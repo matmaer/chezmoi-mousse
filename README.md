@@ -1,7 +1,7 @@
 # chezmoi-mousse
 TUI for ChezMoi with a wink to the mouse.
 
-This repository is for testing a terminal user interface for "[chezmoi]<https://github.com/twpayne/chezmoi>".
+This repository is for testing a terminal user interface for [chezmoi]<https://github.com/twpayne/chezmoi>.
 
 The author is using "chezmoi" as a package in the terminal where this app is tested.
 
