@@ -13,11 +13,13 @@ class Sidebar(Vertical):
         yield Button(label="clear rich log", id="clear_richlog")
 
 
-class Atui(App):
+class ChezMoi(App):
     BINDINGS = [
         ("s", "toggle_sidebar", "MAX"),
         ("q", "quit", "Quit"),
     ]
+
+    CSS_PATH = "textual.tcss"
 
     def rlog(self, to_print: str) -> None:
         self.query_one(RichLog).write(to_print)
@@ -41,5 +43,4 @@ class Atui(App):
 
 
 def run_tui():
-    app = Atui()
-    app.run()
+    ChezMoi().run()
