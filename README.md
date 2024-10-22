@@ -3,10 +3,11 @@ TUI for ChezMoi with a wink to the mouse.
 
 This repository is for testing a terminal user interface for [chezmoi](https://github.com/twpayne/chezmoi).
 
-The author is using "chezmoi" as a package in the terminal where this tui is tested.
+The author is using "chezmoi" as a package in the terminal where this tui is tested.https://github.com/Textualize/textualhttps://github.com/Textualize/textual)
 
 Current `pacman -Qi chezmoi` output:
 
+```text
 Name            : chezmoi
 Version         : 2.52.4-1
 Description     : Manage your dotfiles across multiple machines
@@ -20,3 +21,4 @@ Install Date    : do 17 okt 2024 00:20:24
 Install Reason  : Explicitly installed
 Install Script  : No
 Validated By    : Signature
+```
