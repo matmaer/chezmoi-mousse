@@ -3,7 +3,7 @@ TUI for ChezMoi with a wink to the mouse.
 
 This repository is for testing a terminal user interface for [chezmoi](https://github.com/twpayne/chezmoi).
 
-Possible thanks to [textual](https://github.com/Textualize/textual) and [Python](https://www.python.org/).
+Possible thanks to [Textual](https://github.com/Textualize/textual) and [Python](https://www.python.org/).
 
 Current `pacman -Qi chezmoi` output:
 
