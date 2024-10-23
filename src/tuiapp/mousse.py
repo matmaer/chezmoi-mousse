@@ -7,8 +7,8 @@ from textual.widgets import Button, Footer, RichLog
 class Sidebar(Vertical):
     def compose(self) -> ComposeResult:
         yield Button(
-            label="show chez moi",
-            id="show_chez_moi",
+            label="chezmoi help",
+            id="chezmoi_help",
         )
         yield Button(label="clear rich log", id="clear_richlog")
 
@@ -36,6 +36,10 @@ class ChezMoi(App):
 
     def action_toggle_sidebar(self):
         self.query_one(Sidebar).toggle_class("-hidden")
+
+    @on(Button.Pressed, "#clear_richlog")
+    def chezmoi_help(self):
+        self.query_one(RichLog).write("chezmoi_help")
 
     @on(Button.Pressed, "#clear_richlog")
     def clear_richlog(self):

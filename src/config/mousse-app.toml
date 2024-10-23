@@ -1,0 +1,5 @@
+# these are most common, but to check at app startup if valid
+[chezmoi]
+chezmoi_repo_dir = ".local/share/chezmoi"
+dotfiles_dir = "~"
+executable = "/usr/bin/chezmoi"
