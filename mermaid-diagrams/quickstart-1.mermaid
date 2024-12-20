@@ -1,0 +1,15 @@
+sequenceDiagram
+    participant H as home directory
+    participant W as working copy
+    participant L as local repo
+    participant R as remote repo
+    H->>L: chezmoi init
+    H->>W: chezmoi add <file>;
+    W->>W: chezmoi edit <file>;
+    W-->>H: chezmoi diff
+    W->>H: chezmoi apply
+    H-->>W: chezmoi cd
+    W->>L: git add
+    W->>L: git commit
+    L->>R: git push
+    W-->>H: exit
