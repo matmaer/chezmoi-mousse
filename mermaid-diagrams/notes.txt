@@ -4,5 +4,6 @@ https://github.com/twpayne/chezmoi/blob/491ff52c9e2c34cef42092e3bacf15f967201963
 To be converted to ascii or extended ascii or unicode so they can be used in the Textual TUI.
 
 https://www.chezmoi.io/user-guide/command-overview/
+- daily commands -> daily-commands file
 - multiple machine diagram -> multiple-machines file, can be rendered on https://mermaid.live
 
