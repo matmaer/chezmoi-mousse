@@ -3,6 +3,4 @@ sequenceDiagram
     participant W as working copy
     participant L as local repo
     participant R as remote repo
-    R->>W: chezmoi init <dotfiles-repo-url>
-    R->>H: chezmoi init --apply <dotfiles-repo-url>
-    R->>H: chezmoi init --one-shot <dotfiles-repo-url>
+    R->>H: chezmoi init --apply <repo>
