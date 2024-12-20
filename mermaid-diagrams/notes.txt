@@ -1,6 +1,7 @@
-Mermaid code from the chezmoi docs, manually converted from the source code view in the browser.
-Created from source code view in the browser.
-To be converted so they can be used in the Textual TUI.
+Mermaid code from the chezmoi docs, for example
+https://github.com/twpayne/chezmoi/blob/491ff52c9e2c34cef42092e3bacf15f967201963/assets/chezmoi.io/docs/user-guide/setup.md#L62
+
+To be converted to ascii or extended ascii or unicode so they can be used in the Textual TUI.
 
 https://www.chezmoi.io/user-guide/command-overview/
 - multiple machine diagram -> multiple-machines file, can be rendered on https://mermaid.live
