@@ -43,6 +43,15 @@ Similar to a dashboard that uncludes colors to indicate individual component sta
 
 Can be edited directly in the toml file where the options are stored, so reread config on every operation, which is peanuts anyway.
 
+
+TUI app config path
+  [~/path/to/config.toml]
+  Defaults to ~/.config/chezmoi-mousse/config.toml
+
+Auto add TUI app config
+  O add TUI app config to Chezmoi
+  O don't add
+
 Text characters choices:
   O Pure ascii
   O Extended assci
@@ -51,7 +60,8 @@ Text characters choices:
 Tooltips
   O show
   O don't show
-  ( option to disable as they will be quite verbose to quickly get going but should be self-explanatory)
+  ( option to disable as they will be quite verbose to quickly get going
+    but usage should be self-explanatory and tooltips can ruin the "pretty" experience )
 
 Editing
   O disable spawning editor and as such edit outside of the TUI's awareness
