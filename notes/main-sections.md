@@ -1,7 +1,14 @@
 # interface layout
 
+## Page 1: visualize current state
 
-## Page 1: Status, or "detected configuration"
+Visualisation including with buttons to launch related git and chezmoi commands.
+- Main visualization and modus operandi
+- Ability to verify one specific file its status
+- Local repo (staging and diffs for anything not staged or committed yet)
+- diffs? otherwise modal embedded decide to show Separate Diff window
+
+## Page 2: Status, or "detected configuration"
 
 The goal is to align with the user, on what the TUI will help operating on
 
@@ -27,14 +34,6 @@ The goal is to align with the user, on what the TUI will help operating on
 - configured remotes for the local chezmoi repo
 - display some basic stats from git logs
 
-## Page 2: visualize current state
-
-Visualisation including with buttons to launch related git and chezmoi commands.
-- Main visualization and modus operandi
-- Ability to verify one specific file its status
-- Local repo (staging and diffs for anything not staged or committed yet)
-- diffs? otherwise modal embedded decide to show Separate Diff window
-
 ## Page 3: Options
 
 Text characters choices:
@@ -46,12 +45,11 @@ Tooltips
   O show
   O don't show
 
-## Page 4: Help
-
-- help page, maybe populated with info from the tooltips
-- help with in regards to missing characters or font issues
-
-## Page 5: History and logs
+## Page 4: History and logs
 
 - git log and relevant journal entries
 
+## Page 5: Help
+
+- help page, maybe populated with info from the tooltips
+- help with in regards to missing characters or font issues
