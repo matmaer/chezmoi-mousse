@@ -27,6 +27,6 @@ repos:
     hooks:
       - id: flake8
   - repo: https://github.com/crate-ci/typos
-    rev: v1.26.0
+    rev: v1.28.4
     hooks:
       - id: typos
