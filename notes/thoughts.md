@@ -2,8 +2,10 @@
 
 ## Principles
 
-- everything interactive with dialogs for confirmation and extra information what will be done
-- don't offer editing but launch the editor from the shell with $ $EDITOR <file> so user can use familiar interface and the TUI is not involved, exempt update the visuals when something as changed through the editor, maybe include refresh button.
+- the tool only supports enhancing interactive usage and does not apply in any to scripted usage
+- all chezmoi features for interactive usage are enhanced with context eliminating abbreviations an making it a bit more verbose
+- don't offer editing but launch the editor from the shell with $ $EDITOR <file>
+- button to manually refresh the visuals if something was edited outside of the TUI
 - operate after guiding the user to get started of no existing implementation is found
 - the focus is on convenience for an existing user, who does understand how chezmoi works, maybe fend out later if it looks safe
 - don't proceed if the user doesn't have the needed executables, repository and/or remote
