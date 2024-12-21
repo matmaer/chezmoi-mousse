@@ -4,8 +4,8 @@ sequenceDiagram
     participant L as local repo
     participant R as remote repo
     H->>L: chezmoi init
-    H->>W: chezmoi add <file>;
-    W->>W: chezmoi edit <file>;
+    H->>W: chezmoi add <file>
+    W->>W: chezmoi edit <file>
     W-->>H: chezmoi diff
     W->>H: chezmoi apply
     H-->>W: chezmoi cd
