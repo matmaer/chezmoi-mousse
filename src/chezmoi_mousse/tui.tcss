@@ -1,0 +1,30 @@
+Horizontal {
+  background: #0d1117;
+  padding: 0 1 0 1;
+}
+
+RichLog {
+  background: #0d1117;
+  padding: 0 1 0 1;
+  border: round $panel;
+  height: 100%;
+  scrollbar-color: $panel;
+  scrollbar-size: 1 1;
+  width: 100%;
+}
+
+Sidebar {
+  dock: left;
+  width: auto;
+  margin: 0 1 0 0;
+}
+
+Sidebar > Button {
+  background: #0d1117;
+  border: round $panel;
+  width: 100%;
+}
+
+Sidebar.-hidden {
+  display: none;
+}
