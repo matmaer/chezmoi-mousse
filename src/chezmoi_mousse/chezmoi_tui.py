@@ -1,26 +1,26 @@
 import subprocess
 
+from rich.text import Text
 from textual import on
 from textual.app import App, ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.widgets import Button, Footer, Header, RichLog
 
-GREETER = """
-
+GREETER_PART_1 = """
  ██████╗██╗  ██╗███████╗███████╗███╗   ███╗ ██████╗ ██╗
 ██╔════╝██║  ██║██╔════╝╚══███╔╝████╗ ████║██╔═══██╗██║
 ██║     ███████║█████╗    ███╔╝ ██╔████╔██║██║   ██║██║
 ██║     ██╔══██║██╔══╝   ███╔╝  ██║╚██╔╝██║██║   ██║██║
 ╚██████╗██║  ██║███████╗███████╗██║ ╚═╝ ██║╚██████╔╝██║
  ╚═════╝╚═╝  ╚═╝╚══════╝╚══════╝╚═╝     ╚═╝ ╚═════╝ ╚═╝
-
+"""
+GREETER_PART_2 = """
  ███╗   ███╗ ██████╗ ██╗   ██╗███████╗███████╗███████╗
  ████╗ ████║██╔═══██╗██║   ██║██╔════╝██╔════╝██╔════╝
  ██╔████╔██║██║   ██║██║   ██║███████╗███████╗█████╗
  ██║╚██╔╝██║██║   ██║██║   ██║╚════██║╚════██║██╔══╝
  ██║ ╚═╝ ██║╚██████╔╝╚██████╔╝███████║███████║███████╗
  ╚═╝     ╚═╝ ╚═════╝  ╚═════╝ ╚══════╝╚══════╝╚══════╝
-
 """
 
 
@@ -87,9 +87,29 @@ class ChezmoiTUI(App):
         result = self.run_chezmoi(["help"])
         self.rlog(result.stdout)
 
-    # show the GREETER for just one time
+    # show the greeter after startup
     def on_mount(self):
-        self.rlog(GREETER, highlight=False)
+        top_lines = GREETER_PART_1.split("\n")
+        bottom_lines = GREETER_PART_2.split("\n")
+        gradient = [
+            "#439CFB",
+            "#6698FB",
+            "#8994FB",
+            "#AB8FFB",
+            "#CE8BFB",
+            "#F187FB",
+            "#F187FB",
+        ]
+        self.rlog(" ")
+        for line, color in zip(top_lines, gradient):
+            text = Text.from_markup(f"[{color}]{line}[/]")
+            self.query_one(RichLog).write(text)
+        self.rlog(" ")
+        gradient.reverse()
+        for line, color in zip(bottom_lines, gradient):
+            text = Text.from_markup(f"[{color}]{line}[/]")
+            self.query_one(RichLog).write(text)
+        self.rlog(" ")
 
     def action_toggle_sidebar(self):
         self.query_one(Sidebar).toggle_class("-hidden")
