@@ -23,8 +23,42 @@ GREETER_PART_2 = """
  ╚═╝     ╚═╝ ╚═════╝  ╚═════╝ ╚══════╝╚══════╝╚══════╝
 """
 
+VISUAL_DIAGRAM = """
+Chezmoi terminology used in the diagrams in their docs:
+┌──────────────┐    ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
+│home directory│    │ working copy │    │  local repo  │    │ remote repo  │
+└──────┬───────┘    └──────┬───────┘    └──────┬───────┘    └──────┬───────┘
+       │                   │                   │                   │
+       │    chezmoi add    │                   │                   │
+       │──────────────────>│                   │                   │
+       │                   │                   │                   │
+       │   chezmoi apply   │                   │                   │
+       │<──────────────────│                   │                   │
+       │                   │                   │                   │
+       │  chezmoi status   │                   │                   │
+       │   chezmoi diff    │                   │                   │
+       │<─ ─ ─ ─ ─ ─ ─ ─ ─ │                   │     git push      │
+       │                   │                   │──────────────────>│
+       │                   │                   │                   │
+       │                   │           chezmoi git pull            │
+       │                   │<──────────────────────────────────────│
+       │                   │                   │                   │
+       │                   │    git commit     │                   │
+       │                   │──────────────────>│                   │
+       │                   │                   │                   │
+       │                   │    autoCommit     │                   │
+       │                   │──────────────────>│                   │
+       │                   │                   │                   │
+       │                   │                autoPush               │
+       │                   │──────────────────────────────────────>│
+       │                   │                   │                   │
+       │                   │                   │                   │
+┌──────┴───────┐    ┌──────┴───────┐    ┌──────┴───────┐    ┌──────┴───────┐
+│home directory│    │ working copy │    │  local repo  │    │ remote repo  │
+└──────────────┘    └──────────────┘    └──────────────┘    └──────────────┘
+"""
 
-class Sidebar(Vertical):
+class ButtonSidebar(Vertical):
     def compose(self) -> ComposeResult:
         yield Button(
             label="Status",
