@@ -1,4 +1,4 @@
-from chezmoi_mousse.textual_app import ChezmoiTUI
+from chezmoi_mousse.tui import ChezmoiTUI
 
 if __name__ == "__main__":
     app = ChezmoiTUI()
