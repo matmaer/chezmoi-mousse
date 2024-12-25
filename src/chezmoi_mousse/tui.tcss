@@ -1,38 +1,52 @@
-Horizontal {
-  background: #0d1117;
-  # background:rgb(106, 17, 9);
-  # padding: 0 0 0 0;
+Header {
+  background:rgb(13, 17, 23);
+  # background:rgb(15, 71, 19);
   # margin: 0 0 0 0;
+  # padding: 0 0 0 0;
+  # border: round $panel;
+}
+
+Horizontal {
+  background:rgb(13, 17, 23);
+  # background:rgb(207, 29, 13);
+
+  # margin: 0 0 0 0;
+  # padding: 0 0 0 0;
 }
 
 ButtonSidebar {
+  background:rgb(13, 17, 23);
   dock: left;
   width: auto;
-  # margin: 0 0 0 0;
+  padding: 1 1 0 1;
+  min-width: 10;
 }
 
 ButtonSidebar > Button {
-  background: #0d1117;
-  # background:rgb(20, 62, 126);
+  background:rgb(13, 17, 23);
+  # margin: 0 0 0 0;
+  # padding: 0 1 0 2;
   border: round $panel;
-  width: 100%;
+  width: 10;
 }
 
 RichLogSidebar {
+  background:rgb(13, 17, 23);
   # background:rgb(15, 71, 19);
   dock: right;
-  # padding: 0 0 0 0;
   # margin: 0 0 0 0;
+  # padding: 0 1 0 2;
   width: auto;
+  max-width: 80%;
+  # transition: width 3s;
+  # easing: out-bounce;
 }
 
 RichLogSidebar > RichLog {
-  background: #0d1117;
-  # padding: 0 0 0 0;
-  # margin: 0 0 0 0;
+  background:rgb(13, 17, 23);
+  padding: 0 1 0 1;
   border: round $panel;
-  # height: 80%;
-  scrollbar-color: $panel;
+  scrollbar-color: $boost;
   scrollbar-size: 1 1;
   width: auto;
 }
@@ -44,3 +58,21 @@ ButtonSidebar.-hidden {
 RichLogSidebar.-hidden {
   display: none;
 }
+
+CenterContent {
+  # background:rgb(15, 71, 19);
+  background:rgb(13, 17, 23);
+  # background: $panel;
+  # margin: 1 1 1 1;
+  padding: 1 1 0 1;
+  # border: solid $panel;
+  min-width: 78;
+  max-width: 79;
+}
+
+
+
+# min-width sets a minimum width.
+# max-width sets a maximum width.
+# min-height sets a minimum height.
+# max-height sets a maximum height.
