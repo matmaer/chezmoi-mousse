@@ -1,6 +1,5 @@
 import subprocess
 
-from rich.text import Text
 from textual import on
 from textual.app import App, ComposeResult
 from textual.containers import Horizontal, Vertical
@@ -126,14 +125,13 @@ class ChezmoiTUI(App):
 
     @on(Button.Pressed, "#chezmoi_status")
     def show_chezmoi_status(self):
-        self.rlog("Chezmoi status output:")
+        self.rlog("[cyan]$ chezmoi status[/]")
         result = self.run_chezmoi(["status"])
         self.rlog(result.stdout)
 
     @on(Button.Pressed, "#chezmoi_managed")
     def show_chezmoi_managed(self):
-        # debug message
-        self.rlog("Chezmoi managed output:")
+        self.rlog("[cyan]$ chezmoi managed[/]")
         result = self.run_chezmoi(["managed"])
         self.rlog(result.stdout)
 
@@ -141,7 +139,7 @@ class ChezmoiTUI(App):
     def clear_richlog(self):
         self.query_one(RichLog).clear()
         # debug message
-        self.rlog("[cyan]RichLog Cleared[/]")
+        self.rlog("[green]RichLog Cleared[/]")
 
     @on(Button.Pressed, "#app_help")
     def help_page(self):
@@ -163,12 +161,10 @@ class ChezmoiTUI(App):
             "#F187FB",
         ]
         for line, color in zip(top_lines, gradient):
-            text = Text.from_markup(f"[{color}]{line}[/]")
-            self.query_one(RichLog).write(text)
+            self.rlog(f"[{color}]{line}[/]")
         gradient.reverse()
         for line, color in zip(bottom_lines, gradient):
-            text = Text.from_markup(f"[{color}]{line}[/]")
-            self.query_one(RichLog).write(text)
+            self.rlog(f"[{color}]{line}[/]")
         self.rlog(" ")
 
     def action_toggle_buttonsidebar(self):
