@@ -4,7 +4,7 @@ from rich.text import Text
 from textual import on
 from textual.app import App, ComposeResult
 from textual.containers import Horizontal, Vertical
-from textual.widgets import Button, Footer, Header, RichLog
+from textual.widgets import Button, Footer, Header, RichLog  # , DirectoryTree
 
 GREETER_PART_1 = """
  ██████╗██╗  ██╗███████╗███████╗███╗   ███╗ ██████╗ ██╗
@@ -13,7 +13,7 @@ GREETER_PART_1 = """
 ██║     ██╔══██║██╔══╝   ███╔╝  ██║╚██╔╝██║██║   ██║██║
 ╚██████╗██║  ██║███████╗███████╗██║ ╚═╝ ██║╚██████╔╝██║
  ╚═════╝╚═╝  ╚═╝╚══════╝╚══════╝╚═╝     ╚═╝ ╚═════╝ ╚═╝
-"""
+ """
 GREETER_PART_2 = """
  ███╗   ███╗ ██████╗ ██╗   ██╗███████╗███████╗███████╗
  ████╗ ████║██╔═══██╗██║   ██║██╔════╝██╔════╝██╔════╝
@@ -22,9 +22,7 @@ GREETER_PART_2 = """
  ██║ ╚═╝ ██║╚██████╔╝╚██████╔╝███████║███████║███████╗
  ╚═╝     ╚═╝ ╚═════╝  ╚═════╝ ╚══════╝╚══════╝╚══════╝
 """
-
 VISUAL_DIAGRAM = """
-Chezmoi terminology used in the diagrams in their docs:
 ┌──────────────┐    ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
 │home directory│    │ working copy │    │  local repo  │    │ remote repo  │
 └──────┬───────┘    └──────┬───────┘    └──────┬───────┘    └──────┬───────┘
@@ -58,23 +56,48 @@ Chezmoi terminology used in the diagrams in their docs:
 └──────────────┘    └──────────────┘    └──────────────┘    └──────────────┘
 """
 
+
 class ButtonSidebar(Vertical):
     def compose(self) -> ComposeResult:
         yield Button(
             label="Status",
-            id="chezmoi_status_button",
-            tooltip="runs chezmoi status",
+            id="chezmoi_status",
+        )
+        yield Button(
+            label="Chezmoi Managed",
+            id="chezmoi_managed",
+            tooltip="List the managed files in the home directory",
+        )
+        yield Button(
+            label="Clear RichLog",
+            id="clear_richlog",
         )
         yield Button(
             label="Help",
-            id="help_button",
-            tooltip="runs chezmoi help",
+            id="app_help",
         )
+
+
+class RichLogSidebar(Vertical):
+    def compose(self) -> ComposeResult:
+        yield RichLog(
+            id="richlog",
+            highlight=True,
+            wrap=False,
+            markup=True,
+        )
+
+
+# class ManagedFiles(DirectoryTree):
+#     managed =
+#     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
+#         return [path for path in paths if not path.name.startswith(".")]
 
 
 class ChezmoiTUI(App):
     BINDINGS = [
-        ("s", "toggle_sidebar", "Toggle Maximized"),
+        ("b", "toggle_buttonsidebar", "Toggle Buttons Sidebar"),
+        ("r", "toggle_richlogsidebar", "Toggle Shell Output Sidebar"),
         ("q", "quit", "Quit"),
     ]
     CSS_PATH = "tui.tcss"
@@ -101,25 +124,36 @@ class ChezmoiTUI(App):
     def compose(self) -> ComposeResult:
         yield Header()
         with Horizontal():
-            yield Sidebar(id="sidebar")
-            yield RichLog(
-                highlight=True,
-                wrap=False,
-                markup=True,
-            )
+            yield ButtonSidebar(id="button_sidebar")
+            # yield Static(VISUAL_DIAGRAM)
+            # yield DirectoryTree()
+            yield RichLogSidebar()
         yield Footer()
 
-    @on(Button.Pressed, "#chezmoi_status_button")
-    def chezmoi_status_button(self):
+    @on(Button.Pressed, "#chezmoi_status")
+    def show_chezmoi_status(self):
         self.rlog("Chezmoi status output:")
         result = self.run_chezmoi(["status"])
         self.rlog(result.stdout)
 
-    @on(Button.Pressed, "#help_button")
-    def help_page(self):
-        self.rlog("Chezmoi help output:")
-        result = self.run_chezmoi(["help"])
+    @on(Button.Pressed, "#chezmoi_managed")
+    def show_chezmoi_managed(self):
+        # debug message
+        self.rlog("Chezmoi managed output:")
+        result = self.run_chezmoi(["managed"])
         self.rlog(result.stdout)
+
+    @on(Button.Pressed, "#clear_richlog")
+    def clear_richlog(self):
+        self.query_one(RichLog).clear()
+        # debug message
+        self.rlog("[cyan]RichLog Cleared[/]")
+
+    # @on(Button.Pressed, "#help")
+    # def help_page(self):
+    #     self.rlog("Chezmoi help output:")
+    #     result = self.run_chezmoi(["help"])
+    #     self.rlog(result.stdout)
 
     # show the greeter after startup
     def on_mount(self):
@@ -134,19 +168,20 @@ class ChezmoiTUI(App):
             "#F187FB",
             "#F187FB",
         ]
-        self.rlog(" ")
         for line, color in zip(top_lines, gradient):
             text = Text.from_markup(f"[{color}]{line}[/]")
             self.query_one(RichLog).write(text)
-        self.rlog(" ")
         gradient.reverse()
         for line, color in zip(bottom_lines, gradient):
             text = Text.from_markup(f"[{color}]{line}[/]")
             self.query_one(RichLog).write(text)
         self.rlog(" ")
 
-    def action_toggle_sidebar(self):
-        self.query_one(Sidebar).toggle_class("-hidden")
+    def action_toggle_buttonsidebar(self):
+        self.query_one(ButtonSidebar).toggle_class("-hidden")
+
+    def action_toggle_richlogsidebar(self):
+        self.query_one(RichLogSidebar).toggle_class("-hidden")
 
 
 def run_chezmoi_mousse() -> None:

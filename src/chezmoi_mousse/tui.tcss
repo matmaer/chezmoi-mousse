@@ -1,30 +1,46 @@
 Horizontal {
   background: #0d1117;
-  padding: 0 1 0 1;
+  # background:rgb(106, 17, 9);
+  # padding: 0 0 0 0;
+  # margin: 0 0 0 0;
 }
 
-RichLog {
-  background: #0d1117;
-  padding: 0 1 0 1;
-  border: round $panel;
-  height: 100%;
-  scrollbar-color: $panel;
-  scrollbar-size: 1 1;
-  width: 100%;
-}
-
-Sidebar {
+ButtonSidebar {
   dock: left;
   width: auto;
-  margin: 0 1 0 0;
+  # margin: 0 0 0 0;
 }
 
-Sidebar > Button {
+ButtonSidebar > Button {
   background: #0d1117;
+  # background:rgb(20, 62, 126);
   border: round $panel;
   width: 100%;
 }
 
-Sidebar.-hidden {
+RichLogSidebar {
+  # background:rgb(15, 71, 19);
+  dock: right;
+  # padding: 0 0 0 0;
+  # margin: 0 0 0 0;
+  width: auto;
+}
+
+RichLogSidebar > RichLog {
+  background: #0d1117;
+  # padding: 0 0 0 0;
+  # margin: 0 0 0 0;
+  border: round $panel;
+  # height: 80%;
+  scrollbar-color: $panel;
+  scrollbar-size: 1 1;
+  width: auto;
+}
+
+ButtonSidebar.-hidden {
+  display: none;
+}
+
+RichLogSidebar.-hidden {
   display: none;
 }
