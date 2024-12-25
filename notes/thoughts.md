@@ -87,3 +87,123 @@ To be included in backend, but probably not the visualization although offer lau
 
 
 
+┌──────────────┐    ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
+│home directory│    │ working copy │    │  local repo  │    │ remote repo  │
+└──────┬───────┘    └──────┬───────┘    └──────┬───────┘    └──────┬───────┘
+
+destination         Target state
+directory           desired state
+                    of dest dir
+
+
+(target is file
+dir or symlink in
+destination dir)
+
+destination state:
+**current** state of
+all targets in
+dest dir
+
+                source state:
+                declares
+                **desired state**
+                for home dir
+                including templates
+                for machine specific
+                data.
+                **contains only**
+                **files and dirs**
+                contains **attributes**
+                like executable_
+                dot_, private_
+                                    source directory
+                                    stores the source state
+                                    ~/.local/share/chezmoi
+
+Target state
+**desired** state
+of dest dir
+**computed** from
+ - source state
+ - config file
+ - destination state
+
+                The working tree is
+                the git working tree.
+                Normally it is the
+                same as the source
+                directory, but can
+                be a parent of the
+                source directory.
+                also includes **symbolic**
+                links scripts and targets
+                to **remove**
+
+
+The config file contains machine-specific data. By default it is ~/.config/chezmoi/chezmoi.toml.
+
+chezmoi status
+space: no change
+
+first column: difference between last state **written by chezmoi**
+              A: was created
+              M: was modified
+              D: was deleted
+
+second column: difference between the actual state and the target state
+               effect of running **chezmoi apply**
+               A will be created
+               M will be modified
+               D will be deleted
+               R script will be run
+
+#### Read only operations:
+
+**cat**                  Print the target contents of a file, script, or symlink
+**cat-config**           Print the configuration file
+**data**                 Print the template data
+**diff**                Print the diff between the target state and the destination state
+**doctor**               Check your system for potential problems
+**dump**                 Generate a dump of the target state
+    --format json|yaml
+**dump-config**          Dump the configuration values
+**git**                  Run git in the source directory
+**help**                 Print help about a command
+**ignored**              Print ignored targets
+**license**              Print license
+**managed**              List the managed entries in the destination directory
+**source-path**          Print the source path of a target
+**state dump**
+**status**               Show the status of targets
+**target-path**          Print the target path of a source path
+**unmanaged**            List the unmanaged files in the destination directory
+**verify**               Exit with success if the destination state matches the target state, fail otherwise
+
+#### Write operations
+
+add                  Add an existing file, directory, or symlink to the source state
+age                  Interact with age
+apply                Update the destination directory to match the target state
+archive              Generate a tar archive of the target state
+cd                   Launch a shell in the source directory
+chattr               Change the attributes of a target in the source state
+completion           Generate shell completion code
+decrypt              Decrypt file or standard input
+destroy              Permanently delete an entry from the source state, the destination directory, and the
+edit                 Edit the source state of a target
+edit-config          Edit the configuration file
+edit-config-template Edit the configuration file template
+encrypt              Encrypt file or standard input
+execute-template     Execute the given template(s)
+forget               Remove a target from the source state
+generate             Generate a file for use with chezmoi
+import               Import an archive into the source state
+init                 Setup the source directory and update the destination directory to match the target state
+merge                Perform a three-way merge between the destination state, the source state, and the target state
+merge-all            Perform a three-way merge for each modified file
+purge                Purge chezmoi's configuration and data
+re-add               Re-add modified files
+secret               Interact with a secret manager
+update               Pull and apply any changes
+**verify**               Exit with success if the destination state matches the target state, fail otherwise
