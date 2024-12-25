@@ -88,10 +88,9 @@ class RichLogSidebar(Vertical):
         )
 
 
-# class ManagedFiles(DirectoryTree):
-#     managed =
-#     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
-#         return [path for path in paths if not path.name.startswith(".")]
+class CenterContent(Vertical):
+    def compose(self) -> ComposeResult:
+        yield Static(VISUAL_DIAGRAM)
 
 
 class ChezmoiTUI(App):
@@ -102,13 +101,9 @@ class ChezmoiTUI(App):
     ]
     CSS_PATH = "tui.tcss"
 
-    def rlog(self, to_print: str, highlight=True) -> None:
-        rich_log = self.query_one(RichLog)
-        if not highlight:
-            rich_log.highlight = False
-        else:
-            rich_log.highlight = True
-        self.query_one(RichLog).write(to_print)
+    def rlog(self, to_print: str) -> None:
+        richlog = self.query_one(RichLog)
+        richlog.write(to_print)
 
     def run_chezmoi(self, params: list) -> subprocess.CompletedProcess:
         result = subprocess.run(
@@ -125,8 +120,7 @@ class ChezmoiTUI(App):
         yield Header()
         with Horizontal():
             yield ButtonSidebar(id="button_sidebar")
-            yield Static(VISUAL_DIAGRAM)
-            # yield DirectoryTree()
+            yield CenterContent()
             yield RichLogSidebar()
         yield Footer()
 
@@ -149,11 +143,11 @@ class ChezmoiTUI(App):
         # debug message
         self.rlog("[cyan]RichLog Cleared[/]")
 
-    # @on(Button.Pressed, "#help")
-    # def help_page(self):
-    #     self.rlog("Chezmoi help output:")
-    #     result = self.run_chezmoi(["help"])
-    #     self.rlog(result.stdout)
+    @on(Button.Pressed, "#app_help")
+    def help_page(self):
+        self.rlog("$ chezmoi help")
+        result = self.run_chezmoi(["help"])
+        self.rlog(result.stdout)
 
     # show the greeter after startup
     def on_mount(self):
