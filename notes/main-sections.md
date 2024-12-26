@@ -1,4 +1,4 @@
-# interface layout
+# interface layout ideas and notes
 
 ## Page 1: visualize current state
 
