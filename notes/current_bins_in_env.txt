@@ -1,37 +1,36 @@
-total 35M
--rw-r--r-- 1 mm mm 3,7K 20 dec 08:51 activate
--rw-r--r-- 1 mm mm 2,3K 20 dec 08:51 activate.bat
--rw-r--r-- 1 mm mm 2,6K 20 dec 08:51 activate.csh
--rw-r--r-- 1 mm mm 4,2K 20 dec 08:51 activate.fish
--rw-r--r-- 1 mm mm 3,9K 20 dec 08:51 activate.nu
--rw-r--r-- 1 mm mm 2,8K 20 dec 08:51 activate.ps1
--rw-r--r-- 1 mm mm 2,4K 20 dec 08:51 activate_this.py
--rwxr-xr-x 1 mm mm  251 20 dec 12:55 black
--rwxr-xr-x 1 mm mm  252 20 dec 12:55 blackd
--rw-r--r-- 1 mm mm 1,7K 20 dec 08:51 deactivate.bat
--rwxr-xr-x 1 mm mm  245 20 dec 12:55 flake8
--rwxr-xr-x 1 mm mm  239 21 dec 06:22 hatch
--rwxr-xr-x 1 mm mm  253 21 dec 06:22 hatchling
--rwxr-xr-x 1 mm mm  235 21 dec 06:22 httpx
--rwxr-xr-x 1 mm mm  242 20 dec 08:52 identify-cli
--rwxr-xr-x 1 mm mm  255 23 dec 00:53 ipython
--rwxr-xr-x 1 mm mm  255 23 dec 00:53 ipython3
--rwxr-xr-x 1 mm mm  240 20 dec 12:55 isort
--rwxr-xr-x 1 mm mm  274 20 dec 12:55 isort-identify-imports
--rwxr-xr-x 1 mm mm  241 21 dec 06:22 keyring
--rwxr-xr-x 1 mm mm  251 20 dec 08:52 markdown-it
--rwxr-xr-x 1 mm mm  237 20 dec 08:52 nodeenv
--rwxr-xr-x 1 mm mm  264 20 dec 08:52 normalizer
--rwxr-xr-x 1 mm mm  245 20 dec 08:52 pre-commit
--rwxr-xr-x 1 mm mm  243 20 dec 12:55 pycodestyle
--rw-r--r-- 1 mm mm 1,2K 20 dec 08:51 pydoc.bat
--rwxr-xr-x 1 mm mm  242 20 dec 12:55 pyflakes
--rwxr-xr-x 1 mm mm  246 20 dec 08:52 pygmentize
-lrwxrwxrwx 1 mm mm   78 20 dec 08:51 python -> /home/mm/.local/share/uv/python/cpython-3.13.0-linux-x86_64-gnu/bin/python3.13
-lrwxrwxrwx 1 mm mm    6 20 dec 08:51 python3 -> python
-lrwxrwxrwx 1 mm mm    6 20 dec 08:51 python3.13 -> python
--rwxr-xr-x 1 mm mm  243 22 dec 10:04 textual
--rwxr-xr-x 1 mm mm  250 21 dec 06:22 userpath
--rwxr-xr-x 2 mm mm  35M 21 dec 06:22 uv
--rwxr-xr-x 2 mm mm 351K 21 dec 06:22 uvx
--rwxr-xr-x 1 mm mm  269 20 dec 08:52 virtualenv
+activate
+activate.bat
+activate.csh
+activate.fish
+activate.nu
+activate.ps1
+activate_this.py
+black
+blackd
+deactivate.bat
+flake8
+hatch
+hatchling
+httpx
+identify-cli
+ipython
+ipython3
+isort
+isort-identify-imports
+keyring
+markdown-it
+nodeenv
+normalizer
+pre-commit
+pycodestyle
+pydoc.bat
+pyflakes
+pygmentize
+python
+python3
+python3.13
+textual
+userpath
+uv
+uvx
+virtualenv
