@@ -1,8 +1,9 @@
 import subprocess
 
 from textual import on
-from textual.app import App, ComposeResult
+from textual.app import App, ComposeResult, Widget
 from textual.containers import Horizontal, Vertical
+from textual.reactive import reactive
 from textual.widgets import Button, Footer, Header, RichLog, Static
 
 GREETER_PART_1 = """
@@ -77,7 +78,7 @@ class ButtonSidebar(Vertical):
         )
 
 
-class RichLogSidebar(Vertical):
+class RichLogSidebar(Widget):
     def compose(self) -> ComposeResult:
         yield RichLog(
             id="richlog",
@@ -94,11 +95,12 @@ class CenterContent(Vertical):
 
 class ChezmoiTUI(App):
     BINDINGS = [
-        ("b", "toggle_buttonsidebar", "Toggle Buttons Sidebar"),
-        ("r", "toggle_richlogsidebar", "Toggle Shell Output Sidebar"),
+        ("l", "toggle_buttonsidebar", "Toggle Left Panel"),
+        ("r", "toggle_richlogsidebar", "Toggle Right Panel"),
         ("q", "quit", "Quit"),
     ]
     CSS_PATH = "tui.tcss"
+    show_richlog = reactive(False)
 
     def rlog(self, to_print: str) -> None:
         richlog = self.query_one(RichLog)
@@ -138,8 +140,7 @@ class ChezmoiTUI(App):
     @on(Button.Pressed, "#clear_richlog")
     def clear_richlog(self):
         self.query_one(RichLog).clear()
-        # debug message
-        self.rlog("[green]RichLog Cleared[/]")
+        # self.rlog("[green]RichLog Cleared[/]")
 
     @on(Button.Pressed, "#app_help")
     def help_page(self):
@@ -147,8 +148,18 @@ class ChezmoiTUI(App):
         result = self.run_chezmoi(["help"])
         self.rlog(result.stdout)
 
-    # show the greeter after startup
+    def action_toggle_buttonsidebar(self):
+        self.query_one(ButtonSidebar).toggle_class("-hidden")
+
+    def action_toggle_richlogsidebar(self) -> None:
+        self.show_richlog = not self.show_richlog
+
+    def watch_show_richlog(self, show_richlog: bool) -> None:
+        # Set or unset visible class when reactive changes.
+        self.query_one(RichLogSidebar).set_class(show_richlog, "-visible")
+
     def on_mount(self):
+        # show the greeter after startup
         top_lines = GREETER_PART_1.split("\n")
         bottom_lines = GREETER_PART_2.split("\n")
         gradient = [
@@ -166,12 +177,6 @@ class ChezmoiTUI(App):
         for line, color in zip(bottom_lines, gradient):
             self.rlog(f"[{color}]{line}[/]")
         self.rlog(" ")
-
-    def action_toggle_buttonsidebar(self):
-        self.query_one(ButtonSidebar).toggle_class("-hidden")
-
-    def action_toggle_richlogsidebar(self):
-        self.query_one(RichLogSidebar).toggle_class("-hidden")
 
 
 if __name__ == "__main__":
