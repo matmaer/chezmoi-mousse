@@ -42,11 +42,13 @@ ButtonSidebar > Button {
 
 ButtonSidebar > Button:focus {
   background-tint: rgb(13, 17, 23);
-  border: round rgb(25, 93, 32);
+  color: rgb(29, 196, 46);
+  border: round rgb(9, 131, 21);
+  text-style: bold;
 }
 
 ButtonSidebar > Button:hover {
-  border: round rgb(25, 93, 32);
+  border: round rgb(9, 131, 21);
 }
 
 # ###############################################################
