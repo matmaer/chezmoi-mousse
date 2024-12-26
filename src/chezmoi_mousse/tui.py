@@ -6,22 +6,6 @@ from textual.containers import Horizontal, Vertical
 from textual.reactive import reactive
 from textual.widgets import Button, Footer, Header, RichLog, Static
 
-GREETER_PART_1 = """
- ██████╗██╗  ██╗███████╗███████╗███╗   ███╗ ██████╗ ██╗
-██╔════╝██║  ██║██╔════╝╚══███╔╝████╗ ████║██╔═══██╗██║
-██║     ███████║█████╗    ███╔╝ ██╔████╔██║██║   ██║██║
-██║     ██╔══██║██╔══╝   ███╔╝  ██║╚██╔╝██║██║   ██║██║
-╚██████╗██║  ██║███████╗███████╗██║ ╚═╝ ██║╚██████╔╝██║
- ╚═════╝╚═╝  ╚═╝╚══════╝╚══════╝╚═╝     ╚═╝ ╚═════╝ ╚═╝
- """
-GREETER_PART_2 = """
- ███╗   ███╗ ██████╗ ██╗   ██╗███████╗███████╗███████╗
- ████╗ ████║██╔═══██╗██║   ██║██╔════╝██╔════╝██╔════╝
- ██╔████╔██║██║   ██║██║   ██║███████╗███████╗█████╗
- ██║╚██╔╝██║██║   ██║██║   ██║╚════██║╚════██║██╔══╝
- ██║ ╚═╝ ██║╚██████╔╝╚██████╔╝███████║███████║███████╗
- ╚═╝     ╚═╝ ╚═════╝  ╚═════╝ ╚══════╝╚══════╝╚══════╝
-"""
 VISUAL_DIAGRAM = """
 ┌──────────────┐    ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
 │home directory│    │ working copy │    │  local repo  │    │ remote repo  │
@@ -60,21 +44,21 @@ VISUAL_DIAGRAM = """
 class ButtonSidebar(Vertical):
     def compose(self) -> ComposeResult:
         yield Button(
+            label="Config",
+            id="chezmoi_config",
+        )
+        yield Button(
             label="Status",
             id="chezmoi_status",
         )
         yield Button(
-            label="Chezmoi Managed",
+            label="Managed",
             id="chezmoi_managed",
             tooltip="List the managed files in the home directory",
         )
         yield Button(
-            label="Clear RichLog",
+            label="Clear Output",
             id="clear_richlog",
-        )
-        yield Button(
-            label="Help",
-            id="app_help",
         )
 
 
@@ -120,10 +104,16 @@ class ChezmoiTUI(App):
     def compose(self) -> ComposeResult:
         yield Header()
         with Horizontal():
-            yield ButtonSidebar(id="button_sidebar")
+            yield ButtonSidebar()
             yield CenterContent()
             yield RichLogSidebar()
         yield Footer()
+
+    @on(Button.Pressed, "#chezmoi_config")
+    def show_chezmoi_configuration(self):
+        self.rlog("[cyan]$ chezmoi cat-config[/]")
+        result = self.run_chezmoi(["cat-config"])
+        self.rlog(result.stdout)
 
     @on(Button.Pressed, "#chezmoi_status")
     def show_chezmoi_status(self):
@@ -142,12 +132,6 @@ class ChezmoiTUI(App):
         self.query_one(RichLog).clear()
         # self.rlog("[green]RichLog Cleared[/]")
 
-    @on(Button.Pressed, "#app_help")
-    def help_page(self):
-        self.rlog("$ chezmoi help")
-        result = self.run_chezmoi(["help"])
-        self.rlog(result.stdout)
-
     def action_toggle_buttonsidebar(self):
         self.query_one(ButtonSidebar).toggle_class("-hidden")
 
@@ -157,26 +141,6 @@ class ChezmoiTUI(App):
     def watch_show_richlog(self, show_richlog: bool) -> None:
         # Set or unset visible class when reactive changes.
         self.query_one(RichLogSidebar).set_class(show_richlog, "-visible")
-
-    def on_mount(self):
-        # show the greeter after startup
-        top_lines = GREETER_PART_1.split("\n")
-        bottom_lines = GREETER_PART_2.split("\n")
-        gradient = [
-            "#439CFB",
-            "#6698FB",
-            "#8994FB",
-            "#AB8FFB",
-            "#CE8BFB",
-            "#F187FB",
-            "#F187FB",
-        ]
-        for line, color in zip(top_lines, gradient):
-            self.rlog(f"[{color}]{line}[/]")
-        gradient.reverse()
-        for line, color in zip(bottom_lines, gradient):
-            self.rlog(f"[{color}]{line}[/]")
-        self.rlog(" ")
 
 
 if __name__ == "__main__":
