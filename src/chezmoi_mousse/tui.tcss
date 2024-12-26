@@ -1,78 +1,76 @@
-Header {
+Horizontal {
   background:rgb(13, 17, 23);
-  # background:rgb(15, 71, 19);
-  # margin: 0 0 0 0;
-  # padding: 0 0 0 0;
-  # border: round $panel;
+}
+
+Horizontal > Screen {
+  background:rgb(13, 17, 23);
+  layers: sidebar;
 }
 
 Horizontal {
   background:rgb(13, 17, 23);
-  # background:rgb(207, 29, 13);
-
-  # margin: 0 0 0 0;
-  # padding: 0 0 0 0;
 }
+
+CenterContent {
+  background:rgb(13, 17, 23);
+  padding: 1 1 0 1;
+  min-width: 78;
+  max-width: 79;
+}
+
+# ###############################################################
 
 ButtonSidebar {
   background:rgb(13, 17, 23);
   dock: left;
-  width: auto;
-  padding: 1 1 0 1;
-  min-width: 10;
-}
-
-ButtonSidebar > Button {
-  background:rgb(13, 17, 23);
-  # margin: 0 0 0 0;
-  # padding: 0 1 0 2;
-  border: round $panel;
-  width: 10;
-}
-
-RichLogSidebar {
-  background:rgb(13, 17, 23);
-  # background:rgb(15, 71, 19);
-  dock: right;
-  # margin: 0 0 0 0;
-  # padding: 0 1 0 2;
-  width: auto;
-  max-width: 80%;
-  # transition: width 3s;
-  # easing: out-bounce;
-}
-
-RichLogSidebar > RichLog {
-  background:rgb(13, 17, 23);
-  padding: 0 1 0 1;
-  border: round $panel;
-  scrollbar-color: $boost;
-  scrollbar-size: 1 1;
-  width: auto;
+  width: 12%;
+  min-width: 18;
+  padding: 1 1 1 1;
 }
 
 ButtonSidebar.-hidden {
   display: none;
 }
 
-RichLogSidebar.-hidden {
-  display: none;
-}
-
-CenterContent {
-  # background:rgb(15, 71, 19);
+ButtonSidebar > Button {
   background:rgb(13, 17, 23);
-  # background: $panel;
-  # margin: 1 1 1 1;
-  padding: 1 1 0 1;
-  # border: solid $panel;
-  min-width: 78;
-  max-width: 79;
+  border: round $panel;
+  width: 88%;
+  max-width: 180%;
+  height: 8;
 }
 
+ButtonSidebar > Button:focus {
+  background-tint: rgb(13, 17, 23);
+  border: round rgb(25, 93, 32);
+}
 
+ButtonSidebar > Button:hover {
+  border: round rgb(25, 93, 32);
+}
 
-# min-width sets a minimum width.
-# max-width sets a maximum width.
-# min-height sets a minimum height.
-# max-height sets a maximum height.
+# ###############################################################
+
+RichLogSidebar {
+  dock: right;
+  padding: 1 1 1 2;
+  width: 109;
+  max-width: 80%;
+  # layer to sit above content
+  layer: terminal;
+  transition: offset 400ms;
+  # Offset -100% (left) and 100% (right) to be out of view
+  offset-x: 100%;
+  &.-visible {
+      # offset.x reaches 0 when fully slided in view
+      offset-x: 0;
+  }
+}
+
+RichLog {
+  background:rgb(16, 21, 28);
+  padding: 0 1 0 1;
+  scrollbar-color: $panel;
+  scrollbar-size: 1 1;
+  width: 100%;
+}
