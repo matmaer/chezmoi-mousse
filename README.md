@@ -1,6 +1,6 @@
-Terminal user interface for [chezmoi](https://github.com/twpayne/chezmoi), visualizing its operations. Built with [Textual](https://github.com/Textualize/textual). The name of the repository is a wink to the mouse.
+Terminal user interface for [chezmoi](https://github.com/twpayne/chezmoi), visualizing its operations. Built with [Textual](https://github.com/Textualize/textual), the most complete, most user friendly and no surprise, most popular TUI app development framework.
 
-The project is in its very early stages.
+The name of the repository chezmoi-mousse is a wink to the mouse.  The project is in its very early stages.
 
 ## Roadmap
 
