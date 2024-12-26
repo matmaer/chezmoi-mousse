@@ -6,39 +6,7 @@ from textual.containers import Horizontal, Vertical
 from textual.reactive import reactive
 from textual.widgets import Button, Footer, Header, RichLog, Static
 
-VISUAL_DIAGRAM = """
-┌──────────────┐    ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
-│home directory│    │ working copy │    │  local repo  │    │ remote repo  │
-└──────┬───────┘    └──────┬───────┘    └──────┬───────┘    └──────┬───────┘
-       │                   │                   │                   │
-       │    chezmoi add    │                   │                   │
-       │──────────────────>│                   │                   │
-       │                   │                   │                   │
-       │   chezmoi apply   │                   │                   │
-       │<──────────────────│                   │                   │
-       │                   │                   │                   │
-       │  chezmoi status   │                   │                   │
-       │   chezmoi diff    │                   │                   │
-       │<─ ─ ─ ─ ─ ─ ─ ─ ─ │                   │     git push      │
-       │                   │                   │──────────────────>│
-       │                   │                   │                   │
-       │                   │           chezmoi git pull            │
-       │                   │<──────────────────────────────────────│
-       │                   │                   │                   │
-       │                   │    git commit     │                   │
-       │                   │──────────────────>│                   │
-       │                   │                   │                   │
-       │                   │    autoCommit     │                   │
-       │                   │──────────────────>│                   │
-       │                   │                   │                   │
-       │                   │                autoPush               │
-       │                   │──────────────────────────────────────>│
-       │                   │                   │                   │
-       │                   │                   │                   │
-┌──────┴───────┐    ┌──────┴───────┐    ┌──────┴───────┐    ┌──────┴───────┐
-│home directory│    │ working copy │    │  local repo  │    │ remote repo  │
-└──────────────┘    └──────────────┘    └──────────────┘    └──────────────┘
-"""
+from .diagrams import VISUAL_DIAGRAM
 
 
 class ButtonSidebar(Vertical):
