@@ -2,13 +2,11 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "TMUXP Chezmoi",
+            "label": "ipython console",
             "type": "shell",
-            "command": "tmuxp load ${workspaceFolder:chezmoi-mousse}/.vscode/tmuxp.yaml",
-            "dependsOn": "kill tmux server",
-            "dependsOrder": "sequence",
+            "command": "/home/mm/repos/chezmoi-mousse/.venv/bin/ipython",
             "options": {
-                "cwd": "${workspaceFolder:chezmoi-mousse}/src/"
+                "cwd": "${workspaceFolder:chezmoi-mousse}/src/chezmoi_mousse"
             },
             "runOptions": {
                 "instanceLimit": 1
@@ -16,22 +14,16 @@
             "problemMatcher": []
         },
         {
-            "label": "CSS Chezmoi",
+            "label": "Live TCSS without console",
             "type": "shell",
-            "command": "textual run --dev ${workspaceFolder:chezmoi-mousse}/src/chezmoi_tui.py",
+            "command": "source ../.venv/bin/activate.fish; textual run --dev chezmoi_mousse.tui:ChezmoiTUI",
+            "options": {
+                "cwd": "${workspaceFolder:chezmoi-mousse}/src"
+            },
             "runOptions": {
                 "instanceLimit": 1
             },
             "problemMatcher": []
         },
-        {
-            "label": "kill tmux server",
-            "hide": true,
-            "type": "shell",
-            "command": "tmux kill-server || exit 0",
-            "dependsOrder": "sequence"
-        },
-    ]
+  ]
 }
-
-
