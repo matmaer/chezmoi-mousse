@@ -34,9 +34,8 @@ ButtonSidebar.-hidden {
 
 ButtonSidebar > Button {
   background:rgb(13, 17, 23);
-  border: round $panel;
-  width: 88%;
-  max-width: 180%;
+  border: round rgb(72, 87, 111);
+  width: 100%;
   height: 8;
 }
 
