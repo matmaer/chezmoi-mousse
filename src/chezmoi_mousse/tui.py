@@ -109,8 +109,3 @@ class ChezmoiTUI(App):
     def watch_show_richlog(self, show_richlog: bool) -> None:
         # Set or unset visible class when reactive changes.
         self.query_one(RichLogSidebar).set_class(show_richlog, "-visible")
-
-
-if __name__ == "__main__":
-    app = ChezmoiTUI()
-    app.run()
