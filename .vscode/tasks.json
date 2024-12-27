@@ -1,29 +1,35 @@
 {
     "version": "2.0.0",
+    "command": "/bin/sh",
+    "options": {
+        "cwd": "${workspaceFolder:chezmoi-mousse}"
+    },
     "tasks": [
         {
             "label": "ipython console",
             "type": "shell",
-            "command": "/home/mm/repos/chezmoi-mousse/.venv/bin/ipython",
-            "options": {
-                "cwd": "${workspaceFolder:chezmoi-mousse}/src/chezmoi_mousse"
-            },
+            "command": "ipython",
             "runOptions": {
                 "instanceLimit": 1
-            },
-            "problemMatcher": []
+            }
         },
         {
-            "label": "Live TCSS without console",
+            "label": "TEXTUAL TCSS",
             "type": "shell",
-            "command": "source ../.venv/bin/activate.fish; textual run --dev chezmoi_mousse.tui:ChezmoiTUI",
-            "options": {
-                "cwd": "${workspaceFolder:chezmoi-mousse}/src"
-            },
+            "command": "source ${workspaceFolder:chezmoi-mousse}/.venv/bin/activate && textual run --dev chezmoi_mousse.tui:ChezmoiTUI",
             "runOptions": {
                 "instanceLimit": 1
-            },
-            "problemMatcher": []
+            }
         },
-  ]
+        {
+            "label": "TEXTUAL CONSOLE",
+            "type": "shell",
+            "command": "source .venv/bin/activate; textual run --dev chezmoi_mousse.tui:ChezmoiTUI",
+            "group": "test",
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            }
+        }
+    ]
 }
