@@ -21,6 +21,10 @@ keyring
 markdown-it
 nodeenv
 normalizer
+pip
+pip3
+pip3.13
+pip-review
 pre-commit
 pycodestyle
 pydoc.bat
