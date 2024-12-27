@@ -35,8 +35,10 @@ ButtonSidebar.-hidden {
 ButtonSidebar > Button {
   background:rgb(13, 17, 23);
   border: round rgb(72, 87, 111);
+  padding: 0 2 0 2;
   width: 100%;
-  height: 8;
+  height: auto;
+  min-height: 7;
 }
 
 ButtonSidebar > Button:focus {
