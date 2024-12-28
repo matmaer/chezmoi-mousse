@@ -1,0 +1,10 @@
+{
+    "label": "CONSOLE + TCSS ",
+    "type": "shell",
+    "command": "textual console && cd src && textual run --dev chezmoi_mousse.tui:ChezmoiTUI",
+    "group": "test",
+    "presentation": {
+        "reveal": "always",
+        "panel": "new"
+    }
+}

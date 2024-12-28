@@ -1,12 +1,13 @@
 {
     "version": "2.0.0",
-    "command": "/bin/sh",
-    "options": {
-        "cwd": "${workspaceFolder:chezmoi-mousse}"
-    },
+    "command": "/bin/bash",
+    "args": [
+        "-c",
+        "source /home/mm/repos/chezmoi-mousse/.venv/bin/activate"
+    ],
     "tasks": [
         {
-            "label": "ipython console",
+            "label": "iPython",
             "type": "shell",
             "command": "ipython",
             "runOptions": {
@@ -14,22 +15,22 @@
             }
         },
         {
-            "label": "TEXTUAL TCSS",
+            "label": "TCSS LIVE EDIT",
             "type": "shell",
-            "command": "source ${workspaceFolder:chezmoi-mousse}/.venv/bin/activate && textual run --dev chezmoi_mousse.tui:ChezmoiTUI",
+            "command": "cd src && textual run --dev chezmoi_mousse.tui:ChezmoiTUI",
             "runOptions": {
                 "instanceLimit": 1
-            }
+            },
+            "problemMatcher": []
         },
         {
-            "label": "TEXTUAL CONSOLE",
+            "label": "TEXTUAL LIVE",
             "type": "shell",
-            "command": "source .venv/bin/activate; textual run --dev chezmoi_mousse.tui:ChezmoiTUI",
-            "group": "test",
-            "presentation": {
-                "reveal": "always",
-                "panel": "new"
-            }
-        }
+            "command": "cd src && textual run --dev chezmoi_mousse.tui:ChezmoiTUI",
+            "runOptions": {
+                "instanceLimit": 1
+            },
+            "problemMatcher": []
+        },
     ]
 }
