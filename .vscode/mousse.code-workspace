@@ -1,0 +1,15 @@
+{
+    "folders": [
+        {
+            "name": "mousse",
+            "path": "..",
+        },
+    ],
+    "settings": {
+        "pylint.args": [
+            "--disable=C0114",
+            "--disable=C0115",
+            "--disable=C0116"
+        ],
+    },
+}
