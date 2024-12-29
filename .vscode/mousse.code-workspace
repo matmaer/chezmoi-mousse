@@ -5,9 +5,11 @@
             "path": ".."
         },
         {
+            "name": "textual-fork",
             "path": "../../textual/src/textual/demo"
         },
         {
+            "name": "textual-demo-fork",
             "path": "../../textual-demo"
         }
     ],
