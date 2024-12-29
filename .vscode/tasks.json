@@ -24,6 +24,15 @@
             "problemMatcher": []
         },
         {
+            "label": "TEXTUAL CONSOLE",
+            "type": "shell",
+            "command": "textual console",
+            "runOptions": {
+                "instanceLimit": 1
+            },
+            "problemMatcher": []
+        },
+        {
             "label": "TEXTUAL DEMO",
             "type": "shell",
             "command": "textual run ../textual-demo/src/textual_demo/run.py",
