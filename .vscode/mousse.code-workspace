@@ -5,7 +5,7 @@
             "path": ".."
         },
         {
-            "name": "textual-fork",
+            "name": "textual-fork-demo-files",
             "path": "../../textual/src/textual/demo"
         },
         {
