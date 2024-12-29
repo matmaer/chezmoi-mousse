@@ -2,8 +2,14 @@
     "folders": [
         {
             "name": "mousse",
-            "path": "..",
+            "path": ".."
         },
+        {
+            "path": "../../textual/src/textual/demo"
+        },
+        {
+            "path": "../../textual-demo"
+        }
     ],
     "settings": {
         "pylint.args": [

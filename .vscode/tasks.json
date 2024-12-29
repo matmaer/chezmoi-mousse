@@ -15,7 +15,7 @@
             }
         },
         {
-            "label": "TCSS LIVE EDIT",
+            "label": "CHEZMOI-MOUSSE TCSS LIVE EDIT",
             "type": "shell",
             "command": "cd src && textual run --dev chezmoi_mousse.tui:ChezmoiTUI",
             "runOptions": {
@@ -24,9 +24,45 @@
             "problemMatcher": []
         },
         {
-            "label": "TEXTUAL LIVE",
+            "label": "TEXTUAL DEMO",
             "type": "shell",
-            "command": "cd src && textual run --dev chezmoi_mousse.tui:ChezmoiTUI",
+            "command": "textual run ../textual-demo/src/textual_demo/run.py",
+            "runOptions": {
+                "instanceLimit": 1
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "TEXTUAL COLORS",
+            "type": "shell",
+            "command": "textual colors",
+            "runOptions": {
+                "instanceLimit": 1
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "TEXTUAL BORDERS",
+            "type": "shell",
+            "command": "textual borders",
+            "runOptions": {
+                "instanceLimit": 1
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "TEXTUAL EASING",
+            "type": "shell",
+            "command": "textual easing",
+            "runOptions": {
+                "instanceLimit": 1
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "TEXTUAL KEYS",
+            "type": "shell",
+            "command": "textual keys",
             "runOptions": {
                 "instanceLimit": 1
             },
