@@ -1,10 +1,5 @@
 {
     "version": "2.0.0",
-    "command": "/bin/bash",
-    "args": [
-        "-c",
-        "source /home/mm/repos/chezmoi-mousse/.venv/bin/activate"
-    ],
     "tasks": [
         {
             "label": "iPython",
