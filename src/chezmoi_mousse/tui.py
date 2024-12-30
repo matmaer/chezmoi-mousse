@@ -1,18 +1,16 @@
-import subprocess
-
 from textual import on
 from textual.app import App, ComposeResult, Widget
 from textual.containers import Horizontal, Vertical
 from textual.reactive import reactive
-from textual.widgets import Button, Footer, Header, RichLog, Static
+from textual.widgets import Button, Footer, Header, RichLog, Static, DirectoryTree, TabbedContent
 
-from .diagrams import VISUAL_DIAGRAM
-
+from chezmoi_mousse.diagrams import VISUAL_DIAGRAM
+from chezmoi_mousse.helpers import run_chezmoi
 
 class ButtonSidebar(Vertical):
     def compose(self) -> ComposeResult:
         yield Button(
-            label="Config",
+            label="Config", 
             id="chezmoi_config",
         )
         yield Button(
@@ -40,7 +38,14 @@ class RichLogSidebar(Widget):
         )
 
 
-class CenterContent(Vertical):
+class ManagedFiles(Vertical):
+    def compose(self) -> ComposeResult:
+        result = run_chezmoi(["managed"])
+        # yield DirectoryTree(result.stdout)
+        yield Static(result.stdout)
+
+
+class Diagram(Vertical):
     def compose(self) -> ComposeResult:
         yield Static(VISUAL_DIAGRAM)
 
@@ -58,41 +63,33 @@ class ChezmoiTUI(App):
         richlog = self.query_one(RichLog)
         richlog.write(to_print)
 
-    def run_chezmoi(self, params: list) -> subprocess.CompletedProcess:
-        result = subprocess.run(
-            ["chezmoi"] + params,
-            capture_output=True,
-            check=True,
-            encoding="utf-8",
-            shell=False,
-            timeout=1,
-        )
-        return result
 
     def compose(self) -> ComposeResult:
         yield Header()
         with Horizontal():
             yield ButtonSidebar()
-            yield CenterContent()
+            with TabbedContent("Tree", "Diagram"):
+                yield ManagedFiles()
+                yield Diagram()
             yield RichLogSidebar()
         yield Footer()
 
     @on(Button.Pressed, "#chezmoi_config")
     def show_chezmoi_configuration(self):
         self.rlog("[cyan]$ chezmoi cat-config[/]")
-        result = self.run_chezmoi(["cat-config"])
+        result = run_chezmoi(["cat-config"])
         self.rlog(result.stdout)
 
     @on(Button.Pressed, "#chezmoi_status")
     def show_chezmoi_status(self):
         self.rlog("[cyan]$ chezmoi status[/]")
-        result = self.run_chezmoi(["status"])
+        result = run_chezmoi(["status"])
         self.rlog(result.stdout)
 
     @on(Button.Pressed, "#chezmoi_managed")
     def show_chezmoi_managed(self):
         self.rlog("[cyan]$ chezmoi managed[/]")
-        result = self.run_chezmoi(["managed"])
+        result = run_chezmoi(["managed"])
         self.rlog(result.stdout)
 
     @on(Button.Pressed, "#clear_richlog")
