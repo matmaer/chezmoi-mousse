@@ -1,3 +1,8 @@
+"""
+Provisional file containing the greeter.
+Could be implemented as a splash screen or Richlog greeter.
+"""
+
 GREETER_PART_1 = """
  ██████╗██╗  ██╗███████╗███████╗███╗   ███╗ ██████╗ ██╗
 ██╔════╝██║  ██║██╔════╝╚══███╔╝████╗ ████║██╔═══██╗██║
