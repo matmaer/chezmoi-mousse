@@ -4,7 +4,7 @@ import json
 import subprocess
 
 
-def run_chezmoi(params: list) -> subprocess.CompletedProcess:
+def _run(params: list) -> subprocess.CompletedProcess:
     """run a chezmoi command with the given parameters"""
     global_params = [
         "--no-pager",
@@ -23,42 +23,43 @@ def run_chezmoi(params: list) -> subprocess.CompletedProcess:
     return result
 
 
-class ChezmoiContext:
-    """
-    Retrieved Chezmoi context form the local system.  "Context" includes local
-    chezmoi configuration and other system specific local context.
-    Initialized when starting the app. An optional refresh parameter that will
-    only re-run the the commands needed for the requested context.
-    """
+class ChezmoiCommands:
+    def data(self) -> dict:
+        chezmoi_arguments = ["data", "--format=json"]
+        return json.loads(_run(chezmoi_arguments).stdout)
 
-    def __init__(self, refresh: bool = False) -> None:
-        self.refresh = refresh
-        self.context_item = None
-        self.config = self.get_config()
-        self.data = self.get_data()
+    def dump_config(self) -> dict:
+        chezmoi_arguments = ["dump-config", "--format=json"]
+        return json.loads(_run(chezmoi_arguments).stdout)
 
-    def get_config(self) -> dict:
-        """Refresh the output of the `chezmoi dump-config` command"""
-        return json.loads(run_chezmoi(["dump-config"]).stdout)
+    def cat_config(self) -> str:
+        return _run(["cat-config"]).stdout
 
-    def get_data(self) -> dict:
-        """Refresh the output of the `chezmoi data` command"""
-        return json.loads(run_chezmoi(["data"]).stdout)
+    def managed(self) -> dict:
+        # initialize the the dictionary to return
+        managed = dict.fromkeys(["dirs", "files", "symlinks"], [])
+        # chezmoi managed
+        # note: "--path-style=relative": relative to the destination dir
+        common_args = ["managed", "--path-style=relative"]
+        dir_args = common_args + ["--include=dirs"]
+        file_args = common_args + ["--include=files"]
+        symlink_args = common_args + ["--include=symlinks"]
 
-    def get_source_dir(self) -> str:
-        if self.refresh:
-            self.config = self.get_config()
-        return self.config["sourceDir"]
+        managed["dirs"] = _run(dir_args).stdout.splitlines()
+        managed["files"] = _run(file_args).stdout.splitlines()
+        managed["symlinks"] = _run(symlink_args).stdout.splitlines()
 
-    def get_destination_dir(self) -> str:
-        if self.refresh:
-            self.config = self.get_config()
-        return self.config["destDir"]
+        return managed
 
-    def get_chezmoi_managed(self) -> list:
-        chezmoi_arguments = [
-            "managed",
-            "--exclude=dirs",
-            "--path-style=absolute",
-        ]
-        return run_chezmoi(chezmoi_arguments).stdout.splitlines()
+    def doctor(self) -> list:
+        return _run(["doctor"]).stdout.splitlines()
+
+    def status(self) -> list:
+        return _run(["status"]).stdout.splitlines()
+
+
+# class ChezmoiContext:
+#     """
+#     Handle system specific local context which doesn't change at any point
+#     while using the TUI. Initialized when starting the app.
+#     """

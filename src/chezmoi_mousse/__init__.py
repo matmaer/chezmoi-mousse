@@ -2,9 +2,9 @@
 
 __version__ = "0.1.0"
 
-from chezmoi_mousse.common import ChezmoiContext
+from chezmoi_mousse.common import ChezmoiCommands
 
-CHEZMOI_CONFIG = ChezmoiContext().get_config()
-CHEZMOI_DATA = ChezmoiContext().get_data()
-
-CHEZMOI_MANAGED = ChezmoiContext().get_chezmoi_managed()
+CM_CONFIG_DUMP = ChezmoiCommands().dump_config()
+CM_DATA = ChezmoiCommands().data()
+CM_DOCTOR = ChezmoiCommands().doctor()
+CM_CONFIG_CAT = ChezmoiCommands().cat_config()
