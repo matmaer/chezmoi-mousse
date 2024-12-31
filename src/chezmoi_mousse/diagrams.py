@@ -1,3 +1,5 @@
+""" provisional file containing diagrams until they are made interactive """
+
 VISUAL_DIAGRAM = """
 ┌──────────────┐    ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
 │home directory│    │ working copy │    │  local repo  │    │ remote repo  │

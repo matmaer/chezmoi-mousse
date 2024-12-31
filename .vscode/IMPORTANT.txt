@@ -1,5 +1,5 @@
-It's no longer possible to rely on the python default intrepreter setting. Neither activating an environment by sourcing the activate scritp.
+It's no longer possible to rely on the python default interpreter setting. Neither activating an environment by sourcing the activate script.
 
-Instead, the only way is to select the default intrepreter in the command palette.
+Instead, the only way is to select the default interpreter in the command palette.
 
-Selecting an intrepreter that is part of an venv, which wil also activate the venv it belongs to.
+Selecting an interpreter that is part of a venv, which will also activate the venv it belongs to.

@@ -11,6 +11,22 @@
         {
             "name": "textual-demo-fork",
             "path": "../../textual-demo"
+        },
+        {
+            "name": "full-textual-fork",
+            "path": "../../textual"
         }
     ],
+    "settings": {
+        "pylint.enabled": true,
+        "pylint.args": [
+            "--disable=C0116",
+            "--disable=C0115"
+        ],
+        "pylint.ignorePatterns": [
+            "${workspaceFolder:textual-fork-demo-files}",
+            "${workspaceFolder:textual-demo-fork}",
+            "${workspaceFolder:full-textual-fork}"
+        ],
+    },
 }
