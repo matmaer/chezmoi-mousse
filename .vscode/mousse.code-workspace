@@ -28,5 +28,6 @@
             "${workspaceFolder:textual-demo-fork}",
             "${workspaceFolder:full-textual-fork}"
         ],
+        "pylint.cwd": "${workspaceFolder:mousse}",
     },
 }

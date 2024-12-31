@@ -20,7 +20,7 @@ CenterContent {
 
 # ###############################################################
 
-ButtonSidebar {
+MainMenu {
   background:rgb(13, 17, 23);
   dock: left;
   width: 12%;
@@ -28,11 +28,11 @@ ButtonSidebar {
   padding: 1 1 1 1;
 }
 
-ButtonSidebar.-hidden {
+MainMenu.-hidden {
   display: none;
 }
 
-ButtonSidebar > Button {
+MainMenu > Button {
   background:rgb(13, 17, 23);
   border: round rgb(72, 87, 111);
   padding: 0 2 0 2;
@@ -41,14 +41,14 @@ ButtonSidebar > Button {
   min-height: 7;
 }
 
-ButtonSidebar > Button:focus {
+MainMenu > Button:focus {
   background-tint: rgb(13, 17, 23);
   color: rgb(29, 196, 46);
   border: round rgb(9, 131, 21);
   text-style: bold;
 }
 
-ButtonSidebar > Button:hover {
+MainMenu > Button:hover {
   border: round rgb(9, 131, 21);
 }
 

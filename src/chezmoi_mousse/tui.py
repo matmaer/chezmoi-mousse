@@ -1,37 +1,38 @@
 """ Contains the Textual App class for the TUI. """
 
-# from pathlib import Path
-# from typing import Iterable
 from textual import on
 from textual.app import App, ComposeResult, Widget
 from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual.reactive import reactive
-from textual.widgets import (Button, DirectoryTree, Footer, Header, Pretty,
-                             RichLog, Static, TabbedContent)
+from textual.widgets import (Button, DirectoryTree, Footer, Header, Label,
+                             Pretty, RichLog, Static, TabbedContent)
 
-from chezmoi_mousse import CHEZMOI_CONFIG
-from chezmoi_mousse.common import run_chezmoi
+from chezmoi_mousse import CM_CONFIG_CAT, CM_CONFIG_DUMP, CM_DATA, CM_DOCTOR
 from chezmoi_mousse.diagrams import VISUAL_DIAGRAM
 
 
-class ButtonSidebar(Vertical):
+class MainMenu(Vertical):
     def compose(self) -> ComposeResult:
+        yield Label("Main Menu")
         yield Button(
-            label="Config",
-            id="chezmoi_config",
+            label="Inspect",
+            id="inspect",
         )
         yield Button(
-            label="Status",
-            id="chezmoi_status",
+            label="Operate",
+            id="operate",
         )
         yield Button(
-            label="Managed",
-            id="chezmoi_managed",
-            tooltip="List the managed files in the home directory",
+            label="Show Stdout",
+            id="show_stdout",
         )
         yield Button(
-            label="Clear Output",
-            id="clear_richlog",
+            label="Help",
+            id="app_help",
+        )
+        yield Button(
+            label="Exit",
+            id="clean_exit",
         )
 
 
@@ -43,12 +44,6 @@ class RichLogSidebar(Widget):
             wrap=False,
             markup=True,
         )
-
-
-# class GlobalsLocals(VerticalScroll):
-#     def compose(self) -> ComposeResult:
-#         yield Pretty(locals(), name="Locals")
-#         yield Pretty(globals(), name="Globals")
 
 
 # class ManagedFiles(DirectoryTree):
@@ -75,8 +70,8 @@ class RichLogSidebar(Widget):
 
 class ChezmoiTUI(App):
     BINDINGS = [
-        ("l", "toggle_buttonsidebar", "Toggle Left Panel"),
-        ("r", "toggle_richlogsidebar", "Toggle Right Panel"),
+        ("m", "toggle_mainmenu", "Toggle Menu"),
+        ("s", "toggle_richlogsidebar", "Toggle Stdout"),
         ("q", "quit", "Quit"),
     ]
     CSS_PATH = "tui.tcss"
@@ -89,49 +84,75 @@ class ChezmoiTUI(App):
     def compose(self) -> ComposeResult:
         yield Header()
         with Horizontal():
-            yield ButtonSidebar()
+            yield MainMenu()
             with TabbedContent(
                 "Destination",
                 "Diagram",
+                "Doctor",
+                "Config-cat",
+                "Config-dump",
+                "Data",
                 "Globals",
                 "Locals",
             ):
-                yield DirectoryTree(CHEZMOI_CONFIG["destDir"])
-                # yield DirectoryTree(Iterable[CHEZMOI_MANAGED])
+                yield DirectoryTree(CM_CONFIG_DUMP["destDir"])
                 yield Static(VISUAL_DIAGRAM)
                 with VerticalScroll():
-                    yield Pretty(globals(), name="Globals")
+                    yield Pretty(CM_DOCTOR)
                 with VerticalScroll():
-                    yield Pretty(locals(), name="Lobals")
+                    yield Pretty(CM_CONFIG_CAT)
+                with VerticalScroll():
+                    yield Pretty(CM_CONFIG_DUMP)
+                with VerticalScroll():
+                    yield Pretty(CM_DATA)
+                with VerticalScroll():
+                    yield Pretty(globals())
+                with VerticalScroll():
+                    yield Pretty(locals())
 
             yield RichLogSidebar()
         yield Footer()
 
-    @on(Button.Pressed, "#chezmoi_config")
-    def show_chezmoi_configuration(self):
-        self.rlog("[cyan]$ chezmoi cat-config[/]")
-        result = run_chezmoi(["cat-config"])
-        self.rlog(result.stdout)
+        # yield Button(
+        #     label="Show Stdout",
+        #     id="show_stdout",
+        # )
+        # yield Button(
+        #     label="Help",
+        #     id="app_help",
+        # )
+        # yield Button(
+        #     label="Exit",
+        #     id="clean_exit",
+        # )
 
-    @on(Button.Pressed, "#chezmoi_status")
-    def show_chezmoi_status(self):
-        self.rlog("[cyan]$ chezmoi status[/]")
-        result = run_chezmoi(["status"])
-        self.rlog(result.stdout)
+    @on(Button.Pressed, "#inspect")
+    def enter_inspect_mode(self):
+        self.rlog("[cyan]nspect mode[/]")
+        self.rlog("[red]Inspect mode is not yet implemented[/]")
 
-    @on(Button.Pressed, "#chezmoi_managed")
+    @on(Button.Pressed, "#operate")
+    def enter_operate_mode(self):
+        self.rlog("[cyan]operate mode[/]")
+        self.rlog("[red]Operate mode is not yet implemented[/]")
+
+    @on(Button.Pressed, "#show_stdout")
     def show_chezmoi_managed(self):
-        self.rlog("[cyan]$ chezmoi managed[/]")
-        result = run_chezmoi(["managed"])
-        self.rlog(result.stdout)
+        self.rlog("[cyan]Show stdout[/]")
+        self.rlog("[red]Show stdout is not yet implemented[/]")
 
-    @on(Button.Pressed, "#clear_richlog")
-    def clear_richlog(self):
-        self.query_one(RichLog).clear()
-        # self.rlog("[green]RichLog Cleared[/]")
+    @on(Button.Pressed, "#app_help")
+    def show_app_help(self):
+        self.rlog("[cyan]App help[/]")
+        self.rlog("[red]App help is not yet implemented[/]")
 
-    def action_toggle_buttonsidebar(self):
-        self.query_one(ButtonSidebar).toggle_class("-hidden")
+    @on(Button.Pressed, "#clean_exit")
+    def clean_exit(self):
+        self.rlog("[cyan]Clean exit[/]")
+        self.rlog("[red]Clean exit is not yet implemented[/]")
+
+    def action_toggle_mainmenu(self):
+        self.query_one(MainMenu).toggle_class("-hidden")
 
     def action_toggle_richlogsidebar(self) -> None:
         self.show_richlog = not self.show_richlog
