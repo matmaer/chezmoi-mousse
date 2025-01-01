@@ -2,6 +2,17 @@ Terminal user interface for [chezmoi](https://github.com/twpayne/chezmoi), visua
 
 The name of the repository chezmoi-mousse is a wink to the mouse.  The project is in its very early stages.
 
+## Run app
+
+The app is not packaged yet.
+
+To run:
+- create a python venv and activate the venv
+- `pip install textual` in the venv
+- clone the repo
+- change directory to the src directory in the repo
+- run the app with `python -m chezmoi_mousse`
+
 ## Roadmap
 
 - [x] Create repository, setup initial `uv` dev env with initial `pre-commit` hooks
