@@ -23,7 +23,7 @@ class MainMenu(Vertical):
             id="operate",
         )
         yield Button(
-            label="Show Stdout",
+            label="Output",
             id="show_stdout",
         )
         yield Button(
