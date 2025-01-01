@@ -2,6 +2,7 @@
 
 from textual import on
 from textual.app import App, ComposeResult, Widget
+from textual.binding import Binding
 from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual.reactive import reactive
 from textual.widgets import (Button, DirectoryTree, Footer, Header, Label,
@@ -70,9 +71,9 @@ class RichLogSidebar(Widget):
 
 class ChezmoiTUI(App):
     BINDINGS = [
-        ("m", "toggle_mainmenu", "Toggle Menu"),
-        ("s", "toggle_richlogsidebar", "Toggle Stdout"),
-        ("q", "quit", "Quit"),
+        Binding("o", "operate", "Toggle Menu"),
+        Binding("s", "toggle_richlogsidebar", "Toggle Stdout"),
+        Binding("q", "quit", "Quit"),
     ]
     CSS_PATH = "tui.tcss"
     show_richlog = reactive(False)
