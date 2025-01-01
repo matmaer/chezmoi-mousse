@@ -1,8 +1,6 @@
 """ The root chezmoi-mousse module."""
 
-__version__ = "0.1.0"
-
-from chezmoi_mousse.common import ChezmoiCommands
+from chezmoi_mousse.operate import ChezmoiCommands
 
 CM_CONFIG_DUMP = ChezmoiCommands().dump_config()
 CM_DATA = ChezmoiCommands().data()
