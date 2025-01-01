@@ -1,39 +1,39 @@
-""" Command base classes and helper functions """
+""" Chezmoi Operations """
 
 import json
 import subprocess
 
 
-def _run(params: list) -> subprocess.CompletedProcess:
-    """run a chezmoi command with the given parameters"""
-    global_params = [
-        "--no-pager",
-        "--color=false",
-        "--no-tty",
-        "--progress=false",
-    ]
-    result = subprocess.run(
-        ["chezmoi"] + global_params + params,
-        capture_output=True,
-        check=True,  # raise an exception if exit code is not 0
-        encoding="utf-8",
-        shell=False,  # avoid shell injection, safer
-        timeout=1,  # can be increased at a later stage
-    )
-    return result
-
-
 class ChezmoiCommands:
+
+    def _run(self, params: list) -> subprocess.CompletedProcess:
+        """run a chezmoi command with the given parameters"""
+        global_params = [
+            "--no-pager",
+            "--color=false",
+            "--no-tty",
+            "--progress=false",
+        ]
+        result = subprocess.run(
+            ["chezmoi"] + global_params + params,
+            capture_output=True,
+            check=True,  # raise an exception if exit code is not 0
+            encoding="utf-8",
+            shell=False,  # avoid shell injection, safer
+            timeout=1,  # can be increased at a later stage
+        )
+        return result
+
     def data(self) -> dict:
         chezmoi_arguments = ["data", "--format=json"]
-        return json.loads(_run(chezmoi_arguments).stdout)
+        return json.loads(self._run(chezmoi_arguments).stdout)
 
     def dump_config(self) -> dict:
         chezmoi_arguments = ["dump-config", "--format=json"]
-        return json.loads(_run(chezmoi_arguments).stdout)
+        return json.loads(self._run(chezmoi_arguments).stdout)
 
     def cat_config(self) -> str:
-        return _run(["cat-config"]).stdout
+        return self._run(["cat-config"]).stdout
 
     def managed(self) -> dict:
         # initialize the the dictionary to return
@@ -45,21 +45,14 @@ class ChezmoiCommands:
         file_args = common_args + ["--include=files"]
         symlink_args = common_args + ["--include=symlinks"]
 
-        managed["dirs"] = _run(dir_args).stdout.splitlines()
-        managed["files"] = _run(file_args).stdout.splitlines()
-        managed["symlinks"] = _run(symlink_args).stdout.splitlines()
+        managed["dirs"] = self._run(dir_args).stdout.splitlines()
+        managed["files"] = self._run(file_args).stdout.splitlines()
+        managed["symlinks"] = self._run(symlink_args).stdout.splitlines()
 
         return managed
 
     def doctor(self) -> list:
-        return _run(["doctor"]).stdout.splitlines()
+        return self._run(["doctor"]).stdout.splitlines()
 
     def status(self) -> list:
-        return _run(["status"]).stdout.splitlines()
-
-
-# class ChezmoiContext:
-#     """
-#     Handle system specific local context which doesn't change at any point
-#     while using the TUI. Initialized when starting the app.
-#     """
+        return self._run(["status"]).stdout.splitlines()
