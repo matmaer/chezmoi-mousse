@@ -8,7 +8,7 @@ from textual.widgets import (Button, DirectoryTree, Footer, Header, Label,
                              Pretty, RichLog, Static, TabbedContent)
 
 from chezmoi_mousse import CM_CONFIG_CAT, CM_CONFIG_DUMP, CM_DATA, CM_DOCTOR
-from chezmoi_mousse.diagrams import VISUAL_DIAGRAM
+from chezmoi_mousse.blocks import VISUAL_DIAGRAM
 
 
 class MainMenu(Vertical):
