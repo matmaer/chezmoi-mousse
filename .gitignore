@@ -1,4 +1,5 @@
 __pycache__/
 .venv/
 dist/
-.vscode/mousse.code-workspace
+# .vscode/mousse.code-workspace
+ignored/

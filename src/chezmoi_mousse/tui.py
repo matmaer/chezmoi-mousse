@@ -1,5 +1,8 @@
 """ Contains the Textual App class for the TUI. """
 
+from pathlib import Path
+from typing import Iterable
+
 from textual import on
 from textual.app import App, ComposeResult, Widget
 from textual.binding import Binding
@@ -8,8 +11,10 @@ from textual.reactive import reactive
 from textual.widgets import (Button, DirectoryTree, Footer, Header, Label,
                              Pretty, RichLog, Static, TabbedContent)
 
-from chezmoi_mousse import CM_CONFIG_CAT, CM_CONFIG_DUMP, CM_DATA, CM_DOCTOR
 from chezmoi_mousse.blocks import VISUAL_DIAGRAM
+from chezmoi_mousse.operate import ChezmoiCommands
+
+CM_CONFIG_DUMP = ChezmoiCommands().dump_config()
 
 
 class MainMenu(Vertical):
@@ -47,32 +52,20 @@ class RichLogSidebar(Widget):
         )
 
 
-# class ManagedFiles(DirectoryTree):
-#     def __init__(self):
-#         super().__init__(Path(CHEZMOI_CONFIG["destDir"]))
-#         self.to_filter = []
-#         self.filtered_paths = []
-
-#     def get_chezmoi_managed(self):
-#         chezmoi_arguments = [
-#             "managed",
-#             "--exclude=dirs",
-#             "--path-style=absolute",
-#             ]
-#         cm_managed = run_chezmoi(chezmoi_arguments).stdout.splitlines()
-#         self.to_filter = [Path(p) for p in cm_managed]
-
-#     def filter_paths(self):
-#         for path in self.to_filter:
-#             if path.name in self.to_filter:
-#                 self.filtered_paths.append(path)
-#         return self.filtered_paths
+class ManagedFiles(DirectoryTree):
+    def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
+        managed = ChezmoiCommands().managed()
+        # convert all strings to Path objects
+        filter_list = [Path(entry) for entry in managed]
+        # the actual filter with a list comprehension
+        return [path for path in paths if path in filter_list]
 
 
 class ChezmoiTUI(App):
     BINDINGS = [
-        Binding("o", "operate", "Toggle Menu"),
-        Binding("s", "toggle_richlogsidebar", "Toggle Stdout"),
+        Binding("m", "operate", "Menu"),
+        Binding("s", "toggle_richlogsidebar", "Output"),
+        Binding("escape", "app.pop_screen", "Back"),
         Binding("q", "quit", "Quit"),
     ]
     CSS_PATH = "tui.tcss"
@@ -82,30 +75,34 @@ class ChezmoiTUI(App):
         richlog = self.query_one(RichLog)
         richlog.write(to_print)
 
+    def chezmoi_doctor(self):
+        return ChezmoiCommands().doctor()
+
     def compose(self) -> ComposeResult:
         yield Header()
         with Horizontal():
             yield MainMenu()
             with TabbedContent(
-                "Destination",
+                "Managed",
                 "Diagram",
                 "Doctor",
-                "Config-cat",
                 "Config-dump",
                 "Data",
+                "Config-cat",
                 "Globals",
                 "Locals",
             ):
-                yield DirectoryTree(CM_CONFIG_DUMP["destDir"])
+                # yield DirectoryTree(CM_CONFIG_DUMP["destDir"])
+                yield ManagedFiles("/home/mm")
                 yield Static(VISUAL_DIAGRAM)
                 with VerticalScroll():
-                    yield Pretty(CM_DOCTOR)
+                    yield Pretty(ChezmoiCommands().doctor())
                 with VerticalScroll():
-                    yield Pretty(CM_CONFIG_CAT)
+                    yield Pretty(ChezmoiCommands().dump_config())
                 with VerticalScroll():
-                    yield Pretty(CM_CONFIG_DUMP)
+                    yield Pretty(ChezmoiCommands().data())
                 with VerticalScroll():
-                    yield Pretty(CM_DATA)
+                    yield Pretty(ChezmoiCommands().cat_config())
                 with VerticalScroll():
                     yield Pretty(globals())
                 with VerticalScroll():
@@ -113,19 +110,6 @@ class ChezmoiTUI(App):
 
             yield RichLogSidebar()
         yield Footer()
-
-        # yield Button(
-        #     label="Show Stdout",
-        #     id="show_stdout",
-        # )
-        # yield Button(
-        #     label="Help",
-        #     id="app_help",
-        # )
-        # yield Button(
-        #     label="Exit",
-        #     id="clean_exit",
-        # )
 
     @on(Button.Pressed, "#inspect")
     def enter_inspect_mode(self):
