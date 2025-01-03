@@ -92,8 +92,7 @@ class ChezmoiTUI(App):
                 "Globals",
                 "Locals",
             ):
-                # yield DirectoryTree(CM_CONFIG_DUMP["destDir"])
-                yield ManagedFiles("/home/mm")
+                yield ManagedFiles(CM_CONFIG_DUMP["destDir"])
                 yield Static(VISUAL_DIAGRAM)
                 with VerticalScroll():
                     yield Pretty(ChezmoiCommands().doctor())
