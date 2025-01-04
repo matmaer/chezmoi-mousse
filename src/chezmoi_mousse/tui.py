@@ -53,24 +53,16 @@ class RichLogSidebar(Widget):
 
 
 class ManagedFiles(DirectoryTree):
-    def __init__(self, rootpath=str):
-        super().__init__(rootpath)
+    def __init__(self):
+        super().__init__(CM_CONFIG_DUMP["destDir"])
+        self.managed = [Path(entry) for entry in chezmoi.managed()]
 
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
-        managed = chezmoi.managed()
-        # convert all strings to Path objects
-        filter_list = [Path(entry) for entry in managed]
-        # tell DirectoryTree what to show
-        return [path for path in paths if path in filter_list]
+        return [path for path in paths if path in self.managed]
 
 
-class Help(VerticalScroll):
-    def compose(self) -> ComposeResult:
-        yield Static(HELP_TEXT)
-
-
-# class ChezmoiDoctor(Widget):
-
+class ChezmoiDoctor(DataTable):
+    pass
 #     def __init__(self, doctor_output: list):
 #         super().__init__()
 #         self.doctor_output = doctor_output
@@ -78,23 +70,16 @@ class Help(VerticalScroll):
 #     def compose(self) -> ComposeResult:
 #         yield DataTable()
 
-#     def on_mount(self) -> None:
-#         table = self.query_one(DataTable)
-#         headers = (self.doctor_output.pop(0))
-#         headers = tuple(headers.split(maxsplit=2))
-#         table.add_columns(headers)
+# table.fixed_rows = 2
+# table.fixed_columns = 1
+# table.cursor_type = "row"
+# table.zebra_stripes = True
 
-#         for row in self.doctor_output:
-#             table.add_row(row.split(maxsplit=2))
 
-        # rows_by_column = [row for row in self.doctor_output]
-        # table.add_rows(rows_by_column)
+class Help(VerticalScroll):
+    def compose(self) -> ComposeResult:
+        yield Static(HELP_TEXT)
 
-        # table.add_row(str(number), str(number * 2), str(number * 3))
-        # table.fixed_rows = 2
-        # table.fixed_columns = 1
-        # table.cursor_type = "row"
-        # table.zebra_stripes = True
 
 class ChezmoiTUI(App):
     BINDINGS = [
@@ -131,10 +116,10 @@ class ChezmoiTUI(App):
                 "Locals",
                 "Help",
             ):
-                yield ManagedFiles(CM_CONFIG_DUMP["destDir"])
+                yield ManagedFiles()
                 yield Static(VISUAL_DIAGRAM)
                 with VerticalScroll():
-                    yield DataTable()
+                    yield ChezmoiDoctor()
                 with VerticalScroll():
                     yield Pretty(CM_CONFIG_DUMP)
                 with VerticalScroll():
