@@ -62,18 +62,16 @@ class ManagedFiles(DirectoryTree):
 
 
 class ChezmoiDoctor(DataTable):
-    pass
-#     def __init__(self, doctor_output: list):
-#         super().__init__()
-#         self.doctor_output = doctor_output
+    def __init__(self):
+        super().__init__()
+        self.table = DataTable()
+        self.lines = chezmoi.doctor()
 
-#     def compose(self) -> ComposeResult:
-#         yield DataTable()
-
-# table.fixed_rows = 2
-# table.fixed_columns = 1
-# table.cursor_type = "row"
-# table.zebra_stripes = True
+    def create_doctor_table(self):
+        # table = self.query_one(DataTable())
+        self.table.add_columns(*self.lines.pop(0).split())
+        self.table.add_rows([row.split(maxsplit=2) for row in self.lines])
+        return self.table
 
 
 class Help(VerticalScroll):
@@ -119,7 +117,7 @@ class ChezmoiTUI(App):
                 yield ManagedFiles()
                 yield Static(VISUAL_DIAGRAM)
                 with VerticalScroll():
-                    yield ChezmoiDoctor()
+                    yield ChezmoiDoctor().create_doctor_table()
                 with VerticalScroll():
                     yield Pretty(CM_CONFIG_DUMP)
                 with VerticalScroll():
@@ -134,13 +132,6 @@ class ChezmoiTUI(App):
 
             yield RichLogSidebar()
         yield Footer()
-
-    def on_mount(self) -> None:
-        doctor_output = chezmoi.doctor()
-
-        table = self.query_one(DataTable)
-        table.add_columns(*doctor_output.pop(0).split())
-        table.add_rows([row.split(maxsplit=2) for row in doctor_output])
 
     @on(Button.Pressed, "#inspect")
     def enter_inspect_mode(self):
