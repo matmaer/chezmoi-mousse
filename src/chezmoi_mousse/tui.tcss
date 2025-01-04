@@ -21,12 +21,21 @@ Horizontal {
   background:rgb(13, 17, 23);
 }
 
-CenterContent {
-  background:rgb(13, 17, 23);
-  padding: 1 1 0 1;
-  min-width: 78;
-  max-width: 79;
+VerticalScroll {
+  scrollbar-color: $panel 80%;
+  scrollbar-size: 1 1;
+  scrollbar-background: rgb(24, 25, 28);
+  scrollbar-background-active: rgb(24, 25, 28);
+  scrollbar-background-hover: rgb(24, 25, 28);
+  scrollbar-color-active: $panel;
+  scrollbar-color-hover: $panel;
+  scrollbar-corner-color: $panel 10%;
 }
+
+Pretty {
+  width: 100%;
+}
+
 
 DataTable {
   background:rgb(13, 17, 23);
@@ -39,7 +48,6 @@ DataTable {
   scrollbar-color-active: $panel;
   scrollbar-color-hover: $panel;
   scrollbar-corner-color: $panel 10%;
-  header-height: 3;
 }
 
 # ###############################################################
