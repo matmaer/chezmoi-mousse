@@ -68,9 +68,33 @@ class ChezmoiDoctor(DataTable):
         self.lines = chezmoi.doctor()
 
     def create_doctor_table(self):
-        # table = self.query_one(DataTable())
         self.table.add_columns(*self.lines.pop(0).split())
-        self.table.add_rows([row.split(maxsplit=2) for row in self.lines])
+        rows = [row.split(maxsplit=2) for row in self.lines]
+
+        for row in rows:
+            if row[0] == "ok":
+                row[0] = f"[#90EE90]{row[0]}[/]"
+                row[1] = f"[#90EE90]{row[1]}[/]"
+                row[2] = f"[#90EE90]{row[2]}[/]"
+            if row[0] == "info":
+                row[0] = f"[#E0FFFF]{row[0]}[/]"
+                if row[2] == "not set":
+                    row[1] = f"[#E0FFFF]{row[1]}[/]"
+                    row[2] = f"[#E0FFFF]{row[2]}[/]"
+                else:
+                    row[1] = f"[#E0FFFF dim]{row[1]}[/]"
+                    row[2] = f"[#E0FFFF dim]{row[2]}[/]"
+            if row[0] == "warning":
+                row[0] = f"[#FFD700]{row[0]}[/]"
+                row[1] = f"[#FFD700]{row[1]}[/]"
+                row[2] = f"[#FFD700]{row[2]}[/]"
+            if row[0] == "error":
+                row[0] = f"[red]{row[0]}[/]"
+                row[1] = f"[red]{row[1]}[/]"
+                row[2] = f"[red]{row[2]}[/]"
+
+            self.table.add_row(*row)
+
         return self.table
 
 
@@ -89,7 +113,7 @@ class ChezmoiTUI(App):
         Binding("q", "quit", "Quit"),
     ]
     CSS_PATH = "tui.tcss"
-    show_richlog = reactive(False)
+    richlog_visible = reactive(False)
 
     globaldict = globals().copy()
     globaldict.pop('__builtins__')
@@ -104,9 +128,9 @@ class ChezmoiTUI(App):
         with Horizontal():
             yield MainMenu()
             with TabbedContent(
+                "Doctor",
                 "Managed",
                 "Diagram",
-                "Doctor",
                 "Config-dump",
                 "Data",
                 "Config-cat",
@@ -114,10 +138,10 @@ class ChezmoiTUI(App):
                 "Locals",
                 "Help",
             ):
-                yield ManagedFiles()
-                yield Static(VISUAL_DIAGRAM)
                 with VerticalScroll():
                     yield ChezmoiDoctor().create_doctor_table()
+                yield ManagedFiles()
+                yield Static(VISUAL_DIAGRAM)
                 with VerticalScroll():
                     yield Pretty(CM_CONFIG_DUMP)
                 with VerticalScroll():
@@ -162,8 +186,8 @@ class ChezmoiTUI(App):
         self.query_one(MainMenu).toggle_class("-hidden")
 
     def action_toggle_richlogsidebar(self) -> None:
-        self.show_richlog = not self.show_richlog
+        self.richlog_visible = not self.richlog_visible
 
-    def watch_show_richlog(self, show_richlog: bool) -> None:
+    def watch_richlog_visible(self, richlog_visible: bool) -> None:
         # Set or unset visible class when reactive changes.
-        self.query_one(RichLogSidebar).set_class(show_richlog, "-visible")
+        self.query_one(RichLogSidebar).set_class(richlog_visible, "-visible")
