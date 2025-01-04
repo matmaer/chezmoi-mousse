@@ -26,20 +26,17 @@ class ChezmoiCommands:
         return result
 
     def data(self) -> dict:
-        chezmoi_arguments = ["data", "--format=json"]
-        return json.loads(self._run(chezmoi_arguments).stdout)
+        return json.loads(self._run(["data", "--format=json"]).stdout)
 
     def dump_config(self) -> dict:
-        chezmoi_arguments = ["dump-config", "--format=json"]
-        return json.loads(self._run(chezmoi_arguments).stdout)
+        return json.loads(self._run(["dump-config", "--format=json"]).stdout)
 
     def cat_config(self) -> dict:
         return tomllib.loads(self._run(["cat-config"]).stdout)
 
     def managed(self) -> list:
         command = ["managed", "--path-style=absolute"]
-        managed = self._run(command).stdout.splitlines()
-        return managed
+        return self._run(command).stdout.splitlines()
 
     def doctor(self) -> list:
         return self._run(["doctor"]).stdout.splitlines()
