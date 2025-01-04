@@ -11,10 +11,8 @@ from textual.reactive import reactive
 from textual.widgets import (Button, DataTable, DirectoryTree, Footer, Header,
                              Label, Pretty, RichLog, Static, TabbedContent)
 
+from chezmoi_mousse import chezmoi
 from chezmoi_mousse.blocks import VISUAL_DIAGRAM
-from chezmoi_mousse.operate import ChezmoiCommands
-
-chezmoi = ChezmoiCommands()
 
 CM_CONFIG_DUMP = chezmoi.dump_config()
 
@@ -111,7 +109,6 @@ class ChezmoiTUI(App):
     show_richlog = reactive(False)
 
     globaldict = globals().copy()
-
     globaldict.pop('__builtins__')
     globaldict.pop('VISUAL_DIAGRAM')
 
