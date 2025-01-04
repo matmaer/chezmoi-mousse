@@ -98,11 +98,6 @@ class ChezmoiDoctor(DataTable):
         return self.table
 
 
-class Help(VerticalScroll):
-    def compose(self) -> ComposeResult:
-        yield Static(HELP_TEXT)
-
-
 class ChezmoiTUI(App):
     BINDINGS = [
         Binding("escape", "app.pop_screen", "Back"),
@@ -152,7 +147,8 @@ class ChezmoiTUI(App):
                     yield Pretty(self.globaldict)
                 with VerticalScroll():
                     yield Pretty(locals())
-                yield VerticalScroll()
+                with VerticalScroll():
+                    yield Static(HELP_TEXT)
 
             yield RichLogSidebar()
         yield Footer()
