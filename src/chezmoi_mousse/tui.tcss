@@ -1,5 +1,15 @@
+Screen {
+  align: center middle;
+  layers: below above;
+}
+
 Horizontal {
   background:rgb(13, 17, 23);
+}
+
+Horizontal > TabbedContent {
+  background:rgb(13, 17, 23);
+  margin: 1 0 0 0;
 }
 
 Horizontal > Screen {

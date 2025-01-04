@@ -2,6 +2,7 @@
 
 import json
 import subprocess
+import tomllib
 
 
 class ChezmoiCommands:
@@ -32,8 +33,8 @@ class ChezmoiCommands:
         chezmoi_arguments = ["dump-config", "--format=json"]
         return json.loads(self._run(chezmoi_arguments).stdout)
 
-    def cat_config(self) -> str:
-        return self._run(["cat-config"]).stdout
+    def cat_config(self) -> dict:
+        return tomllib.loads(self._run(["cat-config"]).stdout)
 
     def managed(self) -> list:
         command = ["managed", "--path-style=absolute"]
