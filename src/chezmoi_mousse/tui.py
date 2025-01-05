@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Iterable
 
 from textual import on
-from textual.app import App, ComposeResult, Widget
+from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual.reactive import reactive
@@ -19,7 +19,7 @@ from textual.widgets import (
     TabbedContent,
 )
 
-from chezmoi_mousse import chezmoi
+from chezmoi_mousse import chezmoi, RichLogSidebar
 from chezmoi_mousse.text_blocks import VISUAL_DIAGRAM
 
 CM_CONFIG_DUMP = chezmoi.dump_config()
@@ -38,16 +38,6 @@ class MainMenu(Vertical):
         yield Button(
             label="Setting",
             id="settings",
-        )
-
-
-class RichLogSidebar(Widget):
-    def compose(self) -> ComposeResult:
-        yield RichLog(
-            id="richlog",
-            highlight=True,
-            wrap=False,
-            markup=True,
         )
 
 

@@ -66,8 +66,10 @@ ChezmoiDoctor {
 # ###############################################################
 
 RichLogSidebar {
+  border-left: rgb(85, 102, 128);
+  border-top: rgb(85, 102, 128);
+  border-bottom: rgb(85, 102, 128);
   dock: right;
-  padding: 1 1 1 2;
   width: 109;
   max-width: 80%;
   # layer to sit above content
@@ -82,8 +84,7 @@ RichLogSidebar {
 }
 
 RichLog {
+
   padding: 0 1 0 1;
-  scrollbar-color: $panel;
-  scrollbar-size: 1 1;
   width: 100%;
 }
