@@ -8,7 +8,7 @@ from chezmoi_mousse.operate import ChezmoiCommands
 chezmoi = ChezmoiCommands()
 
 
-class RichLogSidebar(Widget):
+class StdOut(Widget):
     def compose(self) -> ComposeResult:
         yield RichLog(
             id="richlog",

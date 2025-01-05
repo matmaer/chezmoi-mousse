@@ -19,7 +19,7 @@ from textual.widgets import (
     TabbedContent,
 )
 
-from chezmoi_mousse import chezmoi, RichLogSidebar
+from chezmoi_mousse import chezmoi, StdOut
 from chezmoi_mousse.text_blocks import VISUAL_DIAGRAM
 
 CM_CONFIG_DUMP = chezmoi.dump_config()
@@ -97,7 +97,7 @@ class ChezmoiTUI(App):
         ),
         Binding(
             key="s",
-            action="toggle_richlogsidebar",
+            action="toggle_stdout",
             description="Standard Output",
             key_display="s",
         ),
@@ -151,7 +151,7 @@ class ChezmoiTUI(App):
                 with VerticalScroll():
                     yield Pretty(chezmoi.cat_config())
 
-            yield RichLogSidebar()
+            yield StdOut()
         yield Footer()
 
     @on(Button.Pressed, "#inspect")
@@ -172,9 +172,9 @@ class ChezmoiTUI(App):
     def action_toggle_mainmenu(self):
         self.query_one(MainMenu).toggle_class("-hidden")
 
-    def action_toggle_richlogsidebar(self) -> None:
+    def action_toggle_stdout(self) -> None:
         self.richlog_visible = not self.richlog_visible
 
     def watch_richlog_visible(self, richlog_visible: bool) -> None:
         # Set or unset visible class when reactive changes.
-        self.query_one(RichLogSidebar).set_class(richlog_visible, "-visible")
+        self.query_one(StdOut).set_class(richlog_visible, "-visible")
