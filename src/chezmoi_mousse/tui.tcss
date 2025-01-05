@@ -70,7 +70,7 @@ ChezmoiDoctor {
 
 # ###############################################################
 
-RichLogSidebar {
+StdOut {
   border-left: $ui_border;
   border-top: $ui_border;
   border-bottom: $ui_border;
