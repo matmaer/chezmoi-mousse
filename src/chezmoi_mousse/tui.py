@@ -1,4 +1,4 @@
-""" Contains the Textual App class for the TUI. """
+"""Contains the Textual App class for the TUI."""
 
 from pathlib import Path
 from typing import Iterable
@@ -8,37 +8,36 @@ from textual.app import App, ComposeResult, Widget
 from textual.binding import Binding
 from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual.reactive import reactive
-from textual.widgets import (Button, DataTable, DirectoryTree, Footer, Header,
-                             Label, Pretty, RichLog, Static, TabbedContent)
+from textual.widgets import (
+    Button,
+    DataTable,
+    DirectoryTree,
+    Footer,
+    Pretty,
+    RichLog,
+    Static,
+    TabbedContent,
+)
 
 from chezmoi_mousse import chezmoi
-from chezmoi_mousse.text_blocks import HELP_TEXT, VISUAL_DIAGRAM
+from chezmoi_mousse.text_blocks import VISUAL_DIAGRAM
 
 CM_CONFIG_DUMP = chezmoi.dump_config()
 
 
 class MainMenu(Vertical):
     def compose(self) -> ComposeResult:
-        yield Label("Main Menu")
         yield Button(
-            label="Local Info",
-            id="local_info",
-        )
-        yield Button(
-            label="Chezmoi Overview",
+            label="Inspect",
             id="inspect",
         )
         yield Button(
-            label="Operate Chezmoi",
+            label="Operate",
             id="operate",
         )
         yield Button(
-            label="Standard Output",
-            id="show_stdout",
-        )
-        yield Button(
-            label="Help",
-            id="app_help",
+            label="Setting",
+            id="settings",
         )
 
 
@@ -77,13 +76,13 @@ class ChezmoiDoctor(DataTable):
                 row[1] = f"[#90EE90]{row[1]}[/]"
                 row[2] = f"[#90EE90]{row[2]}[/]"
             if row[0] == "info":
-                row[0] = f"[#E0FFFF]{row[0]}[/]"
+                row[0] = f"[#E0FFFF bold]{row[0]}[/]"
                 if row[2] == "not set":
-                    row[1] = f"[#E0FFFF]{row[1]}[/]"
-                    row[2] = f"[#E0FFFF]{row[2]}[/]"
+                    row[1] = f"[#E0FFFF bold]{row[1]}[/]"
+                    row[2] = f"[#FFD700]{row[2]}[/]"
                 else:
-                    row[1] = f"[#E0FFFF dim]{row[1]}[/]"
-                    row[2] = f"[#E0FFFF dim]{row[2]}[/]"
+                    row[1] = f"[#E0FFFF bold]{row[1]}[/]"
+                    row[2] = f"[#E0FFFF bold dim]{row[2]}[/]"
             if row[0] == "warning":
                 row[0] = f"[#FFD700]{row[0]}[/]"
                 row[1] = f"[#FFD700]{row[1]}[/]"
@@ -100,26 +99,47 @@ class ChezmoiDoctor(DataTable):
 
 class ChezmoiTUI(App):
     BINDINGS = [
-        Binding("escape", "app.pop_screen", "Back"),
-        Binding("m", "local_config", "Local Info"),
-        Binding("m", "differences", "Differences"),
-        Binding("m", "operate", "Operate Chezmoi"),
-        Binding("s", "toggle_richlogsidebar", "Standard Output"),
-        Binding("q", "quit", "Quit"),
+        Binding(
+            key="m",
+            action="toggle_mainmenu",
+            description="Main Menu",
+            key_display="m",
+        ),
+        Binding(
+            key="s",
+            action="toggle_richlogsidebar",
+            description="Standard Output",
+            key_display="s",
+        ),
+        # to be implemented when modal/screen/layouts are implemented
+        # Binding(
+        #     key="escape",
+        #     action="app.pop_screen",
+        #     description="Go Back",
+        #     key_display="esc",
+        # ),
+        Binding(
+            key="q",
+            action="quit",
+            description="Quit",
+            key_display="q",
+        ),
+        # to be implemented when command palette is customized
+        # Binding(
+        #     key="h",
+        #     action="help",
+        #     description="Help",
+        #     key_display="h",
+        # ),
     ]
     CSS_PATH = "tui.tcss"
     richlog_visible = reactive(False)
-
-    globaldict = globals().copy()
-    globaldict.pop('__builtins__')
-    globaldict.pop('VISUAL_DIAGRAM')
 
     def rlog(self, to_print: str) -> None:
         richlog = self.query_one(RichLog)
         richlog.write(to_print)
 
     def compose(self) -> ComposeResult:
-        yield Header()
         with Horizontal():
             yield MainMenu()
             with TabbedContent(
@@ -129,9 +149,6 @@ class ChezmoiTUI(App):
                 "Config-dump",
                 "Data",
                 "Config-cat",
-                "Globals",
-                "Locals",
-                "Help",
             ):
                 with VerticalScroll():
                     yield ChezmoiDoctor().create_doctor_table()
@@ -143,40 +160,24 @@ class ChezmoiTUI(App):
                     yield Pretty(chezmoi.data())
                 with VerticalScroll():
                     yield Pretty(chezmoi.cat_config())
-                with VerticalScroll():
-                    yield Pretty(self.globaldict)
-                with VerticalScroll():
-                    yield Pretty(locals())
-                with VerticalScroll():
-                    yield Static(HELP_TEXT)
 
             yield RichLogSidebar()
         yield Footer()
 
     @on(Button.Pressed, "#inspect")
     def enter_inspect_mode(self):
-        self.rlog("[cyan]nspect mode[/]")
+        self.rlog("[cyan]Inspect Mode[/]")
         self.rlog("[red]Inspect mode is not yet implemented[/]")
 
     @on(Button.Pressed, "#operate")
     def enter_operate_mode(self):
-        self.rlog("[cyan]operate mode[/]")
+        self.rlog("[cyan]Operate Mode[/]")
         self.rlog("[red]Operate mode is not yet implemented[/]")
 
-    @on(Button.Pressed, "#show_stdout")
-    def show_chezmoi_managed(self):
-        self.rlog("[cyan]Show stdout[/]")
-        self.rlog("[red]Show stdout is not yet implemented[/]")
-
-    @on(Button.Pressed, "#app_help")
-    def show_app_help(self):
-        self.rlog("[cyan]App help[/]")
-        self.rlog("[red]App help is not yet implemented[/]")
-
-    @on(Button.Pressed, "#clean_exit")
-    def clean_exit(self):
-        self.rlog("[cyan]Clean exit[/]")
-        self.rlog("[red]Clean exit is not yet implemented[/]")
+    @on(Button.Pressed, "#settings")
+    def enter_config_mode(self):
+        self.rlog("[cyan]Configuration Mode[/]")
+        self.rlog("[red]Configuration mode is not yet implemented[/]")
 
     def action_toggle_mainmenu(self):
         self.query_one(MainMenu).toggle_class("-hidden")

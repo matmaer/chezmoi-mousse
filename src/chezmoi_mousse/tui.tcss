@@ -1,27 +1,13 @@
-Screen {
-  align: center middle;
-  layers: below above;
-}
-
-Horizontal {
-  background:rgb(13, 17, 23);
-}
-
 Horizontal > TabbedContent {
-  background:rgb(13, 17, 23);
   margin: 1 0 0 0;
 }
 
 Horizontal > Screen {
-  background:rgb(13, 17, 23);
-  layers: sidebar;
+  layers: stdout;
 }
 
-Horizontal {
+* {
   background:rgb(13, 17, 23);
-}
-
-VerticalScroll {
   scrollbar-color: $panel 80%;
   scrollbar-size: 1 1;
   scrollbar-background: rgb(24, 25, 28);
@@ -36,24 +22,13 @@ Pretty {
   width: 100%;
 }
 
-
 DataTable {
-  background:rgb(13, 17, 23);
-  margin: 0 1 3 0;
-  scrollbar-color: $panel 80%;
-  scrollbar-size: 1 1;
-  scrollbar-background: rgb(24, 25, 28);
-  scrollbar-background-active: rgb(24, 25, 28);
-  scrollbar-background-hover: rgb(24, 25, 28);
-  scrollbar-color-active: $panel;
-  scrollbar-color-hover: $panel;
-  scrollbar-corner-color: $panel 10%;
+  margin: 0 1 1 0;
 }
 
 # ###############################################################
 
 MainMenu {
-  background:rgb(13, 17, 23);
   dock: left;
   width: 12%;
   min-width: 18;
@@ -65,9 +40,9 @@ MainMenu.-hidden {
 }
 
 MainMenu > Button {
-  background:rgb(13, 17, 23);
-  border: round rgb(72, 87, 111);
-  padding: 0 2 0 2;
+  border: round rgb(85, 102, 128);
+  color: rgb(224, 228, 235);
+  padding: 1 2 0 2;
   width: 100%;
   height: auto;
   min-height: 7;
@@ -75,13 +50,17 @@ MainMenu > Button {
 
 MainMenu > Button:focus {
   background-tint: rgb(13, 17, 23);
-  color: rgb(29, 196, 46);
-  border: round rgb(9, 131, 21);
+  color: rgb(47, 166, 59);
+  border: round rgb(12, 114, 22);
   text-style: bold;
 }
 
 MainMenu > Button:hover {
-  border: round rgb(9, 131, 21);
+  border: round rgb(12, 114, 22);
+}
+
+ChezmoiDoctor {
+  color: rgb(224, 228, 235);
 }
 
 # ###############################################################
@@ -92,7 +71,7 @@ RichLogSidebar {
   width: 109;
   max-width: 80%;
   # layer to sit above content
-  layer: terminal;
+  layer: stdout;
   transition: offset 400ms;
   # Offset -100% (left) and 100% (right) to be out of view
   offset-x: 100%;
@@ -103,7 +82,6 @@ RichLogSidebar {
 }
 
 RichLog {
-  background:rgb(16, 21, 28);
   padding: 0 1 0 1;
   scrollbar-color: $panel;
   scrollbar-size: 1 1;
