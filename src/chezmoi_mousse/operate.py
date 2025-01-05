@@ -1,4 +1,4 @@
-""" Chezmoi Operations """
+"""Chezmoi Operations."""
 
 import json
 import subprocess
@@ -6,7 +6,6 @@ import tomllib
 
 
 class ChezmoiCommands:
-
     def _run(self, params: list) -> subprocess.CompletedProcess:
         """run a chezmoi command with the given parameters"""
         global_params = [

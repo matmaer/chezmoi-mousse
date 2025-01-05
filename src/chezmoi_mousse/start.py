@@ -3,7 +3,6 @@ Provisional file containing the greeter.
 Could be implemented as a splash screen or Richlog greeter.
 """
 
-
 SPLASH = """
  ██████╗██╗  ██╗███████╗███████╗███╗   ███╗ ██████╗ ██╗
 ██╔════╝██║  ██║██╔════╝╚══███╔╝████╗ ████║██╔═══██╗██║
@@ -74,8 +73,7 @@ for line in GREETER:
     print(len(line))
 
 
-class Greeter():
-
+class Greeter:
     def generate_fade(self):
         high_fade = [
             "#439CFB",
