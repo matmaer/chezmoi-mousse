@@ -1,18 +1,19 @@
-$ui_border: rgb(85, 102, 128);
+$ui_border: rgb(98, 118, 147);
 $ui_text: rgb(224, 228, 235);
 $base_background: rgb(13, 17, 23);
-$scrollbar_background: rgb(24, 25, 28);
+$scrollbar_color: rgb(79, 95, 120);
+$scrollbar_background: rgb(0, 4, 17);
 
 * {
   background:$base_background;
-  scrollbar-color: $panel 80%;
+  scrollbar-color: $scrollbar_color 80%;
   scrollbar-size: 1 1;
   scrollbar-background: $scrollbar_background;
   scrollbar-background-active: $scrollbar_background;
   scrollbar-background-hover: $scrollbar_background;
-  scrollbar-color-active: $panel;
-  scrollbar-color-hover: $panel;
-  scrollbar-corner-color: $panel 10%;
+  scrollbar-color-active: $scrollbar_color;
+  scrollbar-color-hover: $scrollbar_color;
+  scrollbar-corner-color: $scrollbar_background;
 }
 
 Horizontal > TabbedContent {
@@ -89,7 +90,6 @@ StdOut {
 }
 
 RichLog {
-
   padding: 0 1 0 1;
   width: 100%;
 }

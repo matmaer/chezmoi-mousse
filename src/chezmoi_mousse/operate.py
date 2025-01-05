@@ -1,4 +1,4 @@
-"""Chezmoi Operations."""
+"""Chezmoi operations: wrap commands, handle results."""
 
 import json
 import subprocess
@@ -6,16 +6,18 @@ import tomllib
 
 
 class ChezmoiCommands:
-    def _run(self, params: list) -> subprocess.CompletedProcess:
-        """run a chezmoi command with the given parameters"""
-        global_params = [
+    def __init__(self):
+        self.chezmoi = [
+            "chezmoi",
             "--no-pager",
             "--color=false",
             "--no-tty",
             "--progress=false",
         ]
+
+    def _run(self, command: list) -> subprocess.CompletedProcess:
         result = subprocess.run(
-            ["chezmoi"] + global_params + params,
+            self.chezmoi + command,
             capture_output=True,
             check=True,  # raise an exception if exit code is not 0
             encoding="utf-8",
