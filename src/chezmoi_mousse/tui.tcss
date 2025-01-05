@@ -1,21 +1,26 @@
+$ui_border: rgb(85, 102, 128);
+$ui_text: rgb(224, 228, 235);
+$base_background: rgb(13, 17, 23);
+$scrollbar_background: rgb(24, 25, 28);
+
+* {
+  background:$base_background;
+  scrollbar-color: $panel 80%;
+  scrollbar-size: 1 1;
+  scrollbar-background: $scrollbar_background;
+  scrollbar-background-active: $scrollbar_background;
+  scrollbar-background-hover: $scrollbar_background;
+  scrollbar-color-active: $panel;
+  scrollbar-color-hover: $panel;
+  scrollbar-corner-color: $panel 10%;
+}
+
 Horizontal > TabbedContent {
   margin: 1 0 0 0;
 }
 
 Horizontal > Screen {
   layers: stdout;
-}
-
-* {
-  background:rgb(13, 17, 23);
-  scrollbar-color: $panel 80%;
-  scrollbar-size: 1 1;
-  scrollbar-background: rgb(24, 25, 28);
-  scrollbar-background-active: rgb(24, 25, 28);
-  scrollbar-background-hover: rgb(24, 25, 28);
-  scrollbar-color-active: $panel;
-  scrollbar-color-hover: $panel;
-  scrollbar-corner-color: $panel 10%;
 }
 
 Pretty {
@@ -40,8 +45,8 @@ MainMenu.-hidden {
 }
 
 MainMenu > Button {
-  border: round rgb(85, 102, 128);
-  color: rgb(224, 228, 235);
+  border: round $ui_border;
+  color: $ui_text;
   padding: 1 2 0 2;
   width: 100%;
   height: auto;
@@ -49,7 +54,7 @@ MainMenu > Button {
 }
 
 MainMenu > Button:focus {
-  background-tint: rgb(13, 17, 23);
+  background-tint: $base_background;
   color: rgb(47, 166, 59);
   border: round rgb(12, 114, 22);
   text-style: bold;
@@ -60,15 +65,15 @@ MainMenu > Button:hover {
 }
 
 ChezmoiDoctor {
-  color: rgb(224, 228, 235);
+  color: $ui_text;
 }
 
 # ###############################################################
 
 RichLogSidebar {
-  border-left: rgb(85, 102, 128);
-  border-top: rgb(85, 102, 128);
-  border-bottom: rgb(85, 102, 128);
+  border-left: $ui_border;
+  border-top: $ui_border;
+  border-bottom: $ui_border;
   dock: right;
   width: 109;
   max-width: 80%;
