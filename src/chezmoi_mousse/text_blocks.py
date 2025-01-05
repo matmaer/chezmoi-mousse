@@ -1,4 +1,4 @@
-""" provisional file containing diagrams until they are made interactive """
+"""provisional file containing diagrams until they are made interactive"""
 
 VISUAL_DIAGRAM = """
 ┌──────────────┐    ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
