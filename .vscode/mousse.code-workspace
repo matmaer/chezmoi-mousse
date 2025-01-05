@@ -5,17 +5,14 @@
             "path": ".."
         },
         {
-            "name": "textual-fork-demo-files",
-            "path": "../../textual/src/textual/demo"
-        },
-        {
-            "name": "textual-demo-fork",
-            "path": "../../textual-demo"
-        },
-        {
-            "name": "full-textual-fork",
+            "name": "textual-fork",
             "path": "../../textual"
+        },
+        {
+            "name": "textual-demo",
+            "path": "../../textual-demo"
         }
+
     ],
     "settings": {
         "pylint.enabled": true,
@@ -24,10 +21,8 @@
             "--disable=C0115"
         ],
         "pylint.ignorePatterns": [
-            "${workspaceFolder:textual-fork-demo-files}",
-            "${workspaceFolder:textual-demo-fork}",
-            "${workspaceFolder:full-textual-fork}"
+            "${workspaceFolder:textual-fork}/*",
+            "${workspaceFolder:textual-demo}/*"
         ],
-        "pylint.cwd": "${workspaceFolder:mousse}",
     },
 }
