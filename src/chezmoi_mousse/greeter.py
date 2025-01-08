@@ -73,7 +73,7 @@ class GreeterWidget(Widget):
         return super().render_lines(crop)
 
     def render_line(self, y: int) -> Strip:
-        return Strip([Segment(self.text[y], style=self.colors[y % 17])])
+        return Strip([Segment(self.text[y], style=self.colors[y])])
 
     def get_content_height(self, *_) -> int:
         return len(self.text)
