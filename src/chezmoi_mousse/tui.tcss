@@ -85,28 +85,28 @@ ChezmoiDoctor {
 # StdOut {
   # }
 
-MousseLogger {
-  color: $ui_text;
-  padding: 0 1 0 1;
-  width: 100%;
-  height: auto;
-  border-left: $ui_border;
-  border-top: $ui_border;
-  border-bottom: $ui_border;
-  margin: 6 0 4 0;
-  dock: right;
-  max-width: 80%;
-  min-height: 3;
-  # layer to sit above content
-  layer: sliders;
-  transition: offset 400ms;
-  # Offset -100% (left) and 100% (right) to be out of view
-  offset-x: 100%;
-  &:focus {
-    background-tint: $base_background;
-  }
-  &.-visible {
-    # offset.x reaches 0 when fully slided in view
-      offset-x: 0;
-  }
-}
+
+# RichLog {
+#   padding: 0 1 0 1;
+#   width: 100%;
+#   height: 100%;
+#   border-left: $ui_border;
+#   border-top: $ui_border;
+#   border-bottom: $ui_border;
+#   margin: 6 0 4 0;
+#   dock: right;
+#   max-width: 80%;
+#   min-height: 3;
+#   # layer to sit above content
+#   layer: sliders;
+#   transition: offset 400ms;
+#   # Offset -100% (left) and 100% (right) to be out of view
+#   offset-x: 100%;
+#   &:focus {
+#     background-tint: $base_background;
+#   }
+#   &.-visible {
+#     # offset.x reaches 0 when fully slided in view
+#       offset-x: 0;
+#   }
+# }

@@ -6,8 +6,9 @@ from textual.binding import Binding
 
 
 from chezmoi_mousse.debug import DebugScreen
-from chezmoi_mousse.inspect import InspectScreens
+from chezmoi_mousse.inspector import InspectScreens
 from chezmoi_mousse.operate import OperateScreens
+from chezmoi_mousse.greeter import GreeterScreens
 
 
 # class MainMenu(Vertical):
@@ -27,6 +28,7 @@ from chezmoi_mousse.operate import OperateScreens
 
 
 class ChezmoiTUI(App):
+    CSS_PATH = "tui.tcss"
     BINDINGS = [
         # Binding(
         #     key="m",
@@ -79,13 +81,26 @@ class ChezmoiTUI(App):
             tooltip="Show the debug screen",
         ),
     ]
-    CSS_PATH = "tui.tcss"
     MODES = {
+        "greeter": GreeterScreens,
         "operate": OperateScreens,
         "inspect": InspectScreens,
         "debug": DebugScreen,
     }
     DEFAULT_MODE = "operate"
+
+    # Function "check_action" copied from
+    # https://github.com/Textualize/textual/blob/main/src/textual/demo/demo_app.py
+
+    def check_action(self, action: str, parameters: tuple[object, ...]) -> bool | None:
+        """Disable switching to a mode we are already on."""
+        if (
+            action == "switch_mode"
+            and parameters
+            and self.current_mode == parameters[0]
+        ):
+            return None
+        return True
 
     # def action_toggle_mainmenu(self):
     #     self.query_one(MainMenu).toggle_class("-hidden")
