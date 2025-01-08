@@ -1,10 +1,13 @@
 from collections import deque
 
+# from pyfiglet import figlet_format
 from rich.color import Color
 from rich.segment import Segment
 from rich.style import Style
 from textual.app import App, ComposeResult
-from textual.containers import Container
+from textual.containers import Center
+from textual.geometry import Region
+from textual.reactive import reactive
 from textual.strip import Strip
 from textual.widget import Widget
 
@@ -26,13 +29,7 @@ SPLASH = """
 """
 
 
-class GreeterWidget(Widget):
-    def __init__(self) -> None:
-        super().__init__()
-        self.text = self.create_text()
-        self.width = len(self.text[1])
-        self.height = len(self.text)
-
+class ChristmasWidget(Widget):
     def create_text(self) -> list[str]:
         splash_list = SPLASH.splitlines()[1:]
         # pad each line in the list with spaces to the right
@@ -40,7 +37,12 @@ class GreeterWidget(Widget):
         splash_list = [line.ljust(width) for line in splash_list]
         return splash_list
 
+    def __init__(self) -> None:
+        super().__init__()
+        self.text = self.create_text()
+
     colors: deque[Style] = deque()
+    text: reactive[list[str]] = reactive(list, init=False)
 
     def on_mount(self) -> None:
         for color in (
@@ -63,14 +65,18 @@ class GreeterWidget(Widget):
             "#439CFB",
         ):
             self.colors.append(Style(color=Color.parse(color)))
-        self.clock = self.set_interval(interval=0.1, callback=self.refresh)
+        self.clock = self.set_interval(0.1, self.refresh)
 
-    def render_lines(self, crop) -> list[Strip]:
+    def render_lines(self, crop: Region) -> list[Strip]:
         self.colors.rotate()
         return super().render_lines(crop)
 
     def render_line(self, y: int) -> Strip:
-        return Strip([Segment(self.text[y], style=self.colors[y])])
+        return Strip([Segment(self.text[y], style=self.colors[y % 17])])
+
+    # def with_text(self, text: list) -> Self:
+    #     self.text = text
+    #     return self
 
     def get_content_height(self, *_) -> int:
         return len(self.text)
@@ -79,22 +85,25 @@ class GreeterWidget(Widget):
         return len(self.text[1])
 
 
-class GreeterApp(App):
+class ChristmasApp(App):
+    TITLE = "Merry Christmas"
+
     CSS = """
-    GreeterWidget {
+    ChristmasWidget {
         width: auto;
         height: auto;
     }
-    Container {
+    Center {
+        height: 100%;
         align: center middle;
         background: black;
     }
     """
 
     def compose(self) -> ComposeResult:
-        with Container():
-            yield GreeterWidget()
+        with Center():
+            yield ChristmasWidget()
 
 
 if __name__ == "__main__":
-    GreeterApp().run()
+    ChristmasApp().run()
