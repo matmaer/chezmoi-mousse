@@ -8,7 +8,8 @@ from textual.binding import Binding
 from chezmoi_mousse.debug import DebugScreen
 from chezmoi_mousse.inspector import InspectScreens
 from chezmoi_mousse.operate import OperateScreens
-from chezmoi_mousse.greeter import GreeterScreens
+from chezmoi_mousse.greeter import GreeterWidget
+# from chezmoi_mousse import CSS_PATH
 
 
 # class MainMenu(Vertical):
@@ -82,12 +83,12 @@ class ChezmoiTUI(App):
         ),
     ]
     MODES = {
-        "greeter": GreeterScreens,
+        "greeter": GreeterWidget,
         "operate": OperateScreens,
         "inspect": InspectScreens,
         "debug": DebugScreen,
     }
-    DEFAULT_MODE = "operate"
+    DEFAULT_MODE = "greeter"
 
     # Function "check_action" copied from
     # https://github.com/Textualize/textual/blob/main/src/textual/demo/demo_app.py
