@@ -8,8 +8,7 @@ from textual.binding import Binding
 from chezmoi_mousse.debug import DebugScreen
 from chezmoi_mousse.inspector import InspectScreens
 from chezmoi_mousse.operate import OperateScreens
-from chezmoi_mousse.greeter import GreeterWidget
-# from chezmoi_mousse import CSS_PATH
+from chezmoi_mousse.greeter import GreeterScreen
 
 
 # class MainMenu(Vertical):
@@ -83,7 +82,7 @@ class ChezmoiTUI(App):
         ),
     ]
     MODES = {
-        "greeter": GreeterWidget,
+        "greeter": GreeterScreen,
         "operate": OperateScreens,
         "inspect": InspectScreens,
         "debug": DebugScreen,
