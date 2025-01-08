@@ -43,6 +43,7 @@ class GreeterWidget(Widget):
     def __init__(self) -> None:
         super().__init__()
         self.text = create_text()
+        self.clock = self.set_interval(0.1, self.refresh)
 
     colors: deque[Style] = deque()
     text: reactive[list[str]] = reactive(list, init=False)
@@ -68,7 +69,6 @@ class GreeterWidget(Widget):
             "#439CFB",
         ):
             self.colors.append(Style(color=Color.parse(color)))
-        self.clock = self.set_interval(0.1, self.refresh)
 
     def render_lines(self, crop: Region) -> list[Strip]:
         self.colors.rotate()
