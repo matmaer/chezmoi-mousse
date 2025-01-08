@@ -27,7 +27,7 @@ Widget{
 }
 
 TabbedContent {
-  margin: 0 1 1 1;
+  margin: 1 1 1 1;
 }
 
 Center {
@@ -39,7 +39,7 @@ Center {
 
 Pretty {
   width: 100%;
-  margin: 0 1 1 1;
+  margin: 1 1 1 1;
 }
 
 Header {
@@ -47,12 +47,12 @@ Header {
 }
 
 DataTable {
-  padding: 0 1 1 0;
+  padding: 1 1 1 0;
   background-tint: $base_background;
 }
 
 DirectoryTree {
-  padding: 0 1 1 1;
+  padding: 1 1 1 1;
   background-tint: $base_background;
 }
 
