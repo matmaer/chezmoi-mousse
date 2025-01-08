@@ -16,7 +16,9 @@ from textual.widgets import (
     TabbedContent,
 )
 
-from chezmoi_mousse import chezmoi, CM_CONFIG_DUMP
+from chezmoi_mousse import chezmoi
+
+CM_CONFIG_DUMP = chezmoi.dump_config()
 
 
 class ChezmoiDoctor(DataTable):
@@ -57,12 +59,12 @@ class ChezmoiDoctor(DataTable):
 class SettingTabs(Screen):
     def compose(self) -> ComposeResult:
         with Horizontal():
-            yield Header(name="Chezmoi Mousse", show_clock=True)
+            yield Header(name="Chezmoi Configuration", show_clock=True)
             with TabbedContent(
                 "Doctor",
-                "Config-dump",
-                "Data",
-                "Config-cat",
+                "Config Dump",
+                "Template Data",
+                "Config File",
             ):
                 with VerticalScroll():
                     yield ChezmoiDoctor().create_doctor_table()
@@ -73,17 +75,3 @@ class SettingTabs(Screen):
                 with VerticalScroll():
                     yield Pretty(chezmoi.cat_config())
             yield Footer()
-
-
-# richlog_visible = reactive(False)
-
-# def rlog(self, to_print: str) -> None:
-#     richlog = self.query_one(RichLog)
-#     richlog.write(to_print)
-
-# def action_toggle_richlog(self) -> None:
-#     self.richlog_visible = not self.richlog_visible
-
-# def watch_richlog_visible(self, richlog_visible: bool) -> None:
-#     # Set or unset visible class when reactive changes.
-#     self.query_one(MousseLogger).set_class(richlog_visible, "-visible")
