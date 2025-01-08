@@ -50,9 +50,7 @@ class ChezmoiDoctor(DataTable):
                 row[0] = f"[red]{row[0]}[/]"
                 row[1] = f"[red]{row[1]}[/]"
                 row[2] = f"[red]{row[2]}[/]"
-
             self.table.add_row(*row)
-
         return self.table
 
 
