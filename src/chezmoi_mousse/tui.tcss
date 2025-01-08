@@ -22,10 +22,10 @@ Horizontal > TabbedContent {
   margin: 1 0 0 0;
 }
 
-Horizontal > Screen {
-  layers: stdout-slide;
-  layers: menu-slide;
-}
+# Horizontal > Screen {
+#   layers: stdout-slide;
+#   layers: menu-slide;
+# }
 
 Pretty {
   width: 100%;
@@ -84,6 +84,18 @@ ChezmoiDoctor {
 
 # StdOut {
   # }
+
+GreeterWidget {
+  width: auto;
+  height: auto;
+  # background: $base_background;
+}
+Center {
+  height: 100%;
+  width: 100%;
+  align: center middle;
+  background: $base_background;
+}
 
 
 # RichLog {

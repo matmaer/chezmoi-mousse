@@ -1,12 +1,18 @@
-"""
-Provisional file containing the greeter.
-Could be implemented as a splash screen or Richlog greeter.
-"""
+from collections import deque
 
+
+from rich.color import Color
+from rich.segment import Segment
+from rich.style import Style
 from textual.app import ComposeResult
+from textual.containers import Center
+from textual.geometry import Region
+from textual.reactive import reactive
+from textual.strip import Strip
+from textual.widget import Widget
 from textual.screen import Screen
-from textual.containers import Grid
-from textual.widgets import RichLog
+from textual.widgets import Footer
+
 
 SPLASH = """
  ██████╗██╗  ██╗███████╗███████╗███╗   ███╗ ██████╗ ██╗
@@ -23,103 +29,63 @@ SPLASH = """
  ██║ ╚═╝ ██║╚██████╔╝╚██████╔╝███████║███████║███████╗
  ╚═╝     ╚═╝ ╚═════╝  ╚═════╝ ╚══════╝╚══════╝╚══════╝
 """
-SPLASH = SPLASH.splitlines()[1:]
 
 
-# 13 lines, index 0-12, 6 being the middle
-# 56 columns, index 0-55, middle between 27 and 28
-# 84 = 4 + 24 + 2 + 24 + 2 + 24 + 4
-# 4 + 21 + 2 + 21 + 2 + 21 + 4 = 75
-# --5---10---15---20---25---30---35---40---45---50---55---60---65-----|
-# xxx|xxxxxxxxxxxxxxxxxxx|xxx|xxxxxxxxxxxxxxxxxxx|xxx|xxxxxxxxxxxxxxxxxxx|xxx|
-# total is 77
-# 77 - 56 = 21
-# 10 left and 11 right
-# .......|
-# Inspect
-# Operate
-# Context
+def create_text() -> list[str]:
+    splash_list = SPLASH.splitlines()[1:]
+    # pad each line in the list with spaces to the right
+    width = len(max(splash_list, key=len))
+    splash_list = [line.ljust(width) for line in splash_list]
+    return splash_list
 
 
-# GREETER = """
-# #8  - - - - - - - - - -   / / / / / / / / / / /   - - - - - - - - - - 8#
-
-
-# |-----------------|    |-----------------|    |-----------------|
-
-
-#         ██████╗██╗  ██╗███████╗███████╗███╗   ███╗ ██████╗ ██╗
-#        ██╔════╝██║  ██║██╔════╝╚══███╔╝████╗ ████║██╔═══██╗██║
-#        ██║     ███████║█████╗    ███╔╝ ██╔████╔██║██║   ██║██║
-#        ██║     ██╔══██║██╔══╝   ███╔╝  ██║╚██╔╝██║██║   ██║██║
-#        ╚██████╗██║  ██║███████╗███████╗██║ ╚═╝ ██║╚██████╔╝██║
-#         ╚═════╝╚═╝  ╚═╝╚══════╝╚══════╝╚═╝     ╚═╝ ╚═════╝ ╚═╝
-
-#         ███╗   ███╗ ██████╗ ██╗   ██╗███████╗███████╗███████╗
-#         ████╗ ████║██╔═══██╗██║   ██║██╔════╝██╔════╝██╔════╝
-#         ██╔████╔██║██║   ██║██║   ██║███████╗███████╗█████╗
-#         ██║╚██╔╝██║██║   ██║██║   ██║╚════██║╚════██║██╔══╝
-#         ██║ ╚═╝ ██║╚██████╔╝╚██████╔╝███████║███████║███████╗
-#         ╚═╝     ╚═╝ ╚═════╝  ╚═════╝ ╚══════╝╚══════╝╚══════╝
-
-
-# """
-
-# GREETER = GREETER.splitlines()[1:-1]
-# SHADES = "░▒▓█▓▒░"
-
-
-# for line in GREETER:
-#     print(len(line))
-
-
-class GreeterScreens(Screen):
-    # CSS_PATH = "tui.tcss"
-    CSS = """
-    Middle {
-            background: black;
-            border: heavy $accent;
-            margin: 2 4;
-            scrollbar-gutter: stable;
-            Static {
-                width: auto;
-            }
-    }
-    """
-
-    def __init__(self):
+class GreeterWidget(Widget):
+    def __init__(self) -> None:
         super().__init__()
-        self.fade = self.generate_fade_colors()
-        self.splash = self.generate_splash_lines()
+        self.text = create_text()
 
-    def generate_fade_colors(self):
-        high_fade = [
+    colors: deque[Style] = deque()
+    text: reactive[list[str]] = reactive(list, init=False)
+
+    def on_mount(self) -> None:
+        for color in (
+            "#439CFB",
+            "#439CFB",
+            "#439CFB",
             "#439CFB",
             "#6698FB",
             "#8994FB",
             "#AB8FFB",
             "#CE8BFB",
             "#F187FB",
-        ]
-        low_fade = high_fade.copy()
-        low_fade.reverse()
-        full_fade = high_fade + ["#000000"] + low_fade
-        return full_fade
+            "#CE8BFB",
+            "#AB8FFB",
+            "#8994FB",
+            "#6698FB",
+            "#439CFB",
+            "#439CFB",
+            "#439CFB",
+            "#439CFB",
+        ):
+            self.colors.append(Style(color=Color.parse(color)))
+        self.clock = self.set_interval(0.1, self.refresh)
 
-    def generate_splash_lines(self):
-        splash_lines = []
-        for line, color in zip(SPLASH, self.fade):
-            splash_lines.append(f"[{color}]{line}[/]")
-        return splash_lines
+    def render_lines(self, crop: Region) -> list[Strip]:
+        self.colors.rotate()
+        return super().render_lines(crop)
 
-    def rlog(self, to_print: str) -> None:
-        richlog = self.query_one(RichLog)
-        richlog.write(to_print)
+    def render_line(self, y: int) -> Strip:
+        return Strip([Segment(self.text[y], style=self.colors[y % 17])])
 
+    def get_content_height(self, *_) -> int:
+        return len(self.text)
+
+    def get_content_width(self, *_) -> int:
+        return len(self.text[1])
+
+
+class GreeterScreen(Screen):
     def compose(self) -> ComposeResult:
-        with Grid():
-            yield RichLog(wrap=False, markup=True)
-
-    def on_mount(self) -> None:
-        self.rlog("\n".join(self.splash))
-        # self.rlog(self.css_tree)
+        with Center():
+            yield GreeterWidget()
+            yield Footer()
