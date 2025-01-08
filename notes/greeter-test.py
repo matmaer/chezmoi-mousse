@@ -37,7 +37,7 @@ def create_text() -> list[str]:
     return splash_list
 
 
-class ChristmasWidget(Widget):
+class GreeterWidget(Widget):
     def __init__(self) -> None:
         super().__init__()
         self.text = create_text()
@@ -86,11 +86,9 @@ class ChristmasWidget(Widget):
         return len(self.text[1])
 
 
-class ChristmasApp(App):
-    TITLE = "Merry Christmas"
-
+class GreeterApp(App):
     CSS = """
-    ChristmasWidget {
+    GreeterWidget {
         width: auto;
         height: auto;
     }
@@ -103,8 +101,4 @@ class ChristmasApp(App):
 
     def compose(self) -> ComposeResult:
         with Center():
-            yield ChristmasWidget()
-
-
-if __name__ == "__main__":
-    ChristmasApp().run()
+            yield GreeterWidget()
