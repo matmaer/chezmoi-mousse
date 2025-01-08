@@ -2,7 +2,7 @@
 
 from textual.containers import VerticalScroll
 from textual.screen import Screen
-from textual.widgets import Pretty, TabbedContent, Footer, Header
+from textual.widgets import Pretty, TabbedContent, Footer
 from chezmoi_mousse.commands import CommandLog
 
 
@@ -15,7 +15,6 @@ class DebugTabs(Screen):
     def compose(self):
         self.global_vars = globals()
         del self.global_vars["__builtins__"]
-        yield Header()
         with TabbedContent(
             "Command Log",
             "Global Vars",

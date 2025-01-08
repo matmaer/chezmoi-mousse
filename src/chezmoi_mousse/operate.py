@@ -5,9 +5,8 @@ from typing import Iterable
 
 from textual.screen import Screen
 from textual.widget import Widget
-from textual.containers import Horizontal, VerticalScroll
-from textual.widgets import Static, Footer, TabbedContent, DirectoryTree, Header, Pretty
-
+from textual.containers import Horizontal, VerticalScroll, Center
+from textual.widgets import Footer, TabbedContent, DirectoryTree, Pretty, Static
 from chezmoi_mousse import chezmoi
 
 CM_CONFIG_DUMP = chezmoi.dump_config()
@@ -54,7 +53,7 @@ class InteractiveDiagram(Widget):
         self.diagram = VISUAL_DIAGRAM
 
     def compose(self):
-        yield Static(self.diagram)
+        yield Center(self.diagram)
 
 
 class ManagedFiles(DirectoryTree):
@@ -70,7 +69,6 @@ class ManagedFiles(DirectoryTree):
 class OperationTabs(Screen):
     def compose(self):
         with Horizontal():
-            yield Header(name="Chezmoi Operations")
             with TabbedContent(
                 "Chezmoi Diagram",
                 "Managed Files",

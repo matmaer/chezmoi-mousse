@@ -1,17 +1,13 @@
 """Contains the Textual App class for the TUI."""
 
-# from textual import on
 from textual.app import ComposeResult
 
-# from textual.binding import Binding
 from textual.containers import Horizontal, VerticalScroll
 
-# from textual.reactive import reactive
 from textual.screen import Screen
 from textual.widgets import (
     DataTable,
     Footer,
-    Header,
     Pretty,
     TabbedContent,
 )
@@ -37,13 +33,14 @@ class ChezmoiDoctor(DataTable):
                 row[1] = f"[#90EE90]{row[1]}[/]"
                 row[2] = f"[#90EE90]{row[2]}[/]"
             if row[0] == "info":
-                row[0] = f"[#E0FFFF bold]{row[0]}[/]"
+                row[0] = f"[#E0FFFF]{row[0]}[/]"
                 if row[2] == "not set":
-                    row[1] = f"[#E0FFFF bold]{row[1]}[/]"
+                    row[1] = f"[#E0FFFF]{row[1]}[/]"
                     row[2] = f"[#FFD700]{row[2]}[/]"
                 else:
-                    row[1] = f"[#E0FFFF bold]{row[1]}[/]"
-                    row[2] = f"[#E0FFFF bold dim]{row[2]}[/]"
+                    row[0] = f"[#E0FFFF dim]{row[1]}[/]"
+                    row[1] = f"[#E0FFFF dim]{row[1]}[/]"
+                    row[2] = f"[#E0FFFF dim]{row[2]}[/]"
             if row[0] == "warning":
                 row[0] = f"[#FFD700]{row[0]}[/]"
                 row[1] = f"[#FFD700]{row[1]}[/]"
@@ -59,7 +56,6 @@ class ChezmoiDoctor(DataTable):
 class SettingTabs(Screen):
     def compose(self) -> ComposeResult:
         with Horizontal():
-            yield Header(name="Chezmoi Configuration", show_clock=True)
             with TabbedContent(
                 "Doctor",
                 "Config Dump",

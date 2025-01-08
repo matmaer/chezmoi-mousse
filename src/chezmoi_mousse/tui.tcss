@@ -44,22 +44,20 @@ Pretty {
 
 Header {
   height: 2;
-
 }
 
 DataTable {
   padding: 0 1 1 0;
+  background-tint: $base_background;
 }
 
 DirectoryTree {
   padding: 0 1 1 1;
-  background: $base_background;
   background-tint: $base_background;
 }
 
 ChezmoiDoctor {
-  color: $ui_text;
-  background: $base_background;
+  background-tint: $base_background;
 }
 
 GreeterWidget {
