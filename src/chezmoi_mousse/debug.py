@@ -1,38 +1,29 @@
 """Debugging aids for the app itself."""
 
-# to be implemented when modal/screen/layouts are implemented
-
 from textual.containers import VerticalScroll
 from textual.screen import Screen
-from textual.widgets import Pretty, TabbedContent, Footer
+from textual.widgets import Pretty, TabbedContent, Footer, Header
+from chezmoi_mousse.commands import CommandLog
 
 
-# class DebugTabs(Screen):
-#     def __init__(self, app_theme_vars: dict, local_vars: dict, global_vars: dict):
-#         super().__init__()
-#         self.app_theme_vars = app_theme_vars
-#         self.local_vars = local_vars
-#         self.global_vars = global_vars
-class DebugFloater(Screen):
+class DebugTabs(Screen):
     def __init__(self):
         super().__init__()
         self.local_vars = None
         self.global_vars = None
-        # delete python bulitins as we're debugging Textual, not Python
 
     def compose(self):
         self.global_vars = globals()
         del self.global_vars["__builtins__"]
-
+        yield Header()
         with TabbedContent(
-            "Globals",
-            "Locals",
-            # "Theme Variables",
+            "Command Log",
+            "Global Vars",
+            "Local Vars",
         ):
+            yield CommandLog()
             with VerticalScroll():
                 yield Pretty(self.global_vars)
             with VerticalScroll():
                 yield Pretty(self.local_vars)
-            # with VerticalScroll():
-            #     yield Pretty(self.app_theme_vars)
         yield Footer()

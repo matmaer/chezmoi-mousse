@@ -11,11 +11,25 @@ from textual.widget import Widget
 from textual.screen import Screen
 from textual.widgets import Footer
 
-from chezmoi_mousse.text_blocks import SPLASH
+SPLASH = """\
+ ██████╗██╗  ██╗███████╗███████╗███╗   ███╗ ██████╗ ██╗
+██╔════╝██║  ██║██╔════╝╚══███╔╝████╗ ████║██╔═══██╗██║
+██║     ███████║█████╗    ███╔╝ ██╔████╔██║██║   ██║██║
+██║     ██╔══██║██╔══╝   ███╔╝  ██║╚██╔╝██║██║   ██║██║
+╚██████╗██║  ██║███████╗███████╗██║ ╚═╝ ██║╚██████╔╝██║
+ ╚═════╝╚═╝  ╚═╝╚══════╝╚══════╝╚═╝     ╚═╝ ╚═════╝ ╚═╝
+
+ ███╗   ███╗ ██████╗ ██╗   ██╗███████╗███████╗███████╗
+ ████╗ ████║██╔═══██╗██║   ██║██╔════╝██╔════╝██╔════╝
+ ██╔████╔██║██║   ██║██║   ██║███████╗███████╗█████╗
+ ██║╚██╔╝██║██║   ██║██║   ██║╚════██║╚════██║██╔══╝
+ ██║ ╚═╝ ██║╚██████╔╝╚██████╔╝███████║███████║███████╗
+ ╚═╝     ╚═╝ ╚═════╝  ╚═════╝ ╚══════╝╚══════╝╚══════╝
+"""
 
 
 def create_text() -> list[str]:
-    splash_list = SPLASH.splitlines()[1:]
+    splash_list = SPLASH.splitlines()
     # pad each line in the list with spaces to the right
     width = len(max(splash_list, key=len))
     splash_list = [line.ljust(width) for line in splash_list]
