@@ -1,6 +1,6 @@
 from collections import deque
 
-# from pyfiglet import figlet_format
+
 from rich.color import Color
 from rich.segment import Segment
 from rich.style import Style
@@ -29,17 +29,18 @@ SPLASH = """
 """
 
 
-class ChristmasWidget(Widget):
-    def create_text(self) -> list[str]:
-        splash_list = SPLASH.splitlines()[1:]
-        # pad each line in the list with spaces to the right
-        width = len(max(splash_list, key=len))
-        splash_list = [line.ljust(width) for line in splash_list]
-        return splash_list
+def create_text() -> list[str]:
+    splash_list = SPLASH.splitlines()[1:]
+    # pad each line in the list with spaces to the right
+    width = len(max(splash_list, key=len))
+    splash_list = [line.ljust(width) for line in splash_list]
+    return splash_list
 
+
+class ChristmasWidget(Widget):
     def __init__(self) -> None:
         super().__init__()
-        self.text = self.create_text()
+        self.text = create_text()
 
     colors: deque[Style] = deque()
     text: reactive[list[str]] = reactive(list, init=False)
