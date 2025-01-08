@@ -1,6 +1,5 @@
 from collections import deque
 
-# from pyfiglet import figlet_format
 from rich.color import Color
 from rich.segment import Segment
 from rich.style import Style
@@ -31,6 +30,8 @@ class GreeterWidget(Widget):
     def __init__(self) -> None:
         super().__init__()
         self.text = self.create_text()
+        self.width = len(self.text[1])
+        self.height = len(self.text)
 
     def create_text(self) -> list[str]:
         splash_list = SPLASH.splitlines()[1:]
@@ -69,7 +70,7 @@ class GreeterWidget(Widget):
         return super().render_lines(crop)
 
     def render_line(self, y: int) -> Strip:
-        return Strip([Segment(self.text[y], style=self.colors[y % 17])])
+        return Strip([Segment(self.text[y], style=self.colors[y])])
 
     def get_content_height(self, *_) -> int:
         return len(self.text)
