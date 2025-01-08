@@ -1,8 +1,5 @@
 """Contains the Textual App class for the TUI."""
 
-from pathlib import Path
-from typing import Iterable
-
 # from textual import on
 from textual.app import ComposeResult
 
@@ -12,27 +9,14 @@ from textual.containers import Horizontal, VerticalScroll
 # from textual.reactive import reactive
 from textual.screen import Screen
 from textual.widgets import (
-    # Button,
     DataTable,
-    DirectoryTree,
     Footer,
+    Header,
     Pretty,
     TabbedContent,
 )
 
-from chezmoi_mousse import chezmoi
-
-
-CM_CONFIG_DUMP = chezmoi.dump_config()
-
-
-class ManagedFiles(DirectoryTree):
-    def __init__(self):
-        super().__init__(CM_CONFIG_DUMP["destDir"])
-        self.managed = [Path(entry) for entry in chezmoi.managed()]
-
-    def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
-        return [path for path in paths if path in self.managed]
+from chezmoi_mousse import chezmoi, CM_CONFIG_DUMP
 
 
 class ChezmoiDoctor(DataTable):
@@ -72,27 +56,18 @@ class ChezmoiDoctor(DataTable):
         return self.table
 
 
-# richlog_visible = reactive(False)
-
-
-# def rlog(self, to_print: str) -> None:
-#     richlog = self.query_one(RichLog)
-#     richlog.write(to_print)
-
-
 class SettingTabs(Screen):
     def compose(self) -> ComposeResult:
         with Horizontal():
+            yield Header(name="Chezmoi Mousse", show_clock=True)
             with TabbedContent(
                 "Doctor",
-                "Managed",
                 "Config-dump",
                 "Data",
                 "Config-cat",
             ):
                 with VerticalScroll():
                     yield ChezmoiDoctor().create_doctor_table()
-                yield ManagedFiles()
                 with VerticalScroll():
                     yield Pretty(CM_CONFIG_DUMP)
                 with VerticalScroll():
@@ -101,9 +76,16 @@ class SettingTabs(Screen):
                     yield Pretty(chezmoi.cat_config())
             yield Footer()
 
-    # def action_toggle_richlog(self) -> None:
-    #     self.richlog_visible = not self.richlog_visible
 
-    # def watch_richlog_visible(self, richlog_visible: bool) -> None:
-    #     # Set or unset visible class when reactive changes.
-    #     self.query_one(MousseLogger).set_class(richlog_visible, "-visible")
+# richlog_visible = reactive(False)
+
+# def rlog(self, to_print: str) -> None:
+#     richlog = self.query_one(RichLog)
+#     richlog.write(to_print)
+
+# def action_toggle_richlog(self) -> None:
+#     self.richlog_visible = not self.richlog_visible
+
+# def watch_richlog_visible(self, richlog_visible: bool) -> None:
+#     # Set or unset visible class when reactive changes.
+#     self.query_one(MousseLogger).set_class(richlog_visible, "-visible")

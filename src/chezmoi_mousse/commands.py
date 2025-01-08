@@ -1,4 +1,7 @@
-"""Module that wraps chezmoi commands."""
+"""
+Module that wraps chezmoi and git commands.
+Bare minimum output curation which needed for any widget.
+"""
 
 import json
 import subprocess
@@ -27,7 +30,9 @@ class ChezmoiCommands:
         return result
 
     def data(self) -> dict:
-        return json.loads(self._run(["data", "--format=json"]).stdout)
+        result = json.loads(self._run(["data", "--format=json"]).stdout)["chezmoi"]
+        del result["args"]
+        return result
 
     def dump_config(self) -> dict:
         return json.loads(self._run(["dump-config", "--format=json"]).stdout)
