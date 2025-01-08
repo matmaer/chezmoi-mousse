@@ -16,9 +16,9 @@ class DebugTabs(Screen):
         self.global_vars = globals()
         del self.global_vars["__builtins__"]
         with TabbedContent(
-            "Command Log",
-            "Global Vars",
-            "Local Vars",
+            "Command-Log",
+            "Global-Vars",
+            "Local-Vars",
         ):
             yield CommandLog()
             with VerticalScroll():
