@@ -13,7 +13,7 @@ from textual.widgets import Pretty, TabbedContent, Footer
 #         self.app_theme_vars = app_theme_vars
 #         self.local_vars = local_vars
 #         self.global_vars = global_vars
-class DebugScreen(Screen):
+class DebugFloater(Screen):
     def __init__(self):
         super().__init__()
         self.local_vars = None

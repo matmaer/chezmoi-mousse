@@ -22,11 +22,6 @@ Horizontal > TabbedContent {
   margin: 1 0 0 0;
 }
 
-# Horizontal > Screen {
-#   layers: stdout-slide;
-#   layers: menu-slide;
-# }
-
 Pretty {
   width: 100%;
 }

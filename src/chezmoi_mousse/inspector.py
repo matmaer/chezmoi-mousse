@@ -17,14 +17,11 @@ from textual.widgets import (
     DirectoryTree,
     Footer,
     Pretty,
-    Static,
     TabbedContent,
 )
 
 from chezmoi_mousse import chezmoi
 
-# from chezmoi_mousse import MousseLogger
-from chezmoi_mousse.text_blocks import VISUAL_DIAGRAM
 
 CM_CONFIG_DUMP = chezmoi.dump_config()
 
@@ -83,13 +80,12 @@ class ChezmoiDoctor(DataTable):
 #     richlog.write(to_print)
 
 
-class InspectScreens(Screen):
+class SettingTabs(Screen):
     def compose(self) -> ComposeResult:
         with Horizontal():
             with TabbedContent(
                 "Doctor",
                 "Managed",
-                "Diagram",
                 "Config-dump",
                 "Data",
                 "Config-cat",
@@ -97,7 +93,6 @@ class InspectScreens(Screen):
                 with VerticalScroll():
                     yield ChezmoiDoctor().create_doctor_table()
                 yield ManagedFiles()
-                yield Static(VISUAL_DIAGRAM)
                 with VerticalScroll():
                     yield Pretty(CM_CONFIG_DUMP)
                 with VerticalScroll():
