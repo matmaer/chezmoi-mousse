@@ -18,11 +18,13 @@
         "pylint.enabled": true,
         "pylint.args": [
             "--disable=C0116",
-            "--disable=C0115"
+            "--disable=C0115",
+            "--disable=C0114"
         ],
         "pylint.ignorePatterns": [
             "${workspaceFolder:textual-fork}/*",
-            "${workspaceFolder:textual-demo}/*"
+            "${workspaceFolder:textual-demo}/*",
+            "${workspaceFolder:mousse}/ignored"
         ],
     },
 }
