@@ -7,7 +7,6 @@ from rich.style import Style
 from textual.app import ComposeResult
 from textual.containers import Center
 from textual.geometry import Region
-from textual.reactive import reactive
 from textual.strip import Strip
 from textual.widget import Widget
 from textual.screen import Screen
@@ -46,7 +45,6 @@ class GreeterWidget(Widget):
         self.clock = self.set_interval(0.1, self.refresh)
 
     colors: deque[Style] = deque()
-    text: reactive[list[str]] = reactive(list, init=False)
 
     def on_mount(self) -> None:
         for color in (
