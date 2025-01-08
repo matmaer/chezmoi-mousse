@@ -1,8 +1,22 @@
 """The root chezmoi-mousse module."""
 
-from chezmoi_mousse.operate import ChezmoiCommands
-from chezmoi_mousse.logger import MousseLogger
+# from textual.widgets import RichLog
 
-rlog = MousseLogger()
+from chezmoi_mousse.commands import ChezmoiCommands
+# from chezmoi_mousse.logger import MousseLogger
 
 chezmoi = ChezmoiCommands()
+
+
+# rlog = MousseLogger()
+
+# class MousseLogger(RichLog):
+#     def __init__(self):
+#         super().__init__(
+#             id="monlog",
+#             highlight=True,
+#             wrap=False,
+#             markup=True,
+#         )
+#     def compose(self):
+#         yield MousseLogger()
