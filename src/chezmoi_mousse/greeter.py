@@ -1,6 +1,5 @@
 from collections import deque
 
-
 from rich.color import Color
 from rich.segment import Segment
 from rich.style import Style
@@ -12,22 +11,7 @@ from textual.widget import Widget
 from textual.screen import Screen
 from textual.widgets import Footer
 
-
-SPLASH = """
- ██████╗██╗  ██╗███████╗███████╗███╗   ███╗ ██████╗ ██╗
-██╔════╝██║  ██║██╔════╝╚══███╔╝████╗ ████║██╔═══██╗██║
-██║     ███████║█████╗    ███╔╝ ██╔████╔██║██║   ██║██║
-██║     ██╔══██║██╔══╝   ███╔╝  ██║╚██╔╝██║██║   ██║██║
-╚██████╗██║  ██║███████╗███████╗██║ ╚═╝ ██║╚██████╔╝██║
- ╚═════╝╚═╝  ╚═╝╚══════╝╚══════╝╚═╝     ╚═╝ ╚═════╝ ╚═╝
-
- ███╗   ███╗ ██████╗ ██╗   ██╗███████╗███████╗███████╗
- ████╗ ████║██╔═══██╗██║   ██║██╔════╝██╔════╝██╔════╝
- ██╔████╔██║██║   ██║██║   ██║███████╗███████╗█████╗
- ██║╚██╔╝██║██║   ██║██║   ██║╚════██║╚════██║██╔══╝
- ██║ ╚═╝ ██║╚██████╔╝╚██████╔╝███████║███████║███████╗
- ╚═╝     ╚═╝ ╚═════╝  ╚═════╝ ╚══════╝╚══════╝╚══════╝
-"""
+from chezmoi_mousse.text_blocks import SPLASH
 
 
 def create_text() -> list[str]:
@@ -43,6 +27,7 @@ class GreeterWidget(Widget):
         super().__init__()
         self.text = create_text()
         self.clock = self.set_interval(0.1, self.refresh)
+        # self.width = len(self.text[0])
 
     colors: deque[Style] = deque()
 
@@ -83,6 +68,9 @@ class GreeterWidget(Widget):
 
 
 class GreeterScreen(Screen):
+    # def __init__(self) -> None:
+    #     self.text = create_text()
+    #     self.container_size = (len(self.text), len(self.text[1]))
     def compose(self) -> ComposeResult:
         with Center():
             yield GreeterWidget()
