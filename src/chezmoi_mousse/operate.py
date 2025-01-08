@@ -70,9 +70,9 @@ class OperationTabs(Screen):
     def compose(self):
         with Horizontal():
             with TabbedContent(
-                "Chezmoi Diagram",
-                "Managed Files",
-                "Status Overview",
+                "Chezmoi-Diagram",
+                "Managed-Files",
+                "Status-Overview",
             ):
                 yield Static(VISUAL_DIAGRAM)
                 with VerticalScroll():
