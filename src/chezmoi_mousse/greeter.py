@@ -67,7 +67,15 @@ class GreeterWidget(Widget):
         return len(self.text[1])
 
 
-class GreeterScreen(Screen):
+class GreeterSplash(Screen):
+    # BINDINGS = [
+    #     Binding(
+    #     key="escape",
+    #     action="app.pop_screen",
+    #     description="Close",
+    #     key_display="esc",
+    #     ),
+    # ]
     # def __init__(self) -> None:
     #     self.text = create_text()
     #     self.container_size = (len(self.text), len(self.text[1]))

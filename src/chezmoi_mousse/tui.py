@@ -5,10 +5,10 @@ from textual.binding import Binding
 # from textual.containers import Horizontal, Vertical, VerticalScroll
 
 
-from chezmoi_mousse.debug import DebugScreen
-from chezmoi_mousse.inspector import InspectScreens
-from chezmoi_mousse.operate import OperateScreens
-from chezmoi_mousse.greeter import GreeterScreen
+from chezmoi_mousse.debug import DebugFloater
+from chezmoi_mousse.inspector import SettingTabs
+from chezmoi_mousse.operate import OperationTabs
+from chezmoi_mousse.greeter import GreeterSplash
 
 
 # class MainMenu(Vertical):
@@ -41,13 +41,6 @@ class ChezmoiTUI(App):
         #     action="toggle_richlog",
         #     description="Standard Output",
         #     key_display="s",
-        # ),
-        # to be implemented when modal/screen/layouts are implemented
-        # Binding(
-        #     key="escape",
-        #     action="app.pop_screen",
-        #     description="Go Back",
-        #     key_display="esc",
         # ),
         # Binding(
         #     key="q",
@@ -82,10 +75,10 @@ class ChezmoiTUI(App):
         ),
     ]
     MODES = {
-        "greeter": GreeterScreen,
-        "operate": OperateScreens,
-        "inspect": InspectScreens,
-        "debug": DebugScreen,
+        "greeter": GreeterSplash,
+        "operate": OperationTabs,
+        "inspect": SettingTabs,
+        "debug": DebugFloater,
     }
     DEFAULT_MODE = "greeter"
 
