@@ -227,7 +227,7 @@ Visalization based on the diagrams offered by Chezmoi help.
 
 **89x21**
 
-SPLASH total size: 55x13
+SPLASH total size: **55x13**
 
 (13/55) * 79 = 18.67
 (13/55) * 89 = 18.91
