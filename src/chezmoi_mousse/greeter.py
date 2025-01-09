@@ -24,8 +24,7 @@ SPLASH = """\
  ██╔████╔██║██║   ██║██║   ██║███████╗███████╗█████╗
  ██║╚██╔╝██║██║   ██║██║   ██║╚════██║╚════██║██╔══╝
  ██║ ╚═╝ ██║╚██████╔╝╚██████╔╝███████║███████║███████╗
- ╚═╝     ╚═╝ ╚═════╝  ╚═════╝ ╚══════╝╚══════╝╚══════╝
-"""
+ ╚═╝     ╚═╝ ╚═════╝  ╚═════╝ ╚══════╝╚══════╝╚══════╝"""
 
 
 def create_text() -> list[str]:
@@ -41,7 +40,6 @@ class GreeterWidget(Widget):
         super().__init__()
         self.text = create_text()
         self.clock = self.set_interval(0.1, self.refresh)
-        # self.width = len(self.text[0])
 
     colors: deque[Style] = deque()
 
@@ -64,6 +62,11 @@ class GreeterWidget(Widget):
             "#439CFB",
             "#439CFB",
             "#439CFB",
+            "#439CFB",
+            "#439CFB",
+            "#439CFB",
+            "#439CFB",
+            "#439CFB",
         ):
             self.colors.append(Style(color=Color.parse(color)))
 
@@ -82,17 +85,6 @@ class GreeterWidget(Widget):
 
 
 class GreeterSplash(Screen):
-    # BINDINGS = [
-    #     Binding(
-    #     key="escape",
-    #     action="app.pop_screen",
-    #     description="Close",
-    #     key_display="esc",
-    #     ),
-    # ]
-    # def __init__(self) -> None:
-    #     self.text = create_text()
-    #     self.container_size = (len(self.text), len(self.text[1]))
     def compose(self) -> ComposeResult:
         with Center():
             yield GreeterWidget()
