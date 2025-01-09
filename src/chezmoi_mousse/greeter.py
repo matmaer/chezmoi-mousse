@@ -78,12 +78,6 @@ class GreeterWidget(Widget):
     def render_line(self, y: int) -> Strip:
         return Strip([Segment(self.text[y], style=self.colors[y])])
 
-    def get_content_height(self, *_) -> int:
-        return len(self.text)
-
-    def get_content_width(self, *_) -> int:
-        return len(self.text[1])
-
 
 class GreeterSplash(Screen):
     def compose(self) -> ComposeResult:
