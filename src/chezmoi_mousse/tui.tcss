@@ -18,6 +18,7 @@ Widget{
   scrollbar-color-active: $scrollbar_color;
   scrollbar-color-hover: $scrollbar_color;
   scrollbar-corner-color: $scrollbar_background;
+  background-tint: $base_background;
   # link-background: $link-background;
   # link-color: $link-color;
   # link-style: $link-style;
@@ -38,7 +39,7 @@ Center {
 
 Pretty {
   width: 100%;
-  margin: 1 1 1 1;
+  margin: 0 1 0 1;
 }
 
 Header {
@@ -46,22 +47,17 @@ Header {
 }
 
 DataTable {
-  padding: 1 1 1 0;
-  background-tint: $base_background;
+  padding: 1 0 1 0;
 }
 
 DirectoryTree {
   padding: 1 1 1 1;
-  background-tint: $base_background;
 }
 
-ChezmoiDoctor {
-  background-tint: $base_background;
-}
-
-GreeterWidget {
+GreeterBackground {
   width: 55;
   height: 13;
+  layer: greeter_bottom;
 }
 
 
