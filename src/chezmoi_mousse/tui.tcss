@@ -34,7 +34,6 @@ Center {
   height: 100%;
   width: 100%;
   align: center middle;
-  background: $base_background;
 }
 
 Pretty {

@@ -2,7 +2,6 @@
 
 from textual.app import ComposeResult
 
-from textual.containers import Horizontal, VerticalScroll
 
 from textual.screen import Screen
 from textual.widgets import (
@@ -55,19 +54,14 @@ class ChezmoiDoctor(DataTable):
 
 class SettingTabs(Screen):
     def compose(self) -> ComposeResult:
-        with Horizontal():
-            with TabbedContent(
-                "Doctor",
-                "Config Dump",
-                "Template Data",
-                "Config File",
-            ):
-                with VerticalScroll():
-                    yield ChezmoiDoctor().create_doctor_table()
-                with VerticalScroll():
-                    yield Pretty(CM_CONFIG_DUMP)
-                with VerticalScroll():
-                    yield Pretty(chezmoi.data())
-                with VerticalScroll():
-                    yield Pretty(chezmoi.cat_config())
-            yield Footer()
+        with TabbedContent(
+            "Doctor",
+            "Config Dump",
+            "Template Data",
+            "Config File",
+        ):
+            yield ChezmoiDoctor().create_doctor_table()
+            yield Pretty(CM_CONFIG_DUMP)
+            yield Pretty(chezmoi.data())
+            yield Pretty(chezmoi.cat_config())
+        yield Footer()

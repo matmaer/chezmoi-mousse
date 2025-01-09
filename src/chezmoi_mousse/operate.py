@@ -5,7 +5,7 @@ from typing import Iterable
 
 from textual.screen import Screen
 from textual.widget import Widget
-from textual.containers import Horizontal, VerticalScroll, Center
+from textual.containers import Center
 from textual.widgets import Footer, TabbedContent, DirectoryTree, Pretty, Static
 from chezmoi_mousse import chezmoi
 
@@ -68,15 +68,12 @@ class ManagedFiles(DirectoryTree):
 
 class OperationTabs(Screen):
     def compose(self):
-        with Horizontal():
-            with TabbedContent(
-                "Chezmoi-Diagram",
-                "Managed-Files",
-                "Status-Overview",
-            ):
-                yield Static(VISUAL_DIAGRAM)
-                with VerticalScroll():
-                    yield ManagedFiles()
-                with VerticalScroll():
-                    yield Pretty(chezmoi.status())
-            yield Footer()
+        with TabbedContent(
+            "Chezmoi-Diagram",
+            "Managed-Files",
+            "Status-Overview",
+        ):
+            yield Static(VISUAL_DIAGRAM)
+            yield ManagedFiles()
+            yield Pretty(chezmoi.status())
+        yield Footer()
