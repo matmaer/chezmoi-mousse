@@ -4,12 +4,10 @@ from rich.segment import Segment
 from rich.style import Style
 from textual.app import ComposeResult
 from textual.containers import Center
-from textual.geometry import Region
 from textual.strip import Strip
 from textual.widget import Widget
 from textual.screen import Screen
 from textual.widgets import Footer
-from textual.reactive import reactive
 
 
 SPLASH = """\
@@ -26,7 +24,7 @@ SPLASH = """\
  ██║╚██╔╝██║██║   ██║██║   ██║╚════██║╚════██║██╔══╝
  ██║ ╚═╝ ██║╚██████╔╝╚██████╔╝███████║███████║███████╗
  ╚═╝     ╚═╝ ╚═════╝  ╚═════╝ ╚══════╝╚══════╝╚══════╝
-"""
+""".splitlines()
 
 FADE = (
     "#439CFB",
@@ -49,29 +47,19 @@ FADE = (
 )
 
 
-class GreeterWidget(Widget):
-    colors: deque[Style] = deque()
-    text: reactive[list[str]] = reactive(list, init=False)
+class GreeterBackground(Widget):
+    # size of SPLASH is 55 * 13
+    # pad with spaces to make each line the same length
+    text = [line.ljust(len(max(SPLASH, key=len))) for line in SPLASH]
+    # deque to use the .rotate() method
+    colors = deque([Style(color=color) for color in FADE])
 
     def __init__(self) -> None:
         super().__init__()
-        self.text = self.create_text_with_style()
-        self.clock = self.set_interval(0.1, self.refresh)
-        # self.colors = deque([Style])
+        # set_interval is a method from the Textual message pump
+        self.set_interval(interval=0.1, callback=self.refresh)
 
-    def create_text_with_style(self) -> list[str]:
-        splash_list = SPLASH.splitlines()
-        # pad each line in the list with spaces to the right
-        width = len(max(splash_list, key=len))
-        splash_list = [line.ljust(width) for line in splash_list]
-        return splash_list
-
-    def on_mount(self) -> None:
-        for color in FADE:
-            self.colors.append(Style(color=color))
-        return self.colors
-
-    def render_lines(self, crop: Region) -> list[Strip]:
+    def render_lines(self, crop) -> list[Strip]:
         self.colors.rotate()
         return super().render_lines(crop)
 
@@ -79,8 +67,8 @@ class GreeterWidget(Widget):
         return Strip([Segment(self.text[y], style=self.colors[y])])
 
 
-class GreeterSplash(Screen):
+class GreeterScreen(Screen):
     def compose(self) -> ComposeResult:
         with Center():
-            yield GreeterWidget()
+            yield GreeterBackground()
         yield Footer()
