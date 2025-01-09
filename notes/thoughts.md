@@ -218,8 +218,19 @@ Visalization based on the diagrams offered by Chezmoi help.
 - managed files
 - keep the format of the diagram in line with the Chezmoi docs
 
-### RichLog Sidebar
+### Logging Sidebar
 
-- pop open if any output is send to Richlog
-- to display anything requested by the user
-- avoids displaying info already included in the center visualization
+- show/hide toggle
+- slides in from right
+
+### minimum supported size
+
+**89x21**
+
+SPLASH total size: 55x13
+
+(13/55) * 79 = 18.67
+(13/55) * 89 = 18.91
+(13/55) * 85 = 20.09
+(13/55) * 89 = 21.03
+
