@@ -28,58 +28,55 @@ SPLASH = """\
  ╚═╝     ╚═╝ ╚═════╝  ╚═════╝ ╚══════╝╚══════╝╚══════╝
 """
 
+FADE = (
+    "#439CFB",
+    "#439CFB",
+    "#439CFB",
+    "#439CFB",
+    "#6698FB",
+    "#8994FB",
+    "#AB8FFB",
+    "#CE8BFB",
+    "#F187FB",
+    "#CE8BFB",
+    "#AB8FFB",
+    "#8994FB",
+    "#6698FB",
+    "#439CFB",
+    "#439CFB",
+    "#439CFB",
+    "#439CFB",
+)
+
 
 class GreeterWidget(Widget):
+    colors: deque[Style] = deque()
+    text: reactive[list[str]] = reactive(list, init=False)
+
     def __init__(self) -> None:
         super().__init__()
-        self.text = self.create_text()
+        self.text = self.create_text_with_style()
         self.clock = self.set_interval(0.1, self.refresh)
-        # self.colors[Style] = deque()
+        # self.colors = deque([Style])
 
-    def create_text(self) -> list[str]:
+    def create_text_with_style(self) -> list[str]:
         splash_list = SPLASH.splitlines()
         # pad each line in the list with spaces to the right
         width = len(max(splash_list, key=len))
         splash_list = [line.ljust(width) for line in splash_list]
         return splash_list
 
-    colors: deque[Style] = deque()
-    text: reactive[list[str]] = reactive(list, init=False)
-
-    # fade1 = "#439CFB"
-
     def on_mount(self) -> None:
-        for color in (
-            "#439CFB",
-            "#439CFB",
-            "#439CFB",
-            "#439CFB",
-            "#6698FB",
-            "#8994FB",
-            "#AB8FFB",
-            "#CE8BFB",
-            "#F187FB",
-            "#CE8BFB",
-            "#AB8FFB",
-            "#8994FB",
-            "#6698FB",
-            "#439CFB",
-            "#439CFB",
-            "#439CFB",
-            "#439CFB",
-        ):
+        for color in FADE:
             self.colors.append(Style(color=color))
+        return self.colors
 
     def render_lines(self, crop: Region) -> list[Strip]:
         self.colors.rotate()
         return super().render_lines(crop)
 
     def render_line(self, y: int) -> Strip:
-        return Strip([Segment(self.text[y], style=self.colors[y % 17])])
-
-    # def with_text(self, text: list) -> Self:
-    #     self.text = text
-    #     return self
+        return Strip([Segment(self.text[y], style=self.colors[y])])
 
     def get_content_height(self, *_) -> int:
         return len(self.text)
