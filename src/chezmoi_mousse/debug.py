@@ -1,19 +1,18 @@
 """Debugging aids for the app itself."""
 
-from textual.containers import VerticalScroll
+from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.widgets import Pretty, TabbedContent, Footer
 from chezmoi_mousse.commands import CommandLog
 
 
 class DebugTabs(Screen):
-    def __init__(self):
+    def __init__(self, local_vars, global_vars):
         super().__init__()
-        self.local_vars = None
-        self.global_vars = None
+        self.local_vars = local_vars
+        self.global_vars = global_vars
 
-    def compose(self):
-        self.global_vars = globals()
+    def compose(self) -> ComposeResult:
         del self.global_vars["__builtins__"]
         with TabbedContent(
             "Command-Log",
@@ -21,8 +20,6 @@ class DebugTabs(Screen):
             "Local-Vars",
         ):
             yield CommandLog()
-            with VerticalScroll():
-                yield Pretty(self.global_vars)
-            with VerticalScroll():
-                yield Pretty(self.local_vars)
+            yield Pretty(self.global_vars)
+            yield Pretty(self.local_vars)
         yield Footer()

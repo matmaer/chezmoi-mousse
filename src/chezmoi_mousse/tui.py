@@ -24,12 +24,6 @@ class ChezmoiTUI(App):
             "Inspect",
             tooltip="Show the inspect screen",
         ),
-        # Binding(
-        #     "d",
-        #     "app.switch_mode('debug')",
-        #     "Debug",
-        #     tooltip="Show the debug screen",
-        # ),
     ]
     MODES = {
         "greeter": GreeterSplash,
