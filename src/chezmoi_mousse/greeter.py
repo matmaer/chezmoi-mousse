@@ -8,6 +8,7 @@ from textual.strip import Strip
 from textual.widget import Widget
 from textual.screen import Screen
 from textual.widgets import Footer
+from textual.geometry import Region
 
 
 SPLASH = """\
@@ -26,40 +27,50 @@ SPLASH = """\
  ╚═╝     ╚═╝ ╚═════╝  ╚═════╝ ╚══════╝╚══════╝╚══════╝
 """.splitlines()
 
+
 FADE = (
-    "#439CFB",
-    "#439CFB",
-    "#439CFB",
-    "#439CFB",
-    "#6698FB",
-    "#8994FB",
-    "#AB8FFB",
-    "#CE8BFB",
-    "#F187FB",
-    "#CE8BFB",
-    "#AB8FFB",
-    "#8994FB",
-    "#6698FB",
-    "#439CFB",
-    "#439CFB",
-    "#439CFB",
-    "#439CFB",
+    "rgb(67, 156, 251)",
+    "rgb(67, 156, 251)",
+    "rgb(67, 156, 251)",
+    "rgb(67, 156, 251)",
+    "rgb(67, 156, 251)",
+    "rgb(67, 156, 251)",
+    "rgb(67, 156, 251)",
+    "rgb(67, 156, 251)",
+    "rgb(67, 156, 251)",
+    "rgb(67, 156, 251)",
+    "rgb(67, 156, 251)",
+    "rgb(67, 156, 251)",
+    "rgb(102, 152, 251)",
+    "rgb(137, 148, 251)",
+    "rgb(171, 143, 251)",
+    "rgb(206, 139, 251)",
+    "rgb(241, 135, 251)",
+    "rgb(241, 135, 251)",
+    "rgb(206, 139, 251)",
+    "rgb(171, 143, 251)",
+    "rgb(137, 148, 251)",
+    "rgb(102, 152, 251)",
 )
+
+# class OperationsButton(Widget):
+#     def __init__(self):
+#         super().__init__()
+
+#     def compose(self) -> ComposeResult:
+#         yield Button("Operations")
 
 
 class GreeterBackground(Widget):
-    # size of SPLASH is 55 * 13
-    # pad with spaces to make each line the same length
+    # size of SPLASH is 55 * 13, pad shorter lines with trailing spaces
     text = [line.ljust(len(max(SPLASH, key=len))) for line in SPLASH]
-    # deque to use the .rotate() method
     colors = deque([Style(color=color) for color in FADE])
 
     def __init__(self) -> None:
         super().__init__()
-        # set_interval is a method from the Textual message pump
-        self.set_interval(interval=0.1, callback=self.refresh)
+        self.set_interval(interval=0.04, callback=self.refresh, repeat=52)
 
-    def render_lines(self, crop) -> list[Strip]:
+    def render_lines(self, crop: Region) -> list[Strip]:
         self.colors.rotate()
         return super().render_lines(crop)
 
@@ -71,4 +82,5 @@ class GreeterScreen(Screen):
     def compose(self) -> ComposeResult:
         with Center():
             yield GreeterBackground()
+            # yield OperationsButton())
         yield Footer()
