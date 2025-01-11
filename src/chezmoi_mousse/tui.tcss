@@ -42,16 +42,13 @@ Pretty {
   margin: 0 1 0 1;
 }
 
-Header {
-  height: 2;
-}
 
 DataTable {
   padding: 1 0 1 0;
 }
 
 DirectoryTree {
-  padding: 1 1 1 1;
+  padding: 0 1 0 1;
 }
 
 GreeterBackground {
