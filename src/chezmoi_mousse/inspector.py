@@ -28,26 +28,16 @@ class ChezmoiDoctor(DataTable):
 
         for row in rows:
             if row[0] == "ok":
-                row[0] = f"[#90EE90]{row[0]}[/]"
-                row[1] = f"[#90EE90]{row[1]}[/]"
-                row[2] = f"[#90EE90]{row[2]}[/]"
+                row = [f"[#60EE60]{cell}[/]" for cell in row]
             if row[0] == "info":
-                row[0] = f"[#E0FFFF]{row[0]}[/]"
                 if row[2] == "not set":
-                    row[1] = f"[#E0FFFF]{row[1]}[/]"
-                    row[2] = f"[#FFD700]{row[2]}[/]"
+                    row = [f"[#FFD700]{cell}[/]" for cell in row]
                 else:
-                    row[0] = f"[#E0FFFF dim]{row[1]}[/]"
-                    row[1] = f"[#E0FFFF dim]{row[1]}[/]"
-                    row[2] = f"[#E0FFFF dim]{row[2]}[/]"
+                    row = [f"[#E0FFFF]{cell}[/]" for cell in row]
             if row[0] == "warning":
-                row[0] = f"[#FFD700]{row[0]}[/]"
-                row[1] = f"[#FFD700]{row[1]}[/]"
-                row[2] = f"[#FFD700]{row[2]}[/]"
+                row = [f"[#FFD700]{cell}[/]" for cell in row]
             if row[0] == "error":
-                row[0] = f"[red]{row[0]}[/]"
-                row[1] = f"[red]{row[1]}[/]"
-                row[2] = f"[red]{row[2]}[/]"
+                row = [f"[red]{cell}[/]" for cell in row]
             self.table.add_row(*row)
         return self.table
 
