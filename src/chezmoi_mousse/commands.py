@@ -33,15 +33,21 @@ class ChezmoiCommands:
         self.command_log = CommandLog()
 
     def _run(self, command: list) -> subprocess.CompletedProcess:
+        # removed check=True, not all non-zero exit codes are show stoppers
         result = subprocess.run(
             self.chezmoi + command,
             capture_output=True,
-            check=True,  # raise an exception if exit code is not 0
             encoding="utf-8",
             shell=False,  # avoid shell injection, safer
-            timeout=1,  # can be increased at a later stage
+            timeout=1,  # 1 second, the minimum
         )
-        return result
+        if result.returncode == 0:
+            return result
+        # chezmoi can be used without config file
+        if command[0] == "cat-config" and result.returncode == 1:
+            return result
+        else:  # as if check=True was used, quits the app with an error
+            raise subprocess.CalledProcessError
 
     def _log(self, to_write="default") -> None:
         self.command_log.write_line(to_write)
