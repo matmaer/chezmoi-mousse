@@ -4,7 +4,7 @@ from textual.app import App
 from textual.binding import Binding
 
 from chezmoi_mousse.debug import DebugTabs
-from chezmoi_mousse.inspector import SettingTabs
+from chezmoi_mousse.inspector import InspectTabs
 from chezmoi_mousse.operate import OperationTabs
 from chezmoi_mousse.greeter import GreeterScreen
 
@@ -28,7 +28,7 @@ class ChezmoiTUI(App):
     MODES = {
         "greeter": GreeterScreen,
         "operate": OperationTabs,
-        "inspect": SettingTabs,
+        "inspect": InspectTabs,
         "debug": DebugTabs,
     }
     DEFAULT_MODE = "greeter"

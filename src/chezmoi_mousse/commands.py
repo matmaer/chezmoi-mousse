@@ -38,14 +38,14 @@ class ChezmoiCommands:
             self.chezmoi + command,
             capture_output=True,
             encoding="utf-8",
-            shell=False,  # avoid shell injection, safer
-            timeout=1,  # 1 second, the minimum
+            shell=False,
+            timeout=2,  # temporary for development, should be one
         )
         if result.returncode == 0:
-            return result
+            return result.stdout
         # chezmoi can be used without config file
         if command[0] == "cat-config" and result.returncode == 1:
-            return result
+            return result.stderr
         else:  # as if check=True was used, quits the app with an error
             raise subprocess.CalledProcessError
 
@@ -53,23 +53,26 @@ class ChezmoiCommands:
         self.command_log.write_line(to_write)
 
     def data(self) -> dict:
-        result = json.loads(self._run(["data", "--format=json"]).stdout)["chezmoi"]
+        result = json.loads(self._run(["data", "--format=json"]))["chezmoi"]
         del result["args"]
         return result
 
     def dump_config(self) -> dict:
-        return json.loads(self._run(["dump-config", "--format=json"]).stdout)
+        return json.loads(self._run(["dump-config", "--format=json"]))
 
     def cat_config(self) -> dict:
-        result = self._run(["cat-config"]).stdout
-        return tomllib.loads(result)
+        result = self._run(["cat-config"])
+        try:
+            return tomllib.loads(result)
+        except tomllib.TOMLDecodeError:
+            return result.strip()
 
     def managed(self) -> list:
         command = ["managed", "--path-style=absolute"]
-        return self._run(command).stdout.splitlines()
+        return self._run(command).splitlines()
 
     def doctor(self) -> list:
-        return self._run(["doctor"]).stdout.splitlines()
+        return self._run(["doctor"]).splitlines()
 
     def status(self) -> list:
-        return self._run(["status"]).stdout.splitlines()
+        return self._run(["status"]).splitlines()

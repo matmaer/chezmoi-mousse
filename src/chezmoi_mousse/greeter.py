@@ -39,8 +39,6 @@ FADE = (
     "rgb(67, 156, 251)",
     "rgb(67, 156, 251)",
     "rgb(67, 156, 251)",
-    "rgb(67, 156, 251)",
-    "rgb(67, 156, 251)",
     "rgb(102, 152, 251)",
     "rgb(137, 148, 251)",
     "rgb(171, 143, 251)",
@@ -53,13 +51,6 @@ FADE = (
     "rgb(102, 152, 251)",
 )
 
-# class OperationsButton(Widget):
-#     def __init__(self):
-#         super().__init__()
-
-#     def compose(self) -> ComposeResult:
-#         yield Button("Operations")
-
 
 class GreeterBackground(Widget):
     # size of SPLASH is 55 * 13, pad shorter lines with trailing spaces
@@ -68,7 +59,7 @@ class GreeterBackground(Widget):
 
     def __init__(self) -> None:
         super().__init__()
-        self.set_interval(interval=0.04, callback=self.refresh, repeat=52)
+        self.set_interval(interval=0.06, callback=self.refresh)
 
     def render_lines(self, crop: Region) -> list[Strip]:
         self.colors.rotate()
@@ -82,5 +73,4 @@ class GreeterScreen(Screen):
     def compose(self) -> ComposeResult:
         with Center():
             yield GreeterBackground()
-            # yield OperationsButton())
         yield Footer()
