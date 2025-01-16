@@ -37,24 +37,6 @@
             "problemMatcher": []
         },
         {
-            "label": "TEXTUAL COLORS",
-            "type": "shell",
-            "command": "textual colors",
-            "runOptions": {
-                "instanceLimit": 1
-            },
-            "problemMatcher": []
-        },
-        {
-            "label": "TEXTUAL BORDERS",
-            "type": "shell",
-            "command": "textual borders",
-            "runOptions": {
-                "instanceLimit": 1
-            },
-            "problemMatcher": []
-        },
-        {
             "label": "TEXTUAL EASING",
             "type": "shell",
             "command": "textual easing",
