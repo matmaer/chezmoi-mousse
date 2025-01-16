@@ -6,10 +6,9 @@ from textual.app import ComposeResult
 from textual.containers import Center
 from textual.strip import Strip
 from textual.widget import Widget
-from textual.screen import Screen
 from textual.widgets import Footer
 from textual.geometry import Region
-
+from chezmoi_mousse.page import PageScreen
 
 SPLASH = """\
  ██████╗██╗  ██╗███████╗███████╗███╗   ███╗ ██████╗ ██╗
@@ -69,7 +68,7 @@ class GreeterBackground(Widget):
         return Strip([Segment(self.text[y], style=self.colors[y])])
 
 
-class GreeterScreen(Screen):
+class GreeterScreen(PageScreen):
     def compose(self) -> ComposeResult:
         with Center():
             yield GreeterBackground()

@@ -4,7 +4,6 @@ from textual.app import ComposeResult
 
 from textual import work
 
-from textual.screen import Screen
 from textual.widgets import (
     DataTable,
     Footer,
@@ -14,6 +13,7 @@ from textual.widgets import (
 )
 
 from chezmoi_mousse import chezmoi
+from chezmoi_mousse.page import PageScreen
 
 
 class ChezmoiDoctor(Static):
@@ -52,7 +52,7 @@ class ChezmoiDoctor(Static):
         data_table.loading = False
 
 
-class InspectTabs(Screen):
+class InspectTabs(PageScreen):
     def compose(self) -> ComposeResult:
         with TabbedContent(
             "Doctor",

@@ -3,11 +3,11 @@
 from pathlib import Path
 from typing import Iterable
 
-from textual.screen import Screen
 from textual.widget import Widget
 from textual.containers import Center
 from textual.widgets import Footer, TabbedContent, DirectoryTree, Pretty, Static
 from chezmoi_mousse import chezmoi
+from chezmoi_mousse.page import PageScreen
 
 CM_CONFIG_DUMP = chezmoi.dump_config()
 
@@ -66,7 +66,7 @@ class ManagedFiles(DirectoryTree):
         return [path for path in paths if path in self.managed]
 
 
-class OperationTabs(Screen):
+class OperationTabs(PageScreen):
     def compose(self):
         with TabbedContent(
             "Chezmoi-Diagram",
