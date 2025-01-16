@@ -2,7 +2,7 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "iPython",
+            "label": "IPYTHON",
             "type": "shell",
             "command": "ipython",
             "runOptions": {
@@ -10,7 +10,7 @@
             }
         },
         {
-            "label": "CHEZMOI-MOUSSE TCSS LIVE EDIT",
+            "label": "TEXTUAL-DEV",
             "type": "shell",
             "command": "cd src && textual run --dev chezmoi_mousse.tui:ChezmoiTUI",
             "runOptions": {
@@ -30,7 +30,7 @@
         {
             "label": "TEXTUAL DEMO",
             "type": "shell",
-            "command": "textual run ../textual-demo/src/textual_demo/run.py",
+            "command": "textual demo",
             "runOptions": {
                 "instanceLimit": 1
             },
