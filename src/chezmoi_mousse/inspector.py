@@ -39,6 +39,9 @@ class ChezmoiDoctor(Static):
             if row[0] == "info":
                 if row[2] == "not set":
                     row = [f"[#FFD700]{cell}[/]" for cell in row]
+                elif "not found in $PATH" in row[2]:
+                    row = [f"[#8A8888]{cell}[/]" for cell in row]
+
                 else:
                     row = [f"[#E0FFFF]{cell}[/]" for cell in row]
             if row[0] == "warning":
