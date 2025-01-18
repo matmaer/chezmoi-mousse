@@ -1,58 +1,51 @@
 {
-    "version": "2.0.0",
     "tasks": [
         {
-            "label": "IPYTHON",
-            "type": "shell",
-            "command": "ipython",
-            "runOptions": {
-                "instanceLimit": 1
-            }
-        },
-        {
-            "label": "TEXTUAL-DEV",
-            "type": "shell",
-            "command": "cd src && textual run --dev chezmoi_mousse.tui:ChezmoiTUI",
-            "runOptions": {
-                "instanceLimit": 1
-            },
+            "label": "TEXTUAL-DEV WITH CONSOLE",
+            "dependsOn": [
+                "textual-dev",
+                "textual-console"
+            ],
             "problemMatcher": []
         },
         {
-            "label": "TEXTUAL CONSOLE",
+            "label": "textual-dev",
+            "command": "textual run --dev chezmoi_mousse.tui:ChezmoiTUI",
+            "detail": "Allows for TCSS edits on external tcss files to be rendered live upon save.",
+            "presentation": {
+                "focus": true,
+                "group": "textualize"
+            },
+            "runOptions": {
+                "instanceLimit": 1
+            },
             "type": "shell",
+            "problemMatcher": []
+        },
+        {
+            "label": "textual-console",
             "command": "textual console",
+            "presentation": {
+                "focus": false,
+                "close": true,
+                "group": "textualize"
+            },
             "runOptions": {
                 "instanceLimit": 1
             },
-            "problemMatcher": []
+            "type": "shell"
         },
         {
-            "label": "TEXTUAL DEMO",
-            "type": "shell",
-            "command": "textual demo",
+            "command": "ipython",
+            "label": "IPYTHON",
+            "presentation": {
+                "close": true
+            },
             "runOptions": {
                 "instanceLimit": 1
             },
-            "problemMatcher": []
-        },
-        {
-            "label": "TEXTUAL EASING",
-            "type": "shell",
-            "command": "textual easing",
-            "runOptions": {
-                "instanceLimit": 1
-            },
-            "problemMatcher": []
-        },
-        {
-            "label": "TEXTUAL KEYS",
-            "type": "shell",
-            "command": "textual keys",
-            "runOptions": {
-                "instanceLimit": 1
-            },
-            "problemMatcher": []
-        },
-    ]
+            "type": "shell"
+        }
+    ],
+    "version": "2.0.0"
 }
