@@ -6,19 +6,6 @@ Bare minimum output curation which needed for any widget.
 import json
 import subprocess
 import tomllib
-from textual.app import ComposeResult
-from textual.widgets import Log
-
-
-class CommandLog(Log):
-    def __init__(self):
-        super().__init__(
-            highlight=True,
-            max_lines=1000,
-        )
-
-    def compose(self) -> ComposeResult:
-        yield Log()
 
 
 class ChezmoiCommands:
@@ -30,7 +17,6 @@ class ChezmoiCommands:
             "--no-tty",
             "--progress=false",
         ]
-        self.command_log = CommandLog()
 
     def _run(self, command: list) -> subprocess.CompletedProcess:
         # removed check=True, not all non-zero exit codes are show stoppers
@@ -48,9 +34,6 @@ class ChezmoiCommands:
             return result.stderr
         else:  # as if check=True was used, quits the app with an error
             raise subprocess.CalledProcessError
-
-    def _log(self, to_write="default") -> None:
-        self.command_log.write_line(to_write)
 
     def data(self) -> dict:
         result = json.loads(self._run(["data", "--format=json"]))["chezmoi"]
