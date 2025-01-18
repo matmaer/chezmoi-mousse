@@ -43,7 +43,6 @@ class ChezmoiDoctor(Static):
                     row = [f"[#FFD700]{cell}[/]" for cell in row]
                 elif "not found in $PATH" in row[2]:
                     row = [f"[#8A8888]{cell}[/]" for cell in row]
-
                 else:
                     row = [f"[#E0FFFF]{cell}[/]" for cell in row]
             if row[0] == "warning":
