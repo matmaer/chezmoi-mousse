@@ -16,6 +16,12 @@ class ChezmoiCommands:
             "--color=false",
             "--no-tty",
             "--progress=false",
+            # temporary for development, will be removed
+            "--cache=/home/mm/.cache/chezmoi",
+            "--config-format=toml",
+            "--config=/home/mm/.config/chezmoi/chezmoi.toml",
+            "--source=/home/mm/.local/share/chezmoi",
+            "--destination=/home/mm",
         ]
 
     def _run(self, command: list) -> subprocess.CompletedProcess:
@@ -37,11 +43,18 @@ class ChezmoiCommands:
 
     def data(self) -> dict:
         result = json.loads(self._run(["data", "--format=json"]))["chezmoi"]
-        del result["args"]
+        if "args" in result.keys():
+            del result["args"]
         return result
 
     def dump_config(self) -> dict:
         return json.loads(self._run(["dump-config", "--format=json"]))
+
+    def target_state_dump(self) -> dict:
+        return json.loads(self._run(["dump"]))
+
+    def state_dump(self) -> dict:
+        return json.loads(self._run(["state", "dump"]))
 
     def cat_config(self) -> dict:
         result = self._run(["cat-config"])
@@ -59,3 +72,6 @@ class ChezmoiCommands:
 
     def status(self) -> list:
         return self._run(["status"]).splitlines()
+
+    def ignored(self) -> list:
+        return self._run(["ignored"]).splitlines()

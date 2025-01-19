@@ -1,9 +1,7 @@
-"""Contains the Textual App class for the TUI."""
-
-from textual.app import ComposeResult
+"""Contains the Inspector Screen."""
 
 from textual import work
-
+from textual.app import ComposeResult
 from textual.widgets import (
     DataTable,
     Footer,
@@ -60,9 +58,15 @@ class InspectTabs(PageScreen):
             "Config-Dump",
             "Template-Data",
             "Config-File",
+            "State-Dump",
+            "Target-State",
+            "Ignored",
         ):
             yield ChezmoiDoctor()
             yield Pretty(chezmoi.dump_config())
             yield Pretty(chezmoi.data())
             yield Pretty(chezmoi.cat_config())
+            yield Pretty(chezmoi.state_dump())
+            yield Pretty(chezmoi.target_state_dump())
+            yield Pretty(chezmoi.ignored())
         yield Footer()
