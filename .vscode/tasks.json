@@ -33,12 +33,17 @@
             "runOptions": {
                 "instanceLimit": 1
             },
-            "type": "shell"
+            "type": "shell",
+            "problemMatcher": []
         },
         {
             "command": "ipython",
+            "args": [
+                "--no-confirm-exit"
+            ],
             "label": "IPYTHON",
             "presentation": {
+                "focus": true,
                 "close": true
             },
             "runOptions": {

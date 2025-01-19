@@ -15,16 +15,12 @@
 
     ],
     "settings": {
-        "pylint.enabled": true,
-        "pylint.args": [
-            "--disable=C0116",
-            "--disable=C0115",
-            "--disable=C0114"
+        "python.terminal.focusAfterLaunch": true,
+        "python.analysis.include": [
+            "${workspaceFolder:mousse}"
         ],
-        "pylint.ignorePatterns": [
-            "${workspaceFolder:textual-fork}/*",
-            "${workspaceFolder:textual-demo}/*",
-            "${workspaceFolder:mousse}/ignored"
+        "python.analysis.ignore": [
+            "ignored"
         ],
     },
 }

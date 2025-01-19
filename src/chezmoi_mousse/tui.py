@@ -12,22 +12,16 @@ class ChezmoiTUI(App):
     CSS_PATH = "tui.tcss"
     BINDINGS = [
         Binding(
-            "o",
-            "app.switch_mode('operate')",
-            "Operate",
+            key="o",
+            action="app.switch_mode('operate')",
+            description="Operate",
             tooltip="Show the operations screen",
         ),
         Binding(
-            "i",
-            "app.switch_mode('inspect')",
-            "Inspect",
+            key="i",
+            action="app.switch_mode('inspect')",
+            description="Inspect",
             tooltip="Show the inspect screen",
-        ),
-        Binding(
-            "s",
-            "app.switch_mode('settings')",
-            "Settings",
-            tooltip="chezmoi-mousse settings",
         ),
     ]
     MODES = {
