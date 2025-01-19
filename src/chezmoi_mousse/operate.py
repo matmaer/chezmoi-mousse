@@ -76,7 +76,13 @@ class ManagedFiles(DirectoryTree):
         return [path for path in paths if path in self.managed]
 
 
+# https://www.chezmoi.io/reference/commands/status/
 class ChezmoiStatus(Static):
+    """
+    Chezmoi status command output reference:
+    https://www.chezmoi.io/reference/commands/status/
+    """
+
     status_meaning = {
         "space": {
             "Status": "No change",
@@ -120,8 +126,6 @@ class ChezmoiStatus(Static):
         re_add_table = self.query_one("#re_add_table")
         apply_table = self.query_one("#apply_table")
 
-        # FIRST COLUMN: difference between the last state written by chezmoi and the actual state
-        # SECOND COLUMN: difference between the actual state and the target state, and what effect running chezmoi apply will have
         header_row = ["STATUS", "PATH", "CHANGE"]
 
         re_add_table.add_columns(*header_row)
