@@ -29,6 +29,13 @@ Widget {
 
 TabbedContent {
   margin: 1 1 1 1;
+  width: 100%;
+  min-width: 77;
+}
+
+PageScreen {
+  width: 100%;
+  height: 1fr;
 }
 
 Center {

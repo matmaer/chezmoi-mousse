@@ -3,7 +3,6 @@
 from textual.app import App
 from textual.binding import Binding
 
-from chezmoi_mousse.debug import DebugTabs
 from chezmoi_mousse.inspector import InspectTabs
 from chezmoi_mousse.operate import OperationTabs
 from chezmoi_mousse.greeter import GreeterScreen
@@ -24,12 +23,17 @@ class ChezmoiTUI(App):
             "Inspect",
             tooltip="Show the inspect screen",
         ),
+        Binding(
+            "s",
+            "app.switch_mode('settings')",
+            "Settings",
+            tooltip="chezmoi-mousse settings",
+        ),
     ]
     MODES = {
         "greeter": GreeterScreen,
         "operate": OperationTabs,
         "inspect": InspectTabs,
-        "debug": DebugTabs,
     }
     DEFAULT_MODE = "greeter"
 
