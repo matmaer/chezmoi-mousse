@@ -1,8 +1,7 @@
 from textual import work
 from textual.app import ComposeResult
-from textual.containers import ScrollableContainer
-from textual.screen import ModalScreen
-from textual.widgets import DataTable, LoadingIndicator, Static, Label, Pretty
+
+from textual.widgets import DataTable, LoadingIndicator, Static
 from chezmoi_mousse import chezmoi
 
 
@@ -40,40 +39,3 @@ class ChezmoiDoctor(Static):
                 row = [f"[red]{cell}[/]" for cell in row]
             data_table.add_row(*row)
         data_table.loading = False
-
-
-class VariablesScreen(ModalScreen):
-    DEFAULT_CSS = """
-    VariablesScreen {
-        #vars {
-            border: heavy $accent;
-            margin: 2 4;
-            scrollbar-gutter: stable;
-            Static {
-                width: auto;
-            }
-        }
-    }
-    """
-    BINDINGS = [("escape", "dismiss", "Dismiss")]
-
-    def __init__(self, local_vars: dict, global_vars: dict) -> None:
-        super().__init__()
-        self.local_vars = local_vars
-        self.global_vars = global_vars
-        if "__builtins__" in self.global_vars:
-            del self.global_vars["__builtins__"]
-        if "__cached__" in self.global_vars:
-            del self.global_vars["__cached__"]
-
-    def compose(self) -> ComposeResult:
-        with ScrollableContainer(id="vars"):
-            yield Label("Global Variables", variant="primary")
-            yield Pretty(self.global_vars)
-            yield Label("Local Variables", variant="primary")
-            yield Pretty(self.local_vars)
-
-    def on_mount(self):
-        code_widget = self.query_one("#vars")
-        code_widget.border_title = "Variables"
-        code_widget.border_subtitle = "Escape to close"

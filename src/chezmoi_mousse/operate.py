@@ -1,11 +1,9 @@
-"""Placeholder for operate screen."""
-
 from pathlib import Path
 from typing import Iterable
 
 from textual.app import ComposeResult
-from textual.widget import Widget
 from textual.containers import Center
+from textual.screen import Screen
 from textual.widgets import (
     Footer,
     TabbedContent,
@@ -16,7 +14,6 @@ from textual.widgets import (
     LoadingIndicator,
 )
 from chezmoi_mousse import chezmoi
-from chezmoi_mousse.page import PageScreen
 
 CM_CONFIG_DUMP = chezmoi.dump_config()
 
@@ -57,7 +54,7 @@ VISUAL_DIAGRAM = """\
 """
 
 
-class InteractiveDiagram(Widget):
+class InteractiveDiagram(Static):
     def __init__(self):
         super().__init__()
         self.diagram = VISUAL_DIAGRAM
@@ -147,8 +144,8 @@ class ChezmoiStatus(Static):
             re_add_table.add_row(*re_add_row)
 
 
-class OperationTabs(PageScreen):
-    def compose(self):
+class OperationTabs(Screen):
+    def compose(self) -> ComposeResult:
         with TabbedContent(
             "Chezmoi-Diagram",
             "Managed-Files",

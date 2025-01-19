@@ -1,6 +1,7 @@
 """Contains the Inspector Screen."""
 
 from textual.app import ComposeResult
+from textual.screen import Screen
 from textual.widgets import (
     Footer,
     Pretty,
@@ -8,11 +9,10 @@ from textual.widgets import (
 )
 
 from chezmoi_mousse import chezmoi
-from chezmoi_mousse.page import PageScreen
 from chezmoi_mousse.widgets import ChezmoiDoctor
 
 
-class InspectTabs(PageScreen):
+class InspectTabs(Screen):
     def compose(self) -> ComposeResult:
         with TabbedContent(
             "Doctor",
