@@ -7,6 +7,29 @@ import json
 import subprocess
 import tomllib
 
+from textual.app import ComposeResult
+from textual.widgets import RichLog
+
+
+class CommandLog:
+    def compose(self) -> ComposeResult:
+        yield RichLog(
+            id="command_log",
+            auto_scroll=True,
+            highlight=False,
+            markup=False,
+            max_lines=2000,
+            # min_width=40,
+            # wrap=False,
+        )
+
+    def rlog(self, to_write: list | dict) -> None:
+        self.write(
+            to_write,
+            scroll_end=True,
+            animate=True,
+        )
+
 
 class ChezmoiCommands:
     def __init__(self):
@@ -38,7 +61,8 @@ class ChezmoiCommands:
         # chezmoi can be used without config file
         if command[0] == "cat-config" and result.returncode == 1:
             return result.stderr
-        else:  # as if check=True was used, quits the app with an error
+        else:
+            # as if check=True was used, quits the app with an error
             raise subprocess.CalledProcessError
 
     def data(self) -> dict:

@@ -6,6 +6,9 @@ $base_background: rgb(13, 17, 23);
 $scrollbar_color: rgb(79, 95, 120);
 $scrollbar_background: rgb(0, 4, 17);
 
+Footer {
+  padding-left: 2;
+}
 
 Widget {
   background:$base_background;
@@ -28,14 +31,15 @@ Widget {
 }
 
 TabbedContent {
-  margin: 1 1 1 1;
+  margin: 1 1 1 2;
   width: 100%;
   min-width: 77;
 }
 
-PageScreen {
+Screen {
   width: 100%;
   height: 1fr;
+  layers: slidebar;
 }
 
 Center {
@@ -46,11 +50,11 @@ Center {
 
 Pretty {
   width: 100%;
-  margin: 0 1 0 1;
+  margin: 0 1 0 2;
 }
 
 DirectoryTree {
-  padding: 0 1 0 1;
+  padding: 0 1 0 2;
 }
 
 GreeterBackground {
