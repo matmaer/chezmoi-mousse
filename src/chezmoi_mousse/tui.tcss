@@ -60,7 +60,6 @@ DirectoryTree {
 GreeterBackground {
   width: 55;
   height: 13;
-  layer: greeter_bottom;
 }
 
 # DataTable {

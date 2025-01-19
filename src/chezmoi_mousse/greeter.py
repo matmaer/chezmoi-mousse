@@ -5,10 +5,10 @@ from rich.style import Style
 from textual.app import ComposeResult
 from textual.containers import Center
 from textual.strip import Strip
-from textual.widget import Widget
-from textual.widgets import Footer
+from textual.screen import Screen
+from textual.widgets import Footer, Static
 from textual.geometry import Region
-from chezmoi_mousse.page import PageScreen
+
 
 SPLASH = """\
  ██████╗██╗  ██╗███████╗███████╗███╗   ███╗ ██████╗ ██╗
@@ -51,7 +51,7 @@ FADE = (
 )
 
 
-class GreeterBackground(Widget):
+class GreeterBackground(Static):
     # size of SPLASH is 55 * 13, pad shorter lines with trailing spaces
     text = [line.ljust(len(max(SPLASH, key=len))) for line in SPLASH]
     colors = deque([Style(color=color) for color in FADE])
@@ -68,7 +68,7 @@ class GreeterBackground(Widget):
         return Strip([Segment(self.text[y], style=self.colors[y])])
 
 
-class GreeterScreen(PageScreen):
+class GreeterScreen(Screen):
     def compose(self) -> ComposeResult:
         with Center():
             yield GreeterBackground()
