@@ -14,7 +14,6 @@
             "detail": "Allows for TCSS edits on external tcss files to be rendered live upon save.",
             "presentation": {
                 "focus": true,
-                "close": true,
                 "group": "textualize"
             },
             "runOptions": {
