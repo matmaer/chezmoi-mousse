@@ -1,8 +1,9 @@
 {
     "tasks": [
-        {            "label": "TEXTUAL-DEV VERBOSE CONSOLE",
+        {
+            "label": "TEXTUAL-DEV VERBOSE CONSOLE",
             "dependsOn": [
-                "textual-dev",
+                "TEXTUAL_RUN_--DEV",
                 "textual-console"
             ],
             "problemMatcher": []
@@ -10,21 +11,29 @@
         {
             "label": "TEXTUAL-DEV WARNING+ CONSOLE",
             "dependsOn": [
-                "textual-dev",
-                "textual-console-warning-error-print"
+                "TEXTUAL_RUN_--DEV",
+                "textual-console-warning-error-print-groups"
             ],
             "problemMatcher": []
         },
         {
             "label": "TEXTUAL-DEV SYSTEM CONSOLE",
             "dependsOn": [
-                "textual-dev",
-                "textual-console-system"
+                "TEXTUAL_RUN_--DEV",
+                "textual-console-system-group"
             ],
             "problemMatcher": []
         },
         {
-            "label": "textual-dev",
+            "label": "TEXTUAL-DEV PRINT CONSOLE",
+            "dependsOn": [
+                "TEXTUAL_RUN_--DEV",
+                "textual-console-print-group"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "TEXTUAL_RUN_--DEV",
             "command": "textual run --dev chezmoi_mousse.tui:ChezmoiTUI",
             "detail": "Allows for TCSS edits on external tcss files to be rendered live upon save.",
             "presentation": {
@@ -52,7 +61,21 @@
             "problemMatcher": []
         },
         {
-            "label": "textual-console-warning-error-print",
+            "label": "textual-console-print-group",
+            "command": "textual console -x DEBUG -x EVENT -x INFO -x WARNING -x ERROR -x SYSTEM -x LOGGING -x WORKER",
+            "presentation": {
+                "focus": false,
+                "close": true,
+                "group": "textualize"
+            },
+            "runOptions": {
+                "instanceLimit": 1
+            },
+            "type": "shell",
+            "problemMatcher": []
+        },
+        {
+            "label": "textual-console-warning-error-print-groups",
             "command": "textual console -x SYSTEM -x EVENT -x DEBUG -x INFO",
             "presentation": {
                 "focus": false,
@@ -66,7 +89,7 @@
             "problemMatcher": []
         },
         {
-            "label": "textual-console-system",
+            "label": "textual-console-system-group",
             "command": "textual console -x EVENT -x DEBUG -x INFO -x WARNING -x ERROR -x PRINT -x LOGGING -x WORKER",
             "presentation": {
                 "focus": false,
