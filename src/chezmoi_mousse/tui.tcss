@@ -57,9 +57,10 @@ DirectoryTree {
   padding: 0 1 0 2;
 }
 
-GreeterBackground {
+LoadingBackground {
   width: 55;
   height: 13;
+  align: center middle;
 }
 
 # DataTable {
