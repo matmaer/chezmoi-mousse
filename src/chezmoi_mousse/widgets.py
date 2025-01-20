@@ -1,8 +1,11 @@
 from textual import work
 from textual.app import ComposeResult
-
 from textual.widgets import DataTable, LoadingIndicator, Static
-from chezmoi_mousse import chezmoi
+
+from chezmoi_mousse.commands import ChezmoiCommands
+
+
+chezmoi = ChezmoiCommands()
 
 
 class ChezmoiDoctor(Static):

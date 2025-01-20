@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Iterable
+from collections.abc import Iterable
 
 from textual.app import ComposeResult
 from textual.containers import Center
@@ -13,7 +13,9 @@ from textual.widgets import (
     DataTable,
     LoadingIndicator,
 )
-from chezmoi_mousse import chezmoi
+from chezmoi_mousse.commands import ChezmoiCommands
+
+chezmoi = ChezmoiCommands()
 
 CM_CONFIG_DUMP = chezmoi.dump_config()
 

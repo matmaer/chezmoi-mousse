@@ -8,8 +8,10 @@ from textual.widgets import (
     TabbedContent,
 )
 
-from chezmoi_mousse import chezmoi
+from chezmoi_mousse.commands import ChezmoiCommands
 from chezmoi_mousse.widgets import ChezmoiDoctor
+
+chezmoi = ChezmoiCommands()
 
 
 class InspectTabs(Screen):
