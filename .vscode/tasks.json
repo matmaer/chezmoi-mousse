@@ -1,41 +1,9 @@
 {
     "tasks": [
         {
-            "label": "TEXTUAL-DEV VERBOSE CONSOLE",
-            "dependsOn": [
-                "TEXTUAL_RUN_--DEV",
-                "textual-console"
-            ],
-            "problemMatcher": []
-        },
-        {
-            "label": "TEXTUAL-DEV WARNING+ CONSOLE",
-            "dependsOn": [
-                "TEXTUAL_RUN_--DEV",
-                "textual-console-warning-error-print-groups"
-            ],
-            "problemMatcher": []
-        },
-        {
-            "label": "TEXTUAL-DEV SYSTEM CONSOLE",
-            "dependsOn": [
-                "TEXTUAL_RUN_--DEV",
-                "textual-console-system-group"
-            ],
-            "problemMatcher": []
-        },
-        {
-            "label": "TEXTUAL-DEV PRINT CONSOLE",
-            "dependsOn": [
-                "TEXTUAL_RUN_--DEV",
-                "textual-console-print-group"
-            ],
-            "problemMatcher": []
-        },
-        {
             "label": "TEXTUAL_RUN_--DEV",
             "command": "textual run --dev chezmoi_mousse.tui:ChezmoiTUI",
-            "detail": "Allows for TCSS edits on external tcss files to be rendered live upon save.",
+            "detail": "No Console",
             "presentation": {
                 "focus": true,
                 "group": "textualize"
@@ -47,12 +15,49 @@
             "problemMatcher": []
         },
         {
-            "label": "textual-console",
+            "label": "TEXTUAL-DEV VERBOSE CONSOLE",
+            "detail": "ALL GROUPS",
+            "dependsOn": [
+                "TEXTUAL_RUN_--DEV",
+                "textual-console-verbose"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "TEXTUAL-DEV WARNING CONSOLE",
+            "detail": "WARNING, ERROR, PRINT, LOGGING, WORKER",
+            "dependsOn": [
+                "TEXTUAL_RUN_--DEV",
+                "textual-console-warning"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "TEXTUAL-DEV EVENT CONSOLE",
+            "detail": "EVENT, WARNING, ERROR, PRINT, LOGGING, WORKER",
+            "dependsOn": [
+                "TEXTUAL_RUN_--DEV",
+                "textual-console-event"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "TEXTUAL-DEV SYSTEM CONSOLE",
+            "detail": "SYSTEM",
+            "dependsOn": [
+                "TEXTUAL_RUN_--DEV",
+                "textual-console-system"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "textual-console-verbose",
+            "hide": true,
             "command": "textual console",
             "presentation": {
                 "focus": false,
                 "close": true,
-                "group": "textualize"
+                "group": "textualize",
             },
             "runOptions": {
                 "instanceLimit": 1
@@ -61,21 +66,8 @@
             "problemMatcher": []
         },
         {
-            "label": "textual-console-print-group",
-            "command": "textual console -x DEBUG -x EVENT -x INFO -x WARNING -x ERROR -x SYSTEM -x LOGGING -x WORKER",
-            "presentation": {
-                "focus": false,
-                "close": true,
-                "group": "textualize"
-            },
-            "runOptions": {
-                "instanceLimit": 1
-            },
-            "type": "shell",
-            "problemMatcher": []
-        },
-        {
-            "label": "textual-console-warning-error-print-groups",
+            "label": "textual-console-warning",
+            "hide": true,
             "command": "textual console -x SYSTEM -x EVENT -x DEBUG -x INFO",
             "presentation": {
                 "focus": false,
@@ -89,8 +81,9 @@
             "problemMatcher": []
         },
         {
-            "label": "textual-console-system-group",
-            "command": "textual console -x EVENT -x DEBUG -x INFO -x WARNING -x ERROR -x PRINT -x LOGGING -x WORKER",
+            "label": "textual-console-event",
+            "hide": true,
+            "command": "textual console -x DEBUG -x INFO -x SYSTEM",
             "presentation": {
                 "focus": false,
                 "close": true,
@@ -103,11 +96,27 @@
             "problemMatcher": []
         },
         {
+            "label": "textual-console-system",
+            "hide": true,
+            "command": "textual console -x EVENT -x DEBUG -x INFO",
+            "presentation": {
+                "focus": false,
+                "close": true,
+                "group": "textualize"
+            },
+            "runOptions": {
+                "instanceLimit": 1
+            },
+            "type": "shell",
+            "problemMatcher": []
+        },
+        {
+            "label": "IPYTHON",
+            "detail": "Run ipython",
             "command": "ipython",
             "args": [
                 "--no-confirm-exit"
             ],
-            "label": "IPYTHON",
             "presentation": {
                 "focus": true,
                 "close": true
