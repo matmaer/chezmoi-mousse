@@ -4,11 +4,11 @@ from rich.segment import Segment
 from rich.style import Style
 from textual.app import ComposeResult
 from textual.containers import Center
-from textual.strip import Strip
-from textual.screen import Screen
-from textual.widgets import Footer, Static
 from textual.geometry import Region
-
+from textual.screen import Screen
+from textual.strip import Strip
+from textual.widgets import Footer
+from textual.widget import Widget
 
 SPLASH = """\
  ██████╗██╗  ██╗███████╗███████╗███╗   ███╗ ██████╗ ██╗
@@ -51,14 +51,13 @@ FADE = (
 )
 
 
-class GreeterBackground(Static):
-    # size of SPLASH is 55 * 13, pad shorter lines with trailing spaces
+class LoadingBackground(Widget):
     text = [line.ljust(len(max(SPLASH, key=len))) for line in SPLASH]
     colors = deque([Style(color=color) for color in FADE])
 
     def __init__(self) -> None:
         super().__init__()
-        self.set_interval(interval=0.06, callback=self.refresh)
+        self.set_interval(interval=0.06, callback=self.refresh, repeat=46)
 
     def render_lines(self, crop: Region) -> list[Strip]:
         self.colors.rotate()
@@ -68,8 +67,8 @@ class GreeterBackground(Static):
         return Strip([Segment(self.text[y], style=self.colors[y])])
 
 
-class GreeterScreen(Screen):
+class LoadingScreen(Screen):
     def compose(self) -> ComposeResult:
         with Center():
-            yield GreeterBackground()
+            yield LoadingBackground()
         yield Footer()
