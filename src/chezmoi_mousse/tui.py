@@ -38,5 +38,5 @@ class ChezmoiTUI(App):
     @work
     async def on_mount(self) -> None:
         self.push_screen("loading")
-        await sleep(3)
+        await sleep(1)
         self.switch_screen("operate")
