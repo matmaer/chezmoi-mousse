@@ -39,16 +39,10 @@ class ChezmoiCommands:
             "--color=false",
             "--no-tty",
             "--progress=false",
-            # temporary for development, will be removed
-            "--cache=/home/mm/.cache/chezmoi",
-            "--config-format=toml",
             "--config=/home/mm/.config/chezmoi/chezmoi.toml",
-            "--source=/home/mm/.local/share/chezmoi",
-            "--destination=/home/mm",
         ]
 
     def _run(self, command: list) -> subprocess.CompletedProcess:
-        # removed check=True, not all non-zero exit codes are show stoppers
         result = subprocess.run(
             self.chezmoi + command,
             capture_output=True,
@@ -62,7 +56,6 @@ class ChezmoiCommands:
         if command[0] == "cat-config" and result.returncode == 1:
             return result.stderr
         else:
-            # as if check=True was used, quits the app with an error
             raise subprocess.CalledProcessError
 
     def data(self) -> dict:
