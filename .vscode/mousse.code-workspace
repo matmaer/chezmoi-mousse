@@ -1,23 +1,20 @@
 {
     "folders": [
         {
-            "name": "mousse",
+            "name": "chezmoi-mousse",
             "path": ".."
         },
         {
-            "name": "textual-fork",
+            "name": "textual",
             "path": "../../textual"
         },
-        {
-            "name": "textual-demo",
-            "path": "../../textual-demo"
-        }
-
     ],
     "settings": {
+        "debugpy.hideSpecialVariables": true,
+        "python.analysis.diagnosticMode": "workspace",
         "python.terminal.focusAfterLaunch": true,
-        "python.analysis.include": [
-            "${workspaceFolder:mousse}"
+        "python.analysis.exclude": [
+            "${workspaceFolder:textual}"
         ],
         "python.analysis.ignore": [
             "ignored"
