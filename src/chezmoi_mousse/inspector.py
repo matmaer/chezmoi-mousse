@@ -2,11 +2,7 @@
 
 from textual.app import ComposeResult
 from textual.screen import Screen
-from textual.widgets import (
-    Footer,
-    Pretty,
-    TabbedContent,
-)
+from textual.widgets import Footer, Pretty, TabbedContent
 
 from chezmoi_mousse.commands import ChezmoiCommands
 from chezmoi_mousse.widgets import ChezmoiDoctor
