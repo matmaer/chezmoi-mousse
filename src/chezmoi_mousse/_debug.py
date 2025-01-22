@@ -64,3 +64,8 @@ class VariablesScreen(ModalScreen):
 #         f"Row, col: {event.row}, {event.column}"    # example attributes in event
 #     )
 # handle event
+
+# Will
+# self.log(self.css)
+# Jazz
+# self.log(self.css_tree
