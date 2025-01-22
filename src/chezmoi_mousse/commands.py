@@ -7,28 +7,26 @@ import json
 import subprocess
 import tomllib
 
-from textual.app import ComposeResult
 from textual.widgets import RichLog
 
+# example dataclass
+# https://github.com/Textualize/textual/blob/dc7156449d69cf45cf6a226717c4fe2c52a2bb90/src/textual/css/styles.py#L806
 
-class CommandLog:
-    def compose(self) -> ComposeResult:
-        yield RichLog(
-            id="command_log",
-            auto_scroll=True,
-            highlight=False,
-            markup=False,
-            max_lines=2000,
-            # min_width=40,
-            # wrap=False,
-        )
+# @dataclass
+# class ChezmoiOutput:
+#     pass
 
-    def rlog(self, to_write: list | dict) -> None:
-        self.write(
-            to_write,
-            scroll_end=True,
-            animate=True,
-        )
+
+class CommandLogger(RichLog):
+    def __init__(self):
+        super().__init__()
+        self.id = "command_log"
+        self.auto_scroll = True
+        self.highlight = False
+        self.markup = False
+        self.max_lines = 2000
+        self.wrap = False
+        self.animated = True
 
 
 class ChezmoiCommands:
@@ -91,7 +89,8 @@ class ChezmoiCommands:
         return self._run(command).splitlines()
 
     def doctor(self) -> list:
-        return self._run(["doctor"]).splitlines()
+        result = self._run(["doctor"]).splitlines()
+        return result
 
     def status(self) -> list:
         return self._run(["status"]).splitlines()
