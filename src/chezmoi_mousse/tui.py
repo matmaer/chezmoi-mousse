@@ -1,6 +1,6 @@
-from asyncio import sleep
+# from asyncio import sleep
 
-from textual import work
+# from textual import work
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.widgets import Footer
@@ -28,15 +28,28 @@ class ChezmoiTUI(App):
             key="i",
             action="app.push_screen('inspect')",
             description="Inspect",
-            tooltip="Show the inspect screen",
+            tooltip="Inspect chezmoi setup",
         ),
+        # TODO
+        # Binding(
+        #     key="t",
+        #     action="app.toggle_class('show-log')",
+        #     description="Show Log",  # text should change to hide with reactive
+        #     tooltip="Toggle the log panel.",
+        # ),
     ]
 
     def compose(self) -> ComposeResult:
         yield Footer()
 
-    @work
-    async def on_mount(self) -> None:
-        self.push_screen("loading")
-        await sleep(1)
-        self.switch_screen("operate")
+    # TODO: use as loading screen for first run
+    # @work
+    # async def on_mount(self) -> None:
+    #     self.push_screen("loading")
+    #     await sleep(3)
+    #     self.switch_screen("operate")
+
+
+if __name__ == "__main__":
+    app = ChezmoiTUI()
+    app.run()

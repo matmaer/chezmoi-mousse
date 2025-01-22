@@ -1,22 +1,9 @@
-from pathlib import Path
-from collections.abc import Iterable
-
 from textual.app import ComposeResult
 from textual.containers import Center
 from textual.screen import Screen
-from textual.widgets import (
-    Footer,
-    TabbedContent,
-    DirectoryTree,
-    Label,
-    Static,
-    DataTable,
-    LoadingIndicator,
-)
-from chezmoi_mousse.commands import ChezmoiCommands
+from textual.widgets import Footer, Static, TabbedContent
 
-chezmoi = ChezmoiCommands()
-
+from chezmoi_mousse.widgets import ChezmoiStatus, ManagedFiles
 
 # provisional diagrams until dynamically created
 VISUAL_DIAGRAM = """\
@@ -55,6 +42,7 @@ VISUAL_DIAGRAM = """\
 """
 
 
+# TODO move to widgets.py when interactive
 class InteractiveDiagram(Static):
     def __init__(self):
         super().__init__()
@@ -62,86 +50,6 @@ class InteractiveDiagram(Static):
 
     def compose(self):
         yield Center(self.diagram)
-
-
-class ManagedFiles(DirectoryTree):
-    def __init__(self):
-        # TODO: get destDir from chezmoi config
-        super().__init__("/home/mm")
-        self.managed = [Path(entry) for entry in chezmoi.managed()]
-
-    def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
-        return [path for path in paths if path in self.managed]
-
-
-class ChezmoiStatus(Static):
-    """
-    Chezmoi status command output reference:
-    https://www.chezmoi.io/reference/commands/status/
-    """
-
-    status_meaning = {
-        "space": {
-            "Status": "No change",
-            "Re_Add_Change": "No change",
-            "Apply_Change": "No change",
-        },
-        "A": {
-            "Status": "Added",
-            "Re_Add_Change": "Entry was created",
-            "Apply_Change": "Entry will be created",
-        },
-        "D": {
-            "Status": "Deleted",
-            "Re_Add_Change": "Entry was deleted",
-            "Apply_Change": "Entry will be deleted",
-        },
-        "M": {
-            "Status": "Modified",
-            "Re_Add_Change": "Entry was modified",
-            "Apply_Change": "Entry will be modified",
-        },
-        "R": {
-            "Status": "Run",
-            "Re_Add_Change": "Not applicable",
-            "Apply_Change": "Entry will be run",
-        },
-    }
-
-    def __init__(self):
-        super().__init__()
-        self.status_output = chezmoi.status()
-
-    def compose(self) -> ComposeResult:
-        yield Label("Chezmoi Apply Status", variant="primary")
-        yield DataTable(id="apply_table")
-        yield Label("Chezmoi Re-Add Status", variant="primary")
-        yield DataTable(id="re_add_table")
-        yield LoadingIndicator()
-
-    def on_mount(self):
-        re_add_table = self.query_one("#re_add_table")
-        apply_table = self.query_one("#apply_table")
-
-        header_row = ["STATUS", "PATH", "CHANGE"]
-
-        re_add_table.add_columns(*header_row)
-        apply_table.add_columns(*header_row)
-
-        for line in self.status_output:
-            path = line[3:]
-
-            apply_status = self.status_meaning[line[0]]["Status"]
-            apply_change = self.status_meaning[line[0]]["Re_Add_Change"]
-
-            re_add_status = self.status_meaning[line[1]]["Status"]
-            re_add_change = self.status_meaning[line[1]]["Apply_Change"]
-
-            apply_row = [apply_status, path, apply_change]
-            apply_table.add_row(*apply_row)
-
-            re_add_row = [re_add_status, path, re_add_change]
-            re_add_table.add_row(*re_add_row)
 
 
 class OperationTabs(Screen):

@@ -7,7 +7,6 @@ import json
 import subprocess
 import tomllib
 
-
 # example dataclass
 # https://github.com/Textualize/textual/blob/dc7156449d69cf45cf6a226717c4fe2c52a2bb90/src/textual/css/styles.py#L806
 

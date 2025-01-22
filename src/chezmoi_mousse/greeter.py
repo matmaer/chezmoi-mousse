@@ -7,8 +7,8 @@ from textual.containers import Center
 from textual.geometry import Region
 from textual.screen import Screen
 from textual.strip import Strip
-from textual.widgets import Footer
 from textual.widget import Widget
+from textual.widgets import Footer
 
 SPLASH = """\
  ██████╗██╗  ██╗███████╗███████╗███╗   ███╗ ██████╗ ██╗
