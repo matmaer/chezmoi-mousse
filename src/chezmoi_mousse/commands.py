@@ -7,7 +7,6 @@ import json
 import subprocess
 import tomllib
 
-from textual.widgets import RichLog
 
 # example dataclass
 # https://github.com/Textualize/textual/blob/dc7156449d69cf45cf6a226717c4fe2c52a2bb90/src/textual/css/styles.py#L806
@@ -15,18 +14,6 @@ from textual.widgets import RichLog
 # @dataclass
 # class ChezmoiOutput:
 #     pass
-
-
-class CommandLogger(RichLog):
-    def __init__(self):
-        super().__init__()
-        self.id = "command_log"
-        self.auto_scroll = True
-        self.highlight = False
-        self.markup = False
-        self.max_lines = 2000
-        self.wrap = False
-        self.animated = True
 
 
 class ChezmoiCommands:
@@ -39,6 +26,7 @@ class ChezmoiCommands:
             "--progress=false",
             "--config=/home/mm/.config/chezmoi/chezmoi.toml",
         ]
+        # self.cmd_log = self.query_one(RichLog)
 
     def _run(self, command: list) -> subprocess.CompletedProcess:
         try:
