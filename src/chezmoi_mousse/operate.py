@@ -17,7 +17,6 @@ from chezmoi_mousse.commands import ChezmoiCommands
 
 chezmoi = ChezmoiCommands()
 
-CM_CONFIG_DUMP = chezmoi.dump_config()
 
 # provisional diagrams until dynamically created
 VISUAL_DIAGRAM = """\
@@ -67,15 +66,14 @@ class InteractiveDiagram(Static):
 
 class ManagedFiles(DirectoryTree):
     def __init__(self):
-        self.config_dump = CM_CONFIG_DUMP
-        super().__init__(self.config_dump["destDir"])
+        # TODO: get destDir from chezmoi config
+        super().__init__("/home/mm")
         self.managed = [Path(entry) for entry in chezmoi.managed()]
 
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
         return [path for path in paths if path in self.managed]
 
 
-# https://www.chezmoi.io/reference/commands/status/
 class ChezmoiStatus(Static):
     """
     Chezmoi status command output reference:
