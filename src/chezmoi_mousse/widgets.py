@@ -2,10 +2,22 @@ from textual import work
 from textual.app import ComposeResult
 from textual.widgets import DataTable, LoadingIndicator, Static
 
-from chezmoi_mousse.commands import ChezmoiCommands
+from chezmoi_mousse.commands import ChezmoiCommands  # , CommandLogger
 
 
 chezmoi = ChezmoiCommands()
+
+
+# class CommandLogSlider(Static):
+# def __init__(self):
+# self.cmdlog = self.query_one("command_log")
+# def compose(self) -> ComposeResult:
+#     with Static():
+#         yield CommandLogger()
+
+# def on_mount(self):
+#     self.cmdlog.write("Logging test from CommandLogSlider on_mount")
+#     print("tried to write on mount of CommandLogSlider")
 
 
 class ChezmoiDoctor(Static):
