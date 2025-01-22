@@ -1,23 +1,26 @@
 from textual import work
 from textual.app import ComposeResult
-from textual.widgets import DataTable, LoadingIndicator, Static
+from textual.widgets import DataTable, LoadingIndicator, Static, RichLog
+from textual.widget import Widget
 
-from chezmoi_mousse.commands import ChezmoiCommands  # , CommandLogger
-
+from chezmoi_mousse.commands import ChezmoiCommands
 
 chezmoi = ChezmoiCommands()
 
 
-# class CommandLogSlider(Static):
-# def __init__(self):
-# self.cmdlog = self.query_one("command_log")
-# def compose(self) -> ComposeResult:
-#     with Static():
-#         yield CommandLogger()
+class LoggingSlidebar(Widget):
+    def __init__(self, highlight: bool = False):
+        super().__init__()
+        self.id = "command_log"
+        self.auto_scroll = True
+        self.highlight = highlight
+        self.markup = True
+        self.max_lines = 2000
+        self.wrap = False
+        self.animated = True
 
-# def on_mount(self):
-#     self.cmdlog.write("Logging test from CommandLogSlider on_mount")
-#     print("tried to write on mount of CommandLogSlider")
+    def compose(self) -> ComposeResult:
+        yield RichLog(id="slidelog")
 
 
 class ChezmoiDoctor(Static):
@@ -33,6 +36,7 @@ class ChezmoiDoctor(Static):
     @work(thread=True)
     def construct_table(self) -> None:
         data_table = self.query_one("#doctor")
+        # TODO get from shared object that stores all output
         cm_dr_output = chezmoi.doctor()
         data_table.cursor_type = "row"
         header_row = cm_dr_output.pop(0).split()
