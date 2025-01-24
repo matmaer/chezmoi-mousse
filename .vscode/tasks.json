@@ -1,9 +1,8 @@
 {
     "tasks": [
         {
-            "label": "TEXTUAL_RUN_--DEV",
+            "label": "TEXTUAL LIVE TCSS",
             "command": "textual run --dev chezmoi_mousse.tui:ChezmoiTUI",
-            "detail": "No Console",
             "presentation": {
                 "focus": true,
                 "group": "textualize"
@@ -42,15 +41,6 @@
             "problemMatcher": []
         },
         {
-            "label": "TEXTUAL-DEV SYSTEM CONSOLE",
-            "detail": "SYSTEM",
-            "dependsOn": [
-                "TEXTUAL_RUN_--DEV",
-                "textual-console-system"
-            ],
-            "problemMatcher": []
-        },
-        {
             "label": "textual-console-verbose",
             "hide": true,
             "command": "textual console",
@@ -84,21 +74,6 @@
             "label": "textual-console-event",
             "hide": true,
             "command": "textual console -x DEBUG -x INFO -x SYSTEM",
-            "presentation": {
-                "focus": false,
-                "close": true,
-                "group": "textualize"
-            },
-            "runOptions": {
-                "instanceLimit": 1
-            },
-            "type": "shell",
-            "problemMatcher": []
-        },
-        {
-            "label": "textual-console-system",
-            "hide": true,
-            "command": "textual console -x EVENT -x DEBUG -x INFO",
             "presentation": {
                 "focus": false,
                 "close": true,

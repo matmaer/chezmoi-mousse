@@ -63,6 +63,32 @@ LoadingBackground {
   align: center middle;
 }
 
+RightSlidebar {
+  width: auto;
+  # for the lip
+  min-width: 2;
+  max-width: 70%;
+  height: auto;
+  min-height: 7;
+  max-height: 80%;
+  border-left: $ui_border;
+  border-top: $ui_border;
+  border-bottom: $ui_border;
+  dock: right;
+  # layer to sit above content
+  layer: slidebar;
+  transition: offset 400ms;
+  # Offset -100% (left) and 100% (right) to be out of view
+  offset-x: 100%;
+  &:focus {
+    background-tint: $base_background;
+  }
+  &.-visible {
+    # offset.x reaches 0 when fully slided in view
+    offset-x: 0;
+  }
+}
+
 # DataTable {
 #   color: $foreground;
 #   height: auto;
