@@ -3,11 +3,11 @@ from collections import deque
 from rich.segment import Segment
 from rich.style import Style
 from textual.app import ComposeResult
-from textual.containers import Center
+from textual.binding import Binding
+from textual.containers import Center, Container, Middle
 from textual.screen import Screen
 from textual.strip import Strip
-from textual.widgets import Footer
-from textual.widget import Widget
+from textual.widgets import Footer, Label, ProgressBar, Static
 
 SPLASH = """\
  ██████╗██╗  ██╗███████╗███████╗███╗   ███╗ ██████╗ ██╗
@@ -50,7 +50,9 @@ FADE = (
 )
 
 
-class LoadingBackground(Widget):
+class AnimatedFade(Static):
+    """A widget to show a custom loading screen."""
+
     text = [line.ljust(len(max(SPLASH, key=len))) for line in SPLASH]
     colors = deque([Style(color=color) for color in FADE])
 
@@ -66,7 +68,29 @@ class LoadingBackground(Widget):
 
 
 class LoadingScreen(Screen):
+
+    BINDINGS = [
+        Binding(
+            key="escape",
+            action="app.push_screen('inspect')",
+            description="Skip to the inspect screen",
+        ),
+    ]
+
     def compose(self) -> ComposeResult:
-        with Center():
-            yield LoadingBackground()
+        with Container(id="loadingscreen"):
+            yield Middle(
+                Center(AnimatedFade()),
+                Center(
+                    ProgressBar(
+                        total=100,
+                        gradient=FADE,
+                        show_eta=False,
+                        show_percentage=False,
+                    )
+                ),
+                Center(Label("Loading")),
+            )
+            # yield ItemLoader()
+            # yield Label("aoeu")
         yield Footer()
