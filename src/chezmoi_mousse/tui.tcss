@@ -47,14 +47,14 @@ DirectoryTree {
 
 #loadingscreen {
   AnimatedFade {
-      margin: 1 0 1 0;
       width: 55;
       height: 13;
+      margin: 1 0 1 0;
   }
   ProgressBar {
       margin: 1 0 1 0;
   }
-  Label {
+  ItemLoader {
       margin: 1 0 1 0;
   }
 }
@@ -87,84 +87,84 @@ DirectoryTree {
 #   };
 # }
 
-# DataTable {
-#   color: $foreground;
-#   height: auto;
-#   max-height: 90%;
+DataTable {
+  color: $foreground;
+  height: auto;
+  max-height: 90%;
 
-#   &.datatable--fixed-cursor {
-#       background: $block-cursor-blurred-background;
-#   }
+  &.datatable--fixed-cursor {
+      background: $block-cursor-blurred-background;
+  }
 
-#   &:focus {
-#       background-tint: $foreground 5%;
-#       & > .datatable--cursor {
-#           background: $block-cursor-background;
-#           color: $block-cursor-foreground;
-#           text-style: $block-cursor-text-style;
-#       }
+  &:focus {
+      background-tint: $foreground 5%;
+      & > .datatable--cursor {
+          background: $block-cursor-background;
+          color: $block-cursor-foreground;
+          text-style: $block-cursor-text-style;
+      }
 
-#       & > .datatable--header {
-#           background-tint: $foreground 5%;
-#       }
+      & > .datatable--header {
+          background-tint: $foreground 5%;
+      }
 
-#       & > .datatable--fixed-cursor {
-#           color: $block-cursor-foreground;
-#           background: $block-cursor-background;
-#       }
-#   }
+      & > .datatable--fixed-cursor {
+          color: $block-cursor-foreground;
+          background: $block-cursor-background;
+      }
+  }
 
-#   &:dark {
-#       background: $surface;
-#       & > .datatable--even-row {
-#           background: $surface-darken-1 40%;
-#       }
-#   }
+  &:dark {
+      background: $surface;
+      & > .datatable--even-row {
+          background: $surface-darken-1 40%;
+      }
+  }
 
-#   & > .datatable--header {
-#       text-style: bold;
-#       background: $panel;
-#       # color: $foreground;
-#   }
-#   &:ansi > .datatable--header {
-#       background: ansi_bright_blue;
-#       color: ansi_default;
-#   }
+  & > .datatable--header {
+      text-style: bold;
+      background: $panel;
+      # color: $foreground;
+  }
+  &:ansi > .datatable--header {
+      background: ansi_bright_blue;
+      color: ansi_default;
+  }
 
-#   & > .datatable--fixed {
-#       background: $secondary-muted;
-#       color: $foreground;
-#   }
+  & > .datatable--fixed {
+      background: $secondary-muted;
+      color: $foreground;
+  }
 
-#   & > .datatable--odd-row {
+  & > .datatable--odd-row {
 
-#   }
+  }
 
-#   & > .datatable--even-row {
-#       background: $surface-lighten-1 50%;
-#   }
+  & > .datatable--even-row {
+      background: $surface-lighten-1 50%;
+  }
 
-#   & > .datatable--cursor {
-#       background: $block-cursor-blurred-background;
-#       color: $block-cursor-blurred-foreground;
-#       text-style: $block-cursor-blurred-text-style;
-#   }
+  & > .datatable--cursor {
+      background: $block-cursor-blurred-background;
+      color: $block-cursor-blurred-foreground;
+      text-style: $block-cursor-blurred-text-style;
+  }
 
-#   & > .datatable--fixed-cursor {
-#       background: $block-cursor-blurred-background;
-#       color: $foreground;
-#   }
+  & > .datatable--fixed-cursor {
+      background: $block-cursor-blurred-background;
+      color: $foreground;
+  }
 
-#   & > .datatable--header-cursor {
-#       background: $accent-darken-1;
-#       color: $foreground;
-#   }
+  & > .datatable--header-cursor {
+      background: $accent-darken-1;
+      color: $foreground;
+  }
 
-#   & > .datatable--header-hover {
-#       background: $accent 30%;
-#   }
+  & > .datatable--header-hover {
+      background: $accent 30%;
+  }
 
-#   & > .datatable--hover {
-#       background: $block-hover-background;
-#   }
-# }
+  & > .datatable--hover {
+      background: $block-hover-background;
+  }
+}
