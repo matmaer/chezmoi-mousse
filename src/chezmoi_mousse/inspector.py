@@ -1,6 +1,7 @@
 """Contains the Inspector Screen."""
 
 from textual.app import ComposeResult
+from textual.binding import Binding
 from textual.screen import Screen
 from textual.widgets import Footer, Pretty, TabbedContent
 
@@ -11,6 +12,14 @@ chezmoi = ChezmoiCommands()
 
 
 class InspectTabs(Screen):
+    BINDINGS = [
+        Binding(
+            key="T",
+            action="app.push_screen('operate')",
+            description="Toggle operate/inspect screen",
+        ),
+    ]
+
     def compose(self) -> ComposeResult:
         with TabbedContent(
             "Doctor",

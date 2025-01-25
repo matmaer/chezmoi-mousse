@@ -1,4 +1,5 @@
 from textual.app import ComposeResult
+from textual.binding import Binding
 from textual.containers import Center
 from textual.screen import Screen
 from textual.widgets import Footer, Static, TabbedContent
@@ -53,6 +54,14 @@ class InteractiveDiagram(Static):
 
 
 class OperationTabs(Screen):
+    BINDINGS = [
+        Binding(
+            key="T",
+            action="app.push_screen('inspect')",
+            description="Toggle operate/inspect screen",
+        ),
+    ]
+
     def compose(self) -> ComposeResult:
         with TabbedContent(
             "Chezmoi-Diagram",
