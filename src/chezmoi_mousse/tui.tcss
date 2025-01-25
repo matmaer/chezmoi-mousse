@@ -36,18 +36,6 @@ TabbedContent {
   min-width: 77;
 }
 
-Screen {
-  width: 100%;
-  height: 1fr;
-  layers: slidebar;
-}
-
-Center {
-  height: 100%;
-  width: 100%;
-  align: center middle;
-}
-
 Pretty {
   width: 100%;
   margin: 0 1 0 2;
@@ -57,37 +45,47 @@ DirectoryTree {
   padding: 0 1 0 2;
 }
 
-LoadingBackground {
-  width: 55;
-  height: 13;
-  align: center middle;
+#loadingscreen {
+  AnimatedFade {
+      margin: 1 0 1 0;
+      width: 55;
+      height: 13;
+  }
+  ProgressBar {
+      margin: 1 0 1 0;
+  }
+  Label {
+      margin: 1 0 1 0;
+  }
 }
 
-RightSlidebar {
-  width: auto;
-  # for the lip
-  min-width: 2;
-  max-width: 70%;
-  height: auto;
-  min-height: 7;
-  max-height: 80%;
-  border-left: $ui_border;
-  border-top: $ui_border;
-  border-bottom: $ui_border;
-  dock: right;
-  # layer to sit above content
-  layer: slidebar;
-  transition: offset 400ms;
-  # Offset -100% (left) and 100% (right) to be out of view
-  offset-x: 100%;
-  &:focus {
-    background-tint: $base_background;
-  }
-  &.-visible {
-    # offset.x reaches 0 when fully slided in view
-    offset-x: 0;
-  }
-}
+ # ###################################
+
+# RightSlidebar {
+#   width: auto;
+#   # for the lip
+#   min-width: 2;
+#   max-width: 70%;
+#   height: auto;
+#   min-height: 7;
+#   max-height: 80%;
+#   border-left: $ui_border;
+#   border-top: $ui_border;
+#   border-bottom: $ui_border;
+#   dock: right;
+#   # layer to sit above content
+#   layer: slidebar;
+#   transition: offset 400ms;
+#   # Offset -100% (left) and 100% (right) to be out of view
+#   offset-x: 100%;
+#   &:focus {
+#     background-tint: $base_background;
+#   };
+#   &.-visible {
+#     # offset.x reaches 0 when fully slided in view
+#     offset-x: 0;
+#   };
+# }
 
 # DataTable {
 #   color: $foreground;
