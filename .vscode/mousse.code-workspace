@@ -16,6 +16,7 @@
         ],
         "workbench.colorCustomizations": {
             "statusBar.debuggingBackground": "#310806",
-        }
+        },
+        "git.showPushSuccessNotification": true
     },
 }
