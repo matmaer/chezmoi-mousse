@@ -4,10 +4,6 @@
             "name": "chezmoi-mousse",
             "path": ".."
         },
-        {
-            "name": "textual",
-            "path": "../../textual"
-        },
     ],
     "settings": {
         "python.analysis.diagnosticMode": "workspace",
