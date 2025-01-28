@@ -29,8 +29,8 @@ class InspectTabs(Screen):
             "Ignored",
         ):
             yield ChezmoiDoctor()
-            yield Pretty(chezmoi.dump_config(), classes="horipad")
-            yield Pretty(chezmoi.data(), classes="horipad")
-            yield Pretty(chezmoi.cat_config(), classes="horipad")
-            yield Pretty(chezmoi.ignored(), classes="horipad")
+            yield Pretty(chezmoi.dump_config(), classes="tabpad")
+            yield Pretty(chezmoi.data(), classes="tabpad")
+            yield Pretty(chezmoi.cat_config(), classes="tabpad")
+            yield Pretty(chezmoi.ignored(), classes="tabpad")
         yield Footer()
