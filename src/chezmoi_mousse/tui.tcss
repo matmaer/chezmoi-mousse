@@ -1,14 +1,3 @@
-$ui_accent: rgb(98, 118, 147);
-# $ui_react_border: rgb(12, 114, 22);
-# $ui_text: rgb(224, 228, 235);
-# $ui_text: #e0e4eb;
-# $ui_react_text: rgb(47, 166, 59);
-# $background: rgb(13, 17, 23);
-$ui_dark_accent: rgb(79, 95, 120);
-# $scrollbar_background: rgb(0, 4, 17);
-# $fade_start: rgb(67, 156, 251);
-# $fade_end: rgb(241, 135, 251);
-
 * {
   scrollbar-size-vertical: 1;
 }
