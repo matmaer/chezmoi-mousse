@@ -14,7 +14,7 @@ chezmoi = ChezmoiCommands()
 class InspectTabs(Screen):
     BINDINGS = [
         Binding(
-            key="T",
+            key="t",
             action="app.push_screen('operate')",
             description="Toggle operate/inspect screen",
         ),
@@ -29,8 +29,8 @@ class InspectTabs(Screen):
             "Ignored",
         ):
             yield ChezmoiDoctor()
-            yield Pretty(chezmoi.dump_config())
-            yield Pretty(chezmoi.data())
-            yield Pretty(chezmoi.cat_config())
-            yield Pretty(chezmoi.ignored())
+            yield Pretty(chezmoi.dump_config(), classes="horipad")
+            yield Pretty(chezmoi.data(), classes="horipad")
+            yield Pretty(chezmoi.cat_config(), classes="horipad")
+            yield Pretty(chezmoi.ignored(), classes="horipad")
         yield Footer()

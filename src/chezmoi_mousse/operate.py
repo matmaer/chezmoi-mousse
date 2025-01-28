@@ -56,7 +56,7 @@ class InteractiveDiagram(Static):
 class OperationTabs(Screen):
     BINDINGS = [
         Binding(
-            key="T",
+            key="t",
             action="app.push_screen('inspect')",
             description="Toggle operate/inspect screen",
         ),
@@ -68,7 +68,7 @@ class OperationTabs(Screen):
             "Managed-Files",
             "Status-Overview",
         ):
-            yield Static(VISUAL_DIAGRAM)
+            yield Static(VISUAL_DIAGRAM, id="diagram")
             yield ManagedFiles()
             yield ChezmoiStatus()
         yield Footer()
