@@ -19,8 +19,13 @@ chezmoi = ChezmoiCommands()
 
 
 class ChezmoiDoctor(Static):
+
     def compose(self) -> ComposeResult:
-        yield DataTable(id="doctor")
+        yield DataTable(
+            id="doctor",
+            cursor_type = "row",
+            classes="horipad",
+            )
         yield LoadingIndicator()
 
     def on_mount(self):
@@ -33,7 +38,6 @@ class ChezmoiDoctor(Static):
         data_table = self.query_one("#doctor")
         # TODO get chezmoi.doctor output from dataclass
         cm_dr_output = chezmoi.doctor()
-        data_table.cursor_type = "row"
         header_row = cm_dr_output.pop(0).split()
         data_table.add_columns(*header_row)
         rows = [row.split(maxsplit=2) for row in cm_dr_output]
@@ -93,13 +97,13 @@ class ChezmoiStatus(Static):
         super().__init__()
         # TODO read from dataclass
         self.status_output = chezmoi.status()
+        self.classes = "horipad"
 
     def compose(self) -> ComposeResult:
         yield Label("Chezmoi Apply Status", variant="primary")
         yield DataTable(id="apply_table")
         yield Label("Chezmoi Re-Add Status", variant="primary")
         yield DataTable(id="re_add_table")
-        yield LoadingIndicator()
 
     def on_mount(self):
         re_add_table = self.query_one("#re_add_table")
@@ -143,10 +147,10 @@ class LoggingSlidebar(Widget):
 
 class ManagedFiles(DirectoryTree):
     def __init__(self):
-        # TODO: get destDir from chezmoi config
+        # TODO: get destDir from dataclass
         super().__init__("/home/mm")
-        # TODO: read chezmoi.managed() output from dataclass
         self.managed = [Path(entry) for entry in chezmoi.managed()]
+        self.classes = "horipad"
 
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
         return [path for path in paths if path in self.managed]

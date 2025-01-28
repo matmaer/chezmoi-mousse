@@ -3,16 +3,17 @@ Module that wraps chezmoi and git commands.
 Bare minimum output curation which needed for any widget.
 """
 
+from dataclasses import dataclass
+
 import json
 import subprocess
 import tomllib
 
-# example dataclass
+# example of an advanced dataclass
 # https://github.com/Textualize/textual/blob/dc7156449d69cf45cf6a226717c4fe2c52a2bb90/src/textual/css/styles.py#L806
-
-# @dataclass
-# class ChezmoiOutput:
-#     pass
+@dataclass
+class ChezmoiOutput:
+    pass
 
 
 class ChezmoiCommands:
@@ -65,7 +66,7 @@ class ChezmoiCommands:
             return result.strip()
 
     def cat_config(self) -> dict | str:
-        result = self._run(["cat-config", "--format=json"])
+        result = self._run(["cat-config"])
         try:
             return tomllib.loads(result)
         except tomllib.TOMLDecodeError:
