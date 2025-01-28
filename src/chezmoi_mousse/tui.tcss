@@ -2,17 +2,13 @@
   scrollbar-size-vertical: 1;
 }
 
-Screen {
-  padding-top: 1;
-}
-
 #diagram {
   margin-left: 1;
   margin-right: 1;
   min-width: 76;
 }
 
-.horipad {
+.tabpad {
   padding-top: 1;
   padding-right: 1;
   padding-left: 1;
@@ -30,36 +26,20 @@ DataTable{
 # LoadingWidget {;
 #     .centered {
 #         align: center middle;
-#         margin: 2 2 2 2;
 #     }
 #     AnimatedFade {
 #         width: 55;
 #         height: 13;
-#         margin: 1 0 1 0;
-#         background: green;
 #         align: left middle;
 #     }
 #     Screen > LoadingScreen > Container {
 #         width: auto;
 #         height: auto;
-#         margin: 1 2 1 2;
 #     }
 # }
-# #loadingscreen {
-#   AnimatedFade {
-#       width: 55;
-#       height: 13;
-#       margin: 1 0 1 0;
-#       background: green;
-#   }
-  # ProgressBar {
-  #     margin: 1 0 1 0;
-  #     color: $fade_end;
-  #     background: blue
-  # }
-#   ItemLoader {
-#       margin: 1 0 1 0;
-#   }
+# ProgressBar {
+#     color: $fade_end;
+# }
 #   Bar > .bar--indeterminate {
 #       color: $fade_start;
 #   }
@@ -68,9 +48,6 @@ DataTable{
 #   }
 #   Bar > .bar--complete {
 #       color: $fade_end;
-#   }
-#   PercentageStatus {
-#       color: $fade_start;
 #   }
 # }
 
