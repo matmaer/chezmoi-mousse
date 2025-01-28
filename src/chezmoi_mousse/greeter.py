@@ -12,51 +12,13 @@ from textual.screen import Screen
 from textual.strip import Strip
 from textual.widgets import Footer, ProgressBar, Static, RichLog
 
-SPLASH = """\
- ██████╗██╗  ██╗███████╗███████╗███╗   ███╗ ██████╗ ██╗
-██╔════╝██║  ██║██╔════╝╚══███╔╝████╗ ████║██╔═══██╗██║
-██║     ███████║█████╗    ███╔╝ ██╔████╔██║██║   ██║██║
-██║     ██╔══██║██╔══╝   ███╔╝  ██║╚██╔╝██║██║   ██║██║
-╚██████╗██║  ██║███████╗███████╗██║ ╚═╝ ██║╚██████╔╝██║
- ╚═════╝╚═╝  ╚═╝╚══════╝╚══════╝╚═╝     ╚═╝ ╚═════╝ ╚═╝
-
- ███╗   ███╗ ██████╗ ██╗   ██╗███████╗███████╗███████╗
- ████╗ ████║██╔═══██╗██║   ██║██╔════╝██╔════╝██╔════╝
- ██╔████╔██║██║   ██║██║   ██║███████╗███████╗█████╗
- ██║╚██╔╝██║██║   ██║██║   ██║╚════██║╚════██║██╔══╝
- ██║ ╚═╝ ██║╚██████╔╝╚██████╔╝███████║███████║███████╗
- ╚═╝     ╚═╝ ╚═════╝  ╚═════╝ ╚══════╝╚══════╝╚══════╝
-""".splitlines()
-
-
-FADE = (
-    "rgb(67, 156, 251)",
-    "rgb(67, 156, 251)",
-    "rgb(67, 156, 251)",
-    "rgb(67, 156, 251)",
-    "rgb(67, 156, 251)",
-    "rgb(67, 156, 251)",
-    "rgb(67, 156, 251)",
-    "rgb(67, 156, 251)",
-    "rgb(67, 156, 251)",
-    "rgb(67, 156, 251)",
-    "rgb(102, 152, 251)",
-    "rgb(137, 148, 251)",
-    "rgb(171, 143, 251)",
-    "rgb(206, 139, 251)",
-    "rgb(241, 135, 251)",
-    "rgb(241, 135, 251)",
-    "rgb(206, 139, 251)",
-    "rgb(171, 143, 251)",
-    "rgb(137, 148, 251)",
-    "rgb(102, 152, 251)",
-)
+from chezmoi_mousse.graphic import FADE, SPLASH
 
 
 class AnimatedFade(Static):
     """A widget to show a custom loading screen."""
 
-    text = [line.ljust(len(max(SPLASH, key=len))) for line in SPLASH]
+    text = [line.ljust(len(max(SPLASH, key=len))) for line in SPLASH.splitlines()]
     line_styles = deque([Style(color=color) for color in FADE])
 
     def render_lines(self, crop) -> list[Strip]:
@@ -79,13 +41,6 @@ class ItemLoader(Static):
     def compose(self):
         yield RichLog()
 
-    @work(thread=True)
-    def on_mount(self) -> None:
-        for i in range(1, 6):
-            sleep(0.5)
-            # self.query_one(ProgressBar).advance(20)
-            self.query_one(RichLog).write(f"Loading items {i}")
-
 
 class LoadingScreen(Screen):
 
@@ -100,7 +55,11 @@ class LoadingScreen(Screen):
     def compose(self) -> ComposeResult:
         with Container(id="loadingscreen"):
             yield AnimatedFade()
-            yield ProgressBar()
+            yield ProgressBar(
+                id="progress",
+                show_eta=False,
+                total=100,
+                )
             yield ItemLoader()
         yield Footer()
 
@@ -108,4 +67,5 @@ class LoadingScreen(Screen):
     def on_mount(self) -> None:
         for i in range(1, 6):
             sleep(0.5)
-            self.query_one(ProgressBar).advance(20)
+            self.query_one("#progress").advance(20)
+            self.query_one(RichLog).write(f"Loading items {i}")
