@@ -24,7 +24,7 @@ class ChezmoiDoctor(Static):
         yield DataTable(
             id="doctor",
             cursor_type = "row",
-            classes="horipad",
+            classes="tabpad",
             )
         yield LoadingIndicator()
 
