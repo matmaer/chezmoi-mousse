@@ -18,7 +18,7 @@ Widget {
   background: $background;
 }
 
-DirectoryTree {
+DirectoryTree, RichLog {
   background-tint: $background;
 }
 
@@ -36,6 +36,11 @@ DataTable {
   & > .datatable--header-hover {
       background: $primary 30%;
   }
+}
+
+AnimatedFade {
+  height: 13;
+  width: 55;
 }
 
 

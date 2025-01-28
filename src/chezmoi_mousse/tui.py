@@ -1,7 +1,7 @@
 from textual.app import App, ComposeResult
 from textual.widgets import Footer
 
-# from chezmoi_mousse.greeter import LoadingWidget
+from chezmoi_mousse.greeter import LoadingScreen
 from chezmoi_mousse.inspector import InspectTabs
 from chezmoi_mousse.operate import OperationTabs
 from chezmoi_mousse.graphic import oled_deep_zen
@@ -12,7 +12,7 @@ class ChezmoiTUI(App):
     SCREENS = {
         "operate": OperationTabs,
         "inspect": InspectTabs,
-        # "loading": LoadingWidget,
+        "loading": LoadingScreen,
     }
 
     def compose(self) -> ComposeResult:
@@ -21,5 +21,5 @@ class ChezmoiTUI(App):
     def on_mount(self) -> None:
         self.register_theme(oled_deep_zen)
         self.theme = "oled-deep-zen"
-        self.push_screen("inspect")
-        # self.push_screen("loading")
+        # self.push_screen("inspect")
+        self.push_screen("loading")
