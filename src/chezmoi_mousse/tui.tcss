@@ -14,9 +14,6 @@
   padding-left: 1;
 }
 
-Widget {
-  background: $background;
-}
 
 DirectoryTree, RichLog {
   background-tint: $background;
@@ -29,25 +26,40 @@ DataTable {
   }
 
   & > .datatable--header {
-      text-style: bold;
-      background: $primary 50%;
+    text-style: bold;
+    background: $primary 50%;
   }
 
   & > .datatable--header-hover {
-      background: $primary 30%;
+    background: $primary 30%;
   }
 }
 
 AnimatedFade {
-  height: 13;
+  height: 10;
   width: 55;
+}
+
+ItemLoader {
+  height: auto;
+  width: 55;
+}
+
+ItemLoader > RichLog {
+  height: auto;
+  overflow-y: hidden;
+  overflow-x: hidden;
+}
+
+LoadingScreen {
+  background:rgb(0, 0, 0);
 }
 
 
 # RightSlidebar {
-#   width: auto;
-#   # for the lip
-#   min-width: 2;
+  #   width: auto;
+  #   # for the lip
+  #   min-width: 2;
 #   max-width: 70%;
 #   height: auto;
 #   min-height: 7;
