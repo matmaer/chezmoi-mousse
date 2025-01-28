@@ -18,38 +18,25 @@ Widget {
   background: $background;
 }
 
-DataTable{
+DirectoryTree {
   background-tint: $background;
 }
 
+DataTable {
+  background-tint: $background;
+  & > .datatable--header {
+      background-tint: $primary 50%;
+  }
 
-# LoadingWidget {;
-#     .centered {
-#         align: center middle;
-#     }
-#     AnimatedFade {
-#         width: 55;
-#         height: 13;
-#         align: left middle;
-#     }
-#     Screen > LoadingScreen > Container {
-#         width: auto;
-#         height: auto;
-#     }
-# }
-# ProgressBar {
-#     color: $fade_end;
-# }
-#   Bar > .bar--indeterminate {
-#       color: $fade_start;
-#   }
-#   Bar > .bar--bar {
-#       color: $fade_start;
-#   }
-#   Bar > .bar--complete {
-#       color: $fade_end;
-#   }
-# }
+  & > .datatable--header {
+      text-style: bold;
+      background: $primary 50%;
+  }
+
+  & > .datatable--header-hover {
+      background: $primary 30%;
+  }
+}
 
 
 # RightSlidebar {

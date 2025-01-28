@@ -4,7 +4,7 @@ from textual.widgets import Footer
 # from chezmoi_mousse.greeter import LoadingWidget
 from chezmoi_mousse.inspector import InspectTabs
 from chezmoi_mousse.operate import OperationTabs
-from chezmoi_mousse.custom_theme import oled_deep_zen
+from chezmoi_mousse.graphic import oled_deep_zen
 
 
 class ChezmoiTUI(App):
@@ -22,3 +22,4 @@ class ChezmoiTUI(App):
         self.register_theme(oled_deep_zen)
         self.theme = "oled-deep-zen"
         self.push_screen("inspect")
+        # self.push_screen("loading")
