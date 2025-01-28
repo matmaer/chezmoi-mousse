@@ -97,7 +97,7 @@ class ChezmoiStatus(Static):
         super().__init__()
         # TODO read from dataclass
         self.status_output = chezmoi.status()
-        self.classes = "horipad"
+        self.classes = "tabpad"
 
     def compose(self) -> ComposeResult:
         yield Label("Chezmoi Apply Status", variant="primary")
@@ -150,7 +150,7 @@ class ManagedFiles(DirectoryTree):
         # TODO: get destDir from dataclass
         super().__init__("/home/mm")
         self.managed = [Path(entry) for entry in chezmoi.managed()]
-        self.classes = "horipad"
+        self.classes = "tabpad"
 
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
         return [path for path in paths if path in self.managed]
