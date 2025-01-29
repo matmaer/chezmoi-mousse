@@ -1,8 +1,12 @@
 from textual.theme import Theme
 # from textual.color import Gradient
 
-CM_COLOR = {
-    "success": "rgb(47, 166, 59)",
+def rgb_to_hex(red,green,blue):
+    return "#%02x%02x%02x" % (red,green,blue)
+
+
+CM_COLORS = {
+    "success": "rgb(63, 201, 77)",
 }
 
 oled_deep_zen = Theme(
@@ -15,7 +19,7 @@ oled_deep_zen = Theme(
     luminosity_spread=0.1,
     # panel="",
     secondary="rgb(36, 131, 123)",
-    success=CM_COLOR["success"],
+    success=CM_COLORS["success"],
     text_alpha=0.9,
     warning="rgb(221, 175, 38)",
     error="rgb(176, 81, 55)",
