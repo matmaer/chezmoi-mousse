@@ -1,15 +1,16 @@
 from pathlib import Path
 from collections.abc import Iterable
 
+from time import sleep
 from textual import work
 from textual.app import ComposeResult
 from textual.widgets import (
     DataTable,
-    LoadingIndicator,
     Static,
     RichLog,
     DirectoryTree,
     Label,
+    Pretty,
 )
 from textual.widget import Widget
 
@@ -20,13 +21,18 @@ chezmoi = ChezmoiCommands()
 
 class ChezmoiDoctor(Static):
 
+    def __init__(self):
+        super().__init__()
+        self.not_in_path = []
+
     def compose(self) -> ComposeResult:
         yield DataTable(
             id="doctor",
             cursor_type = "row",
             classes="tabpad",
-            )
-        yield LoadingIndicator()
+        )
+        yield Label("Local commands skippeed because not in Path:")
+        yield Pretty(self.not_in_path)
 
     def on_mount(self):
         data_table = self.query_one("#doctor")
@@ -43,19 +49,23 @@ class ChezmoiDoctor(Static):
         rows = [row.split(maxsplit=2) for row in cm_dr_output]
         for row in rows:
             if row[0] == "ok":
-                row = [f"[#60EE60]{cell}[/]" for cell in row]
-            if row[0] == "info":
+                row = [f"[#3fc94d]{cell}[/]" for cell in row]
+            elif row[0] == "info":
                 if row[2] == "not set":
                     row = [f"[#FFD700]{cell}[/]" for cell in row]
                 elif "not found in $PATH" in row[2]:
+                    self.not_in_path.append(row[1].split('-')[0])
                     row = [f"[#8A8888]{cell}[/]" for cell in row]
                 else:
                     row = [f"[#E0FFFF]{cell}[/]" for cell in row]
-            if row[0] == "warning":
+
+            elif row[0] == "warning":
                 row = [f"[#FFD700]{cell}[/]" for cell in row]
-            if row[0] == "error":
+            elif row[0] == "error":
                 row = [f"[red]{cell}[/]" for cell in row]
             data_table.add_row(*row)
+
+        sleep(3)
         data_table.loading = False
 
 

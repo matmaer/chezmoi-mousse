@@ -14,6 +14,11 @@
   padding-left: 1;
 }
 
+Label {
+  margin-top: 1;
+  margin-bottom: 1;
+}
+
 
 DirectoryTree, RichLog {
   background-tint: $background;
@@ -22,7 +27,7 @@ DirectoryTree, RichLog {
 DataTable {
   background-tint: $background;
   & > .datatable--header {
-      background-tint: $primary 50%;
+    background-tint: $primary 50%;
   }
 
   & > .datatable--header {
@@ -52,6 +57,10 @@ ItemLoader > RichLog {
 }
 
 LoadingScreen {
+  background:rgb(0, 0, 0);
+}
+
+LoadingScreen > Footer {
   background:rgb(0, 0, 0);
 }
 
