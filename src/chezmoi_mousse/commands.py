@@ -3,17 +3,12 @@ Module that wraps chezmoi and git commands.
 Bare minimum output curation which needed for any widget.
 """
 
-from dataclasses import dataclass
 
 import json
 import subprocess
 import tomllib
 
-# example of an advanced dataclass
-# https://github.com/Textualize/textual/blob/dc7156449d69cf45cf6a226717c4fe2c52a2bb90/src/textual/css/styles.py#L806
-@dataclass
-class ChezmoiOutput:
-    pass
+
 
 
 class ChezmoiCommands:
@@ -26,7 +21,6 @@ class ChezmoiCommands:
             "--progress=false",
             "--config=/home/mm/.config/chezmoi/chezmoi.toml",
         ]
-        # self.cmd_log = self.query_one(RichLog)
 
     def _run(self, command: list) -> subprocess.CompletedProcess:
         try:
