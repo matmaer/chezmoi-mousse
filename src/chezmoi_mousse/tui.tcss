@@ -2,6 +2,26 @@
   scrollbar-size-vertical: 1;
 }
 
+Header {
+  background: $background;
+  color: $accent;
+  height: 2;
+  padding-bottom: 1;
+  HeaderIcon {
+    /* don't use display: none; because then the title is not centered */
+    visibility: hidden;
+  }
+}
+
+Footer {
+  height: 2;
+  padding-top: 1;
+}
+
+Screen {
+  overflow: hidden;
+}
+
 #diagram {
   margin-left: 1;
   margin-right: 1;
@@ -14,79 +34,98 @@
   padding-left: 1;
 }
 
-Label {
-  margin-top: 1;
-  margin-bottom: 1;
-}
-
-
-DirectoryTree, RichLog {
+DataTable, DirectoryTree {
   background-tint: $background;
 }
 
 DataTable {
-  background-tint: $background;
-  & > .datatable--header {
-    background-tint: $primary 50%;
-  }
-
-  & > .datatable--header {
-    text-style: bold;
-    background: $primary 50%;
-  }
-
-  & > .datatable--header-hover {
-    background: $primary 30%;
-  }
-}
-
-AnimatedFade {
-  height: 10;
-  width: 55;
-}
-
-ItemLoader {
-  height: auto;
-  width: 55;
-}
-
-ItemLoader > RichLog {
-  height: auto;
-  overflow-y: hidden;
   overflow-x: hidden;
+  color: $foreground 80%;
+  text-style: none;
+  &:focus {
+    & > .datatable--cursor {
+      background: $primary 40%;
+      color: $foreground 90%;
+    }
+    & > .datatable--fixed-cursor {
+      color: $foreground;
+      background: $primary 40%;
+    }
+  }
+  & > .datatable--header {
+    background: $background;
+    background-tint: $background;
+    color: $foreground 80%;
+    text-style: bold;
+  }
+  & > .datatable--header-hover {
+    background: $primary 50%;
+    color: $foreground 80%;
+  }
+  & > .datatable--fixed {
+    background: $background;
+    color: $foreground 70%;
+  }
+  & > .datatable--fixed-cursor {
+    background: $background;
+    color: $foreground 70%;
+  }
 }
 
-LoadingScreen {
-  background:rgb(0, 0, 0);
+#loader-screen {
+  /* several items are set by the theme vars in oled-deep-zen, they need to be
+  overwritten to achieve the black loading screen */
+  background: black;
+  #loader-log {
+    background: black;
+    background-tint: black;
+    overflow-y: hidden;
+    height: 12;
+    margin-top: 2;
+  }
+  #loader-items {
+    height: auto;
+  }
+  #loader-header {
+    background: black;
+  }
+  #loader-footer {
+    background: black;
+  }
+  .footer-key--key {
+    background: black;
+  }
+  .footer-key--description {
+    background: black;
+  }
+  .-command-palette {
+    background: black;
+    border: none;
+  }
 }
-
-LoadingScreen > Footer {
-  background:rgb(0, 0, 0);
-}
-
 
 # RightSlidebar {
   #   width: auto;
   #   # for the lip
   #   min-width: 2;
-#   max-width: 70%;
-#   height: auto;
-#   min-height: 7;
-#   max-height: 80%;
-#   border-left: $ui_accent;
-#   border-top: $ui_accent;
-#   border-bottom: $ui_accent;
-#   dock: right;
-#   # layer to sit above content
-#   layer: slidebar;
-#   transition: offset 400ms;
-#   # Offset -100% (left) and 100% (right) to be out of view
-#   offset-x: 100%;
-#   &:focus {
-#     background-tint: $background;
-#   };
-#   &.-visible {
-#     # offset.x reaches 0 when fully slided in view
-#     offset-x: 0;
-#   };
+  #   max-width: 70%;
+  #   height: auto;
+  #   min-height: 7;
+  #   max-height: 80%;
+  #   border-left: $ui_accent;
+  #   border-top: $ui_accent;
+  #   border-bottom: $ui_accent;
+  #   dock: right;
+  #   # layer to sit above content
+  #   layer: slidebar;
+  #   transition: offset 400ms;
+  #   # Offset -100% (left) and 100% (right) to be out of view
+  #   offset-x: 100%;
+  #   &:focus {
+  #       background-tint: $background;
+  #   };
+  #   &.-visible {
+  #       /* offset.x reaches 0 when fully slided in view */
+  #       offset-x: 0;
+  #   };
 # }

@@ -1,16 +1,14 @@
 from collections import deque
 
-from time import sleep
 from rich.segment import Segment
 from rich.style import Style
 
 from textual import work
 from textual.app import ComposeResult
-from textual.binding import Binding
 from textual.containers import Center, Middle
 from textual.screen import Screen
 from textual.strip import Strip
-from textual.widgets import Footer, RichLog
+from textual.widgets import Footer, RichLog, Header
 from textual.widget import Widget
 
 from chezmoi_mousse.graphic import FADE, SPLASH
@@ -20,8 +18,8 @@ class AnimatedFade(Widget):
 
     def __init__(self) -> None:
         super().__init__()
-        self.id = "animatedfade"
-        # classes = "loader"
+        self.styles.height = 10
+        self.styles.width = 55
 
     def construct_splash_lines():
         splash_lines = SPLASH.splitlines()
@@ -41,47 +39,33 @@ class AnimatedFade(Widget):
     def on_mount(self) -> None:
         self.set_interval(interval=0.10, callback=self.refresh)
 
-    # def compose(self):
-    #     self.query_one("#animatedfade")
 
 class ItemLoader(Widget):
-    def __init__(self):
-        super().__init__()
-        self.id = "itemloader"
-    def compose(self):
+    def compose(self) -> ComposeResult:
         yield RichLog(
-            id="loaderlog",
-            max_lines=1,
+            id="loader-log",
             markup=True,
-            classes="loader"
+            max_lines=11,
         )
 
     @work(thread=True)
     def on_mount(self) -> None:
-        # item_loader = self.query_one("#itemloader")
-        # data_table.loading = True
-        for i in range(1, 6):
-            sleep(0.7)
+        self.query_one("#loader-log").write("Loading...")
 
 class LoadingScreen(Screen):
 
-    BINDINGS = [
-        Binding(
-            key="escape",
-            action="app.push_screen('inspect')",
-            description="skip animation",
-            tooltip="file an issue on Github if you can see this tooltip",
-        ),
-    ]
-
     def __init__(self):
         super().__init__()
-        self.id = "loadingscreen"
+        self.id = "loader-screen"
 
     def compose(self) -> ComposeResult:
+        yield Header(id="loader-header")
         with Center():
             with Middle():
                 yield AnimatedFade()
-                yield ItemLoader()
-        yield Footer()
+                yield ItemLoader(id="loader-items")
+        yield Footer(id="loader-footer")
+
+    def on_mount(self) -> None:
+        self.title = "c h e z m o i - m o u s s e"
 

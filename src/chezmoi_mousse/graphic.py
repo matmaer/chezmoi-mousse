@@ -4,34 +4,27 @@ from textual.theme import Theme
 def rgb_to_hex(red,green,blue):
     return "#%02x%02x%02x" % (red,green,blue)
 
-
-CM_COLORS = {
-    "success": "rgb(63, 201, 77)",
-}
-
 oled_deep_zen = Theme(
     name="oled-deep-zen", dark=True,
-    primary="rgb(31, 110, 195)",
-    # boost="",
-    accent="rgb(195, 146, 255)",
+    primary="rgb(67, 156, 251)", # fade end
+    accent="rgb(241, 135, 251)", # fade end
+    panel="rgb(98, 118, 147)",
     background="rgb(13, 17, 23)",
-    foreground="rgb(219, 214, 199)",
-    luminosity_spread=0.1,
-    # panel="",
-    secondary="rgb(36, 131, 123)",
-    success=CM_COLORS["success"],
+    foreground="rgb(234, 232, 227)",
+    luminosity_spread=0.9,
+    surface="rgb(24, 28, 34)",
+    secondary="rgb(37, 146, 137)",
+    success="rgb(63, 201, 77)",
     text_alpha=0.9,
-    warning="rgb(221, 175, 38)",
-    error="rgb(176, 81, 55)",
+    warning="rgb(224, 195, 30)",
+    error="rgb(203, 68, 31)",
 
-
-    # old vars to integrate and for reference:
-    # $ui_accent: rgb(98, 118, 147);
-    # $ui_dark_accent: rgb(79, 95, 120);
-    # $scrollbar_background: rgb(0, 4, 17);
-    # $fade_start: rgb(67, 156, 251);
-    # $fade_end: rgb(241, 135, 251);
-
+    variables={
+        "footer-background": "rgb(13, 17, 23)",
+        "footer-item-background": "rgb(13, 17, 23)",
+        "footer-key-background": "rgb(13, 17, 23)",
+        "footer-description-background": "rgb(13, 17, 23)",
+    }
     # vars to check:
     # "accent-muted"
     # "block-cursor-background"
@@ -47,12 +40,7 @@ oled_deep_zen = Theme(
     # "button-focus-text-style"
     # "button-foreground"
     # "error-muted"
-    # "footer-background"
-    # "footer-description-background"
     # "footer-description-foreground"
-    # "footer-foreground"
-    # "footer-item-background"
-    # "footer-key-background"
     # "footer-key-foreground"
     # "foreground-disabled"
     # "foreground-muted"
@@ -107,9 +95,9 @@ oled_deep_zen = Theme(
     # "markdown-h6-text-style"
 )
 
-
 # TODO: use Gradient to construct FADE
 FADE = (
+    "rgb(67, 156, 251)",
     "rgb(67, 156, 251)",
     "rgb(67, 156, 251)",
     "rgb(67, 156, 251)",
@@ -121,6 +109,7 @@ FADE = (
     "rgb(137, 148, 251)",
     "rgb(171, 143, 251)",
     "rgb(206, 139, 251)",
+    "rgb(241, 135, 251)",
     "rgb(241, 135, 251)",
     "rgb(206, 139, 251)",
     "rgb(171, 143, 251)",
@@ -139,4 +128,40 @@ SPLASH = """\
   |         |   |   |   |   |__     |__     |     __|
   |   |ˇ|   |       |       |       |       |       |
   '---' '---^-------^-------^-------^-------^-------'
+"""
+
+# provisional diagrams until dynamically created
+FLOW_DIAGRAM = """\
+┌──────────────┐    ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
+│home directory│    │ working copy │    │  local repo  │    │ remote repo  │
+└──────┬───────┘    └──────┬───────┘    └──────┬───────┘    └──────┬───────┘
+       │                   │                   │                   │
+       │    chezmoi add    │                   │                   │
+       │   chezmoi re-add  │                   │                   │
+       │──────────────────>│                   │                   │
+       │                   │                   │                   │
+       │   chezmoi apply   │                   │                   │
+       │<──────────────────│                   │                   │
+       │                   │                   │                   │
+       │  chezmoi status   │                   │                   │
+       │   chezmoi diff    │                   │                   │
+       │<─ ─ ─ ─ ─ ─ ─ ─ ─>│                   │     git push      │
+       │                   │                   │──────────────────>│
+       │                   │                   │                   │
+       │                   │           chezmoi git pull            │
+       │                   │<──────────────────────────────────────│
+       │                   │                   │                   │
+       │                   │    git commit     │                   │
+       │                   │──────────────────>│                   │
+       │                   │                   │                   │
+       │                   │    autoCommit     │                   │
+       │                   │──────────────────>│                   │
+       │                   │                   │                   │
+       │                   │                autoPush               │
+       │                   │──────────────────────────────────────>│
+       │                   │                   │                   │
+       │                   │                   │                   │
+┌──────┴───────┐    ┌──────┴───────┐    ┌──────┴───────┐    ┌──────┴───────┐
+│ destination  │    │   staging    │    │   git repo   │    │  git remote  │
+└──────────────┘    └──────────────┘    └──────────────┘    └──────────────┘
 """

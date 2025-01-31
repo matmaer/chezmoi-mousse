@@ -1,8 +1,6 @@
 from pathlib import Path
 from collections.abc import Iterable
 
-from time import sleep
-from textual import work
 from textual.app import ComposeResult
 from textual.widgets import (
     DataTable,
@@ -10,7 +8,6 @@ from textual.widgets import (
     RichLog,
     DirectoryTree,
     Label,
-    Pretty,
 )
 from textual.widget import Widget
 
@@ -21,52 +18,57 @@ chezmoi = ChezmoiCommands()
 
 class ChezmoiDoctor(Static):
 
-    def __init__(self):
-        super().__init__()
-        self.not_in_path = []
-
     def compose(self) -> ComposeResult:
         yield DataTable(
-            id="doctor",
+            id="main_table",
             cursor_type = "row",
             classes="tabpad",
         )
-        yield Label("Local commands skippeed because not in Path:")
-        yield Pretty(self.not_in_path)
+        yield Label(
+            "Local commands skippeed because not in Path:",
+            classes="tabpad",
+        )
+        yield DataTable(
+            id="second_table",
+            cursor_type = "row",
+            classes="tabpad",
+        )
+
 
     def on_mount(self):
-        data_table = self.query_one("#doctor")
-        data_table.loading = True
         self.construct_table()
 
-    @work(thread=True)
     def construct_table(self) -> None:
-        data_table = self.query_one("#doctor")
-        # TODO get chezmoi.doctor output from dataclass
         cm_dr_output = chezmoi.doctor()
+        main_table = self.query_one("#main_table")
+        main_table.loading = True
+        second_table = self.query_one("#second_table")
+        second_table.loading = True
         header_row = cm_dr_output.pop(0).split()
-        data_table.add_columns(*header_row)
-        rows = [row.split(maxsplit=2) for row in cm_dr_output]
-        for row in rows:
-            if row[0] == "ok":
-                row = [f"[#3fc94d]{cell}[/]" for cell in row]
-            elif row[0] == "info":
-                if row[2] == "not set":
+        main_rows = []
+        other_rows = []
+        for row in [row.split(maxsplit=2) for row in cm_dr_output]:
+            if row[0] == "info" and " not found in $PATH" in row[2]:
+                other_rows.append(row)
+            else:
+                if row[0] == "ok":
+                    row = [f"[#3fc94d]{cell}[/]" for cell in row]
+                elif row[0] == "warning":
                     row = [f"[#FFD700]{cell}[/]" for cell in row]
-                elif "not found in $PATH" in row[2]:
-                    self.not_in_path.append(row[1].split('-')[0])
-                    row = [f"[#8A8888]{cell}[/]" for cell in row]
+                elif row[0] == "error":
+                    row = [f"[red]{cell}[/]" for cell in row]
+                elif row[0] == "info" and row[2] == "not set":
+                    row = [f"[#FFD700]{cell}[/]" for cell in row]
                 else:
-                    row = [f"[#E0FFFF]{cell}[/]" for cell in row]
+                    row = [f"[#FFD700]{cell}[/]" for cell in row]
+                main_rows.append(row)
 
-            elif row[0] == "warning":
-                row = [f"[#FFD700]{cell}[/]" for cell in row]
-            elif row[0] == "error":
-                row = [f"[red]{cell}[/]" for cell in row]
-            data_table.add_row(*row)
-
-        sleep(3)
-        data_table.loading = False
+        main_table.add_columns(*header_row)
+        second_table.add_columns(*header_row)
+        self.query_one("#main_table").add_rows(main_rows)
+        main_table.loading = False
+        self.query_one("#second_table").add_rows(other_rows)
+        second_table.loading = False
 
 
 class ChezmoiStatus(Static):
@@ -105,7 +107,6 @@ class ChezmoiStatus(Static):
 
     def __init__(self):
         super().__init__()
-        # TODO read from dataclass
         self.status_output = chezmoi.status()
         self.classes = "tabpad"
 
