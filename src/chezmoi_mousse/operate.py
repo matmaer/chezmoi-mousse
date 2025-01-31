@@ -1,74 +1,28 @@
+"""Constructs the operate screen."""
+
 from textual.app import ComposeResult
-from textual.binding import Binding
-from textual.containers import Center
+from textual.containers import VerticalScroll
 from textual.screen import Screen
-from textual.widgets import Footer, Static, TabbedContent
+from textual.widgets import Footer, Header, Static, TabbedContent
 
+from chezmoi_mousse.graphic import FLOW_DIAGRAM
 from chezmoi_mousse.widgets import ChezmoiStatus, ManagedFiles
-
-# provisional diagrams until dynamically created
-VISUAL_DIAGRAM = """\
-┌──────────────┐    ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
-│home directory│    │ working copy │    │  local repo  │    │ remote repo  │
-└──────┬───────┘    └──────┬───────┘    └──────┬───────┘    └──────┬───────┘
-       │                   │                   │                   │
-       │    chezmoi add    │                   │                   │
-       │   chezmoi re-add  │                   │                   │
-       │──────────────────>│                   │                   │
-       │                   │                   │                   │
-       │   chezmoi apply   │                   │                   │
-       │<──────────────────│                   │                   │
-       │                   │                   │                   │
-       │  chezmoi status   │                   │                   │
-       │   chezmoi diff    │                   │                   │
-       │<─ ─ ─ ─ ─ ─ ─ ─ ─>│                   │     git push      │
-       │                   │                   │──────────────────>│
-       │                   │                   │                   │
-       │                   │           chezmoi git pull            │
-       │                   │<──────────────────────────────────────│
-       │                   │                   │                   │
-       │                   │    git commit     │                   │
-       │                   │──────────────────>│                   │
-       │                   │                   │                   │
-       │                   │    autoCommit     │                   │
-       │                   │──────────────────>│                   │
-       │                   │                   │                   │
-       │                   │                autoPush               │
-       │                   │──────────────────────────────────────>│
-       │                   │                   │                   │
-       │                   │                   │                   │
-┌──────┴───────┐    ┌──────┴───────┐    ┌──────┴───────┐    ┌──────┴───────┐
-│ destination  │    │   staging    │    │   git repo   │    │  git remote  │
-└──────────────┘    └──────────────┘    └──────────────┘    └──────────────┘
-"""
-
-
-# TODO move to widgets.py when interactive
-class InteractiveDiagram(Static):
-    def __init__(self):
-        super().__init__()
-        self.diagram = VISUAL_DIAGRAM
-
-    def compose(self):
-        yield Center(self.diagram)
 
 
 class OperationTabs(Screen):
-    BINDINGS = [
-        Binding(
-            key="t",
-            action="app.push_screen('inspect')",
-            description="Toggle operate/inspect screen",
-        ),
-    ]
 
     def compose(self) -> ComposeResult:
-        with TabbedContent(
-            "Chezmoi-Diagram",
-            "Managed-Files",
-            "Status-Overview",
-        ):
-            yield Static(VISUAL_DIAGRAM, id="diagram")
-            yield ManagedFiles()
-            yield ChezmoiStatus()
+        yield Header()
+        with VerticalScroll():
+            with TabbedContent(
+                "Chezmoi-Diagram",
+                "Managed-Files",
+                "Status-Overview",
+            ):
+                yield Static(FLOW_DIAGRAM, id="diagram")
+                yield ManagedFiles()
+                yield ChezmoiStatus()
         yield Footer()
+
+    def on_mount(self) -> None:
+        self.title = "- o p e r a t e -"
