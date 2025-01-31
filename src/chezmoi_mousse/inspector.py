@@ -7,9 +7,10 @@ from textual.widgets import Footer, Header, Pretty, TabbedContent
 
 from chezmoi_mousse.commands import ChezmoiCommands
 from chezmoi_mousse.widgets import ChezmoiDoctor
+from chezmoi_mousse.loader import ChezmoiOutput
 
 chezmoi = ChezmoiCommands()
-
+chezmoi_output = ChezmoiOutput(chezmoi.data())
 
 class InspectTabs(Screen):
 
@@ -25,7 +26,8 @@ class InspectTabs(Screen):
             ):
                 yield VerticalScroll(ChezmoiDoctor())
                 yield Pretty(chezmoi.dump_config(), classes="tabpad")
-                yield Pretty(chezmoi.data(), classes="tabpad")
+                yield Pretty(chezmoi_output.data, classes="tabpad")
+                # yield Pretty("test", classes="tabpad")
                 yield Pretty(chezmoi.cat_config(), classes="tabpad")
                 yield Pretty(chezmoi.ignored(), classes="tabpad")
         yield Footer()

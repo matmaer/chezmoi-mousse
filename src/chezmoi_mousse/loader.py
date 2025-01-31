@@ -1,4 +1,5 @@
 from collections import deque
+from dataclasses import dataclass
 
 from rich.segment import Segment
 from rich.style import Style
@@ -11,7 +12,15 @@ from textual.strip import Strip
 from textual.widgets import Footer, RichLog, Header
 from textual.widget import Widget
 
+from chezmoi_mousse.commands import ChezmoiCommands
 from chezmoi_mousse.graphic import FADE, SPLASH
+
+chezmoi = ChezmoiCommands()
+
+
+@dataclass
+class ChezmoiOutput:
+    data: dict | str
 
 
 class AnimatedFade(Widget):
