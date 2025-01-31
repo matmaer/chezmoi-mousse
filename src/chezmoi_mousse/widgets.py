@@ -34,16 +34,11 @@ class ChezmoiDoctor(Static):
             classes="tabpad",
         )
 
-
     def on_mount(self):
         self.construct_table()
 
     def construct_table(self) -> None:
         cm_dr_output = chezmoi.doctor()
-        main_table = self.query_one("#main_table")
-        main_table.loading = True
-        second_table = self.query_one("#second_table")
-        second_table.loading = True
         header_row = cm_dr_output.pop(0).split()
         main_rows = []
         other_rows = []
@@ -63,12 +58,13 @@ class ChezmoiDoctor(Static):
                     row = [f"[#FFD700]{cell}[/]" for cell in row]
                 main_rows.append(row)
 
+        main_table = self.query_one("#main_table")
+        second_table = self.query_one("#second_table")
+
         main_table.add_columns(*header_row)
         second_table.add_columns(*header_row)
         self.query_one("#main_table").add_rows(main_rows)
-        main_table.loading = False
         self.query_one("#second_table").add_rows(other_rows)
-        second_table.loading = False
 
 
 class ChezmoiStatus(Static):
