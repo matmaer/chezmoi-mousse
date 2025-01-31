@@ -7,16 +7,11 @@
     ],
     "settings": {
         "python.analysis.diagnosticMode": "workspace",
-        "python.terminal.focusAfterLaunch": true,
-        "python.analysis.exclude": [
-            "${workspaceFolder:textual}"
-        ],
         "python.analysis.ignore": [
             "ignored"
         ],
         "workbench.colorCustomizations": {
             "statusBar.debuggingBackground": "#310806",
-        },
-        "git.showPushSuccessNotification": true
+        }
     },
 }
