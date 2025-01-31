@@ -140,7 +140,7 @@ class ChezmoiStatus(Static):
 class LoggingSlidebar(Widget):
     def __init__(self, highlight: bool = False):
         super().__init__()
-        self.id = "command_log"
+        self.id = "command-log"
         self.auto_scroll = True
         self.highlight = highlight
         self.markup = True
