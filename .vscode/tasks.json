@@ -17,7 +17,7 @@
             "label": "TEXTUAL-DEV VERBOSE CONSOLE",
             "detail": "ALL GROUPS",
             "dependsOn": [
-                "TEXTUAL_RUN_--DEV",
+                "TEXTUAL LIVE TCSS",
                 "textual-console-verbose"
             ],
             "problemMatcher": []
@@ -26,7 +26,7 @@
             "label": "TEXTUAL-DEV WARNING CONSOLE",
             "detail": "WARNING, ERROR, PRINT, LOGGING, WORKER",
             "dependsOn": [
-                "TEXTUAL_RUN_--DEV",
+                "TEXTUAL LIVE TCSS",
                 "textual-console-warning"
             ],
             "problemMatcher": []
@@ -35,7 +35,7 @@
             "label": "TEXTUAL-DEV EVENT CONSOLE",
             "detail": "EVENT, WARNING, ERROR, PRINT, LOGGING, WORKER",
             "dependsOn": [
-                "TEXTUAL_RUN_--DEV",
+                "TEXTUAL LIVE TCSS",
                 "textual-console-event"
             ],
             "problemMatcher": []
