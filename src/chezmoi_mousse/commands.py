@@ -1,14 +1,8 @@
-"""
-Module that wraps chezmoi and git commands.
-Bare minimum output curation which needed for any widget.
-"""
-
+""" Module that wraps chezmoi commands."""
 
 import json
 import subprocess
 import tomllib
-
-
 
 
 class ChezmoiCommands:

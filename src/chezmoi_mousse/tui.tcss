@@ -19,8 +19,48 @@ Footer {
 }
 
 Screen {
-  overflow: hidden;
+  layers: sidebar;
 }
+
+LogSlidebar {
+  background: $background;
+  background-tint: $background;
+  margin-top: 3;
+  dock: right;
+  /* Needs its own layer to sit above content */
+  layer: sidebar;
+  /* offset-x: -100%; Move out of view if docked left, 100% if docked right */
+  offset-x: 100%;
+  min-width: 7;
+  max-width: 70%;
+  height: auto;
+  min-height: 5;
+  max-height: 80%;
+  border-left: $panel;
+  border-top: $panel;
+  border-bottom: $panel;
+
+  /* Enable animation */
+  transition: offset 350ms;
+  &.-visible {
+      /* Set offset.x to 0 to make it visible when class is applied */
+      offset-x: 0;
+  }
+  & > Vertical {
+      margin: 0 1 0 1;
+      background: $background;
+      background-tint: $background;
+  }
+  &:focus {
+      background-tint: $background;
+  }
+}
+
+#richlog-slidebar {
+  background: $background;
+  background-tint: $background;
+}
+
 
 #diagram {
   margin-left: 1;
@@ -80,7 +120,8 @@ DataTable {
     background: black;
     background-tint: black;
     overflow-y: hidden;
-    height: 12;
+    height: auto;
+    min-height: 1;
     margin-top: 2;
   }
   #loader-items {
@@ -103,29 +144,3 @@ DataTable {
     border: none;
   }
 }
-
-# RightSlidebar {
-  #   width: auto;
-  #   # for the lip
-  #   min-width: 2;
-  #   max-width: 70%;
-  #   height: auto;
-  #   min-height: 7;
-  #   max-height: 80%;
-  #   border-left: $ui_accent;
-  #   border-top: $ui_accent;
-  #   border-bottom: $ui_accent;
-  #   dock: right;
-  #   # layer to sit above content
-  #   layer: slidebar;
-  #   transition: offset 400ms;
-  #   # Offset -100% (left) and 100% (right) to be out of view
-  #   offset-x: 100%;
-  #   &:focus {
-  #       background-tint: $background;
-  #   };
-  #   &.-visible {
-  #       /* offset.x reaches 0 when fully slided in view */
-  #       offset-x: 0;
-  #   };
-# }

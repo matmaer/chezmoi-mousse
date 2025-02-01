@@ -1,13 +1,17 @@
 from textual.theme import Theme
+
 # from textual.color import Gradient
 
-def rgb_to_hex(red,green,blue):
-    return "#%02x%02x%02x" % (red,green,blue)
+
+def rgb_to_hex(red, green, blue):
+    return "#%02x%02x%02x" % (red, green, blue)
+
 
 oled_deep_zen = Theme(
-    name="oled-deep-zen", dark=True,
-    primary="rgb(67, 156, 251)", # fade end
-    accent="rgb(241, 135, 251)", # fade end
+    name="oled-deep-zen",
+    dark=True,
+    primary="rgb(67, 156, 251)",  # fade end
+    accent="rgb(241, 135, 251)",  # fade end
     panel="rgb(98, 118, 147)",
     background="rgb(13, 17, 23)",
     foreground="rgb(234, 232, 227)",
@@ -18,13 +22,12 @@ oled_deep_zen = Theme(
     text_alpha=0.9,
     warning="rgb(224, 195, 30)",
     error="rgb(203, 68, 31)",
-
     variables={
         "footer-background": "rgb(13, 17, 23)",
         "footer-item-background": "rgb(13, 17, 23)",
         "footer-key-background": "rgb(13, 17, 23)",
         "footer-description-background": "rgb(13, 17, 23)",
-    }
+    },
     # vars to check:
     # "accent-muted"
     # "block-cursor-background"

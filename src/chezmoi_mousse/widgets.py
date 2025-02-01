@@ -1,27 +1,20 @@
-from pathlib import Path
 from collections.abc import Iterable
+from pathlib import Path
 
 from textual.app import ComposeResult
-from textual.widgets import (
-    DataTable,
-    Static,
-    RichLog,
-    DirectoryTree,
-    Label,
-)
-from textual.widget import Widget
+from textual.widgets import DataTable, DirectoryTree, Label, Static
 
 from chezmoi_mousse.commands import ChezmoiCommands
-
-chezmoi = ChezmoiCommands()
 
 
 class ChezmoiDoctor(Static):
 
+    chezmoi = ChezmoiCommands()
+
     def compose(self) -> ComposeResult:
         yield DataTable(
             id="main_table",
-            cursor_type = "row",
+            cursor_type="row",
             classes="tabpad",
         )
         yield Label(
@@ -30,7 +23,7 @@ class ChezmoiDoctor(Static):
         )
         yield DataTable(
             id="second_table",
-            cursor_type = "row",
+            cursor_type="row",
             classes="tabpad",
         )
 
@@ -38,7 +31,7 @@ class ChezmoiDoctor(Static):
         self.construct_table()
 
     def construct_table(self) -> None:
-        cm_dr_output = chezmoi.doctor()
+        cm_dr_output = self.chezmoi.doctor()
         header_row = cm_dr_output.pop(0).split()
         main_rows = []
         other_rows = []
@@ -73,6 +66,8 @@ class ChezmoiStatus(Static):
     https://www.chezmoi.io/reference/commands/status/
     """
 
+    chezmoi = ChezmoiCommands()
+
     status_meaning = {
         "space": {
             "Status": "No change",
@@ -103,7 +98,7 @@ class ChezmoiStatus(Static):
 
     def __init__(self):
         super().__init__()
-        self.status_output = chezmoi.status()
+        self.status_output = self.chezmoi.status()
         self.classes = "tabpad"
 
     def compose(self) -> ComposeResult:
@@ -137,26 +132,14 @@ class ChezmoiStatus(Static):
             re_add_table.add_row(*re_add_row)
 
 
-class LoggingSlidebar(Widget):
-    def __init__(self, highlight: bool = False):
-        super().__init__()
-        self.id = "command-log"
-        self.auto_scroll = True
-        self.highlight = highlight
-        self.markup = True
-        self.max_lines = 2000
-        self.wrap = False
-        self.animated = True
-
-    def compose(self) -> ComposeResult:
-        yield RichLog(id="slidelog")
-
-
 class ManagedFiles(DirectoryTree):
+
+    chezmoi = ChezmoiCommands()
+
     def __init__(self):
         # TODO: get destDir from dataclass
         super().__init__("/home/mm")
-        self.managed = [Path(entry) for entry in chezmoi.managed()]
+        self.managed = [Path(entry) for entry in self.chezmoi.managed()]
         self.classes = "tabpad"
 
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:

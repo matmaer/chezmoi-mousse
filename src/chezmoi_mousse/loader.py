@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from rich.segment import Segment
 from rich.style import Style
 
-from textual import work
 from textual.app import ComposeResult
 from textual.containers import Center, Middle
 from textual.screen import Screen
@@ -12,10 +11,8 @@ from textual.strip import Strip
 from textual.widgets import Footer, RichLog, Header
 from textual.widget import Widget
 
-from chezmoi_mousse.commands import ChezmoiCommands
 from chezmoi_mousse.graphic import FADE, SPLASH
-
-chezmoi = ChezmoiCommands()
+from chezmoi_mousse.logslider import LogSlidebar
 
 
 @dataclass
@@ -57,24 +54,29 @@ class ItemLoader(Widget):
             max_lines=11,
         )
 
-    @work(thread=True)
-    def on_mount(self) -> None:
-        self.query_one("#loader-log").write("Loading...")
-
 class LoadingScreen(Screen):
+
+    BINDINGS = [
+        ("i", "app.push_screen('inspect')", "inspect"),
+        ("o", "app.push_screen('operate')", "operate"),
+    ]
 
     def __init__(self):
         super().__init__()
         self.id = "loader-screen"
 
+    def log_to_slidebar(self, message: str) -> None:
+        self.query_one("#richlog-slidebar").write(message)
+
     def compose(self) -> ComposeResult:
         yield Header(id="loader-header")
         with Center():
             with Middle():
+                yield LogSlidebar()
                 yield AnimatedFade()
                 yield ItemLoader(id="loader-items")
         yield Footer(id="loader-footer")
 
     def on_mount(self) -> None:
         self.title = "c h e z m o i - m o u s s e"
-
+        self.log_to_slidebar("Loading dataclass....")
