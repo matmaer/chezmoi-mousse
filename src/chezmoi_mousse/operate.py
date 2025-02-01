@@ -15,7 +15,7 @@ class OperationTabs(Screen):
 
     BINDINGS = [
         ("i", "app.push_screen('inspect')", "inspect"),
-        ("s", "toggle_sidebar", "command-log"),
+        ("l", "toggle_sidebar", "command-log"),
     ]
 
     show_sidebar = reactive(False)
