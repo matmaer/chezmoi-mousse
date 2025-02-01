@@ -23,7 +23,7 @@ class ChezmoiCommands:
                 capture_output=True,
                 encoding="utf-8",
                 shell=False,
-                timeout=2,  # temporary for development, should be one
+                timeout=1,
             )
         except FileNotFoundError:
             return "chezmoi not found"
