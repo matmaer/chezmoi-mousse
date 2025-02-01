@@ -12,7 +12,6 @@ from textual.widgets import Footer, RichLog, Header
 from textual.widget import Widget
 
 from chezmoi_mousse.graphic import FADE, SPLASH
-from chezmoi_mousse.logslider import LogSlidebar
 
 
 @dataclass
@@ -65,18 +64,13 @@ class LoadingScreen(Screen):
         super().__init__()
         self.id = "loader-screen"
 
-    def log_to_slidebar(self, message: str) -> None:
-        self.query_one("#richlog-slidebar").write(message)
-
     def compose(self) -> ComposeResult:
         yield Header(id="loader-header")
         with Center():
             with Middle():
-                yield LogSlidebar()
                 yield AnimatedFade()
                 yield ItemLoader(id="loader-items")
         yield Footer(id="loader-footer")
 
     def on_mount(self) -> None:
         self.title = "c h e z m o i - m o u s s e"
-        self.log_to_slidebar("Loading dataclass....")
