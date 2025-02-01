@@ -36,6 +36,10 @@ class ChezmoiCommands:
         else:
             raise subprocess.CalledProcessError
 
+    ####################
+    # inspect commands #
+    ####################
+
     def data(self) -> dict | str:
         result = self._run(["data", "--format=json"])
         try:
@@ -60,19 +64,23 @@ class ChezmoiCommands:
         except tomllib.TOMLDecodeError:
             return result.strip()
 
-    def managed(self) -> list:
-        command = ["managed", "--path-style=absolute"]
-        return self._run(command).splitlines()
-
     def doctor(self) -> list:
         result = self._run(["doctor"]).splitlines()
         return result
 
+    def ignored(self) -> list:
+        return self._run(["ignored"]).splitlines()
+
+    def managed(self) -> list:
+        command = ["managed", "--path-style=absolute"]
+        return self._run(command).splitlines()
+
     def status(self) -> list:
         return self._run(["status"]).splitlines()
 
-    def ignored(self) -> list:
-        return self._run(["ignored"]).splitlines()
+    #########################################
+    # commands to be implemented, if needed #
+    #########################################
 
     def target_state_dump(self) -> dict | str:
         result = self._run(["dump"])
