@@ -15,16 +15,13 @@ class ChezmoiDoctor(Static):
         yield DataTable(
             id="main_table",
             cursor_type="row",
-            classes="tabpad",
         )
         yield Label(
             "Local commands skippeed because not in Path:",
-            classes="tabpad",
         )
         yield DataTable(
             id="second_table",
             cursor_type="row",
-            classes="tabpad",
         )
 
     def on_mount(self):
