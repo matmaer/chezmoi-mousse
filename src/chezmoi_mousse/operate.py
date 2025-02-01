@@ -1,7 +1,7 @@
 """Constructs the operate screen."""
 
 from textual.app import ComposeResult
-from textual.containers import VerticalScroll
+from textual.containers import Vertical, VerticalScroll
 from textual.reactive import reactive
 from textual.screen import Screen
 from textual.widgets import Footer, Header, Static, TabbedContent
@@ -26,14 +26,14 @@ class OperationTabs(Screen):
     def compose(self) -> ComposeResult:
         yield Header()
         yield LogSlidebar()
-        with VerticalScroll():
+        with Vertical():
             with TabbedContent(
                 "Chezmoi-Diagram",
                 "Managed-Files",
                 "Status-Overview",
             ):
-                yield Static(FLOW_DIAGRAM, id="diagram")
-                yield ManagedFiles()
+                yield VerticalScroll(Static(FLOW_DIAGRAM, id="diagram"))
+                yield VerticalScroll(ManagedFiles())
                 yield ChezmoiStatus()
         yield Footer()
 

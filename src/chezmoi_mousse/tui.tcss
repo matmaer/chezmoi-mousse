@@ -68,8 +68,7 @@ LogSlidebar {
   min-width: 76;
 }
 
-.tabpad {
-  padding-top: 1;
+Pretty {
   padding-right: 1;
   padding-left: 1;
 }
@@ -81,6 +80,7 @@ DataTable, DirectoryTree {
 DataTable {
   overflow-x: hidden;
   color: $foreground 80%;
+  padding: 1 1 0 0;
   text-style: none;
   &:focus {
     & > .datatable--cursor {

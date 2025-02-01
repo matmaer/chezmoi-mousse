@@ -1,7 +1,7 @@
 """Constructs the Inspector screen."""
 
 from textual.app import ComposeResult
-from textual.containers import VerticalScroll
+from textual.containers import Vertical, VerticalScroll
 from textual.reactive import reactive
 from textual.screen import Screen
 from textual.widgets import Footer, Header, Pretty, TabbedContent
@@ -29,7 +29,7 @@ class InspectTabs(Screen):
     def compose(self) -> ComposeResult:
         yield Header(classes="middle")
         yield LogSlidebar()
-        with VerticalScroll():
+        with Vertical():
             with TabbedContent(
                 "Doctor",
                 "Config-Dump",
@@ -38,10 +38,10 @@ class InspectTabs(Screen):
                 "Ignored",
             ):
                 yield VerticalScroll(ChezmoiDoctor())
-                yield Pretty(self.chezmoi.dump_config(), classes="tabpad")
-                # yield Pretty(self.chezmoi_output.data, classes="tabpad")
-                yield Pretty(self.chezmoi.cat_config(), classes="tabpad")
-                yield Pretty(self.chezmoi.ignored(), classes="tabpad")
+                yield VerticalScroll(Pretty(self.chezmoi.dump_config()))
+                # yield Pretty(self.chezmoi_output.data)
+                yield VerticalScroll(Pretty(self.chezmoi.cat_config()))
+                yield VerticalScroll(Pretty(self.chezmoi.ignored()))
         yield Footer()
 
     def on_mount(self) -> None:
