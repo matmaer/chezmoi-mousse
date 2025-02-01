@@ -29,7 +29,8 @@ LogSlidebar {
   dock: right;
   /* Needs its own layer to sit above content */
   layer: sidebar;
-  /* offset-x: -100%; Move out of view if docked left, 100% if docked right */
+  /* offset-x: -100%; out of view if docked left */
+  /* offset-x: 100%; out if view if docked right */
   offset-x: 100%;
   min-width: 7;
   max-width: 70%;
@@ -43,7 +44,7 @@ LogSlidebar {
   /* Enable animation */
   transition: offset 350ms;
   &.-visible {
-      /* Set offset.x to 0 to make it visible when class is applied */
+      /* offset.x: 0; make visible when class is applied */
       offset-x: 0;
   }
   & > Vertical {
@@ -60,7 +61,6 @@ LogSlidebar {
   background: $background;
   background-tint: $background;
 }
-
 
 #diagram {
   margin-left: 1;
@@ -120,8 +120,7 @@ DataTable {
     background: black;
     background-tint: black;
     overflow-y: hidden;
-    height: auto;
-    min-height: 1;
+    height: 12;
     margin-top: 2;
   }
   #loader-items {

@@ -2,6 +2,7 @@
 
 from textual.app import ComposeResult
 from textual.containers import VerticalScroll
+from textual.reactive import reactive
 from textual.screen import Screen
 from textual.widgets import Footer, Header, Pretty, TabbedContent
 
@@ -15,8 +16,10 @@ class InspectTabs(Screen):
 
     BINDINGS = [
         ("o", "app.push_screen('operate')", "operate"),
-        ("s", "toggle_sidebar", "slidebar"),
+        ("l", "toggle_sidebar", "command-log"),
     ]
+
+    show_sidebar = reactive(False)
 
     chezmoi = ChezmoiCommands()
     chezmoi_output = ChezmoiOutput(chezmoi.data())
@@ -45,3 +48,10 @@ class InspectTabs(Screen):
     def on_mount(self) -> None:
         self.title = "- i n s p e c t -"
         self.log_to_slidebar("inspecting")
+
+    def action_toggle_sidebar(self) -> None:
+        self.show_sidebar = not self.show_sidebar
+
+    def watch_show_sidebar(self, show_sidebar: bool) -> None:
+        # Toggle "visible" class when "show_sidebar" reactive changes.
+        self.query_one(LogSlidebar).set_class(show_sidebar, "-visible")
