@@ -23,9 +23,6 @@ class InspectTabs(Screen):
     chezmoi = ChezmoiCommands()
     chezmoi_output = ChezmoiOutput(chezmoi.data())
 
-    def log_to_slidebar(self, message: str) -> None:
-        self.query_one("#richlog-slidebar").write(message)
-
     def compose(self) -> ComposeResult:
         yield Header(classes="middle")
         yield LogSlidebar()
