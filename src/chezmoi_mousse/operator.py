@@ -19,7 +19,7 @@ from textual.widgets import (
     TabbedContent,
 )
 
-from chezmoi_mousse.io import ChezmoiCommands
+from chezmoi_mousse.commands import chezmoi
 from chezmoi_mousse.graphics import FLOW_DIAGRAM
 
 
@@ -44,8 +44,6 @@ class ChezmoiStatus(Static):
     Chezmoi status command output reference:
     https://www.chezmoi.io/reference/commands/status/
     """
-
-    chezmoi = ChezmoiCommands()
 
     status_meaning = {
         "space": {
@@ -86,7 +84,7 @@ class ChezmoiStatus(Static):
         yield DataTable(id="re_add_table")
 
     def on_mount(self):
-        self.status_output = self.chezmoi.status()
+        self.status_output = chezmoi.status()
         re_add_table = self.query_one("#re_add_table")
         apply_table = self.query_one("#apply_table")
 
@@ -113,12 +111,10 @@ class ChezmoiStatus(Static):
 
 class ManagedFiles(DirectoryTree):
 
-    chezmoi = ChezmoiCommands()
-
     def __init__(self):
         # TODO: get destDir from dataclass
         super().__init__("/home/mm")
-        self.managed = [Path(entry) for entry in self.chezmoi.managed()]
+        self.managed = [Path(entry) for entry in chezmoi.managed()]
         self.classes = "tabpad"
 
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
@@ -142,13 +138,13 @@ class OperationTabs(Screen):
         yield LogSlidebar()
         with Vertical():
             with TabbedContent(
+                "Status-Overview",
                 "Chezmoi-Diagram",
                 "Managed-Files",
-                "Status-Overview",
             ):
+                yield ChezmoiStatus()
                 yield VerticalScroll(Static(FLOW_DIAGRAM, id="diagram"))
                 yield VerticalScroll(ManagedFiles())
-                yield ChezmoiStatus()
         yield Footer()
 
     def on_mount(self) -> None:

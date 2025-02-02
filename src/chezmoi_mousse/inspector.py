@@ -13,12 +13,9 @@ from textual.widgets import (
     TabbedContent,
 )
 
-from chezmoi_mousse.io import ChezmoiCommands
-
+from chezmoi_mousse.commands import chezmoi
 
 class ChezmoiDoctor(Static):
-
-    chezmoi = ChezmoiCommands()
 
     def compose(self) -> ComposeResult:
         yield DataTable(
@@ -37,7 +34,7 @@ class ChezmoiDoctor(Static):
         self.construct_table()
 
     def construct_table(self) -> None:
-        cm_dr_output = self.chezmoi.doctor()
+        cm_dr_output = chezmoi.doctor()
         header_row = cm_dr_output.pop(0).split()
         main_rows = []
         other_rows = []
@@ -72,24 +69,24 @@ class InspectTabs(Screen):
         ("o", "app.push_screen('operate')", "operate"),
     ]
 
-    chezmoi = ChezmoiCommands()
-
     def compose(self) -> ComposeResult:
         yield Header(classes="middle")
         with Vertical():
             with TabbedContent(
+                "Ignored",
                 "Doctor",
                 "Config-Dump",
-                # "Template-Data",
+                "Template-Data",
                 "Config-File",
-                "Ignored",
             ):
+                # yield VerticalScroll("to be populated")
+                yield VerticalScroll(Pretty(chezmoi.ignored()))
                 yield VerticalScroll(ChezmoiDoctor())
-                yield VerticalScroll(Pretty(self.chezmoi.dump_config()))
-                # yield Pretty(self.chezmoi_output.data)
-                yield VerticalScroll(Pretty(self.chezmoi.cat_config()))
-                yield VerticalScroll(Pretty(self.chezmoi.ignored()))
+                yield VerticalScroll(Pretty(chezmoi.dump_config()))
+                yield Pretty(chezmoi.data())
+                yield VerticalScroll(Pretty(chezmoi.cat_config()))
         yield Footer()
 
     def on_mount(self) -> None:
         self.title = "- i n s p e c t -"
+
