@@ -7,19 +7,36 @@ from textual.app import ComposeResult
 from textual.containers import Vertical, VerticalScroll
 from textual.reactive import reactive
 from textual.screen import Screen
+from textual.widget import Widget
 from textual.widgets import (
     DataTable,
     DirectoryTree,
     Footer,
     Header,
     Label,
+    RichLog,
     Static,
     TabbedContent,
 )
 
 from chezmoi_mousse.commands import ChezmoiCommands
 from chezmoi_mousse.graphic import FLOW_DIAGRAM
-from chezmoi_mousse.logslider import LogSlidebar
+
+
+class LogSlidebar(Widget):
+
+    def __init__(self, highlight: bool = False):
+        super().__init__()
+        self.animate = True
+        self.auto_scroll = True
+        self.highlight = highlight
+        self.markup = True
+        self.max_lines = 160  # (80×3÷2)×((16−4)÷9)
+        self.wrap = True
+
+    def compose(self) -> ComposeResult:
+        with Vertical():
+            yield RichLog(id="richlog-slidebar")
 
 
 class ChezmoiStatus(Static):
