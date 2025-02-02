@@ -2,7 +2,6 @@
 
 from textual.app import ComposeResult
 from textual.containers import Vertical, VerticalScroll
-from textual.reactive import reactive
 from textual.screen import Screen
 from textual.widgets import (
     DataTable,
@@ -15,7 +14,6 @@ from textual.widgets import (
 )
 
 from chezmoi_mousse.commands import ChezmoiCommands
-from chezmoi_mousse.logslider import LogSlidebar
 
 
 class ChezmoiDoctor(Static):
@@ -74,13 +72,10 @@ class InspectTabs(Screen):
         ("o", "app.push_screen('operate')", "operate"),
     ]
 
-    show_sidebar = reactive(False)
-
     chezmoi = ChezmoiCommands()
 
     def compose(self) -> ComposeResult:
         yield Header(classes="middle")
-        yield LogSlidebar()
         with Vertical():
             with TabbedContent(
                 "Doctor",
