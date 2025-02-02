@@ -6,7 +6,7 @@ import tomllib
 
 
 class ChezmoiCommands:
-    def __init__(self):
+    def __init__(self) -> None:
         self.chezmoi = [
             "chezmoi",
             "--no-pager",
@@ -35,10 +35,6 @@ class ChezmoiCommands:
             return result.stderr
         else:
             raise subprocess.CalledProcessError
-
-    ####################
-    # inspect commands #
-    ####################
 
     def data(self) -> dict | str:
         result = self._run(["data", "--format=json"])
@@ -71,27 +67,13 @@ class ChezmoiCommands:
     def ignored(self) -> list:
         return self._run(["ignored"]).splitlines()
 
+    def umanaged(self) -> list:
+        command = ["managed", "--path-style=absolute"]
+        return self._run(command).splitlines()
+
     def managed(self) -> list:
         command = ["managed", "--path-style=absolute"]
         return self._run(command).splitlines()
 
     def status(self) -> list:
         return self._run(["status"]).splitlines()
-
-    #########################################
-    # commands to be implemented, if needed #
-    #########################################
-
-    def target_state_dump(self) -> dict | str:
-        result = self._run(["dump"])
-        try:
-            return json.loads(result)
-        except json.JSONDecodeError:
-            return result.strip()
-
-    def state_dump(self) -> dict | str:
-        result = self._run(["state", "dump", "--format=json"])
-        try:
-            return json.loads(result)
-        except json.JSONDecodeError:
-            return result.strip()
