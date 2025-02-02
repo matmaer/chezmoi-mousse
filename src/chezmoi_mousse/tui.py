@@ -4,7 +4,7 @@ from textual.binding import Binding
 from chezmoi_mousse.graphic import oled_deep_zen
 from chezmoi_mousse.inspector import InspectTabs
 from chezmoi_mousse.loader import LoadingScreen
-from chezmoi_mousse.operate import OperationTabs
+from chezmoi_mousse.operator import OperationTabs
 
 
 class ChezmoiTUI(App):
