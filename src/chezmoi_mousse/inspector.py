@@ -9,7 +9,6 @@ from textual.widgets import Footer, Header, Pretty, TabbedContent
 from chezmoi_mousse.commands import ChezmoiCommands
 from chezmoi_mousse.widgets import ChezmoiDoctor
 from chezmoi_mousse.logslider import LogSlidebar
-from chezmoi_mousse.loader import ChezmoiOutput
 
 
 class InspectTabs(Screen):
@@ -21,7 +20,6 @@ class InspectTabs(Screen):
     show_sidebar = reactive(False)
 
     chezmoi = ChezmoiCommands()
-    chezmoi_output = ChezmoiOutput(chezmoi.data())
 
     def compose(self) -> ComposeResult:
         yield Header(classes="middle")
