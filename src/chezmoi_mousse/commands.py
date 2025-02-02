@@ -3,11 +3,10 @@
 import json
 import subprocess
 import tomllib
-# from chezmoi_mousse import chezmoi_io
 
 class ChezmoiCommands:
     def __init__(self) -> None:
-        self.chezmoi = [
+        self.chezmoi_base_command = [
             "chezmoi",
             "--no-pager",
             "--color=false",
@@ -16,11 +15,10 @@ class ChezmoiCommands:
             "--config=/home/mm/.config/chezmoi/chezmoi.toml",
         ]
 
-
     def _run(self, command: list) -> subprocess.CompletedProcess:
         try:
             result = subprocess.run(
-                self.chezmoi + command,
+                self.chezmoi_base_command + command,
                 capture_output=True,
                 encoding="utf-8",
                 shell=False,
@@ -78,3 +76,5 @@ class ChezmoiCommands:
 
     def status(self) -> list:
         return self._run(["status"]).splitlines()
+
+chezmoi = ChezmoiCommands()
