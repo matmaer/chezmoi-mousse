@@ -13,7 +13,7 @@ from textual.widgets import (
     TabbedContent,
 )
 
-from chezmoi_mousse.commands import ChezmoiCommands
+from chezmoi_mousse.io import ChezmoiCommands
 
 
 class ChezmoiDoctor(Static):

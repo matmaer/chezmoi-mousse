@@ -19,7 +19,7 @@ from textual.widgets import (
     TabbedContent,
 )
 
-from chezmoi_mousse.commands import ChezmoiCommands
+from chezmoi_mousse.io import ChezmoiCommands
 from chezmoi_mousse.graphics import FLOW_DIAGRAM
 
 
