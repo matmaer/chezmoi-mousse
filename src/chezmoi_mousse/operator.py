@@ -20,7 +20,7 @@ from textual.widgets import (
 )
 
 from chezmoi_mousse.commands import ChezmoiCommands
-from chezmoi_mousse.graphic import FLOW_DIAGRAM
+from chezmoi_mousse.graphics import FLOW_DIAGRAM
 
 
 class LogSlidebar(Widget):

@@ -9,7 +9,7 @@ from textual.strip import Strip
 from textual.widget import Widget
 from textual.widgets import Footer, Header, RichLog
 
-from chezmoi_mousse.graphic import FADE, SPLASH
+from chezmoi_mousse.graphics import FADE, SPLASH
 
 
 class AnimatedFade(Widget):
