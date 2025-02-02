@@ -48,5 +48,3 @@ class ChezmoiTUI(App):
         self.register_theme(oled_deep_zen)
         self.theme = "oled-deep-zen"
         self.push_screen("loader")
-
-

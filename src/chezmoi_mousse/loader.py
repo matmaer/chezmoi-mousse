@@ -2,13 +2,12 @@ from collections import deque
 
 from rich.segment import Segment
 from rich.style import Style
-
 from textual.app import ComposeResult
 from textual.containers import Center, Middle
 from textual.screen import Screen
 from textual.strip import Strip
-from textual.widgets import Footer, RichLog, Header
 from textual.widget import Widget
+from textual.widgets import Footer, Header, RichLog
 
 from chezmoi_mousse.graphic import FADE, SPLASH
 
@@ -68,4 +67,4 @@ class LoadingScreen(Screen):
         yield Footer(id="loader-footer")
 
     def on_mount(self) -> None:
-        self.title = "c h e z m o i - m o u s s e"
+        self.title = "- c h e z m o i  m o u s s e -"
