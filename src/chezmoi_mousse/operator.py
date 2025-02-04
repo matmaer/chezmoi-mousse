@@ -145,13 +145,13 @@ class OperationTabs(Screen):
         yield LogSlidebar()
         with Vertical():
             with TabbedContent(
-                "Status-Overview",
                 "Chezmoi-Diagram",
                 "Managed-Files",
+                "Status-Overview",
             ):
-                yield ChezmoiStatus()
                 yield VerticalScroll(Static(FLOW_DIAGRAM, id="diagram"))
                 yield VerticalScroll(ManagedFiles())
+                yield ChezmoiStatus()
         yield Footer()
 
     def on_mount(self) -> None:
