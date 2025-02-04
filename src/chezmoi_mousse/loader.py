@@ -77,7 +77,11 @@ class LoadingScreen(Screen):
         else:
             command = verb
         self.commands.run(command, refresh=True)
-        message = f"loaded output from chezmoi {verb}"
+
+        pad_chars = 30
+        command = f"chezmoi {verb}".ljust(pad_chars, '.')
+        success_color = self.app.theme_variables['success']
+        message = f"[{success_color}]{command} loaded"
         self.query_one("#loader-log").write(message)
 
     def on_mount(self) -> None:
