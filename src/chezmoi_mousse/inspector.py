@@ -1,5 +1,8 @@
 """Constructs the Inspector screen."""
 
+import json
+import tomllib
+
 from textual.app import ComposeResult
 from textual.containers import Vertical, VerticalScroll
 from textual.screen import Screen
@@ -13,7 +16,10 @@ from textual.widgets import (
     TabbedContent,
 )
 
-from chezmoi_mousse.io import chezmoi
+from chezmoi_mousse.commands import ChezmoiCommands
+
+chezmoi = ChezmoiCommands()
+
 
 class ChezmoiDoctor(Static):
 
@@ -34,7 +40,7 @@ class ChezmoiDoctor(Static):
         self.construct_table()
 
     def construct_table(self) -> None:
-        cm_dr_output = chezmoi.doctor()
+        cm_dr_output = chezmoi.run("doctor")["output"].splitlines()
         header_row = cm_dr_output.pop(0).split()
         main_rows = []
         other_rows = []
@@ -73,20 +79,25 @@ class InspectTabs(Screen):
         yield Header(classes="middle")
         with Vertical():
             with TabbedContent(
-                "Ignored",
                 "Doctor",
                 "Config-Dump",
                 "Template-Data",
                 "Config-File",
+                "Ignored",
             ):
-                # yield VerticalScroll("to be populated")
-                yield VerticalScroll(Pretty(chezmoi.ignored()))
                 yield VerticalScroll(ChezmoiDoctor())
-                yield VerticalScroll(Pretty(chezmoi.dump_config()))
-                yield Pretty(chezmoi.data())
-                yield VerticalScroll(Pretty(chezmoi.cat_config()))
+                yield VerticalScroll(
+                    Pretty(json.loads(chezmoi.run("dump-config")["output"]))
+                )
+                yield VerticalScroll(Pretty(json.loads(chezmoi.run("data")["output"])))
+                yield VerticalScroll(
+                    # TODO: support users with json instead of toml config file
+                    Pretty(tomllib.loads(chezmoi.run("cat-config")["output"]))
+                )
+                yield VerticalScroll(
+                    Pretty(chezmoi.run("ignored")["output"].splitlines())
+                )
         yield Footer()
 
     def on_mount(self) -> None:
         self.title = "- i n s p e c t -"
-

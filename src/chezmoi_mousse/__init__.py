@@ -1,39 +1,22 @@
 """Singleton to store output for each command in the ChezmoiCommands class"""
 
-CHEZMOI = {
-    "data": {
-        "command": str(),
-        "result": str(),
+# current chezmoi verbs that can be handled by the TUI
+VERBS = (
+    "data",
+    "dump-config",
+    "cat-config",
+    "doctor",
+    "ignored",
+    "managed",
+    "unmanaged",
+    "status",
+)
 
-    },
-    "dump_config": {
-        "command": str(),
-        "result": str(),
+# singleton to cache the output for each command
+CHEZMOI = dict()
 
-    },
-    "cat_config": {
+for verb in VERBS:
+    CHEZMOI[verb] = {
         "command": str(),
-        "result": str(),
-
-    },
-    "doctor": {
-        "command": str(),
-        "result": str(),
-
-    },
-    "ignored": {
-        "command": str(),
-        "result": str(),
-
-    },
-    "managed": {
-        "command": str(),
-        "result": str(),
-
-    },
-    "unmanaged": {
-        "command": str(),
-        "result": str(),
-
-    },
-}
+        "output": str(),
+    }

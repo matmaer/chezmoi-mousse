@@ -8,7 +8,6 @@ from chezmoi_mousse.operator import OperationTabs
 
 
 class ChezmoiTUI(App):
-
     BINDINGS = [
         Binding(
             key="i",
