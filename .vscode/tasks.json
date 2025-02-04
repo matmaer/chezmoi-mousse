@@ -85,23 +85,6 @@
             "type": "shell",
             "problemMatcher": []
         },
-        {
-            "label": "IPYTHON",
-            "detail": "Run ipython",
-            "command": "ipython",
-            "args": [
-                "--no-confirm-exit"
-            ],
-            "presentation": {
-                "focus": true,
-                "close": true
-            },
-            "runOptions": {
-                "instanceLimit": 1
-            },
-            "type": "shell",
-            "problemMatcher": []
-        }
     ],
     "version": "2.0.0"
 }
