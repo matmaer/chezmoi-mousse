@@ -30,7 +30,7 @@ To run:
 - [x] `chezmoi doctor`
 - [x] `chezmoi config-dump`
 - [x] `chezmoi ignored`
-- [x] `chezmoi cat-config for toml format`
+- [x] `chezmoi cat-config` for toml format
 - [ ] `git config` for the local chezmoi repository
 - [ ] `git status` between local and remote chezmoi repository
 - ...
