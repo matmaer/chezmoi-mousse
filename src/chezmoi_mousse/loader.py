@@ -23,7 +23,8 @@ class AnimatedFade(Widget):
         self.styles.height = 10
         self.styles.width = 55
 
-    def construct_splash_lines():
+    @staticmethod
+    def construct_splash_lines() -> list:
         splash_lines = SPLASH.splitlines()
         max_width = len(max(splash_lines, key=len))
         return [line.ljust(max_width) for line in splash_lines]
@@ -66,7 +67,7 @@ class ItemLoader(Widget):
         verb = command.split()[0]
         verb_only_command = f"chezmoi {verb} ".ljust(pad_chars, '.')
         color = self.app.theme_variables['success']
-        message = f"[{color}]{verb_only_command} loaded"
+        message = f"[{color}]{verb_only_command} loaded[/]"
         self.query_one("#loader-log").write(message)
 
     def on_mount(self) -> None:
@@ -95,4 +96,3 @@ class LoadingScreen(Screen):
 
     def on_mount(self) -> None:
         self.title = "- c h e z m o i  m o u s s e -"
-

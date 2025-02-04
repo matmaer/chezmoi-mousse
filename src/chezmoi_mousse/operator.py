@@ -79,6 +79,7 @@ class ChezmoiStatus(Static):
     def __init__(self):
         super().__init__()
         self.classes = "tabpad"
+        self.status_output = list()
 
     def compose(self) -> ComposeResult:
         yield Label("Chezmoi Apply Status", variant="primary")
@@ -143,12 +144,12 @@ class OperationTabs(Screen):
         yield LogSlidebar()
         with Vertical():
             with TabbedContent(
-                "Chezmoi-Diagram",
                 "Managed-Files",
+                "Chezmoi-Diagram",
                 "Status-Overview",
             ):
-                yield VerticalScroll(Static(FLOW_DIAGRAM, id="diagram"))
                 yield VerticalScroll(ManagedFiles())
+                yield VerticalScroll(Static(FLOW_DIAGRAM, id="diagram"))
                 yield ChezmoiStatus()
         yield Footer()
 
