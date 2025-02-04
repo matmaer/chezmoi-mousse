@@ -70,5 +70,15 @@ To run:
     - ...
   - [ ] Release pipeline
 
+## General goals
 
-
+- leverage `textual` features for concise and rich visualizations
+- made for existing chezmoi users
+- only support interactive operations
+- prevent accidental errors
+- improve understanding of chezmoi by using the TUI
+- make subprocess calls as safe as possible
+- modus operandi
+  - "loading" screen for initial app startup and pre-flight checks
+  - inspect screen to visualize chezmoi environment
+  - operate screen to operate chezmoi
