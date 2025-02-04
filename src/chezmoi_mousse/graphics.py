@@ -10,17 +10,17 @@ def rgb_to_hex(red, green, blue):
 oled_deep_zen = Theme(
     name="oled-deep-zen",
     dark=True,
+    luminosity_spread=0.9,
+    text_alpha=0.9,
     accent="rgb(241, 135, 251)",  # fade end
     background="rgb(13, 17, 23)",
     error="rgb(203, 68, 31)",
     foreground="rgb(234, 232, 227)",
-    luminosity_spread=0.9,
     panel="rgb(98, 118, 147)",
     primary="rgb(67, 156, 251)",  # fade end
     secondary="rgb(37, 146, 137)",
     success="rgb(63, 170, 77)",
     surface="rgb(24, 28, 34)",
-    text_alpha=0.9,
     warning="rgb(224, 195, 30)",
     variables={
         "footer-background": "rgb(13, 17, 23)",
