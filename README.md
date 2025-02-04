@@ -26,7 +26,6 @@ To run:
 
 ### Inspect chezmoi environment widgets
 
-- [x] local config file for `chezmoi`
 - [x] `chezmoi data`
 - [x] `chezmoi doctor`
 - [x] `chezmoi config-dump`
