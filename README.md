@@ -1,4 +1,4 @@
-terminal user interface for [chezmoi](https://github.com/twpayne/chezmoi), visualizing its operations. Built with [textual](https://github.com/Textualize/textual) and [rich](https://github.com/Textualize/rich), see [Textualize](https://www.textualize.io/).
+terminal user interface for [chezmoi](https://github.com/twpayne/chezmoi), pretty print its environment and starting operations from the relevant visualized components. Built with [textual](https://github.com/Textualize/textual) and [rich](https://github.com/Textualize/rich), see [Textualize](https://www.textualize.io/).
 
 The name of the repository chezmoi-mousse is a wink to the mouse.
 The project is in its very early stages, see roadmap below.
