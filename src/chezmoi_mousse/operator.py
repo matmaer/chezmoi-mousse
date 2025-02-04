@@ -19,8 +19,10 @@ from textual.widgets import (
     TabbedContent,
 )
 
-from chezmoi_mousse.io import chezmoi
+from chezmoi_mousse.commands import ChezmoiCommands
 from chezmoi_mousse.graphics import FLOW_DIAGRAM
+
+chezmoi = ChezmoiCommands()
 
 
 class LogSlidebar(Widget):
@@ -84,7 +86,7 @@ class ChezmoiStatus(Static):
         yield DataTable(id="re_add_table")
 
     def on_mount(self):
-        self.status_output = chezmoi.status()
+        self.status_output = chezmoi.run("status")["output"].splitlines()
         re_add_table = self.query_one("#re_add_table")
         apply_table = self.query_one("#apply_table")
 
@@ -114,7 +116,12 @@ class ManagedFiles(DirectoryTree):
     def __init__(self):
         # TODO: get destDir from dataclass
         super().__init__("/home/mm")
-        self.managed = [Path(entry) for entry in chezmoi.managed()]
+        self.managed = [
+            Path(entry)
+            for entry in chezmoi.run("managed --path-style=absolute")[
+                "output"
+            ].splitlines()
+        ]
         self.classes = "tabpad"
 
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:

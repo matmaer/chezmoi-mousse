@@ -2,6 +2,7 @@ from collections import deque
 
 from rich.segment import Segment
 from rich.style import Style
+from textual import work
 from textual.app import ComposeResult
 from textual.containers import Center, Middle
 from textual.screen import Screen
@@ -9,6 +10,8 @@ from textual.strip import Strip
 from textual.widget import Widget
 from textual.widgets import Footer, Header, RichLog
 
+from chezmoi_mousse import VERBS
+from chezmoi_mousse.commands import ChezmoiCommands
 from chezmoi_mousse.graphics import FADE, SPLASH
 
 
@@ -57,6 +60,7 @@ class LoadingScreen(Screen):
     def __init__(self):
         super().__init__()
         self.id = "loader-screen"
+        self.commands = ChezmoiCommands()
 
     def compose(self) -> ComposeResult:
         yield Header(id="loader-header")
@@ -66,5 +70,17 @@ class LoadingScreen(Screen):
                 yield ItemLoader(id="loader-items")
         yield Footer(id="loader-footer")
 
+    @work(thread=True)
+    def load_command_output(self, verb: str) -> None:
+        if verb == "managed":
+            command = "managed --path-style=absolute"
+        else:
+            command = verb
+        self.commands.run(command, refresh=True)
+        message = f"loaded output from chezmoi {verb}"
+        self.query_one("#loader-log").write(message)
+
     def on_mount(self) -> None:
         self.title = "- c h e z m o i  m o u s s e -"
+        for verb in VERBS:
+            self.load_command_output(verb)
