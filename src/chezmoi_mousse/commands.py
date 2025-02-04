@@ -33,15 +33,13 @@ class ChezmoiCommands:
             )
             CHEZMOI[verb]["output"] = call_result.stdout
             return CHEZMOI[verb]
-        except subprocess.CalledProcessError:
+        except subprocess.CalledProcessError as e:
             # chezmoi can be used without config file
             if chezmoi_args[0] == "cat-config" and call_result.returncode == 1:
                 # store stderr instead of stdout
                 CHEZMOI[verb]["output"] = call_result.stderr
                 return CHEZMOI[verb]
-            else:
-                # raise every other non zero code, like check=true would do
-                raise subprocess.CalledProcessError
+            raise subprocess.CalledProcessError from e
 
     def run(self, chezmoi_args: str, refresh: bool = False) -> dict:
 
@@ -51,8 +49,10 @@ class ChezmoiCommands:
         # safety check because working programmatically created dict
         try:
             chezmoi_args == CHEZMOI[verb]["command"]
-        except KeyError or ValueError:
-            raise ValueError(f"'{chezmoi_args}': unknown command")
+        except ValueError as e:
+            raise ValueError(f"'{chezmoi_args}': unknown command") from e
+        except KeyError as e:
+            raise KeyError(f"'{verb}': unknown command") from e
 
         if refresh:
             return self._run(chezmoi_arg_list)
