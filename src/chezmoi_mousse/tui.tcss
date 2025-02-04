@@ -113,19 +113,20 @@ DataTable {
 }
 
 #loader-screen {
+  background: black;
+  & #item-loader {
+    align: center bottom;
+    height: auto;
+    width: 55;
+  }
+  & #loader-log {
+    margin: 2 0 0 0;
+    background-tint: black;
+    height: 8;
+    width: auto;
+  }
   /* several items are set by the theme vars in oled-deep-zen, they need to be
   overwritten to achieve the black loading screen */
-  background: black;
-  #loader-log {
-    background: black;
-    background-tint: black;
-    overflow-y: hidden;
-    height: 12;
-    margin-top: 2;
-  }
-  #loader-items {
-    height: auto;
-  }
   #loader-header {
     background: black;
   }

@@ -19,6 +19,7 @@ from textual.widgets import (
     TabbedContent,
 )
 
+from chezmoi_mousse import CHEZMOI
 from chezmoi_mousse.commands import ChezmoiCommands
 from chezmoi_mousse.graphics import FLOW_DIAGRAM
 
@@ -116,16 +117,13 @@ class ManagedFiles(DirectoryTree):
     def __init__(self):
         # TODO: get destDir from dataclass
         super().__init__("/home/mm")
-        self.managed = [
-            Path(entry)
-            for entry in chezmoi.run("managed --path-style=absolute")[
-                "output"
-            ].splitlines()
-        ]
+        self.managed = [Path(entry) for entry in CHEZMOI["managed"]["output"].splitlines()]
         self.classes = "tabpad"
 
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
-        return [path for path in paths if path in self.managed]
+        # managed = [Path(entry) for entry in self.managed.splitlines()]
+        return [path for path in paths if path not
+                in self.managed]
 
 
 class OperationTabs(Screen):

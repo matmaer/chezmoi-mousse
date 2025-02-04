@@ -18,6 +18,7 @@ from textual.widgets import (
 
 from chezmoi_mousse.commands import ChezmoiCommands
 
+
 chezmoi = ChezmoiCommands()
 
 
