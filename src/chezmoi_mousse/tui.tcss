@@ -5,8 +5,6 @@
 Header {
   background: $background;
   color: $accent;
-  height: 2;
-  padding-bottom: 1;
   HeaderIcon {
     /* don't use display: none; because then the title is not centered */
     visibility: hidden;
@@ -14,8 +12,8 @@ Header {
 }
 
 Footer {
-  height: 2;
-  padding-top: 1;
+  background: $background;
+  color: $accent;
 }
 
 Screen {
@@ -25,7 +23,7 @@ Screen {
 LogSlidebar {
   background: $background;
   background-tint: $background;
-  margin-top: 3;
+  margin-top: 4;
   dock: right;
   /* Needs its own layer to sit above content */
   layer: sidebar;
@@ -36,7 +34,7 @@ LogSlidebar {
   max-width: 70%;
   height: auto;
   min-height: 5;
-  max-height: 80%;
+  max-height: 75%;
   border-left: $panel;
   border-top: $panel;
   border-bottom: $panel;
@@ -80,7 +78,7 @@ DataTable, DirectoryTree {
 DataTable {
   overflow-x: hidden;
   color: $foreground 80%;
-  padding: 1 1 0 0;
+  padding: 1 1 1 0;
   text-style: none;
   &:focus {
     & > .datatable--cursor {
