@@ -144,22 +144,21 @@ class OperationTabs(Screen):
         yield LogSlidebar()
         with Vertical():
             with TabbedContent(
-                "Managed-Files",
                 "Chezmoi-Diagram",
                 "Status-Overview",
+                "Managed-Files",
             ):
-                yield VerticalScroll(ManagedFiles())
                 yield VerticalScroll(Static(FLOW_DIAGRAM, id="diagram"))
+                yield VerticalScroll(ManagedFiles())
                 yield ChezmoiStatus()
         yield Footer()
 
     def on_mount(self) -> None:
         self.title = "- o p e r a t e -"
-        self.log_to_slidebar("operating")
 
     def action_toggle_sidebar(self) -> None:
         self.show_sidebar = not self.show_sidebar
 
     def watch_show_sidebar(self, show_sidebar: bool) -> None:
         # Toggle "visible" class when "show_sidebar" reactive changes.
-        self.query_one(LogSlidebar).set_class(show_sidebar, "-visible")
+        self.query_one("#richlog-slidebar").set_class(show_sidebar, "-visible")

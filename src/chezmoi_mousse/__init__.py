@@ -20,7 +20,7 @@ for command in COMMANDS:
     verb = command.split()[0] # remove flags to create short dict key
 
     CHEZMOI[verb] = {
-        "command": command, # verb+arguments to run chezmoi
-        "full_command": str(), # will hold the full command run by subprocess.run
+        "command": command, # verb+arguments that will be added to chezmoi
+        "full_command": str(), # will hold the full command run by subprocess
         "output": str(), # will store stdout or stderr from subprocess.run
     }
