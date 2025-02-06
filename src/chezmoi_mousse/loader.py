@@ -62,7 +62,6 @@ class ItemLoader(Widget):
     @work(thread=True)
     def load_command_output(self, command: str) -> None:
         self.commands.run(command, refresh=True)
-
         pad_chars = 33
         verb = command.split()[0]
         verb_only_command = f"chezmoi {verb} ".ljust(pad_chars, '.')
@@ -85,7 +84,6 @@ class LoadingScreen(Screen):
         super().__init__()
         self.id = "loader-screen"
 
-
     def compose(self) -> ComposeResult:
         yield Header(id="loader-header")
         with Middle():
@@ -95,4 +93,4 @@ class LoadingScreen(Screen):
         yield Footer(id="loader-footer")
 
     def on_mount(self) -> None:
-        self.title = "- c h e z m o i  m o u s s e -"
+        self.title = "-  c h e z m o i  m o u s s e  -"

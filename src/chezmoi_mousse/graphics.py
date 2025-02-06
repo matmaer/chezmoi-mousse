@@ -13,7 +13,7 @@ oled_deep_zen = Theme(
     luminosity_spread=0.9,
     text_alpha=0.9,
     accent="rgb(241, 135, 251)",  # fade end
-    background="rgb(13, 17, 23)",
+    background="rgb(12, 14, 18)",
     error="rgb(203, 68, 31)",
     foreground="rgb(234, 232, 227)",
     panel="rgb(98, 118, 147)",
@@ -23,10 +23,10 @@ oled_deep_zen = Theme(
     surface="rgb(24, 28, 34)",
     warning="rgb(224, 195, 30)",
     variables={
-        "footer-background": "rgb(13, 17, 23)",
-        "footer-item-background": "rgb(13, 17, 23)",
-        "footer-key-background": "rgb(13, 17, 23)",
-        "footer-description-background": "rgb(13, 17, 23)",
+        "footer-background": "rgb(12, 14, 18)",
+        "footer-item-background": "rgb(12, 14, 18)",
+        "footer-key-background": "rgb(12, 14, 18)",
+        "footer-description-background": "rgb(12, 14, 18)",
     },
     # vars to check:
     # "accent-muted"
