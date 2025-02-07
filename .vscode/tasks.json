@@ -14,29 +14,20 @@
             "problemMatcher": []
         },
         {
-            "label": "TEXTUAL-DEV VERBOSE CONSOLE",
+            "label": "TEXTUAL-DEV +PRINT+ CONSOLE",
+            "detail": "WARNING, ERROR, PRINT, LOGGING",
+            "dependsOn": [
+                "TEXTUAL LIVE TCSS",
+                "textual-console-print"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "TEXTUAL-DEV CONSOLE",
             "detail": "ALL GROUPS",
             "dependsOn": [
                 "TEXTUAL LIVE TCSS",
                 "textual-console-verbose"
-            ],
-            "problemMatcher": []
-        },
-        {
-            "label": "TEXTUAL-DEV WARNING CONSOLE",
-            "detail": "WARNING, ERROR, PRINT, LOGGING, WORKER",
-            "dependsOn": [
-                "TEXTUAL LIVE TCSS",
-                "textual-console-warning"
-            ],
-            "problemMatcher": []
-        },
-        {
-            "label": "TEXTUAL-DEV EVENT CONSOLE",
-            "detail": "EVENT, WARNING, ERROR, PRINT, LOGGING, WORKER",
-            "dependsOn": [
-                "TEXTUAL LIVE TCSS",
-                "textual-console-event"
             ],
             "problemMatcher": []
         },
@@ -56,9 +47,9 @@
             "problemMatcher": []
         },
         {
-            "label": "textual-console-warning",
+            "label": "textual-console-print",
             "hide": true,
-            "command": "textual console -x SYSTEM -x EVENT -x DEBUG -x INFO",
+            "command": "textual console -x SYSTEM -x EVENT -x DEBUG -x INFO -x WORKER",
             "presentation": {
                 "focus": false,
                 "close": true,
@@ -71,17 +62,9 @@
             "problemMatcher": []
         },
         {
-            "label": "textual-console-event",
-            "hide": true,
-            "command": "textual console -x DEBUG -x INFO -x SYSTEM",
-            "presentation": {
-                "focus": false,
-                "close": true,
-                "group": "textualize"
-            },
-            "runOptions": {
-                "instanceLimit": 1
-            },
+            "label": "Rich Inspect",
+            "command": "ipython",
+            "args": ["rich_inspect.py", "${selectedText}"],
             "type": "shell",
             "problemMatcher": []
         },
