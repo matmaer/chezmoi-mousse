@@ -81,7 +81,6 @@ class LoadingScreen(Screen):
                 yield ItemLoader()
         yield Footer(id="loader-footer")
 
-
     def create_log_line(self, command: str) -> None:
         pad_chars = 33
         verb = command.split()[0]
@@ -99,6 +98,6 @@ class LoadingScreen(Screen):
     def on_mount(self) -> None:
         self.title = "-  c h e z m o i  m o u s s e  -"
 
-        for verb, items in CHEZMOI.__dict__.items():
-            command = items.command
+        for _, verb_fields in CHEZMOI.__dict__.items():
+            command = verb_fields.command
             self.load_command_output(command)
