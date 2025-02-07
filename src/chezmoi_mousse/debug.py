@@ -22,23 +22,56 @@
 #             log(print(f"{key}: {value}"))
 
 
+# from app.py
+# -----------
+
+# @property
+# def log(self) -> Logger:
+#     """The textual logger.
+
+#     Example:
+#         ```python
+#         self.log("Hello, World!")
+#         self.log(self.tree)
+#         ```
+
+#     Returns:
+#         A Textual logger.
+#     """
+#     return self._logger
 
 
+# from dom.py:
+# ------------
+
+# @property
+# def tree(self) -> Tree:
+#     """A Rich tree to display the DOM.
+
+#     Log this to visualize your app in the textual console.
+
+#     Example:
+#         ```python
+#         self.log(self.tree)
+#         ```
+
+#     Returns:
+#         A Tree renderable.
+#     """
 
 
+# @property
+# def css_tree(self) -> Tree:
+#     """A Rich tree to display the DOM, annotated with the node's CSS.
 
-# to integrate
-# use textual.log so no need for screen or other code that could lead to merge conflicts
-# create util function to call self.log(self.css) or self.log(self.css_tree)
-# make util functions to show app.xxx contents
-# locals()
-# globals()
-# active workers
-# check logging events, example from Jazz
-# logging message, example from Jazzhands:
-# @on(MyWidget.EventFoo)
-# async def cell_chosen(self, event: MyWidget.EventFoo):
-#     self.log.debug(
-#         f"event_foo: {event} \n"
-#         f"Row, col: {event.row}, {event.column}"    # example attributes in event
-#     )
+#     Log this to visualize your app in the textual console.
+
+#     Example:
+#         ```python
+#         self.log(self.css_tree)
+#         ```
+
+#     Returns:
+#         A Tree renderable.
+#     """
+
