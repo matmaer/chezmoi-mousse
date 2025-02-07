@@ -10,9 +10,10 @@ from textual.strip import Strip
 from textual.widget import Widget
 from textual.widgets import Footer, Header, RichLog
 
-from chezmoi_mousse import COMMANDS
-from chezmoi_mousse.commands import ChezmoiCommands
+from chezmoi_mousse import CHEZMOI
+from chezmoi_mousse.commands import ChezmoiCommands as chezmoi
 from chezmoi_mousse.graphics import FADE, SPLASH
+
 
 
 class AnimatedFade(Widget):
@@ -22,6 +23,7 @@ class AnimatedFade(Widget):
         self.id = "animated-fade"
         self.styles.height = 10
         self.styles.width = 55
+        print(self.__class__.__mro__)
 
     @staticmethod
     def construct_splash_lines() -> list:
@@ -37,9 +39,7 @@ class AnimatedFade(Widget):
         return super().render_lines(crop)
 
     def render_line(self, y: int) -> Strip:
-        return Strip(
-            [Segment(self.padded_splash[y], style=self.line_styles[y])]
-            )
+        return Strip([Segment(self.padded_splash[y], style=self.line_styles[y])])
 
     def on_mount(self) -> None:
         self.set_interval(interval=0.10, callback=self.refresh)
@@ -50,7 +50,7 @@ class ItemLoader(Widget):
     def __init__(self) -> None:
         super().__init__()
         self.id = "item-loader"
-        self.commands = ChezmoiCommands()
+        print(self.__class__.__mro__)
 
     def compose(self) -> ComposeResult:
         yield RichLog(
@@ -59,18 +59,23 @@ class ItemLoader(Widget):
             max_lines=11,
         )
 
+    # def create_log_line(self, command: str) -> None:
+        # return logline
+
     @work(thread=True)
     def load_command_output(self, command: str) -> None:
-        self.commands.run(command, refresh=True)
         pad_chars = 33
         verb = command.split()[0]
         verb_only_command = f"chezmoi {verb} ".ljust(pad_chars, ".")
         color = self.app.theme_variables["success"]
-        message = f"[{color}]{verb_only_command} loaded[/]"
-        self.query_one("#loader-log").write(message)
+        logline = f"[{color}]{verb_only_command} loaded[/]"
+        chezmoi.run(command)
+        self.query_one("#loader-log").write(logline)
 
     def on_mount(self) -> None:
-        for command in COMMANDS:
+        for verb, items in CHEZMOI.items():
+            command = items["command"]
+
             self.load_command_output(command)
 
 
@@ -84,6 +89,7 @@ class LoadingScreen(Screen):
     def __init__(self):
         super().__init__()
         self.id = "loader-screen"
+        print(self.__class__.__mro__)
 
     def compose(self) -> ComposeResult:
         yield Header(id="loader-header")

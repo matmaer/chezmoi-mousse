@@ -20,10 +20,8 @@ from textual.widgets import (
 )
 
 from chezmoi_mousse import CHEZMOI
-from chezmoi_mousse.commands import ChezmoiCommands
+from chezmoi_mousse.commands import ChezmoiCommands as chezmoi
 from chezmoi_mousse.graphics import FLOW_DIAGRAM
-
-chezmoi = ChezmoiCommands()
 
 
 class LogSlidebar(Widget):
@@ -36,6 +34,7 @@ class LogSlidebar(Widget):
         self.markup = True
         self.max_lines = 160  # (80×3÷2)×((16−4)÷9)
         self.wrap = True
+        print(self.__class__.__mro__)
 
     def compose(self) -> ComposeResult:
         with Vertical():
@@ -80,6 +79,7 @@ class ChezmoiStatus(Static):
         super().__init__()
         self.classes = "tabpad"
         self.status_output = list()
+        print(self.__class__.__mro__)
 
     def compose(self) -> ComposeResult:
         yield Label("Chezmoi Apply Status", variant="primary")
@@ -122,6 +122,7 @@ class ManagedFiles(DirectoryTree):
             Path(entry) for entry in CHEZMOI["managed"]["output"].splitlines()
         ]
         self.classes = "tabpad"
+        print(self.__class__.__mro__)
 
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
         # managed = [Path(entry) for entry in self.managed.splitlines()]
