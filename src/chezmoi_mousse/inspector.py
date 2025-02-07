@@ -15,8 +15,7 @@ from textual.widgets import (
     TabbedContent,
 )
 
-from chezmoi_mousse.commands import ChezmoiCommands as chezmoi
-
+from chezmoi_mousse.commands import ChezmoiCommand as chezmoi
 
 
 class ChezmoiDoctor(Static):
@@ -38,7 +37,7 @@ class ChezmoiDoctor(Static):
         self.construct_table()
 
     def construct_table(self) -> None:
-        cm_dr_output = chezmoi.run("doctor")["output"].splitlines()
+        cm_dr_output = chezmoi.run("doctor").output.splitlines()
         header_row = cm_dr_output.pop(0).split()
         main_rows = []
         other_rows = []
@@ -73,7 +72,6 @@ class InspectTabs(Screen):
         ("o", "app.push_screen('operate')", "operate"),
     ]
 
-
     def compose(self) -> ComposeResult:
         yield Header(classes="middle")
         with Vertical():
@@ -86,15 +84,17 @@ class InspectTabs(Screen):
             ):
                 yield VerticalScroll(ChezmoiDoctor())
                 yield VerticalScroll(
-                    Pretty(json.loads(chezmoi.run("dump-config")["output"]))
+                    Pretty(json.loads(chezmoi.run("dump-config").output))
                 )
-                yield VerticalScroll(Pretty(json.loads(chezmoi.run("data")["output"])))
+                yield VerticalScroll(
+                    Pretty(json.loads(chezmoi.run("data").output))
+                )
                 yield VerticalScroll(
                     # TODO: support users with json instead of toml config file
-                    Pretty(chezmoi.run("cat-config")["output"])
+                    Pretty(chezmoi.run("cat-config").output)
                 )
                 yield VerticalScroll(
-                    Pretty(chezmoi.run("ignored")["output"].splitlines())
+                    Pretty(chezmoi.run("ignored").output.splitlines())
                 )
         yield Footer()
 

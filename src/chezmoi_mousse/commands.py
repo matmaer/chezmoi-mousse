@@ -1,25 +1,14 @@
 """Module to run chezmoi commands with subprocess."""
 
 import subprocess
-
-from chezmoi_mousse import CHEZMOI
-
+from chezmoi_mousse import CHEZMOI, ChezmoiOutput
 
 
-
-
-class ChezmoiCommands:
-
-
-
+class ChezmoiCommand:
 
     @staticmethod
-    def run(chezmoi_args: str, refresh: bool = False) -> dict:
-
-
-
+    def run(chezmoi_args: str, refresh: bool = False) -> ChezmoiOutput:
         base_command = [
-            # which("chezmoi"),
             "chezmoi",
             "--no-pager",
             "--color=false",
@@ -29,20 +18,18 @@ class ChezmoiCommands:
         ]
 
         chezmoi_arg_list = chezmoi_args.split()
-        verb = chezmoi_arg_list[0]
+        verb = chezmoi_arg_list[0].replace("-", "_")
 
         try:
-            verb in CHEZMOI
-        except KeyError:
-            raise KeyError(f"Chezmoi verb '{verb} is not found in CHEZMOI")
+            command_data = getattr(CHEZMOI, verb)
+        except AttributeError:
+            raise KeyError(f"Chezmoi verb '{verb}' is not found in CHEZMOI")
 
         full_command_list = base_command + chezmoi_arg_list
-        print(full_command_list)
+        command_data.full_command = " ".join(full_command_list)
 
-        CHEZMOI[verb]["full_command"] = " ".join(full_command_list)
-        if refresh or CHEZMOI[verb]["output"] == "":
+        if refresh or command_data.output == "":
             try:
-                print(full_command_list)
                 call_output = subprocess.run(
                     full_command_list,
                     capture_output=True,
@@ -50,13 +37,12 @@ class ChezmoiCommands:
                     shell=False,
                     timeout=2,
                 )
-                CHEZMOI[verb]["output"] = call_output.stdout
-                return CHEZMOI[verb]
+                command_data.output = call_output.stdout
+                return command_data
 
             except subprocess.CalledProcessError:
-                # chezmoi can be used without config file
-                if verb == "cat-config" and call_output.returncode == 1:
-                    # store stderr instead of stdout
-                    CHEZMOI[verb]["output"] = call_output.stderr
-                    return CHEZMOI[verb]
-        return CHEZMOI[verb]
+                if verb == "cat_config" and call_output.returncode == 1:
+                    command_data.output = call_output.stderr
+                    return command_data
+
+        return command_data
