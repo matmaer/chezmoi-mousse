@@ -22,6 +22,7 @@ class AnimatedFade(Widget):
         self.id = "animated-fade"
         self.styles.height = 10
         self.styles.width = 55
+        print(self.__class__.__mro__)
 
     @staticmethod
     def construct_splash_lines() -> list:
@@ -50,6 +51,7 @@ class ItemLoader(Widget):
     def __init__(self) -> None:
         super().__init__()
         self.id = "item-loader"
+        print(self.__class__.__mro__)
 
     def compose(self) -> ComposeResult:
         yield RichLog(
@@ -69,6 +71,7 @@ class LoadingScreen(Screen):
     def __init__(self):
         super().__init__()
         self.id = "loader-screen"
+        print(self.__class__.__mro__)
 
     def compose(self) -> ComposeResult:
         yield Header(id="loader-header")
