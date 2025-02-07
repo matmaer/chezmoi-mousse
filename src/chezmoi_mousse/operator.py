@@ -20,7 +20,7 @@ from textual.widgets import (
 )
 
 from chezmoi_mousse import CHEZMOI
-from chezmoi_mousse.commands import ChezmoiCommands as chezmoi
+from chezmoi_mousse.commands import ChezmoiCommand as chezmoi
 from chezmoi_mousse.graphics import FLOW_DIAGRAM
 
 
@@ -88,7 +88,7 @@ class ChezmoiStatus(Static):
         yield DataTable(id="re_add_table")
 
     def on_mount(self):
-        self.status_output = chezmoi.run("status")["output"].splitlines()
+        self.status_output = chezmoi.run("status").output.splitlines()
         re_add_table = self.query_one("#re_add_table")
         apply_table = self.query_one("#apply_table")
 
@@ -119,7 +119,7 @@ class ManagedFiles(DirectoryTree):
         # TODO: get destDir from dataclass
         super().__init__("/home/mm")
         self.managed = [
-            Path(entry) for entry in CHEZMOI["managed"]["output"].splitlines()
+            Path(entry) for entry in CHEZMOI.managed.output.splitlines()
         ]
         self.classes = "tabpad"
         print(self.__class__.__mro__)

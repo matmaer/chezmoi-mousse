@@ -1,47 +1,43 @@
-"""Singleton to store output for each command in the ChezmoiCommands class"""
+"""Singleton to store output for each command"""
 
-# current chezmoi commands used by the TUI, including default verb flags
+from dataclasses import dataclass, field
 
-# singleton to "cache" the output for each command
-CHEZMOI = {
-    "data": {
-        "command": "data --format=json",
-        "full_command": str(),
-        "output": str(),
-    },
-    "dump-config": {
-        "command": "dump-config --format=json",
-        "full_command": str(),
-        "output": str(),
-    },
-    "cat-config": {
-        "command": "cat-config",
-        "full_command": str(),
-        "output": str(),
-    },
-    "doctor": {
-        "command": "doctor",
-        "full_command": str(),
-        "output": str(),
-    },
-    "ignored": {
-        "command": "ignored",
-        "full_command": str(),
-        "output": str(),
-    },
-    "managed": {
-        "command": "managed --path-style=absolute",
-        "full_command": str(),
-        "output": str(),
-    },
-    "unmanaged": {
-        "command": "unmanaged --path-style=absolute",
-        "full_command": str(),
-        "output": str(),
-    },
-    "status": {
-        "command": "status --parent-dirs",
-        "full_command": str(),
-        "output": str(),
-    },
-}
+
+@dataclass
+class ChezmoiOutput:
+    command: str
+    full_command: str = ""
+    output: str = ""
+
+
+@dataclass
+class VerbOutput:
+    data: ChezmoiOutput = field(
+        default_factory=lambda: ChezmoiOutput("data --format=json")
+    )
+    dump_config: ChezmoiOutput = field(
+        default_factory=lambda: ChezmoiOutput("dump-config --format=json")
+    )
+    cat_config: ChezmoiOutput = field(
+        default_factory=lambda: ChezmoiOutput("cat-config")
+    )
+    doctor: ChezmoiOutput = field(
+        default_factory=lambda: ChezmoiOutput("doctor")
+    )
+    ignored: ChezmoiOutput = field(
+        default_factory=lambda: ChezmoiOutput("ignored")
+    )
+    managed: ChezmoiOutput = field(
+        default_factory=lambda: ChezmoiOutput("managed --path-style=absolute")
+    )
+    unmanaged: ChezmoiOutput = field(
+        default_factory=lambda: ChezmoiOutput(
+            "unmanaged --path-style=absolute"
+        )
+    )
+    status: ChezmoiOutput = field(
+        default_factory=lambda: ChezmoiOutput("status --parent-dirs")
+    )
+
+
+CHEZMOI = VerbOutput()
