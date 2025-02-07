@@ -64,14 +64,15 @@ class ItemLoader(Widget):
         self.commands.run(command, refresh=True)
         pad_chars = 33
         verb = command.split()[0]
-        verb_only_command = f"chezmoi {verb} ".ljust(pad_chars, '.')
-        color = self.app.theme_variables['success']
+        verb_only_command = f"chezmoi {verb} ".ljust(pad_chars, ".")
+        color = self.app.theme_variables["success"]
         message = f"[{color}]{verb_only_command} loaded[/]"
         self.query_one("#loader-log").write(message)
 
     def on_mount(self) -> None:
         for command in COMMANDS:
             self.load_command_output(command)
+
 
 class LoadingScreen(Screen):
 
