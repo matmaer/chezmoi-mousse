@@ -1,4 +1,5 @@
-""" Module to run chezmoi commands with subprocess."""
+"""Module to run chezmoi commands with subprocess."""
+
 import subprocess
 
 from chezmoi_mousse import CHEZMOI, COMMANDS
