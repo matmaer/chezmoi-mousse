@@ -1,5 +1,4 @@
 """ Module to run chezmoi commands with subprocess."""
-
 import subprocess
 
 from chezmoi_mousse import CHEZMOI, COMMANDS
@@ -19,6 +18,10 @@ class ChezmoiCommands:
     ]
 
     def _run(self, chezmoi_args: list) -> dict:
+        try:
+            chezmoi_args in COMMANDS
+        except ValueError:
+            raise ValueError(f"Command {chezmoi_args} not in COMMANDS")
 
         full_command_list = self.chezmoi_base_command + chezmoi_args
         verb = chezmoi_args[0]
