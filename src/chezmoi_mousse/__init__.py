@@ -2,25 +2,46 @@
 
 # current chezmoi commands used by the TUI, including default verb flags
 
-COMMANDS = (
-    "data --format=json",
-    "dump-config --format=json",
-    "cat-config",  # no flags available, except --help
-    "doctor",  # only available flag is --no-network, not used in the TUI
-    "ignored",  # only available flag is --tree, not used in the TUI
-    "managed --path-style=absolute",  # absolute to filter for DirectoryTree
-    "unmanaged --path-style=absolute",  # absolute for DirectoryTree
-    "status --parent-dirs",  # flag probably not needed
-)
-
 # singleton to "cache" the output for each command
-CHEZMOI = dict()
-
-for command in COMMANDS:
-    verb = command.split()[0]  # remove flags to create short dict key
-
-    CHEZMOI[verb] = {
-        "command": command,  # verb+arguments that will be added to chezmoi
-        "full_command": str(),  # will hold the full command run by subprocess
-        "output": str(),  # will store stdout or stderr from subprocess.run
-    }
+CHEZMOI = {
+    "data": {
+        "command": "data --format=json",
+        "full_command": str(),
+        "output": str(),
+    },
+    "dump-config": {
+        "command": "dump-config --format=json",
+        "full_command": str(),
+        "output": str(),
+    },
+    "cat-config": {
+        "command": "cat-config",
+        "full_command": str(),
+        "output": str(),
+    },
+    "doctor": {
+        "command": "doctor",
+        "full_command": str(),
+        "output": str(),
+    },
+    "ignored": {
+        "command": "ignored",
+        "full_command": str(),
+        "output": str(),
+    },
+    "managed": {
+        "command": "managed --path-style=absolute",
+        "full_command": str(),
+        "output": str(),
+    },
+    "unmanaged": {
+        "command": "unmanaged --path-style=absolute",
+        "full_command": str(),
+        "output": str(),
+    },
+    "status": {
+        "command": "status --parent-dirs",
+        "full_command": str(),
+        "output": str(),
+    },
+}
