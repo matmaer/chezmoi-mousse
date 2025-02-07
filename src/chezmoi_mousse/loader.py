@@ -60,25 +60,6 @@ class ItemLoader(Widget):
             max_lines=11,
         )
 
-    def create_log_line(self, command: str) -> None:
-        pad_chars = 33
-        verb = command.split()[0]
-        verb_only_command = f"chezmoi {verb} ".ljust(pad_chars, ".")
-        color = self.app.theme_variables["success"]
-        logline = f"[{color}]{verb_only_command} loaded[/]"
-        return logline
-
-    @work(thread=True)
-    def load_command_output(self, command: str) -> None:
-        logline = self.create_log_line(command)
-        chezmoi.run(command)
-        self.query_one("#loader-log").write(logline)
-
-    def on_mount(self) -> None:
-        for verb, items in CHEZMOI.__dict__.items():
-            command = items.command
-            self.load_command_output(command)
-
 
 class LoadingScreen(Screen):
 
@@ -100,5 +81,24 @@ class LoadingScreen(Screen):
                 yield ItemLoader()
         yield Footer(id="loader-footer")
 
+
+    def create_log_line(self, command: str) -> None:
+        pad_chars = 33
+        verb = command.split()[0]
+        verb_only_command = f"chezmoi {verb} ".ljust(pad_chars, ".")
+        color = self.app.theme_variables["success"]
+        logline = f"[{color}]{verb_only_command} loaded[/]"
+        return logline
+
+    @work(thread=True)
+    def load_command_output(self, command: str) -> None:
+        logline = self.create_log_line(command)
+        chezmoi.run(command)
+        self.query_one("#loader-log").write(logline)
+
     def on_mount(self) -> None:
         self.title = "-  c h e z m o i  m o u s s e  -"
+
+        for verb, items in CHEZMOI.__dict__.items():
+            command = items.command
+            self.load_command_output(command)
