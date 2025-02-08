@@ -25,7 +25,7 @@ class CommandData:
 
 
 @dataclass
-class KnownCommands:
+class ChezmoiCommands:
 
     cat_config: CommandData = field(
         default_factory=lambda: CommandData(verb_cmd=["cat-config"])
@@ -61,7 +61,7 @@ class KnownCommands:
     )
 
 
-CHEZMOI = KnownCommands()
+CHEZMOI = ChezmoiCommands()
 
 SPLASH = """\
  _______ _______ _______ _______ ____ ____ _______ _o_
