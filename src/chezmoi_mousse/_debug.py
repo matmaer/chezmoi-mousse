@@ -1,5 +1,10 @@
 
-
+# self.app.log.debug(self.__class__.__mro__)
+# self.app.log.debug(self.tree)
+# self.app.log.debug(self.css_tree)
+# self.app.log.debug(self.ancestors)
+# self.app.log.debug(self.children)
+# self.app.log.debug(self.css_identifier)
 
 # log like this:
 # self.app.log.debug(self.__class__.__mro__)
