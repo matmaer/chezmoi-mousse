@@ -18,7 +18,6 @@ from textual.widgets import (
     Static,
     TabbedContent,
 )
-
 from chezmoi_mousse import CHEZMOI
 from chezmoi_mousse.commands import ChezmoiCommand as chezmoi
 from chezmoi_mousse.graphics import FLOW_DIAGRAM
@@ -85,7 +84,7 @@ class ChezmoiStatus(Static):
         yield DataTable(id="re_add_table")
 
     def on_mount(self):
-        self.status_output = chezmoi.run("status").output.splitlines()
+        self.status_output = chezmoi.run(CHEZMOI.status).pyout
         re_add_table = self.query_one("#re_add_table")
         apply_table = self.query_one("#apply_table")
 
@@ -115,13 +114,11 @@ class ManagedFiles(DirectoryTree):
     def __init__(self):
         # TODO: get destDir from dataclass
         super().__init__("/home/mm")
-        self.managed = [
-            Path(entry) for entry in CHEZMOI.managed.output.splitlines()
-        ]
+        self.managed = chezmoi.run(CHEZMOI.managed).pyout
 
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
-        # managed = [Path(entry) for entry in self.managed.splitlines()]
-        return [path for path in paths if path not in self.managed]
+        managed_paths = [Path(entry) for entry in self.managed]
+        return [path for path in paths if path in managed_paths]
 
 
 class OperationTabs(Screen):

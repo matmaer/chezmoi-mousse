@@ -1,6 +1,5 @@
 """Constructs the Inspector screen."""
 
-import json
 
 from textual.app import ComposeResult
 from textual.containers import Vertical, VerticalScroll
@@ -15,6 +14,7 @@ from textual.widgets import (
     TabbedContent,
 )
 
+from chezmoi_mousse import CHEZMOI
 from chezmoi_mousse.commands import ChezmoiCommand as chezmoi
 
 
@@ -37,7 +37,7 @@ class ChezmoiDoctor(Static):
         self.construct_table()
 
     def construct_table(self) -> None:
-        cm_dr_output = chezmoi.run("doctor").output.splitlines()
+        cm_dr_output = chezmoi.run(CHEZMOI.doctor).pyout
         header_row = cm_dr_output.pop(0).split()
         main_rows = []
         other_rows = []
@@ -84,17 +84,15 @@ class InspectTabs(Screen):
             ):
                 yield VerticalScroll(ChezmoiDoctor())
                 yield VerticalScroll(
-                    Pretty(json.loads(chezmoi.run("dump-config").output))
+                    Pretty(chezmoi.run(CHEZMOI.dump_config).pyout)
                 )
-                yield VerticalScroll(
-                    Pretty(json.loads(chezmoi.run("data").output))
-                )
+                yield VerticalScroll(Pretty(chezmoi.run(CHEZMOI.data).pyout))
                 yield VerticalScroll(
                     # TODO: support users with json instead of toml config file
-                    Pretty(chezmoi.run("cat-config").output)
+                    Pretty(chezmoi.run(CHEZMOI.cat_config).pyout)
                 )
                 yield VerticalScroll(
-                    Pretty(chezmoi.run("ignored").output.splitlines())
+                    Pretty(chezmoi.run(CHEZMOI.ignored).pyout)
                 )
         yield Footer()
 
