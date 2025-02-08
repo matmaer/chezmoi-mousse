@@ -1,0 +1,14 @@
+{
+    "Debug Log": {
+        "prefix": "tdebug",
+        "body": [
+            "self.app.log.debug(self.__class__.__mro__)",
+            "self.app.log.debug(self.ancestors)",
+            "self.app.log.debug(self.children)",
+            "self.app.log.debug(self.css_identifier)",
+            "self.app.log.debug(self.css_tree)",
+            "self.app.log.debug(self.tree)"
+        ],
+        "description": "Insert a debug log statements"
+    }
+}
