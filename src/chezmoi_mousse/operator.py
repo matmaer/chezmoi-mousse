@@ -7,14 +7,13 @@ from textual.app import ComposeResult
 from textual.containers import Vertical, VerticalScroll
 from textual.reactive import reactive
 from textual.screen import Screen
-from textual.widget import Widget
 from textual.widgets import (
     DataTable,
     DirectoryTree,
     Footer,
     Header,
     Label,
-    RichLog,
+    # RichLog,
     Static,
     TabbedContent,
 )
@@ -23,20 +22,20 @@ from chezmoi_mousse.commands import ChezmoiCommand as chezmoi
 from chezmoi_mousse.graphics import FLOW_DIAGRAM
 
 
-class LogSlidebar(Widget):
+# class LogSlidebar(Widget):
 
-    def __init__(self, highlight: bool = False):
-        super().__init__()
-        self.animate = True
-        self.auto_scroll = True
-        self.highlight = highlight
-        self.markup = True
-        self.max_lines = 160  # (80×3÷2)×((16−4)÷9)
-        self.wrap = True
+#     def __init__(self, highlight: bool = False):
+#         super().__init__()
+#         self.animate = True
+#         self.auto_scroll = True
+#         self.highlight = highlight
+#         self.markup = True
+#         self.max_lines = 160  # (80×3÷2)×((16−4)÷9)
+#         self.wrap = True
 
-    def compose(self) -> ComposeResult:
-        with Vertical():
-            yield RichLog(id="richlog-slidebar")
+#     def compose(self) -> ComposeResult:
+#         with Vertical():
+#             yield RichLog(id="richlog-slidebar")
 
 
 class ChezmoiStatus(Static):
@@ -130,12 +129,12 @@ class OperationTabs(Screen):
 
     show_sidebar = reactive(False)
 
-    def log_to_slidebar(self, message: str) -> None:
-        self.query_one("#richlog-slidebar").write(message)
+    # def log_to_slidebar(self, message: str) -> None:
+    #     self.query_one("#richlog-slidebar").write(message)
 
     def compose(self) -> ComposeResult:
         yield Header()
-        yield LogSlidebar()
+        # yield LogSlidebar()
         with Vertical():
             with TabbedContent(
                 "Chezmoi-Diagram",
@@ -152,9 +151,9 @@ class OperationTabs(Screen):
     def on_mount(self) -> None:
         self.title = "- o p e r a t e -"
 
-    def action_toggle_sidebar(self) -> None:
-        self.show_sidebar = not self.show_sidebar
+    # def action_toggle_sidebar(self) -> None:
+    #     self.show_sidebar = not self.show_sidebar
 
-    def watch_show_sidebar(self, show_sidebar: bool) -> None:
-        # Toggle "visible" class when "show_sidebar" reactive changes.
-        self.query_one("#richlog-slidebar").set_class(show_sidebar, "-visible")
+    # def watch_show_sidebar(self, show_sidebar: bool) -> None:
+    #     # Toggle "visible" class when "show_sidebar" reactive changes.
+    #     self.query_one("#richlog-slidebar").set_class(show_sidebar, "-visible")
