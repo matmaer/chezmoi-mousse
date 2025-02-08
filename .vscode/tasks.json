@@ -14,25 +14,31 @@
             "problemMatcher": []
         },
         {
-            "label": "TEXTUAL-DEV +PRINT+ CONSOLE",
-            "detail": "WARNING, ERROR, PRINT, LOGGING",
+            "label": "TEXTUAL-DEV NO EVENTS",
             "dependsOn": [
                 "TEXTUAL LIVE TCSS",
-                "textual-console-print"
+                "textual-console-no-events"
             ],
             "problemMatcher": []
         },
         {
-            "label": "TEXTUAL-DEV CONSOLE",
-            "detail": "ALL GROUPS",
+            "label": "TEXTUAL-DEV EVENTS ONLY",
             "dependsOn": [
                 "TEXTUAL LIVE TCSS",
-                "textual-console-verbose"
+                "textual-console-events-only"
             ],
             "problemMatcher": []
         },
         {
-            "label": "textual-console-verbose",
+            "label": "TEXTUAL-DEV ALL GROUPS",
+            "dependsOn": [
+                "TEXTUAL LIVE TCSS",
+                "textual-console-all-groups"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "textual-console-all-groups",
             "hide": true,
             "command": "textual console",
             "presentation": {
@@ -47,9 +53,24 @@
             "problemMatcher": []
         },
         {
-            "label": "textual-console-print",
+            "label": "textual-console-no-events",
             "hide": true,
-            "command": "textual console -x SYSTEM -x EVENT -x DEBUG -x INFO -x WORKER",
+            "command": "textual console -x EVENT",
+            "presentation": {
+                "focus": false,
+                "close": true,
+                "group": "textualize"
+            },
+            "runOptions": {
+                "instanceLimit": 1
+            },
+            "type": "shell",
+            "problemMatcher": []
+        },
+        {
+            "label": "textual-console-events-only",
+            "hide": true,
+            "command": "textual console -x DEBUG -x ERROR -x INFO -x LOGGING -x PRINT -x SYSTEM -x WARNING -x WORKER",
             "presentation": {
                 "focus": false,
                 "close": true,
