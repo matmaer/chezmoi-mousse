@@ -1,48 +1,37 @@
 """Module to run chezmoi commands with subprocess."""
 
 import subprocess
-from chezmoi_mousse import CHEZMOI, ChezmoiOutput
+import json
+from chezmoi_mousse import CommandData
 
 
 class ChezmoiCommand:
 
     @staticmethod
-    def run(chezmoi_args: str, refresh: bool = False) -> ChezmoiOutput:
-        base_command = [
-            "chezmoi",
-            "--no-pager",
-            "--color=false",
-            "--no-tty",
-            "--progress=false",
-            "--config=/home/mm/.config/chezmoi/chezmoi.toml",
-        ]
+    def run(command_data: CommandData, refresh: bool = False) -> CommandData:
+        full_command = command_data.base_cmd + command_data.verb_cmd
 
-        chezmoi_arg_list = chezmoi_args.split()
-        verb = chezmoi_arg_list[0].replace("-", "_")
-
-        try:
-            command_data = getattr(CHEZMOI, verb)
-        except AttributeError:
-            raise KeyError(f"Chezmoi verb '{verb}' is not found in CHEZMOI")
-
-        full_command_list = base_command + chezmoi_arg_list
-        command_data.full_command = " ".join(full_command_list)
-
-        if refresh or command_data.output == "":
+        if refresh or command_data.stdout == "":
             try:
                 call_output = subprocess.run(
-                    full_command_list,
+                    full_command,
                     capture_output=True,
+                    check=True,
                     encoding="utf-8",
                     shell=False,
                     timeout=2,
                 )
-                command_data.output = call_output.stdout
-                return command_data
-
+                command_data.stdout = call_output.stdout
             except subprocess.CalledProcessError:
-                if verb == "cat_config" and call_output.returncode == 1:
-                    command_data.output = call_output.stderr
-                    return command_data
-
+                if (
+                    command_data.verb_cmd[0] == "cat-config"
+                    and call_output.returncode == 1
+                ):
+                    command_data.stdout = call_output.stderr
+            try:
+                command_data.pyout = json.loads(command_data.stdout)
+            except json.JSONDecodeError:
+                command_data.pyout = command_data.stdout.splitlines()
+            except AttributeError:
+                command_data.pyout = command_data.stdout.strip()
         return command_data
