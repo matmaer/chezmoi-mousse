@@ -22,7 +22,7 @@ class AnimatedFade(Widget):
         self.id = "animated-fade"
         self.styles.height = 10
         self.styles.width = 55
-        print(self.__class__.__mro__)
+        self.app.log.debug(self.__class__.__mro__)
 
     @staticmethod
     def construct_splash_lines() -> list:

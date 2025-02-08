@@ -1,26 +1,8 @@
-# import os
-
-# from textual import log
 
 
-# textual_console_groups = (
-#     "DEBUG"
-#     "ERROR"
-#     "EVENT"
-#     "INFO"
-#     "LOGGING"
-#     "PRINT"
-#     "SYSTEM"
-#     "WARNING"
-#     "WORKER"
-# )
 
-# class DebugUtils:
-#     @staticmethod
-#     def print_env_vars():
-#         for key, value in os.environ.items():
-#             log(print(f"{key}: {value}"))
-
+# log like this:
+# self.app.log.debug(self.__class__.__mro__)
 
 # from app.py
 # -----------
