@@ -7,8 +7,8 @@ from chezmoi_mousse import CommandData
 
 class ChezmoiCommand:
 
-    @staticmethod
-    def run(command_data: CommandData, refresh: bool = False) -> CommandData:
+    @classmethod
+    def run(cls, command_data: CommandData, refresh: bool = False) -> CommandData:
         full_command = command_data.base_cmd + command_data.verb_cmd
 
         if refresh or command_data.stdout == "":
