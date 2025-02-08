@@ -76,7 +76,6 @@ class ChezmoiStatus(Static):
 
     def __init__(self):
         super().__init__()
-        self.classes = "tabpad"
         self.status_output = list()
 
     def compose(self) -> ComposeResult:
@@ -119,7 +118,6 @@ class ManagedFiles(DirectoryTree):
         self.managed = [
             Path(entry) for entry in CHEZMOI.managed.output.splitlines()
         ]
-        self.classes = "tabpad"
 
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
         # managed = [Path(entry) for entry in self.managed.splitlines()]
@@ -144,12 +142,14 @@ class OperationTabs(Screen):
         with Vertical():
             with TabbedContent(
                 "Chezmoi-Diagram",
-                "Status-Overview",
                 "Managed-Files",
+                "Chezmoi-Status",
+                "Git-Status",
             ):
                 yield VerticalScroll(Static(FLOW_DIAGRAM, id="diagram"))
                 yield VerticalScroll(ManagedFiles())
                 yield ChezmoiStatus()
+                yield Static("chezmoi cd; git status")
         yield Footer()
 
     def on_mount(self) -> None:
