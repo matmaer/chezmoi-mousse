@@ -112,11 +112,6 @@ DataTable {
 
 #loader-screen {
   background: black;
-  & #item-loader {
-    align: center bottom;
-    height: auto;
-    width: 55;
-  }
   & #loader-log {
     margin: 2 0 0 0;
     background-tint: black;

@@ -45,20 +45,6 @@ class AnimatedFade(Widget):
         self.set_interval(interval=0.10, callback=self.refresh)
 
 
-class ItemLoader(Widget):
-
-    def __init__(self) -> None:
-        super().__init__()
-        self.id = "item-loader"
-
-    def compose(self) -> ComposeResult:
-        yield RichLog(
-            id="loader-log",
-            markup=True,
-            max_lines=11,
-        )
-
-
 class LoadingScreen(Screen):
 
     BINDINGS = [
@@ -73,9 +59,12 @@ class LoadingScreen(Screen):
     def compose(self) -> ComposeResult:
         yield Header(id="loader-header")
         with Middle():
-            with Center():
-                yield AnimatedFade()
-                yield ItemLoader()
+            yield Center(AnimatedFade())
+            yield Center(RichLog(
+                id="loader-log",
+                markup=True,
+                max_lines=11,
+            ))
         yield Footer(id="loader-footer")
 
     def create_log_line(self, command: str) -> None:
