@@ -1,8 +1,6 @@
 __pycache__/
 .venv/
 dist/
-# .vscode/mousse.code-workspace
 ignored/
 .env
-chezmoi
-.vscode/settings.json
+.vscode/
