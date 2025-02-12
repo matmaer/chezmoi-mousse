@@ -1,48 +1,82 @@
-"""Module to run chezmoi commands with subprocess."""
+"""Module to run shell commands with subprocess."""
 
+from dataclasses import dataclass, field
+import shutil
 import subprocess
-from chezmoi_mousse import CHEZMOI, ChezmoiOutput
+from collections.abc import Sequence
 
 
-class ChezmoiCommand:
+@dataclass
+class FullCommand:
+    global_cmd: str = field(default="")
+    global_args: list = field(default_factory=[])
+    verb_args: list = field(default_factory=[])
 
-    @staticmethod
-    def run(chezmoi_args: str, refresh: bool = False) -> ChezmoiOutput:
-        base_command = [
-            "chezmoi",
-            "--no-pager",
-            "--color=false",
-            "--no-tty",
-            "--progress=false",
-            "--config=/home/mm/.config/chezmoi/chezmoi.toml",
-        ]
+    def get_full_cmd_list(self) -> tuple:
+        cmd_list = [self.global_cmd] + self.global_args + self.verb_args
+        return tuple(cmd_list)
 
-        chezmoi_arg_list = chezmoi_args.split()
-        verb = chezmoi_arg_list[0].replace("-", "_")
+    def get_short_cmd(self) -> tuple:
+        return [self.global_cmd, self.verb]
 
-        try:
-            command_data = getattr(CHEZMOI, verb)
-        except AttributeError:
-            raise KeyError(f"Chezmoi verb '{verb}' is not found in CHEZMOI")
+@dataclass
+class Chezmoi(FullCommand):
 
-        full_command_list = base_command + chezmoi_arg_list
-        command_data.full_command = " ".join(full_command_list)
+    global_cmd = shutil.which("chezmoi")
+    global_args = [
+        "--no-pager",
+        "--color=false",
+        "--no-tty",
+        "--progress=false",
+    ]
+    verb_dict = {
+        "doctor": ["doctor"],
+        "dump_config": ["dump-config", "--format=json"],
+        "data": ["data", "--format=json"],
+        "cat_config": ["cat-config"],
+        "ignored": ["ignored"],
+        "managed": ["managed"],
+        "status": ["status", "--parent-dirs"],
+        "unmanaged": ["unmanaged", "--path-style=absolute"],
+    }
 
-        if refresh or command_data.output == "":
-            try:
-                call_output = subprocess.run(
-                    full_command_list,
-                    capture_output=True,
-                    encoding="utf-8",
-                    shell=False,
-                    timeout=2,
-                )
-                command_data.output = call_output.stdout
-                return command_data
+# same logic as the Chezmoi class but with different command and verbs
+@dataclass
+class Git(FullCommand):
+    global_cmd = shutil.which("git")
+    global_args = [
+        "--no-advice",
+        "--no-pager",
+    ]
+    verb_dict = {
+        "status": [],
+        "log": ["--oneline"],
+    }
 
-            except subprocess.CalledProcessError:
-                if verb == "cat_config" and call_output.returncode == 1:
-                    command_data.output = call_output.stderr
-                    return command_data
 
-        return command_data
+###########################################################
+# run returns from the stored data or runs subprocess.run #
+###########################################################
+
+
+class ChezmoiIO(FullCommand):
+
+    def __init__(self, refresh: bool = False) -> None:
+        self.short_cmd = self.get_short_cmd()
+        self.full_cmd = self.get_full_cmd_list()
+        self.refresh = refresh
+
+    def get_cmd_output(self):
+        if self.refresh:
+            pass
+
+    def _sub_run(self, cmd_sequence: Sequence) -> subprocess.CompletedProcess:
+        return subprocess.run(
+            cmd_sequence,
+            capture_output=True,
+            check=True,  # raises exception for any non-zero return code
+            shell=False,  # mitigates shell injection risk
+            text=True,  # returns stdout as str instead of bytes
+            timeout=2,
+        )
+
