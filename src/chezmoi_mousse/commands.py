@@ -1,29 +1,30 @@
 """Module to run shell commands with subprocess."""
 
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 import shutil
 import subprocess
-from collections.abc import Sequence
 
 
 @dataclass
 class FullCommand:
-    global_cmd: str = field(default="")
-    global_args: list = field(default_factory=[])
-    verb_args: list = field(default_factory=[])
+    command: str = field(default="help")
+    global_args: list = field(default_factory=list)
+    verb_args: list = field(default_factory=list)
 
     def get_full_cmd_list(self) -> tuple:
-        cmd_list = [self.global_cmd] + self.global_args + self.verb_args
+        cmd_list = [self.command] + self.global_args + self.verb_args
         return tuple(cmd_list)
 
-    def get_short_cmd(self) -> tuple:
-        return [self.global_cmd, self.verb]
+    def get_short_cmd(self) -> list:
+        return [self.command]
+
 
 @dataclass
 class Chezmoi(FullCommand):
 
-    global_cmd = shutil.which("chezmoi")
-    global_args = [
+    command = shutil.which("chezmoi")
+    cmd_args = [
         "--no-pager",
         "--color=false",
         "--no-tty",
@@ -40,10 +41,11 @@ class Chezmoi(FullCommand):
         "unmanaged": ["unmanaged", "--path-style=absolute"],
     }
 
+
 # same logic as the Chezmoi class but with different command and verbs
 @dataclass
 class Git(FullCommand):
-    global_cmd = shutil.which("git")
+    command = shutil.which("git")
     global_args = [
         "--no-advice",
         "--no-pager",
@@ -62,6 +64,7 @@ class Git(FullCommand):
 class ChezmoiIO(FullCommand):
 
     def __init__(self, refresh: bool = False) -> None:
+        super().__init__()
         self.short_cmd = self.get_short_cmd()
         self.full_cmd = self.get_full_cmd_list()
         self.refresh = refresh
