@@ -10,25 +10,32 @@ from textual.strip import Strip
 from textual.widget import Widget
 from textual.widgets import Footer, Header, RichLog
 
-from chezmoi_mousse.graphics import FADE, SPLASH
+from chezmoi_mousse.graphics import FADE
+
+
+SPLASH = """\
+ _______ _______ _______ _______ ____ ____ _______ _o_
+|       |   |   |    ___|___    |    ˇ    |       |   |
+|    ===|       |     __'     __|         |   |   |   |
+|       |   |   |       |       |   |ˇ|   |       |   |
+`-------^---^---^-------^-------^---' '---^-------^---'
+   ____ ____ _______ ___ ___ _______ _______ _______
+  |    ˇ    |       |   |   |    ___|    ___|    ___|
+  |         |   |   |   |   |__     |__     |     __|
+  |   |ˇ|   |       |       |       |       |       |
+  '---' '---^-------^-------^-------^-------^-------'
+""".splitlines()
 
 
 class AnimatedFade(Widget):
+
+    line_styles = deque([Style(color=color, bold=True) for color in FADE])
 
     def __init__(self) -> None:
         super().__init__()
         self.id = "animated-fade"
         self.styles.height = 10
-        self.styles.width = 55
-
-    @staticmethod
-    def construct_splash_lines() -> list:
-        splash_lines = SPLASH.splitlines()
-        max_width = len(max(splash_lines, key=len))
-        return [line.ljust(max_width) for line in splash_lines]
-
-    padded_splash = construct_splash_lines()
-    line_styles = deque([Style(color=color, bold=True) for color in FADE])
+        self.styles.width = len(max(SPLASH, key=len))
 
     def render_lines(self, crop) -> list[Strip]:
         self.line_styles.rotate()
@@ -36,7 +43,7 @@ class AnimatedFade(Widget):
 
     def render_line(self, y: int) -> Strip:
         return Strip(
-            [Segment(self.padded_splash[y], style=self.line_styles[y])]
+            [Segment(SPLASH[y], style=self.line_styles[y])]
         )
 
     def on_mount(self) -> None:
@@ -57,13 +64,12 @@ class LoadingScreen(Screen):
     def compose(self) -> ComposeResult:
         yield Header(id="loader-header")
         with Middle():
-            with Center():
-                yield AnimatedFade()
-                yield RichLog(
-                    id="loader-log",
-                    markup=True,
-                    max_lines=11,
-                )
+            yield Center(AnimatedFade())
+            yield Center(RichLog(
+                id="loader-log",
+                markup=True,
+                max_lines=11,
+            ))
         yield Footer(id="loader-footer")
 
     def create_log_line(self, command: str) -> None:
@@ -82,10 +88,4 @@ class LoadingScreen(Screen):
     def on_mount(self) -> None:
         self.title = "-  c h e z m o i  m o u s s e  -"
 
-        for _, verb_fields in {
-                "key1": "value1",
-                "key2": "value2",
-                "key3": "value3",
-            }.items():
-            command = "whatever"
-            self.load_command_output(command)
+        self.load_command_output("command x loaded")
