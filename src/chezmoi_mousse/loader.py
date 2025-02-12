@@ -43,7 +43,6 @@ class AnimatedFade(Widget):
         self.set_interval(interval=0.10, callback=self.refresh)
 
 
-
 class LoadingScreen(Screen):
 
     BINDINGS = [
@@ -78,8 +77,15 @@ class LoadingScreen(Screen):
     @work(thread=True)
     def load_command_output(self, command: str) -> None:
         logline = self.create_log_line(command)
-        # chezmoi.run(command)
         self.query_one("#loader-log").write(logline)
 
     def on_mount(self) -> None:
         self.title = "-  c h e z m o i  m o u s s e  -"
+
+        for _, verb_fields in {
+                "key1": "value1",
+                "key2": "value2",
+                "key3": "value3",
+            }.items():
+            command = "whatever"
+            self.load_command_output(command)
