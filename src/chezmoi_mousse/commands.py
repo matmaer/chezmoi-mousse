@@ -8,12 +8,12 @@ import subprocess
 
 @dataclass
 class FullCommand:
-    command: str = field(default="help")
-    global_args: list = field(default_factory=list)
+    command: str = field(default="exit")
+    cmd_args: list = field(default_factory=list)
     verb_args: list = field(default_factory=list)
 
     def get_full_cmd_list(self) -> tuple:
-        cmd_list = [self.command] + self.global_args + self.verb_args
+        cmd_list = [self.command] + self.cmd_args + self.verb_args
         return tuple(cmd_list)
 
     def get_short_cmd(self) -> list:
@@ -46,7 +46,7 @@ class Chezmoi(FullCommand):
 @dataclass
 class Git(FullCommand):
     command = shutil.which("git")
-    global_args = [
+    cmd_args = [
         "--no-advice",
         "--no-pager",
     ]
