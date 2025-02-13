@@ -1,5 +1,6 @@
 """Constructs the operate screen."""
 
+# pylint: disable=E0401
 from collections.abc import Iterable
 from pathlib import Path
 
@@ -19,9 +20,9 @@ from textual.widgets import (
     TabbedContent,
 )
 
-from chezmoi_mousse import CHEZMOI
-from chezmoi_mousse.commands import ChezmoiCommand as chezmoi
+from chezmoi_mousse.commands import Chezmoi
 from chezmoi_mousse.graphics import FLOW_DIAGRAM
+
 
 
 class LogSlidebar(Widget):
@@ -47,7 +48,7 @@ class ChezmoiStatus(Static):
     """
 
     status_meaning = {
-        "space": {
+        " ": {
             "Status": "No change",
             "Re_Add_Change": "No change",
             "Apply_Change": "No change",
@@ -86,7 +87,7 @@ class ChezmoiStatus(Static):
         yield DataTable(id="re_add_table")
 
     def on_mount(self):
-        self.status_output = chezmoi.run("status").output.splitlines()
+        self.status_output = Chezmoi().run("status").splitlines()
         re_add_table = self.query_one("#re_add_table")
         apply_table = self.query_one("#apply_table")
 
@@ -99,10 +100,10 @@ class ChezmoiStatus(Static):
             path = line[3:]
 
             apply_status = self.status_meaning[line[0]]["Status"]
-            apply_change = self.status_meaning[line[0]]["Re_Add_Change"]
+            apply_change = self.status_meaning[line[0]]["Apply_Change"]
 
             re_add_status = self.status_meaning[line[1]]["Status"]
-            re_add_change = self.status_meaning[line[1]]["Apply_Change"]
+            re_add_change = self.status_meaning[line[1]]["Re_Add_Change"]
 
             apply_row = [apply_status, path, apply_change]
             apply_table.add_row(*apply_row)
@@ -117,7 +118,7 @@ class ManagedFiles(DirectoryTree):
         # TODO: get destDir from dataclass
         super().__init__("/home/mm")
         self.managed = [
-            Path(entry) for entry in CHEZMOI.managed.output.splitlines()
+            Path(entry) for entry in Chezmoi().run("managed").splitlines()
         ]
         self.classes = "tabpad"
 
