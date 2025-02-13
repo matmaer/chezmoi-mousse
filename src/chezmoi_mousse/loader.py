@@ -9,7 +9,6 @@ from textual.widgets import Footer, Header, RichLog
 
 from chezmoi_mousse.graphics import FADE
 
-
 SPLASH = """\
  _______ _______ _______ _______ ____ ____ _______ _o_
 |       |   |   |    ___|___    |    ˇ    |       |   |
@@ -39,9 +38,7 @@ class AnimatedFade(Widget):
         return super().render_lines(crop)
 
     def render_line(self, y: int) -> Strip:
-        return Strip(
-            [Segment(SPLASH[y], style=self.line_styles[y])]
-        )
+        return Strip([Segment(SPLASH[y], style=self.line_styles[y])])
 
     def on_mount(self) -> None:
         self.set_interval(interval=0.10, callback=self.refresh)
@@ -62,11 +59,13 @@ class LoadingScreen(Screen):
         yield Header(id="loader-header")
         with Middle():
             yield Center(AnimatedFade())
-            yield Center(RichLog(
-                id="loader-log",
-                markup=True,
-                max_lines=11,
-            ))
+            yield Center(
+                RichLog(
+                    id="loader-log",
+                    markup=True,
+                    max_lines=11,
+                )
+            )
         yield Footer(id="loader-footer")
 
     def create_log_line(self, command: str) -> None:
@@ -86,3 +85,9 @@ class LoadingScreen(Screen):
         self.title = "-  c h e z m o i  m o u s s e  -"
 
         self.load_command_output("command x loaded")
+
+        # run all commands an all their available verbs
+        # chezmoi = Chezmoi()
+        # self.load_command_output(chezmoi.run("status"))
+        # for verb in chezmoi.verbs_with_flags:
+        #     chezmoi.run(verb)
