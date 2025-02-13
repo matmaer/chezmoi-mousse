@@ -3,8 +3,7 @@ from textual.app import App
 from chezmoi_mousse.graphics import oled_deep_zen
 # from chezmoi_mousse.inspector import InspectTabs
 from chezmoi_mousse.loader import LoadingScreen
-
-# from chezmoi_mousse.operator import OperationTabs
+from chezmoi_mousse.operator import OperationTabs
 
 
 class ChezmoiTUI(App):
@@ -12,7 +11,7 @@ class ChezmoiTUI(App):
     CSS_PATH = "tui.tcss"
 
     SCREENS = {
-        # "operate": OperationTabs,
+        "operate": OperationTabs,
         # "inspect": InspectTabs,
         "loader": LoadingScreen,
     }
