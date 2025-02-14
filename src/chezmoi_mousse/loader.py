@@ -83,11 +83,5 @@ class LoadingScreen(Screen):
 
     def on_mount(self) -> None:
         self.title = "-  c h e z m o i  m o u s s e  -"
-
-        self.load_command_output("command x loaded")
-
         # run all commands an all their available verbs
-        # chezmoi = Chezmoi()
-        # self.load_command_output(chezmoi.run("status"))
-        # for verb in chezmoi.verbs_with_flags:
-        #     chezmoi.run(verb)
+
