@@ -1,11 +1,3 @@
-"""
-Module to run shell commands with subprocess.
-
-CMD_OUTPUT is primitive "cache" to store the last output from subprocess.run().
-The output gets overwritten each time a new call is made when specified.
-For the wrapper, "refresh=False" by default to return this CMD_OUTPUT value.
-"""
-
 from dataclasses import dataclass, field
 import shutil
 import subprocess
