@@ -9,6 +9,7 @@ from textual.widgets import Footer, Header, RichLog
 
 from chezmoi_mousse.graphics import FADE
 
+
 SPLASH = """\
  _______ _______ _______ _______ ____ ____ _______ _o_
 |       |   |   |    ___|___    |    `    |       |   |
@@ -83,5 +84,7 @@ class LoadingScreen(Screen):
 
     def on_mount(self) -> None:
         self.title = "-  c h e z m o i  m o u s s e  -"
-        # run all commands an all their available verbs
-
+        # run subprocess.run call for each cmd/verb combo
+        # cmd_output = CommandOutput()
+        # for cmd, verb in cmd_output.verb_cmds.items():
+        #     self.load_command_output(f"{cmd} {verb[0]}")
