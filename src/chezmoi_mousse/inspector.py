@@ -1,6 +1,6 @@
 """Constructs the Inspector screen."""
 
-
+import json
 from textual.app import ComposeResult
 from textual.containers import Vertical, VerticalScroll
 from textual.screen import Screen
@@ -14,8 +14,7 @@ from textual.widgets import (
     TabbedContent,
 )
 
-from chezmoi_mousse import CHEZMOI
-from chezmoi_mousse.commands import ChezmoiCommand as chezmoi
+from chezmoi_mousse.commands import run
 
 
 class ChezmoiDoctor(Static):
@@ -26,7 +25,7 @@ class ChezmoiDoctor(Static):
             cursor_type="row",
         )
         yield Label(
-            "Local commands skippeed because not in Path:",
+            "Local commands skipped because not in Path:",
         )
         yield DataTable(
             id="second_table",
@@ -37,12 +36,12 @@ class ChezmoiDoctor(Static):
         self.construct_table()
 
     def construct_table(self) -> None:
-        cm_dr_output = chezmoi.run(CHEZMOI.doctor).pyout
+        cm_dr_output = run("chezmoi", "doctor").splitlines()
         header_row = cm_dr_output.pop(0).split()
         main_rows = []
         other_rows = []
         for row in [row.split(maxsplit=2) for row in cm_dr_output]:
-            if row[0] == "info" and " not found in $PATH" in row[2]:
+            if row[0] == "info" and "not found in $PATH" in row[2]:
                 other_rows.append(row)
             else:
                 if row[0] == "ok":
@@ -62,8 +61,8 @@ class ChezmoiDoctor(Static):
 
         main_table.add_columns(*header_row)
         second_table.add_columns(*header_row)
-        self.query_one("#main_table").add_rows(main_rows)
-        self.query_one("#second_table").add_rows(other_rows)
+        main_table.add_rows(main_rows)
+        second_table.add_rows(other_rows)
 
 
 class InspectTabs(Screen):
@@ -84,15 +83,17 @@ class InspectTabs(Screen):
             ):
                 yield VerticalScroll(ChezmoiDoctor())
                 yield VerticalScroll(
-                    Pretty(chezmoi.run(CHEZMOI.dump_config).pyout)
+                    Pretty(json.loads(run("chezmoi", "dump_config")))
                 )
-                yield VerticalScroll(Pretty(chezmoi.run(CHEZMOI.data).pyout))
+                yield VerticalScroll(
+                    Pretty(json.loads(run("chezmoi", "data")))
+                )
                 yield VerticalScroll(
                     # TODO: support users with json instead of toml config file
-                    Pretty(chezmoi.run(CHEZMOI.cat_config).pyout)
+                    Pretty(run("chezmoi", "cat_config"))
                 )
                 yield VerticalScroll(
-                    Pretty(chezmoi.run(CHEZMOI.ignored).pyout)
+                    Pretty(run("chezmoi", "ignored").splitlines())
                 )
         yield Footer()
 

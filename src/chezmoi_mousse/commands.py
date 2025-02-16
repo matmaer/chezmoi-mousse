@@ -1,37 +1,82 @@
-"""Module to run chezmoi commands with subprocess."""
-
+from dataclasses import dataclass
+import shutil
 import subprocess
-import json
-from chezmoi_mousse import CommandData
+import copy
 
 
-class ChezmoiCommand:
+@dataclass(frozen=True)
+class Components:
+    words = {
+        "chezmoi": {
+            "base": [
+                shutil.which("chezmoi"),
+                "--no-pager",
+                "--color=false",
+                "--no-tty",
+                "--progress=false",
+            ],
+            "verbs": {
+                "doctor": ["doctor"],
+                "dump_config": ["dump-config", "--format=json"],
+                "data": ["data", "--format=json"],
+                "cat_config": ["cat-config"],
+                "ignored": ["ignored"],
+                "managed": ["managed"],
+                "status": ["status", "--parent-dirs"],
+                "unmanaged": ["unmanaged", "--path-style=absolute"],
+            },
+        },
+        "git": {
+            "base": [
+                shutil.which("git"),
+                "--no-advice",
+                "--no-pager",
+            ],
+            "verbs": {
+                "log": ["log", "--oneline"],
+                "status": ["status"],
+            },
+        },
+    }
 
-    @classmethod
-    def run(cls, command_data: CommandData, refresh: bool = False) -> CommandData:
-        full_command = command_data.base_cmd + command_data.verb_cmd
+    @property
+    def empty_cmd_dict(self):
+        # a key for each global command
+        empty_cmd_dict = {key: {} for key in self.words}
+        # add a key for each verb for each command
+        for key in empty_cmd_dict:
+            empty_cmd_dict[key] = {verb: "" for verb in self.words[key]["verbs"].keys()}
+        return empty_cmd_dict
 
-        if refresh or command_data.stdout == "":
-            try:
-                call_output = subprocess.run(
-                    full_command,
-                    capture_output=True,
-                    check=True,
-                    encoding="utf-8",
-                    shell=False,
-                    timeout=2,
-                )
-                command_data.stdout = call_output.stdout
-            except subprocess.CalledProcessError:
-                if (
-                    command_data.verb_cmd[0] == "cat-config"
-                    and call_output.returncode == 1
-                ):
-                    command_data.stdout = call_output.stderr
-            try:
-                command_data.pyout = json.loads(command_data.stdout)
-            except json.JSONDecodeError:
-                command_data.pyout = command_data.stdout.splitlines()
-            except AttributeError:
-                command_data.pyout = command_data.stdout.strip()
-        return command_data
+    # property to retrieve all the verbs for calling subprocess.run()
+    @property
+    def full_command(self):
+        full_command = copy.deepcopy(self.empty_cmd_dict)
+        for cmd, items in self.words.items():
+            base_words = items["base"]
+            for verb, verb_words in items["verbs"].items():
+                full_command[cmd][verb] = base_words + verb_words
+        return full_command
+
+    # method to generate a dictionary "template"
+    # Another time for creating the dict full_command to be used by subprocess.run()
+    def create_output_dict(self):
+        return copy.deepcopy(self.empty_cmd_dict)
+
+
+OUTPUT = Components().create_output_dict()
+
+
+def run(command: str, verb: str, refresh: bool = False) -> str:
+    command_to_run = Components().full_command[command][verb]
+    if refresh:
+        result = subprocess.run(
+            command_to_run,
+            capture_output=True,
+            check=True,  # raises exception for any non-zero return code
+            shell=False,  # mitigates shell injection risk
+            text=True,  # returns stdout as str instead of bytes
+            timeout=2,
+        )
+        OUTPUT[command][verb] = result.stdout
+    return OUTPUT[command][verb]

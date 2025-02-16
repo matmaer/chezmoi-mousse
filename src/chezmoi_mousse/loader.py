@@ -1,45 +1,46 @@
 from collections import deque
 
-
-from rich.segment import Segment
-from rich.style import Style
 from textual import work
 from textual.app import ComposeResult
 from textual.containers import Center, Middle
 from textual.screen import Screen
-from textual.strip import Strip
-from textual.widget import Widget
+from textual.widget import Segment, Strip, Style, Widget
 from textual.widgets import Footer, Header, RichLog
 
-from chezmoi_mousse import CHEZMOI, SPLASH, CommandData
-from chezmoi_mousse.commands import ChezmoiCommand as chezmoi
 from chezmoi_mousse.graphics import FADE
+from chezmoi_mousse.commands import Components, run
+
+
+SPLASH = """\
+ _______ _______ _______ _______ ____ ____ _______ _o_
+|       |   |   |    ___|___    |    `    |       |   |
+|    ===|       |     __|     __|         |   |   |   |
+|       |   |   |       |       |   |`|   |       |   |
+`-------^---^---^-------^-------^---' '---^-------^---'
+   ____ ____ _______ ___ ___ _______ _______ _______
+  |    `    |       |   |   |    ___|    ___|    ___|
+  |         |   |   |   |   |__     |__     |     __|
+  |   |`|   |       |       |       |       |       |
+  '---' '---^-------^-------^-------^-------^-------'
+""".splitlines()
 
 
 class AnimatedFade(Widget):
+
+    line_styles = deque([Style(color=color, bold=True) for color in FADE])
 
     def __init__(self) -> None:
         super().__init__()
         self.id = "animated-fade"
         self.styles.height = 10
-        self.styles.width = 55
-
-    def construct_splash_lines() -> list:
-        splash_lines = SPLASH.splitlines()
-        max_width = len(max(splash_lines, key=len))
-        return [line.ljust(max_width) for line in splash_lines]
-
-    padded_splash = construct_splash_lines()
-    line_styles = deque([Style(color=color, bold=True) for color in FADE])
+        self.styles.width = len(max(SPLASH, key=len))
 
     def render_lines(self, crop) -> list[Strip]:
         self.line_styles.rotate()
         return super().render_lines(crop)
 
     def render_line(self, y: int) -> Strip:
-        return Strip(
-            [Segment(self.padded_splash[y], style=self.line_styles[y])]
-        )
+        return Strip([Segment(SPLASH[y], style=self.line_styles[y])])
 
     def on_mount(self) -> None:
         self.set_interval(interval=0.10, callback=self.refresh)
@@ -69,16 +70,17 @@ class LoadingScreen(Screen):
             )
         yield Footer(id="loader-footer")
 
-    @work(thread=True)
-    def first_run(self, command: CommandData) -> CommandData:
-        short_cmd = f"chezmoi {command.verb_cmd[0]}".ljust(33, ".")
-        color = self.app.theme_variables["success"]
-        logline = f"[{color}]{short_cmd} loaded[/]"
-        chezmoi.run(command)
 
-        self.query_one("#loader-log").write(logline)
+    @work(thread=True)
+    def store_command_output(self, command: str, verb: str) -> None:
+        rlog = self.query_one("#loader-log")
+        run(command, verb, refresh=True)
+        pad_chars = 33
+        padded_command = f"{command} {verb} ".ljust(pad_chars, ".")
+        rlog.write(f"{padded_command} loaded")
 
     def on_mount(self) -> None:
         self.title = "-  c h e z m o i  m o u s s e  -"
-        for _, command in CHEZMOI.__dict__.items():
-            self.first_run(command)
+        for c, v in Components().empty_cmd_dict.items():
+            for verb in v.keys():
+                self.store_command_output(c, verb)

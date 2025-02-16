@@ -1,5 +1,4 @@
-"""Constructs the operate screen."""
-
+# pylint: disable=E0401
 from collections.abc import Iterable
 from pathlib import Path
 
@@ -13,12 +12,11 @@ from textual.widgets import (
     Footer,
     Header,
     Label,
-    # RichLog,
     Static,
     TabbedContent,
 )
-from chezmoi_mousse import CHEZMOI
-from chezmoi_mousse.commands import ChezmoiCommand as chezmoi
+
+from chezmoi_mousse.commands import run
 from chezmoi_mousse.graphics import FLOW_DIAGRAM
 
 
@@ -45,7 +43,7 @@ class ChezmoiStatus(Static):
     """
 
     status_meaning = {
-        "space": {
+        " ": {
             "Status": "No change",
             "Re_Add_Change": "No change",
             "Apply_Change": "No change",
@@ -74,7 +72,8 @@ class ChezmoiStatus(Static):
 
     def __init__(self):
         super().__init__()
-        self.status_output = list()
+        self.classes = "tabpad"
+        self.status_output = []
 
     def compose(self) -> ComposeResult:
         yield Label("Chezmoi Apply Status", variant="primary")
@@ -83,7 +82,7 @@ class ChezmoiStatus(Static):
         yield DataTable(id="re_add_table")
 
     def on_mount(self):
-        self.status_output = chezmoi.run(CHEZMOI.status).pyout
+        self.status_output = run("chezmoi", "status").splitlines()
         re_add_table = self.query_one("#re_add_table")
         apply_table = self.query_one("#apply_table")
 
@@ -96,10 +95,10 @@ class ChezmoiStatus(Static):
             path = line[3:]
 
             apply_status = self.status_meaning[line[0]]["Status"]
-            apply_change = self.status_meaning[line[0]]["Re_Add_Change"]
+            apply_change = self.status_meaning[line[0]]["Apply_Change"]
 
             re_add_status = self.status_meaning[line[1]]["Status"]
-            re_add_change = self.status_meaning[line[1]]["Apply_Change"]
+            re_add_change = self.status_meaning[line[1]]["Re_Add_Change"]
 
             apply_row = [apply_status, path, apply_change]
             apply_table.add_row(*apply_row)
@@ -113,11 +112,14 @@ class ManagedFiles(DirectoryTree):
     def __init__(self):
         # TODO: get destDir from dataclass
         super().__init__("/home/mm")
-        self.managed = chezmoi.run(CHEZMOI.managed).pyout
+        self.managed = [
+            Path(entry) for entry in run("chezmoi", "managed").splitlines()
+        ]
+        self.classes = "tabpad"
 
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
-        managed_paths = [Path(entry) for entry in self.managed]
-        return [path for path in paths if path in managed_paths]
+        managed = [Path(entry) for entry in self.managed.splitlines()]
+        return [path for path in paths if path not in managed]
 
 
 class OperationTabs(Screen):
@@ -143,9 +145,8 @@ class OperationTabs(Screen):
                 "Git-Status",
             ):
                 yield VerticalScroll(Static(FLOW_DIAGRAM, id="diagram"))
-                yield VerticalScroll(ManagedFiles())
                 yield ChezmoiStatus()
-                yield Static("chezmoi cd; git status")
+                yield VerticalScroll(ManagedFiles())
         yield Footer()
 
     def on_mount(self) -> None:
