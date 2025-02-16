@@ -21,7 +21,7 @@ class Components:
                 "data": ["data", "--format=json"],
                 "cat_config": ["cat-config"],
                 "ignored": ["ignored"],
-                "managed": ["managed"],
+                "managed": ["managed",  "--path-style=absolute"],
                 "status": ["status", "--parent-dirs"],
                 "unmanaged": ["unmanaged", "--path-style=absolute"],
             },
