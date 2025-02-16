@@ -6,6 +6,7 @@ import copy
 
 @dataclass(frozen=True)
 class Components:
+
     words = {
         "chezmoi": {
             "base": [
@@ -46,25 +47,20 @@ class Components:
         # add a key for each verb for each command
         for key in empty_cmd_dict:
             empty_cmd_dict[key] = {verb: "" for verb in self.words[key]["verbs"].keys()}
-        return empty_cmd_dict
+        return copy.deepcopy(empty_cmd_dict)
 
     # property to retrieve all the verbs for calling subprocess.run()
     @property
     def full_command(self):
-        full_command = copy.deepcopy(self.empty_cmd_dict)
+        full_command = self.empty_cmd_dict
         for cmd, items in self.words.items():
             base_words = items["base"]
             for verb, verb_words in items["verbs"].items():
                 full_command[cmd][verb] = base_words + verb_words
         return full_command
 
-    # method to generate a dictionary "template"
-    # Another time for creating the dict full_command to be used by subprocess.run()
-    def create_output_dict(self):
-        return copy.deepcopy(self.empty_cmd_dict)
 
-
-OUTPUT = Components().create_output_dict()
+OUTPUT = Components().empty_cmd_dict
 
 
 def run(command: str, verb: str, refresh: bool = False) -> str:
