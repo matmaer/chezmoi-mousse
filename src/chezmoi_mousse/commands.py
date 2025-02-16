@@ -59,20 +59,31 @@ class Components:
                 full_command[cmd][verb] = base_words + verb_words
         return full_command
 
-
 OUTPUT = Components().empty_cmd_dict
+
+@dataclass(frozen=True)
+class CommandIO(Components):
+
+    def get_command_output(self, command: str, verb: str) -> str:
+        return OUTPUT[command][verb]
+
+    def set_command_output(self, command: str, verb: str, output: str):
+        OUTPUT[command][verb] = output
+
+    def get_output(self, command: str, verb: str, refresh: bool = False) -> str:
+        command_to_run = Components().full_command[command][verb]
+        if refresh or not self.get_command_output(command, verb):
+            result = subprocess.run(
+                command_to_run,
+                capture_output=True,
+                check=True,  # raises exception for any non-zero return code
+                shell=False,  # mitigates shell injection risk
+                text=True,  # returns stdout as str instead of bytes
+                timeout=2,
+            )
+            self.set_command_output(command, verb, result.stdout)
+        return self.get_command_output(command, verb)
 
 
 def run(command: str, verb: str, refresh: bool = False) -> str:
-    command_to_run = Components().full_command[command][verb]
-    if refresh:
-        result = subprocess.run(
-            command_to_run,
-            capture_output=True,
-            check=True,  # raises exception for any non-zero return code
-            shell=False,  # mitigates shell injection risk
-            text=True,  # returns stdout as str instead of bytes
-            timeout=2,
-        )
-        OUTPUT[command][verb] = result.stdout
-    return OUTPUT[command][verb]
+    return CommandIO().get_output(command, verb, refresh)
