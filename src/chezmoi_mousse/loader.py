@@ -8,6 +8,7 @@ from textual.widget import Segment, Strip, Style, Widget
 from textual.widgets import Footer, Header, RichLog
 
 from chezmoi_mousse.graphics import FADE
+from chezmoi_mousse.commands import Components, run
 
 
 SPLASH = """\
@@ -78,13 +79,14 @@ class LoadingScreen(Screen):
         return logline
 
     @work(thread=True)
-    def load_command_output(self, command: str) -> None:
-        logline = self.create_log_line(command)
-        self.query_one("#loader-log").write(logline)
+    def store_command_output(self, command: str, verb: str) -> None:
+        rlog = self.query_one("#loader-log")
+        rlog.write(f"running {command}, {verb}")
+        run(command, verb, refresh=False)
+
 
     def on_mount(self) -> None:
         self.title = "-  c h e z m o i  m o u s s e  -"
-        # run subprocess.run call for each cmd/verb combo
-        # cmd_output = CommandOutput()
-        # for cmd, verb in cmd_output.verb_cmds.items():
-        #     self.load_command_output(f"{cmd} {verb[0]}")
+        for c, v in Components().empty_cmd_dict.items():
+            for verb in v.keys():
+                self.store_command_output(c, verb)
