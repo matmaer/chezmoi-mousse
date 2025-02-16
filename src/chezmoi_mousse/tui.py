@@ -1,6 +1,7 @@
 from textual.app import App
 
 from chezmoi_mousse.graphics import oled_deep_zen
+
 # from chezmoi_mousse.inspector import InspectTabs
 from chezmoi_mousse.loader import LoadingScreen
 from chezmoi_mousse.operator import OperationTabs

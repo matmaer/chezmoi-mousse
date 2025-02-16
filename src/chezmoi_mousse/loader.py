@@ -84,7 +84,6 @@ class LoadingScreen(Screen):
         rlog.write(f"running {command}, {verb}")
         run(command, verb, refresh=False)
 
-
     def on_mount(self) -> None:
         self.title = "-  c h e z m o i  m o u s s e  -"
         for c, v in Components().empty_cmd_dict.items():

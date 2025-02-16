@@ -4,8 +4,6 @@ import subprocess
 import copy
 
 
-
-
 @dataclass(frozen=True)
 class Components:
     words = {
@@ -50,7 +48,7 @@ class Components:
         for key in empty_cmd_dict:
             empty_cmd_dict[key] = dict.fromkeys(
                 self.words[key]["verbs"].keys(), ""
-                )
+            )
         return empty_cmd_dict
 
     # property to retrieve all the verbs for calling subprocess.run()
@@ -67,7 +65,9 @@ class Components:
     # method to generate a dictionary "template"
     # Another time for creating the dict full_command to be used by subprocess.run()
     def create_output_dict(self):
-        return copy.deepcopy(self.empty_cmd_dict)  # Create a deep copy of the template
+        return copy.deepcopy(
+            self.empty_cmd_dict
+        )  # Create a deep copy of the template
 
 
 OUTPUT = Components().create_output_dict()
