@@ -120,8 +120,9 @@ DataTable {
   & #loader-log {
     margin: 2 0 0 0;
     background-tint: black;
-    height: 8;
+    height: auto;
     width: auto;
+    color: $success;
   }
   /* several items are set by the theme vars in oled-deep-zen, they need to be
   overwritten to achieve the black loading screen */

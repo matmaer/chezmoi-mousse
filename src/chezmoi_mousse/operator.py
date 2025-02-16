@@ -1,6 +1,6 @@
 # pylint: disable=E0401
-# from collections.abc import Iterable
-# from pathlib import Path
+from collections.abc import Iterable
+from pathlib import Path
 
 from textual.app import ComposeResult
 from textual.containers import Vertical, VerticalScroll
@@ -9,7 +9,7 @@ from textual.screen import Screen
 from textual.widget import Widget
 from textual.widgets import (
     DataTable,
-    # DirectoryTree,
+    DirectoryTree,
     Footer,
     Header,
     Label,
@@ -18,7 +18,7 @@ from textual.widgets import (
     TabbedContent,
 )
 
-# from chezmoi_mousse.commands import Chezmoi
+from chezmoi_mousse.commands import run
 from chezmoi_mousse.graphics import FLOW_DIAGRAM
 
 
@@ -84,7 +84,7 @@ class ChezmoiStatus(Static):
         yield DataTable(id="re_add_table")
 
     def on_mount(self):
-        # self.status_output = Chezmoi("status").run().splitlines()
+        self.status_output = run("chezmoi", "status").splitlines()
         re_add_table = self.query_one("#re_add_table")
         apply_table = self.query_one("#apply_table")
 
@@ -109,19 +109,19 @@ class ChezmoiStatus(Static):
             re_add_table.add_row(*re_add_row)
 
 
-# class ManagedFiles(DirectoryTree):
+class ManagedFiles(DirectoryTree):
 
-#     def __init__(self):
-#         # TODO: get destDir from dataclass
-#         super().__init__("/home/mm")
-#         self.managed = [
-#             Path(entry) for entry in Chezmoi().run("managed").splitlines()
-#         ]
-#         self.classes = "tabpad"
+    def __init__(self):
+        # TODO: get destDir from dataclass
+        super().__init__("/home/mm")
+        self.managed = [
+            Path(entry) for entry in run("chezmoi", "managed").splitlines()
+        ]
+        self.classes = "tabpad"
 
-#     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
-#         managed = [Path(entry) for entry in self.managed.splitlines()]
-#         return [path for path in paths if path not in self.managed]
+    def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
+        managed = [Path(entry) for entry in self.managed.splitlines()]
+        return [path for path in paths if path not in managed]
 
 
 class OperationTabs(Screen):
@@ -142,12 +142,12 @@ class OperationTabs(Screen):
         with Vertical():
             with TabbedContent(
                 "Chezmoi-Diagram",
-                # "Status-Overview",
-                # "Managed-Files",
+                "Status-Overview",
+                "Managed-Files",
             ):
                 yield VerticalScroll(Static(FLOW_DIAGRAM, id="diagram"))
-                # yield ChezmoiStatus()
-                # yield VerticalScroll(ManagedFiles())
+                yield ChezmoiStatus()
+                yield VerticalScroll(ManagedFiles())
         yield Footer()
 
     def on_mount(self) -> None:

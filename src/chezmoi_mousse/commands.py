@@ -85,5 +85,5 @@ def run(command: str, verb: str, refresh: bool = False) -> str:
             timeout=2,
         )
         OUTPUT[command][verb] = result.stdout
-    # return OUTPUT[command][verb]
-    return f"Command: {command} {verb} has been run"
+    return OUTPUT[command][verb]
+    # return f"Command: {command} {verb} has been run"
