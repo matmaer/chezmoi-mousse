@@ -22,7 +22,6 @@ from textual.widgets import (
 from chezmoi_mousse.graphics import FLOW_DIAGRAM
 
 
-
 class LogSlidebar(Widget):
 
     def __init__(self, highlight: bool = False):
