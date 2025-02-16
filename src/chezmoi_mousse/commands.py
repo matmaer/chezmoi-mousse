@@ -15,7 +15,6 @@ class Components:
                 "--no-tty",
                 "--progress=false",
             ],
-            # keys for verbs: underscore vs hyphen so DRY
             "verbs": {
                 "doctor": ["doctor"],
                 "dump_config": ["dump-config", "--format=json"],
@@ -43,31 +42,26 @@ class Components:
     @property
     def empty_cmd_dict(self):
         # a key for each global command
-        empty_cmd_dict = dict.fromkeys(self.words.keys(), {})
+        empty_cmd_dict = {key: {} for key in self.words}
         # add a key for each verb for each command
         for key in empty_cmd_dict:
-            empty_cmd_dict[key] = dict.fromkeys(
-                self.words[key]["verbs"].keys(), ""
-            )
+            empty_cmd_dict[key] = {verb: "" for verb in self.words[key]["verbs"].keys()}
         return empty_cmd_dict
 
     # property to retrieve all the verbs for calling subprocess.run()
     @property
     def full_command(self):
-        full_command = self.empty_cmd_dict
+        full_command = copy.deepcopy(self.empty_cmd_dict)
         for cmd, items in self.words.items():
             base_words = items["base"]
             for verb, verb_words in items["verbs"].items():
                 full_command[cmd][verb] = base_words + verb_words
-                # full_command[cmd][verb] = "no output yet"
         return full_command
 
     # method to generate a dictionary "template"
     # Another time for creating the dict full_command to be used by subprocess.run()
     def create_output_dict(self):
-        return copy.deepcopy(
-            self.empty_cmd_dict
-        )  # Create a deep copy of the template
+        return copy.deepcopy(self.empty_cmd_dict)
 
 
 OUTPUT = Components().create_output_dict()
@@ -86,4 +80,3 @@ def run(command: str, verb: str, refresh: bool = False) -> str:
         )
         OUTPUT[command][verb] = result.stdout
     return OUTPUT[command][verb]
-    # return f"Command: {command} {verb} has been run"
