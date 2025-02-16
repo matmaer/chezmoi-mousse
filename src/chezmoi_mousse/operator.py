@@ -111,15 +111,14 @@ class ManagedFiles(DirectoryTree):
 
     def __init__(self):
         # TODO: get destDir from dataclass
-        super().__init__("/home/mm")
+        super().__init__(path=Path.home())
         self.managed = [
             Path(entry) for entry in run("chezmoi", "managed").splitlines()
         ]
         self.classes = "tabpad"
 
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
-        managed = [Path(entry) for entry in self.managed.splitlines()]
-        return [path for path in paths if path not in managed]
+        return [path for path in paths if path in self.managed]
 
 
 class OperationTabs(Screen):
