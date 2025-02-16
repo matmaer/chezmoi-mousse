@@ -2,6 +2,7 @@ from dataclasses import dataclass
 import shutil
 import subprocess
 import copy
+import json
 
 
 @dataclass(frozen=True)
@@ -70,10 +71,9 @@ class CommandIO(Components):
     def set_command_output(self, command: str, verb: str, output: str):
         OUTPUT[command][verb] = output
 
-    def get_output(self, command: str, verb: str, refresh: bool = False) -> str:
+    def _subprocess_run(self, command: str, verb: str) -> str:
         command_to_run = Components().full_command[command][verb]
-        if refresh or not self.get_command_output(command, verb):
-            result = subprocess.run(
+        result = subprocess.run(
                 command_to_run,
                 capture_output=True,
                 check=True,  # raises exception for any non-zero return code
@@ -81,9 +81,22 @@ class CommandIO(Components):
                 text=True,  # returns stdout as str instead of bytes
                 timeout=2,
             )
-            self.set_command_output(command, verb, result.stdout)
+        return result.stdout
+
+    def get_output(self, command: str, verb: str, refresh: bool = False) -> str:
+        if refresh or not self.get_command_output(command, verb):
+            subprocess_result = self._subprocess_run(command, verb)
+            self.set_command_output(command, verb, subprocess_result)
         return self.get_command_output(command, verb)
+
+    @property
+    def chezmoi_config(self) -> str:
+        config_dump = self.get_output("chezmoi", "dump_config")
+        config_dict = json.loads(config_dump)
+        return config_dict
 
 
 def run(command: str, verb: str, refresh: bool = False) -> str:
     return CommandIO().get_output(command, verb, refresh)
+
+chezmoi_config = CommandIO().chezmoi_config

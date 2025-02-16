@@ -16,9 +16,8 @@ from textual.widgets import (
     TabbedContent,
 )
 
-from chezmoi_mousse.commands import run
+from chezmoi_mousse.commands import run, chezmoi_config
 from chezmoi_mousse.graphics import FLOW_DIAGRAM
-
 
 # class LogSlidebar(Widget):
 
@@ -111,7 +110,7 @@ class ManagedFiles(DirectoryTree):
 
     def __init__(self):
         # TODO: get destDir from dataclass
-        super().__init__(path=Path.home())
+        super().__init__(chezmoi_config["destDir"])
         self.managed = [
             Path(entry) for entry in run("chezmoi", "managed").splitlines()
         ]
