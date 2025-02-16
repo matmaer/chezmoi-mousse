@@ -140,9 +140,8 @@ class OperationTabs(Screen):
         with Vertical():
             with TabbedContent(
                 "Chezmoi-Diagram",
-                "Managed-Files",
                 "Chezmoi-Status",
-                "Git-Status",
+                "Managed-Files",
             ):
                 yield VerticalScroll(Static(FLOW_DIAGRAM, id="diagram"))
                 yield ChezmoiStatus()
