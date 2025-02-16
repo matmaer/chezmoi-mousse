@@ -80,6 +80,8 @@ class InspectTabs(Screen):
                 "Template-Data",
                 "Config-File",
                 "Ignored",
+                "Git-Status",
+                "Git-Log",
             ):
                 yield VerticalScroll(ChezmoiDoctor())
                 yield VerticalScroll(
@@ -89,11 +91,16 @@ class InspectTabs(Screen):
                     Pretty(json.loads(run("chezmoi", "data")))
                 )
                 yield VerticalScroll(
-                    # TODO: support users with json instead of toml config file
-                    Pretty(run("chezmoi", "cat_config"))
+                    Pretty(run("chezmoi", "cat_config").splitlines())
                 )
                 yield VerticalScroll(
                     Pretty(run("chezmoi", "ignored").splitlines())
+                )
+                yield VerticalScroll(
+                    Pretty(run("git", "status").splitlines())
+                )
+                yield VerticalScroll(
+                    Pretty(run("git", "log").splitlines())
                 )
         yield Footer()
 
