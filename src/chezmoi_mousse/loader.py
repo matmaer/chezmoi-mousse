@@ -10,6 +10,7 @@ from textual.widgets import Footer, Header, RichLog
 from chezmoi_mousse.graphics import FADE
 from chezmoi_mousse.commands import Components, run
 
+__all__ = ["LoadingScreen"]
 
 SPLASH = """\
  _______ _______ _______ _______ ____ ____ _______ _o_

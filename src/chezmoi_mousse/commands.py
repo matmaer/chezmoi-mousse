@@ -4,6 +4,7 @@ import subprocess
 import copy
 import json
 
+__all__ = ["run", "chezmoi_config"]
 
 @dataclass(frozen=True)
 class Components:

@@ -6,6 +6,7 @@ from chezmoi_mousse.inspector import InspectTabs
 from chezmoi_mousse.loader import LoadingScreen
 from chezmoi_mousse.operator import OperationTabs
 
+__all__ = ["ChezmoiTUI"]
 
 class ChezmoiTUI(App):
 
