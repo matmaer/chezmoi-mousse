@@ -26,19 +26,21 @@ class Components:
                 "managed": ["managed",  "--path-style=absolute"],
                 "status": ["status", "--parent-dirs"],
                 "unmanaged": ["unmanaged", "--path-style=absolute"],
+                "git_status": ["git", "status"],
+                "git_log": ["git", "log", "--", "--oneline"],
             },
         },
-        "git": {
-            "base": [
-                shutil.which("git"),
-                "--no-advice",
-                "--no-pager",
-            ],
-            "verbs": {
-                "log": ["log", "--oneline"],
-                "status": ["status"],
-            },
-        },
+        # "git": {
+        #     "base": [
+        #         shutil.which("git"),
+        #         "--no-advice",
+        #         "--no-pager",
+        #     ],
+        #     "verbs": {
+        #         "log": ["log", "--oneline"],
+        #         "status": ["status"],
+        #     },
+        # },
     }
 
     @property

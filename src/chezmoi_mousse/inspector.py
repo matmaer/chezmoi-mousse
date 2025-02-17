@@ -97,10 +97,10 @@ class InspectTabs(Screen):
                     Pretty(run("chezmoi", "ignored").splitlines())
                 )
                 yield VerticalScroll(
-                    Pretty(run("git", "status").splitlines())
+                    Pretty(run("chezmoi", "git_status").splitlines())
                 )
                 yield VerticalScroll(
-                    Pretty(run("git", "log").splitlines())
+                    Pretty(run("chezmoi", "git_log").splitlines())
                 )
         yield Footer()
 
