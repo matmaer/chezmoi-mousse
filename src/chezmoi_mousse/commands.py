@@ -8,73 +8,53 @@ import json
 @dataclass(frozen=True)
 class Components:
 
-    words = {
-        "chezmoi": {
-            "base": [
-                shutil.which("chezmoi"),
-                "--no-pager",
-                "--color=false",
-                "--no-tty",
-                "--progress=false",
-            ],
-            "verbs": {
-                "doctor": ["doctor"],
-                "dump_config": ["dump-config", "--format=json"],
-                "data": ["data", "--format=json"],
-                "cat_config": ["cat-config"],
-                "ignored": ["ignored"],
-                "managed": ["managed",  "--path-style=absolute"],
-                "status": ["status", "--parent-dirs"],
-                "unmanaged": ["unmanaged", "--path-style=absolute"],
-                "git_status": ["git", "status"],
-                "git_log": ["git", "log", "--", "--oneline"],
-            },
-        },
-        # "git": {
-        #     "base": [
-        #         shutil.which("git"),
-        #         "--no-advice",
-        #         "--no-pager",
-        #     ],
-        #     "verbs": {
-        #         "log": ["log", "--oneline"],
-        #         "status": ["status"],
-        #     },
-        # },
+    global_command = [
+        shutil.which("chezmoi"),
+        "--no-pager",
+        "--color=false",
+        "--no-tty",
+        "--progress=false",
+    ]
+
+    sub_commands = {
+        "doctor": ["doctor"],
+        "dump_config": ["dump-config", "--format=json"],
+        "data": ["data", "--format=json"],
+        "cat_config": ["cat-config"],
+        "ignored": ["ignored"],
+        "managed": ["managed",  "--path-style=absolute"],
+        "status": ["status", "--parent-dirs"],
+        "unmanaged": ["unmanaged", "--path-style=absolute"],
+        "git_status": ["git", "status"],
+        "git_log": ["git", "log", "--", "--oneline"],
     }
 
     @property
-    def empty_cmd_dict(self):
-        # a key for each global command
-        empty_cmd_dict = {key: {} for key in self.words}
-        # add a key for each verb for each command
-        for key in empty_cmd_dict:
-            empty_cmd_dict[key] = {verb: "" for verb in self.words[key]["verbs"].keys()}
+    def empty_command_dict(self):
+        # a key for each command
+        empty_cmd_dict = {key: None for key in self.sub_commands}
         return copy.deepcopy(empty_cmd_dict)
 
-    # property to retrieve all the verbs for calling subprocess.run()
     @property
     def full_command(self):
-        full_command = self.empty_cmd_dict
-        for cmd, items in self.words.items():
-            base_words = items["base"]
-            for verb, verb_words in items["verbs"].items():
-                full_command[cmd][verb] = base_words + verb_words
+        full_command = {}
+        for name, sub_cmd in self.sub_commands.items():
+            full_command[name] = self.global_command + sub_cmd
         return full_command
 
-OUTPUT = Components().empty_cmd_dict
+OUTPUT = Components().empty_command_dict
 
 @dataclass(frozen=True)
 class CommandIO(Components):
 
-    def get_command_output(self, command: str, verb: str) -> str:
-        return OUTPUT[command][verb]
+    def get_command_output(self, sub_cmd: str) -> str:
+        return OUTPUT[sub_cmd]
 
-    def set_command_output(self, command: str, verb: str, output: str):
-        OUTPUT[command][verb] = output
+    def set_command_output(self, sub_cmd: str, output: str):
+        OUTPUT[sub_cmd] = output
 
-    def _subprocess_run(self, command: str, verb: str) -> str:
-        command_to_run = self.full_command[command][verb]
+    def _subprocess_run(self, sub_cmd: str) -> str:
+        command_to_run = self.full_command[sub_cmd]
         result = subprocess.run(
                 command_to_run,
                 capture_output=True,
@@ -85,20 +65,20 @@ class CommandIO(Components):
             )
         return result.stdout
 
-    def get_output(self, command: str, verb: str, refresh: bool = False) -> str:
-        if refresh or not self.get_command_output(command, verb):
-            subprocess_stdout = self._subprocess_run(command, verb)
-            self.set_command_output(command, verb, subprocess_stdout)
-        return self.get_command_output(command, verb)
+    def get_output(self, sub_cmd: str, refresh: bool = False) -> str:
+        if refresh or not self.get_command_output(sub_cmd):
+            subprocess_stdout = self._subprocess_run(sub_cmd)
+            self.set_command_output(sub_cmd, subprocess_stdout)
+        return self.get_command_output(sub_cmd)
 
     @property
     def chezmoi_config(self) -> str:
-        config_dump = self.get_output("chezmoi", "dump_config")
+        config_dump = self.get_output("dump_config")
         config_dict = json.loads(config_dump)
         return config_dict
 
 
-def run(command: str, verb: str, refresh: bool = False) -> str:
-    return CommandIO().get_output(command, verb, refresh)
+def run(sub_cmd: str, refresh: bool = False) -> str:
+    return CommandIO().get_output(sub_cmd, refresh)
 
 chezmoi_config = CommandIO().chezmoi_config
