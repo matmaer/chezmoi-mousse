@@ -25,6 +25,7 @@ SPLASH = """\
   '---' '---^-------^-------^-------^-------^-------'
 """.splitlines()
 
+
 def create_fade():
     start_color = "rgb(67, 156, 251)"
     end_color = "rgb(241, 135, 251)"
@@ -39,7 +40,9 @@ def create_fade():
     fade.extend(gradient.colors)
     return fade
 
+
 FADE = create_fade()
+
 
 class AnimatedFade(Widget):
 
@@ -85,7 +88,6 @@ class LoadingScreen(Screen):
                 )
             )
         yield Footer(id="loader-footer")
-
 
     @work(thread=True)
     def store_command_output(self, sub_cmd: str) -> None:
