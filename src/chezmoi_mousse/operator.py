@@ -17,9 +17,45 @@ from textual.widgets import (
 )
 
 from chezmoi_mousse.commands import run, chezmoi_config
-from chezmoi_mousse.graphics import FLOW_DIAGRAM
 
 __all__ = ["ChezmoiStatus", "ManagedFiles", "OperationTabs"]
+
+
+# provisional diagrams until dynamically created
+FLOW_DIAGRAM = """\
+┌──────────────┐    ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
+│home directory│    │ working copy │    │  local repo  │    │ remote repo  │
+└──────┬───────┘    └──────┬───────┘    └──────┬───────┘    └──────┬───────┘
+       │                   │                   │                   │
+       │    chezmoi add    │                   │                   │
+       │   chezmoi re-add  │                   │                   │
+       │──────────────────>│                   │                   │
+       │                   │                   │                   │
+       │   chezmoi apply   │                   │                   │
+       │<──────────────────│                   │                   │
+       │                   │                   │                   │
+       │  chezmoi status   │                   │                   │
+       │   chezmoi diff    │                   │                   │
+       │<─ ─ ─ ─ ─ ─ ─ ─ ─>│                   │     git push      │
+       │                   │                   │──────────────────>│
+       │                   │                   │                   │
+       │                   │           chezmoi git pull            │
+       │                   │<──────────────────────────────────────│
+       │                   │                   │                   │
+       │                   │    git commit     │                   │
+       │                   │──────────────────>│                   │
+       │                   │                   │                   │
+       │                   │    autoCommit     │                   │
+       │                   │──────────────────>│                   │
+       │                   │                   │                   │
+       │                   │                autoPush               │
+       │                   │──────────────────────────────────────>│
+       │                   │                   │                   │
+       │                   │                   │                   │
+┌──────┴───────┐    ┌──────┴───────┐    ┌──────┴───────┐    ┌──────┴───────┐
+│ destination  │    │   staging    │    │   git repo   │    │  git remote  │
+└──────────────┘    └──────────────┘    └──────────────┘    └──────────────┘
+"""
 
 # class LogSlidebar(Widget):
 
