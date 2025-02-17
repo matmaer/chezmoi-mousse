@@ -1,12 +1,11 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import shutil
 import subprocess
-import copy
 import json
 
 __all__ = ["run", "chezmoi_config"]
 
-@dataclass(frozen=True)
+@dataclass
 class Components:
 
     global_command = [
@@ -31,28 +30,25 @@ class Components:
     }
 
     @property
-    def empty_command_dict(self):
-        # a key for each command
-        empty_cmd_dict = {key: None for key in self.sub_commands}
-        return copy.deepcopy(empty_cmd_dict)
-
-    @property
     def full_command(self):
         full_command = {}
         for name, sub_cmd in self.sub_commands.items():
             full_command[name] = self.global_command + sub_cmd
         return full_command
 
-OUTPUT = Components().empty_command_dict
 
-@dataclass(frozen=True)
+@dataclass
 class CommandIO(Components):
+    output: dict = field(init=False)
+
+    def __post_init__(self):
+        self.output = {key: None for key in self.sub_commands}
 
     def get_command_output(self, sub_cmd: str) -> str:
-        return OUTPUT[sub_cmd]
+        return self.output[sub_cmd]
 
     def set_command_output(self, sub_cmd: str, output: str):
-        OUTPUT[sub_cmd] = output
+        self.output[sub_cmd] = output
 
     def _subprocess_run(self, sub_cmd: str) -> str:
         command_to_run = self.full_command[sub_cmd]
@@ -74,12 +70,9 @@ class CommandIO(Components):
 
     @property
     def chezmoi_config(self) -> dict:
-        config_dump = self.get_output("dump_config")
-        config_dict = json.loads(config_dump)
-        return config_dict
+        return json.loads(self.get_output("dump_config"))
 
 
-def run(sub_cmd: str, refresh: bool = False) -> str:
-    return CommandIO().get_output(sub_cmd, refresh)
+run = CommandIO().get_output
 
 chezmoi_config = CommandIO().chezmoi_config

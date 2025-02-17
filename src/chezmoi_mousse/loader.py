@@ -82,5 +82,5 @@ class LoadingScreen(Screen):
 
     def on_mount(self) -> None:
         self.title = "-  c h e z m o i  m o u s s e  -"
-        for sub_cmd in Components().empty_command_dict:
+        for sub_cmd in Components().sub_commands:
             self.store_command_output(sub_cmd)
