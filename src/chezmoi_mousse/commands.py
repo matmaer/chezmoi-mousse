@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 import shutil
 import subprocess
-import copy
 import json
 
 __all__ = ["run", "chezmoi_config"]
@@ -30,11 +29,13 @@ class Components:
         "git_log": ["git", "log", "--", "--oneline"],
     }
 
+    output = {key: None for key in sub_commands}
+
     @property
-    def empty_command_dict(self):
+    def sub_command_names(self):
         # a key for each command
-        empty_cmd_dict = {key: None for key in self.sub_commands}
-        return copy.deepcopy(empty_cmd_dict)
+        # empty_cmd_dict = {key: None for key in self.sub_commands}
+        return [key for key in self.sub_commands]
 
     @property
     def full_command(self):
@@ -43,16 +44,15 @@ class Components:
             full_command[name] = self.global_command + sub_cmd
         return full_command
 
-OUTPUT = Components().empty_command_dict
 
 @dataclass(frozen=True)
 class CommandIO(Components):
 
     def get_command_output(self, sub_cmd: str) -> str:
-        return OUTPUT[sub_cmd]
+        return self.output[sub_cmd]
 
     def set_command_output(self, sub_cmd: str, output: str):
-        OUTPUT[sub_cmd] = output
+        self.output[sub_cmd] = output
 
     def _subprocess_run(self, sub_cmd: str) -> str:
         command_to_run = self.full_command[sub_cmd]
