@@ -2,38 +2,42 @@ from collections import deque
 
 from textual import work
 from textual.app import ComposeResult
+from textual.color import Color, Gradient
 from textual.containers import Center, Middle
 from textual.screen import Screen
 from textual.widget import Segment, Strip, Style, Widget
 from textual.widgets import Footer, Header, RichLog
 
-from chezmoi_mousse.graphics import FADE
+from chezmoi_mousse.graphics import SPLASH
 from chezmoi_mousse.commands import Components, run
 
 __all__ = ["LoadingScreen"]
 
-SPLASH = """\
- _______ _______ _______ _______ ____ ____ _______ _o_
-|       |   |   |    ___|___    |    `    |       |   |
-|    ===|       |     __|     __|         |   |   |   |
-|       |   |   |       |       |   |`|   |       |   |
-`-------^---^---^-------^-------^---' '---^-------^---'
-   ____ ____ _______ ___ ___ _______ _______ _______
-  |    `    |       |   |   |    ___|    ___|    ___|
-  |         |   |   |   |   |__     |__     |     __|
-  |   |`|   |       |       |       |       |       |
-  '---' '---^-------^-------^-------^-------^-------'
-""".splitlines()
 
+def create_fade():
+    start_color = "rgb(67, 156, 251)"
+    end_color = "rgb(241, 135, 251)"
+    fade = [Color.parse(start_color)] * 4
+    gradient = Gradient.from_colors(
+        start_color,
+        end_color,
+        quality=5,
+    )
+    fade.extend(gradient.colors)
+    gradient.colors.reverse()
+    fade.extend(gradient.colors)
+    return fade
+
+FADE = create_fade()
 
 class AnimatedFade(Widget):
 
-    line_styles = deque([Style(color=color, bold=True) for color in FADE])
+    line_styles = deque([Style(color=color.hex, bold=True) for color in FADE])
 
     def __init__(self) -> None:
         super().__init__()
         self.id = "animated-fade"
-        self.styles.height = 10
+        self.styles.height = len(SPLASH)
         self.styles.width = len(max(SPLASH, key=len))
 
     def render_lines(self, crop) -> list[Strip]:
