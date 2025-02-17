@@ -81,7 +81,7 @@ class ChezmoiStatus(Static):
         yield DataTable(id="re_add_table")
 
     def on_mount(self):
-        self.status_output = run("chezmoi", "status").splitlines()
+        self.status_output = run("status").splitlines()
         re_add_table = self.query_one("#re_add_table")
         apply_table = self.query_one("#apply_table")
 
@@ -111,7 +111,7 @@ class ManagedFiles(DirectoryTree):
     def __init__(self):
         super().__init__(chezmoi_config["destDir"])
         self.managed = [
-            Path(entry) for entry in run("chezmoi", "managed").splitlines()
+            Path(entry) for entry in run("managed").splitlines()
         ]
         self.classes = "tabpad"
 
