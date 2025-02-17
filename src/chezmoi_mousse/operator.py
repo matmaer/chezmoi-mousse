@@ -109,7 +109,6 @@ class ChezmoiStatus(Static):
 class ManagedFiles(DirectoryTree):
 
     def __init__(self):
-        # TODO: get destDir from dataclass
         super().__init__(chezmoi_config["destDir"])
         self.managed = [
             Path(entry) for entry in run("chezmoi", "managed").splitlines()

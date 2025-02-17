@@ -72,7 +72,7 @@ class CommandIO(Components):
         OUTPUT[command][verb] = output
 
     def _subprocess_run(self, command: str, verb: str) -> str:
-        command_to_run = Components().full_command[command][verb]
+        command_to_run = self.full_command[command][verb]
         result = subprocess.run(
                 command_to_run,
                 capture_output=True,
@@ -85,8 +85,8 @@ class CommandIO(Components):
 
     def get_output(self, command: str, verb: str, refresh: bool = False) -> str:
         if refresh or not self.get_command_output(command, verb):
-            subprocess_result = self._subprocess_run(command, verb)
-            self.set_command_output(command, verb, subprocess_result)
+            subprocess_stdout = self._subprocess_run(command, verb)
+            self.set_command_output(command, verb, subprocess_stdout)
         return self.get_command_output(command, verb)
 
     @property
