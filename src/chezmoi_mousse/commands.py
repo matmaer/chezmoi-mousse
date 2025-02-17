@@ -68,9 +68,7 @@ class CommandIO(Components):
 
     @property
     def chezmoi_config(self) -> dict:
-        config_dump = self.get_output("dump_config")
-        config_dict = json.loads(config_dump)
-        return config_dict
+        return json.loads(self.get_output("dump_config"))
 
 
 run = CommandIO().get_output
