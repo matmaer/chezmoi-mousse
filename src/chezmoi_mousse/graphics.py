@@ -1,72 +1,18 @@
-from textual.theme import Theme
-
-from textual.color import Gradient
-
-from rich.text import Text
-from rich.style import Style
-from rich.panel import Panel
-from rich.console import Console
 
 
-oled_deep_zen = Theme(
-    name="oled-deep-zen",
-    dark=True,
-    luminosity_spread=0.9,
-    text_alpha=0.9,
-    accent="rgb(241, 135, 251)",  # fade end
-    background="rgb(12, 14, 18)",
-    error="rgb(203, 68, 31)",
-    foreground="rgb(234, 232, 227)",
-    panel="rgb(98, 118, 147)",
-    primary="rgb(67, 156, 251)",  # fade end
-    secondary="rgb(37, 146, 137)",
-    success="rgb(63, 170, 77)",
-    surface="rgb(24, 28, 34)",
-    warning="rgb(224, 195, 30)",
-    variables={
-        "footer-background": "rgb(12, 14, 18)",
-        "footer-item-background": "rgb(12, 14, 18)",
-        "footer-key-background": "rgb(12, 14, 18)",
-        "footer-description-background": "rgb(12, 14, 18)",
-    },
 
-)
-
-FADE = (
-    "rgb(67, 156, 251)",
-    "rgb(67, 156, 251)",
-    "rgb(67, 156, 251)",
-    "rgb(67, 156, 251)",
-    "rgb(67, 156, 251)",
-    "rgb(67, 156, 251)",
-    "rgb(102, 152, 251)",
-    "rgb(137, 148, 251)",
-    "rgb(171, 143, 251)",
-    "rgb(206, 139, 251)",
-    "rgb(241, 135, 251)",
-    "rgb(241, 135, 251)",
-    "rgb(206, 139, 251)",
-    "rgb(171, 143, 251)",
-    "rgb(137, 148, 251)",
-    "rgb(102, 152, 251)",
-)
-
-
-def test_print_fade():
-
-    console = Console()
-    new_fade = Gradient.from_colors(FADE[0], FADE[11], quality=6)
-
-    i = 1 / 6
-    for some_color in new_fade.colors:
-        color = new_fade.get_rich_color(i)
-        style=Style(color=color)
-        info_text = Text(f"Fade color: {some_color}, step {i}", justify="center")
-        panel = Panel(info_text, style=style)
-        console.print(panel)
-        i += (1 / 6)
-
-
+SPLASH = """\
+ _______ _______ _______ _______ ____ ____ _______ _o_
+|       |   |   |    ___|___    |    `    |       |   |
+|    ===|       |     __|     __|         |   |   |   |
+|       |   |   |       |       |   |`|   |       |   |
+`-------^---^---^-------^-------^---' '---^-------^---'
+   ____ ____ _______ ___ ___ _______ _______ _______
+  |    `    |       |   |   |    ___|    ___|    ___|
+  |         |   |   |   |   |__     |__     |     __|
+  |   |`|   |       |       |       |       |       |
+  '---' '---^-------^-------^-------^-------^-------'
+""".splitlines()
 
 
 # provisional diagrams until dynamically created
@@ -105,7 +51,7 @@ FLOW_DIAGRAM = """\
 └──────────────┘    └──────────────┘    └──────────────┘    └──────────────┘
 """
 
-__all__ = ["oled_deep_zen", "FADE", "FLOW_DIAGRAM"]
+__all__ = ["FLOW_DIAGRAM"]
 
 
 
