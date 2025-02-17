@@ -1,9 +1,10 @@
-from dataclasses import dataclass, field
+import json
 import shutil
 import subprocess
-import json
+from dataclasses import dataclass, field
 
 __all__ = ["run", "chezmoi_config"]
+
 
 @dataclass
 class Components:
@@ -22,7 +23,7 @@ class Components:
         "data": ["data", "--format=json"],
         "cat_config": ["cat-config"],
         "ignored": ["ignored"],
-        "managed": ["managed",  "--path-style=absolute"],
+        "managed": ["managed", "--path-style=absolute"],
         "status": ["status", "--parent-dirs"],
         "unmanaged": ["unmanaged", "--path-style=absolute"],
         "git_status": ["git", "status"],
@@ -53,13 +54,13 @@ class CommandIO(Components):
     def _subprocess_run(self, sub_cmd: str) -> str:
         command_to_run = self.full_command[sub_cmd]
         result = subprocess.run(
-                command_to_run,
-                capture_output=True,
-                check=True,  # raises exception for any non-zero return code
-                shell=False,  # mitigates shell injection risk
-                text=True,  # returns stdout as str instead of bytes
-                timeout=2,
-            )
+            command_to_run,
+            capture_output=True,
+            check=True,  # raises exception for any non-zero return code
+            shell=False,  # mitigates shell injection risk
+            text=True,  # returns stdout as str instead of bytes
+            timeout=2,
+        )
         return result.stdout
 
     def get_output(self, sub_cmd: str, refresh: bool = False) -> str:

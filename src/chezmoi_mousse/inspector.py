@@ -1,6 +1,7 @@
 """Constructs the Inspector screen."""
 
 import json
+
 from textual.app import ComposeResult
 from textual.containers import Vertical, VerticalScroll
 from textual.screen import Screen
@@ -17,6 +18,7 @@ from textual.widgets import (
 from chezmoi_mousse.commands import run
 
 __all__ = ["InspectTabs"]
+
 
 class ChezmoiDoctor(Static):
 
@@ -85,24 +87,12 @@ class InspectTabs(Screen):
                 "Git-Log",
             ):
                 yield VerticalScroll(ChezmoiDoctor())
-                yield VerticalScroll(
-                    Pretty(json.loads(run("dump_config")))
-                )
-                yield VerticalScroll(
-                    Pretty(json.loads(run("data")))
-                )
-                yield VerticalScroll(
-                    Pretty(run("cat_config").splitlines())
-                )
-                yield VerticalScroll(
-                    Pretty(run("ignored").splitlines())
-                )
-                yield VerticalScroll(
-                    Pretty(run("git_status").splitlines())
-                )
-                yield VerticalScroll(
-                    Pretty(run("git_log").splitlines())
-                )
+                yield VerticalScroll(Pretty(json.loads(run("dump_config"))))
+                yield VerticalScroll(Pretty(json.loads(run("data"))))
+                yield VerticalScroll(Pretty(run("cat_config").splitlines()))
+                yield VerticalScroll(Pretty(run("ignored").splitlines()))
+                yield VerticalScroll(Pretty(run("git_status").splitlines()))
+                yield VerticalScroll(Pretty(run("git_log").splitlines()))
         yield Footer()
 
     def on_mount(self) -> None:
