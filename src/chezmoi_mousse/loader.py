@@ -72,15 +72,14 @@ class LoadingScreen(Screen):
 
 
     @work(thread=True)
-    def store_command_output(self, command: str, verb: str) -> None:
+    def store_command_output(self, sub_cmd: str) -> None:
         rlog = self.query_one("#loader-log")
-        run(command, verb, refresh=True)
+        run(sub_cmd, refresh=True)
         pad_chars = 33
-        padded_command = f"{command} {verb} ".ljust(pad_chars, ".")
+        padded_command = f"chezmoi {sub_cmd} ".ljust(pad_chars, ".")
         rlog.write(f"{padded_command} loaded")
 
     def on_mount(self) -> None:
         self.title = "-  c h e z m o i  m o u s s e  -"
-        for c, v in Components().empty_cmd_dict.items():
-            for verb in v.keys():
-                self.store_command_output(c, verb)
+        for sub_cmd in Components().empty_command_dict:
+            self.store_command_output(sub_cmd)

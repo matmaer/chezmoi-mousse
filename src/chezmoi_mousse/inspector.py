@@ -36,7 +36,7 @@ class ChezmoiDoctor(Static):
         self.construct_table()
 
     def construct_table(self) -> None:
-        cm_dr_output = run("chezmoi", "doctor").splitlines()
+        cm_dr_output = run("doctor").splitlines()
         header_row = cm_dr_output.pop(0).split()
         main_rows = []
         other_rows = []
@@ -85,22 +85,22 @@ class InspectTabs(Screen):
             ):
                 yield VerticalScroll(ChezmoiDoctor())
                 yield VerticalScroll(
-                    Pretty(json.loads(run("chezmoi", "dump_config")))
+                    Pretty(json.loads(run("dump_config")))
                 )
                 yield VerticalScroll(
-                    Pretty(json.loads(run("chezmoi", "data")))
+                    Pretty(json.loads(run("data")))
                 )
                 yield VerticalScroll(
-                    Pretty(run("chezmoi", "cat_config").splitlines())
+                    Pretty(run("cat_config").splitlines())
                 )
                 yield VerticalScroll(
-                    Pretty(run("chezmoi", "ignored").splitlines())
+                    Pretty(run("ignored").splitlines())
                 )
                 yield VerticalScroll(
-                    Pretty(run("git", "status").splitlines())
+                    Pretty(run("git_status").splitlines())
                 )
                 yield VerticalScroll(
-                    Pretty(run("git", "log").splitlines())
+                    Pretty(run("git_log").splitlines())
                 )
         yield Footer()
 
