@@ -79,7 +79,6 @@ class CommandIO(Components):
         return config_dict
 
 
-def run(sub_cmd: str, refresh: bool = False) -> str:
-    return CommandIO().get_output(sub_cmd, refresh)
+run = CommandIO().get_output
 
 chezmoi_config = CommandIO().chezmoi_config
