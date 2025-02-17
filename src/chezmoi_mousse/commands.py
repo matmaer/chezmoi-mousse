@@ -73,7 +73,7 @@ class CommandIO(Components):
         return self.get_command_output(sub_cmd)
 
     @property
-    def chezmoi_config(self) -> str:
+    def chezmoi_config(self) -> dict:
         config_dump = self.get_output("dump_config")
         config_dict = json.loads(config_dump)
         return config_dict
