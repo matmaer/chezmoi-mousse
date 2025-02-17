@@ -1,10 +1,11 @@
 from textual.theme import Theme
 
-# from textual.color import Gradient
+from textual.color import Gradient
 
-
-def rgb_to_hex(red, green, blue):
-    return f"#{red:02x}{green:02x}{blue:02x}"
+from rich.text import Text
+from rich.style import Style
+from rich.panel import Panel
+from rich.console import Console
 
 
 oled_deep_zen = Theme(
@@ -28,7 +29,87 @@ oled_deep_zen = Theme(
         "footer-key-background": "rgb(12, 14, 18)",
         "footer-description-background": "rgb(12, 14, 18)",
     },
-    # vars to check:
+
+)
+
+FADE = (
+    "rgb(67, 156, 251)",
+    "rgb(67, 156, 251)",
+    "rgb(67, 156, 251)",
+    "rgb(67, 156, 251)",
+    "rgb(67, 156, 251)",
+    "rgb(67, 156, 251)",
+    "rgb(102, 152, 251)",
+    "rgb(137, 148, 251)",
+    "rgb(171, 143, 251)",
+    "rgb(206, 139, 251)",
+    "rgb(241, 135, 251)",
+    "rgb(241, 135, 251)",
+    "rgb(206, 139, 251)",
+    "rgb(171, 143, 251)",
+    "rgb(137, 148, 251)",
+    "rgb(102, 152, 251)",
+)
+
+
+def test_print_fade():
+
+    console = Console()
+    new_fade = Gradient.from_colors(FADE[0], FADE[11], quality=6)
+
+    i = 1 / 6
+    for some_color in new_fade.colors:
+        color = new_fade.get_rich_color(i)
+        style=Style(color=color)
+        info_text = Text(f"Fade color: {some_color}, step {i}", justify="center")
+        panel = Panel(info_text, style=style)
+        console.print(panel)
+        i += (1 / 6)
+
+
+
+
+# provisional diagrams until dynamically created
+FLOW_DIAGRAM = """\
+┌──────────────┐    ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
+│home directory│    │ working copy │    │  local repo  │    │ remote repo  │
+└──────┬───────┘    └──────┬───────┘    └──────┬───────┘    └──────┬───────┘
+       │                   │                   │                   │
+       │    chezmoi add    │                   │                   │
+       │   chezmoi re-add  │                   │                   │
+       │──────────────────>│                   │                   │
+       │                   │                   │                   │
+       │   chezmoi apply   │                   │                   │
+       │<──────────────────│                   │                   │
+       │                   │                   │                   │
+       │  chezmoi status   │                   │                   │
+       │   chezmoi diff    │                   │                   │
+       │<─ ─ ─ ─ ─ ─ ─ ─ ─>│                   │     git push      │
+       │                   │                   │──────────────────>│
+       │                   │                   │                   │
+       │                   │           chezmoi git pull            │
+       │                   │<──────────────────────────────────────│
+       │                   │                   │                   │
+       │                   │    git commit     │                   │
+       │                   │──────────────────>│                   │
+       │                   │                   │                   │
+       │                   │    autoCommit     │                   │
+       │                   │──────────────────>│                   │
+       │                   │                   │                   │
+       │                   │                autoPush               │
+       │                   │──────────────────────────────────────>│
+       │                   │                   │                   │
+       │                   │                   │                   │
+┌──────┴───────┐    ┌──────┴───────┐    ┌──────┴───────┐    ┌──────┴───────┐
+│ destination  │    │   staging    │    │   git repo   │    │  git remote  │
+└──────────────┘    └──────────────┘    └──────────────┘    └──────────────┘
+"""
+
+__all__ = ["oled_deep_zen", "FADE", "FLOW_DIAGRAM"]
+
+
+
+# theme vars to check:
     # "accent-muted"
     # "block-cursor-background"
     # "block-cursor-blurred-background"
@@ -96,63 +177,7 @@ oled_deep_zen = Theme(
     # "markdown-h6-color"
     # "markdown-h6-background"
     # "markdown-h6-text-style"
-)
-
-# TODO: use Gradient to construct FADE
-FADE = (
-    "rgb(67, 156, 251)",
-    "rgb(67, 156, 251)",
-    "rgb(67, 156, 251)",
-    "rgb(67, 156, 251)",
-    "rgb(67, 156, 251)",
-    "rgb(67, 156, 251)",
-    "rgb(102, 152, 251)",
-    "rgb(137, 148, 251)",
-    "rgb(171, 143, 251)",
-    "rgb(206, 139, 251)",
-    "rgb(241, 135, 251)",
-    "rgb(241, 135, 251)",
-    "rgb(206, 139, 251)",
-    "rgb(171, 143, 251)",
-    "rgb(137, 148, 251)",
-    "rgb(102, 152, 251)",
-)
 
 
-# provisional diagrams until dynamically created
-FLOW_DIAGRAM = """\
-┌──────────────┐    ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
-│home directory│    │ working copy │    │  local repo  │    │ remote repo  │
-└──────┬───────┘    └──────┬───────┘    └──────┬───────┘    └──────┬───────┘
-       │                   │                   │                   │
-       │    chezmoi add    │                   │                   │
-       │   chezmoi re-add  │                   │                   │
-       │──────────────────>│                   │                   │
-       │                   │                   │                   │
-       │   chezmoi apply   │                   │                   │
-       │<──────────────────│                   │                   │
-       │                   │                   │                   │
-       │  chezmoi status   │                   │                   │
-       │   chezmoi diff    │                   │                   │
-       │<─ ─ ─ ─ ─ ─ ─ ─ ─>│                   │     git push      │
-       │                   │                   │──────────────────>│
-       │                   │                   │                   │
-       │                   │           chezmoi git pull            │
-       │                   │<──────────────────────────────────────│
-       │                   │                   │                   │
-       │                   │    git commit     │                   │
-       │                   │──────────────────>│                   │
-       │                   │                   │                   │
-       │                   │    autoCommit     │                   │
-       │                   │──────────────────>│                   │
-       │                   │                   │                   │
-       │                   │                autoPush               │
-       │                   │──────────────────────────────────────>│
-       │                   │                   │                   │
-       │                   │                   │                   │
-┌──────┴───────┐    ┌──────┴───────┐    ┌──────┴───────┐    ┌──────┴───────┐
-│ destination  │    │   staging    │    │   git repo   │    │  git remote  │
-└──────────────┘    └──────────────┘    └──────────────┘    └──────────────┘
-"""
 
-__all__ = ["oled_deep_zen", "FADE", "FLOW_DIAGRAM"]
+
