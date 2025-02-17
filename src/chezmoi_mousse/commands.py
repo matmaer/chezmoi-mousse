@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import shutil
 import subprocess
 import json
@@ -29,8 +29,6 @@ class Components:
         "git_log": ["git", "log", "--", "--oneline"],
     }
 
-    output = {key: None for key in sub_commands}
-
     @property
     def full_command(self):
         full_command = {}
@@ -41,6 +39,10 @@ class Components:
 
 @dataclass
 class CommandIO(Components):
+    output: dict = field(init=False)
+
+    def __post_init__(self):
+        self.output = {key: None for key in self.sub_commands}
 
     def get_command_output(self, sub_cmd: str) -> str:
         return self.output[sub_cmd]
