@@ -5,7 +5,7 @@ import json
 
 __all__ = ["run", "chezmoi_config"]
 
-@dataclass(frozen=True)
+@dataclass
 class Components:
 
     global_command = [
@@ -39,7 +39,7 @@ class Components:
         return full_command
 
 
-@dataclass(frozen=True)
+@dataclass
 class CommandIO(Components):
 
     def get_command_output(self, sub_cmd: str) -> str:
