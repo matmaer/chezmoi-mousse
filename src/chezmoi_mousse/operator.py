@@ -19,6 +19,8 @@ from textual.widgets import (
 from chezmoi_mousse.commands import run, chezmoi_config
 from chezmoi_mousse.graphics import FLOW_DIAGRAM
 
+__all__ = ["ChezmoiStatus", "ManagedFiles", "OperationTabs"]
+
 # class LogSlidebar(Widget):
 
 #     def __init__(self, highlight: bool = False):

@@ -16,6 +16,7 @@ from textual.widgets import (
 
 from chezmoi_mousse.commands import run
 
+__all__ = ["InspectTabs"]
 
 class ChezmoiDoctor(Static):
 
