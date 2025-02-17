@@ -8,11 +8,22 @@ from textual.screen import Screen
 from textual.widget import Segment, Strip, Style, Widget
 from textual.widgets import Footer, Header, RichLog
 
-from chezmoi_mousse.graphics import SPLASH
 from chezmoi_mousse.commands import Components, run
 
 __all__ = ["LoadingScreen"]
 
+SPLASH = """\
+ _______ _______ _______ _______ ____ ____ _______ _o_
+|       |   |   |    ___|___    |    `    |       |   |
+|    ===|       |     __|     __|         |   |   |   |
+|       |   |   |       |       |   |`|   |       |   |
+`-------^---^---^-------^-------^---' '---^-------^---'
+   ____ ____ _______ ___ ___ _______ _______ _______
+  |    `    |       |   |   |    ___|    ___|    ___|
+  |         |   |   |   |   |__     |__     |     __|
+  |   |`|   |       |       |       |       |       |
+  '---' '---^-------^-------^-------^-------^-------'
+""".splitlines()
 
 def create_fade():
     start_color = "rgb(67, 156, 251)"
