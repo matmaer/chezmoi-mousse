@@ -16,7 +16,7 @@ from textual.widgets import (
     TabbedContent,
 )
 
-from chezmoi_mousse.commands import run, chezmoi_config
+from chezmoi_mousse.commands import chezmoi_config, run
 
 __all__ = ["ChezmoiStatus", "ManagedFiles", "OperationTabs"]
 
@@ -74,10 +74,8 @@ FLOW_DIAGRAM = """\
 
 
 class ChezmoiStatus(Static):
-    """
-    Chezmoi status command output reference:
-    https://www.chezmoi.io/reference/commands/status/
-    """
+    # Chezmoi status command output reference:
+    # https://www.chezmoi.io/reference/commands/status/
 
     status_meaning = {
         " ": {
@@ -148,9 +146,7 @@ class ManagedFiles(DirectoryTree):
 
     def __init__(self):
         super().__init__(chezmoi_config["destDir"])
-        self.managed = [
-            Path(entry) for entry in run("managed").splitlines()
-        ]
+        self.managed = [Path(entry) for entry in run("managed").splitlines()]
         self.classes = "tabpad"
 
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
