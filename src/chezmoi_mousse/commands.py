@@ -32,12 +32,6 @@ class Components:
     output = {key: None for key in sub_commands}
 
     @property
-    def sub_command_names(self):
-        # a key for each command
-        # empty_cmd_dict = {key: None for key in self.sub_commands}
-        return [key for key in self.sub_commands]
-
-    @property
     def full_command(self):
         full_command = {}
         for name, sub_cmd in self.sub_commands.items():
