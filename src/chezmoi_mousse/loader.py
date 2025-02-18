@@ -6,7 +6,7 @@ from textual.color import Color, Gradient
 from textual.containers import Center, Middle
 from textual.screen import Screen
 from textual.widget import Segment, Strip, Style, Widget
-from textual.widgets import Footer, Header, RichLog
+from textual.widgets import Footer, Header, Log, RichLog
 
 from chezmoi_mousse.commands import Components, run
 
@@ -65,6 +65,41 @@ class AnimatedFade(Widget):
         self.set_interval(interval=0.10, callback=self.refresh)
 
 
+class AnimatedLog(Widget):
+
+    line_cols: int = 34  # total width of the padded text in characters
+    pad_char: str = "."
+    status_text: dict = ("loaded", "loading")
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.id = "animated-log"
+        # self.log = Log(id="loader-log", max_lines=11)
+
+    def get_log_line(self, sub_cmd_name, nr: int) -> str:
+        # nr of padding chars needed to get to line_cols minus 2 spaces
+        pad_char_count = self.line_cols - len(self.status_text[nr]) - 2
+        prefix = f"chezmoi {Components().pretty_cmd(sub_cmd_name)}"
+        pad_chars = f"{self.pad_char * pad_char_count}"
+        return f"{prefix} {pad_chars} {self.status_text[nr]}"  # includes two spaces
+
+    def compose(self) -> ComposeResult:
+        with Center():
+            yield Log(id="loader-log", max_lines=11)
+
+    @work(thread=True)
+    def store_command_output(self, sub_cmd_name: str) -> None:
+        run(sub_cmd_name, refresh=True)
+
+    def on_mount(self) -> None:
+        rlog = self.query_one("#loader-log")
+
+        for sub_cmd_name in Components().subs:
+            self.store_command_output(sub_cmd_name)
+            line_text = self.get_log_line(sub_cmd_name, 0)
+            rlog.log(line_text)
+
+
 class LoadingScreen(Screen):
 
     BINDINGS = [
@@ -90,14 +125,14 @@ class LoadingScreen(Screen):
         yield Footer(id="loader-footer")
 
     @work(thread=True)
-    def store_command_output(self, sub_cmd: str) -> None:
+    def store_command_output(self, sub: str) -> None:
         rlog = self.query_one("#loader-log")
-        run(sub_cmd, refresh=True)
+        run(sub, refresh=True)
         pad_chars = 33
-        padded_command = f"chezmoi {sub_cmd} ".ljust(pad_chars, ".")
+        padded_command = f"chezmoi {sub} ".ljust(pad_chars, ".")
         rlog.write(f"{padded_command} loaded")
 
     def on_mount(self) -> None:
         self.title = "-  c h e z m o i  m o u s s e  -"
-        for sub_cmd in Components().sub_commands:
-            self.store_command_output(sub_cmd)
+        for sub in Components().subs:
+            self.store_command_output(sub)
