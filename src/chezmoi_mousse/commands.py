@@ -9,15 +9,17 @@ __all__ = ["run", "chezmoi_config"]
 @dataclass
 class Components:
 
-    global_command = [
-        shutil.which("chezmoi"),
+    cmd_name = "chezmoi"
+
+    global_cmd = [
+        shutil.which(cmd_name),
         "--no-pager",
         "--color=false",
         "--no-tty",
         "--progress=false",
     ]
 
-    sub_commands = {
+    subs = {
         "doctor": ["doctor"],
         "dump_config": ["dump-config", "--format=json"],
         "data": ["data", "--format=json"],
@@ -30,12 +32,19 @@ class Components:
         "git_log": ["git", "log", "--", "--oneline"],
     }
 
-    @property
-    def full_command(self):
-        full_command = {}
-        for name, sub_cmd in self.sub_commands.items():
-            full_command[name] = self.global_command + sub_cmd
-        return full_command
+    def full_cmd(self, sub_cmd_name: str) -> list[str]:
+        return self.global_cmd + self.subs[sub_cmd_name]
+
+    # pretty string for logging: full command without flags
+    def pretty_cmd(self, sub_cmd_name: str) -> str:
+        sub_cmd = self.subs[sub_cmd_name]
+        pretty_subs = " ".join([_ for _ in sub_cmd if not _.startswith("-")])
+        return f"{self.cmd_name} {pretty_subs}"
+
+    # property for the loader screen loop
+    # @property
+    # def all_full_commands(self):
+    #     return [self.full_cmd(_) for _ in self.subs]
 
 
 @dataclass
@@ -43,7 +52,7 @@ class CommandIO(Components):
     output: dict = field(init=False)
 
     def __post_init__(self):
-        self.output = {key: None for key in self.sub_commands}
+        self.output = {key: None for key in self.subs}
 
     def get_command_output(self, sub_cmd: str) -> str:
         return self.output[sub_cmd]
@@ -52,7 +61,7 @@ class CommandIO(Components):
         self.output[sub_cmd] = output
 
     def _subprocess_run(self, sub_cmd: str) -> str:
-        command_to_run = self.full_command[sub_cmd]
+        command_to_run = self.full_cmd(sub_cmd)
         result = subprocess.run(
             command_to_run,
             capture_output=True,
