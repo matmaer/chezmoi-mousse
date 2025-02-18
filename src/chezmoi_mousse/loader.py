@@ -69,19 +69,20 @@ class AnimatedLog(Widget):
 
     line_cols: int = 34  # total width of the padded text in characters
     pad_char: str = "."
-    status_text: dict = ("loaded", "loading")
+    status: dict = ("loaded", "loading")
 
     def __init__(self) -> None:
         super().__init__()
         self.id = "animated-log"
         # self.log = Log(id="loader-log", max_lines=11)
 
-    def get_log_line(self, sub_cmd_name, nr: int) -> str:
+    def create_log_line(self, sub_cmd_name, nr: int) -> str:
+        status_length = len(self.status[nr])
+        pretty_cmd = Components().pretty_cmd(sub_cmd_name)
         # nr of padding chars needed to get to line_cols minus 2 spaces
-        pad_char_count = self.line_cols - len(self.status_text[nr]) - 2
-        prefix = f"chezmoi {Components().pretty_cmd(sub_cmd_name)}"
-        pad_chars = f"{self.pad_char * pad_char_count}"
-        return f"{prefix} {pad_chars} {self.status_text[nr]}"  # includes two spaces
+        pad_length = self.line_cols - len(pretty_cmd) - status_length - 2
+        pad_chars = f"{self.pad_char * pad_length}"
+        return f"{pretty_cmd} {pad_chars} {self.status[nr]}"
 
     def compose(self) -> ComposeResult:
         with Center():
@@ -96,7 +97,7 @@ class AnimatedLog(Widget):
 
         for sub_cmd_name in Components().subs:
             self.store_command_output(sub_cmd_name)
-            line_text = self.get_log_line(sub_cmd_name, 0)
+            line_text = self.create_log_line(sub_cmd_name, 0)
             rlog.log(line_text)
 
 
