@@ -30,15 +30,12 @@ class Components:
         "git_log": ["git", "log", "--", "--oneline"],
     }
 
-    def full_command(self, sub_cmd: str) -> list[str]:
-        return self.global_command + self.sub_commands[sub_cmd]
+    def full_command(self, sub_cmd_name: str) -> list[str]:
+        return self.global_command + self.sub_commands[sub_cmd_name]
 
-    # @property
-    # def full_command(self):
-    #     full_command_dict = {}
-    #     for name, sub_cmd in self.sub_commands.items():
-    #         full_command_dict[name] = self.global_command + sub_cmd
-    #     return full_command_dict
+    def sub_cmd_no_flags(self, sub_cmd_name: str) -> str:
+        sub_cmd_list = self.sub_commands[sub_cmd_name]
+        return [word for word in sub_cmd_list if not word.startswith("-")]
 
     # property for the loader screen
     @property
