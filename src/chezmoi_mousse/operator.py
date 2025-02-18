@@ -156,8 +156,8 @@ class ManagedFiles(DirectoryTree):
 class OperationTabs(Screen):
 
     BINDINGS = [
-        ("i", "app.push_screen('inspect')", "inspect"),
-        ("l", "toggle_sidebar", "command-log"),
+        ("i, I", "app.push_screen('inspect')", "inspect"),
+        ("l, L", "toggle_sidebar", "command-log"),
     ]
 
     show_sidebar = reactive(False)
