@@ -30,11 +30,7 @@ def create_fade():
     start_color = "rgb(67, 156, 251)"
     end_color = "rgb(241, 135, 251)"
     fade = [Color.parse(start_color)] * 4
-    gradient = Gradient.from_colors(
-        start_color,
-        end_color,
-        quality=5,
-    )
+    gradient = Gradient.from_colors(start_color, end_color, quality=5)
     fade.extend(gradient.colors)
     gradient.colors.reverse()
     fade.extend(gradient.colors)
@@ -121,4 +117,3 @@ class LoadingScreen(Screen):
     @work(thread=True)
     def on_mount(self) -> None:
         self.title = "-  c h e z m o i  m o u s s e  -"
-
