@@ -41,11 +41,10 @@ class Components:
         pretty_subs = " ".join([_ for _ in sub_cmd if not _.startswith("-")])
         return f"{self.cmd_name} {pretty_subs}"
 
-
     # property for the loader screen loop
-    @property
-    def all_full_commands(self):
-        return [self.full_cmd(_) for _ in self.subs]
+    # @property
+    # def all_full_commands(self):
+    #     return [self.full_cmd(_) for _ in self.subs]
 
 
 @dataclass

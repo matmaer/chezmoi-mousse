@@ -102,6 +102,10 @@ class AnimatedLog(Widget):
 
 class LoadingScreen(Screen):
 
+    line_cols: int = 40  # total width of the padded text in characters
+    pad_char: str = "."
+    status: dict = ("loaded", "loading")
+
     BINDINGS = [
         ("i, I", "app.push_screen('inspect')", "inspect"),
         ("o, O", "app.push_screen('operate')", "operate"),
@@ -126,11 +130,16 @@ class LoadingScreen(Screen):
 
     @work(thread=True)
     def store_command_output(self, sub: str) -> None:
+        nr = 0
         rlog = self.query_one("#loader-log")
         run(sub, refresh=True)
-        pad_chars = 33
-        padded_command = f"chezmoi {sub} ".ljust(pad_chars, ".")
-        rlog.write(f"{padded_command} loaded")
+        status_length = len(self.status[nr])
+        pretty_cmd = Components().pretty_cmd(sub)
+        # nr of padding chars needed to get to line_cols minus 2 spaces
+        pad_length = self.line_cols - len(pretty_cmd) - status_length - 2
+        pad_chars = f"{self.pad_char * pad_length}"
+        log_line_text = f"{pretty_cmd} {pad_chars} {self.status[nr]}"
+        rlog.write(f"{log_line_text}")
 
     def on_mount(self) -> None:
         self.title = "-  c h e z m o i  m o u s s e  -"
