@@ -85,15 +85,13 @@ class AnimatedLog(Widget):
 
     @work(thread=True)
     def store_command_output(self, sub_cmd_name: str) -> None:
+        line_text = self.create_log_line(sub_cmd_name, 0)
         run(sub_cmd_name, refresh=True)
+        self.query_one("#loader-log").write(line_text)
 
     def on_mount(self) -> None:
-        rlog = self.query_one("#loader-log")
-
         for sub_cmd_name in self.components.subs:
             self.store_command_output(sub_cmd_name)
-            line_text = self.create_log_line(sub_cmd_name, 0)
-            rlog.write(line_text)
 
 
 class LoadingScreen(Screen):
@@ -114,6 +112,5 @@ class LoadingScreen(Screen):
             yield Center(AnimatedLog())
         yield Footer(id="loader-footer")
 
-    @work(thread=True)
     def on_mount(self) -> None:
         self.title = "-  c h e z m o i  m o u s s e  -"
