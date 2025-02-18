@@ -112,6 +112,10 @@ DataTable {
 
 #loader-screen {
   background: black;
+  & #animated-log {
+    height: auto;
+    width: auto;
+  }
   & #loader-log {
     margin: 2 0 0 0;
     background-tint: black;
