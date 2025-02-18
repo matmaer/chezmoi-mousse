@@ -6,7 +6,7 @@ from textual.color import Color, Gradient
 from textual.containers import Center, Middle
 from textual.screen import Screen
 from textual.widget import Segment, Strip, Style, Widget
-from textual.widgets import Footer, Header, Log, RichLog
+from textual.widgets import Footer, Header, RichLog
 
 from chezmoi_mousse.commands import Components, run
 
@@ -67,26 +67,25 @@ class AnimatedFade(Widget):
 
 class AnimatedLog(Widget):
 
-    line_cols: int = 34  # total width of the padded text in characters
+    line_cols: int = 40  # total width of the padded text in characters
     pad_char: str = "."
     status: dict = ("loaded", "loading")
 
     def __init__(self) -> None:
         super().__init__()
         self.id = "animated-log"
-        # self.log = Log(id="loader-log", max_lines=11)
+        self.components = Components()
 
     def create_log_line(self, sub_cmd_name, nr: int) -> str:
         status_length = len(self.status[nr])
-        pretty_cmd = Components().pretty_cmd(sub_cmd_name)
+        pretty_cmd = self.components.pretty_cmd(sub_cmd_name)
         # nr of padding chars needed to get to line_cols minus 2 spaces
         pad_length = self.line_cols - len(pretty_cmd) - status_length - 2
         pad_chars = f"{self.pad_char * pad_length}"
         return f"{pretty_cmd} {pad_chars} {self.status[nr]}"
 
     def compose(self) -> ComposeResult:
-        with Center():
-            yield Log(id="loader-log", max_lines=11)
+        yield RichLog(id="loader-log", max_lines=11)
 
     @work(thread=True)
     def store_command_output(self, sub_cmd_name: str) -> None:
@@ -95,17 +94,13 @@ class AnimatedLog(Widget):
     def on_mount(self) -> None:
         rlog = self.query_one("#loader-log")
 
-        for sub_cmd_name in Components().subs:
+        for sub_cmd_name in self.components.subs:
             self.store_command_output(sub_cmd_name)
             line_text = self.create_log_line(sub_cmd_name, 0)
-            rlog.log(line_text)
+            rlog.write(line_text)
 
 
 class LoadingScreen(Screen):
-
-    line_cols: int = 40  # total width of the padded text in characters
-    pad_char: str = "."
-    status: dict = ("loaded", "loading")
 
     BINDINGS = [
         ("i, I", "app.push_screen('inspect')", "inspect"),
@@ -120,29 +115,10 @@ class LoadingScreen(Screen):
         yield Header(id="loader-header")
         with Middle():
             yield Center(AnimatedFade())
-            yield Center(
-                RichLog(
-                    id="loader-log",
-                    markup=True,
-                    max_lines=11,
-                )
-            )
+            yield Center(AnimatedLog())
         yield Footer(id="loader-footer")
 
     @work(thread=True)
-    def store_command_output(self, sub: str) -> None:
-        nr = 0
-        rlog = self.query_one("#loader-log")
-        run(sub, refresh=True)
-        status_length = len(self.status[nr])
-        pretty_cmd = Components().pretty_cmd(sub)
-        # nr of padding chars needed to get to line_cols minus 2 spaces
-        pad_length = self.line_cols - len(pretty_cmd) - status_length - 2
-        pad_chars = f"{self.pad_char * pad_length}"
-        log_line_text = f"{pretty_cmd} {pad_chars} {self.status[nr]}"
-        rlog.write(f"{log_line_text}")
-
     def on_mount(self) -> None:
         self.title = "-  c h e z m o i  m o u s s e  -"
-        for sub in Components().subs:
-            self.store_command_output(sub)
+
