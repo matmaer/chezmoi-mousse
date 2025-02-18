@@ -30,12 +30,20 @@ class Components:
         "git_log": ["git", "log", "--", "--oneline"],
     }
 
+    def full_command(self, sub_cmd: str) -> list[str]:
+        return self.global_command + self.sub_commands[sub_cmd]
+
+    # @property
+    # def full_command(self):
+    #     full_command_dict = {}
+    #     for name, sub_cmd in self.sub_commands.items():
+    #         full_command_dict[name] = self.global_command + sub_cmd
+    #     return full_command_dict
+
+    # property for the loader screen
     @property
-    def full_command(self):
-        full_command = {}
-        for name, sub_cmd in self.sub_commands.items():
-            full_command[name] = self.global_command + sub_cmd
-        return full_command
+    def all_full_commands(self):
+        return [self.full_command(sub_cmd) for sub_cmd in self.sub_commands]
 
 
 @dataclass
@@ -52,7 +60,7 @@ class CommandIO(Components):
         self.output[sub_cmd] = output
 
     def _subprocess_run(self, sub_cmd: str) -> str:
-        command_to_run = self.full_command[sub_cmd]
+        command_to_run = self.full_command(sub_cmd)
         result = subprocess.run(
             command_to_run,
             capture_output=True,

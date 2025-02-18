@@ -71,7 +71,7 @@ class ChezmoiDoctor(Static):
 class InspectTabs(Screen):
 
     BINDINGS = [
-        ("o", "app.push_screen('operate')", "operate"),
+        ("o, O", "app.push_screen('operate')", "operate"),
     ]
 
     def compose(self) -> ComposeResult:
