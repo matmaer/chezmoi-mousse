@@ -5,23 +5,21 @@ from chezmoi_mousse.inspector import InspectTabs
 from chezmoi_mousse.loader import LoadingScreen
 from chezmoi_mousse.operator import OperationTabs
 
-__all__ = ["ChezmoiTUI", "PRIMARY", "ACCENT"]
 
-PRIMARY = "rgb(67, 156, 251)"
 BACKGROUND = "rgb(12, 14, 18)"
-ACCENT = "rgb(241, 135, 251)"
+
 
 oled_dark_zen = Theme(
     name="oled-dark-zen",
     dark=True,
     luminosity_spread=0.9,
     text_alpha=0.9,
-    accent=ACCENT,  # fade end
+    accent="rgb(241, 135, 251)",
     background=BACKGROUND,
     error="rgb(203, 68, 31)",
     foreground="rgb(234, 232, 227)",
     panel="rgb(98, 118, 147)",
-    primary=PRIMARY,  # fade end
+    primary="rgb(67, 156, 251)",
     secondary="rgb(37, 146, 137)",
     success="rgb(63, 170, 77)",
     surface="rgb(24, 28, 34)",
