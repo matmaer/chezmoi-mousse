@@ -2,6 +2,12 @@
   scrollbar-size-vertical: 1;
 }
 
+Footer {
+  .-command-palette {
+    border: none;
+  }
+}
+
 Header {
   background: $background;
   color: $accent;
@@ -92,10 +98,6 @@ DataTable {
   }
   .footer-key--description {
     background: black;
-  }
-  .-command-palette {
-    background: black;
-    border: none;
   }
 }
 
