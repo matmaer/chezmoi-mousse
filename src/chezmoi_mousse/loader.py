@@ -26,29 +26,26 @@ SPLASH = """\
 """.splitlines()
 
 
-def create_fade():
-    start_color = "rgb(67, 156, 251)"
-    end_color = "rgb(241, 135, 251)"
-    fade = [Color.parse(start_color)] * 4
-    gradient = Gradient.from_colors(start_color, end_color, quality=5)
-    fade.extend(gradient.colors)
-    gradient.colors.reverse()
-    fade.extend(gradient.colors)
-    return fade
-
-
-FADE = create_fade()
-
-
 class AnimatedFade(Widget):
 
-    line_styles = deque([Style(color=color.hex, bold=True) for color in FADE])
+    line_styles: deque[Style]
 
     def __init__(self) -> None:
         super().__init__()
         self.id = "animated-fade"
         self.styles.height = len(SPLASH)
         self.styles.width = len(max(SPLASH, key=len))
+        self.create_fade()
+
+    def create_fade(self) -> deque[Style]:
+        start_color = self.app.current_theme.primary
+        end_color = self.app.current_theme.accent
+        fade = [Color.parse(start_color)] * 5
+        gradient = Gradient.from_colors(start_color, end_color, quality=5)
+        fade.extend(gradient.colors)
+        gradient.colors.reverse()
+        fade.extend(gradient.colors)
+        self.line_styles = deque([Style(color=color.hex, bold=True) for color in fade])
 
     def render_lines(self, crop) -> list[Strip]:
         self.line_styles.rotate()

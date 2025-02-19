@@ -39,7 +39,6 @@ DataTable, DirectoryTree {
 
 DataTable {
   overflow-x: hidden;
-  color: $foreground 80%;
   padding: 1 1 1 0;
   text-style: none;
   &:focus {
