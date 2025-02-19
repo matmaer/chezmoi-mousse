@@ -75,7 +75,7 @@ class InspectTabs(Screen):
     ]
 
     def compose(self) -> ComposeResult:
-        yield Header(classes="middle")
+        yield Header()
         with Vertical():
             with TabbedContent(
                 "Doctor",
