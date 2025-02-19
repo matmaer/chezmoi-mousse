@@ -2,56 +2,18 @@
   scrollbar-size-vertical: 1;
 }
 
+Footer {
+  .-command-palette {
+    border: none;
+  }
+}
+
 Header {
   background: $background;
   color: $accent;
   HeaderIcon {
     /* don't use display: none; because then the title is not centered */
     visibility: hidden;
-  }
-}
-
-Footer {
-  background: $background;
-  color: $accent;
-}
-
-Screen {
-  layers: sidebar;
-}
-
-LogSlidebar {
-  background: $background;
-  background-tint: $background;
-  margin-top: 4;
-  dock: right;
-  /* Needs its own layer to sit above content */
-  layer: sidebar;
-  /* offset-x: -100%; out of view if docked left */
-  /* offset-x: 100%; out if view if docked right */
-  offset-x: 100%;
-  min-width: 7;
-  max-width: 70%;
-  height: auto;
-  min-height: 5;
-  max-height: 75%;
-  border-left: $panel;
-  border-top: $panel;
-  border-bottom: $panel;
-
-  /* Enable animation */
-  transition: offset 350ms;
-  &.-visible {
-      /* offset.x: 0; make visible when class is applied */
-      offset-x: 0;
-  }
-  & > Vertical {
-      margin: 0 1 0 1;
-      background: $background;
-      background-tint: $background;
-  }
-  &:focus {
-      background-tint: $background;
   }
 }
 
@@ -77,7 +39,6 @@ DataTable, DirectoryTree {
 
 DataTable {
   overflow-x: hidden;
-  color: $foreground 80%;
   padding: 1 1 1 0;
   text-style: none;
   &:focus {
@@ -137,8 +98,45 @@ DataTable {
   .footer-key--description {
     background: black;
   }
-  .-command-palette {
-    background: black;
-    border: none;
-  }
 }
+
+
+# Screen {
+#   layers: sidebar;
+# }
+
+
+# LogSlidebar {
+#   background: $background;
+#   background-tint: $background;
+#   margin-top: 4;
+#   dock: right;
+#   /* Needs its own layer to sit above content */
+#   layer: sidebar;
+#   /* offset-x: -100%; out of view if docked left */
+#   /* offset-x: 100%; out if view if docked right */
+#   offset-x: 100%;
+#   min-width: 7;
+#   max-width: 70%;
+#   height: auto;
+#   min-height: 5;
+#   max-height: 75%;
+#   border-left: $panel;
+#   border-top: $panel;
+#   border-bottom: $panel;
+
+#   /* Enable animation */
+#   transition: offset 350ms;
+#   &.-visible {
+#       /* offset.x: 0; make visible when class is applied */
+#       offset-x: 0;
+#   }
+#   & > Vertical {
+#       margin: 0 1 0 1;
+#       background: $background;
+#       background-tint: $background;
+#   }
+#   &:focus {
+#       background-tint: $background;
+#   }
+# }
