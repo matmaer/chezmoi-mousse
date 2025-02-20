@@ -12,10 +12,23 @@ from chezmoi_mousse.commands import Components, run
 
 __all__ = ["LoadingScreen"]
 
-SPLASH = """\
+SPLASH_7BIT = """\
  _______ _______ _______ _______ ____ ____ _______ _o_
 |       |   |   |    ___|___    |    `    |       |   |
 |    ===|       |     __|     __|         |   |   |   |
+|       |   |   |       |       |   |`|   |       |   |
+`-------^---^---^-------^-------^---' '---^-------^---'
+   ____ ____ _______ ___ ___ _______ _______ _______
+  |    `    |       |   |   |    ___|    ___|    ___|
+  |         |   |   |   |   |__     |__     |     __|
+  |   |`|   |       |       |       |       |       |
+  '---' '---^-------^-------^-------^-------^-------'
+""".splitlines()
+
+SPLASH_PREVENT_UNICODE_LIGATURE = """\
+ _______ _______ _______ _______ ____ ____ _______ _o_
+|       |   |   |    ___|___    |    `    |       |   |
+|    =\u200B=\u200B=\u200B|       |     __|     __|         |   |   |   |
 |       |   |   |       |       |   |`|   |       |   |
 `-------^---^---^-------^-------^---' '---^-------^---'
    ____ ____ _______ ___ ___ _______ _______ _______
@@ -33,8 +46,8 @@ class AnimatedFade(Widget):
     def __init__(self) -> None:
         super().__init__()
         self.id = "animated-fade"
-        self.styles.height = len(SPLASH)
-        self.styles.width = len(max(SPLASH, key=len))
+        self.styles.height = len(SPLASH_7BIT)
+        self.styles.width = len(max(SPLASH_7BIT, key=len))
         self.create_fade()
 
     def create_fade(self) -> deque[Style]:
@@ -52,7 +65,7 @@ class AnimatedFade(Widget):
         return super().render_lines(crop)
 
     def render_line(self, y: int) -> Strip:
-        return Strip([Segment(SPLASH[y], style=self.line_styles[y])])
+        return Strip([Segment(SPLASH_7BIT[y], style=self.line_styles[y])])
 
     def on_mount(self) -> None:
         self.set_interval(interval=0.10, callback=self.refresh)
