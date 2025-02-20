@@ -1,7 +1,7 @@
 from textual.app import App
 from textual.theme import Theme
 
-from chezmoi_mousse.inspector import InspectTabs
+# from chezmoi_mousse.inspector import InspectTabs
 from chezmoi_mousse.loader import LoadingScreen
 from chezmoi_mousse.operator import OperationTabs
 
@@ -52,7 +52,7 @@ class ChezmoiTUI(App):
 
     SCREENS = {
         "operate": OperationTabs,
-        "inspect": InspectTabs,
+        # "inspect": InspectTabs,
         "loader": LoadingScreen,
     }
 
