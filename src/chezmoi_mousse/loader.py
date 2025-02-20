@@ -38,10 +38,10 @@ SPLASH_8BIT = """\
   '---' '---^-------^-------^-------^-------^-------'
 """.splitlines()
 
-SPLASH_PREVENT_UNICODE_LIGATURE = """\
+SPLASH_PREVENT_LIGATURE = """\
  _______ _______ _______ _______ ____ ____ _______ _o_
 |       |   |   |    ___|___    |    ˇ    |       |   |
-|    =\u200B=\u200B=\u200B|       |     __|     __|         |   |   |   |
+|    ===|       |     __|     __|         |   |   |   |
 |       |   |   |       |       |   |ˇ|   |       |   |
 `-------^---^---^-------^-------^---' '---^-------^---'
    ____ ____ _______ ___ ___ _______ _______ _______
@@ -49,7 +49,7 @@ SPLASH_PREVENT_UNICODE_LIGATURE = """\
   |         |   |   |   |   |__     |__     |     __|
   |   |ˇ|   |       |       |       |       |       |
   '---' '---^-------^-------^-------^-------^-------'
-""".splitlines()
+""".replace("===", "=\u200B=\u200B=\u200B").splitlines()
 
 SPLASH_ASCII_ART = """\
  _______________________________ _________________ _o_
@@ -62,7 +62,11 @@ SPLASH_ASCII_ART = """\
   |         |   |   |   |   |__     |__     |     __|
   |   |ˇ|   |       |       |       |       |       |
   '---' '---^-------^-------^-------^-------^-------'
-""".splitlines()
+""".replace("===", "=\u200B=\u200B=\u200B").splitlines()
+
+
+# TODO: make splash type choice based on detected terminal capabilities
+SPLASH = SPLASH_ASCII_ART
 
 class AnimatedFade(Widget):
 
@@ -71,8 +75,8 @@ class AnimatedFade(Widget):
     def __init__(self) -> None:
         super().__init__()
         self.id = "animated-fade"
-        self.styles.height = len(SPLASH_ASCII_ART)
-        self.styles.width = len(max(SPLASH_ASCII_ART, key=len))
+        self.styles.height = len(SPLASH)
+        self.styles.width = len(max(SPLASH, key=len))
         self.create_fade()
 
     def create_fade(self) -> deque[Style]:
@@ -90,7 +94,7 @@ class AnimatedFade(Widget):
         return super().render_lines(crop)
 
     def render_line(self, y: int) -> Strip:
-        return Strip([Segment(SPLASH_ASCII_ART[y], style=self.line_styles[y])])
+        return Strip([Segment(SPLASH[y], style=self.line_styles[y])])
 
     def on_mount(self) -> None:
         self.set_interval(interval=0.10, callback=self.refresh)
