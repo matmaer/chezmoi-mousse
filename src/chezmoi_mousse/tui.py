@@ -1,9 +1,8 @@
 from textual.app import App
 from textual.theme import Theme
 
-# from chezmoi_mousse.inspector import InspectTabs
 from chezmoi_mousse.loader import LoadingScreen
-from chezmoi_mousse.operator import OperationTabs
+from chezmoi_mousse.operate import OperationScreen
 
 
 BACKGROUND = "rgb(12, 14, 18)"
@@ -51,15 +50,11 @@ class ChezmoiTUI(App):
     CSS_PATH = "tui.tcss"
 
     SCREENS = {
-        "operate": OperationTabs,
-        # "inspect": InspectTabs,
+        "operate": OperationScreen,
         "loader": LoadingScreen,
     }
-
-    def loading_completed(self) -> None:
-        self.push_screen("inspector")
 
     def on_mount(self) -> None:
         self.register_theme(oled_dark_zen)
         self.theme = "oled-dark-zen"
-        self.push_screen("loader", callback=self.loading_completed)
+        self.push_screen("loader")
