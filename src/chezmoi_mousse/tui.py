@@ -56,10 +56,7 @@ class ChezmoiTUI(App):
         "loader": LoadingScreen,
     }
 
-    def loading_completed(self) -> None:
-        self.push_screen("inspector")
-
     def on_mount(self) -> None:
         self.register_theme(oled_dark_zen)
         self.theme = "oled-dark-zen"
-        self.push_screen("loader", callback=self.loading_completed)
+        self.push_screen("loader")
