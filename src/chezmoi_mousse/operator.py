@@ -235,7 +235,7 @@ class ManagedFiles(DirectoryTree):
 class OperationTabs(Screen):
 
     BINDINGS = [
-        ("l, L", "toggle_sidebar", "command-log"),
+        ("l, L", "toggle_sidebar", "loader"),
     ]
 
     show_sidebar = reactive(False)
