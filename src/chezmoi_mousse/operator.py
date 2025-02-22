@@ -1,4 +1,5 @@
 import json
+
 # pylint: disable=E0401
 from collections.abc import Iterable
 from pathlib import Path
@@ -19,6 +20,7 @@ from textual.widgets import (
 )
 
 from chezmoi_mousse.commands import chezmoi_config, run
+
 
 class ChezmoiDoctor(Static):
 
@@ -97,7 +99,6 @@ class InspectTabs(Screen):
 
     def on_mount(self) -> None:
         self.title = "- i n s p e c t -"
-
 
 
 # provisional diagrams until dynamically created
