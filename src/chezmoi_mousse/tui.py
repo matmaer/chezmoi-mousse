@@ -2,7 +2,7 @@ from textual.app import App
 from textual.theme import Theme
 
 from chezmoi_mousse.loader import LoadingScreen
-from chezmoi_mousse.operate import OperationScreen
+from chezmoi_mousse.operator import OperationTabs
 
 
 BACKGROUND = "rgb(12, 14, 18)"
@@ -50,7 +50,7 @@ class ChezmoiTUI(App):
     CSS_PATH = "tui.tcss"
 
     SCREENS = {
-        "operate": OperationScreen,
+        "operate": OperationTabs,
         "loader": LoadingScreen,
     }
 
