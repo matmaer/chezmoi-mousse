@@ -235,7 +235,6 @@ class ManagedFiles(DirectoryTree):
 class OperationTabs(Screen):
 
     BINDINGS = [
-        ("i, I", "app.push_screen('inspect')", "inspect"),
         ("l, L", "toggle_sidebar", "command-log"),
     ]
 
