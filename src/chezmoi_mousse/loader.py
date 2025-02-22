@@ -49,7 +49,9 @@ SPLASH_PREVENT_LIGATURE = """\
   |         |   |   |   |   |__     |__     |     __|
   |   |ˇ|   |       |       |       |       |       |
   '---' '---^-------^-------^-------^-------^-------'
-""".replace("===", "=\u200B=\u200B=\u200B").splitlines()
+""".replace(
+    "===", "=\u200b=\u200b=\u200b"
+).splitlines()
 
 SPLASH_ASCII_ART = """\
  _______________________________ _________________ _o_
@@ -62,11 +64,14 @@ SPLASH_ASCII_ART = """\
   |         |   |   |   |   |__     |__     |     __|
   |   |ˇ|   |       |       |       |       |       |
   '---' '---^-------^-------^-------^-------^-------'
-""".replace("===", "=\u200B=\u200B=\u200B").splitlines()
+""".replace(
+    "===", "=\u200b=\u200b=\u200b"
+).splitlines()
 
 
 # TODO: make splash type choice based on detected terminal capabilities
 SPLASH = SPLASH_ASCII_ART
+
 
 class AnimatedFade(Widget):
 
@@ -87,7 +92,9 @@ class AnimatedFade(Widget):
         fade.extend(gradient.colors)
         gradient.colors.reverse()
         fade.extend(gradient.colors)
-        self.line_styles = deque([Style(color=color.hex, bold=True) for color in fade])
+        self.line_styles = deque(
+            [Style(color=color.hex, bold=True) for color in fade]
+        )
 
     def render_lines(self, crop) -> list[Strip]:
         self.line_styles.rotate()
