@@ -19,7 +19,7 @@ from textual.widgets import (
     TabbedContent,
 )
 
-from chezmoi_mousse.commands import chezmoi_config, run
+from chezmoi_mousse.commands import chezmoi
 
 
 class ChezmoiDoctor(Static):
@@ -41,7 +41,7 @@ class ChezmoiDoctor(Static):
         self.construct_table()
 
     def construct_table(self) -> None:
-        cm_dr_output = run("doctor").splitlines()
+        cm_dr_output = chezmoi.doctor.get().splitlines()
         header_row = cm_dr_output.pop(0).split()
         main_rows = []
         other_rows = []
@@ -89,12 +89,12 @@ class InspectTabs(Screen):
                 "Git-Log",
             ):
                 yield VerticalScroll(ChezmoiDoctor())
-                yield VerticalScroll(Pretty(json.loads(run("dump_config"))))
-                yield VerticalScroll(Pretty(json.loads(run("data"))))
-                yield VerticalScroll(Pretty(run("cat_config").splitlines()))
-                yield VerticalScroll(Pretty(run("ignored").splitlines()))
-                yield VerticalScroll(Pretty(run("git_status").splitlines()))
-                yield VerticalScroll(Pretty(run("git_log").splitlines()))
+                yield VerticalScroll(Pretty(json.loads(chezmoi.dump_config.get())))
+                yield VerticalScroll(Pretty(json.loads(chezmoi.data.get())))
+                yield VerticalScroll(Pretty(chezmoi.cat_config.get().splitlines()))
+                yield VerticalScroll(Pretty(chezmoi.ignored.get().splitlines()))
+                yield VerticalScroll(Pretty(chezmoi.git_status.get().splitlines()))
+                yield VerticalScroll(Pretty(chezmoi.git_log.get().splitlines()))
         yield Footer()
 
     def on_mount(self) -> None:
@@ -197,7 +197,7 @@ class ChezmoiStatus(Static):
         yield DataTable(id="re_add_table")
 
     def on_mount(self):
-        self.status_output = run("status").splitlines()
+        self.status_output = chezmoi.status.get().splitlines()
         re_add_table = self.query_one("#re_add_table")
         apply_table = self.query_one("#apply_table")
 
@@ -225,9 +225,9 @@ class ChezmoiStatus(Static):
 class ManagedFiles(DirectoryTree):
 
     def __init__(self):
-        super().__init__(chezmoi_config["destDir"])
-        self.managed = [Path(entry) for entry in run("managed").splitlines()]
-        self.classes = "tabpad"
+        # super().__init__(chezmoi_config["destDir"])
+        super().__init__("/home/mm")
+        self.managed = [Path(entry) for entry in chezmoi.managed.get().splitlines()]
 
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
         return [path for path in paths if path in self.managed]
@@ -251,11 +251,11 @@ class OperationTabs(Screen):
             with TabbedContent(
                 "Chezmoi-Diagram",
                 "Chezmoi-Status",
-                "Managed-Files",
+                # "Managed-Files",
             ):
                 yield VerticalScroll(Static(FLOW_DIAGRAM, id="diagram"))
                 yield ChezmoiStatus()
-                yield VerticalScroll(ManagedFiles())
+                # yield VerticalScroll(ManagedFiles())
         yield Footer()
 
     def on_mount(self) -> None:
