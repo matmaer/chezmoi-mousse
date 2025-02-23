@@ -27,9 +27,7 @@ class Command:
         self.label = " ".join(
             [_ for _ in self.long_command[1:] if not _.startswith("-")]
         )
-        self.id = self.label
-        self.id = self.label.replace(" ", "_")
-        self.id = self.id.replace("-", "_")
+        self.id = self.label.replace(" ", "_").replace("-", "_")
 
 
 class Chezmoi:
