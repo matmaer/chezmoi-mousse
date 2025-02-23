@@ -41,7 +41,7 @@ class ChezmoiDoctor(Static):
         self.construct_table()
 
     def construct_table(self) -> None:
-        cm_dr_output = chezmoi.doctor.get().splitlines()
+        cm_dr_output = chezmoi.doctor.get().splitlines() # pylint: disable=no-member
         header_row = cm_dr_output.pop(0).split()
         main_rows = []
         other_rows = []
@@ -79,6 +79,7 @@ class InspectTabs(Screen):
     def compose(self) -> ComposeResult:
         yield Header()
         with Vertical():
+            # pylint: disable=no-member
             with TabbedContent(
                 "Doctor",
                 "Config-Dump",
@@ -197,7 +198,7 @@ class ChezmoiStatus(Static):
         yield DataTable(id="re_add_table")
 
     def on_mount(self):
-        self.status_output = chezmoi.status.get().splitlines()
+        self.status_output = chezmoi.status.get().splitlines() # pylint: disable=no-member
         re_add_table = self.query_one("#re_add_table")
         apply_table = self.query_one("#apply_table")
 
@@ -227,7 +228,7 @@ class ManagedFiles(DirectoryTree):
     def __init__(self):
         # super().__init__(chezmoi_config["destDir"])
         super().__init__("/home/mm")
-        self.managed = [Path(entry) for entry in chezmoi.managed.get().splitlines()]
+        self.managed = [Path(entry) for entry in chezmoi.managed.get().splitlines()] # pylint: disable=no-member
 
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
         return [path for path in paths if path in self.managed]
