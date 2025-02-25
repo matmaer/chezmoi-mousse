@@ -1,7 +1,7 @@
-from dataclasses import dataclass, field
 import ast
 import subprocess
 import tomllib
+from dataclasses import dataclass, field
 
 from textual import log
 
@@ -20,7 +20,7 @@ class Storage:
         # normally subprocess.run does NOT return leading/trailing whitespace
         # but the subsequent logic could fail if it would be the case
         new_stdout = new_stdout.strip()
-        if new_stdout not in (self.std_out, None, ''):
+        if new_stdout not in (self.std_out, None, ""):
             self.std_out = new_stdout.strip()
             try:
                 self.py_out = ast.literal_eval(self.std_out)
@@ -31,7 +31,7 @@ class Storage:
             except (ValueError, SyntaxError):
                 pass
             self.py_out = self.std_out
-        elif new_stdout in (None, ''):
+        elif new_stdout in (None, ""):
             raise ValueError("Empty new_stdout, this needs to be handled.")
         elif new_stdout == self.std_out:
             log.warning("useless update, no change in stdout")
@@ -41,8 +41,9 @@ class Storage:
 
 
 @dataclass
-class SingleCommand:
+class Command:
     storage = Storage()
+
     def run(self, long_command) -> str | list | dict:
         result = subprocess.run(
             long_command,
@@ -57,35 +58,31 @@ class SingleCommand:
 
 
 @dataclass
-class Command(SingleCommand):
-    # id: str = field(init=False)
-    # label: str = field(init=False)
-    # long_command: list[str] = field(default_factory=list)    command: str
+class CommandComponents(Command):
     base: list = field(default_factory=list)
     subs: list = field(default_factory=list)
-    command_ids: dict = field(default_factory=dict, init=False)
-    label_ids: dict = field(default_factory=dict, init=False)
+    ids: dict = field(default_factory=dict, init=False)
+    labels: dict = field(default_factory=dict, init=False)
     outputs: dict = field(default_factory=dict, init=False)
 
     def __post_init__(self):
         name = self.base[0]
         for sub in self.subs:
-            labels = [" ".join(_) for _ in sub if not _.startswith("-")]
-            ids = [f"{name}_{_}" for _ in labels.replace("-", "_")]
-            long_command = self.base + sub
-            for cmd_id, label in zip(ids, labels):
-                self.command_ids[cmd_id] = long_command
-                self.label_ids[cmd_id] = label
-                self.outputs[cmd_id] = None
+            sub_label = [" ".join(_) for _ in sub if not _.startswith("-")]
+            cmd_id = [f"{name}_{_}" for _ in sub_label.replace("-", "_")]
+            self.ids[cmd_id] = self.base + sub
+            self.labels[cmd_id] = sub_label
+            self.outputs[cmd_id] = None
 
-    def get_output(
-        self, full_command: list, refresh = False
-        ) -> str | list | dict:
+    def get_output(self, sub_label: str, refresh=False) -> str | list | dict:
+        cmd_id = self.ids[sub_label]
+        full_command = self.ids[cmd_id]
         if self.storage.py_out is None or refresh:
             return self.run(full_command)
         return self.storage.py_out
 
 
+@dataclass
 class Chezmoi(Command):
     base = [
         "chezmoi",
@@ -106,6 +103,8 @@ class Chezmoi(Command):
         ["git", "status"],
         ["git", "log", "--", "--oneline"],
     ]
+    components = CommandComponents(base, subs)
+    get = components.get_output
 
 
 chezmoi = Chezmoi()
