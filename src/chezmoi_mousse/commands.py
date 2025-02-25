@@ -59,24 +59,28 @@ class Command:
 
 @dataclass
 class CommandComponents(Command):
+
+    name: str
     base: list = field(default_factory=list)
     subs: list = field(default_factory=list)
-    ids: dict = field(default_factory=dict, init=False)
-    labels: dict = field(default_factory=dict, init=False)
-    outputs: dict = field(default_factory=dict, init=False)
+    sub_labels: dict = field(default_factory=dict, init=False)
+    log_labels: dict = field(default_factory=dict, init=False)
+    commands: dict = field(default_factory=dict, init=False)
 
     def __post_init__(self):
-        name = self.base[0]
-        for sub in self.subs:
-            sub_label = [" ".join(_) for _ in sub if not _.startswith("-")]
-            cmd_id = [f"{name}_{_}" for _ in sub_label.replace("-", "_")]
-            self.ids[cmd_id] = self.base + sub
-            self.labels[cmd_id] = sub_label
-            self.outputs[cmd_id] = None
+        log.debug(f"initializing {self.name} command components")
+        for sub_words in self.subs:
+            sub_no_flags = [_ for _ in sub_words if not _.startswith("-")]
+            sub_label = " ".join(sub_no_flags)
+            cmd_id = f"{self.name}_{sub_label.replace('-', '_')}"
+            self.sub_labels[cmd_id] = sub_label
+            self.log_labels[cmd_id] = f"{self.name} {sub_label}"
+            self.commands[cmd_id] = self.base + sub_words
 
     def get_output(self, sub_label: str, refresh=False) -> str | list | dict:
-        cmd_id = self.ids[sub_label]
-        full_command = self.ids[cmd_id]
+        log.debug(f"getting output for {self.name} {sub_label}")
+        cmd_id = self.commands[sub_label]
+        full_command = self.commands[cmd_id]
         if self.storage.py_out is None or refresh:
             return self.run(full_command)
         return self.storage.py_out
@@ -84,6 +88,7 @@ class CommandComponents(Command):
 
 @dataclass
 class Chezmoi(Command):
+    name = "chezmoi"
     base = [
         "chezmoi",
         "--no-pager",
@@ -103,8 +108,11 @@ class Chezmoi(Command):
         ["git", "status"],
         ["git", "log", "--", "--oneline"],
     ]
-    components = CommandComponents(base, subs)
-    get = components.get_output
+    _components = CommandComponents(name, base, subs)
+    commands = _components.commands
+    labels = _components.sub_labels
+    log_labels = _components.log_labels
+    get = _components.get_output
 
 
 chezmoi = Chezmoi()
