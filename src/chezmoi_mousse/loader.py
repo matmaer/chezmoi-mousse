@@ -69,8 +69,12 @@ class AnimatedLog(Widget):
     def on_mount(self) -> None:
         # insert all commands from Chezmoi class
         for long_cmd in chezmoi.all_long_commands:
-            label, _ = chezmoi.long_cmd_id_label(long_cmd)
+            label, cmd_id = chezmoi.long_cmd_label_id(long_cmd)
             line = self.create_log_line(label, 0)
+
+            cmd_data = getattr(chezmoi, cmd_id)
+            cmd_data.stdout = chezmoi.run(long_cmd)
+
             self.query_one("#loader-log").write(line)
 
 
