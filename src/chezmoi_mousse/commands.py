@@ -81,6 +81,7 @@ class Chezmoi:
         ["git", "status"],
         ["git", "log", "--", "--oneline"],
     ]
+    all_long_cmds = [    ]
 
     def __init__(self):
         # just the name, not sure why yet
@@ -100,10 +101,6 @@ class Chezmoi:
             # sub_id = Utils.get_sub_id(sub)  # Call the static method using the class name
             setattr(self, io.sub_id, io)
 
-    # used to loop over all commands, eg the loading screen
-    @property
-    def all_long_cmds(self) -> list:
-        all_long_cmds = []
+        # used to loop over all commands, eg the loading screen
         for sub in self.subs:
-            all_long_cmds.append(self.base + sub)
-        return all_long_cmds
+            self.all_long_cmds.append(self.base + sub)
