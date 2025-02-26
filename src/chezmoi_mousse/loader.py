@@ -1,6 +1,6 @@
 from collections import deque
 
-# from textual import work
+from textual import work
 from textual.app import ComposeResult
 from textual.color import Color, Gradient
 from textual.containers import Center, Middle
@@ -8,8 +8,7 @@ from textual.screen import Screen
 from textual.widget import Segment, Strip, Style, Widget
 from textual.widgets import Footer, Header, RichLog
 
-# from chezmoi_mousse.commands import chezmoi
-
+from chezmoi_mousse.commands import chezmoi
 
 SPLASH_7BIT = """\
  _______ _______ _______ _______ ____ ____ _______ _o_
@@ -95,26 +94,27 @@ class AnimatedLog(Widget):
 
     line_cols: int = 40  # total width of the padded text in characters
     pad_char: str = "."
-    status: dict = ("loaded", "loading")
+    status: dict = {0: "loaded", 1: "loading"}
 
     def __init__(self) -> None:
         super().__init__()
         self.id = "animated-log"
 
-    def create_log_line(self, cmd_label, nr: int) -> str:
+    def create_log_line(self, log_label, nr: int) -> str:
         # nr of padding chars needed to get to line_cols minus 2 spaces
-        count = self.line_cols - len(cmd_label) - len(self.status[nr]) - 2
+        count = self.line_cols - len(log_label) - len(self.status[nr]) - 2
         pad_chars = f"{self.pad_char * count}"
-        return f"{cmd_label} {pad_chars} {self.status[nr]}"
+        return f"{log_label} {pad_chars} {self.status[nr]}"
 
     def compose(self) -> ComposeResult:
         yield RichLog(id="loader-log", max_lines=11)
 
-    def on_mount(self) -> None:
-        rlog = self.query_one("#loader-log")
-        for test_str in ["test verb", "another cmd", "test one two three"]:
-            line = self.create_log_line(test_str, 0)
-            rlog.write(line)
+    @work
+    async def on_mount(self) -> None:
+        for cmd_id, data in chezmoi.data.items():
+            log_line = self.create_log_line(cmd_id, 0)
+            self.query_one("#loader-log").write(log_line)
+
 
 class LoadingScreen(Screen):
 
