@@ -84,7 +84,7 @@ class Chezmoi(Utils):
         self._data_instances = {}
 
         for sub in self.subs:
-            cmd_id, _ = self.long_cmd_id_label(sub)
+            _, cmd_id = self.long_cmd_label_id(sub)
             setattr(self, cmd_id, self.cmd_data(sub))
 
     def cmd_data(self, subcommand: list) -> Data:
@@ -95,7 +95,7 @@ class Chezmoi(Utils):
 
     # used to loop over on the loading screen
     @property
-    def all_long_commands(self) -> dict:
+    def all_long_commands(self) -> list:
         all_long_commands = []
         for sub in self.subs:
             all_long_commands.append(self.base + sub)
