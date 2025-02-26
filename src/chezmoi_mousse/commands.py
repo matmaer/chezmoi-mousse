@@ -94,11 +94,10 @@ class Chezmoi:
 
         for sub in self.subs:
             long_command = self.base + sub
-            io = InputOutput(long_command)
             # dictionary key is the sub command id
+            io = InputOutput(long_command)
             self.io[io.sub_id] = io
-            # return io
-            # sub_id = Utils.get_sub_id(sub)  # Call the static method using the class name
+            # attribute with same name as dict key
             setattr(self, io.sub_id, io)
 
         # used to loop over all commands, eg the loading screen
