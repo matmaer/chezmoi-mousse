@@ -1,6 +1,6 @@
 from collections import deque
 
-from textual import work
+# from textual import work
 from textual.app import ComposeResult
 from textual.color import Color, Gradient
 from textual.containers import Center, Middle
@@ -8,7 +8,9 @@ from textual.screen import Screen
 from textual.widget import Segment, Strip, Style, Widget
 from textual.widgets import Footer, Header, RichLog
 
-from chezmoi_mousse.commands import chezmoi
+from chezmoi_mousse.commands import Chezmoi
+
+chezmoi = Chezmoi()
 
 SPLASH_7BIT = """\
  _______ _______ _______ _______ ____ ____ _______ _o_
@@ -65,7 +67,7 @@ class AnimatedFade(Widget):
         self.id = "animated-fade"
         self.styles.height = len(SPLASH)
         self.styles.width = len(max(SPLASH, key=len))
-        self.create_fade()
+        self.line_styles = self.create_fade()
 
     def create_fade(self) -> deque[Style]:
         start_color = self.app.current_theme.primary
@@ -75,7 +77,7 @@ class AnimatedFade(Widget):
         fade.extend(gradient.colors)
         gradient.colors.reverse()
         fade.extend(gradient.colors)
-        self.line_styles = deque(
+        return deque(
             [Style(color=color.hex, bold=True) for color in fade]
         )
 
@@ -100,26 +102,27 @@ class AnimatedLog(Widget):
         super().__init__()
         self.id = "animated-log"
 
+    def compose(self) -> ComposeResult:
+        yield RichLog(id="loader-log", max_lines=11)
+
     def create_log_line(self, log_label, nr: int) -> str:
         # nr of padding chars needed to get to line_cols minus 2 spaces
         count = self.line_cols - len(log_label) - len(self.status[nr]) - 2
         pad_chars = f"{self.pad_char * count}"
         return f"{log_label} {pad_chars} {self.status[nr]}"
 
-    def compose(self) -> ComposeResult:
-        yield RichLog(id="loader-log", max_lines=11)
-
-    @work
-    async def on_mount(self) -> None:
-        for cmd_id, data in chezmoi.data.items():
-            log_line = self.create_log_line(cmd_id, 0)
-            self.query_one("#loader-log").write(log_line)
+    def on_mount(self) -> None:
+        # insert all commands from Chezmoi class
+        for long_cmd in chezmoi.all_long_commands:
+            label, _ = chezmoi.long_cmd_id_label(long_cmd)
+            line = self.create_log_line(label, 0)
+            self.query_one("#loader-log").write(line)
 
 
 class LoadingScreen(Screen):
 
     BINDINGS = [
-        ("o, O", "app.push_screen('operate')", "operate"),
+        # ("o, O", "app.push_screen('operate')", "operate"),
     ]
 
     def __init__(self):
