@@ -89,7 +89,7 @@ class Chezmoi(Utils):
 
     def cmd_data(self, subcommand: list) -> Data:
         long_command = self.base + subcommand
-        cmd_data = Data(long_command=long_command)
+        cmd_data = Data(long_command)
         self._data_instances[cmd_data.cmd_id] = cmd_data
         return cmd_data
 
