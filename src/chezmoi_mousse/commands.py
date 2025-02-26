@@ -97,7 +97,7 @@ class Chezmoi:
             # dictionary key is the sub command id
             io = InputOutput(long_command)
             self.io[io.sub_id] = io
-            # attribute with same name as dict key
+            # attribute which points to the corresponding InputOutput instance
             setattr(self, io.sub_id, io)
 
         # used to loop over all commands, eg the loading screen
