@@ -1,7 +1,7 @@
 import ast
 import subprocess
 import tomllib
-from dataclasses import dataclass  # , field
+from dataclasses import dataclass
 
 # from textual import log
 # log.debug("debug message")
@@ -22,9 +22,9 @@ class Utils:
             return new_stdout.splitlines()
 
     @staticmethod
-    def run(long_command) -> str:
+    def run(long_cmd) -> str:
         result = subprocess.run(
-            long_command,
+            long_cmd,
             capture_output=True,
             check=True,  # raises exception for any non-zero return code
             shell=False,  # mitigates shell injection risk
@@ -33,32 +33,35 @@ class Utils:
         )
         return result.stdout
 
-    @staticmethod
-    def long_cmd_label_id(long_command: list) -> tuple:
-        label = " ".join([w for w in long_command if not w.startswith("-")])
-        cmd_id = label.replace("-", "_")
-        return label, cmd_id
 
 @dataclass
-class Data:
+class InputOutput:
+    """
+    Contains the command list for, and return from a subprocess.run call.
+    """
 
-    long_command: list
+    # Dataclass that also serves as a kind of API, @property decorated methods,
+    # for any command class which is instantiated for each sub command.
+
+    long_cmd: list
     py_out: str | list | dict | None = None
     std_out: str | None = None
 
     @property
     def label(self) -> str:
-        return " ".join(
-            [w for w in self.long_command if not w.startswith("-")]
-        )
+        return " ".join([w for w in self.long_cmd if not w.startswith("-")])
 
+    # Should be sub id so it can be accessed from an instantiated command class
+    # without repeating the main command name
     @property
-    def cmd_id(self) -> str:
-        return self.label.replace(" ", "_").replace("-", "_")
+    def sub_id(self) -> str:
+        sub_label = "_".join(self.label.split(" ")[1:])
+        return sub_label.replace("-", "_")
 
 
-class Chezmoi(Utils):
-
+class Chezmoi:
+    # TODO: general command logic can be moved to command class when more
+    # commands are added like ls, tree, etc.
     base = [
         "chezmoi",
         "--no-pager",
@@ -80,23 +83,27 @@ class Chezmoi(Utils):
     ]
 
     def __init__(self):
+        # just the name, not sure why yet
         self.name = self.base[0]
-        self._data_instances = {}
+
+        # will hold all InputOutput instances mapped to sub command id
+        # the same sub command id will also be set as an attribute
+        # see set attr
+        self.io = {}
 
         for sub in self.subs:
-            _, cmd_id = self.long_cmd_label_id(sub)
-            setattr(self, cmd_id, self.cmd_data(sub))
+            long_command = self.base + sub
+            io = InputOutput(long_command)
+            # dictionary key is the sub command id
+            self.io[io.sub_id] = io
+            # return io
+            # sub_id = Utils.get_sub_id(sub)  # Call the static method using the class name
+            setattr(self, io.sub_id, io)
 
-    def cmd_data(self, subcommand: list) -> Data:
-        long_command = self.base + subcommand
-        cmd_data = Data(long_command)
-        self._data_instances[cmd_data.cmd_id] = cmd_data
-        return cmd_data
-
-    # used to loop over on the loading screen
+    # used to loop over all commands, eg the loading screen
     @property
-    def all_long_commands(self) -> list:
-        all_long_commands = []
+    def all_long_cmds(self) -> list:
+        all_long_cmds = []
         for sub in self.subs:
-            all_long_commands.append(self.base + sub)
-        return all_long_commands
+            all_long_cmds.append(self.base + sub)
+        return all_long_cmds
