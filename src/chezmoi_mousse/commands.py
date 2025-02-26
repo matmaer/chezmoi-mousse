@@ -34,10 +34,10 @@ class Utils:
         return result.stdout
 
     @staticmethod
-    def long_cmd_id_label(long_command: list) -> tuple:
+    def long_cmd_label_id(long_command: list) -> tuple:
         label = " ".join([w for w in long_command if not w.startswith("-")])
         cmd_id = label.replace("-", "_")
-        return cmd_id, label
+        return label, cmd_id
 
 @dataclass
 class Data:
