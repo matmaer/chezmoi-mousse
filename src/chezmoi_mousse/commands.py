@@ -34,11 +34,10 @@ class Utils:
         return result.stdout
 
     @staticmethod
-    def long_cmd_to_id_label(long_command: list) -> tuple:
+    def long_cmd_id_label(long_command: list) -> tuple:
         label = " ".join([w for w in long_command if not w.startswith("-")])
         cmd_id = label.replace("-", "_")
         return cmd_id, label
-
 
 @dataclass
 class Data:
@@ -83,10 +82,9 @@ class Chezmoi(Utils):
     def __init__(self):
         self.name = self.base[0]
         self._data_instances = {}
-        # Dynamically create attributes for each subcommand!
 
         for sub in self.subs:
-            cmd_id, _ = self.long_cmd_to_id_label(sub)
+            cmd_id, _ = self.long_cmd_id_label(sub)
             setattr(self, cmd_id, self.cmd_data(sub))
 
     def cmd_data(self, subcommand: list) -> Data:
@@ -95,7 +93,10 @@ class Chezmoi(Utils):
         self._data_instances[cmd_data.cmd_id] = cmd_data
         return cmd_data
 
-    def get_data_instance(self, cmd_id: str) -> Data:
-        return self._data_instances.get(cmd_id)
-
-    # Remove the __getattr__ method since attributes are now set in __init__
+    # used to loop over on the loading screen
+    @property
+    def all_long_commands(self) -> dict:
+        all_long_commands = []
+        for sub in self.subs:
+            all_long_commands.append(self.base + sub)
+        return all_long_commands
