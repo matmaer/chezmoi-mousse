@@ -4,9 +4,7 @@ import tomllib
 from dataclasses import dataclass  # , field
 
 # from textual import log
-
-# log.warning("useless update, no change in stdout")
-# log.debug(f"getting output for {self.name} {sub_label}")
+# log.debug("debug message")
 
 
 class Utils:
@@ -35,43 +33,32 @@ class Utils:
         )
         return result.stdout
 
+    @staticmethod
+    def long_cmd_to_id_label(long_command: list) -> tuple:
+        label = " ".join([w for w in long_command if not w.startswith("-")])
+        cmd_id = label.replace("-", "_")
+        return cmd_id, label
 
-@dataclass  # (kw_only=True, frozen=True)
+
+@dataclass
 class Data:
 
-    cmd_id: str
-    long_cmd: list
-    std_out: str | None = None
+    long_command: list
     py_out: str | list | dict | None = None
+    std_out: str | None = None
 
-
-class IO(Utils):
-
-    def __init__(self, long_commands: list) -> None:
-        self.long_commands = long_commands
-        self.data = self._empty_data_dict()
-
-    def _empty_data_dict(self) -> None:
-        # construct a dict with std_out and py_out for each command id
-        io = {}
-        for long_command in self.long_commands:
-            no_flags = [w for w in long_command if not w.startswith("-")]
-            cmd_id = "_".join(no_flags).replace("-", "_")
-            io[cmd_id] = Data(cmd_id, long_command)
-        return io
-
-    def get_output(self, cmd_id: str) -> str | list | dict:
-        return self.data[cmd_id]["py_out"]
-
-    def set_output(self, cmd_id: str, long_command) -> str | list | dict:
-        self.data[cmd_id].std_out = self.run(long_command)
-        self.data[cmd_id]["py_out"] = self.parse_stdout(
-            self.data[cmd_id]["std_out"]
+    @property
+    def label(self) -> str:
+        return " ".join(
+            [w for w in self.long_command if not w.startswith("-")]
         )
-        return self.data[cmd_id]["py_out"]
+
+    @property
+    def cmd_id(self) -> str:
+        return self.label.replace(" ", "_").replace("-", "_")
 
 
-class Chezmoi(IO):
+class Chezmoi(Utils):
 
     base = [
         "chezmoi",
@@ -94,17 +81,21 @@ class Chezmoi(IO):
     ]
 
     def __init__(self):
-        super().__init__([self.base + words for words in self.subs])
-        self._generate_attributes()
+        self.name = self.base[0]
+        self._data_instances = {}
+        # Dynamically create attributes for each subcommand!
 
-    def _generate_attributes(self):
-        for cmd_id in self.data:
-            setattr(self, cmd_id, self.data[cmd_id])
+        for sub in self.subs:
+            cmd_id, _ = self.long_cmd_to_id_label(sub)
+            setattr(self, cmd_id, self.cmd_data(sub))
 
-    @property
-    def get(self) -> str:
-        # return self.data.
-        pass
+    def cmd_data(self, subcommand: list) -> Data:
+        long_command = self.base + subcommand
+        cmd_data = Data(long_command=long_command)
+        self._data_instances[cmd_data.cmd_id] = cmd_data
+        return cmd_data
 
+    def get_data_instance(self, cmd_id: str) -> Data:
+        return self._data_instances.get(cmd_id)
 
-chezmoi = Chezmoi()
+    # Remove the __getattr__ method since attributes are now set in __init__
