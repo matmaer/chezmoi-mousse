@@ -2,6 +2,7 @@ from textual.app import App
 from textual.theme import Theme
 
 from chezmoi_mousse.loader import LoadingScreen
+
 # from chezmoi_mousse.operator import OperationTabs
 
 BACKGROUND = "rgb(12, 14, 18)"
