@@ -70,6 +70,7 @@ class AnimatedLog(Widget):
         # run all the available chezmoi commands
         for long_cmd in chezmoi.long_commands:
             io = InputOutput(long_cmd)
+            io.new_py_out()
             line = self.create_log_line(io.label, 0)
             self.query_one("#loader-log").write(line)
 

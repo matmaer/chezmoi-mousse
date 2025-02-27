@@ -20,16 +20,14 @@ class InputOutput:
             return self.std_out
 
     def new_py_out(self) -> str:
-        if self.std_out is None:
-            result = subprocess.run(
-                    self.long_cmd,
-                    capture_output=True,
-                    check=True,  # raises exception for any non-zero return code
-                    shell=False,  # mitigates shell injection risk
-                    text=True,  # returns stdout as str instead of bytes
-                    timeout=2,
-                )
-            return result.stdout
+        self.std_out = subprocess.run(
+                self.long_cmd,
+                capture_output=True,
+                check=True,  # raises exception for any non-zero return code
+                shell=False,  # mitigates shell injection risk
+                text=True,  # returns stdout as str instead of bytes
+                timeout=2,
+            )
         return self.py_out
 
 
