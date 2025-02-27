@@ -1,69 +1,45 @@
 import ast
 import subprocess
-import tomllib
 from dataclasses import dataclass
 
-# from textual import log
-# log.debug("debug message")
 
-
-class Utils:
-
-    @staticmethod
-    def parse_stdout(new_stdout: str) -> str | list | dict:
-        new_stdout = new_stdout.strip()
-        if new_stdout in (None, ""):
-            raise ValueError("Empty new_stdout, this needs to be handled.")
-        try:
-            return ast.literal_eval(new_stdout)
-        except SyntaxError:
-            return tomllib.loads(new_stdout)
-        except ValueError:
-            return new_stdout.splitlines()
-
-    @staticmethod
-    def run(long_cmd) -> str:
-        result = subprocess.run(
-            long_cmd,
-            capture_output=True,
-            check=True,  # raises exception for any non-zero return code
-            shell=False,  # mitigates shell injection risk
-            text=True,  # returns stdout as str instead of bytes
-            timeout=2,
-        )
-        return result.stdout
+def subprocess_run(long_cmd) -> str:
+    result = subprocess.run(
+        long_cmd,
+        capture_output=True,
+        check=True,  # raises exception for any non-zero return code
+        shell=False,  # mitigates shell injection risk
+        text=True,  # returns stdout as str instead of bytes
+        timeout=2,
+    )
+    return result.stdout
 
 
 @dataclass
 class InputOutput:
-    """
-    Contains the command list for, and return from a subprocess.run call.
-    """
 
-    # Dataclass that also serves as a kind of API, @property decorated methods,
-    # for any command class which is instantiated for each sub command.
-
-    long_cmd: list
-    py_out: str | list | dict | None = None
-    std_out: str | None = None
+    long_cmd: list[str]
+    std_out: str = ""
 
     @property
-    def label(self) -> str:
-        return " ".join([w for w in self.long_cmd if not w.startswith("-")])
+    def py_out(self):
+        try:
+            return ast.literal_eval(self.std_out)
+        except (SyntaxError, ValueError):
+            return self.std_out
 
-    # Should be sub id so it can be accessed from an instantiated command class
-    # without repeating the main command name
-    @property
-    def sub_id(self) -> str:
-        sub_label = "_".join(self.label.split(" ")[1:])
-        return sub_label.replace("-", "_")
+    def new_py_out(self) -> str:
+        if self.std_out is None:
+            self.std_out = subprocess_run(self.long_cmd)
+        return self.py_out
 
 
 class Chezmoi:
+
+    name = "chezmoi"
     # TODO: general command logic can be moved to command class when more
     # commands are added like ls, tree, etc.
-    base = [
-        "chezmoi",
+    base = [name] + [
         "--no-pager",
         "--color=false",
         "--no-tty",
@@ -81,25 +57,15 @@ class Chezmoi:
         ["git", "status"],
         ["git", "log", "--", "--oneline"],
     ]
-    all_long_cmds = [    ]
+
 
     def __init__(self):
-        # just the name, not sure why yet
-        self.name = self.base[0]
+        self.long_commands = [self.base + sub for sub in self.subs]
+        self.sub_ids = []
 
-        # will hold all InputOutput instances mapped to sub command id
-        # the same sub command id will also be set as an attribute
-        # see set attr
-        self.io = {}
+        for words in self.long_commands:
+            verbs = [w for w in words[1:] if not w.startswith("-")]
+            self.sub_ids += ["_".join([w.replace("-", "_") for w in verbs])]
 
-        for sub in self.subs:
-            long_command = self.base + sub
-            # dictionary key is the sub command id
-            io = InputOutput(long_command)
-            self.io[io.sub_id] = io
-            # attribute which points to the corresponding InputOutput instance
-            setattr(self, io.sub_id, io)
-
-        # used to loop over all commands, eg the loading screen
-        for sub in self.subs:
-            self.all_long_cmds.append(self.base + sub)
+        for sub_id, long_cmd in zip(self.sub_ids, self.long_commands):
+            setattr(self, sub_id, InputOutput(long_cmd))
