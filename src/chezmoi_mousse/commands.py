@@ -22,6 +22,10 @@ class InputOutput:
     std_out: str = ""
 
     @property
+    def label(self) -> str:
+        return " ".join([w for w in self.long_cmd if not w.startswith("-")])
+
+    @property
     def py_out(self):
         try:
             return ast.literal_eval(self.std_out)
