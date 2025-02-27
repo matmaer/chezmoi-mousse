@@ -66,3 +66,6 @@ class Chezmoi:
 
         for sub_id, long_cmd in zip(self.sub_ids, self.long_commands):
             setattr(self, sub_id, InputOutput(long_cmd))
+
+
+chezmoi = Chezmoi()
