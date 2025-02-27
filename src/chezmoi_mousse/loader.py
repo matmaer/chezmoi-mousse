@@ -1,6 +1,6 @@
 from collections import deque
 
-# from textual import work
+from textual import work
 from textual.app import ComposeResult
 from textual.color import Color, Gradient
 from textual.containers import Center, Middle
@@ -12,6 +12,7 @@ from chezmoi_mousse.commands import Chezmoi, InputOutput
 from chezmoi_mousse.splash import SPLASH
 
 chezmoi = Chezmoi()
+
 
 class AnimatedFade(Widget):
 
@@ -32,9 +33,7 @@ class AnimatedFade(Widget):
         fade.extend(gradient.colors)
         gradient.colors.reverse()
         fade.extend(gradient.colors)
-        return deque(
-            [Style(color=color.hex, bold=True) for color in fade]
-        )
+        return deque([Style(color=color.hex, bold=True) for color in fade])
 
     def render_lines(self, crop) -> list[Strip]:
         self.line_styles.rotate()
@@ -51,7 +50,6 @@ class AnimatedLog(Widget):
 
     line_cols: int = 40  # total width of the padded text in characters
     pad_char: str = "."
-    status: dict = {0: "loaded", 1: "loading"}
 
     def __init__(self) -> None:
         super().__init__()
@@ -60,19 +58,21 @@ class AnimatedLog(Widget):
     def compose(self) -> ComposeResult:
         yield RichLog(id="loader-log", max_lines=11)
 
-    def create_log_line(self, log_label, nr: int) -> str:
+    @work(thread=True)
+    def create_io_data(self, long_cmd) -> None:
+        loaded = "loaded"
+        io = InputOutput(long_cmd)
         # nr of padding chars needed to get to line_cols minus 2 spaces
-        count = self.line_cols - len(log_label) - len(self.status[nr]) - 2
+        count = self.line_cols - len(io.label) - len(loaded) - 2
         pad_chars = f"{self.pad_char * count}"
-        return f"{log_label} {pad_chars} {self.status[nr]}"
+        line = f"{io.label} {pad_chars} {loaded}"
+        io.new_py_out()
+        self.query_one("#loader-log").write(line)
 
     def on_mount(self) -> None:
         # run all the available chezmoi commands
         for long_cmd in chezmoi.long_commands:
-            io = InputOutput(long_cmd)
-            io.new_py_out()
-            line = self.create_log_line(io.label, 0)
-            self.query_one("#loader-log").write(line)
+            self.create_io_data(long_cmd)
 
 
 class LoadingScreen(Screen):
