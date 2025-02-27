@@ -3,21 +3,8 @@ import subprocess
 from dataclasses import dataclass
 
 
-def subprocess_run(long_cmd) -> str:
-    result = subprocess.run(
-        long_cmd,
-        capture_output=True,
-        check=True,  # raises exception for any non-zero return code
-        shell=False,  # mitigates shell injection risk
-        text=True,  # returns stdout as str instead of bytes
-        timeout=2,
-    )
-    return result.stdout
-
-
 @dataclass
 class InputOutput:
-
     long_cmd: list[str]
     std_out: str = ""
 
@@ -34,10 +21,19 @@ class InputOutput:
 
     def new_py_out(self) -> str:
         if self.std_out is None:
-            self.std_out = subprocess_run(self.long_cmd)
+            result = subprocess.run(
+                    self.long_cmd,
+                    capture_output=True,
+                    check=True,  # raises exception for any non-zero return code
+                    shell=False,  # mitigates shell injection risk
+                    text=True,  # returns stdout as str instead of bytes
+                    timeout=2,
+                )
+            return result.stdout
         return self.py_out
 
 
+@dataclass
 class Chezmoi:
 
     name = "chezmoi"
@@ -63,7 +59,7 @@ class Chezmoi:
     ]
 
 
-    def __init__(self):
+    def __post_init__(self):
         self.long_commands = [self.base + sub for sub in self.subs]
         self.sub_ids = []
 
