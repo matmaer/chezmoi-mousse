@@ -21,13 +21,13 @@ class InputOutput:
 
     def new_py_out(self) -> str:
         self.std_out = subprocess.run(
-                self.long_cmd,
-                capture_output=True,
-                check=True,  # raises exception for any non-zero return code
-                shell=False,  # mitigates shell injection risk
-                text=True,  # returns stdout as str instead of bytes
-                timeout=2,
-            )
+            self.long_cmd,
+            capture_output=True,
+            check=True,  # raises exception for any non-zero return code
+            shell=False,  # mitigates shell injection risk
+            text=True,  # returns stdout as str instead of bytes
+            timeout=2,
+        )
         return self.py_out
 
 
@@ -55,7 +55,6 @@ class Chezmoi:
         ["git", "status"],
         ["git", "log", "--", "--oneline"],
     ]
-
 
     def __post_init__(self):
         self.long_commands = [self.base + sub for sub in self.subs]
