@@ -8,7 +8,7 @@ from textual.screen import Screen
 from textual.widget import Segment, Strip, Style, Widget
 from textual.widgets import Footer, Header, RichLog
 
-from chezmoi_mousse.commands import Chezmoi
+from chezmoi_mousse.commands import Chezmoi, InputOutput
 from chezmoi_mousse.splash import SPLASH
 
 chezmoi = Chezmoi()
@@ -67,14 +67,10 @@ class AnimatedLog(Widget):
         return f"{log_label} {pad_chars} {self.status[nr]}"
 
     def on_mount(self) -> None:
-        # insert all commands from Chezmoi class
-        for long_cmd in chezmoi.all_long_commands:
-            label, cmd_id = chezmoi.long_cmd_label_id(long_cmd)
-            line = self.create_log_line(label, 0)
-
-            cmd_data = getattr(chezmoi, cmd_id)
-            cmd_data.stdout = chezmoi.run(long_cmd)
-
+        # run all the available chezmoi commands
+        for long_cmd in chezmoi.long_commands:
+            io = InputOutput(long_cmd)
+            line = self.create_log_line(io.label, 0)
             self.query_one("#loader-log").write(line)
 
 
