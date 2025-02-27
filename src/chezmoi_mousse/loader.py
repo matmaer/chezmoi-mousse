@@ -8,10 +8,8 @@ from textual.screen import Screen
 from textual.widget import Segment, Strip, Style, Widget
 from textual.widgets import Footer, Header, RichLog
 
-from chezmoi_mousse.commands import Chezmoi, InputOutput
+from chezmoi_mousse.commands import chezmoi, InputOutput
 from chezmoi_mousse.splash import SPLASH
-
-chezmoi = Chezmoi()
 
 
 class AnimatedFade(Widget):
