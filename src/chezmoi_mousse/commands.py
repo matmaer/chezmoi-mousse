@@ -25,7 +25,7 @@ class InputOutput:
         verbs = [w for w in all_args if not w.startswith("-")]
         return "_".join([w.replace("-", "_") for w in verbs])
 
-    def new_py_out(self) -> str:
+    def update(self) -> str:
         result = subprocess.run(
             self.long_cmd,
             capture_output=True,
