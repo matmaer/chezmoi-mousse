@@ -35,17 +35,19 @@ class ChezmoiDoctor(Static):
             cursor_type="row",
         )
 
-    def on_mount(self):
-        self.construct_table()
+    def on_mount(self) -> None:
+        main_table = self.query_one("#main_table")
+        second_table = self.query_one("#second_table")
 
-    def construct_table(self) -> None:
         cm_dr_output = chezmoi.io["doctor"].std_out.splitlines()
         header_row = cm_dr_output.pop(0).split()
-        main_rows = []
-        other_rows = []
+
+        main_table.add_columns(*header_row)
+        second_table.add_columns(*header_row)
+
         for row in [row.split(maxsplit=2) for row in cm_dr_output]:
             if row[0] == "info" and "not found in $PATH" in row[2]:
-                other_rows.append(row)
+                second_table.add_row(*row)
             else:
                 if row[0] == "ok":
                     row = [f"[#3fc94d]{cell}[/]" for cell in row]
@@ -57,15 +59,7 @@ class ChezmoiDoctor(Static):
                     row = [f"[#FFD700]{cell}[/]" for cell in row]
                 else:
                     row = [f"[#FFD700]{cell}[/]" for cell in row]
-                main_rows.append(row)
-
-        main_table = self.query_one("#main_table")
-        second_table = self.query_one("#second_table")
-
-        main_table.add_columns(*header_row)
-        second_table.add_columns(*header_row)
-        main_table.add_rows(main_rows)
-        second_table.add_rows(other_rows)
+                main_table.add_row(*row)
 
 # class LogSlidebar(Widget):
 
