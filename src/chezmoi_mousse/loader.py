@@ -8,7 +8,7 @@ from textual.screen import Screen
 from textual.widget import Segment, Strip, Style, Widget
 from textual.widgets import Footer, Header, RichLog
 
-from chezmoi_mousse.commands import chezmoi, InputOutput
+from chezmoi_mousse.commands import chezmoi
 from chezmoi_mousse.splash import SPLASH
 
 
@@ -57,20 +57,23 @@ class AnimatedLog(Widget):
         yield RichLog(id="loader-log", max_lines=11)
 
     @work(thread=True)
-    def create_io_data(self, long_cmd) -> None:
+    def create_io_data(self, sub_id) -> None:
+        label = getattr(chezmoi, sub_id).label
         loaded = "loaded"
-        io = InputOutput(long_cmd)
+
         # nr of padding chars needed to get to line_cols minus 2 spaces
-        count = self.line_cols - len(io.label) - len(loaded) - 2
+
+        count = self.line_cols - len(label) - len(loaded) - 2
         pad_chars = f"{self.pad_char * count}"
-        line = f"{io.label} {pad_chars} {loaded}"
-        io.new_py_out()
+        line = f"{label} {pad_chars} {loaded}"
+        getattr(chezmoi, sub_id).new_py_out()
+
         self.query_one("#loader-log").write(line)
 
     def on_mount(self) -> None:
-        # run all the available chezmoi commands
-        for long_cmd in chezmoi.long_commands:
-            self.create_io_data(long_cmd)
+        # run all the available chezmoi commands, one by one
+        for sub_id in chezmoi.sub_ids:
+            self.create_io_data(sub_id)
 
 
 class LoadingScreen(Screen):
