@@ -203,7 +203,7 @@ class OperationTabs(Screen):
         ):
             yield VerticalScroll(Static(FLOW_DIAGRAM, id="diagram"))
             yield VerticalScroll(ChezmoiDoctor())
-            yield VerticalScroll(Pretty(chezmoi.dump_config.py_out))
+            yield VerticalScroll(Pretty(chezmoi.dump_config.std_out))
             # yield ChezmoiStatus()
             # yield VerticalScroll(ManagedFiles())
         yield Footer()

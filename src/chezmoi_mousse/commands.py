@@ -1,4 +1,3 @@
-import ast
 import subprocess
 from dataclasses import dataclass, field
 
@@ -11,13 +10,6 @@ class InputOutput:
     @property
     def label(self) -> str:
         return " ".join([w for w in self.long_cmd if not w.startswith("-")])
-
-    @property
-    def py_out(self):
-        try:
-            return ast.literal_eval(self.std_out)
-        except (SyntaxError, ValueError):
-            return self.std_out.splitlines()
 
     @property
     def args_id(self) -> str:
@@ -35,7 +27,7 @@ class InputOutput:
             timeout=2,
         )
         self.std_out = result.stdout
-        return self.py_out
+        return result.stdout
 
 
 @dataclass
