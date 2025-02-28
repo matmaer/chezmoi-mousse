@@ -75,16 +75,14 @@ class LoadingScreen(Screen):
         yield Footer(id="loader-footer")
 
     @work(thread=True)
-    def update_stdout(self, args_id) -> None:
+    def run(self, args_id) -> None:
         label = getattr(chezmoi, args_id).label
-        suffix = "loaded"
-        # 40 padding dots
-        padding = "." * (40 - len(label) - len(suffix))
-        line = f"{label} {padding} {suffix}"
+        padding = 32 - len(label)
+        line = f"{label} {"." * padding} loaded"
         getattr(chezmoi, args_id).update()
         self.query_one("#loader-log").write(line)
 
     def on_mount(self) -> None:
         self.title = "-  c h e z m o i  m o u s s e  -"
-        for args_id in chezmoi.args_ids:
-            self.update_stdout(args_id)
+        for args_id in chezmoi.io:
+            self.run(args_id)
