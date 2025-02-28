@@ -19,6 +19,12 @@ class InputOutput:
         except (SyntaxError, ValueError):
             return self.std_out
 
+    @property
+    def args_id(self) -> str:
+        all_args = self.long_cmd[1:]
+        verbs = [w for w in all_args if not w.startswith("-")]
+        return "_".join([w.replace("-", "_") for w in verbs])
+
     def new_py_out(self) -> str:
         result = subprocess.run(
             self.long_cmd,
@@ -56,26 +62,22 @@ class Chezmoi:
         ["git", "status"],
         ["git", "log", "--", "--oneline"],
     ]
+    args_ids: list = field(default_factory=list)  # creates new empty list
 
-    io_instances: dict[str, InputOutput] = field(
-        init=False, default_factory=dict
-    )
+    @property
+    def long_commands(self):
+        return [self.base + sub for sub in self.subs]
 
     def __post_init__(self):
-        self.long_commands = [self.base + sub for sub in self.subs]
-        self.sub_ids = []
+        for long_cmd in self.long_commands:
+            input_output = InputOutput(long_cmd)
+            self.args_ids.append(
+                input_output.args_id
+            )  # Use append instead of +=
+            setattr(self, input_output.args_id, input_output)
 
-        for words in self.long_commands:
-            verbs = [w for w in words[1:] if not w.startswith("-")]
-            self.sub_ids += ["_".join([w.replace("-", "_") for w in verbs])]
-
-        for sub_id, long_cmd in zip(self.sub_ids, self.long_commands):
-            io_instance = InputOutput(long_cmd)
-            setattr(self, sub_id, io_instance)
-            self.io_instances[sub_id] = io_instance
-
-    def refresh_py_out(self, sub_id: str):
-        self.io_instances[sub_id].new_py_out()
+    def update_sub_id(self, args_id: str):
+        return getattr(self, args_id).new_py_out()
 
 
 # Instantiate Chezmoi and call the method at a later stage
