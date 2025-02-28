@@ -1,4 +1,3 @@
-from typing import Iterable
 from pathlib import Path
 
 from textual.app import ComposeResult
@@ -61,6 +60,7 @@ class ChezmoiDoctor(Static):
                     row = [f"[#FFD700]{cell}[/]" for cell in row]
                 main_table.add_row(*row)
 
+
 # class LogSlidebar(Widget):
 
 #     def __init__(self, highlight: bool = False):
@@ -115,9 +115,9 @@ class ChezmoiStatus(Static):
         self.status_output = []
 
     def compose(self) -> ComposeResult:
-        yield Label("Chezmoi Apply Status", variant="primary")
+        yield Label("Chezmoi Apply Status")
         yield DataTable(id="apply_table")
-        yield Label("Chezmoi Re-Add Status", variant="primary")
+        yield Label("Chezmoi Re-Add Status")
         yield DataTable(id="re_add_table")
 
     def on_mount(self):
@@ -138,11 +138,8 @@ class ChezmoiStatus(Static):
             re_add_status = self.status_meaning[line[1]]["Status"]
             re_add_change = self.status_meaning[line[1]]["Re_Add_Change"]
 
-            apply_row = [apply_status, path, apply_change]
-            apply_table.add_row(*apply_row)
-
-            re_add_row = [re_add_status, path, re_add_change]
-            re_add_table.add_row(*re_add_row)
+            apply_table.add_row(*[apply_status, path, apply_change])
+            re_add_table.add_row(*[re_add_status, path, re_add_change])
 
 
 class ManagedFiles(DirectoryTree):
@@ -153,7 +150,7 @@ class ManagedFiles(DirectoryTree):
             Path(entry) for entry in chezmoi.io["managed"].std_out.splitlines()
         ]
 
-    def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
+    def filter_paths(self, paths):
         return [path for path in paths if path in self.managed]
 
 
