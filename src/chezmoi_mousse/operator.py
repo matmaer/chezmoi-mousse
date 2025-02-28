@@ -11,7 +11,7 @@ from textual.widgets import (
     Footer,
     Header,
     Label,
-    # Pretty,
+    Pretty,
     Static,
     TabbedContent,
 )
@@ -39,7 +39,7 @@ class ChezmoiDoctor(Static):
         self.construct_table()
 
     def construct_table(self) -> None:
-        cm_dr_output = chezmoi.doctor.py_out  # pylint: disable=no-member
+        cm_dr_output = chezmoi.doctor.std_out.splitlines()  # pylint: disable=no-member
         header_row = cm_dr_output.pop(0).split()
         main_rows = []
         other_rows = []
@@ -72,24 +72,8 @@ class ChezmoiDoctor(Static):
 #    ("o, O", "app.push_screen('operate')", "operate"),
 # ]
 
-# yield VerticalScroll(
-#     Pretty(json.loads(chezmoi.dump_config.get()))
-# )
-# yield VerticalScroll(Pretty(json.loads(chezmoi.data.get())))
-# yield VerticalScroll(
-#     Pretty(chezmoi.cat_config.get().splitlines())
-# )
-# yield VerticalScroll(
-#     Pretty(chezmoi.ignored.get().splitlines())
-# )
-# yield VerticalScroll(
-#     Pretty(chezmoi.git_status.get().splitlines())
-# )
-# yield VerticalScroll(
-#     Pretty(chezmoi.git_log.get().splitlines())
-# )
 
-# # class LogSlidebar(Widget):
+# class LogSlidebar(Widget):
 
 #     def __init__(self, highlight: bool = False):
 #         super().__init__()
@@ -199,17 +183,27 @@ class OperationTabs(Screen):
     # def log_to_slidebar(self, message: str) -> None:
     #     self.query_one("#richlog-slidebar").write(message)
 
+
+#     Pretty(json.loads(chezmoi.dump_config.get()))
+#     Pretty(json.loads(chezmoi.data.get()))
+#     Pretty(chezmoi.cat_config.get().splitlines())
+#     Pretty(chezmoi.ignored.get().splitlines())
+#     Pretty(chezmoi.git_status.get().splitlines())
+#     Pretty(chezmoi.git_log.get().splitlines())
+
     def compose(self) -> ComposeResult:
         yield Header()
         # yield LogSlidebar()
         with TabbedContent(
             "Chezmoi-Diagram",
             "Chezmoi-Doctor",
+            "Dump-Config",
             # "Chezmoi-Status",
             # "Managed-Files",
         ):
             yield VerticalScroll(Static(FLOW_DIAGRAM, id="diagram"))
             yield VerticalScroll(ChezmoiDoctor())
+            yield VerticalScroll(Pretty(chezmoi.dump_config.py_out))
             # yield ChezmoiStatus()
             # yield VerticalScroll(ManagedFiles())
         yield Footer()
