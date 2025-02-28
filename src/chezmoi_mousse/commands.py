@@ -17,7 +17,7 @@ class InputOutput:
         try:
             return ast.literal_eval(self.std_out)
         except (SyntaxError, ValueError):
-            return self.std_out
+            return self.std_out.splitlines()
 
     @property
     def args_id(self) -> str:
