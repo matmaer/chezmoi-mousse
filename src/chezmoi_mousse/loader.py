@@ -14,14 +14,14 @@ from chezmoi_mousse.splash import SPLASH
 
 class AnimatedFade(Widget):
 
-    line_styles: deque[Style]
+    # line_styles: deque[Style]
 
     def __init__(self) -> None:
         super().__init__()
         self.id = "animated-fade"
         self.styles.height = len(SPLASH)
         self.styles.width = len(max(SPLASH, key=len))
-        self.line_styles = self.create_fade()
+        self.line_styles: deque[Style] = self.create_fade()
 
     def create_fade(self) -> deque[Style]:
         start_color = self.app.current_theme.primary
@@ -56,25 +56,6 @@ class AnimatedLog(Widget):
     def compose(self) -> ComposeResult:
         yield RichLog(id="loader-log", max_lines=11)
 
-    @work(thread=True)
-    def create_io_data(self, sub_id) -> None:
-        label = getattr(chezmoi, sub_id).label
-        loaded = "loaded"
-
-        # nr of padding chars needed to get to line_cols minus 2 spaces
-
-        count = self.line_cols - len(label) - len(loaded) - 2
-        pad_chars = f"{self.pad_char * count}"
-        line = f"{label} {pad_chars} {loaded}"
-        getattr(chezmoi, sub_id).new_py_out()
-
-        self.query_one("#loader-log").write(line)
-
-    def on_mount(self) -> None:
-        # run all the available chezmoi commands, one by one
-        for sub_id in chezmoi.sub_ids:
-            self.create_io_data(sub_id)
-
 
 class LoadingScreen(Screen):
 
@@ -93,5 +74,17 @@ class LoadingScreen(Screen):
             yield Center(AnimatedLog())
         yield Footer(id="loader-footer")
 
+    @work(thread=True)
+    def update_stdout(self, args_id) -> None:
+        label = getattr(chezmoi, args_id).label
+        suffix = "loaded"
+        # 40 padding dots
+        padding = "." * (40 - len(label) - len(suffix))
+        line = f"{label} {padding} {suffix}"
+        getattr(chezmoi, args_id).new_py_out()
+        self.query_one("#loader-log").write(line)
+
     def on_mount(self) -> None:
         self.title = "-  c h e z m o i  m o u s s e  -"
+        for args_id in chezmoi.args_ids:
+            self.update_stdout(args_id)
