@@ -76,7 +76,7 @@ class AnimatedLog(Widget):
 class LoadingScreen(Screen):
 
     BINDINGS = [
-        # ("o, O", "app.push_screen('operate')", "operate"),
+        ("o, O", "app.push_screen('operate')", "operate"),
     ]
 
     def __init__(self):
