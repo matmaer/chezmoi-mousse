@@ -1,25 +1,23 @@
-# import json
-
-# # pylint: disable=E0401
-# from collections.abc import Iterable
+# from typing import Iterable
 # from pathlib import Path
 
-# from textual.app import ComposeResult
-# from textual.containers import Vertical, VerticalScroll
-# from textual.reactive import reactive
-# from textual.screen import Screen
-# from textual.widgets import (
-#     DataTable,
-#     DirectoryTree,
-#     Footer,
-#     Header,
-#     Label,
-#     Pretty,
-#     Static,
-#     TabbedContent,
-# )
+from textual.app import ComposeResult
+from textual.containers import Vertical, VerticalScroll
+from textual.reactive import reactive
+from textual.screen import Screen
+from textual.widgets import (
+    # DataTable,
+    # DirectoryTree,
+    Footer,
+    Header,
+    # Label,
+    # Pretty,
+    Static,
+    TabbedContent,
+)
 
 # from chezmoi_mousse.commands import chezmoi
+from chezmoi_mousse.splash import FLOW_DIAGRAM
 
 
 # class ChezmoiDoctor(Static):
@@ -114,43 +112,6 @@
 #         self.title = "- i n s p e c t -"
 
 
-# # provisional diagrams until dynamically created
-# FLOW_DIAGRAM = """\
-# ┌──────────────┐    ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
-# │home directory│    │ working copy │    │  local repo  │    │ remote repo  │
-# └──────┬───────┘    └──────┬───────┘    └──────┬───────┘    └──────┬───────┘
-#        │                   │                   │                   │
-#        │    chezmoi add    │                   │                   │
-#        │   chezmoi re-add  │                   │                   │
-#        │──────────────────>│                   │                   │
-#        │                   │                   │                   │
-#        │   chezmoi apply   │                   │                   │
-#        │<──────────────────│                   │                   │
-#        │                   │                   │                   │
-#        │  chezmoi status   │                   │                   │
-#        │   chezmoi diff    │                   │                   │
-#        │<─ ─ ─ ─ ─ ─ ─ ─ ─>│                   │     git push      │
-#        │                   │                   │──────────────────>│
-#        │                   │                   │                   │
-#        │                   │           chezmoi git pull            │
-#        │                   │<──────────────────────────────────────│
-#        │                   │                   │                   │
-#        │                   │    git commit     │                   │
-#        │                   │──────────────────>│                   │
-#        │                   │                   │                   │
-#        │                   │    autoCommit     │                   │
-#        │                   │──────────────────>│                   │
-#        │                   │                   │                   │
-#        │                   │                autoPush               │
-#        │                   │──────────────────────────────────────>│
-#        │                   │                   │                   │
-#        │                   │                   │                   │
-# ┌──────┴───────┐    ┌──────┴───────┐    ┌──────┴───────┐    ┌──────┴───────┐
-# │ destination  │    │   staging    │    │   git repo   │    │  git remote  │
-# └──────────────┘    └──────────────┘    └──────────────┘    └──────────────┘
-# """
-
-
 # # class LogSlidebar(Widget):
 
 # #     def __init__(self, highlight: bool = False):
@@ -241,47 +202,46 @@
 # class ManagedFiles(DirectoryTree):
 
 #     def __init__(self):
-#         # super().__init__(chezmoi_config["destDir"])
 #         super().__init__("/home/mm")
 #         self.managed = [
 #             Path(entry) for entry in chezmoi.managed.get().splitlines()
-#         ]  # pylint: disable=no-member
+#         ]
 
 #     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
 #         return [path for path in paths if path in self.managed]
 
 
-# class OperationTabs(Screen):
+class OperationTabs(Screen):
 
-#     BINDINGS = [
-#         ("l, L", "toggle_sidebar", "loader"),
-#     ]
+    BINDINGS = [
+        ("l, L", "toggle_sidebar", "loader"),
+    ]
 
-#     show_sidebar = reactive(False)
+    show_sidebar = reactive(False)
 
-#     # def log_to_slidebar(self, message: str) -> None:
-#     #     self.query_one("#richlog-slidebar").write(message)
+    # def log_to_slidebar(self, message: str) -> None:
+    #     self.query_one("#richlog-slidebar").write(message)
 
-#     def compose(self) -> ComposeResult:
-#         yield Header()
-#         # yield LogSlidebar()
-#         with Vertical():
-#             with TabbedContent(
-#                 "Chezmoi-Diagram",
-#                 "Chezmoi-Status",
-#                 # "Managed-Files",
-#             ):
-#                 yield VerticalScroll(Static(FLOW_DIAGRAM, id="diagram"))
-#                 yield ChezmoiStatus()
-#                 # yield VerticalScroll(ManagedFiles())
-#         yield Footer()
+    def compose(self) -> ComposeResult:
+        yield Header()
+        # yield LogSlidebar()
+        with Vertical():
+            with TabbedContent(
+                "Chezmoi-Diagram",
+                # "Chezmoi-Status",
+                # "Managed-Files",
+            ):
+                yield VerticalScroll(Static(FLOW_DIAGRAM, id="diagram"))
+                # yield ChezmoiStatus()
+                # yield VerticalScroll(ManagedFiles())
+        yield Footer()
 
-#     def on_mount(self) -> None:
-#         self.title = "- o p e r a t e -"
+    def on_mount(self) -> None:
+        self.title = "- o p e r a t e -"
 
-#     # def action_toggle_sidebar(self) -> None:
-#     #     self.show_sidebar = not self.show_sidebar
+    # def action_toggle_sidebar(self) -> None:
+    #     self.show_sidebar = not self.show_sidebar
 
-#     # def watch_show_sidebar(self, show_sidebar: bool) -> None:
-#     #     # Toggle "visible" class when "show_sidebar" reactive changes.
-#     #     self.query_one("#richlog-slidebar").set_class(show_sidebar, "-visible")
+    # def watch_show_sidebar(self, show_sidebar: bool) -> None:
+    #     # Toggle "visible" class when "show_sidebar" reactive changes.
+    #     self.query_one("#richlog-slidebar").set_class(show_sidebar, "-visible")
