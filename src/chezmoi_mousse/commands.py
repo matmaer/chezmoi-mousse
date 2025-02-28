@@ -57,6 +57,9 @@ class Chezmoi:
     def long_commands(self):
         return [self.base + sub for sub in self.subs]
 
+    def get(self, cmd_id: str) -> str:
+        return getattr(self, cmd_id)
+
     def __post_init__(self):
         self.io = {}
         for long_cmd in self.long_commands:
