@@ -89,75 +89,73 @@ class ChezmoiDoctor(Static):
 #             yield RichLog(id="richlog-slidebar")
 
 
-# class ChezmoiStatus(Static):
-#     # Chezmoi status command output reference:
-#     # https://www.chezmoi.io/reference/commands/status/
+class ChezmoiStatus(Static):
+    # Chezmoi status command output reference:
+    # https://www.chezmoi.io/reference/commands/status/
 
-#     status_meaning = {
-#         " ": {
-#             "Status": "No change",
-#             "Re_Add_Change": "No change",
-#             "Apply_Change": "No change",
-#         },
-#         "A": {
-#             "Status": "Added",
-#             "Re_Add_Change": "Entry was created",
-#             "Apply_Change": "Entry will be created",
-#         },
-#         "D": {
-#             "Status": "Deleted",
-#             "Re_Add_Change": "Entry was deleted",
-#             "Apply_Change": "Entry will be deleted",
-#         },
-#         "M": {
-#             "Status": "Modified",
-#             "Re_Add_Change": "Entry was modified",
-#             "Apply_Change": "Entry will be modified",
-#         },
-#         "R": {
-#             "Status": "Run",
-#             "Re_Add_Change": "Not applicable",
-#             "Apply_Change": "Entry will be run",
-#         },
-#     }
+    status_meaning = {
+        " ": {
+            "Status": "No change",
+            "Re_Add_Change": "No change",
+            "Apply_Change": "No change",
+        },
+        "A": {
+            "Status": "Added",
+            "Re_Add_Change": "Entry was created",
+            "Apply_Change": "Entry will be created",
+        },
+        "D": {
+            "Status": "Deleted",
+            "Re_Add_Change": "Entry was deleted",
+            "Apply_Change": "Entry will be deleted",
+        },
+        "M": {
+            "Status": "Modified",
+            "Re_Add_Change": "Entry was modified",
+            "Apply_Change": "Entry will be modified",
+        },
+        "R": {
+            "Status": "Run",
+            "Re_Add_Change": "Not applicable",
+            "Apply_Change": "Entry will be run",
+        },
+    }
 
-#     def __init__(self):
-#         super().__init__()
-#         self.classes = "tabpad"
-#         self.status_output = []
+    def __init__(self):
+        super().__init__()
+        self.classes = "tabpad"
+        self.status_output = []
 
-#     def compose(self) -> ComposeResult:
-#         yield Label("Chezmoi Apply Status", variant="primary")
-#         yield DataTable(id="apply_table")
-#         yield Label("Chezmoi Re-Add Status", variant="primary")
-#         yield DataTable(id="re_add_table")
+    def compose(self) -> ComposeResult:
+        yield Label("Chezmoi Apply Status", variant="primary")
+        yield DataTable(id="apply_table")
+        yield Label("Chezmoi Re-Add Status", variant="primary")
+        yield DataTable(id="re_add_table")
 
-#     def on_mount(self):
-#         self.status_output = (
-#             chezmoi.status.get().splitlines()
-#         )  # pylint: disable=no-member
-#         re_add_table = self.query_one("#re_add_table")
-#         apply_table = self.query_one("#apply_table")
+    def on_mount(self):
+        self.status_output = chezmoi.status.std_out.splitlines()
+        re_add_table = self.query_one("#re_add_table")
+        apply_table = self.query_one("#apply_table")
 
-#         header_row = ["STATUS", "PATH", "CHANGE"]
+        header_row = ["STATUS", "PATH", "CHANGE"]
 
-#         re_add_table.add_columns(*header_row)
-#         apply_table.add_columns(*header_row)
+        re_add_table.add_columns(*header_row)
+        apply_table.add_columns(*header_row)
 
-#         for line in self.status_output:
-#             path = line[3:]
+        for line in self.status_output:
+            path = line[3:]
 
-#             apply_status = self.status_meaning[line[0]]["Status"]
-#             apply_change = self.status_meaning[line[0]]["Apply_Change"]
+            apply_status = self.status_meaning[line[0]]["Status"]
+            apply_change = self.status_meaning[line[0]]["Apply_Change"]
 
-#             re_add_status = self.status_meaning[line[1]]["Status"]
-#             re_add_change = self.status_meaning[line[1]]["Re_Add_Change"]
+            re_add_status = self.status_meaning[line[1]]["Status"]
+            re_add_change = self.status_meaning[line[1]]["Re_Add_Change"]
 
-#             apply_row = [apply_status, path, apply_change]
-#             apply_table.add_row(*apply_row)
+            apply_row = [apply_status, path, apply_change]
+            apply_table.add_row(*apply_row)
 
-#             re_add_row = [re_add_status, path, re_add_change]
-#             re_add_table.add_row(*re_add_row)
+            re_add_row = [re_add_status, path, re_add_change]
+            re_add_table.add_row(*re_add_row)
 
 
 # class ManagedFiles(DirectoryTree):
@@ -183,14 +181,6 @@ class OperationTabs(Screen):
     # def log_to_slidebar(self, message: str) -> None:
     #     self.query_one("#richlog-slidebar").write(message)
 
-
-#     Pretty(json.loads(chezmoi.dump_config.get()))
-#     Pretty(json.loads(chezmoi.data.get()))
-#     Pretty(chezmoi.cat_config.get().splitlines())
-#     Pretty(chezmoi.ignored.get().splitlines())
-#     Pretty(chezmoi.git_status.get().splitlines())
-#     Pretty(chezmoi.git_log.get().splitlines())
-
     def compose(self) -> ComposeResult:
         yield Header()
         # yield LogSlidebar()
@@ -198,13 +188,13 @@ class OperationTabs(Screen):
             "Chezmoi-Diagram",
             "Chezmoi-Doctor",
             "Dump-Config",
-            # "Chezmoi-Status",
+            "Chezmoi-Status",
             # "Managed-Files",
         ):
             yield VerticalScroll(Static(FLOW_DIAGRAM, id="diagram"))
             yield VerticalScroll(ChezmoiDoctor())
             yield VerticalScroll(Pretty(chezmoi.dump_config.std_out))
-            # yield ChezmoiStatus()
+            yield ChezmoiStatus()
             # yield VerticalScroll(ManagedFiles())
         yield Footer()
 
