@@ -99,7 +99,7 @@ Screen {
   layers: sidebar;
 }
 
-Slidebar {
+SlideBar {
   background: $background;
   background-tint: $background;
   margin-top: 4;

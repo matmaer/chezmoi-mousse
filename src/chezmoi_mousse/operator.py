@@ -4,14 +4,15 @@ from textual.app import ComposeResult
 from textual.reactive import reactive
 from textual.screen import Screen
 from textual.widget import Widget
+
 from textual.widgets import (
     DataTable,
     DirectoryTree,
     Footer,
     Header,
     Label,
-    Pretty,
     RichLog,
+    Pretty,
     Static,
     TabbedContent,
 )
@@ -22,19 +23,20 @@ from chezmoi_mousse.splash import FLOW_DIAGRAM
 #pylint: disable=no-member
 
 
-class Slidebar(Widget):
+class SlideBar(Widget):
 
     def __init__(self, highlight: bool = False):
         super().__init__()
         self.animate = True
         self.auto_scroll = True
         self.highlight = highlight
+        self.id = "slidebar"
         self.markup = True
         self.max_lines = 160  # (80×3÷2)×((16−4)÷9)
         self.wrap = True
 
     def compose(self) -> ComposeResult:
-        yield RichLog(id="slidebar")
+        yield RichLog(id="slidebar-log")
 
 class ChezmoiDoctor(Static):
 
@@ -166,7 +168,7 @@ class OperationTabs(Screen):
 
     def compose(self) -> ComposeResult:
         yield Header()
-        yield Slidebar()
+        yield SlideBar()
         with TabbedContent(
             "Diagram",
             "Doctor",
@@ -199,11 +201,11 @@ class OperationTabs(Screen):
         self.log_to_slidebar("Welcome to chezmoi-mousse!")
 
     def log_to_slidebar(self, message: str) -> None:
-        self.query_one("#slidebar").write(message)
+        self.query_one("#slidebar-log").write(message)
 
     def action_toggle_sidebar(self) -> None:
         self.show_sidebar = not self.show_sidebar
 
     def watch_show_sidebar(self, show_sidebar: bool) -> None:
         # Toggle "visible" class when "show_sidebar" reactive changes.
-        self.query_one(Slidebar).set_class(show_sidebar, "-visible")
+        self.query_one("#slidebar").set_class(show_sidebar, "-visible")
