@@ -40,3 +40,40 @@ SPLASH_ASCII_ART = """\
 ).splitlines()
 
 SPLASH = SPLASH_ASCII_ART
+
+
+# # provisional diagrams until dynamically created
+FLOW_DIAGRAM = """\
+┌──────────────┐    ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
+│home directory│    │ working copy │    │  local repo  │    │ remote repo  │
+└──────┬───────┘    └──────┬───────┘    └──────┬───────┘    └──────┬───────┘
+       │                   │                   │                   │
+       │    chezmoi add    │                   │                   │
+       │   chezmoi re-add  │                   │                   │
+       │──────────────────>│                   │                   │
+       │                   │                   │                   │
+       │   chezmoi apply   │                   │                   │
+       │<──────────────────│                   │                   │
+       │                   │                   │                   │
+       │  chezmoi status   │                   │                   │
+       │   chezmoi diff    │                   │                   │
+       │<─ ─ ─ ─ ─ ─ ─ ─ ─>│                   │     git push      │
+       │                   │                   │──────────────────>│
+       │                   │                   │                   │
+       │                   │           chezmoi git pull            │
+       │                   │<──────────────────────────────────────│
+       │                   │                   │                   │
+       │                   │    git commit     │                   │
+       │                   │──────────────────>│                   │
+       │                   │                   │                   │
+       │                   │    autoCommit     │                   │
+       │                   │──────────────────>│                   │
+       │                   │                   │                   │
+       │                   │                autoPush               │
+       │                   │──────────────────────────────────────>│
+       │                   │                   │                   │
+       │                   │                   │                   │
+┌──────┴───────┐    ┌──────┴───────┐    ┌──────┴───────┐    ┌──────┴───────┐
+│ destination  │    │   staging    │    │   git repo   │    │  git remote  │
+└──────────────┘    └──────────────┘    └──────────────┘    └──────────────┘
+"""

@@ -2,11 +2,10 @@ from textual.app import App
 from textual.theme import Theme
 
 from chezmoi_mousse.loader import LoadingScreen
+from chezmoi_mousse.operator import OperationTabs
 
-# from chezmoi_mousse.operator import OperationTabs
 
 BACKGROUND = "rgb(12, 14, 18)"
-
 
 oled_dark_zen = Theme(
     name="oled-dark-zen",
@@ -50,7 +49,7 @@ class ChezmoiTUI(App):
     CSS_PATH = "tui.tcss"
 
     SCREENS = {
-        # "operate": OperationTabs,
+        "operate": OperationTabs,
         "loader": LoadingScreen,
     }
 
