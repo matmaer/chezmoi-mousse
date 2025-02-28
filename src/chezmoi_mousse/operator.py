@@ -39,7 +39,7 @@ class ChezmoiDoctor(Static):
         self.construct_table()
 
     def construct_table(self) -> None:
-        cm_dr_output = chezmoi.doctor.std_out.splitlines()  # pylint: disable=no-member
+        cm_dr_output = chezmoi.io["doctor"].std_out.splitlines()
         header_row = cm_dr_output.pop(0).split()
         main_rows = []
         other_rows = []
@@ -127,7 +127,6 @@ class ChezmoiStatus(Static):
         yield DataTable(id="re_add_table")
 
     def on_mount(self):
-        self.status_output = chezmoi.status.std_out.splitlines()
         re_add_table = self.query_one("#re_add_table")
         apply_table = self.query_one("#apply_table")
 
@@ -136,7 +135,7 @@ class ChezmoiStatus(Static):
         re_add_table.add_columns(*header_row)
         apply_table.add_columns(*header_row)
 
-        for line in self.status_output:
+        for line in chezmoi.io["status"].std_out.splitlines():
             path = line[3:]
 
             apply_status = self.status_meaning[line[0]]["Status"]
@@ -157,7 +156,7 @@ class ManagedFiles(DirectoryTree):
     def __init__(self):
         super().__init__("/home/mm")
         self.managed = [
-            Path(entry) for entry in chezmoi.managed.std_out.splitlines()
+            Path(entry) for entry in chezmoi.io["managed"].std_out.splitlines()
         ]
 
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
@@ -187,7 +186,7 @@ class OperationTabs(Screen):
         ):
             yield VerticalScroll(Static(FLOW_DIAGRAM, id="diagram"))
             yield VerticalScroll(ChezmoiDoctor())
-            yield VerticalScroll(Pretty(chezmoi.dump_config.std_out))
+            yield VerticalScroll(Pretty(chezmoi.io["dump_config"].std_out))
             yield ChezmoiStatus()
             yield VerticalScroll(ManagedFiles())
         yield Footer()
