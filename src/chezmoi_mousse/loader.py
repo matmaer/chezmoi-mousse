@@ -45,7 +45,7 @@ class AnimatedFade(Widget):
 class LoadingScreen(Screen):
 
     BINDINGS = [
-        ("o, O", "app.push_screen('operate')", "operate"),
+        ("o, O", "app.push_screen('operate')", "Operate"),
     ]
 
     def __init__(self):
