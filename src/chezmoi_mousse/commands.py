@@ -1,5 +1,15 @@
+import json
 import subprocess
 from dataclasses import dataclass
+
+
+class Utils:
+
+    @staticmethod
+    def get_args_id(long_cmd: list[str]) -> str:
+        all_args = long_cmd[1:]
+        verbs = [w for w in all_args if not w.startswith("-")]
+        return "_".join([w.replace("-", "_") for w in verbs])
 
 
 @dataclass
@@ -13,9 +23,19 @@ class InputOutput:
 
     @property
     def args_id(self) -> str:
-        all_args = self.long_cmd[1:]
-        verbs = [w for w in all_args if not w.startswith("-")]
-        return "_".join([w.replace("-", "_") for w in verbs])
+        return Utils.get_args_id(self.long_cmd)
+
+    @property
+    def list_out(self) -> list[str]:
+        return self.std_out.splitlines()
+
+    @property
+    def dict_out(self) -> dict[str, str]:
+        try:
+            json.loads(self.std_out.strip())
+        except json.JSONDecodeError:
+            return {}
+        return json.loads(self.std_out)
 
     def update(self) -> str:
         result = subprocess.run(
@@ -30,8 +50,7 @@ class InputOutput:
         return result.stdout
 
 
-@dataclass
-class ChezmoiData:
+class Chezmoi:
 
     name = "chezmoi"
     base = [name] + [
@@ -41,30 +60,26 @@ class ChezmoiData:
         "--progress=false",
     ]
     subs = [
+        ["cat-config"],
+        ["data", "--format=json"],
         ["doctor"],
         ["dump-config", "--format=json"],
-        ["data", "--format=json"],
-        ["cat-config"],
+        ["git", "log", "--", "--oneline"],
+        ["git", "status"],
         ["ignored"],
         ["managed", "--path-style=absolute"],
         ["status", "--parent-dirs"],
         ["unmanaged", "--path-style=absolute"],
-        ["git", "status"],
-        ["git", "log", "--", "--oneline"],
     ]
 
     @property
     def long_commands(self):
         return [self.base + sub for sub in self.subs]
 
-
-class Chezmoi(ChezmoiData):
-
     def __init__(self):
-        self.io: dict[str, InputOutput] = {}
         for long_cmd in self.long_commands:
             input_output = InputOutput(long_cmd)
-            self.io[input_output.args_id] = input_output
             setattr(self, input_output.args_id, input_output)
+
 
 chezmoi = Chezmoi()
