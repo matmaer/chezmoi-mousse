@@ -81,7 +81,7 @@ class LoadingScreen(Screen):
         # 40 padding dots
         padding = "." * (40 - len(label) - len(suffix))
         line = f"{label} {padding} {suffix}"
-        getattr(chezmoi, args_id).new_py_out()
+        getattr(chezmoi, args_id).update()
         self.query_one("#loader-log").write(line)
 
     def on_mount(self) -> None:
