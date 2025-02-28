@@ -3,6 +3,7 @@ from pathlib import Path
 from textual.app import ComposeResult
 from textual.reactive import reactive
 from textual.screen import Screen
+from textual.widget import Widget
 from textual.widgets import (
     DataTable,
     DirectoryTree,
@@ -10,6 +11,7 @@ from textual.widgets import (
     Header,
     Label,
     Pretty,
+    RichLog,
     Static,
     TabbedContent,
 )
@@ -19,6 +21,20 @@ from chezmoi_mousse.splash import FLOW_DIAGRAM
 
 #pylint: disable=no-member
 
+
+class Slidebar(Widget):
+
+    def __init__(self, highlight: bool = False):
+        super().__init__()
+        self.animate = True
+        self.auto_scroll = True
+        self.highlight = highlight
+        self.markup = True
+        self.max_lines = 160  # (80×3÷2)×((16−4)÷9)
+        self.wrap = True
+
+    def compose(self) -> ComposeResult:
+        yield RichLog(id="slidebar")
 
 class ChezmoiDoctor(Static):
 
@@ -60,22 +76,6 @@ class ChezmoiDoctor(Static):
                 else:
                     row = [f"[#FFD700]{cell}[/]" for cell in row]
                 main_table.add_row(*row)
-
-
-# class LogSlidebar(Widget):
-
-#     def __init__(self, highlight: bool = False):
-#         super().__init__()
-#         self.animate = True
-#         self.auto_scroll = True
-#         self.highlight = highlight
-#         self.markup = True
-#         self.max_lines = 160  # (80×3÷2)×((16−4)÷9)
-#         self.wrap = True
-
-#     def compose(self) -> ComposeResult:
-#         with Vertical():
-#             yield RichLog(id="richlog-slidebar")
 
 
 class ChezmoiStatus(Static):
@@ -158,17 +158,14 @@ class ManagedFiles(DirectoryTree):
 class OperationTabs(Screen):
 
     BINDINGS = [
-        ("l, L", "toggle_sidebar", "loader"),
+        ("l, L", "toggle_sidebar", "Toggle sidebar"),
     ]
 
     show_sidebar = reactive(False)
 
-    # def log_to_slidebar(self, message: str) -> None:
-    #     self.query_one("#richlog-slidebar").write(message)
-
     def compose(self) -> ComposeResult:
         yield Header()
-        # yield LogSlidebar()
+        yield Slidebar()
         with TabbedContent(
             "Diagram",
             "Doctor",
@@ -199,9 +196,12 @@ class OperationTabs(Screen):
     def on_mount(self) -> None:
         self.title = "- o p e r a t e -"
 
-    # def action_toggle_sidebar(self) -> None:
-    #     self.show_sidebar = not self.show_sidebar
+    # def log_to_slidebar(self, message: str) -> None:
+    #     self.query_one("#slidebar").write(message)
 
-    # def watch_show_sidebar(self, show_sidebar: bool) -> None:
-    #     # Toggle "visible" class when "show_sidebar" reactive changes.
-    #     self.query_one("#richlog-slidebar").set_class(show_sidebar, "-visible")
+    def action_toggle_sidebar(self) -> None:
+        self.show_sidebar = not self.show_sidebar
+
+    def watch_show_sidebar(self, show_sidebar: bool) -> None:
+        # Toggle "visible" class when "show_sidebar" reactive changes.
+        self.query_one(Slidebar).set_class(show_sidebar, "-visible")

@@ -17,10 +17,7 @@ Header {
   }
 }
 
-#richlog-slidebar {
-  background: $background;
-  background-tint: $background;
-}
+
 
 #diagram {
   margin-left: 1;
@@ -101,42 +98,48 @@ DataTable {
 }
 
 
-# Screen {
-#   layers: sidebar;
-# }
+Screen {
+  layers: sidebar;
+}
 
-
-# LogSlidebar {
+# #richlog-slidebar {
 #   background: $background;
 #   background-tint: $background;
-#   margin-top: 4;
-#   dock: right;
-#   /* Needs its own layer to sit above content */
-#   layer: sidebar;
-#   /* offset-x: -100%; out of view if docked left */
-#   /* offset-x: 100%; out if view if docked right */
-#   offset-x: 100%;
-#   min-width: 7;
-#   max-width: 70%;
-#   height: auto;
-#   min-height: 5;
-#   max-height: 75%;
-#   border-left: $panel;
-#   border-top: $panel;
-#   border-bottom: $panel;
-
-#   /* Enable animation */
-#   transition: offset 350ms;
-#   &.-visible {
-#       /* offset.x: 0; make visible when class is applied */
-#       offset-x: 0;
-#   }
-#   & > Vertical {
-#       margin: 0 1 0 1;
-#       background: $background;
-#       background-tint: $background;
-#   }
-#   &:focus {
-#       background-tint: $background;
-#   }
 # }
+
+
+Slidebar {
+  background: $background;
+  background-tint: $background;
+  margin-top: 4;
+  margin-bottom: 4;
+  dock: right;
+  /* Needs its own layer to sit above content */
+  layer: sidebar;
+  /* offset-x: -100%; out of view if docked left */
+  /* offset-x: 100%; out if view if docked right */
+  offset-x: 100%;
+  min-width: 7;
+  max-width: 80%;
+  height: auto;
+  min-height: 5;
+  max-height: 100%;
+  border-left: $panel;
+  border-top: $panel;
+  border-bottom: $panel;
+
+  /* Enable animation */
+  transition: offset 350ms;
+  &.-visible {
+      /* offset.x: 0; make visible when class is applied */
+      offset-x: 0;
+  }
+  # & > Vertical {
+  #     margin: 0 1 0 1;
+  #     background: $background;
+  #     background-tint: $background;
+  # }
+  &:focus {
+      background-tint: $background;
+  }
+}
