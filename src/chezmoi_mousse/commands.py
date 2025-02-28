@@ -1,5 +1,5 @@
 import subprocess
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 
 @dataclass
@@ -54,19 +54,22 @@ class Chezmoi:
         ["git", "status"],
         ["git", "log", "--", "--oneline"],
     ]
-    args_ids: list = field(default_factory=list)  # creates new empty list
+    # args_ids: list = field(default_factory=list)  # creates new empty list
 
     @property
     def long_commands(self):
         return [self.base + sub for sub in self.subs]
 
     def __post_init__(self):
+        self.io = {}
         for long_cmd in self.long_commands:
             input_output = InputOutput(long_cmd)
-            self.args_ids.append(
-                input_output.args_id
-            )  # Use append instead of +=
+            self.io[input_output.args_id] = input_output
+            # self.args_ids.append(
+            #     input_output.args_id
+            # )  # Use append instead of +=
             setattr(self, input_output.args_id, input_output)
+
 
     def update_sub_id(self, args_id: str):
         return getattr(self, args_id).new_py_out()
