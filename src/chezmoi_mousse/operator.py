@@ -1,7 +1,6 @@
 from pathlib import Path
 
 from textual.app import ComposeResult
-from textual.containers import VerticalScroll
 from textual.reactive import reactive
 from textual.screen import Screen
 from textual.widgets import (
@@ -169,17 +168,30 @@ class OperationTabs(Screen):
         yield Header()
         # yield LogSlidebar()
         with TabbedContent(
-            "Chezmoi-Diagram",
-            "Chezmoi-Doctor",
+            "Diagram",
+            "Doctor",
             "Dump-Config",
-            "Chezmoi-Status",
+            "Git-Status",
             "Managed-Files",
+            "Template-Data",
+            "Cat-Config",
+            "Git-Log",
+            "Ignored",
+            "Status",
+            "Unmanaged",
         ):
-            yield VerticalScroll(Static(FLOW_DIAGRAM, id="diagram"))
-            yield VerticalScroll(ChezmoiDoctor())
-            yield VerticalScroll(Pretty(chezmoi.io["dump_config"].std_out))
+            yield Static(FLOW_DIAGRAM, id="diagram")
+            yield ChezmoiDoctor()
+            yield Pretty(chezmoi.io["dump_config"].std_out)
             yield ChezmoiStatus()
-            yield VerticalScroll(ManagedFiles())
+            yield ManagedFiles()
+            yield Pretty(chezmoi.io["data"].std_out)
+            yield Pretty(chezmoi.io["cat_config"].std_out)
+            yield Pretty(chezmoi.io["git_log"].std_out)
+            yield Pretty(chezmoi.io["ignored"].std_out)
+            yield Pretty(chezmoi.io["status"].std_out)
+            yield Pretty(chezmoi.io["unmanaged"].std_out)
+
         yield Footer()
 
     def on_mount(self) -> None:

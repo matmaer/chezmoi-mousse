@@ -41,16 +41,16 @@ class ChezmoiData:
         "--progress=false",
     ]
     subs = [
+        ["cat-config"],
+        ["data", "--format=json"],
         ["doctor"],
         ["dump-config", "--format=json"],
-        ["data", "--format=json"],
-        ["cat-config"],
+        ["git", "log", "--", "--oneline"],
+        ["git", "status"],
         ["ignored"],
         ["managed", "--path-style=absolute"],
         ["status", "--parent-dirs"],
         ["unmanaged", "--path-style=absolute"],
-        ["git", "status"],
-        ["git", "log", "--", "--oneline"],
     ]
 
     @property
