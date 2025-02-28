@@ -14,8 +14,6 @@ from chezmoi_mousse.splash import SPLASH
 
 class AnimatedFade(Widget):
 
-    # line_styles: deque[Style]
-
     def __init__(self) -> None:
         super().__init__()
         self.id = "animated-fade"
@@ -44,19 +42,6 @@ class AnimatedFade(Widget):
         self.set_interval(interval=0.10, callback=self.refresh)
 
 
-class AnimatedLog(Widget):
-
-    line_cols: int = 40  # total width of the padded text in characters
-    pad_char: str = "."
-
-    def __init__(self) -> None:
-        super().__init__()
-        self.id = "animated-log"
-
-    def compose(self) -> ComposeResult:
-        yield RichLog(id="loader-log", max_lines=11)
-
-
 class LoadingScreen(Screen):
 
     BINDINGS = [
@@ -71,7 +56,7 @@ class LoadingScreen(Screen):
         yield Header(id="loader-header")
         with Middle():
             yield Center(AnimatedFade())
-            yield Center(AnimatedLog())
+            yield Center(RichLog(id="loader-log", max_lines=11))
         yield Footer(id="loader-footer")
 
     @work(thread=True)
