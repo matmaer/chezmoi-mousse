@@ -17,6 +17,8 @@ from textual.widgets import (
 from chezmoi_mousse.commands import chezmoi
 from chezmoi_mousse.splash import FLOW_DIAGRAM
 
+#pylint: disable=no-member
+
 
 class ChezmoiDoctor(Static):
 
@@ -37,7 +39,7 @@ class ChezmoiDoctor(Static):
         main_table = self.query_one("#main_table")
         second_table = self.query_one("#second_table")
 
-        cm_dr_output = chezmoi.io["doctor"].std_out.splitlines()
+        cm_dr_output = chezmoi.doctor.list_out
         header_row = cm_dr_output.pop(0).split()
 
         main_table.add_columns(*header_row)
@@ -128,7 +130,7 @@ class ChezmoiStatus(Static):
         re_add_table.add_columns(*header_row)
         apply_table.add_columns(*header_row)
 
-        for line in chezmoi.io["status"].std_out.splitlines():
+        for line in chezmoi.status.std_out.splitlines():
             path = line[3:]
 
             apply_status = self.status_meaning[line[0]]["Status"]
@@ -146,7 +148,7 @@ class ManagedFiles(DirectoryTree):
     def __init__(self):
         super().__init__("/home/mm")
         self.managed = [
-            Path(entry) for entry in chezmoi.io["managed"].std_out.splitlines()
+            Path(entry) for entry in chezmoi.managed.list_out
         ]
 
     def filter_paths(self, paths):
@@ -182,15 +184,15 @@ class OperationTabs(Screen):
         ):
             yield Static(FLOW_DIAGRAM, id="diagram")
             yield ChezmoiDoctor()
-            yield Pretty(chezmoi.io["dump_config"].std_out)
+            yield Pretty(chezmoi.dump_config.dict_out)
             yield ChezmoiStatus()
             yield ManagedFiles()
-            yield Pretty(chezmoi.io["data"].std_out)
-            yield Pretty(chezmoi.io["cat_config"].std_out)
-            yield Pretty(chezmoi.io["git_log"].std_out)
-            yield Pretty(chezmoi.io["ignored"].std_out)
-            yield Pretty(chezmoi.io["status"].std_out)
-            yield Pretty(chezmoi.io["unmanaged"].std_out)
+            yield Pretty(chezmoi.data.dict_out)
+            yield Pretty(chezmoi.cat_config.list_out)
+            yield Pretty(chezmoi.git_log.list_out)
+            yield Pretty(chezmoi.ignored.list_out)
+            yield Pretty(chezmoi.status.list_out)
+            yield Pretty(chezmoi.unmanaged.list_out)
 
         yield Footer()
 

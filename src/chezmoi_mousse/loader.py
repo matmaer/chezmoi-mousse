@@ -8,7 +8,7 @@ from textual.screen import Screen
 from textual.widget import Segment, Strip, Style, Widget
 from textual.widgets import Footer, Header, RichLog
 
-from chezmoi_mousse.commands import chezmoi
+from chezmoi_mousse.commands import chezmoi, Utils
 from chezmoi_mousse.splash import SPLASH
 
 
@@ -60,7 +60,7 @@ class LoadingScreen(Screen):
         yield Footer(id="loader-footer")
 
     @work(thread=True)
-    def run(self, args_id) -> None:
+    def _run(self, args_id) -> None:
         label = getattr(chezmoi, args_id).label
         padding = 32 - len(label)
         line = f"{label} {"." * padding} loaded"
@@ -69,5 +69,6 @@ class LoadingScreen(Screen):
 
     def on_mount(self) -> None:
         self.title = "-  c h e z m o i  m o u s s e  -"
-        for args_id in chezmoi.io:
-            self.run(args_id)
+        for long_cmd in chezmoi.long_commands:
+            args_id = Utils.get_args_id(long_cmd)
+            self._run(args_id)
