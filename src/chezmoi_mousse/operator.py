@@ -1,5 +1,5 @@
-# from typing import Iterable
-# from pathlib import Path
+from typing import Iterable
+from pathlib import Path
 
 from textual.app import ComposeResult
 from textual.containers import VerticalScroll
@@ -7,7 +7,7 @@ from textual.reactive import reactive
 from textual.screen import Screen
 from textual.widgets import (
     DataTable,
-    # DirectoryTree,
+    DirectoryTree,
     Footer,
     Header,
     Label,
@@ -66,12 +66,6 @@ class ChezmoiDoctor(Static):
         second_table.add_columns(*header_row)
         main_table.add_rows(main_rows)
         second_table.add_rows(other_rows)
-
-
-# BINDINGS = [
-#    ("o, O", "app.push_screen('operate')", "operate"),
-# ]
-
 
 # class LogSlidebar(Widget):
 
@@ -158,16 +152,16 @@ class ChezmoiStatus(Static):
             re_add_table.add_row(*re_add_row)
 
 
-# class ManagedFiles(DirectoryTree):
+class ManagedFiles(DirectoryTree):
 
-#     def __init__(self):
-#         super().__init__("/home/mm")
-#         self.managed = [
-#             Path(entry) for entry in chezmoi.managed.get().splitlines()
-#         ]
+    def __init__(self):
+        super().__init__("/home/mm")
+        self.managed = [
+            Path(entry) for entry in chezmoi.managed.std_out.splitlines()
+        ]
 
-#     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
-#         return [path for path in paths if path in self.managed]
+    def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
+        return [path for path in paths if path in self.managed]
 
 
 class OperationTabs(Screen):
@@ -189,13 +183,13 @@ class OperationTabs(Screen):
             "Chezmoi-Doctor",
             "Dump-Config",
             "Chezmoi-Status",
-            # "Managed-Files",
+            "Managed-Files",
         ):
             yield VerticalScroll(Static(FLOW_DIAGRAM, id="diagram"))
             yield VerticalScroll(ChezmoiDoctor())
             yield VerticalScroll(Pretty(chezmoi.dump_config.std_out))
             yield ChezmoiStatus()
-            # yield VerticalScroll(ManagedFiles())
+            yield VerticalScroll(ManagedFiles())
         yield Footer()
 
     def on_mount(self) -> None:

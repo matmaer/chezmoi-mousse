@@ -34,8 +34,6 @@ class InputOutput:
 class Chezmoi:
 
     name = "chezmoi"
-    # TODO: general command logic can be moved to command class when more
-    # commands are added like ls, tree, etc.
     base = [name] + [
         "--no-pager",
         "--color=false",
@@ -54,7 +52,6 @@ class Chezmoi:
         ["git", "status"],
         ["git", "log", "--", "--oneline"],
     ]
-    # args_ids: list = field(default_factory=list)  # creates new empty list
 
     @property
     def long_commands(self):
