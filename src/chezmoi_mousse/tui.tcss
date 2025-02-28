@@ -17,8 +17,6 @@ Header {
   }
 }
 
-
-
 #diagram {
   margin-left: 1;
   margin-right: 1;
@@ -30,7 +28,7 @@ Pretty {
   padding-left: 1;
 }
 
-DataTable, DirectoryTree {
+DataTable, DirectoryTree, RichLog {
   background-tint: $background;
 }
 
@@ -97,22 +95,16 @@ DataTable {
   }
 }
 
-
 Screen {
   layers: sidebar;
 }
-
-# #richlog-slidebar {
-#   background: $background;
-#   background-tint: $background;
-# }
-
 
 Slidebar {
   background: $background;
   background-tint: $background;
   margin-top: 4;
   margin-bottom: 4;
+  padding-left: 1;
   dock: right;
   /* Needs its own layer to sit above content */
   layer: sidebar;
@@ -124,15 +116,16 @@ Slidebar {
   height: auto;
   min-height: 5;
   max-height: 100%;
-  border-left: $panel;
-  border-top: $panel;
-  border-bottom: $panel;
+  border-left: round $panel;
+  border-top: round $panel;
+  border-bottom: round $panel;
+
 
   /* Enable animation */
-  transition: offset 350ms;
+  transition: offset 380ms;
   &.-visible {
       /* offset.x: 0; make visible when class is applied */
-      offset-x: 0;
+      offset-x: -1;
   }
   # & > Vertical {
   #     margin: 0 1 0 1;

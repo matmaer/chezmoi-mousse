@@ -157,8 +157,9 @@ class ManagedFiles(DirectoryTree):
 
 class OperationTabs(Screen):
 
+
     BINDINGS = [
-        ("l, L", "toggle_sidebar", "Toggle sidebar"),
+        ("s, S", "toggle_sidebar", "Toggle Sidebar"),
     ]
 
     show_sidebar = reactive(False)
@@ -170,13 +171,13 @@ class OperationTabs(Screen):
             "Diagram",
             "Doctor",
             "Dump-Config",
-            "Git-Status",
+            "Chezmoi-Status",
             "Managed-Files",
             "Template-Data",
             "Cat-Config",
             "Git-Log",
             "Ignored",
-            "Status",
+            "Git-Status",
             "Unmanaged",
         ):
             yield Static(FLOW_DIAGRAM, id="diagram")
@@ -195,9 +196,10 @@ class OperationTabs(Screen):
 
     def on_mount(self) -> None:
         self.title = "- o p e r a t e -"
+        self.log_to_slidebar("Welcome to chezmoi-mousse!")
 
-    # def log_to_slidebar(self, message: str) -> None:
-    #     self.query_one("#slidebar").write(message)
+    def log_to_slidebar(self, message: str) -> None:
+        self.query_one("#slidebar").write(message)
 
     def action_toggle_sidebar(self) -> None:
         self.show_sidebar = not self.show_sidebar

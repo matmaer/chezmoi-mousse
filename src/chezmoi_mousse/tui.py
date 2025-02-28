@@ -42,10 +42,6 @@ oled_dark_zen = Theme(
 
 class ChezmoiTUI(App):
 
-    BINDINGS = [
-        ("l, L", "app.push_screen('loader')", "loader"),
-    ]
-
     CSS_PATH = "tui.tcss"
 
     SCREENS = {
