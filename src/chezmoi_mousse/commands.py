@@ -61,7 +61,7 @@ class ChezmoiData:
 class Chezmoi(ChezmoiData):
 
     def __init__(self):
-        self.io = {}
+        self.io: dict[str, InputOutput] = {}
         for long_cmd in self.long_commands:
             input_output = InputOutput(long_cmd)
             self.io[input_output.args_id] = input_output
