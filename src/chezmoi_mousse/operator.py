@@ -1,24 +1,17 @@
 from pathlib import Path
 
 from textual.app import ComposeResult
-from textual.reactive import reactive
-from textual.screen import Screen
 from textual.widget import Widget
 
 from textual.widgets import (
     DataTable,
     DirectoryTree,
-    Footer,
-    Header,
     Label,
     RichLog,
-    Pretty,
     Static,
-    TabbedContent,
 )
 
 from chezmoi_mousse.commands import chezmoi
-from chezmoi_mousse.splash import FLOW_DIAGRAM
 
 #pylint: disable=no-member
 
@@ -157,55 +150,19 @@ class ManagedFiles(DirectoryTree):
         return [path for path in paths if path in self.managed]
 
 
-class OperationTabs(Screen):
+
+    # def on_mount(self) -> None:
+    #     self.title = "- o p e r a t e -"
 
 
-    BINDINGS = [
-        ("s, S", "toggle_sidebar", "Toggle Sidebar"),
-    ]
+    #     self.log_to_slidebar("Welcome to chezmoi-mousse!")
 
-    show_sidebar = reactive(False)
+    # def log_to_slidebar(self, message: str) -> None:
+    #     self.query_one("#slidebar-log").write(message)
 
-    def compose(self) -> ComposeResult:
-        yield Header()
-        yield SlideBar()
-        with TabbedContent(
-            "Diagram",
-            "Doctor",
-            "Dump-Config",
-            "Chezmoi-Status",
-            "Managed-Files",
-            "Template-Data",
-            "Cat-Config",
-            "Git-Log",
-            "Ignored",
-            "Git-Status",
-            "Unmanaged",
-        ):
-            yield Static(FLOW_DIAGRAM, id="diagram")
-            yield ChezmoiDoctor()
-            yield Pretty(chezmoi.dump_config.dict_out)
-            yield ChezmoiStatus()
-            yield ManagedFiles()
-            yield Pretty(chezmoi.data.dict_out)
-            yield Pretty(chezmoi.cat_config.list_out)
-            yield Pretty(chezmoi.git_log.list_out)
-            yield Pretty(chezmoi.ignored.list_out)
-            yield Pretty(chezmoi.status.list_out)
-            yield Pretty(chezmoi.unmanaged.list_out)
+    # def action_toggle_sidebar(self) -> None:
+    #     self.show_sidebar = not self.show_sidebar
 
-        yield Footer()
-
-    def on_mount(self) -> None:
-        self.title = "- o p e r a t e -"
-        self.log_to_slidebar("Welcome to chezmoi-mousse!")
-
-    def log_to_slidebar(self, message: str) -> None:
-        self.query_one("#slidebar-log").write(message)
-
-    def action_toggle_sidebar(self) -> None:
-        self.show_sidebar = not self.show_sidebar
-
-    def watch_show_sidebar(self, show_sidebar: bool) -> None:
-        # Toggle "visible" class when "show_sidebar" reactive changes.
-        self.query_one("#slidebar").set_class(show_sidebar, "-visible")
+    # def watch_show_sidebar(self, show_sidebar: bool) -> None:
+    #     # Toggle "visible" class when "show_sidebar" reactive changes.
+    #     self.query_one("#slidebar").set_class(show_sidebar, "-visible")
