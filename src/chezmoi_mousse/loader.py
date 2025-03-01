@@ -14,9 +14,10 @@ from chezmoi_mousse.splash import SPLASH
 
 class AnimatedFade(Widget):
 
+    line_styles: deque[Style]
+
     def __init__(self) -> None:
-        super().__init__()
-        self.id = "animated-fade"
+        super().__init__(id = "animated-fade")
         self.styles.height = len(SPLASH)
         self.styles.width = len(max(SPLASH, key=len))
         self.line_styles: deque[Style] = self.create_fade()
