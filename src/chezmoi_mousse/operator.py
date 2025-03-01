@@ -1,13 +1,7 @@
 from pathlib import Path
 
 from textual.app import ComposeResult
-
-from textual.widgets import (
-    DataTable,
-    DirectoryTree,
-    Label,
-    Static,
-)
+from textual.widgets import DataTable, DirectoryTree, Label, Static
 
 from chezmoi_mousse.commands import chezmoi
 
@@ -35,8 +29,7 @@ class ChezmoiDoctor(Static):
         main_table = self.query_one("#main_table")
         second_table = self.query_one("#second_table")
 
-
-        cm_dr_output = chezmoi.doctor.list_out
+        cm_dr_output = chezmoi.doctor.py_out
         header_row = cm_dr_output.pop(0).split()
 
         main_table.add_columns(*header_row)
@@ -91,10 +84,7 @@ class ChezmoiStatus(Static):
         },
     }
 
-    def __init__(self):
-        super().__init__()
-        self.classes = "tabpad"
-        self.status_output = []
+    status_output = []
 
     def compose(self) -> ComposeResult:
         yield Label("Chezmoi Apply Status")
@@ -115,7 +105,7 @@ class ChezmoiStatus(Static):
         re_add_table.add_columns(*header_row)
         apply_table.add_columns(*header_row)
 
-        for line in chezmoi.status.list_out:
+        for line in chezmoi.status.py_out:
             path = line[3:]
 
             apply_status = self.status_table[line[0]]["Status"]

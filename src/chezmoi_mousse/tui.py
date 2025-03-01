@@ -1,13 +1,11 @@
 from textual.app import App, ComposeResult
-
 from textual.theme import Theme
 from textual.widgets import Footer, Header, Pretty, Static, TabbedContent
 
-from chezmoi_mousse.loader import LoadingScreen
 from chezmoi_mousse.commands import chezmoi
+from chezmoi_mousse.loader import LoadingScreen
 from chezmoi_mousse.operator import ChezmoiDoctor, ChezmoiStatus, ManagedFiles
 from chezmoi_mousse.splash import FLOW_DIAGRAM
-
 
 BACKGROUND = "rgb(12, 14, 18)"
 
@@ -69,15 +67,15 @@ class ChezmoiTUI(App):
             # pylint: disable=no-member
             yield Static(FLOW_DIAGRAM, id="diagram")
             yield ChezmoiDoctor()
-            yield Pretty(chezmoi.dump_config.dict_out)
+            yield Pretty(chezmoi.dump_config.py_out)
             yield ChezmoiStatus()
             yield ManagedFiles()
-            yield Pretty(chezmoi.data.dict_out)
-            yield Pretty(chezmoi.cat_config.std_out)
-            yield Pretty(chezmoi.git_log.list_out)
-            yield Pretty(chezmoi.ignored.list_out)
-            yield Pretty(chezmoi.status.list_out)
-            yield Pretty(chezmoi.unmanaged.list_out)
+            yield Pretty(chezmoi.data.py_out)
+            yield Pretty(chezmoi.cat_config.py_out)
+            yield Pretty(chezmoi.git_log.py_out)
+            yield Pretty(chezmoi.ignored.py_out)
+            yield Pretty(chezmoi.status.py_out)
+            yield Pretty(chezmoi.unmanaged.py_out)
 
         yield Footer()
 
