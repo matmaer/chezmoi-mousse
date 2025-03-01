@@ -44,10 +44,6 @@ class AnimatedFade(Widget):
 
 class LoadingScreen(Screen):
 
-    BINDINGS = [
-        ("o, O", "app.push_screen('operate')", "Operate"),
-    ]
-
     def __init__(self):
         super().__init__()
         self.id = "loader-screen"
@@ -63,12 +59,15 @@ class LoadingScreen(Screen):
     def _run(self, args_id) -> None:
         label = getattr(chezmoi, args_id).label
         padding = 32 - len(label)
-        line = f"{label} {"." * padding} loaded"
+        line = f"{label} {'.' * padding} loaded"
         getattr(chezmoi, args_id).update()
         self.query_one("#loader-log").write(line)
 
     def on_mount(self) -> None:
         self.title = "-  c h e z m o i  m o u s s e  -"
         for long_cmd in chezmoi.long_commands:
-            args_id = Utils.get_args_id(long_cmd)
-            self._run(args_id)
+            self._run(Utils.get_args_id(long_cmd))
+
+    def on_key(self) -> None:
+        self.dismiss(chezmoi)
+        # self.query_one(RichLog).write(event)
