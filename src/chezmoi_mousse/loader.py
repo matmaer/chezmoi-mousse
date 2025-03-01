@@ -8,7 +8,7 @@ from textual.screen import Screen
 from textual.widget import Segment, Strip, Style, Widget
 from textual.widgets import Footer, Header, RichLog
 
-from chezmoi_mousse.commands import chezmoi, Utils
+from chezmoi_mousse.commands import InputOutput, Utils, chezmoi
 from chezmoi_mousse.splash import SPLASH
 
 
@@ -17,7 +17,7 @@ class AnimatedFade(Widget):
     line_styles: deque[Style]
 
     def __init__(self) -> None:
-        super().__init__(id = "animated-fade")
+        super().__init__(id="animated-fade")
         self.styles.height = len(SPLASH)
         self.styles.width = len(max(SPLASH, key=len))
         self.line_styles: deque[Style] = self.create_fade()
@@ -40,13 +40,13 @@ class AnimatedFade(Widget):
         return Strip([Segment(SPLASH[y], style=self.line_styles[y])])
 
     def on_mount(self) -> None:
-        self.set_interval(interval=0.10, callback=self.refresh)
+        self.set_interval(interval=0.11, callback=self.refresh)
 
 
 class LoadingScreen(Screen):
 
     def __init__(self):
-        super().__init__(id = "loader-screen")
+        super().__init__(id="loader-screen")
 
     def compose(self) -> ComposeResult:
         yield Header(id="loader-header")
@@ -56,17 +56,20 @@ class LoadingScreen(Screen):
         yield Footer(id="loader-footer")
 
     @work(thread=True)
-    def _run(self, args_id) -> None:
-        label = getattr(chezmoi, args_id).label
-        padding = 32 - len(label)
-        line = f"{label} {'.' * padding} loaded"
-        getattr(chezmoi, args_id).update()
+    def _run(self, arg_id: str, line: str) -> None:
+        chezmoi_command = getattr(chezmoi, arg_id)
+        chezmoi_command.update()
         self.query_one("#loader-log").write(line)
 
     def on_mount(self) -> None:
         self.title = "-  c h e z m o i  m o u s s e  -"
         for long_cmd in chezmoi.long_commands:
-            self._run(Utils.get_args_id(long_cmd))
+            arg_id = Utils.get_arg_id(long_cmd)
+            setattr(chezmoi, arg_id, InputOutput(long_cmd, arg_id))
+            label = getattr(chezmoi, arg_id).label
+            padding = 32 - len(label)
+            line = f"{label} {'.' * padding} loaded"
+            self._run(arg_id, line)
 
     # Any key will dismiss the screen
     def on_key(self) -> None:
