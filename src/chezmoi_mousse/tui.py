@@ -23,13 +23,6 @@ oled_dark_zen = Theme(
     surface="rgb(24, 28, 34)",
     warning="rgb(224, 195, 30)",
     variables={
-        # TODO: vars to consider
-        # "accent-muted": ,
-        # "primary-muted": ,
-        # "secondary-muted": ,
-        # "surface-active": ,
-        # "text-primary": ,
-        # "text-secondary": ,
         "footer-background": BACKGROUND,
         "footer-description-background": BACKGROUND,
         "footer-item-background": BACKGROUND,

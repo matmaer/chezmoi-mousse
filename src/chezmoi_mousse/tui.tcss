@@ -81,7 +81,6 @@ DataTable {
   }
 }
 
-
 SlideBar {
   background: $background;
   background-tint: $background;
