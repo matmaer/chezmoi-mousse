@@ -27,15 +27,17 @@ class InputOutput:
 
     @property
     def list_out(self) -> list[str]:
-        return self.std_out.splitlines()
+        try:
+            return self.std_out.splitlines()
+        except AttributeError:
+            return []
 
     @property
     def dict_out(self) -> dict[str, str]:
         try:
-            json.loads(self.std_out.strip())
+            return json.loads(self.std_out.strip())
         except json.JSONDecodeError:
             return {}
-        return json.loads(self.std_out)
 
     def update(self) -> str:
         result = subprocess.run(
