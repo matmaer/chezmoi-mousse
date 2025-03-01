@@ -9,8 +9,8 @@ Footer {
 }
 
 Header {
-  background: $background;
   color: $accent;
+  background: $background;
   HeaderIcon {
     /* don't use display: none; because then the title is not centered */
     visibility: hidden;
@@ -38,8 +38,8 @@ DataTable {
   text-style: none;
   &:focus {
     & > .datatable--cursor {
-      background: $primary 40%;
       color: $foreground 90%;
+      background: $primary 40%;
     }
     & > .datatable--fixed-cursor {
       color: $foreground;
@@ -47,22 +47,22 @@ DataTable {
     }
   }
   & > .datatable--header {
+    color: $foreground 80%;
     background: $background;
     background-tint: $background;
-    color: $foreground 80%;
     text-style: bold;
   }
   & > .datatable--header-hover {
-    background: $primary 50%;
     color: $foreground 80%;
+    background: $primary 50%;
   }
   & > .datatable--fixed {
-    background: $background;
     color: $foreground 70%;
+    background: $background;
   }
   & > .datatable--fixed-cursor {
-    background: $background;
     color: $foreground 70%;
+    background: $background;
   }
 }
 
@@ -73,11 +73,11 @@ DataTable {
     width: auto;
   }
   & #loader-log {
-    margin: 2 0 0 0;
+    color: $success;
     background-tint: black;
     height: 11;
     width: auto;
-    color: $success;
+    margin: 2 0 0 0;
   }
   /* several items are set by the theme vars in oled-deep-zen, they need to be
   overwritten to achieve the black loading screen */
