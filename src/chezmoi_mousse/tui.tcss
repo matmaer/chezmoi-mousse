@@ -2,10 +2,8 @@
   scrollbar-size-vertical: 1;
 }
 
-Footer {
-  .-command-palette {
-    border: none;
-  }
+Screen {
+  layers: loader sidebar content;
 }
 
 Header {
@@ -14,6 +12,12 @@ Header {
   HeaderIcon {
     /* don't use display: none; because then the title is not centered */
     visibility: hidden;
+  }
+}
+
+Footer {
+  .-command-palette {
+    border: none;
   }
 }
 
@@ -28,50 +32,34 @@ Pretty {
   padding-left: 1;
 }
 
-DataTable, DirectoryTree, RichLog {
+DataTable, DirectoryTree, RichLog, Slidebar {
   background-tint: $background;
 }
 
 DataTable {
   overflow-x: hidden;
-  padding: 1 1 1 0;
-  text-style: none;
+  padding: 1 0 1 0;
   &:focus {
     & > .datatable--cursor {
-      color: $foreground 90%;
-      background: $primary 40%;
+      background: $primary 45%;
     }
     & > .datatable--fixed-cursor {
-      color: $foreground;
-      background: $primary 40%;
+      background: $primary 45%;
     }
   }
   & > .datatable--header {
-    color: $foreground 80%;
+    color: $foreground;
     background: $background;
-    background-tint: $background;
-    text-style: bold;
+    text-style: bold underline;
   }
   & > .datatable--header-hover {
-    color: $foreground 80%;
-    background: $primary 50%;
-  }
-  & > .datatable--fixed {
-    color: $foreground 70%;
-    background: $background;
-  }
-  & > .datatable--fixed-cursor {
-    color: $foreground 70%;
+    color: $foreground;
     background: $background;
   }
 }
 
 #loader-screen {
   background: black;
-  & #animated-log {
-    height: auto;
-    width: auto;
-  }
   & #loader-log {
     color: $success;
     background-tint: black;
@@ -79,8 +67,6 @@ DataTable {
     width: auto;
     margin: 2 0 0 0;
   }
-  /* several items are set by the theme vars in oled-deep-zen, they need to be
-  overwritten to achieve the black loading screen */
   #loader-header {
     background: black;
   }
@@ -95,9 +81,6 @@ DataTable {
   }
 }
 
-Screen {
-  layers: sidebar;
-}
 
 SlideBar {
   background: $background;
@@ -120,19 +103,10 @@ SlideBar {
   border-top: round $panel;
   border-bottom: round $panel;
 
-
   /* Enable animation */
   transition: offset 380ms;
   &.-visible {
       /* offset.x: 0; make visible when class is applied */
       offset-x: -1;
-  }
-  # & > Vertical {
-  #     margin: 0 1 0 1;
-  #     background: $background;
-  #     background-tint: $background;
-  # }
-  &:focus {
-      background-tint: $background;
   }
 }
