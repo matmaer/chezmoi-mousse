@@ -66,6 +66,6 @@ class LoadingScreen(Screen):
         for long_cmd in chezmoi.long_commands:
             self._run(Utils.get_args_id(long_cmd))
 
+    # Any key will dismiss the screen
     def on_key(self) -> None:
-        self.dismiss(chezmoi)
-        # self.query_one(RichLog).write(event)
+        self.screen.dismiss()
