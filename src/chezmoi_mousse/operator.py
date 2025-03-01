@@ -50,6 +50,9 @@ class ChezmoiDoctor(Static):
         main_table = self.query_one("#main_table")
         second_table = self.query_one("#second_table")
 
+        # if chezmoi.doctor.std_out == "":
+        #     chezmoi.doctor.update()
+
         cm_dr_output = chezmoi.doctor.list_out
         header_row = cm_dr_output.pop(0).split()
 
@@ -143,7 +146,7 @@ class ManagedFiles(DirectoryTree):
     def __init__(self):
         super().__init__("/home/mm")
         self.managed = [
-            Path(entry) for entry in chezmoi.managed.list_out
+            Path(entry) for entry in chezmoi.managed.stdout.splitlines()
         ]
 
     def filter_paths(self, paths):
