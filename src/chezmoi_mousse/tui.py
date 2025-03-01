@@ -5,7 +5,7 @@ from textual.widgets import Footer, Header, Pretty, Static, TabbedContent
 
 from chezmoi_mousse.loader import LoadingScreen
 from chezmoi_mousse.commands import chezmoi
-from chezmoi_mousse.operator import ChezmoiDoctor
+from chezmoi_mousse.operator import ChezmoiDoctor, ChezmoiStatus, ManagedFiles
 from chezmoi_mousse.splash import FLOW_DIAGRAM
 
 
@@ -57,8 +57,8 @@ class ChezmoiTUI(App):
             "Diagram",
             "Doctor",
             "Dump-Config",
-            # "Chezmoi-Status",
-            # "Managed-Files",
+            "Chezmoi-Status",
+            "Managed-Files",
             "Template-Data",
             "Cat-Config",
             "Git-Log",
@@ -70,16 +70,14 @@ class ChezmoiTUI(App):
             yield Static(FLOW_DIAGRAM, id="diagram")
             yield ChezmoiDoctor()
             yield Pretty(chezmoi.dump_config.dict_out)
-            # yield ChezmoiStatus()
-            # yield ManagedFiles()
+            yield ChezmoiStatus()
+            yield ManagedFiles()
             yield Pretty(chezmoi.data.dict_out)
             yield Pretty(chezmoi.cat_config.std_out)
             yield Pretty(chezmoi.git_log.list_out)
             yield Pretty(chezmoi.ignored.list_out)
             yield Pretty(chezmoi.status.list_out)
-
-            # pylint: disable=no-member
-            yield Pretty(chezmoi.unmanaged.update())
+            yield Pretty(chezmoi.unmanaged.list_out)
 
         yield Footer()
 
