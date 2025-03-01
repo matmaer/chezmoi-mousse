@@ -1,35 +1,16 @@
 from pathlib import Path
 
 from textual.app import ComposeResult
-from textual.widget import Widget
 
 from textual.widgets import (
     DataTable,
     DirectoryTree,
     Label,
-    RichLog,
     Static,
 )
 
 from chezmoi_mousse.commands import chezmoi
 
-#pylint: disable=no-member
-
-
-class SlideBar(Widget):
-
-    def __init__(self, highlight: bool = False):
-        super().__init__()
-        self.animate = True
-        self.auto_scroll = True
-        self.highlight = highlight
-        self.id = "slidebar"
-        self.markup = True
-        self.max_lines = 160  # (80×3÷2)×((16−4)÷9)
-        self.wrap = True
-
-    def compose(self) -> ComposeResult:
-        yield RichLog(id="slidebar-log")
 
 class ChezmoiDoctor(Static):
 
@@ -46,12 +27,14 @@ class ChezmoiDoctor(Static):
             cursor_type="row",
         )
 
+    # pylint: disable = no-member
     def on_mount(self) -> None:
+        if chezmoi.doctor.std_out == "":
+            chezmoi.doctor.update()
+
         main_table = self.query_one("#main_table")
         second_table = self.query_one("#second_table")
 
-        # if chezmoi.doctor.std_out == "":
-        #     chezmoi.doctor.update()
 
         cm_dr_output = chezmoi.doctor.list_out
         header_row = cm_dr_output.pop(0).split()
@@ -80,7 +63,7 @@ class ChezmoiStatus(Static):
     # Chezmoi status command output reference:
     # https://www.chezmoi.io/reference/commands/status/
 
-    status_meaning = {
+    status_table = {
         " ": {
             "Status": "No change",
             "Re_Add_Change": "No change",
@@ -119,7 +102,11 @@ class ChezmoiStatus(Static):
         yield Label("Chezmoi Re-Add Status")
         yield DataTable(id="re_add_table")
 
+    # pylint: disable = no-member
     def on_mount(self):
+        if chezmoi.status.std_out == "":
+            chezmoi.status.update()
+
         re_add_table = self.query_one("#re_add_table")
         apply_table = self.query_one("#apply_table")
 
@@ -128,14 +115,14 @@ class ChezmoiStatus(Static):
         re_add_table.add_columns(*header_row)
         apply_table.add_columns(*header_row)
 
-        for line in chezmoi.status.std_out.splitlines():
+        for line in chezmoi.status.list_out:
             path = line[3:]
 
-            apply_status = self.status_meaning[line[0]]["Status"]
-            apply_change = self.status_meaning[line[0]]["Apply_Change"]
+            apply_status = self.status_table[line[0]]["Status"]
+            apply_change = self.status_table[line[0]]["Apply_Change"]
 
-            re_add_status = self.status_meaning[line[1]]["Status"]
-            re_add_change = self.status_meaning[line[1]]["Re_Add_Change"]
+            re_add_status = self.status_table[line[1]]["Status"]
+            re_add_change = self.status_table[line[1]]["Re_Add_Change"]
 
             apply_table.add_row(*[apply_status, path, apply_change])
             re_add_table.add_row(*[re_add_status, path, re_add_change])
@@ -145,27 +132,10 @@ class ManagedFiles(DirectoryTree):
 
     def __init__(self):
         super().__init__("/home/mm")
-        self.managed = [
-            Path(entry) for entry in chezmoi.managed.stdout.splitlines()
-        ]
+        # pylint: disable = no-member
+        if chezmoi.managed.std_out == "":
+            chezmoi.managed.update()
+        self.managed = [Path(p) for p in chezmoi.managed.std_out.splitlines()]
 
     def filter_paths(self, paths):
         return [path for path in paths if path in self.managed]
-
-
-
-    # def on_mount(self) -> None:
-    #     self.title = "- o p e r a t e -"
-
-
-    #     self.log_to_slidebar("Welcome to chezmoi-mousse!")
-
-    # def log_to_slidebar(self, message: str) -> None:
-    #     self.query_one("#slidebar-log").write(message)
-
-    # def action_toggle_sidebar(self) -> None:
-    #     self.show_sidebar = not self.show_sidebar
-
-    # def watch_show_sidebar(self, show_sidebar: bool) -> None:
-    #     # Toggle "visible" class when "show_sidebar" reactive changes.
-    #     self.query_one("#slidebar").set_class(show_sidebar, "-visible")
