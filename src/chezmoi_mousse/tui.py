@@ -17,7 +17,7 @@ from textual.widgets import (
 )
 
 from chezmoi_mousse import chezmoi
-from chezmoi_mousse.splash import FLOW_DIAGRAM, SPLASH, oled_dark_zen
+from chezmoi_mousse.common import FLOW_DIAGRAM, SPLASH, oled_dark_zen
 
 
 class AnimatedFade(Widget):
