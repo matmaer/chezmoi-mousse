@@ -1,3 +1,5 @@
+from textual.theme import Theme
+
 SPLASH_7BIT = """\
  _______ _______ _______ _______ ____ ____ _______ _o_
 |       |   |   |    ___|___    |    `    |       |   |
@@ -77,3 +79,30 @@ FLOW_DIAGRAM = """\
 │ destination  │    │   staging    │    │   git repo   │    │  git remote  │
 └──────────────┘    └──────────────┘    └──────────────┘    └──────────────┘
 """
+
+BACKGROUND = "rgb(12, 14, 18)"
+
+oled_dark_zen = Theme(
+    name="oled-dark-zen",
+    dark=True,
+    luminosity_spread=0.9,
+    text_alpha=0.9,
+    accent="rgb(241, 135, 251)",
+    background=BACKGROUND,
+    error="rgb(203, 68, 31)",
+    foreground="rgb(234, 232, 227)",
+    panel="rgb(98, 118, 147)",
+    primary="rgb(67, 156, 251)",
+    secondary="rgb(37, 146, 137)",
+    success="rgb(63, 170, 77)",
+    surface="rgb(24, 28, 34)",
+    warning="rgb(224, 195, 30)",
+    variables={
+        "footer-background": BACKGROUND,
+        "footer-description-background": BACKGROUND,
+        "footer-item-background": BACKGROUND,
+        "footer-key-background": BACKGROUND,
+        "link-background": BACKGROUND,
+        "scrollbar-corner-color": BACKGROUND,
+    },
+)
