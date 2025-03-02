@@ -50,7 +50,9 @@ class InputOutput(Utils):
     long_command: list[str]
     arg_id: str
     std_out: str = ""
-    py_out: str | list | dict = field(init=False, default="no output available")
+    py_out: str | list | dict = field(
+        init=False, default="no output available"
+    )
     label: str = field(init=False, default="no label available")
 
     def update(self) -> str | list | dict:
