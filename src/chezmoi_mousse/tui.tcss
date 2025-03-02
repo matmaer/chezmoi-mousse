@@ -3,7 +3,7 @@
 }
 
 Screen {
-  layers: loader sidebar content;
+  layers: slidebar loader;
 }
 
 Header {

@@ -3,10 +3,13 @@ from pathlib import Path
 from textual.app import ComposeResult
 from textual.widgets import DataTable, DirectoryTree, Label, Static
 
-from chezmoi_mousse.commands import chezmoi
 
 
 class ChezmoiDoctor(Static):
+
+    def __init__(self, doctor_py_out: list):
+        super().__init__()
+        self.doctor_py_out = doctor_py_out
 
     def compose(self) -> ComposeResult:
         yield DataTable(
@@ -23,19 +26,16 @@ class ChezmoiDoctor(Static):
 
     # pylint: disable = no-member
     def on_mount(self) -> None:
-        if chezmoi.doctor.std_out == "":
-            chezmoi.doctor.update()
 
         main_table = self.query_one("#main_table")
         second_table = self.query_one("#second_table")
 
-        cm_dr_output = chezmoi.doctor.py_out
-        header_row = cm_dr_output.pop(0).split()
+        header_row = self.doctor_py_out.pop(0).split()
 
         main_table.add_columns(*header_row)
         second_table.add_columns(*header_row)
 
-        for row in [row.split(maxsplit=2) for row in cm_dr_output]:
+        for row in [row.split(maxsplit=2) for row in self.doctor_py_out]:
             if row[0] == "info" and "not found in $PATH" in row[2]:
                 second_table.add_row(*row)
             else:
@@ -84,7 +84,9 @@ class ChezmoiStatus(Static):
         },
     }
 
-    status_output = []
+    def __init__(self, status_py_out: list):
+        super().__init__()
+        self.status_py_out = status_py_out
 
     def compose(self) -> ComposeResult:
         yield Label("Chezmoi Apply Status")
@@ -94,8 +96,6 @@ class ChezmoiStatus(Static):
 
     # pylint: disable = no-member
     def on_mount(self):
-        if chezmoi.status.std_out == "":
-            chezmoi.status.update()
 
         re_add_table = self.query_one("#re_add_table")
         apply_table = self.query_one("#apply_table")
@@ -105,7 +105,7 @@ class ChezmoiStatus(Static):
         re_add_table.add_columns(*header_row)
         apply_table.add_columns(*header_row)
 
-        for line in chezmoi.status.py_out:
+        for line in self.status_py_out:
             path = line[3:]
 
             apply_status = self.status_table[line[0]]["Status"]
@@ -120,12 +120,9 @@ class ChezmoiStatus(Static):
 
 class ManagedFiles(DirectoryTree):
 
-    def __init__(self):
+    def __init__(self, managed_files: list):
         super().__init__("/home/mm")
-        # pylint: disable = no-member
-        if chezmoi.managed.std_out == "":
-            chezmoi.managed.update()
-        self.managed = [Path(p) for p in chezmoi.managed.std_out.splitlines()]
+        self.managed_paths = [Path(p) for p in managed_files]
 
     def filter_paths(self, paths):
-        return [path for path in paths if path in self.managed]
+        return [path for path in paths if path in self.managed_paths]
