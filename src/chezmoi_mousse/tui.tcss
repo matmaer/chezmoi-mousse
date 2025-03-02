@@ -3,7 +3,7 @@
 }
 
 Screen {
-  layers: slidebar loader;
+  layers: slidebar;
 }
 
 Header {
@@ -59,7 +59,6 @@ DataTable {
 }
 
 LoadingScreen {
-  layer: loader;
   background: black;
   & #loader-log {
     color: $success;
