@@ -182,4 +182,4 @@ class ChezmoiTUI(App):
         self.title = "-  c h e z m o i  m o u s s e  -"
         self.register_theme(oled_dark_zen)
         self.theme = "oled-dark-zen"
-        self.push_screen(LoadingScreen())
+        self.push_screen("loading")
