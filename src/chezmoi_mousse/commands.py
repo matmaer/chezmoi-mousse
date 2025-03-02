@@ -1,7 +1,7 @@
 import json
 import subprocess
 import tomllib
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 class Utils:
@@ -46,56 +46,19 @@ class Utils:
 
 
 @dataclass
-class InputOutput:
-    long_cmd: list[str]
+class InputOutput(Utils):
+    long_command: list[str]
     arg_id: str
     std_out: str = ""
-    py_out: str | list | dict | None = None
-    label: str = "Will contain the label after initialization."
+    py_out: str | list | dict = field(init=False, default="no output available")
+    label: str = field(init=False, default="no label available")
 
     def update(self) -> str | list | dict:
-        self.std_out = Utils.subprocess_run(self.long_cmd)
-        self.py_out = Utils.parse_std_out(self.std_out)
+        self.std_out = self.subprocess_run(self.long_command)
+        self.py_out = self.parse_std_out(self.std_out)
         return self.py_out
 
     def __post_init__(self):
         self.label = " ".join(
-            [w for w in self.long_cmd if not w.startswith("-")]
+            [w for w in self.long_command if not w.startswith("-")]
         )
-
-
-class Chezmoi(Utils):
-
-    name = "chezmoi"
-    base = [name] + [
-        "--no-pager",
-        "--color=false",
-        "--no-tty",
-        "--progress=false",
-    ]
-    subs = [
-        ["cat-config"],
-        ["data", "--format=json"],
-        ["doctor"],
-        ["dump-config", "--format=json"],
-        ["git", "log", "--", "--oneline"],
-        ["git", "status"],
-        ["ignored"],
-        ["managed", "--path-style=absolute"],
-        ["status", "--parent-dirs"],
-        ["unmanaged", "--path-style=absolute"],
-    ]
-
-    @property
-    def long_commands(self):
-        return [self.base + sub for sub in self.subs]
-
-    def __init__(self):
-        self.all_arg_ids = []
-        for long_cmd in self.long_commands:
-            arg_id = Utils.get_arg_id(long_cmd)
-            setattr(self, arg_id, InputOutput(long_cmd, arg_id))
-            self.all_arg_ids.append(arg_id)
-
-
-chezmoi = Chezmoi()
