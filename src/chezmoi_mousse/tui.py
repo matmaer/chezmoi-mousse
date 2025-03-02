@@ -17,7 +17,6 @@ from textual.widgets import (
 )
 
 from chezmoi_mousse import chezmoi
-from chezmoi_mousse.commands import Utils
 from chezmoi_mousse.splash import FLOW_DIAGRAM, SPLASH, oled_dark_zen
 
 
@@ -64,18 +63,16 @@ class LoadingScreen(Screen):
             )
 
     @work(thread=True)
-    def _run(self, command_dataclass, line: str) -> None:
-        command_dataclass.update()
+    def _run(self, arg_id, line: str) -> None:
+        getattr(chezmoi, arg_id).update()
         self.query_one("#loader-log").write(line)
 
     def on_mount(self) -> None:
 
-        for long_cmd in chezmoi.all_long_commands:  # pylint: disable=no-member
-            arg_id = Utils.get_arg_id(long_cmd)
-            command_dataclass = getattr(chezmoi, arg_id)
-            padding = 32 - len(command_dataclass.label)
-            line = f"{command_dataclass.label} {'.' * padding} loaded"
-            self._run(command_dataclass, line)
+        for arg_id, items in chezmoi.cmd_ids.items():
+            padding = 32 - len(items["label"])
+            line = f"{items["label"]} {'.' * padding} loaded"
+            self._run(arg_id, line)
 
     def on_key(self) -> None:
         self.app.pop_screen()
