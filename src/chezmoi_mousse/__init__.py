@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 
-from chezmoi_mousse.commands import Utils
+from chezmoi_mousse.common import Utils
 
 @dataclass
 class InputOutput:
