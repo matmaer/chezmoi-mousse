@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from chezmoi_mousse.commands import Utils
 
 @dataclass
-class InputOutput(Utils):
+class InputOutput:
     long_command: list[str]
     arg_id: str
     std_out: str = ""
@@ -13,8 +13,8 @@ class InputOutput(Utils):
     label: str = field(init=False, default="no label available")
 
     def update(self) -> str | list | dict:
-        self.std_out = self.subprocess_run(self.long_command)
-        self.py_out = self.parse_std_out(self.std_out)
+        self.std_out = Utils.subprocess_run(self.long_command)
+        self.py_out = Utils.parse_std_out(self.std_out)
         return self.py_out
 
     def __post_init__(self):
@@ -23,7 +23,7 @@ class InputOutput(Utils):
         )
 
 
-class Chezmoi(Utils):
+class Chezmoi:
 
     name = "chezmoi"
     base = [name] + [
@@ -45,13 +45,14 @@ class Chezmoi(Utils):
         ["unmanaged", "--path-style=absolute"],
     ]
 
-    @property
-    def all_long_commands(self):
-        return [self.base + sub for sub in self.subs]
-
     def __init__(self):
-        for long_cmd in self.all_long_commands:
+
+        self.cmd_ids = {}  # should be dict with arg_id with sub dict of long_cmd and label
+
+        for long_cmd in  [self.base + sub for sub in self.subs]:
             arg_id = Utils.get_arg_id(long_command=long_cmd)
+            label = Utils.get_label(long_command=long_cmd)
+            self.cmd_ids[arg_id] = {"long_cmd": long_cmd, "label": label}
             setattr(self, arg_id, InputOutput(long_cmd, arg_id))
 
 

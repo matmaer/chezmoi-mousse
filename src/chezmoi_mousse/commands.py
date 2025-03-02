@@ -6,6 +6,10 @@ import tomllib
 class Utils:
 
     @staticmethod
+    def get_label(long_command: list[str]) -> str:
+        return " ".join([w for w in long_command if not w.startswith("-")])
+
+    @staticmethod
     def get_arg_id(long_command: list[str]) -> str:
         all_args = long_command[1:]
         verbs = [w for w in all_args if not w.startswith("-")]
