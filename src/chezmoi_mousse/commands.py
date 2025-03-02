@@ -1,7 +1,6 @@
 import json
 import subprocess
 import tomllib
-from dataclasses import dataclass, field
 
 
 class Utils:
@@ -43,24 +42,3 @@ class Utils:
             timeout=2,
         )
         return result.stdout
-
-
-@dataclass
-class InputOutput(Utils):
-    long_command: list[str]
-    arg_id: str
-    std_out: str = ""
-    py_out: str | list | dict = field(
-        init=False, default="no output available"
-    )
-    label: str = field(init=False, default="no label available")
-
-    def update(self) -> str | list | dict:
-        self.std_out = self.subprocess_run(self.long_command)
-        self.py_out = self.parse_std_out(self.std_out)
-        return self.py_out
-
-    def __post_init__(self):
-        self.label = " ".join(
-            [w for w in self.long_command if not w.startswith("-")]
-        )
