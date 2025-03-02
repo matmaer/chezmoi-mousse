@@ -2,16 +2,20 @@ from collections import deque
 
 from textual import work
 from textual.app import App, ComposeResult
-from textual.widgets import Footer, Header, Pretty, RichLog, Static, TabbedContent
-
 from textual.color import Color, Gradient
 from textual.containers import Center, Middle
 from textual.widget import Segment, Strip, Style, Widget
+from textual.widgets import (
+    Footer,
+    Header,
+    Pretty,
+    RichLog,
+    Static,
+    TabbedContent,
+)
 
-from chezmoi_mousse.commands import Utils, InputOutput
+from chezmoi_mousse.commands import InputOutput, Utils
 from chezmoi_mousse.splash import FLOW_DIAGRAM, SPLASH, oled_dark_zen
-
-
 
 
 class Chezmoi(Utils):
@@ -44,6 +48,7 @@ class Chezmoi(Utils):
         for long_cmd in self.all_long_commands:
             arg_id = Utils.get_arg_id(long_command=long_cmd)
             setattr(self, arg_id, InputOutput)
+
 
 chezmoi = Chezmoi()
 
@@ -99,7 +104,7 @@ class LoadingScreen(Widget):
 
     def on_mount(self) -> None:
         # self.title = "-  c h e z m o i  m o u s s e  -"
-        for long_cmd in chezmoi.long_commands: # pylint: disable=no-member
+        for long_cmd in chezmoi.long_commands:  # pylint: disable=no-member
             arg_id = Utils.get_arg_id(long_cmd)
             setattr(chezmoi, arg_id, InputOutput(long_cmd, arg_id))
             label = getattr(chezmoi, arg_id).label

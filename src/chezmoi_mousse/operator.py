@@ -4,7 +4,6 @@ from textual.app import ComposeResult
 from textual.widgets import DataTable, DirectoryTree, Label, Static
 
 
-
 class ChezmoiDoctor(Static):
 
     def __init__(self, doctor_py_out: list):
