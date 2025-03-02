@@ -86,9 +86,6 @@ class AnimatedFade(Widget):
 
 class LoadingScreen(Widget):
 
-    def __init__(self):
-        super().__init__(id="loader-screen")
-
     def compose(self) -> ComposeResult:
         yield Header(id="loader-header")
         with Middle():

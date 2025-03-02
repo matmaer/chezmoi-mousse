@@ -58,7 +58,8 @@ DataTable {
   }
 }
 
-#loader-screen {
+LoadingScreen {
+  layer: loader;
   background: black;
   & #loader-log {
     color: $success;
@@ -82,6 +83,7 @@ DataTable {
 }
 
 SlideBar {
+  layer: slidebar;
   background: $background;
   background-tint: $background;
   margin-top: 4;
