@@ -10,6 +10,7 @@ from urllib.request import Request, urlopen
 from rich.text import Text
 
 from textual import work
+
 # from textual.app import ComposeResult
 from textual.containers import VerticalScroll
 from textual.widgets import Input, Static
@@ -17,12 +18,9 @@ from textual.worker import Worker, get_current_worker
 from textual.screen import Screen
 
 
-
-
-
 class WeatherApp(Screen):
 
-    def compose(self): # -> ComposeResult:
+    def compose(self):  # -> ComposeResult:
         yield Input(placeholder="Enter a City")
         with VerticalScroll(id="weather-container"):
             yield Static(id="weather")
@@ -44,24 +42,23 @@ class WeatherApp(Screen):
         response_text = urlopen(request).read().decode("utf-8")
         weather = Text.from_ansi(response_text)
 
-
-
         if not worker.is_cancelled:
             # update is a method from the `static` class in the _static.py
             # module. It is called with the text from the api response.
-            self.app.call_from_thread(weather_widget.update, weather) # The
-# `self.app` attribute is available in the `update_weather` method of the
-# `WeatherApp` class, because it inherits `self` from `Screen`.
+            self.app.call_from_thread(weather_widget.update, weather)  # The
 
-# `Screen` instances have an `app` attribute that references the textual
-# application instance they belong to.
+    # `self.app` attribute is available in the `update_weather` method of the
+    # `WeatherApp` class, because it inherits `self` from `Screen`.
 
-# In my case the application instance is created by calling `ChezmoiTUI` which
-# is a subclass of`App` from the `textual.app` module.
-# When running `__main__.py`, like `python -m chezmoi_mousse` runs it if the
-# pwd is the `src` directory, then `App` is instantiated because
-# `ChezmoiTUI()` is called, the instance self.app is created
-# AND then `run()`is called.
+    # `Screen` instances have an `app` attribute that references the textual
+    # application instance they belong to.
+
+    # In my case the application instance is created by calling `ChezmoiTUI` which
+    # is a subclass of`App` from the `textual.app` module.
+    # When running `__main__.py`, like `python -m chezmoi_mousse` runs it if the
+    # pwd is the `src` directory, then `App` is instantiated because
+    # `ChezmoiTUI()` is called, the instance self.app is created
+    # AND then `run()`is called.
 
     def on_worker_state_changed(self, event: Worker.StateChanged) -> None:
         """Called when the worker state changes."""
