@@ -10,14 +10,17 @@ from textual.widgets import (
     Button,
     Footer,
     Header,
-    Pretty,
+    # Pretty,
     RichLog,
     Static,
     TabbedContent,
 )
 
-from chezmoi_mousse import chezmoi
+from chezmoi_mousse import Chezmoi
 from chezmoi_mousse.common import FLOW_DIAGRAM, SPLASH, oled_dark_zen
+
+
+chezmoi = Chezmoi()
 
 
 class AnimatedFade(Widget):
@@ -63,16 +66,16 @@ class LoadingScreen(Screen):
             )
 
     @work(thread=True)
-    def _run(self, arg_id, line: str) -> None:
+    def _run(self, arg_id) -> None:
         getattr(chezmoi, arg_id).update()
+        label = getattr(chezmoi, arg_id).label
+        padding = 32 - len(label)
+        line = f"{label} {'.' * padding} loaded"
         self.query_one("#loader-log").write(line)
 
     def on_mount(self) -> None:
-
-        for arg_id, items in chezmoi.cmd_ids.items():
-            padding = 32 - len(items["label"])
-            line = f"{items["label"]} {'.' * padding} loaded"
-            self._run(arg_id, line)
+        for arg_id in chezmoi.arg_ids:
+            self._run(arg_id)
 
     def on_key(self) -> None:
         self.app.pop_screen()
@@ -85,7 +88,6 @@ class ChezmoiTUI(App):
     SCREENS = {
         "loading": LoadingScreen,
     }
-
 
     def compose(self) -> ComposeResult:
         yield Header()
@@ -102,10 +104,9 @@ class ChezmoiTUI(App):
             # "Git-Status",
             # "Unmanaged",
         ):
-            # pylint: disable=no-member
             yield Static(FLOW_DIAGRAM, id="diagram")
             # yield ChezmoiDoctor(chezmoi.doctor.py_out)
-            yield Pretty(chezmoi.dump_config.py_out)
+            yield Static(chezmoi.dump_config.py_out)
             # yield ChezmoiStatus(chezmoi.status.py_out)
             # yield ManagedFiles(chezmoi.managed.py_out)
             # yield Pretty(chezmoi.data.py_out)
