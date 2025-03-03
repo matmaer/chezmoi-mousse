@@ -8,5 +8,4 @@ from chezmoi_mousse.tui import ChezmoiTUI
 
 if __name__ == "__main__":
     app = ChezmoiTUI()
-    setattr(app, "MEGATEST", "mega mega test line")
     app.run()

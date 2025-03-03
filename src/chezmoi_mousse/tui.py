@@ -172,7 +172,7 @@ class LoadingScreen(Screen):
             yield Center(
                 Button(
                     id="to-continue",
-                    label="Press any key to continue",
+                    label=f"{self.app.MEGATEST}",
                     disabled=True,
                 )
             )
@@ -231,6 +231,9 @@ class ChezmoiTUI(App):
         yield Footer()
 
     def on_mount(self) -> None:
+
+        setattr(self.app, "MEGATEST", "mega mega test line")
+
         self.title = "-  c h e z m o i  m o u s s e  -"
         self.register_theme(oled_dark_zen)
         self.theme = "oled-dark-zen"
