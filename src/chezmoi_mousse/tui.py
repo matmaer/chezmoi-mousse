@@ -49,7 +49,9 @@ class InputOutput:
 
     @property
     def label(self):
-        return " ".join([w for w in self.long_command if not w.startswith("-")])
+        return " ".join(
+            [w for w in self.long_command if not w.startswith("-")]
+        )
 
     def _subprocess_run(self):
         """Runs the subprocess call and sets std_out."""
@@ -125,6 +127,7 @@ class Chezmoi:
         getattr(self, arg_id).update()
         return getattr(self, arg_id)
 
+
 chezmoi = Chezmoi()
 
 
@@ -167,7 +170,11 @@ class LoadingScreen(Screen):
             yield Center(AnimatedFade())
             yield Center(RichLog(id="loader-log", max_lines=11))
             yield Center(
-                Button(id="to-continue", label="Press any key to continue")
+                Button(
+                    id="to-continue",
+                    label="Press any key to continue",
+                    disabled=True,
+                )
             )
 
     @work(thread=True)
