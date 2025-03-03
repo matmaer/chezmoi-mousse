@@ -8,7 +8,8 @@ import yaml
 from textual.app import App, ComposeResult
 from textual.widgets import (
     Footer,
-    Header, # Pretty,
+    Header,
+    Pretty,
     Static,
     TabbedContent,
 )
@@ -146,7 +147,7 @@ class ChezmoiTUI(App):
             # "Git-Log",
             # "Ignored",
             # "Git-Status",
-            # "Unmanaged",
+            "Unmanaged",
         ):
             yield Static(FLOW_DIAGRAM, id="diagram")
             # yield ChezmoiDoctor(self.app.chezmoi.doctor.py_out)
@@ -158,7 +159,7 @@ class ChezmoiTUI(App):
             # yield Pretty(self.app.chezmoi.git_log.py_out)
             # yield Pretty(self.app.chezmoi.ignored.py_out)
             # yield Pretty(self.app.chezmoi.status.py_out)
-            # yield Pretty(self.app.chezmoi.unmanaged.py_out)
+            yield Pretty(self.app.chezmoi.unmanaged.py_out)
 
         yield Footer()
 
