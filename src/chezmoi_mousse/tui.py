@@ -19,6 +19,7 @@ from textual.widgets import (
     Static,
     TabbedContent,
 )
+from textual.worker import Worker, get_current_worker
 
 from chezmoi_mousse.common import FLOW_DIAGRAM, SPLASH, oled_dark_zen
 
@@ -127,9 +128,6 @@ class Chezmoi:
         return getattr(self, arg_id)
 
 
-chezmoi = Chezmoi()
-
-
 class AnimatedFade(Widget):
 
     line_styles: deque[Style]
@@ -170,22 +168,28 @@ class LoadingScreen(Screen):
             yield Center(RichLog(id="loader-log", max_lines=11))
             yield Center(
                 Button(
-                    id="to-continue",
-                    label=f"{self.app.MEGATEST}",
+                    id="continue",
+                    label="press any key to continue",
                     disabled=True,
                 )
             )
 
-    @work(thread=True)
-    def run(self, arg_id) -> None:
-        getattr(chezmoi, arg_id).update()
-        label = getattr(chezmoi, arg_id).label
+    @work(exclusive=True, thread=True)
+    def run(self, arg_id) -> Worker:
+        getattr(self.app.chezmoi, arg_id).update()
+        label = getattr(self.app.chezmoi, arg_id).label
         padding = 32 - len(label)
         line = f"{label} {'.' * padding} loaded"
         self.query_one("#loader-log").write(line)
+        worker = get_current_worker()
+        return worker.is_finished
+
+    # def on_worker_state_changed(self, event: Worker.StateChanged) -> None:
+    #     """Called when the worker state changes."""
+    #     self.log(event)
 
     def on_mount(self) -> None:
-        for arg_id in chezmoi.arg_ids:
+        for arg_id in self.app.chezmoi.arg_ids:
             self.run(arg_id)
 
     def on_key(self) -> None:
@@ -199,6 +203,11 @@ class ChezmoiTUI(App):
     SCREENS = {
         "loading": LoadingScreen,
     }
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.chezmoi = Chezmoi()
+
 
     def compose(self) -> ComposeResult:
         yield Header()
@@ -216,22 +225,20 @@ class ChezmoiTUI(App):
             # "Unmanaged",
         ):
             yield Static(FLOW_DIAGRAM, id="diagram")
-            # yield ChezmoiDoctor(chezmoi.doctor.py_out)
-            yield Static(chezmoi.dump_config.py_out)
-            # yield ChezmoiStatus(chezmoi.status.py_out)
-            # yield ManagedFiles(chezmoi.managed.py_out)
-            # yield Pretty(chezmoi.data.py_out)
-            # yield Pretty(chezmoi.cat_config.py_out)
-            # yield Pretty(chezmoi.git_log.py_out)
-            # yield Pretty(chezmoi.ignored.py_out)
-            # yield Pretty(chezmoi.status.py_out)
-            # yield Pretty(chezmoi.unmanaged.py_out)
+            # yield ChezmoiDoctor(self.app.chezmoi.doctor.py_out)
+            yield Static(self.app.chezmoi.dump_config.py_out)
+            # yield ChezmoiStatus(self.app.chezmoi.status.py_out)
+            # yield ManagedFiles(self.app.chezmoi.managed.py_out)
+            # yield Pretty(self.app.chezmoi.data.py_out)
+            # yield Pretty(self.app.chezmoi.cat_config.py_out)
+            # yield Pretty(self.app.chezmoi.git_log.py_out)
+            # yield Pretty(self.app.chezmoi.ignored.py_out)
+            # yield Pretty(self.app.chezmoi.status.py_out)
+            # yield Pretty(self.app.chezmoi.unmanaged.py_out)
 
         yield Footer()
 
     def on_mount(self) -> None:
-
-        setattr(self.app, "MEGATEST", "mega mega test line")
 
         self.title = "-  c h e z m o i  m o u s s e  -"
         self.register_theme(oled_dark_zen)
