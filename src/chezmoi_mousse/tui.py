@@ -28,7 +28,7 @@ class InputOutput:
         failures = {}
         std_out = self.std_out.strip()
         if std_out == "":
-            return f"{std_out} is an empty string"
+            return "std_out is an empty string"
         try:
             return json.loads(std_out)
         except json.JSONDecodeError:
@@ -41,7 +41,6 @@ class InputOutput:
             return yaml.safe_load(std_out)
         except yaml.YAMLError:
             failures["yaml"] = "std_out yaml.YAMLError"
-        # TODO add try/except for yaml
         if std_out.count("\n") > 0:
             return std_out.splitlines()
         return std_out
