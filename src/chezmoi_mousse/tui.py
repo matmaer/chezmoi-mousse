@@ -43,7 +43,7 @@ class InputOutput:
         except tomllib.TOMLDecodeError:
             failures["toml"] = "std_out tomllib.TOMLDecodeError"
             # check how many "\n" newlines are found in the output
-        # add try/except for yaml
+        # TODO add try/except for yaml
         if std_out.count("\n") > 0:
             return std_out.splitlines()
         return std_out
