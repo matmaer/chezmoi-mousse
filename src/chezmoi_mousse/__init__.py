@@ -1,59 +1,107 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
+import json
+import subprocess
+import tomllib
 
-from chezmoi_mousse.common import Utils
 
 @dataclass
 class InputOutput:
     long_command: list[str]
-    arg_id: str
-    std_out: str = ""
-    py_out: str | list | dict = field(
-        init=False, default="initial py_out value"
-    )
-    label: str = field(init=False, default="no label available")
+    std_out: str = "initial std_out value"
 
-    def update(self) -> str | list | dict:
-        self.std_out = Utils.subprocess_run(self.long_command)
-        self.py_out = Utils.parse_std_out(self.std_out)
-        return self.py_out
+    @property
+    def py_out(self):
+        failures = {}
+        std_out = self.std_out.strip()
+        if std_out == "":
+            failures["std_out"] = "empty std_out nothing to decode"
+        try:
+            return json.loads(std_out)
+        except json.JSONDecodeError:
+            failures["json"] = "std_out json.JSONDecodeError"
+        try:
+            return tomllib.loads(std_out)
+        except tomllib.TOMLDecodeError:
+            failures["toml"] = "std_out tomllib.TOMLDecodeError"
+            # check how many "\n" newlines are found in the output
+        if std_out.count("\n") > 0:
+            return std_out.splitlines()
+        return std_out
 
-    def __post_init__(self):
-        self.label = " ".join(
-            [w for w in self.long_command if not w.startswith("-")]
+    @property
+    def label(self):
+        return " ".join([w for w in self.long_command if not w.startswith("-")])
+
+    def _subprocess_run(self):
+        """Runs the subprocess call and sets std_out."""
+        result = subprocess.run(
+            self.long_command,
+            capture_output=True,
+            check=True,  # raises exception for any non-zero return code
+            shell=False,  # mitigates shell injection risk
+            text=True,  # returns stdout as str instead of bytes
+            timeout=2,
         )
+        self.std_out = result.stdout
+
+    def update(self):
+        """Re-run the subprocess call, don't return anything."""
+        self._subprocess_run()
+
+    def updated_std_out(self):
+        """Re-run subprocess call and return std_out."""
+        self._subprocess_run()
+        return self.std_out
+
+    def updated_py_out(self):
+        """Re-run subprocess call and return py_out."""
+        self._subprocess_run()
+        return self.py_out
 
 
 class Chezmoi:
 
-    name = "chezmoi"
-    base = [name] + [
-        "--no-pager",
-        "--color=false",
-        "--no-tty",
-        "--progress=false",
-    ]
-    subs = [
-        ["cat-config"],
-        ["data", "--format=json"],
-        ["doctor"],
-        ["dump-config", "--format=json"],
-        ["git", "log", "--", "--oneline"],
-        ["git", "status"],
-        ["ignored"],
-        ["managed", "--path-style=absolute"],
-        ["status", "--parent-dirs"],
-        ["unmanaged", "--path-style=absolute"],
-    ]
+    cat_config: InputOutput = None
+    data: InputOutput = None
+    doctor: InputOutput = None
+    dump_config: InputOutput = None
+    git_log: InputOutput = None
+    git_status: InputOutput = None
+    ignored: InputOutput = None
+    managed: InputOutput = None
+    status: InputOutput = None
+    unmanaged: InputOutput = None
 
     def __init__(self):
+        self.base = [
+            "chezmoi",
+            "--no-pager",
+            "--color=false",
+            "--no-tty",
+            "--progress=false",
+        ]
+        self.subs = {
+            "cat_config": ["cat-config"],
+            "data": ["data", "--format=json"],
+            "doctor": ["doctor"],
+            "dump_config": ["dump-config", "--format=json"],
+            "git_log": ["git", "log", "--", "--oneline"],
+            "git_status": ["git", "status"],
+            "ignored": ["ignored"],
+            "managed": ["managed", "--path-style=absolute"],
+            "status": ["status", "--parent-dirs"],
+            "unmanaged": ["unmanaged", "--path-style=absolute"],
+        }
 
-        self.cmd_ids = {}  # should be dict with arg_id with sub dict of long_cmd and label
+        for arg_id, sub_cmd in self.subs.items():
+            setattr(self, arg_id, InputOutput(self.base + sub_cmd))
 
-        for long_cmd in  [self.base + sub for sub in self.subs]:
-            arg_id = Utils.get_arg_id(long_command=long_cmd)
-            label = Utils.get_label(long_command=long_cmd)
-            self.cmd_ids[arg_id] = {"long_cmd": long_cmd, "label": label}
-            setattr(self, arg_id, InputOutput(long_cmd, arg_id))
+    @property
+    def arg_ids(self):
+        """Return the list of arg_ids."""
+        return list(self.subs.keys())
 
-
-chezmoi = Chezmoi()
+    def updated_input_output(self, arg_id):
+        """Update and return the InputOutput instance in this Chezmoi class."""
+        getattr(self, arg_id).update()
+        return getattr(self, arg_id)
