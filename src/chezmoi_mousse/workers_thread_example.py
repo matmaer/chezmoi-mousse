@@ -39,6 +39,11 @@ class WeatherApp(Screen):
         # Query the network API
         request = Request(f"https://wttr.in/{quote(city)}")
         request.add_header("User-agent", "CURL")
+
+        # TODO: Is this equivalent considering the @work decorator?
+        # with urlopen(request) as response:
+        #     response_text = response.read().decode("utf-8")
+        #     weather = Text.from_ansi(response_text)
         response_text = urlopen(request).read().decode("utf-8")
         weather = Text.from_ansi(response_text)
 
