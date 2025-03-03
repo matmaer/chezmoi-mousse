@@ -8,14 +8,13 @@ from urllib.parse import quote
 from urllib.request import Request, urlopen
 
 from rich.text import Text
-
 from textual import work
 
 # from textual.app import ComposeResult
 from textual.containers import VerticalScroll
+from textual.screen import Screen
 from textual.widgets import Input, Static
 from textual.worker import Worker, get_current_worker
-from textual.screen import Screen
 
 
 class WeatherApp(Screen):

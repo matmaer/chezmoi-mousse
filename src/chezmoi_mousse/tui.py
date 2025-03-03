@@ -1,11 +1,10 @@
-
-from collections import deque
-from dataclasses import dataclass, field
 import json
 import subprocess
 import tomllib
-import yaml
+from collections import deque
+from dataclasses import dataclass, field
 
+import yaml
 from textual import work
 from textual.app import App, ComposeResult
 from textual.color import Color, Gradient
@@ -16,8 +15,7 @@ from textual.widgets import (
     Button,
     Footer,
     Header,
-    # Pretty,
-    RichLog,
+    RichLog,  # Pretty,
     Static,
     TabbedContent,
 )
@@ -49,7 +47,6 @@ class InputOutput:
             return yaml.safe_load(std_out)
         except yaml.YAMLError:
             failures["yaml"] = "std_out yaml.YAMLError"
-            # check how many "\n" newlines are found in the output
         # TODO add try/except for yaml
         if std_out.count("\n") > 0:
             return std_out.splitlines()
@@ -57,7 +54,9 @@ class InputOutput:
 
     @property
     def label(self):
-        return " ".join([w for w in self.long_command if not w.startswith("-")])
+        return " ".join(
+            [w for w in self.long_command if not w.startswith("-")]
+        )
 
     def _subprocess_run(self):
         """Runs the subprocess call and sets std_out."""
@@ -213,7 +212,6 @@ class ChezmoiTUI(App):
     def __init__(self) -> None:
         super().__init__()
         self.chezmoi = Chezmoi()
-
 
     def compose(self) -> ComposeResult:
         yield Header()
