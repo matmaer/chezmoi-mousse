@@ -1,6 +1,5 @@
 from textual.theme import Theme
 
-
 SPLASH_7BIT = """\
  _______ _______ _______ _______ ____ ____ _______ _o_
 |       |   |   |    ___|___    |    `    |       |   |
