@@ -178,7 +178,7 @@ class LoadingScreen(Screen):
             )
 
     @work(thread=True)
-    def _run(self, arg_id) -> None:
+    def run(self, arg_id) -> None:
         getattr(chezmoi, arg_id).update()
         label = getattr(chezmoi, arg_id).label
         padding = 32 - len(label)
@@ -187,7 +187,7 @@ class LoadingScreen(Screen):
 
     def on_mount(self) -> None:
         for arg_id in chezmoi.arg_ids:
-            self._run(arg_id)
+            self.run(arg_id)
 
     def on_key(self) -> None:
         self.app.pop_screen()
