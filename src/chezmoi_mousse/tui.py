@@ -33,7 +33,7 @@ class InputOutput:
         failures = {}
         std_out = self.std_out.strip()
         if std_out == "":
-            failures["std_out"] = "empty std_out nothing to decode"
+            return f"{std_out} is an empty string"
         try:
             return json.loads(std_out)
         except json.JSONDecodeError:
@@ -43,6 +43,7 @@ class InputOutput:
         except tomllib.TOMLDecodeError:
             failures["toml"] = "std_out tomllib.TOMLDecodeError"
             # check how many "\n" newlines are found in the output
+        # add try/except for yaml
         if std_out.count("\n") > 0:
             return std_out.splitlines()
         return std_out
