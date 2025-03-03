@@ -1,8 +1,10 @@
+
 from collections import deque
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import json
 import subprocess
 import tomllib
+import yaml
 
 from textual import work
 from textual.app import App, ComposeResult
@@ -26,7 +28,7 @@ from chezmoi_mousse.common import FLOW_DIAGRAM, SPLASH, oled_dark_zen
 
 @dataclass
 class InputOutput:
-    long_command: list[str]
+    long_command: list[str] = field(default_factory=list)
     std_out: str = "initial std_out value"
 
     @property
@@ -43,6 +45,10 @@ class InputOutput:
             return tomllib.loads(std_out)
         except tomllib.TOMLDecodeError:
             failures["toml"] = "std_out tomllib.TOMLDecodeError"
+        try:
+            return yaml.safe_load(std_out)
+        except yaml.YAMLError:
+            failures["yaml"] = "std_out yaml.YAMLError"
             # check how many "\n" newlines are found in the output
         # TODO add try/except for yaml
         if std_out.count("\n") > 0:
@@ -80,7 +86,7 @@ class InputOutput:
         return self.py_out
 
 
-class Chezmoi:
+class Chezmoi(InputOutput):
 
     cat_config: InputOutput = None
     data: InputOutput = None
@@ -183,9 +189,10 @@ class LoadingScreen(Screen):
         worker = get_current_worker()
         return worker.is_finished
 
-    # def on_worker_state_changed(self, event: Worker.StateChanged) -> None:
-    #     """Called when the worker state changes."""
-    #     self.log(event)
+    def on_worker_state_changed(self, event: Worker.StateChanged) -> None:
+        """Called when the worker state changes."""
+        if event.state == "finished":
+            self.query_one("#continue").disabled = False
 
     def on_mount(self) -> None:
         for arg_id in self.app.chezmoi.arg_ids:
