@@ -58,9 +58,10 @@ class WeatherApp(Screen):
 
 # In my case the application instance is created by calling `ChezmoiTUI` which
 # is a subclass of`App` from the `textual.app` module.
-# When running `__main__.py`, like `python -m chezmoi_mousse` runs  `__main__.py`
-# when pwd is the `src` directory, then `App` is instantiated because
-# `ChezmoiTUI()` is called, the instance is self.app AND then `run()` is called.
+# When running `__main__.py`, like `python -m chezmoi_mousse` runs it if the
+# pwd is the `src` directory, then `App` is instantiated because
+# `ChezmoiTUI()` is called, the instance self.app is created
+# AND then `run()`is called.
 
     def on_worker_state_changed(self, event: Worker.StateChanged) -> None:
         """Called when the worker state changes."""
