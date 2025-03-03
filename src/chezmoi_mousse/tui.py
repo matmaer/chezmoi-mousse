@@ -125,7 +125,6 @@ class Chezmoi:
     def updated_input_output(self, arg_id):
         """Update and return the InputOutput instance in this Chezmoi class."""
         getattr(self, arg_id).update()
-        return getattr(self, arg_id)
 
 
 class AnimatedFade(Widget):
@@ -174,7 +173,7 @@ class LoadingScreen(Screen):
                 )
             )
 
-    @work(exclusive=True, thread=True)
+    @work(thread=True)
     def run(self, arg_id) -> Worker:
         getattr(self.app.chezmoi, arg_id).update()
         label = getattr(self.app.chezmoi, arg_id).label
