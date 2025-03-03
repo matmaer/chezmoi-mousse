@@ -1,8 +1,8 @@
+from collections import deque
 from dataclasses import dataclass
 import json
 import subprocess
 import tomllib
-from collections import deque
 
 from textual import work
 from textual.app import App, ComposeResult
