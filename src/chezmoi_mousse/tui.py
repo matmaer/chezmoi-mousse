@@ -79,19 +79,7 @@ class InputOutput:
 
 
 class Chezmoi:
-
-    cat_config: InputOutput = None
-    data: InputOutput = None
-    doctor: InputOutput = None
-    dump_config: InputOutput = None
-    git_log: InputOutput = None
-    git_status: InputOutput = None
-    ignored: InputOutput = None
-    managed: InputOutput = None
-    status: InputOutput = None
-    unmanaged: InputOutput = None
-
-    def __init__(self):
+    def __init__(self) -> None:
         self.base = [
             "chezmoi",
             "--no-pager",
@@ -99,7 +87,7 @@ class Chezmoi:
             "--no-tty",
             "--progress=false",
         ]
-        self.subs = {
+        self.subs: dict[str, list[str]] = {
             "cat_config": ["cat-config"],
             "data": ["data", "--format=json"],
             "doctor": ["doctor"],
@@ -116,7 +104,7 @@ class Chezmoi:
             setattr(self, arg_id, InputOutput(self.base + sub_cmd))
 
     @property
-    def arg_ids(self):
+    def arg_ids(self) -> list[str]:
         """Return the list of arg_ids."""
         return list(self.subs.keys())
 
