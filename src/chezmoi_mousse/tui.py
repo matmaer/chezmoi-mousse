@@ -139,7 +139,6 @@ class AnimatedFade(Widget):
         super().__init__(id="animated-fade")
         self.styles.height = len(SPLASH)
         self.styles.width = len(max(SPLASH, key=len))
-        self.line_styles: deque[Style] = self.create_fade()
 
     def create_fade(self) -> deque[Style]:
         start_color = self.app.current_theme.primary
@@ -159,6 +158,7 @@ class AnimatedFade(Widget):
         return Strip([Segment(SPLASH[y], style=self.line_styles[y])])
 
     def on_mount(self) -> None:
+        self.line_styles = self.create_fade()
         self.set_interval(interval=0.11, callback=self.refresh)
 
 
