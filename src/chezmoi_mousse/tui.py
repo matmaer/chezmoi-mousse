@@ -137,6 +137,7 @@ class ChezmoiTUI(App):
     def compose(self) -> ComposeResult:
         yield Header()
         with TabbedContent(
+            "Unmanaged",
             "Diagram",
             # "Doctor",
             "Dump-Config",
@@ -147,8 +148,8 @@ class ChezmoiTUI(App):
             # "Git-Log",
             # "Ignored",
             # "Git-Status",
-            "Unmanaged",
         ):
+            yield Pretty(self.app.chezmoi.unmanaged.py_out)
             yield Static(FLOW_DIAGRAM, id="diagram")
             # yield ChezmoiDoctor(self.app.chezmoi.doctor.py_out)
             yield Static(self.app.chezmoi.dump_config.py_out)
@@ -159,7 +160,6 @@ class ChezmoiTUI(App):
             # yield Pretty(self.app.chezmoi.git_log.py_out)
             # yield Pretty(self.app.chezmoi.ignored.py_out)
             # yield Pretty(self.app.chezmoi.status.py_out)
-            yield Pretty(self.app.chezmoi.unmanaged.py_out)
 
         yield Footer()
 
