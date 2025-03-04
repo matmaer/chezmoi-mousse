@@ -93,7 +93,6 @@ class ChezmoiStatus(Static):
         yield Label("Chezmoi Re-Add Status")
         yield DataTable(id="re_add_table")
 
-    # pylint: disable = no-member
     def on_mount(self):
 
         re_add_table = self.query_one("#re_add_table")

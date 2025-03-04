@@ -11,10 +11,8 @@ from textual.widgets import (
     RichLog,  # Pretty, Static, TabbedContent,
 )
 
-# from textual.worker import Worker
 
-from chezmoi_mousse.common import SPLASH
-from chezmoi_mousse import chezmoi
+from chezmoi_mousse.common import SPLASH, chezmoi
 
 
 class AnimatedFade(Widget):
