@@ -92,9 +92,10 @@ class Chezmoi:
 
         for arg_id, sub_cmd in self.words.items():
             self.io[arg_id] = InputOutput(self.base + sub_cmd)
+            setattr(self, f"{arg_id}", self.io[arg_id])
             setattr(self, f"{arg_id}_py_out", self.io[arg_id].py_out)
             setattr(self, f"{arg_id}_std_out", self.io[arg_id].std_out)
-            setattr(self, f"run_{arg_id}", self.io[arg_id].updated_py_out)
+            setattr(self, f"{arg_id}_refresh", self.io[arg_id].updated_py_out)
 
     @property
     def arg_ids(self):

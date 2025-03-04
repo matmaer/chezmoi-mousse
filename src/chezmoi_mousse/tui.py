@@ -35,7 +35,7 @@ class ChezmoiTUI(App):
             # "Ignored",
             # "Git-Status",
         ):
-            yield Pretty(chezmoi.io["unmanaged"].updated_py_out)
+            yield Pretty(chezmoi.io["unmanaged"].updated_py_out())
             yield Static(FLOW_DIAGRAM, id="diagram")
             # yield ChezmoiDoctor(self.chezmoi.doctor.py_out)
             yield Static(chezmoi.io["dump_config"].py_out)
