@@ -1,5 +1,7 @@
 # from textual import work
 from textual.app import App, ComposeResult
+
+# from textual import work
 from textual.widgets import (
     Footer,
     Header,
@@ -27,8 +29,8 @@ class ChezmoiTUI(App):
             # "Chezmoi-Status",
             "Diagram",
             # "Dump-Config",
-            "Template-Data",
-            "Unmanaged",
+            # "Template-Data",
+            # "Unmanaged",
             # "Cat-Config",
             # "Doctor",
             "Git-Log",
@@ -39,8 +41,8 @@ class ChezmoiTUI(App):
             # yield Pretty(getattr(chezmoi, "status").long_command)
             yield Static(FLOW, id="diagram")
             # yield Static(getattr(chezmoi, "dump_config").long_command)
-            yield Pretty(chezmoi.data.py_out) # pylint: disable=no-member
-            yield Pretty(chezmoi.unmanaged.py_out) # pylint: disable=no-member
+            # yield Pretty(chezmoi.data.py_out) # pylint: disable=no-member
+            # yield Pretty(chezmoi.unmanaged.py_out) # pylint: disable=no-member
             # yield ChezmoiDoctor(getattr(chezmoi, "doctor"))
             # yield ChezmoiStatus(self.chezmoi.status.py_out)
             # yield ManagedFiles(getattr(chezmoi, "managed").long_command)
