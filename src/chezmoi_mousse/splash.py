@@ -1,11 +1,11 @@
-from collections import deque
+# from collections import deque
 
 from textual import work
 from textual.app import ComposeResult
-from textual.color import Color, Gradient
+# from textual.color import Color, Gradient
 from textual.containers import Center, Middle
 from textual.screen import Screen
-from textual.widget import Segment, Strip, Style, Widget
+# from textual.widget import Segment, Strip, Style, Widget
 from textual.widgets import (
     Button, # Footer,
     Header,
@@ -13,39 +13,39 @@ from textual.widgets import (
 )
 from textual.worker import Worker
 
-from chezmoi_mousse.common import SPLASH
+# from chezmoi_mousse.common import SPLASH
 from chezmoi_mousse import chezmoi
 
 
-class AnimatedFade(Widget):
+# class AnimatedFade(Widget):
 
-    line_styles: deque[Style]
+#     line_styles: deque[Style]
 
-    def __init__(self) -> None:
-        super().__init__(id="animated-fade")
-        self.styles.height = len(SPLASH)
-        self.styles.width = len(max(SPLASH, key=len))
+#     def __init__(self) -> None:
+#         super().__init__(id="animated-fade")
+#         self.styles.height = len(SPLASH)
+#         self.styles.width = len(max(SPLASH, key=len))
 
-    def create_fade(self) -> deque[Style]:
-        start_color = self.app.current_theme.primary
-        end_color = self.app.current_theme.accent
-        fade = [Color.parse(start_color)] * 5
-        gradient = Gradient.from_colors(start_color, end_color, quality=5)
-        fade.extend(gradient.colors)
-        gradient.colors.reverse()
-        fade.extend(gradient.colors)
-        return deque([Style(color=color.hex, bold=True) for color in fade])
+#     def create_fade(self) -> deque[Style]:
+#         start_color = self.app.current_theme.primary
+#         end_color = self.app.current_theme.accent
+#         fade = [Color.parse(start_color)] * 5
+#         gradient = Gradient.from_colors(start_color, end_color, quality=5)
+#         fade.extend(gradient.colors)
+#         gradient.colors.reverse()
+#         fade.extend(gradient.colors)
+#         return deque([Style(color=color.hex, bold=True) for color in fade])
 
-    def render_lines(self, crop) -> list[Strip]:
-        self.line_styles.rotate()
-        return super().render_lines(crop)
+#     def render_lines(self, crop) -> list[Strip]:
+#         self.line_styles.rotate()
+#         return super().render_lines(crop)
 
-    def render_line(self, y: int) -> Strip:
-        return Strip([Segment(SPLASH[y], style=self.line_styles[y])])
+#     def render_line(self, y: int) -> Strip:
+#         return Strip([Segment(SPLASH[y], style=self.line_styles[y])])
 
-    def on_mount(self) -> None:
-        self.line_styles = self.create_fade()
-        self.set_interval(interval=0.11, callback=self.refresh)
+#     def on_mount(self) -> None:
+#         self.line_styles = self.create_fade()
+#         self.set_interval(interval=0.11, callback=self.refresh)
 
 
 class LoadingScreen(Screen):
@@ -53,7 +53,7 @@ class LoadingScreen(Screen):
     def compose(self) -> ComposeResult:
         yield Header(id="loader-header")
         with Middle():
-            yield Center(AnimatedFade())
+            # yield Center(AnimatedFade())
             yield Center(RichLog(id="loader-log", max_lines=11))
             yield Center(
                 Button(
