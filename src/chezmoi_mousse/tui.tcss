@@ -72,7 +72,6 @@ LoadingScreen {
     border: none;
     color: $primary;
     text-style: none;
-
   }
 }
 
