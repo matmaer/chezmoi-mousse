@@ -116,3 +116,5 @@ class Chezmoi:
     @property
     def arg_ids(self):
         return list(self.words.keys())
+
+chezmoi = Chezmoi()
