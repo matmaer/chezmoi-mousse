@@ -9,7 +9,7 @@ import yaml
 @dataclass
 class InputOutput:
     long_command: list[str] = field(default_factory=list)
-    std_out: str = "initial std_out value"
+    std_out: str = "Initialize InputOutput std_out"
 
     @property
     def py_out(self):
@@ -116,5 +116,3 @@ class Chezmoi:
     @property
     def arg_ids(self):
         return list(self.words.keys())
-
-chezmoi = Chezmoi()
