@@ -11,9 +11,10 @@ from textual.widgets import (
     Header,
     RichLog,  # Pretty, Static, TabbedContent,
 )
-from textual.worker import Worker, get_current_worker
+from textual.worker import Worker
 
 from chezmoi_mousse.common import SPLASH
+from chezmoi_mousse import chezmoi
 
 
 class AnimatedFade(Widget):
@@ -64,23 +65,22 @@ class LoadingScreen(Screen):
 
     @work(thread=True)
     def run(self, arg_id) -> Worker:
-        getattr(self.app.chezmoi, arg_id).update()
-        label = getattr(self.app.chezmoi, arg_id).label
-        padding = 32 - len(label)
-        line = f"{label} {'.' * padding} loaded"
+        io = getattr(chezmoi, arg_id)
+        io.update()
+        padding = 32 - len(io.label)
+        line = f"{io.label} {'.' * padding} loaded"
         self.query_one("#loader-log").write(line)
-        worker = get_current_worker()
-        return worker.is_finished
+        # worker = get_current_worker()
+        # return worker.is_finished
 
     def on_worker_state_changed(self, event: Worker.StateChanged) -> None:
         """Called when the worker state changes."""
         if event.state == "finished":
             self.query_one("#continue").disabled = False
 
-    def on_mount(self) -> None:
-        for arg_id in self.app.chezmoi.arg_ids:
-            self.run(arg_id)
+    # def on_mount(self) -> None:
+    #     for arg_id in chezmoi.arg_ids:
+    #         self.run(arg_id)
 
     def on_key(self) -> None:
         self.app.pop_screen()
-
