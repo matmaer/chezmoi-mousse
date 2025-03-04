@@ -5,12 +5,10 @@ from textual.app import App, ComposeResult
 from textual.widgets import (
     Footer,
     Header,
-    Pretty,
     Static,
     TabbedContent,
 )
 
-from chezmoi_mousse import chezmoi
 from chezmoi_mousse.common import FLOW, oled_dark_zen
 from chezmoi_mousse.splash import LoadingScreen
 
@@ -33,7 +31,7 @@ class ChezmoiTUI(App):
             # "Unmanaged",
             # "Cat-Config",
             # "Doctor",
-            "Git-Log",
+            # "Git-Log",
             # "Git-Status",
             # "Ignored",
             # "Managed-Files",
@@ -48,7 +46,7 @@ class ChezmoiTUI(App):
             # yield ManagedFiles(getattr(chezmoi, "managed").long_command)
             # yield Pretty(chezmoi.io["cat_config"].py_out)
             # yield Pretty(chezmoi.io["ignored"].long_command)
-            yield Pretty(chezmoi.git_log.py_out) # pylint: disable=no-member
+            # yield Pretty(chezmoi.git_log.py_out) # pylint: disable=no-member
 
         yield Footer()
 
