@@ -65,6 +65,7 @@ class LoadingScreen(Screen):
                 )
             )
 
+
     @work(thread=True)
     def run(self, arg_id) -> None:
         io = getattr(chezmoi, arg_id)
@@ -73,26 +74,16 @@ class LoadingScreen(Screen):
         log_text = f"{io.label} {'.' * padding} loaded"
         self.query_one("#loader-log").write(log_text)
 
-
-    # def on_worker_state_changed(self, event: Worker.StateChanged) -> None:
-    #     """Called when the worker state changes."""
-    #     if event.state == "finished":
-    #         self.query_one("#continue").disabled = False
-
-
     def check_workers(self) -> None:
         if all(worker.state == "finished" for worker in self.workers):
             self.query_one("#continue").disabled = False
 
-
     def on_mount(self) -> None:
         for arg_id in chezmoi.arg_ids:
             self.run(arg_id)
-
         # set a timer for 0.1 seconds to check if all workers are finished
         self.set_interval(interval=0.1, callback=self.check_workers)
 
-
-
     def on_key(self) -> None:
+        # TODO, also enable, like the button, when all workers are finished
         self.app.pop_screen()
