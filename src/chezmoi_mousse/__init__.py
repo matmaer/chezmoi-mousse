@@ -1,9 +1,9 @@
-# import json
-import subprocess
-# import tomllib
 from dataclasses import dataclass, field
+import json
+import subprocess
+import tomllib
+import yaml
 
-# import yaml
 
 
 @dataclass
@@ -11,27 +11,27 @@ class InputOutput:
     long_command: list[str] = field(default_factory=list)
     std_out: str = "initial std_out value"
 
-    # @property
-    # def py_out(self):
-    #     failures = {}
-    #     std_out = self.std_out.strip()
-    #     if std_out == "":
-    #         return "std_out is an empty string"
-    #     try:
-    #         return json.loads(std_out)
-    #     except json.JSONDecodeError:
-    #         failures["json"] = "std_out json.JSONDecodeError"
-    #     try:
-    #         return tomllib.loads(std_out)
-    #     except tomllib.TOMLDecodeError:
-    #         failures["toml"] = "std_out tomllib.TOMLDecodeError"
-    #     try:
-    #         return yaml.safe_load(std_out)
-    #     except yaml.YAMLError:
-    #         failures["yaml"] = "std_out yaml.YAMLError"
-    #     if std_out.count("\n") > 0:
-    #         return std_out.splitlines()
-    #     return std_out
+    @property
+    def py_out(self):
+        failures = {}
+        std_out = self.std_out.strip()
+        if std_out == "":
+            return "std_out is an empty string"
+        try:
+            return json.loads(std_out)
+        except json.JSONDecodeError:
+            failures["json"] = "std_out json.JSONDecodeError"
+        try:
+            return tomllib.loads(std_out)
+        except tomllib.TOMLDecodeError:
+            failures["toml"] = "std_out tomllib.TOMLDecodeError"
+        try:
+            return yaml.safe_load(std_out)
+        except yaml.YAMLError:
+            failures["yaml"] = "std_out yaml.YAMLError"
+        if std_out.count("\n") > 0:
+            return std_out.splitlines()
+        return std_out
 
     @property
     def label(self):
@@ -60,10 +60,10 @@ class InputOutput:
         self._subprocess_run()
         return self.std_out
 
-    # def updated_py_out(self) -> str | list | dict:
-    #     """Re-run subprocess call and return py_out."""
-    #     self._subprocess_run()
-    #     return self.py_out
+    def updated_py_out(self) -> str | list | dict:
+        """Re-run subprocess call and return py_out."""
+        self._subprocess_run()
+        return self.py_out
 
 
 class Chezmoi:

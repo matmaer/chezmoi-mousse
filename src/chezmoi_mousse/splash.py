@@ -70,8 +70,8 @@ class LoadingScreen(Screen):
         padding = 32 - len(io.label)
         log_text = f"{io.label} {'.' * padding} loaded"
         self.query_one("#loader-log").write(log_text)
-        # worker = get_current_worker()
-        # return worker.is_finished
+    #     worker = get_current_worker()
+    #     return worker
 
     # def on_worker_state_changed(self, event: Worker.StateChanged) -> None:
     #     """Called when the worker state changes."""
