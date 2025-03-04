@@ -73,10 +73,10 @@ class LoadingScreen(Screen):
         # worker = get_current_worker()
         # return worker.is_finished
 
-    def on_worker_state_changed(self, event: Worker.StateChanged) -> None:
-        """Called when the worker state changes."""
-        if event.state == "finished":
-            self.query_one("#continue").disabled = False
+    # def on_worker_state_changed(self, event: Worker.StateChanged) -> None:
+    #     """Called when the worker state changes."""
+    #     if event.state == "finished":
+    #         self.query_one("#continue").disabled = False
 
     # def on_mount(self) -> None:
     #     for arg_id in chezmoi.arg_ids:
