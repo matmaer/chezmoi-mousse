@@ -87,3 +87,6 @@ class LoadingScreen(Screen):
     def on_key(self) -> None:
         # TODO, also enable, like the button, when all workers are finished
         self.app.pop_screen()
+
+    def on_click(self) -> None:
+        self.app.pop_screen()
