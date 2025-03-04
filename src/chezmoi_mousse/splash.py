@@ -65,7 +65,6 @@ class LoadingScreen(Screen):
                 )
             )
 
-
     @work(thread=True)
     def run(self, arg_id) -> None:
         io = getattr(chezmoi, arg_id)
@@ -85,8 +84,9 @@ class LoadingScreen(Screen):
         self.set_interval(interval=0.1, callback=self.check_workers)
 
     def on_key(self) -> None:
-        # TODO, also enable, like the button, when all workers are finished
-        self.app.pop_screen()
+        if all(worker.state == "finished" for worker in self.workers):
+            self.app.pop_screen()
 
     def on_click(self) -> None:
-        self.app.pop_screen()
+        if all(worker.state == "finished" for worker in self.workers):
+            self.app.pop_screen()
