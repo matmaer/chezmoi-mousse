@@ -68,8 +68,8 @@ class LoadingScreen(Screen):
         io = getattr(chezmoi, arg_id)
         io.update()
         padding = 32 - len(io.label)
-        line = f"{io.label} {'.' * padding} loaded"
-        self.query_one("#loader-log").write(line)
+        log_text = f"{io.label} {'.' * padding} loaded"
+        self.query_one("#loader-log").write(log_text)
         # worker = get_current_worker()
         # return worker.is_finished
 
@@ -78,9 +78,9 @@ class LoadingScreen(Screen):
     #     if event.state == "finished":
     #         self.query_one("#continue").disabled = False
 
-    # def on_mount(self) -> None:
-    #     for arg_id in chezmoi.arg_ids:
-    #         self.run(arg_id)
+    def on_mount(self) -> None:
+        for arg_id in chezmoi.arg_ids:
+            self.run(arg_id)
 
     def on_key(self) -> None:
         self.app.pop_screen()
