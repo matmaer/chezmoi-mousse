@@ -10,7 +10,6 @@ from textual.widgets import (
 
 from chezmoi_mousse import chezmoi
 from chezmoi_mousse.common import FLOW_DIAGRAM, oled_dark_zen
-# from chezmoi_mousse.operator import ManagedFiles
 from chezmoi_mousse.splash import LoadingScreen
 
 
@@ -25,28 +24,29 @@ class ChezmoiTUI(App):
     def compose(self) -> ComposeResult:
         yield Header()
         with TabbedContent(
-            "Unmanaged",
-            "Diagram",
-            # "Doctor",
-            # "Dump-Config",
             # "Chezmoi-Status",
-            # "Managed-Files",
+            "Diagram",
+            # "Dump-Config",
             "Template-Data",
+            "Unmanaged",
             # "Cat-Config",
-            # "Git-Log",
-            # "Ignored",
+            # "Doctor",
+            "Git-Log",
             # "Git-Status",
+            # "Ignored",
+            # "Managed-Files",
         ):
-            yield Pretty(getattr(chezmoi, "unmanaged").long_command)
+            # yield Pretty(getattr(chezmoi, "status").long_command)
             yield Static(FLOW_DIAGRAM, id="diagram")
-            # yield ChezmoiDoctor(self.chezmoi.doctor.py_out)
             # yield Static(getattr(chezmoi, "dump_config").long_command)
+            yield Pretty(chezmoi.data.py_out) # pylint: disable=no-member
+            yield Pretty(chezmoi.unmanaged.py_out) # pylint: disable=no-member
+            # yield ChezmoiDoctor(getattr(chezmoi, "doctor"))
             # yield ChezmoiStatus(self.chezmoi.status.py_out)
             # yield ManagedFiles(getattr(chezmoi, "managed").long_command)
-            yield Pretty(getattr(chezmoi, "data").long_command)
             # yield Pretty(chezmoi.io["cat_config"].py_out)
-            # yield Pretty(chezmoi.io["ignored"].py_out)
-            # yield Pretty(chezmoi.io["status"].py_out)
+            # yield Pretty(chezmoi.io["ignored"].long_command)
+            yield Pretty(chezmoi.git_log.py_out) # pylint: disable=no-member
 
         yield Footer()
 

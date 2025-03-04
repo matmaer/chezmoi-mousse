@@ -67,6 +67,20 @@ class InputOutput:
 
 
 class Chezmoi:
+
+    # avoid linting errors for the following attributes
+    cat_config: InputOutput
+    data: InputOutput
+    doctor: InputOutput
+    dump_config: InputOutput
+    git_log: InputOutput
+    git_status: InputOutput
+    ignored: InputOutput
+    managed: InputOutput
+    status: InputOutput
+    unmanaged: InputOutput
+
+
     def __init__(self) -> None:
         self.words = {
             "base": [
@@ -90,12 +104,13 @@ class Chezmoi:
 
         self.base = self.words.pop("base")
         self.name = self.base[0]
-        self.io = {}
+        self.std_out = "init std_out from Chezmoi"
+        self.py_out = "init py_out from Chezmoi"
 
         for arg_id, sub_cmd in self.words.items():
-            io = InputOutput(self.base + sub_cmd)
+            command_io = InputOutput(self.base + sub_cmd)
             # setattr(self, f"{arg_id}", self.io[arg_id])
-            setattr(self, arg_id, io)
+            setattr(self, arg_id, command_io)
 
 
     @property
