@@ -8,7 +8,6 @@ from textual.screen import Screen
 from textual.widget import Segment, Strip, Style, Widget
 from textual.widgets import (
     Button,  # Footer,
-    Header,
     RichLog,  # Pretty, Static, TabbedContent,
 )
 
@@ -55,7 +54,6 @@ class LoadingScreen(Screen):
         return deque([Style(color=color.hex, bold=True) for color in fade])
 
     def compose(self) -> ComposeResult:
-        yield Header(id="loader-header")
         with Middle():
             yield Center(AnimatedFade(fade_colors=self.theme_fade))
             yield Center(RichLog(name="loader log", id="loader-log", max_lines=11))
