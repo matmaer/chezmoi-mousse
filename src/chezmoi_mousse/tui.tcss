@@ -74,18 +74,6 @@ LoadingScreen {
     text-style: none;
 
   }
-  #loader-header {
-    background: black;
-  }
-  #loader-footer {
-    background: black;
-  }
-  .footer-key--key {
-    background: black;
-  }
-  .footer-key--description {
-    background: black;
-  }
 }
 
 SlideBar {

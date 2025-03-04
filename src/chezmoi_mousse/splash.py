@@ -7,7 +7,7 @@ from textual.containers import Center, Middle
 from textual.screen import Screen
 from textual.widget import Segment, Strip, Style, Widget
 from textual.widgets import (
-    Button,  # Footer,
+    Button,
     RichLog,  # Pretty, Static, TabbedContent,
 )
 
