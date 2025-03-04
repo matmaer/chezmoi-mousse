@@ -5,7 +5,6 @@ import tomllib
 import yaml
 
 
-
 @dataclass
 class InputOutput:
     long_command: list[str] = field(default_factory=list)
@@ -35,9 +34,7 @@ class InputOutput:
 
     @property
     def label(self):
-        return " ".join(
-            [w for w in self.long_command if not w.startswith("-")]
-        )
+        return " ".join([w for w in self.long_command if not w.startswith("-")])
 
     def _subprocess_run(self):
         """Runs the subprocess call and sets std_out."""
@@ -80,7 +77,6 @@ class Chezmoi:
     status: InputOutput
     unmanaged: InputOutput
 
-
     def __init__(self) -> None:
         self.words = {
             "base": [
@@ -112,9 +108,9 @@ class Chezmoi:
             # setattr(self, f"{arg_id}", self.io[arg_id])
             setattr(self, arg_id, command_io)
 
-
     @property
     def arg_ids(self):
         return list(self.words.keys())
+
 
 chezmoi = Chezmoi()
