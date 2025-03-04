@@ -9,7 +9,7 @@ from textual.widgets import (
 )
 
 from chezmoi_mousse import chezmoi
-from chezmoi_mousse.common import FLOW_DIAGRAM, oled_dark_zen
+from chezmoi_mousse.common import FLOW, oled_dark_zen
 from chezmoi_mousse.splash import LoadingScreen
 
 
@@ -37,7 +37,7 @@ class ChezmoiTUI(App):
             # "Managed-Files",
         ):
             # yield Pretty(getattr(chezmoi, "status").long_command)
-            yield Static(FLOW_DIAGRAM, id="diagram")
+            yield Static(FLOW, id="diagram")
             # yield Static(getattr(chezmoi, "dump_config").long_command)
             yield Pretty(chezmoi.data.py_out) # pylint: disable=no-member
             yield Pretty(chezmoi.unmanaged.py_out) # pylint: disable=no-member

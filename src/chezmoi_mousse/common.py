@@ -45,7 +45,7 @@ SPLASH = SPLASH_ASCII_ART
 
 
 # # provisional diagrams until dynamically created
-FLOW_DIAGRAM = """\
+FLOW = """\
 ┌──────────────┐    ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
 │home directory│    │ working copy │    │  local repo  │    │ remote repo  │
 └──────┬───────┘    └──────┬───────┘    └──────┬───────┘    └──────┬───────┘
