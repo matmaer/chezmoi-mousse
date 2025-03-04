@@ -8,8 +8,10 @@ from textual.widgets import (
     TabbedContent,
 )
 
+from chezmoi_mousse import chezmoi
 from chezmoi_mousse.common import FLOW_DIAGRAM, oled_dark_zen
-from chezmoi_mousse.splash import LoadingScreen, chezmoi
+# from chezmoi_mousse.operator import ManagedFiles
+from chezmoi_mousse.splash import LoadingScreen
 
 
 class ChezmoiTUI(App):
@@ -26,22 +28,22 @@ class ChezmoiTUI(App):
             "Unmanaged",
             "Diagram",
             # "Doctor",
-            "Dump-Config",
+            # "Dump-Config",
             # "Chezmoi-Status",
             # "Managed-Files",
-            # "Template-Data",
+            "Template-Data",
             # "Cat-Config",
             # "Git-Log",
             # "Ignored",
             # "Git-Status",
         ):
-            yield Pretty(getattr(chezmoi, "unmanaged").std_out)
+            yield Pretty(getattr(chezmoi, "unmanaged").long_command)
             yield Static(FLOW_DIAGRAM, id="diagram")
             # yield ChezmoiDoctor(self.chezmoi.doctor.py_out)
-            yield Static(getattr(chezmoi, "dump_config").std_out)
+            # yield Static(getattr(chezmoi, "dump_config").long_command)
             # yield ChezmoiStatus(self.chezmoi.status.py_out)
-            # yield ManagedFiles(self.chezmoi.managed.py_out)
-            # yield Pretty(chezmoi.io["data"].py_out)
+            # yield ManagedFiles(getattr(chezmoi, "managed").long_command)
+            yield Pretty(getattr(chezmoi, "data").long_command)
             # yield Pretty(chezmoi.io["cat_config"].py_out)
             # yield Pretty(chezmoi.io["ignored"].py_out)
             # yield Pretty(chezmoi.io["status"].py_out)
