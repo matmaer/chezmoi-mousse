@@ -35,17 +35,16 @@ class ChezmoiTUI(App):
             # "Ignored",
             # "Git-Status",
         ):
-            yield Pretty(chezmoi.io["unmanaged"].updated_py_out())
+            yield Pretty(getattr(chezmoi, "unmanaged").std_out)
             yield Static(FLOW_DIAGRAM, id="diagram")
             # yield ChezmoiDoctor(self.chezmoi.doctor.py_out)
-            yield Static(chezmoi.io["dump_config"].py_out)
+            yield Static(getattr(chezmoi, "dump_config").std_out)
             # yield ChezmoiStatus(self.chezmoi.status.py_out)
             # yield ManagedFiles(self.chezmoi.managed.py_out)
-            # yield Pretty(self.chezmoi.data.py_out)
-            # yield Pretty(self.chezmoi.cat_config.py_out)
-            # yield Pretty(self.chezmoi.git_log.py_out)
-            # yield Pretty(self.chezmoi.ignored.py_out)
-            # yield Pretty(self.chezmoi.status.py_out)
+            # yield Pretty(chezmoi.io["data"].py_out)
+            # yield Pretty(chezmoi.io["cat_config"].py_out)
+            # yield Pretty(chezmoi.io["ignored"].py_out)
+            # yield Pretty(chezmoi.io["status"].py_out)
 
         yield Footer()
 
