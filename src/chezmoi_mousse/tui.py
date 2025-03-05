@@ -9,7 +9,7 @@ from textual.widgets import (
     TabbedContent,
 )
 
-from chezmoi_mousse.common import FLOW, oled_dark_zen
+from chezmoi_mousse.common import Chezmoi, FLOW, oled_dark_zen
 from chezmoi_mousse.splash import LoadingScreen
 
 
@@ -17,9 +17,7 @@ class ChezmoiTUI(App):
 
     CSS_PATH = "tui.tcss"
 
-    SCREENS = {
-        "loading": LoadingScreen,
-    }
+    chezmoi = Chezmoi()
 
     def compose(self) -> ComposeResult:
         yield Header()
@@ -55,4 +53,4 @@ class ChezmoiTUI(App):
         self.title = "-  c h e z m o i  m o u s s e  -"
         self.register_theme(oled_dark_zen)
         self.theme = "oled-dark-zen"
-        self.push_screen("loading")
+        self.push_screen(LoadingScreen())
