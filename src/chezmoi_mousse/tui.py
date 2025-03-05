@@ -1,14 +1,7 @@
 from textual.app import App, ComposeResult
+from textual.widgets import Footer, Header, Pretty, Static, TabbedContent
 
-from textual.widgets import (
-    Footer,
-    Header,
-    Pretty,
-    Static,
-    TabbedContent,
-)
-
-from chezmoi_mousse.common import Chezmoi, FLOW, oled_dark_zen
+from chezmoi_mousse.common import FLOW, chezmoi, oled_dark_zen
 from chezmoi_mousse.splash import LoadingScreen
 
 
@@ -17,15 +10,14 @@ class ChezmoiTUI(App):
     CSS_PATH = "tui.tcss"
 
     SCREENS = {
+        "operations": App.get_default_screen,
         "loading": LoadingScreen,
     }
-
-    chezmoi = Chezmoi()
 
     def compose(self) -> ComposeResult:
         yield Header()
         with TabbedContent(
-            "Chezmoi-Object",
+            # "Chezmoi-Object",
             "Status-Stdout",
             "Status-Pyout",
             # "Dump-Config",
@@ -39,23 +31,25 @@ class ChezmoiTUI(App):
             # "Managed-Files",
             "Diagram",
         ):
-            yield Pretty({
-                "self.chezmoi": f"{self.chezmoi}",
-                "self.app.chezmoi": f"{self.app.chezmoi}",
-                "self.app.chezmoi.status": f"{self.app.chezmoi.status}",
-                "self.app.chezmoi.status.std_out": f"{self.app.chezmoi.status.std_out}",
-                "self.app.chezmoi.ignored": f"{self.app.chezmoi.ignored}",
-                "self.app.chezmoi.ignored.std_out": f"{self.app.chezmoi.ignored.std_out}"
-                })
-            yield Pretty(self.app.chezmoi.status.std_out)
-            yield Pretty(self.app.chezmoi.status.py_out)
+            yield Pretty(
+                {
+                    "self.chezmoi": f"{chezmoi}",
+                    "chezmoi": f"{chezmoi}",
+                    "chezmoi.status": f"{chezmoi.status}",
+                    "chezmoi.status.std_out": f"{chezmoi.status.std_out}",
+                    "chezmoi.ignored": f"{chezmoi.ignored}",
+                    "chezmoi.ignored.std_out": f"{chezmoi.ignored.std_out}",
+                }
+            )
+            yield Pretty(chezmoi.status.std_out)
+            yield Pretty(chezmoi.status.py_out)
             yield Static(FLOW, id="diagram")
 
         yield Footer()
 
     def store_data(self, io_data: dict) -> None:
         for arg_id, arg_data in io_data.items():
-            setattr(self.chezmoi, arg_id, arg_data)
+            setattr(chezmoi, arg_id, arg_data)
 
     def on_mount(self) -> None:
 
