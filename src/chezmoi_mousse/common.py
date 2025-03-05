@@ -1,9 +1,8 @@
-from dataclasses import dataclass, field
 import json
 import subprocess
 import tomllib
-import yaml
 
+# from textual.reactive import reactive
 from textual.theme import Theme
 
 
@@ -114,111 +113,125 @@ oled_dark_zen = Theme(
 )
 
 
-@dataclass
+def _subprocess_run(long_command: list[str] | None = None) -> str:
+    result = subprocess.run(
+        long_command,
+        capture_output=True,
+        check=True,  # raises exception for any non-zero return code
+        shell=False,  # mitigates shell injection risk
+        text=True,  # returns stdout as str instead of bytes
+        timeout=2,
+    )
+    return result.stdout
+
+
+# @dataclass
 class InputOutput:
-    long_command: list[str] = field(default_factory=list)
-    std_out: str = "will hold std_out"
+
+    def __init__(self, long_command: list[str] | None = None) -> None:
+        self.std_out = "will hold std_out"
+        self.long_command = long_command
 
     @property
     def py_out(self):
         std_out = self.std_out.strip()
+        to_return = "should hold parsed std_out"
+
         if std_out == "":
-            return "std_out is an empty string"
+            to_return = "std_out is an empty string"
+        if std_out == "will hold std_out":
+            to_return = "no std_out available to parse"
         try:
             return json.loads(std_out)
         except json.JSONDecodeError:
-            pass
-        try:
-            return tomllib.loads(std_out)
-        except tomllib.TOMLDecodeError:
-            pass
-        try:
-            return yaml.safe_load(std_out)
-        except yaml.YAMLError:
-            pass
+            try:
+                return tomllib.loads(std_out)
+            except tomllib.TOMLDecodeError:
+                pass
+            # not don't attempt to parse yaml, as it will parse a single string
         if std_out.count("\n") > 0:
-            return std_out.splitlines()
-        return std_out
+            to_return = std_out.splitlines()
+        return to_return
 
     @property
     def label(self):
-        return " ".join([w for w in self.long_command if not w.startswith("-")])
-
-    def _subprocess_run(self):
-        """Runs the subprocess call and sets std_out."""
-        result = subprocess.run(
-            self.long_command,
-            capture_output=True,
-            check=True,  # raises exception for any non-zero return code
-            shell=False,  # mitigates shell injection risk
-            text=True,  # returns stdout as str instead of bytes
-            timeout=2,
+        return " ".join(
+            [w for w in self.long_command if not w.startswith("-")]
         )
-        self.std_out = result.stdout
 
-    def update(self) -> None:
+    # don't call subprocess_run with self.long_command, so we can use this
+    # method to update the std_out attribute of any instance without the
+    # long_command attribute being set.
+
+    def _update(self) -> None:
         """Re-run the subprocess call, don't return anything."""
-        self._subprocess_run()
+        result = _subprocess_run(self.long_command)
+        self.std_out = result
 
     def updated_std_out(self) -> str:
         """Re-run subprocess call and return std_out."""
-        self._subprocess_run()
+        self._update()
         return self.std_out
 
     def updated_py_out(self) -> str | list | dict:
         """Re-run subprocess call and return py_out."""
-        self._subprocess_run()
+        self._update()
         return self.py_out
+
+    # run a command and update the class instance without returning anything
+    def run(self, long_command) -> str:
+        self.long_command = long_command
+        self._update()
 
 
 class Chezmoi:
+    # pylint: disable=too-few-public-methods
+    # the reason for a class is easy dot notation access to all the commands
 
-    # avoid linting errors for the following attributes
-    cat_config: InputOutput
-    data: InputOutput
-    doctor: InputOutput
-    dump_config: InputOutput
-    git_log: InputOutput
-    git_status: InputOutput
-    ignored: InputOutput
-    managed: InputOutput
-    status: InputOutput
-    unmanaged: InputOutput
+    # don't create this dynamically, hard on linters, type checking and
+    # exceptions show up much later than they should.
+    cat_config = InputOutput()
+    template_data = InputOutput()
+    doctor = InputOutput()
+    dump_config = InputOutput()
+    git_log = InputOutput()
+    git_status = InputOutput()
+    ignored = InputOutput()
+    managed = InputOutput()
+    status = InputOutput()
+    unmanaged = InputOutput()
+
+    base = [
+        "chezmoi",
+        "--no-pager",
+        "--color=false",
+        "--no-tty",
+        "--progress=false",
+    ]
+    subs = {
+        "cat_config": ["cat-config"],
+        "template_data": ["data", "--format=json"],
+        "doctor": ["doctor"],
+        "dump_config": ["dump-config", "--format=json"],
+        "git_log": ["git", "log", "--", "--oneline"],
+        "git_status": ["git", "status"],
+        "ignored": ["ignored"],
+        "managed": ["managed", "--path-style=absolute"],
+        "status": ["status", "--parent-dirs"],
+        "unmanaged": ["unmanaged", "--path-style=absolute"],
+    }
+
+    long_commands = {}
 
     def __init__(self) -> None:
-        self.words = {
-            "base": [
-                "chezmoi",
-                "--no-pager",
-                "--color=false",
-                "--no-tty",
-                "--progress=false",
-            ],
-            "cat_config": ["cat-config"],
-            "data": ["data", "--format=json"],
-            "doctor": ["doctor"],
-            "dump_config": ["dump-config", "--format=json"],
-            "git_log": ["git", "log", "--", "--oneline"],
-            "git_status": ["git", "status"],
-            "ignored": ["ignored"],
-            "managed": ["managed", "--path-style=absolute"],
-            "status": ["status", "--parent-dirs"],
-            "unmanaged": ["unmanaged", "--path-style=absolute"],
-        }
 
-        self.base = self.words.pop("base")
-        self.name = self.base[0]
-        self.std_out = "init std_out from Chezmoi"
-        self.py_out = "init py_out from Chezmoi"
-
-        for arg_id, sub_cmd in self.words.items():
-            command_io = InputOutput(self.base + sub_cmd)
-            # setattr(self, f"{arg_id}", self.io[arg_id])
-            setattr(self, arg_id, command_io)
-
-    @property
-    def arg_ids(self):
-        return list(self.words.keys())[1:]
-
-
-chezmoi = Chezmoi()
+        # Populate all InputOutput instances with the corresponding
+        # long_command, this way of looping also makes sure the arg_id matches
+        # the attribute name. If not, an exception will be raised by getattr.
+        for arg_id, sub_cmd in self.subs.items():
+            # using getattr to set the attribute in one lines
+            getattr(self, arg_id).long_command = self.base + sub_cmd
+            # Used for easy looping. Looping over just the arg_id attributes
+            # would require filtering out attributes, also keeps the arg_id
+            # and sub_cmd/attribute name in sync.
+            self.long_commands[arg_id] = self.base + sub_cmd
