@@ -6,12 +6,10 @@ from textual.color import Color, Gradient
 from textual.containers import Center, Middle
 from textual.screen import Screen
 from textual.widget import Segment, Strip, Style, Widget
-from textual.widgets import (
-    Button,
-    RichLog,  # Pretty, Static, TabbedContent,
-)
+from textual.widgets import RichLog  # Pretty, Static, TabbedContent,
+from textual.widgets import Button
 
-from chezmoi_mousse.common import SPLASH
+from chezmoi_mousse.common import SPLASH, chezmoi
 
 
 class AnimatedFade(Widget):
@@ -54,7 +52,9 @@ class LoadingScreen(Screen):
     def compose(self) -> ComposeResult:
         with Middle():
             yield Center(AnimatedFade(fade_colors=self.theme_fade))
-            yield Center(RichLog(name="loader log", id="loader-log", max_lines=11))
+            yield Center(
+                RichLog(name="loader log", id="loader-log", max_lines=11)
+            )
             yield Center(
                 Button(
                     id="continue",
@@ -65,7 +65,7 @@ class LoadingScreen(Screen):
 
     @work(thread=True)
     def run(self, arg_id, cmd) -> None:
-        self.io_data[arg_id] = getattr(self.app.chezmoi, arg_id)
+        self.io_data[arg_id] = getattr(chezmoi, arg_id)
         self.io_data[arg_id].run(cmd)
         padding = 32 - len(self.io_data[arg_id].label)
         log_text = f"{self.io_data[arg_id].label} {'.' * padding} loaded"
@@ -76,7 +76,7 @@ class LoadingScreen(Screen):
             self.query_one("#continue").disabled = False
 
     def on_mount(self) -> None:
-        for arg_id, cmd in self.app.chezmoi.long_commands.items():
+        for arg_id, cmd in chezmoi.long_commands.items():
             self.run(arg_id, cmd)
         # set a timer for 0.1 seconds to check if all workers are finished
         self.set_interval(interval=0.1, callback=self.check_workers)

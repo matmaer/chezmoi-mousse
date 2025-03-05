@@ -234,3 +234,5 @@ class Chezmoi:
             # would require filtering out attributes, also keeps the arg_id
             # and sub_cmd/attribute name in sync.
             self.long_commands[arg_id] = self.base + sub_cmd
+
+chezmoi = Chezmoi()
