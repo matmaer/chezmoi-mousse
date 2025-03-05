@@ -11,7 +11,7 @@ from textual.widgets import (
     RichLog,  # Pretty, Static, TabbedContent,
 )
 
-from chezmoi_mousse.common import SPLASH, chezmoi
+from chezmoi_mousse.common import SPLASH
 
 
 class AnimatedFade(Widget):
@@ -63,9 +63,9 @@ class LoadingScreen(Screen):
             )
 
     @work(thread=True)
-    def run(self, arg_id) -> None:
-        io = getattr(chezmoi, arg_id)
-        io.update()
+    def run(self, arg_id, cmd) -> None:
+        io = getattr(self.app.chezmoi, arg_id)
+        io.run(cmd)
         padding = 32 - len(io.label)
         log_text = f"{io.label} {'.' * padding} loaded"
         self.query_one("#loader-log").write(log_text)
@@ -75,8 +75,8 @@ class LoadingScreen(Screen):
             self.query_one("#continue").disabled = False
 
     def on_mount(self) -> None:
-        for arg_id in chezmoi.arg_ids:
-            self.run(arg_id)
+        for arg_id, cmd in self.app.chezmoi.long_commands.items():
+            self.run(arg_id, cmd)
         # set a timer for 0.1 seconds to check if all workers are finished
         self.set_interval(interval=0.1, callback=self.check_workers)
 
