@@ -17,6 +17,10 @@ class ChezmoiTUI(App):
 
     CSS_PATH = "tui.tcss"
 
+    SCREENS = {
+        "loading": LoadingScreen,
+    }
+
     chezmoi = Chezmoi()
 
     def compose(self) -> ComposeResult:
