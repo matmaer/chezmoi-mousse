@@ -1,10 +1,9 @@
-# from textual import work
 from textual.app import App, ComposeResult
 
-# from textual import work
 from textual.widgets import (
     Footer,
     Header,
+    Pretty,
     Static,
     TabbedContent,
 )
@@ -26,8 +25,10 @@ class ChezmoiTUI(App):
     def compose(self) -> ComposeResult:
         yield Header()
         with TabbedContent(
-            # "Chezmoi-Status",
             "Diagram",
+            "Chezmoi-Status",
+            "Chezmoi-Status2",
+            "Chezmoi-Status3",
             # "Dump-Config",
             # "Template-Data",
             # "Unmanaged",
@@ -39,6 +40,9 @@ class ChezmoiTUI(App):
             # "Managed-Files",
         ):
             yield Static(FLOW, id="diagram")
+            yield Pretty(self.chezmoi.status.std_out, id="chezmoi-status")
+            yield Pretty(self.app.chezmoi.status.std_out, id="chezmoi-status2")
+            yield Pretty(self.app.chezmoi.status.py_out, id="chezmoi-status3")
 
         yield Footer()
 
