@@ -34,23 +34,17 @@ class ChezmoiTUI(App):
             # "Ignored",
             # "Managed-Files",
         ):
-            # yield Pretty(getattr(chezmoi, "status").long_command)
             yield Static(FLOW, id="diagram")
-            # yield Static(getattr(chezmoi, "dump_config").long_command)
-            # yield Pretty(chezmoi.data.py_out) # pylint: disable=no-member
-            # yield Pretty(chezmoi.unmanaged.py_out) # pylint: disable=no-member
-            # yield ChezmoiDoctor(getattr(chezmoi, "doctor"))
-            # yield ChezmoiStatus(self.chezmoi.status.py_out)
-            # yield ManagedFiles(getattr(chezmoi, "managed").long_command)
-            # yield Pretty(chezmoi.io["cat_config"].py_out)
-            # yield Pretty(chezmoi.io["ignored"].long_command)
-            # yield Pretty(chezmoi.git_log.py_out) # pylint: disable=no-member
 
         yield Footer()
+
+    def store_data(self, io_data: dict) -> None:
+        for arg_id, arg_data in io_data.items():
+            setattr(self.chezmoi, arg_id, arg_data)
 
     def on_mount(self) -> None:
 
         self.title = "-  c h e z m o i  m o u s s e  -"
         self.register_theme(oled_dark_zen)
         self.theme = "oled-dark-zen"
-        self.push_screen(LoadingScreen())
+        self.push_screen(LoadingScreen(), self.store_data)
