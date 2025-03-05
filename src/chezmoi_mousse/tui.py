@@ -25,10 +25,9 @@ class ChezmoiTUI(App):
     def compose(self) -> ComposeResult:
         yield Header()
         with TabbedContent(
-            "Diagram",
-            "Chezmoi-Status",
-            "Chezmoi-Status2",
-            "Chezmoi-Status3",
+            "Chezmoi-Object",
+            "Status-Stdout",
+            "Status-Pyout",
             # "Dump-Config",
             # "Template-Data",
             # "Unmanaged",
@@ -38,11 +37,16 @@ class ChezmoiTUI(App):
             # "Git-Status",
             # "Ignored",
             # "Managed-Files",
+            "Diagram",
         ):
+            yield Pretty({
+                "self.app.chezmoi": f"{self.app.chezmoi}",
+                "self.app.chezmoi.status": f"{self.app.chezmoi.status}",
+                "self.app.chezmoi.status.std_out": f"{self.app.chezmoi.status.std_out}"
+                })
+            yield Pretty(self.app.chezmoi.status.std_out)
+            yield Pretty(self.app.chezmoi.status.py_out)
             yield Static(FLOW, id="diagram")
-            yield Pretty(self.chezmoi.status.std_out, id="chezmoi-status")
-            yield Pretty(self.app.chezmoi.status.std_out, id="chezmoi-status2")
-            yield Pretty(self.app.chezmoi.status.py_out, id="chezmoi-status3")
 
         yield Footer()
 
