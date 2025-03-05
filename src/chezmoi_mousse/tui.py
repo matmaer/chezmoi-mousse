@@ -17,7 +17,8 @@ class ChezmoiTUI(App):
     def compose(self) -> ComposeResult:
         yield Header()
         with TabbedContent(
-            # "Chezmoi-Object",
+            "Chezmoi-Object",
+
             "Status-Stdout",
             "Status-Pyout",
             # "Dump-Config",
@@ -33,7 +34,6 @@ class ChezmoiTUI(App):
         ):
             yield Pretty(
                 {
-                    "self.chezmoi": f"{chezmoi}",
                     "chezmoi": f"{chezmoi}",
                     "chezmoi.status": f"{chezmoi.status}",
                     "chezmoi.status.std_out": f"{chezmoi.status.std_out}",
