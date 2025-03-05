@@ -40,9 +40,12 @@ class ChezmoiTUI(App):
             "Diagram",
         ):
             yield Pretty({
+                "self.chezmoi": f"{self.chezmoi}",
                 "self.app.chezmoi": f"{self.app.chezmoi}",
                 "self.app.chezmoi.status": f"{self.app.chezmoi.status}",
-                "self.app.chezmoi.status.std_out": f"{self.app.chezmoi.status.std_out}"
+                "self.app.chezmoi.status.std_out": f"{self.app.chezmoi.status.std_out}",
+                "self.app.chezmoi.ignored": f"{self.app.chezmoi.ignored}",
+                "self.app.chezmoi.ignored.std_out": f"{self.app.chezmoi.ignored.std_out}"
                 })
             yield Pretty(self.app.chezmoi.status.std_out)
             yield Pretty(self.app.chezmoi.status.py_out)
