@@ -11,7 +11,6 @@ from textual.widgets import (
     RichLog,  # Pretty, Static, TabbedContent,
 )
 
-
 from chezmoi_mousse.common import SPLASH, chezmoi
 
 
@@ -58,7 +57,7 @@ class LoadingScreen(Screen):
             yield Center(
                 Button(
                     id="continue",
-                    label="press any key to continue",
+                    label="press any key or click to continue",
                     disabled=True,
                 )
             )
@@ -81,10 +80,10 @@ class LoadingScreen(Screen):
         # set a timer for 0.1 seconds to check if all workers are finished
         self.set_interval(interval=0.1, callback=self.check_workers)
 
-    def on_key(self) -> None:
-        if all(worker.state == "finished" for worker in self.workers):
-            self.app.pop_screen()
+    async def on_key(self) -> None:
+        await self.app.workers.wait_for_complete()
+        self.app.pop_screen()
 
-    def on_click(self) -> None:
-        if all(worker.state == "finished" for worker in self.workers):
-            self.app.pop_screen()
+    async def on_click(self) -> None:
+        await self.app.workers.wait_for_complete()
+        self.app.pop_screen()

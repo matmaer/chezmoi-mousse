@@ -65,7 +65,7 @@ LoadingScreen {
     background-tint: black;
     height: 11;
     width: auto;
-    margin: 2 0 1 0;
+    margin: 2 0 0 0;
   }
   #continue {
     background: black;

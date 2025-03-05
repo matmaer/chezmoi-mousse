@@ -34,12 +34,12 @@ SPLASH_8BIT = """\
 """.splitlines()
 
 SPLASH_ASCII_ART = """\
- _________________________________________________ _o_
-|`      |   |   |    ___|___    |`   '    |       |   |
+ _______________________________ _________________ _o_
+|       |   |   |    ___|___    |    '    |       |   |
 |    ===|       |     __|     __|         |   |   |   |
 |       |   |   |       |       |   |ˇ|   |       |   |
 `-------^---^---^-------^-------^---' '---^-------^---'
-  ._________._______._______._______._______._______.
+   _________________________________________________
   |    '    |       |   |   |    ___|    ___|    ___|
   |         |   |   |   |   |__     |__     |     __|
   |   |ˇ|   |       |       |       |       |       |
@@ -117,26 +117,25 @@ oled_dark_zen = Theme(
 @dataclass
 class InputOutput:
     long_command: list[str] = field(default_factory=list)
-    std_out: str = "Initialize InputOutput std_out"
+    std_out: str = "will hold std_out"
 
     @property
     def py_out(self):
-        failures = {}
         std_out = self.std_out.strip()
         if std_out == "":
             return "std_out is an empty string"
         try:
             return json.loads(std_out)
         except json.JSONDecodeError:
-            failures["json"] = "std_out json.JSONDecodeError"
+            pass
         try:
             return tomllib.loads(std_out)
         except tomllib.TOMLDecodeError:
-            failures["toml"] = "std_out tomllib.TOMLDecodeError"
+            pass
         try:
             return yaml.safe_load(std_out)
         except yaml.YAMLError:
-            failures["yaml"] = "std_out yaml.YAMLError"
+            pass
         if std_out.count("\n") > 0:
             return std_out.splitlines()
         return std_out
@@ -219,7 +218,7 @@ class Chezmoi:
 
     @property
     def arg_ids(self):
-        return list(self.words.keys())
+        return list(self.words.keys())[1:]
 
 
 chezmoi = Chezmoi()
