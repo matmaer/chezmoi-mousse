@@ -39,6 +39,7 @@ class LoadingScreen(Screen):
         super().__init__()
         self.id = "loading"
         self.theme_fade: deque[Style] = self.create_fade()
+        self.to_return = {}
 
     def create_fade(self) -> deque[Style]:
         start_color = self.app.current_theme.primary
@@ -64,10 +65,10 @@ class LoadingScreen(Screen):
 
     @work(thread=True)
     def run(self, arg_id, cmd) -> None:
-        io = getattr(self.app.chezmoi, arg_id)
-        io.run(cmd)
-        padding = 32 - len(io.label)
-        log_text = f"{io.label} {'.' * padding} loaded"
+        self.to_return[arg_id] = getattr(self.app.chezmoi, arg_id)
+        self.to_return[arg_id].run(cmd)
+        padding = 32 - len(self.to_return[arg_id].label)
+        log_text = f"{self.to_return[arg_id].label} {'.' * padding} loaded"
         self.query_one("#loader-log").write(log_text)
 
     def check_workers(self) -> None:
