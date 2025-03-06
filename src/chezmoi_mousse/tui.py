@@ -18,7 +18,6 @@ class ChezmoiTUI(App):
         yield Header()
         with TabbedContent(
             "Chezmoi-Object",
-
             "Status-Stdout",
             "Status-Pyout",
             # "Dump-Config",
@@ -36,9 +35,6 @@ class ChezmoiTUI(App):
                 {
                     "chezmoi": f"{chezmoi}",
                     "chezmoi.status": f"{chezmoi.status}",
-                    "chezmoi.status.std_out": f"{chezmoi.status.std_out}",
-                    "chezmoi.ignored": f"{chezmoi.ignored}",
-                    "chezmoi.ignored.std_out": f"{chezmoi.ignored.std_out}",
                 }
             )
             yield Pretty(chezmoi.status.std_out)
@@ -47,13 +43,10 @@ class ChezmoiTUI(App):
 
         yield Footer()
 
-    def store_data(self, io_data: dict) -> None:
-        for arg_id, arg_data in io_data.items():
-            setattr(chezmoi, arg_id, arg_data)
 
     def on_mount(self) -> None:
 
         self.title = "-  c h e z m o i  m o u s s e  -"
         self.register_theme(oled_dark_zen)
         self.theme = "oled-dark-zen"
-        self.push_screen(LoadingScreen(), self.store_data)
+        self.push_screen("loading")
