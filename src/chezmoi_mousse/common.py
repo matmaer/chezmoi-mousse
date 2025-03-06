@@ -160,24 +160,24 @@ class InputOutput:
             [w for w in self.long_command if not w.startswith("-")]
         )
 
-    def _update(self) -> None:
+    def update(self) -> None:
         """Re-run the subprocess call, don't return anything."""
         result = _subprocess_run(self.long_command)
         self.std_out = result
 
     def updated_std_out(self) -> str:
         """Re-run subprocess call and return std_out."""
-        self._update()
+        self.update()
         return self.std_out
 
     def updated_py_out(self) -> str | list | dict:
         """Re-run subprocess call and return py_out."""
-        self._update()
+        self.update()
         return self.py_out
 
-    def update(self, long_command: list[str] | None = None) -> None:
+    def run_command(self, long_command: list[str] | None = None) -> None:
         if long_command == self.long_command:
-            self._update()
+            self.update()
         else:
             raise ValueError("long_command does not match self.long_command")
 
