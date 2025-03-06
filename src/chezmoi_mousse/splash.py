@@ -83,8 +83,8 @@ class LoadingScreen(Screen):
 
     async def on_key(self) -> None:
         await self.app.workers.wait_for_complete()
-        self.screen.dismiss(self.io_data)
+        self.screen.dismiss()
 
     async def on_click(self) -> None:
         await self.app.workers.wait_for_complete()
-        self.screen.dismiss(self.io_data)
+        self.screen.dismiss()
