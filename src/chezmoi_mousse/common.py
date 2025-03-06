@@ -175,12 +175,6 @@ class InputOutput:
         self.update()
         return self.py_out
 
-    def run_command(self, long_command: list[str] | None = None) -> None:
-        if long_command == self.long_command:
-            self.update()
-        else:
-            raise ValueError("long_command does not match self.long_command")
-
 
 class Chezmoi:
 
