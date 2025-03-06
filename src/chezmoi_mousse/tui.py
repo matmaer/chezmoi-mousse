@@ -34,11 +34,11 @@ class ChezmoiTUI(App):
             yield Pretty(
                 {
                     "chezmoi": f"{chezmoi}",
-                    "chezmoi.status": f"{chezmoi.status}",
+                    "chezmoi.chezmoi_status": f"{chezmoi.chezmoi_status}",
                 }
             )
-            yield Pretty(chezmoi.status.std_out)
-            yield Pretty(chezmoi.status.py_out)
+            yield Pretty(chezmoi.chezmoi_status.std_out)
+            yield Pretty(chezmoi.chezmoi_status.py_out)
             yield Static(FLOW, id="diagram")
 
         yield Footer()
