@@ -65,10 +65,10 @@ class LoadingScreen(Screen):
 
     @work(thread=True)
     def run(self, arg_id, cmd) -> None:
-        self.io_data[arg_id] = getattr(chezmoi, arg_id)
-        self.io_data[arg_id].run_command(cmd)
-        padding = 32 - len(self.io_data[arg_id].label)
-        log_text = f"{self.io_data[arg_id].label} {'.' * padding} loaded"
+        io_class = getattr(chezmoi, arg_id)
+        io_class.update()
+        padding = 32 - len(io_class.label)
+        log_text = f"{io_class.label} {'.' * padding} loaded"
         self.query_one("#loader-log").write(log_text)
 
     def check_workers(self) -> None:
