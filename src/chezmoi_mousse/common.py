@@ -124,12 +124,14 @@ def _subprocess_run(long_command: list[str] | None = None) -> str:
     return result.stdout
 
 
-# @dataclass
 class InputOutput:
 
-    def __init__(self, long_command: list[str] | None = None) -> None:
-        self.std_out = "will hold std_out"
+    long_command: list[str]
+    std_out: str
+
+    def __init__(self, long_command, std_out) -> None:
         self.long_command = long_command
+        self.std_out = std_out
 
     @property
     def py_out(self):
@@ -158,10 +160,6 @@ class InputOutput:
             [w for w in self.long_command if not w.startswith("-")]
         )
 
-    # don't call subprocess_run with self.long_command, so we can use this
-    # method to update the std_out attribute of any instance without the
-    # long_command attribute being set.
-
     def _update(self) -> None:
         """Re-run the subprocess call, don't return anything."""
         result = _subprocess_run(self.long_command)
@@ -177,28 +175,28 @@ class InputOutput:
         self._update()
         return self.py_out
 
-    # run a command and update the class instance without returning anything
-    def run(self, long_command) -> str:
-        self.long_command = long_command
-        self._update()
+    def update(self, long_command: list[str] | None = None) -> None:
+        if long_command == self.long_command:
+            self._update()
+        else:
+            raise ValueError("long_command does not match self.long_command")
 
 
 class Chezmoi:
-    # pylint: disable=too-few-public-methods
-    # the reason for a class is easy dot notation access to all the commands
 
     # don't create this dynamically, hard on linters, type checking and
     # exceptions show up much later than they should.
-    cat_config = InputOutput()
-    template_data = InputOutput()
-    doctor = InputOutput()
-    dump_config = InputOutput()
-    git_log = InputOutput()
-    git_status = InputOutput()
-    ignored = InputOutput()
-    managed = InputOutput()
-    status = InputOutput()
-    unmanaged = InputOutput()
+
+    cat_config: type[InputOutput]
+    chezmoi_status: type[InputOutput]
+    doctor: type[InputOutput]
+    dump_config: type[InputOutput]
+    git_log: type[InputOutput]
+    git_status: type[InputOutput]
+    ignored: type[InputOutput]
+    managed: type[InputOutput]
+    template_data: type[InputOutput]
+    unmanaged: type[InputOutput]
 
     base = [
         "chezmoi",
@@ -207,6 +205,7 @@ class Chezmoi:
         "--no-tty",
         "--progress=false",
     ]
+
     subs = {
         "cat_config": ["cat-config"],
         "template_data": ["data", "--format=json"],
@@ -216,7 +215,7 @@ class Chezmoi:
         "git_status": ["git", "status"],
         "ignored": ["ignored"],
         "managed": ["managed", "--path-style=absolute"],
-        "status": ["status", "--parent-dirs"],
+        "chezmoi_status": ["status", "--parent-dirs"],
         "unmanaged": ["unmanaged", "--path-style=absolute"],
     }
 
@@ -224,15 +223,15 @@ class Chezmoi:
 
     def __init__(self) -> None:
 
-        # Populate all InputOutput instances with the corresponding
-        # long_command, this way of looping also makes sure the arg_id matches
-        # the attribute name. If not, an exception will be raised by getattr.
         for arg_id, sub_cmd in self.subs.items():
-            # using getattr to set the attribute in one lines
-            getattr(self, arg_id).long_command = self.base + sub_cmd
-            # Used for easy looping. Looping over just the arg_id attributes
-            # would require filtering out attributes, also keeps the arg_id
-            # and sub_cmd/attribute name in sync.
-            self.long_commands[arg_id] = self.base + sub_cmd
+            long_cmd = self.base + sub_cmd
+            NewClass = type(arg_id, (InputOutput,), {})
+            setattr(self, arg_id, NewClass(
+                long_command=long_cmd,
+                std_out=f"will hold {arg_id} std_out"
+            ))
+            # map arg_id to the long_command, for looping in LoadingScreen
+            self.long_commands[arg_id] = long_cmd
+
 
 chezmoi = Chezmoi()
