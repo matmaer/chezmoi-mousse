@@ -3,12 +3,10 @@ from pathlib import Path
 from textual.app import ComposeResult
 from textual.widgets import DataTable, DirectoryTree, Label, Static
 
+from chezmoi_mousse.common import chezmoi
+
 
 class ChezmoiDoctor(Static):
-
-    def __init__(self, doctor_py_out: list):
-        super().__init__()
-        self.doctor_py_out = doctor_py_out
 
     def compose(self) -> ComposeResult:
         yield DataTable(
@@ -26,15 +24,17 @@ class ChezmoiDoctor(Static):
     # pylint: disable = no-member
     def on_mount(self) -> None:
 
+        chezmoi.doctor._update()
+
         main_table = self.query_one("#main_table")
         second_table = self.query_one("#second_table")
 
-        header_row = self.doctor_py_out.pop(0).split()
+        header_row = chezmoi.doctor.py_out.pop(0).split()
 
         main_table.add_columns(*header_row)
         second_table.add_columns(*header_row)
 
-        for row in [row.split(maxsplit=2) for row in self.doctor_py_out]:
+        for row in [row.split(maxsplit=2) for row in chezmoi.doctor.py_out]:
             if row[0] == "info" and "not found in $PATH" in row[2]:
                 second_table.add_row(*row)
             else:

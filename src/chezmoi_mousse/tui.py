@@ -9,7 +9,7 @@ from textual.widgets import (
 
 from chezmoi_mousse.common import FLOW, chezmoi, oled_dark_zen
 from chezmoi_mousse.splash import LoadingScreen
-
+from chezmoi_mousse.operator import ChezmoiDoctor
 
 class ChezmoiTUI(App):
 
@@ -23,29 +23,29 @@ class ChezmoiTUI(App):
     def compose(self) -> ComposeResult:
         yield Header()
         with TabbedContent(
-            "Chezmoi-Object",
-            "Status-Stdout",
-            "Status-Pyout",
-            # "Dump-Config",
-            # "Template-Data",
-            # "Unmanaged",
-            # "Cat-Config",
-            # "Doctor",
-            # "Git-Log",
-            # "Git-Status",
-            # "Ignored",
-            # "Managed-Files",
+            "Doctor",
             "Diagram",
+            "Chezmoi-Status",
+            "Dump-Config",
+            "Template-Data",
+            "Unmanaged",
+            "Cat-Config",
+            "Git-Log",
+            "Git-Status",
+            "Ignored",
+            "Managed-Files",
         ):
-            yield Pretty(
-                {
-                    "chezmoi": f"{chezmoi}",
-                    "chezmoi.chezmoi_status": f"{chezmoi.chezmoi_status}",
-                }
-            )
-            yield Pretty(chezmoi.chezmoi_status.std_out)
-            yield Pretty(chezmoi.chezmoi_status.py_out)
+            yield ChezmoiDoctor()
             yield Static(FLOW, id="diagram")
+            yield Pretty(chezmoi.chezmoi_status.py_out)
+            yield Pretty(chezmoi.dump_config.py_out)
+            yield Pretty(chezmoi.template_data.py_out)
+            yield Pretty(chezmoi.unmanaged.py_out)
+            yield Pretty(chezmoi.cat_config.py_out)
+            yield Pretty(chezmoi.git_log.py_out)
+            yield Pretty(chezmoi.git_status.py_out)
+            yield Pretty(chezmoi.ignored.py_out)
+            yield Pretty(chezmoi.managed.py_out)
 
         yield Footer()
 
