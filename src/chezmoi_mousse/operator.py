@@ -24,7 +24,7 @@ class ChezmoiDoctor(Static):
     # pylint: disable = no-member
     def on_mount(self) -> None:
 
-        chezmoi.doctor._update()
+        chezmoi.doctor.update()
 
         main_table = self.query_one("#main_table")
         second_table = self.query_one("#second_table")
