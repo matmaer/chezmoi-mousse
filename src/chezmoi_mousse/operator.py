@@ -167,23 +167,53 @@ class ManagedFiles(Static):
     def compose(self) -> ComposeResult:
         yield Tree(id="managed_tree", label="destDir")
 
+    
+
+    def build_tree(self, paths):
+        json_tree = {}
+        for path in paths:
+            parts = path.split(os.sep)
+            current_level = json_tree
+            for part in parts:
+                if part not in current_level:
+                    current_level[part] = {}
+                current_level = current_level[part]
+        return json_tree
+
+    # def on_mount(self) -> None:
+    #     managed_files = chezmoi.managed.updated_py_out()
+    #     tree = self.query_one("#managed_tree")
+    #     json_tree = self.build_tree(managed_files)
+
+        # Loop over the generated json_tree object
+        # Add leafs and nested leafs to the tree widget
+
+    # def add_leafs(self, tree, json_tree, parent_node=None):
+    #     for key, value in json_tree.items():
+    #         node = tree.add(parent_node, key) if parent_node else tree.add(key)
+    #         if isinstance(value, dict):
+    #             self.add_leafs(tree, value, node)
+
+    # def on_mount(self) -> None:
+    #     managed_files = chezmoi.managed.updated_py_out()
+    #     tree = self.query_one("#managed_tree")
+    #     json_tree = self.build_tree(managed_files)
+
+    #     # Add leafs and nested leafs to the tree widget
+    #     self.add_leafs(tree, json_tree)
+
+        # ...existing code...
+
+    def add_leafs(self, tree, json_tree, parent_node=None):
+        for key, value in json_tree.items():
+            node = parent_node.add(key) if parent_node else tree.root.add(key)
+            if isinstance(value, dict):
+                self.add_leafs(tree, value, node)
+
     def on_mount(self) -> None:
-
         managed_files = chezmoi.managed.updated_py_out()
-
         tree = self.query_one("#managed_tree")
+        json_tree = self.build_tree(managed_files)
 
-        def build_tree(paths):
-            tree = {}
-            for path in paths:
-                parts = path.split(os.sep)
-                current_level = tree
-                for part in parts:
-                    if part not in current_level:
-                        current_level[part] = {}
-                    current_level = current_level[part]
-            return tree
-
-        json_tree = build_tree(managed_files)
-
-        tree.add_json(json_tree)
+        # Add leafs and nested leafs to the tree widget
+        self.add_leafs(tree, json_tree)
