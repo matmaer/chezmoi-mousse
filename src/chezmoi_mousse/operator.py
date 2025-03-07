@@ -24,17 +24,17 @@ class ChezmoiDoctor(Static):
     # pylint: disable = no-member
     def on_mount(self) -> None:
 
-        chezmoi.doctor.update()
+        doctor = chezmoi.doctor.updated_py_out()
 
         main_table = self.query_one("#main_table")
         second_table = self.query_one("#second_table")
 
-        header_row = chezmoi.doctor.py_out.pop(0).split()
+        header_row = doctor.pop(0).split()
 
         main_table.add_columns(*header_row)
         second_table.add_columns(*header_row)
 
-        for row in [row.split(maxsplit=2) for row in chezmoi.doctor.py_out]:
+        for row in [row.split(maxsplit=2) for row in doctor]:
             if row[0] == "info" and "not found in $PATH" in row[2]:
                 second_table.add_row(*row)
             else:
@@ -118,9 +118,9 @@ class ChezmoiStatus(Static):
 
 class ManagedFiles(DirectoryTree):
 
-    def __init__(self, managed_files: list):
+    def __init__(self):
         super().__init__("/home/mm")
-        self.managed_paths = [Path(p) for p in managed_files]
+        self.managed_paths = [Path(p) for p in chezmoi.managed.py_out]
 
     def filter_paths(self, paths):
         return [path for path in paths if path in self.managed_paths]
