@@ -3,7 +3,7 @@
 }
 
 Screen {
-  layers: slidebar;
+  layers: slidebar_layer;
 }
 
 Header {
@@ -77,15 +77,13 @@ LoadingScreen {
 }
 
 SlideBar {
-  layer: slidebar;
+  layer: slidebar_layer;
   background: $background;
   background-tint: $background;
   margin-top: 4;
   margin-bottom: 4;
   padding-left: 1;
   dock: right;
-  /* Needs its own layer to sit above content */
-  layer: sidebar;
   /* offset-x: -100%; out of view if docked left */
   /* offset-x: 100%; out if view if docked right */
   offset-x: 100%;
@@ -102,6 +100,6 @@ SlideBar {
   transition: offset 380ms;
   &.-visible {
       /* offset.x: 0; make visible when class is applied */
-      offset-x: -1;
+      offset-x: 20%;
   }
 }

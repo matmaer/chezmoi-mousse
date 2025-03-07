@@ -1,4 +1,6 @@
 from textual.app import App, ComposeResult
+from textual.reactive import reactive
+from textual.widget import Widget
 from textual.widgets import Footer, Header, Pretty, Static, TabbedContent
 
 from chezmoi_mousse.common import FLOW, chezmoi, oled_dark_zen
@@ -6,17 +8,50 @@ from chezmoi_mousse.operator import ChezmoiDoctor
 from chezmoi_mousse.splash import LoadingScreen
 
 
+class SlideBar(Widget):
+
+
+    def __init__(self, highlight: bool = False):
+        super().__init__()
+        self.animate = True
+        self.auto_scroll = True
+        self.highlight = highlight
+        self.id = "slidebar"
+        self.markup = True
+        self.max_lines = 160  # (80×3÷2)×((16−4)÷9)
+        self.wrap = True
+
+    def compose(self) -> ComposeResult:
+        yield Static("content of the slidebar")
+
+    # def action_toggle_sidebar(self) -> None:
+    #     self.show_sidebar = not self.show_sidebar
+
+    # def watch_show_sidebar(self, show_sidebar: bool) -> None:
+    #     # Toggle "visible" class when "show_sidebar" reactive changes.
+    #     self.set_class(show_sidebar, "-visible")
+
+
+
+
 class ChezmoiTUI(App):
+
+    BINDINGS = {
+        ("t", "toggle_slidebar" ,"Toggle Sidebar")
+    }
 
     CSS_PATH = "tui.tcss"
 
     SCREENS = {
-        "operations": App.get_default_screen,
         "loading": LoadingScreen,
     }
 
+
+    show_sidebar = reactive(True)
+
     def compose(self) -> ComposeResult:
         yield Header(classes="-tall")
+        yield SlideBar()
         with TabbedContent(
             "Doctor",
             "Diagram",
@@ -50,8 +85,10 @@ class ChezmoiTUI(App):
         self.theme = "oled-dark-zen"
         self.push_screen("loading", self.refresh_app)
 
-    # Screen dismiss from the loading screen, returns something even though,
-    # marked as optional in the docs, so adding an underscore
-    # to avoid exception that says refresh takes only one argument
+    # Screen dismiss from the loading screen, returns something, so adding an
+    # underscore to avoid exception saying refresh_app takes only one argument.
     def refresh_app(self, _) -> None:
         self.refresh(recompose=True)
+
+    def action_toggle_slidebar(self):
+        self.query_one(SlideBar).toggle_class("-visible")
