@@ -64,7 +64,7 @@ class LoadingScreen(Screen):
             )
 
     @work(thread=True)
-    def run(self, arg_id, cmd) -> None:
+    def run(self, arg_id) -> None:
         io_class = getattr(chezmoi, arg_id)
         io_class.update()
         padding = 32 - len(io_class.label)
@@ -76,8 +76,8 @@ class LoadingScreen(Screen):
             self.query_one("#continue").disabled = False
 
     def on_mount(self) -> None:
-        for arg_id, cmd in chezmoi.long_commands.items():
-            self.run(arg_id, cmd)
+        for arg_id in chezmoi.long_commands:
+            self.run(arg_id)
         # set a timer for 0.1 seconds to check if all workers are finished
         self.set_interval(interval=0.1, callback=self.check_workers)
 
