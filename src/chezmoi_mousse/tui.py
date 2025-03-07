@@ -21,7 +21,7 @@ class ChezmoiTUI(App):
     }
 
     def compose(self) -> ComposeResult:
-        yield Header()
+        yield Header(classes="-tall")
         with TabbedContent(
             "Doctor",
             "Diagram",
