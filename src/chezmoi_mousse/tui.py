@@ -1,7 +1,15 @@
 from textual.app import App, ComposeResult
 from textual.reactive import reactive
 from textual.widget import Widget
-from textual.widgets import Collapsible, Footer, Header, Pretty, Static, TabbedContent
+from textual.widgets import (
+    Collapsible,
+    Footer,
+    Header,
+    Label,
+    Pretty,
+    Static,
+    TabbedContent,
+)
 
 from chezmoi_mousse.common import FLOW, chezmoi, oled_dark_zen
 from chezmoi_mousse.operator import ChezmoiDoctor
@@ -21,15 +29,16 @@ class SlideBar(Widget):
     #     self.wrap = True
 
     def compose(self) -> ComposeResult:
-        with Collapsible(title="Dump-Config"):
+        yield Label("Outputs from chezmoi commands:")
+        with Collapsible(title="chezmoi dump-config"):
             yield Pretty(chezmoi.dump_config.py_out)
+        with Collapsible(title="chezmoi data (template data)"):
+            yield Pretty(chezmoi.template_data.py_out)
 
 
 class ChezmoiTUI(App):
 
-    BINDINGS = {
-        ("i, I", "toggle_slidebar" ,"Inspect")
-    }
+    BINDINGS = {("i, I", "toggle_slidebar", "Inspect")}
 
     CSS_PATH = "tui.tcss"
 
