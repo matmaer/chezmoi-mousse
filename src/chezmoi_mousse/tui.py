@@ -12,7 +12,7 @@ from textual.widgets import (
 )
 
 from chezmoi_mousse.common import FLOW, chezmoi, oled_dark_zen
-from chezmoi_mousse.operator import ChezmoiDoctor
+from chezmoi_mousse.operator import ChezmoiDoctor, ManagedFiles
 from chezmoi_mousse.splash import LoadingScreen
 
 
@@ -70,7 +70,7 @@ class ChezmoiTUI(App):
             yield Pretty(chezmoi.unmanaged.py_out)
             yield Pretty(chezmoi.git_log.py_out)
             yield Pretty(chezmoi.git_status.py_out)
-            yield Pretty(chezmoi.managed.py_out)
+            yield ManagedFiles()
 
         yield Footer()
 

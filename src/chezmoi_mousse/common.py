@@ -101,7 +101,7 @@ class Chezmoi:
         "git_log": ["git", "log", "--", "--oneline"],
         "git_status": ["git", "status"],
         "ignored": ["ignored"],
-        "managed": ["managed", "--path-style=absolute"],
+        "managed": ["managed"],
         "chezmoi_status": ["status", "--parent-dirs"],
         "unmanaged": ["unmanaged", "--path-style=absolute"],
     }
