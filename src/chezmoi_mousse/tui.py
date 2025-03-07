@@ -1,7 +1,7 @@
 from textual.app import App, ComposeResult
 from textual.reactive import reactive
 from textual.widget import Widget
-from textual.widgets import Footer, Header, Pretty, Static, TabbedContent
+from textual.widgets import Collapsible, Footer, Header, Pretty, Static, TabbedContent
 
 from chezmoi_mousse.common import FLOW, chezmoi, oled_dark_zen
 from chezmoi_mousse.operator import ChezmoiDoctor
@@ -10,34 +10,25 @@ from chezmoi_mousse.splash import LoadingScreen
 
 class SlideBar(Widget):
 
-
-    def __init__(self, highlight: bool = False):
-        super().__init__()
-        self.animate = True
-        self.auto_scroll = True
-        self.highlight = highlight
-        self.id = "slidebar"
-        self.markup = True
-        self.max_lines = 160  # (80×3÷2)×((16−4)÷9)
-        self.wrap = True
+    # def __init__(self, highlight: bool = False):
+    #     super().__init__()
+    #     self.animate = True
+    #     self.auto_scroll = True
+    #     self.highlight = highlight
+    #     self.id = "slidebar"
+    #     self.markup = True
+    #     self.max_lines = 160  # (80×3÷2)×((16−4)÷9)
+    #     self.wrap = True
 
     def compose(self) -> ComposeResult:
-        yield Static("content of the slidebar")
-
-    # def action_toggle_sidebar(self) -> None:
-    #     self.show_sidebar = not self.show_sidebar
-
-    # def watch_show_sidebar(self, show_sidebar: bool) -> None:
-    #     # Toggle "visible" class when "show_sidebar" reactive changes.
-    #     self.set_class(show_sidebar, "-visible")
-
-
+        with Collapsible(title="Dump-Config"):
+            yield Pretty(chezmoi.dump_config.py_out)
 
 
 class ChezmoiTUI(App):
 
     BINDINGS = {
-        ("t", "toggle_slidebar" ,"Toggle Sidebar")
+        ("i, I", "toggle_slidebar" ,"Inspect")
     }
 
     CSS_PATH = "tui.tcss"
@@ -45,7 +36,6 @@ class ChezmoiTUI(App):
     SCREENS = {
         "loading": LoadingScreen,
     }
-
 
     show_sidebar = reactive(True)
 
@@ -56,7 +46,6 @@ class ChezmoiTUI(App):
             "Doctor",
             "Diagram",
             "Chezmoi-Status",
-            "Dump-Config",
             "Template-Data",
             "Unmanaged",
             "Cat-Config",
@@ -68,7 +57,6 @@ class ChezmoiTUI(App):
             yield ChezmoiDoctor()
             yield Static(FLOW, id="diagram")
             yield Pretty(chezmoi.chezmoi_status.py_out)
-            yield Pretty(chezmoi.dump_config.py_out)
             yield Pretty(chezmoi.template_data.py_out)
             yield Pretty(chezmoi.unmanaged.py_out)
             yield Pretty(chezmoi.cat_config.py_out)
