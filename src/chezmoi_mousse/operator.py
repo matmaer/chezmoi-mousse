@@ -1,3 +1,5 @@
+import os
+
 from textual.app import ComposeResult
 from textual.widgets import DataTable, Tree, Label, Static
 
@@ -171,5 +173,17 @@ class ManagedFiles(Static):
 
         tree = self.query_one("#managed_tree")
 
-        for root_file in managed_files:
-            tree.root.add_leaf(root_file)
+        def build_tree(paths):
+            tree = {}
+            for path in paths:
+                parts = path.split(os.sep)
+                current_level = tree
+                for part in parts:
+                    if part not in current_level:
+                        current_level[part] = {}
+                    current_level = current_level[part]
+            return tree
+
+        json_tree = build_tree(managed_files)
+
+        tree.add_json(json_tree)
