@@ -36,6 +36,8 @@ class SlideBar(Widget):
             yield Pretty(chezmoi.template_data.py_out)
         with Collapsible(title="chezmoi ignored (git ignore in source-dir)"):
             yield Pretty(chezmoi.ignored.py_out)
+        with Collapsible(title="chezmoi cat-config (contents of config-file)"):
+            yield Pretty(chezmoi.cat_config.py_out)
 
 
 class ChezmoiTUI(App):
@@ -58,7 +60,6 @@ class ChezmoiTUI(App):
             "Diagram",
             "Chezmoi-Status",
             "Unmanaged",
-            "Cat-Config",
             "Git-Log",
             "Git-Status",
             "Managed-Files",
@@ -67,7 +68,6 @@ class ChezmoiTUI(App):
             yield Static(FLOW, id="diagram")
             yield Pretty(chezmoi.chezmoi_status.py_out)
             yield Pretty(chezmoi.unmanaged.py_out)
-            yield Pretty(chezmoi.cat_config.py_out)
             yield Pretty(chezmoi.git_log.py_out)
             yield Pretty(chezmoi.git_status.py_out)
             yield Pretty(chezmoi.managed.py_out)
