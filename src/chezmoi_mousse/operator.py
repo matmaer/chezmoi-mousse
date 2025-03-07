@@ -1,7 +1,5 @@
-from pathlib import Path
-
 from textual.app import ComposeResult
-from textual.widgets import DataTable, DirectoryTree, Label, Static
+from textual.widgets import DataTable, Tree, Label, Static
 
 from chezmoi_mousse.common import chezmoi
 
@@ -162,11 +160,16 @@ class ChezmoiStatus(Static):
             re_add_table.add_row(*[re_add_status, path, re_add_change])
 
 
-class ManagedFiles(DirectoryTree):
+class ManagedFiles(Static):
 
-    def __init__(self):
-        super().__init__("/home/mm")
-        self.managed_paths = [Path(p) for p in chezmoi.managed.py_out]
+    def compose(self) -> ComposeResult:
+        yield Tree(id="managed_tree", label="destDir")
 
-    def filter_paths(self, paths):
-        return [path for path in paths if path in self.managed_paths]
+    def on_mount(self) -> None:
+
+        managed_files = chezmoi.managed.updated_py_out()
+
+        tree = self.query_one("#managed_tree")
+
+        for root_file in managed_files:
+            tree.root.add_leaf(root_file)

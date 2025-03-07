@@ -27,7 +27,7 @@ Footer {
   min-width: 76;
 }
 
-DataTable, DirectoryTree, RichLog, Slidebar, Collapsible {
+DataTable, DirectoryTree, RichLog, Slidebar, Collapsible, Tree {
   background-tint: $background;
 }
 
