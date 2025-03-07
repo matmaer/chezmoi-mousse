@@ -37,7 +37,8 @@ DataTable, DirectoryTree, RichLog, Slidebar {
 }
 
 DataTable {
-  overflow-x: hidden;
+  width: 100%;
+  # overflow-x: hidden;
   padding: 1 0 1 0;
   &:focus {
     & > .datatable--cursor {
