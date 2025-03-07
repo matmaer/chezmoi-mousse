@@ -1,9 +1,8 @@
-from dataclasses import dataclass
 import json
 import subprocess
 import tomllib
+from dataclasses import dataclass
 
-# from textual.reactive import reactive
 from textual.theme import Theme
 
 
@@ -17,6 +16,7 @@ def _subprocess_run(long_command: list[str] | None = None) -> str:
         timeout=2,
     )
     return result.stdout
+
 
 @dataclass
 class InputOutput:
@@ -113,13 +113,17 @@ class Chezmoi:
         for arg_id, sub_cmd in self.subs.items():
             long_cmd = self.base + sub_cmd
             NewClass = type(arg_id, (InputOutput,), {})
-            setattr(self, arg_id, NewClass(
-                long_command=long_cmd,
-                std_out=f"will hold {arg_id} std_out"
-                )
+            setattr(
+                self,
+                arg_id,
+                NewClass(
+                    long_command=long_cmd,
+                    std_out=f"will hold {arg_id} std_out",
+                ),
             )
             # map arg_id to the long_command, for looping in LoadingScreen
             self.long_commands[arg_id] = long_cmd
+
 
 # there must be a better way to do this
 chezmoi = Chezmoi()

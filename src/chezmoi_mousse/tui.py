@@ -1,15 +1,10 @@
 from textual.app import App, ComposeResult
-from textual.widgets import (
-    Footer,
-    Header,
-    Pretty,
-    Static,
-    TabbedContent,
-)
+from textual.widgets import Footer, Header, Pretty, Static, TabbedContent
 
 from chezmoi_mousse.common import FLOW, chezmoi, oled_dark_zen
-from chezmoi_mousse.splash import LoadingScreen
 from chezmoi_mousse.operator import ChezmoiDoctor
+from chezmoi_mousse.splash import LoadingScreen
+
 
 class ChezmoiTUI(App):
 
