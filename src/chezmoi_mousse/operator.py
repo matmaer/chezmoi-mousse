@@ -8,6 +8,7 @@ from chezmoi_mousse.common import chezmoi
 
 class ChezmoiDoctor(Static):
 
+    # pylint: disable=line-too-long
     command_info = {
         "age": {
             "Description": "A simple, modern and secure file encryption tool",
@@ -69,7 +70,7 @@ class ChezmoiDoctor(Static):
             if row[0] == "info" and "not found in $PATH" in row[2]:
                 # check if the command exists in the command_info dict
                 command = row[2].split()[0]
-                if command in self.command_info.keys():
+                if command in self.command_info:
                     row = [
                         command,
                         self.command_info[command]["Description"],
