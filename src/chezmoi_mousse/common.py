@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import json
 import subprocess
 import tomllib
@@ -123,15 +124,11 @@ def _subprocess_run(long_command: list[str] | None = None) -> str:
     )
     return result.stdout
 
-
+@dataclass
 class InputOutput:
 
     long_command: list[str]
     std_out: str
-
-    def __init__(self, long_command, std_out) -> None:
-        self.long_command = long_command
-        self.std_out = std_out
 
     @property
     def py_out(self):
