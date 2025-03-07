@@ -149,6 +149,8 @@ class InputOutput:
             # not don't attempt to parse yaml, as it will parse a single string
         if std_out.count("\n") > 0:
             to_return = std_out.splitlines()
+        else:
+            to_return = std_out
         return to_return
 
     @property
@@ -158,7 +160,7 @@ class InputOutput:
         )
 
     def update(self) -> None:
-        """Re-run the subprocess call, don't return anything."""
+        """(Re)run the subprocess call, don't return anything."""
         result = _subprocess_run(self.long_command)
         self.std_out = result
 
