@@ -1,4 +1,5 @@
-import os
+# from collections.abc import Iterable
+# from pathlib import Path
 
 from textual.app import ComposeResult
 from textual.widgets import DataTable, Label, Static
@@ -167,16 +168,32 @@ class ChezmoiStatus(Static):
 
 
 # class ManagedFiles(DirectoryTree):
+    # Initialise the managed files widget.
+    # def __init__(
+    #     self,
+    #     paths: list[Path],
+    #     widget_id="managed_files_widget",
+    # ) -> None:
+    #     """Initialise the directory tree."""
+    #     super().__init__(
+    #         path=chezmoi.dest_dir,
+    #         id=widget_id,
+    #     )
+    #     self.paths = paths
 
-#     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
-#         return [path for path in paths if path in chezmoi.managed_paths]
+    #     self._initialize_tree()
 
-#     def compose(self) -> ComposeResult:
-#         yield ManagedFiles(chezmoi.managed_paths)
+    # def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
+    #     return [path for path in paths if path in self.paths]
 
-#     def on_mount(self) -> None:
-#         # at startup, the class gets mounted before the doctor command is run
-#         if chezmoi.doctor.std_out == "":
-#             chezmoi.managed.update()
+    # def _initialize_tree(self) -> None:
+    #     # apply filter
+    #     self.filter_paths(self.paths)
+    #     # Clear the current tree nodes
+    #     self.clear_node(self.root)
+    #     # Reload the tree to reflect the changes
+    #     self.reload()
 
-
+    # chezmoi.managed.update()
+    # managed = [Path(path) for path in chezmoi.managed.py_out]
+    # [Path(path) for path in chezmoi.unmanaged.py_out]
