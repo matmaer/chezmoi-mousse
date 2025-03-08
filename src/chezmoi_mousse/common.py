@@ -106,7 +106,6 @@ class Chezmoi:
 
     dest_dir: str
 
-
     def __init__(self) -> None:
 
         for arg_id, sub_cmd in self.subs.items():
@@ -122,11 +121,7 @@ class Chezmoi:
             )
             # TODO: remove after testing
             if arg_id == "dump_config":
-                setattr(
-                    self,
-                    "dest_dir",
-                    self.dump_config.update()
-                )
+                setattr(self, "dest_dir", self.dump_config.update())
             # map arg_id to the long_command, for looping in LoadingScreen
             self.long_commands[arg_id] = long_cmd
 
