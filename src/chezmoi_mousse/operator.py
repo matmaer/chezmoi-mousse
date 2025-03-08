@@ -65,9 +65,7 @@ class ChezmoiDoctor(Static):
         main_table = self.query_one("#main_table")
         second_table = self.query_one("#second_table")
 
-        header_row = doctor.pop(0).split()
-
-        main_table.add_columns(*header_row)
+        main_table.add_columns(*doctor.pop(0).split())
         second_table.add_columns("COMMAND", "DESCRIPTION", "URL")
 
         for row in [row.split(maxsplit=2) for row in doctor]:
