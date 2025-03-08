@@ -4,6 +4,7 @@
 
 Screen {
   layers: slidebar_layer;
+  overflow-y: hidden;
 }
 
 Header {
@@ -41,14 +42,6 @@ DataTable {
   width: 100%;
   # overflow-x: hidden;
   padding: 1 0 1 0;
-  &:focus {
-    & > .datatable--cursor {
-      background: $primary 45%;
-    }
-    & > .datatable--fixed-cursor {
-      background: $primary 45%;
-    }
-  }
   & > .datatable--header {
     color: $foreground;
     background: $background;
@@ -63,7 +56,7 @@ DataTable {
 LoadingScreen {
   background: black;
   & #loader-log {
-    color: $success;
+    color: $foreground;
     background-tint: black;
     height: 11;
     width: auto;
@@ -83,8 +76,8 @@ SlideBar {
   layer: slidebar_layer;
   background: $background;
   background-tint: $background;
-  margin-top: 4;
-  margin-bottom: 4;
+  margin-top: 6;
+  margin-bottom: 6;
   padding-left: 1;
   dock: right;
   /* offset-x: -100%; out of view if docked left */

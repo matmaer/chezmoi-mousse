@@ -1,4 +1,5 @@
 from textual.app import App, ComposeResult
+from textual.containers import VerticalScroll
 from textual.reactive import reactive
 from textual.widget import Widget
 from textual.widgets import (
@@ -31,13 +32,13 @@ class SlideBar(Widget):
     def compose(self) -> ComposeResult:
         yield Label("Outputs from chezmoi commands:")
         with Collapsible(title="chezmoi dump-config"):
-            yield Pretty(chezmoi.dump_config.py_out)
+            yield VerticalScroll(Pretty(chezmoi.dump_config.py_out))
         with Collapsible(title="chezmoi data (template data)"):
-            yield Pretty(chezmoi.template_data.py_out)
+            yield VerticalScroll(Pretty(chezmoi.template_data.py_out))
         with Collapsible(title="chezmoi ignored (git ignore in source-dir)"):
-            yield Pretty(chezmoi.ignored.py_out)
+            yield VerticalScroll(Pretty(chezmoi.ignored.py_out))
         with Collapsible(title="chezmoi cat-config (contents of config-file)"):
-            yield Pretty(chezmoi.cat_config.py_out)
+            yield VerticalScroll(Pretty(chezmoi.cat_config.py_out))
 
 
 class ChezmoiTUI(App):
@@ -65,7 +66,7 @@ class ChezmoiTUI(App):
             "Git-Status",
         ):
             # yield ManagedFiles(chezmoi.dest_dir)
-            yield ChezmoiDoctor()
+            yield VerticalScroll(ChezmoiDoctor())
             yield Static(FLOW, id="diagram")
             yield Pretty(chezmoi.chezmoi_status.py_out)
             yield Pretty(chezmoi.unmanaged.py_out)

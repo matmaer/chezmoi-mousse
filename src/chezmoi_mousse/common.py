@@ -220,12 +220,10 @@ oled_dark_zen = Theme(
     accent="rgb(241, 135, 251)",
     background=BACKGROUND,
     error="rgb(203, 68, 31)",
-    foreground="rgb(234, 232, 227)",
+    foreground="rgb(222, 218, 209)",
     panel="rgb(98, 118, 147)",
     primary="rgb(67, 156, 251)",
-    secondary="rgb(37, 146, 137)",
     success="rgb(63, 170, 77)",
-    surface="rgb(24, 28, 34)",
     warning="rgb(224, 195, 30)",
     variables={
         "footer-background": BACKGROUND,
