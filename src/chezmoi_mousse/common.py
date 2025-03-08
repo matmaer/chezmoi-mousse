@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 import subprocess
 import tomllib
 from dataclasses import dataclass
@@ -85,6 +86,12 @@ class Chezmoi:
     template_data: type[InputOutput]
     unmanaged: type[InputOutput]
 
+    # extra shortcut for "destDir" config value access
+    dest_dir: str = None
+    # extra shortucts containing list[Path] instead of list[str]
+    managed_paths: list[Path] = None
+    unmanaged_paths: list[Path] = None
+
     base = [
         "chezmoi",
         "--no-pager",
@@ -118,7 +125,6 @@ class Chezmoi:
                 arg_id,
                 NewClass(
                     long_command=long_cmd,
-                    std_out=f"will hold {arg_id} std_out",
                 ),
             )
             # map arg_id to the long_command, for looping in LoadingScreen

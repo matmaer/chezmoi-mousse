@@ -56,21 +56,21 @@ class ChezmoiTUI(App):
         yield Header(classes="-tall")
         yield SlideBar()
         with TabbedContent(
+            # "Managed-Files",
             "Doctor",
             "Diagram",
             "Chezmoi-Status",
             "Unmanaged",
             "Git-Log",
             "Git-Status",
-            "Managed-Files",
         ):
+            # yield ManagedFiles(chezmoi.dest_dir)
             yield ChezmoiDoctor()
             yield Static(FLOW, id="diagram")
             yield Pretty(chezmoi.chezmoi_status.py_out)
             yield Pretty(chezmoi.unmanaged.py_out)
             yield Pretty(chezmoi.git_log.py_out)
             yield Pretty(chezmoi.git_status.py_out)
-            yield ManagedFiles()
 
         yield Footer()
 
