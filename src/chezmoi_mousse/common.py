@@ -236,3 +236,29 @@ oled_dark_zen = Theme(
         "scrollbar-corner-color": BACKGROUND,
     },
 )
+
+
+
+oled_dark_zen_v2 = Theme(
+    name="oled-dark-zen",
+    dark=True,
+    luminosity_spread=0.9,
+    text_alpha=0.9,
+    accent="rgb(255, 95, 184)",
+    background=BACKGROUND,
+    error="rgb(197, 0, 113)",
+    foreground="rgb(222, 218, 209)",
+    panel="rgb(98, 118, 147)",
+    primary="rgb(147, 156, 255)",
+    secondary="rgb(0, 197, 84)",
+    success="rgb(0, 203, 158)",
+    warning="rgb(144, 185, 0)",
+    variables={
+        "footer-background": BACKGROUND,
+        "footer-description-background": BACKGROUND,
+        "footer-item-background": BACKGROUND,
+        "footer-key-background": BACKGROUND,
+        "link-background": BACKGROUND,
+        "scrollbar-corner-color": BACKGROUND,
+    },
+)
