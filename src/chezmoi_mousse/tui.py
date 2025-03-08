@@ -78,7 +78,8 @@ class ChezmoiTUI(App):
     def on_mount(self) -> None:
         self.title = "-  c h e z m o i  m o u s s e  -"
         self.register_theme(oled_dark_zen)
-        self.theme = "oled-dark-zen"
+        # self.theme = "oled-dark-zen" # let's use textual and prioritize the
+        # release of the app
         self.push_screen("loading", self.refresh_app)
 
     # Screen dismiss from the loading screen, returns something, so adding an
