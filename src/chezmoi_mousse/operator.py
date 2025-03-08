@@ -87,15 +87,15 @@ class ChezmoiDoctor(Static):
                 second_table.add_row(*row)
             else:
                 if row[0] == "ok":
-                    row = [f"[#3FAA4D]{cell}[/]" for cell in row]
+                    row = [f"[#4EBF71]{cell}[/]" for cell in row]
                 elif row[0] == "warning":
-                    row = [f"[#E0C31E]{cell}[/]" for cell in row]
+                    row = [f"[#ffa62b]{cell}[/]" for cell in row]
                 elif row[0] == "error":
                     row = [f"[red]{cell}[/]" for cell in row]
                 elif row[0] == "info" and row[2] == "not set":
-                    row = [f"[#E0C31E]{cell}[/]" for cell in row]
+                    row = [f"[#ffa62b]{cell}[/]" for cell in row]
                 else:
-                    row = [f"[#E0C31E]{cell}[/]" for cell in row]
+                    row = [f"[#ffa62b]{cell}[/]" for cell in row]
                 main_table.add_row(*row)
 
 
