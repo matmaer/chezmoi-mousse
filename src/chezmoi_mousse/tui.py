@@ -69,13 +69,16 @@ class ChezmoiDoctor(Static):
         yield DataTable(
             id="main_table",
             cursor_type="row",
+            classes="space",
         )
         yield Label(
             "Local commands skipped because not in Path:",
+            classes="just-bold",
         )
         yield DataTable(
             id="second_table",
             cursor_type="row",
+            classes="space",
         )
 
     def on_mount(self) -> None:
@@ -125,7 +128,10 @@ class ChezmoiDoctor(Static):
 
 class ChezmoiTUI(App):
 
-    BINDINGS = {("i, I", "toggle_slidebar", "Inspect")}
+    BINDINGS = {
+        ("i, I", "toggle_slidebar", "Inspect"),
+        ("S, s", "toggle_space", "Space"),
+    }
 
     CSS_PATH = "tui.tcss"
 
@@ -155,7 +161,7 @@ class ChezmoiTUI(App):
             yield Pretty(chezmoi.git_log.py_out)
             yield Pretty(chezmoi.git_status.py_out)
 
-        yield Footer()
+        yield Footer(classes="just-margin-top")
 
     def on_mount(self) -> None:
         self.title = "-  c h e z m o i  m o u s s e  -"
@@ -171,3 +177,12 @@ class ChezmoiTUI(App):
 
     def action_toggle_slidebar(self):
         self.query_one(SlideBar).toggle_class("-visible")
+
+    def action_toggle_space(self):
+        self.query_one(Header).toggle_class("-tall")
+        self.query_one(DataTable).toggle_class("space")
+        self.query_one(Collapsible).toggle_class("space")
+        self.query_one(Footer).toggle_class("just-margin-top")
+
+    def key_space(self) -> None:
+        self.action_toggle_space()
