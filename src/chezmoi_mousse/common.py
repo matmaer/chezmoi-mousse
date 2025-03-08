@@ -236,7 +236,6 @@ oled_dark_zen = Theme(
 )
 
 
-
 oled_dark_zen_v2 = Theme(
     name="oled-dark-zen-v2",
     dark=True,

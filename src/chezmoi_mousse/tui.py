@@ -19,16 +19,6 @@ from chezmoi_mousse.splash import LoadingScreen
 
 class SlideBar(Widget):
 
-    # def __init__(self, highlight: bool = False):
-    #     super().__init__()
-    #     self.animate = True
-    #     self.auto_scroll = True
-    #     self.highlight = highlight
-    #     self.id = "slidebar"
-    #     self.markup = True
-    #     self.max_lines = 160  # (80×3÷2)×((16−4)÷9)
-    #     self.wrap = True
-
     def compose(self) -> ComposeResult:
         yield Label("Outputs from chezmoi commands:")
         with Collapsible(title="chezmoi dump-config"):
@@ -39,7 +29,6 @@ class SlideBar(Widget):
             yield VerticalScroll(Pretty(chezmoi.ignored.py_out))
         with Collapsible(title="chezmoi cat-config (contents of config-file)"):
             yield VerticalScroll(Pretty(chezmoi.cat_config.py_out))
-
 
 
 class ChezmoiDoctor(Static):
