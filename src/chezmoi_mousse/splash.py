@@ -68,7 +68,7 @@ class LoadingScreen(Screen):
         io_class = getattr(chezmoi, arg_id)
         io_class.update()
 
-        # add extra shortcuts for config parameters access
+        # TODO: remove after testing
         if arg_id == "dump_config":
             setattr(chezmoi, "dest_dir", io_class.py_out["destDir"])
 
