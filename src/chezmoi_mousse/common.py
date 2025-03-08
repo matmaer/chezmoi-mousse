@@ -22,17 +22,17 @@ def _subprocess_run(long_command: list[str] | None = None) -> str:
 class InputOutput:
 
     long_command: list[str]
-    std_out: str
+    std_out: str = ""
 
     @property
     def py_out(self):
+
+        if self.std_out == "":
+            return "no std_out available to parse"
+
         std_out = self.std_out.strip()
         to_return = "should hold parsed std_out"
 
-        if std_out == "":
-            to_return = "std_out is an empty string"
-        if std_out == "will hold std_out":
-            to_return = "no std_out available to parse"
         try:
             return json.loads(std_out)
         except json.JSONDecodeError:

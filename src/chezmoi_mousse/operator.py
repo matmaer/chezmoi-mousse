@@ -56,7 +56,10 @@ class ChezmoiDoctor(Static):
 
     def on_mount(self) -> None:
 
-        doctor = chezmoi.doctor.updated_py_out()
+        doctor = chezmoi.doctor.py_out
+
+        if chezmoi.doctor.std_out == "":
+            doctor = chezmoi.doctor.updated_py_out()
 
         main_table = self.query_one("#main_table")
         second_table = self.query_one("#second_table")
