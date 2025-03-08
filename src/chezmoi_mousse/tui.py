@@ -12,7 +12,7 @@ from textual.widgets import (
     TabbedContent,
 )
 
-from chezmoi_mousse.common import FLOW, chezmoi, oled_dark_zen, integrated_commands
+from chezmoi_mousse.common import FLOW, chezmoi, oled_dark_zen, integrated_command
 from chezmoi_mousse.splash import LoadingScreen
 
 
@@ -64,13 +64,13 @@ class ChezmoiDoctor(Static):
 
         for row in [row.split(maxsplit=2) for row in doctor]:
             if row[0] == "info" and "not found in $PATH" in row[2]:
-                # check if the command exists in the integrated_commands dict
+                # check if the command exists in the integrated_command dict
                 command = row[2].split()[0]
-                if command in integrated_commands:
+                if command in integrated_command:
                     row = [
                         command,
-                        integrated_commands[command]["Description"],
-                        integrated_commands[command]["URL"],
+                        integrated_command[command]["Description"],
+                        integrated_command[command]["URL"],
                     ]
                 else:
                     row = [
