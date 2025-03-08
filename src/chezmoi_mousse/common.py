@@ -108,8 +108,9 @@ class Chezmoi:
 
     def __init__(self) -> None:
 
+        self.long_commands = {}
+
         for arg_id, sub_cmd in self.subs.items():
-            self.long_commands = {}
             long_cmd = self.base + sub_cmd
             NewClass = type(arg_id, (InputOutput,), {})
             setattr(
@@ -120,8 +121,8 @@ class Chezmoi:
                 ),
             )
             # TODO: remove after testing
-            if arg_id == "dump_config":
-                setattr(self, "dest_dir", self.dump_config.update())
+            # if arg_id == "dump_config":
+            #     setattr(self, "dest_dir", self.dump_config.update())
             # map arg_id to the long_command, for looping in LoadingScreen
             self.long_commands[arg_id] = long_cmd
 

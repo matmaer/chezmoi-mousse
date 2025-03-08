@@ -68,8 +68,8 @@ class LoadingScreen(Screen):
         io_class.update()
 
         # TODO: remove after testing
-        if arg_id == "dump_config":
-            setattr(chezmoi, "dest_dir", io_class.py_out["destDir"])
+        # if arg_id == "dump_config":
+        #     setattr(chezmoi, "dest_dir", io_class.py_out["destDir"])
 
         padding = 32 - len(io_class.label)
         log_text = f"{io_class.label} {'.' * padding} loaded"
@@ -82,7 +82,6 @@ class LoadingScreen(Screen):
     def on_mount(self) -> None:
         for arg_id in chezmoi.long_commands:
             self.run(arg_id)
-        # set a timer for 0.1 seconds to check if all workers are finished
         self.set_interval(interval=0.1, callback=self.check_workers)
 
     async def on_key(self) -> None:
