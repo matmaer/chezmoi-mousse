@@ -99,10 +99,12 @@ class Chezmoi:
         "git_log": ["git", "log", "--", "--oneline"],
         "git_status": ["git", "status"],
         "ignored": ["ignored"],
-        "managed": ["managed"],
+        "managed": ["managed", "--path-style=absolute"],
         "chezmoi_status": ["status", "--parent-dirs"],
         "unmanaged": ["unmanaged", "--path-style=absolute"],
     }
+
+    dest_dir: str
 
 
     def __init__(self) -> None:
@@ -118,6 +120,13 @@ class Chezmoi:
                     long_command=long_cmd,
                 ),
             )
+            # TODO: remove after testing
+            if arg_id == "dump_config":
+                setattr(
+                    self,
+                    "dest_dir",
+                    self.dump_config.update()
+                )
             # map arg_id to the long_command, for looping in LoadingScreen
             self.long_commands[arg_id] = long_cmd
 
