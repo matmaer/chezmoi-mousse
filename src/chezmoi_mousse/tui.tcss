@@ -2,13 +2,31 @@
   scrollbar-size-vertical: 1;
 }
 
+.space {
+  margin: 1 0 1 0;
+}
+
+.just-bold {
+  text-style: bold;
+}
+
+.just-margin-top {
+  margin-top: 1;
+}
+
+#diagram {
+  margin-left: 1;
+  margin-right: 1;
+  min-width: 76;
+}
+
 Screen {
   layers: slidebar_layer;
   overflow-y: hidden;
 }
 
 Header {
-  color: $accent;
+  color: $primary;
   background: $background;
   HeaderIcon {
     /* don't use display: none; because then the title is not centered */
@@ -20,12 +38,6 @@ Footer {
   .-command-palette {
     border: none;
   }
-}
-
-#diagram {
-  margin-left: 1;
-  margin-right: 1;
-  min-width: 76;
 }
 
 DataTable, DirectoryTree, RichLog, Slidebar, Collapsible, Tree {
@@ -40,8 +52,6 @@ Collapsible {
 
 DataTable {
   width: 100%;
-  # overflow-x: hidden;
-  padding: 1 0 1 0;
   & > .datatable--header {
     color: $foreground;
     background: $background;
@@ -56,21 +66,20 @@ DataTable {
 LoadingScreen {
   background: black;
   & #loader-log {
-    color: $foreground;
+    color: $primary;
     background-tint: black;
     height: 11;
     width: auto;
     margin: 2 0 0 0;
   }
   #continue {
+    color: $accent;
     background: black;
     border: none;
-    color: $primary;
+    margin-top: 1;
     text-style: none;
   }
 }
-
-
 
 SlideBar {
   layer: slidebar_layer;
@@ -91,7 +100,6 @@ SlideBar {
   border-left: round $panel;
   border-top: round $panel;
   border-bottom: round $panel;
-
   /* Enable animation */
   transition: offset 380ms;
   &.-visible {
