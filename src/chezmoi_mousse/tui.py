@@ -1,6 +1,5 @@
 from textual.app import App, ComposeResult
 from textual.containers import VerticalScroll
-from textual.reactive import reactive
 from textual.widget import Widget
 from textual.widgets import (
     Collapsible,
@@ -138,8 +137,6 @@ class ChezmoiTUI(App):
     SCREENS = {
         "loading": LoadingScreen,
     }
-
-    show_sidebar = reactive(True)
 
     def compose(self) -> ComposeResult:
         yield Header(classes="-tall")
