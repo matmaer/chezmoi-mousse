@@ -1,5 +1,4 @@
 from collections import deque
-from pathlib import Path
 
 from textual import work
 from textual.app import ComposeResult
@@ -72,12 +71,6 @@ class LoadingScreen(Screen):
         # add extra shortcuts for config parameters access
         if arg_id == "dump_config":
             setattr(chezmoi, "dest_dir", io_class.py_out["destDir"])
-        if arg_id == "managed":
-            path_objects = [Path(path) for path in io_class.py_out]
-            setattr(chezmoi, "managed_paths", path_objects)
-        if arg_id == "unmanaged":
-            path_objects = [Path(path) for path in io_class.py_out]
-            setattr(chezmoi, "unmanaged_paths", path_objects)
 
         padding = 32 - len(io_class.label)
         log_text = f"{io_class.label} {'.' * padding} loaded"
