@@ -88,9 +88,6 @@ class Chezmoi:
 
     # extra shortcut for "destDir" config value access
     dest_dir: str = None
-    # extra shortucts containing list[Path] instead of list[str]
-    managed_paths: list[Path] = None
-    unmanaged_paths: list[Path] = None
 
     base = [
         "chezmoi",
@@ -130,6 +127,13 @@ class Chezmoi:
             # map arg_id to the long_command, for looping in LoadingScreen
             self.long_commands[arg_id] = long_cmd
 
+    @property
+    def managed_paths(self) -> list[Path]:
+        return [Path(path) for path in chezmoi.managed.py_out]
+
+    @property
+    def unmanaged_paths(self) -> list[Path]:
+        return [Path(path) for path in chezmoi.unmanaged.py_out]
 
 # there must be a better way to do this
 chezmoi = Chezmoi()
