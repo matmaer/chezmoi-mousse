@@ -87,9 +87,9 @@ class LoadingScreen(Screen):
         self.set_interval(interval=0.1, callback=self.check_workers)
 
     async def on_key(self) -> None:
-        await self.app.workers.wait_for_complete()
+        self.app.workers.wait_for_complete()
         self.screen.dismiss()
 
     async def on_click(self) -> None:
-        await self.app.workers.wait_for_complete()
+        self.app.workers.wait_for_complete()
         self.screen.dismiss()

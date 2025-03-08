@@ -1,5 +1,4 @@
 import json
-from pathlib import Path
 import subprocess
 import tomllib
 from dataclasses import dataclass
@@ -122,13 +121,6 @@ class Chezmoi:
             # map arg_id to the long_command, for looping in LoadingScreen
             self.long_commands[arg_id] = long_cmd
 
-    @property
-    def managed_paths(self) -> list[Path]:
-        return [Path(path) for path in chezmoi.managed.py_out]
-
-    @property
-    def unmanaged_paths(self) -> list[Path]:
-        return [Path(path) for path in chezmoi.unmanaged.py_out]
 
 # there must be a better way to do this
 chezmoi = Chezmoi()
