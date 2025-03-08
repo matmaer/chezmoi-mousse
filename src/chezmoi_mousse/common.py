@@ -262,7 +262,7 @@ oled_dark_zen_v2 = Theme(
 
 
 # pylint: disable=line-too-long
-integrated_commands = {
+integrated_command = {
     "age": {
         "Description": "A simple, modern and secure file encryption tool",
         "URL": "https://github.com/FiloSottile/age",
