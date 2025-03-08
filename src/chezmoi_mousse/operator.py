@@ -41,7 +41,6 @@ class ChezmoiDoctor(Static):
         },
     }
 
-
     def compose(self) -> ComposeResult:
         yield DataTable(
             id="main_table",
@@ -168,32 +167,32 @@ class ChezmoiStatus(Static):
 
 
 # class ManagedFiles(DirectoryTree):
-    # Initialise the managed files widget.
-    # def __init__(
-    #     self,
-    #     paths: list[Path],
-    #     widget_id="managed_files_widget",
-    # ) -> None:
-    #     """Initialise the directory tree."""
-    #     super().__init__(
-    #         path=chezmoi.dest_dir,
-    #         id=widget_id,
-    #     )
-    #     self.paths = paths
+# Initialise the managed files widget.
+# def __init__(
+#     self,
+#     paths: list[Path],
+#     widget_id="managed_files_widget",
+# ) -> None:
+#     """Initialise the directory tree."""
+#     super().__init__(
+#         path=chezmoi.dest_dir,
+#         id=widget_id,
+#     )
+#     self.paths = paths
 
-    #     self._initialize_tree()
+#     self._initialize_tree()
 
-    # def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
-    #     return [path for path in paths if path in self.paths]
+# def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
+#     return [path for path in paths if path in self.paths]
 
-    # def _initialize_tree(self) -> None:
-    #     # apply filter
-    #     self.filter_paths(self.paths)
-    #     # Clear the current tree nodes
-    #     self.clear_node(self.root)
-    #     # Reload the tree to reflect the changes
-    #     self.reload()
+# def _initialize_tree(self) -> None:
+#     # apply filter
+#     self.filter_paths(self.paths)
+#     # Clear the current tree nodes
+#     self.clear_node(self.root)
+#     # Reload the tree to reflect the changes
+#     self.reload()
 
-    # chezmoi.managed.update()
-    # managed = [Path(path) for path in chezmoi.managed.py_out]
-    # [Path(path) for path in chezmoi.unmanaged.py_out]
+# chezmoi.managed.update()
+# managed = [Path(path) for path in chezmoi.managed.py_out]
+# [Path(path) for path in chezmoi.unmanaged.py_out]

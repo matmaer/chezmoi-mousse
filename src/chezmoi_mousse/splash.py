@@ -6,8 +6,7 @@ from textual.color import Color, Gradient
 from textual.containers import Center, Middle
 from textual.screen import Screen
 from textual.widget import Segment, Strip, Style, Widget
-from textual.widgets import RichLog  # Pretty, Static, TabbedContent,
-from textual.widgets import Button
+from textual.widgets import Button, RichLog
 
 from chezmoi_mousse.common import SPLASH, chezmoi
 

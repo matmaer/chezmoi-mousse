@@ -12,7 +12,7 @@ from textual.widgets import (
 )
 
 from chezmoi_mousse.common import FLOW, chezmoi, oled_dark_zen
-from chezmoi_mousse.operator import ChezmoiDoctor, ManagedFiles
+from chezmoi_mousse.operator import ChezmoiDoctor
 from chezmoi_mousse.splash import LoadingScreen
 
 
