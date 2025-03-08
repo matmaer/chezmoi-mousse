@@ -72,9 +72,6 @@ class InputOutput:
 
 class Chezmoi:
 
-    # don't create this dynamically, hard on linters, type checking and
-    # exceptions show up much later than they should.
-
     cat_config: type[InputOutput]
     chezmoi_status: type[InputOutput]
     doctor: type[InputOutput]
@@ -85,9 +82,7 @@ class Chezmoi:
     managed: type[InputOutput]
     template_data: type[InputOutput]
     unmanaged: type[InputOutput]
-
-    # extra shortcut for "destDir" config value access
-    dest_dir: str = None
+    dest_dir: str  # shortcut for "destDir" config value access
 
     base = [
         "chezmoi",
@@ -110,11 +105,11 @@ class Chezmoi:
         "unmanaged": ["unmanaged", "--path-style=absolute"],
     }
 
-    long_commands = {}
 
     def __init__(self) -> None:
 
         for arg_id, sub_cmd in self.subs.items():
+            self.long_commands = {}
             long_cmd = self.base + sub_cmd
             NewClass = type(arg_id, (InputOutput,), {})
             setattr(
