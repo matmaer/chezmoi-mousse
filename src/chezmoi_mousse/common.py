@@ -217,14 +217,14 @@ oled_dark_zen = Theme(
     dark=True,
     luminosity_spread=0.9,
     text_alpha=0.9,
-    accent="rgb(241, 135, 251)",
+    accent="rgb(241, 135, 251)",  # #F187FB
     background=BACKGROUND,
-    error="rgb(203, 68, 31)",
-    foreground="rgb(222, 218, 209)",
-    panel="rgb(98, 118, 147)",
-    primary="rgb(67, 156, 251)",
-    success="rgb(63, 170, 77)",
-    warning="rgb(224, 195, 30)",
+    error="rgb(203, 68, 31)",  # #CB441F
+    foreground="rgb(222, 218, 209)",  # #DEDAE1
+    panel="rgb(98, 118, 147)",  # #627693
+    primary="rgb(67, 156, 251)",  # #439CFB
+    success="rgb(63, 170, 77)",  # #3FAA4D
+    warning="rgb(224, 195, 30)",  # #E0C31E
     variables={
         "footer-background": BACKGROUND,
         "footer-description-background": BACKGROUND,
@@ -238,19 +238,19 @@ oled_dark_zen = Theme(
 
 
 oled_dark_zen_v2 = Theme(
-    name="oled-dark-zen",
+    name="oled-dark-zen-v2",
     dark=True,
     luminosity_spread=0.9,
     text_alpha=0.9,
-    accent="rgb(255, 95, 184)",
+    accent="rgb(255, 95, 184)",  # #FF5FB8
     background=BACKGROUND,
-    error="rgb(197, 0, 113)",
-    foreground="rgb(222, 218, 209)",
-    panel="rgb(98, 118, 147)",
-    primary="rgb(147, 156, 255)",
-    secondary="rgb(0, 197, 84)",
-    success="rgb(0, 203, 158)",
-    warning="rgb(144, 185, 0)",
+    error="rgb(197, 0, 113)",  # #C50071
+    foreground="rgb(222, 218, 209)",  # #DEDAE1
+    panel="rgb(98, 118, 147)",  # #627693
+    primary="rgb(147, 156, 255)",  # #939CFF
+    secondary="rgb(0, 197, 84)",  # #00C554
+    success="rgb(0, 203, 158)",  # #00CB9E
+    warning="rgb(144, 185, 0)",  # #90B900
     variables={
         "footer-background": BACKGROUND,
         "footer-description-background": BACKGROUND,
