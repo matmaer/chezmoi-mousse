@@ -12,7 +12,7 @@ from textual.widgets import (
     TabbedContent,
 )
 
-from chezmoi_mousse.common import FLOW, chezmoi, oled_dark_zen
+from chezmoi_mousse.common import FLOW, chezmoi, oled_dark_zen, integrated_commands
 from chezmoi_mousse.splash import LoadingScreen
 
 
@@ -31,38 +31,6 @@ class SlideBar(Widget):
 
 
 class ChezmoiDoctor(Static):
-
-    # pylint: disable=line-too-long
-    command_info = {
-        "age": {
-            "Description": "A simple, modern and secure file encryption tool",
-            "URL": "https://github.com/FiloSottile/age",
-        },
-        "gopass": {
-            "Description": "The slightly more awesome standard unix password manager for teams.",
-            "URL": "https://github.com/gopasspw/gopass",
-        },
-        "pass": {
-            "Description": "Stores, retrieves, generates, and synchronizes passwords securely",
-            "URL": "https://www.passwordstore.org/",
-        },
-        "rbw": {
-            "Description": "Unofficial Bitwarden CLI",
-            "URL": "https://git.tozt.net/rbw",
-        },
-        "vault": {
-            "Description": "A tool for managing secrets",
-            "URL": "https://vaultproject.io/",
-        },
-        "pinentry": {
-            "Description": "Collection of simple PIN or passphrase entry dialogs which utilize the Assuan protocol",
-            "URL": "https://gnupg.org/related_software/pinentry/",
-        },
-        "keepassxc": {
-            "Description": "Cross-platform community-driven port of Keepass password manager",
-            "URL": "https://keepassxc.org/",
-        },
-    }
 
     def compose(self) -> ComposeResult:
         yield DataTable(
@@ -96,13 +64,13 @@ class ChezmoiDoctor(Static):
 
         for row in [row.split(maxsplit=2) for row in doctor]:
             if row[0] == "info" and "not found in $PATH" in row[2]:
-                # check if the command exists in the command_info dict
+                # check if the command exists in the integrated_commands dict
                 command = row[2].split()[0]
-                if command in self.command_info:
+                if command in integrated_commands:
                     row = [
                         command,
-                        self.command_info[command]["Description"],
-                        self.command_info[command]["URL"],
+                        integrated_commands[command]["Description"],
+                        integrated_commands[command]["URL"],
                     ]
                 else:
                     row = [

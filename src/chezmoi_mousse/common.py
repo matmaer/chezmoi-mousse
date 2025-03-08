@@ -259,3 +259,36 @@ oled_dark_zen_v2 = Theme(
         "scrollbar-corner-color": BACKGROUND,
     },
 )
+
+
+# pylint: disable=line-too-long
+integrated_commands = {
+    "age": {
+        "Description": "A simple, modern and secure file encryption tool",
+        "URL": "https://github.com/FiloSottile/age",
+    },
+    "gopass": {
+        "Description": "The slightly more awesome standard unix password manager for teams.",
+        "URL": "https://github.com/gopasspw/gopass",
+    },
+    "pass": {
+        "Description": "Stores, retrieves, generates, and synchronizes passwords securely",
+        "URL": "https://www.passwordstore.org/",
+    },
+    "rbw": {
+        "Description": "Unofficial Bitwarden CLI",
+        "URL": "https://git.tozt.net/rbw",
+    },
+    "vault": {
+        "Description": "A tool for managing secrets",
+        "URL": "https://vaultproject.io/",
+    },
+    "pinentry": {
+        "Description": "Collection of simple PIN or passphrase entry dialogs which utilize the Assuan protocol",
+        "URL": "https://gnupg.org/related_software/pinentry/",
+    },
+    "keepassxc": {
+        "Description": "Cross-platform community-driven port of Keepass password manager",
+        "URL": "https://keepassxc.org/",
+    },
+}
