@@ -134,7 +134,7 @@ class ChezmoiTUI(App):
         self.register_theme(oled_dark_background)
         self.push_screen("loading", self.refresh_app)
 
-    # Inderscore to ignore return value from screen.dismiss()
+    # Underscore to ignore return value from screen.dismiss()
     def refresh_app(self, _) -> None:
         self.refresh(recompose=True)
 
