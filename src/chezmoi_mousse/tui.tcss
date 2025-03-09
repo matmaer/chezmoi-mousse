@@ -49,6 +49,10 @@ Collapsible {
   padding: 0;
 }
 
+VerticalScroll {
+  height: auto;
+}
+
 DataTable {
   width: 100%;
   & > .datatable--header {
