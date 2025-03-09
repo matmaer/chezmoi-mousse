@@ -29,7 +29,11 @@ class SlideBar(Widget):
         with Collapsible(title="chezmoi cat-config (contents of config-file)"):
             yield VerticalScroll(Pretty(chezmoi.cat_config.py_out))
         with Collapsible(title="chezmoi git log -- --one-line"):
-            yield VerticalScroll(Pretty(chezmoi.cat_config.py_out))
+            yield VerticalScroll(Pretty(chezmoi.git_log.py_out))
+        with Collapsible(title="chezmoi git status"):
+            yield VerticalScroll(Pretty(chezmoi.git_status.py_out))
+        with Collapsible(title="chezmoi unmanaged (in destination directory)"):
+            yield VerticalScroll(Pretty(chezmoi.unmanaged.py_out))
 
 
 class ChezmoiDoctor(Static):
@@ -112,19 +116,13 @@ class ChezmoiTUI(App):
         yield Header(classes="-tall")
         yield SlideBar()
         with TabbedContent(
-            # "Managed-Files",
             "Doctor",
             "Diagram",
             "Chezmoi-Status",
-            "Unmanaged",
-            "Git-Status",
         ):
-            # yield ManagedFiles(chezmoi.dest_dir)
             yield VerticalScroll(ChezmoiDoctor())
             yield Static(FLOW, id="diagram")
             yield Pretty(chezmoi.chezmoi_status.py_out)
-            yield Pretty(chezmoi.unmanaged.py_out)
-            yield Pretty(chezmoi.git_status.py_out)
 
         yield Footer(classes="just-margin-top")
 
@@ -144,7 +142,6 @@ class ChezmoiTUI(App):
     def action_toggle_space(self):
         self.query_one(Header).toggle_class("-tall")
         self.query_one(DataTable).toggle_class("space")
-        self.query_one(Collapsible).toggle_class("space")
         self.query_one(Footer).toggle_class("just-margin-top")
 
     def key_space(self) -> None:
