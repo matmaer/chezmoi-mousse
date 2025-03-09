@@ -212,7 +212,7 @@ FLOW = """\
 
 BACKGROUND = "rgb(12, 14, 18)"
 
-oled_dark_zen = Theme(
+oled_dark_background = Theme(
     name="oled-dark-zen",
     dark=True,
     luminosity_spread=0.9,
@@ -236,7 +236,7 @@ oled_dark_zen = Theme(
 )
 
 
-oled_dark_zen_v2 = Theme(
+oled_dark_background_v2 = Theme(
     name="oled-dark-zen-v2",
     dark=True,
     luminosity_spread=0.9,
