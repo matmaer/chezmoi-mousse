@@ -28,6 +28,8 @@ class SlideBar(Widget):
             yield VerticalScroll(Pretty(chezmoi.ignored.py_out))
         with Collapsible(title="chezmoi cat-config (contents of config-file)"):
             yield VerticalScroll(Pretty(chezmoi.cat_config.py_out))
+        with Collapsible(title="chezmoi git log -- --one-line"):
+            yield VerticalScroll(Pretty(chezmoi.cat_config.py_out))
 
 
 class ChezmoiDoctor(Static):
@@ -115,7 +117,6 @@ class ChezmoiTUI(App):
             "Diagram",
             "Chezmoi-Status",
             "Unmanaged",
-            "Git-Log",
             "Git-Status",
         ):
             # yield ManagedFiles(chezmoi.dest_dir)
@@ -123,7 +124,6 @@ class ChezmoiTUI(App):
             yield Static(FLOW, id="diagram")
             yield Pretty(chezmoi.chezmoi_status.py_out)
             yield Pretty(chezmoi.unmanaged.py_out)
-            yield Pretty(chezmoi.git_log.py_out)
             yield Pretty(chezmoi.git_status.py_out)
 
         yield Footer(classes="just-margin-top")
