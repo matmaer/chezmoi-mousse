@@ -130,13 +130,11 @@ class ChezmoiTUI(App):
 
     def on_mount(self) -> None:
         self.title = "-  c h e z m o i  m o u s s e  -"
+        # TODO: create variants for Textual Dark theme.
         self.register_theme(oled_dark_background)
-        # self.theme = "oled-dark-zen" # let's use textual and prioritize the
-        # release of the app
         self.push_screen("loading", self.refresh_app)
 
-    # Screen dismiss from the loading screen, returns something, so adding an
-    # underscore to avoid exception saying refresh_app takes only one argument.
+    # Inderscore to ignore return value from screen.dismiss()
     def refresh_app(self, _) -> None:
         self.refresh(recompose=True)
 
