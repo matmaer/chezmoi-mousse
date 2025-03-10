@@ -47,6 +47,7 @@ DataTable, DirectoryTree, RichLog, Slidebar, Collapsible, Tree {
 Collapsible {
   border: none;
   padding: 0;
+  margin: 0;
 }
 
 DataTable {
@@ -80,26 +81,36 @@ LoadingScreen {
   }
 }
 
+CollapsibleTitle {
+  color: $secondary;
+}
+
 SlideBar {
   layer: slidebar_layer;
   background: $background;
   background-tint: $background;
   margin-top: 6;
-  margin-bottom: 6;
+  margin-bottom: 4;
   padding-left: 1;
   dock: right;
   /* offset-x: -100%; out of view if docked left */
   /* offset-x: 100%; out if view if docked right */
   offset-x: 100%;
-  max-width: 90%;
+  max-width: 70%;
   min-height: 5;
-  border-left: round $panel;
-  border-top: round $panel;
-  border-bottom: round $panel;
+  border-left: round $secondary;
+  border-top: round $secondary;
+  border-bottom: round $secondary;
   /* Enable animation */
   transition: offset 380ms;
   &.-visible {
       /* offset.x: 0; make visible when class is applied */
       offset-x: 0%;
   }
+  &> Label {
+    color: $primary;
+    text-style: bold;
+    margin-bottom: 1;
+  }
 }
+
