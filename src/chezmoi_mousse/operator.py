@@ -4,38 +4,40 @@
 from textual.app import ComposeResult
 from textual.widgets import DataTable, Label, Static
 
+from chezmoi_mousse.common import chezmoi_status_map
+
 
 class ChezmoiStatus(Static):
-    # Chezmoi status command output reference:
-    # https://www.chezmoi.io/reference/commands/status/
+    # # Chezmoi status command output reference:
+    # # https://www.chezmoi.io/reference/commands/status/
 
-    status_table = {
-        " ": {
-            "Status": "No change",
-            "Re_Add_Change": "No change",
-            "Apply_Change": "No change",
-        },
-        "A": {
-            "Status": "Added",
-            "Re_Add_Change": "Entry was created",
-            "Apply_Change": "Entry will be created",
-        },
-        "D": {
-            "Status": "Deleted",
-            "Re_Add_Change": "Entry was deleted",
-            "Apply_Change": "Entry will be deleted",
-        },
-        "M": {
-            "Status": "Modified",
-            "Re_Add_Change": "Entry was modified",
-            "Apply_Change": "Entry will be modified",
-        },
-        "R": {
-            "Status": "Run",
-            "Re_Add_Change": "Not applicable",
-            "Apply_Change": "Entry will be run",
-        },
-    }
+    # status_table = {
+    #     " ": {
+    #         "Status": "No change",
+    #         "Re_Add_Change": "No change",
+    #         "Apply_Change": "No change",
+    #     },
+    #     "A": {
+    #         "Status": "Added",
+    #         "Re_Add_Change": "Entry was created",
+    #         "Apply_Change": "Entry will be created",
+    #     },
+    #     "D": {
+    #         "Status": "Deleted",
+    #         "Re_Add_Change": "Entry was deleted",
+    #         "Apply_Change": "Entry will be deleted",
+    #     },
+    #     "M": {
+    #         "Status": "Modified",
+    #         "Re_Add_Change": "Entry was modified",
+    #         "Apply_Change": "Entry will be modified",
+    #     },
+    #     "R": {
+    #         "Status": "Run",
+    #         "Re_Add_Change": "Not applicable",
+    #         "Apply_Change": "Entry will be run",
+    #     },
+    # }
 
     def __init__(self, status_py_out: list):
         super().__init__()
@@ -60,11 +62,11 @@ class ChezmoiStatus(Static):
         for line in self.status_py_out:
             path = line[3:]
 
-            apply_status = self.status_table[line[0]]["Status"]
-            apply_change = self.status_table[line[0]]["Apply_Change"]
+            apply_status = chezmoi_status_map[line[0]]["Status"]
+            apply_change = chezmoi_status_map[line[0]]["Apply_Change"]
 
-            re_add_status = self.status_table[line[1]]["Status"]
-            re_add_change = self.status_table[line[1]]["Re_Add_Change"]
+            re_add_status = chezmoi_status_map[line[1]]["Status"]
+            re_add_change = chezmoi_status_map[line[1]]["Re_Add_Change"]
 
             apply_table.add_row(*[apply_status, path, apply_change])
             re_add_table.add_row(*[re_add_status, path, re_add_change])
