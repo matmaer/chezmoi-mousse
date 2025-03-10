@@ -28,7 +28,8 @@ class SlideBar(Widget):
 
         yield VerticalScroll(
             Collapsible(
-                Pretty(chezmoi.dump_config.py_out), title="chezmoi dump-config"
+                Pretty(chezmoi.dump_config.py_out),
+                title="chezmoi dump-config",
             ),
             Collapsible(
                 Pretty(chezmoi.template_data.py_out),
