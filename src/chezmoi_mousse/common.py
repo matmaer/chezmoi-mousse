@@ -259,7 +259,7 @@ oled_dark_background_v2 = Theme(
 )
 
 # pylint: disable=line-too-long
-integrated_command = {
+integrated_command_map = {
     "age": {
         "Description": "A simple, modern and secure file encryption tool",
         "URL": "https://github.com/FiloSottile/age",
@@ -287,5 +287,35 @@ integrated_command = {
     "keepassxc": {
         "Description": "Cross-platform community-driven port of Keepass password manager",
         "URL": "https://keepassxc.org/",
+    },
+}
+
+# Chezmoi status command output reference:
+# https://www.chezmoi.io/reference/commands/status/
+chezmoi_status_map = {
+    " ": {
+        "Status": "No change",
+        "Re_Add_Change": "No change",
+        "Apply_Change": "No change",
+    },
+    "A": {
+        "Status": "Added",
+        "Re_Add_Change": "Entry was created",
+        "Apply_Change": "Entry will be created",
+    },
+    "D": {
+        "Status": "Deleted",
+        "Re_Add_Change": "Entry was deleted",
+        "Apply_Change": "Entry will be deleted",
+    },
+    "M": {
+        "Status": "Modified",
+        "Re_Add_Change": "Entry was modified",
+        "Apply_Change": "Entry will be modified",
+    },
+    "R": {
+        "Status": "Run",
+        "Re_Add_Change": "Not applicable",
+        "Apply_Change": "Entry will be run",
     },
 }

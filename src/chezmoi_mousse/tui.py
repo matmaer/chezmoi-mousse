@@ -15,7 +15,7 @@ from textual.widgets import (
 from chezmoi_mousse.common import (
     FLOW,
     chezmoi,
-    integrated_command,
+    integrated_command_map,
     oled_dark_background,
 )
 from chezmoi_mousse.splash import LoadingScreen
@@ -93,11 +93,11 @@ class ChezmoiDoctor(Static):
             if row[0] == "info" and "not found in $PATH" in row[2]:
                 # check if the command exists in the integrated_command dict
                 command = row[2].split()[0]
-                if command in integrated_command:
+                if command in integrated_command_map:
                     row = [
                         command,
-                        integrated_command[command]["Description"],
-                        integrated_command[command]["URL"],
+                        integrated_command_map[command]["Description"],
+                        integrated_command_map[command]["URL"],
                     ]
                 else:
                     row = [
