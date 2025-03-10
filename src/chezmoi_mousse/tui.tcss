@@ -66,7 +66,7 @@ DataTable {
 LoadingScreen {
   background: black;
   & #loader-log {
-    color: $primary;
+    color: $secondary;
     background-tint: black;
     height: 11;
     width: auto;
@@ -90,7 +90,7 @@ SlideBar {
   background: $background;
   background-tint: $background;
   margin-top: 6;
-  margin-bottom: 4;
+  margin-bottom: 3;
   padding-left: 1;
   dock: right;
   /* offset-x: -100%; out of view if docked left */
