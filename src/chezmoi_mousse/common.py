@@ -129,6 +129,9 @@ class Chezmoi:
 
 chezmoi = Chezmoi()
 
+# chezmoi.dump_config.update()
+# setattr(chezmoi, "dest_dir", chezmoi.dump_config.py_out["destDir"])
+
 SPLASH_7BIT = """\
  _______ _______ _______ _______ ____ ____ _______ _._
 |       |   |   |    ___|___    |    '    |       |   |
