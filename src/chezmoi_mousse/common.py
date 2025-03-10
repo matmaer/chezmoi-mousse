@@ -127,9 +127,7 @@ class Chezmoi:
             self.long_commands[arg_id] = long_cmd
 
 
-# there must be a better way to do this
 chezmoi = Chezmoi()
-
 
 SPLASH_7BIT = """\
  _______ _______ _______ _______ ____ ____ _______ _._
@@ -174,7 +172,7 @@ SPLASH_ASCII_ART = """\
 
 SPLASH = SPLASH_ASCII_ART
 
-# # provisional diagrams until dynamically created
+# provisional diagrams until dynamically created
 FLOW = """\
 ┌──────────────┐    ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
 │home directory│    │ working copy │    │  local repo  │    │ remote repo  │
@@ -235,7 +233,6 @@ oled_dark_background = Theme(
     },
 )
 
-
 oled_dark_background_v2 = Theme(
     name="oled-dark-zen-v2",
     dark=True,
@@ -259,7 +256,6 @@ oled_dark_background_v2 = Theme(
         "scrollbar-corner-color": BACKGROUND,
     },
 )
-
 
 # pylint: disable=line-too-long
 integrated_command = {
