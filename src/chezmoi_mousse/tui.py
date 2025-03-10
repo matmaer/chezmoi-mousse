@@ -12,7 +12,12 @@ from textual.widgets import (
     TabbedContent,
 )
 
-from chezmoi_mousse.common import FLOW, chezmoi, integrated_command, oled_dark_background
+from chezmoi_mousse.common import (
+    FLOW,
+    chezmoi,
+    integrated_command,
+    oled_dark_background,
+)
 from chezmoi_mousse.splash import LoadingScreen
 
 
@@ -20,20 +25,35 @@ class SlideBar(Widget):
 
     def compose(self) -> ComposeResult:
         yield Label("Outputs from chezmoi commands:")
-        with Collapsible(title="chezmoi dump-config"):
-            yield VerticalScroll(Pretty(chezmoi.dump_config.py_out))
-        with Collapsible(title="chezmoi data (template data)"):
-            yield VerticalScroll(Pretty(chezmoi.template_data.py_out))
-        with Collapsible(title="chezmoi ignored (git ignore in source-dir)"):
-            yield VerticalScroll(Pretty(chezmoi.ignored.py_out))
-        with Collapsible(title="chezmoi cat-config (contents of config-file)"):
-            yield VerticalScroll(Pretty(chezmoi.cat_config.py_out))
-        with Collapsible(title="chezmoi git log -- --one-line"):
-            yield VerticalScroll(Pretty(chezmoi.git_log.py_out))
-        with Collapsible(title="chezmoi git status"):
-            yield VerticalScroll(Pretty(chezmoi.git_status.py_out))
-        with Collapsible(title="chezmoi unmanaged (in destination directory)"):
-            yield VerticalScroll(Pretty(chezmoi.unmanaged.py_out))
+
+        yield VerticalScroll(
+            Collapsible(
+                Pretty(chezmoi.dump_config.py_out), title="chezmoi dump-config"
+            ),
+            Collapsible(
+                Pretty(chezmoi.template_data.py_out),
+                title="chezmoi data (template data)",
+            ),
+            Collapsible(
+                Pretty(chezmoi.ignored.py_out),
+                title="chezmoi ignored (git ignore in source-dir)",
+            ),
+            Collapsible(
+                Pretty(chezmoi.cat_config.py_out),
+                title="chezmoi cat-config (contents of config-file)",
+            ),
+            Collapsible(
+                Pretty(chezmoi.git_log.py_out),
+                title="chezmoi git log -- --one-line",
+            ),
+            Collapsible(
+                Pretty(chezmoi.git_status.py_out), title="chezmoi git status"
+            ),
+            Collapsible(
+                Pretty(chezmoi.unmanaged.py_out),
+                title="chezmoi unmanaged (in destination directory)",
+            ),
+        )
 
 
 class ChezmoiDoctor(Static):
