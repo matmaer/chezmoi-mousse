@@ -82,7 +82,8 @@ LoadingScreen {
 }
 
 CollapsibleTitle {
-  color: $secondary;
+  color: $primary;
+
 }
 
 SlideBar {
@@ -108,8 +109,7 @@ SlideBar {
       offset-x: 0%;
   }
   &> Label {
-    color: $primary;
-    text-style: bold;
+    color: $success;
     margin-bottom: 1;
   }
 }
