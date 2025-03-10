@@ -169,9 +169,7 @@ SPLASH_ASCII_ART = """\
   |         |   |   |   |   |__     |__     |     __|
   |   |ˇ|   |       |       |       |       |       |
   '---' '---^-------^-------^-------^-------^-------'
-""".replace(
-    "===", "=\u200b=\u200b="
-).splitlines()
+""".replace("===", "=\u200b=\u200b=").splitlines()
 
 SPLASH = SPLASH_ASCII_ART
 
