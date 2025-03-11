@@ -4,9 +4,11 @@ from textual.widget import Widget
 from textual.widgets import (
     Collapsible,
     DataTable,
+    DirectoryTree,
     Footer,
     Header,
     Label,
+    Placeholder,
     Pretty,
     Static,
     TabbedContent,
@@ -123,10 +125,6 @@ class ChezmoiDoctor(Static):
 
 class ChezmoiStatus(Static):
 
-    def __init__(self, status_py_out: list):
-        super().__init__()
-        self.status_py_out = status_py_out
-
     def compose(self) -> ComposeResult:
         yield Label("Chezmoi Apply Status")
         yield DataTable(id="apply_table")
@@ -134,6 +132,8 @@ class ChezmoiStatus(Static):
         yield DataTable(id="re_add_table")
 
     def on_mount(self):
+
+        chezmoi_status = chezmoi.chezmoi_status.updated_py_out()
 
         re_add_table = self.query_one("#re_add_table")
         apply_table = self.query_one("#apply_table")
@@ -143,7 +143,7 @@ class ChezmoiStatus(Static):
         re_add_table.add_columns(*header_row)
         apply_table.add_columns(*header_row)
 
-        for line in self.status_py_out:
+        for line in chezmoi_status:
             path = line[3:]
 
             apply_status = chezmoi_status_map[line[0]]["Status"]
@@ -154,6 +154,11 @@ class ChezmoiStatus(Static):
 
             apply_table.add_row(*[apply_status, path, apply_change])
             re_add_table.add_row(*[re_add_status, path, re_add_change])
+
+
+class ManagedFiles(DirectoryTree):
+    def compose(self) -> ComposeResult:
+        yield Placeholder("Managed Files")
 
 
 class ChezmoiTUI(App):
@@ -179,7 +184,8 @@ class ChezmoiTUI(App):
         ):
             yield VerticalScroll(ChezmoiDoctor())
             yield Static(FLOW, id="diagram")
-            yield Pretty(chezmoi.chezmoi_status.py_out)
+            # yield Pretty(chezmoi.chezmoi_status.py_out)
+            yield ChezmoiStatus()
 
         yield Footer(classes="just-margin-top")
 
