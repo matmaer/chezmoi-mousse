@@ -316,6 +316,6 @@ chezmoi_status_map = {
     "R": {
         "Status": "Run",
         "Re_Add_Change": "Not applicable",
-        "Apply_Change": "Entry will be run",
+        "Apply_Change": "Script will be run",
     },
 }
