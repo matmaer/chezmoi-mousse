@@ -17,6 +17,7 @@ from chezmoi_mousse.common import (
     chezmoi,
     integrated_command_map,
     oled_dark_background,
+    chezmoi_status_map,
 )
 from chezmoi_mousse.splash import LoadingScreen
 
@@ -118,6 +119,41 @@ class ChezmoiDoctor(Static):
                 else:
                     row = [f"[#ffa62b]{cell}[/]" for cell in row]
                 main_table.add_row(*row)
+
+
+class ChezmoiStatus(Static):
+
+    def __init__(self, status_py_out: list):
+        super().__init__()
+        self.status_py_out = status_py_out
+
+    def compose(self) -> ComposeResult:
+        yield Label("Chezmoi Apply Status")
+        yield DataTable(id="apply_table")
+        yield Label("Chezmoi Re-Add Status")
+        yield DataTable(id="re_add_table")
+
+    def on_mount(self):
+
+        re_add_table = self.query_one("#re_add_table")
+        apply_table = self.query_one("#apply_table")
+
+        header_row = ["STATUS", "PATH", "CHANGE"]
+
+        re_add_table.add_columns(*header_row)
+        apply_table.add_columns(*header_row)
+
+        for line in self.status_py_out:
+            path = line[3:]
+
+            apply_status = chezmoi_status_map[line[0]]["Status"]
+            apply_change = chezmoi_status_map[line[0]]["Apply_Change"]
+
+            re_add_status = chezmoi_status_map[line[1]]["Status"]
+            re_add_change = chezmoi_status_map[line[1]]["Re_Add_Change"]
+
+            apply_table.add_row(*[apply_status, path, apply_change])
+            re_add_table.add_row(*[re_add_status, path, re_add_change])
 
 
 class ChezmoiTUI(App):
