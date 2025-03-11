@@ -47,6 +47,9 @@ DataTable, DirectoryTree, RichLog, Slidebar, Collapsible, Tree {
 Collapsible {
   border: none;
   padding: 0;
+  & Pretty {
+    margin-bottom: 1;
+  }
 }
 
 CollapsibleTitle {
