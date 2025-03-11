@@ -81,7 +81,6 @@ class Chezmoi:
     managed: type[InputOutput]
     template_data: type[InputOutput]
     unmanaged: type[InputOutput]
-    dest_dir: str  # shortcut for "destDir" config value access
 
     base = [
         "chezmoi",
@@ -122,9 +121,6 @@ class Chezmoi:
 
 
 chezmoi = Chezmoi()
-
-# chezmoi.dump_config.update()
-# setattr(chezmoi, "dest_dir", chezmoi.dump_config.py_out["destDir"])
 
 SPLASH_7BIT = """\
  _______ _______ _______ _______ ____ ____ _______ _._
