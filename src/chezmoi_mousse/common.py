@@ -96,7 +96,7 @@ class Chezmoi:
         "template_data": ["data", "--format=json"],
         "doctor": ["doctor"],
         "dump_config": ["dump-config", "--format=json"],
-        "git_log": ["git", "log", "--", "--oneline"],
+        "git_log": ["git", "log", "--", "--oneline", "--max-count", "10"],
         "git_status": ["git", "status"],
         "ignored": ["ignored"],
         "managed": ["managed", "--path-style=absolute"],
