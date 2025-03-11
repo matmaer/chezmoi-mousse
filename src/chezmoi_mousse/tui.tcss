@@ -47,7 +47,14 @@ DataTable, DirectoryTree, RichLog, Slidebar, Collapsible, Tree {
 Collapsible {
   border: none;
   padding: 0;
-  margin: 0;
+}
+
+CollapsibleTitle {
+  padding: 0;
+  &:focus {
+      background: $background;
+      color: $primary;
+  }
 }
 
 DataTable {
