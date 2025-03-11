@@ -15,9 +15,9 @@ from textual.widgets import (
 from chezmoi_mousse.common import (
     FLOW,
     chezmoi,
+    chezmoi_status_map,
     integrated_command_map,
     oled_dark_background,
-    chezmoi_status_map,
 )
 from chezmoi_mousse.splash import LoadingScreen
 
