@@ -143,6 +143,8 @@ class ChezmoiStatus(Static):
         re_add_table.add_columns(*header_row)
         apply_table.add_columns(*header_row)
 
+
+
         for line in chezmoi_status:
             path = line[3:]
 
@@ -184,7 +186,6 @@ class ChezmoiTUI(App):
         ):
             yield VerticalScroll(ChezmoiDoctor())
             yield Static(FLOW, id="diagram")
-            # yield Pretty(chezmoi.chezmoi_status.py_out)
             yield ChezmoiStatus()
 
         yield Footer(classes="just-margin-top")
