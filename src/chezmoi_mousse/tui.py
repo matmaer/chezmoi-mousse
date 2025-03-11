@@ -48,10 +48,7 @@ class SlideBar(Widget):
             ),
             Collapsible(
                 Pretty(chezmoi.git_log.py_out),
-                title="chezmoi git log -- --one-line",
-            ),
-            Collapsible(
-                Pretty(chezmoi.git_status.py_out), title="chezmoi git status"
+                title="chezmoi git log (last 10 commits)",
             ),
             Collapsible(
                 Pretty(chezmoi.unmanaged.py_out),
