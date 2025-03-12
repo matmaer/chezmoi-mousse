@@ -122,6 +122,7 @@ class Chezmoi:
         self.dest_dir = Path(config["destDir"])
         self.managed.update()
 
+    @property
     def managed_paths(self):
         return [Path(p) for p in self.managed.py_out]
 
