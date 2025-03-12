@@ -20,6 +20,26 @@
   min-width: 76;
 }
 
+#tree-checkbox {
+  color: $text;
+  border: none;
+  background: $background;
+
+  &.-on > .toggle--button {
+    color: lime;
+  }
+  &.-on > .toggle--label {
+    color: $success;
+  }
+  &:hover {
+    text-style: bold;
+  }
+  &:focus > .toggle--label {
+    background: $background;
+    text-style: none;
+  }
+}
+
 Screen {
   layers: slidebar_layer;
   overflow-y: hidden;
@@ -78,10 +98,13 @@ DataTable {
     color: $foreground;
     background: $background;
   }
+  & > .datatable--cursor {
+    background: $primary-muted;
+  }
 }
 
 DirectoryTree {
-  padding-left: 1;
+  padding-left: 2;
   & > .directory-tree--extension {
       text-style: none;
   }
@@ -129,7 +152,7 @@ LoadingScreen {
     width: auto;
     margin: 2 0 0 0;
   }
-  #continue {
+  & #continue {
     color: $accent;
     background: black;
     border: none;
