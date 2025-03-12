@@ -31,6 +31,7 @@ Header {
   HeaderIcon {
     /* don't use display: none; because then the title is not centered */
     visibility: hidden;
+    color: $accent;
   }
 }
 
