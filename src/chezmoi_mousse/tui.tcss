@@ -24,9 +24,11 @@
   color: $text;
   border: none;
   background: $background;
+  background-tint: $background;
 
   &.-on > .toggle--button {
     color: lime;
+    text-style: bold;
   }
   &.-on > .toggle--label {
     color: $success;
@@ -36,6 +38,7 @@
   }
   &:focus > .toggle--label {
     background: $background;
+    background-tint: $background;
     text-style: none;
   }
 }
