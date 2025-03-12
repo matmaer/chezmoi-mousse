@@ -1,4 +1,3 @@
-from pathlib import Path
 
 from textual.app import App, ComposeResult
 from textual.containers import VerticalScroll
@@ -165,10 +164,10 @@ class ChezmoiTree(DirectoryTree):
             path=chezmoi.dump_config.py_out["destDir"],
             classes="margin-top-bottom",
             )
-        self.unmanaged_paths = [Path(p) for p in chezmoi.unmanaged.py_out]
+        # self.unmanaged_paths = [Path(p) for p in chezmoi.unmanaged.py_out]
 
     def filter_paths(self, paths: list[str]) -> list[str]:
-        return [p for p in paths if p not in self.unmanaged_paths]
+        return [p for p in paths if p in chezmoi.managed_paths()]
 
 
 class ChezmoiTUI(App):
