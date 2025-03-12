@@ -12,6 +12,7 @@ from textual.widgets import (
     Label,
     Pretty,
     Static,
+    Switch,
     TabbedContent,
 )
 
@@ -171,7 +172,15 @@ class ChezmoiTree(DirectoryTree):
         )
 
     def filter_paths(self, paths: list[str]) -> list[str]:
-        return [p for p in paths if p in chezmoi.managed_paths()]
+        return [p for p in paths if p in chezmoi.managed_paths]
+
+
+class TreeInterface(Widget):
+
+    def compose(self) -> ComposeResult:
+        yield Label("Chezmoi Tree")
+        yield Switch("Show Unmanaged", id="show_unmanaged")
+        yield ChezmoiTree()
 
 
 class ChezmoiTUI(App):
@@ -196,7 +205,7 @@ class ChezmoiTUI(App):
             "Diagram",
             "Chezmoi-Status",
         ):
-            yield VerticalScroll(ChezmoiTree())
+            yield VerticalScroll(TreeInterface())
             yield VerticalScroll(Lazy(ChezmoiDoctor()))
             yield Lazy(Static(FLOW, id="diagram"))
             yield VerticalScroll(Lazy(ChezmoiStatus()))
