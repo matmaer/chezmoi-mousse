@@ -166,7 +166,6 @@ class ChezmoiTree(DirectoryTree):
             classes="margin-top-bottom",
             )
         self.unmanaged_paths = [Path(p) for p in chezmoi.unmanaged.py_out]
-        self.status = chezmoi.chezmoi_status.py_out
 
     def filter_paths(self, paths: list[str]) -> list[str]:
         return [p for p in paths if p not in self.unmanaged_paths]
