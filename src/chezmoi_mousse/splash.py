@@ -92,8 +92,8 @@ class LoadingScreen(Screen):
 
     def on_key(self) -> None:
         if self.workers_finished():
-            self.screen.dismiss()
+            self.dismiss()
 
     def on_click(self) -> None:
         if self.workers_finished():
-            self.screen.dismiss()
+            self.dismiss()
