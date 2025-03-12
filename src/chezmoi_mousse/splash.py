@@ -70,13 +70,15 @@ class LoadingScreen(Screen):
         log_text = f"{io_class.label} {'.' * padding} loaded"
         self.query_one("#loader-log").write(log_text)
 
-    def check_workers(self) -> None:
-        if all(
+    def workers_finished(self) -> bool:
+        finished = all(
             worker.state == "finished"
             for worker in self.app.workers
             if worker.group == "loaders"
-        ):
+        )
+        if finished:
             self.query_one("#continue").disabled = False
+        return finished
 
     def on_mount(self) -> None:
         to_load = [
@@ -86,12 +88,12 @@ class LoadingScreen(Screen):
         ]
         for arg_id in to_load:
             self.run(arg_id)
-        self.set_interval(interval=0.1, callback=self.check_workers)
+        self.set_interval(interval=0.1, callback=self.workers_finished)
 
-    async def on_key(self) -> None:
-        self.app.workers.wait_for_complete()
-        self.screen.dismiss()
+    def on_key(self) -> None:
+        if self.workers_finished():
+            self.screen.dismiss()
 
-    async def on_click(self) -> None:
-        self.app.workers.wait_for_complete()
-        self.screen.dismiss()
+    def on_click(self) -> None:
+        if self.workers_finished():
+            self.screen.dismiss()
