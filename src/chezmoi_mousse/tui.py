@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from textual.app import App, ComposeResult
 from textual.containers import VerticalScroll
 from textual.widget import Widget
@@ -8,7 +10,6 @@ from textual.widgets import (
     Footer,
     Header,
     Label,
-    Placeholder,
     Pretty,
     Static,
     TabbedContent,
@@ -140,8 +141,6 @@ class ChezmoiStatus(Static):
         re_add_table.add_columns(*header_row)
         apply_table.add_columns(*header_row)
 
-
-
         for line in chezmoi_status:
             path = line[3:]
 
@@ -155,9 +154,15 @@ class ChezmoiStatus(Static):
             re_add_table.add_row(*[re_add_status, path, re_add_change])
 
 
-class ManagedFiles(DirectoryTree):
-    def compose(self) -> ComposeResult:
-        yield Placeholder("Managed Files")
+class ChezmoiTree(DirectoryTree):
+
+    def __init__(self) -> None:
+        super().__init__(path=chezmoi.dump_config.py_out["destDir"])
+        self.unmanaged_paths = [Path(p) for p in chezmoi.unmanaged.py_out]
+        self.status = chezmoi.chezmoi_status.py_out
+
+    def filter_paths(self, paths: list[str]) -> list[str]:
+        return [p for p in paths if p not in self.unmanaged_paths]
 
 
 class ChezmoiTUI(App):
@@ -177,10 +182,12 @@ class ChezmoiTUI(App):
         yield Header(classes="-tall")
         yield SlideBar()
         with TabbedContent(
+            "destDir-Tree",
             "Doctor",
             "Diagram",
             "Chezmoi-Status",
         ):
+            yield VerticalScroll(ChezmoiTree())
             yield VerticalScroll(ChezmoiDoctor())
             yield Static(FLOW, id="diagram")
             yield ChezmoiStatus()
@@ -189,7 +196,6 @@ class ChezmoiTUI(App):
 
     def on_mount(self) -> None:
         self.title = "-  c h e z m o i  m o u s s e  -"
-        # TODO: create variants for Textual Dark theme.
         self.register_theme(oled_dark_background)
         self.push_screen("loading", self.refresh_app)
 
