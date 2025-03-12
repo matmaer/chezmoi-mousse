@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 import subprocess
 import tomllib
 from dataclasses import dataclass
@@ -109,15 +110,22 @@ class Chezmoi:
 
         for arg_id, sub_cmd in self.subs.items():
             long_cmd = self.base + sub_cmd
+            self.long_commands[arg_id] = long_cmd
             NewClass = type(arg_id, (InputOutput,), {})
             setattr(
                 self,
                 arg_id,
-                NewClass(
-                    long_command=long_cmd,
-                ),
+                NewClass(long_command=long_cmd),
             )
-            self.long_commands[arg_id] = long_cmd
+        # needed early on to instantiate the DirectoryTree
+        self.dump_config.update()
+        self.managed.update()
+
+    def managed_paths(self):
+        return [Path(p) for p in self.managed.updated_py_out()]
+
+    def unmanaged_paths(self):
+        return [Path(p) for p in self.unmanaged.updated_py_out()]
 
 
 chezmoi = Chezmoi()
@@ -159,7 +167,9 @@ SPLASH_ASCII_ART = """\
   |         |   |   |   |   |__     |__     |     __|
   |   |ˇ|   |       |       |       |       |       |
   '---' '---^-------^-------^-------^-------^-------'
-""".replace("===", "=\u200b=\u200b=").splitlines()
+""".replace(
+    "===", "=\u200b=\u200b="
+).splitlines()
 
 SPLASH = SPLASH_ASCII_ART
 

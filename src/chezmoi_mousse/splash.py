@@ -62,7 +62,7 @@ class LoadingScreen(Screen):
                 )
             )
 
-    @work(thread=True)
+    @work(thread=True, group="loaders")
     def run(self, arg_id) -> None:
         io_class = getattr(chezmoi, arg_id)
         io_class.update()
@@ -71,11 +71,20 @@ class LoadingScreen(Screen):
         self.query_one("#loader-log").write(log_text)
 
     def check_workers(self) -> None:
-        if all(worker.state == "finished" for worker in self.workers):
+        if all(
+            worker.state == "finished"
+            for worker in self.app.workers
+            if worker.group == "loaders"
+        ):
             self.query_one("#continue").disabled = False
 
     def on_mount(self) -> None:
-        for arg_id in chezmoi.long_commands:
+        to_load = [
+            arg_id
+            for arg_id in chezmoi.long_commands
+            if arg_id not in ["dump_config", "managed"]
+        ]
+        for arg_id in to_load:
             self.run(arg_id)
         self.set_interval(interval=0.1, callback=self.check_workers)
 
