@@ -126,6 +126,10 @@ class Chezmoi:
     def managed_paths(self):
         return [Path(p) for p in self.managed.py_out]
 
+    @property
+    def unmanaged_paths(self):
+        return [Path(p) for p in self.unmanaged.py_out]
+
 
 chezmoi = Chezmoi()
 
