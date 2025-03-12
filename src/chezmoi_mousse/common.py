@@ -118,7 +118,8 @@ class Chezmoi:
                 NewClass(long_command=long_cmd),
             )
         # needed early on to instantiate the DirectoryTree
-        self.dump_config.update()
+        config = self.dump_config.updated_py_out()
+        self.dest_dir = Path(config["destDir"])
         self.managed.update()
 
     def managed_paths(self):
