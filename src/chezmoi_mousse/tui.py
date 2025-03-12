@@ -1,6 +1,7 @@
-
+from textual import work
 from textual.app import App, ComposeResult
 from textual.containers import VerticalScroll
+from textual.lazy import Lazy
 from textual.widget import Widget
 from textual.widgets import (
     Collapsible,
@@ -77,21 +78,22 @@ class ChezmoiDoctor(Static):
 
     def on_mount(self) -> None:
 
-        doctor = chezmoi.doctor.py_out
-
-        # at startup, the class gets mounted before the doctor command is run
+        # At startup, the class gets mounted before the doctor command is run
+        # however, self.app.refresh() is called after dismissing the loading
+        # screen. TODO: look into Lazy mounting and why this is still needed.
         if chezmoi.doctor.std_out == "":
-            doctor = chezmoi.doctor.updated_py_out()
+            return
 
         main_table = self.query_one("#main_table")
         second_table = self.query_one("#second_table")
-
-        main_table.add_columns(*doctor.pop(0).split())
         second_table.add_columns("COMMAND", "DESCRIPTION", "URL")
 
-        success_color = self.app.current_theme.success
-        warning_color = self.app.current_theme.warning
-        error_color = self.app.current_theme.error
+        doctor = chezmoi.doctor.py_out
+        main_table.add_columns(*doctor.pop(0).split())
+
+        success = self.app.current_theme.success
+        warning = self.app.current_theme.warning
+        error = self.app.current_theme.error
 
         for row in [row.split(maxsplit=2) for row in doctor]:
             if row[0] == "info" and "not found in $PATH" in row[2]:
@@ -112,15 +114,15 @@ class ChezmoiDoctor(Static):
                 second_table.add_row(*row)
             else:
                 if row[0] == "ok":
-                    row = [f"[{success_color}]{cell}[/]" for cell in row]
+                    row = [f"[{success}]{cell}[/]" for cell in row]
                 elif row[0] == "warning":
-                    row = [f"[{warning_color}]{cell}[/]" for cell in row]
+                    row = [f"[{warning}]{cell}[/]" for cell in row]
                 elif row[0] == "error":
-                    row = [f"[{error_color}]{cell}[/]" for cell in row]
+                    row = [f"[{error}]{cell}[/]" for cell in row]
                 elif row[0] == "info" and row[2] == "not set":
-                    row = [f"[{warning_color}]{cell}[/]" for cell in row]
+                    row = [f"[{warning}]{cell}[/]" for cell in row]
                 else:
-                    row = [f"[{warning_color}]{cell}[/]" for cell in row]
+                    row = [f"[{warning}]{cell}[/]" for cell in row]
                 main_table.add_row(*row)
 
 
@@ -133,8 +135,11 @@ class ChezmoiStatus(Static):
         yield DataTable(id="re_add_table")
 
     def on_mount(self):
+        # see comment in ChezmoiDoctor on_mount()
+        if chezmoi.chezmoi_status.std_out == "":
+            return
 
-        chezmoi_status = chezmoi.chezmoi_status.updated_py_out()
+        chezmoi_status = chezmoi.chezmoi_status.py_out
 
         re_add_table = self.query_one("#re_add_table")
         apply_table = self.query_one("#apply_table")
@@ -163,7 +168,7 @@ class ChezmoiTree(DirectoryTree):
         super().__init__(
             path=chezmoi.dest_dir,
             classes="margin-top-bottom",
-            )
+        )
 
     def filter_paths(self, paths: list[str]) -> list[str]:
         return [p for p in paths if p in chezmoi.managed_paths()]
@@ -184,7 +189,7 @@ class ChezmoiTUI(App):
 
     def compose(self) -> ComposeResult:
         yield Header(classes="-tall")
-        yield SlideBar()
+        yield Lazy(SlideBar())
         with TabbedContent(
             "destDir-Tree",
             "Doctor",
@@ -192,13 +197,14 @@ class ChezmoiTUI(App):
             "Chezmoi-Status",
         ):
             yield VerticalScroll(ChezmoiTree())
-            yield VerticalScroll(ChezmoiDoctor())
-            yield Static(FLOW, id="diagram")
-            yield ChezmoiStatus()
+            yield VerticalScroll(Lazy(ChezmoiDoctor()))
+            yield Lazy(Static(FLOW, id="diagram"))
+            yield VerticalScroll(Lazy(ChezmoiStatus()))
 
         yield Footer(classes="just-margin-top")
 
-    def on_mount(self) -> None:
+    @work
+    async def on_mount(self) -> None:
         self.title = "-  c h e z m o i  m o u s s e  -"
         self.register_theme(mousse_theme)
         self.theme = "mousse-theme"
