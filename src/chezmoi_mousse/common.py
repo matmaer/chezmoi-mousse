@@ -213,12 +213,12 @@ mousse_theme = Theme(
     dark=True,
     accent="rgb(241, 135, 251)",
     background=BACKGROUND,
-    error="#ba3c5b", # textual dark
-    foreground="rgb(222, 218, 209)", # #DEDAE1
-    primary="#0178D4", # textual dark
-    secondary="#004578", # textual dark
-    success="#4EBF71", # textual dark
-    warning="#ffa62b", # textual dark
+    error="#ba3c5b",  # textual dark
+    foreground="rgb(222, 218, 209)",  # #DEDAE1
+    primary="#0178D4",  # textual dark
+    secondary="#004578",  # textual dark
+    success="#4EBF71",  # textual dark
+    warning="#ffa62b",  # textual dark
     variables={
         "footer-background": BACKGROUND,
         "footer-description-background": BACKGROUND,
