@@ -161,10 +161,9 @@ class ChezmoiTree(DirectoryTree):
 
     def __init__(self) -> None:
         super().__init__(
-            path=chezmoi.dump_config.py_out["destDir"],
+            path=chezmoi.dest_dir,
             classes="margin-top-bottom",
             )
-        # self.unmanaged_paths = [Path(p) for p in chezmoi.unmanaged.py_out]
 
     def filter_paths(self, paths: list[str]) -> list[str]:
         return [p for p in paths if p in chezmoi.managed_paths()]
