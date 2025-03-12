@@ -4,6 +4,7 @@ from textual.containers import VerticalScroll
 from textual.lazy import Lazy
 from textual.widget import Widget
 from textual.widgets import (
+    Checkbox,
     Collapsible,
     DataTable,
     DirectoryTree,
@@ -12,7 +13,6 @@ from textual.widgets import (
     Label,
     Pretty,
     Static,
-    Switch,
     TabbedContent,
 )
 
@@ -178,8 +178,11 @@ class ChezmoiTree(DirectoryTree):
 class TreeInterface(Widget):
 
     def compose(self) -> ComposeResult:
-        yield Label("Chezmoi Tree")
-        yield Switch("Show Unmanaged", id="show_unmanaged")
+        yield Checkbox(
+            "Include Unmanaged Files",
+            id="tree-checkbox",
+            classes="just-margin-top",
+        )
         yield ChezmoiTree()
 
 
@@ -227,6 +230,7 @@ class ChezmoiTUI(App):
         self.query_one(SlideBar).toggle_class("-visible")
 
     def action_toggle_room(self):
+        self.query_one(Checkbox).toggle_class("just-margin-top")
         self.query_one(Header).toggle_class("-tall")
         self.query_one(DataTable).toggle_class("margin-top-bottom")
         self.query_one(Footer).toggle_class("just-margin-top")
