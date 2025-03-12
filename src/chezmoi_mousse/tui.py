@@ -20,7 +20,7 @@ from chezmoi_mousse.common import (
     chezmoi,
     chezmoi_status_map,
     integrated_command_map,
-    oled_dark_background,
+    mousse_theme,
 )
 from chezmoi_mousse.splash import LoadingScreen
 
@@ -64,7 +64,7 @@ class ChezmoiDoctor(Static):
         yield DataTable(
             id="main_table",
             cursor_type="row",
-            classes="space",
+            classes="margin-top-bottom",
         )
         yield Label(
             "Local commands skipped because not in Path:",
@@ -73,7 +73,7 @@ class ChezmoiDoctor(Static):
         yield DataTable(
             id="second_table",
             cursor_type="row",
-            classes="space",
+            classes="margin-top-bottom",
         )
 
     def on_mount(self) -> None:
@@ -89,6 +89,10 @@ class ChezmoiDoctor(Static):
 
         main_table.add_columns(*doctor.pop(0).split())
         second_table.add_columns("COMMAND", "DESCRIPTION", "URL")
+
+        success_color = self.app.current_theme.success
+        warning_color = self.app.current_theme.warning
+        error_color = self.app.current_theme.error
 
         for row in [row.split(maxsplit=2) for row in doctor]:
             if row[0] == "info" and "not found in $PATH" in row[2]:
@@ -109,15 +113,15 @@ class ChezmoiDoctor(Static):
                 second_table.add_row(*row)
             else:
                 if row[0] == "ok":
-                    row = [f"[#4EBF71]{cell}[/]" for cell in row]
+                    row = [f"[{success_color}]{cell}[/]" for cell in row]
                 elif row[0] == "warning":
-                    row = [f"[#ffa62b]{cell}[/]" for cell in row]
+                    row = [f"[{warning_color}]{cell}[/]" for cell in row]
                 elif row[0] == "error":
-                    row = [f"[red]{cell}[/]" for cell in row]
+                    row = [f"[{error_color}]{cell}[/]" for cell in row]
                 elif row[0] == "info" and row[2] == "not set":
-                    row = [f"[#ffa62b]{cell}[/]" for cell in row]
+                    row = [f"[{warning_color}]{cell}[/]" for cell in row]
                 else:
-                    row = [f"[#ffa62b]{cell}[/]" for cell in row]
+                    row = [f"[{warning_color}]{cell}[/]" for cell in row]
                 main_table.add_row(*row)
 
 
@@ -157,7 +161,10 @@ class ChezmoiStatus(Static):
 class ChezmoiTree(DirectoryTree):
 
     def __init__(self) -> None:
-        super().__init__(path=chezmoi.dump_config.py_out["destDir"])
+        super().__init__(
+            path=chezmoi.dump_config.py_out["destDir"],
+            classes="margin-top-bottom",
+            )
         self.unmanaged_paths = [Path(p) for p in chezmoi.unmanaged.py_out]
         self.status = chezmoi.chezmoi_status.py_out
 
@@ -169,7 +176,7 @@ class ChezmoiTUI(App):
 
     BINDINGS = {
         ("i, I", "toggle_slidebar", "Inspect"),
-        ("S, s", "toggle_space", "Space"),
+        ("r, R", "toggle_room", "Toggle Roomy"),
     }
 
     CSS_PATH = "tui.tcss"
@@ -196,7 +203,8 @@ class ChezmoiTUI(App):
 
     def on_mount(self) -> None:
         self.title = "-  c h e z m o i  m o u s s e  -"
-        self.register_theme(oled_dark_background)
+        self.register_theme(mousse_theme)
+        self.theme = "mousse-theme"
         self.push_screen("loading", self.refresh_app)
 
     # Underscore to ignore return value from screen.dismiss()
@@ -206,10 +214,11 @@ class ChezmoiTUI(App):
     def action_toggle_slidebar(self):
         self.query_one(SlideBar).toggle_class("-visible")
 
-    def action_toggle_space(self):
+    def action_toggle_room(self):
         self.query_one(Header).toggle_class("-tall")
-        self.query_one(DataTable).toggle_class("space")
+        self.query_one(DataTable).toggle_class("margin-top-bottom")
         self.query_one(Footer).toggle_class("just-margin-top")
+        self.query_one(DirectoryTree).toggle_class("margin-top-bottom")
 
     def key_space(self) -> None:
-        self.action_toggle_space()
+        self.action_toggle_room()

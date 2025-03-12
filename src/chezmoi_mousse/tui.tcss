@@ -2,7 +2,7 @@
   scrollbar-size-vertical: 1;
 }
 
-.space {
+.margin-top-bottom {
   margin: 1 0 1 0;
 }
 
@@ -53,10 +53,16 @@ Collapsible {
 }
 
 CollapsibleTitle {
+  color: $primary;
   padding: 0;
   &:focus {
       background: $background;
       color: $primary;
+      text-style: bold;
+  }
+  &:hover {
+      text-style: bold;
+      background: $background;
   }
 }
 
@@ -70,6 +76,46 @@ DataTable {
   & > .datatable--header-hover {
     color: $foreground;
     background: $background;
+  }
+}
+
+DirectoryTree {
+  padding-left: 1;
+  & > .directory-tree--extension {
+      text-style: none;
+  }
+  & > .directory-tree--folder {
+      text-style: none;
+      color: $primary;
+  }
+  & > .directory-tree--hidden {
+      text-style: none;
+      color: $foreground;
+      background: $background;
+  }
+  & > .directory-tree--file {
+      text-style: none;
+  }
+  & > .tree--guides {
+      color: $secondary;
+      background: $background;
+  }
+  & > .tree--guides-hover {
+      color: $secondary;
+      background: $background;
+  }
+  & > .tree--guides-selected {
+      color: $secondary;
+      background: $background;
+  }
+  & > .tree--highlight {
+      text-style: bold;
+      color: $text;
+      background: $background;
+  }
+  & > .tree--highlight-line {
+      color: $text;
+      background: $background;
   }
 }
 
@@ -89,11 +135,6 @@ LoadingScreen {
     margin-top: 1;
     text-style: none;
   }
-}
-
-CollapsibleTitle {
-  color: $primary;
-
 }
 
 SlideBar {
