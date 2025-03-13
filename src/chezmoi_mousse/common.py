@@ -1,3 +1,5 @@
+"""Modules for singletons or any other shared resources."""
+
 import json
 from pathlib import Path
 import subprocess
