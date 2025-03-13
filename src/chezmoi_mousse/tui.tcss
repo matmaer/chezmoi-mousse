@@ -14,6 +14,10 @@
   margin-top: 1;
 }
 
+.one-margin-bottom {
+  margin-bottom: 1;
+}
+
 #diagram {
   margin-left: 1;
   margin-right: 1;
@@ -54,7 +58,6 @@ Header {
   HeaderIcon {
     /* don't use display: none; because then the title is not centered */
     visibility: hidden;
-    color: $accent;
   }
 }
 
@@ -64,7 +67,13 @@ Footer {
   }
 }
 
-DataTable, DirectoryTree, RichLog, Slidebar, Collapsible, Tree {
+Collapsible,
+CollapsibleTitle,
+DataTable,
+DirectoryTree,
+RichLog,
+Slidebar,
+Tree {
   background-tint: $background;
 }
 
@@ -92,14 +101,15 @@ CollapsibleTitle {
 
 DataTable {
   width: 100%;
+  padding-right: 1;
   & > .datatable--header {
     color: $foreground;
-    background: $background;
-    text-style: bold underline;
+    background: $surface;
+    text-style: underline;
   }
   & > .datatable--header-hover {
     color: $foreground;
-    background: $background;
+    background: $surface;
   }
   & > .datatable--cursor {
     background: $primary-muted;
@@ -153,13 +163,12 @@ LoadingScreen {
     background-tint: black;
     height: 11;
     width: auto;
-    margin: 2 0 0 0;
+    margin-top: 2;
   }
   & #continue {
     color: $accent;
     background: black;
     border: none;
-    margin-top: 1;
     text-style: none;
   }
 }
@@ -167,28 +176,24 @@ LoadingScreen {
 SlideBar {
   layer: slidebar_layer;
   background: $background;
-  background-tint: $background;
-  margin-top: 6;
-  margin-bottom: 3;
+  margin-top: 7;
+  margin-bottom: 4;
+  height: 100%;
   padding-left: 1;
   dock: right;
   /* offset-x: -100%; out of view if docked left */
   /* offset-x: 100%; out if view if docked right */
   offset-x: 100%;
-  max-width: 70%;
+  max-width: 80%;
   min-height: 5;
-  border-left: round $secondary;
-  border-top: round $secondary;
-  border-bottom: round $secondary;
+  border-left: round $accent-muted;
+  border-top: round $accent-muted;
+  border-bottom: round $accent-muted;
   /* Enable animation */
   transition: offset 380ms;
   &.-visible {
       /* offset.x: 0; make visible when class is applied */
       offset-x: 0%;
-  }
-  &> Label {
-    color: $success;
-    margin-bottom: 1;
   }
 }
 
