@@ -1,3 +1,4 @@
+import re
 from textual import work
 from textual.app import App, ComposeResult
 from textual.containers import VerticalScroll
@@ -27,6 +28,62 @@ from chezmoi_mousse.common import (
 from chezmoi_mousse.splash import LoadingScreen
 
 
+class GitLog(Static):
+
+    def compose(self) -> ComposeResult:
+        yield DataTable(
+            id="git_log_table",
+            classes="margin-top-bottom",
+        )
+
+    def parse_commit_message(self, commit_message: str) -> str:
+        """Parse commit message."""
+        all_git_status_words = [
+            "Added",
+            "Copied",
+            "Deleted",
+            "Modified",
+            "Renamed",
+            "Type-Change",
+            "Unmerged",
+            "Unknown",
+            "Broken",
+        ]
+
+        # Create a regex pattern that matches any of the words in all_git_status_words
+        pattern = r'|'.join(all_git_status_words)
+
+        message_text = []
+
+        lines = [line.strip() for line in commit_message.split("\n")]
+        for line in lines:
+            if line.split(" ")[0] not in all_git_status_words:
+                message_text.append(line)
+                continue
+            split_by_status = re.split(pattern, line)
+            if len(split_by_status) < 2:
+                message_text.append(line)
+                continue
+            for status_line in split_by_status:
+                message_text.append(status_line)
+        return "\n".join(message_text)
+
+
+    def on_mount(self) -> None:
+
+        git_log_table = self.query_one("#git_log_table")
+        git_log_table.add_columns("NAME", "TIME", "MESSAGE")
+        git_log_output = chezmoi.git_log.std_out.splitlines()
+
+        for line in git_log_output:
+            columns = line.split(";")
+            name = columns[0]
+            time = columns[1]
+            commit_message = columns[2]
+            message_column_text = self.parse_commit_message(commit_message)
+            git_log_table.add_row(name, time, message_column_text)
+
+
 class SlideBar(Widget):
 
     def __init__(self) -> None:
@@ -53,7 +110,7 @@ class SlideBar(Widget):
                 title="chezmoi cat-config (contents of config-file)",
             ),
             Collapsible(
-                Pretty(chezmoi.git_log.py_out),
+                GitLog(),
                 title="chezmoi git log (last 10 commits)",
             ),
         )
@@ -240,10 +297,11 @@ class ChezmoiTUI(App):
 
     def action_toggle_spacing(self):
         self.query_one(Checkbox).toggle_class("just-margin-top")
-        self.query_one(Header).toggle_class("-tall")
         self.query_one(DataTable).toggle_class("margin-top-bottom")
-        self.query_one(Footer).toggle_class("just-margin-top")
         self.query_one(DirectoryTree).toggle_class("margin-top-bottom")
+        self.query_one(Footer).toggle_class("just-margin-top")
+        self.query_one(GitLog).toggle_class("margin-top-bottom")
+        self.query_one(Header).toggle_class("-tall")
 
     def key_space(self) -> None:
         self.action_toggle_spacing()
