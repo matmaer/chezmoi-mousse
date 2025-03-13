@@ -31,7 +31,7 @@ class SlideBar(Widget):
 
     def __init__(self) -> None:
         super().__init__()
-        self.border_title="outputs from chezmoi commands"
+        self.border_title = "outputs from chezmoi commands"
 
     def compose(self) -> ComposeResult:
 
@@ -55,10 +55,6 @@ class SlideBar(Widget):
             Collapsible(
                 Pretty(chezmoi.git_log.py_out),
                 title="chezmoi git log (last 10 commits)",
-            ),
-            Collapsible(
-                Pretty(chezmoi.unmanaged.py_out),
-                title="chezmoi unmanaged (in destination directory)",
             ),
         )
 
@@ -166,7 +162,7 @@ class ChezmoiStatus(Static):
             re_add_table.add_row(*[re_add_status, path, re_add_change])
 
 
-class ManagedTree(DirectoryTree): # pylint: disable=too-many-ancestors
+class MousseTree(DirectoryTree):  # pylint: disable=too-many-ancestors
 
     show_all = reactive(False)
 
@@ -174,12 +170,16 @@ class ManagedTree(DirectoryTree): # pylint: disable=too-many-ancestors
         super().__init__(
             path=chezmoi.dest_dir,
             classes="margin-top-bottom",
+            id="destdirtree",
         )
 
     def filter_paths(self, paths: list[str]) -> list[str]:
         if self.show_all:
-            return paths
+            return chezmoi.managed_paths + chezmoi.unmanaged_paths
         return [p for p in paths if p in chezmoi.managed_paths]
+
+
+class ManagedTree(Widget):
 
     def compose(self) -> ComposeResult:
         yield Checkbox(
@@ -187,35 +187,19 @@ class ManagedTree(DirectoryTree): # pylint: disable=too-many-ancestors
             id="tree-checkbox",
             classes="just-margin-top",
         )
+        yield MousseTree()
 
     def on_checkbox_changed(self, event: Checkbox.Changed) -> None:
-        self.show_all = event.value
-        self.refresh(recompose=True)
-
-
-        # self.loading = False
-    #     if event.value:
-    #         print(event.value)
-    #         chezmoi_tree = self.query_one(ChezmoiTree)
-    #         chezmoi_tree.filter_paths(
-    #             chezmoi.managed_paths + chezmoi.unmanaged_paths
-    #         )
-    #         await self.app.recompose()
-    #         print(f"{self.app.recompose}")
-    #     else:
-    #         print(event.value)
-    #         chezmoi_tree = self.query_one(ChezmoiTree).filter_paths(
-    #             chezmoi.managed_paths)
-    #         await self.app.recompose()
-    #         print(f"{self.app.recompose}")
-    #     self.loading = False
+        dir_tree = self.query_one(MousseTree)
+        dir_tree.show_all = event.value
+        dir_tree.reload()
 
 
 class ChezmoiTUI(App):
 
     BINDINGS = {
-        ("i, I", "toggle_slidebar", "Inspect"),
-        ("r, R", "toggle_room", "Toggle Roomy"),
+        ("i, I", "toggle_slidebar", "Toggle Inspect"),
+        ("s, S", "toggle_spacing", "Toggle Spacing"),
     }
 
     CSS_PATH = "tui.tcss"
@@ -254,7 +238,7 @@ class ChezmoiTUI(App):
     def action_toggle_slidebar(self):
         self.query_one(SlideBar).toggle_class("-visible")
 
-    def action_toggle_room(self):
+    def action_toggle_spacing(self):
         self.query_one(Checkbox).toggle_class("just-margin-top")
         self.query_one(Header).toggle_class("-tall")
         self.query_one(DataTable).toggle_class("margin-top-bottom")
@@ -262,4 +246,4 @@ class ChezmoiTUI(App):
         self.query_one(DirectoryTree).toggle_class("margin-top-bottom")
 
     def key_space(self) -> None:
-        self.action_toggle_room()
+        self.action_toggle_spacing()
