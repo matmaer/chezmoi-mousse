@@ -25,11 +25,14 @@
 }
 
 #tree-checkbox {
-  color: $text;
+  # color: $success-muted;
   border: none;
   background: $background;
   background-tint: $background;
 
+  & > .toggle--label {
+    color: $success-muted;
+  }
   &.-on > .toggle--button {
     color: lime;
     text-style: bold;
