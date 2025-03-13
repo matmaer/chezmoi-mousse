@@ -32,7 +32,7 @@ class InputOutput:
             return "no std_out available to parse"
 
         std_out = self.std_out.strip()
-        to_return = "should hold parsed std_out"
+        result = "should hold parsed std_out"
 
         try:
             return json.loads(std_out)
@@ -43,10 +43,10 @@ class InputOutput:
                 pass
             # not don't attempt to parse yaml, as it will parse a single string
         if std_out.count("\n") > 0:
-            to_return = std_out.splitlines()
+            result = std_out.splitlines()
         else:
-            to_return = std_out
-        return to_return
+            return std_out
+        return result
 
     @property
     def label(self):
