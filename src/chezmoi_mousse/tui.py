@@ -2,6 +2,7 @@ from textual import work
 from textual.app import App, ComposeResult
 from textual.containers import VerticalScroll
 from textual.lazy import Lazy
+from textual.reactive import reactive
 from textual.widget import Widget
 from textual.widgets import (
     Checkbox,
@@ -59,7 +60,7 @@ class SlideBar(Widget):
         )
 
 
-class ChezmoiDoctor(Static):
+class Doctor(Static):
 
     def compose(self) -> ComposeResult:
         yield DataTable(
@@ -136,7 +137,7 @@ class ChezmoiStatus(Static):
         yield DataTable(id="re_add_table")
 
     def on_mount(self):
-        # see comment in ChezmoiDoctor on_mount()
+        # see comment in Doctor on_mount()
         if chezmoi.chezmoi_status.std_out == "":
             return
 
@@ -163,7 +164,9 @@ class ChezmoiStatus(Static):
             re_add_table.add_row(*[re_add_status, path, re_add_change])
 
 
-class ChezmoiTree(DirectoryTree):
+class ManagedTree(DirectoryTree): # pylint: disable=too-many-ancestors
+
+    show_all = reactive(False)
 
     def __init__(self) -> None:
         super().__init__(
@@ -172,10 +175,9 @@ class ChezmoiTree(DirectoryTree):
         )
 
     def filter_paths(self, paths: list[str]) -> list[str]:
+        if self.show_all:
+            return paths
         return [p for p in paths if p in chezmoi.managed_paths]
-
-
-class TreeInterface(Widget):
 
     def compose(self) -> ComposeResult:
         yield Checkbox(
@@ -183,7 +185,28 @@ class TreeInterface(Widget):
             id="tree-checkbox",
             classes="just-margin-top",
         )
-        yield ChezmoiTree()
+
+    def on_checkbox_changed(self, event: Checkbox.Changed) -> None:
+        self.show_all = event.value
+        self.refresh(recompose=True)
+
+
+        # self.loading = False
+    #     if event.value:
+    #         print(event.value)
+    #         chezmoi_tree = self.query_one(ChezmoiTree)
+    #         chezmoi_tree.filter_paths(
+    #             chezmoi.managed_paths + chezmoi.unmanaged_paths
+    #         )
+    #         await self.app.recompose()
+    #         print(f"{self.app.recompose}")
+    #     else:
+    #         print(event.value)
+    #         chezmoi_tree = self.query_one(ChezmoiTree).filter_paths(
+    #             chezmoi.managed_paths)
+    #         await self.app.recompose()
+    #         print(f"{self.app.recompose}")
+    #     self.loading = False
 
 
 class ChezmoiTUI(App):
@@ -208,8 +231,8 @@ class ChezmoiTUI(App):
             "Diagram",
             "Chezmoi-Status",
         ):
-            yield VerticalScroll(TreeInterface())
-            yield VerticalScroll(Lazy(ChezmoiDoctor()))
+            yield VerticalScroll(ManagedTree())
+            yield VerticalScroll(Lazy(Doctor()))
             yield Lazy(Static(FLOW, id="diagram"))
             yield VerticalScroll(Lazy(ChezmoiStatus()))
 
