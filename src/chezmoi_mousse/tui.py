@@ -29,8 +29,11 @@ from chezmoi_mousse.splash import LoadingScreen
 
 class SlideBar(Widget):
 
+    def __init__(self) -> None:
+        super().__init__()
+        self.border_title="outputs from chezmoi commands"
+
     def compose(self) -> ComposeResult:
-        yield Label("Outputs from chezmoi commands:")
 
         yield VerticalScroll(
             Collapsible(
@@ -70,7 +73,6 @@ class Doctor(Static):
         )
         yield Label(
             "Local commands skipped because not in Path:",
-            classes="just-bold",
         )
         yield DataTable(
             id="second_table",
