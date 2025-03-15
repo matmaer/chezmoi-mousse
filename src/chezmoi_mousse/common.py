@@ -107,7 +107,7 @@ class Chezmoi:
             "--no-decorate",
             "--date-order",
             "--no-expand-tabs",
-            "--format='%cn;%ar;%s'",
+            "--format=%ar by %cn: %s",
         ],
         "git_status": ["git", "status"],
         "ignored": ["ignored"],
@@ -229,10 +229,10 @@ BACKGROUND = "rgb(12, 14, 18)"
 mousse_theme = Theme(
     name="mousse-theme",
     dark=True,
-    accent="rgb(241, 135, 251)",
+    accent="rgb(241, 135, 251)", # custom #F187FB
     background=BACKGROUND,
     error="#ba3c5b",  # textual dark
-    foreground="rgb(222, 218, 209)",  # #DEDAE1
+    foreground="rgb(222, 218, 209)",  # custom #DEDAE1
     primary="#0178D4",  # textual dark
     secondary="#004578",  # textual dark
     success="#4EBF71",  # textual dark
