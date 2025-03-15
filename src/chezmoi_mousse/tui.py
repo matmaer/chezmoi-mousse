@@ -72,16 +72,15 @@ class GitLog(Static):
     def on_mount(self) -> None:
 
         git_log_table = self.query_one("#git_log_table")
-        git_log_table.add_columns("NAME", "TIME", "MESSAGE")
+        git_log_table.add_columns("COMMIT", "MESSAGE")
         git_log_output = chezmoi.git_log.std_out.splitlines()
 
         for line in git_log_output:
             columns = line.split(";")
-            name = columns[0]
-            time = columns[1]
-            commit_message = columns[2]
+            commit_title = columns[0]
+            commit_message = columns[1]
             message_column_text = self.parse_commit_message(commit_message)
-            git_log_table.add_row(name, time, message_column_text)
+            git_log_table.add_row(commit_title, message_column_text)
 
 
 class SlideBar(Widget):
