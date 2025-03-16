@@ -128,16 +128,18 @@ class Chezmoi:
             )
         # needed early on to instantiate the DirectoryTree
         config = self.dump_config.updated_py_out()
-        self.dest_dir = Path(config["destDir"])
+        self.dest_dir = config["destDir"]
         self.managed.update()
 
-    @property
-    def managed_paths(self):
-        return [Path(p) for p in self.managed.py_out]
+    def get_managed_paths(self):
+        if self.managed.std_out == "":
+            self.managed.update()
+        return [Path(p) for p in self.managed.std_out.splitlines()]
 
-    @property
-    def unmanaged_paths(self):
-        return [Path(p) for p in self.unmanaged.py_out]
+    def get_unmanaged_paths(self):
+        if self.unmanaged.std_out == "":
+            self.unmanaged.update()
+        return [Path(p) for p in self.unmanaged.std_out.splitlines()]
 
 
 chezmoi = Chezmoi()

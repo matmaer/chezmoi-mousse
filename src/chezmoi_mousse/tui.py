@@ -1,22 +1,19 @@
-# from pathlib import Path
 from pathlib import Path
 from textual import work
 from textual.app import App, ComposeResult
 from textual.containers import VerticalScroll
 from textual.lazy import Lazy
-from textual.reactive import reactive
 from textual.widget import Widget
 from textual.widgets import (
-    Checkbox,
     Collapsible,
     DataTable,
-    DirectoryTree,
     Footer,
     Header,
     Label,
     Pretty,
     Static,
     TabbedContent,
+    Tree,
 )
 
 from chezmoi_mousse.common import (
@@ -183,37 +180,33 @@ class ChezmoiStatus(Static):
             re_add_table.add_row(*[re_add_status, path, re_add_change])
 
 
-class MousseTree(DirectoryTree):  # pylint: disable=too-many-ancestors
-
-    show_all = reactive(False)
-
-    def __init__(self) -> None:
-        super().__init__(
-            path=chezmoi.dest_dir,
-            classes="margin-top-bottom",
-            id="destdirtree",
-        )
-
-    def filter_paths(self, paths: list[str]) -> list[str]:
-        if self.show_all:
-            return chezmoi.managed_paths + chezmoi.unmanaged_paths
-        return [p for p in paths if p in chezmoi.managed_paths]
-
-
-class ManagedTree(Widget):
+class ManagedTree(Static):
 
     def compose(self) -> ComposeResult:
-        yield Checkbox(
-            "Include Unmanaged Files",
-            id="tree-checkbox",
-            classes="just-margin-top",
-        )
-        yield MousseTree()
+        yield Tree(label=chezmoi.dest_dir, id="managed_tree")
 
-    def on_checkbox_changed(self, event: Checkbox.Changed) -> None:
-        dir_tree = self.query_one(MousseTree)
-        dir_tree.show_all = event.value
-        dir_tree.reload()
+    def on_mount(self) -> None:
+
+        managed_tree = self.query_one("#managed_tree")
+        managed_paths = chezmoi.get_managed_paths()
+        managed_dirs = [p for p in managed_paths if p.is_dir()]
+
+        def create_recursive(subdir_paths: list[Path], parent_node):
+            # Group paths by their first part
+            grouped_paths = {}
+            for path in subdir_paths:
+                root = path.parts[0]
+                if root not in grouped_paths:
+                    grouped_paths[root] = []
+                grouped_paths[root].append(path.relative_to(root))
+
+            # Add each group to the parent node and recurse
+            for root, paths in grouped_paths.items():
+                child_node = parent_node.add(root)
+                create_recursive([p for p in paths if p.parts], child_node)
+
+        # Start the recursive creation from the root node
+        create_recursive(managed_dirs, managed_tree.root)
 
 
 class ChezmoiTUI(App):
@@ -230,10 +223,11 @@ class ChezmoiTUI(App):
     }
 
     def compose(self) -> ComposeResult:
+
         yield Header(classes="-tall")
         yield Lazy(SlideBar())
         with TabbedContent(
-            "destDir-Tree",
+            "Managed-Tree",
             "Doctor",
             "Diagram",
             "Chezmoi-Status",
@@ -260,9 +254,7 @@ class ChezmoiTUI(App):
         self.query_one(SlideBar).toggle_class("-visible")
 
     def action_toggle_spacing(self):
-        self.query_one(Checkbox).toggle_class("just-margin-top")
         self.query_one(DataTable).toggle_class("margin-top-bottom")
-        self.query_one(DirectoryTree).toggle_class("margin-top-bottom")
         self.query_one(Footer).toggle_class("just-margin-top")
         self.query_one(GitLog).toggle_class("margin-top-bottom")
         self.query_one(Header).toggle_class("-tall")
