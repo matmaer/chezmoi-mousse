@@ -108,7 +108,7 @@ class Chezmoi:
         ],
         "git_status": ["git", "status"],
         "ignored": ["ignored"],
-        "managed": ["managed", "--path-style=absolute"],
+        "managed": ["managed", "--path-style=absolute", "--include=files"],
         "chezmoi_status": ["status", "--parent-dirs"],
         "unmanaged": ["unmanaged", "--path-style=absolute"],
     }
