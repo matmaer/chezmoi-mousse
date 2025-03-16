@@ -206,6 +206,7 @@ class ManagedTree(Static):
                 create_recursive([p for p in paths if p.parts], child_node)
 
         # Start the recursive creation from the root node
+        managed_dirs = [p.relative_to(chezmoi.dest_dir) for p in managed_dirs]
         create_recursive(managed_dirs, managed_tree.root)
 
 
