@@ -1,4 +1,5 @@
-import re
+# from pathlib import Path
+from pathlib import Path
 from textual import work
 from textual.app import App, ComposeResult
 from textual.containers import VerticalScroll
@@ -36,39 +37,6 @@ class GitLog(Static):
             classes="margin-top-bottom",
         )
 
-    def parse_commit_message(self, commit_message: str) -> str:
-        """Parse commit message."""
-        all_git_status_words = [
-            "Added",
-            "Copied",
-            "Deleted",
-            "Modified",
-            "Renamed",
-            "Type-Change",
-            "Unmerged",
-            "Unknown",
-            "Broken",
-        ]
-
-        # Create a regex pattern that matches any of the words in all_git_status_words
-        pattern = r'|'.join(all_git_status_words)
-
-        message_text = []
-
-        lines = [line.strip() for line in commit_message.split("\n")]
-        for line in lines:
-            if line.split(" ")[0] not in all_git_status_words:
-                message_text.append(line)
-                continue
-            split_by_status = re.split(pattern, line)
-            if len(split_by_status) < 2:
-                message_text.append(line)
-                continue
-            for status_line in split_by_status:
-                message_text.append(status_line)
-        return "\n".join(message_text)
-
-
     def on_mount(self) -> None:
 
         git_log_table = self.query_one("#git_log_table")
@@ -77,10 +45,7 @@ class GitLog(Static):
 
         for line in git_log_output:
             columns = line.split(";")
-            commit_title = columns[0]
-            commit_message = columns[1]
-            message_column_text = self.parse_commit_message(commit_message)
-            git_log_table.add_row(commit_title, message_column_text)
+            git_log_table.add_row(*columns)
 
 
 class SlideBar(Widget):
