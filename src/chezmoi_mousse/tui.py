@@ -188,7 +188,7 @@ class ManagedTree(Static):
     def on_mount(self) -> None:
 
         managed_tree = self.query_one("#managed_tree")
-        managed_paths = chezmoi.get_managed_paths()
+        file_paths = chezmoi.get_managed_paths()
 
         def create_recursive(subdir_paths: list[Path], parent_node):
             # Group paths by their first part
@@ -205,7 +205,7 @@ class ManagedTree(Static):
                 create_recursive([p for p in paths if p.parts], child_node)
 
         # Start the recursive creation from the root node
-        managed_dirs = [p.relative_to(chezmoi.dest_dir) for p in managed_paths]
+        managed_dirs = [p.relative_to(chezmoi.dest_dir) for p in file_paths]
         create_recursive(managed_dirs, managed_tree.root)
         managed_tree.root.expand_all()
 
