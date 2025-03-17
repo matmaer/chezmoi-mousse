@@ -194,14 +194,14 @@ class ManagedTree(Static):
             # Group paths by their first part
             grouped_paths = {}
             for path in subdir_paths:
-                root = path.parts[0]
-                if root not in grouped_paths:
-                    grouped_paths[root] = []
-                grouped_paths[root].append(path.relative_to(root))
+                first_part = path.parts[0]
+                if first_part not in grouped_paths:
+                    grouped_paths[first_part] = []
+                grouped_paths[first_part].append(path.relative_to(first_part))
 
             # Add each group to the parent node and recurse
-            for root, paths in grouped_paths.items():
-                child_node = parent_node.add(root)
+            for first_part, paths in grouped_paths.items():
+                child_node = parent_node.add(first_part)
                 create_recursive([p for p in paths if p.parts], child_node)
 
         # Start the recursive creation from the root node

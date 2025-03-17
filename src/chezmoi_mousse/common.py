@@ -78,7 +78,7 @@ class Chezmoi:
     git_log: type[InputOutput]
     git_status: type[InputOutput]
     ignored: type[InputOutput]
-    managed: type[InputOutput]
+    managed_files: type[InputOutput]
     template_data: type[InputOutput]
     unmanaged: type[InputOutput]
 
@@ -108,7 +108,7 @@ class Chezmoi:
         ],
         "git_status": ["git", "status"],
         "ignored": ["ignored"],
-        "managed": ["managed", "--path-style=absolute", "--include=files"],
+        "managed_files": ["managed", "--path-style=absolute", "--include=files"],
         "chezmoi_status": ["status", "--parent-dirs"],
         "unmanaged": ["unmanaged", "--path-style=absolute"],
     }
@@ -129,12 +129,12 @@ class Chezmoi:
         # needed early on to instantiate the DirectoryTree
         config = self.dump_config.updated_py_out()
         self.dest_dir = config["destDir"]
-        self.managed.update()
+        self.managed_files.update()
 
     def get_managed_paths(self):
-        if self.managed.std_out == "":
-            self.managed.update()
-        return [Path(p) for p in self.managed.std_out.splitlines()]
+        if self.managed_files.std_out == "":
+            self.managed_files.update()
+        return [Path(p) for p in self.managed_files.std_out.splitlines()]
 
     def get_unmanaged_paths(self):
         if self.unmanaged.std_out == "":
