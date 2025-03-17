@@ -189,11 +189,12 @@ class ManagedTree(Static):
 
         managed_tree = self.query_one("#managed_tree")
         file_paths = chezmoi.get_managed_paths()
+        dest_dir = Path(chezmoi.dest_dir)
 
         def create_recursive(subdir_paths: list[Path], parent_node):
-            # Group paths by their first part
             grouped_paths = {}
             for path in subdir_paths:
+
                 first_part = path.parts[0]
                 if first_part not in grouped_paths:
                     grouped_paths[first_part] = []
@@ -204,9 +205,8 @@ class ManagedTree(Static):
                 child_node = parent_node.add(first_part)
                 create_recursive([p for p in paths if p.parts], child_node)
 
-        # Start the recursive creation from the root node
-        managed_dirs = [p.relative_to(chezmoi.dest_dir) for p in file_paths]
-        create_recursive(managed_dirs, managed_tree.root)
+        managed_paths = [p.relative_to(dest_dir) for p in file_paths]
+        create_recursive(managed_paths, managed_tree.root)
         managed_tree.root.expand_all()
 
 
