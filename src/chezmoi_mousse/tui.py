@@ -23,6 +23,7 @@ from chezmoi_mousse.common import (
     integrated_command_map,
     mousse_theme,
 )
+
 from chezmoi_mousse.splash import LoadingScreen
 
 
@@ -188,25 +189,20 @@ class ManagedTree(Static):
     def on_mount(self) -> None:
 
         managed_tree = self.query_one("#managed_tree")
-        file_paths = chezmoi.get_managed_paths()
-        dest_dir = Path(chezmoi.dest_dir)
+        paths = chezmoi.get_managed_paths()
+        dir_paths = set(p for p in paths if p.is_dir())
+        file_paths = set(p for p in paths if p.is_file())
 
-        def create_recursive(subdir_paths: list[Path], parent_node):
-            grouped_paths = {}
-            for path in subdir_paths:
+        def recurse_paths(parent, dir_path):
+            parent = parent.add(str(dir_path.parts[-1]))
+            files = [f for f in file_paths if f.parent == dir_path]
+            for file in files:
+                parent.add_leaf(str(file.parts[-1]))
+            sub_dirs = [d for d in dir_paths if d.parent == dir_path]
+            for sub_dir in sub_dirs:
+                recurse_paths(parent, sub_dir)
 
-                first_part = path.parts[0]
-                if first_part not in grouped_paths:
-                    grouped_paths[first_part] = []
-                grouped_paths[first_part].append(path.relative_to(first_part))
-
-            # Add each group to the parent node and recurse
-            for first_part, paths in grouped_paths.items():
-                child_node = parent_node.add(first_part)
-                create_recursive([p for p in paths if p.parts], child_node)
-
-        managed_paths = [p.relative_to(dest_dir) for p in file_paths]
-        create_recursive(managed_paths, managed_tree.root)
+        recurse_paths(managed_tree.root, Path(chezmoi.dest_dir))
         managed_tree.root.expand_all()
 
 
