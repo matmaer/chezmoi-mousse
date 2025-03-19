@@ -163,19 +163,6 @@ Tree {
           background: $background;
       }
   }
-
-  &:light {
-      /* In light mode the guides are darker*/
-      & > .tree--guides {
-          color: $surface-darken-1;
-      }
-      & > .tree--guides-hover {
-          color: $block-cursor-background;
-      }
-      & > .tree--guides-selected {
-          color: $block-cursor-background;
-      }
-  }
 }
 
 LoadingScreen {
