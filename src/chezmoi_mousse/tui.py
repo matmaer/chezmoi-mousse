@@ -9,12 +9,14 @@ from textual.widgets import (
     DataTable,
     Footer,
     Header,
+    Input,
     Label,
     Pretty,
     Static,
     TabbedContent,
     Tree,
 )
+from textual_autocomplete import AutoComplete
 
 from chezmoi_mousse.common import (
     FLOW,
@@ -25,6 +27,28 @@ from chezmoi_mousse.common import (
 )
 
 from chezmoi_mousse.splash import LoadingScreen
+
+
+class FileFinder(Static):
+    def compose(self):
+        text_input = Input(placeholder="Search for a file...")
+        yield text_input
+        yield AutoComplete(
+            target=text_input,
+            candidates=chezmoi.managed.py_out,
+        )
+
+
+# class FileFinder(Input):
+
+#     def __init__(self) -> None:
+#         super().__init__(placeholder="Search for a file...")
+
+#     def compose(self):
+#         yield AutoComplete(
+#             target=self,
+#             candidates=chezmoi.managed.py_out,
+#         )
 
 
 class GitLog(DataTable):
@@ -235,7 +259,7 @@ class ChezmoiTUI(App):
             "Diagram",
             "Chezmoi-Status",
         ):
-            yield VerticalScroll(ManagedTree())
+            yield VerticalScroll(FileFinder(), ManagedTree())
             yield VerticalScroll(Lazy(Doctor()))
             yield Lazy(Static(FLOW, id="diagram"))
             yield VerticalScroll(Lazy(ChezmoiStatus()))
