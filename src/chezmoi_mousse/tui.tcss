@@ -122,6 +122,7 @@ DataTable {
 Tree {
   background: $background;
   color: $foreground;
+  width: auto;
 
   & > .tree--label {}
   & > .tree--guides {
