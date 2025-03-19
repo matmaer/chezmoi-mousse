@@ -206,6 +206,11 @@ class ManagedTree(Tree):
         self.show_root = False
         self.root.expand_all()
 
+    # def _on_tree_node_selected(self, message: Tree.NodeSelected) -> None:
+    #     node_data = message.node.data
+    #     managed_file = self.query_one("#managed_file_status")
+    #     message.stop()
+
 
 class ChezmoiTUI(App):
 
