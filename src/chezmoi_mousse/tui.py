@@ -194,7 +194,10 @@ class ManagedTree(Static):
         file_paths = set(p for p in paths if p.is_file())
 
         def recurse_paths(parent, dir_path):
-            parent = parent.add(dir_path.parts[-1], dir_path)
+            if dir_path == Path(chezmoi.dest_dir):
+                parent = managed_tree.root
+            else:
+                parent = parent.add(dir_path.parts[-1], dir_path)
             files = [f for f in file_paths if f.parent == dir_path]
             if len(files) > 0:
                 for file in files:
