@@ -119,26 +119,13 @@ DataTable {
   }
 }
 
-DirectoryTree {
-  padding-left: 2;
-  & > .directory-tree--extension {
-      text-style: none;
-  }
-  & > .directory-tree--folder {
-      text-style: none;
-      color: $primary;
-  }
-  & > .directory-tree--hidden {
-      text-style: none;
-      color: $foreground;
-      background: $background;
-  }
-  & > .directory-tree--file {
-      text-style: none;
-  }
+Tree {
+  background: $background;
+  color: $foreground;
+
+  & > .tree--label {}
   & > .tree--guides {
       color: $secondary;
-      background: $background;
   }
   & > .tree--guides-hover {
       color: $secondary;
@@ -148,14 +135,56 @@ DirectoryTree {
       color: $secondary;
       background: $background;
   }
-  & > .tree--highlight {
+  & > .tree--cursor {
       text-style: bold;
-      color: $text;
-      background: $background;
   }
+  & > .tree--highlight {}
   & > .tree--highlight-line {
-      color: $text;
       background: $background;
+      text-style: bold;
+  }
+
+  &:focus {
+      & > .tree--cursor {
+          color: $block-cursor-foreground;
+          background: $background;
+          text-style: bold;
+      }
+      & > .tree--guides {
+          color: $secondary;
+          background: $background;
+      }
+      & > .tree--guides-hover {
+          color: $secondary;
+          background: $background;
+      }
+      & > .tree--guides-selected {
+          color: $secondary;
+          background: $background;
+      }
+  }
+
+  &:light {
+      /* In light mode the guides are darker*/
+      & > .tree--guides {
+          color: $surface-darken-1;
+      }
+      & > .tree--guides-hover {
+          color: $block-cursor-background;
+      }
+      & > .tree--guides-selected {
+          color: $block-cursor-background;
+      }
+  }
+
+  &:ansi {
+      color: ansi_default;
+      & > .tree--guides {
+          color: ansi_green;
+      }
+      &:nocolor > .tree--cursor{
+          text-style: reverse;
+      }
   }
 }
 
