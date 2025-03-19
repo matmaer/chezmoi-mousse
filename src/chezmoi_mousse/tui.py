@@ -181,21 +181,21 @@ class ChezmoiStatus(Static):
             re_add_table.add_row(*[re_add_status, path, re_add_change])
 
 
-class ManagedTree(Static):
+class ManagedTree(Tree):
 
-    def compose(self) -> ComposeResult:
-        yield Tree(label=chezmoi.dest_dir, id="managed_tree")
+    def __init__(self) -> None:
+        super().__init__(
+            label="managed_tree", id="managed_tree", classes="margin-top-bottom"
+        )
 
     def on_mount(self) -> None:
-
-        managed_tree = self.query_one("#managed_tree")
         paths = chezmoi.get_managed_paths()
         dir_paths = set(p for p in paths if p.is_dir())
         file_paths = set(p for p in paths if p.is_file())
 
         def recurse_paths(parent, dir_path):
             if dir_path == Path(chezmoi.dest_dir):
-                parent = managed_tree.root
+                parent = self.root
             else:
                 parent = parent.add(dir_path.parts[-1], dir_path)
             files = [f for f in file_paths if f.parent == dir_path]
@@ -207,8 +207,9 @@ class ManagedTree(Static):
                 for sub_dir in sub_dirs:
                     recurse_paths(parent, sub_dir)
 
-        recurse_paths(managed_tree.root, Path(chezmoi.dest_dir))
-        managed_tree.root.expand_all()
+        recurse_paths(self.root, Path(chezmoi.dest_dir))
+        self.show_root = False
+        self.root.expand_all()
 
 
 class ChezmoiTUI(App):
