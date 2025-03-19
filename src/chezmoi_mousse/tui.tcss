@@ -176,16 +176,6 @@ Tree {
           color: $block-cursor-background;
       }
   }
-
-  &:ansi {
-      color: ansi_default;
-      & > .tree--guides {
-          color: ansi_green;
-      }
-      &:nocolor > .tree--cursor{
-          text-style: reverse;
-      }
-  }
 }
 
 LoadingScreen {
