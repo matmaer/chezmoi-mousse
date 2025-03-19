@@ -27,23 +27,18 @@ from chezmoi_mousse.common import (
 from chezmoi_mousse.splash import LoadingScreen
 
 
-class GitLog(Static):
+class GitLog(DataTable):
 
-    def compose(self) -> ComposeResult:
-        yield DataTable(
-            id="git_log_table",
-            classes="margin-top-bottom",
-        )
+    def __init__(self) -> None:
+        super().__init__(id="git_log", classes="margin-top-bottom")
 
     def on_mount(self) -> None:
-
-        git_log_table = self.query_one("#git_log_table")
-        git_log_table.add_columns("COMMIT", "MESSAGE")
+        self.add_columns("COMMIT", "MESSAGE")
         git_log_output = chezmoi.git_log.std_out.splitlines()
 
         for line in git_log_output:
             columns = line.split(";")
-            git_log_table.add_row(*columns)
+            self.add_row(*columns)
 
 
 class SlideBar(Widget):
