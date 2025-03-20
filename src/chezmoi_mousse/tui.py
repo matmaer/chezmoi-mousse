@@ -156,7 +156,7 @@ class ChezmoiStatus(Static):
         if chezmoi.chezmoi_status.std_out == "":
             return
 
-        chezmoi_status = chezmoi.chezmoi_status.py_out
+        chezmoi_status = chezmoi.chezmoi_status.std_out.splitlines()
 
         re_add_table = self.query_one("#re_add_table")
         apply_table = self.query_one("#apply_table")
