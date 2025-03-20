@@ -3,7 +3,6 @@
 import json
 from pathlib import Path
 import subprocess
-import tomllib
 from dataclasses import dataclass
 
 from textual.theme import Theme
@@ -28,28 +27,6 @@ class InputOutput:
     std_out: str = ""
 
     @property
-    def py_out(self):
-
-        if self.std_out == "":
-            return "no std_out available to parse"
-
-        std_out = self.std_out.strip()
-        result = "should hold parsed std_out"
-
-        try:
-            return json.loads(std_out)
-        except json.JSONDecodeError:
-            try:
-                return tomllib.loads(std_out)
-            except tomllib.TOMLDecodeError:
-                pass
-        if std_out.count("\n") > 0:
-            result = std_out.splitlines()
-        else:
-            return std_out
-        return result
-
-    @property
     def label(self):
         return " ".join([w for w in self.long_command if not w.startswith("-")])
 
@@ -62,11 +39,6 @@ class InputOutput:
         """Re-run subprocess call and return std_out."""
         self.update()
         return self.std_out
-
-    def updated_py_out(self) -> str | list | dict:
-        """Re-run subprocess call and return py_out."""
-        self.update()
-        return self.py_out
 
 
 class Chezmoi:
@@ -108,7 +80,11 @@ class Chezmoi:
         ],
         "git_status": ["git", "status"],
         "ignored": ["ignored"],
-        "managed": ["managed", "--path-style=absolute", "--include=dirs,files"],
+        "managed": [
+            "managed",
+            "--path-style=absolute",
+            "--include=dirs,files",
+        ],
         "chezmoi_status": ["status", "--parent-dirs"],
         "unmanaged": ["unmanaged", "--path-style=absolute"],
     }
@@ -126,19 +102,31 @@ class Chezmoi:
                 arg_id,
                 NewClass(long_command=long_cmd),
             )
-        # needed early on to instantiate the DirectoryTree
-        config = self.dump_config.updated_py_out()
-        self.dest_dir = config["destDir"]
 
-    def get_managed_paths(self):
-        if self.managed.std_out == "":
+    def get_config_dump(self, refresh: bool = False) -> dict:
+        if self.dump_config.std_out == "" or refresh:
+            self.dump_config.update()
+        return json.loads(self.dump_config.std_out.strip())
+
+    def get_doctor_list(self, refresh: bool = False) -> list[str]:
+        if self.doctor.std_out == "" or refresh:
+            self.doctor.update()
+        return self.doctor.std_out.splitlines()
+
+    def get_managed_paths(self, refresh: bool = False) -> list[Path]:
+        if self.managed.std_out == "" or refresh:
             self.managed.update()
         return sorted([Path(p) for p in self.managed.std_out.splitlines()])
 
-    def get_unmanaged_paths(self):
-        if self.unmanaged.std_out == "":
+    def get_unmanaged_paths(self, refresh: bool = False) -> list[Path]:
+        if self.unmanaged.std_out == "" or refresh:
             self.unmanaged.update()
-        return [Path(p) for p in self.unmanaged.std_out.splitlines()]
+        return sorted([Path(p) for p in self.unmanaged.std_out.splitlines()])
+
+    def get_template_data(self, refresh: bool = False) -> dict:
+        if self.template_data.std_out == "" or refresh:
+            self.template_data.update()
+        return json.loads(self.template_data.std_out.strip())
 
 
 chezmoi = Chezmoi()
