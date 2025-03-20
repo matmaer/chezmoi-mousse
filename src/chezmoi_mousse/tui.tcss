@@ -6,16 +6,8 @@
   margin: 1 0 1 0;
 }
 
-.just-bold {
-  text-style: bold;
-}
-
 .just-margin-top {
   margin-top: 1;
-}
-
-.one-margin-bottom {
-  margin-bottom: 1;
 }
 
 #diagram {
