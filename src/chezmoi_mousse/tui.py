@@ -3,10 +3,13 @@ from textual import work
 from textual.app import App, ComposeResult
 from textual.containers import VerticalScroll
 from textual.lazy import Lazy
+from textual.reactive import reactive
 from textual.widget import Widget
 from textual.widgets import (
     Collapsible,
     DataTable,
+    DirectoryTree,
+    Checkbox,
     Footer,
     Header,
     Label,
@@ -212,6 +215,39 @@ class ManagedTree(Tree):
     #     message.stop()
 
 
+class MousseTree(DirectoryTree):  # pylint: disable=too-many-ancestors
+
+    show_all = reactive(False)
+
+    def __init__(self) -> None:
+        super().__init__(
+            path=chezmoi.dest_dir,
+            classes="margin-top-bottom",
+            id="destdirtree",
+        )
+
+    def filter_paths(self, paths: list[str]) -> list[str]:
+        if self.show_all:
+            return paths
+        return [p for p in paths if p in chezmoi.get_managed_paths()]
+
+
+class ManagedDirTree(Widget):
+
+    def compose(self) -> ComposeResult:
+        yield Checkbox(
+            "Include Unmanaged Files",
+            id="tree-checkbox",
+            classes="just-margin-top",
+        )
+        yield MousseTree()
+
+    def on_checkbox_changed(self, event: Checkbox.Changed) -> None:
+        dir_tree = self.query_one(MousseTree)
+        dir_tree.show_all = event.value
+        dir_tree.reload()
+
+
 class ChezmoiTUI(App):
 
     BINDINGS = {
@@ -231,11 +267,13 @@ class ChezmoiTUI(App):
         yield Lazy(SlideBar())
         with TabbedContent(
             "Managed-Tree",
+            "Managed-DirTree",
             "Doctor",
             "Diagram",
             "Chezmoi-Status",
         ):
             yield VerticalScroll(ManagedTree())
+            yield VerticalScroll(ManagedDirTree())
             yield VerticalScroll(Lazy(Doctor()))
             yield Lazy(Static(FLOW, id="diagram"))
             yield VerticalScroll(Lazy(ChezmoiStatus()))
