@@ -54,19 +54,19 @@ class SlideBar(Widget):
 
         yield VerticalScroll(
             Collapsible(
-                Pretty(chezmoi.dump_config.py_out),
+                Pretty(chezmoi.get_config_dump()),
                 title="chezmoi dump-config",
             ),
             Collapsible(
-                Pretty(chezmoi.template_data.py_out),
+                Pretty(chezmoi.get_template_data()),
                 title="chezmoi data (template data)",
             ),
             Collapsible(
-                Pretty(chezmoi.ignored.py_out),
+                Pretty(chezmoi.ignored.std_out.splitlines()),
                 title="chezmoi ignored (git ignore in source-dir)",
             ),
             Collapsible(
-                Pretty(chezmoi.cat_config.py_out),
+                Pretty(chezmoi.cat_config.std_out.splitlines()),
                 title="chezmoi cat-config (contents of config-file)",
             ),
             Collapsible(
@@ -95,17 +95,11 @@ class Doctor(Static):
 
     def on_mount(self) -> None:
 
-        # At startup, the class gets mounted before the doctor command is run
-        # however, self.app.refresh() is called after dismissing the loading
-        # screen. TODO: look into Lazy mounting and why this is still needed.
-        if chezmoi.doctor.std_out == "":
-            return
-
         main_table = self.query_one("#main_table")
         second_table = self.query_one("#second_table")
         second_table.add_columns("COMMAND", "DESCRIPTION", "URL")
 
-        doctor = chezmoi.doctor.py_out
+        doctor = chezmoi.get_doctor_list()
         main_table.add_columns(*doctor.pop(0).split())
 
         success = self.app.current_theme.success
@@ -183,16 +177,19 @@ class ManagedTree(Tree):
 
     def __init__(self) -> None:
         super().__init__(
-            label="managed_tree", id="managed_tree", classes="margin-top-bottom"
+            label="managed_tree",
+            id="managed_tree",
+            classes="margin-top-bottom",
         )
 
     def on_mount(self) -> None:
+        dest_dir_path = Path(chezmoi.get_config_dump()["destDir"])
         paths = chezmoi.get_managed_paths()
         dir_paths = set(p for p in paths if p.is_dir())
         file_paths = set(p for p in paths if p.is_file())
 
         def recurse_paths(parent, dir_path):
-            if dir_path == Path(chezmoi.dest_dir):
+            if dir_path == dest_dir_path:
                 parent = self.root
             else:
                 parent = parent.add(dir_path.parts[-1], dir_path)
@@ -205,7 +202,7 @@ class ManagedTree(Tree):
                 for sub_dir in sub_dirs:
                     recurse_paths(parent, sub_dir)
 
-        recurse_paths(self.root, Path(chezmoi.dest_dir))
+        recurse_paths(self.root, dest_dir_path)
         self.show_root = False
         self.root.expand_all()
 
@@ -221,7 +218,7 @@ class MousseTree(DirectoryTree):  # pylint: disable=too-many-ancestors
 
     def __init__(self) -> None:
         super().__init__(
-            path=chezmoi.dest_dir,
+            path=chezmoi.get_config_dump()["destDir"],
             classes="margin-top-bottom",
             id="destdirtree",
         )
@@ -263,7 +260,7 @@ class ChezmoiTUI(App):
 
     def compose(self) -> ComposeResult:
 
-        yield Header(classes="-tall")
+        yield Lazy(Header(classes="-tall"))
         yield Lazy(SlideBar())
         with TabbedContent(
             "Managed-Tree",
@@ -272,13 +269,13 @@ class ChezmoiTUI(App):
             "Diagram",
             "Chezmoi-Status",
         ):
-            yield VerticalScroll(ManagedTree())
-            yield VerticalScroll(ManagedDirTree())
+            yield VerticalScroll(Lazy(ManagedTree()))
+            yield VerticalScroll(Lazy(ManagedDirTree()))
             yield VerticalScroll(Lazy(Doctor()))
             yield Lazy(Static(FLOW, id="diagram"))
             yield VerticalScroll(Lazy(ChezmoiStatus()))
 
-        yield Footer(classes="just-margin-top")
+        yield Lazy(Footer(classes="just-margin-top"))
 
     @work
     async def on_mount(self) -> None:
