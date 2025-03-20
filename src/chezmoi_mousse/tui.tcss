@@ -142,6 +142,7 @@ LoadingScreen {
   padding: 1 1 1 1;
   background: black;
   & #loader-log {
+    margin: 1 0 1 0;
     color: $secondary;
     background-tint: black;
     height: 11;
