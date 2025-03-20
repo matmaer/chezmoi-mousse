@@ -238,7 +238,7 @@ class ManagedDirTree(Widget):
         yield Checkbox(
             "Include Unmanaged Files",
             id="tree-checkbox",
-            classes="just-margin-top",
+            classes="margin-top-bottom",
         )
         yield MousseTree()
 
@@ -297,7 +297,6 @@ class ChezmoiTUI(App):
     def action_toggle_spacing(self):
         self.query_one(DataTable).toggle_class("margin-top-bottom")
         self.query_one(Footer).toggle_class("just-margin-top")
-        self.query_one(GitLog).toggle_class("margin-top-bottom")
         self.query_one(Header).toggle_class("-tall")
 
     def key_space(self) -> None:
