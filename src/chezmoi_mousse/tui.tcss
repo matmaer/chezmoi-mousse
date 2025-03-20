@@ -72,27 +72,7 @@ Tree {
   background-tint: $background;
 }
 
-Collapsible {
-  border: none;
-  padding: 0;
-  & Pretty {
-    margin-bottom: 1;
-  }
-}
 
-CollapsibleTitle {
-  color: $primary;
-  padding: 0;
-  &:focus {
-      background: $background;
-      color: $primary;
-      text-style: bold;
-  }
-  &:hover {
-      text-style: bold;
-      background: $background;
-  }
-}
 
 DataTable {
   width: 100%;
@@ -159,13 +139,13 @@ Tree {
 }
 
 LoadingScreen {
+  padding: 1 1 1 1;
   background: black;
   & #loader-log {
     color: $secondary;
     background-tint: black;
     height: 11;
     width: auto;
-    margin-top: 2;
   }
   & #continue {
     color: $accent;
@@ -196,6 +176,23 @@ SlideBar {
   &.-visible {
       /* offset.x: 0; make visible when class is applied */
       offset-x: 0%;
+  }
+  Collapsible {
+    border: none;
+    padding: 0;
+    & Pretty {
+      margin-bottom: 1;
+    }
+  }
+  CollapsibleTitle {
+    color: $primary;
+    padding: 0;
+    &:focus {
+        text-style: bold;
+    }
+    &:hover {
+        text-style: bold;
+    }
   }
 }
 
