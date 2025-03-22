@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from textual.theme import Theme
 
 
-def _subprocess_run(long_command: list[str] | None = None) -> str:
+def _subprocess_run(long_command: list[str]) -> str:
     result = subprocess.run(
         long_command,
         capture_output=True,
