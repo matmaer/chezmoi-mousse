@@ -1,5 +1,6 @@
 from pathlib import Path
-from textual import work
+from collections.abc import Iterable
+
 from textual.app import ComposeResult
 from textual.containers import VerticalScroll
 from textual.lazy import Lazy
@@ -221,7 +222,7 @@ class MousseTree(DirectoryTree):  # pylint: disable=too-many-ancestors
             id="destdirtree",
         )
 
-    def filter_paths(self, paths: list[str]) -> list[str]:
+    def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
         if self.show_all:
             return paths
         return [p for p in paths if p in chezmoi.get_managed_paths()]
