@@ -61,11 +61,11 @@ class SlideBar(Widget):
                 title="chezmoi data (template data)",
             ),
             Collapsible(
-                Pretty(chezmoi.ignored.std_out.splitlines),
+                Pretty(chezmoi.ignored.std_out.splitlines()),
                 title="chezmoi ignored (git ignore in source-dir)",
             ),
             Collapsible(
-                Pretty(chezmoi.cat_config.std_out.splitlines),
+                Pretty(chezmoi.cat_config.std_out.splitlines()),
                 title="chezmoi cat-config (contents of config-file)",
             ),
             Collapsible(
@@ -180,12 +180,12 @@ class ManagedTree(Tree):
             id="managed_tree",
             classes="margin-top-bottom",
         )
+        self.show_root = False
 
     def on_mount(self) -> None:
         dest_dir_path = Path(chezmoi.get_config_dump["destDir"])
-        paths = chezmoi.get_managed_paths
-        dir_paths = set(p for p in paths if p.is_dir())
-        file_paths = set(p for p in paths if p.is_file())
+        dir_paths = set(p for p in chezmoi.get_managed_paths if p.is_dir())
+        file_paths = set(p for p in chezmoi.get_managed_paths if p.is_file())
 
         def recurse_paths(parent, dir_path):
             if dir_path == dest_dir_path:
@@ -193,16 +193,13 @@ class ManagedTree(Tree):
             else:
                 parent = parent.add(dir_path.parts[-1], dir_path)
             files = [f for f in file_paths if f.parent == dir_path]
-            if len(files) > 0:
-                for file in files:
-                    parent.add_leaf(str(file.parts[-1]), file)
+            for file in files:
+                parent.add_leaf(str(file.parts[-1]), file)
             sub_dirs = [d for d in dir_paths if d.parent == dir_path]
-            if len(sub_dirs) > 0:
-                for sub_dir in sub_dirs:
-                    recurse_paths(parent, sub_dir)
+            for sub_dir in sub_dirs:
+                recurse_paths(parent, sub_dir)
 
         recurse_paths(self.root, dest_dir_path)
-        self.show_root = False
         self.root.expand_all()
 
     # def _on_tree_node_selected(self, message: Tree.NodeSelected) -> None:

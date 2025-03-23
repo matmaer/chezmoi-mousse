@@ -1,8 +1,6 @@
 from textual.app import App
 
-from chezmoi_mousse.common import (
-    mousse_theme,
-)
+from chezmoi_mousse.common import mousse_theme
 
 from chezmoi_mousse.splash_screen import LoadingScreen
 from chezmoi_mousse.main_screen import MainScreen
