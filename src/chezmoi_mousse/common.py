@@ -32,27 +32,22 @@ class InputOutput:
 
     def update(self) -> None:
         """(Re)run the subprocess call, don't return anything."""
-        result = _subprocess_run(self.long_command)
-        self.std_out = result
-
-    def updated_std_out(self) -> str:
-        """Re-run subprocess call and return std_out."""
-        self.update()
-        return self.std_out
+        self.std_out = _subprocess_run(self.long_command)
 
 
 class Chezmoi:
 
-    cat_config: type[InputOutput]
-    chezmoi_status: type[InputOutput]
-    doctor: type[InputOutput]
-    dump_config: type[InputOutput]
-    git_log: type[InputOutput]
-    git_status: type[InputOutput]
-    ignored: type[InputOutput]
-    managed: type[InputOutput]
-    template_data: type[InputOutput]
-    unmanaged: type[InputOutput]
+    cat_config: InputOutput
+    chezmoi_status: InputOutput
+    doctor: InputOutput
+    dump_config: InputOutput
+    git_log: InputOutput
+    git_status: InputOutput
+    ignored: InputOutput
+    managed: InputOutput
+    template_data: InputOutput
+    unmanaged: InputOutput
+    dest_dir_path: Path | None = None
 
     base = [
         "chezmoi",
@@ -96,12 +91,16 @@ class Chezmoi:
         for arg_id, sub_cmd in self.subs.items():
             long_cmd = self.base + sub_cmd
             self.long_commands[arg_id] = long_cmd
-            NewClass = type(arg_id, (InputOutput,), {})
             setattr(
                 self,
                 arg_id,
-                NewClass(long_command=long_cmd),
+                InputOutput(long_cmd),
             )
+
+            # if arg_id == "dump_config":
+            #     self.dump_config.update()
+            #     config = json.loads(self.dump_config.std_out.strip())
+            #     self.dest_dir_path = Path(config["destDir"])
 
     def get_config_dump(self, refresh: bool = False) -> dict:
         if self.dump_config.std_out == "" or refresh:
@@ -130,6 +129,8 @@ class Chezmoi:
 
 
 chezmoi = Chezmoi()
+
+
 BACKGROUND = "rgb(12, 14, 18)"
 
 mousse_theme = Theme(

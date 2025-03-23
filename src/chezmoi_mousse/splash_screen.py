@@ -1,11 +1,14 @@
 from collections import deque
 
+from rich.segment import Segment
+from rich.style import Style
 from textual import work
 from textual.app import ComposeResult
 from textual.color import Color, Gradient
 from textual.containers import Center, Middle
 from textual.screen import Screen
-from textual.widget import Segment, Strip, Style, Widget
+from textual.strip import Strip
+from textual.widget import Widget
 from textual.widgets import Button, RichLog
 
 from chezmoi_mousse.common import SPLASH, chezmoi
@@ -36,7 +39,6 @@ class LoadingScreen(Screen):
         super().__init__()
         self.id = "loading"
         self.theme_fade: deque[Style] = self.create_fade()
-        self.io_data = {}
 
     def create_fade(self) -> deque[Style]:
         start_color = self.app.current_theme.primary
@@ -79,12 +81,7 @@ class LoadingScreen(Screen):
         return finished
 
     def on_mount(self) -> None:
-        to_load = [
-            arg_id
-            for arg_id in chezmoi.long_commands
-            if arg_id not in ["dump_config", "managed"]
-        ]
-        for arg_id in to_load:
+        for arg_id in chezmoi.long_commands:
             self.run(arg_id)
         self.set_interval(interval=0.1, callback=self.workers_finished)
 
