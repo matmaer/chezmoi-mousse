@@ -97,35 +97,33 @@ class Chezmoi:
                 InputOutput(long_cmd),
             )
 
-            # if arg_id == "dump_config":
-            #     self.dump_config.update()
-            #     config = json.loads(self.dump_config.std_out.strip())
-            #     self.dest_dir_path = Path(config["destDir"])
+    @property
+    def get_config_dump(self) -> dict:
+        command_output = getattr(self.dump_config, "std_out", "{}")
+        return json.loads(command_output)
 
-    def get_config_dump(self, refresh: bool = False) -> dict:
-        if self.dump_config.std_out == "" or refresh:
-            self.dump_config.update()
-        return json.loads(self.dump_config.std_out.strip())
-
-    def get_doctor_list(self, refresh: bool = False) -> list[str]:
-        if self.doctor.std_out == "" or refresh:
-            self.doctor.update()
+    @property
+    def get_doctor_list(self) -> list[str]:
+        # if self.doctor.std_out == ""
+        #     self.doctor.update()
         return self.doctor.std_out.splitlines()
 
-    def get_managed_paths(self, refresh: bool = False) -> list[Path]:
-        if self.managed.std_out == "" or refresh:
-            self.managed.update()
+    @property
+    def get_managed_paths(self) -> list[Path]:
+        # if self.managed.std_out == ""
+        #     self.managed.update()
         return sorted([Path(p) for p in self.managed.std_out.splitlines()])
 
-    def get_unmanaged_paths(self, refresh: bool = False) -> list[Path]:
-        if self.unmanaged.std_out == "" or refresh:
-            self.unmanaged.update()
+    @property
+    def get_unmanaged_paths(self) -> list[Path]:
+        # if self.unmanaged.std_out == ""
+        #     self.unmanaged.update()
         return sorted([Path(p) for p in self.unmanaged.std_out.splitlines()])
 
-    def get_template_data(self, refresh: bool = False) -> dict:
-        if self.template_data.std_out == "" or refresh:
-            self.template_data.update()
-        return json.loads(self.template_data.std_out.strip())
+    @property
+    def get_template_data(self) -> dict:
+        command_output = getattr(self.template_data, "std_out", "{}")
+        return json.loads(command_output)
 
 
 chezmoi = Chezmoi()
