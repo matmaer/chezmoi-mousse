@@ -252,7 +252,7 @@ class MainScreen(Screen):
 
     def compose(self) -> ComposeResult:
 
-        yield Lazy(Header(classes="-tall"))
+        yield Header(classes="-tall")
         yield Lazy(SlideBar())
         with TabbedContent(
             "Managed-Tree",
@@ -267,7 +267,7 @@ class MainScreen(Screen):
             yield Lazy(Static(FLOW, id="diagram"))
             yield VerticalScroll(Lazy(ChezmoiStatus()))
 
-        yield Lazy(Footer(classes="just-margin-top"))
+        yield Footer(classes="just-margin-top")
 
     # Underscore to ignore return value from screen.dismiss()
     def refresh_app(self, _) -> None:
