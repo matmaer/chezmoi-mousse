@@ -8,18 +8,6 @@ from dataclasses import dataclass
 from textual.theme import Theme
 
 
-def _subprocess_run(long_command: list[str]) -> str:
-    result = subprocess.run(
-        long_command,
-        capture_output=True,
-        check=True,  # raises exception for any non-zero return code
-        shell=False,  # mitigates shell injection risk
-        text=True,  # returns stdout as str instead of bytes
-        timeout=2,
-    )
-    return result.stdout
-
-
 @dataclass
 class InputOutput:
 
@@ -31,8 +19,15 @@ class InputOutput:
         return " ".join([w for w in self.long_command if not w.startswith("-")])
 
     def update(self) -> None:
-        """(Re)run the subprocess call, don't return anything."""
-        self.std_out = _subprocess_run(self.long_command)
+        result = subprocess.run(
+            self.long_command,
+            capture_output=True,
+            check=True,  # raises exception for any non-zero return code
+            shell=False,
+            text=True,  # returns stdout as str instead of bytes
+            timeout=2,
+        )
+        self.std_out = result.stdout
 
 
 class Chezmoi:
@@ -104,20 +99,14 @@ class Chezmoi:
 
     @property
     def get_doctor_list(self) -> list[str]:
-        # if self.doctor.std_out == ""
-        #     self.doctor.update()
         return self.doctor.std_out.splitlines()
 
     @property
     def get_managed_paths(self) -> list[Path]:
-        # if self.managed.std_out == ""
-        #     self.managed.update()
         return sorted([Path(p) for p in self.managed.std_out.splitlines()])
 
     @property
     def get_unmanaged_paths(self) -> list[Path]:
-        # if self.unmanaged.std_out == ""
-        #     self.unmanaged.update()
         return sorted([Path(p) for p in self.unmanaged.std_out.splitlines()])
 
     @property
