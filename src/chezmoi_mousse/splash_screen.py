@@ -36,9 +36,8 @@ class AnimatedFade(Widget):
 class LoadingScreen(Screen):
 
     def __init__(self) -> None:
-        super().__init__()
-        self.id = "loading"
         self.theme_fade: deque[Style] = self.create_fade()
+        super().__init__()
 
     def create_fade(self) -> deque[Style]:
         start_color = Color.parse(self.app.current_theme.primary)
