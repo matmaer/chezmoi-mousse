@@ -53,19 +53,19 @@ class SlideBar(Widget):
 
         yield VerticalScroll(
             Collapsible(
-                Pretty(chezmoi.get_config_dump()),
+                Pretty(chezmoi.get_config_dump),
                 title="chezmoi dump-config",
             ),
             Collapsible(
-                Pretty(chezmoi.get_template_data()),
+                Pretty(chezmoi.get_template_data),
                 title="chezmoi data (template data)",
             ),
             Collapsible(
-                Pretty(chezmoi.ignored.std_out.splitlines()),
+                Pretty(chezmoi.ignored.std_out.splitlines),
                 title="chezmoi ignored (git ignore in source-dir)",
             ),
             Collapsible(
-                Pretty(chezmoi.cat_config.std_out.splitlines()),
+                Pretty(chezmoi.cat_config.std_out.splitlines),
                 title="chezmoi cat-config (contents of config-file)",
             ),
             Collapsible(
@@ -98,7 +98,7 @@ class Doctor(Static):
         second_table = self.query_one("#second_table")
         second_table.add_columns("COMMAND", "DESCRIPTION", "URL")
 
-        doctor = chezmoi.get_doctor_list()
+        doctor = chezmoi.get_doctor_list
         main_table.add_columns(*doctor.pop(0).split())
 
         success = self.app.current_theme.success
@@ -182,8 +182,8 @@ class ManagedTree(Tree):
         )
 
     def on_mount(self) -> None:
-        dest_dir_path = Path(chezmoi.get_config_dump()["destDir"])
-        paths = chezmoi.get_managed_paths()
+        dest_dir_path = Path(chezmoi.get_config_dump["destDir"])
+        paths = chezmoi.get_managed_paths
         dir_paths = set(p for p in paths if p.is_dir())
         file_paths = set(p for p in paths if p.is_file())
 
@@ -217,7 +217,7 @@ class MousseTree(DirectoryTree):  # pylint: disable=too-many-ancestors
 
     def __init__(self) -> None:
         super().__init__(
-            path=chezmoi.get_config_dump()["destDir"],
+            path=chezmoi.get_config_dump["destDir"],
             classes="margin-top-bottom",
             id="destdirtree",
         )
@@ -225,7 +225,7 @@ class MousseTree(DirectoryTree):  # pylint: disable=too-many-ancestors
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
         if self.show_all:
             return paths
-        return [p for p in paths if p in chezmoi.get_managed_paths()]
+        return [p for p in paths if p in chezmoi.get_managed_paths]
 
 
 class ManagedDirTree(Widget):
