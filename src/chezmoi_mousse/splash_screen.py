@@ -41,9 +41,9 @@ class LoadingScreen(Screen):
         self.theme_fade: deque[Style] = self.create_fade()
 
     def create_fade(self) -> deque[Style]:
-        start_color = self.app.current_theme.primary
-        end_color = self.app.current_theme.accent
-        fade = [Color.parse(start_color)] * 5
+        start_color = Color.parse(self.app.current_theme.primary)
+        end_color = Color.parse(self.app.current_theme.accent)
+        fade = [start_color] * 5
         gradient = Gradient.from_colors(start_color, end_color, quality=5)
         fade.extend(gradient.colors)
         gradient.colors.reverse()
@@ -68,7 +68,7 @@ class LoadingScreen(Screen):
         io_class.update()
         padding = 32 - len(io_class.label)
         log_text = f"{io_class.label} {'.' * padding} loaded"
-        self.query_one("#loader-log").write(log_text)
+        self.query_one(RichLog).write(log_text)
 
     def workers_finished(self) -> bool:
         finished = all(
