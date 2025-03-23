@@ -77,12 +77,43 @@ class SlideBar(Widget):
 
 class Doctor(Static):
 
+    output: list[str]
+
+    class DoctorTable(DataTable):
+
+        def __init__(self, output) -> None:
+            super().__init__(id="doctor", classes="margin-top-bottom")
+            self.output = output
+
+        def on_mount(self) -> None:
+            self.add_columns(*self.output.pop(0).split())
+
+            success = self.app.current_theme.success
+            warning = self.app.current_theme.warning
+            error = self.app.current_theme.error
+
+            for row in [row.split(maxsplit=2) for row in self.output]:
+                if "-command" in row[1]:
+                    continue
+                if row[0] == "ok":
+                    row = [f"[{success}]{cell}[/]" for cell in row]
+                elif row[0] == "warning":
+                    row = [f"[{warning}]{cell}[/]" for cell in row]
+                elif row[0] == "error":
+                    row = [f"[{error}]{cell}[/]" for cell in row]
+                elif row[0] == "info" and row[2] == "not set":
+                    row = [f"[{warning}]{cell}[/]" for cell in row]
+                else:
+                    row = [f"[{warning}]{cell}[/]" for cell in row]
+                self.add_row(*row)
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.output = chezmoi.doctor.std_out.strip().splitlines()
+        self.doctor_table = self.DoctorTable(self.output)
+
     def compose(self) -> ComposeResult:
-        yield DataTable(
-            id="main_table",
-            cursor_type="row",
-            classes="margin-top-bottom",
-        )
+        yield self.doctor_table
         yield Label(
             "Local commands skipped because not in Path:",
         )
@@ -94,18 +125,10 @@ class Doctor(Static):
 
     def on_mount(self) -> None:
 
-        main_table = self.query_one("#main_table")
         second_table = self.query_one("#second_table")
         second_table.add_columns("COMMAND", "DESCRIPTION", "URL")
 
-        doctor = chezmoi.get_doctor_list
-        main_table.add_columns(*doctor.pop(0).split())
-
-        success = self.app.current_theme.success
-        warning = self.app.current_theme.warning
-        error = self.app.current_theme.error
-
-        for row in [row.split(maxsplit=2) for row in doctor]:
+        for row in [row.split(maxsplit=2) for row in self.output]:
             if row[0] == "info" and "not found in $PATH" in row[2]:
                 # check if the command exists in the integrated_command dict
                 command = row[2].split()[0]
@@ -122,18 +145,6 @@ class Doctor(Static):
                         "...",
                     ]
                 second_table.add_row(*row)
-            else:
-                if row[0] == "ok":
-                    row = [f"[{success}]{cell}[/]" for cell in row]
-                elif row[0] == "warning":
-                    row = [f"[{warning}]{cell}[/]" for cell in row]
-                elif row[0] == "error":
-                    row = [f"[{error}]{cell}[/]" for cell in row]
-                elif row[0] == "info" and row[2] == "not set":
-                    row = [f"[{warning}]{cell}[/]" for cell in row]
-                else:
-                    row = [f"[{warning}]{cell}[/]" for cell in row]
-                main_table.add_row(*row)
 
 
 class ChezmoiStatus(Static):

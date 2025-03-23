@@ -98,10 +98,6 @@ class Chezmoi:
         return json.loads(command_output)
 
     @property
-    def get_doctor_list(self) -> list[str]:
-        return self.doctor.std_out.splitlines()
-
-    @property
     def get_managed_paths(self) -> list[Path]:
         return sorted([Path(p) for p in self.managed.std_out.splitlines()])
 
