@@ -17,7 +17,7 @@ from chezmoi_mousse.common import SPLASH, chezmoi
 class AnimatedFade(Widget):
 
     def __init__(self, fade_colors: deque[Style]) -> None:
-        super().__init__(id="animated-fade")
+        super().__init__()
         self.styles.height = len(SPLASH)
         self.styles.width = len(max(SPLASH, key=len))
         self.line_styles = fade_colors
