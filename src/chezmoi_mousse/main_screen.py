@@ -130,10 +130,6 @@ class ChezmoiStatus(Static):
         yield ListView(classes="margin-top-bottom")
 
     def on_mount(self):
-        # see comment in Doctor on_mount()
-        if chezmoi.chezmoi_status.std_out == "":
-            return
-
         chezmoi_status = chezmoi.chezmoi_status.std_out.splitlines()
 
         listview = self.query_one(ListView)
