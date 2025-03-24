@@ -1,13 +1,10 @@
 * {
   scrollbar-size-vertical: 1;
+  background-tint: #000000;
 }
 
 .margin-top-bottom {
-  margin: 1 0 1 0;
-}
-
-.just-margin-top {
-  margin-top: 1;
+  margin: 0 0 1 0;
 }
 
 #diagram {
@@ -17,11 +14,7 @@
 }
 
 #tree-checkbox {
-  # color: $success-muted;
   border: none;
-  background: $background;
-  background-tint: $background;
-
   & > .toggle--label {
     color: $success-muted;
   }
@@ -36,8 +29,6 @@
     text-style: bold;
   }
   &:focus > .toggle--label {
-    background: $background;
-    background-tint: $background;
     text-style: none;
   }
 }
@@ -49,7 +40,6 @@ Screen {
 
 Header {
   color: $primary;
-  background: $background;
   HeaderIcon {
     /* don't use display: none; because then the title is not centered */
     visibility: hidden;
@@ -61,18 +51,6 @@ Footer {
     border: none;
   }
 }
-
-Collapsible,
-CollapsibleTitle,
-DataTable,
-DirectoryTree,
-RichLog,
-Slidebar,
-Tree {
-  background-tint: $background;
-}
-
-
 
 DataTable {
   width: 100%;
@@ -92,65 +70,54 @@ DataTable {
 }
 
 Tree {
-  background: $background;
   color: $foreground;
   padding-left: 2;
-
   & > .tree--label {}
   & > .tree--guides {
       color: $secondary;
   }
   & > .tree--guides-hover {
       color: $secondary;
-      background: $background;
   }
   & > .tree--guides-selected {
       color: $secondary;
-      background: $background;
+
   }
   & > .tree--cursor {
       text-style: bold;
   }
   & > .tree--highlight {}
   & > .tree--highlight-line {
-      background: $background;
       text-style: bold;
   }
 
   &:focus {
       & > .tree--cursor {
           color: $block-cursor-foreground;
-          background: $background;
           text-style: bold;
       }
       & > .tree--guides {
           color: $secondary;
-          background: $background;
       }
       & > .tree--guides-hover {
           color: $secondary;
-          background: $background;
       }
       & > .tree--guides-selected {
           color: $secondary;
-          background: $background;
       }
   }
 }
 
 LoadingScreen {
   padding: 1 1 1 1;
-  background: black;
   & #loader-log {
     margin: 1 0 1 0;
     color: $secondary;
-    background-tint: black;
     height: 11;
     width: auto;
   }
   & #continue {
     color: $accent;
-    background: black;
     border: none;
     text-style: none;
   }
@@ -158,7 +125,6 @@ LoadingScreen {
 
 SlideBar {
   layer: slidebar_layer;
-  background: $background;
   margin-top: 7;
   margin-bottom: 4;
   height: 100%;
@@ -178,22 +144,21 @@ SlideBar {
       /* offset.x: 0; make visible when class is applied */
       offset-x: 0%;
   }
-  Collapsible {
-    border: none;
-    padding: 0;
-    & Pretty {
-      margin-bottom: 1;
-    }
-  }
-  CollapsibleTitle {
-    color: $primary;
-    padding: 0;
-    &:focus {
-        text-style: bold;
-    }
-    &:hover {
-        text-style: bold;
-    }
-  }
 }
 
+Collapsible {
+  border: none;
+  padding: 0;
+}
+
+CollapsibleTitle {
+  border: none;
+  color: $primary;
+  padding: 0;
+  &:focus {
+      text-style: bold;
+  }
+  &:hover {
+      text-style: bold;
+  }
+}
