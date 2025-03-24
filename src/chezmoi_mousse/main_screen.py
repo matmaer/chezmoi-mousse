@@ -1,6 +1,7 @@
 from pathlib import Path
 from collections.abc import Iterable
 
+from rich.text import Text
 from textual.app import ComposeResult
 from textual.containers import VerticalScroll
 from textual.lazy import Lazy
@@ -15,6 +16,8 @@ from textual.widgets import (
     Footer,
     Header,
     Label,
+    ListItem,
+    ListView,
     Pretty,
     Static,
     TabbedContent,
@@ -25,7 +28,7 @@ from chezmoi_mousse.common import (
     FLOW,
     chezmoi,
     chezmoi_status_map,
-    integrated_command_map,
+    # integrated_command_map,
 )
 
 
@@ -75,74 +78,56 @@ class SlideBar(Widget):
         )
 
 
-class Doctor(Static):
+class Doctor(Widget):
+
+    def __init__(self) -> None:
+        super().__init__(
+            id="doctor",
+            classes="margin-top-bottom",
+        )
 
     def compose(self) -> ComposeResult:
-        yield DataTable(
-            id="main_table",
-            cursor_type="row",
-            classes="margin-top-bottom",
-        )
-        yield Label(
-            "Local commands skipped because not in Path:",
-        )
-        yield DataTable(
-            id="second_table",
-            cursor_type="row",
-            classes="margin-top-bottom",
-        )
+        with VerticalScroll():
+            yield DataTable(id="doctor", classes="margin-top-bottom")
+            yield ListView(id="cmds_not_found")
 
     def on_mount(self) -> None:
-
-        main_table = self.query_one("#main_table")
-        second_table = self.query_one("#second_table")
-        second_table.add_columns("COMMAND", "DESCRIPTION", "URL")
-
-        doctor = chezmoi.get_doctor_list
-        main_table.add_columns(*doctor.pop(0).split())
+        doctor_data = chezmoi.get_doctor_rows
+        table = self.query_one(DataTable)
+        table.add_columns(*doctor_data["table_rows"][0])
+        table.cursor_type = "row"
 
         success = self.app.current_theme.success
         warning = self.app.current_theme.warning
         error = self.app.current_theme.error
 
-        for row in [row.split(maxsplit=2) for row in doctor]:
-            if row[0] == "info" and "not found in $PATH" in row[2]:
-                # check if the command exists in the integrated_command dict
-                command = row[2].split()[0]
-                if command in integrated_command_map:
-                    row = [
-                        command,
-                        integrated_command_map[command]["Description"],
-                        integrated_command_map[command]["URL"],
-                    ]
-                else:
-                    row = [
-                        command,
-                        "Not found in $PATH",
-                        "...",
-                    ]
-                second_table.add_row(*row)
+        for row in doctor_data["table_rows"][1:]:
+            if row[0] == "ok":
+                row = [Text(str(cell), style=f"{success}") for cell in row]
+            elif row[0] == "warning":
+                row = [Text(str(cell), style=f"{warning}") for cell in row]
+            elif row[0] == "error":
+                row = [Text(str(cell), style=f"{error}") for cell in row]
+            elif row[0] == "info" and row[2] == "not set":
+                row = [Text(str(cell), style=f"{warning}") for cell in row]
             else:
-                if row[0] == "ok":
-                    row = [f"[{success}]{cell}[/]" for cell in row]
-                elif row[0] == "warning":
-                    row = [f"[{warning}]{cell}[/]" for cell in row]
-                elif row[0] == "error":
-                    row = [f"[{error}]{cell}[/]" for cell in row]
-                elif row[0] == "info" and row[2] == "not set":
-                    row = [f"[{warning}]{cell}[/]" for cell in row]
-                else:
-                    row = [f"[{warning}]{cell}[/]" for cell in row]
-                main_table.add_row(*row)
+                row = [Text(str(cell)) for cell in row]
+            table.add_row(*row)
+
+        listview = self.query_one(ListView)
+        for row in doctor_data["cmds_not_found"]:
+            item = Collapsible(
+                Pretty(row),
+                title=row[1],
+                classes="margin-top-bottom",
+            )
+            listview.append(ListItem(item))
 
 
 class ChezmoiStatus(Static):
 
     def compose(self) -> ComposeResult:
-        yield Label("Chezmoi Apply Status")
-        yield DataTable(id="apply_table")
-        yield Label("Chezmoi Re-Add Status")
-        yield DataTable(id="re_add_table")
+        yield ListView(classes="margin-top-bottom")
 
     def on_mount(self):
         # see comment in Doctor on_mount()
@@ -151,25 +136,22 @@ class ChezmoiStatus(Static):
 
         chezmoi_status = chezmoi.chezmoi_status.std_out.splitlines()
 
-        re_add_table = self.query_one("#re_add_table")
-        apply_table = self.query_one("#apply_table")
-
-        header_row = ["STATUS", "PATH", "CHANGE"]
-
-        re_add_table.add_columns(*header_row)
-        apply_table.add_columns(*header_row)
+        listview = self.query_one(ListView)
 
         for line in chezmoi_status:
-            path = line[3:]
-
             apply_status = chezmoi_status_map[line[0]]["Status"]
             apply_change = chezmoi_status_map[line[0]]["Apply_Change"]
-
             re_add_status = chezmoi_status_map[line[1]]["Status"]
             re_add_change = chezmoi_status_map[line[1]]["Re_Add_Change"]
-
-            apply_table.add_row(*[apply_status, path, apply_change])
-            re_add_table.add_row(*[re_add_status, path, re_add_change])
+            item = Collapsible(
+                Label(f"Apply Status: {apply_status}"),
+                Static(f"{apply_change}"),
+                Label(f"Re-Add Status: {re_add_status}"),
+                Static(f"{re_add_change}"),
+                title=line,
+                classes="margin-top-bottom",
+            )
+            listview.append(ListItem(item))
 
 
 class ManagedTree(Tree):
@@ -253,15 +235,15 @@ class MainScreen(Screen):
         yield Header(classes="-tall")
         yield Lazy(SlideBar())
         with TabbedContent(
+            "Doctor",
             "Managed-Tree",
             "Managed-DirTree",
-            "Doctor",
             "Diagram",
             "Chezmoi-Status",
         ):
+            yield VerticalScroll(Lazy(Doctor()))
             yield VerticalScroll(Lazy(ManagedTree()))
             yield VerticalScroll(Lazy(ManagedDirTree()))
-            yield VerticalScroll(Lazy(Doctor()))
             yield Lazy(Static(FLOW, id="diagram"))
             yield VerticalScroll(Lazy(ChezmoiStatus()))
 
