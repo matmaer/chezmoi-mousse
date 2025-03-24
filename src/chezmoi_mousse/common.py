@@ -110,6 +110,17 @@ class Chezmoi:
         command_output = getattr(self.template_data, "std_out", "{}")
         return json.loads(command_output)
 
+    @property
+    def get_doctor_rows(self) -> dict[str, list[tuple]]:
+        doctor_dict = {"cmds_not_found": [], "table_rows": []}
+        for line in self.doctor.std_out.splitlines():
+            parts = tuple(line.split(maxsplit=2))
+            if parts[0] == "info" and "not found in $PATH" in parts[2]:
+                doctor_dict["cmds_not_found"].append(parts)
+            else:
+                doctor_dict["table_rows"].append(parts)
+        return doctor_dict
+
 
 chezmoi = Chezmoi()
 

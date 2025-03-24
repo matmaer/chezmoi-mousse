@@ -1,6 +1,7 @@
 from pathlib import Path
 from collections.abc import Iterable
 
+from rich.text import Text
 from textual.app import ComposeResult
 from textual.containers import VerticalScroll
 from textual.lazy import Lazy
@@ -15,6 +16,8 @@ from textual.widgets import (
     Footer,
     Header,
     Label,
+    ListItem,
+    ListView,
     Pretty,
     Static,
     TabbedContent,
@@ -25,7 +28,7 @@ from chezmoi_mousse.common import (
     FLOW,
     chezmoi,
     chezmoi_status_map,
-    integrated_command_map,
+    # integrated_command_map,
 )
 
 
@@ -75,76 +78,50 @@ class SlideBar(Widget):
         )
 
 
-class Doctor(Static):
-
-    output: list[str]
-
-    class DoctorTable(DataTable):
-
-        def __init__(self, output) -> None:
-            super().__init__(id="doctor", classes="margin-top-bottom")
-            self.output = output
-
-        def on_mount(self) -> None:
-            self.add_columns(*self.output.pop(0).split())
-
-            success = self.app.current_theme.success
-            warning = self.app.current_theme.warning
-            error = self.app.current_theme.error
-
-            for row in [row.split(maxsplit=2) for row in self.output]:
-                if "-command" in row[1]:
-                    continue
-                if row[0] == "ok":
-                    row = [f"[{success}]{cell}[/]" for cell in row]
-                elif row[0] == "warning":
-                    row = [f"[{warning}]{cell}[/]" for cell in row]
-                elif row[0] == "error":
-                    row = [f"[{error}]{cell}[/]" for cell in row]
-                elif row[0] == "info" and row[2] == "not set":
-                    row = [f"[{warning}]{cell}[/]" for cell in row]
-                else:
-                    row = [f"[{warning}]{cell}[/]" for cell in row]
-                self.add_row(*row)
+class Doctor(Widget):
 
     def __init__(self) -> None:
-        super().__init__()
-        self.output = chezmoi.doctor.std_out.strip().splitlines()
-        self.doctor_table = self.DoctorTable(self.output)
-
-    def compose(self) -> ComposeResult:
-        yield self.doctor_table
-        yield Label(
-            "Local commands skipped because not in Path:",
-        )
-        yield DataTable(
-            id="second_table",
-            cursor_type="row",
+        super().__init__(
+            id="doctor",
             classes="margin-top-bottom",
         )
 
+    def compose(self) -> ComposeResult:
+        with VerticalScroll():
+            yield DataTable(id="doctor", classes="margin-top-bottom")
+            yield ListView(id="cmds_not_found")
+
     def on_mount(self) -> None:
+        doctor_data = chezmoi.get_doctor_rows
+        table = self.query_one(DataTable)
+        table.add_columns(*doctor_data["table_rows"][0])
+        table.cursor_type = "row"
 
-        second_table = self.query_one("#second_table")
-        second_table.add_columns("COMMAND", "DESCRIPTION", "URL")
+        success = self.app.current_theme.success
+        warning = self.app.current_theme.warning
+        error = self.app.current_theme.error
 
-        for row in [row.split(maxsplit=2) for row in self.output]:
-            if row[0] == "info" and "not found in $PATH" in row[2]:
-                # check if the command exists in the integrated_command dict
-                command = row[2].split()[0]
-                if command in integrated_command_map:
-                    row = [
-                        command,
-                        integrated_command_map[command]["Description"],
-                        integrated_command_map[command]["URL"],
-                    ]
-                else:
-                    row = [
-                        command,
-                        "Not found in $PATH",
-                        "...",
-                    ]
-                second_table.add_row(*row)
+        for row in doctor_data["table_rows"][1:]:
+            if row[0] == "ok":
+                row = [Text(str(cell), style=f"{success}") for cell in row]
+            elif row[0] == "warning":
+                row = [Text(str(cell), style=f"{warning}") for cell in row]
+            elif row[0] == "error":
+                row = [Text(str(cell), style=f"{error}") for cell in row]
+            elif row[0] == "info" and row[2] == "not set":
+                row = [Text(str(cell), style=f"{warning}") for cell in row]
+            else:
+                row = [Text(str(cell)) for cell in row]
+            table.add_row(*row)
+
+        listview = self.query_one(ListView)
+        for row in doctor_data["cmds_not_found"]:
+            item = Collapsible(
+                Pretty(row),
+                title=row[1],
+                classes="margin-top-bottom",
+            )
+            listview.append(ListItem(item))
 
 
 class ChezmoiStatus(Static):
@@ -264,15 +241,15 @@ class MainScreen(Screen):
         yield Header(classes="-tall")
         yield Lazy(SlideBar())
         with TabbedContent(
+            "Doctor",
             "Managed-Tree",
             "Managed-DirTree",
-            "Doctor",
             "Diagram",
             "Chezmoi-Status",
         ):
+            yield VerticalScroll(Lazy(Doctor()))
             yield VerticalScroll(Lazy(ManagedTree()))
             yield VerticalScroll(Lazy(ManagedDirTree()))
-            yield VerticalScroll(Lazy(Doctor()))
             yield Lazy(Static(FLOW, id="diagram"))
             yield VerticalScroll(Lazy(ChezmoiStatus()))
 
