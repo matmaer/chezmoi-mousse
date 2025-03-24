@@ -127,10 +127,7 @@ class Doctor(Widget):
 class ChezmoiStatus(Static):
 
     def compose(self) -> ComposeResult:
-        yield Label("Chezmoi Apply Status")
-        yield DataTable(id="apply_table")
-        yield Label("Chezmoi Re-Add Status")
-        yield DataTable(id="re_add_table")
+        yield ListView(classes="margin-top-bottom")
 
     def on_mount(self):
         # see comment in Doctor on_mount()
@@ -139,25 +136,22 @@ class ChezmoiStatus(Static):
 
         chezmoi_status = chezmoi.chezmoi_status.std_out.splitlines()
 
-        re_add_table = self.query_one("#re_add_table")
-        apply_table = self.query_one("#apply_table")
-
-        header_row = ["STATUS", "PATH", "CHANGE"]
-
-        re_add_table.add_columns(*header_row)
-        apply_table.add_columns(*header_row)
+        listview = self.query_one(ListView)
 
         for line in chezmoi_status:
-            path = line[3:]
-
             apply_status = chezmoi_status_map[line[0]]["Status"]
             apply_change = chezmoi_status_map[line[0]]["Apply_Change"]
-
             re_add_status = chezmoi_status_map[line[1]]["Status"]
             re_add_change = chezmoi_status_map[line[1]]["Re_Add_Change"]
-
-            apply_table.add_row(*[apply_status, path, apply_change])
-            re_add_table.add_row(*[re_add_status, path, re_add_change])
+            item = Collapsible(
+                Label(f"Apply Status: {apply_status}"),
+                Static(f"{apply_change}"),
+                Label(f"Re-Add Status: {re_add_status}"),
+                Static(f"{re_add_change}"),
+                title=line,
+                classes="margin-top-bottom",
+            )
+            listview.append(ListItem(item))
 
 
 class ManagedTree(Tree):
