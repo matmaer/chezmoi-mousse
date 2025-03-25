@@ -3,10 +3,6 @@
   background-tint: #000000;
 }
 
-.margin-top-bottom {
-  margin: 0 0 1 0;
-}
-
 #diagram {
   margin-left: 1;
   margin-right: 1;
