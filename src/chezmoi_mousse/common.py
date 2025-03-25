@@ -16,7 +16,9 @@ class InputOutput:
 
     @property
     def label(self):
-        return " ".join([w for w in self.long_command if not w.startswith("-")])
+        return " ".join(
+            [w for w in self.long_command if not w.startswith("-")]
+        )
 
     def update(self) -> None:
         result = subprocess.run(
