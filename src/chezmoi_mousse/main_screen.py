@@ -30,7 +30,7 @@ from chezmoi_mousse.common import FLOW, chezmoi
 class GitLog(DataTable):
 
     def __init__(self) -> None:
-        super().__init__(id="git_log", classes="margin-top-bottom")
+        super().__init__(id="git_log")
 
     def on_mount(self) -> None:
         self.add_columns("COMMIT", "MESSAGE")
@@ -76,14 +76,11 @@ class SlideBar(Widget):
 class Doctor(Widget):
 
     def __init__(self) -> None:
-        super().__init__(
-            id="doctor",
-            classes="margin-top-bottom",
-        )
+        super().__init__(id="doctor")
 
     def compose(self) -> ComposeResult:
         with VerticalScroll():
-            yield DataTable(id="doctor", classes="margin-top-bottom")
+            yield DataTable(id="doctor")
             yield ListView(id="cmds_not_found")
 
     def on_mount(self) -> None:
@@ -114,7 +111,6 @@ class Doctor(Widget):
             item = Collapsible(
                 Pretty(row),
                 title=row[1],
-                classes="margin-top-bottom",
             )
             listview.append(ListItem(item))
 
@@ -122,7 +118,7 @@ class Doctor(Widget):
 class ChezmoiStatus(Static):
 
     def compose(self) -> ComposeResult:
-        yield ListView(classes="margin-top-bottom")
+        yield ListView()
 
     def on_mount(self):
         chezmoi_status = chezmoi.chezmoi_status.std_out.splitlines()
@@ -136,7 +132,6 @@ class ChezmoiStatus(Static):
                 Label("Re-Add Status:"),
                 Static("re_add_change"),
                 title=line,
-                classes="margin-top-bottom",
             )
             listview.append(ListItem(item))
 
@@ -147,7 +142,6 @@ class ManagedTree(Tree):
         super().__init__(
             label="managed_tree",
             id="managed_tree",
-            classes="margin-top-bottom",
         )
         self.show_root = False
 
@@ -184,7 +178,6 @@ class MousseTree(DirectoryTree):  # pylint: disable=too-many-ancestors
     def __init__(self) -> None:
         super().__init__(
             path=chezmoi.get_config_dump["destDir"],
-            classes="margin-top-bottom",
             id="destdirtree",
         )
 
@@ -200,7 +193,6 @@ class ManagedDirTree(Widget):
         yield Checkbox(
             "Include Unmanaged Files",
             id="tree-checkbox",
-            classes="margin-top-bottom",
         )
         yield MousseTree()
 
@@ -244,7 +236,6 @@ class MainScreen(Screen):
         self.query_one(SlideBar).toggle_class("-visible")
 
     def action_toggle_spacing(self):
-        self.query_one(DataTable).toggle_class("margin-top-bottom")
         self.query_one(Footer).toggle_class("just-margin-top")
         self.query_one(Header).toggle_class("-tall")
 
