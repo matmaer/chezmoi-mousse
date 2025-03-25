@@ -24,12 +24,7 @@ from textual.widgets import (
     Tree,
 )
 
-from chezmoi_mousse.common import (
-    FLOW,
-    chezmoi,
-    chezmoi_status_map,
-    # integrated_command_map,
-)
+from chezmoi_mousse.common import FLOW, chezmoi
 
 
 class GitLog(DataTable):
@@ -130,24 +125,16 @@ class ChezmoiStatus(Static):
         yield ListView(classes="margin-top-bottom")
 
     def on_mount(self):
-        # see comment in Doctor on_mount()
-        if chezmoi.chezmoi_status.std_out == "":
-            return
-
         chezmoi_status = chezmoi.chezmoi_status.std_out.splitlines()
 
         listview = self.query_one(ListView)
 
         for line in chezmoi_status:
-            apply_status = chezmoi_status_map[line[0]]["Status"]
-            apply_change = chezmoi_status_map[line[0]]["Apply_Change"]
-            re_add_status = chezmoi_status_map[line[1]]["Status"]
-            re_add_change = chezmoi_status_map[line[1]]["Re_Add_Change"]
             item = Collapsible(
-                Label(f"Apply Status: {apply_status}"),
-                Static(f"{apply_change}"),
-                Label(f"Re-Add Status: {re_add_status}"),
-                Static(f"{re_add_change}"),
+                Label("Apply Status:"),
+                Static("Apply Change"),
+                Label("Re-Add Status:"),
+                Static("re_add_change"),
                 title=line,
                 classes="margin-top-bottom",
             )
