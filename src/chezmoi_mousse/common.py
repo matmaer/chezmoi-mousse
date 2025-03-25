@@ -1,11 +1,53 @@
-"""Modules for singletons or any other shared resources."""
-
 import json
 from pathlib import Path
 import subprocess
 from dataclasses import dataclass
 
 from textual.theme import Theme
+
+
+@dataclass
+class StatusData:
+
+    for_fs: bool
+    status_code: str = "space"
+    fs_change: str | None = None
+    repo_change: str | None = None
+    fs_path: Path | None = None
+
+    # Chezmoi status command output reference:
+    # https://www.chezmoi.io/reference/commands/status/
+
+    @property
+    def name(self):
+        status_names = {
+            "space": "No change",
+            "A": "Added",
+            "D": "Deleted",
+            "M": "Modified",
+            "R": "Modified Script",
+        }
+        return status_names[self.status_code]
+
+    @property
+    def change(self):
+        if not self.for_fs:
+            status_change = {
+                "space": "no changes for repository",
+                "A": "add to repository",
+                "D": "mark as deleted in repository",
+                "M": "modify in repository",
+                "R": "not applicable for repository",
+            }
+        else:
+            status_change = {
+                "space": "no changes for filesystem",
+                "A": "create on filesystem",
+                "D": "delete from filesystem",
+                "M": "modify on filesystem",
+                "R": "modify script on filesystem",
+            }
+        return status_change[self.status_code]
 
 
 @dataclass
@@ -179,36 +221,6 @@ integrated_command_map = {
     "keepassxc": {
         "Description": "Cross-platform community-driven port of Keepass password manager",
         "URL": "https://keepassxc.org/",
-    },
-}
-
-# Chezmoi status command output reference:
-# https://www.chezmoi.io/reference/commands/status/
-chezmoi_status_map = {
-    " ": {
-        "Status": "No change",
-        "Re_Add_Change": "No change",
-        "Apply_Change": "No change",
-    },
-    "A": {
-        "Status": "Added",
-        "Re_Add_Change": "Entry was created",
-        "Apply_Change": "Entry will be created",
-    },
-    "D": {
-        "Status": "Deleted",
-        "Re_Add_Change": "Entry was deleted",
-        "Apply_Change": "Entry will be deleted",
-    },
-    "M": {
-        "Status": "Modified",
-        "Re_Add_Change": "Entry was modified",
-        "Apply_Change": "Entry will be modified",
-    },
-    "R": {
-        "Status": "Run",
-        "Re_Add_Change": "Not applicable",
-        "Apply_Change": "Script will be run",
     },
 }
 
