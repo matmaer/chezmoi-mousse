@@ -48,16 +48,22 @@ class Chezmoi:
         "--no-pager",
         "--color=off",
         "--no-tty",
-        "--interactive",
-        "--force",  # make changes without prompting
         "--mode=file",
+        # TODO "--force",  make changes without prompting: flag is not
+        # compatible with "--interactive", find way to handle this.
+        # "--force",
     ]
 
+    # The reference with regards to --include and --exclued flags is here:
+    # https://www.chezmoi.io/reference/command-line-flags/common/#available-entry-types
+    # Currently starting out with support for types file and dir.
     subs = {
         "cat_config": ["cat-config"],
         "template_data": ["data", "--format=json"],
         "doctor": ["doctor"],
         "dump_config": ["dump-config", "--format=json"],
+        # git is not an independent git command, it's ran by chezmoi because
+        # it would otherwise only work if pwd is in the chezmoi git repo
         "git_log": [
             "git",
             "log",
@@ -69,6 +75,10 @@ class Chezmoi:
             "--no-expand-tabs",
             "--format=%ar by %cn; %s",
         ],
+        # see remark above the git_log command, same applies
+        # another advantage is that chezmoi will return the git status for
+        # all files in the chezmoi repo, regardless of the current working
+        # directory
         "git_status": ["git", "status"],
         "ignored": ["ignored"],
         "managed": [
@@ -76,8 +86,8 @@ class Chezmoi:
             "--path-style=absolute",
             "--include=dirs,files",
         ],
-        "chezmoi_status": ["status", "--parent-dirs"],
         "unmanaged": ["unmanaged", "--path-style=absolute"],
+        "chezmoi_status": ["status", "--parent-dirs", "--include=dirs,files"],
     }
 
     def __init__(self) -> None:
