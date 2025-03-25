@@ -42,7 +42,6 @@ class Chezmoi:
     managed: InputOutput
     template_data: InputOutput
     unmanaged: InputOutput
-    dest_dir_path: Path | None = None
 
     base = [
         "chezmoi",
