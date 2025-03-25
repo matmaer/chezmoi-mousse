@@ -1,11 +1,53 @@
-"""Modules for singletons or any other shared resources."""
-
 import json
 from pathlib import Path
 import subprocess
 from dataclasses import dataclass
 
 from textual.theme import Theme
+
+
+@dataclass
+class StatusData:
+
+    for_fs: bool
+    status_code: str = "space"
+    fs_change: str | None = None
+    repo_change: str | None = None
+    fs_path: Path | None = None
+
+    # Chezmoi status command output reference:
+    # https://www.chezmoi.io/reference/commands/status/
+
+    @property
+    def name(self):
+        status_names = {
+            "space": "No change",
+            "A": "Added",
+            "D": "Deleted",
+            "M": "Modified",
+            "R": "Modified Script",
+        }
+        return status_names[self.status_code]
+
+    @property
+    def change(self):
+        if not self.for_fs:
+            status_change = {
+                "space": "no changes for repository",
+                "A": "add to repository",
+                "D": "mark as deleted in repository",
+                "M": "modify in repository",
+                "R": "not applicable for repository",
+            }
+        else:
+            status_change = {
+                "space": "no changes for filesystem",
+                "A": "create on filesystem",
+                "D": "delete from filesystem",
+                "M": "modify on filesystem",
+                "R": "modify script on filesystem",
+            }
+        return status_change[self.status_code]
 
 
 @dataclass
@@ -16,7 +58,9 @@ class InputOutput:
 
     @property
     def label(self):
-        return " ".join([w for w in self.long_command if not w.startswith("-")])
+        return " ".join(
+            [w for w in self.long_command if not w.startswith("-")]
+        )
 
     def update(self) -> None:
         result = subprocess.run(
@@ -25,7 +69,7 @@ class InputOutput:
             check=True,  # raises exception for any non-zero return code
             shell=False,
             text=True,  # returns stdout as str instead of bytes
-            timeout=2,
+            timeout=1,
         )
         self.std_out = result.stdout
 
@@ -42,21 +86,28 @@ class Chezmoi:
     managed: InputOutput
     template_data: InputOutput
     unmanaged: InputOutput
-    dest_dir_path: Path | None = None
 
     base = [
         "chezmoi",
         "--no-pager",
-        "--color=false",
+        "--color=off",
         "--no-tty",
-        "--progress=false",
+        "--mode=file",
+        # TODO "--force",  make changes without prompting: flag is not
+        # compatible with "--interactive", find way to handle this.
+        # "--force",
     ]
 
+    # The reference with regards to --include and --exclued flags is here:
+    # https://www.chezmoi.io/reference/command-line-flags/common/#available-entry-types
+    # Currently starting out with support for types file and dir.
     subs = {
         "cat_config": ["cat-config"],
         "template_data": ["data", "--format=json"],
         "doctor": ["doctor"],
         "dump_config": ["dump-config", "--format=json"],
+        # git is not an independent git command, it's ran by chezmoi because
+        # it would otherwise only work if pwd is in the chezmoi git repo
         "git_log": [
             "git",
             "log",
@@ -68,6 +119,10 @@ class Chezmoi:
             "--no-expand-tabs",
             "--format=%ar by %cn; %s",
         ],
+        # see remark above the git_log command, same applies
+        # another advantage is that chezmoi will return the git status for
+        # all files in the chezmoi repo, regardless of the current working
+        # directory
         "git_status": ["git", "status"],
         "ignored": ["ignored"],
         "managed": [
@@ -75,8 +130,8 @@ class Chezmoi:
             "--path-style=absolute",
             "--include=dirs,files",
         ],
-        "chezmoi_status": ["status", "--parent-dirs"],
         "unmanaged": ["unmanaged", "--path-style=absolute"],
+        "chezmoi_status": ["status", "--parent-dirs", "--include=dirs,files"],
     }
 
     def __init__(self) -> None:
@@ -166,36 +221,6 @@ integrated_command_map = {
     "keepassxc": {
         "Description": "Cross-platform community-driven port of Keepass password manager",
         "URL": "https://keepassxc.org/",
-    },
-}
-
-# Chezmoi status command output reference:
-# https://www.chezmoi.io/reference/commands/status/
-chezmoi_status_map = {
-    " ": {
-        "Status": "No change",
-        "Re_Add_Change": "No change",
-        "Apply_Change": "No change",
-    },
-    "A": {
-        "Status": "Added",
-        "Re_Add_Change": "Entry was created",
-        "Apply_Change": "Entry will be created",
-    },
-    "D": {
-        "Status": "Deleted",
-        "Re_Add_Change": "Entry was deleted",
-        "Apply_Change": "Entry will be deleted",
-    },
-    "M": {
-        "Status": "Modified",
-        "Re_Add_Change": "Entry was modified",
-        "Apply_Change": "Entry will be modified",
-    },
-    "R": {
-        "Status": "Run",
-        "Re_Add_Change": "Not applicable",
-        "Apply_Change": "Script will be run",
     },
 }
 
