@@ -25,7 +25,7 @@ class InputOutput:
             check=True,  # raises exception for any non-zero return code
             shell=False,
             text=True,  # returns stdout as str instead of bytes
-            timeout=2,
+            timeout=1,
         )
         self.std_out = result.stdout
 
@@ -46,9 +46,11 @@ class Chezmoi:
     base = [
         "chezmoi",
         "--no-pager",
-        "--color=false",
+        "--color=off",
         "--no-tty",
-        "--progress=false",
+        "--interactive",
+        "--force",  # make changes without prompting
+        "--mode=file",
     ]
 
     subs = {
