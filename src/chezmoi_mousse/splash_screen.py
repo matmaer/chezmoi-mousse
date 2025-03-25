@@ -52,7 +52,9 @@ class LoadingScreen(Screen):
     def compose(self) -> ComposeResult:
         with Middle():
             yield Center(AnimatedFade(fade_colors=self.theme_fade))
-            yield Center(RichLog(name="loader log", id="loader-log", max_lines=11))
+            yield Center(
+                RichLog(name="loader log", id="loader-log", max_lines=11)
+            )
             yield Center(
                 Button(
                     id="continue",
