@@ -81,12 +81,11 @@ class Doctor(Widget):
             yield ListView(id="cmds_not_found")
 
     def on_mount(self) -> None:
-        doctor_data = chezmoi.get_doctor_rows
         table = self.query_one(DataTable)
-        table.add_columns(*doctor_data["table_rows"][0])
+        table.add_columns(*chezmoi.get_doctor_rows["table_rows"][0])
         table.cursor_type = "row"
 
-        for row in doctor_data["table_rows"][1:]:
+        for row in chezmoi.get_doctor_rows["table_rows"][1:]:
             if row[0] == "ok":
                 row = [
                     Text(str(cell), style=f"{self.app.current_theme.success}")
@@ -112,7 +111,7 @@ class Doctor(Widget):
             table.add_row(*row)
 
         listview = self.query_one(ListView)
-        for row in doctor_data["cmds_not_found"]:
+        for row in chezmoi.get_doctor_rows["cmds_not_found"]:
             item = Collapsible(
                 Pretty(row),
                 title=row[1],
