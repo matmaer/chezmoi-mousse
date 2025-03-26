@@ -24,7 +24,7 @@ from textual.widgets import (
     Tree,
 )
 
-from chezmoi_mousse.common import FLOW, chezmoi, doctor_cmd_map
+from chezmoi_mousse.common import FLOW, chezmoi
 
 
 class GitLog(DataTable):
@@ -75,17 +75,60 @@ class SlideBar(Widget):
 
 class Doctor(Widget):
 
+    def __init__(self) -> None:
+        super().__init__()
+        # pylint: disable=line-too-long
+        doctor_cmd_map = {
+            "age-command": {
+                "Description": "A simple, modern and secure file encryption tool",
+                "URL": "https://github.com/FiloSottile/age",
+            },
+            "gopass-command": {
+                "Description": "The slightly more awesome standard unix password manager for teams.",
+                "URL": "https://github.com/gopasspw/gopass",
+            },
+            "pass-command": {
+                "Description": "Stores, retrieves, generates, and synchronizes passwords securely",
+                "URL": "https://www.passwordstore.org/",
+            },
+            "rbw-command": {
+                "Description": "Unofficial Bitwarden CLI",
+                "URL": "https://git.tozt.net/rbw",
+            },
+            "vault-command": {
+                "Description": "A tool for managing secrets",
+                "URL": "https://vaultproject.io/",
+            },
+            "pinentry-command": {
+                "Description": "Collection of simple PIN or passphrase entry dialogs which utilize the Assuan protocol",
+                "URL": "https://gnupg.org/related_software/pinentry/",
+            },
+            "keepassxc-command": {
+                "Description": "Cross-platform community-driven port of Keepass password manager",
+                "URL": "https://keepassxc.org/",
+            },
+        }
+
     def compose(self) -> ComposeResult:
         with VerticalScroll():
             yield DataTable(id="doctor")
             yield ListView(id="cmds_not_found")
 
     def on_mount(self) -> None:
+
+        doctor_dict = {"cmds_not_found": [], "table_rows": []}
+        for line in chezmoi.get_doctor_rows:
+            parts = tuple(line.split(maxsplit=2))
+            if parts[0] == "info" and "not found in $PATH" in parts[2]:
+                doctor_dict["cmds_not_found"].append(parts)
+            else:
+                doctor_dict["table_rows"].append(parts)
+
         table = self.query_one(DataTable)
-        table.add_columns(*chezmoi.get_doctor_rows["table_rows"][0])
+        table.add_columns(*doctor_dict["table_rows"][0])
         table.cursor_type = "row"
 
-        for row in chezmoi.get_doctor_rows["table_rows"][1:]:
+        for row in doctor_dict["table_rows"][1:]:
             if row[0] == "ok":
                 row = [
                     Text(str(cell), style=f"{self.app.current_theme.success}")
@@ -111,7 +154,7 @@ class Doctor(Widget):
             table.add_row(*row)
 
         listview = self.query_one(ListView)
-        for row in chezmoi.get_doctor_rows["cmds_not_found"]:
+        for row in doctor_dict["cmds_not_found"]:
             item = Collapsible(
                 Pretty(row),
                 title=row[1],
