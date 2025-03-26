@@ -75,9 +75,6 @@ class SlideBar(Widget):
 
 class Doctor(Widget):
 
-    # def __init__(self) -> None:
-    #     super().__init__(id="doctor")
-
     def compose(self) -> ComposeResult:
         with VerticalScroll():
             yield DataTable(id="doctor")
