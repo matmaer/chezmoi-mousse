@@ -24,7 +24,7 @@ from textual.widgets import (
     Tree,
 )
 
-from chezmoi_mousse.common import FLOW, chezmoi
+from chezmoi_mousse.common import FLOW, chezmoi, doctor_cmd_map
 
 
 class GitLog(DataTable):
@@ -75,39 +75,43 @@ class SlideBar(Widget):
 
 class Doctor(Widget):
 
-    def __init__(self) -> None:
-        super().__init__(id="doctor")
-
     def compose(self) -> ComposeResult:
         with VerticalScroll():
             yield DataTable(id="doctor")
             yield ListView(id="cmds_not_found")
 
     def on_mount(self) -> None:
-        doctor_data = chezmoi.get_doctor_rows
         table = self.query_one(DataTable)
-        table.add_columns(*doctor_data["table_rows"][0])
+        table.add_columns(*chezmoi.get_doctor_rows["table_rows"][0])
         table.cursor_type = "row"
 
-        success = self.app.current_theme.success
-        warning = self.app.current_theme.warning
-        error = self.app.current_theme.error
-
-        for row in doctor_data["table_rows"][1:]:
+        for row in chezmoi.get_doctor_rows["table_rows"][1:]:
             if row[0] == "ok":
-                row = [Text(str(cell), style=f"{success}") for cell in row]
+                row = [
+                    Text(str(cell), style=f"{self.app.current_theme.success}")
+                    for cell in row
+                ]
             elif row[0] == "warning":
-                row = [Text(str(cell), style=f"{warning}") for cell in row]
+                row = [
+                    Text(str(cell), style=f"{self.app.current_theme.warning}")
+                    for cell in row
+                ]
             elif row[0] == "error":
-                row = [Text(str(cell), style=f"{error}") for cell in row]
+                row = [
+                    Text(str(cell), style=f"{self.app.current_theme.error}")
+                    for cell in row
+                ]
             elif row[0] == "info" and row[2] == "not set":
-                row = [Text(str(cell), style=f"{warning}") for cell in row]
+                row = [
+                    Text(str(cell), style=f"{self.app.current_theme.warning}")
+                    for cell in row
+                ]
             else:
                 row = [Text(str(cell)) for cell in row]
             table.add_row(*row)
 
         listview = self.query_one(ListView)
-        for row in doctor_data["cmds_not_found"]:
+        for row in chezmoi.get_doctor_rows["cmds_not_found"]:
             item = Collapsible(
                 Pretty(row),
                 title=row[1],
