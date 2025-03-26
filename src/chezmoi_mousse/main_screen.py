@@ -24,7 +24,7 @@ from textual.widgets import (
     Tree,
 )
 
-from chezmoi_mousse.common import FLOW, chezmoi
+from chezmoi_mousse.common import FLOW, chezmoi, doctor_cmd_map
 
 
 class GitLog(DataTable):
@@ -75,8 +75,8 @@ class SlideBar(Widget):
 
 class Doctor(Widget):
 
-    def __init__(self) -> None:
-        super().__init__(id="doctor")
+    # def __init__(self) -> None:
+    #     super().__init__(id="doctor")
 
     def compose(self) -> ComposeResult:
         with VerticalScroll():

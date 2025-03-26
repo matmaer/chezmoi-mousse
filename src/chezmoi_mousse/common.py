@@ -193,7 +193,7 @@ mousse_theme = Theme(
 )
 
 # pylint: disable=line-too-long
-integrated_command_map = {
+doctor_cmd_map = {
     "age": {
         "Description": "A simple, modern and secure file encryption tool",
         "URL": "https://github.com/FiloSottile/age",
