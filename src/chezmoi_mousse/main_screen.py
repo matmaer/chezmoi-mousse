@@ -86,19 +86,27 @@ class Doctor(Widget):
         table.add_columns(*doctor_data["table_rows"][0])
         table.cursor_type = "row"
 
-        success = self.app.current_theme.success
-        warning = self.app.current_theme.warning
-        error = self.app.current_theme.error
-
         for row in doctor_data["table_rows"][1:]:
             if row[0] == "ok":
-                row = [Text(str(cell), style=f"{success}") for cell in row]
+                row = [
+                    Text(str(cell), style=f"{self.app.current_theme.success}")
+                    for cell in row
+                ]
             elif row[0] == "warning":
-                row = [Text(str(cell), style=f"{warning}") for cell in row]
+                row = [
+                    Text(str(cell), style=f"{self.app.current_theme.warning}")
+                    for cell in row
+                ]
             elif row[0] == "error":
-                row = [Text(str(cell), style=f"{error}") for cell in row]
+                row = [
+                    Text(str(cell), style=f"{self.app.current_theme.error}")
+                    for cell in row
+                ]
             elif row[0] == "info" and row[2] == "not set":
-                row = [Text(str(cell), style=f"{warning}") for cell in row]
+                row = [
+                    Text(str(cell), style=f"{self.app.current_theme.warning}")
+                    for cell in row
+                ]
             else:
                 row = [Text(str(cell)) for cell in row]
             table.add_row(*row)
