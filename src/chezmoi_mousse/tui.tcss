@@ -38,11 +38,6 @@
   }
 }
 
-ItemList {
-  height: auto;
-  border: yellow;
-}
-
 Screen {
   layers: slidebar_layer;
   overflow-y: hidden;
@@ -160,7 +155,6 @@ SlideBar {
 Collapsible {
   border: none;
   padding: 0;
-  min-height: 3;
 }
 
 CollapsibleTitle {
