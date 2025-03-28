@@ -68,7 +68,7 @@ class Chezmoi:
             "--no-decorate",
             "--date-order",
             "--no-expand-tabs",
-            "--format=%ar by %cn; %s",
+            "--format=%ar by %cn;%s",
         ],
         "git_status": ["git", "status"],
         "ignored": ["ignored"],

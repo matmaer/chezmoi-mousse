@@ -34,9 +34,7 @@ class GitLog(DataTable):
 
     def on_mount(self) -> None:
         self.add_columns("COMMIT", "MESSAGE")
-        git_log_output = chezmoi.git_log.std_out.splitlines()
-
-        for line in git_log_output:
+        for line in chezmoi.git_log.std_out.splitlines():
             columns = line.split(";")
             self.add_row(*columns)
 
