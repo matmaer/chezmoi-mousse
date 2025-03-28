@@ -275,14 +275,14 @@ class MousseTree(DirectoryTree):  # pylint: disable=too-many-ancestors
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
         if self.show_all:
             return paths
-        return [p for p in paths if p in chezmoi.get_managed_paths]
+        return [p for p in paths if p not in chezmoi.get_managed_paths]
 
 
 class ManagedDirTree(Widget):
 
     def compose(self) -> ComposeResult:
         yield Checkbox(
-            "Include Unmanaged Files",
+            "include already managed files",
             id="tree-checkbox",
         )
         yield MousseTree()
