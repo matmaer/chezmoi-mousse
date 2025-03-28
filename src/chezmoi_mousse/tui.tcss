@@ -29,6 +29,11 @@
   }
 }
 
+ItemList {
+  height: auto;
+  border: yellow;
+}
+
 #cmdnotfound {
   margin: 1 0 1 0;
 }
@@ -163,3 +168,8 @@ CollapsibleTitle {
       text-style: bold;
   }
 }
+
+# VerticalScroll {
+#   border: none;
+#   height: auto;
+# }
