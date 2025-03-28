@@ -16,6 +16,7 @@ from textual.widgets import (
     Footer,
     Header,
     Label,
+    Link,
     ListItem,
     ListView,
     Pretty,
@@ -78,57 +79,74 @@ class Doctor(Widget):
     def __init__(self) -> None:
         super().__init__()
         # pylint: disable=line-too-long
-        doctor_cmd_map = {
+        self.doctor_cmd_map = {
             "age-command": {
-                "Description": "A simple, modern and secure file encryption tool",
-                "URL": "https://github.com/FiloSottile/age",
+                "description": "A simple, modern and secure file encryption tool",
+                "link": "https://github.com/FiloSottile/age",
+            },
+            "bitwarden-command": {
+                "description": "Bitwarden Password Manager",
+                "link": "https://github.com/bitwarden/cli",
+            },
+            "bitwarden-secrets-command": {
+                "description": "Bitwarden Secrets Manager CLI for managing secrets securely.",
+                "link": "https://github.com/bitwarden/bitwarden-secrets",
+            },
+            "doppler-command": {
+                "description": "The Doppler CLI for managing secrets, configs, and environment variables.",
+                "link": "https://github.com/DopplerHQ/cli",
             },
             "gopass-command": {
-                "Description": "The slightly more awesome standard unix password manager for teams.",
-                "URL": "https://github.com/gopasspw/gopass",
+                "description": "The slightly more awesome standard unix password manager for teams.",
+                "link": "https://github.com/gopasspw/gopass",
             },
-            "pass-command": {
-                "Description": "Stores, retrieves, generates, and synchronizes passwords securely",
-                "URL": "https://www.passwordstore.org/",
-            },
-            "rbw-command": {
-                "Description": "Unofficial Bitwarden CLI",
-                "URL": "https://git.tozt.net/rbw",
-            },
-            "vault-command": {
-                "Description": "A tool for managing secrets",
-                "URL": "https://vaultproject.io/",
-            },
-            "pinentry-command": {
-                "Description": "Collection of simple PIN or passphrase entry dialogs which utilize the Assuan protocol",
-                "URL": "https://gnupg.org/related_software/pinentry/",
+            "keeper-command": {
+                "description": "An interface to Keeper® Password Manager",
+                "link": "https://github.com/Keeper-Security/Commander",
             },
             "keepassxc-command": {
-                "Description": "Cross-platform community-driven port of Keepass password manager",
-                "URL": "https://keepassxc.org/",
+                "description": "Cross-platform community-driven port of Keepass password manager",
+                "link": "https://keepassxc.org/",
+            },
+            "lpass-command": {
+                "description": "Old LastPass CLI for accessing your LastPass vault.",
+                "link": "https://github.com/lastpass/lastpass-cli",
+            },
+            "pass-command": {
+                "description": "Stores, retrieves, generates, and synchronizes passwords securely",
+                "link": "https://www.passwordstore.org/",
+            },
+            "pinentry-command": {
+                "description": "Collection of simple PIN or passphrase entry dialogs which utilize the Assuan protocol",
+                "link": "https://gnupg.org/related_software/pinentry/",
+            },
+            "rbw-command": {
+                "description": "Unofficial Bitwarden CLI",
+                "link": "https://git.tozt.net/rbw",
+            },
+            "vault-command": {
+                "description": "A tool for managing secrets",
+                "link": "https://vaultproject.io/",
             },
         }
 
     def compose(self) -> ComposeResult:
         with VerticalScroll():
-            yield DataTable(id="doctor")
-            yield ListView(id="cmds_not_found")
+            yield DataTable(id="doctortable", cursor_type="row")
+            yield Collapsible(
+                ListView(),
+                title="Commands Not Found",
+                id="cmdnotfound",
+            )
 
     def on_mount(self) -> None:
 
-        doctor_dict = {"cmds_not_found": [], "table_rows": []}
-        for line in chezmoi.get_doctor_rows:
-            parts = tuple(line.split(maxsplit=2))
-            if parts[0] == "info" and "not found in $PATH" in parts[2]:
-                doctor_dict["cmds_not_found"].append(parts)
-            else:
-                doctor_dict["table_rows"].append(parts)
-
+        list_view = self.query_one(ListView)
         table = self.query_one(DataTable)
-        table.add_columns(*doctor_dict["table_rows"][0])
-        table.cursor_type = "row"
+        table.add_columns(*chezmoi.get_doctor_rows[0].split())
 
-        for row in doctor_dict["table_rows"][1:]:
+        for line in chezmoi.get_doctor_rows[1:]:
+            row = tuple(line.split(maxsplit=2))
             if row[0] == "ok":
                 row = [
                     Text(str(cell), style=f"{self.app.current_theme.success}")
@@ -149,17 +167,31 @@ class Doctor(Widget):
                     Text(str(cell), style=f"{self.app.current_theme.warning}")
                     for cell in row
                 ]
+            elif row[0] == "info" and "not found in $PATH" in row[2]:
+                if row[1] in self.doctor_cmd_map:
+                    list_view.append(
+                        ListItem(
+                            Link(
+                                row[1],
+                                url=self.doctor_cmd_map[row[1]]["link"],
+                            ),
+                            Static(self.doctor_cmd_map[row[1]]["description"]),
+                        ),
+                    )
+                    continue
+                list_view.append(
+                    ListItem(
+                        # color accent as that's how links are styled by default
+                        Static(f"[$accent]{row[1]}[/]", markup=True),
+                        Static(
+                            "Not Found in $PATH, no description available in TUI."
+                        ),
+                    ),
+                )
+                continue
             else:
                 row = [Text(str(cell)) for cell in row]
             table.add_row(*row)
-
-        listview = self.query_one(ListView)
-        for row in doctor_dict["cmds_not_found"]:
-            item = Collapsible(
-                Pretty(row),
-                title=row[1],
-            )
-            listview.append(ListItem(item))
 
 
 class ChezmoiStatus(Static):
