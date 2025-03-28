@@ -219,7 +219,7 @@ class ManagedTree(Tree):
 
     def __init__(self) -> None:
         super().__init__(
-            label="managed_tree",
+            label="destDir",
             id="managed_tree",
         )
         self.show_root = False
