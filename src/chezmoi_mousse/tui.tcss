@@ -12,14 +12,16 @@
 #tree-checkbox {
   border: none;
   & > .toggle--label {
-    color: $success-muted;
+    color: $primary-muted;
+  }
+  & > .toggle--button {
+    color: $primary-muted;
   }
   &.-on > .toggle--button {
-    color: lime;
-    text-style: bold;
+    color: $primary;
   }
   &.-on > .toggle--label {
-    color: $success;
+    color: $primary;
   }
   &:hover {
     text-style: bold;
@@ -34,10 +36,6 @@ ItemList {
   border: yellow;
 }
 
-#cmdnotfound {
-  margin: 1 0 1 0;
-}
-
 Screen {
   layers: slidebar_layer;
   overflow-y: hidden;
@@ -46,7 +44,7 @@ Screen {
 Header {
   color: $primary;
   HeaderIcon {
-    /* don't use display: none; because then the title is not centered */
+    /* with display: none; the title is not centered */
     visibility: hidden;
   }
 }
@@ -155,6 +153,7 @@ SlideBar {
 Collapsible {
   border: none;
   padding: 0;
+  min-height: 3;
 }
 
 CollapsibleTitle {
@@ -168,8 +167,3 @@ CollapsibleTitle {
       text-style: bold;
   }
 }
-
-# VerticalScroll {
-#   border: none;
-#   height: auto;
-# }
