@@ -29,6 +29,10 @@
   }
 }
 
+#cmdnotfound {
+  margin: 1 0 1 0;
+}
+
 Screen {
   layers: slidebar_layer;
   overflow-y: hidden;
@@ -49,8 +53,8 @@ Footer {
 }
 
 DataTable {
+  height: auto;
   width: 100%;
-  height: 1fr;
   padding-right: 1;
   & > .datatable--header {
     color: $foreground;
