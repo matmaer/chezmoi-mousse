@@ -96,8 +96,7 @@ class Chezmoi:
 
     @property
     def get_config_dump(self) -> dict:
-        command_output = getattr(self.dump_config, "std_out", "{}")
-        return json.loads(command_output)
+        return json.loads(self.dump_config.std_out)
 
     @property
     def get_managed_paths(self) -> list[Path]:
@@ -109,8 +108,7 @@ class Chezmoi:
 
     @property
     def get_template_data(self) -> dict:
-        command_output = getattr(self.template_data, "std_out", "{}")
-        return json.loads(command_output)
+        return json.loads(self.template_data.std_out)
 
     @property
     def get_doctor_rows(self) -> list[str]:
