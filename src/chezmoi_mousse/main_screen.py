@@ -130,12 +130,12 @@ class Doctor(Widget):
         }
 
     def compose(self) -> ComposeResult:
-        with VerticalScroll():
-            yield DataTable(id="doctortable", cursor_type="row")
-            yield Collapsible(
-                ListView(id="cmdnotfound"),
-                title="Commands Not Found",
-            )
+        yield DataTable(id="doctortable", cursor_type="row")
+        yield Collapsible(
+            ListView(id="cmdnotfound"),
+            title="Commands Not Found",
+            id="cmdnotfoundcollapse",
+        )
 
     def on_mount(self) -> None:
 
