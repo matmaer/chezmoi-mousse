@@ -166,15 +166,8 @@ class Chezmoi:
         return json.loads(command_output)
 
     @property
-    def get_doctor_rows(self) -> dict[str, list[tuple]]:
-        doctor_dict = {"cmds_not_found": [], "table_rows": []}
-        for line in self.doctor.std_out.splitlines():
-            parts = tuple(line.split(maxsplit=2))
-            if parts[0] == "info" and "not found in $PATH" in parts[2]:
-                doctor_dict["cmds_not_found"].append(parts)
-            else:
-                doctor_dict["table_rows"].append(parts)
-        return doctor_dict
+    def get_doctor_rows(self) -> list[str]:
+        return self.doctor.std_out.splitlines()
 
 
 chezmoi = Chezmoi()
@@ -182,47 +175,16 @@ chezmoi = Chezmoi()
 mousse_theme = Theme(
     name="mousse-theme",
     dark=True,
-    accent="rgb(241, 135, 251)",  # custom #F187FB
+    accent="#F187FB",  # bespoke
     background="#000000",
     error="#ba3c5b",  # textual dark
-    foreground="rgb(222, 218, 209)",  # custom #DEDAE1
+    foreground="#DEDAE1",  # bespoke
     primary="#0178D4",  # textual dark
     secondary="#004578",  # textual dark
     success="#4EBF71",  # textual dark
     warning="#ffa62b",  # textual dark
 )
 
-# pylint: disable=line-too-long
-doctor_cmd_map = {
-    "age": {
-        "Description": "A simple, modern and secure file encryption tool",
-        "URL": "https://github.com/FiloSottile/age",
-    },
-    "gopass": {
-        "Description": "The slightly more awesome standard unix password manager for teams.",
-        "URL": "https://github.com/gopasspw/gopass",
-    },
-    "pass": {
-        "Description": "Stores, retrieves, generates, and synchronizes passwords securely",
-        "URL": "https://www.passwordstore.org/",
-    },
-    "rbw": {
-        "Description": "Unofficial Bitwarden CLI",
-        "URL": "https://git.tozt.net/rbw",
-    },
-    "vault": {
-        "Description": "A tool for managing secrets",
-        "URL": "https://vaultproject.io/",
-    },
-    "pinentry": {
-        "Description": "Collection of simple PIN or passphrase entry dialogs which utilize the Assuan protocol",
-        "URL": "https://gnupg.org/related_software/pinentry/",
-    },
-    "keepassxc": {
-        "Description": "Cross-platform community-driven port of Keepass password manager",
-        "URL": "https://keepassxc.org/",
-    },
-}
 
 SPLASH_7BIT = """\
  _______ _______ _______ _______ ____ ____ _______ _._
@@ -256,7 +218,7 @@ SPLASH_ASCII_ART = """\
 |    ===|       |     __|     __|         |   |   |   |
 |       |   |   |       |       |   |ˇ|   |       |   |
 `-------^---^---^-------^-------^---' '---^-------^---'
-   _________________________________________________
+   _________________________ _______________________
   |    '    |       |   |   |    ___|    ___|    ___|
   |         |   |   |   |   |__     |__     |     __|
   |   |ˇ|   |       |       |       |       |       |
