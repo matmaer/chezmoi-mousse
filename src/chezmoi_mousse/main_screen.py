@@ -15,7 +15,6 @@ from textual.widgets import (
     Checkbox,
     Footer,
     Header,
-    Label,
     Link,
     ListItem,
     ListView,
@@ -134,15 +133,14 @@ class Doctor(Widget):
         with VerticalScroll():
             yield DataTable(id="doctortable", cursor_type="row")
             yield Collapsible(
-                ListView(),
+                ListView(id="cmdnotfound"),
                 title="Commands Not Found",
-                id="cmdnotfound",
             )
 
     def on_mount(self) -> None:
 
-        list_view = self.query_one(ListView)
-        table = self.query_one(DataTable)
+        list_view = self.query_one("#cmdnotfound", ListView)
+        table = self.query_one("#doctortable", DataTable)
         table.add_columns(*chezmoi.get_doctor_rows[0].split())
 
         for line in chezmoi.get_doctor_rows[1:]:
@@ -194,25 +192,39 @@ class Doctor(Widget):
             table.add_row(*row)
 
 
-class ChezmoiStatus(Static):
+class ChezmoiStatus(Collapsible):
+
+    def __init__(self, apply: bool) -> None:
+        # if true, adds apply status to the list, otherwise "re-add" status
+        self.apply = apply
+        super().__init__()
 
     def compose(self) -> ComposeResult:
-        yield ListView()
+        with Collapsible(collapsed=False, id="statuscollapse", title="status"):
+            yield ListView()
 
-    def on_mount(self):
-        chezmoi_status = chezmoi.chezmoi_status.std_out.splitlines()
-
+    def on_mount(self) -> None:
         listview = self.query_one(ListView)
-
-        for line in chezmoi_status:
-            item = Collapsible(
-                Label("Apply Status:"),
-                Static("Apply Change"),
-                Label("Re-Add Status:"),
-                Static("re_add_change"),
-                title=line,
+        if len(chezmoi.status.std_out.splitlines()) == 0:
+            listview.append(ListItem(Static("No changes to apply")))
+        elif self.apply:
+            status_dict = {
+                line[0]: Path(line[2:])
+                for line in chezmoi.status.std_out.splitlines()
+                if line[0] in "ADM"
+            }
+            listview.append(ListItem(Pretty(status_dict)))
+        elif not self.apply:
+            status_dict = {
+                line[1]: Path(line[2:])
+                for line in chezmoi.status.std_out.splitlines()
+                if line[1] in "ADM"
+            }
+            listview.append(ListItem(Pretty(status_dict)))
+        else:
+            raise ValueError(
+                "chezmoi.status.std_out does not match expected format"
             )
-            listview.append(ListItem(item))
 
 
 class ManagedTree(Tree):
@@ -293,17 +305,26 @@ class MainScreen(Screen):
         yield Header(classes="-tall")
         yield Lazy(SlideBar())
         with TabbedContent(
+            "Apply",
+            "Re-Add",
+            "Add",
             "Doctor",
-            "Managed-Tree",
-            "Managed-DirTree",
             "Diagram",
-            "Chezmoi-Status",
         ):
-            yield VerticalScroll(Lazy(Doctor()))
-            yield VerticalScroll(Lazy(ManagedTree()))
+            # chezmoi apply tab
+            yield VerticalScroll(
+                Lazy(ChezmoiStatus(True)), Lazy(ManagedTree())
+            )
+            # chezmoi re-add tab
+            yield VerticalScroll(
+                Lazy(ChezmoiStatus(False)), Lazy(ManagedTree())
+            )
+            # chezmoi add tab
             yield VerticalScroll(Lazy(ManagedDirTree()))
+            # doctor tab
+            yield VerticalScroll(Lazy(Doctor()))
+            # diagram tab
             yield Lazy(Static(FLOW, id="diagram"))
-            yield VerticalScroll(Lazy(ChezmoiStatus()))
 
         yield Footer(classes="just-margin-top")
 
