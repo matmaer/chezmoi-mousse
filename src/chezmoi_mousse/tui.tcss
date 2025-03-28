@@ -161,9 +161,6 @@ CollapsibleTitle {
   border: none;
   color: $primary;
   padding: 0;
-  &:focus {
-      text-style: bold;
-  }
   &:hover {
       text-style: bold;
   }
