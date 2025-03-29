@@ -74,14 +74,13 @@ DataTable {
   }
   & > .datatable--cursor {
     color: $accent;
+    text-style: none;
   }
   & > .datatable--hover {
     color: $secondary;
     text-style: bold;
   }
-  & > .datatable--fixed {
-    color: yellow;
-  }
+  & > .datatable--fixed {}
   & > .datatable--fixed-cursor {}
   & > .datatable--header-cursor {}
   & > .datatable--header-hover {}
