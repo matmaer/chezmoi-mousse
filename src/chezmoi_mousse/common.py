@@ -1,7 +1,7 @@
 import json
-from pathlib import Path
 import subprocess
 from dataclasses import dataclass
+from pathlib import Path
 
 from textual.theme import Theme
 
