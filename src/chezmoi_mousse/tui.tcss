@@ -9,17 +9,26 @@
   min-width: 76;
 }
 
+#cmdnotfoundcollapse {
+  border: none;
+  padding-top: 1;
+  dock: bottom;
+  min-height: 3;
+}
+
 #tree-checkbox {
   border: none;
   & > .toggle--label {
-    color: $success-muted;
+    color: $primary-muted;
+  }
+  & > .toggle--button {
+    color: $primary-muted;
   }
   &.-on > .toggle--button {
-    color: lime;
-    text-style: bold;
+    color: $primary;
   }
   &.-on > .toggle--label {
-    color: $success;
+    color: $primary;
   }
   &:hover {
     text-style: bold;
@@ -27,10 +36,6 @@
   &:focus > .toggle--label {
     text-style: none;
   }
-}
-
-#cmdnotfound {
-  margin: 1 0 1 0;
 }
 
 Screen {
@@ -41,7 +46,7 @@ Screen {
 Header {
   color: $primary;
   HeaderIcon {
-    /* don't use display: none; because then the title is not centered */
+    /* with display: none; the title is not centered */
     visibility: hidden;
   }
 }
@@ -156,9 +161,6 @@ CollapsibleTitle {
   border: none;
   color: $primary;
   padding: 0;
-  &:focus {
-      text-style: bold;
-  }
   &:hover {
       text-style: bold;
   }
