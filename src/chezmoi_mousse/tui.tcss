@@ -38,6 +38,13 @@
   }
 }
 
+#statuscollapse {
+  border: round $secondary;
+  margin: 0;
+  padding: 0;
+}
+
+
 Screen {
   layers: slidebar_layer;
   overflow-y: hidden;
@@ -164,10 +171,4 @@ CollapsibleTitle {
   &:hover {
     text-style: bold;
   }
-}
-
-#statuscollapse {
-  border: round $secondary;
-  margin: 0;
-  padding: 0;
 }
