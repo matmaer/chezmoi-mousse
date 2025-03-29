@@ -69,13 +69,24 @@ DataTable {
   width: 100%;
   padding-right: 1;
   & > .datatable--header {
-    color: $foreground;
-    background: $surface;
-    text-style: underline;
+    color: $secondary;
+    text-style: bold underline;
   }
   & > .datatable--cursor {
-    background: $primary-muted;
+    color: $accent;
   }
+  & > .datatable--hover {
+    color: $secondary;
+    text-style: bold;
+  }
+  & > .datatable--fixed {
+    color: yellow;
+  }
+  & > .datatable--fixed-cursor {}
+  & > .datatable--header-cursor {}
+  & > .datatable--header-hover {}
+  & > .datatable--odd-row {}
+  & > .datatable--even-row {}
 }
 
 Tree {
@@ -90,12 +101,12 @@ Tree {
   }
   & > .tree--guides-selected {
       color: $secondary;
-
   }
   & > .tree--cursor {
       text-style: bold;
   }
-  & > .tree--highlight {}
+  & > .tree--highlight {
+  }
   & > .tree--highlight-line {
       text-style: bold;
   }
