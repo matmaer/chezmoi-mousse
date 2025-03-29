@@ -244,6 +244,7 @@ class ManagedTree(Tree):
                 parent = self.root
             else:
                 parent = parent.add(dir_path.parts[-1], dir_path)
+                parent.expand()
             files = [f for f in file_paths if f.parent == dir_path]
             for file in files:
                 parent.add_leaf(str(file.parts[-1]), file)
@@ -252,7 +253,10 @@ class ManagedTree(Tree):
                 recurse_paths(parent, sub_dir)
 
         recurse_paths(self.root, dest_dir_path)
-        self.root.expand_all()
+        self.root.collapse_all()
+        self.root.expand()
+        for dirs in self.root.children:
+            dirs.expand()
 
     # def _on_tree_node_selected(self, message: Tree.NodeSelected) -> None:
     #     node_data = message.node.data
