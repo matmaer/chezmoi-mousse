@@ -73,9 +73,6 @@ DataTable {
     background: $surface;
     text-style: underline;
   }
-  & > .datatable--header-hover {
-    background: $surface;
-  }
   & > .datatable--cursor {
     background: $primary-muted;
   }
