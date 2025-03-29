@@ -230,7 +230,7 @@ class ManagedTree(Tree):
 
     def __init__(self) -> None:
         super().__init__(
-            label="destDir",
+            label=f"{chezmoi.get_config_dump['destDir']}",
             id="managed_tree",
         )
         self.show_root = False

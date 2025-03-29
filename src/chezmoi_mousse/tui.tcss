@@ -130,38 +130,44 @@ LoadingScreen {
 }
 
 SlideBar {
-  layer: slidebar_layer;
-  margin-top: 7;
-  margin-bottom: 4;
-  height: 100%;
-  padding-left: 1;
+  border-bottom: round $accent-muted;
+  border-left: round $accent-muted;
+  border-top: round $accent-muted;
   dock: right;
+  height: 100%;
+  layer: slidebar_layer;
+  margin-bottom: 4;
+  margin-top: 7;
+  max-width: 80%;
+  min-height: 5;
   /* offset-x: -100%; out of view if docked left */
   /* offset-x: 100%; out if view if docked right */
   offset-x: 100%;
-  max-width: 80%;
-  min-height: 5;
-  border-left: round $accent-muted;
-  border-top: round $accent-muted;
-  border-bottom: round $accent-muted;
-  /* Enable animation */
+  padding-left: 1;
   transition: offset 380ms;
   &.-visible {
-      /* offset.x: 0; make visible when class is applied */
       offset-x: 0%;
   }
 }
 
 Collapsible {
   border: none;
+  margin: 0;
   padding: 0;
 }
 
 CollapsibleTitle {
   border: none;
   color: $primary;
+  margin: 0;
   padding: 0;
   &:hover {
-      text-style: bold;
+    text-style: bold;
   }
+}
+
+#statuscollapse {
+  border: round $secondary;
+  margin: 0;
+  padding: 0;
 }
