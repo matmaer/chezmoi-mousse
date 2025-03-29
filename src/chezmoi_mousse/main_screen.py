@@ -4,9 +4,10 @@ from collections.abc import Iterable
 from rich.text import Text
 from textual.app import ComposeResult
 from textual.containers import VerticalScroll
-from textual.lazy import Lazy
 from textual.reactive import reactive
 from textual.screen import Screen
+
+# from textual.types import DirEntry
 from textual.widget import Widget
 from textual.widgets import (
     Collapsible,
@@ -275,6 +276,19 @@ class MousseTree(DirectoryTree):  # pylint: disable=too-many-ancestors
             return paths
         return [p for p in paths if p not in chezmoi.get_managed_paths]
 
+    # def _on_tree_node_selected(
+    #     self, event: Tree.NodeSelected[DirEntry]
+    # ) -> None:
+    #     dir_entry = event.node.data
+    #     if dir_entry is None:
+    #         return
+    #     if self._safe_is_dir(dir_entry.path):
+    #         self.post_message(
+    #             self.DirectorySelected(event.node, dir_entry.path)
+    #         )
+    #     else:
+    #         self.post_message(self.FileSelected(event.node, dir_entry.path))
+
 
 class ManagedDirTree(Widget):
 
@@ -301,7 +315,7 @@ class MainScreen(Screen):
     def compose(self) -> ComposeResult:
 
         yield Header(classes="-tall")
-        yield Lazy(SlideBar())
+        yield SlideBar()
         with TabbedContent(
             "Apply",
             "Re-Add",
@@ -310,19 +324,15 @@ class MainScreen(Screen):
             "Diagram",
         ):
             # chezmoi apply tab
-            yield VerticalScroll(
-                Lazy(ChezmoiStatus(True)), Lazy(ManagedTree())
-            )
+            yield VerticalScroll(ChezmoiStatus(True), ManagedTree())
             # chezmoi re-add tab
-            yield VerticalScroll(
-                Lazy(ChezmoiStatus(False)), Lazy(ManagedTree())
-            )
+            yield VerticalScroll(ChezmoiStatus(False), ManagedTree())
             # chezmoi add tab
-            yield VerticalScroll(Lazy(ManagedDirTree()))
+            yield VerticalScroll(ManagedDirTree())
             # doctor tab
-            yield VerticalScroll(Lazy(Doctor()))
+            yield VerticalScroll(Doctor())
             # diagram tab
-            yield Lazy(Static(FLOW, id="diagram"))
+            yield Static(FLOW, id="diagram")
 
         yield Footer(classes="just-margin-top")
 
