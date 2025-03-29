@@ -233,7 +233,6 @@ class ManagedTree(Tree):
             label=f"{chezmoi.get_config_dump['destDir']}",
             id="managed_tree",
         )
-        self.show_root = False
 
     def on_mount(self) -> None:
         dest_dir_path = Path(chezmoi.get_config_dump["destDir"])
