@@ -7,50 +7,6 @@ from textual.theme import Theme
 
 
 @dataclass
-class StatusData:
-
-    for_fs: bool
-    status_code: str = "space"
-    fs_change: str | None = None
-    repo_change: str | None = None
-    fs_path: Path | None = None
-
-    # Chezmoi status command output reference:
-    # https://www.chezmoi.io/reference/commands/status/
-
-    @property
-    def name(self):
-        status_names = {
-            "space": "No change",
-            "A": "Added",
-            "D": "Deleted",
-            "M": "Modified",
-            "R": "Modified Script",
-        }
-        return status_names[self.status_code]
-
-    @property
-    def change(self):
-        if not self.for_fs:
-            status_change = {
-                "space": "no changes for repository",
-                "A": "add to repository",
-                "D": "mark as deleted in repository",
-                "M": "modify in repository",
-                "R": "not applicable for repository",
-            }
-        else:
-            status_change = {
-                "space": "no changes for filesystem",
-                "A": "create on filesystem",
-                "D": "delete from filesystem",
-                "M": "modify on filesystem",
-                "R": "modify script on filesystem",
-            }
-        return status_change[self.status_code]
-
-
-@dataclass
 class InputOutput:
 
     long_command: list[str]
@@ -77,7 +33,7 @@ class InputOutput:
 class Chezmoi:
 
     cat_config: InputOutput
-    chezmoi_status: InputOutput
+    status: InputOutput
     doctor: InputOutput
     dump_config: InputOutput
     git_log: InputOutput
@@ -95,19 +51,14 @@ class Chezmoi:
         "--mode=file",
         # TODO "--force",  make changes without prompting: flag is not
         # compatible with "--interactive", find way to handle this.
-        # "--force",
     ]
 
-    # The reference with regards to --include and --exclued flags is here:
     # https://www.chezmoi.io/reference/command-line-flags/common/#available-entry-types
-    # Currently starting out with support for types file and dir.
     subs = {
         "cat_config": ["cat-config"],
         "template_data": ["data", "--format=json"],
         "doctor": ["doctor"],
         "dump_config": ["dump-config", "--format=json"],
-        # git is not an independent git command, it's ran by chezmoi because
-        # it would otherwise only work if pwd is in the chezmoi git repo
         "git_log": [
             "git",
             "log",
@@ -117,12 +68,8 @@ class Chezmoi:
             "--no-decorate",
             "--date-order",
             "--no-expand-tabs",
-            "--format=%ar by %cn; %s",
+            "--format=%ar by %cn;%s",
         ],
-        # see remark above the git_log command, same applies
-        # another advantage is that chezmoi will return the git status for
-        # all files in the chezmoi repo, regardless of the current working
-        # directory
         "git_status": ["git", "status"],
         "ignored": ["ignored"],
         "managed": [
@@ -131,7 +78,7 @@ class Chezmoi:
             "--include=dirs,files",
         ],
         "unmanaged": ["unmanaged", "--path-style=absolute"],
-        "chezmoi_status": ["status", "--parent-dirs", "--include=dirs,files"],
+        "status": ["status", "--parent-dirs", "--include=dirs,files"],
     }
 
     def __init__(self) -> None:
@@ -149,8 +96,7 @@ class Chezmoi:
 
     @property
     def get_config_dump(self) -> dict:
-        command_output = getattr(self.dump_config, "std_out", "{}")
-        return json.loads(command_output)
+        return json.loads(self.dump_config.std_out)
 
     @property
     def get_managed_paths(self) -> list[Path]:
@@ -162,8 +108,7 @@ class Chezmoi:
 
     @property
     def get_template_data(self) -> dict:
-        command_output = getattr(self.template_data, "std_out", "{}")
-        return json.loads(command_output)
+        return json.loads(self.template_data.std_out)
 
     @property
     def get_doctor_rows(self) -> list[str]:
@@ -184,6 +129,32 @@ mousse_theme = Theme(
     success="#4EBF71",  # textual dark
     warning="#ffa62b",  # textual dark
 )
+
+# Chezmoi status command output reference:
+# https://www.chezmoi.io/reference/commands/status/
+status_info = {
+    "status_names": {
+        "space": "No change",
+        "A": "Added",
+        "D": "Deleted",
+        "M": "Modified",
+        "R": "Modified Script",
+    },
+    "readd_change": {
+        "space": "no changes for repository",
+        "A": "add to repository",
+        "D": "mark as deleted in repository",
+        "M": "modify in repository",
+        "R": "not applicable for repository",
+    },
+    "apply_change": {
+        "space": "no changes for filesystem",
+        "A": "create on filesystem",
+        "D": "delete from filesystem",
+        "M": "modify on filesystem",
+        "R": "modify script on filesystem",
+    },
+}
 
 
 SPLASH_7BIT = """\
