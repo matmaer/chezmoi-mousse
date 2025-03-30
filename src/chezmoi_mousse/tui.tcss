@@ -104,12 +104,10 @@ Tree {
   & > .tree--cursor {
       text-style: bold;
   }
-  & > .tree--highlight {
-  }
+  & > .tree--highlight {}
   & > .tree--highlight-line {
       text-style: bold;
   }
-
   &:focus {
       & > .tree--cursor {
           color: $block-cursor-foreground;
