@@ -38,6 +38,13 @@
   }
 }
 
+#statuscollapse {
+  border: round $secondary;
+  margin: 0;
+  padding: 0;
+}
+
+
 Screen {
   layers: slidebar_layer;
   overflow-y: hidden;
@@ -62,17 +69,23 @@ DataTable {
   width: 100%;
   padding-right: 1;
   & > .datatable--header {
-    color: $foreground;
-    background: $surface;
-    text-style: underline;
-  }
-  & > .datatable--header-hover {
-    color: $foreground;
-    background: $surface;
+    color: $secondary;
+    text-style: bold underline;
   }
   & > .datatable--cursor {
-    background: $primary-muted;
+    color: $accent;
+    text-style: none;
   }
+  & > .datatable--hover {
+    color: $secondary;
+    text-style: bold;
+  }
+  & > .datatable--fixed {}
+  & > .datatable--fixed-cursor {}
+  & > .datatable--header-cursor {}
+  & > .datatable--header-hover {}
+  & > .datatable--odd-row {}
+  & > .datatable--even-row {}
 }
 
 Tree {
@@ -87,12 +100,12 @@ Tree {
   }
   & > .tree--guides-selected {
       color: $secondary;
-
   }
   & > .tree--cursor {
       text-style: bold;
   }
-  & > .tree--highlight {}
+  & > .tree--highlight {
+  }
   & > .tree--highlight-line {
       text-style: bold;
   }
@@ -130,38 +143,38 @@ LoadingScreen {
 }
 
 SlideBar {
-  layer: slidebar_layer;
-  margin-top: 7;
-  margin-bottom: 4;
-  height: 100%;
-  padding-left: 1;
+  border-bottom: round $accent-muted;
+  border-left: round $accent-muted;
+  border-top: round $accent-muted;
   dock: right;
+  height: 100%;
+  layer: slidebar_layer;
+  margin-bottom: 4;
+  margin-top: 7;
+  max-width: 80%;
+  min-height: 5;
   /* offset-x: -100%; out of view if docked left */
   /* offset-x: 100%; out if view if docked right */
   offset-x: 100%;
-  max-width: 80%;
-  min-height: 5;
-  border-left: round $accent-muted;
-  border-top: round $accent-muted;
-  border-bottom: round $accent-muted;
-  /* Enable animation */
+  padding-left: 1;
   transition: offset 380ms;
   &.-visible {
-      /* offset.x: 0; make visible when class is applied */
       offset-x: 0%;
   }
 }
 
 Collapsible {
   border: none;
+  margin: 0;
   padding: 0;
 }
 
 CollapsibleTitle {
   border: none;
   color: $primary;
+  margin: 0;
   padding: 0;
   &:hover {
-      text-style: bold;
+    text-style: bold;
   }
 }

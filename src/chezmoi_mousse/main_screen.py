@@ -1,18 +1,19 @@
-from pathlib import Path
 from collections.abc import Iterable
+from pathlib import Path
 
 from rich.text import Text
 from textual.app import ComposeResult
+from textual.binding import Binding
 from textual.containers import VerticalScroll
-from textual.lazy import Lazy
 from textual.reactive import reactive
 from textual.screen import Screen
+
 from textual.widget import Widget
 from textual.widgets import (
+    Checkbox,
     Collapsible,
     DataTable,
     DirectoryTree,
-    Checkbox,
     Footer,
     Header,
     Link,
@@ -199,40 +200,40 @@ class ChezmoiStatus(Collapsible):
 
     def compose(self) -> ComposeResult:
         with Collapsible(collapsed=False, id="statuscollapse", title="status"):
-            yield ListView()
+            yield ListView(id="statuslist")
 
     def on_mount(self) -> None:
-        listview = self.query_one(ListView)
+        listview = self.query_one("#statuslist", ListView)
         if len(chezmoi.status.std_out.splitlines()) == 0:
             listview.append(ListItem(Static("No changes to apply")))
-        elif self.apply:
-            status_dict = {
-                line[0]: Path(line[2:])
+        elif len(chezmoi.status.std_out.splitlines()) == 1:
+            listview.append(ListItem(Static(chezmoi.status.std_out)))
+        else:
+            lines = [
+                line
                 for line in chezmoi.status.std_out.splitlines()
                 if line[0] in "ADM"
-            }
-            listview.append(ListItem(Pretty(status_dict)))
-        elif not self.apply:
-            status_dict = {
-                line[1]: Path(line[2:])
-                for line in chezmoi.status.std_out.splitlines()
-                if line[1] in "ADM"
-            }
-            listview.append(ListItem(Pretty(status_dict)))
-        else:
-            raise ValueError(
-                "chezmoi.status.std_out does not match expected format"
-            )
+            ]
+            for line in lines:
+                status = line[0]
+                path_str = line[3:]
+                listview.append(ListItem(Static(status)))
+                listview.append(ListItem(Static(path_str)))
+                filtered_strings = [
+                    line
+                    for line in chezmoi.get_cm_diff(path_str).splitlines()
+                    if line.startswith("-") or line.startswith("+")
+                ]
+                listview.append(ListItem(Pretty(filtered_strings)))
 
 
 class ManagedTree(Tree):
 
     def __init__(self) -> None:
         super().__init__(
-            label="destDir",
+            label=f"{chezmoi.get_config_dump['destDir']}",
             id="managed_tree",
         )
-        self.show_root = False
 
     def on_mount(self) -> None:
         dest_dir_path = Path(chezmoi.get_config_dump["destDir"])
@@ -244,6 +245,7 @@ class ManagedTree(Tree):
                 parent = self.root
             else:
                 parent = parent.add(dir_path.parts[-1], dir_path)
+                parent.expand()
             files = [f for f in file_paths if f.parent == dir_path]
             for file in files:
                 parent.add_leaf(str(file.parts[-1]), file)
@@ -252,7 +254,10 @@ class ManagedTree(Tree):
                 recurse_paths(parent, sub_dir)
 
         recurse_paths(self.root, dest_dir_path)
-        self.root.expand_all()
+        self.root.collapse_all()
+        self.root.expand()
+        for dirs in self.root.children:
+            dirs.expand()
 
     # def _on_tree_node_selected(self, message: Tree.NodeSelected) -> None:
     #     node_data = message.node.data
@@ -275,6 +280,26 @@ class MousseTree(DirectoryTree):  # pylint: disable=too-many-ancestors
             return paths
         return [p for p in paths if p not in chezmoi.get_managed_paths]
 
+    # def on_directory_tree_file_selected(
+    #     self, event: DirectoryTree.FileSelected
+    # ) -> None:
+    #     """Called when the user click a file in the directory tree."""
+    #     event.stop()
+    #     self.path = str(event.path)
+
+    # def _on_tree_node_selected(
+    #     self, event: Tree.NodeSelected[DirEntry]
+    # ) -> None:
+    #     dir_entry = event.node.data
+    #     if dir_entry is None:
+    #         return
+    #     if self._safe_is_dir(dir_entry.path):
+    #         self.post_message(
+    #             self.DirectorySelected(event.node, dir_entry.path)
+    #         )
+    #     else:
+    #         self.post_message(self.FileSelected(event.node, dir_entry.path))
+
 
 class ManagedDirTree(Widget):
 
@@ -293,15 +318,16 @@ class ManagedDirTree(Widget):
 
 class MainScreen(Screen):
 
-    BINDINGS = {
-        ("i, I", "toggle_slidebar", "Toggle Inspect"),
-        ("s, S", "toggle_spacing", "Toggle Spacing"),
-    }
+    BINDINGS = [
+        Binding("i, I", "toggle_slidebar", "Toggle Inspect"),
+        Binding("s, S", "toggle_spacing", "Toggle Spacing"),
+        # Binding("escape", "blur", "Unfocus any focused widget", show=False),
+    ]
 
     def compose(self) -> ComposeResult:
 
         yield Header(classes="-tall")
-        yield Lazy(SlideBar())
+        yield SlideBar()
         with TabbedContent(
             "Apply",
             "Re-Add",
@@ -310,19 +336,15 @@ class MainScreen(Screen):
             "Diagram",
         ):
             # chezmoi apply tab
-            yield VerticalScroll(
-                Lazy(ChezmoiStatus(True)), Lazy(ManagedTree())
-            )
+            yield VerticalScroll(ChezmoiStatus(True), ManagedTree())
             # chezmoi re-add tab
-            yield VerticalScroll(
-                Lazy(ChezmoiStatus(False)), Lazy(ManagedTree())
-            )
+            yield VerticalScroll(ChezmoiStatus(False), ManagedTree())
             # chezmoi add tab
-            yield VerticalScroll(Lazy(ManagedDirTree()))
+            yield VerticalScroll(ManagedDirTree())
             # doctor tab
-            yield VerticalScroll(Lazy(Doctor()))
+            yield VerticalScroll(Doctor())
             # diagram tab
-            yield Lazy(Static(FLOW, id="diagram"))
+            yield Static(FLOW, id="diagram")
 
         yield Footer(classes="just-margin-top")
 
