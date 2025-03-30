@@ -38,12 +38,11 @@
   }
 }
 
-#statuscollapse {
+.statuscollapse {
   border: round $secondary;
   margin: 0;
   padding: 0;
 }
-
 
 Screen {
   layers: slidebar_layer;
@@ -61,6 +60,20 @@ Header {
 Footer {
   .-command-palette {
     border: none;
+  }
+}
+
+Collapsible {
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+
+CollapsibleTitle {
+  border: none;
+  color: $secondary;
+  &:hover {
+    text-style: bold;
   }
 }
 
@@ -89,6 +102,8 @@ DataTable {
 }
 
 Tree {
+  height: 1fr;
+  min-height: 3;
   color: $foreground;
   padding-left: 2;
   & > .tree--label {}
@@ -104,12 +119,10 @@ Tree {
   & > .tree--cursor {
       text-style: bold;
   }
-  & > .tree--highlight {
-  }
+  & > .tree--highlight {}
   & > .tree--highlight-line {
       text-style: bold;
   }
-
   &:focus {
       & > .tree--cursor {
           color: $block-cursor-foreground;
@@ -159,19 +172,5 @@ SlideBar {
   transition: offset 380ms;
   &.-visible {
       offset-x: 0%;
-  }
-}
-
-Collapsible {
-  border: none;
-  margin: 0;
-  padding: 0;
-}
-
-CollapsibleTitle {
-  border: none;
-  color: $secondary;
-  &:hover {
-    text-style: bold;
   }
 }
