@@ -9,13 +9,6 @@
   min-width: 76;
 }
 
-#cmdnotfoundcollapse {
-  border: none;
-  padding-top: 1;
-  dock: bottom;
-  min-height: 3;
-}
-
 #tree-checkbox {
   border: none;
   & > .toggle--label {
@@ -38,6 +31,10 @@
   }
 }
 
+#doctortable {
+  height: 70%;
+}
+
 .statuscollapse {
   border: round $secondary;
   margin: 0;
@@ -46,7 +43,6 @@
 
 Screen {
   layers: slidebar_layer;
-  overflow-y: hidden;
 }
 
 Header {
@@ -65,6 +61,8 @@ Footer {
 
 Collapsible {
   border: none;
+  # height: auto;
+  # min-height: 1;
   margin: 0;
   padding: 0;
 }

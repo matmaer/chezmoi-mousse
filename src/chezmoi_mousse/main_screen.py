@@ -50,26 +50,7 @@ class SlideBar(Widget):
     def compose(self) -> ComposeResult:
 
         yield VerticalScroll(
-            Collapsible(
-                Pretty(chezmoi.get_config_dump),
-                title="chezmoi dump-config",
-            ),
-            Collapsible(
-                Pretty(chezmoi.get_template_data),
-                title="chezmoi data (template data)",
-            ),
-            Collapsible(
-                Pretty(chezmoi.ignored.std_out.splitlines()),
-                title="chezmoi ignored (git ignore in source-dir)",
-            ),
-            Collapsible(
-                Pretty(chezmoi.cat_config.std_out.splitlines()),
-                title="chezmoi cat-config (contents of config-file)",
-            ),
-            Collapsible(
-                GitLog(),
-                title="chezmoi git log (last 20 commits)",
-            ),
+            Static("test"),
         )
 
 
@@ -131,11 +112,31 @@ class Doctor(Widget):
 
     def compose(self) -> ComposeResult:
         yield DataTable(id="doctortable", cursor_type="row")
-        yield Collapsible(
-            ListView(id="cmdnotfound"),
-            title="Commands Not Found",
-            id="cmdnotfoundcollapse",
-        )
+        with VerticalScroll():
+            yield Collapsible(
+                ListView(id="cmdnotfound"),
+                title="Commands Not Found",
+            )
+            yield Collapsible(
+                Pretty(chezmoi.get_config_dump),
+                title="chezmoi dump-config",
+            )
+            yield Collapsible(
+                Pretty(chezmoi.get_template_data),
+                title="chezmoi data (template data)",
+            )
+            yield Collapsible(
+                GitLog(),
+                title="chezmoi git log (last 20 commits)",
+            )
+            yield Collapsible(
+                Pretty(chezmoi.cat_config.std_out.splitlines()),
+                title="chezmoi cat-config (contents of config-file)",
+            )
+            yield Collapsible(
+                Pretty(chezmoi.ignored.std_out.splitlines()),
+                title="chezmoi ignored (git ignore in source-dir)",
+            )
 
     def on_mount(self) -> None:
 
@@ -247,15 +248,15 @@ class ManagedTree(Tree):
         dest_dir_path = Path(chezmoi.get_config_dump["destDir"])
         dir_paths = set(p for p in chezmoi.get_managed_paths if p.is_dir())
         file_paths = set(p for p in chezmoi.get_managed_paths if p.is_file())
+        # file_nodes: list[TreeNode] = []
+        # dir_nodes: list[TreeNode] = []
 
         def recurse_paths(parent, dir_path):
             if dir_path == dest_dir_path:
                 parent = self.root
             else:
                 parent = parent.add(dir_path.parts[-1], dir_path)
-                parent.expand()
-            files = [f for f in file_paths if f.parent == dir_path]
-            for file in files:
+            for file in [f for f in file_paths if f.parent == dir_path]:
                 parent.add_leaf(str(file.parts[-1]), file)
             sub_dirs = [d for d in dir_paths if d.parent == dir_path]
             for sub_dir in sub_dirs:
