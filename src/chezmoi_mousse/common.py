@@ -6,6 +6,17 @@ from pathlib import Path
 from textual.theme import Theme
 
 
+def _subprocess_run(long_command):
+    return subprocess.run(
+        long_command,
+        capture_output=True,
+        check=True,  # raises exception for any non-zero return code
+        shell=False,
+        text=True,  # returns stdout as str instead of bytes
+        timeout=1,
+    ).stdout.strip()
+
+
 @dataclass
 class InputOutput:
 
@@ -18,16 +29,9 @@ class InputOutput:
             [w for w in self.long_command if not w.startswith("-")]
         )
 
-    def update(self) -> None:
-        result = subprocess.run(
-            self.long_command,
-            capture_output=True,
-            check=True,  # raises exception for any non-zero return code
-            shell=False,
-            text=True,  # returns stdout as str instead of bytes
-            timeout=1,
-        )
-        self.std_out = result.stdout.strip()
+    def update(self) -> str:
+        self.std_out = _subprocess_run(self.long_command)
+        return self.std_out
 
 
 class Chezmoi:
@@ -124,15 +128,11 @@ class Chezmoi:
     def get_status(self) -> list[str]:
         return self.status.std_out.splitlines()
 
-    def get_cm_diff(self, file_path: str) -> str:
-        return subprocess.run(
-            self.base + ["diff"] + [file_path],
-            capture_output=True,
-            check=True,
-            shell=False,
-            text=True,
-            timeout=1,
-        ).stdout.strip()
+    def get_cm_diff(self, file_path: str, reverse: bool) -> list[str]:
+        long_command = self.base + ["diff", file_path]
+        if reverse:
+            long_command.extend(["--reverse"])
+        return _subprocess_run(long_command).splitlines()
 
 
 chezmoi = Chezmoi()

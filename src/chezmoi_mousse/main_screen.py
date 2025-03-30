@@ -214,9 +214,8 @@ class ChezmoiStatus(Collapsible):
             i = 1
         listview = self.query_one("#statuslist", ListView)
         dest_dir = Path(chezmoi.get_config_dump["destDir"])
-        lines = [
-            _ for _ in chezmoi.status.std_out.splitlines() if _[i] in "ADM"
-        ]
+        lines = [line for line in chezmoi.get_status if line[i] in "ADM"]
+
         if len(lines) == 0:
             listview.append(ListItem(Static("No changes to apply")))
 
@@ -225,7 +224,7 @@ class ChezmoiStatus(Collapsible):
             path_str = line[3:]
             path_label = f"[$primary]{Path(path_str).relative_to(dest_dir)}[/]"
             listview.append(ListItem(Static(f"{status} {path_label}")))
-            for line in chezmoi.get_cm_diff(path_str).splitlines():
+            for line in chezmoi.get_cm_diff(path_str, not self.apply):
                 if line.startswith("- "):
                     listview.append(
                         ListItem(Label(f"{line}", classes="error"))
