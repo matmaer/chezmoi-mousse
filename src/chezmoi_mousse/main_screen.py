@@ -16,6 +16,7 @@ from textual.widgets import (
     DirectoryTree,
     Footer,
     Header,
+    Label,
     Link,
     ListItem,
     ListView,
@@ -25,7 +26,7 @@ from textual.widgets import (
     Tree,
 )
 
-from chezmoi_mousse.common import FLOW, chezmoi
+from chezmoi_mousse.common import FLOW, chezmoi, status_info
 
 
 class GitLog(DataTable):
@@ -199,32 +200,40 @@ class ChezmoiStatus(Collapsible):
         super().__init__()
 
     def compose(self) -> ComposeResult:
-        with Collapsible(collapsed=False, id="statuscollapse", title="status"):
+        with Collapsible(
+            collapsed=False,
+            id="statuscollapse",
+            title=f"status in destDir {chezmoi.get_config_dump['destDir']}",
+        ):
             yield ListView(id="statuslist")
 
     def on_mount(self) -> None:
-        listview = self.query_one("#statuslist", ListView)
-        if len(chezmoi.status.std_out.splitlines()) == 0:
-            listview.append(ListItem(Static("No changes to apply")))
-        elif len(chezmoi.status.std_out.splitlines()) == 1:
-            listview.append(ListItem(Static(chezmoi.status.std_out)))
+        if self.apply:
+            i = 0
         else:
-            lines = [
-                line
-                for line in chezmoi.status.std_out.splitlines()
-                if line[0] in "ADM"
-            ]
-            for line in lines:
-                status = line[0]
-                path_str = line[3:]
-                listview.append(ListItem(Static(status)))
-                listview.append(ListItem(Static(path_str)))
-                filtered_strings = [
-                    line
-                    for line in chezmoi.get_cm_diff(path_str).splitlines()
-                    if line.startswith("-") or line.startswith("+")
-                ]
-                listview.append(ListItem(Pretty(filtered_strings)))
+            i = 1
+        listview = self.query_one("#statuslist", ListView)
+        dest_dir = Path(chezmoi.get_config_dump["destDir"])
+        lines = [
+            _ for _ in chezmoi.status.std_out.splitlines() if _[i] in "ADM"
+        ]
+        if len(lines) == 0:
+            listview.append(ListItem(Static("No changes to apply")))
+
+        for line in lines:
+            status = f"[$primary]{status_info["status names"][line[i]]}[/]"
+            path_str = line[3:]
+            path_label = f"[$primary]{Path(path_str).relative_to(dest_dir)}[/]"
+            listview.append(ListItem(Static(f"{status} {path_label}")))
+            for line in chezmoi.get_cm_diff(path_str).splitlines():
+                if line.startswith("- "):
+                    listview.append(
+                        ListItem(Label(f"{line}", classes="error"))
+                    )
+                elif line.startswith("+ "):
+                    listview.append(
+                        ListItem(Label(f"{line}", classes="success"))
+                    )
 
 
 class ManagedTree(Tree):
