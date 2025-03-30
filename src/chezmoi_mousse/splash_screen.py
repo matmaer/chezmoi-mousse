@@ -71,7 +71,7 @@ class LoadingScreen(Screen):
         log_text = f"{io_class.label} {'.' * padding} loaded"
         self.query_one(RichLog).write(log_text)
 
-    def workers_finished(self) -> bool:
+    def workers_finished(self) -> None:
         finished = all(
             worker.state == "finished"
             for worker in self.app.workers
@@ -79,7 +79,6 @@ class LoadingScreen(Screen):
         )
         if finished:
             self.query_one("#continue").disabled = False
-        return finished
 
     def on_mount(self) -> None:
         for arg_id in chezmoi.long_commands:
@@ -87,9 +86,9 @@ class LoadingScreen(Screen):
         self.set_interval(interval=0.1, callback=self.workers_finished)
 
     def on_key(self) -> None:
-        if self.workers_finished():
+        if not self.query_one("#continue").disabled:
             self.dismiss()
 
     def on_click(self) -> None:
-        if self.workers_finished():
+        if not self.query_one("#continue").disabled:
             self.dismiss()
