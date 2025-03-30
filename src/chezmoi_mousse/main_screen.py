@@ -32,7 +32,7 @@ from chezmoi_mousse.common import FLOW, chezmoi, status_info
 class GitLog(DataTable):
 
     def __init__(self) -> None:
-        super().__init__(id="git_log")
+        super().__init__(id="gitlog", cursor_type="row")
 
     def on_mount(self) -> None:
         self.add_columns("COMMIT", "MESSAGE")
@@ -68,7 +68,7 @@ class SlideBar(Widget):
             ),
             Collapsible(
                 GitLog(),
-                title="chezmoi git log (last 10 commits)",
+                title="chezmoi git log (last 20 commits)",
             ),
         )
 

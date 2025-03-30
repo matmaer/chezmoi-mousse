@@ -68,7 +68,7 @@ class Chezmoi:
             "git",
             "log",
             "--",
-            "-10",
+            "-20",
             "--no-color",
             "--no-decorate",
             "--date-order",
