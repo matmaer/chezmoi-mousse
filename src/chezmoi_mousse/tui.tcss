@@ -61,8 +61,6 @@ Footer {
 
 Collapsible {
   border: none;
-  # height: auto;
-  # min-height: 1;
   margin: 0;
   padding: 0;
 }
