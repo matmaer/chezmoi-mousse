@@ -25,7 +25,7 @@ from textual.widgets import (
     Tree,
 )
 
-from chezmoi_mousse.common import FLOW, chezmoi
+from chezmoi_mousse.common import FLOW, chezmoi, status_info
 
 
 class GitLog(DataTable):
@@ -206,23 +206,20 @@ class ChezmoiStatus(Collapsible):
         listview = self.query_one("#statuslist", ListView)
         if len(chezmoi.status.std_out.splitlines()) == 0:
             listview.append(ListItem(Static("No changes to apply")))
-        elif len(chezmoi.status.std_out.splitlines()) == 1:
-            listview.append(ListItem(Static(chezmoi.status.std_out)))
         else:
             lines = [
-                line
-                for line in chezmoi.status.std_out.splitlines()
-                if line[0] in "ADM"
+                _ for _ in chezmoi.status.std_out.splitlines() if _[0] in "ADM"
             ]
             for line in lines:
-                status = line[0]
+                status = status_info["status names"][line[0]]
                 path_str = line[3:]
                 listview.append(ListItem(Static(status)))
                 listview.append(ListItem(Static(path_str)))
+
                 filtered_strings = [
                     line
                     for line in chezmoi.get_cm_diff(path_str).splitlines()
-                    if line.startswith("-") or line.startswith("+")
+                    if line.startswith("- ") or line.startswith("+ ")
                 ]
                 listview.append(ListItem(Pretty(filtered_strings)))
 
