@@ -29,18 +29,6 @@ from textual.widgets import (
 from chezmoi_mousse.common import FLOW, chezmoi, status_info
 
 
-class GitLog(DataTable):
-
-    def __init__(self) -> None:
-        super().__init__(id="gitlog", cursor_type="row")
-
-    def on_mount(self) -> None:
-        self.add_columns("COMMIT", "MESSAGE")
-        for line in chezmoi.git_log.std_out.splitlines():
-            columns = line.split(";")
-            self.add_row(*columns)
-
-
 class SlideBar(Widget):
 
     def __init__(self) -> None:
@@ -55,6 +43,17 @@ class SlideBar(Widget):
 
 
 class Doctor(Widget):
+
+    class GitLog(DataTable):
+
+        def __init__(self) -> None:
+            super().__init__(id="gitlog", cursor_type="row")
+
+        def on_mount(self) -> None:
+            self.add_columns("COMMIT", "MESSAGE")
+            for line in chezmoi.git_log.std_out.splitlines():
+                columns = line.split(";")
+                self.add_row(*columns)
 
     def __init__(self) -> None:
         super().__init__()
@@ -126,7 +125,7 @@ class Doctor(Widget):
                 title="chezmoi data (template data)",
             )
             yield Collapsible(
-                GitLog(),
+                self.GitLog(),
                 title="chezmoi git log (last 20 commits)",
             )
             yield Collapsible(
@@ -274,53 +273,52 @@ class ManagedTree(Tree):
     #     message.stop()
 
 
-class MousseTree(DirectoryTree):  # pylint: disable=too-many-ancestors
-
-    show_all = reactive(False)
-
-    def __init__(self) -> None:
-        super().__init__(
-            path=chezmoi.get_config_dump["destDir"],
-            id="destdirtree",
-        )
-
-    def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
-        if self.show_all:
-            return paths
-        return [p for p in paths if p not in chezmoi.get_managed_paths]
-
-    # def on_directory_tree_file_selected(
-    #     self, event: DirectoryTree.FileSelected
-    # ) -> None:
-    #     """Called when the user click a file in the directory tree."""
-    #     event.stop()
-    #     self.path = str(event.path)
-
-    # def _on_tree_node_selected(
-    #     self, event: Tree.NodeSelected[DirEntry]
-    # ) -> None:
-    #     dir_entry = event.node.data
-    #     if dir_entry is None:
-    #         return
-    #     if self._safe_is_dir(dir_entry.path):
-    #         self.post_message(
-    #             self.DirectorySelected(event.node, dir_entry.path)
-    #         )
-    #     else:
-    #         self.post_message(self.FileSelected(event.node, dir_entry.path))
-
-
 class ManagedDirTree(Widget):
+
+    class MousseTree(DirectoryTree):  # pylint: disable=too-many-ancestors
+
+        show_all = reactive(False)
+
+        def __init__(self) -> None:
+            super().__init__(
+                path=chezmoi.get_config_dump["destDir"],
+                id="destdirtree",
+            )
+
+        def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
+            if self.show_all:
+                return paths
+            return [p for p in paths if p not in chezmoi.get_managed_paths]
+
+        # def on_directory_tree_file_selected(
+        #     self, event: DirectoryTree.FileSelected
+        # ) -> None:
+        #     """Called when the user click a file in the directory tree."""
+        #     event.stop()
+        #     self.path = str(event.path)
+
+        # def _on_tree_node_selected(
+        #     self, event: Tree.NodeSelected[DirEntry]
+        # ) -> None:
+        #     dir_entry = event.node.data
+        #     if dir_entry is None:
+        #         return
+        #     if self._safe_is_dir(dir_entry.path):
+        #         self.post_message(
+        #             self.DirectorySelected(event.node, dir_entry.path)
+        #         )
+        #     else:
+        #         self.post_message(self.FileSelected(event.node, dir_entry.path))
 
     def compose(self) -> ComposeResult:
         yield Checkbox(
             "include already managed files",
             id="tree-checkbox",
         )
-        yield MousseTree()
+        yield self.MousseTree()
 
     def on_checkbox_changed(self, event: Checkbox.Changed) -> None:
-        dir_tree = self.query_one(MousseTree)
+        dir_tree = self.query_one(self.MousseTree)
         dir_tree.show_all = event.value
         dir_tree.reload()
 
