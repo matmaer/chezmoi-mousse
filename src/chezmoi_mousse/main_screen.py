@@ -299,7 +299,6 @@ class MainScreen(Screen):
 
     BINDINGS = [
         Binding("i, I", "toggle_slidebar", "Toggle Inspect"),
-        Binding("s, S", "toggle_spacing", "Toggle Spacing"),
     ]
 
     def compose(self) -> ComposeResult:
@@ -329,8 +328,6 @@ class MainScreen(Screen):
         self.query_one(SlideBar).toggle_class("-visible")
 
     def action_toggle_spacing(self):
-        self.query_one(Footer).toggle_class()
-        self.toggle_class()
         self.query_one(Header).toggle_class("-tall")
 
     def key_space(self) -> None:
