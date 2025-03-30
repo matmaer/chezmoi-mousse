@@ -105,7 +105,7 @@ Tree {
   height: 1fr;
   min-height: 3;
   color: $foreground;
-  padding-left: 2;
+  padding-left: 1;
   & > .tree--label {}
   & > .tree--guides {
       color: $secondary;
@@ -162,7 +162,7 @@ SlideBar {
   dock: right;
   height: 100%;
   layer: slidebar_layer;
-  margin-bottom: 4;
+  margin-bottom: 3;
   margin-top: 7;
   max-width: 80%;
   min-height: 5;

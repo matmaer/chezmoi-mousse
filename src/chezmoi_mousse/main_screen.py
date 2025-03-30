@@ -45,7 +45,7 @@ class SlideBar(Widget):
 
     def __init__(self) -> None:
         super().__init__()
-        self.border_title = "outputs from chezmoi commands"
+        self.border_title = "outputs-from-chezmoi-commands"
 
     def compose(self) -> ComposeResult:
 
