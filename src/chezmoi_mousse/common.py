@@ -27,12 +27,13 @@ class InputOutput:
             text=True,  # returns stdout as str instead of bytes
             timeout=1,
         )
-        self.std_out = result.stdout
+        self.std_out = result.stdout.strip()
 
 
 class Chezmoi:
 
     cat_config: InputOutput
+    cm_diff: InputOutput
     status: InputOutput
     doctor: InputOutput
     dump_config: InputOutput
@@ -78,7 +79,13 @@ class Chezmoi:
             "--include=dirs,files",
         ],
         "unmanaged": ["unmanaged", "--path-style=absolute"],
-        "status": ["status", "--parent-dirs", "--include=dirs,files"],
+        "status": [
+            "status",
+            "--path-style=absolute",
+            "--parent-dirs",
+            "--include=dirs,files",
+        ],
+        "cm_diff": ["diff"],
     }
 
     def __init__(self) -> None:
@@ -113,6 +120,20 @@ class Chezmoi:
     @property
     def get_doctor_rows(self) -> list[str]:
         return self.doctor.std_out.splitlines()
+
+    @property
+    def get_status(self) -> list[str]:
+        return self.status.std_out.splitlines()
+
+    def get_cm_diff(self, file_path: str) -> str:
+        return subprocess.run(
+            self.base + ["diff"] + [file_path],
+            capture_output=True,
+            check=True,
+            shell=False,
+            text=True,
+            timeout=1,
+        ).stdout.strip()
 
 
 chezmoi = Chezmoi()
