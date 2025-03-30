@@ -304,30 +304,31 @@ class ChezmoiStatus(Collapsible):
 
     def compose(self) -> ComposeResult:
         with Collapsible(collapsed=False, id="statuscollapse", title="status"):
-            yield ListView()
+            yield ListView(id="statuslist")
 
     def on_mount(self) -> None:
-        listview = self.query_one(ListView)
+        listview = self.query_one("#statuslist", ListView)
         if len(chezmoi.status.std_out.splitlines()) == 0:
             listview.append(ListItem(Static("No changes to apply")))
-        elif self.apply:
-            status_dict = {
-                line[0]: Path(line[2:])
+        elif len(chezmoi.status.std_out.splitlines()) == 1:
+            listview.append(ListItem(Static(chezmoi.status.std_out)))
+        else:
+            lines = [
+                line
                 for line in chezmoi.status.std_out.splitlines()
                 if line[0] in "ADM"
-            }
-            listview.append(ListItem(Pretty(status_dict)))
-        elif not self.apply:
-            status_dict = {
-                line[1]: Path(line[2:])
-                for line in chezmoi.status.std_out.splitlines()
-                if line[1] in "ADM"
-            }
-            listview.append(ListItem(Pretty(status_dict)))
-        else:
-            raise ValueError(
-                "chezmoi.status.std_out does not match expected format"
-            )
+            ]
+            for line in lines:
+                status = line[0]
+                path_str = line[3:]
+                listview.append(ListItem(Static(status)))
+                listview.append(ListItem(Static(path_str)))
+                filtered_strings = [
+                    line
+                    for line in chezmoi.get_cm_diff(path_str).splitlines()
+                    if line.startswith("-") or line.startswith("+")
+                ]
+                listview.append(ListItem(Pretty(filtered_strings)))
 
 
 class ManagedTree(Tree):
