@@ -156,7 +156,6 @@ SlideBar {
   /* offset-x: -100%; out of view if docked left */
   /* offset-x: 100%; out if view if docked right */
   offset-x: 100%;
-  padding-left: 1;
   transition: offset 380ms;
   &.-visible {
       offset-x: 0%;
@@ -171,9 +170,7 @@ Collapsible {
 
 CollapsibleTitle {
   border: none;
-  color: $primary;
-  margin: 0;
-  padding: 0;
+  color: $secondary;
   &:hover {
     text-style: bold;
   }
