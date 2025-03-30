@@ -82,7 +82,6 @@ class Chezmoi:
         "status": [
             "status",
             "--path-style=absolute",
-            "--parent-dirs",
             "--include=dirs,files",
         ],
         "cm_diff": ["diff"],
