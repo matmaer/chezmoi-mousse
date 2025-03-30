@@ -240,15 +240,12 @@ class ManagedTree(Tree):
     def __init__(self) -> None:
         super().__init__(
             label=f"{chezmoi.get_config_dump['destDir']}",
-            id="managed_tree",
         )
 
     def on_mount(self) -> None:
         dest_dir_path = Path(chezmoi.get_config_dump["destDir"])
         dir_paths = set(p for p in chezmoi.get_managed_paths if p.is_dir())
         file_paths = set(p for p in chezmoi.get_managed_paths if p.is_file())
-        # file_nodes: list[TreeNode] = []
-        # dir_nodes: list[TreeNode] = []
 
         def recurse_paths(parent, dir_path):
             if dir_path == dest_dir_path:
@@ -266,11 +263,6 @@ class ManagedTree(Tree):
         self.root.expand()
         for dirs in self.root.children:
             dirs.expand()
-
-    # def _on_tree_node_selected(self, message: Tree.NodeSelected) -> None:
-    #     node_data = message.node.data
-    #     managed_file = self.query_one("#managed_file_status")
-    #     message.stop()
 
 
 class ManagedDirTree(Widget):
@@ -290,26 +282,6 @@ class ManagedDirTree(Widget):
                 return paths
             return [p for p in paths if p not in chezmoi.get_managed_paths]
 
-        # def on_directory_tree_file_selected(
-        #     self, event: DirectoryTree.FileSelected
-        # ) -> None:
-        #     """Called when the user click a file in the directory tree."""
-        #     event.stop()
-        #     self.path = str(event.path)
-
-        # def _on_tree_node_selected(
-        #     self, event: Tree.NodeSelected[DirEntry]
-        # ) -> None:
-        #     dir_entry = event.node.data
-        #     if dir_entry is None:
-        #         return
-        #     if self._safe_is_dir(dir_entry.path):
-        #         self.post_message(
-        #             self.DirectorySelected(event.node, dir_entry.path)
-        #         )
-        #     else:
-        #         self.post_message(self.FileSelected(event.node, dir_entry.path))
-
     def compose(self) -> ComposeResult:
         yield Checkbox(
             "include already managed files",
@@ -328,7 +300,6 @@ class MainScreen(Screen):
     BINDINGS = [
         Binding("i, I", "toggle_slidebar", "Toggle Inspect"),
         Binding("s, S", "toggle_spacing", "Toggle Spacing"),
-        # Binding("escape", "blur", "Unfocus any focused widget", show=False),
     ]
 
     def compose(self) -> ComposeResult:
@@ -342,18 +313,13 @@ class MainScreen(Screen):
             "Doctor",
             "Diagram",
         ):
-            # chezmoi apply tab
             yield VerticalScroll(ChezmoiStatus(True), ManagedTree())
-            # chezmoi re-add tab
             yield VerticalScroll(ChezmoiStatus(False), ManagedTree())
-            # chezmoi add tab
             yield VerticalScroll(ManagedDirTree())
-            # doctor tab
             yield VerticalScroll(Doctor())
-            # diagram tab
             yield Static(FLOW, id="diagram")
 
-        yield Footer(classes="just-margin-top")
+        yield Footer()
 
     # Underscore to ignore return value from screen.dismiss()
     def refresh_app(self, _) -> None:
@@ -363,7 +329,8 @@ class MainScreen(Screen):
         self.query_one(SlideBar).toggle_class("-visible")
 
     def action_toggle_spacing(self):
-        self.query_one(Footer).toggle_class("just-margin-top")
+        self.query_one(Footer).toggle_class()
+        self.toggle_class()
         self.query_one(Header).toggle_class("-tall")
 
     def key_space(self) -> None:
