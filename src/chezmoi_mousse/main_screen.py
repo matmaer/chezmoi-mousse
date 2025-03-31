@@ -4,7 +4,7 @@ from pathlib import Path
 from rich.text import Text
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import VerticalScroll
+from textual.containers import VerticalScroll, VerticalGroup
 from textual.reactive import reactive
 from textual.screen import Screen
 
@@ -192,47 +192,57 @@ class Doctor(Widget):
             table.add_row(*row)
 
 
-class ChezmoiStatus(Collapsible):
+class ChezmoiStatus(VerticalScroll):
+
+    class DiffViewer(Collapsible):
+        def __init__(self, diff_title: str, diff_text: Static) -> None:
+            super().__init__(
+                diff_text,
+                collapsed=True,
+                title=diff_title,
+            )
 
     def __init__(self, apply: bool) -> None:
         # if true, adds apply status to the list, otherwise "re-add" status
         self.apply = apply
+        self.status_items: list[Collapsible] = []
+        self.dest_dir = Path(chezmoi.get_config_dump["destDir"])
+        self.status_code_position = int(not self.apply)
         super().__init__()
 
     def compose(self) -> ComposeResult:
-        with Collapsible(
-            collapsed=False,
-            id="statuscollapse",
-            title=f"status in destDir {chezmoi.get_config_dump['destDir']}",
-        ):
-            yield ListView(id="statuslist")
+        yield VerticalGroup(
+            *self.status_items,
+            # collapsed=False,
+            # id="statusitems",
+            # title=f"status in destDir {chezmoi.get_config_dump['destDir']}",
+        )
+        # yield ListView(id="statuslist")
 
     def on_mount(self) -> None:
-        if self.apply:
-            i = 0
-        else:
-            i = 1
-        listview = self.query_one("#statuslist", ListView)
-        dest_dir = Path(chezmoi.get_config_dump["destDir"])
-        lines = [line for line in chezmoi.get_status if line[i] in "ADM"]
+        # in the chezmoi sttus output, the second char is the "apply" status
+        i = self.status_code_position
 
-        if len(lines) == 0:
-            listview.append(ListItem(Static("No changes to apply")))
+        for status_line in [_ for _ in chezmoi.get_status if _[i] in "ADM"]:
+            path_str: str = status_line[3:]
+            status: str = status_info["code name"][status_line[i]]
+            rel_path = str(Path(path_str).relative_to(self.dest_dir))
 
-        for line in lines:
-            status = f"[$primary]{status_info["status names"][line[i]]}[/]"
-            path_str = line[3:]
-            path_label = f"[$primary]{Path(path_str).relative_to(dest_dir)}[/]"
-            listview.append(ListItem(Static(f"{status} {path_label}")))
-            for line in chezmoi.get_cm_diff(path_str, not self.apply):
+            colored_diffs: list[Label] = []
+
+            # listview.append(ListItem(Static(f"{status} {path_label}")))
+            for line in chezmoi.get_cm_diff(path_str, self.apply):
                 if line.startswith("- "):
-                    listview.append(
-                        ListItem(Label(f"{line}", classes="error"))
-                    )
+                    colored_diffs.append(Label(line, variant="error"))
                 elif line.startswith("+ "):
-                    listview.append(
-                        ListItem(Label(f"{line}", classes="success"))
-                    )
+                    colored_diffs.append(Label(line, variant="success"))
+                elif line.startswith("  "):
+                    colored_diffs.append(Label(line, classes="muted"))
+            colored_diffs.append(Label())
+            self.status_items.append(
+                Collapsible(*colored_diffs, title=f"{status} {rel_path}")
+            )
+        self.refresh(recompose=True)
 
 
 class ManagedTree(Tree):
