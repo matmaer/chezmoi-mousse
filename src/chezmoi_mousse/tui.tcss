@@ -35,10 +35,10 @@
   height: 70%;
 }
 
-.statuscollapse {
-  border: round $secondary;
-  margin: 0;
-  padding: 0;
+Label {
+  &.muted {
+      color: $text-muted;
+  }
 }
 
 Screen {
@@ -59,15 +59,21 @@ Footer {
   }
 }
 
+ChezmoiStatus {
+  padding-left: 1;
+  height: auto;
+  margin-bottom: 1;
+}
+
 Collapsible {
   border: none;
-  margin: 0;
   padding: 0;
 }
 
 CollapsibleTitle {
   border: none;
-  color: $secondary;
+  padding: 0;
+  color: $primary;
   &:hover {
     text-style: bold;
   }
@@ -98,7 +104,6 @@ DataTable {
 }
 
 Tree {
-  height: 1fr;
   min-height: 3;
   color: $foreground;
   padding-left: 1;

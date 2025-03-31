@@ -128,11 +128,11 @@ class Chezmoi:
     def get_status(self) -> list[str]:
         return self.status.std_out.splitlines()
 
-    def get_cm_diff(self, file_path: str, reverse: bool) -> list[str]:
+    def get_cm_diff(self, file_path: str, apply: bool) -> list[str]:
         long_command = self.base + ["diff", file_path]
-        if reverse:
-            long_command.extend(["--reverse"])
-        return _subprocess_run(long_command).splitlines()
+        if apply:
+            return _subprocess_run(long_command).splitlines()
+        return _subprocess_run(long_command + ["--reverse"]).splitlines()
 
 
 chezmoi = Chezmoi()
@@ -153,7 +153,7 @@ mousse_theme = Theme(
 # Chezmoi status command output reference:
 # https://www.chezmoi.io/reference/commands/status/
 status_info = {
-    "status names": {
+    "code name": {
         "space": "No change",
         "A": "Added",
         "D": "Deleted",
