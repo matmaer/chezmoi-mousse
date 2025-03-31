@@ -207,7 +207,6 @@ class ChezmoiStatus(VerticalScroll):
         self.apply = apply
         self.status_items: list[Collapsible] = []
         self.dest_dir = Path(chezmoi.get_config_dump["destDir"])
-        self.status_code_position = int(not self.apply)
         super().__init__()
 
     def compose(self) -> ComposeResult:
@@ -220,18 +219,18 @@ class ChezmoiStatus(VerticalScroll):
         # yield ListView(id="statuslist")
 
     def on_mount(self) -> None:
-        # in the chezmoi sttus output, the second char is the "apply" status
-        i = self.status_code_position
 
-        for status_line in [_ for _ in chezmoi.get_status if _[i] in "ADM"]:
-            path_str: str = status_line[3:]
-            status: str = status_info["code name"][status_line[i]]
-            rel_path = str(Path(path_str).relative_to(self.dest_dir))
+        if self.apply:
+            changes = chezmoi.get_apply_changes
+        else:
+            changes = chezmoi.get_add_changes
+
+        for code, path in changes:
+            status: str = status_info["code name"][code]
+            rel_path = str(path.relative_to(self.dest_dir))
 
             colored_diffs: list[Label] = []
-
-            # listview.append(ListItem(Static(f"{status} {path_label}")))
-            for line in chezmoi.get_cm_diff(path_str, self.apply):
+            for line in chezmoi.get_cm_diff(str(path), self.apply):
                 if line.startswith("- "):
                     colored_diffs.append(Label(line, variant="error"))
                 elif line.startswith("+ "):

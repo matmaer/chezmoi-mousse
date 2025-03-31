@@ -128,6 +128,20 @@ class Chezmoi:
     def get_status(self) -> list[str]:
         return self.status.std_out.splitlines()
 
+    @property
+    def get_apply_changes(self) -> list[tuple[str, Path]]:
+        changes = [
+            l for l in self.status.std_out.splitlines() if l[0] in "ADM"
+        ]
+        return [(change[0], Path(change[3:])) for change in changes]
+
+    @property
+    def get_add_changes(self) -> list[tuple[str, Path]]:
+        changes = [
+            l for l in self.status.std_out.splitlines() if l[1] in "ADM"
+        ]
+        return [(change[1], Path(change[3:])) for change in changes]
+
     def get_cm_diff(self, file_path: str, apply: bool) -> list[str]:
         long_command = self.base + ["diff", file_path]
         if apply:
