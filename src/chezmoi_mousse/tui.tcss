@@ -9,13 +9,6 @@
   min-width: 76;
 }
 
-#cmdnotfoundcollapse {
-  border: none;
-  padding-top: 1;
-  dock: bottom;
-  min-height: 3;
-}
-
 #tree-checkbox {
   border: none;
   & > .toggle--label {
@@ -38,15 +31,18 @@
   }
 }
 
-.statuscollapse {
-  border: round $secondary;
-  margin: 0;
-  padding: 0;
+#doctortable {
+  height: 70%;
+}
+
+Label {
+  &.muted {
+      color: $text-muted;
+  }
 }
 
 Screen {
   layers: slidebar_layer;
-  overflow-y: hidden;
 }
 
 Header {
@@ -63,15 +59,21 @@ Footer {
   }
 }
 
+ChezmoiStatus {
+  padding-left: 1;
+  height: auto;
+  margin-bottom: 1;
+}
+
 Collapsible {
   border: none;
-  margin: 0;
   padding: 0;
 }
 
 CollapsibleTitle {
   border: none;
-  color: $secondary;
+  padding: 0;
+  color: $primary;
   &:hover {
     text-style: bold;
   }
@@ -102,10 +104,9 @@ DataTable {
 }
 
 Tree {
-  height: 1fr;
   min-height: 3;
   color: $foreground;
-  padding-left: 2;
+  padding-left: 1;
   & > .tree--label {}
   & > .tree--guides {
       color: $secondary;
@@ -162,7 +163,7 @@ SlideBar {
   dock: right;
   height: 100%;
   layer: slidebar_layer;
-  margin-bottom: 4;
+  margin-bottom: 3;
   margin-top: 7;
   max-width: 80%;
   min-height: 5;

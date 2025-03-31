@@ -4,7 +4,7 @@ from pathlib import Path
 from rich.text import Text
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import VerticalScroll
+from textual.containers import VerticalScroll, VerticalGroup
 from textual.reactive import reactive
 from textual.screen import Screen
 
@@ -29,51 +29,31 @@ from textual.widgets import (
 from chezmoi_mousse.common import FLOW, chezmoi, status_info
 
 
-class GitLog(DataTable):
-
-    def __init__(self) -> None:
-        super().__init__(id="git_log")
-
-    def on_mount(self) -> None:
-        self.add_columns("COMMIT", "MESSAGE")
-        for line in chezmoi.git_log.std_out.splitlines():
-            columns = line.split(";")
-            self.add_row(*columns)
-
-
 class SlideBar(Widget):
 
     def __init__(self) -> None:
         super().__init__()
-        self.border_title = "outputs from chezmoi commands"
+        self.border_title = "outputs-from-chezmoi-commands"
 
     def compose(self) -> ComposeResult:
 
         yield VerticalScroll(
-            Collapsible(
-                Pretty(chezmoi.get_config_dump),
-                title="chezmoi dump-config",
-            ),
-            Collapsible(
-                Pretty(chezmoi.get_template_data),
-                title="chezmoi data (template data)",
-            ),
-            Collapsible(
-                Pretty(chezmoi.ignored.std_out.splitlines()),
-                title="chezmoi ignored (git ignore in source-dir)",
-            ),
-            Collapsible(
-                Pretty(chezmoi.cat_config.std_out.splitlines()),
-                title="chezmoi cat-config (contents of config-file)",
-            ),
-            Collapsible(
-                GitLog(),
-                title="chezmoi git log (last 10 commits)",
-            ),
+            Static("test"),
         )
 
 
 class Doctor(Widget):
+
+    class GitLog(DataTable):
+
+        def __init__(self) -> None:
+            super().__init__(id="gitlog", cursor_type="row")
+
+        def on_mount(self) -> None:
+            self.add_columns("COMMIT", "MESSAGE")
+            for line in chezmoi.git_log.std_out.splitlines():
+                columns = line.split(";")
+                self.add_row(*columns)
 
     def __init__(self) -> None:
         super().__init__()
@@ -131,11 +111,31 @@ class Doctor(Widget):
 
     def compose(self) -> ComposeResult:
         yield DataTable(id="doctortable", cursor_type="row")
-        yield Collapsible(
-            ListView(id="cmdnotfound"),
-            title="Commands Not Found",
-            id="cmdnotfoundcollapse",
-        )
+        with VerticalScroll():
+            yield Collapsible(
+                ListView(id="cmdnotfound"),
+                title="Commands Not Found",
+            )
+            yield Collapsible(
+                Pretty(chezmoi.get_config_dump),
+                title="chezmoi dump-config",
+            )
+            yield Collapsible(
+                Pretty(chezmoi.get_template_data),
+                title="chezmoi data (template data)",
+            )
+            yield Collapsible(
+                self.GitLog(),
+                title="chezmoi git log (last 20 commits)",
+            )
+            yield Collapsible(
+                Pretty(chezmoi.cat_config.std_out.splitlines()),
+                title="chezmoi cat-config (contents of config-file)",
+            )
+            yield Collapsible(
+                Pretty(chezmoi.ignored.std_out.splitlines()),
+                title="chezmoi ignored (git ignore in source-dir)",
+            )
 
     def on_mount(self) -> None:
 
@@ -192,47 +192,57 @@ class Doctor(Widget):
             table.add_row(*row)
 
 
-class ChezmoiStatus(Collapsible):
+class ChezmoiStatus(VerticalScroll):
+
+    class DiffViewer(Collapsible):
+        def __init__(self, diff_title: str, diff_text: Static) -> None:
+            super().__init__(
+                diff_text,
+                collapsed=True,
+                title=diff_title,
+            )
 
     def __init__(self, apply: bool) -> None:
         # if true, adds apply status to the list, otherwise "re-add" status
         self.apply = apply
+        self.status_items: list[Collapsible] = []
+        self.dest_dir = Path(chezmoi.get_config_dump["destDir"])
+        self.status_code_position = int(not self.apply)
         super().__init__()
 
     def compose(self) -> ComposeResult:
-        with Collapsible(
-            collapsed=False,
-            id="statuscollapse",
-            title=f"status in destDir {chezmoi.get_config_dump['destDir']}",
-        ):
-            yield ListView(id="statuslist")
+        yield VerticalGroup(
+            *self.status_items,
+            # collapsed=False,
+            # id="statusitems",
+            # title=f"status in destDir {chezmoi.get_config_dump['destDir']}",
+        )
+        # yield ListView(id="statuslist")
 
     def on_mount(self) -> None:
-        if self.apply:
-            i = 0
-        else:
-            i = 1
-        listview = self.query_one("#statuslist", ListView)
-        dest_dir = Path(chezmoi.get_config_dump["destDir"])
-        lines = [line for line in chezmoi.get_status if line[i] in "ADM"]
+        # in the chezmoi sttus output, the second char is the "apply" status
+        i = self.status_code_position
 
-        if len(lines) == 0:
-            listview.append(ListItem(Static("No changes to apply")))
+        for status_line in [_ for _ in chezmoi.get_status if _[i] in "ADM"]:
+            path_str: str = status_line[3:]
+            status: str = status_info["code name"][status_line[i]]
+            rel_path = str(Path(path_str).relative_to(self.dest_dir))
 
-        for line in lines:
-            status = f"[$primary]{status_info["status names"][line[i]]}[/]"
-            path_str = line[3:]
-            path_label = f"[$primary]{Path(path_str).relative_to(dest_dir)}[/]"
-            listview.append(ListItem(Static(f"{status} {path_label}")))
-            for line in chezmoi.get_cm_diff(path_str, not self.apply):
+            colored_diffs: list[Label] = []
+
+            # listview.append(ListItem(Static(f"{status} {path_label}")))
+            for line in chezmoi.get_cm_diff(path_str, self.apply):
                 if line.startswith("- "):
-                    listview.append(
-                        ListItem(Label(f"{line}", classes="error"))
-                    )
+                    colored_diffs.append(Label(line, variant="error"))
                 elif line.startswith("+ "):
-                    listview.append(
-                        ListItem(Label(f"{line}", classes="success"))
-                    )
+                    colored_diffs.append(Label(line, variant="success"))
+                elif line.startswith("  "):
+                    colored_diffs.append(Label(line, classes="muted"))
+            colored_diffs.append(Label())
+            self.status_items.append(
+                Collapsible(*colored_diffs, title=f"{status} {rel_path}")
+            )
+        self.refresh(recompose=True)
 
 
 class ManagedTree(Tree):
@@ -240,7 +250,6 @@ class ManagedTree(Tree):
     def __init__(self) -> None:
         super().__init__(
             label=f"{chezmoi.get_config_dump['destDir']}",
-            id="managed_tree",
         )
 
     def on_mount(self) -> None:
@@ -253,9 +262,7 @@ class ManagedTree(Tree):
                 parent = self.root
             else:
                 parent = parent.add(dir_path.parts[-1], dir_path)
-                parent.expand()
-            files = [f for f in file_paths if f.parent == dir_path]
-            for file in files:
+            for file in [f for f in file_paths if f.parent == dir_path]:
                 parent.add_leaf(str(file.parts[-1]), file)
             sub_dirs = [d for d in dir_paths if d.parent == dir_path]
             for sub_dir in sub_dirs:
@@ -267,59 +274,33 @@ class ManagedTree(Tree):
         for dirs in self.root.children:
             dirs.expand()
 
-    # def _on_tree_node_selected(self, message: Tree.NodeSelected) -> None:
-    #     node_data = message.node.data
-    #     managed_file = self.query_one("#managed_file_status")
-    #     message.stop()
-
-
-class MousseTree(DirectoryTree):  # pylint: disable=too-many-ancestors
-
-    show_all = reactive(False)
-
-    def __init__(self) -> None:
-        super().__init__(
-            path=chezmoi.get_config_dump["destDir"],
-            id="destdirtree",
-        )
-
-    def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
-        if self.show_all:
-            return paths
-        return [p for p in paths if p not in chezmoi.get_managed_paths]
-
-    # def on_directory_tree_file_selected(
-    #     self, event: DirectoryTree.FileSelected
-    # ) -> None:
-    #     """Called when the user click a file in the directory tree."""
-    #     event.stop()
-    #     self.path = str(event.path)
-
-    # def _on_tree_node_selected(
-    #     self, event: Tree.NodeSelected[DirEntry]
-    # ) -> None:
-    #     dir_entry = event.node.data
-    #     if dir_entry is None:
-    #         return
-    #     if self._safe_is_dir(dir_entry.path):
-    #         self.post_message(
-    #             self.DirectorySelected(event.node, dir_entry.path)
-    #         )
-    #     else:
-    #         self.post_message(self.FileSelected(event.node, dir_entry.path))
-
 
 class ManagedDirTree(Widget):
+
+    class MousseTree(DirectoryTree):  # pylint: disable=too-many-ancestors
+
+        show_all = reactive(False)
+
+        def __init__(self) -> None:
+            super().__init__(
+                path=chezmoi.get_config_dump["destDir"],
+                id="destdirtree",
+            )
+
+        def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
+            if self.show_all:
+                return paths
+            return [p for p in paths if p not in chezmoi.get_managed_paths]
 
     def compose(self) -> ComposeResult:
         yield Checkbox(
             "include already managed files",
             id="tree-checkbox",
         )
-        yield MousseTree()
+        yield self.MousseTree()
 
     def on_checkbox_changed(self, event: Checkbox.Changed) -> None:
-        dir_tree = self.query_one(MousseTree)
+        dir_tree = self.query_one(self.MousseTree)
         dir_tree.show_all = event.value
         dir_tree.reload()
 
@@ -328,8 +309,6 @@ class MainScreen(Screen):
 
     BINDINGS = [
         Binding("i, I", "toggle_slidebar", "Toggle Inspect"),
-        Binding("s, S", "toggle_spacing", "Toggle Spacing"),
-        # Binding("escape", "blur", "Unfocus any focused widget", show=False),
     ]
 
     def compose(self) -> ComposeResult:
@@ -343,18 +322,13 @@ class MainScreen(Screen):
             "Doctor",
             "Diagram",
         ):
-            # chezmoi apply tab
             yield VerticalScroll(ChezmoiStatus(True), ManagedTree())
-            # chezmoi re-add tab
             yield VerticalScroll(ChezmoiStatus(False), ManagedTree())
-            # chezmoi add tab
             yield VerticalScroll(ManagedDirTree())
-            # doctor tab
             yield VerticalScroll(Doctor())
-            # diagram tab
             yield Static(FLOW, id="diagram")
 
-        yield Footer(classes="just-margin-top")
+        yield Footer()
 
     # Underscore to ignore return value from screen.dismiss()
     def refresh_app(self, _) -> None:
@@ -364,7 +338,6 @@ class MainScreen(Screen):
         self.query_one(SlideBar).toggle_class("-visible")
 
     def action_toggle_spacing(self):
-        self.query_one(Footer).toggle_class("just-margin-top")
         self.query_one(Header).toggle_class("-tall")
 
     def key_space(self) -> None:
