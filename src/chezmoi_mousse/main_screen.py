@@ -26,7 +26,7 @@ from textual.widgets import (
     Tree,
 )
 
-from chezmoi_mousse.common import FLOW, chezmoi, status_info
+from chezmoi_mousse.common import FLOW, chezmoi, status_info, Tooling
 
 
 class SlideBar(Widget):
@@ -274,33 +274,47 @@ class ManagedTree(Tree):
             dirs.expand()
 
 
-class ManagedDirTree(Widget):
+class AddDirTree(Widget):
 
-    class MousseTree(DirectoryTree):  # pylint: disable=too-many-ancestors
+    class FilteredTree(DirectoryTree):  # pylint: disable=too-many-ancestors
 
-        show_all = reactive(False)
+        only_managed_dirs = reactive(True)
 
         def __init__(self) -> None:
             super().__init__(
                 path=chezmoi.get_config_dump["destDir"],
-                id="destdirtree",
+                id="moussetree",
             )
 
         def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
-            if self.show_all:
-                return paths
-            return [p for p in paths if p not in chezmoi.get_managed_paths]
+            all_paths = Tooling.filter_unwanted_paths(list(paths))
+            paths_to_show: list[Path] = []
+            if self.only_managed_dirs:
+                unique_parents = {f.parent for f in chezmoi.get_managed_paths}
+                for p in all_paths:
+                    if (
+                        p.is_dir()
+                        and p in unique_parents
+                        and p in chezmoi.get_managed_paths
+                    ):
+                        paths_to_show.append(p)
+                    elif p.is_file() and p not in chezmoi.get_managed_paths:
+                        paths_to_show.append(p)
+                return sorted(paths_to_show)
+            return [p for p in all_paths if p not in chezmoi.get_managed_files]
 
     def compose(self) -> ComposeResult:
         yield Checkbox(
-            "include already managed files",
-            id="tree-checkbox",
+            "show only unmanaged files in directories which already contain managed files",
+            id="adddirtreecheckbox",
+            classes="tree-checkbox",
+            value=True,
         )
-        yield self.MousseTree()
+        yield self.FilteredTree()
 
     def on_checkbox_changed(self, event: Checkbox.Changed) -> None:
-        dir_tree = self.query_one(self.MousseTree)
-        dir_tree.show_all = event.value
+        dir_tree = self.query_one(self.FilteredTree)
+        dir_tree.only_managed_dirs = event.value
         dir_tree.reload()
 
 
@@ -311,7 +325,6 @@ class MainScreen(Screen):
     ]
 
     def compose(self) -> ComposeResult:
-
         yield Header(classes="-tall")
         yield SlideBar()
         with TabbedContent(
@@ -323,10 +336,9 @@ class MainScreen(Screen):
         ):
             yield VerticalScroll(ChezmoiStatus(True), ManagedTree())
             yield VerticalScroll(ChezmoiStatus(False), ManagedTree())
-            yield VerticalScroll(ManagedDirTree())
+            yield VerticalScroll(AddDirTree())
             yield VerticalScroll(Doctor())
             yield Static(FLOW, id="diagram")
-
         yield Footer()
 
     # Underscore to ignore return value from screen.dismiss()
