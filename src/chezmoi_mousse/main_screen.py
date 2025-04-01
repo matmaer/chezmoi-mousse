@@ -301,6 +301,7 @@ class AddDirTree(Widget):
     def compose(self) -> ComposeResult:
         if chezmoi.git_autoadd_enabled:
             yield Static(
+                # pylint: disable=line-too-long
                 Content.from_markup(
                     "[$warning italic]Git autoadd is enabled, so files will be added automatically.[/]\n"
                 )
@@ -311,6 +312,7 @@ class AddDirTree(Widget):
             id="adddirtreecheckbox",
             classes="tree-checkbox",
             value=True,
+            # pylint: disable=line-too-long
             tooltip="""Show only unmanaged files in directories which already contain managed files, regardless of those other managed files their status. Only the unmanaged files are shown, both when the filter is on and off. The purpose of this option is to easily spot new unmanaged files in directories which already contain managed files so they can be added to your chezmoi repository.""",
         )
         yield self.FilteredTree()
