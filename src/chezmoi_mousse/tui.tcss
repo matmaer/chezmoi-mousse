@@ -3,11 +3,27 @@
   background-tint: #000000;
 }
 
-#diagram {
+
+
+.dir-tree {
   margin-left: 1;
-  margin-right: 1;
-  min-width: 76;
+  & > .directory-tree--folder {
+    color: $primary-lighten-3;
+    text-style: none;
+  }
+  & > .directory-tree--extension {
+    text-style: none;
+  }
+  & > .directory-tree--hidden {
+    color: $accent-lighten-3;
+    text-style: none;
+  }
+  & > .directory-tree--file {
+    color: $success-lighten-3;
+    text-style: none;
+  }
 }
+
 
 .tree-checkbox {
   border: round $accent-muted;
@@ -39,8 +55,67 @@
 }
 
 #doctortable {
-  height: 70%;
+  height: 1fr;
 }
+
+.switch-button {
+  # border-left: round $accent-muted;
+  # # border-right: round $accent-muted;
+  # border-top: round $accent-muted;
+  # border-bottom: round $accent-muted;
+  # height: 3;
+  height: auto;
+  width: 7;
+  border: none;
+  # background-tint: $surface;
+  # background: yellow;
+  # width: auto;
+}
+
+.switch-horizontal {
+  # border: round $success-muted;
+  margin: 0 1;
+  height: auto;
+  background: $secondary;
+}
+
+.switch-label {
+  # border: round $panel;
+  width: 1fr;
+  background: $secondary;
+  margin-left: 1;
+  color: $primary;
+  text-style: none;
+}
+
+SwitchDefaults {
+  border: tall $border-blurred;
+  background: $surface;
+  height: auto;
+  width: auto;
+
+  padding: 0 2;
+  &.-on .switch--slider {
+      color: $success;
+  }
+  & .switch--slider {
+      color: $panel;
+      background: $panel-darken-2;
+  }
+  &:hover {
+      & > .switch--slider {
+          color: $panel-lighten-1
+      }
+      &.-on > .switch--slider {
+          color: $success-lighten-1;
+      }
+  }
+  &:focus {
+      border: tall $border;
+      background-tint: $foreground 5%;
+  }
+}
+
 
 Label {
   &.muted {
@@ -86,49 +161,6 @@ CollapsibleTitle {
   }
 }
 
-DataTable {
-  height: auto;
-  width: 100%;
-  padding-right: 1;
-  & > .datatable--header {
-    color: $secondary;
-    text-style: bold underline;
-  }
-  & > .datatable--cursor {
-    color: $accent;
-    text-style: none;
-  }
-  & > .datatable--hover {
-    color: $secondary;
-    text-style: bold;
-  }
-  & > .datatable--fixed {}
-  & > .datatable--fixed-cursor {}
-  & > .datatable--header-cursor {}
-  & > .datatable--header-hover {}
-  & > .datatable--odd-row {}
-  & > .datatable--even-row {}
-}
-
-.dir-tree {
-  margin-left: 1;
-  & > .directory-tree--folder {
-    color: $primary-lighten-3;
-    text-style: none;
-  }
-  & > .directory-tree--extension {
-    text-style: none;
-  }
-  & > .directory-tree--hidden {
-    color: $accent-lighten-3;
-    text-style: none;
-  }
-  & > .directory-tree--file {
-    color: $success-lighten-3;
-    text-style: none;
-  }
-}
-
 Tree {
   min-height: 3;
   padding-left: 1;
@@ -165,21 +197,6 @@ Tree {
   }
 }
 
-LoadingScreen {
-  padding: 1 1 1 1;
-  & #loader-log {
-    margin: 1 0 1 0;
-    color: $secondary;
-    height: 11;
-    width: auto;
-  }
-  & #continue {
-    color: $accent;
-    border: none;
-    text-style: none;
-  }
-}
-
 SlideBar {
   border-bottom: round $accent-muted;
   border-left: round $accent-muted;
@@ -199,30 +216,63 @@ SlideBar {
   }
 }
 
+/* ---------------------- */
+/* "finalized" tcss below */
+/* ---------------------- */
+
 
 AddFileModal {
   align: center middle;
+  Button {
+    background-tint: $surface-lighten-1;
+    width: 1fr;
+  }
+  #dialog {
+    grid-size: 2;
+    grid-gutter: 1 2;
+    grid-rows: 1fr 3;
+    padding: 0 1;
+    width: 60;
+    height: 11;
+    border: thick $background 80%;
+    background: $surface;
+    background-tint: $surface-darken-1;
+  }
+
+  #question {
+    column-span: 2;
+    height: 1fr;
+    width: 1fr;
+    content-align: center middle;
+  }
 }
 
-#dialog {
-  grid-size: 2;
-  grid-gutter: 1 2;
-  grid-rows: 1fr 3;
-  padding: 0 1;
-  width: 60;
-  height: 11;
-  border: thick $background 80%;
-  background: $surface;
-}
-
-#question {
-  column-span: 2;
+#doctortable {
   height: 1fr;
-  width: 1fr;
-  content-align: center middle;
+  padding-right: 1;
+  & > .datatable--header {
+    color: $foreground;
+    text-style: none;
+  }
 }
 
-Button {
-  # background-tint: $surface;
-  width: 100%;
+LoadingScreen {
+  padding: 1 1 1 1;
+  & #loader-log {
+    margin: 1 0 1 0;
+    color: $secondary;
+    height: 11;
+    width: auto;
+  }
+  & #continue {
+    color: $accent;
+    border: none;
+    text-style: none;
+  }
+}
+
+#diagram {
+  margin-left: 1;
+  margin-right: 1;
+  min-width: 76;
 }
