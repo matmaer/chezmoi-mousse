@@ -10,15 +10,16 @@
 }
 
 .tree-checkbox {
-  border: none;
+  border: round $accent-muted;
+  # border: none;
   & > .toggle--label {
-    color: $primary-darken-3;
+    color: $error-darken-2;
   }
   & > .toggle--button {
     color: $error;
   }
   &.-on > .toggle--label {
-    color: $primary-lighten-2;
+    color: $success-darken-2;
   }
   &.-on > .toggle--button {
     color: $success;
