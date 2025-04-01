@@ -6,15 +6,80 @@ from pathlib import Path
 from textual.theme import Theme
 
 
-def _subprocess_run(long_command):
-    return subprocess.run(
-        long_command,
-        capture_output=True,
-        check=True,  # raises exception for any non-zero return code
-        shell=False,
-        text=True,  # returns stdout as str instead of bytes
-        timeout=1,
-    ).stdout.strip()
+class Tooling:
+
+    @staticmethod
+    def subprocess_run(long_command):
+        return subprocess.run(
+            long_command,
+            capture_output=True,
+            check=True,  # raises exception for any non-zero return code
+            shell=False,
+            text=True,  # returns stdout as str instead of bytes
+            timeout=1,
+        ).stdout.strip()
+
+    @staticmethod
+    def filter_unwanted_paths(paths_to_filter: list[Path]) -> list[Path]:
+        junk_dirs = {
+            "__pycache__",
+            ".build",
+            ".bundle",
+            ".cache",
+            ".dart_tool",
+            ".DS_Store",
+            ".git",
+            ".ipynb_checkpoints",
+            ".mypy_cache",
+            ".parcel_cache",
+            ".pytest_cache",
+            ".Trash",
+            ".venv",
+            "bin",
+            "cache",
+            "Cache",
+            "CMakeFiles",
+            "Crash Reports",
+            "DerivedData",
+            "go-build",
+            "node_modules",
+            "Recent",
+            "temp",
+            "Temp",
+            "tmp",
+            "trash",
+            "Trash",
+        }
+        junk_files = {
+            ".bak",
+            ".cache",
+            "*.egg-info",
+            ".lnk",
+            ".lock",
+            ".log",
+            ".pid",
+            ".tar",
+            ".tgz",
+            ".tar.gz",
+            ".zip",
+            ".swp",
+            ".temp",
+            ".tmp",
+        }
+        cleaned = []
+        for p in paths_to_filter:
+            if p.is_file() and p.suffix in junk_files:
+                continue
+            if p.is_file() and ".cache-" in str(p):
+                continue
+            if p.is_dir() and p.name in junk_dirs:
+                continue
+            if p.is_dir():
+                members = [p for p in p.iterdir() if p.is_file() or p.is_dir()]
+                if len(members) == 0:
+                    continue
+            cleaned.append(p)
+        return sorted(cleaned)
 
 
 @dataclass
@@ -30,7 +95,7 @@ class InputOutput:
         )
 
     def update(self) -> str:
-        self.std_out = _subprocess_run(self.long_command)
+        self.std_out = Tooling.subprocess_run(self.long_command)
         return self.std_out
 
 
@@ -81,6 +146,7 @@ class Chezmoi:
             "managed",
             "--path-style=absolute",
             "--include=dirs,files",
+            "--exclude=encrypted",
         ],
         "unmanaged": ["unmanaged", "--path-style=absolute"],
         "status": [
@@ -110,11 +176,15 @@ class Chezmoi:
 
     @property
     def get_managed_paths(self) -> list[Path]:
-        return sorted([Path(p) for p in self.managed.std_out.splitlines()])
+        return [Path(p) for p in self.managed.std_out.splitlines()]
 
     @property
-    def get_unmanaged_paths(self) -> list[Path]:
-        return sorted([Path(p) for p in self.unmanaged.std_out.splitlines()])
+    def get_managed_files(self) -> list[Path]:
+        return [
+            Path(p)
+            for p in self.managed.std_out.splitlines()
+            if Path().is_file()
+        ]
 
     @property
     def get_template_data(self) -> dict:
@@ -128,11 +198,27 @@ class Chezmoi:
     def get_status(self) -> list[str]:
         return self.status.std_out.splitlines()
 
+    @property
+    def get_apply_changes(self) -> list[tuple[str, Path]]:
+        changes = [
+            l for l in self.status.std_out.splitlines() if l[0] in "ADM"
+        ]
+        return [(change[0], Path(change[3:])) for change in changes]
+
+    @property
+    def get_add_changes(self) -> list[tuple[str, Path]]:
+        changes = [
+            l for l in self.status.std_out.splitlines() if l[1] in "ADM"
+        ]
+        return [(change[1], Path(change[3:])) for change in changes]
+
     def get_cm_diff(self, file_path: str, apply: bool) -> list[str]:
         long_command = self.base + ["diff", file_path]
         if apply:
-            return _subprocess_run(long_command).splitlines()
-        return _subprocess_run(long_command + ["--reverse"]).splitlines()
+            return Tooling.subprocess_run(long_command).splitlines()
+        return Tooling.subprocess_run(
+            long_command + ["--reverse"]
+        ).splitlines()
 
 
 chezmoi = Chezmoi()
