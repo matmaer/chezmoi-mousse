@@ -175,6 +175,18 @@ class Chezmoi:
         return Path(chezmoi.get_config_dump["destDir"])
 
     @property
+    def git_autoadd_enabled(self) -> bool:
+        return self.get_config_dump["git"]["autoadd"]
+
+    @property
+    def git_autocommit_enabled(self) -> bool:
+        return self.get_config_dump["git"]["autocommit"]
+
+    @property
+    def git_autpush_enabled(self) -> bool:
+        return self.get_config_dump["git"]["autopush"]
+
+    @property
     def get_config_dump(self) -> dict:
         return json.loads(self.dump_config.std_out)
 
