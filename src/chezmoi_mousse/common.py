@@ -171,6 +171,10 @@ class Chezmoi:
             )
 
     @property
+    def dest_dir(self) -> Path:
+        return Path(chezmoi.get_config_dump["destDir"])
+
+    @property
     def get_config_dump(self) -> dict:
         return json.loads(self.dump_config.std_out)
 
