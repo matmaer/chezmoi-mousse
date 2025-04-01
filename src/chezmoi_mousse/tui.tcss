@@ -115,6 +115,7 @@ DataTable {
 # directory-tree--hidden Target hidden items in the directory structure.
 
 .dir-tree {
+  margin-left: 1;
   & > .directory-tree--folder {
     color: $primary-lighten-3;
     text-style: none;
