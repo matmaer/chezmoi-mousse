@@ -9,7 +9,7 @@
   min-width: 76;
 }
 
-#tree-checkbox {
+.tree-checkbox {
   border: none;
   & > .toggle--label {
     color: $primary-muted;
@@ -163,13 +163,12 @@ SlideBar {
   dock: right;
   height: 100%;
   layer: slidebar_layer;
-  margin-bottom: 3;
-  margin-top: 7;
-  max-width: 80%;
-  min-height: 5;
+  margin: 7 0 3 14;
+  max-width: 100%;
+  min-height: 3;
   /* offset-x: -100%; out of view if docked left */
   /* offset-x: 100%; out if view if docked right */
-  offset-x: 100%;
+  offset-x: 99%;
   transition: offset 380ms;
   &.-visible {
       offset-x: 0%;
