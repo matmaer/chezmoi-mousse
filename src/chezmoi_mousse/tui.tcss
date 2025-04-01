@@ -12,16 +12,16 @@
 .tree-checkbox {
   border: none;
   & > .toggle--label {
-    color: $primary-lighten-3;
-  }
-  & > .toggle--button {
-    color: $success;
-  }
-  &.-on > .toggle--label {
     color: $primary-darken-3;
   }
-  &.-on > .toggle--button {
+  & > .toggle--button {
     color: $error;
+  }
+  &.-on > .toggle--label {
+    color: $primary-lighten-2;
+  }
+  &.-on > .toggle--button {
+    color: $success;
   }
   &:focus > .toggle--label {
     text-style: none;
