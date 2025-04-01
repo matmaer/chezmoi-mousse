@@ -109,11 +109,6 @@ DataTable {
   & > .datatable--even-row {}
 }
 
-# directory-tree--extension Target the extension of a file name.
-# directory-tree--file Target files in the directory structure.
-# directory-tree--folder Target folders in the directory structure.
-# directory-tree--hidden Target hidden items in the directory structure.
-
 .dir-tree {
   margin-left: 1;
   & > .directory-tree--folder {
