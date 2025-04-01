@@ -207,17 +207,10 @@ class ChezmoiStatus(VerticalScroll):
         # if true, adds apply status to the list, otherwise "re-add" status
         self.apply = apply
         self.status_items: list[Collapsible] = []
-        self.dest_dir = Path(chezmoi.get_config_dump["destDir"])
         super().__init__()
 
     def compose(self) -> ComposeResult:
-        yield VerticalGroup(
-            *self.status_items,
-            # collapsed=False,
-            # id="statusitems",
-            # title=f"status in destDir {chezmoi.get_config_dump['destDir']}",
-        )
-        # yield ListView(id="statuslist")
+        yield VerticalGroup(*self.status_items)
 
     def on_mount(self) -> None:
 
@@ -228,7 +221,7 @@ class ChezmoiStatus(VerticalScroll):
 
         for code, path in changes:
             status: str = status_info["code name"][code]
-            rel_path = str(path.relative_to(self.dest_dir))
+            rel_path = str(path.relative_to(chezmoi.dest_dir))
 
             colored_diffs: list[Label] = []
             for line in chezmoi.get_cm_diff(str(path), self.apply):
@@ -249,17 +242,16 @@ class ManagedTree(Tree):
 
     def __init__(self) -> None:
         super().__init__(
-            label=f"{chezmoi.get_config_dump['destDir']}",
+            label=f"{chezmoi.dest_dir}",
             id="managedtree",
         )
 
     def on_mount(self) -> None:
-        dest_dir_path = Path(chezmoi.get_config_dump["destDir"])
         dir_paths = set(p for p in chezmoi.get_managed_paths if p.is_dir())
         file_paths = set(p for p in chezmoi.get_managed_paths if p.is_file())
 
         def recurse_paths(parent, dir_path):
-            if dir_path == dest_dir_path:
+            if dir_path == chezmoi.dest_dir:
                 parent = self.root
             else:
                 parent = parent.add(dir_path.parts[-1], dir_path)
@@ -270,7 +262,7 @@ class ManagedTree(Tree):
             for sub_dir in sub_dirs:
                 recurse_paths(parent, sub_dir)
 
-        recurse_paths(self.root, dest_dir_path)
+        recurse_paths(self.root, chezmoi.dest_dir)
         self.root.collapse_all()
         self.root.expand()
 
@@ -283,7 +275,7 @@ class AddDirTree(Widget):
 
         def __init__(self) -> None:
             super().__init__(
-                path=chezmoi.get_config_dump["destDir"],
+                path=chezmoi.dest_dir,
                 id="adddirtree",
                 classes="dir-tree",
             )
