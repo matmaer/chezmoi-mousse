@@ -12,22 +12,28 @@
 .tree-checkbox {
   border: none;
   & > .toggle--label {
-    color: $primary-muted;
+    color: $primary-lighten-3;
   }
   & > .toggle--button {
-    color: $primary-muted;
-  }
-  &.-on > .toggle--button {
-    color: $primary;
+    color: $success;
   }
   &.-on > .toggle--label {
-    color: $primary;
+    color: $primary-darken-3;
   }
-  &:hover {
-    text-style: bold;
+  &.-on > .toggle--button {
+    color: $error;
   }
   &:focus > .toggle--label {
     text-style: none;
+  }
+  &:focus > .toggle--button {
+    text-style: none;
+  }
+  &:hover > .toggle--label {
+    text-style: bold;
+  }
+  &:hover > .toggle--button {
+    text-style: bold;
   }
 }
 
@@ -103,41 +109,62 @@ DataTable {
   & > .datatable--even-row {}
 }
 
+# directory-tree--extension Target the extension of a file name.
+# directory-tree--file Target files in the directory structure.
+# directory-tree--folder Target folders in the directory structure.
+# directory-tree--hidden Target hidden items in the directory structure.
+
+.dir-tree {
+  & > .directory-tree--folder {
+    color: $primary-lighten-3;
+    text-style: none;
+  }
+  & > .directory-tree--extension {
+    text-style: none;
+  }
+  & > .directory-tree--hidden {
+    color: $accent-lighten-3;
+    text-style: none;
+  }
+  & > .directory-tree--file {
+    color: $success-lighten-3;
+    text-style: none;
+  }
+}
+
 Tree {
   min-height: 3;
-  color: $foreground;
   padding-left: 1;
-  & > .tree--label {}
+  & > .tree--cursor {
+    text-style: none;
+    color: $accent-lighten-3;
+  }
+  & > .tree--highlight-line {
+    text-style: none;
+  }
+  & > .tree--highlight {
+    text-style: none;
+    color: $accent-lighten-3;
+  }
   & > .tree--guides {
-      color: $secondary;
+    color: $primary-lighten-3;
   }
   & > .tree--guides-hover {
-      color: $secondary;
+    color: $primary-lighten-3;
   }
   & > .tree--guides-selected {
-      color: $secondary;
-  }
-  & > .tree--cursor {
-      text-style: bold;
-  }
-  & > .tree--highlight {}
-  & > .tree--highlight-line {
-      text-style: bold;
+    color: $primary-lighten-3;
   }
   &:focus {
-      & > .tree--cursor {
-          color: $block-cursor-foreground;
-          text-style: bold;
-      }
-      & > .tree--guides {
-          color: $secondary;
-      }
-      & > .tree--guides-hover {
-          color: $secondary;
-      }
-      & > .tree--guides-selected {
-          color: $secondary;
-      }
+    & > .tree--guides {
+      color: $primary-lighten-3;
+    }
+    & > .tree--guides-hover {
+      color: $primary-lighten-3;
+    }
+    & > .tree--guides-selected {
+      color: $primary-lighten-3;
+    }
   }
 }
 
@@ -173,4 +200,32 @@ SlideBar {
   &.-visible {
       offset-x: 0%;
   }
+}
+
+
+AddFileModal {
+  align: center middle;
+}
+
+#dialog {
+  grid-size: 2;
+  grid-gutter: 1 2;
+  grid-rows: 1fr 3;
+  padding: 0 1;
+  width: 60;
+  height: 11;
+  border: thick $background 80%;
+  background: $surface;
+}
+
+#question {
+  column-span: 2;
+  height: 1fr;
+  width: 1fr;
+  content-align: center middle;
+}
+
+Button {
+  # background-tint: $surface;
+  width: 100%;
 }

@@ -4,12 +4,13 @@ from pathlib import Path
 from rich.text import Text
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import VerticalScroll, VerticalGroup
+from textual.containers import VerticalScroll, VerticalGroup, Grid
 from textual.reactive import reactive
-from textual.screen import Screen
+from textual.screen import Screen, ModalScreen
 
 from textual.widget import Widget
 from textual.widgets import (
+    Button,
     Checkbox,
     Collapsible,
     DataTable,
@@ -249,6 +250,7 @@ class ManagedTree(Tree):
     def __init__(self) -> None:
         super().__init__(
             label=f"{chezmoi.get_config_dump['destDir']}",
+            id="managedtree",
         )
 
     def on_mount(self) -> None:
@@ -262,7 +264,8 @@ class ManagedTree(Tree):
             else:
                 parent = parent.add(dir_path.parts[-1], dir_path)
             for file in [f for f in file_paths if f.parent == dir_path]:
-                parent.add_leaf(str(file.parts[-1]), file)
+                leaf_label = f"{str(file.parts[-1])}"
+                parent.add_leaf(leaf_label, file)
             sub_dirs = [d for d in dir_paths if d.parent == dir_path]
             for sub_dir in sub_dirs:
                 recurse_paths(parent, sub_dir)
@@ -270,8 +273,6 @@ class ManagedTree(Tree):
         recurse_paths(self.root, dest_dir_path)
         self.root.collapse_all()
         self.root.expand()
-        for dirs in self.root.children:
-            dirs.expand()
 
 
 class AddDirTree(Widget):
@@ -283,7 +284,8 @@ class AddDirTree(Widget):
         def __init__(self) -> None:
             super().__init__(
                 path=chezmoi.get_config_dump["destDir"],
-                id="moussetree",
+                id="adddirtree",
+                classes="dir-tree",
             )
 
         def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
@@ -318,10 +320,28 @@ class AddDirTree(Widget):
         dir_tree.reload()
 
 
+class AddFileModal(ModalScreen):
+
+    def compose(self) -> ComposeResult:
+        yield Grid(
+            Label("Add file to chezmoi managed files?", id="question"),
+            Button("Quit", variant="error", id="quit"),
+            Button("Cancel", variant="primary", id="cancel"),
+            id="dialog",
+        )
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.id == "quit":
+            self.app.exit()
+        else:
+            self.app.pop_screen()
+
+
 class MainScreen(Screen):
 
     BINDINGS = [
         Binding("i, I", "toggle_slidebar", "Toggle Inspect"),
+        Binding("q", "request_quit", "Quit"),
     ]
 
     def compose(self) -> ComposeResult:
@@ -340,6 +360,10 @@ class MainScreen(Screen):
             yield VerticalScroll(Doctor())
             yield Static(FLOW, id="diagram")
         yield Footer()
+
+    def action_request_quit(self) -> None:
+        """Action to display the quit dialog."""
+        self.app.push_screen(AddFileModal())
 
     # Underscore to ignore return value from screen.dismiss()
     def refresh_app(self, _) -> None:
