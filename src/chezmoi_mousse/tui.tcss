@@ -3,8 +3,6 @@
   background-tint: #000000;
 }
 
-
-
 .dir-tree {
   margin-left: 1;
   & > .directory-tree--folder {
@@ -24,10 +22,8 @@
   }
 }
 
-
 .tree-checkbox {
   border: round $accent-muted;
-  # border: none;
   & > .toggle--label {
     color: $error-darken-2;
   }
@@ -54,33 +50,7 @@
   }
 }
 
-#doctortable {
-  height: 1fr;
-}
-
-.switch-button {
-  # border-left: round $accent-muted;
-  # # border-right: round $accent-muted;
-  # border-top: round $accent-muted;
-  # border-bottom: round $accent-muted;
-  # height: 3;
-  height: auto;
-  width: 7;
-  border: none;
-  # background-tint: $surface;
-  # background: yellow;
-  # width: auto;
-}
-
-.switch-horizontal {
-  # border: round $success-muted;
-  margin: 0 1;
-  height: auto;
-  background: $secondary;
-}
-
 .switch-label {
-  # border: round $panel;
   width: 1fr;
   background: $secondary;
   margin-left: 1;
@@ -88,12 +58,17 @@
   text-style: none;
 }
 
-SwitchDefaults {
-  border: tall $border-blurred;
+.switch-horizontal {
+  margin: 0 1;
+  height: auto;
+  background: $secondary;
+}
+
+.switch-button {
   background: $surface;
   height: auto;
   width: auto;
-
+  border: none;
   padding: 0 2;
   &.-on .switch--slider {
       color: $success;
@@ -116,29 +91,8 @@ SwitchDefaults {
   }
 }
 
-
-Label {
-  &.muted {
-      color: $text-muted;
-  }
-}
-
 Screen {
   layers: slidebar_layer;
-}
-
-Header {
-  color: $primary;
-  HeaderIcon {
-    /* with display: none; the title is not centered */
-    visibility: hidden;
-  }
-}
-
-Footer {
-  .-command-palette {
-    border: none;
-  }
 }
 
 ChezmoiStatus {
@@ -247,7 +201,6 @@ Collapsible {
   }
 }
 
-
 #doctortable {
   width: 100%;
   height: 1fr;
@@ -277,4 +230,18 @@ LoadingScreen {
   margin-left: 1;
   margin-right: 1;
   min-width: 76;
+}
+
+Header {
+  color: $primary;
+  HeaderIcon {
+    /* with display: none; the title is not centered */
+    visibility: hidden;
+  }
+}
+
+Footer {
+  .-command-palette {
+    border: none;
+  }
 }
