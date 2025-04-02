@@ -3,60 +3,102 @@
   background-tint: #000000;
 }
 
-#diagram {
+.dir-tree {
   margin-left: 1;
-  margin-right: 1;
-  min-width: 76;
-}
-
-.tree-checkbox {
-  border: none;
-  & > .toggle--label {
-    color: $primary-muted;
+  & > .directory-tree--folder {
+    color: $primary-lighten-3;
+    text-style: none;
   }
-  & > .toggle--button {
-    color: $primary-muted;
+  & > .directory-tree--extension {
+    text-style: none;
   }
-  &.-on > .toggle--button {
-    color: $primary;
+  & > .directory-tree--hidden {
+    color: $accent-lighten-3;
+    text-style: none;
   }
-  &.-on > .toggle--label {
-    color: $primary;
-  }
-  &:hover {
-    text-style: bold;
-  }
-  &:focus > .toggle--label {
+  & > .directory-tree--file {
+    color: $success-lighten-3;
     text-style: none;
   }
 }
 
-#doctortable {
-  height: 70%;
+.tree-checkbox {
+  border: round $accent-muted;
+  & > .toggle--label {
+    color: $error-darken-2;
+  }
+  & > .toggle--button {
+    color: $error;
+  }
+  &.-on > .toggle--label {
+    color: $success-darken-2;
+  }
+  &.-on > .toggle--button {
+    color: $success;
+  }
+  &:focus > .toggle--label {
+    text-style: none;
+  }
+  &:focus > .toggle--button {
+    text-style: none;
+  }
+  &:hover > .toggle--label {
+    text-style: bold;
+  }
+  &:hover > .toggle--button {
+    text-style: bold;
+  }
 }
 
-Label {
-  &.muted {
-      color: $text-muted;
+.switch-label {
+  width: 1fr;
+  background: $surface;
+  background-tint: $surface;
+  margin-left: 1;
+  color: $foreground-darken-1;
+  text-style: none;
+}
+
+.switch-container {
+  margin-left: 1;
+  border: inner $panel;
+  height: auto;
+  width: 41;
+  background: $surface;
+  background-tint: $surface;
+}
+
+.switch-button {
+  background-tint: $surface;
+  background: $surface;
+  height: auto;
+  width: auto;
+  border: none;
+  &.-on .switch--slider {
+    border: none;
+    color: $success-lighten-1;
+  }
+  & .switch--slider {
+    border: none;
+    color: $error-darken-3;
+  }
+  &:hover {
+    & > .switch--slider {
+      color: $error-darken-2;
+    }
+    &.-on > .switch--slider {
+      color: $success-lighten-2;
+    }
+  }
+  &:focus {
+      border: none;
+      background: $surface;
+      background-tint: $surface;
   }
 }
 
 Screen {
   layers: slidebar_layer;
-}
-
-Header {
-  color: $primary;
-  HeaderIcon {
-    /* with display: none; the title is not centered */
-    visibility: hidden;
-  }
-}
-
-Footer {
-  .-command-palette {
-    border: none;
-  }
 }
 
 ChezmoiStatus {
@@ -65,94 +107,39 @@ ChezmoiStatus {
   margin-bottom: 1;
 }
 
-Collapsible {
-  border: none;
-  padding: 0;
-}
-
-CollapsibleTitle {
-  border: none;
-  padding: 0;
-  color: $primary;
-  &:hover {
-    text-style: bold;
-  }
-}
-
-DataTable {
-  height: auto;
-  width: 100%;
-  padding-right: 1;
-  & > .datatable--header {
-    color: $secondary;
-    text-style: bold underline;
-  }
-  & > .datatable--cursor {
-    color: $accent;
-    text-style: none;
-  }
-  & > .datatable--hover {
-    color: $secondary;
-    text-style: bold;
-  }
-  & > .datatable--fixed {}
-  & > .datatable--fixed-cursor {}
-  & > .datatable--header-cursor {}
-  & > .datatable--header-hover {}
-  & > .datatable--odd-row {}
-  & > .datatable--even-row {}
-}
-
 Tree {
   min-height: 3;
-  color: $foreground;
   padding-left: 1;
-  & > .tree--label {}
+  & > .tree--cursor {
+    text-style: none;
+    color: $accent-lighten-3;
+  }
+  & > .tree--highlight-line {
+    text-style: none;
+  }
+  & > .tree--highlight {
+    text-style: none;
+    color: $accent-lighten-3;
+  }
   & > .tree--guides {
-      color: $secondary;
+    color: $primary-lighten-3;
   }
   & > .tree--guides-hover {
-      color: $secondary;
+    color: $primary-lighten-3;
   }
   & > .tree--guides-selected {
-      color: $secondary;
-  }
-  & > .tree--cursor {
-      text-style: bold;
-  }
-  & > .tree--highlight {}
-  & > .tree--highlight-line {
-      text-style: bold;
+    color: $primary-lighten-3;
   }
   &:focus {
-      & > .tree--cursor {
-          color: $block-cursor-foreground;
-          text-style: bold;
-      }
-      & > .tree--guides {
-          color: $secondary;
-      }
-      & > .tree--guides-hover {
-          color: $secondary;
-      }
-      & > .tree--guides-selected {
-          color: $secondary;
-      }
-  }
-}
-
-LoadingScreen {
-  padding: 1 1 1 1;
-  & #loader-log {
-    margin: 1 0 1 0;
-    color: $secondary;
-    height: 11;
-    width: auto;
-  }
-  & #continue {
-    color: $accent;
-    border: none;
-    text-style: none;
+    & > .tree--guides {
+      color: $primary-lighten-3;
+    }
+    & > .tree--guides-hover {
+      color: $primary-lighten-3;
+    }
+    & > .tree--guides-selected {
+      color: $primary-lighten-3;
+    }
   }
 }
 
@@ -172,5 +159,95 @@ SlideBar {
   transition: offset 380ms;
   &.-visible {
       offset-x: 0%;
+  }
+}
+
+/* ---------------------- */
+/* "finalized" tcss below */
+/* ---------------------- */
+
+
+AddFileModal {
+  align: center middle;
+  Button {
+    background-tint: $surface-lighten-1;
+    width: 1fr;
+  }
+  #dialog {
+    grid-size: 2;
+    grid-gutter: 1 2;
+    grid-rows: 1fr 3;
+    padding: 0 1;
+    width: 60;
+    height: 11;
+    border: thick $background 80%;
+    background: $surface;
+    background-tint: $surface-darken-1;
+  }
+
+  #question {
+    column-span: 2;
+    height: 1fr;
+    width: 1fr;
+    content-align: center middle;
+  }
+}
+
+Collapsible {
+  border: none;
+  padding: 0;
+
+  CollapsibleTitle {
+    border: none;
+    padding: 0;
+    color: $primary-lighten-1;
+    &:hover {
+      text-style: bold;
+    }
+  }
+}
+
+#doctortable {
+  width: 100%;
+  height: 1fr;
+  padding-right: 1;
+  & > .datatable--header {
+    color: $foreground;
+    text-style: none;
+  }
+}
+
+LoadingScreen {
+  padding: 1 1 1 1;
+  & #loader-log {
+    margin: 1 0 1 0;
+    color: $secondary;
+    height: 11;
+    width: auto;
+  }
+  & #continue {
+    color: $accent;
+    border: none;
+    text-style: none;
+  }
+}
+
+#diagram {
+  margin-left: 1;
+  margin-right: 1;
+  min-width: 76;
+}
+
+Header {
+  color: $primary;
+  HeaderIcon {
+    /* with display: none; the title is not centered */
+    visibility: hidden;
+  }
+}
+
+Footer {
+  .-command-palette {
+    border: none;
   }
 }

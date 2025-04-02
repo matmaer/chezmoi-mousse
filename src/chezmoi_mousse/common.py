@@ -171,6 +171,22 @@ class Chezmoi:
             )
 
     @property
+    def dest_dir(self) -> Path:
+        return Path(chezmoi.get_config_dump["destDir"])
+
+    @property
+    def git_autoadd_enabled(self) -> bool:
+        return self.get_config_dump["git"]["autoadd"]
+
+    @property
+    def git_autocommit_enabled(self) -> bool:
+        return self.get_config_dump["git"]["autocommit"]
+
+    @property
+    def git_autpush_enabled(self) -> bool:
+        return self.get_config_dump["git"]["autopush"]
+
+    @property
     def get_config_dump(self) -> dict:
         return json.loads(self.dump_config.std_out)
 
@@ -227,7 +243,7 @@ mousse_theme = Theme(
     name="mousse-theme",
     dark=True,
     accent="#F187FB",  # bespoke
-    background="#000000",
+    background="#000000",  # bespoke
     error="#ba3c5b",  # textual dark
     foreground="#DEDAE1",  # bespoke
     primary="#0178D4",  # textual dark
