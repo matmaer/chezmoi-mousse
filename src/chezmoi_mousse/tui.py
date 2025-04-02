@@ -17,7 +17,7 @@ class ChezmoiTUI(App):
     def on_mount(self) -> None:
         self.title = "-  c h e z m o i  m o u s s e  -"
         self.register_theme(mousse_theme)
-        self.theme = "mousse-theme"
+        self.theme = "chezmoi-mousse-dark"
         self.push_screen("loading", self.push_main_screen)
 
     def push_main_screen(self, _) -> None:
