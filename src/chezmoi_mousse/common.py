@@ -240,7 +240,7 @@ class Chezmoi:
 chezmoi = Chezmoi()
 
 mousse_theme = Theme(
-    name="mousse-theme",
+    name="chezmoi-mousse-dark",
     dark=True,
     accent="#F187FB",  # bespoke
     background="#000000",  # bespoke
