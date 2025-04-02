@@ -3,8 +3,6 @@ import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
-from textual.theme import Theme
-
 
 class Tooling:
 
@@ -175,6 +173,10 @@ class Chezmoi:
         return Path(chezmoi.get_config_dump["destDir"])
 
     @property
+    def source_dir(self) -> Path:
+        return Path(chezmoi.get_config_dump["SourceDir"])
+
+    @property
     def git_autoadd_enabled(self) -> bool:
         return self.get_config_dump["git"]["autoadd"]
 
@@ -238,45 +240,6 @@ class Chezmoi:
 
 
 chezmoi = Chezmoi()
-
-mousse_theme = Theme(
-    name="chezmoi-mousse-dark",
-    dark=True,
-    accent="#F187FB",  # bespoke
-    background="#000000",  # bespoke
-    error="#ba3c5b",  # textual dark
-    foreground="#DEDAE1",  # bespoke
-    primary="#0178D4",  # textual dark
-    secondary="#004578",  # textual dark
-    success="#4EBF71",  # textual dark
-    warning="#ffa62b",  # textual dark
-)
-
-# Chezmoi status command output reference:
-# https://www.chezmoi.io/reference/commands/status/
-status_info = {
-    "code name": {
-        "space": "No change",
-        "A": "Added",
-        "D": "Deleted",
-        "M": "Modified",
-        "R": "Modified Script",
-    },
-    "re add change": {
-        "space": "no changes for repository",
-        "A": "add to repository",
-        "D": "mark as deleted in repository",
-        "M": "modify in repository",
-        "R": "not applicable for repository",
-    },
-    "apply change": {
-        "space": "no changes for filesystem",
-        "A": "create on filesystem",
-        "D": "delete from filesystem",
-        "M": "modify on filesystem",
-        "R": "modify script on filesystem",
-    },
-}
 
 
 SPLASH_7BIT = """\
