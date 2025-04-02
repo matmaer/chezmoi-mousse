@@ -147,20 +147,6 @@ ChezmoiStatus {
   margin-bottom: 1;
 }
 
-Collapsible {
-  border: none;
-  padding: 0;
-}
-
-CollapsibleTitle {
-  border: none;
-  padding: 0;
-  color: $primary;
-  &:hover {
-    text-style: bold;
-  }
-}
-
 Tree {
   min-height: 3;
   padding-left: 1;
@@ -246,6 +232,21 @@ AddFileModal {
     content-align: center middle;
   }
 }
+
+Collapsible {
+  border: none;
+  padding: 0;
+
+  CollapsibleTitle {
+    border: none;
+    padding: 0;
+    color: $primary-lighten-1;
+    &:hover {
+      text-style: bold;
+    }
+  }
+}
+
 
 #doctortable {
   width: 100%;
