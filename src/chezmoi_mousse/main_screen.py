@@ -112,7 +112,7 @@ class Doctor(Widget):
         }
 
     def compose(self) -> ComposeResult:
-        yield DataTable(id="doctortable", cursor_type="row")
+        yield DataTable(id="doctortable", show_cursor=False)
         with VerticalScroll():
             yield Collapsible(
                 ListView(id="cmdnotfound"),
@@ -149,23 +149,23 @@ class Doctor(Widget):
             row = tuple(line.split(maxsplit=2))
             if row[0] == "ok":
                 row = [
-                    Text(str(cell), style=f"{self.app.current_theme.success}")
-                    for cell in row
+                    Text(cell_text, style=f"{self.app.current_theme.success}")
+                    for cell_text in row
                 ]
             elif row[0] == "warning":
                 row = [
-                    Text(str(cell), style=f"{self.app.current_theme.warning}")
-                    for cell in row
+                    Text(cell_text, style=f"{self.app.current_theme.warning}")
+                    for cell_text in row
                 ]
             elif row[0] == "error":
                 row = [
-                    Text(str(cell), style=f"{self.app.current_theme.error}")
-                    for cell in row
+                    Text(cell_text, style=f"{self.app.current_theme.error}")
+                    for cell_text in row
                 ]
             elif row[0] == "info" and row[2] == "not set":
                 row = [
-                    Text(str(cell), style=f"{self.app.current_theme.warning}")
-                    for cell in row
+                    Text(cell_text, style=f"{self.app.current_theme.warning}")
+                    for cell_text in row
                 ]
             elif row[0] == "info" and "not found in $PATH" in row[2]:
                 if row[1] in self.doctor_cmd_map:
@@ -190,19 +190,11 @@ class Doctor(Widget):
                 )
                 continue
             else:
-                row = [Text(str(cell)) for cell in row]
+                row = [Text(cell_text) for cell_text in row]
             table.add_row(*row)
 
 
 class ChezmoiStatus(VerticalScroll):
-
-    class DiffViewer(Collapsible):
-        def __init__(self, diff_title: str, diff_text: Static) -> None:
-            super().__init__(
-                diff_text,
-                collapsed=True,
-                title=diff_title,
-            )
 
     def __init__(self, apply: bool) -> None:
         # if true, adds apply status to the list, otherwise "re-add" status
