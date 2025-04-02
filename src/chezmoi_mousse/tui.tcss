@@ -50,53 +50,6 @@
   }
 }
 
-.switch-label {
-  width: 1fr;
-  background: $surface;
-  background-tint: $surface;
-  margin-left: 1;
-  color: $foreground-darken-1;
-  text-style: none;
-}
-
-.switch-container {
-  margin-left: 1;
-  border: inner $panel;
-  height: auto;
-  width: 41;
-  background: $surface;
-  background-tint: $surface;
-}
-
-.switch-button {
-  background-tint: $surface;
-  background: $surface;
-  height: auto;
-  width: auto;
-  border: none;
-  &.-on .switch--slider {
-    border: none;
-    color: $success-lighten-1;
-  }
-  & .switch--slider {
-    border: none;
-    color: $error-darken-3;
-  }
-  &:hover {
-    & > .switch--slider {
-      color: $error-darken-2;
-    }
-    &.-on > .switch--slider {
-      color: $success-lighten-2;
-    }
-  }
-  &:focus {
-      border: none;
-      background: $surface;
-      background-tint: $surface;
-  }
-}
-
 Screen {
   layers: slidebar_layer;
 }
@@ -144,19 +97,64 @@ Tree {
 }
 
 SlideBar {
-  border-bottom: round $accent-muted;
-  border-left: round $accent-muted;
-  border-top: round $accent-muted;
+  background: $surface;
+  background-tint: $surface;
+  border-left: inner $accent-muted;
+  border-top: inner $accent-muted;
+  border-bottom: inner $accent-muted;
+  border-right: none;
   dock: right;
-  height: 100%;
+  height: auto;
+  width: auto;
   layer: slidebar_layer;
   margin: 7 0 3 14;
-  max-width: 100%;
+  padding-top: 1;
+  max-width: 80%;
   min-height: 3;
   /* offset-x: -100%; out of view if docked left */
   /* offset-x: 100%; out if view if docked right */
-  offset-x: 99%;
+  offset-x: 100%;
   transition: offset 380ms;
+
+  .switch-label {
+    border: none;
+    padding-bottom: 1;
+    padding-right: 3;
+    color: $text;
+  }
+
+  .switch-container {
+    height: auto;
+    width: auto;
+    background: $surface;
+    background-tint: $surface;
+  }
+
+  .switch-button {
+    background-tint: $surface;
+    border: none;
+    &.-on .switch--slider {
+      border: none;
+      color: $success;
+    }
+    & .switch--slider {
+      border: none;
+      color: $error-darken-3;
+    }
+    &:hover {
+      & > .switch--slider {
+        color: $error-darken-2;
+      }
+      &.-on > .switch--slider {
+        color: $success-lighten-1;
+      }
+    }
+    &:focus {
+        border: none;
+        background: $surface;
+        background-tint: $surface;
+    }
+  }
   &.-visible {
       offset-x: 0%;
   }
@@ -218,9 +216,8 @@ Collapsible {
 }
 
 LoadingScreen {
-  padding: 1 1 1 1;
   & #loader-log {
-    margin: 1 0 1 0;
+    margin: 2 1 2 1;
     color: $secondary;
     height: 11;
     width: auto;
