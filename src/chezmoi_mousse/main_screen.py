@@ -2,15 +2,18 @@ from collections.abc import Iterable
 from pathlib import Path
 
 from rich.text import Text
+from textual import on
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import VerticalScroll, VerticalGroup
+from textual.containers import VerticalScroll, VerticalGroup, Grid, Horizontal
+from textual.content import Content
 from textual.reactive import reactive
-from textual.screen import Screen
+from textual.screen import Screen, ModalScreen
 
 from textual.widget import Widget
 from textual.widgets import (
-    Checkbox,
+    Button,
+    # Checkbox,
     Collapsible,
     DataTable,
     DirectoryTree,
@@ -22,6 +25,7 @@ from textual.widgets import (
     ListView,
     Pretty,
     Static,
+    Switch,
     TabbedContent,
     Tree,
 )
@@ -110,7 +114,7 @@ class Doctor(Widget):
         }
 
     def compose(self) -> ComposeResult:
-        yield DataTable(id="doctortable", cursor_type="row")
+        yield DataTable(id="doctortable", show_cursor=False)
         with VerticalScroll():
             yield Collapsible(
                 ListView(id="cmdnotfound"),
@@ -147,23 +151,23 @@ class Doctor(Widget):
             row = tuple(line.split(maxsplit=2))
             if row[0] == "ok":
                 row = [
-                    Text(str(cell), style=f"{self.app.current_theme.success}")
-                    for cell in row
+                    Text(cell_text, style=f"{self.app.current_theme.success}")
+                    for cell_text in row
                 ]
             elif row[0] == "warning":
                 row = [
-                    Text(str(cell), style=f"{self.app.current_theme.warning}")
-                    for cell in row
+                    Text(cell_text, style=f"{self.app.current_theme.warning}")
+                    for cell_text in row
                 ]
             elif row[0] == "error":
                 row = [
-                    Text(str(cell), style=f"{self.app.current_theme.error}")
-                    for cell in row
+                    Text(cell_text, style=f"{self.app.current_theme.error}")
+                    for cell_text in row
                 ]
             elif row[0] == "info" and row[2] == "not set":
                 row = [
-                    Text(str(cell), style=f"{self.app.current_theme.warning}")
-                    for cell in row
+                    Text(cell_text, style=f"{self.app.current_theme.warning}")
+                    for cell_text in row
                 ]
             elif row[0] == "info" and "not found in $PATH" in row[2]:
                 if row[1] in self.doctor_cmd_map:
@@ -188,35 +192,20 @@ class Doctor(Widget):
                 )
                 continue
             else:
-                row = [Text(str(cell)) for cell in row]
+                row = [Text(cell_text) for cell_text in row]
             table.add_row(*row)
 
 
 class ChezmoiStatus(VerticalScroll):
 
-    class DiffViewer(Collapsible):
-        def __init__(self, diff_title: str, diff_text: Static) -> None:
-            super().__init__(
-                diff_text,
-                collapsed=True,
-                title=diff_title,
-            )
-
     def __init__(self, apply: bool) -> None:
         # if true, adds apply status to the list, otherwise "re-add" status
         self.apply = apply
         self.status_items: list[Collapsible] = []
-        self.dest_dir = Path(chezmoi.get_config_dump["destDir"])
         super().__init__()
 
     def compose(self) -> ComposeResult:
-        yield VerticalGroup(
-            *self.status_items,
-            # collapsed=False,
-            # id="statusitems",
-            # title=f"status in destDir {chezmoi.get_config_dump['destDir']}",
-        )
-        # yield ListView(id="statuslist")
+        yield VerticalGroup(*self.status_items)
 
     def on_mount(self) -> None:
 
@@ -227,7 +216,7 @@ class ChezmoiStatus(VerticalScroll):
 
         for code, path in changes:
             status: str = status_info["code name"][code]
-            rel_path = str(path.relative_to(self.dest_dir))
+            rel_path = str(path.relative_to(chezmoi.dest_dir))
 
             colored_diffs: list[Label] = []
             for line in chezmoi.get_cm_diff(str(path), self.apply):
@@ -248,30 +237,29 @@ class ManagedTree(Tree):
 
     def __init__(self) -> None:
         super().__init__(
-            label=f"{chezmoi.get_config_dump['destDir']}",
+            label=f"{chezmoi.dest_dir}",
+            id="managedtree",
         )
 
     def on_mount(self) -> None:
-        dest_dir_path = Path(chezmoi.get_config_dump["destDir"])
         dir_paths = set(p for p in chezmoi.get_managed_paths if p.is_dir())
         file_paths = set(p for p in chezmoi.get_managed_paths if p.is_file())
 
         def recurse_paths(parent, dir_path):
-            if dir_path == dest_dir_path:
+            if dir_path == chezmoi.dest_dir:
                 parent = self.root
             else:
                 parent = parent.add(dir_path.parts[-1], dir_path)
             for file in [f for f in file_paths if f.parent == dir_path]:
-                parent.add_leaf(str(file.parts[-1]), file)
+                leaf_label = f"{str(file.parts[-1])}"
+                parent.add_leaf(leaf_label, file)
             sub_dirs = [d for d in dir_paths if d.parent == dir_path]
             for sub_dir in sub_dirs:
                 recurse_paths(parent, sub_dir)
 
-        recurse_paths(self.root, dest_dir_path)
+        recurse_paths(self.root, chezmoi.dest_dir)
         self.root.collapse_all()
         self.root.expand()
-        for dirs in self.root.children:
-            dirs.expand()
 
 
 class AddDirTree(Widget):
@@ -282,8 +270,9 @@ class AddDirTree(Widget):
 
         def __init__(self) -> None:
             super().__init__(
-                path=chezmoi.get_config_dump["destDir"],
-                id="moussetree",
+                path=chezmoi.dest_dir,
+                id="adddirtree",
+                classes="dir-tree",
             )
 
         def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
@@ -304,42 +293,79 @@ class AddDirTree(Widget):
             return [p for p in all_paths if p not in chezmoi.get_managed_files]
 
     def compose(self) -> ComposeResult:
-        yield Checkbox(
-            "show only unmanaged files in directories which already contain managed files",
-            id="adddirtreecheckbox",
-            classes="tree-checkbox",
-            value=True,
-        )
+        if chezmoi.git_autoadd_enabled:
+            yield Static(
+                # pylint: disable=line-too-long
+                Content.from_markup(
+                    "[$warning italic]Git autoadd is enabled, so files will be added automatically.[/]\n"
+                )
+            )
+
+        with Horizontal(classes="switch-container"):
+            # pylint: disable=line-too-long
+            yield Switch(
+                value=True,
+                id="addswitch",
+                classes="switch-button",
+                # tooltip="Show only unmanaged files in directories which already contain managed files. Only the unmanaged files are shown, both when the filter is on and off. The purpose of this option is to easily spot new unmanaged files in directories which already contain managed files so they can be added to your chezmoi repository.",
+            )
+            yield Label(
+                "Show only managed directories",
+                classes="switch-label",
+            )
         yield self.FilteredTree()
 
-    def on_checkbox_changed(self, event: Checkbox.Changed) -> None:
+    @on(Switch.Changed, "#addswitch")
+    def show_only_managed_dirs(self, event: Switch.Changed) -> None:
         dir_tree = self.query_one(self.FilteredTree)
         dir_tree.only_managed_dirs = event.value
         dir_tree.reload()
+
+
+class AddFileModal(ModalScreen):
+
+    def compose(self) -> ComposeResult:
+        yield Grid(
+            Label("Add file to chezmoi managed files?", id="question"),
+            Button("Quit", variant="error", id="quit"),
+            Button("Cancel", variant="primary", id="cancel"),
+            id="dialog",
+        )
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.id == "quit":
+            self.app.exit()
+        else:
+            self.app.pop_screen()
 
 
 class MainScreen(Screen):
 
     BINDINGS = [
         Binding("i, I", "toggle_slidebar", "Toggle Inspect"),
+        Binding("q", "request_quit", "Quit"),
     ]
 
     def compose(self) -> ComposeResult:
         yield Header(classes="-tall")
         yield SlideBar()
         with TabbedContent(
+            "Add",
             "Apply",
             "Re-Add",
-            "Add",
             "Doctor",
             "Diagram",
         ):
+            yield VerticalScroll(AddDirTree())
             yield VerticalScroll(ChezmoiStatus(True), ManagedTree())
             yield VerticalScroll(ChezmoiStatus(False), ManagedTree())
-            yield VerticalScroll(AddDirTree())
             yield VerticalScroll(Doctor())
             yield Static(FLOW, id="diagram")
         yield Footer()
+
+    def action_request_quit(self) -> None:
+        """Action to display the quit dialog."""
+        self.app.push_screen(AddFileModal())
 
     # Underscore to ignore return value from screen.dismiss()
     def refresh_app(self, _) -> None:
