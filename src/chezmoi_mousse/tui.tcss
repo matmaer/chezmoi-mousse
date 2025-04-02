@@ -248,6 +248,7 @@ AddFileModal {
 }
 
 #doctortable {
+  width: 100%;
   height: 1fr;
   padding-right: 1;
   & > .datatable--header {
