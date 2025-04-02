@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 
-class Tooling:
+class Tools:
 
     @staticmethod
     def subprocess_run(long_command):
@@ -93,7 +93,7 @@ class InputOutput:
         )
 
     def update(self) -> str:
-        self.std_out = Tooling.subprocess_run(self.long_command)
+        self.std_out = Tools.subprocess_run(self.long_command)
         return self.std_out
 
 
@@ -233,90 +233,8 @@ class Chezmoi:
     def get_cm_diff(self, file_path: str, apply: bool) -> list[str]:
         long_command = self.base + ["diff", file_path]
         if apply:
-            return Tooling.subprocess_run(long_command).splitlines()
-        return Tooling.subprocess_run(
-            long_command + ["--reverse"]
-        ).splitlines()
+            return Tools.subprocess_run(long_command).splitlines()
+        return Tools.subprocess_run(long_command + ["--reverse"]).splitlines()
 
 
 chezmoi = Chezmoi()
-
-
-SPLASH_7BIT = """\
- _______ _______ _______ _______ ____ ____ _______ _._
-|       |   |   |    ___|___    |    '    |       |   |
-|    ---|       |     __|     __|         |   |   |   |
-|       |   |   |       |       |   |`|   |       |   |
-`-------^---^---^-------^-------^---' '---^-------^---'
-   ____ ____ _______ ___ ___ _______ _______ _______
-  |    '    |       |   |   |    ___|    ___|    ___|
-  |         |   |   |   |   |__     |__     |     __|
-  |   |`|   |       |       |       |       |       |
-  '---' '---^-------^-------^-------^-------^-------'
-""".splitlines()
-
-SPLASH_8BIT = """\
- _______ _______ _______ _______ ____ ____ _______ _._
-|       |   |   |    ___|___    |    ˇ    |       |   |
-|    ---|       |     __|     __|         |   |   |   |
-|       |   |   |       |       |   |ˇ|   |       |   |
-`-------^---^---^-------^-------^---' '---^-------^---'
-   ____ ____ _______ ___ ___ _______ _______ _______
-  |    ˇ    |       |   |   |    ___|    ___|    ___|
-  |         |   |   |   |   |__     |__     |     __|
-  |   |ˇ|   |       |       |       |       |       |
-  '---' '---^-------^-------^-------^-------^-------'
-""".splitlines()
-
-SPLASH_ASCII_ART = """\
- _______________________________ _________________ _o_
-|       |   |   |    ___|___    |    '    |       |   |
-|    ===|       |     __|     __|         |   |   |   |
-|       |   |   |       |       |   |ˇ|   |       |   |
-`-------^---^---^-------^-------^---' '---^-------^---'
-   _________________________ _______________________
-  |    '    |       |   |   |    ___|    ___|    ___|
-  |         |   |   |   |   |__     |__     |     __|
-  |   |ˇ|   |       |       |       |       |       |
-  '---' '---^-------^-------^-------^-------^-------'
-""".replace(
-    "===", "=\u200b=\u200b="
-).splitlines()
-
-SPLASH = SPLASH_ASCII_ART
-
-# provisional diagrams until dynamically created
-FLOW = """\
-┌──────────────┐    ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
-│home directory│    │ working copy │    │  local repo  │    │ remote repo  │
-└──────┬───────┘    └──────┬───────┘    └──────┬───────┘    └──────┬───────┘
-       │                   │                   │                   │
-       │    chezmoi add    │                   │                   │
-       │   chezmoi re-add  │                   │                   │
-       │──────────────────>│                   │                   │
-       │                   │                   │                   │
-       │   chezmoi apply   │                   │                   │
-       │<──────────────────│                   │                   │
-       │                   │                   │                   │
-       │  chezmoi status   │                   │                   │
-       │   chezmoi diff    │                   │                   │
-       │<─ ─ ─ ─ ─ ─ ─ ─ ─>│                   │     git push      │
-       │                   │                   │──────────────────>│
-       │                   │                   │                   │
-       │                   │           chezmoi git pull            │
-       │                   │<──────────────────────────────────────│
-       │                   │                   │                   │
-       │                   │    git commit     │                   │
-       │                   │──────────────────>│                   │
-       │                   │                   │                   │
-       │                   │    autoCommit     │                   │
-       │                   │──────────────────>│                   │
-       │                   │                   │                   │
-       │                   │                autoPush               │
-       │                   │──────────────────────────────────────>│
-       │                   │                   │                   │
-       │                   │                   │                   │
-┌──────┴───────┐    ┌──────┴───────┐    ┌──────┴───────┐    ┌──────┴───────┐
-│ destination  │    │   staging    │    │   git repo   │    │  git remote  │
-└──────────────┘    └──────────────┘    └──────────────┘    └──────────────┘
-"""

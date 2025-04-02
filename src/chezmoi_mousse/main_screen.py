@@ -30,7 +30,8 @@ from textual.widgets import (
     Tree,
 )
 
-from chezmoi_mousse.common import FLOW, chezmoi, status_info, Tooling
+from chezmoi_mousse.common import chezmoi, Tools
+from chezmoi_mousse.ascii_art import FLOW
 
 
 class SlideBar(Widget):
