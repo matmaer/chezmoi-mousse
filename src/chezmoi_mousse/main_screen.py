@@ -198,6 +198,32 @@ class Doctor(Widget):
 
 class ChezmoiStatus(VerticalScroll):
 
+    # Chezmoi status command output reference:
+    # https://www.chezmoi.io/reference/commands/status/
+    status_info = {
+        "code name": {
+            "space": "No change",
+            "A": "Added",
+            "D": "Deleted",
+            "M": "Modified",
+            "R": "Modified Script",
+        },
+        "re add change": {
+            "space": "no changes for repository",
+            "A": "add to repository",
+            "D": "mark as deleted in repository",
+            "M": "modify in repository",
+            "R": "not applicable for repository",
+        },
+        "apply change": {
+            "space": "no changes for filesystem",
+            "A": "create on filesystem",
+            "D": "delete from filesystem",
+            "M": "modify on filesystem",
+            "R": "modify script on filesystem",
+        },
+    }
+
     def __init__(self, apply: bool) -> None:
         # if true, adds apply status to the list, otherwise "re-add" status
         self.apply = apply
