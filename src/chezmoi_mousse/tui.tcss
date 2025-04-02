@@ -52,42 +52,48 @@
 
 .switch-label {
   width: 1fr;
-  background: $secondary;
+  background: $surface;
+  background-tint: $surface;
   margin-left: 1;
-  color: $primary;
+  color: $foreground-darken-1;
   text-style: none;
 }
 
-.switch-horizontal {
-  margin: 0 1;
+.switch-container {
+  margin-left: 1;
+  border: inner $panel;
   height: auto;
-  background: $secondary;
+  width: 41;
+  background: $surface;
+  background-tint: $surface;
 }
 
 .switch-button {
+  background-tint: $surface;
   background: $surface;
   height: auto;
   width: auto;
   border: none;
-  padding: 0 2;
   &.-on .switch--slider {
-      color: $success;
+    border: none;
+    color: $success-lighten-1;
   }
   & .switch--slider {
-      color: $panel;
-      background: $panel-darken-2;
+    border: none;
+    color: $error-darken-3;
   }
   &:hover {
-      & > .switch--slider {
-          color: $panel-lighten-1
-      }
-      &.-on > .switch--slider {
-          color: $success-lighten-1;
-      }
+    & > .switch--slider {
+      color: $error-darken-2;
+    }
+    &.-on > .switch--slider {
+      color: $success-lighten-2;
+    }
   }
   &:focus {
-      border: tall $border;
-      background-tint: $foreground 5%;
+      border: none;
+      background: $surface;
+      background-tint: $surface;
   }
 }
 

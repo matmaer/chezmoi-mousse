@@ -2,9 +2,10 @@ from collections.abc import Iterable
 from pathlib import Path
 
 from rich.text import Text
+from textual import on
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import VerticalScroll, VerticalGroup, Grid
+from textual.containers import VerticalScroll, VerticalGroup, Grid, Horizontal
 from textual.content import Content
 from textual.reactive import reactive
 from textual.screen import Screen, ModalScreen
@@ -12,7 +13,7 @@ from textual.screen import Screen, ModalScreen
 from textual.widget import Widget
 from textual.widgets import (
     Button,
-    Checkbox,
+    # Checkbox,
     Collapsible,
     DataTable,
     DirectoryTree,
@@ -24,6 +25,7 @@ from textual.widgets import (
     ListView,
     Pretty,
     Static,
+    Switch,
     TabbedContent,
     Tree,
 )
@@ -299,17 +301,22 @@ class AddDirTree(Widget):
                 )
             )
 
-        yield Checkbox(
-            "Show only managed directories",
-            id="adddirtreecheckbox",
-            classes="tree-checkbox",
-            value=True,
+        with Horizontal(classes="switch-container"):
             # pylint: disable=line-too-long
-            tooltip="""Show only unmanaged files in directories which already contain managed files, regardless of those other managed files their status. Only the unmanaged files are shown, both when the filter is on and off. The purpose of this option is to easily spot new unmanaged files in directories which already contain managed files so they can be added to your chezmoi repository.""",
-        )
+            yield Switch(
+                value=True,
+                id="addswitch",
+                classes="switch-button",
+                # tooltip="Show only unmanaged files in directories which already contain managed files. Only the unmanaged files are shown, both when the filter is on and off. The purpose of this option is to easily spot new unmanaged files in directories which already contain managed files so they can be added to your chezmoi repository.",
+            )
+            yield Label(
+                "Show only managed directories",
+                classes="switch-label",
+            )
         yield self.FilteredTree()
 
-    def on_checkbox_changed(self, event: Checkbox.Changed) -> None:
+    @on(Switch.Changed, "#addswitch")
+    def show_only_managed_dirs(self, event: Switch.Changed) -> None:
         dir_tree = self.query_one(self.FilteredTree)
         dir_tree.only_managed_dirs = event.value
         dir_tree.reload()
@@ -343,15 +350,15 @@ class MainScreen(Screen):
         yield Header(classes="-tall")
         yield SlideBar()
         with TabbedContent(
+            "Add",
             "Apply",
             "Re-Add",
-            "Add",
             "Doctor",
             "Diagram",
         ):
+            yield VerticalScroll(AddDirTree())
             yield VerticalScroll(ChezmoiStatus(True), ManagedTree())
             yield VerticalScroll(ChezmoiStatus(False), ManagedTree())
-            yield VerticalScroll(AddDirTree())
             yield VerticalScroll(Doctor())
             yield Static(FLOW, id="diagram")
         yield Footer()
