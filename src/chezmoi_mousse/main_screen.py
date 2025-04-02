@@ -241,7 +241,7 @@ class ChezmoiStatus(VerticalScroll):
             changes = chezmoi.get_add_changes
 
         for code, path in changes:
-            status: str = status_info["code name"][code]
+            status: str = self.status_info["code name"][code]
             rel_path = str(path.relative_to(chezmoi.dest_dir))
 
             colored_diffs: list[Label] = []
