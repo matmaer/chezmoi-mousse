@@ -169,6 +169,10 @@ class Chezmoi:
             )
 
     @property
+    def get_config_dump(self) -> dict:
+        return json.loads(self.dump_config.std_out)
+
+    @property
     def dest_dir(self) -> Path:
         return Path(chezmoi.get_config_dump["destDir"])
 
@@ -187,10 +191,6 @@ class Chezmoi:
     @property
     def git_autpush_enabled(self) -> bool:
         return self.get_config_dump["git"]["autopush"]
-
-    @property
-    def get_config_dump(self) -> dict:
-        return json.loads(self.dump_config.std_out)
 
     @property
     def get_managed_paths(self) -> list[Path]:
