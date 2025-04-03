@@ -201,7 +201,7 @@ class Chezmoi:
         return [
             Path(p)
             for p in self.managed.std_out.splitlines()
-            if Path().is_file()
+            if Path(p).is_file()
         ]
 
     @property
