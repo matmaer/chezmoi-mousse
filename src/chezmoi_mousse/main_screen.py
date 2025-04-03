@@ -13,7 +13,6 @@ from textual.screen import Screen, ModalScreen
 from textual.widget import Widget
 from textual.widgets import (
     Button,
-    # Checkbox,
     Collapsible,
     DataTable,
     DirectoryTree,
@@ -46,9 +45,6 @@ class SlideBar(Widget):
     def compose(self) -> ComposeResult:
 
         with Horizontal(classes="filter-container"):
-            # HorizontalGroup(
-
-            # )
             yield Switch(
                 value=False,
                 id="includeunmanaged",
@@ -76,6 +72,11 @@ class SlideBar(Widget):
             yield Label(
                 "(?)", id="junktooltip", classes="filter-tooltip"
             ).with_tooltip(tooltip=self.junk_tooltip)
+
+    @on(Switch.Changed, "#includeunmanaged")
+    def show_unmanaged_dirs(self, event: Switch.Changed) -> None:
+        self.screen.query_one(FilteredTree).include_unmanaged = event.value
+        self.screen.query_one(FilteredTree).reload()
 
     def on_mount(self) -> None:
         # set the label text to the padded value
@@ -329,35 +330,36 @@ class ManagedTree(Tree):
         self.root.expand()
 
 
+class FilteredTree(DirectoryTree):  # pylint: disable=too-many-ancestors
+
+    include_unmanaged = reactive(False)
+
+    def __init__(self) -> None:
+        super().__init__(
+            path=chezmoi.dest_dir,
+            id="adddirtree",
+            classes="dir-tree",
+        )
+
+    def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
+        all_paths = Tools.filter_junk_paths(list(paths))
+        paths_to_show: list[Path] = []
+        if not self.include_unmanaged:
+            unique_parents = {f.parent for f in chezmoi.get_managed_paths}
+            for p in all_paths:
+                if (
+                    p.is_dir()
+                    and p in unique_parents
+                    and p in chezmoi.get_managed_paths
+                ):
+                    paths_to_show.append(p)
+                elif p.is_file() and p not in chezmoi.get_managed_paths:
+                    paths_to_show.append(p)
+            return sorted(paths_to_show)
+        return [p for p in all_paths if p not in chezmoi.get_managed_files]
+
+
 class AddDirTree(Widget):
-
-    class FilteredTree(DirectoryTree):  # pylint: disable=too-many-ancestors
-
-        only_managed_dirs = reactive(True)
-
-        def __init__(self) -> None:
-            super().__init__(
-                path=chezmoi.dest_dir,
-                id="adddirtree",
-                classes="dir-tree",
-            )
-
-        def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
-            all_paths = Tooling.filter_unwanted_paths(list(paths))
-            paths_to_show: list[Path] = []
-            if self.only_managed_dirs:
-                unique_parents = {f.parent for f in chezmoi.get_managed_paths}
-                for p in all_paths:
-                    if (
-                        p.is_dir()
-                        and p in unique_parents
-                        and p in chezmoi.get_managed_paths
-                    ):
-                        paths_to_show.append(p)
-                    elif p.is_file() and p not in chezmoi.get_managed_paths:
-                        paths_to_show.append(p)
-                return sorted(paths_to_show)
-            return [p for p in all_paths if p not in chezmoi.get_managed_files]
 
     def compose(self) -> ComposeResult:
         if chezmoi.git_autoadd_enabled:
@@ -367,26 +369,7 @@ class AddDirTree(Widget):
                     "[$warning italic]Git autoadd is enabled, so files will be added automatically.[/]\n"
                 )
             )
-
-        with Horizontal(classes="switch-container"):
-            # pylint: disable=line-too-long
-            yield Switch(
-                value=True,
-                id="addswitch",
-                classes="switch-button",
-                # tooltip="Show only unmanaged files in directories which already contain managed files. Only the unmanaged files are shown, both when the filter is on and off. The purpose of this option is to easily spot new unmanaged files in directories which already contain managed files so they can be added to your chezmoi repository.",
-            )
-            yield Label(
-                "Show only managed directories",
-                classes="switch-label",
-            )
-        yield self.FilteredTree()
-
-    @on(Switch.Changed, "#addswitch")
-    def show_only_managed_dirs(self, event: Switch.Changed) -> None:
-        dir_tree = self.query_one(self.FilteredTree)
-        dir_tree.only_managed_dirs = event.value
-        dir_tree.reload()
+        yield FilteredTree()
 
 
 class AddFileModal(ModalScreen):
