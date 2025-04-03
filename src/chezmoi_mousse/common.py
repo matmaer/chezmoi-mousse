@@ -18,7 +18,7 @@ class Tools:
         ).stdout.strip()
 
     @staticmethod
-    def filter_unwanted_paths(paths_to_filter: list[Path]) -> list[Path]:
+    def filter_junk_paths(paths_to_filter: list[Path]) -> list[Path]:
         junk_dirs = {
             "__pycache__",
             ".build",
