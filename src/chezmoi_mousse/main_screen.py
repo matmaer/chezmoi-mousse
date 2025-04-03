@@ -13,7 +13,6 @@ from textual.screen import Screen, ModalScreen
 from textual.widget import Widget
 from textual.widgets import (
     Button,
-    # Checkbox,
     Collapsible,
     DataTable,
     DirectoryTree,
@@ -30,20 +29,8 @@ from textual.widgets import (
     Tree,
 )
 
-from chezmoi_mousse.common import FLOW, chezmoi, status_info, Tooling
-
-
-class SlideBar(Widget):
-
-    def __init__(self) -> None:
-        super().__init__()
-        self.border_title = "outputs-from-chezmoi-commands"
-
-    def compose(self) -> ComposeResult:
-
-        yield VerticalScroll(
-            Static("test"),
-        )
+from chezmoi_mousse.common import chezmoi, Tools
+from chezmoi_mousse.ascii_art import FLOW
 
 
 class Doctor(Widget):
@@ -198,6 +185,32 @@ class Doctor(Widget):
 
 class ChezmoiStatus(VerticalScroll):
 
+    # Chezmoi status command output reference:
+    # https://www.chezmoi.io/reference/commands/status/
+    status_info = {
+        "code name": {
+            "space": "No change",
+            "A": "Added",
+            "D": "Deleted",
+            "M": "Modified",
+            "R": "Modified Script",
+        },
+        "re add change": {
+            "space": "no changes for repository",
+            "A": "add to repository",
+            "D": "mark as deleted in repository",
+            "M": "modify in repository",
+            "R": "not applicable for repository",
+        },
+        "apply change": {
+            "space": "no changes for filesystem",
+            "A": "create on filesystem",
+            "D": "delete from filesystem",
+            "M": "modify on filesystem",
+            "R": "modify script on filesystem",
+        },
+    }
+
     def __init__(self, apply: bool) -> None:
         # if true, adds apply status to the list, otherwise "re-add" status
         self.apply = apply
@@ -215,7 +228,7 @@ class ChezmoiStatus(VerticalScroll):
             changes = chezmoi.get_add_changes
 
         for code, path in changes:
-            status: str = status_info["code name"][code]
+            status: str = self.status_info["code name"][code]
             rel_path = str(path.relative_to(chezmoi.dest_dir))
 
             colored_diffs: list[Label] = []
@@ -262,35 +275,36 @@ class ManagedTree(Tree):
         self.root.expand()
 
 
+class FilteredTree(DirectoryTree):  # pylint: disable=too-many-ancestors
+
+    include_unmanaged = reactive(False)
+
+    def __init__(self) -> None:
+        super().__init__(
+            path=chezmoi.dest_dir,
+            id="adddirtree",
+            classes="dir-tree",
+        )
+
+    def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
+        all_paths = Tools.filter_junk_paths(list(paths))
+        paths_to_show: list[Path] = []
+        if not self.include_unmanaged:
+            unique_parents = {f.parent for f in chezmoi.get_managed_paths}
+            for p in all_paths:
+                if (
+                    p.is_dir()
+                    and p in unique_parents
+                    and p in chezmoi.get_managed_paths
+                ):
+                    paths_to_show.append(p)
+                elif p.is_file() and p not in chezmoi.get_managed_paths:
+                    paths_to_show.append(p)
+            return sorted(paths_to_show)
+        return [p for p in all_paths if p not in chezmoi.get_managed_files]
+
+
 class AddDirTree(Widget):
-
-    class FilteredTree(DirectoryTree):  # pylint: disable=too-many-ancestors
-
-        only_managed_dirs = reactive(True)
-
-        def __init__(self) -> None:
-            super().__init__(
-                path=chezmoi.dest_dir,
-                id="adddirtree",
-                classes="dir-tree",
-            )
-
-        def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
-            all_paths = Tooling.filter_unwanted_paths(list(paths))
-            paths_to_show: list[Path] = []
-            if self.only_managed_dirs:
-                unique_parents = {f.parent for f in chezmoi.get_managed_paths}
-                for p in all_paths:
-                    if (
-                        p.is_dir()
-                        and p in unique_parents
-                        and p in chezmoi.get_managed_paths
-                    ):
-                        paths_to_show.append(p)
-                    elif p.is_file() and p not in chezmoi.get_managed_paths:
-                        paths_to_show.append(p)
-                return sorted(paths_to_show)
-            return [p for p in all_paths if p not in chezmoi.get_managed_files]
 
     def compose(self) -> ComposeResult:
         if chezmoi.git_autoadd_enabled:
@@ -300,26 +314,61 @@ class AddDirTree(Widget):
                     "[$warning italic]Git autoadd is enabled, so files will be added automatically.[/]\n"
                 )
             )
+        yield FilteredTree()
 
-        with Horizontal(classes="switch-container"):
-            # pylint: disable=line-too-long
+
+class SlideBar(Widget):
+
+    def __init__(self) -> None:
+        super().__init__()
+        # pylint: disable=line-too-long
+        self.border_title = "filters "
+        self.unmanaged_tooltip = "Enable to Include all un-managed files, even if they live in an un-managed directory. Disable to only show un-managed files in directories which already contain managed files (the default). The purpose is to easily spot new un-managed files in already managed directories. (in both cases, only the un-managed files are shown)"
+        self.junk_tooltip = 'Show files and directories considered as "junk" for a dotfile manager. These include cache, temporary, trash (recycle bin) and other similar files or directories.  You can disable this, for example if you want to add files to your chezmoi repository which are in a directory named "cache".'
+
+    def compose(self) -> ComposeResult:
+
+        with Horizontal(classes="filter-container"):
             yield Switch(
-                value=True,
-                id="addswitch",
-                classes="switch-button",
-                # tooltip="Show only unmanaged files in directories which already contain managed files. Only the unmanaged files are shown, both when the filter is on and off. The purpose of this option is to easily spot new unmanaged files in directories which already contain managed files so they can be added to your chezmoi repository.",
+                value=False,
+                id="includeunmanaged",
+                classes="filter-switch",
             )
             yield Label(
-                "Show only managed directories",
-                classes="switch-label",
+                id="unmanagedlabel",
+                classes="filter-label",
             )
-        yield self.FilteredTree()
+            yield Label(
+                "(?)", id="unmanagedtooltip", classes="filter-tooltip"
+            ).with_tooltip(tooltip=self.unmanaged_tooltip)
 
-    @on(Switch.Changed, "#addswitch")
-    def show_only_managed_dirs(self, event: Switch.Changed) -> None:
-        dir_tree = self.query_one(self.FilteredTree)
-        dir_tree.only_managed_dirs = event.value
-        dir_tree.reload()
+        with Horizontal(classes="filter-container"):
+            yield Switch(
+                value=False,
+                id="includejunk",
+                classes="filter-switch",
+            )
+            yield Label(
+                "no text set",
+                id="junklabel",
+                classes="filter-label",
+            )
+            yield Label(
+                "(?)", id="junktooltip", classes="filter-tooltip"
+            ).with_tooltip(tooltip=self.junk_tooltip)
+
+    @on(Switch.Changed, "#includeunmanaged")
+    def show_unmanaged_dirs(self, event: Switch.Changed) -> None:
+        self.screen.query_one(FilteredTree).include_unmanaged = event.value
+        self.screen.query_one(FilteredTree).reload()
+
+    def on_mount(self) -> None:
+        switch_labels = {
+            "#unmanagedlabel": "Include unmanaged directories",
+            "#junklabel": "Include junk paths",
+        }
+        for label_id, label_text in switch_labels.items():
+            self.query_one(label_id, Label).update(label_text)
 
 
 class AddFileModal(ModalScreen):

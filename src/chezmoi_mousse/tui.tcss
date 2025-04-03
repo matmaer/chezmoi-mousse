@@ -1,8 +1,3 @@
-* {
-  scrollbar-size-vertical: 1;
-  background-tint: #000000;
-}
-
 .dir-tree {
   margin-left: 1;
   & > .directory-tree--folder {
@@ -20,91 +15,6 @@
     color: $success-lighten-3;
     text-style: none;
   }
-}
-
-.tree-checkbox {
-  border: round $accent-muted;
-  & > .toggle--label {
-    color: $error-darken-2;
-  }
-  & > .toggle--button {
-    color: $error;
-  }
-  &.-on > .toggle--label {
-    color: $success-darken-2;
-  }
-  &.-on > .toggle--button {
-    color: $success;
-  }
-  &:focus > .toggle--label {
-    text-style: none;
-  }
-  &:focus > .toggle--button {
-    text-style: none;
-  }
-  &:hover > .toggle--label {
-    text-style: bold;
-  }
-  &:hover > .toggle--button {
-    text-style: bold;
-  }
-}
-
-.switch-label {
-  width: 1fr;
-  background: $surface;
-  background-tint: $surface;
-  margin-left: 1;
-  color: $foreground-darken-1;
-  text-style: none;
-}
-
-.switch-container {
-  margin-left: 1;
-  border: inner $panel;
-  height: auto;
-  width: 41;
-  background: $surface;
-  background-tint: $surface;
-}
-
-.switch-button {
-  background-tint: $surface;
-  background: $surface;
-  height: auto;
-  width: auto;
-  border: none;
-  &.-on .switch--slider {
-    border: none;
-    color: $success-lighten-1;
-  }
-  & .switch--slider {
-    border: none;
-    color: $error-darken-3;
-  }
-  &:hover {
-    & > .switch--slider {
-      color: $error-darken-2;
-    }
-    &.-on > .switch--slider {
-      color: $success-lighten-2;
-    }
-  }
-  &:focus {
-      border: none;
-      background: $surface;
-      background-tint: $surface;
-  }
-}
-
-Screen {
-  layers: slidebar_layer;
-}
-
-ChezmoiStatus {
-  padding-left: 1;
-  height: auto;
-  margin-bottom: 1;
 }
 
 Tree {
@@ -144,21 +54,63 @@ Tree {
 }
 
 SlideBar {
-  border-bottom: round $accent-muted;
-  border-left: round $accent-muted;
-  border-top: round $accent-muted;
+  background-tint: $background-lighten-1;
+  background: $background-lighten-1;
+  border-bottom: inner $primary-muted;
+  border-left: inner $primary-muted;
+  border-right: none;
+  border-title-color: $primary;
+  border-top: inner $primary-muted;
   dock: right;
-  height: 100%;
+  height: auto;
   layer: slidebar_layer;
+  width: auto;
   margin: 7 0 3 14;
-  max-width: 100%;
-  min-height: 3;
-  /* offset-x: -100%; out of view if docked left */
+  /* max-width to keep the switches in view, labels overflow first */
+  max-width: 1fr;
   /* offset-x: 100%; out if view if docked right */
-  offset-x: 99%;
+  offset-x: 100%;
+  padding-top: 1;
   transition: offset 380ms;
+
+  .filter-container {
+    background-tint: $background-lighten-1;
+    background: $background-lighten-1;
+    height: auto;
+    width: auto;
+  }
+
+  .filter-switch {
+    background-tint: $background-lighten-1;
+    border: none;
+    &.-on .switch--slider {
+      border: none;
+      color: $success;
+    }
+    & .switch--slider {
+      border: none;
+      color: $error-darken-3;
+    }
+    &:hover {
+      & > .switch--slider {
+        color: $error-darken-2;
+      }
+      &.-on > .switch--slider {
+        color: $success-lighten-1;
+      }
+    }
+    &:focus {}
+  }
+  .filter-label {
+    padding-bottom: 1;
+    padding-right: 1;
+  }
+  .filter-tooltip {
+    padding-right: 2;
+    color: $primary;
+  }
   &.-visible {
-      offset-x: 0%;
+  offset-x: 0%;
   }
 }
 
@@ -166,31 +118,10 @@ SlideBar {
 /* "finalized" tcss below */
 /* ---------------------- */
 
-
-AddFileModal {
-  align: center middle;
-  Button {
-    background-tint: $surface-lighten-1;
-    width: 1fr;
-  }
-  #dialog {
-    grid-size: 2;
-    grid-gutter: 1 2;
-    grid-rows: 1fr 3;
-    padding: 0 1;
-    width: 60;
-    height: 11;
-    border: thick $background 80%;
-    background: $surface;
-    background-tint: $surface-darken-1;
-  }
-
-  #question {
-    column-span: 2;
-    height: 1fr;
-    width: 1fr;
-    content-align: center middle;
-  }
+ChezmoiStatus {
+  padding-left: 1;
+  height: auto;
+  margin-bottom: 1;
 }
 
 Collapsible {
@@ -218,9 +149,8 @@ Collapsible {
 }
 
 LoadingScreen {
-  padding: 1 1 1 1;
   & #loader-log {
-    margin: 1 0 1 0;
+    margin: 2 1 2 1;
     color: $secondary;
     height: 11;
     width: auto;
@@ -238,6 +168,15 @@ LoadingScreen {
   min-width: 76;
 }
 
+* {
+  scrollbar-size-vertical: 1;
+  background-tint: #000000;
+}
+
+Screen {
+  layers: slidebar_layer;
+}
+
 Header {
   color: $primary;
   HeaderIcon {
@@ -249,5 +188,35 @@ Header {
 Footer {
   .-command-palette {
     border: none;
+  }
+}
+
+/* not in use yet */
+
+.tree-checkbox {
+  border: round $accent-muted;
+  & > .toggle--label {
+    color: $error-darken-2;
+  }
+  & > .toggle--button {
+    color: $error;
+  }
+  &.-on > .toggle--label {
+    color: $success-darken-2;
+  }
+  &.-on > .toggle--button {
+    color: $success;
+  }
+  &:focus > .toggle--label {
+    text-style: none;
+  }
+  &:focus > .toggle--button {
+    text-style: none;
+  }
+  &:hover > .toggle--label {
+    text-style: bold;
+  }
+  &:hover > .toggle--button {
+    text-style: bold;
   }
 }
