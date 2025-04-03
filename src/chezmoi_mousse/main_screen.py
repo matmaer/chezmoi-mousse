@@ -38,13 +38,53 @@ class SlideBar(Widget):
 
     def __init__(self) -> None:
         super().__init__()
-        self.border_title = "outputs-from-chezmoi-commands"
+        # pylint: disable=line-too-long
+        self.border_title = "filters "
+        self.unmanaged_tooltip = "Enable to Include all un-managed files, even if they live in an un-managed directory. Disable to only show un-managed files in directories which already contain managed files (the default). The purpose is to easily spot new un-managed files in already managed directories. (in both cases, only the un-managed files are shown)"
+        self.junk_tooltip = 'Show files and directories considered as "junk" for a dotfile manager. These include cache, temporary, trash (recycle bin) and other similar files or directories.  You can disable this, for example if you want to add files to your chezmoi repository which are in a directory named "cache".'
 
     def compose(self) -> ComposeResult:
 
-        yield VerticalScroll(
-            Static("test"),
-        )
+        with Horizontal(classes="filter-container"):
+            # HorizontalGroup(
+
+            # )
+            yield Switch(
+                value=False,
+                id="includeunmanaged",
+                classes="filter-switch",
+            )
+            yield Label(
+                id="unmanagedlabel",
+                classes="filter-label",
+            )
+            yield Label(
+                "(?)", id="unmanagedtooltip", classes="filter-tooltip"
+            ).with_tooltip(tooltip=self.unmanaged_tooltip)
+
+        with Horizontal(classes="filter-container"):
+            yield Switch(
+                value=False,
+                id="includejunk",
+                classes="filter-switch",
+            )
+            yield Label(
+                "no text set",
+                id="junklabel",
+                classes="filter-label",
+            )
+            yield Label(
+                "(?)", id="junktooltip", classes="filter-tooltip"
+            ).with_tooltip(tooltip=self.junk_tooltip)
+
+    def on_mount(self) -> None:
+        # set the label text to the padded value
+        switch_labels = {
+            "#unmanagedlabel": "Include unmanaged directories",
+            "#junklabel": "Include junk paths",
+        }
+        for label_id, label_text in switch_labels.items():
+            self.query_one(label_id, Label).update(label_text)
 
 
 class Doctor(Widget):
