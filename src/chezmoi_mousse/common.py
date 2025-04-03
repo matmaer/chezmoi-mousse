@@ -3,10 +3,8 @@ import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
-from textual.theme import Theme
 
-
-class Tooling:
+class Tools:
 
     @staticmethod
     def subprocess_run(long_command):
@@ -20,7 +18,7 @@ class Tooling:
         ).stdout.strip()
 
     @staticmethod
-    def filter_unwanted_paths(paths_to_filter: list[Path]) -> list[Path]:
+    def filter_junk_paths(paths_to_filter: list[Path]) -> list[Path]:
         junk_dirs = {
             "__pycache__",
             ".build",
@@ -95,7 +93,7 @@ class InputOutput:
         )
 
     def update(self) -> str:
-        self.std_out = Tooling.subprocess_run(self.long_command)
+        self.std_out = Tools.subprocess_run(self.long_command)
         return self.std_out
 
 
@@ -171,8 +169,16 @@ class Chezmoi:
             )
 
     @property
+    def get_config_dump(self) -> dict:
+        return json.loads(self.dump_config.std_out)
+
+    @property
     def dest_dir(self) -> Path:
         return Path(chezmoi.get_config_dump["destDir"])
+
+    @property
+    def source_dir(self) -> Path:
+        return Path(chezmoi.get_config_dump["SourceDir"])
 
     @property
     def git_autoadd_enabled(self) -> bool:
@@ -187,10 +193,6 @@ class Chezmoi:
         return self.get_config_dump["git"]["autopush"]
 
     @property
-    def get_config_dump(self) -> dict:
-        return json.loads(self.dump_config.std_out)
-
-    @property
     def get_managed_paths(self) -> list[Path]:
         return [Path(p) for p in self.managed.std_out.splitlines()]
 
@@ -199,7 +201,7 @@ class Chezmoi:
         return [
             Path(p)
             for p in self.managed.std_out.splitlines()
-            if Path().is_file()
+            if Path(p).is_file()
         ]
 
     @property
@@ -231,129 +233,8 @@ class Chezmoi:
     def get_cm_diff(self, file_path: str, apply: bool) -> list[str]:
         long_command = self.base + ["diff", file_path]
         if apply:
-            return Tooling.subprocess_run(long_command).splitlines()
-        return Tooling.subprocess_run(
-            long_command + ["--reverse"]
-        ).splitlines()
+            return Tools.subprocess_run(long_command).splitlines()
+        return Tools.subprocess_run(long_command + ["--reverse"]).splitlines()
 
 
 chezmoi = Chezmoi()
-
-mousse_theme = Theme(
-    name="mousse-theme",
-    dark=True,
-    accent="#F187FB",  # bespoke
-    background="#000000",  # bespoke
-    error="#ba3c5b",  # textual dark
-    foreground="#DEDAE1",  # bespoke
-    primary="#0178D4",  # textual dark
-    secondary="#004578",  # textual dark
-    success="#4EBF71",  # textual dark
-    warning="#ffa62b",  # textual dark
-)
-
-# Chezmoi status command output reference:
-# https://www.chezmoi.io/reference/commands/status/
-status_info = {
-    "code name": {
-        "space": "No change",
-        "A": "Added",
-        "D": "Deleted",
-        "M": "Modified",
-        "R": "Modified Script",
-    },
-    "re add change": {
-        "space": "no changes for repository",
-        "A": "add to repository",
-        "D": "mark as deleted in repository",
-        "M": "modify in repository",
-        "R": "not applicable for repository",
-    },
-    "apply change": {
-        "space": "no changes for filesystem",
-        "A": "create on filesystem",
-        "D": "delete from filesystem",
-        "M": "modify on filesystem",
-        "R": "modify script on filesystem",
-    },
-}
-
-
-SPLASH_7BIT = """\
- _______ _______ _______ _______ ____ ____ _______ _._
-|       |   |   |    ___|___    |    '    |       |   |
-|    ---|       |     __|     __|         |   |   |   |
-|       |   |   |       |       |   |`|   |       |   |
-`-------^---^---^-------^-------^---' '---^-------^---'
-   ____ ____ _______ ___ ___ _______ _______ _______
-  |    '    |       |   |   |    ___|    ___|    ___|
-  |         |   |   |   |   |__     |__     |     __|
-  |   |`|   |       |       |       |       |       |
-  '---' '---^-------^-------^-------^-------^-------'
-""".splitlines()
-
-SPLASH_8BIT = """\
- _______ _______ _______ _______ ____ ____ _______ _._
-|       |   |   |    ___|___    |    ˇ    |       |   |
-|    ---|       |     __|     __|         |   |   |   |
-|       |   |   |       |       |   |ˇ|   |       |   |
-`-------^---^---^-------^-------^---' '---^-------^---'
-   ____ ____ _______ ___ ___ _______ _______ _______
-  |    ˇ    |       |   |   |    ___|    ___|    ___|
-  |         |   |   |   |   |__     |__     |     __|
-  |   |ˇ|   |       |       |       |       |       |
-  '---' '---^-------^-------^-------^-------^-------'
-""".splitlines()
-
-SPLASH_ASCII_ART = """\
- _______________________________ _________________ _o_
-|       |   |   |    ___|___    |    '    |       |   |
-|    ===|       |     __|     __|         |   |   |   |
-|       |   |   |       |       |   |ˇ|   |       |   |
-`-------^---^---^-------^-------^---' '---^-------^---'
-   _________________________ _______________________
-  |    '    |       |   |   |    ___|    ___|    ___|
-  |         |   |   |   |   |__     |__     |     __|
-  |   |ˇ|   |       |       |       |       |       |
-  '---' '---^-------^-------^-------^-------^-------'
-""".replace(
-    "===", "=\u200b=\u200b="
-).splitlines()
-
-SPLASH = SPLASH_ASCII_ART
-
-# provisional diagrams until dynamically created
-FLOW = """\
-┌──────────────┐    ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
-│home directory│    │ working copy │    │  local repo  │    │ remote repo  │
-└──────┬───────┘    └──────┬───────┘    └──────┬───────┘    └──────┬───────┘
-       │                   │                   │                   │
-       │    chezmoi add    │                   │                   │
-       │   chezmoi re-add  │                   │                   │
-       │──────────────────>│                   │                   │
-       │                   │                   │                   │
-       │   chezmoi apply   │                   │                   │
-       │<──────────────────│                   │                   │
-       │                   │                   │                   │
-       │  chezmoi status   │                   │                   │
-       │   chezmoi diff    │                   │                   │
-       │<─ ─ ─ ─ ─ ─ ─ ─ ─>│                   │     git push      │
-       │                   │                   │──────────────────>│
-       │                   │                   │                   │
-       │                   │           chezmoi git pull            │
-       │                   │<──────────────────────────────────────│
-       │                   │                   │                   │
-       │                   │    git commit     │                   │
-       │                   │──────────────────>│                   │
-       │                   │                   │                   │
-       │                   │    autoCommit     │                   │
-       │                   │──────────────────>│                   │
-       │                   │                   │                   │
-       │                   │                autoPush               │
-       │                   │──────────────────────────────────────>│
-       │                   │                   │                   │
-       │                   │                   │                   │
-┌──────┴───────┐    ┌──────┴───────┐    ┌──────┴───────┐    ┌──────┴───────┐
-│ destination  │    │   staging    │    │   git repo   │    │  git remote  │
-└──────────────┘    └──────────────┘    └──────────────┘    └──────────────┘
-"""
