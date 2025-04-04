@@ -1,3 +1,4 @@
+from collections.abc import Iterable
 import json
 import subprocess
 from dataclasses import dataclass
@@ -18,7 +19,7 @@ class Tools:
         ).stdout.strip()
 
     @staticmethod
-    def filter_junk(paths_to_filter: list[Path]) -> list[Path]:
+    def filter_junk(paths_to_filter: Iterable[Path]) -> list[Path]:
         junk_dirs = {
             "__pycache__",
             ".build",
@@ -51,18 +52,19 @@ class Tools:
         junk_files = {
             ".bak",
             ".cache",
-            "*.egg-info",
+            ".egg-info",
+            ".gz",
             ".lnk",
             ".lock",
             ".log",
             ".pid",
-            ".tar",
-            ".tgz",
-            ".tar.gz",
-            ".zip",
+            ".rar",
             ".swp",
+            ".tar",
             ".temp",
+            ".tgz",
             ".tmp",
+            ".zip",
         }
         cleaned = []
         for p in paths_to_filter:
@@ -71,7 +73,7 @@ class Tools:
             if p.is_file() and (p.suffix in junk_files or ".cache-" in str(p)):
                 continue
             cleaned.append(p)
-        return sorted(cleaned)
+        return cleaned
 
 
 @dataclass
@@ -196,8 +198,8 @@ class Chezmoi:
         ]
 
     @property
-    def get_managed_parents(self) -> set[Path]:
-        return {f.parent for f in self.get_managed_files}
+    def get_managed_parents(self) -> list[Path]:
+        return [f.parent for f in self.get_managed_files]
 
     @property
     def get_template_data(self) -> dict:

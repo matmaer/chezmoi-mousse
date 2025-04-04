@@ -286,33 +286,37 @@ class AddDirTree(DirectoryTree):  # pylint: disable=too-many-ancestors
 
     include_unmanaged = reactive(False)
     include_junk = reactive(False)
-    paths_to_show: list[Path] = []
 
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
-        # case 1: default, do not include unmanaged dirs or trash paths
-        if self.include_unmanaged is False and self.include_junk is False:
-            clean_paths = Tools.filter_junk(list(paths))
-            paths_to_show: list[Path] = []
-            for p in clean_paths:
-                if p.is_dir() and p in chezmoi.get_managed_parents:
+        paths_to_show: list[Path] = []
+        managed_parents = set(chezmoi.get_managed_parents)
+        managed_paths = set(chezmoi.get_managed_paths)
+        # Case 1:
+        # Do not include any junk paths
+        # Include unmanaged files if they are part of a directory that already
+        # has managed files in chezmoi.get_managed_paths.
+        if not self.include_unmanaged and not self.include_junk:
+            for p in Tools.filter_junk(paths):
+                if p.is_dir() and p in managed_parents:
                     paths_to_show.append(p)
-                elif p.is_file() and p not in chezmoi.get_managed_paths:
+                elif p.is_file() and p.parent in managed_parents:
                     paths_to_show.append(p)
-            return sorted(paths_to_show)
-        # case 2: include unmanaged dirs but not jusk
-        if self.include_unmanaged is True and self.include_junk is False:
-            return Tools.filter_junk(list(paths))
-        # case 3: dont' include unmanaged dirs but include managed trash dirs
-        if self.include_unmanaged is True and self.include_junk is True:
-            paths_to_show: list[Path] = []
-            for p in chezmoi.get_managed_paths:
-                if p.is_dir() and p in chezmoi.get_managed_parents:
+            return paths_to_show
+        # Case 2:
+        # Do not include any junk paths
+        # Include any unmanaged path in the destDir
+        if self.include_unmanaged and not self.include_junk:
+            return Tools.filter_junk(paths)
+        # Case 3:
+        # Include any unmanaged path in the destDir, even if they are considered junk paths.
+        if not self.include_unmanaged and self.include_junk:
+            for p in paths:
+                if p not in managed_paths:
                     paths_to_show.append(p)
-                elif p.is_file():
-                    paths_to_show.append(p)
-            return sorted(paths_to_show)
-        # case 4: both switches "on" or True: include everything
-        return paths
+            return paths_to_show
+        # Case 4:
+        # Both switches "on" or True: include all files in the destDir path.
+        return list(paths)
 
 
 class AddTabDirTree(Widget):
