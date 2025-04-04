@@ -318,7 +318,7 @@ class AddDirTree(DirectoryTree):  # pylint: disable=too-many-ancestors
 class AddTabDirTree(Widget):
 
     def compose(self) -> ComposeResult:
-        if chezmoi.git_autoadd_enabled:
+        if chezmoi.autoadd_enabled:
             yield Static(
                 # pylint: disable=line-too-long
                 Content.from_markup(
@@ -326,9 +326,6 @@ class AddTabDirTree(Widget):
                 )
             )
         yield AddDirTree()
-
-    def on_mount(self):
-        self.query_exactly_one("#adddirtree")
 
 
 class SlideBar(Widget):

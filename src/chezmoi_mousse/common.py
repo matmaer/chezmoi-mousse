@@ -104,6 +104,7 @@ class Chezmoi:
     managed: InputOutput
     template_data: InputOutput
     unmanaged: InputOutput
+    config: dict = {}
 
     base = [
         "chezmoi",
@@ -168,23 +169,19 @@ class Chezmoi:
 
     @property
     def dest_dir(self) -> Path:
-        return Path(self.get_config_dump["destDir"])
+        return Path(self.config["destDir"])
 
     @property
-    def source_dir(self) -> Path:
-        return Path(self.get_config_dump["SourceDir"])
+    def autoadd_enabled(self) -> bool:
+        return self.config["git"]["autoadd"]
 
     @property
-    def git_autoadd_enabled(self) -> bool:
-        return self.get_config_dump["git"]["autoadd"]
+    def autocommit_enabled(self) -> bool:
+        return self.config["git"]["autocommit"]
 
     @property
-    def git_autocommit_enabled(self) -> bool:
-        return self.get_config_dump["git"]["autocommit"]
-
-    @property
-    def git_autpush_enabled(self) -> bool:
-        return self.get_config_dump["git"]["autopush"]
+    def autpush_enabled(self) -> bool:
+        return self.config["git"]["autopush"]
 
     @property
     def get_managed_paths(self) -> list[Path]:
