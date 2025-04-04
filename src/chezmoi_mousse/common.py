@@ -205,6 +205,10 @@ class Chezmoi:
         ]
 
     @property
+    def get_managed_parents(self) -> set[Path]:
+        return {f.parent for f in self.get_managed_files}
+
+    @property
     def get_template_data(self) -> dict:
         return json.loads(self.template_data.std_out)
 

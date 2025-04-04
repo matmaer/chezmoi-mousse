@@ -288,16 +288,13 @@ class AddDirTree(DirectoryTree):  # pylint: disable=too-many-ancestors
     include_junk = reactive(False)
     paths_to_show: list[Path] = []
 
-    def get_managed_parents(self) -> set[Path]:
-        return {f.parent for f in chezmoi.get_managed_paths}
-
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
         # case 1: default, do not include unmanaged dirs or trash paths
         if self.include_unmanaged is False and self.include_junk is False:
             clean_paths = Tools.filter_junk(list(paths), return_junk=False)
             paths_to_show: list[Path] = []
             for p in clean_paths:
-                if p.is_dir() and p in self.get_managed_parents():
+                if p.is_dir() and p in chezmoi.get_managed_parents:
                     paths_to_show.append(p)
                 elif p.is_file() and p not in chezmoi.get_managed_paths:
                     paths_to_show.append(p)
@@ -309,9 +306,9 @@ class AddDirTree(DirectoryTree):  # pylint: disable=too-many-ancestors
         if self.include_unmanaged is True and self.include_junk is True:
             paths_to_show: list[Path] = []
             for p in chezmoi.get_managed_paths:
-                if p.is_dir() and p in self.get_managed_parents():
+                if p.is_dir() and p in chezmoi.get_managed_parents:
                     paths_to_show.append(p)
-                elif p.is_file() and p in self.get_managed_parents():
+                elif p.is_file():
                     paths_to_show.append(p)
             return sorted(paths_to_show)
         # case 4: both switches "on" or True: include everything
