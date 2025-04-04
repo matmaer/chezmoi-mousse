@@ -1,5 +1,6 @@
 from collections import deque
 import json
+from pathlib import Path
 
 from rich.segment import Segment
 from rich.style import Style
@@ -70,7 +71,13 @@ class LoadingScreen(Screen):
         io_class = getattr(chezmoi, arg_id)
         io_class.update()
         if arg_id == "dump_config":
-            setattr(chezmoi, "config", json.loads(io_class.std_out))
+            config_dict = json.loads(io_class.std_out)
+            setattr(chezmoi, "config", config_dict)
+            setattr(
+                chezmoi,
+                "dest_dir_paths",
+                Path(config_dict["destDir"]).rglob("*"),
+            )
         padding = 32 - len(io_class.label)
         log_text = f"{io_class.label} {'.' * padding} loaded"
         self.query_one(RichLog).write(log_text)
