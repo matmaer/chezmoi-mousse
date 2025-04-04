@@ -1,4 +1,5 @@
 from collections import deque
+import json
 
 from rich.segment import Segment
 from rich.style import Style
@@ -68,6 +69,8 @@ class LoadingScreen(Screen):
     def run(self, arg_id) -> None:
         io_class = getattr(chezmoi, arg_id)
         io_class.update()
+        if arg_id == "dump_config":
+            setattr(chezmoi, "config", json.loads(io_class.std_out))
         padding = 32 - len(io_class.label)
         log_text = f"{io_class.label} {'.' * padding} loaded"
         self.query_one(RichLog).write(log_text)
