@@ -322,7 +322,7 @@ class AddTabDirTree(Widget):
             yield Static(
                 # pylint: disable=line-too-long
                 Content.from_markup(
-                    "[$warning italic]Git autoadd is enabled, so files will be added automatically.[/]\n"
+                    '[$warning italic]"autoadd" is enabled: changes will be added to the source state after any change.[/]\n'
                 )
             )
         yield AddDirTree()
