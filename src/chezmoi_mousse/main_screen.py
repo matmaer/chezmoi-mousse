@@ -278,6 +278,8 @@ class ManagedTree(Tree):
 class FilteredTree(DirectoryTree):  # pylint: disable=too-many-ancestors
 
     include_unmanaged = reactive(False)
+    include_junk = reactive(False)
+    paths_to_show: list[Path] = []
 
     def __init__(self) -> None:
         super().__init__(
@@ -286,22 +288,37 @@ class FilteredTree(DirectoryTree):  # pylint: disable=too-many-ancestors
             classes="dir-tree",
         )
 
+    def get_managed_parents(self) -> set[Path]:
+        return {f.parent for f in chezmoi.get_managed_paths}
+
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
-        all_paths = Tools.filter_junk_paths(list(paths))
-        paths_to_show: list[Path] = []
-        if not self.include_unmanaged:
-            unique_parents = {f.parent for f in chezmoi.get_managed_paths}
-            for p in all_paths:
-                if (
-                    p.is_dir()
-                    and p in unique_parents
-                    and p in chezmoi.get_managed_paths
-                ):
+        # case 1: default, do not include unmanaged dirs or trash paths
+        if self.include_unmanaged is False and self.include_junk is False:
+            clean_paths = Tools.filter_junk(list(paths), return_junk=False)
+            paths_to_show: list[Path] = []
+            for p in clean_paths:
+                if p.is_dir() and p in self.get_managed_parents():
                     paths_to_show.append(p)
                 elif p.is_file() and p not in chezmoi.get_managed_paths:
                     paths_to_show.append(p)
             return sorted(paths_to_show)
-        return [p for p in all_paths if p not in chezmoi.get_managed_files]
+
+        # case 2: include unmanaged dirs but not jusk
+        if self.include_unmanaged is True and self.include_junk is False:
+            return Tools.filter_junk(list(paths), return_junk=False)
+
+        # dont' include unmanaged dirs but include managed trash dirs
+        if self.include_unmanaged is True and self.include_junk is True:
+            paths_to_show: list[Path] = []
+            for p in chezmoi.get_managed_paths:
+                if p.is_dir() and p in self.get_managed_parents():
+                    paths_to_show.append(p)
+                elif p.is_file() and p in self.get_managed_parents():
+                    paths_to_show.append(p)
+            return sorted(paths_to_show)
+
+        # Both switches "on" or True: include everything
+        return paths
 
 
 class AddDirTree(Widget):
@@ -360,6 +377,11 @@ class SlideBar(Widget):
     @on(Switch.Changed, "#includeunmanaged")
     def show_unmanaged_dirs(self, event: Switch.Changed) -> None:
         self.screen.query_one(FilteredTree).include_unmanaged = event.value
+        self.screen.query_one(FilteredTree).reload()
+
+    @on(Switch.Changed, "#includejunk")
+    def include_junk(self, event: Switch.Changed) -> None:
+        self.screen.query_one(FilteredTree).include_junk = event.value
         self.screen.query_one(FilteredTree).reload()
 
     def on_mount(self) -> None:
