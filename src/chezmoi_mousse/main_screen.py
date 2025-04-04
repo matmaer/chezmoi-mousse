@@ -275,11 +275,7 @@ class ManagedTree(Tree):
         self.root.expand()
 
 
-class FilteredTree(DirectoryTree):  # pylint: disable=too-many-ancestors
-
-    include_unmanaged = reactive(False)
-    include_junk = reactive(False)
-    paths_to_show: list[Path] = []
+class AddDirTree(DirectoryTree):  # pylint: disable=too-many-ancestors
 
     def __init__(self) -> None:
         super().__init__(
@@ -287,6 +283,10 @@ class FilteredTree(DirectoryTree):  # pylint: disable=too-many-ancestors
             id="adddirtree",
             classes="dir-tree",
         )
+
+    include_unmanaged = reactive(False)
+    include_junk = reactive(False)
+    paths_to_show: list[Path] = []
 
     def get_managed_parents(self) -> set[Path]:
         return {f.parent for f in chezmoi.get_managed_paths}
@@ -302,12 +302,10 @@ class FilteredTree(DirectoryTree):  # pylint: disable=too-many-ancestors
                 elif p.is_file() and p not in chezmoi.get_managed_paths:
                     paths_to_show.append(p)
             return sorted(paths_to_show)
-
         # case 2: include unmanaged dirs but not jusk
         if self.include_unmanaged is True and self.include_junk is False:
             return Tools.filter_junk(list(paths), return_junk=False)
-
-        # dont' include unmanaged dirs but include managed trash dirs
+        # case 3: dont' include unmanaged dirs but include managed trash dirs
         if self.include_unmanaged is True and self.include_junk is True:
             paths_to_show: list[Path] = []
             for p in chezmoi.get_managed_paths:
@@ -316,12 +314,11 @@ class FilteredTree(DirectoryTree):  # pylint: disable=too-many-ancestors
                 elif p.is_file() and p in self.get_managed_parents():
                     paths_to_show.append(p)
             return sorted(paths_to_show)
-
-        # Both switches "on" or True: include everything
+        # case 4: both switches "on" or True: include everything
         return paths
 
 
-class AddDirTree(Widget):
+class AddTabDirTree(Widget):
 
     def compose(self) -> ComposeResult:
         if chezmoi.git_autoadd_enabled:
@@ -331,7 +328,7 @@ class AddDirTree(Widget):
                     "[$warning italic]Git autoadd is enabled, so files will be added automatically.[/]\n"
                 )
             )
-        yield FilteredTree()
+        yield AddDirTree()
 
 
 class SlideBar(Widget):
@@ -376,13 +373,13 @@ class SlideBar(Widget):
 
     @on(Switch.Changed, "#includeunmanaged")
     def show_unmanaged_dirs(self, event: Switch.Changed) -> None:
-        self.screen.query_one(FilteredTree).include_unmanaged = event.value
-        self.screen.query_one(FilteredTree).reload()
+        self.screen.query_one(AddDirTree).include_unmanaged = event.value
+        self.screen.query_one(AddDirTree).reload()
 
     @on(Switch.Changed, "#includejunk")
     def include_junk(self, event: Switch.Changed) -> None:
-        self.screen.query_one(FilteredTree).include_junk = event.value
-        self.screen.query_one(FilteredTree).reload()
+        self.screen.query_one(AddDirTree).include_junk = event.value
+        self.screen.query_one(AddDirTree).reload()
 
     def on_mount(self) -> None:
         switch_labels = {
@@ -427,7 +424,7 @@ class MainScreen(Screen):
             "Doctor",
             "Diagram",
         ):
-            yield VerticalScroll(AddDirTree())
+            yield VerticalScroll(AddTabDirTree())
             yield VerticalScroll(ChezmoiStatus(True), ManagedTree())
             yield VerticalScroll(ChezmoiStatus(False), ManagedTree())
             yield VerticalScroll(Doctor())
