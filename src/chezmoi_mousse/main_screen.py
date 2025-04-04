@@ -291,7 +291,7 @@ class AddDirTree(DirectoryTree):  # pylint: disable=too-many-ancestors
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
         # case 1: default, do not include unmanaged dirs or trash paths
         if self.include_unmanaged is False and self.include_junk is False:
-            clean_paths = Tools.filter_junk(list(paths), return_junk=False)
+            clean_paths = Tools.filter_junk(list(paths))
             paths_to_show: list[Path] = []
             for p in clean_paths:
                 if p.is_dir() and p in chezmoi.get_managed_parents:
@@ -301,7 +301,7 @@ class AddDirTree(DirectoryTree):  # pylint: disable=too-many-ancestors
             return sorted(paths_to_show)
         # case 2: include unmanaged dirs but not jusk
         if self.include_unmanaged is True and self.include_junk is False:
-            return Tools.filter_junk(list(paths), return_junk=False)
+            return Tools.filter_junk(list(paths))
         # case 3: dont' include unmanaged dirs but include managed trash dirs
         if self.include_unmanaged is True and self.include_junk is True:
             paths_to_show: list[Path] = []

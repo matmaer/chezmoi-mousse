@@ -18,7 +18,7 @@ class Tools:
         ).stdout.strip()
 
     @staticmethod
-    def filter_junk(paths_to_filter: list[Path], return_junk) -> list[Path]:
+    def filter_junk(paths_to_filter: list[Path]) -> list[Path]:
         junk_dirs = {
             "__pycache__",
             ".build",
@@ -64,19 +64,13 @@ class Tools:
             ".temp",
             ".tmp",
         }
-        junk = []
-        if return_junk:
-            return junk
         cleaned = []
         for p in paths_to_filter:
             if p.is_dir() and p.name in junk_dirs:
-                junk.append(p)
                 continue
             if p.is_file() and (p.suffix in junk_files or ".cache-" in str(p)):
-                junk.append(p)
                 continue
             cleaned.append(p)
-
         return sorted(cleaned)
 
 
