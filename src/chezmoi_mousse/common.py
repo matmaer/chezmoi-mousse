@@ -18,7 +18,7 @@ class Tools:
         ).stdout.strip()
 
     @staticmethod
-    def filter_junk_paths(paths_to_filter: list[Path]) -> list[Path]:
+    def filter_junk(paths_to_filter: list[Path], return_junk) -> list[Path]:
         junk_dirs = {
             "__pycache__",
             ".build",
@@ -64,19 +64,19 @@ class Tools:
             ".temp",
             ".tmp",
         }
+        junk = []
+        if return_junk:
+            return junk
         cleaned = []
         for p in paths_to_filter:
-            if p.is_file() and p.suffix in junk_files:
-                continue
-            if p.is_file() and ".cache-" in str(p):
-                continue
             if p.is_dir() and p.name in junk_dirs:
+                junk.append(p)
                 continue
-            if p.is_dir():
-                members = [p for p in p.iterdir() if p.is_file() or p.is_dir()]
-                if len(members) == 0:
-                    continue
+            if p.is_file() and (p.suffix in junk_files or ".cache-" in str(p)):
+                junk.append(p)
+                continue
             cleaned.append(p)
+
         return sorted(cleaned)
 
 
@@ -174,11 +174,11 @@ class Chezmoi:
 
     @property
     def dest_dir(self) -> Path:
-        return Path(chezmoi.get_config_dump["destDir"])
+        return Path(self.get_config_dump["destDir"])
 
     @property
     def source_dir(self) -> Path:
-        return Path(chezmoi.get_config_dump["SourceDir"])
+        return Path(self.get_config_dump["SourceDir"])
 
     @property
     def git_autoadd_enabled(self) -> bool:
