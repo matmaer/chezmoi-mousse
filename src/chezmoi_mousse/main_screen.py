@@ -130,8 +130,8 @@ class Doctor(Widget):
 
     def on_mount(self) -> None:
 
-        list_view = self.query_one("#cmdnotfound", ListView)
-        table = self.query_one("#doctortable", DataTable)
+        list_view = self.query_exactly_one("#cmdnotfound", ListView)
+        table = self.query_exactly_one("#doctortable", DataTable)
         table.add_columns(*chezmoi.get_doctor_rows[0].split())
 
         for line in chezmoi.get_doctor_rows[1:]:
@@ -327,6 +327,9 @@ class AddTabDirTree(Widget):
             )
         yield AddDirTree()
 
+    def on_mount(self):
+        self.query_exactly_one("#adddirtree")
+
 
 class SlideBar(Widget):
 
@@ -370,13 +373,15 @@ class SlideBar(Widget):
 
     @on(Switch.Changed, "#includeunmanaged")
     def show_unmanaged_dirs(self, event: Switch.Changed) -> None:
-        self.screen.query_one(AddDirTree).include_unmanaged = event.value
-        self.screen.query_one(AddDirTree).reload()
+        self.screen.query_exactly_one(AddDirTree).include_unmanaged = (
+            event.value
+        )
+        self.screen.query_exactly_one(AddDirTree).reload()
 
     @on(Switch.Changed, "#includejunk")
     def include_junk(self, event: Switch.Changed) -> None:
-        self.screen.query_one(AddDirTree).include_junk = event.value
-        self.screen.query_one(AddDirTree).reload()
+        self.screen.query_exactly_one(AddDirTree).include_junk = event.value
+        self.screen.query_exactly_one(AddDirTree).reload()
 
     def on_mount(self) -> None:
         switch_labels = {
@@ -384,7 +389,7 @@ class SlideBar(Widget):
             "#junklabel": "Include junk paths",
         }
         for label_id, label_text in switch_labels.items():
-            self.query_one(label_id, Label).update(label_text)
+            self.screen.query_exactly_one(label_id, Label).update(label_text)
 
 
 class AddFileModal(ModalScreen):
@@ -437,10 +442,10 @@ class MainScreen(Screen):
         self.refresh(recompose=True)
 
     def action_toggle_slidebar(self):
-        self.query_one(SlideBar).toggle_class("-visible")
+        self.screen.query_exactly_one(SlideBar).toggle_class("-visible")
 
     def action_toggle_spacing(self):
-        self.query_one(Header).toggle_class("-tall")
+        self.screen.query_exactly_one(Header).toggle_class("-tall")
 
     def key_space(self) -> None:
         self.action_toggle_spacing()
