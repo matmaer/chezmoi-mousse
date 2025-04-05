@@ -194,10 +194,6 @@ class Chezmoi:
         return {f.parent for f in managed_files}
 
     @property
-    def get_doctor_rows(self) -> list[str]:
-        return self.doctor.std_out.splitlines()
-
-    @property
     def get_apply_changes(self) -> list[tuple[str, Path]]:
         changes = [
             l for l in self.status.std_out.splitlines() if l[0] in "ADM"
