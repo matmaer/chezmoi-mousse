@@ -255,7 +255,11 @@ class ManagedTree(Tree):
 
     def on_mount(self) -> None:
         dest_dir_path = Path(chezmoi.get_config_dump["destDir"])
-        file_paths = chezmoi.get_managed_files
+        file_paths = [
+            Path(file_path)
+            for file_path in chezmoi.managed.std_out.splitlines()
+            if Path(file_path).is_file()
+        ]
 
         if self.apply:
             dir_paths = chezmoi.get_managed_parents
