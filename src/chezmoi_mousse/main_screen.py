@@ -423,9 +423,12 @@ class MainScreen(Screen):
     def compose(self) -> ComposeResult:
         yield Header(classes="-tall")
 
-        with TabbedContent("Apply", "Add", "Doctor", "Diagram"):
+        with TabbedContent("Apply", "Re-Add", "Add", "Doctor", "Diagram"):
             yield VerticalScroll(
                 ChezmoiStatus(True), ManagedTree(), can_focus=False
+            )
+            yield VerticalScroll(
+                ChezmoiStatus(False), ManagedTree(), can_focus=False
             )
             yield VerticalScroll(AddDirTree(), can_focus=False)
             yield VerticalScroll(Doctor(), id="doctor", can_focus=False)
