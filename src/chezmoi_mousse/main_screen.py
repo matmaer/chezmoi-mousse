@@ -252,8 +252,8 @@ class ManagedTree(Tree):
         super().__init__(label=f"{chezmoi.dest_dir}", id="managedtree")
 
     def on_mount(self) -> None:
-        dir_paths = set(p for p in chezmoi.get_managed_paths if p.is_dir())
-        file_paths = set(p for p in chezmoi.get_managed_paths if p.is_file())
+        dir_paths: set = chezmoi.get_managed_parents
+        file_paths: set[Path] = set(chezmoi.get_managed_files)
 
         def recurse_paths(parent, dir_path):
             if dir_path == chezmoi.dest_dir:

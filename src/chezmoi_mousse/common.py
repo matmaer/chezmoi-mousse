@@ -143,11 +143,7 @@ class Chezmoi:
             "--exclude=encrypted",
         ],
         "unmanaged": ["unmanaged", "--path-style=absolute"],
-        "status": [
-            "status",
-            "--path-style=absolute",
-            "--include=dirs,files",
-        ],
+        "status": ["status", "--path-style=absolute", "--include=dirs,files"],
         "cm_diff": ["diff"],
     }
 
@@ -158,11 +154,7 @@ class Chezmoi:
         for arg_id, sub_cmd in self.subs.items():
             long_cmd = self.base + sub_cmd
             self.long_commands[arg_id] = long_cmd
-            setattr(
-                self,
-                arg_id,
-                InputOutput(long_cmd),
-            )
+            setattr(self, arg_id, InputOutput(long_cmd))
 
     @property
     def get_config_dump(self) -> dict:
@@ -187,6 +179,14 @@ class Chezmoi:
     @property
     def get_managed_paths(self) -> list[Path]:
         return [Path(p) for p in self.managed.std_out.splitlines()]
+
+    @property
+    def get_managed_files(self) -> list[Path]:
+        return [
+            Path(p)
+            for p in self.managed.std_out.splitlines()
+            if Path(p).is_file()
+        ]
 
     @property
     def get_managed_parents(self) -> set[Path]:
