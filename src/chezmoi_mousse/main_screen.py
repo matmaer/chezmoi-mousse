@@ -248,27 +248,33 @@ class ChezmoiStatus(VerticalScroll):
 
 class ManagedTree(Tree):
 
-    def __init__(self) -> None:
-        super().__init__(label=f"{chezmoi.dest_dir}", id="managedtree")
+    def __init__(self, apply: bool) -> None:
+        self.apply = apply
+        super().__init__(label=str(chezmoi.dest_dir), id="managed_tree")
 
     def on_mount(self) -> None:
-        dir_paths = set(p for p in chezmoi.get_managed_paths if p.is_dir())
-        file_paths = set(p for p in chezmoi.get_managed_paths if p.is_file())
+        dest_dir_path = Path(chezmoi.get_config_dump["destDir"])
+        file_paths = chezmoi.get_managed_files
+
+        if self.apply:
+            dir_paths = chezmoi.get_managed_parents
+        else:
+            status_paths = [t[1] for t in chezmoi.get_add_changes]
+            dir_paths = {path for path in status_paths if path.is_dir()}
 
         def recurse_paths(parent, dir_path):
-            if dir_path == chezmoi.dest_dir:
+            if dir_path == dest_dir_path:
                 parent = self.root
             else:
                 parent = parent.add(dir_path.parts[-1], dir_path)
-            for file in [f for f in file_paths if f.parent == dir_path]:
-                leaf_label = f"{str(file.parts[-1])}"
-                parent.add_leaf(leaf_label, file)
+            files = [f for f in file_paths if f.parent == dir_path]
+            for file in files:
+                parent.add_leaf(str(file.parts[-1]), file)
             sub_dirs = [d for d in dir_paths if d.parent == dir_path]
             for sub_dir in sub_dirs:
                 recurse_paths(parent, sub_dir)
 
-        recurse_paths(self.root, chezmoi.dest_dir)
-        self.root.collapse_all()
+        recurse_paths(self.root, dest_dir_path)
         self.root.expand()
 
 
@@ -328,6 +334,9 @@ class AddDirTree(Widget):
             )
         yield self.FilteredAddDirTree(chezmoi.dest_dir, id="adddirtree")
 
+    def action_add_file(self) -> None:
+        self.app.push_screen(AddFileModal())
+
 
 class AddFileModal(ModalScreen):
 
@@ -336,8 +345,8 @@ class AddFileModal(ModalScreen):
     ]
 
     def __init__(self, file_name: str = ""):
-        super().__init__()
         self.file_name = file_name
+        super().__init__()
 
     def compose(self) -> ComposeResult:
         yield Center(
@@ -357,8 +366,11 @@ class AddFileModal(ModalScreen):
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "addfile":
             self.screen.dismiss()
+        if event.button.id == "re_add_file":
+            self.screen.dismiss()
         elif event.button.id == "cancel":
             self.screen.dismiss()
+            self.notify("no write operation performed")
 
 
 class SlideBar(Widget):
@@ -390,22 +402,6 @@ class SlideBar(Widget):
                 "(?)", id="junktooltip", classes="filter-tooltip"
             ).with_tooltip(tooltip=self.junk_tooltip)
 
-    # @on(Switch.Changed, "#includeunmanaged")
-    # def show_unmanaged_dirs(self, event: Switch.Changed) -> None:
-    #     add_dir_tree = self.screen.query_exactly_one(
-    #         AddDirTree.FilteredAddDirTree
-    #     )
-    #     add_dir_tree.include_unmanaged = event.value
-    #     add_dir_tree.reload()
-
-    # @on(Switch.Changed, "#includejunk")
-    # def include_junk(self, event: Switch.Changed) -> None:
-    #     add_dir_tree = self.screen.query_exactly_one(
-    #         AddDirTree.FilteredAddDirTree
-    #     )
-    #     add_dir_tree.include_junk = event.value
-    #     add_dir_tree.reload()
-
     def on_switch_changed(self, event: Switch.Changed) -> None:
         add_dir_tree = self.screen.query_exactly_one(
             AddDirTree.FilteredAddDirTree
@@ -432,26 +428,22 @@ class MainScreen(Screen):
 
     def compose(self) -> ComposeResult:
         yield Header(classes="-tall")
-        yield SlideBar()
-        # the default prefix for a tab id: --content-tab-
-        with TabbedContent(
-            "Add",
-            "Apply",
-            "Re-Add",
-            "Doctor",
-            "Diagram",
-            id="moussetabs",
-            # initial="Add",
-        ):
+
+        with TabbedContent("Apply", "Re-Add", "Add", "Doctor", "Diagram"):
+            yield VerticalScroll(
+                ChezmoiStatus(apply=True),
+                ManagedTree(apply=True),
+                can_focus=False,
+            )
+            yield VerticalScroll(
+                ChezmoiStatus(apply=False),
+                ManagedTree(apply=False),
+                can_focus=False,
+            )
             yield VerticalScroll(AddDirTree(), can_focus=False)
-            yield VerticalScroll(
-                ChezmoiStatus(True), ManagedTree(), can_focus=False
-            )
-            yield VerticalScroll(
-                ChezmoiStatus(False), ManagedTree(), can_focus=False
-            )
             yield VerticalScroll(Doctor(), id="doctor", can_focus=False)
             yield Static(FLOW, id="diagram")
+        yield SlideBar()
         yield Footer()
 
     def action_toggle_slidebar(self):
@@ -462,9 +454,3 @@ class MainScreen(Screen):
 
     def key_space(self) -> None:
         self.action_toggle_spacing()
-
-    # def action_operate_modal(self) -> None:
-    #     active_pane = self.screen.query_exactly_one(TabbedContent).active_pane
-    #     # if active_pane =
-    #     print(active_pane)
-    #     self.app.push_screen(AddFileModal())
