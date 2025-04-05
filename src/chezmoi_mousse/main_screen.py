@@ -317,7 +317,7 @@ class AddDirTree(Widget):
                     ):
                         paths_to_show.append(p)
                 return paths_to_show
-            # Both switches "on" or True: include all files in the destDir path
+            # Both switches "on": include all files in the destDir path
             return list(paths)
 
     def compose(self) -> ComposeResult:
@@ -329,6 +329,27 @@ class AddDirTree(Widget):
                 )
             )
         yield self.FilteredAddDirTree(chezmoi.dest_dir)
+
+
+class AddFileModal(ModalScreen):
+
+    BINDINGS = [("escape", "dismiss", "Dismiss code")]
+
+    def compose(self) -> ComposeResult:
+        yield Center(
+            Static("file add modal"),
+            Button("Add", id="addfile"),
+            Button("Re-Add", id="readdfile"),
+            Button("Cancel", id="canceladd"),
+        )
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.id == "addfile":
+            self.screen.dismiss()
+        elif event.button.id == "readdfile":
+            self.screen.dismiss()
+        elif event.button.id == "cancel":
+            self.screen.dismiss()
 
 
 class SlideBar(Widget):
@@ -396,28 +417,17 @@ class SlideBar(Widget):
             self.screen.query_exactly_one(label_id, Label).update(label_text)
 
 
-class AddFileModal(ModalScreen):
-
-    def compose(self) -> ComposeResult:
-        yield Grid(
-            Label("Add file to chezmoi managed files?", id="question"),
-            Button("Quit", variant="error", id="quit"),
-            Button("Cancel", variant="primary", id="cancel"),
-            id="dialog",
-        )
-
-    def on_button_pressed(self, event: Button.Pressed) -> None:
-        if event.button.id == "quit":
-            self.app.exit()
-        else:
-            self.app.pop_screen()
-
-
 class MainScreen(Screen):
 
+    SCREENS = {
+        "add_file_modal": AddFileModal,
+    }
+
     BINDINGS = [
-        Binding("i, I", "toggle_slidebar", "Toggle Inspect"),
-        Binding("q", "request_quit", "Quit"),
+        # Binding("escape", "blur", "Unfocus any focused widget", show=False),
+        # Binding("escape", "dismiss", "Dismiss any modal screen", show=False),
+        Binding("f", "toggle_slidebar", "Filters"),
+        Binding("a", "add_file", "Add File"),
     ]
 
     def compose(self) -> ComposeResult:
@@ -437,10 +447,6 @@ class MainScreen(Screen):
             yield Static(FLOW, id="diagram")
         yield Footer()
 
-    def action_request_quit(self) -> None:
-        """Action to display the quit dialog."""
-        self.app.push_screen(AddFileModal())
-
     # Underscore to ignore return value from screen.dismiss()
     def refresh_app(self, _) -> None:
         self.refresh(recompose=True)
@@ -453,3 +459,6 @@ class MainScreen(Screen):
 
     def key_space(self) -> None:
         self.action_toggle_spacing()
+
+    def action_add_file(self) -> None:
+        self.app.push_screen(AddFileModal())
