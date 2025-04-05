@@ -275,51 +275,48 @@ class ManagedTree(Tree):
         self.root.expand()
 
 
-class AddDirTree(DirectoryTree):  # pylint: disable=too-many-ancestors
+class AddDirTree(Widget):  # pylint: disable=too-many-ancestors
 
-    def __init__(self) -> None:
-        super().__init__(
-            path=chezmoi.dest_dir,
-            id="adddirtree",
-            classes="dir-tree",
-        )
+    class FilteredAddDirTree(DirectoryTree):
 
-    include_unmanaged = reactive(False)
-    include_junk = reactive(False)
+        include_unmanaged = reactive(False)
+        include_junk = reactive(False)
 
-    def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
-        paths_to_show: list[Path] = []
-        managed_parents = set(chezmoi.get_managed_parents)
-        managed_paths = set(chezmoi.get_managed_paths)
-        # Case 1:
-        # Do not include any junk paths
-        # Include unmanaged files if they are part of a directory that already
-        # has managed files in chezmoi.get_managed_paths.
-        if not self.include_unmanaged and not self.include_junk:
-            for p in Tools.filter_junk(paths):
-                if p.is_dir() and p in managed_parents:
-                    paths_to_show.append(p)
-                elif p.is_file() and p.parent in managed_parents:
-                    paths_to_show.append(p)
-            return paths_to_show
-        # Case 2:
-        # Do not include any junk paths
-        # Include any unmanaged path in the destDir
-        if self.include_unmanaged and not self.include_junk:
-            return Tools.filter_junk(paths)
-        # Case 3:
-        # Include any unmanaged path in the destDir, even if they are considered junk paths.
-        if not self.include_unmanaged and self.include_junk:
-            for p in paths:
-                if p not in managed_paths:
-                    paths_to_show.append(p)
-            return paths_to_show
-        # Case 4:
-        # Both switches "on" or True: include all files in the destDir path.
-        return list(paths)
-
-
-class AddTabDirTree(Widget):
+        def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
+            # Case 1:
+            # Do not include any junk paths
+            # Include unmanaged files if they are part of a directory that already
+            # has managed files in chezmoi.get_managed_paths.
+            if not self.include_unmanaged and not self.include_junk:
+                paths_to_show: list[Path] = []
+                for p in Tools.filter_junk(list(paths)):
+                    if p.is_dir() and p in chezmoi.get_managed_parents:
+                        paths_to_show.append(p)
+                    elif (
+                        p.is_file() and p.parent in chezmoi.get_managed_parents
+                    ):
+                        paths_to_show.append(p)
+                return paths_to_show
+            # Case 2:
+            # Do not include any junk paths
+            # Include any unmanaged path in the destDir
+            if self.include_unmanaged and not self.include_junk:
+                return Tools.filter_junk(list(paths))
+            # Case 3:
+            # Include any unmanaged path in the destDir, even if they are considered junk paths.
+            if not self.include_unmanaged and self.include_junk:
+                paths_to_show: list[Path] = []
+                for p in list(paths):
+                    if p.is_dir() and p in chezmoi.get_managed_parents:
+                        paths_to_show.append(p)
+                    elif (
+                        p.is_file() and p.parent in chezmoi.get_managed_parents
+                    ):
+                        paths_to_show.append(p)
+                return paths_to_show
+            # Case 4:
+            # Both switches "on" or True: include all files in the destDir path.
+            return list(paths)
 
     def compose(self) -> ComposeResult:
         if chezmoi.autoadd_enabled:
@@ -329,7 +326,7 @@ class AddTabDirTree(Widget):
                     '[$warning italic]"autoadd" is enabled: changes will be added to the source state after any change.[/]\n'
                 )
             )
-        yield AddDirTree()
+        yield self.FilteredAddDirTree(chezmoi.dest_dir)
 
 
 class SlideBar(Widget):
@@ -374,15 +371,19 @@ class SlideBar(Widget):
 
     @on(Switch.Changed, "#includeunmanaged")
     def show_unmanaged_dirs(self, event: Switch.Changed) -> None:
-        self.screen.query_exactly_one(AddDirTree).include_unmanaged = (
-            event.value
+        add_dir_tree = self.screen.query_exactly_one(
+            AddDirTree.FilteredAddDirTree
         )
-        self.screen.query_exactly_one(AddDirTree).reload()
+        add_dir_tree.include_unmanaged = event.value
+        add_dir_tree.reload()
 
     @on(Switch.Changed, "#includejunk")
     def include_junk(self, event: Switch.Changed) -> None:
-        self.screen.query_exactly_one(AddDirTree).include_junk = event.value
-        self.screen.query_exactly_one(AddDirTree).reload()
+        add_dir_tree = self.screen.query_exactly_one(
+            AddDirTree.FilteredAddDirTree
+        )
+        add_dir_tree.include_junk = event.value
+        add_dir_tree.reload()
 
     def on_mount(self) -> None:
         switch_labels = {
@@ -427,7 +428,7 @@ class MainScreen(Screen):
             "Doctor",
             "Diagram",
         ):
-            yield VerticalScroll(AddTabDirTree())
+            yield VerticalScroll(AddDirTree())
             yield VerticalScroll(ChezmoiStatus(True), ManagedTree())
             yield VerticalScroll(ChezmoiStatus(False), ManagedTree())
             yield VerticalScroll(Doctor())
