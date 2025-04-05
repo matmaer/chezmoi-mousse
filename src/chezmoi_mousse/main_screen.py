@@ -248,13 +248,19 @@ class ChezmoiStatus(VerticalScroll):
 
 class ManagedTree(Tree):
 
-    def __init__(self) -> None:
+    def __init__(self, apply: bool) -> None:
+        self.apply = apply
         super().__init__(label=str(chezmoi.dest_dir), id="managed_tree")
 
     def on_mount(self) -> None:
         dest_dir_path = Path(chezmoi.get_config_dump["destDir"])
-        dir_paths = chezmoi.get_managed_parents
         file_paths = chezmoi.get_managed_files
+
+        if self.apply:
+            dir_paths = chezmoi.get_managed_parents
+        else:
+            status_paths = [t[1] for t in chezmoi.get_add_changes]
+            dir_paths = {path for path in status_paths if path.is_dir()}
 
         def recurse_paths(parent, dir_path):
             if dir_path == dest_dir_path:
@@ -425,10 +431,14 @@ class MainScreen(Screen):
 
         with TabbedContent("Apply", "Re-Add", "Add", "Doctor", "Diagram"):
             yield VerticalScroll(
-                ChezmoiStatus(apply=True), ManagedTree(), can_focus=False
+                ChezmoiStatus(apply=True),
+                ManagedTree(apply=True),
+                can_focus=False,
             )
             yield VerticalScroll(
-                ChezmoiStatus(apply=False), ManagedTree(), can_focus=False
+                ChezmoiStatus(apply=False),
+                ManagedTree(apply=False),
+                can_focus=False,
             )
             yield VerticalScroll(AddDirTree(), can_focus=False)
             yield VerticalScroll(Doctor(), id="doctor", can_focus=False)
