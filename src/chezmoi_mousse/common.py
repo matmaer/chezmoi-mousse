@@ -18,7 +18,7 @@ class Tools:
         ).stdout.strip()
 
     @staticmethod
-    def filter_junk(paths_to_filter: list[Path], return_junk) -> list[Path]:
+    def filter_junk(paths_to_filter: list[Path]) -> list[Path]:
         junk_dirs = {
             "__pycache__",
             ".build",
@@ -51,33 +51,28 @@ class Tools:
         junk_files = {
             ".bak",
             ".cache",
-            "*.egg-info",
+            ".egg-info",
+            ".gz",
             ".lnk",
             ".lock",
             ".log",
             ".pid",
-            ".tar",
-            ".tgz",
-            ".tar.gz",
-            ".zip",
+            ".rar",
             ".swp",
+            ".tar",
             ".temp",
+            ".tgz",
             ".tmp",
+            ".zip",
         }
-        junk = []
-        if return_junk:
-            return junk
         cleaned = []
         for p in paths_to_filter:
             if p.is_dir() and p.name in junk_dirs:
-                junk.append(p)
                 continue
             if p.is_file() and (p.suffix in junk_files or ".cache-" in str(p)):
-                junk.append(p)
                 continue
             cleaned.append(p)
-
-        return sorted(cleaned)
+        return cleaned
 
 
 @dataclass
@@ -101,13 +96,14 @@ class Chezmoi:
 
     cat_config: InputOutput
     cm_diff: InputOutput
-    status: InputOutput
+    config: dict = {}
     doctor: InputOutput
     dump_config: InputOutput
     git_log: InputOutput
     git_status: InputOutput
     ignored: InputOutput
     managed: InputOutput
+    status: InputOutput
     template_data: InputOutput
     unmanaged: InputOutput
 
@@ -174,35 +170,28 @@ class Chezmoi:
 
     @property
     def dest_dir(self) -> Path:
-        return Path(self.get_config_dump["destDir"])
+        return self.config["destDir"]
 
     @property
-    def source_dir(self) -> Path:
-        return Path(self.get_config_dump["SourceDir"])
+    def autoadd_enabled(self) -> bool:
+        return self.config["git"]["autoadd"]
 
     @property
-    def git_autoadd_enabled(self) -> bool:
-        return self.get_config_dump["git"]["autoadd"]
+    def autocommit_enabled(self) -> bool:
+        return self.config["git"]["autocommit"]
 
     @property
-    def git_autocommit_enabled(self) -> bool:
-        return self.get_config_dump["git"]["autocommit"]
-
-    @property
-    def git_autpush_enabled(self) -> bool:
-        return self.get_config_dump["git"]["autopush"]
+    def autpush_enabled(self) -> bool:
+        return self.config["git"]["autopush"]
 
     @property
     def get_managed_paths(self) -> list[Path]:
         return [Path(p) for p in self.managed.std_out.splitlines()]
 
     @property
-    def get_managed_files(self) -> list[Path]:
-        return [
-            Path(p)
-            for p in self.managed.std_out.splitlines()
-            if Path(p).is_file()
-        ]
+    def get_managed_parents(self) -> set[Path]:
+        managed_files = [Path(p) for p in self.managed.std_out.splitlines()]
+        return {f.parent for f in managed_files}
 
     @property
     def get_template_data(self) -> dict:

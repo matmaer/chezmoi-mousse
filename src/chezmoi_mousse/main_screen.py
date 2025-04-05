@@ -130,8 +130,8 @@ class Doctor(Widget):
 
     def on_mount(self) -> None:
 
-        list_view = self.query_one("#cmdnotfound", ListView)
-        table = self.query_one("#doctortable", DataTable)
+        list_view = self.query_exactly_one("#cmdnotfound", ListView)
+        table = self.query_exactly_one("#doctortable", DataTable)
         table.add_columns(*chezmoi.get_doctor_rows[0].split())
 
         for line in chezmoi.get_doctor_rows[1:]:
@@ -275,63 +275,55 @@ class ManagedTree(Tree):
         self.root.expand()
 
 
-class FilteredTree(DirectoryTree):  # pylint: disable=too-many-ancestors
+class AddDirTree(Widget):  # pylint: disable=too-many-ancestors
 
-    include_unmanaged = reactive(False)
-    include_junk = reactive(False)
-    paths_to_show: list[Path] = []
+    class FilteredAddDirTree(DirectoryTree):
 
-    def __init__(self) -> None:
-        super().__init__(
-            path=chezmoi.dest_dir,
-            id="adddirtree",
-            classes="dir-tree",
-        )
+        include_unmanaged = reactive(False)
+        include_junk = reactive(False)
 
-    def get_managed_parents(self) -> set[Path]:
-        return {f.parent for f in chezmoi.get_managed_paths}
-
-    def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
-        # case 1: default, do not include unmanaged dirs or trash paths
-        if self.include_unmanaged is False and self.include_junk is False:
-            clean_paths = Tools.filter_junk(list(paths), return_junk=False)
-            paths_to_show: list[Path] = []
-            for p in clean_paths:
-                if p.is_dir() and p in self.get_managed_parents():
-                    paths_to_show.append(p)
-                elif p.is_file() and p not in chezmoi.get_managed_paths:
-                    paths_to_show.append(p)
-            return sorted(paths_to_show)
-
-        # case 2: include unmanaged dirs but not jusk
-        if self.include_unmanaged is True and self.include_junk is False:
-            return Tools.filter_junk(list(paths), return_junk=False)
-
-        # dont' include unmanaged dirs but include managed trash dirs
-        if self.include_unmanaged is True and self.include_junk is True:
-            paths_to_show: list[Path] = []
-            for p in chezmoi.get_managed_paths:
-                if p.is_dir() and p in self.get_managed_parents():
-                    paths_to_show.append(p)
-                elif p.is_file() and p in self.get_managed_parents():
-                    paths_to_show.append(p)
-            return sorted(paths_to_show)
-
-        # Both switches "on" or True: include everything
-        return paths
-
-
-class AddDirTree(Widget):
+        def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
+            # Do not include any junk paths
+            # Include unmanaged files if they are part of a directory which
+            # already has managed files in chezmoi.get_managed_paths.
+            if not self.include_unmanaged and not self.include_junk:
+                paths_to_show: list[Path] = []
+                for p in Tools.filter_junk(list(paths)):
+                    if p.is_dir() and p in chezmoi.get_managed_parents:
+                        paths_to_show.append(p)
+                    elif (
+                        p.is_file() and p.parent in chezmoi.get_managed_parents
+                    ):
+                        paths_to_show.append(p)
+                return paths_to_show
+            # Do not include any junk paths
+            # Include any unmanaged path in the destDir
+            if self.include_unmanaged and not self.include_junk:
+                return Tools.filter_junk(list(paths))
+            # Include any unmanaged path in the destDir,
+            # even if they are considered junk paths.
+            if not self.include_unmanaged and self.include_junk:
+                paths_to_show: list[Path] = []
+                for p in list(paths):
+                    if p.is_dir() and p in chezmoi.get_managed_parents:
+                        paths_to_show.append(p)
+                    elif (
+                        p.is_file() and p.parent in chezmoi.get_managed_parents
+                    ):
+                        paths_to_show.append(p)
+                return paths_to_show
+            # Both switches "on" or True: include all files in the destDir path
+            return list(paths)
 
     def compose(self) -> ComposeResult:
-        if chezmoi.git_autoadd_enabled:
+        if chezmoi.autoadd_enabled:
             yield Static(
                 # pylint: disable=line-too-long
                 Content.from_markup(
-                    "[$warning italic]Git autoadd is enabled, so files will be added automatically.[/]\n"
+                    '[$warning italic]"autoadd" is enabled: changes will be added to the source state after any change.[/]\n'
                 )
             )
-        yield FilteredTree()
+        yield self.FilteredAddDirTree(chezmoi.dest_dir)
 
 
 class SlideBar(Widget):
@@ -340,7 +332,7 @@ class SlideBar(Widget):
         super().__init__()
         # pylint: disable=line-too-long
         self.border_title = "filters "
-        self.unmanaged_tooltip = "Enable to Include all un-managed files, even if they live in an un-managed directory. Disable to only show un-managed files in directories which already contain managed files (the default). The purpose is to easily spot new un-managed files in already managed directories. (in both cases, only the un-managed files are shown)"
+        self.unmanaged_tooltip = "Enable to include all un-managed files, even if they live in an un-managed directory. Disable to only show un-managed files in directories which already contain managed files (the default). The purpose is to easily spot new un-managed files in already managed directories. (in both cases, only the un-managed files are shown)"
         self.junk_tooltip = 'Show files and directories considered as "junk" for a dotfile manager. These include cache, temporary, trash (recycle bin) and other similar files or directories.  You can disable this, for example if you want to add files to your chezmoi repository which are in a directory named "cache".'
 
     def compose(self) -> ComposeResult:
@@ -376,13 +368,19 @@ class SlideBar(Widget):
 
     @on(Switch.Changed, "#includeunmanaged")
     def show_unmanaged_dirs(self, event: Switch.Changed) -> None:
-        self.screen.query_one(FilteredTree).include_unmanaged = event.value
-        self.screen.query_one(FilteredTree).reload()
+        add_dir_tree = self.screen.query_exactly_one(
+            AddDirTree.FilteredAddDirTree
+        )
+        add_dir_tree.include_unmanaged = event.value
+        add_dir_tree.reload()
 
     @on(Switch.Changed, "#includejunk")
     def include_junk(self, event: Switch.Changed) -> None:
-        self.screen.query_one(FilteredTree).include_junk = event.value
-        self.screen.query_one(FilteredTree).reload()
+        add_dir_tree = self.screen.query_exactly_one(
+            AddDirTree.FilteredAddDirTree
+        )
+        add_dir_tree.include_junk = event.value
+        add_dir_tree.reload()
 
     def on_mount(self) -> None:
         switch_labels = {
@@ -390,7 +388,7 @@ class SlideBar(Widget):
             "#junklabel": "Include junk paths",
         }
         for label_id, label_text in switch_labels.items():
-            self.query_one(label_id, Label).update(label_text)
+            self.screen.query_exactly_one(label_id, Label).update(label_text)
 
 
 class AddFileModal(ModalScreen):
@@ -443,10 +441,10 @@ class MainScreen(Screen):
         self.refresh(recompose=True)
 
     def action_toggle_slidebar(self):
-        self.query_one(SlideBar).toggle_class("-visible")
+        self.screen.query_exactly_one(SlideBar).toggle_class("-visible")
 
     def action_toggle_spacing(self):
-        self.query_one(Header).toggle_class("-tall")
+        self.screen.query_exactly_one(Header).toggle_class("-tall")
 
     def key_space(self) -> None:
         self.action_toggle_spacing()

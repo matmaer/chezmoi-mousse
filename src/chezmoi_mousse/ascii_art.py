@@ -73,6 +73,6 @@ FLOW = """\
        │                   │                   │                   │
        │                   │                   │                   │
 ┌──────┴───────┐    ┌──────┴───────┐    ┌──────┴───────┐    ┌──────┴───────┐
-│ destination  │    │   staging    │    │   git repo   │    │  git remote  │
+│ destination  │    │ target state │    │ source state │    │  git remote  │
 └──────────────┘    └──────────────┘    └──────────────┘    └──────────────┘
 """
