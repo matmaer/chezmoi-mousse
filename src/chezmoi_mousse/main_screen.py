@@ -283,10 +283,9 @@ class AddDirTree(Widget):  # pylint: disable=too-many-ancestors
         include_junk = reactive(False)
 
         def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
-            # Case 1:
             # Do not include any junk paths
-            # Include unmanaged files if they are part of a directory that already
-            # has managed files in chezmoi.get_managed_paths.
+            # Include unmanaged files if they are part of a directory which
+            # already has managed files in chezmoi.get_managed_paths.
             if not self.include_unmanaged and not self.include_junk:
                 paths_to_show: list[Path] = []
                 for p in Tools.filter_junk(list(paths)):
@@ -297,13 +296,12 @@ class AddDirTree(Widget):  # pylint: disable=too-many-ancestors
                     ):
                         paths_to_show.append(p)
                 return paths_to_show
-            # Case 2:
             # Do not include any junk paths
             # Include any unmanaged path in the destDir
             if self.include_unmanaged and not self.include_junk:
                 return Tools.filter_junk(list(paths))
-            # Case 3:
-            # Include any unmanaged path in the destDir, even if they are considered junk paths.
+            # Include any unmanaged path in the destDir,
+            # even if they are considered junk paths.
             if not self.include_unmanaged and self.include_junk:
                 paths_to_show: list[Path] = []
                 for p in list(paths):
@@ -314,8 +312,7 @@ class AddDirTree(Widget):  # pylint: disable=too-many-ancestors
                     ):
                         paths_to_show.append(p)
                 return paths_to_show
-            # Case 4:
-            # Both switches "on" or True: include all files in the destDir path.
+            # Both switches "on" or True: include all files in the destDir path
             return list(paths)
 
     def compose(self) -> ComposeResult:
@@ -335,7 +332,7 @@ class SlideBar(Widget):
         super().__init__()
         # pylint: disable=line-too-long
         self.border_title = "filters "
-        self.unmanaged_tooltip = "Enable to Include all un-managed files, even if they live in an un-managed directory. Disable to only show un-managed files in directories which already contain managed files (the default). The purpose is to easily spot new un-managed files in already managed directories. (in both cases, only the un-managed files are shown)"
+        self.unmanaged_tooltip = "Enable to include all un-managed files, even if they live in an un-managed directory. Disable to only show un-managed files in directories which already contain managed files (the default). The purpose is to easily spot new un-managed files in already managed directories. (in both cases, only the un-managed files are shown)"
         self.junk_tooltip = 'Show files and directories considered as "junk" for a dotfile manager. These include cache, temporary, trash (recycle bin) and other similar files or directories.  You can disable this, for example if you want to add files to your chezmoi repository which are in a directory named "cache".'
 
     def compose(self) -> ComposeResult:
