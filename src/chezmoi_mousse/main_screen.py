@@ -114,7 +114,7 @@ class Doctor(Widget):
                 Pretty(chezmoi.get_config_dump), title="chezmoi dump-config"
             )
             yield Collapsible(
-                Pretty(chezmoi.get_template_data),
+                Pretty(chezmoi.template_data_dict),
                 title="chezmoi data (template data)",
             )
             yield Collapsible(
