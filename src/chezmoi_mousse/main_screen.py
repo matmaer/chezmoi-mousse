@@ -328,6 +328,9 @@ class AddDirTree(Widget):
             )
         yield self.FilteredAddDirTree(chezmoi.dest_dir, id="adddirtree")
 
+    def action_add_file(self) -> None:
+        self.app.push_screen(AddFileModal())
+
 
 class AddFileModal(ModalScreen):
 
@@ -336,8 +339,8 @@ class AddFileModal(ModalScreen):
     ]
 
     def __init__(self, file_name: str = ""):
-        super().__init__()
         self.file_name = file_name
+        super().__init__()
 
     def compose(self) -> ComposeResult:
         yield Center(
@@ -357,8 +360,11 @@ class AddFileModal(ModalScreen):
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "addfile":
             self.screen.dismiss()
+        if event.button.id == "re_add_file":
+            self.screen.dismiss()
         elif event.button.id == "cancel":
             self.screen.dismiss()
+            self.notify("no write operation performed")
 
 
 class SlideBar(Widget):
@@ -417,13 +423,10 @@ class MainScreen(Screen):
     def compose(self) -> ComposeResult:
         yield Header(classes="-tall")
 
-        with TabbedContent("Add", "Apply", "Re-Add", "Doctor", "Diagram"):
+        with TabbedContent("Add", "Apply", "Doctor", "Diagram"):
             yield VerticalScroll(AddDirTree(), can_focus=False)
             yield VerticalScroll(
                 ChezmoiStatus(True), ManagedTree(), can_focus=False
-            )
-            yield VerticalScroll(
-                ChezmoiStatus(False), ManagedTree(), can_focus=False
             )
             yield VerticalScroll(Doctor(), id="doctor", can_focus=False)
             yield Static(FLOW, id="diagram")
