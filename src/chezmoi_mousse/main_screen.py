@@ -111,7 +111,7 @@ class Doctor(Widget):
                 ListView(id="cmdnotfound"), title="Commands Not Found"
             )
             yield Collapsible(
-                Pretty(chezmoi.get_config_dump), title="chezmoi dump-config"
+                Pretty(chezmoi.config), title="chezmoi dump-config"
             )
             yield Collapsible(
                 Pretty(chezmoi.template_data_dict),
@@ -230,7 +230,7 @@ class ChezmoiStatus(VerticalScroll):
 
         for code, path in changes:
             status: str = self.status_info["code name"][code]
-            rel_path = str(path.relative_to(chezmoi.dest_dir))
+            rel_path = str(path.relative_to(chezmoi.config["destDir"]))
 
             colored_diffs: list[Label] = []
             for line in chezmoi.get_cm_diff(str(path), self.apply):
@@ -251,10 +251,12 @@ class ManagedTree(Tree):
 
     def __init__(self, apply: bool) -> None:
         self.apply = apply
-        super().__init__(label=str(chezmoi.dest_dir), id="managed_tree")
+        super().__init__(
+            label=str(chezmoi.config["destDir"]), id="managed_tree"
+        )
 
     def on_mount(self) -> None:
-        dest_dir_path = Path(chezmoi.get_config_dump["destDir"])
+        dest_dir_path = Path(chezmoi.config["destDir"])
         file_paths = [
             Path(file_path)
             for file_path in chezmoi.managed.std_out.splitlines()
@@ -299,7 +301,7 @@ class AddDirTree(Widget):
         def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
             # Do not include any junk paths
             # Include unmanaged files if they are part of a directory which
-            # already has managed files in chezmoi.get_managed_paths.
+            # already has managed files in it.
             if not self.include_unmanaged and not self.include_junk:
                 paths_to_show: list[Path] = []
                 for p in Tools.filter_junk(list(paths)):
@@ -337,7 +339,9 @@ class AddDirTree(Widget):
                     '[$warning italic]"autoadd" is enabled: changes will be added to the source state after any change.[/]\n'
                 )
             )
-        yield self.FilteredAddDirTree(chezmoi.dest_dir, id="adddirtree")
+        yield self.FilteredAddDirTree(
+            chezmoi.config["destDir"], id="adddirtree"
+        )
 
     def action_add_file(self) -> None:
         self.app.push_screen(AddFileModal())

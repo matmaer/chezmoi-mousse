@@ -104,8 +104,8 @@ class Chezmoi:
     status: InputOutput
     template_data: InputOutput
     unmanaged: InputOutput
-    template_data_dict: dict = {}
     config: dict = {}
+    template_data_dict: dict = {}
 
     base = [
         "chezmoi",
@@ -120,7 +120,7 @@ class Chezmoi:
     # https://www.chezmoi.io/reference/command-line-flags/common/#available-entry-types
     subs = {
         "cat_config": ["cat-config"],
-        "template_data": ["data", "--format=json"],
+        "cm_diff": ["diff"],
         "doctor": ["doctor"],
         "dump_config": ["dump-config", "--format=json"],
         "git_log": [
@@ -142,9 +142,21 @@ class Chezmoi:
             "--include=dirs,files",
             "--exclude=encrypted",
         ],
-        "unmanaged": ["unmanaged", "--path-style=absolute"],
         "status": ["status", "--path-style=absolute", "--include=dirs,files"],
-        "cm_diff": ["diff"],
+        "template_data": ["data", "--format=json"],
+        "unmanaged": ["unmanaged", "--path-style=absolute"],
+    }
+
+    write_commands = {
+        "add": [
+            "add",
+            "--include=files",
+            "--recursive=false",
+            "--prompt=false",
+            "--secrets=error",  # Scan for secrets when adding unencrypted files
+        ],
+        "apply": ["apply", "--include=files", "--recursive=false"],
+        "re_add": ["re-add", "--include=files", "--recursive=false"],
     }
 
     def __init__(self) -> None:
@@ -155,14 +167,6 @@ class Chezmoi:
             long_cmd = self.base + sub_cmd
             self.long_commands[arg_id] = long_cmd
             setattr(self, arg_id, InputOutput(long_cmd))
-
-    @property
-    def get_config_dump(self) -> dict:
-        return self.config
-
-    @property
-    def dest_dir(self) -> Path:
-        return self.config["destDir"]
 
     @property
     def autoadd_enabled(self) -> bool:
@@ -177,13 +181,11 @@ class Chezmoi:
         return self.config["git"]["autopush"]
 
     @property
-    def get_managed_paths(self) -> list[Path]:
-        return [Path(p) for p in self.managed.std_out.splitlines()]
-
-    @property
-    def get_managed_parents(self) -> set[Path]:
-        managed_files = [Path(p) for p in self.managed.std_out.splitlines()]
-        return {f.parent for f in managed_files}
+    def get_add_changes(self) -> list[tuple[str, Path]]:
+        changes = [
+            l for l in self.status.std_out.splitlines() if l[1] in "ADM"
+        ]
+        return [(change[1], Path(change[3:])) for change in changes]
 
     @property
     def get_apply_changes(self) -> list[tuple[str, Path]]:
@@ -193,17 +195,31 @@ class Chezmoi:
         return [(change[0], Path(change[3:])) for change in changes]
 
     @property
-    def get_add_changes(self) -> list[tuple[str, Path]]:
-        changes = [
-            l for l in self.status.std_out.splitlines() if l[1] in "ADM"
-        ]
-        return [(change[1], Path(change[3:])) for change in changes]
+    def get_managed_parents(self) -> set[Path]:
+        managed_files = [Path(p) for p in self.managed.std_out.splitlines()]
+        return {f.parent for f in managed_files}
+
+    @property
+    def get_managed_paths(self) -> list[Path]:
+        return [Path(p) for p in self.managed.std_out.splitlines()]
 
     def get_cm_diff(self, file_path: str, apply: bool) -> list[str]:
         long_command = self.base + ["diff", file_path]
         if apply:
             return Tools.subprocess_run(long_command).splitlines()
         return Tools.subprocess_run(long_command + ["--reverse"]).splitlines()
+
+    def run_chezmoi_add(self, file_path: Path) -> str:
+        long_command = self.base + self.write_commands["add"]
+        return Tools.subprocess_run(long_command + [file_path])
+
+    def run_chezmoi_re_add(self, file_path: Path) -> str:
+        long_command = self.base + self.write_commands["re_add"]
+        return Tools.subprocess_run(long_command + [file_path])
+
+    def run_chezmoi_apply(self, file_path: Path) -> str:
+        long_command = self.base + self.write_commands["apply"]
+        return Tools.subprocess_run(long_command + [file_path])
 
 
 chezmoi = Chezmoi()
