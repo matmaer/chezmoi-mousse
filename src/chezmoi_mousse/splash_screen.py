@@ -1,6 +1,5 @@
 import json
 from collections import deque
-from pathlib import Path
 
 from rich.segment import Segment
 from rich.style import Style

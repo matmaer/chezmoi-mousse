@@ -1,4 +1,3 @@
-import json
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
@@ -197,10 +196,6 @@ class Chezmoi:
     @property
     def get_doctor_rows(self) -> list[str]:
         return self.doctor.std_out.splitlines()
-
-    @property
-    def get_status(self) -> list[str]:
-        return self.status.std_out.splitlines()
 
     @property
     def get_apply_changes(self) -> list[tuple[str, Path]]:
