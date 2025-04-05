@@ -73,6 +73,9 @@ class LoadingScreen(Screen):
         if arg_id == "dump_config":
             config_dict = json.loads(io_class.std_out)
             setattr(chezmoi, "config", config_dict)
+        if arg_id == "template_data":
+            config_dict = json.loads(io_class.std_out)
+            setattr(chezmoi, "template_data_dict", config_dict)
         padding = 32 - len(io_class.label)
         log_text = f"{io_class.label} {'.' * padding} loaded"
         self.query_one(RichLog).write(log_text)

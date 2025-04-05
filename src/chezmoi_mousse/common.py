@@ -105,6 +105,7 @@ class Chezmoi:
     status: InputOutput
     template_data: InputOutput
     unmanaged: InputOutput
+    template_data_dict: dict = {}
     config: dict = {}
 
     base = [
@@ -192,10 +193,6 @@ class Chezmoi:
     def get_managed_parents(self) -> set[Path]:
         managed_files = [Path(p) for p in self.managed.std_out.splitlines()]
         return {f.parent for f in managed_files}
-
-    @property
-    def get_template_data(self) -> dict:
-        return json.loads(self.template_data.std_out)
 
     @property
     def get_doctor_rows(self) -> list[str]:
