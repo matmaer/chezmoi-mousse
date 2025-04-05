@@ -181,14 +181,6 @@ class Chezmoi:
         return [Path(p) for p in self.managed.std_out.splitlines()]
 
     @property
-    def get_managed_files(self) -> list[Path]:
-        return [
-            Path(p)
-            for p in self.managed.std_out.splitlines()
-            if Path(p).is_file()
-        ]
-
-    @property
     def get_managed_parents(self) -> set[Path]:
         managed_files = [Path(p) for p in self.managed.std_out.splitlines()]
         return {f.parent for f in managed_files}
