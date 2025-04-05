@@ -19,7 +19,7 @@ class Tools:
         ).stdout.strip()
 
     @staticmethod
-    def filter_junk(paths_to_filter: Iterable[Path]) -> list[Path]:
+    def filter_junk(paths_to_filter: list[Path]) -> list[Path]:
         junk_dirs = {
             "__pycache__",
             ".build",
@@ -97,16 +97,16 @@ class Chezmoi:
 
     cat_config: InputOutput
     cm_diff: InputOutput
-    status: InputOutput
+    config: dict = {}
     doctor: InputOutput
     dump_config: InputOutput
     git_log: InputOutput
     git_status: InputOutput
     ignored: InputOutput
     managed: InputOutput
+    status: InputOutput
     template_data: InputOutput
     unmanaged: InputOutput
-    config: dict = {}
 
     base = [
         "chezmoi",
@@ -171,7 +171,7 @@ class Chezmoi:
 
     @property
     def dest_dir(self) -> Path:
-        return Path(self.config["destDir"])
+        return self.config["destDir"]
 
     @property
     def autoadd_enabled(self) -> bool:
@@ -191,15 +191,11 @@ class Chezmoi:
 
     @property
     def get_managed_files(self) -> list[Path]:
-        return [
-            Path(p)
-            for p in self.managed.std_out.splitlines()
-            if Path(p).is_file()
-        ]
+        return [p for p in self.get_managed_paths if p.is_file]
 
     @property
-    def get_managed_parents(self) -> list[Path]:
-        return [f.parent for f in self.get_managed_files]
+    def get_managed_parents(self) -> set[Path]:
+        return {f.parent for f in self.get_managed_files}
 
     @property
     def get_template_data(self) -> dict:
