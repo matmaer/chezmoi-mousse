@@ -22,7 +22,7 @@ repos:
     hooks:
     - id: black
       name: black
-      args: [--line-length=79]
+      args: [--line-length=79, --skip-magic-trailing-comma]
       description: "Black: The uncompromising Python code formatter"
       entry: black
       language: python
