@@ -249,12 +249,12 @@ class ChezmoiStatus(VerticalScroll):
 class ManagedTree(Tree):
 
     def __init__(self) -> None:
-        super().__init__(label="destDir", id="managed_tree")
+        super().__init__(label=str(chezmoi.dest_dir), id="managed_tree")
 
     def on_mount(self) -> None:
         dest_dir_path = Path(chezmoi.get_config_dump["destDir"])
-        dir_paths = set(p for p in chezmoi.get_managed_paths if p.is_dir())
-        file_paths = set(p for p in chezmoi.get_managed_paths if p.is_file())
+        dir_paths = chezmoi.get_managed_parents
+        file_paths = chezmoi.get_managed_files
 
         def recurse_paths(parent, dir_path):
             if dir_path == dest_dir_path:
@@ -269,7 +269,7 @@ class ManagedTree(Tree):
                 recurse_paths(parent, sub_dir)
 
         recurse_paths(self.root, dest_dir_path)
-        self.root.expand_all()
+        self.root.expand()
 
 
 class AddDirTree(Widget):
