@@ -416,17 +416,8 @@ class MainScreen(Screen):
 
     def compose(self) -> ComposeResult:
         yield Header(classes="-tall")
-        yield SlideBar()
-        # the default prefix for a tab id: --content-tab-
-        with TabbedContent(
-            "Add",
-            "Apply",
-            "Re-Add",
-            "Doctor",
-            "Diagram",
-            id="moussetabs",
-            # initial="Add",
-        ):
+
+        with TabbedContent("Add", "Apply", "Re-Add", "Doctor", "Diagram"):
             yield VerticalScroll(AddDirTree(), can_focus=False)
             yield VerticalScroll(
                 ChezmoiStatus(True), ManagedTree(), can_focus=False
@@ -436,6 +427,7 @@ class MainScreen(Screen):
             )
             yield VerticalScroll(Doctor(), id="doctor", can_focus=False)
             yield Static(FLOW, id="diagram")
+        yield SlideBar()
         yield Footer()
 
     def action_toggle_slidebar(self):
