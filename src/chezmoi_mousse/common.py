@@ -1,4 +1,3 @@
-from collections.abc import Iterable
 import json
 import subprocess
 from dataclasses import dataclass
@@ -190,12 +189,9 @@ class Chezmoi:
         return [Path(p) for p in self.managed.std_out.splitlines()]
 
     @property
-    def get_managed_files(self) -> list[Path]:
-        return [p for p in self.get_managed_paths if p.is_file]
-
-    @property
     def get_managed_parents(self) -> set[Path]:
-        return {f.parent for f in self.get_managed_files}
+        managed_files = [Path(p) for p in self.managed.std_out.splitlines()]
+        return {f.parent for f in managed_files}
 
     @property
     def get_template_data(self) -> dict:
