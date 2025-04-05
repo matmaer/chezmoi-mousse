@@ -9,10 +9,7 @@ class ChezmoiTUI(App):
 
     CSS_PATH = "tui.tcss"
 
-    SCREENS = {
-        "main": MainScreen,
-        "loading": LoadingScreen,
-    }
+    SCREENS = {"main": MainScreen, "loading": LoadingScreen}
 
     def on_mount(self) -> None:
         self.title = "-  c h e z m o i  m o u s s e  -"

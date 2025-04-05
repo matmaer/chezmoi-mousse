@@ -2,14 +2,18 @@ from collections.abc import Iterable
 from pathlib import Path
 
 from rich.text import Text
-from textual import on
+
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import VerticalScroll, VerticalGroup, Grid, Horizontal
+from textual.containers import (
+    Center,
+    Horizontal,
+    VerticalGroup,
+    VerticalScroll,
+)
 from textual.content import Content
 from textual.reactive import reactive
-from textual.screen import Screen, ModalScreen
-
+from textual.screen import ModalScreen, Screen
 from textual.widget import Widget
 from textual.widgets import (
     Button,
@@ -29,8 +33,8 @@ from textual.widgets import (
     Tree,
 )
 
-from chezmoi_mousse.common import chezmoi, Tools
 from chezmoi_mousse.ascii_art import FLOW
+from chezmoi_mousse.common import Tools, chezmoi
 
 
 class Doctor(Widget):
@@ -104,20 +108,17 @@ class Doctor(Widget):
         yield DataTable(id="doctortable", show_cursor=False)
         with VerticalScroll():
             yield Collapsible(
-                ListView(id="cmdnotfound"),
-                title="Commands Not Found",
+                ListView(id="cmdnotfound"), title="Commands Not Found"
             )
             yield Collapsible(
-                Pretty(chezmoi.get_config_dump),
-                title="chezmoi dump-config",
+                Pretty(chezmoi.get_config_dump), title="chezmoi dump-config"
             )
             yield Collapsible(
                 Pretty(chezmoi.get_template_data),
                 title="chezmoi data (template data)",
             )
             yield Collapsible(
-                self.GitLog(),
-                title="chezmoi git log (last 20 commits)",
+                self.GitLog(), title="chezmoi git log (last 20 commits)"
             )
             yield Collapsible(
                 Pretty(chezmoi.cat_config.std_out.splitlines()),
@@ -161,11 +162,10 @@ class Doctor(Widget):
                     list_view.append(
                         ListItem(
                             Link(
-                                row[1],
-                                url=self.doctor_cmd_map[row[1]]["link"],
+                                row[1], url=self.doctor_cmd_map[row[1]]["link"]
                             ),
                             Static(self.doctor_cmd_map[row[1]]["description"]),
-                        ),
+                        )
                     )
                     continue
                 list_view.append(
@@ -175,7 +175,7 @@ class Doctor(Widget):
                         Static(
                             "Not Found in $PATH, no description available in TUI."
                         ),
-                    ),
+                    )
                 )
                 continue
             else:
@@ -249,10 +249,7 @@ class ChezmoiStatus(VerticalScroll):
 class ManagedTree(Tree):
 
     def __init__(self) -> None:
-        super().__init__(
-            label=f"{chezmoi.dest_dir}",
-            id="managedtree",
-        )
+        super().__init__(label=f"{chezmoi.dest_dir}", id="managedtree")
 
     def on_mount(self) -> None:
         dir_paths = set(p for p in chezmoi.get_managed_paths if p.is_dir())
@@ -275,8 +272,14 @@ class ManagedTree(Tree):
         self.root.expand()
 
 
-class AddDirTree(Widget):  # pylint: disable=too-many-ancestors
+class AddDirTree(Widget):
 
+    BINDINGS = [
+        Binding("f", "toggle_slidebar", "Filters"),
+        Binding("a", "add_file", "Add Path"),
+    ]
+
+    # pylint: disable=too-many-ancestors
     class FilteredAddDirTree(DirectoryTree):
 
         include_unmanaged = reactive(False)
@@ -312,7 +315,7 @@ class AddDirTree(Widget):  # pylint: disable=too-many-ancestors
                     ):
                         paths_to_show.append(p)
                 return paths_to_show
-            # Both switches "on" or True: include all files in the destDir path
+            # Both switches "on": include all files in the destDir path
             return list(paths)
 
     def compose(self) -> ComposeResult:
@@ -323,7 +326,39 @@ class AddDirTree(Widget):  # pylint: disable=too-many-ancestors
                     '[$warning italic]"autoadd" is enabled: changes will be added to the source state after any change.[/]\n'
                 )
             )
-        yield self.FilteredAddDirTree(chezmoi.dest_dir)
+        yield self.FilteredAddDirTree(chezmoi.dest_dir, id="adddirtree")
+
+
+class AddFileModal(ModalScreen):
+
+    BINDINGS = [
+        Binding("escape", "dismiss", "dismiss modal screen", show=False)
+    ]
+
+    def __init__(self, file_name: str = ""):
+        super().__init__()
+        self.file_name = file_name
+
+    def compose(self) -> ComposeResult:
+        yield Center(
+            Static("file add modal"),
+            Horizontal(
+                Button("Add", id="addfile"), Button("Cancel", id="cancel")
+            ),
+            id="addfilemodal",
+            classes="operationmodal",
+        )
+
+    def on_mount(self):
+        add_file_modal = self.query_one("#addfilemodal")
+        add_file_modal.border_title = self.title
+        add_file_modal.border_subtitle = "Escape to cancel"
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.id == "addfile":
+            self.screen.dismiss()
+        elif event.button.id == "cancel":
+            self.screen.dismiss()
 
 
 class SlideBar(Widget):
@@ -339,48 +374,48 @@ class SlideBar(Widget):
 
         with Horizontal(classes="filter-container"):
             yield Switch(
-                value=False,
-                id="includeunmanaged",
-                classes="filter-switch",
+                value=False, id="includeunmanaged", classes="filter-switch"
             )
-            yield Label(
-                id="unmanagedlabel",
-                classes="filter-label",
-            )
+            yield Label(id="unmanagedlabel", classes="filter-label")
             yield Label(
                 "(?)", id="unmanagedtooltip", classes="filter-tooltip"
             ).with_tooltip(tooltip=self.unmanaged_tooltip)
 
         with Horizontal(classes="filter-container"):
             yield Switch(
-                value=False,
-                id="includejunk",
-                classes="filter-switch",
+                value=False, id="includejunk", classes="filter-switch"
             )
-            yield Label(
-                "no text set",
-                id="junklabel",
-                classes="filter-label",
-            )
+            yield Label("no text set", id="junklabel", classes="filter-label")
             yield Label(
                 "(?)", id="junktooltip", classes="filter-tooltip"
             ).with_tooltip(tooltip=self.junk_tooltip)
 
-    @on(Switch.Changed, "#includeunmanaged")
-    def show_unmanaged_dirs(self, event: Switch.Changed) -> None:
-        add_dir_tree = self.screen.query_exactly_one(
-            AddDirTree.FilteredAddDirTree
-        )
-        add_dir_tree.include_unmanaged = event.value
-        add_dir_tree.reload()
+    # @on(Switch.Changed, "#includeunmanaged")
+    # def show_unmanaged_dirs(self, event: Switch.Changed) -> None:
+    #     add_dir_tree = self.screen.query_exactly_one(
+    #         AddDirTree.FilteredAddDirTree
+    #     )
+    #     add_dir_tree.include_unmanaged = event.value
+    #     add_dir_tree.reload()
 
-    @on(Switch.Changed, "#includejunk")
-    def include_junk(self, event: Switch.Changed) -> None:
+    # @on(Switch.Changed, "#includejunk")
+    # def include_junk(self, event: Switch.Changed) -> None:
+    #     add_dir_tree = self.screen.query_exactly_one(
+    #         AddDirTree.FilteredAddDirTree
+    #     )
+    #     add_dir_tree.include_junk = event.value
+    #     add_dir_tree.reload()
+
+    def on_switch_changed(self, event: Switch.Changed) -> None:
         add_dir_tree = self.screen.query_exactly_one(
             AddDirTree.FilteredAddDirTree
         )
-        add_dir_tree.include_junk = event.value
-        add_dir_tree.reload()
+        if event.switch.id == "includeunmanaged":
+            add_dir_tree.include_unmanaged = event.value
+            add_dir_tree.reload()
+        elif event.switch.id == "includejunk":
+            add_dir_tree.include_junk = event.value
+            add_dir_tree.reload()
 
     def on_mount(self) -> None:
         switch_labels = {
@@ -391,54 +426,33 @@ class SlideBar(Widget):
             self.screen.query_exactly_one(label_id, Label).update(label_text)
 
 
-class AddFileModal(ModalScreen):
-
-    def compose(self) -> ComposeResult:
-        yield Grid(
-            Label("Add file to chezmoi managed files?", id="question"),
-            Button("Quit", variant="error", id="quit"),
-            Button("Cancel", variant="primary", id="cancel"),
-            id="dialog",
-        )
-
-    def on_button_pressed(self, event: Button.Pressed) -> None:
-        if event.button.id == "quit":
-            self.app.exit()
-        else:
-            self.app.pop_screen()
-
-
 class MainScreen(Screen):
 
-    BINDINGS = [
-        Binding("i, I", "toggle_slidebar", "Toggle Inspect"),
-        Binding("q", "request_quit", "Quit"),
-    ]
+    BINDINGS = [Binding("f", "toggle_slidebar", "Filters")]
 
     def compose(self) -> ComposeResult:
         yield Header(classes="-tall")
         yield SlideBar()
+        # the default prefix for a tab id: --content-tab-
         with TabbedContent(
             "Add",
             "Apply",
             "Re-Add",
             "Doctor",
             "Diagram",
+            id="moussetabs",
+            # initial="Add",
         ):
-            yield VerticalScroll(AddDirTree())
-            yield VerticalScroll(ChezmoiStatus(True), ManagedTree())
-            yield VerticalScroll(ChezmoiStatus(False), ManagedTree())
-            yield VerticalScroll(Doctor())
+            yield VerticalScroll(AddDirTree(), can_focus=False)
+            yield VerticalScroll(
+                ChezmoiStatus(True), ManagedTree(), can_focus=False
+            )
+            yield VerticalScroll(
+                ChezmoiStatus(False), ManagedTree(), can_focus=False
+            )
+            yield VerticalScroll(Doctor(), id="doctor", can_focus=False)
             yield Static(FLOW, id="diagram")
         yield Footer()
-
-    def action_request_quit(self) -> None:
-        """Action to display the quit dialog."""
-        self.app.push_screen(AddFileModal())
-
-    # Underscore to ignore return value from screen.dismiss()
-    def refresh_app(self, _) -> None:
-        self.refresh(recompose=True)
 
     def action_toggle_slidebar(self):
         self.screen.query_exactly_one(SlideBar).toggle_class("-visible")
@@ -448,3 +462,9 @@ class MainScreen(Screen):
 
     def key_space(self) -> None:
         self.action_toggle_spacing()
+
+    # def action_operate_modal(self) -> None:
+    #     active_pane = self.screen.query_exactly_one(TabbedContent).active_pane
+    #     # if active_pane =
+    #     print(active_pane)
+    #     self.app.push_screen(AddFileModal())
