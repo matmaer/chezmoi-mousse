@@ -64,14 +64,18 @@ class Tools:
             ".tmp",
             ".zip",
         }
-        cleaned = []
-        for p in paths_to_filter:
-            if p.is_dir() and p.name in junk_dirs:
-                continue
-            if p.is_file() and (p.suffix in junk_files or ".cache-" in str(p)):
-                continue
-            cleaned.append(p)
-        return cleaned
+
+        return [
+            p
+            for p in paths_to_filter
+            if not (
+                (p.is_dir() and p.name in junk_dirs)
+                or (
+                    p.is_file()
+                    and (p.suffix in junk_files or ".cache-" in str(p))
+                )
+            )
+        ]
 
 
 @dataclass
