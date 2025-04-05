@@ -279,8 +279,9 @@ class ManagedTree(Tree):
         self.root.expand()
 
 
-class AddDirTree(Widget):  # pylint: disable=too-many-ancestors
+class AddDirTree(Widget):
 
+    # pylint: disable=too-many-ancestors
     class FilteredAddDirTree(DirectoryTree):
 
         include_unmanaged = reactive(False)
