@@ -1,4 +1,5 @@
 from textual.app import App
+from textual.binding import Binding
 from textual.theme import Theme
 
 from chezmoi_mousse.main_screen import MainScreen
@@ -6,6 +7,10 @@ from chezmoi_mousse.splash_screen import LoadingScreen
 
 
 class ChezmoiTUI(App):
+
+    BINDINGS = [
+        Binding("escape", "blur", "Unfocus any focused widget", show=False)
+    ]
 
     CSS_PATH = "tui.tcss"
 
