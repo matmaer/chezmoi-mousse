@@ -390,22 +390,6 @@ class SlideBar(Widget):
                 "(?)", id="junktooltip", classes="filter-tooltip"
             ).with_tooltip(tooltip=self.junk_tooltip)
 
-    # @on(Switch.Changed, "#includeunmanaged")
-    # def show_unmanaged_dirs(self, event: Switch.Changed) -> None:
-    #     add_dir_tree = self.screen.query_exactly_one(
-    #         AddDirTree.FilteredAddDirTree
-    #     )
-    #     add_dir_tree.include_unmanaged = event.value
-    #     add_dir_tree.reload()
-
-    # @on(Switch.Changed, "#includejunk")
-    # def include_junk(self, event: Switch.Changed) -> None:
-    #     add_dir_tree = self.screen.query_exactly_one(
-    #         AddDirTree.FilteredAddDirTree
-    #     )
-    #     add_dir_tree.include_junk = event.value
-    #     add_dir_tree.reload()
-
     def on_switch_changed(self, event: Switch.Changed) -> None:
         add_dir_tree = self.screen.query_exactly_one(
             AddDirTree.FilteredAddDirTree
@@ -462,9 +446,3 @@ class MainScreen(Screen):
 
     def key_space(self) -> None:
         self.action_toggle_spacing()
-
-    # def action_operate_modal(self) -> None:
-    #     active_pane = self.screen.query_exactly_one(TabbedContent).active_pane
-    #     # if active_pane =
-    #     print(active_pane)
-    #     self.app.push_screen(AddFileModal())
