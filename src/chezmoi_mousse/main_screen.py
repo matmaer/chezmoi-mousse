@@ -106,7 +106,7 @@ class Doctor(Widget):
 
     def compose(self) -> ComposeResult:
         yield DataTable(id="doctortable", show_cursor=False)
-        with VerticalScroll():
+        with VerticalScroll(can_focus=False):
             yield Collapsible(
                 ListView(id="cmdnotfound"), title="Commands Not Found"
             )
@@ -133,9 +133,10 @@ class Doctor(Widget):
 
         list_view = self.query_exactly_one("#cmdnotfound", ListView)
         table = self.query_exactly_one("#doctortable", DataTable)
-        table.add_columns(*chezmoi.get_doctor_rows[0].split())
+        doctor_rows = chezmoi.doctor.std_out.splitlines()
+        table.add_columns(*doctor_rows[0].split())
 
-        for line in chezmoi.get_doctor_rows[1:]:
+        for line in doctor_rows[1:]:
             row = tuple(line.split(maxsplit=2))
             if row[0] == "ok":
                 row = [
