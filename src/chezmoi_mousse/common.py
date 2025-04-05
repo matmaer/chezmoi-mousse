@@ -96,7 +96,6 @@ class Chezmoi:
 
     cat_config: InputOutput
     cm_diff: InputOutput
-    config: dict = {}
     doctor: InputOutput
     dump_config: InputOutput
     git_log: InputOutput
@@ -106,6 +105,7 @@ class Chezmoi:
     status: InputOutput
     template_data: InputOutput
     unmanaged: InputOutput
+    config: dict = {}
 
     base = [
         "chezmoi",
@@ -158,7 +158,7 @@ class Chezmoi:
 
     @property
     def get_config_dump(self) -> dict:
-        return json.loads(self.dump_config.std_out)
+        return self.config
 
     @property
     def dest_dir(self) -> Path:
