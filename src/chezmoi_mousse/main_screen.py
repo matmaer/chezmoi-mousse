@@ -5,11 +5,15 @@ from rich.text import Text
 from textual import on
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import VerticalScroll, VerticalGroup, Grid, Horizontal
+from textual.containers import (
+    Center,
+    Horizontal,
+    VerticalGroup,
+    VerticalScroll,
+)
 from textual.content import Content
 from textual.reactive import reactive
-from textual.screen import Screen, ModalScreen
-
+from textual.screen import ModalScreen, Screen
 from textual.widget import Widget
 from textual.widgets import (
     Button,
@@ -29,8 +33,8 @@ from textual.widgets import (
     Tree,
 )
 
-from chezmoi_mousse.common import chezmoi, Tools
 from chezmoi_mousse.ascii_art import FLOW
+from chezmoi_mousse.common import Tools, chezmoi
 
 
 class Doctor(Widget):

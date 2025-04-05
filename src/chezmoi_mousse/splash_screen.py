@@ -1,5 +1,5 @@
-from collections import deque
 import json
+from collections import deque
 from pathlib import Path
 
 from rich.segment import Segment
