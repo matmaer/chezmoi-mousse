@@ -94,7 +94,6 @@ class Chezmoi:
     doctor: InputOutput
     dump_config: InputOutput
     git_log: InputOutput
-    git_status: InputOutput
     ignored: InputOutput
     managed_files: InputOutput
     managed_dirs: InputOutput
@@ -131,7 +130,6 @@ class Chezmoi:
             "--no-expand-tabs",
             "--format=%ar by %cn;%s",
         ],
-        "git_status": ["git", "status"],
         "ignored": ["ignored"],
         "managed_dirs": ["managed", "--path-style=absolute", "--include=dirs"],
         "managed_files": [
