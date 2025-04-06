@@ -1,4 +1,3 @@
-import json
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
@@ -65,14 +64,13 @@ class Tools:
             ".tmp",
             ".zip",
         }
-        cleaned = []
-        for p in paths_to_filter:
-            if p.is_dir() and p.name in junk_dirs:
-                continue
-            if p.is_file() and (p.suffix in junk_files or ".cache-" in str(p)):
-                continue
-            cleaned.append(p)
-        return cleaned
+        all_dirs = [p for p in paths_to_filter if p.is_dir()]
+        all_files = [p for p in paths_to_filter if p.is_file()]
+        clean_dirs = [p for p in all_dirs if p.name not in junk_dirs]
+        clean_files = [
+            p for p in all_files if p.name.split(".")[-1] not in junk_files
+        ]
+        return clean_dirs + clean_files
 
 
 @dataclass
@@ -95,17 +93,18 @@ class InputOutput:
 class Chezmoi:
 
     cat_config: InputOutput
-    cm_diff: InputOutput
-    config: dict = {}
     doctor: InputOutput
     dump_config: InputOutput
     git_log: InputOutput
-    git_status: InputOutput
     ignored: InputOutput
-    managed: InputOutput
-    status: InputOutput
+    managed_files: InputOutput
+    managed_dirs: InputOutput
+    status_dirs: InputOutput
+    status_files: InputOutput
     template_data: InputOutput
     unmanaged: InputOutput
+    config: dict = {}
+    template_data_dict: dict = {}
 
     base = [
         "chezmoi",
@@ -120,7 +119,6 @@ class Chezmoi:
     # https://www.chezmoi.io/reference/command-line-flags/common/#available-entry-types
     subs = {
         "cat_config": ["cat-config"],
-        "template_data": ["data", "--format=json"],
         "doctor": ["doctor"],
         "dump_config": ["dump-config", "--format=json"],
         "git_log": [
@@ -134,17 +132,29 @@ class Chezmoi:
             "--no-expand-tabs",
             "--format=%ar by %cn;%s",
         ],
-        "git_status": ["git", "status"],
         "ignored": ["ignored"],
-        "managed": [
+        "managed_dirs": ["managed", "--path-style=absolute", "--include=dirs"],
+        "managed_files": [
             "managed",
             "--path-style=absolute",
-            "--include=dirs,files",
-            "--exclude=encrypted",
+            "--include=files",
         ],
+        "status_dirs": ["status", "--path-style=absolute", "--include=dirs"],
+        "status_files": ["status", "--path-style=absolute", "--include=files"],
+        "template_data": ["data", "--format=json"],
         "unmanaged": ["unmanaged", "--path-style=absolute"],
-        "status": ["status", "--path-style=absolute", "--include=dirs,files"],
-        "cm_diff": ["diff"],
+    }
+
+    write_commands = {
+        "add": [
+            "add",
+            "--include=files",
+            "--recursive=false",
+            "--prompt=false",
+            "--secrets=error",  # Scan for secrets when adding unencrypted files
+        ],
+        "apply": ["apply", "--include=files", "--recursive=false"],
+        "re_add": ["re-add", "--include=files", "--recursive=false"],
     }
 
     def __init__(self) -> None:
@@ -155,14 +165,6 @@ class Chezmoi:
             long_cmd = self.base + sub_cmd
             self.long_commands[arg_id] = long_cmd
             setattr(self, arg_id, InputOutput(long_cmd))
-
-    @property
-    def get_config_dump(self) -> dict:
-        return json.loads(self.dump_config.std_out)
-
-    @property
-    def dest_dir(self) -> Path:
-        return self.config["destDir"]
 
     @property
     def autoadd_enabled(self) -> bool:
@@ -177,53 +179,68 @@ class Chezmoi:
         return self.config["git"]["autopush"]
 
     @property
-    def get_managed_paths(self) -> list[Path]:
-        return [Path(p) for p in self.managed.std_out.splitlines()]
+    def managed_d_paths(self) -> list[Path]:
+        return [Path(p) for p in self.managed_dirs.std_out.splitlines()]
 
     @property
-    def get_managed_files(self) -> list[Path]:
-        return [
-            Path(p)
-            for p in self.managed.std_out.splitlines()
-            if Path(p).is_file()
+    def managed_f_paths(self) -> list[Path]:
+        return [Path(p) for p in self.managed_files.std_out.splitlines()]
+
+    @property
+    def managed_paths(self) -> list[Path]:
+        return self.managed_d_paths + self.managed_f_paths
+
+    def get_status(
+        self, apply: bool, dirs: bool, files: bool
+    ) -> list[tuple[str, Path]]:
+
+        result = []
+        lines = []
+        dir_lines = [
+            l
+            for l in self.status_dirs.std_out.splitlines()
+            if l[0] in "ADM" or l[1] in "ADM"
         ]
-
-    @property
-    def get_managed_parents(self) -> set[Path]:
-        managed_files = [Path(p) for p in self.managed.std_out.splitlines()]
-        return {f.parent for f in managed_files}
-
-    @property
-    def get_template_data(self) -> dict:
-        return json.loads(self.template_data.std_out)
-
-    @property
-    def get_doctor_rows(self) -> list[str]:
-        return self.doctor.std_out.splitlines()
-
-    @property
-    def get_status(self) -> list[str]:
-        return self.status.std_out.splitlines()
-
-    @property
-    def get_apply_changes(self) -> list[tuple[str, Path]]:
-        changes = [
-            l for l in self.status.std_out.splitlines() if l[0] in "ADM"
+        file_lines = [
+            l
+            for l in self.status_files.std_out.splitlines()
+            if l[0] in "ADM" or l[1] in "ADM"
         ]
-        return [(change[0], Path(change[3:])) for change in changes]
+        if files and not dirs:
+            lines = file_lines
+        elif dirs and not files:
+            lines = dir_lines
+        elif dirs and files:
+            lines = file_lines + dir_lines
+        else:
+            raise ValueError("Either files or dirs must be true")
 
-    @property
-    def get_add_changes(self) -> list[tuple[str, Path]]:
-        changes = [
-            l for l in self.status.std_out.splitlines() if l[1] in "ADM"
-        ]
-        return [(change[1], Path(change[3:])) for change in changes]
+        for line in lines:
+            if apply:
+                status_code = line[1]
+            else:
+                status_code = line[0]
+            path = Path(line[3:])
+            result.append((status_code, path))
+        return result
 
-    def get_cm_diff(self, file_path: str, apply: bool) -> list[str]:
+    def chezmoi_diff(self, file_path: str, apply: bool) -> list[str]:
         long_command = self.base + ["diff", file_path]
         if apply:
             return Tools.subprocess_run(long_command).splitlines()
         return Tools.subprocess_run(long_command + ["--reverse"]).splitlines()
+
+    def chezmoi_add(self, file_path: Path) -> str:
+        long_command = self.base + self.write_commands["add"]
+        return Tools.subprocess_run(long_command + [file_path])
+
+    def chezmoi_re_add(self, file_path: Path) -> str:
+        long_command = self.base + self.write_commands["re_add"]
+        return Tools.subprocess_run(long_command + [file_path])
+
+    def chezmoi_apply(self, file_path: Path) -> str:
+        long_command = self.base + self.write_commands["apply"]
+        return Tools.subprocess_run(long_command + [file_path])
 
 
 chezmoi = Chezmoi()
