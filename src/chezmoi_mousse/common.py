@@ -67,7 +67,9 @@ class Tools:
         all_dirs = [p for p in paths_to_filter if p.is_dir()]
         all_files = [p for p in paths_to_filter if p.is_file()]
         clean_dirs = [p for p in all_dirs if p.name not in junk_dirs]
-        clean_files = [p for p in all_files if p.suffix not in junk_files]
+        clean_files = [
+            p for p in all_files if p.name.split(".")[-1] not in junk_files
+        ]
         return clean_dirs + clean_files
 
 
