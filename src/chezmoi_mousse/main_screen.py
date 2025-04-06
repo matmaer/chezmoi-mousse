@@ -229,7 +229,7 @@ class ChezmoiStatus(VerticalScroll):
             rel_path = str(path.relative_to(chezmoi.config["destDir"]))
 
             colored_diffs: list[Label] = []
-            for line in chezmoi.get_cm_diff(str(path), self.apply):
+            for line in chezmoi.chezmoi_diff(str(path), self.apply):
                 if line.startswith("- "):
                     colored_diffs.append(Label(line, variant="error"))
                 elif line.startswith("+ "):
