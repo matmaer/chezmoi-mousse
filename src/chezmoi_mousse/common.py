@@ -138,20 +138,9 @@ class Chezmoi:
             "managed",
             "--path-style=absolute",
             "--include=files",
-            "--exclude=encrypted",
         ],
-        "status_dirs": [
-            "status",
-            "--path-style=absolute",
-            "--include=dirs",
-            "--recursive",
-        ],
-        "status_files": [
-            "status",
-            "--path-style=absolute",
-            "--include=files",
-            "--recursive",
-        ],
+        "status_dirs": ["status", "--path-style=absolute", "--include=dirs"],
+        "status_files": ["status", "--path-style=absolute", "--include=files"],
         "template_data": ["data", "--format=json"],
         "unmanaged": ["unmanaged", "--path-style=absolute"],
     }

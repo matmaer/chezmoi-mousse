@@ -236,9 +236,9 @@ class ChezmoiStatus(VerticalScroll):
                     colored_diffs.append(Label(line, variant="success"))
                 elif line.startswith("  "):
                     colored_diffs.append(Label(line, classes="muted"))
-            self.status_items.append(
-                Collapsible(*colored_diffs, title=f"{status} {rel_path}")
-            )
+                self.status_items.append(
+                    Collapsible(*colored_diffs, title=f"{status} {rel_path}")
+                )
         # self.refresh(recompose=True)
 
 
@@ -284,51 +284,60 @@ class AddDirTree(Widget):
     # pylint: disable=too-many-ancestors
     class FilteredAddDirTree(DirectoryTree):
 
-        include_files_in_unmanaged_dirs = reactive(False)
+        include_unmanaged_dirs = reactive(False)
         include_junk = reactive(False)
 
         def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
 
-            all_paths = [p for p in paths if p.is_file() or p.is_dir()]
-            clean_paths = Tools.filter_junk(all_paths)
+            all_paths = list(paths)
 
-            managed_paths = chezmoi.managed_paths
             paths_to_show: list[Path] = []
+
+            managed_dirs: list[Path] = chezmoi.managed_d_paths
+            managed_files: list[Path] = chezmoi.managed_f_paths
+
+            unmanaged_dirs: list[Path] = [p for p in all_paths if p.is_dir()]
+            unmanaged_files: list[Path] = [p for p in all_paths if p.is_file()]
+
+            cleaned_unmanaged_dirs = Tools.filter_junk(unmanaged_dirs)
+            cleaned_unmanaged_files = Tools.filter_junk(unmanaged_files)
 
             # Include unmanaged files if they are part of a directory which
             # already has managed files in it without junk.
-            if (
-                not self.include_files_in_unmanaged_dirs
-                and not self.include_junk
-            ):
-                for p in clean_paths:
-                    if p.is_dir() and p not in managed_paths:
+            if not self.include_unmanaged_dirs and self.include_junk:
+                for p in unmanaged_dirs:
+                    if p in managed_dirs:
                         paths_to_show.append(p)
-                    elif p.is_file() and p.parent in chezmoi.managed_d_paths:
+                for p in unmanaged_files:
+                    if p.parent in managed_dirs:
                         paths_to_show.append(p)
                 return paths_to_show
 
             # Include unmanaged files if they are part of a directory which
             # already has managed files in it including junk.
-            if not self.include_files_in_unmanaged_dirs and self.include_junk:
-                paths_to_show: list[Path] = []
-                for p in list(paths):
-                    if p.is_dir() and p not in chezmoi.managed_d_paths:
+            if not self.include_unmanaged_dirs and not self.include_junk:
+                for p in cleaned_unmanaged_dirs:
+                    if p in managed_dirs:
                         paths_to_show.append(p)
-                    elif (
-                        p.is_file()
-                        and p.parent in chezmoi.managed_d_paths
-                        and p not in chezmoi.managed_f_paths
-                    ):
+                for p in cleaned_unmanaged_files:
+                    if p.parent in managed_dirs:
                         paths_to_show.append(p)
                 return paths_to_show
 
             # Include any unmanaged path in the destDir but without junk
-            if self.include_files_in_unmanaged_dirs and not self.include_junk:
-                return [p for p in clean_paths if p not in managed_paths]
+            if self.include_unmanaged_dirs and not self.include_junk:
+                return [
+                    p
+                    for p in cleaned_unmanaged_dirs + cleaned_unmanaged_files
+                    if p not in chezmoi.managed_paths
+                ]
 
-            # Both switches "on": include all files in the destDir path
-            return [p for p in all_paths if p not in managed_paths]
+            # Both switches "on": include all unmanaged paths in the destDir
+            return [
+                p
+                for p in all_paths
+                if p not in managed_dirs and p not in managed_files
+            ]
 
     def compose(self) -> ComposeResult:
         if chezmoi.autoadd_enabled:
@@ -421,7 +430,7 @@ class SlideBar(Widget):
             AddDirTree.FilteredAddDirTree
         )
         if event.switch.id == "includeunmanaged":
-            add_dir_tree.include_files_in_unmanaged_dirs = event.value
+            add_dir_tree.include_unmanaged_dirs = event.value
             add_dir_tree.reload()
         elif event.switch.id == "includejunk":
             add_dir_tree.include_junk = event.value
