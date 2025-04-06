@@ -253,21 +253,19 @@ class ManagedTree(Tree):
     def on_mount(self) -> None:
 
         dest_dir_path = Path(chezmoi.config["destDir"])
-        file_paths = chezmoi.managed_f_paths
-        status_paths = chezmoi.get_status(
-            apply=self.apply, files=True, dirs=True
-        )
 
         def recurse_paths(parent, dir_path):
             if dir_path == dest_dir_path:
                 parent = self.root
             else:
                 parent = parent.add(dir_path.parts[-1], dir_path)
-            files = [f for f in file_paths if f.parent == dir_path]
+            files = [
+                f for f in chezmoi.managed_f_paths if f.parent == dir_path
+            ]
             for file in files:
-                parent.add_leaf(str(file.parts[-1]), file)
+                parent.add_leaf(str(file.parts[-1]))
             sub_dirs = [
-                d for d in chezmoi.managed_f_paths if d.parent == dir_path
+                d for d in chezmoi.managed_d_paths if d.parent == dir_path
             ]
             for sub_dir in sub_dirs:
                 recurse_paths(parent, sub_dir)
