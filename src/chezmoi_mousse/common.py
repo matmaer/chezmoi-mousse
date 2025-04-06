@@ -203,9 +203,9 @@ class Chezmoi:
 
     def get_status(
         self, apply: bool, dirs: bool, files: bool
-    ) -> dict[str, Path]:
+    ) -> list[tuple[str, Path]]:
 
-        result: dict[str, Path] = {}
+        result = []
         lines = []
         dir_lines = [
             l
@@ -224,15 +224,15 @@ class Chezmoi:
         elif dirs and files:
             lines = file_lines + dir_lines
         else:
-            raise ValueError("Ether files or dirs must be true")
+            raise ValueError("Either files or dirs must be true")
 
         for line in lines:
-            path = Path(Path(line[3:]))
             if apply:
                 status_code = line[1]
             else:
                 status_code = line[0]
-            result[status_code] = path
+            path = Path(line[3:])
+            result.append((status_code, path))
         return result
 
     def chezmoi_diff(self, file_path: str, apply: bool) -> list[str]:
