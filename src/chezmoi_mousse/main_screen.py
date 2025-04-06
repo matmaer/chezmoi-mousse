@@ -131,6 +131,13 @@ class Doctor(Widget):
 
     def on_mount(self) -> None:
 
+        styles = {
+            "ok": f"{self.app.current_theme.success}",
+            "warning": f"{self.app.current_theme.warning}",
+            "error": f"{self.app.current_theme.error}",
+            "info": f"{self.app.current_theme.foreground}",
+        }
+
         list_view = self.query_exactly_one("#cmdnotfound", ListView)
         table = self.query_exactly_one("#doctortable", DataTable)
         doctor_rows = chezmoi.doctor.std_out.splitlines()
@@ -138,27 +145,7 @@ class Doctor(Widget):
 
         for line in doctor_rows[1:]:
             row = tuple(line.split(maxsplit=2))
-            if row[0] == "ok":
-                row = [
-                    Text(cell_text, style=f"{self.app.current_theme.success}")
-                    for cell_text in row
-                ]
-            elif row[0] == "warning":
-                row = [
-                    Text(cell_text, style=f"{self.app.current_theme.warning}")
-                    for cell_text in row
-                ]
-            elif row[0] == "error":
-                row = [
-                    Text(cell_text, style=f"{self.app.current_theme.error}")
-                    for cell_text in row
-                ]
-            elif row[0] == "info" and row[2] == "not set":
-                row = [
-                    Text(cell_text, style=f"{self.app.current_theme.warning}")
-                    for cell_text in row
-                ]
-            elif row[0] == "info" and "not found in $PATH" in row[2]:
+            if row[0] == "info" and "not found in $PATH" in row[2]:
                 if row[1] in self.doctor_cmd_map:
                     list_view.append(
                         ListItem(
@@ -168,17 +155,26 @@ class Doctor(Widget):
                             Static(self.doctor_cmd_map[row[1]]["description"]),
                         )
                     )
-                    continue
-                list_view.append(
-                    ListItem(
-                        # color accent as that's how links are styled by default
-                        Static(f"[$accent]{row[1]}[/]", markup=True),
-                        Static(
-                            "Not Found in $PATH, no description available in TUI."
-                        ),
+                elif row[1] not in self.doctor_cmd_map:
+                    list_view.append(
+                        ListItem(
+                            # color accent as that's how links are styled by default
+                            Static(f"[$accent-muted]{row[1]}[/]", markup=True),
+                            Label(
+                                "Not Found in $PATH, no description available in TUI."
+                            ),
+                        )
                     )
-                )
-                continue
+            elif row[0] == "ok" or row[0] == "warning" or row[0] == "error":
+                row = [
+                    Text(cell_text, style=f"{styles[row[0]]}")
+                    for cell_text in row
+                ]
+            elif row[0] == "info" and row[2] == "not set":
+                row = [
+                    Text(cell_text, style=f"{self.app.current_theme.warning}")
+                    for cell_text in row
+                ]
             else:
                 row = [Text(cell_text) for cell_text in row]
             table.add_row(*row)
