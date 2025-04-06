@@ -198,6 +198,43 @@ class Chezmoi:
         return [Path(p) for p in self.managed_files.std_out.splitlines()]
 
     @property
+    def managed_paths(self) -> list[Path]:
+        return self.managed_d_paths + self.managed_f_paths
+
+    def get_status(
+        self, apply: bool, dirs: bool, files: bool
+    ) -> dict[str, Path]:
+
+        result: dict[str, Path] = {}
+        lines = []
+        dir_lines = [
+            l
+            for l in self.status_dirs.std_out.splitlines()
+            if l[0] in "ADM" or l[1] in "ADM"
+        ]
+        file_lines = [
+            l
+            for l in self.status_files.std_out.splitlines()
+            if l[0] in "ADM" or l[1] in "ADM"
+        ]
+        if files and not dirs:
+            lines = file_lines
+        elif dirs and not files:
+            lines = dir_lines
+        elif dirs and files:
+            lines = file_lines + dir_lines
+        else:
+            raise ValueError("Ether files or dirs must be true")
+
+        for line in lines:
+            path = Path(Path(line[3:]))
+            if apply:
+                status_code = line[1]
+            else:
+                status_code = line[0]
+            result[status_code] = path
+        return result
+
     def chezmoi_diff(self, file_path: str, apply: bool) -> list[str]:
         long_command = self.base + ["diff", file_path]
         if apply:
