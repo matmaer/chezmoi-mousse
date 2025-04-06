@@ -104,8 +104,10 @@ class Chezmoi:
     git_log: InputOutput
     git_status: InputOutput
     ignored: InputOutput
-    managed: InputOutput
-    status: InputOutput
+    managed_files: InputOutput
+    managed_dirs: InputOutput
+    status_dirs: InputOutput
+    status_files: InputOutput
     template_data: InputOutput
     unmanaged: InputOutput
     config: dict = {}
@@ -140,13 +142,25 @@ class Chezmoi:
         ],
         "git_status": ["git", "status"],
         "ignored": ["ignored"],
-        "managed": [
+        "managed_dirs": ["managed", "--path-style=absolute", "--include=dirs"],
+        "managed_files": [
             "managed",
             "--path-style=absolute",
-            "--include=dirs,files",
+            "--include=files",
             "--exclude=encrypted",
         ],
-        "status": ["status", "--path-style=absolute", "--include=dirs,files"],
+        "status_dirs": [
+            "status",
+            "--path-style=absolute",
+            "--include=dirs",
+            "--recursive",
+        ],
+        "status_files": [
+            "status",
+            "--path-style=absolute",
+            "--include=files",
+            "--recursive",
+        ],
         "template_data": ["data", "--format=json"],
         "unmanaged": ["unmanaged", "--path-style=absolute"],
     }
@@ -185,18 +199,12 @@ class Chezmoi:
         return self.config["git"]["autopush"]
 
     @property
-    def get_add_changes(self) -> list[tuple[str, Path]]:
-        changes = [
-            l for l in self.status.std_out.splitlines() if l[1] in "ADM"
-        ]
-        return [(change[1], Path(change[3:])) for change in changes]
+    def managed_d_paths(self) -> list[Path]:
+        return [Path(p) for p in self.managed_dirs.std_out.splitlines()]
 
     @property
-    def get_apply_changes(self) -> list[tuple[str, Path]]:
-        changes = [
-            l for l in self.status.std_out.splitlines() if l[0] in "ADM"
-        ]
-        return [(change[0], Path(change[3:])) for change in changes]
+    def managed_f_paths(self) -> list[Path]:
+        return [Path(p) for p in self.managed_files.std_out.splitlines()]
 
     @property
     def get_managed_parents(self) -> set[Path]:
@@ -213,15 +221,15 @@ class Chezmoi:
             return Tools.subprocess_run(long_command).splitlines()
         return Tools.subprocess_run(long_command + ["--reverse"]).splitlines()
 
-    def run_chezmoi_add(self, file_path: Path) -> str:
+    def chezmoi_add(self, file_path: Path) -> str:
         long_command = self.base + self.write_commands["add"]
         return Tools.subprocess_run(long_command + [file_path])
 
-    def run_chezmoi_re_add(self, file_path: Path) -> str:
+    def chezmoi_re_add(self, file_path: Path) -> str:
         long_command = self.base + self.write_commands["re_add"]
         return Tools.subprocess_run(long_command + [file_path])
 
-    def run_chezmoi_apply(self, file_path: Path) -> str:
+    def chezmoi_apply(self, file_path: Path) -> str:
         long_command = self.base + self.write_commands["apply"]
         return Tools.subprocess_run(long_command + [file_path])
 
