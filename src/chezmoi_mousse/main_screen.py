@@ -219,10 +219,13 @@ class ChezmoiStatus(VerticalScroll):
 
     def on_mount(self) -> None:
 
-        changes = chezmoi.get_status(apply=self.apply, files=True, dirs=False)
+        changes: list[tuple[str, Path]] = chezmoi.get_status(
+            apply=self.apply, files=True, dirs=False
+        )
 
-        for status_code, path in changes.items():
+        for status_code, path in changes:
             status: str = self.status_info["code name"][status_code]
+
             rel_path = str(path.relative_to(chezmoi.config["destDir"]))
 
             colored_diffs: list[Label] = []
@@ -233,7 +236,6 @@ class ChezmoiStatus(VerticalScroll):
                     colored_diffs.append(Label(line, variant="success"))
                 elif line.startswith("  "):
                     colored_diffs.append(Label(line, classes="muted"))
-            colored_diffs.append(Label(""))
             self.status_items.append(
                 Collapsible(*colored_diffs, title=f"{status} {rel_path}")
             )
