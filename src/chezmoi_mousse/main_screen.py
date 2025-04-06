@@ -236,10 +236,10 @@ class ChezmoiStatus(VerticalScroll):
                     colored_diffs.append(Label(line, variant="success"))
                 elif line.startswith("  "):
                     colored_diffs.append(Label(line, classes="muted"))
-                self.status_items.append(
-                    Collapsible(*colored_diffs, title=f"{status} {rel_path}")
-                )
-        # self.refresh(recompose=True)
+            self.status_items.append(
+                Collapsible(*colored_diffs, title=f"{status} {rel_path}")
+            )
+        self.refresh(recompose=True)
 
 
 class ManagedTree(Tree):
