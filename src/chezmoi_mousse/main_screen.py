@@ -396,7 +396,11 @@ class SlideBar(Widget):
             yield Switch(
                 value=False, id="includeunmanaged", classes="filter-switch"
             )
-            yield Label(id="unmanagedlabel", classes="filter-label")
+            yield Label(
+                "Include unmanaged directories",
+                id="unmanagedlabel",
+                classes="filter-label",
+            )
             yield Label(
                 "(?)", id="unmanagedtooltip", classes="filter-tooltip"
             ).with_tooltip(tooltip=self.unmanaged_tooltip)
@@ -405,7 +409,9 @@ class SlideBar(Widget):
             yield Switch(
                 value=False, id="includejunk", classes="filter-switch"
             )
-            yield Label("no text set", id="junklabel", classes="filter-label")
+            yield Label(
+                "Include junk paths", id="junklabel", classes="filter-label"
+            )
             yield Label(
                 "(?)", id="junktooltip", classes="filter-tooltip"
             ).with_tooltip(tooltip=self.junk_tooltip)
@@ -420,14 +426,6 @@ class SlideBar(Widget):
         elif event.switch.id == "includejunk":
             add_dir_tree.include_junk = event.value
             add_dir_tree.reload()
-
-    def on_mount(self) -> None:
-        switch_labels = {
-            "#unmanagedlabel": "Include unmanaged directories",
-            "#junklabel": "Include junk paths",
-        }
-        for label_id, label_text in switch_labels.items():
-            self.screen.query_exactly_one(label_id, Label).update(label_text)
 
 
 class MainScreen(Screen):
