@@ -91,7 +91,6 @@ class InputOutput:
 class Chezmoi:
 
     cat_config: InputOutput
-    cm_diff: InputOutput
     doctor: InputOutput
     dump_config: InputOutput
     git_log: InputOutput
@@ -119,7 +118,6 @@ class Chezmoi:
     # https://www.chezmoi.io/reference/command-line-flags/common/#available-entry-types
     subs = {
         "cat_config": ["cat-config"],
-        "cm_diff": ["diff"],
         "doctor": ["doctor"],
         "dump_config": ["dump-config", "--format=json"],
         "git_log": [
@@ -200,15 +198,7 @@ class Chezmoi:
         return [Path(p) for p in self.managed_files.std_out.splitlines()]
 
     @property
-    def get_managed_parents(self) -> set[Path]:
-        managed_files = [Path(p) for p in self.managed.std_out.splitlines()]
-        return {f.parent for f in managed_files}
-
-    @property
-    def get_managed_paths(self) -> list[Path]:
-        return [Path(p) for p in self.managed.std_out.splitlines()]
-
-    def get_cm_diff(self, file_path: str, apply: bool) -> list[str]:
+    def chezmoi_diff(self, file_path: str, apply: bool) -> list[str]:
         long_command = self.base + ["diff", file_path]
         if apply:
             return Tools.subprocess_run(long_command).splitlines()
