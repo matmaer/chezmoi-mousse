@@ -106,15 +106,15 @@ class Doctor(Widget):
 
     def compose(self) -> ComposeResult:
         yield DataTable(id="doctortable", show_cursor=False)
-        with VerticalScroll():
+        with VerticalScroll(can_focus=False):
             yield Collapsible(
                 ListView(id="cmdnotfound"), title="Commands Not Found"
             )
             yield Collapsible(
-                Pretty(chezmoi.get_config_dump), title="chezmoi dump-config"
+                Pretty(chezmoi.config), title="chezmoi dump-config"
             )
             yield Collapsible(
-                Pretty(chezmoi.get_template_data),
+                Pretty(chezmoi.template_data_dict),
                 title="chezmoi data (template data)",
             )
             yield Collapsible(
@@ -131,33 +131,21 @@ class Doctor(Widget):
 
     def on_mount(self) -> None:
 
+        styles = {
+            "ok": f"{self.app.current_theme.success}",
+            "warning": f"{self.app.current_theme.warning}",
+            "error": f"{self.app.current_theme.error}",
+            "info": f"{self.app.current_theme.foreground}",
+        }
+
         list_view = self.query_exactly_one("#cmdnotfound", ListView)
         table = self.query_exactly_one("#doctortable", DataTable)
-        table.add_columns(*chezmoi.get_doctor_rows[0].split())
+        doctor_rows = chezmoi.doctor.std_out.splitlines()
+        table.add_columns(*doctor_rows[0].split())
 
-        for line in chezmoi.get_doctor_rows[1:]:
+        for line in doctor_rows[1:]:
             row = tuple(line.split(maxsplit=2))
-            if row[0] == "ok":
-                row = [
-                    Text(cell_text, style=f"{self.app.current_theme.success}")
-                    for cell_text in row
-                ]
-            elif row[0] == "warning":
-                row = [
-                    Text(cell_text, style=f"{self.app.current_theme.warning}")
-                    for cell_text in row
-                ]
-            elif row[0] == "error":
-                row = [
-                    Text(cell_text, style=f"{self.app.current_theme.error}")
-                    for cell_text in row
-                ]
-            elif row[0] == "info" and row[2] == "not set":
-                row = [
-                    Text(cell_text, style=f"{self.app.current_theme.warning}")
-                    for cell_text in row
-                ]
-            elif row[0] == "info" and "not found in $PATH" in row[2]:
+            if row[0] == "info" and "not found in $PATH" in row[2]:
                 if row[1] in self.doctor_cmd_map:
                     list_view.append(
                         ListItem(
@@ -167,17 +155,26 @@ class Doctor(Widget):
                             Static(self.doctor_cmd_map[row[1]]["description"]),
                         )
                     )
-                    continue
-                list_view.append(
-                    ListItem(
-                        # color accent as that's how links are styled by default
-                        Static(f"[$accent]{row[1]}[/]", markup=True),
-                        Static(
-                            "Not Found in $PATH, no description available in TUI."
-                        ),
+                elif row[1] not in self.doctor_cmd_map:
+                    list_view.append(
+                        ListItem(
+                            # color accent as that's how links are styled by default
+                            Static(f"[$accent-muted]{row[1]}[/]", markup=True),
+                            Label(
+                                "Not Found in $PATH, no description available in TUI."
+                            ),
+                        )
                     )
-                )
-                continue
+            elif row[0] == "ok" or row[0] == "warning" or row[0] == "error":
+                row = [
+                    Text(cell_text, style=f"{styles[row[0]]}")
+                    for cell_text in row
+                ]
+            elif row[0] == "info" and row[2] == "not set":
+                row = [
+                    Text(cell_text, style=f"{self.app.current_theme.warning}")
+                    for cell_text in row
+                ]
             else:
                 row = [Text(cell_text) for cell_text in row]
             table.add_row(*row)
@@ -222,24 +219,23 @@ class ChezmoiStatus(VerticalScroll):
 
     def on_mount(self) -> None:
 
-        if self.apply:
-            changes = chezmoi.get_apply_changes
-        else:
-            changes = chezmoi.get_add_changes
+        changes: list[tuple[str, Path]] = chezmoi.get_status(
+            apply=self.apply, files=True, dirs=False
+        )
 
-        for code, path in changes:
-            status: str = self.status_info["code name"][code]
-            rel_path = str(path.relative_to(chezmoi.dest_dir))
+        for status_code, path in changes:
+            status: str = self.status_info["code name"][status_code]
+
+            rel_path = str(path.relative_to(chezmoi.config["destDir"]))
 
             colored_diffs: list[Label] = []
-            for line in chezmoi.get_cm_diff(str(path), self.apply):
+            for line in chezmoi.chezmoi_diff(str(path), self.apply):
                 if line.startswith("- "):
                     colored_diffs.append(Label(line, variant="error"))
                 elif line.startswith("+ "):
                     colored_diffs.append(Label(line, variant="success"))
                 elif line.startswith("  "):
                     colored_diffs.append(Label(line, classes="muted"))
-            colored_diffs.append(Label())
             self.status_items.append(
                 Collapsible(*colored_diffs, title=f"{status} {rel_path}")
             )
@@ -250,27 +246,27 @@ class ManagedTree(Tree):
 
     def __init__(self, apply: bool) -> None:
         self.apply = apply
-        super().__init__(label=str(chezmoi.dest_dir), id="managed_tree")
+        super().__init__(
+            label=str(chezmoi.config["destDir"]), id="managed_tree"
+        )
 
     def on_mount(self) -> None:
-        dest_dir_path = Path(chezmoi.get_config_dump["destDir"])
-        file_paths = chezmoi.get_managed_files
 
-        if self.apply:
-            dir_paths = chezmoi.get_managed_parents
-        else:
-            status_paths = [t[1] for t in chezmoi.get_add_changes]
-            dir_paths = {path for path in status_paths if path.is_dir()}
+        dest_dir_path = Path(chezmoi.config["destDir"])
 
         def recurse_paths(parent, dir_path):
             if dir_path == dest_dir_path:
                 parent = self.root
             else:
                 parent = parent.add(dir_path.parts[-1], dir_path)
-            files = [f for f in file_paths if f.parent == dir_path]
+            files = [
+                f for f in chezmoi.managed_f_paths if f.parent == dir_path
+            ]
             for file in files:
-                parent.add_leaf(str(file.parts[-1]), file)
-            sub_dirs = [d for d in dir_paths if d.parent == dir_path]
+                parent.add_leaf(str(file.parts[-1]))
+            sub_dirs = [
+                d for d in chezmoi.managed_d_paths if d.parent == dir_path
+            ]
             for sub_dir in sub_dirs:
                 recurse_paths(parent, sub_dir)
 
@@ -288,41 +284,60 @@ class AddDirTree(Widget):
     # pylint: disable=too-many-ancestors
     class FilteredAddDirTree(DirectoryTree):
 
-        include_unmanaged = reactive(False)
+        include_unmanaged_dirs = reactive(False)
         include_junk = reactive(False)
 
         def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
-            # Do not include any junk paths
+
+            all_paths = list(paths)
+
+            paths_to_show: list[Path] = []
+
+            managed_dirs: list[Path] = chezmoi.managed_d_paths
+            managed_files: list[Path] = chezmoi.managed_f_paths
+
+            unmanaged_dirs: list[Path] = [p for p in all_paths if p.is_dir()]
+            unmanaged_files: list[Path] = [p for p in all_paths if p.is_file()]
+
+            cleaned_unmanaged_dirs = Tools.filter_junk(unmanaged_dirs)
+            cleaned_unmanaged_files = Tools.filter_junk(unmanaged_files)
+
             # Include unmanaged files if they are part of a directory which
-            # already has managed files in chezmoi.get_managed_paths.
-            if not self.include_unmanaged and not self.include_junk:
-                paths_to_show: list[Path] = []
-                for p in Tools.filter_junk(list(paths)):
-                    if p.is_dir() and p in chezmoi.get_managed_parents:
+            # already has managed files in it without junk.
+            if not self.include_unmanaged_dirs and self.include_junk:
+                for p in unmanaged_dirs:
+                    if p in managed_dirs:
                         paths_to_show.append(p)
-                    elif (
-                        p.is_file() and p.parent in chezmoi.get_managed_parents
-                    ):
+                for p in unmanaged_files:
+                    if p.parent in managed_dirs:
                         paths_to_show.append(p)
                 return paths_to_show
-            # Do not include any junk paths
-            # Include any unmanaged path in the destDir
-            if self.include_unmanaged and not self.include_junk:
-                return Tools.filter_junk(list(paths))
-            # Include any unmanaged path in the destDir,
-            # even if they are considered junk paths.
-            if not self.include_unmanaged and self.include_junk:
-                paths_to_show: list[Path] = []
-                for p in list(paths):
-                    if p.is_dir() and p in chezmoi.get_managed_parents:
+
+            # Include unmanaged files if they are part of a directory which
+            # already has managed files in it including junk.
+            if not self.include_unmanaged_dirs and not self.include_junk:
+                for p in cleaned_unmanaged_dirs:
+                    if p in managed_dirs:
                         paths_to_show.append(p)
-                    elif (
-                        p.is_file() and p.parent in chezmoi.get_managed_parents
-                    ):
+                for p in cleaned_unmanaged_files:
+                    if p.parent in managed_dirs:
                         paths_to_show.append(p)
                 return paths_to_show
-            # Both switches "on": include all files in the destDir path
-            return list(paths)
+
+            # Include any unmanaged path in the destDir but without junk
+            if self.include_unmanaged_dirs and not self.include_junk:
+                return [
+                    p
+                    for p in cleaned_unmanaged_dirs + cleaned_unmanaged_files
+                    if p not in chezmoi.managed_paths
+                ]
+
+            # Both switches "on": include all unmanaged paths in the destDir
+            return [
+                p
+                for p in all_paths
+                if p not in managed_dirs and p not in managed_files
+            ]
 
     def compose(self) -> ComposeResult:
         if chezmoi.autoadd_enabled:
@@ -332,7 +347,9 @@ class AddDirTree(Widget):
                     '[$warning italic]"autoadd" is enabled: changes will be added to the source state after any change.[/]\n'
                 )
             )
-        yield self.FilteredAddDirTree(chezmoi.dest_dir, id="adddirtree")
+        yield self.FilteredAddDirTree(
+            chezmoi.config["destDir"], id="adddirtree"
+        )
 
     def action_add_file(self) -> None:
         self.app.push_screen(AddFileModal())
@@ -388,7 +405,11 @@ class SlideBar(Widget):
             yield Switch(
                 value=False, id="includeunmanaged", classes="filter-switch"
             )
-            yield Label(id="unmanagedlabel", classes="filter-label")
+            yield Label(
+                "Include unmanaged directories",
+                id="unmanagedlabel",
+                classes="filter-label",
+            )
             yield Label(
                 "(?)", id="unmanagedtooltip", classes="filter-tooltip"
             ).with_tooltip(tooltip=self.unmanaged_tooltip)
@@ -397,7 +418,9 @@ class SlideBar(Widget):
             yield Switch(
                 value=False, id="includejunk", classes="filter-switch"
             )
-            yield Label("no text set", id="junklabel", classes="filter-label")
+            yield Label(
+                "Include junk paths", id="junklabel", classes="filter-label"
+            )
             yield Label(
                 "(?)", id="junktooltip", classes="filter-tooltip"
             ).with_tooltip(tooltip=self.junk_tooltip)
@@ -407,19 +430,11 @@ class SlideBar(Widget):
             AddDirTree.FilteredAddDirTree
         )
         if event.switch.id == "includeunmanaged":
-            add_dir_tree.include_unmanaged = event.value
+            add_dir_tree.include_unmanaged_dirs = event.value
             add_dir_tree.reload()
         elif event.switch.id == "includejunk":
             add_dir_tree.include_junk = event.value
             add_dir_tree.reload()
-
-    def on_mount(self) -> None:
-        switch_labels = {
-            "#unmanagedlabel": "Include unmanaged directories",
-            "#junklabel": "Include junk paths",
-        }
-        for label_id, label_text in switch_labels.items():
-            self.screen.query_exactly_one(label_id, Label).update(label_text)
 
 
 class MainScreen(Screen):
