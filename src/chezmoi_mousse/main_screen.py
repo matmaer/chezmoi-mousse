@@ -296,23 +296,19 @@ class AddDirTree(Widget):
             managed_dirs: list[Path] = chezmoi.managed_d_paths
             managed_files: list[Path] = chezmoi.managed_f_paths
 
-            unmanaged_dirs: list[Path] = [p for p in all_paths if p.is_dir()]
-            unmanaged_files: list[Path] = [p for p in all_paths if p.is_file()]
+            all_dirs: list[Path] = [p for p in all_paths if p.is_dir()]
+            all_files: list[Path] = [p for p in all_paths if p.is_file()]
 
-            cleaned_unmanaged_dirs = Tools.filter_unwanted_paths(
-                unmanaged_dirs
-            )
-            cleaned_unmanaged_files = Tools.filter_unwanted_paths(
-                unmanaged_files
-            )
+            cleaned_unmanaged_dirs = Tools.filter_unwanted_paths(all_dirs)
+            cleaned_unmanaged_files = Tools.filter_unwanted_paths(all_files)
 
             # Include unmanaged files if they are part of a directory which
             # already has managed files in it without junk.
             if not self.include_unmanaged_dirs and self.include_junk:
-                for p in unmanaged_dirs:
+                for p in all_dirs:
                     if p in managed_dirs:
                         paths_to_show.append(p)
-                for p in unmanaged_files:
+                for p in all_files:
                     if p.parent in managed_dirs:
                         paths_to_show.append(p)
                 return paths_to_show
