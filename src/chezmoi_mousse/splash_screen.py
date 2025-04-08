@@ -18,11 +18,21 @@ from chezmoi_mousse.common import chezmoi
 
 class AnimatedFade(Widget):
 
-    def __init__(self, fade_colors: deque[Style]) -> None:
+    def __init__(self) -> None:
         super().__init__()
         self.styles.height = len(SPLASH)
         self.styles.width = len(max(SPLASH, key=len))
-        self.line_styles = fade_colors
+        self.line_styles = self.create_fade()
+
+    def create_fade(self) -> deque[Style]:
+        start_color = Color.parse(self.app.current_theme.primary)
+        end_color = Color.parse(self.app.current_theme.accent)
+        fade = [start_color] * 5
+        gradient = Gradient.from_colors(start_color, end_color, quality=5)
+        fade.extend(gradient.colors)
+        gradient.colors.reverse()
+        fade.extend(gradient.colors)
+        return deque([Style(color=color.hex, bold=True) for color in fade])
 
     def render_lines(self, crop) -> list[Strip]:
         self.line_styles.rotate()
@@ -37,23 +47,9 @@ class AnimatedFade(Widget):
 
 class LoadingScreen(Screen):
 
-    def __init__(self) -> None:
-        self.theme_fade: deque[Style] = self.create_fade()
-        super().__init__()
-
-    def create_fade(self) -> deque[Style]:
-        start_color = Color.parse(self.app.current_theme.primary)
-        end_color = Color.parse(self.app.current_theme.accent)
-        fade = [start_color] * 5
-        gradient = Gradient.from_colors(start_color, end_color, quality=5)
-        fade.extend(gradient.colors)
-        gradient.colors.reverse()
-        fade.extend(gradient.colors)
-        return deque([Style(color=color.hex, bold=True) for color in fade])
-
     def compose(self) -> ComposeResult:
         with Middle():
-            yield Center(AnimatedFade(fade_colors=self.theme_fade))
+            yield Center(AnimatedFade())
             yield Center(
                 RichLog(name="loader log", id="loader-log", max_lines=11)
             )
@@ -72,7 +68,7 @@ class LoadingScreen(Screen):
         if arg_id == "dump_config":
             config_dict = json.loads(io_class.std_out)
             setattr(chezmoi, "config", config_dict)
-        if arg_id == "template_data":
+        elif arg_id == "template_data":
             config_dict = json.loads(io_class.std_out)
             setattr(chezmoi, "template_data_dict", config_dict)
         padding = 32 - len(io_class.label)
