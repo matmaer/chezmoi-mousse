@@ -12,7 +12,7 @@ from textual.strip import Strip
 from textual.widget import Widget
 from textual.widgets import Button, RichLog
 
-from chezmoi_mousse.ascii_art import SPLASH
+from chezmoi_mousse import SPLASH
 from chezmoi_mousse.common import chezmoi
 
 
