@@ -33,7 +33,7 @@ from textual.widgets import (
     Tree,
 )
 
-from chezmoi_mousse.ascii_art import FLOW
+from chezmoi_mousse import FLOW
 from chezmoi_mousse.common import Tools, chezmoi
 
 
