@@ -299,8 +299,12 @@ class AddDirTree(Widget):
             unmanaged_dirs: list[Path] = [p for p in all_paths if p.is_dir()]
             unmanaged_files: list[Path] = [p for p in all_paths if p.is_file()]
 
-            cleaned_unmanaged_dirs = Tools.filter_junk(unmanaged_dirs)
-            cleaned_unmanaged_files = Tools.filter_junk(unmanaged_files)
+            cleaned_unmanaged_dirs = Tools.filter_unwanted_paths(
+                unmanaged_dirs
+            )
+            cleaned_unmanaged_files = Tools.filter_unwanted_paths(
+                unmanaged_files
+            )
 
             # Include unmanaged files if they are part of a directory which
             # already has managed files in it without junk.
