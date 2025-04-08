@@ -17,8 +17,10 @@ class Tools:
         ).stdout.strip()
 
     @staticmethod
-    def filter_unwanted_paths(paths_to_filter: list[Path]) -> list[Path]:
-        junk_dirs = {
+    def filter_unwanted_paths(
+        paths_to_filter: list[Path], return_unwanted: bool
+    ) -> list[Path]:
+        unwanted_dirs = {
             "__pycache__",
             ".build",
             ".bundle",
@@ -47,7 +49,7 @@ class Tools:
             "trash",
             "Trash",
         }
-        junk_files = {
+        unwanted_files = {
             ".bak",
             ".cache",
             ".egg-info",
@@ -66,9 +68,17 @@ class Tools:
         }
         all_dirs = [p for p in paths_to_filter if p.is_dir()]
         all_files = [p for p in paths_to_filter if p.is_file()]
-        clean_dirs = [p for p in all_dirs if p.name not in junk_dirs]
+
+        if return_unwanted:
+            unwanted_dirs = [p for p in all_dirs if p.name in unwanted_dirs]
+            unwanted_files = [
+                p for p in all_files if p.name.split(".")[-1] in unwanted_files
+            ]
+            return unwanted_dirs + unwanted_files
+
+        clean_dirs = [p for p in all_dirs if p.name not in unwanted_dirs]
         clean_files = [
-            p for p in all_files if p.name.split(".")[-1] not in junk_files
+            p for p in all_files if p.name.split(".")[-1] not in unwanted_files
         ]
         return clean_dirs + clean_files
 
