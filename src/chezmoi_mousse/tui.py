@@ -5,6 +5,20 @@ from chezmoi_mousse.main_screen import MainScreen
 from chezmoi_mousse.splash_screen import LoadingScreen
 
 
+theme = Theme(
+    name="chezmoi-mousse-dark",
+    dark=True,
+    accent="#F187FB",
+    background="#000000",
+    error="#ba3c5b",  # textual dark
+    foreground="#DEDAE1",
+    primary="#0178D4",  # textual dark
+    secondary="#004578",  # textual dark
+    success="#4EBF71",  # textual dark
+    warning="#ffa62b",  # textual dark
+)
+
+
 class ChezmoiTUI(App):
 
     CSS_PATH = "tui.tcss"
@@ -19,17 +33,3 @@ class ChezmoiTUI(App):
 
     def push_main_screen(self, _) -> None:
         self.push_screen("main")
-
-
-theme = Theme(
-    name="chezmoi-mousse-dark",
-    dark=True,
-    accent="#F187FB",
-    background="#000000",
-    error="#ba3c5b",  # textual dark
-    foreground="#DEDAE1",
-    primary="#0178D4",  # textual dark
-    secondary="#004578",  # textual dark
-    success="#4EBF71",  # textual dark
-    warning="#ffa62b",  # textual dark
-)
