@@ -207,37 +207,29 @@ class Chezmoi:
         return self.managed_d_paths + self.managed_f_paths
 
     def get_status(
-        self, apply: bool, dirs: bool, files: bool
+        self, apply: bool = False, dirs: bool = False, files: bool = False
     ) -> list[tuple[str, Path]]:
-
-        result = []
-        lines = []
-        dir_lines = [
-            l
-            for l in self.status_dirs.std_out.splitlines()
-            if l[0] in "ADM" or l[1] in "ADM"
-        ]
-        file_lines = [
-            l
-            for l in self.status_files.std_out.splitlines()
-            if l[0] in "ADM" or l[1] in "ADM"
-        ]
-        if files and not dirs:
-            lines = file_lines
-        elif dirs and not files:
-            lines = dir_lines
-        elif dirs and files:
-            lines = file_lines + dir_lines
-        else:
+        if not dirs and not files:
             raise ValueError("Either files or dirs must be true")
 
-        for line in lines:
-            if apply:
-                status_code = line[1]
-            else:
-                status_code = line[0]
-            path = Path(line[3:])
-            result.append((status_code, path))
+        # Combine lines from dirs and files
+        lines = []
+        if dirs:
+            lines.extend(self.status_dirs.std_out.splitlines())
+        if files:
+            lines.extend(self.status_files.std_out.splitlines())
+
+        # Filter relevant lines
+        relevant_status_codes = {"A", "D", "M"}
+        relevant_lines = [
+            line for line in lines if line[:2].strip() in relevant_status_codes
+        ]
+
+        # Build the result list
+        result = [
+            (line[1] if apply else line[0], Path(line[3:]))
+            for line in relevant_lines
+        ]
         return result
 
     def chezmoi_diff(self, file_path: str, apply: bool) -> list[str]:
