@@ -65,12 +65,6 @@ class LoadingScreen(Screen):
     def run(self, arg_id) -> None:
         io_class = getattr(chezmoi, arg_id)
         io_class.update()
-        if arg_id == "dump_config":
-            config_dict = json.loads(io_class.std_out)
-            setattr(chezmoi, "config", config_dict)
-        elif arg_id == "template_data":
-            config_dict = json.loads(io_class.std_out)
-            setattr(chezmoi, "template_data_dict", config_dict)
         padding = 32 - len(io_class.label)
         log_text = f"{io_class.label} {'.' * padding} loaded"
         self.query_one(RichLog).write(log_text)
@@ -82,6 +76,14 @@ class LoadingScreen(Screen):
             if worker.group == "loaders"
         )
         if finished:
+            for arg_id in chezmoi.long_commands:
+                if arg_id == "dump_config":
+                    config_dict = json.loads(chezmoi.dump_config.std_out)
+                    setattr(chezmoi, "config", config_dict)
+                elif arg_id == "template_data":
+                    config_dict = json.loads(chezmoi.template_data.std_out)
+                    setattr(chezmoi, "template_data_dict", config_dict)
+                    self.query_one("#continue").disabled = False
             self.query_one("#continue").disabled = False
 
     def on_mount(self) -> None:
