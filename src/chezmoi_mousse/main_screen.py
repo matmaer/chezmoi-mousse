@@ -282,55 +282,39 @@ class FilteredAddDirTree(DirectoryTree):
 
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
 
-        all_paths = list(paths)
+        # include unmanaged dirs
+        # include the files that have a parent that exists in managed dirs
+        # do not include directories that have zero non non managed files till
+        # the end of the tree
 
-        paths_to_show: list[Path] = []
+        # Switches: Off and On (default)
+        # or switches: Off Off (include files in any managed dir)
 
-        managed_dirs: list[Path] = chezmoi.managed_d_paths
-        managed_files: list[Path] = chezmoi.managed_f_paths
-
-        all_dirs: list[Path] = [p for p in all_paths if p.is_dir()]
-        all_files: list[Path] = [p for p in all_paths if p.is_file()]
-
-        cleaned_unmanaged_dirs = Tools.filter_unwanted_paths(all_dirs)
-        cleaned_unmanaged_files = Tools.filter_unwanted_paths(all_files)
-
-        # Include unmanaged files if they are part of a directory which
-        # already has managed files in it without junk.
-        if not self.include_unmanaged_dirs and self.filter_unwanted:
-            for p in all_dirs:
-                if p in managed_dirs:
-                    paths_to_show.append(p)
-            for p in all_files:
-                if p.parent in managed_dirs:
-                    paths_to_show.append(p)
-            return paths_to_show
-
-        # Include unmanaged files if they are part of a directory which
-        # already has managed files in it including junk.
-        if not self.include_unmanaged_dirs and not self.filter_unwanted:
-            for p in cleaned_unmanaged_dirs:
-                if p in managed_dirs:
-                    paths_to_show.append(p)
-            for p in cleaned_unmanaged_files:
-                if p.parent in managed_dirs:
-                    paths_to_show.append(p)
-            return paths_to_show
-
-        # Include any unmanaged path in the destDir but without junk
-        if self.include_unmanaged_dirs and not self.filter_unwanted:
+        if not self.include_unmanaged_dirs:
             return [
                 p
-                for p in cleaned_unmanaged_dirs + cleaned_unmanaged_files
-                if p not in chezmoi.managed_paths
+                for p in paths
+                if p not in set(chezmoi.managed_f_paths)
+                or p in set(chezmoi.managed_d_paths)
             ]
 
-        # Both switches "on": include all unmanaged paths in the destDir
-        return [
-            p
-            for p in all_paths
-            if p not in managed_dirs and p not in managed_files
-        ]
+        # Switches: On and On
+        # Include any unmanaged path in the destDir but without unwanted
+        if self.include_unmanaged_dirs and self.filter_unwanted:
+            return [
+                p
+                for p in Tools.filter_unwanted_paths(
+                    list(paths), return_unwanted=False
+                )
+                if p not in set(chezmoi.managed_paths)
+            ]
+
+        # Switches: On Off
+        # Include all unmanaged paths with unwanted included.
+        if self.include_unmanaged_dirs and not self.filter_unwanted:
+            return [p for p in paths if p not in set(chezmoi.managed_paths)]
+
+        return paths
 
 
 class AddDirTree(Widget):
