@@ -274,70 +274,79 @@ class ManagedTree(Tree):
         self.root.expand()
 
 
+# pylint: disable=too-many-ancestors
+class FilteredAddDirTree(DirectoryTree):
+
+    include_unmanaged_dirs = reactive(False, always_update=True)
+    filter_unwanted = reactive(True, always_update=True)
+
+    def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
+
+        managed_dirs = set(chezmoi.managed_d_paths)
+        managed_files = set(chezmoi.managed_f_paths)
+        managed_paths = set(chezmoi.managed_d_paths + chezmoi.managed_f_paths)
+
+        # Switches: Red - Green (default)
+        if not self.include_unmanaged_dirs and self.filter_unwanted:
+            return [
+                p
+                for p in paths
+                if (
+                    p.is_file()
+                    and (
+                        p.parent in managed_dirs
+                        or p.parent == Path(chezmoi.config["destDir"])
+                    )
+                    and not Tools.is_unwanted_path(p)
+                    and p not in managed_files
+                )
+                or (
+                    p.is_dir()
+                    and not Tools.is_unwanted_path(p)
+                    and p in managed_dirs
+                )
+            ]
+
+        # Switches: Red - Red
+        if not self.include_unmanaged_dirs and not self.filter_unwanted:
+            return [
+                p
+                for p in paths
+                if (
+                    p.is_file()
+                    and (
+                        p.parent in managed_dirs
+                        or p.parent == Path(chezmoi.config["destDir"])
+                    )
+                    and p not in managed_files
+                )
+                or (p.is_dir() and p in managed_dirs)
+            ]
+
+        # Switches: Green - Green
+        if self.include_unmanaged_dirs and self.filter_unwanted:
+            return [
+                p
+                for p in paths
+                if p not in managed_paths and not Tools.is_unwanted_path(p)
+            ]
+
+        # Switches: Green - Red , this means the following is true:
+        # self.include_unmanaged_dirs and not self.filter_unwanted
+        return [
+            p
+            for p in paths
+            if (p.is_file() and p not in managed_files)
+            or (p.is_dir() and Tools.has_sub_dirs(p))
+        ]
+
+
 class AddDirTree(Widget):
 
     BINDINGS = [
         Binding("f", "toggle_slidebar", "Filters"),
         Binding("a", "add_file", "Add Path"),
     ]
-
-    # pylint: disable=too-many-ancestors
-    class FilteredAddDirTree(DirectoryTree):
-
-        include_unmanaged_dirs = reactive(False)
-        include_junk = reactive(False)
-
-        def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
-
-            all_paths = list(paths)
-
-            paths_to_show: list[Path] = []
-
-            managed_dirs: list[Path] = chezmoi.managed_d_paths
-            managed_files: list[Path] = chezmoi.managed_f_paths
-
-            unmanaged_dirs: list[Path] = [p for p in all_paths if p.is_dir()]
-            unmanaged_files: list[Path] = [p for p in all_paths if p.is_file()]
-
-            cleaned_unmanaged_dirs = Tools.filter_junk(unmanaged_dirs)
-            cleaned_unmanaged_files = Tools.filter_junk(unmanaged_files)
-
-            # Include unmanaged files if they are part of a directory which
-            # already has managed files in it without junk.
-            if not self.include_unmanaged_dirs and self.include_junk:
-                for p in unmanaged_dirs:
-                    if p in managed_dirs:
-                        paths_to_show.append(p)
-                for p in unmanaged_files:
-                    if p.parent in managed_dirs:
-                        paths_to_show.append(p)
-                return paths_to_show
-
-            # Include unmanaged files if they are part of a directory which
-            # already has managed files in it including junk.
-            if not self.include_unmanaged_dirs and not self.include_junk:
-                for p in cleaned_unmanaged_dirs:
-                    if p in managed_dirs:
-                        paths_to_show.append(p)
-                for p in cleaned_unmanaged_files:
-                    if p.parent in managed_dirs:
-                        paths_to_show.append(p)
-                return paths_to_show
-
-            # Include any unmanaged path in the destDir but without junk
-            if self.include_unmanaged_dirs and not self.include_junk:
-                return [
-                    p
-                    for p in cleaned_unmanaged_dirs + cleaned_unmanaged_files
-                    if p not in chezmoi.managed_paths
-                ]
-
-            # Both switches "on": include all unmanaged paths in the destDir
-            return [
-                p
-                for p in all_paths
-                if p not in managed_dirs and p not in managed_files
-            ]
 
     def compose(self) -> ComposeResult:
         if chezmoi.autoadd_enabled:
@@ -347,9 +356,7 @@ class AddDirTree(Widget):
                     '[$warning italic]"autoadd" is enabled: changes will be added to the source state after any change.[/]\n'
                 )
             )
-        yield self.FilteredAddDirTree(
-            chezmoi.config["destDir"], id="adddirtree"
-        )
+        yield FilteredAddDirTree(chezmoi.config["destDir"], id="adddirtree")
 
     def action_add_file(self) -> None:
         self.app.push_screen(AddFileModal())
@@ -376,7 +383,7 @@ class AddFileModal(ModalScreen):
         )
 
     def on_mount(self):
-        add_file_modal = self.query_one("#addfilemodal")
+        add_file_modal = self.query_exactly_one("#addfilemodal")
         add_file_modal.border_title = self.title
         add_file_modal.border_subtitle = "Escape to cancel"
 
@@ -397,7 +404,7 @@ class SlideBar(Widget):
         # pylint: disable=line-too-long
         self.border_title = "filters "
         self.unmanaged_tooltip = "Enable to include all un-managed files, even if they live in an un-managed directory. Disable to only show un-managed files in directories which already contain managed files (the default). The purpose is to easily spot new un-managed files in already managed directories. (in both cases, only the un-managed files are shown)"
-        self.junk_tooltip = 'Show files and directories considered as "junk" for a dotfile manager. These include cache, temporary, trash (recycle bin) and other similar files or directories.  You can disable this, for example if you want to add files to your chezmoi repository which are in a directory named "cache".'
+        self.junk_tooltip = 'Filter out files and directories considered as "unwanted" for a dotfile manager. These include cache, temporary, trash (recycle bin) and other similar files or directories.  You can disable this, for example if you want to add files to your chezmoi repository which are in a directory named "cache".'
 
     def compose(self) -> ComposeResult:
 
@@ -415,25 +422,21 @@ class SlideBar(Widget):
             ).with_tooltip(tooltip=self.unmanaged_tooltip)
 
         with Horizontal(classes="filter-container"):
-            yield Switch(
-                value=False, id="includejunk", classes="filter-switch"
-            )
+            yield Switch(value=True, id="filterjunk", classes="filter-switch")
             yield Label(
-                "Include junk paths", id="junklabel", classes="filter-label"
+                "Filter unwanted paths", id="unwanted", classes="filter-label"
             )
             yield Label(
                 "(?)", id="junktooltip", classes="filter-tooltip"
             ).with_tooltip(tooltip=self.junk_tooltip)
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
-        add_dir_tree = self.screen.query_exactly_one(
-            AddDirTree.FilteredAddDirTree
-        )
+        add_dir_tree = self.screen.query_exactly_one(FilteredAddDirTree)
         if event.switch.id == "includeunmanaged":
             add_dir_tree.include_unmanaged_dirs = event.value
             add_dir_tree.reload()
-        elif event.switch.id == "includejunk":
-            add_dir_tree.include_junk = event.value
+        elif event.switch.id == "filterjunk":
+            add_dir_tree.filter_unwanted = event.value
             add_dir_tree.reload()
 
 
@@ -460,6 +463,12 @@ class MainScreen(Screen):
             yield Static(FLOW, id="diagram")
         yield SlideBar()
         yield Footer()
+
+    def on_mount(self) -> None:
+        add_dir_tree = self.screen.query_exactly_one(FilteredAddDirTree)
+        add_dir_tree.include_unmanaged_dirs = False
+        add_dir_tree.filter_unwanted = True
+        add_dir_tree.reload()
 
     def action_toggle_slidebar(self):
         self.screen.query_exactly_one(SlideBar).toggle_class("-visible")

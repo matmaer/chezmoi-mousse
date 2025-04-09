@@ -1,3 +1,4 @@
+import re
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
@@ -17,8 +18,8 @@ class Tools:
         ).stdout.strip()
 
     @staticmethod
-    def filter_junk(paths_to_filter: list[Path]) -> list[Path]:
-        junk_dirs = {
+    def is_unwanted_path(path: Path) -> bool:
+        unwanted_dirs = {
             "__pycache__",
             ".build",
             ".bundle",
@@ -47,7 +48,7 @@ class Tools:
             "trash",
             "Trash",
         }
-        junk_files = {
+        unwanted_files = {
             ".bak",
             ".cache",
             ".egg-info",
@@ -64,13 +65,28 @@ class Tools:
             ".tmp",
             ".zip",
         }
-        all_dirs = [p for p in paths_to_filter if p.is_dir()]
-        all_files = [p for p in paths_to_filter if p.is_file()]
-        clean_dirs = [p for p in all_dirs if p.name not in junk_dirs]
-        clean_files = [
-            p for p in all_files if p.name.split(".")[-1] not in junk_files
-        ]
-        return clean_dirs + clean_files
+
+        if path.is_dir() and path.name in unwanted_dirs:
+            return True
+
+        regex = r"\.[^.]*$"
+        if path.is_file() and bool(re.match(regex, path.name)):
+            extension = re.match(regex, path.name)
+            if extension in unwanted_files:
+                return True
+
+        if not path.is_dir() and not path.is_file():
+            # for the time being, only support files and directories
+            return True
+
+        return False
+
+    @staticmethod
+    def has_sub_dirs(path: Path) -> bool:
+        for child in path.iterdir():
+            if child.is_dir():
+                return True
+        return False
 
 
 @dataclass
@@ -102,7 +118,6 @@ class Chezmoi:
     status_dirs: InputOutput
     status_files: InputOutput
     template_data: InputOutput
-    unmanaged: InputOutput
     config: dict = {}
     template_data_dict: dict = {}
 
@@ -142,7 +157,6 @@ class Chezmoi:
         "status_dirs": ["status", "--path-style=absolute", "--include=dirs"],
         "status_files": ["status", "--path-style=absolute", "--include=files"],
         "template_data": ["data", "--format=json"],
-        "unmanaged": ["unmanaged", "--path-style=absolute"],
     }
 
     write_commands = {
@@ -186,43 +200,38 @@ class Chezmoi:
     def managed_f_paths(self) -> list[Path]:
         return [Path(p) for p in self.managed_files.std_out.splitlines()]
 
-    @property
-    def managed_paths(self) -> list[Path]:
-        return self.managed_d_paths + self.managed_f_paths
+    def unmanaged_in_d(self, dir_path: Path) -> list[Path]:
+        long_command = self.base + [
+            "unmanaged",
+            "--path-style=absolute",
+            str(dir_path),
+        ]
+        return [
+            Path(p) for p in Tools.subprocess_run(long_command).splitlines()
+        ]
 
     def get_status(
-        self, apply: bool, dirs: bool, files: bool
+        self, apply: bool = False, dirs: bool = False, files: bool = False
     ) -> list[tuple[str, Path]]:
-
-        result = []
-        lines = []
-        dir_lines = [
-            l
-            for l in self.status_dirs.std_out.splitlines()
-            if l[0] in "ADM" or l[1] in "ADM"
-        ]
-        file_lines = [
-            l
-            for l in self.status_files.std_out.splitlines()
-            if l[0] in "ADM" or l[1] in "ADM"
-        ]
-        if files and not dirs:
-            lines = file_lines
-        elif dirs and not files:
-            lines = dir_lines
-        elif dirs and files:
-            lines = file_lines + dir_lines
-        else:
+        if not dirs and not files:
             raise ValueError("Either files or dirs must be true")
 
-        for line in lines:
-            if apply:
-                status_code = line[1]
-            else:
-                status_code = line[0]
-            path = Path(line[3:])
-            result.append((status_code, path))
-        return result
+        # Combine lines from dirs and files
+        lines = []
+        if dirs:
+            lines.extend(self.status_dirs.std_out.splitlines())
+        if files:
+            lines.extend(self.status_files.std_out.splitlines())
+
+        relevant_status_codes = {"A", "D", "M"}
+        relevant_lines = [
+            line for line in lines if line[:2].strip() in relevant_status_codes
+        ]
+
+        return [
+            (line[1] if apply else line[0], Path(line[3:]))
+            for line in relevant_lines
+        ]
 
     def chezmoi_diff(self, file_path: str, apply: bool) -> list[str]:
         long_command = self.base + ["diff", file_path]
