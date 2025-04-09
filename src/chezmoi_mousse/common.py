@@ -1,3 +1,4 @@
+import re
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
@@ -66,13 +67,18 @@ class Tools:
             ".tmp",
             ".zip",
         }
+
+        regex = r"\.[^.]*$"
+
         all_dirs = [p for p in paths_to_filter if p.is_dir()]
         all_files = [p for p in paths_to_filter if p.is_file()]
 
         if return_unwanted:
             unwanted_dirs = [p for p in all_dirs if p.name in unwanted_dirs]
             unwanted_files = [
-                p for p in all_files if p.name.split(".")[-1] in unwanted_files
+                p
+                for p in all_files
+                if re.search(regex, p.name.split(".")[-1]) in unwanted_files
             ]
             return unwanted_dirs + unwanted_files
 
