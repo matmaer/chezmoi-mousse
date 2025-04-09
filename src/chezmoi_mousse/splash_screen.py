@@ -67,7 +67,7 @@ class LoadingScreen(Screen):
         io_class.update()
         padding = 32 - len(io_class.label)
         log_text = f"{io_class.label} {'.' * padding} loaded"
-        self.query_one(RichLog).write(log_text)
+        self.query_exactly_one(RichLog).write(log_text)
 
     def workers_finished(self) -> None:
         finished = all(
@@ -84,7 +84,7 @@ class LoadingScreen(Screen):
                     config_dict = json.loads(chezmoi.template_data.std_out)
                     setattr(chezmoi, "template_data_dict", config_dict)
                     self.query_one("#continue").disabled = False
-            self.query_one("#continue").disabled = False
+            self.query_exactly_one("#continue").disabled = False
 
     def on_mount(self) -> None:
         for arg_id in chezmoi.long_commands:
@@ -92,9 +92,9 @@ class LoadingScreen(Screen):
         self.set_interval(interval=0.1, callback=self.workers_finished)
 
     def on_key(self) -> None:
-        if not self.query_one("#continue").disabled:
+        if not self.query_exactly_one("#continue").disabled:
             self.dismiss()
 
     def on_click(self) -> None:
-        if not self.query_one("#continue").disabled:
+        if not self.query_exactly_one("#continue").disabled:
             self.dismiss()

@@ -277,44 +277,68 @@ class ManagedTree(Tree):
 # pylint: disable=too-many-ancestors
 class FilteredAddDirTree(DirectoryTree):
 
-    include_unmanaged_dirs = reactive(False)
-    filter_unwanted = reactive(True)
+    include_unmanaged_dirs = reactive(False, always_update=True)
+    filter_unwanted = reactive(True, always_update=True)
 
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
 
-        # include unmanaged dirs
-        # include the files that have a parent that exists in managed dirs
-        # do not include directories that have zero non non managed files till
-        # the end of the tree
+        managed_dirs = set(chezmoi.managed_d_paths)
+        managed_files = set(chezmoi.managed_f_paths)
+        managed_paths = set(chezmoi.managed_d_paths + chezmoi.managed_f_paths)
 
-        # Switches: Off and On (default)
-        # or switches: Off Off (include files in any managed dir)
-
-        if not self.include_unmanaged_dirs:
+        # Switches: Red - Green (default)
+        if not self.include_unmanaged_dirs and self.filter_unwanted:
             return [
                 p
                 for p in paths
-                if p not in set(chezmoi.managed_f_paths)
-                or p in set(chezmoi.managed_d_paths)
+                if (
+                    p.is_file()
+                    and (
+                        p.parent in managed_dirs
+                        or p.parent == Path(chezmoi.config["destDir"])
+                    )
+                    and not Tools.is_unwanted_path(p)
+                    and p not in managed_files
+                )
+                or (
+                    p.is_dir()
+                    and not Tools.is_unwanted_path(p)
+                    and p in managed_dirs
+                )
             ]
 
-        # Switches: On and On
-        # Include any unmanaged path in the destDir but without unwanted
+        # Switches: Red - Red
+        if not self.include_unmanaged_dirs and not self.filter_unwanted:
+            return [
+                p
+                for p in paths
+                if (
+                    p.is_file()
+                    and (
+                        p.parent in managed_dirs
+                        or p.parent == Path(chezmoi.config["destDir"])
+                    )
+                    and p not in managed_files
+                )
+                or (p.is_dir() and p in managed_dirs)
+            ]
+
+        # Switches: Green - Green
         if self.include_unmanaged_dirs and self.filter_unwanted:
             return [
                 p
-                for p in Tools.filter_unwanted_paths(
-                    list(paths), return_unwanted=False
-                )
-                if p not in set(chezmoi.managed_paths)
+                for p in paths
+                if p not in managed_paths and not Tools.is_unwanted_path(p)
             ]
 
-        # Switches: On Off
-        # Include all unmanaged paths with unwanted included.
-        if self.include_unmanaged_dirs and not self.filter_unwanted:
-            return [p for p in paths if p not in set(chezmoi.managed_paths)]
-
-        return paths
+        # Switches: Green - Red , this means the following is true:
+        # self.include_unmanaged_dirs and not self.filter_unwanted
+        return [
+            p
+            for p in paths
+            if (p.is_file() and p not in managed_files)
+            or (p.is_dir() and Tools.has_sub_dirs(p))
+        ]
 
 
 class AddDirTree(Widget):
@@ -359,7 +383,7 @@ class AddFileModal(ModalScreen):
         )
 
     def on_mount(self):
-        add_file_modal = self.query_one("#addfilemodal")
+        add_file_modal = self.query_exactly_one("#addfilemodal")
         add_file_modal.border_title = self.title
         add_file_modal.border_subtitle = "Escape to cancel"
 
@@ -380,7 +404,7 @@ class SlideBar(Widget):
         # pylint: disable=line-too-long
         self.border_title = "filters "
         self.unmanaged_tooltip = "Enable to include all un-managed files, even if they live in an un-managed directory. Disable to only show un-managed files in directories which already contain managed files (the default). The purpose is to easily spot new un-managed files in already managed directories. (in both cases, only the un-managed files are shown)"
-        self.junk_tooltip = 'Filter out files and directories considered as "junk" for a dotfile manager. These include cache, temporary, trash (recycle bin) and other similar files or directories.  You can disable this, for example if you want to add files to your chezmoi repository which are in a directory named "cache".'
+        self.junk_tooltip = 'Filter out files and directories considered as "unwanted" for a dotfile manager. These include cache, temporary, trash (recycle bin) and other similar files or directories.  You can disable this, for example if you want to add files to your chezmoi repository which are in a directory named "cache".'
 
     def compose(self) -> ComposeResult:
 
@@ -439,6 +463,12 @@ class MainScreen(Screen):
             yield Static(FLOW, id="diagram")
         yield SlideBar()
         yield Footer()
+
+    def on_mount(self) -> None:
+        add_dir_tree = self.screen.query_exactly_one(FilteredAddDirTree)
+        add_dir_tree.include_unmanaged_dirs = False
+        add_dir_tree.filter_unwanted = True
+        add_dir_tree.reload()
 
     def action_toggle_slidebar(self):
         self.screen.query_exactly_one(SlideBar).toggle_class("-visible")
