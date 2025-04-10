@@ -390,7 +390,6 @@ class AddFileModal(ModalScreen):
 
     def on_mount(self):
         modal = self.query_exactly_one("#addfilemodal")
-        modal.border_subtitle = "Escape to cancel"
         modal.border_title = self.file_name
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
