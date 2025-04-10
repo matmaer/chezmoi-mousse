@@ -361,10 +361,10 @@ class AddDirTree(Widget):
     def on_directory_tree_file_selected(
         self, event: DirectoryTree.FileSelected
     ) -> None:
-        self.app.push_screen(AddFileModal(event.path.name))
+        self.app.push_screen(AddFileModal(event.path))
 
     def action_add_file(self) -> None:
-        self.app.push_screen(AddFileModal())
+        self.app.push_screen(AddFileModal(Path("directory")))
 
 
 class AddFileModal(ModalScreen):
@@ -373,12 +373,14 @@ class AddFileModal(ModalScreen):
         Binding("escape", "dismiss", "dismiss modal screen", show=False)
     ]
 
-    def __init__(self, file_name: str = "auaoeu") -> None:
-        self.file_name = file_name
+    def __init__(self, file_path: Path) -> None:
+        self.file_name = file_path.name
+        self.path_str = str(file_path)
         super().__init__(id="addfilemodal")
 
     def compose(self) -> ComposeResult:
         yield Center(
+            Label(self.path_str),
             Horizontal(
                 Button("Add", id="addfile"), Button("Cancel", id="cancel")
             ),
