@@ -358,6 +358,11 @@ class AddDirTree(Widget):
             )
         yield FilteredAddDirTree(chezmoi.config["destDir"], id="adddirtree")
 
+    def on_directory_tree_file_selected(
+        self, event: DirectoryTree.FileSelected
+    ) -> None:
+        self.app.push_screen(AddFileModal(event.path.name))
+
     def action_add_file(self) -> None:
         self.app.push_screen(AddFileModal())
 
@@ -368,13 +373,12 @@ class AddFileModal(ModalScreen):
         Binding("escape", "dismiss", "dismiss modal screen", show=False)
     ]
 
-    def __init__(self, file_name: str = ""):
+    def __init__(self, file_name: str = "auaoeu") -> None:
         self.file_name = file_name
-        super().__init__()
+        super().__init__(id="addfilemodal")
 
     def compose(self) -> ComposeResult:
         yield Center(
-            Static("file add modal"),
             Horizontal(
                 Button("Add", id="addfile"), Button("Cancel", id="cancel")
             ),
@@ -383,9 +387,9 @@ class AddFileModal(ModalScreen):
         )
 
     def on_mount(self):
-        add_file_modal = self.query_exactly_one("#addfilemodal")
-        add_file_modal.border_title = self.title
-        add_file_modal.border_subtitle = "Escape to cancel"
+        modal = self.query_exactly_one("#addfilemodal")
+        modal.border_subtitle = "Escape to cancel"
+        modal.border_title = self.file_name
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "addfile":
