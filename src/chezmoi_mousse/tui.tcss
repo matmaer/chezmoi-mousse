@@ -1,4 +1,5 @@
 .dir-tree {
+  height: auto;
   margin-left: 1;
   & > .directory-tree--folder {
     color: $primary-lighten-3;
@@ -18,135 +19,95 @@
 }
 
 .operationmodal {
+  align: center middle;
+  background-tint: $background-lighten-1;
   background: $background-lighten-1;
-  border: $accent;
-  margin: 2 4;
+  border: heavy $primary-darken-3;
+  height: auto;
+  margin: 2 3 2 3;
+  max-height: 1fr;
+  max-width: 1fr;
   scrollbar-gutter: stable;
-  Static {
-    width: auto;
-  }
+  width: auto;
+
   Button {
-    width: auto;
-    min-width: 16;
-    height: 3;
-    color: $button-foreground;
-    background: $surface;
-    border: none;
-    border-top: tall $surface-lighten-1;
-    border-bottom: tall $surface-darken-1;
-    text-align: center;
+    background-tint: $background-lighten-1;
+    background: $background-lighten-1;
+    border-bottom: none;
+    border-left: none;
+    border-right: none;
+    border-top: heavy $primary;
+    color: $primary;
     content-align: center middle;
-    text-style: bold;
+    height: auto;
     line-pad: 1;
+    min-width: 8;
+    text-align: center;
+    text-style: none;
+    text-style: none;
+    width: 1fr;
+    margin: 0 3 0 3;
 
     &:disabled {
       text-opacity: 0.6;
     }
 
     &:focus {
-      text-style: $button-focus-text-style;
-      background-tint: $foreground 5%;
+      background-tint: $background-lighten-1;
+      background: $background-lighten-1;
+      border-bottom: none;
+      border-left: none;
+      border-right: none;
+      border-top: $primary-lighten-2;
+      color: $accent-lighten-1    ;
+      text-style: none;
     }
     &:hover {
-      border-top: tall $surface;
-      background: $surface-darken-1;
+      background-tint: $background-lighten-1;
+      background: $background-lighten-1;
+      border-bottom: none;
+      border-left: none;
+      border-right: none;
+      border-top: $primary-lighten-3;
+      color: $accent-lighten-3;
     }
     &.-active {
-      background: $surface;
-      border-bottom: tall $surface-lighten-1;
-      border-top: tall $surface-darken-1;
-      tint: $background 30%;
+      background-tint: $background-lighten-1;
+      background: $background-lighten-1;
+      border-bottom: none;
+      border-left: none;
+      border-right: none;
+      border-top: $primary-lighten-3;
+      color: white;
     }
+  }
 
-    &.cancel {
-      color: $button-color-foreground;
-      background: $primary;
-      border-top: tall $primary-lighten-3;
-      border-bottom: tall $primary-darken-3;
+  RichLog {
+    padding-left: 1;
+    margin-left: 1;
+    # margin: 0 1 0 1;
+    # background-tint: $background-lighten-1;
+    # background: $background-lighten-1;
+    # # color: yellow;
+    # height: 100%;
+    # height: auto;
+  }
 
-      &:hover {
-          background: $primary-darken-2;
-          border-top: tall $primary;
-      }
+  Label {
+    height: auto;
+    width: 1fr;
+    margin: 0 0 0 1;
+    # padding: 0 0 0      1;
+    # margin-bottom: 1;
+    # dock: top;
+    align: center top;
+    # border: note;
+    border-bottom: ascii $primary;
+  }
 
-      &.-active {
-          background: $primary;
-          border-bottom: tall $primary-lighten-3;
-          border-top: tall $primary-darken-3;
-      }
-    }
-
-    &.-primary {
-      color: $button-color-foreground;
-      background: $primary;
-      border-top: tall $primary-lighten-3;
-      border-bottom: tall $primary-darken-3;
-
-      &:hover {
-          background: $primary-darken-2;
-          border-top: tall $primary;
-      }
-
-      &.-active {
-          background: $primary;
-          border-bottom: tall $primary-lighten-3;
-          border-top: tall $primary-darken-3;
-      }
-    }
-
-    &.-success {
-      color: $button-color-foreground;
-      background: $success;
-      border-top: tall $success-lighten-2;
-      border-bottom: tall $success-darken-3;
-
-      &:hover {
-          background: $success-darken-2;
-          border-top: tall $success;
-      }
-
-      &.-active {
-          background: $success;
-          border-bottom: tall $success-lighten-2;
-          border-top: tall $success-darken-2;
-      }
-    }
-
-    &.-warning{
-      color: $button-color-foreground;
-      background: $warning;
-      border-top: tall $warning-lighten-2;
-      border-bottom: tall $warning-darken-3;
-
-      &:hover {
-          background: $warning-darken-2;
-          border-top: tall $warning;
-      }
-
-      &.-active {
-          background: $warning;
-          border-bottom: tall $warning-lighten-2;
-          border-top: tall $warning-darken-2;
-      }
-    }
-
-    &.-error {
-      color: $button-color-foreground;
-      background: $error;
-      border-top: tall $error-lighten-2;
-      border-bottom: tall $error-darken-3;
-
-      &:hover {
-          background: $error-darken-1;
-          border-top: tall $error;
-      }
-
-      &.-active {
-          background: $error;
-          border-bottom: tall $error-lighten-2;
-          border-top: tall $error-darken-2;
-      }
-    }
+  Horizontal {
+    align: center bottom;
+    height: 2;
   }
 }
 
@@ -250,6 +211,11 @@ SlideBar {
 /* ---------------------- */
 /* "finalized" tcss below */
 /* ---------------------- */
+
+Toast {
+  background: $background-lighten-1;
+  background-tint: $background-lighten-1;
+}
 
 ChezmoiStatus {
   padding-left: 1;

@@ -27,6 +27,7 @@ from textual.widgets import (
     ListItem,
     ListView,
     Pretty,
+    RichLog,
     Static,
     Switch,
     TabbedContent,
@@ -281,10 +282,8 @@ class FilteredAddDirTree(DirectoryTree):
     filter_unwanted = reactive(True, always_update=True)
 
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
-
         managed_dirs = set(chezmoi.managed_d_paths)
         managed_files = set(chezmoi.managed_f_paths)
-        managed_paths = set(chezmoi.managed_d_paths + chezmoi.managed_f_paths)
 
         # Switches: Red - Green (default)
         if not self.include_unmanaged_dirs and self.filter_unwanted:
@@ -306,7 +305,6 @@ class FilteredAddDirTree(DirectoryTree):
                     and p in managed_dirs
                 )
             ]
-
         # Switches: Red - Red
         if not self.include_unmanaged_dirs and not self.filter_unwanted:
             return [
@@ -322,15 +320,13 @@ class FilteredAddDirTree(DirectoryTree):
                 )
                 or (p.is_dir() and p in managed_dirs)
             ]
-
         # Switches: Green - Green
         if self.include_unmanaged_dirs and self.filter_unwanted:
             return [
                 p
                 for p in paths
-                if p not in managed_paths and not Tools.is_unwanted_path(p)
+                if p not in managed_files and not Tools.is_unwanted_path(p)
             ]
-
         # Switches: Green - Red , this means the following is true:
         # self.include_unmanaged_dirs and not self.filter_unwanted
         return [
@@ -358,8 +354,13 @@ class AddDirTree(Widget):
             )
         yield FilteredAddDirTree(chezmoi.config["destDir"], id="adddirtree")
 
-    def action_add_file(self) -> None:
-        self.app.push_screen(AddFileModal())
+    def on_directory_tree_file_selected(
+        self, event: DirectoryTree.FileSelected
+    ) -> None:
+        self.app.push_screen(AddFileModal(event.path))
+
+    def action_add_file(self, event: DirectoryTree.FileSelected) -> None:
+        self.notify(f"will hold the add-file modal {event.control}")
 
 
 class AddFileModal(ModalScreen):
@@ -368,24 +369,33 @@ class AddFileModal(ModalScreen):
         Binding("escape", "dismiss", "dismiss modal screen", show=False)
     ]
 
-    def __init__(self, file_name: str = ""):
-        self.file_name = file_name
+    def __init__(self, file_path: Path) -> None:
+        self.file_path = file_path
+        self.file_name = file_path.name
+        self.path_str = str(file_path)
         super().__init__()
 
     def compose(self) -> ComposeResult:
+
         yield Center(
-            Static("file add modal"),
+            Label(f"Path: {self.path_str}"),
+            RichLog(highlight=True, id="addfilelog"),
             Horizontal(
-                Button("Add", id="addfile"), Button("Cancel", id="cancel")
+                Button("- Add File -", id="addfile"),
+                Button("- Cancel -", id="cancel"),
             ),
             id="addfilemodal",
             classes="operationmodal",
         )
 
     def on_mount(self):
-        add_file_modal = self.query_exactly_one("#addfilemodal")
-        add_file_modal.border_title = self.title
-        add_file_modal.border_subtitle = "Escape to cancel"
+        modal = self.query_exactly_one("#addfilemodal")
+        modal.border_title = self.file_name
+
+        rich_log = self.query_exactly_one(RichLog)
+        with open(self.file_path, "rt", encoding="utf-8") as file_:
+            content = file_.read()
+            rich_log.write(content)
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "addfile":
@@ -463,12 +473,6 @@ class MainScreen(Screen):
             yield Static(FLOW, id="diagram")
         yield SlideBar()
         yield Footer()
-
-    def on_mount(self) -> None:
-        add_dir_tree = self.screen.query_exactly_one(FilteredAddDirTree)
-        add_dir_tree.include_unmanaged_dirs = False
-        add_dir_tree.filter_unwanted = True
-        add_dir_tree.reload()
 
     def action_toggle_slidebar(self):
         self.screen.query_exactly_one(SlideBar).toggle_class("-visible")
