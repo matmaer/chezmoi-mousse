@@ -468,12 +468,6 @@ class MainScreen(Screen):
         yield SlideBar()
         yield Footer()
 
-    def on_mount(self) -> None:
-        add_dir_tree = self.screen.query_exactly_one(FilteredAddDirTree)
-        add_dir_tree.include_unmanaged_dirs = False
-        add_dir_tree.filter_unwanted = True
-        add_dir_tree.reload()
-
     def action_toggle_slidebar(self):
         self.screen.query_exactly_one(SlideBar).toggle_class("-visible")
 
