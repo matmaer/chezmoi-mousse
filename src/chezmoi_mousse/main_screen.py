@@ -6,10 +6,10 @@ from rich.text import Text
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import (
-    Center,
     Horizontal,
     VerticalGroup,
     VerticalScroll,
+    Container,
 )
 from textual.content import Content
 from textual.reactive import reactive
@@ -109,25 +109,34 @@ class Doctor(Widget):
         yield DataTable(id="doctortable", show_cursor=False)
         with VerticalScroll(can_focus=False):
             yield Collapsible(
-                ListView(id="cmdnotfound"), title="Commands Not Found"
+                ListView(id="cmdnotfound"),
+                title="Commands Not Found",
+                classes="collapsible-defaults",
             )
             yield Collapsible(
-                Pretty(chezmoi.config), title="chezmoi dump-config"
+                Pretty(chezmoi.config),
+                title="chezmoi dump-config",
+                classes="collapsible-defaults",
             )
             yield Collapsible(
                 Pretty(chezmoi.template_data_dict),
                 title="chezmoi data (template data)",
+                classes="collapsible-defaults",
             )
             yield Collapsible(
-                self.GitLog(), title="chezmoi git log (last 20 commits)"
+                self.GitLog(),
+                title="chezmoi git log (last 20 commits)",
+                classes="collapsible-defaults",
             )
             yield Collapsible(
                 Pretty(chezmoi.cat_config.std_out.splitlines()),
                 title="chezmoi cat-config (contents of config-file)",
+                classes="collapsible-defaults",
             )
             yield Collapsible(
                 Pretty(chezmoi.ignored.std_out.splitlines()),
                 title="chezmoi ignored (git ignore in source-dir)",
+                classes="collapsible-defaults",
             )
 
     def on_mount(self) -> None:
@@ -238,7 +247,11 @@ class ChezmoiStatus(VerticalScroll):
                 elif line.startswith("  "):
                     colored_diffs.append(Label(line, classes="muted"))
             self.status_items.append(
-                Collapsible(*colored_diffs, title=f"{status} {rel_path}")
+                Collapsible(
+                    *colored_diffs,
+                    title=f"{status} {rel_path}",
+                    classes="collapsible-default",
+                )
             )
         self.refresh(recompose=True)
 
@@ -359,6 +372,11 @@ class AddDirTree(Widget):
     ) -> None:
         self.app.push_screen(AddFileModal(event.path))
 
+    def on_directory_tree_directory_selected(
+        self, event: DirectoryTree.DirectorySelected
+    ) -> None:
+        self.app.push_screen(AddFileModal(event.path))
+
     def action_add_file(self, event: DirectoryTree.FileSelected) -> None:
         self.notify(f"will hold the add-file modal {event.control}")
 
@@ -369,38 +387,51 @@ class AddFileModal(ModalScreen):
         Binding("escape", "dismiss", "dismiss modal screen", show=False)
     ]
 
-    def __init__(self, file_path: Path) -> None:
-        self.file_path = file_path
-        self.file_name = file_path.name
-        self.path_str = str(file_path)
+    def __init__(self, path: Path) -> None:
+        self.path = path
+        self.add_file_items: list[Collapsible] = []
         super().__init__()
 
     def compose(self) -> ComposeResult:
-
-        yield Center(
-            Label(f"Path: {self.path_str}"),
-            RichLog(highlight=True, id="addfilelog"),
-            Horizontal(
+        with Container(id="addfilemodal", classes="operationmodal"):
+            yield VerticalGroup(*self.add_file_items)
+            yield Horizontal(
                 Button("- Add File -", id="addfile"),
                 Button("- Cancel -", id="cancel"),
-            ),
-            id="addfilemodal",
-            classes="operationmodal",
-        )
+            )
 
-    def on_mount(self):
+    def on_mount(self) -> None:
+
         modal = self.query_exactly_one("#addfilemodal")
-        modal.border_title = self.file_name
+        modal.border_title = "Files to Add"
+        files_to_add: list[Path] = []
 
-        rich_log = self.query_exactly_one(RichLog)
-        with open(self.file_path, "rt", encoding="utf-8") as file_:
-            content = file_.read()
-            rich_log.write(content)
+        if self.path.is_file():
+            files_to_add: list[Path] = [self.path]
+        elif self.path.is_dir():
+            files_to_add: list[Path] = [
+                p
+                for p in Path.iterdir(self.path)
+                if p.is_file() and p not in chezmoi.managed_f_paths
+            ]
+
+        for file_ in files_to_add:
+            rich_content = RichLog(highlight=True)
+            with open(file_, "rt", encoding="utf-8") as file_:
+                content = file_.read()
+                rich_content.write(content)
+
+            self.add_file_items.append(
+                Collapsible(
+                    rich_content,
+                    title=str(self.path),
+                    classes="collapsible-defaults",
+                )
+            )
+        self.refresh(recompose=True)
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "addfile":
-            self.screen.dismiss()
-        if event.button.id == "re_add_file":
             self.screen.dismiss()
         elif event.button.id == "cancel":
             self.screen.dismiss()
