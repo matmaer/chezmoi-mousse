@@ -26,7 +26,7 @@
   width: auto;
   max-width: 1fr;
   align: center middle;
-  margin: 4 3 2 3;
+  margin: 2 3 2 3;
   scrollbar-gutter: stable;
   height: auto;
   Button {
