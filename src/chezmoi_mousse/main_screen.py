@@ -284,7 +284,6 @@ class FilteredAddDirTree(DirectoryTree):
 
         managed_dirs = set(chezmoi.managed_d_paths)
         managed_files = set(chezmoi.managed_f_paths)
-        managed_paths = set(chezmoi.managed_d_paths + chezmoi.managed_f_paths)
 
         # Switches: Red - Green (default)
         if not self.include_unmanaged_dirs and self.filter_unwanted:
@@ -328,7 +327,7 @@ class FilteredAddDirTree(DirectoryTree):
             return [
                 p
                 for p in paths
-                if p not in managed_paths and not Tools.is_unwanted_path(p)
+                if p not in managed_files and not Tools.is_unwanted_path(p)
             ]
 
         # Switches: Green - Red , this means the following is true:
