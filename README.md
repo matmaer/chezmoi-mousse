@@ -18,39 +18,41 @@ To run:
 
 ### General
 - [x] Create text based version of the `mermaid` diagrams offered by `chezmoi`.
-- [ ] Implement fist startup loading screen
+- [x] Implement first startup loading screen
   - [x] show the chezmoi commands run to load all data
   - [x] create animated ascii art font on the loading screen
   - [ ] implement pre-flight checks with feedback what to do if failed
 - [ ] Create widget to show subprocess shell IO when using the TUI
 
-### Inspect chezmoi environment widgets
+### Chezmoi commands
 
 - [x] `chezmoi data`
 - [x] `chezmoi doctor`
 - [x] `chezmoi config-dump`
 - [x] `chezmoi ignored`
 - [x] `chezmoi cat-config` for toml format
+- [x] `chezmoi managed` paths tree toggle
+- [x] `chezmoi unmanaged` paths tree toggle
+- [x] `chezmoi diff`
+- [x] `chezmoi status`
+- [x] `chezmoi git log`
 - [ ] `git config` for the local chezmoi repository
 - [ ] `git status` between local and remote chezmoi repository
 - ...
 
-### Operate chezmoi widgets
+### Chezmoi features
 
-- [ ] interactive chezmoi status
-  - [ ] chezmoi re-add
-  - [ ] chezmoi apply
   - [ ] autopush option switch
   - [ ] autcommit option switch
-  - ...
-- [ ] interactive chezmoi managed/unmanaged tab
-  - [x] `chezmoi managed` file tree
-  - [ ] `chezmoi unmanaged` toggle to add muted entries to the managed tree
+
+### Chezmoi write commands
+
   - [ ] `chezmoi add`
+  - [ ] `chezmoi apply`
+  - [ ] `chezmoi re-add`
   - [ ] `chezmoi forget`
   - [ ] `chezmoi destroy`
   - ...
-- [ ] interactive chezmoi diagram
 
 ### Development overhead
 
@@ -80,5 +82,4 @@ To run:
 - make subprocess calls as safe as possible
 - modus operandi
   - "loading" screen for initial app startup and pre-flight checks
-  - inspect screen to visualize chezmoi environment
   - operate screen to operate chezmoi
