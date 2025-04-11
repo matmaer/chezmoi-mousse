@@ -363,9 +363,10 @@ class AddDirTree(Widget):
         )
 
     def on_mount(self) -> None:
-        self.query_one(FilteredAddDirTree).root.label = chezmoi.config[
-            "destDir"
-        ]
+        self.query_one(FilteredAddDirTree).root.label = (
+            f"{chezmoi.config[
+            "destDir"]} (chezmoi destDir)"
+        )
 
     def action_add_path(self) -> None:
         cursor_node = self.query_exactly_one(FilteredAddDirTree).cursor_node
