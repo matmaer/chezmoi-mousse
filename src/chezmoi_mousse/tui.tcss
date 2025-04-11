@@ -24,11 +24,10 @@
   background: $background-lighten-1;
   border: thick $panel;
   height: auto;
-  min-height: 7;
-  margin: 2 3 2 3;
+  margin: 2 2 2 2;
   max-height: 1fr;
   max-width: 1fr;
-  scrollbar-gutter: stable;
+  min-height: 7;
   width: auto;
 
   Button {
@@ -42,12 +41,12 @@
     content-align: center middle;
     height: auto;
     line-pad: 1;
+    margin: 0 7 0 7;
     min-width: 8;
     text-align: center;
     text-style: none;
     text-style: none;
     width: 1fr;
-    margin: 0 7 0 7;
 
     &:disabled {
       text-opacity: 0.6;
@@ -59,8 +58,8 @@
       border-bottom: none;
       border-left: none;
       border-right: none;
-      border-top: $primary-lighten-2;
-      color: $accent-lighten-1    ;
+      border-top: heavy $primary-lighten-2;
+      color: $accent-lighten-1;
       text-style: none;
     }
     &:hover {
@@ -69,7 +68,7 @@
       border-bottom: none;
       border-left: none;
       border-right: none;
-      border-top: $primary-lighten-3;
+      border-top: heavy $primary-lighten-3;
       color: $accent-lighten-3;
     }
     &.-active {
@@ -78,32 +77,33 @@
       border-bottom: none;
       border-left: none;
       border-right: none;
-      border-top: $primary-lighten-3;
-      color: white;
+      border-top: heavy $primary-lighten-2;
+      color: $accent-lighten-2;
     }
   }
-
 
   Collapsible{
     background-tint: $background-lighten-1;
     background: $background-lighten-1;
-    margin: 0 0 0 -1;
-    RichLog {
-      padding: 0 1 0 1;
-      margin-right: 1;
-      margin-left: 0;
-      height: 1fr;
-    }
-    CollapsibleTitle {
-      padding-left: 2;
-    }
+    margin-left: -1;
+    margin-right: 1;
+    padding: 0;
+    scrollbar-gutter: stable;
+  }
+  CollapsibleTitle {
+    background-tint: $background-lighten-1;
+    background: $background-lighten-1;
+    padding-left: 2;
   }
 
+  RichLog {
+    padding: 0 0 0 1;
+  }
 
   Horizontal {
     align: center bottom;
-    height: 3;
     dock: bottom;
+    height: 3;
   }
 }
 
@@ -154,13 +154,13 @@ SlideBar {
   dock: right;
   height: auto;
   layer: slidebar_layer;
-  width: auto;
   margin: 7 0 3 14;
+  padding-top: 1;
+  width: auto;
   /* max-width to keep the switches in view, labels overflow first */
   max-width: 1fr;
   /* offset-x: 100%; out if view if docked right */
   offset-x: 100%;
-  padding-top: 1;
   transition: offset 380ms;
 
   .filter-container {
@@ -206,13 +206,8 @@ SlideBar {
 
 .collapsible-defaults {
   border: none;
-  padding-bottom: 0;
-  padding-left: 0;
-
+  padding: 0;
   CollapsibleTitle {
-    border: none;
-    padding-left: 0;
-    margin-left: 1;
     color: $primary-lighten-1;
     &:hover {
       text-style: bold;
@@ -242,14 +237,14 @@ ChezmoiStatus {
 
 LoadingScreen {
   & #loader-log {
-    margin: 2 1 2 1;
     color: $secondary;
     height: 11;
+    margin: 2 1 2 1;
     width: auto;
   }
   & #continue {
-    color: $accent;
     border: none;
+    color: $accent;
     text-style: none;
   }
 }
@@ -261,8 +256,8 @@ LoadingScreen {
 }
 
 * {
-  scrollbar-size-vertical: 1;
   background-tint: #000000;
+  scrollbar-size-vertical: 1;
 }
 
 Screen {

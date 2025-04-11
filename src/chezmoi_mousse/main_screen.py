@@ -341,7 +341,7 @@ class FilteredAddDirTree(DirectoryTree):
                 if p not in managed_files and not Tools.is_unwanted_path(p)
             ]
         # Switches: Green - Red , this means the following is true:
-        # self.include_unmanaged_dirs and not self.filter_unwanted
+        # "self.include_unmanaged_dirs and not self.filter_unwanted"
         return [
             p
             for p in paths
@@ -354,7 +354,7 @@ class AddDirTree(Widget):
 
     BINDINGS = [
         Binding("f", "toggle_slidebar", "Filters"),
-        Binding("a", "add_file", "Add Path"),
+        Binding("a", "add_path", "Add Path"),
     ]
 
     def compose(self) -> ComposeResult:
@@ -367,18 +367,9 @@ class AddDirTree(Widget):
             )
         yield FilteredAddDirTree(chezmoi.config["destDir"], id="adddirtree")
 
-    def on_directory_tree_file_selected(
-        self, event: DirectoryTree.FileSelected
-    ) -> None:
-        self.app.push_screen(AddFileModal(event.path))
-
-    def on_directory_tree_directory_selected(
-        self, event: DirectoryTree.DirectorySelected
-    ) -> None:
-        self.app.push_screen(AddFileModal(event.path))
-
-    def action_add_file(self, event: DirectoryTree.FileSelected) -> None:
-        self.notify(f"will hold the add-file modal {event.control}")
+    def action_add_path(self) -> None:
+        cursor_node = self.query_exactly_one(FilteredAddDirTree).cursor_node
+        self.app.push_screen(AddFileModal(cursor_node.data.path))  # type: ignore[reportOptionalMemberAccess] # pylint: disable:line-too-long
 
 
 class AddFileModal(ModalScreen):
@@ -387,55 +378,60 @@ class AddFileModal(ModalScreen):
         Binding("escape", "dismiss", "dismiss modal screen", show=False)
     ]
 
-    def __init__(self, path: Path) -> None:
-        self.path = path
-        self.add_file_items: list[Collapsible] = []
-        super().__init__()
+    def __init__(self, path_to_add: Path) -> None:
+        self.path_to_add = path_to_add
+        self.add_path_items: list[Collapsible] = []
+        self.add_label = "- Add File -"
+        super().__init__(id="addfilemodal")
 
     def compose(self) -> ComposeResult:
-        with Container(id="addfilemodal", classes="operationmodal"):
-            yield VerticalGroup(*self.add_file_items)
+        with Container(id="addfilemodalcontainer", classes="operationmodal"):
+            yield VerticalGroup(*self.add_path_items)
             yield Horizontal(
-                Button("- Add File -", id="addfile"),
+                Button(self.add_label, id="addfile"),
                 Button("- Cancel -", id="cancel"),
             )
 
     def on_mount(self) -> None:
-
-        modal = self.query_exactly_one("#addfilemodal")
-        modal.border_title = "Files to Add"
+        self.border_title = "Files to Add"
+        collapse = True
         files_to_add: list[Path] = []
+        if self.path_to_add.is_file():
+            files_to_add: list[Path] = [self.path_to_add]
+            collapse = False
+        elif self.path_to_add.is_dir():
+            files_to_add = chezmoi.unmanaged_in_d(self.path_to_add)
+        if len(files_to_add) == 0:
+            # pylint: disable=line-too-long
+            self.notify(
+                f"The selected directory does not contain unmanaged files to add.\nDirectory: {self.path_to_add}."
+            )
+            self.dismiss()
+        elif len(files_to_add) > 1:
+            self.add_label = "- Add Files -"
 
-        if self.path.is_file():
-            files_to_add: list[Path] = [self.path]
-        elif self.path.is_dir():
-            files_to_add: list[Path] = [
-                p
-                for p in Path.iterdir(self.path)
-                if p.is_file() and p not in chezmoi.managed_f_paths
-            ]
-
-        for file_ in files_to_add:
-            rich_content = RichLog(highlight=True)
-            with open(file_, "rt", encoding="utf-8") as file_:
-                content = file_.read()
-                rich_content.write(content)
-
-            self.add_file_items.append(
+        for f in files_to_add:
+            file_content = Tools.get_file_content(f)
+            self.add_path_items.append(
                 Collapsible(
-                    rich_content,
-                    title=str(self.path),
+                    RichLog(
+                        highlight=True, auto_scroll=False, wrap=True
+                    ).write(file_content),
+                    collapsed=collapse,
+                    title=str(str(f)),
                     classes="collapsible-defaults",
                 )
             )
         self.refresh(recompose=True)
+
+    def push_add_path_modal(self) -> None:
+        self.notify(f"Adding {self.path_to_add} to chezmoi source directory.")
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "addfile":
             self.screen.dismiss()
         elif event.button.id == "cancel":
             self.screen.dismiss()
-            self.notify("no write operation performed")
 
 
 class SlideBar(Widget):
