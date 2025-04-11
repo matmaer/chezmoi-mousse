@@ -362,6 +362,11 @@ class AddDirTree(Widget):
             chezmoi.config["destDir"], id="adddirtree", classes="dir-tree"
         )
 
+    def on_mount(self) -> None:
+        self.query_one(FilteredAddDirTree).root.label = chezmoi.config[
+            "destDir"
+        ]
+
     def action_add_path(self) -> None:
         cursor_node = self.query_exactly_one(FilteredAddDirTree).cursor_node
         self.app.push_screen(AddFileModal(cursor_node.data.path))  # type: ignore[reportOptionalMemberAccess] # pylint: disable:line-too-long
