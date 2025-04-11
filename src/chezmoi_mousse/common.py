@@ -88,6 +88,15 @@ class Tools:
                 return True
         return False
 
+    @staticmethod
+    def get_file_content(path: Path) -> str:
+        if not path.is_file():
+            raise ValueError(f"Path is not a file: {path}")
+        if not path.exists():
+            raise ValueError(f"File does not exist: {path}")
+        with open(path, "rt", encoding="utf-8") as f:
+            return f.read()
+
 
 @dataclass
 class InputOutput:
@@ -206,12 +215,20 @@ class Chezmoi:
             "--path-style=absolute",
             str(dir_path),
         ]
-        return [
-            Path(p) for p in Tools.subprocess_run(long_command).splitlines()
+        if (
+            not dir_path.exists()
+            or not dir_path.is_dir()
+            or not dir_path.is_absolute()
+        ):
+            raise ValueError(f"Invalid directory path: {dir_path}")
+        file_paths = [
+            Path(line)
+            for line in Tools.subprocess_run(long_command).splitlines()
         ]
+        return [p for p in file_paths if p.is_file() and p.parent == dir_path]
 
     def get_status(
-        self, apply: bool = False, dirs: bool = False, files: bool = False
+        self, apply: bool, dirs: bool = False, files: bool = False
     ) -> list[tuple[str, Path]]:
         if not dirs and not files:
             raise ValueError("Either files or dirs must be true")
