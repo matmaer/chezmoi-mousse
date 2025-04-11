@@ -358,14 +358,15 @@ class AddDirTree(Widget):
     ]
 
     def compose(self) -> ComposeResult:
-        yield FilteredAddDirTree(
-            chezmoi.config["destDir"], id="adddirtree", classes="dir-tree"
-        )
+        with VerticalScroll():
+            yield FilteredAddDirTree(
+                chezmoi.config["destDir"], id="adddirtree", classes="dir-tree"
+            )
 
     def on_mount(self) -> None:
         self.query_one(FilteredAddDirTree).root.label = (
             f"{chezmoi.config[
-            "destDir"]} (chezmoi destDir)"
+            "destDir"]} (destDir)"
         )
 
     def action_add_path(self) -> None:
