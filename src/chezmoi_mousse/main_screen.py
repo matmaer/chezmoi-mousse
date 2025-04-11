@@ -358,13 +358,6 @@ class AddDirTree(Widget):
     ]
 
     def compose(self) -> ComposeResult:
-        if chezmoi.autoadd_enabled:
-            yield Static(
-                # pylint: disable=line-too-long
-                Content.from_markup(
-                    '[$warning italic]"autoadd" is enabled: changes will be added to the source state after any change.[/]\n'
-                )
-            )
         yield FilteredAddDirTree(chezmoi.config["destDir"], id="adddirtree")
 
     def action_add_path(self) -> None:
@@ -382,10 +375,18 @@ class AddFileModal(ModalScreen):
         self.path_to_add = path_to_add
         self.add_path_items: list[Collapsible] = []
         self.add_label = "- Add File -"
+        self.auto_warning = ""
         super().__init__(id="addfilemodal")
 
     def compose(self) -> ComposeResult:
         with Container(id="addfilemodalcontainer", classes="operationmodal"):
+            if chezmoi.autocommit_enabled:
+                yield Static(
+                    Content.from_markup(
+                        f"[$warning italic]{self.auto_warning}[/]"
+                    ),
+                    classes="autowarning",
+                )
             yield VerticalGroup(*self.add_path_items)
             yield Horizontal(
                 Button(self.add_label, id="addfile"),
@@ -393,6 +394,11 @@ class AddFileModal(ModalScreen):
             )
 
     def on_mount(self) -> None:
+        # pylint: disable=line-too-long
+        if chezmoi.autocommit_enabled and not chezmoi.autopush_enabled:
+            self.auto_warning = '"Auto Commit" is enabled: added file(s) will also be committed.'
+        elif chezmoi.autocommit_enabled and chezmoi.autopush_enabled:
+            self.auto_warning = '"Auto Commit" and "Auto Push" are enabled: adding file(s) will also be committed and pushed the remote.'
         self.border_title = "Files to Add"
         collapse = True
         files_to_add: list[Path] = []
