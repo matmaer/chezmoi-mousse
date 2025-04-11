@@ -371,10 +371,10 @@ class AddDirTree(Widget):
 
     def action_add_path(self) -> None:
         cursor_node = self.query_exactly_one(FilteredAddDirTree).cursor_node
-        self.app.push_screen(AddFileModal(cursor_node.data.path))  # type: ignore[reportOptionalMemberAccess] # pylint: disable:line-too-long
+        self.app.push_screen(ChezmoiAdd(cursor_node.data.path))  # type: ignore[reportOptionalMemberAccess] # pylint: disable:line-too-long
 
 
-class AddFileModal(ModalScreen):
+class ChezmoiAdd(ModalScreen):
 
     BINDINGS = [
         Binding("escape", "dismiss", "dismiss modal screen", show=False)
