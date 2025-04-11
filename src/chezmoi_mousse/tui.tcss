@@ -105,6 +105,10 @@
     dock: bottom;
     height: 3;
   }
+
+  .autowarning {
+    padding: 0 2 1 2;
+  }
 }
 
 Tree {

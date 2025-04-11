@@ -198,7 +198,7 @@ class Chezmoi:
         return self.config["git"]["autocommit"]
 
     @property
-    def autpush_enabled(self) -> bool:
+    def autopush_enabled(self) -> bool:
         return self.config["git"]["autopush"]
 
     @property
