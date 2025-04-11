@@ -358,7 +358,9 @@ class AddDirTree(Widget):
     ]
 
     def compose(self) -> ComposeResult:
-        yield FilteredAddDirTree(chezmoi.config["destDir"], id="adddirtree")
+        yield FilteredAddDirTree(
+            chezmoi.config["destDir"], id="adddirtree", classes="dir-tree"
+        )
 
     def action_add_path(self) -> None:
         cursor_node = self.query_exactly_one(FilteredAddDirTree).cursor_node
