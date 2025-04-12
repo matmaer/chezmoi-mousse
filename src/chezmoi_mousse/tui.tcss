@@ -9,7 +9,6 @@
     text-style: none;
   }
   & > .directory-tree--hidden {
-    color: $accent-lighten-3;
     text-style: none;
   }
   & > .directory-tree--file {
@@ -59,7 +58,6 @@
       border-left: none;
       border-right: none;
       border-top: heavy $primary-lighten-2;
-      color: $accent-lighten-1;
       text-style: none;
     }
     &:hover {
@@ -78,7 +76,6 @@
       border-left: none;
       border-right: none;
       border-top: heavy $primary-lighten-2;
-      color: $accent-lighten-2;
     }
   }
 
@@ -122,8 +119,7 @@ Tree {
     text-style: none;
   }
   & > .tree--highlight {
-    text-style: none;
-    color: $accent-lighten-3;
+    text-style: bold;
   }
   & > .tree--guides {
     color: $primary-lighten-3;
