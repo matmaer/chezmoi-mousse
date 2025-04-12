@@ -1,4 +1,3 @@
-import json
 from collections import deque
 
 from rich.segment import Segment
@@ -13,7 +12,7 @@ from textual.widget import Widget
 from textual.widgets import Button, RichLog
 
 from chezmoi_mousse import SPLASH
-from chezmoi_mousse.common import chezmoi
+from chezmoi_mousse.common import chezmoi, Tools
 
 
 class AnimatedFade(Widget):
@@ -78,10 +77,19 @@ class LoadingScreen(Screen):
         if finished:
             for arg_id in chezmoi.long_commands:
                 if arg_id == "dump_config":
-                    config_dict = json.loads(chezmoi.dump_config.std_out)
+                    config_dict = Tools.string_to_dict(
+                        chezmoi.dump_config.std_out.replace("null", "None")
+                        .replace("true", "True")
+                        .replace("false", "False")
+                    )
                     setattr(chezmoi, "config", config_dict)
                 elif arg_id == "template_data":
-                    config_dict = json.loads(chezmoi.template_data.std_out)
+                    std_out = (
+                        chezmoi.template_data.std_out.replace("null", "None")
+                        .replace("true", "True")
+                        .replace("false", "False")
+                    )
+                    config_dict = Tools.string_to_dict(std_out)
                     setattr(chezmoi, "template_data_dict", config_dict)
                     self.query_one("#continue").disabled = False
             self.query_exactly_one("#continue").disabled = False
