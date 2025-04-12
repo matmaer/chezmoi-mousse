@@ -2,6 +2,7 @@ import re
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
+import ast
 
 
 class Tools:
@@ -96,6 +97,15 @@ class Tools:
             raise ValueError(f"File does not exist: {path}")
         with open(path, "rt", encoding="utf-8") as f:
             return f.read()
+
+    @staticmethod
+    def string_to_dict(string: str) -> dict:
+        try:
+            return ast.literal_eval(string)
+        except (SyntaxError, ValueError) as error:
+            raise ValueError(
+                f"Syntax error or invalid value provided: {error}"
+            ) from error
 
 
 @dataclass
