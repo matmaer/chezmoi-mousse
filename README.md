@@ -5,14 +5,7 @@ The project is in its very early stages, see roadmap below.
 
 ## Run app
 
-The app is not packaged yet.
-
-To run:
-- create a python venv and activate the venv
-- `pip install textual` in the venv
-- clone the repo
-- change directory to the src directory in the repo
-- run the app with `python -m chezmoi_mousse`
+The app is not packaged yet, can be run as a module with python stdlib and textual
 
 ## Roadmap
 
@@ -22,7 +15,9 @@ To run:
   - [x] show the chezmoi commands run to load all data
   - [x] create animated ascii art font on the loading screen
   - [ ] implement pre-flight checks with feedback what to do if failed
+    - [ ] handle chezmoi init recommendation when config was changed
 - [ ] Create widget to show subprocess shell IO when using the TUI
+- [ ] Spaced-out/compact content toggling
 
 ### Chezmoi commands
 
@@ -36,23 +31,19 @@ To run:
 - [x] `chezmoi diff`
 - [x] `chezmoi status`
 - [x] `chezmoi git log`
-- [x] `git config` for the local chezmoi repository
-- [ ] `git status` between local and remote chezmoi repository
+- [x] `chezmoi add`
+- [ ] `chezmoi apply`
+- [ ] `chezmoi re-add`
+- [ ] `chezmoi forget`
+- [ ] `chezmoi destroy`
 - ...
 
 ### Chezmoi features
 
-  - [ ] autopush option switch
-  - [ ] autcommit option switch
-
-### Chezmoi write commands
-
-  - [x] `chezmoi add`
-  - [ ] `chezmoi apply`
-  - [ ] `chezmoi re-add`
-  - [ ] `chezmoi forget`
-  - [ ] `chezmoi destroy`
-  - ...
+- [ ] autopush option switch
+- [ ] autcommit option switch
+- [x] support for regular files
+- [ ] support for chezmoi templates
 
 ### Development overhead
 
@@ -63,13 +54,9 @@ To run:
   - [x] Setup linting
   - [x] Setup formatting
   - [x] Setup `pre-commit` hooks.
-
-- CI/CD pipeline
   - [ ] Setup pytest
+  - [ ] Setup profiling
   - [ ] Packaging
-    - ...
-  - [ ] Distribution
-    - ...
   - [ ] Release pipeline
 
 ## General goals
@@ -77,9 +64,8 @@ To run:
 - leverage `textual` features for concise and rich visualizations
 - made for existing chezmoi users
 - only support interactive operations
-- prevent accidental errors
+- rich visualization of state
 - improve understanding of chezmoi by using the TUI
 - make subprocess calls as safe as possible
-- modus operandi
-  - "loading" screen for initial app startup and pre-flight checks
-  - operate screen to operate chezmoi
+- "loading" screen for initial app startup and pre-flight checks
+- operate screen to operate chezmoi
