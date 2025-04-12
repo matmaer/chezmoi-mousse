@@ -250,22 +250,32 @@ class Chezmoi:
             for line in relevant_lines
         ]
 
-    def chezmoi_diff(self, file_path: str, apply: bool) -> list[str]:
+    def diff(self, file_path: str, apply: bool) -> list[str]:
         long_command = self.base + ["diff", file_path]
         if apply:
             return Tools.subprocess_run(long_command).splitlines()
         return Tools.subprocess_run(long_command + ["--reverse"]).splitlines()
 
-    def chezmoi_add(self, file_path: Path) -> str:
-        long_command = self.base + self.write_commands["add"]
+    def add(self, file_path: Path) -> str:
+        long_command = (
+            self.base + ["--dry-run", "--verbose"] + self.write_commands["add"]
+        )
+        return Tools.subprocess_run(long_command + [str(file_path)])
+
+    def re_add(self, file_path: Path) -> str:
+        long_command = (
+            self.base
+            + ["--dry-run", "--verbose"]
+            + self.write_commands["re_add"]
+        )
         return Tools.subprocess_run(long_command + [file_path])
 
-    def chezmoi_re_add(self, file_path: Path) -> str:
-        long_command = self.base + self.write_commands["re_add"]
-        return Tools.subprocess_run(long_command + [file_path])
-
-    def chezmoi_apply(self, file_path: Path) -> str:
-        long_command = self.base + self.write_commands["apply"]
+    def apply(self, file_path: Path) -> str:
+        long_command = (
+            self.base
+            + ["--dry-run", "--verbose"]
+            + self.write_commands["apply"]
+        )
         return Tools.subprocess_run(long_command + [file_path])
 
 
