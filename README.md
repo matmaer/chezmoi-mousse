@@ -5,7 +5,7 @@ The project is in its very early stages, see roadmap below.
 
 ## Run app
 
-The app is not packaged yet, can be run as a module with python stdlib and textual
+The app is not packaged yet, can be run as a module with python and `textual`.
 
 ## Roadmap
 
