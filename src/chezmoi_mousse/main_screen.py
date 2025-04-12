@@ -369,13 +369,9 @@ class AddDirTree(Widget):
             "destDir"]} (destDir)"
         )
 
-    def show_results(self, files_that_were_added) -> None:
-        self.app.push_screen(ChezmoiAddResult(files_that_were_added))
-        self.notify(f"added {files_that_were_added}")
-
     def action_add_path(self) -> None:
         cursor_node = self.query_exactly_one(FilteredAddDirTree).cursor_node
-        self.app.push_screen(ChezmoiAdd(cursor_node.data.path), self.show_results)  # type: ignore[reportOptionalMemberAccess] # pylint: disable:line-too-long
+        self.app.push_screen(ChezmoiAdd(cursor_node.data.path))  # type: ignore[reportOptionalMemberAccess] # pylint: disable:line-too-long
 
 
 class ChezmoiAdd(ModalScreen):
@@ -404,7 +400,7 @@ class ChezmoiAdd(ModalScreen):
             yield VerticalGroup(*self.add_path_items)
             yield Horizontal(
                 Button(self.add_label, id="addfile"),
-                Button("- Cancel -", id="cancel"),
+                Button("- Cancel -", id="canceladding"),
             )
 
     def on_mount(self) -> None:
@@ -445,53 +441,13 @@ class ChezmoiAdd(ModalScreen):
 
     def on_button_pressed(self, event: Button.Pressed):
         if event.button.id == "addfile":
-            self.screen.dismiss(self.files_to_add)
-        elif event.button.id == "cancel":
+            for f in self.files_to_add:
+                chezmoi.add(f)
+                self.notify(f"Added {f} to chezmoi.")
+            self.screen.dismiss()
+        elif event.button.id == "canceladding":
             self.notify("No files were added.")
             self.screen.dismiss()
-
-
-class ChezmoiAddResult(ModalScreen):
-
-    BINDINGS = [
-        Binding("escape", "dismiss", "dismiss modal screen", show=False)
-    ]
-
-    def __init__(self, files_to_add: list[Path]) -> None:
-        self.files_to_add: list[Path] = files_to_add
-        self.added_file_items: list[Collapsible] = []
-        super().__init__(id="addfileresult")
-
-    def compose(self) -> ComposeResult:
-        with Container(id="addfileresultcontainer", classes="operationmodal"):
-            yield VerticalGroup(*self.added_file_items)
-            yield Horizontal(Button("- Close -", id="close"))
-
-    def on_mount(self) -> None:
-        collapse = True
-        for f in self.files_to_add:
-            if len(self.files_to_add) == 1:
-                collapse = False
-
-            cmd_output = chezmoi.add(f)
-
-            self.added_file_items.append(
-                Collapsible(
-                    RichLog(
-                        highlight=True, auto_scroll=False, wrap=True
-                    ).write(cmd_output),
-                    collapsed=collapse,
-                    title=str(str(f)),
-                    classes="collapsible-defaults",
-                )
-            )
-
-        self.refresh(recompose=True)
-
-    def on_button_pressed(self, event: Button.Pressed):
-        if event.button.id == "close":
-            self.notify("Files were added to chezmoi source directory.")
-        self.screen.dismiss()
 
 
 class SlideBar(Widget):
