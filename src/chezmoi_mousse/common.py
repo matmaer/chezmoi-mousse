@@ -1,111 +1,7 @@
-import re
-import subprocess
 from dataclasses import dataclass
 from pathlib import Path
-import ast
 
-
-class Tools:
-
-    @staticmethod
-    def subprocess_run(long_command):
-        return subprocess.run(
-            long_command,
-            capture_output=True,
-            check=True,  # raises exception for any non-zero return code
-            shell=False,
-            text=True,  # returns stdout as str instead of bytes
-            timeout=1,
-        ).stdout.strip()
-
-    @staticmethod
-    def is_unwanted_path(path: Path) -> bool:
-        unwanted_dirs = {
-            "__pycache__",
-            ".build",
-            ".bundle",
-            ".cache",
-            ".dart_tool",
-            ".DS_Store",
-            ".git",
-            ".ipynb_checkpoints",
-            ".mypy_cache",
-            ".parcel_cache",
-            ".pytest_cache",
-            ".Trash",
-            ".venv",
-            "bin",
-            "cache",
-            "Cache",
-            "CMakeFiles",
-            "Crash Reports",
-            "DerivedData",
-            "go-build",
-            "node_modules",
-            "Recent",
-            "temp",
-            "Temp",
-            "tmp",
-            "trash",
-            "Trash",
-        }
-        unwanted_files = {
-            ".bak",
-            ".cache",
-            ".egg-info",
-            ".gz",
-            ".lnk",
-            ".lock",
-            ".log",
-            ".pid",
-            ".rar",
-            ".swp",
-            ".tar",
-            ".temp",
-            ".tgz",
-            ".tmp",
-            ".zip",
-        }
-
-        if path.is_dir() and path.name in unwanted_dirs:
-            return True
-
-        regex = r"\.[^.]*$"
-        if path.is_file() and bool(re.match(regex, path.name)):
-            extension = re.match(regex, path.name)
-            if extension in unwanted_files:
-                return True
-
-        if not path.is_dir() and not path.is_file():
-            # for the time being, only support files and directories
-            return True
-
-        return False
-
-    @staticmethod
-    def has_sub_dirs(path: Path) -> bool:
-        for child in path.iterdir():
-            if child.is_dir():
-                return True
-        return False
-
-    @staticmethod
-    def get_file_content(path: Path) -> str:
-        if not path.is_file():
-            raise ValueError(f"Path is not a file: {path}")
-        if not path.exists():
-            raise ValueError(f"File does not exist: {path}")
-        with open(path, "rt", encoding="utf-8") as f:
-            return f.read()
-
-    @staticmethod
-    def string_to_dict(string: str) -> dict:
-        try:
-            return ast.literal_eval(string)
-        except (SyntaxError, ValueError) as error:
-            raise ValueError(
-                f"Syntax error or invalid value provided: {error}"
-            ) from error
+from chezmoi_mousse import tools
 
 
 @dataclass
@@ -121,7 +17,7 @@ class InputOutput:
         )
 
     def update(self) -> str:
-        self.std_out = Tools.subprocess_run(self.long_command)
+        self.std_out = tools.subprocess_run(self.long_command)
         return self.std_out
 
 
@@ -233,7 +129,7 @@ class Chezmoi:
             raise ValueError(f"Invalid directory path: {dir_path}")
         file_paths = [
             Path(line)
-            for line in Tools.subprocess_run(long_command).splitlines()
+            for line in tools.subprocess_run(long_command).splitlines()
         ]
         return [p for p in file_paths if p.is_file() and p.parent == dir_path]
 
@@ -263,14 +159,14 @@ class Chezmoi:
     def diff(self, file_path: str, apply: bool) -> list[str]:
         long_command = self.base + ["diff", file_path]
         if apply:
-            return Tools.subprocess_run(long_command).splitlines()
-        return Tools.subprocess_run(long_command + ["--reverse"]).splitlines()
+            return tools.subprocess_run(long_command).splitlines()
+        return tools.subprocess_run(long_command + ["--reverse"]).splitlines()
 
     def add(self, file_path: Path) -> str:
         long_command = (
             self.base + ["--dry-run", "--verbose"] + self.write_commands["add"]
         )
-        return Tools.subprocess_run(long_command + [str(file_path)])
+        return tools.subprocess_run(long_command + [str(file_path)])
 
     def re_add(self, file_path: Path) -> str:
         long_command = (
@@ -278,7 +174,7 @@ class Chezmoi:
             + ["--dry-run", "--verbose"]
             + self.write_commands["re_add"]
         )
-        return Tools.subprocess_run(long_command + [file_path])
+        return tools.subprocess_run(long_command + [file_path])
 
     def apply(self, file_path: Path) -> str:
         long_command = (
@@ -286,7 +182,7 @@ class Chezmoi:
             + ["--dry-run", "--verbose"]
             + self.write_commands["apply"]
         )
-        return Tools.subprocess_run(long_command + [file_path])
+        return tools.subprocess_run(long_command + [file_path])
 
 
 chezmoi = Chezmoi()

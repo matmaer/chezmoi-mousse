@@ -11,8 +11,8 @@ from textual.strip import Strip
 from textual.widget import Widget
 from textual.widgets import Button, RichLog
 
-from chezmoi_mousse import SPLASH
-from chezmoi_mousse.common import chezmoi, Tools
+from chezmoi_mousse import SPLASH, tools
+from chezmoi_mousse.common import chezmoi
 
 
 class AnimatedFade(Widget):
@@ -77,7 +77,7 @@ class LoadingScreen(Screen):
         if finished:
             for arg_id in chezmoi.long_commands:
                 if arg_id == "dump_config":
-                    config_dict = Tools.string_to_dict(
+                    config_dict = tools.string_to_dict(
                         chezmoi.dump_config.std_out.replace("null", "None")
                         .replace("true", "True")
                         .replace("false", "False")
@@ -89,7 +89,7 @@ class LoadingScreen(Screen):
                         .replace("true", "True")
                         .replace("false", "False")
                     )
-                    config_dict = Tools.string_to_dict(std_out)
+                    config_dict = tools.string_to_dict(std_out)
                     setattr(chezmoi, "template_data_dict", config_dict)
                     self.query_one("#continue").disabled = False
             self.query_exactly_one("#continue").disabled = False
