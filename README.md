@@ -36,7 +36,7 @@ To run:
 - [x] `chezmoi diff`
 - [x] `chezmoi status`
 - [x] `chezmoi git log`
-- [ ] `git config` for the local chezmoi repository
+- [x] `git config` for the local chezmoi repository
 - [ ] `git status` between local and remote chezmoi repository
 - ...
 
@@ -47,7 +47,7 @@ To run:
 
 ### Chezmoi write commands
 
-  - [ ] `chezmoi add`
+  - [x] `chezmoi add`
   - [ ] `chezmoi apply`
   - [ ] `chezmoi re-add`
   - [ ] `chezmoi forget`
