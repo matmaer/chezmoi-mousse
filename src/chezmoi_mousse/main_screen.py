@@ -239,7 +239,7 @@ class ChezmoiStatus(VerticalScroll):
             rel_path = str(path.relative_to(chezmoi.config["destDir"]))
 
             colored_diffs: list[Label] = []
-            for line in chezmoi.chezmoi_diff(str(path), self.apply):
+            for line in chezmoi.diff(str(path), self.apply):
                 if line.startswith("- "):
                     colored_diffs.append(Label(line, variant="error"))
                 elif line.startswith("+ "):
@@ -358,14 +358,27 @@ class AddDirTree(Widget):
     ]
 
     def compose(self) -> ComposeResult:
-        yield FilteredAddDirTree(chezmoi.config["destDir"], id="adddirtree")
+        with VerticalScroll():
+            yield FilteredAddDirTree(
+                chezmoi.config["destDir"], id="adddirtree", classes="dir-tree"
+            )
+
+    def on_mount(self) -> None:
+        self.query_one(FilteredAddDirTree).root.label = (
+            f"{chezmoi.config[
+            "destDir"]} (destDir)"
+        )
+
+    def show_results(self, files_that_were_added) -> None:
+        self.app.push_screen(ChezmoiAddResult(files_that_were_added))
+        self.notify(f"added {files_that_were_added}")
 
     def action_add_path(self) -> None:
         cursor_node = self.query_exactly_one(FilteredAddDirTree).cursor_node
-        self.app.push_screen(AddFileModal(cursor_node.data.path))  # type: ignore[reportOptionalMemberAccess] # pylint: disable:line-too-long
+        self.app.push_screen(ChezmoiAdd(cursor_node.data.path), self.show_results)  # type: ignore[reportOptionalMemberAccess] # pylint: disable:line-too-long
 
 
-class AddFileModal(ModalScreen):
+class ChezmoiAdd(ModalScreen):
 
     BINDINGS = [
         Binding("escape", "dismiss", "dismiss modal screen", show=False)
@@ -373,6 +386,7 @@ class AddFileModal(ModalScreen):
 
     def __init__(self, path_to_add: Path) -> None:
         self.path_to_add = path_to_add
+        self.files_to_add: list[Path] = []
         self.add_path_items: list[Collapsible] = []
         self.add_label = "- Add File -"
         self.auto_warning = ""
@@ -399,24 +413,23 @@ class AddFileModal(ModalScreen):
             self.auto_warning = '"Auto Commit" is enabled: added file(s) will also be committed.'
         elif chezmoi.autocommit_enabled and chezmoi.autopush_enabled:
             self.auto_warning = '"Auto Commit" and "Auto Push" are enabled: adding file(s) will also be committed and pushed the remote.'
-        self.border_title = "Files to Add"
         collapse = True
-        files_to_add: list[Path] = []
+        self.files_to_add: list[Path] = []
         if self.path_to_add.is_file():
-            files_to_add: list[Path] = [self.path_to_add]
+            self.files_to_add: list[Path] = [self.path_to_add]
             collapse = False
         elif self.path_to_add.is_dir():
-            files_to_add = chezmoi.unmanaged_in_d(self.path_to_add)
-        if len(files_to_add) == 0:
+            self.files_to_add = chezmoi.unmanaged_in_d(self.path_to_add)
+        if len(self.files_to_add) == 0:
             # pylint: disable=line-too-long
             self.notify(
                 f"The selected directory does not contain unmanaged files to add.\nDirectory: {self.path_to_add}."
             )
             self.dismiss()
-        elif len(files_to_add) > 1:
+        elif len(self.files_to_add) > 1:
             self.add_label = "- Add Files -"
 
-        for f in files_to_add:
+        for f in self.files_to_add:
             file_content = Tools.get_file_content(f)
             self.add_path_items.append(
                 Collapsible(
@@ -430,14 +443,55 @@ class AddFileModal(ModalScreen):
             )
         self.refresh(recompose=True)
 
-    def push_add_path_modal(self) -> None:
-        self.notify(f"Adding {self.path_to_add} to chezmoi source directory.")
-
-    def on_button_pressed(self, event: Button.Pressed) -> None:
+    def on_button_pressed(self, event: Button.Pressed):
         if event.button.id == "addfile":
-            self.screen.dismiss()
+            self.screen.dismiss(self.files_to_add)
         elif event.button.id == "cancel":
+            self.notify("No files were added.")
             self.screen.dismiss()
+
+
+class ChezmoiAddResult(ModalScreen):
+
+    BINDINGS = [
+        Binding("escape", "dismiss", "dismiss modal screen", show=False)
+    ]
+
+    def __init__(self, files_to_add: list[Path]) -> None:
+        self.files_to_add: list[Path] = files_to_add
+        self.added_file_items: list[Collapsible] = []
+        super().__init__(id="addfileresult")
+
+    def compose(self) -> ComposeResult:
+        with Container(id="addfileresultcontainer", classes="operationmodal"):
+            yield VerticalGroup(*self.added_file_items)
+            yield Horizontal(Button("- Close -", id="close"))
+
+    def on_mount(self) -> None:
+        collapse = True
+        for f in self.files_to_add:
+            if len(self.files_to_add) == 1:
+                collapse = False
+
+            cmd_output = chezmoi.add(f)
+
+            self.added_file_items.append(
+                Collapsible(
+                    RichLog(
+                        highlight=True, auto_scroll=False, wrap=True
+                    ).write(cmd_output),
+                    collapsed=collapse,
+                    title=str(str(f)),
+                    classes="collapsible-defaults",
+                )
+            )
+
+        self.refresh(recompose=True)
+
+    def on_button_pressed(self, event: Button.Pressed):
+        if event.button.id == "close":
+            self.notify("Files were added to chezmoi source directory.")
+        self.screen.dismiss()
 
 
 class SlideBar(Widget):
