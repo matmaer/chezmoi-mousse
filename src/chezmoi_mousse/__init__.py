@@ -315,13 +315,7 @@ class Chezmoi:
 
         return False
 
-    def has_sub_dirs(self, path: Path) -> bool:
-        for child in path.iterdir():
-            if child.is_dir():
-                return True
-        return False
-
-    def get_file_content(self, path: Path) -> str:
+    def file_content(self, path: Path) -> str:
         if not path.is_file():
             raise ValueError(f"Path is not a file: {path}")
         if not path.exists():
