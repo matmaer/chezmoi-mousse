@@ -143,18 +143,6 @@ class Chezmoi:
         "template_data": ["data", "--format=json"],
     }
 
-    write_commands = {
-        "add": [
-            "add",
-            "--include=files",
-            "--recursive=false",
-            "--prompt=false",
-            "--secrets=error",  # Scan for secrets when adding unencrypted files
-        ],
-        "apply": ["apply", "--include=files", "--recursive=false"],
-        "re_add": ["re-add", "--include=files", "--recursive=false"],
-    }
-
     def __init__(self) -> None:
 
         self.long_commands = {}
@@ -232,15 +220,24 @@ class Chezmoi:
 
     def add(self, file_path: Path) -> str:
         long_command = (
-            self.base + ["--dry-run", "--verbose"] + self.write_commands["add"]
+            self.base
+            + ["--dry-run", "--verbose"]
+            + [
+                "add",
+                "--include=files",
+                "--recursive=false",
+                "--prompt=false",
+                "--secrets=error",
+            ]
         )
+        # Scan for secrets when adding unencrypted files
         return subprocess_run(long_command + [str(file_path)])
 
     def re_add(self, file_path: Path) -> str:
         long_command = (
             self.base
             + ["--dry-run", "--verbose"]
-            + self.write_commands["re_add"]
+            + ["re-add", "--include=files", "--recursive=false"]
         )
         return subprocess_run(long_command + [file_path])
 
@@ -248,7 +245,7 @@ class Chezmoi:
         long_command = (
             self.base
             + ["--dry-run", "--verbose"]
-            + self.write_commands["apply"]
+            + ["apply", "--include=files", "--recursive=false"]
         )
         return subprocess_run(long_command + [file_path])
 
