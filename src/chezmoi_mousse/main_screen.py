@@ -366,8 +366,7 @@ class AddDirTree(Widget):
 
     def on_mount(self) -> None:
         self.query_one(FilteredAddDirTree).root.label = (
-            f"{chezmoi.config[
-            "destDir"]} (destDir)"
+            f"{chezmoi.config["destDir"]} (destDir)"
         )
 
     def action_add_path(self) -> None:
