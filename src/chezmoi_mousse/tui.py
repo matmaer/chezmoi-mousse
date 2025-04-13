@@ -14,7 +14,7 @@ theme = Theme(
     foreground="#DEDAE1",
     primary="#0178D4",  # textual dark
     secondary="#004578",  # textual dark
-    surface="#1a1a1a",  # see also textual/theme.py
+    surface="#101010",  # see also textual/theme.py
     success="#4EBF71",  # textual dark
     warning="#ffa62b",  # textual dark
 )
