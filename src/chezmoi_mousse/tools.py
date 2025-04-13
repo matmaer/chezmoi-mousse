@@ -2,17 +2,23 @@ import ast
 import re
 from pathlib import Path
 import subprocess
+from subprocess import TimeoutExpired
 
 
 def subprocess_run(long_command):
-    return subprocess.run(
-        long_command,
-        capture_output=True,
-        check=True,  # raises exception for any non-zero return code
-        shell=False,
-        text=True,  # returns stdout as str instead of bytes
-        timeout=1,
-    ).stdout.strip()
+    try:
+        return subprocess.run(
+            long_command,
+            capture_output=True,
+            check=True,  # raises exception for any non-zero return code
+            shell=False,
+            text=True,  # returns stdout as str instead of bytes
+            timeout=1,
+        ).stdout.strip()
+    except TimeoutExpired:
+        if long_command[-1] == "doctor":
+            return "'chezmoi doctor' timed out, the command depends on an internet connection."
+        raise
 
 
 def is_unwanted_path(path: Path) -> bool:
