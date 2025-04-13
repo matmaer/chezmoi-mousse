@@ -208,7 +208,7 @@ SlideBar {
   border: none;
   padding: 0;
   CollapsibleTitle {
-    color: $primary-lighten-1;
+    color: $primary-lighten-3;
     &:hover {
       text-style: bold;
     }
