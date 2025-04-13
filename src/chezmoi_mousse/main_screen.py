@@ -344,7 +344,10 @@ class FilteredAddDirTree(DirectoryTree):
             p
             for p in paths
             if (p.is_file() and p not in managed_files)
-            or (p.is_dir() and chezmoi.has_sub_dirs(p))
+            or (
+                p.is_dir()
+                and not [child for child in p.iterdir() if child.is_dir()]
+            )
         ]
 
 
@@ -424,7 +427,7 @@ class ChezmoiAdd(ModalScreen):
             self.add_label = "- Add Files -"
 
         for f in self.files_to_add:
-            file_content = chezmoi.get_file_content(f)
+            file_content = chezmoi.file_content(f)
             self.add_path_items.append(
                 Collapsible(
                     RichLog(
