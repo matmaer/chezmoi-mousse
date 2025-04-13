@@ -67,32 +67,13 @@ class LoadingScreen(Screen):
         log_text = f"{io_class.label} {'.' * padding} loaded"
         self.query_exactly_one(RichLog).write(log_text)
 
-    def workers_finished(self) -> bool:
-        finished = all(
+    def workers_finished(self) -> None:
+        if all(
             worker.state == "finished"
             for worker in self.app.workers
             if worker.group == "loaders"
-        )
-        if finished:
-            for arg_id in chezmoi.long_commands:
-                if arg_id == "dump_config":
-                    config_dict = chezmoi.string_to_dict(
-                        chezmoi.dump_config.std_out.replace("null", "None")
-                        .replace("true", "True")
-                        .replace("false", "False")
-                    )
-                    setattr(chezmoi, "config", config_dict)
-                elif arg_id == "template_data":
-                    std_out = (
-                        chezmoi.template_data.std_out.replace("null", "None")
-                        .replace("true", "True")
-                        .replace("false", "False")
-                    )
-                    config_dict = chezmoi.string_to_dict(std_out)
-                    setattr(chezmoi, "template_data_dict", config_dict)
-                    self.query_one("#continue").disabled = False
+        ):
             self.query_exactly_one("#continue").disabled = False
-        return True
 
     def on_mount(self) -> None:
         for arg_id in chezmoi.long_commands:

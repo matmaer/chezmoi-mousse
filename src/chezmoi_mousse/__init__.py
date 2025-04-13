@@ -102,8 +102,6 @@ class Chezmoi:
     status_dirs: InputOutput
     status_files: InputOutput
     template_data: InputOutput
-    config: dict = {}
-    template_data_dict: dict = {}
 
     base = [
         "chezmoi",
@@ -171,6 +169,14 @@ class Chezmoi:
     @property
     def managed_f_paths(self) -> list[Path]:
         return [Path(p) for p in self.managed_files.std_out.splitlines()]
+
+    @property
+    def config(self) -> dict:
+        return self.string_to_dict(self.dump_config.std_out)
+
+    @property
+    def template_data_dict(self) -> dict:
+        return self.string_to_dict(self.template_data.std_out)
 
     def unmanaged_in_d(self, dir_path: Path) -> list[Path]:
         long_command = self.base + [
@@ -320,9 +326,13 @@ class Chezmoi:
         with open(path, "rt", encoding="utf-8") as f:
             return f.read()
 
-    def string_to_dict(self, string: str) -> dict:
+    def string_to_dict(self, std_out: str) -> dict:
         try:
-            return ast.literal_eval(string)
+            return ast.literal_eval(
+                std_out.replace("null", "None")
+                .replace("false", "False")
+                .replace("true", "True")
+            )
         except (SyntaxError, ValueError) as error:
             raise ValueError(
                 f"Syntax error or invalid value provided: {error}"
