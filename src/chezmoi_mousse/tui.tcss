@@ -19,8 +19,8 @@
 
 .operationmodal {
   align: center middle;
-  background-tint: $background-lighten-1;
-  background: $background-lighten-1;
+  background-tint: $surface;
+  background: $surface;
   border: thick $panel;
   height: auto;
   margin: 2 2 2 2;
@@ -30,8 +30,8 @@
   width: auto;
 
   Button {
-    background-tint: $background-lighten-1;
-    background: $background-lighten-1;
+    background-tint: $surface;
+    background: $surface;
     border-bottom: none;
     border-left: none;
     border-right: none;
@@ -52,8 +52,8 @@
     }
 
     &:focus {
-      background-tint: $background-lighten-1;
-      background: $background-lighten-1;
+      background-tint: $surface;
+      background: $surface;
       border-bottom: none;
       border-left: none;
       border-right: none;
@@ -61,8 +61,8 @@
       text-style: none;
     }
     &:hover {
-      background-tint: $background-lighten-1;
-      background: $background-lighten-1;
+      background-tint: $surface;
+      background: $surface;
       border-bottom: none;
       border-left: none;
       border-right: none;
@@ -70,8 +70,8 @@
       color: $accent-lighten-3;
     }
     &.-active {
-      background-tint: $background-lighten-1;
-      background: $background-lighten-1;
+      background-tint: $surface;
+      background: $surface;
       border-bottom: none;
       border-left: none;
       border-right: none;
@@ -80,16 +80,16 @@
   }
 
   Collapsible{
-    background-tint: $background-lighten-1;
-    background: $background-lighten-1;
+    background-tint: $surface;
+    background: $surface;
     margin-left: -1;
     margin-right: 1;
     padding: 0;
     scrollbar-gutter: stable;
   }
   CollapsibleTitle {
-    background-tint: $background-lighten-1;
-    background: $background-lighten-1;
+    background-tint: $surface;
+    background: $surface;
     padding-left: 2;
   }
 
@@ -144,8 +144,8 @@ Tree {
 }
 
 SlideBar {
-  background-tint: $background-lighten-1;
-  background: $background-lighten-1;
+  background-tint: $surface;
+  background: $surface;
   border-bottom: inner $primary-muted;
   border-left: inner $primary-muted;
   border-right: none;
@@ -164,14 +164,14 @@ SlideBar {
   transition: offset 380ms;
 
   .filter-container {
-    background-tint: $background-lighten-1;
-    background: $background-lighten-1;
+    background-tint: $surface;
+    background: $surface;
     height: auto;
     width: auto;
   }
 
   .filter-switch {
-    background-tint: $background-lighten-1;
+    background-tint: $surface;
     border: none;
     &.-on .switch--slider {
       border: none;
@@ -208,7 +208,7 @@ SlideBar {
   border: none;
   padding: 0;
   CollapsibleTitle {
-    color: $primary-lighten-1;
+    color: $primary-lighten-3;
     &:hover {
       text-style: bold;
     }
@@ -216,8 +216,8 @@ SlideBar {
 }
 
 Toast {
-  background: $background-lighten-1;
-  background-tint: $background-lighten-1;
+  background: $surface;
+  background-tint: $surface;
 }
 
 ChezmoiStatus {

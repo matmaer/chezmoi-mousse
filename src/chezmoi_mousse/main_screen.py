@@ -2,14 +2,13 @@ from collections.abc import Iterable
 from pathlib import Path
 
 from rich.text import Text
-
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import (
+    Container,
     Horizontal,
     VerticalGroup,
     VerticalScroll,
-    Container,
 )
 from textual.content import Content
 from textual.reactive import reactive
@@ -34,8 +33,7 @@ from textual.widgets import (
     Tree,
 )
 
-from chezmoi_mousse import FLOW, tools
-from chezmoi_mousse.common import chezmoi
+from chezmoi_mousse import chezmoi, FLOW
 
 
 class Doctor(Widget):
@@ -309,12 +307,12 @@ class FilteredAddDirTree(DirectoryTree):
                         p.parent in managed_dirs
                         or p.parent == Path(chezmoi.config["destDir"])
                     )
-                    and not tools.is_unwanted_path(p)
+                    and not chezmoi.is_unwanted_path(p)
                     and p not in managed_files
                 )
                 or (
                     p.is_dir()
-                    and not tools.is_unwanted_path(p)
+                    and not chezmoi.is_unwanted_path(p)
                     and p in managed_dirs
                 )
             ]
@@ -338,7 +336,7 @@ class FilteredAddDirTree(DirectoryTree):
             return [
                 p
                 for p in paths
-                if p not in managed_files and not tools.is_unwanted_path(p)
+                if p not in managed_files and not chezmoi.is_unwanted_path(p)
             ]
         # Switches: Green - Red , this means the following is true:
         # "self.include_unmanaged_dirs and not self.filter_unwanted"
@@ -346,7 +344,10 @@ class FilteredAddDirTree(DirectoryTree):
             p
             for p in paths
             if (p.is_file() and p not in managed_files)
-            or (p.is_dir() and tools.has_sub_dirs(p))
+            or (
+                p.is_dir()
+                and not [child for child in p.iterdir() if child.is_dir()]
+            )
         ]
 
 
@@ -426,7 +427,7 @@ class ChezmoiAdd(ModalScreen):
             self.add_label = "- Add Files -"
 
         for f in self.files_to_add:
-            file_content = tools.get_file_content(f)
+            file_content = chezmoi.file_content(f)
             self.add_path_items.append(
                 Collapsible(
                     RichLog(
