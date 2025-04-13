@@ -4,7 +4,6 @@ from textual.theme import Theme
 from chezmoi_mousse.main_screen import MainScreen
 from chezmoi_mousse.splash_screen import LoadingScreen
 
-
 theme = Theme(
     name="chezmoi-mousse-dark",
     dark=True,
