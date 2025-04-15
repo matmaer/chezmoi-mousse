@@ -179,21 +179,16 @@ class Chezmoi:
         return self.string_to_dict(self.template_data.std_out)
 
     def unmanaged_in_d(self, dir_path: Path) -> list[Path]:
-        long_command = self.base + [
-            "unmanaged",
-            "--path-style=absolute",
-            str(dir_path),
+        if not dir_path.is_dir():
+            raise ValueError(f"Directory does not exist: {dir_path}")
+        path_strings = subprocess_run(
+            self.base + ["unmanaged", "--path-style=absolute", str(dir_path)]
+        ).splitlines()
+        return [
+            p
+            for entry in path_strings
+            if (p := Path(entry)).parent == dir_path and p.is_file()
         ]
-        if (
-            not dir_path.exists()
-            or not dir_path.is_dir()
-            or not dir_path.is_absolute()
-        ):
-            raise ValueError(f"Invalid directory path: {dir_path}")
-        file_paths = [
-            Path(line) for line in subprocess_run(long_command).splitlines()
-        ]
-        return [p for p in file_paths if p.is_file() and p.parent == dir_path]
 
     def get_status(
         self, apply: bool, dirs: bool = False, files: bool = False
