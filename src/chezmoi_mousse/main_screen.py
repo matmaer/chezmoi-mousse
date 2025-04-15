@@ -20,7 +20,6 @@ from textual.widgets import (
     Footer,
     Header,
     Label,
-    RichLog,
     Static,
     Switch,
     TabbedContent,
@@ -30,6 +29,7 @@ from textual.widgets import (
 from chezmoi_mousse.constants import FLOW
 from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.doctor import Doctor
+import chezmoi_mousse.factory as factory
 
 
 class ChezmoiStatus(VerticalScroll):
@@ -266,12 +266,10 @@ class ChezmoiAdd(ModalScreen):
             self.add_label = "- Add Files -"
 
         for f in self.files_to_add:
-            file_content = chezmoi.file_content(f)
+            # file_content = chezmoi.file_content(f)
             self.add_path_items.append(
                 Collapsible(
-                    RichLog(
-                        highlight=True, auto_scroll=False, wrap=True
-                    ).write(file_content),
+                    factory.rich_file_content(f),
                     collapsed=collapse,
                     title=str(str(f)),
                     classes="collapsible-defaults",
