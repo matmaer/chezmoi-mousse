@@ -242,11 +242,6 @@ ChezmoiStatus {
   }
 }
 
-TobbedContent {
-  background-: $surface;
-  background-tint: yellow;
-}
-
 Screen {
   layers: filters filesinfo cmd_output;
 }
