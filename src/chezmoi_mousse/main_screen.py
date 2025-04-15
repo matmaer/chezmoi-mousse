@@ -187,11 +187,7 @@ class FilteredAddDirTree(DirectoryTree):
         return [
             p
             for p in paths
-            if (p.is_file() and p not in managed_files)
-            or (
-                p.is_dir()
-                and [child for child in p.iterdir() if child.is_dir()]
-            )
+            if p.is_dir() or (p.is_file() and p not in managed_files)
         ]
 
 
