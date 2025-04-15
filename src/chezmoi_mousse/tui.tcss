@@ -1,9 +1,3 @@
-/* DEFAULTS */
-
-Tree, DirectoryTree, DataTable, VerticalScroll {
-  scrollbar-size-vertical: 1;
-}
-
 .dir-tree {
   height: auto;
   margin-left: 1;
@@ -115,7 +109,6 @@ Tree, DirectoryTree, DataTable, VerticalScroll {
 }
 
 Tree {
-  background-tint: $background;
   min-height: 3;
   padding-left: 1;
   & > .tree--cursor {
@@ -242,31 +235,9 @@ ChezmoiStatus {
   }
 }
 
-Screen {
-  layers: filters filesinfo cmd_output;
-}
-
-Header {
-  background-tint: $background;
-  color: $primary;
-  HeaderIcon {
-    /* with display: none; the title is not centered */
-    visibility: hidden;
-  }
-}
-
-Footer {
-  background-tint: $background;
-  .-command-palette {
-    border: none;
-  }
-}
-
 LoadingScreen {
   & #loader-log {
     color: $secondary;
-    background: $background;
-    background-tint: $background;
     height: 11;
     margin: 2 1 2 1;
     width: auto;
@@ -277,6 +248,37 @@ LoadingScreen {
     text-style: none;
   }
 }
+
+#diagram {
+  margin-left: 1;
+  margin-right: 1;
+  min-width: 76;
+}
+
+* {
+  background-tint: $background;
+  scrollbar-size-vertical: 1;
+}
+
+Screen {
+  layers: slidebar_layer;
+}
+
+Header {
+  color: $primary;
+  HeaderIcon {
+    /* with display: none; the title is not centered */
+    visibility: hidden;
+  }
+}
+
+Footer {
+  .-command-palette {
+    border: none;
+  }
+}
+
+/* not in use yet */
 
 .tree-checkbox {
   border: round $accent-muted;
@@ -304,10 +306,4 @@ LoadingScreen {
   &:hover > .toggle--button {
     text-style: bold;
   }
-}
-
-#diagram {
-  margin-left: 1;
-  margin-right: 1;
-  min-width: 76;
 }
