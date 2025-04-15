@@ -356,7 +356,7 @@ class MainScreen(Screen):
             )
             yield VerticalScroll(AddDirTree(), can_focus=False)
             yield VerticalScroll(Doctor(), id="doctor", can_focus=False)
-            yield Static(FLOW, id="diagram")
+            yield VerticalScroll(Static(FLOW, id="diagram"))
         yield SlideBar()
         yield Footer()
 
