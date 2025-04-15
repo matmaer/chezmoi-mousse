@@ -172,11 +172,11 @@ class Chezmoi:
 
     @property
     def config(self) -> dict:
-        return self.string_to_dict(self.dump_config.std_out)
+        return self._string_to_dict(self.dump_config.std_out)
 
     @property
     def template_data_dict(self) -> dict:
-        return self.string_to_dict(self.template_data.std_out)
+        return self._string_to_dict(self.template_data.std_out)
 
     def unmanaged_in_d(self, dir_path: Path) -> list[Path]:
         if not dir_path.is_dir():
@@ -285,9 +285,7 @@ class Chezmoi:
             ".cache",
             ".egg-info",
             ".gz",
-            ".lnk",
             ".lock",
-            ".log",
             ".pid",
             ".rar",
             ".swp",
@@ -298,30 +296,37 @@ class Chezmoi:
             ".zip",
         }
 
-        if path.is_dir() and path.name in unwanted_dirs:
-            return True
+        if path.is_dir():
+            if path.name in unwanted_dirs:
+                return True
+            return False
 
-        regex = r"\.[^.]*$"
-        if path.is_file() and bool(re.match(regex, path.name)):
-            extension = re.match(regex, path.name)
+        if path.is_file():
+            extension = re.match(r"\.[^.]*$", path.name)
             if extension in unwanted_files:
                 return True
-
-        if not path.is_dir() and not path.is_file():
-            # for the time being, only support files and directories
-            return True
-
+            if self._is_reasonable_dotfile(path):
+                return False
         return False
 
     def file_content(self, path: Path) -> str:
-        if not path.is_file():
-            raise ValueError(f"Path is not a file: {path}")
-        if not path.exists():
-            raise ValueError(f"File does not exist: {path}")
+        if not self._is_reasonable_dotfile(path):
+            raise ValueError(
+                f'File is not a text file or too large for a reasonable "dotfile" : {path}'
+            )
         with open(path, "rt", encoding="utf-8") as f:
             return f.read()
 
-    def string_to_dict(self, std_out: str) -> dict:
+    def _is_reasonable_dotfile(self, file_path: Path) -> bool:
+        if not file_path.is_file():
+            raise ValueError(f"File does not exist: {file_path}")
+        if not file_path.stat().st_size > 150 * 1024:  # 150 KiB
+            with open(file_path, "rb") as file:
+                chunk = file.read(512)
+                return str.isprintable(str(chunk))
+        return False
+
+    def _string_to_dict(self, std_out: str) -> dict:
         try:
             return ast.literal_eval(
                 std_out.replace("null", "None")
