@@ -15,7 +15,7 @@ from textual.widgets import (
     Static,
 )
 
-from chezmoi_mousse import chezmoi
+from chezmoi_mousse.chezmoi import chezmoi
 
 
 class GitLog(DataTable):
