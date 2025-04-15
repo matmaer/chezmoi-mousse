@@ -231,16 +231,23 @@ class Chezmoi:
         unwanted_files = {
             ".bak",
             ".cache",
+            ".doc",
+            ".docx",
             ".egg-info",
             ".gz",
             ".lock",
+            ".pdf",
             ".pid",
+            ".ppt",
+            ".pptx",
             ".rar",
             ".swp",
             ".tar",
             ".temp",
             ".tgz",
             ".tmp",
+            ".xls",
+            ".xlsx",
             ".zip",
         }
 
