@@ -256,7 +256,7 @@ LoadingScreen {
 }
 
 * {
-  background-tint: #000000;
+  background-tint: $background;
   scrollbar-size-vertical: 1;
 }
 
