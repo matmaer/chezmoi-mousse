@@ -27,7 +27,7 @@ from textual.widgets import (
     Tree,
 )
 
-from chezmoi_mousse import FLOW
+from chezmoi_mousse.constants import FLOW
 from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.doctor import Doctor
 
