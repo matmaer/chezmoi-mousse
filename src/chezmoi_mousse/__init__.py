@@ -11,6 +11,9 @@ def main():
     app.run(inline=False, headless=False, mouse=True)
 
     profiler.disable()
+    profiler.dump_stats(
+        "/home/mm/repos/chezmoi-mousse/profiling/profiling_data"
+    )
     stats = pstats.Stats(profiler)
     stats.strip_dirs()
     stats.sort_stats("cumulative")
