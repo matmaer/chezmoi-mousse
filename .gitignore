@@ -4,3 +4,4 @@ dist/
 ignored/
 .env
 .vscode/
+pydeps
