@@ -5,3 +5,4 @@ ignored/
 .env
 .vscode/
 pydeps
+profiling/
