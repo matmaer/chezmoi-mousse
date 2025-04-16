@@ -152,17 +152,25 @@ class Chezmoi:
             lines.extend(self.status_files.std_out.splitlines())
 
         relevant_status_codes = {"A", "D", "M"}
+        relevant_lines: list[str] = []
+
         relevant_lines = [
-            line for line in lines if line[:2].strip() in relevant_status_codes
+            l for l in lines if l[0] or l[1] in relevant_status_codes
         ]
 
-        return [
-            (line[1] if apply else line[0], Path(line[3:]))
-            for line in relevant_lines
-        ]
+        result: list[tuple[str, Path]] = []
+        for line in relevant_lines:
+            if apply:
+                status_code = line[1]
+            else:
+                status_code = line[0]
+            path = Path(line[3:])
+            result.append((status_code, path))
+
+        return result
 
     def diff(self, file_path: str, apply: bool) -> list[str]:
-        long_command = self.base + ["diff", file_path]
+        long_command = self.base + ["diff"] + [file_path]
         if apply:
             return subprocess_run(long_command).splitlines()
         return subprocess_run(long_command + ["--reverse"]).splitlines()
