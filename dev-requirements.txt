@@ -8,6 +8,7 @@ attrs==25.3.0
 black==25.1.0
 cfgv==3.4.0
 click==8.1.8
+coverage==7.8.0
 decorator==5.2.1
 dill==0.3.9
 distlib==0.3.9
@@ -51,6 +52,7 @@ Pygments==2.19.1
 pylint==3.3.6
 pyprof2calltree==1.4.5
 pytest==8.3.5
+pytest-cov==6.1.1
 pytest-textual-snapshot==1.1.0
 PyYAML==6.0.2
 rich==14.0.0
