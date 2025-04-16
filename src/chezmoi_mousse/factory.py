@@ -21,17 +21,13 @@ def colored_diff(diff_list: list[str]) -> RichLog:
     added = str(rich_log.app.current_theme.success)
     removed = str(rich_log.app.current_theme.error)
     dimmed = f"{rich_log.app.current_theme.foreground} dim"
-    styled_lines = []
 
     for line in diff_list:
         if line.startswith("+ "):
-            styled_lines.append(Text(line, style=added))
+            rich_log.write(Text(line, style=added))
         elif line.startswith("- "):
-            styled_lines.append(Text(line, style=removed))
+            rich_log.write(Text(line, style=removed))
         elif line.startswith("  "):
-            styled_lines.append(Text(line, style=dimmed))
-
-    for line in styled_lines:
-        rich_log.write(line)
+            rich_log.write(Text(line, style=dimmed))
 
     return rich_log
