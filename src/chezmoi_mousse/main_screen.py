@@ -80,19 +80,11 @@ class ChezmoiStatus(VerticalScroll):
 
             rel_path = str(path.relative_to(chezmoi.config["destDir"]))
 
-            colored_diffs: list[Label] = []
-            for line in chezmoi.diff(str(path), self.apply):
-                if line.startswith("- "):
-                    colored_diffs.append(Label(line, variant="error"))
-                elif line.startswith("+ "):
-                    colored_diffs.append(Label(line, variant="success"))
-                elif line.startswith("  "):
-                    colored_diffs.append(Label(line, classes="muted"))
             self.status_items.append(
                 Collapsible(
-                    *colored_diffs,
+                    factory.colored_diff(chezmoi.diff(str(path), self.apply)),
                     title=f"{status} {rel_path}",
-                    classes="collapsible-default",
+                    classes="collapsible-defaults",
                 )
             )
         self.refresh(recompose=True)
@@ -266,7 +258,6 @@ class ChezmoiAdd(ModalScreen):
             self.add_label = "- Add Files -"
 
         for f in self.files_to_add:
-            # file_content = chezmoi.file_content(f)
             self.add_path_items.append(
                 Collapsible(
                     factory.rich_file_content(f),
