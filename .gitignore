@@ -5,4 +5,4 @@ ignored/
 .env
 .vscode/
 pydeps
-profiling/rofile_data
+profiling
