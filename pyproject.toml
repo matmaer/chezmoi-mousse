@@ -10,6 +10,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "ayu>=0.1.1",
     "black>=25.1.0",
     "coverage>=7.8.0",
     "ipython>=9.1.0",
