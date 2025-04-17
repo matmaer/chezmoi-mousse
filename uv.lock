@@ -98,7 +98,7 @@ wheels = [
 
 [[package]]
 name = "ayu"
-version = "0.1.1"
+version = "0.1.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pytest" },
@@ -106,9 +106,9 @@ dependencies = [
     { name = "textual-slidecontainer" },
     { name = "websockets" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/2e/29/772a4ad2167b3cfb0751ebeb96ef883cc9aba16334dd97a9fdb9bd9950e0/ayu-0.1.1.tar.gz", hash = "sha256:0d7dac294e756c16ef76a3c7036929972ac59f968fcb1edbd18da085324912ff", size = 62596 }
+sdist = { url = "https://files.pythonhosted.org/packages/78/15/564766007e52e3ff6e3a5c4886be92297996f4a66166956831632f9282d9/ayu-0.1.2.tar.gz", hash = "sha256:2251daeb479211d359edf09b9025308906cf69426b057e55338b04752729ed16", size = 64653 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/2c/6b/d96c0f7460b1c14b42c5cb59ec0bc30933480118b6212d36a1824e3d1e9d/ayu-0.1.1-py3-none-any.whl", hash = "sha256:bf238c928c5478624d3b49855341f7dbea8a9c13542053374724030cb717baeb", size = 11811 },
+    { url = "https://files.pythonhosted.org/packages/66/4c/b83af08f0c1181dd6f7379e92927a48e9c8534a8144c932a85332dd5afa3/ayu-0.1.2-py3-none-any.whl", hash = "sha256:f5ad7313105959f4205753e9154abe24e93e5a2d4aeb6fbb2bc01b035efc03fc", size = 14238 },
 ]
 
 [[package]]
