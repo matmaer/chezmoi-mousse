@@ -8,6 +8,13 @@ def chezmoi_instance():
     return Chezmoi()
 
 
+def test_chezmoi_instantiation():
+    try:
+        instance = Chezmoi()
+    except Exception as e:
+        pytest.fail(f"Chezmoi instantiation failed with exception: {e}")
+
+
 def test_string_to_dict_valid(chezmoi_instance):
     valid_json = '{"key": "value"}'
     result = chezmoi_instance._string_to_dict(valid_json)
