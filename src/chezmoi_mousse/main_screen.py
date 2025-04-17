@@ -10,6 +10,7 @@ from textual.containers import (
     VerticalScroll,
 )
 from textual.content import Content
+from textual.lazy import Lazy
 from textual.reactive import reactive
 from textual.screen import ModalScreen, Screen
 from textual.widget import Widget
@@ -331,12 +332,12 @@ class MainScreen(Screen):
 
         with TabbedContent("Apply", "Re-Add", "Add", "Doctor", "Diagram"):
             yield VerticalScroll(
-                ChezmoiStatus(apply=True),
+                Lazy(ChezmoiStatus(apply=True)),
                 ManagedTree(apply=True),
                 can_focus=False,
             )
             yield VerticalScroll(
-                ChezmoiStatus(apply=False),
+                Lazy(ChezmoiStatus(apply=False)),
                 ManagedTree(apply=False),
                 can_focus=False,
             )
