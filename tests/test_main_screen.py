@@ -18,19 +18,21 @@ def test_chezmoi_status_instantiation():
         pytest.fail(f"ChezmoiStatus instantiation failed with exception: {e}")
 
 
-def test_managed_tree_instantiation():
+def test_managed_tree_instantiation_with_apply_true():
     try:
         instance = ManagedTree(apply=True)
     except Exception as e:
-        pytest.fail(f"ManagedTree instantiation failed with exception: {e}")
+        pytest.fail(
+            f"ManagedTree instantiation with apply=True failed with exception: {e}"
+        )
 
 
-def test_filtered_add_dir_tree_instantiation():
+def test_managed_tree_instantiation_with_apply_false():
     try:
-        instance = FilteredAddDirTree(Path("/some/path"))
+        instance = ManagedTree(apply=False)
     except Exception as e:
         pytest.fail(
-            f"FilteredAddDirTree instantiation failed with exception: {e}"
+            f"ManagedTree instantiation with apply=False failed with exception: {e}"
         )
 
 

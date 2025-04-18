@@ -8,6 +8,12 @@ def chezmoi_instance():
     return Chezmoi()
 
 
+def test_chezmoi_singleton():
+    from chezmoi_mousse.chezmoi import chezmoi
+
+    assert isinstance(chezmoi, Chezmoi)
+
+
 def test_chezmoi_instantiation():
     try:
         instance = Chezmoi()
