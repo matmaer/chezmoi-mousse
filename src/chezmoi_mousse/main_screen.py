@@ -93,10 +93,6 @@ class ChezmoiStatus(VerticalScroll):
 
 class ManagedTree(Tree):
 
-    def __init__(self, apply: bool) -> None:
-        self.apply = apply
-        super().__init__(label=str("root_node"), id="managed_tree")
-
     def on_mount(self) -> None:
 
         dest_dir_path = Path(chezmoi.config["destDir"])
@@ -120,6 +116,16 @@ class ManagedTree(Tree):
 
         recurse_paths(self.root, dest_dir_path)
         self.root.expand()
+
+
+class ApplyTree(ManagedTree):
+    def __init__(self) -> None:
+        super().__init__(label=str("root_node"), id="apply_tree")
+
+
+class ReAddTree(ManagedTree):
+    def __init__(self) -> None:
+        super().__init__(label=str("root_node"), id="re_add_tree")
 
 
 # pylint: disable=too-many-ancestors
@@ -331,14 +337,10 @@ class MainScreen(Screen):
 
         with TabbedContent("Apply", "Re-Add", "Add", "Doctor", "Diagram"):
             yield VerticalScroll(
-                Lazy(ChezmoiStatus(apply=True)),
-                ManagedTree(apply=True),
-                can_focus=False,
+                Lazy(ChezmoiStatus(apply=True)), ApplyTree(), can_focus=False
             )
             yield VerticalScroll(
-                Lazy(ChezmoiStatus(apply=False)),
-                ManagedTree(apply=False),
-                can_focus=False,
+                Lazy(ChezmoiStatus(apply=False)), ReAddTree(), can_focus=False
             )
             yield VerticalScroll(AddDirTree(), can_focus=False)
             yield VerticalScroll(Doctor(), id="doctor", can_focus=False)
