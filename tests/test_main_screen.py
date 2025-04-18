@@ -29,7 +29,7 @@ def test_apply_tree():
 
 def test_re_add_tree():
     try:
-        instance = ApplyTree()
+        instance = ReAddTree()
     except Exception as e:
         pytest.fail(
             f"ManagedTree instantiation with apply=False failed with exception: {e}"
