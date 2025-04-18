@@ -1,10 +1,11 @@
 import pytest
 from pathlib import Path
 from chezmoi_mousse.main_screen import (
-    ChezmoiStatus,
-    ManagedTree,
-    AddDirTree,
+    ApplyTree,
     ChezmoiAdd,
+    ChezmoiStatus,
+    AddDirTree,
+    ReAddTree,
     SlideBar,
     MainScreen,
 )
@@ -17,18 +18,18 @@ def test_chezmoi_status_instantiation():
         pytest.fail(f"ChezmoiStatus instantiation failed with exception: {e}")
 
 
-def test_managed_tree_instantiation_with_apply_true():
+def test_apply_tree():
     try:
-        instance = ManagedTree(apply=True)
+        instance = ApplyTree()
     except Exception as e:
         pytest.fail(
             f"ManagedTree instantiation with apply=True failed with exception: {e}"
         )
 
 
-def test_managed_tree_instantiation_with_apply_false():
+def test_re_add_tree():
     try:
-        instance = ManagedTree(apply=False)
+        instance = ApplyTree()
     except Exception as e:
         pytest.fail(
             f"ManagedTree instantiation with apply=False failed with exception: {e}"
