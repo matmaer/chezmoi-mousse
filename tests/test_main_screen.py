@@ -3,7 +3,6 @@ from pathlib import Path
 from chezmoi_mousse.main_screen import (
     ChezmoiStatus,
     ManagedTree,
-    FilteredAddDirTree,
     AddDirTree,
     ChezmoiAdd,
     SlideBar,
