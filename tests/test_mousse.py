@@ -2,15 +2,22 @@ from pathlib import Path
 
 import pytest
 
-from chezmoi_mousse.main_screen import (
+from chezmoi_mousse.mousse import (
     AddDirTree,
     ApplyTree,
     ChezmoiAdd,
     ChezmoiStatus,
-    MainScreen,
+    Doctor,
     ReAddTree,
     SlideBar,
 )
+
+
+def test_doctor_instantiation():
+    try:
+        instance = Doctor()
+    except Exception as e:
+        pytest.fail(f"ChezmoiStatus instantiation failed with exception: {e}")
 
 
 def test_chezmoi_status_instantiation():
@@ -57,10 +64,3 @@ def test_slide_bar_instantiation():
         instance = SlideBar()
     except Exception as e:
         pytest.fail(f"SlideBar instantiation failed with exception: {e}")
-
-
-def test_main_screen_instantiation():
-    try:
-        instance = MainScreen()
-    except Exception as e:
-        pytest.fail(f"MainScreen instantiation failed with exception: {e}")
