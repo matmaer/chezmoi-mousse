@@ -37,21 +37,17 @@ class InputOutput:
         )
 
     def __post_init__(self) -> None:
-        self.update()
+        self.list_out = []
         self.list_out = self.std_out.splitlines()
         self._update_dict()
 
     def update(self) -> None:
         self.std_out = subprocess_run(self.long_command)
-        if self.arg_id in ["dump_config", "template_data"]:
-            self._update_dict()
-        else:
-            self.dict_out = {}
+        self._update_dict()
         self.list_out = self.std_out.splitlines()
 
     def _update_dict(self) -> None:
         self.dict_out = {}
-        self.std_out = subprocess_run(self.long_command)
         try:
             self.dict_out = ast.literal_eval(
                 self.std_out.replace("null", "None")
