@@ -37,7 +37,6 @@ class InputOutput:
         )
 
     def __post_init__(self) -> None:
-        self.list_out = []
         self.list_out = self.std_out.splitlines()
         self._update_dict()
 
@@ -55,7 +54,7 @@ class InputOutput:
                 .replace("true", "True")
             )
         except (SyntaxError, ValueError) as error:
-            self.dict_out = {}
+            return
 
 
 class Chezmoi:
