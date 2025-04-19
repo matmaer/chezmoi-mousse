@@ -79,7 +79,9 @@ class ChezmoiStatus(VerticalScroll):
         for status_code, path in changes:
             status: str = self.status_info["code name"][status_code]
 
-            rel_path = str(path.relative_to(chezmoi.config["destDir"]))
+            rel_path = str(
+                path.relative_to(chezmoi.dump_config.dict_out["destDir"])
+            )
 
             self.status_items.append(
                 Collapsible(
@@ -95,7 +97,7 @@ class ManagedTree(Tree):
 
     def on_mount(self) -> None:
 
-        dest_dir_path = Path(chezmoi.config["destDir"])
+        dest_dir_path = Path(chezmoi.dump_config.dict_out["destDir"])
 
         def recurse_paths(parent, dir_path):
             if dir_path == dest_dir_path:
@@ -147,7 +149,8 @@ class FilteredAddDirTree(DirectoryTree):
                     p.is_file()
                     and (
                         p.parent in managed_dirs
-                        or p.parent == Path(chezmoi.config["destDir"])
+                        or p.parent
+                        == Path(chezmoi.dump_config.dict_out["destDir"])
                     )
                     and not chezmoi.is_unwanted_path(p)
                     and p not in managed_files
@@ -167,7 +170,8 @@ class FilteredAddDirTree(DirectoryTree):
                     p.is_file()
                     and (
                         p.parent in managed_dirs
-                        or p.parent == Path(chezmoi.config["destDir"])
+                        or p.parent
+                        == Path(chezmoi.dump_config.dict_out["destDir"])
                     )
                     and p not in managed_files
                 )
@@ -199,12 +203,14 @@ class AddDirTree(Widget):
     def compose(self) -> ComposeResult:
         with VerticalScroll():
             yield FilteredAddDirTree(
-                chezmoi.config["destDir"], id="adddirtree", classes="dir-tree"
+                chezmoi.dump_config.dict_out["destDir"],
+                id="adddirtree",
+                classes="dir-tree",
             )
 
     def on_mount(self) -> None:
         self.query_one(FilteredAddDirTree).root.label = (
-            f"{chezmoi.config["destDir"]} (destDir)"
+            f"{chezmoi.dump_config.dict_out["destDir"]} (destDir)"
         )
 
     def action_add_path(self) -> None:
