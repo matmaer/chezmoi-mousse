@@ -1,4 +1,5 @@
 import pytest
+
 from chezmoi_mousse.splash_screen import AnimatedFade, LoadingScreen
 
 

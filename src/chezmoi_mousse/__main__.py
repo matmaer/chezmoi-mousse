@@ -1,4 +1,4 @@
-from chezmoi_mousse.tui import ChezmoiTUI
+from chezmoi_mousse.gui import ChezmoiTUI
 
 
 def main():
