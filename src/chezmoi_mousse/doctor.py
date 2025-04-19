@@ -1,8 +1,6 @@
 from rich.text import Text
 from textual.app import ComposeResult
-
 from textual.containers import VerticalScroll
-
 from textual.widget import Widget
 from textual.widgets import (
     Collapsible,

@@ -1,4 +1,5 @@
 from unittest.mock import patch
+
 from chezmoi_mousse import main
 from chezmoi_mousse.tui import ChezmoiTUI
 
