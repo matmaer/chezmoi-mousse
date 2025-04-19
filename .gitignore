@@ -4,5 +4,6 @@ dist/
 ignored/
 .env
 .vscode/
+pydeps/
 pydeps
 profiling/
