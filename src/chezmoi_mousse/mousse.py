@@ -3,6 +3,7 @@
 from collections.abc import Iterable
 from pathlib import Path
 
+from rich.text import Text
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import (
@@ -18,33 +19,19 @@ from textual.widget import Widget
 from textual.widgets import (
     Button,
     Collapsible,
-    DirectoryTree,
-    Label,
-    Static,
-    Switch,
-    Tree,
-)
-
-import chezmoi_mousse.factory as factory
-from chezmoi_mousse import FLOW
-from chezmoi_mousse.chezmoi import chezmoi
-
-
-from rich.text import Text
-from textual.app import ComposeResult
-from textual.containers import VerticalScroll
-from textual.widget import Widget
-from textual.widgets import (
-    Collapsible,
     DataTable,
+    DirectoryTree,
     Label,
     Link,
     ListItem,
     ListView,
     Pretty,
     Static,
+    Switch,
+    Tree,
 )
 
+import chezmoi_mousse.factory as factory
 from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.config import pw_mgr_info
 
