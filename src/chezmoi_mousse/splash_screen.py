@@ -24,8 +24,8 @@ class AnimatedFade(Widget):
         self.line_styles = self.create_fade()
 
     def create_fade(self) -> deque[Style]:
-        start_color = Color.parse(self.screen.app.current_theme.primary)
-        end_color = Color.parse(self.screen.app.current_theme.accent)
+        start_color = Color.parse(self.app.current_theme.primary)
+        end_color = Color.parse(self.app.current_theme.accent)
         fade = [start_color] * 5
         gradient = Gradient.from_colors(start_color, end_color, quality=5)
         fade.extend(gradient.colors)
