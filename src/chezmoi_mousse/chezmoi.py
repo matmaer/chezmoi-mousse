@@ -1,6 +1,6 @@
 import ast
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from subprocess import TimeoutExpired, run
 
@@ -25,7 +25,10 @@ def subprocess_run(long_command):
 class InputOutput:
 
     long_command: list[str]
+    arg_id: str = ""
     std_out: str = ""
+    dict_out: dict = field(default_factory=dict)
+    list_out: list[str] = field(default_factory=list)
 
     @property
     def label(self):
@@ -33,9 +36,30 @@ class InputOutput:
             [w for w in self.long_command if not w.startswith("-")]
         )
 
-    def update(self) -> str:
+    def __post_init__(self) -> None:
+        self.update()
+        self.list_out = self.std_out.splitlines()
+        self._update_dict()
+
+    def update(self) -> None:
         self.std_out = subprocess_run(self.long_command)
-        return self.std_out
+        if self.arg_id in ["dump_config", "template_data"]:
+            self._update_dict()
+        else:
+            self.dict_out = {}
+        self.list_out = self.std_out.splitlines()
+
+    def _update_dict(self) -> None:
+        self.dict_out = {}
+        self.std_out = subprocess_run(self.long_command)
+        try:
+            self.dict_out = ast.literal_eval(
+                self.std_out.replace("null", "None")
+                .replace("false", "False")
+                .replace("true", "True")
+            )
+        except (SyntaxError, ValueError) as error:
+            self.dict_out = {}
 
 
 class Chezmoi:
@@ -100,31 +124,23 @@ class Chezmoi:
 
     @property
     def autoadd_enabled(self) -> bool:
-        return self.config["git"]["autoadd"]
+        return self.dump_config.dict_out["git"]["autoadd"]
 
     @property
     def autocommit_enabled(self) -> bool:
-        return self.config["git"]["autocommit"]
+        return self.dump_config.dict_out["git"]["autocommit"]
 
     @property
     def autopush_enabled(self) -> bool:
-        return self.config["git"]["autopush"]
+        return self.dump_config.dict_out["git"]["autopush"]
 
     @property
     def managed_d_paths(self) -> list[Path]:
-        return [Path(p) for p in self.managed_dirs.std_out.splitlines()]
+        return [Path(p) for p in self.managed_dirs.list_out]
 
     @property
     def managed_f_paths(self) -> list[Path]:
-        return [Path(p) for p in self.managed_files.std_out.splitlines()]
-
-    @property
-    def config(self) -> dict:
-        return self._string_to_dict(self.dump_config.std_out)
-
-    @property
-    def template_data_dict(self) -> dict:
-        return self._string_to_dict(self.template_data.std_out)
+        return [Path(p) for p in self.managed_files.list_out]
 
     def unmanaged_in_d(self, dir_path: Path) -> list[Path]:
         if not dir_path.is_dir():
@@ -147,9 +163,9 @@ class Chezmoi:
         # Combine lines from dirs and files
         lines = []
         if dirs:
-            lines.extend(self.status_dirs.std_out.splitlines())
+            lines.extend(self.status_dirs.list_out)
         if files:
-            lines.extend(self.status_files.std_out.splitlines())
+            lines.extend(self.status_files.list_out)
 
         relevant_status_codes = {"A", "D", "M"}
         relevant_lines: list[str] = []
@@ -279,24 +295,11 @@ class Chezmoi:
             return f.read()
 
     def _is_reasonable_dotfile(self, file_path: Path) -> bool:
-
         if not file_path.stat().st_size > 150 * 1024:  # 150 KiB
             with open(file_path, "rb") as file:
                 chunk = file.read(512)
                 return str.isprintable(str(chunk))
         return False
-
-    def _string_to_dict(self, std_out: str) -> dict:
-        try:
-            return ast.literal_eval(
-                std_out.replace("null", "None")
-                .replace("false", "False")
-                .replace("true", "True")
-            )
-        except (SyntaxError, ValueError) as error:
-            raise ValueError(
-                f"Syntax error or invalid value provided: {error}"
-            ) from error
 
 
 chezmoi = Chezmoi()
