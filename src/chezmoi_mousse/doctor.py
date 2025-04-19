@@ -16,6 +16,7 @@ from textual.widgets import (
 )
 
 from chezmoi_mousse.chezmoi import chezmoi
+from chezmoi_mousse.config import pw_mgr_info
 
 
 class GitLog(DataTable):
@@ -31,60 +32,6 @@ class GitLog(DataTable):
 
 
 class Doctor(Widget):
-
-    def __init__(self) -> None:
-        super().__init__()
-        # pylint: disable=line-too-long
-        self.doctor_cmd_map = {
-            "age-command": {
-                "description": "A simple, modern and secure file encryption tool",
-                "link": "https://github.com/FiloSottile/age",
-            },
-            "bitwarden-command": {
-                "description": "Bitwarden Password Manager",
-                "link": "https://github.com/bitwarden/cli",
-            },
-            "bitwarden-secrets-command": {
-                "description": "Bitwarden Secrets Manager CLI for managing secrets securely.",
-                "link": "https://github.com/bitwarden/bitwarden-secrets",
-            },
-            "doppler-command": {
-                "description": "The Doppler CLI for managing secrets, configs, and environment variables.",
-                "link": "https://github.com/DopplerHQ/cli",
-            },
-            "gopass-command": {
-                "description": "The slightly more awesome standard unix password manager for teams.",
-                "link": "https://github.com/gopasspw/gopass",
-            },
-            "keeper-command": {
-                "description": "An interface to Keeper® Password Manager",
-                "link": "https://github.com/Keeper-Security/Commander",
-            },
-            "keepassxc-command": {
-                "description": "Cross-platform community-driven port of Keepass password manager",
-                "link": "https://keepassxc.org/",
-            },
-            "lpass-command": {
-                "description": "Old LastPass CLI for accessing your LastPass vault.",
-                "link": "https://github.com/lastpass/lastpass-cli",
-            },
-            "pass-command": {
-                "description": "Stores, retrieves, generates, and synchronizes passwords securely",
-                "link": "https://www.passwordstore.org/",
-            },
-            "pinentry-command": {
-                "description": "Collection of simple PIN or passphrase entry dialogs which utilize the Assuan protocol",
-                "link": "https://gnupg.org/related_software/pinentry/",
-            },
-            "rbw-command": {
-                "description": "Unofficial Bitwarden CLI",
-                "link": "https://git.tozt.net/rbw",
-            },
-            "vault-command": {
-                "description": "A tool for managing secrets",
-                "link": "https://vaultproject.io/",
-            },
-        }
 
     def compose(self) -> ComposeResult:
         yield DataTable(id="doctortable", show_cursor=False)
@@ -137,16 +84,14 @@ class Doctor(Widget):
         for line in doctor_rows[1:]:
             row = tuple(line.split(maxsplit=2))
             if row[0] == "info" and "not found in $PATH" in row[2]:
-                if row[1] in self.doctor_cmd_map:
+                if row[1] in pw_mgr_info:
                     list_view.append(
                         ListItem(
-                            Link(
-                                row[1], url=self.doctor_cmd_map[row[1]]["link"]
-                            ),
-                            Static(self.doctor_cmd_map[row[1]]["description"]),
+                            Link(row[1], url=pw_mgr_info[row[1]]["link"]),
+                            Static(pw_mgr_info[row[1]]["description"]),
                         )
                     )
-                elif row[1] not in self.doctor_cmd_map:
+                elif row[1] not in pw_mgr_info:
                     list_view.append(
                         ListItem(
                             # color accent as that's how links are styled by default
