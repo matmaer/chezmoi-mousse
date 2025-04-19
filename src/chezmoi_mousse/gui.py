@@ -16,7 +16,7 @@ from chezmoi_mousse.mousse import (
     SlideBar,
 )
 
-# from chezmoi_mousse.main_screen import MainScreen
+from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.splash_screen import LoadingScreen
 
 theme = Theme(
@@ -66,11 +66,14 @@ class MainScreen(Screen):
 
 class ChezmoiTUI(App):
 
-    CSS_PATH = "tui.tcss"
+    CSS_PATH = "gui.tcss"
 
     SCREENS = {"main": MainScreen, "loading": LoadingScreen}
 
+    chezmoi = {}
+
     def on_mount(self) -> None:
+        self.chezmoi = chezmoi
         self.title = "-  c h e z m o i  m o u s s e  -"
         self.register_theme(theme)
         self.theme = "chezmoi-mousse-dark"

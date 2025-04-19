@@ -12,13 +12,14 @@ from textual.widget import Widget
 from textual.widgets import Button, RichLog
 
 from chezmoi_mousse import SPLASH
+
 from chezmoi_mousse.chezmoi import chezmoi
 
 
 class AnimatedFade(Widget):
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
         self.styles.height = len(SPLASH)
         self.styles.width = len(max(SPLASH, key=len))
         self.line_styles = self.create_fade()
