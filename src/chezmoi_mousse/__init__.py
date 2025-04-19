@@ -1,6 +1,3 @@
-from chezmoi_mousse.tui import ChezmoiTUI
-
-
 SPLASH = """\
  _______________________________ ___________________._
 |       |   |   |    ___|___    |    '    |       |   |
@@ -51,12 +48,3 @@ FLOW = """\
 │ destination  │    │ target state │    │ source state │    │  git remote  │
 └──────────────┘    └──────────────┘    └──────────────┘    └──────────────┘
 """
-
-
-def main():
-    app = ChezmoiTUI()
-    app.run(inline=False, headless=False, mouse=True)
-
-
-if __name__ == "__main__":
-    main()

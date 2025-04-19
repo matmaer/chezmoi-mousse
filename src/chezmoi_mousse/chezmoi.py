@@ -4,6 +4,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from subprocess import TimeoutExpired, run
 
+from chezmoi_mousse.config import unwanted_dirs, unwanted_files
+
 
 def subprocess_run(long_command):
     try:
@@ -218,58 +220,6 @@ class Chezmoi:
         return subprocess_run(long_command + [file_path])
 
     def is_unwanted_path(self, path: Path) -> bool:
-        unwanted_dirs = {
-            "__pycache__",
-            ".build",
-            ".bundle",
-            ".cache",
-            ".dart_tool",
-            ".DS_Store",
-            ".git",
-            ".ipynb_checkpoints",
-            ".mypy_cache",
-            ".parcel_cache",
-            ".pytest_cache",
-            ".Trash",
-            ".venv",
-            "bin",
-            "cache",
-            "Cache",
-            "CMakeFiles",
-            "Crash Reports",
-            "DerivedData",
-            "go-build",
-            "node_modules",
-            "Recent",
-            "temp",
-            "Temp",
-            "tmp",
-            "trash",
-            "Trash",
-        }
-        unwanted_files = {
-            ".bak",
-            ".cache",
-            ".doc",
-            ".docx",
-            ".egg-info",
-            ".gz",
-            ".lock",
-            ".pdf",
-            ".pid",
-            ".ppt",
-            ".pptx",
-            ".rar",
-            ".swp",
-            ".tar",
-            ".temp",
-            ".tgz",
-            ".tmp",
-            ".xls",
-            ".xlsx",
-            ".zip",
-        }
-
         if path.is_dir():
             if path.name in unwanted_dirs:
                 return True
