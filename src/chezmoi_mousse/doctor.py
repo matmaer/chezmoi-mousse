@@ -25,7 +25,7 @@ class GitLog(DataTable):
 
     def on_mount(self) -> None:
         self.add_columns("COMMIT", "MESSAGE")
-        for line in chezmoi.git_log.std_out.splitlines():
+        for line in chezmoi.git_log.list_out:
             columns = line.split(";")
             self.add_row(*columns)
 
@@ -95,12 +95,12 @@ class Doctor(Widget):
                 classes="collapsible-defaults",
             )
             yield Collapsible(
-                Pretty(chezmoi.config),
+                Pretty(chezmoi.dump_config.dict_out),
                 title="chezmoi dump-config",
                 classes="collapsible-defaults",
             )
             yield Collapsible(
-                Pretty(chezmoi.template_data_dict),
+                Pretty(chezmoi.template_data.dict_out),
                 title="chezmoi data (template data)",
                 classes="collapsible-defaults",
             )
@@ -110,12 +110,12 @@ class Doctor(Widget):
                 classes="collapsible-defaults",
             )
             yield Collapsible(
-                Pretty(chezmoi.cat_config.std_out.splitlines()),
+                Pretty(chezmoi.cat_config.list_out),
                 title="chezmoi cat-config (contents of config-file)",
                 classes="collapsible-defaults",
             )
             yield Collapsible(
-                Pretty(chezmoi.ignored.std_out.splitlines()),
+                Pretty(chezmoi.ignored.list_out),
                 title="chezmoi ignored (git ignore in source-dir)",
                 classes="collapsible-defaults",
             )
@@ -131,7 +131,7 @@ class Doctor(Widget):
 
         list_view = self.query_exactly_one("#cmdnotfound", ListView)
         table = self.query_exactly_one("#doctortable", DataTable)
-        doctor_rows = chezmoi.doctor.std_out.splitlines()
+        doctor_rows = chezmoi.doctor.list_out
         table.add_columns(*doctor_rows[0].split())
 
         for line in doctor_rows[1:]:
