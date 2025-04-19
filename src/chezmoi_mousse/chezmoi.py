@@ -4,6 +4,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from subprocess import TimeoutExpired, run
 
+from chezmoi_mousse.config import unwanted_dirs, unwanted_files
+
 
 def subprocess_run(long_command):
     try:
@@ -37,7 +39,6 @@ class InputOutput:
         )
 
     def __post_init__(self) -> None:
-        self.list_out = []
         self.list_out = self.std_out.splitlines()
         self._update_dict()
 
@@ -55,7 +56,7 @@ class InputOutput:
                 .replace("true", "True")
             )
         except (SyntaxError, ValueError) as error:
-            self.dict_out = {}
+            return
 
 
 class Chezmoi:
@@ -219,58 +220,6 @@ class Chezmoi:
         return subprocess_run(long_command + [file_path])
 
     def is_unwanted_path(self, path: Path) -> bool:
-        unwanted_dirs = {
-            "__pycache__",
-            ".build",
-            ".bundle",
-            ".cache",
-            ".dart_tool",
-            ".DS_Store",
-            ".git",
-            ".ipynb_checkpoints",
-            ".mypy_cache",
-            ".parcel_cache",
-            ".pytest_cache",
-            ".Trash",
-            ".venv",
-            "bin",
-            "cache",
-            "Cache",
-            "CMakeFiles",
-            "Crash Reports",
-            "DerivedData",
-            "go-build",
-            "node_modules",
-            "Recent",
-            "temp",
-            "Temp",
-            "tmp",
-            "trash",
-            "Trash",
-        }
-        unwanted_files = {
-            ".bak",
-            ".cache",
-            ".doc",
-            ".docx",
-            ".egg-info",
-            ".gz",
-            ".lock",
-            ".pdf",
-            ".pid",
-            ".ppt",
-            ".pptx",
-            ".rar",
-            ".swp",
-            ".tar",
-            ".temp",
-            ".tgz",
-            ".tmp",
-            ".xls",
-            ".xlsx",
-            ".zip",
-        }
-
         if path.is_dir():
             if path.name in unwanted_dirs:
                 return True
@@ -291,7 +240,7 @@ class Chezmoi:
             return f.read()
 
     def _is_reasonable_dotfile(self, file_path: Path) -> bool:
-        if not file_path.stat().st_size > 150 * 1024:  # 150 KiB
+        if file_path.stat().st_size < 150 * 1024:  # 150 KiB
             with open(file_path, "rb") as file:
                 chunk = file.read(512)
                 return str.isprintable(str(chunk))

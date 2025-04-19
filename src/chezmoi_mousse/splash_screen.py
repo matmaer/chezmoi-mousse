@@ -11,7 +11,7 @@ from textual.strip import Strip
 from textual.widget import Widget
 from textual.widgets import Button, RichLog
 
-from chezmoi_mousse.constants import SPLASH
+from chezmoi_mousse import SPLASH
 from chezmoi_mousse.chezmoi import chezmoi
 
 
