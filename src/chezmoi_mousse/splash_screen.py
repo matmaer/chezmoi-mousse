@@ -63,7 +63,7 @@ class LoadingScreen(Screen):
     @work(thread=True, group="loaders")
     def run(self, arg_id) -> None:
         io_class = getattr(chezmoi, arg_id)
-        # io_class()
+        io_class.update()
         padding = 32 - len(io_class.label)
         log_text = f"{io_class.label} {'.' * padding} loaded"
         self.query_exactly_one(RichLog).write(log_text)
