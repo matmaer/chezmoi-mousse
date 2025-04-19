@@ -290,7 +290,7 @@ class Chezmoi:
             return f.read()
 
     def _is_reasonable_dotfile(self, file_path: Path) -> bool:
-        if not file_path.stat().st_size > 150 * 1024:  # 150 KiB
+        if file_path.stat().st_size < 150 * 1024:  # 150 KiB
             with open(file_path, "rb") as file:
                 chunk = file.read(512)
                 return str.isprintable(str(chunk))
