@@ -1,7 +1,22 @@
-from textual.app import App
+from textual.app import App, ComposeResult
+from textual.binding import Binding
+from textual.containers import VerticalScroll
+from textual.lazy import Lazy
+from textual.screen import Screen
 from textual.theme import Theme
+from textual.widgets import Footer, Header, Static, TabbedContent
 
-from chezmoi_mousse.main_screen import MainScreen
+from chezmoi_mousse import FLOW
+from chezmoi_mousse.doctor import Doctor
+from chezmoi_mousse.main_screen import (
+    ApplyTree,
+    ChezmoiStatus,
+    ReAddTree,
+    AddDirTree,
+    SlideBar,
+)
+
+# from chezmoi_mousse.main_screen import MainScreen
 from chezmoi_mousse.splash_screen import LoadingScreen
 
 theme = Theme(
@@ -17,6 +32,36 @@ theme = Theme(
     success="#4EBF71",  # textual dark
     warning="#ffa62b",  # textual dark
 )
+
+
+class MainScreen(Screen):
+
+    BINDINGS = [Binding("f", "toggle_slidebar", "Filters")]
+
+    def compose(self) -> ComposeResult:
+        yield Header(classes="-tall")
+
+        with TabbedContent("Apply", "Re-Add", "Add", "Doctor", "Diagram"):
+            yield VerticalScroll(
+                Lazy(ChezmoiStatus(apply=True)), ApplyTree(), can_focus=False
+            )
+            yield VerticalScroll(
+                Lazy(ChezmoiStatus(apply=False)), ReAddTree(), can_focus=False
+            )
+            yield VerticalScroll(AddDirTree(), can_focus=False)
+            yield VerticalScroll(Doctor(), id="doctor", can_focus=False)
+            yield VerticalScroll(Static(FLOW, id="diagram"))
+        yield SlideBar()
+        yield Footer()
+
+    def action_toggle_slidebar(self):
+        self.screen.query_exactly_one(SlideBar).toggle_class("-visible")
+
+    def action_toggle_spacing(self):
+        self.screen.query_exactly_one(Header).toggle_class("-tall")
+
+    def key_space(self) -> None:
+        self.action_toggle_spacing()
 
 
 class ChezmoiTUI(App):

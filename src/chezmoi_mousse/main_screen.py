@@ -10,7 +10,6 @@ from textual.containers import (
     VerticalScroll,
 )
 from textual.content import Content
-from textual.lazy import Lazy
 from textual.reactive import reactive
 from textual.screen import ModalScreen, Screen
 from textual.widget import Widget
@@ -18,19 +17,15 @@ from textual.widgets import (
     Button,
     Collapsible,
     DirectoryTree,
-    Footer,
-    Header,
     Label,
     Static,
     Switch,
-    TabbedContent,
     Tree,
 )
 
+import chezmoi_mousse.factory as factory
 from chezmoi_mousse import FLOW
 from chezmoi_mousse.chezmoi import chezmoi
-from chezmoi_mousse.doctor import Doctor
-import chezmoi_mousse.factory as factory
 
 
 class ChezmoiStatus(VerticalScroll):
@@ -334,31 +329,31 @@ class SlideBar(Widget):
             add_dir_tree.reload()
 
 
-class MainScreen(Screen):
+# class MainScreen(Screen):
 
-    BINDINGS = [Binding("f", "toggle_slidebar", "Filters")]
+#     BINDINGS = [Binding("f", "toggle_slidebar", "Filters")]
 
-    def compose(self) -> ComposeResult:
-        yield Header(classes="-tall")
+#     def compose(self) -> ComposeResult:
+#         yield Header(classes="-tall")
 
-        with TabbedContent("Apply", "Re-Add", "Add", "Doctor", "Diagram"):
-            yield VerticalScroll(
-                Lazy(ChezmoiStatus(apply=True)), ApplyTree(), can_focus=False
-            )
-            yield VerticalScroll(
-                Lazy(ChezmoiStatus(apply=False)), ReAddTree(), can_focus=False
-            )
-            yield VerticalScroll(AddDirTree(), can_focus=False)
-            yield VerticalScroll(Doctor(), id="doctor", can_focus=False)
-            yield VerticalScroll(Static(FLOW, id="diagram"))
-        yield SlideBar()
-        yield Footer()
+#         with TabbedContent("Apply", "Re-Add", "Add", "Doctor", "Diagram"):
+#             yield VerticalScroll(
+#                 Lazy(ChezmoiStatus(apply=True)), ApplyTree(), can_focus=False
+#             )
+#             yield VerticalScroll(
+#                 Lazy(ChezmoiStatus(apply=False)), ReAddTree(), can_focus=False
+#             )
+#             yield VerticalScroll(AddDirTree(), can_focus=False)
+#             yield VerticalScroll(Doctor(), id="doctor", can_focus=False)
+#             yield VerticalScroll(Static(FLOW, id="diagram"))
+#         yield SlideBar()
+#         yield Footer()
 
-    def action_toggle_slidebar(self):
-        self.screen.query_exactly_one(SlideBar).toggle_class("-visible")
+#     def action_toggle_slidebar(self):
+#         self.screen.query_exactly_one(SlideBar).toggle_class("-visible")
 
-    def action_toggle_spacing(self):
-        self.screen.query_exactly_one(Header).toggle_class("-tall")
+#     def action_toggle_spacing(self):
+#         self.screen.query_exactly_one(Header).toggle_class("-tall")
 
-    def key_space(self) -> None:
-        self.action_toggle_spacing()
+#     def key_space(self) -> None:
+#         self.action_toggle_spacing()
