@@ -66,7 +66,7 @@ class MainScreen(Screen):
 
 class ChezmoiTUI(App):
 
-    CSS_PATH = "tui.tcss"
+    CSS_PATH = "gui.tcss"
 
     SCREENS = {"main": MainScreen, "loading": LoadingScreen}
 
