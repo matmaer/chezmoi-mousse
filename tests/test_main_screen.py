@@ -1,13 +1,15 @@
-import pytest
 from pathlib import Path
+
+import pytest
+
 from chezmoi_mousse.main_screen import (
+    AddDirTree,
     ApplyTree,
     ChezmoiAdd,
     ChezmoiStatus,
-    AddDirTree,
+    MainScreen,
     ReAddTree,
     SlideBar,
-    MainScreen,
 )
 
 
