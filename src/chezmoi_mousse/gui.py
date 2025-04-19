@@ -7,10 +7,10 @@ from textual.theme import Theme
 from textual.widgets import Footer, Header, Static, TabbedContent
 
 from chezmoi_mousse import FLOW
-from chezmoi_mousse.doctor import Doctor
-from chezmoi_mousse.main_screen import (
+from chezmoi_mousse.mousse import (
     ApplyTree,
     ChezmoiStatus,
+    Doctor,
     ReAddTree,
     AddDirTree,
     SlideBar,
