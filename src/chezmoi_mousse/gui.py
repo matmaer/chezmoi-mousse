@@ -8,11 +8,11 @@ from textual.widgets import Footer, Header, Static, TabbedContent
 
 from chezmoi_mousse import FLOW
 from chezmoi_mousse.mousse import (
+    AddDirTree,
     ApplyTree,
     ChezmoiStatus,
     Doctor,
     ReAddTree,
-    AddDirTree,
     SlideBar,
 )
 
