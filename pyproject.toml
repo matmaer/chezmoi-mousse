@@ -16,6 +16,7 @@ dev = [
     "ayu>=0.1.1",
     "black>=25.1.0",
     "coverage>=7.8.0",
+    "ganglion>=0.1.1",
     "ipython>=9.1.0",
     "isort>=6.0.1",
     "memray>=1.17.1",
@@ -31,3 +32,6 @@ dev = [
     "textual>=3.1.0",
     "textual-dev>=1.7.0",
 ]
+
+[tool.pre-commit]
+config = ".pre-commit-config.yaml"
