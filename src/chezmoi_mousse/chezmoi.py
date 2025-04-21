@@ -66,21 +66,24 @@ class ChezmoiPaths:
     existing_managed_dirs: list[Path]
     existing_managed_files: list[Path]
 
-    def update(self) -> None:
-        chezmoi.dump_config.update()
-        chezmoi.managed_dirs.update()
-        chezmoi.managed_files.update()
+    def update(
+        self,
+        dump_config: InputOutput,
+        managed_dirs: InputOutput,
+        managed_files: InputOutput,
+    ) -> None:
+        dump_config.update()
+        managed_dirs.update()
+        managed_files.update()
 
-        self.dest_dir = Path(chezmoi.dump_config.dict_out["destDir"])
-        self.managed_dirs = [Path(p) for p in chezmoi.managed_dirs.list_out]
-        self.managed_files = [Path(p) for p in chezmoi.managed_files.list_out]
+        self.dest_dir = Path(dump_config.dict_out["destDir"])
+        self.managed_dirs = [Path(p) for p in managed_dirs.list_out]
+        self.managed_files = [Path(p) for p in managed_files.list_out]
         self.existing_managed_dirs = [
-            Path(p) for p in chezmoi.managed_dirs.list_out if Path(p).is_dir()
+            Path(p) for p in managed_dirs.list_out if Path(p).is_dir()
         ]
         self.existing_managed_files = [
-            Path(p)
-            for p in chezmoi.managed_files.list_out
-            if Path(p).is_file()
+            Path(p) for p in managed_files.list_out if Path(p).is_file()
         ]
 
 
@@ -271,6 +274,13 @@ class Chezmoi:
                 chunk = file.read(512)
                 return str.isprintable(str(chunk))
         return False
+
+    def update_paths(self) -> None:
+        self.paths.update(
+            dump_config=self.dump_config,
+            managed_dirs=self.managed_dirs,
+            managed_files=self.managed_files,
+        )
 
 
 chezmoi = Chezmoi()
