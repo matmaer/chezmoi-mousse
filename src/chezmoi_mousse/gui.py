@@ -1,12 +1,28 @@
+from collections import deque
+
+from rich.segment import Segment
+from rich.style import Style
+from textual import work
 from textual.app import App, ComposeResult
 from textual.binding import Binding
-from textual.containers import VerticalScroll
+from textual.color import Color, Gradient
+from textual.containers import Center, Middle, VerticalScroll
 from textual.lazy import Lazy
 from textual.screen import Screen
+from textual.strip import Strip
 from textual.theme import Theme
-from textual.widgets import Footer, Header, Static, TabbedContent
+from textual.widget import Widget
+from textual.widgets import (
+    Button,
+    Footer,
+    Header,
+    RichLog,
+    Static,
+    TabbedContent,
+)
 
-from chezmoi_mousse import FLOW
+from chezmoi_mousse import FLOW, SPLASH
+from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.mousse import (
     AddDirTree,
     ApplyTree,
@@ -15,9 +31,6 @@ from chezmoi_mousse.mousse import (
     ReAddTree,
     SlideBar,
 )
-
-from chezmoi_mousse.chezmoi import chezmoi
-from chezmoi_mousse.splash_screen import LoadingScreen
 
 theme = Theme(
     name="chezmoi-mousse-dark",
@@ -32,6 +45,82 @@ theme = Theme(
     success="#4EBF71",  # textual dark
     warning="#ffa62b",  # textual dark
 )
+
+
+class LoadingScreen(Screen):
+
+    class AnimatedFade(Widget):
+
+        line_styles: deque[Style]
+
+        def __init__(self, line_styles: deque[Style], **kwargs) -> None:
+            super().__init__(**kwargs)
+            self.styles.height = len(SPLASH)
+            self.styles.width = len(max(SPLASH, key=len))
+            self.line_styles = line_styles
+
+        def render_lines(self, crop) -> list[Strip]:
+            self.line_styles.rotate()
+            return super().render_lines(crop)
+
+        def render_line(self, y: int) -> Strip:
+            return Strip([Segment(SPLASH[y], style=self.line_styles[y])])
+
+        def on_mount(self) -> None:
+            self.set_interval(interval=0.11, callback=self.refresh)
+
+    def compose(self) -> ComposeResult:
+        with Middle():
+            yield Center(self.AnimatedFade(line_styles=self.create_fade()))
+            yield Center(
+                RichLog(name="loader log", id="loader-log", max_lines=11)
+            )
+            yield Center(
+                Button(
+                    id="continue",
+                    label="press any key or click to continue",
+                    disabled=True,
+                )
+            )
+
+    @work(thread=True, group="loaders")
+    def run(self, arg_id) -> None:
+        io_class = getattr(chezmoi, arg_id)
+        io_class.update()
+        padding = 32 - len(io_class.label)
+        log_text = f"{io_class.label} {'.' * padding} loaded"
+        self.query_exactly_one(RichLog).write(log_text)
+
+    def workers_finished(self) -> None:
+        if all(
+            worker.state == "finished"
+            for worker in self.app.workers
+            if worker.group == "loaders"
+        ):
+            self.query_exactly_one("#continue").disabled = False
+
+    def create_fade(self) -> deque[Style]:
+        start_color = Color.parse(self.app.current_theme.primary)
+        end_color = Color.parse(self.app.current_theme.accent)
+        fade = [start_color] * 5
+        gradient = Gradient.from_colors(start_color, end_color, quality=5)
+        fade.extend(gradient.colors)
+        gradient.colors.reverse()
+        fade.extend(gradient.colors)
+        return deque([Style(color=color.hex, bold=True) for color in fade])
+
+    def on_mount(self) -> None:
+        for arg_id in chezmoi.long_commands:
+            self.run(arg_id)
+        self.set_interval(interval=0.1, callback=self.workers_finished)
+
+    def on_key(self) -> None:
+        if not self.query_exactly_one("#continue").disabled:
+            self.dismiss()
+
+    def on_click(self) -> None:
+        if not self.query_exactly_one("#continue").disabled:
+            self.dismiss()
 
 
 class MainScreen(Screen):
