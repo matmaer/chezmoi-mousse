@@ -4,9 +4,8 @@ from collections.abc import Iterable
 from pathlib import Path
 
 from rich.text import Text
-from textual.app import ComposeResult
+from textual.lazy import Lazy
 from textual.reactive import reactive
-from textual.widget import Widget
 from textual.widgets import Collapsible, DirectoryTree, RichLog, Tree
 
 from chezmoi_mousse.chezmoi import chezmoi
@@ -27,15 +26,17 @@ class RichDiff(RichLog):
         diff_output = [
             line
             for line in chezmoi.diff(str(self.file_path), self.apply)
-            if line.strip() and line.startswith(("+ ", "- ", "  "))
+            if line.strip()
+            and line.startswith(("+", "-", " "))
+            and not line.startswith(("+++", "---"))
         ]
 
         for line in diff_output:
-            if line.startswith("+ "):
+            if line.startswith("+"):
                 self.write(Text(line, style=added))
-            elif line.startswith("- "):
+            elif line.startswith("-"):
                 self.write(Text(line, style=removed))
-            elif line.startswith("  "):
+            elif line.startswith(" "):
                 self.write(Text(line, style=dimmed))
 
 
@@ -72,14 +73,12 @@ class ColorDiff(Collapsible):
         self.apply = apply
         self.file_path = file_path
         self.status = self.status_info["code name"][status_code]
-        rich_diff = RichDiff(self.file_path, self.apply)
+        rich_diff = Lazy(RichDiff(self.file_path, self.apply))
         rel_path = str(
             self.file_path.relative_to(chezmoi.dump_config.dict_out["destDir"])
         )
         super().__init__(rich_diff, classes="collapsible-defaults")
         self.title = f"{self.status} {rel_path}"
-
-    # def on_mount(self) -> None:
 
 
 class FilteredAddDirTree(DirectoryTree):
