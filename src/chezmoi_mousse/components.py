@@ -76,7 +76,7 @@ class ColorDiff(Collapsible):
         self.apply = apply
         self.file_path = file_path
         self.status = self.status_info["code name"][status_code]
-        dest_dir = Path(chezmoi.dump_config.dict_out["destDir"])  # Cache value
+        dest_dir = chezmoi.paths.dest_dir  # Cache value
         rel_path = str(self.file_path.relative_to(dest_dir))
         rich_diff = Lazy(RichDiff(self.file_path, self.apply))
         super().__init__(rich_diff)
@@ -91,7 +91,7 @@ class FilteredAddDirTree(DirectoryTree):
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
         managed_dirs = set(chezmoi.paths.managed_dirs)
         managed_files = set(chezmoi.paths.managed_files)
-        dest_dir = Path(chezmoi.dump_config.dict_out["destDir"])  # Cache value
+        dest_dir = chezmoi.paths.dest_dir  # Cache value
 
         # Switches: Red - Green (default)
         if not self.include_unmanaged_dirs and self.filter_unwanted:
@@ -146,7 +146,7 @@ class ManagedTree(Tree):
 
     def on_mount(self) -> None:
 
-        dest_dir_path = Path(chezmoi.dump_config.dict_out["destDir"])
+        dest_dir_path = chezmoi.paths.dest_dir
         managed_f_paths = set(chezmoi.paths.managed_files)
         # generate a set of all the parent directories of the managed files
         managed_f_parents = set(
@@ -166,7 +166,7 @@ class ManagedTree(Tree):
                 and (not self.show_existing_only or f.exists())
             ]
             for file in files:
-                parent.add_leaf(str(file.parts[-1]))
+                parent.add_leaf(str(file.parts[-1]), file)
             sub_dirs = [
                 d
                 for d in chezmoi.paths.managed_dirs
