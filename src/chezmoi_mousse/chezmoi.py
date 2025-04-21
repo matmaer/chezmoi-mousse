@@ -40,7 +40,7 @@ class InputOutput:
 
     def __post_init__(self) -> None:
         self.list_out = self.std_out.splitlines()
-        self._update_dict()
+        self.dict_out = {}
 
     def update(self) -> None:
         self.std_out = subprocess_run(self.long_command)
@@ -48,7 +48,6 @@ class InputOutput:
         self.list_out = self.std_out.splitlines()
 
     def _update_dict(self) -> None:
-        self.dict_out = {}
         try:
             self.dict_out = ast.literal_eval(
                 self.std_out.replace("null", "None")
@@ -56,7 +55,7 @@ class InputOutput:
                 .replace("true", "True")
             )
         except (SyntaxError, ValueError) as error:
-            return
+            self.dict_out = {}
 
 
 class Chezmoi:
