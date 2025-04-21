@@ -48,7 +48,6 @@
     min-width: 8;
     text-align: center;
     text-style: none;
-    text-style: none;
     width: 1fr;
 
     &:disabled {
@@ -56,29 +55,16 @@
     }
 
     &:focus {
-      background-tint: $surface;
-      background: $surface;
-      border-bottom: none;
-      border-left: none;
-      border-right: none;
+
       border-top: heavy $primary-lighten-2;
-      text-style: none;
     }
     &:hover {
-      background-tint: $surface;
-      background: $surface;
-      border-bottom: none;
-      border-left: none;
-      border-right: none;
+
       border-top: heavy $primary-lighten-3;
       color: $accent-lighten-3;
     }
     &.-active {
-      background-tint: $surface;
-      background: $surface;
-      border-bottom: none;
-      border-left: none;
-      border-right: none;
+
       border-top: heavy $primary-lighten-2;
     }
   }
@@ -98,6 +84,7 @@
   }
 
   RichLog {
+    height: auto;
     padding: 0 0 0 1;
   }
 
