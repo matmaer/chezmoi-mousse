@@ -253,7 +253,9 @@ class Doctor(Widget):
 
 class ReAddTree(ManagedTree):
     def __init__(self) -> None:
-        super().__init__(label=str("root_node"), id="re_add_tree")
+        super().__init__(
+            label=str("root_node"), id="re_add_tree", show_existing_only=True
+        )
 
 
 class SlideBar(Widget):

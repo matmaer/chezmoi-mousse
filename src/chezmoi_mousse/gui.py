@@ -90,12 +90,21 @@ class LoadingScreen(Screen):
         log_text = f"{io_class.label} {'.' * padding} loaded"
         self.query_exactly_one(RichLog).write(log_text)
 
+    def populate_paths(self) -> None:
+        paths_class = getattr(chezmoi, "paths")
+        paths_class.update()
+        log_label = "Update chezmoi paths"
+        padding = 32 - len(log_label)
+        log_text = f"{log_label} {'.' * padding} loaded"
+        self.query_exactly_one(RichLog).write(log_text)
+
     def workers_finished(self) -> None:
         if all(
             worker.state == "finished"
             for worker in self.app.workers
             if worker.group == "loaders"
         ):
+            self.populate_paths()
             self.query_exactly_one("#continue").disabled = False
 
     def create_fade(self) -> deque[Style]:

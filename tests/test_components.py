@@ -13,6 +13,6 @@ def test_filtered_add_dir_tree_instantiation():
 
 def test_managed_tree_instantiation():
     try:
-        instance = ManagedTree("test_label")
+        instance = ManagedTree(label="test_label")
     except Exception as e:
         pytest.fail(f"ChezmoiStatus instantiation failed with exception: {e}")

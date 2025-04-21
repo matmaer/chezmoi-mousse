@@ -89,8 +89,8 @@ class FilteredAddDirTree(DirectoryTree):
     filter_unwanted = reactive(True, always_update=True)
 
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
-        managed_dirs = set(chezmoi.managed_d_paths)
-        managed_files = set(chezmoi.managed_f_paths)
+        managed_dirs = set(chezmoi.paths.managed_dirs)
+        managed_files = set(chezmoi.paths.managed_files)
         dest_dir = Path(chezmoi.dump_config.dict_out["destDir"])  # Cache value
 
         # Switches: Red - Green (default)
@@ -140,9 +140,18 @@ class FilteredAddDirTree(DirectoryTree):
 
 class ManagedTree(Tree):
 
+    def __init__(self, show_existing_only: bool = False, **kwargs) -> None:
+        self.show_existing_only = show_existing_only
+        super().__init__(**kwargs)
+
     def on_mount(self) -> None:
 
         dest_dir_path = Path(chezmoi.dump_config.dict_out["destDir"])
+        managed_f_paths = set(chezmoi.paths.managed_files)
+        # generate a set of all the parent directories of the managed files
+        managed_f_parents = set(
+            f.parent for f in managed_f_paths if f.parent != dest_dir_path
+        )
 
         def recurse_paths(parent, dir_path):
             if dir_path == dest_dir_path:
@@ -150,14 +159,19 @@ class ManagedTree(Tree):
                 self.root.label = str(dir_path)
             else:
                 parent = parent.add(dir_path.parts[-1], dir_path)
-
             files = [
-                f for f in chezmoi.managed_f_paths if f.parent == dir_path
+                f
+                for f in chezmoi.paths.managed_files
+                if f.parent == dir_path
+                and (not self.show_existing_only or f.exists())
             ]
             for file in files:
                 parent.add_leaf(str(file.parts[-1]))
             sub_dirs = [
-                d for d in chezmoi.managed_d_paths if d.parent == dir_path
+                d
+                for d in chezmoi.paths.managed_dirs
+                if d.parent == dir_path
+                and (not self.show_existing_only or d.exists())
             ]
             for sub_dir in sub_dirs:
                 recurse_paths(parent, sub_dir)
