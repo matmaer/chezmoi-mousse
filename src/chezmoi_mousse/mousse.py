@@ -23,6 +23,7 @@ from textual.widgets import (
     ListItem,
     ListView,
     Pretty,
+    RichLog,
     Static,
     Switch,
 )
@@ -115,9 +116,14 @@ class ChezmoiAdd(ModalScreen):
             self.add_label = "- Add Files -"
 
         for f in self.files_to_add:
+            file_content = chezmoi.file_content(f)
+            rich_log = RichLog(
+                highlight=True, auto_scroll=False, wrap=True, max_lines=500
+            )
+            rich_log.write(file_content)
             self.add_path_items.append(
                 Collapsible(
-                    components.rich_file_content(f),
+                    rich_log,
                     collapsed=collapse,
                     title=str(str(f)),
                     classes="collapsible-defaults",
@@ -175,6 +181,23 @@ class ChezmoiStatus(VerticalScroll):
 
     def on_mount(self) -> None:
 
+        def colored_diff(diff_list: list[str]) -> RichLog:
+
+            rich_log = RichLog(auto_scroll=False, wrap=True, max_lines=2000)
+            added = str(rich_log.app.current_theme.success)
+            removed = str(rich_log.app.current_theme.error)
+            dimmed = f"{rich_log.app.current_theme.foreground} dim"
+
+            for line in diff_list:
+                if line.startswith("+ "):
+                    rich_log.write(Text(line, style=added))
+                elif line.startswith("- "):
+                    rich_log.write(Text(line, style=removed))
+                elif line.startswith("  "):
+                    rich_log.write(Text(line, style=dimmed))
+
+            return rich_log
+
         changes: list[tuple[str, Path]] = chezmoi.get_status(
             apply=self.apply, files=True, dirs=False
         )
@@ -188,9 +211,7 @@ class ChezmoiStatus(VerticalScroll):
 
             self.status_items.append(
                 Collapsible(
-                    components.colored_diff(
-                        chezmoi.diff(str(path), self.apply)
-                    ),
+                    colored_diff(chezmoi.diff(str(path), self.apply)),
                     title=f"{status} {rel_path}",
                     classes="collapsible-defaults",
                 )
