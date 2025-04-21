@@ -6,8 +6,7 @@ from textual import work
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.color import Color, Gradient
-from textual.containers import Center, Middle, VerticalScroll
-from textual.lazy import Lazy
+from textual.containers import Center, Middle, VerticalGroup, VerticalScroll
 from textual.screen import Screen
 from textual.strip import Strip
 from textual.theme import Theme
@@ -131,13 +130,9 @@ class MainScreen(Screen):
         yield Header(classes="-tall")
 
         with TabbedContent("Apply", "Re-Add", "Add", "Doctor", "Diagram"):
-            yield VerticalScroll(
-                Lazy(ChezmoiStatus(apply=True)), ApplyTree(), can_focus=False
-            )
-            yield VerticalScroll(
-                Lazy(ChezmoiStatus(apply=False)), ReAddTree(), can_focus=False
-            )
-            yield VerticalScroll(AddDirTree(), can_focus=False)
+            yield VerticalGroup(ChezmoiStatus(apply=True), ApplyTree())
+            yield VerticalGroup(ChezmoiStatus(apply=False), ReAddTree())
+            yield VerticalGroup(AddDirTree())
             yield VerticalScroll(Doctor(), id="doctor", can_focus=False)
             yield VerticalScroll(Static(FLOW, id="diagram"))
         yield SlideBar()
