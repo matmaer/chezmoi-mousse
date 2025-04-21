@@ -151,7 +151,7 @@ class ManagedTree(Tree):
             else:
                 parent = parent.add(dir_path.parts[-1], dir_path)
 
-            # Combine file and directory processing for efficiency
+            # Combine file and directory processing, | is union for sets
             managed_paths = set(chezmoi.managed_f_paths) | set(
                 chezmoi.managed_d_paths
             )

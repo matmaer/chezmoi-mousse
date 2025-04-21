@@ -7,3 +7,4 @@ ignored/
 pydeps/
 pydeps
 profiling/
+.gitconfig
