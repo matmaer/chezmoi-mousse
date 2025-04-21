@@ -151,16 +151,17 @@ class ManagedTree(Tree):
             else:
                 parent = parent.add(dir_path.parts[-1], dir_path)
 
-            # Combine file and directory processing, | is union for sets
-            managed_paths = set(chezmoi.managed_f_paths) | set(
-                chezmoi.managed_d_paths
-            )
-            for path in managed_paths:
-                if path.parent == dir_path:
-                    if path.is_file():
-                        parent.add_leaf(str(path.parts[-1]))
-                    else:
-                        recurse_paths(parent, path)
+            files = [
+                f for f in chezmoi.managed_f_paths if f.parent == dir_path
+            ]
+            for file in files:
+                parent.add_leaf(str(file.parts[-1]))
+            sub_dirs = [
+                d for d in chezmoi.managed_d_paths if d.parent == dir_path
+            ]
+            for sub_dir in sub_dirs:
+                recurse_paths(parent, sub_dir)
+
 
         recurse_paths(self.root, dest_dir_path)
         self.root.expand()
