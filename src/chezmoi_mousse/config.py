@@ -10,6 +10,7 @@ unwanted_dirs = {
     ".mypy_cache",
     ".parcel_cache",
     ".pytest_cache",
+    ".ssh",
     ".Trash",
     ".venv",
     "bin",

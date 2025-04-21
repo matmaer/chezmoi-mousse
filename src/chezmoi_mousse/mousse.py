@@ -125,12 +125,7 @@ class ChezmoiAdd(ModalScreen):
             )
             rich_log.write(file_content)
             self.add_path_items.append(
-                Collapsible(
-                    rich_log,
-                    collapsed=collapse,
-                    title=str(str(f)),
-                    classes="collapsible-defaults",
-                )
+                Collapsible(rich_log, collapsed=collapse, title=str(str(f)))
             )
         self.refresh(recompose=True)
 
@@ -176,34 +171,27 @@ class Doctor(Widget):
     def compose(self) -> ComposeResult:
         yield DataTable(id="doctortable", show_cursor=False)
         yield Collapsible(
-            ListView(id="cmdnotfound"),
-            title="Commands Not Found",
-            classes="collapsible-defaults",
+            ListView(id="cmdnotfound"), title="Commands Not Found"
         )
         yield Collapsible(
             VerticalScroll(Pretty(chezmoi.dump_config.dict_out)),
             title="chezmoi dump-config",
-            classes="collapsible-defaults",
         )
         yield Collapsible(
             VerticalScroll(Pretty(chezmoi.template_data.dict_out)),
             title="chezmoi data (template data)",
-            classes="collapsible-defaults",
         )
         yield Collapsible(
             DataTable(id="gitlog", cursor_type="row"),
             title="chezmoi git log (last 20 commits)",
-            classes="collapsible-defaults",
         )
         yield Collapsible(
             VerticalScroll(Pretty(chezmoi.cat_config.list_out)),
             title="chezmoi cat-config (contents of config-file)",
-            classes="collapsible-defaults",
         )
         yield Collapsible(
             VerticalScroll(Pretty(chezmoi.ignored.list_out)),
             title="chezmoi ignored (git ignore in source-dir)",
-            classes="collapsible-defaults",
         )
 
     def on_mount(self) -> None:
@@ -265,7 +253,9 @@ class Doctor(Widget):
 
 class ReAddTree(ManagedTree):
     def __init__(self) -> None:
-        super().__init__(label=str("root_node"), id="re_add_tree")
+        super().__init__(
+            label=str("root_node"), id="re_add_tree", show_existing_only=True
+        )
 
 
 class SlideBar(Widget):

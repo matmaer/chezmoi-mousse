@@ -90,12 +90,21 @@ class LoadingScreen(Screen):
         log_text = f"{io_class.label} {'.' * padding} loaded"
         self.query_exactly_one(RichLog).write(log_text)
 
+    def populate_paths(self) -> None:
+        paths_class = getattr(chezmoi, "paths")
+        paths_class.update()
+        log_label = "Update chezmoi paths"
+        padding = 32 - len(log_label)
+        log_text = f"{log_label} {'.' * padding} loaded"
+        self.query_exactly_one(RichLog).write(log_text)
+
     def workers_finished(self) -> None:
         if all(
             worker.state == "finished"
             for worker in self.app.workers
             if worker.group == "loaders"
         ):
+            self.populate_paths()
             self.query_exactly_one("#continue").disabled = False
 
     def create_fade(self) -> deque[Style]:
@@ -130,8 +139,8 @@ class MainScreen(Screen):
         yield Header(classes="-tall")
 
         with TabbedContent("Apply", "Re-Add", "Add", "Doctor", "Diagram"):
-            yield VerticalGroup(ChezmoiStatus(apply=True), ApplyTree())
-            yield VerticalGroup(ChezmoiStatus(apply=False), ReAddTree())
+            yield VerticalScroll(ChezmoiStatus(apply=True), ApplyTree())
+            yield VerticalScroll(ChezmoiStatus(apply=False), ReAddTree())
             yield VerticalScroll(AddDirTree())
             yield VerticalScroll(Doctor(), id="doctor", can_focus=False)
             yield VerticalScroll(Static(FLOW, id="diagram"))

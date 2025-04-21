@@ -58,6 +58,40 @@ class InputOutput:
             self.dict_out = {}
 
 
+@dataclass
+class ChezmoiPaths:
+    dest_dir: Path
+    managed_dirs: list[Path]
+    managed_files: list[Path]
+    existing_managed_dirs: list[Path]
+    existing_managed_files: list[Path]
+
+    def update(self) -> None:
+        chezmoi.dump_config.update()
+        chezmoi.managed_dirs.update()
+        chezmoi.managed_files.update()
+
+        self.dest_dir = Path(chezmoi.dump_config.dict_out["destDir"])
+        self.managed_dirs = [Path(p) for p in chezmoi.managed_dirs.list_out]
+        self.managed_files = [Path(p) for p in chezmoi.managed_files.list_out]
+        self.existing_managed_dirs = [
+            Path(p) for p in chezmoi.managed_dirs.list_out if Path(p).is_dir()
+        ]
+        self.existing_managed_files = [
+            Path(p)
+            for p in chezmoi.managed_files.list_out
+            if Path(p).is_file()
+        ]
+
+    @property
+    def managed_d_paths(self) -> list[Path]:
+        return [Path(p) for p in chezmoi.managed_dirs.list_out]
+
+    @property
+    def managed_f_paths(self) -> list[Path]:
+        return [Path(p) for p in chezmoi.managed_files.list_out]
+
+
 class Chezmoi:
 
     cat_config: InputOutput
@@ -70,6 +104,7 @@ class Chezmoi:
     status_dirs: InputOutput
     status_files: InputOutput
     template_data: InputOutput
+    paths: ChezmoiPaths
 
     base = [
         "chezmoi",
@@ -118,6 +153,14 @@ class Chezmoi:
             self.long_commands[arg_id] = long_cmd
             setattr(self, arg_id, InputOutput(long_cmd))
 
+        self.paths = ChezmoiPaths(
+            dest_dir=Path.home(),
+            managed_dirs=[],
+            managed_files=[],
+            existing_managed_dirs=[],
+            existing_managed_files=[],
+        )
+
     @property
     def autoadd_enabled(self) -> bool:
         return self.dump_config.dict_out["git"]["autoadd"]
@@ -129,14 +172,6 @@ class Chezmoi:
     @property
     def autopush_enabled(self) -> bool:
         return self.dump_config.dict_out["git"]["autopush"]
-
-    @property
-    def managed_d_paths(self) -> list[Path]:
-        return [Path(p) for p in self.managed_dirs.list_out]
-
-    @property
-    def managed_f_paths(self) -> list[Path]:
-        return [Path(p) for p in self.managed_files.list_out]
 
     def unmanaged_in_d(self, dir_path: Path) -> list[Path]:
         if not dir_path.is_dir():
