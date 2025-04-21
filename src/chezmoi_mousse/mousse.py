@@ -251,14 +251,16 @@ class Doctor(Widget):
                     Text(cell_text, style=f"{styles[row[0]]}")
                     for cell_text in row
                 ]
+                table.add_row(*row)
             elif row[0] == "info" and row[2] == "not set":
                 row = [
                     Text(cell_text, style=f"{self.app.current_theme.warning}")
                     for cell_text in row
                 ]
+                table.add_row(*row)
             else:
                 row = [Text(cell_text) for cell_text in row]
-            table.add_row(*row)
+                table.add_row(*row)
 
 
 class ReAddTree(ManagedTree):
