@@ -26,21 +26,21 @@ class RichDiff(RichLog):
         # line.strip() does not return a boolean but when used in a conditional statement, the result of `line.strip()` is evaluated as a boolean.
         # An empty string (`""`) evaluates to `False`, while a non-empty string evaluates to `True`.
 
-        diff_output = [
+        diff_output = (
             line
             for line in chezmoi.diff(str(self.file_path), self.apply)
             if line.strip()
-            and line.startswith(("+", "-", " "))
+            and line[0] in "+- "
             and not line.startswith(("+++", "---"))
-        ]
+        )
 
         for line in diff_output:
-            if line.startswith("+"):
-                self.write(Text(line, style=added))
-            elif line.startswith("-"):
-                self.write(Text(line, style=removed))
-            elif line.startswith(" "):
-                self.write(Text(line, style=dimmed))
+            style = (
+                added
+                if line.startswith("+")
+                else removed if line.startswith("-") else dimmed
+            )
+            self.write(Text(line, style=style))
 
 
 class ColorDiff(Collapsible):
@@ -76,10 +76,9 @@ class ColorDiff(Collapsible):
         self.apply = apply
         self.file_path = file_path
         self.status = self.status_info["code name"][status_code]
+        dest_dir = Path(chezmoi.dump_config.dict_out["destDir"])  # Cache value
+        rel_path = str(self.file_path.relative_to(dest_dir))
         rich_diff = Lazy(RichDiff(self.file_path, self.apply))
-        rel_path = str(
-            self.file_path.relative_to(chezmoi.dump_config.dict_out["destDir"])
-        )
         super().__init__(rich_diff, classes="collapsible-defaults")
         self.title = f"{self.status} {rel_path}"
 
