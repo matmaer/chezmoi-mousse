@@ -117,7 +117,6 @@ RichDiff {
   margin-bottom: 1;
 }
 
-
 Tree {
   min-height: 3;
   height: auto;
@@ -237,7 +236,6 @@ ChezmoiStatus {
 }
 
 #doctortable {
-  width: 100%;
   height: 1fr;
   & > .datatable--header {
     color: $foreground;
