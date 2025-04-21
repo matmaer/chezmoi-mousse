@@ -132,7 +132,7 @@ class MainScreen(Screen):
         with TabbedContent("Apply", "Re-Add", "Add", "Doctor", "Diagram"):
             yield VerticalGroup(ChezmoiStatus(apply=True), ApplyTree())
             yield VerticalGroup(ChezmoiStatus(apply=False), ReAddTree())
-            yield VerticalGroup(AddDirTree())
+            yield VerticalScroll(AddDirTree())
             yield VerticalScroll(Doctor(), id="doctor", can_focus=False)
             yield VerticalScroll(Static(FLOW, id="diagram"))
         yield SlideBar()
