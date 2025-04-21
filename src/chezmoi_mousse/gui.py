@@ -52,11 +52,10 @@ class LoadingScreen(Screen):
 
         line_styles: deque[Style]
 
-        def __init__(self, line_styles: deque[Style], **kwargs) -> None:
-            super().__init__(**kwargs)
+        def __init__(self) -> None:
+            super().__init__()
             self.styles.height = len(SPLASH)
             self.styles.width = len(max(SPLASH, key=len))
-            self.line_styles = line_styles
 
         def render_lines(self, crop) -> list[Strip]:
             self.line_styles.rotate()
@@ -70,7 +69,7 @@ class LoadingScreen(Screen):
 
     def compose(self) -> ComposeResult:
         with Middle():
-            yield Center(self.AnimatedFade(line_styles=self.create_fade()))
+            yield Center(self.AnimatedFade())
             yield Center(
                 RichLog(name="loader log", id="loader-log", max_lines=11)
             )
@@ -82,28 +81,62 @@ class LoadingScreen(Screen):
                 )
             )
 
-    @work(thread=True, group="loaders")
-    def run(self, arg_id) -> None:
-        io_class = getattr(chezmoi, arg_id)
-        io_class.update()
-        padding = 32 - len(io_class.label)
-        log_text = f"{io_class.label} {'.' * padding} loaded"
-        self.query_exactly_one(RichLog).write(log_text)
+    def __init__(self) -> None:
+        super().__init__()
+        self.path_worker_timer = self.set_interval(
+            interval=0.1, callback=self.path_workers_finished
+        )
+        self.all_workers_timer = self.set_interval(
+            interval=0.1, callback=self.all_workers_finished
+        )
 
-    def populate_paths(self) -> None:
-        chezmoi.update_paths()
-        log_label = "Update chezmoi paths"
+    def log_text(self, log_label: str) -> None:
         padding = 32 - len(log_label)
         log_text = f"{log_label} {'.' * padding} loaded"
-        self.query_exactly_one(RichLog).write(log_text)
 
-    def workers_finished(self) -> None:
+        def update_log():
+            self.screen.query_exactly_one(RichLog).write(log_text)
+
+        self.app.call_from_thread(update_log)
+
+    @work(thread=True, group="path_workers")
+    def run_path_worker(self, arg_id) -> None:
+        io_class = getattr(chezmoi, arg_id)
+        io_class.update()
+        self.log_text(io_class.label)
+
+    @work(thread=True, group="io_workers")
+    def run_io_worker(self, arg_id) -> None:
+        io_class = getattr(chezmoi, arg_id)
+        io_class.update()
+        self.log_text(io_class.label)
+
+    @work(thread=True, group="path_workers")
+    def populate_paths(self) -> None:
+        paths_class = getattr(chezmoi, "paths")
+        paths_class.update(
+            update_std_out=False,
+            dump_config=chezmoi.dump_config,
+            managed_dirs=chezmoi.managed_dirs,
+            managed_files=chezmoi.managed_files,
+        )
+        self.log_text("Update chezmoi paths")
+
+    def path_workers_finished(self) -> None:
         if all(
             worker.state == "finished"
             for worker in self.app.workers
-            if worker.group == "loaders"
+            if worker.group == "path_workers"
         ):
+            self.path_worker_timer.stop()
             self.populate_paths()
+
+    def all_workers_finished(self) -> None:
+        if all(
+            worker.state == "finished"
+            for worker in self.app.workers
+            if worker.group == "loaders" or worker.group == "io_workers"
+        ):
             self.query_exactly_one("#continue").disabled = False
 
     def create_fade(self) -> deque[Style]:
@@ -117,9 +150,22 @@ class LoadingScreen(Screen):
         return deque([Style(color=color.hex, bold=True) for color in fade])
 
     def on_mount(self) -> None:
-        for arg_id in chezmoi.long_commands:
-            self.run(arg_id)
-        self.set_interval(interval=0.1, callback=self.workers_finished)
+
+        self.AnimatedFade.line_styles = self.create_fade()
+
+        to_process = chezmoi.long_commands.copy()
+
+        to_process.pop("dump_config")
+        self.run_path_worker("dump_config")
+
+        to_process.pop("managed_dirs")
+        self.run_path_worker("managed_dirs")
+
+        to_process.pop("managed_files")
+        self.run_path_worker("managed_files")
+
+        for arg_id in to_process:
+            self.run_io_worker(arg_id)
 
     def on_key(self) -> None:
         if not self.query_exactly_one("#continue").disabled:
