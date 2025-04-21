@@ -71,7 +71,7 @@ class ChezmoiPaths:
         chezmoi.managed_dirs.update()
         chezmoi.managed_files.update()
 
-        self.dest_dir = chezmoi.paths.dest_dir
+        self.dest_dir = Path(chezmoi.dump_config.dict_out["destDir"])
         self.managed_dirs = [Path(p) for p in chezmoi.managed_dirs.list_out]
         self.managed_files = [Path(p) for p in chezmoi.managed_files.list_out]
         self.existing_managed_dirs = [
