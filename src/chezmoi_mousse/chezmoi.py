@@ -83,14 +83,6 @@ class ChezmoiPaths:
             if Path(p).is_file()
         ]
 
-    @property
-    def managed_d_paths(self) -> list[Path]:
-        return [Path(p) for p in chezmoi.managed_dirs.list_out]
-
-    @property
-    def managed_f_paths(self) -> list[Path]:
-        return [Path(p) for p in chezmoi.managed_files.list_out]
-
 
 class Chezmoi:
 
