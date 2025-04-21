@@ -91,8 +91,7 @@ class LoadingScreen(Screen):
         self.query_exactly_one(RichLog).write(log_text)
 
     def populate_paths(self) -> None:
-        paths_class = getattr(chezmoi, "paths")
-        paths_class.update()
+        chezmoi.update_paths()
         log_label = "Update chezmoi paths"
         padding = 32 - len(log_label)
         log_text = f"{log_label} {'.' * padding} loaded"
