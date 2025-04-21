@@ -201,7 +201,8 @@ SlideBar {
   }
 }
 
-.collapsible-defaults {
+Collapsible {
+  height: auto;
   border: none;
   padding: 0;
   CollapsibleTitle {

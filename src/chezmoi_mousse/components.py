@@ -79,7 +79,7 @@ class ColorDiff(Collapsible):
         dest_dir = Path(chezmoi.dump_config.dict_out["destDir"])  # Cache value
         rel_path = str(self.file_path.relative_to(dest_dir))
         rich_diff = Lazy(RichDiff(self.file_path, self.apply))
-        super().__init__(rich_diff, classes="collapsible-defaults")
+        super().__init__(rich_diff)
         self.title = f"{self.status} {rel_path}"
 
 
@@ -161,7 +161,6 @@ class ManagedTree(Tree):
             ]
             for sub_dir in sub_dirs:
                 recurse_paths(parent, sub_dir)
-
 
         recurse_paths(self.root, dest_dir_path)
         self.root.expand()
