@@ -23,6 +23,9 @@ class RichDiff(RichLog):
         removed = str(self.app.current_theme.error)
         dimmed = f"{self.app.current_theme.foreground} dim"
 
+        # line.strip() does not return a boolean but when used in a conditional statement, the result of `line.strip()` is evaluated as a boolean.
+        # An empty string (`""`) evaluates to `False`, while a non-empty string evaluates to `True`.
+
         diff_output = [
             line
             for line in chezmoi.diff(str(self.file_path), self.apply)
