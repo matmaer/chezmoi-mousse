@@ -4,10 +4,82 @@ from collections.abc import Iterable
 from pathlib import Path
 
 from rich.text import Text
+from textual.app import ComposeResult
 from textual.reactive import reactive
-from textual.widgets import DirectoryTree, Tree
+from textual.widget import Widget
+from textual.widgets import Collapsible, DirectoryTree, RichLog, Tree
 
 from chezmoi_mousse.chezmoi import chezmoi
+
+
+class RichDiff(RichLog):
+
+    def __init__(self, file_path: Path, apply: bool) -> None:
+        self.file_path = file_path
+        self.apply = apply
+        super().__init__(auto_scroll=False, wrap=True, max_lines=500)
+
+    def on_mount(self) -> None:
+        added = str(self.app.current_theme.success)
+        removed = str(self.app.current_theme.error)
+        dimmed = f"{self.app.current_theme.foreground} dim"
+
+        diff_output = [
+            line
+            for line in chezmoi.diff(str(self.file_path), self.apply)
+            if line.strip() and line.startswith(("+ ", "- ", "  "))
+        ]
+
+        for line in diff_output:
+            if line.startswith("+ "):
+                self.write(Text(line, style=added))
+            elif line.startswith("- "):
+                self.write(Text(line, style=removed))
+            elif line.startswith("  "):
+                self.write(Text(line, style=dimmed))
+
+
+class ColorDiff(Collapsible):
+
+    # Chezmoi status command output reference:
+    # https://www.chezmoi.io/reference/commands/status/
+    status_info = {
+        "code name": {
+            "space": "No change",
+            "A": "Added",
+            "D": "Deleted",
+            "M": "Modified",
+            "R": "Modified Script",
+        },
+        "re add change": {
+            "space": "no changes for repository",
+            "A": "add to repository",
+            "D": "mark as deleted in repository",
+            "M": "modify in repository",
+            "R": "not applicable for repository",
+        },
+        "apply change": {
+            "space": "no changes for filesystem",
+            "A": "create on filesystem",
+            "D": "delete from filesystem",
+            "M": "modify on filesystem",
+            "R": "modify script on filesystem",
+        },
+    }
+
+    def __init__(self, apply: bool, file_path: Path, status_code: str) -> None:
+        # if true, adds apply status to the list, otherwise "re-add" status
+        self.apply = apply
+        self.file_path = file_path
+        self.status = self.status_info["code name"][status_code]
+        rich_diff = RichDiff(self.file_path, self.apply)
+        rel_path = str(
+            self.file_path.relative_to(chezmoi.dump_config.dict_out["destDir"])
+        )
+        super().__init__(rich_diff, classes="collapsible-defaults")
+        self.title = f"{self.status} {rel_path}"
+
+    # def on_mount(self) -> None:
 
 
 class FilteredAddDirTree(DirectoryTree):

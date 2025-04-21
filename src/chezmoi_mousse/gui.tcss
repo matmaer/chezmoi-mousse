@@ -1,3 +1,7 @@
+.space {
+  margin-top: 1;
+}
+
 .dir-tree {
   height: auto;
   margin-left: 1;
@@ -108,9 +112,15 @@
   }
 }
 
+RichDiff {
+  height: auto;
+  margin-bottom: 1;
+}
+
+
 Tree {
   min-height: 3;
-  height: 1fr;
+  height: auto;
   padding-left: 1;
   & > .tree--cursor {
     text-style: none;
@@ -222,9 +232,8 @@ Toast {
 }
 
 ChezmoiStatus {
-  padding-left: 1;
-  height: 1fr;
-  # margin-bottom: 1;
+  height: auto;
+  margin-bottom: 1;
 }
 
 #doctortable {
