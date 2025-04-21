@@ -28,9 +28,12 @@ from textual.widgets import (
     Switch,
 )
 
-import chezmoi_mousse.components as components
 from chezmoi_mousse.chezmoi import chezmoi
-from chezmoi_mousse.components import FilteredAddDirTree, ManagedTree
+from chezmoi_mousse.components import (
+    ColorDiff,
+    FilteredAddDirTree,
+    ManagedTree,
+)
 from chezmoi_mousse.config import pw_mgr_info
 
 
@@ -142,38 +145,12 @@ class ChezmoiAdd(ModalScreen):
             self.screen.dismiss()
 
 
-class ChezmoiStatus(VerticalScroll):
-
-    # Chezmoi status command output reference:
-    # https://www.chezmoi.io/reference/commands/status/
-    status_info = {
-        "code name": {
-            "space": "No change",
-            "A": "Added",
-            "D": "Deleted",
-            "M": "Modified",
-            "R": "Modified Script",
-        },
-        "re add change": {
-            "space": "no changes for repository",
-            "A": "add to repository",
-            "D": "mark as deleted in repository",
-            "M": "modify in repository",
-            "R": "not applicable for repository",
-        },
-        "apply change": {
-            "space": "no changes for filesystem",
-            "A": "create on filesystem",
-            "D": "delete from filesystem",
-            "M": "modify on filesystem",
-            "R": "modify script on filesystem",
-        },
-    }
+class ChezmoiStatus(VerticalGroup):
 
     def __init__(self, apply: bool) -> None:
         # if true, adds apply status to the list, otherwise "re-add" status
         self.apply = apply
-        self.status_items: list[Collapsible] = []
+        self.status_items: list[ColorDiff] = []
         super().__init__()
 
     def compose(self) -> ComposeResult:
@@ -181,39 +158,14 @@ class ChezmoiStatus(VerticalScroll):
 
     def on_mount(self) -> None:
 
-        def colored_diff(diff_list: list[str]) -> RichLog:
-
-            rich_log = RichLog(auto_scroll=False, wrap=True, max_lines=2000)
-            added = str(rich_log.app.current_theme.success)
-            removed = str(rich_log.app.current_theme.error)
-            dimmed = f"{rich_log.app.current_theme.foreground} dim"
-
-            for line in diff_list:
-                if line.startswith("+ "):
-                    rich_log.write(Text(line, style=added))
-                elif line.startswith("- "):
-                    rich_log.write(Text(line, style=removed))
-                elif line.startswith("  "):
-                    rich_log.write(Text(line, style=dimmed))
-
-            return rich_log
-
         changes: list[tuple[str, Path]] = chezmoi.get_status(
             apply=self.apply, files=True, dirs=False
         )
 
         for status_code, path in changes:
-            status: str = self.status_info["code name"][status_code]
-
-            rel_path = str(
-                path.relative_to(chezmoi.dump_config.dict_out["destDir"])
-            )
-
             self.status_items.append(
-                Collapsible(
-                    colored_diff(chezmoi.diff(str(path), self.apply)),
-                    title=f"{status} {rel_path}",
-                    classes="collapsible-defaults",
+                ColorDiff(
+                    file_path=path, apply=self.apply, status_code=status_code
                 )
             )
         self.refresh(recompose=True)
@@ -221,52 +173,46 @@ class ChezmoiStatus(VerticalScroll):
 
 class Doctor(Widget):
 
-    class GitLog(DataTable):
-
-        def __init__(self) -> None:
-            super().__init__(id="gitlog", cursor_type="row")
-
-        def on_mount(self) -> None:
-            self.add_columns("COMMIT", "MESSAGE")
-            for line in chezmoi.git_log.list_out:
-                columns = line.split(";")
-                self.add_row(*columns)
-
     def compose(self) -> ComposeResult:
         yield DataTable(id="doctortable", show_cursor=False)
-        with VerticalScroll(can_focus=False):
-            yield Collapsible(
-                ListView(id="cmdnotfound"),
-                title="Commands Not Found",
-                classes="collapsible-defaults",
-            )
-            yield Collapsible(
-                Pretty(chezmoi.dump_config.dict_out),
-                title="chezmoi dump-config",
-                classes="collapsible-defaults",
-            )
-            yield Collapsible(
-                Pretty(chezmoi.template_data.dict_out),
-                title="chezmoi data (template data)",
-                classes="collapsible-defaults",
-            )
-            yield Collapsible(
-                self.GitLog(),
-                title="chezmoi git log (last 20 commits)",
-                classes="collapsible-defaults",
-            )
-            yield Collapsible(
-                Pretty(chezmoi.cat_config.list_out),
-                title="chezmoi cat-config (contents of config-file)",
-                classes="collapsible-defaults",
-            )
-            yield Collapsible(
-                Pretty(chezmoi.ignored.list_out),
-                title="chezmoi ignored (git ignore in source-dir)",
-                classes="collapsible-defaults",
-            )
+        yield Collapsible(
+            ListView(id="cmdnotfound"),
+            title="Commands Not Found",
+            classes="collapsible-defaults",
+        )
+        yield Collapsible(
+            VerticalScroll(Pretty(chezmoi.dump_config.dict_out)),
+            title="chezmoi dump-config",
+            classes="collapsible-defaults",
+        )
+        yield Collapsible(
+            VerticalScroll(Pretty(chezmoi.template_data.dict_out)),
+            title="chezmoi data (template data)",
+            classes="collapsible-defaults",
+        )
+        yield Collapsible(
+            DataTable(id="gitlog", cursor_type="row"),
+            title="chezmoi git log (last 20 commits)",
+            classes="collapsible-defaults",
+        )
+        yield Collapsible(
+            VerticalScroll(Pretty(chezmoi.cat_config.list_out)),
+            title="chezmoi cat-config (contents of config-file)",
+            classes="collapsible-defaults",
+        )
+        yield Collapsible(
+            VerticalScroll(Pretty(chezmoi.ignored.list_out)),
+            title="chezmoi ignored (git ignore in source-dir)",
+            classes="collapsible-defaults",
+        )
 
     def on_mount(self) -> None:
+
+        git_log_table = self.query_exactly_one("#gitlog", DataTable)
+        git_log_table.add_columns("COMMIT", "MESSAGE")
+        for line in chezmoi.git_log.list_out:
+            columns = line.split(";")
+            git_log_table.add_row(*columns)
 
         styles = {
             "ok": f"{self.app.current_theme.success}",
