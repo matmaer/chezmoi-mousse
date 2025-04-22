@@ -276,9 +276,14 @@ class Chezmoi:
 
     def _is_reasonable_dotfile(self, file_path: Path) -> bool:
         if file_path.stat().st_size < 150 * 1024:  # 150 KiB
-            with open(file_path, "rb") as file:
-                chunk = file.read(512)
-                return str.isprintable(str(chunk))
+            try:
+                with open(file_path, "rb") as file:
+                    chunk = file.read(512)
+                    # Decode explicitly with encoding="utf-8" or the UnicodeDecodeError will not be raised in time
+                    return str(chunk, encoding="utf-8").isprintable()
+            except UnicodeDecodeError:
+                # Assume the file is not a text file in this case
+                return False
         return False
 
     def update_paths(self) -> None:
