@@ -11,12 +11,35 @@ from textual.widgets import Collapsible, DirectoryTree, RichLog, Tree
 from chezmoi_mousse.chezmoi import chezmoi
 
 
+class RichFileContent(RichLog):
+    """RichLog widget to display the content of a file."""
+
+    def __init__(self, file_path: Path) -> None:
+        self.file_path = file_path
+        super().__init__(auto_scroll=False, wrap=True)
+
+    def on_mount(self) -> None:
+        file_content = chezmoi.file_content(self.file_path)
+        self.write(file_content)
+
+
+class ColoredFileContent(Collapsible):
+    """Collapsible widget to display the content of a file."""
+
+    def __init__(self, file_path: Path) -> None:
+        self.file_path = file_path
+        super().__init__(Lazy(RichFileContent(self.file_path)))
+
+    def on_mount(self) -> None:
+        self.title = str(self.file_path.relative_to(chezmoi.paths.dest_dir))
+
+
 class RichDiff(RichLog):
 
     def __init__(self, file_path: Path, apply: bool) -> None:
         self.file_path = file_path
         self.apply = apply
-        super().__init__(auto_scroll=False, wrap=True, max_lines=500)
+        super().__init__(auto_scroll=False, wrap=True)
 
     def on_mount(self) -> None:
         added = str(self.app.current_theme.success)
@@ -43,7 +66,7 @@ class RichDiff(RichLog):
             self.write(Text(line, style=style))
 
 
-class ColorDiff(Collapsible):
+class ColoredDiff(Collapsible):
 
     # Chezmoi status command output reference:
     # https://www.chezmoi.io/reference/commands/status/
