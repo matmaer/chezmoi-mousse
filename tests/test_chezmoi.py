@@ -70,3 +70,8 @@ def test_status_dirs(chezmoi_instance):
 def test_unmanaged_in_d_invalid_dir(chezmoi_instance):
     with pytest.raises(ValueError):
         chezmoi_instance.unmanaged_in_d(Path("/invalid/path"))
+
+
+def test_get_status(chezmoi_instance):
+    status = chezmoi_instance.get_status(apply=True, files=True)
+    assert isinstance(status, list)
