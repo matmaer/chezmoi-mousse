@@ -6,11 +6,10 @@ from textual import work
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.color import Color, Gradient
-from textual.containers import Center, Middle, VerticalGroup, VerticalScroll
+from textual.containers import Center, Middle, VerticalScroll
 from textual.screen import Screen
 from textual.strip import Strip
 from textual.theme import Theme
-from textual.widget import Widget
 from textual.widgets import (
     Button,
     Footer,
@@ -48,7 +47,7 @@ theme = Theme(
 
 class LoadingScreen(Screen):
 
-    class AnimatedFade(Widget):
+    class AnimatedFade(Static):
 
         line_styles: deque[Style]
 
