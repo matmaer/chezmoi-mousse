@@ -32,6 +32,7 @@ unwanted_dirs = {
 unwanted_files = {
     ".bak",
     ".cache",
+    ".coverage",
     ".doc",
     ".docx",
     ".egg-info",

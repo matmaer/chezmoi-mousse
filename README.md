@@ -57,7 +57,11 @@ The app is not packaged yet, can be run as a module with python and `textual`.
   - [ ] Setup pytest
   - [ ] Setup profiling
   - [ ] Packaging
+    - [x] Manage project venvs with `uv`
   - [ ] Release pipeline
+    - [x] Implement basic `pytest` testing
+    - [ ] Coverage
+
 
 ## General goals
 

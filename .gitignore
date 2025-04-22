@@ -8,3 +8,4 @@ pydeps/
 pydeps
 profiling/
 .gitconfig
+.coverage
