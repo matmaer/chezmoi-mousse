@@ -83,7 +83,7 @@
     padding-left: 2;
   }
 
-  RichLog {
+  ColoredFileContent {
     height: auto;
     padding: 0 0 0 1;
   }

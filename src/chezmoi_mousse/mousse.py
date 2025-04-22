@@ -23,14 +23,14 @@ from textual.widgets import (
     ListItem,
     ListView,
     Pretty,
-    RichLog,
     Static,
     Switch,
 )
 
 from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.components import (
-    ColorDiff,
+    ColoredDiff,
+    ColoredFileContent,
     FilteredAddDirTree,
     ManagedTree,
 )
@@ -76,7 +76,7 @@ class ChezmoiAdd(ModalScreen):
     def __init__(self, path_to_add: Path) -> None:
         self.path_to_add = path_to_add
         self.files_to_add: list[Path] = []
-        self.add_path_items: list[Collapsible] = []
+        self.add_path_items: list[ColoredFileContent] = []
         self.add_label = "- Add File -"
         self.auto_warning = ""
         super().__init__(id="addfilemodal")
@@ -119,14 +119,7 @@ class ChezmoiAdd(ModalScreen):
             self.add_label = "- Add Files -"
 
         for f in self.files_to_add:
-            file_content = chezmoi.file_content(f)
-            rich_log = RichLog(
-                highlight=True, auto_scroll=False, wrap=True, max_lines=500
-            )
-            rich_log.write(file_content)
-            self.add_path_items.append(
-                Collapsible(rich_log, collapsed=collapse, title=str(str(f)))
-            )
+            self.add_path_items.append(ColoredFileContent(file_path=f))
         self.refresh(recompose=True)
 
     def on_button_pressed(self, event: Button.Pressed):
@@ -145,7 +138,7 @@ class ChezmoiStatus(VerticalGroup):
     def __init__(self, apply: bool) -> None:
         # if true, adds apply status to the list, otherwise "re-add" status
         self.apply = apply
-        self.status_items: list[ColorDiff] = []
+        self.status_items: list[ColoredDiff] = []
         super().__init__()
 
     def compose(self) -> ComposeResult:
@@ -159,7 +152,7 @@ class ChezmoiStatus(VerticalGroup):
 
         for status_code, path in changes:
             self.status_items.append(
-                ColorDiff(
+                ColoredDiff(
                     file_path=path, apply=self.apply, status_code=status_code
                 )
             )
