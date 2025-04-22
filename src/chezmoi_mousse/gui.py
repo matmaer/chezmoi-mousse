@@ -66,6 +66,17 @@ class LoadingScreen(Screen):
         def on_mount(self) -> None:
             self.set_interval(interval=0.11, callback=self.refresh)
 
+    def __init__(self) -> None:
+        super().__init__()
+        self.AnimatedFade.line_styles = self.create_fade()
+
+        self.path_worker_timer = self.set_interval(
+            interval=0.1, callback=self.path_workers_finished
+        )
+        self.all_workers_timer = self.set_interval(
+            interval=0.1, callback=self.all_workers_finished
+        )
+
     def compose(self) -> ComposeResult:
         with Middle():
             yield Center(self.AnimatedFade())
@@ -79,15 +90,6 @@ class LoadingScreen(Screen):
                     disabled=True,
                 )
             )
-
-    def __init__(self) -> None:
-        super().__init__()
-        self.path_worker_timer = self.set_interval(
-            interval=0.1, callback=self.path_workers_finished
-        )
-        self.all_workers_timer = self.set_interval(
-            interval=0.1, callback=self.all_workers_finished
-        )
 
     def log_text(self, log_label: str) -> None:
         padding = 32 - len(log_label)
@@ -134,8 +136,9 @@ class LoadingScreen(Screen):
         if all(
             worker.state == "finished"
             for worker in self.app.workers
-            if worker.group == "loaders" or worker.group == "io_workers"
+            if worker.group == "path_workers" or worker.group == "io_workers"
         ):
+            self.all_workers_timer.stop()
             self.query_exactly_one("#continue").disabled = False
 
     def create_fade(self) -> deque[Style]:
@@ -150,7 +153,7 @@ class LoadingScreen(Screen):
 
     def on_mount(self) -> None:
 
-        self.AnimatedFade.line_styles = self.create_fade()
+        # self.AnimatedFade.line_styles = self.create_fade()
 
         to_process = chezmoi.long_commands.copy()
 
