@@ -72,6 +72,28 @@ def test_unmanaged_in_d_invalid_dir(chezmoi_instance):
         chezmoi_instance.unmanaged_in_d(Path("/invalid/path"))
 
 
-def test_get_status(chezmoi_instance):
+def test_get_status_files(chezmoi_instance):
     status = chezmoi_instance.get_status(apply=True, files=True)
     assert isinstance(status, list)
+
+
+def test_get_status_dirs(chezmoi_instance):
+    status = chezmoi_instance.get_status(apply=True, dirs=True)
+    assert isinstance(status, list)
+
+
+def test_get_status_files_and_dirs(chezmoi_instance):
+    status = chezmoi_instance.get_status(apply=True, dirs=True, files=True)
+    assert isinstance(status, list)
+
+
+def test_file_content(chezmoi_instance):
+    status = chezmoi_instance.file_content(path=Path("tests/test.txt"))
+    assert isinstance(status, str)
+
+
+def test_is_reasonable_dotfile(chezmoi_instance):
+    status = chezmoi_instance._is_reasonable_dotfile(
+        file_path=Path("tests/test.txt")
+    )
+    assert isinstance(status, bool)
