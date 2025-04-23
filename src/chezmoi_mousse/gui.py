@@ -181,11 +181,13 @@ class MainScreen(Screen):
 
         with TabbedContent("Apply", "Re-Add", "Add", "Doctor", "Diagram"):
             yield VerticalScroll(ChezmoiStatus(apply=True), ApplyTree())
-            yield VerticalScroll(ChezmoiStatus(apply=False), ReAddTree())
+            yield VerticalScroll(
+                Lazy(ChezmoiStatus(apply=False)), Lazy(ReAddTree())
+            )
             yield VerticalScroll(Lazy(AddDirTree()))
             yield VerticalScroll(Lazy(Doctor()), id="doctor", can_focus=False)
-            yield VerticalScroll(Static(FLOW, id="diagram"))
-        yield SlideBar()
+            yield VerticalScroll(Lazy(Static(FLOW, id="diagram")))
+        yield Lazy(SlideBar())
         yield Footer()
 
     def action_toggle_slidebar(self):
