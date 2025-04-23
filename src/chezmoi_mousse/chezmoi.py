@@ -286,12 +286,5 @@ class Chezmoi:
                 return False
         return False
 
-    def update_paths(self) -> None:
-        self.paths.update(
-            dump_config=self.dump_config,
-            managed_dirs=self.managed_dirs,
-            managed_files=self.managed_files,
-        )
-
 
 chezmoi = Chezmoi()
