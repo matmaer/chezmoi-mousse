@@ -8,7 +8,7 @@ from textual.lazy import Lazy
 from textual.reactive import reactive
 from textual.widgets import Collapsible, DirectoryTree, RichLog, Tree
 
-from chezmoi_mousse.chezmoi import chezmoi
+from chezmoi_mousse.chezmoi import chezmoi, subprocess_run
 
 
 class RichFileContent(RichLog):
@@ -41,6 +41,12 @@ class RichDiff(RichLog):
         self.apply = apply
         super().__init__(auto_scroll=False, wrap=True)
 
+    def diff(self, file_path: str, apply: bool) -> list[str]:
+        long_command = chezmoi.base + ["diff"] + [file_path]
+        if apply:
+            return subprocess_run(long_command).splitlines()
+        return subprocess_run(long_command + ["--reverse"]).splitlines()
+
     def on_mount(self) -> None:
         added = str(self.app.current_theme.success)
         removed = str(self.app.current_theme.error)
@@ -51,7 +57,7 @@ class RichDiff(RichLog):
 
         diff_output = (
             line
-            for line in chezmoi.diff(str(self.file_path), self.apply)
+            for line in self.diff(str(self.file_path), self.apply)
             if line.strip()
             and line[0] in "+- "
             and not line.startswith(("+++", "---"))

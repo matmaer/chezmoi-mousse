@@ -186,43 +186,6 @@ class Chezmoi:
             if (p := Path(entry)).parent == dir_path and p.is_file()
         ]
 
-    def get_status(
-        self, apply: bool, dirs: bool = False, files: bool = False
-    ) -> list[tuple[str, Path]]:
-        if not dirs and not files:
-            raise ValueError("Either files or dirs must be true")
-
-        # Combine lines from dirs and files
-        lines = []
-        if dirs:
-            lines.extend(self.status_dirs.list_out)
-        if files:
-            lines.extend(self.status_files.list_out)
-
-        relevant_status_codes = {"A", "D", "M"}
-        relevant_lines: list[str] = []
-
-        relevant_lines = [
-            l for l in lines if l[0] or l[1] in relevant_status_codes
-        ]
-
-        result: list[tuple[str, Path]] = []
-        for line in relevant_lines:
-            if apply:
-                status_code = line[1]
-            else:
-                status_code = line[0]
-            path = Path(line[3:])
-            result.append((status_code, path))
-
-        return result
-
-    def diff(self, file_path: str, apply: bool) -> list[str]:
-        long_command = self.base + ["diff"] + [file_path]
-        if apply:
-            return subprocess_run(long_command).splitlines()
-        return subprocess_run(long_command + ["--reverse"]).splitlines()
-
     def add(self, file_path: Path) -> str:
         long_command = (
             self.base

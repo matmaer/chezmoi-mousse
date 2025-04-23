@@ -27,7 +27,7 @@ from textual.widgets import (
     Switch,
 )
 
-from chezmoi_mousse.chezmoi import chezmoi
+from chezmoi_mousse.chezmoi import chezmoi, subprocess_run
 from chezmoi_mousse.components import (
     ColoredDiff,
     ColoredFileContent,
@@ -133,7 +133,7 @@ class ChezmoiAdd(ModalScreen):
             self.screen.dismiss()
 
 
-class ChezmoiStatus(VerticalGroup):
+class ChezmoiStatus(Widget):
 
     def __init__(self, apply: bool) -> None:
         # if true, adds apply status to the list, otherwise "re-add" status
@@ -144,9 +144,40 @@ class ChezmoiStatus(VerticalGroup):
     def compose(self) -> ComposeResult:
         yield VerticalGroup(*self.status_items)
 
+    def get_status(
+        self, apply: bool, dirs: bool = False, files: bool = False
+    ) -> list[tuple[str, Path]]:
+        if not dirs and not files:
+            raise ValueError("Either files or dirs must be true")
+
+        # Combine lines from dirs and files
+        lines = []
+        if dirs:
+            lines.extend(chezmoi.status_dirs.list_out)
+        if files:
+            lines.extend(chezmoi.status_files.list_out)
+
+        relevant_status_codes = {"A", "D", "M"}
+        relevant_lines: list[str] = []
+
+        relevant_lines = [
+            l for l in lines if l[0] or l[1] in relevant_status_codes
+        ]
+
+        result: list[tuple[str, Path]] = []
+        for line in relevant_lines:
+            if apply:
+                status_code = line[1]
+            else:
+                status_code = line[0]
+            path = Path(line[3:])
+            result.append((status_code, path))
+
+        return result
+
     def on_mount(self) -> None:
 
-        changes: list[tuple[str, Path]] = chezmoi.get_status(
+        changes: list[tuple[str, Path]] = self.get_status(
             apply=self.apply, files=True, dirs=False
         )
 
