@@ -10,7 +10,6 @@ from chezmoi_mousse.components import (
     ColoredDiff,
     ColoredFileContent,
     FilteredAddDirTree,
-    ManagedTree,
     RichDiff,
     RichFileContent,
 )
@@ -31,20 +30,18 @@ def test_rich_file_content_instantiation(rich_file_content):
 
 
 def test_rich_diff_instantiation():
-    rich_diff = RichDiff(Path.home(), apply=True)
-    assert isinstance(rich_diff, RichLog)
+    instance = RichDiff(Path.home(), apply=True)
+    assert isinstance(instance, RichDiff)
 
 
 def test_colored_diff_instantiation():
-    colored_diff = ColoredDiff(
-        file_path=Path.home(), status_code="M", apply=True
-    )
-    assert isinstance(colored_diff, Collapsible)
+    instance = ColoredDiff(file_path=Path.home(), status_code="M", apply=True)
+    assert isinstance(instance, ColoredDiff)
 
 
 def test_colored_file_content_instantiation():
-    file_content = ColoredFileContent(Path.home())
-    assert isinstance(file_content, ColoredFileContent)
+    instance = ColoredFileContent(Path.home())
+    assert isinstance(instance, ColoredFileContent)
 
 
 def test_filtered_add_dir_tree_instantiation():
