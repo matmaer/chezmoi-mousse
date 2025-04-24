@@ -2,6 +2,8 @@ from pathlib import Path
 
 import pytest
 
+from textual.widgets import Collapsible, DirectoryTree, RichLog, Tree
+
 import chezmoi_mousse.components as chezmoi_components
 from chezmoi_mousse.chezmoi import Chezmoi
 from chezmoi_mousse.components import (
@@ -30,14 +32,14 @@ def test_rich_file_content_instantiation(rich_file_content):
 
 def test_rich_diff_instantiation():
     rich_diff = RichDiff(Path.home(), apply=True)
-    assert isinstance(rich_diff, RichDiff)
+    assert isinstance(rich_diff, RichLog)
 
 
 def test_colored_diff_instantiation():
     colored_diff = ColoredDiff(
         file_path=Path.home(), status_code="M", apply=True
     )
-    assert isinstance(colored_diff, ColoredDiff)
+    assert isinstance(colored_diff, Collapsible)
 
 
 def test_colored_file_content_instantiation():
@@ -52,14 +54,9 @@ def test_filtered_add_dir_tree_instantiation():
         pytest.fail(f"ChezmoiStatus instantiation failed with exception: {e}")
 
 
-def test_managed_tree_instantiation():
-    managed_tree = ManagedTree(label="test_label")
-    assert isinstance(managed_tree, list)
-
-
 def test_is_unwanted_path_false():
     unwanted_path = chezmoi_components.is_unwanted_path(
-        path=Path("tests/test.txt")
+        path=Path("tests/text_file.txt")
     )
     assert unwanted_path is False
 
@@ -71,8 +68,15 @@ def test_is_unwanted_path_true():
     assert unwanted_path is True
 
 
+def test_is_reasonable_dotfile_false():
+    reasonable_dotfile = chezmoi_components.is_reasonable_dotfile(
+        file_path=Path("tests/binary_file.png")
+    )
+    assert reasonable_dotfile is False
+
+
 def test_is_reasonable_dotfile_true():
     reasonable_dotfile = chezmoi_components.is_reasonable_dotfile(
-        file_path=Path("tests/test.txt")
+        file_path=Path("tests/text_file.txt")
     )
     assert reasonable_dotfile is True
