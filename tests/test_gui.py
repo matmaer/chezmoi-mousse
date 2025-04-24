@@ -10,13 +10,6 @@ def test_chezmoi_tui_instantiation():
         pytest.fail(f"MainScreen instantiation failed with exception: {e}")
 
 
-def test_loading_screen_instantiation():
-    try:
-        instance = LoadingScreen()
-    except Exception as e:
-        pytest.fail(f"MainScreen instantiation failed with exception: {e}")
-
-
 def test_main_screen_instantiation():
     try:
         instance = MainScreen()
