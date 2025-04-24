@@ -1,15 +1,16 @@
-import pytest
 from pathlib import Path
 
-from chezmoi_mousse.chezmoi import Chezmoi
+import pytest
+
 import chezmoi_mousse.components as chezmoi_components
+from chezmoi_mousse.chezmoi import Chezmoi
 from chezmoi_mousse.components import (
-    RichDiff,
     ColoredDiff,
     ColoredFileContent,
-    RichFileContent,
     FilteredAddDirTree,
     ManagedTree,
+    RichDiff,
+    RichFileContent,
 )
 
 
