@@ -1,13 +1,13 @@
 """Contains classes used as re-used components by the widgets in mousse.py"""
 
+import re
 from collections.abc import Iterable
 from pathlib import Path
-import re
 
 from rich.text import Text
 from textual.app import ComposeResult
-from textual.lazy import Lazy
 from textual.content import Content
+from textual.lazy import Lazy
 from textual.reactive import reactive
 from textual.widget import Widget
 from textual.widgets import Collapsible, DirectoryTree, RichLog, Static, Tree
@@ -172,8 +172,8 @@ class FilteredAddDirTree(DirectoryTree):
     filter_unwanted = reactive(True, always_update=True)
 
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
-        managed_dirs = set(chezmoi.paths.managed_dirs)
-        managed_files = set(chezmoi.paths.managed_files)
+        managed_dirs = chezmoi.paths.managed_dirs
+        managed_files = chezmoi.paths.managed_files
         dest_dir = chezmoi.paths.dest_dir  # Cache value
 
         # Switches: Red - Green (default)
@@ -230,11 +230,6 @@ class ManagedTree(Tree):
     def on_mount(self) -> None:
 
         dest_dir_path = chezmoi.paths.dest_dir
-        managed_f_paths = set(chezmoi.paths.managed_files)
-        # generate a set of all the parent directories of the managed files
-        managed_f_parents = set(
-            f.parent for f in managed_f_paths if f.parent != dest_dir_path
-        )
 
         def recurse_paths(parent, dir_path):
             if dir_path == dest_dir_path:

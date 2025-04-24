@@ -58,10 +58,10 @@ class InputOutput:
 @dataclass
 class ChezmoiPaths:
     dest_dir: Path
-    managed_dirs: list[Path]
-    managed_files: list[Path]
-    existing_managed_dirs: list[Path]
-    existing_managed_files: list[Path]
+    managed_dirs: set[Path]
+    managed_files: set[Path]
+    existing_managed_dirs: set[Path]
+    existing_managed_files: set[Path]
 
     def update(
         self,
@@ -76,14 +76,14 @@ class ChezmoiPaths:
             managed_files.update()
 
         self.dest_dir = Path(dump_config.dict_out["destDir"])
-        self.managed_dirs = [Path(p) for p in managed_dirs.list_out]
-        self.managed_files = [Path(p) for p in managed_files.list_out]
-        self.existing_managed_dirs = [
+        self.managed_dirs = {Path(p) for p in managed_dirs.list_out}
+        self.managed_files = {Path(p) for p in managed_files.list_out}
+        self.existing_managed_dirs = {
             Path(p) for p in managed_dirs.list_out if Path(p).is_dir()
-        ]
-        self.existing_managed_files = [
+        }
+        self.existing_managed_files = {
             Path(p) for p in managed_files.list_out if Path(p).is_file()
-        ]
+        }
 
 
 class Chezmoi:
@@ -152,10 +152,10 @@ class Chezmoi:
             "paths",
             ChezmoiPaths(
                 dest_dir=Path.home(),
-                managed_dirs=[],
-                managed_files=[],
-                existing_managed_dirs=[],
-                existing_managed_files=[],
+                managed_dirs=set(),
+                managed_files=set(),
+                existing_managed_dirs=set(),
+                existing_managed_files=set(),
             ),
         )
 
@@ -213,5 +213,6 @@ class Chezmoi:
             + ["apply", "--include=files", "--recursive=false"]
         )
         return subprocess_run(long_command + [file_path])
+
 
 chezmoi = Chezmoi()
