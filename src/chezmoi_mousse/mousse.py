@@ -27,14 +27,16 @@ from textual.widgets import (
     Switch,
 )
 
-from chezmoi_mousse.chezmoi import chezmoi, subprocess_run
+from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.components import (
+    AutoWarning,
     ColoredDiff,
     ColoredFileContent,
     FilteredAddDirTree,
     ManagedTree,
 )
 from chezmoi_mousse.config import pw_mgr_info
+from chezmoi_mousse.components import is_reasonable_dotfile
 
 
 class AddDirTree(Widget):
@@ -47,9 +49,7 @@ class AddDirTree(Widget):
     def compose(self) -> ComposeResult:
         with VerticalScroll():
             yield FilteredAddDirTree(
-                chezmoi.dump_config.dict_out["destDir"],
-                id="adddirtree",
-                classes="dir-tree",
+                chezmoi.paths.dest_dir, id="adddirtree", classes="dir-tree"
             )
 
     def on_mount(self) -> None:
@@ -74,22 +74,18 @@ class ChezmoiAdd(ModalScreen):
     ]
 
     def __init__(self, path_to_add: Path) -> None:
+        super().__init__(classes="addfilemodal")
         self.path_to_add = path_to_add
         self.files_to_add: list[Path] = []
         self.add_path_items: list[ColoredFileContent] = []
         self.add_label = "- Add File -"
-        self.auto_warning = ""
-        super().__init__(id="addfilemodal")
+        # self.auto_warning = ""
 
     def compose(self) -> ComposeResult:
-        with Container(id="addfilemodalcontainer", classes="operationmodal"):
-            if chezmoi.autocommit_enabled:
-                yield Static(
-                    Content.from_markup(
-                        f"[$warning italic]{self.auto_warning}[/]"
-                    ),
-                    classes="autowarning",
-                )
+        with VerticalScroll(
+            id="addfilemodalcontainer", classes="operationmodal"
+        ):
+            yield AutoWarning()
             yield VerticalGroup(*self.add_path_items)
             yield Horizontal(
                 Button(self.add_label, id="addfile"),
@@ -97,18 +93,15 @@ class ChezmoiAdd(ModalScreen):
             )
 
     def on_mount(self) -> None:
-        # pylint: disable=line-too-long
-        if chezmoi.autocommit_enabled and not chezmoi.autopush_enabled:
-            self.auto_warning = '"Auto Commit" is enabled: added file(s) will also be committed.'
-        elif chezmoi.autocommit_enabled and chezmoi.autopush_enabled:
-            self.auto_warning = '"Auto Commit" and "Auto Push" are enabled: adding file(s) will also be committed and pushed the remote.'
-        collapse = True
         self.files_to_add: list[Path] = []
         if self.path_to_add.is_file():
             self.files_to_add: list[Path] = [self.path_to_add]
-            collapse = False
         elif self.path_to_add.is_dir():
-            self.files_to_add = chezmoi.unmanaged_in_d(self.path_to_add)
+            self.files_to_add = [
+                f
+                for f in chezmoi.unmanaged_in_d(self.path_to_add)
+                if is_reasonable_dotfile(f)
+            ]
         if len(self.files_to_add) == 0:
             # pylint: disable=line-too-long
             self.notify(

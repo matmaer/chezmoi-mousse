@@ -1,10 +1,7 @@
 import ast
-import re
 from dataclasses import dataclass, field
 from pathlib import Path
 from subprocess import TimeoutExpired, run
-
-from chezmoi_mousse.config import unwanted_dirs, unwanted_files
 
 
 def subprocess_run(long_command):
@@ -216,38 +213,5 @@ class Chezmoi:
             + ["apply", "--include=files", "--recursive=false"]
         )
         return subprocess_run(long_command + [file_path])
-
-    def is_unwanted_path(self, path: Path) -> bool:
-        if path.is_dir():
-            if path.name in unwanted_dirs:
-                return True
-            return False
-
-        if path.is_file():
-            extension = re.match(r"\.[^.]*$", path.name)
-            if extension in unwanted_files:
-                return True
-            if self._is_reasonable_dotfile(path):
-                return False
-        return False
-
-    def file_content(self, path: Path) -> str:
-        if not self._is_reasonable_dotfile(path):
-            return f'File is not a text file or too large for a reasonable "dotfile" : {path}'
-        with open(path, "rt", encoding="utf-8") as f:
-            return f.read()
-
-    def _is_reasonable_dotfile(self, file_path: Path) -> bool:
-        if file_path.stat().st_size < 150 * 1024:  # 150 KiB
-            try:
-                with open(file_path, "rb") as file:
-                    chunk = file.read(512)
-                    # Decode explicitly with encoding="utf-8" or the UnicodeDecodeError will not be raised in time
-                    return str(chunk, encoding="utf-8").isprintable()
-            except UnicodeDecodeError:
-                # Assume the file is not a text file in this case
-                return False
-        return False
-
 
 chezmoi = Chezmoi()

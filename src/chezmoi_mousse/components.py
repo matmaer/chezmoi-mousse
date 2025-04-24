@@ -2,13 +2,60 @@
 
 from collections.abc import Iterable
 from pathlib import Path
+import re
 
 from rich.text import Text
 from textual.lazy import Lazy
+from textual.content import Content
 from textual.reactive import reactive
-from textual.widgets import Collapsible, DirectoryTree, RichLog, Tree
+from textual.widget import Widget
+from textual.widgets import Collapsible, DirectoryTree, RichLog, Static, Tree
 
 from chezmoi_mousse.chezmoi import chezmoi, subprocess_run
+from chezmoi_mousse.config import unwanted_dirs, unwanted_files
+
+
+def is_reasonable_dotfile(file_path: Path) -> bool:
+    if file_path.stat().st_size < 150 * 1024:  # 150 KiB
+        try:
+            with open(file_path, "rb") as file:
+                chunk = file.read(512)
+                # Decode explicitly with encoding="utf-8" or the UnicodeDecodeError will not be raised in time
+                return str(chunk, encoding="utf-8").isprintable()
+        except UnicodeDecodeError:
+            # Assume the file is not a text file in this case
+            return False
+    return False
+
+
+def is_unwanted_path(path: Path) -> bool:
+    if path.is_dir():
+        if path.name in unwanted_dirs:
+            return True
+    if path.is_file():
+        extension = re.match(r"\.[^.]*$", path.name)
+        if extension in unwanted_files:
+            return True
+    return False
+
+
+class AutoWarning(Widget):
+
+    def __init__(self) -> None:
+        self.auto_warning = ""
+        if chezmoi.autocommit_enabled and not chezmoi.autopush_enabled:
+            self.auto_warning = '"Auto Commit" is enabled: added file(s) will also be committed.'
+        elif chezmoi.autocommit_enabled and chezmoi.autopush_enabled:
+            self.auto_warning = '"Auto Commit" and "Auto Push" are enabled: adding file(s) will also be committed and pushed the remote.'
+        super().__init__()
+
+    def compose(self) -> Iterable[Widget]:
+        yield Static(
+            Content.from_markup(f"[$warning italic]{self.auto_warning}[/]")
+        )
+
+    # def on_mount(self) -> None:
+    # pylint: disable=line-too-long
 
 
 class RichFileContent(RichLog):
@@ -16,11 +63,19 @@ class RichFileContent(RichLog):
 
     def __init__(self, file_path: Path) -> None:
         self.file_path = file_path
-        super().__init__(auto_scroll=False, wrap=True)
+        super().__init__(
+            auto_scroll=False, wrap=True, classes="richfilecontent"
+        )
 
     def on_mount(self) -> None:
-        file_content = chezmoi.file_content(self.file_path)
-        self.write(file_content)
+        if is_reasonable_dotfile(self.file_path):
+            self.write(
+                f'File is not a text file or too large for a reasonable "dotfile" : {self.file_path}'
+            )
+        else:
+            with open(self.file_path, "rt", encoding="utf-8") as f:
+                self.write(f.read())
+        self.refresh(recompose=True)
 
 
 class ColoredFileContent(Collapsible):
@@ -28,10 +83,12 @@ class ColoredFileContent(Collapsible):
 
     def __init__(self, file_path: Path) -> None:
         self.file_path = file_path
-        super().__init__(Lazy(RichFileContent(self.file_path)))
-
-    def on_mount(self) -> None:
+        rich_file_content = Lazy(RichFileContent(self.file_path))
+        super().__init__(rich_file_content, classes="coloredfilecontent")
         self.title = str(self.file_path.relative_to(chezmoi.paths.dest_dir))
+
+    # def on_mount(self) -> None:
+    #     self.refresh(recompose=True)
 
 
 class RichDiff(RichLog):
@@ -130,12 +187,12 @@ class FilteredAddDirTree(DirectoryTree):
                 if (
                     p.is_file()
                     and (p.parent in managed_dirs or p.parent == dest_dir)
-                    and not chezmoi.is_unwanted_path(p)
+                    and not is_unwanted_path(p)
                     and p not in managed_files
                 )
                 or (
                     p.is_dir()
-                    and not chezmoi.is_unwanted_path(p)
+                    and not is_unwanted_path(p)
                     and p in managed_dirs
                 )
             )
@@ -156,7 +213,7 @@ class FilteredAddDirTree(DirectoryTree):
             return (
                 p
                 for p in paths
-                if p not in managed_files and not chezmoi.is_unwanted_path(p)
+                if p not in managed_files and not is_unwanted_path(p)
             )
         # Switches: Green - Red , this means the following is true:
         # "self.include_unmanaged_dirs and not self.filter_unwanted"
