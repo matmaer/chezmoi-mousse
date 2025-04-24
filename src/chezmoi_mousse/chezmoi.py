@@ -60,8 +60,6 @@ class ChezmoiPaths:
     dest_dir: Path
     managed_dirs: set[Path]
     managed_files: set[Path]
-    existing_managed_dirs: set[Path]
-    existing_managed_files: set[Path]
 
     def update(
         self,
@@ -78,12 +76,6 @@ class ChezmoiPaths:
         self.dest_dir = Path(dump_config.dict_out["destDir"])
         self.managed_dirs = {Path(p) for p in managed_dirs.list_out}
         self.managed_files = {Path(p) for p in managed_files.list_out}
-        self.existing_managed_dirs = {
-            Path(p) for p in managed_dirs.list_out if Path(p).is_dir()
-        }
-        self.existing_managed_files = {
-            Path(p) for p in managed_files.list_out if Path(p).is_file()
-        }
 
 
 class Chezmoi:
@@ -151,11 +143,7 @@ class Chezmoi:
             self,
             "paths",
             ChezmoiPaths(
-                dest_dir=Path.home(),
-                managed_dirs=set(),
-                managed_files=set(),
-                existing_managed_dirs=set(),
-                existing_managed_files=set(),
+                dest_dir=Path.home(), managed_dirs=set(), managed_files=set()
             ),
         )
 
