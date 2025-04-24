@@ -72,7 +72,6 @@ class RichFileContent(RichLog):
         else:
             with open(self.file_path, "rt", encoding="utf-8") as f:
                 self.write(f.read())
-        self.refresh(recompose=True)
 
 
 class ColoredFileContent(Collapsible):
@@ -84,8 +83,6 @@ class ColoredFileContent(Collapsible):
         super().__init__(rich_file_content, classes="coloredfilecontent")
         self.title = str(self.file_path.relative_to(chezmoi.paths.dest_dir))
 
-    # def on_mount(self) -> None:
-    #     self.refresh(recompose=True)
 
 
 class RichDiff(RichLog):

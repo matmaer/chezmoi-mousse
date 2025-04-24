@@ -79,7 +79,6 @@ class ChezmoiAdd(ModalScreen):
         self.files_to_add: list[Path] = []
         self.add_path_items: list[ColoredFileContent] = []
         self.add_label = "- Add File -"
-        # self.auto_warning = ""
 
     def compose(self) -> ComposeResult:
         with VerticalScroll(
