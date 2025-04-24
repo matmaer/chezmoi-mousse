@@ -21,10 +21,9 @@ def is_reasonable_dotfile(file_path: Path) -> bool:
         try:
             with open(file_path, "rb") as file:
                 chunk = file.read(512)
-                # Decode explicitly with encoding="utf-8" or the UnicodeDecodeError will not be raised in time
-                return str(chunk, encoding="utf-8").strip().isprintable()
+                chars = re.sub(r"\s", "", str(chunk, encoding="utf-8"))
+                return chars.isprintable()
         except UnicodeDecodeError:
-            # Assume the file is not a text file in this case
             return False
     return False
 
@@ -66,7 +65,7 @@ class RichFileContent(RichLog):
         )
 
     def on_mount(self) -> None:
-        if is_reasonable_dotfile(self.file_path):
+        if not is_reasonable_dotfile(self.file_path):
             self.write(
                 f'File is not a text file or too large for a reasonable "dotfile" : {self.file_path}'
             )
