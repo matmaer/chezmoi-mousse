@@ -34,9 +34,9 @@ from chezmoi_mousse.components import (
     ColoredFileContent,
     FilteredAddDirTree,
     ManagedTree,
+    is_reasonable_dotfile,
 )
 from chezmoi_mousse.config import pw_mgr_info
-from chezmoi_mousse.components import is_reasonable_dotfile
 
 
 class AddDirTree(Widget):

@@ -1,5 +1,6 @@
 import pytest
-from chezmoi_mousse.gui import ChezmoiTUI, MainScreen, LoadingScreen
+
+from chezmoi_mousse.gui import ChezmoiTUI, LoadingScreen, MainScreen
 
 
 def test_chezmoi_tui_instantiation():

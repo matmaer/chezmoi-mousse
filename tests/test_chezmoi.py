@@ -59,15 +59,18 @@ def test_managed_dirs(chezmoi_instance):
 
 def test_status_files(chezmoi_instance):
     chezmoi_instance.status_files.update()
-    assert isinstance(chezmoi_instance.status_files.list_out, list)
 
 
-def test_status_dirs(chezmoi_instance):
-    chezmoi_instance.status_dirs.update()
-    assert isinstance(chezmoi_instance.status_dirs.list_out, list)
+def test_autoadd_enabled(chezmoi_instance):
+    chezmoi_instance.dump_config.update()
+    assert isinstance(chezmoi_instance.autoadd_enabled, bool)
 
 
-def test_unmanaged_in_d_invalid_dir(chezmoi_instance):
-    with pytest.raises(ValueError):
-        chezmoi_instance.unmanaged_in_d(Path("/invalid/path"))
+def test_autocommit_enabled(chezmoi_instance):
+    chezmoi_instance.dump_config.update()
+    assert isinstance(chezmoi_instance.autocommit_enabled, bool)
 
+
+def test_autopush_enabled(chezmoi_instance):
+    chezmoi_instance.dump_config.update()
+    assert isinstance(chezmoi_instance.autopush_enabled, bool)

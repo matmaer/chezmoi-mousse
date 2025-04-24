@@ -206,8 +206,6 @@ class ChezmoiTUI(App):
 
     SCREENS = {"main": MainScreen, "loading": LoadingScreen}
 
-    chezmoi = {}
-
     def on_mount(self) -> None:
         self.chezmoi = chezmoi
         self.title = "-  c h e z m o i  m o u s s e  -"
