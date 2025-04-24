@@ -5,6 +5,7 @@ from pathlib import Path
 import re
 
 from rich.text import Text
+from textual.app import ComposeResult
 from textual.lazy import Lazy
 from textual.content import Content
 from textual.reactive import reactive
@@ -21,7 +22,7 @@ def is_reasonable_dotfile(file_path: Path) -> bool:
             with open(file_path, "rb") as file:
                 chunk = file.read(512)
                 # Decode explicitly with encoding="utf-8" or the UnicodeDecodeError will not be raised in time
-                return str(chunk, encoding="utf-8").isprintable()
+                return str(chunk, encoding="utf-8").strip().isprintable()
         except UnicodeDecodeError:
             # Assume the file is not a text file in this case
             return False
@@ -49,13 +50,10 @@ class AutoWarning(Widget):
             self.auto_warning = '"Auto Commit" and "Auto Push" are enabled: adding file(s) will also be committed and pushed the remote.'
         super().__init__()
 
-    def compose(self) -> Iterable[Widget]:
+    def compose(self) -> ComposeResult:
         yield Static(
             Content.from_markup(f"[$warning italic]{self.auto_warning}[/]")
         )
-
-    # def on_mount(self) -> None:
-    # pylint: disable=line-too-long
 
 
 class RichFileContent(RichLog):
