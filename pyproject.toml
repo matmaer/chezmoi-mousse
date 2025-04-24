@@ -13,7 +13,6 @@ Repository = "https://github.com/matmaer/chezmoi-mousse"
 
 [dependency-groups]
 dev = [
-    "ayu>=0.1.1",
     "black>=25.1.0",
     "coverage>=7.8.0",
     "coverage-badge>=1.1.2",
