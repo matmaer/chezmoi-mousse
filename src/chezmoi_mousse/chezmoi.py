@@ -1,10 +1,7 @@
 import ast
-import re
 from dataclasses import dataclass, field
 from pathlib import Path
 from subprocess import TimeoutExpired, run
-
-from chezmoi_mousse.config import unwanted_dirs, unwanted_files
 
 
 def subprocess_run(long_command):
@@ -186,43 +183,6 @@ class Chezmoi:
             if (p := Path(entry)).parent == dir_path and p.is_file()
         ]
 
-    def get_status(
-        self, apply: bool, dirs: bool = False, files: bool = False
-    ) -> list[tuple[str, Path]]:
-        if not dirs and not files:
-            raise ValueError("Either files or dirs must be true")
-
-        # Combine lines from dirs and files
-        lines = []
-        if dirs:
-            lines.extend(self.status_dirs.list_out)
-        if files:
-            lines.extend(self.status_files.list_out)
-
-        relevant_status_codes = {"A", "D", "M"}
-        relevant_lines: list[str] = []
-
-        relevant_lines = [
-            l for l in lines if l[0] or l[1] in relevant_status_codes
-        ]
-
-        result: list[tuple[str, Path]] = []
-        for line in relevant_lines:
-            if apply:
-                status_code = line[1]
-            else:
-                status_code = line[0]
-            path = Path(line[3:])
-            result.append((status_code, path))
-
-        return result
-
-    def diff(self, file_path: str, apply: bool) -> list[str]:
-        long_command = self.base + ["diff"] + [file_path]
-        if apply:
-            return subprocess_run(long_command).splitlines()
-        return subprocess_run(long_command + ["--reverse"]).splitlines()
-
     def add(self, file_path: Path) -> str:
         long_command = (
             self.base
@@ -253,45 +213,5 @@ class Chezmoi:
             + ["apply", "--include=files", "--recursive=false"]
         )
         return subprocess_run(long_command + [file_path])
-
-    def is_unwanted_path(self, path: Path) -> bool:
-        if path.is_dir():
-            if path.name in unwanted_dirs:
-                return True
-            return False
-
-        if path.is_file():
-            extension = re.match(r"\.[^.]*$", path.name)
-            if extension in unwanted_files:
-                return True
-            if self._is_reasonable_dotfile(path):
-                return False
-        return False
-
-    def file_content(self, path: Path) -> str:
-        if not self._is_reasonable_dotfile(path):
-            return f'File is not a text file or too large for a reasonable "dotfile" : {path}'
-        with open(path, "rt", encoding="utf-8") as f:
-            return f.read()
-
-    def _is_reasonable_dotfile(self, file_path: Path) -> bool:
-        if file_path.stat().st_size < 150 * 1024:  # 150 KiB
-            try:
-                with open(file_path, "rb") as file:
-                    chunk = file.read(512)
-                    # Decode explicitly with encoding="utf-8" or the UnicodeDecodeError will not be raised in time
-                    return str(chunk, encoding="utf-8").isprintable()
-            except UnicodeDecodeError:
-                # Assume the file is not a text file in this case
-                return False
-        return False
-
-    def update_paths(self) -> None:
-        self.paths.update(
-            dump_config=self.dump_config,
-            managed_dirs=self.managed_dirs,
-            managed_files=self.managed_files,
-        )
-
 
 chezmoi = Chezmoi()

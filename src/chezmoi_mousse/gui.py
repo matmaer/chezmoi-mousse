@@ -7,6 +7,7 @@ from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.color import Color, Gradient
 from textual.containers import Center, Middle, VerticalScroll
+from textual.lazy import Lazy
 from textual.screen import Screen
 from textual.strip import Strip
 from textual.theme import Theme
@@ -153,18 +154,11 @@ class LoadingScreen(Screen):
 
     def on_mount(self) -> None:
 
-        # self.AnimatedFade.line_styles = self.create_fade()
-
         to_process = chezmoi.long_commands.copy()
 
-        to_process.pop("dump_config")
-        self.run_path_worker("dump_config")
-
-        to_process.pop("managed_dirs")
-        self.run_path_worker("managed_dirs")
-
-        to_process.pop("managed_files")
-        self.run_path_worker("managed_files")
+        for arg_id in ("dump_config", "managed_dirs", "managed_files"):
+            to_process.pop(arg_id)
+            self.run_path_worker(arg_id)
 
         for arg_id in to_process:
             self.run_io_worker(arg_id)
@@ -187,11 +181,13 @@ class MainScreen(Screen):
 
         with TabbedContent("Apply", "Re-Add", "Add", "Doctor", "Diagram"):
             yield VerticalScroll(ChezmoiStatus(apply=True), ApplyTree())
-            yield VerticalScroll(ChezmoiStatus(apply=False), ReAddTree())
-            yield VerticalScroll(AddDirTree())
-            yield VerticalScroll(Doctor(), id="doctor", can_focus=False)
-            yield VerticalScroll(Static(FLOW, id="diagram"))
-        yield SlideBar()
+            yield VerticalScroll(
+                Lazy(ChezmoiStatus(apply=False)), Lazy(ReAddTree())
+            )
+            yield VerticalScroll(Lazy(AddDirTree()))
+            yield VerticalScroll(Lazy(Doctor()), id="doctor", can_focus=False)
+            yield VerticalScroll(Lazy(Static(FLOW, id="diagram")))
+        yield Lazy(SlideBar())
         yield Footer()
 
     def action_toggle_slidebar(self):
