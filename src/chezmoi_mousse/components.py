@@ -84,19 +84,12 @@ class ColoredFileContent(Collapsible):
         self.title = str(self.file_path.relative_to(chezmoi.paths.dest_dir))
 
 
-
 class RichDiff(RichLog):
 
     def __init__(self, file_path: Path, apply: bool) -> None:
         self.file_path = file_path
         self.apply = apply
         super().__init__(auto_scroll=False, wrap=True)
-
-    def diff(self, file_path: str, apply: bool) -> list[str]:
-        long_command = chezmoi.base + ["diff"] + [file_path]
-        if apply:
-            return subprocess_run(long_command).splitlines()
-        return subprocess_run(long_command + ["--reverse"]).splitlines()
 
     def on_mount(self) -> None:
         added = str(self.app.current_theme.success)
@@ -108,7 +101,7 @@ class RichDiff(RichLog):
 
         diff_output = (
             line
-            for line in self.diff(str(self.file_path), self.apply)
+            for line in chezmoi.diff(str(self.file_path), self.apply)
             if line.strip()
             and line[0] in "+- "
             and not line.startswith(("+++", "---"))
@@ -157,10 +150,12 @@ class ColoredDiff(Collapsible):
         self.file_path = file_path
         self.status = self.status_info["code name"][status_code]
         dest_dir = chezmoi.paths.dest_dir  # Cache value
-        rel_path = str(self.file_path.relative_to(dest_dir))
+        self.rel_path = str(self.file_path.relative_to(dest_dir))
         rich_diff = Lazy(RichDiff(self.file_path, self.apply))
         super().__init__(rich_diff)
-        self.title = f"{self.status} {rel_path}"
+
+    def on_mount(self) -> None:
+        self.title = f"{self.status} {self.rel_path}"
 
 
 class FilteredAddDirTree(DirectoryTree):

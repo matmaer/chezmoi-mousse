@@ -202,5 +202,11 @@ class Chezmoi:
         )
         return subprocess_run(long_command + [file_path])
 
+    def diff(self, file_path: str, apply: bool) -> list[str]:
+        long_command = chezmoi.base + ["diff"] + [file_path]
+        if apply:
+            return subprocess_run(long_command).splitlines()
+        return subprocess_run(long_command + ["--reverse"]).splitlines()
+
 
 chezmoi = Chezmoi()
