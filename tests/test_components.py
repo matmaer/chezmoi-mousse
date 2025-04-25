@@ -27,7 +27,7 @@ def test_rich_file_content_instantiation(rich_file_content):
     assert isinstance(rich_file_content, RichFileContent)
 
 
-def test_rich_diff_instantiation():
+def test_static_diff_instantiation():
     instance = StaticDiff(Path.home(), apply=True)
     assert isinstance(instance, StaticDiff)
 
