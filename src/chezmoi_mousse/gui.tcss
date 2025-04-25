@@ -206,11 +206,12 @@ ChezmoiStatus {
   margin-bottom: 1;
 }
 
-#doctortable {
-  height: 1fr;
-  & > .datatable--header {
-    color: $foreground;
-    text-style: none;
+Doctor > VerticalScroll {
+  & > #doctortable {
+    & > .datatable--header {
+      color: $foreground;
+      text-style: none;
+    }
   }
 }
 

@@ -28,6 +28,7 @@ dev = [
     "pytest>=8.3.5",
     "pytest-cov>=6.1.1",
     "pytest-memray>=1.7.0",
+    "pytest-mock>=3.14.0",
     "pytest-textual-snapshot>=1.1.0",
     "snakeviz>=2.2.2",
     "textual>=3.1.0",
@@ -36,3 +37,12 @@ dev = [
 
 [tool.pre-commit]
 config = ".pre-commit-config.yaml"
+
+[tool.pytest.ini_options]
+addopts = "--cov=src --cov-config=pyproject.toml"
+testpaths = ["tests"]
+
+[tool.coverage.run]
+omit = [
+    "tests/*"
+]

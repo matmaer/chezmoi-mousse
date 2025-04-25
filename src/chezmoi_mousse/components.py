@@ -39,7 +39,7 @@ def is_unwanted_path(path: Path) -> bool:
     return False
 
 
-class AutoWarning(Widget):
+class AutoWarning(Container):
 
     def __init__(self) -> None:
         self.auto_warning = ""

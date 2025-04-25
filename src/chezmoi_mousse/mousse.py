@@ -5,7 +5,12 @@ from pathlib import Path
 from rich.text import Text
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import Horizontal, VerticalGroup, VerticalScroll
+from textual.containers import (
+    Container,
+    Horizontal,
+    VerticalGroup,
+    VerticalScroll,
+)
 from textual.screen import ModalScreen
 from textual.widget import Widget
 from textual.widgets import (
@@ -33,7 +38,7 @@ from chezmoi_mousse.components import (
 from chezmoi_mousse.config import pw_mgr_info
 
 
-class AddDirTree(Widget):
+class AddDirTree(Container):
 
     BINDINGS = [
         Binding("f", "toggle_slidebar", "Filters"),
@@ -119,7 +124,7 @@ class ChezmoiAdd(ModalScreen):
             self.screen.dismiss()
 
 
-class ChezmoiStatus(Widget):
+class ChezmoiStatus(Container):
 
     def __init__(self, apply: bool) -> None:
         # if true, adds apply status to the list, otherwise "re-add" status
@@ -146,33 +151,34 @@ class ChezmoiStatus(Widget):
         self.refresh(recompose=True)
 
 
-class Doctor(Widget):
+class Doctor(Container):
 
     def compose(self) -> ComposeResult:
-        yield DataTable(id="doctortable", show_cursor=False)
-        yield Collapsible(
-            ListView(id="cmdnotfound"), title="Commands Not Found"
-        )
-        yield Collapsible(
-            VerticalScroll(Pretty(chezmoi.dump_config.dict_out)),
-            title="chezmoi dump-config",
-        )
-        yield Collapsible(
-            VerticalScroll(Pretty(chezmoi.template_data.dict_out)),
-            title="chezmoi data (template data)",
-        )
-        yield Collapsible(
-            DataTable(id="gitlog", cursor_type="row"),
-            title="chezmoi git log (last 20 commits)",
-        )
-        yield Collapsible(
-            VerticalScroll(Pretty(chezmoi.cat_config.list_out)),
-            title="chezmoi cat-config (contents of config-file)",
-        )
-        yield Collapsible(
-            VerticalScroll(Pretty(chezmoi.ignored.list_out)),
-            title="chezmoi ignored (git ignore in source-dir)",
-        )
+        with VerticalScroll(classes="doctorcollapsibles"):
+            yield DataTable(id="doctortable", show_cursor=False)
+            yield Collapsible(
+                ListView(id="cmdnotfound"), title="Commands Not Found"
+            )
+            yield Collapsible(
+                VerticalScroll(Pretty(chezmoi.dump_config.dict_out)),
+                title="chezmoi dump-config",
+            )
+            yield Collapsible(
+                VerticalScroll(Pretty(chezmoi.template_data.dict_out)),
+                title="chezmoi data (template data)",
+            )
+            yield Collapsible(
+                DataTable(id="gitlog", cursor_type="row"),
+                title="chezmoi git log (last 20 commits)",
+            )
+            yield Collapsible(
+                VerticalScroll(Pretty(chezmoi.cat_config.list_out)),
+                title="chezmoi cat-config (contents of config-file)",
+            )
+            yield Collapsible(
+                VerticalScroll(Pretty(chezmoi.ignored.list_out)),
+                title="chezmoi ignored (git ignore in source-dir)",
+            )
 
     def on_mount(self) -> None:
 
