@@ -36,3 +36,12 @@ dev = [
 
 [tool.pre-commit]
 config = ".pre-commit-config.yaml"
+
+[tool.pytest.ini_options]
+addopts = "--cov=src --cov-config=pyproject.toml"
+testpaths = ["tests"]
+
+[tool.coverage.run]
+omit = [
+    "tests/*"
+]
