@@ -21,21 +21,13 @@
   }
 }
 
-AutoWarning {
-  align: center top;
-  height: auto;
-  dock: top;
-  margin-bottom: 1;
-}
-
 .operationmodal {
   background-tint: $surface;
   background: $surface;
   border: thick $panel;
   height: auto;
-  margin: 2 2 2 2;
-  padding: 0 1 0 1;
   max-height: 1fr;
+  margin: 1;
   max-width: 1fr;
 
   & Button {
@@ -66,13 +58,18 @@ AutoWarning {
       border-top: heavy $primary-lighten-2;
     }
   }
-  & .coloredfilecontent{
+
+  & AutoWarning {
+    margin: 0 1 1 1;
+  }
+
+  & ColoredFileContent {
     background-tint: $surface;
     background: $surface;
-    margin-right: 2;
   }
-  & .richfilecontent {
-    height: auto;
+  & RichFileContent {
+    margin-right: 3;
+    padding-left: 1;
   }
   & Horizontal {
     align: center bottom;
@@ -81,11 +78,9 @@ AutoWarning {
   }
 }
 
-RichFileContent, StaticDiff {
+RichFileContent, StaticDiff, AutoWarning {
   height: auto;
-  margin-bottom: 1;
 }
-
 
 Tree {
   min-height: 3;
@@ -188,13 +183,18 @@ Collapsible {
   height: auto;
   border: none;
   padding: 0;
-  CollapsibleTitle {
-    color: $primary-lighten-3;
-    &:hover {
-      text-style: bold;
-    }
+  & Pretty, StaticDiff {
+    margin-bottom: 1;
   }
 }
+
+CollapsibleTitle {
+  color: $primary-lighten-3;
+  &:hover {
+    text-style: bold;
+  }
+}
+
 
 Toast {
   background: $surface;
@@ -206,13 +206,14 @@ ChezmoiStatus {
   margin-bottom: 1;
 }
 
-Doctor > VerticalScroll {
-  & > #doctortable {
-    & > .datatable--header {
-      color: $foreground;
-      text-style: none;
-    }
+#doctortable {
+  & > .datatable--header {
+    text-style: none;
   }
+}
+
+#doctorcollapsibles {
+  margin: 1 0 1 0;
 }
 
 LoadingScreen {

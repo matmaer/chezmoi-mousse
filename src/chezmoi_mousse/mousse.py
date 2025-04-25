@@ -73,7 +73,7 @@ class ChezmoiAdd(ModalScreen):
     ]
 
     def __init__(self, path_to_add: Path) -> None:
-        super().__init__(classes="addfilemodal")
+        super().__init__()
         self.path_to_add = path_to_add
         self.files_to_add: list[Path] = []
         self.add_path_items: list[ColoredFileContent] = []
@@ -154,31 +154,32 @@ class ChezmoiStatus(Container):
 class Doctor(Container):
 
     def compose(self) -> ComposeResult:
-        with VerticalScroll(classes="doctorcollapsibles"):
+        with VerticalScroll():
             yield DataTable(id="doctortable", show_cursor=False)
-            yield Collapsible(
-                ListView(id="cmdnotfound"), title="Commands Not Found"
-            )
-            yield Collapsible(
-                VerticalScroll(Pretty(chezmoi.dump_config.dict_out)),
-                title="chezmoi dump-config",
-            )
-            yield Collapsible(
-                VerticalScroll(Pretty(chezmoi.template_data.dict_out)),
-                title="chezmoi data (template data)",
-            )
-            yield Collapsible(
-                DataTable(id="gitlog", cursor_type="row"),
-                title="chezmoi git log (last 20 commits)",
-            )
-            yield Collapsible(
-                VerticalScroll(Pretty(chezmoi.cat_config.list_out)),
-                title="chezmoi cat-config (contents of config-file)",
-            )
-            yield Collapsible(
-                VerticalScroll(Pretty(chezmoi.ignored.list_out)),
-                title="chezmoi ignored (git ignore in source-dir)",
-            )
+            with VerticalGroup(id="doctorcollapsibles"):
+                yield Collapsible(
+                    Pretty(chezmoi.dump_config.dict_out),
+                    title="output from 'chezmoi dump-config'",
+                )
+                yield Collapsible(
+                    ListView(id="cmdnotfound"), title="Commands Not Found"
+                )
+                yield Collapsible(
+                    Pretty(chezmoi.template_data.dict_out),
+                    title="chezmoi data (template data)",
+                )
+                yield Collapsible(
+                    DataTable(id="gitlog", cursor_type="row"),
+                    title="chezmoi git log (last 20 commits)",
+                )
+                yield Collapsible(
+                    Pretty(chezmoi.cat_config.list_out),
+                    title="chezmoi cat-config (contents of config-file)",
+                )
+                yield Collapsible(
+                    Pretty(chezmoi.ignored.list_out),
+                    title="chezmoi ignored (git ignore in source-dir)",
+                )
 
     def on_mount(self) -> None:
 
