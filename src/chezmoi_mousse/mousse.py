@@ -18,6 +18,7 @@ from textual.widgets import (
     ListView,
     Pretty,
     Static,
+    Switch,
 )
 
 from chezmoi_mousse import FLOW
@@ -31,10 +32,24 @@ from chezmoi_mousse.components import (
     SlideBar,
     is_reasonable_dotfile,
 )
-from chezmoi_mousse.config import pw_mgr_info
+from chezmoi_mousse.config import pw_mgr_info, filter_items
 
 
 class AddDirTreeTab(VerticalScroll):
+
+    class SlidebarActions(SlideBar):
+
+        def __init__(self) -> None:
+            super().__init__(filter_items["add_tab"])
+
+        def on_switch_changed(self, event: Switch.Changed) -> None:
+            add_dir_tree = self.screen.query_exactly_one(FilteredAddDirTree)
+            if event.switch.id == "includeunmanaged":
+                add_dir_tree.include_unmanaged_dirs = event.value
+                add_dir_tree.reload()
+            elif event.switch.id == "unwanted":
+                add_dir_tree.filter_unwanted = event.value
+                add_dir_tree.reload()
 
     BINDINGS = [
         Binding("f", "toggle_slidebar", "Filters"),
@@ -45,7 +60,7 @@ class AddDirTreeTab(VerticalScroll):
         yield FilteredAddDirTree(
             chezmoi.paths.dest_dir, id="adddirtree", classes="dir-tree"
         )
-        yield Lazy(SlideBar())
+        yield Lazy(self.SlidebarActions())
 
     def on_mount(self) -> None:
         self.query_one(FilteredAddDirTree).root.label = (

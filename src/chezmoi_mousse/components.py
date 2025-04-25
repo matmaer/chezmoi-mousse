@@ -297,25 +297,27 @@ class SlideBar(Static):
             self,
             switch_label: str,
             switch_tooltip: str,
-            switch_id: str = "includeunmanaged",
+            switch_id: str,
+            initial_state: bool,
         ) -> None:
             self.switch_label = switch_label
             self.switch_tooltip = switch_tooltip
             self.switch_id = switch_id
+            self.initial_state = initial_state
             super().__init__(classes="filter-container")
 
         def compose(self) -> ComposeResult:
             yield Switch(
-                value=False, id="includeunmanaged", classes="filter-switch"
+                value=self.initial_state,
+                id=self.switch_id,
+                classes="filter-switch",
             )
-            yield Label(
-                self.switch_label, id="unmanagedlabel", classes="filter-label"
+            yield Label(self.switch_label, classes="filter-label")
+            yield Label("(?)", classes="filter-tooltip").with_tooltip(
+                tooltip=self.switch_tooltip
             )
-            yield Label(
-                "(?)", id="unmanagedtooltip", classes="filter-tooltip"
-            ).with_tooltip(tooltip=self.switch_tooltip)
 
-    def __init__(self, filters: dict = filter_items["add_tab"]) -> None:
+    def __init__(self, filters: dict) -> None:
         self.filters = filters
         self.labels = list(self.filters.keys())
         self.tooltips = list(self.filters.values())
@@ -326,20 +328,11 @@ class SlideBar(Static):
             switch_label=self.labels[0],
             switch_tooltip=self.tooltips[0],
             switch_id="includeunmanaged",
+            initial_state=False,
         )
-
-        with Horizontal(classes="filter-container"):
-            yield Switch(value=True, id="filterjunk", classes="filter-switch")
-            yield Label(self.labels[1], id="unwanted", classes="filter-label")
-            yield Label(
-                "(?)", id="junktooltip", classes="filter-tooltip"
-            ).with_tooltip(tooltip=self.tooltips[1])
-
-    def on_switch_changed(self, event: Switch.Changed) -> None:
-        add_dir_tree = self.screen.query_exactly_one(FilteredAddDirTree)
-        if event.switch.id == "includeunmanaged":
-            add_dir_tree.include_unmanaged_dirs = event.value
-            add_dir_tree.reload()
-        elif event.switch.id == "filterjunk":
-            add_dir_tree.filter_unwanted = event.value
-            add_dir_tree.reload()
+        yield self.FilterItem(
+            switch_label=self.labels[1],
+            switch_tooltip=self.tooltips[1],
+            switch_id="unwanted",
+            initial_state=True,
+        )
