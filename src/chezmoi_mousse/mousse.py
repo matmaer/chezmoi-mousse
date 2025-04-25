@@ -130,40 +130,16 @@ class ChezmoiStatus(Widget):
     def compose(self) -> ComposeResult:
         yield VerticalGroup(*self.status_items)
 
-    def get_status(
-        self, apply: bool, dirs: bool = False, files: bool = False
-    ) -> list[tuple[str, Path]]:
-        if not dirs and not files:
-            raise ValueError("Either files or dirs must be true")
-
-        # Combine lines from dirs and files
-        lines = []
-        if dirs:
-            lines.extend(chezmoi.status_dirs.list_out)
-        if files:
-            lines.extend(chezmoi.status_files.list_out)
-
-        relevant_status_codes = {"A", "D", "M"}
-        relevant_lines = [
-            l
-            for l in lines
-            if (status_code := l[1] if apply else l[0])
-            in relevant_status_codes
+    def get_status(self) -> list[tuple[str, Path]]:
+        status_lines = [
+            line
+            for line in chezmoi.status_files.list_out
+            if (status_code := line[1] if self.apply else line[0]) in "ADM"
         ]
-
-        result: list[tuple[str, Path]] = [
-            (status_code, Path(line[3:])) for line in relevant_lines
-        ]
-
-        return result
+        return [(status_code, Path(line[3:])) for line in status_lines]
 
     def on_mount(self) -> None:
-
-        changes: list[tuple[str, Path]] = self.get_status(
-            apply=self.apply, files=True, dirs=False
-        )
-
-        for status_code, path in changes:
+        for status_code, path in self.get_status():
             self.status_items.append(
                 ColoredDiff(
                     file_path=path, apply=self.apply, status_code=status_code
