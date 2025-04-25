@@ -25,7 +25,7 @@ from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.mousse import (
     AddDirTree,
     ApplyTab,
-    Doctor,
+    DoctorTab,
     ReAddTab,
     SlideBar,
 )
@@ -182,7 +182,7 @@ class MainScreen(Screen):
             yield ApplyTab()
             yield Lazy(ReAddTab())
             yield VerticalScroll(Lazy(AddDirTree()))
-            yield VerticalScroll(Lazy(Doctor()), id="doctor", can_focus=False)
+            yield Lazy(DoctorTab(id="doctor", can_focus=False))
             yield VerticalScroll(Lazy(Static(FLOW, id="diagram")))
         yield Lazy(SlideBar())
         yield Footer()

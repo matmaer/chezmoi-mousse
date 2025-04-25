@@ -5,11 +5,10 @@ from collections.abc import Iterable
 from pathlib import Path
 
 from textual.app import ComposeResult
-from textual.containers import Container
+from textual.containers import Container, VerticalGroup
 from textual.content import Content
 from textual.lazy import Lazy
 from textual.reactive import reactive
-from textual.widget import Widget
 from textual.widgets import Collapsible, DirectoryTree, RichLog, Static, Tree
 
 from chezmoi_mousse.chezmoi import chezmoi
@@ -251,3 +250,30 @@ class ManagedTree(Tree):
 
         recurse_paths(self.root, dest_dir_path)
         self.root.expand()
+
+
+class ChezmoiStatus(Container):
+
+    def __init__(self, apply: bool) -> None:
+        # if true, adds apply status to the list, otherwise "re-add" status
+        self.apply = apply
+        self.status_items: list[ColoredDiff] = []
+        super().__init__()
+
+    def compose(self) -> ComposeResult:
+        yield VerticalGroup(*self.status_items)
+
+    def on_mount(self) -> None:
+        # status can be a space so not using str.split() or str.strip()
+        status_paths = [
+            (adm, Path(line[3:]))
+            for line in chezmoi.status_files.list_out
+            if (adm := line[1] if self.apply else line[0]) in "ADM"
+        ]
+        for status_code, path in status_paths:
+            self.status_items.append(
+                ColoredDiff(
+                    file_path=path, apply=self.apply, status_code=status_code
+                )
+            )
+        self.refresh(recompose=True)

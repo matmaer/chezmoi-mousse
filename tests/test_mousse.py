@@ -7,7 +7,7 @@ from chezmoi_mousse.mousse import (
     ApplyTree,
     ChezmoiAdd,
     ChezmoiStatus,
-    Doctor,
+    DoctorTab,
     ReAddTree,
     SlideBar,
 )
@@ -15,7 +15,7 @@ from chezmoi_mousse.mousse import (
 
 def test_doctor_instantiation():
     try:
-        instance = Doctor()
+        instance = DoctorTab()
     except Exception as e:
         pytest.fail(f"ChezmoiStatus instantiation failed with exception: {e}")
 
