@@ -61,7 +61,10 @@ class RichFileContent(RichLog):
     def __init__(self, file_path: Path) -> None:
         self.file_path = file_path
         super().__init__(
-            auto_scroll=False, wrap=True, classes="richfilecontent"
+            auto_scroll=False,
+            wrap=True,
+            highlight=True,
+            classes="richfilecontent",
         )
 
     def on_mount(self) -> None:
