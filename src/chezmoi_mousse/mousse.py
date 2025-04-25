@@ -286,3 +286,17 @@ class SlideBar(Widget):
         elif event.switch.id == "filterjunk":
             add_dir_tree.filter_unwanted = event.value
             add_dir_tree.reload()
+
+
+class ApplyTab(VerticalScroll):
+
+    def compose(self) -> ComposeResult:
+        yield ChezmoiStatus(apply=True)
+        yield ApplyTree()
+
+
+class ReAddTab(VerticalScroll):
+
+    def compose(self) -> ComposeResult:
+        yield ChezmoiStatus(apply=False)
+        yield ReAddTree()

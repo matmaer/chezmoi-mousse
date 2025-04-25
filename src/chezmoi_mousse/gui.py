@@ -24,10 +24,9 @@ from chezmoi_mousse import FLOW, SPLASH
 from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.mousse import (
     AddDirTree,
-    ApplyTree,
-    ChezmoiStatus,
+    ApplyTab,
     Doctor,
-    ReAddTree,
+    ReAddTab,
     SlideBar,
 )
 
@@ -180,10 +179,8 @@ class MainScreen(Screen):
         yield Header(classes="-tall")
 
         with TabbedContent("Apply", "Re-Add", "Add", "Doctor", "Diagram"):
-            yield VerticalScroll(ChezmoiStatus(apply=True), ApplyTree())
-            yield VerticalScroll(
-                Lazy(ChezmoiStatus(apply=False)), Lazy(ReAddTree())
-            )
+            yield ApplyTab()
+            yield Lazy(ReAddTab())
             yield VerticalScroll(Lazy(AddDirTree()))
             yield VerticalScroll(Lazy(Doctor()), id="doctor", can_focus=False)
             yield VerticalScroll(Lazy(Static(FLOW, id="diagram")))
