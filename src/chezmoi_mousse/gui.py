@@ -6,7 +6,7 @@ from textual import work
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.color import Color, Gradient
-from textual.containers import Center, Middle, VerticalScroll
+from textual.containers import Center, Middle
 from textual.lazy import Lazy
 from textual.screen import Screen
 from textual.strip import Strip
