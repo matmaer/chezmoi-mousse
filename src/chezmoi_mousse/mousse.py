@@ -61,11 +61,6 @@ class AddDirTreeTab(VerticalScroll):
         self.app.push_screen(ChezmoiAdd(cursor_node.data.path))  # type: ignore[reportOptionalMemberAccess] # pylint: disable:line-too-long
 
 
-class ApplyTree(ManagedTree):
-    def __init__(self) -> None:
-        super().__init__(label=str("root_node"), id="apply_tree")
-
-
 class ChezmoiAdd(ModalScreen):
 
     BINDINGS = [
@@ -211,13 +206,6 @@ class DoctorTab(VerticalScroll):
                 table.add_row(*row)
 
 
-class ReAddTree(ManagedTree):
-    def __init__(self) -> None:
-        super().__init__(
-            label=str("root_node"), id="re_add_tree", show_existing_only=True
-        )
-
-
 class SlideBar(Widget):
 
     def __init__(self) -> None:
@@ -263,16 +251,26 @@ class SlideBar(Widget):
 
 class ApplyTab(VerticalScroll):
 
+    def __init__(self) -> None:
+        self.apply_tree = ManagedTree(label=str("root_node"), id="apply_tree")
+        super().__init__()
+
     def compose(self) -> ComposeResult:
         yield ChezmoiStatus(apply=True)
-        yield ApplyTree()
+        yield self.apply_tree
 
 
 class ReAddTab(VerticalScroll):
 
+    def __init__(self) -> None:
+        self.re_add_tree = ManagedTree(
+            label=str("root_node"), id="re_add_tree", show_existing_only=True
+        )
+        super().__init__()
+
     def compose(self) -> ComposeResult:
         yield ChezmoiStatus(apply=False)
-        yield ReAddTree()
+        yield self.re_add_tree
 
 
 class DiagramTab(VerticalScroll):
