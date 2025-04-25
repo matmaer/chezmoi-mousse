@@ -26,10 +26,11 @@ from textual.widgets import (
     Switch,
 )
 
+from chezmoi_mousse import FLOW
 from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.components import (
     AutoWarning,
-    ColoredDiff,
+    ChezmoiStatus,
     ColoredFileContent,
     FilteredAddDirTree,
     ManagedTree,
@@ -38,7 +39,7 @@ from chezmoi_mousse.components import (
 from chezmoi_mousse.config import pw_mgr_info
 
 
-class AddDirTree(Container):
+class AddDirTreeTab(VerticalScroll):
 
     BINDINGS = [
         Binding("f", "toggle_slidebar", "Filters"),
@@ -46,10 +47,9 @@ class AddDirTree(Container):
     ]
 
     def compose(self) -> ComposeResult:
-        with VerticalScroll():
-            yield FilteredAddDirTree(
-                chezmoi.paths.dest_dir, id="adddirtree", classes="dir-tree"
-            )
+        yield FilteredAddDirTree(
+            chezmoi.paths.dest_dir, id="adddirtree", classes="dir-tree"
+        )
 
     def on_mount(self) -> None:
         self.query_one(FilteredAddDirTree).root.label = (
@@ -73,7 +73,7 @@ class ChezmoiAdd(ModalScreen):
     ]
 
     def __init__(self, path_to_add: Path) -> None:
-        super().__init__(classes="addfilemodal")
+        super().__init__()
         self.path_to_add = path_to_add
         self.files_to_add: list[Path] = []
         self.add_path_items: list[ColoredFileContent] = []
@@ -124,61 +124,35 @@ class ChezmoiAdd(ModalScreen):
             self.screen.dismiss()
 
 
-class ChezmoiStatus(Container):
-
-    def __init__(self, apply: bool) -> None:
-        # if true, adds apply status to the list, otherwise "re-add" status
-        self.apply = apply
-        self.status_items: list[ColoredDiff] = []
-        super().__init__()
+class DoctorTab(VerticalScroll):
 
     def compose(self) -> ComposeResult:
-        yield VerticalGroup(*self.status_items)
-
-    def on_mount(self) -> None:
-        # status can be a space so not using str.split() or str.strip()
-        status_paths = [
-            (adm, Path(line[3:]))
-            for line in chezmoi.status_files.list_out
-            if (adm := line[1] if self.apply else line[0]) in "ADM"
-        ]
-        for status_code, path in status_paths:
-            self.status_items.append(
-                ColoredDiff(
-                    file_path=path, apply=self.apply, status_code=status_code
-                )
-            )
-        self.refresh(recompose=True)
-
-
-class Doctor(Container):
-
-    def compose(self) -> ComposeResult:
-        with VerticalScroll(classes="doctorcollapsibles"):
+        with VerticalScroll():
             yield DataTable(id="doctortable", show_cursor=False)
-            yield Collapsible(
-                ListView(id="cmdnotfound"), title="Commands Not Found"
-            )
-            yield Collapsible(
-                VerticalScroll(Pretty(chezmoi.dump_config.dict_out)),
-                title="chezmoi dump-config",
-            )
-            yield Collapsible(
-                VerticalScroll(Pretty(chezmoi.template_data.dict_out)),
-                title="chezmoi data (template data)",
-            )
-            yield Collapsible(
-                DataTable(id="gitlog", cursor_type="row"),
-                title="chezmoi git log (last 20 commits)",
-            )
-            yield Collapsible(
-                VerticalScroll(Pretty(chezmoi.cat_config.list_out)),
-                title="chezmoi cat-config (contents of config-file)",
-            )
-            yield Collapsible(
-                VerticalScroll(Pretty(chezmoi.ignored.list_out)),
-                title="chezmoi ignored (git ignore in source-dir)",
-            )
+            with VerticalGroup(id="doctorcollapsibles"):
+                yield Collapsible(
+                    Pretty(chezmoi.dump_config.dict_out),
+                    title="output from 'chezmoi dump-config'",
+                )
+                yield Collapsible(
+                    ListView(id="cmdnotfound"), title="Commands Not Found"
+                )
+                yield Collapsible(
+                    Pretty(chezmoi.template_data.dict_out),
+                    title="chezmoi data (template data)",
+                )
+                yield Collapsible(
+                    DataTable(id="gitlog", cursor_type="row"),
+                    title="chezmoi git log (last 20 commits)",
+                )
+                yield Collapsible(
+                    Pretty(chezmoi.cat_config.list_out),
+                    title="chezmoi cat-config (contents of config-file)",
+                )
+                yield Collapsible(
+                    Pretty(chezmoi.ignored.list_out),
+                    title="chezmoi ignored (git ignore in source-dir)",
+                )
 
     def on_mount(self) -> None:
 
@@ -285,3 +259,23 @@ class SlideBar(Widget):
         elif event.switch.id == "filterjunk":
             add_dir_tree.filter_unwanted = event.value
             add_dir_tree.reload()
+
+
+class ApplyTab(VerticalScroll):
+
+    def compose(self) -> ComposeResult:
+        yield ChezmoiStatus(apply=True)
+        yield ApplyTree()
+
+
+class ReAddTab(VerticalScroll):
+
+    def compose(self) -> ComposeResult:
+        yield ChezmoiStatus(apply=False)
+        yield ReAddTree()
+
+
+class DiagramTab(VerticalScroll):
+
+    def compose(self) -> ComposeResult:
+        yield Static(FLOW, id="diagram")
