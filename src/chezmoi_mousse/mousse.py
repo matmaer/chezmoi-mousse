@@ -144,20 +144,16 @@ class ChezmoiStatus(Widget):
             lines.extend(chezmoi.status_files.list_out)
 
         relevant_status_codes = {"A", "D", "M"}
-        relevant_lines: list[str] = []
-
         relevant_lines = [
-            l for l in lines if l[0] or l[1] in relevant_status_codes
+            l
+            for l in lines
+            if (status_code := l[1] if apply else l[0])
+            in relevant_status_codes
         ]
 
-        result: list[tuple[str, Path]] = []
-        for line in relevant_lines:
-            if apply:
-                status_code = line[1]
-            else:
-                status_code = line[0]
-            path = Path(line[3:])
-            result.append((status_code, path))
+        result: list[tuple[str, Path]] = [
+            (status_code, Path(line[3:])) for line in relevant_lines
+        ]
 
         return result
 
