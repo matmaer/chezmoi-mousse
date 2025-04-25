@@ -130,16 +130,14 @@ class ChezmoiStatus(Widget):
     def compose(self) -> ComposeResult:
         yield VerticalGroup(*self.status_items)
 
-    def get_status(self) -> list[tuple[str, Path]]:
-        status_lines = [
-            line
-            for line in chezmoi.status_files.list_out
-            if (status_code := line[1] if self.apply else line[0]) in "ADM"
-        ]
-        return [(status_code, Path(line[3:])) for line in status_lines]
-
     def on_mount(self) -> None:
-        for status_code, path in self.get_status():
+        # status can be a space so not using str.split() or str.strip()
+        status_paths = [
+            (adm, Path(line[3:]))
+            for line in chezmoi.status_files.list_out
+            if (adm := line[1] if self.apply else line[0]) in "ADM"
+        ]
+        for status_code, path in status_paths:
             self.status_items.append(
                 ColoredDiff(
                     file_path=path, apply=self.apply, status_code=status_code
