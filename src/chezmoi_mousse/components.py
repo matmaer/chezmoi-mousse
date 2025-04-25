@@ -5,11 +5,20 @@ from collections.abc import Iterable
 from pathlib import Path
 
 from textual.app import ComposeResult
-from textual.containers import Container, VerticalGroup
+from textual.containers import Container, VerticalGroup, Horizontal
 from textual.content import Content
 from textual.lazy import Lazy
 from textual.reactive import reactive
-from textual.widgets import Collapsible, DirectoryTree, RichLog, Static, Tree
+from textual.widget import Widget
+from textual.widgets import (
+    Collapsible,
+    DirectoryTree,
+    Label,
+    RichLog,
+    Static,
+    Switch,
+    Tree,
+)
 
 from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.config import unwanted_dirs, unwanted_files
@@ -277,3 +286,46 @@ class ChezmoiStatus(Container):
                 )
             )
         self.refresh(recompose=True)
+
+
+class SlideBar(Widget):
+
+    def __init__(self) -> None:
+        super().__init__()
+        # pylint: disable=line-too-long
+        self.border_title = "filters "
+        self.unmanaged_tooltip = "Enable to include all un-managed files, even if they live in an un-managed directory. Disable to only show un-managed files in directories which already contain managed files (the default). The purpose is to easily spot new un-managed files in already managed directories. (in both cases, only the un-managed files are shown)"
+        self.junk_tooltip = 'Filter out files and directories considered as "unwanted" for a dotfile manager. These include cache, temporary, trash (recycle bin) and other similar files or directories.  You can disable this, for example if you want to add files to your chezmoi repository which are in a directory named "cache".'
+
+    def compose(self) -> ComposeResult:
+
+        with Horizontal(classes="filter-container"):
+            yield Switch(
+                value=False, id="includeunmanaged", classes="filter-switch"
+            )
+            yield Label(
+                "Include unmanaged directories",
+                id="unmanagedlabel",
+                classes="filter-label",
+            )
+            yield Label(
+                "(?)", id="unmanagedtooltip", classes="filter-tooltip"
+            ).with_tooltip(tooltip=self.unmanaged_tooltip)
+
+        with Horizontal(classes="filter-container"):
+            yield Switch(value=True, id="filterjunk", classes="filter-switch")
+            yield Label(
+                "Filter unwanted paths", id="unwanted", classes="filter-label"
+            )
+            yield Label(
+                "(?)", id="junktooltip", classes="filter-tooltip"
+            ).with_tooltip(tooltip=self.junk_tooltip)
+
+    def on_switch_changed(self, event: Switch.Changed) -> None:
+        add_dir_tree = self.screen.query_exactly_one(FilteredAddDirTree)
+        if event.switch.id == "includeunmanaged":
+            add_dir_tree.include_unmanaged_dirs = event.value
+            add_dir_tree.reload()
+        elif event.switch.id == "filterjunk":
+            add_dir_tree.filter_unwanted = event.value
+            add_dir_tree.reload()

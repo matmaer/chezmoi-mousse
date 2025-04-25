@@ -28,7 +28,6 @@ from chezmoi_mousse.mousse import (
     DiagramTab,
     DoctorTab,
     ReAddTab,
-    SlideBar,
 )
 
 theme = Theme(
@@ -185,11 +184,7 @@ class MainScreen(Screen):
             yield Lazy(AddDirTreeTab())
             yield Lazy(DoctorTab(id="doctor", can_focus=False))
             yield Lazy(DiagramTab())
-        yield Lazy(SlideBar())
         yield Footer()
-
-    def action_toggle_slidebar(self):
-        self.screen.query_exactly_one(SlideBar).toggle_class("-visible")
 
     def action_toggle_spacing(self):
         self.screen.query_exactly_one(Header).toggle_class("-tall")
