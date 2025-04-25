@@ -20,11 +20,12 @@ from textual.widgets import (
     TabbedContent,
 )
 
-from chezmoi_mousse import FLOW, SPLASH
+from chezmoi_mousse import SPLASH
 from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.mousse import (
-    AddDirTree,
+    AddDirTreeTab,
     ApplyTab,
+    DiagramTab,
     DoctorTab,
     ReAddTab,
     SlideBar,
@@ -181,9 +182,9 @@ class MainScreen(Screen):
         with TabbedContent("Apply", "Re-Add", "Add", "Doctor", "Diagram"):
             yield ApplyTab()
             yield Lazy(ReAddTab())
-            yield VerticalScroll(Lazy(AddDirTree()))
+            yield Lazy(AddDirTreeTab())
             yield Lazy(DoctorTab(id="doctor", can_focus=False))
-            yield VerticalScroll(Lazy(Static(FLOW, id="diagram")))
+            yield Lazy(DiagramTab())
         yield Lazy(SlideBar())
         yield Footer()
 

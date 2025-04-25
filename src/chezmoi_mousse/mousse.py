@@ -26,6 +26,7 @@ from textual.widgets import (
     Switch,
 )
 
+from chezmoi_mousse import FLOW
 from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.components import (
     AutoWarning,
@@ -38,7 +39,7 @@ from chezmoi_mousse.components import (
 from chezmoi_mousse.config import pw_mgr_info
 
 
-class AddDirTree(Container):
+class AddDirTreeTab(VerticalScroll):
 
     BINDINGS = [
         Binding("f", "toggle_slidebar", "Filters"),
@@ -46,10 +47,9 @@ class AddDirTree(Container):
     ]
 
     def compose(self) -> ComposeResult:
-        with VerticalScroll():
-            yield FilteredAddDirTree(
-                chezmoi.paths.dest_dir, id="adddirtree", classes="dir-tree"
-            )
+        yield FilteredAddDirTree(
+            chezmoi.paths.dest_dir, id="adddirtree", classes="dir-tree"
+        )
 
     def on_mount(self) -> None:
         self.query_one(FilteredAddDirTree).root.label = (
@@ -273,3 +273,9 @@ class ReAddTab(VerticalScroll):
     def compose(self) -> ComposeResult:
         yield ChezmoiStatus(apply=False)
         yield ReAddTree()
+
+
+class DiagramTab(VerticalScroll):
+
+    def compose(self) -> ComposeResult:
+        yield Static(FLOW, id="diagram")
