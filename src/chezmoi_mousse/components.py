@@ -9,7 +9,8 @@ from textual.containers import Container, VerticalGroup, Horizontal
 from textual.content import Content
 from textual.lazy import Lazy
 from textual.reactive import reactive
-from textual.widget import Widget
+
+# from textual.widget import Widget
 from textual.widgets import (
     Collapsible,
     DirectoryTree,
@@ -288,7 +289,7 @@ class ChezmoiStatus(Container):
         self.refresh(recompose=True)
 
 
-class SlideBar(Widget):
+class SlideBar(Static):
 
     def __init__(self) -> None:
         super().__init__()
