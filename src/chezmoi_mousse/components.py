@@ -4,15 +4,15 @@ import re
 from collections.abc import Iterable
 from pathlib import Path
 
-from rich.text import Text
 from textual.app import ComposeResult
+from textual.containers import Container
 from textual.content import Content
 from textual.lazy import Lazy
 from textual.reactive import reactive
 from textual.widget import Widget
 from textual.widgets import Collapsible, DirectoryTree, RichLog, Static, Tree
 
-from chezmoi_mousse.chezmoi import chezmoi, subprocess_run
+from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.config import unwanted_dirs, unwanted_files
 
 
@@ -72,7 +72,6 @@ class RichFileContent(RichLog):
         else:
             with open(self.file_path, "rt", encoding="utf-8") as f:
                 self.write(f.read())
-        self.refresh(recompose=True)
 
 
 class ColoredFileContent(Collapsible):
@@ -84,22 +83,16 @@ class ColoredFileContent(Collapsible):
         super().__init__(rich_file_content, classes="coloredfilecontent")
         self.title = str(self.file_path.relative_to(chezmoi.paths.dest_dir))
 
-    # def on_mount(self) -> None:
-    #     self.refresh(recompose=True)
 
-
-class RichDiff(RichLog):
+class StaticDiff(Container):
 
     def __init__(self, file_path: Path, apply: bool) -> None:
         self.file_path = file_path
         self.apply = apply
-        super().__init__(auto_scroll=False, wrap=True)
+        super().__init__()
 
-    def diff(self, file_path: str, apply: bool) -> list[str]:
-        long_command = chezmoi.base + ["diff"] + [file_path]
-        if apply:
-            return subprocess_run(long_command).splitlines()
-        return subprocess_run(long_command + ["--reverse"]).splitlines()
+    def compose(self) -> ComposeResult:
+        yield Static(id="staticdiff")
 
     def on_mount(self) -> None:
         added = str(self.app.current_theme.success)
@@ -111,19 +104,23 @@ class RichDiff(RichLog):
 
         diff_output = (
             line
-            for line in self.diff(str(self.file_path), self.apply)
+            for line in chezmoi.diff(str(self.file_path), self.apply)
             if line.strip()
             and line[0] in "+- "
             and not line.startswith(("+++", "---"))
         )
-
+        colored_lines = []
         for line in diff_output:
-            style = (
-                added
-                if line.startswith("+")
-                else removed if line.startswith("-") else dimmed
-            )
-            self.write(Text(line, style=style))
+            escaped = line.replace("[", "\\[")
+            if escaped.startswith("+"):
+                colored_lines.append(f"[{added}]{escaped}[/{added}]")
+            elif escaped.startswith("-"):
+                colored_lines.append(f"[{removed}]{escaped}[/{removed}]")
+            else:
+                colored_lines.append(f"[{dimmed}]{escaped}[/{dimmed}]")
+
+        text_widget = self.query_one("#staticdiff", Static)
+        text_widget.update("\n".join(colored_lines))
 
 
 class ColoredDiff(Collapsible):
@@ -155,15 +152,10 @@ class ColoredDiff(Collapsible):
     }
 
     def __init__(self, apply: bool, file_path: Path, status_code: str) -> None:
-        # if true, adds apply status to the list, otherwise "re-add" status
-        self.apply = apply
-        self.file_path = file_path
-        self.status = self.status_info["code name"][status_code]
-        dest_dir = chezmoi.paths.dest_dir  # Cache value
-        rel_path = str(self.file_path.relative_to(dest_dir))
-        rich_diff = Lazy(RichDiff(self.file_path, self.apply))
-        super().__init__(rich_diff)
-        self.title = f"{self.status} {rel_path}"
+        rel_path = str(file_path.relative_to(chezmoi.paths.dest_dir))
+        title = f"{self.status_info["code name"][status_code]} {rel_path}"
+        colored_diff = StaticDiff(file_path, apply)
+        super().__init__(colored_diff, title=title)
 
 
 class FilteredAddDirTree(DirectoryTree):
@@ -174,7 +166,7 @@ class FilteredAddDirTree(DirectoryTree):
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
         managed_dirs = chezmoi.paths.managed_dirs
         managed_files = chezmoi.paths.managed_files
-        dest_dir = chezmoi.paths.dest_dir  # Cache value
+        dest_dir = chezmoi.paths.dest_dir
 
         # Switches: Red - Green (default)
         if not self.include_unmanaged_dirs and self.filter_unwanted:

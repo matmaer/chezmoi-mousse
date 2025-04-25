@@ -5,13 +5,7 @@ from pathlib import Path
 from rich.text import Text
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import (
-    Container,
-    Horizontal,
-    VerticalGroup,
-    VerticalScroll,
-)
-from textual.content import Content
+from textual.containers import Horizontal, VerticalGroup, VerticalScroll
 from textual.screen import ModalScreen
 from textual.widget import Widget
 from textual.widgets import (
@@ -79,7 +73,6 @@ class ChezmoiAdd(ModalScreen):
         self.files_to_add: list[Path] = []
         self.add_path_items: list[ColoredFileContent] = []
         self.add_label = "- Add File -"
-        # self.auto_warning = ""
 
     def compose(self) -> ComposeResult:
         with VerticalScroll(
@@ -137,44 +130,14 @@ class ChezmoiStatus(Widget):
     def compose(self) -> ComposeResult:
         yield VerticalGroup(*self.status_items)
 
-    def get_status(
-        self, apply: bool, dirs: bool = False, files: bool = False
-    ) -> list[tuple[str, Path]]:
-        if not dirs and not files:
-            raise ValueError("Either files or dirs must be true")
-
-        # Combine lines from dirs and files
-        lines = []
-        if dirs:
-            lines.extend(chezmoi.status_dirs.list_out)
-        if files:
-            lines.extend(chezmoi.status_files.list_out)
-
-        relevant_status_codes = {"A", "D", "M"}
-        relevant_lines: list[str] = []
-
-        relevant_lines = [
-            l for l in lines if l[0] or l[1] in relevant_status_codes
-        ]
-
-        result: list[tuple[str, Path]] = []
-        for line in relevant_lines:
-            if apply:
-                status_code = line[1]
-            else:
-                status_code = line[0]
-            path = Path(line[3:])
-            result.append((status_code, path))
-
-        return result
-
     def on_mount(self) -> None:
-
-        changes: list[tuple[str, Path]] = self.get_status(
-            apply=self.apply, files=True, dirs=False
-        )
-
-        for status_code, path in changes:
+        # status can be a space so not using str.split() or str.strip()
+        status_paths = [
+            (adm, Path(line[3:]))
+            for line in chezmoi.status_files.list_out
+            if (adm := line[1] if self.apply else line[0]) in "ADM"
+        ]
+        for status_code, path in status_paths:
             self.status_items.append(
                 ColoredDiff(
                     file_path=path, apply=self.apply, status_code=status_code
