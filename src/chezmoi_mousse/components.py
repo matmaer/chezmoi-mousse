@@ -12,7 +12,7 @@ from textual.reactive import reactive
 from textual.widget import Widget
 from textual.widgets import Collapsible, DirectoryTree, RichLog, Static, Tree
 
-from chezmoi_mousse.chezmoi import chezmoi, subprocess_run
+from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.config import unwanted_dirs, unwanted_files
 
 
