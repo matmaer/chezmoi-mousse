@@ -22,7 +22,7 @@ from textual.widgets import (
 )
 
 from chezmoi_mousse.chezmoi import chezmoi
-from chezmoi_mousse.config import unwanted_dirs, unwanted_files
+from chezmoi_mousse.config import filter_items, unwanted_dirs, unwanted_files
 
 
 def is_reasonable_dotfile(file_path: Path) -> bool:
@@ -291,36 +291,49 @@ class ChezmoiStatus(Container):
 
 class SlideBar(Static):
 
-    def __init__(self) -> None:
-        super().__init__()
-        # pylint: disable=line-too-long
-        self.border_title = "filters "
-        self.unmanaged_tooltip = "Enable to include all un-managed files, even if they live in an un-managed directory. Disable to only show un-managed files in directories which already contain managed files (the default). The purpose is to easily spot new un-managed files in already managed directories. (in both cases, only the un-managed files are shown)"
-        self.junk_tooltip = 'Filter out files and directories considered as "unwanted" for a dotfile manager. These include cache, temporary, trash (recycle bin) and other similar files or directories.  You can disable this, for example if you want to add files to your chezmoi repository which are in a directory named "cache".'
+    class FilterItem(Horizontal):
 
-    def compose(self) -> ComposeResult:
+        def __init__(
+            self,
+            switch_label: str,
+            switch_tooltip: str,
+            switch_id: str = "includeunmanaged",
+        ) -> None:
+            self.switch_label = switch_label
+            self.switch_tooltip = switch_tooltip
+            self.switch_id = switch_id
+            super().__init__(classes="filter-container")
 
-        with Horizontal(classes="filter-container"):
+        def compose(self) -> ComposeResult:
             yield Switch(
                 value=False, id="includeunmanaged", classes="filter-switch"
             )
             yield Label(
-                "Include unmanaged directories",
-                id="unmanagedlabel",
-                classes="filter-label",
+                self.switch_label, id="unmanagedlabel", classes="filter-label"
             )
             yield Label(
                 "(?)", id="unmanagedtooltip", classes="filter-tooltip"
-            ).with_tooltip(tooltip=self.unmanaged_tooltip)
+            ).with_tooltip(tooltip=self.switch_tooltip)
+
+    def __init__(self, filters: dict = filter_items["add_tab"]) -> None:
+        self.filters = filters
+        self.labels = list(self.filters.keys())
+        self.tooltips = list(self.filters.values())
+        super().__init__()
+
+    def compose(self) -> ComposeResult:
+        yield self.FilterItem(
+            switch_label=self.labels[0],
+            switch_tooltip=self.tooltips[0],
+            switch_id="includeunmanaged",
+        )
 
         with Horizontal(classes="filter-container"):
             yield Switch(value=True, id="filterjunk", classes="filter-switch")
-            yield Label(
-                "Filter unwanted paths", id="unwanted", classes="filter-label"
-            )
+            yield Label(self.labels[1], id="unwanted", classes="filter-label")
             yield Label(
                 "(?)", id="junktooltip", classes="filter-tooltip"
-            ).with_tooltip(tooltip=self.junk_tooltip)
+            ).with_tooltip(tooltip=self.tooltips[1])
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
         add_dir_tree = self.screen.query_exactly_one(FilteredAddDirTree)

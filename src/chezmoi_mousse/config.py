@@ -1,3 +1,10 @@
+filter_items = {
+    "add_tab": {
+        "Include unmanaged directories": "Enable to include all un-managed files, even if they live in an un-managed directory. Disable to only show un-managed files in directories which already contain managed files (the default). The purpose is to easily spot new un-managed files in already managed directories. (in both cases, only the un-managed files are shown)",
+        "Filter unwanted paths": 'Filter out files and directories considered as "unwanted" for a dotfile manager. These include cache, temporary, trash (recycle bin) and other similar files or directories.  You can disable this, for example if you want to add files to your chezmoi repository which are in a directory named "cache".',
+    }
+}
+
 unwanted_dirs = {
     "__pycache__",
     ".build",
