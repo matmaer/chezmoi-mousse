@@ -4,8 +4,8 @@ import re
 from collections.abc import Iterable
 from pathlib import Path
 
-from rich.text import Text
 from textual.app import ComposeResult
+from textual.containers import Container
 from textual.content import Content
 from textual.lazy import Lazy
 from textual.reactive import reactive
@@ -84,12 +84,15 @@ class ColoredFileContent(Collapsible):
         self.title = str(self.file_path.relative_to(chezmoi.paths.dest_dir))
 
 
-class RichDiff(RichLog):
+class StaticDiff(Container):
 
     def __init__(self, file_path: Path, apply: bool) -> None:
         self.file_path = file_path
         self.apply = apply
-        super().__init__(auto_scroll=False, wrap=True)
+        super().__init__()
+
+    def compose(self) -> ComposeResult:
+        yield Static(id="staticdiff")
 
     def on_mount(self) -> None:
         added = str(self.app.current_theme.success)
@@ -106,14 +109,18 @@ class RichDiff(RichLog):
             and line[0] in "+- "
             and not line.startswith(("+++", "---"))
         )
-
+        colored_lines = []
         for line in diff_output:
-            style = (
-                added
-                if line.startswith("+")
-                else removed if line.startswith("-") else dimmed
-            )
-            self.write(Text(line, style=style))
+            escaped = line.replace("[", "\\[")
+            if escaped.startswith("+"):
+                colored_lines.append(f"[{added}]{escaped}[/{added}]")
+            elif escaped.startswith("-"):
+                colored_lines.append(f"[{removed}]{escaped}[/{removed}]")
+            else:
+                colored_lines.append(f"[{dimmed}]{escaped}[/{dimmed}]")
+
+        text_widget = self.query_one("#staticdiff", Static)
+        text_widget.update("\n".join(colored_lines))
 
 
 class ColoredDiff(Collapsible):
@@ -145,17 +152,10 @@ class ColoredDiff(Collapsible):
     }
 
     def __init__(self, apply: bool, file_path: Path, status_code: str) -> None:
-        # if true, adds apply status to the list, otherwise "re-add" status
-        self.apply = apply
-        self.file_path = file_path
-        self.status = self.status_info["code name"][status_code]
-        dest_dir = chezmoi.paths.dest_dir  # Cache value
-        self.rel_path = str(self.file_path.relative_to(dest_dir))
-        rich_diff = Lazy(RichDiff(self.file_path, self.apply))
-        super().__init__(rich_diff)
-
-    def on_mount(self) -> None:
-        self.title = f"{self.status} {self.rel_path}"
+        rel_path = str(file_path.relative_to(chezmoi.paths.dest_dir))
+        title = f"{self.status_info["code name"][status_code]} {rel_path}"
+        colored_diff = StaticDiff(file_path, apply)
+        super().__init__(colored_diff, title=title)
 
 
 class FilteredAddDirTree(DirectoryTree):
@@ -166,7 +166,7 @@ class FilteredAddDirTree(DirectoryTree):
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
         managed_dirs = chezmoi.paths.managed_dirs
         managed_files = chezmoi.paths.managed_files
-        dest_dir = chezmoi.paths.dest_dir  # Cache value
+        dest_dir = chezmoi.paths.dest_dir
 
         # Switches: Red - Green (default)
         if not self.include_unmanaged_dirs and self.filter_unwanted:

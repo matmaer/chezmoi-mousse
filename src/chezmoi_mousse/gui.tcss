@@ -81,7 +81,7 @@ AutoWarning {
   }
 }
 
-RichDiff, RichFileContent {
+RichFileContent, StaticDiff {
   height: auto;
   margin-bottom: 1;
 }

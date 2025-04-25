@@ -2,16 +2,14 @@ from pathlib import Path
 
 import pytest
 
-from textual.widgets import Collapsible, DirectoryTree, RichLog, Tree
-
 import chezmoi_mousse.components as chezmoi_components
 from chezmoi_mousse.chezmoi import Chezmoi
 from chezmoi_mousse.components import (
     ColoredDiff,
     ColoredFileContent,
     FilteredAddDirTree,
-    RichDiff,
     RichFileContent,
+    StaticDiff,
 )
 
 
@@ -30,8 +28,8 @@ def test_rich_file_content_instantiation(rich_file_content):
 
 
 def test_rich_diff_instantiation():
-    instance = RichDiff(Path.home(), apply=True)
-    assert isinstance(instance, RichDiff)
+    instance = StaticDiff(Path.home(), apply=True)
+    assert isinstance(instance, StaticDiff)
 
 
 def test_colored_diff_instantiation():
