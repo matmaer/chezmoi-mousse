@@ -253,7 +253,6 @@ class ManagedTree(Tree):
         self.root.expand()
 
 
-
 class ChezmoiStatus(VerticalGroup):
 
     def __init__(self, apply: bool) -> None:
