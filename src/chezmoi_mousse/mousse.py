@@ -32,7 +32,7 @@ from chezmoi_mousse.components import (
     SlideBar,
     is_reasonable_dotfile,
 )
-from chezmoi_mousse.config import pw_mgr_info, filter_items
+from chezmoi_mousse.config import pw_mgr_info, filter_switches
 
 
 class AddDirTreeTab(VerticalScroll):
@@ -40,14 +40,14 @@ class AddDirTreeTab(VerticalScroll):
     class SlidebarActions(SlideBar):
 
         def __init__(self) -> None:
-            super().__init__(filter_items["add_tab"])
+            super().__init__(filter_switches["add_tab"])
 
         def on_switch_changed(self, event: Switch.Changed) -> None:
             add_dir_tree = self.screen.query_exactly_one(FilteredAddDirTree)
-            if event.switch.id == "includeunmanaged":
+            if event.switch.id == "Include_unmanaged_directories":
                 add_dir_tree.include_unmanaged_dirs = event.value
                 add_dir_tree.reload()
-            elif event.switch.id == "unwanted":
+            elif event.switch.id == "Filter_unwanted_paths":
                 add_dir_tree.filter_unwanted = event.value
                 add_dir_tree.reload()
 

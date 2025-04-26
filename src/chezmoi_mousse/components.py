@@ -9,8 +9,6 @@ from textual.containers import Container, VerticalGroup, Horizontal
 from textual.content import Content
 from textual.lazy import Lazy
 from textual.reactive import reactive
-
-# from textual.widget import Widget
 from textual.widgets import (
     Collapsible,
     DirectoryTree,
@@ -22,7 +20,7 @@ from textual.widgets import (
 )
 
 from chezmoi_mousse.chezmoi import chezmoi
-from chezmoi_mousse.config import filter_items, unwanted_dirs, unwanted_files
+from chezmoi_mousse.config import unwanted_dirs, unwanted_files
 
 
 def is_reasonable_dotfile(file_path: Path) -> bool:
@@ -319,20 +317,20 @@ class SlideBar(Static):
 
     def __init__(self, filters: dict) -> None:
         self.filters = filters
-        self.labels = list(self.filters.keys())
-        self.tooltips = list(self.filters.values())
+        self.filter_items = []
         super().__init__()
 
     def compose(self) -> ComposeResult:
-        yield self.FilterItem(
-            switch_label=self.labels[0],
-            switch_tooltip=self.tooltips[0],
-            switch_id="includeunmanaged",
-            initial_state=False,
-        )
-        yield self.FilterItem(
-            switch_label=self.labels[1],
-            switch_tooltip=self.tooltips[1],
-            switch_id="unwanted",
-            initial_state=True,
-        )
+        yield VerticalGroup(*self.filter_items)
+
+    def on_mount(self) -> None:
+        for switch_label, switch_tooltip in self.filters.items():
+            self.filter_items.append(
+                self.FilterItem(
+                    switch_label=switch_label,
+                    switch_tooltip=switch_tooltip,
+                    switch_id=switch_label.replace(" ", "_"),
+                    initial_state=False,
+                )
+            )
+            self.refresh(recompose=True)

@@ -138,6 +138,10 @@ SlideBar {
   offset-x: 100%;
   transition: offset 380ms;
 
+  & VerticalGroup {
+    width: auto;
+  }
+
   .filter-container {
     background-tint: $surface;
     background: $surface;
@@ -164,11 +168,11 @@ SlideBar {
         color: $success-lighten-1;
       }
     }
-    &:focus {}
   }
   .filter-label {
     padding-bottom: 1;
     padding-right: 1;
+    width: auto;
   }
   .filter-tooltip {
     padding-right: 2;
