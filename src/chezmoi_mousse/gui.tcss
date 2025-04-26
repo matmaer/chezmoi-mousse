@@ -59,26 +59,24 @@
     }
   }
 
-  & AutoWarning {
-    margin: 0 1 0 1;
-  }
-
   & ColoredFileContent {
     background-tint: $surface;
     background: $surface;
-  }
-  & RichFileContent {
     margin-right: 3;
-    padding-left: 1;
   }
   & Horizontal {
     align: center bottom;
     dock: bottom;
-    height: 2;
+    height: 3;
   }
 }
 
-RichFileContent, StaticDiff, AutoWarning {
+AutoWarning {
+  margin: 0 1 0 1;
+  height: auto;
+}
+
+StaticDiff {
   height: auto;
 }
 

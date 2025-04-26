@@ -71,7 +71,6 @@ class RichFileContent(RichLog):
             auto_scroll=False,
             wrap=True,
             highlight=True,
-            classes="richfilecontent",
         )
 
     def on_mount(self) -> None:
