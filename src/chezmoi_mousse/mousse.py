@@ -244,11 +244,11 @@ class ApplyTab(VerticalScroll):
 
     def compose(self) -> ComposeResult:
         yield ChezmoiStatus(apply=True)
-        yield ManagedTree(label=str("root_node"), id="applytree")
-        yield SlideBar(self.filter_switches, id="applyslidebar")
+        yield ManagedTree(label=str("root_node"), id="apply_tree")
+        yield SlideBar(self.filter_switches, id="apply_slidebar")
 
     def action_toggle_slidebar(self):
-        self.screen.query_exactly_one("#applyslidebar").toggle_class(
+        self.screen.query_exactly_one("#apply_slidebar").toggle_class(
             "-visible"
         )
 
@@ -256,12 +256,14 @@ class ApplyTab(VerticalScroll):
         self.notify("will apply path")
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
-        managed_tree = self.query_exactly_one("#applytree")
+        managed_tree = self.query_exactly_one("#apply_tree")
         if event.switch.id == "notexisting":
             # filter logic here
+            self.notify(f"Not yet implemented for {managed_tree}")
             managed_tree.refresh()
         elif event.switch.id == "changedfiles":
             # filter logic here
+            self.notify(f"Not yet implemented {managed_tree}")
             managed_tree.refresh()
 
 
@@ -285,9 +287,10 @@ class ReAddTab(VerticalScroll):
         yield ManagedTree(
             label=str("root_node"), show_existing_only=True, id="re_add_tree"
         )
+        yield SlideBar(self.filter_switches, id="re_add_slidebar")
 
     def action_toggle_slidebar(self):
-        self.screen.query_exactly_one("#applyslidebar").toggle_class(
+        self.screen.query_exactly_one("#re_add_slidebar").toggle_class(
             "-visible"
         )
 
@@ -295,10 +298,10 @@ class ReAddTab(VerticalScroll):
         self.notify("will re-add path")
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
-        managed_tree = self.query_exactly_one("#applytree")
+        managed_tree = self.query_exactly_one("#re_add_tree")
         if event.switch.id == "changedfiles":
             # filter logic here
-            managed_tree.refresh()
+            self.notify(f"Not yet implemented for {managed_tree}")
 
 
 class DiagramTab(VerticalScroll):
