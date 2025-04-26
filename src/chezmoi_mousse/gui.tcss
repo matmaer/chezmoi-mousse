@@ -221,7 +221,7 @@ ChezmoiStatus {
 }
 
 LoadingScreen {
-  & #loader-log {
+  & RichLog {
     color: $secondary;
     height: 11;
     margin: 2 1 2 1;

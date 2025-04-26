@@ -73,9 +73,7 @@ class LoadingScreen(Screen):
     def compose(self) -> ComposeResult:
         with Middle():
             yield Center(self.animated_fade)
-            yield Center(
-                RichLog(name="loader log", id="loader-log", max_lines=11)
-            )
+            yield Center(RichLog(name="loader log", max_lines=11))
             yield Center(
                 Button(
                     id="continue",
@@ -89,7 +87,7 @@ class LoadingScreen(Screen):
         log_text = f"{log_label} {'.' * padding} loaded"
 
         def update_log():
-            self.screen.query_exactly_one(RichLog).write(log_text)
+            self.screen.query_one(RichLog).write(log_text)
 
         self.app.call_from_thread(update_log)
 
@@ -109,7 +107,7 @@ class LoadingScreen(Screen):
             for worker in self.app.workers
             if worker.group == "io_workers"
         ):
-            self.query_exactly_one("#continue").disabled = False
+            self.query_one("#continue").disabled = False
 
     def create_fade(self) -> deque[Style]:
         start_color = Color.parse(self.app.current_theme.primary)
@@ -131,11 +129,11 @@ class LoadingScreen(Screen):
             self.run_io_worker(arg_id)
 
     def on_key(self) -> None:
-        if not self.query_exactly_one("#continue").disabled:
+        if not self.query_one("#continue").disabled:
             self.dismiss()
 
     def on_click(self) -> None:
-        if not self.query_exactly_one("#continue").disabled:
+        if not self.query_one("#continue").disabled:
             self.dismiss()
 
 
@@ -150,12 +148,12 @@ class MainScreen(Screen):
             yield ApplyTab()
             yield Lazy(ReAddTab())
             yield Lazy(AddDirTreeTab())
-            yield Lazy(DoctorTab(id="doctor", can_focus=False))
+            yield Lazy(DoctorTab())
             yield Lazy(DiagramTab())
         yield Footer()
 
     def action_toggle_spacing(self):
-        self.screen.query_exactly_one(Header).toggle_class("-tall")
+        self.screen.query_one(Header).toggle_class("-tall")
 
     def key_space(self) -> None:
         self.action_toggle_spacing()
