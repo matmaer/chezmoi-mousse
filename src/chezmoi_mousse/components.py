@@ -253,6 +253,7 @@ class ManagedTree(Tree):
         self.root.expand()
 
 
+
 class ChezmoiStatus(VerticalGroup):
 
     def __init__(self, apply: bool) -> None:
@@ -308,10 +309,10 @@ class SlideBar(VerticalGroup):
                 tooltip=self.switch_tooltip
             )
 
-    def __init__(self, filters: dict) -> None:
+    def __init__(self, filters: dict, **kwargs) -> None:
         self.filters = filters
         self.filter_items = []
-        super().__init__()
+        super().__init__(**kwargs)
 
     def compose(self) -> ComposeResult:
         yield from self.filter_items
