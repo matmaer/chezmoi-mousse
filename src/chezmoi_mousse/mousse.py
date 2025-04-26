@@ -22,7 +22,7 @@ from textual.widgets import (
 )
 
 from chezmoi_mousse import FLOW
-from chezmoi_mousse.chezmoi import chezmoi
+from chezmoi_mousse.chezmoi import chezmoi, dest_dir
 from chezmoi_mousse.components import (
     AutoWarning,
     ChezmoiStatus,
@@ -70,9 +70,7 @@ class AddDirTreeTab(VerticalScroll):
     ]
 
     def compose(self) -> ComposeResult:
-        yield FilteredAddDirTree(
-            chezmoi.paths.dest_dir, id="adddirtree", classes="dir-tree"
-        )
+        yield FilteredAddDirTree(dest_dir, id="adddirtree", classes="dir-tree")
         yield Lazy(self.SlidebarActions())
 
     def action_toggle_slidebar(self):

@@ -1,4 +1,5 @@
 from collections import deque
+from pathlib import Path
 
 from rich.segment import Segment
 from rich.style import Style
@@ -21,7 +22,7 @@ from textual.widgets import (
 )
 
 from chezmoi_mousse import SPLASH
-from chezmoi_mousse.chezmoi import chezmoi
+from chezmoi_mousse.chezmoi import chezmoi, dest_dir
 from chezmoi_mousse.mousse import (
     AddDirTreeTab,
     ApplyTab,
@@ -112,10 +113,12 @@ class LoadingScreen(Screen):
 
     @work(thread=True, group="path_workers")
     def populate_paths(self) -> None:
+
+        global dest_dir
+        dest_dir = Path(chezmoi.dump_config.dict_out["destDir"])
         paths_class = getattr(chezmoi, "paths")
         paths_class.update(
             update_std_out=False,
-            dump_config=chezmoi.dump_config,
             managed_dirs=chezmoi.managed_dirs,
             managed_files=chezmoi.managed_files,
         )

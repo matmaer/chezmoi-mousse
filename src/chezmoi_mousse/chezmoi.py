@@ -3,6 +3,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from subprocess import TimeoutExpired, run
 
+dest_dir = Path.home()
+
 
 def subprocess_run(long_command):
     try:
@@ -57,23 +59,19 @@ class InputOutput:
 
 @dataclass
 class ChezmoiPaths:
-    dest_dir: Path
     managed_dirs: set[Path]
     managed_files: set[Path]
 
     def update(
         self,
-        dump_config: InputOutput,
         managed_dirs: InputOutput,
         managed_files: InputOutput,
         update_std_out: bool = True,
     ) -> None:
         if update_std_out:
-            dump_config.update()
             managed_dirs.update()
             managed_files.update()
 
-        self.dest_dir = Path(dump_config.dict_out["destDir"])
         self.managed_dirs = {Path(p) for p in managed_dirs.list_out}
         self.managed_files = {Path(p) for p in managed_files.list_out}
 
@@ -142,9 +140,7 @@ class Chezmoi:
         setattr(
             self,
             "paths",
-            ChezmoiPaths(
-                dest_dir=Path.home(), managed_dirs=set(), managed_files=set()
-            ),
+            ChezmoiPaths(managed_dirs=set(), managed_files=set()),
         )
 
     @property
