@@ -70,7 +70,7 @@ class AddDirTreeTab(VerticalScroll):
     ]
 
     def compose(self) -> ComposeResult:
-        yield FilteredAddDirTree(dest_dir, id="adddirtree", classes="dir-tree")
+        yield FilteredAddDirTree(dest_dir, classes="dir-tree")
         yield self.SlidebarActions()
 
     def action_toggle_slidebar(self):
