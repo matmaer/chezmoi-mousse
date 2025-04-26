@@ -35,7 +35,7 @@ from chezmoi_mousse.components import (
 from chezmoi_mousse.config import pw_mgr_info
 
 
-class AddDirTreeTab(VerticalScroll):
+class AddTab(VerticalScroll):
 
     filter_switches = {
         "unmanaged": {

@@ -24,7 +24,7 @@ from textual.widgets import (
 from chezmoi_mousse import SPLASH
 from chezmoi_mousse.chezmoi import chezmoi, dest_dir
 from chezmoi_mousse.mousse import (
-    AddDirTreeTab,
+    AddTab,
     ApplyTab,
     DiagramTab,
     DoctorTab,
@@ -147,7 +147,7 @@ class MainScreen(Screen):
         with TabbedContent("Apply", "Re-Add", "Add", "Doctor", "Diagram"):
             yield ApplyTab()
             yield Lazy(ReAddTab())
-            yield Lazy(AddDirTreeTab())
+            yield Lazy(AddTab())
             yield Lazy(DoctorTab())
             yield Lazy(DiagramTab())
         yield Footer()
