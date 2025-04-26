@@ -69,9 +69,6 @@ class LoadingScreen(Screen):
     def __init__(self) -> None:
         self.animated_fade = self.AnimatedFade(line_styles=self.create_fade())
         super().__init__()
-        self.path_worker_timer = self.set_interval(
-            interval=0.1, callback=self.path_workers_finished
-        )
         self.all_workers_timer = self.set_interval(
             interval=0.1, callback=self.all_workers_finished
         )
@@ -99,45 +96,21 @@ class LoadingScreen(Screen):
 
         self.app.call_from_thread(update_log)
 
-    @work(thread=True, group="path_workers")
-    def run_path_worker(self, arg_id) -> None:
-        io_class = getattr(chezmoi, arg_id)
-        io_class.update()
-        self.log_text(io_class.label)
-
     @work(thread=True, group="io_workers")
     def run_io_worker(self, arg_id) -> None:
         io_class = getattr(chezmoi, arg_id)
         io_class.update()
         self.log_text(io_class.label)
-
-    @work(thread=True, group="path_workers")
-    def populate_paths(self) -> None:
-
-        global dest_dir
-        dest_dir = Path(chezmoi.dump_config.dict_out["destDir"])
-        paths_class = getattr(chezmoi, "paths")
-        paths_class.update(
-            update_std_out=False,
-            managed_dirs=chezmoi.managed_dirs,
-            managed_files=chezmoi.managed_files,
-        )
-        self.log_text("Update chezmoi paths")
-
-    def path_workers_finished(self) -> None:
-        if all(
-            worker.state == "finished"
-            for worker in self.app.workers
-            if worker.group == "path_workers"
-        ):
-            self.path_worker_timer.stop()
-            self.populate_paths()
+        if arg_id == "dump_config":
+            global dest_dir
+            dest_dir = Path(io_class.dict_out["destDir"])
+            self.log_text(f"destDir={str(dest_dir)}")
 
     def all_workers_finished(self) -> None:
         if all(
             worker.state == "finished"
             for worker in self.app.workers
-            if worker.group == "path_workers" or worker.group == "io_workers"
+            if worker.group == "io_workers"
         ):
             self.all_workers_timer.stop()
             self.query_exactly_one("#continue").disabled = False
@@ -155,10 +128,8 @@ class LoadingScreen(Screen):
     def on_mount(self) -> None:
 
         to_process = chezmoi.long_commands.copy()
-
-        for arg_id in ("dump_config", "managed_dirs", "managed_files"):
-            to_process.pop(arg_id)
-            self.run_path_worker(arg_id)
+        self.run_io_worker("dump_config")
+        to_process.pop("dump_config")
 
         for arg_id in to_process:
             self.run_io_worker(arg_id)

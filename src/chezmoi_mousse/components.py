@@ -174,8 +174,8 @@ class FilteredAddDirTree(DirectoryTree):
     filter_unwanted = reactive(True, always_update=True)
 
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
-        managed_dirs = chezmoi.paths.managed_dirs
-        managed_files = chezmoi.paths.managed_files
+        managed_dirs = chezmoi.managed_dir_paths
+        managed_files = chezmoi.managed_file_paths
         self.root.label = f"{dest_dir} (destDir)"
 
         # Switches: Red - Green (default)
@@ -239,7 +239,7 @@ class ManagedTree(Tree):
                 parent = parent.add(dir_path.parts[-1], dir_path)
             files = [
                 f
-                for f in chezmoi.paths.managed_files
+                for f in chezmoi.managed_file_paths
                 if f.parent == dir_path
                 and (not self.show_existing_only or f.exists())
             ]
@@ -247,7 +247,7 @@ class ManagedTree(Tree):
                 parent.add_leaf(str(file.parts[-1]), file)
             sub_dirs = [
                 d
-                for d in chezmoi.paths.managed_dirs
+                for d in chezmoi.managed_dir_paths
                 if d.parent == dir_path
                 and (not self.show_existing_only or d.exists())
             ]

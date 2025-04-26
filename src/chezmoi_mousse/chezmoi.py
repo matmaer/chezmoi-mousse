@@ -57,25 +57,6 @@ class InputOutput:
             self.dict_out = {}
 
 
-@dataclass
-class ChezmoiPaths:
-    managed_dirs: set[Path]
-    managed_files: set[Path]
-
-    def update(
-        self,
-        managed_dirs: InputOutput,
-        managed_files: InputOutput,
-        update_std_out: bool = True,
-    ) -> None:
-        if update_std_out:
-            managed_dirs.update()
-            managed_files.update()
-
-        self.managed_dirs = {Path(p) for p in managed_dirs.list_out}
-        self.managed_files = {Path(p) for p in managed_files.list_out}
-
-
 class Chezmoi:
 
     cat_config: InputOutput
@@ -88,7 +69,6 @@ class Chezmoi:
     status_dirs: InputOutput
     status_files: InputOutput
     template_data: InputOutput
-    paths: ChezmoiPaths
 
     base = [
         "chezmoi",
@@ -137,12 +117,6 @@ class Chezmoi:
             self.long_commands[arg_id] = long_cmd
             setattr(self, arg_id, InputOutput(long_cmd))
 
-        setattr(
-            self,
-            "paths",
-            ChezmoiPaths(managed_dirs=set(), managed_files=set()),
-        )
-
     @property
     def autoadd_enabled(self) -> bool:
         return self.dump_config.dict_out["git"]["autoadd"]
@@ -154,6 +128,14 @@ class Chezmoi:
     @property
     def autopush_enabled(self) -> bool:
         return self.dump_config.dict_out["git"]["autopush"]
+
+    @property
+    def managed_dir_paths(self) -> set[Path]:
+        return {Path(p) for p in self.managed_dirs.list_out}
+
+    @property
+    def managed_file_paths(self) -> set[Path]:
+        return {Path(p) for p in self.managed_files.list_out}
 
     def unmanaged_in_d(self, dir_path: Path) -> list[Path]:
         if not dir_path.is_dir():
