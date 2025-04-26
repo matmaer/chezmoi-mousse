@@ -69,9 +69,6 @@ class LoadingScreen(Screen):
     def __init__(self) -> None:
         self.animated_fade = self.AnimatedFade(line_styles=self.create_fade())
         super().__init__()
-        self.all_workers_timer = self.set_interval(
-            interval=0.1, callback=self.all_workers_finished
-        )
 
     def compose(self) -> ComposeResult:
         with Middle():
@@ -112,7 +109,6 @@ class LoadingScreen(Screen):
             for worker in self.app.workers
             if worker.group == "io_workers"
         ):
-            self.all_workers_timer.stop()
             self.query_exactly_one("#continue").disabled = False
 
     def create_fade(self) -> deque[Style]:
@@ -126,7 +122,7 @@ class LoadingScreen(Screen):
         return deque([Style(color=color.hex, bold=True) for color in fade])
 
     def on_mount(self) -> None:
-
+        self.set_interval(interval=0.1, callback=self.all_workers_finished)
         to_process = chezmoi.long_commands.copy()
         self.run_io_worker("dump_config")
         to_process.pop("dump_config")
