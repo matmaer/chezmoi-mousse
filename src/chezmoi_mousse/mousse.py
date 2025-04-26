@@ -70,8 +70,8 @@ class AddDirTreeTab(VerticalScroll):
     ]
 
     def compose(self) -> ComposeResult:
-        yield FilteredAddDirTree(dest_dir, id="adddirtree", classes="dir-tree")
-        yield Lazy(self.SlidebarActions())
+        yield FilteredAddDirTree(dest_dir, classes="dir-tree")
+        yield self.SlidebarActions()
 
     def action_toggle_slidebar(self):
         self.screen.query_exactly_one(SlideBar).toggle_class("-visible")
@@ -99,7 +99,8 @@ class ChezmoiAdd(ModalScreen):
             id="addfilemodalcontainer", classes="operationmodal"
         ):
             yield AutoWarning()
-            yield VerticalGroup(*self.add_path_items)
+            with VerticalGroup(classes="collapsiblegroup"):
+                yield from self.add_path_items
             yield Horizontal(
                 Button(self.add_label, id="addfile"),
                 Button("- Cancel -", id="canceladding"),
@@ -142,32 +143,32 @@ class ChezmoiAdd(ModalScreen):
 class DoctorTab(VerticalScroll):
 
     def compose(self) -> ComposeResult:
-        with VerticalScroll():
-            yield DataTable(id="doctortable", show_cursor=False)
-            with VerticalGroup(id="doctorcollapsibles"):
-                yield Collapsible(
-                    Pretty(chezmoi.dump_config.dict_out),
-                    title="output from 'chezmoi dump-config'",
-                )
-                yield Collapsible(
-                    ListView(id="cmdnotfound"), title="Commands Not Found"
-                )
-                yield Collapsible(
-                    Pretty(chezmoi.template_data.dict_out),
-                    title="chezmoi data (template data)",
-                )
-                yield Collapsible(
-                    DataTable(id="gitlog", cursor_type="row"),
-                    title="chezmoi git log (last 20 commits)",
-                )
-                yield Collapsible(
-                    Pretty(chezmoi.cat_config.list_out),
-                    title="chezmoi cat-config (contents of config-file)",
-                )
-                yield Collapsible(
-                    Pretty(chezmoi.ignored.list_out),
-                    title="chezmoi ignored (git ignore in source-dir)",
-                )
+
+        yield DataTable(id="doctortable", show_cursor=False)
+        with VerticalGroup(classes="collapsiblegroup"):
+            yield Collapsible(
+                Pretty(chezmoi.dump_config.dict_out),
+                title="output from 'chezmoi dump-config'",
+            )
+            yield Collapsible(
+                ListView(id="cmdnotfound"), title="Commands Not Found"
+            )
+            yield Collapsible(
+                Pretty(chezmoi.template_data.dict_out),
+                title="chezmoi data (template data)",
+            )
+            yield Collapsible(
+                DataTable(id="gitlog", cursor_type="row"),
+                title="chezmoi git log (last 20 commits)",
+            )
+            yield Collapsible(
+                Pretty(chezmoi.cat_config.list_out),
+                title="chezmoi cat-config (contents of config-file)",
+            )
+            yield Collapsible(
+                Pretty(chezmoi.ignored.list_out),
+                title="chezmoi ignored (git ignore in source-dir)",
+            )
 
     def on_mount(self) -> None:
 
@@ -184,8 +185,8 @@ class DoctorTab(VerticalScroll):
             "info": f"{self.app.current_theme.foreground}",
         }
 
-        list_view = self.query_exactly_one("#cmdnotfound", ListView)
-        table = self.query_exactly_one("#doctortable", DataTable)
+        list_view = self.query_one("#cmdnotfound", ListView)
+        table = self.query_one("#doctortable", DataTable)
         doctor_rows = chezmoi.doctor.list_out
         table.add_columns(*doctor_rows[0].split())
 
@@ -241,7 +242,7 @@ class ReAddTab(VerticalScroll):
 
     def __init__(self) -> None:
         self.re_add_tree = ManagedTree(
-            label=str("root_node"), id="re_add_tree", show_existing_only=True
+            label=str("root_node"), show_existing_only=True
         )
         super().__init__()
 

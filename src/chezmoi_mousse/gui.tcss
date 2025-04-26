@@ -59,17 +59,10 @@
     }
   }
 
-  & AutoWarning {
-    margin: 0 1 1 1;
-  }
-
   & ColoredFileContent {
     background-tint: $surface;
     background: $surface;
-  }
-  & RichFileContent {
     margin-right: 3;
-    padding-left: 1;
   }
   & Horizontal {
     align: center bottom;
@@ -78,7 +71,12 @@
   }
 }
 
-RichFileContent, StaticDiff, AutoWarning {
+AutoWarning {
+  margin: 0 1 0 1;
+  height: auto;
+}
+
+StaticDiff {
   height: auto;
 }
 
@@ -205,23 +203,19 @@ Toast {
   background-tint: $surface;
 }
 
-ChezmoiStatus {
-  height: auto;
-  margin-bottom: 1;
-}
-
 #doctortable {
   & > .datatable--header {
     text-style: none;
   }
 }
 
-#doctorcollapsibles {
+.collapsiblegroup {
+  height: auto;
   margin: 1 0 1 0;
 }
 
 LoadingScreen {
-  & #loader-log {
+  & RichLog {
     color: $secondary;
     height: 11;
     margin: 2 1 2 1;

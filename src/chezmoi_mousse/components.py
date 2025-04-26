@@ -5,7 +5,7 @@ from collections.abc import Iterable
 from pathlib import Path
 
 from textual.app import ComposeResult
-from textual.containers import Container, VerticalGroup, Horizontal
+from textual.containers import Container, HorizontalGroup, VerticalGroup
 from textual.content import Content
 from textual.lazy import Lazy
 from textual.reactive import reactive
@@ -67,12 +67,7 @@ class RichFileContent(RichLog):
 
     def __init__(self, file_path: Path) -> None:
         self.file_path = file_path
-        super().__init__(
-            auto_scroll=False,
-            wrap=True,
-            highlight=True,
-            classes="richfilecontent",
-        )
+        super().__init__(auto_scroll=False, wrap=True, highlight=True)
 
     def on_mount(self) -> None:
         if not is_reasonable_dotfile(self.file_path):
@@ -102,7 +97,7 @@ class StaticDiff(Container):
         super().__init__()
 
     def compose(self) -> ComposeResult:
-        yield Static(id="staticdiff")
+        yield Static()
 
     def on_mount(self) -> None:
         added = str(self.app.current_theme.success)
@@ -129,7 +124,7 @@ class StaticDiff(Container):
             else:
                 colored_lines.append(f"[{dimmed}]{escaped}[/{dimmed}]")
 
-        text_widget = self.query_one("#staticdiff", Static)
+        text_widget = self.query_one(Static)
         text_widget.update("\n".join(colored_lines))
 
 
@@ -258,7 +253,7 @@ class ManagedTree(Tree):
         self.root.expand()
 
 
-class ChezmoiStatus(Container):
+class ChezmoiStatus(VerticalGroup):
 
     def __init__(self, apply: bool) -> None:
         # if true, adds apply status to the list, otherwise "re-add" status
@@ -267,7 +262,7 @@ class ChezmoiStatus(Container):
         super().__init__()
 
     def compose(self) -> ComposeResult:
-        yield VerticalGroup(*self.status_items)
+        yield from self.status_items
 
     def on_mount(self) -> None:
         # status can be a space so not using str.split() or str.strip()
@@ -285,9 +280,9 @@ class ChezmoiStatus(Container):
         self.refresh(recompose=True)
 
 
-class SlideBar(Static):
+class SlideBar(VerticalGroup):
 
-    class FilterItem(Horizontal):
+    class FilterItem(HorizontalGroup):
 
         def __init__(
             self,
@@ -319,7 +314,7 @@ class SlideBar(Static):
         super().__init__()
 
     def compose(self) -> ComposeResult:
-        yield VerticalGroup(*self.filter_items)
+        yield from self.filter_items
 
     def on_mount(self) -> None:
         for switch_id, items in self.filters.items():
@@ -331,4 +326,4 @@ class SlideBar(Static):
                     initial_state=items["switch_state"],
                 )
             )
-            self.refresh(recompose=True)
+        self.refresh(recompose=True)
