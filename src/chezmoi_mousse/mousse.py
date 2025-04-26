@@ -71,7 +71,7 @@ class AddDirTreeTab(VerticalScroll):
 
     def compose(self) -> ComposeResult:
         yield FilteredAddDirTree(dest_dir, id="adddirtree", classes="dir-tree")
-        yield Lazy(self.SlidebarActions())
+        yield self.SlidebarActions()
 
     def action_toggle_slidebar(self):
         self.screen.query_exactly_one(SlideBar).toggle_class("-visible")
