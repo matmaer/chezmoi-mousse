@@ -49,9 +49,8 @@ class LoadingScreen(Screen):
 
     class AnimatedFade(Static):
 
-        line_styles: deque[Style]
-
-        def __init__(self) -> None:
+        def __init__(self, line_styles: deque[Style]) -> None:
+            self.line_styles = line_styles
             super().__init__()
             self.styles.height = len(SPLASH)
             self.styles.width = len(max(SPLASH, key=len))
@@ -67,9 +66,8 @@ class LoadingScreen(Screen):
             self.set_interval(interval=0.11, callback=self.refresh)
 
     def __init__(self) -> None:
+        self.animated_fade = self.AnimatedFade(line_styles=self.create_fade())
         super().__init__()
-        self.AnimatedFade.line_styles = self.create_fade()
-
         self.path_worker_timer = self.set_interval(
             interval=0.1, callback=self.path_workers_finished
         )
@@ -79,7 +77,7 @@ class LoadingScreen(Screen):
 
     def compose(self) -> ComposeResult:
         with Middle():
-            yield Center(self.AnimatedFade())
+            yield Center(self.animated_fade)
             yield Center(
                 RichLog(name="loader log", id="loader-log", max_lines=11)
             )
