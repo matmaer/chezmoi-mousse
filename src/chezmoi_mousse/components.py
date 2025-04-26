@@ -19,7 +19,7 @@ from textual.widgets import (
     Tree,
 )
 
-from chezmoi_mousse.chezmoi import chezmoi
+from chezmoi_mousse.chezmoi import chezmoi, dest_dir
 from chezmoi_mousse.config import unwanted_dirs, unwanted_files
 
 
@@ -91,7 +91,7 @@ class ColoredFileContent(Collapsible):
         self.file_path = file_path
         rich_file_content = Lazy(RichFileContent(self.file_path))
         super().__init__(rich_file_content, classes="coloredfilecontent")
-        self.title = str(self.file_path.relative_to(chezmoi.paths.dest_dir))
+        self.title = str(self.file_path.relative_to(dest_dir))
 
 
 class StaticDiff(Container):
@@ -162,7 +162,7 @@ class ColoredDiff(Collapsible):
     }
 
     def __init__(self, apply: bool, file_path: Path, status_code: str) -> None:
-        rel_path = str(file_path.relative_to(chezmoi.paths.dest_dir))
+        rel_path = str(file_path.relative_to(dest_dir))
         title = f"{self.status_info["code name"][status_code]} {rel_path}"
         colored_diff = StaticDiff(file_path, apply)
         super().__init__(colored_diff, title=title)
@@ -174,9 +174,8 @@ class FilteredAddDirTree(DirectoryTree):
     filter_unwanted = reactive(True, always_update=True)
 
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
-        managed_dirs = chezmoi.paths.managed_dirs
-        managed_files = chezmoi.paths.managed_files
-        dest_dir = chezmoi.paths.dest_dir
+        managed_dirs = chezmoi.managed_dir_paths
+        managed_files = chezmoi.managed_file_paths
         self.root.label = f"{dest_dir} (destDir)"
 
         # Switches: Red - Green (default)
@@ -232,17 +231,15 @@ class ManagedTree(Tree):
 
     def on_mount(self) -> None:
 
-        dest_dir_path = chezmoi.paths.dest_dir
-
         def recurse_paths(parent, dir_path):
-            if dir_path == dest_dir_path:
+            if dir_path == dest_dir:
                 parent = self.root
                 self.root.label = str(dir_path)
             else:
                 parent = parent.add(dir_path.parts[-1], dir_path)
             files = [
                 f
-                for f in chezmoi.paths.managed_files
+                for f in chezmoi.managed_file_paths
                 if f.parent == dir_path
                 and (not self.show_existing_only or f.exists())
             ]
@@ -250,14 +247,14 @@ class ManagedTree(Tree):
                 parent.add_leaf(str(file.parts[-1]), file)
             sub_dirs = [
                 d
-                for d in chezmoi.paths.managed_dirs
+                for d in chezmoi.managed_dir_paths
                 if d.parent == dir_path
                 and (not self.show_existing_only or d.exists())
             ]
             for sub_dir in sub_dirs:
                 recurse_paths(parent, sub_dir)
 
-        recurse_paths(self.root, dest_dir_path)
+        recurse_paths(self.root, dest_dir)
         self.root.expand()
 
 

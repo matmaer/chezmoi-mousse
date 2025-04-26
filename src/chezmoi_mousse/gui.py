@@ -1,4 +1,5 @@
 from collections import deque
+from pathlib import Path
 
 from rich.segment import Segment
 from rich.style import Style
@@ -21,7 +22,7 @@ from textual.widgets import (
 )
 
 from chezmoi_mousse import SPLASH
-from chezmoi_mousse.chezmoi import chezmoi
+from chezmoi_mousse.chezmoi import chezmoi, dest_dir
 from chezmoi_mousse.mousse import (
     AddDirTreeTab,
     ApplyTab,
@@ -49,9 +50,8 @@ class LoadingScreen(Screen):
 
     class AnimatedFade(Static):
 
-        line_styles: deque[Style]
-
-        def __init__(self) -> None:
+        def __init__(self, line_styles: deque[Style]) -> None:
+            self.line_styles = line_styles
             super().__init__()
             self.styles.height = len(SPLASH)
             self.styles.width = len(max(SPLASH, key=len))
@@ -67,19 +67,15 @@ class LoadingScreen(Screen):
             self.set_interval(interval=0.11, callback=self.refresh)
 
     def __init__(self) -> None:
+        self.animated_fade = self.AnimatedFade(line_styles=self.create_fade())
         super().__init__()
-        self.AnimatedFade.line_styles = self.create_fade()
-
-        self.path_worker_timer = self.set_interval(
-            interval=0.1, callback=self.path_workers_finished
-        )
         self.all_workers_timer = self.set_interval(
             interval=0.1, callback=self.all_workers_finished
         )
 
     def compose(self) -> ComposeResult:
         with Middle():
-            yield Center(self.AnimatedFade())
+            yield Center(self.animated_fade)
             yield Center(
                 RichLog(name="loader log", id="loader-log", max_lines=11)
             )
@@ -100,43 +96,21 @@ class LoadingScreen(Screen):
 
         self.app.call_from_thread(update_log)
 
-    @work(thread=True, group="path_workers")
-    def run_path_worker(self, arg_id) -> None:
-        io_class = getattr(chezmoi, arg_id)
-        io_class.update()
-        self.log_text(io_class.label)
-
     @work(thread=True, group="io_workers")
     def run_io_worker(self, arg_id) -> None:
         io_class = getattr(chezmoi, arg_id)
         io_class.update()
         self.log_text(io_class.label)
-
-    @work(thread=True, group="path_workers")
-    def populate_paths(self) -> None:
-        paths_class = getattr(chezmoi, "paths")
-        paths_class.update(
-            update_std_out=False,
-            dump_config=chezmoi.dump_config,
-            managed_dirs=chezmoi.managed_dirs,
-            managed_files=chezmoi.managed_files,
-        )
-        self.log_text("Update chezmoi paths")
-
-    def path_workers_finished(self) -> None:
-        if all(
-            worker.state == "finished"
-            for worker in self.app.workers
-            if worker.group == "path_workers"
-        ):
-            self.path_worker_timer.stop()
-            self.populate_paths()
+        if arg_id == "dump_config":
+            global dest_dir
+            dest_dir = Path(io_class.dict_out["destDir"])
+            self.log_text(f"destDir={str(dest_dir)}")
 
     def all_workers_finished(self) -> None:
         if all(
             worker.state == "finished"
             for worker in self.app.workers
-            if worker.group == "path_workers" or worker.group == "io_workers"
+            if worker.group == "io_workers"
         ):
             self.all_workers_timer.stop()
             self.query_exactly_one("#continue").disabled = False
@@ -154,10 +128,8 @@ class LoadingScreen(Screen):
     def on_mount(self) -> None:
 
         to_process = chezmoi.long_commands.copy()
-
-        for arg_id in ("dump_config", "managed_dirs", "managed_files"):
-            to_process.pop(arg_id)
-            self.run_path_worker(arg_id)
+        self.run_io_worker("dump_config")
+        to_process.pop("dump_config")
 
         for arg_id in to_process:
             self.run_io_worker(arg_id)
