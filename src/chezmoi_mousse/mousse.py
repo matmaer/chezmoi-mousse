@@ -75,11 +75,6 @@ class AddDirTreeTab(VerticalScroll):
         )
         yield Lazy(self.SlidebarActions())
 
-    def on_mount(self) -> None:
-        self.query_one(FilteredAddDirTree).root.label = (
-            f"{chezmoi.dump_config.dict_out['destDir']} (destDir)"
-        )
-
     def action_toggle_slidebar(self):
         self.screen.query_exactly_one(SlideBar).toggle_class("-visible")
 

@@ -177,6 +177,7 @@ class FilteredAddDirTree(DirectoryTree):
         managed_dirs = chezmoi.paths.managed_dirs
         managed_files = chezmoi.paths.managed_files
         dest_dir = chezmoi.paths.dest_dir
+        self.root.label = f"{dest_dir} (destDir)"
 
         # Switches: Red - Green (default)
         if not self.include_unmanaged_dirs and self.filter_unwanted:
