@@ -239,12 +239,12 @@ class ApplyTab(VerticalScroll):
 
     BINDINGS = [
         Binding("f", "toggle_slidebar", "Filters"),
-        Binding("a", "add_path", "Add Path"),
+        Binding("a", "apply_path", "Apply Path"),
     ]
 
     def compose(self) -> ComposeResult:
         yield ChezmoiStatus(apply=True)
-        yield ManagedTree(label=str("root_node"), id="apply_tree")
+        yield ManagedTree(label=str("root_node"), id="applytree")
         yield SlideBar(self.filter_switches, id="applyslidebar")
 
     def action_toggle_slidebar(self):
@@ -252,27 +252,53 @@ class ApplyTab(VerticalScroll):
             "-visible"
         )
 
-    # def on_switch_changed(self, event: Switch.Changed) -> None:
-    #     managed_tree = self.screen.query_exactly_one(ManagedTree)
-    #     if event.switch.id == "notexisting":
-    #         managed_tree.include_unmanaged_dirs = event.value
-    #         managed_tree.reload()
-    #     elif event.switch.id == "changedfiles":
-    #         managed_tree.filter_unwanted = event.value
-    #         managed_tree.reload()
+    def action_apply_path(self) -> None:
+        self.notify("will apply path")
+
+    def on_switch_changed(self, event: Switch.Changed) -> None:
+        managed_tree = self.query_exactly_one("#applytree")
+        if event.switch.id == "notexisting":
+            # filter logic here
+            managed_tree.refresh()
+        elif event.switch.id == "changedfiles":
+            # filter logic here
+            managed_tree.refresh()
 
 
 class ReAddTab(VerticalScroll):
 
-    def __init__(self) -> None:
-        self.re_add_tree = ManagedTree(
-            label=str("root_node"), show_existing_only=True
-        )
-        super().__init__()
+    filter_switches = {
+        "changedfiles": {
+            "switch_label": "Show only files with changed status",
+            "switch_tooltip": "Show only files with changed status",
+            "switch_state": False,
+        }
+    }
+
+    BINDINGS = [
+        Binding("f", "toggle_slidebar", "Filters"),
+        Binding("a", "re_add_path", "Re-Add Path"),
+    ]
 
     def compose(self) -> ComposeResult:
         yield ChezmoiStatus(apply=False)
-        yield self.re_add_tree
+        yield ManagedTree(
+            label=str("root_node"), show_existing_only=True, id="re_add_tree"
+        )
+
+    def action_toggle_slidebar(self):
+        self.screen.query_exactly_one("#applyslidebar").toggle_class(
+            "-visible"
+        )
+
+    def action_re_add_path(self) -> None:
+        self.notify("will re-add path")
+
+    def on_switch_changed(self, event: Switch.Changed) -> None:
+        managed_tree = self.query_exactly_one("#applytree")
+        if event.switch.id == "changedfiles":
+            # filter logic here
+            managed_tree.refresh()
 
 
 class DiagramTab(VerticalScroll):
