@@ -60,7 +60,7 @@
   }
 
   & AutoWarning {
-    margin: 0 1 1 1;
+    margin: 0 1 0 1;
   }
 
   & ColoredFileContent {
@@ -74,7 +74,7 @@
   & Horizontal {
     align: center bottom;
     dock: bottom;
-    height: 3;
+    height: 2;
   }
 }
 
@@ -216,7 +216,7 @@ ChezmoiStatus {
   }
 }
 
-#doctorcollapsibles {
+.collapsiblegroup {
   margin: 1 0 1 0;
 }
 

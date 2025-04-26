@@ -99,7 +99,9 @@ class ChezmoiAdd(ModalScreen):
             id="addfilemodalcontainer", classes="operationmodal"
         ):
             yield AutoWarning()
-            yield VerticalGroup(*self.add_path_items)
+            yield VerticalGroup(
+                *self.add_path_items, classes="collapsiblegroup"
+            )
             yield Horizontal(
                 Button(self.add_label, id="addfile"),
                 Button("- Cancel -", id="canceladding"),
@@ -144,7 +146,7 @@ class DoctorTab(VerticalScroll):
     def compose(self) -> ComposeResult:
 
         yield DataTable(id="doctortable", show_cursor=False)
-        with VerticalGroup(id="doctorcollapsibles"):
+        with VerticalGroup(classes="collapsiblegroup"):
             yield Collapsible(
                 Pretty(chezmoi.dump_config.dict_out),
                 title="output from 'chezmoi dump-config'",
@@ -184,8 +186,8 @@ class DoctorTab(VerticalScroll):
             "info": f"{self.app.current_theme.foreground}",
         }
 
-        list_view = self.query_exactly_one("#cmdnotfound", ListView)
-        table = self.query_exactly_one("#doctortable", DataTable)
+        list_view = self.query_one("#cmdnotfound", ListView)
+        table = self.query_one("#doctortable", DataTable)
         doctor_rows = chezmoi.doctor.list_out
         table.add_columns(*doctor_rows[0].split())
 
@@ -241,7 +243,7 @@ class ReAddTab(VerticalScroll):
 
     def __init__(self) -> None:
         self.re_add_tree = ManagedTree(
-            label=str("root_node"), id="re_add_tree", show_existing_only=True
+            label=str("root_node"), show_existing_only=True
         )
         super().__init__()
 
