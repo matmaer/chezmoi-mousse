@@ -37,32 +37,18 @@ from chezmoi_mousse.config import pw_mgr_info
 
 class AddDirTreeTab(VerticalScroll):
 
-    class SlidebarActions(SlideBar):
-
-        filter_switches = {
-            "unmanaged": {
-                "switch_label": "Include unmanaged directories",
-                "switch_tooltip": "Enable to include all un-managed files, even if they live in an un-managed directory. Disable to only show un-managed files in directories which already contain managed files (the default). The purpose is to easily spot new un-managed files in already managed directories. (in both cases, only the un-managed files are shown)",
-                "switch_state": False,
-            },
-            "unwanted": {
-                "switch_label": "Filter unwanted paths",
-                "switch_tooltip": 'Filter out files and directories considered as "unwanted" for a dotfile manager. These include cache, temporary, trash (recycle bin) and other similar files or directories.  You can disable this, for example if you want to add files to your chezmoi repository which are in a directory named "cache".',
-                "switch_state": True,
-            },
-        }
-
-        def __init__(self) -> None:
-            super().__init__(self.filter_switches)
-
-        def on_switch_changed(self, event: Switch.Changed) -> None:
-            add_dir_tree = self.screen.query_exactly_one(FilteredAddDirTree)
-            if event.switch.id == "unmanaged":
-                add_dir_tree.include_unmanaged_dirs = event.value
-                add_dir_tree.reload()
-            elif event.switch.id == "unwanted":
-                add_dir_tree.filter_unwanted = event.value
-                add_dir_tree.reload()
+    filter_switches = {
+        "unmanaged": {
+            "switch_label": "Include unmanaged directories",
+            "switch_tooltip": "Enable to include all un-managed files, even if they live in an un-managed directory. Disable to only show un-managed files in directories which already contain managed files (the default). The purpose is to easily spot new un-managed files in already managed directories. (in both cases, only the un-managed files are shown)",
+            "switch_state": False,
+        },
+        "unwanted": {
+            "switch_label": "Filter unwanted paths",
+            "switch_tooltip": 'Filter out files and directories considered as "unwanted" for a dotfile manager. These include cache, temporary, trash (recycle bin) and other similar files or directories.  You can disable this, for example if you want to add files to your chezmoi repository which are in a directory named "cache".',
+            "switch_state": True,
+        },
+    }
 
     BINDINGS = [
         Binding("f", "toggle_slidebar", "Filters"),
@@ -71,10 +57,19 @@ class AddDirTreeTab(VerticalScroll):
 
     def compose(self) -> ComposeResult:
         yield FilteredAddDirTree(dest_dir, classes="dir-tree")
-        yield self.SlidebarActions()
+        yield SlideBar(self.filter_switches, id="addslidebar")
 
     def action_toggle_slidebar(self):
-        self.screen.query_exactly_one(SlideBar).toggle_class("-visible")
+        self.screen.query_one("#addslidebar").toggle_class("-visible")
+
+    def on_switch_changed(self, event: Switch.Changed) -> None:
+        add_dir_tree = self.screen.query_exactly_one(FilteredAddDirTree)
+        if event.switch.id == "unmanaged":
+            add_dir_tree.include_unmanaged_dirs = event.value
+            add_dir_tree.reload()
+        elif event.switch.id == "unwanted":
+            add_dir_tree.filter_unwanted = event.value
+            add_dir_tree.reload()
 
     def action_add_path(self) -> None:
         cursor_node = self.query_exactly_one(FilteredAddDirTree).cursor_node
@@ -229,13 +224,42 @@ class DoctorTab(VerticalScroll):
 
 class ApplyTab(VerticalScroll):
 
-    def __init__(self) -> None:
-        self.apply_tree = ManagedTree(label=str("root_node"), id="apply_tree")
-        super().__init__()
+    filter_switches = {
+        "notexisting": {
+            "switch_label": "Show only non-existing files",
+            "switch_tooltip": "Show only non-existing files",
+            "switch_state": False,
+        },
+        "changedfiles": {
+            "switch_label": "Show only files with changed status",
+            "switch_tooltip": "Show only files with changed status",
+            "switch_state": False,
+        },
+    }
+
+    BINDINGS = [
+        Binding("f", "toggle_slidebar", "Filters"),
+        Binding("a", "add_path", "Add Path"),
+    ]
 
     def compose(self) -> ComposeResult:
         yield ChezmoiStatus(apply=True)
-        yield self.apply_tree
+        yield ManagedTree(label=str("root_node"), id="apply_tree")
+        yield SlideBar(self.filter_switches, id="applyslidebar")
+
+    def action_toggle_slidebar(self):
+        self.screen.query_exactly_one("#applyslidebar").toggle_class(
+            "-visible"
+        )
+
+    # def on_switch_changed(self, event: Switch.Changed) -> None:
+    #     managed_tree = self.screen.query_exactly_one(ManagedTree)
+    #     if event.switch.id == "notexisting":
+    #         managed_tree.include_unmanaged_dirs = event.value
+    #         managed_tree.reload()
+    #     elif event.switch.id == "changedfiles":
+    #         managed_tree.filter_unwanted = event.value
+    #         managed_tree.reload()
 
 
 class ReAddTab(VerticalScroll):
