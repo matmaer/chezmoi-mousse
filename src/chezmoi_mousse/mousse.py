@@ -5,14 +5,9 @@ from pathlib import Path
 from rich.text import Text
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import (
-    Container,
-    Horizontal,
-    VerticalGroup,
-    VerticalScroll,
-)
+from textual.containers import Horizontal, VerticalGroup, VerticalScroll
+from textual.lazy import Lazy
 from textual.screen import ModalScreen
-from textual.widget import Widget
 from textual.widgets import (
     Button,
     Collapsible,
@@ -34,12 +29,40 @@ from chezmoi_mousse.components import (
     ColoredFileContent,
     FilteredAddDirTree,
     ManagedTree,
+    SlideBar,
     is_reasonable_dotfile,
 )
 from chezmoi_mousse.config import pw_mgr_info
 
 
 class AddDirTreeTab(VerticalScroll):
+
+    class SlidebarActions(SlideBar):
+
+        filter_switches = {
+            "unmanaged": {
+                "switch_label": "Include unmanaged directories",
+                "switch_tooltip": "Enable to include all un-managed files, even if they live in an un-managed directory. Disable to only show un-managed files in directories which already contain managed files (the default). The purpose is to easily spot new un-managed files in already managed directories. (in both cases, only the un-managed files are shown)",
+                "switch_state": False,
+            },
+            "unwanted": {
+                "switch_label": "Filter unwanted paths",
+                "switch_tooltip": 'Filter out files and directories considered as "unwanted" for a dotfile manager. These include cache, temporary, trash (recycle bin) and other similar files or directories.  You can disable this, for example if you want to add files to your chezmoi repository which are in a directory named "cache".',
+                "switch_state": True,
+            },
+        }
+
+        def __init__(self) -> None:
+            super().__init__(self.filter_switches)
+
+        def on_switch_changed(self, event: Switch.Changed) -> None:
+            add_dir_tree = self.screen.query_exactly_one(FilteredAddDirTree)
+            if event.switch.id == "unmanaged":
+                add_dir_tree.include_unmanaged_dirs = event.value
+                add_dir_tree.reload()
+            elif event.switch.id == "unwanted":
+                add_dir_tree.filter_unwanted = event.value
+                add_dir_tree.reload()
 
     BINDINGS = [
         Binding("f", "toggle_slidebar", "Filters"),
@@ -50,20 +73,14 @@ class AddDirTreeTab(VerticalScroll):
         yield FilteredAddDirTree(
             chezmoi.paths.dest_dir, id="adddirtree", classes="dir-tree"
         )
+        yield Lazy(self.SlidebarActions())
 
-    def on_mount(self) -> None:
-        self.query_one(FilteredAddDirTree).root.label = (
-            f"{chezmoi.dump_config.dict_out['destDir']} (destDir)"
-        )
+    def action_toggle_slidebar(self):
+        self.screen.query_exactly_one(SlideBar).toggle_class("-visible")
 
     def action_add_path(self) -> None:
         cursor_node = self.query_exactly_one(FilteredAddDirTree).cursor_node
         self.app.push_screen(ChezmoiAdd(cursor_node.data.path))  # type: ignore[reportOptionalMemberAccess] # pylint: disable:line-too-long
-
-
-class ApplyTree(ManagedTree):
-    def __init__(self) -> None:
-        super().__init__(label=str("root_node"), id="apply_tree")
 
 
 class ChezmoiAdd(ModalScreen):
@@ -211,68 +228,28 @@ class DoctorTab(VerticalScroll):
                 table.add_row(*row)
 
 
-class ReAddTree(ManagedTree):
-    def __init__(self) -> None:
-        super().__init__(
-            label=str("root_node"), id="re_add_tree", show_existing_only=True
-        )
-
-
-class SlideBar(Widget):
-
-    def __init__(self) -> None:
-        super().__init__()
-        # pylint: disable=line-too-long
-        self.border_title = "filters "
-        self.unmanaged_tooltip = "Enable to include all un-managed files, even if they live in an un-managed directory. Disable to only show un-managed files in directories which already contain managed files (the default). The purpose is to easily spot new un-managed files in already managed directories. (in both cases, only the un-managed files are shown)"
-        self.junk_tooltip = 'Filter out files and directories considered as "unwanted" for a dotfile manager. These include cache, temporary, trash (recycle bin) and other similar files or directories.  You can disable this, for example if you want to add files to your chezmoi repository which are in a directory named "cache".'
-
-    def compose(self) -> ComposeResult:
-
-        with Horizontal(classes="filter-container"):
-            yield Switch(
-                value=False, id="includeunmanaged", classes="filter-switch"
-            )
-            yield Label(
-                "Include unmanaged directories",
-                id="unmanagedlabel",
-                classes="filter-label",
-            )
-            yield Label(
-                "(?)", id="unmanagedtooltip", classes="filter-tooltip"
-            ).with_tooltip(tooltip=self.unmanaged_tooltip)
-
-        with Horizontal(classes="filter-container"):
-            yield Switch(value=True, id="filterjunk", classes="filter-switch")
-            yield Label(
-                "Filter unwanted paths", id="unwanted", classes="filter-label"
-            )
-            yield Label(
-                "(?)", id="junktooltip", classes="filter-tooltip"
-            ).with_tooltip(tooltip=self.junk_tooltip)
-
-    def on_switch_changed(self, event: Switch.Changed) -> None:
-        add_dir_tree = self.screen.query_exactly_one(FilteredAddDirTree)
-        if event.switch.id == "includeunmanaged":
-            add_dir_tree.include_unmanaged_dirs = event.value
-            add_dir_tree.reload()
-        elif event.switch.id == "filterjunk":
-            add_dir_tree.filter_unwanted = event.value
-            add_dir_tree.reload()
-
-
 class ApplyTab(VerticalScroll):
+
+    def __init__(self) -> None:
+        self.apply_tree = ManagedTree(label=str("root_node"), id="apply_tree")
+        super().__init__()
 
     def compose(self) -> ComposeResult:
         yield ChezmoiStatus(apply=True)
-        yield ApplyTree()
+        yield self.apply_tree
 
 
 class ReAddTab(VerticalScroll):
 
+    def __init__(self) -> None:
+        self.re_add_tree = ManagedTree(
+            label=str("root_node"), id="re_add_tree", show_existing_only=True
+        )
+        super().__init__()
+
     def compose(self) -> ComposeResult:
         yield ChezmoiStatus(apply=False)
-        yield ReAddTree()
+        yield self.re_add_tree
 
 
 class DiagramTab(VerticalScroll):

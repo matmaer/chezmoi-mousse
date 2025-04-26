@@ -5,11 +5,19 @@ from collections.abc import Iterable
 from pathlib import Path
 
 from textual.app import ComposeResult
-from textual.containers import Container, VerticalGroup
+from textual.containers import Container, VerticalGroup, Horizontal
 from textual.content import Content
 from textual.lazy import Lazy
 from textual.reactive import reactive
-from textual.widgets import Collapsible, DirectoryTree, RichLog, Static, Tree
+from textual.widgets import (
+    Collapsible,
+    DirectoryTree,
+    Label,
+    RichLog,
+    Static,
+    Switch,
+    Tree,
+)
 
 from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.config import unwanted_dirs, unwanted_files
@@ -169,6 +177,7 @@ class FilteredAddDirTree(DirectoryTree):
         managed_dirs = chezmoi.paths.managed_dirs
         managed_files = chezmoi.paths.managed_files
         dest_dir = chezmoi.paths.dest_dir
+        self.root.label = f"{dest_dir} (destDir)"
 
         # Switches: Red - Green (default)
         if not self.include_unmanaged_dirs and self.filter_unwanted:
@@ -277,3 +286,52 @@ class ChezmoiStatus(Container):
                 )
             )
         self.refresh(recompose=True)
+
+
+class SlideBar(Static):
+
+    class FilterItem(Horizontal):
+
+        def __init__(
+            self,
+            switch_label: str,
+            switch_tooltip: str,
+            switch_id: str,
+            initial_state: bool,
+        ) -> None:
+            self.switch_label = switch_label
+            self.switch_tooltip = switch_tooltip
+            self.switch_id = switch_id
+            self.initial_state = initial_state
+            super().__init__(classes="filter-container")
+
+        def compose(self) -> ComposeResult:
+            yield Switch(
+                value=self.initial_state,
+                id=self.switch_id,
+                classes="filter-switch",
+            )
+            yield Label(self.switch_label, classes="filter-label")
+            yield Label("(?)", classes="filter-tooltip").with_tooltip(
+                tooltip=self.switch_tooltip
+            )
+
+    def __init__(self, filters: dict) -> None:
+        self.filters = filters
+        self.filter_items = []
+        super().__init__()
+
+    def compose(self) -> ComposeResult:
+        yield VerticalGroup(*self.filter_items)
+
+    def on_mount(self) -> None:
+        for switch_id, items in self.filters.items():
+            self.filter_items.append(
+                self.FilterItem(
+                    switch_label=items["switch_label"],
+                    switch_tooltip=items["switch_tooltip"],
+                    switch_id=switch_id,
+                    initial_state=items["switch_state"],
+                )
+            )
+            self.refresh(recompose=True)

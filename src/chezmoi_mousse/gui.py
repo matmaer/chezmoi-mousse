@@ -6,7 +6,7 @@ from textual import work
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.color import Color, Gradient
-from textual.containers import Center, Middle, VerticalScroll
+from textual.containers import Center, Middle
 from textual.lazy import Lazy
 from textual.screen import Screen
 from textual.strip import Strip
@@ -28,7 +28,6 @@ from chezmoi_mousse.mousse import (
     DiagramTab,
     DoctorTab,
     ReAddTab,
-    SlideBar,
 )
 
 theme = Theme(
@@ -185,11 +184,7 @@ class MainScreen(Screen):
             yield Lazy(AddDirTreeTab())
             yield Lazy(DoctorTab(id="doctor", can_focus=False))
             yield Lazy(DiagramTab())
-        yield Lazy(SlideBar())
         yield Footer()
-
-    def action_toggle_slidebar(self):
-        self.screen.query_exactly_one(SlideBar).toggle_class("-visible")
 
     def action_toggle_spacing(self):
         self.screen.query_exactly_one(Header).toggle_class("-tall")
