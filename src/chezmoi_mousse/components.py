@@ -102,7 +102,7 @@ class StaticDiff(Container):
         super().__init__()
 
     def compose(self) -> ComposeResult:
-        yield Static(id="staticdiff")
+        yield Static()
 
     def on_mount(self) -> None:
         added = str(self.app.current_theme.success)
@@ -129,7 +129,7 @@ class StaticDiff(Container):
             else:
                 colored_lines.append(f"[{dimmed}]{escaped}[/{dimmed}]")
 
-        text_widget = self.query_one("#staticdiff", Static)
+        text_widget = self.query_one(Static)
         text_widget.update("\n".join(colored_lines))
 
 
