@@ -99,9 +99,8 @@ class ChezmoiAdd(ModalScreen):
             id="addfilemodalcontainer", classes="operationmodal"
         ):
             yield AutoWarning()
-            yield VerticalGroup(
-                *self.add_path_items, classes="collapsiblegroup"
-            )
+            with VerticalGroup(classes="collapsiblegroup"):
+                yield from self.add_path_items
             yield Horizontal(
                 Button(self.add_label, id="addfile"),
                 Button("- Cancel -", id="canceladding"),
