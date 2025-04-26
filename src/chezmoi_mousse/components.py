@@ -324,13 +324,13 @@ class SlideBar(Static):
         yield VerticalGroup(*self.filter_items)
 
     def on_mount(self) -> None:
-        for switch_label, switch_tooltip in self.filters.items():
+        for switch_id, items in self.filters.items():
             self.filter_items.append(
                 self.FilterItem(
-                    switch_label=switch_label,
-                    switch_tooltip=switch_tooltip,
-                    switch_id=switch_label.replace(" ", "_"),
-                    initial_state=False,
+                    switch_label=items["switch_label"],
+                    switch_tooltip=items["switch_tooltip"],
+                    switch_id=switch_id,
+                    initial_state=items["switch_state"],
                 )
             )
             self.refresh(recompose=True)

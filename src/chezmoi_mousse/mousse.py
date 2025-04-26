@@ -32,22 +32,35 @@ from chezmoi_mousse.components import (
     SlideBar,
     is_reasonable_dotfile,
 )
-from chezmoi_mousse.config import pw_mgr_info, filter_switches
+from chezmoi_mousse.config import pw_mgr_info
 
 
 class AddDirTreeTab(VerticalScroll):
 
     class SlidebarActions(SlideBar):
 
+        filter_switches = {
+            "unmanaged": {
+                "switch_label": "Include unmanaged directories",
+                "switch_tooltip": "Enable to include all un-managed files, even if they live in an un-managed directory. Disable to only show un-managed files in directories which already contain managed files (the default). The purpose is to easily spot new un-managed files in already managed directories. (in both cases, only the un-managed files are shown)",
+                "switch_state": False,
+            },
+            "unwanted": {
+                "switch_label": "Filter unwanted paths",
+                "switch_tooltip": 'Filter out files and directories considered as "unwanted" for a dotfile manager. These include cache, temporary, trash (recycle bin) and other similar files or directories.  You can disable this, for example if you want to add files to your chezmoi repository which are in a directory named "cache".',
+                "switch_state": True,
+            },
+        }
+
         def __init__(self) -> None:
-            super().__init__(filter_switches["add_tab"])
+            super().__init__(self.filter_switches)
 
         def on_switch_changed(self, event: Switch.Changed) -> None:
             add_dir_tree = self.screen.query_exactly_one(FilteredAddDirTree)
-            if event.switch.id == "Include_unmanaged_directories":
+            if event.switch.id == "unmanaged":
                 add_dir_tree.include_unmanaged_dirs = event.value
                 add_dir_tree.reload()
-            elif event.switch.id == "Filter_unwanted_paths":
+            elif event.switch.id == "unwanted":
                 add_dir_tree.filter_unwanted = event.value
                 add_dir_tree.reload()
 
