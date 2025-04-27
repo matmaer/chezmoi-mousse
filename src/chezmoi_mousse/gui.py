@@ -31,20 +31,6 @@ from chezmoi_mousse.mousse import (
     ReAddTab,
 )
 
-theme = Theme(
-    name="chezmoi-mousse-dark",
-    dark=True,
-    accent="#F187FB",
-    background="#000000",
-    error="#ba3c5b",  # textual dark
-    foreground="#DEDAE1",
-    primary="#0178D4",  # textual dark
-    secondary="#004578",  # textual dark
-    surface="#101010",  # see also textual/theme.py
-    success="#4EBF71",  # textual dark
-    warning="#ffa62b",  # textual dark
-)
-
 
 class LoadingScreen(Screen):
 
@@ -139,10 +125,8 @@ class LoadingScreen(Screen):
 
 class MainScreen(Screen):
 
-    BINDINGS = [Binding("f", "toggle_slidebar", "Filters")]
-
     def compose(self) -> ComposeResult:
-        yield Header(classes="-tall")
+        yield Header()
 
         with TabbedContent("Add", "Apply", "Re-Add", "Doctor", "Diagram"):
             yield AddTab()
@@ -168,7 +152,21 @@ class ChezmoiTUI(App):
     def on_mount(self) -> None:
         self.chezmoi = chezmoi
         self.title = "-  c h e z m o i  m o u s s e  -"
-        self.register_theme(theme)
+        self.register_theme(
+            Theme(
+                name="chezmoi-mousse-dark",
+                dark=True,
+                accent="#F187FB",
+                background="#000000",
+                error="#ba3c5b",  # textual dark
+                foreground="#DEDAE1",
+                primary="#0178D4",  # textual dark
+                secondary="#004578",  # textual dark
+                surface="#101010",  # see also textual/theme.py
+                success="#4EBF71",  # textual dark
+                warning="#ffa62b",  # textual dark
+            )
+        )
         self.theme = "chezmoi-mousse-dark"
         self.push_screen("loading", self.push_main_screen)
 
