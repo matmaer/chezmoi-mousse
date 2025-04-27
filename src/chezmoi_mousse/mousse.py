@@ -141,26 +141,45 @@ class ChezmoiAdd(ModalScreen):
             self.screen.dismiss()
 
 
+class PrettyModal(ModalScreen):
+
+    BINDINGS = [Binding("escape", "dismiss", "", show=True)]
+
+    def __init__(self, pretty_object: Pretty | DataTable) -> None:
+        self.pretty_object = pretty_object
+        super().__init__()
+
+    def compose(self) -> ComposeResult:
+        yield self.pretty_object
+
+
+class GitLog(DataTable):
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.add_columns("COMMIT", "MESSAGE")
+        for line in chezmoi.git_log.list_out:
+            columns = line.split(";")
+            self.add_row(*columns)
+
+
 class DoctorTab(VerticalScroll):
+
+    BINDINGS = [
+        Binding("c", "open_config", "dump-config"),
+        Binding("g", "git_log", "git-log"),
+    ]
 
     def compose(self) -> ComposeResult:
 
         yield DataTable(id="doctortable", show_cursor=False)
         with VerticalGroup(classes="collapsiblegroup"):
             yield Collapsible(
-                Pretty(chezmoi.dump_config.dict_out),
-                title="output from 'chezmoi dump-config'",
-            )
-            yield Collapsible(
                 ListView(id="cmdnotfound"), title="Commands Not Found"
             )
             yield Collapsible(
                 Pretty(chezmoi.template_data.dict_out),
                 title="chezmoi data (template data)",
-            )
-            yield Collapsible(
-                DataTable(id="gitlog", cursor_type="row"),
-                title="chezmoi git log (last 20 commits)",
             )
             yield Collapsible(
                 Pretty(chezmoi.cat_config.list_out),
@@ -226,6 +245,12 @@ class DoctorTab(VerticalScroll):
             else:
                 row = [Text(cell_text) for cell_text in row]
                 table.add_row(*row)
+
+    def action_open_config(self) -> None:
+        self.app.push_screen(PrettyModal(Pretty(chezmoi.dump_config.dict_out)))
+
+    def action_git_log(self) -> None:
+        self.app.push_screen(PrettyModal(GitLog()))
 
 
 class ApplyTab(VerticalScroll):
