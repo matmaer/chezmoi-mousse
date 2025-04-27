@@ -266,14 +266,15 @@ Screen {
 }
 
 Header {
+  height: 2;
+  border-bottom: dashed $panel;
   color: $primary;
-  HeaderIcon {
-    /* with display: none; the title is not centered */
-    visibility: hidden;
-  }
 }
 
 Footer {
+  height: 3;
+  border-top: dashed $panel;
+  border-bottom: dashed $panel;
   .-command-palette {
     border: none;
   }
