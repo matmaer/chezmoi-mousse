@@ -5,7 +5,13 @@ from pathlib import Path
 from rich.text import Text
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import Horizontal, VerticalGroup, VerticalScroll, Grid
+from textual.containers import (
+    Horizontal,
+    VerticalGroup,
+    VerticalScroll,
+    Grid,
+    Container,
+)
 from textual.lazy import Lazy
 from textual.screen import ModalScreen
 from textual.widgets import (
@@ -163,7 +169,7 @@ class GitLog(DataTable):
             self.add_row(*columns)
 
 
-class DoctorTab(VerticalScroll):
+class DoctorTab(Container):
 
     BINDINGS = [
         Binding("c", "open_config", "dump-config"),
@@ -191,12 +197,6 @@ class DoctorTab(VerticalScroll):
             )
 
     def on_mount(self) -> None:
-
-        git_log_table = self.query_exactly_one("#gitlog", DataTable)
-        git_log_table.add_columns("COMMIT", "MESSAGE")
-        for line in chezmoi.git_log.list_out:
-            columns = line.split(";")
-            git_log_table.add_row(*columns)
 
         styles = {
             "ok": f"{self.app.current_theme.success}",
