@@ -5,7 +5,7 @@ from pathlib import Path
 from rich.text import Text
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import Horizontal, VerticalGroup, VerticalScroll
+from textual.containers import Horizontal, VerticalGroup, VerticalScroll, Grid
 from textual.lazy import Lazy
 from textual.screen import ModalScreen
 from textual.widgets import (
@@ -27,6 +27,7 @@ from chezmoi_mousse.components import (
     AutoWarning,
     ChezmoiStatus,
     ColoredFileContent,
+    RichFileContent,
     FilteredAddDirTree,
     ManagedTree,
     SlideBar,
@@ -56,7 +57,12 @@ class AddTab(VerticalScroll):
     ]
 
     def compose(self) -> ComposeResult:
-        yield FilteredAddDirTree(dest_dir, classes="dir-tree")
+        with Grid(id="addtabgrid"):
+            yield FilteredAddDirTree(dest_dir, classes="dir-tree box")
+            yield RichFileContent(
+                Path("/home/mm/repos/chezmoi-mousse/tests/text_file.txt"),
+                classes="rich-file-content",
+            )
         yield SlideBar(self.filter_switches, id="addslidebar")
 
     def action_toggle_slidebar(self):

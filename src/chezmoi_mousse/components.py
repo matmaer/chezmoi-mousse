@@ -62,15 +62,15 @@ class AutoWarning(Container):
         )
 
 
-class RichFileContent(Container):
+class RichFileContent(Static):
     """RichLog widget to display the content of a file."""
 
-    def __init__(self, file_path: Path) -> None:
+    def __init__(self, file_path: Path, **kwargs) -> None:
         self.file_path = file_path
         self.rich_file_content = RichLog(
             auto_scroll=False, wrap=True, highlight=True
         )
-        super().__init__()
+        super().__init__(**kwargs)
 
     def compose(self) -> ComposeResult:
         yield self.rich_file_content
