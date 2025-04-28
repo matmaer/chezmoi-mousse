@@ -20,7 +20,7 @@ from textual.widgets import (
 )
 
 from chezmoi_mousse.chezmoi import chezmoi, dest_dir
-from chezmoi_mousse.config import unwanted_dirs, unwanted_files
+from chezmoi_mousse.config import unwanted
 
 
 def is_reasonable_dotfile(file_path: Path) -> bool:
@@ -37,11 +37,11 @@ def is_reasonable_dotfile(file_path: Path) -> bool:
 
 def is_unwanted_path(path: Path) -> bool:
     if path.is_dir():
-        if path.name in unwanted_dirs:
+        if path.name in unwanted["dirs"]:
             return True
     if path.is_file():
         extension = re.match(r"\.[^.]*$", path.name)
-        if extension in unwanted_files:
+        if extension in unwanted["files"]:
             return True
     return False
 
