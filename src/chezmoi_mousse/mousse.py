@@ -147,7 +147,7 @@ class PrettyModal(ModalScreen):
 
     def __init__(self, pretty_object: Pretty | DataTable) -> None:
         self.pretty_object = pretty_object
-        super().__init__(classes="operationmodal modalscreen")
+        super().__init__(classes="modalscreen")
 
     def compose(self) -> ComposeResult:
         yield self.pretty_object
@@ -155,23 +155,22 @@ class PrettyModal(ModalScreen):
 
 class DoctorTab(VerticalScroll):
 
-    class GitLog(DataTable):
-
-        def __init__(self) -> None:
-            super().__init__()
-            self.add_columns("COMMIT", "MESSAGE")
-            for line in chezmoi.git_log.list_out:
-                columns = line.split(";")
-                self.add_row(*columns)
-
     BINDINGS = [
         Binding("c", "open_config", "dump-config"),
         Binding("g", "git_log", "git-log"),
     ]
 
+    def __init__(self) -> None:
+        self.git_log = DataTable(
+            id="gitlog", classes="doctortable", show_cursor=False
+        )
+        super().__init__()
+
     def compose(self) -> ComposeResult:
 
-        yield DataTable(id="doctortable", show_cursor=False)
+        yield DataTable(
+            id="doctortable", classes="doctortable", show_cursor=False
+        )
         with VerticalGroup(classes="collapsiblegroup"):
             yield Collapsible(
                 ListView(id="cmdnotfound"), title="Commands Not Found"
@@ -239,11 +238,35 @@ class DoctorTab(VerticalScroll):
                 row = [Text(cell_text) for cell_text in row]
                 table.add_row(*row)
 
+        self.git_log.add_columns("COMMIT", "MESSAGE")
+        for line in chezmoi.git_log.list_out:
+            columns = line.split(";")
+            if columns[1].split(maxsplit=1)[0] == "Add":
+                row = [
+                    Text(cell_text, style=f"{styles["ok"]}")
+                    for cell_text in columns
+                ]
+                self.git_log.add_row(*row)
+            elif columns[1].split(maxsplit=1)[0] == "Update":
+                row = [
+                    Text(cell_text, style=f"{styles["warning"]}")
+                    for cell_text in columns
+                ]
+                self.git_log.add_row(*row)
+            elif columns[1].split(maxsplit=1)[0] == "Remove":
+                row = [
+                    Text(cell_text, style=f"{styles["error"]}")
+                    for cell_text in columns
+                ]
+                self.git_log.add_row(*row)
+            else:
+                self.git_log.add_row(*columns)
+
     def action_open_config(self) -> None:
         self.app.push_screen(PrettyModal(Pretty(chezmoi.dump_config.dict_out)))
 
     def action_git_log(self) -> None:
-        self.app.push_screen(PrettyModal(self.GitLog()))
+        self.app.push_screen(PrettyModal(self.git_log))
 
 
 class ApplyTab(VerticalScroll):
