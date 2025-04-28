@@ -6,7 +6,7 @@ from textual.theme import Theme
 from textual.widgets import Footer, Header, TabbedContent
 
 from chezmoi_mousse import SPLASH
-from chezmoi_mousse.chezmoi import chezmoi, dest_dir
+from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.mousse import (
     AddTab,
     ApplyTab,
