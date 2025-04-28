@@ -159,17 +159,16 @@ class PrettyModal(ModalScreen):
         yield self.pretty_object
 
 
-class GitLog(DataTable):
+class DoctorTab(VerticalScroll):
 
-    def __init__(self) -> None:
-        super().__init__()
-        self.add_columns("COMMIT", "MESSAGE")
-        for line in chezmoi.git_log.list_out:
-            columns = line.split(";")
-            self.add_row(*columns)
+    class GitLog(DataTable):
 
-
-class DoctorTab(Container):
+        def __init__(self) -> None:
+            super().__init__()
+            self.add_columns("COMMIT", "MESSAGE")
+            for line in chezmoi.git_log.list_out:
+                columns = line.split(";")
+                self.add_row(*columns)
 
     BINDINGS = [
         Binding("c", "open_config", "dump-config"),
@@ -250,7 +249,7 @@ class DoctorTab(Container):
         self.app.push_screen(PrettyModal(Pretty(chezmoi.dump_config.dict_out)))
 
     def action_git_log(self) -> None:
-        self.app.push_screen(PrettyModal(GitLog()))
+        self.app.push_screen(PrettyModal(self.GitLog()))
 
 
 class ApplyTab(VerticalScroll):

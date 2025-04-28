@@ -226,6 +226,7 @@ Toast {
 }
 
 #doctortable {
+  height: auto;
   & > .datatable--header {
     text-style: none;
   }
