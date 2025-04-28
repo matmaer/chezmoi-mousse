@@ -106,9 +106,11 @@ class StaticDiff(Container):
         yield Static()
 
     def on_mount(self) -> None:
-        added = self.app.current_theme.success
-        removed = self.app.current_theme.error
-        dimmed = f"{self.app.current_theme.foreground} dim"
+
+        all_colors = self.app.current_theme.to_color_system().generate()
+        added = all_colors["success-lighten-3"]
+        removed = all_colors["error-lighten-3"]
+        dimmed = all_colors["text-muted"]
 
         # line.strip() does not return a boolean but when used in a conditional statement, the result of `line.strip()` is evaluated as a boolean.
         # An empty string (`""`) evaluates to `False`, while a non-empty string evaluates to `True`.
