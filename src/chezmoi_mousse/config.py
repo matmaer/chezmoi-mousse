@@ -55,6 +55,33 @@ unwanted = {
 }
 
 
+# Chezmoi status command output reference:
+# https://www.chezmoi.io/reference/commands/status/
+status_info = {
+    "code name": {
+        "space": "No change",
+        "A": "Added",
+        "D": "Deleted",
+        "M": "Modified",
+        "R": "Modified Script",
+    },
+    "re add change": {
+        "space": "no changes for repository",
+        "A": "add to repository",
+        "D": "mark as deleted in repository",
+        "M": "modify in repository",
+        "R": "not applicable for repository",
+    },
+    "apply change": {
+        "space": "no changes for filesystem",
+        "A": "create on filesystem",
+        "D": "delete from filesystem",
+        "M": "modify on filesystem",
+        "R": "modify script on filesystem",
+    },
+}
+
+
 pw_mgr_info = {
     "age-command": {
         "description": "A simple, modern and secure file encryption tool",

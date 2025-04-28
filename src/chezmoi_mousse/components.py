@@ -20,7 +20,7 @@ from textual.widgets import (
 )
 
 from chezmoi_mousse.chezmoi import chezmoi, dest_dir
-from chezmoi_mousse.config import unwanted
+from chezmoi_mousse.config import unwanted, status_info
 
 
 def is_reasonable_dotfile(file_path: Path) -> bool:
@@ -136,35 +136,9 @@ class StaticDiff(Container):
 
 class ColoredDiff(Collapsible):
 
-    # Chezmoi status command output reference:
-    # https://www.chezmoi.io/reference/commands/status/
-    status_info = {
-        "code name": {
-            "space": "No change",
-            "A": "Added",
-            "D": "Deleted",
-            "M": "Modified",
-            "R": "Modified Script",
-        },
-        "re add change": {
-            "space": "no changes for repository",
-            "A": "add to repository",
-            "D": "mark as deleted in repository",
-            "M": "modify in repository",
-            "R": "not applicable for repository",
-        },
-        "apply change": {
-            "space": "no changes for filesystem",
-            "A": "create on filesystem",
-            "D": "delete from filesystem",
-            "M": "modify on filesystem",
-            "R": "modify script on filesystem",
-        },
-    }
-
     def __init__(self, apply: bool, file_path: Path, status_code: str) -> None:
         rel_path = str(file_path.relative_to(dest_dir))
-        title = f"{self.status_info["code name"][status_code]} {rel_path}"
+        title = f"{status_info["code name"][status_code]} {rel_path}"
         colored_diff = StaticDiff(file_path, apply)
         super().__init__(colored_diff, title=title)
 
