@@ -6,11 +6,11 @@ from rich.text import Text
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import (
+    Container,
+    Grid,
     Horizontal,
     VerticalGroup,
     VerticalScroll,
-    Grid,
-    Container,
 )
 from textual.lazy import Lazy
 from textual.screen import ModalScreen
@@ -33,9 +33,9 @@ from chezmoi_mousse.components import (
     AutoWarning,
     ChezmoiStatus,
     ColoredFileContent,
-    RichFileContent,
     FilteredAddDirTree,
     ManagedTree,
+    RichFileContent,
     SlideBar,
     is_reasonable_dotfile,
 )
