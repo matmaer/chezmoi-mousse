@@ -22,7 +22,7 @@ class MainScreen(Screen):
     def compose(self) -> ComposeResult:
         yield Header()
 
-        with TabbedContent("Add", "Apply", "Re-Add", "Doctor", "Diagram"):
+        with TabbedContent("Apply", "Re-Add", "Add", "Doctor", "Diagram"):
             yield ApplyTab()
             yield Lazy(ReAddTab())
             yield Lazy(AddTab())
