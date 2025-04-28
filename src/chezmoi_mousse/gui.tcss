@@ -15,7 +15,7 @@
     /* box you can add as a class for widgets yielded */
   .box {
     height: 100%;
-    border: solid green;
+    # border: solid green;
   }
 }
 
