@@ -1,24 +1,9 @@
-# from collections import deque
-# from pathlib import Path
-
-# from rich.segment import Segment
-# from rich.style import Style
-# from textual import work
 from textual.app import App, ComposeResult
-
-# from textual.binding import Binding
-# from textual.color import Color, Gradient
-# from textual.containers import Center, Middle
 from textual.lazy import Lazy
 from textual.screen import Screen
 
-# from textual.strip import Strip
 from textual.theme import Theme
-from textual.widgets import (
-    Footer,
-    Header,  # Button,; RichLog,; Static,
-    TabbedContent,
-)
+from textual.widgets import Footer, Header, TabbedContent
 
 from chezmoi_mousse import SPLASH
 from chezmoi_mousse.chezmoi import chezmoi, dest_dir
@@ -38,9 +23,9 @@ class MainScreen(Screen):
         yield Header()
 
         with TabbedContent("Add", "Apply", "Re-Add", "Doctor", "Diagram"):
-            yield AddTab()
-            yield Lazy(ApplyTab())
+            yield ApplyTab()
             yield Lazy(ReAddTab())
+            yield Lazy(AddTab())
             yield Lazy(DoctorTab())
             yield Lazy(DiagramTab())
         yield Footer()
