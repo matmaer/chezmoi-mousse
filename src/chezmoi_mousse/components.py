@@ -62,21 +62,27 @@ class AutoWarning(Container):
         )
 
 
-class RichFileContent(RichLog):
+class RichFileContent(Static):
     """RichLog widget to display the content of a file."""
 
-    def __init__(self, file_path: Path) -> None:
+    def __init__(self, file_path: Path, **kwargs) -> None:
         self.file_path = file_path
-        super().__init__(auto_scroll=False, wrap=True, highlight=True)
+        self.rich_file_content = RichLog(
+            auto_scroll=False, wrap=True, highlight=True
+        )
+        super().__init__(**kwargs)
+
+    def compose(self) -> ComposeResult:
+        yield self.rich_file_content
 
     def on_mount(self) -> None:
         if not is_reasonable_dotfile(self.file_path):
-            self.write(
+            self.rich_file_content.write(
                 f'File is not a text file or too large for a reasonable "dotfile" : {self.file_path}'
             )
         else:
             with open(self.file_path, "rt", encoding="utf-8") as f:
-                self.write(f.read())
+                self.rich_file_content.write(f.read())
 
 
 class ColoredFileContent(Collapsible):

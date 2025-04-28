@@ -5,7 +5,13 @@ from pathlib import Path
 from rich.text import Text
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import Horizontal, VerticalGroup, VerticalScroll
+from textual.containers import (
+    Horizontal,
+    VerticalGroup,
+    VerticalScroll,
+    Grid,
+    Container,
+)
 from textual.lazy import Lazy
 from textual.screen import ModalScreen
 from textual.widgets import (
@@ -27,6 +33,7 @@ from chezmoi_mousse.components import (
     AutoWarning,
     ChezmoiStatus,
     ColoredFileContent,
+    RichFileContent,
     FilteredAddDirTree,
     ManagedTree,
     SlideBar,
@@ -56,7 +63,12 @@ class AddTab(VerticalScroll):
     ]
 
     def compose(self) -> ComposeResult:
-        yield FilteredAddDirTree(dest_dir, classes="dir-tree")
+        with Grid(id="addtabgrid"):
+            yield FilteredAddDirTree(dest_dir, classes="dir-tree box")
+            yield RichFileContent(
+                Path("/home/mm/repos/chezmoi-mousse/tests/text_file.txt"),
+                classes="rich-file-content",
+            )
         yield SlideBar(self.filter_switches, id="addslidebar")
 
     def action_toggle_slidebar(self):
@@ -135,26 +147,45 @@ class ChezmoiAdd(ModalScreen):
             self.screen.dismiss()
 
 
-class DoctorTab(VerticalScroll):
+class PrettyModal(ModalScreen):
+
+    BINDINGS = [Binding("escape", "dismiss", "", show=True)]
+
+    def __init__(self, pretty_object: Pretty | DataTable) -> None:
+        self.pretty_object = pretty_object
+        super().__init__()
+
+    def compose(self) -> ComposeResult:
+        yield self.pretty_object
+
+
+class GitLog(DataTable):
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.add_columns("COMMIT", "MESSAGE")
+        for line in chezmoi.git_log.list_out:
+            columns = line.split(";")
+            self.add_row(*columns)
+
+
+class DoctorTab(Container):
+
+    BINDINGS = [
+        Binding("c", "open_config", "dump-config"),
+        Binding("g", "git_log", "git-log"),
+    ]
 
     def compose(self) -> ComposeResult:
 
         yield DataTable(id="doctortable", show_cursor=False)
         with VerticalGroup(classes="collapsiblegroup"):
             yield Collapsible(
-                Pretty(chezmoi.dump_config.dict_out),
-                title="output from 'chezmoi dump-config'",
-            )
-            yield Collapsible(
                 ListView(id="cmdnotfound"), title="Commands Not Found"
             )
             yield Collapsible(
                 Pretty(chezmoi.template_data.dict_out),
                 title="chezmoi data (template data)",
-            )
-            yield Collapsible(
-                DataTable(id="gitlog", cursor_type="row"),
-                title="chezmoi git log (last 20 commits)",
             )
             yield Collapsible(
                 Pretty(chezmoi.cat_config.list_out),
@@ -166,12 +197,6 @@ class DoctorTab(VerticalScroll):
             )
 
     def on_mount(self) -> None:
-
-        git_log_table = self.query_exactly_one("#gitlog", DataTable)
-        git_log_table.add_columns("COMMIT", "MESSAGE")
-        for line in chezmoi.git_log.list_out:
-            columns = line.split(";")
-            git_log_table.add_row(*columns)
 
         styles = {
             "ok": f"{self.app.current_theme.success}",
@@ -220,6 +245,12 @@ class DoctorTab(VerticalScroll):
             else:
                 row = [Text(cell_text) for cell_text in row]
                 table.add_row(*row)
+
+    def action_open_config(self) -> None:
+        self.app.push_screen(PrettyModal(Pretty(chezmoi.dump_config.dict_out)))
+
+    def action_git_log(self) -> None:
+        self.app.push_screen(PrettyModal(GitLog()))
 
 
 class ApplyTab(VerticalScroll):

@@ -2,6 +2,28 @@
   margin-top: 1;
 }
 
+#addtabgrid {
+  /* defaults
+  width: 1fr;
+  height: 1fr;
+  layout: grid;
+  */
+  layout: grid;
+    grid-size: 2 1;
+    grid-columns: 1fr 2fr; # size for each column
+    grid-rows: 1fr 1fr;
+    /* box you can add as a class for widgets yielded */
+  .box {
+    height: 100%;
+    border: solid green;
+  }
+}
+
+.rich-file-content {
+  border: $panel inner;
+  padding: 0 1 0 1;
+}
+
 .dir-tree {
   height: auto;
   margin-left: 1;
@@ -244,14 +266,15 @@ Screen {
 }
 
 Header {
+  height: 2;
+  border-bottom: dashed $panel;
   color: $primary;
-  HeaderIcon {
-    /* with display: none; the title is not centered */
-    visibility: hidden;
-  }
 }
 
 Footer {
+  height: 3;
+  border-top: dashed $panel;
+  border-bottom: dashed $panel;
   .-command-palette {
     border: none;
   }
