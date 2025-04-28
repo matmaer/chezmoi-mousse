@@ -106,8 +106,8 @@ class StaticDiff(Container):
         yield Static()
 
     def on_mount(self) -> None:
-        added = str(self.app.current_theme.success)
-        removed = str(self.app.current_theme.error)
+        added = self.app.current_theme.success
+        removed = self.app.current_theme.error
         dimmed = f"{self.app.current_theme.foreground} dim"
 
         # line.strip() does not return a boolean but when used in a conditional statement, the result of `line.strip()` is evaluated as a boolean.
