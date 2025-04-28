@@ -8,7 +8,6 @@ from unittest.mock import patch
 
 from chezmoi_mousse.components import (
     AutoWarning,
-    ColoredDiff,
     ColoredFileContent,
     FilteredAddDirTree,
     RichFileContent,
@@ -33,11 +32,6 @@ def test_rich_file_content_instantiation(rich_file_content):
 def test_static_diff_instantiation():
     instance = StaticDiff(Path.home(), apply=True)
     assert isinstance(instance, StaticDiff)
-
-
-def test_colored_diff_instantiation():
-    instance = ColoredDiff(file_path=Path.home(), status_code="M", apply=True)
-    assert isinstance(instance, ColoredDiff)
 
 
 def test_colored_file_content_instantiation():

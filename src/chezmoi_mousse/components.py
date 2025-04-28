@@ -134,15 +134,6 @@ class StaticDiff(Container):
         text_widget.update("\n".join(colored_lines))
 
 
-class ColoredDiff(Collapsible):
-
-    def __init__(self, apply: bool, file_path: Path, status_code: str) -> None:
-        rel_path = str(file_path.relative_to(dest_dir))
-        title = f"{status_info["code name"][status_code]} {rel_path}"
-        colored_diff = StaticDiff(file_path, apply)
-        super().__init__(colored_diff, title=title)
-
-
 class FilteredAddDirTree(DirectoryTree):
 
     include_unmanaged_dirs = reactive(False, always_update=True)
@@ -238,7 +229,7 @@ class ChezmoiStatus(VerticalGroup):
     def __init__(self, apply: bool) -> None:
         # if true, adds apply status to the list, otherwise "re-add" status
         self.apply = apply
-        self.status_items: list[ColoredDiff] = []
+        self.status_items: list[Collapsible] = []
         super().__init__()
 
     def compose(self) -> ComposeResult:
@@ -251,11 +242,11 @@ class ChezmoiStatus(VerticalGroup):
             for line in chezmoi.status_files.list_out
             if (adm := line[1] if self.apply else line[0]) in "ADM"
         ]
-        for status_code, path in status_paths:
+        for status_code, file_path in status_paths:
+            rel_path = str(file_path.relative_to(dest_dir))
+            title = f"{status_info["code name"][status_code]} {rel_path}"
             self.status_items.append(
-                ColoredDiff(
-                    file_path=path, apply=self.apply, status_code=status_code
-                )
+                Collapsible(StaticDiff(file_path, self.apply), title=title)
             )
         self.refresh(recompose=True)
 
