@@ -5,13 +5,7 @@ from pathlib import Path
 from rich.text import Text
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import (
-    Container,
-    Grid,
-    Horizontal,
-    VerticalGroup,
-    VerticalScroll,
-)
+from textual.containers import Grid, Horizontal, VerticalGroup, VerticalScroll
 from textual.lazy import Lazy
 from textual.screen import ModalScreen
 from textual.widgets import (
@@ -103,7 +97,7 @@ class ChezmoiAdd(ModalScreen):
 
     def compose(self) -> ComposeResult:
         with VerticalScroll(
-            id="addfilemodalcontainer", classes="operationmodal"
+            id="addfilemodalcontainer", classes="operationmodal modalscreen"
         ):
             yield AutoWarning()
             with VerticalGroup(classes="collapsiblegroup"):
@@ -153,7 +147,7 @@ class PrettyModal(ModalScreen):
 
     def __init__(self, pretty_object: Pretty | DataTable) -> None:
         self.pretty_object = pretty_object
-        super().__init__()
+        super().__init__(classes="operationmodal modalscreen")
 
     def compose(self) -> ComposeResult:
         yield self.pretty_object

@@ -43,15 +43,18 @@
   }
 }
 
-.operationmodal {
-  background-tint: $surface;
-  background: $surface;
+.modalscreen {
+  border: yellow;
   border: thick $panel;
+  background: $surface;
   height: auto;
+  background-tint: $surface;
   max-height: 1fr;
   margin: 1;
   max-width: 1fr;
+}
 
+.operationmodal {
   & Button {
     background-tint: $surface;
     background: $surface;
