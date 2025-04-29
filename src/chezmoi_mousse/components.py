@@ -107,33 +107,26 @@ class StaticDiff(Container):
 
     def on_mount(self) -> None:
 
-        all_colors = self.app.current_theme.to_color_system().generate()
-        added = all_colors["success-lighten-3"]
-        removed = all_colors["error-lighten-3"]
-        dimmed = all_colors["text-muted"]
-
-        # line.strip() does not return a boolean but when used in a conditional statement, the result of `line.strip()` is evaluated as a boolean.
-        # An empty string (`""`) evaluates to `False`, while a non-empty string evaluates to `True`.
-
         diff_output = (
-            line
+            line.replace("[", "\\[")
             for line in chezmoi.diff(str(self.file_path), self.apply)
-            if line.strip()
+            if line.strip()  # filter lines containing only spaces
             and line[0] in "+- "
             and not line.startswith(("+++", "---"))
         )
-        colored_lines = []
-        for line in diff_output:
-            escaped = line.replace("[", "\\[")
-            if escaped.startswith("+"):
-                colored_lines.append(f"[{added}]{escaped}[/{added}]")
-            elif escaped.startswith("-"):
-                colored_lines.append(f"[{removed}]{escaped}[/{removed}]")
-            else:
-                colored_lines.append(f"[{dimmed}]{escaped}[/{dimmed}]")
 
-        text_widget = self.query_one(Static)
-        text_widget.update("\n".join(colored_lines))
+        colored_lines: list[Content] = []
+        for line in diff_output:
+            content = Content(line)
+            if line.startswith("+"):
+                colored_lines.append(content.stylize("$text-error"))
+            elif line.startswith("-"):
+                colored_lines.append(content.stylize("$text-success"))
+            else:
+                colored_lines.append(content.stylize("$text-muted"))
+
+        static_diff = self.query_one(Static)
+        static_diff.update(Content("\n").join(colored_lines))
 
 
 class FilteredAddDirTree(DirectoryTree):
