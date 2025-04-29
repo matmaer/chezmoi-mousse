@@ -48,17 +48,18 @@ def is_unwanted_path(path: Path) -> bool:
 
 class AutoWarning(Container):
 
-    def __init__(self) -> None:
-        self.auto_warning = ""
-        if chezmoi.autocommit_enabled and not chezmoi.autopush_enabled:
-            self.auto_warning = '"Auto Commit" is enabled: added file(s) will also be committed.'
-        elif chezmoi.autocommit_enabled and chezmoi.autopush_enabled:
-            self.auto_warning = '"Auto Commit" and "Auto Push" are enabled: adding file(s) will also be committed and pushed the remote.'
-        super().__init__()
-
     def compose(self) -> ComposeResult:
-        yield Static(
-            Content.from_markup(f"[$warning italic]{self.auto_warning}[/]")
+        yield Static()
+
+    def on_mount(self) -> None:
+        auto_warning = ""
+        if chezmoi.autocommit_enabled and not chezmoi.autopush_enabled:
+            auto_warning = '"Auto Commit" is enabled: added file(s) will also be committed.'
+        elif chezmoi.autocommit_enabled and chezmoi.autopush_enabled:
+            auto_warning = '"Auto Commit" and "Auto Push" are enabled: adding file(s) will also be committed and pushed the remote.'
+
+        self.query_one(Static).update(
+            Content.from_markup(f"[$text-warning italic]{auto_warning}[/]")
         )
 
 
