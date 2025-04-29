@@ -60,8 +60,7 @@ class AddTab(VerticalScroll):
         with Grid(id="addtabgrid"):
             yield FilteredAddDirTree(dest_dir, classes="dir-tree box")
             yield RichFileContent(
-                Path("/home/mm/repos/chezmoi-mousse/tests/text_file.txt"),
-                classes="rich-file-content",
+                Path("/home/mm/repos/chezmoi-mousse/tests/text_file.txt")
             )
         yield SlideBar(self.filter_switches, id="addslidebar")
 

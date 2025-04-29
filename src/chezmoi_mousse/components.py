@@ -63,37 +63,37 @@ class AutoWarning(Container):
         )
 
 
-class RichFileContent(Static):
+class RichFileContent(RichLog):
     """RichLog widget to display the content of a file."""
 
-    def __init__(self, file_path: Path, **kwargs) -> None:
+    def __init__(self, file_path: Path) -> None:
         self.file_path = file_path
-        self.rich_file_content = RichLog(
-            auto_scroll=False, wrap=True, highlight=True
-        )
-        super().__init__(**kwargs)
-
-    def compose(self) -> ComposeResult:
-        yield self.rich_file_content
+        super().__init__(auto_scroll=False, wrap=True, highlight=True)
 
     def on_mount(self) -> None:
         if not is_reasonable_dotfile(self.file_path):
-            self.rich_file_content.write(
+            self.write(
                 f'File is not a text file or too large for a reasonable "dotfile" : {self.file_path}'
             )
         else:
             with open(self.file_path, "rt", encoding="utf-8") as f:
-                self.rich_file_content.write(f.read())
+                self.write(f.read())
 
 
-class ColoredFileContent(Collapsible):
+class ColoredFileContent(Container):
     """Collapsible widget to display the content of a file."""
 
     def __init__(self, file_path: Path) -> None:
         self.file_path = file_path
-        rich_file_content = Lazy(RichFileContent(self.file_path))
-        super().__init__(rich_file_content, classes="coloredfilecontent")
-        self.title = str(self.file_path.relative_to(dest_dir))
+        super().__init__()
+
+    def compose(self) -> ComposeResult:
+        yield Collapsible(RichFileContent(self.file_path))
+
+    def on_mount(self) -> None:
+        collapsible = self.query_one(Collapsible)
+        collapsible.add_class("coloredfilecontent")
+        collapsible.title = str(self.file_path.relative_to(dest_dir))
 
 
 class StaticDiff(Container):
@@ -109,7 +109,7 @@ class StaticDiff(Container):
     def on_mount(self) -> None:
 
         diff_output = (
-            line.replace("[", "\\[")
+            line
             for line in chezmoi.diff(str(self.file_path), self.apply)
             if line.strip()  # filter lines containing only spaces
             and line[0] in "+- "
@@ -124,7 +124,7 @@ class StaticDiff(Container):
             elif line.startswith("-"):
                 colored_lines.append(content.stylize("$text-success"))
             else:
-                colored_lines.append(content.stylize("$text-muted"))
+                colored_lines.append(content.stylize("dim"))
 
         static_diff = self.query_one(Static)
         static_diff.update(Content("\n").join(colored_lines))

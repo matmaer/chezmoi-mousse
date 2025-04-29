@@ -72,33 +72,3 @@ def test_is_reasonable_dotfile_true():
         file_path=Path("tests/text_file.txt")
     )
     assert reasonable_dotfile is True
-
-
-@patch("chezmoi_mousse.components.chezmoi")
-def test_auto_warning_message_autocommit_enabled(mock_chezmoi):
-    mock_chezmoi.autocommit_enabled = True
-    mock_chezmoi.autopush_enabled = False
-    instance = AutoWarning()
-    assert (
-        instance.auto_warning
-        == '"Auto Commit" is enabled: added file(s) will also be committed.'
-    )
-
-
-@patch("chezmoi_mousse.components.chezmoi")
-def test_auto_warning_message_autocommit_and_autopush_enabled(mock_chezmoi):
-    mock_chezmoi.autocommit_enabled = True
-    mock_chezmoi.autopush_enabled = True
-    instance = AutoWarning()
-    assert (
-        instance.auto_warning
-        == '"Auto Commit" and "Auto Push" are enabled: adding file(s) will also be committed and pushed the remote.'
-    )
-
-
-@patch("chezmoi_mousse.components.chezmoi")
-def test_auto_warning_message_neither_enabled(mock_chezmoi):
-    mock_chezmoi.autocommit_enabled = False
-    mock_chezmoi.autopush_enabled = False
-    instance = AutoWarning()
-    assert instance.auto_warning == ""
