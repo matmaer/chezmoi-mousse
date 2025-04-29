@@ -43,32 +43,38 @@
   }
 }
 
-.operationmodal {
-  background-tint: $surface;
-  background: $surface;
+.modalscreen {
+  border: yellow;
   border: thick $panel;
+  background: $surface;
   height: auto;
+  background-tint: $surface;
   max-height: 1fr;
   margin: 1;
   max-width: 1fr;
+}
 
-  & Button {
+
+ChezmoiAdd {
+  & * {
     background-tint: $surface;
     background: $surface;
-    border-bottom: none;
-    border-left: none;
-    border-right: none;
+    height: auto;
+    border: none;
+  }
+  .collapsiblegroup {
+    margin-top: 1;
+  }
+  & Button {
     border-top: heavy $primary;
     color: $primary;
     margin: 0 7 0 7;
     min-width: 8;
     text-style: none;
     width: 1fr;
-
     &:disabled {
       text-opacity: 0.6;
     }
-
     &:focus {
       border-top: heavy $primary-lighten-2;
     }
@@ -80,11 +86,10 @@
       border-top: heavy $primary-lighten-2;
     }
   }
-
-  & ColoredFileContent {
-    background-tint: $surface;
-    background: $surface;
-    margin-right: 3;
+  & RichFileContent {
+    background-tint: $background;
+    background: $background;
+    margin-right: 2;
   }
   & Horizontal {
     align: center bottom;
@@ -92,6 +97,7 @@
     height: 3;
   }
 }
+
 
 AutoWarning {
   margin: 0 1 0 1;
@@ -213,6 +219,7 @@ Collapsible {
 }
 
 CollapsibleTitle {
+  padding-left: 1;
   color: $primary-lighten-3;
   &:hover {
     text-style: bold;
@@ -225,7 +232,8 @@ Toast {
   background-tint: $surface;
 }
 
-#doctortable {
+.doctortable {
+  height: auto;
   & > .datatable--header {
     text-style: none;
   }

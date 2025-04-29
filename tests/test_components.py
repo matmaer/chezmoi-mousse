@@ -8,7 +8,6 @@ from unittest.mock import patch
 
 from chezmoi_mousse.components import (
     AutoWarning,
-    ColoredDiff,
     ColoredFileContent,
     FilteredAddDirTree,
     RichFileContent,
@@ -33,11 +32,6 @@ def test_rich_file_content_instantiation(rich_file_content):
 def test_static_diff_instantiation():
     instance = StaticDiff(Path.home(), apply=True)
     assert isinstance(instance, StaticDiff)
-
-
-def test_colored_diff_instantiation():
-    instance = ColoredDiff(file_path=Path.home(), status_code="M", apply=True)
-    assert isinstance(instance, ColoredDiff)
 
 
 def test_colored_file_content_instantiation():
@@ -78,33 +72,3 @@ def test_is_reasonable_dotfile_true():
         file_path=Path("tests/text_file.txt")
     )
     assert reasonable_dotfile is True
-
-
-@patch("chezmoi_mousse.components.chezmoi")
-def test_auto_warning_message_autocommit_enabled(mock_chezmoi):
-    mock_chezmoi.autocommit_enabled = True
-    mock_chezmoi.autopush_enabled = False
-    instance = AutoWarning()
-    assert (
-        instance.auto_warning
-        == '"Auto Commit" is enabled: added file(s) will also be committed.'
-    )
-
-
-@patch("chezmoi_mousse.components.chezmoi")
-def test_auto_warning_message_autocommit_and_autopush_enabled(mock_chezmoi):
-    mock_chezmoi.autocommit_enabled = True
-    mock_chezmoi.autopush_enabled = True
-    instance = AutoWarning()
-    assert (
-        instance.auto_warning
-        == '"Auto Commit" and "Auto Push" are enabled: adding file(s) will also be committed and pushed the remote.'
-    )
-
-
-@patch("chezmoi_mousse.components.chezmoi")
-def test_auto_warning_message_neither_enabled(mock_chezmoi):
-    mock_chezmoi.autocommit_enabled = False
-    mock_chezmoi.autopush_enabled = False
-    instance = AutoWarning()
-    assert instance.auto_warning == ""

@@ -48,51 +48,52 @@ def is_unwanted_path(path: Path) -> bool:
 
 class AutoWarning(Container):
 
-    def __init__(self) -> None:
-        self.auto_warning = ""
-        if chezmoi.autocommit_enabled and not chezmoi.autopush_enabled:
-            self.auto_warning = '"Auto Commit" is enabled: added file(s) will also be committed.'
-        elif chezmoi.autocommit_enabled and chezmoi.autopush_enabled:
-            self.auto_warning = '"Auto Commit" and "Auto Push" are enabled: adding file(s) will also be committed and pushed the remote.'
-        super().__init__()
-
     def compose(self) -> ComposeResult:
-        yield Static(
-            Content.from_markup(f"[$warning italic]{self.auto_warning}[/]")
+        yield Static()
+
+    def on_mount(self) -> None:
+        auto_warning = ""
+        if chezmoi.autocommit_enabled and not chezmoi.autopush_enabled:
+            auto_warning = '"Auto Commit" is enabled: added file(s) will also be committed.'
+        elif chezmoi.autocommit_enabled and chezmoi.autopush_enabled:
+            auto_warning = '"Auto Commit" and "Auto Push" are enabled: adding file(s) will also be committed and pushed the remote.'
+
+        self.query_one(Static).update(
+            Content.from_markup(f"[$text-warning italic]{auto_warning}[/]")
         )
 
 
-class RichFileContent(Static):
+class RichFileContent(RichLog):
     """RichLog widget to display the content of a file."""
 
-    def __init__(self, file_path: Path, **kwargs) -> None:
+    def __init__(self, file_path: Path) -> None:
         self.file_path = file_path
-        self.rich_file_content = RichLog(
-            auto_scroll=False, wrap=True, highlight=True
-        )
-        super().__init__(**kwargs)
-
-    def compose(self) -> ComposeResult:
-        yield self.rich_file_content
+        super().__init__(auto_scroll=False, wrap=True, highlight=True)
 
     def on_mount(self) -> None:
         if not is_reasonable_dotfile(self.file_path):
-            self.rich_file_content.write(
+            self.write(
                 f'File is not a text file or too large for a reasonable "dotfile" : {self.file_path}'
             )
         else:
             with open(self.file_path, "rt", encoding="utf-8") as f:
-                self.rich_file_content.write(f.read())
+                self.write(f.read())
 
 
-class ColoredFileContent(Collapsible):
+class ColoredFileContent(Container):
     """Collapsible widget to display the content of a file."""
 
     def __init__(self, file_path: Path) -> None:
         self.file_path = file_path
-        rich_file_content = Lazy(RichFileContent(self.file_path))
-        super().__init__(rich_file_content, classes="coloredfilecontent")
-        self.title = str(self.file_path.relative_to(dest_dir))
+        super().__init__()
+
+    def compose(self) -> ComposeResult:
+        yield Collapsible(RichFileContent(self.file_path))
+
+    def on_mount(self) -> None:
+        collapsible = self.query_one(Collapsible)
+        collapsible.add_class("coloredfilecontent")
+        collapsible.title = str(self.file_path.relative_to(dest_dir))
 
 
 class StaticDiff(Container):
@@ -106,41 +107,27 @@ class StaticDiff(Container):
         yield Static()
 
     def on_mount(self) -> None:
-        added = str(self.app.current_theme.success)
-        removed = str(self.app.current_theme.error)
-        dimmed = f"{self.app.current_theme.foreground} dim"
-
-        # line.strip() does not return a boolean but when used in a conditional statement, the result of `line.strip()` is evaluated as a boolean.
-        # An empty string (`""`) evaluates to `False`, while a non-empty string evaluates to `True`.
 
         diff_output = (
             line
             for line in chezmoi.diff(str(self.file_path), self.apply)
-            if line.strip()
+            if line.strip()  # filter lines containing only spaces
             and line[0] in "+- "
             and not line.startswith(("+++", "---"))
         )
-        colored_lines = []
+
+        colored_lines: list[Content] = []
         for line in diff_output:
-            escaped = line.replace("[", "\\[")
-            if escaped.startswith("+"):
-                colored_lines.append(f"[{added}]{escaped}[/{added}]")
-            elif escaped.startswith("-"):
-                colored_lines.append(f"[{removed}]{escaped}[/{removed}]")
+            content = Content(line)
+            if line.startswith("+"):
+                colored_lines.append(content.stylize("$text-error"))
+            elif line.startswith("-"):
+                colored_lines.append(content.stylize("$text-success"))
             else:
-                colored_lines.append(f"[{dimmed}]{escaped}[/{dimmed}]")
+                colored_lines.append(content.stylize("dim"))
 
-        text_widget = self.query_one(Static)
-        text_widget.update("\n".join(colored_lines))
-
-
-class ColoredDiff(Collapsible):
-
-    def __init__(self, apply: bool, file_path: Path, status_code: str) -> None:
-        rel_path = str(file_path.relative_to(dest_dir))
-        title = f"{status_info["code name"][status_code]} {rel_path}"
-        colored_diff = StaticDiff(file_path, apply)
-        super().__init__(colored_diff, title=title)
+        static_diff = self.query_one(Static)
+        static_diff.update(Content("\n").join(colored_lines))
 
 
 class FilteredAddDirTree(DirectoryTree):
@@ -238,7 +225,7 @@ class ChezmoiStatus(VerticalGroup):
     def __init__(self, apply: bool) -> None:
         # if true, adds apply status to the list, otherwise "re-add" status
         self.apply = apply
-        self.status_items: list[ColoredDiff] = []
+        self.status_items: list[Collapsible] = []
         super().__init__()
 
     def compose(self) -> ComposeResult:
@@ -251,11 +238,11 @@ class ChezmoiStatus(VerticalGroup):
             for line in chezmoi.status_files.list_out
             if (adm := line[1] if self.apply else line[0]) in "ADM"
         ]
-        for status_code, path in status_paths:
+        for status_code, file_path in status_paths:
+            rel_path = str(file_path.relative_to(dest_dir))
+            title = f"{status_info["code name"][status_code]} {rel_path}"
             self.status_items.append(
-                ColoredDiff(
-                    file_path=path, apply=self.apply, status_code=status_code
-                )
+                Collapsible(StaticDiff(file_path, self.apply), title=title)
             )
         self.refresh(recompose=True)
 

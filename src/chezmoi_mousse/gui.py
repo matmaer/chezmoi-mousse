@@ -5,8 +5,6 @@ from textual.screen import Screen
 from textual.theme import Theme
 from textual.widgets import Footer, Header, TabbedContent
 
-from chezmoi_mousse import SPLASH
-from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.mousse import (
     AddTab,
     ApplyTab,
@@ -44,7 +42,6 @@ class ChezmoiTUI(App):
     SCREENS = {"main": MainScreen, "loading": LoadingScreen}
 
     def on_mount(self) -> None:
-        self.chezmoi = chezmoi
         self.title = "-  c h e z m o i  m o u s s e  -"
         self.register_theme(
             Theme(
