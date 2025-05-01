@@ -66,12 +66,14 @@ class AutoWarning(Container):
 class RichFileContent(RichLog):
     """RichLog widget to display the content of a file."""
 
-    def __init__(self, file_path: Path) -> None:
+    def __init__(self, file_path: Path | None) -> None:
         self.file_path = file_path
         super().__init__(auto_scroll=False, wrap=True, highlight=True)
 
     def on_mount(self) -> None:
-        if not is_reasonable_dotfile(self.file_path):
+        if self.file_path is None:
+            self.write("No file to display.")
+        elif not is_reasonable_dotfile(self.file_path):
             self.write(
                 f'File is not a text file or too large for a reasonable "dotfile" : {self.file_path}'
             )
