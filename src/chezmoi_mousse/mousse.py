@@ -59,9 +59,7 @@ class AddTab(VerticalScroll):
     def compose(self) -> ComposeResult:
         with Grid(id="addtabgrid"):
             yield FilteredAddDirTree(dest_dir, classes="dir-tree box")
-            yield RichFileContent(
-                Path("/home/mm/repos/chezmoi-mousse/tests/text_file.txt")
-            )
+
         yield SlideBar(self.filter_switches, id="addslidebar")
 
     def action_toggle_slidebar(self):
