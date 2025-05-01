@@ -1,4 +1,3 @@
-from __future__ import annotations
 from typing import ClassVar
 
 from math import ceil
@@ -14,7 +13,7 @@ from chezmoi_mousse.gui import ChezmoiTUI
 
 
 class CustomScrollBarRender(ScrollBarRender):
-    SLIM_HORIZONTAL_BAR: ClassVar[str] | None = "▂"
+    SLIM_HORIZONTAL_BAR: ClassVar[str] | None = "▃"
 
     @classmethod
     def render_bar(
