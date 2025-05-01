@@ -78,6 +78,13 @@ class AddTab(VerticalScroll):
         cursor_node = self.query_exactly_one(FilteredAddDirTree).cursor_node
         self.app.push_screen(ChezmoiAdd(cursor_node.data.path))  # type: ignore[reportOptionalMemberAccess] # pylint: disable:line-too-long
 
+    def on_directory_tree_file_selected(
+        self, event: FilteredAddDirTree.FileSelected
+    ) -> None:
+        """Called when the user click a file in the directory tree."""
+        event.stop()
+        self.notify(f"file selected: {event.path}")
+
 
 class ChezmoiAdd(ModalScreen):
 
