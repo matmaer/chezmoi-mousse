@@ -100,9 +100,7 @@ class ChezmoiAdd(ModalScreen):
         self.add_label = "- Add File -"
 
     def compose(self) -> ComposeResult:
-        with VerticalScroll(
-            id="addfilemodalcontainer", classes="operationmodal modalscreen"
-        ):
+        with VerticalScroll(classes="modalscreen"):
             yield AutoWarning()
             with VerticalGroup(classes="collapsiblegroup"):
                 yield from self.add_path_items
