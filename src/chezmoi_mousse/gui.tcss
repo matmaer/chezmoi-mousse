@@ -19,11 +19,6 @@
   }
 }
 
-.rich-file-content {
-  border: $panel inner;
-  padding: 0 1 0 1;
-}
-
 .dir-tree {
   height: auto;
   margin-left: 1;
