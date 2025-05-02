@@ -5,10 +5,6 @@
   scrollbar-size-vertical: 1;
 }
 
-.space {
-  margin-top: 1;
-}
-
 #addtabgrid {
   /* defaults
   width: 1fr;
