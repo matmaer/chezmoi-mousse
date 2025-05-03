@@ -5,116 +5,24 @@
   scrollbar-size-vertical: 1;
 }
 
-#addtabgrid {
-  /* defaults
-  width: 1fr;
-  height: 1fr;
-  layout: grid;
-  */
-  layout: grid;
-  grid-size: 2 1;
-  grid-columns: 1fr 2fr;  /* size for each column */ grid-rows: 1fr 1fr;
+/* Type Selector (Python class selector) */
 
-  /* box you can add as a class for widgets yielded */
-  .box {
-    height: 100%;
-    # border: solid green;
-  }
-}
+/* textual widgets type selectors */
 
-.dir-tree {
+Collapsible {
   height: auto;
-  margin-left: 1;
-
-  &>.directory-tree--folder {
-    color: $primary-lighten-3;
-    text-style: none;
-  }
-
-  &>.directory-tree--extension {
-    text-style: none;
-  }
-
-  &>.directory-tree--hidden {
-    text-style: none;
-  }
-
-  &>.directory-tree--file {
-    color: $success-lighten-3;
-    text-style: none;
+  border: none;
+  padding: 0;
+  & Pretty,
+  StaticDiff,
+  RichFileContent
+   {
+    margin-bottom: 1;
   }
 }
 
-.modalscreen {
-  border: yellow;
-  border: thick $panel;
-  background: $surface;
-  height: auto;
-  background-tint: $surface;
-  max-height: 1fr;
-  margin: 1;
-  max-width: 1fr;
-}
-
-
-ChezmoiAdd {
-  & * {
-    background-tint: $surface;
-    background: $surface;
-    height: auto;
-    border: none;
-  }
-
-  .collapsiblegroup {
-    margin-top: 1;
-  }
-
-  & Button {
-    border-top: heavy $primary;
-    color: $primary;
-    margin: 0 7 0 7;
-    min-width: 8;
-    text-style: none;
-    width: 1fr;
-
-    &:disabled {
-      text-opacity: 0.6;
-    }
-
-    &:focus {
-      border-top: heavy $primary-lighten-2;
-    }
-
-    &:hover {
-      border-top: heavy $primary-lighten-3;
-      color: $accent-lighten-3;
-    }
-
-    &.-active {
-      border-top: heavy $primary-lighten-2;
-    }
-  }
-
-  & RichFileContent {
-    background-tint: $background;
-    margin-right: 2;
-  }
-
-  & Horizontal {
-    align: center bottom;
-    dock: bottom;
-    height: 3;
-  }
-}
-
-
-AutoWarning {
-  margin: 0 1 0 1;
-  height: auto;
-}
-
-StaticDiff {
-  height: auto;
+Screen {
+  layers: slidebar_layer;
 }
 
 Tree {
@@ -160,6 +68,35 @@ Tree {
       color: $primary-lighten-3;
     }
   }
+}
+
+CollapsibleTitle {
+  padding-left: 1;
+  color: $primary-lighten-3;
+  &:hover {
+    text-style: bold;
+  }
+}
+
+Header {
+  height: 2;
+  border-bottom: dashed $panel;
+  color: $primary;
+}
+
+Footer {
+  height: 3;
+  border-top: dashed $panel;
+  border-bottom: dashed $panel;
+
+  .-command-palette {
+    border: none;
+  }
+}
+
+Toast {
+  background: $surface;
+  background-tint: $surface;
 }
 
 SlideBar {
@@ -234,43 +171,61 @@ SlideBar {
   }
 }
 
-Collapsible {
-  height: auto;
-  border: none;
-  padding: 0;
+/* derived widgets type selectors */
 
-  & Pretty,
-  StaticDiff {
-    margin-bottom: 1;
+ChezmoiAdd {
+  & * {
+    background-tint: $surface;
+    background: $surface;
+    height: auto;
+    border: none;
   }
-}
 
-CollapsibleTitle {
-  padding-left: 1;
-  color: $primary-lighten-3;
-
-  &:hover {
-    text-style: bold;
-  }
-}
-
-
-Toast {
-  background: $surface;
-  background-tint: $surface;
-}
-
-.doctortable {
-  height: auto;
-
-  &>.datatable--header {
+  & Button {
+    border-top: heavy $primary;
+    color: $primary;
+    margin: 0 7 0 7;
+    min-width: 8;
     text-style: none;
+    width: 1fr;
+
+    &:disabled {
+      text-opacity: 0.6;
+    }
+
+    &:focus {
+      border-top: heavy $primary-lighten-2;
+    }
+
+    &:hover {
+      border-top: heavy $primary-lighten-3;
+      color: $accent-lighten-3;
+    }
+
+    &.-active {
+      border-top: heavy $primary-lighten-2;
+    }
+  }
+
+  & RichFileContent {
+    background-tint: $background;
+    margin-right: 2;
+  }
+
+  & Horizontal {
+    align: center bottom;
+    dock: bottom;
+    height: 3;
   }
 }
 
-.collapsiblegroup {
+AutoWarning {
+  margin: 0 1 0 1;
   height: auto;
-  margin: 1 0 1 0;
+}
+
+StaticDiff {
+  height: auto;
 }
 
 LoadingScreen {
@@ -288,32 +243,60 @@ LoadingScreen {
   }
 }
 
+/* ID Selectors */
+
 #diagram {
   margin-left: 1;
   margin-right: 1;
   min-width: 76;
 }
 
+/* TCSS-Class-name selector */
 
+.dir-tree {
+  height: auto;
+  margin-left: 1;
 
-Screen {
-  layers: slidebar_layer;
-}
-
-Header {
-  height: 2;
-  border-bottom: dashed $panel;
-  color: $primary;
-}
-
-Footer {
-  height: 3;
-  border-top: dashed $panel;
-  border-bottom: dashed $panel;
-
-  .-command-palette {
-    border: none;
+  &>.directory-tree--folder {
+    color: $primary-lighten-3;
+    text-style: none;
   }
+
+  &>.directory-tree--extension {
+    text-style: none;
+  }
+
+  &>.directory-tree--hidden {
+    text-style: none;
+  }
+
+  &>.directory-tree--file {
+    color: $success-lighten-3;
+    text-style: none;
+  }
+}
+
+.modalscreen {
+  border: thick $panel;
+  background: $surface;
+  height: auto;
+  background-tint: $surface;
+  max-height: 1fr;
+  margin: 1;
+  max-width: 1fr;
+}
+
+.doctortable {
+  height: auto;
+  margin-bottom: 1;
+  &>.datatable--header {
+    text-style: none;
+  }
+}
+
+.collapsiblegroup {
+  height: auto;
+  margin-bottom: 1;
 }
 
 /* not in use yet */

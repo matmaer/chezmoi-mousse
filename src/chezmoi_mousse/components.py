@@ -232,7 +232,7 @@ class ChezmoiStatus(VerticalGroup):
         # if true, adds apply status to the list, otherwise "re-add" status
         self.apply = apply
         self.status_items: list[Collapsible] = []
-        super().__init__()
+        super().__init__(classes="collapsiblegroup")
 
     def compose(self) -> ComposeResult:
         yield from self.status_items
