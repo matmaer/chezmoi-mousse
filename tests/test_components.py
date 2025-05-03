@@ -1,18 +1,11 @@
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 
 import chezmoi_mousse.components as chezmoi_components
 from chezmoi_mousse.chezmoi import Chezmoi
-from unittest.mock import patch
-
-from chezmoi_mousse.components import (
-    AutoWarning,
-    ColoredFileContent,
-    FilteredAddDirTree,
-    RichFileContent,
-    StaticDiff,
-)
+from chezmoi_mousse.components import FilteredAddDirTree, StaticDiff
 
 
 @pytest.fixture
@@ -20,23 +13,9 @@ def chezmoi():
     return Chezmoi()
 
 
-@pytest.fixture
-def rich_file_content():
-    return RichFileContent(Path.home())
-
-
-def test_rich_file_content_instantiation(rich_file_content):
-    assert isinstance(rich_file_content, RichFileContent)
-
-
 def test_static_diff_instantiation():
     instance = StaticDiff(Path.home(), apply=True)
     assert isinstance(instance, StaticDiff)
-
-
-def test_colored_file_content_instantiation():
-    instance = ColoredFileContent(Path.home())
-    assert isinstance(instance, ColoredFileContent)
 
 
 def test_filtered_add_dir_tree_instantiation():
@@ -58,17 +37,3 @@ def test_is_unwanted_path_true():
         path=Path(f"{Path.home()}/.cache")
     )
     assert unwanted_path is True
-
-
-def test_is_reasonable_dotfile_false():
-    reasonable_dotfile = chezmoi_components.is_reasonable_dotfile(
-        file_path=Path("tests/binary_file.png")
-    )
-    assert reasonable_dotfile is False
-
-
-def test_is_reasonable_dotfile_true():
-    reasonable_dotfile = chezmoi_components.is_reasonable_dotfile(
-        file_path=Path("tests/text_file.txt")
-    )
-    assert reasonable_dotfile is True

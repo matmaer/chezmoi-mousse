@@ -28,12 +28,6 @@ class MainScreen(Screen):
             yield Lazy(DiagramTab())
         yield Footer()
 
-    def action_toggle_spacing(self):
-        self.screen.query_one(Header).toggle_class("-tall")
-
-    def key_space(self) -> None:
-        self.action_toggle_spacing()
-
 
 class ChezmoiTUI(App):
 

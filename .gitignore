@@ -9,3 +9,4 @@ pydeps
 profiling/
 .gitconfig
 .coverage
+.prettierrc

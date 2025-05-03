@@ -20,19 +20,7 @@ from textual.widgets import (
 )
 
 from chezmoi_mousse.chezmoi import chezmoi, dest_dir
-from chezmoi_mousse.config import unwanted, status_info
-
-
-def is_reasonable_dotfile(file_path: Path) -> bool:
-    if file_path.stat().st_size < 150 * 1024:  # 150 KiB
-        try:
-            with open(file_path, "rb") as file:
-                chunk = file.read(512)
-                chars = re.sub(r"\s", "", str(chunk, encoding="utf-8"))
-                return chars.isprintable()
-        except UnicodeDecodeError:
-            return False
-    return False
+from chezmoi_mousse.config import status_info, unwanted
 
 
 def is_unwanted_path(path: Path) -> bool:
@@ -63,26 +51,41 @@ class AutoWarning(Container):
         )
 
 
-class RichFileContent(RichLog):
-    """RichLog widget to display the content of a file."""
+class FileView(Static):
+    """RichLog widget to display the content of a file with highlighting."""
 
-    def __init__(self, file_path: Path | None) -> None:
+    file_path: reactive[Path]
+
+    def __init__(self, file_path: Path) -> None:
         self.file_path = file_path
-        super().__init__(auto_scroll=False, wrap=True, highlight=True)
+        super().__init__()
+
+    def compose(self) -> ComposeResult:
+        yield RichLog(auto_scroll=False, wrap=True, highlight=True)
 
     def on_mount(self) -> None:
-        if self.file_path is None:
-            self.write("No file to display.")
-        elif not is_reasonable_dotfile(self.file_path):
-            self.write(
-                f'File is not a text file or too large for a reasonable "dotfile" : {self.file_path}'
-            )
-        else:
-            with open(self.file_path, "rt", encoding="utf-8") as f:
-                self.write(f.read())
+        highlighted = self.query_one(RichLog)
+        trunkated = ""
+        try:
+            if self.file_path.stat().st_size > 150 * 1024:
+                trunkated = (
+                    "\n\n------ File content truncated to 150 KiB ------\n"
+                )
+        except (PermissionError, FileNotFoundError, OSError) as error:
+            highlighted.write(str(error))
+
+        try:
+            with open(self.file_path, "rt", encoding="utf-8") as file:
+                file_content = file.read(150 * 1024)
+                if not file_content.strip():
+                    highlighted.write("File contains only whitespace")
+                else:
+                    highlighted.write(file_content + trunkated)
+        except (UnicodeDecodeError, IsADirectoryError) as error:
+            highlighted.write(str(error))
 
 
-class ColoredFileContent(Container):
+class FileViewCollapsible(Container):
     """Collapsible widget to display the content of a file."""
 
     def __init__(self, file_path: Path) -> None:
@@ -90,7 +93,7 @@ class ColoredFileContent(Container):
         super().__init__()
 
     def compose(self) -> ComposeResult:
-        yield Collapsible(RichFileContent(self.file_path))
+        yield Collapsible(FileView(self.file_path))
 
     def on_mount(self) -> None:
         collapsible = self.query_one(Collapsible)
@@ -228,7 +231,7 @@ class ChezmoiStatus(VerticalGroup):
         # if true, adds apply status to the list, otherwise "re-add" status
         self.apply = apply
         self.status_items: list[Collapsible] = []
-        super().__init__()
+        super().__init__(classes="collapsiblegroup")
 
     def compose(self) -> ComposeResult:
         yield from self.status_items
