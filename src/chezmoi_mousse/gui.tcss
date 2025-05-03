@@ -3,6 +3,10 @@
 * {
   background-tint: $background;
   scrollbar-size-vertical: 1;
+  scrollbar-background: $background;
+  scrollbar-background-active: $background;
+  scrollbar-background-hover: $background;
+  scrollbar-corner-color: $background;
 }
 
 /* Type Selector (Python class selector) */
