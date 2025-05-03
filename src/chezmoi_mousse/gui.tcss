@@ -15,7 +15,7 @@ Collapsible {
   padding: 0;
   & Pretty,
   StaticDiff,
-  RichFileContent
+  FileViewer
    {
     margin-bottom: 1;
   }
@@ -207,7 +207,7 @@ ChezmoiAdd {
     }
   }
 
-  & RichFileContent {
+  & FileViewer {
     background-tint: $background;
     margin-right: 2;
   }

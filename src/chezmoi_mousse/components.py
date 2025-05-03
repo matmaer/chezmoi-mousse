@@ -63,30 +63,24 @@ class AutoWarning(Container):
         )
 
 
-class RichFileContent(Static):
+class FileViewer(RichLog):
     """RichLog widget to display the content of a file."""
 
-    def __init__(self, file_path: Path | None) -> None:
+    def __init__(self, file_path: Path) -> None:
         self.file_path = file_path
-        super().__init__()
-
-    def compose(self) -> ComposeResult:
-        yield RichLog(auto_scroll=False, wrap=True, highlight=True)
+        super().__init__(auto_scroll=False, wrap=True, highlight=True)
 
     def on_mount(self) -> None:
-        rich_log = self.query_one(RichLog)
-        if self.file_path is None:
-            rich_log.write("No file to display.")
-        elif not is_reasonable_dotfile(self.file_path):
-            rich_log.write(
+        if not is_reasonable_dotfile(self.file_path):
+            self.write(
                 f'File is not a text file or too large for a reasonable "dotfile" : {self.file_path}'
             )
         else:
             with open(self.file_path, "rt", encoding="utf-8") as f:
-                rich_log.write(f.read())
+                self.write(f.read())
 
 
-class ColoredFileContent(Container):
+class FileViewCollapsible(Container):
     """Collapsible widget to display the content of a file."""
 
     def __init__(self, file_path: Path) -> None:
@@ -94,7 +88,7 @@ class ColoredFileContent(Container):
         super().__init__()
 
     def compose(self) -> ComposeResult:
-        yield Collapsible(RichFileContent(self.file_path))
+        yield Collapsible(FileViewer(self.file_path))
 
     def on_mount(self) -> None:
         collapsible = self.query_one(Collapsible)

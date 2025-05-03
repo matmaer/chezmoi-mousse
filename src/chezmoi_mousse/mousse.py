@@ -26,10 +26,9 @@ from chezmoi_mousse.chezmoi import chezmoi, dest_dir
 from chezmoi_mousse.components import (
     AutoWarning,
     ChezmoiStatus,
-    ColoredFileContent,
+    FileViewCollapsible,
     FilteredAddDirTree,
     ManagedTree,
-    RichFileContent,
     SlideBar,
     is_reasonable_dotfile,
 )
@@ -83,7 +82,8 @@ class AddTab(VerticalScroll):
     ) -> None:
         """Called when the user click a file in the directory tree."""
         event.stop()
-        self.notify(f"file selected: {event.path}")
+        file_content = self.query_one(Static)
+        file_content.update(f"file selected: {event.path}")
 
 
 class ChezmoiAdd(ModalScreen):
@@ -96,7 +96,7 @@ class ChezmoiAdd(ModalScreen):
         super().__init__()
         self.path_to_add = path_to_add
         self.files_to_add: list[Path] = []
-        self.add_path_items: list[ColoredFileContent] = []
+        self.add_path_items: list[FileViewCollapsible] = []
         self.add_label = "- Add File -"
 
     def compose(self) -> ComposeResult:
@@ -129,7 +129,7 @@ class ChezmoiAdd(ModalScreen):
             self.add_label = "- Add Files -"
 
         for f in self.files_to_add:
-            self.add_path_items.append(ColoredFileContent(file_path=f))
+            self.add_path_items.append(FileViewCollapsible(file_path=f))
         self.refresh(recompose=True)
 
     def on_button_pressed(self, event: Button.Pressed):
@@ -292,8 +292,12 @@ class ApplyTab(VerticalScroll):
     ]
 
     def compose(self) -> ComposeResult:
-        yield ChezmoiStatus(apply=True)
-        yield ManagedTree(label=str("root_node"), id="apply_tree")
+        with VerticalScroll():
+            yield ChezmoiStatus(apply=True)
+            yield Horizontal(
+                ManagedTree(label=str("root_node"), id="apply_tree"),
+                # FileViewer(file_path=dest_dir / ".bashrc"),
+            )
         yield SlideBar(self.filter_switches, id="apply_slidebar")
 
     def action_toggle_slidebar(self):
