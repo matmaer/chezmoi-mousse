@@ -5,7 +5,7 @@ from pathlib import Path
 from rich.text import Text
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import Grid, Horizontal, VerticalGroup, VerticalScroll
+from textual.containers import Horizontal, VerticalGroup, VerticalScroll
 from textual.lazy import Lazy
 from textual.screen import ModalScreen
 from textual.widgets import (
@@ -55,8 +55,8 @@ class AddTab(VerticalScroll):
     ]
 
     def compose(self) -> ComposeResult:
-        with Grid(id="addtabgrid"):
-            yield FilteredAddDirTree(dest_dir, classes="dir-tree box")
+        with Horizontal():
+            yield FilteredAddDirTree(dest_dir, classes="dir-tree")
 
         yield SlideBar(self.filter_switches, id="addslidebar")
 
