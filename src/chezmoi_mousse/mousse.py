@@ -30,7 +30,6 @@ from chezmoi_mousse.components import (
     FilteredAddDirTree,
     ManagedTree,
     SlideBar,
-    is_reasonable_dotfile,
 )
 from chezmoi_mousse.config import pw_mgr_info
 
@@ -117,7 +116,7 @@ class ChezmoiAdd(ModalScreen):
             self.files_to_add = [
                 f
                 for f in chezmoi.unmanaged_in_d(self.path_to_add)
-                if is_reasonable_dotfile(f)
+                # TODO: implement checkbokes for files to add and take into account the filters for the directory tree selected by the user, so only the displayed children are shown on the modal
             ]
         if len(self.files_to_add) == 0:
             # pylint: disable=line-too-long
