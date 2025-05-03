@@ -56,9 +56,9 @@ class FileView(Static):
 
     file_path: reactive[Path]
 
-    def __init__(self, file_path: Path) -> None:
+    def __init__(self, file_path: Path, **kwargs) -> None:
         self.file_path = file_path
-        super().__init__()
+        super().__init__(**kwargs)
 
     def compose(self) -> ComposeResult:
         yield RichLog(auto_scroll=False, wrap=True, highlight=True)

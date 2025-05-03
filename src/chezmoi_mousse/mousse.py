@@ -26,6 +26,7 @@ from chezmoi_mousse.chezmoi import chezmoi, dest_dir
 from chezmoi_mousse.components import (
     AutoWarning,
     ChezmoiStatus,
+    FileView,
     FileViewCollapsible,
     FilteredAddDirTree,
     ManagedTree,
@@ -57,6 +58,7 @@ class AddTab(VerticalScroll):
     def compose(self) -> ComposeResult:
         with Horizontal():
             yield FilteredAddDirTree(dest_dir, classes="dir-tree")
+            yield FileView(Path(dest_dir) / ".bashrc", classes="file-preview")
 
         yield SlideBar(self.filter_switches, id="addslidebar")
 

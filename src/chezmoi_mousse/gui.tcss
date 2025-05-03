@@ -26,6 +26,7 @@ Screen {
 }
 
 Tree {
+  width: auto;
   min-height: 3;
   height: auto;
   padding-left: 1;
@@ -252,6 +253,10 @@ LoadingScreen {
 }
 
 /* TCSS-Class-name selector */
+
+.file-preview {
+  border: outer $panel;
+}
 
 .dir-tree {
   height: auto;
