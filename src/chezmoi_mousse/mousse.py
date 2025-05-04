@@ -91,6 +91,9 @@ class AddTab(Container):
         cursor_node = self.query_exactly_one(FilteredDirTree).cursor_node
         self.app.push_screen(ChezmoiAdd(cursor_node.data.path))  # type: ignore[reportOptionalMemberAccess] # pylint: disable:line-too-long
 
+    def on_resize(self) -> None:
+        self.query_one(FilteredDirTree).focus()
+
 
 class ChezmoiAdd(ModalScreen):
 
