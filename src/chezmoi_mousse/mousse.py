@@ -58,13 +58,13 @@ class AddTab(VerticalScroll):
     def compose(self) -> ComposeResult:
         with Horizontal():
             yield FilteredDirTree(dest_dir, classes="dir-tree")
-            yield ReactiveFileView(file_path=Path(), classes="file-preview")
+            yield ReactiveFileView(classes="file-preview")
 
         yield SlideBar(self.filter_switches, id="addslidebar")
 
     @on(FilteredDirTree.FileSelected)
     def update_preview_path(self, event: FilteredDirTree.FileSelected) -> None:
-        self.notify(f"file selected {event.path}")
+        self.notify(f"in FilteredDirtree {event.path}")
         self.query_one(ReactiveFileView).file_path = event.path
 
     def action_toggle_slidebar(self):
@@ -82,14 +82,6 @@ class AddTab(VerticalScroll):
     def action_add_path(self) -> None:
         cursor_node = self.query_exactly_one(FilteredDirTree).cursor_node
         self.app.push_screen(ChezmoiAdd(cursor_node.data.path))  # type: ignore[reportOptionalMemberAccess] # pylint: disable:line-too-long
-
-    def on_directory_tree_file_selected(
-        self, event: FilteredDirTree.FileSelected
-    ) -> None:
-        """Called when the user click a file in the directory tree."""
-        event.stop()
-        file_content = self.query_one(Static)
-        file_content.update(f"file selected: {event.path}")
 
 
 class ChezmoiAdd(ModalScreen):

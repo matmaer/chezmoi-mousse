@@ -51,40 +51,46 @@ class AutoWarning(Static):
 class FileView(RichLog):
     """RichLog widget to display the content of a file with highlighting."""
 
-    def __init__(self, file_path: Path, **kwargs) -> None:
+    def __init__(self, file_path: Path | None = None, **kwargs) -> None:
         super().__init__(auto_scroll=False, wrap=True, highlight=True)
         self.file_path = file_path
 
     def on_mount(self) -> None:
-        trunkated = ""
-        try:
-            if self.file_path.stat().st_size > 150 * 1024:
-                trunkated = (
-                    "\n\n------ File content truncated to 150 KiB ------\n"
-                )
-        except (PermissionError, FileNotFoundError, OSError) as error:
-            self.write(str(error))
+        if self.file_path is None:
+            self.write("No file selected")
+        else:
+            trunkated = ""
+            try:
+                if self.file_path.stat().st_size > 150 * 1024:
+                    trunkated = (
+                        "\n\n------ File content truncated to 150 KiB ------\n"
+                    )
+            except (PermissionError, FileNotFoundError, OSError) as error:
+                self.write(str(error))
 
-        try:
-            with open(self.file_path, "rt", encoding="utf-8") as file:
-                file_content = file.read(150 * 1024)
-                if not file_content.strip():
-                    self.write("File contains only whitespace")
-                else:
-                    self.write(file_content + trunkated)
-        except (UnicodeDecodeError, IsADirectoryError) as error:
-            self.write(str(error))
+            try:
+                with open(self.file_path, "rt", encoding="utf-8") as file:
+                    file_content = file.read(150 * 1024)
+                    if not file_content.strip():
+                        self.write("File contains only whitespace")
+                    else:
+                        self.write(file_content + trunkated)
+            except (UnicodeDecodeError, IsADirectoryError) as error:
+                self.write(str(error))
 
 
 class ReactiveFileView(FileView):
     """Reactive version of FileView with reactive file path."""
 
-    file_path: reactive[Path] = reactive(Path)
+    file_path: reactive[Path | None] = reactive(None)
 
     def watch_file_path(self) -> None:
-        self.notify(f"file_path {self.file_path}")
-        self.clear()
-        self.on_mount()
+        if self.file_path is None or not self.file_path.exists():
+            self.write("No file selected")
+        else:
+            self.notify(f"in ReactiveFileView: {self.file_path}")
+            self.clear()
+            self.on_mount()
 
 
 class FileViewCollapsible(Container):
