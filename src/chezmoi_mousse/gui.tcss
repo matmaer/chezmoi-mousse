@@ -31,9 +31,9 @@ Screen {
 
 Tree {
   width: auto;
-  min-height: 3;
+  min-height: 5;
   height: auto;
-  padding-left: 1;
+  padding-right: 1;
 
   &>.tree--cursor {
     text-style: none;
@@ -177,6 +177,11 @@ SlideBar {
 }
 
 /* derived widgets type selectors */
+
+FileView {
+  padding: 0 1 0 1;
+}
+
 
 ChezmoiAdd {
   & * {

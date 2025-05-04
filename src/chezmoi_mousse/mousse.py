@@ -3,6 +3,7 @@
 from pathlib import Path
 
 from rich.text import Text
+from textual import on
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Horizontal, VerticalGroup, VerticalScroll
@@ -58,9 +59,16 @@ class AddTab(VerticalScroll):
     def compose(self) -> ComposeResult:
         with Horizontal():
             yield FilteredAddDirTree(dest_dir, classes="dir-tree")
-            yield FileView(Path(dest_dir) / ".bashrc", classes="file-preview")
+            yield FileView(file_path=Path(), classes="file-preview")
 
         yield SlideBar(self.filter_switches, id="addslidebar")
+
+    @on(FilteredAddDirTree.FileSelected)
+    def update_preview_path(
+        self, event: FilteredAddDirTree.FileSelected
+    ) -> None:
+        self.notify(f"file selected {event.path}")
+        self.query_one(FileView).file_path = event.path
 
     def action_toggle_slidebar(self):
         self.screen.query_one("#addslidebar").toggle_class("-visible")
