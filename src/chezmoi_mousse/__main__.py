@@ -11,7 +11,7 @@ from chezmoi_mousse.gui import ChezmoiTUI
 
 
 class CustomScrollBarRender(ScrollBarRender):
-    SLIM_HORIZONTAL_BAR = "▃"
+    SLIM_HORIZONTAL_BAR = "▄"
 
     @classmethod
     def render_bar(
