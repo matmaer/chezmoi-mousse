@@ -51,17 +51,19 @@ class AutoWarning(Container):
         )
 
 
-class FileView(Static):
+class FileView(RichLog):
     """RichLog widget to display the content of a file with highlighting."""
 
-    file_path: reactive[Path]
+    file_path: reactive[Path] = reactive(Path())
 
     def __init__(self, file_path: Path, **kwargs) -> None:
+        super().__init__(auto_scroll=False, wrap=True, highlight=True)
         self.file_path = file_path
-        super().__init__(**kwargs)
 
-    def compose(self) -> ComposeResult:
-        yield RichLog(auto_scroll=False, wrap=True, highlight=True)
+    def watch_file_path(self) -> None:
+        self.notify(f"file_path {self.file_path}")
+        self.clear()
+        self.on_mount()
 
     def on_mount(self) -> None:
         highlighted = self.query_one(RichLog)
