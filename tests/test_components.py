@@ -5,7 +5,7 @@ import pytest
 
 import chezmoi_mousse.components as chezmoi_components
 from chezmoi_mousse.chezmoi import Chezmoi
-from chezmoi_mousse.components import FilteredAddDirTree, StaticDiff
+from chezmoi_mousse.components import StaticDiff
 
 
 @pytest.fixture
@@ -16,13 +16,6 @@ def chezmoi():
 def test_static_diff_instantiation():
     instance = StaticDiff(Path.home(), apply=True)
     assert isinstance(instance, StaticDiff)
-
-
-def test_filtered_add_dir_tree_instantiation():
-    try:
-        instance = FilteredAddDirTree(Path.home())
-    except Exception as e:
-        pytest.fail(f"ChezmoiStatus instantiation failed with exception: {e}")
 
 
 def test_is_unwanted_path_false():
