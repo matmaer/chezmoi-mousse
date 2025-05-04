@@ -6,7 +6,13 @@ from rich.text import Text
 from textual import on
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import Horizontal, VerticalGroup, VerticalScroll
+from textual.containers import (
+    Horizontal,
+    VerticalGroup,
+    VerticalScroll,
+    Container,
+    ScrollableContainer,
+)
 from textual.screen import ModalScreen
 from textual.widgets import (
     Button,
@@ -35,7 +41,7 @@ from chezmoi_mousse.components import (
 from chezmoi_mousse.config import pw_mgr_info
 
 
-class AddTab(VerticalScroll):
+class AddTab(Container):
 
     filter_switches = {
         "unmanaged": {
@@ -56,10 +62,13 @@ class AddTab(VerticalScroll):
     ]
 
     def compose(self) -> ComposeResult:
-        with Horizontal():
-            yield FilteredDirTree(dest_dir, classes="dir-tree")
-            yield ReactiveFileView(classes="file-preview")
-
+        yield Horizontal(
+            ScrollableContainer(
+                FilteredDirTree(dest_dir, classes="dir-tree"),
+                classes="scrollable-dir-tree",
+            ),
+            ReactiveFileView(classes="file-preview"),
+        )
         yield SlideBar(self.filter_switches, id="addslidebar")
 
     @on(FilteredDirTree.FileSelected)

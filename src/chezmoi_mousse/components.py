@@ -52,7 +52,9 @@ class FileView(RichLog):
     """RichLog widget to display the content of a file with highlighting."""
 
     def __init__(self, file_path: Path | None = None, **kwargs) -> None:
-        super().__init__(auto_scroll=False, wrap=True, highlight=True)
+        super().__init__(
+            auto_scroll=False, wrap=True, highlight=True, **kwargs
+        )
         self.file_path = file_path
 
     def on_mount(self) -> None:
@@ -85,18 +87,16 @@ class ReactiveFileView(FileView):
     file_path: reactive[Path | None] = reactive(None)
 
     def watch_file_path(self) -> None:
-        if self.file_path is None or not self.file_path.exists():
-            self.write("No file selected")
-        else:
-            self.notify(f"in ReactiveFileView: {self.file_path}")
+        if self.file_path is not None:
             self.clear()
             self.on_mount()
+            self.refresh()
 
 
 class FileViewCollapsible(Container):
     """Collapsible widget to display the content of a file."""
 
-    def __init__(self, file_path: Path) -> None:
+    def __init__(self, file_path: Path | None = None) -> None:
         self.file_path = file_path
         super().__init__()
 
@@ -104,9 +104,10 @@ class FileViewCollapsible(Container):
         yield Collapsible(FileView(self.file_path))
 
     def on_mount(self) -> None:
-        collapsible = self.query_one(Collapsible)
-        collapsible.add_class("coloredfilecontent")
-        collapsible.title = str(self.file_path.relative_to(dest_dir))
+        if self.file_path is not None:
+            collapsible = self.query_one(Collapsible)
+            collapsible.add_class("coloredfilecontent")
+            collapsible.title = str(self.file_path.relative_to(dest_dir))
 
 
 class StaticDiff(Static):
