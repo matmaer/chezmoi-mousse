@@ -206,10 +206,29 @@ class FilteredDirTree(DirectoryTree):
 
 class ManagedTree(Tree):
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, file_paths: set[Path] | None = None, **kwargs) -> None:
+        if file_paths is None:
+            self.file_paths = chezmoi.managed_file_paths
+        else:
+            self.file_paths = file_paths
         super().__init__(label=str("root_node"), **kwargs)
 
     def on_mount(self) -> None:
+
+        # Collect all parent directories, including intermediate ones
+        dir_nodes = set()
+        for file_path in self.file_paths:
+            current = file_path.parent
+            while (
+                # Stop at the root directory
+                current != current.parent
+                # Stop if current is dest_dir
+                and current != dest_dir
+                # Stop if dest_dir is a subdirectory of current
+                and not dest_dir.is_relative_to(current)
+            ):
+                dir_nodes.add(current)
+                current = current.parent
 
         def recurse_paths(parent, dir_path):
             if dir_path == dest_dir:
@@ -217,14 +236,10 @@ class ManagedTree(Tree):
                 self.root.label = str(dir_path)
             else:
                 parent = parent.add(dir_path.parts[-1], dir_path)
-            files = [
-                f for f in chezmoi.managed_file_paths if f.parent == dir_path
-            ]
+            files = [f for f in self.file_paths if f.parent == dir_path]
             for file in files:
                 parent.add_leaf(str(file.parts[-1]), file)
-            sub_dirs = [
-                d for d in chezmoi.managed_dir_paths if d.parent == dir_path
-            ]
+            sub_dirs = [d for d in dir_nodes if d.parent == dir_path]
             for sub_dir in sub_dirs:
                 recurse_paths(parent, sub_dir)
 
