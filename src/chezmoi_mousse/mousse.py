@@ -73,7 +73,6 @@ class AddTab(Container):
 
     @on(FilteredDirTree.FileSelected)
     def update_preview_path(self, event: FilteredDirTree.FileSelected) -> None:
-        self.notify(f"in FilteredDirtree {event.path}")
         self.query_one(ReactiveFileView).file_path = event.path
 
     def action_toggle_slidebar(self):
