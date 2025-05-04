@@ -6,7 +6,12 @@ from pathlib import Path
 from typing import Any
 
 from textual.app import ComposeResult
-from textual.containers import Container, HorizontalGroup, VerticalGroup
+from textual.containers import (
+    Container,
+    HorizontalGroup,
+    VerticalGroup,
+    VerticalScroll,
+)
 from textual.content import Content
 from textual.reactive import reactive
 from textual.widgets import (
@@ -90,7 +95,6 @@ class ReactiveFileView(FileView):
         if self.file_path is not None:
             self.clear()
             self.on_mount()
-            self.refresh()
             self.border_title = str(self.file_path.relative_to(dest_dir))
         else:
             self.border_title = "no file selected"
@@ -233,16 +237,16 @@ class ManagedTree(Tree):
         self.root.expand()
 
 
-class ChezmoiStatus(VerticalGroup):
+class ChezmoiStatus(VerticalScroll):
 
-    def __init__(self, apply: bool) -> None:
+    def __init__(self, apply: bool, **kwargs) -> None:
         # if true, adds apply status to the list, otherwise "re-add" status
         self.apply = apply
         self.status_items: list[Collapsible] = []
-        super().__init__(classes="collapsiblegroup")
+        super().__init__(**kwargs)
 
     def compose(self) -> ComposeResult:
-        yield from self.status_items
+        yield Collapsible(*self.status_items, title="Chezmoi Status")
 
     def on_mount(self) -> None:
         # status can be a space so not using str.split() or str.strip()

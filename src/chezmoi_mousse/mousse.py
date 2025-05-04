@@ -7,11 +7,12 @@ from textual import on
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import (
+    Container,
     Horizontal,
+    ScrollableContainer,
+    Vertical,
     VerticalGroup,
     VerticalScroll,
-    Container,
-    ScrollableContainer,
 )
 from textual.screen import ModalScreen
 from textual.widgets import (
@@ -32,10 +33,10 @@ from chezmoi_mousse.chezmoi import chezmoi, dest_dir
 from chezmoi_mousse.components import (
     AutoWarning,
     ChezmoiStatus,
-    ReactiveFileView,
     FileViewCollapsible,
     FilteredDirTree,
     ManagedTree,
+    ReactiveFileView,
     SlideBar,
 )
 from chezmoi_mousse.config import pw_mgr_info
@@ -304,10 +305,24 @@ class ApplyTab(VerticalScroll):
         with VerticalScroll():
             yield ChezmoiStatus(apply=True)
             yield Horizontal(
-                ManagedTree(label=str("root_node"), id="apply_tree"),
-                # FileViewer(file_path=dest_dir / ".bashrc"),
+                ScrollableContainer(
+                    ManagedTree(label=str("root_node")),
+                    classes="scrollable-dir-tree",
+                ),
+                ReactiveFileView(classes="file-preview"),
             )
         yield SlideBar(self.filter_switches, id="apply_slidebar")
+
+    @on(ManagedTree.NodeSelected)
+    def update_preview_path(self, event: ManagedTree.NodeSelected) -> None:
+        if event.node.data is not None and event.node.data.is_file():
+            self.query_one(ReactiveFileView).file_path = event.node.data
+        elif (
+            event.node.data is not None
+            and not event.node.data.is_dir()
+            and not event.node.data.exists()
+        ):
+            self.query_one(ReactiveFileView).file_path = event.node.data
 
     def action_toggle_slidebar(self):
         self.screen.query_exactly_one("#apply_slidebar").toggle_class(
@@ -327,6 +342,9 @@ class ApplyTab(VerticalScroll):
             # filter logic here
             self.notify(f"Not yet implemented {managed_tree}")
             managed_tree.refresh()
+
+    def on_resize(self) -> None:
+        self.query_exactly_one(ManagedTree).focus()
 
 
 class ReAddTab(VerticalScroll):

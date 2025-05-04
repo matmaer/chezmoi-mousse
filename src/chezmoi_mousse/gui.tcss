@@ -248,6 +248,12 @@ LoadingScreen {
   }
 }
 
+ChezmoiStatus {
+  height: auto;
+  max-height: 70%;
+  padding-bottom: 1;
+}
+
 /* ID Selectors */
 
 #diagram {
@@ -274,6 +280,7 @@ LoadingScreen {
 }
 
 .dir-tree {
+  height: auto;
   &>.directory-tree--folder {
     color: $primary-lighten-3;
     text-style: none;
