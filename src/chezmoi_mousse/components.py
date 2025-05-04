@@ -34,10 +34,7 @@ def is_unwanted_path(path: Path) -> bool:
     return False
 
 
-class AutoWarning(Container):
-
-    def compose(self) -> ComposeResult:
-        yield Static()
+class AutoWarning(Static):
 
     def on_mount(self) -> None:
         auto_warning = ""
@@ -46,7 +43,7 @@ class AutoWarning(Container):
         elif chezmoi.autocommit_enabled and chezmoi.autopush_enabled:
             auto_warning = '"Auto Commit" and "Auto Push" are enabled: adding file(s) will also be committed and pushed the remote.'
 
-        self.query_one(Static).update(
+        self.update(
             Content.from_markup(f"[$text-warning italic]{auto_warning}[/]")
         )
 
@@ -102,15 +99,12 @@ class FileViewCollapsible(Container):
         collapsible.title = str(self.file_path.relative_to(dest_dir))
 
 
-class StaticDiff(Container):
+class StaticDiff(Static):
 
     def __init__(self, file_path: Path, apply: bool) -> None:
         self.file_path = file_path
         self.apply = apply
         super().__init__()
-
-    def compose(self) -> ComposeResult:
-        yield Static()
 
     def on_mount(self) -> None:
 
@@ -132,11 +126,10 @@ class StaticDiff(Container):
             else:
                 colored_lines.append(content.stylize("dim"))
 
-        static_diff = self.query_one(Static)
-        static_diff.update(Content("\n").join(colored_lines))
+        self.update(Content("\n").join(colored_lines))
 
 
-class FilteredAddDirTree(DirectoryTree):
+class FilteredDirTree(DirectoryTree):
 
     include_unmanaged_dirs = reactive(False, always_update=True)
     filter_unwanted = reactive(True, always_update=True)

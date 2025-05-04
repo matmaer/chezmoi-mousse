@@ -7,7 +7,6 @@ from textual import on
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Horizontal, VerticalGroup, VerticalScroll
-from textual.lazy import Lazy
 from textual.screen import ModalScreen
 from textual.widgets import (
     Button,
@@ -29,7 +28,7 @@ from chezmoi_mousse.components import (
     ChezmoiStatus,
     FileView,
     FileViewCollapsible,
-    FilteredAddDirTree,
+    FilteredDirTree,
     ManagedTree,
     SlideBar,
 )
@@ -58,15 +57,13 @@ class AddTab(VerticalScroll):
 
     def compose(self) -> ComposeResult:
         with Horizontal():
-            yield FilteredAddDirTree(dest_dir, classes="dir-tree")
+            yield FilteredDirTree(dest_dir, classes="dir-tree")
             yield FileView(file_path=Path(), classes="file-preview")
 
         yield SlideBar(self.filter_switches, id="addslidebar")
 
-    @on(FilteredAddDirTree.FileSelected)
-    def update_preview_path(
-        self, event: FilteredAddDirTree.FileSelected
-    ) -> None:
+    @on(FilteredDirTree.FileSelected)
+    def update_preview_path(self, event: FilteredDirTree.FileSelected) -> None:
         self.notify(f"file selected {event.path}")
         self.query_one(FileView).file_path = event.path
 
@@ -74,7 +71,7 @@ class AddTab(VerticalScroll):
         self.screen.query_one("#addslidebar").toggle_class("-visible")
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
-        add_dir_tree = self.screen.query_exactly_one(FilteredAddDirTree)
+        add_dir_tree = self.screen.query_exactly_one(FilteredDirTree)
         if event.switch.id == "unmanaged":
             add_dir_tree.include_unmanaged_dirs = event.value
             add_dir_tree.reload()
@@ -83,11 +80,11 @@ class AddTab(VerticalScroll):
             add_dir_tree.reload()
 
     def action_add_path(self) -> None:
-        cursor_node = self.query_exactly_one(FilteredAddDirTree).cursor_node
+        cursor_node = self.query_exactly_one(FilteredDirTree).cursor_node
         self.app.push_screen(ChezmoiAdd(cursor_node.data.path))  # type: ignore[reportOptionalMemberAccess] # pylint: disable:line-too-long
 
     def on_directory_tree_file_selected(
-        self, event: FilteredAddDirTree.FileSelected
+        self, event: FilteredDirTree.FileSelected
     ) -> None:
         """Called when the user click a file in the directory tree."""
         event.stop()
