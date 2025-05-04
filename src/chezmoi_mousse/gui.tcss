@@ -183,6 +183,10 @@ FileView {
 }
 
 
+.fileview-border-top {
+  border-top: tab yellow;
+}
+
 ChezmoiAdd {
   & * {
     background-tint: $surface;
