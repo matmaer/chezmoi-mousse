@@ -258,12 +258,17 @@ LoadingScreen {
 /* TCSS-Class-name selector */
 
 .file-preview {
+  padding-top: 1;
   max-width: 80%;
   padding-left: 1;
+  border-top: tab $primary-muted;
+  border-title-align: center;
+  border-title-color: $text-accent;
 }
 
 .scrollable-dir-tree {
   padding-left: 1;
+  padding-right: 1;
   width: auto;
   max-width: 33%;
 }

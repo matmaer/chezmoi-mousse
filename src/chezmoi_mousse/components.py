@@ -59,7 +59,7 @@ class FileView(RichLog):
 
     def on_mount(self) -> None:
         if self.file_path is None:
-            self.write("No file selected")
+            self.write("Select a file to view its content.")
         else:
             trunkated = ""
             try:
@@ -91,6 +91,9 @@ class ReactiveFileView(FileView):
             self.clear()
             self.on_mount()
             self.refresh()
+            self.border_title = str(self.file_path.relative_to(dest_dir))
+        else:
+            self.border_title = "no file selected"
 
 
 class FileViewCollapsible(Container):
