@@ -34,10 +34,7 @@ def is_unwanted_path(path: Path) -> bool:
     return False
 
 
-class AutoWarning(Container):
-
-    def compose(self) -> ComposeResult:
-        yield Static()
+class AutoWarning(Static):
 
     def on_mount(self) -> None:
         auto_warning = ""
@@ -46,7 +43,7 @@ class AutoWarning(Container):
         elif chezmoi.autocommit_enabled and chezmoi.autopush_enabled:
             auto_warning = '"Auto Commit" and "Auto Push" are enabled: adding file(s) will also be committed and pushed the remote.'
 
-        self.query_one(Static).update(
+        self.update(
             Content.from_markup(f"[$text-warning italic]{auto_warning}[/]")
         )
 
@@ -54,42 +51,52 @@ class AutoWarning(Container):
 class FileView(RichLog):
     """RichLog widget to display the content of a file with highlighting."""
 
-    file_path: reactive[Path] = reactive(Path())
-
-    def __init__(self, file_path: Path, **kwargs) -> None:
-        super().__init__(auto_scroll=False, wrap=True, highlight=True)
+    def __init__(self, file_path: Path | None = None, **kwargs) -> None:
+        super().__init__(
+            auto_scroll=False, wrap=True, highlight=True, **kwargs
+        )
         self.file_path = file_path
 
-    def watch_file_path(self) -> None:
-        self.notify(f"file_path {self.file_path}")
-        self.clear()
-        self.on_mount()
-
     def on_mount(self) -> None:
-        trunkated = ""
-        try:
-            if self.file_path.stat().st_size > 150 * 1024:
-                trunkated = (
-                    "\n\n------ File content truncated to 150 KiB ------\n"
-                )
-        except (PermissionError, FileNotFoundError, OSError) as error:
-            self.write(str(error))
+        if self.file_path is None:
+            self.write("No file selected")
+        else:
+            trunkated = ""
+            try:
+                if self.file_path.stat().st_size > 150 * 1024:
+                    trunkated = (
+                        "\n\n------ File content truncated to 150 KiB ------\n"
+                    )
+            except (PermissionError, FileNotFoundError, OSError) as error:
+                self.write(str(error))
 
-        try:
-            with open(self.file_path, "rt", encoding="utf-8") as file:
-                file_content = file.read(150 * 1024)
-                if not file_content.strip():
-                    self.write("File contains only whitespace")
-                else:
-                    self.write(file_content + trunkated)
-        except (UnicodeDecodeError, IsADirectoryError) as error:
-            self.write(str(error))
+            try:
+                with open(self.file_path, "rt", encoding="utf-8") as file:
+                    file_content = file.read(150 * 1024)
+                    if not file_content.strip():
+                        self.write("File contains only whitespace")
+                    else:
+                        self.write(file_content + trunkated)
+            except (UnicodeDecodeError, IsADirectoryError) as error:
+                self.write(str(error))
+
+
+class ReactiveFileView(FileView):
+    """Reactive version of FileView with reactive file path."""
+
+    file_path: reactive[Path | None] = reactive(None)
+
+    def watch_file_path(self) -> None:
+        if self.file_path is not None:
+            self.clear()
+            self.on_mount()
+            self.refresh()
 
 
 class FileViewCollapsible(Container):
     """Collapsible widget to display the content of a file."""
 
-    def __init__(self, file_path: Path) -> None:
+    def __init__(self, file_path: Path | None = None) -> None:
         self.file_path = file_path
         super().__init__()
 
@@ -97,20 +104,18 @@ class FileViewCollapsible(Container):
         yield Collapsible(FileView(self.file_path))
 
     def on_mount(self) -> None:
-        collapsible = self.query_one(Collapsible)
-        collapsible.add_class("coloredfilecontent")
-        collapsible.title = str(self.file_path.relative_to(dest_dir))
+        if self.file_path is not None:
+            collapsible = self.query_one(Collapsible)
+            collapsible.add_class("coloredfilecontent")
+            collapsible.title = str(self.file_path.relative_to(dest_dir))
 
 
-class StaticDiff(Container):
+class StaticDiff(Static):
 
     def __init__(self, file_path: Path, apply: bool) -> None:
         self.file_path = file_path
         self.apply = apply
         super().__init__()
-
-    def compose(self) -> ComposeResult:
-        yield Static()
 
     def on_mount(self) -> None:
 
@@ -132,11 +137,10 @@ class StaticDiff(Container):
             else:
                 colored_lines.append(content.stylize("dim"))
 
-        static_diff = self.query_one(Static)
-        static_diff.update(Content("\n").join(colored_lines))
+        self.update(Content("\n").join(colored_lines))
 
 
-class FilteredAddDirTree(DirectoryTree):
+class FilteredDirTree(DirectoryTree):
 
     include_unmanaged_dirs = reactive(False, always_update=True)
     filter_unwanted = reactive(True, always_update=True)
