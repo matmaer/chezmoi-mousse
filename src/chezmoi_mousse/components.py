@@ -206,9 +206,8 @@ class FilteredDirTree(DirectoryTree):
 
 class ManagedTree(Tree):
 
-    def __init__(self, show_existing_only: bool = False, **kwargs) -> None:
-        self.show_existing_only = show_existing_only
-        super().__init__(**kwargs)
+    def __init__(self, **kwargs) -> None:
+        super().__init__(label=str("root_node"), **kwargs)
 
     def on_mount(self) -> None:
 
@@ -219,18 +218,12 @@ class ManagedTree(Tree):
             else:
                 parent = parent.add(dir_path.parts[-1], dir_path)
             files = [
-                f
-                for f in chezmoi.managed_file_paths
-                if f.parent == dir_path
-                and (not self.show_existing_only or f.exists())
+                f for f in chezmoi.managed_file_paths if f.parent == dir_path
             ]
             for file in files:
                 parent.add_leaf(str(file.parts[-1]), file)
             sub_dirs = [
-                d
-                for d in chezmoi.managed_dir_paths
-                if d.parent == dir_path
-                and (not self.show_existing_only or d.exists())
+                d for d in chezmoi.managed_dir_paths if d.parent == dir_path
             ]
             for sub_dir in sub_dirs:
                 recurse_paths(parent, sub_dir)

@@ -306,7 +306,7 @@ class ApplyTab(VerticalScroll):
             yield ChezmoiStatus(apply=True)
             yield Horizontal(
                 ScrollableContainer(
-                    ManagedTree(label=str("root_node"), id="re_add_tree"),
+                    ManagedTree(id="re_add_tree"),
                     classes="scrollable-dir-tree",
                 ),
                 ReactiveFileView(classes="file-preview"),
@@ -367,11 +367,7 @@ class ReAddTab(VerticalScroll):
             yield ChezmoiStatus(apply=False)
             yield Horizontal(
                 ScrollableContainer(
-                    ManagedTree(
-                        label=str("root_node"),
-                        show_existing_only=True,
-                        id="re_add_tree",
-                    ),
+                    ManagedTree(id="re_add_tree"),
                     classes="scrollable-dir-tree",
                 ),
                 ReactiveFileView(classes="file-preview"),
