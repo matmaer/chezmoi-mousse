@@ -3,6 +3,10 @@
 * {
   background-tint: $background;
   scrollbar-size-vertical: 1;
+  scrollbar-background: $background;
+  scrollbar-background-active: $background;
+  scrollbar-background-hover: $background;
+  scrollbar-corner-color: $background;
 }
 
 /* Type Selector (Python class selector) */
@@ -26,9 +30,10 @@ Screen {
 }
 
 Tree {
-  min-height: 3;
+  width: auto;
+  min-height: 5;
   height: auto;
-  padding-left: 1;
+  padding-right: 1;
 
   &>.tree--cursor {
     text-style: none;
@@ -173,6 +178,11 @@ SlideBar {
 
 /* derived widgets type selectors */
 
+FileView {
+  padding: 0 1 0 1;
+}
+
+
 ChezmoiAdd {
   & * {
     background-tint: $surface;
@@ -252,6 +262,10 @@ LoadingScreen {
 }
 
 /* TCSS-Class-name selector */
+
+.file-preview {
+  border: outer $panel;
+}
 
 .dir-tree {
   height: auto;

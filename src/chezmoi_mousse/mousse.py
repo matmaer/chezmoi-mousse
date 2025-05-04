@@ -3,9 +3,10 @@
 from pathlib import Path
 
 from rich.text import Text
+from textual import on
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import Grid, Horizontal, VerticalGroup, VerticalScroll
+from textual.containers import Horizontal, VerticalGroup, VerticalScroll
 from textual.lazy import Lazy
 from textual.screen import ModalScreen
 from textual.widgets import (
@@ -26,6 +27,7 @@ from chezmoi_mousse.chezmoi import chezmoi, dest_dir
 from chezmoi_mousse.components import (
     AutoWarning,
     ChezmoiStatus,
+    FileView,
     FileViewCollapsible,
     FilteredAddDirTree,
     ManagedTree,
@@ -55,10 +57,18 @@ class AddTab(VerticalScroll):
     ]
 
     def compose(self) -> ComposeResult:
-        with Grid(id="addtabgrid"):
-            yield FilteredAddDirTree(dest_dir, classes="dir-tree box")
+        with Horizontal():
+            yield FilteredAddDirTree(dest_dir, classes="dir-tree")
+            yield FileView(file_path=Path(), classes="file-preview")
 
         yield SlideBar(self.filter_switches, id="addslidebar")
+
+    @on(FilteredAddDirTree.FileSelected)
+    def update_preview_path(
+        self, event: FilteredAddDirTree.FileSelected
+    ) -> None:
+        self.notify(f"file selected {event.path}")
+        self.query_one(FileView).file_path = event.path
 
     def action_toggle_slidebar(self):
         self.screen.query_one("#addslidebar").toggle_class("-visible")

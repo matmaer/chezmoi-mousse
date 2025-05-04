@@ -3,11 +3,11 @@
 import re
 from collections.abc import Iterable
 from pathlib import Path
+from typing import Any
 
 from textual.app import ComposeResult
 from textual.containers import Container, HorizontalGroup, VerticalGroup
 from textual.content import Content
-from textual.lazy import Lazy
 from textual.reactive import reactive
 from textual.widgets import (
     Collapsible,
@@ -51,20 +51,21 @@ class AutoWarning(Container):
         )
 
 
-class FileView(Static):
+class FileView(RichLog):
     """RichLog widget to display the content of a file with highlighting."""
 
-    file_path: reactive[Path]
+    file_path: reactive[Path] = reactive(Path())
 
-    def __init__(self, file_path: Path) -> None:
+    def __init__(self, file_path: Path, **kwargs) -> None:
+        super().__init__(auto_scroll=False, wrap=True, highlight=True)
         self.file_path = file_path
-        super().__init__()
 
-    def compose(self) -> ComposeResult:
-        yield RichLog(auto_scroll=False, wrap=True, highlight=True)
+    def watch_file_path(self) -> None:
+        self.notify(f"file_path {self.file_path}")
+        self.clear()
+        self.on_mount()
 
     def on_mount(self) -> None:
-        highlighted = self.query_one(RichLog)
         trunkated = ""
         try:
             if self.file_path.stat().st_size > 150 * 1024:
@@ -72,17 +73,17 @@ class FileView(Static):
                     "\n\n------ File content truncated to 150 KiB ------\n"
                 )
         except (PermissionError, FileNotFoundError, OSError) as error:
-            highlighted.write(str(error))
+            self.write(str(error))
 
         try:
             with open(self.file_path, "rt", encoding="utf-8") as file:
                 file_content = file.read(150 * 1024)
                 if not file_content.strip():
-                    highlighted.write("File contains only whitespace")
+                    self.write("File contains only whitespace")
                 else:
-                    highlighted.write(file_content + trunkated)
+                    self.write(file_content + trunkated)
         except (UnicodeDecodeError, IsADirectoryError) as error:
-            highlighted.write(str(error))
+            self.write(str(error))
 
 
 class FileViewCollapsible(Container):
@@ -280,7 +281,7 @@ class SlideBar(VerticalGroup):
                 tooltip=self.switch_tooltip
             )
 
-    def __init__(self, filters: dict, **kwargs) -> None:
+    def __init__(self, filters: dict[str, dict], **kwargs: Any) -> None:
         self.filters = filters
         self.filter_items = []
         super().__init__(**kwargs)
@@ -290,12 +291,15 @@ class SlideBar(VerticalGroup):
 
     def on_mount(self) -> None:
         for switch_id, items in self.filters.items():
-            self.filter_items.append(
-                self.FilterItem(
-                    switch_label=items["switch_label"],
-                    switch_tooltip=items["switch_tooltip"],
-                    switch_id=switch_id,
-                    initial_state=items["switch_state"],
+            if items["switch_label"] is None:
+                break
+            else:
+                self.filter_items.append(
+                    self.FilterItem(
+                        switch_label=items["switch_label"],
+                        switch_tooltip=items["switch_tooltip"],
+                        switch_id=switch_id,
+                        initial_state=items["switch_state"],
+                    )
                 )
-            )
         self.refresh(recompose=True)
