@@ -306,7 +306,7 @@ class ApplyTab(VerticalScroll):
             yield ChezmoiStatus(apply=True)
             yield Horizontal(
                 ScrollableContainer(
-                    ManagedTree(label=str("root_node")),
+                    ManagedTree(label=str("root_node"), id="re_add_tree"),
                     classes="scrollable-dir-tree",
                 ),
                 ReactiveFileView(classes="file-preview"),
@@ -363,11 +363,31 @@ class ReAddTab(VerticalScroll):
     ]
 
     def compose(self) -> ComposeResult:
-        yield ChezmoiStatus(apply=False)
-        yield ManagedTree(
-            label=str("root_node"), show_existing_only=True, id="re_add_tree"
-        )
+        with VerticalScroll():
+            yield ChezmoiStatus(apply=False)
+            yield Horizontal(
+                ScrollableContainer(
+                    ManagedTree(
+                        label=str("root_node"),
+                        show_existing_only=True,
+                        id="re_add_tree",
+                    ),
+                    classes="scrollable-dir-tree",
+                ),
+                ReactiveFileView(classes="file-preview"),
+            )
         yield SlideBar(self.filter_switches, id="re_add_slidebar")
+
+    @on(ManagedTree.NodeSelected)
+    def update_preview_path(self, event: ManagedTree.NodeSelected) -> None:
+        if event.node.data is not None and event.node.data.is_file():
+            self.query_one(ReactiveFileView).file_path = event.node.data
+        elif (
+            event.node.data is not None
+            and not event.node.data.is_dir()
+            and not event.node.data.exists()
+        ):
+            self.query_one(ReactiveFileView).file_path = event.node.data
 
     def action_toggle_slidebar(self):
         self.screen.query_exactly_one("#re_add_slidebar").toggle_class(
