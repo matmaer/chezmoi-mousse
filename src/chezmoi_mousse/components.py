@@ -276,51 +276,65 @@ class ChezmoiStatus(VerticalScroll):
 
 class SlideBar(VerticalGroup):
 
-    class FilterItem(HorizontalGroup):
+    TOOLTIPS = {
+        "unmanaged": (
+            "Enable to include all un-managed files, even if they live in an un-managed directory. "
+            "Disable to only show un-managed files in directories which already contain managed files (the default). "
+            "The purpose is to easily spot new un-managed files in already managed directories. "
+            "(in both cases, only the un-managed files are shown)"
+        ),
+        "unwanted": (
+            'Filter out files and directories considered as "unwanted" for a dotfile manager. '
+            "These include cache, temporary, trash (recycle bin) and other similar files or directories. "
+            "You can disable this, for example if you want to add files to your chezmoi repository which are in a directory named 'cache'."
+        ),
+        "not_existing": "Show only non-existing files",
+        "changed_files": "Show only files with changed status",
+    }
 
-        def __init__(
-            self,
-            switch_label: str,
-            switch_tooltip: str,
-            switch_id: str,
-            initial_state: bool,
-        ) -> None:
-            self.switch_label = switch_label
-            self.switch_tooltip = switch_tooltip
-            self.switch_id = switch_id
-            self.initial_state = initial_state
-            super().__init__(classes="filter-container")
+    FILTER_GROUPS = {
+        "add_tab": [
+            ("unmanaged_dirs", "Include unmanaged directories", False),
+            ("unwanted_paths", "Filter unwanted paths", True),
+        ],
+        "apply_tab": [
+            ("not_existing", "Show only non-existing files", False),
+            ("changed_files", "Show only files with changed status", False),
+        ],
+        "re_add_tab": [
+            ("changed_files", "Show only files with changed status", False)
+        ],
+    }
 
-        def compose(self) -> ComposeResult:
-            yield Switch(
-                value=self.initial_state,
-                id=self.switch_id,
-                classes="filter-switch",
-            )
-            yield Label(self.switch_label, classes="filter-label")
-            yield Label("(?)", classes="filter-tooltip").with_tooltip(
-                tooltip=self.switch_tooltip
-            )
-
-    def __init__(self, filters: dict[str, dict], **kwargs: Any) -> None:
-        self.filters = filters
-        self.filter_items = []
+    def __init__(self, filter_group: str, **kwargs) -> None:
+        self.filter_group = filter_group
+        self.filter_items: list[HorizontalGroup] = []
         super().__init__(**kwargs)
 
     def compose(self) -> ComposeResult:
         yield from self.filter_items
 
     def on_mount(self) -> None:
-        for switch_id, items in self.filters.items():
-            if items["switch_label"] is None:
-                break
-            else:
+        # Dynamically add switches based on filter_groups
+        if self.filter_group in self.FILTER_GROUPS:
+            for switch_id, label, default_value in self.FILTER_GROUPS[
+                self.filter_group
+            ]:
                 self.filter_items.append(
-                    self.FilterItem(
-                        switch_label=items["switch_label"],
-                        switch_tooltip=items["switch_tooltip"],
-                        switch_id=switch_id,
-                        initial_state=items["switch_state"],
-                    )
+                    self.create_switch(switch_id, label, default_value)
                 )
         self.refresh(recompose=True)
+
+    def create_switch(
+        self, switch_id: str, label: str, default_value: bool
+    ) -> HorizontalGroup:
+        """Create a switch dynamically using the TOOLTIPS and FILTER_GROUPS."""
+        tooltip = self.TOOLTIPS.get(switch_id, "")
+        return HorizontalGroup(
+            Switch(value=default_value, id=switch_id, classes="filter-switch"),
+            Label(label, classes="filter-label"),
+            Label("(?)", classes="filter-tooltip").with_tooltip(
+                tooltip=tooltip
+            ),
+            classes="filter-container",
+        )

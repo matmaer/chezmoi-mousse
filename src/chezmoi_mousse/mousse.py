@@ -10,7 +10,6 @@ from textual.containers import (
     Container,
     Horizontal,
     ScrollableContainer,
-    Vertical,
     VerticalGroup,
     VerticalScroll,
 )
@@ -44,18 +43,7 @@ from chezmoi_mousse.config import pw_mgr_info
 
 class AddTab(Container):
 
-    filter_switches = {
-        "unmanaged": {
-            "switch_label": "Include unmanaged directories",
-            "switch_tooltip": "Enable to include all un-managed files, even if they live in an un-managed directory. Disable to only show un-managed files in directories which already contain managed files (the default). The purpose is to easily spot new un-managed files in already managed directories. (in both cases, only the un-managed files are shown)",
-            "switch_state": False,
-        },
-        "unwanted": {
-            "switch_label": "Filter unwanted paths",
-            "switch_tooltip": 'Filter out files and directories considered as "unwanted" for a dotfile manager. These include cache, temporary, trash (recycle bin) and other similar files or directories.  You can disable this, for example if you want to add files to your chezmoi repository which are in a directory named "cache".',
-            "switch_state": True,
-        },
-    }
+    filter_switches = "add_tab"  # Use the filter group name defined in SlideBar.FILTER_GROUPS
 
     BINDINGS = [
         Binding("f", "toggle_slidebar", "Filters"),
@@ -81,16 +69,16 @@ class AddTab(Container):
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
         add_dir_tree = self.screen.query_exactly_one(FilteredDirTree)
-        if event.switch.id == "unmanaged":
+        if event.switch.id == "unmanaged_dirs":
             add_dir_tree.include_unmanaged_dirs = event.value
             add_dir_tree.reload()
-        elif event.switch.id == "unwanted":
+        elif event.switch.id == "unwanted_paths":
             add_dir_tree.filter_unwanted = event.value
             add_dir_tree.reload()
 
     def action_add_path(self) -> None:
         cursor_node = self.query_exactly_one(FilteredDirTree).cursor_node
-        self.app.push_screen(ChezmoiAdd(cursor_node.data.path))  # type: ignore[reportOptionalMemberAccess] # pylint: disable:line-too-long
+        self.app.push_screen(ChezmoiAdd(cursor_node.data.path))  # type: ignore[reportOptionalMemberAccess] # pylint: disable=line-too-long
 
     def on_resize(self) -> None:
         self.query_one(FilteredDirTree).focus()
@@ -283,18 +271,7 @@ class DoctorTab(VerticalScroll):
 
 class ApplyTab(VerticalScroll):
 
-    filter_switches = {
-        "notexisting": {
-            "switch_label": "Show only non-existing files",
-            "switch_tooltip": "Show only non-existing files",
-            "switch_state": False,
-        },
-        "changedfiles": {
-            "switch_label": "Show only files with changed status",
-            "switch_tooltip": "Show only files with changed status",
-            "switch_state": False,
-        },
-    }
+    filter_switches = "apply_tab"  # Use the filter group name defined in SlideBar.FILTER_GROUPS
 
     BINDINGS = [
         Binding("f", "toggle_slidebar", "Filters"),
@@ -306,8 +283,7 @@ class ApplyTab(VerticalScroll):
             yield ChezmoiStatus(apply=True)
             yield Horizontal(
                 ScrollableContainer(
-                    ManagedTree(id="re_add_tree"),
-                    classes="scrollable-dir-tree",
+                    ManagedTree(id="apply_tree"), classes="scrollable-dir-tree"
                 ),
                 ReactiveFileView(classes="file-preview"),
             )
@@ -334,11 +310,11 @@ class ApplyTab(VerticalScroll):
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
         managed_tree = self.query_exactly_one("#apply_tree")
-        if event.switch.id == "notexisting":
+        if event.switch.id == "not_existing":
             # filter logic here
             self.notify(f"Not yet implemented for {managed_tree}")
             managed_tree.refresh()
-        elif event.switch.id == "changedfiles":
+        elif event.switch.id == "changed_files":
             # filter logic here
             self.notify(f"Not yet implemented {managed_tree}")
             managed_tree.refresh()
@@ -349,13 +325,7 @@ class ApplyTab(VerticalScroll):
 
 class ReAddTab(VerticalScroll):
 
-    filter_switches = {
-        "changedfiles": {
-            "switch_label": "Show only files with changed status",
-            "switch_tooltip": "Show only files with changed status",
-            "switch_state": False,
-        }
-    }
+    filter_switches = "re_add_tab"  # Use the filter group name defined in SlideBar.FILTER_GROUPS
 
     BINDINGS = [
         Binding("f", "toggle_slidebar", "Filters"),
@@ -395,7 +365,7 @@ class ReAddTab(VerticalScroll):
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
         managed_tree = self.query_exactly_one("#re_add_tree")
-        if event.switch.id == "changedfiles":
+        if event.switch.id == "changed_files":
             # filter logic here
             self.notify(f"Not yet implemented for {managed_tree}")
 
