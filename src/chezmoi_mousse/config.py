@@ -1,3 +1,40 @@
+filter_switch_data = {
+    "unmanaged": {
+        "tooltip": (
+            "Enable to include all un-managed files, even if they live in an un-managed directory. "
+            "Disable to only show un-managed files in directories which already contain managed files (the default). "
+            "The purpose is to easily spot new un-managed files in already managed directories. "
+            "(in both cases, only the un-managed files are shown)"
+        ),
+        "label": "Include unmanaged directories",
+        "default": False,
+        "tab_ids": ["add_tab"],
+    },
+    "unwanted": {
+        "tooltip": (
+            'Filter out files and directories considered as "unwanted" for a dotfile manager. '
+            "These include cache, temporary, trash (recycle bin) and other similar files or directories. "
+            "You can disable this, for example if you want to add files to your chezmoi repository which are in a directory named 'cache'."
+        ),
+        "label": "Filter unwanted paths",
+        "default": True,
+        "tab_ids": ["add_tab"],
+    },
+    "not_existing": {
+        "tooltip": "Show only non-existing files.",
+        "label": "Show only non-existing files",
+        "default": False,
+        "tab_ids": ["apply_tab"],
+    },
+    "changed_files": {
+        "tooltip": "Show only files with changed status.",
+        "label": "Show only files with changed status",
+        "default": False,
+        "tab_ids": ["apply_tab", "re_add_tab"],
+    },
+}
+
+
 unwanted = {
     "dirs": {
         "__pycache__",

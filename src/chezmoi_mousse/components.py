@@ -5,24 +5,12 @@ from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
 
+
 from textual.app import ComposeResult
-from textual.containers import (
-    Container,
-    HorizontalGroup,
-    VerticalGroup,
-    VerticalScroll,
-)
+from textual.containers import Container, VerticalScroll
 from textual.content import Content
 from textual.reactive import reactive
-from textual.widgets import (
-    Collapsible,
-    DirectoryTree,
-    Label,
-    RichLog,
-    Static,
-    Switch,
-    Tree,
-)
+from textual.widgets import Collapsible, DirectoryTree, RichLog, Static, Tree
 
 from chezmoi_mousse.chezmoi import chezmoi, dest_dir
 from chezmoi_mousse.config import status_info, unwanted
@@ -272,69 +260,3 @@ class ChezmoiStatus(VerticalScroll):
                 Collapsible(StaticDiff(file_path, self.apply), title=title)
             )
         self.refresh(recompose=True)
-
-
-class SlideBar(VerticalGroup):
-
-    TOOLTIPS = {
-        "unmanaged": (
-            "Enable to include all un-managed files, even if they live in an un-managed directory. "
-            "Disable to only show un-managed files in directories which already contain managed files (the default). "
-            "The purpose is to easily spot new un-managed files in already managed directories. "
-            "(in both cases, only the un-managed files are shown)"
-        ),
-        "unwanted": (
-            'Filter out files and directories considered as "unwanted" for a dotfile manager. '
-            "These include cache, temporary, trash (recycle bin) and other similar files or directories. "
-            "You can disable this, for example if you want to add files to your chezmoi repository which are in a directory named 'cache'."
-        ),
-        "not_existing": "Show only non-existing files",
-        "changed_files": "Show only files with changed status",
-    }
-
-    FILTER_GROUPS = {
-        "add_tab": [
-            ("unmanaged_dirs", "Include unmanaged directories", False),
-            ("unwanted_paths", "Filter unwanted paths", True),
-        ],
-        "apply_tab": [
-            ("not_existing", "Show only non-existing files", False),
-            ("changed_files", "Show only files with changed status", False),
-        ],
-        "re_add_tab": [
-            ("changed_files", "Show only files with changed status", False)
-        ],
-    }
-
-    def __init__(self, filter_group: str, **kwargs) -> None:
-        self.filter_group = filter_group
-        self.filter_items: list[HorizontalGroup] = []
-        super().__init__(**kwargs)
-
-    def compose(self) -> ComposeResult:
-        yield from self.filter_items
-
-    def on_mount(self) -> None:
-        # Dynamically add switches based on filter_groups
-        if self.filter_group in self.FILTER_GROUPS:
-            for switch_id, label, default_value in self.FILTER_GROUPS[
-                self.filter_group
-            ]:
-                self.filter_items.append(
-                    self.create_switch(switch_id, label, default_value)
-                )
-        self.refresh(recompose=True)
-
-    def create_switch(
-        self, switch_id: str, label: str, default_value: bool
-    ) -> HorizontalGroup:
-        """Create a switch dynamically using the TOOLTIPS and FILTER_GROUPS."""
-        tooltip = self.TOOLTIPS.get(switch_id, "")
-        return HorizontalGroup(
-            Switch(value=default_value, id=switch_id, classes="filter-switch"),
-            Label(label, classes="filter-label"),
-            Label("(?)", classes="filter-tooltip").with_tooltip(
-                tooltip=tooltip
-            ),
-            classes="filter-container",
-        )

@@ -6,13 +6,14 @@ from rich.style import Style
 from textual import work
 from textual.app import ComposeResult
 from textual.color import Color, Gradient
-from textual.containers import Center, Middle
+from textual.containers import Center, HorizontalGroup, Middle
 from textual.screen import Screen
 from textual.strip import Strip
-from textual.widgets import Button, RichLog, Static
+from textual.widgets import Button, Label, RichLog, Static, Switch
 
 from chezmoi_mousse import SPLASH
 from chezmoi_mousse.chezmoi import chezmoi
+from chezmoi_mousse.config import filter_switch_data
 
 
 class LoadingScreen(Screen):
@@ -37,7 +38,18 @@ class LoadingScreen(Screen):
 
     def __init__(self) -> None:
         self.animated_fade = self.AnimatedFade(line_styles=self.create_fade())
+        self.switches_by_tab: dict[str, list[HorizontalGroup]]  # | None = None
         super().__init__()
+
+    def create_fade(self) -> deque[Style]:
+        start_color = Color.parse(self.app.current_theme.primary)
+        end_color = Color.parse(self.app.current_theme.accent)
+        fade = [start_color] * 5
+        gradient = Gradient.from_colors(start_color, end_color, quality=5)
+        fade.extend(gradient.colors)
+        gradient.colors.reverse()
+        fade.extend(gradient.colors)
+        return deque([Style(color=color.hex, bold=True) for color in fade])
 
     def compose(self) -> ComposeResult:
         with Middle():
@@ -61,6 +73,32 @@ class LoadingScreen(Screen):
         self.app.call_from_thread(update_log)
 
     @work(thread=True, group="io_workers")
+    def create_switches_by_tab(self) -> None:
+
+        tab_ids = ["add_tab", "apply_tab", "re_add_tab"]
+        self.switches_by_tab = dict.fromkeys(tab_ids, [])
+
+        for tab_id in tab_ids:
+            self.switches_by_tab[f"{tab_id}"] = [
+                HorizontalGroup(
+                    Switch(
+                        value=filter_switch_data["default"],
+                        id=switch_id,
+                        classes="filter-switch",
+                    ),
+                    Label(filter_switch_data["label"], classes="filter-label"),
+                    Label("(?)", classes="filter-tooltip").with_tooltip(
+                        tooltip=filter_switch_data["tooltip"]
+                    ),
+                    classes="filter-container",
+                )
+                for switch_id, filter_switch_data in filter_switch_data.items()
+                if tab_id in filter_switch_data["tab_ids"]
+            ]
+
+        self.log_text("Create filter switches")
+
+    @work(thread=True, group="io_workers")
     def run_io_worker(self, arg_id) -> None:
         io_class = getattr(chezmoi, arg_id)
         io_class.update()
@@ -78,18 +116,10 @@ class LoadingScreen(Screen):
         ):
             self.query_one("#continue").disabled = False
 
-    def create_fade(self) -> deque[Style]:
-        start_color = Color.parse(self.app.current_theme.primary)
-        end_color = Color.parse(self.app.current_theme.accent)
-        fade = [start_color] * 5
-        gradient = Gradient.from_colors(start_color, end_color, quality=5)
-        fade.extend(gradient.colors)
-        gradient.colors.reverse()
-        fade.extend(gradient.colors)
-        return deque([Style(color=color.hex, bold=True) for color in fade])
-
     def on_mount(self) -> None:
-        self.set_interval(interval=0.1, callback=self.all_workers_finished)
+
+        self.create_switches_by_tab()
+
         to_process = chezmoi.long_commands.copy()
         self.run_io_worker("dump_config")
         to_process.pop("dump_config")
@@ -97,10 +127,12 @@ class LoadingScreen(Screen):
         for arg_id in to_process:
             self.run_io_worker(arg_id)
 
+        self.set_interval(interval=0.1, callback=self.all_workers_finished)
+
     def on_key(self) -> None:
         if not self.query_one("#continue").disabled:
-            self.dismiss()
+            self.dismiss(self.switches_by_tab)
 
     def on_click(self) -> None:
         if not self.query_one("#continue").disabled:
-            self.dismiss()
+            self.dismiss(self.switches_by_tab)
