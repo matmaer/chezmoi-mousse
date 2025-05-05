@@ -1,4 +1,5 @@
 from unittest.mock import patch
+
 from chezmoi_mousse.__main__ import main
 
 

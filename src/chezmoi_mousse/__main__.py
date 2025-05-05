@@ -4,7 +4,6 @@ import rich.repr
 from rich.color import Color
 from rich.segment import Segment, Segments
 from rich.style import Style
-
 from textual.scrollbar import ScrollBar, ScrollBarRender
 
 from chezmoi_mousse.gui import ChezmoiTUI
