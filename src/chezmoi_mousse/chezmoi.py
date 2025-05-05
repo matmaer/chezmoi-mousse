@@ -137,6 +137,30 @@ class Chezmoi:
     def managed_file_paths(self) -> set[Path]:
         return {Path(p) for p in self.managed_files.list_out}
 
+    @property
+    def missing_file_paths(self) -> set[Path]:
+        return {
+            Path(p)
+            for p in self.managed_files.list_out
+            if not Path(p).exists()
+        }
+
+    @property
+    def apply_status_file_paths(self) -> set[Path]:
+        return {
+            Path(line[3:])
+            for line in chezmoi.status_files.list_out
+            if line[1] in "ADM"
+        }
+
+    @property
+    def re_add_status_file_paths(self) -> set[Path]:
+        return {
+            Path(line[3:])
+            for line in chezmoi.status_files.list_out
+            if line[0] in "ADM"
+        }
+
     def unmanaged_in_d(self, dir_path: Path) -> list[Path]:
         if not dir_path.is_dir():
             raise ValueError(f"Directory does not exist: {dir_path}")
