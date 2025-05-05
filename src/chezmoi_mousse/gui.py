@@ -1,9 +1,6 @@
 from textual import on
 from textual.app import App, ComposeResult
 from textual.lazy import Lazy
-
-from textual.reactive import reactive
-from textual.containers import HorizontalGroup, VerticalGroup
 from textual.screen import Screen
 from textual.theme import Theme
 from textual.widgets import Footer, Header, TabbedContent

@@ -3,8 +3,6 @@
 import re
 from collections.abc import Iterable
 from pathlib import Path
-from typing import Any
-
 
 from textual.app import ComposeResult
 from textual.containers import Container, VerticalScroll
@@ -52,7 +50,7 @@ class FileView(RichLog):
 
     def on_mount(self) -> None:
         if self.file_path is None:
-            self.write(" < Select a file to view its content.")
+            self.write(" Select a file to view its content.")
         elif not self.file_path.exists():
             self.write(f"File does not exist: {self.file_path}")
         else:

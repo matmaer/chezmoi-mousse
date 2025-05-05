@@ -14,7 +14,7 @@ from textual.containers import (
     VerticalGroup,
     VerticalScroll,
 )
-from textual.reactive import reactive
+
 from textual.screen import ModalScreen
 from textual.widgets import (
     Button,
@@ -334,8 +334,6 @@ class ApplyTab(VerticalScroll):
 
 
 class ReAddTab(VerticalScroll):
-
-    filter_switches = "re_add_tab"  # Use the filter group name defined in SlideBar.FILTER_GROUPS
 
     BINDINGS = [
         Binding("f", "toggle_slidebar", "Filters"),
