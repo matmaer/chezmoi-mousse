@@ -9,6 +9,7 @@ from textual.binding import Binding
 from textual.containers import (
     Container,
     Horizontal,
+    HorizontalGroup,
     ScrollableContainer,
     VerticalGroup,
     VerticalScroll,
@@ -36,14 +37,24 @@ from chezmoi_mousse.components import (
     FilteredDirTree,
     ManagedTree,
     ReactiveFileView,
-    SlideBar,
 )
 from chezmoi_mousse.config import pw_mgr_info
 
 
-class AddTab(Container):
+class SlideBar(VerticalGroup):
 
-    filter_switches = "add_tab"  # Use the filter group name defined in SlideBar.FILTER_GROUPS
+    switches_by_tab: dict[str, list[HorizontalGroup]] | None = None
+
+    def __init__(self, filter_key: str = "apply_tab", **kwargs) -> None:
+        self.filter_key = filter_key
+        super().__init__(**kwargs)
+
+    def compose(self) -> ComposeResult:
+        if self.switches_by_tab is not None:
+            yield from self.switches_by_tab[f"{self.filter_key}"]
+
+
+class AddTab(Container):
 
     BINDINGS = [
         Binding("f", "toggle_slidebar", "Filters"),
@@ -58,21 +69,21 @@ class AddTab(Container):
             ),
             ReactiveFileView(classes="file-preview"),
         )
-        yield SlideBar(self.filter_switches, id="addslidebar")
+        yield SlideBar(filter_key="add_tab", id="add_filters")
 
     @on(FilteredDirTree.FileSelected)
     def update_preview_path(self, event: FilteredDirTree.FileSelected) -> None:
         self.query_one(ReactiveFileView).file_path = event.path
 
     def action_toggle_slidebar(self):
-        self.screen.query_one("#addslidebar").toggle_class("-visible")
+        self.screen.query_one("#add_filters").toggle_class("-visible")
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
         add_dir_tree = self.screen.query_exactly_one(FilteredDirTree)
-        if event.switch.id == "unmanaged_dirs":
+        if event.switch.id == "unmanaged":
             add_dir_tree.include_unmanaged_dirs = event.value
             add_dir_tree.reload()
-        elif event.switch.id == "unwanted_paths":
+        elif event.switch.id == "unwanted":
             add_dir_tree.filter_unwanted = event.value
             add_dir_tree.reload()
 
@@ -287,7 +298,7 @@ class ApplyTab(VerticalScroll):
                 ),
                 ReactiveFileView(classes="file-preview"),
             )
-        yield SlideBar(self.filter_switches, id="apply_slidebar")
+        yield SlideBar(filter_key="apply_tab", id="apply_filters")
 
     @on(ManagedTree.NodeSelected)
     def update_preview_path(self, event: ManagedTree.NodeSelected) -> None:
@@ -301,9 +312,7 @@ class ApplyTab(VerticalScroll):
             self.query_one(ReactiveFileView).file_path = event.node.data
 
     def action_toggle_slidebar(self):
-        self.screen.query_exactly_one("#apply_slidebar").toggle_class(
-            "-visible"
-        )
+        self.screen.query_one("#apply_filters").toggle_class("-visible")
 
     def action_apply_path(self) -> None:
         self.notify("will apply path")
@@ -325,8 +334,6 @@ class ApplyTab(VerticalScroll):
 
 class ReAddTab(VerticalScroll):
 
-    filter_switches = "re_add_tab"  # Use the filter group name defined in SlideBar.FILTER_GROUPS
-
     BINDINGS = [
         Binding("f", "toggle_slidebar", "Filters"),
         Binding("a", "re_add_path", "Re-Add Path"),
@@ -342,7 +349,8 @@ class ReAddTab(VerticalScroll):
                 ),
                 ReactiveFileView(classes="file-preview"),
             )
-        yield SlideBar(self.filter_switches, id="re_add_slidebar")
+
+        yield SlideBar(filter_key="re_add_tab", id="re_add_filters")
 
     @on(ManagedTree.NodeSelected)
     def update_preview_path(self, event: ManagedTree.NodeSelected) -> None:
@@ -356,9 +364,7 @@ class ReAddTab(VerticalScroll):
             self.query_one(ReactiveFileView).file_path = event.node.data
 
     def action_toggle_slidebar(self):
-        self.screen.query_exactly_one("#re_add_slidebar").toggle_class(
-            "-visible"
-        )
+        self.screen.query_one("#re_add_filters").toggle_class("-visible")
 
     def action_re_add_path(self) -> None:
         self.notify("will re-add path")

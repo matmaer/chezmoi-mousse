@@ -234,9 +234,9 @@ StaticDiff {
 }
 
 LoadingScreen {
-  & RichLog {
+  RichLog {
     color: $secondary;
-    height: 11;
+    height: 12;
     margin: 2 1 2 1;
     width: auto;
   }
