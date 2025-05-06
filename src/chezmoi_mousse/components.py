@@ -83,9 +83,9 @@ class ReactiveFileView(FileView):
         if self.file_path is not None:
             self.clear()
             self.on_mount()
-            self.border_title = str(self.file_path.relative_to(dest_dir))
+            self.border_title = f" {self.file_path.relative_to(dest_dir)} "
         else:
-            self.border_title = "no file selected"
+            self.border_title = " no file selected "
 
 
 class FileViewCollapsible(Container):
