@@ -281,8 +281,16 @@ class DoctorTab(VerticalScroll):
 
 class ApplyTab(VerticalScroll):
 
-    not_existing = reactive(False, always_update=True)
-    changed_files = reactive(True, always_update=True)
+    class ApplyTree(ManagedTree):
+
+        not_existing = reactive(False, always_update=True)
+        changed_files = reactive(True, always_update=True)
+
+        def __init__(self) -> None:
+            super().__init__(id="apply_tree", classes="any-tree")
+
+        def watch_not_existing(self) -> None:
+            self.notify("not_existing was changed")
 
     BINDINGS = [
         Binding("f", "toggle_slidebar", "Filters"),
@@ -292,10 +300,7 @@ class ApplyTab(VerticalScroll):
     def compose(self) -> ComposeResult:
         with VerticalScroll():
             yield ChezmoiStatus(apply=True)
-            yield Horizontal(
-                ManagedTree(id="apply_tree", classes="any-tree"),
-                ReactiveFileView(),
-            )
+            yield Horizontal(ApplyTab.ApplyTree(), ReactiveFileView())
         yield SlideBar(filter_key="apply_tab", id="apply_filters")
 
     @on(ManagedTree.NodeSelected)
@@ -316,15 +321,16 @@ class ApplyTab(VerticalScroll):
         self.notify("will apply path")
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
-        managed_tree = self.query_exactly_one("#apply_tree")
+        apply_tree = self.query_exactly_one("#apply_tree", ApplyTab.ApplyTree)
         if event.switch.id == "not_existing":
             # filter logic here
-            self.notify(f"Not yet implemented for {managed_tree}")
-            managed_tree.refresh()
-        elif event.switch.id == "changed_files":
-            # filter logic here
-            self.notify(f"Not yet implemented {managed_tree}")
-            managed_tree.refresh()
+            apply_tree.not_existing = event.value
+            self.notify(f"Not yet implemented for {apply_tree}")
+            apply_tree.refresh()
+        # elif event.switch.id == "changed_files":
+        #     # filter logic here
+        #     self.notify(f"Not yet implemented {managed_tree}")
+        #     managed_tree.refresh()
 
     def on_resize(self) -> None:
         self.query_exactly_one(ManagedTree).focus()
