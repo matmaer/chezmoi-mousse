@@ -16,28 +16,29 @@ from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.config import filter_switch_data
 
 
+class AnimatedFade(Static):
+
+    def __init__(self, line_styles: deque[Style]) -> None:
+        self.line_styles = line_styles
+        super().__init__()
+        self.styles.height = len(SPLASH)
+        self.styles.width = len(max(SPLASH, key=len))
+
+    def render_lines(self, crop) -> list[Strip]:
+        self.line_styles.rotate()
+        return super().render_lines(crop)
+
+    def render_line(self, y: int) -> Strip:
+        return Strip([Segment(SPLASH[y], style=self.line_styles[y])])
+
+    def on_mount(self) -> None:
+        self.set_interval(interval=0.11, callback=self.refresh)
+
+
 class LoadingScreen(Screen):
 
-    class AnimatedFade(Static):
-
-        def __init__(self, line_styles: deque[Style]) -> None:
-            self.line_styles = line_styles
-            super().__init__()
-            self.styles.height = len(SPLASH)
-            self.styles.width = len(max(SPLASH, key=len))
-
-        def render_lines(self, crop) -> list[Strip]:
-            self.line_styles.rotate()
-            return super().render_lines(crop)
-
-        def render_line(self, y: int) -> Strip:
-            return Strip([Segment(SPLASH[y], style=self.line_styles[y])])
-
-        def on_mount(self) -> None:
-            self.set_interval(interval=0.11, callback=self.refresh)
-
     def __init__(self) -> None:
-        self.animated_fade = self.AnimatedFade(line_styles=self.create_fade())
+        self.animated_fade = AnimatedFade(line_styles=self.create_fade())
         self.switches_by_tab: dict[str, list[HorizontalGroup]] = {}
         super().__init__()
 
