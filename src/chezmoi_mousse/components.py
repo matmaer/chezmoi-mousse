@@ -4,14 +4,12 @@ import re
 from collections.abc import Iterable
 from pathlib import Path
 
+from rich.text import Text
 from textual.app import ComposeResult
-from textual.color import Color
 from textual.containers import VerticalScroll
 from textual.content import Content
 from textual.reactive import reactive
 from textual.widgets import Collapsible, DirectoryTree, RichLog, Static, Tree
-from rich.text import Text
-from rich.style import Style
 
 from chezmoi_mousse.chezmoi import chezmoi, dest_dir
 from chezmoi_mousse.config import status_info, unwanted
