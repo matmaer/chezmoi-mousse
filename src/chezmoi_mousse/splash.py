@@ -38,7 +38,7 @@ class LoadingScreen(Screen):
 
     def __init__(self) -> None:
         self.animated_fade = self.AnimatedFade(line_styles=self.create_fade())
-        self.switches_by_tab: dict[str, list[HorizontalGroup]]  # | None = None
+        self.switches_by_tab: dict[str, list[HorizontalGroup]] = {}
         super().__init__()
 
     def create_fade(self) -> deque[Style]:
@@ -54,7 +54,7 @@ class LoadingScreen(Screen):
     def compose(self) -> ComposeResult:
         with Middle():
             yield Center(self.animated_fade)
-            yield Center(RichLog(name="loader log", max_lines=11))
+            yield Center(RichLog())
             yield Center(
                 Button(
                     id="continue",
@@ -65,9 +65,9 @@ class LoadingScreen(Screen):
 
     def log_text(self, log_label: str) -> None:
         padding = 32 - len(log_label)
-        log_text = f"{log_label} {'.' * padding} loaded"
 
         def update_log():
+            log_text = f"{log_label} {'.' * padding} loaded"
             self.screen.query_one(RichLog).write(log_text)
 
         self.app.call_from_thread(update_log)
@@ -76,7 +76,7 @@ class LoadingScreen(Screen):
     def create_switches_by_tab(self) -> None:
 
         tab_ids = ["add_tab", "apply_tab", "re_add_tab"]
-        self.switches_by_tab = dict.fromkeys(tab_ids, [])
+        self.switches_by_tab = {tab_id: [] for tab_id in tab_ids}
 
         for tab_id in tab_ids:
             self.switches_by_tab[f"{tab_id}"] = [
@@ -96,7 +96,7 @@ class LoadingScreen(Screen):
                 if tab_id in filter_switch_data["tab_ids"]
             ]
 
-        self.log_text("Create filter switches")
+        self.log_text("filter switches")
 
     @work(thread=True, group="io_workers")
     def run_io_worker(self, arg_id) -> None:
@@ -106,7 +106,7 @@ class LoadingScreen(Screen):
         if arg_id == "dump_config":
             global dest_dir
             dest_dir = Path(io_class.dict_out["destDir"])
-            self.log_text(f"destDir={str(dest_dir)}")
+            self.log_text(f"chezmoi destDir")
 
     def all_workers_finished(self) -> None:
         if all(

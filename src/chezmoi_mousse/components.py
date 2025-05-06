@@ -32,7 +32,7 @@ class AutoWarning(Static):
         if chezmoi.autocommit_enabled and not chezmoi.autopush_enabled:
             auto_warning = '"Auto Commit" is enabled: added file(s) will also be committed.'
         elif chezmoi.autocommit_enabled and chezmoi.autopush_enabled:
-            auto_warning = '"Auto Commit" and "Auto Push" are enabled: adding file(s) will also be committed and pushed the remote.'
+            auto_warning = '"Auto Commit" and "Auto Push" are enabled: adding file(s) will also be committed and pushed to the remote.'
 
         self.update(
             Content.from_markup(f"[$text-warning italic]{auto_warning}[/]")
@@ -54,10 +54,10 @@ class FileView(RichLog):
         elif not self.file_path.exists():
             self.write(f"File does not exist: {self.file_path}")
         else:
-            trunkated = ""
+            truncated = ""
             try:
                 if self.file_path.stat().st_size > 150 * 1024:
-                    trunkated = (
+                    truncated = (
                         "\n\n------ File content truncated to 150 KiB ------\n"
                     )
             except (PermissionError, FileNotFoundError, OSError) as error:
@@ -69,7 +69,7 @@ class FileView(RichLog):
                     if not file_content.strip():
                         self.write("File contains only whitespace")
                     else:
-                        self.write(file_content + trunkated)
+                        self.write(file_content + truncated)
             except (UnicodeDecodeError, IsADirectoryError) as error:
                 self.write(str(error))
 

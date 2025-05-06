@@ -14,7 +14,6 @@ from textual.containers import (
     VerticalGroup,
     VerticalScroll,
 )
-
 from textual.screen import ModalScreen
 from textual.widgets import (
     Button,
