@@ -108,20 +108,19 @@ SlideBar {
   background-tint: $surface;
   background: $surface;
   border-bottom: inner $primary-muted;
-  border-left: inner $primary-muted;
-  border-right: none;
+  border-right: inner $primary-muted;
+  border-left: none;
   border-title-color: $primary;
   border-top: inner $primary-muted;
-  dock: right;
+  dock: bottom;
   height: auto;
   layer: slidebar_layer;
-  margin: 7 0 3 14;
   padding-top: 1;
   width: auto;
   /* max-width to keep the switches in view, labels overflow first */
   max-width: 1fr;
-  /* offset-x: 100%; out if view if docked right */
-  offset-x: 100%;
+  /* offset-x: -100%; out if view if docked left */
+  offset-x: -100%;
   transition: offset 380ms;
 
   & VerticalGroup {
@@ -131,6 +130,7 @@ SlideBar {
   .filter-container {
     background-tint: $surface;
     background: $surface;
+    padding-left: 1;
     height: auto;
     width: auto;
   }
