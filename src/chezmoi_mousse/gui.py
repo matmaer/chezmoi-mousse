@@ -1,4 +1,3 @@
-from textual import on
 from textual.app import App, ComposeResult
 from textual.lazy import Lazy
 from textual.screen import Screen
