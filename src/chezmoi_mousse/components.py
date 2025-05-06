@@ -5,7 +5,7 @@ from collections.abc import Iterable
 from pathlib import Path
 
 from textual.app import ComposeResult
-from textual.containers import Container, VerticalScroll
+from textual.containers import VerticalScroll
 from textual.content import Content
 from textual.reactive import reactive
 from textual.widgets import Collapsible, DirectoryTree, RichLog, Static, Tree
@@ -44,7 +44,7 @@ class FileView(RichLog):
 
     def __init__(self, file_path: Path | None = None, **kwargs) -> None:
         super().__init__(
-            auto_scroll=False, wrap=True, highlight=True, **kwargs
+            auto_scroll=False, highlight=True, classes="file-preview", **kwargs
         )
         self.file_path = file_path
 
@@ -88,21 +88,16 @@ class ReactiveFileView(FileView):
             self.border_title = " no file selected "
 
 
-class FileViewCollapsible(Container):
+class FileViewCollapsible(Collapsible):
     """Collapsible widget to display the content of a file."""
 
     def __init__(self, file_path: Path | None = None) -> None:
         self.file_path = file_path
-        super().__init__()
-
-    def compose(self) -> ComposeResult:
-        yield Collapsible(FileView(self.file_path))
+        super().__init__(ReactiveFileView(self.file_path))
 
     def on_mount(self) -> None:
         if self.file_path is not None:
-            collapsible = self.query_one(Collapsible)
-            collapsible.add_class("coloredfilecontent")
-            collapsible.title = str(self.file_path.relative_to(dest_dir))
+            self.title = str(self.file_path.relative_to(dest_dir))
 
 
 class StaticDiff(Static):

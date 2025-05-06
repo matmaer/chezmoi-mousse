@@ -10,7 +10,6 @@ from textual.containers import (
     Container,
     Horizontal,
     HorizontalGroup,
-    ScrollableContainer,
     VerticalGroup,
     VerticalScroll,
 )
@@ -62,13 +61,9 @@ class AddTab(Container):
     ]
 
     def compose(self) -> ComposeResult:
-        yield Horizontal(
-            ScrollableContainer(
-                FilteredDirTree(dest_dir, classes="dir-tree"),
-                classes="scrollable-dir-tree",
-            ),
-            ReactiveFileView(classes="file-preview"),
-        )
+        with Horizontal():
+            yield FilteredDirTree(dest_dir, classes="dir-tree any-tree")
+            yield ReactiveFileView()
         yield SlideBar(filter_key="add_tab", id="add_filters")
 
     @on(FilteredDirTree.FileSelected)
@@ -101,21 +96,24 @@ class ChezmoiAdd(ModalScreen):
         Binding("escape", "dismiss", "dismiss modal screen", show=False)
     ]
 
-    def __init__(self, path_to_add: Path) -> None:
-        super().__init__()
+    def __init__(self, path_to_add: Path, **kwargs) -> None:
+        super().__init__(**kwargs)
         self.path_to_add = path_to_add
         self.files_to_add: list[Path] = []
         self.add_path_items: list[FileViewCollapsible] = []
-        self.add_label = "- Add File -"
 
     def compose(self) -> ComposeResult:
-        with VerticalScroll(classes="modalscreen"):
+        with VerticalScroll():
             yield AutoWarning()
-            with VerticalGroup(classes="collapsiblegroup"):
-                yield from self.add_path_items
+            yield from self.add_path_items
             yield Horizontal(
-                Button(self.add_label, id="addfile"),
-                Button("- Cancel -", id="canceladding"),
+                Button(
+                    "- Add File -", id="addfile", classes="add-modal-button"
+                ),
+                Button(
+                    "- Cancel -", id="canceladding", classes="add-modal-button"
+                ),
+                id="button_container",
             )
 
     def on_mount(self) -> None:
@@ -293,10 +291,8 @@ class ApplyTab(VerticalScroll):
         with VerticalScroll():
             yield ChezmoiStatus(apply=True)
             yield Horizontal(
-                ScrollableContainer(
-                    ManagedTree(id="apply_tree"), classes="scrollable-dir-tree"
-                ),
-                ReactiveFileView(classes="file-preview"),
+                ManagedTree(id="apply_tree", classes="any-tree"),
+                ReactiveFileView(),
             )
         yield SlideBar(filter_key="apply_tab", id="apply_filters")
 
@@ -343,11 +339,8 @@ class ReAddTab(VerticalScroll):
         with VerticalScroll():
             yield ChezmoiStatus(apply=False)
             yield Horizontal(
-                ScrollableContainer(
-                    ManagedTree(id="re_add_tree"),
-                    classes="scrollable-dir-tree",
-                ),
-                ReactiveFileView(classes="file-preview"),
+                ManagedTree(id="re_add_tree", classes="any-tree"),
+                ReactiveFileView(),
             )
 
         yield SlideBar(filter_key="re_add_tab", id="re_add_filters")
