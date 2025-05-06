@@ -269,7 +269,7 @@ ChezmoiStatus {
   padding-left: 1;
   border-top: tab $primary-muted;
   border-title-align: center;
-  border-title-color: $text-accent;
+  border-title-color: $primary-lighten-3;
 }
 
 .scrollable-dir-tree {
