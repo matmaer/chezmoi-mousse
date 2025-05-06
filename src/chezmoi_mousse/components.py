@@ -4,8 +4,9 @@ import re
 from collections.abc import Iterable
 from pathlib import Path
 
+from rich.text import Text
 from textual.app import ComposeResult
-from textual.containers import Container, VerticalScroll
+from textual.containers import VerticalScroll
 from textual.content import Content
 from textual.reactive import reactive
 from textual.widgets import Collapsible, DirectoryTree, RichLog, Static, Tree
@@ -44,7 +45,7 @@ class FileView(RichLog):
 
     def __init__(self, file_path: Path | None = None, **kwargs) -> None:
         super().__init__(
-            auto_scroll=False, wrap=True, highlight=True, **kwargs
+            auto_scroll=False, highlight=True, classes="file-preview", **kwargs
         )
         self.file_path = file_path
 
@@ -88,21 +89,16 @@ class ReactiveFileView(FileView):
             self.border_title = " no file selected "
 
 
-class FileViewCollapsible(Container):
+class FileViewCollapsible(Collapsible):
     """Collapsible widget to display the content of a file."""
 
     def __init__(self, file_path: Path | None = None) -> None:
         self.file_path = file_path
-        super().__init__()
-
-    def compose(self) -> ComposeResult:
-        yield Collapsible(FileView(self.file_path))
+        super().__init__(ReactiveFileView(self.file_path))
 
     def on_mount(self) -> None:
         if self.file_path is not None:
-            collapsible = self.query_one(Collapsible)
-            collapsible.add_class("coloredfilecontent")
-            collapsible.title = str(self.file_path.relative_to(dest_dir))
+            self.title = str(self.file_path.relative_to(dest_dir))
 
 
 class StaticDiff(Static):
@@ -193,43 +189,47 @@ class FilteredDirTree(DirectoryTree):
 class ManagedTree(Tree):
 
     def __init__(self, file_paths: set[Path] | None = None, **kwargs) -> None:
-        if file_paths is None:
-            self.file_paths = chezmoi.managed_file_paths
-        else:
-            self.file_paths = file_paths
-        super().__init__(label=str("root_node"), **kwargs)
+        self.file_paths = file_paths or chezmoi.managed_file_paths
+        super().__init__(label="root_node", **kwargs)
 
     def on_mount(self) -> None:
+        color_system = self.app.current_theme.to_color_system().generate()
 
-        # Collect all parent directories, including intermediate ones
-        dir_nodes = set()
+        # Collect all directories (including intermediate ones)
+        all_dirs = {dest_dir}
         for file_path in self.file_paths:
             current = file_path.parent
-            while (
-                # Stop at the root directory
-                current != current.parent
-                # Stop if current is dest_dir
-                and current != dest_dir
-                # Stop if dest_dir is a subdirectory of current
-                and not dest_dir.is_relative_to(current)
-            ):
-                dir_nodes.add(current)
+            while current not in all_dirs and current != current.parent:
+                all_dirs.add(current)
                 current = current.parent
 
-        def recurse_paths(parent, dir_path):
+        def add_nodes(parent_node, dir_path):
+            # Add directory nodes
             if dir_path == dest_dir:
-                parent = self.root
+                parent_node = self.root
                 self.root.label = str(dir_path)
             else:
-                parent = parent.add(dir_path.parts[-1], dir_path)
-            files = [f for f in self.file_paths if f.parent == dir_path]
-            for file in files:
-                parent.add_leaf(str(file.parts[-1]), file)
-            sub_dirs = [d for d in dir_nodes if d.parent == dir_path]
-            for sub_dir in sub_dirs:
-                recurse_paths(parent, sub_dir)
+                parent_node = parent_node.add(dir_path.name, dir_path)
+                parent_node.set_label(
+                    Text(dir_path.name, style=color_system["text-primary"])
+                )
 
-        recurse_paths(self.root, dest_dir)
+            # Add files in the current directory
+            for file in (f for f in self.file_paths if f.parent == dir_path):
+                file_node = parent_node.add_leaf(file.name, file)
+                file_style = (
+                    color_system["text-warning"]
+                    if file.exists()
+                    else color_system["text-success"]
+                )
+                file_node.set_label(Text(file.name, style=file_style))
+
+            # Add subdirectories
+            for sub_dir in (d for d in all_dirs if d.parent == dir_path):
+                add_nodes(parent_node, sub_dir)
+
+        # Build the tree starting from dest_dir
+        add_nodes(self.root, dest_dir)
         self.root.expand()
 
 

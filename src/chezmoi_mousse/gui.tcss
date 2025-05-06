@@ -14,12 +14,10 @@
 /* textual widgets type selectors */
 
 Collapsible {
-  height: auto;
   border: none;
   padding: 0;
   & Pretty,
-  StaticDiff,
-  FileViewer
+  StaticDiff
    {
     margin-bottom: 1;
   }
@@ -30,6 +28,7 @@ Screen {
 }
 
 Tree {
+  padding-left: 1;
   width: auto;
   min-height: 5;
   height: auto;
@@ -179,21 +178,22 @@ SlideBar {
 /* derived widgets type selectors */
 
 ChezmoiAdd {
-  & * {
     background-tint: $surface;
     background: $surface;
-    height: auto;
-    border: none;
-  }
+    border: thick $panel;
+    margin: 1 2 1 2;
 
-  & Button {
+  & .add-modal-button {
     border-top: heavy $primary;
+    border-bottom: none;
+    border-left: none;
+    border-right: none;
+    background-tint: $surface;
+    background: $surface;
     color: $primary;
     margin: 0 7 0 7;
-    min-width: 8;
+    width: 8;
     text-style: none;
-    width: 1fr;
-
     &:disabled {
       text-opacity: 0.6;
     }
@@ -212,21 +212,29 @@ ChezmoiAdd {
     }
   }
 
-  & FileViewer {
-    background-tint: $background;
+  #button_container {
+    height: 3;
+    align: center bottom;
+    dock: bottom;
+  }
+
+  & FileViewCollapsible {
+    background-tint: $surface;
+    background: $surface;
     margin-right: 2;
   }
 
-  & Horizontal {
-    align: center bottom;
-    dock: bottom;
-    height: 2;
+  .file-preview {
+    padding: 0;
+    margin-right: 1;
+    border: none;
   }
 }
 
 AutoWarning {
   margin: 0 1 1 1;
   height: auto;
+  dock: top;
 }
 
 StaticDiff {
@@ -265,23 +273,23 @@ ChezmoiStatus {
 
 .file-preview {
   padding-top: 1;
-  max-width: 80%;
   padding-left: 1;
   border-top: tab $primary-muted;
   border-title-align: center;
   border-title-color: $primary-lighten-3;
 }
 
-.scrollable-dir-tree {
-  height: auto;
+.any-tree {
   padding-left: 1;
   padding-right: 1;
   width: auto;
-  max-width: 33%;
+  height: auto;
 }
 
 .dir-tree {
   height: auto;
+  width: auto;
+
   &>.directory-tree--folder {
     color: $primary-lighten-3;
     text-style: none;
@@ -299,16 +307,6 @@ ChezmoiStatus {
     color: $success-lighten-3;
     text-style: none;
   }
-}
-
-.modalscreen {
-  border: thick $panel;
-  background: $surface;
-  height: auto;
-  background-tint: $surface;
-  max-height: 1fr;
-  margin: 1;
-  max-width: 1fr;
 }
 
 .doctortable {
