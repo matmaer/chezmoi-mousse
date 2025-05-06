@@ -13,6 +13,7 @@ from textual.containers import (
     VerticalGroup,
     VerticalScroll,
 )
+from textual.reactive import reactive
 from textual.screen import ModalScreen
 from textual.widgets import (
     Button,
@@ -280,7 +281,8 @@ class DoctorTab(VerticalScroll):
 
 class ApplyTab(VerticalScroll):
 
-    filter_switches = "apply_tab"  # Use the filter group name defined in SlideBar.FILTER_GROUPS
+    not_existing = reactive(False, always_update=True)
+    changed_files = reactive(True, always_update=True)
 
     BINDINGS = [
         Binding("f", "toggle_slidebar", "Filters"),
