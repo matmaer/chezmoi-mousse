@@ -32,6 +32,7 @@ from chezmoi_mousse import FLOW
 from chezmoi_mousse.chezmoi import chezmoi, dest_dir
 from chezmoi_mousse.components import (
     AutoWarning,
+    ApplyTree,
     ChezmoiStatus,
     FileViewCollapsible,
     FilteredDirTree,
@@ -281,17 +282,6 @@ class DoctorTab(VerticalScroll):
 
 class ApplyTab(VerticalScroll):
 
-    class ApplyTree(ManagedTree):
-
-        not_existing = reactive(False, always_update=True)
-        changed_files = reactive(True, always_update=True)
-
-        def __init__(self) -> None:
-            super().__init__(id="apply_tree", classes="any-tree")
-
-        def watch_not_existing(self) -> None:
-            self.notify("not_existing was changed")
-
     BINDINGS = [
         Binding("f", "toggle_slidebar", "Filters"),
         Binding("a", "apply_path", "Apply Path"),
@@ -300,7 +290,7 @@ class ApplyTab(VerticalScroll):
     def compose(self) -> ComposeResult:
         with VerticalScroll():
             yield ChezmoiStatus(apply=True)
-            yield Horizontal(ApplyTab.ApplyTree(), ReactiveFileView())
+            yield Horizontal(ApplyTree(), ReactiveFileView())
         yield SlideBar(filter_key="apply_tab", id="apply_filters")
 
     @on(ManagedTree.NodeSelected)
@@ -321,7 +311,7 @@ class ApplyTab(VerticalScroll):
         self.notify("will apply path")
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
-        apply_tree = self.query_exactly_one("#apply_tree", ApplyTab.ApplyTree)
+        apply_tree = self.query_exactly_one("#apply_tree", ApplyTree)
         if event.switch.id == "not_existing":
             # filter logic here
             apply_tree.not_existing = event.value
@@ -333,7 +323,7 @@ class ApplyTab(VerticalScroll):
         #     managed_tree.refresh()
 
     def on_resize(self) -> None:
-        self.query_exactly_one(ManagedTree).focus()
+        self.query_exactly_one(ApplyTree).focus()
 
 
 class ReAddTab(VerticalScroll):
@@ -347,7 +337,11 @@ class ReAddTab(VerticalScroll):
         with VerticalScroll():
             yield ChezmoiStatus(apply=False)
             yield Horizontal(
-                ManagedTree(id="re_add_tree", classes="any-tree"),
+                ManagedTree(
+                    id="re_add_tree",
+                    file_paths=chezmoi.managed_file_paths,
+                    classes="any-tree",
+                ),
                 ReactiveFileView(),
             )
 

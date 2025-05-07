@@ -191,10 +191,13 @@ class FilteredDirTree(DirectoryTree):
 class ManagedTree(Tree):
 
     def __init__(self, file_paths: set[Path] | None = None, **kwargs) -> None:
-        self.file_paths = file_paths or chezmoi.managed_file_paths
         super().__init__(label="root_node", **kwargs)
+        self.file_paths = file_paths
 
     def on_mount(self) -> None:
+        if self.file_paths is None:
+            self.file_paths = chezmoi.managed_file_paths
+
         color_system = self.app.current_theme.to_color_system().generate()
 
         # Collect all directories (including intermediate ones)
@@ -233,6 +236,30 @@ class ManagedTree(Tree):
         # Build the tree starting from dest_dir
         add_nodes(self.root, dest_dir)
         self.root.expand()
+
+
+class ApplyTree(ManagedTree):
+
+    not_existing = reactive(False, always_update=True)
+    changed_files = reactive(True, always_update=True)
+
+    file_paths: reactive[set[Path] | None] = reactive(None)
+
+    def watch_file_paths(self) -> None:
+        if self.file_paths is not None:
+            if not self.not_existing and not self.changed_files:
+                self.file_paths = chezmoi.managed_file_paths
+            elif self.not_existing and not self.changed_files:
+                self.file_paths = self.file_paths = {
+                    f for f in chezmoi.managed_file_paths if not f.exists()
+                }
+                self.refresh()
+
+    def watch_not_existing(self) -> None:
+        self.notify("the not_existing filter was changed")
+
+    def watch_changed_files(self) -> None:
+        self.notify("the changed_files filter was changed")
 
 
 class ChezmoiStatus(VerticalScroll):
