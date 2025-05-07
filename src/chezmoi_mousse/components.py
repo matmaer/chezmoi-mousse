@@ -76,7 +76,9 @@ class FileView(RichLog):
 
 
 class ReactiveFileView(FileView):
-    """Reactive version of FileView with reactive file path."""
+    """Reactive version of FileView with reactive file path.
+    This is useful because FileView is also used in a non-reactive context
+    """
 
     file_path: reactive[Path | None] = reactive(None)
 
