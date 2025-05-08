@@ -302,10 +302,6 @@ Tree {
 }
 
 .dir-tree {
-  height: auto;
-  width: auto;
-  max-width: 1fr;
-
   &>.directory-tree--folder {
     color: $primary-lighten-3;
     text-style: none;
