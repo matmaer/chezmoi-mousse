@@ -306,17 +306,16 @@ class ApplyTab(VerticalScroll):
     def action_apply_path(self) -> None:
         self.notify("will apply path")
 
-    # def on_switch_changed(self, event: Switch.Changed) -> None:
-    #     apply_tree = self.query_exactly_one("#apply_tree", ApplyTree)
-    #     if event.switch.id == "missing":
-    #         # filter logic here
-    #         apply_tree.missing = event.value
-    #         self.notify(f"Not yet implemented for {apply_tree}")
-    #         apply_tree.refresh()
-    # elif event.switch.id == "changed_files":
-    #     # filter logic here
-    #     self.notify(f"Not yet implemented {managed_tree}")
-    #     managed_tree.refresh()
+    def on_switch_changed(self, event: Switch.Changed) -> None:
+        event.stop()
+        apply_tree = self.query_exactly_one("#apply_tree", ApplyTree)
+        if event.switch.id == "missing":
+            # filter logic here
+            apply_tree.missing = event.value
+            self.notify(f"Not yet implemented for {apply_tree}")
+        elif event.switch.id == "changed_files":
+            # filter logic here
+            self.notify(f"Not yet implemented {apply_tree}")
 
     def on_resize(self) -> None:
         self.query_exactly_one(ApplyTree).focus()
