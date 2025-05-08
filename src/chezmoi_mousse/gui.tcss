@@ -9,10 +9,6 @@
   scrollbar-corner-color: $background;
 }
 
-/* Type Selector (Python class selector) */
-
-/* textual widgets type selectors */
-
 AutoWarning {
   margin: 0 1 1 1;
   height: auto;
@@ -286,7 +282,6 @@ Tree {
   border-title-style: bold;
   margin-left: 2;
   margin-right: 1;
-  max-width: 2fr;
   text-style: none;
 }
 
@@ -294,11 +289,7 @@ Tree {
   border-top: tab $primary-background-lighten-2;
   border-title-align: center;
   border-title-style: bold;
-  padding-left: 1;
-  padding-right: 1;
-  width: auto;
-  height: auto;
-  max-width: 1fr;
+  margin-left: 1;
 }
 
 .dir-tree {
