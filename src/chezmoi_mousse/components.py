@@ -271,7 +271,6 @@ class ManagedTree(Tree):
                     label_text, style=self.node_colors[status_code]
                 )
                 node.set_label(new_label)
-        event.node.refresh()
 
 
 class ApplyTree(ManagedTree):
