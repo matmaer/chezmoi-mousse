@@ -275,14 +275,15 @@ class ChezmoiStatus(VerticalScroll):
 
     def on_mount(self) -> None:
         # status can be a space so not using str.split() or str.strip()
-        status_paths = [
-            (adm, Path(line[3:]))
-            for line in chezmoi.status_files.list_out
-            if (adm := line[1] if self.apply else line[0]) in "ADM"
-        ]
+        status_paths = (
+            chezmoi.apply_status_file_paths
+            if self.apply
+            else chezmoi.re_add_status_file_paths
+        )
+
         for status_code, file_path in status_paths:
             rel_path = str(file_path.relative_to(dest_dir))
-            title = f"{status_info["code name"][status_code]} {rel_path}"
+            title = f"{status_info['code name'][status_code]} {rel_path}"
             self.status_items.append(
                 Collapsible(StaticDiff(file_path, self.apply), title=title)
             )
