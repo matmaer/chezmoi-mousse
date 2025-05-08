@@ -68,6 +68,11 @@ class AddTab(Container):
             yield ReactiveFileView()
         yield SlideBar(filter_key="add_tab", id="add_filters")
 
+    def on_mount(self) -> None:
+        dir_tree = self.query_one(FilteredDirTree)
+        dir_tree.show_root = False
+        dir_tree.border_title = f" {dest_dir} "
+
     @on(FilteredDirTree.FileSelected)
     def update_preview_path(self, event: FilteredDirTree.FileSelected) -> None:
         self.query_one(ReactiveFileView).file_path = event.path

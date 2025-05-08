@@ -209,7 +209,7 @@ class ManagedTree(Tree):
     ) -> None:
         self.apply = apply
         self.file_paths = file_paths
-        super().__init__(label="root_node", **kwargs)
+        super().__init__(label="root_node", classes="any-tree", **kwargs)
 
     def on_mount(self) -> None:
         # Collect all directories (including intermediate ones)
@@ -242,6 +242,8 @@ class ManagedTree(Tree):
 
         # Build the tree starting from dest_dir
         add_nodes(self.root, dest_dir)
+        self.show_root = False
+        self.border_title = f" {dest_dir} "
         self.root.expand()
 
     @on(Tree.NodeExpanded)
