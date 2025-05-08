@@ -317,18 +317,22 @@ ChezmoiStatus {
   }
 }
 
-.doctortable {
-  height: auto;
-  margin-bottom: 1;
-  &>.datatable--header {
-    text-style: none;
+Doctor {
+  .doctortable {
+    height: auto;
+    margin-bottom: 1;
+    &>.datatable--header {
+      text-style: none;
+    }
   }
+
+  .collapsiblegroup {
+    height: auto;
+    margin-bottom: 1;
+  }
+
 }
 
-.collapsiblegroup {
-  height: auto;
-  margin-bottom: 1;
-}
 
 /* not in use yet */
 
