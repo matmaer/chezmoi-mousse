@@ -205,7 +205,7 @@ class ManagedTree(Tree):
     }
 
     def __init__(
-        self, file_paths: set[Path] = set(), apply: bool = True, **kwargs
+        self, apply: bool, file_paths: set[Path] = set(), **kwargs
     ) -> None:
         self.apply = apply
         self.file_paths = file_paths
@@ -263,8 +263,8 @@ class ManagedTree(Tree):
 
         for node in status_nodes:
             label_text = str(node.label)
-            if node.data in chezmoi.apply_status_file_paths:
-                status_code: str = chezmoi.apply_status_file_paths[node.data]
+            if node.data in status_paths:
+                status_code: str = status_paths[node.data]
                 new_label = Text(
                     label_text, style=self.node_colors[status_code]
                 )
@@ -280,7 +280,9 @@ class ApplyTree(ManagedTree):
 
     def __init__(self, **kwargs) -> None:
         # Initialize with a specific set of file paths for ApplyTree
-        super().__init__(file_paths=chezmoi.managed_file_paths, **kwargs)
+        super().__init__(
+            apply=True, file_paths=chezmoi.managed_file_paths, **kwargs
+        )
 
     def on_mount(self) -> None:
         # Additional setup specific to ApplyTree
@@ -301,7 +303,7 @@ class ReAddTree(ManagedTree):
     def __init__(self, **kwargs) -> None:
         file_paths = {p for p in chezmoi.managed_file_paths if p.exists()}
         # Initialize with a specific set of file paths for ReAddTree
-        super().__init__(file_paths=file_paths, **kwargs)
+        super().__init__(apply=False, file_paths=file_paths, **kwargs)
 
     def on_mount(self) -> None:
         # Additional setup specific to ReAddTree
