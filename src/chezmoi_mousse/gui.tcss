@@ -9,10 +9,6 @@
   scrollbar-corner-color: $background;
 }
 
-/* Type Selector (Python class selector) */
-
-/* textual widgets type selectors */
-
 AutoWarning {
   margin: 0 1 1 1;
   height: auto;
@@ -122,9 +118,10 @@ Footer {
 }
 
 Header {
-  height: 2;
-  border-bottom: dashed $panel;
+  border-bottom: dashed $panel-lighten-1;
   color: $primary;
+  height: 2;
+  text-style: bold;
 }
 
 LoadingScreen {
@@ -218,22 +215,12 @@ SlideBar {
   }
 }
 
-StaticDiff {
-  height: auto;
-}
-
 Toast {
   background: $surface;
   background-tint: $surface;
 }
 
 Tree {
-  padding-left: 1;
-  width: auto;
-  min-height: 5;
-  height: auto;
-  padding-right: 1;
-
   &>.tree--cursor {
     text-style: none;
     color: $accent-lighten-3;
@@ -291,25 +278,17 @@ Tree {
   border-title-style: bold;
   margin-left: 2;
   margin-right: 1;
-  max-width: 2fr;
+  text-style: none;
 }
 
 .any-tree {
   border-top: tab $primary-background-lighten-2;
   border-title-align: center;
   border-title-style: bold;
-  padding-left: 1;
-  padding-right: 1;
-  width: auto;
-  height: auto;
-  max-width: 1fr;
+  margin-left: 1;
 }
 
 .dir-tree {
-  height: auto;
-  width: auto;
-  max-width: 1fr;
-
   &>.directory-tree--folder {
     color: $primary-lighten-3;
     text-style: none;
