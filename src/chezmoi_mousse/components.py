@@ -251,9 +251,9 @@ class ManagedTree(Tree):
         """Color the new visible leaves."""
         event.stop()
 
-        file_nodes: list[TreeNode] = []
-
-        file_nodes = [c for c in event.node.children if not c.children]
+        file_nodes: list[TreeNode] = [
+            c for c in event.node.children if not c.children
+        ]
 
         status_paths = (
             chezmoi.apply_status_file_paths
