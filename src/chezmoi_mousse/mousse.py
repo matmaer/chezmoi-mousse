@@ -31,13 +31,13 @@ from textual.widgets import (
 from chezmoi_mousse import FLOW
 from chezmoi_mousse.chezmoi import chezmoi, dest_dir
 from chezmoi_mousse.components import (
-    AutoWarning,
     ApplyTree,
+    AutoWarning,
     ChezmoiStatus,
     FileViewCollapsible,
     FilteredDirTree,
-    ManagedTree,
     ReactiveFileView,
+    ReAddTree,
 )
 from chezmoi_mousse.config import pw_mgr_info
 
@@ -290,19 +290,10 @@ class ApplyTab(VerticalScroll):
     def compose(self) -> ComposeResult:
         with VerticalScroll():
             yield ChezmoiStatus(apply=True)
-            yield Horizontal(ApplyTree(), ReactiveFileView())
+            yield Horizontal(
+                ApplyTree(id="apply_tree"), ReactiveFileView(id="apply_file")
+            )
         yield SlideBar(filter_key="apply_tab", id="apply_filters")
-
-    @on(ManagedTree.NodeSelected)
-    def update_preview_path(self, event: ManagedTree.NodeSelected) -> None:
-        if event.node.data is not None and event.node.data.is_file():
-            self.query_one(ReactiveFileView).file_path = event.node.data
-        elif (
-            event.node.data is not None
-            and not event.node.data.is_dir()
-            and not event.node.data.exists()
-        ):
-            self.query_one(ReactiveFileView).file_path = event.node.data
 
     def action_toggle_slidebar(self):
         self.screen.query_one("#apply_filters").toggle_class("-visible")
@@ -310,20 +301,25 @@ class ApplyTab(VerticalScroll):
     def action_apply_path(self) -> None:
         self.notify("will apply path")
 
-    def on_switch_changed(self, event: Switch.Changed) -> None:
-        apply_tree = self.query_exactly_one("#apply_tree", ApplyTree)
-        if event.switch.id == "not_existing":
-            # filter logic here
-            apply_tree.not_existing = event.value
-            self.notify(f"Not yet implemented for {apply_tree}")
-            apply_tree.refresh()
-        # elif event.switch.id == "changed_files":
-        #     # filter logic here
-        #     self.notify(f"Not yet implemented {managed_tree}")
-        #     managed_tree.refresh()
+    # def on_switch_changed(self, event: Switch.Changed) -> None:
+    #     apply_tree = self.query_exactly_one("#apply_tree", ApplyTree)
+    #     if event.switch.id == "not_existing":
+    #         # filter logic here
+    #         apply_tree.not_existing = event.value
+    #         self.notify(f"Not yet implemented for {apply_tree}")
+    #         apply_tree.refresh()
+    # elif event.switch.id == "changed_files":
+    #     # filter logic here
+    #     self.notify(f"Not yet implemented {managed_tree}")
+    #     managed_tree.refresh()
 
-    def on_resize(self) -> None:
-        self.query_exactly_one(ApplyTree).focus()
+    # def on_resize(self) -> None:
+    #     self.query_exactly_one(ApplyTree).focus()
+
+    @on(ApplyTree.NodeSelected)
+    def update_preview_path(self, event: ApplyTree.NodeSelected) -> None:
+        event.stop()
+        self.query_one(ReactiveFileView).file_path = event.node.data
 
 
 class ReAddTab(VerticalScroll):
@@ -336,39 +332,14 @@ class ReAddTab(VerticalScroll):
     def compose(self) -> ComposeResult:
         with VerticalScroll():
             yield ChezmoiStatus(apply=False)
-            yield Horizontal(
-                ManagedTree(
-                    id="re_add_tree",
-                    file_paths=chezmoi.managed_file_paths,
-                    classes="any-tree",
-                ),
-                ReactiveFileView(),
-            )
+            yield Horizontal(ReAddTree(id="re_add_tree"), ReactiveFileView())
 
         yield SlideBar(filter_key="re_add_tab", id="re_add_filters")
 
-    @on(ManagedTree.NodeSelected)
-    def update_preview_path(self, event: ManagedTree.NodeSelected) -> None:
-        if event.node.data is not None and event.node.data.is_file():
-            self.query_one(ReactiveFileView).file_path = event.node.data
-        elif (
-            event.node.data is not None
-            and not event.node.data.is_dir()
-            and not event.node.data.exists()
-        ):
-            self.query_one(ReactiveFileView).file_path = event.node.data
-
-    def action_toggle_slidebar(self):
-        self.screen.query_one("#re_add_filters").toggle_class("-visible")
-
-    def action_re_add_path(self) -> None:
-        self.notify("will re-add path")
-
-    def on_switch_changed(self, event: Switch.Changed) -> None:
-        managed_tree = self.query_exactly_one("#re_add_tree")
-        if event.switch.id == "changed_files":
-            # filter logic here
-            self.notify(f"Not yet implemented for {managed_tree}")
+    @on(ReAddTree.NodeSelected)
+    def update_preview_path(self, event: ReAddTree.NodeSelected) -> None:
+        event.stop()
+        self.query_one(ReactiveFileView).file_path = event.node.data
 
 
 class DiagramTab(VerticalScroll):
