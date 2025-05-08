@@ -281,7 +281,7 @@ class ChezmoiStatus(VerticalScroll):
             else chezmoi.re_add_status_file_paths
         )
 
-        for status_code, file_path in status_paths.items():
+        for file_path, status_code in status_paths.items():
             rel_path = str(file_path.relative_to(dest_dir))
             title = f"{status_info['code name'][status_code]} {rel_path}"
             self.status_items.append(
