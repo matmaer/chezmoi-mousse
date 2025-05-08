@@ -276,7 +276,7 @@ class ManagedTree(Tree):
 class ApplyTree(ManagedTree):
     """Tree for managing 'apply' operations."""
 
-    not_existing: reactive[bool] = reactive(False)
+    missing: reactive[bool] = reactive(False)
     changed_files: reactive[bool] = reactive(False)
 
     def __init__(self, **kwargs) -> None:
@@ -289,8 +289,8 @@ class ApplyTree(ManagedTree):
         # Additional setup specific to ApplyTree
         self.file_paths = chezmoi.managed_file_paths
 
-    def watch_not_existing(self) -> None:
-        self.notify("The not_existing filter was changed")
+    def watch_missing(self) -> None:
+        self.notify("The missing filter was changed")
 
     def watch_changed_files(self) -> None:
         self.notify("The changed_files filter was changed")

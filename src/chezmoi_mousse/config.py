@@ -20,7 +20,7 @@ filter_switch_data = {
         "default": True,
         "tab_ids": ["add_tab"],
     },
-    "not_existing": {
+    "missing": {
         "tooltip": "Show only missing files.",
         "label": "Show only missing files",
         "default": False,

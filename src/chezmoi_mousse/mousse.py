@@ -308,9 +308,9 @@ class ApplyTab(VerticalScroll):
 
     # def on_switch_changed(self, event: Switch.Changed) -> None:
     #     apply_tree = self.query_exactly_one("#apply_tree", ApplyTree)
-    #     if event.switch.id == "not_existing":
+    #     if event.switch.id == "missing":
     #         # filter logic here
-    #         apply_tree.not_existing = event.value
+    #         apply_tree.missing = event.value
     #         self.notify(f"Not yet implemented for {apply_tree}")
     #         apply_tree.refresh()
     # elif event.switch.id == "changed_files":
