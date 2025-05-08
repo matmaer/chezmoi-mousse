@@ -318,8 +318,8 @@ class ApplyTab(VerticalScroll):
     #     self.notify(f"Not yet implemented {managed_tree}")
     #     managed_tree.refresh()
 
-    # def on_resize(self) -> None:
-    #     self.query_exactly_one(ApplyTree).focus()
+    def on_resize(self) -> None:
+        self.query_exactly_one(ApplyTree).focus()
 
     @on(ApplyTree.NodeSelected)
     def update_preview_path(self, event: ApplyTree.NodeSelected) -> None:
@@ -345,6 +345,9 @@ class ReAddTab(VerticalScroll):
     def update_preview_path(self, event: ReAddTree.NodeSelected) -> None:
         event.stop()
         self.query_one(ReactiveFileView).file_path = event.node.data
+
+    def on_resize(self) -> None:
+        self.query_exactly_one(ReAddTree).focus()
 
 
 class DiagramTab(VerticalScroll):
