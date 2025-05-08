@@ -13,64 +13,78 @@
 
 /* textual widgets type selectors */
 
+AutoWarning {
+  margin: 0 1 1 1;
+  height: auto;
+  dock: top;
+}
+
+ChezmoiAdd {
+  background-tint: $surface;
+  background: $surface;
+  border: thick $panel;
+  margin: 1 2 1 2;
+
+  & .add-modal-button {
+    border-top: heavy $primary;
+    border-bottom: none;
+    border-left: none;
+    border-right: none;
+    background-tint: $surface;
+    background: $surface;
+    color: $primary;
+    margin: 0 7 0 7;
+    width: 8;
+    text-style: none;
+    &:disabled {
+      text-opacity: 0.6;
+    }
+
+    &:focus {
+      border-top: heavy $primary-lighten-2;
+    }
+
+    &:hover {
+      border-top: heavy $primary-lighten-3;
+      color: $accent-lighten-3;
+    }
+
+    &.-active {
+      border-top: heavy $primary-lighten-2;
+    }
+  }
+
+  #button_container {
+    height: 3;
+    align: center bottom;
+    dock: bottom;
+  }
+
+  & FileViewCollapsible {
+    background-tint: $surface;
+    background: $surface;
+    margin-right: 2;
+  }
+
+  .file-preview {
+    padding: 0;
+    margin-right: 1;
+    border: none;
+  }
+}
+
+ChezmoiStatus {
+  height: auto;
+  max-height: 70%;
+  padding-bottom: 1;
+}
+
 Collapsible {
   border: none;
   padding: 0;
   & Pretty,
-  StaticDiff
-   {
+  StaticDiff {
     margin-bottom: 1;
-  }
-}
-
-Screen {
-  layers: slidebar_layer;
-}
-
-Tree {
-  padding-left: 1;
-  width: auto;
-  min-height: 5;
-  height: auto;
-  padding-right: 1;
-
-  &>.tree--cursor {
-    text-style: none;
-    color: $accent-lighten-3;
-  }
-
-  &>.tree--highlight-line {
-    text-style: none;
-  }
-
-  &>.tree--highlight {
-    text-style: bold;
-  }
-
-  &>.tree--guides {
-    color: $primary-lighten-3;
-  }
-
-  &>.tree--guides-hover {
-    color: $primary-lighten-3;
-  }
-
-  &>.tree--guides-selected {
-    color: $primary-lighten-3;
-  }
-
-  &:focus {
-    &>.tree--guides {
-      color: $primary-lighten-3;
-    }
-
-    &>.tree--guides-hover {
-      color: $primary-lighten-3;
-    }
-
-    &>.tree--guides-selected {
-      color: $primary-lighten-3;
-    }
   }
 }
 
@@ -82,10 +96,19 @@ CollapsibleTitle {
   }
 }
 
-Header {
-  height: 2;
-  border-bottom: dashed $panel;
-  color: $primary;
+Doctor {
+  .doctortable {
+    height: auto;
+    margin-bottom: 1;
+    &>.datatable--header {
+      text-style: none;
+    }
+  }
+
+  .collapsiblegroup {
+    height: auto;
+    margin-bottom: 1;
+  }
 }
 
 Footer {
@@ -98,9 +121,29 @@ Footer {
   }
 }
 
-Toast {
-  background: $surface;
-  background-tint: $surface;
+Header {
+  height: 2;
+  border-bottom: dashed $panel;
+  color: $primary;
+}
+
+LoadingScreen {
+  RichLog {
+    color: $secondary;
+    height: 12;
+    margin: 2 1 2 1;
+    width: auto;
+  }
+
+  & #continue {
+    border: none;
+    color: $accent;
+    text-style: none;
+  }
+}
+
+Screen {
+  layers: slidebar_layer;
 }
 
 SlideBar {
@@ -175,91 +218,60 @@ SlideBar {
   }
 }
 
-/* derived widgets type selectors */
-
-ChezmoiAdd {
-    background-tint: $surface;
-    background: $surface;
-    border: thick $panel;
-    margin: 1 2 1 2;
-
-  & .add-modal-button {
-    border-top: heavy $primary;
-    border-bottom: none;
-    border-left: none;
-    border-right: none;
-    background-tint: $surface;
-    background: $surface;
-    color: $primary;
-    margin: 0 7 0 7;
-    width: 8;
-    text-style: none;
-    &:disabled {
-      text-opacity: 0.6;
-    }
-
-    &:focus {
-      border-top: heavy $primary-lighten-2;
-    }
-
-    &:hover {
-      border-top: heavy $primary-lighten-3;
-      color: $accent-lighten-3;
-    }
-
-    &.-active {
-      border-top: heavy $primary-lighten-2;
-    }
-  }
-
-  #button_container {
-    height: 3;
-    align: center bottom;
-    dock: bottom;
-  }
-
-  & FileViewCollapsible {
-    background-tint: $surface;
-    background: $surface;
-    margin-right: 2;
-  }
-
-  .file-preview {
-    padding: 0;
-    margin-right: 1;
-    border: none;
-  }
-}
-
-AutoWarning {
-  margin: 0 1 1 1;
-  height: auto;
-  dock: top;
-}
-
 StaticDiff {
   height: auto;
 }
 
-LoadingScreen {
-  RichLog {
-    color: $secondary;
-    height: 12;
-    margin: 2 1 2 1;
-    width: auto;
-  }
-
-  & #continue {
-    border: none;
-    color: $accent;
-    text-style: none;
-  }
+Toast {
+  background: $surface;
+  background-tint: $surface;
 }
 
-ChezmoiStatus {
+Tree {
+  padding-left: 1;
+  width: auto;
+  min-height: 5;
   height: auto;
-  max-height: 70%;
-  padding-bottom: 1;
+  padding-right: 1;
+
+  &>.tree--cursor {
+    text-style: none;
+    color: $accent-lighten-3;
+  }
+
+  &>.tree--highlight-line {
+    text-style: none;
+  }
+
+  &>.tree--highlight {
+    text-style: bold;
+  }
+
+  &>.tree--guides {
+    color: $primary-lighten-3;
+  }
+
+  &>.tree--guides-hover {
+    color: $primary-lighten-3;
+  }
+
+  &>.tree--guides-selected {
+    color: $primary-lighten-3;
+  }
+
+  &:focus {
+    &>.tree--guides {
+      color: $primary-lighten-3;
+    }
+
+    &>.tree--guides-hover {
+      color: $primary-lighten-3;
+    }
+
+    &>.tree--guides-selected {
+      color: $primary-lighten-3;
+    }
+  }
 }
 
 /* ID Selectors */
@@ -316,23 +328,6 @@ ChezmoiStatus {
     text-style: none;
   }
 }
-
-Doctor {
-  .doctortable {
-    height: auto;
-    margin-bottom: 1;
-    &>.datatable--header {
-      text-style: none;
-    }
-  }
-
-  .collapsiblegroup {
-    height: auto;
-    margin-bottom: 1;
-  }
-
-}
-
 
 /* not in use yet */
 
