@@ -146,20 +146,22 @@ class Chezmoi:
         }
 
     @property
-    def apply_status_file_paths(self) -> set[Path]:
-        return {
-            Path(line[3:])
-            for line in chezmoi.status_files.list_out
-            if line[1] in "ADM"
-        }
+    def apply_status_file_paths(self) -> dict[Path, str]:
+        status_paths = {}
+        for line in self.status_files.list_out:
+            status_code = line[1]
+            if status_code in "ADM":
+                status_paths[Path(line[3:])] = status_code
+        return status_paths
 
     @property
-    def re_add_status_file_paths(self) -> set[Path]:
-        return {
-            Path(line[3:])
-            for line in chezmoi.status_files.list_out
-            if line[0] in "ADM"
-        }
+    def re_add_status_file_paths(self) -> dict[Path, str]:
+        status_paths = {}
+        for line in self.status_files.list_out:
+            status_code = line[0]
+            if status_code in "ADM":
+                status_paths[Path(line[3:])] = status_code
+        return status_paths
 
     def unmanaged_in_d(self, dir_path: Path) -> list[Path]:
         if not dir_path.is_dir():

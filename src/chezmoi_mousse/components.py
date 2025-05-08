@@ -4,12 +4,15 @@ import re
 from collections.abc import Iterable
 from pathlib import Path
 
+from rich.style import Style
 from rich.text import Text
+from textual import on
 from textual.app import ComposeResult
 from textual.containers import VerticalScroll
 from textual.content import Content
 from textual.reactive import reactive
 from textual.widgets import Collapsible, DirectoryTree, RichLog, Static, Tree
+from textual.widgets.tree import TreeNode
 
 from chezmoi_mousse.chezmoi import chezmoi, dest_dir
 from chezmoi_mousse.config import status_info, unwanted
@@ -62,7 +65,7 @@ class FileView(RichLog):
                         "\n\n------ File content truncated to 150 KiB ------\n"
                     )
             except (PermissionError, FileNotFoundError, OSError) as error:
-                self.write(str(error))
+                self.write(error.strerror)
 
             try:
                 with open(self.file_path, "rt", encoding="utf-8") as file:
@@ -72,11 +75,16 @@ class FileView(RichLog):
                     else:
                         self.write(file_content + truncated)
             except (UnicodeDecodeError, IsADirectoryError) as error:
-                self.write(str(error))
+                if isinstance(error, UnicodeDecodeError):
+                    self.write("The file cannot be decoded as UTF-8")
+                else:
+                    self.write(error.strerror)
 
 
 class ReactiveFileView(FileView):
-    """Reactive version of FileView with reactive file path."""
+    """Reactive version of FileView with reactive file path.
+    This is useful because FileView is also used in a non-reactive context
+    """
 
     file_path: reactive[Path | None] = reactive(None)
 
@@ -188,13 +196,22 @@ class FilteredDirTree(DirectoryTree):
 
 class ManagedTree(Tree):
 
-    def __init__(self, file_paths: set[Path] | None = None, **kwargs) -> None:
-        self.file_paths = file_paths or chezmoi.managed_file_paths
+    # default color but will be updated on theme change
+    node_colors = {
+        "Dir": "#57A5E2",  # text-primary
+        "D": "#D17E92",  # text-error
+        "A": "#8AD4A1",  # text-success
+        "M": "#FFC473",  # text-warning
+    }
+
+    def __init__(
+        self, apply: bool, file_paths: set[Path] = set(), **kwargs
+    ) -> None:
+        self.apply = apply
+        self.file_paths = file_paths
         super().__init__(label="root_node", **kwargs)
 
     def on_mount(self) -> None:
-        color_system = self.app.current_theme.to_color_system().generate()
-
         # Collect all directories (including intermediate ones)
         all_dirs = {dest_dir}
         for file_path in self.file_paths:
@@ -211,18 +228,13 @@ class ManagedTree(Tree):
             else:
                 parent_node = parent_node.add(dir_path.name, dir_path)
                 parent_node.set_label(
-                    Text(dir_path.name, style=color_system["text-primary"])
+                    Text(dir_path.name, style=self.node_colors["Dir"])
                 )
 
             # Add files in the current directory
             for file in (f for f in self.file_paths if f.parent == dir_path):
                 file_node = parent_node.add_leaf(file.name, file)
-                file_style = (
-                    color_system["text-warning"]
-                    if file.exists()
-                    else color_system["text-success"]
-                )
-                file_node.set_label(Text(file.name, style=file_style))
+                file_node.set_label(Text(str(file.name), Style(dim=True)))
 
             # Add subdirectories
             for sub_dir in (d for d in all_dirs if d.parent == dir_path):
@@ -231,6 +243,74 @@ class ManagedTree(Tree):
         # Build the tree starting from dest_dir
         add_nodes(self.root, dest_dir)
         self.root.expand()
+
+    @on(Tree.NodeExpanded)
+    def color_files(self, event: Tree.NodeExpanded) -> None:
+        """Color the new visible leaves."""
+        event.stop()
+
+        file_nodes: list[TreeNode] = []
+
+        file_nodes = [c for c in event.node.children if not c.children]
+
+        status_paths = (
+            chezmoi.apply_status_file_paths
+            if self.apply
+            else chezmoi.re_add_status_file_paths
+        )
+
+        status_nodes = [n for n in file_nodes if n.data in status_paths]
+
+        for node in status_nodes:
+            label_text = str(node.label)
+            if node.data in status_paths:
+                status_code: str = status_paths[node.data]
+                new_label = Text(
+                    label_text, style=self.node_colors[status_code]
+                )
+                node.set_label(new_label)
+        event.node.refresh()
+
+
+class ApplyTree(ManagedTree):
+    """Tree for managing 'apply' operations."""
+
+    not_existing: reactive[bool] = reactive(False)
+    changed_files: reactive[bool] = reactive(False)
+
+    def __init__(self, **kwargs) -> None:
+        # Initialize with a specific set of file paths for ApplyTree
+        super().__init__(
+            apply=True, file_paths=chezmoi.managed_file_paths, **kwargs
+        )
+
+    def on_mount(self) -> None:
+        # Additional setup specific to ApplyTree
+        self.file_paths = chezmoi.managed_file_paths
+
+    def watch_not_existing(self) -> None:
+        self.notify("The not_existing filter was changed")
+
+    def watch_changed_files(self) -> None:
+        self.notify("The changed_files filter was changed")
+
+
+class ReAddTree(ManagedTree):
+    """Tree for managing 're-add' operations."""
+
+    changed_files: reactive[bool] = reactive(False)
+
+    def __init__(self, **kwargs) -> None:
+        file_paths = {p for p in chezmoi.managed_file_paths if p.exists()}
+        # Initialize with a specific set of file paths for ReAddTree
+        super().__init__(apply=False, file_paths=file_paths, **kwargs)
+
+    def on_mount(self) -> None:
+        # Additional setup specific to ReAddTree
+        self.file_paths = chezmoi.managed_file_paths
+
+    def watch_changed_files(self) -> None:
+        self.notify("The changed_files filter was changed")
 
 
 class ChezmoiStatus(VerticalScroll):
@@ -246,14 +326,15 @@ class ChezmoiStatus(VerticalScroll):
 
     def on_mount(self) -> None:
         # status can be a space so not using str.split() or str.strip()
-        status_paths = [
-            (adm, Path(line[3:]))
-            for line in chezmoi.status_files.list_out
-            if (adm := line[1] if self.apply else line[0]) in "ADM"
-        ]
-        for status_code, file_path in status_paths:
+        status_paths = (
+            chezmoi.apply_status_file_paths
+            if self.apply
+            else chezmoi.re_add_status_file_paths
+        )
+
+        for file_path, status_code in status_paths.items():
             rel_path = str(file_path.relative_to(dest_dir))
-            title = f"{status_info["code name"][status_code]} {rel_path}"
+            title = f"{status_info['code name'][status_code]} {rel_path}"
             self.status_items.append(
                 Collapsible(StaticDiff(file_path, self.apply), title=title)
             )

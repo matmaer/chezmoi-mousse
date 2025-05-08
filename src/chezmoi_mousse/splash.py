@@ -119,14 +119,14 @@ class LoadingScreen(Screen):
 
     def on_mount(self) -> None:
 
-        self.create_switches_by_tab()
-
         to_process = chezmoi.long_commands.copy()
         self.run_io_worker("dump_config")
         to_process.pop("dump_config")
 
         for arg_id in to_process:
             self.run_io_worker(arg_id)
+
+        self.create_switches_by_tab()
 
         self.set_interval(interval=0.1, callback=self.all_workers_finished)
 
