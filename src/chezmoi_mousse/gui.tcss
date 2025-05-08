@@ -100,7 +100,6 @@ Doctor {
       text-style: none;
     }
   }
-
   .collapsiblegroup {
     height: auto;
     margin-bottom: 1;
@@ -279,6 +278,7 @@ Tree {
   margin-left: 2;
   margin-right: 1;
   text-style: none;
+  width: 2fr;
 }
 
 .any-tree {
@@ -286,6 +286,7 @@ Tree {
   border-title-align: center;
   border-title-style: bold;
   margin-left: 1;
+  width: 1fr;
 }
 
 .dir-tree {
