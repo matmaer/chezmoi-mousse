@@ -276,14 +276,12 @@ class ManagedTree(Tree):
 class ApplyTree(ManagedTree):
     """Tree for managing 'apply' operations."""
 
-    missing: reactive[bool] = reactive(False)
-    changed_files: reactive[bool] = reactive(False)
+    missing: reactive[bool] = reactive(False, always_update=True)
+    changed_files: reactive[bool] = reactive(False, always_update=True)
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self) -> None:
         # Initialize with a specific set of file paths for ApplyTree
-        super().__init__(
-            apply=True, file_paths=chezmoi.managed_file_paths, **kwargs
-        )
+        super().__init__(apply=True, file_paths=chezmoi.managed_file_paths)
 
     def on_mount(self) -> None:
         # Additional setup specific to ApplyTree
@@ -299,12 +297,12 @@ class ApplyTree(ManagedTree):
 class ReAddTree(ManagedTree):
     """Tree for managing 're-add' operations."""
 
-    changed_files: reactive[bool] = reactive(False)
+    changed_files: reactive[bool] = reactive(False, always_update=True)
 
-    def __init__(self, **kwargs) -> None:
-        file_paths = {p for p in chezmoi.managed_file_paths if p.exists()}
-        # Initialize with a specific set of file paths for ReAddTree
-        super().__init__(apply=False, file_paths=file_paths, **kwargs)
+    def __init__(self) -> None:
+        super().__init__(
+            apply=False, file_paths=chezmoi.existing_managed_file_paths
+        )
 
     def on_mount(self) -> None:
         # Additional setup specific to ReAddTree
