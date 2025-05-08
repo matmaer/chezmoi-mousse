@@ -138,11 +138,9 @@ class Chezmoi:
         return {Path(p) for p in self.managed_files.list_out}
 
     @property
-    def missing_file_paths(self) -> set[Path]:
+    def existing_managed_file_paths(self) -> set[Path]:
         return {
-            Path(p)
-            for p in self.managed_files.list_out
-            if not Path(p).exists()
+            Path(p) for p in self.managed_files.list_out if Path(p).exists()
         }
 
     @property
