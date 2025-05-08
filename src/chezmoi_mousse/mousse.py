@@ -71,7 +71,9 @@ class AddTab(Container):
     def on_mount(self) -> None:
         dir_tree = self.query_one(FilteredDirTree)
         dir_tree.show_root = False
-        dir_tree.border_title = f" {dest_dir} "
+        dir_tree.border_title = Text.assemble(
+            (f"\ue0b6", "reverse"), f"{dest_dir}", (f"\ue0b4", "reverse")
+        )
 
     @on(FilteredDirTree.FileSelected)
     def update_preview_path(self, event: FilteredDirTree.FileSelected) -> None:

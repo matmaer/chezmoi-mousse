@@ -55,6 +55,11 @@ class FileView(RichLog):
     def on_mount(self) -> None:
         if self.file_path is None:
             self.write(" Select a file to view its content.")
+            self.border_title = Text.assemble(
+                (f"\ue0b6", "reverse"),
+                "no file selected",
+                (f"\ue0b4", "reverse"),
+            )
         elif not self.file_path.exists():
             self.write(f"File does not exist: {self.file_path}")
         else:
@@ -92,7 +97,11 @@ class ReactiveFileView(FileView):
         if self.file_path is not None:
             self.clear()
             self.on_mount()
-            self.border_title = f" {self.file_path.relative_to(dest_dir)} "
+            self.border_title = Text.assemble(
+                (f"\ue0b6", "reverse"),
+                f"{self.file_path.relative_to(dest_dir)}",
+                (f"\ue0b4", "reverse"),
+            )
         else:
             self.border_title = " no file selected "
 
@@ -243,7 +252,9 @@ class ManagedTree(Tree):
         # Build the tree starting from dest_dir
         add_nodes(self.root, dest_dir)
         self.show_root = False
-        self.border_title = f" {dest_dir} "
+        self.border_title = Text.assemble(
+            (f"\ue0b6", "reverse"), f"{dest_dir}", (f"\ue0b4", "reverse")
+        )
         self.root.expand()
 
     @on(Tree.NodeExpanded)
