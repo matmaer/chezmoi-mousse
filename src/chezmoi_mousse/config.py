@@ -13,7 +13,7 @@ filter_switch_data = {
         "tooltip": (
             'Show files and directories considered as "unwanted" for a dotfile manager. '
             "These include cache, temporary, trash (recycle bin) and other similar files or directories. "
-            "For example enable this to add files to your chezmoi repository which are in a directory named 'cache'."
+            'For example enable this to add files to your chezmoi repository which are in a directory named ".cache".'
         ),
         "label": "Show unwanted paths",
         "filter_keys": ["add_tab"],
