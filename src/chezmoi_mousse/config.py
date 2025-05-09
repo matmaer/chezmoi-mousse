@@ -20,20 +20,19 @@ filter_switch_data = {
         "default": True,
         "tab_ids": ["add_tab"],
     },
-    "not_existing": {
-        "tooltip": "Show only missing files.",
-        "label": "Show only missing files",
+    "missing": {
+        "label": "Show only missing files.",
+        "tooltip": "Show only files that are missing on the filesystem and would be created by running chezmoi apply",
         "default": False,
         "tab_ids": ["apply_tab"],
     },
     "changed_files": {
-        "tooltip": "Show only files with changed status.",
-        "label": "Show only files with changed status",
+        "label": "Show only files with changed status.",
+        "tooltip": "Show only files that would be changed by running chezmoi apply or chezmoi re-add, depending on the current tab.",
         "default": False,
         "tab_ids": ["apply_tab", "re_add_tab"],
     },
 }
-
 
 unwanted = {
     "dirs": {

@@ -249,11 +249,10 @@ class ManagedTree(Tree):
     @on(Tree.NodeExpanded)
     def color_files(self, event: Tree.NodeExpanded) -> None:
         """Color the new visible leaves."""
-        event.stop()
 
-        file_nodes: list[TreeNode] = []
-
-        file_nodes = [c for c in event.node.children if not c.children]
+        file_nodes: list[TreeNode] = [
+            c for c in event.node.children if not c.children
+        ]
 
         status_paths = (
             chezmoi.apply_status_file_paths
@@ -276,21 +275,17 @@ class ManagedTree(Tree):
 class ApplyTree(ManagedTree):
     """Tree for managing 'apply' operations."""
 
-    not_existing: reactive[bool] = reactive(False)
-    changed_files: reactive[bool] = reactive(False)
+    missing: reactive[bool] = reactive(False, always_update=True)
+    changed_files: reactive[bool] = reactive(False, always_update=True)
 
-    def __init__(self, **kwargs) -> None:
-        # Initialize with a specific set of file paths for ApplyTree
-        super().__init__(
-            apply=True, file_paths=chezmoi.managed_file_paths, **kwargs
-        )
+    def __init__(self) -> None:
+        super().__init__(apply=True, file_paths=chezmoi.managed_file_paths)
 
     def on_mount(self) -> None:
-        # Additional setup specific to ApplyTree
         self.file_paths = chezmoi.managed_file_paths
 
-    def watch_not_existing(self) -> None:
-        self.notify("The not_existing filter was changed")
+    def watch_missing(self) -> None:
+        self.notify("The missing filter was changed")
 
     def watch_changed_files(self) -> None:
         self.notify("The changed_files filter was changed")
@@ -299,15 +294,14 @@ class ApplyTree(ManagedTree):
 class ReAddTree(ManagedTree):
     """Tree for managing 're-add' operations."""
 
-    changed_files: reactive[bool] = reactive(False)
+    changed_files: reactive[bool] = reactive(False, always_update=True)
 
-    def __init__(self, **kwargs) -> None:
-        file_paths = {p for p in chezmoi.managed_file_paths if p.exists()}
-        # Initialize with a specific set of file paths for ReAddTree
-        super().__init__(apply=False, file_paths=file_paths, **kwargs)
+    def __init__(self) -> None:
+        super().__init__(
+            apply=False, file_paths=chezmoi.existing_managed_file_paths
+        )
 
     def on_mount(self) -> None:
-        # Additional setup specific to ReAddTree
         self.file_paths = chezmoi.managed_file_paths
 
     def watch_changed_files(self) -> None:

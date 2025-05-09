@@ -143,6 +143,7 @@ Screen {
 }
 
 SlideBar {
+  color: $foreground-darken-2;
   background-tint: $surface;
   background: $surface;
   border-bottom: inner $primary-muted;
@@ -179,21 +180,21 @@ SlideBar {
 
     &.-on .switch--slider {
       border: none;
-      color: $success;
+      color: $success-darken-1;
     }
 
     & .switch--slider {
       border: none;
-      color: $error-darken-3;
+      color: $error-darken-1;
     }
 
     &:hover {
       &>.switch--slider {
-        color: $error-darken-2;
+        color: $error;
       }
 
       &.-on>.switch--slider {
-        color: $success-lighten-1;
+        color: $success;
       }
     }
   }
