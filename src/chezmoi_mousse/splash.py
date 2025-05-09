@@ -74,32 +74,6 @@ class LoadingScreen(Screen):
         self.app.call_from_thread(update_log)
 
     @work(thread=True, group="io_workers")
-    def create_switches_by_tab(self) -> None:
-
-        tab_ids = ["add_tab", "apply_tab", "re_add_tab"]
-        self.switches_by_tab = {tab_id: [] for tab_id in tab_ids}
-
-        for tab_id in tab_ids:
-            self.switches_by_tab[f"{tab_id}"] = [
-                HorizontalGroup(
-                    Switch(
-                        value=filter_switch_data["default"],
-                        id=switch_id,
-                        classes="filter-switch",
-                    ),
-                    Label(filter_switch_data["label"], classes="filter-label"),
-                    Label("(?)", classes="filter-tooltip").with_tooltip(
-                        tooltip=filter_switch_data["tooltip"]
-                    ),
-                    classes="filter-container",
-                )
-                for switch_id, filter_switch_data in filter_switch_data.items()
-                if tab_id in filter_switch_data["tab_ids"]
-            ]
-
-        self.log_text("filter switches")
-
-    @work(thread=True, group="io_workers")
     def run_io_worker(self, arg_id) -> None:
         io_class = getattr(chezmoi, arg_id)
         io_class.update()
@@ -125,8 +99,6 @@ class LoadingScreen(Screen):
 
         for arg_id in to_process:
             self.run_io_worker(arg_id)
-
-        self.create_switches_by_tab()
 
         self.set_interval(interval=0.1, callback=self.all_workers_finished)
 

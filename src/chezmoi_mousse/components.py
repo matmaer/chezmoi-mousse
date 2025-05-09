@@ -8,14 +8,22 @@ from rich.style import Style
 from rich.text import Text
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import VerticalScroll
+from textual.containers import VerticalScroll, VerticalGroup, HorizontalGroup
 from textual.content import Content
 from textual.reactive import reactive
-from textual.widgets import Collapsible, DirectoryTree, RichLog, Static, Tree
+from textual.widgets import (
+    Collapsible,
+    DirectoryTree,
+    RichLog,
+    Static,
+    Tree,
+    Switch,
+    Label,
+)
 from textual.widgets.tree import TreeNode
 
 from chezmoi_mousse.chezmoi import chezmoi, dest_dir
-from chezmoi_mousse.config import status_info, unwanted
+from chezmoi_mousse.config import status_info, unwanted, filter_switch_data
 
 
 def is_unwanted_path(path: Path) -> bool:
@@ -333,4 +341,43 @@ class ChezmoiStatus(VerticalScroll):
             self.status_items.append(
                 Collapsible(StaticDiff(file_path, self.apply), title=title)
             )
+        self.refresh(recompose=True)
+
+
+class FilterSwitch(HorizontalGroup):
+    """A switch, a label and a tooltip."""
+
+    def __init__(self, switch_data: dict[str, str], switch_id: str) -> None:
+        self.switch_data = switch_data
+        self.switch_id = switch_id
+        super().__init__(classes="filter-container")
+
+    def compose(self) -> ComposeResult:
+        yield Switch(id=self.switch_id, classes="filter-switch")
+        yield Label(self.switch_data["label"], classes="filter-label")
+        yield Label("(?)", classes="filter-tooltip").with_tooltip(
+            tooltip=self.switch_data["tooltip"]
+        )
+
+
+class SlideBar(VerticalGroup):
+
+    def __init__(self, filter_key: str) -> None:
+        self.filter_key = filter_key
+        self.tab_switches: list[HorizontalGroup] = []
+        self.tab_switch_data = {
+            f"{filter_key}_{key}": value
+            for key, value in filter_switch_data.items()
+            if filter_key in value.get("filter_keys", [])
+        }
+        super().__init__(id=self.filter_key)
+
+    def compose(self) -> ComposeResult:
+        yield from self.tab_switches
+
+    def on_mount(self) -> None:
+        self.tab_switches = [
+            FilterSwitch(switch_data, switch_id)
+            for switch_id, switch_data in self.tab_switch_data.items()
+        ]
         self.refresh(recompose=True)

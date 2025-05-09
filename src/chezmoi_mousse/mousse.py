@@ -37,21 +37,9 @@ from chezmoi_mousse.components import (
     FilteredDirTree,
     ReactiveFileView,
     ReAddTree,
+    SlideBar,
 )
 from chezmoi_mousse.config import pw_mgr_info
-
-
-class SlideBar(VerticalGroup):
-
-    switches_by_tab: dict[str, list[HorizontalGroup]] | None = None
-
-    def __init__(self, filter_key: str, **kwargs) -> None:
-        self.filter_key = filter_key
-        super().__init__(**kwargs)
-
-    def compose(self) -> ComposeResult:
-        if self.switches_by_tab is not None:
-            yield from self.switches_by_tab[f"{self.filter_key}"]
 
 
 class AddTab(Container):
@@ -61,11 +49,15 @@ class AddTab(Container):
         Binding("a", "add_path", "Add Path"),
     ]
 
+    def __init__(self) -> None:
+        self.filter_switches: list[HorizontalGroup] = []
+        super().__init__(id="add_tab")
+
     def compose(self) -> ComposeResult:
         with Horizontal():
             yield FilteredDirTree(dest_dir, classes="dir-tree any-tree")
             yield ReactiveFileView()
-        yield SlideBar(filter_key="add_tab", id="add_filters")
+        yield SlideBar(filter_key="add_tab")
 
     def on_mount(self) -> None:
         dir_tree = self.query_one(FilteredDirTree)
@@ -77,14 +69,14 @@ class AddTab(Container):
         self.query_one(ReactiveFileView).file_path = event.path
 
     def action_toggle_slidebar(self):
-        self.screen.query_one("#add_filters").toggle_class("-visible")
+        self.screen.query_exactly_one(SlideBar).toggle_class("-visible")
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
         add_dir_tree = self.screen.query_exactly_one(FilteredDirTree)
-        if event.switch.id == "unmanaged":
+        if event.switch.id == "add_tab_unmanaged":
             add_dir_tree.include_unmanaged_dirs = event.value
             add_dir_tree.reload()
-        elif event.switch.id == "unwanted":
+        elif event.switch.id == "add_tab_unwanted":
             add_dir_tree.filter_unwanted = event.value
             add_dir_tree.reload()
 
@@ -288,14 +280,17 @@ class ApplyTab(VerticalScroll):
         Binding("a", "apply_path", "Apply Path"),
     ]
 
+    def __init__(self) -> None:
+        super().__init__(id="apply_tab")
+
     def compose(self) -> ComposeResult:
         with VerticalScroll():
             yield ChezmoiStatus(apply=True)
             yield Horizontal(ApplyTree(), ReactiveFileView(id="apply_file"))
-        yield SlideBar(filter_key="apply_tab", id="apply_filters")
+        # yield SlideBar(filter_key="apply_tab")
 
     def action_toggle_slidebar(self):
-        self.screen.query_exactly_one("#apply_filters").toggle_class(
+        self.screen.query_exactly_one("#slidebar_apply_tab").toggle_class(
             "-visible"
         )
 
@@ -330,7 +325,7 @@ class ReAddTab(VerticalScroll):
             yield ChezmoiStatus(apply=False)
             yield Horizontal(ReAddTree(), ReactiveFileView())
 
-        yield SlideBar(filter_key="re_add_tab", id="re_add_filters")
+        # yield SlideBar(filter_key="re_add_tab")
 
     def action_toggle_slidebar(self):
         self.screen.query_one("#re_add_filters").toggle_class("-visible")
@@ -346,7 +341,7 @@ class ReAddTab(VerticalScroll):
         self.query_one(ReactiveFileView).file_path = event.node.data
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
-        re_add_tree = self.query_one(ReAddTree)
+        re_add_tree = self.query_exactly_one(ReAddTree)
         if event.switch.id == "changed_files":
             re_add_tree.changed_files = event.value
 
