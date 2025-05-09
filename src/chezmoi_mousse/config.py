@@ -34,7 +34,6 @@ filter_switch_data = {
     },
 }
 
-
 unwanted = {
     "dirs": {
         "__pycache__",

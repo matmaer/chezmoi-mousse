@@ -279,11 +279,9 @@ class ApplyTree(ManagedTree):
     changed_files: reactive[bool] = reactive(False, always_update=True)
 
     def __init__(self) -> None:
-        # Initialize with a specific set of file paths for ApplyTree
         super().__init__(apply=True, file_paths=chezmoi.managed_file_paths)
 
     def on_mount(self) -> None:
-        # Additional setup specific to ApplyTree
         self.file_paths = chezmoi.managed_file_paths
 
     def watch_missing(self) -> None:
@@ -304,7 +302,6 @@ class ReAddTree(ManagedTree):
         )
 
     def on_mount(self) -> None:
-        # Additional setup specific to ReAddTree
         self.file_paths = chezmoi.managed_file_paths
 
     def watch_changed_files(self) -> None:
