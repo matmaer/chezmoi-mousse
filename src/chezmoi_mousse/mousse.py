@@ -308,7 +308,8 @@ class ApplyTab(VerticalScroll):
     def update_preview_path(self, event: ApplyTree.NodeSelected) -> None:
         self.query_exactly_one(ReactiveFileView).file_path = event.node.data
 
-    def on_switch_changed(self, event: Switch.Changed) -> None:
+    @on(Switch.Changed)
+    def notify_apply_tree(self, event: Switch.Changed) -> None:
         apply_tree = self.query_exactly_one(ApplyTree)
         if event.switch.id == "apply_tab_missing":
             apply_tree.missing = event.value
@@ -345,7 +346,8 @@ class ReAddTab(VerticalScroll):
     def update_preview_path(self, event: ReAddTree.NodeSelected) -> None:
         self.query_exactly_one(ReactiveFileView).file_path = event.node.data
 
-    def on_switch_changed(self, event: Switch.Changed) -> None:
+    @on(Switch.Changed)
+    def notify_re_add_tree(self, event: Switch.Changed) -> None:
         re_add_tree = self.query_exactly_one(ReAddTree)
         if event.switch.id == "re_add_tab_changed_files":
             re_add_tree.changed_files = event.value
