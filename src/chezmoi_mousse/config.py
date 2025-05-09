@@ -7,30 +7,26 @@ filter_switch_data = {
             "(in both cases, only the un-managed files are shown)"
         ),
         "label": "Include unmanaged directories",
-        "default": False,
-        "tab_ids": ["add_tab"],
+        "filter_keys": ["add_tab"],
     },
     "unwanted": {
         "tooltip": (
-            'Filter out files and directories considered as "unwanted" for a dotfile manager. '
+            'Show files and directories considered as "unwanted" for a dotfile manager. '
             "These include cache, temporary, trash (recycle bin) and other similar files or directories. "
-            "You can disable this, for example if you want to add files to your chezmoi repository which are in a directory named 'cache'."
+            "For example enable this to add files to your chezmoi repository which are in a directory named 'cache'."
         ),
-        "label": "Filter unwanted paths",
-        "default": True,
-        "tab_ids": ["add_tab"],
+        "label": "Show unwanted paths",
+        "filter_keys": ["add_tab"],
     },
     "missing": {
         "label": "Show only missing files.",
         "tooltip": "Show only files that are missing on the filesystem and would be created by running chezmoi apply",
-        "default": False,
-        "tab_ids": ["apply_tab"],
+        "filter_keys": ["apply_tab"],
     },
     "changed_files": {
         "label": "Show only files with changed status.",
-        "tooltip": "Show only files that would be changed by running chezmoi apply or chezmoi re-add, depending on the current tab.",
-        "default": False,
-        "tab_ids": ["apply_tab", "re_add_tab"],
+        "tooltip": "Show only files which are found in the chezmoi status output.",
+        "filter_keys": ["apply_tab", "re_add_tab"],
     },
 }
 
