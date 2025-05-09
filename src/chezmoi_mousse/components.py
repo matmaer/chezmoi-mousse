@@ -362,7 +362,7 @@ class FilterSwitch(HorizontalGroup):
 
 class SlideBar(VerticalGroup):
 
-    def __init__(self, filter_key: str) -> None:
+    def __init__(self, filter_key: str, **kwargs) -> None:
         self.filter_key = filter_key
         self.tab_switches: list[HorizontalGroup] = []
         self.tab_switch_data = {
@@ -370,7 +370,7 @@ class SlideBar(VerticalGroup):
             for key, value in filter_switch_data.items()
             if filter_key in value.get("filter_keys", [])
         }
-        super().__init__(id=self.filter_key)
+        super().__init__(**kwargs)
 
     def compose(self) -> ComposeResult:
         yield from self.tab_switches

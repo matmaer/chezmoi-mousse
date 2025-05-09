@@ -287,10 +287,10 @@ class ApplyTab(VerticalScroll):
         with VerticalScroll():
             yield ChezmoiStatus(apply=True)
             yield Horizontal(ApplyTree(), ReactiveFileView(id="apply_file"))
-        # yield SlideBar(filter_key="apply_tab")
+        yield SlideBar(filter_key="apply_tab", id="apply_filters")
 
     def action_toggle_slidebar(self):
-        self.screen.query_exactly_one("#slidebar_apply_tab").toggle_class(
+        self.screen.query_exactly_one("#apply_filters").toggle_class(
             "-visible"
         )
 
@@ -325,10 +325,12 @@ class ReAddTab(VerticalScroll):
             yield ChezmoiStatus(apply=False)
             yield Horizontal(ReAddTree(), ReactiveFileView())
 
-        # yield SlideBar(filter_key="re_add_tab")
+        yield SlideBar(filter_key="re_add_tab", id="re_add_filters")
 
     def action_toggle_slidebar(self):
-        self.screen.query_one("#re_add_filters").toggle_class("-visible")
+        self.screen.query_exactly_one("#re_add_filters").toggle_class(
+            "-visible"
+        )
 
     def action_re_add_path(self) -> None:
         self.notify("will re-add path")
