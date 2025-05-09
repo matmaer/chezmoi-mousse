@@ -57,7 +57,7 @@ class AddTab(Container):
         with Horizontal():
             yield FilteredDirTree(dest_dir, classes="dir-tree any-tree")
             yield ReactiveFileView()
-        yield SlideBar(filter_key="add_tab")
+        yield SlideBar(filter_key="add_tab", id="add_filters")
 
     def on_mount(self) -> None:
         dir_tree = self.query_one(FilteredDirTree)
@@ -69,7 +69,7 @@ class AddTab(Container):
         self.query_one(ReactiveFileView).file_path = event.path
 
     def action_toggle_slidebar(self):
-        self.screen.query_exactly_one(SlideBar).toggle_class("-visible")
+        self.screen.query_one("#add_filters").toggle_class("-visible")
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
         add_dir_tree = self.screen.query_exactly_one(FilteredDirTree)
