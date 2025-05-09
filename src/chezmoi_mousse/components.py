@@ -249,7 +249,6 @@ class ManagedTree(Tree):
     @on(Tree.NodeExpanded)
     def color_files(self, event: Tree.NodeExpanded) -> None:
         """Color the new visible leaves."""
-        event.stop()
 
         file_nodes: list[TreeNode] = [
             c for c in event.node.children if not c.children

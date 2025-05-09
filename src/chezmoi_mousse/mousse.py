@@ -308,11 +308,9 @@ class ApplyTab(VerticalScroll):
 
     @on(ApplyTree.NodeSelected)
     def update_preview_path(self, event: ApplyTree.NodeSelected) -> None:
-        event.stop()
         self.query_one(ReactiveFileView).file_path = event.node.data
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
-        # event.stop()
         if event.switch.id == "missing":
             apply_tree = self.query_one(ApplyTree)
             apply_tree.missing = event.value
