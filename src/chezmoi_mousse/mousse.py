@@ -57,7 +57,7 @@ class AddTab(Container):
         with Horizontal():
             yield FilteredDirTree(dest_dir, classes="dir-tree any-tree")
             yield ReactiveFileView()
-        yield SlideBar(filter_key="add_tab", id="add_filters")
+        yield SlideBar(filter_key="add_tab", tab_filters_id="add_filters")
 
     def on_mount(self) -> None:
         dir_tree = self.query_one(FilteredDirTree)
@@ -287,7 +287,7 @@ class ApplyTab(VerticalScroll):
         with VerticalScroll():
             yield ChezmoiStatus(apply=True)
             yield Horizontal(ApplyTree(), ReactiveFileView(id="apply_file"))
-        yield SlideBar(filter_key="apply_tab", id="apply_filters")
+        yield SlideBar(filter_key="apply_tab", tab_filters_id="apply_filters")
 
     def action_toggle_slidebar(self):
         self.screen.query_exactly_one("#apply_filters").toggle_class(
@@ -305,11 +305,10 @@ class ApplyTab(VerticalScroll):
         self.query_one(ReactiveFileView).file_path = event.node.data
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
-        if event.switch.id == "missing":
-            apply_tree = self.query_one(ApplyTree)
+        apply_tree = self.query_one(ApplyTree)
+        if event.switch.id == "apply_tab_missing":
             apply_tree.missing = event.value
-        elif event.switch.id == "changed_files":
-            apply_tree = self.query_one(ApplyTree)
+        elif event.switch.id == "apply_tab_changed_files":
             apply_tree.changed_files = event.value
 
 
@@ -325,7 +324,9 @@ class ReAddTab(VerticalScroll):
             yield ChezmoiStatus(apply=False)
             yield Horizontal(ReAddTree(), ReactiveFileView())
 
-        yield SlideBar(filter_key="re_add_tab", id="re_add_filters")
+        yield SlideBar(
+            filter_key="re_add_tab", tab_filters_id="re_add_filters"
+        )
 
     def action_toggle_slidebar(self):
         self.screen.query_exactly_one("#re_add_filters").toggle_class(
@@ -344,7 +345,7 @@ class ReAddTab(VerticalScroll):
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
         re_add_tree = self.query_exactly_one(ReAddTree)
-        if event.switch.id == "changed_files":
+        if event.switch.id == "re_add_tab_changed_files":
             re_add_tree.changed_files = event.value
 
 

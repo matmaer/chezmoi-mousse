@@ -8,22 +8,27 @@ from rich.style import Style
 from rich.text import Text
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import VerticalScroll, VerticalGroup, HorizontalGroup
+from textual.containers import (
+    Container,
+    HorizontalGroup,
+    VerticalGroup,
+    VerticalScroll,
+)
 from textual.content import Content
 from textual.reactive import reactive
 from textual.widgets import (
     Collapsible,
     DirectoryTree,
+    Label,
     RichLog,
     Static,
-    Tree,
     Switch,
-    Label,
+    Tree,
 )
 from textual.widgets.tree import TreeNode
 
 from chezmoi_mousse.chezmoi import chezmoi, dest_dir
-from chezmoi_mousse.config import status_info, unwanted, filter_switch_data
+from chezmoi_mousse.config import filter_switch_data, status_info, unwanted
 
 
 def is_unwanted_path(path: Path) -> bool:
@@ -360,24 +365,34 @@ class FilterSwitch(HorizontalGroup):
         )
 
 
-class SlideBar(VerticalGroup):
+class TabFilters(VerticalGroup):
 
-    def __init__(self, filter_key: str, **kwargs) -> None:
+    def __init__(self, filter_key: str) -> None:
         self.filter_key = filter_key
         self.tab_switches: list[HorizontalGroup] = []
-        self.tab_switch_data = {
-            f"{filter_key}_{key}": value
-            for key, value in filter_switch_data.items()
-            if filter_key in value.get("filter_keys", [])
-        }
-        super().__init__(**kwargs)
+        super().__init__()
 
     def compose(self) -> ComposeResult:
         yield from self.tab_switches
 
     def on_mount(self) -> None:
+        self.tab_switch_data = {
+            f"{self.filter_key}_{key}": value
+            for key, value in filter_switch_data.items()
+            if self.filter_key in value.get("filter_keys", [])
+        }
         self.tab_switches = [
             FilterSwitch(switch_data, switch_id)
             for switch_id, switch_data in self.tab_switch_data.items()
         ]
         self.refresh(recompose=True)
+
+
+class SlideBar(Container):
+
+    def __init__(self, filter_key: str, tab_filters_id: str) -> None:
+        self.filter_key = filter_key
+        super().__init__(id=tab_filters_id)
+
+    def compose(self) -> ComposeResult:
+        yield TabFilters(self.filter_key)
