@@ -55,24 +55,28 @@ class AddTab(Container):
 
     def compose(self) -> ComposeResult:
         with Horizontal():
-            yield FilteredDirTree(dest_dir, classes="dir-tree any-tree")
+            yield FilteredDirTree(
+                dest_dir, classes="dir-tree any-tree", id="filtered_dir_tree"
+            )
             yield ReactiveFileView()
         yield SlideBar(filter_key="add_tab", tab_filters_id="add_filters")
 
     def on_mount(self) -> None:
-        dir_tree = self.query_one(FilteredDirTree)
+        dir_tree = self.query_one("#filtered_dir_tree", FilteredDirTree)
         dir_tree.show_root = False
         dir_tree.border_title = f" {dest_dir} "
 
     @on(FilteredDirTree.FileSelected)
     def update_preview_path(self, event: FilteredDirTree.FileSelected) -> None:
-        self.query_one(ReactiveFileView).file_path = event.path
+        self.query_exactly_one(ReactiveFileView).file_path = event.path
 
     def action_toggle_slidebar(self):
-        self.screen.query_one("#add_filters").toggle_class("-visible")
+        self.screen.query_one("#add_filters", SlideBar).toggle_class(
+            "-visible"
+        )
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
-        add_dir_tree = self.screen.query_exactly_one(FilteredDirTree)
+        add_dir_tree = self.query_one("#filtered_dir_tree", FilteredDirTree)
         if event.switch.id == "add_tab_unmanaged":
             add_dir_tree.include_unmanaged_dirs = event.value
             add_dir_tree.reload()
@@ -81,11 +85,13 @@ class AddTab(Container):
             add_dir_tree.reload()
 
     def action_add_path(self) -> None:
-        cursor_node = self.query_exactly_one(FilteredDirTree).cursor_node
+        cursor_node = self.query_one(
+            "#filtered_dir_tree", FilteredDirTree
+        ).cursor_node
         self.app.push_screen(ChezmoiAdd(cursor_node.data.path))  # type: ignore[reportOptionalMemberAccess] # pylint: disable=line-too-long
 
     def on_resize(self) -> None:
-        self.query_one(FilteredDirTree).focus()
+        self.query_one("#filtered_dir_tree", FilteredDirTree).focus()
 
 
 class ChezmoiAdd(ModalScreen):
@@ -290,22 +296,20 @@ class ApplyTab(VerticalScroll):
         yield SlideBar(filter_key="apply_tab", tab_filters_id="apply_filters")
 
     def action_toggle_slidebar(self):
-        self.screen.query_exactly_one("#apply_filters").toggle_class(
-            "-visible"
-        )
+        self.query_one("#apply_filters", SlideBar).toggle_class("-visible")
 
     def action_apply_path(self) -> None:
         self.notify("will apply path")
 
     def on_resize(self) -> None:
-        self.query_one(ApplyTree).focus()
+        self.query_exactly_one(ApplyTree).focus()
 
     @on(ApplyTree.NodeSelected)
     def update_preview_path(self, event: ApplyTree.NodeSelected) -> None:
-        self.query_one(ReactiveFileView).file_path = event.node.data
+        self.query_exactly_one(ReactiveFileView).file_path = event.node.data
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
-        apply_tree = self.query_one(ApplyTree)
+        apply_tree = self.query_exactly_one(ApplyTree)
         if event.switch.id == "apply_tab_missing":
             apply_tree.missing = event.value
         elif event.switch.id == "apply_tab_changed_files":
@@ -329,19 +333,17 @@ class ReAddTab(VerticalScroll):
         )
 
     def action_toggle_slidebar(self):
-        self.screen.query_exactly_one("#re_add_filters").toggle_class(
-            "-visible"
-        )
+        self.query_one("#re_add_filters", SlideBar).toggle_class("-visible")
 
     def action_re_add_path(self) -> None:
         self.notify("will re-add path")
 
     def on_resize(self) -> None:
-        self.query_one(ReAddTree).focus()
+        self.query_exactly_one(ReAddTree).focus()
 
     @on(ReAddTree.NodeSelected)
     def update_preview_path(self, event: ReAddTree.NodeSelected) -> None:
-        self.query_one(ReactiveFileView).file_path = event.node.data
+        self.query_exactly_one(ReactiveFileView).file_path = event.node.data
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
         re_add_tree = self.query_exactly_one(ReAddTree)
