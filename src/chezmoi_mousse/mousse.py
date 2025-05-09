@@ -46,7 +46,7 @@ class SlideBar(VerticalGroup):
 
     switches_by_tab: dict[str, list[HorizontalGroup]] | None = None
 
-    def __init__(self, filter_key: str = "apply_tab", **kwargs) -> None:
+    def __init__(self, filter_key: str, **kwargs) -> None:
         self.filter_key = filter_key
         super().__init__(**kwargs)
 
@@ -312,13 +312,13 @@ class ApplyTab(VerticalScroll):
         self.query_one(ReactiveFileView).file_path = event.node.data
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
-        event.stop()
+        # event.stop()
         if event.switch.id == "missing":
             apply_tree = self.query_one(ApplyTree)
             apply_tree.missing = event.value
         elif event.switch.id == "changed_files":
             apply_tree = self.query_one(ApplyTree)
-            apply_tree.missing = event.value
+            apply_tree.changed_files = event.value
 
 
 class ReAddTab(VerticalScroll):
