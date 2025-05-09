@@ -150,7 +150,7 @@ class StaticDiff(Static):
 class FilteredDirTree(DirectoryTree):
 
     include_unmanaged_dirs = reactive(False, always_update=True)
-    filter_unwanted = reactive(True, always_update=True)
+    filter_unwanted = reactive(False, always_update=True)
 
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
         managed_dirs = chezmoi.managed_dir_paths
@@ -158,7 +158,7 @@ class FilteredDirTree(DirectoryTree):
         self.root.label = f"{dest_dir} (destDir)"
 
         # Switches: Red - Green (default)
-        if not self.include_unmanaged_dirs and self.filter_unwanted:
+        if not self.include_unmanaged_dirs and not self.filter_unwanted:
             return (
                 p
                 for p in paths
@@ -174,8 +174,15 @@ class FilteredDirTree(DirectoryTree):
                     and p in managed_dirs
                 )
             )
-        # Switches: Red - Red
-        if not self.include_unmanaged_dirs and not self.filter_unwanted:
+        # Switches: Green - Red
+        if self.include_unmanaged_dirs and not self.filter_unwanted:
+            return (
+                p
+                for p in paths
+                if p not in managed_files and not is_unwanted_path(p)
+            )
+        # Switches: Red - Green
+        if not self.include_unmanaged_dirs and self.filter_unwanted:
             return (
                 p
                 for p in paths
@@ -186,20 +193,13 @@ class FilteredDirTree(DirectoryTree):
                 )
                 or (p.is_dir() and p in managed_dirs)
             )
-        # Switches: Green - Green
-        if self.include_unmanaged_dirs and self.filter_unwanted:
+        # Switches: Green - Green, include all unmanaged paths
+        else:
             return (
                 p
                 for p in paths
-                if p not in managed_files and not is_unwanted_path(p)
+                if p.is_dir() or (p.is_file() and p not in managed_files)
             )
-        # Switches: Green - Red , this means the following is true:
-        # "self.include_unmanaged_dirs and not self.filter_unwanted"
-        return (
-            p
-            for p in paths
-            if p.is_dir() or (p.is_file() and p not in managed_files)
-        )
 
 
 class ManagedTree(Tree):
