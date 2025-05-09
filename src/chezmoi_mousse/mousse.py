@@ -343,11 +343,9 @@ class ReAddTab(VerticalScroll):
 
     @on(ReAddTree.NodeSelected)
     def update_preview_path(self, event: ReAddTree.NodeSelected) -> None:
-        event.stop()
         self.query_one(ReactiveFileView).file_path = event.node.data
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
-        event.stop()
         re_add_tree = self.query_one(ReAddTree)
         if event.switch.id == "changed_files":
             re_add_tree.changed_files = event.value
