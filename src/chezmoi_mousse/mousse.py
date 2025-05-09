@@ -68,7 +68,10 @@ class AddTab(Container):
 
     @on(FilteredDirTree.FileSelected)
     def update_preview_path(self, event: FilteredDirTree.FileSelected) -> None:
-        self.query_exactly_one(ReactiveFileView).file_path = event.path
+        if event.node.data is not None:
+            self.query_exactly_one(ReactiveFileView).file_path = (
+                event.node.data.path
+            )
 
     def action_toggle_slidebar(self):
         self.screen.query_one("#add_filters", SlideBar).toggle_class(
@@ -306,7 +309,10 @@ class ApplyTab(VerticalScroll):
 
     @on(ApplyTree.NodeSelected)
     def update_preview_path(self, event: ApplyTree.NodeSelected) -> None:
-        self.query_exactly_one(ReactiveFileView).file_path = event.node.data
+        if event.node.data is not None and event.node.data.path is not None:
+            self.query_exactly_one(ReactiveFileView).file_path = (
+                event.node.data.path
+            )
 
     @on(Switch.Changed)
     def notify_apply_tree(self, event: Switch.Changed) -> None:
@@ -344,7 +350,12 @@ class ReAddTab(VerticalScroll):
 
     @on(ReAddTree.NodeSelected)
     def update_preview_path(self, event: ReAddTree.NodeSelected) -> None:
-        self.query_exactly_one(ReactiveFileView).file_path = event.node.data
+        if event.node.data is not None:
+            self.query_exactly_one(ReactiveFileView).file_path = (
+                event.node.data.path
+            )
+        else:
+            self.query_exactly_one(ReactiveFileView).file_path = None
 
     @on(Switch.Changed)
     def notify_re_add_tree(self, event: Switch.Changed) -> None:

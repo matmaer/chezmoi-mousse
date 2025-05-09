@@ -2,6 +2,7 @@
 
 import re
 from collections.abc import Iterable
+from dataclasses import dataclass
 from pathlib import Path
 
 from rich.style import Style
@@ -217,6 +218,13 @@ class ManagedTree(Tree):
         "M": "#FFC473",  # text-warning
     }
 
+    @dataclass
+    class NodeData:
+        path: Path
+        exists: bool = True
+        is_file: bool = False
+        status: str = "X"
+
     def __init__(
         self, apply: bool, file_paths: set[Path] = set(), **kwargs
     ) -> None:
@@ -225,6 +233,13 @@ class ManagedTree(Tree):
         super().__init__(label="root_node", classes="any-tree", **kwargs)
 
     def on_mount(self) -> None:
+
+        status_paths = (
+            chezmoi.apply_status_file_paths
+            if self.apply
+            else chezmoi.re_add_status_file_paths
+        )
+
         # Collect all directories (including intermediate ones)
         all_dirs = {dest_dir}
         for file_path in self.file_paths:
@@ -233,56 +248,49 @@ class ManagedTree(Tree):
                 all_dirs.add(current)
                 current = current.parent
 
-        def add_nodes(parent_node, dir_path):
+        def add_nodes(parent_node, node_data: ManagedTree.NodeData) -> None:
             # Add directory nodes
-            if dir_path == dest_dir:
+            if node_data.path == dest_dir:
                 parent_node = self.root
-                self.root.label = str(dir_path)
+                parent_node.data = node_data
+                self.root.label = str(node_data.path)
             else:
-                parent_node = parent_node.add(dir_path.name, dir_path)
+                parent_node = parent_node.add(node_data.path.name, node_data)
                 parent_node.set_label(
-                    Text(dir_path.name, style=self.node_colors["Dir"])
+                    Text(node_data.path.name, style=self.node_colors["Dir"])
                 )
 
             # Add files in the current directory
-            for file in (f for f in self.file_paths if f.parent == dir_path):
-                file_node = parent_node.add_leaf(file.name, file)
-                file_node.set_label(Text(str(file.name), Style(dim=True)))
+            for file_path in (
+                f for f in self.file_paths if f.parent == node_data.path
+            ):
+                node_label = Text(file_path.name, Style(dim=True))
+                node_data_data = ManagedTree.NodeData(
+                    path=file_path, is_file=True
+                )
+                if file_path in status_paths:
+                    node_data_data.status = status_paths[file_path]
+                    node_label = Text(
+                        file_path.name,
+                        style=self.node_colors[node_data_data.status],
+                    )
+
+                file_node = parent_node.add_leaf(
+                    file_path.name, node_data_data
+                )
+                file_node.set_label(node_label)
 
             # Add subdirectories
-            for sub_dir in (d for d in all_dirs if d.parent == dir_path):
-                add_nodes(parent_node, sub_dir)
+            for sub_dir in (d for d in all_dirs if d.parent == node_data.path):
+                node_data_data = ManagedTree.NodeData(path=sub_dir)
+                add_nodes(parent_node, node_data_data)
 
         # Build the tree starting from dest_dir
-        add_nodes(self.root, dest_dir)
+        initial_node_data = ManagedTree.NodeData(path=dest_dir)
+        add_nodes(self.root, initial_node_data)
         self.show_root = False
         self.border_title = f" {dest_dir} "
         self.root.expand()
-
-    @on(Tree.NodeExpanded)
-    def color_files(self, event: Tree.NodeExpanded) -> None:
-        """Color the new visible leaves."""
-
-        file_nodes: list[TreeNode] = [
-            c for c in event.node.children if not c.children
-        ]
-
-        status_paths = (
-            chezmoi.apply_status_file_paths
-            if self.apply
-            else chezmoi.re_add_status_file_paths
-        )
-
-        status_nodes = [n for n in file_nodes if n.data in status_paths]
-
-        for node in status_nodes:
-            label_text = str(node.label)
-            if node.data in status_paths:
-                status_code: str = status_paths[node.data]
-                new_label = Text(
-                    label_text, style=self.node_colors[status_code]
-                )
-                node.set_label(new_label)
 
 
 class ApplyTree(ManagedTree):
@@ -298,10 +306,12 @@ class ApplyTree(ManagedTree):
         self.file_paths = chezmoi.managed_file_paths
 
     def watch_missing(self) -> None:
-        self.notify("The missing filter was changed")
+        self.notify(f"new value for missing in {self} = {self.missing}")
 
     def watch_changed_files(self) -> None:
-        self.notify("The changed_files filter was changed")
+        self.notify(
+            f"new value for changed_files in {self} = {self.changed_files}"
+        )
 
 
 class ReAddTree(ManagedTree):
@@ -318,7 +328,9 @@ class ReAddTree(ManagedTree):
         self.file_paths = chezmoi.managed_file_paths
 
     def watch_changed_files(self) -> None:
-        self.notify("The changed_files filter was changed")
+        self.notify(
+            f"new value for changed files in {self} = {self.changed_files}"
+        )
 
 
 class ChezmoiStatus(VerticalScroll):
