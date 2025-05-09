@@ -39,7 +39,6 @@ class LoadingScreen(Screen):
 
     def __init__(self) -> None:
         self.animated_fade = AnimatedFade(line_styles=self.create_fade())
-        self.switches_by_tab: dict[str, list[HorizontalGroup]] = {}
         super().__init__()
 
     def create_fade(self) -> deque[Style]:
@@ -69,7 +68,7 @@ class LoadingScreen(Screen):
 
         def update_log():
             log_text = f"{log_label} {'.' * padding} loaded"
-            self.screen.query_one(RichLog).write(log_text)
+            self.screen.query_exactly_one(RichLog).write(log_text)
 
         self.app.call_from_thread(update_log)
 
@@ -89,7 +88,7 @@ class LoadingScreen(Screen):
             for worker in self.app.workers
             if worker.group == "io_workers"
         ):
-            self.query_one("#continue").disabled = False
+            self.query_one("#continue", Button).disabled = False
 
     def on_mount(self) -> None:
 
@@ -103,9 +102,9 @@ class LoadingScreen(Screen):
         self.set_interval(interval=0.1, callback=self.all_workers_finished)
 
     def on_key(self) -> None:
-        if not self.query_one("#continue").disabled:
-            self.dismiss(self.switches_by_tab)
+        if not self.query_one("#continue", Button).disabled:
+            self.dismiss()
 
     def on_click(self) -> None:
-        if not self.query_one("#continue").disabled:
-            self.dismiss(self.switches_by_tab)
+        if not self.query_one("#continue", Button).disabled:
+            self.dismiss()
