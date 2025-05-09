@@ -10,7 +10,6 @@ from chezmoi_mousse.mousse import (
     DiagramTab,
     DoctorTab,
     ReAddTab,
-    SlideBar,
 )
 from chezmoi_mousse.splash import LoadingScreen
 
@@ -20,8 +19,8 @@ class MainScreen(Screen):
     def compose(self) -> ComposeResult:
         yield Header()
         with TabbedContent("Apply", "Re-Add", "Add", "Doctor", "Diagram"):
-            yield ApplyTab(id="apply_tab")
-            yield Lazy(ReAddTab(id="re_add_tab"))
+            yield ApplyTab()
+            yield Lazy(ReAddTab())
             yield Lazy(AddTab())
             yield Lazy(DoctorTab())
             yield Lazy(DiagramTab())
@@ -54,6 +53,5 @@ class ChezmoiTUI(App):
         self.theme = "chezmoi-mousse-dark"
         self.push_screen("loading", self.push_main_screen)
 
-    def push_main_screen(self, switches_by_tab) -> None:
-        SlideBar.switches_by_tab = switches_by_tab
+    def push_main_screen(self, _) -> None:
         self.push_screen("main")

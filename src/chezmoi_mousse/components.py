@@ -8,14 +8,27 @@ from rich.style import Style
 from rich.text import Text
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import VerticalScroll
+from textual.containers import (
+    Container,
+    HorizontalGroup,
+    VerticalGroup,
+    VerticalScroll,
+)
 from textual.content import Content
 from textual.reactive import reactive
-from textual.widgets import Collapsible, DirectoryTree, RichLog, Static, Tree
+from textual.widgets import (
+    Collapsible,
+    DirectoryTree,
+    Label,
+    RichLog,
+    Static,
+    Switch,
+    Tree,
+)
 from textual.widgets.tree import TreeNode
 
 from chezmoi_mousse.chezmoi import chezmoi, dest_dir
-from chezmoi_mousse.config import status_info, unwanted
+from chezmoi_mousse.config import filter_switch_data, status_info, unwanted
 
 
 def is_unwanted_path(path: Path) -> bool:
@@ -142,7 +155,7 @@ class StaticDiff(Static):
 class FilteredDirTree(DirectoryTree):
 
     include_unmanaged_dirs = reactive(False, always_update=True)
-    filter_unwanted = reactive(True, always_update=True)
+    filter_unwanted = reactive(False, always_update=True)
 
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
         managed_dirs = chezmoi.managed_dir_paths
@@ -150,7 +163,7 @@ class FilteredDirTree(DirectoryTree):
         self.root.label = f"{dest_dir} (destDir)"
 
         # Switches: Red - Green (default)
-        if not self.include_unmanaged_dirs and self.filter_unwanted:
+        if not self.include_unmanaged_dirs and not self.filter_unwanted:
             return (
                 p
                 for p in paths
@@ -166,8 +179,15 @@ class FilteredDirTree(DirectoryTree):
                     and p in managed_dirs
                 )
             )
-        # Switches: Red - Red
-        if not self.include_unmanaged_dirs and not self.filter_unwanted:
+        # Switches: Green - Red
+        if self.include_unmanaged_dirs and not self.filter_unwanted:
+            return (
+                p
+                for p in paths
+                if p not in managed_files and not is_unwanted_path(p)
+            )
+        # Switches: Red - Green
+        if not self.include_unmanaged_dirs and self.filter_unwanted:
             return (
                 p
                 for p in paths
@@ -178,20 +198,13 @@ class FilteredDirTree(DirectoryTree):
                 )
                 or (p.is_dir() and p in managed_dirs)
             )
-        # Switches: Green - Green
-        if self.include_unmanaged_dirs and self.filter_unwanted:
+        # Switches: Green - Green, include all unmanaged paths
+        else:
             return (
                 p
                 for p in paths
-                if p not in managed_files and not is_unwanted_path(p)
+                if p.is_dir() or (p.is_file() and p not in managed_files)
             )
-        # Switches: Green - Red , this means the following is true:
-        # "self.include_unmanaged_dirs and not self.filter_unwanted"
-        return (
-            p
-            for p in paths
-            if p.is_dir() or (p.is_file() and p not in managed_files)
-        )
 
 
 class ManagedTree(Tree):
@@ -334,3 +347,52 @@ class ChezmoiStatus(VerticalScroll):
                 Collapsible(StaticDiff(file_path, self.apply), title=title)
             )
         self.refresh(recompose=True)
+
+
+class FilterSwitch(HorizontalGroup):
+    """A switch, a label and a tooltip."""
+
+    def __init__(self, switch_data: dict[str, str], switch_id: str) -> None:
+        self.switch_data = switch_data
+        self.switch_id = switch_id
+        super().__init__(classes="filter-container")
+
+    def compose(self) -> ComposeResult:
+        yield Switch(id=self.switch_id, classes="filter-switch")
+        yield Label(self.switch_data["label"], classes="filter-label")
+        yield Label("(?)", classes="filter-tooltip").with_tooltip(
+            tooltip=self.switch_data["tooltip"]
+        )
+
+
+class TabFilters(VerticalGroup):
+
+    def __init__(self, filter_key: str) -> None:
+        self.filter_key = filter_key
+        self.tab_switches: list[HorizontalGroup] = []
+        super().__init__()
+
+    def compose(self) -> ComposeResult:
+        yield from self.tab_switches
+
+    def on_mount(self) -> None:
+        self.tab_switch_data = {
+            f"{self.filter_key}_{key}": value
+            for key, value in filter_switch_data.items()
+            if self.filter_key in value.get("filter_keys", [])
+        }
+        self.tab_switches = [
+            FilterSwitch(switch_data, switch_id)
+            for switch_id, switch_data in self.tab_switch_data.items()
+        ]
+        self.refresh(recompose=True)
+
+
+class SlideBar(Container):
+
+    def __init__(self, filter_key: str, tab_filters_id: str) -> None:
+        self.filter_key = filter_key
+        super().__init__(id=tab_filters_id)
+
+    def compose(self) -> ComposeResult:
+        yield TabFilters(self.filter_key)
