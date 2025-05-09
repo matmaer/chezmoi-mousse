@@ -338,6 +338,9 @@ class ReAddTab(VerticalScroll):
     def action_toggle_slidebar(self):
         self.screen.query_one("#re_add_filters").toggle_class("-visible")
 
+    def action_re_add_path(self) -> None:
+        self.notify("will re-add path")
+
     def on_resize(self) -> None:
         self.query_one(ReAddTree).focus()
 
