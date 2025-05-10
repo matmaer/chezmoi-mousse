@@ -39,7 +39,7 @@ def _handle_tooltip_timer(self, widget: Widget) -> None:
             tooltip.absolute_offset = self.app.mouse_position
             tooltip.update(tooltip_content)
 
-            self.set_timer(2.0, lambda: setattr(tooltip, "display", False))
+            self.set_timer(2.5, lambda: setattr(tooltip, "display", False))
 
 
 class CustomScrollBarRender(ScrollBarRender):
