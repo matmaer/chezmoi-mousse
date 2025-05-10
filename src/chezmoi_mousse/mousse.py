@@ -45,8 +45,18 @@ from chezmoi_mousse.config import pw_mgr_info
 class AddTab(Container):
 
     BINDINGS = [
-        Binding(key="F,f", action="toggle_slidebar", description="filters"),
-        Binding(key="A,a", action="add_path", description="add-chezmoi"),
+        Binding(
+            key="F,f",
+            action="toggle_slidebar",
+            description="filters",
+            tooltip="show/hide filters",
+        ),
+        Binding(
+            key="A,a",
+            action="add_path",
+            description="add-chezmoi",
+            tooltip="add new file to your chezmoi repository",
+        ),
     ]
 
     def __init__(self) -> None:
@@ -172,7 +182,12 @@ class DoctorTab(VerticalScroll):
 
     BINDINGS = [
         Binding(key="V,v", action="open_config", description="chezmoi-config"),
-        Binding(key="G,g", action="git_log", description="show-git-log"),
+        Binding(
+            key="G,g",
+            action="git_log",
+            description="show-git-log",
+            tooltip="git log from your chezmoi repository",
+        ),
     ]
 
     def __init__(self) -> None:
@@ -287,9 +302,17 @@ class DoctorTab(VerticalScroll):
 class ApplyTab(VerticalScroll):
 
     BINDINGS = [
-        Binding(key="F,f", action="toggle_slidebar", description="filters"),
         Binding(
-            key="W,w", action="apply_path", description="write-to-dotfile"
+            key="F,f",
+            action="toggle_slidebar",
+            description="filters",
+            tooltip="show/hide filters",
+        ),
+        Binding(
+            key="W,w",
+            action="apply_path",
+            description="write-dotfile",
+            tooltip="write to dotfiles from your chezmoi repository",
         ),
     ]
 
@@ -330,8 +353,18 @@ class ApplyTab(VerticalScroll):
 class ReAddTab(VerticalScroll):
 
     BINDINGS = [
-        Binding(key="f,F", action="toggle_slidebar", description="filters"),
-        Binding(key="a,A", action="re_add_path", description="re-add-chezmoi"),
+        Binding(
+            key="F,f",
+            action="toggle_slidebar",
+            description="filters",
+            tooltip="show/hide filters",
+        ),
+        Binding(
+            key="a,A",
+            action="re_add_path",
+            description="re-add-chezmoi",
+            tooltip="overwrite chezmoi repository with your current dotfiles",
+        ),
     ]
 
     def compose(self) -> ComposeResult:
