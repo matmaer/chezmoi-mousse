@@ -360,7 +360,7 @@ class ReAddTab(VerticalScroll):
             tooltip="show/hide filters",
         ),
         Binding(
-            key="a,A",
+            key="A,a",
             action="re_add_path",
             description="re-add-chezmoi",
             tooltip="overwrite chezmoi repository with your current dotfiles",
