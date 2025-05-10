@@ -3,8 +3,6 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from subprocess import TimeoutExpired, run
 
-dest_dir = Path.home()
-
 
 def subprocess_run(long_command):
     try:
@@ -205,10 +203,7 @@ class Chezmoi:
         return subprocess_run(long_command + [file_path])
 
     def diff(self, file_path: str, apply: bool) -> list[str]:
-        long_command = chezmoi.base + ["diff"] + [file_path]
+        long_command = self.base + ["diff"] + [file_path]
         if apply:
             return subprocess_run(long_command).splitlines()
         return subprocess_run(long_command + ["--reverse"]).splitlines()
-
-
-chezmoi = Chezmoi()

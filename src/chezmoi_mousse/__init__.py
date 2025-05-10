@@ -1,3 +1,9 @@
+from pathlib import Path
+from .chezmoi import Chezmoi
+
+chezmoi = Chezmoi()
+dest_dir = Path.home()
+
 SPLASH = """\
  _______________________________ ___________________._
 |       |   |   |    ___|___    |    '    |       |   |

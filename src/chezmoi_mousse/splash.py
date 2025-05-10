@@ -12,8 +12,7 @@ from textual.strip import Strip
 from textual.widgets import Button, Label, RichLog, Static, Switch
 
 from chezmoi_mousse import SPLASH
-from chezmoi_mousse.chezmoi import chezmoi
-from chezmoi_mousse.config import filter_switch_data
+from chezmoi_mousse import chezmoi
 
 
 class AnimatedFade(Static):

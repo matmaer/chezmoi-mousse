@@ -28,7 +28,7 @@ from textual.widgets import (
 )
 
 from chezmoi_mousse import FLOW
-from chezmoi_mousse.chezmoi import chezmoi, dest_dir
+from chezmoi_mousse import chezmoi, dest_dir
 from chezmoi_mousse.components import (
     ApplyTree,
     AutoWarning,

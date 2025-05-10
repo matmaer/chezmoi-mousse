@@ -28,7 +28,7 @@ from textual.widgets import (
 )
 from textual.widgets.tree import TreeNode
 
-from chezmoi_mousse.chezmoi import chezmoi, dest_dir
+from chezmoi_mousse import chezmoi, dest_dir
 from chezmoi_mousse.config import filter_switch_data, status_info, unwanted
 
 
