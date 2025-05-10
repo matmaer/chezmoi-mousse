@@ -1,3 +1,4 @@
+from __future__ import annotations
 from math import ceil
 
 import rich.repr
@@ -7,6 +8,38 @@ from rich.style import Style
 from textual.scrollbar import ScrollBar, ScrollBarRender
 
 from chezmoi_mousse.gui import ChezmoiTUI
+
+
+from textual.widget import Widget
+from textual.css.query import NoMatches
+from textual.widgets._tooltip import Tooltip
+from textual.screen import Screen
+from rich.console import RenderableType
+
+
+def _handle_tooltip_timer(self, widget: Widget) -> None:
+
+    try:
+        tooltip = self.get_child_by_type(Tooltip)
+    except NoMatches:
+        pass
+    else:
+        tooltip_content: RenderableType | None = None
+        for node in widget.ancestors_with_self:
+            if not isinstance(node, Widget):
+                break
+            if node.tooltip is not None:
+                tooltip_content = node.tooltip  # type: ignore
+                break
+
+        if tooltip_content is None:
+            tooltip.display = False
+        else:
+            tooltip.display = True
+            tooltip.absolute_offset = self.app.mouse_position
+            tooltip.update(tooltip_content)
+
+            self.set_timer(2.0, lambda: setattr(tooltip, "display", False))
 
 
 class CustomScrollBarRender(ScrollBarRender):
@@ -143,6 +176,9 @@ class CustomScrollBar(ScrollBar):
 
 
 def main():
+    # MONKEY PATCH:
+    Screen._handle_tooltip_timer = _handle_tooltip_timer  # type: ignore
+
     app = ChezmoiTUI()
     ScrollBar.renderer = CustomScrollBarRender
     app.run(inline=False, headless=False, mouse=True)
