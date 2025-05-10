@@ -45,8 +45,8 @@ from chezmoi_mousse.config import pw_mgr_info
 class AddTab(Container):
 
     BINDINGS = [
-        Binding("f", "toggle_slidebar", "Filters"),
-        Binding("a", "add_path", "Add Path"),
+        Binding(key="F,f", action="toggle_slidebar", description="filters"),
+        Binding(key="A,a", action="add_path", description="add-chezmoi"),
     ]
 
     def __init__(self) -> None:
@@ -100,7 +100,7 @@ class AddTab(Container):
 class ChezmoiAdd(ModalScreen):
 
     BINDINGS = [
-        Binding("escape", "dismiss", "dismiss modal screen", show=False)
+        Binding(key="escape", action="dismiss", description="close", show=True)
     ]
 
     def __init__(self, path_to_add: Path, **kwargs) -> None:
@@ -156,7 +156,9 @@ class ChezmoiAdd(ModalScreen):
 
 class PrettyModal(ModalScreen):
 
-    BINDINGS = [Binding("escape", "dismiss", "", show=True)]
+    BINDINGS = [
+        Binding(key="escape", action="dismiss", description="close", show=True)
+    ]
 
     def __init__(self, pretty_object: Pretty | DataTable) -> None:
         self.pretty_object = pretty_object
@@ -169,8 +171,8 @@ class PrettyModal(ModalScreen):
 class DoctorTab(VerticalScroll):
 
     BINDINGS = [
-        Binding("c", "open_config", "dump-config"),
-        Binding("g", "git_log", "git-log"),
+        Binding(key="V,v", action="open_config", description="chezmoi-config"),
+        Binding(key="G,g", action="git_log", description="show-git-log"),
     ]
 
     def __init__(self) -> None:
@@ -285,8 +287,10 @@ class DoctorTab(VerticalScroll):
 class ApplyTab(VerticalScroll):
 
     BINDINGS = [
-        Binding("f", "toggle_slidebar", "Filters"),
-        Binding("a", "apply_path", "Apply Path"),
+        Binding(key="F,f", action="toggle_slidebar", description="filters"),
+        Binding(
+            key="W,w", action="apply_path", description="write-to-dotfile"
+        ),
     ]
 
     def __init__(self) -> None:
@@ -326,8 +330,8 @@ class ApplyTab(VerticalScroll):
 class ReAddTab(VerticalScroll):
 
     BINDINGS = [
-        Binding("f", "toggle_slidebar", "Filters"),
-        Binding("a", "re_add_path", "Re-Add Path"),
+        Binding(key="f,F", action="toggle_slidebar", description="filters"),
+        Binding(key="a,A", action="re_add_path", description="re-add-chezmoi"),
     ]
 
     def compose(self) -> ComposeResult:
