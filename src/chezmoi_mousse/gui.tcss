@@ -265,7 +265,7 @@ Tree {
 
 #diagram {
   padding: 0 1 0 1;
-  min-width: 76;
+  min-width: 82;
 }
 
 /* TCSS-Class-name selector */

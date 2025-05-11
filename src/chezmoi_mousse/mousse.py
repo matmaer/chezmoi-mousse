@@ -28,7 +28,7 @@ from textual.widgets import (
 )
 
 from chezmoi_mousse import FLOW
-from chezmoi_mousse.chezmoi import chezmoi, dest_dir
+from chezmoi_mousse import chezmoi, dest_dir
 from chezmoi_mousse.components import (
     ApplyTree,
     AutoWarning,
@@ -45,8 +45,18 @@ from chezmoi_mousse.config import pw_mgr_info
 class AddTab(Container):
 
     BINDINGS = [
-        Binding("f", "toggle_slidebar", "Filters"),
-        Binding("a", "add_path", "Add Path"),
+        Binding(
+            key="F,f",
+            action="toggle_slidebar",
+            description="filters",
+            tooltip="show/hide filters",
+        ),
+        Binding(
+            key="A,a",
+            action="add_path",
+            description="add-chezmoi",
+            tooltip="add new file to your chezmoi repository",
+        ),
     ]
 
     def __init__(self) -> None:
@@ -68,7 +78,10 @@ class AddTab(Container):
 
     @on(FilteredDirTree.FileSelected)
     def update_preview_path(self, event: FilteredDirTree.FileSelected) -> None:
-        self.query_exactly_one(ReactiveFileView).file_path = event.path
+        if event.node.data is not None:
+            self.query_exactly_one(ReactiveFileView).file_path = (
+                event.node.data.path
+            )
 
     def action_toggle_slidebar(self):
         self.screen.query_one("#add_filters", SlideBar).toggle_class(
@@ -97,7 +110,7 @@ class AddTab(Container):
 class ChezmoiAdd(ModalScreen):
 
     BINDINGS = [
-        Binding("escape", "dismiss", "dismiss modal screen", show=False)
+        Binding(key="escape", action="dismiss", description="close", show=True)
     ]
 
     def __init__(self, path_to_add: Path, **kwargs) -> None:
@@ -153,7 +166,9 @@ class ChezmoiAdd(ModalScreen):
 
 class PrettyModal(ModalScreen):
 
-    BINDINGS = [Binding("escape", "dismiss", "", show=True)]
+    BINDINGS = [
+        Binding(key="escape", action="dismiss", description="close", show=True)
+    ]
 
     def __init__(self, pretty_object: Pretty | DataTable) -> None:
         self.pretty_object = pretty_object
@@ -166,8 +181,13 @@ class PrettyModal(ModalScreen):
 class DoctorTab(VerticalScroll):
 
     BINDINGS = [
-        Binding("c", "open_config", "dump-config"),
-        Binding("g", "git_log", "git-log"),
+        Binding(key="V,v", action="open_config", description="chezmoi-config"),
+        Binding(
+            key="G,g",
+            action="git_log",
+            description="show-git-log",
+            tooltip="git log from your chezmoi repository",
+        ),
     ]
 
     def __init__(self) -> None:
@@ -282,8 +302,18 @@ class DoctorTab(VerticalScroll):
 class ApplyTab(VerticalScroll):
 
     BINDINGS = [
-        Binding("f", "toggle_slidebar", "Filters"),
-        Binding("a", "apply_path", "Apply Path"),
+        Binding(
+            key="F,f",
+            action="toggle_slidebar",
+            description="filters",
+            tooltip="show/hide filters",
+        ),
+        Binding(
+            key="W,w",
+            action="apply_path",
+            description="write-dotfile",
+            tooltip="write to dotfiles from your chezmoi repository",
+        ),
     ]
 
     def __init__(self) -> None:
@@ -306,9 +336,13 @@ class ApplyTab(VerticalScroll):
 
     @on(ApplyTree.NodeSelected)
     def update_preview_path(self, event: ApplyTree.NodeSelected) -> None:
-        self.query_exactly_one(ReactiveFileView).file_path = event.node.data
+        if event.node.data is not None and event.node.data.path is not None:
+            self.query_exactly_one(ReactiveFileView).file_path = (
+                event.node.data.path
+            )
 
-    def on_switch_changed(self, event: Switch.Changed) -> None:
+    @on(Switch.Changed)
+    def notify_apply_tree(self, event: Switch.Changed) -> None:
         apply_tree = self.query_exactly_one(ApplyTree)
         if event.switch.id == "apply_tab_missing":
             apply_tree.missing = event.value
@@ -319,8 +353,18 @@ class ApplyTab(VerticalScroll):
 class ReAddTab(VerticalScroll):
 
     BINDINGS = [
-        Binding("f", "toggle_slidebar", "Filters"),
-        Binding("a", "re_add_path", "Re-Add Path"),
+        Binding(
+            key="F,f",
+            action="toggle_slidebar",
+            description="filters",
+            tooltip="show/hide filters",
+        ),
+        Binding(
+            key="A,a",
+            action="re_add_path",
+            description="re-add-chezmoi",
+            tooltip="overwrite chezmoi repository with your current dotfiles",
+        ),
     ]
 
     def compose(self) -> ComposeResult:
@@ -343,9 +387,15 @@ class ReAddTab(VerticalScroll):
 
     @on(ReAddTree.NodeSelected)
     def update_preview_path(self, event: ReAddTree.NodeSelected) -> None:
-        self.query_exactly_one(ReactiveFileView).file_path = event.node.data
+        if event.node.data is not None:
+            self.query_exactly_one(ReactiveFileView).file_path = (
+                event.node.data.path
+            )
+        else:
+            self.query_exactly_one(ReactiveFileView).file_path = None
 
-    def on_switch_changed(self, event: Switch.Changed) -> None:
+    @on(Switch.Changed)
+    def notify_re_add_tree(self, event: Switch.Changed) -> None:
         re_add_tree = self.query_exactly_one(ReAddTree)
         if event.switch.id == "re_add_tab_changed_files":
             re_add_tree.changed_files = event.value
