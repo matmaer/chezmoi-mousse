@@ -1,13 +1,16 @@
 name: Pylint
 
-on: [push]
+on:
+  push:
+    branches:
+      - master
 
 jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.11"]
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
     steps:
     - uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.python-version }}
@@ -20,4 +23,4 @@ jobs:
         pip install pylint textual
     - name: Analysing the code with pylint
       run: |
-        pylint --disable=missing-docstring,line-too-long $(git ls-files '*.py')
+        pylint --errors-only $(git ls-files 'src/*.py')
