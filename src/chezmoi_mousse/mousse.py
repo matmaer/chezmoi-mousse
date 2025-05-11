@@ -273,19 +273,19 @@ class DoctorTab(VerticalScroll):
             columns = line.split(";")
             if columns[1].split(maxsplit=1)[0] == "Add":
                 row = [
-                    Text(cell_text, style=f"{styles["ok"]}")
+                    Text(cell_text, style=f"{styles['ok']}")
                     for cell_text in columns
                 ]
                 self.git_log.add_row(*row)
             elif columns[1].split(maxsplit=1)[0] == "Update":
                 row = [
-                    Text(cell_text, style=f"{styles["warning"]}")
+                    Text(cell_text, style=f"{styles['warning']}")
                     for cell_text in columns
                 ]
                 self.git_log.add_row(*row)
             elif columns[1].split(maxsplit=1)[0] == "Remove":
                 row = [
-                    Text(cell_text, style=f"{styles["error"]}")
+                    Text(cell_text, style=f"{styles['error']}")
                     for cell_text in columns
                 ]
                 self.git_log.add_row(*row)
