@@ -209,22 +209,18 @@ class ManagedTree(Tree):
         status: str = "X"
 
     def __init__(
-        self,
-        apply: bool,
-        file_paths: list[Path],
-        dir_paths: list[Path],
-        status_paths: dict[Path, str],
-        **kwargs,
+        self, apply: bool, status_paths: dict[Path, str], **kwargs
     ) -> None:
         self.apply = apply
-        self.file_paths: list[Path] = file_paths
-        self.dir_paths: list[Path] = dir_paths
         self.status_paths: dict[Path, str] = status_paths
         super().__init__(label="root_node", classes="any-tree", **kwargs)
 
     def on_mount(self) -> None:
 
         print(f"Mounting {self.__class__.__name__} tree")
+
+        self.file_paths = [Path(p) for p in chezmoi.managed_file_paths]
+        self.dir_paths = [Path(p) for p in chezmoi.managed_dir_paths]
 
         self.root.data = ManagedTree.NodeData(path=dest_dir)
         self.root.label = str(dest_dir)
@@ -265,11 +261,47 @@ class ManagedTree(Tree):
 
             new_leaf.set_label(node_label)
 
+    def remove_nodes(self) -> None:
+        nodes_with_leaves = {self.root}
+        nodes_without_leaves = set()
+        parent_nodes_of_leaves = set()
+
+        def classify_nodes(node: TreeNode) -> None:
+            has_leaf = False
+            has_non_leaf_child = False
+
+            for child in node.children:
+                if child.data and child.data.is_file:
+                    has_leaf = True
+                    nodes_with_leaves.add(node)
+                    if node.parent is not None:
+                        parent_nodes_of_leaves.add(node.parent)
+                else:
+                    has_non_leaf_child = True
+                    classify_nodes(child)
+
+            # Only classify as "without leaves" if the node has no leaf children and no non-leaf children
+            if not has_leaf and not has_non_leaf_child:
+                nodes_without_leaves.add(node)
+
+        # Collect unique parents of leaf nodes
+        parent_nodes_of_leaves = {
+            node.parent
+            for node in nodes_with_leaves
+            if node.parent is not None
+        }
+
+        # Remove nodes without leaves unless they are in the parent list
+        for node in nodes_without_leaves:
+            if node not in parent_nodes_of_leaves:
+                node.remove()
+
     @on(Tree.NodeExpanded)
     def populate_directory(self, event: Tree.NodeExpanded) -> None:
 
         print(f"Node expanded: {event.node.label}")
         self.add_child_nodes(event.node)
+        self.remove_nodes()
 
     @on(Tree.NodeCollapsed)
     def clear_all_children(self, event: Tree.NodeExpanded) -> None:
@@ -285,18 +317,10 @@ class ApplyTree(ManagedTree):
     changed_files: reactive[bool] = reactive(False, always_update=True)
 
     def __init__(self) -> None:
-        self.file_paths: list[Path] | None = None
-        self.dir_paths: list[Path] | None = None
-        self.status_paths: dict[Path, str] = {}
-        super().__init__(
-            apply=True, file_paths=[], dir_paths=[], status_paths={}
-        )
+        super().__init__(apply=True, status_paths={})
 
     def on_mount(self) -> None:
-        # do not use chezmoi.managed_file_paths attribute as the
-        # items in the tree will not be sorted using a set
-        self.file_paths = [Path(p) for p in chezmoi.managed_files.list_out]
-        self.dir_paths = [Path(p) for p in chezmoi.managed_dirs.list_out]
+        print(f"Mounting {self.__class__.__name__} tree")
         self.status_paths = chezmoi.apply_status_file_paths
 
     def watch_missing(self) -> None:
@@ -312,22 +336,10 @@ class ReAddTree(ManagedTree):
     changed_files: reactive[bool] = reactive(False, always_update=True)
 
     def __init__(self) -> None:
-        self.file_paths: list[Path] | None = None
-        self.dir_paths: list[Path] | None = None
-        self.status_paths: dict[Path, str] = {}
-        super().__init__(
-            apply=False, file_paths=[], dir_paths=[], status_paths={}
-        )
+        super().__init__(apply=False, status_paths={})
 
     def on_mount(self) -> None:
-        # do not use chezmoi.managed_file_paths attribute as the
-        # items in the tree will not be sorted using a set
-        self.file_paths = [
-            Path(p) for p in chezmoi.managed_files.list_out if Path(p).exists()
-        ]
-        self.dir_paths = [
-            Path(p) for p in chezmoi.managed_dirs.list_out if Path(p).exists()
-        ]
+        print(f"Mounting {self.__class__.__name__} tree")
         self.status_paths = chezmoi.re_add_status_file_paths
 
     def watch_changed_files(self) -> None:
