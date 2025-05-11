@@ -1,4 +1,3 @@
-from __future__ import annotations
 from math import ceil
 
 import rich.repr
@@ -180,7 +179,7 @@ def main():
     app = ChezmoiTUI()
 
     # MONKEY PATCHES:
-    Screen._handle_tooltip_timer = _handle_tooltip_timer  # type: ignore
+    Screen._handle_tooltip_timer = _handle_tooltip_timer
     ScrollBar.renderer = CustomScrollBarRender
 
     app.run(inline=False, headless=False, mouse=True)
