@@ -11,7 +11,6 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.12", "3.13"]
-        test-type: [pylint, pip-audit]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -25,10 +24,8 @@ jobs:
         run: pip install pylint pip-audit textual
 
       - name: Run pylint
-        if: matrix.test-type == 'pylint'
         run: |
           pylint -E $(git ls-files '*.py') # Adjusted to check all Python files
 
       - name: Run pip-audit
-        if: matrix.test-type == 'pip-audit'
         run: pip-audit
