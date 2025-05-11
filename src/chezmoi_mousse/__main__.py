@@ -176,11 +176,13 @@ class CustomScrollBar(ScrollBar):
 
 
 def main():
-    # MONKEY PATCH:
-    Screen._handle_tooltip_timer = _handle_tooltip_timer  # type: ignore
 
     app = ChezmoiTUI()
+
+    # MONKEY PATCHES:
+    Screen._handle_tooltip_timer = _handle_tooltip_timer  # type: ignore
     ScrollBar.renderer = CustomScrollBarRender
+
     app.run(inline=False, headless=False, mouse=True)
 
 
