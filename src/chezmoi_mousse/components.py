@@ -68,12 +68,13 @@ class FileView(RichLog):
             auto_scroll=False, highlight=True, classes="file-preview", **kwargs
         )
         self.file_path = file_path
+        self.cat_output: str | None = None
 
     def on_mount(self) -> None:
         if self.file_path is None:
             self.write(" Select a file to view its content.")
-        elif not self.file_path.exists():
-            self.write(f"File does not exist: {self.file_path}")
+        # elif not self.file_path.exists():
+        #     self.write(f"File does not exist: {self.file_path}")
         else:
             truncated = ""
             try:
@@ -82,15 +83,21 @@ class FileView(RichLog):
                         "\n\n------ File content truncated to 150 KiB ------\n"
                     )
             except (PermissionError, FileNotFoundError, OSError) as error:
-                self.write(error.strerror)
-
+                if FileNotFoundError:
+                    if self.file_path in chezmoi.managed_file_paths:
+                        self.cat_output = chezmoi.cat(str(self.file_path))
+                else:
+                    self.write(error.strerror)
             try:
-                with open(self.file_path, "rt", encoding="utf-8") as file:
-                    file_content = file.read(150 * 1024)
-                    if not file_content.strip():
-                        self.write("File contains only whitespace")
-                    else:
-                        self.write(file_content + truncated)
+                if self.cat_output:
+                    self.write(self.cat_output)
+                else:
+                    with open(self.file_path, "rt", encoding="utf-8") as file:
+                        file_content = file.read(150 * 1024)
+                        if not file_content.strip():
+                            self.write("File contains only whitespace")
+                        else:
+                            self.write(file_content + truncated)
             except (UnicodeDecodeError, IsADirectoryError) as error:
                 if isinstance(error, UnicodeDecodeError):
                     self.write("The file cannot be decoded as UTF-8")
@@ -126,9 +133,9 @@ class StaticDiff(Static):
         colored_lines: list[Content] = []
         for line in diff_output:
             content = Content(line)
-            if line.startswith("+"):
+            if line.startswith("-"):
                 colored_lines.append(content.stylize("$text-error"))
-            elif line.startswith("-"):
+            elif line.startswith("+"):
                 colored_lines.append(content.stylize("$text-success"))
             else:
                 colored_lines.append(content.stylize("dim"))
