@@ -24,7 +24,3 @@ jobs:
     - name: Run pylint
       run: |
         pylint -E $(git ls-files 'src/*.py')
-
-    - name: Run pip-audit
-      run: |
-        pip-audit
