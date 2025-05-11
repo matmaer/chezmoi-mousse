@@ -1,3 +1,5 @@
+[![Pylint](https://github.com/matmaer/chezmoi-mousse/actions/workflows/pylint.yml/badge.svg?branch=master)](https://github.com/matmaer/chezmoi-mousse/actions/workflows/pylint.yml)
+
 terminal user interface for [chezmoi](https://github.com/twpayne/chezmoi), pretty print its environment and starting operations from the relevant visualized components. Built with [textual](https://github.com/Textualize/textual) and [rich](https://github.com/Textualize/rich), see [Textualize](https://www.textualize.io/).
 
 The name of the repository chezmoi-mousse is a wink to the mouse.
@@ -17,7 +19,6 @@ The app is not packaged yet, can be run as a module with python and `textual`.
   - [ ] implement pre-flight checks with feedback what to do if failed
     - [ ] handle chezmoi init recommendation when config was changed
 - [ ] Create widget to show subprocess shell IO when using the TUI
-- [ ] Spaced-out/compact content toggling
 
 ### Chezmoi commands
 
