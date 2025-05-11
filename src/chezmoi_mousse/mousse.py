@@ -164,24 +164,72 @@ class ChezmoiAdd(ModalScreen):
             self.screen.dismiss()
 
 
-class PrettyModal(ModalScreen):
+class GitLog(ModalScreen):
 
-    BINDINGS = [
-        Binding(key="escape", action="dismiss", description="close", show=True)
-    ]
-
-    def __init__(self, pretty_object: Pretty | DataTable) -> None:
-        self.pretty_object = pretty_object
-        super().__init__(classes="modalscreen")
+    BINDINGS = [Binding(key="escape", action="dismiss", description="close")]
 
     def compose(self) -> ComposeResult:
-        yield self.pretty_object
+        yield DataTable(
+            id="gitlogtable", show_cursor=False, classes="doctormodal"
+        )
+
+    def on_mount(self) -> None:
+        table = self.query_one("#gitlogtable", DataTable)
+        table.border_title = "chezmoi git log - command output"
+        table.border_subtitle = "escape to close"
+        styles = {
+            "ok": f"{self.app.current_theme.success}",
+            "warning": f"{self.app.current_theme.warning}",
+            "error": f"{self.app.current_theme.error}",
+            "info": f"{self.app.current_theme.foreground}",
+        }
+        table.add_columns("COMMIT", "MESSAGE")
+        for line in chezmoi.git_log.list_out:
+            columns = line.split(";")
+            if columns[1].split(maxsplit=1)[0] == "Add":
+                row = [
+                    Text(cell_text, style=f"{styles['ok']}")
+                    for cell_text in columns
+                ]
+                table.add_row(*row)
+            elif columns[1].split(maxsplit=1)[0] == "Update":
+                row = [
+                    Text(cell_text, style=f"{styles['warning']}")
+                    for cell_text in columns
+                ]
+                table.add_row(*row)
+            elif columns[1].split(maxsplit=1)[0] == "Remove":
+                row = [
+                    Text(cell_text, style=f"{styles['error']}")
+                    for cell_text in columns
+                ]
+                table.add_row(*row)
+            else:
+                table.add_row(*columns)
+
+
+class ConfigDump(ModalScreen):
+
+    BINDINGS = [Binding(key="escape", action="dismiss", description="close")]
+
+    def compose(self) -> ComposeResult:
+        yield Pretty(
+            chezmoi.dump_config.dict_out,
+            id="configdump",
+            classes="doctormodal",
+        )
+
+    def on_mount(self) -> None:
+        self.query_one("#configdump").border_title = (
+            "chezmoi dump-config - command output"
+        )
+        self.query_one("#configdump").border_subtitle = " escape to close "
 
 
 class DoctorTab(VerticalScroll):
 
     BINDINGS = [
-        Binding(key="V,v", action="open_config", description="chezmoi-config"),
+        Binding(key="C,c", action="open_config", description="chezmoi-config"),
         Binding(
             key="G,g",
             action="git_log",
@@ -190,21 +238,13 @@ class DoctorTab(VerticalScroll):
         ),
     ]
 
-    def __init__(self) -> None:
-        self.git_log = DataTable(
-            id="gitlog", classes="doctortable", show_cursor=False
-        )
-        super().__init__()
-
     def compose(self) -> ComposeResult:
 
-        yield DataTable(
-            id="doctortable", classes="doctortable", show_cursor=False
-        )
-        with VerticalGroup(classes="collapsiblegroup"):
-            yield Collapsible(
-                ListView(id="cmdnotfound"), title="Commands Not Found"
+        with Horizontal():
+            yield DataTable(
+                id="doctortable", classes="doctortable", show_cursor=False
             )
+        with VerticalGroup(classes="collapsiblegroup"):
             yield Collapsible(
                 Pretty(chezmoi.template_data.dict_out),
                 title="chezmoi data (template data)",
@@ -216,6 +256,9 @@ class DoctorTab(VerticalScroll):
             yield Collapsible(
                 Pretty(chezmoi.ignored.list_out),
                 title="chezmoi ignored (git ignore in source-dir)",
+            )
+            yield Collapsible(
+                ListView(id="cmdnotfound"), title="Commands Not Found"
             )
 
     def on_mount(self) -> None:
@@ -268,35 +311,14 @@ class DoctorTab(VerticalScroll):
                 row = [Text(cell_text) for cell_text in row]
                 table.add_row(*row)
 
-        self.git_log.add_columns("COMMIT", "MESSAGE")
-        for line in chezmoi.git_log.list_out:
-            columns = line.split(";")
-            if columns[1].split(maxsplit=1)[0] == "Add":
-                row = [
-                    Text(cell_text, style=f"{styles['ok']}")
-                    for cell_text in columns
-                ]
-                self.git_log.add_row(*row)
-            elif columns[1].split(maxsplit=1)[0] == "Update":
-                row = [
-                    Text(cell_text, style=f"{styles['warning']}")
-                    for cell_text in columns
-                ]
-                self.git_log.add_row(*row)
-            elif columns[1].split(maxsplit=1)[0] == "Remove":
-                row = [
-                    Text(cell_text, style=f"{styles['error']}")
-                    for cell_text in columns
-                ]
-                self.git_log.add_row(*row)
-            else:
-                self.git_log.add_row(*columns)
+    def on_resize(self) -> None:
+        self.query_one("#doctortable", DataTable).focus()
 
     def action_open_config(self) -> None:
-        self.app.push_screen(PrettyModal(Pretty(chezmoi.dump_config.dict_out)))
+        self.app.push_screen(ConfigDump())
 
     def action_git_log(self) -> None:
-        self.app.push_screen(PrettyModal(self.git_log))
+        self.app.push_screen(GitLog())
 
 
 class ApplyTab(VerticalScroll):

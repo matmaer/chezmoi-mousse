@@ -92,17 +92,9 @@ CollapsibleTitle {
   }
 }
 
-Doctor {
-  .doctortable {
-    height: auto;
-    margin-bottom: 1;
-    &>.datatable--header {
-      text-style: none;
-    }
-  }
-  .collapsiblegroup {
-    height: auto;
-    margin-bottom: 1;
+DataTable {
+  &>.datatable--header {
+    text-style: none;
   }
 }
 
@@ -110,10 +102,15 @@ Footer {
   height: 3;
   border-top: dashed $panel;
   border-bottom: dashed $panel;
-
   .-command-palette {
     border: none;
   }
+}
+
+.doctormodal {
+  max-height: 1fr;
+  border: round $warning;
+  margin-bottom: 1;
 }
 
 Header {
