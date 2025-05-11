@@ -14,6 +14,7 @@ from textual.containers import (
     VerticalScroll,
 )
 from textual.screen import ModalScreen
+from textual.widget import Widget
 from textual.widgets import (
     Button,
     Collapsible,
@@ -33,7 +34,6 @@ from chezmoi_mousse.components import (
     ApplyTree,
     AutoWarning,
     ChezmoiStatus,
-    FileViewCollapsible,
     FilteredDirTree,
     FileView,
     ReAddTree,
@@ -115,7 +115,7 @@ class ChezmoiAdd(ModalScreen):
         super().__init__(**kwargs)
         self.path_to_add = path_to_add
         self.files_to_add: list[Path] = []
-        self.add_path_items: list[FileViewCollapsible] = []
+        self.add_path_items: list[Collapsible] = []
 
     def compose(self) -> ComposeResult:
         with VerticalScroll():
@@ -130,6 +130,9 @@ class ChezmoiAdd(ModalScreen):
                 ),
                 id="button_container",
             )
+
+    def compose_add_child(self, widget: Widget) -> None:
+        return super().compose_add_child(widget)
 
     def on_mount(self) -> None:
         self.files_to_add: list[Path] = []
@@ -148,7 +151,9 @@ class ChezmoiAdd(ModalScreen):
             self.add_label = "- Add Files -"
 
         for f in self.files_to_add:
-            self.add_path_items.append(FileViewCollapsible(file_path=f))
+            self.add_path_items.append(
+                Collapsible(FileView(f), title=str(f.relative_to(dest_dir)))
+            )
         self.refresh(recompose=True)
 
     def on_button_pressed(self, event: Button.Pressed):

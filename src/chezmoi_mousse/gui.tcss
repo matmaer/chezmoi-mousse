@@ -56,7 +56,7 @@ ChezmoiAdd {
     dock: bottom;
   }
 
-  & FileViewCollapsible {
+  & Collapsible {
     background-tint: $surface;
     background: $surface;
     margin-right: 2;

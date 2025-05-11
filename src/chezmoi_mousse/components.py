@@ -26,7 +26,6 @@ from textual.widgets import (
     Switch,
     Tree,
 )
-from textual.widgets.tree import TreeNode
 
 from chezmoi_mousse import chezmoi, dest_dir
 from chezmoi_mousse.config import filter_switch_data, status_info, unwanted
@@ -103,18 +102,6 @@ class FileView(RichLog):
             self.border_title = f" {self.file_path.relative_to(dest_dir)} "
         else:
             self.border_title = " no file selected "
-
-
-class FileViewCollapsible(Collapsible):
-    """Collapsible widget to display the content of a file."""
-
-    def __init__(self, file_path: Path | None = None) -> None:
-        self.file_path = file_path
-        super().__init__(FileView(self.file_path))
-
-    def on_mount(self) -> None:
-        if self.file_path is not None:
-            self.title = str(self.file_path.relative_to(dest_dir))
 
 
 class StaticDiff(Static):
