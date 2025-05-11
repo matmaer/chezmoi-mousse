@@ -22,13 +22,13 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install dependencies
-        run: pip install pylint pip-audit textual
+        run: pip install pylint pip-audit
 
       - name: Run pylint
         if: matrix.test-type == 'pylint'
         run: |
-                pylint -E $(git ls-files 'src/*.py')
+          pylint -E $(git ls-files '*.py') # Adjusted to check all Python files
 
       - name: Run pip-audit
         if: matrix.test-type == 'pip-audit'
-        run: pip-audit $(git ls-files 'src/*.py')
+        run: pip-audit --auto
