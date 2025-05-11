@@ -14,6 +14,7 @@ from textual.containers import (
     VerticalScroll,
 )
 from textual.screen import ModalScreen
+from textual.widget import Widget
 from textual.widgets import (
     Button,
     Collapsible,
@@ -33,9 +34,8 @@ from chezmoi_mousse.components import (
     ApplyTree,
     AutoWarning,
     ChezmoiStatus,
-    FileViewCollapsible,
     FilteredDirTree,
-    ReactiveFileView,
+    FileView,
     ReAddTree,
     SlideBar,
 )
@@ -68,7 +68,7 @@ class AddTab(Container):
             yield FilteredDirTree(
                 dest_dir, classes="dir-tree any-tree", id="filtered_dir_tree"
             )
-            yield ReactiveFileView()
+            yield FileView()
         yield SlideBar(filter_key="add_tab", tab_filters_id="add_filters")
 
     def on_mount(self) -> None:
@@ -79,9 +79,7 @@ class AddTab(Container):
     @on(FilteredDirTree.FileSelected)
     def update_preview_path(self, event: FilteredDirTree.FileSelected) -> None:
         if event.node.data is not None:
-            self.query_exactly_one(ReactiveFileView).file_path = (
-                event.node.data.path
-            )
+            self.query_exactly_one(FileView).file_path = event.node.data.path
 
     def action_toggle_slidebar(self):
         self.screen.query_one("#add_filters", SlideBar).toggle_class(
@@ -117,7 +115,7 @@ class ChezmoiAdd(ModalScreen):
         super().__init__(**kwargs)
         self.path_to_add = path_to_add
         self.files_to_add: list[Path] = []
-        self.add_path_items: list[FileViewCollapsible] = []
+        self.add_path_items: list[Collapsible] = []
 
     def compose(self) -> ComposeResult:
         with VerticalScroll():
@@ -132,6 +130,9 @@ class ChezmoiAdd(ModalScreen):
                 ),
                 id="button_container",
             )
+
+    def compose_add_child(self, widget: Widget) -> None:
+        return super().compose_add_child(widget)
 
     def on_mount(self) -> None:
         self.files_to_add: list[Path] = []
@@ -150,7 +151,9 @@ class ChezmoiAdd(ModalScreen):
             self.add_label = "- Add Files -"
 
         for f in self.files_to_add:
-            self.add_path_items.append(FileViewCollapsible(file_path=f))
+            self.add_path_items.append(
+                Collapsible(FileView(f), title=str(f.relative_to(dest_dir)))
+            )
         self.refresh(recompose=True)
 
     def on_button_pressed(self, event: Button.Pressed):
@@ -164,24 +167,72 @@ class ChezmoiAdd(ModalScreen):
             self.screen.dismiss()
 
 
-class PrettyModal(ModalScreen):
+class GitLog(ModalScreen):
 
-    BINDINGS = [
-        Binding(key="escape", action="dismiss", description="close", show=True)
-    ]
-
-    def __init__(self, pretty_object: Pretty | DataTable) -> None:
-        self.pretty_object = pretty_object
-        super().__init__(classes="modalscreen")
+    BINDINGS = [Binding(key="escape", action="dismiss", description="close")]
 
     def compose(self) -> ComposeResult:
-        yield self.pretty_object
+        yield DataTable(
+            id="gitlogtable", show_cursor=False, classes="doctormodal"
+        )
+
+    def on_mount(self) -> None:
+        table = self.query_one("#gitlogtable", DataTable)
+        table.border_title = "chezmoi git log - command output"
+        table.border_subtitle = "escape to close"
+        styles = {
+            "ok": f"{self.app.current_theme.success}",
+            "warning": f"{self.app.current_theme.warning}",
+            "error": f"{self.app.current_theme.error}",
+            "info": f"{self.app.current_theme.foreground}",
+        }
+        table.add_columns("COMMIT", "MESSAGE")
+        for line in chezmoi.git_log.list_out:
+            columns = line.split(";")
+            if columns[1].split(maxsplit=1)[0] == "Add":
+                row = [
+                    Text(cell_text, style=f"{styles['ok']}")
+                    for cell_text in columns
+                ]
+                table.add_row(*row)
+            elif columns[1].split(maxsplit=1)[0] == "Update":
+                row = [
+                    Text(cell_text, style=f"{styles['warning']}")
+                    for cell_text in columns
+                ]
+                table.add_row(*row)
+            elif columns[1].split(maxsplit=1)[0] == "Remove":
+                row = [
+                    Text(cell_text, style=f"{styles['error']}")
+                    for cell_text in columns
+                ]
+                table.add_row(*row)
+            else:
+                table.add_row(*columns)
+
+
+class ConfigDump(ModalScreen):
+
+    BINDINGS = [Binding(key="escape", action="dismiss", description="close")]
+
+    def compose(self) -> ComposeResult:
+        yield Pretty(
+            chezmoi.dump_config.dict_out,
+            id="configdump",
+            classes="doctormodal",
+        )
+
+    def on_mount(self) -> None:
+        self.query_one("#configdump").border_title = (
+            "chezmoi dump-config - command output"
+        )
+        self.query_one("#configdump").border_subtitle = " escape to close "
 
 
 class DoctorTab(VerticalScroll):
 
     BINDINGS = [
-        Binding(key="V,v", action="open_config", description="chezmoi-config"),
+        Binding(key="C,c", action="open_config", description="chezmoi-config"),
         Binding(
             key="G,g",
             action="git_log",
@@ -190,21 +241,13 @@ class DoctorTab(VerticalScroll):
         ),
     ]
 
-    def __init__(self) -> None:
-        self.git_log = DataTable(
-            id="gitlog", classes="doctortable", show_cursor=False
-        )
-        super().__init__()
-
     def compose(self) -> ComposeResult:
 
-        yield DataTable(
-            id="doctortable", classes="doctortable", show_cursor=False
-        )
-        with VerticalGroup(classes="collapsiblegroup"):
-            yield Collapsible(
-                ListView(id="cmdnotfound"), title="Commands Not Found"
+        with Horizontal():
+            yield DataTable(
+                id="doctortable", classes="doctortable", show_cursor=False
             )
+        with VerticalGroup(classes="collapsiblegroup"):
             yield Collapsible(
                 Pretty(chezmoi.template_data.dict_out),
                 title="chezmoi data (template data)",
@@ -216,6 +259,9 @@ class DoctorTab(VerticalScroll):
             yield Collapsible(
                 Pretty(chezmoi.ignored.list_out),
                 title="chezmoi ignored (git ignore in source-dir)",
+            )
+            yield Collapsible(
+                ListView(id="cmdnotfound"), title="Commands Not Found"
             )
 
     def on_mount(self) -> None:
@@ -268,35 +314,14 @@ class DoctorTab(VerticalScroll):
                 row = [Text(cell_text) for cell_text in row]
                 table.add_row(*row)
 
-        self.git_log.add_columns("COMMIT", "MESSAGE")
-        for line in chezmoi.git_log.list_out:
-            columns = line.split(";")
-            if columns[1].split(maxsplit=1)[0] == "Add":
-                row = [
-                    Text(cell_text, style=f"{styles['ok']}")
-                    for cell_text in columns
-                ]
-                self.git_log.add_row(*row)
-            elif columns[1].split(maxsplit=1)[0] == "Update":
-                row = [
-                    Text(cell_text, style=f"{styles['warning']}")
-                    for cell_text in columns
-                ]
-                self.git_log.add_row(*row)
-            elif columns[1].split(maxsplit=1)[0] == "Remove":
-                row = [
-                    Text(cell_text, style=f"{styles['error']}")
-                    for cell_text in columns
-                ]
-                self.git_log.add_row(*row)
-            else:
-                self.git_log.add_row(*columns)
+    def on_resize(self) -> None:
+        self.query_one("#doctortable", DataTable).focus()
 
     def action_open_config(self) -> None:
-        self.app.push_screen(PrettyModal(Pretty(chezmoi.dump_config.dict_out)))
+        self.app.push_screen(ConfigDump())
 
     def action_git_log(self) -> None:
-        self.app.push_screen(PrettyModal(self.git_log))
+        self.app.push_screen(GitLog())
 
 
 class ApplyTab(VerticalScroll):
@@ -322,7 +347,7 @@ class ApplyTab(VerticalScroll):
     def compose(self) -> ComposeResult:
         with VerticalScroll():
             yield ChezmoiStatus(apply=True)
-            yield Horizontal(ApplyTree(), ReactiveFileView(id="apply_file"))
+            yield Horizontal(ApplyTree(), FileView(id="apply_file"))
         yield SlideBar(filter_key="apply_tab", tab_filters_id="apply_filters")
 
     def action_toggle_slidebar(self):
@@ -337,9 +362,7 @@ class ApplyTab(VerticalScroll):
     @on(ApplyTree.NodeSelected)
     def update_preview_path(self, event: ApplyTree.NodeSelected) -> None:
         if event.node.data is not None and event.node.data.path is not None:
-            self.query_exactly_one(ReactiveFileView).file_path = (
-                event.node.data.path
-            )
+            self.query_exactly_one(FileView).file_path = event.node.data.path
 
     @on(Switch.Changed)
     def notify_apply_tree(self, event: Switch.Changed) -> None:
@@ -370,7 +393,7 @@ class ReAddTab(VerticalScroll):
     def compose(self) -> ComposeResult:
         with VerticalScroll():
             yield ChezmoiStatus(apply=False)
-            yield Horizontal(ReAddTree(), ReactiveFileView())
+            yield Horizontal(ReAddTree(), FileView())
 
         yield SlideBar(
             filter_key="re_add_tab", tab_filters_id="re_add_filters"
@@ -388,11 +411,9 @@ class ReAddTab(VerticalScroll):
     @on(ReAddTree.NodeSelected)
     def update_preview_path(self, event: ReAddTree.NodeSelected) -> None:
         if event.node.data is not None:
-            self.query_exactly_one(ReactiveFileView).file_path = (
-                event.node.data.path
-            )
+            self.query_exactly_one(FileView).file_path = event.node.data.path
         else:
-            self.query_exactly_one(ReactiveFileView).file_path = None
+            self.query_exactly_one(FileView).file_path = None
 
     @on(Switch.Changed)
     def notify_re_add_tree(self, event: Switch.Changed) -> None:

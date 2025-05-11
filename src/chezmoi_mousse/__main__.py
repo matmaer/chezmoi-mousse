@@ -17,6 +17,7 @@ from rich.console import RenderableType
 
 
 def _handle_tooltip_timer(self, widget: Widget) -> None:
+    """Make the tooltip display temporarily when the mouse is over a widget."""
 
     try:
         tooltip = self.get_child_by_type(Tooltip)
@@ -42,6 +43,8 @@ def _handle_tooltip_timer(self, widget: Widget) -> None:
 
 
 class CustomScrollBarRender(ScrollBarRender):
+    """Enable slim horizontal scrollbar."""
+
     SLIM_HORIZONTAL_BAR = "▃"
 
     @classmethod
