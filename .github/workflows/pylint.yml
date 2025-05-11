@@ -1,5 +1,4 @@
-name: Pylint and Pip Audit
-
+name: Pylint
 on:
   push:
     branches:
