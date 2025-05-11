@@ -207,3 +207,6 @@ class Chezmoi:
         if apply:
             return subprocess_run(long_command).splitlines()
         return subprocess_run(long_command + ["--reverse"]).splitlines()
+
+    def cat(self, file_path: str) -> str:
+        return subprocess_run(self.base + ["cat"] + [file_path])
