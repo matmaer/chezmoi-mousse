@@ -26,8 +26,9 @@ jobs:
 
       - name: Run pylint
         if: matrix.test-type == 'pylint'
-        run: pylint chezmoi_mousse
+        run: |
+                pylint -E $(git ls-files 'src/*.py')
 
       - name: Run pip-audit
         if: matrix.test-type == 'pip-audit'
-        run: pip-audit
+        run: pip-audit $(git ls-files 'src/*.py')
