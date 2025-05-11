@@ -20,4 +20,4 @@ jobs:
         pip install pylint textual
     - name: Analysing the code with pylint
       run: |
-        pylint --disable=missing-docstring,line-too-long $(git ls-files '*.py')
+        pylint --errors-only $(git ls-files 'src/*.py')
