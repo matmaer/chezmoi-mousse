@@ -381,7 +381,7 @@ class TabFilters(VerticalGroup):
         self.refresh(recompose=True)
 
 
-class SlideBar(Container):
+class FilterBar(Container):
 
     def __init__(self, filter_key: str, tab_filters_id: str) -> None:
         self.filter_key = filter_key

@@ -136,10 +136,10 @@ LoadingScreen {
 }
 
 Screen {
-  layers: slidebar_layer;
+  layers: filterbar_layer;
 }
 
-SlideBar {
+FilterBar {
   color: $foreground-darken-2;
   background-tint: $surface;
   background: $surface;
@@ -150,7 +150,7 @@ SlideBar {
   border-top: inner $primary-muted;
   dock: bottom;
   height: auto;
-  layer: slidebar_layer;
+  layer: filterbar_layer;
   padding-top: 1;
   width: auto;
   /* max-width to keep the switches in view, labels overflow first */

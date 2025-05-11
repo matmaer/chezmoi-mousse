@@ -37,7 +37,7 @@ from chezmoi_mousse.components import (
     FilteredDirTree,
     FileView,
     ReAddTree,
-    SlideBar,
+    FilterBar,
 )
 from chezmoi_mousse.config import pw_mgr_info
 
@@ -47,7 +47,7 @@ class AddTab(Container):
     BINDINGS = [
         Binding(
             key="F,f",
-            action="toggle_slidebar",
+            action="toggle_filterbar",
             description="filters",
             tooltip="show/hide filters",
         ),
@@ -69,7 +69,7 @@ class AddTab(Container):
                 dest_dir, classes="dir-tree any-tree", id="filtered_dir_tree"
             )
             yield FileView()
-        yield SlideBar(filter_key="add_tab", tab_filters_id="add_filters")
+        yield FilterBar(filter_key="add_tab", tab_filters_id="add_filters")
 
     def on_mount(self) -> None:
         dir_tree = self.query_one("#filtered_dir_tree", FilteredDirTree)
@@ -81,8 +81,8 @@ class AddTab(Container):
         if event.node.data is not None:
             self.query_exactly_one(FileView).file_path = event.node.data.path
 
-    def action_toggle_slidebar(self):
-        self.screen.query_one("#add_filters", SlideBar).toggle_class(
+    def action_toggle_filterbar(self):
+        self.screen.query_one("#add_filters", FilterBar).toggle_class(
             "-visible"
         )
 
@@ -329,7 +329,7 @@ class ApplyTab(VerticalScroll):
     BINDINGS = [
         Binding(
             key="F,f",
-            action="toggle_slidebar",
+            action="toggle_filterbar",
             description="filters",
             tooltip="show/hide filters",
         ),
@@ -348,10 +348,10 @@ class ApplyTab(VerticalScroll):
         with VerticalScroll():
             yield ChezmoiStatus(apply=True)
             yield Horizontal(ApplyTree(), FileView(id="apply_file"))
-        yield SlideBar(filter_key="apply_tab", tab_filters_id="apply_filters")
+        yield FilterBar(filter_key="apply_tab", tab_filters_id="apply_filters")
 
-    def action_toggle_slidebar(self):
-        self.query_one("#apply_filters", SlideBar).toggle_class("-visible")
+    def action_toggle_filterbar(self):
+        self.query_one("#apply_filters", FilterBar).toggle_class("-visible")
 
     def action_apply_path(self) -> None:
         self.notify("will apply path")
@@ -378,7 +378,7 @@ class ReAddTab(VerticalScroll):
     BINDINGS = [
         Binding(
             key="F,f",
-            action="toggle_slidebar",
+            action="toggle_filterbar",
             description="filters",
             tooltip="show/hide filters",
         ),
@@ -395,12 +395,12 @@ class ReAddTab(VerticalScroll):
             yield ChezmoiStatus(apply=False)
             yield Horizontal(ReAddTree(), FileView())
 
-        yield SlideBar(
+        yield FilterBar(
             filter_key="re_add_tab", tab_filters_id="re_add_filters"
         )
 
-    def action_toggle_slidebar(self):
-        self.query_one("#re_add_filters", SlideBar).toggle_class("-visible")
+    def action_toggle_filterbar(self):
+        self.query_one("#re_add_filters", FilterBar).toggle_class("-visible")
 
     def action_re_add_path(self) -> None:
         self.notify("will re-add path")
