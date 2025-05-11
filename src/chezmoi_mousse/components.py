@@ -60,6 +60,8 @@ class AutoWarning(Static):
 class FileView(RichLog):
     """RichLog widget to display the content of a file with highlighting."""
 
+    file_path: reactive[Path | None] = reactive(None)
+
     def __init__(self, file_path: Path | None = None, **kwargs) -> None:
         super().__init__(
             auto_scroll=False, highlight=True, classes="file-preview", **kwargs
@@ -94,14 +96,6 @@ class FileView(RichLog):
                 else:
                     self.write(error.strerror)
 
-
-class ReactiveFileView(FileView):
-    """Reactive version of FileView with reactive file path.
-    This is useful because FileView is also used in a non-reactive context
-    """
-
-    file_path: reactive[Path | None] = reactive(None)
-
     def watch_file_path(self) -> None:
         if self.file_path is not None:
             self.clear()
@@ -116,7 +110,7 @@ class FileViewCollapsible(Collapsible):
 
     def __init__(self, file_path: Path | None = None) -> None:
         self.file_path = file_path
-        super().__init__(ReactiveFileView(self.file_path))
+        super().__init__(FileView(self.file_path))
 
     def on_mount(self) -> None:
         if self.file_path is not None:

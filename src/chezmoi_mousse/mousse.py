@@ -35,7 +35,7 @@ from chezmoi_mousse.components import (
     ChezmoiStatus,
     FileViewCollapsible,
     FilteredDirTree,
-    ReactiveFileView,
+    FileView,
     ReAddTree,
     SlideBar,
 )
@@ -68,7 +68,7 @@ class AddTab(Container):
             yield FilteredDirTree(
                 dest_dir, classes="dir-tree any-tree", id="filtered_dir_tree"
             )
-            yield ReactiveFileView()
+            yield FileView()
         yield SlideBar(filter_key="add_tab", tab_filters_id="add_filters")
 
     def on_mount(self) -> None:
@@ -79,9 +79,7 @@ class AddTab(Container):
     @on(FilteredDirTree.FileSelected)
     def update_preview_path(self, event: FilteredDirTree.FileSelected) -> None:
         if event.node.data is not None:
-            self.query_exactly_one(ReactiveFileView).file_path = (
-                event.node.data.path
-            )
+            self.query_exactly_one(FileView).file_path = event.node.data.path
 
     def action_toggle_slidebar(self):
         self.screen.query_one("#add_filters", SlideBar).toggle_class(
@@ -344,7 +342,7 @@ class ApplyTab(VerticalScroll):
     def compose(self) -> ComposeResult:
         with VerticalScroll():
             yield ChezmoiStatus(apply=True)
-            yield Horizontal(ApplyTree(), ReactiveFileView(id="apply_file"))
+            yield Horizontal(ApplyTree(), FileView(id="apply_file"))
         yield SlideBar(filter_key="apply_tab", tab_filters_id="apply_filters")
 
     def action_toggle_slidebar(self):
@@ -359,9 +357,7 @@ class ApplyTab(VerticalScroll):
     @on(ApplyTree.NodeSelected)
     def update_preview_path(self, event: ApplyTree.NodeSelected) -> None:
         if event.node.data is not None and event.node.data.path is not None:
-            self.query_exactly_one(ReactiveFileView).file_path = (
-                event.node.data.path
-            )
+            self.query_exactly_one(FileView).file_path = event.node.data.path
 
     @on(Switch.Changed)
     def notify_apply_tree(self, event: Switch.Changed) -> None:
@@ -392,7 +388,7 @@ class ReAddTab(VerticalScroll):
     def compose(self) -> ComposeResult:
         with VerticalScroll():
             yield ChezmoiStatus(apply=False)
-            yield Horizontal(ReAddTree(), ReactiveFileView())
+            yield Horizontal(ReAddTree(), FileView())
 
         yield SlideBar(
             filter_key="re_add_tab", tab_filters_id="re_add_filters"
@@ -410,11 +406,9 @@ class ReAddTab(VerticalScroll):
     @on(ReAddTree.NodeSelected)
     def update_preview_path(self, event: ReAddTree.NodeSelected) -> None:
         if event.node.data is not None:
-            self.query_exactly_one(ReactiveFileView).file_path = (
-                event.node.data.path
-            )
+            self.query_exactly_one(FileView).file_path = event.node.data.path
         else:
-            self.query_exactly_one(ReactiveFileView).file_path = None
+            self.query_exactly_one(FileView).file_path = None
 
     @on(Switch.Changed)
     def notify_re_add_tree(self, event: Switch.Changed) -> None:
