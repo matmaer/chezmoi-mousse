@@ -273,15 +273,15 @@ Tree {
   border-title-align: center;
   border-title-style: bold;
   text-style: none;
-  width: 2fr;
 }
 
 .any-tree {
+  max-width: 33%;
   padding-left: 1;
   border-top: tab $scrollbar;
   border-title-align: center;
   border-title-style: bold;
-  width: 1fr;
+  width: auto;
   margin-right: 2;
 }
 
