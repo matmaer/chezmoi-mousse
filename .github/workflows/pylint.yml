@@ -31,4 +31,4 @@ jobs:
 
       - name: Run pip-audit
         if: matrix.test-type == 'pip-audit'
-        run: pip-audit --auto
+        run: pip-audit
