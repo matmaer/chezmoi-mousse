@@ -36,41 +36,13 @@ The app is not packaged yet, can be run as a module with python and `textual`.
 - [x] `chezmoi add`
 - [ ] `chezmoi apply`
 - [ ] `chezmoi re-add`
-- [ ] `chezmoi forget`
-- [ ] `chezmoi destroy`
-- ...
-
-### Chezmoi features
-
-- [ ] autopush option switch
-- [ ] autcommit option switch
-- [x] support for regular files
-- [ ] support for chezmoi templates
-
-### Development overhead
-
-- [x] Setup development environment
-  - [x] Develop in rootless container which includes the chezmoi command
-  - [x] Create vscode workspace with integrated `textual-dev` tooling
-  - [x] Test relevant vscode extensions
-  - [x] Setup linting
-  - [x] Setup formatting
-  - [x] Setup `pre-commit` hooks.
-  - [ ] Setup pytest
-  - [ ] Setup profiling
-  - [ ] Packaging
-    - [x] Manage project venvs with `uv`
-  - [ ] Release pipeline
-    - [x] Implement basic `pytest` testing
-    - [ ] Coverage
 
 
-## General goals
+## General goals for a first release
 
 - leverage `textual` features for concise and rich visualizations
 - made for existing chezmoi users
-- only support interactive operations
-- rich visualization of state
+- only support interactive operations for regular files
 - improve understanding of chezmoi by using the TUI
 - make subprocess calls as safe as possible
 - "loading" screen for initial app startup and pre-flight checks
