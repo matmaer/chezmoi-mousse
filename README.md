@@ -1,12 +1,4 @@
-![Python 3.11](https://github.com/matmaer/chezmoi-mousse/actions/workflows/python.yml/badge.svg?branch=master&event=push&matrix.python-version=3.11)
-![Python 3.12](https://github.com/matmaer/chezmoi-mousse/actions/workflows/python.yml/badge.svg?branch=master&event=push&matrix.python-version=3.12)
-![Python 3.13](https://github.com/matmaer/chezmoi-mousse/actions/workflows/python.yml/badge.svg?branch=master&event=push&matrix.python-version=3.13)
-
-
 [![Pylint](https://github.com/matmaer/chezmoi-mousse/actions/workflows/pylint.yml/badge.svg?branch=master)](https://github.com/matmaer/chezmoi-mousse/actions/workflows/pylint.yml)
-[![Pylint](https://github.com/matmaer/chezmoi-mousse/actions/workflows/pylint.yml/badge.svg?branch=master&test-type=pylint)](https://github.com/matmaer/chezmoi-mousse/actions/workflows/pylint.yml)
-[![Pylint](https://github.com/matmaer/chezmoi-mousse/actions/workflows/pylint.yml/badge.svg?branch=master&test-type=pip-audit)](https://github.com/matmaer/chezmoi-mousse/actions/workflows/pylint.yml)
-
 
 
 terminal user interface for [chezmoi](https://github.com/twpayne/chezmoi), pretty print its environment and starting operations from the relevant visualized components. Built with [textual](https://github.com/Textualize/textual) and [rich](https://github.com/Textualize/rich), see [Textualize](https://www.textualize.io/).
