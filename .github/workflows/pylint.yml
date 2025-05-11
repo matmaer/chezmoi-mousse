@@ -10,22 +10,21 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.12", "3.13"]
+        python-version: ["3.11", "3.12", "3.13"]
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - uses: actions/checkout@v4
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pylint textual
+    - name: Run pylint
+      run: |
+        pylint -E $(git ls-files 'src/*.py')
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      - name: Install dependencies
-        run: pip install pylint pip-audit textual
-
-      - name: Run pylint
-        run: |
-          pylint -E $(git ls-files '*.py') # Adjusted to check all Python files
-
-      - name: Run pip-audit
-        run: pip-audit
+    - name: Run pip-audit
+      run: |
+        pip-audit
