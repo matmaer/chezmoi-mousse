@@ -26,6 +26,8 @@ from textual.widgets import (
     Switch,
     Tree,
 )
+from textual.widgets.tree import TreeNode
+
 
 from chezmoi_mousse import chezmoi, dest_dir
 from chezmoi_mousse.config import filter_switch_data, status_info, unwanted
@@ -207,71 +209,73 @@ class ManagedTree(Tree):
         status: str = "X"
 
     def __init__(
-        self, apply: bool, file_paths: set[Path] = set(), **kwargs
+        self,
+        apply: bool,
+        file_paths: list[Path],
+        dir_paths: list[Path],
+        status_paths: dict[Path, str],
+        **kwargs,
     ) -> None:
         self.apply = apply
-        self.file_paths = file_paths
+        self.file_paths: list[Path] = file_paths
+        self.dir_paths: list[Path] = dir_paths
+        self.status_paths: dict[Path, str] = status_paths
         super().__init__(label="root_node", classes="any-tree", **kwargs)
 
     def on_mount(self) -> None:
 
-        status_paths = (
-            chezmoi.apply_status_file_paths
-            if self.apply
-            else chezmoi.re_add_status_file_paths
-        )
+        print(f"Mounting {self.__class__.__name__} tree")
 
-        # Collect all directories (including intermediate ones)
-        all_dirs = {dest_dir}
-        for file_path in self.file_paths:
-            current = file_path.parent
-            while current not in all_dirs and current != current.parent:
-                all_dirs.add(current)
-                current = current.parent
+        self.root.data = ManagedTree.NodeData(path=dest_dir)
+        self.root.label = str(dest_dir)
 
-        def add_nodes(parent_node, node_data: ManagedTree.NodeData) -> None:
-            # Add directory nodes
-            if node_data.path == dest_dir:
-                parent_node = self.root
-                parent_node.data = node_data
-                self.root.label = str(node_data.path)
-            else:
-                parent_node = parent_node.add(node_data.path.name, node_data)
-                parent_node.set_label(
-                    Text(node_data.path.name, style=self.node_colors["Dir"])
-                )
-
-            # Add files in the current directory
-            for file_path in (
-                f for f in self.file_paths if f.parent == node_data.path
-            ):
-                node_label = Text(file_path.name, Style(dim=True))
-                node_data_data = ManagedTree.NodeData(
-                    path=file_path, is_file=True
-                )
-                if file_path in status_paths:
-                    node_data_data.status = status_paths[file_path]
-                    node_label = Text(
-                        file_path.name,
-                        style=self.node_colors[node_data_data.status],
-                    )
-
-                file_node = parent_node.add_leaf(
-                    file_path.name, node_data_data
-                )
-                file_node.set_label(node_label)
-
-            # Add subdirectories
-            for sub_dir in (d for d in all_dirs if d.parent == node_data.path):
-                node_data_data = ManagedTree.NodeData(path=sub_dir)
-                add_nodes(parent_node, node_data_data)
-
-        # Build the tree starting from dest_dir
-        initial_node_data = ManagedTree.NodeData(path=dest_dir)
-        add_nodes(self.root, initial_node_data)
-        self.show_root = False
         self.border_title = f" {dest_dir} "
+        # self.show_root = False
         self.root.expand()
+
+    def add_child_nodes(self, tree_node: TreeNode) -> None:
+        # collect subdirectories to add based on the tree_node parameter
+        sub_dirs = [
+            d
+            for d in self.dir_paths
+            if tree_node.data is not None and d.parent == tree_node.data.path
+        ]
+        for dir_path in sub_dirs:
+            node_data = ManagedTree.NodeData(path=dir_path)
+            node_label = Text(dir_path.name, style=self.node_colors["Dir"])
+            tree_node.add(node_label, node_data)
+
+        # collect files to add based on the tree_node parameter
+        file_children = [
+            f
+            for f in self.file_paths
+            if tree_node.data is not None and f.parent == tree_node.data.path
+        ]
+        for file_path in file_children:
+            node_data = ManagedTree.NodeData(path=file_path, is_file=True)
+            new_leaf = tree_node.add_leaf(file_path.name, node_data)
+
+            if file_path in self.status_paths:
+                node_data.status = self.status_paths[file_path]
+                node_label = Text(
+                    file_path.name, style=self.node_colors[node_data.status]
+                )
+            else:
+                node_label = Text(file_path.name, Style(dim=True))
+
+            new_leaf.set_label(node_label)
+
+    @on(Tree.NodeExpanded)
+    def populate_directory(self, event: Tree.NodeExpanded) -> None:
+
+        print(f"Node expanded: {event.node.label}")
+        self.add_child_nodes(event.node)
+
+    @on(Tree.NodeCollapsed)
+    def clear_all_children(self, event: Tree.NodeExpanded) -> None:
+
+        print(f"Node collapsed: {event.node.label}")
+        event.node.remove_children()
 
 
 class ApplyTree(ManagedTree):
@@ -281,18 +285,25 @@ class ApplyTree(ManagedTree):
     changed_files: reactive[bool] = reactive(False, always_update=True)
 
     def __init__(self) -> None:
-        super().__init__(apply=True, file_paths=chezmoi.managed_file_paths)
+        self.file_paths: list[Path] | None = None
+        self.dir_paths: list[Path] | None = None
+        self.status_paths: dict[Path, str] = {}
+        super().__init__(
+            apply=True, file_paths=[], dir_paths=[], status_paths={}
+        )
 
     def on_mount(self) -> None:
-        self.file_paths = chezmoi.managed_file_paths
+        # do not use chezmoi.managed_file_paths attribute as the
+        # items in the tree will not be sorted using a set
+        self.file_paths = [Path(p) for p in chezmoi.managed_files.list_out]
+        self.dir_paths = [Path(p) for p in chezmoi.managed_dirs.list_out]
+        self.status_paths = chezmoi.apply_status_file_paths
 
     def watch_missing(self) -> None:
-        self.notify(f"new value for missing in {self} = {self.missing}")
+        print(f"new value for missing in {self} = {self.missing}")
 
     def watch_changed_files(self) -> None:
-        self.notify(
-            f"new value for changed_files in {self} = {self.changed_files}"
-        )
+        print(f"new value for changed_files in {self} = {self.changed_files}")
 
 
 class ReAddTree(ManagedTree):
@@ -301,17 +312,26 @@ class ReAddTree(ManagedTree):
     changed_files: reactive[bool] = reactive(False, always_update=True)
 
     def __init__(self) -> None:
+        self.file_paths: list[Path] | None = None
+        self.dir_paths: list[Path] | None = None
+        self.status_paths: dict[Path, str] = {}
         super().__init__(
-            apply=False, file_paths=chezmoi.existing_managed_file_paths
+            apply=False, file_paths=[], dir_paths=[], status_paths={}
         )
 
     def on_mount(self) -> None:
-        self.file_paths = chezmoi.managed_file_paths
+        # do not use chezmoi.managed_file_paths attribute as the
+        # items in the tree will not be sorted using a set
+        self.file_paths = [
+            Path(p) for p in chezmoi.managed_files.list_out if Path(p).exists()
+        ]
+        self.dir_paths = [
+            Path(p) for p in chezmoi.managed_dirs.list_out if Path(p).exists()
+        ]
+        self.status_paths = chezmoi.re_add_status_file_paths
 
     def watch_changed_files(self) -> None:
-        self.notify(
-            f"new value for changed files in {self} = {self.changed_files}"
-        )
+        print(f"new value for changed files in {self} = {self.changed_files}")
 
 
 class ChezmoiStatus(VerticalScroll):
