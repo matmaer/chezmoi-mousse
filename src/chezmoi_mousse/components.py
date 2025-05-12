@@ -378,6 +378,8 @@ class ApplyTree(ManagedTree):
             ]
             self.dir_paths = self.dir_paths
 
+        self.show_root = False
+        self.border_title = f" {chezmoi.dest_dir} "
         self.root.expand()
 
     def create_parent_dir_list(
