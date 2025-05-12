@@ -365,8 +365,7 @@ class ApplyTab(VerticalScroll):
 
     @on(ApplyTree.NodeSelected)
     def update_preview_path(self, event: ApplyTree.NodeSelected) -> None:
-        if event.node.data is not None and event.node.data.path is not None:
-            self.query_exactly_one(FileView).file_path = event.node.data.path
+        self.query_exactly_one(FileView).file_path = event.node.data.path  # type: ignore
 
     @on(Switch.Changed)
     def notify_apply_tree(self, event: Switch.Changed) -> None:
