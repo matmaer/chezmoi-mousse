@@ -268,47 +268,11 @@ class ManagedTree(Tree):
 
             new_leaf.set_label(node_label)
 
-    def remove_nodes(self) -> None:
-        nodes_with_leaves = {self.root}
-        nodes_without_leaves = set()
-        parent_nodes_of_leaves = set()
-
-        def classify_nodes(node: TreeNode) -> None:
-            has_leaf = False
-            has_non_leaf_child = False
-
-            for child in node.children:
-                if child.data and child.data.is_file:
-                    has_leaf = True
-                    nodes_with_leaves.add(node)
-                    if node.parent is not None:
-                        parent_nodes_of_leaves.add(node.parent)
-                else:
-                    has_non_leaf_child = True
-                    classify_nodes(child)
-
-            # Only classify as "without leaves" if the node has no leaf children and no non-leaf children
-            if not has_leaf and not has_non_leaf_child:
-                nodes_without_leaves.add(node)
-
-        # Collect unique parents of leaf nodes
-        parent_nodes_of_leaves = {
-            node.parent
-            for node in nodes_with_leaves
-            if node.parent is not None
-        }
-
-        # Remove nodes without leaves unless they are in the parent list
-        for node in nodes_without_leaves:
-            if node not in parent_nodes_of_leaves:
-                node.remove()
-
     @on(Tree.NodeExpanded)
     def populate_directory(self, event: Tree.NodeExpanded) -> None:
 
         print(f"Node expanded: {event.node.label}")
         self.add_child_nodes(event.node)
-        self.remove_nodes()
 
     @on(Tree.NodeCollapsed)
     def clear_all_children(self, event: Tree.NodeExpanded) -> None:
