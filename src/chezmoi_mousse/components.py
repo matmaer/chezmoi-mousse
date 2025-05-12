@@ -204,7 +204,15 @@ class FilteredDirTree(DirectoryTree):
             )
 
 
-class ManagedTree(Tree):
+@dataclass
+class NodeData:
+    path: Path
+    exists: bool = True
+    is_file: bool = False
+    status: str = "X"
+
+
+class ManagedTree(Tree[NodeData]):
 
     # TODO: default color should be updated on theme change
     node_colors = {
@@ -214,13 +222,6 @@ class ManagedTree(Tree):
         "M": "#FFC473",  # text-warning
     }
 
-    @dataclass
-    class NodeData:
-        path: Path
-        exists: bool = True
-        is_file: bool = False
-        status: str = "X"
-
     def __init__(
         self,
         file_paths: list[Path],
@@ -229,7 +230,7 @@ class ManagedTree(Tree):
         status_dirs: dict[Path, str],
         **kwargs,
     ) -> None:
-        root_data = ManagedTree.NodeData(path=chezmoi.dest_dir)
+        root_data = NodeData(path=chezmoi.dest_dir)
         root_label = str(chezmoi.dest_dir)
         super().__init__(
             data=root_data, label=root_label, classes="any-tree", **kwargs
@@ -240,61 +241,43 @@ class ManagedTree(Tree):
         self.status_dirs: dict[Path, str] = status_dirs
 
     def color_file(self, file_node: TreeNode) -> None:
+        assert isinstance(file_node.data, NodeData)
         """Color file node (leaf) based on its status."""
-        if file_node.data.path in self.status_files:  # type: ignore
+        if file_node.data.path in self.status_files:
 
             file_node.set_label(
                 Text(
                     str(file_node.label),
-                    style=self.node_colors[file_node.data.status],  # type: ignore
+                    style=self.node_colors[file_node.data.status],
                 )
             )
         else:
             file_node.set_label(Text(str(file_node.label), Style(dim=True)))
 
-    # def update_all_expanded_nodes(self) -> list[TreeNode]:
-    #     """Update all expanded nodes in the tree."""
-
-    #     def collect_expanded_nodes(
-    #         node: TreeNode, expanded_nodes: list[TreeNode]
-    #     ) -> None:
-    #         if node.is_expanded:
-    #             expanded_nodes.append(node)
-    #             for child in node.children:
-    #                 collect_expanded_nodes(child, expanded_nodes)
-
-    #     expanded_nodes = []
-    #     collect_expanded_nodes(self.root, expanded_nodes)
-    #     print(f"Expanded nodes: {[node for node in expanded_nodes]}")
-    #     return expanded_nodes
-
     def add_child_nodes(self, tree_node: TreeNode) -> None:
+        assert isinstance(tree_node.data, NodeData)
         # collect subdirectories to add based on the tree_node parameter
         sub_dirs = [
-            d
-            for d in self.dir_paths
-            if d.parent == tree_node.data.path  # type: ignore
+            d for d in self.dir_paths if d.parent == tree_node.data.path
         ]
         for dir_path in sub_dirs:
-            node_data = ManagedTree.NodeData(path=dir_path)
+            node_data = NodeData(path=dir_path)
             node_label = Text(dir_path.name, style=self.node_colors["Dir"])
             tree_node.add(node_label, node_data)
 
         # collect files to add based on the tree_node parameter
         file_children = [
-            f
-            for f in self.file_paths
-            if f.parent == tree_node.data.path  # type: ignore
+            f for f in self.file_paths if f.parent == tree_node.data.path
         ]
         for file_path in file_children:
-            node_data = ManagedTree.NodeData(path=file_path, is_file=True)
+
+            node_data = NodeData(path=file_path, is_file=True)
             new_leaf = tree_node.add_leaf(file_path.name, node_data)
 
-            if new_leaf.data.path in self.status_files:  # type: ignore
+            assert isinstance(new_leaf.data, NodeData)
 
+            if new_leaf.data.path in self.status_files:
                 self.color_file(new_leaf)
-            else:
-                new_leaf.set_label(Text(file_path.name, Style(dim=True)))
 
     @on(Tree.NodeExpanded)
     def populate_directory(self, event: Tree.NodeExpanded) -> None:
@@ -386,10 +369,11 @@ class ApplyTree(ManagedTree):
         self, file_paths_to_process: list[Path]
     ) -> list[Path]:
         """Create a list of all parent directories for the given file paths."""
+        assert isinstance(self.root.data, NodeData)
         parent_dirs = set()
         for file_path in file_paths_to_process:
             current_path = file_path.parent
-            while current_path != self.root.data.path:  # type: ignore
+            while current_path != self.root.data.path:
                 if current_path not in parent_dirs:
                     parent_dirs.add(current_path)
                 current_path = current_path.parent
