@@ -239,6 +239,22 @@ class ManagedTree(Tree):
         self.status_files: dict[Path, str] = status_files
         self.status_dirs: dict[Path, str] = status_dirs
 
+    def update_all_expanded_nodes(self) -> list[TreeNode]:
+        """Update all expanded nodes in the tree."""
+
+        def collect_expanded_nodes(
+            node: TreeNode, expanded_nodes: list[TreeNode]
+        ) -> None:
+            if node.is_expanded:
+                expanded_nodes.append(node)
+                for child in node.children:
+                    collect_expanded_nodes(child, expanded_nodes)
+
+        expanded_nodes = []
+        collect_expanded_nodes(self.root, expanded_nodes)
+        print(f"Expanded nodes: {[node for node in expanded_nodes]}")
+        return expanded_nodes
+
     def add_child_nodes(self, tree_node: TreeNode) -> None:
         # collect subdirectories to add based on the tree_node parameter
         sub_dirs = [
@@ -308,8 +324,10 @@ class ApplyTree(ManagedTree):
         # Initialize paths and status data
         self.file_paths = sorted(list(chezmoi.managed_file_paths))
         self.dir_paths = sorted(list(chezmoi.managed_dir_paths))
-        self.status_paths: dict[Path, str] = chezmoi.status_paths.apply_files
-        self.status_dirs: dict[Path, str] = chezmoi.status_paths.apply_dirs
+        self.status_paths: dict[Path, str] = chezmoi.status_paths[
+            "apply_files"
+        ]
+        self.status_dirs: dict[Path, str] = chezmoi.status_paths["apply_dirs"]
 
         print(f"Mounting {self.__class__.__name__} tree")
 
@@ -318,7 +336,7 @@ class ApplyTree(ManagedTree):
             self.file_paths = [
                 f
                 for f in self.file_paths
-                if f in chezmoi.status_paths.apply_files
+                if f in chezmoi.status_paths["apply_files"]
             ]
             parent_dirs = self.create_parent_dir_list(self.file_paths)
             status_dirs = [d for d in self.dir_paths if d in self.status_dirs]
@@ -334,7 +352,7 @@ class ApplyTree(ManagedTree):
             self.file_paths = [
                 f
                 for f in self.file_paths
-                if f in chezmoi.status_paths.apply_files and not f.exists()
+                if f in chezmoi.status_paths["apply_files"] and not f.exists()
             ]
             dirs_to_include = self.create_parent_dir_list(self.file_paths)
             managed_dirs_with_status = [
@@ -347,7 +365,7 @@ class ApplyTree(ManagedTree):
             self.file_paths = [
                 f
                 for f in self.file_paths
-                if f in chezmoi.status_paths.apply_files or not f.exists()
+                if f in chezmoi.status_paths["apply_files"] or not f.exists()
             ]
             self.dir_paths = self.dir_paths
 
@@ -391,9 +409,9 @@ class ChezmoiStatus(VerticalScroll):
     def on_mount(self) -> None:
         # status can be a space so not using str.split() or str.strip()
         status_paths = (
-            chezmoi.status_paths.apply_files
+            chezmoi.status_paths["apply_files"]
             if self.apply
-            else chezmoi.status_paths.re_add_files
+            else chezmoi.status_paths["re_add_files"]
         )
 
         for file_path, status_code in status_paths.items():
