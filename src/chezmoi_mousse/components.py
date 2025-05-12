@@ -223,9 +223,10 @@ class ManagedTree(Tree):
 
     def __init__(
         self,
-        status_paths: dict[Path, str],
         file_paths: list[Path],
         dir_paths: list[Path],
+        status_files: dict[Path, str],
+        status_dirs: dict[Path, str],
         **kwargs,
     ) -> None:
         root_data = ManagedTree.NodeData(path=chezmoi.dest_dir)
@@ -233,9 +234,10 @@ class ManagedTree(Tree):
         super().__init__(
             data=root_data, label=root_label, classes="any-tree", **kwargs
         )
-        self.status_paths: dict[Path, str] = status_paths
         self.file_paths: list[Path] = file_paths
         self.dir_paths: list[Path] = dir_paths
+        self.status_files: dict[Path, str] = status_files
+        self.status_dirs: dict[Path, str] = status_dirs
 
     def add_child_nodes(self, tree_node: TreeNode) -> None:
         # collect subdirectories to add based on the tree_node parameter
@@ -259,8 +261,8 @@ class ManagedTree(Tree):
             node_data = ManagedTree.NodeData(path=file_path, is_file=True)
             new_leaf = tree_node.add_leaf(file_path.name, node_data)
 
-            if file_path in self.status_paths:
-                node_data.status = self.status_paths[file_path]
+            if file_path in self.status_files:
+                node_data.status = self.status_files[file_path]
                 node_label = Text(
                     file_path.name, style=self.node_colors[node_data.status]
                 )
@@ -284,30 +286,29 @@ class ManagedTree(Tree):
 class ApplyTree(ManagedTree):
     """Tree for managing 'apply' operations."""
 
-    only_missing: reactive[bool] = reactive(False, always_update=True)
-    include_unchanged_files: reactive[bool] = reactive(
-        False, always_update=True
-    )
+    only_missing: reactive[bool] = reactive(False, init=False)
+    include_unchanged_files: reactive[bool] = reactive(False, init=False)
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self) -> None:
         # Pass placeholder values to ManagedTree.__init__()
         super().__init__(
-            status_paths={},
             file_paths=[],
             dir_paths=[],
+            status_files={},
+            status_dirs={},
             id="apply_tree",
-            **kwargs,
         )
         # Attributes will be initialized in on_mount
         self.file_paths: list[Path] = []
         self.dir_paths: list[Path] = []
-        self.status_paths: dict[Path, str] = {}
+        self.status_files: dict[Path, str] = {}
+        self.status_dirs: dict[Path, str] = {}
 
     def on_mount(self) -> None:
         # Initialize paths and status data
         self.file_paths = sorted(list(chezmoi.managed_file_paths))
         self.dir_paths = sorted(list(chezmoi.managed_dir_paths))
-        self.status_paths = chezmoi.status_paths.apply_files
+        self.status_paths: dict[Path, str] = chezmoi.status_paths.apply_files
         self.status_dirs: dict[Path, str] = chezmoi.status_paths.apply_dirs
 
         print(f"Mounting {self.__class__.__name__} tree")
