@@ -38,7 +38,7 @@ class LoadingScreen(Screen):
 
     def __init__(self) -> None:
         self.animated_fade = AnimatedFade(line_styles=self.create_fade())
-        self.dest_dir: Path | None = None
+        self.dest_dir: Path
         super().__init__()
 
     def create_fade(self) -> deque[Style]:
@@ -91,8 +91,7 @@ class LoadingScreen(Screen):
             self.query_one("#continue", Button).disabled = False
 
     def set_dest_dir(self) -> None:
-        if self.dest_dir is not None:
-            chezmoi.dest_dir = self.dest_dir
+        chezmoi.dest_dir = self.dest_dir
 
     def on_mount(self) -> None:
 
