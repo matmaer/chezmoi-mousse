@@ -73,8 +73,6 @@ class FileView(RichLog):
     def on_mount(self) -> None:
         if self.file_path is None:
             self.write(" Select a file to view its content.")
-        # elif not self.file_path.exists():
-        #     self.write(f"File does not exist: {self.file_path}")
         else:
             truncated = ""
             try:
@@ -216,18 +214,27 @@ class ManagedTree(Tree):
         status: str = "X"
 
     def __init__(
-        self, apply: bool, status_paths: dict[Path, str], **kwargs
+        self,
+        apply: bool,
+        file_paths: list[Path],
+        dir_paths: list[Path],
+        status_paths: dict[Path, str],
+        **kwargs,
     ) -> None:
+        super().__init__(label="root_node", classes="any-tree", **kwargs)
         self.apply = apply
         self.status_paths: dict[Path, str] = status_paths
-        super().__init__(label="root_node", classes="any-tree", **kwargs)
+        self.file_paths: list[Path] = file_paths
+        self.dir_paths: list[Path] = dir_paths
 
     def on_mount(self) -> None:
 
-        print(f"Mounting {self.__class__.__name__} tree")
+        self.apply = self.apply
+        self.status_paths: dict[Path, str] = self.status_paths
+        self.file_paths: list[Path] = self.file_paths
+        self.dir_paths: list[Path] = self.dir_paths
 
-        self.file_paths = [Path(p) for p in chezmoi.managed_file_paths]
-        self.dir_paths = [Path(p) for p in chezmoi.managed_dir_paths]
+        print(f"Mounting {self.__class__.__name__} tree")
 
         self.root.data = ManagedTree.NodeData(path=dest_dir)
         self.root.label = str(dest_dir)
@@ -268,47 +275,12 @@ class ManagedTree(Tree):
 
             new_leaf.set_label(node_label)
 
-    def remove_nodes(self) -> None:
-        nodes_with_leaves = {self.root}
-        nodes_without_leaves = set()
-        parent_nodes_of_leaves = set()
-
-        def classify_nodes(node: TreeNode) -> None:
-            has_leaf = False
-            has_non_leaf_child = False
-
-            for child in node.children:
-                if child.data and child.data.is_file:
-                    has_leaf = True
-                    nodes_with_leaves.add(node)
-                    if node.parent is not None:
-                        parent_nodes_of_leaves.add(node.parent)
-                else:
-                    has_non_leaf_child = True
-                    classify_nodes(child)
-
-            # Only classify as "without leaves" if the node has no leaf children and no non-leaf children
-            if not has_leaf and not has_non_leaf_child:
-                nodes_without_leaves.add(node)
-
-        # Collect unique parents of leaf nodes
-        parent_nodes_of_leaves = {
-            node.parent
-            for node in nodes_with_leaves
-            if node.parent is not None
-        }
-
-        # Remove nodes without leaves unless they are in the parent list
-        for node in nodes_without_leaves:
-            if node not in parent_nodes_of_leaves:
-                node.remove()
-
     @on(Tree.NodeExpanded)
     def populate_directory(self, event: Tree.NodeExpanded) -> None:
 
         print(f"Node expanded: {event.node.label}")
         self.add_child_nodes(event.node)
-        self.remove_nodes()
+        # self.remove_nodes()
 
     @on(Tree.NodeCollapsed)
     def clear_all_children(self, event: Tree.NodeExpanded) -> None:
@@ -320,37 +292,109 @@ class ManagedTree(Tree):
 class ApplyTree(ManagedTree):
     """Tree for managing 'apply' operations."""
 
-    missing: reactive[bool] = reactive(False, always_update=True)
-    changed_files: reactive[bool] = reactive(False, always_update=True)
+    only_missing: reactive[bool] = reactive(False, always_update=True)
+    include_unchanged_files: reactive[bool] = reactive(
+        False, always_update=True
+    )
 
     def __init__(self) -> None:
-        super().__init__(apply=True, status_paths={})
+        super().__init__(
+            apply=True, file_paths=[], dir_paths=[], status_paths={}
+        )
 
     def on_mount(self) -> None:
         print(f"Mounting {self.__class__.__name__} tree")
-        self.status_paths = chezmoi.apply_status_file_paths
+        self.status_paths = chezmoi.status_paths.apply_files
+        self.all_managed_files = sorted(list(chezmoi.managed_file_paths))
+        self.all_managed_dirs = sorted(list(chezmoi.managed_dir_paths))
+        self.status_files = chezmoi.status_paths.apply_files
+        self.status_dirs = chezmoi.status_paths.apply_dirs
 
-    def watch_missing(self) -> None:
-        print(f"new value for missing in {self} = {self.missing}")
+        # default switch values: False False, meaning show only files with
+        # a changed status, whether they exist or not on the filesystem
+        if not self.include_unchanged_files and not self.only_missing:
+            self.file_paths = [
+                f
+                for f in self.all_managed_files
+                if f in chezmoi.status_paths.apply_files
+            ]
+            parent_dirs = self.create_parent_dir_list(self.file_paths)
+            status_dirs = [
+                d for d in self.all_managed_dirs if d in self.status_dirs
+            ]
+            self.dir_paths = sorted(parent_dirs + status_dirs)
 
-    def watch_changed_files(self) -> None:
-        print(f"new value for changed_files in {self} = {self.changed_files}")
+        # include all files and directories that are managed
+        # whether they exist or not on the filesystem
+        # (user enables include_unchanged_files while only_missing is off)
+        elif self.include_unchanged_files and not self.only_missing:
+            self.file_paths = self.all_managed_files
+            self.dir_paths = self.all_managed_dirs
+
+        # include all managed paths that are either missing or a managed file
+        # or a parent directory of a managed file or a missing directory
+        elif self.include_unchanged_files and self.only_missing:
+            self.file_paths = [
+                f
+                for f in self.all_managed_files
+                if f in chezmoi.status_paths.apply_files and not f.exists()
+            ]
+            dirs_to_include = self.create_parent_dir_list(self.file_paths)
+            managed_dirs_with_status = [
+                d for d in self.all_managed_dirs if d in self.status_dirs
+            ]
+            self.dir_paths = sorted(dirs_to_include + managed_dirs_with_status)
+
+        # include all files or directories that are missing on the filesystem
+        # or any directory parent of a missing file or any unchanged path
+        elif not self.include_unchanged_files and self.only_missing:
+            self.file_paths = [
+                f
+                for f in self.all_managed_files
+                if f in chezmoi.status_paths.apply_files or not f.exists()
+            ]
+
+            self.dir_paths = self.all_managed_dirs
+
+    def create_parent_dir_list(
+        self, file_paths_to_process: list[Path]
+    ) -> list[Path]:
+        """Create a list of parent directories for the given file paths."""
+        parent_dirs = set()
+        for file_path in file_paths_to_process:
+            if file_path.parent not in parent_dirs:
+                parent_dirs.add(file_path.parent)
+        return sorted(list(parent_dirs))
+
+    def watch_only_missing(self) -> None:
+        print(f"new value for only_missing in {self} = {self.only_missing}")
+
+    def watch_include_unchanged_files(self) -> None:
+        print(
+            f"new value for include_changed_files in {self} = {self.include_unchanged_files}"
+        )
 
 
 class ReAddTree(ManagedTree):
     """Tree for managing 're-add' operations."""
 
-    changed_files: reactive[bool] = reactive(False, always_update=True)
+    include_unchanged_files: reactive[bool] = reactive(
+        False, always_update=True
+    )
 
     def __init__(self) -> None:
-        super().__init__(apply=False, status_paths={})
+        super().__init__(
+            apply=False, file_paths=[], dir_paths=[], status_paths={}
+        )
 
     def on_mount(self) -> None:
         print(f"Mounting {self.__class__.__name__} tree")
-        self.status_paths = chezmoi.re_add_status_file_paths
+        self.status_paths = chezmoi.status_paths.re_add_files
 
-    def watch_changed_files(self) -> None:
-        print(f"new value for changed files in {self} = {self.changed_files}")
+    def watch_include_unchanged_files(self) -> None:
+        print(
+            f"new value for changed files in {self} = {self.include_unchanged_files}"
+        )
 
 
 class ChezmoiStatus(VerticalScroll):
@@ -367,9 +411,9 @@ class ChezmoiStatus(VerticalScroll):
     def on_mount(self) -> None:
         # status can be a space so not using str.split() or str.strip()
         status_paths = (
-            chezmoi.apply_status_file_paths
+            chezmoi.status_paths.apply_files
             if self.apply
-            else chezmoi.re_add_status_file_paths
+            else chezmoi.status_paths.re_add_files
         )
 
         for file_path, status_code in status_paths.items():
@@ -385,9 +429,9 @@ class FilterSwitch(HorizontalGroup):
     """A switch, a label and a tooltip."""
 
     def __init__(self, switch_data: dict[str, str], switch_id: str) -> None:
+        super().__init__(classes="filter-container")
         self.switch_data = switch_data
         self.switch_id = switch_id
-        super().__init__(classes="filter-container")
 
     def compose(self) -> ComposeResult:
         yield Switch(id=self.switch_id, classes="filter-switch")

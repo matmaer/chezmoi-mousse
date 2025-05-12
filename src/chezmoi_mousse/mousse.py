@@ -367,10 +367,10 @@ class ApplyTab(VerticalScroll):
     @on(Switch.Changed)
     def notify_apply_tree(self, event: Switch.Changed) -> None:
         apply_tree = self.query_exactly_one(ApplyTree)
-        if event.switch.id == "apply_tab_missing":
-            apply_tree.missing = event.value
-        elif event.switch.id == "apply_tab_changed_files":
-            apply_tree.changed_files = event.value
+        if event.switch.id == "apply_tab_only_missing":
+            apply_tree.only_missing = event.value
+        elif event.switch.id == "apply_tab_include_unchanged_files":
+            apply_tree.include_unchanged_files = event.value
 
 
 class ReAddTab(VerticalScroll):
@@ -419,7 +419,7 @@ class ReAddTab(VerticalScroll):
     def notify_re_add_tree(self, event: Switch.Changed) -> None:
         re_add_tree = self.query_exactly_one(ReAddTree)
         if event.switch.id == "re_add_tab_changed_files":
-            re_add_tree.changed_files = event.value
+            re_add_tree.include_unchanged_files = event.value
 
 
 class DiagramTab(VerticalScroll):
