@@ -182,7 +182,7 @@ FilterBar {
 
     & .switch--slider {
       border: none;
-      color: $error-darken-1;
+      color: $error-darken-3;
     }
 
     &:hover {
@@ -191,7 +191,7 @@ FilterBar {
       }
 
       &.-on>.switch--slider {
-        color: $success;
+        color: $success-lighten-1;
       }
     }
   }
