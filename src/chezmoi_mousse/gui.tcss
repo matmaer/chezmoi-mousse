@@ -276,7 +276,8 @@ Tree {
 }
 
 .any-tree {
-  max-width: 33%;
+  min-width: 30;
+  max-width: 45%;
   padding-left: 1;
   border-top: tab $scrollbar;
   border-title-align: center;
