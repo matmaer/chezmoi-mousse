@@ -356,11 +356,16 @@ class ApplyTree(ManagedTree):
     def create_parent_dir_list(
         self, file_paths_to_process: list[Path]
     ) -> list[Path]:
-        """Create a list of parent directories for the given file paths."""
+        """Create a list of all parent directories for the given file paths."""
         parent_dirs = set()
         for file_path in file_paths_to_process:
-            if file_path.parent not in parent_dirs:
-                parent_dirs.add(file_path.parent)
+            current_path = file_path.parent
+            while (
+                current_path != current_path.parent
+            ):  # Traverse up to the root
+                if current_path not in parent_dirs:
+                    parent_dirs.add(current_path)
+                current_path = current_path.parent
         return sorted(list(parent_dirs))
 
     def watch_only_missing(self) -> None:
