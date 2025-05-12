@@ -239,28 +239,41 @@ class ManagedTree(Tree):
         self.status_files: dict[Path, str] = status_files
         self.status_dirs: dict[Path, str] = status_dirs
 
-    def update_all_expanded_nodes(self) -> list[TreeNode]:
-        """Update all expanded nodes in the tree."""
+    def color_file(self, file_node: TreeNode) -> None:
+        """Color file node (leaf) based on its status."""
+        if file_node.data.path in self.status_files:  # type: ignore
 
-        def collect_expanded_nodes(
-            node: TreeNode, expanded_nodes: list[TreeNode]
-        ) -> None:
-            if node.is_expanded:
-                expanded_nodes.append(node)
-                for child in node.children:
-                    collect_expanded_nodes(child, expanded_nodes)
+            file_node.set_label(
+                Text(
+                    str(file_node.label),
+                    style=self.node_colors[file_node.data.status],  # type: ignore
+                )
+            )
+        else:
+            file_node.set_label(Text(str(file_node.label), Style(dim=True)))
 
-        expanded_nodes = []
-        collect_expanded_nodes(self.root, expanded_nodes)
-        print(f"Expanded nodes: {[node for node in expanded_nodes]}")
-        return expanded_nodes
+    # def update_all_expanded_nodes(self) -> list[TreeNode]:
+    #     """Update all expanded nodes in the tree."""
+
+    #     def collect_expanded_nodes(
+    #         node: TreeNode, expanded_nodes: list[TreeNode]
+    #     ) -> None:
+    #         if node.is_expanded:
+    #             expanded_nodes.append(node)
+    #             for child in node.children:
+    #                 collect_expanded_nodes(child, expanded_nodes)
+
+    #     expanded_nodes = []
+    #     collect_expanded_nodes(self.root, expanded_nodes)
+    #     print(f"Expanded nodes: {[node for node in expanded_nodes]}")
+    #     return expanded_nodes
 
     def add_child_nodes(self, tree_node: TreeNode) -> None:
         # collect subdirectories to add based on the tree_node parameter
         sub_dirs = [
             d
             for d in self.dir_paths
-            if tree_node.data is not None and d.parent == tree_node.data.path
+            if d.parent == tree_node.data.path  # type: ignore
         ]
         for dir_path in sub_dirs:
             node_data = ManagedTree.NodeData(path=dir_path)
@@ -271,21 +284,17 @@ class ManagedTree(Tree):
         file_children = [
             f
             for f in self.file_paths
-            if tree_node.data is not None and f.parent == tree_node.data.path
+            if f.parent == tree_node.data.path  # type: ignore
         ]
         for file_path in file_children:
             node_data = ManagedTree.NodeData(path=file_path, is_file=True)
             new_leaf = tree_node.add_leaf(file_path.name, node_data)
 
-            if file_path in self.status_files:
-                node_data.status = self.status_files[file_path]
-                node_label = Text(
-                    file_path.name, style=self.node_colors[node_data.status]
-                )
-            else:
-                node_label = Text(file_path.name, Style(dim=True))
+            if new_leaf.data.path in self.status_files:  # type: ignore
 
-            new_leaf.set_label(node_label)
+                self.color_file(new_leaf)
+            else:
+                new_leaf.set_label(Text(file_path.name, Style(dim=True)))
 
     @on(Tree.NodeExpanded)
     def populate_directory(self, event: Tree.NodeExpanded) -> None:
@@ -378,9 +387,7 @@ class ApplyTree(ManagedTree):
         parent_dirs = set()
         for file_path in file_paths_to_process:
             current_path = file_path.parent
-            while (
-                current_path != current_path.parent
-            ):  # Traverse up to the root
+            while current_path != self.root.data.path:  # type: ignore
                 if current_path not in parent_dirs:
                     parent_dirs.add(current_path)
                 current_path = current_path.parent
