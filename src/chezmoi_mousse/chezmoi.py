@@ -55,6 +55,14 @@ class InputOutput:
             self.dict_out = {}
 
 
+class StatusPaths:
+    def __init__(self, apply_files, apply_dirs, re_add_files, re_add_dirs):
+        self.apply_files = apply_files
+        self.apply_dirs = apply_dirs
+        self.re_add_files = re_add_files
+        self.re_add_dirs = re_add_dirs
+
+
 class Chezmoi:
 
     cat_config: InputOutput
@@ -142,22 +150,24 @@ class Chezmoi:
         }
 
     @property
-    def apply_status_file_paths(self) -> dict[Path, str]:
-        status_paths = {}
-        for line in self.status_files.list_out:
-            status_code = line[1]
-            if status_code in "ADM":
-                status_paths[Path(line[3:])] = status_code
-        return status_paths
+    def status_paths(self) -> StatusPaths:
+        """
+        Returns a StatusPaths object with attributes for each status type.
+        """
 
-    @property
-    def re_add_status_file_paths(self) -> dict[Path, str]:
-        status_paths = {}
-        for line in self.status_files.list_out:
-            status_code = line[0]
-            if status_code in "ADM":
-                status_paths[Path(line[3:])] = status_code
-        return status_paths
+        def parse_status(list_out, index):
+            return {
+                Path(line[3:]): line[index]
+                for line in list_out
+                if line[index] in "ADM"
+            }
+
+        return StatusPaths(
+            apply_files=parse_status(self.status_files.list_out, 1),
+            apply_dirs=parse_status(self.status_dirs.list_out, 1),
+            re_add_files=parse_status(self.status_files.list_out, 0),
+            re_add_dirs=parse_status(self.status_dirs.list_out, 0),
+        )
 
     def unmanaged_in_d(self, dir_path: Path) -> list[Path]:
         if not dir_path.is_dir():
