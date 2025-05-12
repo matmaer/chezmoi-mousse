@@ -55,14 +55,6 @@ class InputOutput:
             self.dict_out = {}
 
 
-class StatusPaths:
-    def __init__(self, apply_files, apply_dirs, re_add_files, re_add_dirs):
-        self.apply_files = apply_files
-        self.apply_dirs = apply_dirs
-        self.re_add_files = re_add_files
-        self.re_add_dirs = re_add_dirs
-
-
 class Chezmoi:
 
     cat_config: InputOutput
@@ -151,24 +143,37 @@ class Chezmoi:
         }
 
     @property
-    def status_paths(self) -> StatusPaths:
+    def status_paths(self) -> dict[str, dict[Path, str]]:
         """
-        Returns a StatusPaths object with attributes for each status type.
+        Returns a dictionary with four keys: "apply_files", "apply_dirs",
+        "re_add_files", and "re_add_dirs". Each key contains a dictionary
+        with a Path for the key the corresponding status codes as value.
         """
 
-        def parse_status(list_out, index):
-            return {
-                Path(line[3:]): line[index]
-                for line in list_out
-                if line[index] in "ADM"
-            }
+        def create_status_dict(
+            lines: list[str], apply: bool
+        ) -> dict[Path, str]:
+            result = {}
+            for line in lines:
+                status_code = line[1] if apply else line[0]
+                if status_code in "ADM":
+                    result[Path(line[3:])] = status_code
+            return result
 
-        return StatusPaths(
-            apply_files=parse_status(self.status_files.list_out, 1),
-            apply_dirs=parse_status(self.status_dirs.list_out, 1),
-            re_add_files=parse_status(self.status_files.list_out, 0),
-            re_add_dirs=parse_status(self.status_dirs.list_out, 0),
-        )
+        return {
+            "apply_files": create_status_dict(
+                self.status_files.list_out, apply=True
+            ),
+            "apply_dirs": create_status_dict(
+                self.status_dirs.list_out, apply=True
+            ),
+            "re_add_files": create_status_dict(
+                self.status_files.list_out, apply=False
+            ),
+            "re_add_dirs": create_status_dict(
+                self.status_dirs.list_out, apply=False
+            ),
+        }
 
     def unmanaged_in_d(self, dir_path: Path) -> list[Path]:
         if not dir_path.is_dir():
