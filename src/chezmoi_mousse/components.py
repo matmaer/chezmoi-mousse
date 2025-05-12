@@ -215,21 +215,17 @@ class ManagedTree(Tree):
 
     def __init__(
         self,
-        apply: bool,
         file_paths: list[Path],
         dir_paths: list[Path],
         status_paths: dict[Path, str],
-        **kwargs,
     ) -> None:
-        super().__init__(label="root_node", classes="any-tree", **kwargs)
-        self.apply = apply
         self.status_paths: dict[Path, str] = status_paths
         self.file_paths: list[Path] = file_paths
         self.dir_paths: list[Path] = dir_paths
+        super().__init__(label="root_node", classes="any-tree")
 
     def on_mount(self) -> None:
 
-        self.apply = self.apply
         self.status_paths: dict[Path, str] = self.status_paths
         self.file_paths: list[Path] = self.file_paths
         self.dir_paths: list[Path] = self.dir_paths
@@ -297,9 +293,7 @@ class ApplyTree(ManagedTree):
     )
 
     def __init__(self) -> None:
-        super().__init__(
-            apply=True, file_paths=[], dir_paths=[], status_paths={}
-        )
+        super().__init__(file_paths=[], dir_paths=[], status_paths={})
 
     def on_mount(self) -> None:
         print(f"Mounting {self.__class__.__name__} tree")
@@ -382,9 +376,7 @@ class ReAddTree(ManagedTree):
     )
 
     def __init__(self) -> None:
-        super().__init__(
-            apply=False, file_paths=[], dir_paths=[], status_paths={}
-        )
+        super().__init__(file_paths=[], dir_paths=[], status_paths={})
 
     def on_mount(self) -> None:
         print(f"Mounting {self.__class__.__name__} tree")
