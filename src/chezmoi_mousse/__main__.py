@@ -2,18 +2,16 @@ from math import ceil
 
 import rich.repr
 from rich.color import Color
+from rich.console import RenderableType
 from rich.segment import Segment, Segments
 from rich.style import Style
+from textual.css.query import NoMatches
+from textual.screen import Screen
 from textual.scrollbar import ScrollBar, ScrollBarRender
+from textual.widget import Widget
+from textual.widgets._tooltip import Tooltip
 
 from chezmoi_mousse.gui import ChezmoiTUI
-
-
-from textual.widget import Widget
-from textual.css.query import NoMatches
-from textual.widgets._tooltip import Tooltip
-from textual.screen import Screen
-from rich.console import RenderableType
 
 
 def _handle_tooltip_timer(self, widget: Widget) -> None:
