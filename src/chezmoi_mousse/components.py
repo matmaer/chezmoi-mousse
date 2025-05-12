@@ -280,7 +280,6 @@ class ManagedTree(Tree):
 
         print(f"Node expanded: {event.node.label}")
         self.add_child_nodes(event.node)
-        # self.remove_nodes()
 
     @on(Tree.NodeCollapsed)
     def clear_all_children(self, event: Tree.NodeExpanded) -> None:
