@@ -6,13 +6,13 @@ from rich.style import Style
 from textual import work
 from textual.app import ComposeResult
 from textual.color import Gradient
-from textual.containers import Center, HorizontalGroup, Middle
+from textual.containers import Center, Middle
 from textual.screen import Screen
 from textual.strip import Strip
-from textual.widgets import Button, Label, RichLog, Static, Switch
+from textual.widgets import Button, RichLog, Static
 
 from chezmoi_mousse import SPLASH
-from chezmoi_mousse import chezmoi
+from chezmoi_mousse.chezmoi import chezmoi
 
 
 class AnimatedFade(Static):
@@ -38,6 +38,7 @@ class LoadingScreen(Screen):
 
     def __init__(self) -> None:
         self.animated_fade = AnimatedFade(line_styles=self.create_fade())
+        self.dest_dir: Path | None = None
         super().__init__()
 
     def create_fade(self) -> deque[Style]:
@@ -77,9 +78,8 @@ class LoadingScreen(Screen):
         io_class.update()
         self.log_text(io_class.label)
         if arg_id == "dump_config":
-            global dest_dir
-            dest_dir = Path(io_class.dict_out["destDir"])
-            self.log_text(f"chezmoi destDir")
+            self.dest_dir = Path(io_class.dict_out["destDir"])
+            self.log_text(f"destDir is {self.dest_dir}")
 
     def all_workers_finished(self) -> None:
         if all(
@@ -87,7 +87,12 @@ class LoadingScreen(Screen):
             for worker in self.app.workers
             if worker.group == "io_workers"
         ):
+            self.set_dest_dir()
             self.query_one("#continue", Button).disabled = False
+
+    def set_dest_dir(self) -> None:
+        if self.dest_dir is not None:
+            chezmoi.dest_dir = self.dest_dir
 
     def on_mount(self) -> None:
 

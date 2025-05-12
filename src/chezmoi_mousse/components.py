@@ -28,8 +28,7 @@ from textual.widgets import (
 )
 from textual.widgets.tree import TreeNode
 
-
-from chezmoi_mousse import chezmoi, dest_dir
+from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.config import filter_switch_data, status_info, unwanted
 
 
@@ -73,6 +72,7 @@ class FileView(RichLog):
     def on_mount(self) -> None:
         if self.file_path is None:
             self.write(" Select a file to view its content.")
+
         else:
             truncated = ""
             try:
@@ -106,7 +106,9 @@ class FileView(RichLog):
         if self.file_path is not None:
             self.clear()
             self.on_mount()
-            self.border_title = f" {self.file_path.relative_to(dest_dir)} "
+            self.border_title = (
+                f" {self.file_path.relative_to(chezmoi.dest_dir)} "
+            )
         else:
             self.border_title = " no file selected "
 
@@ -149,7 +151,7 @@ class FilteredDirTree(DirectoryTree):
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
         managed_dirs = chezmoi.managed_dir_paths
         managed_files = chezmoi.managed_file_paths
-        self.root.label = f"{dest_dir} (destDir)"
+        self.root.label = f"{chezmoi.dest_dir} (destDir)"
 
         # Switches: Red - Green (default)
         if not self.include_unmanaged_dirs and not self.filter_unwanted:
@@ -158,7 +160,10 @@ class FilteredDirTree(DirectoryTree):
                 for p in paths
                 if (
                     p.is_file()
-                    and (p.parent in managed_dirs or p.parent == dest_dir)
+                    and (
+                        p.parent in managed_dirs
+                        or p.parent == chezmoi.dest_dir
+                    )
                     and not is_unwanted_path(p)
                     and p not in managed_files
                 )
@@ -182,7 +187,10 @@ class FilteredDirTree(DirectoryTree):
                 for p in paths
                 if (
                     p.is_file()
-                    and (p.parent in managed_dirs or p.parent == dest_dir)
+                    and (
+                        p.parent in managed_dirs
+                        or p.parent == chezmoi.dest_dir
+                    )
                     and p not in managed_files
                 )
                 or (p.is_dir() and p in managed_dirs)
@@ -213,17 +221,6 @@ class ManagedTree(Tree):
         is_file: bool = False
         status: str = "X"
 
-    def __init__(
-        self,
-        file_paths: list[Path],
-        dir_paths: list[Path],
-        status_paths: dict[Path, str],
-    ) -> None:
-        self.status_paths: dict[Path, str] = status_paths
-        self.file_paths: list[Path] = file_paths
-        self.dir_paths: list[Path] = dir_paths
-        super().__init__(label="root_node", classes="any-tree")
-
     def on_mount(self) -> None:
 
         self.status_paths: dict[Path, str] = self.status_paths
@@ -232,10 +229,10 @@ class ManagedTree(Tree):
 
         print(f"Mounting {self.__class__.__name__} tree")
 
-        self.root.data = ManagedTree.NodeData(path=dest_dir)
-        self.root.label = str(dest_dir)
+        self.root.data = ManagedTree.NodeData(path=chezmoi.dest_dir)
+        self.root.label = str(chezmoi.dest_dir)
 
-        self.border_title = f" {dest_dir} "
+        self.border_title = f" {chezmoi.dest_dir} "
         # self.show_root = False
         self.root.expand()
 
@@ -292,8 +289,19 @@ class ApplyTree(ManagedTree):
         False, always_update=True
     )
 
-    def __init__(self) -> None:
-        super().__init__(file_paths=[], dir_paths=[], status_paths={})
+    def __init__(
+        self,
+        file_paths: list[Path] = [],
+        dir_paths: list[Path] = [],
+        status_paths: dict[Path, str] = {},
+        **kwargs,
+    ) -> None:
+        self.status_paths: dict[Path, str] = status_paths
+        self.file_paths: list[Path] = file_paths
+        self.dir_paths: list[Path] = dir_paths
+        super().__init__(
+            label="add_root_node", classes="any-tree", id="add_tree", **kwargs
+        )
 
     def on_mount(self) -> None:
         print(f"Mounting {self.__class__.__name__} tree")
@@ -375,8 +383,22 @@ class ReAddTree(ManagedTree):
         False, always_update=True
     )
 
-    def __init__(self) -> None:
-        super().__init__(file_paths=[], dir_paths=[], status_paths={})
+    def __init__(
+        self,
+        file_paths: list[Path] = [],
+        dir_paths: list[Path] = [],
+        status_paths: dict[Path, str] = {},
+        **kwargs,
+    ) -> None:
+        self.status_paths: dict[Path, str] = status_paths
+        self.file_paths: list[Path] = file_paths
+        self.dir_paths: list[Path] = dir_paths
+        super().__init__(
+            label="re_add_root_node",
+            classes="any-tree",
+            id="re_add_tree",
+            **kwargs,
+        )
 
     def on_mount(self) -> None:
         print(f"Mounting {self.__class__.__name__} tree")
@@ -408,7 +430,7 @@ class ChezmoiStatus(VerticalScroll):
         )
 
         for file_path, status_code in status_paths.items():
-            rel_path = str(file_path.relative_to(dest_dir))
+            rel_path = str(file_path.relative_to(chezmoi.dest_dir))
             title = f"{status_info['code name'][status_code]} {rel_path}"
             self.status_items.append(
                 Collapsible(StaticDiff(file_path, self.apply), title=title)

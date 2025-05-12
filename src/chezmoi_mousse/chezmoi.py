@@ -75,6 +75,7 @@ class Chezmoi:
     status_dirs: InputOutput
     status_files: InputOutput
     template_data: InputOutput
+    dest_dir: Path
 
     base = [
         "chezmoi",
@@ -220,3 +221,6 @@ class Chezmoi:
 
     def cat(self, file_path: str) -> str:
         return subprocess_run(self.base + ["cat"] + [file_path])
+
+
+chezmoi = Chezmoi()

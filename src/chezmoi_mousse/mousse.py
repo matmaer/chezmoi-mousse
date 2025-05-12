@@ -29,15 +29,15 @@ from textual.widgets import (
 )
 
 from chezmoi_mousse import FLOW
-from chezmoi_mousse import chezmoi, dest_dir
+from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.components import (
     ApplyTree,
     AutoWarning,
     ChezmoiStatus,
-    FilteredDirTree,
     FileView,
-    ReAddTree,
     FilterBar,
+    FilteredDirTree,
+    ReAddTree,
 )
 from chezmoi_mousse.config import pw_mgr_info
 
@@ -66,7 +66,9 @@ class AddTab(Container):
     def compose(self) -> ComposeResult:
         with Horizontal():
             yield FilteredDirTree(
-                dest_dir, classes="dir-tree any-tree", id="filtered_dir_tree"
+                chezmoi.dest_dir,
+                classes="dir-tree any-tree",
+                id="filtered_dir_tree",
             )
             yield FileView()
         yield FilterBar(filter_key="add_tab", tab_filters_id="add_filters")
@@ -74,7 +76,7 @@ class AddTab(Container):
     def on_mount(self) -> None:
         dir_tree = self.query_one("#filtered_dir_tree", FilteredDirTree)
         dir_tree.show_root = False
-        dir_tree.border_title = f" {dest_dir} "
+        dir_tree.border_title = f" {chezmoi.dest_dir} "
 
     @on(FilteredDirTree.FileSelected)
     def update_preview_path(self, event: FilteredDirTree.FileSelected) -> None:
@@ -152,7 +154,9 @@ class ChezmoiAdd(ModalScreen):
 
         for f in self.files_to_add:
             self.add_path_items.append(
-                Collapsible(FileView(f), title=str(f.relative_to(dest_dir)))
+                Collapsible(
+                    FileView(f), title=str(f.relative_to(chezmoi.dest_dir))
+                )
             )
         self.refresh(recompose=True)
 
