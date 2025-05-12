@@ -206,7 +206,7 @@ class FilteredDirTree(DirectoryTree):
 
 class ManagedTree(Tree):
 
-    # default color but will be updated on theme change
+    # TODO: default color should be updated on theme change
     node_colors = {
         "Dir": "#57A5E2",  # text-primary
         "D": "#D17E92",  # text-error
@@ -221,20 +221,21 @@ class ManagedTree(Tree):
         is_file: bool = False
         status: str = "X"
 
-    def on_mount(self) -> None:
-
-        self.status_paths: dict[Path, str] = self.status_paths
-        self.file_paths: list[Path] = self.file_paths
-        self.dir_paths: list[Path] = self.dir_paths
-
-        print(f"Mounting {self.__class__.__name__} tree")
-
-        self.root.data = ManagedTree.NodeData(path=chezmoi.dest_dir)
-        self.root.label = str(chezmoi.dest_dir)
-
-        self.border_title = f" {chezmoi.dest_dir} "
-        # self.show_root = False
-        self.root.expand()
+    def __init__(
+        self,
+        status_paths: dict[Path, str],
+        file_paths: list[Path],
+        dir_paths: list[Path],
+        **kwargs,
+    ) -> None:
+        root_data = ManagedTree.NodeData(path=chezmoi.dest_dir)
+        root_label = str(chezmoi.dest_dir)
+        super().__init__(
+            data=root_data, label=root_label, classes="any-tree", **kwargs
+        )
+        self.status_paths: dict[Path, str] = status_paths
+        self.file_paths: list[Path] = file_paths
+        self.dir_paths: list[Path] = dir_paths
 
     def add_child_nodes(self, tree_node: TreeNode) -> None:
         # collect subdirectories to add based on the tree_node parameter
@@ -270,7 +271,6 @@ class ManagedTree(Tree):
 
     @on(Tree.NodeExpanded)
     def populate_directory(self, event: Tree.NodeExpanded) -> None:
-
         print(f"Node expanded: {event.node.label}")
         self.add_child_nodes(event.node)
 
@@ -289,73 +289,68 @@ class ApplyTree(ManagedTree):
         False, always_update=True
     )
 
-    def __init__(
-        self,
-        file_paths: list[Path] = [],
-        dir_paths: list[Path] = [],
-        status_paths: dict[Path, str] = {},
-        **kwargs,
-    ) -> None:
-        self.status_paths: dict[Path, str] = status_paths
-        self.file_paths: list[Path] = file_paths
-        self.dir_paths: list[Path] = dir_paths
+    def __init__(self, **kwargs) -> None:
+        # Pass placeholder values to ManagedTree.__init__()
         super().__init__(
-            label="add_root_node", classes="any-tree", id="add_tree", **kwargs
+            status_paths={},
+            file_paths=[],
+            dir_paths=[],
+            id="apply_tree",
+            **kwargs,
         )
+        # Attributes will be initialized in on_mount
+        self.file_paths: list[Path] = []
+        self.dir_paths: list[Path] = []
+        self.status_paths: dict[Path, str] = {}
 
     def on_mount(self) -> None:
-        print(f"Mounting {self.__class__.__name__} tree")
+        # Initialize paths and status data
+        self.file_paths = sorted(list(chezmoi.managed_file_paths))
+        self.dir_paths = sorted(list(chezmoi.managed_dir_paths))
         self.status_paths = chezmoi.status_paths.apply_files
-        self.all_managed_files = sorted(list(chezmoi.managed_file_paths))
-        self.all_managed_dirs = sorted(list(chezmoi.managed_dir_paths))
-        self.status_files = chezmoi.status_paths.apply_files
-        self.status_dirs = chezmoi.status_paths.apply_dirs
+        self.status_dirs: dict[Path, str] = chezmoi.status_paths.apply_dirs
 
-        # default switch values: False False, meaning show only files with
-        # a changed status, whether they exist or not on the filesystem
+        print(f"Mounting {self.__class__.__name__} tree")
+
+        # Default switch values: False False
         if not self.include_unchanged_files and not self.only_missing:
             self.file_paths = [
                 f
-                for f in self.all_managed_files
+                for f in self.file_paths
                 if f in chezmoi.status_paths.apply_files
             ]
             parent_dirs = self.create_parent_dir_list(self.file_paths)
-            status_dirs = [
-                d for d in self.all_managed_dirs if d in self.status_dirs
-            ]
+            status_dirs = [d for d in self.dir_paths if d in self.status_dirs]
             self.dir_paths = sorted(parent_dirs + status_dirs)
 
-        # include all files and directories that are managed
-        # whether they exist or not on the filesystem
-        # (user enables include_unchanged_files while only_missing is off)
+        # Include all files and directories that are managed
         elif self.include_unchanged_files and not self.only_missing:
-            self.file_paths = self.all_managed_files
-            self.dir_paths = self.all_managed_dirs
+            self.file_paths = self.file_paths
+            self.dir_paths = self.dir_paths
 
-        # include all managed paths that are either missing or a managed file
-        # or a parent directory of a managed file or a missing directory
+        # Include all managed paths that are missing or their parents
         elif self.include_unchanged_files and self.only_missing:
             self.file_paths = [
                 f
-                for f in self.all_managed_files
+                for f in self.file_paths
                 if f in chezmoi.status_paths.apply_files and not f.exists()
             ]
             dirs_to_include = self.create_parent_dir_list(self.file_paths)
             managed_dirs_with_status = [
-                d for d in self.all_managed_dirs if d in self.status_dirs
+                d for d in self.dir_paths if d in self.status_dirs
             ]
             self.dir_paths = sorted(dirs_to_include + managed_dirs_with_status)
 
-        # include all files or directories that are missing on the filesystem
-        # or any directory parent of a missing file or any unchanged path
+        # Include all files or directories that are missing
         elif not self.include_unchanged_files and self.only_missing:
             self.file_paths = [
                 f
-                for f in self.all_managed_files
+                for f in self.file_paths
                 if f in chezmoi.status_paths.apply_files or not f.exists()
             ]
+            self.dir_paths = self.dir_paths
 
-            self.dir_paths = self.all_managed_dirs
+        self.root.expand()
 
     def create_parent_dir_list(
         self, file_paths_to_process: list[Path]
@@ -373,40 +368,6 @@ class ApplyTree(ManagedTree):
     def watch_include_unchanged_files(self) -> None:
         print(
             f"new value for include_changed_files in {self} = {self.include_unchanged_files}"
-        )
-
-
-class ReAddTree(ManagedTree):
-    """Tree for managing 're-add' operations."""
-
-    include_unchanged_files: reactive[bool] = reactive(
-        False, always_update=True
-    )
-
-    def __init__(
-        self,
-        file_paths: list[Path] = [],
-        dir_paths: list[Path] = [],
-        status_paths: dict[Path, str] = {},
-        **kwargs,
-    ) -> None:
-        self.status_paths: dict[Path, str] = status_paths
-        self.file_paths: list[Path] = file_paths
-        self.dir_paths: list[Path] = dir_paths
-        super().__init__(
-            label="re_add_root_node",
-            classes="any-tree",
-            id="re_add_tree",
-            **kwargs,
-        )
-
-    def on_mount(self) -> None:
-        print(f"Mounting {self.__class__.__name__} tree")
-        self.status_paths = chezmoi.status_paths.re_add_files
-
-    def watch_include_unchanged_files(self) -> None:
-        print(
-            f"new value for changed files in {self} = {self.include_unchanged_files}"
         )
 
 
