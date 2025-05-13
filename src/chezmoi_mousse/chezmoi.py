@@ -179,7 +179,7 @@ class Chezmoi:
         if not dir_path.is_dir():
             raise ValueError(f"Directory does not exist: {dir_path}")
         path_strings = subprocess_run(
-            self.base + ["unmanaged", "--path-style=absolute", str(dir_path)]
+            [self.base, "unmanaged", "--path-style=absolute", str(dir_path)]
         ).splitlines()
         return [
             p
@@ -188,44 +188,52 @@ class Chezmoi:
         ]
 
     def add(self, file_path: Path) -> str:
-        long_command = (
-            self.base
-            + ["--dry-run", "--verbose"]
-            + [
-                "add",
-                "--include=files",
-                "--recursive=false",
-                "--prompt=false",
-                "--secrets=error",
-            ]
-        )
+        long_command = [
+            self.base,
+            "--dry-run",
+            "--verbose",
+            "add",
+            "--include=files",
+            "--recursive=false",
+            "--prompt=false",
+            "--secrets=error",
+        ]
         # Scan for secrets when adding unencrypted files
         return subprocess_run(long_command + [str(file_path)])
 
     def re_add(self, file_path: Path) -> str:
-        long_command = (
-            self.base
-            + ["--dry-run", "--verbose"]
-            + ["re-add", "--include=files", "--recursive=false"]
-        )
+        long_command = [
+            self.base,
+            "--dry-run",
+            "--verbose",
+            "re-add",
+            "--include=files",
+            "--recursive=false",
+        ]
         return subprocess_run(long_command + [file_path])
 
     def apply(self, file_path: Path) -> str:
-        long_command = (
-            self.base
-            + ["--dry-run", "--verbose"]
-            + ["apply", "--include=files", "--recursive=false"]
-        )
+        long_command = [
+            self.base,
+            "--dry-run",
+            "--verbose",
+            "apply",
+            "--include=files",
+            "--recursive=false",
+        ]
         return subprocess_run(long_command + [file_path])
 
     def diff(self, file_path: str, apply: bool) -> list[str]:
         long_command = self.base + ["diff"] + [file_path]
         if apply:
             return subprocess_run(long_command).splitlines()
-        return subprocess_run(long_command + ["--reverse"]).splitlines()
+        return subprocess_run([long_command, "--reverse"]).splitlines()
 
     def cat(self, file_path: str) -> str:
-        return subprocess_run(self.base + ["cat"] + [file_path])
+        return subprocess_run([self.base, "cat", file_path])
+
+    def status(self, path: str) -> str:
+        return subprocess_run([self.base, "status", path])
 
 
 chezmoi = Chezmoi()
