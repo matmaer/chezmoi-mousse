@@ -376,53 +376,53 @@ class ApplyTab(VerticalScroll):
             apply_tree.include_unchanged_files = event.value
 
 
-# class ReAddTab(VerticalScroll):
+class ReAddTab(VerticalScroll):
 
-#     BINDINGS = [
-#         Binding(
-#             key="F,f",
-#             action="toggle_filterbar",
-#             description="filters",
-#             tooltip="show/hide filters",
-#         ),
-#         Binding(
-#             key="A,a",
-#             action="re_add_path",
-#             description="re-add-chezmoi",
-#             tooltip="overwrite chezmoi repository with your current dotfiles",
-#         ),
-#     ]
+    BINDINGS = [
+        Binding(
+            key="F,f",
+            action="toggle_filterbar",
+            description="filters",
+            tooltip="show/hide filters",
+        ),
+        Binding(
+            key="A,a",
+            action="re_add_path",
+            description="re-add-chezmoi",
+            tooltip="overwrite chezmoi repository with your current dotfiles",
+        ),
+    ]
 
-#     def compose(self) -> ComposeResult:
-#         with VerticalScroll():
-#             yield ChezmoiStatus(apply=False)
-#             yield Horizontal(ReAddTree(), FileView())
+    def compose(self) -> ComposeResult:
+        with VerticalScroll():
+            yield ChezmoiStatus(apply=False)
+            # yield Horizontal(ReAddTree(), FileView())
 
-#         yield FilterBar(
-#             filter_key="re_add_tab", tab_filters_id="re_add_filters"
-#         )
+        yield FilterBar(
+            filter_key="re_add_tab", tab_filters_id="re_add_filters"
+        )
 
-#     def action_toggle_filterbar(self):
-#         self.query_one("#re_add_filters", FilterBar).toggle_class("-visible")
+    def action_toggle_filterbar(self):
+        self.query_one("#re_add_filters", FilterBar).toggle_class("-visible")
 
-#     def action_re_add_path(self) -> None:
-#         self.notify("will re-add path")
+    def action_re_add_path(self) -> None:
+        self.notify("will re-add path")
 
-#     def on_resize(self) -> None:
-#         self.query_exactly_one(ReAddTree).focus()
+    # def on_resize(self) -> None:
+    #     self.query_exactly_one(ReAddTree).focus()
 
-#     @on(ReAddTree.NodeSelected)
-#     def update_preview_path(self, event: ReAddTree.NodeSelected) -> None:
-#         if event.node.data is not None:
-#             self.query_exactly_one(FileView).file_path = event.node.data.path
-#         else:
-#             self.query_exactly_one(FileView).file_path = None
+    # @on(ReAddTree.NodeSelected)
+    # def update_preview_path(self, event: ReAddTree.NodeSelected) -> None:
+    #     if event.node.data is not None:
+    #         self.query_exactly_one(FileView).file_path = event.node.data.path
+    #     else:
+    #         self.query_exactly_one(FileView).file_path = None
 
-#     @on(Switch.Changed)
-#     def notify_re_add_tree(self, event: Switch.Changed) -> None:
-#         re_add_tree = self.query_exactly_one(ReAddTree)
-#         if event.switch.id == "re_add_tab_changed_files":
-#             re_add_tree.include_unchanged_files = event.value
+    # @on(Switch.Changed)
+    # def notify_re_add_tree(self, event: Switch.Changed) -> None:
+    #     re_add_tree = self.query_exactly_one(ReAddTree)
+    #     if event.switch.id == "re_add_tab_changed_files":
+    #         re_add_tree.include_unchanged_files = event.value
 
 
 class DiagramTab(VerticalScroll):

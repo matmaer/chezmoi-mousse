@@ -244,15 +244,16 @@ class ManagedTree(Tree[NodeData]):
         assert isinstance(file_node.data, NodeData)
         """Color file node (leaf) based on its status."""
         if file_node.data.path in self.status_files:
-
             file_node.set_label(
                 Text(
-                    str(file_node.label),
+                    f"{file_node.data.path.name}",
                     style=self.node_colors[file_node.data.status],
                 )
             )
         else:
-            file_node.set_label(Text(str(file_node.label), Style(dim=True)))
+            file_node.set_label(
+                Text(str(file_node.data.path.name), Style(dim=True))
+            )
 
     def add_child_nodes(self, tree_node: TreeNode) -> None:
         assert isinstance(tree_node.data, NodeData)
