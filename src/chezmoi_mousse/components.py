@@ -57,58 +57,79 @@ class AutoWarning(Static):
         )
 
 
-class FileView(RichLog):
+class PathView(RichLog):
     """RichLog widget to display the content of a file with highlighting."""
 
-    file_path: reactive[Path | None] = reactive(None)
+    path: reactive[Path | None] = reactive(None)
 
-    def __init__(self, file_path: Path | None = None, **kwargs) -> None:
+    def __init__(self, path: Path | None = None, **kwargs) -> None:
         super().__init__(
             auto_scroll=False, highlight=True, classes="file-preview", **kwargs
         )
-        self.file_path = file_path
+        self.path = path
         self.cat_output: str | None = None
 
     def on_mount(self) -> None:
-        if self.file_path is None:
+        if self.path is None or not isinstance(self.path, Path):
             self.write(" Select a file to view its content.")
-
         else:
             truncated = ""
             try:
-                if self.file_path.stat().st_size > 150 * 1024:
+                if self.path.stat().st_size > 150 * 1024:
                     truncated = (
                         "\n\n------ File content truncated to 150 KiB ------\n"
                     )
-            except (PermissionError, FileNotFoundError, OSError) as error:
-                if FileNotFoundError:
-                    if self.file_path in chezmoi.managed_file_paths:
-                        self.cat_output = chezmoi.cat(str(self.file_path))
+            except PermissionError as error:
+                self.write(error.strerror)
+                return
+            except FileNotFoundError as error:
+                # FileNotFoundError is raised both when a file or a directory
+                # does not exist
+                if self.path in chezmoi.managed_file_paths:
+                    self.write(chezmoi.cat(str(self.path)))
+                    return
+                elif self.path in chezmoi.managed_dir_paths:
+                    text = [
+                        "The directory is managed, and does not exist on disk.",
+                        f'Output from "chezmoi status {self.path}"',
+                        f"{chezmoi.status(str(self.path))}",
+                    ]
+                    self.write("\n".join(text))
+                    return
                 else:
-                    self.write(error.strerror)
+                    # a file or dir that doesn't exist and is not managed
+                    # should not be displayed in the UI, so raise
+                    raise error
             try:
                 if self.cat_output:
                     self.write(self.cat_output)
                 else:
-                    with open(self.file_path, "rt", encoding="utf-8") as file:
+                    with open(self.path, "rt", encoding="utf-8") as file:
                         file_content = file.read(150 * 1024)
                         if not file_content.strip():
                             self.write("File contains only whitespace")
                         else:
                             self.write(file_content + truncated)
-            except (UnicodeDecodeError, IsADirectoryError) as error:
-                if isinstance(error, UnicodeDecodeError):
-                    self.write("The file cannot be decoded as UTF-8")
-                else:
-                    self.write(error.strerror)
 
-    def watch_file_path(self) -> None:
-        if self.file_path is not None:
+            except IsADirectoryError as error:
+                self.write(f"Directory: {self.path}")
+                return
+
+            except UnicodeDecodeError as error:
+                text = Content(f"{self.path} cannot be decoded as UTF-8.")
+                text.stylize("text-error")
+                self.write(text)
+                return
+
+            except OSError as error:
+                text = Content(f"Error reading {self.path}: {error}")
+                self.write(text)
+
+    def watch_path(self) -> None:
+        if self.path is not None:
             self.clear()
             self.on_mount()
-            self.border_title = (
-                f" {self.file_path.relative_to(chezmoi.dest_dir)} "
-            )
+            self.border_title = f" {self.path.relative_to(chezmoi.dest_dir)} "
         else:
             self.border_title = " no file selected "
 
