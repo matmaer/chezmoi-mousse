@@ -240,6 +240,12 @@ class ManagedTree(Tree[NodeData]):
         self.status_files: dict[Path, str] = status_files
         self.status_dirs: dict[Path, str] = status_dirs
 
+    def print_vars(self) -> None:
+        print(f"file_paths: {self.file_paths}")
+        print(f"dir_paths: {self.dir_paths}")
+        print(f"status_files: {self.status_files}")
+        print(f"status_dirs: {self.status_dirs}")
+
     def color_file(self, file_node: TreeNode) -> None:
         assert isinstance(file_node.data, NodeData)
         """Color file node (leaf) based on its status."""
@@ -272,7 +278,11 @@ class ManagedTree(Tree[NodeData]):
         ]
         for file_path in file_children:
 
-            node_data = NodeData(path=file_path, is_file=True)
+            node_data = NodeData(
+                path=file_path,
+                is_file=True,
+                status=self.status_files[file_path],
+            )
             new_leaf = tree_node.add_leaf(file_path.name, node_data)
 
             assert isinstance(new_leaf.data, NodeData)
@@ -317,7 +327,7 @@ class ApplyTree(ManagedTree):
         # Initialize paths and status data
         self.file_paths = sorted(list(chezmoi.managed_file_paths))
         self.dir_paths = sorted(list(chezmoi.managed_dir_paths))
-        self.status_paths: dict[Path, str] = chezmoi.status_paths[
+        self.status_files: dict[Path, str] = chezmoi.status_paths[
             "apply_files"
         ]
         self.status_dirs: dict[Path, str] = chezmoi.status_paths["apply_dirs"]
