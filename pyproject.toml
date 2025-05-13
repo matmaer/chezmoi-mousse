@@ -33,6 +33,7 @@ dev = [
     "snakeviz>=2.2.2",
     "textual>=3.1.0",
     "textual-dev>=1.7.0",
+    "textual-slidecontainer>=0.4.0",
 ]
 
 [tool.pre-commit]
