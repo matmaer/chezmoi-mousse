@@ -297,9 +297,7 @@ class DoctorTab(VerticalScroll):
                         ListItem(
                             # color accent as that's how links are styled by default
                             Static(f"[$accent-muted]{row[1]}[/]", markup=True),
-                            Label(
-                                "Not Found in $PATH, no description available in TUI."
-                            ),
+                            Label("Not Found in $PATH, no description found."),
                         )
                     )
             elif row[0] == "ok" or row[0] == "warning" or row[0] == "error":

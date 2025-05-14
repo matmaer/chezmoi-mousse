@@ -116,9 +116,8 @@ class PathView(RichLog):
                 return
 
             except UnicodeDecodeError as error:
-                text = Content(f"{self.path} cannot be decoded as UTF-8.")
-                text.stylize("text-error")
-                self.write(text)
+                text = f"{self.path} cannot be decoded as UTF-8."
+                self.write(f"{self.path} cannot be decoded as UTF-8.")
                 return
 
             except OSError as error:
@@ -166,8 +165,8 @@ class StaticDiff(Static):
 
 class FilteredDirTree(DirectoryTree):
 
-    include_unmanaged_dirs = reactive(False, always_update=True)
-    filter_unwanted = reactive(False, always_update=True)
+    include_unmanaged_dirs = reactive(False)
+    filter_unwanted = reactive(False)
 
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
         managed_dirs = chezmoi.managed_dir_paths
