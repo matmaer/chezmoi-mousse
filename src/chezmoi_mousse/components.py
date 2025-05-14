@@ -460,6 +460,10 @@ class ReAddTree(ManagedTree):
             self.file_paths = self.file_paths
             self.dir_paths = self.dir_paths
 
+        self.show_root = False
+        self.border_title = f" {chezmoi.dest_dir} "
+        self.root.expand()
+
     def watch_include_unchanged_files(self) -> None:
         print(
             f"new value for include_changed_files in {self} = {self.include_unchanged_files}"
