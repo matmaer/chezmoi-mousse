@@ -344,24 +344,14 @@ class ApplyTree(ManagedTree):
 
     def __init__(self) -> None:
         super().__init__(
-            file_paths=[],
-            dir_paths=[],
-            status_files={},
-            status_dirs={},
+            file_paths=[Path(p) for p in chezmoi.managed_files.list_out],
+            dir_paths=[Path(p) for p in chezmoi.managed_dirs.list_out],
+            status_files=chezmoi.status_paths["apply_files"],
+            status_dirs=chezmoi.status_paths["apply_dirs"],
             id="apply_tree",
         )
-        self.file_paths: list[Path] = []
-        self.dir_paths: list[Path] = []
-        self.status_files: dict[Path, str] = {}
-        self.status_dirs: dict[Path, str] = {}
 
     def on_mount(self) -> None:
-        self.file_paths = sorted(list(chezmoi.managed_file_paths))
-        self.dir_paths = sorted(list(chezmoi.managed_dir_paths))
-        self.status_files: dict[Path, str] = chezmoi.status_paths[
-            "apply_files"
-        ]
-        self.status_dirs: dict[Path, str] = chezmoi.status_paths["apply_dirs"]
 
         print(f"Mounting {self.__class__.__name__} tree")
 
@@ -423,25 +413,14 @@ class ReAddTree(ManagedTree):
 
     def __init__(self) -> None:
         super().__init__(
-            file_paths=[],
-            dir_paths=[],
-            status_files={},
-            status_dirs={},
-            id="re_add_tree",
+            file_paths=[Path(p) for p in chezmoi.managed_files.list_out],
+            dir_paths=[Path(p) for p in chezmoi.managed_dirs.list_out],
+            status_files=chezmoi.status_paths["re_add_files"],
+            status_dirs=chezmoi.status_paths["re_add_dirs"],
+            id="apply_tree",
         )
-        self.file_paths: list[Path] = []
-        self.dir_paths: list[Path] = []
-        self.status_files: dict[Path, str] = {}
-        self.status_dirs: dict[Path, str] = {}
 
     def on_mount(self) -> None:
-        self.file_paths = sorted(list(chezmoi.managed_file_paths))
-        self.dir_paths = sorted(list(chezmoi.managed_dir_paths))
-        self.status_files: dict[Path, str] = chezmoi.status_paths[
-            "apply_files"
-        ]
-        self.status_dirs: dict[Path, str] = chezmoi.status_paths["re_add_dirs"]
-
         print(f"Mounting {self.__class__.__name__} tree")
 
         # Default switch value: False
