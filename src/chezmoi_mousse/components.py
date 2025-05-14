@@ -310,6 +310,20 @@ class ManagedTree(Tree[NodeData]):
             if new_leaf.data.path in self.status_files:
                 self.color_file(new_leaf)
 
+    def create_parent_dir_list(
+        self, file_paths_to_process: list[Path]
+    ) -> list[Path]:
+        """Create a list of all parent directories for the given file paths."""
+        assert isinstance(self.root.data, NodeData)
+        parent_dirs = set()
+        for file_path in file_paths_to_process:
+            current_path = file_path.parent
+            while current_path != self.root.data.path:
+                if current_path not in parent_dirs:
+                    parent_dirs.add(current_path)
+                current_path = current_path.parent
+        return sorted(list(parent_dirs))
+
     @on(Tree.NodeExpanded)
     def populate_directory(self, event: Tree.NodeExpanded) -> None:
         print(f"Node expanded: {event.node.label}")
@@ -393,20 +407,6 @@ class ApplyTree(ManagedTree):
         self.border_title = f" {chezmoi.dest_dir} "
         self.root.expand()
 
-    def create_parent_dir_list(
-        self, file_paths_to_process: list[Path]
-    ) -> list[Path]:
-        """Create a list of all parent directories for the given file paths."""
-        assert isinstance(self.root.data, NodeData)
-        parent_dirs = set()
-        for file_path in file_paths_to_process:
-            current_path = file_path.parent
-            while current_path != self.root.data.path:
-                if current_path not in parent_dirs:
-                    parent_dirs.add(current_path)
-                current_path = current_path.parent
-        return sorted(list(parent_dirs))
-
     def watch_only_missing(self) -> None:
         print(f"new value for only_missing in {self} = {self.only_missing}")
 
@@ -427,12 +427,43 @@ class ReAddTree(ManagedTree):
             dir_paths=[],
             status_files={},
             status_dirs={},
-            id="apply_tree",
+            id="re_add_tree",
         )
         self.file_paths: list[Path] = []
         self.dir_paths: list[Path] = []
         self.status_files: dict[Path, str] = {}
         self.status_dirs: dict[Path, str] = {}
+
+    def on_mount(self) -> None:
+        self.file_paths = sorted(list(chezmoi.managed_file_paths))
+        self.dir_paths = sorted(list(chezmoi.managed_dir_paths))
+        self.status_files: dict[Path, str] = chezmoi.status_paths[
+            "apply_files"
+        ]
+        self.status_dirs: dict[Path, str] = chezmoi.status_paths["re_add_dirs"]
+
+        print(f"Mounting {self.__class__.__name__} tree")
+
+        # Default switch value: False
+        if not self.include_unchanged_files:
+            self.file_paths = [
+                f
+                for f in self.file_paths
+                if f in chezmoi.status_paths["apply_files"]
+            ]
+            parent_dirs = self.create_parent_dir_list(self.file_paths)
+            status_dirs = [d for d in self.dir_paths if d in self.status_dirs]
+            self.dir_paths = sorted(parent_dirs + status_dirs)
+
+        # Include all files and directories that are managed and exist
+        elif self.include_unchanged_files:
+            self.file_paths = self.file_paths
+            self.dir_paths = self.dir_paths
+
+    def watch_include_unchanged_files(self) -> None:
+        print(
+            f"new value for include_changed_files in {self} = {self.include_unchanged_files}"
+        )
 
 
 class ChezmoiStatus(VerticalScroll):
