@@ -494,7 +494,7 @@ class ChezmoiStatus(VerticalScroll):
         self.refresh(recompose=True)
 
 
-class FilterBar(Container):
+class FilterBar(VerticalGroup):
 
     class FilterSwitch(HorizontalGroup):
         """A switch, a label and a tooltip."""
@@ -513,31 +513,22 @@ class FilterBar(Container):
                 tooltip=self.switch_data["tooltip"]
             )
 
-    class TabFilters(VerticalGroup):
-
-        def __init__(self, filter_key: str) -> None:
-            self.filter_key = filter_key
-            self.tab_switches: list[HorizontalGroup] = []
-            super().__init__()
-
-        def compose(self) -> ComposeResult:
-            yield from self.tab_switches
-
-        def on_mount(self) -> None:
-            self.tab_switch_data = {
-                f"{self.filter_key}_{key}": value
-                for key, value in filter_switch_data.items()
-                if self.filter_key in value.get("filter_keys", [])
-            }
-            self.tab_switches = [
-                FilterBar.FilterSwitch(switch_data, switch_id)
-                for switch_id, switch_data in self.tab_switch_data.items()
-            ]
-            self.refresh(recompose=True)
-
     def __init__(self, filter_key: str, tab_filters_id: str) -> None:
         self.filter_key = filter_key
+        self.tab_switches: list[HorizontalGroup] = []
         super().__init__(id=tab_filters_id)
 
+    def on_mount(self) -> None:
+        self.tab_switch_data = {
+            f"{self.filter_key}_{key}": value
+            for key, value in filter_switch_data.items()
+            if self.filter_key in value.get("filter_keys", [])
+        }
+        self.tab_switches = [
+            FilterBar.FilterSwitch(switch_data, switch_id)
+            for switch_id, switch_data in self.tab_switch_data.items()
+        ]
+        self.refresh(recompose=True)
+
     def compose(self) -> ComposeResult:
-        yield FilterBar.TabFilters(self.filter_key)
+        yield from self.tab_switches
