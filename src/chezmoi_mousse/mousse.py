@@ -42,7 +42,7 @@ from chezmoi_mousse.components import (
 from chezmoi_mousse.config import pw_mgr_info
 
 
-class AddTab(Container):
+class AddTab(Horizontal):
 
     BINDINGS = [
         Binding(
@@ -64,13 +64,12 @@ class AddTab(Container):
         super().__init__(id="add_tab")
 
     def compose(self) -> ComposeResult:
-        with Horizontal():
-            yield FilteredDirTree(
-                chezmoi.dest_dir,
-                classes="dir-tree any-tree",
-                id="filtered_dir_tree",
-            )
-            yield PathView()
+        yield FilteredDirTree(
+            chezmoi.dest_dir,
+            classes="dir-tree any-tree",
+            id="filtered_dir_tree",
+        )
+        yield PathView()
         yield FilterBar(filter_key="add_tab", tab_filters_id="add_filters")
 
     def on_mount(self) -> None:
@@ -347,9 +346,8 @@ class ApplyTab(VerticalScroll):
         super().__init__(id="apply_tab")
 
     def compose(self) -> ComposeResult:
-        with VerticalScroll():
-            yield ChezmoiStatus(apply=True)
-            yield Horizontal(ApplyTree(), PathView(id="apply_file"))
+        yield ChezmoiStatus(apply=True)
+        yield Horizontal(ApplyTree(), PathView(id="apply_file"))
         yield FilterBar(filter_key="apply_tab", tab_filters_id="apply_filters")
 
     def action_toggle_filterbar(self):
@@ -395,10 +393,8 @@ class ReAddTab(VerticalScroll):
     ]
 
     def compose(self) -> ComposeResult:
-        with VerticalScroll():
-            yield ChezmoiStatus(apply=False)
-            yield Horizontal(ReAddTree(), PathView())
-
+        yield ChezmoiStatus(apply=False)
+        yield Horizontal(ReAddTree(), PathView())
         yield FilterBar(
             filter_key="re_add_tab", tab_filters_id="re_add_filters"
         )
