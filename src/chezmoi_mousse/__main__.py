@@ -14,32 +14,6 @@ from textual.widgets._tooltip import Tooltip
 from chezmoi_mousse.gui import ChezmoiTUI
 
 
-def _handle_tooltip_timer(self, widget: Widget) -> None:
-    """Make the tooltip display temporarily when the mouse is over a widget."""
-
-    try:
-        tooltip = self.get_child_by_type(Tooltip)
-    except NoMatches:
-        pass
-    else:
-        tooltip_content: RenderableType | None = None
-        for node in widget.ancestors_with_self:
-            if not isinstance(node, Widget):
-                break
-            if node.tooltip is not None:
-                tooltip_content = node.tooltip  # type: ignore
-                break
-
-        if tooltip_content is None:
-            tooltip.display = False
-        else:
-            tooltip.display = True
-            tooltip.absolute_offset = self.app.mouse_position
-            tooltip.update(tooltip_content)
-
-            self.set_timer(2.5, lambda: setattr(tooltip, "display", False))
-
-
 class CustomScrollBarRender(ScrollBarRender):
     """Enable slim horizontal scrollbar."""
 
@@ -179,8 +153,7 @@ def main():
 
     app = ChezmoiTUI()
 
-    # MONKEY PATCHES:
-    Screen._handle_tooltip_timer = _handle_tooltip_timer
+    # MONKEY PATCH:
     ScrollBar.renderer = CustomScrollBarRender
 
     app.run(inline=False, headless=False, mouse=True)
