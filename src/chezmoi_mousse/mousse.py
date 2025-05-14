@@ -37,7 +37,7 @@ from chezmoi_mousse.components import (
     PathView,
     FilterBar,
     FilteredDirTree,
-    # ReAddTree,
+    ReAddTree,
 )
 from chezmoi_mousse.config import pw_mgr_info
 
@@ -297,7 +297,7 @@ class DoctorTab(VerticalScroll):
                         ListItem(
                             # color accent as that's how links are styled by default
                             Static(f"[$accent-muted]{row[1]}[/]", markup=True),
-                            Label("Not Found in $PATH, no description found."),
+                            Label("Not Found in $PATH."),
                         )
                     )
             elif row[0] == "ok" or row[0] == "warning" or row[0] == "error":
@@ -397,7 +397,7 @@ class ReAddTab(VerticalScroll):
     def compose(self) -> ComposeResult:
         with VerticalScroll():
             yield ChezmoiStatus(apply=False)
-            # yield Horizontal(ReAddTree(), PathView())
+            yield Horizontal(ReAddTree(), PathView())
 
         yield FilterBar(
             filter_key="re_add_tab", tab_filters_id="re_add_filters"
@@ -409,21 +409,21 @@ class ReAddTab(VerticalScroll):
     def action_re_add_path(self) -> None:
         self.notify("will re-add path")
 
-    # def on_resize(self) -> None:
-    #     self.query_exactly_one(ReAddTree).focus()
+    def on_resize(self) -> None:
+        self.query_exactly_one(ReAddTree).focus()
 
-    # @on(ReAddTree.NodeSelected)
-    # def update_preview_path(self, event: ReAddTree.NodeSelected) -> None:
-    #     if event.node.data is not None:
-    #         self.query_exactly_one(PathView).file_path = event.node.data.path
-    #     else:
-    #         self.query_exactly_one(PathView).file_path = None
+    @on(ReAddTree.NodeSelected)
+    def update_preview_path(self, event: ReAddTree.NodeSelected) -> None:
+        if event.node.data is not None:
+            self.query_exactly_one(PathView).path = event.node.data.path
+        else:
+            self.query_exactly_one(PathView).path = None
 
-    # @on(Switch.Changed)
-    # def notify_re_add_tree(self, event: Switch.Changed) -> None:
-    #     re_add_tree = self.query_exactly_one(ReAddTree)
-    #     if event.switch.id == "re_add_tab_changed_files":
-    #         re_add_tree.include_unchanged_files = event.value
+    @on(Switch.Changed)
+    def notify_re_add_tree(self, event: Switch.Changed) -> None:
+        re_add_tree = self.query_exactly_one(ReAddTree)
+        if event.switch.id == "re_add_tab_changed_files":
+            re_add_tree.include_unchanged_files = event.value
 
 
 class DiagramTab(VerticalScroll):

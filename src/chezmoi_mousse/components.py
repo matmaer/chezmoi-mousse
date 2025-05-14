@@ -323,13 +323,12 @@ class ManagedTree(Tree[NodeData]):
 
 
 class ApplyTree(ManagedTree):
-    """Tree for managing 'apply' operations."""
+    """Tree for 'chezmoi apply' operations."""
 
     only_missing: reactive[bool] = reactive(False, init=False)
     include_unchanged_files: reactive[bool] = reactive(False, init=False)
 
     def __init__(self) -> None:
-        # Pass placeholder values to ManagedTree.__init__()
         super().__init__(
             file_paths=[],
             dir_paths=[],
@@ -337,14 +336,12 @@ class ApplyTree(ManagedTree):
             status_dirs={},
             id="apply_tree",
         )
-        # Attributes will be initialized in on_mount
         self.file_paths: list[Path] = []
         self.dir_paths: list[Path] = []
         self.status_files: dict[Path, str] = {}
         self.status_dirs: dict[Path, str] = {}
 
     def on_mount(self) -> None:
-        # Initialize paths and status data
         self.file_paths = sorted(list(chezmoi.managed_file_paths))
         self.dir_paths = sorted(list(chezmoi.managed_dir_paths))
         self.status_files: dict[Path, str] = chezmoi.status_paths[
@@ -417,6 +414,25 @@ class ApplyTree(ManagedTree):
         print(
             f"new value for include_changed_files in {self} = {self.include_unchanged_files}"
         )
+
+
+class ReAddTree(ManagedTree):
+    """Tree for 'chezmoi re-add' operations."""
+
+    include_unchanged_files: reactive[bool] = reactive(False, init=False)
+
+    def __init__(self) -> None:
+        super().__init__(
+            file_paths=[],
+            dir_paths=[],
+            status_files={},
+            status_dirs={},
+            id="apply_tree",
+        )
+        self.file_paths: list[Path] = []
+        self.dir_paths: list[Path] = []
+        self.status_files: dict[Path, str] = {}
+        self.status_dirs: dict[Path, str] = {}
 
 
 class ChezmoiStatus(VerticalScroll):
