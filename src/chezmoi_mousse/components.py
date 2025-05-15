@@ -106,11 +106,11 @@ class PathView(RichLog):
                         else:
                             self.write(file_content + truncated)
 
-            except IsADirectoryError as error:
+            except IsADirectoryError:
                 self.write(f"Directory: {self.path}")
                 return
 
-            except UnicodeDecodeError as error:
+            except UnicodeDecodeError:
                 text = f"{self.path} cannot be decoded as UTF-8."
                 self.write(f"{self.path} cannot be decoded as UTF-8.")
                 return

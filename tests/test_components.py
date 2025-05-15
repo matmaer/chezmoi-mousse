@@ -1,5 +1,3 @@
-from pathlib import Path
-
 import pytest
 
 import chezmoi_mousse.mousse as mousse

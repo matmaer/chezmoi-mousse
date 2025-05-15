@@ -51,7 +51,7 @@ class InputOutput:
                 .replace("false", "False")
                 .replace("true", "True")
             )
-        except (SyntaxError, ValueError) as error:
+        except (SyntaxError, ValueError):
             self.dict_out = {}
 
 
