@@ -251,26 +251,18 @@ class ManagedTree(Tree[NodeData]):
         self.status_files: dict[Path, str] = status_files
         self.status_dirs: dict[Path, str] = status_dirs
 
-    def print_vars(self) -> None:
-        print(f"file_paths: {self.file_paths}")
-        print(f"dir_paths: {self.dir_paths}")
-        print(f"status_files: {self.status_files}")
-        print(f"status_dirs: {self.status_dirs}")
-
-    def color_file(self, file_node: TreeNode) -> None:
-        assert isinstance(file_node.data, NodeData)
+    def style_node(self, node: TreeNode) -> None:
+        assert isinstance(node.data, NodeData)
         """Color file node (leaf) based on its status."""
-        if file_node.data.path in self.status_files:
-            file_node.set_label(
+        if node.data.path in self.status_files:
+            node.set_label(
                 Text(
-                    f"{file_node.data.path.name}",
-                    style=self.node_colors[file_node.data.status],
+                    f"{node.data.path.name}",
+                    style=self.node_colors[node.data.status],
                 )
             )
         else:
-            file_node.set_label(
-                Text(str(file_node.data.path.name), Style(dim=True))
-            )
+            node.set_label(Text(str(node.data.path.name), Style(dim=True)))
 
     def add_child_nodes(self, tree_node: TreeNode) -> None:
         assert isinstance(tree_node.data, NodeData)
@@ -299,7 +291,7 @@ class ManagedTree(Tree[NodeData]):
             assert isinstance(new_leaf.data, NodeData)
 
             if new_leaf.data.path in self.status_files:
-                self.color_file(new_leaf)
+                self.style_node(new_leaf)
 
     def create_parent_dir_list(
         self, file_paths_to_process: list[Path]
@@ -325,8 +317,6 @@ class ManagedTree(Tree[NodeData]):
 
     @on(Tree.NodeCollapsed)
     def clear_all_children(self, event: Tree.NodeExpanded) -> None:
-
-        print(f"Node collapsed: {event.node.label}")
         event.node.remove_children()
 
 
