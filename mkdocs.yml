@@ -3,3 +3,19 @@ site_description: Docs for to use the textual chezmoi GUI.
 site_author: Matsi
 site_url: https://matmaer.github.io/chezmoi-mousse/docs
 repo_url: https://github.com/matmaer/chezmoi-mousse/
+
+
+theme:
+  name: material
+  palette:
+    # Dark Mode
+    - scheme: slate
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+
+    # Light Mode
+    - scheme: default
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
