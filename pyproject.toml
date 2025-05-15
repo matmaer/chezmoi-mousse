@@ -5,6 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "mkdocs-material>=9.6.14",
     "textual>=3.1.1",
 ]
 
