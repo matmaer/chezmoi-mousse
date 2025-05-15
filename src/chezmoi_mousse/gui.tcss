@@ -155,8 +155,7 @@ FilterBar {
   width: auto;
   /* max-width to keep the switches in view, labels overflow first */
   max-width: 1fr;
-  /* offset-x: -100%; out if view if docked left */
-  offset-x: -100%;
+  offset-x: 0%;
   transition: offset 380ms;
 
   & VerticalGroup {
@@ -208,7 +207,7 @@ FilterBar {
   }
 
   &.-visible {
-    offset-x: 0%;
+    offset-x: -100%;
   }
 }
 
