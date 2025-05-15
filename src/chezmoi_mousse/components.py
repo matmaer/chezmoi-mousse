@@ -218,7 +218,7 @@ class FilteredDirTree(DirectoryTree):
 @dataclass
 class NodeData:
     path: Path
-    exists: bool = True
+    found: bool = True
     is_file: bool = False
     status: str = "X"
 
@@ -244,54 +244,53 @@ class ManagedTree(Tree[NodeData]):
         root_data = NodeData(path=chezmoi.dest_dir)
         root_label = str(chezmoi.dest_dir)
         super().__init__(
-            data=root_data, label=root_label, classes="any-tree", **kwargs
+            data=root_data,
+            label=root_label,
+            classes="any-tree managed-tree",
+            **kwargs,
         )
         self.file_paths: list[Path] = file_paths
         self.dir_paths: list[Path] = dir_paths
         self.status_files: dict[Path, str] = status_files
         self.status_dirs: dict[Path, str] = status_dirs
 
-    def style_node(self, node: TreeNode) -> None:
-        assert isinstance(node.data, NodeData)
-        """Color file node (leaf) based on its status."""
-        if node.data.path in self.status_files:
-            node.set_label(
-                Text(
-                    f"{node.data.path.name}",
-                    style=self.node_colors[node.data.status],
-                )
+    def style_label(self, node_data: NodeData) -> Text:
+        assert isinstance(node_data, NodeData)
+        """Color node based on being a file, directary and its status."""
+        italic = False if node_data.found else True
+        if node_data.status != "X":  # files with a status
+            style = Style(
+                color=self.node_colors[node_data.status], italic=italic
             )
-        else:
-            node.set_label(Text(str(node.data.path.name), Style(dim=True)))
+        elif node_data.is_file:
+            style = "dim"
+        else:  # format a directory node without status
+            style = self.node_colors["Dir"]
+        return Text(node_data.path.name, style=style)
 
     def add_child_nodes(self, tree_node: TreeNode) -> None:
         assert isinstance(tree_node.data, NodeData)
         # collect subdirectories to add based on the tree_node parameter
-        sub_dirs = [
+        for dir_path in [
             d for d in self.dir_paths if d.parent == tree_node.data.path
-        ]
-        for dir_path in sub_dirs:
-            node_data = NodeData(path=dir_path)
-            node_label = Text(dir_path.name, style=self.node_colors["Dir"])
-            tree_node.add(node_label, node_data)
+        ]:
+            node_data = NodeData(path=dir_path, found=dir_path.exists())
+            if dir_path in self.status_dirs:
+                node_data.status = self.status_dirs[dir_path]
+            tree_node.add(label=self.style_label(node_data), data=node_data)
 
         # collect files to add based on the tree_node parameter
-        file_children = [
+        for file_path in [
             f for f in self.file_paths if f.parent == tree_node.data.path
-        ]
-        for file_path in file_children:
-
+        ]:
             node_data = NodeData(
-                path=file_path,
-                is_file=True,
-                status=self.status_files[file_path],
+                path=file_path, is_file=True, found=file_path.exists()
             )
-            new_leaf = tree_node.add_leaf(file_path.name, node_data)
-
-            assert isinstance(new_leaf.data, NodeData)
-
-            if new_leaf.data.path in self.status_files:
-                self.style_node(new_leaf)
+            if file_path in self.status_files:
+                node_data.status = self.status_files[file_path]
+            tree_node.add_leaf(
+                label=self.style_label(node_data), data=node_data
+            )
 
     def create_parent_dir_list(
         self, file_paths_to_process: list[Path]
@@ -343,39 +342,39 @@ class ApplyTree(ManagedTree):
         if not self.include_unchanged_files and not self.only_missing:
             self.file_paths = [
                 f
-                for f in self.file_paths
+                for f in [Path(p) for p in chezmoi.managed_files.list_out]
                 if f in chezmoi.status_paths["apply_files"]
             ]
             parent_dirs = self.create_parent_dir_list(self.file_paths)
-            status_dirs = [d for d in self.dir_paths if d in self.status_dirs]
+            status_dirs = [d for d in parent_dirs if d in self.status_dirs]
             self.dir_paths = sorted(parent_dirs + status_dirs)
 
         # Include all files and directories that are managed
         elif self.include_unchanged_files and not self.only_missing:
-            self.file_paths = self.file_paths
-            self.dir_paths = self.dir_paths
+            self.file_paths = [Path(p) for p in chezmoi.managed_files.list_out]
+            self.dir_paths = [Path(p) for p in chezmoi.managed_dirs.list_out]
 
         # Include all managed paths that are missing or their parents
         elif self.include_unchanged_files and self.only_missing:
             self.file_paths = [
                 f
-                for f in self.file_paths
-                if f in chezmoi.status_paths["apply_files"] and not f.exists()
+                for f in [Path(p) for p in chezmoi.managed_files.list_out]
+                if f in chezmoi.status_paths["apply_files"]
             ]
-            dirs_to_include = self.create_parent_dir_list(self.file_paths)
+            parent_dirs = self.create_parent_dir_list(self.file_paths)
             managed_dirs_with_status = [
-                d for d in self.dir_paths if d in self.status_dirs
+                d for d in parent_dirs if d in self.status_dirs
             ]
-            self.dir_paths = sorted(dirs_to_include + managed_dirs_with_status)
+            self.dir_paths = sorted(parent_dirs + managed_dirs_with_status)
 
         # Include all files or directories that are missing
         elif not self.include_unchanged_files and self.only_missing:
             self.file_paths = [
                 f
-                for f in self.file_paths
-                if f in chezmoi.status_paths["apply_files"] or not f.exists()
+                for f in [Path(p) for p in chezmoi.managed_files.list_out]
+                if f in chezmoi.status_paths["apply_files"]
             ]
-            self.dir_paths = self.dir_paths
+            self.dir_paths = [Path(p) for p in chezmoi.managed_dirs.list_out]
 
         self.show_root = False
         self.border_title = f" {chezmoi.dest_dir} "

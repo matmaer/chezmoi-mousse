@@ -217,7 +217,7 @@ Toast {
   background-tint: $surface;
 }
 
-Tree {
+.managed-tree {
   &>.tree--cursor {
     text-style: none;
     color: $accent-lighten-3;
