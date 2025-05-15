@@ -2,6 +2,7 @@ from pathlib import Path
 
 import pytest
 
+from chezmoi_mousse import components
 from chezmoi_mousse.chezmoi import Chezmoi
 
 

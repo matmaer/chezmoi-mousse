@@ -7,7 +7,6 @@ from textual import on
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import (
-    Container,
     Horizontal,
     HorizontalGroup,
     VerticalGroup,
@@ -34,9 +33,9 @@ from chezmoi_mousse.components import (
     ApplyTree,
     AutoWarning,
     ChezmoiStatus,
-    PathView,
     FilterBar,
     FilteredDirTree,
+    PathView,
     ReAddTree,
 )
 from chezmoi_mousse.config import pw_mgr_info

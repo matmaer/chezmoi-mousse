@@ -9,12 +9,7 @@ from rich.style import Style
 from rich.text import Text
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import (
-    Container,
-    HorizontalGroup,
-    VerticalGroup,
-    VerticalScroll,
-)
+from textual.containers import HorizontalGroup, VerticalGroup, VerticalScroll
 from textual.content import Content
 from textual.reactive import reactive
 from textual.widgets import (
