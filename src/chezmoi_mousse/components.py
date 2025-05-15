@@ -62,7 +62,6 @@ class PathView(RichLog):
             auto_scroll=False, highlight=True, classes="file-preview", **kwargs
         )
         self.path = path
-        self.cat_output: str | None = None
 
     def on_mount(self) -> None:
         if self.path is None or not isinstance(self.path, Path):
@@ -96,15 +95,12 @@ class PathView(RichLog):
                     # should not be displayed in the UI, so raise
                     raise error
             try:
-                if self.cat_output:
-                    self.write(self.cat_output)
-                else:
-                    with open(self.path, "rt", encoding="utf-8") as file:
-                        file_content = file.read(150 * 1024)
-                        if not file_content.strip():
-                            self.write("File contains only whitespace")
-                        else:
-                            self.write(file_content + truncated)
+                with open(self.path, "rt", encoding="utf-8") as file:
+                    file_content = file.read(150 * 1024)
+                    if not file_content.strip():
+                        self.write("File contains only whitespace")
+                    else:
+                        self.write(file_content + truncated)
 
             except IsADirectoryError:
                 self.write(f"Directory: {self.path}")
