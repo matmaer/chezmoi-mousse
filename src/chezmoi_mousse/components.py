@@ -315,6 +315,9 @@ class ManagedTree(Tree[NodeData]):
                 current_path = current_path.parent
         return sorted(list(parent_dirs))
 
+    def get_expanded_nodes(self) -> list[TreeNode]:
+        return [node for node in self._tree_nodes.values() if node.is_expanded]
+
     @on(Tree.NodeExpanded)
     def populate_directory(self, event: Tree.NodeExpanded) -> None:
         print(f"Node expanded: {event.node.label}")
