@@ -162,7 +162,6 @@ class FilteredDirTree(DirectoryTree):
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
         managed_dirs = chezmoi.managed_dir_paths
         managed_files = chezmoi.managed_file_paths
-        self.root.label = f"{chezmoi.dest_dir} (destDir)"
 
         # Switches: Red - Green (default)
         if not self.include_unmanaged_dirs and not self.filter_unwanted:
@@ -327,8 +326,8 @@ class ApplyTree(ManagedTree):
 
     def __init__(self) -> None:
         super().__init__(
-            file_paths=[Path(p) for p in chezmoi.managed_files.list_out],
-            dir_paths=[Path(p) for p in chezmoi.managed_dirs.list_out],
+            file_paths=chezmoi.managed_file_paths,
+            dir_paths=chezmoi.managed_dir_paths,
             status_files=chezmoi.status_paths["apply_files"],
             status_dirs=chezmoi.status_paths["apply_dirs"],
             id="apply_tree",
@@ -342,7 +341,7 @@ class ApplyTree(ManagedTree):
         if not self.include_unchanged_files and not self.only_missing:
             self.file_paths = [
                 f
-                for f in [Path(p) for p in chezmoi.managed_files.list_out]
+                for f in chezmoi.managed_file_paths
                 if f in chezmoi.status_paths["apply_files"]
             ]
             parent_dirs = self.create_parent_dir_list(self.file_paths)
@@ -351,14 +350,14 @@ class ApplyTree(ManagedTree):
 
         # Include all files and directories that are managed
         elif self.include_unchanged_files and not self.only_missing:
-            self.file_paths = [Path(p) for p in chezmoi.managed_files.list_out]
-            self.dir_paths = [Path(p) for p in chezmoi.managed_dirs.list_out]
+            self.file_paths = chezmoi.managed_file_paths
+            self.dir_paths = chezmoi.managed_dir_paths
 
         # Include all managed paths that are missing or their parents
         elif self.include_unchanged_files and self.only_missing:
             self.file_paths = [
                 f
-                for f in [Path(p) for p in chezmoi.managed_files.list_out]
+                for f in chezmoi.managed_file_paths
                 if f in chezmoi.status_paths["apply_files"]
             ]
             parent_dirs = self.create_parent_dir_list(self.file_paths)
@@ -371,10 +370,10 @@ class ApplyTree(ManagedTree):
         elif not self.include_unchanged_files and self.only_missing:
             self.file_paths = [
                 f
-                for f in [Path(p) for p in chezmoi.managed_files.list_out]
+                for f in chezmoi.managed_file_paths
                 if f in chezmoi.status_paths["apply_files"]
             ]
-            self.dir_paths = [Path(p) for p in chezmoi.managed_dirs.list_out]
+            self.dir_paths = chezmoi.managed_dir_paths
 
         self.show_root = False
         self.border_title = f" {chezmoi.dest_dir} "
@@ -396,8 +395,8 @@ class ReAddTree(ManagedTree):
 
     def __init__(self) -> None:
         super().__init__(
-            file_paths=[Path(p) for p in chezmoi.managed_files.list_out],
-            dir_paths=[Path(p) for p in chezmoi.managed_dirs.list_out],
+            file_paths=chezmoi.managed_file_paths,
+            dir_paths=chezmoi.managed_dir_paths,
             status_files=chezmoi.status_paths["re_add_files"],
             status_dirs=chezmoi.status_paths["re_add_dirs"],
             id="apply_tree",

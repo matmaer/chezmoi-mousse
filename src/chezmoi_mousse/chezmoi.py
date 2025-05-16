@@ -129,18 +129,12 @@ class Chezmoi:
         return self.dump_config.dict_out["git"]["autopush"]
 
     @property
-    def managed_dir_paths(self) -> set[Path]:
-        return {Path(p) for p in self.managed_dirs.list_out}
+    def managed_dir_paths(self) -> list[Path]:
+        return [Path(p) for p in self.managed_dirs.list_out]
 
     @property
-    def managed_file_paths(self) -> set[Path]:
-        return {Path(p) for p in self.managed_files.list_out}
-
-    @property
-    def existing_managed_file_paths(self) -> set[Path]:
-        return {
-            Path(p) for p in self.managed_files.list_out if Path(p).exists()
-        }
+    def managed_file_paths(self) -> list[Path]:
+        return [Path(p) for p in self.managed_files.list_out]
 
     @property
     def status_paths(self) -> dict[str, dict[Path, str]]:
