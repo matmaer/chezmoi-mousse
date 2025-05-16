@@ -220,7 +220,7 @@ class NodeData:
     path: Path
     found: bool
     is_file: bool
-    status = "X"
+    status: str
 
 
 class ManagedTree(Tree[NodeData]):
@@ -239,30 +239,27 @@ class ManagedTree(Tree[NodeData]):
         status_dirs: dict[Path, str],
         **kwargs,
     ) -> None:
-        root_data = NodeData(path=chezmoi.dest_dir, found=True, is_file=False)
-        root_label = str(chezmoi.dest_dir)
         super().__init__(
-            data=root_data,
-            label=root_label,
-            classes="any-tree managed-tree",
-            **kwargs,
+            label="initial root", classes="any-tree managed-tree", **kwargs
         )
         self.status_files: dict[Path, str] = status_files
         self.status_dirs: dict[Path, str] = status_dirs
         self.include_unchanged_files = False
         self.only_missing = False
 
-    def on_mount(self) -> None:
-        print(f"Mounting {self.__class__.__name__} tree")
-        self.show_root = False
-        self.border_title = f" {chezmoi.dest_dir} "
-        self.root.data = NodeData(
-            path=chezmoi.dest_dir, found=True, is_file=False
-        )
-        self.root.expand()
+    def get_all_current_nodes(self) -> list[TreeNode]:
+        """Get all current nodes in the tree."""
 
-    def get_expanded_nodes(self) -> list[TreeNode]:
-        return [node for node in self._tree_nodes.values() if node.is_expanded]
+        def collect_nodes(node: TreeNode) -> list[TreeNode]:
+            nodes = [node]
+            for child in node.children:
+                assert isinstance(child.data, NodeData)
+                if not child.data.is_file:
+                    nodes.append(child)
+                nodes.extend(collect_nodes(child))
+            return nodes
+
+        return collect_nodes(self.root)
 
     def style_label(self, node_data: NodeData) -> Text:
         assert isinstance(node_data, NodeData)
@@ -297,22 +294,32 @@ class ManagedTree(Tree[NodeData]):
     def create_files_data(self, file_paths: list[Path]) -> list[NodeData]:
         result: list[NodeData] = []
         for file_path in file_paths:
-            node_data = NodeData(
-                path=file_path, found=file_path.exists(), is_file=True
-            )
             if file_path in self.status_files:
-                node_data.status = self.status_files[file_path]
+                status_code = self.status_files[file_path]
+            else:
+                status_code = "X"
+            node_data = NodeData(
+                path=file_path,
+                found=file_path.exists(),
+                is_file=True,
+                status=status_code,
+            )
             result.append(node_data)
         return result
 
     def create_dirs_data(self, dir_paths: list[Path]) -> list[NodeData]:
         result: list[NodeData] = []
         for dir_path in dir_paths:
+            if dir_path in self.status_dirs:
+                status_code = self.status_dirs[dir_path]
+            else:
+                status_code = "X"
             node_data = NodeData(
-                path=dir_path, found=dir_path.exists(), is_file=False
+                path=dir_path,
+                found=dir_path.exists(),
+                is_file=False,
+                status=status_code,
             )
-            if dir_path in self.status_files:
-                node_data.status = self.status_files[dir_path]
             result.append(node_data)
         return result
 
@@ -336,16 +343,28 @@ class ManagedTree(Tree[NodeData]):
         # include_unchanged_files=True and only_missing=False
         return files_data
 
+    def expanded_node_cleanup(self) -> None:
+        current_nodes = self.get_all_current_nodes()
+        expanded_nodes = [n for n in current_nodes if n.is_expanded]
+        for node in expanded_nodes:
+            if not node.children:
+                node.remove()
+
     def populate_node(self, node: TreeNode) -> None:
         """Populate the node with files and directories."""
         assert isinstance(node.data, NodeData)
+
         dir_paths = chezmoi.managed_dir_paths_in_dir(node.data.path)
         dir_nodes_data = self.create_dirs_data(dir_paths)
+        # dirs_nodes_data = self.filter_files_data(dirs_nodes_data)
+
         file_paths = chezmoi.managed_file_paths_in_dir(node.data.path)
         file_nodes_data = self.create_files_data(file_paths)
 
         self.add_nodes(node, dir_nodes_data)
         self.add_leaves(node, self.filter_files_data(file_nodes_data))
+
+        # self.expanded_node_cleanup()
 
 
 class ApplyTree(ManagedTree):
@@ -358,21 +377,37 @@ class ApplyTree(ManagedTree):
             id="apply_tree",
         )
 
+    def on_mount(self) -> None:
+        print(f"Mounting {self.__class__.__name__} tree")
+        self.show_root = False
+        self.border_title = f" {chezmoi.dest_dir} "
+        self.root.data = NodeData(
+            path=chezmoi.dest_dir, found=True, is_file=False, status="X"
+        )
+        self.root.label = str(chezmoi.dest_dir)
+        self.root.expand()
+
+    @on(Switch.Changed)
+    def update_tree_nodes(self) -> None:
+        for node in self.get_all_current_nodes():
+            if node.children:
+                node.remove_children()
+                self.populate_node(node)
+
     @on(Tree.NodeExpanded)
     def update_node_children(self, event: Tree.NodeExpanded) -> None:
-        print(f"Node expanded: {event.node.label}")
+        print(f"Node expanded: {event.node.data}")
         self.populate_node(event.node)
 
-    @on(Tree.NodeCollapsed)
-    def clear_all_children(self, event: Tree.NodeExpanded) -> None:
-        print(f"Node expanded: {event.node.label}")
-        # event.node.remove_children()
+    @on(Tree.NodeSelected)
+    def print_node_data(self, event: Tree.NodeSelected) -> None:
+        print(f"Selected node data: {event.node.data}")
 
 
 class ReAddTree(ManagedTree):
     """Tree for 'chezmoi re-add' operations."""
 
-    include_unchanged_files: reactive[bool] = reactive(False, init=False)
+    # include_unchanged_files: reactive[bool] = reactive(False, init=False)
 
     def __init__(self) -> None:
         super().__init__(
@@ -381,17 +416,24 @@ class ReAddTree(ManagedTree):
             id="apply_tree",
         )
 
-    def on_mount(self) -> None:
-        print(f"Mounting {self.__class__.__name__} tree")
+    # def on_mount(self) -> None:
+    #     print(f"Mounting {self.__class__.__name__} tree")
+    #     self.show_root = False
+    #     self.border_title = f" {chezmoi.dest_dir} "
+    #     self.root.data = NodeData(
+    #         path=chezmoi.dest_dir, found=True, is_file=False
+    #     )
+    #     self.root.expand()
 
-        self.show_root = False
-        self.border_title = f" {chezmoi.dest_dir} "
-        self.root.expand()
+    # @on(Tree.NodeExpanded)
+    # def update_node_children(self, event: Tree.NodeExpanded) -> None:
+    #     print(f"Node expanded: {event.node.label}")
+    #     self.populate_node(event.node)
 
-    def watch_include_unchanged_files(self) -> None:
-        print(
-            f"new value for include_changed_files in {self} = {self.include_unchanged_files}"
-        )
+    # @on(Tree.NodeCollapsed)
+    # def clear_all_children(self, event: Tree.NodeExpanded) -> None:
+    #     print(f"Node expanded: {event.node.label}")
+    # event.node.remove_children()
 
 
 class ChezmoiStatus(VerticalScroll):
