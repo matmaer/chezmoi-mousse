@@ -1,4 +1,4 @@
-"""Contains classes used as re-used components by the widgets in mousse.py."""
+"""Contains classes used as reused components by the widgets in mousse.py."""
 
 import re
 from collections.abc import Iterable
@@ -254,44 +254,90 @@ class ManagedTree(Tree[NodeData]):
         print(f"Mounting {self.__class__.__name__} tree")
         self.show_root = False
         self.border_title = f" {chezmoi.dest_dir} "
+        # give root node status R so it's not considered having status "X"
         self.root.data = NodeData(
-            path=chezmoi.dest_dir, found=True, is_file=False, status="X"
+            path=chezmoi.dest_dir, found=True, is_file=False, status="R"
         )
         self.root.label = str(chezmoi.dest_dir)
         self.root.expand()
 
-    def display_dir_node(self, node_data: NodeData) -> bool:
+    def show_dir_node(self, node_data: NodeData) -> bool:
         """Check if a directory node should be displayed according to the
         current filter settings, including if any subdirectory contains a leaf
         that potentially could include a leaf to display."""
 
-        def dir_has_leaves_or_subleaves(dir_path: Path) -> bool:
-            # Check for leaves in this directory
-            if not self.include_unchanged_files:
-                leaves = chezmoi.managed_file_paths_in_dir(
-                    dir_path=dir_path, only_with_status=True
+        if node_data.is_file:
+            raise ValueError(
+                f"Expected a dir node, got {node_data.path} instead."
+            )
+
+        if node_data.path == chezmoi.dest_dir:
+            return True
+
+        # Check if the directory itself, or any of its subdirectories, no matter how
+        # deep it's nested contains a file of interest. If that's the case,
+        # show_dir_node should return True for the node_data.path being evaluated.
+        # Only files that ultimately have node_data.path as a parent directory
+        # are considered.
+
+        # To determine if a file of interest is present, no matter how deeply nested,
+        # it depends on the value of include_unchanged_files and only_missing.
+
+        # If both variables are false, a file of interest is any file which is
+        # present in self.status_files, if this file ultimately has node_data.path as a parent, no
+        # matter how many intermediate parents exist.
+        # in this case show_dir_node should return True.
+
+        # If only include_unchanged_files is true, a file of interest is any file
+        # which is present in self.managed_files, if this file ultimately has node_data.path as a parent, no
+        # matter how many intermediate parents exist.
+        # in this case show_dir_node should return True.
+
+        # If only_missing is true, a file of interest is any file which is present
+        # in self.status_files AND does not exist on disk, if this file ultimately has node_data.path as a parent, no
+        # matter how many intermediate parents exist.
+        # in this case show_dir_node should return True.
+
+        # If both variables are true, this case will not be handled yet and will
+        # be implemented in the future
+
+        # The return value can ONLY be determined using the value of node_data.path
+        # using the methods from the Chezmoi class.
+
+        # Helper to check if any file of interest exists under this directory
+        def has_file_of_interest(dir_path: Path) -> bool:
+            # Get all managed files under this directory (recursively)
+            all_files = [
+                f for f in chezmoi.managed_file_paths if dir_path in f.parents
+            ]
+
+            if not self.include_unchanged_files and not self.only_missing:
+                # Only files in status_files
+                return any(f in self.status_files for f in all_files)
+            elif self.include_unchanged_files and not self.only_missing:
+                # Any managed file
+                return bool(all_files)
+            elif not self.include_unchanged_files and self.only_missing:
+                # Files in status_files and not found on disk
+                return any(
+                    f in self.status_files and not f.exists()
+                    for f in all_files
                 )
-            else:
-                leaves = chezmoi.managed_file_paths_in_dir(
-                    dir_path=dir_path, only_with_status=False
-                )
-            if leaves:
-                return True
-            # Recursively check subdirectories
-            sub_dirs = chezmoi.managed_dir_paths_in_dir(dir_path=dir_path)
-            for sub_dir in sub_dirs:
-                if dir_has_leaves_or_subleaves(sub_dir):
-                    return True
+            elif self.include_unchanged_files and self.only_missing:
+                # Not implemented yet
+                return False
             return False
 
-        dir_has_status = node_data.path in self.status_dirs
-        if dir_has_leaves_or_subleaves(node_data.path) or dir_has_status:
-            return True
-        return False
+        return has_file_of_interest(node_data.path)
 
-    def display_file_node(self, node_data: NodeData) -> bool:
+    def show_file_node(self, node_data: NodeData) -> bool:
         """Check if a file node should be displayed according to the current
         filter settings."""
+        if not node_data.is_file:
+            raise ValueError(
+                f"Expected a file node, got {node_data.path} instead."
+            )
+
         # include_unchanged_files=False and only_missing=False
         if not self.include_unchanged_files and not self.only_missing:
             return node_data.status != "X"
@@ -305,7 +351,8 @@ class ManagedTree(Tree[NodeData]):
         return True
 
     def get_all_current_dir_nodes(self) -> list[TreeNode]:
-        """Get all current dir nodes in the tree."""
+        """Get all current dir nodes in the tree, this also depends on which
+        nodes the user has expanded."""
 
         def collect_nodes(node: TreeNode) -> list[TreeNode]:
             nodes = [node]
@@ -351,21 +398,26 @@ class ManagedTree(Tree[NodeData]):
     def add_leaves(
         self, tree_node: TreeNode, file_nodes_data: list[NodeData]
     ) -> None:
-        # collect files to add based on the tree_node parameter
+        """Uses a list of NodeData objects provided by the files_nodes_data
+        parameter, to add to the provided tree_node parameter."""
         for node_data in file_nodes_data:
-            node_label = self.style_label(node_data)
-            tree_node.add_leaf(label=node_label, data=node_data)
+            if self.show_file_node(node_data) and node_data.is_file:
+                node_label = self.style_label(node_data)
+                tree_node.add_leaf(label=node_label, data=node_data)
 
     def add_nodes(
         self, tree_node: TreeNode, dir_nodes_data: list[NodeData]
     ) -> None:
+        """Uses a list of NodeData objects in provided by the dir_nodes_data
+        parameter, to add to the provided tree_node parameter."""
         for node_data in dir_nodes_data:
-            # if self.display_dir_node(node_data):
-            #     continue  # skip adding this node
-            node_label = self.style_label(node_data)
-            tree_node.add(label=node_label, data=node_data)
+            if self.show_dir_node(node_data):
+                node_label = self.style_label(node_data)
+                tree_node.add(label=node_label, data=node_data)
 
     def create_files_data(self, file_paths: list[Path]) -> list[NodeData]:
+        """Creates a list of NodeData objects from the provided list of
+        directory paths provided by the file_paths parameter."""
         result: list[NodeData] = []
         for file_path in file_paths:
             if file_path in self.status_files:
@@ -383,6 +435,8 @@ class ManagedTree(Tree[NodeData]):
 
     def create_dirs_data(self, dir_paths: list[Path]) -> list[NodeData]:
         result: list[NodeData] = []
+        """Creates a list of NodeData objects from the list of directory paths
+        provided by the dir_paths parameter."""
         for dir_path in dir_paths:
             if dir_path in self.status_dirs:
                 status_code = self.status_dirs[dir_path]
@@ -397,22 +451,6 @@ class ManagedTree(Tree[NodeData]):
             result.append(node_data)
         return result
 
-    def filtered_files_data(
-        self, files_data: list[NodeData], include_unchanged_files, only_missing
-    ) -> list[NodeData]:
-        """Filter nodes based on the value of the filter switches."""
-        # include_unchanged_files=False and only_missing=False
-        if not include_unchanged_files and not only_missing:
-            return [_ for _ in files_data if _.status != "X"]
-        # include_unchanged_files=False and only_missing=True
-        if not include_unchanged_files and only_missing:
-            return [_ for _ in files_data if _.found and _.status != "X"]
-        # include_unchanged_files=True and only_missing=True
-        if include_unchanged_files and only_missing:
-            return [_ for _ in files_data if _.found]
-        # include_unchanged_files=True and only_missing=False
-        return files_data
-
     def populate_node(self, node: TreeNode) -> None:
         """Populate the node with files and directories."""
         assert isinstance(node.data, NodeData)
@@ -426,21 +464,11 @@ class ManagedTree(Tree[NodeData]):
         file_nodes_data = self.create_files_data(file_paths)
 
         self.add_nodes(node, dir_nodes_data)
-        self.add_leaves(
-            node,
-            self.filtered_files_data(
-                files_data=file_nodes_data,
-                include_unchanged_files=self.include_unchanged_files,
-                only_missing=self.only_missing,
-            ),
-        )
-
-        # self.expanded_node_cleanup()
+        self.add_leaves(node, file_nodes_data)
 
     def on_tree_node_expanded(self, event: Tree.NodeExpanded) -> None:
         print(f"Node expanded: {event.node.data}")
         self.populate_node(event.node)
-        # self.dir_node_cleanup()
 
     def on_tree_node_selected(self, event: Tree.NodeSelected) -> None:
         print(f"Selected node data: {event.node.data}, tree id: {self.id}")
