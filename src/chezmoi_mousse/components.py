@@ -247,6 +247,16 @@ class ManagedTree(Tree[NodeData]):
         self.include_unchanged_files = False
         self.only_missing = False
 
+    def on_mount(self) -> None:
+        print(f"Mounting {self.__class__.__name__} tree")
+        self.show_root = False
+        self.border_title = f" {chezmoi.dest_dir} "
+        self.root.data = NodeData(
+            path=chezmoi.dest_dir, found=True, is_file=False, status="X"
+        )
+        self.root.label = str(chezmoi.dest_dir)
+        self.root.expand()
+
     def get_all_current_nodes(self) -> list[TreeNode]:
         """Get all current nodes in the tree."""
 
@@ -370,6 +380,9 @@ class ManagedTree(Tree[NodeData]):
 class ApplyTree(ManagedTree):
     """Tree for 'chezmoi apply' operations."""
 
+    only_missing: reactive[bool] = reactive(False, init=False)
+    include_unchanged_files: reactive[bool] = reactive(False, init=False)
+
     def __init__(self) -> None:
         super().__init__(
             status_files=chezmoi.status_paths["apply_files"],
@@ -377,63 +390,45 @@ class ApplyTree(ManagedTree):
             id="apply_tree",
         )
 
-    def on_mount(self) -> None:
-        print(f"Mounting {self.__class__.__name__} tree")
-        self.show_root = False
-        self.border_title = f" {chezmoi.dest_dir} "
-        self.root.data = NodeData(
-            path=chezmoi.dest_dir, found=True, is_file=False, status="X"
-        )
-        self.root.label = str(chezmoi.dest_dir)
-        self.root.expand()
-
-    @on(Switch.Changed)
-    def update_tree_nodes(self) -> None:
-        for node in self.get_all_current_nodes():
-            if node.children:
-                node.remove_children()
-                self.populate_node(node)
-
-    @on(Tree.NodeExpanded)
-    def update_node_children(self, event: Tree.NodeExpanded) -> None:
+    def on_tree_node_expanded(self, event: Tree.NodeExpanded) -> None:
         print(f"Node expanded: {event.node.data}")
         self.populate_node(event.node)
 
-    @on(Tree.NodeSelected)
-    def print_node_data(self, event: Tree.NodeSelected) -> None:
+    def on_tree_node_selected(self, event: Tree.NodeSelected) -> None:
         print(f"Selected node data: {event.node.data}")
+
+    def watch_only_missing(self) -> None:
+        print(f"new value for only_missing in {self} = {self.only_missing}")
+
+    def watch_include_unchanged_files(self) -> None:
+        print(
+            f"new value for include_changed_files in {self} = {self.include_unchanged_files}"
+        )
 
 
 class ReAddTree(ManagedTree):
     """Tree for 'chezmoi re-add' operations."""
 
-    # include_unchanged_files: reactive[bool] = reactive(False, init=False)
+    include_unchanged_files: reactive[bool] = reactive(False, init=False)
 
     def __init__(self) -> None:
         super().__init__(
             status_files=chezmoi.status_paths["re_add_files"],
             status_dirs=chezmoi.status_paths["re_add_dirs"],
-            id="apply_tree",
+            id="re_add_tree",
         )
 
-    # def on_mount(self) -> None:
-    #     print(f"Mounting {self.__class__.__name__} tree")
-    #     self.show_root = False
-    #     self.border_title = f" {chezmoi.dest_dir} "
-    #     self.root.data = NodeData(
-    #         path=chezmoi.dest_dir, found=True, is_file=False
-    #     )
-    #     self.root.expand()
+    def on_tree_node_expanded(self, event: Tree.NodeExpanded) -> None:
+        print(f"Node expanded: {event.node.data}")
+        self.populate_node(event.node)
 
-    # @on(Tree.NodeExpanded)
-    # def update_node_children(self, event: Tree.NodeExpanded) -> None:
-    #     print(f"Node expanded: {event.node.label}")
-    #     self.populate_node(event.node)
+    def on_tree_node_selected(self, event: Tree.NodeSelected) -> None:
+        print(f"Selected node data: {event.node.data}")
 
-    # @on(Tree.NodeCollapsed)
-    # def clear_all_children(self, event: Tree.NodeExpanded) -> None:
-    #     print(f"Node expanded: {event.node.label}")
-    # event.node.remove_children()
+    def watch_include_unchanged_files(self) -> None:
+        print(
+            f"new value for include_changed_files in {self} = {self.include_unchanged_files}"
+        )
 
 
 class ChezmoiStatus(VerticalScroll):
