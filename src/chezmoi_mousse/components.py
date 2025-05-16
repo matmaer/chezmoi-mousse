@@ -27,17 +27,6 @@ from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.config import filter_switch_data, status_info, unwanted
 
 
-def is_unwanted_path(path: Path) -> bool:
-    if path.is_dir():
-        if path.name in unwanted["dirs"]:
-            return True
-    if path.is_file():
-        extension = re.match(r"\.[^.]*$", path.name)
-        if extension in unwanted["files"]:
-            return True
-    return False
-
-
 class AutoWarning(Static):
 
     def on_mount(self) -> None:
@@ -174,12 +163,12 @@ class FilteredDirTree(DirectoryTree):
                         p.parent in managed_dirs
                         or p.parent == chezmoi.dest_dir
                     )
-                    and not is_unwanted_path(p)
+                    and not self.is_unwanted_path(p)
                     and p not in managed_files
                 )
                 or (
                     p.is_dir()
-                    and not is_unwanted_path(p)
+                    and not self.is_unwanted_path(p)
                     and p in managed_dirs
                 )
             )
@@ -188,7 +177,7 @@ class FilteredDirTree(DirectoryTree):
             return (
                 p
                 for p in paths
-                if p not in managed_files and not is_unwanted_path(p)
+                if p not in managed_files and not self.is_unwanted_path(p)
             )
         # Switches: Red - Green
         if not self.include_unmanaged_dirs and self.filter_unwanted:
@@ -212,6 +201,16 @@ class FilteredDirTree(DirectoryTree):
                 for p in paths
                 if p.is_dir() or (p.is_file() and p not in managed_files)
             )
+
+    def is_unwanted_path(self, path: Path) -> bool:
+        if path.is_dir():
+            if path.name in unwanted["dirs"]:
+                return True
+        if path.is_file():
+            extension = re.match(r"\.[^.]*$", path.name)
+            if extension in unwanted["files"]:
+                return True
+        return False
 
 
 @dataclass
