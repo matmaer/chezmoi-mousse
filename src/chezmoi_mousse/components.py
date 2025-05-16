@@ -173,14 +173,14 @@ class FilteredDirTree(DirectoryTree):
                 )
             )
         # Switches: Green - Red
-        if self.include_unmanaged_dirs and not self.filter_unwanted:
+        elif self.include_unmanaged_dirs and not self.filter_unwanted:
             return (
                 p
                 for p in paths
                 if p not in managed_files and not self.is_unwanted_path(p)
             )
         # Switches: Red - Green
-        if not self.include_unmanaged_dirs and self.filter_unwanted:
+        elif not self.include_unmanaged_dirs and self.filter_unwanted:
             return (
                 p
                 for p in paths
@@ -195,12 +195,14 @@ class FilteredDirTree(DirectoryTree):
                 or (p.is_dir() and p in managed_dirs)
             )
         # Switches: Green - Green, include all unmanaged paths
-        else:
+        elif self.include_unmanaged_dirs and self.filter_unwanted:
             return (
                 p
                 for p in paths
                 if p.is_dir() or (p.is_file() and p not in managed_files)
             )
+        else:
+            return paths
 
     def is_unwanted_path(self, path: Path) -> bool:
         if path.is_dir():
