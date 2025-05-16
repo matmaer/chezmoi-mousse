@@ -235,8 +235,6 @@ class ManagedTree(Tree[NodeData]):
 
     def __init__(
         self,
-        file_paths: list[Path],
-        dir_paths: list[Path],
         status_files: dict[Path, str],
         status_dirs: dict[Path, str],
         **kwargs,
@@ -249,10 +247,11 @@ class ManagedTree(Tree[NodeData]):
             classes="any-tree managed-tree",
             **kwargs,
         )
-        self.file_paths: list[Path] = file_paths
-        self.dir_paths: list[Path] = dir_paths
         self.status_files: dict[Path, str] = status_files
         self.status_dirs: dict[Path, str] = status_dirs
+
+    def get_expanded_nodes(self) -> list[TreeNode]:
+        return [node for node in self._tree_nodes.values() if node.is_expanded]
 
     def style_label(self, node_data: NodeData) -> Text:
         assert isinstance(node_data, NodeData)
@@ -268,55 +267,54 @@ class ManagedTree(Tree[NodeData]):
             style = self.node_colors["Dir"]
         return Text(node_data.path.name, style=style)
 
-    def add_child_nodes(self, tree_node: TreeNode) -> None:
-        assert isinstance(tree_node.data, NodeData)
-        # collect subdirectories to add based on the tree_node parameter
-        for dir_path in [
-            d for d in self.dir_paths if d.parent == tree_node.data.path
-        ]:
-            node_data = NodeData(path=dir_path, found=dir_path.exists())
-            if dir_path in self.status_dirs:
-                node_data.status = self.status_dirs[dir_path]
-            tree_node.add(label=self.style_label(node_data), data=node_data)
+    # node_data = NodeData(path=dir_path, found=dir_path.exists())
+    # if dir_path in self.status_dirs:
+    #     node_data.status = self.status_dirs[dir_path]
+    # tree_node.add(label=self.style_label(node_data), data=node_data)
 
+    # tree_node.add_leaf(
+    #     label=self.style_label(node_data), data=node_data
+    # )
+
+    def add_leaves(
+        self, tree_node: TreeNode, file_nodes_data: list[NodeData]
+    ) -> None:
         # collect files to add based on the tree_node parameter
-        for file_path in [
-            f for f in self.file_paths if f.parent == tree_node.data.path
-        ]:
-            node_data = NodeData(
-                path=file_path, is_file=True, found=file_path.exists()
-            )
-            if file_path in self.status_files:
-                node_data.status = self.status_files[file_path]
-            tree_node.add_leaf(
-                label=self.style_label(node_data), data=node_data
-            )
+        for node_data in file_nodes_data:
+            node_label = self.style_label(node_data)
+            tree_node.add_leaf(label=node_label, data=node_data)
 
-    def create_parent_dir_list(
-        self, file_paths_to_process: list[Path]
-    ) -> list[Path]:
-        """Create a list of all parent directories for the given file paths."""
-        assert isinstance(self.root.data, NodeData)
-        parent_dirs = set()
-        for file_path in file_paths_to_process:
-            current_path = file_path.parent
-            while current_path != self.root.data.path:
-                if current_path not in parent_dirs:
-                    parent_dirs.add(current_path)
-                current_path = current_path.parent
-        return sorted(list(parent_dirs))
+    def add_nodes(
+        self, tree_node: TreeNode, dir_nodes_data: list[NodeData]
+    ) -> None:
+        # collect files to add based on the tree_node parameter
+        for node_data in dir_nodes_data:
+            node_label = self.style_label(node_data)
+            tree_node.add(label=node_label, data=node_data)
 
-    def get_expanded_nodes(self) -> list[TreeNode]:
-        return [node for node in self._tree_nodes.values() if node.is_expanded]
+    def get_node_file_paths(self, tree_node) -> list[Path]:
+        """Get all file paths for a given node."""
+        assert isinstance(tree_node.data, NodeData)
+        return [
+            p
+            for p in chezmoi.managed_file_paths
+            if p.parent == tree_node.data.path
+        ]
 
-    @on(Tree.NodeExpanded)
-    def populate_directory(self, event: Tree.NodeExpanded) -> None:
+    def get_node_dir_paths(self, tree_node) -> list[Path]:
+        """Get all subdirectory paths for a given node."""
+        assert isinstance(tree_node.data, NodeData)
+        return [
+            d
+            for d in chezmoi.managed_dir_paths
+            if d.parent == tree_node.data.path
+        ]
+
+    def on_node_expanded(self, event: Tree.NodeExpanded) -> None:
         print(f"Node expanded: {event.node.label}")
-        self.add_child_nodes(event.node)
 
-    # @on(Tree.NodeCollapsed)
-    # def clear_all_children(self, event: Tree.NodeExpanded) -> None:
-    #     event.node.remove_children()
+    def on_node_collapsed(self, event: Tree.NodeExpanded) -> None:
+        print(f"Node collapsed: {event.node.label}")
 
 
 class ApplyTree(ManagedTree):
@@ -327,90 +325,24 @@ class ApplyTree(ManagedTree):
 
     def __init__(self) -> None:
         super().__init__(
-            file_paths=chezmoi.managed_file_paths,
-            dir_paths=chezmoi.managed_dir_paths,
             status_files=chezmoi.status_paths["apply_files"],
             status_dirs=chezmoi.status_paths["apply_dirs"],
             id="apply_tree",
         )
 
-    def filter_none(self) -> None:
-        """include_unchanged_files=False, only_missing=False"""
-        self.file_paths = [
-            f
-            for f in chezmoi.managed_file_paths
-            if f in chezmoi.status_paths["apply_files"]
-        ]
-        parent_dirs = self.create_parent_dir_list(self.file_paths)
-        status_dirs = [d for d in parent_dirs if d in self.status_dirs]
-        self.dir_paths = sorted(parent_dirs + status_dirs)
-
-    def filter_include_unchanged(self) -> None:
-        """include_unchanged_files=True, only_missing=False"""
-        self.file_paths = chezmoi.managed_file_paths
-        self.dir_paths = chezmoi.managed_dir_paths
-
-    def filter_both(self) -> None:
-        """include_unchanged_files=True, only_missing=True"""
-        self.file_paths = [
-            f
-            for f in chezmoi.managed_file_paths
-            if f in chezmoi.status_paths["apply_files"]
-        ]
-        parent_dirs = self.create_parent_dir_list(self.file_paths)
-        managed_dirs_with_status = [
-            d for d in parent_dirs if d in self.status_dirs
-        ]
-        self.dir_paths = sorted(parent_dirs + managed_dirs_with_status)
-
-    def filter_only_missing(self) -> None:
-        """include_unchanged_files=False, only_missing=True"""
-        self.file_paths = [
-            f
-            for f in chezmoi.managed_file_paths
-            if f in chezmoi.status_paths["apply_files"]
-        ]
-        self.dir_paths = chezmoi.managed_dir_paths
-
-    def filter_paths_and_dirs(self) -> None:
-        """Dispatch to the correct filter method based on current state."""
-        if not self.include_unchanged_files and not self.only_missing:
-            self.filter_none()
-        elif self.include_unchanged_files and not self.only_missing:
-            self.filter_include_unchanged()
-        elif self.include_unchanged_files and self.only_missing:
-            self.filter_both()
-        elif not self.include_unchanged_files and self.only_missing:
-            self.filter_only_missing()
-
-    def update_expanded_nodes(self) -> None:
-        """Refresh all expanded nodes in the tree."""
-        for node in self.get_expanded_nodes():
-            node.remove_children()
-            self.add_child_nodes(node)
-
     def on_mount(self) -> None:
         print(f"Mounting {self.__class__.__name__} tree")
-        self.filter_paths_and_dirs()
         self.show_root = False
         self.border_title = f" {chezmoi.dest_dir} "
         self.root.expand()
 
-    def update_tree(self) -> None:
-        """Update the tree according to the reactive filter values"""
-        expanded_nodes = self.get_expanded_nodes()
-
     def watch_only_missing(self) -> None:
         print(f"new value for only_missing in {self} = {self.only_missing}")
-        self.filter_paths_and_dirs()
-        self.update_expanded_nodes()
 
     def watch_include_unchanged_files(self) -> None:
         print(
             f"new value for include_changed_files in {self} = {self.include_unchanged_files}"
         )
-        self.filter_paths_and_dirs()
-        self.update_expanded_nodes()
 
 
 class ReAddTree(ManagedTree):
@@ -420,8 +352,6 @@ class ReAddTree(ManagedTree):
 
     def __init__(self) -> None:
         super().__init__(
-            file_paths=chezmoi.managed_file_paths,
-            dir_paths=chezmoi.managed_dir_paths,
             status_files=chezmoi.status_paths["re_add_files"],
             status_dirs=chezmoi.status_paths["re_add_dirs"],
             id="apply_tree",
@@ -429,22 +359,6 @@ class ReAddTree(ManagedTree):
 
     def on_mount(self) -> None:
         print(f"Mounting {self.__class__.__name__} tree")
-
-        # Default switch value: False
-        if not self.include_unchanged_files:
-            self.file_paths = [
-                f
-                for f in self.file_paths
-                if f in chezmoi.status_paths["apply_files"]
-            ]
-            parent_dirs = self.create_parent_dir_list(self.file_paths)
-            status_dirs = [d for d in self.dir_paths if d in self.status_dirs]
-            self.dir_paths = sorted(parent_dirs + status_dirs)
-
-        # Include all files and directories that are managed and exist
-        elif self.include_unchanged_files:
-            self.file_paths = self.file_paths
-            self.dir_paths = self.dir_paths
 
         self.show_root = False
         self.border_title = f" {chezmoi.dest_dir} "
