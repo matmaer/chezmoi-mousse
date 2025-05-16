@@ -17,6 +17,7 @@ dev = [
     "black>=25.1.0",
     "coverage>=7.8.0",
     "coverage-badge>=1.1.2",
+    "docformatter>=1.7.7",
     "ganglion>=0.1.1",
     "ipython>=9.1.0",
     "isort>=6.0.1",
