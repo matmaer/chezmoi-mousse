@@ -30,13 +30,12 @@ from textual.widgets import (
 from chezmoi_mousse import FLOW
 from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.components import (
-    ApplyTree,
     AutoWarning,
     ChezmoiStatus,
     FilterBar,
     FilteredDirTree,
+    ManagedTree,
     PathView,
-    ReAddTree,
 )
 from chezmoi_mousse.config import pw_mgr_info
 
@@ -346,7 +345,14 @@ class ApplyTab(VerticalScroll):
 
     def compose(self) -> ComposeResult:
         yield ChezmoiStatus(apply=True)
-        yield Horizontal(ApplyTree(), PathView(id="apply_file"))
+        yield Horizontal(
+            ManagedTree(
+                status_files=chezmoi.status_paths["apply_files"],
+                status_dirs=chezmoi.status_paths["apply_dirs"],
+                id="apply_tree",
+            ),
+            PathView(id="apply_file"),
+        )
         yield FilterBar(filter_key="apply_tab", tab_filters_id="apply_filters")
 
     def action_toggle_filterbar(self):
@@ -356,18 +362,18 @@ class ApplyTab(VerticalScroll):
         self.notify("will apply path")
 
     def on_resize(self) -> None:
-        self.query_exactly_one(ApplyTree).focus()
+        self.query_one("#apply_tree").focus()
 
-    @on(ApplyTree.NodeSelected)
-    def update_preview_path(self, event: ApplyTree.NodeSelected) -> None:
+    @on(ManagedTree.NodeSelected)
+    def update_preview_path(self, event: ManagedTree.NodeSelected) -> None:
         if event.node.data is not None:
             self.query_exactly_one(PathView).path = event.node.data.path
         else:
-            raise ValueError("ApplyTree.NodeSelected event.data is None.")
+            raise ValueError("ManagedTree.NodeSelected event.data is None.")
 
     @on(Switch.Changed)
     def notify_apply_tree(self, event: Switch.Changed) -> None:
-        apply_tree = self.query_exactly_one(ApplyTree)
+        apply_tree = self.query_one("#apply_tree", ManagedTree)
         if event.switch.id == "apply_tab_only_missing":
             apply_tree.only_missing = event.value
         elif event.switch.id == "apply_tab_include_unchanged_files":
@@ -393,7 +399,14 @@ class ReAddTab(VerticalScroll):
 
     def compose(self) -> ComposeResult:
         yield ChezmoiStatus(apply=False)
-        yield Horizontal(ReAddTree(), PathView())
+        yield Horizontal(
+            ManagedTree(
+                status_files=chezmoi.status_paths["re_add_files"],
+                status_dirs=chezmoi.status_paths["re_add_dirs"],
+                id="re_add_tree",
+            ),
+            PathView(),
+        )
         yield FilterBar(
             filter_key="re_add_tab", tab_filters_id="re_add_filters"
         )
@@ -405,10 +418,10 @@ class ReAddTab(VerticalScroll):
         self.notify("will re-add path")
 
     def on_resize(self) -> None:
-        self.query_exactly_one(ReAddTree).focus()
+        self.query_exactly_one(ManagedTree).focus()
 
-    @on(ReAddTree.NodeSelected)
-    def update_preview_path(self, event: ReAddTree.NodeSelected) -> None:
+    @on(ManagedTree.NodeSelected)
+    def update_preview_path(self, event: ManagedTree.NodeSelected) -> None:
         if event.node.data is not None:
             self.query_exactly_one(PathView).path = event.node.data.path
         else:
@@ -416,8 +429,8 @@ class ReAddTab(VerticalScroll):
 
     @on(Switch.Changed)
     def notify_re_add_tree(self, event: Switch.Changed) -> None:
-        re_add_tree = self.query_exactly_one(ReAddTree)
-        if event.switch.id == "re_add_tab_changed_files":
+        re_add_tree = self.query_one("#re_add_tree", ManagedTree)
+        if event.switch.id == "re_add_tab_include_unchanged_files":
             re_add_tree.include_unchanged_files = event.value
 
 

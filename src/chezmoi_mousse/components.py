@@ -225,6 +225,12 @@ class NodeData:
 
 class ManagedTree(Tree[NodeData]):
 
+    # even though these are class vars, they are not shared between instances
+    # because they are decorated with @reactive and most Python descriptors
+    # work at the instance level
+    only_missing: reactive[bool] = reactive(False, init=False)
+    include_unchanged_files: reactive[bool] = reactive(False, init=False)
+
     # TODO: default color should be updated on theme change
     node_colors = {
         "Dir": "#57A5E2",  # text-primary
@@ -244,8 +250,6 @@ class ManagedTree(Tree[NodeData]):
         )
         self.status_files: dict[Path, str] = status_files
         self.status_dirs: dict[Path, str] = status_dirs
-        self.include_unchanged_files = False
-        self.only_missing = False
 
     def on_mount(self) -> None:
         print(f"Mounting {self.__class__.__name__} tree")
@@ -257,8 +261,8 @@ class ManagedTree(Tree[NodeData]):
         self.root.label = str(chezmoi.dest_dir)
         self.root.expand()
 
-    def get_all_current_nodes(self) -> list[TreeNode]:
-        """Get all current nodes in the tree."""
+    def get_all_current_dir_nodes(self) -> list[TreeNode]:
+        """Get all current dir nodes in the tree."""
 
         def collect_nodes(node: TreeNode) -> list[TreeNode]:
             nodes = [node]
@@ -333,11 +337,8 @@ class ManagedTree(Tree[NodeData]):
             result.append(node_data)
         return result
 
-    def filter_files_data(
-        self,
-        files_data: list[NodeData],
-        include_unchanged_files=False,
-        only_missing=False,
+    def filtered_files_data(
+        self, files_data: list[NodeData], include_unchanged_files, only_missing
     ) -> list[NodeData]:
         """Filter nodes based on the value of the filter switches."""
         result: list[NodeData] = []
@@ -353,8 +354,22 @@ class ManagedTree(Tree[NodeData]):
         # include_unchanged_files=True and only_missing=False
         return files_data
 
-    def expanded_node_cleanup(self) -> None:
-        current_nodes = self.get_all_current_nodes()
+    def filtered_dirs_data(self, dirs_data: list[NodeData]) -> list[NodeData]:
+        """Filter nodes based on the value of the filter switches."""
+        filtered_dirs_data: list[NodeData] = []
+        for dir_data in dirs_data:
+            managed_leaves = chezmoi.managed_file_paths_in_dir(dir_data.path)
+            managed_sub_dirs = chezmoi.managed_dir_paths_in_dir(dir_data.path)
+            dir_has_status = (
+                True if dir_data.path in self.status_dirs else False
+            )
+            if managed_leaves or managed_sub_dirs or dir_has_status:
+                filtered_dirs_data.append(dir_data)
+        return filtered_dirs_data
+
+    def dir_node_cleanup(self) -> None:
+        """Remove empty directories from the tree."""
+        current_nodes = self.get_all_current_dir_nodes()
         expanded_nodes = [n for n in current_nodes if n.is_expanded]
         for node in expanded_nodes:
             if not node.children:
@@ -366,64 +381,31 @@ class ManagedTree(Tree[NodeData]):
 
         dir_paths = chezmoi.managed_dir_paths_in_dir(node.data.path)
         dir_nodes_data = self.create_dirs_data(dir_paths)
-        # dirs_nodes_data = self.filter_files_data(dirs_nodes_data)
 
         file_paths = chezmoi.managed_file_paths_in_dir(node.data.path)
         file_nodes_data = self.create_files_data(file_paths)
 
-        self.add_nodes(node, dir_nodes_data)
-        self.add_leaves(node, self.filter_files_data(file_nodes_data))
+        self.add_nodes(node, self.filtered_dirs_data(dir_nodes_data))
+        self.add_leaves(
+            node,
+            self.filtered_files_data(
+                files_data=file_nodes_data,
+                include_unchanged_files=self.include_unchanged_files,
+                only_missing=self.only_missing,
+            ),
+        )
 
         # self.expanded_node_cleanup()
 
-
-class ApplyTree(ManagedTree):
-    """Tree for 'chezmoi apply' operations."""
-
-    only_missing: reactive[bool] = reactive(False, init=False)
-    include_unchanged_files: reactive[bool] = reactive(False, init=False)
-
-    def __init__(self) -> None:
-        super().__init__(
-            status_files=chezmoi.status_paths["apply_files"],
-            status_dirs=chezmoi.status_paths["apply_dirs"],
-            id="apply_tree",
-        )
-
     def on_tree_node_expanded(self, event: Tree.NodeExpanded) -> None:
         print(f"Node expanded: {event.node.data}")
         self.populate_node(event.node)
 
     def on_tree_node_selected(self, event: Tree.NodeSelected) -> None:
-        print(f"Selected node data: {event.node.data}")
+        print(f"Selected node data: {event.node.data}, tree id: {self.id}")
 
     def watch_only_missing(self) -> None:
         print(f"new value for only_missing in {self} = {self.only_missing}")
-
-    def watch_include_unchanged_files(self) -> None:
-        print(
-            f"new value for include_changed_files in {self} = {self.include_unchanged_files}"
-        )
-
-
-class ReAddTree(ManagedTree):
-    """Tree for 'chezmoi re-add' operations."""
-
-    include_unchanged_files: reactive[bool] = reactive(False, init=False)
-
-    def __init__(self) -> None:
-        super().__init__(
-            status_files=chezmoi.status_paths["re_add_files"],
-            status_dirs=chezmoi.status_paths["re_add_dirs"],
-            id="re_add_tree",
-        )
-
-    def on_tree_node_expanded(self, event: Tree.NodeExpanded) -> None:
-        print(f"Node expanded: {event.node.data}")
-        self.populate_node(event.node)
-
-    def on_tree_node_selected(self, event: Tree.NodeSelected) -> None:
-        print(f"Selected node data: {event.node.data}")
 
     def watch_include_unchanged_files(self) -> None:
         print(
