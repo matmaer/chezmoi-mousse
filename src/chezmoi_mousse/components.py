@@ -224,11 +224,8 @@ class NodeData:
 
 class ManagedTree(Tree[NodeData]):
 
-    # even though these are class vars, they are not shared between instances
-    # because they are decorated with @reactive and most Python descriptors
-    # work at the instance level
-    only_missing: reactive[bool] = reactive(False, init=True)
-    include_unchanged_files: reactive[bool] = reactive(False, init=True)
+    only_missing: reactive[bool] = reactive(False, init=False)
+    include_unchanged_files: reactive[bool] = reactive(False, init=False)
 
     # TODO: default color should be updated on theme change
     node_colors = {
@@ -324,7 +321,6 @@ class ManagedTree(Tree[NodeData]):
                 assert isinstance(child.data, NodeData)
                 if not child.data.is_file:
                     nodes.append(child)
-                nodes.extend(collect_nodes(child))
             return nodes
 
         return collect_nodes(self.root)
@@ -363,9 +359,19 @@ class ManagedTree(Tree[NodeData]):
         self, tree_node: TreeNode, file_nodes_data: list[NodeData]
     ) -> None:
         """Uses a list of NodeData objects provided by the files_nodes_data
-        parameter, to add to the provided tree_node parameter."""
+        parameter, to add to the provided tree_node parameter  if the tree_node
+        doesn't already contain a node with this path."""
+        current_child_paths = [
+            node.data.path
+            for node in tree_node.children
+            if isinstance(node.data, NodeData) and node.data.is_file
+        ]
         for node_data in file_nodes_data:
-            if self.show_file_node(node_data) and node_data.is_file:
+            if (
+                self.show_file_node(node_data)
+                and node_data.is_file
+                and node_data.path not in current_child_paths
+            ):
                 node_label = self.style_label(node_data)
                 tree_node.add_leaf(label=node_label, data=node_data)
 
@@ -373,9 +379,18 @@ class ManagedTree(Tree[NodeData]):
         self, tree_node: TreeNode, dir_nodes_data: list[NodeData]
     ) -> None:
         """Uses a list of NodeData objects in provided by the dir_nodes_data
-        parameter, to add to the provided tree_node parameter."""
+        parameter, to add to the provided tree_node parameter if the tree_node
+        doesn't already contain a node with this path."""
+        current_child_paths = [
+            node.data.path
+            for node in tree_node.children
+            if isinstance(node.data, NodeData) and node.data.is_file
+        ]
         for node_data in dir_nodes_data:
-            if self.show_dir_node(node_data):
+            if (
+                self.show_dir_node(node_data)
+                and node_data.path not in current_child_paths
+            ):
                 node_label = self.style_label(node_data)
                 tree_node.add(label=node_label, data=node_data)
 
@@ -455,15 +470,31 @@ class ManagedTree(Tree[NodeData]):
     def on_tree_node_selected(self, event: Tree.NodeSelected) -> None:
         print(f"Selected node data: {event.node.data}, tree id: {self.id}")
 
+    # update nodes when the filter switches are changed
+    def update_visible_nodes(self) -> None:
+        """Update the visible nodes in the tree based on the current filter
+        settings."""
+        expanded_nodes = self.get_current_expanded_nodes()
+        for node in expanded_nodes:
+            if not any(child.is_expanded for child in node.children):
+                node.remove_children()
+                self.populate_node(node)
+
+        collapsed_nodes = self.get_current_collapsed_nodes()
+        for node in collapsed_nodes:
+            assert isinstance(node.data, NodeData)
+            if self.show_dir_node(node.data):
+                node.remove()
+
     def watch_only_missing(self) -> None:
         print(f"new value for only_missing in {self} = {self.only_missing}")
-        self.refresh()
+        self.update_visible_nodes()
 
     def watch_include_unchanged_files(self) -> None:
         print(
             f"new value for include_changed_files in {self} = {self.include_unchanged_files}"
         )
-        self.refresh()
+        self.update_visible_nodes()
 
 
 class ChezmoiStatus(VerticalScroll):
