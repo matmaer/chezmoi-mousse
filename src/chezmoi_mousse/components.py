@@ -274,61 +274,25 @@ class ManagedTree(Tree[NodeData]):
         if node_data.path == chezmoi.dest_dir:
             return True
 
-        # Check if the directory itself, or any of its subdirectories, no matter how
-        # deep it's nested contains a file of interest. If that's the case,
-        # show_dir_node should return True for the node_data.path being evaluated.
-        # Only files that ultimately have node_data.path as a parent directory
-        # are considered.
+        # Inline the logic from has_file_of_interest
+        all_files = [
+            f
+            for f in chezmoi.managed_file_paths
+            if node_data.path in f.parents
+        ]
 
-        # To determine if a file of interest is present, no matter how deeply nested,
-        # it depends on the value of include_unchanged_files and only_missing.
-
-        # If both variables are false, a file of interest is any file which is
-        # present in self.status_files, if this file ultimately has node_data.path as a parent, no
-        # matter how many intermediate parents exist.
-        # in this case show_dir_node should return True.
-
-        # If only include_unchanged_files is true, a file of interest is any file
-        # which is present in self.managed_files, if this file ultimately has node_data.path as a parent, no
-        # matter how many intermediate parents exist.
-        # in this case show_dir_node should return True.
-
-        # If only_missing is true, a file of interest is any file which is present
-        # in self.status_files AND does not exist on disk, if this file ultimately has node_data.path as a parent, no
-        # matter how many intermediate parents exist.
-        # in this case show_dir_node should return True.
-
-        # If both variables are true, this case will not be handled yet and will
-        # be implemented in the future
-
-        # The return value can ONLY be determined using the value of node_data.path
-        # using the methods from the Chezmoi class.
-
-        # Helper to check if any file of interest exists under this directory
-        def has_file_of_interest(dir_path: Path) -> bool:
-            # Get all managed files under this directory (recursively)
-            all_files = [
-                f for f in chezmoi.managed_file_paths if dir_path in f.parents
-            ]
-
-            if not self.include_unchanged_files and not self.only_missing:
-                # Only files in status_files
-                return any(f in self.status_files for f in all_files)
-            elif self.include_unchanged_files and not self.only_missing:
-                # Any managed file
-                return bool(all_files)
-            elif not self.include_unchanged_files and self.only_missing:
-                # Files in status_files and not found on disk
-                return any(
-                    f in self.status_files and not f.exists()
-                    for f in all_files
-                )
-            elif self.include_unchanged_files and self.only_missing:
-                # Not implemented yet
-                return False
+        if not self.include_unchanged_files and not self.only_missing:
+            return any(f in self.status_files for f in all_files)
+        elif self.include_unchanged_files and not self.only_missing:
+            return bool(all_files)
+        elif not self.include_unchanged_files and self.only_missing:
+            return any(
+                f in self.status_files and not f.exists() for f in all_files
+            )
+        elif self.include_unchanged_files and self.only_missing:
+            # Not implemented yet
             return False
-
-        return has_file_of_interest(node_data.path)
+        return False
 
     def show_file_node(self, node_data: NodeData) -> bool:
         """Check if a file node should be displayed according to the current
