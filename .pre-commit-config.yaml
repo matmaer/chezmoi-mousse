@@ -1,9 +1,12 @@
 ---
 repos:
+
+  # first because typo fixes can change word length which impacts formatting
   - repo: https://github.com/crate-ci/typos
     rev: v1.32.0
     hooks:
       - id: typos
+
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:
@@ -17,6 +20,23 @@ repos:
       - id: debug-statements
       - id: detect-private-key
       - id: trailing-whitespace
+
+  # When running with --fix, Ruff's lint hook should be placed BEFORE Black
+  # as Ruff's fix behavior can output code changes that require reformatting.
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.11.10
+    hooks:
+      - id: ruff-check
+        types_or: [ python, pyi ]
+        args: [ --fix ]
+
+  - repo: https://github.com/PyCQA/docformatter
+    rev: v1.7.7
+    hooks:
+      - id: docformatter
+        args: [--in-place, --recursive, --wrap-summaries=79, --wrap-descriptions=79]
+        files: ^src/
+
   - repo: https://github.com/psf/black-pre-commit-mirror
     rev: 25.1.0
     hooks:
@@ -29,15 +49,4 @@ repos:
       minimum_pre_commit_version: 2.9.2
       require_serial: true
       types_or: [python, pyi]
-  - repo: https://github.com/PyCQA/docformatter
-    rev: v1.7.7
-    hooks:
-      - id: docformatter
-        args: [--in-place, --recursive, --wrap-summaries=79, --wrap-descriptions=79]
 
-  # - repo: https://github.com/astral-sh/ruff-pre-commit
-  #   rev: v0.8.6
-  #   hooks:
-  #     # Run the linter.
-  #     - id: ruff
-  #       args: [ --fix ]
