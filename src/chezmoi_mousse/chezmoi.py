@@ -175,13 +175,13 @@ class Chezmoi:
         if only_with_status:
             return [
                 f
-                for f in chezmoi.managed_file_paths
+                for f in self.managed_file_paths
                 if f.parent == dir_path and f in self.status_files.list_out
             ]
-        return [f for f in chezmoi.managed_file_paths if f.parent == dir_path]
+        return [f for f in self.managed_file_paths if f.parent == dir_path]
 
     def managed_dir_paths_in_dir(self, dir_path: Path) -> list[Path]:
-        return [d for d in chezmoi.managed_dir_paths if d.parent == dir_path]
+        return [d for d in self.managed_dir_paths if d.parent == dir_path]
 
     def unmanaged_in_d(self, dir_path: Path) -> list[Path]:
         if not dir_path.is_dir():
