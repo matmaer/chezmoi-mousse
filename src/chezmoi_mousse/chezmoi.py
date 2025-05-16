@@ -169,6 +169,12 @@ class Chezmoi:
             ),
         }
 
+    def managed_file_paths_in_dir(self, dir_path: Path) -> list[Path]:
+        return [f for f in chezmoi.managed_file_paths if f.parent == dir_path]
+
+    def managed_dir_paths_in_dir(self, dir_path: Path) -> list[Path]:
+        return [d for d in chezmoi.managed_dir_paths if d.parent == dir_path]
+
     def unmanaged_in_d(self, dir_path: Path) -> list[Path]:
         if not dir_path.is_dir():
             raise ValueError(f"Directory does not exist: {dir_path}")
