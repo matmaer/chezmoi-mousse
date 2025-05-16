@@ -422,10 +422,24 @@ class ManagedTree(Tree[NodeData]):
         dir_paths = chezmoi.managed_dir_paths_in_dir(node.data.path)
         dir_nodes_data = self.create_dirs_data(dir_paths)
 
+        # filter dir_nodes_data with show_dir_node
+        dir_nodes_data = [
+            node_data
+            for node_data in dir_nodes_data
+            if self.show_dir_node(node_data)
+        ]
+
         file_paths = chezmoi.managed_file_paths_in_dir(
             node.data.path, only_with_status=False
         )
         file_nodes_data = self.create_files_data(file_paths)
+
+        # filter file_nodes_data with show_file_node
+        file_nodes_data = [
+            node_data
+            for node_data in file_nodes_data
+            if self.show_file_node(node_data)
+        ]
 
         self.add_nodes(node, dir_nodes_data)
         self.add_leaves(node, file_nodes_data)
@@ -433,6 +447,10 @@ class ManagedTree(Tree[NodeData]):
     def on_tree_node_expanded(self, event: Tree.NodeExpanded) -> None:
         print(f"Node expanded: {event.node.data}")
         self.populate_node(event.node)
+
+    def on_tree_node_collapsed(self, event: Tree.NodeCollapsed) -> None:
+        print(f"Node collapsed: {event.node.data}")
+        event.node.remove_children()
 
     def on_tree_node_selected(self, event: Tree.NodeSelected) -> None:
         print(f"Selected node data: {event.node.data}, tree id: {self.id}")
