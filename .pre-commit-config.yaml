@@ -1,11 +1,11 @@
 ---
 repos:
 
-  # first because typo fixes can change word length which impacts formatting
-  - repo: https://github.com/crate-ci/typos
-    rev: v1.32.0
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.4.1
     hooks:
-      - id: typos
+      - id: codespell
+        files: ^src/
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
@@ -37,22 +37,16 @@ repos:
         args: [--in-place, --recursive, --wrap-summaries=79, --wrap-descriptions=79]
         files: ^src/
 
-  - repo: https://github.com/pycqa/isort
-    rev: 6.0.1
-    hooks:
-      - id: isort
-        name: isort (python)
-
   - repo: https://github.com/psf/black-pre-commit-mirror
     rev: 25.1.0
     hooks:
-    - id: black
-      name: black
-      args: [--line-length=79, --skip-magic-trailing-comma]
-      description: "Black: The uncompromising Python code formatter"
-      entry: black
-      language: python
-      minimum_pre_commit_version: 2.9.2
-      require_serial: true
-      types_or: [python, pyi]
-
+      - id: black
+        name: black
+        args: [--line-length=79, --skip-magic-trailing-comma]
+        additional_dependencies: [isort]
+        description: "Black: The uncompromising Python code formatter (with isort)"
+        entry: black
+        language: python
+        minimum_pre_commit_version: 2.9.2
+        require_serial: true
+        types_or: [python, pyi]
