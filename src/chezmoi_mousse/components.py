@@ -314,9 +314,9 @@ class ManagedTree(Tree[NodeData]):
         print(f"Node expanded: {event.node.label}")
         self.add_child_nodes(event.node)
 
-    @on(Tree.NodeCollapsed)
-    def clear_all_children(self, event: Tree.NodeExpanded) -> None:
-        event.node.remove_children()
+    # @on(Tree.NodeCollapsed)
+    # def clear_all_children(self, event: Tree.NodeExpanded) -> None:
+    #     event.node.remove_children()
 
 
 class ApplyTree(ManagedTree):
@@ -334,59 +334,83 @@ class ApplyTree(ManagedTree):
             id="apply_tree",
         )
 
-    def on_mount(self) -> None:
+    def filter_none(self) -> None:
+        """include_unchanged_files=False, only_missing=False"""
+        self.file_paths = [
+            f
+            for f in chezmoi.managed_file_paths
+            if f in chezmoi.status_paths["apply_files"]
+        ]
+        parent_dirs = self.create_parent_dir_list(self.file_paths)
+        status_dirs = [d for d in parent_dirs if d in self.status_dirs]
+        self.dir_paths = sorted(parent_dirs + status_dirs)
 
-        print(f"Mounting {self.__class__.__name__} tree")
+    def filter_include_unchanged(self) -> None:
+        """include_unchanged_files=True, only_missing=False"""
+        self.file_paths = chezmoi.managed_file_paths
+        self.dir_paths = chezmoi.managed_dir_paths
 
-        # Default switch values: False False
+    def filter_both(self) -> None:
+        """include_unchanged_files=True, only_missing=True"""
+        self.file_paths = [
+            f
+            for f in chezmoi.managed_file_paths
+            if f in chezmoi.status_paths["apply_files"]
+        ]
+        parent_dirs = self.create_parent_dir_list(self.file_paths)
+        managed_dirs_with_status = [
+            d for d in parent_dirs if d in self.status_dirs
+        ]
+        self.dir_paths = sorted(parent_dirs + managed_dirs_with_status)
+
+    def filter_only_missing(self) -> None:
+        """include_unchanged_files=False, only_missing=True"""
+        self.file_paths = [
+            f
+            for f in chezmoi.managed_file_paths
+            if f in chezmoi.status_paths["apply_files"]
+        ]
+        self.dir_paths = chezmoi.managed_dir_paths
+
+    def filter_paths_and_dirs(self) -> None:
+        """Dispatch to the correct filter method based on current state."""
         if not self.include_unchanged_files and not self.only_missing:
-            self.file_paths = [
-                f
-                for f in chezmoi.managed_file_paths
-                if f in chezmoi.status_paths["apply_files"]
-            ]
-            parent_dirs = self.create_parent_dir_list(self.file_paths)
-            status_dirs = [d for d in parent_dirs if d in self.status_dirs]
-            self.dir_paths = sorted(parent_dirs + status_dirs)
-
-        # Include all files and directories that are managed
+            self.filter_none()
         elif self.include_unchanged_files and not self.only_missing:
-            self.file_paths = chezmoi.managed_file_paths
-            self.dir_paths = chezmoi.managed_dir_paths
-
-        # Include all managed paths that are missing or their parents
+            self.filter_include_unchanged()
         elif self.include_unchanged_files and self.only_missing:
-            self.file_paths = [
-                f
-                for f in chezmoi.managed_file_paths
-                if f in chezmoi.status_paths["apply_files"]
-            ]
-            parent_dirs = self.create_parent_dir_list(self.file_paths)
-            managed_dirs_with_status = [
-                d for d in parent_dirs if d in self.status_dirs
-            ]
-            self.dir_paths = sorted(parent_dirs + managed_dirs_with_status)
-
-        # Include all files or directories that are missing
+            self.filter_both()
         elif not self.include_unchanged_files and self.only_missing:
-            self.file_paths = [
-                f
-                for f in chezmoi.managed_file_paths
-                if f in chezmoi.status_paths["apply_files"]
-            ]
-            self.dir_paths = chezmoi.managed_dir_paths
+            self.filter_only_missing()
 
+    def update_expanded_nodes(self) -> None:
+        """Refresh all expanded nodes in the tree."""
+        for node in self.get_expanded_nodes():
+            node.remove_children()
+            self.add_child_nodes(node)
+
+    def on_mount(self) -> None:
+        print(f"Mounting {self.__class__.__name__} tree")
+        self.filter_paths_and_dirs()
         self.show_root = False
         self.border_title = f" {chezmoi.dest_dir} "
         self.root.expand()
 
+    def update_tree(self) -> None:
+        """Update the tree according to the reactive filter values"""
+        expanded_nodes = self.get_expanded_nodes()
+
     def watch_only_missing(self) -> None:
         print(f"new value for only_missing in {self} = {self.only_missing}")
+        self.filter_paths_and_dirs()
+        self.update_expanded_nodes()
 
     def watch_include_unchanged_files(self) -> None:
         print(
             f"new value for include_changed_files in {self} = {self.include_unchanged_files}"
         )
+        self.filter_paths_and_dirs()
+        self.update_expanded_nodes()
 
 
 class ReAddTree(ManagedTree):
