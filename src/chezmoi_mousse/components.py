@@ -1,4 +1,4 @@
-"""Contains classes used as re-used components by the widgets in mousse.py"""
+"""Contains classes used as re-used components by the widgets in mousse.py."""
 
 import re
 from collections.abc import Iterable
@@ -7,7 +7,6 @@ from pathlib import Path
 
 from rich.style import Style
 from rich.text import Text
-from textual import on
 from textual.app import ComposeResult
 from textual.containers import HorizontalGroup, VerticalGroup, VerticalScroll
 from textual.content import Content
@@ -228,8 +227,8 @@ class ManagedTree(Tree[NodeData]):
     # even though these are class vars, they are not shared between instances
     # because they are decorated with @reactive and most Python descriptors
     # work at the instance level
-    only_missing: reactive[bool] = reactive(False, init=False)
-    include_unchanged_files: reactive[bool] = reactive(False, init=False)
+    only_missing: reactive[bool] = reactive(False, init=True)
+    include_unchanged_files: reactive[bool] = reactive(False, init=True)
 
     # TODO: default color should be updated on theme change
     node_colors = {
@@ -261,6 +260,50 @@ class ManagedTree(Tree[NodeData]):
         self.root.label = str(chezmoi.dest_dir)
         self.root.expand()
 
+    def display_dir_node(self, node_data: NodeData) -> bool:
+        """Check if a directory node should be displayed according to the
+        current filter settings, including if any subdirectory contains a leaf
+        that potentially could include a leaf to display."""
+
+        def dir_has_leaves_or_subleaves(dir_path: Path) -> bool:
+            # Check for leaves in this directory
+            if not self.include_unchanged_files:
+                leaves = chezmoi.managed_file_paths_in_dir(
+                    dir_path=dir_path, only_with_status=True
+                )
+            else:
+                leaves = chezmoi.managed_file_paths_in_dir(
+                    dir_path=dir_path, only_with_status=False
+                )
+            if leaves:
+                return True
+            # Recursively check subdirectories
+            sub_dirs = chezmoi.managed_dir_paths_in_dir(dir_path=dir_path)
+            for sub_dir in sub_dirs:
+                if dir_has_leaves_or_subleaves(sub_dir):
+                    return True
+            return False
+
+        dir_has_status = node_data.path in self.status_dirs
+        if dir_has_leaves_or_subleaves(node_data.path) or dir_has_status:
+            return True
+        return False
+
+    def display_file_node(self, node_data: NodeData) -> bool:
+        """Check if a file node should be displayed according to the current
+        filter settings."""
+        # include_unchanged_files=False and only_missing=False
+        if not self.include_unchanged_files and not self.only_missing:
+            return node_data.status != "X"
+        # include_unchanged_files=False and only_missing=True
+        if not self.include_unchanged_files and self.only_missing:
+            return node_data.status != "X" and not node_data.found
+        # include_unchanged_files=True and only_missing=True
+        if self.include_unchanged_files and self.only_missing:
+            return not node_data.found or node_data.status == "X"
+        # include_unchanged_files=True and only_missing=False
+        return True
+
     def get_all_current_dir_nodes(self) -> list[TreeNode]:
         """Get all current dir nodes in the tree."""
 
@@ -274,6 +317,22 @@ class ManagedTree(Tree[NodeData]):
             return nodes
 
         return collect_nodes(self.root)
+
+    def get_current_expanded_nodes(self) -> list[TreeNode]:
+        """Get all current expanded nodes in the tree."""
+        return [
+            node
+            for node in self.get_all_current_dir_nodes()
+            if node.is_expanded
+        ]
+
+    def get_current_collapsed_nodes(self) -> list[TreeNode]:
+        """Get all current collapsed nodes in the tree."""
+        return [
+            node
+            for node in self.get_all_current_dir_nodes()
+            if not node.is_expanded
+        ]
 
     def style_label(self, node_data: NodeData) -> Text:
         assert isinstance(node_data, NodeData)
@@ -300,8 +359,9 @@ class ManagedTree(Tree[NodeData]):
     def add_nodes(
         self, tree_node: TreeNode, dir_nodes_data: list[NodeData]
     ) -> None:
-        # collect files to add based on the tree_node parameter
         for node_data in dir_nodes_data:
+            # if self.display_dir_node(node_data):
+            #     continue  # skip adding this node
             node_label = self.style_label(node_data)
             tree_node.add(label=node_label, data=node_data)
 
@@ -341,7 +401,6 @@ class ManagedTree(Tree[NodeData]):
         self, files_data: list[NodeData], include_unchanged_files, only_missing
     ) -> list[NodeData]:
         """Filter nodes based on the value of the filter switches."""
-        result: list[NodeData] = []
         # include_unchanged_files=False and only_missing=False
         if not include_unchanged_files and not only_missing:
             return [_ for _ in files_data if _.status != "X"]
@@ -354,27 +413,6 @@ class ManagedTree(Tree[NodeData]):
         # include_unchanged_files=True and only_missing=False
         return files_data
 
-    def filtered_dirs_data(self, dirs_data: list[NodeData]) -> list[NodeData]:
-        """Filter nodes based on the value of the filter switches."""
-        filtered_dirs_data: list[NodeData] = []
-        for dir_data in dirs_data:
-            managed_leaves = chezmoi.managed_file_paths_in_dir(dir_data.path)
-            managed_sub_dirs = chezmoi.managed_dir_paths_in_dir(dir_data.path)
-            dir_has_status = (
-                True if dir_data.path in self.status_dirs else False
-            )
-            if managed_leaves or managed_sub_dirs or dir_has_status:
-                filtered_dirs_data.append(dir_data)
-        return filtered_dirs_data
-
-    def dir_node_cleanup(self) -> None:
-        """Remove empty directories from the tree."""
-        current_nodes = self.get_all_current_dir_nodes()
-        expanded_nodes = [n for n in current_nodes if n.is_expanded]
-        for node in expanded_nodes:
-            if not node.children:
-                node.remove()
-
     def populate_node(self, node: TreeNode) -> None:
         """Populate the node with files and directories."""
         assert isinstance(node.data, NodeData)
@@ -382,10 +420,12 @@ class ManagedTree(Tree[NodeData]):
         dir_paths = chezmoi.managed_dir_paths_in_dir(node.data.path)
         dir_nodes_data = self.create_dirs_data(dir_paths)
 
-        file_paths = chezmoi.managed_file_paths_in_dir(node.data.path)
+        file_paths = chezmoi.managed_file_paths_in_dir(
+            node.data.path, only_with_status=False
+        )
         file_nodes_data = self.create_files_data(file_paths)
 
-        self.add_nodes(node, self.filtered_dirs_data(dir_nodes_data))
+        self.add_nodes(node, dir_nodes_data)
         self.add_leaves(
             node,
             self.filtered_files_data(
@@ -400,17 +440,20 @@ class ManagedTree(Tree[NodeData]):
     def on_tree_node_expanded(self, event: Tree.NodeExpanded) -> None:
         print(f"Node expanded: {event.node.data}")
         self.populate_node(event.node)
+        # self.dir_node_cleanup()
 
     def on_tree_node_selected(self, event: Tree.NodeSelected) -> None:
         print(f"Selected node data: {event.node.data}, tree id: {self.id}")
 
     def watch_only_missing(self) -> None:
         print(f"new value for only_missing in {self} = {self.only_missing}")
+        self.refresh()
 
     def watch_include_unchanged_files(self) -> None:
         print(
             f"new value for include_changed_files in {self} = {self.include_unchanged_files}"
         )
+        self.refresh()
 
 
 class ChezmoiStatus(VerticalScroll):
