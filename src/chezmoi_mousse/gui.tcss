@@ -15,7 +15,7 @@ AutoWarning {
   dock: top;
 }
 
-ChezmoiAdd {
+Operate {
   background-tint: $surface;
   background: $surface;
   border: thick $panel;

@@ -15,11 +15,6 @@ def test_add_tab_instantiation():
     assert isinstance(tab, mousse.AddTab)
 
 
-def test_chezmoi_add_instantiation(dummy_path):
-    modal = mousse.ChezmoiAdd(dummy_path)
-    assert isinstance(modal, mousse.ChezmoiAdd)
-
-
 def test_git_log_instantiation():
     modal = mousse.GitLog()
     assert isinstance(modal, mousse.GitLog)

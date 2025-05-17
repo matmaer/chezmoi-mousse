@@ -99,13 +99,13 @@ class AddTab(Horizontal):
         cursor_node = self.query_one(
             "#filtered_dir_tree", FilteredDirTree
         ).cursor_node
-        self.app.push_screen(ChezmoiAdd(cursor_node.data.path))  # type: ignore[reportOptionalMemberAccess] # pylint: disable=line-too-long
+        self.app.push_screen(Operate(cursor_node.data.path))  # type: ignore[reportOptionalMemberAccess] # pylint: disable=line-too-long
 
     def on_resize(self) -> None:
         self.query_one("#filtered_dir_tree", FilteredDirTree).focus()
 
 
-class ChezmoiAdd(ModalScreen):
+class Operate(ModalScreen):
 
     BINDINGS = [
         Binding(key="escape", action="dismiss", description="close", show=True)
