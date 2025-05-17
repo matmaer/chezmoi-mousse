@@ -14,7 +14,6 @@ from textual.containers import (
 )
 from textual.events import Click
 from textual.screen import ModalScreen
-from textual.widget import Widget
 from textual.widgets import (
     Button,
     Checkbox,
@@ -130,9 +129,6 @@ class Operate(ModalScreen):
             Button("- Cancel -", id="canceladding", classes="operate-button"),
             id="button_container",
         )
-
-    def compose_add_child(self, widget: Widget) -> None:
-        return super().compose_add_child(widget)
 
     def on_mount(self) -> None:
         self.files_to_add: list[Path] = []
