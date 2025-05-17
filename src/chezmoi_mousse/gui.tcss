@@ -18,6 +18,10 @@ AutoWarning {
   border-bottom: dashed $panel;
 }
 
+PathView {
+  padding-left: 1;
+}
+
 Operate {
   background-tint: $surface;
   background: $surface;
@@ -288,14 +292,6 @@ Toast {
 #diagram {
   padding: 0 1 0 1;
   min-width: 82;
-}
-
-PathView {
-  padding-left: 1;
-  border-top: tab $scrollbar;
-  border-title-align: center;
-  border-title-style: bold;
-  text-style: none;
 }
 
 .any-tree {
