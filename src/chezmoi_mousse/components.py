@@ -271,19 +271,25 @@ class ManagedTree(Tree[NodeData]):
         if node_data.path == chezmoi.dest_dir:
             return True
 
-        all_files = [
+        managed_in_dir_tree = [
             f
             for f in chezmoi.managed_file_paths
             if node_data.path in f.parents
         ]
 
+        # include_unchanged_files=False and only_missing=False
         if not self.include_unchanged_files and not self.only_missing:
-            return any(f in self.status_files for f in all_files)
+            return any(f in self.status_files for f in managed_in_dir_tree)
+
+        # include_unchanged_files=False and only_missing=True
         elif self.include_unchanged_files and not self.only_missing:
-            return bool(all_files)
+            return bool(managed_in_dir_tree)
+
+        # include_unchanged_files=True and only_missing=False
         elif not self.include_unchanged_files and self.only_missing:
             return any(
-                f in self.status_files and not f.exists() for f in all_files
+                f in self.status_files and not f.exists()
+                for f in managed_in_dir_tree
             )
         elif self.include_unchanged_files and self.only_missing:
             # Not implemented yet
@@ -314,7 +320,7 @@ class ManagedTree(Tree[NodeData]):
         """Recursively get all current expanded nodes in the tree."""
 
         def collect_nodes(node: TreeNode) -> list[TreeNode]:
-            nodes = []
+            nodes = [self.root]
             for child in node.children:
                 if child.is_expanded:
                     nodes.append(child)
@@ -339,9 +345,7 @@ class ManagedTree(Tree[NodeData]):
         return Text(node_data.path.name, style=style)
 
     def add_leaves(self, tree_node: TreeNode) -> None:
-        """Uses a list of NodeData objects provided by the files_nodes_data
-        parameter, to add to the provided tree_node parameter  if the tree_node
-        doesn't already contain a node with this path."""
+        """Adds a leaf for each file in the tree_node.data.path directory,"""
 
         current_leafs = [
             leaf
@@ -371,13 +375,17 @@ class ManagedTree(Tree[NodeData]):
                 tree_node.add_leaf(label=node_label, data=node_data)
 
     def add_nodes(self, tree_node: TreeNode) -> None:
-        """Uses a list of NodeData objects in provided by the dir_nodes_data
-        parameter, to add to the provided tree_node parameter if the tree_node
-        doesn't already contain a node with this path."""
+        """Adds a node for each directory in the tree_node.data.path
+        directory."""
 
         assert isinstance(tree_node.data, NodeData)
-
         dir_paths = chezmoi.managed_dir_paths_in_dir(tree_node.data.path)
+
+        current_sub_dir_node_paths = [
+            child.data.path
+            for child in tree_node.children
+            if isinstance(child.data, NodeData) and not child.data.is_file
+        ]
 
         for dir_path in dir_paths:
             status_code = "X"
@@ -389,7 +397,10 @@ class ManagedTree(Tree[NodeData]):
                 is_file=False,
                 status=status_code,
             )
-            if self.show_dir_node(node_data):
+            if (
+                self.show_dir_node(node_data)
+                and node_data.path not in current_sub_dir_node_paths
+            ):
                 node_label = self.style_label(node_data)
                 tree_node.add(label=node_label, data=node_data)
 
