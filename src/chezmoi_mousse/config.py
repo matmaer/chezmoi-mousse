@@ -18,15 +18,15 @@ filter_switch_data = {
         "label": "Show unwanted paths",
         "filter_keys": ["add_tab"],
     },
-    "only_missing": {
-        "label": "Show only missing files.",
-        "tooltip": "Show only files that are missing on the filesystem and would be created by running chezmoi apply",
-        "filter_keys": ["apply_tab"],
-    },
     "include_unchanged_files": {
         "label": "Include files without changed status.",
         "tooltip": "Show only files which are found in the chezmoi status output.",
         "filter_keys": ["apply_tab", "re_add_tab"],
+    },
+    "only_missing": {
+        "label": "Show only missing files.",
+        "tooltip": "Show only files that are missing on the filesystem and would be created by running chezmoi apply",
+        "filter_keys": ["apply_tab"],
     },
 }
 

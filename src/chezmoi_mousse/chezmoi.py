@@ -129,18 +129,12 @@ class Chezmoi:
         return self.dump_config.dict_out["git"]["autopush"]
 
     @property
-    def managed_dir_paths(self) -> set[Path]:
-        return {Path(p) for p in self.managed_dirs.list_out}
+    def managed_dir_paths(self) -> list[Path]:
+        return [Path(p) for p in self.managed_dirs.list_out]
 
     @property
-    def managed_file_paths(self) -> set[Path]:
-        return {Path(p) for p in self.managed_files.list_out}
-
-    @property
-    def existing_managed_file_paths(self) -> set[Path]:
-        return {
-            Path(p) for p in self.managed_files.list_out if Path(p).exists()
-        }
+    def managed_file_paths(self) -> list[Path]:
+        return [Path(p) for p in self.managed_files.list_out]
 
     @property
     def status_paths(self) -> dict[str, dict[Path, str]]:
@@ -174,6 +168,20 @@ class Chezmoi:
                 self.status_dirs.list_out, apply=False
             ),
         }
+
+    def managed_file_paths_in_dir(
+        self, dir_path: Path, only_with_status: bool
+    ) -> list[Path]:
+        if only_with_status:
+            return [
+                f
+                for f in self.managed_file_paths
+                if f.parent == dir_path and f in self.status_files.list_out
+            ]
+        return [f for f in self.managed_file_paths if f.parent == dir_path]
+
+    def managed_dir_paths_in_dir(self, dir_path: Path) -> list[Path]:
+        return [d for d in self.managed_dir_paths if d.parent == dir_path]
 
     def unmanaged_in_d(self, dir_path: Path) -> list[Path]:
         if not dir_path.is_dir():
