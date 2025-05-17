@@ -272,7 +272,6 @@ class ManagedTree(Tree[NodeData]):
         if node_data.path == chezmoi.dest_dir:
             return True
 
-        # Inline the logic from has_file_of_interest
         all_files = [
             f
             for f in chezmoi.managed_file_paths
@@ -357,30 +356,28 @@ class ManagedTree(Tree[NodeData]):
         parameter, to add to the provided tree_node parameter  if the tree_node
         doesn't already contain a node with this path."""
 
+        current_leafs = [
+            leaf
+            for leaf in tree_node.children
+            if isinstance(leaf.data, NodeData) and leaf.data.is_file
+        ]
+        for leaf in current_leafs:
+            leaf.remove()
+
         assert isinstance(tree_node.data, NodeData)
         file_paths = chezmoi.managed_file_paths_in_dir(
             tree_node.data.path, only_with_status=False
         )
-        file_nodes_data: list[NodeData] = self.create_files_data(file_paths)
 
         # filter file_nodes_data with show_file_node
         file_nodes_data = [
             node_data
-            for node_data in file_nodes_data
+            for node_data in self.create_files_data(file_paths)
             if self.show_file_node(node_data)
         ]
 
-        current_child_paths = [
-            node.data.path
-            for node in tree_node.children
-            if isinstance(node.data, NodeData)
-        ]
         for node_data in file_nodes_data:
-            if (
-                self.show_file_node(node_data)
-                and node_data.is_file
-                and node_data.path not in current_child_paths
-            ):
+            if self.show_file_node(node_data) and node_data.is_file:
                 node_label = self.style_label(node_data)
                 tree_node.add_leaf(label=node_label, data=node_data)
 
@@ -452,13 +449,12 @@ class ManagedTree(Tree[NodeData]):
 
     def on_tree_node_expanded(self, event: Tree.NodeExpanded) -> None:
         print(f"Node expanded: {event.node.data}")
-        event.node.remove_children()
         self.add_nodes(event.node)
         self.add_leaves(event.node)
 
-    def on_tree_node_collapsed(self, event: Tree.NodeCollapsed) -> None:
-        print(f"Node collapsed: {event.node.data}")
-        event.node.remove_children()
+    # def on_tree_node_collapsed(self, event: Tree.NodeCollapsed) -> None:
+    #     print(f"Node collapsed: {event.node.data}")
+    #     event.node.remove_children()
 
     # update nodes when the filter switches are changed
     def update_visible_nodes(self) -> None:
@@ -466,7 +462,6 @@ class ManagedTree(Tree[NodeData]):
         settings."""
         expanded_nodes = self.get_current_dir_nodes(mode="expanded")
         for node in expanded_nodes:
-            node.remove_children()
             self.add_nodes(node)
             self.add_leaves(node)
 
