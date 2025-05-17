@@ -224,7 +224,6 @@ class NodeData:
 
 class ManagedTree(Tree[NodeData]):
 
-    only_missing: reactive[bool] = reactive(False, init=False)
     include_unchanged_files: reactive[bool] = reactive(False, init=False)
 
     # TODO: default color should be updated on theme change
@@ -277,23 +276,13 @@ class ManagedTree(Tree[NodeData]):
             if node_data.path in f.parents
         ]
 
-        # include_unchanged_files=False and only_missing=False
-        if not self.include_unchanged_files and not self.only_missing:
+        # include_unchanged_files=False
+        if not self.include_unchanged_files:
             return any(f in self.status_files for f in managed_in_dir_tree)
 
-        # include_unchanged_files=False and only_missing=True
-        elif self.include_unchanged_files and not self.only_missing:
+        # include_unchanged_files=False
+        elif self.include_unchanged_files:
             return bool(managed_in_dir_tree)
-
-        # include_unchanged_files=True and only_missing=False
-        elif not self.include_unchanged_files and self.only_missing:
-            return any(
-                f in self.status_files and not f.exists()
-                for f in managed_in_dir_tree
-            )
-        elif self.include_unchanged_files and self.only_missing:
-            # Not implemented yet
-            return False
         return False
 
     def show_file_node(self, node_data: NodeData) -> bool:
@@ -304,16 +293,10 @@ class ManagedTree(Tree[NodeData]):
                 f"Expected a file node, got {node_data.path} instead."
             )
 
-        # include_unchanged_files=False and only_missing=False
-        if not self.include_unchanged_files and not self.only_missing:
+        # include_unchanged_files=False
+        if not self.include_unchanged_files:
             return node_data.status != "X"
-        # include_unchanged_files=False and only_missing=True
-        if not self.include_unchanged_files and self.only_missing:
-            return node_data.status != "X" and not node_data.found
-        # include_unchanged_files=True and only_missing=True
-        if self.include_unchanged_files and self.only_missing:
-            return not node_data.found or node_data.status == "X"
-        # include_unchanged_files=True and only_missing=False
+        # include_unchanged_files=True
         return True
 
     def get_expanded_nodes(self) -> list[TreeNode]:
@@ -409,19 +392,13 @@ class ManagedTree(Tree[NodeData]):
         self.add_nodes(event.node)
         self.add_leaves(event.node)
 
-    def update_visible_nodes(self) -> None:
+    def watch_include_unchanged_files(self) -> None:
         """Update the visible nodes in the tree based on the current filter
         settings."""
         expanded_nodes = self.get_expanded_nodes()
         for node in expanded_nodes:
             self.add_nodes(node)
             self.add_leaves(node)
-
-    def watch_only_missing(self) -> None:
-        self.update_visible_nodes()
-
-    def watch_include_unchanged_files(self) -> None:
-        self.update_visible_nodes()
 
 
 class ChezmoiStatus(VerticalScroll):

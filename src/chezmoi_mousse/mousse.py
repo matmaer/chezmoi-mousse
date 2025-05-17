@@ -374,9 +374,7 @@ class ApplyTab(VerticalScroll):
     @on(Switch.Changed)
     def notify_apply_tree(self, event: Switch.Changed) -> None:
         apply_tree = self.query_one("#apply_tree", ManagedTree)
-        if event.switch.id == "apply_tab_only_missing":
-            apply_tree.only_missing = event.value
-        elif event.switch.id == "apply_tab_include_unchanged_files":
+        if event.switch.id == "apply_tab_include_unchanged_files":
             apply_tree.include_unchanged_files = event.value
 
 
