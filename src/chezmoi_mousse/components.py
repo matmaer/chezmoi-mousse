@@ -416,10 +416,9 @@ class ManagedTree(Tree[NodeData]):
         directory paths provided by the file_paths parameter."""
         result: list[NodeData] = []
         for file_path in file_paths:
+            status_code = "X"
             if file_path in self.status_files:
                 status_code = self.status_files[file_path]
-            else:
-                status_code = "X"
             node_data = NodeData(
                 path=file_path,
                 found=file_path.exists(),
@@ -434,10 +433,9 @@ class ManagedTree(Tree[NodeData]):
         """Creates a list of NodeData objects from the list of directory paths
         provided by the dir_paths parameter."""
         for dir_path in dir_paths:
+            status_code = "X"
             if dir_path in self.status_dirs:
                 status_code = self.status_dirs[dir_path]
-            else:
-                status_code = "X"
             node_data = NodeData(
                 path=dir_path,
                 found=dir_path.exists(),
