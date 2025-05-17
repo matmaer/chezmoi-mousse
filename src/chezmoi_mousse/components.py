@@ -4,7 +4,6 @@ import re
 from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Literal
 
 from rich.style import Style
 from rich.text import Text
@@ -272,19 +271,25 @@ class ManagedTree(Tree[NodeData]):
         if node_data.path == chezmoi.dest_dir:
             return True
 
-        all_files = [
+        managed_in_dir_tree = [
             f
             for f in chezmoi.managed_file_paths
             if node_data.path in f.parents
         ]
 
+        # include_unchanged_files=False and only_missing=False
         if not self.include_unchanged_files and not self.only_missing:
-            return any(f in self.status_files for f in all_files)
+            return any(f in self.status_files for f in managed_in_dir_tree)
+
+        # include_unchanged_files=False and only_missing=True
         elif self.include_unchanged_files and not self.only_missing:
-            return bool(all_files)
+            return bool(managed_in_dir_tree)
+
+        # include_unchanged_files=True and only_missing=False
         elif not self.include_unchanged_files and self.only_missing:
             return any(
-                f in self.status_files and not f.exists() for f in all_files
+                f in self.status_files and not f.exists()
+                for f in managed_in_dir_tree
             )
         elif self.include_unchanged_files and self.only_missing:
             # Not implemented yet
@@ -311,26 +316,14 @@ class ManagedTree(Tree[NodeData]):
         # include_unchanged_files=True and only_missing=False
         return True
 
-    def get_current_dir_nodes(
-        self, mode: Literal["expanded", "collapsed", "all"]
-    ) -> list[TreeNode]:
-        """Recursively get all current dir nodes in the tree, depending on the
-        mode.
-
-        mode: "expanded" | "collapsed" | "all"
-        """
+    def get_expanded_nodes(self) -> list[TreeNode]:
+        """Recursively get all current expanded nodes in the tree."""
 
         def collect_nodes(node: TreeNode) -> list[TreeNode]:
-            nodes = []
+            nodes = [self.root]
             for child in node.children:
-                assert isinstance(child.data, NodeData)
-                if not child.data.is_file:
-                    if mode == "collapsed" and child.is_collapsed:
-                        nodes.append(child)
-                    elif mode == "expanded" and child.is_expanded:
-                        nodes.append(child)
-                    elif mode == "all":
-                        nodes.append(child)
+                if child.is_expanded:
+                    nodes.append(child)
                     # Recurse into directory children
                     nodes.extend(collect_nodes(child))
             return nodes
@@ -352,9 +345,7 @@ class ManagedTree(Tree[NodeData]):
         return Text(node_data.path.name, style=style)
 
     def add_leaves(self, tree_node: TreeNode) -> None:
-        """Uses a list of NodeData objects provided by the files_nodes_data
-        parameter, to add to the provided tree_node parameter  if the tree_node
-        doesn't already contain a node with this path."""
+        """Adds a leaf for each file in the tree_node.data.path directory,"""
 
         current_leafs = [
             leaf
@@ -369,52 +360,6 @@ class ManagedTree(Tree[NodeData]):
             tree_node.data.path, only_with_status=False
         )
 
-        # filter file_nodes_data with show_file_node
-        file_nodes_data = [
-            node_data
-            for node_data in self.create_files_data(file_paths)
-            if self.show_file_node(node_data)
-        ]
-
-        for node_data in file_nodes_data:
-            if self.show_file_node(node_data) and node_data.is_file:
-                node_label = self.style_label(node_data)
-                tree_node.add_leaf(label=node_label, data=node_data)
-
-    def add_nodes(self, tree_node: TreeNode) -> None:
-        """Uses a list of NodeData objects in provided by the dir_nodes_data
-        parameter, to add to the provided tree_node parameter if the tree_node
-        doesn't already contain a node with this path."""
-
-        assert isinstance(tree_node.data, NodeData)
-
-        dir_paths = chezmoi.managed_dir_paths_in_dir(tree_node.data.path)
-        dir_nodes_data: list[NodeData] = self.create_dirs_data(dir_paths)
-
-        # filter dir_nodes_data with show_dir_node
-        dir_nodes_data = [
-            node_data
-            for node_data in dir_nodes_data
-            if self.show_dir_node(node_data)
-        ]
-
-        current_child_paths = [
-            node.data.path
-            for node in tree_node.children
-            if isinstance(node.data, NodeData)
-        ]
-        for node_data in dir_nodes_data:
-            if (
-                self.show_dir_node(node_data)
-                and node_data.path not in current_child_paths
-            ):
-                node_label = self.style_label(node_data)
-                tree_node.add(label=node_label, data=node_data)
-
-    def create_files_data(self, file_paths: list[Path]) -> list[NodeData]:
-        """Creates a list of NodeData objects from the provided list of
-        directory paths provided by the file_paths parameter."""
-        result: list[NodeData] = []
         for file_path in file_paths:
             status_code = "X"
             if file_path in self.status_files:
@@ -425,13 +370,23 @@ class ManagedTree(Tree[NodeData]):
                 is_file=True,
                 status=status_code,
             )
-            result.append(node_data)
-        return result
+            if self.show_file_node(node_data):
+                node_label = self.style_label(node_data)
+                tree_node.add_leaf(label=node_label, data=node_data)
 
-    def create_dirs_data(self, dir_paths: list[Path]) -> list[NodeData]:
-        result: list[NodeData] = []
-        """Creates a list of NodeData objects from the list of directory paths
-        provided by the dir_paths parameter."""
+    def add_nodes(self, tree_node: TreeNode) -> None:
+        """Adds a node for each directory in the tree_node.data.path
+        directory."""
+
+        assert isinstance(tree_node.data, NodeData)
+        dir_paths = chezmoi.managed_dir_paths_in_dir(tree_node.data.path)
+
+        current_sub_dir_node_paths = [
+            child.data.path
+            for child in tree_node.children
+            if isinstance(child.data, NodeData) and not child.data.is_file
+        ]
+
         for dir_path in dir_paths:
             status_code = "X"
             if dir_path in self.status_dirs:
@@ -442,35 +397,30 @@ class ManagedTree(Tree[NodeData]):
                 is_file=False,
                 status=status_code,
             )
-            result.append(node_data)
-        return result
+            if (
+                self.show_dir_node(node_data)
+                and node_data.path not in current_sub_dir_node_paths
+            ):
+                node_label = self.style_label(node_data)
+                tree_node.add(label=node_label, data=node_data)
 
     def on_tree_node_expanded(self, event: Tree.NodeExpanded) -> None:
         print(f"Node expanded: {event.node.data}")
         self.add_nodes(event.node)
         self.add_leaves(event.node)
 
-    # def on_tree_node_collapsed(self, event: Tree.NodeCollapsed) -> None:
-    #     print(f"Node collapsed: {event.node.data}")
-    #     event.node.remove_children()
-
-    # update nodes when the filter switches are changed
     def update_visible_nodes(self) -> None:
         """Update the visible nodes in the tree based on the current filter
         settings."""
-        expanded_nodes = self.get_current_dir_nodes(mode="expanded")
+        expanded_nodes = self.get_expanded_nodes()
         for node in expanded_nodes:
             self.add_nodes(node)
             self.add_leaves(node)
 
     def watch_only_missing(self) -> None:
-        print(f"new value for only_missing in {self} = {self.only_missing}")
         self.update_visible_nodes()
 
     def watch_include_unchanged_files(self) -> None:
-        print(
-            f"new value for include_changed_files in {self} = {self.include_unchanged_files}"
-        )
         self.update_visible_nodes()
 
 
