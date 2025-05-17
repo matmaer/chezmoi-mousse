@@ -68,7 +68,7 @@ class AddTab(Horizontal):
             classes="dir-tree any-tree",
             id="filtered_dir_tree",
         )
-        yield PathView()
+        yield PathView(id="add_file_view")
         yield FilterBar(filter_key="add_tab", tab_filters_id="add_filters")
 
     def on_mount(self) -> None:
@@ -79,7 +79,9 @@ class AddTab(Horizontal):
     @on(FilteredDirTree.FileSelected)
     def update_preview_path(self, event: FilteredDirTree.FileSelected) -> None:
         if event.node.data is not None:
-            self.query_exactly_one(PathView).path = event.node.data.path
+            self.query_one("add_file_view", PathView).path = (
+                event.node.data.path
+            )
 
     def action_toggle_filterbar(self):
         self.screen.query_one("#add_filters", FilterBar).toggle_class(
@@ -378,7 +380,7 @@ class ApplyTab(VerticalScroll):
     @on(ManagedTree.NodeSelected)
     def update_preview_path(self, event: ManagedTree.NodeSelected) -> None:
         if event.node.data is not None:
-            self.query_exactly_one(PathView).path = event.node.data.path
+            self.query_one("#apply_file", PathView).path = event.node.data.path
         else:
             raise ValueError("ManagedTree.NodeSelected event.data is None.")
 
@@ -414,7 +416,7 @@ class ReAddTab(VerticalScroll):
                 status_dirs=chezmoi.status_paths["re_add_dirs"],
                 id="re_add_tree",
             ),
-            PathView(),
+            PathView(id="re_add_file"),
         )
         yield FilterBar(
             filter_key="re_add_tab", tab_filters_id="re_add_filters"
@@ -432,9 +434,11 @@ class ReAddTab(VerticalScroll):
     @on(ManagedTree.NodeSelected)
     def update_preview_path(self, event: ManagedTree.NodeSelected) -> None:
         if event.node.data is not None:
-            self.query_exactly_one(PathView).path = event.node.data.path
+            self.query_one("#re_add_file", PathView).path = (
+                event.node.data.path
+            )
         else:
-            self.query_exactly_one(PathView).path = None
+            self.query_one("#re_add_file", PathView).path = None
 
     @on(Switch.Changed)
     def notify_re_add_tree(self, event: Switch.Changed) -> None:

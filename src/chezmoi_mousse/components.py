@@ -408,7 +408,8 @@ class ChezmoiStatus(VerticalScroll):
         super().__init__(**kwargs)
 
     def compose(self) -> ComposeResult:
-        yield Collapsible(*self.status_items, title="Chezmoi Status")
+        with Collapsible(title="Chezmoi Status"):
+            yield from self.status_items
 
     def on_mount(self) -> None:
         # status can be a space so not using str.split() or str.strip()
