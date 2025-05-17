@@ -68,7 +68,11 @@ class PathView(RichLog):
                 # FileNotFoundError is raised both when a file or a directory
                 # does not exist
                 if self.path in chezmoi.managed_file_paths:
-                    self.write(chezmoi.cat(str(self.path)))
+                    file_content = chezmoi.cat(str(self.path))
+                    if not file_content.strip():
+                        self.write("File contains only whitespace")
+                    else:
+                        self.write(chezmoi.cat(file_content))
                     return
                 elif self.path in chezmoi.managed_dir_paths:
                     text = [
