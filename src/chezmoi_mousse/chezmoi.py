@@ -169,15 +169,7 @@ class Chezmoi:
             ),
         }
 
-    def managed_file_paths_in_dir(
-        self, dir_path: Path, only_with_status: bool
-    ) -> list[Path]:
-        if only_with_status:
-            return [
-                f
-                for f in self.managed_file_paths
-                if f.parent == dir_path and f in self.status_files.list_out
-            ]
+    def managed_file_paths_in_dir(self, dir_path: Path) -> list[Path]:
         return [f for f in self.managed_file_paths if f.parent == dir_path]
 
     def managed_dir_paths_in_dir(self, dir_path: Path) -> list[Path]:
