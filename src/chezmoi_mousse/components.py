@@ -4,6 +4,7 @@ import re
 from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Literal
 
 from rich.style import Style
 from rich.text import Text
@@ -311,35 +312,31 @@ class ManagedTree(Tree[NodeData]):
         # include_unchanged_files=True and only_missing=False
         return True
 
-    def get_all_current_dir_nodes(self) -> list[TreeNode]:
-        """Get all current dir nodes in the tree, this also depends on which
-        nodes the user has expanded."""
+    def get_current_dir_nodes(
+        self, mode: Literal["expanded", "collapsed", "all"]
+    ) -> list[TreeNode]:
+        """Recursively get all current dir nodes in the tree, depending on the
+        mode.
+
+        mode: "expanded" | "collapsed" | "all"
+        """
 
         def collect_nodes(node: TreeNode) -> list[TreeNode]:
-            nodes = [node]
+            nodes = []
             for child in node.children:
                 assert isinstance(child.data, NodeData)
                 if not child.data.is_file:
-                    nodes.append(child)
+                    if mode == "collapsed" and child.is_collapsed:
+                        nodes.append(child)
+                    elif mode == "expanded" and child.is_expanded:
+                        nodes.append(child)
+                    elif mode == "all":
+                        nodes.append(child)
+                    # Recurse into directory children
+                    nodes.extend(collect_nodes(child))
             return nodes
 
         return collect_nodes(self.root)
-
-    def get_current_expanded_nodes(self) -> list[TreeNode]:
-        """Get all current expanded nodes in the tree."""
-        return [
-            node
-            for node in self.get_all_current_dir_nodes()
-            if node.is_expanded
-        ]
-
-    def get_current_collapsed_nodes(self) -> list[TreeNode]:
-        """Get all current collapsed nodes in the tree."""
-        return [
-            node
-            for node in self.get_all_current_dir_nodes()
-            if not node.is_expanded
-        ]
 
     def style_label(self, node_data: NodeData) -> Text:
         assert isinstance(node_data, NodeData)
@@ -355,16 +352,28 @@ class ManagedTree(Tree[NodeData]):
             style = self.node_colors["Dir"]
         return Text(node_data.path.name, style=style)
 
-    def add_leaves(
-        self, tree_node: TreeNode, file_nodes_data: list[NodeData]
-    ) -> None:
+    def add_leaves(self, tree_node: TreeNode) -> None:
         """Uses a list of NodeData objects provided by the files_nodes_data
         parameter, to add to the provided tree_node parameter  if the tree_node
         doesn't already contain a node with this path."""
+
+        assert isinstance(tree_node.data, NodeData)
+        file_paths = chezmoi.managed_file_paths_in_dir(
+            tree_node.data.path, only_with_status=False
+        )
+        file_nodes_data: list[NodeData] = self.create_files_data(file_paths)
+
+        # filter file_nodes_data with show_file_node
+        file_nodes_data = [
+            node_data
+            for node_data in file_nodes_data
+            if self.show_file_node(node_data)
+        ]
+
         current_child_paths = [
             node.data.path
             for node in tree_node.children
-            if isinstance(node.data, NodeData) and node.data.is_file
+            if isinstance(node.data, NodeData)
         ]
         for node_data in file_nodes_data:
             if (
@@ -375,16 +384,27 @@ class ManagedTree(Tree[NodeData]):
                 node_label = self.style_label(node_data)
                 tree_node.add_leaf(label=node_label, data=node_data)
 
-    def add_nodes(
-        self, tree_node: TreeNode, dir_nodes_data: list[NodeData]
-    ) -> None:
+    def add_nodes(self, tree_node: TreeNode) -> None:
         """Uses a list of NodeData objects in provided by the dir_nodes_data
         parameter, to add to the provided tree_node parameter if the tree_node
         doesn't already contain a node with this path."""
+
+        assert isinstance(tree_node.data, NodeData)
+
+        dir_paths = chezmoi.managed_dir_paths_in_dir(tree_node.data.path)
+        dir_nodes_data: list[NodeData] = self.create_dirs_data(dir_paths)
+
+        # filter dir_nodes_data with show_dir_node
+        dir_nodes_data = [
+            node_data
+            for node_data in dir_nodes_data
+            if self.show_dir_node(node_data)
+        ]
+
         current_child_paths = [
             node.data.path
             for node in tree_node.children
-            if isinstance(node.data, NodeData) and node.data.is_file
+            if isinstance(node.data, NodeData)
         ]
         for node_data in dir_nodes_data:
             if (
@@ -430,61 +450,25 @@ class ManagedTree(Tree[NodeData]):
             result.append(node_data)
         return result
 
-    def populate_node(self, node: TreeNode) -> None:
-        """Populate the node with files and directories."""
-        assert isinstance(node.data, NodeData)
-
-        dir_paths = chezmoi.managed_dir_paths_in_dir(node.data.path)
-        dir_nodes_data = self.create_dirs_data(dir_paths)
-
-        # filter dir_nodes_data with show_dir_node
-        dir_nodes_data = [
-            node_data
-            for node_data in dir_nodes_data
-            if self.show_dir_node(node_data)
-        ]
-
-        file_paths = chezmoi.managed_file_paths_in_dir(
-            node.data.path, only_with_status=False
-        )
-        file_nodes_data = self.create_files_data(file_paths)
-
-        # filter file_nodes_data with show_file_node
-        file_nodes_data = [
-            node_data
-            for node_data in file_nodes_data
-            if self.show_file_node(node_data)
-        ]
-
-        self.add_nodes(node, dir_nodes_data)
-        self.add_leaves(node, file_nodes_data)
-
     def on_tree_node_expanded(self, event: Tree.NodeExpanded) -> None:
         print(f"Node expanded: {event.node.data}")
-        self.populate_node(event.node)
+        event.node.remove_children()
+        self.add_nodes(event.node)
+        self.add_leaves(event.node)
 
     def on_tree_node_collapsed(self, event: Tree.NodeCollapsed) -> None:
         print(f"Node collapsed: {event.node.data}")
         event.node.remove_children()
 
-    def on_tree_node_selected(self, event: Tree.NodeSelected) -> None:
-        print(f"Selected node data: {event.node.data}, tree id: {self.id}")
-
     # update nodes when the filter switches are changed
     def update_visible_nodes(self) -> None:
         """Update the visible nodes in the tree based on the current filter
         settings."""
-        expanded_nodes = self.get_current_expanded_nodes()
+        expanded_nodes = self.get_current_dir_nodes(mode="expanded")
         for node in expanded_nodes:
-            if not any(child.is_expanded for child in node.children):
-                node.remove_children()
-                self.populate_node(node)
-
-        collapsed_nodes = self.get_current_collapsed_nodes()
-        for node in collapsed_nodes:
-            assert isinstance(node.data, NodeData)
-            if self.show_dir_node(node.data):
-                node.remove()
+            node.remove_children()
+            self.add_nodes(node)
+            self.add_leaves(node)
 
     def watch_only_missing(self) -> None:
         print(f"new value for only_missing in {self} = {self.only_missing}")
