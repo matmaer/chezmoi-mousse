@@ -17,6 +17,7 @@ from textual.screen import ModalScreen
 from textual.widget import Widget
 from textual.widgets import (
     Button,
+    Checkbox,
     Collapsible,
     DataTable,
     Label,
@@ -79,7 +80,7 @@ class AddTab(Horizontal):
     @on(FilteredDirTree.FileSelected)
     def update_preview_path(self, event: FilteredDirTree.FileSelected) -> None:
         if event.node.data is not None:
-            self.query_one("add_file_view", PathView).path = (
+            self.query_one("#add_file_view", PathView).path = (
                 event.node.data.path
             )
 
@@ -117,21 +118,18 @@ class Operate(ModalScreen):
         super().__init__(**kwargs)
         self.path_to_add = path_to_add
         self.files_to_add: list[Path] = []
-        self.add_path_items: list[Collapsible] = []
+        self.add_path_items: list[HorizontalGroup] = []
 
     def compose(self) -> ComposeResult:
+        yield AutoWarning()
         with VerticalScroll():
-            yield AutoWarning()
             yield from self.add_path_items
-            yield Horizontal(
-                Button(
-                    "- Add File -", id="addfile", classes="add-modal-button"
-                ),
-                Button(
-                    "- Cancel -", id="canceladding", classes="add-modal-button"
-                ),
-                id="button_container",
-            )
+        yield HorizontalGroup(
+            Button("- Select All -", id="selectall", classes="operate-button"),
+            Button("- Add Files -", id="addfile", classes="operate-button"),
+            Button("- Cancel -", id="canceladding", classes="operate-button"),
+            id="button_container",
+        )
 
     def compose_add_child(self, widget: Widget) -> None:
         return super().compose_add_child(widget)
@@ -154,8 +152,13 @@ class Operate(ModalScreen):
 
         for f in self.files_to_add:
             self.add_path_items.append(
-                Collapsible(
-                    PathView(f), title=str(f.relative_to(chezmoi.dest_dir))
+                HorizontalGroup(
+                    Checkbox(classes="operate-checkbox"),
+                    Collapsible(
+                        PathView(f),
+                        title=str(f.relative_to(chezmoi.dest_dir)),
+                        classes="operate-collapsible",
+                    ),
                 )
             )
         self.refresh(recompose=True)
@@ -429,7 +432,7 @@ class ReAddTab(VerticalScroll):
         self.notify("will re-add path")
 
     def on_resize(self) -> None:
-        self.query_exactly_one(ManagedTree).focus()
+        self.query_one("#re_add_tree", ManagedTree).focus()
 
     @on(ManagedTree.NodeSelected)
     def update_preview_path(self, event: ManagedTree.NodeSelected) -> None:
@@ -442,8 +445,8 @@ class ReAddTab(VerticalScroll):
 
     @on(Switch.Changed)
     def notify_re_add_tree(self, event: Switch.Changed) -> None:
-        re_add_tree = self.query_one("#re_add_tree", ManagedTree)
         if event.switch.id == "re_add_tab_include_unchanged_files":
+            re_add_tree = self.query_one("#re_add_tree", ManagedTree)
             re_add_tree.include_unchanged_files = event.value
 
 
