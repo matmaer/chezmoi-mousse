@@ -12,6 +12,7 @@ from textual.containers import (
     VerticalGroup,
     VerticalScroll,
 )
+from textual.events import Click
 from textual.screen import ModalScreen
 from textual.widget import Widget
 from textual.widgets import (
@@ -180,7 +181,7 @@ class GitLog(ModalScreen):
     def on_mount(self) -> None:
         table = self.query_one("#gitlogtable", DataTable)
         table.border_title = "chezmoi git log - command output"
-        table.border_subtitle = "escape to close"
+        table.border_subtitle = "double click or escape to close"
         styles = {
             "ok": f"{self.app.current_theme.success}",
             "warning": f"{self.app.current_theme.warning}",
@@ -211,6 +212,10 @@ class GitLog(ModalScreen):
             else:
                 table.add_row(*columns)
 
+    def on_click(self, event: Click) -> None:
+        if event.chain == 2:
+            self.dismiss()
+
 
 class ConfigDump(ModalScreen):
 
@@ -227,7 +232,13 @@ class ConfigDump(ModalScreen):
         self.query_one("#configdump").border_title = (
             "chezmoi dump-config - command output"
         )
-        self.query_one("#configdump").border_subtitle = " escape to close "
+        self.query_one("#configdump").border_subtitle = (
+            "double click or escape to close"
+        )
+
+    def on_click(self, event: Click) -> None:
+        if event.chain == 2:
+            self.dismiss()
 
 
 class DoctorTab(VerticalScroll):

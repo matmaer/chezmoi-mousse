@@ -339,9 +339,7 @@ class ManagedTree(Tree[NodeData]):
             leaf.remove()
 
         assert isinstance(tree_node.data, NodeData)
-        file_paths = chezmoi.managed_file_paths_in_dir(
-            tree_node.data.path, only_with_status=False
-        )
+        file_paths = chezmoi.managed_file_paths_in_dir(tree_node.data.path)
 
         for file_path in file_paths:
             status_code = "X"
