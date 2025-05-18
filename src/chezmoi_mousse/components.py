@@ -109,23 +109,26 @@ class PathView(RichLog):
         if self.path is not None:
             self.clear()
             self.on_mount()
-            self.border_title = f" {self.path.relative_to(chezmoi.dest_dir)} "
-        else:
-            self.border_title = " no file selected "
 
 
 class StaticDiff(Static):
 
-    def __init__(self, apply: bool, file_path: Path | None = None) -> None:
+    file_path: reactive[Path | None] = reactive(None)
+
+    def __init__(self, apply: bool) -> None:
         super().__init__()
-        self.file_path = file_path
         self.apply = apply
 
     def on_mount(self) -> None:
-
-        if self.file_path is None:
-            self.update("No file selected")
-
+        if self.apply:
+            key = "apply_files"
+        else:
+            key = "re_add_files"
+        if (
+            self.file_path is None
+            or self.file_path not in chezmoi.status_paths[key]
+        ):
+            self.update(f"self.file_path: {self.file_path}")
         else:
             diff_output = (
                 line
@@ -146,6 +149,9 @@ class StaticDiff(Static):
                     colored_lines.append(content.stylize("dim"))
 
             self.update(Content("\n").join(colored_lines))
+
+    def watch_file_path(self) -> None:
+        self.on_mount()
 
 
 class PathViewTabs(TabbedContent):
@@ -279,8 +285,6 @@ class ManagedTree(Tree[NodeData]):
 
     def on_mount(self) -> None:
         print(f"Mounting {self.__class__.__name__} tree")
-        self.show_root = False
-        self.border_title = f" {chezmoi.dest_dir} "
         # give root node status R so it's not considered having status "X"
         self.root.data = NodeData(
             path=chezmoi.dest_dir, found=True, is_file=False, status="R"
@@ -453,11 +457,10 @@ class ChezmoiStatus(VerticalScroll):
         for file_path, status_code in status_paths.items():
             rel_path = str(file_path.relative_to(chezmoi.dest_dir))
             title = f"{status_info['code name'][status_code]} {rel_path}"
+            static_diff = StaticDiff(apply=self.apply)
+            static_diff.file_path = file_path
             self.status_items.append(
-                Collapsible(
-                    StaticDiff(file_path=file_path, apply=self.apply),
-                    title=title,
-                )
+                Collapsible(StaticDiff(apply=self.apply), title=title)
             )
         self.refresh(recompose=True)
 

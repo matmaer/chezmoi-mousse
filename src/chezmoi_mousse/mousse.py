@@ -74,8 +74,7 @@ class AddTab(Horizontal):
 
     def on_mount(self) -> None:
         dir_tree = self.query_one("#filtered_dir_tree", FilteredDirTree)
-        dir_tree.show_root = False
-        dir_tree.border_title = f" {chezmoi.dest_dir} "
+        dir_tree.root.label = str(chezmoi.dest_dir)
 
     @on(FilteredDirTree.FileSelected)
     def update_preview_path(self, event: FilteredDirTree.FileSelected) -> None:

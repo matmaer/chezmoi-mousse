@@ -298,9 +298,6 @@ Toast {
   min-width: 30;
   max-width: 45%;
   padding-left: 1;
-  border-top: tab $scrollbar;
-  border-title-align: center;
-  border-title-style: bold;
   width: auto;
   margin-right: 2;
 }
