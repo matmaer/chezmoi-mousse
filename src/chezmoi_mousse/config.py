@@ -19,7 +19,7 @@ filter_switch_data = {
         "filter_keys": ["add_tab"],
     },
     "include_unchanged_files": {
-        "label": "Include files without changed status.",
+        "label": "Include files without changed status",
         "tooltip": "Show only files which are found in the chezmoi status output.",
         "filter_keys": ["apply_tab", "re_add_tab"],
     },

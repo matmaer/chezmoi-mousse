@@ -234,6 +234,20 @@ FilterBar {
     offset-x: -100%;
   }
 }
+#loading_screen {
+  #loading_screen_log {
+    color: $secondary;
+    height: 12;
+    margin: 2 1 2 1;
+    width: auto;
+  }
+  #continue_button {
+    border: none;
+    color: $accent;
+    text-style: none;
+  }
+}
+
 
 Toast {
   background: $surface;
