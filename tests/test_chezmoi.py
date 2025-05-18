@@ -1,6 +1,5 @@
 import pytest
 
-from chezmoi_mousse import components
 from chezmoi_mousse.chezmoi import Chezmoi
 
 
@@ -84,8 +83,3 @@ def test_auto_flags(chezmoi_instance):
     assert isinstance(chezmoi_instance.autoadd_enabled, bool)
     assert isinstance(chezmoi_instance.autocommit_enabled, bool)
     assert isinstance(chezmoi_instance.autopush_enabled, bool)
-
-
-def test_filterbar_instantiation():
-    fb = components.FilterBar(filter_key="main", tab_filters_id="tab1")
-    assert isinstance(fb, components.FilterBar)
