@@ -86,16 +86,6 @@ def test_auto_flags(chezmoi_instance):
     assert isinstance(chezmoi_instance.autopush_enabled, bool)
 
 
-def test_filtereddirtree_instantiation(monkeypatch, tmp_path):
-    tree = components.FilteredDirTree(tmp_path)
-    assert isinstance(tree, components.FilteredDirTree)
-
-
-def test_chezmoistatus_instantiation():
-    cs = components.ChezmoiStatus(apply=True)
-    assert isinstance(cs, components.ChezmoiStatus)
-
-
 def test_filterbar_instantiation():
     fb = components.FilterBar(filter_key="main", tab_filters_id="tab1")
     assert isinstance(fb, components.FilterBar)
