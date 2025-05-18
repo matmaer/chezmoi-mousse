@@ -220,10 +220,12 @@ class Chezmoi:
         ]
         return subprocess_run(long_command + [file_path])
 
-    def diff(self, file_path: str, apply: bool) -> list[str]:
+    def apply_diff(self, file_path: str) -> list[str]:
         long_command = self.base + ["diff", file_path]
-        if apply:
-            return subprocess_run(long_command).splitlines()
+        return subprocess_run(long_command).splitlines()
+
+    def re_add_diff(self, file_path: str) -> list[str]:
+        long_command = self.base + ["diff", file_path]
         return subprocess_run(long_command + ["--reverse"]).splitlines()
 
     def cat(self, file_path: str) -> str:
