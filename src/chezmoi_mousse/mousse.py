@@ -80,9 +80,7 @@ class AddTab(Horizontal):
     @on(FilteredDirTree.FileSelected)
     def update_preview_path(self, event: FilteredDirTree.FileSelected) -> None:
         if event.node.data is not None:
-            self.query_one("#add_file_view", PathView).path = (
-                event.node.data.path
-            )
+            self.query_exactly_one(PathView).path = event.node.data.path
 
     def action_toggle_filterbar(self):
         self.screen.query_one("#add_filters", FilterBar).toggle_class(
