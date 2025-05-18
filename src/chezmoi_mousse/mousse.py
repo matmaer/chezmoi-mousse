@@ -37,6 +37,7 @@ from chezmoi_mousse.components import (
     FilteredDirTree,
     ManagedTree,
     PathView,
+    PathViewTabs,
 )
 from chezmoi_mousse.config import pw_mgr_info
 
@@ -68,7 +69,7 @@ class AddTab(Horizontal):
             classes="dir-tree any-tree",
             id="filtered_dir_tree",
         )
-        yield PathView(id="add_file_view")
+        yield PathView()
         yield FilterBar(filter_key="add_tab", tab_filters_id="add_filters")
 
     def on_mount(self) -> None:
@@ -151,7 +152,7 @@ class Operate(ModalScreen):
                 HorizontalGroup(
                     Checkbox(classes="operate-checkbox"),
                     Collapsible(
-                        PathView(f),
+                        PathView(),
                         title=str(f.relative_to(chezmoi.dest_dir)),
                         classes="operate-collapsible",
                     ),
@@ -363,7 +364,7 @@ class ApplyTab(VerticalScroll):
                 status_dirs=chezmoi.status_paths["apply_dirs"],
                 id="apply_tree",
             ),
-            PathView(id="apply_file"),
+            PathViewTabs(id="apply_path_view_tabs", apply=True),
         )
         yield FilterBar(filter_key="apply_tab", tab_filters_id="apply_filters")
 
@@ -373,13 +374,15 @@ class ApplyTab(VerticalScroll):
     def action_apply_path(self) -> None:
         self.notify("will apply path")
 
-    def on_resize(self) -> None:
-        self.query_one("#apply_tree").focus()
+    # def on_resize(self) -> None:
+    #     self.query_one("#apply_tree").focus()
 
     @on(ManagedTree.NodeSelected)
     def update_preview_path(self, event: ManagedTree.NodeSelected) -> None:
         if event.node.data is not None:
-            self.query_one("#apply_file", PathView).path = event.node.data.path
+            self.query_one(
+                "#apply_path_view_tabs", PathViewTabs
+            ).selected_path = event.node.data.path
         else:
             raise ValueError("ManagedTree.NodeSelected event.data is None.")
 
@@ -415,7 +418,7 @@ class ReAddTab(VerticalScroll):
                 status_dirs=chezmoi.status_paths["re_add_dirs"],
                 id="re_add_tree",
             ),
-            PathView(id="re_add_file"),
+            PathView(),
         )
         yield FilterBar(
             filter_key="re_add_tab", tab_filters_id="re_add_filters"
@@ -433,11 +436,9 @@ class ReAddTab(VerticalScroll):
     @on(ManagedTree.NodeSelected)
     def update_preview_path(self, event: ManagedTree.NodeSelected) -> None:
         if event.node.data is not None:
-            self.query_one("#re_add_file", PathView).path = (
-                event.node.data.path
-            )
+            self.query_exactly_one(PathView).path = event.node.data.path
         else:
-            self.query_one("#re_add_file", PathView).path = None
+            self.query_exactly_one(PathView).path = None
 
     @on(Switch.Changed)
     def notify_re_add_tree(self, event: Switch.Changed) -> None:

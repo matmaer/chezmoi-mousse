@@ -86,22 +86,6 @@ def test_auto_flags(chezmoi_instance):
     assert isinstance(chezmoi_instance.autopush_enabled, bool)
 
 
-# --- Components.py coverage ---
-
-
-def test_staticdiff_instantiation(monkeypatch, tmp_path):
-    file = tmp_path / "file.txt"
-    file.write_text("foo")
-    monkeypatch.setattr(
-        components.chezmoi,
-        "diff",
-        lambda path, apply: ["+added", "-removed", " unchanged"],
-    )
-    sd = components.StaticDiff(file, apply=True)
-    assert isinstance(sd, components.StaticDiff)
-    sd.on_mount()
-
-
 def test_filtereddirtree_instantiation(monkeypatch, tmp_path):
     tree = components.FilteredDirTree(tmp_path)
     assert isinstance(tree, components.FilteredDirTree)

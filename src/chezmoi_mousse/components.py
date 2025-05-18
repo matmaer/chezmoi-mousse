@@ -18,6 +18,7 @@ from textual.widgets import (
     RichLog,
     Static,
     Switch,
+    TabbedContent,
     Tree,
 )
 from textual.widgets.tree import TreeNode
@@ -43,13 +44,12 @@ class AutoWarning(Static):
 class PathView(RichLog):
     """RichLog widget to display the content of a file with highlighting."""
 
-    path: reactive[Path | None] = reactive(None)
+    path: reactive[Path | None] = reactive(None, init=False)
 
-    def __init__(self, path: Path | None = None, **kwargs) -> None:
+    def __init__(self) -> None:
         super().__init__(
-            auto_scroll=False, highlight=True, classes="file-preview", **kwargs
+            auto_scroll=False, highlight=True, classes="file-preview"
         )
-        self.path = path
 
     def on_mount(self) -> None:
         if self.path is None or not isinstance(self.path, Path):
@@ -64,7 +64,7 @@ class PathView(RichLog):
             except PermissionError as error:
                 self.write(error.strerror)
                 return
-            except FileNotFoundError as error:
+            except FileNotFoundError:
                 # FileNotFoundError is raised both when a file or a directory
                 # does not exist
                 if self.path in chezmoi.managed_file_paths:
@@ -72,20 +72,18 @@ class PathView(RichLog):
                     if not file_content.strip():
                         self.write("File contains only whitespace")
                     else:
-                        self.write(chezmoi.cat(file_content))
+                        self.write(file_content)
                     return
-                elif self.path in chezmoi.managed_dir_paths:
-                    text = [
-                        "The directory is managed, and does not exist on disk.",
-                        f'Output from "chezmoi status {self.path}"',
-                        f"{chezmoi.status(str(self.path))}",
-                    ]
-                    self.write("\n".join(text))
-                    return
-                else:
-                    # a file or dir that doesn't exist and is not managed
-                    # should not be displayed in the UI, so raise
-                    raise error
+
+            if self.path in chezmoi.managed_dir_paths:
+                text = [
+                    "The directory is managed, and does not exist on disk.",
+                    f'Output from "chezmoi status {self.path}"',
+                    f"{chezmoi.status(str(self.path))}",
+                ]
+                self.write("\n".join(text))
+                return
+
             try:
                 with open(self.path, "rt", encoding="utf-8") as file:
                     file_content = file.read(150 * 1024)
@@ -118,32 +116,61 @@ class PathView(RichLog):
 
 class StaticDiff(Static):
 
-    def __init__(self, file_path: Path, apply: bool) -> None:
+    def __init__(self, apply: bool, file_path: Path | None = None) -> None:
+        super().__init__()
         self.file_path = file_path
         self.apply = apply
-        super().__init__()
 
     def on_mount(self) -> None:
 
-        diff_output = (
-            line
-            for line in chezmoi.diff(str(self.file_path), self.apply)
-            if line.strip()  # filter lines containing only spaces
-            and line[0] in "+- "
-            and not line.startswith(("+++", "---"))
-        )
+        if self.file_path is None:
+            self.update("No file selected")
 
-        colored_lines: list[Content] = []
-        for line in diff_output:
-            content = Content(line)
-            if line.startswith("-"):
-                colored_lines.append(content.stylize("$text-error"))
-            elif line.startswith("+"):
-                colored_lines.append(content.stylize("$text-success"))
-            else:
-                colored_lines.append(content.stylize("dim"))
+        else:
+            diff_output = (
+                line
+                for line in chezmoi.diff(str(self.file_path), self.apply)
+                if line.strip()  # filter lines containing only spaces
+                and line[0] in "+- "
+                and not line.startswith(("+++", "---"))
+            )
 
-        self.update(Content("\n").join(colored_lines))
+            colored_lines: list[Content] = []
+            for line in diff_output:
+                content = Content(line)
+                if line.startswith("-"):
+                    colored_lines.append(content.stylize("$text-error"))
+                elif line.startswith("+"):
+                    colored_lines.append(content.stylize("$text-success"))
+                else:
+                    colored_lines.append(content.stylize("dim"))
+
+            self.update(Content("\n").join(colored_lines))
+
+
+class PathViewTabs(TabbedContent):
+    """Two tabs to view the content or the diff of a file."""
+
+    selected_path: reactive[Path | None] = reactive(None)
+
+    def __init__(self, apply: bool, **kwargs) -> None:
+        self.apply = apply
+
+        super().__init__(**kwargs)
+
+    def compose(self) -> ComposeResult:
+        with TabbedContent("Content", "Diff"):
+            yield PathView()
+            yield StaticDiff(apply=self.apply)
+
+    def watch_selected_path(self) -> None:
+        if self.selected_path is None:
+            return
+        self.query_one(PathView).path = self.selected_path
+        diff_path: Path | None = None
+        if self.selected_path in chezmoi.managed_file_paths:
+            diff_path = self.selected_path
+            self.query_one(StaticDiff).file_path = diff_path
 
 
 class FilteredDirTree(DirectoryTree):
@@ -427,7 +454,10 @@ class ChezmoiStatus(VerticalScroll):
             rel_path = str(file_path.relative_to(chezmoi.dest_dir))
             title = f"{status_info['code name'][status_code]} {rel_path}"
             self.status_items.append(
-                Collapsible(StaticDiff(file_path, self.apply), title=title)
+                Collapsible(
+                    StaticDiff(file_path=file_path, apply=self.apply),
+                    title=title,
+                )
             )
         self.refresh(recompose=True)
 
