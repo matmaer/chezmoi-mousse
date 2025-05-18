@@ -69,7 +69,7 @@ class AddTab(Horizontal):
             classes="dir-tree any-tree",
             id="filtered_dir_tree",
         )
-        yield PathView()
+        yield PathViewTabs(apply=False)
         yield FilterBar(filter_key="add_tab", tab_filters_id="add_filters")
 
     def on_mount(self) -> None:
@@ -80,7 +80,9 @@ class AddTab(Horizontal):
     @on(FilteredDirTree.FileSelected)
     def update_preview_path(self, event: FilteredDirTree.FileSelected) -> None:
         if event.node.data is not None:
-            self.query_exactly_one(PathView).path = event.node.data.path
+            self.query_exactly_one(PathViewTabs).selected_path = (
+                event.node.data.path
+            )
 
     def action_toggle_filterbar(self):
         self.screen.query_one("#add_filters", FilterBar).toggle_class(
