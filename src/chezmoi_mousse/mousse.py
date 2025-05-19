@@ -1,5 +1,7 @@
 """Contains the widgets used to compose the main screen of chezmoi-mousse."""
 
+from pathlib import Path
+
 from rich.text import Text
 from textual import on
 from textual.app import ComposeResult
@@ -74,7 +76,9 @@ class AddTab(Horizontal):
         cursor_node = self.query_one(
             "#filtered_dir_tree", FilteredDirTree
         ).cursor_node
-        self.app.push_screen(Operate(cursor_node.data.path))  # type: ignore[reportOptionalMemberAccess] # pylint: disable=line-too-long
+        if cursor_node is not None:
+            assert isinstance(cursor_node.data, Path)
+            self.app.push_screen(Operate(cursor_node.data.path))
 
 
 class DoctorTab(VerticalScroll):
