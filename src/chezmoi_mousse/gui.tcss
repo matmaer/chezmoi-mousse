@@ -158,7 +158,6 @@ Operate {
   & .operate-collapsible {
     background-tint: $surface;
     background: $surface;
-    # margin-right: 1;
   }
 
   & .operate-file-preview {
@@ -249,6 +248,7 @@ DataTable {
 }
 
 DirectoryTree {
+  width: auto;
   &>.directory-tree--folder {
     color: $primary-lighten-3;
     text-style: none;

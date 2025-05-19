@@ -8,12 +8,17 @@ from pathlib import Path
 
 from rich.style import Style
 from rich.text import Text
-from textual import on
 from textual.app import ComposeResult
-from textual.containers import HorizontalGroup, Vertical, VerticalGroup
+from textual.containers import (
+    HorizontalGroup,
+    Vertical,
+    VerticalGroup,
+    ScrollableContainer,
+)
 from textual.content import Content
 from textual.reactive import reactive
 from textual.widgets import (
+    Collapsible,
     DirectoryTree,
     Label,
     RichLog,
@@ -26,6 +31,7 @@ from textual.widgets.tree import TreeNode
 
 from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.config import filter_switch_data, unwanted
+from chezmoi_mousse.modalscreens import Operate
 
 
 class AutoWarning(Static):
@@ -116,9 +122,13 @@ class PathView(RichLog):
             self.on_mount()
 
 
-class StaticDiff(Static):
+class StaticDiff(ScrollableContainer):
 
     new_diff_lines: reactive[list[str]] = reactive([])
+
+    @property
+    def allow_maximize(self) -> bool:
+        return True
 
     def compose(self) -> ComposeResult:
         yield Static()
@@ -126,22 +136,27 @@ class StaticDiff(Static):
     def watch_new_diff_lines(self) -> None:
         print(f"{self.new_diff_lines}")
         static_diff = self.query_exactly_one(Static)
-        diff_output = (
+        diff_output: list[str] = [
             line
             for line in self.new_diff_lines
             if line.strip()  # filter lines containing only spaces
             and line[0] in "+- "
             and not line.startswith(("+++", "---"))
-        )
+        ]
 
+        if diff_output:
+            max_len = max(len(line) for line in diff_output)
+        else:
+            max_len = 0
+        padded_lines = [line.ljust(max_len) for line in diff_output]
         colored_lines: list[Content] = []
-        for line in diff_output:
-            content = Content(line)
+        for line in padded_lines:
             if line.startswith("-"):
-                colored_lines.append(content.stylize("$text-error"))
+                colored_lines.append(Content(line).stylize("$text-error"))
             elif line.startswith("+"):
-                colored_lines.append(content.stylize("$text-success"))
+                colored_lines.append(Content(line).stylize("$text-success"))
             else:
+                content = Content("▏" + line)
                 colored_lines.append(content.stylize("dim"))
         static_diff.update(Content("\n").join(colored_lines))
 
@@ -288,11 +303,6 @@ class AddDirTree(Vertical):
         dir_tree = self.query_one("#filtered_dir_tree", FilteredDirTree)
         dir_tree.root.label = str(chezmoi.dest_dir)
 
-    @on(FilteredDirTree.FileSelected)
-    def update_preview_path(self, event: FilteredDirTree.FileSelected) -> None:
-        if event.node.data is not None:
-            self.query_exactly_one(PathView).path = event.node.data.path
-
     def on_switch_changed(self, event: Switch.Changed) -> None:
         add_dir_tree = self.query_one("#filtered_dir_tree", FilteredDirTree)
         if event.switch.id == "add_tab_unmanaged":
@@ -302,11 +312,11 @@ class AddDirTree(Vertical):
             add_dir_tree.filter_unwanted = event.value
             add_dir_tree.reload()
 
-    # def action_add_path(self) -> None:
-    #     cursor_node = self.query_one(
-    #         "#filtered_dir_tree", FilteredDirTree
-    #     ).cursor_node
-    #     self.app.push_screen(Operate(cursor_node.data.path))  # type: ignore[reportOptionalMemberAccess] # pylint: disable=line-too-long
+    def action_add_path(self) -> None:
+        cursor_node = self.query_one(
+            "#filtered_dir_tree", FilteredDirTree
+        ).cursor_node
+        self.app.push_screen(Operate(cursor_node.data.path))  # type: ignore[reportOptionalMemberAccess] # pylint: disable=line-too-long
 
     def on_resize(self) -> None:
         self.query_one("#filtered_dir_tree", FilteredDirTree).focus()
@@ -349,6 +359,7 @@ class ManagedTree(Vertical):
     def on_mount(self) -> None:
 
         managed_tree = self.query_exactly_one(Tree)
+        managed_tree.guide_depth = 2
         if managed_tree.root.data is None:
             managed_tree.root.data = NodeData(
                 path=chezmoi.dest_dir, found=True, is_file=False, status="R"
@@ -502,33 +513,42 @@ class ManagedTree(Vertical):
             self.add_leaves(node)
 
 
-# class ChezmoiStatus(Vertical):
+class ChezmoiStatus(Vertical):
 
-#     def __init__(self, apply: bool) -> None:
-#         # if true, adds apply status to the list, otherwise "re-add" status
-#         self.apply = apply
-#         self.status_items: list[Collapsible] = []
-#         super().__init__()
+    apply_status: reactive[bool | None] | None = reactive(None, init=False)
 
-#     def compose(self) -> ComposeResult:
-#         with Collapsible(title="Chezmoi Status", id="chezmoi_status_group"):
-#             yield from self.status_items
+    def compose(self) -> ComposeResult:
+        with Collapsible(title="Chezmoi Status", id="chezmoi_status_group"):
+            yield from self.status_items
 
-#     def on_mount(self) -> None:
-#         # status can be a space so not using str.split() or str.strip()
-#         status_paths = (
-#             chezmoi.status_paths["apply_files"]
-#             if self.apply
-#             else chezmoi.status_paths["re_add_files"]
-#         )
+    def on_mount(self) -> None:
+        # status can be a space so not using str.split() or str.strip()
+        status_paths: dict[Path, str] = (
+            chezmoi.status_paths["apply_files"]
+            if self.apply_status
+            else chezmoi.status_paths["re_add_files"]
+        )
 
-#         for file_path, status_code in status_paths.items():
-#             rel_path = str(file_path.relative_to(chezmoi.dest_dir))
-#             title = f"{status_info['code name'][status_code]} {rel_path}"
-#             static_diff = StaticDiff()
-#             static_diff.diff_path = file_path
-#             self.status_items.append(Collapsible(StaticDiff(), title=title))
-#         self.refresh(recompose=True)
+        # write dict comprehension to create a dict with the file path as key
+        # and as value that the command returns, which is a list of strings
+        # depending on the apply_status bool, to determine calling chezmoi.apply_diff() or
+        # chezmoi.re_add_diff()
+        diff_results = {
+            file_path: (
+                chezmoi.apply_diff(str(file_path))
+                if self.apply_status
+                else chezmoi.re_add_diff(str(file_path))
+            )
+            for file_path in status_paths
+        }
+
+        self.status_items = []
+        for file_path, status_code in status_paths.items():
+            title = f"{file_path.relative_to(chezmoi.dest_dir)}: {status_code}"
+            static_diff = StaticDiff()
+            static_diff.new_diff_lines = diff_results[file_path]
+            self.status_items.append(Collapsible(static_diff, title=title))
+        self.refresh(recompose=True)
 
 
 class FilterBar(Vertical):
