@@ -1,6 +1,6 @@
 import pytest
 
-from chezmoi_mousse.mousse import DoctorTab
+from chezmoi_mousse.main_tabs import DoctorTab
 
 
 def test_doctor_instantiation():

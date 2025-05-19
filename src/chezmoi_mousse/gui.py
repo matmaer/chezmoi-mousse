@@ -4,7 +4,7 @@ from textual.screen import Screen
 from textual.theme import Theme
 from textual.widgets import Footer, Header, TabbedContent, TabPane
 
-from chezmoi_mousse.mousse import (
+from chezmoi_mousse.main_tabs import (
     AddTab,
     ApplyTab,
     DiagramTab,
