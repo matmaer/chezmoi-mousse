@@ -2,7 +2,7 @@ from textual.app import App, ComposeResult
 from textual.lazy import Lazy
 from textual.screen import Screen
 from textual.theme import Theme
-from textual.widgets import Footer, Header, TabbedContent
+from textual.widgets import Footer, Header, TabbedContent, TabPane
 
 from chezmoi_mousse.mousse import (
     AddTab,
@@ -18,19 +18,17 @@ class MainScreen(Screen):
 
     def compose(self) -> ComposeResult:
         yield Header()
-        with TabbedContent(
-            "Apply",
-            "Re-Add",
-            "Add",
-            "Doctor",
-            "Diagram",
-            id="main_tabbed_content",
-        ):
-            yield ApplyTab(id="apply_tab")
-            yield Lazy(ReAddTab(id="re_add_tab"))
-            yield Lazy(AddTab(id="add_tab"))
-            yield Lazy(DoctorTab(id="doctor_tab"))
-            yield Lazy(DiagramTab(id="diagram_tab"))
+        with TabbedContent(id="main_tabbed_content"):
+            with TabPane("Apply"):
+                yield ApplyTab(id="apply_tab")
+            with TabPane("Re-Add"):
+                yield Lazy(ReAddTab(id="re_add_tab"))
+            with TabPane("Add"):
+                yield Lazy(AddTab(id="add_tab"))
+            with TabPane("Doctor"):
+                yield Lazy(DoctorTab(id="doctor_tab"))
+            with TabPane("Diagram"):
+                yield Lazy(DiagramTab(id="diagram_tab"))
         yield Footer()
 
 

@@ -25,6 +25,7 @@ from textual.widgets import (
     Static,
     Switch,
     TabbedContent,
+    TabPane,
     Tree,
 )
 from textual.widgets.tree import TreeNode
@@ -166,9 +167,11 @@ class PathViewTabs(Vertical):
     diff_lines: reactive[list[str]] = reactive([])
 
     def compose(self) -> ComposeResult:
-        with TabbedContent("Content", "Diff", classes="path-view-tabs"):
-            yield PathView()
-            yield StaticDiff()
+        with TabbedContent(id="path_review_tabs", classes="path-view-tabs"):
+            with TabPane("Content"):
+                yield PathView()
+            with TabPane("Diff"):
+                yield StaticDiff()
 
     def watch_selected_path(self) -> None:
         if self.selected_path is None:
