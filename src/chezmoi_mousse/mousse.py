@@ -39,7 +39,7 @@ from chezmoi_mousse.components import (
 )
 
 from chezmoi_mousse.config import pw_mgr_info
-from chezmoi_mousse.modalscreens import ConfigDump, GitLog
+from chezmoi_mousse.modalscreens import ConfigDump, GitLog, Operate
 
 
 class AddTab(Horizontal):
@@ -69,6 +69,12 @@ class AddTab(Horizontal):
     def update_preview_path(self, event: FilteredDirTree.FileSelected) -> None:
         if event.node.data is not None:
             self.query_exactly_one(PathView).path = event.node.data.path
+
+    def action_add_path(self) -> None:
+        cursor_node = self.query_one(
+            "#filtered_dir_tree", FilteredDirTree
+        ).cursor_node
+        self.app.push_screen(Operate(cursor_node.data.path))  # type: ignore[reportOptionalMemberAccess] # pylint: disable=line-too-long
 
 
 class DoctorTab(VerticalScroll):

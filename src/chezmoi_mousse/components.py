@@ -31,7 +31,6 @@ from textual.widgets.tree import TreeNode
 
 from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.config import filter_switch_data, unwanted
-from chezmoi_mousse.modalscreens import Operate
 
 
 class AutoWarning(Static):
@@ -311,12 +310,6 @@ class AddDirTree(Vertical):
         elif event.switch.id == "add_tab_unwanted":
             add_dir_tree.filter_unwanted = event.value
             add_dir_tree.reload()
-
-    def action_add_path(self) -> None:
-        cursor_node = self.query_one(
-            "#filtered_dir_tree", FilteredDirTree
-        ).cursor_node
-        self.app.push_screen(Operate(cursor_node.data.path))  # type: ignore[reportOptionalMemberAccess] # pylint: disable=line-too-long
 
     def on_resize(self) -> None:
         self.query_one("#filtered_dir_tree", FilteredDirTree).focus()
