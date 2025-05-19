@@ -13,7 +13,11 @@
 }
 
 .file-preview {
-  max-width: 1fr;
+  # height: auto;
+  height: 1fr;
+  width: 1fr;
+  # overflow-x: scroll;
+  # overflow-y: scroll;
 }
 
 .left-side-tree {
@@ -27,7 +31,7 @@
 .tree-right-side {
   /* assigned to the main vertical next to the trees on the ApplyTab,
   ReAddTab and AddTab classes */
-  min-width: 1fr;
+  # min-width: 1fr;
   # border: yellow;
 }
 

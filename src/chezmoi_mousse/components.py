@@ -10,6 +10,7 @@ from rich.style import Style
 from rich.text import Text
 from textual.app import ComposeResult
 from textual.containers import (
+    Container,
     HorizontalGroup,
     Vertical,
     VerticalGroup,
@@ -48,23 +49,25 @@ class AutoWarning(Static):
         )
 
 
-class PathView(RichLog):
+class PathView(Container):
     """RichLog widget to display the content of a file with highlighting."""
 
     path: reactive[Path | None] = reactive(None, init=False)
 
-    def __init__(self) -> None:
-        super().__init__(
-            id="path_view",
+    def compose(self) -> ComposeResult:
+        yield RichLog(
+            id="file_preview",
+            classes="file-preview",
             auto_scroll=False,
             wrap=False,
             highlight=True,
-            classes="file-preview",
         )
 
     def on_mount(self) -> None:
+        rich_log = self.query_one(RichLog)
+
         if self.path is None or not isinstance(self.path, Path):
-            self.write(" Select a file to view its content.")
+            rich_log.write(" Select a file to view its content.")
         else:
             truncated = ""
             try:
@@ -73,7 +76,7 @@ class PathView(RichLog):
                         "\n\n------ File content truncated to 150 KiB ------\n"
                     )
             except PermissionError as error:
-                self.write(error.strerror)
+                rich_log.write(error.strerror)
                 return
             except FileNotFoundError:
                 # FileNotFoundError is raised both when a file or a directory
@@ -81,9 +84,9 @@ class PathView(RichLog):
                 if self.path in chezmoi.managed_file_paths:
                     file_content = chezmoi.cat(str(self.path))
                     if not file_content.strip():
-                        self.write("File contains only whitespace")
+                        rich_log.write("File contains only whitespace")
                     else:
-                        self.write(file_content)
+                        rich_log.write(file_content)
                     return
 
             if self.path in chezmoi.managed_dir_paths:
@@ -92,33 +95,33 @@ class PathView(RichLog):
                     f'Output from "chezmoi status {self.path}"',
                     f"{chezmoi.status(str(self.path))}",
                 ]
-                self.write("\n".join(text))
+                rich_log.write("\n".join(text))
                 return
 
             try:
                 with open(self.path, "rt", encoding="utf-8") as file:
                     file_content = file.read(150 * 1024)
                     if not file_content.strip():
-                        self.write("File contains only whitespace")
+                        rich_log.write("File contains only whitespace")
                     else:
-                        self.write(file_content + truncated)
+                        rich_log.write(file_content + truncated)
 
             except IsADirectoryError:
-                self.write(f"Directory: {self.path}")
+                rich_log.write(f"Directory: {self.path}")
                 return
 
             except UnicodeDecodeError:
                 text = f"{self.path} cannot be decoded as UTF-8."
-                self.write(f"{self.path} cannot be decoded as UTF-8.")
+                rich_log.write(f"{self.path} cannot be decoded as UTF-8.")
                 return
 
             except OSError as error:
                 text = Content(f"Error reading {self.path}: {error}")
-                self.write(text)
+                rich_log.write(text)
 
     def watch_path(self) -> None:
         if self.path is not None:
-            self.clear()
+            self.query_one(RichLog).clear()
             self.on_mount()
 
 
@@ -169,9 +172,9 @@ class PathViewTabs(Vertical):
     def compose(self) -> ComposeResult:
         with TabbedContent(id="path_review_tabs", classes="path-view-tabs"):
             with TabPane("Content"):
-                yield PathView()
+                yield PathView(id="path_view_tab")
             with TabPane("Diff"):
-                yield StaticDiff()
+                yield StaticDiff(id="static_diff_tab")
 
     def watch_selected_path(self) -> None:
         if self.selected_path is None:
