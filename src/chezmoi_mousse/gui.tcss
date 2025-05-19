@@ -1,10 +1,12 @@
-.tree-title{
+.tree-title {
   height: 2;
+
   /* the width is programmatically set according to the length of the path
   string, without setting it this way, the width will take 100% */
   .tree-title-text {
     color: $text;
   }
+
   .tree-title-bars {
     color: $accent-darken-3;
   }
@@ -134,6 +136,7 @@ Operate {
     margin: 0 7 0 7;
     width: 8;
     text-style: none;
+
     &:disabled {
       text-opacity: 0.6;
     }
@@ -176,17 +179,21 @@ Operate {
     border: none;
     background: $surface;
     background-tint: $surface;
+
     &>.toggle--button {
       color: $error;
       background: $surface;
       background-tint: $surface;
     }
+
     &.-on>.toggle--button {
       color: $success;
     }
+
     &:focus>.toggle--button {
       text-style: none;
     }
+
     &:hover>.toggle--button {
       text-style: bold;
     }
@@ -206,6 +213,7 @@ Operate {
     margin: 2 1 2 1;
     width: auto;
   }
+
   #continue_button {
     border: none;
     color: $accent;
@@ -239,6 +247,7 @@ CollapsibleTitle {
   padding: 0;
   margin: 0;
   color: $primary-lighten-3;
+
   &:hover {
     text-style: bold;
   }
@@ -252,6 +261,7 @@ DataTable {
 
 DirectoryTree {
   width: auto;
+
   &>.directory-tree--folder {
     color: $primary-lighten-3;
     text-style: none;
@@ -275,6 +285,7 @@ Footer {
   height: 3;
   border-top: dashed $panel;
   border-bottom: dashed $panel;
+
   .-command-palette {
     border: none;
   }
@@ -305,6 +316,7 @@ Toast {
 
 Tree {
   width: auto;
+
   &>.tree--cursor {
     text-style: none;
     color: $accent-lighten-3;
