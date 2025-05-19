@@ -1,15 +1,99 @@
-/* todo: for background-tint: check alternative not to overwrite other themes */
-
-* {
-  background-tint: $background;
-  scrollbar-size-vertical: 1;
-  scrollbar-background: $background;
-  scrollbar-background-active: $background;
-  scrollbar-background-hover: $background;
-  scrollbar-corner-color: $background;
+.tree-title{
+  height: 2;
+  /* the width is programmatically set according to the length of the path
+  string, without setting it this way, the width will take 100% */
+  .tree-title-text {
+    color: $text;
+  }
+  .tree-title-bars {
+    color: $accent-darken-3;
+  }
 }
 
-AutoWarning {
+.file-preview {
+  max-width: 1fr;
+}
+
+.left-side-tree {
+  /* although Tree has width auto, this is set so the other main vertical
+  containers takes any available space */
+  width: auto;
+  margin-right: 1;
+  padding-left: 1;
+}
+
+.right-side-tabs {
+  min-width: 1fr;
+}
+
+.filter-bar {
+  color: $foreground-darken-2;
+  background-tint: $surface;
+  background: $surface;
+  border-bottom: outer $primary-muted;
+  border-right: outer $primary-muted;
+  border-left: none;
+  border-title-color: $primary;
+  border-top: outer $primary-muted;
+  dock: bottom;
+  height: auto;
+  layer: filterbar_layer;
+  width: auto;
+  offset-x: 0%;
+  transition: offset 380ms;
+
+  & VerticalGroup {
+    width: auto;
+  }
+
+  .filter-container {
+    background-tint: $surface;
+    background: $surface;
+    padding-left: 1;
+    height: auto;
+    width: auto;
+  }
+
+  .filter-switch {
+    background-tint: $surface;
+    border: none;
+
+    &.-on .switch--slider {
+      border: none;
+      color: $success-darken-1;
+    }
+
+    & .switch--slider {
+      border: none;
+      color: $error-darken-3;
+    }
+
+    &:hover {
+      &>.switch--slider {
+        color: $error;
+      }
+
+      &.-on>.switch--slider {
+        color: $success-lighten-1;
+      }
+    }
+  }
+
+  .filter-label {
+    padding-right: 1;
+    width: auto;
+  }
+
+  .filter-tooltip {
+    color: $primary;
+  }
+
+  &.-visible {
+    offset-x: -100%;
+  }
+}
+
+#auto_warning {
   height: auto;
   padding: 0 1 0 1;
   margin: 0 1 0 1;
@@ -18,8 +102,16 @@ AutoWarning {
   border-bottom: dashed $panel;
 }
 
-PathView {
-  padding-left: 1;
+#diagram_text {
+  padding: 0 1 0 1;
+  min-width: 82;
+}
+
+#doctor_tab {
+  .doctormodals {
+    border: round $warning-darken-2;
+    margin-bottom: 1;
+  }
 }
 
 Operate {
@@ -99,23 +191,51 @@ Operate {
   }
 }
 
-ChezmoiStatus {
+#chezmoi_status_group {
   height: auto;
   max-height: 70%;
   padding-bottom: 1;
 }
 
-Collapsible {
-  border: none;
-  padding: 0;
-  & Pretty,
-  StaticDiff {
-    margin-bottom: 1;
+#loading_screen {
+  #loading_screen_log {
+    color: $secondary;
+    height: 12;
+    margin: 2 1 2 1;
+    width: auto;
+  }
+  #continue_button {
+    border: none;
+    color: $accent;
+    text-style: none;
   }
 }
 
+/******************************************************************/
+/* App default TCSS which are different than the textual defaults */
+/******************************************************************/
+
+/* todo: avoid "*"" selector */
+
+* {
+  background-tint: $background;
+  scrollbar-size-vertical: 1;
+  scrollbar-background: $background;
+  scrollbar-background-active: $background;
+  scrollbar-background-hover: $background;
+  scrollbar-corner-color: $background;
+}
+
+Collapsible {
+  padding: 0;
+  margin: 0;
+  border: none;
+}
+
 CollapsibleTitle {
-  padding-left: 1;
+  border: none;
+  padding: 0;
+  margin: 0;
   color: $primary-lighten-3;
   &:hover {
     text-style: bold;
@@ -124,6 +244,26 @@ CollapsibleTitle {
 
 DataTable {
   &>.datatable--header {
+    text-style: none;
+  }
+}
+
+DirectoryTree {
+  &>.directory-tree--folder {
+    color: $primary-lighten-3;
+    text-style: none;
+  }
+
+  &>.directory-tree--extension {
+    text-style: none;
+  }
+
+  &>.directory-tree--hidden {
+    text-style: none;
+  }
+
+  &>.directory-tree--file {
+    color: $success-lighten-3;
     text-style: none;
   }
 }
@@ -144,123 +284,24 @@ Header {
   text-style: bold;
 }
 
-LoadingScreen {
-  RichLog {
-    color: $secondary;
-    height: 12;
-    margin: 2 1 2 1;
-    width: auto;
-  }
-
-  & #continue {
-    border: none;
-    color: $accent;
-    text-style: none;
-  }
+RichLog {
+  padding-left: 1;
+  padding-right: 1;
+  height: auto;
+  width: auto;
 }
 
-Screen {
+MainScreen {
   layers: filterbar_layer;
 }
-
-FilterBar {
-  color: $foreground-darken-2;
-  background-tint: $surface;
-  background: $surface;
-  border-bottom: inner $primary-muted;
-  border-right: inner $primary-muted;
-  border-left: none;
-  border-title-color: $primary;
-  border-top: inner $primary-muted;
-  dock: bottom;
-  height: auto;
-  layer: filterbar_layer;
-  padding-top: 1;
-  width: auto;
-  /* max-width to keep the switches in view, labels overflow first */
-  max-width: 1fr;
-  offset-x: 0%;
-  transition: offset 380ms;
-
-  & VerticalGroup {
-    width: auto;
-  }
-
-  .filter-container {
-    background-tint: $surface;
-    background: $surface;
-    padding-left: 1;
-    height: auto;
-    width: auto;
-  }
-
-  .filter-switch {
-    background-tint: $surface;
-    border: none;
-
-    &.-on .switch--slider {
-      border: none;
-      color: $success-darken-1;
-    }
-
-    & .switch--slider {
-      border: none;
-      color: $error-darken-3;
-    }
-
-    &:hover {
-      &>.switch--slider {
-        color: $error;
-      }
-
-      &.-on>.switch--slider {
-        color: $success-lighten-1;
-      }
-    }
-  }
-
-  .filter-label {
-    padding-bottom: 1;
-    padding-right: 1;
-    width: auto;
-  }
-
-  .filter-tooltip {
-    padding-right: 2;
-    color: $primary;
-  }
-
-  &.-visible {
-    offset-x: -100%;
-  }
-}
-#loading_screen {
-  #loading_screen_log {
-    color: $secondary;
-    height: 12;
-    margin: 2 1 2 1;
-    width: auto;
-  }
-  #continue_button {
-    border: none;
-    color: $accent;
-    text-style: none;
-  }
-}
-
 
 Toast {
   background: $surface;
   background-tint: $surface;
 }
 
-.doctormodal {
-  max-height: 1fr;
-  border: round $warning-darken-2;
-  margin-bottom: 1;
-}
-
-.managed-tree {
+Tree {
+  width: auto;
   &>.tree--cursor {
     text-style: none;
     color: $accent-lighten-3;
@@ -298,40 +339,5 @@ Toast {
     &>.tree--guides-selected {
       color: $primary-lighten-3;
     }
-  }
-}
-
-/* ID Selectors */
-
-#diagram {
-  padding: 0 1 0 1;
-  min-width: 82;
-}
-
-.any-tree {
-  min-width: 30;
-  max-width: 45%;
-  padding-left: 1;
-  width: auto;
-  margin-right: 2;
-}
-
-.dir-tree {
-  &>.directory-tree--folder {
-    color: $primary-lighten-3;
-    text-style: none;
-  }
-
-  &>.directory-tree--extension {
-    text-style: none;
-  }
-
-  &>.directory-tree--hidden {
-    text-style: none;
-  }
-
-  &>.directory-tree--file {
-    color: $success-lighten-3;
-    text-style: none;
   }
 }
