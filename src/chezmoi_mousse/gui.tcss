@@ -22,8 +22,11 @@
   padding-left: 1;
 }
 
-.right-side-tabs {
+.tree-right-side {
+  /* assigned to the main vertical next to the trees on the ApplyTab,
+  ReAddTab and AddTab classes */
   min-width: 1fr;
+  # border: yellow;
 }
 
 .filter-bar {

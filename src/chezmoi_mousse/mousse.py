@@ -63,7 +63,7 @@ class AddTab(Horizontal):
 
     def compose(self) -> ComposeResult:
         yield AddDirTree(classes="left-side-tree")
-        with Vertical():
+        with Vertical(classes="tree-right-side"):
             yield TreeTitle(classes="tree-title")
             yield PathView()
 
@@ -196,7 +196,7 @@ class ApplyTab(Horizontal):
             id="apply_tree",
             classes="left-side-tree",
         )
-        yield PathViewTabs(id="apply_path_view", classes="right-side-tabs")
+        yield PathViewTabs(id="apply_path_view", classes="tree-right-side")
 
     def action_toggle_filterbar(self):
         self.query_exactly_one(FilterBar).toggle_class("-visible")
@@ -254,7 +254,7 @@ class ReAddTab(Horizontal):
                     classes="left-side-tree",
                 )
                 yield PathViewTabs(
-                    id="re_add_path_view", classes="right-side-tabs"
+                    id="re_add_path_view", classes="tree-right-side"
                 )
 
     def action_re_add_path(self) -> None:
