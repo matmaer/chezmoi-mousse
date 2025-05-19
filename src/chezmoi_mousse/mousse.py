@@ -44,6 +44,118 @@ from chezmoi_mousse.config import pw_mgr_info
 from chezmoi_mousse.modalscreens import ConfigDump, GitLog, Operate
 
 
+class ApplyTab(Horizontal):
+
+    BINDINGS = [
+        Binding(
+            key="F,f",
+            action="toggle_filterbar",
+            description="filter",
+            tooltip="show/hide filter",
+        ),
+        Binding(
+            key="W,w",
+            action="apply_path",
+            description="write-dotfile",
+            tooltip="write to dotfiles from your chezmoi repository",
+        ),
+    ]
+
+    def compose(self) -> ComposeResult:
+        # yield ChezmoiStatus(apply=True)
+        yield ManagedTree(
+            status_files=chezmoi.status_paths["apply_files"],
+            status_dirs=chezmoi.status_paths["apply_dirs"],
+            id="apply_tree",
+            classes="left-side-tree",
+        )
+        yield PathViewTabs(id="apply_path_view", classes="tree-right-side")
+
+    def action_toggle_filterbar(self):
+        self.query_exactly_one(FilterBar).toggle_class("-visible")
+
+    def action_apply_path(self) -> None:
+        self.notify("will apply path")
+
+    @on(Tree.NodeSelected)
+    def update_preview_path(self, event: Tree.NodeSelected) -> None:
+        assert event.node.data is not None
+        path_view_tabs = self.query_one("#apply_path_view", PathViewTabs)
+        if event.node.data is not None:
+            self.query_exactly_one(PathViewTabs).selected_path = (
+                event.node.data.path
+            )
+        if event.node.data.path in chezmoi.status_paths["re_add_files"]:
+            path_view_tabs.diff_lines = chezmoi.apply_diff(
+                str(event.node.data.path)
+            )
+        else:
+            path_view_tabs.diff_lines = ["no diff available"]
+
+    @on(Switch.Changed)
+    def notify_apply_tree(self, event: Switch.Changed) -> None:
+        apply_tree = self.query_one("#apply_tree", ManagedTree)
+        if event.switch.id == "apply_tab_include_unchanged_files":
+            apply_tree.include_unchanged_files = event.value
+
+
+class ReAddTab(Horizontal):
+
+    BINDINGS = [
+        Binding(
+            key="F,f",
+            action="toggle_filterbar",
+            description="filter",
+            tooltip="show or hide filter",
+        ),
+        Binding(
+            key="A,a",
+            action="re_add_path",
+            description="re-add-chezmoi",
+            tooltip="overwrite chezmoi repository with your current dotfiles",
+        ),
+    ]
+
+    def compose(self) -> ComposeResult:
+        with Vertical():
+            # yield ChezmoiStatus(apply=False)
+            with Horizontal():
+                yield ManagedTree(
+                    status_files=chezmoi.status_paths["re_add_files"],
+                    status_dirs=chezmoi.status_paths["re_add_dirs"],
+                    id="re_add_tree",
+                    classes="left-side-tree",
+                )
+                yield PathViewTabs(
+                    id="re_add_path_view", classes="tree-right-side"
+                )
+
+    def action_re_add_path(self) -> None:
+        self.notify("will re-add path")
+
+    def on_resize(self) -> None:
+        self.query_one("#re_add_tree", ManagedTree).focus()
+
+    @on(Tree.NodeSelected)
+    def update_preview_path(self, event: Tree.NodeSelected) -> None:
+        assert event.node.data is not None
+        path_view_tabs = self.query_one("#re_add_path_view", PathViewTabs)
+        if event.node.data is not None:
+            path_view_tabs.selected_path = event.node.data.path
+        if event.node.data.path in chezmoi.status_paths["re_add_files"]:
+            path_view_tabs.diff_lines = chezmoi.re_add_diff(
+                str(event.node.data.path)
+            )
+        else:
+            path_view_tabs.diff_lines = ["no diff available"]
+
+    @on(Switch.Changed)
+    def notify_re_add_tree(self, event: Switch.Changed) -> None:
+        if event.switch.id == "re_add_tab_include_unchanged_files":
+            re_add_tree = self.query_one("#re_add_tree", ManagedTree)
+            re_add_tree.include_unchanged_files = event.value
+
+
 class AddTab(Horizontal):
 
     BINDINGS = [
@@ -169,118 +281,6 @@ class DoctorTab(VerticalScroll):
 
     def action_git_log(self) -> None:
         self.app.push_screen(GitLog())
-
-
-class ApplyTab(Horizontal):
-
-    BINDINGS = [
-        Binding(
-            key="F,f",
-            action="toggle_filterbar",
-            description="filter",
-            tooltip="show/hide filter",
-        ),
-        Binding(
-            key="W,w",
-            action="apply_path",
-            description="write-dotfile",
-            tooltip="write to dotfiles from your chezmoi repository",
-        ),
-    ]
-
-    def compose(self) -> ComposeResult:
-        # yield ChezmoiStatus(apply=True)
-        yield ManagedTree(
-            status_files=chezmoi.status_paths["apply_files"],
-            status_dirs=chezmoi.status_paths["apply_dirs"],
-            id="apply_tree",
-            classes="left-side-tree",
-        )
-        yield PathViewTabs(id="apply_path_view", classes="tree-right-side")
-
-    def action_toggle_filterbar(self):
-        self.query_exactly_one(FilterBar).toggle_class("-visible")
-
-    def action_apply_path(self) -> None:
-        self.notify("will apply path")
-
-    @on(Tree.NodeSelected)
-    def update_preview_path(self, event: Tree.NodeSelected) -> None:
-        assert event.node.data is not None
-        path_view_tabs = self.query_one("#apply_path_view", PathViewTabs)
-        if event.node.data is not None:
-            self.query_exactly_one(PathViewTabs).selected_path = (
-                event.node.data.path
-            )
-        if event.node.data.path in chezmoi.status_paths["re_add_files"]:
-            path_view_tabs.diff_lines = chezmoi.apply_diff(
-                str(event.node.data.path)
-            )
-        else:
-            path_view_tabs.diff_lines = ["no diff available"]
-
-    @on(Switch.Changed)
-    def notify_apply_tree(self, event: Switch.Changed) -> None:
-        apply_tree = self.query_one("#apply_tree", ManagedTree)
-        if event.switch.id == "apply_tab_include_unchanged_files":
-            apply_tree.include_unchanged_files = event.value
-
-
-class ReAddTab(Horizontal):
-
-    BINDINGS = [
-        Binding(
-            key="F,f",
-            action="toggle_filterbar",
-            description="filter",
-            tooltip="show or hide filter",
-        ),
-        Binding(
-            key="A,a",
-            action="re_add_path",
-            description="re-add-chezmoi",
-            tooltip="overwrite chezmoi repository with your current dotfiles",
-        ),
-    ]
-
-    def compose(self) -> ComposeResult:
-        with Vertical():
-            # yield ChezmoiStatus(apply=False)
-            with Horizontal():
-                yield ManagedTree(
-                    status_files=chezmoi.status_paths["re_add_files"],
-                    status_dirs=chezmoi.status_paths["re_add_dirs"],
-                    id="re_add_tree",
-                    classes="left-side-tree",
-                )
-                yield PathViewTabs(
-                    id="re_add_path_view", classes="tree-right-side"
-                )
-
-    def action_re_add_path(self) -> None:
-        self.notify("will re-add path")
-
-    def on_resize(self) -> None:
-        self.query_one("#re_add_tree", ManagedTree).focus()
-
-    @on(Tree.NodeSelected)
-    def update_preview_path(self, event: Tree.NodeSelected) -> None:
-        assert event.node.data is not None
-        path_view_tabs = self.query_one("#re_add_path_view", PathViewTabs)
-        if event.node.data is not None:
-            path_view_tabs.selected_path = event.node.data.path
-        if event.node.data.path in chezmoi.status_paths["re_add_files"]:
-            path_view_tabs.diff_lines = chezmoi.re_add_diff(
-                str(event.node.data.path)
-            )
-        else:
-            path_view_tabs.diff_lines = ["no diff available"]
-
-    @on(Switch.Changed)
-    def notify_re_add_tree(self, event: Switch.Changed) -> None:
-        if event.switch.id == "re_add_tab_include_unchanged_files":
-            re_add_tree = self.query_one("#re_add_tree", ManagedTree)
-            re_add_tree.include_unchanged_files = event.value
 
 
 class DiagramTab(Container):
