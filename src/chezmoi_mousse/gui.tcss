@@ -18,7 +18,7 @@
   /* although Tree has width auto, this is set so the other main vertical
   containers takes any available space */
   width: auto;
-  margin-right: 1;
+  margin-right: 2;
   padding-left: 1;
 }
 
