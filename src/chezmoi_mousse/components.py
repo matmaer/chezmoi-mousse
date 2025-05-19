@@ -133,7 +133,6 @@ class StaticDiff(ScrollableContainer):
         yield Static()
 
     def watch_new_diff_lines(self) -> None:
-        print(f"{self.new_diff_lines}")
         static_diff = self.query_exactly_one(Static)
         diff_output: list[str] = [
             line
@@ -311,9 +310,6 @@ class AddDirTree(Vertical):
             add_dir_tree.filter_unwanted = event.value
             add_dir_tree.reload()
 
-    def on_resize(self) -> None:
-        self.query_one("#filtered_dir_tree", FilteredDirTree).focus()
-
 
 @dataclass
 class NodeData:
@@ -357,12 +353,10 @@ class ManagedTree(Vertical):
             managed_tree.root.data = NodeData(
                 path=chezmoi.dest_dir, found=True, is_file=False, status="R"
             )
-        print(f"Mounting {self.__class__.__name__} tree")
         # give root node status R so it's not considered having status "X"
         managed_tree.show_root = False
         self.add_nodes(managed_tree.root)
         self.add_leaves(managed_tree.root)
-        # managed_tree.root.expand()
 
     def show_dir_node(self, node_data: NodeData) -> bool:
         """Check if a directory node should be displayed according to the
@@ -490,7 +484,6 @@ class ManagedTree(Vertical):
                 tree_node.add(label=node_label, data=node_data)
 
     def on_tree_node_expanded(self, event: Tree.NodeExpanded) -> None:
-        print(f"Node expanded: {event.node.data}")
         if not isinstance(event.node.data, NodeData):
             return
         self.add_nodes(event.node)

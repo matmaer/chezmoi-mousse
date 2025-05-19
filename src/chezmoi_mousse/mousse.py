@@ -164,9 +164,6 @@ class DoctorTab(VerticalScroll):
                 row = [Text(cell_text) for cell_text in row]
                 table.add_row(*row)
 
-    def on_resize(self) -> None:
-        self.query_one("#doctortable", DataTable).focus()
-
     def action_open_config(self) -> None:
         self.app.push_screen(ConfigDump())
 
@@ -206,9 +203,6 @@ class ApplyTab(Horizontal):
 
     def action_apply_path(self) -> None:
         self.notify("will apply path")
-
-    def on_resize(self) -> None:
-        self.query_one("#apply_tree").focus()
 
     @on(Tree.NodeSelected)
     def update_preview_path(self, event: Tree.NodeSelected) -> None:
