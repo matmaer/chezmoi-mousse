@@ -1,7 +1,6 @@
 """Contains classes used as reused components by the widgets in mousse.py."""
 
 import re
-import os
 from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
@@ -32,7 +31,7 @@ from textual.widgets import (
 from textual.widgets.tree import TreeNode
 
 from chezmoi_mousse.chezmoi import chezmoi
-from chezmoi_mousse.config import filter_switch_data, unwanted
+from chezmoi_mousse.config import unwanted
 
 
 class AutoWarning(Static):
@@ -187,15 +186,15 @@ class PathViewTabs(Vertical):
 
 class FilteredDirTree(DirectoryTree):
 
-    include_unmanaged_dirs = reactive(False)
-    filter_unwanted = reactive(False)
+    unmanaged_dirs = reactive(False)
+    unwanted = reactive(False)
 
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
         managed_dirs = chezmoi.managed_dir_paths
         managed_files = chezmoi.managed_file_paths
 
         # Switches: Red - Green (default)
-        if not self.include_unmanaged_dirs and not self.filter_unwanted:
+        if not self.unmanaged_dirs and not self.unwanted:
             return (
                 p
                 for p in paths
@@ -215,14 +214,14 @@ class FilteredDirTree(DirectoryTree):
                 )
             )
         # Switches: Green - Red
-        elif self.include_unmanaged_dirs and not self.filter_unwanted:
+        elif self.unmanaged_dirs and not self.unwanted:
             return (
                 p
                 for p in paths
                 if p not in managed_files and not self.is_unwanted_path(p)
             )
         # Switches: Red - Green
-        elif not self.include_unmanaged_dirs and self.filter_unwanted:
+        elif not self.unmanaged_dirs and self.unwanted:
             return (
                 p
                 for p in paths
@@ -237,7 +236,7 @@ class FilteredDirTree(DirectoryTree):
                 or (p.is_dir() and p in managed_dirs)
             )
         # Switches: Green - Green, include all unmanaged paths
-        elif self.include_unmanaged_dirs and self.filter_unwanted:
+        elif self.unmanaged_dirs and self.unwanted:
             return (
                 p
                 for p in paths
@@ -255,24 +254,6 @@ class FilteredDirTree(DirectoryTree):
             if extension in unwanted["files"]:
                 return True
         return False
-
-
-class TreeTitle(VerticalGroup):
-    """Create a tree title that looks similar to a TabbedContent Tab Styled in
-    gui.tcss to distinguish from a real TabbedContent Tab This is used to match
-    the tree or directorytree next to the PathViewTabs."""
-
-    def compose(self) -> ComposeResult:
-        yield Static(id="tree_title_text", classes="tree-title-text")
-        yield Static(id="tree_title_bars", classes="tree-title-bars")
-
-    def on_mount(self) -> None:
-        dest_dir_str = f"{chezmoi.dest_dir}{os.sep}"
-        tree_title_text = Content.from_text(dest_dir_str)
-        tree_title_bars = "━" * len(dest_dir_str)
-        self.query_one("#tree_title_text", Static).update(tree_title_text)
-        self.query_one("#tree_title_bars", Static).update(tree_title_bars)
-        self.styles.width = len(dest_dir_str)
 
 
 class PathViewTitle(VerticalGroup):
@@ -293,28 +274,6 @@ class PathViewTitle(VerticalGroup):
             path_view_title_bars
         )
         self.styles.width = len(self.path_view_title)
-
-
-class AddDirTree(Vertical):
-    def compose(self) -> ComposeResult:
-        yield TreeTitle(classes="tree-title")
-        yield FilteredDirTree(
-            chezmoi.dest_dir, classes="dir-tree", id="filtered_dir_tree"
-        )
-
-    def on_mount(self) -> None:
-        self.query_one(FilteredDirTree).show_root = False
-        dir_tree = self.query_one("#filtered_dir_tree", FilteredDirTree)
-        dir_tree.root.label = str(chezmoi.dest_dir)
-
-    def on_switch_changed(self, event: Switch.Changed) -> None:
-        add_dir_tree = self.query_one("#filtered_dir_tree", FilteredDirTree)
-        if event.switch.id == "add_tab_unmanaged":
-            add_dir_tree.include_unmanaged_dirs = event.value
-            add_dir_tree.reload()
-        elif event.switch.id == "add_tab_unwanted":
-            add_dir_tree.filter_unwanted = event.value
-            add_dir_tree.reload()
 
 
 @dataclass
@@ -348,7 +307,7 @@ class ManagedTree(Vertical):
         super().__init__(**kwargs)
 
     def compose(self) -> ComposeResult:
-        yield TreeTitle(classes="tree-title")
+        # yield TreeHeader(classes="tree-title")
         yield Tree(label="root")
 
     def on_mount(self) -> None:
@@ -543,42 +502,17 @@ class ChezmoiStatus(Vertical):
         self.refresh(recompose=True)
 
 
-class FilterBar(Vertical):
+class FilterSwitch(HorizontalGroup):
+    """A switch, a label and a tooltip."""
 
-    class FilterSwitch(HorizontalGroup):
-        """A switch, a label and a tooltip."""
-
-        def __init__(
-            self, switch_data: dict[str, str], switch_id: str
-        ) -> None:
-            super().__init__(classes="filter-container")
-            self.switch_data = switch_data
-            self.switch_id = switch_id
-
-        def compose(self) -> ComposeResult:
-            yield Switch(id=self.switch_id, classes="filter-switch")
-            yield Label(self.switch_data["label"], classes="filter-label")
-            yield Label("(?)", classes="filter-tooltip").with_tooltip(
-                tooltip=self.switch_data["tooltip"]
-            )
-
-    def __init__(self, filter_key: str) -> None:
-        self.filter_key = filter_key
-        self.tab_switches: list[HorizontalGroup] = []
-        super().__init__(classes="filter-bar")
+    def __init__(self, switch_data: dict[str, str], switch_id: str) -> None:
+        super().__init__(classes="filter-container")
+        self.switch_data = switch_data
+        self.switch_id = switch_id
 
     def compose(self) -> ComposeResult:
-        with VerticalGroup():
-            yield from self.tab_switches
-
-    def on_mount(self) -> None:
-        self.tab_switch_data = {
-            f"{self.filter_key}_{key}": value
-            for key, value in filter_switch_data.items()
-            if self.filter_key in value.get("filter_keys", [])
-        }
-        self.tab_switches = [
-            FilterBar.FilterSwitch(switch_data, switch_id)
-            for switch_id, switch_data in self.tab_switch_data.items()
-        ]
-        self.refresh(recompose=True)
+        yield Switch(id=self.switch_id, classes="filter-switch")
+        yield Label(self.switch_data["label"], classes="filter-label")
+        yield Label("(?)", classes="filter-tooltip").with_tooltip(
+            tooltip=self.switch_data["tooltip"]
+        )

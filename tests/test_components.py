@@ -30,16 +30,6 @@ def test_doctor_tab_instantiation():
     assert isinstance(tab, main_tabs.DoctorTab)
 
 
-def test_apply_tab_instantiation():
-    tab = main_tabs.ApplyTab()
-    assert isinstance(tab, main_tabs.ApplyTab)
-
-
-def test_re_add_tab_instantiation():
-    tab = main_tabs.ReAddTab()
-    assert isinstance(tab, main_tabs.ReAddTab)
-
-
 def test_diagram_tab_instantiation():
     tab = main_tabs.DiagramTab()
     assert isinstance(tab, main_tabs.DiagramTab)

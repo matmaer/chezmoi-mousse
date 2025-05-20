@@ -1,3 +1,15 @@
+#add_tab_left {
+  border-top: solid $text-primary;
+  border-title-align: center;
+  margin-right: 2;
+  margin-left: 1;
+}
+
+#add_tab_right {
+  border-top: solid $text-primary;
+  border-title-align: center;
+}
+
 .tree-title {
   height: 2;
 
@@ -39,28 +51,20 @@
   color: $foreground-darken-2;
   background-tint: $surface;
   background: $surface;
-  border-bottom: outer $primary-muted;
-  border-right: outer $primary-muted;
-  border-left: none;
-  border-title-color: $primary;
-  border-top: outer $primary-muted;
-  dock: bottom;
-  height: auto;
-  layer: filterbar_layer;
-  width: auto;
-  offset-x: 0%;
-  transition: offset 380ms;
-
-  & VerticalGroup {
-    width: auto;
-  }
+  border-top: inner $surface;
+  border-bottom: inner $surface;
 
   .filter-container {
     background-tint: $surface;
     background: $surface;
-    padding-left: 1;
     height: auto;
     width: auto;
+  }
+
+  & .switch--slider {
+    border: none;
+    color: $error-darken-3;
+
   }
 
   .filter-switch {
@@ -70,11 +74,6 @@
     &.-on .switch--slider {
       border: none;
       color: $success-darken-1;
-    }
-
-    & .switch--slider {
-      border: none;
-      color: $error-darken-3;
     }
 
     &:hover {
@@ -95,10 +94,6 @@
 
   .filter-tooltip {
     color: $primary;
-  }
-
-  &.-visible {
-    offset-x: -100%;
   }
 }
 

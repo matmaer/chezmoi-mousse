@@ -1,27 +1,23 @@
 filter_switch_data = {
-    "unmanaged": {
+    "unmanaged_dirs": {
         "tooltip": (
-            "The purpose to disable it, is to easily spot new un-managed files in already managed directories. "
-            "Enable to include all un-managed files, even if they live in an un-managed directory. "
-            "Disable to only show unmanaged files in directories which already contain managed files (the default). "
-            "(in both cases, only the un-managed files are shown)"
+            "The default (disabled), only shows directories which already contain managed files."
+            "This allows spotting new un-managed files in already managed directories."
+            "Enable to show all directories which contain un-managed files."
         ),
-        "label": "show unmanaged dirs",
-        "filter_keys": ["add_tab"],
+        "label": "include unmanaged dirs",
     },
     "unwanted": {
         "tooltip": (
-            'Show files and directories considered as "unwanted" for a dotfile manager. '
+            'Include files and directories considered as "unwanted" for a dotfile manager. '
             "These include cache, temporary, trash (recycle bin) and other similar files or directories. "
             'For example enable this to add files to your chezmoi repository which are in a directory named ".cache".'
         ),
-        "label": "show unwanted paths",
-        "filter_keys": ["add_tab"],
+        "label": "include unwanted paths",
     },
-    "include_unchanged_files": {
+    "unchanged": {
         "label": "show unchanged",
         "tooltip": "Include files unchanged files which are not found in the 'chezmoi status' output.",
-        "filter_keys": ["apply_tab", "re_add_tab"],
     },
 }
 

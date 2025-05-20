@@ -1,5 +1,6 @@
 """Contains the widgets used to compose the main screen of chezmoi-mousse."""
 
+import os
 from pathlib import Path
 
 from rich.text import Text
@@ -14,6 +15,7 @@ from textual.containers import (
     VerticalGroup,
     VerticalScroll,
 )
+from textual.content import Content
 from textual.widgets import (
     Collapsible,
     DataTable,
@@ -24,165 +26,176 @@ from textual.widgets import (
     Pretty,
     Static,
     Switch,
-    Tree,
 )
 
 from chezmoi_mousse import FLOW
 from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.components import (
-    AddDirTree,
-    # ChezmoiStatus,
-    FilterBar,
+    # AddDirTree,
+    FilterSwitch,
     FilteredDirTree,
-    ManagedTree,
     PathView,
-    PathViewTabs,
-    TreeTitle,
 )
 
-from chezmoi_mousse.config import pw_mgr_info
+from chezmoi_mousse.config import filter_switch_data, pw_mgr_info
 from chezmoi_mousse.modalscreens import ConfigDump, GitLog, Operate
 
 
-class ApplyTab(Horizontal):
+# class ApplyTab(Horizontal):
 
-    BINDINGS = [
-        Binding(
-            key="F,f",
-            action="toggle_filterbar",
-            description="filter",
-            tooltip="show/hide filter",
-        ),
-        Binding(
-            key="W,w",
-            action="apply_path",
-            description="write-dotfile",
-            tooltip="write to dotfiles from your chezmoi repository",
-        ),
-    ]
+#     BINDINGS = [
+#         Binding(
+#             key="F,f",
+#             action="toggle_filterbar",
+#             description="filter",
+#             tooltip="show/hide filter",
+#         ),
+#         Binding(
+#             key="W,w",
+#             action="apply_path",
+#             description="write-dotfile",
+#             tooltip="write to dotfiles from your chezmoi repository",
+#         ),
+#     ]
 
-    def compose(self) -> ComposeResult:
-        # yield ChezmoiStatus(apply=True)
-        yield ManagedTree(
-            status_files=chezmoi.status_paths["apply_files"],
-            status_dirs=chezmoi.status_paths["apply_dirs"],
-            id="apply_tree",
-            classes="left-side-tree",
-        )
-        yield PathViewTabs(id="apply_path_view", classes="tree-right-side")
+#     def compose(self) -> ComposeResult:
+#         with Vertical():
+#             yield TreeHeader(classes="tree-title")
+#             yield ManagedTree(
+#                 status_files=chezmoi.status_paths["apply_files"],
+#                 status_dirs=chezmoi.status_paths["apply_dirs"],
+#                 id="apply_tree",
+#                 classes="left-side-tree",
+#             )
+#         yield PathViewTabs(id="apply_path_view", classes="tree-right-side")
 
-    def action_toggle_filterbar(self):
-        self.query_exactly_one(FilterBar).toggle_class("-visible")
+#     def action_toggle_filterbar(self):
+#         self.query_exactly_one(FilterBar).toggle_class("-visible")
 
-    def action_apply_path(self) -> None:
-        self.notify("will apply path")
+#     def action_apply_path(self) -> None:
+#         self.notify("will apply path")
 
-    @on(Tree.NodeSelected)
-    def update_preview_path(self, event: Tree.NodeSelected) -> None:
-        assert event.node.data is not None
-        path_view_tabs = self.query_one("#apply_path_view", PathViewTabs)
-        if event.node.data is not None:
-            self.query_exactly_one(PathViewTabs).selected_path = (
-                event.node.data.path
-            )
-        if event.node.data.path in chezmoi.status_paths["re_add_files"]:
-            path_view_tabs.diff_lines = chezmoi.apply_diff(
-                str(event.node.data.path)
-            )
-        else:
-            path_view_tabs.diff_lines = ["no diff available"]
+#     @on(Tree.NodeSelected)
+#     def update_preview_path(self, event: Tree.NodeSelected) -> None:
+#         assert event.node.data is not None
+#         path_view_tabs = self.query_one("#apply_path_view", PathViewTabs)
+#         if event.node.data is not None:
+#             self.query_exactly_one(PathViewTabs).selected_path = (
+#                 event.node.data.path
+#             )
+#         if event.node.data.path in chezmoi.status_paths["re_add_files"]:
+#             path_view_tabs.diff_lines = chezmoi.apply_diff(
+#                 str(event.node.data.path)
+#             )
+#         else:
+#             path_view_tabs.diff_lines = ["no diff available"]
 
-    @on(Switch.Changed)
-    def notify_apply_tree(self, event: Switch.Changed) -> None:
-        apply_tree = self.query_one("#apply_tree", ManagedTree)
-        if event.switch.id == "apply_tab_include_unchanged_files":
-            apply_tree.include_unchanged_files = event.value
+#     @on(Switch.Changed)
+#     def notify_apply_tree(self, event: Switch.Changed) -> None:
+#         apply_tree = self.query_one("#apply_tree", ManagedTree)
+#         if event.switch.id == "apply_tab_include_unchanged_files":
+#             apply_tree.include_unchanged_files = event.value
 
 
-class ReAddTab(Horizontal):
+# class ReAddTab(Horizontal):
 
-    BINDINGS = [
-        Binding(
-            key="F,f",
-            action="toggle_filterbar",
-            description="filter",
-            tooltip="show or hide filter",
-        ),
-        Binding(
-            key="A,a",
-            action="re_add_path",
-            description="re-add-chezmoi",
-            tooltip="overwrite chezmoi repository with your current dotfiles",
-        ),
-    ]
+#     BINDINGS = [
+#         Binding(
+#             key="F,f",
+#             action="toggle_filterbar",
+#             description="filter",
+#             tooltip="show or hide filter",
+#         ),
+#         Binding(
+#             key="A,a",
+#             action="re_add_path",
+#             description="re-add-chezmoi",
+#             tooltip="overwrite chezmoi repository with your current dotfiles",
+#         ),
+#     ]
 
-    def compose(self) -> ComposeResult:
-        with Vertical():
-            # yield ChezmoiStatus(apply=False)
-            with Horizontal():
-                yield ManagedTree(
-                    status_files=chezmoi.status_paths["re_add_files"],
-                    status_dirs=chezmoi.status_paths["re_add_dirs"],
-                    id="re_add_tree",
-                    classes="left-side-tree",
-                )
-                yield PathViewTabs(
-                    id="re_add_path_view", classes="tree-right-side"
-                )
+#     def compose(self) -> ComposeResult:
+#         with Vertical():
+#             yield TreeHeader(classes="tree-title")
+#             yield ManagedTree(
+#                 status_files=chezmoi.status_paths["re_add_files"],
+#                 status_dirs=chezmoi.status_paths["re_add_dirs"],
+#                 id="re_add_tree",
+#                 classes="left-side-tree",
+#             )
+#         yield PathViewTabs(id="re_add_path_view", classes="tree-right-side")
 
-    def action_re_add_path(self) -> None:
-        self.notify("will re-add path")
+#     def action_re_add_path(self) -> None:
+#         self.notify("will re-add path")
 
-    def on_resize(self) -> None:
-        self.query_one("#re_add_tree", ManagedTree).focus()
+#     def on_resize(self) -> None:
+#         self.query_one("#re_add_tree", ManagedTree).focus()
 
-    @on(Tree.NodeSelected)
-    def update_preview_path(self, event: Tree.NodeSelected) -> None:
-        assert event.node.data is not None
-        path_view_tabs = self.query_one("#re_add_path_view", PathViewTabs)
-        if event.node.data is not None:
-            path_view_tabs.selected_path = event.node.data.path
-        if event.node.data.path in chezmoi.status_paths["re_add_files"]:
-            path_view_tabs.diff_lines = chezmoi.re_add_diff(
-                str(event.node.data.path)
-            )
-        else:
-            path_view_tabs.diff_lines = ["no diff available"]
+#     @on(Tree.NodeSelected)
+#     def update_preview_path(self, event: Tree.NodeSelected) -> None:
+#         assert event.node.data is not None
+#         path_view_tabs = self.query_one("#re_add_path_view", PathViewTabs)
+#         if event.node.data is not None:
+#             path_view_tabs.selected_path = event.node.data.path
+#         if event.node.data.path in chezmoi.status_paths["re_add_files"]:
+#             path_view_tabs.diff_lines = chezmoi.re_add_diff(
+#                 str(event.node.data.path)
+#             )
+#         else:
+#             path_view_tabs.diff_lines = ["no diff available"]
 
-    @on(Switch.Changed)
-    def notify_re_add_tree(self, event: Switch.Changed) -> None:
-        if event.switch.id == "re_add_tab_include_unchanged_files":
-            re_add_tree = self.query_one("#re_add_tree", ManagedTree)
-            re_add_tree.include_unchanged_files = event.value
+#     @on(Switch.Changed)
+#     def notify_re_add_tree(self, event: Switch.Changed) -> None:
+#         if event.switch.id == "re_add_tab_include_unchanged_files":
+#             re_add_tree = self.query_one("#re_add_tree", ManagedTree)
+#             re_add_tree.include_unchanged_files = event.value
 
 
 class AddTab(Horizontal):
 
     BINDINGS = [
         Binding(
-            key="F,f",
-            action="toggle_filterbar",
-            description="filters",
-            tooltip="show/hide filters",
-        ),
-        Binding(
             key="A,a",
             action="add_path",
             description="add-chezmoi",
             tooltip="add new file to your chezmoi repository",
-        ),
+        )
     ]
 
     def compose(self) -> ComposeResult:
-        yield AddDirTree(classes="left-side-tree")
-        with Vertical(classes="tree-right-side"):
-            yield TreeTitle(classes="tree-title")
-            yield PathView()
+        with Vertical(id="add_tab_left"):
+            yield FilteredDirTree(
+                chezmoi.dest_dir, id="add_tree", classes="dir-tree"
+            )
+            with VerticalGroup(classes="filter-bar"):
+                yield FilterSwitch(
+                    switch_id="add_tab_unmanaged_dirs",
+                    switch_data=filter_switch_data["unmanaged_dirs"],
+                )
+                yield FilterSwitch(
+                    switch_id="add_tab_unwanted",
+                    switch_data=filter_switch_data["unwanted"],
+                )
+        with Vertical(id="add_tab_right"):
+            yield PathView(id="add_path_view")
+
+    def on_mount(self) -> None:
+        self.query_exactly_one(FilteredDirTree).show_root = False
+        tree_title = Content.from_text(f" {chezmoi.dest_dir}{os.sep} ")
+
+        add_tab_left = self.query_one("#add_tab_left", Vertical)
+        add_tab_left.border_title = tree_title
+        add_tab_left.styles.min_width = len(tree_title)
+
+        add_tab_right = self.query_one("#add_tab_right", Vertical)
+        add_tab_right.border_title = Content.from_text(" Path View ")
 
     @on(FilteredDirTree.FileSelected)
     def update_preview_path(self, event: FilteredDirTree.FileSelected) -> None:
         if event.node.data is not None:
             self.query_exactly_one(PathView).path = event.node.data.path
+            title = f" {event.node.data.path.relative_to(chezmoi.dest_dir)} "
+            self.query_one("#add_tab_right", Vertical).border_title = title
 
     def action_add_path(self) -> None:
         cursor_node = self.query_one(
@@ -191,6 +204,15 @@ class AddTab(Horizontal):
         if cursor_node is not None:
             assert isinstance(cursor_node.data, Path)
             self.app.push_screen(Operate(cursor_node.data.path))
+
+    def on_switch_changed(self, event: Switch.Changed) -> None:
+        tree = self.query_one("#add_tree", FilteredDirTree)
+        if event.switch.id == "add_tab_unmanaged_dirs":
+            tree.unmanaged_dirs = event.value
+            tree.reload()
+        elif event.switch.id == "add_tab_unwanted":
+            tree.unwanted = event.value
+            tree.reload()
 
 
 class DoctorTab(VerticalScroll):
