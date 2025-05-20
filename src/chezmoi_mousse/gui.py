@@ -6,7 +6,7 @@ from textual.widgets import Footer, Header, TabbedContent, TabPane
 
 from chezmoi_mousse.main_tabs import (
     AddTab,
-    # ApplyTab,
+    ApplyTab,
     DiagramTab,
     DoctorTab,
     # ReAddTab,
@@ -19,13 +19,12 @@ class MainScreen(Screen):
     def compose(self) -> ComposeResult:
         yield Header()
         with TabbedContent(id="main_tabbed_content"):
-            # with TabPane("Apply"):
-            #     yield ApplyTab(id="apply_tab")
+            with TabPane("Apply"):
+                yield ApplyTab(id="apply_tab")
             # with TabPane("Re-Add"):
             #     yield Lazy(ReAddTab(id="re_add_tab"))
             with TabPane("Add"):
-                # yield Lazy(AddTab(id="add_tab"))
-                yield AddTab(id="add_tab")
+                yield Lazy(AddTab(id="add_tab"))
             with TabPane("Doctor"):
                 yield Lazy(DoctorTab(id="doctor_tab"))
             with TabPane("Diagram"):
