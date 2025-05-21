@@ -6,7 +6,6 @@ from pathlib import Path
 from rich.text import Text
 from textual import on
 from textual.app import ComposeResult
-from textual.binding import Binding
 from textual.containers import (
     Container,
     Horizontal,
@@ -47,15 +46,6 @@ from chezmoi_mousse.modalscreens import ConfigDumpModal, GitLog
 
 
 class ApplyTab(Horizontal):
-
-    BINDINGS = [
-        Binding(
-            key="W,w",
-            action="apply_path",
-            description="write-dotfile",
-            tooltip="write to dotfiles from your chezmoi repository",
-        )
-    ]
 
     def compose(self) -> ComposeResult:
         with Vertical(id="apply_tab_left"):
@@ -98,15 +88,6 @@ class ApplyTab(Horizontal):
 
 class ReAddTab(Horizontal):
 
-    BINDINGS = [
-        Binding(
-            key="A,a",
-            action="re_add_path",
-            description="re-add-chezmoi",
-            tooltip="overwrite chezmoi repository with your current dotfiles",
-        )
-    ]
-
     def compose(self) -> ComposeResult:
         with Vertical(id="re_add_tab_left"):
             yield ManagedTree(
@@ -147,15 +128,6 @@ class ReAddTab(Horizontal):
 
 
 class AddTab(Horizontal):
-
-    BINDINGS = [
-        Binding(
-            key="A,a",
-            action="add_path",
-            description="chezmoi-add",
-            tooltip="add new file to your chezmoi repository",
-        )
-    ]
 
     def compose(self) -> ComposeResult:
         with Vertical(id="add_tab_left"):
@@ -234,16 +206,6 @@ class AddTab(Horizontal):
 
 
 class DoctorTab(VerticalScroll):
-
-    BINDINGS = [
-        Binding(key="C,c", action="open_config", description="chezmoi-config"),
-        Binding(
-            key="G,g",
-            action="git_log",
-            description="show-git-log",
-            tooltip="git log from your chezmoi repository",
-        ),
-    ]
 
     def compose(self) -> ComposeResult:
 

@@ -1,7 +1,6 @@
 from pathlib import Path
 
 from rich.text import Text
-from textual.binding import Binding
 from textual.app import ComposeResult
 from textual.containers import VerticalScroll, HorizontalGroup
 from textual.events import Click
@@ -13,10 +12,6 @@ from chezmoi_mousse.components import ConfigDump, AutoWarning, PathView
 
 
 class Operate(ModalScreen):
-
-    BINDINGS = [
-        Binding(key="escape", action="dismiss", description="close", show=True)
-    ]
 
     def __init__(self, path_to_add: Path) -> None:
         self.path_to_add = path_to_add
@@ -77,8 +72,6 @@ class Operate(ModalScreen):
 
 class GitLog(ModalScreen):
 
-    BINDINGS = [Binding(key="escape", action="dismiss", description="close")]
-
     def compose(self) -> ComposeResult:
         yield DataTable(
             id="gitlogtable", show_cursor=False, classes="doctormodals"
@@ -124,8 +117,6 @@ class GitLog(ModalScreen):
 
 
 class ConfigDumpModal(ModalScreen):
-
-    BINDINGS = [Binding(key="escape", action="dismiss", description="close")]
 
     def compose(self) -> ComposeResult:
         yield ConfigDump(id="configdump", classes="doctormodals")
