@@ -24,6 +24,7 @@ from textual.widgets import (
     ListItem,
     ListView,
     Pretty,
+    RichLog,
     TabbedContent,
     TabPane,
     Static,
@@ -42,7 +43,7 @@ from chezmoi_mousse.components import (
 )
 
 from chezmoi_mousse.config import filter_switch_data, pw_mgr_info
-from chezmoi_mousse.modalscreens import ConfigDumpModal, GitLog, Operate
+from chezmoi_mousse.modalscreens import ConfigDumpModal, GitLog
 
 
 class ApplyTab(Horizontal):
@@ -151,7 +152,7 @@ class AddTab(Horizontal):
         Binding(
             key="A,a",
             action="add_path",
-            description="add-chezmoi",
+            description="chezmoi-add",
             tooltip="add new file to your chezmoi repository",
         )
     ]
@@ -184,20 +185,43 @@ class AddTab(Horizontal):
         add_tab_right = self.query_one("#add_tab_right", Vertical)
         add_tab_right.border_title = Content.from_text(" Path View ")
 
-    @on(FilteredDirTree.FileSelected)
-    def update_preview_path(self, event: FilteredDirTree.FileSelected) -> None:
+    def on_directory_tree_file_selected(
+        self, event: FilteredDirTree.FileSelected
+    ) -> None:
         if event.node.data is not None:
             self.query_exactly_one(PathView).path = event.node.data.path
             title = f" {event.node.data.path.relative_to(chezmoi.dest_dir)} "
             self.query_one("#add_tab_right", Vertical).border_title = title
 
+    def on_directory_tree_directory_selected(
+        self, event: FilteredDirTree.DirectorySelected
+    ) -> None:
+        if event.node.data is not None:
+            rich_log = self.query_one("#file_preview", RichLog)
+            rich_log.clear()
+            managed: bool = event.node.data.path in chezmoi.managed_dir_paths
+            if managed:
+                rich_log.write(f'Managed directory: "{event.node.data.path}"')
+            else:
+                rich_log.write(
+                    f'Unmanaged directory: "{event.node.data.path}"'
+                )
+            unmanaged_files: list[Path] = chezmoi.unmanaged_in_d(
+                event.node.data.path
+            )
+            if not unmanaged_files:
+                rich_log.write("No unmanaged files in this directory.")
+            else:
+                rich_log.write("Unmanaged files in this directory:")
+                for p in unmanaged_files:
+                    rich_log.write(f'"{p}"')
+                rich_log.write(
+                    "Click chezmoi-add or hit A to add it to chezmoi."
+                )
+
     def action_add_path(self) -> None:
-        cursor_node = self.query_one(
-            "#filtered_dir_tree", FilteredDirTree
-        ).cursor_node
-        if cursor_node is not None:
-            assert isinstance(cursor_node.data, Path)
-            self.app.push_screen(Operate(cursor_node.data.path))
+        cursor_node = self.query_one("#add_tree", FilteredDirTree).cursor_node
+        self.notify(f"will add {cursor_node}")
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
         tree = self.query_one("#add_tree", FilteredDirTree)
