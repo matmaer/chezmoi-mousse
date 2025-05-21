@@ -1,6 +1,5 @@
 from textual.app import App, ComposeResult
 from textual.binding import Binding
-from textual.events import Click
 from textual.lazy import Lazy
 from textual.screen import Screen
 from textual.theme import Theme
@@ -81,16 +80,12 @@ class MainScreen(Screen):
         self.notify("will re-add path")
 
     def action_open_config(self) -> None:
-        self.notify("will open config dump output")
-        # self.app.push_screen(ConfigDumpModal())
+        # TODO add condition depending on the tab
+        self.app.push_screen(DoctorTab.ConfigDumpModal())
 
     def action_git_log(self) -> None:
-        self.notify("will show git log")
-        # self.app.push_screen(GitLog())
-
-    def on_click(self, event: Click) -> None:
-        if event.chain == 2:
-            self.dismiss()
+        # TODO add condition depending on the tab
+        self.app.push_screen(DoctorTab.GitLogModal())
 
 
 chezmoi_mousse_dark = Theme(

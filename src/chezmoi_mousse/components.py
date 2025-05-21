@@ -17,7 +17,6 @@ from textual.containers import (
 )
 from textual.content import Content
 from textual.reactive import reactive
-from textual.screen import ModalScreen
 from textual.widgets import (
     Button,
     DataTable,
@@ -39,7 +38,9 @@ class ConfigDump(Container):
         yield Pretty(chezmoi.dump_config.dict_out)
 
 
-class GitLog(ModalScreen):
+class GitLog(Container):
+
+    path: reactive[Path | None] = reactive(None, init=False)
 
     def compose(self) -> ComposeResult:
         yield DataTable(
@@ -50,6 +51,11 @@ class GitLog(ModalScreen):
         table = self.query_one("#gitlogtable", DataTable)
         table.border_title = "chezmoi git log - command output"
         table.border_subtitle = "double click or escape to close"
+        if self.path is None:
+            self.populate_data_table(chezmoi.git_log)
+
+    def populate_data_table(self, cmd_output: list[str]):
+        table = self.query_one("#gitlogtable", DataTable)
         styles = {
             "ok": f"{self.app.current_theme.success}",
             "warning": f"{self.app.current_theme.warning}",
@@ -57,7 +63,7 @@ class GitLog(ModalScreen):
             "info": f"{self.app.current_theme.foreground}",
         }
         table.add_columns("COMMIT", "MESSAGE")
-        for line in chezmoi.git_log.list_out:
+        for line in cmd_output:
             columns = line.split(";")
             if columns[1].split(maxsplit=1)[0] == "Add":
                 row = [
@@ -79,6 +85,10 @@ class GitLog(ModalScreen):
                 table.add_row(*row)
             else:
                 table.add_row(*columns)
+
+    def watch_path(self) -> None:
+        assert isinstance(self.path, Path)
+        self.populate_data_table(chezmoi.git_log_path(str(self.path)))
 
 
 class AutoWarning(Static):

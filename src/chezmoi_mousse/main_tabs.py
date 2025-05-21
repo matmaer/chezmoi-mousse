@@ -6,6 +6,8 @@ from pathlib import Path
 from rich.text import Text
 from textual import on
 from textual.app import ComposeResult
+from textual.binding import Binding
+from textual.events import Click
 from textual.containers import (
     Container,
     Horizontal,
@@ -44,6 +46,7 @@ from chezmoi_mousse.components import (
     PathView,
     DiffView,
     ManagedTree,
+    GitLog,
 )
 
 from chezmoi_mousse.components import ConfigDump
@@ -275,6 +278,12 @@ class DoctorTab(VerticalScroll):
 
     class ConfigDumpModal(ModalScreen):
 
+        BINDINGS = [
+            Binding(
+                key="escape", action="dismiss", description="close", show=False
+            )
+        ]
+
         def compose(self) -> ComposeResult:
             yield ConfigDump(id="configdump", classes="doctormodals")
 
@@ -285,6 +294,25 @@ class DoctorTab(VerticalScroll):
             self.query_one("#configdump").border_subtitle = (
                 "double click or escape to close"
             )
+
+        def on_click(self, event: Click) -> None:
+            if event.chain == 2:
+                self.dismiss()
+
+    class GitLogModal(ModalScreen):
+
+        BINDINGS = [
+            Binding(
+                key="escape", action="dismiss", description="close", show=False
+            )
+        ]
+
+        def compose(self) -> ComposeResult:
+            yield GitLog()
+
+        def on_click(self, event: Click) -> None:
+            if event.chain == 2:
+                self.dismiss()
 
     def compose(self) -> ComposeResult:
 
