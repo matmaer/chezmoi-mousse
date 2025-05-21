@@ -24,6 +24,8 @@ from textual.widgets import (
     ListItem,
     ListView,
     Pretty,
+    TabbedContent,
+    TabPane,
     Static,
     Switch,
     Tree,
@@ -35,7 +37,7 @@ from chezmoi_mousse.components import (
     FilterSwitch,
     FilteredDirTree,
     PathView,
-    PathViewTabs,
+    DiffView,
     ManagedTree,
 )
 
@@ -47,29 +49,31 @@ class ApplyTab(Horizontal):
 
     BINDINGS = [
         Binding(
-            key="F,f",
-            action="toggle_filterbar",
-            description="filter",
-            tooltip="show/hide filter",
-        ),
-        Binding(
             key="W,w",
             action="apply_path",
             description="write-dotfile",
             tooltip="write to dotfiles from your chezmoi repository",
-        ),
+        )
     ]
 
     def compose(self) -> ComposeResult:
-        with Vertical():
+        with Vertical(id="apply_tab_left"):
             yield ManagedTree(
                 status_files=chezmoi.status_paths["apply_files"],
                 status_dirs=chezmoi.status_paths["apply_dirs"],
                 id="apply_tree",
                 classes="left-side-tree",
             )
-        with Vertical():
-            yield PathViewTabs(id="apply_path_view", classes="tree-right-side")
+            with VerticalGroup(classes="filter-bar"):
+                yield FilterSwitch(
+                    switch_id="apply_tab_unchanged",
+                    switch_data=filter_switch_data["unchanged"],
+                )
+        with TabbedContent(id="apply_path_view", classes="path-view-tabs"):
+            with TabPane("Content"):
+                yield PathView(id="apply_path_view")
+            with TabPane("Diff"):
+                yield DiffView(id="apply_diff_view")
 
     def action_apply_path(self) -> None:
         self.notify("will apply path")
@@ -77,23 +81,19 @@ class ApplyTab(Horizontal):
     @on(Tree.NodeSelected)
     def update_preview_path(self, event: Tree.NodeSelected) -> None:
         assert event.node.data is not None
-        path_view_tabs = self.query_one("#apply_path_view", PathViewTabs)
-        if event.node.data is not None:
-            self.query_exactly_one(PathViewTabs).selected_path = (
-                event.node.data.path
-            )
-        if event.node.data.path in chezmoi.status_paths["re_add_files"]:
-            path_view_tabs.diff_lines = chezmoi.apply_diff(
-                str(event.node.data.path)
-            )
-        else:
-            path_view_tabs.diff_lines = ["no diff available"]
+        self.query_one("#apply_path_view", PathView).path = (
+            event.node.data.path
+        )
+        self.query_one("#apply_diff_view", DiffView).diff_spec = (
+            event.node.data.path,
+            "apply",
+        )
 
     @on(Switch.Changed)
-    def notify_apply_tree(self, event: Switch.Changed) -> None:
+    def update_apply_tree(self, event: Switch.Changed) -> None:
         apply_tree = self.query_one("#apply_tree", ManagedTree)
         if event.switch.id == "apply_tab_include_unchanged_files":
-            apply_tree.include_unchanged_files = event.value
+            apply_tree.unchanged = event.value
 
 
 # class ReAddTab(Horizontal):

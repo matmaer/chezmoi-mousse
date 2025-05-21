@@ -1,50 +1,37 @@
-#add_tab_left {
-  border-top: solid $text-primary;
-  border-title-align: center;
-  margin-right: 2;
-  margin-left: 1;
-}
-
-#add_tab_right {
-  border-top: solid $text-primary;
-  border-title-align: center;
-}
-
-.tree-title {
+# ManagedTree
+#tree_buttons_horizontal {
   height: 2;
-
-  /* the width is programmatically set according to the length of the path
-  string, without setting it this way, the width will take 100% */
-  .tree-title-text {
-    color: $text;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+  border-bottom: solid $primary;
+  border-subtitle-color: $primary;
+  border-subtitle-align: center;
+  border-subtitle-style: bold;
+  #tree_button_tree {
+    max-width: 6;
+    width: 6;
   }
-
-  .tree-title-bars {
-    color: $accent-darken-3;
+  #tree_button_status {
+    max-width: 8;
+    width: 8;
   }
 }
-
-.file-preview {
-  # height: auto;
-  height: 1fr;
-  width: 1fr;
-  # overflow-x: scroll;
-  # overflow-y: scroll;
+.tree-button-vertical {
+  align: center top;
+  height: 1;
 }
 
-.left-side-tree {
-  /* although Tree has width auto, this is set so the other main vertical
-  containers takes any available space */
-  width: auto;
-  margin-right: 2;
-  padding-left: 1;
+#apply_tab_left {
+  width: 33%;
+  max-width: 1fr;
 }
 
-.tree-right-side {
-  /* assigned to the main vertical next to the trees on the ApplyTab,
-  ReAddTab and AddTab classes */
-  # min-width: 1fr;
-  # border: yellow;
+Button {
+  border: none;
+  height: 1;
+  text-style: none;
+  color: $foreground;
 }
 
 .filter-bar {
@@ -89,12 +76,32 @@
 
   .filter-label {
     padding-right: 1;
-    width: auto;
+    # width: auto;
   }
 
   .filter-tooltip {
     color: $primary;
   }
+}
+
+.doctormodals {
+  border: round $warning-darken-2;
+  margin-bottom: 1;
+}
+
+/****************/
+/* ID selectors */
+/****************/
+
+#add_tab_left {
+  border-top: solid $text-primary;
+  border-title-align: center;
+  margin-right: 2;
+}
+
+#add_tab_right {
+  border-top: solid $text-primary;
+  border-title-align: center;
 }
 
 #auto_warning {
@@ -109,100 +116,6 @@
 #diagram_text {
   padding: 0 1 0 1;
   min-width: 82;
-}
-
-#doctor_tab {
-  .doctormodals {
-    border: round $warning-darken-2;
-    margin-bottom: 1;
-  }
-}
-
-Operate {
-  background-tint: $surface;
-  background: $surface;
-  border: thick $panel;
-  margin: 1 2 1 2;
-
-  & .operate-button {
-    border-top: heavy $primary;
-    border-bottom: none;
-    border-left: none;
-    border-right: none;
-    background-tint: $surface;
-    background: $surface;
-    color: $primary;
-    margin: 0 7 0 7;
-    width: 8;
-    text-style: none;
-
-    &:disabled {
-      text-opacity: 0.6;
-    }
-
-    &:focus {
-      border-top: heavy $primary-lighten-2;
-    }
-
-    &:hover {
-      border-top: heavy $primary-lighten-3;
-      color: $accent-lighten-3;
-    }
-
-    &.-active {
-      border-top: heavy $primary-lighten-2;
-    }
-  }
-
-  #button_container {
-    height: 3;
-    align: center bottom;
-    dock: bottom;
-  }
-
-  & .operate-collapsible {
-    background-tint: $surface;
-    background: $surface;
-  }
-
-  & .operate-file-preview {
-    padding: 0;
-    margin-right: 1;
-    border: none;
-    offset: -1 0;
-  }
-
-  & .operate-checkbox {
-    margin: 0;
-    padding: 0;
-    border: none;
-    background: $surface;
-    background-tint: $surface;
-
-    &>.toggle--button {
-      color: $error;
-      background: $surface;
-      background-tint: $surface;
-    }
-
-    &.-on>.toggle--button {
-      color: $success;
-    }
-
-    &:focus>.toggle--button {
-      text-style: none;
-    }
-
-    &:hover>.toggle--button {
-      text-style: bold;
-    }
-  }
-}
-
-#chezmoi_status_group {
-  height: auto;
-  max-height: 70%;
-  padding-bottom: 1;
 }
 
 #loading_screen {
@@ -297,15 +210,8 @@ Header {
   text-style: bold;
 }
 
-RichLog {
-  padding-left: 1;
-  padding-right: 1;
-  height: auto;
-  width: auto;
-}
-
 MainScreen {
-  layers: filterbar_layer;
+  layers: command_log;
 }
 
 Toast {
@@ -355,3 +261,86 @@ Tree {
     }
   }
 }
+
+
+
+# Operate {
+#   background-tint: $surface;
+#   background: $surface;
+#   border: thick $panel;
+#   margin: 1 2 1 2;
+
+#   & .operate-button {
+#     border-top: heavy $primary;
+#     border-bottom: none;
+#     border-left: none;
+#     border-right: none;
+#     background-tint: $surface;
+#     background: $surface;
+#     color: $primary;
+#     margin: 0 7 0 7;
+#     width: 8;
+#     text-style: none;
+
+#     &:disabled {
+#       text-opacity: 0.6;
+#     }
+
+#     &:focus {
+#       border-top: heavy $primary-lighten-2;
+#     }
+
+#     &:hover {
+#       border-top: heavy $primary-lighten-3;
+#       color: $accent-lighten-3;
+#     }
+
+#     &.-active {
+#       border-top: heavy $primary-lighten-2;
+#     }
+#   }
+
+#   #button_container {
+#     height: 3;
+#     align: center bottom;
+#     dock: bottom;
+#   }
+
+#   & .operate-collapsible {
+#     background-tint: $surface;
+#     background: $surface;
+#   }
+
+#   & .operate-file-preview {
+#     padding: 0;
+#     margin-right: 1;
+#     border: none;
+#     offset: -1 0;
+#   }
+
+#   & .operate-checkbox {
+#     margin: 0;
+#     padding: 0;
+#     border: none;
+#     background: $surface;
+#     background-tint: $surface;
+
+#     &>.toggle--button {
+#       color: $error;
+#       background: $surface;
+#       background-tint: $surface;
+#     }
+
+#     &.-on>.toggle--button {
+#       color: $success;
+#     }
+
+#     &:focus>.toggle--button {
+#       text-style: none;
+#     }
+
+#     &:hover>.toggle--button {
+#       text-style: bold;
+#     }
+#   }
+# }

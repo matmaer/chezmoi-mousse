@@ -1,5 +1,6 @@
 """Contains classes used as reused components by the widgets in mousse.py."""
 
+import os
 import re
 from collections.abc import Iterable
 from dataclasses import dataclass
@@ -10,22 +11,20 @@ from rich.text import Text
 from textual.app import ComposeResult
 from textual.containers import (
     Container,
+    Horizontal,
     HorizontalGroup,
     Vertical,
-    VerticalGroup,
     ScrollableContainer,
 )
 from textual.content import Content
 from textual.reactive import reactive
 from textual.widgets import (
-    Collapsible,
+    Button,
     DirectoryTree,
     Label,
     RichLog,
     Static,
     Switch,
-    TabbedContent,
-    TabPane,
     Tree,
 )
 from textual.widgets.tree import TreeNode
@@ -124,22 +123,68 @@ class PathView(Container):
             self.on_mount()
 
 
-class StaticDiff(ScrollableContainer):
+class DiffView(ScrollableContainer):
 
-    new_diff_lines: reactive[list[str]] = reactive([])
+    diff_spec: reactive[tuple[Path, str] | None] = reactive(None, init=False)
 
+    # override property from ScrollableContainer to allow maximizing
     @property
     def allow_maximize(self) -> bool:
         return True
 
     def compose(self) -> ComposeResult:
-        yield Static()
+        yield Static("Click a file to see its diff")
 
-    def watch_new_diff_lines(self) -> None:
+    def on_mount(self) -> None:
         static_diff = self.query_exactly_one(Static)
-        diff_output: list[str] = [
+        static_diff.update(
+            Content("Select a file in the tree to view its diff.")
+        )
+
+    def watch_diff_spec(self) -> None:
+        assert self.diff_spec is not None and isinstance(self.diff_spec, tuple)
+        static_diff = self.query_exactly_one(Static)
+
+        diff_output: list[str]
+        if self.diff_spec[1] == "apply":
+            if self.diff_spec[0] not in chezmoi.status_paths["apply_files"]:
+                print(f"{chezmoi.status_paths["apply_files"]}")
+                static_diff.update(
+                    Content("\n").join(
+                        [
+                            f"No diff available for {self.diff_spec[0]}",
+                            "File not in chezmoi status output.",
+                        ]
+                    )
+                )
+                return
+            else:
+                diff_output = chezmoi.apply_diff(str(self.diff_spec[0]))
+        elif self.diff_spec[1] == "re-add":
+            if self.diff_spec[0] not in chezmoi.status_paths["re_add_files"]:
+                static_diff.update(
+                    Content("\n").join(
+                        [
+                            f"No diff available for {self.diff_spec[0]}",
+                            "File not in chezmoi status output.",
+                        ]
+                    )
+                )
+                return
+            else:
+                diff_output = chezmoi.re_add_diff(str(self.diff_spec[0]))
+
+        if not diff_output:
+            static_diff.update(
+                Content(
+                    f"chezmoi diff {self.diff_spec[0]} returned no output."
+                )
+            )
+            return
+
+        diff_lines: list[str] = [
             line
-            for line in self.new_diff_lines
+            for line in diff_output
             if line.strip()  # filter lines containing only spaces
             and line[0] in "+- "
             and not line.startswith(("+++", "---"))
@@ -149,7 +194,7 @@ class StaticDiff(ScrollableContainer):
             max_len = max(len(line) for line in diff_output)
         else:
             max_len = 0
-        padded_lines = [line.ljust(max_len) for line in diff_output]
+        padded_lines = [line.ljust(max_len) for line in diff_lines]
         colored_lines: list[Content] = []
         for line in padded_lines:
             if line.startswith("-"):
@@ -157,31 +202,9 @@ class StaticDiff(ScrollableContainer):
             elif line.startswith("+"):
                 colored_lines.append(Content(line).stylize("$text-success"))
             else:
-                content = Content("▏" + line)
+                content = Content("\u2022" + line)  # bullet •
                 colored_lines.append(content.stylize("dim"))
         static_diff.update(Content("\n").join(colored_lines))
-
-
-class PathViewTabs(Vertical):
-    """Two tabs to view the content or the diff of a file."""
-
-    selected_path: reactive[Path | None] = reactive(None)
-    diff_lines: reactive[list[str]] = reactive([])
-
-    def compose(self) -> ComposeResult:
-        with TabbedContent(id="path_review_tabs", classes="path-view-tabs"):
-            with TabPane("Content"):
-                yield PathView(id="path_view_tab")
-            with TabPane("Diff"):
-                yield StaticDiff(id="static_diff_tab")
-
-    def watch_selected_path(self) -> None:
-        if self.selected_path is None:
-            return
-        self.query_one(PathView).path = self.selected_path
-
-    def watch_diff_lines(self) -> None:
-        self.query_one(StaticDiff).new_diff_lines = self.diff_lines
 
 
 class FilteredDirTree(DirectoryTree):
@@ -256,26 +279,6 @@ class FilteredDirTree(DirectoryTree):
         return False
 
 
-class PathViewTitle(VerticalGroup):
-
-    path_view_title: reactive[str] = reactive("")
-
-    def compose(self) -> ComposeResult:
-        yield Static(id="path_view_title_text", classes="path-view-title-text")
-        yield Static(id="path_view_title_bars", classes="path-view-title-bars")
-
-    def watch_path_view_title(self) -> None:
-        path_view_title_text = Content.from_text(self.path_view_title)
-        path_view_title_bars = "━" * len(self.path_view_title)
-        self.query_one("#path_view_title_text", Static).update(
-            path_view_title_text
-        )
-        self.query_one("#path_view_title_bars", Static).update(
-            path_view_title_bars
-        )
-        self.styles.width = len(self.path_view_title)
-
-
 @dataclass
 class NodeData:
     path: Path
@@ -286,7 +289,7 @@ class NodeData:
 
 class ManagedTree(Vertical):
 
-    include_unchanged_files: reactive[bool] = reactive(False, init=False)
+    unchanged: reactive[bool] = reactive(False, init=False)
 
     # TODO: default color should be updated on theme change
     node_colors = {
@@ -307,21 +310,30 @@ class ManagedTree(Vertical):
         super().__init__(**kwargs)
 
     def compose(self) -> ComposeResult:
-        # yield TreeHeader(classes="tree-title")
-        yield Tree(label="root")
+        with Horizontal(id="tree_buttons_horizontal"):
+            # hack to center everything above the variable width of the tree
+            # including the root label with auto justified horizontal bar
+            # padding which style matches the tab underlines on the right
+            with Vertical(classes="tree-button-vertical"):
+                yield Button("Tree", id="tree_button_tree")
+            with Vertical(classes="tree-button-vertical"):
+                yield Button("Status", id="tree_button_status")
+        yield Tree(label="root", classes="managed-tree")
 
     def on_mount(self) -> None:
+        tree_buttons = self.query_one("#tree_buttons_horizontal", Horizontal)
+        tree_buttons.border_subtitle = f"{chezmoi.dest_dir}{os.sep}"
 
-        managed_tree = self.query_exactly_one(Tree)
-        managed_tree.guide_depth = 2
-        if managed_tree.root.data is None:
-            managed_tree.root.data = NodeData(
+        tree = self.query_exactly_one(Tree)
+        tree.guide_depth = 2
+        if tree.root.data is None:
+            tree.root.data = NodeData(
                 path=chezmoi.dest_dir, found=True, is_file=False, status="R"
             )
         # give root node status R so it's not considered having status "X"
-        managed_tree.show_root = False
-        self.add_nodes(managed_tree.root)
-        self.add_leaves(managed_tree.root)
+        tree.show_root = False
+        self.add_nodes(tree.root)
+        self.add_leaves(tree.root)
 
     def show_dir_node(self, node_data: NodeData) -> bool:
         """Check if a directory node should be displayed according to the
@@ -343,11 +355,11 @@ class ManagedTree(Vertical):
         ]
 
         # include_unchanged_files=False
-        if not self.include_unchanged_files:
+        if not self.unchanged:
             return any(f in self.status_files for f in managed_in_dir_tree)
 
         # include_unchanged_files=False
-        elif self.include_unchanged_files:
+        elif self.unchanged:
             return bool(managed_in_dir_tree)
         return False
 
@@ -359,7 +371,7 @@ class ManagedTree(Vertical):
                 f"Expected a file node, got {node_data.path} instead."
             )
         # include_unchanged_files=False
-        if not self.include_unchanged_files:
+        if not self.unchanged:
             return node_data.status != "X"
         # include_unchanged_files=True
         return True
@@ -454,7 +466,7 @@ class ManagedTree(Vertical):
         self.add_nodes(event.node)
         self.add_leaves(event.node)
 
-    def watch_include_unchanged_files(self) -> None:
+    def watch_unchanged(self) -> None:
         """Update the visible nodes in the tree based on the current filter
         settings."""
         root_node = self.query_exactly_one(Tree).root
@@ -464,42 +476,42 @@ class ManagedTree(Vertical):
             self.add_leaves(node)
 
 
-class ChezmoiStatus(Vertical):
+# class ChezmoiStatus(Vertical):
 
-    apply_status: reactive[bool | None] | None = reactive(None, init=False)
+#     apply_status: reactive[bool | None] | None = reactive(None, init=False)
 
-    def compose(self) -> ComposeResult:
-        with Collapsible(title="Chezmoi Status", id="chezmoi_status_group"):
-            yield from self.status_items
+#     def compose(self) -> ComposeResult:
+#         with Collapsible(title="Chezmoi Status", id="chezmoi_status_group"):
+#             yield from self.status_items
 
-    def on_mount(self) -> None:
-        # status can be a space so not using str.split() or str.strip()
-        status_paths: dict[Path, str] = (
-            chezmoi.status_paths["apply_files"]
-            if self.apply_status
-            else chezmoi.status_paths["re_add_files"]
-        )
+#     def on_mount(self) -> None:
+#         # status can be a space so not using str.split() or str.strip()
+#         status_paths: dict[Path, str] = (
+#             chezmoi.status_paths["apply_files"]
+#             if self.apply_status
+#             else chezmoi.status_paths["re_add_files"]
+#         )
 
-        # write dict comprehension to create a dict with the file path as key
-        # and as value that the command returns, which is a list of strings
-        # depending on the apply_status bool, to determine calling chezmoi.apply_diff() or
-        # chezmoi.re_add_diff()
-        diff_results = {
-            file_path: (
-                chezmoi.apply_diff(str(file_path))
-                if self.apply_status
-                else chezmoi.re_add_diff(str(file_path))
-            )
-            for file_path in status_paths
-        }
+#         # write dict comprehension to create a dict with the file path as key
+#         # and as value that the command returns, which is a list of strings
+#         # depending on the apply_status bool, to determine calling chezmoi.apply_diff() or
+#         # chezmoi.re_add_diff()
+#         diff_results = {
+#             file_path: (
+#                 chezmoi.apply_diff(str(file_path))
+#                 if self.apply_status
+#                 else chezmoi.re_add_diff(str(file_path))
+#             )
+#             for file_path in status_paths
+#         }
 
-        self.status_items = []
-        for file_path, status_code in status_paths.items():
-            title = f"{file_path.relative_to(chezmoi.dest_dir)}: {status_code}"
-            static_diff = StaticDiff()
-            static_diff.new_diff_lines = diff_results[file_path]
-            self.status_items.append(Collapsible(static_diff, title=title))
-        self.refresh(recompose=True)
+#         self.status_items = []
+#         for file_path, status_code in status_paths.items():
+#             title = f"{file_path.relative_to(chezmoi.dest_dir)}: {status_code}"
+#             static_diff = DiffView()
+#             static_diff.new_diff_lines = diff_results[file_path]
+#             self.status_items.append(Collapsible(static_diff, title=title))
+#         self.refresh(recompose=True)
 
 
 class FilterSwitch(HorizontalGroup):
