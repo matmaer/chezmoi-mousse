@@ -4,7 +4,6 @@ import os
 from pathlib import Path
 
 from rich.text import Text
-from textual import on
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.events import Click
@@ -74,8 +73,8 @@ class ApplyTab(Horizontal):
             with TabPane("Diff"):
                 yield DiffView(id="apply_diff_view")
 
-    @on(Tree.NodeSelected)
-    def update_preview_path(self, event: Tree.NodeSelected) -> None:
+    def on_tree_node_selected(self, event: Tree.NodeSelected) -> None:
+        event.stop()
         assert event.node.data is not None
         self.query_one("#apply_path_view", PathView).path = (
             event.node.data.path
@@ -85,8 +84,8 @@ class ApplyTab(Horizontal):
             "apply",
         )
 
-    @on(Switch.Changed)
-    def update_apply_tree(self, event: Switch.Changed) -> None:
+    def on_switch_changed(self, event: Switch.Changed) -> None:
+        event.stop()
         if event.switch.id == "apply_tab_unchanged":
             self.query_one("#apply_tree", ManagedTree).unchanged = event.value
 
@@ -112,8 +111,8 @@ class ReAddTab(Horizontal):
             with TabPane("Diff"):
                 yield DiffView(id="re_add_diff_view")
 
-    @on(Tree.NodeSelected)
-    def update_preview_path(self, event: Tree.NodeSelected) -> None:
+    def on_tree_node_selected(self, event: Tree.NodeSelected) -> None:
+        event.stop()
         assert event.node.data is not None
         self.query_one("#re_add_path_view", PathView).path = (
             event.node.data.path
@@ -123,8 +122,8 @@ class ReAddTab(Horizontal):
             "re-add",
         )
 
-    @on(Switch.Changed)
-    def update_apply_tree(self, event: Switch.Changed) -> None:
+    def on_switch_changed(self, event: Switch.Changed) -> None:
+        event.stop()
         if event.switch.id == "re_add_tab_unchanged":
             self.query_one("#re_add_tree", ManagedTree).unchanged = event.value
 
@@ -233,6 +232,7 @@ class AddTab(Horizontal):
     def on_directory_tree_file_selected(
         self, event: FilteredDirTree.FileSelected
     ) -> None:
+        event.stop()
         if event.node.data is not None:
             self.query_exactly_one(PathView).path = event.node.data.path
             title = f" {event.node.data.path.relative_to(chezmoi.dest_dir)} "
@@ -241,6 +241,7 @@ class AddTab(Horizontal):
     def on_directory_tree_directory_selected(
         self, event: FilteredDirTree.DirectorySelected
     ) -> None:
+        event.stop()
         if event.node.data is not None:
             rich_log = self.query_one("#file_preview", RichLog)
             rich_log.clear()
@@ -265,6 +266,7 @@ class AddTab(Horizontal):
                 )
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
+        event.stop()
         tree = self.query_one("#add_tree", AddTab.FilteredDirTree)
         if event.switch.id == "add_tab_unmanaged_dirs":
             tree.unmanaged_dirs = event.value
@@ -296,6 +298,7 @@ class DoctorTab(VerticalScroll):
             )
 
         def on_click(self, event: Click) -> None:
+            event.stop()
             if event.chain == 2:
                 self.dismiss()
 
@@ -311,6 +314,7 @@ class DoctorTab(VerticalScroll):
             yield GitLog()
 
         def on_click(self, event: Click) -> None:
+            event.stop()
             if event.chain == 2:
                 self.dismiss()
 

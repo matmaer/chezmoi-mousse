@@ -436,6 +436,7 @@ class ManagedTree(Vertical):
                 tree_node.add(label=node_label, data=node_data)
 
     def on_tree_node_expanded(self, event: Tree.NodeExpanded) -> None:
+        event.stop()
         if not isinstance(event.node.data, NodeData):
             return
         self.add_nodes(event.node)
