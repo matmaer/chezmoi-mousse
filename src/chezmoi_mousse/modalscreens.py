@@ -6,10 +6,10 @@ from textual.app import ComposeResult
 from textual.containers import VerticalScroll, HorizontalGroup
 from textual.events import Click
 from textual.screen import ModalScreen
-from textual.widgets import Button, Checkbox, Collapsible, DataTable, Pretty
+from textual.widgets import Button, Checkbox, Collapsible, DataTable
 
 from chezmoi_mousse.chezmoi import chezmoi
-from chezmoi_mousse.components import AutoWarning, PathView
+from chezmoi_mousse.components import ConfigDump, AutoWarning, PathView
 
 
 class Operate(ModalScreen):
@@ -123,16 +123,12 @@ class GitLog(ModalScreen):
             self.dismiss()
 
 
-class ConfigDump(ModalScreen):
+class ConfigDumpModal(ModalScreen):
 
     BINDINGS = [Binding(key="escape", action="dismiss", description="close")]
 
     def compose(self) -> ComposeResult:
-        yield Pretty(
-            chezmoi.dump_config.dict_out,
-            id="configdump",
-            classes="doctormodals",
-        )
+        yield ConfigDump(id="configdump", classes="doctormodals")
 
     def on_mount(self) -> None:
         self.query_one("#configdump").border_title = (

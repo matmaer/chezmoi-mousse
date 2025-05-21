@@ -42,7 +42,7 @@ from chezmoi_mousse.components import (
 )
 
 from chezmoi_mousse.config import filter_switch_data, pw_mgr_info
-from chezmoi_mousse.modalscreens import ConfigDump, GitLog, Operate
+from chezmoi_mousse.modalscreens import ConfigDumpModal, GitLog, Operate
 
 
 class ApplyTab(Horizontal):
@@ -293,7 +293,7 @@ class DoctorTab(VerticalScroll):
                 table.add_row(*row)
 
     def action_open_config(self) -> None:
-        self.app.push_screen(ConfigDump())
+        self.app.push_screen(ConfigDumpModal())
 
     def action_git_log(self) -> None:
         self.app.push_screen(GitLog())

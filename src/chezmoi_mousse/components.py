@@ -22,6 +22,7 @@ from textual.widgets import (
     Button,
     DirectoryTree,
     Label,
+    Pretty,
     RichLog,
     Static,
     Switch,
@@ -31,6 +32,12 @@ from textual.widgets.tree import TreeNode
 
 from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.config import unwanted
+
+
+class ConfigDump(Container):
+
+    def compose(self) -> ComposeResult:
+        yield Pretty(chezmoi.dump_config.dict_out)
 
 
 class AutoWarning(Static):
@@ -52,78 +59,85 @@ class PathView(Container):
 
     path: reactive[Path | None] = reactive(None, init=False)
 
+    class Greeter(Static):
+        def compose(self) -> ComposeResult:
+            yield Static(
+                "Click a file or directory to see its content.\nThis is your configuration:"
+            )
+            yield ConfigDump()
+
     def compose(self) -> ComposeResult:
-        yield RichLog(
-            id="file_preview",
-            classes="file-preview",
-            auto_scroll=False,
-            wrap=False,
-            highlight=True,
-        )
-
-    def on_mount(self) -> None:
-        rich_log = self.query_one(RichLog)
-
-        if self.path is None or not isinstance(self.path, Path):
-            rich_log.write(" Select a file to view its content.")
+        if self.path is None:
+            yield self.Greeter()
         else:
-            truncated = ""
-            try:
-                if self.path.stat().st_size > 150 * 1024:
-                    truncated = (
-                        "\n\n------ File content truncated to 150 KiB ------\n"
-                    )
-            except PermissionError as error:
-                rich_log.write(error.strerror)
-                return
-            except FileNotFoundError:
-                # FileNotFoundError is raised both when a file or a directory
-                # does not exist
-                if self.path in chezmoi.managed_file_paths:
-                    file_content = chezmoi.cat(str(self.path))
-                    if not file_content.strip():
-                        rich_log.write("File contains only whitespace")
-                    else:
-                        rich_log.write(file_content)
-                    return
+            yield RichLog(
+                id="file_preview",
+                classes="file-preview",
+                auto_scroll=False,
+                wrap=False,
+                highlight=True,
+            )
 
-            if self.path in chezmoi.managed_dir_paths:
-                text = [
-                    "The directory is managed, and does not exist on disk.",
-                    f'Output from "chezmoi status {self.path}"',
-                    f"{chezmoi.status(str(self.path))}",
-                ]
-                rich_log.write("\n".join(text))
-                return
-
-            try:
-                with open(self.path, "rt", encoding="utf-8") as file:
-                    file_content = file.read(150 * 1024)
-                    if not file_content.strip():
-                        rich_log.write("File contains only whitespace")
-                    else:
-                        rich_log.write(file_content + truncated)
-
-            except IsADirectoryError:
-                rich_log.write(f"Directory: {self.path}")
+    def update_path_view(self, path: Path) -> None:
+        assert isinstance(self.path, Path)
+        rich_log = self.query_one("#file_preview", RichLog)
+        truncated = ""
+        try:
+            if self.path.stat().st_size > 150 * 1024:
+                truncated = (
+                    "\n\n------ File content truncated to 150 KiB ------\n"
+                )
+        except PermissionError as error:
+            rich_log.write(error.strerror)
+            return
+        except FileNotFoundError:
+            # FileNotFoundError is raised both when a file or a directory
+            # does not exist
+            if self.path in chezmoi.managed_file_paths:
+                file_content = chezmoi.cat(str(self.path))
+                if not file_content.strip():
+                    rich_log.write("File contains only whitespace")
+                else:
+                    rich_log.write(file_content)
                 return
 
-            except UnicodeDecodeError:
-                text = f"{self.path} cannot be decoded as UTF-8."
-                rich_log.write(f"{self.path} cannot be decoded as UTF-8.")
-                return
+        if self.path in chezmoi.managed_dir_paths:
+            text = [
+                "The directory is managed, and does not exist on disk.",
+                f'Output from "chezmoi status {self.path}"',
+                f"{chezmoi.status(str(self.path))}",
+            ]
+            rich_log.write("\n".join(text))
+            return
 
-            except OSError as error:
-                text = Content(f"Error reading {self.path}: {error}")
-                rich_log.write(text)
+        try:
+            with open(self.path, "rt", encoding="utf-8") as file:
+                file_content = file.read(150 * 1024)
+                if not file_content.strip():
+                    rich_log.write("File contains only whitespace")
+                else:
+                    rich_log.write(file_content + truncated)
+
+        except IsADirectoryError:
+            rich_log.write(f"Directory: {self.path}")
+            return
+
+        except UnicodeDecodeError:
+            text = f"{self.path} cannot be decoded as UTF-8."
+            rich_log.write(f"{self.path} cannot be decoded as UTF-8.")
+            return
+
+        except OSError as error:
+            text = Content(f"Error reading {self.path}: {error}")
+            rich_log.write(text)
 
     def watch_path(self) -> None:
         if self.path is not None:
             self.query_one(RichLog).clear()
-            self.on_mount()
+            self.update_path_view(self.path)
 
 
-class DiffView(ScrollableContainer):
+class DiffView(Container):
 
     diff_spec: reactive[tuple[Path, str] | None] = reactive(None, init=False)
 
@@ -133,13 +147,8 @@ class DiffView(ScrollableContainer):
         return True
 
     def compose(self) -> ComposeResult:
-        yield Static("Click a file to see its diff")
-
-    def on_mount(self) -> None:
-        static_diff = self.query_exactly_one(Static)
-        static_diff.update(
-            Content("Select a file in the tree to view its diff.")
-        )
+        with ScrollableContainer():
+            yield Static("Click a file to see its diff")
 
     def watch_diff_spec(self) -> None:
         assert self.diff_spec is not None and isinstance(self.diff_spec, tuple)

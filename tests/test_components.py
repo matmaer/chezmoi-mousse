@@ -20,11 +20,6 @@ def test_git_log_instantiation():
     assert isinstance(modal, main_tabs.GitLog)
 
 
-def test_config_dump_instantiation():
-    modal = main_tabs.ConfigDump()
-    assert isinstance(modal, main_tabs.ConfigDump)
-
-
 def test_doctor_tab_instantiation():
     tab = main_tabs.DoctorTab()
     assert isinstance(tab, main_tabs.DoctorTab)

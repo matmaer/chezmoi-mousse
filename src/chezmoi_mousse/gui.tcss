@@ -1,25 +1,30 @@
-# ManagedTree
-#tree_buttons_horizontal {
-  height: 2;
-  border-left: none;
-  border-right: none;
-  border-top: none;
-  border-bottom: solid $primary;
-  border-subtitle-color: $primary;
-  border-subtitle-align: center;
-  border-subtitle-style: bold;
-  #tree_button_tree {
-    max-width: 6;
-    width: 6;
-  }
-  #tree_button_status {
-    max-width: 8;
-    width: 8;
+ManagedTree {
+  #tree_buttons_horizontal {
+    height: 2;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+    border-bottom: solid $primary;
+    border-subtitle-color: $primary;
+    border-subtitle-align: center;
+    border-subtitle-style: bold;
+    #tree_button_tree {
+      max-width: 6;
+      width: 6;
+    }
+    #tree_button_status {
+      max-width: 8;
+      width: 8;
+    }
   }
 }
 .tree-button-vertical {
   align: center top;
   height: 1;
+}
+
+.path-view-tabs {
+  margin-left: 2;
 }
 
 #apply_tab_left {
@@ -29,13 +34,6 @@
 #re_add_tab_left {
   width: 33%;
   max-width: 1fr;
-}
-
-Button {
-  border: none;
-  height: 1;
-  text-style: none;
-  color: $foreground;
 }
 
 .filter-bar {
@@ -150,6 +148,14 @@ Button {
   scrollbar-background-active: $background;
   scrollbar-background-hover: $background;
   scrollbar-corner-color: $background;
+}
+
+
+Button {
+  border: none;
+  height: 1;
+  text-style: none;
+  color: $foreground;
 }
 
 Collapsible {
