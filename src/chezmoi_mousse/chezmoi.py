@@ -31,9 +31,7 @@ class InputOutput:
 
     @property
     def label(self):
-        return " ".join(
-            [w for w in self.long_command if not w.startswith("-")]
-        )
+        return f'chezmoi {self.arg_id.replace("_", " ")}'
 
     def __post_init__(self) -> None:
         self.list_out = self.std_out.splitlines()
@@ -64,6 +62,8 @@ class Chezmoi:
     ignored: InputOutput
     managed_files: InputOutput
     managed_dirs: InputOutput
+    managed_files_source: InputOutput
+    managed_dirs_source: InputOutput
     status_dirs: InputOutput
     status_files: InputOutput
     template_data: InputOutput
@@ -88,7 +88,6 @@ class Chezmoi:
             "git",
             "--",
             "log",
-            "--follow",
             "--max-count=400",
             "--no-color",
             "--no-decorate",
@@ -103,6 +102,16 @@ class Chezmoi:
             "--path-style=absolute",
             "--include=files",
         ],
+        "managed_dirs_source": [
+            "managed",
+            "--path-style=source-absolute",
+            "--include=dirs",
+        ],
+        "managed_files_source": [
+            "managed",
+            "--path-style=source-absolute",
+            "--include=files",
+        ],
         "status_dirs": ["status", "--path-style=absolute", "--include=dirs"],
         "status_files": ["status", "--path-style=absolute", "--include=files"],
         "template_data": ["data", "--format=json"],
@@ -115,7 +124,7 @@ class Chezmoi:
         for arg_id, sub_cmd in self.subs.items():
             long_cmd = self.base + sub_cmd
             self.long_commands[arg_id] = long_cmd
-            setattr(self, arg_id, InputOutput(long_cmd))
+            setattr(self, arg_id, InputOutput(long_cmd, arg_id=arg_id))
 
     @property
     def autoadd_enabled(self) -> bool:
