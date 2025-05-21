@@ -14,10 +14,16 @@ from textual.containers import (
     VerticalGroup,
     VerticalScroll,
 )
+import re
+from chezmoi_mousse.config import unwanted
+from collections.abc import Iterable
 from textual.content import Content
+from textual.reactive import reactive
+from textual.screen import ModalScreen
 from textual.widgets import (
     Collapsible,
     DataTable,
+    DirectoryTree,
     Label,
     Link,
     ListItem,
@@ -35,14 +41,13 @@ from chezmoi_mousse import FLOW
 from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.components import (
     FilterSwitch,
-    FilteredDirTree,
     PathView,
     DiffView,
     ManagedTree,
 )
 
+from chezmoi_mousse.components import ConfigDump
 from chezmoi_mousse.config import filter_switch_data, pw_mgr_info
-from chezmoi_mousse.modalscreens import ConfigDumpModal, GitLog
 
 
 class ApplyTab(Horizontal):
@@ -65,9 +70,6 @@ class ApplyTab(Horizontal):
                 yield PathView(id="apply_path_view")
             with TabPane("Diff"):
                 yield DiffView(id="apply_diff_view")
-
-    def action_apply_path(self) -> None:
-        self.notify("will apply path")
 
     @on(Tree.NodeSelected)
     def update_preview_path(self, event: Tree.NodeSelected) -> None:
@@ -107,9 +109,6 @@ class ReAddTab(Horizontal):
             with TabPane("Diff"):
                 yield DiffView(id="re_add_diff_view")
 
-    def action_re_add_path(self) -> None:
-        self.notify("will re-add path")
-
     @on(Tree.NodeSelected)
     def update_preview_path(self, event: Tree.NodeSelected) -> None:
         assert event.node.data is not None
@@ -129,9 +128,80 @@ class ReAddTab(Horizontal):
 
 class AddTab(Horizontal):
 
+    class FilteredDirTree(DirectoryTree):
+
+        unmanaged_dirs = reactive(False)
+        unwanted = reactive(False)
+
+        def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
+            managed_dirs = chezmoi.managed_dir_paths
+            managed_files = chezmoi.managed_file_paths
+
+            # Switches: Red - Green (default)
+            if not self.unmanaged_dirs and not self.unwanted:
+                return (
+                    p
+                    for p in paths
+                    if (
+                        p.is_file()
+                        and (
+                            p.parent in managed_dirs
+                            or p.parent == chezmoi.dest_dir
+                        )
+                        and not self.is_unwanted_path(p)
+                        and p not in managed_files
+                    )
+                    or (
+                        p.is_dir()
+                        and not self.is_unwanted_path(p)
+                        and p in managed_dirs
+                    )
+                )
+            # Switches: Green - Red
+            elif self.unmanaged_dirs and not self.unwanted:
+                return (
+                    p
+                    for p in paths
+                    if p not in managed_files and not self.is_unwanted_path(p)
+                )
+            # Switches: Red - Green
+            elif not self.unmanaged_dirs and self.unwanted:
+                return (
+                    p
+                    for p in paths
+                    if (
+                        p.is_file()
+                        and (
+                            p.parent in managed_dirs
+                            or p.parent == chezmoi.dest_dir
+                        )
+                        and p not in managed_files
+                    )
+                    or (p.is_dir() and p in managed_dirs)
+                )
+            # Switches: Green - Green, include all unmanaged paths
+            elif self.unmanaged_dirs and self.unwanted:
+                return (
+                    p
+                    for p in paths
+                    if p.is_dir() or (p.is_file() and p not in managed_files)
+                )
+            else:
+                return paths
+
+        def is_unwanted_path(self, path: Path) -> bool:
+            if path.is_dir():
+                if path.name in unwanted["dirs"]:
+                    return True
+            if path.is_file():
+                extension = re.match(r"\.[^.]*$", path.name)
+                if extension in unwanted["files"]:
+                    return True
+            return False
+
     def compose(self) -> ComposeResult:
         with Vertical(id="add_tab_left"):
-            yield FilteredDirTree(
+            yield AddTab.FilteredDirTree(
                 chezmoi.dest_dir, id="add_tree", classes="dir-tree"
             )
             with VerticalGroup(classes="filter-bar"):
@@ -147,7 +217,7 @@ class AddTab(Horizontal):
             yield PathView(id="add_path_view")
 
     def on_mount(self) -> None:
-        self.query_exactly_one(FilteredDirTree).show_root = False
+        self.query_exactly_one(AddTab.FilteredDirTree).show_root = False
         tree_title = Content.from_text(f" {chezmoi.dest_dir}{os.sep} ")
 
         add_tab_left = self.query_one("#add_tab_left", Vertical)
@@ -191,12 +261,8 @@ class AddTab(Horizontal):
                     "Click chezmoi-add or hit A to add it to chezmoi."
                 )
 
-    def action_add_path(self) -> None:
-        cursor_node = self.query_one("#add_tree", FilteredDirTree).cursor_node
-        self.notify(f"will add {cursor_node}")
-
     def on_switch_changed(self, event: Switch.Changed) -> None:
-        tree = self.query_one("#add_tree", FilteredDirTree)
+        tree = self.query_one("#add_tree", AddTab.FilteredDirTree)
         if event.switch.id == "add_tab_unmanaged_dirs":
             tree.unmanaged_dirs = event.value
             tree.reload()
@@ -206,6 +272,19 @@ class AddTab(Horizontal):
 
 
 class DoctorTab(VerticalScroll):
+
+    class ConfigDumpModal(ModalScreen):
+
+        def compose(self) -> ComposeResult:
+            yield ConfigDump(id="configdump", classes="doctormodals")
+
+        def on_mount(self) -> None:
+            self.query_one("#configdump").border_title = (
+                "chezmoi dump-config - command output"
+            )
+            self.query_one("#configdump").border_subtitle = (
+                "double click or escape to close"
+            )
 
     def compose(self) -> ComposeResult:
 
@@ -277,12 +356,6 @@ class DoctorTab(VerticalScroll):
             else:
                 row = [Text(cell_text) for cell_text in row]
                 table.add_row(*row)
-
-    def action_open_config(self) -> None:
-        self.app.push_screen(ConfigDumpModal())
-
-    def action_git_log(self) -> None:
-        self.app.push_screen(GitLog())
 
 
 class DiagramTab(Container):

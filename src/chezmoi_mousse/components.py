@@ -1,8 +1,7 @@
 """Contains classes used as reused components by the widgets in mousse.py."""
 
 import os
-import re
-from collections.abc import Iterable
+
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -18,9 +17,10 @@ from textual.containers import (
 )
 from textual.content import Content
 from textual.reactive import reactive
+from textual.screen import ModalScreen
 from textual.widgets import (
     Button,
-    DirectoryTree,
+    DataTable,
     Label,
     Pretty,
     RichLog,
@@ -31,13 +31,54 @@ from textual.widgets import (
 from textual.widgets.tree import TreeNode
 
 from chezmoi_mousse.chezmoi import chezmoi
-from chezmoi_mousse.config import unwanted
 
 
 class ConfigDump(Container):
 
     def compose(self) -> ComposeResult:
         yield Pretty(chezmoi.dump_config.dict_out)
+
+
+class GitLog(ModalScreen):
+
+    def compose(self) -> ComposeResult:
+        yield DataTable(
+            id="gitlogtable", show_cursor=False, classes="doctormodals"
+        )
+
+    def on_mount(self) -> None:
+        table = self.query_one("#gitlogtable", DataTable)
+        table.border_title = "chezmoi git log - command output"
+        table.border_subtitle = "double click or escape to close"
+        styles = {
+            "ok": f"{self.app.current_theme.success}",
+            "warning": f"{self.app.current_theme.warning}",
+            "error": f"{self.app.current_theme.error}",
+            "info": f"{self.app.current_theme.foreground}",
+        }
+        table.add_columns("COMMIT", "MESSAGE")
+        for line in chezmoi.git_log.list_out:
+            columns = line.split(";")
+            if columns[1].split(maxsplit=1)[0] == "Add":
+                row = [
+                    Text(cell_text, style=f"{styles['ok']}")
+                    for cell_text in columns
+                ]
+                table.add_row(*row)
+            elif columns[1].split(maxsplit=1)[0] == "Update":
+                row = [
+                    Text(cell_text, style=f"{styles['warning']}")
+                    for cell_text in columns
+                ]
+                table.add_row(*row)
+            elif columns[1].split(maxsplit=1)[0] == "Remove":
+                row = [
+                    Text(cell_text, style=f"{styles['error']}")
+                    for cell_text in columns
+                ]
+                table.add_row(*row)
+            else:
+                table.add_row(*columns)
 
 
 class AutoWarning(Static):
@@ -204,78 +245,6 @@ class DiffView(Container):
                 content = Content("\u2022" + line)  # bullet •
                 colored_lines.append(content.stylize("dim"))
         static_diff.update(Content("\n").join(colored_lines))
-
-
-class FilteredDirTree(DirectoryTree):
-
-    unmanaged_dirs = reactive(False)
-    unwanted = reactive(False)
-
-    def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
-        managed_dirs = chezmoi.managed_dir_paths
-        managed_files = chezmoi.managed_file_paths
-
-        # Switches: Red - Green (default)
-        if not self.unmanaged_dirs and not self.unwanted:
-            return (
-                p
-                for p in paths
-                if (
-                    p.is_file()
-                    and (
-                        p.parent in managed_dirs
-                        or p.parent == chezmoi.dest_dir
-                    )
-                    and not self.is_unwanted_path(p)
-                    and p not in managed_files
-                )
-                or (
-                    p.is_dir()
-                    and not self.is_unwanted_path(p)
-                    and p in managed_dirs
-                )
-            )
-        # Switches: Green - Red
-        elif self.unmanaged_dirs and not self.unwanted:
-            return (
-                p
-                for p in paths
-                if p not in managed_files and not self.is_unwanted_path(p)
-            )
-        # Switches: Red - Green
-        elif not self.unmanaged_dirs and self.unwanted:
-            return (
-                p
-                for p in paths
-                if (
-                    p.is_file()
-                    and (
-                        p.parent in managed_dirs
-                        or p.parent == chezmoi.dest_dir
-                    )
-                    and p not in managed_files
-                )
-                or (p.is_dir() and p in managed_dirs)
-            )
-        # Switches: Green - Green, include all unmanaged paths
-        elif self.unmanaged_dirs and self.unwanted:
-            return (
-                p
-                for p in paths
-                if p.is_dir() or (p.is_file() and p not in managed_files)
-            )
-        else:
-            return paths
-
-    def is_unwanted_path(self, path: Path) -> bool:
-        if path.is_dir():
-            if path.name in unwanted["dirs"]:
-                return True
-        if path.is_file():
-            extension = re.match(r"\.[^.]*$", path.name)
-            if extension in unwanted["files"]:
-                return True
-        return False
 
 
 @dataclass

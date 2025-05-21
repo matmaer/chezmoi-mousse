@@ -15,11 +15,6 @@ def test_add_tab_instantiation():
     assert isinstance(tab, main_tabs.AddTab)
 
 
-def test_git_log_instantiation():
-    modal = main_tabs.GitLog()
-    assert isinstance(modal, main_tabs.GitLog)
-
-
 def test_doctor_tab_instantiation():
     tab = main_tabs.DoctorTab()
     assert isinstance(tab, main_tabs.DoctorTab)

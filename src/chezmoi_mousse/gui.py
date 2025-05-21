@@ -1,5 +1,6 @@
 from textual.app import App, ComposeResult
 from textual.binding import Binding
+from textual.events import Click
 from textual.lazy import Lazy
 from textual.screen import Screen
 from textual.theme import Theme
@@ -43,7 +44,9 @@ class MainScreen(Screen):
             description="show-git-log",
             tooltip="git log from your chezmoi repository",
         ),
-        Binding(key="escape", action="dismiss", description="close"),
+        Binding(
+            key="escape", action="dismiss", description="close", show=False
+        ),
     ]
 
     def compose(self) -> ComposeResult:
@@ -60,6 +63,34 @@ class MainScreen(Screen):
             with TabPane("Diagram"):
                 yield Lazy(DiagramTab(id="diagram_tab"))
         yield Footer()
+
+    def action_apply_path(self) -> None:
+        self.notify("will apply path")
+
+    def action_maximize(self) -> None:
+        """Maximize the window if focussed on the relevant pane."""
+        return
+
+    def action_add_path(self) -> None:
+        cursor_node = self.query_one(
+            "#add_tree", AddTab.FilteredDirTree
+        ).cursor_node
+        self.notify(f"will add {cursor_node}")
+
+    def action_re_add_path(self) -> None:
+        self.notify("will re-add path")
+
+    def action_open_config(self) -> None:
+        self.notify("will open config dump output")
+        # self.app.push_screen(ConfigDumpModal())
+
+    def action_git_log(self) -> None:
+        self.notify("will show git log")
+        # self.app.push_screen(GitLog())
+
+    def on_click(self, event: Click) -> None:
+        if event.chain == 2:
+            self.dismiss()
 
 
 chezmoi_mousse_dark = Theme(
