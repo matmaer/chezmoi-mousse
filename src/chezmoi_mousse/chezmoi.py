@@ -147,6 +147,14 @@ class Chezmoi:
         return [Path(p) for p in self.managed_files.list_out]
 
     @property
+    def managed_dir_paths_source(self) -> list[Path]:
+        return [Path(p) for p in self.managed_dirs_source.list_out]
+
+    @property
+    def managed_file_paths_source(self) -> list[Path]:
+        return [Path(p) for p in self.managed_files_source.list_out]
+
+    @property
     def status_paths(self) -> dict[str, dict[Path, str]]:
         """
         Returns a dictionary with four keys: "apply_files", "apply_dirs",
