@@ -59,13 +59,6 @@ class PathView(Container):
 
     path: reactive[Path | None] = reactive(None, init=False)
 
-    class Greeter(Static):
-        def compose(self) -> ComposeResult:
-            yield Static(
-                "Click a file or directory to see its content.\nThis is your configuration:"
-            )
-            yield ConfigDump()
-
     def compose(self) -> ComposeResult:
         yield RichLog(
             id="file_preview",
