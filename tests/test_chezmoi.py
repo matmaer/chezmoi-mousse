@@ -1,6 +1,5 @@
 import pytest
 
-from chezmoi_mousse import components
 from chezmoi_mousse.chezmoi import Chezmoi
 
 
@@ -84,34 +83,3 @@ def test_auto_flags(chezmoi_instance):
     assert isinstance(chezmoi_instance.autoadd_enabled, bool)
     assert isinstance(chezmoi_instance.autocommit_enabled, bool)
     assert isinstance(chezmoi_instance.autopush_enabled, bool)
-
-
-# --- Components.py coverage ---
-
-
-def test_staticdiff_instantiation(monkeypatch, tmp_path):
-    file = tmp_path / "file.txt"
-    file.write_text("foo")
-    monkeypatch.setattr(
-        components.chezmoi,
-        "diff",
-        lambda path, apply: ["+added", "-removed", " unchanged"],
-    )
-    sd = components.StaticDiff(file, apply=True)
-    assert isinstance(sd, components.StaticDiff)
-    sd.on_mount()
-
-
-def test_filtereddirtree_instantiation(monkeypatch, tmp_path):
-    tree = components.FilteredDirTree(tmp_path)
-    assert isinstance(tree, components.FilteredDirTree)
-
-
-def test_chezmoistatus_instantiation():
-    cs = components.ChezmoiStatus(apply=True)
-    assert isinstance(cs, components.ChezmoiStatus)
-
-
-def test_filterbar_instantiation():
-    fb = components.FilterBar(filter_key="main", tab_filters_id="tab1")
-    assert isinstance(fb, components.FilterBar)

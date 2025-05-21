@@ -1,173 +1,59 @@
-/* todo: for background-tint: check alternative not to overwrite other themes */
-
-* {
-  background-tint: $background;
-  scrollbar-size-vertical: 1;
-  scrollbar-background: $background;
-  scrollbar-background-active: $background;
-  scrollbar-background-hover: $background;
-  scrollbar-corner-color: $background;
-}
-
-AutoWarning {
-  margin: 0 1 1 1;
-  height: auto;
-  dock: top;
-}
-
-ChezmoiAdd {
-  background-tint: $surface;
-  background: $surface;
-  border: thick $panel;
-  margin: 1 2 1 2;
-
-  & .add-modal-button {
-    border-top: heavy $primary;
-    border-bottom: none;
+ManagedTree {
+  #tree_buttons_horizontal {
+    height: 2;
     border-left: none;
     border-right: none;
-    background-tint: $surface;
-    background: $surface;
-    color: $primary;
-    margin: 0 7 0 7;
-    width: 8;
-    text-style: none;
-    &:disabled {
-      text-opacity: 0.6;
+    border-top: none;
+    border-bottom: solid $primary;
+    border-subtitle-color: $primary;
+    border-subtitle-align: center;
+    border-subtitle-style: bold;
+    #tree_button_tree {
+      max-width: 6;
+      width: 6;
     }
-
-    &:focus {
-      border-top: heavy $primary-lighten-2;
-    }
-
-    &:hover {
-      border-top: heavy $primary-lighten-3;
-      color: $accent-lighten-3;
-    }
-
-    &.-active {
-      border-top: heavy $primary-lighten-2;
+    #tree_button_status {
+      max-width: 8;
+      width: 8;
     }
   }
-
-  #button_container {
-    height: 3;
-    align: center bottom;
-    dock: bottom;
-  }
-
-  & Collapsible {
-    background-tint: $surface;
-    background: $surface;
-    margin-right: 2;
-  }
-
-  .file-preview {
-    padding: 0;
-    margin-right: 1;
-    border: none;
-  }
+}
+.tree-button-vertical {
+  align: center top;
+  height: 1;
 }
 
-ChezmoiStatus {
-  height: auto;
-  max-height: 70%;
-  padding-bottom: 1;
+.path-view-tabs {
+  margin-left: 2;
 }
 
-Collapsible {
-  border: none;
-  padding: 0;
-  & Pretty,
-  StaticDiff {
-    margin-bottom: 1;
-  }
+#apply_tab_left {
+  width: 33%;
+  max-width: 1fr;
+}
+#re_add_tab_left {
+  width: 33%;
+  max-width: 1fr;
 }
 
-CollapsibleTitle {
-  padding-left: 1;
-  color: $primary-lighten-3;
-  &:hover {
-    text-style: bold;
-  }
-}
-
-DataTable {
-  &>.datatable--header {
-    text-style: none;
-  }
-}
-
-Footer {
-  height: 3;
-  border-top: dashed $panel;
-  border-bottom: dashed $panel;
-  .-command-palette {
-    border: none;
-  }
-}
-
-.doctormodal {
-  max-height: 1fr;
-  border: round $warning;
-  margin-bottom: 1;
-}
-
-Header {
-  border-bottom: dashed $panel-lighten-1;
-  color: $primary;
-  height: 2;
-  text-style: bold;
-}
-
-LoadingScreen {
-  RichLog {
-    color: $secondary;
-    height: 12;
-    margin: 2 1 2 1;
-    width: auto;
-  }
-
-  & #continue {
-    border: none;
-    color: $accent;
-    text-style: none;
-  }
-}
-
-Screen {
-  layers: filterbar_layer;
-}
-
-FilterBar {
+.filter-bar {
   color: $foreground-darken-2;
   background-tint: $surface;
   background: $surface;
-  border-bottom: inner $primary-muted;
-  border-right: inner $primary-muted;
-  border-left: none;
-  border-title-color: $primary;
-  border-top: inner $primary-muted;
-  dock: bottom;
-  height: auto;
-  layer: filterbar_layer;
-  padding-top: 1;
-  width: auto;
-  /* max-width to keep the switches in view, labels overflow first */
-  max-width: 1fr;
-  offset-x: 0%;
-  transition: offset 380ms;
-
-  & VerticalGroup {
-    width: auto;
-  }
+  border-top: inner $surface;
+  border-bottom: inner $surface;
 
   .filter-container {
     background-tint: $surface;
     background: $surface;
-    padding-left: 1;
     height: auto;
     width: auto;
+  }
+
+  & .switch--slider {
+    border: none;
+    color: $error-darken-3;
+
   }
 
   .filter-switch {
@@ -177,11 +63,6 @@ FilterBar {
     &.-on .switch--slider {
       border: none;
       color: $success-darken-1;
-    }
-
-    & .switch--slider {
-      border: none;
-      color: $error-darken-3;
     }
 
     &:hover {
@@ -196,19 +77,151 @@ FilterBar {
   }
 
   .filter-label {
-    padding-bottom: 1;
     padding-right: 1;
-    width: auto;
+    # width: auto;
   }
 
   .filter-tooltip {
-    padding-right: 2;
     color: $primary;
   }
+}
 
-  &.-visible {
-    offset-x: -100%;
+.doctormodals {
+  border: round $warning-darken-2;
+  margin-bottom: 1;
+}
+
+/****************/
+/* ID selectors */
+/****************/
+
+#add_tab_left {
+  border-top: solid $text-primary;
+  border-title-align: center;
+  margin-right: 2;
+}
+
+#add_tab_right {
+  border-top: solid $text-primary;
+  border-title-align: center;
+}
+
+#auto_warning {
+  height: auto;
+  padding: 0 1 0 1;
+  margin: 0 1 0 1;
+  dock: top;
+  text-align: center;
+  border-bottom: dashed $panel;
+}
+
+#diagram_text {
+  padding: 0 1 0 1;
+  min-width: 82;
+}
+
+#loading_screen {
+  #loading_screen_log {
+    color: $secondary;
+    height: 12;
+    margin: 2 1 2 1;
+    width: auto;
   }
+
+  #continue_button {
+    border: none;
+    color: $accent;
+    text-style: none;
+  }
+}
+
+/******************************************************************/
+/* App default TCSS which are different than the textual defaults */
+/******************************************************************/
+
+/* todo: avoid "*"" selector */
+
+* {
+  background-tint: $background;
+  scrollbar-size-vertical: 1;
+  scrollbar-background: $background;
+  scrollbar-background-active: $background;
+  scrollbar-background-hover: $background;
+  scrollbar-corner-color: $background;
+}
+
+
+Button {
+  border: none;
+  height: 1;
+  text-style: none;
+  color: $foreground;
+}
+
+Collapsible {
+  padding: 0;
+  margin: 0;
+  border: none;
+}
+
+CollapsibleTitle {
+  border: none;
+  padding: 0;
+  margin: 0;
+  color: $primary-lighten-3;
+
+  &:hover {
+    text-style: bold;
+  }
+}
+
+DataTable {
+  &>.datatable--header {
+    text-style: none;
+  }
+}
+
+DirectoryTree {
+  width: auto;
+
+  &>.directory-tree--folder {
+    color: $primary-lighten-3;
+    text-style: none;
+  }
+
+  &>.directory-tree--extension {
+    text-style: none;
+  }
+
+  &>.directory-tree--hidden {
+    text-style: none;
+  }
+
+  &>.directory-tree--file {
+    color: $success-lighten-3;
+    text-style: none;
+  }
+}
+
+Footer {
+  height: 3;
+  border-top: dashed $panel;
+  border-bottom: dashed $panel;
+
+  .-command-palette {
+    border: none;
+  }
+}
+
+Header {
+  border-bottom: dashed $panel-lighten-1;
+  color: $primary;
+  height: 2;
+  text-style: bold;
+}
+
+MainScreen {
+  layers: command_log;
 }
 
 Toast {
@@ -216,7 +229,9 @@ Toast {
   background-tint: $surface;
 }
 
-.managed-tree {
+Tree {
+  width: auto;
+
   &>.tree--cursor {
     text-style: none;
     color: $accent-lighten-3;
@@ -257,88 +272,85 @@ Toast {
   }
 }
 
-/* ID Selectors */
 
-#diagram {
-  padding: 0 1 0 1;
-  min-width: 82;
-}
 
-/* TCSS-Class-name selector */
+# Operate {
+#   background-tint: $surface;
+#   background: $surface;
+#   border: thick $panel;
+#   margin: 1 2 1 2;
 
-.file-preview {
-  padding-left: 1;
-  border-top: tab $scrollbar;
-  border-title-align: center;
-  border-title-style: bold;
-  text-style: none;
-}
+#   & .operate-button {
+#     border-top: heavy $primary;
+#     border-bottom: none;
+#     border-left: none;
+#     border-right: none;
+#     background-tint: $surface;
+#     background: $surface;
+#     color: $primary;
+#     margin: 0 7 0 7;
+#     width: 8;
+#     text-style: none;
 
-.any-tree {
-  min-width: 30;
-  max-width: 45%;
-  padding-left: 1;
-  border-top: tab $scrollbar;
-  border-title-align: center;
-  border-title-style: bold;
-  width: auto;
-  margin-right: 2;
-}
+#     &:disabled {
+#       text-opacity: 0.6;
+#     }
 
-.dir-tree {
-  &>.directory-tree--folder {
-    color: $primary-lighten-3;
-    text-style: none;
-  }
+#     &:focus {
+#       border-top: heavy $primary-lighten-2;
+#     }
 
-  &>.directory-tree--extension {
-    text-style: none;
-  }
+#     &:hover {
+#       border-top: heavy $primary-lighten-3;
+#       color: $accent-lighten-3;
+#     }
 
-  &>.directory-tree--hidden {
-    text-style: none;
-  }
+#     &.-active {
+#       border-top: heavy $primary-lighten-2;
+#     }
+#   }
 
-  &>.directory-tree--file {
-    color: $success-lighten-3;
-    text-style: none;
-  }
-}
+#   #button_container {
+#     height: 3;
+#     align: center bottom;
+#     dock: bottom;
+#   }
 
-/* not in use yet */
+#   & .operate-collapsible {
+#     background-tint: $surface;
+#     background: $surface;
+#   }
 
-.tree-checkbox {
-  border: round $accent-muted;
+#   & .operate-file-preview {
+#     padding: 0;
+#     margin-right: 1;
+#     border: none;
+#     offset: -1 0;
+#   }
 
-  &>.toggle--label {
-    color: $error-darken-2;
-  }
+#   & .operate-checkbox {
+#     margin: 0;
+#     padding: 0;
+#     border: none;
+#     background: $surface;
+#     background-tint: $surface;
 
-  &>.toggle--button {
-    color: $error;
-  }
+#     &>.toggle--button {
+#       color: $error;
+#       background: $surface;
+#       background-tint: $surface;
+#     }
 
-  &.-on>.toggle--label {
-    color: $success-darken-2;
-  }
+#     &.-on>.toggle--button {
+#       color: $success;
+#     }
 
-  &.-on>.toggle--button {
-    color: $success;
-  }
+#     &:focus>.toggle--button {
+#       text-style: none;
+#     }
 
-  &:focus>.toggle--label {
-    text-style: none;
-  }
-
-  &:focus>.toggle--button {
-    text-style: none;
-  }
-
-  &:hover>.toggle--label {
-    text-style: bold;
-  }
-
-  &:hover>.toggle--button {
-    text-style: bold;
-  }
-}
+#     &:hover>.toggle--button {
+#       text-style: bold;
+#     }
+#   }
+# }

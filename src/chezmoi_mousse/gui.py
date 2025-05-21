@@ -2,9 +2,9 @@ from textual.app import App, ComposeResult
 from textual.lazy import Lazy
 from textual.screen import Screen
 from textual.theme import Theme
-from textual.widgets import Footer, Header, TabbedContent
+from textual.widgets import Footer, Header, TabbedContent, TabPane
 
-from chezmoi_mousse.mousse import (
+from chezmoi_mousse.main_tabs import (
     AddTab,
     ApplyTab,
     DiagramTab,
@@ -18,13 +18,33 @@ class MainScreen(Screen):
 
     def compose(self) -> ComposeResult:
         yield Header()
-        with TabbedContent("Apply", "Re-Add", "Add", "Doctor", "Diagram"):
-            yield ApplyTab()
-            yield Lazy(ReAddTab())
-            yield Lazy(AddTab())
-            yield Lazy(DoctorTab())
-            yield Lazy(DiagramTab())
+        with TabbedContent(id="main_tabbed_content"):
+            with TabPane("Apply"):
+                yield ApplyTab(id="apply_tab")
+            with TabPane("Re-Add"):
+                yield Lazy(ReAddTab(id="re_add_tab"))
+            with TabPane("Add"):
+                yield Lazy(AddTab(id="add_tab"))
+            with TabPane("Doctor"):
+                yield Lazy(DoctorTab(id="doctor_tab"))
+            with TabPane("Diagram"):
+                yield Lazy(DiagramTab(id="diagram_tab"))
         yield Footer()
+
+
+chezmoi_mousse_dark = Theme(
+    name="chezmoi-mousse-dark",
+    dark=True,
+    accent="#F187FB",
+    background="#000000",
+    error="#ba3c5b",  # textual dark
+    foreground="#DEDAE1",
+    primary="#0178D4",  # textual dark
+    secondary="#004578",  # textual dark
+    surface="#101010",  # see also textual/theme.py
+    success="#4EBF71",  # textual dark
+    warning="#ffa62b",  # textual dark
+)
 
 
 class ChezmoiTUI(App):
@@ -35,21 +55,7 @@ class ChezmoiTUI(App):
 
     def on_mount(self) -> None:
         self.title = "-  c h e z m o i  m o u s s e  -"
-        self.register_theme(
-            Theme(
-                name="chezmoi-mousse-dark",
-                dark=True,
-                accent="#F187FB",
-                background="#000000",
-                error="#ba3c5b",  # textual dark
-                foreground="#DEDAE1",
-                primary="#0178D4",  # textual dark
-                secondary="#004578",  # textual dark
-                surface="#101010",  # see also textual/theme.py
-                success="#4EBF71",  # textual dark
-                warning="#ffa62b",  # textual dark
-            )
-        )
+        self.register_theme(chezmoi_mousse_dark)
         self.theme = "chezmoi-mousse-dark"
         self.push_screen("loading", self.push_main_screen)
 

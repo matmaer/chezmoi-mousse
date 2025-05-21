@@ -39,7 +39,7 @@ class LoadingScreen(Screen):
     def __init__(self) -> None:
         self.animated_fade = AnimatedFade(line_styles=self.create_fade())
         self.dest_dir: Path
-        super().__init__()
+        super().__init__(id="loading_screen")
 
     def create_fade(self) -> deque[Style]:
         start_color = "#0178D4"
@@ -54,10 +54,10 @@ class LoadingScreen(Screen):
     def compose(self) -> ComposeResult:
         with Middle():
             yield Center(self.animated_fade)
-            yield Center(RichLog())
+            yield Center(RichLog(id="loading_screen_log"))
             yield Center(
                 Button(
-                    id="continue",
+                    id="continue_button",
                     label="press any key or click to continue",
                     disabled=True,
                 )
@@ -88,7 +88,7 @@ class LoadingScreen(Screen):
             if worker.group == "io_workers"
         ):
             self.set_dest_dir()
-            self.query_one("#continue", Button).disabled = False
+            self.query_one("#continue_button", Button).disabled = False
 
     def set_dest_dir(self) -> None:
         chezmoi.dest_dir = self.dest_dir
@@ -105,9 +105,9 @@ class LoadingScreen(Screen):
         self.set_interval(interval=0.1, callback=self.all_workers_finished)
 
     def on_key(self) -> None:
-        if not self.query_one("#continue", Button).disabled:
+        if not self.query_one("#continue_button", Button).disabled:
             self.dismiss()
 
     def on_click(self) -> None:
-        if not self.query_one("#continue", Button).disabled:
+        if not self.query_one("#continue_button", Button).disabled:
             self.dismiss()

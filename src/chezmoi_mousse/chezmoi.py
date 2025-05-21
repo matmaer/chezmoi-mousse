@@ -177,7 +177,9 @@ class Chezmoi:
 
     def unmanaged_in_d(self, dir_path: Path) -> list[Path]:
         if not dir_path.is_dir():
-            raise ValueError(f"Directory does not exist: {dir_path}")
+            raise ValueError(
+                f"Cannot show unmanaged because it not exist or is not a directory: {dir_path}"
+            )
         path_strings = subprocess_run(
             self.base + ["unmanaged", "--path-style=absolute", str(dir_path)]
         ).splitlines()
@@ -220,10 +222,12 @@ class Chezmoi:
         ]
         return subprocess_run(long_command + [file_path])
 
-    def diff(self, file_path: str, apply: bool) -> list[str]:
+    def apply_diff(self, file_path: str) -> list[str]:
         long_command = self.base + ["diff", file_path]
-        if apply:
-            return subprocess_run(long_command).splitlines()
+        return subprocess_run(long_command).splitlines()
+
+    def re_add_diff(self, file_path: str) -> list[str]:
+        long_command = self.base + ["diff", file_path]
         return subprocess_run(long_command + ["--reverse"]).splitlines()
 
     def cat(self, file_path: str) -> str:

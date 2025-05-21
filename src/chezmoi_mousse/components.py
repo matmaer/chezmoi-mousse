@@ -1,5 +1,6 @@
 """Contains classes used as reused components by the widgets in mousse.py."""
 
+import os
 import re
 from collections.abc import Iterable
 from dataclasses import dataclass
@@ -8,13 +9,20 @@ from pathlib import Path
 from rich.style import Style
 from rich.text import Text
 from textual.app import ComposeResult
-from textual.containers import HorizontalGroup, VerticalGroup, VerticalScroll
+from textual.containers import (
+    Container,
+    Horizontal,
+    HorizontalGroup,
+    Vertical,
+    ScrollableContainer,
+)
 from textual.content import Content
 from textual.reactive import reactive
 from textual.widgets import (
-    Collapsible,
+    Button,
     DirectoryTree,
     Label,
+    Pretty,
     RichLog,
     Static,
     Switch,
@@ -23,7 +31,13 @@ from textual.widgets import (
 from textual.widgets.tree import TreeNode
 
 from chezmoi_mousse.chezmoi import chezmoi
-from chezmoi_mousse.config import filter_switch_data, status_info, unwanted
+from chezmoi_mousse.config import unwanted
+
+
+class ConfigDump(Container):
+
+    def compose(self) -> ComposeResult:
+        yield Pretty(chezmoi.dump_config.dict_out)
 
 
 class AutoWarning(Static):
@@ -40,119 +54,176 @@ class AutoWarning(Static):
         )
 
 
-class PathView(RichLog):
+class PathView(Container):
     """RichLog widget to display the content of a file with highlighting."""
 
-    path: reactive[Path | None] = reactive(None)
+    path: reactive[Path | None] = reactive(None, init=False)
 
-    def __init__(self, path: Path | None = None, **kwargs) -> None:
-        super().__init__(
-            auto_scroll=False, highlight=True, classes="file-preview", **kwargs
+    class Greeter(Static):
+        def compose(self) -> ComposeResult:
+            yield Static(
+                "Click a file or directory to see its content.\nThis is your configuration:"
+            )
+            yield ConfigDump()
+
+    def compose(self) -> ComposeResult:
+        yield RichLog(
+            id="file_preview",
+            classes="file-preview",
+            auto_scroll=False,
+            wrap=False,
+            highlight=True,
         )
-        self.path = path
 
-    def on_mount(self) -> None:
-        if self.path is None or not isinstance(self.path, Path):
-            self.write(" Select a file to view its content.")
-        else:
-            truncated = ""
-            try:
-                if self.path.stat().st_size > 150 * 1024:
-                    truncated = (
-                        "\n\n------ File content truncated to 150 KiB ------\n"
-                    )
-            except PermissionError as error:
-                self.write(error.strerror)
-                return
-            except FileNotFoundError as error:
-                # FileNotFoundError is raised both when a file or a directory
-                # does not exist
-                if self.path in chezmoi.managed_file_paths:
-                    self.write(chezmoi.cat(str(self.path)))
-                    return
-                elif self.path in chezmoi.managed_dir_paths:
-                    text = [
-                        "The directory is managed, and does not exist on disk.",
-                        f'Output from "chezmoi status {self.path}"',
-                        f"{chezmoi.status(str(self.path))}",
-                    ]
-                    self.write("\n".join(text))
-                    return
+    def update_path_view(self, path: Path) -> None:
+        assert isinstance(self.path, Path)
+        rich_log = self.query_one("#file_preview", RichLog)
+        truncated = ""
+        try:
+            if self.path.stat().st_size > 150 * 1024:
+                truncated = (
+                    "\n\n------ File content truncated to 150 KiB ------\n"
+                )
+        except PermissionError as error:
+            rich_log.write(error.strerror)
+            return
+        except FileNotFoundError:
+            # FileNotFoundError is raised both when a file or a directory
+            # does not exist
+            if self.path in chezmoi.managed_file_paths:
+                file_content = chezmoi.cat(str(self.path))
+                if not file_content.strip():
+                    rich_log.write("File contains only whitespace")
                 else:
-                    # a file or dir that doesn't exist and is not managed
-                    # should not be displayed in the UI, so raise
-                    raise error
-            try:
-                with open(self.path, "rt", encoding="utf-8") as file:
-                    file_content = file.read(150 * 1024)
-                    if not file_content.strip():
-                        self.write("File contains only whitespace")
-                    else:
-                        self.write(file_content + truncated)
-
-            except IsADirectoryError:
-                self.write(f"Directory: {self.path}")
+                    rich_log.write(file_content)
                 return
 
-            except UnicodeDecodeError:
-                text = f"{self.path} cannot be decoded as UTF-8."
-                self.write(f"{self.path} cannot be decoded as UTF-8.")
-                return
+        if self.path in chezmoi.managed_dir_paths:
+            text = [
+                "The directory is managed, and does not exist on disk.",
+                f'Output from "chezmoi status {self.path}"',
+                f"{chezmoi.status(str(self.path))}",
+            ]
+            rich_log.write("\n".join(text))
+            return
 
-            except OSError as error:
-                text = Content(f"Error reading {self.path}: {error}")
-                self.write(text)
+        try:
+            with open(self.path, "rt", encoding="utf-8") as file:
+                file_content = file.read(150 * 1024)
+                if not file_content.strip():
+                    rich_log.write("File contains only whitespace")
+                else:
+                    rich_log.write(file_content + truncated)
+
+        except IsADirectoryError:
+            rich_log.write(f"Directory: {self.path}")
+            return
+
+        except UnicodeDecodeError:
+            text = f"{self.path} cannot be decoded as UTF-8."
+            rich_log.write(f"{self.path} cannot be decoded as UTF-8.")
+            return
+
+        except OSError as error:
+            text = Content(f"Error reading {self.path}: {error}")
+            rich_log.write(text)
 
     def watch_path(self) -> None:
         if self.path is not None:
-            self.clear()
-            self.on_mount()
-            self.border_title = f" {self.path.relative_to(chezmoi.dest_dir)} "
-        else:
-            self.border_title = " no file selected "
+            self.query_one(RichLog).clear()
+            self.update_path_view(self.path)
 
 
-class StaticDiff(Static):
+class DiffView(Container):
 
-    def __init__(self, file_path: Path, apply: bool) -> None:
-        self.file_path = file_path
-        self.apply = apply
-        super().__init__()
+    diff_spec: reactive[tuple[Path, str] | None] = reactive(None, init=False)
 
-    def on_mount(self) -> None:
+    # override property from ScrollableContainer to allow maximizing
+    @property
+    def allow_maximize(self) -> bool:
+        return True
 
-        diff_output = (
+    def compose(self) -> ComposeResult:
+        with ScrollableContainer():
+            yield Static("Click a file to see its diff")
+
+    def watch_diff_spec(self) -> None:
+        assert self.diff_spec is not None and isinstance(self.diff_spec, tuple)
+        static_diff = self.query_exactly_one(Static)
+
+        diff_output: list[str]
+        if self.diff_spec[1] == "apply":
+            if self.diff_spec[0] not in chezmoi.status_paths["apply_files"]:
+                print(f"{chezmoi.status_paths["apply_files"]}")
+                static_diff.update(
+                    Content("\n").join(
+                        [
+                            f"No diff available for {self.diff_spec[0]}",
+                            "File not in chezmoi status output.",
+                        ]
+                    )
+                )
+                return
+            else:
+                diff_output = chezmoi.apply_diff(str(self.diff_spec[0]))
+        elif self.diff_spec[1] == "re-add":
+            if self.diff_spec[0] not in chezmoi.status_paths["re_add_files"]:
+                static_diff.update(
+                    Content("\n").join(
+                        [
+                            f"No diff available for {self.diff_spec[0]}",
+                            "File not in chezmoi status output.",
+                        ]
+                    )
+                )
+                return
+            else:
+                diff_output = chezmoi.re_add_diff(str(self.diff_spec[0]))
+
+        if not diff_output:
+            static_diff.update(
+                Content(
+                    f"chezmoi diff {self.diff_spec[0]} returned no output."
+                )
+            )
+            return
+
+        diff_lines: list[str] = [
             line
-            for line in chezmoi.diff(str(self.file_path), self.apply)
+            for line in diff_output
             if line.strip()  # filter lines containing only spaces
             and line[0] in "+- "
             and not line.startswith(("+++", "---"))
-        )
+        ]
 
+        if diff_output:
+            max_len = max(len(line) for line in diff_output)
+        else:
+            max_len = 0
+        padded_lines = [line.ljust(max_len) for line in diff_lines]
         colored_lines: list[Content] = []
-        for line in diff_output:
-            content = Content(line)
+        for line in padded_lines:
             if line.startswith("-"):
-                colored_lines.append(content.stylize("$text-error"))
+                colored_lines.append(Content(line).stylize("$text-error"))
             elif line.startswith("+"):
-                colored_lines.append(content.stylize("$text-success"))
+                colored_lines.append(Content(line).stylize("$text-success"))
             else:
+                content = Content("\u2022" + line)  # bullet •
                 colored_lines.append(content.stylize("dim"))
-
-        self.update(Content("\n").join(colored_lines))
+        static_diff.update(Content("\n").join(colored_lines))
 
 
 class FilteredDirTree(DirectoryTree):
 
-    include_unmanaged_dirs = reactive(False)
-    filter_unwanted = reactive(False)
+    unmanaged_dirs = reactive(False)
+    unwanted = reactive(False)
 
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
         managed_dirs = chezmoi.managed_dir_paths
         managed_files = chezmoi.managed_file_paths
 
         # Switches: Red - Green (default)
-        if not self.include_unmanaged_dirs and not self.filter_unwanted:
+        if not self.unmanaged_dirs and not self.unwanted:
             return (
                 p
                 for p in paths
@@ -172,14 +243,14 @@ class FilteredDirTree(DirectoryTree):
                 )
             )
         # Switches: Green - Red
-        elif self.include_unmanaged_dirs and not self.filter_unwanted:
+        elif self.unmanaged_dirs and not self.unwanted:
             return (
                 p
                 for p in paths
                 if p not in managed_files and not self.is_unwanted_path(p)
             )
         # Switches: Red - Green
-        elif not self.include_unmanaged_dirs and self.filter_unwanted:
+        elif not self.unmanaged_dirs and self.unwanted:
             return (
                 p
                 for p in paths
@@ -194,7 +265,7 @@ class FilteredDirTree(DirectoryTree):
                 or (p.is_dir() and p in managed_dirs)
             )
         # Switches: Green - Green, include all unmanaged paths
-        elif self.include_unmanaged_dirs and self.filter_unwanted:
+        elif self.unmanaged_dirs and self.unwanted:
             return (
                 p
                 for p in paths
@@ -222,9 +293,9 @@ class NodeData:
     status: str
 
 
-class ManagedTree(Tree[NodeData]):
+class ManagedTree(Vertical):
 
-    include_unchanged_files: reactive[bool] = reactive(False, init=False)
+    unchanged: reactive[bool] = reactive(False, init=False)
 
     # TODO: default color should be updated on theme change
     node_colors = {
@@ -240,22 +311,32 @@ class ManagedTree(Tree[NodeData]):
         status_dirs: dict[Path, str],
         **kwargs,
     ) -> None:
-        super().__init__(
-            label="initial root", classes="any-tree managed-tree", **kwargs
-        )
         self.status_files: dict[Path, str] = status_files
         self.status_dirs: dict[Path, str] = status_dirs
+        super().__init__(**kwargs)
+
+    def compose(self) -> ComposeResult:
+        with Horizontal(id="tree_buttons_horizontal"):
+            with Vertical(classes="tree-button-vertical"):
+                yield Button("Tree", id="tree_button_tree")
+            with Vertical(classes="tree-button-vertical"):
+                yield Button("Status", id="tree_button_status")
+        yield Tree(label="root", classes="managed-tree")
 
     def on_mount(self) -> None:
-        print(f"Mounting {self.__class__.__name__} tree")
-        self.show_root = False
-        self.border_title = f" {chezmoi.dest_dir} "
+        tree_buttons = self.query_one("#tree_buttons_horizontal", Horizontal)
+        tree_buttons.border_subtitle = f"{chezmoi.dest_dir}{os.sep}"
+
+        tree = self.query_exactly_one(Tree)
+        tree.guide_depth = 2
+        if tree.root.data is None:
+            tree.root.data = NodeData(
+                path=chezmoi.dest_dir, found=True, is_file=False, status="R"
+            )
         # give root node status R so it's not considered having status "X"
-        self.root.data = NodeData(
-            path=chezmoi.dest_dir, found=True, is_file=False, status="R"
-        )
-        self.root.label = str(chezmoi.dest_dir)
-        self.root.expand()
+        tree.show_root = False
+        self.add_nodes(tree.root)
+        self.add_leaves(tree.root)
 
     def show_dir_node(self, node_data: NodeData) -> bool:
         """Check if a directory node should be displayed according to the
@@ -277,11 +358,11 @@ class ManagedTree(Tree[NodeData]):
         ]
 
         # include_unchanged_files=False
-        if not self.include_unchanged_files:
+        if not self.unchanged:
             return any(f in self.status_files for f in managed_in_dir_tree)
 
         # include_unchanged_files=False
-        elif self.include_unchanged_files:
+        elif self.unchanged:
             return bool(managed_in_dir_tree)
         return False
 
@@ -292,18 +373,17 @@ class ManagedTree(Tree[NodeData]):
             raise ValueError(
                 f"Expected a file node, got {node_data.path} instead."
             )
-
         # include_unchanged_files=False
-        if not self.include_unchanged_files:
+        if not self.unchanged:
             return node_data.status != "X"
         # include_unchanged_files=True
         return True
 
-    def get_expanded_nodes(self) -> list[TreeNode]:
+    def get_expanded_nodes(self, root_node: TreeNode) -> list[TreeNode]:
         """Recursively get all current expanded nodes in the tree."""
 
         def collect_nodes(node: TreeNode) -> list[TreeNode]:
-            nodes = [self.root]
+            nodes = [root_node]
             for child in node.children:
                 if child.is_expanded:
                     nodes.append(child)
@@ -311,10 +391,9 @@ class ManagedTree(Tree[NodeData]):
                     nodes.extend(collect_nodes(child))
             return nodes
 
-        return collect_nodes(self.root)
+        return collect_nodes(root_node)
 
     def style_label(self, node_data: NodeData) -> Text:
-        assert isinstance(node_data, NodeData)
         """Color node based on being a file, directary and its status."""
         italic = False if node_data.found else True
         if node_data.status != "X":  # files with a status
@@ -329,7 +408,6 @@ class ManagedTree(Tree[NodeData]):
 
     def add_leaves(self, tree_node: TreeNode) -> None:
         """Adds a leaf for each file in the tree_node.data.path directory,"""
-
         current_leafs = [
             leaf
             for leaf in tree_node.children
@@ -386,82 +464,32 @@ class ManagedTree(Tree[NodeData]):
                 tree_node.add(label=node_label, data=node_data)
 
     def on_tree_node_expanded(self, event: Tree.NodeExpanded) -> None:
-        print(f"Node expanded: {event.node.data}")
+        if not isinstance(event.node.data, NodeData):
+            return
         self.add_nodes(event.node)
         self.add_leaves(event.node)
 
-    def watch_include_unchanged_files(self) -> None:
+    def watch_unchanged(self) -> None:
         """Update the visible nodes in the tree based on the current filter
         settings."""
-        expanded_nodes = self.get_expanded_nodes()
+        root_node = self.query_exactly_one(Tree).root
+        expanded_nodes = self.get_expanded_nodes(root_node)
         for node in expanded_nodes:
             self.add_nodes(node)
             self.add_leaves(node)
 
 
-class ChezmoiStatus(VerticalScroll):
+class FilterSwitch(HorizontalGroup):
+    """A switch, a label and a tooltip."""
 
-    def __init__(self, apply: bool, **kwargs) -> None:
-        # if true, adds apply status to the list, otherwise "re-add" status
-        self.apply = apply
-        self.status_items: list[Collapsible] = []
-        super().__init__(**kwargs)
+    def __init__(self, switch_data: dict[str, str], switch_id: str) -> None:
+        super().__init__(classes="filter-container")
+        self.switch_data = switch_data
+        self.switch_id = switch_id
 
     def compose(self) -> ComposeResult:
-        yield Collapsible(*self.status_items, title="Chezmoi Status")
-
-    def on_mount(self) -> None:
-        # status can be a space so not using str.split() or str.strip()
-        status_paths = (
-            chezmoi.status_paths["apply_files"]
-            if self.apply
-            else chezmoi.status_paths["re_add_files"]
+        yield Switch(id=self.switch_id, classes="filter-switch")
+        yield Label(self.switch_data["label"], classes="filter-label")
+        yield Label("(?)", classes="filter-tooltip").with_tooltip(
+            tooltip=self.switch_data["tooltip"]
         )
-
-        for file_path, status_code in status_paths.items():
-            rel_path = str(file_path.relative_to(chezmoi.dest_dir))
-            title = f"{status_info['code name'][status_code]} {rel_path}"
-            self.status_items.append(
-                Collapsible(StaticDiff(file_path, self.apply), title=title)
-            )
-        self.refresh(recompose=True)
-
-
-class FilterBar(VerticalGroup):
-
-    class FilterSwitch(HorizontalGroup):
-        """A switch, a label and a tooltip."""
-
-        def __init__(
-            self, switch_data: dict[str, str], switch_id: str
-        ) -> None:
-            super().__init__(classes="filter-container")
-            self.switch_data = switch_data
-            self.switch_id = switch_id
-
-        def compose(self) -> ComposeResult:
-            yield Switch(id=self.switch_id, classes="filter-switch")
-            yield Label(self.switch_data["label"], classes="filter-label")
-            yield Label("(?)", classes="filter-tooltip").with_tooltip(
-                tooltip=self.switch_data["tooltip"]
-            )
-
-    def __init__(self, filter_key: str, tab_filters_id: str) -> None:
-        self.filter_key = filter_key
-        self.tab_switches: list[HorizontalGroup] = []
-        super().__init__(id=tab_filters_id)
-
-    def on_mount(self) -> None:
-        self.tab_switch_data = {
-            f"{self.filter_key}_{key}": value
-            for key, value in filter_switch_data.items()
-            if self.filter_key in value.get("filter_keys", [])
-        }
-        self.tab_switches = [
-            FilterBar.FilterSwitch(switch_data, switch_id)
-            for switch_id, switch_data in self.tab_switch_data.items()
-        ]
-        self.refresh(recompose=True)
-
-    def compose(self) -> ComposeResult:
-        yield from self.tab_switches
