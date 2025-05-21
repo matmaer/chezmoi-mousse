@@ -67,16 +67,13 @@ class PathView(Container):
             yield ConfigDump()
 
     def compose(self) -> ComposeResult:
-        if self.path is None:
-            yield self.Greeter()
-        else:
-            yield RichLog(
-                id="file_preview",
-                classes="file-preview",
-                auto_scroll=False,
-                wrap=False,
-                highlight=True,
-            )
+        yield RichLog(
+            id="file_preview",
+            classes="file-preview",
+            auto_scroll=False,
+            wrap=False,
+            highlight=True,
+        )
 
     def update_path_view(self, path: Path) -> None:
         assert isinstance(self.path, Path)
