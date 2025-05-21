@@ -86,9 +86,10 @@ class Chezmoi:
         "dump_config": ["dump-config", "--format=json"],
         "git_log": [
             "git",
-            "log",
             "--",
-            "-400",
+            "log",
+            "--follow",
+            "--max-count=400",
             "--no-color",
             "--no-decorate",
             "--date-order",
