@@ -58,7 +58,6 @@ class Chezmoi:
     cat_config: InputOutput
     doctor: InputOutput
     dump_config: InputOutput
-    git_log: InputOutput
     ignored: InputOutput
     managed_files: InputOutput
     managed_dirs: InputOutput
@@ -84,17 +83,6 @@ class Chezmoi:
         "cat_config": ["cat-config"],
         "doctor": ["doctor"],
         "dump_config": ["dump-config", "--format=json"],
-        "git_log": [
-            "git",
-            "--",
-            "log",
-            "--max-count=400",
-            "--no-color",
-            "--no-decorate",
-            "--date-order",
-            "--no-expand-tabs",
-            "--format=%ar by %cn;%s",
-        ],
         "ignored": ["ignored"],
         "managed_dirs": ["managed", "--path-style=absolute", "--include=dirs"],
         "managed_files": [
@@ -186,6 +174,42 @@ class Chezmoi:
                 self.status_dirs.list_out, apply=False
             ),
         }
+
+    @property
+    def git_log(self) -> list[str]:
+        long_command = self.base + [
+            "git",
+            "--",
+            "log",
+            "--max-count=400",
+            "--no-color",
+            "--no-decorate",
+            "--date-order",
+            "--no-expand-tabs",
+            "--format=%ar by %cn;%s",
+        ]
+        return subprocess_run(long_command).splitlines()
+
+    def git_log_path(self, source_path: str) -> list[str]:
+        # source_dir = chezmoi.dump_config["sourceDir"]
+        long_command = (
+            self.base
+            + [
+                "git",
+                "--",
+                "log",
+                "--max-count=400",
+                "--no-color",
+                "--no-decorate",
+                "--date-order",
+                "--no-expand-tabs",
+                "--format=%ar by %cn;%s",
+                "--follow",
+                "--",
+                source_path,
+            ],
+        )
+        return subprocess_run(long_command).splitlines()
 
     def managed_file_paths_in_dir(self, dir_path: Path) -> list[Path]:
         return [f for f in self.managed_file_paths if f.parent == dir_path]
