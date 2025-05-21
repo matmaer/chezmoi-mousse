@@ -26,6 +26,10 @@
   width: 33%;
   max-width: 1fr;
 }
+#re_add_tab_left {
+  width: 33%;
+  max-width: 1fr;
+}
 
 Button {
   border: none;

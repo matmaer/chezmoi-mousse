@@ -9,7 +9,7 @@ from chezmoi_mousse.main_tabs import (
     ApplyTab,
     DiagramTab,
     DoctorTab,
-    # ReAddTab,
+    ReAddTab,
 )
 from chezmoi_mousse.splash import LoadingScreen
 
@@ -21,8 +21,8 @@ class MainScreen(Screen):
         with TabbedContent(id="main_tabbed_content"):
             with TabPane("Apply"):
                 yield ApplyTab(id="apply_tab")
-            # with TabPane("Re-Add"):
-            #     yield Lazy(ReAddTab(id="re_add_tab"))
+            with TabPane("Re-Add"):
+                yield Lazy(ReAddTab(id="re_add_tab"))
             with TabPane("Add"):
                 yield Lazy(AddTab(id="add_tab"))
             with TabPane("Doctor"):

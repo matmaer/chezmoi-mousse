@@ -311,9 +311,6 @@ class ManagedTree(Vertical):
 
     def compose(self) -> ComposeResult:
         with Horizontal(id="tree_buttons_horizontal"):
-            # hack to center everything above the variable width of the tree
-            # including the root label with auto justified horizontal bar
-            # padding which style matches the tab underlines on the right
             with Vertical(classes="tree-button-vertical"):
                 yield Button("Tree", id="tree_button_tree")
             with Vertical(classes="tree-button-vertical"):
@@ -474,44 +471,6 @@ class ManagedTree(Vertical):
         for node in expanded_nodes:
             self.add_nodes(node)
             self.add_leaves(node)
-
-
-# class ChezmoiStatus(Vertical):
-
-#     apply_status: reactive[bool | None] | None = reactive(None, init=False)
-
-#     def compose(self) -> ComposeResult:
-#         with Collapsible(title="Chezmoi Status", id="chezmoi_status_group"):
-#             yield from self.status_items
-
-#     def on_mount(self) -> None:
-#         # status can be a space so not using str.split() or str.strip()
-#         status_paths: dict[Path, str] = (
-#             chezmoi.status_paths["apply_files"]
-#             if self.apply_status
-#             else chezmoi.status_paths["re_add_files"]
-#         )
-
-#         # write dict comprehension to create a dict with the file path as key
-#         # and as value that the command returns, which is a list of strings
-#         # depending on the apply_status bool, to determine calling chezmoi.apply_diff() or
-#         # chezmoi.re_add_diff()
-#         diff_results = {
-#             file_path: (
-#                 chezmoi.apply_diff(str(file_path))
-#                 if self.apply_status
-#                 else chezmoi.re_add_diff(str(file_path))
-#             )
-#             for file_path in status_paths
-#         }
-
-#         self.status_items = []
-#         for file_path, status_code in status_paths.items():
-#             title = f"{file_path.relative_to(chezmoi.dest_dir)}: {status_code}"
-#             static_diff = DiffView()
-#             static_diff.new_diff_lines = diff_results[file_path]
-#             self.status_items.append(Collapsible(static_diff, title=title))
-#         self.refresh(recompose=True)
 
 
 class FilterSwitch(HorizontalGroup):
