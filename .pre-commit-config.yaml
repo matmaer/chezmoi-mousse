@@ -1,6 +1,14 @@
 ---
 repos:
 
+  - repo: https://github.com/pre-commit/pygrep-hooks
+    rev: v1.10.0
+    hooks:
+      - id: python-check-blanket-noqa
+      - id: python-check-blanket-type-ignore
+      - id: text-unicode-replacement-char
+      - id: python-use-type-annotations
+
   - repo: https://github.com/jendrikseipp/vulture
     rev: 'v2.14'
     hooks:
