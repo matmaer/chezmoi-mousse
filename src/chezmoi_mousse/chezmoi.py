@@ -31,9 +31,7 @@ class InputOutput:
 
     @property
     def label(self):
-        return " ".join(
-            [w for w in self.long_command if not w.startswith("-")]
-        )
+        return f'chezmoi {self.arg_id.replace("_", " ")}'
 
     def __post_init__(self) -> None:
         self.list_out = self.std_out.splitlines()
@@ -60,10 +58,11 @@ class Chezmoi:
     cat_config: InputOutput
     doctor: InputOutput
     dump_config: InputOutput
-    git_log: InputOutput
     ignored: InputOutput
     managed_files: InputOutput
     managed_dirs: InputOutput
+    managed_files_source: InputOutput
+    managed_dirs_source: InputOutput
     status_dirs: InputOutput
     status_files: InputOutput
     template_data: InputOutput
@@ -84,22 +83,21 @@ class Chezmoi:
         "cat_config": ["cat-config"],
         "doctor": ["doctor"],
         "dump_config": ["dump-config", "--format=json"],
-        "git_log": [
-            "git",
-            "log",
-            "--",
-            "-400",
-            "--no-color",
-            "--no-decorate",
-            "--date-order",
-            "--no-expand-tabs",
-            "--format=%ar by %cn;%s",
-        ],
         "ignored": ["ignored"],
         "managed_dirs": ["managed", "--path-style=absolute", "--include=dirs"],
         "managed_files": [
             "managed",
             "--path-style=absolute",
+            "--include=files",
+        ],
+        "managed_dirs_source": [
+            "managed",
+            "--path-style=source-absolute",
+            "--include=dirs",
+        ],
+        "managed_files_source": [
+            "managed",
+            "--path-style=source-absolute",
             "--include=files",
         ],
         "status_dirs": ["status", "--path-style=absolute", "--include=dirs"],
@@ -114,7 +112,7 @@ class Chezmoi:
         for arg_id, sub_cmd in self.subs.items():
             long_cmd = self.base + sub_cmd
             self.long_commands[arg_id] = long_cmd
-            setattr(self, arg_id, InputOutput(long_cmd))
+            setattr(self, arg_id, InputOutput(long_cmd, arg_id=arg_id))
 
     @property
     def autoadd_enabled(self) -> bool:
@@ -135,6 +133,14 @@ class Chezmoi:
     @property
     def managed_file_paths(self) -> list[Path]:
         return [Path(p) for p in self.managed_files.list_out]
+
+    @property
+    def managed_dir_paths_source(self) -> list[Path]:
+        return [Path(p) for p in self.managed_dirs_source.list_out]
+
+    @property
+    def managed_file_paths_source(self) -> list[Path]:
+        return [Path(p) for p in self.managed_files_source.list_out]
 
     @property
     def status_paths(self) -> dict[str, dict[Path, str]]:
@@ -168,6 +174,42 @@ class Chezmoi:
                 self.status_dirs.list_out, apply=False
             ),
         }
+
+    @property
+    def git_log(self) -> list[str]:
+        long_command = self.base + [
+            "git",
+            "--",
+            "log",
+            "--max-count=400",
+            "--no-color",
+            "--no-decorate",
+            "--date-order",
+            "--no-expand-tabs",
+            "--format=%ar by %cn;%s",
+        ]
+        return subprocess_run(long_command).splitlines()
+
+    def git_log_path(self, source_path: str) -> list[str]:
+        # source_dir = chezmoi.dump_config["sourceDir"]
+        long_command = (
+            self.base
+            + [
+                "git",
+                "--",
+                "log",
+                "--max-count=400",
+                "--no-color",
+                "--no-decorate",
+                "--date-order",
+                "--no-expand-tabs",
+                "--format=%ar by %cn;%s",
+                "--follow",
+                "--",
+                source_path,
+            ],
+        )
+        return subprocess_run(long_command).splitlines()
 
     def managed_file_paths_in_dir(self, dir_path: Path) -> list[Path]:
         return [f for f in self.managed_file_paths if f.parent == dir_path]
