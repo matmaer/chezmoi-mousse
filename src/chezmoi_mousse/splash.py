@@ -24,6 +24,8 @@ fade.extend([color.hex for color in gradient.colors])
 line_styles = deque([Style(color=color, bold=True) for color in fade])
 fade_height = len(SPLASH)
 fade_width = len(max(SPLASH, key=len))
+log_height = len(chezmoi.long_commands)
+log_width = 32
 
 
 class AnimatedFade(Static):
@@ -41,23 +43,32 @@ class AnimatedFade(Static):
         return Strip([Segment(SPLASH[y], style=line_styles[y])])
 
     def on_mount(self) -> None:
-        self.set_interval(interval=0.05, callback=self.refresh)
+        self.set_interval(interval=0.04, callback=self.refresh)
+
+
+ANIMATED_FADE = AnimatedFade()
+RICH_LOG = RichLog(id="loading_screen_log")
+LOG_PADDING_WIDTH = 32
+RICH_LOG.styles.height = len(chezmoi.long_commands) + 1
+RICH_LOG.styles.width = LOG_PADDING_WIDTH + 14
 
 
 class LoadingScreen(Screen):
 
     def __init__(self) -> None:
-        self.animated_fade = AnimatedFade()
+        self.animated_fade = ANIMATED_FADE
+        self.rich_log = RICH_LOG
         self.dest_dir: Path
         super().__init__(id="loading_screen")
+        self.set_interval(interval=0.6, callback=self.all_workers_finished)
 
     def compose(self) -> ComposeResult:
         with Middle():
             yield Center(self.animated_fade)
-            yield Center(RichLog(id="loading_screen_log"))
+            yield Center(self.rich_log)
 
     def log_text(self, log_label: str) -> None:
-        padding = 32 - len(log_label)
+        padding = LOG_PADDING_WIDTH - len(log_label)
 
         def update_log():
             log_text = f"{log_label} {'.' * padding} loaded"
@@ -85,11 +96,5 @@ class LoadingScreen(Screen):
 
     def on_mount(self) -> None:
 
-        to_process = chezmoi.long_commands.copy()
-        self.run_io_worker("dump_config")
-        to_process.pop("dump_config")
-
-        for arg_id in to_process:
+        for arg_id in chezmoi.long_commands:
             self.run_io_worker(arg_id)
-
-        self.set_interval(interval=0.4, callback=self.all_workers_finished)
