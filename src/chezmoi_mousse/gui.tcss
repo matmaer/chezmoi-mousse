@@ -127,12 +127,6 @@ ManagedTree {
     margin: 2 1 2 1;
     width: auto;
   }
-
-  #continue_button {
-    border: none;
-    color: $accent;
-    text-style: none;
-  }
 }
 
 /******************************************************************/
