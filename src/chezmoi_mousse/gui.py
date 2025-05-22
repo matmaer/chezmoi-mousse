@@ -12,6 +12,7 @@ from chezmoi_mousse.main_tabs import (
     ReAddTab,
 )
 from chezmoi_mousse.splash import LoadingScreen
+from chezmoi_mousse import BURGER
 
 
 class MainScreen(Screen):
@@ -27,7 +28,7 @@ class MainScreen(Screen):
     ]
 
     def compose(self) -> ComposeResult:
-        yield Header()
+        yield Header(icon=BURGER)  # hamburger icon
         with TabbedContent(id="main_tabbed_content"):
             with TabPane("Apply", id="apply_tab_pane"):
                 yield ApplyTab(id="apply_tab")
