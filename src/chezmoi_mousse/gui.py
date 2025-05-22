@@ -1,10 +1,10 @@
+from textual import on
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.lazy import Lazy
 from textual.screen import Screen
 from textual.theme import Theme
 from textual.widgets import Footer, Header, TabbedContent, TabPane
-
 from chezmoi_mousse.main_tabs import (
     AddTab,
     ApplyTab,
@@ -51,17 +51,21 @@ class MainScreen(Screen):
     def compose(self) -> ComposeResult:
         yield Header()
         with TabbedContent(id="main_tabbed_content"):
-            with TabPane("Apply"):
+            with TabPane("Apply", id="apply_tab_pane"):
                 yield ApplyTab(id="apply_tab")
-            with TabPane("Re-Add"):
+            with TabPane("Re-Add", id="re_add_pane"):
                 yield Lazy(ReAddTab(id="re_add_tab"))
-            with TabPane("Add"):
+            with TabPane("Add", id="add_tab_pane"):
                 yield Lazy(AddTab(id="add_tab"))
-            with TabPane("Doctor"):
+            with TabPane("Doctor", id="doctor_tab_pane"):
                 yield Lazy(DoctorTab(id="doctor_tab"))
-            with TabPane("Diagram"):
+            with TabPane("Diagram", id="diagram_tab_pane"):
                 yield Lazy(DiagramTab(id="diagram_tab"))
         yield Footer()
+
+    @on(TabbedContent.TabActivated)
+    def handle_tab_activated(self, event: TabbedContent.TabActivated) -> None:
+        print(f"event: {event.pane.id}")
 
     def action_apply_path(self) -> None:
         self.notify("will apply path")
