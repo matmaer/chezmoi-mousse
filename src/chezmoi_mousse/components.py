@@ -9,13 +9,7 @@ from rich.style import Style
 from rich.text import Text
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import (
-    Container,
-    Horizontal,
-    HorizontalGroup,
-    Vertical,
-    ScrollableContainer,
-)
+from textual.containers import Container, Horizontal, HorizontalGroup, Vertical
 from textual.content import Content
 from textual.reactive import reactive
 from textual.widgets import (
@@ -181,7 +175,7 @@ class PathView(Container):
             self.update_path_view(self.path)
 
 
-class DiffView(Container):
+class DiffView(Horizontal):
 
     BINDINGS = [Binding(key="M,m", action="maximize", description="maximize")]
 
@@ -193,8 +187,7 @@ class DiffView(Container):
         return True
 
     def compose(self) -> ComposeResult:
-        with ScrollableContainer():
-            yield Static("Click a file to see its diff")
+        yield Static("Click a file to see its diff")
 
     def watch_diff_spec(self) -> None:
         assert self.diff_spec is not None and isinstance(self.diff_spec, tuple)

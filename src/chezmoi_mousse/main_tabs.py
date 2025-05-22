@@ -4,7 +4,6 @@ import os
 from pathlib import Path
 
 from rich.text import Text
-from textual import on
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.events import Click
@@ -78,9 +77,9 @@ class ApplyTab(Horizontal):
                     switch_data=filter_switch_data["unchanged"],
                 )
         with TabbedContent(id="apply_tabs", classes="path-view-tabs"):
-            with TabPane("Content"):
+            with TabPane("Content", id="content_tab_pane"):
                 yield PathView(id="apply_path_view")
-            with TabPane("Diff"):
+            with TabPane("Diff", id="diff_tab_pane"):
                 yield DiffView(id="apply_diff_view")
 
     def on_tree_node_selected(self, event: Tree.NodeSelected) -> None:
@@ -93,10 +92,6 @@ class ApplyTab(Horizontal):
             event.node.data.path,
             "apply",
         )
-
-    @on(TabbedContent.TabActivated)
-    def handle_tab_activated(self, event: TabbedContent.TabActivated) -> None:
-        print(f"event: {event.pane.id}")
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
         event.stop()
