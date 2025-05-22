@@ -8,6 +8,7 @@ from pathlib import Path
 from rich.style import Style
 from rich.text import Text
 from textual.app import ComposeResult
+from textual.binding import Binding
 from textual.containers import (
     Container,
     Horizontal,
@@ -108,6 +109,8 @@ class AutoWarning(Static):
 class PathView(Container):
     """RichLog widget to display the content of a file with highlighting."""
 
+    BINDINGS = [Binding(key="M,m", action="maximize", description="maximize")]
+
     path: reactive[Path | None] = reactive(None, init=False)
 
     def compose(self) -> ComposeResult:
@@ -180,6 +183,8 @@ class PathView(Container):
 
 class DiffView(Container):
 
+    BINDINGS = [Binding(key="M,m", action="maximize", description="maximize")]
+
     diff_spec: reactive[tuple[Path, str] | None] = reactive(None, init=False)
 
     # override property from ScrollableContainer to allow maximizing
@@ -198,7 +203,6 @@ class DiffView(Container):
         diff_output: list[str]
         if self.diff_spec[1] == "apply":
             if self.diff_spec[0] not in chezmoi.status_paths["apply_files"]:
-                print(f"{chezmoi.status_paths["apply_files"]}")
                 static_diff.update(
                     Content("\n").join(
                         [

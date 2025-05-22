@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 
 from rich.text import Text
+from textual import on
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.events import Click
@@ -54,6 +55,15 @@ from chezmoi_mousse.config import filter_switch_data, pw_mgr_info
 
 class ApplyTab(Horizontal):
 
+    BINDINGS = [
+        Binding(
+            key="W,w",
+            action="apply_path",
+            description="write-dotfile",
+            tooltip="write to dotfiles from your chezmoi repository",
+        )
+    ]
+
     def compose(self) -> ComposeResult:
         with Vertical(id="apply_tab_left"):
             yield ManagedTree(
@@ -84,13 +94,29 @@ class ApplyTab(Horizontal):
             "apply",
         )
 
+    @on(TabbedContent.TabActivated)
+    def handle_tab_activated(self, event: TabbedContent.TabActivated) -> None:
+        print(f"event: {event.pane.id}")
+
     def on_switch_changed(self, event: Switch.Changed) -> None:
         event.stop()
         if event.switch.id == "apply_tab_unchanged":
             self.query_one("#apply_tree", ManagedTree).unchanged = event.value
 
+    def action_apply_path(self) -> None:
+        self.notify("will apply path")
+
 
 class ReAddTab(Horizontal):
+
+    BINDINGS = [
+        Binding(
+            key="A,a",
+            action="re_add_path",
+            description="re-add-chezmoi",
+            tooltip="overwrite chezmoi repository with your current dotfiles",
+        )
+    ]
 
     def compose(self) -> ComposeResult:
         with Vertical(id="re_add_tab_left"):
@@ -127,8 +153,20 @@ class ReAddTab(Horizontal):
         if event.switch.id == "re_add_tab_unchanged":
             self.query_one("#re_add_tree", ManagedTree).unchanged = event.value
 
+    def action_re_add_path(self) -> None:
+        self.notify("will re-add path")
+
 
 class AddTab(Horizontal):
+
+    BINDINGS = [
+        Binding(
+            key="A,a",
+            action="add_path",
+            description="chezmoi-add",
+            tooltip="add new file to your chezmoi repository",
+        )
+    ]
 
     class FilteredDirTree(DirectoryTree):
 
@@ -274,6 +312,12 @@ class AddTab(Horizontal):
         elif event.switch.id == "add_tab_unwanted":
             tree.unwanted = event.value
             tree.reload()
+
+    def action_add_path(self) -> None:
+        cursor_node = self.query_one(
+            "#add_tree", AddTab.FilteredDirTree
+        ).cursor_node
+        self.notify(f"will add {cursor_node}")
 
 
 class DoctorTab(VerticalScroll):

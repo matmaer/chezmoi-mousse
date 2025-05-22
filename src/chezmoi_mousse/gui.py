@@ -1,4 +1,3 @@
-from textual import on
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.lazy import Lazy
@@ -18,33 +17,12 @@ from chezmoi_mousse.splash import LoadingScreen
 class MainScreen(Screen):
 
     BINDINGS = [
-        Binding(
-            key="W,w",
-            action="apply_path",
-            description="write-dotfile",
-            tooltip="write to dotfiles from your chezmoi repository",
-        ),
-        Binding(
-            key="A,a",
-            action="re_add_path",
-            description="re-add-chezmoi",
-            tooltip="overwrite chezmoi repository with your current dotfiles",
-        ),
-        Binding(
-            key="A,a",
-            action="add_path",
-            description="chezmoi-add",
-            tooltip="add new file to your chezmoi repository",
-        ),
         Binding(key="C,c", action="open_config", description="chezmoi-config"),
         Binding(
             key="G,g",
             action="git_log",
             description="show-git-log",
             tooltip="git log from your chezmoi repository",
-        ),
-        Binding(
-            key="escape", action="dismiss", description="close", show=False
         ),
     ]
 
@@ -62,26 +40,6 @@ class MainScreen(Screen):
             with TabPane("Diagram", id="diagram_tab_pane"):
                 yield Lazy(DiagramTab(id="diagram_tab"))
         yield Footer()
-
-    @on(TabbedContent.TabActivated)
-    def handle_tab_activated(self, event: TabbedContent.TabActivated) -> None:
-        print(f"event: {event.pane.id}")
-
-    def action_apply_path(self) -> None:
-        self.notify("will apply path")
-
-    def action_maximize(self) -> None:
-        """Maximize the window if focussed on the relevant pane."""
-        return
-
-    def action_add_path(self) -> None:
-        cursor_node = self.query_one(
-            "#add_tree", AddTab.FilteredDirTree
-        ).cursor_node
-        self.notify(f"will add {cursor_node}")
-
-    def action_re_add_path(self) -> None:
-        self.notify("will re-add path")
 
     def action_open_config(self) -> None:
         # TODO add condition depending on the tab
