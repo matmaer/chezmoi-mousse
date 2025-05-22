@@ -51,6 +51,7 @@ RICH_LOG = RichLog(id="loading_screen_log")
 LOG_PADDING_WIDTH = 32
 RICH_LOG.styles.height = len(chezmoi.long_commands) + 1
 RICH_LOG.styles.width = LOG_PADDING_WIDTH + 14
+DEST_DIR: Path
 
 
 class LoadingScreen(Screen):
@@ -58,7 +59,6 @@ class LoadingScreen(Screen):
     def __init__(self) -> None:
         self.animated_fade = ANIMATED_FADE
         self.rich_log = RICH_LOG
-        self.dest_dir: Path
         super().__init__(id="loading_screen")
         self.timer = self.set_interval(
             interval=0.5, callback=self.all_workers_finished
@@ -91,13 +91,13 @@ class LoadingScreen(Screen):
             if worker.group == "io_workers"
         ):
             self.timer.stop()
-            dest_dir = Path(chezmoi.dump_config.dict_out["destDir"])
-            chezmoi.dest_dir = dest_dir
-            log_label = f"destDir {dest_dir}"
+            DEST_DIR = Path(chezmoi.dump_config.dict_out["destDir"])
+            chezmoi.dest_dir = DEST_DIR
+            log_label = f"destDir {DEST_DIR}"
             padding = LOG_PADDING_WIDTH - len(log_label)
             log_text = f"{log_label} {'.' * padding} loaded"
             RICH_LOG.write(log_text)
-            # self.dismiss()
+            self.dismiss()
 
     def on_mount(self) -> None:
 
