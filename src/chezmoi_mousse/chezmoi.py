@@ -107,8 +107,11 @@ class Chezmoi:
 
     def __init__(self) -> None:
 
+        self.long_commands = {}
+
         for arg_id, sub_cmd in self.subs.items():
             long_cmd = self.base + sub_cmd
+            self.long_commands[arg_id] = long_cmd
             setattr(self, arg_id, InputOutput(long_cmd, arg_id=arg_id))
 
     @property
