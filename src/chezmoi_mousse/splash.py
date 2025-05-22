@@ -43,7 +43,7 @@ class AnimatedFade(Static):
         return Strip([Segment(SPLASH[y], style=line_styles[y])])
 
     def on_mount(self) -> None:
-        self.set_interval(interval=0.04, callback=self.refresh)
+        self.set_interval(interval=0.05, callback=self.refresh)
 
 
 ANIMATED_FADE = AnimatedFade()
@@ -60,7 +60,9 @@ class LoadingScreen(Screen):
         self.rich_log = RICH_LOG
         self.dest_dir: Path
         super().__init__(id="loading_screen")
-        self.set_interval(interval=0.6, callback=self.all_workers_finished)
+        self.timer = self.set_interval(
+            interval=0.5, callback=self.all_workers_finished
+        )
 
     def compose(self) -> ComposeResult:
         with Middle():
@@ -72,7 +74,7 @@ class LoadingScreen(Screen):
 
         def update_log():
             log_text = f"{log_label} {'.' * padding} loaded"
-            self.screen.query_exactly_one(RichLog).write(log_text)
+            RICH_LOG.write(log_text)
 
         self.app.call_from_thread(update_log)
 
@@ -81,9 +83,6 @@ class LoadingScreen(Screen):
         io_class = getattr(chezmoi, arg_id)
         io_class.update()
         self.log_text(io_class.label)
-        if arg_id == "dump_config":
-            self.dest_dir = Path(io_class.dict_out["destDir"])
-            self.log_text(f"destDir is {self.dest_dir}")
 
     def all_workers_finished(self) -> None:
         if all(
@@ -91,8 +90,14 @@ class LoadingScreen(Screen):
             for worker in self.app.workers
             if worker.group == "io_workers"
         ):
-            chezmoi.dest_dir = self.dest_dir
-            self.dismiss()
+            self.timer.stop()
+            dest_dir = Path(chezmoi.dump_config.dict_out["destDir"])
+            chezmoi.dest_dir = dest_dir
+            log_label = f"destDir {dest_dir}"
+            padding = LOG_PADDING_WIDTH - len(log_label)
+            log_text = f"{log_label} {'.' * padding} loaded"
+            RICH_LOG.write(log_text)
+            # self.dismiss()
 
     def on_mount(self) -> None:
 
