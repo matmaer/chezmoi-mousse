@@ -43,13 +43,6 @@ ManagedTree {
   border-top: inner $surface;
   border-bottom: inner $surface;
 
-  .filter-container {
-    background-tint: $surface;
-    background: $surface;
-    height: auto;
-    width: auto;
-  }
-
   & .switch--slider {
     border: none;
     color: $error-darken-3;
