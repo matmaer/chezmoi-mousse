@@ -23,9 +23,12 @@ gradient.colors.reverse()
 fade.extend([color.hex for color in gradient.colors])
 line_styles = deque([Style(color=color, bold=True) for color in fade])
 fade_height = len(SPLASH)
-fade_width = len(max(SPLASH, key=len))
-log_height = len(chezmoi.long_commands)
-log_width = 32
+fade_width = len(max(SPLASH, key=len)) - 2
+
+LOG_HEIGHT = len(chezmoi.long_commands)
+DEST_DIR: Path
+LOG_PADDING_WIDTH = 36
+LONG_COMMANDS = chezmoi.long_commands
 
 
 class AnimatedFade(Static):
@@ -34,6 +37,7 @@ class AnimatedFade(Static):
         super().__init__()
         self.styles.height = fade_height
         self.styles.width = fade_width
+        self.styles.margin = 2
 
     def render_lines(self, crop) -> list[Strip]:
         line_styles.rotate()
@@ -43,15 +47,15 @@ class AnimatedFade(Static):
         return Strip([Segment(SPLASH[y], style=line_styles[y])])
 
     def on_mount(self) -> None:
-        self.set_interval(interval=0.05, callback=self.refresh)
+        self.set_interval(interval=0.06, callback=self.refresh)
 
 
 ANIMATED_FADE = AnimatedFade()
+
 RICH_LOG = RichLog(id="loading_screen_log")
-LOG_PADDING_WIDTH = 32
-RICH_LOG.styles.height = len(chezmoi.long_commands) + 1
-RICH_LOG.styles.width = LOG_PADDING_WIDTH + 14
-DEST_DIR: Path
+RICH_LOG.styles.height = LOG_HEIGHT + 1
+RICH_LOG.styles.width = LOG_PADDING_WIDTH + 9
+RICH_LOG.styles.color = "#0053AA"
 
 
 class LoadingScreen(Screen):
@@ -59,9 +63,9 @@ class LoadingScreen(Screen):
     def __init__(self) -> None:
         self.animated_fade = ANIMATED_FADE
         self.rich_log = RICH_LOG
-        super().__init__(id="loading_screen")
+        super().__init__()
         self.timer = self.set_interval(
-            interval=0.5, callback=self.all_workers_finished
+            interval=0.7, callback=self.all_workers_finished
         )
 
     def compose(self) -> ComposeResult:
@@ -101,5 +105,5 @@ class LoadingScreen(Screen):
 
     def on_mount(self) -> None:
 
-        for arg_id in chezmoi.long_commands:
+        for arg_id in LONG_COMMANDS:
             self.run_io_worker(arg_id)

@@ -120,15 +120,6 @@ ManagedTree {
   min-width: 82;
 }
 
-#loading_screen {
-  #loading_screen_log {
-    color: $secondary;
-    height: 14;
-    margin: 2 1 2 1;
-    width: auto;
-  }
-}
-
 /******************************************************************/
 /* App default TCSS which are different than the textual defaults */
 /******************************************************************/
