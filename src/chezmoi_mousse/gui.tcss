@@ -8,16 +8,19 @@ ManagedTree {
     border-subtitle-color: $primary;
     border-subtitle-align: center;
     border-subtitle-style: bold;
+
     #tree_button_tree {
       max-width: 6;
       width: 6;
     }
+
     #tree_button_status {
       max-width: 8;
       width: 8;
     }
   }
 }
+
 .tree-button-vertical {
   align: center top;
   height: 1;
@@ -31,6 +34,7 @@ ManagedTree {
   width: 33%;
   max-width: 1fr;
 }
+
 #re_add_tab_left {
   width: 33%;
   max-width: 1fr;
@@ -46,7 +50,6 @@ ManagedTree {
   & .switch--slider {
     border: none;
     color: $error-darken-3;
-
   }
 
   .filter-switch {
@@ -71,7 +74,7 @@ ManagedTree {
 
   .filter-label {
     padding-right: 1;
-    # width: auto;
+    width: auto;
   }
 
   .filter-tooltip {
@@ -251,84 +254,86 @@ Tree {
 }
 
 
+/*
+Operate {
+  background-tint: $surface;
+  background: $surface;
+  border: thick $panel;
+  margin: 1 2 1 2;
 
-# Operate {
-#   background-tint: $surface;
-#   background: $surface;
-#   border: thick $panel;
-#   margin: 1 2 1 2;
+  & .operate-button {
+    border-top: heavy $primary;
+    border-bottom: none;
+    border-left: none;
+    border-right: none;
+    background-tint: $surface;
+    background: $surface;
+    color: $primary;
+    margin: 0 7 0 7;
+    width: 8;
+    text-style: none;
 
-#   & .operate-button {
-#     border-top: heavy $primary;
-#     border-bottom: none;
-#     border-left: none;
-#     border-right: none;
-#     background-tint: $surface;
-#     background: $surface;
-#     color: $primary;
-#     margin: 0 7 0 7;
-#     width: 8;
-#     text-style: none;
+    &:disabled {
+      text-opacity: 0.6;
+    }
 
-#     &:disabled {
-#       text-opacity: 0.6;
-#     }
+    &:focus {
+      border-top: heavy $primary-lighten-2;
+    }
 
-#     &:focus {
-#       border-top: heavy $primary-lighten-2;
-#     }
+    &:hover {
+      border-top: heavy $primary-lighten-3;
+      color: $accent-lighten-3;
+    }
 
-#     &:hover {
-#       border-top: heavy $primary-lighten-3;
-#       color: $accent-lighten-3;
-#     }
+    &.-active {
+      border-top: heavy $primary-lighten-2;
+    }
+  }
 
-#     &.-active {
-#       border-top: heavy $primary-lighten-2;
-#     }
-#   }
+  #button_container {
+    height: 3;
+    align: center bottom;
+    dock: bottom;
+  }
 
-#   #button_container {
-#     height: 3;
-#     align: center bottom;
-#     dock: bottom;
-#   }
+  & .operate-collapsible {
+    background-tint: $surface;
+    background: $surface;
+  }
 
-#   & .operate-collapsible {
-#     background-tint: $surface;
-#     background: $surface;
-#   }
+  & .operate-file-preview {
+    padding: 0;
+    margin-right: 1;
+    border: none;
+    offset: -1 0;
+  }
 
-#   & .operate-file-preview {
-#     padding: 0;
-#     margin-right: 1;
-#     border: none;
-#     offset: -1 0;
-#   }
+  & .operate-checkbox {
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: $surface;
+    background-tint: $surface;
 
-#   & .operate-checkbox {
-#     margin: 0;
-#     padding: 0;
-#     border: none;
-#     background: $surface;
-#     background-tint: $surface;
+    &>.toggle--button {
+      color: $error;
+      background: $surface;
+      background-tint: $surface;
+    }
 
-#     &>.toggle--button {
-#       color: $error;
-#       background: $surface;
-#       background-tint: $surface;
-#     }
+    &.-on>.toggle--button {
+      color: $success;
+    }
 
-#     &.-on>.toggle--button {
-#       color: $success;
-#     }
+    &:focus>.toggle--button {
+      text-style: none;
+    }
 
-#     &:focus>.toggle--button {
-#       text-style: none;
-#     }
+    &:hover>.toggle--button {
+      text-style: bold;
 
-#     &:hover>.toggle--button {
-#       text-style: bold;
-#     }
-#   }
-# }
+    }
+  }
+}
+*/
