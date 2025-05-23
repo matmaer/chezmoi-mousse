@@ -1,5 +1,5 @@
+from textual import on
 from textual.app import App, ComposeResult
-from textual.binding import Binding
 from textual.lazy import Lazy
 from textual.screen import Screen
 from textual.theme import Theme
@@ -10,6 +10,7 @@ from chezmoi_mousse.main_tabs import (
     DiagramTab,
     DoctorTab,
     ReAddTab,
+    LogTab,
 )
 from chezmoi_mousse.splash import LoadingScreen
 from chezmoi_mousse import BURGER
@@ -18,7 +19,7 @@ from chezmoi_mousse import BURGER
 class MainScreen(Screen):
 
     def compose(self) -> ComposeResult:
-        yield Header(icon=BURGER)  # hamburger icon
+        yield Header(icon=BURGER)
         with TabbedContent(id="main_tabbed_content"):
             with TabPane("Apply", id="apply_tab_pane"):
                 yield ApplyTab(id="apply_tab")
@@ -30,7 +31,14 @@ class MainScreen(Screen):
                 yield Lazy(DoctorTab(id="doctor_tab"))
             with TabPane("Diagram", id="diagram_tab_pane"):
                 yield Lazy(DiagramTab(id="diagram_tab"))
+            with TabPane("Log", id="log_tab_pane"):
+                yield LogTab(id="log_tab", highlight=True, max_lines=20000)
         yield Footer()
+
+    @on(TabbedContent.TabActivated)
+    def show_notification(self, event: TabbedContent.TabActivated) -> None:
+        event.stop()
+        self.notify(f"hi, I'm activated: {event.pane.id}")
 
 
 chezmoi_mousse_dark = Theme(
