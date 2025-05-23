@@ -3,14 +3,13 @@ from textual.app import App, ComposeResult
 from textual.lazy import Lazy
 from textual.screen import Screen
 from textual.theme import Theme
-from textual.widgets import Footer, Header, TabbedContent, TabPane
+from textual.widgets import Footer, Header, RichLog, TabbedContent, TabPane
 from chezmoi_mousse.main_tabs import (
     AddTab,
     ApplyTab,
     DiagramTab,
     DoctorTab,
     ReAddTab,
-    LogTab,
 )
 from chezmoi_mousse.splash import LoadingScreen
 from chezmoi_mousse import BURGER
@@ -31,14 +30,17 @@ class MainScreen(Screen):
                 yield Lazy(DoctorTab(id="doctor_tab"))
             with TabPane("Diagram", id="diagram_tab_pane"):
                 yield Lazy(DiagramTab(id="diagram_tab"))
-            with TabPane("Log", id="log_tab_pane"):
-                yield LogTab(id="log_tab", highlight=True, max_lines=20000)
+            with TabPane("RichLog", id="rich_log_tab_pane"):
+                yield RichLog(
+                    id="rich_log_tab", highlight=True, max_lines=20000
+                )
         yield Footer()
 
     @on(TabbedContent.TabActivated)
     def show_notification(self, event: TabbedContent.TabActivated) -> None:
         event.stop()
-        self.notify(f"hi, I'm activated: {event.pane.id}")
+        rich_log = self.query_one("#rich_log_tab", RichLog)
+        rich_log.write(f"hi, I'm activated: {event.pane.id}")
 
 
 chezmoi_mousse_dark = Theme(
