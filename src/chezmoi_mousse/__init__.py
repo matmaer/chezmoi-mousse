@@ -1,4 +1,4 @@
-BURGER = "\u2630"  # burger icon
+BURGER = "\u2261"  # burger icon
 GEAR = "\u2699"  # gear icon
 
 SPLASH = """\
