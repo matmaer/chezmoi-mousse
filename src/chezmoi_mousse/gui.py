@@ -1,10 +1,10 @@
+from textual import on
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.lazy import Lazy
 from textual.screen import Screen
 from textual.theme import Theme
-from textual.widgets import Footer, Header, TabbedContent, TabPane
-
+from textual.widgets import Footer, Header, RichLog, TabbedContent, TabPane
 from chezmoi_mousse.main_tabs import (
     AddTab,
     ApplyTab,
@@ -13,6 +13,7 @@ from chezmoi_mousse.main_tabs import (
     ReAddTab,
 )
 from chezmoi_mousse.splash import LoadingScreen
+from chezmoi_mousse import BURGER
 
 
 class MainScreen(Screen):
@@ -49,58 +50,29 @@ class MainScreen(Screen):
     ]
 
     def compose(self) -> ComposeResult:
-        yield Header()
+        yield Header(icon=BURGER)
         with TabbedContent(id="main_tabbed_content"):
-            with TabPane("Apply"):
+            with TabPane("Apply", id="apply_tab_pane"):
                 yield ApplyTab(id="apply_tab")
-            with TabPane("Re-Add"):
+            with TabPane("Re-Add", id="re_add_pane"):
                 yield Lazy(ReAddTab(id="re_add_tab"))
-            with TabPane("Add"):
+            with TabPane("Add", id="add_tab_pane"):
                 yield Lazy(AddTab(id="add_tab"))
-            with TabPane("Doctor"):
+            with TabPane("Doctor", id="doctor_tab_pane"):
                 yield Lazy(DoctorTab(id="doctor_tab"))
-            with TabPane("Diagram"):
+            with TabPane("Diagram", id="diagram_tab_pane"):
                 yield Lazy(DiagramTab(id="diagram_tab"))
+            with TabPane("RichLog", id="rich_log_tab_pane"):
+                yield RichLog(
+                    id="rich_log_tab", highlight=True, max_lines=20000
+                )
         yield Footer()
 
-    def action_apply_path(self) -> None:
-        self.notify("will apply path")
-
-    def action_maximize(self) -> None:
-        """Maximize the window if focussed on the relevant pane."""
-        return
-
-    def action_add_path(self) -> None:
-        cursor_node = self.query_one(
-            "#add_tree", AddTab.FilteredDirTree
-        ).cursor_node
-        self.notify(f"will add {cursor_node}")
-
-    def action_re_add_path(self) -> None:
-        self.notify("will re-add path")
-
-    def action_open_config(self) -> None:
-        # TODO add condition depending on the tab
-        self.app.push_screen(DoctorTab.ConfigDumpModal())
-
-    def action_git_log(self) -> None:
-        # TODO add condition depending on the tab
-        self.app.push_screen(DoctorTab.GitLogModal())
-
-
-chezmoi_mousse_dark = Theme(
-    name="chezmoi-mousse-dark",
-    dark=True,
-    accent="#F187FB",
-    background="#000000",
-    error="#ba3c5b",  # textual dark
-    foreground="#DEDAE1",
-    primary="#0178D4",  # textual dark
-    secondary="#004578",  # textual dark
-    surface="#101010",  # see also textual/theme.py
-    success="#4EBF71",  # textual dark
-    warning="#ffa62b",  # textual dark
-)
+    @on(TabbedContent.TabActivated)
+    def show_notification(self, event: TabbedContent.TabActivated) -> None:
+        event.stop()
+        rich_log = self.query_one("#rich_log_tab", RichLog)
+        rich_log.write(f"Will be implemented for {event.pane.id}")
 
 
 chezmoi_mousse_dark = Theme(

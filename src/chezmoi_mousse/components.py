@@ -8,13 +8,8 @@ from pathlib import Path
 from rich.style import Style
 from rich.text import Text
 from textual.app import ComposeResult
-from textual.containers import (
-    Container,
-    Horizontal,
-    HorizontalGroup,
-    Vertical,
-    ScrollableContainer,
-)
+from textual.binding import Binding
+from textual.containers import Container, Horizontal, HorizontalGroup, Vertical
 from textual.content import Content
 from textual.reactive import reactive
 from textual.widgets import (
@@ -108,6 +103,8 @@ class AutoWarning(Static):
 class PathView(Container):
     """RichLog widget to display the content of a file with highlighting."""
 
+    BINDINGS = [Binding(key="M,m", action="maximize", description="maximize")]
+
     path: reactive[Path | None] = reactive(None, init=False)
 
     def compose(self) -> ComposeResult:
@@ -178,7 +175,9 @@ class PathView(Container):
             self.update_path_view(self.path)
 
 
-class DiffView(Container):
+class DiffView(Horizontal):
+
+    BINDINGS = [Binding(key="M,m", action="maximize", description="maximize")]
 
     diff_spec: reactive[tuple[Path, str] | None] = reactive(None, init=False)
 
@@ -188,8 +187,7 @@ class DiffView(Container):
         return True
 
     def compose(self) -> ComposeResult:
-        with ScrollableContainer():
-            yield Static("Click a file to see its diff")
+        yield Static("Click a file to see its diff")
 
     def watch_diff_spec(self) -> None:
         assert self.diff_spec is not None and isinstance(self.diff_spec, tuple)
@@ -198,7 +196,6 @@ class DiffView(Container):
         diff_output: list[str]
         if self.diff_spec[1] == "apply":
             if self.diff_spec[0] not in chezmoi.status_paths["apply_files"]:
-                print(f"{chezmoi.status_paths["apply_files"]}")
                 static_diff.update(
                     Content("\n").join(
                         [
@@ -436,6 +433,7 @@ class ManagedTree(Vertical):
                 tree_node.add(label=node_label, data=node_data)
 
     def on_tree_node_expanded(self, event: Tree.NodeExpanded) -> None:
+        event.stop()
         if not isinstance(event.node.data, NodeData):
             return
         self.add_nodes(event.node)

@@ -9,66 +9,76 @@ from textual.color import Gradient
 from textual.containers import Center, Middle
 from textual.screen import Screen
 from textual.strip import Strip
-from textual.widgets import Button, RichLog, Static
+from textual.widgets import RichLog, Static
 
 from chezmoi_mousse import SPLASH
 from chezmoi_mousse.chezmoi import chezmoi
 
+start_color = "#0178D4"
+end_color = "#F187FB"
+fade = [start_color] * 5
+gradient = Gradient.from_colors(start_color, end_color, quality=5)
+fade.extend([color.hex for color in gradient.colors])
+gradient.colors.reverse()
+fade.extend([color.hex for color in gradient.colors])
+line_styles = deque([Style(color=color, bold=True) for color in fade])
+fade_height = len(SPLASH)
+fade_width = len(max(SPLASH, key=len)) - 2
+
+LOG_HEIGHT = len(chezmoi.long_commands)
+DEST_DIR: Path
+LOG_PADDING_WIDTH = 36
+LONG_COMMANDS = chezmoi.long_commands
+
 
 class AnimatedFade(Static):
 
-    def __init__(self, line_styles: deque[Style]) -> None:
-        self.line_styles = line_styles
+    def __init__(self) -> None:
         super().__init__()
-        self.styles.height = len(SPLASH)
-        self.styles.width = len(max(SPLASH, key=len))
+        self.styles.height = fade_height
+        self.styles.width = fade_width
+        self.styles.margin = 2
 
     def render_lines(self, crop) -> list[Strip]:
-        self.line_styles.rotate()
+        line_styles.rotate()
         return super().render_lines(crop)
 
     def render_line(self, y: int) -> Strip:
-        return Strip([Segment(SPLASH[y], style=self.line_styles[y])])
+        return Strip([Segment(SPLASH[y], style=line_styles[y])])
 
     def on_mount(self) -> None:
-        self.set_interval(interval=0.11, callback=self.refresh)
+        self.set_interval(interval=0.06, callback=self.refresh)
+
+
+ANIMATED_FADE = AnimatedFade()
+
+RICH_LOG = RichLog(id="loading_screen_log")
+RICH_LOG.styles.height = LOG_HEIGHT + 1
+RICH_LOG.styles.width = LOG_PADDING_WIDTH + 9
+RICH_LOG.styles.color = "#0053AA"
 
 
 class LoadingScreen(Screen):
 
     def __init__(self) -> None:
-        self.animated_fade = AnimatedFade(line_styles=self.create_fade())
-        self.dest_dir: Path
-        super().__init__(id="loading_screen")
-
-    def create_fade(self) -> deque[Style]:
-        start_color = "#0178D4"
-        end_color = "#F187FB"
-        fade = [start_color] * 5
-        gradient = Gradient.from_colors(start_color, end_color, quality=5)
-        fade.extend([color.hex for color in gradient.colors])
-        gradient.colors.reverse()
-        fade.extend([color.hex for color in gradient.colors])
-        return deque([Style(color=color, bold=True) for color in fade])
+        self.animated_fade = ANIMATED_FADE
+        self.rich_log = RICH_LOG
+        super().__init__()
+        self.timer = self.set_interval(
+            interval=0.7, callback=self.all_workers_finished
+        )
 
     def compose(self) -> ComposeResult:
         with Middle():
             yield Center(self.animated_fade)
-            yield Center(RichLog(id="loading_screen_log"))
-            yield Center(
-                Button(
-                    id="continue_button",
-                    label="press any key or click to continue",
-                    disabled=True,
-                )
-            )
+            yield Center(self.rich_log)
 
     def log_text(self, log_label: str) -> None:
-        padding = 32 - len(log_label)
+        padding = LOG_PADDING_WIDTH - len(log_label)
 
         def update_log():
             log_text = f"{log_label} {'.' * padding} loaded"
-            self.screen.query_exactly_one(RichLog).write(log_text)
+            RICH_LOG.write(log_text)
 
         self.app.call_from_thread(update_log)
 
@@ -77,9 +87,6 @@ class LoadingScreen(Screen):
         io_class = getattr(chezmoi, arg_id)
         io_class.update()
         self.log_text(io_class.label)
-        if arg_id == "dump_config":
-            self.dest_dir = Path(io_class.dict_out["destDir"])
-            self.log_text(f"destDir is {self.dest_dir}")
 
     def all_workers_finished(self) -> None:
         if all(
@@ -87,27 +94,16 @@ class LoadingScreen(Screen):
             for worker in self.app.workers
             if worker.group == "io_workers"
         ):
-            self.set_dest_dir()
-            self.query_one("#continue_button", Button).disabled = False
-
-    def set_dest_dir(self) -> None:
-        chezmoi.dest_dir = self.dest_dir
+            self.timer.stop()
+            DEST_DIR = Path(chezmoi.dump_config.dict_out["destDir"])
+            chezmoi.dest_dir = DEST_DIR
+            log_label = f"destDir {DEST_DIR}"
+            padding = LOG_PADDING_WIDTH - len(log_label)
+            log_text = f"{log_label} {'.' * padding} loaded"
+            RICH_LOG.write(log_text)
+            self.dismiss()
 
     def on_mount(self) -> None:
 
-        to_process = chezmoi.long_commands.copy()
-        self.run_io_worker("dump_config")
-        to_process.pop("dump_config")
-
-        for arg_id in to_process:
+        for arg_id in LONG_COMMANDS:
             self.run_io_worker(arg_id)
-
-        self.set_interval(interval=0.1, callback=self.all_workers_finished)
-
-    def on_key(self) -> None:
-        if not self.query_one("#continue_button", Button).disabled:
-            self.dismiss()
-
-    def on_click(self) -> None:
-        if not self.query_one("#continue_button", Button).disabled:
-            self.dismiss()
