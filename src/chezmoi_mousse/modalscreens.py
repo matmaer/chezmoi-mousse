@@ -95,7 +95,7 @@ class GitLog(ModalScreen):
             "info": f"{self.app.current_theme.foreground}",
         }
         table.add_columns("COMMIT", "MESSAGE")
-        for line in chezmoi.git_log.list_out:
+        for line in chezmoi.git_log:
             columns = line.split(";")
             if columns[1].split(maxsplit=1)[0] == "Add":
                 row = [
