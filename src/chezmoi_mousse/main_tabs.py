@@ -29,7 +29,6 @@ from textual.widgets import (
     Link,
     ListItem,
     ListView,
-    Log,
     Pretty,
     RichLog,
     TabbedContent,
@@ -451,9 +450,3 @@ class DiagramTab(Container):
     def compose(self) -> ComposeResult:
         with ScrollableContainer():
             yield Static(FLOW, id="diagram_text")
-
-
-class LogTab(Log):
-
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
