@@ -317,6 +317,16 @@ class AddTab(Horizontal):
 
 class DoctorTab(VerticalScroll):
 
+    BINDINGS = [
+        Binding(key="C,c", action="open_config", description="chezmoi-config"),
+        Binding(
+            key="G,g",
+            action="git_log",
+            description="show-git-log",
+            tooltip="git log from your chezmoi repository",
+        ),
+    ]
+
     class ConfigDumpModal(ModalScreen):
 
         BINDINGS = [
@@ -427,6 +437,12 @@ class DoctorTab(VerticalScroll):
             else:
                 row = [Text(cell_text) for cell_text in row]
                 table.add_row(*row)
+
+    def action_open_config(self) -> None:
+        self.app.push_screen(DoctorTab.ConfigDumpModal())
+
+    def action_git_log(self) -> None:
+        self.app.push_screen(DoctorTab.GitLogModal())
 
 
 class DiagramTab(Container):

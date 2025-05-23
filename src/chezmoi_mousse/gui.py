@@ -17,16 +17,6 @@ from chezmoi_mousse import BURGER
 
 class MainScreen(Screen):
 
-    BINDINGS = [
-        Binding(key="C,c", action="open_config", description="chezmoi-config"),
-        Binding(
-            key="G,g",
-            action="git_log",
-            description="show-git-log",
-            tooltip="git log from your chezmoi repository",
-        ),
-    ]
-
     def compose(self) -> ComposeResult:
         yield Header(icon=BURGER)  # hamburger icon
         with TabbedContent(id="main_tabbed_content"):
@@ -41,14 +31,6 @@ class MainScreen(Screen):
             with TabPane("Diagram", id="diagram_tab_pane"):
                 yield Lazy(DiagramTab(id="diagram_tab"))
         yield Footer()
-
-    def action_open_config(self) -> None:
-        # TODO add condition depending on the tab
-        self.app.push_screen(DoctorTab.ConfigDumpModal())
-
-    def action_git_log(self) -> None:
-        # TODO add condition depending on the tab
-        self.app.push_screen(DoctorTab.GitLogModal())
 
 
 chezmoi_mousse_dark = Theme(
