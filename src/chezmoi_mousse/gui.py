@@ -40,7 +40,7 @@ class MainScreen(Screen):
     def show_notification(self, event: TabbedContent.TabActivated) -> None:
         event.stop()
         rich_log = self.query_one("#rich_log_tab", RichLog)
-        rich_log.write(f"hi, I'm activated: {event.pane.id}")
+        rich_log.write(f"Will be implemented for {event.pane.id}")
 
 
 chezmoi_mousse_dark = Theme(
