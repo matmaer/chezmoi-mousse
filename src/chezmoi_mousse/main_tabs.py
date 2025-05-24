@@ -8,6 +8,7 @@ from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.events import Click
 from textual.containers import (
+    Container,
     Horizontal,
     Vertical,
     VerticalGroup,
@@ -37,15 +38,9 @@ from textual.widgets import (
 )
 
 from chezmoi_mousse.chezmoi import chezmoi
-from chezmoi_mousse.components import (
-    FilterSwitch,
-    PathView,
-    DiffView,
-    ManagedTree,
-    GitLog,
-)
+from chezmoi_mousse.components import PathView, DiffView, ManagedTree, GitLog
 
-from chezmoi_mousse.config import filter_switch_data, pw_mgr_info
+from chezmoi_mousse.config import filter_data, pw_mgr_info
 
 
 class ApplyTab(Horizontal):
@@ -67,10 +62,11 @@ class ApplyTab(Horizontal):
                 id="apply_tree",
                 classes="tree",
             )
-            yield FilterSwitch(
-                switch_id="apply_tab_unchanged",
-                switch_data=filter_switch_data["unchanged"],
-            )
+            with Horizontal(classes="filter-container"):
+                yield Switch(id="apply_tab_unchanged", classes="filter-switch")
+                yield Label(
+                    filter_data.unchanged.label, classes="filter-label"
+                ).with_tooltip(tooltip=filter_data.unchanged.tooltip)
         with Vertical():
             with TabbedContent(id="apply_tabs", classes="right"):
                 with TabPane("Content", id="content_tab_pane"):
@@ -114,11 +110,13 @@ class ReAddTab(Horizontal):
                 status_dirs=chezmoi.status_paths["re_add_dirs"],
                 id="re_add_tree",
             )
-            with VerticalGroup(classes="filter-bar"):
-                yield FilterSwitch(
-                    switch_id="re_add_tab_unchanged",
-                    switch_data=filter_switch_data["unchanged"],
+            with Horizontal(classes="filter-container"):
+                yield Switch(
+                    id="re_add_tab_unchanged", classes="filter-switch"
                 )
+                yield Label(
+                    filter_data.unchanged.label, classes="filter-label"
+                ).with_tooltip(tooltip=filter_data.unchanged.tooltip)
         with Vertical():
             with TabbedContent(id="re_add_tabs", classes="right"):
                 with TabPane("Content"):
@@ -227,15 +225,21 @@ class AddTab(Horizontal):
             yield AddTab.FilteredDirTree(
                 chezmoi.dest_dir, id="add_tree", classes="dir-tree"
             )
-            with VerticalGroup(classes="filter-group"):
-                yield FilterSwitch(
-                    switch_id="add_tab_unmanaged_dirs",
-                    switch_data=filter_switch_data["unmanaged_dirs"],
-                )
-                yield FilterSwitch(
-                    switch_id="add_tab_unwanted",
-                    switch_data=filter_switch_data["unwanted"],
-                )
+            with Container(classes="filter-container"):
+                with Horizontal():
+                    yield Switch(
+                        id="add_tab_unmanaged_dirs", classes="filter-switch"
+                    )
+                    yield Label(
+                        filter_data.unchanged.label, classes="filter-label"
+                    ).with_tooltip(tooltip=filter_data.unchanged.tooltip)
+                with Horizontal():
+                    yield Switch(
+                        id="add_tab_unwanted", classes="filter-switch"
+                    )
+                    yield Label(
+                        filter_data.unchanged.label, classes="filter-label"
+                    ).with_tooltip(tooltip=filter_data.unchanged.tooltip)
         with Vertical(id="add_tab_right"):
             yield PathView()
 

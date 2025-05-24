@@ -9,18 +9,10 @@ from rich.style import Style
 from rich.text import Text
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import Horizontal, HorizontalGroup, Vertical
+from textual.containers import Horizontal, Vertical
 from textual.content import Content
 from textual.reactive import reactive
-from textual.widgets import (
-    Button,
-    DataTable,
-    Label,
-    RichLog,
-    Static,
-    Switch,
-    Tree,
-)
+from textual.widgets import Button, DataTable, RichLog, Static, Tree
 from textual.widgets.tree import TreeNode
 
 from chezmoi_mousse.chezmoi import chezmoi
@@ -436,18 +428,3 @@ class ManagedTree(Vertical):
         for node in expanded_nodes:
             self.add_nodes(node)
             self.add_leaves(node)
-
-
-class FilterSwitch(HorizontalGroup):
-    """A switch, a label and a tooltip."""
-
-    def __init__(self, switch_data: dict[str, str], switch_id: str) -> None:
-        super().__init__(classes="filter-container")
-        self.switch_data = switch_data
-        self.switch_id = switch_id
-
-    def compose(self) -> ComposeResult:
-        yield Switch(id=self.switch_id, classes="filter-switch")
-        yield Label(
-            self.switch_data["label"], classes="filter-label"
-        ).with_tooltip(tooltip=self.switch_data["tooltip"])

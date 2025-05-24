@@ -1,72 +1,52 @@
+#tree_buttons_horizontal {
+  height: 2;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+  border-bottom: solid $primary;
+  border-subtitle-color: $primary;
+  border-subtitle-align: center;
+  border-subtitle-style: bold;
+}
 
-# #tree_buttons_horizontal {
-#   height: 2;
-#   border-left: none;
-#   border-right: none;
-#   border-top: none;
-#   border-bottom: solid $primary;
-#   border-subtitle-color: $primary;
-#   border-subtitle-align: center;
-#   border-subtitle-style: bold;
-# }
+.filter-container {
+  border-top: inner $background-lighten-1;
+  border-bottom: inner $background-lighten-1;
+  align: center bottom;
+  background: $background-lighten-1;
+  background-tint: $background-lighten-1;
+  height: auto;
+  .filter-label {
+    padding-right: 2;
+  }
 
-# # .path-view-tabs {
-# #   margin-left: 2;
-# # }
+  .switch--slider {
+    border: none;
+    height: 1;
+    color: $error-darken-3;
+  }
 
-# # .left {
-# #   max-width: 80%;
-# #   width: auto;
-# #   margin-right: 1;
+  .filter-switch {
+    height: 1;
+    border: none;
+    background: $background-lighten-1;
+    background-tint: $background-lighten-1;
 
-# # }
+      &.-on .switch--slider {
+        color: $success-darken-1;
+      }
 
-# # .right {
-# #   margin-left: 1;
-# #   max-width: 80%;
-# # }
+      &:hover {
+        &>.switch--slider {
+          color: $error;
+        }
 
-# .filter-group {
-#   background: $background-lighten-1;
-#   border: none;
-#   background-tint: $background-lighten-1;
-#   border-top: inner $background-lighten-1;
-#   width: auto;
-# }
-
-# .filter-container {
-#   color: $foreground-darken-2;
-#   background-tint: $background-lighten-1;
-#   background: $background-lighten-1;
-#   width: auto;
-#   border-left: inner $background-lighten-1;
-#   border-right: inner $background-lighten-1;
-#   padding-right: 2;
-
-# .switch--slider {
-#   border: none;
-#   color: $error-darken-3;
-# }
-
-# .filter-switch {
-#   border: none;
-#   background-tint: $background-lighten-1;
-
-#     &.-on .switch--slider {
-#       color: $success-darken-1;
-#     }
-
-#     &:hover {
-#       &>.switch--slider {
-#         color: $error;
-#       }
-
-#       &.-on>.switch--slider {
-#         color: $success-lighten-1;
-#       }
-#     }
-#   }
-# }
+        &.-on>.switch--slider {
+          color: $success-lighten-1;
+        }
+      }
+    }
+}
 
 .doctor-modal {
   border: round $warning-darken-2;
@@ -175,6 +155,10 @@ MainScreen {
 Toast {
   background: $surface;
   background-tint: $surface;
+}
+
+RichLog {
+  padding-left: 1;
 }
 
 Tree {
