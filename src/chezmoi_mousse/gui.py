@@ -1,18 +1,20 @@
 from textual import on
 from textual.app import App, ComposeResult
+from textual.containers import ScrollableContainer
 from textual.lazy import Lazy
 from textual.screen import Screen
 from textual.theme import Theme
-from textual.widgets import Footer, Header, RichLog, TabbedContent, TabPane
-from chezmoi_mousse.main_tabs import (
-    AddTab,
-    ApplyTab,
-    DiagramTab,
-    DoctorTab,
-    ReAddTab,
+from textual.widgets import (
+    Footer,
+    Header,
+    RichLog,
+    Static,
+    TabbedContent,
+    TabPane,
 )
+from chezmoi_mousse.main_tabs import AddTab, ApplyTab, DoctorTab, ReAddTab
 from chezmoi_mousse.splash import LoadingScreen
-from chezmoi_mousse import BURGER
+from chezmoi_mousse import BURGER, FLOW
 
 
 class MainScreen(Screen):
@@ -29,7 +31,7 @@ class MainScreen(Screen):
             with TabPane("Doctor", id="doctor_tab_pane"):
                 yield Lazy(DoctorTab(id="doctor_tab"))
             with TabPane("Diagram", id="diagram_tab_pane"):
-                yield Lazy(DiagramTab(id="diagram_tab"))
+                yield ScrollableContainer(Static(FLOW, id="diagram_text"))
             with TabPane("Log", id="rich_log_tab_pane"):
                 yield RichLog(
                     id="rich_log_tab", highlight=True, max_lines=20000

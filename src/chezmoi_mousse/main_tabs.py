@@ -8,9 +8,7 @@ from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.events import Click
 from textual.containers import (
-    Container,
     Horizontal,
-    ScrollableContainer,
     Vertical,
     VerticalGroup,
     VerticalScroll,
@@ -38,7 +36,6 @@ from textual.widgets import (
     Tree,
 )
 
-from chezmoi_mousse import FLOW
 from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.components import (
     FilterSwitch,
@@ -444,10 +441,3 @@ class DoctorTab(VerticalScroll):
 
     def action_git_log(self) -> None:
         self.app.push_screen(DoctorTab.GitLogModal())
-
-
-class DiagramTab(Container):
-
-    def compose(self) -> ComposeResult:
-        with ScrollableContainer():
-            yield Static(FLOW, id="diagram_text")

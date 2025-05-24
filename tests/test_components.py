@@ -18,8 +18,3 @@ def test_add_tab_instantiation():
 def test_doctor_tab_instantiation():
     tab = main_tabs.DoctorTab()
     assert isinstance(tab, main_tabs.DoctorTab)
-
-
-def test_diagram_tab_instantiation():
-    tab = main_tabs.DiagramTab()
-    assert isinstance(tab, main_tabs.DiagramTab)
