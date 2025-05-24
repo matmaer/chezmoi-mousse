@@ -129,17 +129,12 @@ Button {
 }
 
 Collapsible {
-  padding: 0;
-  margin: 0;
   border: none;
+  padding: 0;
 }
 
 CollapsibleTitle {
-  border: none;
-  padding: 0;
-  margin: 0;
   color: $primary-lighten-3;
-
   &:hover {
     text-style: bold;
   }
