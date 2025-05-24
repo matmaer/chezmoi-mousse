@@ -19,7 +19,7 @@ class MainScreen(Screen):
 
     def compose(self) -> ComposeResult:
         yield Header(icon=BURGER)
-        with TabbedContent(id="main_tabbed_content"):
+        with TabbedContent():
             with TabPane("Apply", id="apply_tab_pane"):
                 yield ApplyTab(id="apply_tab")
             with TabPane("Re-Add", id="re_add_pane"):
@@ -30,7 +30,7 @@ class MainScreen(Screen):
                 yield Lazy(DoctorTab(id="doctor_tab"))
             with TabPane("Diagram", id="diagram_tab_pane"):
                 yield Lazy(DiagramTab(id="diagram_tab"))
-            with TabPane("RichLog", id="rich_log_tab_pane"):
+            with TabPane("Log", id="rich_log_tab_pane"):
                 yield RichLog(
                     id="rich_log_tab", highlight=True, max_lines=20000
                 )
@@ -38,9 +38,11 @@ class MainScreen(Screen):
 
     @on(TabbedContent.TabActivated)
     def show_notification(self, event: TabbedContent.TabActivated) -> None:
-        event.stop()
+        # event.stop()
         rich_log = self.query_one("#rich_log_tab", RichLog)
-        rich_log.write(f"Will be implemented for {event.pane.id}")
+        # rich_log.write(f"Will be implemented for {event.pane.id}")
+        if event.pane.id == "apply_tab_pane":
+            rich_log.write(f"{self.query_one("#apply_tree")}")
 
 
 chezmoi_mousse_dark = Theme(

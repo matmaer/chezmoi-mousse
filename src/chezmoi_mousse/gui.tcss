@@ -1,88 +1,74 @@
-ManagedTree {
-  #tree_buttons_horizontal {
-    height: 2;
-    border-left: none;
-    border-right: none;
-    border-top: none;
-    border-bottom: solid $primary;
-    border-subtitle-color: $primary;
-    border-subtitle-align: center;
-    border-subtitle-style: bold;
 
-    #tree_button_tree {
-      max-width: 6;
-      width: 6;
-    }
+# #tree_buttons_horizontal {
+#   height: 2;
+#   border-left: none;
+#   border-right: none;
+#   border-top: none;
+#   border-bottom: solid $primary;
+#   border-subtitle-color: $primary;
+#   border-subtitle-align: center;
+#   border-subtitle-style: bold;
+# }
 
-    #tree_button_status {
-      max-width: 8;
-      width: 8;
-    }
-  }
-}
+# # .path-view-tabs {
+# #   margin-left: 2;
+# # }
 
-.tree-button-vertical {
-  align: center top;
-  height: 1;
-}
+# # .left {
+# #   max-width: 80%;
+# #   width: auto;
+# #   margin-right: 1;
 
-.path-view-tabs {
-  margin-left: 2;
-}
+# # }
 
-#apply_tab_left {
-  width: 33%;
-  max-width: 1fr;
-}
+# # .right {
+# #   margin-left: 1;
+# #   max-width: 80%;
+# # }
 
-#re_add_tab_left {
-  width: 33%;
-  max-width: 1fr;
-}
+# .filter-group {
+#   background: $background-lighten-1;
+#   border: none;
+#   background-tint: $background-lighten-1;
+#   border-top: inner $background-lighten-1;
+#   width: auto;
+# }
 
-.filter-bar {
-  color: $foreground-darken-2;
-  background-tint: $surface;
-  background: $surface;
-  border-top: inner $surface;
-  border-bottom: inner $surface;
+# .filter-container {
+#   color: $foreground-darken-2;
+#   background-tint: $background-lighten-1;
+#   background: $background-lighten-1;
+#   width: auto;
+#   border-left: inner $background-lighten-1;
+#   border-right: inner $background-lighten-1;
+#   padding-right: 2;
 
-  & .switch--slider {
-    border: none;
-    color: $error-darken-3;
-  }
+# .switch--slider {
+#   border: none;
+#   color: $error-darken-3;
+# }
 
-  .filter-switch {
-    background-tint: $surface;
-    border: none;
+# .filter-switch {
+#   border: none;
+#   background-tint: $background-lighten-1;
 
-    &.-on .switch--slider {
-      border: none;
-      color: $success-darken-1;
-    }
+#     &.-on .switch--slider {
+#       color: $success-darken-1;
+#     }
 
-    &:hover {
-      &>.switch--slider {
-        color: $error;
-      }
+#     &:hover {
+#       &>.switch--slider {
+#         color: $error;
+#       }
 
-      &.-on>.switch--slider {
-        color: $success-lighten-1;
-      }
-    }
-  }
+#       &.-on>.switch--slider {
+#         color: $success-lighten-1;
+#       }
+#     }
+#   }
+# }
 
-  .filter-label {
-    padding-right: 1;
-    width: auto;
-  }
-
-  .filter-tooltip {
-    color: $primary;
-  }
-}
-
-.doctormodals {
+.doctor-modal {
   border: round $warning-darken-2;
   margin-bottom: 1;
 }

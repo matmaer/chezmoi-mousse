@@ -48,7 +48,6 @@ from chezmoi_mousse.components import (
     GitLog,
 )
 
-from chezmoi_mousse.components import ConfigDump
 from chezmoi_mousse.config import filter_switch_data, pw_mgr_info
 
 
@@ -64,23 +63,23 @@ class ApplyTab(Horizontal):
     ]
 
     def compose(self) -> ComposeResult:
-        with Vertical(id="apply_tab_left"):
+        with Vertical():
             yield ManagedTree(
                 status_files=chezmoi.status_paths["apply_files"],
                 status_dirs=chezmoi.status_paths["apply_dirs"],
                 id="apply_tree",
-                classes="left-side-tree",
+                classes="tree",
             )
-            with VerticalGroup(classes="filter-bar"):
-                yield FilterSwitch(
-                    switch_id="apply_tab_unchanged",
-                    switch_data=filter_switch_data["unchanged"],
-                )
-        with TabbedContent(id="apply_tabs", classes="path-view-tabs"):
-            with TabPane("Content", id="content_tab_pane"):
-                yield PathView(id="apply_path_view")
-            with TabPane("Diff", id="diff_tab_pane"):
-                yield DiffView(id="apply_diff_view")
+            yield FilterSwitch(
+                switch_id="apply_tab_unchanged",
+                switch_data=filter_switch_data["unchanged"],
+            )
+        with Vertical():
+            with TabbedContent(id="apply_tabs", classes="right"):
+                with TabPane("Content", id="content_tab_pane"):
+                    yield PathView(id="apply_path_view")
+                with TabPane("Diff", id="diff_tab_pane"):
+                    yield DiffView(id="apply_diff_view")
 
     def on_tree_node_selected(self, event: Tree.NodeSelected) -> None:
         event.stop()
@@ -114,23 +113,23 @@ class ReAddTab(Horizontal):
     ]
 
     def compose(self) -> ComposeResult:
-        with Vertical(id="re_add_tab_left"):
+        with Vertical():
             yield ManagedTree(
                 status_files=chezmoi.status_paths["re_add_files"],
                 status_dirs=chezmoi.status_paths["re_add_dirs"],
                 id="re_add_tree",
-                classes="left-side-tree",
             )
             with VerticalGroup(classes="filter-bar"):
                 yield FilterSwitch(
                     switch_id="re_add_tab_unchanged",
                     switch_data=filter_switch_data["unchanged"],
                 )
-        with TabbedContent(id="re_add_tabs", classes="path-view-tabs"):
-            with TabPane("Content"):
-                yield PathView(id="re_add_path_view")
-            with TabPane("Diff"):
-                yield DiffView(id="re_add_diff_view")
+        with Vertical():
+            with TabbedContent(id="re_add_tabs", classes="right"):
+                with TabPane("Content"):
+                    yield PathView(id="re_add_path_view")
+                with TabPane("Diff"):
+                    yield DiffView(id="re_add_diff_view")
 
     def on_tree_node_selected(self, event: Tree.NodeSelected) -> None:
         event.stop()
@@ -239,7 +238,7 @@ class AddTab(Horizontal):
             yield AddTab.FilteredDirTree(
                 chezmoi.dest_dir, id="add_tree", classes="dir-tree"
             )
-            with VerticalGroup(classes="filter-bar"):
+            with VerticalGroup(classes="filter-group"):
                 yield FilterSwitch(
                     switch_id="add_tab_unmanaged_dirs",
                     switch_data=filter_switch_data["unmanaged_dirs"],
@@ -336,15 +335,12 @@ class DoctorTab(VerticalScroll):
         ]
 
         def compose(self) -> ComposeResult:
-            yield ConfigDump(id="configdump", classes="doctormodals")
+            yield Pretty(chezmoi.dump_config.dict_out, id="config_dump_doctor")
 
         def on_mount(self) -> None:
-            self.query_one("#configdump").border_title = (
-                "chezmoi dump-config - command output"
-            )
-            self.query_one("#configdump").border_subtitle = (
-                "double click or escape to close"
-            )
+            self.add_class("doctor-modal")
+            self.border_title = "chezmoi dump-config - command output"
+            self.border_subtitle = "double click or escape to close"
 
         def on_click(self, event: Click) -> None:
             event.stop()
@@ -361,6 +357,11 @@ class DoctorTab(VerticalScroll):
 
         def compose(self) -> ComposeResult:
             yield GitLog()
+
+        def on_mount(self) -> None:
+            self.add_class("doctor-modal")
+            self.border_title = "chezmoi git log - command output"
+            self.border_subtitle = "double click or escape to close"
 
         def on_click(self, event: Click) -> None:
             event.stop()

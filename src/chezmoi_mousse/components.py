@@ -16,7 +16,6 @@ from textual.widgets import (
     Button,
     DataTable,
     Label,
-    Pretty,
     RichLog,
     Static,
     Switch,
@@ -27,37 +26,27 @@ from textual.widgets.tree import TreeNode
 from chezmoi_mousse.chezmoi import chezmoi
 
 
-class ConfigDump(Container):
-
-    def compose(self) -> ComposeResult:
-        yield Pretty(chezmoi.dump_config.dict_out)
-
-
-class GitLog(Container):
+class GitLog(DataTable):
 
     path: reactive[Path | None] = reactive(None, init=False)
 
-    def compose(self) -> ComposeResult:
-        yield DataTable(
-            id="gitlogtable", show_cursor=False, classes="doctormodals"
-        )
+    def __init__(self, path: Path | None = None) -> None:
+        super().__init__(id="git_log")
+        self.path = path
 
     def on_mount(self) -> None:
-        table = self.query_one("#gitlogtable", DataTable)
-        table.border_title = "chezmoi git log - command output"
-        table.border_subtitle = "double click or escape to close"
+        self.show_cursor = False
         if self.path is None:
             self.populate_data_table(chezmoi.git_log)
 
     def populate_data_table(self, cmd_output: list[str]):
-        table = self.query_one("#gitlogtable", DataTable)
         styles = {
             "ok": f"{self.app.current_theme.success}",
             "warning": f"{self.app.current_theme.warning}",
             "error": f"{self.app.current_theme.error}",
             "info": f"{self.app.current_theme.foreground}",
         }
-        table.add_columns("COMMIT", "MESSAGE")
+        self.add_columns("COMMIT", "MESSAGE")
         for line in cmd_output:
             columns = line.split(";")
             if columns[1].split(maxsplit=1)[0] == "Add":
@@ -65,21 +54,21 @@ class GitLog(Container):
                     Text(cell_text, style=f"{styles['ok']}")
                     for cell_text in columns
                 ]
-                table.add_row(*row)
+                self.add_row(*row)
             elif columns[1].split(maxsplit=1)[0] == "Update":
                 row = [
                     Text(cell_text, style=f"{styles['warning']}")
                     for cell_text in columns
                 ]
-                table.add_row(*row)
+                self.add_row(*row)
             elif columns[1].split(maxsplit=1)[0] == "Remove":
                 row = [
                     Text(cell_text, style=f"{styles['error']}")
                     for cell_text in columns
                 ]
-                table.add_row(*row)
+                self.add_row(*row)
             else:
-                table.add_row(*columns)
+                self.add_row(*columns)
 
     def watch_path(self) -> None:
         assert isinstance(self.path, Path)
@@ -459,7 +448,6 @@ class FilterSwitch(HorizontalGroup):
 
     def compose(self) -> ComposeResult:
         yield Switch(id=self.switch_id, classes="filter-switch")
-        yield Label(self.switch_data["label"], classes="filter-label")
-        yield Label("(?)", classes="filter-tooltip").with_tooltip(
-            tooltip=self.switch_data["tooltip"]
-        )
+        yield Label(
+            self.switch_data["label"], classes="filter-label"
+        ).with_tooltip(tooltip=self.switch_data["tooltip"])
