@@ -9,7 +9,7 @@ from rich.style import Style
 from rich.text import Text
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import Container, Horizontal, HorizontalGroup, Vertical
+from textual.containers import Horizontal, HorizontalGroup, Vertical
 from textual.content import Content
 from textual.reactive import reactive
 from textual.widgets import (
@@ -89,25 +89,25 @@ class AutoWarning(Static):
         )
 
 
-class PathView(Container):
+class PathView(RichLog):
     """RichLog widget to display the content of a file with highlighting."""
 
     BINDINGS = [Binding(key="M,m", action="maximize", description="maximize")]
 
     path: reactive[Path | None] = reactive(None, init=False)
 
-    def compose(self) -> ComposeResult:
-        yield RichLog(
+    def __init__(self, path: Path | None = None) -> None:
+        super().__init__(
             id="file_preview",
             classes="file-preview",
             auto_scroll=False,
             wrap=False,
             highlight=True,
         )
+        self.path = path
 
-    def update_path_view(self, path: Path) -> None:
+    def update_path_view(self) -> None:
         assert isinstance(self.path, Path)
-        rich_log = self.query_one("#file_preview", RichLog)
         truncated = ""
         try:
             if self.path.stat().st_size > 150 * 1024:
@@ -115,7 +115,7 @@ class PathView(Container):
                     "\n\n------ File content truncated to 150 KiB ------\n"
                 )
         except PermissionError as error:
-            rich_log.write(error.strerror)
+            self.write(error.strerror)
             return
         except FileNotFoundError:
             # FileNotFoundError is raised both when a file or a directory
@@ -123,9 +123,9 @@ class PathView(Container):
             if self.path in chezmoi.managed_file_paths:
                 file_content = chezmoi.cat(str(self.path))
                 if not file_content.strip():
-                    rich_log.write("File contains only whitespace")
+                    self.write("File contains only whitespace")
                 else:
-                    rich_log.write(file_content)
+                    self.write(file_content)
                 return
 
         if self.path in chezmoi.managed_dir_paths:
@@ -134,34 +134,34 @@ class PathView(Container):
                 f'Output from "chezmoi status {self.path}"',
                 f"{chezmoi.status(str(self.path))}",
             ]
-            rich_log.write("\n".join(text))
+            self.write("\n".join(text))
             return
 
         try:
             with open(self.path, "rt", encoding="utf-8") as file:
                 file_content = file.read(150 * 1024)
                 if not file_content.strip():
-                    rich_log.write("File contains only whitespace")
+                    self.write("File contains only whitespace")
                 else:
-                    rich_log.write(file_content + truncated)
+                    self.write(file_content + truncated)
 
         except IsADirectoryError:
-            rich_log.write(f"Directory: {self.path}")
+            self.write(f"Directory: {self.path}")
             return
 
         except UnicodeDecodeError:
             text = f"{self.path} cannot be decoded as UTF-8."
-            rich_log.write(f"{self.path} cannot be decoded as UTF-8.")
+            self.write(f"{self.path} cannot be decoded as UTF-8.")
             return
 
         except OSError as error:
             text = Content(f"Error reading {self.path}: {error}")
-            rich_log.write(text)
+            self.write(text)
 
     def watch_path(self) -> None:
         if self.path is not None:
-            self.query_one(RichLog).clear()
-            self.update_path_view(self.path)
+            self.clear()
+            self.update_path_view()
 
 
 class DiffView(Horizontal):

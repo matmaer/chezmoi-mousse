@@ -74,16 +74,14 @@ class ApplyTab(Horizontal):
         with Vertical():
             with TabbedContent(id="apply_tabs", classes="right"):
                 with TabPane("Content", id="content_tab_pane"):
-                    yield PathView(id="apply_path_view")
+                    yield PathView()
                 with TabPane("Diff", id="diff_tab_pane"):
                     yield DiffView(id="apply_diff_view")
 
     def on_tree_node_selected(self, event: Tree.NodeSelected) -> None:
         event.stop()
         assert event.node.data is not None
-        self.query_one("#apply_path_view", PathView).path = (
-            event.node.data.path
-        )
+        self.query_exactly_one(PathView).path = event.node.data.path
         self.query_one("#apply_diff_view", DiffView).diff_spec = (
             event.node.data.path,
             "apply",
@@ -124,20 +122,14 @@ class ReAddTab(Horizontal):
         with Vertical():
             with TabbedContent(id="re_add_tabs", classes="right"):
                 with TabPane("Content"):
-                    yield PathView(id="re_add_path_view")
+                    yield PathView()
                 with TabPane("Diff"):
                     yield DiffView(id="re_add_diff_view")
 
     def on_tree_node_selected(self, event: Tree.NodeSelected) -> None:
         event.stop()
         assert event.node.data is not None
-        self.query_one("#re_add_path_view", PathView).path = (
-            event.node.data.path
-        )
-        self.query_one("#re_add_diff_view", DiffView).diff_spec = (
-            event.node.data.path,
-            "re-add",
-        )
+        self.query_exactly_one(PathView).path = event.node.data.path
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
         event.stop()
@@ -245,7 +237,7 @@ class AddTab(Horizontal):
                     switch_data=filter_switch_data["unwanted"],
                 )
         with Vertical(id="add_tab_right"):
-            yield PathView(id="add_path_view")
+            yield PathView()
 
     def on_mount(self) -> None:
         self.query_exactly_one(AddTab.FilteredDirTree).show_root = False
