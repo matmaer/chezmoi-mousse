@@ -125,7 +125,6 @@ Button {
   border: none;
   height: 1;
   text-style: none;
-  color: $foreground;
 }
 
 Collapsible {
@@ -147,7 +146,6 @@ DataTable {
 }
 
 DirectoryTree {
-  width: auto;
 
   &>.directory-tree--folder {
     color: $primary-lighten-3;
@@ -194,8 +192,6 @@ Toast {
 }
 
 Tree {
-  width: auto;
-
   &>.tree--cursor {
     text-style: none;
     color: $accent-lighten-3;
