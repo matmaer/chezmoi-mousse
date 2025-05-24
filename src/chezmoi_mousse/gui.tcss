@@ -91,17 +91,6 @@ ManagedTree {
 /* ID selectors */
 /****************/
 
-#add_tab_left {
-  border-top: solid $text-primary;
-  border-title-align: center;
-  margin-right: 2;
-}
-
-#add_tab_right {
-  border-top: solid $text-primary;
-  border-title-align: center;
-}
-
 #auto_warning {
   height: auto;
   padding: 0 1 0 1;
