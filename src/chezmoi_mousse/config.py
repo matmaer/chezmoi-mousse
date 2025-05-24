@@ -1,25 +1,41 @@
-filter_switch_data = {
-    "unmanaged_dirs": {
-        "tooltip": (
+from dataclasses import dataclass
+
+
+@dataclass(frozen=True)
+class Filter:
+    tooltip: str
+    label: str
+
+
+@dataclass(frozen=True)
+class FilterSwitch:
+    unmanaged_dirs: Filter
+    unwanted: Filter
+    unchanged: Filter
+
+
+filter_data = FilterSwitch(
+    unmanaged_dirs=Filter(
+        tooltip=(
             "The default (disabled), only shows directories which already contain managed files."
             "This allows spotting new un-managed files in already managed directories."
             "Enable to show all directories which contain un-managed files."
         ),
-        "label": "include unmanaged dirs",
-    },
-    "unwanted": {
-        "tooltip": (
+        label="include unmanaged dirs",
+    ),
+    unwanted=Filter(
+        tooltip=(
             'Include files and directories considered as "unwanted" for a dotfile manager. '
             "These include cache, temporary, trash (recycle bin) and other similar files or directories. "
             'For example enable this to add files to your chezmoi repository which are in a directory named ".cache".'
         ),
-        "label": "include unwanted paths",
-    },
-    "unchanged": {
-        "label": "show unchanged",
-        "tooltip": "Include files unchanged files which are not found in the 'chezmoi status' output.",
-    },
-}
+        label="include unwanted paths",
+    ),
+    unchanged=Filter(
+        label="show unchanged",
+        tooltip="Include files unchanged files which are not found in the 'chezmoi status' output.",
+    ),
+)
 
 unwanted = {
     "dirs": {
