@@ -171,8 +171,7 @@ DirectoryTree {
 Footer {
   height: 3;
   border-top: dashed $panel;
-  border-bottom: dashed $panel;
-
+  border-bottom: hidden;
   .-command-palette {
     border: none;
   }
