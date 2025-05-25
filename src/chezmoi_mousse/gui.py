@@ -24,7 +24,7 @@ class MainScreen(Screen):
         with TabbedContent():
             with TabPane("Apply", id="apply_tab_pane"):
                 yield ApplyTab(id="apply_tab")
-            with TabPane("Re-Add", id="re_add_pane"):
+            with TabPane("Re-Add", id="re_add_tab_pane"):
                 yield Lazy(ReAddTab(id="re_add_tab"))
             with TabPane("Add", id="add_tab_pane"):
                 yield Lazy(AddTab(id="add_tab"))
@@ -40,11 +40,9 @@ class MainScreen(Screen):
 
     @on(TabbedContent.TabActivated)
     def show_notification(self, event: TabbedContent.TabActivated) -> None:
-        # event.stop()
+        event.stop()
         rich_log = self.query_one("#rich_log_tab", RichLog)
-        # rich_log.write(f"Will be implemented for {event.pane.id}")
-        if event.pane.id == "apply_tab_pane":
-            rich_log.write(f"{self.query_one("#apply_tree")}")
+        rich_log.write(f"Switched to tab: {event.pane.id}")
 
 
 chezmoi_mousse_dark = Theme(
