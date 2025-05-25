@@ -70,7 +70,7 @@ class ApplyTab(Horizontal):
                 classes="filter-container",
             )
         with Vertical(classes="right-vertical"):
-            with TabbedContent(id="apply_tabs", classes="right"):
+            with TabbedContent(id="apply_view_tabs"):
                 with TabPane("Content", id="apply_content_pane"):
                     yield PathView(id="apply_path_view")
                 with TabPane("Diff", id="apply_diff_pane"):
@@ -123,7 +123,7 @@ class ReAddTab(Horizontal):
                 classes="filter-container",
             )
         with Vertical(classes="right-vertical"):
-            with TabbedContent(id="re_add_tabs", classes="right"):
+            with TabbedContent(id="re_add_view_tabs"):
                 with TabPane("Content", id="re_add_content_pane"):
                     yield PathView(id="re_add_path_view")
                 with TabPane("Diff", id="re_add_diff_pane"):
@@ -227,7 +227,7 @@ class AddTab(Horizontal):
             return False
 
     def compose(self) -> ComposeResult:
-        with Vertical(id="add_tab_left", classes="left-vertical"):
+        with Vertical(classes="left-vertical"):
             yield AddTab.FilteredDirTree(
                 chezmoi.dest_dir, id="add_tree", classes="any-tree"
             )
@@ -250,11 +250,7 @@ class AddTab(Horizontal):
                         ).with_tooltip(tooltip=filter_data.unchanged.tooltip),
                         classes="filter-container",
                     )
-        yield Vertical(
-            PathView(id="add_path_view"),
-            id="add_tab_right",
-            classes="right-vertical",
-        )
+        yield Vertical(PathView(), classes="right-vertical")
 
     def on_mount(self) -> None:
         add_tree = self.query_exactly_one(AddTab.FilteredDirTree)
@@ -264,7 +260,7 @@ class AddTab(Horizontal):
         add_tree.border_title = tree_title
         add_tree.styles.min_width = len(tree_title) + 4
 
-        self.query_one("#add_path_view", PathView).border_title = "Path View"
+        self.query_exactly_one(PathView).border_title = "Path View"
 
     def on_directory_tree_file_selected(
         self, event: FilteredDirTree.FileSelected
@@ -273,14 +269,14 @@ class AddTab(Horizontal):
         if event.node.data is not None:
             self.query_exactly_one(PathView).path = event.node.data.path
             title = f"{event.node.data.path.relative_to(chezmoi.dest_dir)}"
-            self.query_one("#add_path_view", PathView).border_title = title
+            self.query_exactly_one(PathView).border_title = title
 
     def on_directory_tree_directory_selected(
         self, event: FilteredDirTree.DirectorySelected
     ) -> None:
         event.stop()
         if event.node.data is not None:
-            path_view = self.query_one("#add_path_view", PathView)
+            path_view = self.query_exactly_one(PathView)
             path_view.clear()
             title = f"{event.node.data.path.relative_to(chezmoi.dest_dir)}"
             path_view.border_title = title
@@ -315,10 +311,8 @@ class AddTab(Horizontal):
             tree.reload()
 
     def action_add_path(self) -> None:
-        cursor_node = self.query_one(
-            "#add_tree", AddTab.FilteredDirTree
-        ).cursor_node
-        self.notify(f"will add {cursor_node}")
+        dir_tree = self.query_one("#add_tree", AddTab.FilteredDirTree)
+        self.notify(f"will add {dir_tree.cursor_node}")
 
 
 class DoctorTab(VerticalScroll):
@@ -378,8 +372,8 @@ class DoctorTab(VerticalScroll):
     def compose(self) -> ComposeResult:
 
         with Horizontal():
-            yield DataTable(id="doctor_table", show_cursor=False)
-        with VerticalGroup(classes="collapsiblegroup"):
+            yield DataTable(show_cursor=False)
+        with VerticalGroup():
             yield Collapsible(
                 Pretty(chezmoi.template_data.dict_out),
                 title="chezmoi data (template data)",
@@ -392,9 +386,7 @@ class DoctorTab(VerticalScroll):
                 Pretty(chezmoi.ignored.list_out),
                 title="chezmoi ignored (git ignore in source-dir)",
             )
-            yield Collapsible(
-                ListView(id="cmdnotfound"), title="Commands Not Found"
-            )
+            yield Collapsible(ListView(), title="Commands Not Found")
 
     def on_mount(self) -> None:
 
@@ -405,8 +397,8 @@ class DoctorTab(VerticalScroll):
             "info": f"{self.app.current_theme.foreground}",
         }
 
-        list_view = self.query_one("#cmdnotfound", ListView)
-        table = self.query_one("#doctor_table", DataTable)
+        list_view = self.query_exactly_one(ListView)
+        table = self.query_exactly_one(DataTable)
         doctor_rows = chezmoi.doctor.list_out
         table.add_columns(*doctor_rows[0].split())
 
