@@ -1,19 +1,21 @@
 from textual import on
 from textual.app import App, ComposeResult
 from textual.binding import Binding
+from textual.containers import ScrollableContainer
 from textual.lazy import Lazy
 from textual.screen import Screen
 from textual.theme import Theme
-from textual.widgets import Footer, Header, RichLog, TabbedContent, TabPane
-from chezmoi_mousse.main_tabs import (
-    AddTab,
-    ApplyTab,
-    DiagramTab,
-    DoctorTab,
-    ReAddTab,
+from textual.widgets import (
+    Footer,
+    Header,
+    RichLog,
+    Static,
+    TabbedContent,
+    TabPane,
 )
+from chezmoi_mousse.main_tabs import AddTab, ApplyTab, DoctorTab, ReAddTab
 from chezmoi_mousse.splash import LoadingScreen
-from chezmoi_mousse import BURGER
+from chezmoi_mousse import BURGER, FLOW
 
 
 class MainScreen(Screen):
@@ -51,18 +53,18 @@ class MainScreen(Screen):
 
     def compose(self) -> ComposeResult:
         yield Header(icon=BURGER)
-        with TabbedContent(id="main_tabbed_content"):
+        with TabbedContent():
             with TabPane("Apply", id="apply_tab_pane"):
                 yield ApplyTab(id="apply_tab")
-            with TabPane("Re-Add", id="re_add_pane"):
+            with TabPane("Re-Add", id="re_add_tab_pane"):
                 yield Lazy(ReAddTab(id="re_add_tab"))
             with TabPane("Add", id="add_tab_pane"):
                 yield Lazy(AddTab(id="add_tab"))
             with TabPane("Doctor", id="doctor_tab_pane"):
                 yield Lazy(DoctorTab(id="doctor_tab"))
             with TabPane("Diagram", id="diagram_tab_pane"):
-                yield Lazy(DiagramTab(id="diagram_tab"))
-            with TabPane("RichLog", id="rich_log_tab_pane"):
+                yield ScrollableContainer(Static(FLOW, id="flow_diagram"))
+            with TabPane("Log", id="rich_log_tab_pane"):
                 yield RichLog(
                     id="rich_log_tab", highlight=True, max_lines=20000
                 )
@@ -72,7 +74,7 @@ class MainScreen(Screen):
     def show_notification(self, event: TabbedContent.TabActivated) -> None:
         event.stop()
         rich_log = self.query_one("#rich_log_tab", RichLog)
-        rich_log.write(f"Will be implemented for {event.pane.id}")
+        rich_log.write(f"Switched to tab: {event.pane.id}")
 
 
 chezmoi_mousse_dark = Theme(

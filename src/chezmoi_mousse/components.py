@@ -9,55 +9,36 @@ from rich.style import Style
 from rich.text import Text
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import Container, Horizontal, HorizontalGroup, Vertical
+from textual.containers import Horizontal, Vertical
 from textual.content import Content
 from textual.reactive import reactive
-from textual.widgets import (
-    Button,
-    DataTable,
-    Label,
-    Pretty,
-    RichLog,
-    Static,
-    Switch,
-    Tree,
-)
+from textual.widgets import Button, DataTable, RichLog, Static, Tree
 from textual.widgets.tree import TreeNode
 
 from chezmoi_mousse.chezmoi import chezmoi
 
 
-class ConfigDump(Container):
-
-    def compose(self) -> ComposeResult:
-        yield Pretty(chezmoi.dump_config.dict_out)
-
-
-class GitLog(Container):
+class GitLog(DataTable):
 
     path: reactive[Path | None] = reactive(None, init=False)
 
-    def compose(self) -> ComposeResult:
-        yield DataTable(
-            id="gitlogtable", show_cursor=False, classes="doctormodals"
-        )
+    def __init__(self, path: Path | None = None) -> None:
+        super().__init__(id="git_log")
+        self.path = path
 
     def on_mount(self) -> None:
-        table = self.query_one("#gitlogtable", DataTable)
-        table.border_title = "chezmoi git log - command output"
-        table.border_subtitle = "double click or escape to close"
+        self.show_cursor = False
         if self.path is None:
             self.populate_data_table(chezmoi.git_log)
 
     def populate_data_table(self, cmd_output: list[str]):
-        table = self.query_one("#gitlogtable", DataTable)
         styles = {
             "ok": f"{self.app.current_theme.success}",
             "warning": f"{self.app.current_theme.warning}",
             "error": f"{self.app.current_theme.error}",
             "info": f"{self.app.current_theme.foreground}",
         }
-        table.add_columns("COMMIT", "MESSAGE")
+        self.add_columns("COMMIT", "MESSAGE")
         for line in cmd_output:
             columns = line.split(";")
             if columns[1].split(maxsplit=1)[0] == "Add":
@@ -65,21 +46,21 @@ class GitLog(Container):
                     Text(cell_text, style=f"{styles['ok']}")
                     for cell_text in columns
                 ]
-                table.add_row(*row)
+                self.add_row(*row)
             elif columns[1].split(maxsplit=1)[0] == "Update":
                 row = [
                     Text(cell_text, style=f"{styles['warning']}")
                     for cell_text in columns
                 ]
-                table.add_row(*row)
+                self.add_row(*row)
             elif columns[1].split(maxsplit=1)[0] == "Remove":
                 row = [
                     Text(cell_text, style=f"{styles['error']}")
                     for cell_text in columns
                 ]
-                table.add_row(*row)
+                self.add_row(*row)
             else:
-                table.add_row(*columns)
+                self.add_row(*columns)
 
     def watch_path(self) -> None:
         assert isinstance(self.path, Path)
@@ -100,25 +81,21 @@ class AutoWarning(Static):
         )
 
 
-class PathView(Container):
+class PathView(RichLog):
     """RichLog widget to display the content of a file with highlighting."""
 
     BINDINGS = [Binding(key="M,m", action="maximize", description="maximize")]
 
     path: reactive[Path | None] = reactive(None, init=False)
 
-    def compose(self) -> ComposeResult:
-        yield RichLog(
-            id="file_preview",
-            classes="file-preview",
-            auto_scroll=False,
-            wrap=False,
-            highlight=True,
+    def __init__(self, path: Path | None = None, **kwargs) -> None:
+        super().__init__(
+            auto_scroll=False, wrap=False, highlight=True, **kwargs
         )
+        self.path = path
 
-    def update_path_view(self, path: Path) -> None:
+    def update_path_view(self) -> None:
         assert isinstance(self.path, Path)
-        rich_log = self.query_one("#file_preview", RichLog)
         truncated = ""
         try:
             if self.path.stat().st_size > 150 * 1024:
@@ -126,7 +103,7 @@ class PathView(Container):
                     "\n\n------ File content truncated to 150 KiB ------\n"
                 )
         except PermissionError as error:
-            rich_log.write(error.strerror)
+            self.write(error.strerror)
             return
         except FileNotFoundError:
             # FileNotFoundError is raised both when a file or a directory
@@ -134,9 +111,9 @@ class PathView(Container):
             if self.path in chezmoi.managed_file_paths:
                 file_content = chezmoi.cat(str(self.path))
                 if not file_content.strip():
-                    rich_log.write("File contains only whitespace")
+                    self.write("File contains only whitespace")
                 else:
-                    rich_log.write(file_content)
+                    self.write(file_content)
                 return
 
         if self.path in chezmoi.managed_dir_paths:
@@ -145,37 +122,37 @@ class PathView(Container):
                 f'Output from "chezmoi status {self.path}"',
                 f"{chezmoi.status(str(self.path))}",
             ]
-            rich_log.write("\n".join(text))
+            self.write("\n".join(text))
             return
 
         try:
             with open(self.path, "rt", encoding="utf-8") as file:
                 file_content = file.read(150 * 1024)
                 if not file_content.strip():
-                    rich_log.write("File contains only whitespace")
+                    self.write("File contains only whitespace")
                 else:
-                    rich_log.write(file_content + truncated)
+                    self.write(file_content + truncated)
 
         except IsADirectoryError:
-            rich_log.write(f"Directory: {self.path}")
+            self.write(f"Directory: {self.path}")
             return
 
         except UnicodeDecodeError:
             text = f"{self.path} cannot be decoded as UTF-8."
-            rich_log.write(f"{self.path} cannot be decoded as UTF-8.")
+            self.write(f"{self.path} cannot be decoded as UTF-8.")
             return
 
         except OSError as error:
             text = Content(f"Error reading {self.path}: {error}")
-            rich_log.write(text)
+            self.write(text)
 
     def watch_path(self) -> None:
         if self.path is not None:
-            self.query_one(RichLog).clear()
-            self.update_path_view(self.path)
+            self.clear()
+            self.update_path_view()
 
 
-class DiffView(Horizontal):
+class DiffView(Static):
 
     BINDINGS = [Binding(key="M,m", action="maximize", description="maximize")]
 
@@ -186,17 +163,15 @@ class DiffView(Horizontal):
     def allow_maximize(self) -> bool:
         return True
 
-    def compose(self) -> ComposeResult:
-        yield Static("Click a file to see its diff")
-
     def watch_diff_spec(self) -> None:
+        if self.diff_spec is None:
+            self.update("Click a file to see its diff")
         assert self.diff_spec is not None and isinstance(self.diff_spec, tuple)
-        static_diff = self.query_exactly_one(Static)
 
         diff_output: list[str]
         if self.diff_spec[1] == "apply":
             if self.diff_spec[0] not in chezmoi.status_paths["apply_files"]:
-                static_diff.update(
+                self.update(
                     Content("\n").join(
                         [
                             f"No diff available for {self.diff_spec[0]}",
@@ -209,7 +184,7 @@ class DiffView(Horizontal):
                 diff_output = chezmoi.apply_diff(str(self.diff_spec[0]))
         elif self.diff_spec[1] == "re-add":
             if self.diff_spec[0] not in chezmoi.status_paths["re_add_files"]:
-                static_diff.update(
+                self.update(
                     Content("\n").join(
                         [
                             f"No diff available for {self.diff_spec[0]}",
@@ -222,7 +197,7 @@ class DiffView(Horizontal):
                 diff_output = chezmoi.re_add_diff(str(self.diff_spec[0]))
 
         if not diff_output:
-            static_diff.update(
+            self.update(
                 Content(
                     f"chezmoi diff {self.diff_spec[0]} returned no output."
                 )
@@ -251,7 +226,7 @@ class DiffView(Horizontal):
             else:
                 content = Content("\u2022" + line)  # bullet •
                 colored_lines.append(content.stylize("dim"))
-        static_diff.update(Content("\n").join(colored_lines))
+        self.update(Content("\n").join(colored_lines))
 
 
 @dataclass
@@ -286,11 +261,10 @@ class ManagedTree(Vertical):
 
     def compose(self) -> ComposeResult:
         with Horizontal(id="tree_buttons_horizontal"):
-            with Vertical(classes="tree-button-vertical"):
-                yield Button("Tree", id="tree_button_tree")
-            with Vertical(classes="tree-button-vertical"):
-                yield Button("Status", id="tree_button_status")
-        yield Tree(label="root", classes="managed-tree")
+            yield Vertical(Button("Tree", id="tree_button_tree"))
+            yield Vertical(Button("Status", id="tree_button_status"))
+        with Horizontal():
+            yield Tree(label="root")
 
     def on_mount(self) -> None:
         tree_buttons = self.query_one("#tree_buttons_horizontal", Horizontal)
@@ -447,19 +421,3 @@ class ManagedTree(Vertical):
         for node in expanded_nodes:
             self.add_nodes(node)
             self.add_leaves(node)
-
-
-class FilterSwitch(HorizontalGroup):
-    """A switch, a label and a tooltip."""
-
-    def __init__(self, switch_data: dict[str, str], switch_id: str) -> None:
-        super().__init__(classes="filter-container")
-        self.switch_data = switch_data
-        self.switch_id = switch_id
-
-    def compose(self) -> ComposeResult:
-        yield Switch(id=self.switch_id, classes="filter-switch")
-        yield Label(self.switch_data["label"], classes="filter-label")
-        yield Label("(?)", classes="filter-tooltip").with_tooltip(
-            tooltip=self.switch_data["tooltip"]
-        )

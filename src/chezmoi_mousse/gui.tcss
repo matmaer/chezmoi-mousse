@@ -1,69 +1,45 @@
-ManagedTree {
-  #tree_buttons_horizontal {
-    height: 2;
-    border-left: none;
-    border-right: none;
-    border-top: none;
-    border-bottom: solid $primary;
-    border-subtitle-color: $primary;
-    border-subtitle-align: center;
-    border-subtitle-style: bold;
+/****************/
+/* tcss classes */
+/****************/
 
-    #tree_button_tree {
-      max-width: 6;
-      width: 6;
-    }
-
-    #tree_button_status {
-      max-width: 8;
-      width: 8;
-    }
-  }
+.left-vertical {
+  width: 1fr;
+  margin-right: 2;
 }
 
-.tree-button-vertical {
-  align: center top;
-  height: 1;
+.right-vertical {
+  width: 2fr;
 }
 
-.path-view-tabs {
-  margin-left: 2;
+.center-content {
+  align: center middle;
 }
 
-#apply_tab_left {
-  width: 33%;
-  max-width: 1fr;
-}
+.filter-container {
+  dock: bottom;
+  align: center middle;
+  border-top: inner $background-lighten-1;
+  border-bottom: inner $background-lighten-1;
+  border-right: inner $background-lighten-1;
+  background: $background-lighten-1;
+  background-tint: $background-lighten-1;
+  height: auto;
 
-#re_add_tab_left {
-  width: 33%;
-  max-width: 1fr;
-}
-
-.filter-bar {
-  color: $foreground-darken-2;
-  background-tint: $surface;
-  background: $surface;
-  border-top: inner $surface;
-  border-bottom: inner $surface;
-
-  & .switch--slider {
-    border: none;
-    color: $error-darken-3;
+  &>.filter-label {
+    padding-right: 1;
   }
 
-  & .switch--slider {
-    border: none;
+  .switch--slider {
     color: $error-darken-3;
 
   }
 
   .filter-switch {
-    background-tint: $surface;
     border: none;
+    background: $background-lighten-1;
+    background-tint: $background-lighten-1;
 
     &.-on .switch--slider {
-      border: none;
       color: $success-darken-1;
     }
 
@@ -73,42 +49,30 @@ ManagedTree {
       }
 
       &.-on>.switch--slider {
-        color: $success-lighten-1;
+        color: $success-lighten-2;
       }
     }
   }
-
-  .filter-label {
-    padding-right: 1;
-    # width: auto;
-  }
-
-  .filter-tooltip {
-    color: $primary;
-  }
 }
 
-.doctormodals {
+.doctor-modal {
   border: round $warning-darken-2;
   margin-bottom: 1;
 }
 
-/****************/
-/* ID selectors */
-/****************/
-
-#add_tab_left {
-  border-top: solid $text-primary;
-  border-title-align: center;
-  margin-right: 2;
+AddTab {
+  /* to have a space between the two filters */
+  .padding-once {
+    padding-bottom: 1;
+  }
+  /* to show the root path on the left and view path on the right */
+  .border-path-title {
+    border-top: solid $primary;
+    border-title-align: center;
+  }
 }
 
-#add_tab_right {
-  border-top: solid $text-primary;
-  border-title-align: center;
-}
-
-#auto_warning {
+AutoWarning {
   height: auto;
   padding: 0 1 0 1;
   margin: 0 1 0 1;
@@ -117,9 +81,28 @@ ManagedTree {
   border-bottom: dashed $panel;
 }
 
-#diagram_text {
+ApplyTab, ReAddTab {
+  /* for "Tree" vs "Status" switcher */
+  #tree_buttons_horizontal {
+    height: 2;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+    border-bottom: solid $primary;
+    border-subtitle-color: $primary;
+    border-subtitle-align: center;
+    border-subtitle-style: bold;
+    width: 1fr;
+    max-width: 1fr;
+  }
+  #re_add_tree {
+    width: auto;
+}
+}
+
+#flow_diagram {
   padding: 0 1 0 1;
-  min-width: 82;
+  min-width: 80;
 }
 
 /******************************************************************/
@@ -142,21 +125,15 @@ Button {
   border: none;
   height: 1;
   text-style: none;
-  color: $foreground;
 }
 
 Collapsible {
-  padding: 0;
-  margin: 0;
   border: none;
+  padding: 0;
 }
 
 CollapsibleTitle {
-  border: none;
-  padding: 0;
-  margin: 0;
   color: $primary-lighten-3;
-
   &:hover {
     text-style: bold;
   }
@@ -169,8 +146,6 @@ DataTable {
 }
 
 DirectoryTree {
-  width: auto;
-
   &>.directory-tree--folder {
     color: $primary-lighten-3;
     text-style: none;
@@ -193,8 +168,7 @@ DirectoryTree {
 Footer {
   height: 3;
   border-top: dashed $panel;
-  border-bottom: dashed $panel;
-
+  border-bottom: hidden;
   .-command-palette {
     border: none;
   }
@@ -216,9 +190,11 @@ Toast {
   background-tint: $surface;
 }
 
-Tree {
-  width: auto;
+RichLog {
+  padding-left: 1;
+}
 
+Tree {
   &>.tree--cursor {
     text-style: none;
     color: $accent-lighten-3;
