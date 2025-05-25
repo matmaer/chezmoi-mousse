@@ -66,7 +66,7 @@ AutoWarning {
   border-bottom: dashed $panel;
 }
 
-#diagram_text {
+#diagram_tab {
   padding: 0 1 0 1;
   min-width: 82;
 }

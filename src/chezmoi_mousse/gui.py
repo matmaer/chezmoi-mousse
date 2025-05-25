@@ -31,7 +31,7 @@ class MainScreen(Screen):
             with TabPane("Doctor", id="doctor_tab_pane"):
                 yield Lazy(DoctorTab(id="doctor_tab"))
             with TabPane("Diagram", id="diagram_tab_pane"):
-                yield ScrollableContainer(Static(FLOW, id="diagram_text"))
+                yield ScrollableContainer(Static(FLOW, id="diagram_tab"))
             with TabPane("Log", id="rich_log_tab_pane"):
                 yield RichLog(
                     id="rich_log_tab", highlight=True, max_lines=20000
