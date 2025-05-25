@@ -1,6 +1,7 @@
 """Contains the widgets used to compose the main screen of chezmoi-mousse."""
 
 import os
+import re
 from pathlib import Path
 
 from rich.text import Text
@@ -14,7 +15,6 @@ from textual.containers import (
     VerticalGroup,
     VerticalScroll,
 )
-import re
 from chezmoi_mousse.config import unwanted
 from collections.abc import Iterable
 from textual.content import Content
