@@ -101,6 +101,10 @@ class ApplyTab(Horizontal):
             event.node.data.path,
             "apply",
         )
+        self.query_one("#apply_diff_view", DiffView).diff_spec = (
+            event.node.data.path,
+            "apply",
+        )
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
         event.stop()
@@ -154,6 +158,10 @@ class ReAddTab(Horizontal):
         event.stop()
         assert event.node.data is not None
         self.query_exactly_one(PathView).path = event.node.data.path
+        self.query_one("#re_add_diff_view", DiffView).diff_spec = (
+            event.node.data.path,
+            "re-add",
+        )
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
         event.stop()
