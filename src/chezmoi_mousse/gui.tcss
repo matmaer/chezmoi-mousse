@@ -11,6 +11,7 @@
   width: 2fr;
 }
 
+/* used to center Switch+Label Horizontal below the (Dir)Tree widgets */
 .center-content {
   align: center middle;
 }
@@ -18,13 +19,13 @@
 .filter-container {
   dock: bottom;
   align: center middle;
-  border-top: inner $background-lighten-1;
-  border-bottom: inner $background-lighten-1;
-  border-right: inner $background-lighten-1;
-  background: $background-lighten-1;
-  background-tint: $background-lighten-1;
+  border-top: inner $background-lighten-2;
+  border-bottom: inner $background-lighten-2;
+  border-right: inner $background-lighten-2;
+  background: $background-lighten-2;
+  background-tint: $background-lighten-2;
   height: auto;
-
+  max-height: 5;
   &>.filter-label {
     padding-right: 1;
   }
@@ -36,8 +37,8 @@
 
   .filter-switch {
     border: none;
-    background: $background-lighten-1;
-    background-tint: $background-lighten-1;
+    background: $background-lighten-2;
+    background-tint: $background-lighten-2;
 
     &.-on .switch--slider {
       color: $success-darken-1;
@@ -61,6 +62,10 @@
 }
 
 AddTab {
+  DirectoryTree {
+    border: green;
+    height: 100%;
+  }
   /* to have a space between the two filters */
   .padding-once {
     padding-bottom: 1;
@@ -95,9 +100,6 @@ ApplyTab, ReAddTab {
     width: 1fr;
     max-width: 1fr;
   }
-  #re_add_tree {
-    width: auto;
-}
 }
 
 #flow_diagram {
@@ -119,7 +121,6 @@ ApplyTab, ReAddTab {
   scrollbar-background-hover: $background;
   scrollbar-corner-color: $background;
 }
-
 
 Button {
   border: none;
@@ -182,16 +183,12 @@ Header {
 }
 
 MainScreen {
-  layers: command_log;
+  layers: window;
 }
 
 Toast {
   background: $surface;
   background-tint: $surface;
-}
-
-RichLog {
-  padding-left: 1;
 }
 
 Tree {

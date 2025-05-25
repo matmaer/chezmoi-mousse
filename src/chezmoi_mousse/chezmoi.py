@@ -220,7 +220,7 @@ class Chezmoi:
     def unmanaged_in_d(self, dir_path: Path) -> list[Path]:
         if not dir_path.is_dir():
             raise ValueError(
-                f"Cannot show unmanaged because it not exist or is not a directory: {dir_path}"
+                f"Cannot show unmanaged file or dir: not found. {dir_path}"
             )
         path_strings = subprocess_run(
             self.base + ["unmanaged", "--path-style=absolute", str(dir_path)]

@@ -373,6 +373,7 @@ source = { virtual = "." }
 dependencies = [
     { name = "mkdocs-material" },
     { name = "textual" },
+    { name = "textual-window" },
 ]
 
 [package.dev-dependencies]
@@ -406,6 +407,7 @@ dev = [
 requires-dist = [
     { name = "mkdocs-material", specifier = ">=9.6.14" },
     { name = "textual", specifier = ">=3.1.1" },
+    { name = "textual-window", specifier = ">=0.2.1" },
 ]
 
 [package.metadata.requires-dev]
@@ -1708,6 +1710,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/1c/00/0bff4f5839208d31c871ad9d045c46451071e4844b16c6d7f442db8fb60a/textual_slidecontainer-0.4.0.tar.gz", hash = "sha256:d572e1d700e44d24f0f82fcccf990540acc81f8c751f05c93f1f6354b2007e21", size = 147742, upload-time = "2025-05-05T07:20:39.35Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/91/e7/693f5068bec0f9c1dedb5fda18913e48987d9008dba1d0e28e822a76b27a/textual_slidecontainer-0.4.0-py3-none-any.whl", hash = "sha256:35f58ae680b760cb7bea0325d9c73ed73d76f66da5fc8479b56a34f4c0333adc", size = 10692, upload-time = "2025-05-05T07:20:37.918Z" },
+]
+
+[[package]]
+name = "textual-window"
+version = "0.2.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "textual" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/3b/8f/23092de9e52689f25f503b396171b77213ea67034a383f2f2fd92e2b1309/textual_window-0.2.2.tar.gz", hash = "sha256:94da0e728ce41bc053e2c83f6b55a8bd36df3f36e17788010f2dc57e6cda1389", size = 88529, upload-time = "2025-05-25T10:22:16.771Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/06/b4/fc5ed3b8901df8753c498e4f73a8718640b0db0b6bfe812d5afe0cafcccd/textual_window-0.2.2-py3-none-any.whl", hash = "sha256:426e295138ba2116b042943d6e2ef92d7d8e890ad43d0b38e512493dd75546d1", size = 24004, upload-time = "2025-05-25T10:22:15.396Z" },
 ]
 
 [[package]]

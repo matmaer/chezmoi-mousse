@@ -98,32 +98,36 @@ class PathView(RichLog):
         assert isinstance(self.path, Path)
         truncated = ""
         try:
-            if self.path.stat().st_size > 150 * 1024:
+            if self.path.is_file() and self.path.stat().st_size > 150 * 1024:
                 truncated = (
                     "\n\n------ File content truncated to 150 KiB ------\n"
                 )
         except PermissionError as error:
             self.write(error.strerror)
             return
+
+        except UnicodeDecodeError:
+            text = f"{self.path} cannot be decoded as UTF-8."
+            self.write(f"{self.path} cannot be decoded as UTF-8.")
+            return
+
         except FileNotFoundError:
             # FileNotFoundError is raised both when a file or a directory
             # does not exist
             if self.path in chezmoi.managed_file_paths:
-                file_content = chezmoi.cat(str(self.path))
-                if not file_content.strip():
+                if not chezmoi.cat(str(self.path)).strip():
                     self.write("File contains only whitespace")
                 else:
-                    self.write(file_content)
+                    self.write(chezmoi.cat(str(self.path)))
                 return
-
-        if self.path in chezmoi.managed_dir_paths:
-            text = [
-                "The directory is managed, and does not exist on disk.",
-                f'Output from "chezmoi status {self.path}"',
-                f"{chezmoi.status(str(self.path))}",
-            ]
-            self.write("\n".join(text))
-            return
+            elif self.path in chezmoi.managed_dir_paths:
+                text = [
+                    "The directory is managed, but does not exist on disk.",
+                    f'Output from "chezmoi status {self.path}"',
+                    f"{chezmoi.status(str(self.path))}",
+                ]
+                self.write("\n".join(text))
+                return
 
         try:
             with open(self.path, "rt", encoding="utf-8") as file:
@@ -135,11 +139,7 @@ class PathView(RichLog):
 
         except IsADirectoryError:
             self.write(f"Directory: {self.path}")
-            return
 
-        except UnicodeDecodeError:
-            text = f"{self.path} cannot be decoded as UTF-8."
-            self.write(f"{self.path} cannot be decoded as UTF-8.")
             return
 
         except OSError as error:
