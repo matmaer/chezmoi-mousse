@@ -32,7 +32,7 @@ filter_data = FilterSwitch(
         label="include unwanted paths",
     ),
     unchanged=Filter(
-        label="show unchanged",
+        label="include unchanged",
         tooltip="Include files unchanged files which are not found in the 'chezmoi status' output.",
     ),
 )

@@ -1,47 +1,35 @@
-#tree_buttons_horizontal {
-  height: 2;
-  border-left: none;
-  border-right: none;
-  border-top: none;
-  border-bottom: solid $primary;
-  border-subtitle-color: $primary;
-  border-subtitle-align: center;
-  border-subtitle-style: bold;
-  width: auto;
-}
-
-.right-vertical {
-}
+/****************/
+/* tcss classes */
+/****************/
 
 .left-vertical {
+  width: 1fr;
   margin-right: 2;
 }
 
-.any-tree {
+.right-vertical {
+  width: 2fr;
 }
 
-#add_tree, #add_path_view {
-  border-top: solid $primary;
-  border-title-align: center;
+.center-content {
+  align: center middle;
 }
 
 .filter-container {
-  align: center bottom;
+  dock: bottom;
+  align: center middle;
   border-top: inner $background-lighten-1;
   border-bottom: inner $background-lighten-1;
+  border-right: inner $background-lighten-1;
   background: $background-lighten-1;
   background-tint: $background-lighten-1;
   height: auto;
-  max-height: 8;
 
   &>.filter-label {
-    background: $background-lighten-1;
-    background-tint: $background-lighten-1;
-    padding-right: 2;
+    padding-right: 1;
   }
 
   .switch--slider {
-    border: none;
     color: $error-darken-3;
   }
 
@@ -60,7 +48,7 @@
       }
 
       &.-on>.switch--slider {
-        color: $success-lighten-1;
+        color: $success-lighten-2;
       }
     }
   }
@@ -71,9 +59,17 @@
   margin-bottom: 1;
 }
 
-/****************/
-/* ID selectors */
-/****************/
+AddTab {
+  /* to have a space between the two filters */
+  .padding-once {
+    padding-bottom: 1;
+  }
+  /* to show the root path on the left and view path on the right */
+  .border-path-title {
+    border-top: solid $primary;
+    border-title-align: center;
+  }
+}
 
 AutoWarning {
   height: auto;
@@ -84,9 +80,28 @@ AutoWarning {
   border-bottom: dashed $panel;
 }
 
-#diagram_tab {
+ApplyTab, ReAddTab {
+  /* for "Tree" vs "Status" switcher */
+  #tree_buttons_horizontal {
+    height: 2;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+    border-bottom: solid $primary;
+    border-subtitle-color: $primary;
+    border-subtitle-align: center;
+    border-subtitle-style: bold;
+    width: 1fr;
+    max-width: 1fr;
+  }
+  #re_add_tree {
+    width: auto;
+}
+}
+
+#flow_diagram {
   padding: 0 1 0 1;
-  min-width: 82;
+  min-width: 80;
 }
 
 /******************************************************************/
