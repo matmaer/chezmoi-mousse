@@ -42,7 +42,7 @@ from chezmoi_mousse.components import PathView, DiffView, ManagedTree, GitLog
 from chezmoi_mousse.config import filter_data, pw_mgr_info
 
 
-def _get_left_vertical_min_width(add_tab: bool = False) -> int:
+def left_min_width(add_tab: bool = False) -> int:
     dest_dir_length = len(str(chezmoi.dest_dir)) + 4  # for double padding
     # 8 for the filter switch, 2 for title padding right and the border
     if add_tab:
@@ -90,7 +90,7 @@ class ApplyTab(Horizontal):
 
     def on_mount(self) -> None:
         self.query_one("#apply_left_vertical", Vertical).styles.min_width = (
-            _get_left_vertical_min_width()
+            left_min_width()
         )
 
     def on_tree_node_selected(self, event: Tree.NodeSelected) -> None:
@@ -151,7 +151,7 @@ class ReAddTab(Horizontal):
 
     def on_mount(self) -> None:
         self.query_one("#re_add_left_vertical", Vertical).styles.min_width = (
-            _get_left_vertical_min_width()
+            left_min_width()
         )
 
     def on_tree_node_selected(self, event: Tree.NodeSelected) -> None:
@@ -295,14 +295,13 @@ class AddTab(Horizontal):
         )
 
     def on_mount(self) -> None:
-        add_tree = self.query_exactly_one(AddTab.FilteredDirTree)
-        add_tree.show_root = False
-
-        tree_title = Content.from_text(f"{chezmoi.dest_dir}{os.sep}")
-        add_tree.border_title = tree_title
+        self.query_one(AddTab.FilteredDirTree).show_root = False
+        self.query_one(AddTab.FilteredDirTree).border_title = (
+            Content.from_text(f"{chezmoi.dest_dir}{os.sep}")
+        )
 
         self.query_one("#add_left_vertical", Vertical).styles.min_width = (
-            _get_left_vertical_min_width(add_tab=True)
+            left_min_width(add_tab=True)
         )
 
         self.query_exactly_one(PathView).border_title = "Path View"
