@@ -1,6 +1,5 @@
 from textual import on
 from textual.app import App, ComposeResult
-from textual.binding import Binding
 from textual.containers import ScrollableContainer
 from textual.lazy import Lazy
 from textual.screen import Screen
@@ -19,37 +18,6 @@ from chezmoi_mousse import BURGER, FLOW
 
 
 class MainScreen(Screen):
-
-    BINDINGS = [
-        Binding(
-            key="W,w",
-            action="apply_path",
-            description="write-dotfile",
-            tooltip="write to dotfiles from your chezmoi repository",
-        ),
-        Binding(
-            key="A,a",
-            action="re_add_path",
-            description="re-add-chezmoi",
-            tooltip="overwrite chezmoi repository with your current dotfiles",
-        ),
-        Binding(
-            key="A,a",
-            action="add_path",
-            description="chezmoi-add",
-            tooltip="add new file to your chezmoi repository",
-        ),
-        Binding(key="C,c", action="open_config", description="chezmoi-config"),
-        Binding(
-            key="G,g",
-            action="git_log",
-            description="show-git-log",
-            tooltip="git log from your chezmoi repository",
-        ),
-        Binding(
-            key="escape", action="dismiss", description="close", show=False
-        ),
-    ]
 
     def compose(self) -> ComposeResult:
         yield Header(icon=BURGER)
