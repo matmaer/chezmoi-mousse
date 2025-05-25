@@ -1714,14 +1714,14 @@ wheels = [
 
 [[package]]
 name = "textual-window"
-version = "0.2.1"
+version = "0.2.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "textual" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/a3/60/6cb32e1d85b8381913f8aa807bee6280b8740c550571169fd5fe6d02d544/textual_window-0.2.1.tar.gz", hash = "sha256:9a1b8cb1a792839e8409a8c059014ec18f70b66f073ef28e2759d00dd2510fcc", size = 87725, upload-time = "2025-05-25T06:22:22.362Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/3b/8f/23092de9e52689f25f503b396171b77213ea67034a383f2f2fd92e2b1309/textual_window-0.2.2.tar.gz", hash = "sha256:94da0e728ce41bc053e2c83f6b55a8bd36df3f36e17788010f2dc57e6cda1389", size = 88529, upload-time = "2025-05-25T10:22:16.771Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c4/b7/2871179ae7a6fff6fa19af0071363eed1f0a3bfb228a78571eaad723762d/textual_window-0.2.1-py3-none-any.whl", hash = "sha256:eea0593726d5a400ab6ca6242a529bf90833d2fa4caf6f3e03e6673d946d5118", size = 23463, upload-time = "2025-05-25T06:22:21.004Z" },
+    { url = "https://files.pythonhosted.org/packages/06/b4/fc5ed3b8901df8753c498e4f73a8718640b0db0b6bfe812d5afe0cafcccd/textual_window-0.2.2-py3-none-any.whl", hash = "sha256:426e295138ba2116b042943d6e2ef92d7d8e890ad43d0b38e512493dd75546d1", size = 24004, upload-time = "2025-05-25T10:22:15.396Z" },
 ]
 
 [[package]]
