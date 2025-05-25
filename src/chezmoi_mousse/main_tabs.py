@@ -326,23 +326,32 @@ class AddTab(Horizontal):
             path_view.border_title = title
             managed: bool = event.node.data.path in chezmoi.managed_dir_paths
             if managed:
-                path_view.write(f'Managed directory: "{event.node.data.path}"')
+                path_view.write(f"Managed directory: {event.node.data.path}\n")
             else:
                 path_view.write(
-                    f'Unmanaged directory: "{event.node.data.path}"'
+                    f"Unmanaged directory: {event.node.data.path}\n"
                 )
             unmanaged_files: list[Path] = chezmoi.unmanaged_in_d(
                 event.node.data.path
             )
-            if not unmanaged_files:
-                path_view.write("No unmanaged files in this directory.")
-            else:
-                path_view.write("Unmanaged files in this directory:")
+            managed_files: list[Path] = chezmoi.managed_file_paths_in_dir(
+                event.node.data.path
+            )
+            managed_dirs: list[Path] = chezmoi.managed_dir_paths_in_dir(
+                event.node.data.path
+            )
+            if managed_dirs:
+                path_view.write("Contains managed sub dirs:")
+                for p in managed_dirs:
+                    path_view.write(str(p))
+            if unmanaged_files:
+                path_view.write("Contains unmanaged files:")
                 for p in unmanaged_files:
-                    path_view.write(f'"{p}"')
-                path_view.write(
-                    "Click chezmoi-add or hit A to add it to chezmoi."
-                )
+                    path_view.write(str(p))
+            if managed_files:
+                path_view.write("Contains managed files:")
+                for p in managed_files:
+                    path_view.write(str(p))
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
         event.stop()
