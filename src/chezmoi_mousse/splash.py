@@ -56,6 +56,8 @@ RICH_LOG = RichLog(id="loading_screen_log")
 RICH_LOG.styles.height = LOG_HEIGHT + 1
 RICH_LOG.styles.width = LOG_PADDING_WIDTH + 9
 RICH_LOG.styles.color = "#0053AA"
+RICH_LOG.styles.margin = 0
+RICH_LOG.styles.padding = 0
 
 
 class LoadingScreen(Screen):
