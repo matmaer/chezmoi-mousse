@@ -9,7 +9,6 @@ from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.events import Click
 from textual.containers import (
-    Container,
     Horizontal,
     Vertical,
     VerticalGroup,
@@ -29,7 +28,6 @@ from textual.widgets import (
     ListItem,
     ListView,
     Pretty,
-    RichLog,
     TabbedContent,
     TabPane,
     Static,
@@ -55,23 +53,27 @@ class ApplyTab(Horizontal):
     ]
 
     def compose(self) -> ComposeResult:
-        with Vertical():
-            yield ManagedTree(
-                status_files=chezmoi.status_paths["apply_files"],
-                status_dirs=chezmoi.status_paths["apply_dirs"],
-                id="apply_tree",
-                classes="tree",
+        with Vertical(classes="left-vertical"):
+            yield Horizontal(
+                ManagedTree(
+                    status_files=chezmoi.status_paths["apply_files"],
+                    status_dirs=chezmoi.status_paths["apply_dirs"],
+                    id="apply_tree",
+                    classes="any-tree",
+                )
             )
-            with Horizontal(classes="filter-container"):
-                yield Switch(id="apply_tab_unchanged", classes="filter-switch")
-                yield Label(
+            yield Horizontal(
+                Switch(id="apply_tab_unchanged", classes="filter-switch"),
+                Label(
                     filter_data.unchanged.label, classes="filter-label"
-                ).with_tooltip(tooltip=filter_data.unchanged.tooltip)
-        with Vertical():
+                ).with_tooltip(tooltip=filter_data.unchanged.tooltip),
+                classes="filter-container",
+            )
+        with Vertical(classes="right-vertical"):
             with TabbedContent(id="apply_tabs", classes="right"):
-                with TabPane("Content", id="content_tab_pane"):
-                    yield PathView()
-                with TabPane("Diff", id="diff_tab_pane"):
+                with TabPane("Content", id="apply_content_pane"):
+                    yield PathView(id="apply_path_view")
+                with TabPane("Diff", id="apply_diff_pane"):
                     yield DiffView(id="apply_diff_view")
 
     def on_tree_node_selected(self, event: Tree.NodeSelected) -> None:
@@ -104,24 +106,27 @@ class ReAddTab(Horizontal):
     ]
 
     def compose(self) -> ComposeResult:
-        with Vertical():
-            yield ManagedTree(
-                status_files=chezmoi.status_paths["re_add_files"],
-                status_dirs=chezmoi.status_paths["re_add_dirs"],
-                id="re_add_tree",
-            )
-            with Horizontal(classes="filter-container"):
-                yield Switch(
-                    id="re_add_tab_unchanged", classes="filter-switch"
+        with Vertical(classes="left-vertical"):
+            yield Horizontal(
+                ManagedTree(
+                    status_files=chezmoi.status_paths["re_add_files"],
+                    status_dirs=chezmoi.status_paths["re_add_dirs"],
+                    id="re_add_tree",
+                    classes="any-tree",
                 )
-                yield Label(
+            )
+            yield Horizontal(
+                Switch(id="re_add_tab_unchanged", classes="filter-switch"),
+                Label(
                     filter_data.unchanged.label, classes="filter-label"
-                ).with_tooltip(tooltip=filter_data.unchanged.tooltip)
-        with Vertical():
+                ).with_tooltip(tooltip=filter_data.unchanged.tooltip),
+                classes="filter-container",
+            )
+        with Vertical(classes="right-vertical"):
             with TabbedContent(id="re_add_tabs", classes="right"):
-                with TabPane("Content"):
-                    yield PathView()
-                with TabPane("Diff"):
+                with TabPane("Content", id="re_add_content_pane"):
+                    yield PathView(id="re_add_path_view")
+                with TabPane("Diff", id="re_add_diff_pane"):
                     yield DiffView(id="re_add_diff_view")
 
     def on_tree_node_selected(self, event: Tree.NodeSelected) -> None:
@@ -151,6 +156,7 @@ class AddTab(Horizontal):
 
     class FilteredDirTree(DirectoryTree):
 
+        path_view_top_border: reactive[str] = reactive("Path View")
         unmanaged_dirs = reactive(False)
         unwanted = reactive(False)
 
@@ -221,38 +227,44 @@ class AddTab(Horizontal):
             return False
 
     def compose(self) -> ComposeResult:
-        with Vertical(id="add_tab_left"):
+        with Vertical(id="add_tab_left", classes="left-vertical"):
             yield AddTab.FilteredDirTree(
-                chezmoi.dest_dir, id="add_tree", classes="dir-tree"
+                chezmoi.dest_dir, id="add_tree", classes="any-tree"
             )
-            with Container(classes="filter-container"):
-                with Horizontal():
-                    yield Switch(
-                        id="add_tab_unmanaged_dirs", classes="filter-switch"
+            with Horizontal(classes="filter-container"):
+                with Vertical():
+                    yield Horizontal(
+                        Switch(
+                            id="add_tab_unmanaged_dirs",
+                            classes="filter-switch",
+                        ),
+                        Label(
+                            filter_data.unchanged.label, classes="filter-label"
+                        ).with_tooltip(tooltip=filter_data.unchanged.tooltip),
+                        classes="filter-container",
                     )
-                    yield Label(
-                        filter_data.unchanged.label, classes="filter-label"
-                    ).with_tooltip(tooltip=filter_data.unchanged.tooltip)
-                with Horizontal():
-                    yield Switch(
-                        id="add_tab_unwanted", classes="filter-switch"
+                    yield Horizontal(
+                        Switch(id="add_tab_unwanted", classes="filter-switch"),
+                        Label(
+                            filter_data.unchanged.label, classes="filter-label"
+                        ).with_tooltip(tooltip=filter_data.unchanged.tooltip),
+                        classes="filter-container",
                     )
-                    yield Label(
-                        filter_data.unchanged.label, classes="filter-label"
-                    ).with_tooltip(tooltip=filter_data.unchanged.tooltip)
-        with Vertical(id="add_tab_right"):
-            yield PathView()
+        yield Vertical(
+            PathView(id="add_path_view"),
+            id="add_tab_right",
+            classes="right-vertical",
+        )
 
     def on_mount(self) -> None:
-        self.query_exactly_one(AddTab.FilteredDirTree).show_root = False
-        tree_title = Content.from_text(f" {chezmoi.dest_dir}{os.sep} ")
+        add_tree = self.query_exactly_one(AddTab.FilteredDirTree)
+        add_tree.show_root = False
 
-        add_tab_left = self.query_one("#add_tab_left", Vertical)
-        add_tab_left.border_title = tree_title
-        add_tab_left.styles.min_width = len(tree_title)
+        tree_title = Content.from_text(f"{chezmoi.dest_dir}{os.sep}")
+        add_tree.border_title = tree_title
+        add_tree.styles.min_width = len(tree_title) + 4
 
-        add_tab_right = self.query_one("#add_tab_right", Vertical)
-        add_tab_right.border_title = Content.from_text(" Path View ")
+        self.query_one("#add_path_view", PathView).border_title = "Path View"
 
     def on_directory_tree_file_selected(
         self, event: FilteredDirTree.FileSelected
@@ -260,33 +272,35 @@ class AddTab(Horizontal):
         event.stop()
         if event.node.data is not None:
             self.query_exactly_one(PathView).path = event.node.data.path
-            title = f" {event.node.data.path.relative_to(chezmoi.dest_dir)} "
-            self.query_one("#add_tab_right", Vertical).border_title = title
+            title = f"{event.node.data.path.relative_to(chezmoi.dest_dir)}"
+            self.query_one("#add_path_view", PathView).border_title = title
 
     def on_directory_tree_directory_selected(
         self, event: FilteredDirTree.DirectorySelected
     ) -> None:
         event.stop()
         if event.node.data is not None:
-            rich_log = self.query_one("#file_preview", RichLog)
-            rich_log.clear()
+            path_view = self.query_one("#add_path_view", PathView)
+            path_view.clear()
+            title = f"{event.node.data.path.relative_to(chezmoi.dest_dir)}"
+            path_view.border_title = title
             managed: bool = event.node.data.path in chezmoi.managed_dir_paths
             if managed:
-                rich_log.write(f'Managed directory: "{event.node.data.path}"')
+                path_view.write(f'Managed directory: "{event.node.data.path}"')
             else:
-                rich_log.write(
+                path_view.write(
                     f'Unmanaged directory: "{event.node.data.path}"'
                 )
             unmanaged_files: list[Path] = chezmoi.unmanaged_in_d(
                 event.node.data.path
             )
             if not unmanaged_files:
-                rich_log.write("No unmanaged files in this directory.")
+                path_view.write("No unmanaged files in this directory.")
             else:
-                rich_log.write("Unmanaged files in this directory:")
+                path_view.write("Unmanaged files in this directory:")
                 for p in unmanaged_files:
-                    rich_log.write(f'"{p}"')
-                rich_log.write(
+                    path_view.write(f'"{p}"')
+                path_view.write(
                     "Click chezmoi-add or hit A to add it to chezmoi."
                 )
 
@@ -364,9 +378,7 @@ class DoctorTab(VerticalScroll):
     def compose(self) -> ComposeResult:
 
         with Horizontal():
-            yield DataTable(
-                id="doctortable", classes="doctortable", show_cursor=False
-            )
+            yield DataTable(id="doctor_table", show_cursor=False)
         with VerticalGroup(classes="collapsiblegroup"):
             yield Collapsible(
                 Pretty(chezmoi.template_data.dict_out),
@@ -394,7 +406,7 @@ class DoctorTab(VerticalScroll):
         }
 
         list_view = self.query_one("#cmdnotfound", ListView)
-        table = self.query_one("#doctortable", DataTable)
+        table = self.query_one("#doctor_table", DataTable)
         doctor_rows = chezmoi.doctor.list_out
         table.add_columns(*doctor_rows[0].split())
 

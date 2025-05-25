@@ -88,13 +88,9 @@ class PathView(RichLog):
 
     path: reactive[Path | None] = reactive(None, init=False)
 
-    def __init__(self, path: Path | None = None) -> None:
+    def __init__(self, path: Path | None = None, **kwargs) -> None:
         super().__init__(
-            id="file_preview",
-            classes="file-preview",
-            auto_scroll=False,
-            wrap=False,
-            highlight=True,
+            auto_scroll=False, wrap=False, highlight=True, **kwargs
         )
         self.path = path
 
@@ -156,7 +152,7 @@ class PathView(RichLog):
             self.update_path_view()
 
 
-class DiffView(Horizontal):
+class DiffView(Static):
 
     BINDINGS = [Binding(key="M,m", action="maximize", description="maximize")]
 
@@ -167,17 +163,15 @@ class DiffView(Horizontal):
     def allow_maximize(self) -> bool:
         return True
 
-    def compose(self) -> ComposeResult:
-        yield Static("Click a file to see its diff")
-
     def watch_diff_spec(self) -> None:
+        if self.diff_spec is None:
+            self.update("Click a file to see its diff")
         assert self.diff_spec is not None and isinstance(self.diff_spec, tuple)
-        static_diff = self.query_exactly_one(Static)
 
         diff_output: list[str]
         if self.diff_spec[1] == "apply":
             if self.diff_spec[0] not in chezmoi.status_paths["apply_files"]:
-                static_diff.update(
+                self.update(
                     Content("\n").join(
                         [
                             f"No diff available for {self.diff_spec[0]}",
@@ -190,7 +184,7 @@ class DiffView(Horizontal):
                 diff_output = chezmoi.apply_diff(str(self.diff_spec[0]))
         elif self.diff_spec[1] == "re-add":
             if self.diff_spec[0] not in chezmoi.status_paths["re_add_files"]:
-                static_diff.update(
+                self.update(
                     Content("\n").join(
                         [
                             f"No diff available for {self.diff_spec[0]}",
@@ -203,7 +197,7 @@ class DiffView(Horizontal):
                 diff_output = chezmoi.re_add_diff(str(self.diff_spec[0]))
 
         if not diff_output:
-            static_diff.update(
+            self.update(
                 Content(
                     f"chezmoi diff {self.diff_spec[0]} returned no output."
                 )
@@ -232,7 +226,7 @@ class DiffView(Horizontal):
             else:
                 content = Content("\u2022" + line)  # bullet •
                 colored_lines.append(content.stylize("dim"))
-        static_diff.update(Content("\n").join(colored_lines))
+        self.update(Content("\n").join(colored_lines))
 
 
 @dataclass
@@ -267,11 +261,10 @@ class ManagedTree(Vertical):
 
     def compose(self) -> ComposeResult:
         with Horizontal(id="tree_buttons_horizontal"):
-            with Vertical(classes="tree-button-vertical"):
-                yield Button("Tree", id="tree_button_tree")
-            with Vertical(classes="tree-button-vertical"):
-                yield Button("Status", id="tree_button_status")
-        yield Tree(label="root", classes="managed-tree")
+            yield Vertical(Button("Tree", id="tree_button_tree"))
+            yield Vertical(Button("Status", id="tree_button_status"))
+        with Horizontal():
+            yield Tree(label="root")
 
     def on_mount(self) -> None:
         tree_buttons = self.query_one("#tree_buttons_horizontal", Horizontal)

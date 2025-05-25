@@ -7,45 +7,63 @@
   border-subtitle-color: $primary;
   border-subtitle-align: center;
   border-subtitle-style: bold;
+  width: auto;
+}
+
+.right-vertical {
+}
+
+.left-vertical {
+  margin-right: 2;
+}
+
+.any-tree {
+}
+
+#add_tree, #add_path_view {
+  border-top: solid $primary;
+  border-title-align: center;
 }
 
 .filter-container {
+  align: center bottom;
   border-top: inner $background-lighten-1;
   border-bottom: inner $background-lighten-1;
-  align: center bottom;
   background: $background-lighten-1;
   background-tint: $background-lighten-1;
   height: auto;
-  .filter-label {
+  max-height: 8;
+
+  &>.filter-label {
+    background: $background-lighten-1;
+    background-tint: $background-lighten-1;
     padding-right: 2;
   }
 
   .switch--slider {
     border: none;
-    height: 1;
     color: $error-darken-3;
   }
 
   .filter-switch {
-    height: 1;
     border: none;
     background: $background-lighten-1;
     background-tint: $background-lighten-1;
 
-      &.-on .switch--slider {
-        color: $success-darken-1;
+    &.-on .switch--slider {
+      color: $success-darken-1;
+    }
+
+    &:hover {
+      &>.switch--slider {
+        color: $error;
       }
 
-      &:hover {
-        &>.switch--slider {
-          color: $error;
-        }
-
-        &.-on>.switch--slider {
-          color: $success-lighten-1;
-        }
+      &.-on>.switch--slider {
+        color: $success-lighten-1;
       }
     }
+  }
 }
 
 .doctor-modal {
@@ -112,7 +130,6 @@ DataTable {
 }
 
 DirectoryTree {
-
   &>.directory-tree--folder {
     color: $primary-lighten-3;
     text-style: none;
