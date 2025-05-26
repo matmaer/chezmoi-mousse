@@ -15,6 +15,9 @@ from textual.reactive import reactive
 from textual.widgets import Button, DataTable, RichLog, Static, Tree
 from textual.widgets.tree import TreeNode
 
+from textual_window import Window
+
+
 from chezmoi_mousse.chezmoi import chezmoi
 
 
@@ -94,6 +97,10 @@ class PathView(RichLog):
         )
         self.path = path
 
+    def on_mount(self) -> None:
+        text = "Click a file or directory, \nto show its contents."
+        self.write(Text(text, style="dim"))
+
     def update_path_view(self) -> None:
         assert isinstance(self.path, Path)
         truncated = ""
@@ -105,6 +112,14 @@ class PathView(RichLog):
         except PermissionError as error:
             self.write(error.strerror)
             return
+
+        try:
+            with open(self.path, "rt", encoding="utf-8") as file:
+                file_content = file.read(150 * 1024)
+                if not file_content.strip():
+                    self.write("File contains only whitespace")
+                else:
+                    self.write(file_content + truncated)
 
         except UnicodeDecodeError:
             text = f"{self.path} cannot be decoded as UTF-8."
@@ -129,21 +144,12 @@ class PathView(RichLog):
                 self.write("\n".join(text))
                 return
 
-        try:
-            with open(self.path, "rt", encoding="utf-8") as file:
-                file_content = file.read(150 * 1024)
-                if not file_content.strip():
-                    self.write("File contains only whitespace")
-                else:
-                    self.write(file_content + truncated)
-
         except IsADirectoryError:
             self.write(f"Directory: {self.path}")
-
             return
 
         except OSError as error:
-            text = Content(f"Error reading {self.path}: {error}")
+            text = Text(f"Error reading {self.path}: {error}")
             self.write(text)
 
     def watch_path(self) -> None:
@@ -162,6 +168,10 @@ class DiffView(Static):
     @property
     def allow_maximize(self) -> bool:
         return True
+
+    def on_mount(self) -> None:
+        text = "Click a file or directory, \nto show the diff."
+        self.update(Text(text, style="dim"))
 
     def watch_diff_spec(self) -> None:
         if self.diff_spec is None:
@@ -262,7 +272,7 @@ class ManagedTree(Vertical):
     def compose(self) -> ComposeResult:
         with Horizontal(id="tree_buttons_horizontal"):
             yield Vertical(Button("Tree", id="tree_button_tree"))
-            yield Vertical(Button("Status", id="tree_button_status"))
+            yield Vertical(Button("List", id="tree_button_status"))
         with Horizontal():
             yield Tree(label="root")
 
@@ -421,3 +431,24 @@ class ManagedTree(Vertical):
         for node in expanded_nodes:
             self.add_nodes(node)
             self.add_leaves(node)
+
+
+class PathViewWindow(Window):
+    """Draggable window layer which contains a PathView widget."""
+
+    path_for_window: reactive[Path | None] = reactive(None, init=False)
+
+    def __init__(self, **kworgs) -> None:
+        super().__init__(
+            allow_resize=True,
+            show_maximize_button=True,
+            start_open=False,
+            classes="path-view-window",
+            **kworgs,
+        )
+
+    # def on_mount(self) -> None:
+
+    def watch_path_for_window(self) -> None:
+        self.remove_children_in_window()
+        self.mount_in_window(PathView(self.path_for_window))
