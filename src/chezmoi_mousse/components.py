@@ -9,9 +9,11 @@ from rich.style import Style
 from rich.text import Text
 from textual.app import ComposeResult
 from textual.binding import Binding
+from textual.color import Color
 from textual.containers import Horizontal, Vertical
 from textual.content import Content
 from textual.reactive import reactive
+from textual.theme import Theme
 from textual.widgets import Button, DataTable, RichLog, Static, Tree
 from textual.widgets.tree import TreeNode
 
@@ -19,6 +21,12 @@ from textual_window import Window
 
 
 from chezmoi_mousse.chezmoi import chezmoi
+
+
+def convert_theme_color_var(theme: Theme, var: str) -> str:
+    """Convert a theme var to string for pre-Content objects."""
+    colors_dict = theme.to_color_system().generate()
+    return Color.parse(colors_dict[var]).hex
 
 
 class GitLog(DataTable):
