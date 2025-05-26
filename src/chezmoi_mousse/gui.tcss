@@ -266,10 +266,12 @@ TitleBar {
   height: 1;
   padding: 0 1;
   &:hover {
-    background: $panel-lighten-3;
-    background-tint: $panel-lighten-3;
+    text-style: bold;
+    background: $panel-lighten-1;
+    background-tint: $panel-lighten-1;
   }
   &:focus {
+    text-style: bold;
     background: $panel-lighten-3;
     background-tint: $panel-lighten-3;
   }
@@ -280,7 +282,9 @@ TitleBar {
   }
 }
 CloseButton {
-  width: 3; height: 1; padding: 0;
+  width: 3;
+  height: 1;
+  padding: 0;
   &:hover {
     text-style: bold;
     background: $error;
