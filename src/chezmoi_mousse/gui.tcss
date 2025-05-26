@@ -63,7 +63,6 @@
 
 AddTab {
   DirectoryTree {
-    border: green;
     height: 100%;
   }
   /* to have a space between the two filters */
@@ -89,6 +88,7 @@ AutoWarning {
 ApplyTab, ReAddTab {
   /* for "Tree" vs "Status" switcher */
   #tree_buttons_horizontal {
+    align: center middle;
     height: 2;
     border-left: none;
     border-right: none;
@@ -97,14 +97,20 @@ ApplyTab, ReAddTab {
     border-subtitle-color: $primary;
     border-subtitle-align: center;
     border-subtitle-style: bold;
-    width: 1fr;
-    max-width: 1fr;
+
+    Vertical {
+      align: center middle;
+    }
   }
 }
 
 #flow_diagram {
   padding: 0 1 0 1;
   min-width: 80;
+}
+
+PathView, DiffView {
+  padding-left: 1;
 }
 
 /******************************************************************/
@@ -168,8 +174,8 @@ DirectoryTree {
 
 Footer {
   height: 3;
-  border-top: dashed $panel;
-  border-bottom: hidden;
+  border-top: dashed $panel-lighten-1;
+  border-bottom: dashed $panel;
   .-command-palette {
     border: none;
   }

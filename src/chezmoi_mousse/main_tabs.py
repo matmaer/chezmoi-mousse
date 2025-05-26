@@ -60,7 +60,7 @@ class ApplyTab(Horizontal):
         Binding(
             key="W,w",
             action="apply_path",
-            description="write-dotfile",
+            description="chezmoi-apply",
             tooltip="write to dotfiles from your chezmoi repository",
         )
     ]
@@ -121,7 +121,7 @@ class ReAddTab(Horizontal):
         Binding(
             key="A,a",
             action="re_add_path",
-            description="re-add-chezmoi",
+            description="chezmoi-re-add",
             tooltip="overwrite chezmoi repository with your current dotfiles",
         )
     ]
