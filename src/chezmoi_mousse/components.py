@@ -448,16 +448,10 @@ class PathViewWindow(Window):
         super().__init__(id="path_view_window", name="Path View")
         self.path_for_window = path_for_window
 
-    # def on_mount(self) -> None:
-    #     if self.path_for_window is None:
-    #         self.path_for_window = chezmoi.dest_dir
-
-    def watch_path_for_window(self) -> None:
-        # path_view_window = self.query_one("#path_view_window", Window)
+    def pop_out_window(self) -> None:
         self.remove_children_in_window()
         self.mount_in_window(PathView(path=self.path_for_window))
+        self.open_window()
 
-    def action_show_in_window(self) -> None:
-        """Action to show the PathView in a separate window."""
-        # self
-        ...
+    def watch_path_for_window(self) -> None:
+        self.pop_out_window()
