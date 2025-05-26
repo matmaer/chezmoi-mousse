@@ -267,16 +267,14 @@ TitleBar {
   padding: 0 1;
   &:hover {
     text-style: bold;
+    background: $panel-lighten-3;
+    background-tint: $panel-lighten-3;
   }
   &:focus {
     text-style: bold;
-    background: $panel-lighten-3;
-    background-tint: $panel-lighten-3;
   }
   &.pressed {
     text-style: bold;
-    background: $panel-lighten-3;
-    background-tint: $panel-lighten-3;
   }
 }
 CloseButton {
