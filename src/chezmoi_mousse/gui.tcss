@@ -325,6 +325,7 @@ HamburgerButton {
 }
 Resizer {
   width: 2;
+  border-right: wide $panel-lighten-1;
   height: 1;
   padding: 0;
   content-align: right middle;
@@ -343,8 +344,6 @@ Resizer {
   padding: 0 1;
 }
 #content_pane {
-  # background: $surface;
-  # background-tint: $surface;
   border-left: wide $panel-lighten-1;
   border-right: wide $panel-lighten-1;
   padding: 1 0 1 1;
