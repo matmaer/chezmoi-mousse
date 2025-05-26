@@ -267,8 +267,6 @@ TitleBar {
   padding: 0 1;
   &:hover {
     text-style: bold;
-    background: $panel-lighten-1;
-    background-tint: $panel-lighten-1;
   }
   &:focus {
     text-style: bold;
