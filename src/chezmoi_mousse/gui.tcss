@@ -239,106 +239,118 @@ Tree {
 
 
 Window {
-    width: 20;
-    height: 10;
-    min-width: 12;
-    min-height: 6;
-    &:focus {
-      & > TopBar, BottomBar {
-        background: $panel-lighten-3;
-        background-tint: $panel-lighten-3;
-      }
-      & > #content_pane {
-          border-left: wide $panel-lighten-3;
-          border-right: wide $panel-lighten-3;
-      }
+  width: 20;
+  height: 10;
+  min-width: 12;
+  min-height: 6;
+  &:focus {
+    & > TopBar, BottomBar {
+      background: $panel-lighten-3;
+      background-tint: $panel-lighten-3;
     }
+    & > #content_pane {
+        border-left: wide $panel-lighten-3;
+        border-right: wide $panel-lighten-3;
+    }
+  }
 }
 TopBar, BottomBar {
-    height: 1;
-    max-height: 1;
-    width: 1fr;
-    background: $panel-lighten-1;
-    background-tint: $panel-lighten-1;
+  height: 1;
+  max-height: 1;
+  width: 1fr;
+  background: $panel-lighten-1;
+  background-tint: $panel-lighten-1;
 }
 TitleBar {
-    width: 1fr;
-    height: 1;
-    padding: 0 1;
-    &:hover {
-      text-style: bold;
-      background: $panel-lighten-3;
-      background-tint: $panel-lighten-3;
-    }
-    &.pressed {
-      text-style: bold;
-      background: $panel-lighten-3;
-      background-tint: $panel-lighten-3;
-    }
+  width: 1fr;
+  height: 1;
+  padding: 0 1;
+  &:hover {
+    background: $panel-lighten-3;
+    background-tint: $panel-lighten-3;
+  }
+  &:focus {
+    background: $panel-lighten-3;
+    background-tint: $panel-lighten-3;
+  }
+  &.pressed {
+    text-style: bold;
+    background: $panel-lighten-3;
+    background-tint: $panel-lighten-3;
+  }
 }
 CloseButton {
-    width: 3; height: 1; padding: 0;
-    &:hover {
-      text-style: bold;
-      background: $error;
-      background-tint: $error;
-    }
-    &.pressed {
-      text-style: bold;
-      background: $error-darken-2;
-      background-tint: $error-darken-2;
-      color: $text-error; }
+  width: 3; height: 1; padding: 0;
+  &:hover {
+    text-style: bold;
+    background: $error;
+    background-tint: $error;
+  }
+  &.pressed {
+    text-style: bold;
+    background: $error-darken-2;
+    background-tint: $error-darken-2;
+    color: $text-error;
+  }
+  &:focus {
+    background: $panel-lighten-3;
+    background-tint: $panel-lighten-3;
+  }
 }
 MaximizeButton {
-    width: 3;
-    height: 1;
-    padding: 0;
-    &:hover {
-      background: $panel-lighten-3;
-      background-tint: $panel-lighten-3;
-     }
-    &.pressed {
-      background: $primary;
-      background-tint: $primary;
-      color: $text; }
+  width: 3;
+  height: 1;
+  padding: 0;
+  &:hover {
+    background: $panel-lighten-3;
+    background-tint: $panel-lighten-3;
+    }
+  &.pressed {
+    background: $primary;
+    background-tint: $primary;
+    color: $text; }
 }
 HamburgerButton {
-    width: 3;
-    height: 1;
-    padding: 0;
-    &:hover {
-      background: $panel-lighten-3;
-      background-tint: $panel-lighten-3;
-    }
-    &.pressed {
-      background: $primary;
-      background-tint: $primary;
-    }
+  width: 3;
+  height: 1;
+  padding: 0;
+  &:hover {
+    background: $panel-lighten-3;
+    background-tint: $panel-lighten-3;
+  }
+  &.pressed {
+    background: $primary;
+    background-tint: $primary;
+  }
 }
 Resizer {
-    width: 2;
-    height: 1;
-    padding: 0;
-    content-align: right middle;
-    &:hover {
-      background: $panel-lighten-3;
-      background-tint: $panel-lighten-3;
-    }
-    &.pressed {
-      background: $panel-lighten-3;
-      background-tint: $panel-lighten-3;
-    }
+  width: 2;
+  height: 1;
+  padding: 0;
+  content-align: right middle;
+  &:hover {
+    background: $panel-lighten-3;
+    background-tint: $panel-lighten-3;
+  }
+  &.pressed {
+    background: $panel-lighten-3;
+    background-tint: $panel-lighten-3;
+  }
 }
-#bottom_bar_text { width: 1fr; height: 1; padding: 0 1; }
+#bottom_bar_text {
+  width: 1fr;
+  height: 1;
+  padding: 0 1;
+}
 #content_pane {
-    background: $surface;
-    background-tint: $surface;
-    border-left: wide $panel-lighten-1;
-    border-right: wide $panel-lighten-1;
-    padding: 1 0 1 1;
-    align: center top;
-    width: 1fr;
-    height: 1fr;
+  background: $surface;
+  background-tint: $surface;
+  border-left: wide $panel-lighten-1;
+  border-right: wide $panel-lighten-1;
+  padding: 1 0 1 1;
+  align: center top;
+  width: 1fr;
+  height: 1fr;
 }
 
 /*
