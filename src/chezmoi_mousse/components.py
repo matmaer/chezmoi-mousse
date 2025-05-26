@@ -436,19 +436,28 @@ class ManagedTree(Vertical):
 class PathViewWindow(Window):
     """Draggable window layer which contains a PathView widget."""
 
+    BINDINGS = [
+        Binding(
+            key="W,w", action="show_in_window", description="show-in-window"
+        )
+    ]
+
     path_for_window: reactive[Path | None] = reactive(None, init=False)
 
-    def __init__(self, **kworgs) -> None:
-        super().__init__(
-            allow_resize=True,
-            show_maximize_button=True,
-            start_open=False,
-            classes="path-view-window",
-            **kworgs,
-        )
+    def __init__(self, path_for_window: Path | None = None) -> None:
+        super().__init__(id="path_view_window", name="Path View")
+        self.path_for_window = path_for_window
 
     # def on_mount(self) -> None:
+    #     if self.path_for_window is None:
+    #         self.path_for_window = chezmoi.dest_dir
 
     def watch_path_for_window(self) -> None:
+        # path_view_window = self.query_one("#path_view_window", Window)
         self.remove_children_in_window()
-        self.mount_in_window(PathView(self.path_for_window))
+        self.mount_in_window(PathView(path=self.path_for_window))
+
+    def action_show_in_window(self) -> None:
+        """Action to show the PathView in a separate window."""
+        # self
+        ...

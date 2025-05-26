@@ -37,7 +37,13 @@ from textual.widgets import (
 )
 
 from chezmoi_mousse.chezmoi import chezmoi
-from chezmoi_mousse.components import PathView, DiffView, ManagedTree, GitLog
+from chezmoi_mousse.components import (
+    PathView,
+    DiffView,
+    ManagedTree,
+    GitLog,
+    PathViewWindow,
+)
 
 from chezmoi_mousse.config import filter_data, pw_mgr_info
 
@@ -87,6 +93,7 @@ class ApplyTab(Horizontal):
                     yield PathView(id="apply_path_view")
                 with TabPane("Diff", id="apply_diff_pane"):
                     yield DiffView(id="apply_diff_view")
+        yield PathViewWindow()
 
     def on_mount(self) -> None:
         self.query_one("#apply_left_vertical", Vertical).styles.min_width = (
@@ -96,15 +103,14 @@ class ApplyTab(Horizontal):
     def on_tree_node_selected(self, event: Tree.NodeSelected) -> None:
         event.stop()
         assert event.node.data is not None
-        self.query_exactly_one(PathView).path = event.node.data.path
-        self.query_one("#apply_diff_view", DiffView).diff_spec = (
-            event.node.data.path,
-            "apply",
+        self.query_one("#apply_path_view", PathView).path = (
+            event.node.data.path
         )
         self.query_one("#apply_diff_view", DiffView).diff_spec = (
             event.node.data.path,
             "apply",
         )
+        self.query_one(PathViewWindow).path_for_window = event.node.data.path
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
         event.stop()
