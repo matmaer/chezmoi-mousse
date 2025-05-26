@@ -121,7 +121,7 @@ class ReAddTab(Horizontal):
         Binding(
             key="A,a",
             action="re_add_path",
-            description="re-add-chezmoi",
+            description="chezmoi-re-add",
             tooltip="overwrite chezmoi repository with your current dotfiles",
         )
     ]
