@@ -324,11 +324,11 @@ HamburgerButton {
   }
 }
 Resizer {
-  width: 2;
+  width: 3;
   border-right: wide $panel-lighten-1;
   height: 1;
   padding: 0;
-  content-align: right middle;
+  content-align: right top;
   &:hover {
     background: $panel-lighten-3;
     background-tint: $panel-lighten-3;
