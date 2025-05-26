@@ -237,7 +237,6 @@ Tree {
   }
 }
 
-
 Window {
   width: 20;
   height: 10;
@@ -324,8 +323,8 @@ HamburgerButton {
   }
 }
 Resizer {
-  width: 3;
-  border-right: wide $panel-lighten-1;
+  width: 2;
+  border-right: $panel-lighten-1;
   height: 1;
   padding: 0;
   content-align: right top;
