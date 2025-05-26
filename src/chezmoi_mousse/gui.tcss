@@ -96,8 +96,10 @@ ApplyTab, ReAddTab {
     border-subtitle-color: $primary;
     border-subtitle-align: center;
     border-subtitle-style: bold;
-    # width: 1fr;
-    # max-width: 1fr;
+
+    Vertical {
+      align: center middle;
+    }
   }
 }
 
@@ -171,8 +173,8 @@ DirectoryTree {
 
 Footer {
   height: 3;
-  border-top: dashed $panel;
-  border-bottom: hidden;
+  border-top: dashed $panel-lighten-1;
+  border-bottom: dashed $panel;
   .-command-palette {
     border: none;
   }

@@ -60,7 +60,7 @@ class ApplyTab(Horizontal):
         Binding(
             key="W,w",
             action="apply_path",
-            description="write-dotfile",
+            description="chezmoi-apply",
             tooltip="write to dotfiles from your chezmoi repository",
         )
     ]
