@@ -32,6 +32,7 @@
 
   .switch--slider {
     color: $error-darken-3;
+
   }
 
   .filter-switch {
