@@ -241,8 +241,8 @@ Tree {
 Window {
   width: 20;
   height: 10;
-  min-width: 12;
-  min-height: 6;
+  min-width: 42;
+  min-height: 12;
   &:focus {
     & > TopBar, BottomBar {
       background: $panel-lighten-3;
@@ -343,8 +343,8 @@ Resizer {
   padding: 0 1;
 }
 #content_pane {
-  background: $surface;
-  background-tint: $surface;
+  # background: $surface;
+  # background-tint: $surface;
   border-left: wide $panel-lighten-1;
   border-right: wide $panel-lighten-1;
   padding: 1 0 1 1;
