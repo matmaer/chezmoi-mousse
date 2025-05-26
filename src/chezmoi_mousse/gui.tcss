@@ -238,8 +238,6 @@ Tree {
 }
 
 Window {
-  width: 20;
-  height: 10;
   min-width: 42;
   min-height: 12;
   &:focus {
