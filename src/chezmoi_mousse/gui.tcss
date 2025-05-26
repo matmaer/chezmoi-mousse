@@ -109,7 +109,7 @@ ApplyTab, ReAddTab {
 }
 
 PathView, DiffView {
-  margin-left: 1;
+  padding-left: 1;
 }
 
 /******************************************************************/
