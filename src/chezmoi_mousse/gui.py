@@ -13,7 +13,6 @@ from textual.widgets import (
     TabPane,
 )
 
-from chezmoi_mousse.components import PathViewWindow
 from chezmoi_mousse.main_tabs import AddTab, ApplyTab, DoctorTab, ReAddTab
 from chezmoi_mousse.splash import LoadingScreen
 from chezmoi_mousse import BURGER, FLOW
@@ -38,7 +37,6 @@ class MainScreen(Screen):
                 yield RichLog(
                     id="rich_log_tab", highlight=True, max_lines=20000
                 )
-        yield PathViewWindow(name="main_path_view_window")
         yield Footer()
 
     @on(TabbedContent.TabActivated)

@@ -14,10 +14,6 @@ from textual.content import Content
 from textual.reactive import reactive
 from textual.widgets import Button, DataTable, RichLog, Static, Tree
 from textual.widgets.tree import TreeNode
-
-from textual_window import Window
-
-
 from chezmoi_mousse.chezmoi import chezmoi
 
 
@@ -431,24 +427,3 @@ class ManagedTree(Vertical):
         for node in expanded_nodes:
             self.add_nodes(node)
             self.add_leaves(node)
-
-
-class PathViewWindow(Window):
-    """Draggable window layer which contains a PathView widget."""
-
-    path_for_window: reactive[Path | None] = reactive(None, init=False)
-
-    def __init__(self, **kworgs) -> None:
-        super().__init__(
-            allow_resize=True,
-            show_maximize_button=True,
-            start_open=False,
-            classes="path-view-window",
-            **kworgs,
-        )
-
-    # def on_mount(self) -> None:
-
-    def watch_path_for_window(self) -> None:
-        self.remove_children_in_window()
-        self.mount_in_window(PathView(self.path_for_window))
