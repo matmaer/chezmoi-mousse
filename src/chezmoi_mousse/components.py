@@ -89,7 +89,7 @@ class PathView(RichLog):
 
     BINDINGS = [Binding(key="M,m", action="maximize", description="maximize")]
 
-    path: reactive[Path | None] = reactive(None, init=False)
+    path: reactive[Path | None] = reactive(None, init=True)
 
     def __init__(self, path: Path | None = None, **kwargs) -> None:
         super().__init__(
@@ -98,8 +98,9 @@ class PathView(RichLog):
         self.path = path
 
     def on_mount(self) -> None:
-        text = "Click a file or directory, \nto show its contents."
-        self.write(Text(text, style="dim"))
+        if self.path is None:
+            text = "Click a file or directory, \nto show its contents."
+            self.write(Text(text, style="dim"))
 
     def update_path_view(self) -> None:
         assert isinstance(self.path, Path)
