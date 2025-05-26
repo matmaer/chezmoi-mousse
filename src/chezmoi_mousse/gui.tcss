@@ -244,14 +244,14 @@ Window {
     min-width: 12;
     min-height: 6;
     &:focus {
-        & > TopBar, BottomBar {
-          background: $panel-lighten-3;
-          background-tint: $panel-lighten-3;
-        }
-        & > #content_pane {
-            border-left: wide $panel-lighten-3;
-            border-right: wide $panel-lighten-3;
-        }
+      & > TopBar, BottomBar {
+        background: $panel-lighten-3;
+        background-tint: $panel-lighten-3;
+      }
+      & > #content_pane {
+          border-left: wide $panel-lighten-3;
+          border-right: wide $panel-lighten-3;
+      }
     }
 }
 TopBar, BottomBar {
@@ -262,7 +262,9 @@ TopBar, BottomBar {
     background-tint: $panel-lighten-1;
 }
 TitleBar {
-    width: 1fr; height: 1; padding: 0 1;
+    width: 1fr;
+    height: 1;
+    padding: 0 1;
     &:hover {
       text-style: bold;
       background: $panel-lighten-3;
@@ -323,8 +325,8 @@ Resizer {
       background-tint: $panel-lighten-3;
     }
     &.pressed {
-      background: $primary;
-      background-tint: $primary;
+      background: $panel-lighten-3;
+      background-tint: $panel-lighten-3;
     }
 }
 #bottom_bar_text { width: 1fr; height: 1; padding: 0 1; }
