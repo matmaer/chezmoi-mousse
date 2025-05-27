@@ -13,7 +13,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 from rich.style import Style
 from rich.text import Text
@@ -279,6 +279,9 @@ class ManagedTree(Tree):
     # not a container, focussable https://textual.textualize.io/widgets/tree/
 
     unchanged: reactive[bool] = reactive(False, init=False)
+    direction: reactive[Literal["apply", "re-add"]] = reactive(
+        "apply", init=False
+    )
 
     # TODO: default color should be updated on theme change
     node_colors = {
@@ -288,17 +291,19 @@ class ManagedTree(Tree):
         "M": "#FFC473",  # text-warning
     }
 
-    def __init__(
-        self,
-        status_files: dict[Path, str],
-        status_dirs: dict[Path, str],
-        **kwargs,
-    ) -> None:
-        self.status_files: dict[Path, str] = status_files
-        self.status_dirs: dict[Path, str] = status_dirs
+    def __init__(self, **kwargs) -> None:
         super().__init__(label="root", **kwargs)
+        # self.status_dirs: dict[Path, str] = {}
+        # self.status_files: dict[Path, str] = {}
 
     def on_mount(self) -> None:
+        if self.direction == "apply":
+            self.status_dirs = chezmoi.status_paths["apply_dirs"]
+            self.status_files = chezmoi.status_paths["apply_files"]
+        elif self.direction == "re-add":
+            self.status_dirs = chezmoi.status_paths["re_add_dirs"]
+            self.status_files = chezmoi.status_paths["re_add_files"]
+
         self.guide_depth = 3
         if self.root.data is None:
             self.root.data = NodeData(

@@ -82,11 +82,7 @@ class ApplyTab(Horizontal):
                 id="apply_tree_buttons_horizontal",
             )
             with ContentSwitcher(initial="apply_tree", id="apply_switcher"):
-                yield ManagedTree(
-                    status_files=chezmoi.status_paths["apply_files"],
-                    status_dirs=chezmoi.status_paths["apply_dirs"],
-                    id="apply_tree",
-                )
+                yield ManagedTree(id="apply_tree")
                 yield Static("List of files with status", id="apply_list")
             yield Vertical(
                 HorizontalGroup(
@@ -167,11 +163,7 @@ class ReAddTab(Horizontal):
                 id="re_add_tree_buttons_horizontal",
             )
             with ContentSwitcher(initial="re_add_tree", id="re_add_switcher"):
-                yield ManagedTree(
-                    status_files=chezmoi.status_paths["re_add_files"],
-                    status_dirs=chezmoi.status_paths["re_add_dirs"],
-                    id="re_add_tree",
-                )
+                yield ManagedTree(id="re_add_tree")
                 yield Static("List of files with status", id="re_add_list")
             yield Vertical(
                 HorizontalGroup(
