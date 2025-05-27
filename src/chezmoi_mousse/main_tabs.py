@@ -86,11 +86,14 @@ class ApplyTab(Horizontal):
                 status_dirs=chezmoi.status_paths["apply_dirs"],
                 id="apply_tree",
             )
-            yield Horizontal(
-                Switch(id="apply_tab_unchanged", classes="filter-switch"),
-                Label(
-                    filter_data.unchanged.label, classes="filter-label"
-                ).with_tooltip(tooltip=filter_data.unchanged.tooltip),
+            yield Vertical(
+                HorizontalGroup(
+                    Switch(id="apply_tab_unchanged", classes="filter-switch"),
+                    Label(
+                        filter_data.unchanged.label, classes="filter-label"
+                    ).with_tooltip(tooltip=filter_data.unchanged.tooltip),
+                    # classes="filter-container",
+                ),
                 classes="filter-container",
             )
         with TabbedContent(id="apply_view_tabs", classes="tab-content-right"):
@@ -161,11 +164,13 @@ class ReAddTab(Horizontal):
                     id="re_add_tree",
                 )
                 yield Static("List of files with status")
-            yield Horizontal(
-                Switch(id="re_add_tab_unchanged", classes="filter-switch"),
-                Label(
-                    filter_data.unchanged.label, classes="filter-label"
-                ).with_tooltip(tooltip=filter_data.unchanged.tooltip),
+            yield Vertical(
+                HorizontalGroup(
+                    Switch(id="re_add_tab_unchanged", classes="filter-switch"),
+                    Label(
+                        filter_data.unchanged.label, classes="filter-label"
+                    ).with_tooltip(tooltip=filter_data.unchanged.tooltip),
+                ),
                 classes="filter-container",
             )
         with TabbedContent(id="re_add_view_tabs", classes="tab-content-right"):
