@@ -47,6 +47,15 @@ class InputOutput:
             self.dict_out = {}
 
 
+@dataclass
+class ChezmoiStatus:
+    path: str
+    is_file: bool
+    found: bool
+    status: str
+    diff_output: str
+
+
 class Chezmoi:
 
     cat_config: InputOutput
@@ -60,6 +69,7 @@ class Chezmoi:
     status_dirs: InputOutput
     status_files: InputOutput
     template_data: InputOutput
+    chezmoi_status: ChezmoiStatus
 
     base = [
         "chezmoi",
@@ -130,14 +140,6 @@ class Chezmoi:
     @property
     def managed_file_paths(self) -> list[Path]:
         return [Path(p) for p in self.managed_files.list_out]
-
-    @property
-    def managed_dir_paths_source(self) -> list[Path]:
-        return [Path(p) for p in self.managed_dirs_source.list_out]
-
-    @property
-    def managed_file_paths_source(self) -> list[Path]:
-        return [Path(p) for p in self.managed_files_source.list_out]
 
     @property
     def status_paths(self) -> dict[str, dict[Path, str]]:
