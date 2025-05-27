@@ -1,10 +1,5 @@
 __pycache__/
 .venv/
-dist/
-ignored/**
-.env
+ignored/
 .vscode/
-profiling/
-.gitconfig
 .coverage
-.prettierrc
