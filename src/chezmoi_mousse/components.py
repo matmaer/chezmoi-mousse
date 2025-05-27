@@ -2,7 +2,7 @@
 
 These classes
 - inherit directly from built in textual widgets
-- do not directly inherit from container classes
+- are not containers
 - don't override the parents' compose method
 - don't call any query methods
 """
@@ -24,6 +24,8 @@ from chezmoi_mousse.config import unwanted
 
 
 class GitLog(DataTable):
+
+    # not a container, focussable  https://textual.textualize.io/widgets/data_table/
 
     path: reactive[Path | None] = reactive(None, init=False)
 
@@ -74,6 +76,8 @@ class GitLog(DataTable):
 
 class AutoWarning(Static):
 
+    # not a container, not focussable https://textual.textualize.io/widgets/static/
+
     def on_mount(self) -> None:
         auto_warning = ""
         if chezmoi.autocommit_enabled and not chezmoi.autopush_enabled:
@@ -88,6 +92,8 @@ class AutoWarning(Static):
 
 class PathView(RichLog):
     """RichLog widget to display the content of a file with highlighting."""
+
+    # not a container, focussable https://textual.textualize.io/widgets/rich_log/
 
     BINDINGS = [Binding(key="M,m", action="maximize", description="maximize")]
 
@@ -161,6 +167,8 @@ class PathView(RichLog):
 
 
 class DiffView(Static):
+
+    # not a container, not focussable https://textual.textualize.io/widgets/static/
 
     BINDINGS = [Binding(key="M,m", action="maximize", description="maximize")]
 
@@ -250,6 +258,8 @@ class NodeData:
 
 
 class ManagedTree(Tree):
+
+    # not a container, focussable https://textual.textualize.io/widgets/tree/
 
     unchanged: reactive[bool] = reactive(False, init=False)
 
@@ -423,6 +433,8 @@ class ManagedTree(Tree):
 
 
 class FilteredDirTree(DirectoryTree):
+
+    # not a container, focussable https://textual.textualize.io/widgets/directory_tree/
 
     path_view_top_border: reactive[str] = reactive("Path View")
     unmanaged_dirs = reactive(False)
