@@ -1,20 +1,26 @@
-"""Contains classes used as reused components by the widgets in mousse.py."""
+"""Contains classes used as reused components by the widgets in mousse.py.
 
-import os
+These classes
+- inherit directly from built in textual widgets
+- do not directly inherit from container classes
+- don't override the parents' compose method
+- don't call any query methods
+"""
 
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
+import re
 
 from rich.style import Style
 from rich.text import Text
-from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import Horizontal, Vertical
 from textual.content import Content
 from textual.reactive import reactive
-from textual.widgets import Button, DataTable, RichLog, Static, Tree
+from textual.widgets import DataTable, DirectoryTree, RichLog, Static, Tree
 from textual.widgets.tree import TreeNode
 from chezmoi_mousse.chezmoi import chezmoi
+from chezmoi_mousse.config import unwanted
 
 
 class GitLog(DataTable):
@@ -243,7 +249,7 @@ class NodeData:
     status: str
 
 
-class ManagedTree(Vertical):
+class ManagedTree(Tree):
 
     unchanged: reactive[bool] = reactive(False, init=False)
 
@@ -263,29 +269,18 @@ class ManagedTree(Vertical):
     ) -> None:
         self.status_files: dict[Path, str] = status_files
         self.status_dirs: dict[Path, str] = status_dirs
-        super().__init__(**kwargs)
-
-    def compose(self) -> ComposeResult:
-        with Horizontal(id="tree_buttons_horizontal"):
-            yield Vertical(Button("Tree", id="tree_button_tree"))
-            yield Vertical(Button("List", id="tree_button_status"))
-        with Horizontal():
-            yield Tree(label="root")
+        super().__init__(label="root", **kwargs)
 
     def on_mount(self) -> None:
-        tree_buttons = self.query_one("#tree_buttons_horizontal", Horizontal)
-        tree_buttons.border_subtitle = f"{chezmoi.dest_dir}{os.sep}"
-
-        tree = self.query_exactly_one(Tree)
-        tree.guide_depth = 2
-        if tree.root.data is None:
-            tree.root.data = NodeData(
+        self.guide_depth = 3
+        if self.root.data is None:
+            self.root.data = NodeData(
                 path=chezmoi.dest_dir, found=True, is_file=False, status="R"
             )
         # give root node status R so it's not considered having status "X"
-        tree.show_root = False
-        self.add_nodes(tree.root)
-        self.add_leaves(tree.root)
+        self.show_root = False
+        self.add_nodes(self.root)
+        self.add_leaves(self.root)
 
     def show_dir_node(self, node_data: NodeData) -> bool:
         """Check if a directory node should be displayed according to the
@@ -422,8 +417,79 @@ class ManagedTree(Vertical):
     def watch_unchanged(self) -> None:
         """Update the visible nodes in the tree based on the current filter
         settings."""
-        root_node = self.query_exactly_one(Tree).root
-        expanded_nodes = self.get_expanded_nodes(root_node)
-        for node in expanded_nodes:
+        for node in self.get_expanded_nodes(self.root):
             self.add_nodes(node)
             self.add_leaves(node)
+
+
+class FilteredDirTree(DirectoryTree):
+
+    path_view_top_border: reactive[str] = reactive("Path View")
+    unmanaged_dirs = reactive(False)
+    unwanted = reactive(False)
+
+    def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
+        managed_dirs = chezmoi.managed_dir_paths
+        managed_files = chezmoi.managed_file_paths
+
+        # Switches: Red - Green (default)
+        if not self.unmanaged_dirs and not self.unwanted:
+            return (
+                p
+                for p in paths
+                if (
+                    p.is_file()
+                    and (
+                        p.parent in managed_dirs
+                        or p.parent == chezmoi.dest_dir
+                    )
+                    and not self.is_unwanted_path(p)
+                    and p not in managed_files
+                )
+                or (
+                    p.is_dir()
+                    and not self.is_unwanted_path(p)
+                    and p in managed_dirs
+                )
+            )
+        # Switches: Green - Red
+        elif self.unmanaged_dirs and not self.unwanted:
+            return (
+                p
+                for p in paths
+                if p not in managed_files and not self.is_unwanted_path(p)
+            )
+        # Switches: Red - Green
+        elif not self.unmanaged_dirs and self.unwanted:
+            return (
+                p
+                for p in paths
+                if (
+                    p.is_file()
+                    and (
+                        p.parent in managed_dirs
+                        or p.parent == chezmoi.dest_dir
+                    )
+                    and p not in managed_files
+                )
+                or (p.is_dir() and p in managed_dirs)
+            )
+        # Switches: Green - Green, include all unmanaged paths
+        elif self.unmanaged_dirs and self.unwanted:
+            return (
+                p
+                for p in paths
+                if p.is_dir() or (p.is_file() and p not in managed_files)
+            )
+        else:
+            return paths
+
+    def is_unwanted_path(self, path: Path) -> bool:
+        if path.is_dir():
+            if path.name in unwanted["dirs"]:
+                return True
+        if path.is_file():
+            extension = re.match(r"\.[^.]*$", path.name)
+            if extension in unwanted["files"]:
+                return True
+        return False

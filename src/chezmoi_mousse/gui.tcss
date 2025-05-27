@@ -2,13 +2,13 @@
 /* tcss classes */
 /****************/
 
-.left-vertical {
-  width: 1fr;
-  margin-right: 2;
+.tab-content-left {
+  /* fake width to allow the width of the tree to automatically adjust */
+  width: 1;
 }
 
-.right-vertical {
-  width: 2fr;
+.tab-content-right {
+  margin-left: 2;
 }
 
 /* used to center Switch+Label Horizontal below the (Dir)Tree widgets */
@@ -26,8 +26,8 @@
   background-tint: $background-lighten-2;
   height: auto;
   max-height: 5;
-  &>.filter-label {
-    padding-right: 1;
+  .filter-label {
+    padding-right: 2;
   }
 
   .switch--slider {
@@ -56,23 +56,16 @@
   }
 }
 
-.doctor-modal {
-  border: round $warning-darken-2;
-  margin-bottom: 1;
-}
-
 AddTab {
-  DirectoryTree {
-    height: 100%;
-  }
-  /* to have a space between the two filters */
-  .padding-once {
+  /* to have a space between the two filters below the tree*/
+  .padding-bottom-once {
     padding-bottom: 1;
   }
   /* to show the root path on the left and view path on the right */
   .border-path-title {
     border-top: solid $primary;
     border-title-align: center;
+    border-title-style: bold;
   }
 }
 
@@ -85,22 +78,18 @@ AutoWarning {
   border-bottom: dashed $panel;
 }
 
-ApplyTab, ReAddTab {
-  /* for "Tree" vs "Status" switcher */
-  #tree_buttons_horizontal {
-    align: center middle;
-    height: 2;
-    border-left: none;
-    border-right: none;
-    border-top: none;
-    border-bottom: solid $primary;
-    border-subtitle-color: $primary;
-    border-subtitle-align: center;
-    border-subtitle-style: bold;
+PathView, DiffView {
+  padding-left: 1;
+}
 
-    Vertical {
-      align: center middle;
-    }
+MainScreen {
+  layers: window;
+}
+
+ModalScreen {
+  &.doctor-modal {
+    border: round $warning-darken-2;
+    margin-bottom: 1;
   }
 }
 
@@ -109,8 +98,21 @@ ApplyTab, ReAddTab {
   min-width: 80;
 }
 
-PathView, DiffView {
-  padding-left: 1;
+/* for "Tree" vs "Status" switcher */
+#tree_buttons_horizontal {
+  align: center middle;
+  height: 2;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+  border-bottom: solid $primary;
+  border-subtitle-color: $primary;
+  border-subtitle-align: center;
+  border-subtitle-style: bold;
+  # width: auto;
+  Vertical {
+    align: center middle;
+  }
 }
 
 /******************************************************************/
@@ -188,16 +190,13 @@ Header {
   text-style: bold;
 }
 
-MainScreen {
-  layers: window;
-}
-
 Toast {
   background: $surface;
   background-tint: $surface;
 }
 
 Tree {
+
   &>.tree--cursor {
     text-style: none;
     color: $accent-lighten-3;
@@ -321,4 +320,35 @@ Operate {
     }
   }
 }
+
+.diff-operate-button {
+  height: 3;
+  dock: bottom;
+  border-top: wide $primary;
+  border-bottom: inner $background;
+
+  &:disabled {
+    text-opacity: 0.6;
+  }
+
+  &:focus {
+    border-top: wide $primary-lighten-2;
+    # border-bottom: inner $background;
+  }
+
+  &:hover {
+    border-top: wide $primary-lighten-3;
+    border-bottom: inner $background;
+    # color: $accent-lighten-3;
+  }
+
+  &.-active {
+    text-style: none;
+    border-top: wide $primary-lighten-2;
+    border-bottom: inner $background;
+  }
+}
+
 */
+
+

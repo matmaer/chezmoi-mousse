@@ -1,7 +1,6 @@
 """Contains the widgets used to compose the main screen of chezmoi-mousse."""
 
 import os
-import re
 from pathlib import Path
 
 from rich.text import Text
@@ -11,19 +10,16 @@ from textual.events import Click
 from textual.containers import (
     Horizontal,
     HorizontalGroup,
+    ScrollableContainer,
     Vertical,
     VerticalGroup,
     VerticalScroll,
 )
-from chezmoi_mousse.config import unwanted
-from collections.abc import Iterable
-from textual.content import Content
-from textual.reactive import reactive
 from textual.screen import ModalScreen
 from textual.widgets import (
+    Button,
     Collapsible,
     DataTable,
-    DirectoryTree,
     Label,
     Link,
     ListItem,
@@ -37,7 +33,13 @@ from textual.widgets import (
 )
 
 from chezmoi_mousse.chezmoi import chezmoi
-from chezmoi_mousse.components import PathView, DiffView, ManagedTree, GitLog
+from chezmoi_mousse.components import (
+    DiffView,
+    FilteredDirTree,
+    GitLog,
+    ManagedTree,
+    PathView,
+)
 
 from chezmoi_mousse.config import filter_data, pw_mgr_info
 
@@ -66,13 +68,20 @@ class ApplyTab(Horizontal):
     ]
 
     def compose(self) -> ComposeResult:
-        with Vertical(id="apply_left_vertical", classes="left-vertical"):
-            yield Horizontal(
-                ManagedTree(
-                    status_files=chezmoi.status_paths["apply_files"],
-                    status_dirs=chezmoi.status_paths["apply_dirs"],
-                    id="apply_tree",
+        with Vertical(id="apply_left_vertical", classes="tab-content-left"):
+            with Horizontal(id="tree_buttons_horizontal"):
+                yield Vertical(
+                    Button("Tree", id="tree_button_tree"),
+                    classes="center-content",
                 )
+                yield Vertical(
+                    Button("List", id="tree_button_status"),
+                    classes="center-content",
+                )
+            yield ManagedTree(
+                status_files=chezmoi.status_paths["apply_files"],
+                status_dirs=chezmoi.status_paths["apply_dirs"],
+                id="apply_tree",
             )
             yield Horizontal(
                 Switch(id="apply_tab_unchanged", classes="filter-switch"),
@@ -81,19 +90,20 @@ class ApplyTab(Horizontal):
                 ).with_tooltip(tooltip=filter_data.unchanged.tooltip),
                 classes="filter-container",
             )
-        with Vertical(classes="right-vertical"):
-            with TabbedContent(id="apply_view_tabs"):
-                with TabPane("Content", id="apply_content_pane"):
-                    yield PathView(id="apply_path_view")
-                with TabPane("Diff", id="apply_diff_pane"):
-                    yield DiffView(id="apply_diff_view")
+        with TabbedContent(id="apply_view_tabs", classes="tab-content-right"):
+            with TabPane("Content", id="apply_content_pane"):
+                yield PathView(id="apply_path_view")
+            with TabPane("Diff", id="apply_diff_pane"):
+                yield DiffView(id="apply_diff_view")
 
     def on_mount(self) -> None:
         self.query_one("#apply_left_vertical", Vertical).styles.min_width = (
             left_min_width()
         )
+        tree_buttons = self.query_one("#tree_buttons_horizontal", Horizontal)
+        tree_buttons.border_subtitle = f"{chezmoi.dest_dir}{os.sep}"
 
-    def on_tree_node_selected(self, event: Tree.NodeSelected) -> None:
+    def on_tree_node_selected(self, event: ManagedTree.NodeSelected) -> None:
         event.stop()
         assert event.node.data is not None
         self.query_exactly_one(PathView).path = event.node.data.path
@@ -127,13 +137,20 @@ class ReAddTab(Horizontal):
     ]
 
     def compose(self) -> ComposeResult:
-        with Vertical(id="re_add_left_vertical", classes="left-vertical"):
-            yield Horizontal(
-                ManagedTree(
-                    status_files=chezmoi.status_paths["re_add_files"],
-                    status_dirs=chezmoi.status_paths["re_add_dirs"],
-                    id="re_add_tree",
+        with Vertical(id="re_add_left_vertical", classes="tab-content-left"):
+            with Horizontal(id="tree_buttons_horizontal"):
+                yield Vertical(
+                    Button("Tree", id="tree_button_tree"),
+                    classes="center-content",
                 )
+                yield Vertical(
+                    Button("List", id="tree_button_status"),
+                    classes="center-content",
+                )
+            yield ManagedTree(
+                status_files=chezmoi.status_paths["re_add_files"],
+                status_dirs=chezmoi.status_paths["re_add_dirs"],
+                id="re_add_tree",
             )
             yield Horizontal(
                 Switch(id="re_add_tab_unchanged", classes="filter-switch"),
@@ -142,17 +159,18 @@ class ReAddTab(Horizontal):
                 ).with_tooltip(tooltip=filter_data.unchanged.tooltip),
                 classes="filter-container",
             )
-        with Vertical(classes="right-vertical"):
-            with TabbedContent(id="re_add_view_tabs"):
-                with TabPane("Content", id="re_add_content_pane"):
-                    yield PathView(id="re_add_path_view")
-                with TabPane("Diff", id="re_add_diff_pane"):
-                    yield DiffView(id="re_add_diff_view")
+        with TabbedContent(id="re_add_view_tabs", classes="tab-content-right"):
+            with TabPane("Content", id="re_add_content_pane"):
+                yield PathView(id="re_add_path_view")
+            with TabPane("Diff", id="re_add_diff_pane"):
+                yield DiffView(id="re_add_diff_view")
 
     def on_mount(self) -> None:
         self.query_one("#re_add_left_vertical", Vertical).styles.min_width = (
             left_min_width()
         )
+        tree_buttons = self.query_one("#tree_buttons_horizontal", Horizontal)
+        tree_buttons.border_subtitle = f"{chezmoi.dest_dir}{os.sep}"
 
     def on_tree_node_selected(self, event: Tree.NodeSelected) -> None:
         event.stop()
@@ -183,122 +201,44 @@ class AddTab(Horizontal):
         )
     ]
 
-    class FilteredDirTree(DirectoryTree):
-
-        path_view_top_border: reactive[str] = reactive("Path View")
-        unmanaged_dirs = reactive(False)
-        unwanted = reactive(False)
-
-        def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
-            managed_dirs = chezmoi.managed_dir_paths
-            managed_files = chezmoi.managed_file_paths
-
-            # Switches: Red - Green (default)
-            if not self.unmanaged_dirs and not self.unwanted:
-                return (
-                    p
-                    for p in paths
-                    if (
-                        p.is_file()
-                        and (
-                            p.parent in managed_dirs
-                            or p.parent == chezmoi.dest_dir
-                        )
-                        and not self.is_unwanted_path(p)
-                        and p not in managed_files
-                    )
-                    or (
-                        p.is_dir()
-                        and not self.is_unwanted_path(p)
-                        and p in managed_dirs
-                    )
-                )
-            # Switches: Green - Red
-            elif self.unmanaged_dirs and not self.unwanted:
-                return (
-                    p
-                    for p in paths
-                    if p not in managed_files and not self.is_unwanted_path(p)
-                )
-            # Switches: Red - Green
-            elif not self.unmanaged_dirs and self.unwanted:
-                return (
-                    p
-                    for p in paths
-                    if (
-                        p.is_file()
-                        and (
-                            p.parent in managed_dirs
-                            or p.parent == chezmoi.dest_dir
-                        )
-                        and p not in managed_files
-                    )
-                    or (p.is_dir() and p in managed_dirs)
-                )
-            # Switches: Green - Green, include all unmanaged paths
-            elif self.unmanaged_dirs and self.unwanted:
-                return (
-                    p
-                    for p in paths
-                    if p.is_dir() or (p.is_file() and p not in managed_files)
-                )
-            else:
-                return paths
-
-        def is_unwanted_path(self, path: Path) -> bool:
-            if path.is_dir():
-                if path.name in unwanted["dirs"]:
-                    return True
-            if path.is_file():
-                extension = re.match(r"\.[^.]*$", path.name)
-                if extension in unwanted["files"]:
-                    return True
-            return False
-
     def compose(self) -> ComposeResult:
-        with Vertical(id="add_left_vertical", classes="left-vertical"):
-            yield Horizontal(
-                AddTab.FilteredDirTree(
-                    chezmoi.dest_dir,
-                    id="add_tree",
-                    classes="border-path-title",
-                )
+        with Vertical(id="add_left_vertical", classes="tab-content-left"):
+            yield ScrollableContainer(
+                FilteredDirTree(chezmoi.dest_dir, id="add_tree"),
+                id="dir_tree_container",
+                classes="border-path-title",
             )
-            yield Horizontal(
-                Vertical(
-                    HorizontalGroup(
-                        Switch(
-                            id="add_tab_unmanaged_dirs",
-                            classes="filter-switch",
-                        ),
-                        Label(
-                            filter_data.unmanaged_dirs.label,
-                            classes="filter-label padding-once",
-                        ).with_tooltip(
-                            tooltip=filter_data.unmanaged_dirs.tooltip
-                        ),
-                        classes="center-content",
+            yield Vertical(
+                HorizontalGroup(
+                    Switch(
+                        id="add_tab_unmanaged_dirs", classes="filter-switch"
                     ),
-                    HorizontalGroup(
-                        Switch(id="add_tab_unwanted", classes="filter-switch"),
-                        Label(
-                            filter_data.unwanted.label, classes="filter-label"
-                        ).with_tooltip(tooltip=filter_data.unwanted.tooltip),
-                        classes="center-content",
-                    ),
-                    classes="filter-container",
-                )
+                    Label(
+                        filter_data.unmanaged_dirs.label,
+                        classes="filter-label",
+                    ).with_tooltip(tooltip=filter_data.unmanaged_dirs.tooltip),
+                    classes="center-content padding-bottom-once",
+                ),
+                HorizontalGroup(
+                    Switch(id="add_tab_unwanted", classes="filter-switch"),
+                    Label(
+                        filter_data.unwanted.label, classes="filter-label"
+                    ).with_tooltip(tooltip=filter_data.unwanted.tooltip),
+                    classes="center-content",
+                ),
+                classes="filter-container",
             )
 
         yield Vertical(
-            PathView(classes="border-path-title"), classes="right-vertical"
+            PathView(classes="border-path-title"), classes="tab-content-right"
         )
 
     def on_mount(self) -> None:
-        self.query_one(AddTab.FilteredDirTree).show_root = False
-        self.query_one(AddTab.FilteredDirTree).border_title = (
-            Content.from_text(f"{chezmoi.dest_dir}{os.sep}")
-        )
+        self.query_one(FilteredDirTree).show_root = False
+        self.query_one(FilteredDirTree).guide_depth = 3
+        self.query_one(
+            "#dir_tree_container", ScrollableContainer
+        ).border_title = f"{chezmoi.dest_dir}{os.sep}"
 
         self.query_one("#add_left_vertical", Vertical).styles.min_width = (
             left_min_width(add_tab=True)
@@ -355,7 +295,7 @@ class AddTab(Horizontal):
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
         event.stop()
-        tree = self.query_one("#add_tree", AddTab.FilteredDirTree)
+        tree = self.query_one("#add_tree", FilteredDirTree)
         if event.switch.id == "add_tab_unmanaged_dirs":
             tree.unmanaged_dirs = event.value
             tree.reload()
@@ -364,7 +304,7 @@ class AddTab(Horizontal):
             tree.reload()
 
     def action_add_path(self) -> None:
-        dir_tree = self.query_one("#add_tree", AddTab.FilteredDirTree)
+        dir_tree = self.query_one("#add_tree", FilteredDirTree)
         self.notify(f"will add {dir_tree.cursor_node}")
 
 
