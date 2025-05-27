@@ -69,7 +69,7 @@ class LoadingScreen(Screen):
         self.rich_log = RICH_LOG
         super().__init__()
         self.timer = self.set_interval(
-            interval=0.6, callback=self.all_workers_finished
+            interval=0.7, callback=self.all_workers_finished
         )
 
     def compose(self) -> ComposeResult:
@@ -100,13 +100,6 @@ class LoadingScreen(Screen):
             for worker in self.app.workers
             if worker.group == "io_workers"
         ):
-            self.timer.stop()
-            DEST_DIR = Path(chezmoi.dump_config.dict_out["destDir"])
-            chezmoi.dest_dir = DEST_DIR
-            log_label = f"destDir {DEST_DIR}"
-            padding = LOG_PADDING_WIDTH - len(log_label)
-            log_text = f"{log_label} {'.' * padding} loaded"
-            RICH_LOG.write(log_text)
             self.dismiss(COMMAND_LOG)
 
     def on_mount(self) -> None:

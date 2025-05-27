@@ -60,7 +60,6 @@ class Chezmoi:
     status_dirs: InputOutput
     status_files: InputOutput
     template_data: InputOutput
-    dest_dir: Path
 
     base = [
         "chezmoi",
@@ -107,6 +106,10 @@ class Chezmoi:
             long_cmd = self.base + sub_cmd
             self.long_commands[arg_id] = long_cmd
             setattr(self, arg_id, InputOutput(long_cmd, arg_id=arg_id))
+
+    @property
+    def dest_dir(self) -> Path:
+        return Path(chezmoi.dump_config.dict_out["destDir"])
 
     @property
     def autoadd_enabled(self) -> bool:
