@@ -1,11 +1,9 @@
 __pycache__/
 .venv/
 dist/
-ignored/
+ignored/**
 .env
 .vscode/
-pydeps/
-pydeps
 profiling/
 .gitconfig
 .coverage
