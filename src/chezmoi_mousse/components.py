@@ -37,7 +37,7 @@ class CommandLog(RichLog):
             self.write(chezmoi_cmd)
 
 
-CMD_LOG = CommandLog()
+cmd_log = CommandLog()
 
 
 class GitLog(DataTable):

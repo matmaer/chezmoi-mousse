@@ -5,7 +5,7 @@ from textual.screen import Screen
 from textual.theme import Theme
 from textual.widgets import Footer, Header, Static, TabbedContent, TabPane
 
-from chezmoi_mousse.components import CMD_LOG
+from chezmoi_mousse.components import cmd_log
 from chezmoi_mousse.main_tabs import AddTab, ApplyTab, DoctorTab, ReAddTab
 from chezmoi_mousse.splash import LoadingScreen
 from chezmoi_mousse import BURGER, FLOW
@@ -31,12 +31,12 @@ class MainScreen(Screen):
             with TabPane("Diagram", id="diagram_tab_pane"):
                 yield ScrollableContainer(Static(FLOW, id="flow_diagram"))
             with TabPane("Log", id="rich_log_tab_pane"):
-                yield CMD_LOG
+                yield cmd_log
         yield Footer()
 
     def on_mount(self) -> None:
         for cmd in self.command_log:
-            CMD_LOG.add(cmd)
+            cmd_log.add(cmd)
 
 
 chezmoi_mousse_dark = Theme(
