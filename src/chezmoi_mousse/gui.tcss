@@ -3,12 +3,7 @@
 /****************/
 
 .tab-content-left {
-  /* fake width to allow the width of the tree to automatically adjust */
-  width: 1;
-}
-
-.tab-content-right {
-  margin-left: 2;
+  margin-right: 2;
 }
 
 /* used to center Switch+Label Horizontal below the (Dir)Tree widgets */
