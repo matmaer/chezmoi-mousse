@@ -176,7 +176,7 @@ class Chezmoi:
         }
 
     @property
-    def git_log(self) -> list[str]:
+    def run_git_log(self) -> list[str]:
         long_command = self.base + [
             "git",
             "--",
@@ -190,7 +190,7 @@ class Chezmoi:
         ]
         return subprocess_run(long_command).splitlines()
 
-    def git_log_path(self, source_path: str) -> list[str]:
+    def run_git_log_path(self, source_path: str) -> list[str]:
         # source_dir = chezmoi.dump_config["sourceDir"]
         long_command = (
             self.base
@@ -231,7 +231,7 @@ class Chezmoi:
             if (p := Path(entry)).parent == dir_path and p.is_file()
         ]
 
-    def add(self, file_path: Path) -> str:
+    def run_add(self, file_path: Path) -> str:
         long_command = self.base + [
             "--dry-run",
             "--verbose",
@@ -244,7 +244,7 @@ class Chezmoi:
         # Scan for secrets when adding unencrypted files
         return subprocess_run(long_command + [str(file_path)])
 
-    def re_add(self, file_path: Path) -> str:
+    def run_re_add(self, file_path: Path) -> str:
         long_command = self.base + [
             "--dry-run",
             "--verbose",
@@ -254,7 +254,7 @@ class Chezmoi:
         ]
         return subprocess_run(long_command + [file_path])
 
-    def apply(self, file_path: Path) -> str:
+    def run_apply(self, file_path: Path) -> str:
         long_command = self.base + [
             "--dry-run",
             "--verbose",
@@ -264,18 +264,18 @@ class Chezmoi:
         ]
         return subprocess_run(long_command + [file_path])
 
-    def apply_diff(self, file_path: str) -> list[str]:
+    def run_apply_diff(self, file_path: str) -> list[str]:
         long_command = self.base + ["diff", file_path]
         return subprocess_run(long_command).splitlines()
 
-    def re_add_diff(self, file_path: str) -> list[str]:
+    def run_re_add_diff(self, file_path: str) -> list[str]:
         long_command = self.base + ["diff", file_path]
         return subprocess_run(long_command + ["--reverse"]).splitlines()
 
-    def cat(self, file_path: str) -> str:
+    def run_cat(self, file_path: str) -> str:
         return subprocess_run(self.base + ["cat", file_path])
 
-    def status(self, path: str) -> str:
+    def run_status(self, path: str) -> str:
         return subprocess_run(self.base + ["status", path])
 
 
