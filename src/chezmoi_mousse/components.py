@@ -333,20 +333,6 @@ class ManagedTree(Tree):
         # include_unchanged_files=True
         return True
 
-    def get_expanded_nodes(self, root_node: TreeNode) -> list[TreeNode]:
-        """Recursively get all current expanded nodes in the tree."""
-
-        def collect_nodes(node: TreeNode) -> list[TreeNode]:
-            nodes = [root_node]
-            for child in node.children:
-                if child.is_expanded:
-                    nodes.append(child)
-                    # Recurse into directory children
-                    nodes.extend(collect_nodes(child))
-            return nodes
-
-        return collect_nodes(root_node)
-
     def style_label(self, node_data: NodeData) -> Text:
         """Color node based on being a file, directary and its status."""
         italic = False if node_data.found else True
@@ -427,7 +413,24 @@ class ManagedTree(Tree):
     def watch_unchanged(self) -> None:
         """Update the visible nodes in the tree based on the current filter
         settings."""
-        for node in self.get_expanded_nodes(self.root):
+
+        def get_expanded_nodes() -> list[TreeNode]:
+            """Recursively get all current expanded nodes in the tree."""
+
+            current_node = self.root
+
+            def collect_nodes(current_node: TreeNode) -> list[TreeNode]:
+                nodes = [current_node]
+                for child in current_node.children:
+                    if child.is_expanded:
+                        nodes.append(child)
+                        # Recurse into directory children
+                        nodes.extend(collect_nodes(child))
+                return nodes
+
+            return collect_nodes(current_node)
+
+        for node in get_expanded_nodes():
             self.add_nodes(node)
             self.add_leaves(node)
 
