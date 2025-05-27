@@ -1,18 +1,11 @@
-from textual import on
 from textual.app import App, ComposeResult
 from textual.containers import ScrollableContainer
 from textual.lazy import Lazy
 from textual.screen import Screen
 from textual.theme import Theme
-from textual.widgets import (
-    Footer,
-    Header,
-    RichLog,
-    Static,
-    TabbedContent,
-    TabPane,
-)
+from textual.widgets import Footer, Header, Static, TabbedContent, TabPane
 
+from chezmoi_mousse.components import CMD_LOG
 from chezmoi_mousse.main_tabs import AddTab, ApplyTab, DoctorTab, ReAddTab
 from chezmoi_mousse.splash import LoadingScreen
 from chezmoi_mousse import BURGER, FLOW
@@ -38,21 +31,12 @@ class MainScreen(Screen):
             with TabPane("Diagram", id="diagram_tab_pane"):
                 yield ScrollableContainer(Static(FLOW, id="flow_diagram"))
             with TabPane("Log", id="rich_log_tab_pane"):
-                yield RichLog(
-                    id="rich_log_tab", highlight=True, max_lines=20000
-                )
+                yield CMD_LOG
         yield Footer()
 
     def on_mount(self) -> None:
-        rich_log = self.query_one("#rich_log_tab", RichLog)
-        rich_log.write("Commands executed by splash screen:")
-        rich_log.write(self.command_log)
-
-    @on(TabbedContent.TabActivated)
-    def show_notification(self, event: TabbedContent.TabActivated) -> None:
-        event.stop()
-        rich_log = self.query_one("#rich_log_tab", RichLog)
-        rich_log.write(f"Switched to tab: {event.pane.id}")
+        for cmd in self.command_log:
+            CMD_LOG.add(cmd)
 
 
 chezmoi_mousse_dark = Theme(
