@@ -33,15 +33,11 @@ class InputOutput:
     def label(self):
         return f'chezmoi {self.arg_id.replace("_", " ")}'
 
-    def __post_init__(self) -> None:
-        self.list_out = self.std_out.splitlines()
-        self.dict_out = {}
-
     def update(self) -> None:
         self.std_out = subprocess_run(self.long_command)
         self.list_out = self.std_out.splitlines()
-        # logic to convert json data from chezmoi commands to a dict
         try:
+            # convert dict-like output from chezmoi commands, eg json output
             self.dict_out = ast.literal_eval(
                 self.std_out.replace("null", "None")
                 .replace("false", "False")
