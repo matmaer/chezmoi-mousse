@@ -22,13 +22,13 @@
   background-tint: $background-lighten-2;
   height: auto;
   max-height: 5;
+
   .filter-label {
     padding-right: 2;
   }
 
   .switch--slider {
     color: $error-darken-3;
-
   }
 
   .filter-switch {
@@ -111,7 +111,7 @@ ModalScreen {
   border-subtitle-color: $primary;
   border-subtitle-align: center;
   border-subtitle-style: bold;
-  # width: auto;
+
   Vertical {
     align: center middle;
   }
@@ -203,7 +203,6 @@ Toast {
 }
 
 Tree {
-
   &>.tree--cursor {
     text-style: none;
     color: $accent-lighten-3;
