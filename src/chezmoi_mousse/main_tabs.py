@@ -29,7 +29,6 @@ from textual.widgets import (
     TabPane,
     Static,
     Switch,
-    Tree,
 )
 
 from chezmoi_mousse.chezmoi import chezmoi
@@ -69,15 +68,18 @@ class ApplyTab(Horizontal):
 
     def compose(self) -> ComposeResult:
         with Vertical(id="apply_left_vertical", classes="tab-content-left"):
-            with Horizontal(id="tree_buttons_horizontal"):
-                yield Vertical(
+            yield Horizontal(
+                Vertical(
                     Button("Tree", id="tree_button_tree"),
                     classes="center-content",
-                )
-                yield Vertical(
+                ),
+                Vertical(
                     Button("List", id="tree_button_status"),
                     classes="center-content",
-                )
+                ),
+                classes="tree_buttons_horizontal",
+                id="apply_tree_buttons_horizontal",
+            )
             yield ManagedTree(
                 status_files=chezmoi.status_paths["apply_files"],
                 status_dirs=chezmoi.status_paths["apply_dirs"],
@@ -100,8 +102,9 @@ class ApplyTab(Horizontal):
         self.query_one("#apply_left_vertical", Vertical).styles.min_width = (
             left_min_width()
         )
-        tree_buttons = self.query_one("#tree_buttons_horizontal", Horizontal)
-        tree_buttons.border_subtitle = f"{chezmoi.dest_dir}{os.sep}"
+        self.query_one(
+            "#apply_tree_buttons_horizontal", Horizontal
+        ).border_subtitle = f"{chezmoi.dest_dir}{os.sep}"
 
     def on_tree_node_selected(self, event: ManagedTree.NodeSelected) -> None:
         event.stop()
@@ -132,21 +135,24 @@ class ReAddTab(Horizontal):
             key="A,a",
             action="re_add_path",
             description="chezmoi-re-add",
-            tooltip="overwrite chezmoi repository with your current dotfiles",
+            tooltip="overwrite chezmoi repository with dotfile on disk",
         )
     ]
 
     def compose(self) -> ComposeResult:
         with Vertical(id="re_add_left_vertical", classes="tab-content-left"):
-            with Horizontal(id="tree_buttons_horizontal"):
-                yield Vertical(
+            yield Horizontal(
+                Vertical(
                     Button("Tree", id="tree_button_tree"),
                     classes="center-content",
-                )
-                yield Vertical(
+                ),
+                Vertical(
                     Button("List", id="tree_button_status"),
                     classes="center-content",
-                )
+                ),
+                classes="tree_buttons_horizontal",
+                id="re_add_tree_buttons_horizontal",
+            )
             yield ManagedTree(
                 status_files=chezmoi.status_paths["re_add_files"],
                 status_dirs=chezmoi.status_paths["re_add_dirs"],
@@ -169,10 +175,11 @@ class ReAddTab(Horizontal):
         self.query_one("#re_add_left_vertical", Vertical).styles.min_width = (
             left_min_width()
         )
-        tree_buttons = self.query_one("#tree_buttons_horizontal", Horizontal)
-        tree_buttons.border_subtitle = f"{chezmoi.dest_dir}{os.sep}"
+        self.query_one(
+            "#re_add_tree_buttons_horizontal", Horizontal
+        ).border_subtitle = f"{chezmoi.dest_dir}{os.sep}"
 
-    def on_tree_node_selected(self, event: Tree.NodeSelected) -> None:
+    def on_tree_node_selected(self, event: ManagedTree.NodeSelected) -> None:
         event.stop()
         assert event.node.data is not None
         self.query_exactly_one(PathView).path = event.node.data.path

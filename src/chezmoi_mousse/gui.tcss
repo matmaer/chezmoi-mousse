@@ -93,8 +93,8 @@ ModalScreen {
   min-width: 80;
 }
 
-/* for "Tree" vs "Status" switcher */
-#tree_buttons_horizontal {
+/* for "Tree" vs "List" switcher */
+.tree_buttons_horizontal {
   align: center middle;
   height: 2;
   border-left: none;
