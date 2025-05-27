@@ -81,18 +81,19 @@ class ApplyTab(Horizontal):
                 classes="tree_buttons_horizontal",
                 id="apply_tree_buttons_horizontal",
             )
-            yield ManagedTree(
-                status_files=chezmoi.status_paths["apply_files"],
-                status_dirs=chezmoi.status_paths["apply_dirs"],
-                id="apply_tree",
-            )
+            with ContentSwitcher(initial="apply_tree", id="apply_switcher"):
+                yield ManagedTree(
+                    status_files=chezmoi.status_paths["apply_files"],
+                    status_dirs=chezmoi.status_paths["apply_dirs"],
+                    id="apply_tree",
+                )
+                yield Static("List of files with status", id="apply_list")
             yield Vertical(
                 HorizontalGroup(
                     Switch(id="apply_tab_unchanged", classes="filter-switch"),
                     Label(
                         filter_data.unchanged.label, classes="filter-label"
                     ).with_tooltip(tooltip=filter_data.unchanged.tooltip),
-                    # classes="filter-container",
                 ),
                 classes="filter-container",
             )
@@ -120,7 +121,15 @@ class ApplyTab(Horizontal):
         )
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
-        self.notify(f"button {event.button.id} pressed")
+        event.stop()
+        if event.button.id == "apply_button_tree":
+            self.query_one("#apply_switcher", ContentSwitcher).current = (
+                "apply_tree"
+            )
+        elif event.button.id == "apply_button_status":
+            self.query_one("#apply_switcher", ContentSwitcher).current = (
+                "apply_list"
+            )
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
         event.stop()
@@ -157,13 +166,13 @@ class ReAddTab(Horizontal):
                 classes="tree_buttons_horizontal",
                 id="re_add_tree_buttons_horizontal",
             )
-            with ContentSwitcher(initial="re_add_tree"):
+            with ContentSwitcher(initial="re_add_tree", id="re_add_switcher"):
                 yield ManagedTree(
                     status_files=chezmoi.status_paths["re_add_files"],
                     status_dirs=chezmoi.status_paths["re_add_dirs"],
                     id="re_add_tree",
                 )
-                yield Static("List of files with status")
+                yield Static("List of files with status", id="re_add_list")
             yield Vertical(
                 HorizontalGroup(
                     Switch(id="re_add_tab_unchanged", classes="filter-switch"),
@@ -197,7 +206,14 @@ class ReAddTab(Horizontal):
         )
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
-        self.notify(f"button {event.button.id} pressed")
+        if event.button.id == "re_add_button_tree":
+            self.query_one("#re_add_switcher", ContentSwitcher).current = (
+                "re_add_tree"
+            )
+        elif event.button.id == "re_add_button_status":
+            self.query_one("#re_add_switcher", ContentSwitcher).current = (
+                "re_add_list"
+            )
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
         event.stop()
