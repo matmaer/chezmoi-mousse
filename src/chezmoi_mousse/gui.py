@@ -20,6 +20,10 @@ from chezmoi_mousse import BURGER, FLOW
 
 class MainScreen(Screen):
 
+    def __init__(self, command_log: list[str]) -> None:
+        super().__init__()
+        self.command_log = command_log
+
     def compose(self) -> ComposeResult:
         yield Header(icon=BURGER)
         with TabbedContent():
@@ -38,6 +42,11 @@ class MainScreen(Screen):
                     id="rich_log_tab", highlight=True, max_lines=20000
                 )
         yield Footer()
+
+    def on_mount(self) -> None:
+        rich_log = self.query_one("#rich_log_tab", RichLog)
+        rich_log.write("Commands executed by splash screen:")
+        rich_log.write(self.command_log)
 
     @on(TabbedContent.TabActivated)
     def show_notification(self, event: TabbedContent.TabActivated) -> None:
@@ -65,13 +74,11 @@ class ChezmoiTUI(App):
 
     CSS_PATH = "gui.tcss"
 
-    SCREENS = {"main": MainScreen, "loading": LoadingScreen}
-
     def on_mount(self) -> None:
         self.title = "-  c h e z m o i  m o u s s e  -"
         self.register_theme(chezmoi_mousse_dark)
         self.theme = "chezmoi-mousse-dark"
-        self.push_screen("loading", self.push_main_screen)
+        self.push_screen(LoadingScreen(), self.push_main_screen)
 
-    def push_main_screen(self, _) -> None:
-        self.push_screen("main")
+    def push_main_screen(self, command_log) -> None:
+        self.push_screen(MainScreen(command_log))

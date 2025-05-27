@@ -59,6 +59,8 @@ RICH_LOG.styles.color = "#0053AA"
 RICH_LOG.styles.margin = 0
 RICH_LOG.styles.padding = 0
 
+COMMAND_LOG: list[str] = []
+
 
 class LoadingScreen(Screen):
 
@@ -67,7 +69,7 @@ class LoadingScreen(Screen):
         self.rich_log = RICH_LOG
         super().__init__()
         self.timer = self.set_interval(
-            interval=0.7, callback=self.all_workers_finished
+            interval=0.6, callback=self.all_workers_finished
         )
 
     def compose(self) -> ComposeResult:
@@ -89,6 +91,8 @@ class LoadingScreen(Screen):
         io_class = getattr(chezmoi, arg_id)
         io_class.update()
         self.log_text(io_class.label)
+        long_command = getattr(chezmoi, arg_id).long_command
+        COMMAND_LOG.append(" ".join(long_command))
 
     def all_workers_finished(self) -> None:
         if all(
@@ -103,9 +107,8 @@ class LoadingScreen(Screen):
             padding = LOG_PADDING_WIDTH - len(log_label)
             log_text = f"{log_label} {'.' * padding} loaded"
             RICH_LOG.write(log_text)
-            self.dismiss()
+            self.dismiss(COMMAND_LOG)
 
     def on_mount(self) -> None:
-
         for arg_id in LONG_COMMANDS:
             self.run_io_worker(arg_id)

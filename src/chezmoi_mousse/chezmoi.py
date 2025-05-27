@@ -24,7 +24,7 @@ def subprocess_run(long_command):
 class InputOutput:
 
     long_command: list[str]
-    arg_id: str = ""
+    arg_id: str
     std_out: str = ""
     dict_out: dict = field(default_factory=dict)
     list_out: list[str] = field(default_factory=list)
