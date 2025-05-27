@@ -109,7 +109,7 @@ class Chezmoi:
 
     @property
     def dest_dir(self) -> Path:
-        return Path(chezmoi.dump_config.dict_out["destDir"])
+        return Path(self.dump_config.dict_out["destDir"])
 
     @property
     def autoadd_enabled(self) -> bool:
@@ -172,8 +172,7 @@ class Chezmoi:
             ),
         }
 
-    @property
-    def run_git_log(self) -> list[str]:
+    def run_git_log(self, source_path: str | None = None) -> list[str]:
         long_command = self.base + [
             "git",
             "--",
@@ -185,27 +184,10 @@ class Chezmoi:
             "--no-expand-tabs",
             "--format=%ar by %cn;%s",
         ]
-        return subprocess_run(long_command).splitlines()
 
-    def run_git_log_path(self, source_path: str) -> list[str]:
-        # source_dir = chezmoi.dump_config["sourceDir"]
-        long_command = (
-            self.base
-            + [
-                "git",
-                "--",
-                "log",
-                "--max-count=400",
-                "--no-color",
-                "--no-decorate",
-                "--date-order",
-                "--no-expand-tabs",
-                "--format=%ar by %cn;%s",
-                "--follow",
-                "--",
-                source_path,
-            ],
-        )
+        if source_path is not None:
+            long_command.extend(["--follow", "--", source_path])
+
         return subprocess_run(long_command).splitlines()
 
     def managed_file_paths_in_dir(self, dir_path: Path) -> list[Path]:

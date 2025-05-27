@@ -53,7 +53,7 @@ class GitLog(DataTable):
     def on_mount(self) -> None:
         self.show_cursor = False
         if self.path is None:
-            self.populate_data_table(chezmoi.run_git_log)
+            self.populate_data_table(chezmoi.run_git_log())
 
     def populate_data_table(self, cmd_output: list[str]):
         styles = {
@@ -88,7 +88,7 @@ class GitLog(DataTable):
 
     def watch_path(self) -> None:
         assert isinstance(self.path, Path)
-        self.populate_data_table(chezmoi.run_git_log_path(str(self.path)))
+        self.populate_data_table(chezmoi.run_git_log(str(self.path)))
 
 
 class AutoWarning(Static):
