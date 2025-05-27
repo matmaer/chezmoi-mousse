@@ -15,8 +15,9 @@
   dock: bottom;
   align: center middle;
   border-top: inner $background-lighten-2;
-  border-bottom: inner $background-lighten-2;
   border-right: inner $background-lighten-2;
+  border-bottom: inner $background-lighten-2;
+  border-left: none;
   background: $background-lighten-2;
   background-tint: $background-lighten-2;
   height: auto;
@@ -59,6 +60,9 @@ AddTab {
   /* to show the root path on the left and view path on the right */
   .border-path-title {
     border-top: solid $primary;
+    border-right: none;
+    border-bottom: none;
+    border-left: none;
     border-title-align: center;
     border-title-style: bold;
   }
@@ -70,7 +74,10 @@ AutoWarning {
   margin: 0 1 0 1;
   dock: top;
   text-align: center;
+  border-top: none;
+  border-right: none;
   border-bottom: dashed $panel;
+  border-left: none;
 }
 
 PathView, DiffView {
@@ -97,10 +104,10 @@ ModalScreen {
 .tree_buttons_horizontal {
   align: center middle;
   height: 2;
-  border-left: none;
-  border-right: none;
   border-top: none;
+  border-right: none;
   border-bottom: solid $primary;
+  border-left: none;
   border-subtitle-color: $primary;
   border-subtitle-align: center;
   border-subtitle-style: bold;
@@ -172,14 +179,19 @@ DirectoryTree {
 Footer {
   height: 3;
   border-top: dashed $panel-lighten-1;
+  border-right: none;
   border-bottom: dashed $panel;
+  border-left: none;
   .-command-palette {
     border: none;
   }
 }
 
 Header {
+  border-top: none;
+  border-right: none;
   border-bottom: dashed $panel-lighten-1;
+  border-left: none;
   color: $primary;
   height: 2;
   text-style: bold;
