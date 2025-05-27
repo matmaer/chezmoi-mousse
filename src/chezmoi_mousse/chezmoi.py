@@ -39,10 +39,8 @@ class InputOutput:
 
     def update(self) -> None:
         self.std_out = subprocess_run(self.long_command)
-        self._update_dict()
         self.list_out = self.std_out.splitlines()
-
-    def _update_dict(self) -> None:
+        # logic to convert json data from chezmoi commands to a dict
         try:
             self.dict_out = ast.literal_eval(
                 self.std_out.replace("null", "None")
