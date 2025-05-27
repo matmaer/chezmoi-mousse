@@ -190,6 +190,9 @@ class ReAddTab(Horizontal):
             "re-add",
         )
 
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        self.notify(f"button {event.button.id} pressed")
+
     def on_switch_changed(self, event: Switch.Changed) -> None:
         event.stop()
         if event.switch.id == "re_add_tab_unchanged":
