@@ -222,7 +222,6 @@ class Chezmoi:
             "--prompt=false",
             "--secrets=error",
         ]
-        # Scan for secrets when adding unencrypted files
         return subprocess_run(long_command + [str(file_path)])
 
     def run_re_add(self, file_path: Path) -> str:
