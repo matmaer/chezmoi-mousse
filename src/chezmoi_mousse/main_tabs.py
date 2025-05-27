@@ -125,7 +125,8 @@ class ApplyTab(Horizontal):
             self.query_one("#apply_tree", ManagedTree).unchanged = event.value
 
     def action_apply_path(self) -> None:
-        self.notify("will apply path")
+        managed_tree = self.query_one("#apply_tree", ManagedTree)
+        self.notify(f"will add {managed_tree.cursor_node}")
 
 
 class ReAddTab(Horizontal):
@@ -199,7 +200,8 @@ class ReAddTab(Horizontal):
             self.query_one("#re_add_tree", ManagedTree).unchanged = event.value
 
     def action_re_add_path(self) -> None:
-        self.notify("will re-add path")
+        managed_tree = self.query_one("#re_add_tree", ManagedTree)
+        self.notify(f"will add {managed_tree.cursor_node}")
 
 
 class AddTab(Horizontal):
@@ -217,7 +219,7 @@ class AddTab(Horizontal):
         with Vertical(id="add_left_vertical", classes="tab-content-left"):
             yield ScrollableContainer(
                 FilteredDirTree(chezmoi.dest_dir, id="add_tree"),
-                id="dir_tree_container",
+                id="add_tree_container",
                 classes="border-path-title",
             )
             yield Vertical(
@@ -246,10 +248,11 @@ class AddTab(Horizontal):
         )
 
     def on_mount(self) -> None:
-        self.query_one(FilteredDirTree).show_root = False
-        self.query_one(FilteredDirTree).guide_depth = 3
+        filtered_dir_tree = self.query_one(FilteredDirTree)
+        filtered_dir_tree.show_root = False
+        filtered_dir_tree.guide_depth = 3
         self.query_one(
-            "#dir_tree_container", ScrollableContainer
+            "#add_tree_container", ScrollableContainer
         ).border_title = f"{chezmoi.dest_dir}{os.sep}"
 
         self.query_one("#add_left_vertical", Vertical).styles.min_width = (
