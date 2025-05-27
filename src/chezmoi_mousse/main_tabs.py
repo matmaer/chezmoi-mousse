@@ -19,6 +19,7 @@ from textual.screen import ModalScreen
 from textual.widgets import (
     Button,
     Collapsible,
+    ContentSwitcher,
     DataTable,
     Label,
     Link,
@@ -70,11 +71,11 @@ class ApplyTab(Horizontal):
         with Vertical(id="apply_left_vertical", classes="tab-content-left"):
             yield Horizontal(
                 Vertical(
-                    Button("Tree", id="tree_button_tree"),
+                    Button("Tree", id="apply_button_tree"),
                     classes="center-content",
                 ),
                 Vertical(
-                    Button("List", id="tree_button_status"),
+                    Button("List", id="apply_button_status"),
                     classes="center-content",
                 ),
                 classes="tree_buttons_horizontal",
@@ -114,10 +115,9 @@ class ApplyTab(Horizontal):
             event.node.data.path,
             "apply",
         )
-        self.query_one("#apply_diff_view", DiffView).diff_spec = (
-            event.node.data.path,
-            "apply",
-        )
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        self.notify(f"button {event.button.id} pressed")
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
         event.stop()
@@ -143,21 +143,23 @@ class ReAddTab(Horizontal):
         with Vertical(id="re_add_left_vertical", classes="tab-content-left"):
             yield Horizontal(
                 Vertical(
-                    Button("Tree", id="tree_button_tree"),
+                    Button("Tree", id="re_add_button_tree"),
                     classes="center-content",
                 ),
                 Vertical(
-                    Button("List", id="tree_button_status"),
+                    Button("List", id="re_add_button_status"),
                     classes="center-content",
                 ),
                 classes="tree_buttons_horizontal",
                 id="re_add_tree_buttons_horizontal",
             )
-            yield ManagedTree(
-                status_files=chezmoi.status_paths["re_add_files"],
-                status_dirs=chezmoi.status_paths["re_add_dirs"],
-                id="re_add_tree",
-            )
+            with ContentSwitcher(initial="re_add_tree"):
+                yield ManagedTree(
+                    status_files=chezmoi.status_paths["re_add_files"],
+                    status_dirs=chezmoi.status_paths["re_add_dirs"],
+                    id="re_add_tree",
+                )
+                yield Static("List of files with status")
             yield Horizontal(
                 Switch(id="re_add_tab_unchanged", classes="filter-switch"),
                 Label(
