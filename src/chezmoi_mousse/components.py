@@ -13,7 +13,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 from rich.style import Style
 from rich.text import Text
@@ -53,7 +53,7 @@ class GitLog(DataTable):
     def on_mount(self) -> None:
         self.show_cursor = False
         if self.path is None:
-            self.populate_data_table(chezmoi.git_log)
+            self.populate_data_table(chezmoi.run_git_log())
 
     def populate_data_table(self, cmd_output: list[str]):
         styles = {
@@ -88,7 +88,7 @@ class GitLog(DataTable):
 
     def watch_path(self) -> None:
         assert isinstance(self.path, Path)
-        self.populate_data_table(chezmoi.git_log_path(str(self.path)))
+        self.populate_data_table(chezmoi.run_git_log(str(self.path)))
 
 
 class AutoWarning(Static):
@@ -155,16 +155,16 @@ class PathView(RichLog):
             # FileNotFoundError is raised both when a file or a directory
             # does not exist
             if self.path in chezmoi.managed_file_paths:
-                if not chezmoi.cat(str(self.path)).strip():
+                if not chezmoi.run_cat(str(self.path)).strip():
                     self.write("File contains only whitespace")
                 else:
-                    self.write(chezmoi.cat(str(self.path)))
+                    self.write(chezmoi.run_cat(str(self.path)))
                 return
             elif self.path in chezmoi.managed_dir_paths:
                 text = [
                     "The directory is managed, but does not exist on disk.",
                     f'Output from "chezmoi status {self.path}"',
-                    f"{chezmoi.status(str(self.path))}",
+                    f"{chezmoi.run_status(str(self.path))}",
                 ]
                 self.write("\n".join(text))
                 return
@@ -218,7 +218,7 @@ class DiffView(Static):
                 )
                 return
             else:
-                diff_output = chezmoi.apply_diff(str(self.diff_spec[0]))
+                diff_output = chezmoi.run_apply_diff(str(self.diff_spec[0]))
         elif self.diff_spec[1] == "re-add":
             if self.diff_spec[0] not in chezmoi.status_paths["re_add_files"]:
                 self.update(
@@ -231,7 +231,7 @@ class DiffView(Static):
                 )
                 return
             else:
-                diff_output = chezmoi.re_add_diff(str(self.diff_spec[0]))
+                diff_output = chezmoi.run_re_add_diff(str(self.diff_spec[0]))
 
         if not diff_output:
             self.update(
@@ -274,7 +274,7 @@ class NodeData:
     status: str
 
 
-class ManagedTree(Tree):
+class ManagedTree(Tree[NodeData]):
 
     # not a container, focussable https://textual.textualize.io/widgets/tree/
 
@@ -288,17 +288,18 @@ class ManagedTree(Tree):
         "M": "#FFC473",  # text-warning
     }
 
-    def __init__(
-        self,
-        status_files: dict[Path, str],
-        status_dirs: dict[Path, str],
-        **kwargs,
-    ) -> None:
-        self.status_files: dict[Path, str] = status_files
-        self.status_dirs: dict[Path, str] = status_dirs
+    def __init__(self, direction, **kwargs) -> None:
+        self.direction: Literal["apply", "re-add"] = direction
         super().__init__(label="root", **kwargs)
 
     def on_mount(self) -> None:
+        if self.direction == "apply":
+            self.status_dirs = chezmoi.status_paths["apply_dirs"]
+            self.status_files = chezmoi.status_paths["apply_files"]
+        elif self.direction == "re-add":
+            self.status_dirs = chezmoi.status_paths["re_add_dirs"]
+            self.status_files = chezmoi.status_paths["re_add_files"]
+
         self.guide_depth = 3
         if self.root.data is None:
             self.root.data = NodeData(

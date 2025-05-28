@@ -33,17 +33,11 @@ class InputOutput:
     def label(self):
         return f'chezmoi {self.arg_id.replace("_", " ")}'
 
-    def __post_init__(self) -> None:
-        self.list_out = self.std_out.splitlines()
-        self.dict_out = {}
-
     def update(self) -> None:
         self.std_out = subprocess_run(self.long_command)
-        self._update_dict()
         self.list_out = self.std_out.splitlines()
-
-    def _update_dict(self) -> None:
         try:
+            # convert dict-like output from chezmoi commands, eg json output
             self.dict_out = ast.literal_eval(
                 self.std_out.replace("null", "None")
                 .replace("false", "False")
@@ -66,7 +60,6 @@ class Chezmoi:
     status_dirs: InputOutput
     status_files: InputOutput
     template_data: InputOutput
-    dest_dir: Path
 
     base = [
         "chezmoi",
@@ -115,6 +108,10 @@ class Chezmoi:
             setattr(self, arg_id, InputOutput(long_cmd, arg_id=arg_id))
 
     @property
+    def dest_dir(self) -> Path:
+        return Path(self.dump_config.dict_out["destDir"])
+
+    @property
     def autoadd_enabled(self) -> bool:
         return self.dump_config.dict_out["git"]["autoadd"]
 
@@ -133,14 +130,6 @@ class Chezmoi:
     @property
     def managed_file_paths(self) -> list[Path]:
         return [Path(p) for p in self.managed_files.list_out]
-
-    @property
-    def managed_dir_paths_source(self) -> list[Path]:
-        return [Path(p) for p in self.managed_dirs_source.list_out]
-
-    @property
-    def managed_file_paths_source(self) -> list[Path]:
-        return [Path(p) for p in self.managed_files_source.list_out]
 
     @property
     def status_paths(self) -> dict[str, dict[Path, str]]:
@@ -175,8 +164,7 @@ class Chezmoi:
             ),
         }
 
-    @property
-    def git_log(self) -> list[str]:
+    def run_git_log(self, source_path: str | None = None) -> list[str]:
         long_command = self.base + [
             "git",
             "--",
@@ -188,27 +176,10 @@ class Chezmoi:
             "--no-expand-tabs",
             "--format=%ar by %cn;%s",
         ]
-        return subprocess_run(long_command).splitlines()
 
-    def git_log_path(self, source_path: str) -> list[str]:
-        # source_dir = chezmoi.dump_config["sourceDir"]
-        long_command = (
-            self.base
-            + [
-                "git",
-                "--",
-                "log",
-                "--max-count=400",
-                "--no-color",
-                "--no-decorate",
-                "--date-order",
-                "--no-expand-tabs",
-                "--format=%ar by %cn;%s",
-                "--follow",
-                "--",
-                source_path,
-            ],
-        )
+        if source_path is not None:
+            long_command.extend(["--follow", "--", source_path])
+
         return subprocess_run(long_command).splitlines()
 
     def managed_file_paths_in_dir(self, dir_path: Path) -> list[Path]:
@@ -231,7 +202,7 @@ class Chezmoi:
             if (p := Path(entry)).parent == dir_path and p.is_file()
         ]
 
-    def add(self, file_path: Path) -> str:
+    def run_add(self, file_path: Path) -> str:
         long_command = self.base + [
             "--dry-run",
             "--verbose",
@@ -241,10 +212,9 @@ class Chezmoi:
             "--prompt=false",
             "--secrets=error",
         ]
-        # Scan for secrets when adding unencrypted files
         return subprocess_run(long_command + [str(file_path)])
 
-    def re_add(self, file_path: Path) -> str:
+    def run_re_add(self, file_path: Path) -> str:
         long_command = self.base + [
             "--dry-run",
             "--verbose",
@@ -254,7 +224,7 @@ class Chezmoi:
         ]
         return subprocess_run(long_command + [file_path])
 
-    def apply(self, file_path: Path) -> str:
+    def run_apply(self, file_path: Path) -> str:
         long_command = self.base + [
             "--dry-run",
             "--verbose",
@@ -264,18 +234,18 @@ class Chezmoi:
         ]
         return subprocess_run(long_command + [file_path])
 
-    def apply_diff(self, file_path: str) -> list[str]:
+    def run_apply_diff(self, file_path: str) -> list[str]:
         long_command = self.base + ["diff", file_path]
         return subprocess_run(long_command).splitlines()
 
-    def re_add_diff(self, file_path: str) -> list[str]:
+    def run_re_add_diff(self, file_path: str) -> list[str]:
         long_command = self.base + ["diff", file_path]
         return subprocess_run(long_command + ["--reverse"]).splitlines()
 
-    def cat(self, file_path: str) -> str:
+    def run_cat(self, file_path: str) -> str:
         return subprocess_run(self.base + ["cat", file_path])
 
-    def status(self, path: str) -> str:
+    def run_status(self, path: str) -> str:
         return subprocess_run(self.base + ["status", path])
 
 
