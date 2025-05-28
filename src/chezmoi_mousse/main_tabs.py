@@ -82,7 +82,7 @@ class ApplyTab(Horizontal):
                 id="apply_tree_buttons_horizontal",
             )
             with ContentSwitcher(initial="apply_tree", id="apply_switcher"):
-                yield ManagedTree(id="apply_tree")
+                yield ManagedTree(id="apply_tree", direction="apply")
                 yield Static("List of files with status", id="apply_list")
             yield Vertical(
                 HorizontalGroup(
@@ -163,7 +163,7 @@ class ReAddTab(Horizontal):
                 id="re_add_tree_buttons_horizontal",
             )
             with ContentSwitcher(initial="re_add_tree", id="re_add_switcher"):
-                yield ManagedTree(id="re_add_tree")
+                yield ManagedTree(id="re_add_tree", direction="re-add")
                 yield Static("List of files with status", id="re_add_list")
             yield Vertical(
                 HorizontalGroup(

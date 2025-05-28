@@ -274,14 +274,11 @@ class NodeData:
     status: str
 
 
-class ManagedTree(Tree):
+class ManagedTree(Tree[NodeData]):
 
     # not a container, focussable https://textual.textualize.io/widgets/tree/
 
     unchanged: reactive[bool] = reactive(False, init=False)
-    direction: reactive[Literal["apply", "re-add"]] = reactive(
-        "apply", init=False
-    )
 
     # TODO: default color should be updated on theme change
     node_colors = {
@@ -291,10 +288,9 @@ class ManagedTree(Tree):
         "M": "#FFC473",  # text-warning
     }
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, direction, **kwargs) -> None:
+        self.direction: Literal["apply", "re-add"] = direction
         super().__init__(label="root", **kwargs)
-        # self.status_dirs: dict[Path, str] = {}
-        # self.status_files: dict[Path, str] = {}
 
     def on_mount(self) -> None:
         if self.direction == "apply":
