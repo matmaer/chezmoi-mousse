@@ -303,27 +303,41 @@ class ManagedTree(Tree[NodeData]):
         "M": "#FFC473",  # text-warning
     }
 
-    def __init__(self, direction, **kwargs) -> None:
+    def __init__(self, direction, flat_list=False, **kwargs) -> None:
         self.direction: Literal["apply", "re-add"] = direction
+        self.flat_list: bool = flat_list
         super().__init__(label="root", **kwargs)
 
-    def on_mount(self) -> None:
+    @property
+    def status_dirs(self):
         if self.direction == "apply":
-            self.status_dirs = chezmoi.status_paths["apply_dirs"]
-            self.status_files = chezmoi.status_paths["apply_files"]
+            return chezmoi.status_paths["apply_dirs"]
         elif self.direction == "re-add":
-            self.status_dirs = chezmoi.status_paths["re_add_dirs"]
-            self.status_files = chezmoi.status_paths["re_add_files"]
+            return chezmoi.status_paths["re_add_dirs"]
+        else:
+            return {}
+
+    @property
+    def status_files(self):
+        if self.direction == "apply":
+            return chezmoi.status_paths["apply_files"]
+        elif self.direction == "re-add":
+            return chezmoi.status_paths["re_add_files"]
+        else:
+            return {}
+
+    def on_mount(self) -> None:
 
         self.guide_depth = 3
+        # give root node status R so it's not considered having status "X"
         if self.root.data is None:
             self.root.data = NodeData(
                 path=chezmoi.dest_dir, found=True, is_file=False, status="R"
             )
-        # give root node status R so it's not considered having status "X"
         self.show_root = False
-        self.add_nodes(self.root)
-        self.add_leaves(self.root)
+        if not self.flat_list:
+            self.add_nodes(self.root)
+        self.add_leaves(self.root, flat=self.flat_list)
 
     def show_dir_node(self, node_data: NodeData) -> bool:
         """Check if a directory node should be displayed according to the
@@ -379,7 +393,7 @@ class ManagedTree(Tree[NodeData]):
             style = self.node_colors["Dir"]
         return Text(node_data.path.name, style=style)
 
-    def add_leaves(self, tree_node: TreeNode) -> None:
+    def add_leaves(self, tree_node: TreeNode, flat: bool) -> None:
         """Adds a leaf for each file in the tree_node.data.path directory,"""
         current_leafs = [
             leaf
@@ -389,22 +403,33 @@ class ManagedTree(Tree[NodeData]):
         for leaf in current_leafs:
             leaf.remove()
 
+        status_code = "X"
         assert isinstance(tree_node.data, NodeData)
-        file_paths = chezmoi.managed_file_paths_in_dir(tree_node.data.path)
-
-        for file_path in file_paths:
-            status_code = "X"
-            if file_path in self.status_files:
-                status_code = self.status_files[file_path]
-            node_data = NodeData(
-                path=file_path,
-                found=file_path.exists(),
-                is_file=True,
-                status=status_code,
-            )
-            if self.show_file_node(node_data):
-                node_label = self.style_label(node_data)
-                tree_node.add_leaf(label=node_label, data=node_data)
+        if not flat:
+            file_paths = chezmoi.managed_file_paths_in_dir(tree_node.data.path)
+            for file_path in file_paths:
+                if file_path in self.status_files:
+                    status_code = self.status_files[file_path]
+                node_data = NodeData(
+                    path=file_path,
+                    found=file_path.exists(),
+                    is_file=True,
+                    status=status_code,
+                )
+                if self.show_file_node(node_data):
+                    node_label = self.style_label(node_data)
+                    tree_node.add_leaf(label=node_label, data=node_data)
+        elif flat:
+            for file_path in self.status_files:
+                node_data = NodeData(
+                    path=file_path,
+                    found=file_path.exists(),
+                    is_file=True,
+                    status=self.status_files[file_path],
+                )
+                if self.show_file_node(node_data):
+                    node_label = self.style_label(node_data)
+                    tree_node.add_leaf(label=node_label, data=node_data)
 
     def add_nodes(self, tree_node: TreeNode) -> None:
         """Adds a node for each directory in the tree_node.data.path
@@ -441,7 +466,7 @@ class ManagedTree(Tree[NodeData]):
         if not isinstance(event.node.data, NodeData):
             return
         self.add_nodes(event.node)
-        self.add_leaves(event.node)
+        self.add_leaves(event.node, flat=self.flat_list)
 
     def watch_unchanged(self) -> None:
         """Update the visible nodes in the tree based on the current filter
@@ -465,7 +490,7 @@ class ManagedTree(Tree[NodeData]):
 
         for node in get_expanded_nodes():
             self.add_nodes(node)
-            self.add_leaves(node)
+            self.add_leaves(node, flat=self.flat_list)
 
 
 class FilteredDirTree(DirectoryTree):
