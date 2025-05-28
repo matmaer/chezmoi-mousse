@@ -1,9 +1,12 @@
+from datetime import datetime
+import traceback
 from math import ceil
 
 import rich.repr
 from rich.color import Color
 from rich.segment import Segment, Segments
 from rich.style import Style
+from textual.app import App
 from textual.scrollbar import ScrollBar, ScrollBarRender
 
 from chezmoi_mousse.gui import ChezmoiTUI
@@ -137,6 +140,20 @@ class CustomScrollBarRender(ScrollBarRender):
             return Segments(
                 (segments + [_Segment.line()]) * thickness, new_lines=False
             )
+
+
+# monkey patch to copy/paste an unformatted stacktrace for AI dev tooling.
+_original_handle_exception = App._handle_exception
+
+
+def _patched_handle_exception(self, error, *args, **kwargs):
+    with open("error.log", "w") as f:
+        f.write(f"----- {datetime.now().strftime("%Y-%m-%d %Hh%M")} -----\n\n")
+        traceback.print_exc(file=f)
+    return _original_handle_exception(self, error, *args, **kwargs)
+
+
+App._handle_exception = _patched_handle_exception
 
 
 @rich.repr.auto

@@ -121,26 +121,25 @@ ModalScreen {
   color: $text;
   text-style: none;
 
-  &.initial-active {
-    color: $accent;
-    text-style: none;
-  }
-
   &:focus {
     color: $accent;
-      &:hover {
-        color: $accent;
-        text-style: none;
-      }
-
-      &.-active {
-        color: $accent;
-        text-style: none;
-      }
+    &.-active {
+      color: $accent;
+      text-style: none;
     }
+  }
 
   &:hover {
     text-style: bold;
+    &.-active {
+      color: $accent;
+      text-style: none;
+    }
+  }
+
+  &.-active {
+    color: $accent;
+    text-style: none;
   }
 }
 

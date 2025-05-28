@@ -47,7 +47,8 @@ class AnimatedFade(Static):
         return Strip([Segment(SPLASH[y], style=line_styles[y])])
 
     def on_mount(self) -> None:
-        self.set_interval(interval=0.06, callback=self.refresh)
+        # podcast refresh rate info
+        self.set_interval(interval=0.1, callback=self.refresh)
 
 
 ANIMATED_FADE = AnimatedFade()
@@ -69,7 +70,7 @@ class LoadingScreen(Screen):
         self.rich_log = RICH_LOG
         super().__init__()
         self.timer = self.set_interval(
-            interval=0.7, callback=self.all_workers_finished
+            interval=1, callback=self.all_workers_finished
         )
 
     def compose(self) -> ComposeResult:

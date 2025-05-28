@@ -83,8 +83,12 @@ class ApplyTab(Horizontal):
                 id="apply_tree_buttons_horizontal",
             )
             with ContentSwitcher(initial="apply_tree", id="apply_switcher"):
-                yield ManagedTree(id="apply_tree", direction="apply")
-                yield Static("List of files with status", id="apply_list")
+                yield ManagedTree(
+                    id="apply_tree", direction="apply", flat_list=False
+                )
+                yield ManagedTree(
+                    id="apply_list", direction="apply", flat_list=True
+                )
             yield Vertical(
                 HorizontalGroup(
                     Switch(id="apply_tab_unchanged", classes="filter-switch"),
@@ -100,6 +104,9 @@ class ApplyTab(Horizontal):
             with TabPane("Diff", id="apply_diff_pane"):
                 yield DiffView(id="apply_diff_view")
 
+    def on_load(self) -> None:
+        self.query_one("#apply_button_tree", Button).add_class("-active")
+
     def on_mount(self) -> None:
         self.query_one("#apply_left_vertical", Vertical).styles.min_width = (
             left_min_width()
@@ -107,10 +114,6 @@ class ApplyTab(Horizontal):
         self.query_one(
             "#apply_tree_buttons_horizontal", Horizontal
         ).border_subtitle = f"{chezmoi.dest_dir}{os.sep}"
-        # Render the tree button as it would be already have been pressed
-        self.query_one("#apply_button_tree", Button).add_class(
-            "initial-active"
-        )
 
     def on_tree_node_selected(self, event: ManagedTree.NodeSelected) -> None:
         event.stop()
@@ -123,9 +126,6 @@ class ApplyTab(Horizontal):
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
-        self.query_one("#apply_button_tree", Button).remove_class(
-            "initial-active"
-        )
         if event.button.id == "apply_button_tree":
             self.query_one("#apply_switcher", ContentSwitcher).current = (
                 "apply_tree"
@@ -171,8 +171,12 @@ class ReAddTab(Horizontal):
                 id="re_add_tree_buttons_horizontal",
             )
             with ContentSwitcher(initial="re_add_tree", id="re_add_switcher"):
-                yield ManagedTree(id="re_add_tree", direction="re-add")
-                yield Static("List of files with status", id="re_add_list")
+                yield ManagedTree(
+                    id="re_add_tree", direction="re-add", flat_list=False
+                )
+                yield ManagedTree(
+                    id="re_add_list", direction="re-add", flat_list=True
+                )
             yield Vertical(
                 HorizontalGroup(
                     Switch(id="re_add_tab_unchanged", classes="filter-switch"),
@@ -195,9 +199,6 @@ class ReAddTab(Horizontal):
         self.query_one(
             "#re_add_tree_buttons_horizontal", Horizontal
         ).border_subtitle = f"{chezmoi.dest_dir}{os.sep}"
-        self.query_one("#re_add_button_tree", Button).add_class(
-            "initial-active"
-        )
 
     def on_tree_node_selected(self, event: ManagedTree.NodeSelected) -> None:
         event.stop()
@@ -210,9 +211,6 @@ class ReAddTab(Horizontal):
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
-        self.query_one("#re_add_button_tree", Button).remove_class(
-            "initial-active"
-        )
         if event.button.id == "re_add_button_tree":
             self.query_one("#re_add_switcher", ContentSwitcher).current = (
                 "re_add_tree"
