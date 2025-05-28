@@ -39,6 +39,7 @@ from chezmoi_mousse.components import (
     GitLog,
     ManagedTree,
     PathView,
+    TreeButton,
 )
 
 from chezmoi_mousse.config import filter_data, pw_mgr_info
@@ -71,11 +72,11 @@ class ApplyTab(Horizontal):
         with Vertical(id="apply_left_vertical", classes="tab-content-left"):
             yield Horizontal(
                 Vertical(
-                    Button("Tree", id="apply_button_tree"),
+                    TreeButton("Tree", id="apply_button_tree"),
                     classes="center-content",
                 ),
                 Vertical(
-                    Button("List", id="apply_button_status"),
+                    TreeButton("List", id="apply_button_status"),
                     classes="center-content",
                 ),
                 classes="tree_buttons_horizontal",
@@ -106,6 +107,10 @@ class ApplyTab(Horizontal):
         self.query_one(
             "#apply_tree_buttons_horizontal", Horizontal
         ).border_subtitle = f"{chezmoi.dest_dir}{os.sep}"
+        # Render the tree button as it would be already have been pressed
+        self.query_one("#apply_button_tree", Button).add_class(
+            "initial-active"
+        )
 
     def on_tree_node_selected(self, event: ManagedTree.NodeSelected) -> None:
         event.stop()
@@ -118,6 +123,9 @@ class ApplyTab(Horizontal):
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
+        self.query_one("#apply_button_tree", Button).remove_class(
+            "initial-active"
+        )
         if event.button.id == "apply_button_tree":
             self.query_one("#apply_switcher", ContentSwitcher).current = (
                 "apply_tree"
@@ -152,11 +160,11 @@ class ReAddTab(Horizontal):
         with Vertical(id="re_add_left_vertical", classes="tab-content-left"):
             yield Horizontal(
                 Vertical(
-                    Button("Tree", id="re_add_button_tree"),
+                    TreeButton("Tree", id="re_add_button_tree"),
                     classes="center-content",
                 ),
                 Vertical(
-                    Button("List", id="re_add_button_status"),
+                    TreeButton("List", id="re_add_button_status"),
                     classes="center-content",
                 ),
                 classes="tree_buttons_horizontal",
@@ -187,6 +195,9 @@ class ReAddTab(Horizontal):
         self.query_one(
             "#re_add_tree_buttons_horizontal", Horizontal
         ).border_subtitle = f"{chezmoi.dest_dir}{os.sep}"
+        self.query_one("#re_add_button_tree", Button).add_class(
+            "initial-active"
+        )
 
     def on_tree_node_selected(self, event: ManagedTree.NodeSelected) -> None:
         event.stop()
@@ -198,6 +209,10 @@ class ReAddTab(Horizontal):
         )
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
+        event.stop()
+        self.query_one("#re_add_button_tree", Button).remove_class(
+            "initial-active"
+        )
         if event.button.id == "re_add_button_tree":
             self.query_one("#re_add_switcher", ContentSwitcher).current = (
                 "re_add_tree"

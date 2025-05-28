@@ -117,6 +117,33 @@ ModalScreen {
   }
 }
 
+.tree-buttons {
+  color: $text;
+  text-style: none;
+
+  &.initial-active {
+    color: $accent;
+    text-style: none;
+  }
+
+  &:focus {
+    color: $accent;
+      &:hover {
+        color: $accent;
+        text-style: none;
+      }
+
+      &.-active {
+        color: $accent;
+        text-style: none;
+      }
+    }
+
+  &:hover {
+    text-style: bold;
+  }
+}
+
 /******************************************************************/
 /* App default TCSS which are different than the textual defaults */
 /******************************************************************/
@@ -130,12 +157,6 @@ ModalScreen {
   scrollbar-background-active: $background;
   scrollbar-background-hover: $background;
   scrollbar-corner-color: $background;
-}
-
-Button {
-  border: none;
-  height: 1;
-  text-style: none;
 }
 
 Collapsible {
