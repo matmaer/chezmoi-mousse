@@ -47,15 +47,6 @@ class InputOutput:
             self.dict_out = {}
 
 
-@dataclass
-class ChezmoiStatus:
-    path: str
-    is_file: bool
-    found: bool
-    status: str
-    diff_output: str
-
-
 class Chezmoi:
 
     cat_config: InputOutput
@@ -69,7 +60,6 @@ class Chezmoi:
     status_dirs: InputOutput
     status_files: InputOutput
     template_data: InputOutput
-    chezmoi_status: ChezmoiStatus
 
     base = [
         "chezmoi",
