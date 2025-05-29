@@ -111,11 +111,12 @@ class ApplyTab(Horizontal):
             "#apply_tree_buttons_horizontal", Horizontal
         ).border_subtitle = f"{chezmoi.dest_dir}{os.sep}"
         self.query_one("#apply_tree_button", Button).add_class("last-clicked")
+        self.query_one("#apply_path_view", PathView).tab_id = "apply_tab"
 
     def on_tree_node_selected(self, event: ManagedTree.NodeSelected) -> None:
         event.stop()
         assert event.node.data is not None
-        path_view = self.query_exactly_one(PathView)
+        path_view = self.query_one("#apply_path_view", PathView)
         path_view.path = event.node.data.path
         path_view.tab_id = "apply_tab"
 
@@ -212,11 +213,12 @@ class ReAddTab(Horizontal):
             "#re_add_tree_buttons_horizontal", Horizontal
         ).border_subtitle = f"{chezmoi.dest_dir}{os.sep}"
         self.query_one("#re_add_tree_button", Button).add_class("last-clicked")
+        self.query_one("#re_add_path_view", PathView).tab_id = "re_add_tab"
 
     def on_tree_node_selected(self, event: ManagedTree.NodeSelected) -> None:
         event.stop()
         assert event.node.data is not None
-        path_view = self.query_exactly_one(PathView)
+        path_view = self.query_one("#re_add_path_view", PathView)
         path_view.path = event.node.data.path
         path_view.tab_id = "re_add_tab"
         self.query_one("#re_add_diff_view", DiffView).diff_spec = (
@@ -297,7 +299,8 @@ class AddTab(Horizontal):
             )
 
         yield Vertical(
-            PathView(classes="border-path-title"), classes="tab-content-right"
+            PathView(id="add_path_view", classes="border-path-title"),
+            classes="tab-content-right",
         )
 
     def on_mount(self) -> None:
@@ -311,13 +314,14 @@ class AddTab(Horizontal):
         self.query_one("#add_left_vertical", Vertical).styles.min_width = (
             left_min_width(add_tab=True)
         )
+        self.query_one("#add_path_view", PathView).tab_id = "add_tab"
 
     def on_directory_tree_file_selected(
         self, event: FilteredDirTree.FileSelected
     ) -> None:
         event.stop()
         if event.node.data is not None:
-            path_view = self.query_exactly_one(PathView)
+            path_view = self.query_one("#add_path_view", PathView)
             path_view.path = event.node.data.path
             path_view.tab_id = "add_tab"
 
@@ -326,7 +330,7 @@ class AddTab(Horizontal):
     ) -> None:
         event.stop()
         if event.node.data is not None:
-            path_view = self.query_exactly_one(PathView)
+            path_view = self.query_one("#add_path_view", PathView)
             path_view.path = event.node.data.path
             path_view.tab_id = "add_tab"
 
