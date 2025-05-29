@@ -235,6 +235,11 @@ class ReAddTab(Horizontal):
     def on_tree_node_selected(self, event: ManagedTree.NodeSelected) -> None:
         event.stop()
         assert event.node.data is not None
+        self.query_one(
+            "#re_add_view_buttons_horizontal", Horizontal
+        ).border_subtitle = (
+            f" {event.node.data.path.relative_to(chezmoi.dest_dir)} "
+        )
         path_view = self.query_one("#re_add_content", PathView)
         path_view.path = event.node.data.path
         path_view.tab_id = "re_add_tab"
