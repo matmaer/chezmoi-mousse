@@ -78,7 +78,7 @@ class ApplyTab(Horizontal):
                     TabButton("List", id="apply_list_button"),
                     classes="center-content",
                 ),
-                classes="tree_buttons_horizontal",
+                classes="tab-buttons-horizontal",
                 id="apply_tree_buttons_horizontal",
             )
             with ContentSwitcher(initial="apply_tree", id="apply_switcher"):
@@ -180,10 +180,12 @@ class ReAddTab(Horizontal):
                     TabButton("List", id="re_add_list_button"),
                     classes="center-content",
                 ),
-                classes="tree_buttons_horizontal",
+                classes="tab-buttons-horizontal",
                 id="re_add_tree_buttons_horizontal",
             )
-            with ContentSwitcher(initial="re_add_tree", id="re_add_switcher"):
+            with ContentSwitcher(
+                initial="re_add_tree", id="re_add_tree_switcher"
+            ):
                 yield ManagedTree(
                     id="re_add_tree", direction="re-add", flat_list=False
                 )
@@ -199,11 +201,24 @@ class ReAddTab(Horizontal):
                 ),
                 classes="filter-container",
             )
-        with TabbedContent(id="re_add_view_tabs", classes="tab-content-right"):
-            with TabPane("Content", id="re_add_content_pane"):
-                yield PathView(id="re_add_path_view")
-            with TabPane("Diff", id="re_add_diff_pane"):
-                yield DiffView(id="re_add_diff_view")
+        with Vertical(classes="tab-content-right"):
+            yield Horizontal(
+                Vertical(
+                    TabButton("Content", id="re_add_content_button"),
+                    classes="center-content",
+                ),
+                Vertical(
+                    TabButton("Diff", id="re_add_diff_button"),
+                    classes="center-content",
+                ),
+                id="re_add_view_buttons_horizontal",
+                classes="tab-buttons-horizontal",
+            )
+            with ContentSwitcher(
+                initial="re_add_content", id="re_add_view_switcher"
+            ):
+                yield PathView(id="re_add_content")
+                yield DiffView(id="re_add_diff")
 
     def on_mount(self) -> None:
         self.query_one("#re_add_left_vertical", Vertical).styles.min_width = (
@@ -212,16 +227,24 @@ class ReAddTab(Horizontal):
         self.query_one(
             "#re_add_tree_buttons_horizontal", Horizontal
         ).border_subtitle = f"{chezmoi.dest_dir}{os.sep}"
+
+        self.query_one(
+            "#re_add_view_buttons_horizontal", Horizontal
+        ).border_subtitle = f"{chezmoi.dest_dir}{os.sep}"
+
         self.query_one("#re_add_tree_button", Button).add_class("last-clicked")
-        self.query_one("#re_add_path_view", PathView).tab_id = "re_add_tab"
+
+        self.query_one("#re_add_content_button", Button).add_class(
+            "last-clicked"
+        )
 
     def on_tree_node_selected(self, event: ManagedTree.NodeSelected) -> None:
         event.stop()
         assert event.node.data is not None
-        path_view = self.query_one("#re_add_path_view", PathView)
+        path_view = self.query_one("#re_add_content", PathView)
         path_view.path = event.node.data.path
         path_view.tab_id = "re_add_tab"
-        self.query_one("#re_add_diff_view", DiffView).diff_spec = (
+        self.query_one("#re_add_diff", DiffView).diff_spec = (
             event.node.data.path,
             "re-add",
         )
@@ -229,9 +252,9 @@ class ReAddTab(Horizontal):
     def on_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
         if event.button.id == "re_add_tree_button":
-            self.query_one("#re_add_switcher", ContentSwitcher).current = (
-                "re_add_tree"
-            )
+            self.query_one(
+                "#re_add_tree_switcher", ContentSwitcher
+            ).current = "re_add_tree"
             self.query_one("#re_add_tree_button", Button).add_class(
                 "last-clicked"
             )
@@ -239,13 +262,33 @@ class ReAddTab(Horizontal):
                 "last-clicked"
             )
         elif event.button.id == "re_add_list_button":
-            self.query_one("#re_add_switcher", ContentSwitcher).current = (
-                "re_add_list"
-            )
+            self.query_one(
+                "#re_add_tree_switcher", ContentSwitcher
+            ).current = "re_add_list"
             self.query_one("#re_add_list_button", Button).add_class(
                 "last-clicked"
             )
             self.query_one("#re_add_tree_button", Button).remove_class(
+                "last-clicked"
+            )
+        elif event.button.id == "re_add_content_button":
+            self.query_one(
+                "#re_add_view_switcher", ContentSwitcher
+            ).current = "re_add_content"
+            self.query_one("#re_add_content_button", Button).add_class(
+                "last-clicked"
+            )
+            self.query_one("#re_add_diff_button", Button).remove_class(
+                "last-clicked"
+            )
+        elif event.button.id == "re_add_diff_button":
+            self.query_one(
+                "#re_add_view_switcher", ContentSwitcher
+            ).current = "re_add_diff"
+            self.query_one("#re_add_diff_button", Button).add_class(
+                "last-clicked"
+            )
+            self.query_one("#re_add_content_button", Button).remove_class(
                 "last-clicked"
             )
 
@@ -370,7 +413,7 @@ class DoctorTab(VerticalScroll):
         ]
 
         def compose(self) -> ComposeResult:
-            yield Pretty(chezmoi.dump_config.dict_out, id="config_dump_doctor")
+            yield Pretty(chezmoi.dump_config.dict_out)
 
         def on_mount(self) -> None:
             self.add_class("doctor-modal")

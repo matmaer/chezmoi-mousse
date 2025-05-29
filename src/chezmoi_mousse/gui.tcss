@@ -99,7 +99,7 @@ ModalScreen {
 }
 
 /* for "Tree" vs "List" switcher */
-.tree_buttons_horizontal {
+.tab-buttons-horizontal {
   align: center middle;
   height: 2;
   border-top: none;
