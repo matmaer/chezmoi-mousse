@@ -44,16 +44,12 @@ from chezmoi_mousse.components import (
 from chezmoi_mousse.config import filter_data, pw_mgr_info
 
 
-def left_min_width(add_tab: bool = False) -> int:
-    dest_dir_length = len(str(chezmoi.dest_dir)) + 4  # for double padding
-    # 8 for the filter switch, 2 for title padding right and the border
-    if add_tab:
-        max_filter_width = (
-            max(len(f.label) for f in vars(filter_data).values()) + 8 + 2
-        )
-    else:
-        max_filter_width = len(filter_data.unchanged.label) + 8 + 2
-    return max(dest_dir_length, max_filter_width)
+def left_min_width() -> int:
+    # 7 for the filter switch, 2 for title padding right
+    max_filter_width = (
+        max(len(f.label) for f in vars(filter_data).values()) + 8 + 2
+    )
+    return max(len(chezmoi.dest_dir_str_spaced) + 2, max_filter_width)
 
 
 class ApplyTab(Horizontal):
@@ -355,7 +351,7 @@ class AddTab(Horizontal):
         ).border_title = f"{chezmoi.dest_dir}{os.sep}"
 
         self.query_one("#add_left_vertical", Vertical).styles.min_width = (
-            left_min_width(add_tab=True)
+            left_min_width()
         )
         self.query_one("#add_path_view", PathView).tab_id = "add_tab"
 
