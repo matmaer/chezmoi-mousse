@@ -48,6 +48,27 @@ def left_min_width() -> int:
     return max(len(chezmoi.dest_dir_str_spaced) + 2, max_filter_width)
 
 
+class TreeTabButtons(Horizontal):
+
+    def __init__(self, kind: str, **kwargs) -> None:
+        self.kind = kind
+        super().__init__(
+            classes="tab-buttons-horizontal",
+            id=f"{self.kind}_tree_buttons",
+            **kwargs,
+        )
+
+    def compose(self) -> ComposeResult:
+        yield Vertical(
+            TabButton("Tree", id=f"{self.kind}_tree_button"),
+            classes="center-content",
+        )
+        yield Vertical(
+            TabButton("List", id=f"{self.kind}_list_button"),
+            classes="center-content",
+        )
+
+
 class ApplyTab(Horizontal):
 
     BINDINGS = [
@@ -61,18 +82,7 @@ class ApplyTab(Horizontal):
 
     def compose(self) -> ComposeResult:
         with Vertical(id="apply_left", classes="tab-content-left"):
-            yield Horizontal(
-                Vertical(
-                    TabButton("Tree", id="apply_tree_button"),
-                    classes="center-content",
-                ),
-                Vertical(
-                    TabButton("List", id="apply_list_button"),
-                    classes="center-content",
-                ),
-                classes="tab-buttons-horizontal",
-                id="apply_tree_buttons",
-            )
+            yield TreeTabButtons("apply")
             with ContentSwitcher(initial="apply_tree", id="apply_switcher"):
                 yield ManagedTree(
                     id="apply_tree", direction="apply", flat_list=False
@@ -207,18 +217,7 @@ class ReAddTab(Horizontal):
 
     def compose(self) -> ComposeResult:
         with Vertical(id="re_add_left", classes="tab-content-left"):
-            yield Horizontal(
-                Vertical(
-                    TabButton("Tree", id="re_add_tree_button"),
-                    classes="center-content",
-                ),
-                Vertical(
-                    TabButton("List", id="re_add_list_button"),
-                    classes="center-content",
-                ),
-                classes="tab-buttons-horizontal",
-                id="re_add_tree_buttons",
-            )
+            yield TreeTabButtons("re_add")
             with ContentSwitcher(
                 initial="re_add_tree", id="re_add_tree_switcher"
             ):
