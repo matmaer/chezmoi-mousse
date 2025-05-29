@@ -53,8 +53,8 @@ class TreeTabButtons(Horizontal):
     def __init__(self, kind: str, **kwargs) -> None:
         self.kind = kind
         super().__init__(
-            classes="tab-buttons-horizontal",
             id=f"{self.kind}_tree_buttons",
+            classes="tab-buttons-horizontal",
             **kwargs,
         )
 
@@ -65,6 +65,26 @@ class TreeTabButtons(Horizontal):
         )
         yield Vertical(
             TabButton("List", id=f"{self.kind}_list_button"),
+            classes="center-content",
+        )
+
+
+class ViewTabButtons(Horizontal):
+    def __init__(self, kind: str, **kwargs) -> None:
+        self.kind = kind
+        super().__init__(
+            id=f"{self.kind}_view_buttons",
+            classes="tab-buttons-horizontal",
+            **kwargs,
+        )
+
+    def compose(self) -> ComposeResult:
+        yield Vertical(
+            TabButton("Content", id=f"{self.kind}_content_button"),
+            classes="center-content",
+        )
+        yield Vertical(
+            TabButton("Diff", id=f"{self.kind}_diff_button"),
             classes="center-content",
         )
 
@@ -100,18 +120,7 @@ class ApplyTab(Horizontal):
                 classes="filter-container",
             )
         with Vertical(classes="tab-content-right"):
-            yield Horizontal(
-                Vertical(
-                    TabButton("Content", id="apply_content_button"),
-                    classes="center-content",
-                ),
-                Vertical(
-                    TabButton("Diff", id="apply_diff_button"),
-                    classes="center-content",
-                ),
-                id="apply_view_buttons",
-                classes="tab-buttons-horizontal",
-            )
+            yield ViewTabButtons("apply")
             with ContentSwitcher(
                 initial="apply_content", id="apply_view_switcher"
             ):
@@ -237,18 +246,7 @@ class ReAddTab(Horizontal):
                 classes="filter-container",
             )
         with Vertical(classes="tab-content-right"):
-            yield Horizontal(
-                Vertical(
-                    TabButton("Content", id="re_add_content_button"),
-                    classes="center-content",
-                ),
-                Vertical(
-                    TabButton("Diff", id="re_add_diff_button"),
-                    classes="center-content",
-                ),
-                id="re_add_view_buttons",
-                classes="tab-buttons-horizontal",
-            )
+            yield ViewTabButtons("re_add")
             with ContentSwitcher(
                 initial="re_add_content", id="re_add_view_switcher"
             ):
