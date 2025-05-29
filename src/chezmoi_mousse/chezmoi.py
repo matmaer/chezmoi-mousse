@@ -188,18 +188,17 @@ class Chezmoi:
     def managed_dir_paths_in_dir(self, dir_path: Path) -> list[Path]:
         return [d for d in self.managed_dir_paths if d.parent == dir_path]
 
-    def unmanaged_in_d(self, dir_path: Path) -> list[Path]:
-        if not dir_path.is_dir():
-            raise ValueError(
-                f"Cannot show unmanaged file or dir: not found. {dir_path}"
-            )
+    def unmanaged_in_dir(self, dir_path: Path) -> list[Path]:
         path_strings = subprocess_run(
             self.base + ["unmanaged", "--path-style=absolute", str(dir_path)]
         ).splitlines()
+        # chezmoi can return the dir itself, eg when the dir is not managed
+        if len(path_strings) == 1 and path_strings[0] == str(dir_path):
+            return []
         return [
             p
             for entry in path_strings
-            if (p := Path(entry)).parent == dir_path and p.is_file()
+            if (p := Path(entry)).parent == dir_path
         ]
 
     def run_add(self, file_path: Path) -> str:

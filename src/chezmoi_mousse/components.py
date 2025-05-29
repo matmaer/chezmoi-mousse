@@ -122,6 +122,7 @@ class PathView(RichLog):
     BINDINGS = [Binding(key="M,m", action="maximize", description="maximize")]
 
     path: reactive[Path | None] = reactive(None, init=False)
+    tab_id: reactive[str] = reactive("apply_tab", init=False)
 
     def __init__(self, path: Path | None = None, **kwargs) -> None:
         super().__init__(
@@ -132,9 +133,38 @@ class PathView(RichLog):
     def on_mount(self) -> None:
         text = "Click a file or directory, \nto show its contents."
         self.write(Text(text, style="dim"))
+        self.border_title = "Path View"
+
+    def write_managed_dirs_in_dir(self) -> None:
+        assert isinstance(self.path, Path)
+        managed_dirs: list[Path] = chezmoi.managed_dir_paths_in_dir(self.path)
+        if managed_dirs:
+            self.write("\nManaged sub dirs:")
+            for p in managed_dirs:
+                self.write(str(p))
+
+    def write_managed_files_in_dir(self) -> None:
+        assert isinstance(self.path, Path)
+        managed_files: list[Path] = chezmoi.managed_file_paths_in_dir(
+            self.path
+        )
+        if managed_files:
+            self.write("\nManaged files:")
+            for p in managed_files:
+                self.write(str(p))
+
+    def write_unmanaged_files_in_dir(self) -> None:
+        assert isinstance(self.path, Path)
+        unmanaged_files: list[Path] = chezmoi.unmanaged_in_dir(self.path)
+        if unmanaged_files:
+            self.write("\nUnmanaged files:")
+            self.write('(switch to "AddTab" to add files)')
+            for p in unmanaged_files:
+                self.write(str(p))
 
     def update_path_view(self) -> None:
         assert isinstance(self.path, Path)
+        self.border_title = f"{self.path.relative_to(chezmoi.dest_dir)}"
         truncated = ""
         try:
             if self.path.is_file() and self.path.stat().st_size > 150 * 1024:
@@ -167,18 +197,23 @@ class PathView(RichLog):
                 else:
                     self.write(chezmoi.run_cat(str(self.path)))
                 return
-            elif self.path in chezmoi.managed_dir_paths:
-                text = [
-                    "The directory is managed, but does not exist on disk.",
-                    f'Output from "chezmoi status {self.path}"',
-                    f"{chezmoi.run_status(str(self.path))}",
-                ]
-                self.write("\n".join(text))
-                return
 
         except IsADirectoryError:
-            self.write(f"Directory: {self.path}")
-            return
+
+            if self.path in chezmoi.managed_dir_paths:
+                self.write(f"Managed directory: {self.path}")
+            else:
+                self.write(f"Unmanaged directory: {self.path}")
+
+            if self.tab_id == "apply_tab" or self.tab_id == "re_add_tab":
+                self.write_unmanaged_files_in_dir()
+
+            elif self.tab_id == "add_tab":
+                self.write(
+                    '(switch to "Apply" or "ReAdd" tab to apply or re-add)'
+                )
+                self.write_managed_files_in_dir()
+                self.write_managed_dirs_in_dir()
 
         except OSError as error:
             text = Text(f"Error reading {self.path}: {error}")
@@ -273,10 +308,9 @@ class DiffView(Static):
         self.update(Content("\n").join(colored_lines))
 
 
-class TreeButton(Button):
+class TabButton(Button):
     # not a container, focussable https://textual.textualize.io/widgets/button/
     def on_mount(self) -> None:
-        self.add_class("tree-buttons")
         self.active_effect_duration = 0
         self.compact = True
 

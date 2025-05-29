@@ -15,9 +15,7 @@
   dock: bottom;
   align: center middle;
   border-top: inner $background-lighten-2;
-  border-right: inner $background-lighten-2;
   border-bottom: inner $background-lighten-2;
-  border-left: none;
   background: $background-lighten-2;
   background-tint: $background-lighten-2;
   height: auto;
@@ -117,29 +115,21 @@ ModalScreen {
   }
 }
 
-.tree-buttons {
+TabButton {
   color: $text;
   text-style: none;
 
   &:focus {
     color: $accent;
-    &.-active {
-      color: $accent;
-      text-style: none;
-    }
   }
 
   &:hover {
     text-style: bold;
-    &.-active {
-      color: $accent;
-      text-style: none;
-    }
   }
 
-  &.-active {
+  &.last-clicked {
     color: $accent;
-    text-style: none;
+    text-style: bold;
   }
 }
 
