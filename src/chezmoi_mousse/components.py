@@ -155,21 +155,12 @@ class PathView(RichLog):
 
     def write_unmanaged_files_in_dir(self) -> None:
         assert isinstance(self.path, Path)
-        unmanaged_files: list[Path] = chezmoi.unmanaged_in_d(self.path)
+        unmanaged_files: list[Path] = chezmoi.unmanaged_in_dir(self.path)
         if unmanaged_files:
             self.write("\nUnmanaged files:")
+            self.write('(switch to "AddTab" to add files)')
             for p in unmanaged_files:
                 self.write(str(p))
-
-    def write_status_in_dir(self) -> None:
-        if self.path in chezmoi.managed_dir_paths:
-            self.write("\nStatus in directory:")
-            text = [
-                f'Output from "chezmoi status {self.path}"',
-                f"{chezmoi.run_status(str(self.path))}",
-            ]
-            self.write("\n".join(text))
-            return
 
     def update_path_view(self) -> None:
         assert isinstance(self.path, Path)
@@ -214,10 +205,15 @@ class PathView(RichLog):
             else:
                 self.write(f"Unmanaged directory: {self.path}")
 
-            self.write_status_in_dir()
-            self.write_unmanaged_files_in_dir()
-            self.write_managed_files_in_dir()
-            self.write_managed_dirs_in_dir()
+            if self.tab_id == "apply_tab" or self.tab_id == "re_add_tab":
+                self.write_unmanaged_files_in_dir()
+
+            elif self.tab_id == "add_tab":
+                self.write(
+                    '(switch to "Apply" or "ReAdd" tab to apply or re-add)'
+                )
+                self.write_managed_files_in_dir()
+                self.write_managed_dirs_in_dir()
 
         except OSError as error:
             text = Text(f"Error reading {self.path}: {error}")
