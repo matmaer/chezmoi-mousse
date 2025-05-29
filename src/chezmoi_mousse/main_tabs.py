@@ -71,7 +71,7 @@ class ApplyTab(Horizontal):
                     classes="center-content",
                 ),
                 classes="tab-buttons-horizontal",
-                id="apply_tree_buttons_horizontal",
+                id="apply_tree_buttons",
             )
             with ContentSwitcher(initial="apply_tree", id="apply_switcher"):
                 yield ManagedTree(
@@ -99,7 +99,7 @@ class ApplyTab(Horizontal):
                     TabButton("Diff", id="apply_diff_button"),
                     classes="center-content",
                 ),
-                id="apply_view_buttons_horizontal",
+                id="apply_view_buttons",
                 classes="tab-buttons-horizontal",
             )
             with ContentSwitcher(
@@ -113,13 +113,13 @@ class ApplyTab(Horizontal):
             left_min_width()
         )
 
-        self.query_one(
-            "#apply_tree_buttons_horizontal", Horizontal
-        ).border_subtitle = chezmoi.dest_dir_str_spaced
+        self.query_one("#apply_tree_buttons", Horizontal).border_subtitle = (
+            chezmoi.dest_dir_str_spaced
+        )
 
-        self.query_one(
-            "#apply_view_buttons_horizontal", Horizontal
-        ).border_subtitle = " path view "
+        self.query_one("#apply_view_buttons", Horizontal).border_subtitle = (
+            " path view "
+        )
 
         self.query_one("#apply_tree_button", Button).add_class("last-clicked")
 
@@ -130,9 +130,7 @@ class ApplyTab(Horizontal):
     def on_tree_node_selected(self, event: ManagedTree.NodeSelected) -> None:
         event.stop()
         assert event.node.data is not None
-        self.query_one(
-            "#apply_view_buttons_horizontal", Horizontal
-        ).border_subtitle = (
+        self.query_one("#apply_view_buttons", Horizontal).border_subtitle = (
             f" {event.node.data.path.relative_to(chezmoi.dest_dir)} "
         )
         path_view = self.query_one("#apply_content", PathView)
@@ -219,7 +217,7 @@ class ReAddTab(Horizontal):
                     classes="center-content",
                 ),
                 classes="tab-buttons-horizontal",
-                id="re_add_tree_buttons_horizontal",
+                id="re_add_tree_buttons",
             )
             with ContentSwitcher(
                 initial="re_add_tree", id="re_add_tree_switcher"
@@ -249,7 +247,7 @@ class ReAddTab(Horizontal):
                     TabButton("Diff", id="re_add_diff_button"),
                     classes="center-content",
                 ),
-                id="re_add_view_buttons_horizontal",
+                id="re_add_view_buttons",
                 classes="tab-buttons-horizontal",
             )
             with ContentSwitcher(
@@ -263,13 +261,13 @@ class ReAddTab(Horizontal):
             left_min_width()
         )
 
-        self.query_one(
-            "#re_add_tree_buttons_horizontal", Horizontal
-        ).border_subtitle = chezmoi.dest_dir_str_spaced
+        self.query_one("#re_add_tree_buttons", Horizontal).border_subtitle = (
+            chezmoi.dest_dir_str_spaced
+        )
 
-        self.query_one(
-            "#re_add_view_buttons_horizontal", Horizontal
-        ).border_subtitle = " path view "
+        self.query_one("#re_add_view_buttons", Horizontal).border_subtitle = (
+            " path view "
+        )
 
         self.query_one("#re_add_tree_button", Button).add_class("last-clicked")
 
@@ -280,9 +278,7 @@ class ReAddTab(Horizontal):
     def on_tree_node_selected(self, event: ManagedTree.NodeSelected) -> None:
         event.stop()
         assert event.node.data is not None
-        self.query_one(
-            "#re_add_view_buttons_horizontal", Horizontal
-        ).border_subtitle = (
+        self.query_one("#re_add_view_buttons", Horizontal).border_subtitle = (
             f" {event.node.data.path.relative_to(chezmoi.dest_dir)} "
         )
         path_view = self.query_one("#re_add_content", PathView)
