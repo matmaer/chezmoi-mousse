@@ -39,7 +39,7 @@ from chezmoi_mousse.components import (
     GitLog,
     ManagedTree,
     PathView,
-    TreeButton,
+    TabButton,
 )
 
 from chezmoi_mousse.config import filter_data, pw_mgr_info
@@ -72,11 +72,11 @@ class ApplyTab(Horizontal):
         with Vertical(id="apply_left_vertical", classes="tab-content-left"):
             yield Horizontal(
                 Vertical(
-                    TreeButton("Tree", id="apply_button_tree"),
+                    TabButton("Tree", id="apply_tree_button"),
                     classes="center-content",
                 ),
                 Vertical(
-                    TreeButton("List", id="apply_button_status"),
+                    TabButton("List", id="apply_list_button"),
                     classes="center-content",
                 ),
                 classes="tree_buttons_horizontal",
@@ -104,9 +104,6 @@ class ApplyTab(Horizontal):
             with TabPane("Diff", id="apply_diff_pane"):
                 yield DiffView(id="apply_diff_view")
 
-    def on_load(self) -> None:
-        self.query_one("#apply_button_tree", Button).add_class("-active")
-
     def on_mount(self) -> None:
         self.query_one("#apply_left_vertical", Vertical).styles.min_width = (
             left_min_width()
@@ -114,6 +111,7 @@ class ApplyTab(Horizontal):
         self.query_one(
             "#apply_tree_buttons_horizontal", Horizontal
         ).border_subtitle = f"{chezmoi.dest_dir}{os.sep}"
+        self.query_one("#apply_tree_button", Button).add_class("last-clicked")
 
     def on_tree_node_selected(self, event: ManagedTree.NodeSelected) -> None:
         event.stop()
@@ -126,13 +124,25 @@ class ApplyTab(Horizontal):
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
-        if event.button.id == "apply_button_tree":
+        if event.button.id == "apply_tree_button":
             self.query_one("#apply_switcher", ContentSwitcher).current = (
                 "apply_tree"
             )
-        elif event.button.id == "apply_button_status":
+            self.query_one("#apply_tree_button", Button).add_class(
+                "last-clicked"
+            )
+            self.query_one("#apply_list_button", Button).remove_class(
+                "last-clicked"
+            )
+        elif event.button.id == "apply_list_button":
             self.query_one("#apply_switcher", ContentSwitcher).current = (
                 "apply_list"
+            )
+            self.query_one("#apply_list_button", Button).add_class(
+                "last-clicked"
+            )
+            self.query_one("#apply_tree_button", Button).remove_class(
+                "last-clicked"
             )
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
@@ -160,11 +170,11 @@ class ReAddTab(Horizontal):
         with Vertical(id="re_add_left_vertical", classes="tab-content-left"):
             yield Horizontal(
                 Vertical(
-                    TreeButton("Tree", id="re_add_button_tree"),
+                    TabButton("Tree", id="re_add_tree_button"),
                     classes="center-content",
                 ),
                 Vertical(
-                    TreeButton("List", id="re_add_button_status"),
+                    TabButton("List", id="re_add_list_button"),
                     classes="center-content",
                 ),
                 classes="tree_buttons_horizontal",
@@ -199,6 +209,7 @@ class ReAddTab(Horizontal):
         self.query_one(
             "#re_add_tree_buttons_horizontal", Horizontal
         ).border_subtitle = f"{chezmoi.dest_dir}{os.sep}"
+        self.query_one("#re_add_tree_button", Button).add_class("last-clicked")
 
     def on_tree_node_selected(self, event: ManagedTree.NodeSelected) -> None:
         event.stop()
@@ -211,13 +222,25 @@ class ReAddTab(Horizontal):
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
-        if event.button.id == "re_add_button_tree":
+        if event.button.id == "re_add_tree_button":
             self.query_one("#re_add_switcher", ContentSwitcher).current = (
                 "re_add_tree"
             )
-        elif event.button.id == "re_add_button_status":
+            self.query_one("#re_add_tree_button", Button).add_class(
+                "last-clicked"
+            )
+            self.query_one("#re_add_list_button", Button).remove_class(
+                "last-clicked"
+            )
+        elif event.button.id == "re_add_list_button":
             self.query_one("#re_add_switcher", ContentSwitcher).current = (
                 "re_add_list"
+            )
+            self.query_one("#re_add_list_button", Button).add_class(
+                "last-clicked"
+            )
+            self.query_one("#re_add_tree_button", Button).remove_class(
+                "last-clicked"
             )
 
     def on_switch_changed(self, event: Switch.Changed) -> None:

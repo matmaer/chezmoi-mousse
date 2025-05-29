@@ -273,10 +273,9 @@ class DiffView(Static):
         self.update(Content("\n").join(colored_lines))
 
 
-class TreeButton(Button):
+class TabButton(Button):
     # not a container, focussable https://textual.textualize.io/widgets/button/
     def on_mount(self) -> None:
-        self.add_class("tree-buttons")
         self.active_effect_duration = 0
         self.compact = True
 
