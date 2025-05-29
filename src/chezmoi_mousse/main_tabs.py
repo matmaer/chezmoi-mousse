@@ -341,7 +341,7 @@ class AddTab(Horizontal):
         )
 
     def on_mount(self) -> None:
-        filtered_dir_tree = self.query_one(FilteredDirTree)
+        filtered_dir_tree = self.query_one("#add_tree", FilteredDirTree)
         filtered_dir_tree.show_root = False
         filtered_dir_tree.guide_depth = 3
         self.query_one(
