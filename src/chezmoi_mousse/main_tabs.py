@@ -1,7 +1,5 @@
 """Contains the widgets used to compose the main screen of chezmoi-mousse."""
 
-import os
-
 from rich.text import Text
 from textual.app import ComposeResult
 from textual.binding import Binding
@@ -25,8 +23,6 @@ from textual.widgets import (
     ListItem,
     ListView,
     Pretty,
-    TabbedContent,
-    TabPane,
     Static,
     Switch,
 )
@@ -44,16 +40,12 @@ from chezmoi_mousse.components import (
 from chezmoi_mousse.config import filter_data, pw_mgr_info
 
 
-def left_min_width(add_tab: bool = False) -> int:
-    dest_dir_length = len(str(chezmoi.dest_dir)) + 4  # for double padding
-    # 8 for the filter switch, 2 for title padding right and the border
-    if add_tab:
-        max_filter_width = (
-            max(len(f.label) for f in vars(filter_data).values()) + 8 + 2
-        )
-    else:
-        max_filter_width = len(filter_data.unchanged.label) + 8 + 2
-    return max(dest_dir_length, max_filter_width)
+def left_min_width() -> int:
+    # 7 for the filter switch, 2 for title padding right
+    max_filter_width = (
+        max(len(f.label) for f in vars(filter_data).values()) + 8 + 2
+    )
+    return max(len(chezmoi.dest_dir_str_spaced) + 2, max_filter_width)
 
 
 class ApplyTab(Horizontal):
@@ -78,7 +70,7 @@ class ApplyTab(Horizontal):
                     TabButton("List", id="apply_list_button"),
                     classes="center-content",
                 ),
-                classes="tree_buttons_horizontal",
+                classes="tab-buttons-horizontal",
                 id="apply_tree_buttons_horizontal",
             )
             with ContentSwitcher(initial="apply_tree", id="apply_switcher"):
@@ -97,30 +89,56 @@ class ApplyTab(Horizontal):
                 ),
                 classes="filter-container",
             )
-        with TabbedContent(id="apply_view_tabs", classes="tab-content-right"):
-            with TabPane("Content", id="apply_content_pane"):
-                yield PathView(id="apply_path_view")
-            with TabPane("Diff", id="apply_diff_pane"):
-                yield DiffView(id="apply_diff_view")
+        with Vertical(classes="tab-content-right"):
+            yield Horizontal(
+                Vertical(
+                    TabButton("Content", id="apply_content_button"),
+                    classes="center-content",
+                ),
+                Vertical(
+                    TabButton("Diff", id="apply_diff_button"),
+                    classes="center-content",
+                ),
+                id="apply_view_buttons_horizontal",
+                classes="tab-buttons-horizontal",
+            )
+            with ContentSwitcher(
+                initial="apply_content", id="apply_view_switcher"
+            ):
+                yield PathView(id="apply_content")
+                yield DiffView(id="apply_diff")
 
     def on_mount(self) -> None:
         self.query_one("#apply_left_vertical", Vertical).styles.min_width = (
             left_min_width()
         )
+
         self.query_one(
             "#apply_tree_buttons_horizontal", Horizontal
-        ).border_subtitle = f"{chezmoi.dest_dir}{os.sep}"
+        ).border_subtitle = chezmoi.dest_dir_str_spaced
+
+        self.query_one(
+            "#apply_view_buttons_horizontal", Horizontal
+        ).border_subtitle = " path view "
+
         self.query_one("#apply_tree_button", Button).add_class("last-clicked")
-        self.query_one("#apply_path_view", PathView).tab_id = "apply_tab"
+
+        self.query_one("#apply_content_button", Button).add_class(
+            "last-clicked"
+        )
 
     def on_tree_node_selected(self, event: ManagedTree.NodeSelected) -> None:
         event.stop()
         assert event.node.data is not None
-        path_view = self.query_one("#apply_path_view", PathView)
+        self.query_one(
+            "#apply_view_buttons_horizontal", Horizontal
+        ).border_subtitle = (
+            f" {event.node.data.path.relative_to(chezmoi.dest_dir)} "
+        )
+        path_view = self.query_one("#apply_content", PathView)
         path_view.path = event.node.data.path
         path_view.tab_id = "apply_tab"
-
-        self.query_one("#apply_diff_view", DiffView).diff_spec = (
+        self.query_one("#apply_diff", DiffView).diff_spec = (
             event.node.data.path,
             "apply",
         )
@@ -145,6 +163,26 @@ class ApplyTab(Horizontal):
                 "last-clicked"
             )
             self.query_one("#apply_tree_button", Button).remove_class(
+                "last-clicked"
+            )
+        elif event.button.id == "apply_content_button":
+            self.query_one("#apply_view_switcher", ContentSwitcher).current = (
+                "apply_content"
+            )
+            self.query_one("#apply_content_button", Button).add_class(
+                "last-clicked"
+            )
+            self.query_one("#apply_diff_button", Button).remove_class(
+                "last-clicked"
+            )
+        elif event.button.id == "apply_diff_button":
+            self.query_one("#apply_view_switcher", ContentSwitcher).current = (
+                "apply_diff"
+            )
+            self.query_one("#apply_diff_button", Button).add_class(
+                "last-clicked"
+            )
+            self.query_one("#apply_content_button", Button).remove_class(
                 "last-clicked"
             )
 
@@ -180,10 +218,12 @@ class ReAddTab(Horizontal):
                     TabButton("List", id="re_add_list_button"),
                     classes="center-content",
                 ),
-                classes="tree_buttons_horizontal",
+                classes="tab-buttons-horizontal",
                 id="re_add_tree_buttons_horizontal",
             )
-            with ContentSwitcher(initial="re_add_tree", id="re_add_switcher"):
+            with ContentSwitcher(
+                initial="re_add_tree", id="re_add_tree_switcher"
+            ):
                 yield ManagedTree(
                     id="re_add_tree", direction="re-add", flat_list=False
                 )
@@ -199,29 +239,56 @@ class ReAddTab(Horizontal):
                 ),
                 classes="filter-container",
             )
-        with TabbedContent(id="re_add_view_tabs", classes="tab-content-right"):
-            with TabPane("Content", id="re_add_content_pane"):
-                yield PathView(id="re_add_path_view")
-            with TabPane("Diff", id="re_add_diff_pane"):
-                yield DiffView(id="re_add_diff_view")
+        with Vertical(classes="tab-content-right"):
+            yield Horizontal(
+                Vertical(
+                    TabButton("Content", id="re_add_content_button"),
+                    classes="center-content",
+                ),
+                Vertical(
+                    TabButton("Diff", id="re_add_diff_button"),
+                    classes="center-content",
+                ),
+                id="re_add_view_buttons_horizontal",
+                classes="tab-buttons-horizontal",
+            )
+            with ContentSwitcher(
+                initial="re_add_content", id="re_add_view_switcher"
+            ):
+                yield PathView(id="re_add_content")
+                yield DiffView(id="re_add_diff")
 
     def on_mount(self) -> None:
         self.query_one("#re_add_left_vertical", Vertical).styles.min_width = (
             left_min_width()
         )
+
         self.query_one(
             "#re_add_tree_buttons_horizontal", Horizontal
-        ).border_subtitle = f"{chezmoi.dest_dir}{os.sep}"
+        ).border_subtitle = chezmoi.dest_dir_str_spaced
+
+        self.query_one(
+            "#re_add_view_buttons_horizontal", Horizontal
+        ).border_subtitle = " path view "
+
         self.query_one("#re_add_tree_button", Button).add_class("last-clicked")
-        self.query_one("#re_add_path_view", PathView).tab_id = "re_add_tab"
+
+        self.query_one("#re_add_content_button", Button).add_class(
+            "last-clicked"
+        )
 
     def on_tree_node_selected(self, event: ManagedTree.NodeSelected) -> None:
         event.stop()
         assert event.node.data is not None
-        path_view = self.query_one("#re_add_path_view", PathView)
+        self.query_one(
+            "#re_add_view_buttons_horizontal", Horizontal
+        ).border_subtitle = (
+            f" {event.node.data.path.relative_to(chezmoi.dest_dir)} "
+        )
+        path_view = self.query_one("#re_add_content", PathView)
         path_view.path = event.node.data.path
         path_view.tab_id = "re_add_tab"
-        self.query_one("#re_add_diff_view", DiffView).diff_spec = (
+        self.query_one("#re_add_diff", DiffView).diff_spec = (
             event.node.data.path,
             "re-add",
         )
@@ -229,9 +296,9 @@ class ReAddTab(Horizontal):
     def on_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
         if event.button.id == "re_add_tree_button":
-            self.query_one("#re_add_switcher", ContentSwitcher).current = (
-                "re_add_tree"
-            )
+            self.query_one(
+                "#re_add_tree_switcher", ContentSwitcher
+            ).current = "re_add_tree"
             self.query_one("#re_add_tree_button", Button).add_class(
                 "last-clicked"
             )
@@ -239,13 +306,33 @@ class ReAddTab(Horizontal):
                 "last-clicked"
             )
         elif event.button.id == "re_add_list_button":
-            self.query_one("#re_add_switcher", ContentSwitcher).current = (
-                "re_add_list"
-            )
+            self.query_one(
+                "#re_add_tree_switcher", ContentSwitcher
+            ).current = "re_add_list"
             self.query_one("#re_add_list_button", Button).add_class(
                 "last-clicked"
             )
             self.query_one("#re_add_tree_button", Button).remove_class(
+                "last-clicked"
+            )
+        elif event.button.id == "re_add_content_button":
+            self.query_one(
+                "#re_add_view_switcher", ContentSwitcher
+            ).current = "re_add_content"
+            self.query_one("#re_add_content_button", Button).add_class(
+                "last-clicked"
+            )
+            self.query_one("#re_add_diff_button", Button).remove_class(
+                "last-clicked"
+            )
+        elif event.button.id == "re_add_diff_button":
+            self.query_one(
+                "#re_add_view_switcher", ContentSwitcher
+            ).current = "re_add_diff"
+            self.query_one("#re_add_diff_button", Button).add_class(
+                "last-clicked"
+            )
+            self.query_one("#re_add_content_button", Button).remove_class(
                 "last-clicked"
             )
 
@@ -304,15 +391,15 @@ class AddTab(Horizontal):
         )
 
     def on_mount(self) -> None:
-        filtered_dir_tree = self.query_one(FilteredDirTree)
+        filtered_dir_tree = self.query_one("#add_tree", FilteredDirTree)
         filtered_dir_tree.show_root = False
         filtered_dir_tree.guide_depth = 3
         self.query_one(
             "#add_tree_container", ScrollableContainer
-        ).border_title = f"{chezmoi.dest_dir}{os.sep}"
+        ).border_title = chezmoi.dest_dir_str_spaced
 
         self.query_one("#add_left_vertical", Vertical).styles.min_width = (
-            left_min_width(add_tab=True)
+            left_min_width()
         )
         self.query_one("#add_path_view", PathView).tab_id = "add_tab"
 
@@ -370,7 +457,7 @@ class DoctorTab(VerticalScroll):
         ]
 
         def compose(self) -> ComposeResult:
-            yield Pretty(chezmoi.dump_config.dict_out, id="config_dump_doctor")
+            yield Pretty(chezmoi.dump_config.dict_out)
 
         def on_mount(self) -> None:
             self.add_class("doctor-modal")

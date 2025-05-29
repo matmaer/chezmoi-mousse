@@ -133,7 +133,6 @@ class PathView(RichLog):
     def on_mount(self) -> None:
         text = "Click a file or directory, \nto show its contents."
         self.write(Text(text, style="dim"))
-        self.border_title = "Path View"
 
     def write_managed_dirs_in_dir(self) -> None:
         assert isinstance(self.path, Path)
@@ -164,7 +163,6 @@ class PathView(RichLog):
 
     def update_path_view(self) -> None:
         assert isinstance(self.path, Path)
-        self.border_title = f"{self.path.relative_to(chezmoi.dest_dir)}"
         truncated = ""
         try:
             if self.path.is_file() and self.path.stat().st_size > 150 * 1024:
@@ -531,7 +529,6 @@ class FilteredDirTree(DirectoryTree):
 
     # not a container, focussable https://textual.textualize.io/widgets/directory_tree/
 
-    path_view_top_border: reactive[str] = reactive("Path View")
     unmanaged_dirs = reactive(False)
     unwanted = reactive(False)
 

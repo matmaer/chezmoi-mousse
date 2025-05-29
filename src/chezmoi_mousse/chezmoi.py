@@ -1,5 +1,6 @@
 import ast
 from dataclasses import dataclass, field
+import os
 from pathlib import Path
 from subprocess import TimeoutExpired, run
 
@@ -110,6 +111,14 @@ class Chezmoi:
     @property
     def dest_dir(self) -> Path:
         return Path(self.dump_config.dict_out["destDir"])
+
+    @property
+    def dest_dir_str(self) -> str:
+        return self.dump_config.dict_out["destDir"]
+
+    @property
+    def dest_dir_str_spaced(self) -> str:
+        return f" {self.dump_config.dict_out["destDir"]}{os.sep} "
 
     @property
     def autoadd_enabled(self) -> bool:
