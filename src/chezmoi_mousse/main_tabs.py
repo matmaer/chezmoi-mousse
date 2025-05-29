@@ -60,7 +60,7 @@ class ApplyTab(Horizontal):
     ]
 
     def compose(self) -> ComposeResult:
-        with Vertical(id="apply_left_vertical", classes="tab-content-left"):
+        with Vertical(id="apply_left", classes="tab-content-left"):
             yield Horizontal(
                 Vertical(
                     TabButton("Tree", id="apply_tree_button"),
@@ -109,7 +109,7 @@ class ApplyTab(Horizontal):
                 yield DiffView(id="apply_diff")
 
     def on_mount(self) -> None:
-        self.query_one("#apply_left_vertical", Vertical).styles.min_width = (
+        self.query_one("#apply_left", Vertical).styles.min_width = (
             left_min_width()
         )
 
@@ -206,7 +206,7 @@ class ReAddTab(Horizontal):
     ]
 
     def compose(self) -> ComposeResult:
-        with Vertical(id="re_add_left_vertical", classes="tab-content-left"):
+        with Vertical(id="re_add_left", classes="tab-content-left"):
             yield Horizontal(
                 Vertical(
                     TabButton("Tree", id="re_add_tree_button"),
@@ -257,7 +257,7 @@ class ReAddTab(Horizontal):
                 yield DiffView(id="re_add_diff")
 
     def on_mount(self) -> None:
-        self.query_one("#re_add_left_vertical", Vertical).styles.min_width = (
+        self.query_one("#re_add_left", Vertical).styles.min_width = (
             left_min_width()
         )
 
