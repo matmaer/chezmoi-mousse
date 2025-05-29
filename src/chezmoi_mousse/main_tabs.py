@@ -23,8 +23,6 @@ from textual.widgets import (
     ListItem,
     ListView,
     Pretty,
-    TabbedContent,
-    TabPane,
     Static,
     Switch,
 )
@@ -91,30 +89,56 @@ class ApplyTab(Horizontal):
                 ),
                 classes="filter-container",
             )
-        with TabbedContent(id="apply_view_tabs", classes="tab-content-right"):
-            with TabPane("Content", id="apply_content_pane"):
-                yield PathView(id="apply_path_view")
-            with TabPane("Diff", id="apply_diff_pane"):
-                yield DiffView(id="apply_diff_view")
+        with Vertical(classes="tab-content-right"):
+            yield Horizontal(
+                Vertical(
+                    TabButton("Content", id="apply_content_button"),
+                    classes="center-content",
+                ),
+                Vertical(
+                    TabButton("Diff", id="apply_diff_button"),
+                    classes="center-content",
+                ),
+                id="apply_view_buttons_horizontal",
+                classes="tab-buttons-horizontal",
+            )
+            with ContentSwitcher(
+                initial="apply_content", id="apply_view_switcher"
+            ):
+                yield PathView(id="apply_content")
+                yield DiffView(id="apply_diff")
 
     def on_mount(self) -> None:
         self.query_one("#apply_left_vertical", Vertical).styles.min_width = (
             left_min_width()
         )
+
         self.query_one(
             "#apply_tree_buttons_horizontal", Horizontal
         ).border_subtitle = chezmoi.dest_dir_str_spaced
+
+        self.query_one(
+            "#apply_view_buttons_horizontal", Horizontal
+        ).border_subtitle = " path view "
+
         self.query_one("#apply_tree_button", Button).add_class("last-clicked")
-        self.query_one("#apply_path_view", PathView).tab_id = "apply_tab"
+
+        self.query_one("#apply_content_button", Button).add_class(
+            "last-clicked"
+        )
 
     def on_tree_node_selected(self, event: ManagedTree.NodeSelected) -> None:
         event.stop()
         assert event.node.data is not None
-        path_view = self.query_one("#apply_path_view", PathView)
+        self.query_one(
+            "#apply_view_buttons_horizontal", Horizontal
+        ).border_subtitle = (
+            f" {event.node.data.path.relative_to(chezmoi.dest_dir)} "
+        )
+        path_view = self.query_one("#apply_content", PathView)
         path_view.path = event.node.data.path
         path_view.tab_id = "apply_tab"
-
-        self.query_one("#apply_diff_view", DiffView).diff_spec = (
+        self.query_one("#apply_diff", DiffView).diff_spec = (
             event.node.data.path,
             "apply",
         )
@@ -139,6 +163,26 @@ class ApplyTab(Horizontal):
                 "last-clicked"
             )
             self.query_one("#apply_tree_button", Button).remove_class(
+                "last-clicked"
+            )
+        elif event.button.id == "apply_content_button":
+            self.query_one("#apply_view_switcher", ContentSwitcher).current = (
+                "apply_content"
+            )
+            self.query_one("#apply_content_button", Button).add_class(
+                "last-clicked"
+            )
+            self.query_one("#apply_diff_button", Button).remove_class(
+                "last-clicked"
+            )
+        elif event.button.id == "apply_diff_button":
+            self.query_one("#apply_view_switcher", ContentSwitcher).current = (
+                "apply_diff"
+            )
+            self.query_one("#apply_diff_button", Button).add_class(
+                "last-clicked"
+            )
+            self.query_one("#apply_content_button", Button).remove_class(
                 "last-clicked"
             )
 
@@ -218,6 +262,7 @@ class ReAddTab(Horizontal):
         self.query_one("#re_add_left_vertical", Vertical).styles.min_width = (
             left_min_width()
         )
+
         self.query_one(
             "#re_add_tree_buttons_horizontal", Horizontal
         ).border_subtitle = chezmoi.dest_dir_str_spaced
