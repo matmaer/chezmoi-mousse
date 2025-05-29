@@ -1,7 +1,5 @@
 """Contains the widgets used to compose the main screen of chezmoi-mousse."""
 
-import os
-
 from rich.text import Text
 from textual.app import ComposeResult
 from textual.binding import Binding
@@ -105,7 +103,7 @@ class ApplyTab(Horizontal):
         )
         self.query_one(
             "#apply_tree_buttons_horizontal", Horizontal
-        ).border_subtitle = f"{chezmoi.dest_dir}{os.sep}"
+        ).border_subtitle = chezmoi.dest_dir_str_spaced
         self.query_one("#apply_tree_button", Button).add_class("last-clicked")
         self.query_one("#apply_path_view", PathView).tab_id = "apply_tab"
 
@@ -222,11 +220,11 @@ class ReAddTab(Horizontal):
         )
         self.query_one(
             "#re_add_tree_buttons_horizontal", Horizontal
-        ).border_subtitle = f"{chezmoi.dest_dir}{os.sep}"
+        ).border_subtitle = chezmoi.dest_dir_str_spaced
 
         self.query_one(
             "#re_add_view_buttons_horizontal", Horizontal
-        ).border_subtitle = f"{chezmoi.dest_dir}{os.sep}"
+        ).border_subtitle = " path view "
 
         self.query_one("#re_add_tree_button", Button).add_class("last-clicked")
 
@@ -348,7 +346,7 @@ class AddTab(Horizontal):
         filtered_dir_tree.guide_depth = 3
         self.query_one(
             "#add_tree_container", ScrollableContainer
-        ).border_title = f"{chezmoi.dest_dir}{os.sep}"
+        ).border_title = chezmoi.dest_dir_str_spaced
 
         self.query_one("#add_left_vertical", Vertical).styles.min_width = (
             left_min_width()
