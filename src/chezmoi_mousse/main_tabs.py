@@ -1,7 +1,6 @@
 """Contains the widgets used to compose the main screen of chezmoi-mousse."""
 
 import os
-from pathlib import Path
 
 from rich.text import Text
 from textual.app import ComposeResult
@@ -116,7 +115,10 @@ class ApplyTab(Horizontal):
     def on_tree_node_selected(self, event: ManagedTree.NodeSelected) -> None:
         event.stop()
         assert event.node.data is not None
-        self.query_exactly_one(PathView).path = event.node.data.path
+        path_view = self.query_exactly_one(PathView)
+        path_view.path = event.node.data.path
+        path_view.tab_id = "apply_tab"
+
         self.query_one("#apply_diff_view", DiffView).diff_spec = (
             event.node.data.path,
             "apply",
@@ -214,7 +216,9 @@ class ReAddTab(Horizontal):
     def on_tree_node_selected(self, event: ManagedTree.NodeSelected) -> None:
         event.stop()
         assert event.node.data is not None
-        self.query_exactly_one(PathView).path = event.node.data.path
+        path_view = self.query_exactly_one(PathView)
+        path_view.path = event.node.data.path
+        path_view.tab_id = "re_add_tab"
         self.query_one("#re_add_diff_view", DiffView).diff_spec = (
             event.node.data.path,
             "re-add",
@@ -308,16 +312,14 @@ class AddTab(Horizontal):
             left_min_width(add_tab=True)
         )
 
-        self.query_exactly_one(PathView).border_title = "Path View"
-
     def on_directory_tree_file_selected(
         self, event: FilteredDirTree.FileSelected
     ) -> None:
         event.stop()
         if event.node.data is not None:
-            self.query_exactly_one(PathView).path = event.node.data.path
-            title = f"{event.node.data.path.relative_to(chezmoi.dest_dir)}"
-            self.query_exactly_one(PathView).border_title = title
+            path_view = self.query_exactly_one(PathView)
+            path_view.path = event.node.data.path
+            path_view.tab_id = "add_tab"
 
     def on_directory_tree_directory_selected(
         self, event: FilteredDirTree.DirectorySelected
@@ -325,37 +327,8 @@ class AddTab(Horizontal):
         event.stop()
         if event.node.data is not None:
             path_view = self.query_exactly_one(PathView)
-            path_view.clear()
-            title = f"{event.node.data.path.relative_to(chezmoi.dest_dir)}"
-            path_view.border_title = title
-            managed: bool = event.node.data.path in chezmoi.managed_dir_paths
-            if managed:
-                path_view.write(f"Managed directory: {event.node.data.path}\n")
-            else:
-                path_view.write(
-                    f"Unmanaged directory: {event.node.data.path}\n"
-                )
-            unmanaged_files: list[Path] = chezmoi.unmanaged_in_d(
-                event.node.data.path
-            )
-            managed_files: list[Path] = chezmoi.managed_file_paths_in_dir(
-                event.node.data.path
-            )
-            managed_dirs: list[Path] = chezmoi.managed_dir_paths_in_dir(
-                event.node.data.path
-            )
-            if managed_dirs:
-                path_view.write("Contains managed sub dirs:")
-                for p in managed_dirs:
-                    path_view.write(str(p))
-            if unmanaged_files:
-                path_view.write("Contains unmanaged files:")
-                for p in unmanaged_files:
-                    path_view.write(str(p))
-            if managed_files:
-                path_view.write("Contains managed files:")
-                for p in managed_files:
-                    path_view.write(str(p))
+            path_view.path = event.node.data.path
+            path_view.tab_id = "add_tab"
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
         event.stop()
