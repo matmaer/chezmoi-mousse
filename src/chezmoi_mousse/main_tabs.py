@@ -43,6 +43,7 @@ from chezmoi_mousse.config import filter_data, pw_mgr_info
 # for type hinting/checking
 TabName = Literal["Apply", "ReAdd", "Add", "Doctor"]
 AreaName = Literal["left_top", "right_top", "right_bottom", "left_bottom"]
+Labels = Literal["Tree", "List", "Content", "Diff"]
 
 
 def left_min_width() -> int:
