@@ -100,7 +100,6 @@ ModalScreen {
 
 /* for "Tree" vs "List" switcher */
 .tab-buttons-horizontal {
-  align: center middle;
   height: 2;
   border-top: none;
   border-right: none;
@@ -115,7 +114,7 @@ ModalScreen {
   }
 }
 
-TabButton {
+.tab-button {
   color: $text;
   text-style: none;
 

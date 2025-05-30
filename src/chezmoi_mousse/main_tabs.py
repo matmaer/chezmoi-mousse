@@ -34,7 +34,6 @@ from chezmoi_mousse.components import (
     GitLog,
     ManagedTree,
     PathView,
-    TabButton,
 )
 
 from chezmoi_mousse.config import filter_data, pw_mgr_info
@@ -48,6 +47,22 @@ def left_min_width() -> int:
     return max(len(chezmoi.dest_dir_str_spaced) + 2, max_filter_width)
 
 
+class TabButton(Vertical):
+
+    def __init__(self, label: str, button_id: str) -> None:
+        super().__init__(classes="center-content")
+        self.button_id = button_id
+        self.label = label
+
+    def compose(self) -> ComposeResult:
+        yield Button(self.label, id=self.button_id, classes="tab-button")
+
+    def on_mount(self) -> None:
+        button = self.query_one(f"#{self.button_id}", Button)
+        button.active_effect_duration = 0
+        button.compact = True
+
+
 class TreeListSwitcher(Vertical):
 
     def __init__(self, kind: str) -> None:
@@ -59,14 +74,8 @@ class TreeListSwitcher(Vertical):
         with Horizontal(
             id=f"{self.kind}_tree_buttons", classes="tab-buttons-horizontal"
         ):
-            yield Vertical(
-                TabButton("Tree", id=f"{self.kind}_tree_button"),
-                classes="center-content",
-            )
-            yield Vertical(
-                TabButton("List", id=f"{self.kind}_list_button"),
-                classes="center-content",
-            )
+            yield TabButton("Tree", f"{self.kind}_tree_button")
+            yield TabButton("List", f"{self.kind}_list_button")
 
         with ContentSwitcher(
             initial=f"{self.kind}_tree", id=f"{self.kind}_tree_switcher"
@@ -139,14 +148,8 @@ class ContentDiffSwitcher(Vertical):
         with Horizontal(
             id=f"{self.kind}_view_buttons", classes="tab-buttons-horizontal"
         ):
-            yield Vertical(
-                TabButton("Content", id=f"{self.kind}_content_button"),
-                classes="center-content",
-            )
-            yield Vertical(
-                TabButton("Diff", id=f"{self.kind}_diff_button"),
-                classes="center-content",
-            )
+            yield TabButton("Content", f"{self.kind}_content_button")
+            yield TabButton("Diff", f"{self.kind}_diff_button")
         with ContentSwitcher(
             initial=f"{self.kind}_content", id=f"{self.kind}_view_switcher"
         ):
