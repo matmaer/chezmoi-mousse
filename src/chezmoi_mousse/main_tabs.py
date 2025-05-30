@@ -47,7 +47,7 @@ def left_min_width() -> int:
     return max(len(chezmoi.dest_dir_str_spaced) + 2, max_filter_width)
 
 
-class TabButtonsNew(Horizontal):
+class TabButtons(Horizontal):
 
     def __init__(self, tab: str, labels: list[str], area: str) -> None:
         super().__init__(classes="center-content")
@@ -93,35 +93,31 @@ class TabButton(Vertical):
 
 class TreeListSwitcher(Vertical):
 
-    def __init__(self, kind: str) -> None:
-        self.kind = kind
-        super().__init__(id=f"{kind}_left", classes="tab-content-left")
+    def __init__(self, tab: str) -> None:
+        self.tab = tab
+        super().__init__(id=f"{tab}_left", classes="tab-content-left")
 
     def compose(self) -> ComposeResult:
 
         with Horizontal(
-            id=f"{self.kind}_tree_buttons", classes="tab-buttons-horizontal"
+            id=f"{self.tab}_tree_buttons", classes="tab-buttons-horizontal"
         ):
-            yield TabButton("Tree", f"{self.kind}_tree_button")
-            yield TabButton("List", f"{self.kind}_list_button")
+            yield TabButton("Tree", f"{self.tab}_tree_button")
+            yield TabButton("List", f"{self.tab}_list_button")
 
         with ContentSwitcher(
-            initial=f"{self.kind}_tree", id=f"{self.kind}_tree_switcher"
+            initial=f"{self.tab}_tree", id=f"{self.tab}_tree_switcher"
         ):
             yield ManagedTree(
-                id=f"{self.kind}_tree",
-                direction=f"{self.kind}",
-                flat_list=False,
+                id=f"{self.tab}_tree", direction=f"{self.tab}", flat_list=False
             )
             yield ManagedTree(
-                id=f"{self.kind}_list",
-                direction=f"{self.kind}",
-                flat_list=True,
+                id=f"{self.tab}_list", direction=f"{self.tab}", flat_list=True
             )
         yield Vertical(
             HorizontalGroup(
                 Switch(
-                    id=f"{self.kind}_tab_unchanged", classes="filter-switch"
+                    id=f"{self.tab}_tab_unchanged", classes="filter-switch"
                 ),
                 Label(
                     filter_data.unchanged.label, classes="filter-label"
@@ -135,85 +131,85 @@ class TreeListSwitcher(Vertical):
         self.styles.min_width = left_min_width()
 
         self.query_one(
-            f"#{self.kind}_tree_buttons", Horizontal
+            f"#{self.tab}_tree_buttons", Horizontal
         ).border_subtitle = chezmoi.dest_dir_str_spaced
 
-        self.query_one(f"#{self.kind}_tree_button", Button).add_class(
+        self.query_one(f"#{self.tab}_tree_button", Button).add_class(
             "last-clicked"
         )
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
-        if event.button.id == f"{self.kind}_tree_button":
+        if event.button.id == f"{self.tab}_tree_button":
             self.query_one(
-                f"#{self.kind}_tree_switcher", ContentSwitcher
-            ).current = f"{self.kind}_tree"
-            self.query_one(f"#{self.kind}_tree_button", Button).add_class(
+                f"#{self.tab}_tree_switcher", ContentSwitcher
+            ).current = f"{self.tab}_tree"
+            self.query_one(f"#{self.tab}_tree_button", Button).add_class(
                 "last-clicked"
             )
-            self.query_one(f"#{self.kind}_list_button", Button).remove_class(
+            self.query_one(f"#{self.tab}_list_button", Button).remove_class(
                 "last-clicked"
             )
-        elif event.button.id == f"{self.kind}_list_button":
+        elif event.button.id == f"{self.tab}_list_button":
             self.query_one(
-                f"#{self.kind}_tree_switcher", ContentSwitcher
-            ).current = f"{self.kind}_list"
-            self.query_one(f"#{self.kind}_list_button", Button).add_class(
+                f"#{self.tab}_tree_switcher", ContentSwitcher
+            ).current = f"{self.tab}_list"
+            self.query_one(f"#{self.tab}_list_button", Button).add_class(
                 "last-clicked"
             )
-            self.query_one(f"#{self.kind}_tree_button", Button).remove_class(
+            self.query_one(f"#{self.tab}_tree_button", Button).remove_class(
                 "last-clicked"
             )
 
 
 class ContentDiffSwitcher(Vertical):
 
-    def __init__(self, kind: str) -> None:
-        self.kind = kind
-        super().__init__(id=f"{kind}_right", classes="tab-content-right")
+    def __init__(self, tab: str) -> None:
+        self.tab = tab
+        super().__init__(id=f"{tab}_right", classes="tab-content-right")
 
     def compose(self) -> ComposeResult:
         with Horizontal(
-            id=f"{self.kind}_view_buttons", classes="tab-buttons-horizontal"
+            id=f"{self.tab}_view_buttons", classes="tab-buttons-horizontal"
         ):
-            yield TabButton("Content", f"{self.kind}_content_button")
-            yield TabButton("Diff", f"{self.kind}_diff_button")
+            yield TabButton("Content", f"{self.tab}_content_button")
+            yield TabButton("Diff", f"{self.tab}_diff_button")
         with ContentSwitcher(
-            initial=f"{self.kind}_content", id=f"{self.kind}_view_switcher"
+            initial=f"{self.tab}_content", id=f"{self.tab}_view_switcher"
         ):
-            yield PathView(id=f"{self.kind}_content")
-            yield DiffView(id=f"{self.kind}_diff")
+            yield PathView(id=f"{self.tab}_content")
+            yield DiffView(id=f"{self.tab}_diff")
 
     def on_mount(self) -> None:
-        self.query_one(f"#{self.kind}_content_button", Button).add_class(
+        self.query_one(f"#{self.tab}_content_button", Button).add_class(
             "last-clicked"
         )
         self.query_one(
-            f"#{self.kind}_view_buttons", Horizontal
+            f"#{self.tab}_view_buttons", Horizontal
         ).border_subtitle = " path view "
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
-        if event.button.id == f"{self.kind}_content_button":
+        if event.button.id == f"{self.tab}_content_button":
             self.query_one(
-                f"#{self.kind}_view_switcher", ContentSwitcher
-            ).current = f"{self.kind}_content"
-            self.query_one(f"#{self.kind}_content_button", Button).add_class(
+                f"#{self.tab}_view_switcher", ContentSwitcher
+            ).current = f"{self.tab}_content"
+            self.query_one(f"#{self.tab}_content_button", Button).add_class(
                 "last-clicked"
             )
-            self.query_one(f"#{self.kind}_diff_button", Button).remove_class(
+            self.query_one(f"#{self.tab}_diff_button", Button).remove_class(
                 "last-clicked"
             )
-        elif event.button.id == f"{self.kind}_diff_button":
+        elif event.button.id == f"{self.tab}_diff_button":
             self.query_one(
-                f"#{self.kind}_view_switcher", ContentSwitcher
-            ).current = f"{self.kind}_diff"
-            self.query_one(f"#{self.kind}_diff_button", Button).add_class(
+                f"#{self.tab}_view_switcher", ContentSwitcher
+            ).current = f"{self.tab}_diff"
+            self.query_one(f"#{self.tab}_diff_button", Button).add_class(
                 "last-clicked"
             )
-            self.query_one(
-                f"#{self.kind}_content_button", Button
-            ).remove_class("last-clicked")
+            self.query_one(f"#{self.tab}_content_button", Button).remove_class(
+                "last-clicked"
+            )
 
 
 class ApplyTab(Horizontal):
