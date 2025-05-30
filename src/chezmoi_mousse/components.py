@@ -20,14 +20,7 @@ from rich.text import Text
 from textual.binding import Binding
 from textual.content import Content
 from textual.reactive import reactive
-from textual.widgets import (
-    Button,
-    DataTable,
-    DirectoryTree,
-    RichLog,
-    Static,
-    Tree,
-)
+from textual.widgets import DataTable, DirectoryTree, RichLog, Static, Tree
 from textual.widgets.tree import TreeNode
 from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.config import unwanted
@@ -304,13 +297,6 @@ class DiffView(Static):
                 content = Content("\u2022" + line)  # bullet •
                 colored_lines.append(content.stylize("dim"))
         self.update(Content("\n").join(colored_lines))
-
-
-class TabButton(Button):
-    # not a container, focussable https://textual.textualize.io/widgets/button/
-    def on_mount(self) -> None:
-        self.active_effect_duration = 0
-        self.compact = True
 
 
 @dataclass
