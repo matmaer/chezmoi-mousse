@@ -5,6 +5,9 @@ from pathlib import Path
 from subprocess import TimeoutExpired, run
 
 
+BASE = ["chezmoi", "--no-pager", "--color=off", "--no-tty", "--mode=file"]
+
+
 def subprocess_run(long_command):
     try:
         return run(
@@ -19,6 +22,32 @@ def subprocess_run(long_command):
         if long_command[-1] == "doctor":
             return "'chezmoi doctor' timed out, the command depends on an internet connection."
         raise
+
+
+class PerformChange:
+    """Group of commands which either make changes on disk or in the chezmoi
+    repository.
+
+    Verbose output is returned for logging.
+    """
+
+    base = BASE + ["--verbose" "--dry-run"]
+    # TODO: remove --dry-run
+
+    @staticmethod
+    def add(path: Path) -> str:
+        long_command = PerformChange.base + ["add"]
+        return subprocess_run(long_command + [path])
+
+    @staticmethod
+    def re_add(path: Path) -> str:
+        long_command = PerformChange.base + ["re-add"]
+        return subprocess_run(long_command + [path])
+
+    @staticmethod
+    def apply(path: Path) -> str:
+        long_command = PerformChange.base + ["apply"]
+        return subprocess_run(long_command + [path])
 
 
 @dataclass
@@ -61,16 +90,7 @@ class Chezmoi:
     status_dirs: InputOutput
     status_files: InputOutput
     template_data: InputOutput
-
-    base = [
-        "chezmoi",
-        "--no-pager",
-        "--color=off",
-        "--no-tty",
-        "--mode=file",
-        # TODO "--force",  make changes without prompting: flag is not
-        # compatible with "--interactive", find way to handle this.
-    ]
+    perform = PerformChange()
 
     # https://www.chezmoi.io/reference/command-line-flags/common/#available-entry-types
     subs = {
@@ -104,9 +124,11 @@ class Chezmoi:
         self.long_commands = {}
 
         for arg_id, sub_cmd in self.subs.items():
-            long_cmd = self.base + sub_cmd
+            long_cmd = BASE + sub_cmd
             self.long_commands[arg_id] = long_cmd
             setattr(self, arg_id, InputOutput(long_cmd, arg_id=arg_id))
+
+        self.run = self.SubProcessCalls()
 
     @property
     def dest_dir(self) -> Path:
@@ -173,24 +195,6 @@ class Chezmoi:
             ),
         }
 
-    def run_git_log(self, source_path: str | None = None) -> list[str]:
-        long_command = self.base + [
-            "git",
-            "--",
-            "log",
-            "--max-count=400",
-            "--no-color",
-            "--no-decorate",
-            "--date-order",
-            "--no-expand-tabs",
-            "--format=%ar by %cn;%s",
-        ]
-
-        if source_path is not None:
-            long_command.extend(["--follow", "--", source_path])
-
-        return subprocess_run(long_command).splitlines()
-
     def managed_file_paths_in_dir(self, dir_path: Path) -> list[Path]:
         return [f for f in self.managed_file_paths if f.parent == dir_path]
 
@@ -199,7 +203,7 @@ class Chezmoi:
 
     def unmanaged_in_dir(self, dir_path: Path) -> list[Path]:
         path_strings = subprocess_run(
-            self.base + ["unmanaged", "--path-style=absolute", str(dir_path)]
+            BASE + ["unmanaged", "--path-style=absolute", str(dir_path)]
         ).splitlines()
         # chezmoi can return the dir itself, eg when the dir is not managed
         if len(path_strings) == 1 and path_strings[0] == str(dir_path):
@@ -210,51 +214,40 @@ class Chezmoi:
             if (p := Path(entry)).parent == dir_path
         ]
 
-    def run_add(self, file_path: Path) -> str:
-        long_command = self.base + [
-            "--dry-run",
-            "--verbose",
-            "add",
-            "--include=files",
-            "--recursive=false",
-            "--prompt=false",
-            "--secrets=error",
-        ]
-        return subprocess_run(long_command + [str(file_path)])
+    class SubProcessCalls:
+        """Group of commands that call subprocess.run()"""
 
-    def run_re_add(self, file_path: Path) -> str:
-        long_command = self.base + [
-            "--dry-run",
-            "--verbose",
-            "re-add",
-            "--include=files",
-            "--recursive=false",
-        ]
-        return subprocess_run(long_command + [file_path])
+        def git_log(self, source_path: str | None = None) -> list[str]:
+            long_command = BASE + [
+                "git",
+                "--",
+                "log",
+                "--max-count=400",
+                "--no-color",
+                "--no-decorate",
+                "--date-order",
+                "--no-expand-tabs",
+                "--format=%ar by %cn;%s",
+            ]
 
-    def run_apply(self, file_path: Path) -> str:
-        long_command = self.base + [
-            "--dry-run",
-            "--verbose",
-            "apply",
-            "--include=files",
-            "--recursive=false",
-        ]
-        return subprocess_run(long_command + [file_path])
+            if source_path is not None:
+                long_command.extend(["--follow", "--", source_path])
 
-    def run_apply_diff(self, file_path: str) -> list[str]:
-        long_command = self.base + ["diff", file_path]
-        return subprocess_run(long_command).splitlines()
+            return subprocess_run(long_command).splitlines()
 
-    def run_re_add_diff(self, file_path: str) -> list[str]:
-        long_command = self.base + ["diff", file_path]
-        return subprocess_run(long_command + ["--reverse"]).splitlines()
+        def apply_diff(self, file_path: str) -> list[str]:
+            long_command = BASE + ["diff", file_path]
+            return subprocess_run(long_command).splitlines()
 
-    def run_cat(self, file_path: str) -> str:
-        return subprocess_run(self.base + ["cat", file_path])
+        def re_add_diff(self, file_path: str) -> list[str]:
+            long_command = BASE + ["diff", file_path]
+            return subprocess_run(long_command + ["--reverse"]).splitlines()
 
-    def run_status(self, path: str) -> str:
-        return subprocess_run(self.base + ["status", path])
+        def cat(self, file_path: str) -> str:
+            return subprocess_run(BASE + ["cat", file_path])
+
+        def status(self, path: str) -> str:
+            return subprocess_run(BASE + ["status", path])
 
 
 chezmoi = Chezmoi()
