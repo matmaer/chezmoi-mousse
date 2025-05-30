@@ -34,7 +34,7 @@ The app is not packaged yet, can be run as a module with python and `textual`.
 - [x] `chezmoi diff`
 - [x] `chezmoi status`
 - [x] `chezmoi git log`
-- [x] `chezmoi add`
+- [ ] `chezmoi add`
 - [ ] `chezmoi apply`
 - [ ] `chezmoi re-add`
 
