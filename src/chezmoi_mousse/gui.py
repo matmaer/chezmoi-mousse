@@ -1,14 +1,41 @@
+from datetime import datetime
+from typing import Any
+
 from textual.app import App, ComposeResult
 from textual.containers import ScrollableContainer
 from textual.lazy import Lazy
 from textual.screen import Screen
 from textual.theme import Theme
-from textual.widgets import Footer, Header, Static, TabbedContent, TabPane
+from textual.widgets import (
+    Footer,
+    Header,
+    RichLog,
+    Static,
+    TabbedContent,
+    TabPane,
+)
 
-from chezmoi_mousse.components import cmd_log
 from chezmoi_mousse.main_tabs import AddTab, ApplyTab, DoctorTab, ReAddTab
 from chezmoi_mousse.splash import LoadingScreen
 from chezmoi_mousse import BURGER, FLOW
+
+
+class CommandLog(RichLog):
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+
+    # TODO: implement logging cmd_output in chezmoi.py
+
+    def add(self, chezmoi_cmd: str, cmd_output: Any = None) -> None:
+        time_stamp = datetime.now().strftime("%H:%M:%S")
+        self.write(f"{time_stamp} {chezmoi_cmd}")
+        if cmd_output is not None:
+            self.write(f"Output: {cmd_output}")
+        else:
+            self.write("to be implemented")
+        self.write("Output:")
+        if cmd_output is not None:
+            self.write(chezmoi_cmd)
 
 
 class MainScreen(Screen):
@@ -31,12 +58,15 @@ class MainScreen(Screen):
             with TabPane("Diagram", id="diagram_tab_pane"):
                 yield ScrollableContainer(Static(FLOW, id="flow_diagram"))
             with TabPane("Log", id="rich_log_tab_pane"):
-                yield cmd_log
+                yield CommandLog(
+                    id="command_log", highlight=True, max_lines=20000
+                )
         yield Footer()
 
     def on_mount(self) -> None:
+        command_log = self.query_one("#command_log", CommandLog)
         for cmd in self.command_log:
-            cmd_log.add(cmd)
+            command_log.add(cmd)
 
 
 chezmoi_mousse_dark = Theme(
@@ -57,6 +87,8 @@ chezmoi_mousse_dark = Theme(
 class ChezmoiTUI(App):
 
     CSS_PATH = "gui.tcss"
+
+    # SCREENS = {"main": MainScreen}
 
     def on_mount(self) -> None:
         self.title = "-  c h e z m o i  m o u s s e  -"

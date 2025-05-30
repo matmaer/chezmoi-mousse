@@ -11,9 +11,8 @@ import re
 
 from collections.abc import Iterable
 from dataclasses import dataclass
-from datetime import datetime
 from pathlib import Path
-from typing import Any, Literal
+from typing import Literal
 
 from rich.style import Style
 from rich.text import Text
@@ -24,20 +23,6 @@ from textual.widgets import DataTable, DirectoryTree, RichLog, Static, Tree
 from textual.widgets.tree import TreeNode
 from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.config import unwanted
-
-
-class CommandLog(RichLog):
-    def __init__(self) -> None:
-        super().__init__(id="command_log", highlight=True, max_lines=20000)
-
-    def add(self, chezmoi_cmd: str, cmd_output: Any = None) -> None:
-        time_stamp = datetime.now().strftime("%H:%M:%S")
-        self.write(f"{time_stamp} {chezmoi_cmd}")
-        if cmd_output is not None:
-            self.write(chezmoi_cmd)
-
-
-cmd_log = CommandLog()
 
 
 class GitLog(DataTable):
