@@ -47,34 +47,6 @@ def left_min_width() -> int:
     return max(len(chezmoi.dest_dir_str_spaced) + 2, max_filter_width)
 
 
-class TabButtons(Horizontal):
-
-    def __init__(self, tab: str, area: str, labels: list[str]) -> None:
-        super().__init__(classes="center-content")
-        self.tab = tab  # this is either "apply_tab", "re_add_tab" or "add_tab"
-        self.area = (
-            area  # this is either "tree_top", "view_top" or "view_bottom"
-        )
-        self.buttons: list[Vertical] = []
-        self.labels = labels
-
-    def compose(self) -> ComposeResult:
-        yield from self.buttons
-
-    def on_mount(self) -> None:
-        for label in self.labels:
-            button = Button(label, id=f"{self.tab}_{self.area}_{label}_button")
-            button.active_effect_duration = 0
-            button.compact = True
-            self.buttons.append(
-                Vertical(
-                    button,
-                    id=f"{self.tab}_{self.area}_button_container",
-                    classes="tab-button-container",
-                )
-            )
-
-
 class TabButton(Vertical):
 
     def __init__(self, label: str, button_id: str) -> None:
