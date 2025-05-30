@@ -49,14 +49,14 @@ def left_min_width() -> int:
 
 class TabButtons(Horizontal):
 
-    def __init__(self, tab: str, labels: list[str], area: str) -> None:
+    def __init__(self, tab: str, area: str, labels: list[str]) -> None:
         super().__init__(classes="center-content")
         self.tab = tab  # this is either "apply_tab", "re_add_tab" or "add_tab"
-        self.labels = labels
         self.area = (
             area  # this is either "tree_top", "view_top" or "view_bottom"
         )
         self.buttons: list[Vertical] = []
+        self.labels = labels
 
     def compose(self) -> ComposeResult:
         yield from self.buttons
