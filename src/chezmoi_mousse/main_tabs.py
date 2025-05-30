@@ -275,7 +275,7 @@ class AddTab(Horizontal):
     ]
 
     def compose(self) -> ComposeResult:
-        with Vertical(id="add_left_vertical", classes="tab-content-left"):
+        with Vertical(id="add_tab_left", classes="tab-content-left"):
             yield ScrollableContainer(
                 FilteredDirTree(chezmoi.dest_dir, id="add_tree"),
                 id="add_tree_container",
@@ -303,40 +303,51 @@ class AddTab(Horizontal):
             )
 
         yield Vertical(
-            PathView(id="add_path_view", classes="border-path-title"),
-            classes="tab-content-right",
+            PathView(id="add_path_view"),
+            id="add_tab_right",
+            classes="border-path-title",
         )
 
     def on_mount(self) -> None:
         filtered_dir_tree = self.query_one("#add_tree", FilteredDirTree)
         filtered_dir_tree.show_root = False
         filtered_dir_tree.guide_depth = 3
+
+        self.query_one("#add_tab_left", Vertical).styles.min_width = (
+            left_min_width()
+        )
         self.query_one(
             "#add_tree_container", ScrollableContainer
         ).border_title = chezmoi.dest_dir_str_spaced
 
-        self.query_one("#add_left_vertical", Vertical).styles.min_width = (
-            left_min_width()
-        )
+        self.query_one("#add_tab_right", Vertical).border_title = " path view "
+
         self.query_one("#add_path_view", PathView).tab_id = "add_tab"
 
     def on_directory_tree_file_selected(
         self, event: FilteredDirTree.FileSelected
     ) -> None:
         event.stop()
-        if event.node.data is not None:
-            path_view = self.query_one("#add_path_view", PathView)
-            path_view.path = event.node.data.path
-            path_view.tab_id = "add_tab"
+
+        assert event.node.data is not None
+        path_view = self.query_one("#add_path_view", PathView)
+        path_view.path = event.node.data.path
+        path_view.tab_id = "add_tab"
+        self.query_one("#add_tab_right", Vertical).border_title = (
+            f" {event.node.data.path} "
+        )
 
     def on_directory_tree_directory_selected(
         self, event: FilteredDirTree.DirectorySelected
     ) -> None:
         event.stop()
-        if event.node.data is not None:
-            path_view = self.query_one("#add_path_view", PathView)
-            path_view.path = event.node.data.path
-            path_view.tab_id = "add_tab"
+        assert event.node.data is not None
+        path_view = self.query_one("#add_path_view", PathView)
+        path_view.path = event.node.data.path
+        path_view.tab_id = "add_tab"
+        self.query_one("#add_tab_right", Vertical).border_title = (
+            f" {event.node.data.path} "
+        )
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
         event.stop()
