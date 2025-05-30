@@ -30,6 +30,15 @@ DEST_DIR: Path
 LOG_PADDING_WIDTH = 36
 LONG_COMMANDS = chezmoi.long_commands
 
+RICH_LOG = RichLog(id="loading_screen_log")
+RICH_LOG.styles.height = LOG_HEIGHT + 1
+RICH_LOG.styles.width = LOG_PADDING_WIDTH + 9
+RICH_LOG.styles.color = "#0053AA"
+RICH_LOG.styles.margin = 0
+RICH_LOG.styles.padding = 0
+
+COMMAND_LOG: list[str] = []
+
 
 class AnimatedFade(Static):
 
@@ -53,30 +62,11 @@ class AnimatedFade(Static):
 
 ANIMATED_FADE = AnimatedFade()
 
-RICH_LOG = RichLog(id="loading_screen_log")
-RICH_LOG.styles.height = LOG_HEIGHT + 1
-RICH_LOG.styles.width = LOG_PADDING_WIDTH + 9
-RICH_LOG.styles.color = "#0053AA"
-RICH_LOG.styles.margin = 0
-RICH_LOG.styles.padding = 0
-
-COMMAND_LOG: list[str] = []
-
 
 class LoadingScreen(Screen):
 
-    def __init__(self) -> None:
-        self.animated_fade = ANIMATED_FADE
-        self.rich_log = RICH_LOG
-        super().__init__()
-        self.timer = self.set_interval(
-            interval=1, callback=self.all_workers_finished
-        )
-
     def compose(self) -> ComposeResult:
-        with Middle():
-            yield Center(self.animated_fade)
-            yield Center(self.rich_log)
+        yield Middle(Center(ANIMATED_FADE), Center(RICH_LOG))
 
     def log_text(self, log_label: str) -> None:
         padding = LOG_PADDING_WIDTH - len(log_label)
@@ -104,5 +94,6 @@ class LoadingScreen(Screen):
             self.dismiss(COMMAND_LOG)
 
     def on_mount(self) -> None:
+        self.set_interval(interval=1, callback=self.all_workers_finished)
         for arg_id in LONG_COMMANDS:
             self.run_io_worker(arg_id)
