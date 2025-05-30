@@ -68,9 +68,13 @@ class TreeTabButtons(Horizontal):
             classes="center-content",
         )
 
+    def on_mount(self) -> None:
+        self.query_one(f"#{self.kind}_tree_button", Button).add_class(
+            "last-clicked"
+        )
+
 
 class ViewTabButtons(Horizontal):
-
     def __init__(self, kind: str, **kwargs) -> None:
         self.kind = kind
         super().__init__(
@@ -89,28 +93,9 @@ class ViewTabButtons(Horizontal):
             classes="center-content",
         )
 
-
-class TabFilterSwitches(Horizontal):
-
-    def __init__(self, kind: str, **kwargs) -> None:
-        self.kind = kind
-        super().__init__(
-            id=f"{self.kind}_view_buttons",
-            classes="tab-buttons-horizontal",
-            **kwargs,
-        )
-
-    def compose(self) -> ComposeResult:
-        yield Vertical(
-            HorizontalGroup(
-                Switch(
-                    id=f"{self.kind}_tab_unchanged", classes="filter-switch"
-                ),
-                Label(
-                    filter_data.unchanged.label, classes="filter-label"
-                ).with_tooltip(tooltip=filter_data.unchanged.tooltip),
-            ),
-            classes="filter-container",
+    def on_mount(self) -> None:
+        self.query_one(f"#{self.kind}_content_button", Button).add_class(
+            "last-clicked"
         )
 
 
@@ -135,7 +120,15 @@ class ApplyTab(Horizontal):
                 yield ManagedTree(
                     id="apply_list", direction="apply", flat_list=True
                 )
-
+            yield Vertical(
+                HorizontalGroup(
+                    Switch(id="apply_tab_unchanged", classes="filter-switch"),
+                    Label(
+                        filter_data.unchanged.label, classes="filter-label"
+                    ).with_tooltip(tooltip=filter_data.unchanged.tooltip),
+                ),
+                classes="filter-container",
+            )
         with Vertical(classes="tab-content-right"):
             yield ViewTabButtons("apply")
             with ContentSwitcher(
@@ -155,12 +148,6 @@ class ApplyTab(Horizontal):
 
         self.query_one("#apply_view_buttons", Horizontal).border_subtitle = (
             " path view "
-        )
-
-        self.query_one("#apply_tree_button", Button).add_class("last-clicked")
-
-        self.query_one("#apply_content_button", Button).add_class(
-            "last-clicked"
         )
 
     def on_tree_node_selected(self, event: ManagedTree.NodeSelected) -> None:
@@ -281,12 +268,6 @@ class ReAddTab(Horizontal):
 
         self.query_one("#re_add_view_buttons", Horizontal).border_subtitle = (
             " path view "
-        )
-
-        self.query_one("#re_add_tree_button", Button).add_class("last-clicked")
-
-        self.query_one("#re_add_content_button", Button).add_class(
-            "last-clicked"
         )
 
     def on_tree_node_selected(self, event: ManagedTree.NodeSelected) -> None:
