@@ -336,7 +336,7 @@ class ManagedTree(Tree[NodeData]):
     }
 
     def __init__(self, direction, flat_list=False, **kwargs) -> None:
-        self.direction: Literal["apply", "re-add"] = direction
+        self.direction: Literal["apply", "re_add"] = direction
         self.flat_list: bool = flat_list
         super().__init__(label="root", **kwargs)
 
@@ -344,7 +344,7 @@ class ManagedTree(Tree[NodeData]):
     def status_dirs(self):
         if self.direction == "apply":
             return chezmoi.status_paths["apply_dirs"]
-        elif self.direction == "re-add":
+        elif self.direction == "re_add":
             return chezmoi.status_paths["re_add_dirs"]
         else:
             return {}
@@ -353,7 +353,7 @@ class ManagedTree(Tree[NodeData]):
     def status_files(self):
         if self.direction == "apply":
             return chezmoi.status_paths["apply_files"]
-        elif self.direction == "re-add":
+        elif self.direction == "re_add":
             return chezmoi.status_paths["re_add_files"]
         else:
             return {}
