@@ -38,7 +38,7 @@ class GitLog(DataTable):
     def on_mount(self) -> None:
         self.show_cursor = False
         if self.path is None:
-            self.populate_data_table(chezmoi.run_git_log())
+            self.populate_data_table(chezmoi.run.git_log())
 
     def populate_data_table(self, cmd_output: list[str]):
         styles = {
@@ -73,7 +73,7 @@ class GitLog(DataTable):
 
     def watch_path(self) -> None:
         assert isinstance(self.path, Path)
-        self.populate_data_table(chezmoi.run_git_log(str(self.path)))
+        self.populate_data_table(chezmoi.run.git_log(str(self.path)))
 
 
 class AutoWarning(Static):
@@ -168,10 +168,10 @@ class PathView(RichLog):
             # FileNotFoundError is raised both when a file or a directory
             # does not exist
             if self.path in chezmoi.managed_file_paths:
-                if not chezmoi.run_cat(str(self.path)).strip():
+                if not chezmoi.run.cat(str(self.path)).strip():
                     self.write("File contains only whitespace")
                 else:
-                    self.write(chezmoi.run_cat(str(self.path)))
+                    self.write(chezmoi.run.cat(str(self.path)))
                 return
 
         except IsADirectoryError:
@@ -236,7 +236,7 @@ class DiffView(Static):
                 )
                 return
             else:
-                diff_output = chezmoi.run_apply_diff(str(self.diff_spec[0]))
+                diff_output = chezmoi.run.apply_diff(str(self.diff_spec[0]))
         elif self.diff_spec[1] == "re-add":
             if self.diff_spec[0] not in chezmoi.status_paths["re_add_files"]:
                 self.update(
@@ -249,7 +249,7 @@ class DiffView(Static):
                 )
                 return
             else:
-                diff_output = chezmoi.run_re_add_diff(str(self.diff_spec[0]))
+                diff_output = chezmoi.run.re_add_diff(str(self.diff_spec[0]))
 
         if not diff_output:
             self.update(
