@@ -508,7 +508,7 @@ class FilteredDirTree(DirectoryTree):
     """Provides a fast DirectoryTree to explore any path in the destination
     directory which can be added to the chezmoi repository.
 
-    As it's unknown how large the directory tree on disk is.
+    No mather how large the tree in the destination directory is.
     """
 
     unmanaged_dirs = reactive(False)
