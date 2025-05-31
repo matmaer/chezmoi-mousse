@@ -43,7 +43,6 @@ from chezmoi_mousse.config import filter_data, pw_mgr_info
 # for type hinting/checking
 TabName = Literal["Apply", "ReAdd", "Add", "Doctor"]
 AreaName = Literal["left_top", "right_top", "right_bottom", "left_bottom"]
-Labels = Literal["Tree", "List", "Content", "Diff"]
 
 
 def left_min_width() -> int:
@@ -52,6 +51,39 @@ def left_min_width() -> int:
         max(len(f.label) for f in vars(filter_data).values()) + 8 + 2
     )
     return max(len(chezmoi.dest_dir_str_spaced) + 2, max_filter_width)
+
+
+class TabButtons(Horizontal):
+    def __init__(
+        self, tab: TabName, area: AreaName, labels: list[str]
+    ) -> None:
+        self.tab = tab
+        self.area = area
+        self.labels = labels
+        super().__init__(
+            id=f"{self.tab}_{self.area}", classes="tab-buttons-horizontal"
+        )
+        self.buttons: list[Vertical] = []  # used to yield from in compose
+
+    def compose(self) -> ComposeResult:
+        yield from self.buttons
+
+    def on_mount(self) -> None:
+        for label in self.labels:
+            button = Button(
+                label,
+                id=f"{self.tab}_{self.area}_{label}",
+                classes="tab-button",
+            )
+            button.active_effect_duration = 0
+            button.compact = True
+            self.buttons.append(
+                Vertical(
+                    button,
+                    id=f"{self.tab}_{self.area}_vertical",
+                    classes="center-content",
+                )
+            )
 
 
 class TabButton(Vertical):
@@ -72,18 +104,20 @@ class TabButton(Vertical):
 
 class TreeTabSwitchers(Horizontal):
 
-    def __init__(self, tab: str) -> None:
-        self.tab = tab
+    def __init__(self, tab: TabName) -> None:
         super().__init__(id=f"{tab}_tab_switchers")
+        self.tab: TabName = tab
 
     def compose(self) -> ComposeResult:
         # Left: Tree/List Switcher
         with Vertical(id=f"{self.tab}_left", classes="tab-content-left"):
-            with Horizontal(
-                id=f"{self.tab}_tree_buttons", classes="tab-buttons-horizontal"
-            ):
-                yield TabButton("Tree", f"{self.tab}_tree_button")
-                yield TabButton("List", f"{self.tab}_list_button")
+            yield TabButtons(self.tab, "left_top", ["Tree", "List"])
+
+            # with Horizontal(
+            #     id=f"{self.tab}_tree_buttons", classes="tab-buttons-horizontal"
+            # ):
+            #     yield TabButton("Tree", f"{self.tab}_tree_button")
+            #     yield TabButton("List", f"{self.tab}_list_button")
             with ContentSwitcher(
                 initial=f"{self.tab}_tree", id=f"{self.tab}_tree_switcher"
             ):
@@ -199,7 +233,7 @@ class ApplyTab(Horizontal):
     ]
 
     def compose(self) -> ComposeResult:
-        yield TreeTabSwitchers("apply")
+        yield TreeTabSwitchers("Apply")
 
     def on_tree_node_selected(self, event: ManagedTree.NodeSelected) -> None:
         event.stop()
@@ -225,42 +259,42 @@ class ApplyTab(Horizontal):
         self.notify(f"will add {managed_tree.cursor_node}")
 
 
-class ReAddTab(Horizontal):
+# class ReAddTab(Horizontal):
 
-    BINDINGS = [
-        Binding(
-            key="A,a",
-            action="re_add_path",
-            description="chezmoi-re-add",
-            tooltip="overwrite chezmoi repository with dotfile on disk",
-        )
-    ]
+#     BINDINGS = [
+#         Binding(
+#             key="A,a",
+#             action="re_add_path",
+#             description="chezmoi-re-add",
+#             tooltip="overwrite chezmoi repository with dotfile on disk",
+#         )
+#     ]
 
-    def compose(self) -> ComposeResult:
-        yield TreeTabSwitchers("re_add")
+#     def compose(self) -> ComposeResult:
+#         yield TreeTabSwitchers("ReAdd")
 
-    def on_tree_node_selected(self, event: ManagedTree.NodeSelected) -> None:
-        event.stop()
-        assert event.node.data is not None
-        self.query_one("#re_add_view_buttons", Horizontal).border_subtitle = (
-            f" {event.node.data.path.relative_to(chezmoi.dest_dir)} "
-        )
-        path_view = self.query_one("#re_add_content", PathView)
-        path_view.path = event.node.data.path
-        path_view.tab_id = "re_add_tab"
-        self.query_one("#re_add_diff", DiffView).diff_spec = (
-            event.node.data.path,
-            "re-add",
-        )
+#     def on_tree_node_selected(self, event: ManagedTree.NodeSelected) -> None:
+#         event.stop()
+#         assert event.node.data is not None
+#         self.query_one("#re_add_view_buttons", Horizontal).border_subtitle = (
+#             f" {event.node.data.path.relative_to(chezmoi.dest_dir)} "
+#         )
+#         path_view = self.query_one("#re_add_content", PathView)
+#         path_view.path = event.node.data.path
+#         path_view.tab_id = "re_add_tab"
+#         self.query_one("#re_add_diff", DiffView).diff_spec = (
+#             event.node.data.path,
+#             "re-add",
+#         )
 
-    def on_switch_changed(self, event: Switch.Changed) -> None:
-        event.stop()
-        if event.switch.id == "re_add_tab_unchanged":
-            self.query_one("#re_add_tree", ManagedTree).unchanged = event.value
+#     def on_switch_changed(self, event: Switch.Changed) -> None:
+#         event.stop()
+#         if event.switch.id == "re_add_tab_unchanged":
+#             self.query_one("#re_add_tree", ManagedTree).unchanged = event.value
 
-    def action_re_add_path(self) -> None:
-        managed_tree = self.query_one("#re_add_tree", ManagedTree)
-        self.notify(f"will add {managed_tree.cursor_node}")
+#     def action_re_add_path(self) -> None:
+#         managed_tree = self.query_one("#re_add_tree", ManagedTree)
+#         self.notify(f"will add {managed_tree.cursor_node}")
 
 
 class AddTab(Horizontal):
