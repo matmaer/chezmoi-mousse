@@ -18,8 +18,24 @@ from textual.screen import Screen
 from textual.strip import Strip
 from textual.widgets import RichLog, Static
 
-from chezmoi_mousse import SPLASH
 from chezmoi_mousse.chezmoi import chezmoi
+
+
+SPLASH = """\
+ _______________________________ ___________________._
+|       |   |   |    ___|___    |    '    |       |   |
+|    ===|       |     __|     __|         |   |   |   |
+|       |   |   |       |       |   |ˇ|   |       |   |
+`-------^---^---^-------^-------^---' '---^-------^---'
+   ____ ____ _______ ___ ___ _______ _______ _______
+  |    ˇ    |       |   |   |    ___|    ___|    ___|
+  |         |   |   |   |   |__     |__     |     __|
+  |   |ˇ|   |       |       |       |       |       |
+  '---' '---^-------^-------^-------^-------^-------'
+""".replace(
+    "===", "=\u200b=\u200b="
+).splitlines()
+
 
 start_color = "#0178D4"
 end_color = "#F187FB"
