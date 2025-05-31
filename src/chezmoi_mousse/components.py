@@ -1,8 +1,8 @@
-"""Contains classes used as reused components by the widgets in mousse.py.
+"""Contains classes used components by the widgets in main_tabs.py.
 
 These classes
 - inherit directly from built in textual widgets
-- are not containers
+- are not containers, but can be focussable or not
 - don't override the parents' compose method
 - don't call any query methods
 """
@@ -26,8 +26,13 @@ from chezmoi_mousse.config import unwanted
 
 
 class GitLog(DataTable):
+    """DataTable widget to display the output of the `git log` command, either
+    for a specific path or the chezmoi repository as a whole.
 
-    # not a container, focussable  https://textual.textualize.io/widgets/data_table/
+    Does not call the git command directly, calls it through chezmoi.
+    """
+
+    # focussable  https://textual.textualize.io/widgets/data_table/
 
     path: reactive[Path | None] = reactive(None, init=False)
 
@@ -77,8 +82,11 @@ class GitLog(DataTable):
 
 
 class AutoWarning(Static):
+    """Shows important information before the user performs a chezmoi.perform
+    command which could trigger other commands depending on the chezmoi
+    configuration."""
 
-    # not a container, not focussable https://textual.textualize.io/widgets/static/
+    # not focussable https://textual.textualize.io/widgets/static/
 
     def on_mount(self) -> None:
         auto_warning = ""
@@ -95,7 +103,7 @@ class AutoWarning(Static):
 class PathView(RichLog):
     """RichLog widget to display the content of a file with highlighting."""
 
-    # not a container, focussable https://textual.textualize.io/widgets/rich_log/
+    # focussable https://textual.textualize.io/widgets/rich_log/
 
     BINDINGS = [Binding(key="M,m", action="maximize", description="maximize")]
 
@@ -202,8 +210,10 @@ class PathView(RichLog):
 
 
 class DiffView(Static):
+    """Shows the diff between the destination and the chezmoi repository,
+    accounts for the direction of the operation to color the diff."""
 
-    # not a container, not focussable https://textual.textualize.io/widgets/static/
+    # not focussable https://textual.textualize.io/widgets/static/
 
     BINDINGS = [Binding(key="M,m", action="maximize", description="maximize")]
 
@@ -293,6 +303,7 @@ class NodeData:
 
 
 class ManagedTree(Tree[NodeData]):
+    """Shows the tree widget on the left for Apply and Re-Add tabs."""
 
     unchanged: reactive[bool] = reactive(False, init=False)
 
@@ -483,7 +494,6 @@ class ManagedTree(Tree[NodeData]):
                 for child in current_node.children:
                     if child.is_expanded:
                         nodes.append(child)
-                        # Recurse into directory children
                         nodes.extend(collect_nodes(child))
                 return nodes
 
@@ -495,6 +505,11 @@ class ManagedTree(Tree[NodeData]):
 
 
 class FilteredDirTree(DirectoryTree):
+    """Provides a fast DirectoryTree to explore any path in the destination
+    directory which can be added to the chezmoi repository.
+
+    As it's unknown how large the directory tree on disk is.
+    """
 
     unmanaged_dirs = reactive(False)
     unwanted = reactive(False)

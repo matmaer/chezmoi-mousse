@@ -1,7 +1,7 @@
 """Contains constants used in the GUI."""
 
 BURGER = "\u2261"  # burger icon, math symbol
-GEAR = "\u2699"  # gear icon, not used ye
+GEAR = "\u2699"  # gear icon, not used yet
 
 # provisional diagrams until dynamically created
 FLOW = """\
