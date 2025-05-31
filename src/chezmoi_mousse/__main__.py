@@ -1,3 +1,5 @@
+"""Runs the textual App an monkey patches the scrollbar renderer."""
+
 from datetime import datetime
 import traceback
 from math import ceil

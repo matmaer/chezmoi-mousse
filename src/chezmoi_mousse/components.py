@@ -294,8 +294,6 @@ class NodeData:
 
 class ManagedTree(Tree[NodeData]):
 
-    # not a container, focussable https://textual.textualize.io/widgets/tree/
-
     unchanged: reactive[bool] = reactive(False, init=False)
 
     # TODO: default color should be updated on theme change
@@ -497,8 +495,6 @@ class ManagedTree(Tree[NodeData]):
 
 
 class FilteredDirTree(DirectoryTree):
-
-    # not a container, focussable https://textual.textualize.io/widgets/directory_tree/
 
     unmanaged_dirs = reactive(False)
     unwanted = reactive(False)

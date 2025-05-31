@@ -1,3 +1,7 @@
+"""Contains settings like which strings filters use to decide what to filter,
+text displayed on widgets in the GUI and 3rd party information in the context
+of commands integrated in chezmoi."""
+
 from dataclasses import dataclass
 
 

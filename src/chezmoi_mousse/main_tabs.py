@@ -1,5 +1,9 @@
 """Contains the widgets used to compose the tabs on the main screen of chezmoi-
-mousse, except for the Log tab."""
+mousse, except for the Log tab.
+
+Additionally, it contains widgets which are these tabs depend on, if they are
+containers.
+"""
 
 from typing import Literal
 from rich.text import Text

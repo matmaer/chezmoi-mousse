@@ -1,3 +1,7 @@
+"""Contains the main GUI application where the App class is being subclassed
+and the MainScreen class which is rendered after the LoadingScreen has
+completed running each chezmoi command."""
+
 from datetime import datetime
 from typing import Any
 

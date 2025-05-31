@@ -1,3 +1,10 @@
+"""Shows a splash screen with an animated fade effect and logs the loading
+process.
+
+The goal for initializing vars on module level is to have the animated fade run
+smoothly as soon as it's ready for being rendered.
+"""
+
 from collections import deque
 from pathlib import Path
 
@@ -56,7 +63,6 @@ class AnimatedFade(Static):
         return Strip([Segment(SPLASH[y], style=line_styles[y])])
 
     def on_mount(self) -> None:
-        # podcast refresh rate info
         self.set_interval(interval=0.1, callback=self.refresh)
 
 
