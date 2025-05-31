@@ -1,3 +1,6 @@
+"""Contains anything related to running chezmoi commands and processing the
+output of those commands."""
+
 import ast
 from dataclasses import dataclass, field
 import os
@@ -167,7 +170,7 @@ class Chezmoi:
         """
         Returns a dictionary with four keys: "apply_files", "apply_dirs",
         "re_add_files", and "re_add_dirs". Each key contains a dictionary
-        with a Path for the key the corresponding status codes as value.
+        with a Path for the key and the corresponding status codes as value.
         """
 
         def create_status_dict(

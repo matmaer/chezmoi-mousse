@@ -1,3 +1,10 @@
+"""Shows a splash screen with an animated fade effect and logs the loading
+process.
+
+The goal for initializing vars on module level is to have the animated fade run
+smoothly as soon as it's ready for being rendered.
+"""
+
 from collections import deque
 from pathlib import Path
 
@@ -11,8 +18,24 @@ from textual.screen import Screen
 from textual.strip import Strip
 from textual.widgets import RichLog, Static
 
-from chezmoi_mousse import SPLASH
 from chezmoi_mousse.chezmoi import chezmoi
+
+
+SPLASH = """\
+ _______________________________ ___________________._
+|       |   |   |    ___|___    |    '    |       |   |
+|    ===|       |     __|     __|         |   |   |   |
+|       |   |   |       |       |   |ˇ|   |       |   |
+`-------^---^---^-------^-------^---' '---^-------^---'
+   ____ ____ _______ ___ ___ _______ _______ _______
+  |    ˇ    |       |   |   |    ___|    ___|    ___|
+  |         |   |   |   |   |__     |__     |     __|
+  |   |ˇ|   |       |       |       |       |       |
+  '---' '---^-------^-------^-------^-------^-------'
+""".replace(
+    "===", "=\u200b=\u200b="
+).splitlines()
+
 
 start_color = "#0178D4"
 end_color = "#F187FB"
@@ -56,7 +79,6 @@ class AnimatedFade(Static):
         return Strip([Segment(SPLASH[y], style=line_styles[y])])
 
     def on_mount(self) -> None:
-        # podcast refresh rate info
         self.set_interval(interval=0.1, callback=self.refresh)
 
 

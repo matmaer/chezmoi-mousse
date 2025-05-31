@@ -1,20 +1,7 @@
-BURGER = "\u2261"  # burger icon, math symbol
-GEAR = "\u2699"  # gear icon
+"""Contains constants used in the GUI."""
 
-SPLASH = """\
- _______________________________ ___________________._
-|       |   |   |    ___|___    |    '    |       |   |
-|    ===|       |     __|     __|         |   |   |   |
-|       |   |   |       |       |   |ˇ|   |       |   |
-`-------^---^---^-------^-------^---' '---^-------^---'
-   ____ ____ _______ ___ ___ _______ _______ _______
-  |    ˇ    |       |   |   |    ___|    ___|    ___|
-  |         |   |   |   |   |__     |__     |     __|
-  |   |ˇ|   |       |       |       |       |       |
-  '---' '---^-------^-------^-------^-------^-------'
-""".replace(
-    "===", "=\u200b=\u200b="
-).splitlines()
+BURGER = "\u2261"  # burger icon, math symbol
+GEAR = "\u2699"  # gear icon, not used yet
 
 # provisional diagrams until dynamically created
 FLOW = """\
