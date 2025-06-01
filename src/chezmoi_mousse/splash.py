@@ -60,7 +60,7 @@ RICH_LOG.styles.color = "#0053AA"
 RICH_LOG.styles.margin = 0
 RICH_LOG.styles.padding = 0
 
-COMMAND_LOG: list[str] = []
+COMMAND_LOG: list[tuple[list, str]] = []
 
 
 class AnimatedFade(Static):
@@ -105,7 +105,12 @@ class LoadingScreen(Screen):
         io_class.update()
         self.log_text(io_class.label)
         long_command = getattr(chezmoi, arg_id).long_command
-        COMMAND_LOG.append(" ".join(long_command))
+        COMMAND_LOG.append(
+            (
+                long_command,
+                "output stored in an InputOutput dataclass by 'splash.py'.",
+            )
+        )
 
     def all_workers_finished(self) -> None:
         if all(
@@ -117,5 +122,10 @@ class LoadingScreen(Screen):
 
     def on_mount(self) -> None:
         self.set_interval(interval=1, callback=self.all_workers_finished)
+        # first run chezzmoi doctor as it is the most expensive command so the
+        # other threads can run while it's being executed
+        self.run_io_worker("doctor")
+        LONG_COMMANDS.pop("doctor")
+        # the doctor command has been removed from LONG_COMMANDS
         for arg_id in LONG_COMMANDS:
             self.run_io_worker(arg_id)

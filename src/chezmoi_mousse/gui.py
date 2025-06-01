@@ -3,7 +3,6 @@ and the MainScreen class which is rendered after the LoadingScreen has
 completed running each chezmoi command."""
 
 from datetime import datetime
-from typing import Any
 
 from textual.app import App, ComposeResult
 from textual.containers import ScrollableContainer
@@ -19,34 +18,43 @@ from textual.widgets import (
     TabPane,
 )
 
+import chezmoi_mousse.chezmoi
+from chezmoi_mousse import BURGER, FLOW
 from chezmoi_mousse.main_tabs import AddTab, ApplyTab, DoctorTab, ReAddTab
 from chezmoi_mousse.splash import LoadingScreen
-from chezmoi_mousse import BURGER, FLOW
 
 
 class CommandLog(RichLog):
-    def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)
-
-    # TODO: implement logging cmd_output in chezmoi.py
-
-    def add(self, chezmoi_cmd: str, cmd_output: Any = None) -> None:
+    def add(self, chezmoi_io: tuple[list, str]) -> None:
         time_stamp = datetime.now().strftime("%H:%M:%S")
-        self.write(f"{time_stamp} {chezmoi_cmd}")
-        if cmd_output is not None:
-            self.write(f"Output: {cmd_output}")
+        # Turn the full command list into string, remove elements not useful
+        # to display in the log
+        trimmed_cmd = [
+            _
+            for _ in chezmoi_io[0]
+            if _
+            not in (
+                "--no-pager"
+                "--color=off"
+                "--no-tty"
+                "--format=json"
+                "--path-style=absolute"
+                "--path-style=source-absolute"
+            )
+        ]
+        pretty_cmd = " ".join(trimmed_cmd)
+        self.write(f"{time_stamp} {pretty_cmd}")
+        if chezmoi_io[1]:
+            self.write(chezmoi_io[1])
         else:
-            self.write("to be implemented")
-        self.write("Output:")
-        if cmd_output is not None:
-            self.write(chezmoi_cmd)
+            self.write("Output: to be implemented")
 
 
 class MainScreen(Screen):
 
-    def __init__(self, command_log: list[str]) -> None:
+    def __init__(self, splash_command_log: list[tuple[list, str]]) -> None:
         super().__init__()
-        self.command_log = command_log
+        self.splash_command_log = splash_command_log
 
     def compose(self) -> ComposeResult:
         yield Header(icon=BURGER)
@@ -69,8 +77,14 @@ class MainScreen(Screen):
 
     def on_mount(self) -> None:
         command_log = self.query_one("#command_log", CommandLog)
-        for cmd in self.command_log:
+        for cmd in self.splash_command_log:
             command_log.add(cmd)
+
+        def log_callback(chezmoi_io: tuple[list, str]) -> None:
+            command_log.add(chezmoi_io)
+
+        global command_log_callback
+        chezmoi_mousse.chezmoi.command_log_callback = log_callback
 
 
 chezmoi_mousse_dark = Theme(
@@ -100,5 +114,5 @@ class ChezmoiTUI(App):
         self.theme = "chezmoi-mousse-dark"
         self.push_screen(LoadingScreen(), self.push_main_screen)
 
-    def push_main_screen(self, command_log) -> None:
-        self.push_screen(MainScreen(command_log))
+    def push_main_screen(self, splash_command_log) -> None:
+        self.push_screen(MainScreen(splash_command_log))
