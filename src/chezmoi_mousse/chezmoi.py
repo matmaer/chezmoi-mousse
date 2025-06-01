@@ -8,11 +8,12 @@ from pathlib import Path
 from subprocess import TimeoutExpired, run
 
 
-def noop(*args, **kwargs):
+def callback_null_object(*args, **kwargs) -> None:
     pass
 
 
-command_log_callback = noop  # Used in gui.py to log commands
+# Used and re-assigned in gui.py to log commands
+command_log_callback = callback_null_object
 
 
 BASE = ["chezmoi", "--no-pager", "--color=off", "--no-tty", "--mode=file"]
