@@ -106,8 +106,6 @@ class ChezmoiGUI(App):
 
     CSS_PATH = "gui.tcss"
 
-    # SCREENS = {"main": MainScreen}
-
     def on_mount(self) -> None:
         self.title = "-  c h e z m o i  m o u s s e  -"
         self.register_theme(chezmoi_mousse_dark)
