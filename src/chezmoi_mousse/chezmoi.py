@@ -8,7 +8,7 @@ from pathlib import Path
 from subprocess import TimeoutExpired, run
 
 
-def callback_null_object(*args, **kwargs) -> None:
+def callback_null_object(*args) -> None:
     pass
 
 
