@@ -41,6 +41,10 @@ class CommandLog(RichLog):
                 "--path-style=absolute"
                 "--path-style=source-absolute"
                 "--no-color"
+                "--no-decorate"
+                "--date-order"
+                "--no-expand-tabs"
+                "--format=%ar by %cn;%s"
             )
         ]
         pretty_cmd = " ".join(trimmed_cmd)
