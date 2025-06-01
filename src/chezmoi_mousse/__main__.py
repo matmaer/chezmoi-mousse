@@ -1,6 +1,5 @@
 """Runs the textual App an monkey patches the scrollbar renderer."""
 
-from datetime import datetime
 import traceback
 from math import ceil
 
@@ -157,9 +156,6 @@ def main():
     # generate an unformatted stacktrace to copy/paste in AI dev tooling.
     def patched_handle_exception(error):
         with open("error.log", "w") as f:
-            f.write(
-                f"----- {datetime.now().strftime("%Y-%m-%d %Hh%M")} -----\n\n"
-            )
             traceback.print_exc(file=f)
         original_handle_exception(error)
 
