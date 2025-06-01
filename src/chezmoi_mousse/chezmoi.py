@@ -29,7 +29,7 @@ def subprocess_run(long_command: list[str]) -> str:
             text=True,  # returns stdout as str instead of bytes
             timeout=1,
         ).stdout.strip()
-        if "diff" in long_command:
+        if any(cmd in long_command for cmd in ("diff", "cat", "git")):
             command_log_callback((long_command, "output displayed in gui"))
         else:
             command_log_callback((long_command, result))

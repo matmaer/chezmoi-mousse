@@ -36,8 +36,8 @@ class GitLog(DataTable):
 
     path: reactive[Path | None] = reactive(None, init=False)
 
-    def __init__(self, path: Path | None = None) -> None:
-        super().__init__(id="git_log")
+    def __init__(self, path: Path | None = None, **kwargs) -> None:
+        super().__init__(**kwargs)
         self.path = path
 
     def on_mount(self) -> None:

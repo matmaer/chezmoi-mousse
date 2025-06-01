@@ -119,11 +119,13 @@ class TreeTabSwitchers(Horizontal):
             ):
                 yield TabButton("Content", f"{self.tab}_content_button")
                 yield TabButton("Diff", f"{self.tab}_diff_button")
+                yield TabButton("Git-Log", f"{self.tab}_git_log_button")
             with ContentSwitcher(
                 initial=f"{self.tab}_content", id=f"{self.tab}_view_switcher"
             ):
                 yield PathView(id=f"{self.tab}_content")
                 yield DiffView(id=f"{self.tab}_diff")
+                yield GitLog(id=f"{self.tab}_git_log")
 
     def on_mount(self) -> None:
         # Left
@@ -167,7 +169,7 @@ class TreeTabSwitchers(Horizontal):
             self.query_one(f"#{self.tab}_tree_button", Button).remove_class(
                 "last-clicked"
             )
-        # Content/Diff Switch
+        # Content/Diff/GitLog Switch
         elif event.button.id == f"{self.tab}_content_button":
             self.query_one(
                 f"#{self.tab}_view_switcher", ContentSwitcher
@@ -178,11 +180,30 @@ class TreeTabSwitchers(Horizontal):
             self.query_one(f"#{self.tab}_diff_button", Button).remove_class(
                 "last-clicked"
             )
+            self.query_one(f"#{self.tab}_git_log_button", Button).remove_class(
+                "last-clicked"
+            )
         elif event.button.id == f"{self.tab}_diff_button":
             self.query_one(
                 f"#{self.tab}_view_switcher", ContentSwitcher
             ).current = f"{self.tab}_diff"
             self.query_one(f"#{self.tab}_diff_button", Button).add_class(
+                "last-clicked"
+            )
+            self.query_one(f"#{self.tab}_content_button", Button).remove_class(
+                "last-clicked"
+            )
+            self.query_one(f"#{self.tab}_git_log_button", Button).remove_class(
+                "last-clicked"
+            )
+        elif event.button.id == f"{self.tab}_git_log_button":
+            self.query_one(
+                f"#{self.tab}_view_switcher", ContentSwitcher
+            ).current = f"{self.tab}_git_log"
+            self.query_one(f"#{self.tab}_git_log_button", Button).add_class(
+                "last-clicked"
+            )
+            self.query_one(f"#{self.tab}_diff_button", Button).remove_class(
                 "last-clicked"
             )
             self.query_one(f"#{self.tab}_content_button", Button).remove_class(
