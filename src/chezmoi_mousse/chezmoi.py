@@ -153,6 +153,14 @@ class Chezmoi:
         self.run = self.SubProcessCalls()
 
     @property
+    def source_dir(self) -> Path:
+        return Path(self.dump_config.dict_out["sourceDir"])
+
+    @property
+    def source_dir_str(self) -> Path:
+        return self.dump_config.dict_out["sourceDir"]
+
+    @property
     def dest_dir(self) -> Path:
         return Path(self.dump_config.dict_out["destDir"])
 
@@ -270,6 +278,9 @@ class Chezmoi:
 
         def status(self, path: str) -> str:
             return subprocess_run(BASE + ["status", path])
+
+        def source_path(self, path: str) -> str:
+            return subprocess_run(BASE + ["source-path", path])
 
 
 chezmoi = Chezmoi()
