@@ -110,20 +110,20 @@ class SubProcessCalls:
     """Group of commands that call subprocess.run() but do not change any
     state."""
 
-    def git_log(self, source_path: str) -> list[str]:
-        long_command = BASE + SUBS["git_log"] + [source_path]
+    def git_log(self, source_path: Path) -> list[str]:
+        long_command = BASE + SUBS["git_log"] + [str(source_path)]
         return subprocess_run(long_command).splitlines()
 
-    def apply_diff(self, file_path: str) -> list[str]:
-        long_command = BASE + ["diff", file_path]
+    def apply_diff(self, file_path: Path) -> list[str]:
+        long_command = BASE + ["diff", str(file_path)]
         return subprocess_run(long_command).splitlines()
 
-    def re_add_diff(self, file_path: str) -> list[str]:
-        long_command = BASE + ["diff", file_path]
+    def re_add_diff(self, file_path: Path) -> list[str]:
+        long_command = BASE + ["diff", str(file_path)]
         return subprocess_run(long_command + ["--reverse"]).splitlines()
 
-    def cat(self, file_path: str) -> str:
-        return subprocess_run(BASE + ["cat", file_path])
+    def cat(self, file_path: Path) -> str:
+        return subprocess_run(BASE + ["cat", str(file_path)])
 
     def source_path(self, path_to_convert: Path) -> str:
         return subprocess_run(BASE + ["source-path", str(path_to_convert)])
