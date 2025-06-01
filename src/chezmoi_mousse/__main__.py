@@ -1,6 +1,5 @@
 """Runs the textual App an monkey patches the scrollbar renderer."""
 
-from datetime import datetime
 import traceback
 from math import ceil
 
@@ -8,7 +7,6 @@ import rich.repr
 from rich.color import Color
 from rich.segment import Segment, Segments
 from rich.style import Style
-from textual.app import App
 from textual.scrollbar import ScrollBar, ScrollBarRender
 
 from chezmoi_mousse.gui import ChezmoiGUI
@@ -144,20 +142,6 @@ class CustomScrollBarRender(ScrollBarRender):
             )
 
 
-# monkey patch to copy/paste an unformatted stacktrace for AI dev tooling.
-_original_handle_exception = App._handle_exception
-
-
-def _patched_handle_exception(self, error, *args, **kwargs):
-    with open("error.log", "w") as f:
-        f.write(f"----- {datetime.now().strftime("%Y-%m-%d %Hh%M")} -----\n\n")
-        traceback.print_exc(file=f)
-    return _original_handle_exception(self, error, *args, **kwargs)
-
-
-App._handle_exception = _patched_handle_exception
-
-
 @rich.repr.auto
 class CustomScrollBar(ScrollBar):
     renderer = CustomScrollBarRender
@@ -167,7 +151,16 @@ def main():
 
     app = ChezmoiGUI()
 
+    original_handle_exception = app._handle_exception
+
+    # generate an unformatted stacktrace to copy/paste in AI dev tooling.
+    def patched_handle_exception(error):
+        with open("error.log", "w") as f:
+            traceback.print_exc(file=f)
+        original_handle_exception(error)
+
     # MONKEY PATCH:
+    app._handle_exception = patched_handle_exception
     ScrollBar.renderer = CustomScrollBarRender
 
     app.run(inline=False, headless=False, mouse=True)
