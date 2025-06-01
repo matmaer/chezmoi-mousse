@@ -5,7 +5,6 @@ Additionally, it contains widgets which are these tabs depend on, if they are
 containers.
 """
 
-from typing import Literal
 from rich.text import Text
 from textual.app import ComposeResult
 from textual.binding import Binding
@@ -43,10 +42,6 @@ from chezmoi_mousse.components import (
 )
 
 from chezmoi_mousse.config import filter_data, pw_mgr_info
-
-# for type hinting/checking
-TabName = Literal["Apply", "ReAdd", "Add", "Doctor"]
-AreaName = Literal["left_top", "right_top", "right_bottom", "left_bottom"]
 
 
 def left_min_width() -> int:
