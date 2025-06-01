@@ -110,7 +110,8 @@ class SubProcessCalls:
     """Group of commands that call subprocess.run() but do not change any
     state."""
 
-    def git_log(self, source_path: Path) -> list[str]:
+    def git_log(self, file_path: Path) -> list[str]:
+        source_path = subprocess_run(BASE + ["source-path", str(file_path)])
         long_command = BASE + SUBS["git_log"] + [str(source_path)]
         return subprocess_run(long_command).splitlines()
 
@@ -124,9 +125,6 @@ class SubProcessCalls:
 
     def cat(self, file_path: Path) -> str:
         return subprocess_run(BASE + ["cat", str(file_path)])
-
-    def source_path(self, path_to_convert: Path) -> str:
-        return subprocess_run(BASE + ["source-path", str(path_to_convert)])
 
     def unmanaged_in_dir(self, dir_path: Path) -> list[Path]:
         path_strings = subprocess_run(
