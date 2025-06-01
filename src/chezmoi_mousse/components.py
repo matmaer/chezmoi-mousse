@@ -189,10 +189,7 @@ class PathView(RichLog):
             else:
                 self.write(f"Unmanaged directory: {self.path}")
 
-            if self.tab_id == "apply_tab" or self.tab_id == "re_add_tab":
-                self.write_unmanaged_files_in_dir()
-
-            elif self.tab_id == "add_tab":
+            if self.tab_id == "add_tab":
                 self.write(
                     '(switch to "Apply" or "ReAdd" tab to apply or re-add)'
                 )
