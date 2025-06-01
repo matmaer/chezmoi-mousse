@@ -43,7 +43,7 @@ class GitLog(DataTable):
     def on_mount(self) -> None:
         self.show_cursor = False
         if self.path is None:
-            self.populate_data_table(chezmoi.run.git_log())
+            self.populate_data_table(chezmoi.git_log.list_out)
 
     def populate_data_table(self, cmd_output: list[str]):
         styles = {
@@ -140,7 +140,7 @@ class PathView(RichLog):
 
     def write_unmanaged_files_in_dir(self) -> None:
         assert isinstance(self.path, Path)
-        unmanaged_files: list[Path] = chezmoi.unmanaged_in_dir(self.path)
+        unmanaged_files: list[Path] = chezmoi.run.unmanaged_in_dir(self.path)
         if unmanaged_files:
             self.write("\nUnmanaged files:")
             self.write('(switch to "AddTab" to add files)')
