@@ -40,6 +40,7 @@ class CommandLog(RichLog):
                 "--format=json"
                 "--path-style=absolute"
                 "--path-style=source-absolute"
+                "--no-color"
             )
         ]
         pretty_cmd = " ".join(trimmed_cmd)
