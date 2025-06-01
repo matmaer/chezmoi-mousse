@@ -27,10 +27,13 @@ def subprocess_run(long_command: list[str]) -> str:
         if command_log_callback:
             command_log_callback((long_command, result))
         return result
-    except TimeoutExpired:
-        if long_command[-1] == "doctor":
-            return "'chezmoi doctor' timed out, the command depends on an internet connection."
-        raise
+    except TimeoutExpired as error:
+        raise TimeoutExpired(
+            error.cmd,
+            error.timeout,
+            output="The timeout value for subprocess calls of one second was exceeded.",
+            stderr=error.stderr,
+        ) from error
 
 
 class PerformChange:
