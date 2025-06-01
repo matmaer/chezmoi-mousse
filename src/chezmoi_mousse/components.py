@@ -36,8 +36,8 @@ class GitLog(DataTable):
 
     path: reactive[Path | None] = reactive(None, init=False)
 
-    def __init__(self, path: Path | None = None) -> None:
-        super().__init__(id="git_log")
+    def __init__(self, path: Path | None = None, **kwargs) -> None:
+        super().__init__(**kwargs)
         self.path = path
 
     def on_mount(self) -> None:
@@ -189,10 +189,7 @@ class PathView(RichLog):
             else:
                 self.write(f"Unmanaged directory: {self.path}")
 
-            if self.tab_id == "apply_tab" or self.tab_id == "re_add_tab":
-                self.write_unmanaged_files_in_dir()
-
-            elif self.tab_id == "add_tab":
+            if self.tab_id == "add_tab":
                 self.write(
                     '(switch to "Apply" or "ReAdd" tab to apply or re-add)'
                 )
