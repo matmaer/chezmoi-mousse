@@ -39,8 +39,8 @@ SPLASH = """\
 
 start_color = "#0178D4"
 end_color = "#F187FB"
-fade = [start_color] * 5
-gradient = Gradient.from_colors(start_color, end_color, quality=5)
+fade = [start_color] * 7
+gradient = Gradient.from_colors(start_color, end_color, quality=4)
 fade.extend([color.hex for color in gradient.colors])
 gradient.colors.reverse()
 fade.extend([color.hex for color in gradient.colors])
@@ -48,13 +48,12 @@ line_styles = deque([Style(color=color, bold=True) for color in fade])
 fade_height = len(SPLASH)
 fade_width = len(max(SPLASH, key=len)) - 2
 
-LOG_HEIGHT = len(chezmoi.long_commands)
 DEST_DIR: Path
 LOG_PADDING_WIDTH = 36
 LONG_COMMANDS = chezmoi.long_commands
 
 RICH_LOG = RichLog(id="loading_screen_log")
-RICH_LOG.styles.height = LOG_HEIGHT + 1
+RICH_LOG.styles.height = len(LONG_COMMANDS)
 RICH_LOG.styles.width = LOG_PADDING_WIDTH + 9
 RICH_LOG.styles.color = "#0053AA"
 RICH_LOG.styles.margin = 0
@@ -121,7 +120,7 @@ class LoadingScreen(Screen):
             self.dismiss(COMMAND_LOG)
 
     def on_mount(self) -> None:
-        self.set_interval(interval=1, callback=self.all_workers_finished)
+        self.set_interval(interval=1.2, callback=self.all_workers_finished)
         # first run chezzmoi doctor as it is the most expensive command so the
         # other threads can run while it's being executed
         self.run_io_worker("doctor")

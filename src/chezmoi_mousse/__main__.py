@@ -11,7 +11,7 @@ from rich.style import Style
 from textual.app import App
 from textual.scrollbar import ScrollBar, ScrollBarRender
 
-from chezmoi_mousse.gui import ChezmoiTUI
+from chezmoi_mousse.gui import ChezmoiGUI
 
 
 class CustomScrollBarRender(ScrollBarRender):
@@ -165,7 +165,7 @@ class CustomScrollBar(ScrollBar):
 
 def main():
 
-    app = ChezmoiTUI()
+    app = ChezmoiGUI()
 
     # MONKEY PATCH:
     ScrollBar.renderer = CustomScrollBarRender

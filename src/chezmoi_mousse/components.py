@@ -43,7 +43,7 @@ class GitLog(DataTable):
     def on_mount(self) -> None:
         self.show_cursor = False
         if self.path is None:
-            self.populate_data_table(chezmoi.run.git_log())
+            self.populate_data_table(chezmoi.git_log.list_out)
 
     def populate_data_table(self, cmd_output: list[str]):
         styles = {
@@ -78,7 +78,9 @@ class GitLog(DataTable):
 
     def watch_path(self) -> None:
         assert isinstance(self.path, Path)
-        self.populate_data_table(chezmoi.run.git_log(str(self.path)))
+        git_log_output = chezmoi.run.git_log(self.path)
+        self.clear()
+        self.populate_data_table(git_log_output)
 
 
 class AutoWarning(Static):
@@ -140,7 +142,7 @@ class PathView(RichLog):
 
     def write_unmanaged_files_in_dir(self) -> None:
         assert isinstance(self.path, Path)
-        unmanaged_files: list[Path] = chezmoi.unmanaged_in_dir(self.path)
+        unmanaged_files: list[Path] = chezmoi.run.unmanaged_in_dir(self.path)
         if unmanaged_files:
             self.write("\nUnmanaged files:")
             self.write('(switch to "AddTab" to add files)')
@@ -176,10 +178,10 @@ class PathView(RichLog):
             # FileNotFoundError is raised both when a file or a directory
             # does not exist
             if self.path in chezmoi.managed_file_paths:
-                if not chezmoi.run.cat(str(self.path)).strip():
+                if not chezmoi.run.cat(self.path).strip():
                     self.write("File contains only whitespace")
                 else:
-                    self.write(chezmoi.run.cat(str(self.path)))
+                    self.write(chezmoi.run.cat(self.path))
                 return
 
         except IsADirectoryError:
@@ -243,7 +245,7 @@ class DiffView(Static):
                 )
                 return
             else:
-                diff_output = chezmoi.run.apply_diff(str(self.diff_spec[0]))
+                diff_output = chezmoi.run.apply_diff(self.diff_spec[0])
         elif self.diff_spec[1] == "re-add":
             if self.diff_spec[0] not in chezmoi.status_paths["re_add_files"]:
                 self.update(
@@ -256,7 +258,7 @@ class DiffView(Static):
                 )
                 return
             else:
-                diff_output = chezmoi.run.re_add_diff(str(self.diff_spec[0]))
+                diff_output = chezmoi.run.re_add_diff(self.diff_spec[0])
 
         if not diff_output:
             self.update(

@@ -4,6 +4,11 @@
 
 .tab-content-left {
   margin-right: 2;
+  width: 1fr;
+}
+
+.tab-content-right {
+  width: 2fr;
 }
 
 /* used to center Switch+Label Horizontal below the (Dir)Tree widgets */

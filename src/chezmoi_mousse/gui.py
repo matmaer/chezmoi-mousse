@@ -40,6 +40,11 @@ class CommandLog(RichLog):
                 "--format=json"
                 "--path-style=absolute"
                 "--path-style=source-absolute"
+                "--no-color"
+                "--no-decorate"
+                "--date-order"
+                "--no-expand-tabs"
+                "--format=%ar by %cn;%s"
             )
         ]
         pretty_cmd = " ".join(trimmed_cmd)
@@ -102,11 +107,9 @@ chezmoi_mousse_dark = Theme(
 )
 
 
-class ChezmoiTUI(App):
+class ChezmoiGUI(App):
 
     CSS_PATH = "gui.tcss"
-
-    # SCREENS = {"main": MainScreen}
 
     def on_mount(self) -> None:
         self.title = "-  c h e z m o i  m o u s s e  -"
