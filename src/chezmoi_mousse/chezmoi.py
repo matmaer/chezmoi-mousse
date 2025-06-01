@@ -111,7 +111,7 @@ class SubProcessCalls:
     state."""
 
     def git_log(self, source_path: str) -> list[str]:
-        long_command = BASE + SUBS["git_log"] + ["--follow", "--", source_path]
+        long_command = BASE + SUBS["git_log"] + [source_path]
         return subprocess_run(long_command).splitlines()
 
     def apply_diff(self, file_path: str) -> list[str]:
@@ -130,6 +130,19 @@ class SubProcessCalls:
 
     def source_path(self, path_to_convert: str) -> str:
         return subprocess_run(BASE + ["source-path", path_to_convert])
+
+    def unmanaged_in_dir(self, dir_path: Path) -> list[Path]:
+        path_strings = subprocess_run(
+            BASE + ["unmanaged", "--path-style=absolute", str(dir_path)]
+        ).splitlines()
+        # chezmoi can return the dir itself, eg when the dir is not managed
+        if len(path_strings) == 1 and path_strings[0] == str(dir_path):
+            return []
+        return [
+            p
+            for entry in path_strings
+            if (p := Path(entry)).parent == dir_path
+        ]
 
 
 @dataclass
@@ -263,19 +276,6 @@ class Chezmoi:
 
     def managed_dir_paths_in_dir(self, dir_path: Path) -> list[Path]:
         return [d for d in self.managed_dir_paths if d.parent == dir_path]
-
-    def unmanaged_in_dir(self, dir_path: Path) -> list[Path]:
-        path_strings = subprocess_run(
-            BASE + ["unmanaged", "--path-style=absolute", str(dir_path)]
-        ).splitlines()
-        # chezmoi can return the dir itself, eg when the dir is not managed
-        if len(path_strings) == 1 and path_strings[0] == str(dir_path):
-            return []
-        return [
-            p
-            for entry in path_strings
-            if (p := Path(entry)).parent == dir_path
-        ]
 
 
 chezmoi = Chezmoi()
