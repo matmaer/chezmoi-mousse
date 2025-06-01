@@ -54,6 +54,13 @@ class CommandLog(RichLog):
         else:
             self.write("Output: to be implemented")
 
+    def on_mount(self) -> None:
+        def log_callback(chezmoi_io: tuple[list, str]) -> None:
+            self.add(chezmoi_io)
+
+        global command_log_callback
+        chezmoi_mousse.chezmoi.command_log_callback = log_callback
+
 
 class MainScreen(Screen):
 
@@ -84,12 +91,6 @@ class MainScreen(Screen):
         command_log = self.query_one("#command_log", CommandLog)
         for cmd in self.splash_command_log:
             command_log.add(cmd)
-
-        def log_callback(chezmoi_io: tuple[list, str]) -> None:
-            command_log.add(chezmoi_io)
-
-        global command_log_callback
-        chezmoi_mousse.chezmoi.command_log_callback = log_callback
 
 
 chezmoi_mousse_dark = Theme(
