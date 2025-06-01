@@ -18,6 +18,40 @@ command_log_callback = callback_null_object
 
 BASE = ["chezmoi", "--no-pager", "--color=off", "--no-tty", "--mode=file"]
 
+# https://www.chezmoi.io/reference/command-line-flags/common/#available-entry-types
+SUBS = {
+    "cat_config": ["cat-config"],
+    "doctor": ["doctor"],
+    "dump_config": ["dump-config", "--format=json"],
+    "git_log": [
+        "git",
+        "--",
+        "log",
+        "--max-count=400",
+        "--no-color",
+        "--no-decorate",
+        "--date-order",
+        "--no-expand-tabs",
+        "--format=%ar by %cn;%s",
+    ],
+    "ignored": ["ignored"],
+    "managed_dirs": ["managed", "--path-style=absolute", "--include=dirs"],
+    "managed_files": ["managed", "--path-style=absolute", "--include=files"],
+    "managed_dirs_source": [
+        "managed",
+        "--path-style=source-absolute",
+        "--include=dirs",
+    ],
+    "managed_files_source": [
+        "managed",
+        "--path-style=source-absolute",
+        "--include=files",
+    ],
+    "status_dirs": ["status", "--path-style=absolute", "--include=dirs"],
+    "status_files": ["status", "--path-style=absolute", "--include=files"],
+    "template_data": ["data", "--format=json"],
+}
+
 
 def subprocess_run(long_command: list[str]) -> str:
     try:
@@ -72,6 +106,32 @@ class PerformChange:
         )
 
 
+class SubProcessCalls:
+    """Group of commands that call subprocess.run() but do not change any
+    state."""
+
+    def git_log(self, source_path: str) -> list[str]:
+        long_command = BASE + SUBS["git_log"] + ["--follow", "--", source_path]
+        return subprocess_run(long_command).splitlines()
+
+    def apply_diff(self, file_path: str) -> list[str]:
+        long_command = BASE + ["diff", file_path]
+        return subprocess_run(long_command).splitlines()
+
+    def re_add_diff(self, file_path: str) -> list[str]:
+        long_command = BASE + ["diff", file_path]
+        return subprocess_run(long_command + ["--reverse"]).splitlines()
+
+    def cat(self, file_path: str) -> str:
+        return subprocess_run(BASE + ["cat", file_path])
+
+    def status(self, path: str) -> str:
+        return subprocess_run(BASE + ["status", path])
+
+    def source_path(self, path_to_convert: str) -> str:
+        return subprocess_run(BASE + ["source-path", path_to_convert])
+
+
 @dataclass
 class InputOutput:
 
@@ -104,6 +164,7 @@ class Chezmoi:
     cat_config: InputOutput
     doctor: InputOutput
     dump_config: InputOutput
+    git_log: InputOutput
     ignored: InputOutput
     managed_files: InputOutput
     managed_dirs: InputOutput
@@ -113,44 +174,16 @@ class Chezmoi:
     status_files: InputOutput
     template_data: InputOutput
     perform = PerformChange()
-
-    # https://www.chezmoi.io/reference/command-line-flags/common/#available-entry-types
-    subs = {
-        "cat_config": ["cat-config"],
-        "doctor": ["doctor"],
-        "dump_config": ["dump-config", "--format=json"],
-        "ignored": ["ignored"],
-        "managed_dirs": ["managed", "--path-style=absolute", "--include=dirs"],
-        "managed_files": [
-            "managed",
-            "--path-style=absolute",
-            "--include=files",
-        ],
-        "managed_dirs_source": [
-            "managed",
-            "--path-style=source-absolute",
-            "--include=dirs",
-        ],
-        "managed_files_source": [
-            "managed",
-            "--path-style=source-absolute",
-            "--include=files",
-        ],
-        "status_dirs": ["status", "--path-style=absolute", "--include=dirs"],
-        "status_files": ["status", "--path-style=absolute", "--include=files"],
-        "template_data": ["data", "--format=json"],
-    }
+    run = SubProcessCalls()
 
     def __init__(self) -> None:
 
         self.long_commands = {}
 
-        for arg_id, sub_cmd in self.subs.items():
+        for arg_id, sub_cmd in SUBS.items():
             long_cmd = BASE + sub_cmd
             self.long_commands[arg_id] = long_cmd
             setattr(self, arg_id, InputOutput(long_cmd, arg_id=arg_id))
-
-        self.run = self.SubProcessCalls()
 
     @property
     def source_dir(self) -> Path:
@@ -243,44 +276,6 @@ class Chezmoi:
             for entry in path_strings
             if (p := Path(entry)).parent == dir_path
         ]
-
-    class SubProcessCalls:
-        """Group of commands that call subprocess.run()"""
-
-        def git_log(self, source_path: str) -> list[str]:
-            long_command = BASE + [
-                "git",
-                "--",
-                "log",
-                "--max-count=100",
-                "--no-color",
-                "--no-decorate",
-                "--date-order",
-                "--no-expand-tabs",
-                "--format=%ar by %cn;%s",
-            ]
-
-            if source_path is not None:
-                long_command.extend(["--follow", "--", source_path])
-
-            return subprocess_run(long_command).splitlines()
-
-        def apply_diff(self, file_path: str) -> list[str]:
-            long_command = BASE + ["diff", file_path]
-            return subprocess_run(long_command).splitlines()
-
-        def re_add_diff(self, file_path: str) -> list[str]:
-            long_command = BASE + ["diff", file_path]
-            return subprocess_run(long_command + ["--reverse"]).splitlines()
-
-        def cat(self, file_path: str) -> str:
-            return subprocess_run(BASE + ["cat", file_path])
-
-        def status(self, path: str) -> str:
-            return subprocess_run(BASE + ["status", path])
-
-        def source_path(self, path_to_convert: str) -> str:
-            return subprocess_run(BASE + ["source-path", path_to_convert])
 
 
 chezmoi = Chezmoi()
