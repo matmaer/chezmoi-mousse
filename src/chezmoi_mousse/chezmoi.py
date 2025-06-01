@@ -8,12 +8,15 @@ from pathlib import Path
 from subprocess import TimeoutExpired, run
 
 
+command_log_callback = None  # Used in gui.py to log commands
+
+
 BASE = ["chezmoi", "--no-pager", "--color=off", "--no-tty", "--mode=file"]
 
 
-def subprocess_run(long_command):
+def subprocess_run(long_command: list[str]) -> str:
     try:
-        return run(
+        result = run(
             long_command,
             capture_output=True,
             check=True,  # raises exception for any non-zero return code
@@ -21,6 +24,9 @@ def subprocess_run(long_command):
             text=True,  # returns stdout as str instead of bytes
             timeout=1,
         ).stdout.strip()
+        if command_log_callback:
+            command_log_callback((long_command, result))
+        return result
     except TimeoutExpired:
         if long_command[-1] == "doctor":
             return "'chezmoi doctor' timed out, the command depends on an internet connection."
@@ -39,18 +45,21 @@ class PerformChange:
 
     @staticmethod
     def add(path: Path) -> str:
-        long_command = PerformChange.base + ["add"]
-        return subprocess_run(long_command + [path])
+        return subprocess_run(
+            BASE + PerformChange.base + ["add"] + [str(path)]
+        )
 
     @staticmethod
     def re_add(path: Path) -> str:
-        long_command = PerformChange.base + ["re-add"]
-        return subprocess_run(long_command + [path])
+        return subprocess_run(
+            BASE + PerformChange.base + ["re-add"] + [str(path)]
+        )
 
     @staticmethod
     def apply(path: Path) -> str:
-        long_command = PerformChange.base + ["apply"]
-        return subprocess_run(long_command + [path])
+        return subprocess_run(
+            BASE + PerformChange.base + ["apply"] + [str(path)]
+        )
 
 
 @dataclass
