@@ -8,7 +8,11 @@ from pathlib import Path
 from subprocess import TimeoutExpired, run
 
 
-command_log_callback = None  # Used in gui.py to log commands
+def noop(*args, **kwargs):
+    pass
+
+
+command_log_callback = noop  # Used in gui.py to log commands
 
 
 BASE = ["chezmoi", "--no-pager", "--color=off", "--no-tty", "--mode=file"]
@@ -24,7 +28,9 @@ def subprocess_run(long_command: list[str]) -> str:
             text=True,  # returns stdout as str instead of bytes
             timeout=1,
         ).stdout.strip()
-        if command_log_callback:
+        if "diff" in long_command:
+            command_log_callback((long_command, "output displayed in gui"))
+        else:
             command_log_callback((long_command, result))
         return result
     except TimeoutExpired as error:

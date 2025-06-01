@@ -80,13 +80,11 @@ class MainScreen(Screen):
         for cmd in self.splash_command_log:
             command_log.add(cmd)
 
-        if chezmoi_mousse.chezmoi.command_log_callback is None:
+        def log_callback(chezmoi_io: tuple[list, str]) -> None:
+            command_log.add(chezmoi_io)
 
-            def log_callback(chezmoi_io: tuple[list, str]) -> None:
-                command_log.add(chezmoi_io)
-
-            global command_log_callback
-            chezmoi_mousse.chezmoi.command_log_callback = log_callback
+        global command_log_callback
+        chezmoi_mousse.chezmoi.command_log_callback = log_callback
 
 
 chezmoi_mousse_dark = Theme(
