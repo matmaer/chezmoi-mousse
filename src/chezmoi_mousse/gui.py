@@ -102,7 +102,7 @@ chezmoi_mousse_dark = Theme(
 )
 
 
-class ChezmoiTUI(App):
+class ChezmoiGUI(App):
 
     CSS_PATH = "gui.tcss"
 
