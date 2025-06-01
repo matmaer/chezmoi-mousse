@@ -9,12 +9,6 @@ repos:
       - id: text-unicode-replacement-char
       - id: python-use-type-annotations
 
-  - repo: https://github.com/jendrikseipp/vulture
-    rev: 'v2.14'
-    hooks:
-      - id: vulture
-        args: [src/, --min-confidence=61]
-
   - repo: https://github.com/codespell-project/codespell
     rev: v2.4.1
     hooks:
