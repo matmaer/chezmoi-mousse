@@ -125,11 +125,8 @@ class SubProcessCalls:
     def cat(self, file_path: str) -> str:
         return subprocess_run(BASE + ["cat", file_path])
 
-    def status(self, path: str) -> str:
-        return subprocess_run(BASE + ["status", path])
-
-    def source_path(self, path_to_convert: str) -> str:
-        return subprocess_run(BASE + ["source-path", path_to_convert])
+    def source_path(self, path_to_convert: Path) -> str:
+        return subprocess_run(BASE + ["source-path", str(path_to_convert)])
 
     def unmanaged_in_dir(self, dir_path: Path) -> list[Path]:
         path_strings = subprocess_run(
