@@ -247,12 +247,12 @@ class Chezmoi:
     class SubProcessCalls:
         """Group of commands that call subprocess.run()"""
 
-        def git_log(self, source_path: str | None = None) -> list[str]:
+        def git_log(self, source_path: str) -> list[str]:
             long_command = BASE + [
                 "git",
                 "--",
                 "log",
-                "--max-count=400",
+                "--max-count=100",
                 "--no-color",
                 "--no-decorate",
                 "--date-order",
@@ -279,8 +279,8 @@ class Chezmoi:
         def status(self, path: str) -> str:
             return subprocess_run(BASE + ["status", path])
 
-        def source_path(self, path: str) -> str:
-            return subprocess_run(BASE + ["source-path", path])
+        def source_path(self, path_to_convert: str) -> str:
+            return subprocess_run(BASE + ["source-path", path_to_convert])
 
 
 chezmoi = Chezmoi()
