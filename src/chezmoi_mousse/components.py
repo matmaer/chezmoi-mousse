@@ -78,7 +78,9 @@ class GitLog(DataTable):
 
     def watch_path(self) -> None:
         assert isinstance(self.path, Path)
-        self.populate_data_table(chezmoi.run.git_log(self.path))
+        git_log_output = chezmoi.run.git_log(self.path)
+        self.clear()
+        self.populate_data_table(git_log_output)
 
 
 class AutoWarning(Static):

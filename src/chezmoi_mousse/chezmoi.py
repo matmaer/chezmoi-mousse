@@ -27,7 +27,7 @@ SUBS = {
         "git",
         "--",
         "log",
-        "--max-count=400",
+        "--max-count=100",
         "--no-color",
         "--no-decorate",
         "--date-order",

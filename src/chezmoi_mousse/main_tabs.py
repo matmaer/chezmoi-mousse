@@ -240,6 +240,7 @@ class ApplyTab(Horizontal):
             event.node.data.path,
             "apply",
         )
+        self.query_one("#apply_git_log", GitLog).path = event.node.data.path
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
         event.stop()
@@ -278,6 +279,7 @@ class ReAddTab(Horizontal):
             event.node.data.path,
             "re-add",
         )
+        self.query_one("#re_add_git_log", GitLog).path = event.node.data.path
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
         event.stop()
