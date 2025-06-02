@@ -1,5 +1,5 @@
 from typing import Literal
 
-TabLabels = Literal["Apply", "ReAdd", "Add", "Doctor", "Diagram", "Log"]
-TabButtons = Literal["Tree", "List", "Content", "Diff", "Git-Log"]
-ButtonAreas = Literal["TopLeft", "TopRight", "BottomRight", "BottomLeft"]
+TabLabel = Literal["Apply", "ReAdd", "Add", "Doctor", "Diagram", "Log"]
+TabButton = Literal["Tree", "List", "Content", "Diff", "Git-Log"]
+ButtonArea = Literal["TopLeft", "TopRight", "BottomRight", "BottomLeft"]
