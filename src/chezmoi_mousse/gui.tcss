@@ -24,29 +24,29 @@
   border-subtitle-align: center;
   border-subtitle-style: bold;
 
+  .tab-button {
+    /* default min width from textual is 16 */
+    min-width: 4;
+    color: $text;
+    text-style: none;
+
+    &:hover {
+      text-style: bold;
+    }
+
+    &.last-clicked {
+      color: $accent;
+      text-style: none;
+      &:hover {
+        text-style: none;
+      }
+    }
+  }
+
   Vertical {
     align: center middle;
   }
 }
-
-.tab-button {
-  color: $text;
-  text-style: none;
-
-  &:focus {
-    color: $accent;
-  }
-
-  &:hover {
-    text-style: bold;
-  }
-
-  &.last-clicked {
-    color: $accent;
-    text-style: bold;
-  }
-}
-
 
 .filter-container {
   dock: bottom;
@@ -340,34 +340,6 @@ Operate {
       text-style: bold;
 
     }
-  }
-}
-
-.diff-operate-button {
-  height: 3;
-  dock: bottom;
-  border-top: wide $primary;
-  border-bottom: inner $background;
-
-  &:disabled {
-    text-opacity: 0.6;
-  }
-
-  &:focus {
-    border-top: wide $primary-lighten-2;
-    # border-bottom: inner $background;
-  }
-
-  &:hover {
-    border-top: wide $primary-lighten-3;
-    border-bottom: inner $background;
-    # color: $accent-lighten-3;
-  }
-
-  &.-active {
-    text-style: none;
-    border-top: wide $primary-lighten-2;
-    border-bottom: inner $background;
   }
 }
 
