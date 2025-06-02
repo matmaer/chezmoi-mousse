@@ -9,6 +9,5 @@ TreeViewButton = Literal["Tree", "List"]
 PathViewButton = Literal["Content", "Diff"]
 TabButton = Literal[TreeViewButton, PathViewButton, "Git-Log"]
 ButtonArea = Literal["TopLeft", "TopRight", "BottomRight", "BottomLeft"]
-DiffDirection = Literal["ApplyDiff", "ReAddDiff"]
 
-DiffSpec = reactive[tuple[Path, DiffDirection]]
+DiffSpec = reactive[tuple[Path, TabModifyLabel]] | reactive[None]
