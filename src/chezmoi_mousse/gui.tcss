@@ -50,8 +50,10 @@
   border-subtitle-style: bold;
 
   .tab-button {
-    /* default min width from textual is 16 */
-    min-width: 9;
+    /* default min width from textual is 16, setting to shortest button text */
+    min-width: 4;
+    /* setting the longest button text */
+    max-width: 9;
     color: $text;
     text-style: none;
 
