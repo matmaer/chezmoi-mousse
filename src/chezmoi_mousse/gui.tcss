@@ -3,14 +3,11 @@
 /****************/
 
 .filter-container {
-  dock: bottom;
-  align: center middle;
   border-top: inner $background-lighten-2;
   border-bottom: inner $background-lighten-2;
   background: $background-lighten-2;
   background-tint: $background-lighten-2;
-  height: auto;
-  max-height: 5;
+  dock: bottom;
 
   .filter-label {
     padding-right: 2;
@@ -39,15 +36,10 @@
       }
     }
   }
-  /* used to center Switch+Label Horizontal below the (Dir)Tree widgets */
-  .center-content {
-    align: center middle;
-  }
 }
 
 /* for custom tab buttons */
 .tab-buttons-horizontal {
-  align: center middle;
   height: 2;
   border-top: none;
   border-right: none;
@@ -59,17 +51,18 @@
 
   .tab-button {
     /* default min width from textual is 16 */
-    min-width: 4;
+    min-width: 9;
     color: $text;
     text-style: none;
 
     &:hover {
-      text-style: bold;
+    text-style: bold;
     }
 
     &.last-clicked {
       color: $accent;
       text-style: none;
+
       &:hover {
         text-style: none;
       }
@@ -77,7 +70,7 @@
   }
 
   Vertical {
-    width: auto;
+    align: center middle;
     margin-left: 1;
     margin-right: 1;
   }
@@ -89,13 +82,12 @@ ApplyTab, ReAddTab {
   }
   .tab-content-right {
   }
+  .filter-container {
+    height: 3;
+  }
 }
 
 AddTab {
-  /* to have a space between the two filters below the tree*/
-  .padding-bottom-once {
-    padding-bottom: 1;
-  }
   /* to show the root path on the left and view path on the right */
   .border-path-title {
     border-top: solid $primary;
@@ -106,11 +98,16 @@ AddTab {
     border-title-style: bold;
   }
   .tab-content-left {
-    border: silver;
     margin-right: 2;
   }
   .tab-content-right {
-    border: blue;
+  }
+  .filter-container {
+    height: 5;
+    /* to have a space between the two filters below the tree*/
+    .padding-bottom-once {
+      padding-bottom: 1;
+    }
   }
 }
 
@@ -131,7 +128,6 @@ PathView, DiffView {
 }
 
 MainScreen {
-  layers: window;
 }
 
 ModalScreen {

@@ -95,7 +95,6 @@ class TreeTabSwitchers(Horizontal):
                     Label(
                         filter_data.unchanged.label, classes="filter-label"
                     ).with_tooltip(tooltip=filter_data.unchanged.tooltip),
-                    classes="center-content",
                 ),
                 classes="filter-container",
             )
@@ -308,14 +307,13 @@ class AddTab(Horizontal):
                         filter_data.unmanaged_dirs.label,
                         classes="filter-label",
                     ).with_tooltip(tooltip=filter_data.unmanaged_dirs.tooltip),
-                    classes="center-content padding-bottom-once",
+                    classes="padding-bottom-once",
                 ),
                 HorizontalGroup(
                     Switch(id="add_tab_unwanted", classes="filter-switch"),
                     Label(
                         filter_data.unwanted.label, classes="filter-label"
                     ).with_tooltip(tooltip=filter_data.unwanted.tooltip),
-                    classes="center-content",
                 ),
                 classes="filter-container",
             )
