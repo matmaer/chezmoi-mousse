@@ -72,7 +72,7 @@ class TreeTabSwitchers(Horizontal):
 
     def __init__(self, tab: str) -> None:
         self.tab = tab
-        super().__init__(id=f"{tab}_tab_switchers")
+        super().__init__()
 
     def compose(self) -> ComposeResult:
         # Left: Tree/List Switcher
@@ -209,7 +209,7 @@ class TreeTabSwitchers(Horizontal):
                 ).add_class("last-clicked")
 
 
-class ApplyTab(Horizontal):
+class ApplyTab(Vertical):
 
     BINDINGS = [
         Binding(
@@ -287,7 +287,7 @@ class ReAddTab(Horizontal):
         self.notify(f"will add {managed_tree.cursor_node}")
 
 
-class AddTab(Horizontal):
+class AddTab(Vertical):
 
     BINDINGS = [
         Binding(
