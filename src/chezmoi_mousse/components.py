@@ -5,6 +5,7 @@ These classes
 - are not containers, but can be focussable or not
 - don't override the parents' compose method
 - don't call any query methods
+- don't apply tcss classes
 """
 
 import re
@@ -36,9 +37,9 @@ class GitLog(DataTable):
 
     path: reactive[Path | None] = reactive(None, init=False)
 
-    def __init__(self, path: Path | None = None, **kwargs) -> None:
-        super().__init__(**kwargs)
-        self.path = path
+    # def __init__(self, path: Path | None = None, **kwargs) -> None:
+    #     super().__init__(**kwargs)
+    #     self.path = path
 
     def on_mount(self) -> None:
         self.show_cursor = False
@@ -111,12 +112,6 @@ class PathView(RichLog):
 
     path: reactive[Path | None] = reactive(None, init=False)
     tab_id: reactive[str] = reactive("apply_tab", init=False)
-
-    def __init__(self, path: Path | None = None, **kwargs) -> None:
-        super().__init__(
-            auto_scroll=False, wrap=False, highlight=True, **kwargs
-        )
-        self.path = path
 
     def on_mount(self) -> None:
         text = "Click a file or directory, \nto show its contents."

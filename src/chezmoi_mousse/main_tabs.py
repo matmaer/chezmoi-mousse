@@ -119,7 +119,12 @@ class TreeTabSwitchers(Horizontal):
             with ContentSwitcher(
                 initial=f"{self.tab}_content", id=f"{self.tab}_view_switcher"
             ):
-                yield PathView(id=f"{self.tab}_content")
+                yield PathView(
+                    id=f"{self.tab}_content",
+                    auto_scroll=False,
+                    wrap=False,
+                    highlight=True,
+                )
                 yield DiffView(id=f"{self.tab}_diff")
                 yield GitLog(id=f"{self.tab}_git_log")
 
@@ -287,7 +292,7 @@ class ReAddTab(Horizontal):
         self.notify(f"will add {managed_tree.cursor_node}")
 
 
-class AddTab(Vertical):
+class AddTab(Horizontal):
 
     BINDINGS = [
         Binding(
@@ -327,7 +332,12 @@ class AddTab(Vertical):
             )
 
         yield Vertical(
-            PathView(id="add_path_view"),
+            PathView(
+                id="add_path_view",
+                auto_scroll=False,
+                wrap=False,
+                highlight=True,
+            ),
             id="add_tab_right",
             classes="border-path-title",
         )
