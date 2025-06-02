@@ -1,9 +1,10 @@
-"""Contains classes used components by the widgets in main_tabs.py.
+"""Contains classes used by the widgets in main_tabs.py.
 
 These classes
-- inherit directly from built in textual widgets
+- inherit directly from built in textual widgets or can be dataclasses
 - are not containers, but can be focussable or not
 - don't override the parents' compose method
+- don't override the parents' init method
 - don't call any query methods
 - don't apply tcss classes
 """

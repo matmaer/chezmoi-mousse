@@ -1,5 +1,9 @@
 """Contains anything related to running chezmoi commands and processing the
-output of those commands."""
+output of those commands.
+
+The module will not import any textual classes, but does contain a
+command_log_callback function set by gui.py.
+"""
 
 import ast
 from dataclasses import dataclass, field
