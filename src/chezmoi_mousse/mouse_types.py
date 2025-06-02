@@ -1,5 +1,14 @@
+from pathlib import Path
+from textual.reactive import reactive
 from typing import Literal
 
-TabLabel = Literal["Apply", "ReAdd", "Add", "Doctor", "Diagram", "Log"]
-TabButton = Literal["Tree", "List", "Content", "Diff", "Git-Log"]
+TabModifyLabel = Literal["Apply", "ReAdd"]
+TabOperateLabel = Literal[TabModifyLabel, "Add"]
+TabLabel = Literal[TabOperateLabel, "Doctor", "Diagram", "Log"]
+TreeViewButton = Literal["Tree", "List"]
+PathViewButton = Literal["Content", "Diff"]
+TabButton = Literal[TreeViewButton, PathViewButton, "Git-Log"]
 ButtonArea = Literal["TopLeft", "TopRight", "BottomRight", "BottomLeft"]
+DiffDirection = Literal["ApplyDiff", "ReAddDiff"]
+
+DiffSpec = reactive[tuple[Path, DiffDirection]]
