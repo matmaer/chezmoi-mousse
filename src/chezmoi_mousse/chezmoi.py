@@ -272,6 +272,7 @@ class Chezmoi:
             p
             for p in self.managed_file_paths
             if p not in self.status_paths["apply_files"]
+            or p not in self.status_paths["re_add_files"]
         ]
 
     def managed_file_paths_in_dir(self, dir_path: Path) -> list[Path]:
