@@ -1,8 +1,8 @@
 """Contains the widgets used to compose the tabs on the main screen of chezmoi-
 mousse, except for the Log tab.
 
-Additionally, it contains widgets which are these tabs depend on, if they are
-containers.
+Additionally, it contains widgets which these tabs depend on if they don't meet
+the specs laid out in the components.py docstring.
 """
 
 from typing import Literal
