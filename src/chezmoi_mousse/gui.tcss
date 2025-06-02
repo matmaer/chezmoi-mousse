@@ -11,10 +11,42 @@
   width: 2fr;
 }
 
-/* used to center Switch+Label Horizontal below the (Dir)Tree widgets */
-.center-content {
-  align: center middle;
+
+
+/* for "Tree" vs "List" switcher */
+.tab-buttons-horizontal {
+  height: 2;
+  border-top: none;
+  border-right: none;
+  border-bottom: solid $primary;
+  border-left: none;
+  border-subtitle-color: $primary;
+  border-subtitle-align: center;
+  border-subtitle-style: bold;
+
+  Vertical {
+    align: center middle;
+  }
 }
+
+.tab-button {
+  color: $text;
+  text-style: none;
+
+  &:focus {
+    color: $accent;
+  }
+
+  &:hover {
+    text-style: bold;
+  }
+
+  &.last-clicked {
+    color: $accent;
+    text-style: bold;
+  }
+}
+
 
 .filter-container {
   dock: bottom;
@@ -52,6 +84,10 @@
         color: $success-lighten-2;
       }
     }
+  }
+  /* used to center Switch+Label Horizontal below the (Dir)Tree widgets */
+  .center-content {
+    align: center middle;
   }
 }
 
@@ -101,40 +137,6 @@ ModalScreen {
 #flow_diagram {
   padding: 0 1 0 1;
   min-width: 80;
-}
-
-/* for "Tree" vs "List" switcher */
-.tab-buttons-horizontal {
-  height: 2;
-  border-top: none;
-  border-right: none;
-  border-bottom: solid $primary;
-  border-left: none;
-  border-subtitle-color: $primary;
-  border-subtitle-align: center;
-  border-subtitle-style: bold;
-
-  Vertical {
-    align: center middle;
-  }
-}
-
-.tab-button {
-  color: $text;
-  text-style: none;
-
-  &:focus {
-    color: $accent;
-  }
-
-  &:hover {
-    text-style: bold;
-  }
-
-  &.last-clicked {
-    color: $accent;
-    text-style: bold;
-  }
 }
 
 /******************************************************************/

@@ -55,7 +55,7 @@ def left_min_width() -> int:
 class TabButton(Vertical):
 
     def __init__(self, label: str, button_id: str) -> None:
-        super().__init__(classes="center-content")
+        super().__init__()
         self.button_id = button_id
         self.label = label
 
@@ -103,6 +103,7 @@ class TreeTabSwitchers(Horizontal):
                     Label(
                         filter_data.unchanged.label, classes="filter-label"
                     ).with_tooltip(tooltip=filter_data.unchanged.tooltip),
+                    classes="center-content",
                 ),
                 classes="filter-container",
             )
