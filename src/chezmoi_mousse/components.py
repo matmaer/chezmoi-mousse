@@ -26,6 +26,8 @@ from textual.widgets.tree import TreeNode
 from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.config import unwanted
 
+# from chezmoi_mousse.mouse_types import
+
 
 class GitLog(DataTable):
     """DataTable widget to display the output of the `git log` command, either
@@ -301,6 +303,8 @@ class ManagedTree(Tree[NodeData]):
     """Shows the tree widget on the left for Apply and Re-Add tabs."""
 
     unchanged: reactive[bool] = reactive(False, init=False)
+    direction: reactive[Literal["apply", "re_add"]] = reactive("apply")
+    flat_list: reactive[bool] = reactive(False, init=False)
 
     # TODO: default color should be updated on theme change
     node_colors = {
@@ -310,10 +314,10 @@ class ManagedTree(Tree[NodeData]):
         "M": "#FFC473",  # text-warning
     }
 
-    def __init__(self, direction, flat_list=False, **kwargs) -> None:
-        self.direction: Literal["apply", "re_add"] = direction
-        self.flat_list: bool = flat_list
-        super().__init__(label="root", **kwargs)
+    # def __init__(self, **kwargs) -> None:
+    # self.direction: Literal["apply", "re_add"] = direction
+    # self.flat_list: bool = flat_list
+    # super().__init__(label="root", **kwargs)
 
     @property
     def status_dirs(self):

@@ -5,6 +5,7 @@ Additionally, it contains widgets which are these tabs depend on, if they are
 containers.
 """
 
+from typing import Literal
 from rich.text import Text
 from textual.app import ComposeResult
 from textual.binding import Binding
@@ -62,8 +63,8 @@ class TabButton(Vertical):
 
 class TreeTabSwitchers(Horizontal):
 
-    def __init__(self, tab: str) -> None:
-        self.tab = tab
+    def __init__(self, tab: Literal["apply", "re_add"]) -> None:
+        self.tab: Literal["apply", "re_add"] = tab
         super().__init__()
 
     def compose(self) -> ComposeResult:
@@ -78,14 +79,10 @@ class TreeTabSwitchers(Horizontal):
                 initial=f"{self.tab}_tree", id=f"{self.tab}_tree_switcher"
             ):
                 yield ManagedTree(
-                    id=f"{self.tab}_tree",
-                    direction=f"{self.tab}",
-                    flat_list=False,
+                    id=f"{self.tab}_tree", label="hidden_tree_root"
                 )
                 yield ManagedTree(
-                    id=f"{self.tab}_list",
-                    direction=f"{self.tab}",
-                    flat_list=True,
+                    id=f"{self.tab}_list", label="hidden_list_root"
                 )
             yield Vertical(
                 HorizontalGroup(
@@ -134,6 +131,8 @@ class TreeTabSwitchers(Horizontal):
         self.query_one(
             f"#{self.tab}_view_buttons", Horizontal
         ).border_subtitle = " path view "
+
+        self.query_one(f"#{self.tab}_tree", ManagedTree).direction = self.tab
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
