@@ -1,13 +1,54 @@
 from pathlib import Path
-from typing import Literal
+from typing import Literal, TypedDict
 
-ModifyTabLabel = Literal["Apply", "ReAdd"]
-OperateTabLabel = Literal[ModifyTabLabel, "Add"]
-AnyTabLabel = Literal[OperateTabLabel, "Doctor", "Diagram", "Log"]
-TreeViewButton = Literal["Tree", "List"]
-PathViewButton = Literal["Content", "Diff"]
-AnyTabButton = Literal[TreeViewButton, PathViewButton, "Git-Log"]
-ButtonArea = Literal["TopLeft", "TopRight", "BottomRight", "BottomLeft"]
+# Buttons available within a tab, so far used in Apply, Re-Add, Add tabs
+type TreeButtonLabel = Literal["Tree"]
+type ListButtonLabel = Literal["List"]
+type ContentButtonLabel = Literal["Content"]
+type DiffButtonLabel = Literal["Diff"]
+type GitLogButtonLabel = Literal["Git-Log"]
 
-DiffSpec = tuple[Path, ModifyTabLabel] | None
-TreeSpec = tuple[ModifyTabLabel, TreeViewButton] | None
+# Current tab names depending on type checking aliases.
+type ApplyTabLabel = Literal["Apply"]
+type ReAddTabLabel = Literal["Re-Add"]
+type AddTabLabel = Literal["Add"]
+
+# Current button areas containing xxxButtonLabel aliases
+TopLeftArea = Literal["TopLeft"]
+TopRightArea = Literal["TopRight"]
+BottomRightArea = Literal["BottomRight"]
+
+###############################################
+# Aliases composed from literal type aliases. #
+###############################################
+
+type ApplyReAddLabel = Literal[ApplyTabLabel, ReAddTabLabel]
+type ApplyReAddAddLabel = Literal[ApplyTabLabel, ReAddTabLabel, AddTabLabel]
+
+type ButtonArea = Literal[TopLeftArea, TopRightArea, BottomRightArea]
+
+type TreeViewButton = Literal[TreeButtonLabel, ListButtonLabel]
+type PathViewButton = Literal[
+    ContentButtonLabel, DiffButtonLabel, GitLogButtonLabel
+]
+
+########################################
+# Type aliases used for reactive vars. #
+########################################
+
+type ButtonLabelDictKey = Literal["button_label"]
+
+
+type TreeSpec = dict[Literal["tab_label"], ApplyReAddLabel] | None
+type PathViewSpec = dict[Literal["path"], Path] | None
+
+
+class DiffSpecDict(TypedDict, total=True):
+    """Dictionary to pass for diff_spec, with required path and tab_label
+    keys."""
+
+    path: Path
+    tab_label: ApplyReAddLabel
+
+
+type DiffSpec = DiffSpecDict | None
