@@ -358,12 +358,11 @@ class ManagedTree(Tree[NodeData]):
             )
         self.show_root = False
 
-        if self.tree_spec is not None:
-            if self.tree_spec["tree_kind"] == "Tree":
-                self.add_nodes(self.root)
-                self.add_leaves(self.root)
-            elif self.tree_spec["tree_kind"] == "List":
-                self.add_flat_leaves()
+        if self.tree_spec["tree_kind"] == "Tree":
+            self.add_nodes(self.root)
+            self.add_leaves(self.root)
+        elif self.tree_spec["tree_kind"] == "List":
+            self.add_flat_leaves()
 
     def show_dir_node(self, node_data: NodeData) -> bool:
         """Check if a directory node should be displayed according to the
@@ -537,8 +536,6 @@ class ManagedTree(Tree[NodeData]):
             self.add_flat_leaves()
 
     def watch_tree_spec(self) -> None:
-        if self.tree_spec is None:
-            return
         if self.tree_spec["tree_kind"] == "Tree":
             self.add_nodes(self.root)
             self.add_leaves(self.root)

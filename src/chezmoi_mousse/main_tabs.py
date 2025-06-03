@@ -48,8 +48,8 @@ from chezmoi_mousse.mouse_types import (
     ButtonLabel,
     # DiffSpec,
     # PathViewSpec,
-    # TabLabel,
-    TreeSpec,
+    TabLabel,
+    # TreeSpec,
 )
 
 
@@ -71,19 +71,17 @@ class TabButton(Vertical):
 
 class ApplyOrReAddTabHorizontal(Horizontal):
 
-    def __init__(self, tree_spec: TreeSpec) -> None:
+    def __init__(self, tab_label: TabLabel) -> None:
         """Initialize the Apply or Re-Add tab with the given tree_spec."""
-        self.tree_spec: TreeSpec = tree_spec
 
         # used for rendering two ManagedTree instances for the ContentSwitcher
-        self.tab: str = tree_spec["tab_label"]
-        self.tree_kind: str = tree_spec["tree_kind"]
+        self.tab: TabLabel = tab_label
         # used to set the dynamic bottom border titles
         self.area_top_left_id: str = f"{self.tab}_TopLeft_area"
         self.area_top_right_id: str = f"{self.tab}_TopRight_area"
         # used by on_button_pressed event handling
-        self.tree_button_id: str = f"{self.tab}_{self.tree_kind}_button"
-        self.list_button_id: str = f"{self.tab}_{self.tree_kind}_button"
+        self.tree_button_id: str = f"{self.tab}_Tree_button"
+        self.list_button_id: str = f"{self.tab}_List_button"
         self.content_button_id: str = f"{self.tab}_Content_button"
         self.diff_button_id: str = f"{self.tab}_Diff_button"
         self.git_log_button_id: str = f"{self.tab}_Git-Log_button"
@@ -165,35 +163,38 @@ class ApplyOrReAddTabHorizontal(Horizontal):
     def on_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
         # Tree/List Switch
-        if (
-            event.button.id == self.tree_button_id
-            or event.button.id == self.list_button_id
-        ):
+        if event.button.id in [self.tree_button_id, self.list_button_id]:
             # Remove from both tree and list buttons
             for btn_id in [self.tree_button_id, self.list_button_id]:
                 self.query_one(f"#{btn_id}", Button).remove_class(
                     "last-clicked"
                 )
-            # get the ContentSwitcher for the tree/list switch
-            tree_list_switcher = self.query_one(
-                f"#{self.tab}_managed_tree_switcher", ContentSwitcher
-            )
             if event.button.id == self.tree_button_id:
-                tree_list_switcher.current = f"{self.tab}_managed_tree"
+                self.query_one(
+                    f"#{self.tab}_managed_tree_switcher", ContentSwitcher
+                ).current = f"{self.tab}_managed_tree"
                 self.query_one(f"#{self.tree_button_id}", Button).add_class(
                     "last-clicked"
                 )
-            else:
-                tree_list_switcher.current = f"{self.tab}_managed_list"
+                self.query_one(
+                    f"#{self.tab}_managed_tree", ManagedTree
+                ).tree_spec = {"tab_label": self.tab, "tree_kind": "Tree"}
+            elif event.button.id == self.list_button_id:
+                self.query_one(
+                    f"#{self.tab}_managed_tree_switcher", ContentSwitcher
+                ).current = f"{self.tab}_managed_list"
                 self.query_one(f"#{self.list_button_id}", Button).add_class(
                     "last-clicked"
                 )
+                self.query_one(
+                    f"#{self.tab}_managed_list", ManagedTree
+                ).tree_spec = {"tab_label": self.tab, "tree_kind": "List"}
         # Content/Diff/GitLog Switch
-        if (
-            event.button.id == self.content_button_id
-            or event.button.id == self.diff_button_id
-            or event.button.id == self.git_log_button_id
-        ):
+        if event.button.id in [
+            self.content_button_id,
+            self.diff_button_id,
+            self.git_log_button_id,
+        ]:
             # Remove from all right-side buttons
             for btn_id in [
                 self.content_button_id,
@@ -266,9 +267,7 @@ class ApplyTab(Vertical):
     ]
 
     def compose(self) -> ComposeResult:
-        yield ApplyOrReAddTabHorizontal(
-            {"tab_label": "Apply", "tree_kind": "Tree"}
-        )
+        yield ApplyOrReAddTabHorizontal(tab_label="Apply")
 
     # def action_apply_path(self) -> None:
     #     managed_tree = self.query_one("#apply_tree", ManagedTree)
@@ -287,9 +286,7 @@ class ReAddTab(Horizontal):
     ]
 
     def compose(self) -> ComposeResult:
-        yield ApplyOrReAddTabHorizontal(
-            {"tab_label": "Re-Add", "tree_kind": "Tree"}
-        )
+        yield ApplyOrReAddTabHorizontal(tab_label="Re-Add")
 
 
 #     def action_re_add_path(self) -> None:
