@@ -47,8 +47,8 @@ class DiffSpecDict(TypedDict, total=True):
     """Dictionary to pass for diff_spec, with required path and tab_label
     keys."""
 
-    path: Path
-    tab_label: ApplyReAddLabel
+    path: Path  # key "path" as a string is required
+    tab_label: ApplyReAddLabel  # key "tab_label" as a string is required
 
 
 type DiffSpec = DiffSpecDict | None
