@@ -39,6 +39,7 @@ from chezmoi_mousse.components import (
     FilteredDirTree,
     GitLog,
     ManagedTree,
+    NodeData,
     PathView,
 )
 
@@ -217,7 +218,9 @@ class ApplyTab(Vertical):
 
     def on_tree_node_selected(self, event: ManagedTree.NodeSelected) -> None:
         event.stop()
-        assert event.node.data is not None
+        if not isinstance(event.node.data, NodeData):
+            raise TypeError(f"Expected NodeData, got {type(event.node.data)}")
+
         self.query_one("#apply_view_buttons", Horizontal).border_subtitle = (
             f" {event.node.data.path.relative_to(chezmoi.dest_dir)} "
         )
@@ -226,7 +229,7 @@ class ApplyTab(Vertical):
         path_view.tab_id = "apply_tab"
         self.query_one("#apply_diff", DiffView).diff_spec = (
             event.node.data.path,
-            "apply",
+            "Apply",
         )
         self.query_one("#apply_git_log", GitLog).path = event.node.data.path
 
@@ -256,7 +259,8 @@ class ReAddTab(Horizontal):
 
     def on_tree_node_selected(self, event: ManagedTree.NodeSelected) -> None:
         event.stop()
-        assert event.node.data is not None
+        if not isinstance(event.node.data, NodeData):
+            raise TypeError(f"Expected NodeData, got {type(event.node.data)}")
         self.query_one("#re_add_view_buttons", Horizontal).border_subtitle = (
             f" {event.node.data.path.relative_to(chezmoi.dest_dir)} "
         )
@@ -265,7 +269,7 @@ class ReAddTab(Horizontal):
         path_view.tab_id = "re_add_tab"
         self.query_one("#re_add_diff", DiffView).diff_spec = (
             event.node.data.path,
-            "re-add",
+            "ReAdd",
         )
         self.query_one("#re_add_git_log", GitLog).path = event.node.data.path
 

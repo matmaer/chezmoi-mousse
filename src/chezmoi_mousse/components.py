@@ -26,7 +26,8 @@ from textual.widgets.tree import TreeNode
 from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.config import unwanted
 
-# from chezmoi_mousse.mouse_types import
+
+from chezmoi_mousse.mouse_types import DiffSpec
 
 
 class GitLog(DataTable):
@@ -214,7 +215,7 @@ class DiffView(Static):
 
     BINDINGS = [Binding(key="M,m", action="maximize", description="maximize")]
 
-    diff_spec: reactive[tuple[Path, str] | None] = reactive(None, init=False)
+    diff_spec: reactive[DiffSpec] = reactive(None, init=False)
 
     # override property from ScrollableContainer to allow maximizing
     @property
@@ -228,10 +229,10 @@ class DiffView(Static):
     def watch_diff_spec(self) -> None:
         if self.diff_spec is None:
             self.update("Click a file to see its diff")
-        assert self.diff_spec is not None and isinstance(self.diff_spec, tuple)
+            return
 
         diff_output: list[str]
-        if self.diff_spec[1] == "apply":
+        if self.diff_spec[1] == "Apply":
             if self.diff_spec[0] not in chezmoi.status_paths["apply_files"]:
                 self.update(
                     Content("\n").join(
@@ -244,7 +245,7 @@ class DiffView(Static):
                 return
             else:
                 diff_output = chezmoi.run.apply_diff(self.diff_spec[0])
-        elif self.diff_spec[1] == "re-add":
+        elif self.diff_spec[1] == "ReAdd":
             if self.diff_spec[0] not in chezmoi.status_paths["re_add_files"]:
                 self.update(
                     Content("\n").join(
