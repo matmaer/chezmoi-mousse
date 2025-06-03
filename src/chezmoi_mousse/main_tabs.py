@@ -44,13 +44,11 @@ from chezmoi_mousse.components import (
 
 from chezmoi_mousse.config import filter_data, pw_mgr_info
 from chezmoi_mousse.mouse_types import (
-    TreeSpecDict,
+    TabLabel,
     ButtonArea,
-    ListButtonLabel,
-    TreeButtonLabel,
-    ContentButtonLabel,
-    DiffButtonLabel,
-    GitLogButtonLabel,
+    TreeSpec,
+    PathViewSpec,
+    DiffSpec,
 )
 
 
