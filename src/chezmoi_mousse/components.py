@@ -344,9 +344,9 @@ class ManagedTree(Tree[NodeData]):
 
     @property
     def status_files(self) -> dict[Path, str]:
-        if self.tree_spec["tab_label"] == "Apply":
-            return chezmoi.status_paths["apply_files"]
-        return chezmoi.status_paths["re_add_files"]
+        if self.tree_spec["tab_label"] == "Re-Add":
+            return chezmoi.status_paths["re_add_files"]
+        return chezmoi.status_paths["apply_files"]
 
     def on_mount(self) -> None:
 
