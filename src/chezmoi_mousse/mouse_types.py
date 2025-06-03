@@ -1,12 +1,12 @@
 from pathlib import Path
 from typing import Literal
 
-TabModifyLabel = Literal["Apply", "ReAdd"]
-TabOperateLabel = Literal[TabModifyLabel, "Add"]
-TabLabel = Literal[TabOperateLabel, "Doctor", "Diagram", "Log"]
+ModifyTabLabel = Literal["Apply", "ReAdd"]
+OperateTabLabel = Literal[ModifyTabLabel, "Add"]
+AnyTabLabel = Literal[OperateTabLabel, "Doctor", "Diagram", "Log"]
 TreeViewButton = Literal["Tree", "List"]
 PathViewButton = Literal["Content", "Diff"]
 TabButton = Literal[TreeViewButton, PathViewButton, "Git-Log"]
 ButtonArea = Literal["TopLeft", "TopRight", "BottomRight", "BottomLeft"]
 
-DiffSpec = tuple[Path, TabModifyLabel] | None
+DiffSpec = tuple[Path, ModifyTabLabel] | None
