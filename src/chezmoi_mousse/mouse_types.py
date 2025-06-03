@@ -1,40 +1,13 @@
 from pathlib import Path
 from typing import Literal, TypedDict
 
-# Buttons available within a tab, so far used in Apply, Re-Add, Add tabs
-type TreeButtonLabel = Literal["Tree"]
-type ListButtonLabel = Literal["List"]
-type ContentButtonLabel = Literal["Content"]
-type DiffButtonLabel = Literal["Diff"]
-type GitLogButtonLabel = Literal["Git-Log"]
 
-# Current tab names depending on type checking aliases.
-type ApplyTabLabel = Literal["Apply"]
-type ReAddTabLabel = Literal["Re-Add"]
-type AddTabLabel = Literal["Add"]
+type TabLabel = Literal["Apply", "Re-Add", "Add"]
 
-# Current button areas containing xxxButtonLabel aliases
-type TopLeftArea = Literal["TopLeft"]
-type TopRightArea = Literal["TopRight"]
-type BottomRightArea = Literal["BottomRight"]
+type ButtonArea = Literal["TopLeft", "TopRight", "BottomRight"]
 
-###############################################
-# Aliases composed from literal type aliases. #
-###############################################
-
-type ApplyReAddLabel = Literal[ApplyTabLabel, ReAddTabLabel]
-type ApplyReAddAddLabel = Literal[ApplyTabLabel, ReAddTabLabel, AddTabLabel]
-
-type ButtonArea = Literal[TopLeftArea, TopRightArea, BottomRightArea]
-
-type TreeViewButton = Literal[TreeButtonLabel, ListButtonLabel]
-type PathViewButton = Literal[
-    ContentButtonLabel, DiffButtonLabel, GitLogButtonLabel
-]
-
-########################################
-# Type aliases used for reactive vars. #
-########################################
+type TopLeftButton = Literal["Tree", "List"]
+type TopRightButton = Literal["Content", "Diff", "Git-Log"]
 
 
 class TreeSpecDict(TypedDict, total=True):
@@ -45,12 +18,12 @@ class TreeSpecDict(TypedDict, total=True):
     """
 
     # key has to be "tab_label", value is an ApplyReAddLabel Literal type alias
-    tab_label: ApplyReAddLabel
+    tab_label: TabLabel
     # key has to be "tree_kind", value will be either "Tree" or "List"
-    tree_kind: TreeViewButton
+    tree_kind: TopLeftButton
 
 
-type TreeSpec = dict[Literal["tab_label"], ApplyReAddLabel] | None
+type TreeSpec = TreeSpecDict
 
 
 class PathViewSpecDict(TypedDict, total=True):
@@ -62,7 +35,7 @@ class PathViewSpecDict(TypedDict, total=True):
     # key has to be "path", value is a Path object
     path: Path
     # key has to be "tab_label", value is an ApplyReAddLabel Literal type alias
-    tab_label: ApplyReAddLabel
+    tab_label: TabLabel
 
 
 type PathViewSpec = dict[Literal["path"], Path] | None
@@ -78,7 +51,7 @@ class DiffSpecDict(TypedDict, total=True):
     # key has to be "path", value is a Path object
     path: Path
     # key has to be "tab_label", value is an ApplyReAddLabel Literal type alias
-    tab_label: ApplyReAddLabel
+    tab_label: TabLabel
 
 
 type DiffSpec = DiffSpecDict | None
