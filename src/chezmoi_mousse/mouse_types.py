@@ -37,7 +37,7 @@ class PathViewSpecDict(TypedDict, total=True):
     tab_label: TabLabel
 
 
-type PathViewSpec = dict[Literal["path"], Path] | None
+type PathViewSpec = PathViewSpecDict | None
 
 
 class DiffSpecDict(TypedDict, total=True):
