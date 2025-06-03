@@ -96,16 +96,9 @@ class ApplyOrReAddTabHorizontal(Horizontal):
             ):
                 yield TabButton(label="Tree", button_id=self.tree_button_id)
                 yield TabButton(label="List", button_id=self.list_button_id)
-            with ContentSwitcher(
-                initial=f"{self.tab}_managed_tree",
-                id=f"{self.tab}_managed_tree_switcher",
-            ):
-                yield ManagedTree(
-                    id=f"{self.tab}_managed_tree", label="hidden_tree_root"
-                )
-                yield ManagedTree(
-                    id=f"{self.tab}_managed_list", label="hidden_list_root"
-                )
+            yield ManagedTree(
+                id=f"{self.tab}_managed_tree", label="hidden_tree_root"
+            )
             yield Vertical(
                 HorizontalGroup(
                     Switch(
@@ -170,9 +163,6 @@ class ApplyOrReAddTabHorizontal(Horizontal):
                     "last-clicked"
                 )
             if event.button.id == self.tree_button_id:
-                self.query_one(
-                    f"#{self.tab}_managed_tree_switcher", ContentSwitcher
-                ).current = f"{self.tab}_managed_tree"
                 self.query_one(f"#{self.tree_button_id}", Button).add_class(
                     "last-clicked"
                 )
@@ -180,14 +170,11 @@ class ApplyOrReAddTabHorizontal(Horizontal):
                     f"#{self.tab}_managed_tree", ManagedTree
                 ).tree_spec = {"tab_label": self.tab, "tree_kind": "Tree"}
             elif event.button.id == self.list_button_id:
-                self.query_one(
-                    f"#{self.tab}_managed_tree_switcher", ContentSwitcher
-                ).current = f"{self.tab}_managed_list"
                 self.query_one(f"#{self.list_button_id}", Button).add_class(
                     "last-clicked"
                 )
                 self.query_one(
-                    f"#{self.tab}_managed_list", ManagedTree
+                    f"#{self.tab}_managed_tree", ManagedTree
                 ).tree_spec = {"tab_label": self.tab, "tree_kind": "List"}
         # Content/Diff/GitLog Switch
         if event.button.id in [
