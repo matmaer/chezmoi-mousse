@@ -22,7 +22,7 @@ class TreeSpecDict(TypedDict, total=True):
     tree_kind: ButtonLabel
 
 
-type TreeSpec = TreeSpecDict
+type TreeSpec = TreeSpecDict | None
 
 
 class PathViewSpecDict(TypedDict, total=True):
