@@ -324,7 +324,9 @@ class ManagedTree(Tree[NodeData]):
     """Shows the tree widget on the left for Apply and Re-Add tabs."""
 
     unchanged: reactive[bool] = reactive(False, init=False)
-    tree_spec: reactive[TreeSpec] = reactive(None, init=False)
+    tree_spec: reactive[TreeSpec] = reactive(
+        default={"tab_label": "Apply", "tree_kind": "Tree"}, init=False
+    )
 
     # TODO: default color should be updated on theme change
     node_colors = {
@@ -336,23 +338,15 @@ class ManagedTree(Tree[NodeData]):
 
     @property
     def status_dirs(self) -> dict[Path, str]:
-        if self.tree_spec is None:
-            return chezmoi.status_paths["apply_dirs"]
         if self.tree_spec["tab_label"] == "Apply":
             return chezmoi.status_paths["apply_dirs"]
-        if self.tree_spec["tab_label"] == "ReAdd":
-            return chezmoi.status_paths["re_add_dirs"]
-        return chezmoi.status_paths["apply_dirs"]
+        return chezmoi.status_paths["re_add_dirs"]
 
     @property
     def status_files(self) -> dict[Path, str]:
-        if self.tree_spec is None:
-            return chezmoi.status_paths["apply_files"]
         if self.tree_spec["tab_label"] == "Apply":
             return chezmoi.status_paths["apply_files"]
-        if self.tree_spec["tab_label"] == "ReAdd":
-            return chezmoi.status_paths["re_add_files"]
-        return chezmoi.status_paths["apply_files"]
+        return chezmoi.status_paths["re_add_files"]
 
     def on_mount(self) -> None:
 

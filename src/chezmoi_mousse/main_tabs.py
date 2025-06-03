@@ -73,17 +73,17 @@ class ApplyOrReAddTabHorizontal(Horizontal):
 
     def __init__(self, tree_spec: TreeSpec) -> None:
         """Initialize the Apply or Re-Add tab with the given tree_spec."""
-        assert isinstance(tree_spec, dict)
         self.tree_spec: TreeSpec = tree_spec
 
+        # used for rendering two ManagedTree instances for the ContentSwitcher
         self.tab: str = tree_spec["tab_label"]
         self.tree_kind: str = tree_spec["tree_kind"]
-
+        # used to set the dynamic bottom border titles
         self.area_top_left_id: str = f"{self.tab}_TopLeft_area"
         self.area_top_right_id: str = f"{self.tab}_TopRight_area"
-
-        self.tree_button_id: str = f"{self.tab}_Tree_button"
-        self.list_button_id: str = f"{self.tab}_List_button"
+        # used by on_button_pressed event handling
+        self.tree_button_id: str = f"{self.tab}_{self.tree_kind}_button"
+        self.list_button_id: str = f"{self.tab}_{self.tree_kind}_button"
         self.content_button_id: str = f"{self.tab}_Content_button"
         self.diff_button_id: str = f"{self.tab}_Diff_button"
         self.git_log_button_id: str = f"{self.tab}_Git-Log_button"
@@ -99,13 +99,14 @@ class ApplyOrReAddTabHorizontal(Horizontal):
                 yield TabButton(label="Tree", button_id=self.tree_button_id)
                 yield TabButton(label="List", button_id=self.list_button_id)
             with ContentSwitcher(
-                initial=f"{self.tab}_tree", id=f"{self.tab}_tree_switcher"
+                initial=f"{self.tab}_managed_tree",
+                id=f"{self.tab}_managed_tree_switcher",
             ):
                 yield ManagedTree(
-                    id=f"{self.tab}_tree", label="hidden_tree_root"
+                    id=f"{self.tab}_managed_tree", label="hidden_tree_root"
                 )
                 yield ManagedTree(
-                    id=f"{self.tab}_list", label="hidden_list_root"
+                    id=f"{self.tab}_managed_list", label="hidden_list_root"
                 )
             yield Vertical(
                 HorizontalGroup(
@@ -173,22 +174,22 @@ class ApplyOrReAddTabHorizontal(Horizontal):
                 self.query_one(f"#{btn_id}", Button).remove_class(
                     "last-clicked"
                 )
+            # get the ContentSwitcher for the tree/list switch
+            tree_list_switcher = self.query_one(
+                f"#{self.tab}_managed_tree_switcher", ContentSwitcher
+            )
             if event.button.id == self.tree_button_id:
-                # self.query_one(
-                #     f"#{self.tab}_tree_switcher", ContentSwitcher
-                # ).current = f"{self.tab}_tree"
+                tree_list_switcher.current = f"{self.tab}_managed_tree"
                 self.query_one(f"#{self.tree_button_id}", Button).add_class(
                     "last-clicked"
                 )
             else:
-                # self.query_one(
-                #     f"#{self.tab}_tree_switcher", ContentSwitcher
-                # ).current = f"{self.tab}_list"
+                tree_list_switcher.current = f"{self.tab}_managed_list"
                 self.query_one(f"#{self.list_button_id}", Button).add_class(
                     "last-clicked"
                 )
         # Content/Diff/GitLog Switch
-        elif (
+        if (
             event.button.id == self.content_button_id
             or event.button.id == self.diff_button_id
             or event.button.id == self.git_log_button_id
