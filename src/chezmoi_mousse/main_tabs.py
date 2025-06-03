@@ -5,7 +5,6 @@ Additionally, it contains widgets which these tabs depend on if they don't meet
 the specs laid out in the components.py docstring.
 """
 
-from typing import Literal
 from rich.text import Text
 from textual.app import ComposeResult
 from textual.binding import Binding
@@ -44,6 +43,7 @@ from chezmoi_mousse.components import (
 )
 
 from chezmoi_mousse.config import filter_data, pw_mgr_info
+from chezmoi_mousse.mouse_types import ModifyTabLabel
 
 
 class TabButton(Vertical):
@@ -64,8 +64,8 @@ class TabButton(Vertical):
 
 class TreeTabSwitchers(Horizontal):
 
-    def __init__(self, tab: Literal["apply", "re_add"]) -> None:
-        self.tab: Literal["apply", "re_add"] = tab
+    def __init__(self, tab: ModifyTabLabel) -> None:
+        self.tab: ModifyTabLabel = tab
         super().__init__()
 
     def compose(self) -> ComposeResult:
@@ -133,7 +133,10 @@ class TreeTabSwitchers(Horizontal):
             f"#{self.tab}_view_buttons", Horizontal
         ).border_subtitle = " path view "
 
-        self.query_one(f"#{self.tab}_tree", ManagedTree).direction = self.tab
+        self.query_one(f"#{self.tab}_tree", ManagedTree).tree_spec = (
+            "Apply",
+            "Tree",
+        )
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
@@ -214,7 +217,7 @@ class ApplyTab(Vertical):
     ]
 
     def compose(self) -> ComposeResult:
-        yield TreeTabSwitchers("apply")
+        yield TreeTabSwitchers("Apply")
 
     def on_tree_node_selected(self, event: ManagedTree.NodeSelected) -> None:
         event.stop()
@@ -255,7 +258,7 @@ class ReAddTab(Horizontal):
     ]
 
     def compose(self) -> ComposeResult:
-        yield TreeTabSwitchers("re_add")
+        yield TreeTabSwitchers("ReAdd")
 
     def on_tree_node_selected(self, event: ManagedTree.NodeSelected) -> None:
         event.stop()

@@ -14,7 +14,6 @@ import re
 from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Literal
 
 from rich.style import Style
 from rich.text import Text
@@ -27,7 +26,7 @@ from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.config import unwanted
 
 
-from chezmoi_mousse.mouse_types import DiffSpec
+from chezmoi_mousse.mouse_types import DiffSpec, TreeSpec
 
 
 class GitLog(DataTable):
@@ -304,8 +303,7 @@ class ManagedTree(Tree[NodeData]):
     """Shows the tree widget on the left for Apply and Re-Add tabs."""
 
     unchanged: reactive[bool] = reactive(False, init=False)
-    direction: reactive[Literal["apply", "re_add"]] = reactive("apply")
-    flat_list: reactive[bool] = reactive(False, init=False)
+    tree_spec: reactive[TreeSpec] = reactive(None, init=False)
 
     # TODO: default color should be updated on theme change
     node_colors = {
@@ -315,28 +313,25 @@ class ManagedTree(Tree[NodeData]):
         "M": "#FFC473",  # text-warning
     }
 
-    # def __init__(self, **kwargs) -> None:
-    # self.direction: Literal["apply", "re_add"] = direction
-    # self.flat_list: bool = flat_list
-    # super().__init__(label="root", **kwargs)
-
     @property
-    def status_dirs(self):
-        if self.direction == "apply":
+    def status_dirs(self) -> dict[Path, str]:
+        if self.tree_spec is None:
             return chezmoi.status_paths["apply_dirs"]
-        elif self.direction == "re_add":
+        if self.tree_spec[0] == "Apply":
+            return chezmoi.status_paths["apply_dirs"]
+        if self.tree_spec[0] == "ReAdd":
             return chezmoi.status_paths["re_add_dirs"]
-        else:
-            return {}
+        return chezmoi.status_paths["apply_dirs"]
 
     @property
-    def status_files(self):
-        if self.direction == "apply":
+    def status_files(self) -> dict[Path, str]:
+        if self.tree_spec is None:
             return chezmoi.status_paths["apply_files"]
-        elif self.direction == "re_add":
+        if self.tree_spec[0] == "Apply":
+            return chezmoi.status_paths["apply_files"]
+        if self.tree_spec[0] == "ReAdd":
             return chezmoi.status_paths["re_add_files"]
-        else:
-            return {}
+        return chezmoi.status_paths["apply_files"]
 
     def on_mount(self) -> None:
 
@@ -347,11 +342,13 @@ class ManagedTree(Tree[NodeData]):
                 path=chezmoi.dest_dir, found=True, is_file=False, status="R"
             )
         self.show_root = False
-        if not self.flat_list:
-            self.add_nodes(self.root)
-            self.add_leaves(self.root)
-        elif self.flat_list:
-            self.add_flat_leaves()
+
+        if self.tree_spec is not None:
+            if self.tree_spec[1] == "Tree":
+                self.add_nodes(self.root)
+                self.add_leaves(self.root)
+            elif self.tree_spec[1] == "List":
+                self.add_flat_leaves()
 
     def show_dir_node(self, node_data: NodeData) -> bool:
         """Check if a directory node should be displayed according to the
@@ -496,7 +493,10 @@ class ManagedTree(Tree[NodeData]):
     def watch_unchanged(self) -> None:
         """Update the visible nodes in the tree based on the current filter
         settings."""
-        if not self.flat_list:
+        if self.tree_spec is None:
+            return
+
+        if not self.tree_spec[1]:
 
             def get_expanded_nodes() -> list[TreeNode]:
                 """Recursively get all current expanded nodes in the tree."""
@@ -517,8 +517,17 @@ class ManagedTree(Tree[NodeData]):
                 self.add_nodes(node)
                 self.add_leaves(node)
 
-        elif self.flat_list:
+        elif self.tree_spec[1]:
             self.clear()
+            self.add_flat_leaves()
+
+    def watch_tree_spec(self) -> None:
+        if self.tree_spec is None:
+            return
+        if self.tree_spec[1] == "Tree":
+            self.add_nodes(self.root)
+            self.add_leaves(self.root)
+        elif self.tree_spec[1] == "List":
             self.add_flat_leaves()
 
 
