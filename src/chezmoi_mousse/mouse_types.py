@@ -10,3 +10,4 @@ AnyTabButton = Literal[TreeViewButton, PathViewButton, "Git-Log"]
 ButtonArea = Literal["TopLeft", "TopRight", "BottomRight", "BottomLeft"]
 
 DiffSpec = tuple[Path, ModifyTabLabel] | None
+TreeSpec = tuple[ModifyTabLabel, TreeViewButton] | None
