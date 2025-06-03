@@ -44,17 +44,18 @@ from chezmoi_mousse.components import (
 
 from chezmoi_mousse.config import filter_data, pw_mgr_info
 from chezmoi_mousse.mouse_types import (
-    TabLabel,
     ButtonArea,
+    ButtonLabel,
+    # DiffSpec,
+    # PathViewSpec,
+    # TabLabel,
     TreeSpec,
-    PathViewSpec,
-    DiffSpec,
 )
 
 
 class TabButton(Vertical):
 
-    def __init__(self, label: str, button_id: str) -> None:
+    def __init__(self, label: ButtonLabel, button_id: str) -> None:
         super().__init__()
         self.button_id = button_id
         self.label = label
@@ -70,9 +71,10 @@ class TabButton(Vertical):
 
 class ApplyOrReAddTabHorizontal(Horizontal):
 
-    def __init__(self, tree_spec: TreeSpecDict) -> None:
+    def __init__(self, tree_spec: TreeSpec) -> None:
         """Initialize the Apply or Re-Add tab with the given tree_spec."""
-        self.tree_spec: TreeSpecDict = tree_spec
+        assert isinstance(tree_spec, dict)
+        self.tree_spec: TreeSpec = tree_spec
 
         self.tab: str = tree_spec["tab_label"]
         self.tree_kind: str = tree_spec["tree_kind"]
@@ -83,27 +85,27 @@ class ApplyOrReAddTabHorizontal(Horizontal):
         self.area_top_left_id: str = f"{self.tab}_{self.area_top_left}_area"
         self.area_top_right_id: str = f"{self.tab}_{self.area_top_right}_area"
 
-        self.tree_button_label: TreeButtonLabel = "Tree"
+        self.tree_button_label: ButtonLabel = "Tree"
         self.tree_button_id: str = (
             f"{self.tab}_{self.tree_button_label}_button"
         )
 
-        self.list_button_label: ListButtonLabel = "List"
+        self.list_button_label: ButtonLabel = "List"
         self.list_button_id: str = (
             f"{self.tab}_{self.list_button_label}_button"
         )
 
-        self.content_button_label: ContentButtonLabel = "Content"
+        self.content_button_label: ButtonLabel = "Content"
         self.content_button_id: str = (
             f"{self.tab}_{self.content_button_label}_button"
         )
 
-        self.diff_button_label: DiffButtonLabel = "Diff"
+        self.diff_button_label: ButtonLabel = "Diff"
         self.diff_button_id: str = (
             f"{self.tab}_{self.diff_button_label}_button"
         )
 
-        self.git_log_button_label: GitLogButtonLabel = "Git-Log"
+        self.git_log_button_label: ButtonLabel = "Git-Log"
         self.git_log_button_id: str = (
             f"{self.tab}_{self.git_log_button_label}_button"
         )
@@ -188,11 +190,6 @@ class ApplyOrReAddTabHorizontal(Horizontal):
         self.query_one(f"#{self.content_button_id}", Button).add_class(
             "last-clicked"
         )
-
-        # self.query_one(f"#{self.tab}_tree", ManagedTree).tree_spec = (
-        #     self.tab,
-        #     "Tree",
-        # )
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
@@ -297,8 +294,6 @@ class ApplyTab(Vertical):
         )
     ]
 
-    # tab_label: ModifyTabLabel = "Apply"
-
     def compose(self) -> ComposeResult:
         yield ApplyOrReAddTabHorizontal(
             {"tab_label": "Apply", "tree_kind": "Tree"}
@@ -309,19 +304,22 @@ class ApplyTab(Vertical):
     #     self.notify(f"will add {managed_tree.cursor_node}")
 
 
-# class ReAddTab(Horizontal):
+class ReAddTab(Horizontal):
 
-#     BINDINGS = [
-#         Binding(
-#             key="A,a",
-#             action="re_add_path",
-#             description="chezmoi-re-add",
-#             tooltip="overwrite chezmoi repository with dotfile on disk",
-#         )
-#     ]
+    BINDINGS = [
+        Binding(
+            key="A,a",
+            action="re_add_path",
+            description="chezmoi-re-add",
+            tooltip="overwrite chezmoi repository with dotfile on disk",
+        )
+    ]
 
-#     def compose(self) -> ComposeResult:
-#         yield TreeTabSwitchers("ReAdd")
+    def compose(self) -> ComposeResult:
+        yield ApplyOrReAddTabHorizontal(
+            {"tab_label": "Re-Add", "tree_kind": "Tree"}
+        )
+
 
 #     def action_re_add_path(self) -> None:
 #         managed_tree = self.query_one("#re_add_tree", ManagedTree)

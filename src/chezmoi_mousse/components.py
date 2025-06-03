@@ -25,8 +25,14 @@ from textual.widgets.tree import TreeNode
 from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.config import unwanted
 
-
-from chezmoi_mousse.mouse_types import DiffSpec, TreeSpec
+from chezmoi_mousse.mouse_types import (
+    # ButtonArea,
+    # ButtonLabel,
+    DiffSpec,
+    PathViewSpec,
+    # TabLabel,
+    TreeSpec,
+)
 
 
 class GitLog(DataTable):
@@ -39,10 +45,6 @@ class GitLog(DataTable):
     # focussable  https://textual.textualize.io/widgets/data_table/
 
     path: reactive[Path | None] = reactive(None, init=False)
-
-    # def __init__(self, path: Path | None = None, **kwargs) -> None:
-    #     super().__init__(**kwargs)
-    #     self.path = path
 
     def on_mount(self) -> None:
         self.show_cursor = False
@@ -113,25 +115,26 @@ class PathView(RichLog):
 
     BINDINGS = [Binding(key="M,m", action="maximize", description="maximize")]
 
-    path: reactive[Path | None] = reactive(None, init=False)
-    tab_id: reactive[str] = reactive("apply_tab", init=False)
+    path_view_spec: reactive[PathViewSpec] = reactive(None, init=False)
 
     def on_mount(self) -> None:
         text = "Click a file or directory, \nto show its contents."
         self.write(Text(text, style="dim"))
 
     def write_managed_dirs_in_dir(self) -> None:
-        assert isinstance(self.path, Path)
-        managed_dirs: list[Path] = chezmoi.managed_dir_paths_in_dir(self.path)
+        assert isinstance(self.path_view_spec, dict)
+        managed_dirs: list[Path] = chezmoi.managed_dir_paths_in_dir(
+            self.path_view_spec["path"]
+        )
         if managed_dirs:
             self.write("\nManaged sub dirs:")
             for p in managed_dirs:
                 self.write(str(p))
 
     def write_managed_files_in_dir(self) -> None:
-        assert isinstance(self.path, Path)
+        assert isinstance(self.path_view_spec, dict)
         managed_files: list[Path] = chezmoi.managed_file_paths_in_dir(
-            self.path
+            self.path_view_spec["path"]
         )
         if managed_files:
             self.write("\nManaged files:")
@@ -139,8 +142,10 @@ class PathView(RichLog):
                 self.write(str(p))
 
     def write_unmanaged_files_in_dir(self) -> None:
-        assert isinstance(self.path, Path)
-        unmanaged_files: list[Path] = chezmoi.run.unmanaged_in_dir(self.path)
+        assert isinstance(self.path_view_spec, dict)
+        unmanaged_files: list[Path] = chezmoi.run.unmanaged_in_dir(
+            self.path_view_spec["path"]
+        )
         if unmanaged_files:
             self.write("\nUnmanaged files:")
             self.write('(switch to "AddTab" to add files)')
@@ -148,10 +153,13 @@ class PathView(RichLog):
                 self.write(str(p))
 
     def update_path_view(self) -> None:
-        assert isinstance(self.path, Path)
         truncated = ""
+        assert isinstance(self.path_view_spec, dict)
         try:
-            if self.path.is_file() and self.path.stat().st_size > 150 * 1024:
+            if (
+                self.path_view_spec["path"].is_file()
+                and self.path_view_spec["path"].stat().st_size > 150 * 1024
+            ):
                 truncated = (
                     "\n\n------ File content truncated to 150 KiB ------\n"
                 )
@@ -160,7 +168,9 @@ class PathView(RichLog):
             return
 
         try:
-            with open(self.path, "rt", encoding="utf-8") as file:
+            with open(
+                self.path_view_spec["path"], "rt", encoding="utf-8"
+            ) as file:
                 file_content = file.read(150 * 1024)
                 if not file_content.strip():
                     self.write("File contains only whitespace")
@@ -168,28 +178,32 @@ class PathView(RichLog):
                     self.write(file_content + truncated)
 
         except UnicodeDecodeError:
-            text = f"{self.path} cannot be decoded as UTF-8."
-            self.write(f"{self.path} cannot be decoded as UTF-8.")
+            text = f"{self.path_view_spec['path']} cannot be decoded as UTF-8."
+            self.write(
+                f"{self.path_view_spec['path']} cannot be decoded as UTF-8."
+            )
             return
 
         except FileNotFoundError:
             # FileNotFoundError is raised both when a file or a directory
             # does not exist
-            if self.path in chezmoi.managed_file_paths:
-                if not chezmoi.run.cat(self.path).strip():
+            if self.path_view_spec["path"] in chezmoi.managed_file_paths:
+                if not chezmoi.run.cat(self.path_view_spec["path"]).strip():
                     self.write("File contains only whitespace")
                 else:
-                    self.write(chezmoi.run.cat(self.path))
+                    self.write(chezmoi.run.cat(self.path_view_spec["path"]))
                 return
 
         except IsADirectoryError:
 
-            if self.path in chezmoi.managed_dir_paths:
-                self.write(f"Managed directory: {self.path}")
+            if self.path_view_spec["path"] in chezmoi.managed_dir_paths:
+                self.write(f"Managed directory: {self.path_view_spec['path']}")
             else:
-                self.write(f"Unmanaged directory: {self.path}")
+                self.write(
+                    f"Unmanaged directory: {self.path_view_spec['path']}"
+                )
 
-            if self.tab_id == "add_tab":
+            if self.path_view_spec["tab_label"] == "Add":
                 self.write(
                     '(switch to "Apply" or "ReAdd" tab to apply or re-add)'
                 )
@@ -197,13 +211,14 @@ class PathView(RichLog):
                 self.write_managed_dirs_in_dir()
 
         except OSError as error:
-            text = Text(f"Error reading {self.path}: {error}")
+            text = Text(
+                f"Error reading {self.path_view_spec['path']}: {error}"
+            )
             self.write(text)
 
-    def watch_path(self) -> None:
-        if self.path is not None:
-            self.clear()
-            self.update_path_view()
+    def watch_path_view_spec(self) -> None:
+        self.clear()
+        self.update_path_view()
 
 
 class DiffView(Static):
@@ -231,37 +246,43 @@ class DiffView(Static):
             return
 
         diff_output: list[str]
-        if self.diff_spec[1] == "Apply":
-            if self.diff_spec[0] not in chezmoi.status_paths["apply_files"]:
+        if self.diff_spec["tab_label"] == "Apply":
+            if (
+                self.diff_spec["path"]
+                not in chezmoi.status_paths["apply_files"]
+            ):
                 self.update(
                     Content("\n").join(
                         [
-                            f"No diff available for {self.diff_spec[0]}",
+                            f"No diff available for {self.diff_spec["path"]}",
                             "File not in chezmoi status output.",
                         ]
                     )
                 )
                 return
             else:
-                diff_output = chezmoi.run.apply_diff(self.diff_spec[0])
-        elif self.diff_spec[1] == "ReAdd":
-            if self.diff_spec[0] not in chezmoi.status_paths["re_add_files"]:
+                diff_output = chezmoi.run.apply_diff(self.diff_spec["path"])
+        elif self.diff_spec["tab_label"] == "ReAdd":
+            if (
+                self.diff_spec["path"]
+                not in chezmoi.status_paths["re_add_files"]
+            ):
                 self.update(
                     Content("\n").join(
                         [
-                            f"No diff available for {self.diff_spec[0]}",
+                            f"No diff available for {self.diff_spec["path"]}",
                             "File not in chezmoi status output.",
                         ]
                     )
                 )
                 return
             else:
-                diff_output = chezmoi.run.re_add_diff(self.diff_spec[0])
+                diff_output = chezmoi.run.re_add_diff(self.diff_spec["path"])
 
         if not diff_output:
             self.update(
                 Content(
-                    f"chezmoi diff {self.diff_spec[0]} returned no output."
+                    f"chezmoi diff {self.diff_spec["path"]} returned no output."
                 )
             )
             return
@@ -317,9 +338,9 @@ class ManagedTree(Tree[NodeData]):
     def status_dirs(self) -> dict[Path, str]:
         if self.tree_spec is None:
             return chezmoi.status_paths["apply_dirs"]
-        if self.tree_spec[0] == "Apply":
+        if self.tree_spec["tab_label"] == "Apply":
             return chezmoi.status_paths["apply_dirs"]
-        if self.tree_spec[0] == "ReAdd":
+        if self.tree_spec["tab_label"] == "ReAdd":
             return chezmoi.status_paths["re_add_dirs"]
         return chezmoi.status_paths["apply_dirs"]
 
@@ -327,9 +348,9 @@ class ManagedTree(Tree[NodeData]):
     def status_files(self) -> dict[Path, str]:
         if self.tree_spec is None:
             return chezmoi.status_paths["apply_files"]
-        if self.tree_spec[0] == "Apply":
+        if self.tree_spec["tab_label"] == "Apply":
             return chezmoi.status_paths["apply_files"]
-        if self.tree_spec[0] == "ReAdd":
+        if self.tree_spec["tab_label"] == "ReAdd":
             return chezmoi.status_paths["re_add_files"]
         return chezmoi.status_paths["apply_files"]
 
@@ -344,10 +365,10 @@ class ManagedTree(Tree[NodeData]):
         self.show_root = False
 
         if self.tree_spec is not None:
-            if self.tree_spec[1] == "Tree":
+            if self.tree_spec["tree_kind"] == "Tree":
                 self.add_nodes(self.root)
                 self.add_leaves(self.root)
-            elif self.tree_spec[1] == "List":
+            elif self.tree_spec["tree_kind"] == "List":
                 self.add_flat_leaves()
 
     def show_dir_node(self, node_data: NodeData) -> bool:
@@ -493,41 +514,41 @@ class ManagedTree(Tree[NodeData]):
     def watch_unchanged(self) -> None:
         """Update the visible nodes in the tree based on the current filter
         settings."""
+
+        def get_expanded_nodes() -> list[TreeNode]:
+            """Recursively get all current expanded nodes in the tree."""
+
+            current_node = self.root
+
+            def collect_nodes(current_node: TreeNode) -> list[TreeNode]:
+                nodes = [current_node]
+                for child in current_node.children:
+                    if child.is_expanded:
+                        nodes.append(child)
+                        nodes.extend(collect_nodes(child))
+                return nodes
+
+            return collect_nodes(current_node)
+
         if self.tree_spec is None:
             return
 
-        if not self.tree_spec[1]:
-
-            def get_expanded_nodes() -> list[TreeNode]:
-                """Recursively get all current expanded nodes in the tree."""
-
-                current_node = self.root
-
-                def collect_nodes(current_node: TreeNode) -> list[TreeNode]:
-                    nodes = [current_node]
-                    for child in current_node.children:
-                        if child.is_expanded:
-                            nodes.append(child)
-                            nodes.extend(collect_nodes(child))
-                    return nodes
-
-                return collect_nodes(current_node)
-
+        elif self.tree_spec["tree_kind"] == "Tree":
             for node in get_expanded_nodes():
                 self.add_nodes(node)
                 self.add_leaves(node)
 
-        elif self.tree_spec[1]:
+        elif self.tree_spec["tree_kind"] == "List":
             self.clear()
             self.add_flat_leaves()
 
     def watch_tree_spec(self) -> None:
         if self.tree_spec is None:
             return
-        if self.tree_spec[1] == "Tree":
+        if self.tree_spec["tree_kind"] == "Tree":
             self.add_nodes(self.root)
             self.add_leaves(self.root)
-        elif self.tree_spec[1] == "List":
+        elif self.tree_spec["tree_kind"] == "List":
             self.add_flat_leaves()
 
 
