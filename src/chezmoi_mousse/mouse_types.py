@@ -36,19 +36,49 @@ type PathViewButton = Literal[
 # Type aliases used for reactive vars. #
 ########################################
 
-type ButtonLabelDictKey = Literal["button_label"]
+
+class TreeSpecDict(TypedDict, total=True):
+    """Dictionary to pass for tree_spec, with required tab_label and tree_kind
+    keys.
+
+    Logic in TreeView depends on these.
+    """
+
+    # key has to be "tab_label", value is an ApplyReAddLabel Literal type alias
+    tab_label: ApplyReAddLabel
+    # key has to be "tree_kind", value will be either "Tree" or "List"
+    tree_kind: TreeViewButton
 
 
 type TreeSpec = dict[Literal["tab_label"], ApplyReAddLabel] | None
+
+
+class PathViewSpecDict(TypedDict, total=True):
+    """Dictionary to pass for path_spec, with required path and tab_label keys.
+
+    Logic in PathView depends on these.
+    """
+
+    # key has to be "path", value is a Path object
+    path: Path
+    # key has to be "tab_label", value is an ApplyReAddLabel Literal type alias
+    tab_label: ApplyReAddLabel
+
+
 type PathViewSpec = dict[Literal["path"], Path] | None
 
 
 class DiffSpecDict(TypedDict, total=True):
-    """Dictionary to pass for diff_spec, with required path and tab_label
-    keys."""
+    """Dictionary to pass for diff_spec, with required path and tab_label keys
+    and value types.
 
-    path: Path  # key "path" as a string is required
-    tab_label: ApplyReAddLabel  # key "tab_label" as a string is required
+    Logic in DiffView depends on these.
+    """
+
+    # key has to be "path", value is a Path object
+    path: Path
+    # key has to be "tab_label", value is an ApplyReAddLabel Literal type alias
+    tab_label: ApplyReAddLabel
 
 
 type DiffSpec = DiffSpecDict | None
