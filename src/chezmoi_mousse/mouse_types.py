@@ -6,8 +6,7 @@ type TabLabel = Literal["Apply", "Re-Add", "Add"]
 
 type ButtonArea = Literal["TopLeft", "TopRight", "BottomRight"]
 
-type TopLeftButton = Literal["Tree", "List"]
-type TopRightButton = Literal["Content", "Diff", "Git-Log"]
+type ButtonLabel = Literal["Tree", "List", "Content", "Diff", "Git-Log"]
 
 
 class TreeSpecDict(TypedDict, total=True):
@@ -20,7 +19,7 @@ class TreeSpecDict(TypedDict, total=True):
     # key has to be "tab_label", value is an ApplyReAddLabel Literal type alias
     tab_label: TabLabel
     # key has to be "tree_kind", value will be either "Tree" or "List"
-    tree_kind: TopLeftButton
+    tree_kind: ButtonLabel
 
 
 type TreeSpec = TreeSpecDict
