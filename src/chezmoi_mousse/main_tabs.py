@@ -38,7 +38,7 @@ from chezmoi_mousse.components import (
     # FilteredDirTree,
     GitLog,
     ManagedTree,
-    NodeData,
+    # NodeData,
     PathView,
 )
 
@@ -48,6 +48,9 @@ from chezmoi_mousse.mouse_types import (
     ButtonArea,
     ListButtonLabel,
     TreeButtonLabel,
+    ContentButtonLabel,
+    DiffButtonLabel,
+    GitLogButtonLabel,
 )
 
 
@@ -91,6 +94,22 @@ class ApplyOrReAddTabHorizontal(Horizontal):
         self.list_button_id: str = (
             f"{self.tab}_{self.list_button_label}_button"
         )
+
+        self.content_button_label: ContentButtonLabel = "Content"
+        self.content_button_id: str = (
+            f"{self.tab}_{self.content_button_label}_button"
+        )
+
+        self.diff_button_label: DiffButtonLabel = "Diff"
+        self.diff_button_id: str = (
+            f"{self.tab}_{self.diff_button_label}_button"
+        )
+
+        self.git_log_button_label: GitLogButtonLabel = "Git-Log"
+        self.git_log_button_id: str = (
+            f"{self.tab}_{self.git_log_button_label}_button"
+        )
+
         super().__init__()
 
     def compose(self) -> ComposeResult:
@@ -131,9 +150,17 @@ class ApplyOrReAddTabHorizontal(Horizontal):
             with Horizontal(
                 id=self.area_top_right_id, classes="tab-buttons-horizontal"
             ):
-                yield TabButton("Content", f"{self.tab}_content_button")
-                yield TabButton("Diff", f"{self.tab}_diff_button")
-                yield TabButton("Git-Log", f"{self.tab}_git_log_button")
+                yield TabButton(
+                    label=self.content_button_label,
+                    button_id=self.content_button_id,
+                )
+                yield TabButton(
+                    label=self.diff_button_label, button_id=self.diff_button_id
+                )
+                yield TabButton(
+                    label=self.git_log_button_label,
+                    button_id=self.git_log_button_id,
+                )
             with ContentSwitcher(
                 initial=f"{self.tab}_content", id=f"{self.tab}_view_switcher"
             ):
@@ -156,95 +183,92 @@ class ApplyOrReAddTabHorizontal(Horizontal):
             f"#{self.area_top_right_id}", Horizontal
         ).border_subtitle = " path view "
 
-        # self.query_one(f"#{self.tab}_tree_button", Button).add_class(
-        #     "last-clicked"
-        # )
-        # Right
-        # self.query_one(f"#{self.tab}_content_button", Button).add_class(
-        #     "last-clicked"
-        # )
+        # set style to indicate initial active button tab
+        self.query_one(f"#{self.tree_button_id}", Button).add_class(
+            "last-clicked"
+        )
+        self.query_one(f"#{self.content_button_id}", Button).add_class(
+            "last-clicked"
+        )
 
-    # self.query_one(f"#{self.tab}_tree", ManagedTree).tree_spec = (
-    #     self.tab,
-    #     "Tree",
-    # )
+        # self.query_one(f"#{self.tab}_tree", ManagedTree).tree_spec = (
+        #     self.tab,
+        #     "Tree",
+        # )
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
         # Tree/List Switch
         if (
-            event.button.id == f"{self.tab}_tree_button"
-            or event.button.id == f"{self.tab}_list_button"
+            event.button.id == self.tree_button_id
+            or event.button.id == self.list_button_id
         ):
             # Remove from both tree and list buttons
-            for btn_id in [
-                f"{self.tab}_tree_button",
-                f"{self.tab}_list_button",
-            ]:
+            for btn_id in [self.tree_button_id, self.list_button_id]:
                 self.query_one(f"#{btn_id}", Button).remove_class(
                     "last-clicked"
                 )
-            if event.button.id == f"{self.tab}_tree_button":
-                self.query_one(
-                    f"#{self.tab}_tree_switcher", ContentSwitcher
-                ).current = f"{self.tab}_tree"
-                self.query_one(f"#{self.tab}_tree_button", Button).add_class(
+            if event.button.id == self.tree_button_id:
+                # self.query_one(
+                #     f"#{self.tab}_tree_switcher", ContentSwitcher
+                # ).current = f"{self.tab}_tree"
+                self.query_one(f"#{self.tree_button_id}", Button).add_class(
                     "last-clicked"
                 )
             else:
-                self.query_one(
-                    f"#{self.tab}_tree_switcher", ContentSwitcher
-                ).current = f"{self.tab}_list"
-                self.query_one(f"#{self.tab}_list_button", Button).add_class(
+                # self.query_one(
+                #     f"#{self.tab}_tree_switcher", ContentSwitcher
+                # ).current = f"{self.tab}_list"
+                self.query_one(f"#{self.list_button_id}", Button).add_class(
                     "last-clicked"
                 )
         # Content/Diff/GitLog Switch
-        elif (
-            event.button.id == f"{self.tab}_content_button"
-            or event.button.id == f"{self.tab}_diff_button"
-            or event.button.id == f"{self.tab}_git_log_button"
-        ):
-            # Remove from all right-side buttons
-            for btn_id in [
-                f"{self.tab}_content_button",
-                f"{self.tab}_diff_button",
-                f"{self.tab}_git_log_button",
-            ]:
-                self.query_one(f"#{btn_id}", Button).remove_class(
-                    "last-clicked"
-                )
-            # if event.button.id == f"{self.tab}_content_button":
-            #     self.query_one(
-            #         f"#{self.tab}_view_switcher", ContentSwitcher
-            #     ).current = f"{self.tab}_content"
-            #     self.query_one(
-            #         f"#{self.tab}_content_button", Button
-            #     ).add_class("last-clicked")
-            # elif event.button.id == f"{self.tab}_diff_button":
-            #     self.query_one(
-            #         f"#{self.tab}_view_switcher", ContentSwitcher
-            #     ).current = f"{self.tab}_diff"
-            #     self.query_one(f"#{self.tab}_diff_button", Button).add_class(
-            #         "last-clicked"
-            #     )
-            # elif event.button.id == f"{self.tab}_git_log_button":
-            #     self.query_one(
-            #         f"#{self.tab}_view_switcher", ContentSwitcher
-            #     ).current = f"{self.tab}_git_log"
-            #     self.query_one(
-            #         f"#{self.tab}_git_log_button", Button
-            #     ).add_class("last-clicked")
+        # elif (
+        #     event.button.id == f"{self.tab}_content_button"
+        #     or event.button.id == f"{self.tab}_diff_button"
+        #     or event.button.id == f"{self.tab}_git_log_button"
+        # ):
+        #     # Remove from all right-side buttons
+        #     for btn_id in [
+        #         f"{self.tab}_content_button",
+        #         f"{self.tab}_diff_button",
+        #         f"{self.tab}_git_log_button",
+        #     ]:
+        #         self.query_one(f"#{btn_id}", Button).remove_class(
+        #             "last-clicked"
+        #         )
+        # if event.button.id == f"{self.tab}_content_button":
+        #     self.query_one(
+        #         f"#{self.tab}_view_switcher", ContentSwitcher
+        #     ).current = f"{self.tab}_content"
+        #     self.query_one(
+        #         f"#{self.tab}_content_button", Button
+        #     ).add_class("last-clicked")
+        # elif event.button.id == f"{self.tab}_diff_button":
+        #     self.query_one(
+        #         f"#{self.tab}_view_switcher", ContentSwitcher
+        #     ).current = f"{self.tab}_diff"
+        #     self.query_one(f"#{self.tab}_diff_button", Button).add_class(
+        #         "last-clicked"
+        #     )
+        # elif event.button.id == f"{self.tab}_git_log_button":
+        #     self.query_one(
+        #         f"#{self.tab}_view_switcher", ContentSwitcher
+        #     ).current = f"{self.tab}_git_log"
+        #     self.query_one(
+        #         f"#{self.tab}_git_log_button", Button
+        #     ).add_class("last-clicked")
 
-    def on_tree_node_selected(self, event: ManagedTree.NodeSelected) -> None:
-        event.stop()
-        if not isinstance(event.node.data, NodeData):
-            raise TypeError(f"Expected NodeData, got {type(event.node.data)}")
+        # def on_tree_node_selected(self, event: ManagedTree.NodeSelected) -> None:
+        #     event.stop()
+        #     if not isinstance(event.node.data, NodeData):
+        #         raise TypeError(f"Expected NodeData, got {type(event.node.data)}")
 
-        self.query_one(
-            f"#{self.tab}_view_buttons", Horizontal
-        ).border_subtitle = (
-            f" {event.node.data.path.relative_to(chezmoi.dest_dir)} "
-        )
+        #     self.query_one(
+        #         f"#{self.tab}_view_buttons", Horizontal
+        #     ).border_subtitle = (
+        #         f" {event.node.data.path.relative_to(chezmoi.dest_dir)} "
+        #     )
         # path_view = self.query_one(f"#{self.tab}_content", PathView)
         # path_view.path = event.node.data.path
         # path_view.tab_id = "apply_tab"
@@ -252,16 +276,16 @@ class ApplyOrReAddTabHorizontal(Horizontal):
         #     event.node.data.path,
         #     self.tab,
         # )
-        self.query_one(f"#{self.tab}_git_log", GitLog).path = (
-            event.node.data.path
-        )
+        # self.query_one(f"#{self.tab}_git_log", GitLog).path = (
+        #     event.node.data.path
+        # )
 
-    def on_switch_changed(self, event: Switch.Changed) -> None:
-        event.stop()
-        if event.switch.id == f"{self.tab}_unchanged":
-            self.query_one(f"#{self.tab}_tree", ManagedTree).unchanged = (
-                event.value
-            )
+    # def on_switch_changed(self, event: Switch.Changed) -> None:
+    #     event.stop()
+    #     if event.switch.id == f"{self.tab}_unchanged":
+    #         self.query_one(f"#{self.tab}_tree", ManagedTree).unchanged = (
+    #             event.value
+    #         )
 
 
 class ApplyTab(Vertical):
