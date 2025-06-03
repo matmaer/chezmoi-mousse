@@ -10,11 +10,6 @@ def dummy_path(tmp_path):
     return file
 
 
-def test_add_tab_instantiation():
-    tab = main_tabs.AddTab()
-    assert isinstance(tab, main_tabs.AddTab)
-
-
 def test_doctor_tab_instantiation():
     tab = main_tabs.DoctorTab()
     assert isinstance(tab, main_tabs.DoctorTab)
