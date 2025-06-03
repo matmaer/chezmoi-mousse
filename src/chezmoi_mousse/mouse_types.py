@@ -14,9 +14,9 @@ type ReAddTabLabel = Literal["Re-Add"]
 type AddTabLabel = Literal["Add"]
 
 # Current button areas containing xxxButtonLabel aliases
-TopLeftArea = Literal["TopLeft"]
-TopRightArea = Literal["TopRight"]
-BottomRightArea = Literal["BottomRight"]
+type TopLeftArea = Literal["TopLeft"]
+type TopRightArea = Literal["TopRight"]
+type BottomRightArea = Literal["BottomRight"]
 
 ###############################################
 # Aliases composed from literal type aliases. #
