@@ -44,7 +44,7 @@ from chezmoi_mousse.components import (
 
 from chezmoi_mousse.config import filter_data, pw_mgr_info
 from chezmoi_mousse.mouse_types import (
-    ButtonArea,
+    # ButtonArea,
     ButtonLabel,
     # DiffSpec,
     # PathViewSpec,
@@ -79,36 +79,14 @@ class ApplyOrReAddTabHorizontal(Horizontal):
         self.tab: str = tree_spec["tab_label"]
         self.tree_kind: str = tree_spec["tree_kind"]
 
-        self.area_top_left: ButtonArea = "TopLeft"
-        self.area_top_right: ButtonArea = "TopRight"
+        self.area_top_left_id: str = f"{self.tab}_TopLeft_area"
+        self.area_top_right_id: str = f"{self.tab}_TopRight_area"
 
-        self.area_top_left_id: str = f"{self.tab}_{self.area_top_left}_area"
-        self.area_top_right_id: str = f"{self.tab}_{self.area_top_right}_area"
-
-        self.tree_button_label: ButtonLabel = "Tree"
-        self.tree_button_id: str = (
-            f"{self.tab}_{self.tree_button_label}_button"
-        )
-
-        self.list_button_label: ButtonLabel = "List"
-        self.list_button_id: str = (
-            f"{self.tab}_{self.list_button_label}_button"
-        )
-
-        self.content_button_label: ButtonLabel = "Content"
-        self.content_button_id: str = (
-            f"{self.tab}_{self.content_button_label}_button"
-        )
-
-        self.diff_button_label: ButtonLabel = "Diff"
-        self.diff_button_id: str = (
-            f"{self.tab}_{self.diff_button_label}_button"
-        )
-
-        self.git_log_button_label: ButtonLabel = "Git-Log"
-        self.git_log_button_id: str = (
-            f"{self.tab}_{self.git_log_button_label}_button"
-        )
+        self.tree_button_id: str = f"{self.tab}_Tree_button"
+        self.list_button_id: str = f"{self.tab}_List_button"
+        self.content_button_id: str = f"{self.tab}_Content_button"
+        self.diff_button_id: str = f"{self.tab}_Diff_button"
+        self.git_log_button_id: str = f"{self.tab}_Git-Log_button"
 
         super().__init__()
 
@@ -118,12 +96,8 @@ class ApplyOrReAddTabHorizontal(Horizontal):
             with Horizontal(
                 id=self.area_top_left_id, classes="tab-buttons-horizontal"
             ):
-                yield TabButton(
-                    label=self.tree_button_label, button_id=self.tree_button_id
-                )
-                yield TabButton(
-                    label=self.list_button_label, button_id=self.list_button_id
-                )
+                yield TabButton(label="Tree", button_id=self.tree_button_id)
+                yield TabButton(label="List", button_id=self.list_button_id)
             with ContentSwitcher(
                 initial=f"{self.tab}_tree", id=f"{self.tab}_tree_switcher"
             ):
@@ -151,15 +125,11 @@ class ApplyOrReAddTabHorizontal(Horizontal):
                 id=self.area_top_right_id, classes="tab-buttons-horizontal"
             ):
                 yield TabButton(
-                    label=self.content_button_label,
-                    button_id=self.content_button_id,
+                    label="Content", button_id=self.content_button_id
                 )
+                yield TabButton(label="Diff", button_id=self.diff_button_id)
                 yield TabButton(
-                    label=self.diff_button_label, button_id=self.diff_button_id
-                )
-                yield TabButton(
-                    label=self.git_log_button_label,
-                    button_id=self.git_log_button_id,
+                    label="Git-Log", button_id=self.git_log_button_id
                 )
             with ContentSwitcher(
                 initial=f"{self.tab}_content", id=f"{self.tab}_view_switcher"
