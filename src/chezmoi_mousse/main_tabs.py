@@ -128,12 +128,14 @@ class ApplyOrReAddTabHorizontal(Horizontal):
 
         # Right: Content/Diff Switcher
         with Vertical(classes="tab-content-right"):
-            with Horizontal(classes="tab-buttons-horizontal"):
+            with Horizontal(
+                id=self.area_top_right_id, classes="tab-buttons-horizontal"
+            ):
                 yield TabButton("Content", f"{self.tab}_content_button")
                 yield TabButton("Diff", f"{self.tab}_diff_button")
                 yield TabButton("Git-Log", f"{self.tab}_git_log_button")
             with ContentSwitcher(
-                initial=f"{self.tab}_content", id=self.area_top_right_id
+                initial=f"{self.tab}_content", id=f"{self.tab}_view_switcher"
             ):
                 yield PathView(
                     id=f"{self.tab}_content",
@@ -144,21 +146,23 @@ class ApplyOrReAddTabHorizontal(Horizontal):
                 yield DiffView(id=f"{self.tab}_diff")
                 yield GitLog(id=f"{self.tab}_git_log")
 
-    # def on_mount(self) -> None:
+    def on_mount(self) -> None:
 
-    # self.query_one(self.area_top_left_id, Horizontal).border_subtitle = (
-    #     chezmoi.dest_dir_str_spaced
-    # )
-    # self.query_one(f"#{self.tab}_tree_button", Button).add_class(
-    #     "last-clicked"
-    # )
-    # Right
-    # self.query_one(f"#{self.tab}_content_button", Button).add_class(
-    #     "last-clicked"
-    # )
-    # self.query_one(
-    #     f"#{self.tab}_view_buttons", Horizontal
-    # ).border_subtitle = " path view "
+        # set border titles below left and right horizontal button containers
+        self.query_one(
+            f"#{self.area_top_left_id}", Horizontal
+        ).border_subtitle = chezmoi.dest_dir_str_spaced
+        self.query_one(
+            f"#{self.area_top_right_id}", Horizontal
+        ).border_subtitle = " path view "
+
+        # self.query_one(f"#{self.tab}_tree_button", Button).add_class(
+        #     "last-clicked"
+        # )
+        # Right
+        # self.query_one(f"#{self.tab}_content_button", Button).add_class(
+        #     "last-clicked"
+        # )
 
     # self.query_one(f"#{self.tab}_tree", ManagedTree).tree_spec = (
     #     self.tab,
