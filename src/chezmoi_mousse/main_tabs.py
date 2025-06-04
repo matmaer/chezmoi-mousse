@@ -152,7 +152,7 @@ class TreeTabSwitchers(Horizontal):
             f"#{self.view_buttons_id}", Horizontal
         ).border_subtitle = " path view "
 
-    def _update_button_classes(self, button_ids, active_id):
+    def update_button_classes(self, button_ids, active_id):
         for btn_id in button_ids:
             self.query_one(f"#{btn_id}", Button).remove_class("last-clicked")
         self.query_one(f"#{active_id}", Button).add_class("last-clicked")
@@ -161,7 +161,7 @@ class TreeTabSwitchers(Horizontal):
         event.stop()
         # Tree/List Switch
         if event.button.id in [self.tree_button_id, self.list_button_id]:
-            self._update_button_classes(
+            self.update_button_classes(
                 [self.tree_button_id, self.list_button_id], event.button.id
             )
             if event.button.id == self.tree_button_id:
@@ -179,7 +179,7 @@ class TreeTabSwitchers(Horizontal):
             self.git_log_button_id,
         ]:
             # Remove from all right-side buttons
-            self._update_button_classes(
+            self.update_button_classes(
                 [
                     self.content_button_id,
                     self.diff_button_id,
