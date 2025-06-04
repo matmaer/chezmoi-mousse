@@ -101,12 +101,10 @@ class TreeTabSwitchers(Horizontal):
                 initial=self.tree_content_id, id=self.tree_switcher_id
             ):
                 yield ManagedTree(
-                    id=self.tree_content_id,
-                    direction=self.tab,
-                    flat_list=False,
+                    id=self.tree_content_id, tab=self.tab, flat_list=False
                 )
                 yield ManagedTree(
-                    id=self.list_content_id, direction=self.tab, flat_list=True
+                    id=self.list_content_id, tab=self.tab, flat_list=True
                 )
             yield Vertical(
                 HorizontalGroup(

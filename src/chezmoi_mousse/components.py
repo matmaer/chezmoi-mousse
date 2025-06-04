@@ -306,25 +306,25 @@ class ManagedTree(Tree[NodeData]):
         "M": "#FFC473",  # text-warning
     }
 
-    def __init__(self, direction, flat_list=False, **kwargs) -> None:
-        self.direction: TabLabel = direction
+    def __init__(self, tab, flat_list=False, **kwargs) -> None:
+        self.tab: TabLabel = tab
         self.flat_list: bool = flat_list
         super().__init__(label="root", **kwargs)
 
     @property
     def status_dirs(self):
-        if self.direction == "Apply":
+        if self.tab == "Apply":
             return chezmoi.status_paths["apply_dirs"]
-        elif self.direction == "Re-Add":
+        elif self.tab == "Re-Add":
             return chezmoi.status_paths["re_add_dirs"]
         else:
             return {}
 
     @property
     def status_files(self):
-        if self.direction == "Apply":
+        if self.tab == "Apply":
             return chezmoi.status_paths["apply_files"]
-        elif self.direction == "Re-Add":
+        elif self.tab == "Re-Add":
             return chezmoi.status_paths["re_add_files"]
         else:
             return {}
