@@ -40,13 +40,19 @@
   }
 }
 
-/* for custom tab buttons */
-.tab-buttons-horizontal {
-  height: 2;
+.tab-buttons-top {
   border-bottom: solid $primary;
   border-subtitle-color: $primary;
   border-subtitle-align: center;
   border-subtitle-style: bold;
+}
+
+
+
+/* for custom tab buttons */
+.tab-buttons-horizontal {
+  height: 2;
+
 
   .tab-button {
     /* default min width from textual is 16, setting to shortest button text */
