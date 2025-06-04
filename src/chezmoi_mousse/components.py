@@ -24,6 +24,7 @@ from textual.widgets import DataTable, DirectoryTree, RichLog, Static, Tree
 from textual.widgets.tree import TreeNode
 from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.config import unwanted
+from chezmoi_mousse.mouse_types import TabLabel
 
 
 class GitLog(DataTable):
@@ -107,7 +108,7 @@ class PathView(RichLog):
     BINDINGS = [Binding(key="M,m", action="maximize", description="maximize")]
 
     path: reactive[Path | None] = reactive(None, init=False)
-    tab: reactive[str] = reactive("apply_tab", init=False)
+    tab: reactive[TabLabel] = reactive("Apply", init=False)
 
     def on_mount(self) -> None:
         text = "Click a file or directory, \nto show its contents."
@@ -161,7 +162,6 @@ class PathView(RichLog):
                     self.write(file_content + truncated)
 
         except UnicodeDecodeError:
-            text = f"{self.path} cannot be decoded as UTF-8."
             self.write(f"{self.path} cannot be decoded as UTF-8.")
             return
 
