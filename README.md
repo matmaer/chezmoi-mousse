@@ -15,11 +15,12 @@ The app is not packaged yet, can be run as a module with python and `textual`.
 ### General
 - [x] Create text based version of the `mermaid` diagrams offered by `chezmoi`.
 - [x] Implement first startup loading screen
-- [x] Create widget to show subprocess shell IO 
+- [x] Create widget to show subprocess shell IO
   - [x] show the chezmoi commands run to load all data
   - [x] create animated ascii art font on the loading screen
   - [ ] implement pre-flight checks with feedback what to do if failed
     - [ ] handle chezmoi init recommendation when config was changed
+- [ ] Check https://github.com/actions/attest-build-provenance
 - [ ] Check https://github.com/actions/attest-build-provenance
 
 ### Chezmoi commands
@@ -34,6 +35,7 @@ The app is not packaged yet, can be run as a module with python and `textual`.
 - [x] `chezmoi diff`
 - [x] `chezmoi status`
 - [x] `chezmoi git log`
+- [ ] `chezmoi add`
 - [ ] `chezmoi add`
 - [ ] `chezmoi apply`
 - [ ] `chezmoi re-add`

@@ -44,18 +44,10 @@ from chezmoi_mousse.components import (
 from chezmoi_mousse.config import filter_data, pw_mgr_info
 
 
-def left_min_width() -> int:
-    # 7 for the filter switch, 2 for title padding right
-    max_filter_width = (
-        max(len(f.label) for f in vars(filter_data).values()) + 8 + 2
-    )
-    return max(len(chezmoi.dest_dir_str_spaced) + 2, max_filter_width)
-
-
 class TabButton(Vertical):
 
     def __init__(self, label: str, button_id: str) -> None:
-        super().__init__(classes="center-content")
+        super().__init__()
         self.button_id = button_id
         self.label = label
 
@@ -72,7 +64,7 @@ class TreeTabSwitchers(Horizontal):
 
     def __init__(self, tab: str) -> None:
         self.tab = tab
-        super().__init__(id=f"{tab}_tab_switchers")
+        super().__init__()
 
     def compose(self) -> ComposeResult:
         # Left: Tree/List Switcher
@@ -118,15 +110,17 @@ class TreeTabSwitchers(Horizontal):
             with ContentSwitcher(
                 initial=f"{self.tab}_content", id=f"{self.tab}_view_switcher"
             ):
-                yield PathView(id=f"{self.tab}_content")
+                yield PathView(
+                    id=f"{self.tab}_content",
+                    auto_scroll=False,
+                    wrap=False,
+                    highlight=True,
+                )
                 yield DiffView(id=f"{self.tab}_diff")
                 yield GitLog(id=f"{self.tab}_git_log")
 
     def on_mount(self) -> None:
-        # Left
-        self.query_one(f"#{self.tab}_left", Vertical).styles.min_width = (
-            left_min_width()
-        )
+
         self.query_one(
             f"#{self.tab}_tree_buttons", Horizontal
         ).border_subtitle = chezmoi.dest_dir_str_spaced
@@ -208,7 +202,7 @@ class TreeTabSwitchers(Horizontal):
                 ).add_class("last-clicked")
 
 
-class ApplyTab(Horizontal):
+class ApplyTab(Vertical):
 
     BINDINGS = [
         Binding(
@@ -313,20 +307,24 @@ class AddTab(Horizontal):
                         filter_data.unmanaged_dirs.label,
                         classes="filter-label",
                     ).with_tooltip(tooltip=filter_data.unmanaged_dirs.tooltip),
-                    classes="center-content padding-bottom-once",
+                    classes="padding-bottom-once",
                 ),
                 HorizontalGroup(
                     Switch(id="add_tab_unwanted", classes="filter-switch"),
                     Label(
                         filter_data.unwanted.label, classes="filter-label"
                     ).with_tooltip(tooltip=filter_data.unwanted.tooltip),
-                    classes="center-content",
                 ),
                 classes="filter-container",
             )
 
         yield Vertical(
-            PathView(id="add_path_view"),
+            PathView(
+                id="add_path_view",
+                auto_scroll=False,
+                wrap=False,
+                highlight=True,
+            ),
             id="add_tab_right",
             classes="border-path-title",
         )
@@ -336,9 +334,6 @@ class AddTab(Horizontal):
         filtered_dir_tree.show_root = False
         filtered_dir_tree.guide_depth = 3
 
-        self.query_one("#add_tab_left", Vertical).styles.min_width = (
-            left_min_width()
-        )
         self.query_one(
             "#add_tree_container", ScrollableContainer
         ).border_title = chezmoi.dest_dir_str_spaced

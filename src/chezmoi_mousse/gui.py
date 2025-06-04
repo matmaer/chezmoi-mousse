@@ -25,8 +25,11 @@ from textual.scrollbar import ScrollBar, ScrollBarRender
 
 import chezmoi_mousse.chezmoi
 from chezmoi_mousse import BURGER, FLOW
-from chezmoi_mousse.main_tabs import AddTab, ApplyTab, DoctorTab, ReAddTab
+from chezmoi_mousse.main_tabs import AddTab, ApplyTab, ReAddTab, DoctorTab
 from chezmoi_mousse.splash import LoadingScreen
+
+
+splash_command_log: list[tuple[list, str]]
 
 
 class CommandLog(RichLog):
@@ -69,10 +72,6 @@ class CommandLog(RichLog):
 
 class MainScreen(Screen):
 
-    def __init__(self, splash_command_log: list[tuple[list, str]]) -> None:
-        super().__init__()
-        self.splash_command_log = splash_command_log
-
     def compose(self) -> ComposeResult:
         yield Header(icon=BURGER)
         with TabbedContent():
@@ -94,7 +93,8 @@ class MainScreen(Screen):
 
     def on_mount(self) -> None:
         command_log = self.query_one("#command_log", CommandLog)
-        for cmd in self.splash_command_log:
+        global splash_command_log
+        for cmd in splash_command_log:
             command_log.add(cmd)
 
 
@@ -240,6 +240,8 @@ class ChezmoiGUI(App):
 
     CSS_PATH = "gui.tcss"
 
+    SCREENS = {"main_screen": MainScreen}
+
     def on_mount(self) -> None:
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
         self.title = "-  c h e z m o i  m o u s s e  -"
@@ -247,5 +249,7 @@ class ChezmoiGUI(App):
         self.theme = "chezmoi-mousse-dark"
         self.push_screen(LoadingScreen(), self.push_main_screen)
 
-    def push_main_screen(self, splash_command_log) -> None:
-        self.push_screen(MainScreen(splash_command_log))
+    def push_main_screen(self, new_splash_command_log) -> None:
+        global splash_command_log
+        splash_command_log = new_splash_command_log
+        self.push_screen("main_screen")

@@ -1,5 +1,9 @@
 """Contains anything related to running chezmoi commands and processing the
-output of those commands."""
+output of those commands.
+
+The module will not import any textual classes, but does contain a
+command_log_callback function set by gui.py.
+"""
 
 import ast
 from dataclasses import dataclass, field
@@ -110,8 +114,8 @@ class SubProcessCalls:
     """Group of commands that call subprocess.run() but do not change any
     state."""
 
-    def git_log(self, file_path: Path) -> list[str]:
-        source_path = subprocess_run(BASE + ["source-path", str(file_path)])
+    def git_log(self, path: Path) -> list[str]:
+        source_path = subprocess_run(BASE + ["source-path", str(path)])
         long_command = BASE + SUBS["git_log"] + [str(source_path)]
         return subprocess_run(long_command).splitlines()
 
@@ -234,6 +238,14 @@ class Chezmoi:
         return [Path(p) for p in self.managed_files.list_out]
 
     @property
+    def status_dir_paths(self) -> list[Path]:
+        return [Path(p) for p in self.status_dirs.list_out]
+
+    @property
+    def status_file_paths(self) -> list[Path]:
+        return [Path(p) for p in self.status_files.list_out]
+
+    @property
     def status_paths(self) -> dict[str, dict[Path, str]]:
         """
         Returns a dictionary with four keys: "apply_files", "apply_dirs",
@@ -265,6 +277,15 @@ class Chezmoi:
                 self.status_dirs.list_out, apply=False
             ),
         }
+
+    @property
+    def managed_file_paths_without_status(self) -> list[Path]:
+        return [
+            p
+            for p in self.managed_file_paths
+            if p not in self.status_paths["apply_files"]
+            or p not in self.status_paths["re_add_files"]
+        ]
 
     def managed_file_paths_in_dir(self, dir_path: Path) -> list[Path]:
         return [f for f in self.managed_file_paths if f.parent == dir_path]

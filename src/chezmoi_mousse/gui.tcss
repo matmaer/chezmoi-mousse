@@ -2,29 +2,12 @@
 /* tcss classes */
 /****************/
 
-.tab-content-left {
-  margin-right: 2;
-  width: 1fr;
-}
-
-.tab-content-right {
-  width: 2fr;
-}
-
-/* used to center Switch+Label Horizontal below the (Dir)Tree widgets */
-.center-content {
-  align: center middle;
-}
-
 .filter-container {
-  dock: bottom;
-  align: center middle;
   border-top: inner $background-lighten-2;
   border-bottom: inner $background-lighten-2;
   background: $background-lighten-2;
   background-tint: $background-lighten-2;
-  height: auto;
-  max-height: 5;
+  dock: bottom;
 
   .filter-label {
     padding-right: 2;
@@ -55,11 +38,58 @@
   }
 }
 
-AddTab {
-  /* to have a space between the two filters below the tree*/
-  .padding-bottom-once {
-    padding-bottom: 1;
+/* for custom tab buttons */
+.tab-buttons-horizontal {
+  height: 2;
+  border-top: none;
+  border-right: none;
+  border-bottom: solid $primary;
+  border-left: none;
+  border-subtitle-color: $primary;
+  border-subtitle-align: center;
+  border-subtitle-style: bold;
+
+  .tab-button {
+    /* default min width from textual is 16, setting to shortest button text */
+    min-width: 4;
+    /* setting the longest button text */
+    max-width: 9;
+    color: $text;
+    text-style: none;
+
+    &:hover {
+    text-style: bold;
+    }
+
+    &.last-clicked {
+      color: $accent;
+      text-style: none;
+
+      &:hover {
+        text-style: none;
+      }
+    }
   }
+
+  Vertical {
+    align: center middle;
+    margin-left: 1;
+    margin-right: 1;
+  }
+}
+
+ApplyTab, ReAddTab {
+  .tab-content-left {
+    margin-right: 2;
+  }
+  .tab-content-right {
+  }
+  .filter-container {
+    height: 3;
+  }
+}
+
+AddTab {
   /* to show the root path on the left and view path on the right */
   .border-path-title {
     border-top: solid $primary;
@@ -68,6 +98,18 @@ AddTab {
     border-left: none;
     border-title-align: center;
     border-title-style: bold;
+  }
+  .tab-content-left {
+    margin-right: 2;
+  }
+  .tab-content-right {
+  }
+  .filter-container {
+    height: 5;
+    /* to have a space between the two filters below the tree*/
+    .padding-bottom-once {
+      padding-bottom: 1;
+    }
   }
 }
 
@@ -88,7 +130,6 @@ PathView, DiffView {
 }
 
 MainScreen {
-  layers: window;
 }
 
 ModalScreen {
@@ -101,40 +142,6 @@ ModalScreen {
 #flow_diagram {
   padding: 0 1 0 1;
   min-width: 80;
-}
-
-/* for "Tree" vs "List" switcher */
-.tab-buttons-horizontal {
-  height: 2;
-  border-top: none;
-  border-right: none;
-  border-bottom: solid $primary;
-  border-left: none;
-  border-subtitle-color: $primary;
-  border-subtitle-align: center;
-  border-subtitle-style: bold;
-
-  Vertical {
-    align: center middle;
-  }
-}
-
-.tab-button {
-  color: $text;
-  text-style: none;
-
-  &:focus {
-    color: $accent;
-  }
-
-  &:hover {
-    text-style: bold;
-  }
-
-  &.last-clicked {
-    color: $accent;
-    text-style: bold;
-  }
 }
 
 /******************************************************************/
@@ -306,13 +313,6 @@ Operate {
     background: $surface;
   }
 
-  & .operate-file-preview {
-    padding: 0;
-    margin-right: 1;
-    border: none;
-    offset: -1 0;
-  }
-
   & .operate-checkbox {
     margin: 0;
     padding: 0;
@@ -338,34 +338,6 @@ Operate {
       text-style: bold;
 
     }
-  }
-}
-
-.diff-operate-button {
-  height: 3;
-  dock: bottom;
-  border-top: wide $primary;
-  border-bottom: inner $background;
-
-  &:disabled {
-    text-opacity: 0.6;
-  }
-
-  &:focus {
-    border-top: wide $primary-lighten-2;
-    # border-bottom: inner $background;
-  }
-
-  &:hover {
-    border-top: wide $primary-lighten-3;
-    border-bottom: inner $background;
-    # color: $accent-lighten-3;
-  }
-
-  &.-active {
-    text-style: none;
-    border-top: wide $primary-lighten-2;
-    border-bottom: inner $background;
   }
 }
 
