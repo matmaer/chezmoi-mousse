@@ -292,7 +292,7 @@ class AddTab(Horizontal):
     ]
 
     def __init__(self, **kwargs) -> None:
-        self.tab = "Add"
+        self.tab: TabLabel = "Add"
         # the directory tree on the left
         self.add_tree_id = f"{self.tab}_dir_tree"
         # the path view on the right
@@ -300,7 +300,9 @@ class AddTab(Horizontal):
         # vertical container ids to set border titles
         self.tree_container_id = f"{self.tab}_tree_container"
         self.view_container_id = f"{self.tab}_view_container"
-        # TODO filter switch ids
+        # filter switch ids
+        self.unmanaged_dirs_filter_id = f"{self.tab}_unmanaged_dirs_filter"
+        self.unwanted_filter_id = f"{self.tab}_unwanted_filter"
 
         super().__init__(**kwargs)
 
@@ -314,7 +316,8 @@ class AddTab(Horizontal):
             yield Vertical(
                 HorizontalGroup(
                     Switch(
-                        id="add_tab_unmanaged_dirs", classes="filter-switch"
+                        id=self.unmanaged_dirs_filter_id,
+                        classes="filter-switch",
                     ),
                     Label(
                         filter_data.unmanaged_dirs.label,
@@ -323,7 +326,9 @@ class AddTab(Horizontal):
                     classes="padding-bottom-once",
                 ),
                 HorizontalGroup(
-                    Switch(id="add_tab_unwanted", classes="filter-switch"),
+                    Switch(
+                        id=self.unwanted_filter_id, classes="filter-switch"
+                    ),
                     Label(
                         filter_data.unwanted.label, classes="filter-label"
                     ).with_tooltip(tooltip=filter_data.unwanted.tooltip),
@@ -387,10 +392,10 @@ class AddTab(Horizontal):
     def on_switch_changed(self, event: Switch.Changed) -> None:
         event.stop()
         tree = self.query_one(f"#{self.add_tree_id}", FilteredDirTree)
-        if event.switch.id == "add_tab_unmanaged_dirs":
+        if event.switch.id == self.unmanaged_dirs_filter_id:
             tree.unmanaged_dirs = event.value
             tree.reload()
-        elif event.switch.id == "add_tab_unwanted":
+        elif event.switch.id == self.unwanted_filter_id:
             tree.unwanted = event.value
             tree.reload()
 
