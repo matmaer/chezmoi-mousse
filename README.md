@@ -10,18 +10,15 @@ The project is in its very early stages, see roadmap below.
 
 The app is not packaged yet, can be run as a module with python and `textual`.
 
-## Roadmap
+## General goals for a first release
 
-### General
-- [x] Create text based version of the `mermaid` diagrams offered by `chezmoi`.
-- [x] Implement first startup loading screen
-- [x] Create widget to show subprocess shell IO
-  - [x] show the chezmoi commands run to load all data
-  - [x] create animated ascii art font on the loading screen
-  - [ ] implement pre-flight checks with feedback what to do if failed
-    - [ ] handle chezmoi init recommendation when config was changed
-- [ ] Check https://github.com/actions/attest-build-provenance
-- [ ] Check https://github.com/actions/attest-build-provenance
+- support chezmoi add, re-add and apply commands
+- support interactive operations for regular files
+- use `textual` features for rich visualization
+- keep app as safe as possible to avoid user mistakes with visualizations
+- have no support for system interaction other than through chezmoi
+
+## Roadmap
 
 ### Chezmoi commands
 
@@ -29,24 +26,25 @@ The app is not packaged yet, can be run as a module with python and `textual`.
 - [x] `chezmoi doctor`
 - [x] `chezmoi config-dump`
 - [x] `chezmoi ignored`
-- [x] `chezmoi cat-config` for toml format
-- [x] `chezmoi managed` paths tree toggle
-- [x] `chezmoi unmanaged` paths tree toggle
+- [x] `chezmoi cat-config`
+- [x] `chezmoi managed`
+- [x] `chezmoi unmanaged`
 - [x] `chezmoi diff`
 - [x] `chezmoi status`
 - [x] `chezmoi git log`
-- [ ] `chezmoi add`
+- [x] `chezmoi cat`
+- [x] `chezmoi source-dir`
 - [ ] `chezmoi add`
 - [ ] `chezmoi apply`
 - [ ] `chezmoi re-add`
 
 
-## General goals for a first release
+### Todo notes
 
-- leverage `textual` features for concise and rich visualizations
-- made for existing chezmoi users
-- only support interactive operations for regular files
-- improve understanding of chezmoi by using the TUI
-- make subprocess calls as safe as possible
-- "loading" screen for initial app startup and pre-flight checks
-- operate screen to operate chezmoi
+- [ ] implement pre-flight checks before app can load with feedback in an  inline textual app
+- [x] Implement first startup loading screen
+  - [x] create animated ascii art font on the loading screen
+- [x] Create widget to show subprocess shell IO as it happens
+  - [x] log the chezmoi commands which ran ran to load all data
+- [ ] handle chezmoi init recommendation when config was changed
+- [ ] Check https://github.com/actions/attest-build-provenance
