@@ -37,10 +37,6 @@ class GitLog(DataTable):
 
     path: reactive[Path | None] = reactive(None, init=False)
 
-    # def __init__(self, path: Path | None = None, **kwargs) -> None:
-    #     super().__init__(**kwargs)
-    #     self.path = path
-
     def on_mount(self) -> None:
         self.show_cursor = False
         if self.path is None:
@@ -111,7 +107,7 @@ class PathView(RichLog):
     BINDINGS = [Binding(key="M,m", action="maximize", description="maximize")]
 
     path: reactive[Path | None] = reactive(None, init=False)
-    tab_id: reactive[str] = reactive("apply_tab", init=False)
+    tab: reactive[str] = reactive("apply_tab", init=False)
 
     def on_mount(self) -> None:
         text = "Click a file or directory, \nto show its contents."
@@ -186,7 +182,7 @@ class PathView(RichLog):
             else:
                 self.write(f"Unmanaged directory: {self.path}")
 
-            if self.tab_id == "add_tab":
+            if self.tab == "Add":
                 self.write(
                     '(switch to "Apply" or "ReAdd" tab to apply or re-add)'
                 )
@@ -228,7 +224,7 @@ class DiffView(Static):
         assert self.diff_spec is not None and isinstance(self.diff_spec, tuple)
 
         diff_output: list[str]
-        if self.diff_spec[1] == "apply":
+        if self.diff_spec[1] == "Apply":
             if self.diff_spec[0] not in chezmoi.status_paths["apply_files"]:
                 self.update(
                     Content("\n").join(
@@ -241,7 +237,7 @@ class DiffView(Static):
                 return
             else:
                 diff_output = chezmoi.run.apply_diff(self.diff_spec[0])
-        elif self.diff_spec[1] == "re-add":
+        elif self.diff_spec[1] == "Re-Add":
             if self.diff_spec[0] not in chezmoi.status_paths["re_add_files"]:
                 self.update(
                     Content("\n").join(
@@ -310,24 +306,24 @@ class ManagedTree(Tree[NodeData]):
     }
 
     def __init__(self, direction, flat_list=False, **kwargs) -> None:
-        self.direction: Literal["apply", "re_add"] = direction
+        self.direction: Literal["Apply", "Re-Add"] = direction
         self.flat_list: bool = flat_list
         super().__init__(label="root", **kwargs)
 
     @property
     def status_dirs(self):
-        if self.direction == "apply":
+        if self.direction == "Apply":
             return chezmoi.status_paths["apply_dirs"]
-        elif self.direction == "re_add":
+        elif self.direction == "Re-Add":
             return chezmoi.status_paths["re_add_dirs"]
         else:
             return {}
 
     @property
     def status_files(self):
-        if self.direction == "apply":
+        if self.direction == "Apply":
             return chezmoi.status_paths["apply_files"]
-        elif self.direction == "re_add":
+        elif self.direction == "Re-Add":
             return chezmoi.status_paths["re_add_files"]
         else:
             return {}
