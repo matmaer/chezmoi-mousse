@@ -76,7 +76,6 @@ class TreeTabSwitchers(Horizontal):
         # button group ids
         self.tree_button_group_id = f"{self.tab}_tree_buttons"
         self.view_button_group_id = f"{self.tab}_view_buttons"
-
         # content switcher ids
         self.tree_switcher_id = f"{self.tab}_tree_switcher"
         self.view_switcher_id = f"{self.tab}_view_switcher"
@@ -108,19 +107,17 @@ class TreeTabSwitchers(Horizontal):
                 yield ManagedTree(
                     id=self.list_content_id, tab=self.tab, flat_list=True
                 )
-            yield Vertical(
-                HorizontalGroup(
-                    Switch(id=self.filter_switch_id, classes="filter-switch"),
-                    Label(
-                        filter_data.unchanged.label, classes="filter-label"
-                    ).with_tooltip(tooltip=filter_data.unchanged.tooltip),
-                ),
+            yield HorizontalGroup(
+                Switch(id=self.filter_switch_id, classes="filter-switch"),
+                Label(
+                    filter_data.unchanged.label, classes="filter-label"
+                ).with_tooltip(tooltip=filter_data.unchanged.tooltip),
                 classes="filter-container",
             )
 
         # Right: Content/Diff Switcher
-        with Vertical(classes="tab-content-right"):
-            with Horizontal(
+        with VerticalGroup(classes="tab-content-right"):
+            with HorizontalGroup(
                 id=self.view_buttons_id,
                 classes="tab-buttons-horizontal tab-buttons-top",
             ):
@@ -141,9 +138,9 @@ class TreeTabSwitchers(Horizontal):
 
     def on_mount(self) -> None:
 
-        self.query_one(
-            f"#{self.tree_button_group_id}", Horizontal
-        ).border_subtitle = chezmoi.dest_dir_str_spaced
+        self.query_one(f"#{self.tree_button_group_id}").border_subtitle = (
+            chezmoi.dest_dir_str_spaced
+        )
         self.query_one(f"#{self.tree_button_id}", Button).add_class(
             "last-clicked"
         )
@@ -151,9 +148,9 @@ class TreeTabSwitchers(Horizontal):
         self.query_one(f"#{self.content_button_id}", Button).add_class(
             "last-clicked"
         )
-        self.query_one(
-            f"#{self.view_buttons_id}", Horizontal
-        ).border_subtitle = " path view "
+        self.query_one(f"#{self.view_buttons_id}").border_subtitle = (
+            " path view "
+        )
 
     def update_button_classes(self, button_ids, active_id):
         for btn_id in button_ids:
@@ -206,9 +203,7 @@ class TreeTabSwitchers(Horizontal):
     def on_tree_node_selected(self, event: ManagedTree.NodeSelected) -> None:
         event.stop()
         assert event.node.data is not None
-        self.query_one(
-            f"#{self.view_button_group_id}", Horizontal
-        ).border_subtitle = (
+        self.query_one(f"#{self.view_button_group_id}").border_subtitle = (
             f" {event.node.data.path.relative_to(chezmoi.dest_dir)} "
         )
         path_view = self.query_one(f"#{self.content_content_id}", PathView)
@@ -299,7 +294,7 @@ class AddTab(Horizontal):
                 id=self.tree_container_id,
                 classes="border-path-title",
             )
-            yield Vertical(
+            yield VerticalGroup(
                 HorizontalGroup(
                     Switch(
                         id=self.unmanaged_dirs_filter_id,

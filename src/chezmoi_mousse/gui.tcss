@@ -49,6 +49,7 @@
 }
 
 .filter-container {
+  align: center middle;
   border-top: inner $surface;
   border-bottom: inner $surface;
   background: $surface;
@@ -82,9 +83,6 @@
       }
     }
   }
-  HorizontalGroup {
-    align: center middle;
-  }
 }
 
 ApplyTab, ReAddTab {
@@ -107,6 +105,9 @@ AddTab {
       padding-bottom: 1;
     }
   }
+  VerticalGroup > HorizontalGroup {
+    align: center middle;
+  }
 }
 
 AutoWarning {
@@ -123,7 +124,6 @@ PathView, DiffView {
 }
 
 MainScreen {
-  border: round silver;
 }
 
 ModalScreen {
