@@ -36,6 +36,9 @@
       }
     }
   }
+  HorizontalGroup {
+    align: center middle;
+  }
 }
 
 /* for custom tab buttons */
