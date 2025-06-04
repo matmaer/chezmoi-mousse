@@ -10,6 +10,7 @@ from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.events import Click
 from textual.containers import (
+    Container,
     Horizontal,
     HorizontalGroup,
     ScrollableContainer,
@@ -93,7 +94,8 @@ class TreeTabSwitchers(Horizontal):
         # Left: Tree/List Switcher
         with Vertical(classes="tab-content-left"):
             with Horizontal(
-                id=self.tree_button_group_id, classes="tab-buttons-horizontal"
+                id=self.tree_button_group_id,
+                classes="tab-buttons-horizontal tab-buttons-top",
             ):
                 yield TabButton("Tree", self.tree_button_id)
                 yield TabButton("List", self.list_button_id)
@@ -119,7 +121,8 @@ class TreeTabSwitchers(Horizontal):
         # Right: Content/Diff Switcher
         with Vertical(classes="tab-content-right"):
             with Horizontal(
-                id=self.view_buttons_id, classes="tab-buttons-horizontal"
+                id=self.view_buttons_id,
+                classes="tab-buttons-horizontal tab-buttons-top",
             ):
                 yield TabButton("Content", self.content_button_id)
                 yield TabButton("Diff", self.diff_button_id)
@@ -227,7 +230,7 @@ class TreeTabSwitchers(Horizontal):
             ).unchanged = event.value
 
 
-class ApplyTab(Vertical):
+class ApplyTab(Container):
 
     BINDINGS = [
         Binding(
@@ -245,7 +248,7 @@ class ApplyTab(Vertical):
         self.notify("to implement")
 
 
-class ReAddTab(Vertical):
+class ReAddTab(Container):
 
     BINDINGS = [
         Binding(
