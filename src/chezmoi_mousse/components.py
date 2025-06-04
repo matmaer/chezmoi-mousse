@@ -13,7 +13,6 @@ import re
 from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Literal
 
 from rich.style import Style
 from rich.text import Text
@@ -308,7 +307,7 @@ class ManagedTree(Tree[NodeData]):
     }
 
     def __init__(self, direction, flat_list=False, **kwargs) -> None:
-        self.direction: Literal["Apply", "Re-Add"] = direction
+        self.direction: TabLabel = direction
         self.flat_list: bool = flat_list
         super().__init__(label="root", **kwargs)
 
