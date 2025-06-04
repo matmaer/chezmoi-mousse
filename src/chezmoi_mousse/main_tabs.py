@@ -291,11 +291,24 @@ class AddTab(Horizontal):
         )
     ]
 
+    def __init__(self, **kwargs) -> None:
+        self.tab = "Add"
+        # the directory tree on the left
+        self.add_tree_id = f"{self.tab}_dir_tree"
+        # the path view on the right
+        self.path_view_id = f"{self.tab}_path_view"
+        # vertical container ids to set border titles
+        self.tree_container_id = f"{self.tab}_tree_container"
+        self.view_container_id = f"{self.tab}_view_container"
+        # TODO filter switch ids
+
+        super().__init__(**kwargs)
+
     def compose(self) -> ComposeResult:
-        with Vertical(id="add_tab_left", classes="tab-content-left"):
+        with Vertical(classes="tab-content-left"):
             yield ScrollableContainer(
-                FilteredDirTree(chezmoi.dest_dir, id="add_tree"),
-                id="add_tree_container",
+                FilteredDirTree(chezmoi.dest_dir, id=self.add_tree_id),
+                id=self.tree_container_id,
                 classes="border-path-title",
             )
             yield Vertical(
@@ -320,27 +333,31 @@ class AddTab(Horizontal):
 
         yield Vertical(
             PathView(
-                id="add_path_view",
+                id=self.path_view_id,
                 auto_scroll=False,
                 wrap=False,
                 highlight=True,
             ),
-            id="add_tab_right",
+            id=self.view_container_id,
             classes="border-path-title",
         )
 
     def on_mount(self) -> None:
-        filtered_dir_tree = self.query_one("#add_tree", FilteredDirTree)
+        filtered_dir_tree = self.query_one(
+            f"#{self.add_tree_id}", FilteredDirTree
+        )
         filtered_dir_tree.show_root = False
         filtered_dir_tree.guide_depth = 3
 
         self.query_one(
-            "#add_tree_container", ScrollableContainer
+            f"#{self.tree_container_id}", ScrollableContainer
         ).border_title = chezmoi.dest_dir_str_spaced
 
-        self.query_one("#add_tab_right", Vertical).border_title = " path view "
+        self.query_one(f"#{self.view_container_id}", Vertical).border_title = (
+            " path view "
+        )
 
-        self.query_one("#add_path_view", PathView).tab = "Add"
+        self.query_one(f"#{self.path_view_id}", PathView).tab = self.tab
 
     def on_directory_tree_file_selected(
         self, event: FilteredDirTree.FileSelected
@@ -348,10 +365,10 @@ class AddTab(Horizontal):
         event.stop()
 
         assert event.node.data is not None
-        path_view = self.query_one("#add_path_view", PathView)
+        path_view = self.query_one(f"#{self.path_view_id}", PathView)
         path_view.path = event.node.data.path
-        path_view.tab = "Add"
-        self.query_one("#add_tab_right", Vertical).border_title = (
+        path_view.tab = self.tab
+        self.query_one(f"#{self.view_container_id}", Vertical).border_title = (
             f" {event.node.data.path} "
         )
 
@@ -360,16 +377,16 @@ class AddTab(Horizontal):
     ) -> None:
         event.stop()
         assert event.node.data is not None
-        path_view = self.query_one("#add_path_view", PathView)
+        path_view = self.query_one(f"#{self.path_view_id}", PathView)
         path_view.path = event.node.data.path
-        path_view.tab = "Add"
-        self.query_one("#add_tab_right", Vertical).border_title = (
+        path_view.tab = self.tab
+        self.query_one(f"#{self.view_container_id}", Vertical).border_title = (
             f" {event.node.data.path} "
         )
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
         event.stop()
-        tree = self.query_one("#add_tree", FilteredDirTree)
+        tree = self.query_one(f"#{self.add_tree_id}", FilteredDirTree)
         if event.switch.id == "add_tab_unmanaged_dirs":
             tree.unmanaged_dirs = event.value
             tree.reload()
@@ -378,7 +395,7 @@ class AddTab(Horizontal):
             tree.reload()
 
     def action_add_path(self) -> None:
-        dir_tree = self.query_one("#add_tree", FilteredDirTree)
+        dir_tree = self.query_one(f"#{self.add_tree_id}", FilteredDirTree)
         self.notify(f"will add {dir_tree.cursor_node}")
 
 
