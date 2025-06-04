@@ -88,26 +88,20 @@ class PerformChange:
     Verbose output is returned for logging.
     """
 
-    base = BASE + ["--verbose" "--dry-run"]
+    base = BASE + ["--verbose", "--dry-run"]
     # TODO: remove --dry-run
 
     @staticmethod
     def add(path: Path) -> str:
-        return subprocess_run(
-            BASE + PerformChange.base + ["add"] + [str(path)]
-        )
+        return subprocess_run(PerformChange.base + ["add"] + [str(path)])
 
     @staticmethod
     def re_add(path: Path) -> str:
-        return subprocess_run(
-            BASE + PerformChange.base + ["re-add"] + [str(path)]
-        )
+        return subprocess_run(PerformChange.base + ["re-add"] + [str(path)])
 
     @staticmethod
     def apply(path: Path) -> str:
-        return subprocess_run(
-            BASE + PerformChange.base + ["apply"] + [str(path)]
-        )
+        return subprocess_run(PerformChange.base + ["apply"] + [str(path)])
 
 
 class SubProcessCalls:
@@ -202,7 +196,7 @@ class Chezmoi:
         return Path(self.dump_config.dict_out["sourceDir"])
 
     @property
-    def source_dir_str(self) -> Path:
+    def source_dir_str(self) -> str:
         return self.dump_config.dict_out["sourceDir"]
 
     @property
