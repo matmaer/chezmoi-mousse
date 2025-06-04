@@ -25,9 +25,7 @@ from textual.scrollbar import ScrollBar, ScrollBarRender
 
 import chezmoi_mousse.chezmoi
 from chezmoi_mousse import BURGER, FLOW
-from chezmoi_mousse.main_tabs import ApplyTab, ReAddTab, DoctorTab
-
-# AddTab
+from chezmoi_mousse.main_tabs import AddTab, ApplyTab, ReAddTab, DoctorTab
 from chezmoi_mousse.splash import LoadingScreen
 
 
@@ -81,8 +79,8 @@ class MainScreen(Screen):
                 yield ApplyTab(id="apply_tab")
             with TabPane("Re-Add", id="re_add_tab_pane"):
                 yield Lazy(ReAddTab(id="re_add_tab"))
-            # with TabPane("Add", id="add_tab_pane"):
-            #     yield Lazy(AddTab(id="add_tab"))
+            with TabPane("Add", id="add_tab_pane"):
+                yield Lazy(AddTab(id="add_tab"))
             with TabPane("Doctor", id="doctor_tab_pane"):
                 yield Lazy(DoctorTab(id="doctor_tab"))
             with TabPane("Diagram", id="diagram_tab_pane"):
