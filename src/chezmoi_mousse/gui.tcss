@@ -2,44 +2,6 @@
 /* tcss classes */
 /****************/
 
-.filter-container {
-  border-top: inner $background-lighten-2;
-  border-bottom: inner $background-lighten-2;
-  background: $background-lighten-2;
-  background-tint: $background-lighten-2;
-  dock: bottom;
-
-  .filter-label {
-    padding-right: 2;
-  }
-
-  .switch--slider {
-    color: $error-darken-3;
-  }
-
-  .filter-switch {
-    background: $background-lighten-2;
-    background-tint: $background-lighten-2;
-
-    &.-on .switch--slider {
-      color: $success-darken-1;
-    }
-
-    &:hover {
-      &>.switch--slider {
-        color: $error;
-      }
-
-      &.-on>.switch--slider {
-        color: $success-lighten-2;
-      }
-    }
-  }
-  HorizontalGroup {
-    align: center middle;
-  }
-}
-
 .tab-buttons-top {
   border-bottom: solid $primary;
   border-subtitle-color: $primary;
@@ -47,12 +9,9 @@
   border-subtitle-style: bold;
 }
 
-
-
 /* for custom tab buttons */
 .tab-buttons-horizontal {
   height: 2;
-
 
   .tab-button {
     /* default min width from textual is 16, setting to shortest button text */
@@ -89,8 +48,46 @@
 .tab-content-right {
 }
 
-ApplyTab, ReAddTab {
+.filter-container {
+  border-top: inner $surface;
+  border-bottom: inner $surface;
+  background: $surface;
+  background-tint: $surface;
+  dock: bottom;
 
+  .filter-label {
+    padding-right: 2;
+  }
+
+  /* all switches start in the off state */
+  .switch--slider {
+    color: $error-darken-3;
+  }
+
+  .filter-switch {
+    background: $surface;
+    background-tint: $surface;
+
+    &.-on .switch--slider {
+      color: $success;
+    }
+
+    &:hover {
+      &>.switch--slider {
+        color: $error;
+      }
+
+      &.-on>.switch--slider {
+        color: $success-lighten-2;
+      }
+    }
+  }
+  HorizontalGroup {
+    align: center middle;
+  }
+}
+
+ApplyTab, ReAddTab {
   .filter-container {
     height: 3;
   }
@@ -126,6 +123,7 @@ PathView, DiffView {
 }
 
 MainScreen {
+  border: round silver;
 }
 
 ModalScreen {
