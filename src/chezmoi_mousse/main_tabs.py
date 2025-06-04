@@ -152,68 +152,53 @@ class TreeTabSwitchers(Horizontal):
             f"#{self.view_buttons_id}", Horizontal
         ).border_subtitle = " path view "
 
+    def _update_button_classes(self, button_ids, active_id):
+        for btn_id in button_ids:
+            self.query_one(f"#{btn_id}", Button).remove_class("last-clicked")
+        self.query_one(f"#{active_id}", Button).add_class("last-clicked")
+
     def on_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
         # Tree/List Switch
-        if (
-            event.button.id == self.tree_button_id
-            or event.button.id == self.list_button_id
-        ):
-            # Remove from both tree and list buttons
-            for btn_id in [self.tree_button_id, self.list_button_id]:
-                self.query_one(f"#{btn_id}", Button).remove_class(
-                    "last-clicked"
-                )
+        if event.button.id in [self.tree_button_id, self.list_button_id]:
+            self._update_button_classes(
+                [self.tree_button_id, self.list_button_id], event.button.id
+            )
             if event.button.id == self.tree_button_id:
                 self.query_one(
                     f"#{self.tree_switcher_id}", ContentSwitcher
                 ).current = self.tree_content_id
-                self.query_one(f"#{self.tree_button_id}", Button).add_class(
-                    "last-clicked"
-                )
             else:
                 self.query_one(
                     f"#{self.tree_switcher_id}", ContentSwitcher
                 ).current = self.list_content_id
-                self.query_one(f"#{self.list_button_id}", Button).add_class(
-                    "last-clicked"
-                )
         # Content/Diff/GitLog Switch
-        elif (
-            event.button.id == self.content_button_id
-            or event.button.id == self.diff_button_id
-            or event.button.id == self.git_log_button_id
-        ):
+        elif event.button.id in [
+            self.content_button_id,
+            self.diff_button_id,
+            self.git_log_button_id,
+        ]:
             # Remove from all right-side buttons
-            for btn_id in [
-                self.content_button_id,
-                self.diff_button_id,
-                self.git_log_button_id,
-            ]:
-                self.query_one(f"#{btn_id}", Button).remove_class(
-                    "last-clicked"
-                )
+            self._update_button_classes(
+                [
+                    self.content_button_id,
+                    self.diff_button_id,
+                    self.git_log_button_id,
+                ],
+                event.button.id,
+            )
             if event.button.id == self.content_button_id:
                 self.query_one(
                     f"#{self.view_switcher_id}", ContentSwitcher
                 ).current = self.content_content_id
-                self.query_one(f"#{self.content_button_id}", Button).add_class(
-                    "last-clicked"
-                )
             elif event.button.id == self.diff_button_id:
                 self.query_one(
                     f"#{self.view_switcher_id}", ContentSwitcher
                 ).current = self.diff_content_id
-                self.query_one(f"#{self.diff_button_id}", Button).add_class(
-                    "last-clicked"
-                )
             elif event.button.id == self.git_log_button_id:
                 self.query_one(
                     f"#{self.view_switcher_id}", ContentSwitcher
                 ).current = self.git_log_content_id
-                self.query_one(f"#{self.git_log_button_id}", Button).add_class(
-                    "last-clicked"
-                )
 
     def on_tree_node_selected(self, event: ManagedTree.NodeSelected) -> None:
         event.stop()
