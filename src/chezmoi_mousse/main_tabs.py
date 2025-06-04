@@ -96,9 +96,16 @@ class ApplyOrReAddTabHorizontal(Horizontal):
             ):
                 yield TabButton(label="Tree", button_id=self.tree_button_id)
                 yield TabButton(label="List", button_id=self.list_button_id)
-            yield ManagedTree(
-                id=f"{self.tab}_managed_tree", label="hidden_tree_root"
-            )
+            with ContentSwitcher(
+                initial=f"{self.tab}_managed_tree",
+                id=f"{self.tab}_managed_tree_switcher",
+            ):
+                yield ManagedTree(
+                    id=f"{self.tab}_managed_tree", label="hidden_tree_root"
+                )
+                yield ManagedTree(
+                    id=f"{self.tab}_managed_list", label="hidden_list_root"
+                )
             yield Vertical(
                 HorizontalGroup(
                     Switch(
