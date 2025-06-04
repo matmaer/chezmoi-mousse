@@ -260,7 +260,7 @@ class ApplyTab(Vertical):
         self.notify("to implement")
 
 
-class ReAddTab(Horizontal):
+class ReAddTab(Vertical):
 
     BINDINGS = [
         Binding(
