@@ -259,8 +259,7 @@ class ApplyTab(Vertical):
         yield TreeTabSwitchers("Apply")
 
     def action_apply_path(self) -> None:
-        managed_tree = self.query_one("#apply_tree", ManagedTree)
-        self.notify(f"will add {managed_tree.cursor_node}")
+        self.notify("to implement")
 
 
 class ReAddTab(Horizontal):
@@ -278,8 +277,7 @@ class ReAddTab(Horizontal):
         yield TreeTabSwitchers("Re-Add")
 
     def action_re_add_path(self) -> None:
-        managed_tree = self.query_one("#re_add_tree", ManagedTree)
-        self.notify(f"will add {managed_tree.cursor_node}")
+        self.notify("to implement")
 
 
 class AddTab(Horizontal):
