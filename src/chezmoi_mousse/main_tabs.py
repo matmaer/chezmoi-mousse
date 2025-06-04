@@ -42,12 +42,12 @@ from chezmoi_mousse.components import (
 )
 
 from chezmoi_mousse.config import filter_data, pw_mgr_info
-from chezmoi_mousse.mouse_types import TabLabel
+from chezmoi_mousse.mouse_types import TabLabel, ButtonLabel
 
 
 class TabButton(Vertical):
 
-    def __init__(self, label: str, button_id: str) -> None:
+    def __init__(self, label: ButtonLabel, button_id: str) -> None:
         super().__init__()
         self.button_id = button_id
         self.label = label
@@ -64,7 +64,7 @@ class TabButton(Vertical):
 class TreeTabSwitchers(Horizontal):
 
     def __init__(self, tab: TabLabel) -> None:
-        self.tab = tab
+        self.tab: TabLabel = tab
         # button ids
         self.tree_button_id = f"{self.tab}_tree_button"
         self.list_button_id = f"{self.tab}_list_button"
