@@ -1,8 +1,8 @@
 """Contains the widgets used to compose the tabs on the main screen of chezmoi-
 mousse, except for the Log tab.
 
-Additionally, it contains widgets which these tabs depend on if they don't meet
-the specs laid out in the components.py docstring.
+Additionally, it contains widgets which are these tabs depend on, if they are
+containers.
 """
 
 from rich.text import Text
@@ -12,7 +12,7 @@ from textual.events import Click
 from textual.containers import (
     Horizontal,
     HorizontalGroup,
-    # ScrollableContainer,
+    ScrollableContainer,
     Vertical,
     VerticalGroup,
     VerticalScroll,
@@ -35,27 +35,18 @@ from textual.widgets import (
 from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.components import (
     DiffView,
-    # FilteredDirTree,
+    FilteredDirTree,
     GitLog,
     ManagedTree,
-    # NodeData,
     PathView,
 )
 
 from chezmoi_mousse.config import filter_data, pw_mgr_info
-from chezmoi_mousse.mouse_types import (
-    # ButtonArea,
-    ButtonLabel,
-    # DiffSpec,
-    # PathViewSpec,
-    TabLabel,
-    # TreeSpec,
-)
 
 
 class TabButton(Vertical):
 
-    def __init__(self, label: ButtonLabel, button_id: str) -> None:
+    def __init__(self, label: str, button_id: str) -> None:
         super().__init__()
         self.button_id = button_id
         self.label = label
@@ -69,42 +60,32 @@ class TabButton(Vertical):
         button.compact = True
 
 
-class ApplyOrReAddTabHorizontal(Horizontal):
+class TreeTabSwitchers(Horizontal):
 
-    def __init__(self, tab_label: TabLabel) -> None:
-        """Initialize the Apply or Re-Add tab with the given tree_spec."""
-
-        # used for rendering two ManagedTree instances for the ContentSwitcher
-        self.tab: TabLabel = tab_label
-        # used to set the dynamic bottom border titles
-        self.area_top_left_id: str = f"{self.tab}_TopLeft_area"
-        self.area_top_right_id: str = f"{self.tab}_TopRight_area"
-        # used by on_button_pressed event handling
-        self.tree_button_id: str = f"{self.tab}_Tree_button"
-        self.list_button_id: str = f"{self.tab}_List_button"
-        self.content_button_id: str = f"{self.tab}_Content_button"
-        self.diff_button_id: str = f"{self.tab}_Diff_button"
-        self.git_log_button_id: str = f"{self.tab}_Git-Log_button"
-
+    def __init__(self, tab: str) -> None:
+        self.tab = tab
         super().__init__()
 
     def compose(self) -> ComposeResult:
         # Left: Tree/List Switcher
-        with Vertical(classes="tab-content-left"):
+        with Vertical(id=f"{self.tab}_left", classes="tab-content-left"):
             with Horizontal(
-                id=self.area_top_left_id, classes="tab-buttons-horizontal"
+                id=f"{self.tab}_tree_buttons", classes="tab-buttons-horizontal"
             ):
-                yield TabButton(label="Tree", button_id=self.tree_button_id)
-                yield TabButton(label="List", button_id=self.list_button_id)
+                yield TabButton("Tree", f"{self.tab}_tree_button")
+                yield TabButton("List", f"{self.tab}_list_button")
             with ContentSwitcher(
-                initial=f"{self.tab}_managed_tree",
-                id=f"{self.tab}_managed_tree_switcher",
+                initial=f"{self.tab}_tree", id=f"{self.tab}_tree_switcher"
             ):
                 yield ManagedTree(
-                    id=f"{self.tab}_managed_tree", label="hidden_tree_root"
+                    id=f"{self.tab}_tree",
+                    direction=f"{self.tab}",
+                    flat_list=False,
                 )
                 yield ManagedTree(
-                    id=f"{self.tab}_managed_list", label="hidden_list_root"
+                    id=f"{self.tab}_list",
+                    direction=f"{self.tab}",
+                    flat_list=True,
                 )
             yield Vertical(
                 HorizontalGroup(
@@ -119,17 +100,13 @@ class ApplyOrReAddTabHorizontal(Horizontal):
             )
 
         # Right: Content/Diff Switcher
-        with Vertical(classes="tab-content-right"):
+        with Vertical(id=f"{self.tab}_right", classes="tab-content-right"):
             with Horizontal(
-                id=self.area_top_right_id, classes="tab-buttons-horizontal"
+                id=f"{self.tab}_view_buttons", classes="tab-buttons-horizontal"
             ):
-                yield TabButton(
-                    label="Content", button_id=self.content_button_id
-                )
-                yield TabButton(label="Diff", button_id=self.diff_button_id)
-                yield TabButton(
-                    label="Git-Log", button_id=self.git_log_button_id
-                )
+                yield TabButton("Content", f"{self.tab}_content_button")
+                yield TabButton("Diff", f"{self.tab}_diff_button")
+                yield TabButton("Git-Log", f"{self.tab}_git_log_button")
             with ContentSwitcher(
                 initial=f"{self.tab}_content", id=f"{self.tab}_view_switcher"
             ):
@@ -144,109 +121,85 @@ class ApplyOrReAddTabHorizontal(Horizontal):
 
     def on_mount(self) -> None:
 
-        # set border titles below left and right horizontal button containers
         self.query_one(
-            f"#{self.area_top_left_id}", Horizontal
+            f"#{self.tab}_tree_buttons", Horizontal
         ).border_subtitle = chezmoi.dest_dir_str_spaced
+        self.query_one(f"#{self.tab}_tree_button", Button).add_class(
+            "last-clicked"
+        )
+        # Right
+        self.query_one(f"#{self.tab}_content_button", Button).add_class(
+            "last-clicked"
+        )
         self.query_one(
-            f"#{self.area_top_right_id}", Horizontal
+            f"#{self.tab}_view_buttons", Horizontal
         ).border_subtitle = " path view "
-
-        # set style to indicate initial active button tab
-        self.query_one(f"#{self.tree_button_id}", Button).add_class(
-            "last-clicked"
-        )
-        self.query_one(f"#{self.content_button_id}", Button).add_class(
-            "last-clicked"
-        )
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
         # Tree/List Switch
-        if event.button.id in [self.tree_button_id, self.list_button_id]:
+        if (
+            event.button.id == f"{self.tab}_tree_button"
+            or event.button.id == f"{self.tab}_list_button"
+        ):
             # Remove from both tree and list buttons
-            for btn_id in [self.tree_button_id, self.list_button_id]:
-                self.query_one(f"#{btn_id}", Button).remove_class(
-                    "last-clicked"
-                )
-            if event.button.id == self.tree_button_id:
-                self.query_one(f"#{self.tree_button_id}", Button).add_class(
-                    "last-clicked"
-                )
-                self.query_one(
-                    f"#{self.tab}_managed_tree", ManagedTree
-                ).tree_spec = {"tab_label": self.tab, "tree_kind": "Tree"}
-            elif event.button.id == self.list_button_id:
-                self.query_one(f"#{self.list_button_id}", Button).add_class(
-                    "last-clicked"
-                )
-                self.query_one(
-                    f"#{self.tab}_managed_tree", ManagedTree
-                ).tree_spec = {"tab_label": self.tab, "tree_kind": "List"}
-        # Content/Diff/GitLog Switch
-        if event.button.id in [
-            self.content_button_id,
-            self.diff_button_id,
-            self.git_log_button_id,
-        ]:
-            # Remove from all right-side buttons
             for btn_id in [
-                self.content_button_id,
-                self.diff_button_id,
-                self.git_log_button_id,
+                f"{self.tab}_tree_button",
+                f"{self.tab}_list_button",
             ]:
                 self.query_one(f"#{btn_id}", Button).remove_class(
                     "last-clicked"
                 )
-            if event.button.id == self.content_button_id:
-                # self.query_one(
-                #     f"#{self.tab}_view_switcher", ContentSwitcher
-                # ).current = f"{self.tab}_content"
-                self.query_one(f"#{self.content_button_id}", Button).add_class(
+            if event.button.id == f"{self.tab}_tree_button":
+                self.query_one(
+                    f"#{self.tab}_tree_switcher", ContentSwitcher
+                ).current = f"{self.tab}_tree"
+                self.query_one(f"#{self.tab}_tree_button", Button).add_class(
                     "last-clicked"
                 )
-            elif event.button.id == self.diff_button_id:
-                # self.query_one(
-                #     f"#{self.tab}_view_switcher", ContentSwitcher
-                # ).current = f"{self.tab}_diff"
-                self.query_one(f"#{self.diff_button_id}", Button).add_class(
+            else:
+                self.query_one(
+                    f"#{self.tab}_tree_switcher", ContentSwitcher
+                ).current = f"{self.tab}_list"
+                self.query_one(f"#{self.tab}_list_button", Button).add_class(
                     "last-clicked"
                 )
-            elif event.button.id == self.git_log_button_id:
-                # self.query_one(
-                #     f"#{self.tab}_view_switcher", ContentSwitcher
-                # ).current = f"{self.tab}_git_log"
-                self.query_one(f"#{self.git_log_button_id}", Button).add_class(
+        # Content/Diff/GitLog Switch
+        elif (
+            event.button.id == f"{self.tab}_content_button"
+            or event.button.id == f"{self.tab}_diff_button"
+            or event.button.id == f"{self.tab}_git_log_button"
+        ):
+            # Remove from all right-side buttons
+            for btn_id in [
+                f"{self.tab}_content_button",
+                f"{self.tab}_diff_button",
+                f"{self.tab}_git_log_button",
+            ]:
+                self.query_one(f"#{btn_id}", Button).remove_class(
                     "last-clicked"
                 )
-
-        # def on_tree_node_selected(self, event: ManagedTree.NodeSelected) -> None:
-        #     event.stop()
-        #     if not isinstance(event.node.data, NodeData):
-        #         raise TypeError(f"Expected NodeData, got {type(event.node.data)}")
-
-        #     self.query_one(
-        #         f"#{self.tab}_view_buttons", Horizontal
-        #     ).border_subtitle = (
-        #         f" {event.node.data.path.relative_to(chezmoi.dest_dir)} "
-        #     )
-        # path_view = self.query_one(f"#{self.tab}_content", PathView)
-        # path_view.path = event.node.data.path
-        # path_view.tab_id = "apply_tab"
-        # self.query_one(f"#{self.tab}_diff", DiffView).diff_spec = (
-        #     event.node.data.path,
-        #     self.tab,
-        # )
-        # self.query_one(f"#{self.tab}_git_log", GitLog).path = (
-        #     event.node.data.path
-        # )
-
-    # def on_switch_changed(self, event: Switch.Changed) -> None:
-    #     event.stop()
-    #     if event.switch.id == f"{self.tab}_unchanged":
-    #         self.query_one(f"#{self.tab}_tree", ManagedTree).unchanged = (
-    #             event.value
-    #         )
+            if event.button.id == f"{self.tab}_content_button":
+                self.query_one(
+                    f"#{self.tab}_view_switcher", ContentSwitcher
+                ).current = f"{self.tab}_content"
+                self.query_one(
+                    f"#{self.tab}_content_button", Button
+                ).add_class("last-clicked")
+            elif event.button.id == f"{self.tab}_diff_button":
+                self.query_one(
+                    f"#{self.tab}_view_switcher", ContentSwitcher
+                ).current = f"{self.tab}_diff"
+                self.query_one(f"#{self.tab}_diff_button", Button).add_class(
+                    "last-clicked"
+                )
+            elif event.button.id == f"{self.tab}_git_log_button":
+                self.query_one(
+                    f"#{self.tab}_view_switcher", ContentSwitcher
+                ).current = f"{self.tab}_git_log"
+                self.query_one(
+                    f"#{self.tab}_git_log_button", Button
+                ).add_class("last-clicked")
 
 
 class ApplyTab(Vertical):
@@ -261,11 +214,31 @@ class ApplyTab(Vertical):
     ]
 
     def compose(self) -> ComposeResult:
-        yield ApplyOrReAddTabHorizontal(tab_label="Apply")
+        yield TreeTabSwitchers("apply")
 
-    # def action_apply_path(self) -> None:
-    #     managed_tree = self.query_one("#apply_tree", ManagedTree)
-    #     self.notify(f"will add {managed_tree.cursor_node}")
+    def on_tree_node_selected(self, event: ManagedTree.NodeSelected) -> None:
+        event.stop()
+        assert event.node.data is not None
+        self.query_one("#apply_view_buttons", Horizontal).border_subtitle = (
+            f" {event.node.data.path.relative_to(chezmoi.dest_dir)} "
+        )
+        path_view = self.query_one("#apply_content", PathView)
+        path_view.path = event.node.data.path
+        path_view.tab_id = "apply_tab"
+        self.query_one("#apply_diff", DiffView).diff_spec = (
+            event.node.data.path,
+            "apply",
+        )
+        self.query_one("#apply_git_log", GitLog).path = event.node.data.path
+
+    def on_switch_changed(self, event: Switch.Changed) -> None:
+        event.stop()
+        if event.switch.id == "apply_tab_unchanged":
+            self.query_one("#apply_tree", ManagedTree).unchanged = event.value
+
+    def action_apply_path(self) -> None:
+        managed_tree = self.query_one("#apply_tree", ManagedTree)
+        self.notify(f"will add {managed_tree.cursor_node}")
 
 
 class ReAddTab(Horizontal):
@@ -280,114 +253,133 @@ class ReAddTab(Horizontal):
     ]
 
     def compose(self) -> ComposeResult:
-        yield ApplyOrReAddTabHorizontal(tab_label="Re-Add")
+        yield TreeTabSwitchers("re_add")
+
+    def on_tree_node_selected(self, event: ManagedTree.NodeSelected) -> None:
+        event.stop()
+        assert event.node.data is not None
+        self.query_one("#re_add_view_buttons", Horizontal).border_subtitle = (
+            f" {event.node.data.path.relative_to(chezmoi.dest_dir)} "
+        )
+        path_view = self.query_one("#re_add_content", PathView)
+        path_view.path = event.node.data.path
+        path_view.tab_id = "re_add_tab"
+        self.query_one("#re_add_diff", DiffView).diff_spec = (
+            event.node.data.path,
+            "re-add",
+        )
+        self.query_one("#re_add_git_log", GitLog).path = event.node.data.path
+
+    def on_switch_changed(self, event: Switch.Changed) -> None:
+        event.stop()
+        if event.switch.id == "re_add_tab_unchanged":
+            self.query_one("#re_add_tree", ManagedTree).unchanged = event.value
+
+    def action_re_add_path(self) -> None:
+        managed_tree = self.query_one("#re_add_tree", ManagedTree)
+        self.notify(f"will add {managed_tree.cursor_node}")
 
 
-#     def action_re_add_path(self) -> None:
-#         managed_tree = self.query_one("#re_add_tree", ManagedTree)
-#         self.notify(f"will add {managed_tree.cursor_node}")
+class AddTab(Horizontal):
 
+    BINDINGS = [
+        Binding(
+            key="A,a",
+            action="add_path",
+            description="chezmoi-add",
+            tooltip="add new file to your chezmoi repository",
+        )
+    ]
 
-# class AddTab(Horizontal):
+    def compose(self) -> ComposeResult:
+        with Vertical(id="add_tab_left", classes="tab-content-left"):
+            yield ScrollableContainer(
+                FilteredDirTree(chezmoi.dest_dir, id="add_tree"),
+                id="add_tree_container",
+                classes="border-path-title",
+            )
+            yield Vertical(
+                HorizontalGroup(
+                    Switch(
+                        id="add_tab_unmanaged_dirs", classes="filter-switch"
+                    ),
+                    Label(
+                        filter_data.unmanaged_dirs.label,
+                        classes="filter-label",
+                    ).with_tooltip(tooltip=filter_data.unmanaged_dirs.tooltip),
+                    classes="padding-bottom-once",
+                ),
+                HorizontalGroup(
+                    Switch(id="add_tab_unwanted", classes="filter-switch"),
+                    Label(
+                        filter_data.unwanted.label, classes="filter-label"
+                    ).with_tooltip(tooltip=filter_data.unwanted.tooltip),
+                ),
+                classes="filter-container",
+            )
 
-#     BINDINGS = [
-#         Binding(
-#             key="A,a",
-#             action="add_path",
-#             description="chezmoi-add",
-#             tooltip="add new file to your chezmoi repository",
-#         )
-#     ]
+        yield Vertical(
+            PathView(
+                id="add_path_view",
+                auto_scroll=False,
+                wrap=False,
+                highlight=True,
+            ),
+            id="add_tab_right",
+            classes="border-path-title",
+        )
 
-#     def compose(self) -> ComposeResult:
-#         with Vertical(id="add_tab_left", classes="tab-content-left"):
-#             yield ScrollableContainer(
-#                 FilteredDirTree(chezmoi.dest_dir, id="add_tree"),
-#                 id="add_tree_container",
-#                 classes="border-path-title",
-#             )
-#             yield Vertical(
-#                 HorizontalGroup(
-#                     Switch(
-#                         id="add_tab_unmanaged_dirs", classes="filter-switch"
-#                     ),
-#                     Label(
-#                         filter_data.unmanaged_dirs.label,
-#                         classes="filter-label",
-#                     ).with_tooltip(tooltip=filter_data.unmanaged_dirs.tooltip),
-#                     classes="padding-bottom-once",
-#                 ),
-#                 HorizontalGroup(
-#                     Switch(id="add_tab_unwanted", classes="filter-switch"),
-#                     Label(
-#                         filter_data.unwanted.label, classes="filter-label"
-#                     ).with_tooltip(tooltip=filter_data.unwanted.tooltip),
-#                 ),
-#                 classes="filter-container",
-#             )
+    def on_mount(self) -> None:
+        filtered_dir_tree = self.query_one("#add_tree", FilteredDirTree)
+        filtered_dir_tree.show_root = False
+        filtered_dir_tree.guide_depth = 3
 
-#         yield Vertical(
-#             PathView(
-#                 id="add_path_view",
-#                 auto_scroll=False,
-#                 wrap=False,
-#                 highlight=True,
-#             ),
-#             id="add_tab_right",
-#             classes="border-path-title",
-#         )
+        self.query_one(
+            "#add_tree_container", ScrollableContainer
+        ).border_title = chezmoi.dest_dir_str_spaced
 
-#     def on_mount(self) -> None:
-#         filtered_dir_tree = self.query_one("#add_tree", FilteredDirTree)
-#         filtered_dir_tree.show_root = False
-#         filtered_dir_tree.guide_depth = 3
+        self.query_one("#add_tab_right", Vertical).border_title = " path view "
 
-#         self.query_one(
-#             "#add_tree_container", ScrollableContainer
-#         ).border_title = chezmoi.dest_dir_str_spaced
+        self.query_one("#add_path_view", PathView).tab_id = "add_tab"
 
-#         self.query_one("#add_tab_right", Vertical).border_title = " path view "
+    def on_directory_tree_file_selected(
+        self, event: FilteredDirTree.FileSelected
+    ) -> None:
+        event.stop()
 
-#         self.query_one("#add_path_view", PathView).tab_id = "add_tab"
+        assert event.node.data is not None
+        path_view = self.query_one("#add_path_view", PathView)
+        path_view.path = event.node.data.path
+        path_view.tab_id = "add_tab"
+        self.query_one("#add_tab_right", Vertical).border_title = (
+            f" {event.node.data.path} "
+        )
 
-#     def on_directory_tree_file_selected(
-#         self, event: FilteredDirTree.FileSelected
-#     ) -> None:
-#         event.stop()
+    def on_directory_tree_directory_selected(
+        self, event: FilteredDirTree.DirectorySelected
+    ) -> None:
+        event.stop()
+        assert event.node.data is not None
+        path_view = self.query_one("#add_path_view", PathView)
+        path_view.path = event.node.data.path
+        path_view.tab_id = "add_tab"
+        self.query_one("#add_tab_right", Vertical).border_title = (
+            f" {event.node.data.path} "
+        )
 
-#         assert event.node.data is not None
-#         path_view = self.query_one("#add_path_view", PathView)
-#         path_view.path = event.node.data.path
-#         path_view.tab_id = "add_tab"
-#         self.query_one("#add_tab_right", Vertical).border_title = (
-#             f" {event.node.data.path} "
-#         )
+    def on_switch_changed(self, event: Switch.Changed) -> None:
+        event.stop()
+        tree = self.query_one("#add_tree", FilteredDirTree)
+        if event.switch.id == "add_tab_unmanaged_dirs":
+            tree.unmanaged_dirs = event.value
+            tree.reload()
+        elif event.switch.id == "add_tab_unwanted":
+            tree.unwanted = event.value
+            tree.reload()
 
-#     def on_directory_tree_directory_selected(
-#         self, event: FilteredDirTree.DirectorySelected
-#     ) -> None:
-#         event.stop()
-#         assert event.node.data is not None
-#         path_view = self.query_one("#add_path_view", PathView)
-#         path_view.path = event.node.data.path
-#         path_view.tab_id = "add_tab"
-#         self.query_one("#add_tab_right", Vertical).border_title = (
-#             f" {event.node.data.path} "
-#         )
-
-#     def on_switch_changed(self, event: Switch.Changed) -> None:
-#         event.stop()
-#         tree = self.query_one("#add_tree", FilteredDirTree)
-#         if event.switch.id == "add_tab_unmanaged_dirs":
-#             tree.unmanaged_dirs = event.value
-#             tree.reload()
-#         elif event.switch.id == "add_tab_unwanted":
-#             tree.unwanted = event.value
-#             tree.reload()
-
-#     def action_add_path(self) -> None:
-#         dir_tree = self.query_one("#add_tree", FilteredDirTree)
-#         self.notify(f"will add {dir_tree.cursor_node}")
+    def action_add_path(self) -> None:
+        dir_tree = self.query_one("#add_tree", FilteredDirTree)
+        self.notify(f"will add {dir_tree.cursor_node}")
 
 
 class DoctorTab(VerticalScroll):
