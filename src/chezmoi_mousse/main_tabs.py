@@ -10,6 +10,7 @@ from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.events import Click
 from textual.containers import (
+    Container,
     Horizontal,
     HorizontalGroup,
     ScrollableContainer,
@@ -227,7 +228,7 @@ class TreeTabSwitchers(Horizontal):
             ).unchanged = event.value
 
 
-class ApplyTab(Vertical):
+class ApplyTab(Container):
 
     BINDINGS = [
         Binding(
@@ -245,7 +246,7 @@ class ApplyTab(Vertical):
         self.notify("to implement")
 
 
-class ReAddTab(Vertical):
+class ReAddTab(Container):
 
     BINDINGS = [
         Binding(
