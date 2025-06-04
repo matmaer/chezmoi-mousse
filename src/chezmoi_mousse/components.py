@@ -42,7 +42,11 @@ class GitLog(DataTable):
         if self.path is None:
             self.populate_data_table(chezmoi.git_log.list_out)
 
-    def populate_data_table(self, cmd_output: list[str]):
+    def add_row_with_style(self, columns, style):
+        row = [Text(cell_text, style=style) for cell_text in columns]
+        self.add_row(*row)
+
+    def populate_data_table(self, cmd_output: list[str]) -> None:
         styles = {
             "ok": f"{self.app.current_theme.success}",
             "warning": f"{self.app.current_theme.warning}",
@@ -53,23 +57,11 @@ class GitLog(DataTable):
         for line in cmd_output:
             columns = line.split(";")
             if columns[1].split(maxsplit=1)[0] == "Add":
-                row = [
-                    Text(cell_text, style=f"{styles['ok']}")
-                    for cell_text in columns
-                ]
-                self.add_row(*row)
+                self.add_row_with_style(columns, styles["ok"])
             elif columns[1].split(maxsplit=1)[0] == "Update":
-                row = [
-                    Text(cell_text, style=f"{styles['warning']}")
-                    for cell_text in columns
-                ]
-                self.add_row(*row)
+                self.add_row_with_style(columns, styles["warning"])
             elif columns[1].split(maxsplit=1)[0] == "Remove":
-                row = [
-                    Text(cell_text, style=f"{styles['error']}")
-                    for cell_text in columns
-                ]
-                self.add_row(*row)
+                self.add_row_with_style(columns, styles["error"])
             else:
                 self.add_row(*columns)
 
