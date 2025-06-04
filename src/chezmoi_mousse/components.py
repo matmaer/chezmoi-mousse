@@ -207,7 +207,9 @@ class DiffView(Static):
 
     BINDINGS = [Binding(key="M,m", action="maximize", description="maximize")]
 
-    diff_spec: reactive[tuple[Path, str] | None] = reactive(None, init=False)
+    diff_spec: reactive[tuple[Path, TabLabel] | None] = reactive(
+        None, init=False
+    )
 
     # override property from ScrollableContainer to allow maximizing
     @property
