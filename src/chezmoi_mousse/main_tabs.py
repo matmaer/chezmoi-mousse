@@ -259,8 +259,7 @@ class ApplyTab(Vertical):
         yield TreeTabSwitchers("Apply")
 
     def action_apply_path(self) -> None:
-        managed_tree = self.query_one("#apply_tree", ManagedTree)
-        self.notify(f"will add {managed_tree.cursor_node}")
+        self.notify("to implement")
 
 
 class ReAddTab(Horizontal):
@@ -278,8 +277,7 @@ class ReAddTab(Horizontal):
         yield TreeTabSwitchers("Re-Add")
 
     def action_re_add_path(self) -> None:
-        managed_tree = self.query_one("#re_add_tree", ManagedTree)
-        self.notify(f"will add {managed_tree.cursor_node}")
+        self.notify("to implement")
 
 
 class AddTab(Horizontal):
@@ -293,17 +291,33 @@ class AddTab(Horizontal):
         )
     ]
 
+    def __init__(self, **kwargs) -> None:
+        self.tab: TabLabel = "Add"
+        # the directory tree on the left
+        self.add_tree_id = f"{self.tab}_dir_tree"
+        # the path view on the right
+        self.path_view_id = f"{self.tab}_path_view"
+        # vertical container ids to set border titles
+        self.tree_container_id = f"{self.tab}_tree_container"
+        self.view_container_id = f"{self.tab}_view_container"
+        # filter switch ids
+        self.unmanaged_dirs_filter_id = f"{self.tab}_unmanaged_dirs_filter"
+        self.unwanted_filter_id = f"{self.tab}_unwanted_filter"
+
+        super().__init__(**kwargs)
+
     def compose(self) -> ComposeResult:
-        with Vertical(id="add_tab_left", classes="tab-content-left"):
+        with Vertical(classes="tab-content-left"):
             yield ScrollableContainer(
-                FilteredDirTree(chezmoi.dest_dir, id="add_tree"),
-                id="add_tree_container",
+                FilteredDirTree(chezmoi.dest_dir, id=self.add_tree_id),
+                id=self.tree_container_id,
                 classes="border-path-title",
             )
             yield Vertical(
                 HorizontalGroup(
                     Switch(
-                        id="add_tab_unmanaged_dirs", classes="filter-switch"
+                        id=self.unmanaged_dirs_filter_id,
+                        classes="filter-switch",
                     ),
                     Label(
                         filter_data.unmanaged_dirs.label,
@@ -312,7 +326,9 @@ class AddTab(Horizontal):
                     classes="padding-bottom-once",
                 ),
                 HorizontalGroup(
-                    Switch(id="add_tab_unwanted", classes="filter-switch"),
+                    Switch(
+                        id=self.unwanted_filter_id, classes="filter-switch"
+                    ),
                     Label(
                         filter_data.unwanted.label, classes="filter-label"
                     ).with_tooltip(tooltip=filter_data.unwanted.tooltip),
@@ -322,27 +338,31 @@ class AddTab(Horizontal):
 
         yield Vertical(
             PathView(
-                id="add_path_view",
+                id=self.path_view_id,
                 auto_scroll=False,
                 wrap=False,
                 highlight=True,
             ),
-            id="add_tab_right",
+            id=self.view_container_id,
             classes="border-path-title",
         )
 
     def on_mount(self) -> None:
-        filtered_dir_tree = self.query_one("#add_tree", FilteredDirTree)
+        filtered_dir_tree = self.query_one(
+            f"#{self.add_tree_id}", FilteredDirTree
+        )
         filtered_dir_tree.show_root = False
         filtered_dir_tree.guide_depth = 3
 
         self.query_one(
-            "#add_tree_container", ScrollableContainer
+            f"#{self.tree_container_id}", ScrollableContainer
         ).border_title = chezmoi.dest_dir_str_spaced
 
-        self.query_one("#add_tab_right", Vertical).border_title = " path view "
+        self.query_one(f"#{self.view_container_id}", Vertical).border_title = (
+            " path view "
+        )
 
-        self.query_one("#add_path_view", PathView).tab = "Add"
+        self.query_one(f"#{self.path_view_id}", PathView).tab = self.tab
 
     def on_directory_tree_file_selected(
         self, event: FilteredDirTree.FileSelected
@@ -350,10 +370,10 @@ class AddTab(Horizontal):
         event.stop()
 
         assert event.node.data is not None
-        path_view = self.query_one("#add_path_view", PathView)
+        path_view = self.query_one(f"#{self.path_view_id}", PathView)
         path_view.path = event.node.data.path
-        path_view.tab = "Add"
-        self.query_one("#add_tab_right", Vertical).border_title = (
+        path_view.tab = self.tab
+        self.query_one(f"#{self.view_container_id}", Vertical).border_title = (
             f" {event.node.data.path} "
         )
 
@@ -362,25 +382,25 @@ class AddTab(Horizontal):
     ) -> None:
         event.stop()
         assert event.node.data is not None
-        path_view = self.query_one("#add_path_view", PathView)
+        path_view = self.query_one(f"#{self.path_view_id}", PathView)
         path_view.path = event.node.data.path
-        path_view.tab = "Add"
-        self.query_one("#add_tab_right", Vertical).border_title = (
+        path_view.tab = self.tab
+        self.query_one(f"#{self.view_container_id}", Vertical).border_title = (
             f" {event.node.data.path} "
         )
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
         event.stop()
-        tree = self.query_one("#add_tree", FilteredDirTree)
-        if event.switch.id == "add_tab_unmanaged_dirs":
+        tree = self.query_one(f"#{self.add_tree_id}", FilteredDirTree)
+        if event.switch.id == self.unmanaged_dirs_filter_id:
             tree.unmanaged_dirs = event.value
             tree.reload()
-        elif event.switch.id == "add_tab_unwanted":
+        elif event.switch.id == self.unwanted_filter_id:
             tree.unwanted = event.value
             tree.reload()
 
     def action_add_path(self) -> None:
-        dir_tree = self.query_one("#add_tree", FilteredDirTree)
+        dir_tree = self.query_one(f"#{self.add_tree_id}", FilteredDirTree)
         self.notify(f"will add {dir_tree.cursor_node}")
 
 
