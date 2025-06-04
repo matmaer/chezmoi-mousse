@@ -77,12 +77,14 @@
   }
 }
 
+.tab-content-left {
+  margin-right: 2;
+}
+.tab-content-right {
+}
+
 ApplyTab, ReAddTab {
-  .tab-content-left {
-    margin-right: 2;
-  }
-  .tab-content-right {
-  }
+
   .filter-container {
     height: 3;
   }
@@ -94,11 +96,6 @@ AddTab {
     border-top: solid $primary;
     border-title-align: center;
     border-title-style: bold;
-  }
-  .tab-content-left {
-    margin-right: 2;
-  }
-  .tab-content-right {
   }
   .filter-container {
     height: 5;
