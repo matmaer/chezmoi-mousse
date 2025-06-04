@@ -18,7 +18,6 @@
   }
 
   .filter-switch {
-    border: none;
     background: $background-lighten-2;
     background-tint: $background-lighten-2;
 
@@ -44,10 +43,7 @@
 /* for custom tab buttons */
 .tab-buttons-horizontal {
   height: 2;
-  border-top: none;
-  border-right: none;
   border-bottom: solid $primary;
-  border-left: none;
   border-subtitle-color: $primary;
   border-subtitle-align: center;
   border-subtitle-style: bold;
@@ -96,9 +92,6 @@ AddTab {
   /* to show the root path on the left and view path on the right */
   .border-path-title {
     border-top: solid $primary;
-    border-right: none;
-    border-bottom: none;
-    border-left: none;
     border-title-align: center;
     border-title-style: bold;
   }
@@ -122,10 +115,7 @@ AutoWarning {
   margin: 0 1 0 1;
   dock: top;
   text-align: center;
-  border-top: none;
-  border-right: none;
   border-bottom: dashed $panel;
-  border-left: none;
 }
 
 PathView, DiffView {
@@ -160,10 +150,10 @@ ModalScreen {
   scrollbar-background-active: $background;
   scrollbar-background-hover: $background;
   scrollbar-corner-color: $background;
+  border: none;
 }
 
 Collapsible {
-  border: none;
   padding: 0;
 }
 
@@ -203,19 +193,11 @@ DirectoryTree {
 Footer {
   height: 3;
   border-top: dashed $panel-lighten-1;
-  border-right: none;
   border-bottom: dashed $panel;
-  border-left: none;
-  .-command-palette {
-    border: none;
-  }
 }
 
 Header {
-  border-top: none;
-  border-right: none;
   border-bottom: dashed $panel-lighten-1;
-  border-left: none;
   color: $primary;
   height: 2;
   text-style: bold;
@@ -277,9 +259,6 @@ Operate {
 
   & .operate-button {
     border-top: heavy $primary;
-    border-bottom: none;
-    border-left: none;
-    border-right: none;
     background-tint: $surface;
     background: $surface;
     color: $primary;
@@ -319,7 +298,6 @@ Operate {
   & .operate-checkbox {
     margin: 0;
     padding: 0;
-    border: none;
     background: $surface;
     background-tint: $surface;
 
