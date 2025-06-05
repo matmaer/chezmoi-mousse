@@ -10,3 +10,5 @@ type TabLabel = Literal[ApplyLabel, ReAddLabel, AddLabel]
 type ButtonLabel = Literal["Tree", "List", "Content", "Diff", "Git-Log"]
 
 type DiffSpec = tuple[Path, str] | None
+
+type ButtonArea = Literal["TopLeft", "TopRight"]

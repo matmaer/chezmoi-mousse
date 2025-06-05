@@ -43,13 +43,53 @@ from chezmoi_mousse.components import (
 )
 
 from chezmoi_mousse.config import filter_data, pw_mgr_info
-from chezmoi_mousse.mouse_types import TabLabel, ButtonLabel
+from chezmoi_mousse.mouse_types import TabLabel, ButtonLabel, ButtonArea
+
+
+class FilterSwitches(Horizontal):
+    """Container for the filter switches in any tab."""
+
+    def __init__(self, tab: TabLabel) -> None:
+        self.tab: TabLabel = tab
+        self.unmanaged_dirs_id = f"{self.tab}_unmanaged_dirs_filter"
+        self.unwanted_id = f"{self.tab}_unwanted_filter"
+        self.unchanged_id = f"{self.tab}_unchanged"
+        super().__init__()
+
+    def compose(self) -> ComposeResult:
+        # Filter Switches for Apply and Re-Add Tabs
+        if self.tab in ["Apply", "Re-Add"]:
+            with Container(classes="apply-re-add-filters"):
+                with Container(classes="single-filter-container"):
+                    yield Switch(id=self.unchanged_id, classes="filter-switch")
+                    yield Label(filter_data.unchanged.label).with_tooltip(
+                        tooltip=filter_data.unchanged.tooltip
+                    )
+            return
+
+        # Filter Switches for Add Tab
+        with Container(classes="add-tab-filters"):
+            with Container(
+                classes="single-filter-container padding-bottom-once"
+            ):
+                yield Switch(
+                    id=self.unmanaged_dirs_id, classes="filter-switch"
+                )
+                yield Label(filter_data.unmanaged_dirs.label).with_tooltip(
+                    tooltip=filter_data.unmanaged_dirs.tooltip
+                )
+
+            with Container(classes="single-filter-container"):
+                yield Switch(id=self.unwanted_id, classes="filter-switch")
+                yield Label(filter_data.unwanted.label).with_tooltip(
+                    tooltip=filter_data.unwanted.tooltip
+                )
 
 
 class TabButton(Vertical):
 
     def __init__(self, label: ButtonLabel, button_id: str) -> None:
-        super().__init__(classes="auto-width")
+        super().__init__(classes="tab-button-vertical")
         self.button_id = button_id
         self.label = label
 
@@ -60,6 +100,42 @@ class TabButton(Vertical):
         button = self.query_one(f"#{self.button_id}", Button)
         button.active_effect_duration = 0
         button.compact = True
+
+
+class TabButtons(Horizontal):
+
+    def __init__(self, tab: TabLabel, area: ButtonArea) -> None:
+        self.tab: TabLabel = tab
+        self.area: ButtonArea = area
+        # button ids
+        self.tree_button_id = f"{self.tab}_tree_button"
+        self.list_button_id = f"{self.tab}_list_button"
+        self.content_button_id = f"{self.tab}_content_button"
+        self.diff_button_id = f"{self.tab}_diff_button"
+        self.git_log_button_id = f"{self.tab}_git_log_button"
+        self.view_buttons_id = f"{self.tab}_view_buttons"
+        # button group ids
+        self.tree_button_group_id = f"{self.tab}_tree_buttons"
+        self.view_button_group_id = f"{self.tab}_view_buttons"
+        super().__init__(classes="tab-buttons-horizontal")
+
+    def compose(self) -> ComposeResult:
+
+        if self.area == "TopLeft":
+
+            with HorizontalGroup(
+                id=self.tree_button_group_id, classes="tab-buttons-horizontal"
+            ):
+                yield TabButton("Tree", self.tree_button_id)
+                yield TabButton("List", self.list_button_id)
+
+        elif self.area == "TopRight":
+            with HorizontalGroup(
+                id=self.view_buttons_id, classes="tab-buttons-horizontal"
+            ):
+                yield TabButton("Content", self.content_button_id)
+                yield TabButton("Diff", self.diff_button_id)
+                yield TabButton("Git-Log", self.git_log_button_id)
 
 
 class TreeTabSwitchers(Horizontal):
@@ -91,47 +167,43 @@ class TreeTabSwitchers(Horizontal):
 
     def compose(self) -> ComposeResult:
         # Left: Tree/List Switcher
-        with Vertical(classes="auto-width tab-content-left"):
-            with HorizontalGroup(
-                id=self.tree_button_group_id,
-                classes="auto-width tab-buttons-horizontal",
-            ):
-                yield TabButton("Tree", self.tree_button_id)
-                yield TabButton("List", self.list_button_id)
-            with Horizontal(classes="auto-width"):
+        with Vertical(classes="tab-content-left"):
+            yield TabButtons(self.tab, "TopLeft")
+            # with HorizontalGroup(
+            #     id=self.tree_button_group_id, classes="tab-buttons-horizontal"
+            # ):
+            #     yield TabButton("Tree", self.tree_button_id)
+            #     yield TabButton("List", self.list_button_id)
+            with Horizontal(classes="content-switcher-container"):
                 with ContentSwitcher(
                     initial=self.tree_content_id,
                     id=self.tree_switcher_id,
-                    classes="auto-width top-border-title-style",
+                    classes="top-border-title-style",
                 ):
                     yield ManagedTree(
                         id=self.tree_content_id,
                         tab=self.tab,
                         flat_list=False,
-                        classes="auto-width",
+                        classes="tree-explorer",
                     )
                     yield ManagedTree(
                         id=self.list_content_id,
                         tab=self.tab,
                         flat_list=True,
-                        classes="auto-width",
+                        classes="tree-explorer",
                     )
-            with HorizontalGroup(classes="filter-container"):
-                yield Switch(id=self.filter_switch_id, classes="filter-switch")
-                yield Label(
-                    filter_data.unchanged.label, classes="filter-label"
-                ).with_tooltip(tooltip=filter_data.unchanged.tooltip)
+            yield FilterSwitches(self.tab)
 
         # Right: Content/Diff Switcher
         with Vertical():
-            with HorizontalGroup(
-                id=self.view_buttons_id,
-                classes="auto-width tab-buttons-horizontal",
-            ):
-                yield TabButton("Content", self.content_button_id)
-                yield TabButton("Diff", self.diff_button_id)
-                yield TabButton("Git-Log", self.git_log_button_id)
-            with Horizontal(classes="auto-width"):
+            yield TabButtons(self.tab, "TopRight")
+            # with HorizontalGroup(
+            #     id=self.view_buttons_id, classes="tab-buttons-horizontal"
+            # ):
+            #     yield TabButton("Content", self.content_button_id)
+            #     yield TabButton("Diff", self.diff_button_id)
+            #     yield TabButton("Git-Log", self.git_log_button_id)
+            with Horizontal(classes="content-switcher-container"):
                 with ContentSwitcher(
                     id=self.view_switcher_id,
                     initial=self.content_content_id,
@@ -143,9 +215,7 @@ class TreeTabSwitchers(Horizontal):
                         wrap=False,
                         highlight=True,
                     )
-                    yield DiffView(
-                        id=self.diff_content_id, classes="auto-width"
-                    )
+                    yield DiffView(id=self.diff_content_id)
                     yield GitLog(id=self.git_log_content_id)
 
     def on_mount(self) -> None:
@@ -304,39 +374,21 @@ class AddTab(Horizontal):
         with Vertical(id=self.left_container_id, classes="tab-content-left"):
             yield ScrollableContainer(
                 FilteredDirTree(
-                    chezmoi.dest_dir, id=self.dir_tree_id, classes="auto-width"
+                    chezmoi.dest_dir,
+                    id=self.dir_tree_id,
+                    classes="tree-explorer",
                 ),
                 id=self.scrollable_dir_tree_id,
-                classes="auto-width top-border-title-style",
+                classes="dir-tree-container top-border-title-style",
             )
-            # override property from ScrollableContainer to allow maximizing
+            # TODO: check to override property from ScrollableContainer to
+            # allow maximizing:
+            #
             # @property
             # def allow_maximize(self) -> bool:
             #     return True
-
-            with VerticalGroup(
-                classes="filter-container filter-border-top filter-border-bottom"
-            ):
-                yield HorizontalGroup(
-                    Switch(
-                        id=self.unmanaged_dirs_filter_id,
-                        classes="filter-switch",
-                    ),
-                    Label(
-                        filter_data.unmanaged_dirs.label,
-                        classes="filter-label",
-                    ).with_tooltip(tooltip=filter_data.unmanaged_dirs.tooltip),
-                    classes="auto-width center-filter padding-bottom-once",
-                )
-                yield HorizontalGroup(
-                    Switch(
-                        id=self.unwanted_filter_id, classes="filter-switch"
-                    ),
-                    Label(
-                        filter_data.unwanted.label, classes="filter-label"
-                    ).with_tooltip(tooltip=filter_data.unwanted.tooltip),
-                    classes="auto-width center-filter",
-                )
+            #
+            yield FilterSwitches(self.tab)
         # right
         with Vertical(id=self.right_container_id):
             yield PathView(

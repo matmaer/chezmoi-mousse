@@ -2,26 +2,102 @@
 /* tcss classes */
 /****************/
 
+.tab-content-left {
+  margin-right: 2;
+  border: blue;
+}
+
 
 .top-border-title-style {
+  border: $primary;
   border-top: solid $primary;
   border-title-align: center;
   border-title-style: bold;
   /* min width for two buttons 4 chars: Tree and List */
-  min-width: 12;
+  # min-width: 12;
 }
 
-.auto-width {
+.content-switcher-container {
+  border: green;
+}
+
+.tree-explorer {
+  border: red;
+}
+
+/* tcss to style the switch and the label */
+FilterSwitches {
+
+  background: $surface;
+  background-tint: $surface;
+  padding-right: 2;
+  dock: bottom;
+  # height: auto;
+  # border-top: inner $surface;
+  # border-bottom: inner $surface;
   width: auto;
-}
+  max-height: 5;
 
-.tab-content-left {
-  margin-right: 2;
+  .padding-bottom-once {
+    padding-bottom: 1;
+  }
+
+  .add-tab-filters {
+    # border: green;
+    width: auto;
+  }
+
+  .apply-re-add-filters {
+    # border: green;
+    height: 3;
+    dock: bottom;
+  }
+
+  .single-filter-container {
+    background: $surface-lighten-3;
+    background-tint: $surface-lighten-3;
+    layout: horizontal;
+    # border: green;
+    align: center middle;
+    height: auto;
+
+    /* color of the label text */
+    color: $foreground-darken-1;
+
+    /* style the switch itself */
+    .switch--slider {
+      color: $error-darken-3;
+    }
+    .filter-switch {
+      background: $surface;
+      background-tint: $surface;
+
+      &.-on .switch--slider {
+        color: $success;
+      }
+
+      &:hover {
+        &>.switch--slider {
+          color: $error;
+        }
+
+        &.-on>.switch--slider {
+          color: $success-lighten-2;
+        }
+      }
+    }
+
+  }
 }
 
 /* for custom tab buttons */
 .tab-buttons-horizontal {
   height: 1;
+
+  .tab-button-vertical {
+    background: $surface-lighten-2;
+    background-tint: $surface-lighten-2;
+  }
 
   .tab-button {
     /* default min width from textual is 16, setting to shortest button text */
@@ -46,53 +122,52 @@
   }
 }
 
+# .filter-container {
+#   align: center middle;
+#   width: 100%;
+#   background: $surface;
+#   background-tint: $surface;
+#   color: $foreground-darken-1;
+#   # dock: bottom;
+#   padding-right: 2;
+#   # layout: horizontal;
 
-.filter-container {
-  align: center middle;
-  width: 100%;
-  background: $surface;
-  background-tint: $surface;
-  color: $foreground-darken-1;
-  # dock: bottom;
-  padding-right: 2;
-  # layout: horizontal;
+#   &.filter-border-top {
+#     border-top: inner $surface;
+#   }
 
-  &.filter-border-top {
-    border-top: inner $surface;
-  }
+#   &.filter-border-bottom {
+#     border-bottom: inner $surface;
+#   }
 
-  &.filter-border-bottom {
-    border-bottom: inner $surface;
-  }
+#   &.padding-bottom-once {
+#     padding-bottom: 1;
+#   }
 
-  &.padding-bottom-once {
-    padding-bottom: 1;
-  }
+#   /* all switches start in the off state */
+#   .switch--slider {
+#     color: $error-darken-3;
+#   }
 
-  /* all switches start in the off state */
-  .switch--slider {
-    color: $error-darken-3;
-  }
+#   .filter-switch {
+#     background: $surface;
+#     background-tint: $surface;
 
-  .filter-switch {
-    background: $surface;
-    background-tint: $surface;
+#     &.-on .switch--slider {
+#       color: $success;
+#     }
 
-    &.-on .switch--slider {
-      color: $success;
-    }
+#     &:hover {
+#       &>.switch--slider {
+#         color: $error;
+#       }
 
-    &:hover {
-      &>.switch--slider {
-        color: $error;
-      }
-
-      &.-on>.switch--slider {
-        color: $success-lighten-2;
-      }
-    }
-  }
-}
+#       &.-on>.switch--slider {
+#         color: $success-lighten-2;
+#       }
+#     }
+#   }
+# }
 
 AutoWarning {
   height: auto;
@@ -105,6 +180,8 @@ AutoWarning {
 
 MainScreen {
 }
+
+
 
 ModalScreen {
   &.doctor-modal {
