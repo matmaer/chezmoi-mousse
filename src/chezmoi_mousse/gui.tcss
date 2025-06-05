@@ -7,32 +7,37 @@
 }
 
 .top-border-title-style {
-  border: $primary;
   border-top: solid $primary;
   border-title-align: center;
   border-title-style: bold;
-  /* min width for two buttons 4 chars: Tree and List */
+  /* min width for two buttons with 4 chars: Tree and List plus padding */
   # min-width: 12;
 }
 
 /* assigned to ManagedTree classes and FilteredTree class */
 .tree-explorer {
-  border: red;
+  width: auto; /* shrinks width of the Tree classes */
 }
 
 /* assigned to the ScrollableContainer class containing FilteredDirTree */
 .dir-tree-scrollable-container {
-  border: cyan;
+  width: auto; /* shrinks width around the directory tree in AddTab */
 }
 
 /* assigned to horizontal containers containing the ContentSwitcher class */
 .content-switcher-horizontal {
-  border: green;
+  width: auto; /* shrinks width in the TreeTabsSwitchers class */
 }
 
 /* assigned to ContentSwitcher classes */
-.content-switcher {
-  border: cyan;
+.content-switcher-left {
+  width: auto; /* shrinks the content around the ManagedTree widgets */
+  border: green;
+}
+.content-switcher-right {
+  border: green;
+  width: auto;
+  # width: auto;
 }
 
 /* assigned to the filter switches parent Horizontal container */
@@ -54,6 +59,7 @@ FilterSwitches {
   .single-filter-container {
     layout: horizontal;
     align: center middle;
+    height: auto;  /* if not set, only one filter is visible in AddTab */
 
     /* color of the label text */
     color: $foreground-darken-1;
@@ -119,10 +125,11 @@ TabButton {
   height: 1;
 }
 
-TabButtonsGroup {
+.tab-buttons-group {
   /* assigned to just one horizontal button container area */
   .tab-buttons-area-horizontal {
-
+    width: auto;
+    # background: yellow;
   }
 }
 

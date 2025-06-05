@@ -43,7 +43,7 @@ from chezmoi_mousse.components import (
 )
 
 from chezmoi_mousse.config import filter_data, pw_mgr_info
-from chezmoi_mousse.mouse_types import TabLabel, ButtonLabel, ButtonArea
+from chezmoi_mousse.mouse_types import TabLabel, ButtonLabel
 
 
 class TabIdMixin:
@@ -132,31 +132,32 @@ class TabButton(Vertical):
         button.compact = True
 
 
-class TabButtonsGroup(Horizontal, TabIdMixin):
-
-    def __init__(self, tab: TabLabel, area: ButtonArea) -> None:
+class TabButtonsTopLeft(Horizontal, TabIdMixin):
+    def __init__(self, tab: TabLabel) -> None:
         TabIdMixin.__init__(self, tab)
-        self.area: ButtonArea = area
-        super().__init__(classes="tab-buttons-horizontal")
+        super().__init__(classes="tab-buttons-horizontal tab-buttons-group")
 
     def compose(self) -> ComposeResult:
 
-        if self.area == "TopLeft":
+        with HorizontalGroup(
+            id=self.tree_button_group_id, classes="tab-buttons-area-horizontal"
+        ):
+            yield TabButton("Tree", self.tree_button_id)
+            yield TabButton("List", self.list_button_id)
 
-            with HorizontalGroup(
-                id=self.tree_button_group_id,
-                classes="tab-buttons-area-horizontal",
-            ):
-                yield TabButton("Tree", self.tree_button_id)
-                yield TabButton("List", self.list_button_id)
 
-        elif self.area == "TopRight":
-            with HorizontalGroup(
-                id=self.view_buttons_id, classes="tab-buttons-area-horizontal"
-            ):
-                yield TabButton("Content", self.content_button_id)
-                yield TabButton("Diff", self.diff_button_id)
-                yield TabButton("Git-Log", self.git_log_button_id)
+class TabButtonsTopRight(Horizontal, TabIdMixin):
+    def __init__(self, tab: TabLabel) -> None:
+        TabIdMixin.__init__(self, tab)
+        super().__init__(classes="tab-buttons-horizontal tab-buttons-group")
+
+    def compose(self) -> ComposeResult:
+        with HorizontalGroup(
+            id=self.view_buttons_id, classes="tab-buttons-area-horizontal"
+        ):
+            yield TabButton("Content", self.content_button_id)
+            yield TabButton("Diff", self.diff_button_id)
+            yield TabButton("Git-Log", self.git_log_button_id)
 
 
 class TreeTabSwitchers(Horizontal, TabIdMixin):
@@ -168,12 +169,12 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
     def compose(self) -> ComposeResult:
         # Left: Tree/List Switcher
         with Vertical(classes="tab-content-left"):
-            yield TabButtonsGroup(self.tab, "TopLeft")
+            yield TabButtonsTopLeft(self.tab)
             with Horizontal(classes="content-switcher-horizontal"):
                 with ContentSwitcher(
                     initial=self.tree_content_id,
                     id=self.tree_switcher_id,
-                    classes="content-switcher top-border-title-style",
+                    classes="content-switcher-left top-border-title-style",
                 ):
                     yield ManagedTree(
                         id=self.tree_content_id,
@@ -190,13 +191,13 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
             yield FilterSwitches(self.tab)
 
         # Right: Content/Diff Switcher
-        with Vertical():
-            yield TabButtonsGroup(self.tab, "TopRight")
+        with Vertical(classes="tab-content-right"):
+            yield TabButtonsTopRight(self.tab)
             with Horizontal(classes="content-switcher-horizontal"):
                 with ContentSwitcher(
                     id=self.view_switcher_id,
                     initial=self.content_content_id,
-                    classes="content-switcher top-border-title-style",
+                    classes="content-switcher-right top-border-title-style",
                 ):
                     yield PathView(
                         id=self.content_content_id,
