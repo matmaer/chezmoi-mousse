@@ -47,8 +47,6 @@
   padding-right: 2;
 }
 
-
-
 /* classes used inside of FilterSwitches class */
 FilterSwitches {
   .padding-bottom-once {

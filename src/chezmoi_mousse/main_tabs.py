@@ -89,25 +89,25 @@ class FilterSwitches(Horizontal, TabIdMixin):
                 yield Label(filter_data.unchanged.label).with_tooltip(
                     tooltip=filter_data.unchanged.tooltip
                 )
-            return
 
-        # Filter Switches for Add Tab
-        with Container():
-            with Container(
-                classes="single-filter-container padding-bottom-once"
-            ):
-                yield Switch(
-                    id=self.unmanaged_dirs_id, classes="filter-switch"
-                )
-                yield Label(filter_data.unmanaged_dirs.label).with_tooltip(
-                    tooltip=filter_data.unmanaged_dirs.tooltip
-                )
+        elif self.tab == "Add":
+            # Filter Switches for Add Tab
+            with Container():
+                with Container(
+                    classes="single-filter-container padding-bottom-once"
+                ):
+                    yield Switch(
+                        id=self.unmanaged_dirs_id, classes="filter-switch"
+                    )
+                    yield Label(filter_data.unmanaged_dirs.label).with_tooltip(
+                        tooltip=filter_data.unmanaged_dirs.tooltip
+                    )
 
-            with Container(classes="single-filter-container"):
-                yield Switch(id=self.unwanted_id, classes="filter-switch")
-                yield Label(filter_data.unwanted.label).with_tooltip(
-                    tooltip=filter_data.unwanted.tooltip
-                )
+                with Container(classes="single-filter-container"):
+                    yield Switch(id=self.unwanted_id, classes="filter-switch")
+                    yield Label(filter_data.unwanted.label).with_tooltip(
+                        tooltip=filter_data.unwanted.tooltip
+                    )
 
     def on_mount(self) -> None:
         if self.tab in ["Apply", "Re-Add"]:
@@ -344,7 +344,7 @@ class AddTab(Horizontal, TabIdMixin):
     ]
 
     def __init__(self, **kwargs) -> None:
-        self.tab: TabLabel = "Add"
+        TabIdMixin.__init__(self, "Add")
         # used in on_mount to set show_root and guide_depth
         self.dir_tree_id = f"{self.tab}_dir_tree"
         # used to set the top border title for the directory tree on the left
@@ -373,7 +373,7 @@ class AddTab(Horizontal, TabIdMixin):
             # def allow_maximize(self) -> bool:
             #     return True
             #
-            yield FilterSwitches(self.tab)
+            yield FilterSwitches("Add")
         # right
         with Vertical():
             yield PathView(
