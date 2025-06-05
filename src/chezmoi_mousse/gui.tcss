@@ -4,7 +4,7 @@
 
 .tab-content-left {
   margin-right: 2;
-  border: blue;
+  # border: blue;
 }
 
 .top-border-title-style {
@@ -29,41 +29,36 @@
 /* assigned to horizontal containers containing the ContentSwitcher class */
 .content-switcher-horizontal {
   border: green;
+  # height: 100%;
 }
 
 /* assigned to ContentSwitcher classes */
 .content-switcher {
   border: cyan;
+  height: 100%;
 }
 
 /* assigned to the filter switches parent Horizontal container */
 .filter-switches-horizontal {
   background: $surface;
   background-tint: $surface;
+  border-top: inner $surface;
+  border-bottom: inner $surface;
   padding-right: 2;
-  max-height: 5;
 }
 
-/* classes used inside of FilterSwitchesContainer */
-FilterSwitchesContainer {
 
+
+/* classes used inside of FilterSwitches class */
+FilterSwitches {
   .padding-bottom-once {
     padding-bottom: 1;
   }
 
-  /* conditional logic in the FilterSwitches class compose method */
-  .add-tab-filters {
-
-  }
-  /* conditional logic in the FilterSwitches class compose method */
-  .apply-re-add-filters {
-
-  }
-
   /* applies to all Container classes that contain a single filter switch */
   .single-filter-container {
-    background: $surface-lighten-3;
-    background-tint: $surface-lighten-3;
+    # background: $surface-lighten-3;
+    # background-tint: $surface-lighten-3;
     layout: horizontal;
     align: center middle;
     height: auto;
@@ -93,7 +88,6 @@ FilterSwitchesContainer {
         }
       }
     }
-
   }
 }
 

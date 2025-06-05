@@ -84,16 +84,15 @@ class FilterSwitches(Horizontal, TabIdMixin):
     def compose(self) -> ComposeResult:
         # Filter Switches for Apply and Re-Add Tabs
         if self.tab in ["Apply", "Re-Add"]:
-            with Container(classes="apply-re-add-filters"):
-                with Container(classes="single-filter-container"):
-                    yield Switch(id=self.unchanged_id, classes="filter-switch")
-                    yield Label(filter_data.unchanged.label).with_tooltip(
-                        tooltip=filter_data.unchanged.tooltip
-                    )
+            with Container(classes="single-filter-container"):
+                yield Switch(id=self.unchanged_id, classes="filter-switch")
+                yield Label(filter_data.unchanged.label).with_tooltip(
+                    tooltip=filter_data.unchanged.tooltip
+                )
             return
 
         # Filter Switches for Add Tab
-        with Container(classes="add-tab-filters"):
+        with Container():
             with Container(
                 classes="single-filter-container padding-bottom-once"
             ):
@@ -109,6 +108,12 @@ class FilterSwitches(Horizontal, TabIdMixin):
                 yield Label(filter_data.unwanted.label).with_tooltip(
                     tooltip=filter_data.unwanted.tooltip
                 )
+
+    def on_mount(self) -> None:
+        if self.tab in ["Apply", "Re-Add"]:
+            self.styles.height = "3"
+        elif self.tab == "Add":
+            self.styles.height = "5"
 
 
 class TabButton(Vertical):
