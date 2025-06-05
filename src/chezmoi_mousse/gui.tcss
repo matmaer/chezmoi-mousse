@@ -49,11 +49,13 @@
 
 .filter-container {
   align: center middle;
+  width: 100%;
   background: $surface;
   background-tint: $surface;
   color: $foreground-darken-1;
-  dock: bottom;
+  # dock: bottom;
   padding-right: 2;
+  # layout: horizontal;
 
   &.filter-border-top {
     border-top: inner $surface;
@@ -63,12 +65,8 @@
     border-bottom: inner $surface;
   }
 
-  .padding-bottom-once {
+  &.padding-bottom-once {
     padding-bottom: 1;
-  }
-
-  .center-filter {
-    align: center middle;
   }
 
   /* all switches start in the off state */
