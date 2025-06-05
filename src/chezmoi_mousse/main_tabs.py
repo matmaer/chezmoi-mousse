@@ -97,17 +97,23 @@ class TreeTabSwitchers(Horizontal):
             ):
                 yield TabButton("Tree", self.tree_button_id)
                 yield TabButton("List", self.list_button_id)
-            with Container():
+            with Horizontal(classes="tree-kinds"):
                 with ContentSwitcher(
                     initial=self.tree_content_id,
                     id=self.tree_switcher_id,
                     classes="top-border-title",
                 ):
                     yield ManagedTree(
-                        id=self.tree_content_id, tab=self.tab, flat_list=False
+                        id=self.tree_content_id,
+                        tab=self.tab,
+                        flat_list=False,
+                        classes="tree-kinds",
                     )
                     yield ManagedTree(
-                        id=self.list_content_id, tab=self.tab, flat_list=True
+                        id=self.list_content_id,
+                        tab=self.tab,
+                        flat_list=True,
+                        classes="tree-kinds",
                     )
             with HorizontalGroup(
                 classes="filter-container filter-border-top filter-border-bottom"
@@ -125,7 +131,7 @@ class TreeTabSwitchers(Horizontal):
                 yield TabButton("Content", self.content_button_id)
                 yield TabButton("Diff", self.diff_button_id)
                 yield TabButton("Git-Log", self.git_log_button_id)
-            with Container():
+            with Horizontal(classes="tree-kinds"):
                 with ContentSwitcher(
                     id=self.view_switcher_id,
                     initial=self.content_content_id,
@@ -298,6 +304,11 @@ class AddTab(Horizontal):
                 id=self.tree_container_id,
                 classes="top-border-title",
             )
+            # override property from ScrollableContainer to allow maximizing
+            # @property
+            # def allow_maximize(self) -> bool:
+            #     return True
+
             with VerticalGroup(
                 classes="filter-container filter-border-top filter-border-bottom"
             ):

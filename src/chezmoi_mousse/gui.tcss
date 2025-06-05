@@ -6,15 +6,23 @@
   border-top: solid $primary;
   border-title-align: center;
   border-title-style: bold;
+  width: auto;
+}
+
+.tree-kinds {
+  width: auto;
 }
 
 .tab-content-left {
   margin-right: 2;
+  /* TODO for first release */
+  # width: auto;
 }
 
 /* for custom tab buttons */
 .tab-buttons-horizontal {
   height: 1;
+  width: auto;
 
   .tab-button {
     /* default min width from textual is 16, setting to shortest button text */
@@ -40,6 +48,7 @@
 
   Vertical {
     align: center middle;
+    width: auto;
   }
 }
 
@@ -48,8 +57,10 @@
   align: center middle;
   background: $surface;
   background-tint: $surface;
+  color: $foreground-darken-1;
   dock: bottom;
   padding-right: 2;
+  width: auto;
 
   &.filter-border-top {
     border-top: inner $surface;
@@ -99,10 +110,6 @@ AutoWarning {
   dock: top;
   text-align: center;
   border-bottom: dashed $panel;
-}
-
-PathView, DiffView {
-  padding-left: 1;
 }
 
 MainScreen {
@@ -237,8 +244,6 @@ Tree {
 Operate {
   background-tint: $surface;
   background: $surface;
-  border: thick $panel;
-  margin: 1 2 1 2;
 
   & .operate-button {
     border-top: heavy $primary;
