@@ -101,7 +101,7 @@ class TreeTabSwitchers(Horizontal):
                 with ContentSwitcher(
                     initial=self.tree_content_id,
                     id=self.tree_switcher_id,
-                    classes="top-border-title",
+                    classes="top-border-title-left",
                 ):
                     yield ManagedTree(
                         id=self.tree_content_id,
@@ -135,7 +135,7 @@ class TreeTabSwitchers(Horizontal):
                 with ContentSwitcher(
                     id=self.view_switcher_id,
                     initial=self.content_content_id,
-                    classes="top-border-title",
+                    classes="top-border-title-right",
                 ):
                     yield PathView(
                         id=self.content_content_id,
@@ -298,11 +298,12 @@ class AddTab(Horizontal):
         super().__init__(**kwargs)
 
     def compose(self) -> ComposeResult:
+        # left
         with Vertical(id=self.tree_container_id, classes="tab-content-left"):
             yield ScrollableContainer(
                 FilteredDirTree(chezmoi.dest_dir, id=self.add_tree_id),
                 id=self.tree_container_id,
-                classes="top-border-title",
+                classes="top-border-title-left",
             )
             # override property from ScrollableContainer to allow maximizing
             # @property
@@ -332,8 +333,8 @@ class AddTab(Horizontal):
                     ).with_tooltip(tooltip=filter_data.unwanted.tooltip),
                     classes="center-filter",
                 )
-
-        with Vertical(id=self.view_container_id, classes="top-border-title"):
+        # right
+        with Vertical(id=self.view_container_id):
             yield PathView(
                 id=self.path_view_id,
                 auto_scroll=False,

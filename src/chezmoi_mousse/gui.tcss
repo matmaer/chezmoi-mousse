@@ -2,11 +2,17 @@
 /* tcss classes */
 /****************/
 
-.top-border-title {
+.top-border-title-left {
   border-top: solid $primary;
   border-title-align: center;
   border-title-style: bold;
   width: auto;
+}
+
+.top-border-title-right {
+  border-top: solid $primary;
+  border-title-align: center;
+  border-title-style: bold;
 }
 
 .tree-kinds {
