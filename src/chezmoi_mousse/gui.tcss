@@ -2,16 +2,19 @@
 /* tcss classes */
 /****************/
 
-.tab-buttons-top {
-  border-bottom: solid $primary;
-  border-subtitle-color: $primary;
-  border-subtitle-align: center;
-  border-subtitle-style: bold;
+.top-border-title {
+  border-top: solid $primary;
+  border-title-align: center;
+  border-title-style: bold;
+}
+
+.tab-content-left {
+  margin-right: 2;
 }
 
 /* for custom tab buttons */
 .tab-buttons-horizontal {
-  height: 2;
+  height: 1;
 
   .tab-button {
     /* default min width from textual is 16, setting to shortest button text */
@@ -40,22 +43,28 @@
   }
 }
 
-.tab-content-left {
-  margin-right: 2;
-}
-.tab-content-right {
-}
 
 .filter-container {
   align: center middle;
-  border-top: inner $surface;
-  border-bottom: inner $surface;
   background: $surface;
   background-tint: $surface;
   dock: bottom;
+  padding-right: 2;
 
-  .filter-label {
-    padding-right: 2;
+  &.filter-border-top {
+    border-top: inner $surface;
+  }
+
+  &.filter-border-bottom {
+    border-bottom: inner $surface;
+  }
+
+  .padding-bottom-once {
+    padding-bottom: 1;
+  }
+
+  .center-filter {
+    align: center middle;
   }
 
   /* all switches start in the off state */
@@ -80,31 +89,6 @@
         color: $success-lighten-2;
       }
     }
-  }
-}
-
-ApplyTab, ReAddTab {
-  .filter-container {
-    height: 3;
-  }
-}
-
-AddTab {
-  /* to show the root path on the left and view path on the right */
-  .border-path-title {
-    border-top: solid $primary;
-    border-title-align: center;
-    border-title-style: bold;
-  }
-  .filter-container {
-    height: 5;
-    /* to have a space between the two filters below the tree*/
-    .padding-bottom-once {
-      padding-bottom: 1;
-    }
-  }
-  VerticalGroup > HorizontalGroup {
-    align: center middle;
   }
 }
 
