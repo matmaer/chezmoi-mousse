@@ -137,7 +137,7 @@ class TreeTabSwitchers(Horizontal):
                 with ContentSwitcher(
                     id=self.view_switcher_id,
                     initial=self.content_content_id,
-                    classes="auto-width top-border-title-style",
+                    classes="top-border-title-style",
                 ):
                     yield PathView(
                         id=self.content_content_id,
@@ -145,7 +145,9 @@ class TreeTabSwitchers(Horizontal):
                         wrap=False,
                         highlight=True,
                     )
-                    yield DiffView(id=self.diff_content_id)
+                    yield DiffView(
+                        id=self.diff_content_id, classes="auto-width"
+                    )
                     yield GitLog(id=self.git_log_content_id)
 
     def on_mount(self) -> None:
