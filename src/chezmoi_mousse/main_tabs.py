@@ -49,7 +49,7 @@ from chezmoi_mousse.mouse_types import TabLabel, ButtonLabel
 class TabButton(Vertical):
 
     def __init__(self, label: ButtonLabel, button_id: str) -> None:
-        super().__init__()
+        super().__init__(classes="auto-width")
         self.button_id = button_id
         self.label = label
 
@@ -91,26 +91,33 @@ class TreeTabSwitchers(Horizontal):
 
     def compose(self) -> ComposeResult:
         # Left: Tree/List Switcher
-        with Vertical(classes="tab-content-left"):
+        with Vertical(classes="auto-width tab-content-left"):
             with HorizontalGroup(
-                id=self.tree_button_group_id, classes="tab-buttons-horizontal"
+                id=self.tree_button_group_id,
+                classes="auto-width tab-buttons-horizontal",
             ):
                 yield TabButton("Tree", self.tree_button_id)
                 yield TabButton("List", self.list_button_id)
-            with Container():
+            with Horizontal(classes="auto-width"):
                 with ContentSwitcher(
                     initial=self.tree_content_id,
                     id=self.tree_switcher_id,
-                    classes="top-border-title",
+                    classes="auto-width top-border-title-style",
                 ):
                     yield ManagedTree(
-                        id=self.tree_content_id, tab=self.tab, flat_list=False
+                        id=self.tree_content_id,
+                        tab=self.tab,
+                        flat_list=False,
+                        classes="auto-width",
                     )
                     yield ManagedTree(
-                        id=self.list_content_id, tab=self.tab, flat_list=True
+                        id=self.list_content_id,
+                        tab=self.tab,
+                        flat_list=True,
+                        classes="auto-width",
                     )
             with HorizontalGroup(
-                classes="filter-container filter-border-top filter-border-bottom"
+                classes="auto-width filter-container filter-border-top filter-border-bottom"
             ):
                 yield Switch(id=self.filter_switch_id, classes="filter-switch")
                 yield Label(
@@ -120,16 +127,17 @@ class TreeTabSwitchers(Horizontal):
         # Right: Content/Diff Switcher
         with Vertical():
             with HorizontalGroup(
-                id=self.view_buttons_id, classes="tab-buttons-horizontal"
+                id=self.view_buttons_id,
+                classes="auto-width tab-buttons-horizontal",
             ):
                 yield TabButton("Content", self.content_button_id)
                 yield TabButton("Diff", self.diff_button_id)
                 yield TabButton("Git-Log", self.git_log_button_id)
-            with Container():
+            with Horizontal(classes="auto-width"):
                 with ContentSwitcher(
                     id=self.view_switcher_id,
                     initial=self.content_content_id,
-                    classes="top-border-title",
+                    classes="auto-width, top-border-title-style",
                 ):
                     yield PathView(
                         id=self.content_content_id,
@@ -292,14 +300,22 @@ class AddTab(Horizontal):
         super().__init__(**kwargs)
 
     def compose(self) -> ComposeResult:
-        with Vertical(id=self.tree_container_id, classes="tab-content-left"):
+        # left
+        with Vertical(
+            id=self.tree_container_id, classes="auto-width tab-content-left"
+        ):
             yield ScrollableContainer(
                 FilteredDirTree(chezmoi.dest_dir, id=self.add_tree_id),
                 id=self.tree_container_id,
-                classes="top-border-title",
+                classes="auto-width top-border-title-style",
             )
+            # override property from ScrollableContainer to allow maximizing
+            # @property
+            # def allow_maximize(self) -> bool:
+            #     return True
+
             with VerticalGroup(
-                classes="filter-container filter-border-top filter-border-bottom"
+                classes="auto-width filter-container filter-border-top filter-border-bottom"
             ):
                 yield HorizontalGroup(
                     Switch(
@@ -321,8 +337,8 @@ class AddTab(Horizontal):
                     ).with_tooltip(tooltip=filter_data.unwanted.tooltip),
                     classes="center-filter",
                 )
-
-        with Vertical(id=self.view_container_id, classes="top-border-title"):
+        # right
+        with Vertical(id=self.view_container_id):
             yield PathView(
                 id=self.path_view_id,
                 auto_scroll=False,
