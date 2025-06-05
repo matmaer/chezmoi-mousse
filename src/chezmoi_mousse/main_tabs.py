@@ -137,7 +137,7 @@ class TreeTabSwitchers(Horizontal):
                 with ContentSwitcher(
                     id=self.view_switcher_id,
                     initial=self.content_content_id,
-                    classes="auto-width, top-border-title-style",
+                    classes="auto-width top-border-title-style",
                 ):
                     yield PathView(
                         id=self.content_content_id,
