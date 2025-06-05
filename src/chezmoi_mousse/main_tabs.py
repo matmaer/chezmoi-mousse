@@ -10,7 +10,6 @@ from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.events import Click
 from textual.containers import (
-    Container,
     Horizontal,
     HorizontalGroup,
     ScrollableContainer,
@@ -18,6 +17,7 @@ from textual.containers import (
     VerticalGroup,
     VerticalScroll,
 )
+
 from textual.screen import ModalScreen
 from textual.widgets import (
     Button,
@@ -68,52 +68,18 @@ class TabIdMixin:
         self.content_content_id = f"{tab}_content"
         self.diff_content_id = f"{tab}_diff_content"
         self.git_log_content_id = f"{tab}_git_log_content"
+        # filter switch container id
+        self.filters_container_id = f"{tab}_filters_container"
         # filter switch id
         self.unmanaged_dirs_id = f"{tab}_unmanaged_dirs_filter"
         self.unwanted_id = f"{tab}_unwanted_filter"  # used by AddTab
         self.unchanged_id = f"{tab}_unchanged"  # used by ApplyTab and ReAddTab
-
-
-class FilterSwitches(Horizontal, TabIdMixin):
-    """Container for the filter switches in any tab."""
-
-    def __init__(self, tab: TabLabel) -> None:
-        TabIdMixin.__init__(self, tab)
-        super().__init__(classes="filter-switches-horizontal")
-
-    def compose(self) -> ComposeResult:
-        # Filter Switches for Apply and Re-Add Tabs
-        if self.tab in ["Apply", "Re-Add"]:
-            with Container(classes="single-filter-container"):
-                yield Switch(id=self.unchanged_id, classes="filter-switch")
-                yield Label(filter_data.unchanged.label).with_tooltip(
-                    tooltip=filter_data.unchanged.tooltip
-                )
-
-        elif self.tab == "Add":
-            # Filter Switches for Add Tab
-            with Container():
-                with Container(
-                    classes="single-filter-container padding-bottom-once"
-                ):
-                    yield Switch(
-                        id=self.unmanaged_dirs_id, classes="filter-switch"
-                    )
-                    yield Label(filter_data.unmanaged_dirs.label).with_tooltip(
-                        tooltip=filter_data.unmanaged_dirs.tooltip
-                    )
-
-                with Container(classes="single-filter-container"):
-                    yield Switch(id=self.unwanted_id, classes="filter-switch")
-                    yield Label(filter_data.unwanted.label).with_tooltip(
-                        tooltip=filter_data.unwanted.tooltip
-                    )
-
-    def on_mount(self) -> None:
-        if self.tab in ["Apply", "Re-Add"]:
-            self.styles.height = "3"
-        elif self.tab == "Add":
-            self.styles.height = "5"
+        # used in on_mount to set show_root and guide_depth
+        self.dir_tree_id = f"{tab}_dir_tree"
+        # used to set the top border title for the directory tree on the left
+        self.scrollable_dir_tree_id = f"{tab}_scrollable_dir_tree"
+        # used to set the top border title for the path view on the right
+        self.path_view_id = f"{tab}_path_view"
 
 
 class TabButton(Vertical):
@@ -188,9 +154,16 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
                         flat_list=True,
                         classes="tree-explorer",
                     )
-            yield FilterSwitches(self.tab)
+            with Horizontal(
+                id=self.filters_container_id, classes="filters-container"
+            ):
+                with HorizontalGroup(classes="single-filter-container"):
+                    yield Switch(id=self.unchanged_id, classes="filter-switch")
+                    yield Label(filter_data.unchanged.label).with_tooltip(
+                        tooltip=filter_data.unchanged.tooltip
+                    )
 
-        # Right: Content/Diff Switcher
+        # Right: Content/Diff/GitLog Switcher
         with Vertical(classes="tab-content-right"):
             yield TabButtonsTopRight(self.tab)
             with Horizontal(classes="content-switcher-horizontal"):
@@ -297,7 +270,7 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
             ).unchanged = event.value
 
 
-class ApplyTab(Horizontal):
+class ApplyTab(Horizontal, TabIdMixin):
 
     BINDINGS = [
         Binding(
@@ -315,7 +288,7 @@ class ApplyTab(Horizontal):
         self.notify("to implement")
 
 
-class ReAddTab(Horizontal):
+class ReAddTab(Horizontal, TabIdMixin):
 
     BINDINGS = [
         Binding(
@@ -346,13 +319,6 @@ class AddTab(Horizontal, TabIdMixin):
 
     def __init__(self, **kwargs) -> None:
         TabIdMixin.__init__(self, "Add")
-        # used in on_mount to set show_root and guide_depth
-        self.dir_tree_id = f"{self.tab}_dir_tree"
-        # used to set the top border title for the directory tree on the left
-        self.scrollable_dir_tree_id = f"{self.tab}_scrollable_dir_tree"
-        # used to set the top border title for the path view on the right
-        self.path_view_id = f"{self.tab}_path_view"
-
         super().__init__(**kwargs)
 
     def compose(self) -> ComposeResult:
@@ -374,9 +340,29 @@ class AddTab(Horizontal, TabIdMixin):
             # def allow_maximize(self) -> bool:
             #     return True
             #
-            yield FilterSwitches("Add")
+            with Horizontal(
+                id=self.filters_container_id, classes="filters-container"
+            ):
+                yield Vertical(
+                    HorizontalGroup(
+                        Switch(
+                            id=self.unmanaged_dirs_id, classes="filter-switch"
+                        ),
+                        Label(filter_data.unmanaged_dirs.label).with_tooltip(
+                            tooltip=filter_data.unmanaged_dirs.tooltip
+                        ),
+                        classes="single-filter-container padding-bottom-once",
+                    ),
+                    HorizontalGroup(
+                        Switch(id=self.unwanted_id, classes="filter-switch"),
+                        Label(filter_data.unwanted.label).with_tooltip(
+                            tooltip=filter_data.unwanted.tooltip
+                        ),
+                        classes="single-filter-container",
+                    ),
+                )
         # right
-        with Vertical():
+        with Vertical(classes="tab-content-right"):
             yield PathView(
                 id=self.path_view_id,
                 auto_scroll=False,

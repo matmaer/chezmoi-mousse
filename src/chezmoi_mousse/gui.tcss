@@ -2,8 +2,18 @@
 /* tcss classes */
 /****************/
 
+# .width-auto {
+#   width: auto;
+# }
+
 .tab-content-left {
   margin-right: 2;
+  border: blue;
+  # width: 20;
+}
+
+.tab-content-right {
+  border: blue;
 }
 
 .top-border-title-style {
@@ -40,23 +50,26 @@
   # width: auto;
 }
 
-/* assigned to the filter switches parent Horizontal container */
-.filter-switches-horizontal {
+
+/* classes used within the Horizontal containing filters */
+.filters-container {
   background: $surface;
   background-tint: $surface;
   border-top: inner $surface;
   border-bottom: inner $surface;
   padding-right: 2;
-}
+  width: auto;
+  # height: 20;
 
-/* classes used inside of FilterSwitches class */
-FilterSwitches {
   .padding-bottom-once {
     padding-bottom: 1;
+    width: auto;
   }
 
   /* applies to all Container classes that contain a single filter switch */
   .single-filter-container {
+    layout: horizontal;
+    width: auto;
     layout: horizontal;
     align: center middle;
     height: auto;  /* if not set, only one filter is visible in AddTab */
@@ -91,6 +104,8 @@ FilterSwitches {
 
 /* assigned to the TabButton Vertical parent class in super.init */
 .tab-button-vertical {
+  align: center middle;
+  width: auto;
   background: $surface-lighten-2;
   background-tint: $surface-lighten-2;
 }
@@ -122,7 +137,9 @@ TabButton {
 
 /* assigned to TabButtonsGroup Horizontal parent class in super.init */
 .tab-buttons-horizontal {
+  border-right: magenta;
   height: 1;
+  width: auto;
 }
 
 .tab-buttons-group {
