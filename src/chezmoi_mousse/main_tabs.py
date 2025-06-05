@@ -155,7 +155,8 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
                         classes="tree-explorer",
                     )
             with Horizontal(
-                id=self.filters_container_id, classes="filters-container"
+                id=self.filters_container_id,
+                classes="filters-container one-filter-height",
             ):
                 with HorizontalGroup(classes="single-filter-container"):
                     yield Switch(id=self.unchanged_id, classes="filter-switch")
@@ -341,7 +342,8 @@ class AddTab(Horizontal, TabIdMixin):
             #     return True
             #
             with Horizontal(
-                id=self.filters_container_id, classes="filters-container"
+                id=self.filters_container_id,
+                classes="filters-container two-filters-height",
             ):
                 yield Vertical(
                     HorizontalGroup(
@@ -358,8 +360,9 @@ class AddTab(Horizontal, TabIdMixin):
                         Label(filter_data.unwanted.label).with_tooltip(
                             tooltip=filter_data.unwanted.tooltip
                         ),
-                        classes="single-filter-container",
+                        classes="single-filter-container two-filters-height",
                     ),
+                    classes="two-filters-vertical",
                 )
         # right
         with Vertical(classes="tab-content-right"):

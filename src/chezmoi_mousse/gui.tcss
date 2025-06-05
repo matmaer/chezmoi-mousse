@@ -61,6 +61,18 @@
   width: auto;
   # height: 20;
 
+  &.one-filter-height {
+    height: 3
+  }
+
+  &.two-filters-height {
+    height: 5;
+  }
+
+  .two-filters-vertical {
+    width: auto;
+  }
+
   .padding-bottom-once {
     padding-bottom: 1;
     width: auto;
