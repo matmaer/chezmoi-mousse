@@ -80,6 +80,9 @@ class TabIdMixin:
         self.scrollable_dir_tree_id = f"{tab}_scrollable_dir_tree"
         # used to set the top border title for the path view on the right
         self.path_view_id = f"{tab}_path_view"
+        # make sure the main verticals have unique id's
+        self.tab_left_vertical = f"{tab}_main_left_vertical"
+        self.tab_right_vertical = f"{tab}_main_right_vertical"
 
 
 class TabButton(Vertical):
@@ -133,8 +136,7 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
         super().__init__()
 
     def compose(self) -> ComposeResult:
-        # Left: Tree/List Switcher
-        with Vertical(classes="tab-content-left"):
+        with Vertical(id=self.tab_left_vertical, classes="tab-content-left"):
             yield TabButtonsTopLeft(self.tab)
             with Horizontal(classes="content-switcher-horizontal"):
                 with ContentSwitcher(
@@ -164,8 +166,7 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
                         tooltip=filter_data.unchanged.tooltip
                     )
 
-        # Right: Content/Diff/GitLog Switcher
-        with Vertical(classes="tab-content-right"):
+        with Vertical(id=self.tab_right_vertical, classes="tab-content-right"):
             yield TabButtonsTopRight(self.tab)
             with Horizontal(classes="content-switcher-horizontal"):
                 with ContentSwitcher(
@@ -323,8 +324,7 @@ class AddTab(Horizontal, TabIdMixin):
         super().__init__(**kwargs)
 
     def compose(self) -> ComposeResult:
-        # left
-        with Vertical(classes="tab-content-left"):
+        with Vertical(id=self.tab_left_vertical, classes="tab-content-left"):
             yield ScrollableContainer(
                 FilteredDirTree(
                     chezmoi.dest_dir,
@@ -364,8 +364,7 @@ class AddTab(Horizontal, TabIdMixin):
                     ),
                     classes="two-filters-vertical",
                 )
-        # right
-        with Vertical(classes="tab-content-right"):
+        with Vertical(id=self.tab_right_vertical, classes="tab-content-right"):
             yield PathView(
                 id=self.path_view_id,
                 auto_scroll=False,
