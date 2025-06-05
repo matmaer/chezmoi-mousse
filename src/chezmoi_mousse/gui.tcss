@@ -7,6 +7,8 @@
   border-top: solid $primary;
   border-title-align: center;
   border-title-style: bold;
+  /* min width for two buttons 4 chars: Tree and List */
+  min-width: 12;
 }
 
 .auto-width {
@@ -15,14 +17,11 @@
 
 .tab-content-left {
   margin-right: 2;
-  /* TODO for first release */
-  width: auto;
 }
 
 /* for custom tab buttons */
 .tab-buttons-horizontal {
   height: 1;
-  width: auto;
 
   .tab-button {
     /* default min width from textual is 16, setting to shortest button text */
@@ -45,11 +44,6 @@
       }
     }
   }
-
-  Vertical {
-    align: center middle;
-    width: auto;
-  }
 }
 
 
@@ -60,7 +54,6 @@
   color: $foreground-darken-1;
   dock: bottom;
   padding-right: 2;
-  width: auto;
 
   &.filter-border-top {
     border-top: inner $surface;
