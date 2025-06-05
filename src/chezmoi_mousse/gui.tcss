@@ -2,57 +2,19 @@
 /* tcss classes */
 /****************/
 
-.filter-container {
-  border-top: inner $background-lighten-2;
-  border-bottom: inner $background-lighten-2;
-  background: $background-lighten-2;
-  background-tint: $background-lighten-2;
-  dock: bottom;
-
-  .filter-label {
-    padding-right: 2;
-  }
-
-  .switch--slider {
-    color: $error-darken-3;
-  }
-
-  .filter-switch {
-    background: $background-lighten-2;
-    background-tint: $background-lighten-2;
-
-    &.-on .switch--slider {
-      color: $success-darken-1;
-    }
-
-    &:hover {
-      &>.switch--slider {
-        color: $error;
-      }
-
-      &.-on>.switch--slider {
-        color: $success-lighten-2;
-      }
-    }
-  }
-  HorizontalGroup {
-    align: center middle;
-  }
+.top-border-title {
+  border-top: solid $primary;
+  border-title-align: center;
+  border-title-style: bold;
 }
 
-.tab-buttons-top {
-  border-bottom: solid $primary;
-  border-subtitle-color: $primary;
-  border-subtitle-align: center;
-  border-subtitle-style: bold;
+.tab-content-left {
+  margin-right: 2;
 }
-
-
 
 /* for custom tab buttons */
 .tab-buttons-horizontal {
-  height: 2;
-
+  height: 1;
 
   .tab-button {
     /* default min width from textual is 16, setting to shortest button text */
@@ -78,36 +40,54 @@
 
   Vertical {
     align: center middle;
-    margin-left: 1;
-    margin-right: 1;
   }
 }
 
-.tab-content-left {
-  margin-right: 2;
-}
-.tab-content-right {
-}
 
-ApplyTab, ReAddTab {
+.filter-container {
+  align: center middle;
+  background: $surface;
+  background-tint: $surface;
+  dock: bottom;
+  padding-right: 2;
 
-  .filter-container {
-    height: 3;
+  &.filter-border-top {
+    border-top: inner $surface;
   }
-}
 
-AddTab {
-  /* to show the root path on the left and view path on the right */
-  .border-path-title {
-    border-top: solid $primary;
-    border-title-align: center;
-    border-title-style: bold;
+  &.filter-border-bottom {
+    border-bottom: inner $surface;
   }
-  .filter-container {
-    height: 5;
-    /* to have a space between the two filters below the tree*/
-    .padding-bottom-once {
-      padding-bottom: 1;
+
+  .padding-bottom-once {
+    padding-bottom: 1;
+  }
+
+  .center-filter {
+    align: center middle;
+  }
+
+  /* all switches start in the off state */
+  .switch--slider {
+    color: $error-darken-3;
+  }
+
+  .filter-switch {
+    background: $surface;
+    background-tint: $surface;
+
+    &.-on .switch--slider {
+      color: $success;
+    }
+
+    &:hover {
+      &>.switch--slider {
+        color: $error;
+      }
+
+      &.-on>.switch--slider {
+        color: $success-lighten-2;
+      }
     }
   }
 }
