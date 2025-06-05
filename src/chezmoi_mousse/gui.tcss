@@ -4,7 +4,6 @@
 
 .tab-content-left {
   margin-right: 2;
-  # border: blue;
 }
 
 .top-border-title-style {
@@ -13,7 +12,7 @@
   border-title-align: center;
   border-title-style: bold;
   /* min width for two buttons 4 chars: Tree and List */
-  min-width: 12;
+  # min-width: 12;
 }
 
 /* assigned to ManagedTree classes and FilteredTree class */
@@ -29,13 +28,11 @@
 /* assigned to horizontal containers containing the ContentSwitcher class */
 .content-switcher-horizontal {
   border: green;
-  # height: 100%;
 }
 
 /* assigned to ContentSwitcher classes */
 .content-switcher {
   border: cyan;
-  height: 100%;
 }
 
 /* assigned to the filter switches parent Horizontal container */
@@ -55,11 +52,8 @@ FilterSwitches {
 
   /* applies to all Container classes that contain a single filter switch */
   .single-filter-container {
-    # background: $surface-lighten-3;
-    # background-tint: $surface-lighten-3;
     layout: horizontal;
     align: center middle;
-    height: auto;
 
     /* color of the label text */
     color: $foreground-darken-1;
