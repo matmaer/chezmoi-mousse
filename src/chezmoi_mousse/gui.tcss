@@ -7,57 +7,64 @@
   border: blue;
 }
 
-
 .top-border-title-style {
   border: $primary;
   border-top: solid $primary;
   border-title-align: center;
   border-title-style: bold;
   /* min width for two buttons 4 chars: Tree and List */
-  # min-width: 12;
+  min-width: 12;
 }
 
-.content-switcher-container {
-  border: green;
-}
-
+/* assigned to ManagedTree classes and FilteredTree class */
 .tree-explorer {
   border: red;
 }
 
-/* tcss to style the switch and the label */
-FilterSwitches {
+/* assigned to the ScrollableContainer class containing FilteredDirTree */
+.dir-tree-scrollable-container {
+  border: cyan;
+}
 
+/* assigned to horizontal containers containing the ContentSwitcher class */
+.content-switcher-horizontal {
+  border: green;
+}
+
+/* assigned to ContentSwitcher classes */
+.content-switcher {
+  border: cyan;
+}
+
+/* assigned to the filter switches parent Horizontal container */
+.filter-switches-horizontal {
   background: $surface;
   background-tint: $surface;
   padding-right: 2;
-  dock: bottom;
-  # height: auto;
-  # border-top: inner $surface;
-  # border-bottom: inner $surface;
-  width: auto;
   max-height: 5;
+}
+
+/* classes used inside of FilterSwitchesContainer */
+FilterSwitchesContainer {
 
   .padding-bottom-once {
     padding-bottom: 1;
   }
 
+  /* conditional logic in the FilterSwitches class compose method */
   .add-tab-filters {
-    # border: green;
-    width: auto;
-  }
 
+  }
+  /* conditional logic in the FilterSwitches class compose method */
   .apply-re-add-filters {
-    # border: green;
-    height: 3;
-    dock: bottom;
+
   }
 
+  /* applies to all Container classes that contain a single filter switch */
   .single-filter-container {
     background: $surface-lighten-3;
     background-tint: $surface-lighten-3;
     layout: horizontal;
-    # border: green;
     align: center middle;
     height: auto;
 
@@ -90,15 +97,14 @@ FilterSwitches {
   }
 }
 
-/* for custom tab buttons */
-.tab-buttons-horizontal {
-  height: 1;
+/* assigned to the TabButton Vertical parent class in super.init */
+.tab-button-vertical {
+  background: $surface-lighten-2;
+  background-tint: $surface-lighten-2;
+}
 
-  .tab-button-vertical {
-    background: $surface-lighten-2;
-    background-tint: $surface-lighten-2;
-  }
-
+TabButton {
+  /* assigned to the Button class within the Vertical container for a Button */
   .tab-button {
     /* default min width from textual is 16, setting to shortest button text */
     min-width: 4;
@@ -122,52 +128,17 @@ FilterSwitches {
   }
 }
 
-# .filter-container {
-#   align: center middle;
-#   width: 100%;
-#   background: $surface;
-#   background-tint: $surface;
-#   color: $foreground-darken-1;
-#   # dock: bottom;
-#   padding-right: 2;
-#   # layout: horizontal;
+/* assigned to TabButtonsGroup Horizontal parent class in super.init */
+.tab-buttons-horizontal {
+  height: 1;
+}
 
-#   &.filter-border-top {
-#     border-top: inner $surface;
-#   }
+TabButtonsGroup {
+  /* assigned to just one horizontal button container area */
+  .tab-buttons-area-horizontal {
 
-#   &.filter-border-bottom {
-#     border-bottom: inner $surface;
-#   }
-
-#   &.padding-bottom-once {
-#     padding-bottom: 1;
-#   }
-
-#   /* all switches start in the off state */
-#   .switch--slider {
-#     color: $error-darken-3;
-#   }
-
-#   .filter-switch {
-#     background: $surface;
-#     background-tint: $surface;
-
-#     &.-on .switch--slider {
-#       color: $success;
-#     }
-
-#     &:hover {
-#       &>.switch--slider {
-#         color: $error;
-#       }
-
-#       &.-on>.switch--slider {
-#         color: $success-lighten-2;
-#       }
-#     }
-#   }
-# }
+  }
+}
 
 AutoWarning {
   height: auto;
@@ -180,7 +151,6 @@ AutoWarning {
 
 MainScreen {
 }
-
 
 
 ModalScreen {

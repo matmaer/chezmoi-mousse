@@ -79,7 +79,7 @@ class FilterSwitches(Horizontal, TabIdMixin):
 
     def __init__(self, tab: TabLabel) -> None:
         TabIdMixin.__init__(self, tab)
-        super().__init__()
+        super().__init__(classes="filter-switches-horizontal")
 
     def compose(self) -> ComposeResult:
         # Filter Switches for Apply and Re-Add Tabs
@@ -127,7 +127,7 @@ class TabButton(Vertical):
         button.compact = True
 
 
-class TabButtons(Horizontal, TabIdMixin):
+class TabButtonsGroup(Horizontal, TabIdMixin):
 
     def __init__(self, tab: TabLabel, area: ButtonArea) -> None:
         TabIdMixin.__init__(self, tab)
@@ -139,14 +139,15 @@ class TabButtons(Horizontal, TabIdMixin):
         if self.area == "TopLeft":
 
             with HorizontalGroup(
-                id=self.tree_button_group_id, classes="tab-buttons-horizontal"
+                id=self.tree_button_group_id,
+                classes="tab-buttons-area-horizontal",
             ):
                 yield TabButton("Tree", self.tree_button_id)
                 yield TabButton("List", self.list_button_id)
 
         elif self.area == "TopRight":
             with HorizontalGroup(
-                id=self.view_buttons_id, classes="tab-buttons-horizontal"
+                id=self.view_buttons_id, classes="tab-buttons-area-horizontal"
             ):
                 yield TabButton("Content", self.content_button_id)
                 yield TabButton("Diff", self.diff_button_id)
@@ -162,12 +163,12 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
     def compose(self) -> ComposeResult:
         # Left: Tree/List Switcher
         with Vertical(classes="tab-content-left"):
-            yield TabButtons(self.tab, "TopLeft")
-            with Horizontal(classes="content-switcher-container"):
+            yield TabButtonsGroup(self.tab, "TopLeft")
+            with Horizontal(classes="content-switcher-horizontal"):
                 with ContentSwitcher(
                     initial=self.tree_content_id,
                     id=self.tree_switcher_id,
-                    classes="top-border-title-style",
+                    classes="content-switcher top-border-title-style",
                 ):
                     yield ManagedTree(
                         id=self.tree_content_id,
@@ -185,12 +186,12 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
 
         # Right: Content/Diff Switcher
         with Vertical():
-            yield TabButtons(self.tab, "TopRight")
-            with Horizontal(classes="content-switcher-container"):
+            yield TabButtonsGroup(self.tab, "TopRight")
+            with Horizontal(classes="content-switcher-horizontal"):
                 with ContentSwitcher(
                     id=self.view_switcher_id,
                     initial=self.content_content_id,
-                    classes="top-border-title-style",
+                    classes="content-switcher top-border-title-style",
                 ):
                     yield PathView(
                         id=self.content_content_id,
@@ -290,7 +291,7 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
             ).unchanged = event.value
 
 
-class ApplyTab(Container):
+class ApplyTab(Horizontal):
 
     BINDINGS = [
         Binding(
@@ -308,7 +309,7 @@ class ApplyTab(Container):
         self.notify("to implement")
 
 
-class ReAddTab(Container):
+class ReAddTab(Horizontal):
 
     BINDINGS = [
         Binding(
@@ -358,7 +359,7 @@ class AddTab(Horizontal, TabIdMixin):
                     classes="tree-explorer",
                 ),
                 id=self.scrollable_dir_tree_id,
-                classes="dir-tree-container top-border-title-style",
+                classes="dir-tree-scrollable-container top-border-title-style",
             )
             # TODO: check to override property from ScrollableContainer to
             # allow maximizing:
