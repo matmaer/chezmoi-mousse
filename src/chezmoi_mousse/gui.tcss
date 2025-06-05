@@ -2,27 +2,21 @@
 /* tcss classes */
 /****************/
 
-.top-border-title-left {
-  border-top: solid $primary;
-  border-title-align: center;
-  border-title-style: bold;
-  width: auto;
-}
 
-.top-border-title-right {
+.top-border-title-style {
   border-top: solid $primary;
   border-title-align: center;
   border-title-style: bold;
 }
 
-.tree-kinds {
+.auto-width {
   width: auto;
 }
 
 .tab-content-left {
   margin-right: 2;
   /* TODO for first release */
-  # width: auto;
+  width: auto;
 }
 
 /* for custom tab buttons */
