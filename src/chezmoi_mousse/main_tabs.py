@@ -83,6 +83,9 @@ class TabIdMixin:
         # make sure the main verticals have unique id's
         self.tab_left_vertical = f"{tab}_main_left_vertical"
         self.tab_right_vertical = f"{tab}_main_right_vertical"
+        # make sure the tab button horizontals have unique id's in TreeTabSwitchers
+        self.top_left_buttons_id = f"{tab}_top_left_buttons_id"
+        self.top_right_buttons_id = f"{tab}_top_right_buttons_id"
 
 
 class TabButton(Vertical):
@@ -104,7 +107,10 @@ class TabButton(Vertical):
 class TabButtonsTopLeft(Horizontal, TabIdMixin):
     def __init__(self, tab: TabLabel) -> None:
         TabIdMixin.__init__(self, tab)
-        super().__init__(classes="tab-buttons-horizontal tab-buttons-group")
+        super().__init__(
+            id=self.top_left_buttons_id,
+            classes="tab-buttons-horizontal tab-buttons-group",
+        )
 
     def compose(self) -> ComposeResult:
 
@@ -118,7 +124,10 @@ class TabButtonsTopLeft(Horizontal, TabIdMixin):
 class TabButtonsTopRight(Horizontal, TabIdMixin):
     def __init__(self, tab: TabLabel) -> None:
         TabIdMixin.__init__(self, tab)
-        super().__init__(classes="tab-buttons-horizontal tab-buttons-group")
+        super().__init__(
+            id=self.top_right_buttons_id,
+            classes="tab-buttons-horizontal tab-buttons-group",
+        )
 
     def compose(self) -> ComposeResult:
         with HorizontalGroup(
