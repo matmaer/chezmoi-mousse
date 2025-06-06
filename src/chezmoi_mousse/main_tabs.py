@@ -44,6 +44,7 @@ from chezmoi_mousse.components import (
 
 from chezmoi_mousse.config import filter_data, pw_mgr_info
 from chezmoi_mousse.mouse_types import TabLabel, ButtonLabel
+import chezmoi_mousse.theme as theme
 
 
 class TabIdMixin:
@@ -509,12 +510,11 @@ class DoctorTab(VerticalScroll):
     def on_mount(self) -> None:
 
         styles = {
-            "ok": f"{self.app.current_theme.success}",
-            "warning": f"{self.app.current_theme.warning}",
-            "error": f"{self.app.current_theme.error}",
-            "info": f"{self.app.current_theme.foreground}",
+            "ok": theme.vars["text-success"],
+            "warning": theme.vars["text-warning"],
+            "error": theme.vars["text-error"],
+            "info": theme.vars["foreground-darken-1"],
         }
-
         list_view = self.query_exactly_one(ListView)
         table = self.query_exactly_one(DataTable)
         doctor_rows = chezmoi.doctor.list_out
@@ -546,7 +546,7 @@ class DoctorTab(VerticalScroll):
                 table.add_row(*row)
             elif row[0] == "info" and row[2] == "not set":
                 row = [
-                    Text(cell_text, style=f"{self.app.current_theme.warning}")
+                    Text(cell_text, style=styles["warning"])
                     for cell_text in row
                 ]
                 table.add_row(*row)
