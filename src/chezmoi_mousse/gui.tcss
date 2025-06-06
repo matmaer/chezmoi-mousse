@@ -9,6 +9,7 @@
 .tab-content-left {
   margin-right: 2;
   width: auto;
+  max-width:69%
 }
 
 .tab-content-right {
@@ -24,17 +25,17 @@
 
 /* assigned to ManagedTree classes and FilteredTree class */
 .tree-explorer {
-  width: auto; /* shrinks width of the Tree classes */
+  # width: 100%; /* shrinks width of the Tree classes */
 }
 
 /* assigned to the ScrollableContainer class containing FilteredDirTree */
 .dir-tree-scrollable-container {
-  width: auto; /* shrinks width around the directory tree in AddTab */
+  # width: auto; /* shrinks width around the directory tree in AddTab */
 }
 
 /* assigned to horizontal containers containing the ContentSwitcher class */
 .content-switcher-horizontal {
-  width: auto; /* shrinks width in the TreeTabsSwitchers class */
+  width: 100%;
 }
 
 /* assigned to ContentSwitcher classes */
@@ -42,7 +43,7 @@
   width: auto; /* shrinks the content around the ManagedTree widgets */
 }
 .content-switcher-right {
-  # width: auto;
+  width: auto;
 }
 /* classes used within the Horizontal containing filters */
 .filters-container {
