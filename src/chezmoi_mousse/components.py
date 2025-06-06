@@ -198,9 +198,12 @@ class DiffView(Static):
 
     BINDINGS = [Binding(key="M,m", action="maximize", description="maximize")]
 
-    diff_spec: reactive[tuple[Path, TabLabel] | None] = reactive(
-        None, init=False
-    )
+    path: reactive[Path | None] = reactive(None, init=False)
+
+    def __init__(self, tab: TabLabel, **kwargs) -> None:
+        """Initialize the DiffView for either Apply or Re-Add tab."""
+        super().__init__(**kwargs)
+        self.tab: TabLabel = tab
 
     # override property from ScrollableContainer to allow maximizing
     @property
@@ -208,47 +211,43 @@ class DiffView(Static):
         return True
 
     def on_mount(self) -> None:
-        text = "Click a file or directory, \nto show the diff."
-        self.update(Text(text, style="dim"))
+        self.update(
+            Text("Click a file  with status to show the diff.", style="dim")
+        )
 
-    def watch_diff_spec(self) -> None:
-        if self.diff_spec is None:
-            self.update("Click a file to see its diff")
-        assert self.diff_spec is not None and isinstance(self.diff_spec, tuple)
+    def watch_path(self) -> None:
 
         diff_output: list[str]
-        if self.diff_spec[1] == "Apply":
-            if self.diff_spec[0] not in chezmoi.status_paths["apply_files"]:
+        if self.tab == "Apply":
+            if self.path not in chezmoi.status_paths["apply_files"]:
                 self.update(
                     Content("\n").join(
                         [
-                            f"No diff available for {self.diff_spec[0]}",
+                            f"No diff available for {self.path}",
                             "File not in chezmoi status output.",
                         ]
                     )
                 )
                 return
             else:
-                diff_output = chezmoi.run.apply_diff(self.diff_spec[0])
-        elif self.diff_spec[1] == "Re-Add":
-            if self.diff_spec[0] not in chezmoi.status_paths["re_add_files"]:
+                diff_output = chezmoi.run.apply_diff(self.path)
+        elif self.tab == "Re-Add":
+            if self.path not in chezmoi.status_paths["re_add_files"]:
                 self.update(
                     Content("\n").join(
                         [
-                            f"No diff available for {self.diff_spec[0]}",
+                            f"No diff available for {self.path}",
                             "File not in chezmoi status output.",
                         ]
                     )
                 )
                 return
             else:
-                diff_output = chezmoi.run.re_add_diff(self.diff_spec[0])
+                diff_output = chezmoi.run.re_add_diff(self.path)
 
         if not diff_output:
             self.update(
-                Content(
-                    f"chezmoi diff {self.diff_spec[0]} returned no output."
-                )
+                Content(f"chezmoi diff {self.path} returned no output.")
             )
             return
 
