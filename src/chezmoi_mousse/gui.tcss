@@ -13,6 +13,7 @@
 }
 
 .tab-content-right {
+  # width: auto;
 }
 
 .top-border-title-style {
@@ -25,12 +26,12 @@
 
 /* assigned to ManagedTree classes and FilteredTree class */
 .tree-explorer {
-  # width: 100%; /* shrinks width of the Tree classes */
+  width: auto; /* shrinks width of the Tree classes */
 }
 
 /* assigned to the ScrollableContainer class containing FilteredDirTree */
 .dir-tree-scrollable-container {
-  # width: auto; /* shrinks width around the directory tree in AddTab */
+  width: 100%; /* shrinks width around the directory tree in AddTab */
 }
 
 /* assigned to horizontal containers containing the ContentSwitcher class */
