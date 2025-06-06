@@ -256,7 +256,7 @@ class DiffView(RichLog):
             # calling self.update() for a batched update
             line = line.rstrip("\n")
             if line.startswith("-"):
-                self.write(Text(line, theme.vars["text-primary"]))
+                self.write(Text(line, theme.vars["text-error"]))
             elif line.startswith("+"):
                 self.write(Text(line, theme.vars["text-success"]))
             else:
