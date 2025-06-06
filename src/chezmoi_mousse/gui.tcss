@@ -9,7 +9,6 @@
 .tab-content-left {
   margin-right: 2;
   width: auto;
-  max-width: 69%;
 }
 
 .tab-content-right {
@@ -109,8 +108,6 @@
 .tab-button-vertical {
   align: center middle;
   width: auto;
-  background: $surface-lighten-2;
-  background-tint: $surface-lighten-2;
 }
 
 TabButton {
