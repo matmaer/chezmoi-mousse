@@ -78,12 +78,14 @@ class TabIdMixin:
         self.dir_tree_id = f"{tab}_dir_tree"
         # used to set the top border title for the directory tree on the left
         self.scrollable_dir_tree_id = f"{tab}_scrollable_dir_tree"
+        # used to wrap DiffView in a ScrollableContainer
+        self.scrollable_diff_view_id = f"{tab}_scrollable_diff_view"
         # used to set the top border title for the path view on the right
         self.path_view_id = f"{tab}_path_view"
-        # make sure the main verticals have unique id's
+        # unique id's for main verticals
         self.tab_left_vertical = f"{tab}_main_left_vertical"
         self.tab_right_vertical = f"{tab}_main_right_vertical"
-        # make sure the tab button horizontals have unique id's in TreeTabSwitchers
+        # unique id's for tab button horizontals in TreeTabSwitchers
         self.top_left_buttons_id = f"{tab}_top_left_buttons_id"
         self.top_right_buttons_id = f"{tab}_top_right_buttons_id"
 
@@ -189,7 +191,10 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
                         wrap=False,
                         highlight=True,
                     )
-                    yield DiffView(id=self.diff_content_id)
+                    yield ScrollableContainer(
+                        DiffView(id=self.diff_content_id, tab=self.tab),
+                        id=self.scrollable_diff_view_id,
+                    )
                     yield GitLog(id=self.git_log_content_id)
 
     def on_mount(self) -> None:
@@ -250,7 +255,7 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
             elif event.button.id == self.diff_button_id:
                 self.query_one(
                     f"#{self.view_switcher_id}", ContentSwitcher
-                ).current = self.diff_content_id
+                ).current = self.scrollable_diff_view_id
             elif event.button.id == self.git_log_button_id:
                 self.query_one(
                     f"#{self.view_switcher_id}", ContentSwitcher
@@ -265,10 +270,11 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
         path_view = self.query_one(f"#{self.content_content_id}", PathView)
         path_view.path = event.node.data.path
         path_view.tab = self.tab
-        self.query_one(f"#{self.diff_content_id}", DiffView).diff_spec = (
-            event.node.data.path,
-            self.tab,
+
+        self.query_one(f"#{self.diff_content_id}", DiffView).path = (
+            event.node.data.path
         )
+
         self.query_one(f"#{self.git_log_content_id}", GitLog).path = (
             event.node.data.path
         )

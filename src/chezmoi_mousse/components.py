@@ -21,6 +21,7 @@ from textual.content import Content
 from textual.reactive import reactive
 from textual.widgets import DataTable, DirectoryTree, RichLog, Static, Tree
 from textual.widgets.tree import TreeNode
+from chezmoi_mousse import BULLET
 from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.config import unwanted
 from chezmoi_mousse.mouse_types import TabLabel
@@ -198,57 +199,51 @@ class DiffView(Static):
 
     BINDINGS = [Binding(key="M,m", action="maximize", description="maximize")]
 
-    diff_spec: reactive[tuple[Path, TabLabel] | None] = reactive(
-        None, init=False
-    )
+    path: reactive[Path | None] = reactive(None, init=False)
 
-    # override property from ScrollableContainer to allow maximizing
-    @property
-    def allow_maximize(self) -> bool:
-        return True
+    def __init__(self, tab: TabLabel, **kwargs) -> None:
+        """Initialize the DiffView for either Apply or Re-Add tab."""
+        self.tab: TabLabel = tab
+        super().__init__(**kwargs)
 
     def on_mount(self) -> None:
-        text = "Click a file or directory, \nto show the diff."
-        self.update(Text(text, style="dim"))
+        self.update(
+            Text("Click a file  with status to show the diff.", style="dim")
+        )
 
-    def watch_diff_spec(self) -> None:
-        if self.diff_spec is None:
-            self.update("Click a file to see its diff")
-        assert self.diff_spec is not None and isinstance(self.diff_spec, tuple)
+    def watch_path(self) -> None:
 
         diff_output: list[str]
-        if self.diff_spec[1] == "Apply":
-            if self.diff_spec[0] not in chezmoi.status_paths["apply_files"]:
+        if self.tab == "Apply":
+            if self.path not in chezmoi.status_paths["apply_files"]:
                 self.update(
                     Content("\n").join(
                         [
-                            f"No diff available for {self.diff_spec[0]}",
+                            f"No diff available for {self.path}",
                             "File not in chezmoi status output.",
                         ]
                     )
                 )
                 return
             else:
-                diff_output = chezmoi.run.apply_diff(self.diff_spec[0])
-        elif self.diff_spec[1] == "Re-Add":
-            if self.diff_spec[0] not in chezmoi.status_paths["re_add_files"]:
+                diff_output = chezmoi.run.apply_diff(self.path)
+        elif self.tab == "Re-Add":
+            if self.path not in chezmoi.status_paths["re_add_files"]:
                 self.update(
                     Content("\n").join(
                         [
-                            f"No diff available for {self.diff_spec[0]}",
+                            f"No diff available for {self.path}",
                             "File not in chezmoi status output.",
                         ]
                     )
                 )
                 return
             else:
-                diff_output = chezmoi.run.re_add_diff(self.diff_spec[0])
+                diff_output = chezmoi.run.re_add_diff(self.path)
 
         if not diff_output:
             self.update(
-                Content(
-                    f"chezmoi diff {self.diff_spec[0]} returned no output."
-                )
+                Content(f"chezmoi diff {self.path} returned no output.")
             )
             return
 
@@ -267,13 +262,15 @@ class DiffView(Static):
         padded_lines = [line.ljust(max_len) for line in diff_lines]
         colored_lines: list[Content] = []
         for line in padded_lines:
+            # strip trailing newline as they get joined with a new line before
+            # calling self.update() for a batched update
+            line = line.rstrip("\n")
             if line.startswith("-"):
                 colored_lines.append(Content(line).stylize("$text-error"))
             elif line.startswith("+"):
                 colored_lines.append(Content(line).stylize("$text-success"))
             else:
-                content = Content("\u2022" + line)  # bullet •
-                colored_lines.append(content.stylize("dim"))
+                colored_lines.append(Content(BULLET + line).stylize("dim"))
         self.update(Content("\n").join(colored_lines))
 
 
