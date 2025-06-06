@@ -50,14 +50,8 @@ import chezmoi_mousse.theme as theme
 class TabIdMixin:
     def __init__(self, tab: TabLabel):
         self.tab: TabLabel = tab
-        # button ids
-        self.tree_button_id = f"{tab}_tree_button"
-        self.list_button_id = f"{tab}_list_button"
-        self.content_button_id = f"{tab}_content_button"
-        self.diff_button_id = f"{tab}_diff_button"
-        self.git_log_button_id = f"{tab}_git_log_button"
-        self.view_buttons_id = f"{tab}_view_buttons"
         # button group ids
+        self.tab_button = f"{tab}_tab_button"
         self.tree_button_group_id = f"{tab}_tree_buttons"
         self.view_button_group_id = f"{tab}_view_buttons"
         # left content switcher content ids
@@ -88,6 +82,10 @@ class TabIdMixin:
         self.top_left_buttons_id = f"{tab}_top_left_buttons_id"
         self.top_right_buttons_id = f"{tab}_top_right_buttons_id"
 
+    def button_id(self, button_label: ButtonLabel) -> str:
+        """Generate a unique button id for this tab and button label."""
+        return f"{self.tab}_button_{button_label}"
+
 
 class TabButton(Vertical):
 
@@ -114,12 +112,11 @@ class TabButtonsTopLeft(Horizontal, TabIdMixin):
         )
 
     def compose(self) -> ComposeResult:
-
         with HorizontalGroup(
             id=self.tree_button_group_id, classes="tab-buttons-area-horizontal"
         ):
-            yield TabButton("Tree", self.tree_button_id)
-            yield TabButton("List", self.list_button_id)
+            yield TabButton("Tree", self.button_id("Tree"))
+            yield TabButton("List", self.button_id("List"))
 
 
 class TabButtonsTopRight(Horizontal, TabIdMixin):
@@ -132,11 +129,11 @@ class TabButtonsTopRight(Horizontal, TabIdMixin):
 
     def compose(self) -> ComposeResult:
         with HorizontalGroup(
-            id=self.view_buttons_id, classes="tab-buttons-area-horizontal"
+            id=self.view_button_group_id, classes="tab-buttons-area-horizontal"
         ):
-            yield TabButton("Content", self.content_button_id)
-            yield TabButton("Diff", self.diff_button_id)
-            yield TabButton("Git-Log", self.git_log_button_id)
+            yield TabButton("Content", self.button_id("Content"))
+            yield TabButton("Diff", self.button_id("Diff"))
+            yield TabButton("Git-Log", self.button_id("Git-Log"))
 
 
 class TreeTabSwitchers(Horizontal, TabIdMixin):
@@ -198,11 +195,11 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
         self.query_one(f"#{self.tree_switcher_id}").border_title = (
             chezmoi.dest_dir_str_spaced
         )
-        self.query_one(f"#{self.tree_button_id}", Button).add_class(
+        self.query_one(f"#{self.button_id('Tree')}", Button).add_class(
             "last-clicked"
         )
         # right
-        self.query_one(f"#{self.content_button_id}", Button).add_class(
+        self.query_one(f"#{self.button_id('Content')}", Button).add_class(
             "last-clicked"
         )
         self.query_one(f"#{self.view_switcher_id}").border_title = (
@@ -217,11 +214,12 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
     def on_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
         # Tree/List Switch
-        if event.button.id in [self.tree_button_id, self.list_button_id]:
+        if event.button.id in [self.button_id("Tree"), self.button_id("List")]:
             self.update_button_classes(
-                [self.tree_button_id, self.list_button_id], event.button.id
+                [self.button_id("Tree"), self.button_id("List")],
+                event.button.id,
             )
-            if event.button.id == self.tree_button_id:
+            if event.button.id == self.button_id("Tree"):
                 self.query_one(
                     f"#{self.tree_switcher_id}", ContentSwitcher
                 ).current = self.tree_content_id
@@ -231,28 +229,28 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
                 ).current = self.list_content_id
         # Content/Diff/GitLog Switch
         elif event.button.id in [
-            self.content_button_id,
-            self.diff_button_id,
-            self.git_log_button_id,
+            self.button_id("Content"),
+            self.button_id("Diff"),
+            self.button_id("Git-Log"),
         ]:
             # Remove from all right-side buttons
             self.update_button_classes(
                 [
-                    self.content_button_id,
-                    self.diff_button_id,
-                    self.git_log_button_id,
+                    self.button_id("Content"),
+                    self.button_id("Diff"),
+                    self.button_id("Git-Log"),
                 ],
                 event.button.id,
             )
-            if event.button.id == self.content_button_id:
+            if event.button.id == self.button_id("Content"):
                 self.query_one(
                     f"#{self.view_switcher_id}", ContentSwitcher
                 ).current = self.content_content_id
-            elif event.button.id == self.diff_button_id:
+            elif event.button.id == self.button_id("Diff"):
                 self.query_one(
                     f"#{self.view_switcher_id}", ContentSwitcher
                 ).current = self.diff_content_id
-            elif event.button.id == self.git_log_button_id:
+            elif event.button.id == self.button_id("Git-Log"):
                 self.query_one(
                     f"#{self.view_switcher_id}", ContentSwitcher
                 ).current = self.git_log_content_id
