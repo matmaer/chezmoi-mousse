@@ -21,6 +21,7 @@ from textual.content import Content
 from textual.reactive import reactive
 from textual.widgets import DataTable, DirectoryTree, RichLog, Static, Tree
 from textual.widgets.tree import TreeNode
+from chezmoi_mousse import BULLET
 from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.config import unwanted
 from chezmoi_mousse.mouse_types import TabLabel
@@ -261,13 +262,15 @@ class DiffView(Static):
         padded_lines = [line.ljust(max_len) for line in diff_lines]
         colored_lines: list[Content] = []
         for line in padded_lines:
+            # strip trailing newline as they get joined with a new line before
+            # calling self.update() for a batched update
+            line = line.rstrip("\n")
             if line.startswith("-"):
                 colored_lines.append(Content(line).stylize("$text-error"))
             elif line.startswith("+"):
                 colored_lines.append(Content(line).stylize("$text-success"))
             else:
-                content = Content("\u2022" + line)  # bullet •
-                colored_lines.append(content.stylize("dim"))
+                colored_lines.append(Content(BULLET + line).stylize("dim"))
         self.update(Content("\n").join(colored_lines))
 
 
