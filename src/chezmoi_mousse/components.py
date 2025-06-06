@@ -23,6 +23,7 @@ from textual.widgets import DataTable, DirectoryTree, RichLog, Static, Tree
 from textual.widgets.tree import TreeNode
 from chezmoi_mousse import BULLET
 from chezmoi_mousse.chezmoi import chezmoi
+import chezmoi_mousse.theme as theme
 from chezmoi_mousse.config import unwanted
 from chezmoi_mousse.mouse_types import TabLabel
 
@@ -255,9 +256,9 @@ class DiffView(RichLog):
             # calling self.update() for a batched update
             line = line.rstrip("\n")
             if line.startswith("-"):
-                self.write(Text(line))
+                self.write(Text(line, theme.vars["text-primary"]))
             elif line.startswith("+"):
-                self.write(Text(line))
+                self.write(Text(line, theme.vars["text-success"]))
             else:
                 self.write(Text(BULLET + line, style="dim"))
 
@@ -275,17 +276,10 @@ class ManagedTree(Tree[NodeData]):
 
     unchanged: reactive[bool] = reactive(False, init=False)
 
-    # TODO: default color should be updated on theme change
-    node_colors = {
-        "Dir": "#57A5E2",  # text-primary
-        "D": "#D17E92",  # text-error
-        "A": "#8AD4A1",  # text-success
-        "M": "#FFC473",  # text-warning
-    }
-
     def __init__(self, tab, flat_list=False, **kwargs) -> None:
         self.tab: TabLabel = tab
         self.flat_list: bool = flat_list
+
         super().__init__(label="root", **kwargs)
 
     @property
@@ -307,6 +301,13 @@ class ManagedTree(Tree[NodeData]):
             return {}
 
     def on_mount(self) -> None:
+
+        self.node_colors = {
+            "Dir": theme.vars["text-primary"],
+            "D": theme.vars["text-error"],
+            "A": theme.vars["text-success"],
+            "M": theme.vars["text-warning"],
+        }
 
         self.guide_depth = 3
         # give root node status R so it's not considered having status "X"
