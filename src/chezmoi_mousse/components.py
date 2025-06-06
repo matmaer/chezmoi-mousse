@@ -202,13 +202,8 @@ class DiffView(Static):
 
     def __init__(self, tab: TabLabel, **kwargs) -> None:
         """Initialize the DiffView for either Apply or Re-Add tab."""
-        super().__init__(**kwargs)
         self.tab: TabLabel = tab
-
-    # override property from ScrollableContainer to allow maximizing
-    @property
-    def allow_maximize(self) -> bool:
-        return True
+        super().__init__(**kwargs)
 
     def on_mount(self) -> None:
         self.update(
