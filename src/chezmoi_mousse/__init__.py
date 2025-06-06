@@ -2,6 +2,7 @@
 
 BURGER = "\u2261"  # burger icon, math symbol
 GEAR = "\u2699"  # gear icon, not used yet
+BULLET = "\u2022"  # bullet character
 
 # provisional diagrams until dynamically created
 FLOW = """\
