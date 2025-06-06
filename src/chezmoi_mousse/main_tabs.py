@@ -345,13 +345,6 @@ class AddTab(Horizontal, TabIdMixin):
                 id=self.scrollable_dir_tree_id,
                 classes="dir-tree-scrollable-container top-border-title-style",
             )
-            # TODO: check to override property from ScrollableContainer to
-            # allow maximizing:
-            #
-            # @property
-            # def allow_maximize(self) -> bool:
-            #     return True
-            #
             with Horizontal(
                 id=self.filters_container_id,
                 classes="filters-container two-filters-height",
