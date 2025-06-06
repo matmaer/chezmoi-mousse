@@ -8,12 +8,11 @@
 
 .tab-content-left {
   margin-right: 2;
-  border: blue;
-  # width: 20;
+  width: auto;
+  max-width: 69%;
 }
 
 .tab-content-right {
-  border: blue;
 }
 
 .top-border-title-style {
@@ -21,7 +20,7 @@
   border-title-align: center;
   border-title-style: bold;
   /* min width for two buttons with 4 chars: Tree and List plus padding */
-  # min-width: 12;
+  min-width: 12;
 }
 
 /* assigned to ManagedTree classes and FilteredTree class */
@@ -42,15 +41,10 @@
 /* assigned to ContentSwitcher classes */
 .content-switcher-left {
   width: auto; /* shrinks the content around the ManagedTree widgets */
-  border: green;
 }
 .content-switcher-right {
-  border: green;
-  width: auto;
   # width: auto;
 }
-
-
 /* classes used within the Horizontal containing filters */
 .filters-container {
   background: $surface;
@@ -59,7 +53,6 @@
   border-bottom: inner $surface;
   padding-right: 2;
   width: auto;
-  # height: 20;
 
   &.one-filter-height {
     height: 3
@@ -82,9 +75,7 @@
   .single-filter-container {
     layout: horizontal;
     width: auto;
-    layout: horizontal;
     align: center middle;
-    height: auto;  /* if not set, only one filter is visible in AddTab */
 
     /* color of the label text */
     color: $foreground-darken-1;
@@ -149,7 +140,6 @@ TabButton {
 
 /* assigned to TabButtonsGroup Horizontal parent class in super.init */
 .tab-buttons-horizontal {
-  border-right: magenta;
   height: 1;
   width: auto;
 }
@@ -158,7 +148,6 @@ TabButton {
   /* assigned to just one horizontal button container area */
   .tab-buttons-area-horizontal {
     width: auto;
-    # background: yellow;
   }
 }
 
@@ -173,7 +162,6 @@ AutoWarning {
 
 MainScreen {
 }
-
 
 ModalScreen {
   &.doctor-modal {
