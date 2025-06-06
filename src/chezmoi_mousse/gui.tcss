@@ -2,9 +2,67 @@
 /* tcss classes */
 /****************/
 
-# .width-auto {
-#   width: auto;
-# }
+.add-tab-left {
+  margin-right: 2;
+}
+.add-tab-right {
+}
+/* assigned to the ScrollableContainer class containing FilteredDirTree */
+.dir-tree-scrollable-container {
+}
+.add-tab-main-horizontal {
+}
+.filtered-dir-tree {
+}
+
+/* applies to all Container classes that contain a single filter switch */
+.add-filter-container {
+  /* color of the label text */
+  color: $foreground-darken-1;
+  background: $surface;
+  background-tint: $surface;
+  align: center middle;
+  padding-right: 2;
+
+  &.border-bottom-once {
+    border-bottom: inner $surface;
+  }
+
+  &.border-top-once {
+    border-top: inner $surface;
+  }
+
+  &.height-2 {
+    height: 2;
+  }
+
+  &.height-3 {
+    height: 3;
+  }
+
+  /* style the switch itself */
+  .switch--slider {
+    color: $error-darken-3;
+  }
+  .add-filter {
+    background: $surface;
+    background-tint: $surface;
+
+    &.-on .switch--slider {
+      color: $success-darken-2;
+    }
+
+    &:hover {
+      &>.switch--slider {
+        color: $error;
+      }
+
+      &.-on>.switch--slider {
+        color: $success-lighten-1;
+      }
+    }
+  }
+}
 
 .tab-content-left {
   margin-right: 2;
@@ -13,15 +71,12 @@
 }
 
 .tab-content-right {
-  # width: auto;
 }
 
 .top-border-title-style {
   border-top: solid $primary;
   border-title-align: center;
   border-title-style: bold;
-  /* min width for two buttons with 4 chars: Tree and List plus padding */
-  min-width: 12;
 }
 
 /* assigned to ManagedTree classes and FilteredTree class */
@@ -29,10 +84,6 @@
   width: auto; /* shrinks width of the Tree classes */
 }
 
-/* assigned to the ScrollableContainer class containing FilteredDirTree */
-.dir-tree-scrollable-container {
-  width: 100%; /* shrinks width around the directory tree in AddTab */
-}
 
 /* assigned to horizontal containers containing the ContentSwitcher class */
 .content-switcher-horizontal {
@@ -63,9 +114,9 @@
     height: 5;
   }
 
-  .two-filters-vertical {
-    width: auto;
-  }
+  # .two-filters-vertical {
+  #   width: auto;
+  # }
 
   .padding-bottom-once {
     padding-bottom: 1;

@@ -335,46 +335,44 @@ class AddTab(Horizontal, TabIdMixin):
         super().__init__(**kwargs)
 
     def compose(self) -> ComposeResult:
-        with Vertical(id=self.tab_left_vertical, classes="tab-content-left"):
-            yield ScrollableContainer(
-                FilteredDirTree(
+        with Vertical(
+            id=self.tab_left_vertical,
+            classes="add-tab-left top-border-title-style",
+        ):
+            with ScrollableContainer(
+                id=self.scrollable_dir_tree_id,
+                classes="dir-tree-scrollable-container",
+            ):
+                yield FilteredDirTree(
                     chezmoi.dest_dir,
                     id=self.dir_tree_id,
-                    classes="tree-explorer",
-                ),
-                id=self.scrollable_dir_tree_id,
-                classes="dir-tree-scrollable-container top-border-title-style",
-            )
-            with Horizontal(
-                id=self.filters_container_id,
-                classes="filters-container two-filters-height",
-            ):
-                yield Vertical(
-                    HorizontalGroup(
-                        Switch(
-                            id=self.unmanaged_dirs_id, classes="filter-switch"
-                        ),
-                        Label(filter_data.unmanaged_dirs.label).with_tooltip(
-                            tooltip=filter_data.unmanaged_dirs.tooltip
-                        ),
-                        classes="single-filter-container padding-bottom-once",
-                    ),
-                    HorizontalGroup(
-                        Switch(id=self.unwanted_id, classes="filter-switch"),
-                        Label(filter_data.unwanted.label).with_tooltip(
-                            tooltip=filter_data.unwanted.tooltip
-                        ),
-                        classes="single-filter-container two-filters-height",
-                    ),
-                    classes="two-filters-vertical",
+                    classes="filtered-dir-tree",
                 )
-        with Vertical(id=self.tab_right_vertical, classes="tab-content-right"):
+
+            yield Horizontal(
+                Switch(id=self.unmanaged_dirs_id, classes="add-filter"),
+                Label(filter_data.unmanaged_dirs.label).with_tooltip(
+                    tooltip=filter_data.unmanaged_dirs.tooltip
+                ),
+                classes="add-filter-container padding-bottom-once border-top-once height-3",
+            )
+            yield Horizontal(
+                Switch(id=self.unwanted_id, classes="add-filter"),
+                Label(filter_data.unwanted.label).with_tooltip(
+                    tooltip=filter_data.unwanted.tooltip
+                ),
+                classes="add-filter-container border-bottom-once height-2",
+            )
+
+        with ScrollableContainer(
+            id=self.tab_right_vertical,
+            classes="add-tab-right top-border-title-style",
+        ):
             yield PathView(
                 id=self.path_view_id,
                 auto_scroll=False,
                 wrap=False,
                 highlight=True,
-                classes="top-border-title-style",
             )
 
     def on_mount(self) -> None:
@@ -384,13 +382,14 @@ class AddTab(Horizontal, TabIdMixin):
         filtered_dir_tree.show_root = False
         filtered_dir_tree.guide_depth = 3
 
-        self.query_one(
-            f"#{self.scrollable_dir_tree_id}", ScrollableContainer
-        ).border_title = chezmoi.dest_dir_str_spaced
+        self.query_one(f"#{self.tab_left_vertical}", Vertical).border_title = (
+            chezmoi.dest_dir_str_spaced
+        )
 
-        path_view = self.query_one(f"#{self.path_view_id}", PathView)
-        path_view.border_title = " path view "
-        path_view.tab = self.tab
+        self.query_one(
+            f"#{self.tab_right_vertical}", ScrollableContainer
+        ).border_title = " path view "
+        self.query_one(f"#{self.path_view_id}", PathView).tab = self.tab
 
     def on_directory_tree_file_selected(
         self, event: FilteredDirTree.FileSelected
@@ -411,7 +410,9 @@ class AddTab(Horizontal, TabIdMixin):
         path_view = self.query_one(f"#{self.path_view_id}", PathView)
         path_view.path = event.node.data.path
         path_view.tab = self.tab
-        path_view.border_title = f" {event.node.data.path} "
+        self.query_one(
+            f"#{self.tab_right_vertical}", ScrollableContainer
+        ).border_title = f" {event.node.data.path} "
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
         event.stop()
