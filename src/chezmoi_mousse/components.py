@@ -191,7 +191,7 @@ class PathView(RichLog):
             self.update_path_view()
 
 
-class DiffView(Static):
+class DiffView(RichLog):
     """Shows the diff between the destination and the chezmoi repository,
     accounts for the direction of the operation to color the diff."""
 
@@ -207,21 +207,20 @@ class DiffView(Static):
         super().__init__(**kwargs)
 
     def on_mount(self) -> None:
-        self.update(
+        self.write(
             Text("Click a file  with status to show the diff.", style="dim")
         )
 
     def watch_path(self) -> None:
+        self.clear()
 
         diff_output: list[str]
         if self.tab == "Apply":
             if self.path not in chezmoi.status_paths["apply_files"]:
-                self.update(
-                    Content("\n").join(
-                        [
-                            f"No diff available for {self.path}",
-                            "File not in chezmoi status output.",
-                        ]
+                self.write(
+                    Text(
+                        f"No diff available for {self.path}, file not present in chezmoi status output.",
+                        style="dim",
                     )
                 )
                 return
@@ -229,12 +228,10 @@ class DiffView(Static):
                 diff_output = chezmoi.run.apply_diff(self.path)
         elif self.tab == "Re-Add":
             if self.path not in chezmoi.status_paths["re_add_files"]:
-                self.update(
-                    Content("\n").join(
-                        [
-                            f"No diff available for {self.path}",
-                            "File not in chezmoi status output.",
-                        ]
+                self.write(
+                    Text(
+                        f"No diff available for {self.path}, file not present in chezmoi status output.",
+                        style="dim",
                     )
                 )
                 return
@@ -242,9 +239,7 @@ class DiffView(Static):
                 diff_output = chezmoi.run.re_add_diff(self.path)
 
         if not diff_output:
-            self.update(
-                Content(f"chezmoi diff {self.path} returned no output.")
-            )
+            self.write(Text(f"chezmoi diff {self.path} returned no output."))
             return
 
         diff_lines: list[str] = [
@@ -255,23 +250,16 @@ class DiffView(Static):
             and not line.startswith(("+++", "---"))
         ]
 
-        if diff_output:
-            max_len = max(len(line) for line in diff_output)
-        else:
-            max_len = 0
-        padded_lines = [line.ljust(max_len) for line in diff_lines]
-        colored_lines: list[Content] = []
-        for line in padded_lines:
+        for line in diff_lines:
             # strip trailing newline as they get joined with a new line before
             # calling self.update() for a batched update
             line = line.rstrip("\n")
             if line.startswith("-"):
-                colored_lines.append(Content(line).stylize("$text-error"))
+                self.write(Text(line))
             elif line.startswith("+"):
-                colored_lines.append(Content(line).stylize("$text-success"))
+                self.write(Text(line))
             else:
-                colored_lines.append(Content(BULLET + line).stylize("dim"))
-        self.update(Content("\n").join(colored_lines))
+                self.write(Text(BULLET + line, style="dim"))
 
 
 @dataclass
