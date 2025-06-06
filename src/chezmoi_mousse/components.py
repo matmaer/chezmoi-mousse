@@ -50,10 +50,9 @@ class GitLog(DataTable):
 
     def populate_data_table(self, cmd_output: list[str]) -> None:
         styles = {
-            "ok": f"{self.app.current_theme.success}",
-            "warning": f"{self.app.current_theme.warning}",
-            "error": f"{self.app.current_theme.error}",
-            "info": f"{self.app.current_theme.foreground}",
+            "ok": theme.vars["text-success"],
+            "warning": theme.vars["text-warning"],
+            "error": theme.vars["text-error"],
         }
         self.add_columns("COMMIT", "MESSAGE")
         for line in cmd_output:
@@ -256,7 +255,7 @@ class DiffView(RichLog):
             # calling self.update() for a batched update
             line = line.rstrip("\n")
             if line.startswith("-"):
-                self.write(Text(line, theme.vars["text-primary"]))
+                self.write(Text(line, theme.vars["text-error"]))
             elif line.startswith("+"):
                 self.write(Text(line, theme.vars["text-success"]))
             else:
