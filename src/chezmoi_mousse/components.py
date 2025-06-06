@@ -23,6 +23,7 @@ from textual.widgets import DataTable, DirectoryTree, RichLog, Static, Tree
 from textual.widgets.tree import TreeNode
 from chezmoi_mousse import BULLET
 from chezmoi_mousse.chezmoi import chezmoi
+import chezmoi_mousse.theme as theme
 from chezmoi_mousse.config import unwanted
 from chezmoi_mousse.mouse_types import TabLabel
 
@@ -191,7 +192,7 @@ class PathView(RichLog):
             self.update_path_view()
 
 
-class DiffView(Static):
+class DiffView(RichLog):
     """Shows the diff between the destination and the chezmoi repository,
     accounts for the direction of the operation to color the diff."""
 
@@ -207,21 +208,20 @@ class DiffView(Static):
         super().__init__(**kwargs)
 
     def on_mount(self) -> None:
-        self.update(
+        self.write(
             Text("Click a file  with status to show the diff.", style="dim")
         )
 
     def watch_path(self) -> None:
+        self.clear()
 
         diff_output: list[str]
         if self.tab == "Apply":
             if self.path not in chezmoi.status_paths["apply_files"]:
-                self.update(
-                    Content("\n").join(
-                        [
-                            f"No diff available for {self.path}",
-                            "File not in chezmoi status output.",
-                        ]
+                self.write(
+                    Text(
+                        f"No diff available for {self.path}, file not present in chezmoi status output.",
+                        style="dim",
                     )
                 )
                 return
@@ -229,12 +229,10 @@ class DiffView(Static):
                 diff_output = chezmoi.run.apply_diff(self.path)
         elif self.tab == "Re-Add":
             if self.path not in chezmoi.status_paths["re_add_files"]:
-                self.update(
-                    Content("\n").join(
-                        [
-                            f"No diff available for {self.path}",
-                            "File not in chezmoi status output.",
-                        ]
+                self.write(
+                    Text(
+                        f"No diff available for {self.path}, file not present in chezmoi status output.",
+                        style="dim",
                     )
                 )
                 return
@@ -242,9 +240,7 @@ class DiffView(Static):
                 diff_output = chezmoi.run.re_add_diff(self.path)
 
         if not diff_output:
-            self.update(
-                Content(f"chezmoi diff {self.path} returned no output.")
-            )
+            self.write(Text(f"chezmoi diff {self.path} returned no output."))
             return
 
         diff_lines: list[str] = [
@@ -255,23 +251,16 @@ class DiffView(Static):
             and not line.startswith(("+++", "---"))
         ]
 
-        if diff_output:
-            max_len = max(len(line) for line in diff_output)
-        else:
-            max_len = 0
-        padded_lines = [line.ljust(max_len) for line in diff_lines]
-        colored_lines: list[Content] = []
-        for line in padded_lines:
+        for line in diff_lines:
             # strip trailing newline as they get joined with a new line before
             # calling self.update() for a batched update
             line = line.rstrip("\n")
             if line.startswith("-"):
-                colored_lines.append(Content(line).stylize("$text-error"))
+                self.write(Text(line, theme.vars["text-primary"]))
             elif line.startswith("+"):
-                colored_lines.append(Content(line).stylize("$text-success"))
+                self.write(Text(line, theme.vars["text-success"]))
             else:
-                colored_lines.append(Content(BULLET + line).stylize("dim"))
-        self.update(Content("\n").join(colored_lines))
+                self.write(Text(BULLET + line, style="dim"))
 
 
 @dataclass
@@ -287,17 +276,10 @@ class ManagedTree(Tree[NodeData]):
 
     unchanged: reactive[bool] = reactive(False, init=False)
 
-    # TODO: default color should be updated on theme change
-    node_colors = {
-        "Dir": "#57A5E2",  # text-primary
-        "D": "#D17E92",  # text-error
-        "A": "#8AD4A1",  # text-success
-        "M": "#FFC473",  # text-warning
-    }
-
     def __init__(self, tab, flat_list=False, **kwargs) -> None:
         self.tab: TabLabel = tab
         self.flat_list: bool = flat_list
+
         super().__init__(label="root", **kwargs)
 
     @property
@@ -319,6 +301,13 @@ class ManagedTree(Tree[NodeData]):
             return {}
 
     def on_mount(self) -> None:
+
+        self.node_colors = {
+            "Dir": theme.vars["text-primary"],
+            "D": theme.vars["text-error"],
+            "A": theme.vars["text-success"],
+            "M": theme.vars["text-warning"],
+        }
 
         self.guide_depth = 3
         # give root node status R so it's not considered having status "X"

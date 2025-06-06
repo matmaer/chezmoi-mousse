@@ -78,8 +78,6 @@ class TabIdMixin:
         self.dir_tree_id = f"{tab}_dir_tree"
         # used to set the top border title for the directory tree on the left
         self.scrollable_dir_tree_id = f"{tab}_scrollable_dir_tree"
-        # used to wrap DiffView in a ScrollableContainer
-        self.scrollable_diff_view_id = f"{tab}_scrollable_diff_view"
         # used to set the top border title for the path view on the right
         self.path_view_id = f"{tab}_path_view"
         # unique id's for main verticals
@@ -191,10 +189,7 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
                         wrap=False,
                         highlight=True,
                     )
-                    yield ScrollableContainer(
-                        DiffView(id=self.diff_content_id, tab=self.tab),
-                        id=self.scrollable_diff_view_id,
-                    )
+                    yield DiffView(id=self.diff_content_id, tab=self.tab)
                     yield GitLog(id=self.git_log_content_id)
 
     def on_mount(self) -> None:
@@ -255,7 +250,7 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
             elif event.button.id == self.diff_button_id:
                 self.query_one(
                     f"#{self.view_switcher_id}", ContentSwitcher
-                ).current = self.scrollable_diff_view_id
+                ).current = self.diff_content_id
             elif event.button.id == self.git_log_button_id:
                 self.query_one(
                     f"#{self.view_switcher_id}", ContentSwitcher

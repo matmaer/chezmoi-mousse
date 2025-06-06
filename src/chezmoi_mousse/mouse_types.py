@@ -5,10 +5,17 @@ type ApplyLabel = Literal["Apply"]
 type ReAddLabel = Literal["Re-Add"]
 type AddLabel = Literal["Add"]
 
+# chezmoi status: added, deleted, modified, and no status
+type StatusCode = Literal["A", "D", "M", "X"]
+
 type TabLabel = Literal[ApplyLabel, ReAddLabel, AddLabel]
 
 type ButtonLabel = Literal["Tree", "List", "Content", "Diff", "Git-Log"]
 
-type DiffSpec = tuple[Path, str] | None
-
 type ButtonArea = Literal["TopLeft", "TopRight"]
+
+type StatusGroup = Literal[
+    "apply_files", "apply_dirs", "re_add_files", "re_add_dirs"
+]
+
+type PathStatusDict = dict[StatusGroup, dict[Path, StatusCode]]

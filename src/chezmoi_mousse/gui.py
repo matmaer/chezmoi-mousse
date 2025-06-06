@@ -26,6 +26,7 @@ from textual.scrollbar import ScrollBar, ScrollBarRender
 import chezmoi_mousse.chezmoi
 from chezmoi_mousse import BURGER, FLOW
 from chezmoi_mousse.main_tabs import AddTab, ApplyTab, ReAddTab, DoctorTab
+import chezmoi_mousse.theme
 from chezmoi_mousse.splash import LoadingScreen
 
 
@@ -96,21 +97,6 @@ class MainScreen(Screen):
         global splash_command_log
         for cmd in splash_command_log:
             command_log.add(cmd)
-
-
-chezmoi_mousse_dark = Theme(
-    name="chezmoi-mousse-dark",
-    dark=True,
-    accent="#F187FB",
-    background="#000000",
-    error="#ba3c5b",  # textual dark
-    foreground="#DEDAE1",
-    primary="#0178D4",  # textual dark
-    secondary="#004578",  # textual dark
-    surface="#101010",  # see also textual/theme.py
-    success="#4EBF71",  # textual dark
-    warning="#ffa62b",  # textual dark
-)
 
 
 class CustomScrollBarRender(ScrollBarRender):
@@ -245,11 +231,19 @@ class ChezmoiGUI(App):
     def on_mount(self) -> None:
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
         self.title = "-  c h e z m o i  m o u s s e  -"
-        self.register_theme(chezmoi_mousse_dark)
+        self.register_theme(chezmoi_mousse.theme.chezmoi_mousse_dark)
         self.theme = "chezmoi-mousse-dark"
         self.push_screen(LoadingScreen(), self.push_main_screen)
+        self.watch(self, "theme", self.on_theme_change, init=False)
 
     def push_main_screen(self, new_splash_command_log) -> None:
         global splash_command_log
         splash_command_log = new_splash_command_log
         self.push_screen("main_screen")
+
+    def on_theme_change(self, _, new_theme):
+        new_theme_object: Theme | None = self.app.get_theme(new_theme)
+        assert isinstance(new_theme_object, Theme)
+        chezmoi_mousse.theme.vars = (
+            new_theme_object.to_color_system().generate()
+        )

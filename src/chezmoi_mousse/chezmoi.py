@@ -20,14 +20,14 @@ def callback_null_object(*args) -> None:
 command_log_callback = callback_null_object
 
 
-BASE = ["chezmoi", "--no-pager", "--color=off", "--no-tty", "--mode=file"]
+BASE = ("chezmoi", "--no-pager", "--color=off", "--no-tty", "--mode=file")
 
 # https://www.chezmoi.io/reference/command-line-flags/common/#available-entry-types
 SUBS = {
-    "cat_config": ["cat-config"],
-    "doctor": ["doctor"],
-    "dump_config": ["dump-config", "--format=json"],
-    "git_log": [
+    "cat_config": ("cat-config",),
+    "doctor": ("doctor",),
+    "dump_config": ("dump-config", "--format=json"),
+    "git_log": (
         "git",
         "--",
         "log",
@@ -37,27 +37,27 @@ SUBS = {
         "--date-order",
         "--no-expand-tabs",
         "--format=%ar by %cn;%s",
-    ],
-    "ignored": ["ignored"],
-    "managed_dirs": ["managed", "--path-style=absolute", "--include=dirs"],
-    "managed_files": ["managed", "--path-style=absolute", "--include=files"],
-    "managed_dirs_source": [
+    ),
+    "ignored": ("ignored",),
+    "managed_dirs": ("managed", "--path-style=absolute", "--include=dirs"),
+    "managed_files": ("managed", "--path-style=absolute", "--include=files"),
+    "managed_dirs_source": (
         "managed",
         "--path-style=source-absolute",
         "--include=dirs",
-    ],
-    "managed_files_source": [
+    ),
+    "managed_files_source": (
         "managed",
         "--path-style=source-absolute",
         "--include=files",
-    ],
-    "status_dirs": ["status", "--path-style=absolute", "--include=dirs"],
-    "status_files": ["status", "--path-style=absolute", "--include=files"],
-    "template_data": ["data", "--format=json"],
+    ),
+    "status_dirs": ("status", "--path-style=absolute", "--include=dirs"),
+    "status_files": ("status", "--path-style=absolute", "--include=files"),
+    "template_data": ("data", "--format=json"),
 }
 
 
-def subprocess_run(long_command: list[str]) -> str:
+def subprocess_run(long_command: tuple[str, ...]) -> str:
     try:
         result = run(
             long_command,
@@ -88,20 +88,20 @@ class PerformChange:
     Verbose output is returned for logging.
     """
 
-    base = BASE + ["--verbose", "--dry-run"]
+    base = BASE + ("--verbose", "--dry-run")
     # TODO: remove --dry-run
 
     @staticmethod
     def add(path: Path) -> str:
-        return subprocess_run(PerformChange.base + ["add"] + [str(path)])
+        return subprocess_run(PerformChange.base + ("add", str(path)))
 
     @staticmethod
     def re_add(path: Path) -> str:
-        return subprocess_run(PerformChange.base + ["re-add"] + [str(path)])
+        return subprocess_run(PerformChange.base + ("re-add", str(path)))
 
     @staticmethod
     def apply(path: Path) -> str:
-        return subprocess_run(PerformChange.base + ["apply"] + [str(path)])
+        return subprocess_run(PerformChange.base + ("apply", str(path)))
 
 
 class SubProcessCalls:
@@ -109,24 +109,24 @@ class SubProcessCalls:
     state."""
 
     def git_log(self, path: Path) -> list[str]:
-        source_path = subprocess_run(BASE + ["source-path", str(path)])
-        long_command = BASE + SUBS["git_log"] + [str(source_path)]
+        source_path = subprocess_run(BASE + ("source-path", str(path)))
+        long_command = BASE + SUBS["git_log"] + (str(source_path),)
         return subprocess_run(long_command).splitlines()
 
     def apply_diff(self, file_path: Path) -> list[str]:
-        long_command = BASE + ["diff", str(file_path)]
+        long_command = BASE + ("diff", str(file_path))
         return subprocess_run(long_command).splitlines()
 
     def re_add_diff(self, file_path: Path) -> list[str]:
-        long_command = BASE + ["diff", str(file_path)]
-        return subprocess_run(long_command + ["--reverse"]).splitlines()
+        long_command = BASE + ("diff", str(file_path), "--reverse")
+        return subprocess_run(long_command).splitlines()
 
     def cat(self, file_path: Path) -> str:
-        return subprocess_run(BASE + ["cat", str(file_path)])
+        return subprocess_run(BASE + ("cat", str(file_path)))
 
     def unmanaged_in_dir(self, dir_path: Path) -> list[Path]:
         path_strings = subprocess_run(
-            BASE + ["unmanaged", "--path-style=absolute", str(dir_path)]
+            BASE + ("unmanaged", "--path-style=absolute", str(dir_path))
         ).splitlines()
         # chezmoi can return the dir itself, eg when the dir is not managed
         if len(path_strings) == 1 and path_strings[0] == str(dir_path):
@@ -141,7 +141,7 @@ class SubProcessCalls:
 @dataclass
 class InputOutput:
 
-    long_command: list[str]
+    long_command: tuple[str, ...]
     arg_id: str
     std_out: str = ""
     dict_out: dict = field(default_factory=dict)
@@ -209,7 +209,7 @@ class Chezmoi:
 
     @property
     def dest_dir_str_spaced(self) -> str:
-        return f" {self.dump_config.dict_out["destDir"]}{os.sep} "
+        return f" {self.dump_config.dict_out['destDir']}{os.sep} "
 
     @property
     def autoadd_enabled(self) -> bool:
