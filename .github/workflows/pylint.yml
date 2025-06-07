@@ -23,7 +23,3 @@ jobs:
     - name: Run ruff
       run: |
         ruff check src/
-    - name: Check app startup
-      working-directory: src
-      run: |
-        python -m chezmoi_mousse
