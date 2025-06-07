@@ -43,7 +43,7 @@ from chezmoi_mousse.components import (
 )
 
 from chezmoi_mousse.config import filter_data, pw_mgr_info
-from chezmoi_mousse.mouse_types import TabLabel, ButtonLabel
+from chezmoi_mousse.mouse_types import TabLabel, ButtonLabel, FilterName
 import chezmoi_mousse.theme as theme
 
 
@@ -60,10 +60,6 @@ class TabIdMixin:
         self.view_switcher_id = f"{tab}_view_switcher"
         # filter switch container id
         self.filters_container_id = f"{tab}_filters_container"
-        # filter switch id
-        self.unmanaged_dirs_id = f"{tab}_unmanaged_dirs_filter"
-        self.unwanted_id = f"{tab}_unwanted_filter"  # used by AddTab
-        self.unchanged_id = f"{tab}_unchanged"  # used by ApplyTab and ReAddTab
         # used in on_mount to set show_root and guide_depth
         self.dir_tree_id = f"{tab}_dir_tree"
         # used to set the top border title for the directory tree on the left
@@ -84,6 +80,10 @@ class TabIdMixin:
     def content_id(self, button_label: ButtonLabel) -> str:
         """Generate a unique content id for this tab and content label."""
         return f"{self.tab}_{button_label}_content"
+
+    def filter_id(self, filter_name: FilterName) -> str:
+        """Generate a unique filter id for this tab and filter name."""
+        return f"{self.tab}_{filter_name}_filter"
 
 
 class TabButton(Vertical):
@@ -167,7 +167,9 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
                 classes="filters-container one-filter-height",
             ):
                 with HorizontalGroup(classes="single-filter-container"):
-                    yield Switch(id=self.unchanged_id, classes="filter-switch")
+                    yield Switch(
+                        id=self.filter_id("unchanged"), classes="filter-switch"
+                    )
                     yield Label(filter_data.unchanged.label).with_tooltip(
                         tooltip=filter_data.unchanged.tooltip
                     )
@@ -274,7 +276,7 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
         event.stop()
-        if event.switch.id == self.unchanged_id:
+        if event.switch.id == self.filter_id("unchanged"):
             self.query_one(
                 f"#{self.content_id('Tree')}", ManagedTree
             ).unchanged = event.value
@@ -347,14 +349,16 @@ class AddTab(Horizontal, TabIdMixin):
                 )
 
             yield Horizontal(
-                Switch(id=self.unmanaged_dirs_id, classes="add-filter"),
+                Switch(
+                    id=self.filter_id("unmanaged_dirs"), classes="add-filter"
+                ),
                 Label(filter_data.unmanaged_dirs.label).with_tooltip(
                     tooltip=filter_data.unmanaged_dirs.tooltip
                 ),
                 classes="add-filter-container padding-bottom-once border-top-once height-3",
             )
             yield Horizontal(
-                Switch(id=self.unwanted_id, classes="add-filter"),
+                Switch(id=self.filter_id("unwanted"), classes="add-filter"),
                 Label(filter_data.unwanted.label).with_tooltip(
                     tooltip=filter_data.unwanted.tooltip
                 ),
@@ -414,10 +418,10 @@ class AddTab(Horizontal, TabIdMixin):
     def on_switch_changed(self, event: Switch.Changed) -> None:
         event.stop()
         tree = self.query_one(f"#{self.dir_tree_id}", FilteredDirTree)
-        if event.switch.id == self.unmanaged_dirs_id:
+        if event.switch.id == self.filter_id("unmanaged_dirs"):
             tree.unmanaged_dirs = event.value
             tree.reload()
-        elif event.switch.id == self.unwanted_id:
+        elif event.switch.id == self.filter_id("unwanted"):
             tree.unwanted = event.value
             tree.reload()
 
