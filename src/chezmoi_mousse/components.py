@@ -215,28 +215,24 @@ class DiffView(RichLog):
         self.clear()
 
         diff_output: list[str]
+        status_files = chezmoi.status_paths[self.tab].files
+
+        if self.path not in status_files:
+            self.write(
+                Text(
+                    f"No diff available for {self.path}, file not present in chezmoi status output.",
+                    style="dim",
+                )
+            )
+            return
+
         if self.tab == "Apply":
-            if self.path not in chezmoi.status_paths["apply_files"]:
-                self.write(
-                    Text(
-                        f"No diff available for {self.path}, file not present in chezmoi status output.",
-                        style="dim",
-                    )
-                )
-                return
-            else:
-                diff_output = chezmoi.run.apply_diff(self.path)
+            diff_output = chezmoi.run.apply_diff(self.path)
         elif self.tab == "Re-Add":
-            if self.path not in chezmoi.status_paths["re_add_files"]:
-                self.write(
-                    Text(
-                        f"No diff available for {self.path}, file not present in chezmoi status output.",
-                        style="dim",
-                    )
-                )
-                return
-            else:
-                diff_output = chezmoi.run.re_add_diff(self.path)
+            diff_output = chezmoi.run.re_add_diff(self.path)
+        else:
+            self.write(Text(f"Unknown tab: {self.tab}", style="dim"))
+            return
 
         if not diff_output:
             self.write(Text(f"chezmoi diff {self.path} returned no output."))
@@ -251,8 +247,6 @@ class DiffView(RichLog):
         ]
 
         for line in diff_lines:
-            # strip trailing newline as they get joined with a new line before
-            # calling self.update() for a batched update
             line = line.rstrip("\n")
             if line.startswith("-"):
                 self.write(Text(line, theme.vars["text-error"]))
@@ -281,25 +275,8 @@ class ManagedTree(Tree[NodeData]):
 
         super().__init__(label="root", **kwargs)
 
-    @property
-    def status_dirs(self):
-        if self.tab == "Apply":
-            return chezmoi.status_paths["apply_dirs"]
-        elif self.tab == "Re-Add":
-            return chezmoi.status_paths["re_add_dirs"]
-        else:
-            return {}
-
-    @property
-    def status_files(self):
-        if self.tab == "Apply":
-            return chezmoi.status_paths["apply_files"]
-        elif self.tab == "Re-Add":
-            return chezmoi.status_paths["re_add_files"]
-        else:
-            return {}
-
     def on_mount(self) -> None:
+        print(f"in ManagedTree.on_mount(), tab: {self.tab} -------------")
 
         self.node_colors = {
             "Dir": theme.vars["text-primary"],
@@ -322,10 +299,6 @@ class ManagedTree(Tree[NodeData]):
             self.add_flat_leaves()
 
     def show_dir_node(self, node_data: NodeData) -> bool:
-        """Check if a directory node should be displayed according to the
-        current filter settings, including if any subdirectory contains a leaf
-        that potentially could include a leaf to display."""
-
         if node_data.is_file:
             raise ValueError(
                 f"Expected a dir node, got {node_data.path} instead."
@@ -340,43 +313,36 @@ class ManagedTree(Tree[NodeData]):
             if node_data.path in f.parents
         ]
 
-        # include_unchanged_files=False
-        if not self.unchanged:
-            return any(f in self.status_files for f in managed_in_dir_tree)
+        status_files = chezmoi.status_paths[self.tab].files
 
-        # include_unchanged_files=False
+        if not self.unchanged:
+            return any(f in status_files for f in managed_in_dir_tree)
         elif self.unchanged:
             return bool(managed_in_dir_tree)
         return False
 
     def show_file_node(self, node_data: NodeData) -> bool:
-        """Check if a file node should be displayed according to the current
-        filter settings."""
         if not node_data.is_file:
             raise ValueError(
                 f"Expected a file node, got {node_data.path} instead."
             )
-        # include_unchanged_files=False
         if not self.unchanged:
             return node_data.status != "X"
-        # include_unchanged_files=True
         return True
 
     def style_label(self, node_data: NodeData) -> Text:
-        """Color node based on being a file, directary and its status."""
         italic = False if node_data.found else True
-        if node_data.status != "X":  # files with a status
+        if node_data.status != "X":
             style = Style(
                 color=self.node_colors[node_data.status], italic=italic
             )
         elif node_data.is_file:
             style = "dim"
-        else:  # format a directory node without status
+        else:
             style = self.node_colors["Dir"]
         return Text(node_data.path.name, style=style)
 
     def add_leaves(self, tree_node: TreeNode) -> None:
-        """Adds a leaf for each file in the tree_node.data.path directory,"""
         current_leafs = [
             leaf
             for leaf in tree_node.children
@@ -387,11 +353,11 @@ class ManagedTree(Tree[NodeData]):
 
         status_code = "X"
         assert isinstance(tree_node.data, NodeData)
-        # if not flat:
         file_paths = chezmoi.managed_file_paths_in_dir(tree_node.data.path)
+        status_files = chezmoi.status_paths[self.tab].files
         for file_path in file_paths:
-            if file_path in self.status_files:
-                status_code = self.status_files[file_path]
+            if file_path in status_files:
+                status_code = status_files[file_path]
             node_data = NodeData(
                 path=file_path,
                 found=file_path.exists(),
@@ -403,18 +369,17 @@ class ManagedTree(Tree[NodeData]):
                 tree_node.add_leaf(label=node_label, data=node_data)
 
     def add_flat_leaves(self) -> None:
-        # include_unchanged_files=False
-        for file_path in self.status_files:
+        status_files = chezmoi.status_paths[self.tab].files
+        for file_path in status_files:
             node_data = NodeData(
                 path=file_path,
                 found=file_path.exists(),
                 is_file=True,
-                status=self.status_files[file_path],
+                status=status_files[file_path],
             )
             node_label = self.style_label(node_data)
             self.root.add_leaf(label=node_label, data=node_data)
 
-        # add additional leaves when include_unchanged_files=True
         if self.unchanged:
             for file_path in chezmoi.managed_file_paths_without_status:
                 node_data = NodeData(
@@ -427,11 +392,9 @@ class ManagedTree(Tree[NodeData]):
                 self.root.add_leaf(label=node_label, data=node_data)
 
     def add_nodes(self, tree_node: TreeNode) -> None:
-        """Adds a node for each directory in the tree_node.data.path
-        directory."""
-
         assert isinstance(tree_node.data, NodeData)
         dir_paths = chezmoi.managed_dir_paths_in_dir(tree_node.data.path)
+        status_dirs = chezmoi.status_paths[self.tab].dirs
 
         current_sub_dir_node_paths = [
             child.data.path
@@ -441,8 +404,8 @@ class ManagedTree(Tree[NodeData]):
 
         for dir_path in dir_paths:
             status_code = "X"
-            if dir_path in self.status_dirs:
-                status_code = self.status_dirs[dir_path]
+            if dir_path in status_dirs:
+                status_code = status_dirs[dir_path]
             node_data = NodeData(
                 path=dir_path,
                 found=dir_path.exists(),
