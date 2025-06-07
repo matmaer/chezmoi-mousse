@@ -263,6 +263,7 @@ class ManagedTree(Tree[NodeData]):
     """Shows the tree widget on the left for Apply and Re-Add tabs."""
 
     unchanged: reactive[bool] = reactive(False, init=False)
+    expand_all: reactive[bool] = reactive(False, init=False)
 
     def __init__(self, tab, flat_list=False, **kwargs) -> None:
         self.tab: TabLabel = tab
@@ -454,6 +455,9 @@ class ManagedTree(Tree[NodeData]):
         for node in get_expanded_nodes():
             self.add_nodes(node)
             self.add_leaves(node)
+
+    def watch_expand_all(self) -> None:
+        self.notify("expand_all")
 
 
 class FilteredDirTree(DirectoryTree):
