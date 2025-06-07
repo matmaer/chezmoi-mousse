@@ -313,7 +313,11 @@ class ManagedTree(Tree[NodeData]):
         if not self.unchanged:
             return any(f in status_files for f in managed_in_dir_tree)
         elif self.unchanged:
-            return bool(managed_in_dir_tree)
+            # Show if this is a managed dir, even if empty
+            return (
+                bool(managed_in_dir_tree)
+                or node_data.path in chezmoi.managed_dir_paths
+            )
         return False
 
     def show_file_node(self, node_data: NodeData) -> bool:
@@ -429,26 +433,27 @@ class ManagedTree(Tree[NodeData]):
         """Update the visible nodes based on the "show unchanged" filter."""
 
         # the switch is disabled when the tree is flat
-        if not self.flat_list:
+        if self.flat_list:
+            return
 
-            def get_expanded_nodes() -> list[TreeNode]:
-                """Recursively get all current expanded nodes in the tree."""
+        def get_expanded_nodes() -> list[TreeNode]:
+            """Recursively get all current expanded nodes in the tree."""
 
-                current_node = self.root
+            current_node = self.root
 
-                def collect_nodes(current_node: TreeNode) -> list[TreeNode]:
-                    nodes = [current_node]
-                    for child in current_node.children:
-                        if child.is_expanded:
-                            nodes.append(child)
-                            nodes.extend(collect_nodes(child))
-                    return nodes
+            def collect_nodes(current_node: TreeNode) -> list[TreeNode]:
+                nodes = [current_node]
+                for child in current_node.children:
+                    if child.is_expanded:
+                        nodes.append(child)
+                        nodes.extend(collect_nodes(child))
+                return nodes
 
-                return collect_nodes(current_node)
+            return collect_nodes(current_node)
 
-            for node in get_expanded_nodes():
-                self.add_nodes(node)
-                self.add_leaves(node)
+        for node in get_expanded_nodes():
+            self.add_nodes(node)
+            self.add_leaves(node)
 
 
 class FilteredDirTree(DirectoryTree):
