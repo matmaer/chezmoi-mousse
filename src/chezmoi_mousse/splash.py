@@ -20,7 +20,6 @@ from textual.widgets import RichLog, Static
 
 from chezmoi_mousse.chezmoi import chezmoi
 
-
 SPLASH = """\
  _______________________________ ___________________._
 |       |   |   |    ___|___    |    '    |       |   |
