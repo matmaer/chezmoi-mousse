@@ -430,6 +430,22 @@ class ManagedTree(Tree[NodeData]):
         self.add_nodes(event.node)
         self.add_leaves(event.node)
 
+    def get_expanded_nodes(self) -> list[TreeNode]:
+        """Recursively get all current expanded nodes in the tree, always
+        including the root node."""
+        nodes = [self.root]  # Always start with the root node
+
+        def collect_nodes(current_node: TreeNode) -> list[TreeNode]:
+            expanded = []
+            for child in current_node.children:
+                if child.is_expanded:
+                    expanded.append(child)
+                    expanded.extend(collect_nodes(child))
+            return expanded
+
+        nodes.extend(collect_nodes(self.root))
+        return nodes
+
     def watch_unchanged(self) -> None:
         """Update the visible nodes based on the "show unchanged" filter."""
 
@@ -437,22 +453,7 @@ class ManagedTree(Tree[NodeData]):
         if self.flat_list:
             return
 
-        def get_expanded_nodes() -> list[TreeNode]:
-            """Recursively get all current expanded nodes in the tree."""
-
-            current_node = self.root
-
-            def collect_nodes(current_node: TreeNode) -> list[TreeNode]:
-                nodes = [current_node]
-                for child in current_node.children:
-                    if child.is_expanded:
-                        nodes.append(child)
-                        nodes.extend(collect_nodes(child))
-                return nodes
-
-            return collect_nodes(current_node)
-
-        for node in get_expanded_nodes():
+        for node in self.get_expanded_nodes():
             self.add_nodes(node)
             self.add_leaves(node)
 
