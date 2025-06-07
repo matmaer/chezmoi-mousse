@@ -8,7 +8,6 @@ containers.
 from rich.text import Text
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.events import Click
 from textual.containers import (
     Horizontal,
     HorizontalGroup,
@@ -17,7 +16,7 @@ from textual.containers import (
     VerticalGroup,
     VerticalScroll,
 )
-
+from textual.events import Click
 from textual.screen import ModalScreen
 from textual.widgets import (
     Button,
@@ -33,6 +32,7 @@ from textual.widgets import (
     Switch,
 )
 
+import chezmoi_mousse.theme as theme
 from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.components import (
     DiffView,
@@ -41,15 +41,13 @@ from chezmoi_mousse.components import (
     ManagedTree,
     PathView,
 )
-
 from chezmoi_mousse.config import filter_data, pw_mgr_info
 from chezmoi_mousse.mouse_types import (
-    TabLabel,
     ButtonLabel,
     FilterName,
+    TabLabel,
     TreeName,
 )
-import chezmoi_mousse.theme as theme
 
 
 class TabIdMixin:

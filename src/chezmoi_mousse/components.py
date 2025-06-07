@@ -9,7 +9,6 @@ These classes
 """
 
 import re
-
 from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
@@ -21,9 +20,10 @@ from textual.content import Content
 from textual.reactive import reactive
 from textual.widgets import DataTable, DirectoryTree, RichLog, Static, Tree
 from textual.widgets.tree import TreeNode
+
+import chezmoi_mousse.theme as theme
 from chezmoi_mousse import BULLET
 from chezmoi_mousse.chezmoi import chezmoi
-import chezmoi_mousse.theme as theme
 from chezmoi_mousse.config import unwanted
 from chezmoi_mousse.mouse_types import TabLabel
 

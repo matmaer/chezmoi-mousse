@@ -6,8 +6,8 @@ command_log_callback function set by gui.py.
 """
 
 import ast
-from dataclasses import dataclass, field
 import os
+from dataclasses import dataclass, field
 from pathlib import Path
 from subprocess import TimeoutExpired, run
 

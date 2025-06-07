@@ -4,8 +4,10 @@
 
 .tab-content-left {
   margin-right: 2;
+  width: 1fr;
 }
 .tab-content-right {
+  width: 2fr;
 }
 .tree-scrollable-container {
 }
@@ -72,6 +74,7 @@
 TabButton {
   /* assigned to the Button class within the Vertical container for a Button */
   .tab-button {
+    align: center middle;
     /* default min width from textual is 16, setting to shortest button text */
     min-width: 4;
     /* setting the longest button text */
@@ -92,20 +95,23 @@ TabButton {
       }
     }
   }
+  &.tab-button-vertical {
+    align: center middle;
+  }
 }
+
 
 /* assigned to TabButtonsGroup Horizontal parent class in super.init */
 .tab-buttons-horizontal {
   height: 1;
-  width: auto;
 }
 
-.tab-buttons-group {
-  /* assigned to just one horizontal button container area */
-  .tab-buttons-area-horizontal {
-    width: auto;
-  }
-}
+# .tab-buttons-group {
+#   /* assigned to just one horizontal button container area */
+#   .tab-buttons-area-horizontal {
+#     width: auto;
+#   }
+# }
 
 AutoWarning {
   height: auto;

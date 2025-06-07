@@ -6,7 +6,6 @@ Var names accessible from the the vars dict. Updated on theme change by gui.py.
 
 from textual.theme import Theme
 
-
 chezmoi_mousse_dark = Theme(
     name="chezmoi-mousse-dark",
     dark=True,

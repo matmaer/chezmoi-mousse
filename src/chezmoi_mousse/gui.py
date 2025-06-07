@@ -5,10 +5,14 @@ completed running each chezmoi command."""
 from datetime import datetime
 from math import ceil
 
+from rich.color import Color
+from rich.segment import Segment, Segments
+from rich.style import Style
 from textual.app import App, ComposeResult
 from textual.containers import ScrollableContainer
 from textual.lazy import Lazy
 from textual.screen import Screen
+from textual.scrollbar import ScrollBar, ScrollBarRender
 from textual.theme import Theme
 from textual.widgets import (
     Footer,
@@ -18,17 +22,12 @@ from textual.widgets import (
     TabbedContent,
     TabPane,
 )
-from rich.color import Color
-from rich.segment import Segment, Segments
-from rich.style import Style
-from textual.scrollbar import ScrollBar, ScrollBarRender
 
 import chezmoi_mousse.chezmoi
-from chezmoi_mousse import BURGER, FLOW
-from chezmoi_mousse.main_tabs import AddTab, ApplyTab, ReAddTab, DoctorTab
 import chezmoi_mousse.theme
+from chezmoi_mousse import BURGER, FLOW
+from chezmoi_mousse.main_tabs import AddTab, ApplyTab, DoctorTab, ReAddTab
 from chezmoi_mousse.splash import LoadingScreen
-
 
 splash_command_log: list[tuple[list, str]]
 
