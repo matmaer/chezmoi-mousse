@@ -60,7 +60,7 @@ class TabIdMixin:
         # right content switcher content ids
         self.tree_content_id = f"{tab}_tree_content"
         self.list_content_id = f"{tab}_list_content"
-        self.content_content_id = f"{tab}_content"
+        self.contents_content_id = f"{tab}_content"
         self.diff_content_id = f"{tab}_diff_content"
         self.git_log_content_id = f"{tab}_git_log_content"
         # filter switch container id
@@ -131,7 +131,7 @@ class TabButtonsTopRight(Horizontal, TabIdMixin):
         with HorizontalGroup(
             id=self.view_button_group_id, classes="tab-buttons-area-horizontal"
         ):
-            yield TabButton("Content", self.button_id("Content"))
+            yield TabButton("Contents", self.button_id("Contents"))
             yield TabButton("Diff", self.button_id("Diff"))
             yield TabButton("Git-Log", self.button_id("Git-Log"))
 
@@ -178,11 +178,11 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
             with Horizontal(classes="content-switcher-horizontal"):
                 with ContentSwitcher(
                     id=self.view_switcher_id,
-                    initial=self.content_content_id,
+                    initial=self.contents_content_id,
                     classes="content-switcher-right top-border-title-style",
                 ):
                     yield PathView(
-                        id=self.content_content_id,
+                        id=self.contents_content_id,
                         auto_scroll=False,
                         wrap=False,
                         highlight=True,
@@ -199,7 +199,7 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
             "last-clicked"
         )
         # right
-        self.query_one(f"#{self.button_id('Content')}", Button).add_class(
+        self.query_one(f"#{self.button_id('Contents')}", Button).add_class(
             "last-clicked"
         )
         self.query_one(f"#{self.view_switcher_id}").border_title = (
@@ -227,25 +227,25 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
                 self.query_one(
                     f"#{self.tree_switcher_id}", ContentSwitcher
                 ).current = self.list_content_id
-        # Content/Diff/GitLog Switch
+        # Contents/Diff/GitLog Switch
         elif event.button.id in [
-            self.button_id("Content"),
+            self.button_id("Contents"),
             self.button_id("Diff"),
             self.button_id("Git-Log"),
         ]:
             # Remove from all right-side buttons
             self.update_button_classes(
                 [
-                    self.button_id("Content"),
+                    self.button_id("Contents"),
                     self.button_id("Diff"),
                     self.button_id("Git-Log"),
                 ],
                 event.button.id,
             )
-            if event.button.id == self.button_id("Content"):
+            if event.button.id == self.button_id("Contents"):
                 self.query_one(
                     f"#{self.view_switcher_id}", ContentSwitcher
-                ).current = self.content_content_id
+                ).current = self.contents_content_id
             elif event.button.id == self.button_id("Diff"):
                 self.query_one(
                     f"#{self.view_switcher_id}", ContentSwitcher
@@ -261,7 +261,7 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
         self.query_one(f"#{self.view_switcher_id}").border_title = (
             f" {event.node.data.path.relative_to(chezmoi.dest_dir)} "
         )
-        path_view = self.query_one(f"#{self.content_content_id}", PathView)
+        path_view = self.query_one(f"#{self.contents_content_id}", PathView)
         path_view.path = event.node.data.path
         path_view.tab = self.tab
 

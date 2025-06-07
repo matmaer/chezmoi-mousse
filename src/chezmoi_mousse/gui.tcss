@@ -169,7 +169,7 @@ TabButton {
     /* default min width from textual is 16, setting to shortest button text */
     min-width: 4;
     /* setting the longest button text */
-    max-width: 9;
+    max-width: 10;
     color: $text;
     text-style: none;
 
