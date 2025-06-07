@@ -71,23 +71,28 @@ class TabIdMixin:
         self.top_right_buttons_id = f"{tab}_top_right_buttons_id"
 
     def button_id(self, button_label: ButtonLabel) -> str:
-        """Generate a unique button id for this tab and button label."""
+        """Generate an id for each TabButton."""
         return f"{self.tab}_button_{button_label}"
 
     def content_id(self, button_label: ButtonLabel) -> str:
-        """Generate a unique content id for this tab and content label."""
+        """Generate an id for each widget inside of the content switcher."""
         return f"{self.tab}_{button_label}_content"
 
     def filter_id(self, filter_name: FilterName) -> str:
-        """Generate a unique filter id for this tab and filter name."""
+        """Generate an id for each filter switch."""
         return f"{self.tab}_{filter_name}_filter"
 
+    def filter_label_id(self, filter_name: FilterName) -> str:
+        """Generate an id for each filter label to change style when
+        disabled."""
+        return f"{self.tab}_{filter_name}_label"
+
     def tree_container_id(self, tree_name: TreeName) -> str:
-        """Generate a unique scrollable tree id for this tab."""
+        """Generate an id for each tree container."""
         return f"{self.tab}_{tree_name}_container"
 
     def tree_widget_id(self, tree_name: TreeName) -> str:
-        """Generate a unique tree id for a Tree or DirectoryTree."""
+        """Generate an id for each Tree or DirectoryTree."""
         return f"{self.tab}_{tree_name}_widget"
 
 
@@ -169,9 +174,11 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
                         )
             yield Horizontal(
                 Switch(id=self.filter_id("unchanged"), classes="filter"),
-                Label(filter_data.unchanged.label).with_tooltip(
-                    tooltip=filter_data.unchanged.tooltip
-                ),
+                Label(
+                    filter_data.unchanged.label,
+                    id=self.filter_label_id("unchanged"),
+                    classes="filter filter-label",
+                ).with_tooltip(tooltip=filter_data.unchanged.tooltip),
                 id=self.filters_container_id,
                 classes="filter-container border-top border-bottom height-3",
             )
@@ -225,10 +232,16 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
                 self.query_one(
                     f"#{self.left_content_switcher_id}", ContentSwitcher
                 ).current = self.content_id("Tree")
-            else:
+                self.query_one(
+                    f"#{self.filter_id('unchanged')}", Switch
+                ).disabled = False
+            elif event.button.id == self.button_id("List"):
                 self.query_one(
                     f"#{self.left_content_switcher_id}", ContentSwitcher
                 ).current = self.content_id("List")
+                self.query_one(
+                    f"#{self.filter_id('unchanged')}", Switch
+                ).disabled = True
         # Contents/Diff/GitLog Switch
         elif event.button.id in [
             self.button_id("Contents"),
@@ -357,16 +370,20 @@ class AddTab(Horizontal, TabIdMixin):
 
             yield Horizontal(
                 Switch(id=self.filter_id("unmanaged_dirs"), classes="filter"),
-                Label(filter_data.unmanaged_dirs.label).with_tooltip(
-                    tooltip=filter_data.unmanaged_dirs.tooltip
-                ),
+                Label(
+                    filter_data.unmanaged_dirs.label,
+                    id=self.filter_label_id("unmanaged_dirs"),
+                    classes="filter-label",
+                ).with_tooltip(tooltip=filter_data.unmanaged_dirs.tooltip),
                 classes="filter-container padding-bottom-once border-top height-3",
             )
             yield Horizontal(
                 Switch(id=self.filter_id("unwanted"), classes="filter"),
-                Label(filter_data.unwanted.label).with_tooltip(
-                    tooltip=filter_data.unwanted.tooltip
-                ),
+                Label(
+                    filter_data.unwanted.label,
+                    id=self.filter_label_id("unwanted"),
+                    classes="filter-label",
+                ).with_tooltip(tooltip=filter_data.unwanted.tooltip),
                 classes="filter-container border-bottom height-2",
                 id=self.filters_container_id,
             )
