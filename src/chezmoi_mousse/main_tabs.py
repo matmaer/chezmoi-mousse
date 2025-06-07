@@ -10,7 +10,6 @@ from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import (
     Horizontal,
-    HorizontalGroup,
     ScrollableContainer,
     Vertical,
     VerticalGroup,
@@ -112,33 +111,25 @@ class TabButtonsTopLeft(Horizontal, TabIdMixin):
     def __init__(self, tab: TabLabel) -> None:
         TabIdMixin.__init__(self, tab)
         super().__init__(
-            id=self.top_left_buttons_id,
-            classes="tab-buttons-horizontal tab-buttons-group",
+            id=self.top_left_buttons_id, classes="tab-buttons-horizontal"
         )
 
     def compose(self) -> ComposeResult:
-        with HorizontalGroup(
-            id=self.tree_button_group_id, classes="tab-buttons-area-horizontal"
-        ):
-            yield TabButton("Tree", self.button_id("Tree"))
-            yield TabButton("List", self.button_id("List"))
+        yield TabButton("Tree", self.button_id("Tree"))
+        yield TabButton("List", self.button_id("List"))
 
 
 class TabButtonsTopRight(Horizontal, TabIdMixin):
     def __init__(self, tab: TabLabel) -> None:
         TabIdMixin.__init__(self, tab)
         super().__init__(
-            id=self.top_right_buttons_id,
-            classes="tab-buttons-horizontal tab-buttons-group",
+            id=self.top_right_buttons_id, classes="tab-buttons-horizontal"
         )
 
     def compose(self) -> ComposeResult:
-        with HorizontalGroup(
-            id=self.view_button_group_id, classes="tab-buttons-area-horizontal"
-        ):
-            yield TabButton("Contents", self.button_id("Contents"))
-            yield TabButton("Diff", self.button_id("Diff"))
-            yield TabButton("Git-Log", self.button_id("Git-Log"))
+        yield TabButton("Contents", self.button_id("Contents"))
+        yield TabButton("Diff", self.button_id("Diff"))
+        yield TabButton("Git-Log", self.button_id("Git-Log"))
 
 
 class TreeTabSwitchers(Horizontal, TabIdMixin):
