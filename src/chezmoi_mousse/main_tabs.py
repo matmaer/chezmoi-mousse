@@ -10,7 +10,6 @@ from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import (
     Horizontal,
-    HorizontalGroup,
     ScrollableContainer,
     Vertical,
     VerticalGroup,
@@ -72,23 +71,28 @@ class TabIdMixin:
         self.top_right_buttons_id = f"{tab}_top_right_buttons_id"
 
     def button_id(self, button_label: ButtonLabel) -> str:
-        """Generate a unique button id for this tab and button label."""
+        """Generate an id for each TabButton."""
         return f"{self.tab}_button_{button_label}"
 
     def content_id(self, button_label: ButtonLabel) -> str:
-        """Generate a unique content id for this tab and content label."""
+        """Generate an id for each widget inside of the content switcher."""
         return f"{self.tab}_{button_label}_content"
 
     def filter_id(self, filter_name: FilterName) -> str:
-        """Generate a unique filter id for this tab and filter name."""
+        """Generate an id for each filter switch."""
         return f"{self.tab}_{filter_name}_filter"
 
+    def filter_label_id(self, filter_name: FilterName) -> str:
+        """Generate an id for each filter label to change style when
+        disabled."""
+        return f"{self.tab}_{filter_name}_label"
+
     def tree_container_id(self, tree_name: TreeName) -> str:
-        """Generate a unique scrollable tree id for this tab."""
+        """Generate an id for each tree container."""
         return f"{self.tab}_{tree_name}_container"
 
     def tree_widget_id(self, tree_name: TreeName) -> str:
-        """Generate a unique tree id for a Tree or DirectoryTree."""
+        """Generate an id for each Tree or DirectoryTree."""
         return f"{self.tab}_{tree_name}_widget"
 
 
@@ -112,33 +116,25 @@ class TabButtonsTopLeft(Horizontal, TabIdMixin):
     def __init__(self, tab: TabLabel) -> None:
         TabIdMixin.__init__(self, tab)
         super().__init__(
-            id=self.top_left_buttons_id,
-            classes="tab-buttons-horizontal tab-buttons-group",
+            id=self.top_left_buttons_id, classes="tab-buttons-horizontal"
         )
 
     def compose(self) -> ComposeResult:
-        with HorizontalGroup(
-            id=self.tree_button_group_id, classes="tab-buttons-area-horizontal"
-        ):
-            yield TabButton("Tree", self.button_id("Tree"))
-            yield TabButton("List", self.button_id("List"))
+        yield TabButton("Tree", self.button_id("Tree"))
+        yield TabButton("List", self.button_id("List"))
 
 
 class TabButtonsTopRight(Horizontal, TabIdMixin):
     def __init__(self, tab: TabLabel) -> None:
         TabIdMixin.__init__(self, tab)
         super().__init__(
-            id=self.top_right_buttons_id,
-            classes="tab-buttons-horizontal tab-buttons-group",
+            id=self.top_right_buttons_id, classes="tab-buttons-horizontal"
         )
 
     def compose(self) -> ComposeResult:
-        with HorizontalGroup(
-            id=self.view_button_group_id, classes="tab-buttons-area-horizontal"
-        ):
-            yield TabButton("Contents", self.button_id("Contents"))
-            yield TabButton("Diff", self.button_id("Diff"))
-            yield TabButton("Git-Log", self.button_id("Git-Log"))
+        yield TabButton("Contents", self.button_id("Contents"))
+        yield TabButton("Diff", self.button_id("Diff"))
+        yield TabButton("Git-Log", self.button_id("Git-Log"))
 
 
 class TreeTabSwitchers(Horizontal, TabIdMixin):
@@ -154,16 +150,22 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
                 with ContentSwitcher(
                     initial=self.content_id("Tree"),
                     id=self.left_content_switcher_id,
-                    classes="top-border-title-style",
+                    classes="content-switcher-left top-border-title-style",
                 ):
-                    with ScrollableContainer(id=self.content_id("Tree")):
+                    with ScrollableContainer(
+                        id=self.content_id("Tree"),
+                        classes="tree-scrollable-container",
+                    ):
                         yield ManagedTree(
                             id=self.tree_widget_id("ManagedTree"),
                             tab=self.tab,
                             flat_list=False,
                             classes="tree",
                         )
-                    with ScrollableContainer(id=self.content_id("List")):
+                    with ScrollableContainer(
+                        id=self.content_id("List"),
+                        classes="tree-scrollable-container",
+                    ):
                         yield ManagedTree(
                             id=self.tree_widget_id("ManTreeList"),
                             tab=self.tab,
@@ -172,9 +174,11 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
                         )
             yield Horizontal(
                 Switch(id=self.filter_id("unchanged"), classes="filter"),
-                Label(filter_data.unchanged.label).with_tooltip(
-                    tooltip=filter_data.unchanged.tooltip
-                ),
+                Label(
+                    filter_data.unchanged.label,
+                    id=self.filter_label_id("unchanged"),
+                    classes="filter filter-label",
+                ).with_tooltip(tooltip=filter_data.unchanged.tooltip),
                 id=self.filters_container_id,
                 classes="filter-container border-top border-bottom height-3",
             )
@@ -228,10 +232,16 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
                 self.query_one(
                     f"#{self.left_content_switcher_id}", ContentSwitcher
                 ).current = self.content_id("Tree")
-            else:
+                self.query_one(
+                    f"#{self.filter_id('unchanged')}", Switch
+                ).disabled = False
+            elif event.button.id == self.button_id("List"):
                 self.query_one(
                     f"#{self.left_content_switcher_id}", ContentSwitcher
                 ).current = self.content_id("List")
+                self.query_one(
+                    f"#{self.filter_id('unchanged')}", Switch
+                ).disabled = True
         # Contents/Diff/GitLog Switch
         elif event.button.id in [
             self.button_id("Contents"),
@@ -286,7 +296,7 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
             ).unchanged = event.value
 
 
-class ApplyTab(Horizontal, TabIdMixin):
+class ApplyTab(Horizontal):
 
     BINDINGS = [
         Binding(
@@ -297,6 +307,9 @@ class ApplyTab(Horizontal, TabIdMixin):
         )
     ]
 
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs, classes="tab-main-horizontal")
+
     def compose(self) -> ComposeResult:
         yield TreeTabSwitchers("Apply")
 
@@ -304,7 +317,7 @@ class ApplyTab(Horizontal, TabIdMixin):
         self.notify("to implement")
 
 
-class ReAddTab(Horizontal, TabIdMixin):
+class ReAddTab(Horizontal):
 
     BINDINGS = [
         Binding(
@@ -314,6 +327,9 @@ class ReAddTab(Horizontal, TabIdMixin):
             tooltip="overwrite chezmoi repository with dotfile on disk",
         )
     ]
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs, classes="tab-main-horizontal")
 
     def compose(self) -> ComposeResult:
         yield TreeTabSwitchers("Re-Add")
@@ -335,7 +351,7 @@ class AddTab(Horizontal, TabIdMixin):
 
     def __init__(self, **kwargs) -> None:
         TabIdMixin.__init__(self, "Add")
-        super().__init__(**kwargs)
+        super().__init__(**kwargs, classes="tab-main-horizontal")
 
     def compose(self) -> ComposeResult:
         with Vertical(
@@ -354,16 +370,20 @@ class AddTab(Horizontal, TabIdMixin):
 
             yield Horizontal(
                 Switch(id=self.filter_id("unmanaged_dirs"), classes="filter"),
-                Label(filter_data.unmanaged_dirs.label).with_tooltip(
-                    tooltip=filter_data.unmanaged_dirs.tooltip
-                ),
+                Label(
+                    filter_data.unmanaged_dirs.label,
+                    id=self.filter_label_id("unmanaged_dirs"),
+                    classes="filter-label",
+                ).with_tooltip(tooltip=filter_data.unmanaged_dirs.tooltip),
                 classes="filter-container padding-bottom-once border-top height-3",
             )
             yield Horizontal(
                 Switch(id=self.filter_id("unwanted"), classes="filter"),
-                Label(filter_data.unwanted.label).with_tooltip(
-                    tooltip=filter_data.unwanted.tooltip
-                ),
+                Label(
+                    filter_data.unwanted.label,
+                    id=self.filter_label_id("unwanted"),
+                    classes="filter-label",
+                ).with_tooltip(tooltip=filter_data.unwanted.tooltip),
                 classes="filter-container border-bottom height-2",
                 id=self.filters_container_id,
             )

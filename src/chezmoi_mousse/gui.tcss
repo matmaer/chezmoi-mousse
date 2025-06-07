@@ -9,17 +9,23 @@
 .tab-content-right {
   width: 2fr;
 }
-.tree-scrollable-container {
-}
+
+.content-switcher-left {}
+
+.content-switcher-right {}
+
+.tree-scrollable-container {}
+
 .tab-main-horizontal {
+  width: 1fr;
+  height: 1fr;
 }
-.tree {
-}
+
+.tree {}
 
 /* applies to all Container classes that contain a single filter switch */
 .filter-container {
   /* color of the label text */
-  color: $foreground-darken-1;
   background: $surface;
   background-tint: $surface;
   align: center middle;
@@ -41,14 +47,17 @@
     height: 3;
   }
 
-  /* style the switch itself */
-  .switch--slider {
-    color: $error-darken-3;
-  }
   .filter {
     background: $surface;
     background-tint: $surface;
 
+    &.filter-label {
+      color: $foreground-darken-1;
+    }
+
+    &>.switch--slider {
+      color: $error-darken-2;
+    }
     &.-on .switch--slider {
       color: $success-darken-2;
     }
@@ -60,6 +69,12 @@
 
       &.-on>.switch--slider {
         color: $success-lighten-1;
+      }
+    }
+
+    &:disabled {
+      &>.switch--slider {
+        color: $panel;
       }
     }
   }
