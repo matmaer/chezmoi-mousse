@@ -54,15 +54,10 @@ class TabIdMixin:
         self.tab_button = f"{tab}_tab_button"
         self.tree_button_group_id = f"{tab}_tree_buttons"
         self.view_button_group_id = f"{tab}_view_buttons"
-        # left content switcher content ids
+        # left content switcher id
         self.tree_switcher_id = f"{tab}_tree_switcher"
+        # right content switcher id
         self.view_switcher_id = f"{tab}_view_switcher"
-        # right content switcher content ids
-        self.tree_content_id = f"{tab}_tree_content"
-        self.list_content_id = f"{tab}_list_content"
-        self.contents_content_id = f"{tab}_content"
-        self.diff_content_id = f"{tab}_diff_content"
-        self.git_log_content_id = f"{tab}_git_log_content"
         # filter switch container id
         self.filters_container_id = f"{tab}_filters_container"
         # filter switch id
@@ -85,6 +80,10 @@ class TabIdMixin:
     def button_id(self, button_label: ButtonLabel) -> str:
         """Generate a unique button id for this tab and button label."""
         return f"{self.tab}_button_{button_label}"
+
+    def content_id(self, button_label: ButtonLabel) -> str:
+        """Generate a unique content id for this tab and content label."""
+        return f"{self.tab}_{button_label}_content"
 
 
 class TabButton(Vertical):
@@ -147,18 +146,18 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
             yield TabButtonsTopLeft(self.tab)
             with Horizontal(classes="content-switcher-horizontal"):
                 with ContentSwitcher(
-                    initial=self.tree_content_id,
+                    initial=self.content_id("Tree"),
                     id=self.tree_switcher_id,
                     classes="content-switcher-left top-border-title-style",
                 ):
                     yield ManagedTree(
-                        id=self.tree_content_id,
+                        id=self.content_id("Tree"),
                         tab=self.tab,
                         flat_list=False,
                         classes="tree-explorer",
                     )
                     yield ManagedTree(
-                        id=self.list_content_id,
+                        id=self.content_id("List"),
                         tab=self.tab,
                         flat_list=True,
                         classes="tree-explorer",
@@ -178,17 +177,17 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
             with Horizontal(classes="content-switcher-horizontal"):
                 with ContentSwitcher(
                     id=self.view_switcher_id,
-                    initial=self.contents_content_id,
+                    initial=self.content_id("Contents"),
                     classes="content-switcher-right top-border-title-style",
                 ):
                     yield PathView(
-                        id=self.contents_content_id,
+                        id=self.content_id("Contents"),
                         auto_scroll=False,
                         wrap=False,
                         highlight=True,
                     )
-                    yield DiffView(id=self.diff_content_id, tab=self.tab)
-                    yield GitLog(id=self.git_log_content_id)
+                    yield DiffView(id=self.content_id("Diff"), tab=self.tab)
+                    yield GitLog(id=self.content_id("Git-Log"))
 
     def on_mount(self) -> None:
         # left
@@ -222,11 +221,11 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
             if event.button.id == self.button_id("Tree"):
                 self.query_one(
                     f"#{self.tree_switcher_id}", ContentSwitcher
-                ).current = self.tree_content_id
+                ).current = self.content_id("Tree")
             else:
                 self.query_one(
                     f"#{self.tree_switcher_id}", ContentSwitcher
-                ).current = self.list_content_id
+                ).current = self.content_id("List")
         # Contents/Diff/GitLog Switch
         elif event.button.id in [
             self.button_id("Contents"),
@@ -245,15 +244,15 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
             if event.button.id == self.button_id("Contents"):
                 self.query_one(
                     f"#{self.view_switcher_id}", ContentSwitcher
-                ).current = self.contents_content_id
+                ).current = self.content_id("Contents")
             elif event.button.id == self.button_id("Diff"):
                 self.query_one(
                     f"#{self.view_switcher_id}", ContentSwitcher
-                ).current = self.diff_content_id
+                ).current = self.content_id("Diff")
             elif event.button.id == self.button_id("Git-Log"):
                 self.query_one(
                     f"#{self.view_switcher_id}", ContentSwitcher
-                ).current = self.git_log_content_id
+                ).current = self.content_id("Git-Log")
 
     def on_tree_node_selected(self, event: ManagedTree.NodeSelected) -> None:
         event.stop()
@@ -261,15 +260,15 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
         self.query_one(f"#{self.view_switcher_id}").border_title = (
             f" {event.node.data.path.relative_to(chezmoi.dest_dir)} "
         )
-        path_view = self.query_one(f"#{self.contents_content_id}", PathView)
+        path_view = self.query_one(f"#{self.content_id('Contents')}", PathView)
         path_view.path = event.node.data.path
         path_view.tab = self.tab
 
-        self.query_one(f"#{self.diff_content_id}", DiffView).path = (
+        self.query_one(f"#{self.content_id('Diff')}", DiffView).path = (
             event.node.data.path
         )
 
-        self.query_one(f"#{self.git_log_content_id}", GitLog).path = (
+        self.query_one(f"#{self.content_id('Git-Log')}", GitLog).path = (
             event.node.data.path
         )
 
@@ -277,7 +276,7 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
         event.stop()
         if event.switch.id == self.unchanged_id:
             self.query_one(
-                f"#{self.tree_content_id}", ManagedTree
+                f"#{self.content_id('Tree')}", ManagedTree
             ).unchanged = event.value
 
 
