@@ -43,7 +43,12 @@ from chezmoi_mousse.components import (
 )
 
 from chezmoi_mousse.config import filter_data, pw_mgr_info
-from chezmoi_mousse.mouse_types import TabLabel, ButtonLabel, FilterName
+from chezmoi_mousse.mouse_types import (
+    TabLabel,
+    ButtonLabel,
+    FilterName,
+    TreeName,
+)
 import chezmoi_mousse.theme as theme
 
 
@@ -51,19 +56,14 @@ class TabIdMixin:
     def __init__(self, tab: TabLabel):
         self.tab: TabLabel = tab
         # button group ids
+        self.left_content_switcher_id = f"{tab}_left_content_switcher"
+        self.right_content_switcher_id = f"{tab}_right_content_switcher"
         self.tab_button = f"{tab}_tab_button"
         self.tree_button_group_id = f"{tab}_tree_buttons"
         self.view_button_group_id = f"{tab}_view_buttons"
-        # left content switcher id
-        self.tree_switcher_id = f"{tab}_tree_switcher"
-        # right content switcher id
-        self.view_switcher_id = f"{tab}_view_switcher"
+
         # filter switch container id
         self.filters_container_id = f"{tab}_filters_container"
-        # used in on_mount to set show_root and guide_depth
-        self.dir_tree_id = f"{tab}_dir_tree"
-        # used to set the top border title for the directory tree on the left
-        self.scrollable_dir_tree_id = f"{tab}_scrollable_dir_tree"
         # used to set the top border title for the path view on the right
         self.path_view_id = f"{tab}_path_view"
         # unique id's for main verticals
@@ -84,6 +84,14 @@ class TabIdMixin:
     def filter_id(self, filter_name: FilterName) -> str:
         """Generate a unique filter id for this tab and filter name."""
         return f"{self.tab}_{filter_name}_filter"
+
+    def tree_container_id(self, tree_name: TreeName) -> str:
+        """Generate a unique scrollable tree id for this tab."""
+        return f"{self.tab}_{tree_name}_container"
+
+    def tree_widget_id(self, tree_name: TreeName) -> str:
+        """Generate a unique tree id for a Tree or DirectoryTree."""
+        return f"{self.tab}_{tree_name}_widget"
 
 
 class TabButton(Vertical):
@@ -137,63 +145,61 @@ class TabButtonsTopRight(Horizontal, TabIdMixin):
 
 class TreeTabSwitchers(Horizontal, TabIdMixin):
 
-    def __init__(self, tab: TabLabel) -> None:
+    def __init__(self, tab: TabLabel, **kwargs) -> None:
         TabIdMixin.__init__(self, tab)
-        super().__init__()
+        super().__init__(**kwargs)
 
     def compose(self) -> ComposeResult:
         with Vertical(id=self.tab_left_vertical, classes="tab-content-left"):
             yield TabButtonsTopLeft(self.tab)
-            with Horizontal(classes="content-switcher-horizontal"):
+            with Horizontal():
                 with ContentSwitcher(
                     initial=self.content_id("Tree"),
-                    id=self.tree_switcher_id,
-                    classes="content-switcher-left top-border-title-style",
+                    id=self.left_content_switcher_id,
+                    classes="top-border-title-style",
                 ):
-                    yield ManagedTree(
-                        id=self.content_id("Tree"),
-                        tab=self.tab,
-                        flat_list=False,
-                        classes="tree-explorer",
-                    )
-                    yield ManagedTree(
-                        id=self.content_id("List"),
-                        tab=self.tab,
-                        flat_list=True,
-                        classes="tree-explorer",
-                    )
-            with Horizontal(
+                    with ScrollableContainer(id=self.content_id("Tree")):
+                        yield ManagedTree(
+                            id=self.tree_widget_id("ManagedTree"),
+                            tab=self.tab,
+                            flat_list=False,
+                            classes="tree",
+                        )
+                    with ScrollableContainer(id=self.content_id("List")):
+                        yield ManagedTree(
+                            id=self.tree_widget_id("ManTreeList"),
+                            tab=self.tab,
+                            flat_list=True,
+                            classes="tree",
+                        )
+            yield Horizontal(
+                Switch(id=self.filter_id("unchanged"), classes="filter"),
+                Label(filter_data.unchanged.label).with_tooltip(
+                    tooltip=filter_data.unchanged.tooltip
+                ),
                 id=self.filters_container_id,
-                classes="filters-container one-filter-height",
-            ):
-                with HorizontalGroup(classes="single-filter-container"):
-                    yield Switch(
-                        id=self.filter_id("unchanged"), classes="filter-switch"
-                    )
-                    yield Label(filter_data.unchanged.label).with_tooltip(
-                        tooltip=filter_data.unchanged.tooltip
-                    )
+                classes="filter-container border-top border-bottom height-3",
+            )
 
         with Vertical(id=self.tab_right_vertical, classes="tab-content-right"):
             yield TabButtonsTopRight(self.tab)
-            with Horizontal(classes="content-switcher-horizontal"):
-                with ContentSwitcher(
-                    id=self.view_switcher_id,
-                    initial=self.content_id("Contents"),
-                    classes="content-switcher-right top-border-title-style",
-                ):
-                    yield PathView(
-                        id=self.content_id("Contents"),
-                        auto_scroll=False,
-                        wrap=False,
-                        highlight=True,
-                    )
-                    yield DiffView(id=self.content_id("Diff"), tab=self.tab)
-                    yield GitLog(id=self.content_id("Git-Log"))
+            with ContentSwitcher(
+                id=self.right_content_switcher_id,
+                initial=self.content_id("Contents"),
+                classes="content-switcher-right top-border-title-style",
+            ):
+                yield PathView(
+                    id=self.content_id("Contents"),
+                    auto_scroll=False,
+                    wrap=False,
+                    highlight=True,
+                )
+                yield DiffView(id=self.content_id("Diff"), tab=self.tab)
+                yield GitLog(id=self.content_id("Git-Log"))
 
     def on_mount(self) -> None:
         # left
-        self.query_one(f"#{self.tree_switcher_id}").border_title = (
+        self.query_one(f"#{self.left_content_switcher_id}").border_title = (
             chezmoi.dest_dir_str_spaced
         )
         self.query_one(f"#{self.button_id('Tree')}", Button).add_class(
@@ -203,7 +209,7 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
         self.query_one(f"#{self.button_id('Contents')}", Button).add_class(
             "last-clicked"
         )
-        self.query_one(f"#{self.view_switcher_id}").border_title = (
+        self.query_one(f"#{self.right_content_switcher_id}").border_title = (
             " path view "
         )
 
@@ -222,11 +228,11 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
             )
             if event.button.id == self.button_id("Tree"):
                 self.query_one(
-                    f"#{self.tree_switcher_id}", ContentSwitcher
+                    f"#{self.left_content_switcher_id}", ContentSwitcher
                 ).current = self.content_id("Tree")
             else:
                 self.query_one(
-                    f"#{self.tree_switcher_id}", ContentSwitcher
+                    f"#{self.left_content_switcher_id}", ContentSwitcher
                 ).current = self.content_id("List")
         # Contents/Diff/GitLog Switch
         elif event.button.id in [
@@ -245,21 +251,21 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
             )
             if event.button.id == self.button_id("Contents"):
                 self.query_one(
-                    f"#{self.view_switcher_id}", ContentSwitcher
+                    f"#{self.right_content_switcher_id}", ContentSwitcher
                 ).current = self.content_id("Contents")
             elif event.button.id == self.button_id("Diff"):
                 self.query_one(
-                    f"#{self.view_switcher_id}", ContentSwitcher
+                    f"#{self.right_content_switcher_id}", ContentSwitcher
                 ).current = self.content_id("Diff")
             elif event.button.id == self.button_id("Git-Log"):
                 self.query_one(
-                    f"#{self.view_switcher_id}", ContentSwitcher
+                    f"#{self.right_content_switcher_id}", ContentSwitcher
                 ).current = self.content_id("Git-Log")
 
     def on_tree_node_selected(self, event: ManagedTree.NodeSelected) -> None:
         event.stop()
         assert event.node.data is not None
-        self.query_one(f"#{self.view_switcher_id}").border_title = (
+        self.query_one(f"#{self.right_content_switcher_id}").border_title = (
             f" {event.node.data.path.relative_to(chezmoi.dest_dir)} "
         )
         path_view = self.query_one(f"#{self.content_id('Contents')}", PathView)
@@ -278,7 +284,7 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
         event.stop()
         if event.switch.id == self.filter_id("unchanged"):
             self.query_one(
-                f"#{self.content_id('Tree')}", ManagedTree
+                f"#{self.tree_widget_id('ManagedTree')}", ManagedTree
             ).unchanged = event.value
 
 
@@ -336,38 +342,37 @@ class AddTab(Horizontal, TabIdMixin):
     def compose(self) -> ComposeResult:
         with Vertical(
             id=self.tab_left_vertical,
-            classes="add-tab-left top-border-title-style",
+            classes="tab-content-left top-border-title-style",
         ):
             with ScrollableContainer(
-                id=self.scrollable_dir_tree_id,
-                classes="dir-tree-scrollable-container",
+                id=self.tree_container_id("DirTree"),
+                classes="tree-scrollable-container",
             ):
                 yield FilteredDirTree(
                     chezmoi.dest_dir,
-                    id=self.dir_tree_id,
-                    classes="filtered-dir-tree",
+                    id=self.tree_widget_id("DirTree"),
+                    classes="tree",
                 )
 
             yield Horizontal(
-                Switch(
-                    id=self.filter_id("unmanaged_dirs"), classes="add-filter"
-                ),
+                Switch(id=self.filter_id("unmanaged_dirs"), classes="filter"),
                 Label(filter_data.unmanaged_dirs.label).with_tooltip(
                     tooltip=filter_data.unmanaged_dirs.tooltip
                 ),
-                classes="add-filter-container padding-bottom-once border-top-once height-3",
+                classes="filter-container padding-bottom-once border-top height-3",
             )
             yield Horizontal(
-                Switch(id=self.filter_id("unwanted"), classes="add-filter"),
+                Switch(id=self.filter_id("unwanted"), classes="filter"),
                 Label(filter_data.unwanted.label).with_tooltip(
                     tooltip=filter_data.unwanted.tooltip
                 ),
-                classes="add-filter-container border-bottom-once height-2",
+                classes="filter-container border-bottom height-2",
+                id=self.filters_container_id,
             )
 
         with ScrollableContainer(
             id=self.tab_right_vertical,
-            classes="add-tab-right top-border-title-style",
+            classes="tab-content-right top-border-title-style",
         ):
             yield PathView(
                 id=self.path_view_id,
@@ -378,7 +383,7 @@ class AddTab(Horizontal, TabIdMixin):
 
     def on_mount(self) -> None:
         filtered_dir_tree = self.query_one(
-            f"#{self.dir_tree_id}", FilteredDirTree
+            f"#{self.tree_widget_id("DirTree")}", FilteredDirTree
         )
         filtered_dir_tree.show_root = False
         filtered_dir_tree.guide_depth = 3
@@ -417,7 +422,9 @@ class AddTab(Horizontal, TabIdMixin):
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
         event.stop()
-        tree = self.query_one(f"#{self.dir_tree_id}", FilteredDirTree)
+        tree = self.query_one(
+            f"#{self.tree_widget_id("DirTree")}", FilteredDirTree
+        )
         if event.switch.id == self.filter_id("unmanaged_dirs"):
             tree.unmanaged_dirs = event.value
             tree.reload()

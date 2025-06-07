@@ -2,21 +2,20 @@
 /* tcss classes */
 /****************/
 
-.add-tab-left {
+.tab-content-left {
   margin-right: 2;
 }
-.add-tab-right {
+.tab-content-right {
 }
-/* assigned to the ScrollableContainer class containing FilteredDirTree */
-.dir-tree-scrollable-container {
+.tree-scrollable-container {
 }
-.add-tab-main-horizontal {
+.tab-main-horizontal {
 }
-.filtered-dir-tree {
+.tree {
 }
 
 /* applies to all Container classes that contain a single filter switch */
-.add-filter-container {
+.filter-container {
   /* color of the label text */
   color: $foreground-darken-1;
   background: $surface;
@@ -24,11 +23,11 @@
   align: center middle;
   padding-right: 2;
 
-  &.border-bottom-once {
+  &.border-bottom {
     border-bottom: inner $surface;
   }
 
-  &.border-top-once {
+  &.border-top {
     border-top: inner $surface;
   }
 
@@ -44,7 +43,7 @@
   .switch--slider {
     color: $error-darken-3;
   }
-  .add-filter {
+  .filter {
     background: $surface;
     background-tint: $surface;
 
@@ -64,103 +63,10 @@
   }
 }
 
-.tab-content-left {
-  margin-right: 2;
-  width: auto;
-  max-width:69%
-}
-
-.tab-content-right {
-}
-
 .top-border-title-style {
   border-top: solid $primary;
   border-title-align: center;
   border-title-style: bold;
-}
-
-/* assigned to ManagedTree classes and FilteredTree class */
-.tree-explorer {
-  width: auto; /* shrinks width of the Tree classes */
-}
-
-
-/* assigned to horizontal containers containing the ContentSwitcher class */
-.content-switcher-horizontal {
-  width: 100%;
-}
-
-/* assigned to ContentSwitcher classes */
-.content-switcher-left {
-  width: auto; /* shrinks the content around the ManagedTree widgets */
-}
-.content-switcher-right {
-  width: auto;
-}
-/* classes used within the Horizontal containing filters */
-.filters-container {
-  background: $surface;
-  background-tint: $surface;
-  border-top: inner $surface;
-  border-bottom: inner $surface;
-  padding-right: 2;
-  width: auto;
-
-  &.one-filter-height {
-    height: 3
-  }
-
-  &.two-filters-height {
-    height: 5;
-  }
-
-  # .two-filters-vertical {
-  #   width: auto;
-  # }
-
-  .padding-bottom-once {
-    padding-bottom: 1;
-    width: auto;
-  }
-
-  /* applies to all Container classes that contain a single filter switch */
-  .single-filter-container {
-    layout: horizontal;
-    width: auto;
-    align: center middle;
-
-    /* color of the label text */
-    color: $foreground-darken-1;
-
-    /* style the switch itself */
-    .switch--slider {
-      color: $error-darken-3;
-    }
-    .filter-switch {
-      background: $surface;
-      background-tint: $surface;
-
-      &.-on .switch--slider {
-        color: $success;
-      }
-
-      &:hover {
-        &>.switch--slider {
-          color: $error;
-        }
-
-        &.-on>.switch--slider {
-          color: $success-lighten-2;
-        }
-      }
-    }
-  }
-}
-
-/* assigned to the TabButton Vertical parent class in super.init */
-.tab-button-vertical {
-  align: center middle;
-  width: auto;
 }
 
 TabButton {
