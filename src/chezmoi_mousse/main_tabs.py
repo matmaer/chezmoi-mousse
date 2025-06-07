@@ -145,16 +145,22 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
                 with ContentSwitcher(
                     initial=self.content_id("Tree"),
                     id=self.left_content_switcher_id,
-                    classes="top-border-title-style",
+                    classes="content-switcher-left top-border-title-style",
                 ):
-                    with ScrollableContainer(id=self.content_id("Tree")):
+                    with ScrollableContainer(
+                        id=self.content_id("Tree"),
+                        classes="tree-scrollable-container",
+                    ):
                         yield ManagedTree(
                             id=self.tree_widget_id("ManagedTree"),
                             tab=self.tab,
                             flat_list=False,
                             classes="tree",
                         )
-                    with ScrollableContainer(id=self.content_id("List")):
+                    with ScrollableContainer(
+                        id=self.content_id("List"),
+                        classes="tree-scrollable-container",
+                    ):
                         yield ManagedTree(
                             id=self.tree_widget_id("ManTreeList"),
                             tab=self.tab,
@@ -277,7 +283,7 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
             ).unchanged = event.value
 
 
-class ApplyTab(Horizontal, TabIdMixin):
+class ApplyTab(Horizontal):
 
     BINDINGS = [
         Binding(
@@ -288,6 +294,9 @@ class ApplyTab(Horizontal, TabIdMixin):
         )
     ]
 
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs, classes="tab-main-horizontal")
+
     def compose(self) -> ComposeResult:
         yield TreeTabSwitchers("Apply")
 
@@ -295,7 +304,7 @@ class ApplyTab(Horizontal, TabIdMixin):
         self.notify("to implement")
 
 
-class ReAddTab(Horizontal, TabIdMixin):
+class ReAddTab(Horizontal):
 
     BINDINGS = [
         Binding(
@@ -305,6 +314,9 @@ class ReAddTab(Horizontal, TabIdMixin):
             tooltip="overwrite chezmoi repository with dotfile on disk",
         )
     ]
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs, classes="tab-main-horizontal")
 
     def compose(self) -> ComposeResult:
         yield TreeTabSwitchers("Re-Add")
@@ -326,7 +338,7 @@ class AddTab(Horizontal, TabIdMixin):
 
     def __init__(self, **kwargs) -> None:
         TabIdMixin.__init__(self, "Add")
-        super().__init__(**kwargs)
+        super().__init__(**kwargs, classes="tab-main-horizontal")
 
     def compose(self) -> ComposeResult:
         with Vertical(

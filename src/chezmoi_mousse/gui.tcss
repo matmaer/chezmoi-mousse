@@ -9,12 +9,19 @@
 .tab-content-right {
   width: 2fr;
 }
-.tree-scrollable-container {
-}
+
+.content-switcher-left {}
+
+.content-switcher-right {}
+
+.tree-scrollable-container {}
+
 .tab-main-horizontal {
+  width: 1fr;
+  height: 1fr;
 }
-.tree {
-}
+
+.tree {}
 
 /* applies to all Container classes that contain a single filter switch */
 .filter-container {
