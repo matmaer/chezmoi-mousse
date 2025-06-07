@@ -268,25 +268,25 @@ class ManagedTree(Tree[NodeData]):
     def __init__(self, tab, flat_list=False, **kwargs) -> None:
         self.tab: TabLabel = tab
         self.flat_list: bool = flat_list
-
+        self.suspend_user_state_save: bool = False
         super().__init__(label="root", **kwargs)
+        self.root.data = NodeData(
+            # act as if chezmoi.dest_dir always has a modified status
+            path=chezmoi.dest_dir,
+            found=True,
+            is_file=False,
+            status="M",
+        )
+        self.user_expanded_nodes: list[NodeData] = [self.root.data]
 
     def on_mount(self) -> None:
-        print(f"in ManagedTree.on_mount(), tab: {self.tab} -------------")
-
         self.node_colors = {
             "Dir": theme.vars["text-primary"],
             "D": theme.vars["text-error"],
             "A": theme.vars["text-success"],
             "M": theme.vars["text-warning"],
         }
-
         self.guide_depth = 3
-        # give root node status R so it's not considered having status "X"
-        if self.root.data is None:
-            self.root.data = NodeData(
-                path=chezmoi.dest_dir, found=True, is_file=False, status="R"
-            )
         self.show_root = False
         if not self.flat_list:
             self.add_nodes(self.root)
