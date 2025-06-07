@@ -14,6 +14,8 @@ type ButtonLabel = Literal["Tree", "List", "Contents", "Diff", "Git-Log"]
 
 type ButtonArea = Literal["TopLeft", "TopRight"]
 
+type FilterName = Literal["unchanged", "unwanted", "unmanaged_dirs"]
+
 type StatusGroup = Literal[
     "apply_files", "apply_dirs", "re_add_files", "re_add_dirs"
 ]
