@@ -25,7 +25,7 @@ filter_data = FilterSwitch(
             "This allows spotting new un-managed files in already managed directories."
             "Enable to show all directories which contain un-managed files."
         ),
-        label="include unmanaged dirs",
+        label="show unmanaged dirs",
     ),
     unwanted=Filter(
         tooltip=(
@@ -33,10 +33,10 @@ filter_data = FilterSwitch(
             "These include cache, temporary, trash (recycle bin) and other similar files or directories. "
             'For example enable this to add files to your chezmoi repository which are in a directory named ".cache".'
         ),
-        label="include unwanted paths",
+        label="show unwanted paths",
     ),
     unchanged=Filter(
-        label="include unchanged",
+        label="show unchanged",
         tooltip="Include files unchanged files which are not found in the 'chezmoi status' output.",
     ),
 )

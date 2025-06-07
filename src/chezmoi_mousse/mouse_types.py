@@ -10,7 +10,7 @@ type StatusCode = Literal["A", "D", "M", "X"]
 
 type TabLabel = Literal[ApplyLabel, ReAddLabel, AddLabel]
 
-type ButtonLabel = Literal["Tree", "List", "Content", "Diff", "Git-Log"]
+type ButtonLabel = Literal["Tree", "List", "Contents", "Diff", "Git-Log"]
 
 type ButtonArea = Literal["TopLeft", "TopRight"]
 
