@@ -93,8 +93,6 @@ class AutoWarning(Static):
 
 
 class PathView(RichLog):
-    """RichLog widget to display the content of a file with highlighting."""
-
     # focussable https://textual.textualize.io/widgets/rich_log/
 
     BINDINGS = [Binding(key="M,m", action="maximize", description="maximize")]
@@ -192,9 +190,6 @@ class PathView(RichLog):
 
 
 class DiffView(RichLog):
-    """Shows the diff between the destination and the chezmoi repository,
-    accounts for the direction of the operation to color the diff."""
-
     # not focussable https://textual.textualize.io/widgets/static/
 
     BINDINGS = [Binding(key="M,m", action="maximize", description="maximize")]
@@ -396,12 +391,16 @@ class ManagedTree(Tree[NodeData]):
         dir_paths = chezmoi.managed_dir_paths_in_dir(tree_node.data.path)
         status_dirs = chezmoi.status_paths[self.tab].dirs
 
-        current_sub_dir_node_paths = [
-            child.data.path
-            for child in tree_node.children
-            if isinstance(child.data, NodeData) and not child.data.is_file
-        ]
+        # Remove directory nodes that no longer match the filter
+        for child in list(tree_node.children):
+            if (
+                isinstance(child.data, NodeData)
+                and not child.data.is_file
+                and not self.show_dir_node(child.data)
+            ):
+                child.remove()
 
+        # Add directory nodes that now match the filter
         for dir_path in dir_paths:
             status_code = "X"
             if dir_path in status_dirs:
@@ -412,10 +411,12 @@ class ManagedTree(Tree[NodeData]):
                 is_file=False,
                 status=status_code,
             )
-            if (
-                self.show_dir_node(node_data)
-                and node_data.path not in current_sub_dir_node_paths
-            ):
+            # Only add if not already present and should be shown
+            if self.show_dir_node(node_data) and dir_path not in [
+                child.data.path
+                for child in tree_node.children
+                if isinstance(child.data, NodeData) and not child.data.is_file
+            ]:
                 node_label = self.style_label(node_data)
                 tree_node.add(label=node_label, data=node_data)
 
@@ -425,8 +426,9 @@ class ManagedTree(Tree[NodeData]):
         self.add_leaves(event.node)
 
     def watch_unchanged(self) -> None:
-        """Update the visible nodes in the tree based on the current filter
-        settings."""
+        """Update the visible nodes based on the "show unchanged" filter."""
+
+        # the switch is disabled when the tree is flat
         if not self.flat_list:
 
             def get_expanded_nodes() -> list[TreeNode]:
@@ -448,19 +450,10 @@ class ManagedTree(Tree[NodeData]):
                 self.add_nodes(node)
                 self.add_leaves(node)
 
-        elif self.flat_list:
-            self.clear()
-            self.add_flat_leaves()
-
 
 class FilteredDirTree(DirectoryTree):
     """Provides a fast DirectoryTree to explore any path in the destination
-    directory which can be added to the chezmoi repository.
-
-    No mather how large the tree in the destination directory is and with the
-    ability to filter the tree for easy access to paths to be considered adding
-    to the chezmoi repository.
-    """
+    directory which can be added to the chezmoi repository."""
 
     unmanaged_dirs = reactive(False)
     unwanted = reactive(False)
