@@ -458,7 +458,7 @@ class ManagedTree(Tree[NodeData]):
             self.add_leaves(node)
 
     def watch_expand_all(self) -> None:
-        self.notify("expand_all")
+        self.notify("not yet implemented")
 
 
 class FilteredDirTree(DirectoryTree):
