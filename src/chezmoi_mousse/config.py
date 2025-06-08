@@ -13,6 +13,7 @@ class Filter:
 
 @dataclass(frozen=True)
 class FilterSwitch:
+    expand_all: Filter
     unmanaged_dirs: Filter
     unwanted: Filter
     unchanged: Filter
@@ -35,8 +36,14 @@ filter_data = FilterSwitch(
         ),
         label="show unwanted paths",
     ),
+    expand_all=Filter(
+        tooltip=("Expand all directories in the Tree view."),
+        label="expand all nodes",
+    ),
     unchanged=Filter(
-        label="show unchanged",
+        # trailing spaces to easily have the leading edge align with
+        # "expand all nodes" when centering both switches
+        label="show unchanged  ",
         tooltip="Include files unchanged files which are not found in the 'chezmoi status' output.",
     ),
 )

@@ -14,7 +14,9 @@ type ButtonLabel = Literal["Tree", "List", "Contents", "Diff", "Git-Log"]
 
 type ButtonArea = Literal["TopLeft", "TopRight"]
 
-type FilterName = Literal["unchanged", "unwanted", "unmanaged_dirs"]
+type FilterName = Literal[
+    "expand_all", "unchanged", "unwanted", "unmanaged_dirs"
+]
 
 type TreeName = Literal["ManagedTree", "ManTreeList", "DirTree"]
 

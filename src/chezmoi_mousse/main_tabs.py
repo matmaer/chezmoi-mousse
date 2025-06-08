@@ -78,6 +78,10 @@ class TabIdMixin:
         """Generate an id for each widget inside of the content switcher."""
         return f"{self.tab}_{button_label}_content"
 
+    def filter_container_id(self, filter_name: FilterName) -> str:
+        """Generate an id for the filter container."""
+        return f"{self.tab}_{filter_name}_filter_container"
+
     def filter_id(self, filter_name: FilterName) -> str:
         """Generate an id for each filter switch."""
         return f"{self.tab}_{filter_name}_filter"
@@ -179,8 +183,18 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
                     id=self.filter_label_id("unchanged"),
                     classes="filter filter-label",
                 ).with_tooltip(tooltip=filter_data.unchanged.tooltip),
-                id=self.filters_container_id,
-                classes="filter-container border-top border-bottom height-3",
+                id=self.filter_container_id("unchanged"),
+                classes="filter-container padding-bottom-once border-top height-3",
+            )
+            yield Horizontal(
+                Switch(id=self.filter_id("expand_all"), classes="filter"),
+                Label(
+                    filter_data.expand_all.label,
+                    id=self.filter_label_id("expand_all"),
+                    classes="filter filter-label",
+                ).with_tooltip(tooltip=filter_data.expand_all.tooltip),
+                id=self.filter_container_id("expand_all"),
+                classes="filter-container border-bottom height-2",
             )
 
         with Vertical(id=self.tab_right_vertical, classes="tab-content-right"):
@@ -294,6 +308,10 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
             self.query_one(
                 f"#{self.tree_widget_id('ManagedTree')}", ManagedTree
             ).unchanged = event.value
+        if event.switch.id == self.filter_id("expand_all"):
+            self.query_one(
+                f"#{self.tree_widget_id('ManagedTree')}", ManagedTree
+            ).expand_all = event.value
 
 
 class ApplyTab(Horizontal):
@@ -376,6 +394,7 @@ class AddTab(Horizontal, TabIdMixin):
                     classes="filter-label",
                 ).with_tooltip(tooltip=filter_data.unmanaged_dirs.tooltip),
                 classes="filter-container padding-bottom-once border-top height-3",
+                id=self.filter_container_id("unmanaged_dirs"),
             )
             yield Horizontal(
                 Switch(id=self.filter_id("unwanted"), classes="filter"),
@@ -385,7 +404,7 @@ class AddTab(Horizontal, TabIdMixin):
                     classes="filter-label",
                 ).with_tooltip(tooltip=filter_data.unwanted.tooltip),
                 classes="filter-container border-bottom height-2",
-                id=self.filters_container_id,
+                id=self.filter_container_id("unwanted"),
             )
 
         with ScrollableContainer(

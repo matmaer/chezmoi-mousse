@@ -263,29 +263,30 @@ class ManagedTree(Tree[NodeData]):
     """Shows the tree widget on the left for Apply and Re-Add tabs."""
 
     unchanged: reactive[bool] = reactive(False, init=False)
+    expand_all: reactive[bool] = reactive(False, init=False)
 
     def __init__(self, tab, flat_list=False, **kwargs) -> None:
         self.tab: TabLabel = tab
         self.flat_list: bool = flat_list
-
+        self.suspend_user_state_save: bool = False
         super().__init__(label="root", **kwargs)
+        self.root.data = NodeData(
+            # act as if chezmoi.dest_dir always has a modified status
+            path=chezmoi.dest_dir,
+            found=True,
+            is_file=False,
+            status="M",
+        )
+        self.user_expanded_nodes: list[NodeData] = [self.root.data]
 
     def on_mount(self) -> None:
-        print(f"in ManagedTree.on_mount(), tab: {self.tab} -------------")
-
         self.node_colors = {
             "Dir": theme.vars["text-primary"],
             "D": theme.vars["text-error"],
             "A": theme.vars["text-success"],
             "M": theme.vars["text-warning"],
         }
-
         self.guide_depth = 3
-        # give root node status R so it's not considered having status "X"
-        if self.root.data is None:
-            self.root.data = NodeData(
-                path=chezmoi.dest_dir, found=True, is_file=False, status="R"
-            )
         self.show_root = False
         if not self.flat_list:
             self.add_nodes(self.root)
@@ -429,6 +430,22 @@ class ManagedTree(Tree[NodeData]):
         self.add_nodes(event.node)
         self.add_leaves(event.node)
 
+    def get_expanded_nodes(self) -> list[TreeNode]:
+        """Recursively get all current expanded nodes in the tree, always
+        including the root node."""
+        nodes = [self.root]  # Always start with the root node
+
+        def collect_nodes(current_node: TreeNode) -> list[TreeNode]:
+            expanded = []
+            for child in current_node.children:
+                if child.is_expanded:
+                    expanded.append(child)
+                    expanded.extend(collect_nodes(child))
+            return expanded
+
+        nodes.extend(collect_nodes(self.root))
+        return nodes
+
     def watch_unchanged(self) -> None:
         """Update the visible nodes based on the "show unchanged" filter."""
 
@@ -436,24 +453,12 @@ class ManagedTree(Tree[NodeData]):
         if self.flat_list:
             return
 
-        def get_expanded_nodes() -> list[TreeNode]:
-            """Recursively get all current expanded nodes in the tree."""
-
-            current_node = self.root
-
-            def collect_nodes(current_node: TreeNode) -> list[TreeNode]:
-                nodes = [current_node]
-                for child in current_node.children:
-                    if child.is_expanded:
-                        nodes.append(child)
-                        nodes.extend(collect_nodes(child))
-                return nodes
-
-            return collect_nodes(current_node)
-
-        for node in get_expanded_nodes():
+        for node in self.get_expanded_nodes():
             self.add_nodes(node)
             self.add_leaves(node)
+
+    def watch_expand_all(self) -> None:
+        self.notify("not yet implemented")
 
 
 class FilteredDirTree(DirectoryTree):
