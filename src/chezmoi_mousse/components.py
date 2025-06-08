@@ -445,7 +445,12 @@ class ManagedTree(Tree[NodeData]):
         nodes.extend(collect_nodes(self.root))
         return nodes
 
-    def expand_all_nodes_below(self, node_to_expand: TreeNode) -> None:
+    def expand_all_nodes_below(
+        self, node_to_expand: TreeNode | None = None
+    ) -> None:
+
+        if node_to_expand is None:
+            node_to_expand = self.root
 
         def recurse(node: TreeNode):
             self.add_nodes(node)
