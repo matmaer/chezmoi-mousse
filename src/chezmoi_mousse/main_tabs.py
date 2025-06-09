@@ -52,7 +52,7 @@ from chezmoi_mousse.mouse_types import (
 class TabIdMixin:
     def __init__(self, tab: TabLabel):
         self.tab: TabLabel = tab
-        # ContentSwitcher id's
+        # button group ids
         self.left_content_switcher_id = f"{tab}_left_content_switcher"
         self.right_content_switcher_id = f"{tab}_right_content_switcher"
         self.tab_button = f"{tab}_tab_button"
@@ -61,14 +61,12 @@ class TabIdMixin:
 
         # filter switch container id
         self.filters_container_id = f"{tab}_filters_container"
-        # id's for the right side widgets inside of the scrollable containers
+        # used to set the top border title for the path view on the right
         self.path_view_id = f"{tab}_path_view"
-        self.diff_view_id = f"{tab}_diff_view"
-        self.git_log_view_id = f"{tab}_git_log_view"
         # unique id's for main verticals
         self.tab_left_vertical = f"{tab}_main_left_vertical"
         self.tab_right_vertical = f"{tab}_main_right_vertical"
-        # unique id's for tab button horizontals in ApplyReAddSwithers
+        # unique id's for tab button horizontals in TreeTabSwitchers
         self.top_left_buttons_id = f"{tab}_top_left_buttons_id"
         self.top_right_buttons_id = f"{tab}_top_right_buttons_id"
 
@@ -143,7 +141,7 @@ class TabButtonsTopRight(Horizontal, TabIdMixin):
         yield TabButton("Git-Log", self.button_id("Git-Log"))
 
 
-class ApplyReAddSwithers(Horizontal, TabIdMixin):
+class TreeTabSwitchers(Horizontal, TabIdMixin):
 
     def __init__(self, tab: TabLabel, **kwargs) -> None:
         TabIdMixin.__init__(self, tab)
@@ -300,10 +298,6 @@ class ApplyReAddSwithers(Horizontal, TabIdMixin):
             self.query_one(
                 f"#{self.tree_widget_id('ManagedTree')}", ManagedTree
             ).unchanged = event.value
-        if event.switch.id == self.filter_id("expand_all"):
-            self.query_one(
-                f"#{self.tree_widget_id('ManagedTree')}", ManagedTree
-            ).expand_all = event.value
 
 
 class ApplyTab(Horizontal):
@@ -321,7 +315,7 @@ class ApplyTab(Horizontal):
         super().__init__(**kwargs, classes="tab-main-horizontal")
 
     def compose(self) -> ComposeResult:
-        yield ApplyReAddSwithers("Apply")
+        yield TreeTabSwitchers("Apply")
 
     def action_apply_path(self) -> None:
         self.notify("to implement")
@@ -342,7 +336,7 @@ class ReAddTab(Horizontal):
         super().__init__(**kwargs, classes="tab-main-horizontal")
 
     def compose(self) -> ComposeResult:
-        yield ApplyReAddSwithers("Re-Add")
+        yield TreeTabSwitchers("Re-Add")
 
     def action_re_add_path(self) -> None:
         self.notify("to implement")
@@ -398,17 +392,17 @@ class AddTab(Horizontal, TabIdMixin):
                 classes="filter-container border-bottom height-2",
                 id=self.filter_container_id("unwanted"),
             )
-        with Vertical(
+
+        with ScrollableContainer(
             id=self.tab_right_vertical,
             classes="tab-content-right top-border-title-style",
         ):
-            with ScrollableContainer(id=self.right_content_switcher_id):
-                yield PathView(
-                    id=self.path_view_id,
-                    auto_scroll=False,
-                    wrap=False,
-                    highlight=True,
-                )
+            yield PathView(
+                id=self.path_view_id,
+                auto_scroll=False,
+                wrap=False,
+                highlight=True,
+            )
 
     def on_mount(self) -> None:
         filtered_dir_tree = self.query_one(
