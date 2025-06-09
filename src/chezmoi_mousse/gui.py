@@ -10,7 +10,6 @@ from rich.segment import Segment, Segments
 from rich.style import Style
 from textual.app import App, ComposeResult
 from textual.containers import ScrollableContainer
-from textual.lazy import Lazy
 from textual.screen import Screen
 from textual.scrollbar import ScrollBar, ScrollBarRender
 from textual.theme import Theme
@@ -78,11 +77,11 @@ class MainScreen(Screen):
             with TabPane("Apply", id="apply_tab_pane"):
                 yield ApplyTab(id="apply_tab")
             with TabPane("Re-Add", id="re_add_tab_pane"):
-                yield Lazy(ReAddTab(id="re_add_tab"))
+                yield ReAddTab(id="re_add_tab")
             with TabPane("Add", id="add_tab_pane"):
-                yield Lazy(AddTab(id="add_tab"))
+                yield AddTab(id="add_tab")
             with TabPane("Doctor", id="doctor_tab_pane"):
-                yield Lazy(DoctorTab(id="doctor_tab"))
+                yield DoctorTab(id="doctor_tab")
             with TabPane("Diagram", id="diagram_tab_pane"):
                 yield ScrollableContainer(Static(FLOW, id="flow_diagram"))
             with TabPane("Log", id="rich_log_tab_pane"):
