@@ -1,4 +1,3 @@
-from pathlib import Path
 from typing import Literal
 
 type ApplyLabel = Literal["Apply"]
@@ -14,14 +13,6 @@ type ButtonLabel = Literal["Tree", "List", "Contents", "Diff", "Git-Log"]
 
 type ButtonArea = Literal["TopLeft", "TopRight"]
 
-type FilterName = Literal[
-    "expand_all", "unchanged", "unwanted", "unmanaged_dirs"
-]
+type FilterName = Literal["unchanged", "unwanted", "unmanaged_dirs"]
 
 type TreeName = Literal["ManagedTree", "ManTreeList", "DirTree"]
-
-type StatusGroup = Literal[
-    "apply_files", "apply_dirs", "re_add_files", "re_add_dirs"
-]
-
-type PathStatusDict = dict[StatusGroup, dict[Path, StatusCode]]

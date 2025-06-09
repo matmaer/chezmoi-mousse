@@ -186,17 +186,7 @@ class ApplyReAddSwithers(Horizontal, TabIdMixin):
                     classes="filter filter-label",
                 ).with_tooltip(tooltip=filter_data.unchanged.tooltip),
                 id=self.filter_container_id("unchanged"),
-                classes="filter-container padding-bottom-once border-top height-3",
-            )
-            yield Horizontal(
-                Switch(id=self.filter_id("expand_all"), classes="filter"),
-                Label(
-                    filter_data.expand_all.label,
-                    id=self.filter_label_id("expand_all"),
-                    classes="filter filter-label",
-                ).with_tooltip(tooltip=filter_data.expand_all.tooltip),
-                id=self.filter_container_id("expand_all"),
-                classes="filter-container border-bottom height-2",
+                classes="filter-container border-top border-bottom height-3",
             )
 
         with Vertical(id=self.tab_right_vertical, classes="tab-content-right"):
