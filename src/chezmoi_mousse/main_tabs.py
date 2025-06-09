@@ -408,17 +408,17 @@ class AddTab(Horizontal, TabIdMixin):
                 classes="filter-container border-bottom height-2",
                 id=self.filter_container_id("unwanted"),
             )
-
-        with ScrollableContainer(
+        with Vertical(
             id=self.tab_right_vertical,
             classes="tab-content-right top-border-title-style",
         ):
-            yield PathView(
-                id=self.path_view_id,
-                auto_scroll=False,
-                wrap=False,
-                highlight=True,
-            )
+            with ScrollableContainer(id=self.right_content_switcher_id):
+                yield PathView(
+                    id=self.path_view_id,
+                    auto_scroll=False,
+                    wrap=False,
+                    highlight=True,
+                )
 
     def on_mount(self) -> None:
         filtered_dir_tree = self.query_one(
