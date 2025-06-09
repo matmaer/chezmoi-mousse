@@ -1,5 +1,104 @@
+# Byte-compiled / optimized / DLL files
 __pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
 .venv/
-ignored/
-.vscode/
+.build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
 .coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+test-results/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# pytype
+.pytype/
+
+# VS Code
+.vscode/
+
+# PyCharm
+.idea/
+
+# Mac
+.DS_Store
+
+# Backup files
+*~
+*.bak
+*.swp
+*.swo
+
+# dotenv
+.env
+.env.*
+
+# Poetry
+poetry.lock
+
+# PDM
+pdm.lock
+__pypackages__/
+
+# Editor configs
+*.sublime-workspace
+*.sublime-project
+
+# Local configuration files
+*.local
+
+# System files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Misc
+*.log
