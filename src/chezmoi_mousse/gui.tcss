@@ -2,98 +2,129 @@
 /* tcss classes */
 /****************/
 
-.tab-content-left {
-  margin-right: 2;
-  width: 1fr;
-}
-.tab-content-right {
-  width: 2fr;
-}
-
-.content-switcher-left {}
-
-.content-switcher-right {}
-
-.tree-scrollable-container {}
-
-.tab-main-horizontal {
-  width: 1fr;
-  height: 1fr;
-}
-
-.tree {}
-
-/* applies to all Container classes that contain a single filter switch */
-.filter-container {
-  /* color of the label text */
-  background: $surface;
-  background-tint: $surface;
-  align: center middle;
-  padding-right: 2;
-
-  &.border-bottom {
-    border-bottom: inner $surface;
-  }
-
-  &.border-top {
-    border-top: inner $surface;
-  }
-
-  &.height-2 {
-    height: 2;
-  }
-
-  &.height-3 {
-    height: 3;
-  }
-
-  .filter {
-    background: $surface;
-    background-tint: $surface;
-
-    &.filter-label {
-      color: $foreground-darken-1;
-    }
-
-    &>.switch--slider {
-      color: $error-darken-2;
-    }
-    &.-on .switch--slider {
-      color: $success-darken-2;
-    }
-
-    &:hover {
-      &>.switch--slider {
-        color: $error;
-      }
-
-      &.-on>.switch--slider {
-        color: $success-lighten-1;
-      }
-    }
-
-    &:disabled {
-      &>.switch--slider {
-        color: $panel;
-      }
-    }
-  }
-}
-
 .top-border-title-style {
   border-top: solid $primary;
   border-title-align: center;
   border-title-style: bold;
+  width: auto;
 }
 
-TabButton {
-  /* assigned to the Button class within the Vertical container for a Button */
-  .tab-button {
+.top-border-title-style-right {
+  border-top: solid $primary;
+  border-title-align: center;
+  border-title-style: bold;
+  # width: auto;
+}
+
+.tab-content-right {
+  # margin-right: 2;
+  # width: auto;
+}
+.tab-content-left {
+  margin-right: 2;
+  width: auto;
+}
+.content-switcher-left {
+  width: auto;
+}
+.tree-scrollable-container {
+  width: auto;
+}
+
+.content-switcher-right {
+
+}
+.widget-right {
+  border: silver;
+}
+
+.add-tab-path-view-scrollable-container {
+  # width: auto;
+}
+.tree-widget {
+  width: auto;
+}
+
+.filter-group-vertical {
+  height: auto;
+  align: left bottom;
+  dock: bottom;
+  width: auto;
+
+  /* applies to all Container classes that contain a single filter switch */
+  .filter-horizontal {
+    /* color of the label text */
+    background: $surface;
+    background-tint: $surface;
     align: center middle;
+    padding-right: 2;
+    layout: horizontal;
+    width: auto;
+
+    &.border-bottom {
+      border-bottom: inner $surface;
+    }
+
+    &.border-top {
+      border-top: inner $surface;
+    }
+
+    &.height-2 {
+      height: 2;
+    }
+
+    &.height-3 {
+      height: 3;
+    }
+
+    &>.filter {
+      background: $surface;
+      background-tint: $surface;
+
+      &.filter-label {
+        color: $foreground-darken-1;
+      }
+
+      &>.switch--slider {
+        color: $error-darken-2;
+      }
+      &.-on .switch--slider {
+        color: $success-darken-2;
+      }
+
+      &:hover {
+        &>.switch--slider {
+          color: $error;
+        }
+
+        &.-on>.switch--slider {
+          color: $success-lighten-1;
+        }
+      }
+
+      &:disabled {
+        &>.switch--slider {
+          color: $panel;
+        }
+      }
+    }
+  }
+}
+
+/* assigned to TabButtonsGroup Horizontal parent class in super.init */
+.tab-buttons-horizontal {
+  # layout: horizontal;
+  align: center top;
+  height: 1;
+  width: auto;
+
+  .tab-button {
+    height: 1;
     /* default min width from textual is 16, setting to shortest button text */
     min-width: 4;
     /* setting the longest button text */
     max-width: 10;
+    width: auto;
     color: $text;
     text-style: none;
 
@@ -110,23 +141,14 @@ TabButton {
       }
     }
   }
-  &.tab-button-vertical {
-    align: center middle;
+
+  Vertical {
+    align: center top;
+    height: 1;
+    width: auto;
   }
+
 }
-
-
-/* assigned to TabButtonsGroup Horizontal parent class in super.init */
-.tab-buttons-horizontal {
-  height: 1;
-}
-
-# .tab-buttons-group {
-#   /* assigned to just one horizontal button container area */
-#   .tab-buttons-area-horizontal {
-#     width: auto;
-#   }
-# }
 
 AutoWarning {
   height: auto;
