@@ -30,7 +30,7 @@ Graphical user interface in the terminal for [chezmoi](https://github.com/twpayn
 - [x] `chezmoi unmanaged`
 
 
-## Supported features
+## Supported chezmoi features
 
 - [ ] file encryption
 - [ ] import files from archives
