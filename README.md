@@ -9,7 +9,7 @@ Graphical user interface in the terminal for [chezmoi](https://github.com/twpayn
 - [Textual](https://textual.textualize.io/)
 - [Chezmoi](https://www.chezmoi.io/)
 
-## Supported commands
+## Chezmoi commands
 
 - [ ] `chezmoi add`
 - [ ] `chezmoi apply`
@@ -30,7 +30,7 @@ Graphical user interface in the terminal for [chezmoi](https://github.com/twpayn
 - [x] `chezmoi unmanaged`
 
 
-## Supported chezmoi features
+### implemented features
 
 - [ ] file encryption
 - [ ] import files from archives
@@ -39,7 +39,6 @@ Graphical user interface in the terminal for [chezmoi](https://github.com/twpayn
 - [ ] templates
 - [x] filemode
 - [x] read commands
-
 
 ## Packaging
 
