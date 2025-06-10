@@ -43,7 +43,7 @@ Graphical user interface in the terminal for [chezmoi](https://github.com/twpayn
 
 ## Packaging
 
-- [x] Vindows
+- [x] Windows
   - [x] unpackaged
   - [ ] executable
 - [x] Apple
