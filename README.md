@@ -40,15 +40,19 @@ Graphical user interface in the terminal for [chezmoi](https://github.com/twpayn
 - [x] filemode
 - [x] read commands
 
-## Packaging
+## Start
 
+- [x] python -m chezmoi_mousse
 - [x] Windows
-  - [x] unpackaged
+  - [ ] app store
   - [ ] executable
+  - [x] unpackaged
 - [x] Apple
-  - [x] unpackaged
+  - [ ] app store
   - [ ] executable
+  - [x] unpackaged
 - [x] Linux
-  - [x] unpackaged
   - [ ] executable
-- [ ] https://github.com/actions/attest-build-provenance
+  - [ ] flatpak
+  - [ ] snap
+  - [x] unpackaged
