@@ -61,34 +61,6 @@
         color: $foreground-darken-1;
         padding-right: 2;
       }
-
-      &>.filter-switch {
-        background: $surface;
-        background-tint: $surface;
-
-        &>.switch--slider {
-          color: $error-darken-2;
-        }
-        &.-on .switch--slider {
-          color: $success-darken-2;
-        }
-
-        &:hover {
-          &>.switch--slider {
-            color: $error;
-          }
-
-          &.-on>.switch--slider {
-            color: $success-lighten-1;
-          }
-        }
-
-        &:disabled {
-          &>.switch--slider {
-            color: $panel;
-          }
-        }
-      }
     }
   }
 }
@@ -205,6 +177,34 @@ Header {
   color: $primary;
   height: 2;
   text-style: bold;
+}
+
+Switch {
+  background: $surface;
+  background-tint: $surface;
+
+  &>.switch--slider {
+    color: $error-darken-2;
+  }
+  &.-on .switch--slider {
+    color: $success-darken-2;
+  }
+
+  &:hover {
+    &>.switch--slider {
+      color: $error;
+    }
+
+    &.-on>.switch--slider {
+      color: $success-lighten-1;
+    }
+  }
+
+  &:disabled {
+    &>.switch--slider {
+      color: $panel;
+    }
+  }
 }
 
 Toast {

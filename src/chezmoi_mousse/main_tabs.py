@@ -157,10 +157,7 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
                     id=self.filter_horizontal_id("unchanged"),
                     classes="filter-horizontal",
                 ):
-                    yield Switch(
-                        id=self.filter_switch_id("unchanged"),
-                        classes="filter-switch",
-                    )
+                    yield Switch(id=self.filter_switch_id("unchanged"))
                     yield Label(
                         filter_data.unchanged.label,
                         id=self.filter_label_id("unchanged"),
@@ -367,10 +364,7 @@ class AddTab(Horizontal, TabIdMixin):
                     id=self.filter_horizontal_id("unmanaged_dirs"),
                     classes="filter-horizontal padding-bottom-once",
                 ):
-                    yield Switch(
-                        id=self.filter_switch_id("unmanaged_dirs"),
-                        classes="filter-switch",
-                    )
+                    yield Switch(id=self.filter_switch_id("unmanaged_dirs"))
                     yield Label(
                         filter_data.unmanaged_dirs.label,
                         id=self.filter_label_id("unmanaged_dirs"),
@@ -380,10 +374,7 @@ class AddTab(Horizontal, TabIdMixin):
                     id=self.filter_horizontal_id("unwanted"),
                     classes="filter-horizontal",
                 ):
-                    yield Switch(
-                        id=self.filter_switch_id("unwanted"),
-                        classes="filter-switch",
-                    )
+                    yield Switch(id=self.filter_switch_id("unwanted"))
                     yield Label(
                         filter_data.unwanted.label,
                         id=self.filter_label_id("unwanted"),
