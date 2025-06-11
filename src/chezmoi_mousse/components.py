@@ -98,7 +98,6 @@ class PathView(RichLog):
     BINDINGS = [Binding(key="M,m", action="maximize", description="maximize")]
 
     path: reactive[Path | None] = reactive(None, init=False)
-    tab: reactive[TabLabel] = reactive("Apply", init=False)
 
     def on_mount(self) -> None:
         text = "Click a file or directory, \nto show its contents."
@@ -171,13 +170,6 @@ class PathView(RichLog):
                 self.write(f"Managed directory: {self.path}")
             else:
                 self.write(f"Unmanaged directory: {self.path}")
-
-            if self.tab == "Add":
-                self.write(
-                    '(switch to "Apply" or "ReAdd" tab to apply or re-add)'
-                )
-                self.write_managed_files_in_dir()
-                self.write_managed_dirs_in_dir()
 
         except OSError as error:
             text = Text(f"Error reading {self.path}: {error}")
@@ -265,7 +257,7 @@ class ManagedTree(Tree[NodeData]):
     unchanged: reactive[bool] = reactive(False, init=False)
     expand_all: reactive[bool] = reactive(False, init=False)
 
-    def __init__(self, tab, flat_list=False, **kwargs) -> None:
+    def __init__(self, tab: TabLabel, flat_list=False, **kwargs) -> None:
         self.tab: TabLabel = tab
         self.flat_list: bool = flat_list
         root_node_data = NodeData(
@@ -481,6 +473,10 @@ class FilteredDirTree(DirectoryTree):
 
     unmanaged_dirs = reactive(False)
     unwanted = reactive(False)
+
+    def on_mount(self) -> None:
+        self.show_root = False
+        self.guide_depth = 3
 
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
         managed_dirs = chezmoi.managed_dir_paths

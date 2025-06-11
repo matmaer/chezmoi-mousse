@@ -2,132 +2,106 @@
 /* tcss classes */
 /****************/
 
-.top-border-title-style {
+.path-view {}
+.diff-view {}
+.git-log {}
+.tab-right-vertical {}
+.content-switcher-right {}
+
+.top-border-title {
   border-top: solid $primary;
   border-title-align: center;
   border-title-style: bold;
-  width: auto;
 }
 
-.top-border-title-style-right {
-  border-top: solid $primary;
-  border-title-align: center;
-  border-title-style: bold;
-  # width: auto;
-}
-
-.tab-content-right {
-  # margin-right: 2;
-  # width: auto;
-}
-.tab-content-left {
+.tab-left-vertical {
   margin-right: 2;
   width: auto;
-}
-.content-switcher-left {
-  width: auto;
-}
-.tree-scrollable-container {
-  width: auto;
-}
+  max-width: 50%;
 
-.content-switcher-right {
+  &.apply-re-add-min-width {
+    min-width: 24;
+  }
 
-}
-.widget-right {
-  border: silver;
-}
+  &.add-tab-min-width {
+    min-width: 29;
+  }
 
-.add-tab-path-view-scrollable-container {
-  # width: auto;
-}
-.tree-widget {
-  width: auto;
-}
+  &>.content-switcher-left {
+    width: auto;
+    min-width: 24;
+    &>.tree-widget {
+      min-width: 24;
+      width: auto;
+    }
+  }
 
-.filter-group-vertical {
-  height: auto;
-  align: left bottom;
-  dock: bottom;
-  width: auto;
+  &>.dir-tree-widget {
+    min-width: 29;
+    width: auto;
+  }
 
-  /* applies to all Container classes that contain a single filter switch */
-  .filter-horizontal {
-    /* color of the label text */
+  &>.filters-vertical {
+    width: auto;
+    dock: bottom;
+    border-bottom: inner $surface;
+    border-top: inner $surface;
     background: $surface;
     background-tint: $surface;
-    align: center middle;
-    padding-right: 2;
-    layout: horizontal;
-    width: auto;
 
-    &.border-bottom {
-      border-bottom: inner $surface;
-    }
+    /* applies to all Container classes that contain a single filter switch */
+    &>.filter-horizontal {
+      width: auto;
 
-    &.border-top {
-      border-top: inner $surface;
-    }
+      &.padding-bottom-once {
+        padding-bottom: 1;
+      }
 
-    &.height-2 {
-      height: 2;
-    }
-
-    &.height-3 {
-      height: 3;
-    }
-
-    &>.filter {
-      background: $surface;
-      background-tint: $surface;
-
-      &.filter-label {
+      &>.filter-label {
         color: $foreground-darken-1;
+        padding-right: 2;
       }
 
-      &>.switch--slider {
-        color: $error-darken-2;
-      }
-      &.-on .switch--slider {
-        color: $success-darken-2;
-      }
+      &>.filter-switch {
+        background: $surface;
+        background-tint: $surface;
 
-      &:hover {
         &>.switch--slider {
-          color: $error;
+          color: $error-darken-2;
+        }
+        &.-on .switch--slider {
+          color: $success-darken-2;
         }
 
-        &.-on>.switch--slider {
-          color: $success-lighten-1;
-        }
-      }
+        &:hover {
+          &>.switch--slider {
+            color: $error;
+          }
 
-      &:disabled {
-        &>.switch--slider {
-          color: $panel;
+          &.-on>.switch--slider {
+            color: $success-lighten-1;
+          }
+        }
+
+        &:disabled {
+          &>.switch--slider {
+            color: $panel;
+          }
         }
       }
     }
   }
 }
-
 /* assigned to TabButtonsGroup Horizontal parent class in super.init */
 .tab-buttons-horizontal {
-  # layout: horizontal;
   align: center top;
-  height: 1;
   width: auto;
-
-  .tab-button {
-    height: 1;
+  height: 1;
+  &>.tab-button {
     /* default min width from textual is 16, setting to shortest button text */
     min-width: 4;
-    /* setting the longest button text */
-    max-width: 10;
-    width: auto;
     color: $text;
     text-style: none;
-
     &:hover {
     text-style: bold;
     }
@@ -141,13 +115,6 @@
       }
     }
   }
-
-  Vertical {
-    align: center top;
-    height: 1;
-    width: auto;
-  }
-
 }
 
 AutoWarning {
@@ -289,17 +256,8 @@ Tree {
 
 /*
 Operate {
-  background-tint: $surface;
-  background: $surface;
 
   & .operate-button {
-    border-top: heavy $primary;
-    background-tint: $surface;
-    background: $surface;
-    color: $primary;
-    margin: 0 7 0 7;
-    width: 8;
-    text-style: none;
 
     &:disabled {
       text-opacity: 0.6;
@@ -323,11 +281,6 @@ Operate {
     height: 3;
     align: center bottom;
     dock: bottom;
-  }
-
-  & .operate-collapsible {
-    background-tint: $surface;
-    background: $surface;
   }
 
   & .operate-checkbox {
@@ -356,7 +309,6 @@ Operate {
     }
   }
 }
-
 */
 
 
