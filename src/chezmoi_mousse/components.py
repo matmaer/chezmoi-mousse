@@ -268,15 +268,14 @@ class ManagedTree(Tree[NodeData]):
     def __init__(self, tab, flat_list=False, **kwargs) -> None:
         self.tab: TabLabel = tab
         self.flat_list: bool = flat_list
-        self.suspend_user_state_save: bool = False
-        super().__init__(label="root", **kwargs)
-        self.root.data = NodeData(
+        root_node_data = NodeData(
             # act as if chezmoi.dest_dir always has a modified status
             path=chezmoi.dest_dir,
             found=True,
             is_file=False,
             status="M",
         )
+        super().__init__(label="root", data=root_node_data, **kwargs)
 
     def on_mount(self) -> None:
         self.node_colors = {
