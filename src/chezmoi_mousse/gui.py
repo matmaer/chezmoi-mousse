@@ -65,7 +65,6 @@ class CommandLog(RichLog):
         def log_callback(chezmoi_io: tuple[list, str]) -> None:
             self.add(chezmoi_io)
 
-        global command_log_callback
         chezmoi_mousse.chezmoi.command_log_callback = log_callback
 
 

@@ -2,101 +2,106 @@
 /* tcss classes */
 /****************/
 
-.tab-content-left {
-  margin-right: 2;
-  width: 1fr;
-}
-.tab-content-right {
-  width: 2fr;
-}
-
-.content-switcher-left {}
-
+.path-view {}
+.diff-view {}
+.git-log {}
+.tab-right-vertical {}
 .content-switcher-right {}
 
-.tree-scrollable-container {}
-
-.tab-main-horizontal {
-  width: 1fr;
-  height: 1fr;
-}
-
-.tree {}
-
-/* applies to all Container classes that contain a single filter switch */
-.filter-container {
-  /* color of the label text */
-  background: $surface;
-  background-tint: $surface;
-  align: center middle;
-  padding-right: 2;
-
-  &.border-bottom {
-    border-bottom: inner $surface;
-  }
-
-  &.border-top {
-    border-top: inner $surface;
-  }
-
-  &.height-2 {
-    height: 2;
-  }
-
-  &.height-3 {
-    height: 3;
-  }
-
-  .filter {
-    background: $surface;
-    background-tint: $surface;
-
-    &.filter-label {
-      color: $foreground-darken-1;
-    }
-
-    &>.switch--slider {
-      color: $error-darken-2;
-    }
-    &.-on .switch--slider {
-      color: $success-darken-2;
-    }
-
-    &:hover {
-      &>.switch--slider {
-        color: $error;
-      }
-
-      &.-on>.switch--slider {
-        color: $success-lighten-1;
-      }
-    }
-
-    &:disabled {
-      &>.switch--slider {
-        color: $panel;
-      }
-    }
-  }
-}
-
-.top-border-title-style {
+.top-border-title {
   border-top: solid $primary;
   border-title-align: center;
   border-title-style: bold;
 }
 
-TabButton {
-  /* assigned to the Button class within the Vertical container for a Button */
-  .tab-button {
-    align: center middle;
+.tab-left-vertical {
+  margin-right: 2;
+  width: auto;
+  max-width: 50%;
+
+  &.apply-re-add-min-width {
+    min-width: 24;
+  }
+
+  &.add-tab-min-width {
+    min-width: 29;
+  }
+
+  &>.content-switcher-left {
+    width: auto;
+    min-width: 24;
+    &>.tree-widget {
+      min-width: 24;
+      width: auto;
+    }
+  }
+
+  &>.dir-tree-widget {
+    min-width: 29;
+    width: auto;
+  }
+
+  &>.filters-vertical {
+    width: auto;
+    dock: bottom;
+    border-bottom: inner $surface;
+    border-top: inner $surface;
+    background: $surface;
+    background-tint: $surface;
+
+    /* applies to all Container classes that contain a single filter switch */
+    &>.filter-horizontal {
+      width: auto;
+
+      &.padding-bottom-once {
+        padding-bottom: 1;
+      }
+
+      &>.filter-label {
+        color: $foreground-darken-1;
+        padding-right: 2;
+      }
+
+      &>.filter-switch {
+        background: $surface;
+        background-tint: $surface;
+
+        &>.switch--slider {
+          color: $error-darken-2;
+        }
+        &.-on .switch--slider {
+          color: $success-darken-2;
+        }
+
+        &:hover {
+          &>.switch--slider {
+            color: $error;
+          }
+
+          &.-on>.switch--slider {
+            color: $success-lighten-1;
+          }
+        }
+
+        &:disabled {
+          &>.switch--slider {
+            color: $panel;
+          }
+        }
+      }
+    }
+  }
+}
+/* assigned to TabButtonsGroup Horizontal parent class in super.init */
+.tab-buttons-horizontal {
+  align: center top;
+  width: auto;
+  height: 1;
+  &>.tab-button {
     /* default min width from textual is 16, setting to shortest button text */
     min-width: 4;
-    /* setting the longest button text */
-    max-width: 10;
     color: $text;
     text-style: none;
-
     &:hover {
     text-style: bold;
     }
@@ -110,23 +115,7 @@ TabButton {
       }
     }
   }
-  &.tab-button-vertical {
-    align: center middle;
-  }
 }
-
-
-/* assigned to TabButtonsGroup Horizontal parent class in super.init */
-.tab-buttons-horizontal {
-  height: 1;
-}
-
-# .tab-buttons-group {
-#   /* assigned to just one horizontal button container area */
-#   .tab-buttons-area-horizontal {
-#     width: auto;
-#   }
-# }
 
 AutoWarning {
   height: auto;
@@ -267,17 +256,8 @@ Tree {
 
 /*
 Operate {
-  background-tint: $surface;
-  background: $surface;
 
   & .operate-button {
-    border-top: heavy $primary;
-    background-tint: $surface;
-    background: $surface;
-    color: $primary;
-    margin: 0 7 0 7;
-    width: 8;
-    text-style: none;
 
     &:disabled {
       text-opacity: 0.6;
@@ -301,11 +281,6 @@ Operate {
     height: 3;
     align: center bottom;
     dock: bottom;
-  }
-
-  & .operate-collapsible {
-    background-tint: $surface;
-    background: $surface;
   }
 
   & .operate-checkbox {
@@ -334,7 +309,6 @@ Operate {
     }
   }
 }
-
 */
 
 
