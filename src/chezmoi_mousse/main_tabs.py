@@ -42,25 +42,11 @@ from chezmoi_mousse.components import (
     GitLog,
     ManagedTree,
     PathView,
+    TabButton,
     TabIdMixin,
 )
 from chezmoi_mousse.config import filter_data, pw_mgr_info
-from chezmoi_mousse.mouse_types import ButtonLabel, FilterName, TabLabel
-
-
-class TabButton(Button, TabIdMixin):
-
-    def __init__(self, button_label: ButtonLabel, tab: TabLabel) -> None:
-        TabIdMixin.__init__(self, tab)
-        super().__init__(
-            label=button_label,
-            id=self.button_id(button_label),
-            classes="tab-button",
-        )
-
-    def on_mount(self) -> None:
-        self.active_effect_duration = 0
-        self.compact = True
+from chezmoi_mousse.mouse_types import FilterName, TabLabel
 
 
 class FilterSwitch(HorizontalGroup, TabIdMixin):
@@ -154,8 +140,8 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
                 id=self.buttons_horizontal_id("TopLeft"),
                 classes="tab-buttons-horizontal",
             ):
-                yield TabButton("Tree", tab=self.tab)
-                yield TabButton("List", tab=self.tab)
+                yield TabButton("Tree", tab=self.tab, classes="tab-button")
+                yield TabButton("List", tab=self.tab, classes="tab-button")
             with ContentSwitcher(
                 id=self.content_switcher_id("Left"),
                 initial=self.component_id("ManagedTree"),
@@ -172,9 +158,9 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
                 id=self.buttons_horizontal_id("TopRight"),
                 classes="tab-buttons-horizontal",
             ):
-                yield TabButton("Contents", tab=self.tab)
-                yield TabButton("Diff", tab=self.tab)
-                yield TabButton("Git-Log", tab=self.tab)
+                yield TabButton("Contents", tab=self.tab, classes="tab-button")
+                yield TabButton("Diff", tab=self.tab, classes="tab-button")
+                yield TabButton("Git-Log", tab=self.tab, classes="tab-button")
 
             with ContentSwitcher(
                 id=self.content_switcher_id("Right"),

@@ -18,7 +18,14 @@ from rich.text import Text
 from textual.binding import Binding
 from textual.content import Content
 from textual.reactive import reactive
-from textual.widgets import DataTable, DirectoryTree, RichLog, Static, Tree
+from textual.widgets import (
+    Button,
+    DataTable,
+    DirectoryTree,
+    RichLog,
+    Static,
+    Tree,
+)
 from textual.widgets.tree import TreeNode
 
 import chezmoi_mousse.theme as theme
@@ -78,6 +85,21 @@ class TabIdMixin:
 
     def filter_group_id(self, group: FilterGroups) -> str:
         return f"{self.tab}_{group}_filter_vertical_group"
+
+
+class TabButton(Button, TabIdMixin):
+
+    def __init__(
+        self, button_label: ButtonLabel, tab: TabLabel, **kwargs
+    ) -> None:
+        TabIdMixin.__init__(self, tab)
+        super().__init__(
+            label=button_label, id=self.button_id(button_label), **kwargs
+        )
+
+    def on_mount(self) -> None:
+        self.active_effect_duration = 0
+        self.compact = True
 
 
 class GitLog(DataTable, TabIdMixin):
