@@ -43,7 +43,7 @@ filter_data = FilterSwitch(
     unchanged=Filter(
         # trailing spaces to easily have the leading edge align with
         # "expand all nodes" when centering both switches
-        label="show unchanged  ",
+        label="show unchanged",
         tooltip="Include files unchanged files which are not found in the 'chezmoi status' output.",
     ),
 )
