@@ -11,6 +11,7 @@ type ComponentName = Literal[TreeName, "PathView", "DiffView", "GitLog"]
 type FilterName = Literal[
     "expand_all", "unchanged", "unwanted", "unmanaged_dirs"
 ]
+type FilterGroups = Literal["dir-tree-filters", "tree-filters", "list-filters"]
 type StatusCode = Literal["A", "D", "M", "X"]
 type TabLabel = Literal["Apply", "Re-Add", "Add"]
 type TabSide = Literal["Left", "Right"]

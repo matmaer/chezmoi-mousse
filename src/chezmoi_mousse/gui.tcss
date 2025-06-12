@@ -43,27 +43,41 @@
     max-width: 100%;
   }
 
-  &>.filters-vertical {
+}
+
+
+.filters-vertical {
+  align: left bottom;
+  max-width: 80%;
+  background-tint: $surface;
+  background: $surface;
+  border-right: round $primary;
+  border-bottom: round $primary;
+  border-top: round $primary;
+  dock: bottom;
+  layer: filter_switches;
+  margin-bottom: 3;
+  # max-width: 80%;
+  padding-right: 2;
+  width: auto;
+  /* offset-x: -100%; out if view if docked left */
+  offset-x: -100%;
+  transition: offset 380ms;
+
+  /* applies to all Container classes that contain a single filter switch */
+  &>.filter-horizontal {
     width: auto;
-    dock: bottom;
-    border-bottom: inner $surface;
-    border-top: inner $surface;
-    background: $surface;
-    background-tint: $surface;
-    padding-right: 2;
 
-    /* applies to all Container classes that contain a single filter switch */
-    &>.filter-horizontal {
-      width: auto;
-
-      &.padding-bottom-once {
-        padding-bottom: 1;
-      }
-
-      &>.filter-label {
-        color: $foreground-darken-1;
-      }
+    &.padding-bottom-once {
+      padding-bottom: 1;
     }
+
+    &>.filter-label {
+      color: $foreground-darken-1;
+    }
+  }
+  &.-visible {
+    offset-x: 0%;
   }
 }
 
@@ -72,8 +86,8 @@
   width: auto;
   height: 1;
   &>.tab-button {
-    /* default min width from textual is 16, setting to shortest button text */
-    min-width: 4;
+    /* default min width from textual is 16, setting 1 for the burger button */
+    min-width: 1;
     color: $text;
     text-style: none;
     &:hover {
@@ -91,6 +105,7 @@
   }
 }
 
+
 AutoWarning {
   height: auto;
   padding: 0 1 0 1;
@@ -101,6 +116,7 @@ AutoWarning {
 }
 
 MainScreen {
+  layers: filter_switches
 }
 
 ModalScreen {
@@ -312,5 +328,4 @@ Operate {
   }
 }
 */
-
 

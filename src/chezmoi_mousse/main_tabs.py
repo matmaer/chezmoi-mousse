@@ -48,10 +48,10 @@ from chezmoi_mousse.mouse_types import (
     ButtonArea,
     ButtonLabel,
     ComponentName,
+    FilterGroups,
     FilterName,
     TabLabel,
     TabSide,
-    TreeName,
 )
 
 
@@ -91,10 +91,8 @@ class TabIdMixin:
         # individually, to test when applying tcss classes
         return f"{self.tab}_{filter_name}_filter_label"
 
-    def filter_switch_id(
-        self, filter_name: FilterName, tree_name: TreeName
-    ) -> str:
-        return f"{self.tab}_{filter_name}_{tree_name}_filter_switch"
+    def filter_switch_id(self, filter_name: FilterName) -> str:
+        return f"{self.tab}_{filter_name}_filter_switch"
 
     def tab_vertical_id(self, tab_side: TabSide) -> str:
         """Generate an id for each vertical container within a tab."""
@@ -103,12 +101,14 @@ class TabIdMixin:
     def tree_tab_switchers_id(self, tab: TabLabel) -> str:
         return f"{tab}_tree_tab_switchers"
 
+    def filter_group_id(self, group: FilterGroups) -> str:
+        return f"{self.tab}_{group}_filter_vertical_group"
+
 
 class TabButton(Button, TabIdMixin):
 
     def __init__(self, button_label: ButtonLabel, tab: TabLabel) -> None:
         TabIdMixin.__init__(self, tab)
-        # self.button_id = self.button_id(button_label)
         super().__init__(
             label=button_label,
             id=self.button_id(button_label),
@@ -123,27 +123,77 @@ class TabButton(Button, TabIdMixin):
 class FilterSwitch(HorizontalGroup, TabIdMixin):
 
     def __init__(
-        self,
-        tab: TabLabel,
-        tree_name: TreeName,
-        switch_name: FilterName,
-        **kwargs,
+        self, tab: TabLabel, switch_name: FilterName, **kwargs
     ) -> None:
         TabIdMixin.__init__(self, tab)
         self.switch_name: FilterName = switch_name
-        self.tree_name: TreeName = tree_name
         self.label = filter_data[self.switch_name].label
         super().__init__(id=self.filter_horizontal_id(switch_name), **kwargs)
 
     def compose(self) -> ComposeResult:
-        yield Switch(
-            id=self.filter_switch_id(self.switch_name, self.tree_name)
-        )
+        yield Switch(id=self.filter_switch_id(self.switch_name))
         yield Label(
             filter_data[self.switch_name].label,
             id=self.filter_label_id(self.switch_name),
             classes="filter-label",
         ).with_tooltip(tooltip=filter_data[self.switch_name].tooltip)
+
+
+class TreeFilterSlider(VerticalGroup, TabIdMixin):
+
+    def __init__(self, tab: TabLabel, slider_name: str) -> None:
+        TabIdMixin.__init__(self, tab)
+        self.slider_name = slider_name
+        super().__init__(
+            id=self.filters_vertical_id(self.tab), classes="filters-vertical"
+        )
+
+    def compose(self) -> ComposeResult:
+        yield FilterSwitch(
+            tab=self.tab,
+            switch_name="unchanged",
+            classes="filter-horizontal padding-bottom-once",
+        )
+        yield FilterSwitch(
+            tab=self.tab, switch_name="expand_all", classes="filter-horizontal"
+        )
+
+
+class AddFilterSlider(VerticalGroup, TabIdMixin):
+
+    def __init__(self, tab: TabLabel, slider_name: str) -> None:
+        TabIdMixin.__init__(self, tab)
+        self.slider_name = slider_name
+        super().__init__(
+            id=self.filters_vertical_id(self.tab), classes="filters-vertical"
+        )
+
+    def compose(self) -> ComposeResult:
+        yield FilterSwitch(
+            tab=self.tab,
+            switch_name="unmanaged_dirs",
+            classes="filter-horizontal padding-bottom-once",
+        )
+        yield FilterSwitch(
+            tab=self.tab, switch_name="unwanted", classes="filter-horizontal"
+        )
+
+
+class TreeTabFilterSliders(HorizontalGroup, TabIdMixin):
+
+    def __init__(self, tab: TabLabel, **kwargs) -> None:
+        TabIdMixin.__init__(self, tab)
+        super().__init__(id=self.filters_vertical_id(self.tab), **kwargs)
+
+    def compose(self) -> ComposeResult:
+        yield FilterSwitch(
+            tab=self.tab,
+            switch_name="unmanaged_dirs",
+            classes="filter-horizontal padding-bottom-once",
+        )
+        yield FilterSwitch(
+            tab=self.tab, switch_name="unwanted", classes="filter-horizontal"
+        )
 
 
 class TreeTabSwitchers(Horizontal, TabIdMixin):
@@ -183,22 +233,6 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
                     tab=self.tab,
                     classes="tree-widget",
                 )
-            with VerticalGroup(
-                id=self.filters_vertical_id(self.tab),
-                classes="filters-vertical",
-            ):
-                yield FilterSwitch(
-                    tab=self.tab,
-                    tree_name="ManagedTree",
-                    switch_name="unchanged",
-                    classes="filter-horizontal padding-bottom-once",
-                )
-                yield FilterSwitch(
-                    tab=self.tab,
-                    tree_name="ManagedTree",
-                    switch_name="expand_all",
-                    classes="filter-horizontal",
-                )
 
         with Vertical(
             id=self.tab_vertical_id("Right"), classes="tab-right-vertical"
@@ -230,6 +264,8 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
                 )
                 yield GitLog(id=self.component_id("GitLog"), classes="git-log")
 
+        yield TreeFilterSlider(tab=self.tab, slider_name="tree-filters")
+
     def on_mount(self) -> None:
         self.query_one(f"#{self.button_id('Tree')}").add_class("last-clicked")
         self.query_one(
@@ -241,6 +277,10 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
         self.query_one(
             f"#{self.content_switcher_id("Right")}", ContentSwitcher
         ).border_title = " path view "
+        # self.component_id("ManagedTree").set_focus()
+        self.screen.set_focus(
+            self.query_one(f"#{self.component_id('ManagedTree')}", ManagedTree)
+        )
 
     def update_button_classes(self, button_id: str) -> None:
         lc = "last-clicked"
@@ -312,16 +352,24 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
         event.stop()
-        if event.switch.id == self.filter_switch_id(
-            "unchanged", "ManagedTree"
-        ):
+        if event.switch.id == self.filter_switch_id("unchanged"):
             self.query_one(
                 f"#{self.component_id('ManagedTree')}", ManagedTree
             ).unchanged = event.value
-        if event.switch.id == self.filter_switch_id("unchanged", "FlatTree"):
+        elif event.switch.id == self.filter_switch_id("unchanged"):
             self.query_one(
                 f"#{self.component_id('FlatTree')}", FlatTree
             ).unchanged = event.value
+        elif event.switch.id == self.filter_switch_id("expand_all"):
+            self.notify(f"Expand all: {event.value}")
+            if event.value:
+                self.query_one(
+                    f"#{self.content_switcher_id("Left")}", ContentSwitcher
+                ).current = self.component_id("ExpandedTree")
+            elif not event.value:
+                self.query_one(
+                    f"#{self.content_switcher_id("Left")}", ContentSwitcher
+                ).current = self.component_id("ManagedTree")
 
 
 class ApplyTab(Container, TabIdMixin):
@@ -332,7 +380,13 @@ class ApplyTab(Container, TabIdMixin):
             action="apply_path",
             description="chezmoi-apply",
             tooltip="write to dotfiles from your chezmoi repository",
-        )
+        ),
+        Binding(
+            key="F,f",
+            action="toggle_filter_slider",
+            description="toggle-filters",
+            tooltip="toggle filters for this tree in/out of view",
+        ),
     ]
 
     def __init__(self, **kwargs) -> None:
@@ -345,16 +399,22 @@ class ApplyTab(Container, TabIdMixin):
     def action_apply_path(self) -> None:
         self.notify("to implement")
 
+    def action_toggle_filter_slider(self) -> None:
+        """Toggle the visibility of the filter slider."""
+        self.query_one(
+            f"#{self.filters_vertical_id(self.tab)}", VerticalGroup
+        ).toggle_class("-visible")
+
 
 class ReAddTab(Container, TabIdMixin):
 
     BINDINGS = [
+        Binding(key="A,a", action="re_add_path", description="chezmoi-re-add"),
         Binding(
-            key="A,a",
-            action="re_add_path",
-            description="chezmoi-re-add",
-            tooltip="overwrite chezmoi repository with dotfile on disk",
-        )
+            key="F,f",
+            action="toggle_filter_slider",
+            description="toggle-filters",
+        ),
     ]
 
     def __init__(self, **kwargs) -> None:
@@ -367,16 +427,22 @@ class ReAddTab(Container, TabIdMixin):
     def action_re_add_path(self) -> None:
         self.notify("to implement")
 
+    def action_toggle_filter_slider(self) -> None:
+        """Toggle the visibility of the filter slider."""
+        self.query_one(
+            f"#{self.filters_vertical_id(self.tab)}", VerticalGroup
+        ).toggle_class("-visible")
+
 
 class AddTab(Horizontal, TabIdMixin):
 
     BINDINGS = [
+        Binding(key="A,a", action="add_path", description="chezmoi-add"),
         Binding(
-            key="A,a",
-            action="add_path",
-            description="chezmoi-add",
-            tooltip="add new file to your chezmoi repository",
-        )
+            key="F,f",
+            action="toggle_filter_slider",
+            description="toggle-filters",
+        ),
     ]
 
     def __init__(self, **kwargs) -> None:
@@ -393,21 +459,20 @@ class AddTab(Horizontal, TabIdMixin):
                 id=self.component_id("FilteredDirTree"),
                 classes="dir-tree-widget top-border-title",
             )
-            with VerticalGroup(
-                id=self.filters_vertical_id("Add"), classes="filters-vertical"
-            ):
-                yield FilterSwitch(
-                    tab=self.tab,
-                    tree_name="FilteredDirTree",
-                    switch_name="unmanaged_dirs",
-                    classes="filter-horizontal padding-bottom-once",
-                )
-                yield FilterSwitch(
-                    tab=self.tab,
-                    tree_name="FilteredDirTree",
-                    switch_name="unwanted",
-                    classes="filter-horizontal",
-                )
+
+            # with VerticalGroup(
+            #     id=self.filters_vertical_id("Add"), classes="filters-vertical"
+            # ):
+            #     yield FilterSwitch(
+            #         tab=self.tab,
+            #         switch_name="unmanaged_dirs",
+            #         classes="filter-horizontal padding-bottom-once",
+            #     )
+            #     yield FilterSwitch(
+            #         tab=self.tab,
+            #         switch_name="unwanted",
+            #         classes="filter-horizontal",
+            #     )
 
         with Vertical(
             id=self.tab_vertical_id("Right"), classes="tab-right-vertical"
@@ -419,6 +484,7 @@ class AddTab(Horizontal, TabIdMixin):
                 highlight=True,
                 classes="path-view top-border-title",
             )
+        yield AddFilterSlider(tab=self.tab, slider_name="dir-tree-filters")
 
     def on_mount(self) -> None:
         self.query_one(
@@ -460,19 +526,21 @@ class AddTab(Horizontal, TabIdMixin):
         tree = self.query_one(
             f"#{self.component_id("FilteredDirTree")}", FilteredDirTree
         )
-        if event.switch.id == self.filter_switch_id(
-            "unmanaged_dirs", "FilteredDirTree"
-        ):
+        if event.switch.id == self.filter_switch_id("unmanaged_dirs"):
             tree.unmanaged_dirs = event.value
             tree.reload()
-        elif event.switch.id == self.filter_switch_id(
-            "unwanted", "FilteredDirTree"
-        ):
+        elif event.switch.id == self.filter_switch_id("unwanted"):
             tree.unwanted = event.value
             tree.reload()
 
     def action_add_path(self) -> None:
         self.notify(f"to_implement: {self.tab} tab action 'add_path'")
+
+    def action_toggle_filter_slider(self) -> None:
+        """Toggle the visibility of the filter slider."""
+        self.query_one(
+            f"#{self.filters_vertical_id(self.tab)}", VerticalGroup
+        ).toggle_class("-visible")
 
 
 class DoctorTab(VerticalScroll):
