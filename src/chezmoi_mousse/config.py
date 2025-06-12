@@ -30,7 +30,7 @@ filter_data = {
     ),
     "expand_all": Filter(
         tooltip=("Expand all directories in the Tree view."),
-        label="expand all nodes",
+        label="expand all",
     ),
     "unchanged": Filter(
         label="show unchanged",

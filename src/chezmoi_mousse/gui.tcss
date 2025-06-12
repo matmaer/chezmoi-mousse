@@ -186,7 +186,7 @@ Switch {
   background-tint: $surface;
 
   &>.switch--slider {
-    color: $error-darken-2;
+    color: $error-darken-3;
   }
   &.-on .switch--slider {
     color: $success-darken-2;
@@ -194,7 +194,7 @@ Switch {
 
   &:hover {
     &>.switch--slider {
-      color: $error;
+      color: $error-darken-1;
     }
 
     &.-on>.switch--slider {
