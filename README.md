@@ -15,6 +15,7 @@ Graphical user interface in the terminal for [chezmoi](https://github.com/twpayn
 - [ ] `chezmoi apply`
 - [ ] `chezmoi destroy`
 - [ ] `chezmoi forget`
+- [ ] `chezmoi init`
 - [ ] `chezmoi re-add`
 - [x] `chezmoi cat-config`
 - [x] `chezmoi cat`
@@ -42,17 +43,31 @@ Graphical user interface in the terminal for [chezmoi](https://github.com/twpayn
 
 ## Start
 
-- [x] python -m chezmoi_mousse
+Feedback is welcome before the app is packaged and supports changing state, it's very safe to test currently.
+
+Required: `chezmoi` command available and existing `chezmoi` repository.
+
+Clone this repository and cd into the `src` directory of the cloned repository.
+
+Then run `python -m chezmoi_mousse`
+
+If you don't have `textual` installed but the `uv` command is available:
+`uv run --with textual -m chezmoi_mousse`
+
+(Don't run the app in a `chezmoi cd` invoked shell, it doesn't do anything bad as the app only performs read-only operations but it will crash.)
+
+- [x] python -m chezmoi_mousse (Python 3.13 with `textual` installed)
+- [x] uv run --with textual -m chezmoi_mousse
 - [x] Windows
   - [ ] app store
-  - [ ] executable
+  - [ ] single executable
   - [x] unpackaged
 - [x] Apple
   - [ ] app store
-  - [ ] executable
+  - [ ] single executable
   - [x] unpackaged
 - [x] Linux
-  - [ ] executable
+  - [ ] single executable
   - [ ] flatpak
   - [ ] snap
   - [x] unpackaged
