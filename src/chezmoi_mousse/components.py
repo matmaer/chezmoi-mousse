@@ -25,10 +25,62 @@ import chezmoi_mousse.theme as theme
 from chezmoi_mousse import BULLET
 from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.config import unwanted
-from chezmoi_mousse.mouse_types import TabLabel
+from chezmoi_mousse.mouse_types import (
+    ButtonArea,
+    ButtonLabel,
+    ComponentName,
+    FilterGroups,
+    FilterName,
+    TabLabel,
+    TabSide,
+)
 
 
-class GitLog(DataTable):
+class TabIdMixin:
+    def __init__(self, tab: TabLabel):
+        self.tab: TabLabel = tab
+
+    def button_id(self, button_label: ButtonLabel) -> str:
+        return f"{self.tab}_{button_label}_button"
+
+    def buttons_horizontal_id(self, area: ButtonArea) -> str:
+        return f"{self.tab}_{area}_buttons_horizontal"
+
+    def component_id(self, component: ComponentName) -> str:
+        """Generate an id for items imported from components.py."""
+        return f"{self.tab}_{component}_component"
+
+    def content_switcher_id(self, tab_side: TabSide) -> str:
+        """Generate an id for each content switcher."""
+        return f"{self.tab}_{tab_side}_content_switcher"
+
+    def filter_horizontal_id(self, filter_name: FilterName) -> str:
+        """Generate an id for each filter container."""
+        return f"{self.tab}_{filter_name}_filter_horizontal"
+
+    def filters_vertical_id(self, tab: TabLabel) -> str:
+        """Generate an id for the vertical that contains multiple
+        filter_horizontal containers."""
+        return f"{self.tab}_{tab}_filters_vertical"
+
+    def filter_label_id(self, filter_name: FilterName) -> str:
+        return f"{self.tab}_{filter_name}_filter_label"
+
+    def filter_switch_id(self, filter_name: FilterName) -> str:
+        return f"{self.tab}_{filter_name}_filter_switch"
+
+    def tab_vertical_id(self, tab_side: TabSide) -> str:
+        """Generate an id for each vertical container within a tab."""
+        return f"{self.tab}_{tab_side}_vertical_container"
+
+    def tree_tab_switchers_id(self, tab: TabLabel) -> str:
+        return f"{tab}_tree_tab_switchers"
+
+    def filter_group_id(self, group: FilterGroups) -> str:
+        return f"{self.tab}_{group}_filter_vertical_group"
+
+
+class GitLog(DataTable, TabIdMixin):
     """DataTable widget to display the output of the `git log` command, either
     for a specific path or the chezmoi repository as a whole.
 
@@ -38,6 +90,10 @@ class GitLog(DataTable):
     # focussable  https://textual.textualize.io/widgets/data_table/
 
     path: reactive[Path | None] = reactive(None, init=False)
+
+    def __init__(self, tab: TabLabel, **kwargs) -> None:
+        TabIdMixin.__init__(self, tab)
+        super().__init__(id=self.component_id("GitLog"), **kwargs)
 
     def on_mount(self) -> None:
         self.show_cursor = False
@@ -92,12 +148,22 @@ class AutoWarning(Static):
         )
 
 
-class PathView(RichLog):
+class PathView(RichLog, TabIdMixin):
     # focussable https://textual.textualize.io/widgets/rich_log/
 
     BINDINGS = [Binding(key="M,m", action="maximize", description="maximize")]
 
     path: reactive[Path | None] = reactive(None, init=False)
+
+    def __init__(self, tab: TabLabel, **kwargs) -> None:
+        TabIdMixin.__init__(self, tab)
+        super().__init__(
+            id=self.component_id("PathView"),
+            auto_scroll=True,
+            wrap=True,
+            highlight=True,
+            **kwargs,
+        )
 
     def on_mount(self) -> None:
         text = "Click a file or directory, \nto show its contents."
@@ -181,7 +247,7 @@ class PathView(RichLog):
             self.update_path_view()
 
 
-class DiffView(RichLog):
+class DiffView(RichLog, TabIdMixin):
     # not focussable https://textual.textualize.io/widgets/static/
 
     BINDINGS = [Binding(key="M,m", action="maximize", description="maximize")]
@@ -189,9 +255,8 @@ class DiffView(RichLog):
     path: reactive[Path | None] = reactive(None, init=False)
 
     def __init__(self, tab: TabLabel, **kwargs) -> None:
-        """Initialize the DiffView for either Apply or Re-Add tab."""
-        self.tab: TabLabel = tab
-        super().__init__(**kwargs)
+        TabIdMixin.__init__(self, tab)
+        super().__init__(id=self.component_id("DiffView"), **kwargs)
 
     def on_mount(self) -> None:
         self.write(
@@ -251,50 +316,34 @@ class NodeData:
     status: str
 
 
-class TreeBase(Tree[NodeData]):
+class TreeBase(Tree[NodeData], TabIdMixin):
     """Shows the tree widget on the left for Apply and Re-Add tabs."""
 
-    def __init__(self, tab: TabLabel, **kwargs) -> None:
+    unchanged: reactive[bool] = reactive(False, init=False)
+
+    def __init__(
+        self, tab: TabLabel, component_name: ComponentName, **kwargs
+    ) -> None:
+        TabIdMixin.__init__(self, tab)
         self.node_colors = {
             "Dir": theme.vars["text-primary"],
             "D": theme.vars["text-error"],
             "A": theme.vars["text-success"],
             "M": theme.vars["text-warning"],
         }
-        self.tab: TabLabel = tab
         root_node_data = NodeData(
-            # act as if chezmoi.dest_dir always has a modified status
-            path=chezmoi.dest_dir,
-            found=True,
-            is_file=False,
-            status="M",
+            path=chezmoi.dest_dir, found=True, is_file=False, status="M"
         )
-        super().__init__(label="root", data=root_node_data, **kwargs)
+        super().__init__(
+            label="root",
+            data=root_node_data,
+            id=self.component_id(component_name),
+            **kwargs,
+        )
 
     def on_mount(self) -> None:
         self.guide_depth = 3
         self.show_root = False
-
-    def style_label(self, node_data: NodeData) -> Text:
-        italic = False if node_data.found else True
-        if node_data.status != "X":
-            style = Style(
-                color=self.node_colors[node_data.status], italic=italic
-            )
-        elif node_data.is_file:
-            style = "dim"
-        else:
-            style = self.node_colors["Dir"]
-        return Text(node_data.path.name, style=style)
-
-
-class ManagedTree(TreeBase):
-
-    unchanged: reactive[bool] = reactive(False, init=False)
-
-    def on_mount(self) -> None:
-        self.add_nodes(self.root)
-        self.add_leaves(self.root)
 
     def show_dir_node(self, node_data: NodeData) -> bool:
         if node_data.is_file:
@@ -392,6 +441,28 @@ class ManagedTree(TreeBase):
                 node_label = self.style_label(node_data)
                 tree_node.add(label=node_label, data=node_data)
 
+    def style_label(self, node_data: NodeData) -> Text:
+        italic = False if node_data.found else True
+        if node_data.status != "X":
+            style = Style(
+                color=self.node_colors[node_data.status], italic=italic
+            )
+        elif node_data.is_file:
+            style = "dim"
+        else:
+            style = self.node_colors["Dir"]
+        return Text(node_data.path.name, style=style)
+
+
+class ManagedTree(TreeBase):
+
+    def __init__(self, tab: TabLabel, **kwargs) -> None:
+        super().__init__(tab, "ManagedTree", **kwargs)
+
+    def on_mount(self) -> None:
+        self.add_nodes(self.root)
+        self.add_leaves(self.root)
+
     def on_tree_node_expanded(self, event: Tree.NodeExpanded) -> None:
         event.stop()
         self.add_nodes(event.node)
@@ -427,7 +498,7 @@ class ManagedTree(TreeBase):
             for child in node.children:
                 recurse(child)
 
-            recurse(node_to_expand)
+        recurse(node_to_expand)
 
     def watch_unchanged(self) -> None:
         """Update the visible nodes based on the "show unchanged" filter."""
@@ -437,10 +508,9 @@ class ManagedTree(TreeBase):
             self.add_leaves(node)
 
 
-class ExpandedTree(ManagedTree):
-
+class ExpandedTree(TreeBase):
     def __init__(self, tab: TabLabel, **kwargs) -> None:
-        super().__init__(tab, **kwargs)
+        super().__init__(tab, "ExpandedTree", **kwargs)
 
     def on_mount(self) -> None:
         self.expand_all_nodes(self.root)
@@ -462,8 +532,10 @@ class ExpandedTree(ManagedTree):
 
 
 class FlatTree(TreeBase):
-
     unchanged: reactive[bool] = reactive(False, init=False)
+
+    def __init__(self, tab: TabLabel, **kwargs) -> None:
+        super().__init__(tab, "FlatTree", **kwargs)
 
     def on_mount(self) -> None:
         self.add_flat_leaves()

@@ -13,5 +13,5 @@ type FilterName = Literal[
 ]
 type FilterGroups = Literal["dir-tree-filters", "tree-filters", "list-filters"]
 type StatusCode = Literal["A", "D", "M", "X"]
-type TabLabel = Literal["Apply", "Re-Add", "Add"]
+type TabLabel = Literal["Apply", "Re-Add", "Add", "Doctor", "Diagram", "Log"]
 type TabSide = Literal["Left", "Right"]
