@@ -50,6 +50,7 @@ from chezmoi_mousse.mouse_types import (
     FilterName,
     TabLabel,
     TabSide,
+    TreeName,
 )
 
 
@@ -89,8 +90,10 @@ class TabIdMixin:
         # individually, to test when applying tcss classes
         return f"{self.tab}_{filter_name}_filter_label"
 
-    def filter_switch_id(self, filter_name: FilterName) -> str:
-        return f"{self.tab}_{filter_name}_filter_switch"
+    def filter_switch_id(
+        self, filter_name: FilterName, tree_name: TreeName
+    ) -> str:
+        return f"{self.tab}_{filter_name}_{tree_name}_filter_switch"
 
     def tab_vertical_id(self, tab_side: TabSide) -> str:
         """Generate an id for each vertical container within a tab."""
@@ -116,6 +119,31 @@ class TabButton(Button, TabIdMixin):
         self.compact = True
 
 
+class FilterSwitch(HorizontalGroup, TabIdMixin):
+
+    def __init__(
+        self,
+        tab: TabLabel,
+        tree_name: TreeName,
+        switch_name: FilterName,
+        **kwargs,
+    ) -> None:
+        TabIdMixin.__init__(self, tab)
+        self.switch_name: FilterName = switch_name
+        self.tree_name: TreeName = tree_name
+        super().__init__(id=self.filter_horizontal_id(switch_name), **kwargs)
+
+    def compose(self) -> ComposeResult:
+        yield Switch(
+            id=self.filter_switch_id(self.switch_name, self.tree_name)
+        )
+        yield Label(
+            filter_data.unchanged.label,
+            id=self.filter_label_id(self.switch_name),
+            classes="filter-label",
+        ).with_tooltip(tooltip=filter_data.unchanged.tooltip)
+
+
 class TreeTabSwitchers(Horizontal, TabIdMixin):
 
     def __init__(self, tab: TabLabel, **kwargs) -> None:
@@ -135,16 +163,16 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
                 yield TabButton("List", tab=self.tab)
             with ContentSwitcher(
                 id=self.content_switcher_id("Left"),
-                initial=self.component_id("TreeTree"),
+                initial=self.component_id("ManagedTree"),
                 classes="content-switcher-left top-border-title",
             ):
                 yield ManagedTree(
-                    id=self.component_id("TreeTree"),
+                    id=self.component_id("ManagedTree"),
                     tab=self.tab,
                     classes="tree-widget",
                 )
                 yield FlatTree(
-                    id=self.component_id("TreeList"),
+                    id=self.component_id("FlatTree"),
                     tab=self.tab,
                     classes="tree-widget",
                 )
@@ -152,16 +180,12 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
                 id=self.filters_vertical_id(self.tab),
                 classes="filters-vertical",
             ):
-                with HorizontalGroup(
-                    id=self.filter_horizontal_id("unchanged"),
+                yield FilterSwitch(
+                    tab=self.tab,
+                    tree_name="ManagedTree",
+                    switch_name="unchanged",
                     classes="filter-horizontal",
-                ):
-                    yield Switch(id=self.filter_switch_id("unchanged"))
-                    yield Label(
-                        filter_data.unchanged.label,
-                        id=self.filter_label_id("unchanged"),
-                        classes="filter-label",
-                    ).with_tooltip(tooltip=filter_data.unchanged.tooltip)
+                )
 
         with Vertical(
             id=self.tab_vertical_id("Right"), classes="tab-right-vertical"
@@ -234,17 +258,11 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
         if event.button.id == self.button_id("Tree"):
             self.query_one(
                 f"#{self.content_switcher_id("Left")}", ContentSwitcher
-            ).current = self.component_id("TreeTree")
-            self.query_one(
-                f"#{self.filter_switch_id('unchanged')}", Switch
-            ).disabled = False
+            ).current = self.component_id("ManagedTree")
         elif event.button.id == self.button_id("List"):
             self.query_one(
                 f"#{self.content_switcher_id("Left")}", ContentSwitcher
-            ).current = self.component_id("TreeList")
-            self.query_one(
-                f"#{self.filter_switch_id('unchanged')}", Switch
-            ).disabled = True
+            ).current = self.component_id("FlatTree")
         # Contents/Diff/GitLog Switch
         elif event.button.id == self.button_id("Contents"):
             self.query_one(
@@ -281,9 +299,15 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
         event.stop()
-        if event.switch.id == self.filter_switch_id("unchanged"):
+        if event.switch.id == self.filter_switch_id(
+            "unchanged", "ManagedTree"
+        ):
             self.query_one(
-                f"#{self.component_id('TreeTree')}", ManagedTree
+                f"#{self.component_id('ManagedTree')}", ManagedTree
+            ).unchanged = event.value
+        if event.switch.id == self.filter_switch_id("unchanged", "FlatTree"):
+            self.query_one(
+                f"#{self.component_id('FlatTree')}", FlatTree
             ).unchanged = event.value
 
 
@@ -359,26 +383,18 @@ class AddTab(Horizontal, TabIdMixin):
             with VerticalGroup(
                 id=self.filters_vertical_id("Add"), classes="filters-vertical"
             ):
-                with HorizontalGroup(
-                    id=self.filter_horizontal_id("unmanaged_dirs"),
+                yield FilterSwitch(
+                    tab=self.tab,
+                    tree_name="FilteredDirTree",
+                    switch_name="unmanaged_dirs",
                     classes="filter-horizontal padding-bottom-once",
-                ):
-                    yield Switch(id=self.filter_switch_id("unmanaged_dirs"))
-                    yield Label(
-                        filter_data.unmanaged_dirs.label,
-                        id=self.filter_label_id("unmanaged_dirs"),
-                        classes="filter-label",
-                    ).with_tooltip(tooltip=filter_data.unmanaged_dirs.tooltip)
-                with HorizontalGroup(
-                    id=self.filter_horizontal_id("unwanted"),
+                )
+                yield FilterSwitch(
+                    tab=self.tab,
+                    tree_name="FilteredDirTree",
+                    switch_name="unwanted",
                     classes="filter-horizontal",
-                ):
-                    yield Switch(id=self.filter_switch_id("unwanted"))
-                    yield Label(
-                        filter_data.unwanted.label,
-                        id=self.filter_label_id("unwanted"),
-                        classes="filter-label",
-                    ).with_tooltip(tooltip=filter_data.unwanted.tooltip)
+                )
 
         with Vertical(
             id=self.tab_vertical_id("Right"), classes="tab-right-vertical"
@@ -431,10 +447,14 @@ class AddTab(Horizontal, TabIdMixin):
         tree = self.query_one(
             f"#{self.component_id("FilteredDirTree")}", FilteredDirTree
         )
-        if event.switch.id == self.filter_switch_id("unmanaged_dirs"):
+        if event.switch.id == self.filter_switch_id(
+            "unmanaged_dirs", "FilteredDirTree"
+        ):
             tree.unmanaged_dirs = event.value
             tree.reload()
-        elif event.switch.id == self.filter_switch_id("unwanted"):
+        elif event.switch.id == self.filter_switch_id(
+            "unwanted", "FilteredDirTree"
+        ):
             tree.unwanted = event.value
             tree.reload()
 
