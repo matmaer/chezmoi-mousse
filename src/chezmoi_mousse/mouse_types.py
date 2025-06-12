@@ -1,7 +1,9 @@
 from typing import Literal
 
 # first define TreeName, as it is used in other type aliases
-type TreeName = Literal["ManagedTree", "FlatTree", "FilteredDirTree"]
+type TreeName = Literal[
+    "ExpandedTree", "ManagedTree", "FlatTree", "FilteredDirTree"
+]
 # sorted alphabetically:
 type ButtonArea = Literal["TopLeft", "TopRight", "BottomRight"]
 type ButtonLabel = Literal["Tree", "List", "Contents", "Diff", "Git-Log"]

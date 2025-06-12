@@ -441,8 +441,8 @@ class ExpandedTree(ManagedTree):
 
     unchanged: reactive[bool] = reactive(False, init=False)
 
-    def __init__(self, tab: TabLabel) -> None:
-        super().__init__(tab)
+    def __init__(self, tab: TabLabel, **kwargs) -> None:
+        super().__init__(tab, **kwargs)
 
     def on_mount(self) -> None:
         self.expand_all_nodes(self.root)

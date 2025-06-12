@@ -36,6 +36,7 @@ import chezmoi_mousse.theme as theme
 from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.components import (
     DiffView,
+    ExpandedTree,
     FilteredDirTree,
     FlatTree,
     GitLog,
@@ -174,6 +175,11 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
                 )
                 yield FlatTree(
                     id=self.component_id("FlatTree"),
+                    tab=self.tab,
+                    classes="tree-widget",
+                )
+                yield ExpandedTree(
+                    id=self.component_id("ExpandedTree"),
                     tab=self.tab,
                     classes="tree-widget",
                 )
