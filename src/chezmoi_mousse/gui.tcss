@@ -5,8 +5,12 @@
 .path-view {}
 .diff-view {}
 .git-log {}
-.tab-right-vertical {}
-.content-switcher-right {}
+.tab-right-vertical {
+  .content-switcher-right {
+    margin-bottom: 1;
+    overflow: scroll;
+  }
+}
 
 .top-border-title {
   border-top: solid $primary;
@@ -42,9 +46,7 @@
     width: auto;
     max-width: 100%;
   }
-
 }
-
 
 .filters-vertical {
   align: left bottom;
