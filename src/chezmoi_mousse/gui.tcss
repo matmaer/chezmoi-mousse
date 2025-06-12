@@ -64,7 +64,7 @@
     }
   }
 }
-/* assigned to TabButtonsGroup Horizontal parent class in super.init */
+
 .tab-buttons-horizontal {
   align: center top;
   width: auto;
