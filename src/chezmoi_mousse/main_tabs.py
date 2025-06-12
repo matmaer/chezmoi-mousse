@@ -131,6 +131,7 @@ class FilterSwitch(HorizontalGroup, TabIdMixin):
         TabIdMixin.__init__(self, tab)
         self.switch_name: FilterName = switch_name
         self.tree_name: TreeName = tree_name
+        self.label = filter_data[self.switch_name].label
         super().__init__(id=self.filter_horizontal_id(switch_name), **kwargs)
 
     def compose(self) -> ComposeResult:
@@ -138,10 +139,10 @@ class FilterSwitch(HorizontalGroup, TabIdMixin):
             id=self.filter_switch_id(self.switch_name, self.tree_name)
         )
         yield Label(
-            filter_data.unchanged.label,
+            filter_data[self.switch_name].label,
             id=self.filter_label_id(self.switch_name),
             classes="filter-label",
-        ).with_tooltip(tooltip=filter_data.unchanged.tooltip)
+        ).with_tooltip(tooltip=filter_data[self.switch_name].tooltip)
 
 
 class TreeTabSwitchers(Horizontal, TabIdMixin):
@@ -184,6 +185,12 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
                     tab=self.tab,
                     tree_name="ManagedTree",
                     switch_name="unchanged",
+                    classes="filter-horizontal padding-bottom-once",
+                )
+                yield FilterSwitch(
+                    tab=self.tab,
+                    tree_name="ManagedTree",
+                    switch_name="expand_all",
                     classes="filter-horizontal",
                 )
 

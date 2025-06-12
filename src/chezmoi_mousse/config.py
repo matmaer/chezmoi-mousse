@@ -11,16 +11,8 @@ class Filter:
     label: str
 
 
-@dataclass(frozen=True)
-class FilterSwitch:
-    expand_all: Filter
-    unmanaged_dirs: Filter
-    unwanted: Filter
-    unchanged: Filter
-
-
-filter_data = FilterSwitch(
-    unmanaged_dirs=Filter(
+filter_data = {
+    "unmanaged_dirs": Filter(
         tooltip=(
             "The default (disabled), only shows directories which already contain managed files."
             "This allows spotting new un-managed files in already managed directories."
@@ -28,7 +20,7 @@ filter_data = FilterSwitch(
         ),
         label="show unmanaged dirs",
     ),
-    unwanted=Filter(
+    "unwanted": Filter(
         tooltip=(
             'Include files and directories considered as "unwanted" for a dotfile manager. '
             "These include cache, temporary, trash (recycle bin) and other similar files or directories. "
@@ -36,17 +28,15 @@ filter_data = FilterSwitch(
         ),
         label="show unwanted paths",
     ),
-    expand_all=Filter(
+    "expand_all": Filter(
         tooltip=("Expand all directories in the Tree view."),
         label="expand all nodes",
     ),
-    unchanged=Filter(
-        # trailing spaces to easily have the leading edge align with
-        # "expand all nodes" when centering both switches
+    "unchanged": Filter(
         label="show unchanged",
         tooltip="Include files unchanged files which are not found in the 'chezmoi status' output.",
     ),
-)
+}
 
 unwanted = {
     "dirs": {

@@ -291,7 +291,6 @@ class TreeBase(Tree[NodeData]):
 class ManagedTree(TreeBase):
 
     unchanged: reactive[bool] = reactive(False, init=False)
-    expand_all: reactive[bool] = reactive(False, init=False)
 
     def on_mount(self) -> None:
         self.add_nodes(self.root)
@@ -437,14 +436,36 @@ class ManagedTree(TreeBase):
             self.add_nodes(node)
             self.add_leaves(node)
 
-    def watch_expand_all(self) -> None:
-        self.notify("not yet implemented")
+
+class ExpandedTree(ManagedTree):
+
+    unchanged: reactive[bool] = reactive(False, init=False)
+
+    def __init__(self, tab: TabLabel) -> None:
+        super().__init__(tab)
+
+    def on_mount(self) -> None:
+        self.expand_all_nodes(self.root)
+
+    def expand_all_nodes(self, node: TreeNode) -> None:
+        """Recursively expand all directory nodes."""
+        if (
+            node.data
+            and not node.data.is_file
+            and self.show_dir_node(node.data)
+        ):
+            if not node.is_expanded:
+                node.expand()
+                self.add_nodes(node)
+                self.add_leaves(node)
+            for child in node.children:
+                if child.data and not child.data.is_file:
+                    self.expand_all_nodes(child)
 
 
 class FlatTree(TreeBase):
 
     unchanged: reactive[bool] = reactive(False, init=False)
-    expand_all: reactive[bool] = reactive(False, init=False)
 
     def on_mount(self) -> None:
         self.add_flat_leaves()
@@ -474,9 +495,6 @@ class FlatTree(TreeBase):
             )
             node_label = self.style_label(node_data)
             self.root.add_leaf(label=node_label, data=node_data)
-
-    def watch_expand_all(self) -> None:
-        self.notify("not yet implemented")
 
 
 class FilteredDirTree(DirectoryTree):
