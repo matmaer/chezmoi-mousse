@@ -48,6 +48,7 @@
     border-top: inner $surface;
     background: $surface;
     background-tint: $surface;
+    padding-right: 2;
 
     /* applies to all Container classes that contain a single filter switch */
     &>.filter-horizontal {
@@ -59,7 +60,6 @@
 
       &>.filter-label {
         color: $foreground-darken-1;
-        padding-right: 2;
       }
     }
   }
