@@ -7,10 +7,10 @@ command_log_callback function set by gui.py.
 
 import ast
 import os
-from typing import NamedTuple
 from dataclasses import dataclass, field
 from pathlib import Path
 from subprocess import TimeoutExpired, run
+from typing import NamedTuple
 
 
 def callback_null_object(*args) -> None:
