@@ -53,16 +53,19 @@ class TabIdMixin:
     def buttons_horizontal_id(self, area: ButtonArea) -> str:
         return f"{self.tab}_{area}_buttons_horizontal"
 
+    def button_vertical_id(self, button_label: ButtonLabel) -> str:
+        """Generate an id for each button in a vertical container to center
+        them by applying auto width and align on this container."""
+        return f"{self.tab}_{button_label}_button_vertical"
+
     def component_id(self, component: ComponentName) -> str:
         """Generate an id for items imported from components.py."""
         return f"{self.tab}_{component}_component"
 
     def content_switcher_id(self, tab_side: TabSide) -> str:
-        """Generate an id for each content switcher."""
         return f"{self.tab}_{tab_side}_content_switcher"
 
     def filter_horizontal_id(self, filter_name: FilterName) -> str:
-        """Generate an id for each filter container."""
         return f"{self.tab}_{filter_name}_filter_horizontal"
 
     def filters_vertical_id(self, tab: TabLabel) -> str:
@@ -77,7 +80,8 @@ class TabIdMixin:
         return f"{self.tab}_{filter_name}_filter_switch"
 
     def tab_vertical_id(self, tab_side: TabSide) -> str:
-        """Generate an id for each vertical container within a tab."""
+        """Generate an id for the main left and right vertical containers in a
+        tab."""
         return f"{self.tab}_{tab_side}_vertical_container"
 
     def tree_tab_switchers_id(self, tab: TabLabel) -> str:
@@ -574,8 +578,6 @@ class FlatTree(TreeBase):
             self.root.add_leaf(label=node_label, data=node_data)
 
     def watch_unchanged(self) -> None:
-        print(f"{chezmoi.managed_file_paths_without_status}")
-
         for file_path in chezmoi.managed_file_paths_without_status:
             node_data = NodeData(
                 path=file_path,

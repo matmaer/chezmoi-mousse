@@ -133,15 +133,22 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
 
     def compose(self) -> ComposeResult:
         with VerticalGroup(
-            id=self.tab_vertical_id("Left"),
-            classes="tab-left-vertical apply-re-add-min-width",
+            id=self.tab_vertical_id("Left"), classes="tab-left-vertical"
         ):
             with HorizontalGroup(
                 id=self.buttons_horizontal_id("TopLeft"),
                 classes="tab-buttons-horizontal",
             ):
-                yield TabButton("Tree", tab=self.tab, classes="tab-button")
-                yield TabButton("List", tab=self.tab, classes="tab-button")
+                with Vertical(
+                    id=self.button_vertical_id("Tree"),
+                    classes="single-button-vertical",
+                ):
+                    yield TabButton("Tree", tab=self.tab, classes="tab-button")
+                with Vertical(
+                    id=self.button_vertical_id("List"),
+                    classes="single-button-vertical",
+                ):
+                    yield TabButton("List", tab=self.tab, classes="tab-button")
             with ContentSwitcher(
                 id=self.content_switcher_id("Left"),
                 initial=self.component_id("ManagedTree"),
@@ -158,9 +165,25 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
                 id=self.buttons_horizontal_id("TopRight"),
                 classes="tab-buttons-horizontal",
             ):
-                yield TabButton("Contents", tab=self.tab, classes="tab-button")
-                yield TabButton("Diff", tab=self.tab, classes="tab-button")
-                yield TabButton("Git-Log", tab=self.tab, classes="tab-button")
+                with Vertical(
+                    id=self.button_vertical_id("Contents"),
+                    classes="single-button-vertical",
+                ):
+                    yield TabButton(
+                        "Contents", tab=self.tab, classes="tab-button"
+                    )
+                with Vertical(
+                    id=self.button_vertical_id("Diff"),
+                    classes="single-button-vertical",
+                ):
+                    yield TabButton("Diff", tab=self.tab, classes="tab-button")
+                with Vertical(
+                    id=self.button_vertical_id("Git-Log"),
+                    classes="single-button-vertical",
+                ):
+                    yield TabButton(
+                        "Git-Log", tab=self.tab, classes="tab-button"
+                    )
 
             with ContentSwitcher(
                 id=self.content_switcher_id("Right"),
@@ -207,7 +230,7 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
             self.query_one(f"#{self.button_id('Git-Log')}").add_class(lc)
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
-        event.stop()
+        # event.stop()
         assert event.button.id is not None
         # Tree/List Switch
         self.update_button_classes(event.button.id)
@@ -234,7 +257,7 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
             ).current = self.component_id("GitLog")
 
     def on_tree_node_selected(self, event: ManagedTree.NodeSelected) -> None:
-        event.stop()
+        # event.stop()
         assert event.node.data is not None
         self.query_one(
             f"#{self.content_switcher_id('Right')}", Container
@@ -352,8 +375,7 @@ class AddTab(Horizontal, TabIdMixin):
 
     def compose(self) -> ComposeResult:
         with VerticalGroup(
-            id=self.tab_vertical_id("Left"),
-            classes="tab-left-vertical add-tab-min-width",
+            id=self.tab_vertical_id("Left"), classes="tab-left-vertical"
         ):
             yield FilteredDirTree(
                 chezmoi.dest_dir,

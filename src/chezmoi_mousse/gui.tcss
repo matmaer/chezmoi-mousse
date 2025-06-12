@@ -20,46 +20,40 @@
 
 .tab-left-vertical {
   margin-right: 2;
+  min-width: 14;
   width: auto;
   max-width: 50%;
 
-  &.apply-re-add-min-width {
-    min-width: 24;
-  }
-
-  &.add-tab-min-width {
-    min-width: 29;
-  }
-
   &>.content-switcher-left {
+    /* do not set max-width here! */
     width: auto;
-    min-width: 24;
-    max-width: 100%;
+    min-width: 14;
     &>.tree-widget {
-      min-width: 24;
+      /* do not set max-width here! */
+      min-width: 14;
       width: auto;
     }
   }
 
   &>.dir-tree-widget {
-    min-width: 29;
+    /* do not set max-width here! */
+    min-width: 14;
     width: auto;
-    max-width: 100%;
   }
 }
 
 .filters-vertical {
   align: left bottom;
-  max-width: 80%;
   background-tint: $surface;
   background: $surface;
-  border-right: round $primary;
   border-bottom: round $primary;
+  border-right: round $primary;
   border-top: round $primary;
   dock: bottom;
   layer: filter_switches;
   margin-bottom: 3;
-  # max-width: 80%;
+  max-width: 80%;
+  min-width: 14;
   padding-right: 2;
   width: auto;
   /* offset-x: -100%; out if view if docked left */
@@ -84,29 +78,29 @@
 }
 
 .tab-buttons-horizontal {
-  align: center top;
-  width: auto;
   height: 1;
-  &>.tab-button {
-    /* default min width from textual is 16, setting 1 for the burger button */
-    min-width: 1;
-    color: $text;
-    text-style: none;
-    &:hover {
-    text-style: bold;
-    }
-
-    &.last-clicked {
-      color: $accent;
+  width: 100%;
+  &>.single-button-vertical {
+    align: center top;
+    &>.tab-button {
+      width: auto;
+      min-width: 4;
+      color: $text;
       text-style: none;
-
       &:hover {
+      text-style: bold;
+      }
+      &.last-clicked {
+        color: $accent;
         text-style: none;
+        &:hover {
+          text-style: none;
+        }
       }
     }
+
   }
 }
-
 
 AutoWarning {
   height: auto;
