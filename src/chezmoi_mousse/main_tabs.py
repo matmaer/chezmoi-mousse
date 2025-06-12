@@ -277,7 +277,6 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
                 f"#{self.component_id('FlatTree')}", FlatTree
             ).unchanged = event.value
         elif event.switch.id == self.filter_switch_id("expand_all"):
-            self.notify(f"Expand all: {event.value}")
             if event.value:
                 self.query_one(
                     f"#{self.content_switcher_id('Left')}", ContentSwitcher

@@ -502,7 +502,6 @@ class ManagedTree(TreeBase):
 
     def watch_unchanged(self) -> None:
         """Update the visible nodes based on the "show unchanged" filter."""
-        # self.notify(f"watch_unchanged called for {self.tab}")
         for node in self.get_expanded_nodes():
             self.add_nodes(node)
             self.add_leaves(node)
@@ -553,7 +552,6 @@ class FlatTree(TreeBase):
             self.root.add_leaf(label=node_label, data=node_data)
 
     def watch_unchanged(self) -> None:
-        self.notify(f"watch_unchanged called for {self.tab}")
         print(f"{chezmoi.managed_file_paths_without_status}")
 
         for file_path in chezmoi.managed_file_paths_without_status:
