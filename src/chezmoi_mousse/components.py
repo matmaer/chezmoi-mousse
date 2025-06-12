@@ -251,11 +251,8 @@ class NodeData:
     status: str
 
 
-class ManagedTreeBase(Tree[NodeData]):
+class TreeBase(Tree[NodeData]):
     """Shows the tree widget on the left for Apply and Re-Add tabs."""
-
-    unchanged: reactive[bool] = reactive(False, init=False)
-    expand_all: reactive[bool] = reactive(False, init=False)
 
     def __init__(self, tab: TabLabel, **kwargs) -> None:
         self.node_colors = {
@@ -277,6 +274,28 @@ class ManagedTreeBase(Tree[NodeData]):
     def on_mount(self) -> None:
         self.guide_depth = 3
         self.show_root = False
+
+    def style_label(self, node_data: NodeData) -> Text:
+        italic = False if node_data.found else True
+        if node_data.status != "X":
+            style = Style(
+                color=self.node_colors[node_data.status], italic=italic
+            )
+        elif node_data.is_file:
+            style = "dim"
+        else:
+            style = self.node_colors["Dir"]
+        return Text(node_data.path.name, style=style)
+
+
+class ManagedTree(TreeBase):
+
+    unchanged: reactive[bool] = reactive(False, init=False)
+    expand_all: reactive[bool] = reactive(False, init=False)
+
+    def on_mount(self) -> None:
+        self.add_nodes(self.root)
+        self.add_leaves(self.root)
 
     def show_dir_node(self, node_data: NodeData) -> bool:
         if node_data.is_file:
@@ -313,18 +332,6 @@ class ManagedTreeBase(Tree[NodeData]):
         if not self.unchanged:
             return node_data.status != "X"
         return True
-
-    def style_label(self, node_data: NodeData) -> Text:
-        italic = False if node_data.found else True
-        if node_data.status != "X":
-            style = Style(
-                color=self.node_colors[node_data.status], italic=italic
-            )
-        elif node_data.is_file:
-            style = "dim"
-        else:
-            style = self.node_colors["Dir"]
-        return Text(node_data.path.name, style=style)
 
     def add_leaves(self, tree_node: TreeNode) -> None:
         current_leafs = [
@@ -425,6 +432,7 @@ class ManagedTreeBase(Tree[NodeData]):
 
     def watch_unchanged(self) -> None:
         """Update the visible nodes based on the "show unchanged" filter."""
+        # self.notify(f"watch_unchanged called for {self.tab}")
         for node in self.get_expanded_nodes():
             self.add_nodes(node)
             self.add_leaves(node)
@@ -433,18 +441,10 @@ class ManagedTreeBase(Tree[NodeData]):
         self.notify("not yet implemented")
 
 
-class ManagedTree(ManagedTreeBase):
-    def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)
+class FlatTree(TreeBase):
 
-    def on_mount(self) -> None:
-        self.add_nodes(self.root)
-        self.add_leaves(self.root)
-
-
-class FlatTree(ManagedTreeBase):
-    def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)
+    unchanged: reactive[bool] = reactive(False, init=False)
+    expand_all: reactive[bool] = reactive(False, init=False)
 
     def on_mount(self) -> None:
         self.add_flat_leaves()
@@ -460,6 +460,23 @@ class FlatTree(ManagedTreeBase):
             )
             node_label = self.style_label(node_data)
             self.root.add_leaf(label=node_label, data=node_data)
+
+    def watch_unchanged(self) -> None:
+        self.notify(f"watch_unchanged called for {self.tab}")
+        print(f"{chezmoi.managed_file_paths_without_status}")
+
+        for file_path in chezmoi.managed_file_paths_without_status:
+            node_data = NodeData(
+                path=file_path,
+                found=file_path.exists(),
+                is_file=True,
+                status="X",
+            )
+            node_label = self.style_label(node_data)
+            self.root.add_leaf(label=node_label, data=node_data)
+
+    def watch_expand_all(self) -> None:
+        self.notify("not yet implemented")
 
 
 class FilteredDirTree(DirectoryTree):
