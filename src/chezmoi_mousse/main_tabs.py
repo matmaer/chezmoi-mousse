@@ -37,6 +37,7 @@ from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.components import (
     DiffView,
     FilteredDirTree,
+    FlatTree,
     GitLog,
     ManagedTree,
     PathView,
@@ -140,13 +141,11 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
                 yield ManagedTree(
                     id=self.component_id("TreeTree"),
                     tab=self.tab,
-                    flat_list=False,
                     classes="tree-widget",
                 )
-                yield ManagedTree(
+                yield FlatTree(
                     id=self.component_id("TreeList"),
                     tab=self.tab,
-                    flat_list=True,
                     classes="tree-widget",
                 )
             with VerticalGroup(

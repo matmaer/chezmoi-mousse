@@ -251,15 +251,20 @@ class NodeData:
     status: str
 
 
-class ManagedTree(Tree[NodeData]):
+class ManagedTreeBase(Tree[NodeData]):
     """Shows the tree widget on the left for Apply and Re-Add tabs."""
 
     unchanged: reactive[bool] = reactive(False, init=False)
     expand_all: reactive[bool] = reactive(False, init=False)
 
-    def __init__(self, tab: TabLabel, flat_list=False, **kwargs) -> None:
+    def __init__(self, tab: TabLabel, **kwargs) -> None:
+        self.node_colors = {
+            "Dir": theme.vars["text-primary"],
+            "D": theme.vars["text-error"],
+            "A": theme.vars["text-success"],
+            "M": theme.vars["text-warning"],
+        }
         self.tab: TabLabel = tab
-        self.flat_list: bool = flat_list
         root_node_data = NodeData(
             # act as if chezmoi.dest_dir always has a modified status
             path=chezmoi.dest_dir,
@@ -270,19 +275,8 @@ class ManagedTree(Tree[NodeData]):
         super().__init__(label="root", data=root_node_data, **kwargs)
 
     def on_mount(self) -> None:
-        self.node_colors = {
-            "Dir": theme.vars["text-primary"],
-            "D": theme.vars["text-error"],
-            "A": theme.vars["text-success"],
-            "M": theme.vars["text-warning"],
-        }
         self.guide_depth = 3
         self.show_root = False
-        if not self.flat_list:
-            self.add_nodes(self.root)
-            self.add_leaves(self.root)
-        elif self.flat_list:
-            self.add_flat_leaves()
 
     def show_dir_node(self, node_data: NodeData) -> bool:
         if node_data.is_file:
@@ -358,29 +352,6 @@ class ManagedTree(Tree[NodeData]):
                 node_label = self.style_label(node_data)
                 tree_node.add_leaf(label=node_label, data=node_data)
 
-    def add_flat_leaves(self) -> None:
-        status_files = chezmoi.status_paths[self.tab].files
-        for file_path in status_files:
-            node_data = NodeData(
-                path=file_path,
-                found=file_path.exists(),
-                is_file=True,
-                status=status_files[file_path],
-            )
-            node_label = self.style_label(node_data)
-            self.root.add_leaf(label=node_label, data=node_data)
-
-        if self.unchanged:
-            for file_path in chezmoi.managed_file_paths_without_status:
-                node_data = NodeData(
-                    path=file_path,
-                    found=file_path.exists(),
-                    is_file=True,
-                    status="X",
-                )
-                node_label = self.style_label(node_data)
-                self.root.add_leaf(label=node_label, data=node_data)
-
     def add_nodes(self, tree_node: TreeNode) -> None:
         assert isinstance(tree_node.data, NodeData)
         dir_paths = chezmoi.managed_dir_paths_in_dir(tree_node.data.path)
@@ -454,17 +425,41 @@ class ManagedTree(Tree[NodeData]):
 
     def watch_unchanged(self) -> None:
         """Update the visible nodes based on the "show unchanged" filter."""
-
-        # the switch is disabled when the tree is flat
-        if self.flat_list:
-            return
-
         for node in self.get_expanded_nodes():
             self.add_nodes(node)
             self.add_leaves(node)
 
     def watch_expand_all(self) -> None:
         self.notify("not yet implemented")
+
+
+class ManagedTree(ManagedTreeBase):
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+
+    def on_mount(self) -> None:
+        self.add_nodes(self.root)
+        self.add_leaves(self.root)
+
+
+class FlatTree(ManagedTreeBase):
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+
+    def on_mount(self) -> None:
+        self.add_flat_leaves()
+
+    def add_flat_leaves(self) -> None:
+        status_files = chezmoi.status_paths[self.tab].files
+        for file_path in status_files:
+            node_data = NodeData(
+                path=file_path,
+                found=file_path.exists(),
+                is_file=True,
+                status=status_files[file_path],
+            )
+            node_label = self.style_label(node_data)
+            self.root.add_leaf(label=node_label, data=node_data)
 
 
 class FilteredDirTree(DirectoryTree):
