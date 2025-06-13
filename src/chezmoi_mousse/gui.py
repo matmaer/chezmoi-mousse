@@ -2,7 +2,6 @@
 and the MainScreen class which is rendered after the LoadingScreen has
 completed running each chezmoi command."""
 
-from datetime import datetime
 from math import ceil
 
 from rich.color import Color
@@ -13,63 +12,18 @@ from textual.containers import ScrollableContainer
 from textual.screen import Screen
 from textual.scrollbar import ScrollBar, ScrollBarRender
 from textual.theme import Theme
-from textual.widgets import (
-    Footer,
-    Header,
-    RichLog,
-    Static,
-    TabbedContent,
-    TabPane,
-)
+from textual.widgets import Footer, Header, Static, TabbedContent, TabPane
 
-import chezmoi_mousse.chezmoi
 import chezmoi_mousse.theme
 from chezmoi_mousse import BURGER, FLOW
-from chezmoi_mousse.main_tabs import AddTab, ApplyTab, DoctorTab, ReAddTab
+from chezmoi_mousse.main_tabs import (
+    AddTab,
+    ApplyTab,
+    DoctorTab,
+    ReAddTab,
+    CommandLog,
+)
 from chezmoi_mousse.splash import LoadingScreen
-
-splash_command_log: list[tuple[list, str]]
-
-
-class CommandLog(RichLog):
-
-    def add(self, chezmoi_io: tuple[list, str]) -> None:
-        time_stamp = datetime.now().strftime("%H:%M:%S")
-        # Turn the full command list into string, remove elements not useful
-        # to display in the log
-        trimmed_cmd = [
-            _
-            for _ in chezmoi_io[0]
-            if _
-            not in (
-                "--no-pager"
-                "--color=off"
-                "--no-tty"
-                "--format=json"
-                "--path-style=absolute"
-                "--path-style=source-absolute"
-                "--no-color"
-                "--no-decorate"
-                "--date-order"
-                "--no-expand-tabs"
-                "--format=%ar by %cn;%s"
-            )
-        ]
-        pretty_cmd = " ".join(trimmed_cmd)
-        self.write(f"{time_stamp} {pretty_cmd}")
-        if chezmoi_io[1]:
-            self.write(chezmoi_io[1])
-        else:
-            self.write("Output: to be implemented")
-
-    def on_mount(self) -> None:
-        def log_callback(chezmoi_io: tuple[list, str]) -> None:
-            self.add(chezmoi_io)
-
-        chezmoi_mousse.chezmoi.command_log_callback = log_callback
-        global splash_command_log
-        for cmd in splash_command_log:
-            self.add(cmd)
 
 
 class MainScreen(Screen):
@@ -232,8 +186,7 @@ class ChezmoiGUI(App):
         self.watch(self, "theme", self.on_theme_change, init=False)
 
     def push_main_screen(self, new_splash_command_log) -> None:
-        global splash_command_log
-        splash_command_log = new_splash_command_log
+        CommandLog.splash_command_log = new_splash_command_log
         self.push_screen("main_screen")
 
     def on_theme_change(self, _, new_theme):

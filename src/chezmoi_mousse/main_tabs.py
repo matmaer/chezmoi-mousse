@@ -5,6 +5,7 @@ Additionally, it contains widgets which are these tabs depend on, if they are
 containers.
 """
 
+from datetime import datetime
 from rich.text import Text
 from textual.app import ComposeResult
 from textual.binding import Binding
@@ -33,6 +34,7 @@ from textual.widgets import (
 )
 
 import chezmoi_mousse.theme as theme
+import chezmoi_mousse.chezmoi
 from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.components import (
     DiffView,
@@ -42,9 +44,11 @@ from chezmoi_mousse.components import (
     GitLog,
     ManagedTree,
     PathView,
+    RichLog,
     TabButton,
     TabIdMixin,
 )
+
 from chezmoi_mousse.config import filter_data, pw_mgr_info
 from chezmoi_mousse.mouse_types import FilterName, TabLabel
 
@@ -554,3 +558,47 @@ class DoctorTab(VerticalScroll):
 
     def action_git_log(self) -> None:
         self.app.push_screen(DoctorTab.GitLogModal())
+
+
+class CommandLog(RichLog):
+
+    splash_command_log: list[tuple[list, str]] | None = None
+
+    def add(self, chezmoi_io: tuple[list, str]) -> None:
+        time_stamp = datetime.now().strftime("%H:%M:%S")
+        # Turn the full command list into string, remove elements not useful
+        # to display in the log
+        trimmed_cmd = [
+            _
+            for _ in chezmoi_io[0]
+            if _
+            not in (
+                "--no-pager"
+                "--color=off"
+                "--no-tty"
+                "--format=json"
+                "--path-style=absolute"
+                "--path-style=source-absolute"
+                "--no-color"
+                "--no-decorate"
+                "--date-order"
+                "--no-expand-tabs"
+                "--format=%ar by %cn;%s"
+            )
+        ]
+        pretty_cmd = " ".join(trimmed_cmd)
+        self.write(f"{time_stamp} {pretty_cmd}")
+        if chezmoi_io[1]:
+            self.write(chezmoi_io[1])
+        else:
+            self.write("Output: to be implemented")
+
+    def on_mount(self) -> None:
+        def log_callback(chezmoi_io: tuple[list, str]) -> None:
+            self.add(chezmoi_io)
+
+        chezmoi_mousse.chezmoi.command_log_callback = log_callback
+
+        if self.splash_command_log is not None:
+            for cmd in self.splash_command_log:
+                self.add(cmd)
