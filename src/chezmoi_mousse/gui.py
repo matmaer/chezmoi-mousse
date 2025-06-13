@@ -32,6 +32,7 @@ splash_command_log: list[tuple[list, str]]
 
 
 class CommandLog(RichLog):
+
     def add(self, chezmoi_io: tuple[list, str]) -> None:
         time_stamp = datetime.now().strftime("%H:%M:%S")
         # Turn the full command list into string, remove elements not useful
@@ -66,6 +67,9 @@ class CommandLog(RichLog):
             self.add(chezmoi_io)
 
         chezmoi_mousse.chezmoi.command_log_callback = log_callback
+        global splash_command_log
+        for cmd in splash_command_log:
+            self.add(cmd)
 
 
 class MainScreen(Screen):
@@ -88,12 +92,6 @@ class MainScreen(Screen):
                     id="command_log", highlight=True, max_lines=20000
                 )
         yield Footer()
-
-    def on_mount(self) -> None:
-        command_log = self.query_one("#command_log", CommandLog)
-        global splash_command_log
-        for cmd in splash_command_log:
-            command_log.add(cmd)
 
 
 class CustomScrollBarRender(ScrollBarRender):
