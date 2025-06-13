@@ -241,11 +241,11 @@ class Chezmoi:
 
     @property
     def status_dir_paths(self) -> list[Path]:
-        return [Path(p) for p in self.status_dirs.list_out]
+        return [Path(line[3:]) for line in self.status_dirs.list_out]
 
     @property
     def status_file_paths(self) -> list[Path]:
-        return [Path(p) for p in self.status_files.list_out]
+        return [Path(line[3:]) for line in self.status_files.list_out]
 
     @property
     def status_paths(self) -> dict[str, StatusDicts]:
@@ -294,8 +294,7 @@ class Chezmoi:
         return [
             p
             for p in self.managed_file_paths
-            if p not in self.status_paths["Apply"].files
-            or p not in self.status_paths["Re-Add"].files
+            if p not in self.status_file_paths
         ]
 
     def managed_file_paths_in_dir(self, dir_path: Path) -> list[Path]:
