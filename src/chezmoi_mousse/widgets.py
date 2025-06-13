@@ -1,4 +1,4 @@
-"""Contains classes used components by the widgets in main_tabs.py.
+"""Contains classes used as widgets by the main_tabs.py module.
 
 These classes
 - inherit directly from built in textual widgets
@@ -6,6 +6,7 @@ These classes
 - don't override the parents' compose method
 - don't call any query methods
 - don't apply tcss classes
+- don't import from main_tabs.py, gui.py or containers.py modules
 """
 
 import re
