@@ -500,22 +500,6 @@ class ManagedTree(TreeBase):
         nodes.extend(collect_nodes(self.root))
         return nodes
 
-    def expand_all_nodes_below(
-        self, node_to_expand: TreeNode | None = None
-    ) -> None:
-
-        if node_to_expand is None:
-            node_to_expand = self.root
-
-        def recurse(node: TreeNode):
-            self.add_nodes(node)
-            self.add_leaves(node)
-
-            for child in node.children:
-                recurse(child)
-
-        recurse(node_to_expand)
-
     def watch_unchanged(self) -> None:
         """Update the visible nodes based on the "show unchanged" filter."""
         for node in self.get_expanded_nodes():
