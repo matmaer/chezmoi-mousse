@@ -31,7 +31,7 @@ from chezmoi_mousse.widgets import (
 )
 
 from chezmoi_mousse.config import filter_data
-from chezmoi_mousse.mouse_types import FilterName, TabLabel
+from chezmoi_mousse.type_aliases import FilterName, TabLabel
 
 
 class FilterSwitch(HorizontalGroup, TabIdMixin):

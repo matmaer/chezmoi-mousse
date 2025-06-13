@@ -33,7 +33,7 @@ import chezmoi_mousse.theme as theme
 from chezmoi_mousse import BULLET
 from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.config import unwanted
-from chezmoi_mousse.mouse_types import (
+from chezmoi_mousse.type_aliases import (
     Area,
     ButtonLabel,
     ComponentName,
