@@ -33,45 +33,42 @@ from chezmoi_mousse import BULLET
 from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.config import unwanted
 from chezmoi_mousse.mouse_types import (
-    ButtonArea,
+    Area,
     ButtonLabel,
     ComponentName,
-    FilterGroups,
     FilterName,
     TabLabel,
-    TabSide,
 )
 
 
 class TabIdMixin:
-    def __init__(self, tab: TabLabel):
+    def __init__(self, tab: TabLabel) -> None:
         self.tab: TabLabel = tab
+        self.filter_slider_id = f"{self.tab}_filter_slider"
 
     def button_id(self, button_label: ButtonLabel) -> str:
-        return f"{self.tab}_{button_label}_button"
+        # replace spaces with underscores to make it a valid id
+        button_id = button_label.replace(" ", "_")
+        return f"{self.tab}_{button_id}_button"
 
-    def buttons_horizontal_id(self, area: ButtonArea) -> str:
+    def buttons_horizontal_id(self, area: Area) -> str:
         return f"{self.tab}_{area}_buttons_horizontal"
 
     def button_vertical_id(self, button_label: ButtonLabel) -> str:
         """Generate an id for each button in a vertical container to center
         them by applying auto width and align on this container."""
-        return f"{self.tab}_{button_label}_button_vertical"
+        button_id = button_label.replace(" ", "_")
+        return f"{self.tab}_{button_id}_button_vertical"
 
-    def component_id(self, component: ComponentName) -> str:
+    def component_id(self, component_name: ComponentName) -> str:
         """Generate an id for items imported from components.py."""
-        return f"{self.tab}_{component}_component"
+        return f"{self.tab}_{component_name}_component"
 
-    def content_switcher_id(self, tab_side: TabSide) -> str:
-        return f"{self.tab}_{tab_side}_content_switcher"
+    def content_switcher_id(self, area: Area) -> str:
+        return f"{self.tab}_{area}_content_switcher"
 
     def filter_horizontal_id(self, filter_name: FilterName) -> str:
         return f"{self.tab}_{filter_name}_filter_horizontal"
-
-    def filters_vertical_id(self, tab: TabLabel) -> str:
-        """Generate an id for the vertical that contains multiple
-        filter_horizontal containers."""
-        return f"{self.tab}_{tab}_filters_vertical"
 
     def filter_label_id(self, filter_name: FilterName) -> str:
         return f"{self.tab}_{filter_name}_filter_label"
@@ -79,23 +76,15 @@ class TabIdMixin:
     def filter_switch_id(self, filter_name: FilterName) -> str:
         return f"{self.tab}_{filter_name}_filter_switch"
 
-    def tab_vertical_id(self, tab_side: TabSide) -> str:
+    def tab_vertical_id(self, area: Area) -> str:
         """Generate an id for the main left and right vertical containers in a
         tab."""
-        return f"{self.tab}_{tab_side}_vertical_container"
-
-    def tree_tab_switchers_id(self, tab: TabLabel) -> str:
-        return f"{tab}_tree_tab_switchers"
-
-    def filter_group_id(self, group: FilterGroups) -> str:
-        return f"{self.tab}_{group}_filter_vertical_group"
+        return f"{self.tab}_{area}_vertical"
 
 
 class TabButton(Button, TabIdMixin):
 
-    def __init__(
-        self, button_label: ButtonLabel, tab: TabLabel, **kwargs
-    ) -> None:
+    def __init__(self, tab, *, button_label: ButtonLabel, **kwargs) -> None:
         TabIdMixin.__init__(self, tab)
         super().__init__(
             label=button_label, id=self.button_id(button_label), **kwargs
@@ -348,7 +337,7 @@ class TreeBase(Tree[NodeData], TabIdMixin):
     unchanged: reactive[bool] = reactive(False, init=False)
 
     def __init__(
-        self, tab: TabLabel, component_name: ComponentName, **kwargs
+        self, tab: TabLabel, *, component_name: ComponentName, **kwargs
     ) -> None:
         TabIdMixin.__init__(self, tab)
         self.node_colors = {
@@ -483,7 +472,7 @@ class TreeBase(Tree[NodeData], TabIdMixin):
 class ManagedTree(TreeBase):
 
     def __init__(self, tab: TabLabel, **kwargs) -> None:
-        super().__init__(tab, "ManagedTree", **kwargs)
+        super().__init__(tab, component_name="ManagedTree", **kwargs)
 
     def on_mount(self) -> None:
         self.add_nodes(self.root)
@@ -535,7 +524,7 @@ class ManagedTree(TreeBase):
 
 class ExpandedTree(TreeBase):
     def __init__(self, tab: TabLabel, **kwargs) -> None:
-        super().__init__(tab, "ExpandedTree", **kwargs)
+        super().__init__(tab, component_name="ExpandedTree", **kwargs)
 
     def on_mount(self) -> None:
         self.expand_all_nodes(self.root)
@@ -560,7 +549,7 @@ class FlatTree(TreeBase):
     unchanged: reactive[bool] = reactive(False, init=False)
 
     def __init__(self, tab: TabLabel, **kwargs) -> None:
-        super().__init__(tab, "FlatTree", **kwargs)
+        super().__init__(tab, component_name="FlatTree", **kwargs)
 
     def on_mount(self) -> None:
         self.add_flat_leaves()

@@ -68,6 +68,7 @@ If you don't have `textual` installed but the `uv` command is available:
   - [x] unpackaged
 - [x] Linux
   - [ ] single executable
+  - [ ] AppImage
   - [ ] flatpak
   - [ ] snap
   - [x] unpackaged
