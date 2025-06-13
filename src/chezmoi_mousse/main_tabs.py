@@ -36,7 +36,7 @@ from textual.widgets import (
 import chezmoi_mousse.theme as theme
 import chezmoi_mousse.chezmoi
 from chezmoi_mousse.chezmoi import chezmoi
-from chezmoi_mousse.components import (
+from chezmoi_mousse.widgets import (
     DiffView,
     ExpandedTree,
     FilteredDirTree,
