@@ -108,23 +108,6 @@ class AddFilterSlider(VerticalGroup, TabIdMixin):
         )
 
 
-class TreeTabFilterSliders(HorizontalGroup, TabIdMixin):
-
-    def __init__(self, tab: TabLabel, **kwargs) -> None:
-        TabIdMixin.__init__(self, tab)
-        super().__init__(id=self.filters_vertical_id(self.tab), **kwargs)
-
-    def compose(self) -> ComposeResult:
-        yield FilterSwitch(
-            tab=self.tab,
-            switch_name="unmanaged_dirs",
-            classes="filter-horizontal padding-bottom-once",
-        )
-        yield FilterSwitch(
-            tab=self.tab, switch_name="unwanted", classes="filter-horizontal"
-        )
-
-
 class TreeTabSwitchers(Horizontal, TabIdMixin):
 
     def __init__(self, tab: TabLabel, **kwargs) -> None:
