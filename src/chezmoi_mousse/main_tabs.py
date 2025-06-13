@@ -89,23 +89,6 @@ class TreeFilterSlider(VerticalGroup, TabIdMixin):
         )
 
 
-class AddFilterSlider(VerticalGroup, TabIdMixin):
-
-    def __init__(self, tab: TabLabel) -> None:
-        TabIdMixin.__init__(self, tab)
-        super().__init__(id=self.filter_slider_id, classes="filters-vertical")
-
-    def compose(self) -> ComposeResult:
-        yield FilterSwitch(
-            self.tab,
-            filter_name="unmanaged_dirs",
-            classes="filter-horizontal padding-bottom-once",
-        )
-        yield FilterSwitch(
-            self.tab, filter_name="unwanted", classes="filter-horizontal"
-        )
-
-
 class TreeTabSwitchers(Horizontal, TabIdMixin):
 
     def __init__(self, tab: TabLabel) -> None:
@@ -374,7 +357,18 @@ class AddTab(Horizontal, TabIdMixin):
             id=self.tab_vertical_id("Right"), classes="tab-right-vertical"
         ):
             yield PathView(self.tab, classes="path-view top-border-title")
-        yield AddFilterSlider(self.tab)
+
+        with VerticalGroup(
+            id=self.filter_slider_id, classes="filters-vertical"
+        ):
+            yield FilterSwitch(
+                self.tab,
+                filter_name="unmanaged_dirs",
+                classes="filter-horizontal padding-bottom-once",
+            )
+            yield FilterSwitch(
+                self.tab, filter_name="unwanted", classes="filter-horizontal"
+            )
 
     def on_mount(self) -> None:
         self.query_one(
