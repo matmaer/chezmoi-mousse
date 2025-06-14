@@ -341,15 +341,13 @@ class FileNodeData(NodeData):
     pass
 
 
-class TreeBase(Tree[NodeData], TabIdMixin):
+class TreeBase(Tree[NodeData]):
     """Shows the tree widget on the left for Apply and Re-Add tabs."""
 
     unchanged: reactive[bool] = reactive(False, init=False)
 
-    def __init__(
-        self, tab: TabLabel, *, component_name: ComponentName, **kwargs
-    ) -> None:
-        TabIdMixin.__init__(self, tab)
+    def __init__(self, tab: TabLabel, **kwargs) -> None:
+        self.tab: TabLabel = tab
         self.node_colors = {
             "Dir": theme.vars["text-primary"],
             "D": theme.vars["text-error"],
@@ -359,12 +357,7 @@ class TreeBase(Tree[NodeData], TabIdMixin):
         root_node_data = DirNodeData(
             path=chezmoi.dest_dir, found=True, status="M"
         )
-        super().__init__(
-            label="root",
-            data=root_node_data,
-            id=self.component_id(component_name),
-            **kwargs,
-        )
+        super().__init__(label="root", data=root_node_data, **kwargs)
 
     def on_mount(self) -> None:
         self.guide_depth = 3
@@ -465,10 +458,11 @@ class TreeBase(Tree[NodeData], TabIdMixin):
         return Text(node_data.path.name, style=style)
 
 
-class ManagedTree(TreeBase):
+class ManagedTree(TreeBase, TabIdMixin):
 
     def __init__(self, tab: TabLabel, **kwargs) -> None:
-        super().__init__(tab, component_name="ManagedTree", **kwargs)
+        TabIdMixin.__init__(self, tab)
+        super().__init__(tab, id=self.component_id("ManagedTree"), **kwargs)
 
     def on_mount(self) -> None:
         self.add_nodes(self.root)
@@ -502,9 +496,10 @@ class ManagedTree(TreeBase):
             self.add_leaves(node)
 
 
-class ExpandedTree(TreeBase):
+class ExpandedTree(TreeBase, TabIdMixin):
     def __init__(self, tab: TabLabel, **kwargs) -> None:
-        super().__init__(tab, component_name="ExpandedTree", **kwargs)
+        TabIdMixin.__init__(self, tab)
+        super().__init__(tab, id=self.component_id("ExpandedTree"), **kwargs)
 
     def on_mount(self) -> None:
         self.expand_all_nodes(self.root)
@@ -525,11 +520,12 @@ class ExpandedTree(TreeBase):
                     self.expand_all_nodes(child)
 
 
-class FlatTree(TreeBase):
+class FlatTree(TreeBase, TabIdMixin):
     unchanged: reactive[bool] = reactive(False, init=False)
 
     def __init__(self, tab: TabLabel, **kwargs) -> None:
-        super().__init__(tab, component_name="FlatTree", **kwargs)
+        TabIdMixin.__init__(self, tab)
+        super().__init__(tab, id=self.component_id("FlatTree"), **kwargs)
 
     def on_mount(self) -> None:
         self.add_flat_leaves()
