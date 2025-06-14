@@ -142,9 +142,9 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
                 initial=self.component_id("PathView"),
                 classes="content-switcher-right top-border-title",
             ):
-                yield PathView(self.tab, classes="path-view")
-                yield DiffView(self.tab, classes="diff-view")
-                yield GitLog(self.tab, classes="git-log")
+                yield PathView(self.tab)
+                yield DiffView(self.tab)
+                yield GitLog(self.tab)
 
         yield TreeFilterSlider(self.tab)
 

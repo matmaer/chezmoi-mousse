@@ -2,9 +2,6 @@
 /* tcss classes */
 /****************/
 
-.path-view {}
-.diff-view {}
-.git-log {}
 .tab-right-vertical {
   .content-switcher-right {
     margin-bottom: 1;
@@ -20,15 +17,14 @@
 
 .tab-left-vertical {
   margin-right: 2;
-  min-width: 14;
   width: auto;
   max-width: 50%;
 
   &>.content-switcher-left {
     width: auto;
-    min-width: 14;
+    max-width: 100%;
     &>.tree-widget {
-      min-width: 14;
+      max-width: 100%;
       width: auto;
     }
   }

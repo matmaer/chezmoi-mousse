@@ -128,9 +128,10 @@ class AddTab(Horizontal, TabIdMixin):
             )
 
         with Vertical(
-            id=self.tab_vertical_id("Right"), classes="tab-right-vertical"
+            id=self.tab_vertical_id("Right"),
+            classes="tab-right-vertical top-border-title",
         ):
-            yield PathView(self.tab, classes="path-view top-border-title")
+            yield PathView(self.tab)
 
         with VerticalGroup(
             id=self.filter_slider_id, classes="filters-vertical"
@@ -146,7 +147,7 @@ class AddTab(Horizontal, TabIdMixin):
 
     def on_mount(self) -> None:
         self.query_one(
-            f"#{self.component_id('PathView')}", PathView
+            f"#{self.tab_vertical_id("Right")}", Vertical
         ).border_title = " path view "
         self.query_one(
             f"#{self.tab_vertical_id("Left")}", VerticalGroup
@@ -158,11 +159,12 @@ class AddTab(Horizontal, TabIdMixin):
         event.stop()
 
         assert event.node.data is not None
-        path_view = self.query_one(
-            f"#{self.component_id('PathView')}", PathView
+        self.query_one(f"#{self.component_id('PathView')}", PathView).path = (
+            event.node.data.path
         )
-        path_view.path = event.node.data.path
-        path_view.border_title = (
+        self.query_one(
+            f"#{self.tab_vertical_id("Right")}", Vertical
+        ).border_title = (
             f" {event.node.data.path.relative_to(chezmoi.dest_dir)} "
         )
 
@@ -171,11 +173,12 @@ class AddTab(Horizontal, TabIdMixin):
     ) -> None:
         event.stop()
         assert event.node.data is not None
-        path_view = self.query_one(
-            f"#{self.component_id('PathView')}", PathView
+        self.query_one(f"#{self.component_id('PathView')}", PathView).path = (
+            event.node.data.path
         )
-        path_view.path = event.node.data.path
-        path_view.border_title = (
+        self.query_one(
+            f"#{self.tab_vertical_id("Right")}", Vertical
+        ).border_title = (
             f" {event.node.data.path.relative_to(chezmoi.dest_dir)} "
         )
 
