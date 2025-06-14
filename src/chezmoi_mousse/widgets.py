@@ -324,14 +324,6 @@ class DiffView(RichLog, TabIdMixin):
                 self.write(Text(BULLET + line, style="dim"))
 
 
-# @dataclass
-# class NodeData:
-#     path: Path
-#     is_file: bool
-#     found: bool
-#     status: str
-
-
 @dataclass
 class NodeData:
     path: Path

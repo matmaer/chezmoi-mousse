@@ -118,12 +118,13 @@ class AddTab(Horizontal, TabIdMixin):
 
     def compose(self) -> ComposeResult:
         with VerticalGroup(
-            id=self.tab_vertical_id("Left"), classes="tab-left-vertical"
+            id=self.tab_vertical_id("Left"),
+            classes="tab-left-vertical top-border-title",
         ):
             yield FilteredDirTree(
                 chezmoi.dest_dir,
                 id=self.component_id("AddTree"),
-                classes="dir-tree-widget top-border-title",
+                classes="dir-tree-widget",
             )
 
         with Vertical(
@@ -148,7 +149,7 @@ class AddTab(Horizontal, TabIdMixin):
             f"#{self.component_id('PathView')}", PathView
         ).border_title = " path view "
         self.query_one(
-            f"#{self.component_id('AddTree')}", FilteredDirTree
+            f"#{self.tab_vertical_id("Left")}", VerticalGroup
         ).border_title = chezmoi.dest_dir_str_spaced
 
     def on_directory_tree_file_selected(
