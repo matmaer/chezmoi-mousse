@@ -45,6 +45,7 @@ from chezmoi_mousse.type_aliases import (
 class TabIdMixin:
     def __init__(self, tab: TabLabel) -> None:
         self.tab: TabLabel = tab
+        self.tab_main_horizontal_id = f"{self.tab}_main_horizontal"
         self.filter_slider_id = f"{self.tab}_filter_slider"
         self.tree_tab_switchers_id = f"{self.tab}_tree_tab_switchers"
 

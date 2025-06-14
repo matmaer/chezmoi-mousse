@@ -56,9 +56,9 @@ class ApplyTab(Container, TabIdMixin):
         ),
     ]
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self) -> None:
         TabIdMixin.__init__(self, "Apply")
-        super().__init__(**kwargs)
+        super().__init__(id=self.tab_main_horizontal_id)
 
     def compose(self) -> ComposeResult:
         yield TreeTabSwitchers("Apply")
@@ -84,9 +84,9 @@ class ReAddTab(Container, TabIdMixin):
         ),
     ]
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self) -> None:
         TabIdMixin.__init__(self, "Re-Add")
-        super().__init__(**kwargs)
+        super().__init__(id=self.tab_main_horizontal_id)
 
     def compose(self) -> ComposeResult:
         yield TreeTabSwitchers("Re-Add")
@@ -112,9 +112,9 @@ class AddTab(Horizontal, TabIdMixin):
         ),
     ]
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self) -> None:
         TabIdMixin.__init__(self, "Add")
-        super().__init__(**kwargs)
+        super().__init__(id=self.tab_main_horizontal_id)
 
     def compose(self) -> ComposeResult:
         with VerticalGroup(
