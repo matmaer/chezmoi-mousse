@@ -5,7 +5,7 @@
 .tab-right-vertical {
   .content-switcher-right {
     margin-bottom: 1;
-    overflow: scroll;
+    overflow-x: scroll;
   }
 }
 
