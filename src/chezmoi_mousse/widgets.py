@@ -46,6 +46,7 @@ class TabIdMixin:
     def __init__(self, tab: TabLabel) -> None:
         self.tab: TabLabel = tab
         self.filter_slider_id = f"{self.tab}_filter_slider"
+        self.tree_tab_switchers_id = f"{self.tab}_tree_tab_switchers"
 
     def button_id(self, button_label: ButtonLabel) -> str:
         # replace spaces with underscores to make it a valid id
