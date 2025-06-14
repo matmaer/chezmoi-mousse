@@ -2,9 +2,6 @@
 /* tcss classes */
 /****************/
 
-.path-view {}
-.diff-view {}
-.git-log {}
 .tab-right-vertical {
   .content-switcher-right {
     margin-bottom: 1;
