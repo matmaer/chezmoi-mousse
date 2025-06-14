@@ -48,17 +48,11 @@ from chezmoi_mousse.containers import FilterSwitch, TreeTabSwitchers
 class ApplyTab(Container, TabIdMixin):
 
     BINDINGS = [
-        Binding(
-            key="W,w",
-            action="apply_path",
-            description="chezmoi-apply",
-            tooltip="write to dotfiles from your chezmoi repository",
-        ),
+        Binding(key="W,w", action="apply_path", description="chezmoi-apply"),
         Binding(
             key="F,f",
             action="toggle_filter_slider",
             description="toggle-filters",
-            tooltip="toggle filters for this tree in/out of view",
         ),
     ]
 

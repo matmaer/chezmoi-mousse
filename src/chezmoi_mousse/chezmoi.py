@@ -11,6 +11,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from subprocess import TimeoutExpired, run
 from typing import NamedTuple
+from chezmoi_mousse.type_aliases import TabLabel
 
 
 def callback_null_object(*args) -> None:
@@ -240,11 +241,11 @@ class Chezmoi:
 
     @property
     def status_dir_paths(self) -> list[Path]:
-        return [Path(p) for p in self.status_dirs.list_out]
+        return [Path(line[3:]) for line in self.status_dirs.list_out]
 
     @property
     def status_file_paths(self) -> list[Path]:
-        return [Path(p) for p in self.status_files.list_out]
+        return [Path(line[3:]) for line in self.status_files.list_out]
 
     @property
     def status_paths(self) -> dict[str, StatusDicts]:
@@ -255,24 +256,32 @@ class Chezmoi:
         """
 
         def create_status_dict(
-            lines: list[str], apply: bool
+            lines: list[str], *, tab_label: TabLabel
         ) -> dict[Path, str]:
-            result = {}
-            for line in lines:
-                status_code = line[1] if apply else line[0]
-                if status_code in "ADM":
-                    result[Path(line[3:])] = status_code
-            return result
+            if tab_label == "Apply":
+                status_codes = "ADM"
+                status_idx = 1
+            elif tab_label == "Re-Add":
+                status_codes = "M"
+                status_idx = 0
+            # list comprehension returns empty dict if no lines match
+            return {
+                Path(line[3:]): line[status_idx]
+                for line in lines
+                if line[status_idx] in status_codes
+            }
 
-        apply_dirs = create_status_dict(self.status_dirs.list_out, apply=True)
+        apply_dirs = create_status_dict(
+            self.status_dirs.list_out, tab_label="Apply"
+        )
         apply_files = create_status_dict(
-            self.status_files.list_out, apply=True
+            self.status_files.list_out, tab_label="Apply"
         )
         re_add_dirs = create_status_dict(
-            self.status_dirs.list_out, apply=False
+            self.status_dirs.list_out, tab_label="Re-Add"
         )
         re_add_files = create_status_dict(
-            self.status_files.list_out, apply=False
+            self.status_files.list_out, tab_label="Re-Add"
         )
 
         return {
@@ -285,8 +294,7 @@ class Chezmoi:
         return [
             p
             for p in self.managed_file_paths
-            if p not in self.status_paths["Apply"].files
-            or p not in self.status_paths["Re-Add"].files
+            if p not in self.status_file_paths
         ]
 
     def managed_file_paths_in_dir(self, dir_path: Path) -> list[Path]:

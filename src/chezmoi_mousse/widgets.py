@@ -370,21 +370,28 @@ class TreeBase(Tree[NodeData], TabIdMixin):
         if node_data.path == chezmoi.dest_dir:
             return True
 
-        managed_in_dir_tree = [
+        managed_files_in_sub_dir = [
             f
             for f in chezmoi.managed_file_paths
             if node_data.path in f.parents
         ]
 
+        managed_dirs_in_sub_dir = [
+            f
+            for f in chezmoi.managed_dir_paths
+            if node_data.path in f.parents
+            or node_data.path.parent == chezmoi.dest_dir
+        ]
+
         status_files = chezmoi.status_paths[self.tab].files
 
         if not self.unchanged:
-            return any(f in status_files for f in managed_in_dir_tree)
+            return any(f in status_files for f in managed_files_in_sub_dir)
         elif self.unchanged:
-            # Show if this is a managed dir, even if empty
             return (
-                bool(managed_in_dir_tree)
-                or node_data.path in chezmoi.managed_dir_paths
+                bool(managed_dirs_in_sub_dir)
+                or bool(managed_files_in_sub_dir)
+                and node_data.path in chezmoi.managed_dir_paths
             )
         return False
 
@@ -499,22 +506,6 @@ class ManagedTree(TreeBase):
 
         nodes.extend(collect_nodes(self.root))
         return nodes
-
-    def expand_all_nodes_below(
-        self, node_to_expand: TreeNode | None = None
-    ) -> None:
-
-        if node_to_expand is None:
-            node_to_expand = self.root
-
-        def recurse(node: TreeNode):
-            self.add_nodes(node)
-            self.add_leaves(node)
-
-            for child in node.children:
-                recurse(child)
-
-        recurse(node_to_expand)
 
     def watch_unchanged(self) -> None:
         """Update the visible nodes based on the "show unchanged" filter."""

@@ -3,13 +3,14 @@
 
 Graphical user interface in the terminal for [chezmoi](https://github.com/twpayne/chezmoi). Built with [textual](https://github.com/Textualize/textual).
 
-## Install
+## Current Use Case
 
-- [Python](https://www.python.org/)
-- [Textual](https://textual.textualize.io/)
-- [Chezmoi](https://www.chezmoi.io/)
+- [Chezmoi](https://www.chezmoi.io/) is installed
+- Existing local `chezmoi` repository on disk (`chezmoi init` is not implemented)
+- [Python 3.13](https://www.python.org/) is installed
+  (including [Textual](https://textual.textualize.io/) or run with [UV](https://docs.astral.sh/uv/getting-started/installation/))
 
-## Chezmoi commands
+## Available Chezmoi commands
 
 - [ ] `chezmoi add`
 - [ ] `chezmoi apply`
