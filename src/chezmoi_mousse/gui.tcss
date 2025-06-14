@@ -25,19 +25,17 @@
   max-width: 50%;
 
   &>.content-switcher-left {
-    /* do not set max-width here! */
     width: auto;
     min-width: 14;
     &>.tree-widget {
-      /* do not set max-width here! */
       min-width: 14;
       width: auto;
     }
   }
 
   &>.dir-tree-widget {
-    /* do not set max-width here! */
     min-width: 14;
+    max-width: 100%;
     width: auto;
   }
 }
