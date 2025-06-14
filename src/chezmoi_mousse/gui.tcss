@@ -46,7 +46,7 @@
   dock: bottom;
   layer: filter_switches;
   margin-bottom: 3;
-  max-width: 80%;
+  max-width: 95%;
   padding-right: 2;
   width: auto;
   /* offset-x: -100%; out if view if docked left */
