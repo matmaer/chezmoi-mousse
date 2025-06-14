@@ -324,12 +324,29 @@ class DiffView(RichLog, TabIdMixin):
                 self.write(Text(BULLET + line, style="dim"))
 
 
+# @dataclass
+# class NodeData:
+#     path: Path
+#     is_file: bool
+#     found: bool
+#     status: str
+
+
 @dataclass
 class NodeData:
     path: Path
     found: bool
-    is_file: bool
     status: str
+
+
+@dataclass
+class DirNodeData(NodeData):
+    pass
+
+
+@dataclass
+class FileNodeData(NodeData):
+    pass
 
 
 class TreeBase(Tree[NodeData], TabIdMixin):
@@ -347,8 +364,8 @@ class TreeBase(Tree[NodeData], TabIdMixin):
             "A": theme.vars["text-success"],
             "M": theme.vars["text-warning"],
         }
-        root_node_data = NodeData(
-            path=chezmoi.dest_dir, found=True, is_file=False, status="M"
+        root_node_data = DirNodeData(
+            path=chezmoi.dest_dir, found=True, status="M"
         )
         super().__init__(
             label="root",
@@ -361,87 +378,69 @@ class TreeBase(Tree[NodeData], TabIdMixin):
         self.guide_depth = 3
         self.show_root = False
 
-    def show_dir_node(self, node_data: NodeData) -> bool:
-        if node_data.is_file:
-            raise ValueError(
-                f"Expected a dir node, got {node_data.path} instead."
-            )
-
-        if node_data.path == chezmoi.dest_dir:
+    def should_show_node(self, node_data: NodeData) -> bool:
+        if isinstance(node_data, FileNodeData):
+            if not self.unchanged:
+                return node_data.status != "X"
             return True
-
-        managed_files_in_sub_dir = [
-            f
-            for f in chezmoi.managed_file_paths
-            if node_data.path in f.parents
-        ]
-
-        managed_dirs_in_sub_dir = [
-            f
-            for f in chezmoi.managed_dir_paths
-            if node_data.path in f.parents
-            or node_data.path.parent == chezmoi.dest_dir
-        ]
-
-        status_files = chezmoi.status_paths[self.tab].files
-
-        if not self.unchanged:
-            return any(f in status_files for f in managed_files_in_sub_dir)
-        elif self.unchanged:
-            return (
-                bool(managed_dirs_in_sub_dir)
-                or bool(managed_files_in_sub_dir)
-                and node_data.path in chezmoi.managed_dir_paths
-            )
+        elif isinstance(node_data, DirNodeData):
+            if node_data.path == chezmoi.dest_dir:
+                return True
+            managed_files_in_sub_dir = [
+                f
+                for f in chezmoi.managed_file_paths
+                if node_data.path in f.parents
+            ]
+            managed_dirs_in_sub_dir = [
+                f
+                for f in chezmoi.managed_dir_paths
+                if node_data.path in f.parents
+                or node_data.path.parent == chezmoi.dest_dir
+            ]
+            status_files = chezmoi.status_paths[self.tab].files
+            if not self.unchanged:
+                return any(f in status_files for f in managed_files_in_sub_dir)
+            else:
+                return (
+                    bool(managed_dirs_in_sub_dir)
+                    or bool(managed_files_in_sub_dir)
+                    and node_data.path in chezmoi.managed_dir_paths
+                )
         return False
-
-    def show_file_node(self, node_data: NodeData) -> bool:
-        if not node_data.is_file:
-            raise ValueError(
-                f"Expected a file node, got {node_data.path} instead."
-            )
-        if not self.unchanged:
-            return node_data.status != "X"
-        return True
 
     def add_leaves(self, tree_node: TreeNode) -> None:
         current_leafs = [
             leaf
             for leaf in tree_node.children
-            if isinstance(leaf.data, NodeData) and leaf.data.is_file
+            if isinstance(leaf.data, FileNodeData)
         ]
         for leaf in current_leafs:
             leaf.remove()
 
         status_code = "X"
-        assert isinstance(tree_node.data, NodeData)
+        assert isinstance(tree_node.data, DirNodeData)
         file_paths = chezmoi.managed_file_paths_in_dir(tree_node.data.path)
         status_files = chezmoi.status_paths[self.tab].files
         for file_path in file_paths:
             if file_path in status_files:
                 status_code = status_files[file_path]
-            node_data = NodeData(
-                path=file_path,
-                found=file_path.exists(),
-                is_file=True,
-                status=status_code,
+            node_data = FileNodeData(
+                path=file_path, found=file_path.exists(), status=status_code
             )
-            if self.show_file_node(node_data):
+            if self.should_show_node(node_data):
                 node_label = self.style_label(node_data)
                 tree_node.add_leaf(label=node_label, data=node_data)
 
     def add_nodes(self, tree_node: TreeNode) -> None:
-        assert isinstance(tree_node.data, NodeData)
+        assert isinstance(tree_node.data, DirNodeData)
         dir_paths = chezmoi.managed_dir_paths_in_dir(tree_node.data.path)
         status_dirs = chezmoi.status_paths[self.tab].dirs
 
         # Remove directory nodes that no longer match the filter
         for child in list(tree_node.children):
-            if (
-                isinstance(child.data, NodeData)
-                and not child.data.is_file
-                and not self.show_dir_node(child.data)
-            ):
+            if isinstance(
+                child.data, DirNodeData
+            ) and not self.should_show_node(child.data):
                 child.remove()
 
         # Add directory nodes that now match the filter
@@ -449,17 +448,14 @@ class TreeBase(Tree[NodeData], TabIdMixin):
             status_code = "X"
             if dir_path in status_dirs:
                 status_code = status_dirs[dir_path]
-            node_data = NodeData(
-                path=dir_path,
-                found=dir_path.exists(),
-                is_file=False,
-                status=status_code,
+            node_data = DirNodeData(
+                path=dir_path, found=dir_path.exists(), status=status_code
             )
             # Only add if not already present and should be shown
-            if self.show_dir_node(node_data) and dir_path not in [
+            if self.should_show_node(node_data) and dir_path not in [
                 child.data.path
                 for child in tree_node.children
-                if isinstance(child.data, NodeData) and not child.data.is_file
+                if isinstance(child.data, DirNodeData)
             ]:
                 node_label = self.style_label(node_data)
                 tree_node.add(label=node_label, data=node_data)
@@ -470,7 +466,7 @@ class TreeBase(Tree[NodeData], TabIdMixin):
             style = Style(
                 color=self.node_colors[node_data.status], italic=italic
             )
-        elif node_data.is_file:
+        elif isinstance(node_data, FileNodeData):
             style = "dim"
         else:
             style = self.node_colors["Dir"]
@@ -525,15 +521,15 @@ class ExpandedTree(TreeBase):
         """Recursively expand all directory nodes."""
         if (
             node.data
-            and not node.data.is_file
-            and self.show_dir_node(node.data)
+            and isinstance(node.data, DirNodeData)
+            and self.should_show_node(node.data)
         ):
             if not node.is_expanded:
                 node.expand()
                 self.add_nodes(node)
                 self.add_leaves(node)
             for child in node.children:
-                if child.data and not child.data.is_file:
+                if child.data and isinstance(child.data, DirNodeData):
                     self.expand_all_nodes(child)
 
 
@@ -549,10 +545,9 @@ class FlatTree(TreeBase):
     def add_flat_leaves(self) -> None:
         status_files = chezmoi.status_paths[self.tab].files
         for file_path in status_files:
-            node_data = NodeData(
+            node_data = FileNodeData(
                 path=file_path,
                 found=file_path.exists(),
-                is_file=True,
                 status=status_files[file_path],
             )
             node_label = self.style_label(node_data)
@@ -560,11 +555,8 @@ class FlatTree(TreeBase):
 
     def watch_unchanged(self) -> None:
         for file_path in chezmoi.managed_file_paths_without_status:
-            node_data = NodeData(
-                path=file_path,
-                found=file_path.exists(),
-                is_file=True,
-                status="X",
+            node_data = FileNodeData(
+                path=file_path, found=file_path.exists(), status="X"
             )
             node_label = self.style_label(node_data)
             self.root.add_leaf(label=node_label, data=node_data)
