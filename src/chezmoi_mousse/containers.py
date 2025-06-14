@@ -75,7 +75,7 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
 
     def __init__(self, tab: TabLabel, **kwargs) -> None:
         TabIdMixin.__init__(self, tab)
-        super().__init__(**kwargs)
+        super().__init__(id=self.tree_tab_switchers_id, **kwargs)
 
     def compose(self) -> ComposeResult:
         with VerticalGroup(
