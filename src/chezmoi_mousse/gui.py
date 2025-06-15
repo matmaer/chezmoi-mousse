@@ -32,11 +32,11 @@ class MainScreen(Screen):
         yield Header(icon=BURGER)
         with TabbedContent():
             with TabPane("Apply", id="apply_tab_pane"):
-                yield ApplyTab(id="apply_tab")
+                yield ApplyTab()
             with TabPane("Re-Add", id="re_add_tab_pane"):
-                yield ReAddTab(id="re_add_tab")
+                yield ReAddTab()
             with TabPane("Add", id="add_tab_pane"):
-                yield AddTab(id="add_tab")
+                yield AddTab()
             with TabPane("Doctor", id="doctor_tab_pane"):
                 yield DoctorTab(id="doctor_tab")
             with TabPane("Diagram", id="diagram_tab_pane"):

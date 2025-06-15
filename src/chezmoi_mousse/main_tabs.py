@@ -10,7 +10,6 @@ from rich.text import Text
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import (
-    Container,
     Horizontal,
     Vertical,
     VerticalGroup,
@@ -42,10 +41,18 @@ from chezmoi_mousse.widgets import (
 )
 
 from chezmoi_mousse.config import pw_mgr_info
-from chezmoi_mousse.containers import FilterSwitch, TreeTabSwitchers
+from chezmoi_mousse.containers import (
+    FilterSwitch,
+    TreeTabEventMixin,
+    TabButtonsLeft,
+    TabButtonsRight,
+    ContentSwitcherLeft,
+    ContentSwitcherRight,
+    TreeFilterSlider,
+)
 
 
-class ApplyTab(Container, TabIdMixin):
+class ApplyTab(Horizontal, TabIdMixin, TreeTabEventMixin):
 
     BINDINGS = [
         Binding(key="W,w", action="apply_path", description="chezmoi-apply"),
@@ -56,12 +63,24 @@ class ApplyTab(Container, TabIdMixin):
         ),
     ]
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self) -> None:
         TabIdMixin.__init__(self, "Apply")
-        super().__init__(**kwargs)
+        super().__init__(id=self.tab_main_horizontal_id)
 
     def compose(self) -> ComposeResult:
-        yield TreeTabSwitchers("Apply")
+        with VerticalGroup(
+            id=self.tab_vertical_id("Left"), classes="tab-left-vertical"
+        ):
+            yield TabButtonsLeft(self.tab)
+            yield ContentSwitcherLeft(self.tab)
+
+        with Vertical(
+            id=self.tab_vertical_id("Right"), classes="tab-right-vertical"
+        ):
+            yield TabButtonsRight(self.tab)
+            yield ContentSwitcherRight(self.tab)
+
+        yield TreeFilterSlider(self.tab)
 
     def action_apply_path(self) -> None:
         self.notify("to implement")
@@ -73,7 +92,7 @@ class ApplyTab(Container, TabIdMixin):
         ).toggle_class("-visible")
 
 
-class ReAddTab(Container, TabIdMixin):
+class ReAddTab(Horizontal, TabIdMixin, TreeTabEventMixin):
 
     BINDINGS = [
         Binding(key="A,a", action="re_add_path", description="chezmoi-re-add"),
@@ -84,12 +103,24 @@ class ReAddTab(Container, TabIdMixin):
         ),
     ]
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self) -> None:
         TabIdMixin.__init__(self, "Re-Add")
-        super().__init__(**kwargs)
+        super().__init__(id=self.tab_main_horizontal_id)
 
     def compose(self) -> ComposeResult:
-        yield TreeTabSwitchers("Re-Add")
+        with VerticalGroup(
+            id=self.tab_vertical_id("Left"), classes="tab-left-vertical"
+        ):
+            yield TabButtonsLeft(self.tab)
+            yield ContentSwitcherLeft(self.tab)
+
+        with Vertical(
+            id=self.tab_vertical_id("Right"), classes="tab-right-vertical"
+        ):
+            yield TabButtonsRight(self.tab)
+            yield ContentSwitcherRight(self.tab)
+
+        yield TreeFilterSlider(self.tab)
 
     def action_re_add_path(self) -> None:
         self.notify("to implement")
@@ -112,9 +143,9 @@ class AddTab(Horizontal, TabIdMixin):
         ),
     ]
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self) -> None:
         TabIdMixin.__init__(self, "Add")
-        super().__init__(**kwargs)
+        super().__init__(id=self.tab_main_horizontal_id)
 
     def compose(self) -> ComposeResult:
         with VerticalGroup(

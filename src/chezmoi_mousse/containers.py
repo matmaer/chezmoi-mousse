@@ -10,7 +10,6 @@ These classes
 from textual.app import ComposeResult
 from textual.containers import (
     Container,
-    Horizontal,
     HorizontalGroup,
     Vertical,
     VerticalGroup,
@@ -31,7 +30,11 @@ from chezmoi_mousse.widgets import (
 )
 
 from chezmoi_mousse.config import filter_data
-from chezmoi_mousse.type_aliases import FilterName, TabLabel
+from chezmoi_mousse.type_definitions import (
+    FilterName,
+    CommonTabEvents,
+    TabLabel,
+)
 
 
 class FilterSwitch(HorizontalGroup, TabIdMixin):
@@ -71,121 +74,148 @@ class TreeFilterSlider(VerticalGroup, TabIdMixin):
         )
 
 
-class TreeTabSwitchers(Horizontal, TabIdMixin):
+class TabButtonsLeft(HorizontalGroup, TabIdMixin):
 
     def __init__(self, tab: TabLabel, **kwargs) -> None:
         TabIdMixin.__init__(self, tab)
-        super().__init__(id=self.tree_tab_switchers_id, **kwargs)
+        super().__init__(
+            id=self.buttons_horizontal_id("Left"),
+            classes="tab-buttons-horizontal",
+            **kwargs,
+        )
 
     def compose(self) -> ComposeResult:
-        with VerticalGroup(
-            id=self.tab_vertical_id("Left"), classes="tab-left-vertical"
-        ):
-            with HorizontalGroup(
-                id=self.buttons_horizontal_id("TopLeft"),
-                classes="tab-buttons-horizontal",
-            ):
-                with Vertical(
-                    id=self.button_vertical_id("Tree"),
-                    classes="single-button-vertical",
-                ):
-                    yield TabButton(
-                        self.tab, button_label="Tree", classes="tab-button"
-                    )
-                with Vertical(
-                    id=self.button_vertical_id("List"),
-                    classes="single-button-vertical",
-                ):
-                    yield TabButton(
-                        self.tab, button_label="List", classes="tab-button"
-                    )
-            with ContentSwitcher(
-                id=self.content_switcher_id("Left"),
-                initial=self.component_id("ManagedTree"),
-                classes="content-switcher-left top-border-title",
-            ):
-                yield ManagedTree(self.tab, classes="tree-widget")
-                yield FlatTree(self.tab, classes="tree-widget")
-                yield ExpandedTree(self.tab, classes="tree-widget")
-
         with Vertical(
-            id=self.tab_vertical_id("Right"), classes="tab-right-vertical"
+            id=self.button_vertical_id("Tree"),
+            classes="single-button-vertical",
         ):
-            with HorizontalGroup(
-                id=self.buttons_horizontal_id("TopRight"),
-                classes="tab-buttons-horizontal",
-            ):
-                with Vertical(
-                    id=self.button_vertical_id("Contents"),
-                    classes="single-button-vertical",
-                ):
-                    yield TabButton(
-                        self.tab, button_label="Contents", classes="tab-button"
-                    )
-                with Vertical(
-                    id=self.button_vertical_id("Diff"),
-                    classes="single-button-vertical",
-                ):
-                    yield TabButton(
-                        self.tab, button_label="Diff", classes="tab-button"
-                    )
-                with Vertical(
-                    id=self.button_vertical_id("Git-Log"),
-                    classes="single-button-vertical",
-                ):
-                    yield TabButton(
-                        self.tab, button_label="Git-Log", classes="tab-button"
-                    )
-
-            with ContentSwitcher(
-                id=self.content_switcher_id("Right"),
-                initial=self.component_id("PathView"),
-                classes="content-switcher-right top-border-title",
-            ):
-                yield PathView(self.tab)
-                yield DiffView(self.tab)
-                yield GitLog(self.tab)
-
-        yield TreeFilterSlider(self.tab)
+            yield TabButton(
+                self.tab, button_label="Tree", classes="tab-button"
+            )
+        with Vertical(
+            id=self.button_vertical_id("List"),
+            classes="single-button-vertical",
+        ):
+            yield TabButton(
+                self.tab, button_label="List", classes="tab-button"
+            )
 
     def on_mount(self) -> None:
         self.query_one(f"#{self.button_id('Tree')}").add_class("last-clicked")
-        self.query_one(
-            f"#{self.content_switcher_id('Left')}", ContentSwitcher
-        ).border_title = chezmoi.dest_dir_str_spaced
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        lc = "last-clicked"
+        if event.button.id == self.button_id("Tree"):
+            self.query_one(f"#{self.button_id('List')}").remove_class(lc)
+            self.query_one(f"#{self.button_id('Tree')}").add_class(lc)
+        elif event.button.id == self.button_id("List"):
+            self.query_one(f"#{self.button_id('Tree')}").remove_class(lc)
+            self.query_one(f"#{self.button_id('List')}").add_class(lc)
+
+
+class TabButtonsRight(HorizontalGroup, TabIdMixin):
+    def __init__(self, tab: TabLabel, **kwargs) -> None:
+        TabIdMixin.__init__(self, tab)
+        super().__init__(
+            id=self.buttons_horizontal_id("Right"),
+            classes="tab-buttons-horizontal",
+            **kwargs,
+        )
+
+    def compose(self) -> ComposeResult:
+        with Vertical(
+            id=self.button_vertical_id("Contents"),
+            classes="single-button-vertical",
+        ):
+            yield TabButton(
+                self.tab, button_label="Contents", classes="tab-button"
+            )
+        with Vertical(
+            id=self.button_vertical_id("Diff"),
+            classes="single-button-vertical",
+        ):
+            yield TabButton(
+                self.tab, button_label="Diff", classes="tab-button"
+            )
+        with Vertical(
+            id=self.button_vertical_id("Git-Log"),
+            classes="single-button-vertical",
+        ):
+            yield TabButton(
+                self.tab, button_label="Git-Log", classes="tab-button"
+            )
+
+    def on_mount(self) -> None:
         self.query_one(f"#{self.button_id('Contents')}").add_class(
             "last-clicked"
         )
-        self.query_one(
-            f"#{self.content_switcher_id('Right')}", ContentSwitcher
-        ).border_title = " path view "
 
-    def update_button_classes(self, button_id: str) -> None:
+    def on_button_pressed(self, event: Button.Pressed) -> None:
         lc = "last-clicked"
-        if button_id == self.button_id("Tree"):
-            self.query_one(f"#{self.button_id('List')}").remove_class(lc)
-            self.query_one(f"#{self.button_id('Tree')}").add_class(lc)
-        elif button_id == self.button_id("List"):
-            self.query_one(f"#{self.button_id('Tree')}").remove_class(lc)
-            self.query_one(f"#{self.button_id('List')}").add_class(lc)
-        elif button_id == self.button_id("Contents"):
+        if event.button.id == self.button_id("Contents"):
             self.query_one(f"#{self.button_id('Diff')}").remove_class(lc)
             self.query_one(f"#{self.button_id('Git-Log')}").remove_class(lc)
             self.query_one(f"#{self.button_id('Contents')}").add_class(lc)
-        elif button_id == self.button_id("Diff"):
+        elif event.button.id == self.button_id("Diff"):
             self.query_one(f"#{self.button_id('Contents')}").remove_class(lc)
             self.query_one(f"#{self.button_id('Git-Log')}").remove_class(lc)
             self.query_one(f"#{self.button_id('Diff')}").add_class(lc)
-        elif button_id == self.button_id("Git-Log"):
+        elif event.button.id == self.button_id("Git-Log"):
             self.query_one(f"#{self.button_id('Contents')}").remove_class(lc)
             self.query_one(f"#{self.button_id('Diff')}").remove_class(lc)
             self.query_one(f"#{self.button_id('Git-Log')}").add_class(lc)
 
-    def on_button_pressed(self, event: Button.Pressed) -> None:
-        # event.stop()
+
+class ContentSwitcherLeft(ContentSwitcher, TabIdMixin):
+    """Reusable ContentSwitcher for the left panel with tree widgets."""
+
+    def __init__(self, tab: TabLabel, **kwargs):
+        TabIdMixin.__init__(self, tab)
+        self.tab = tab
+        super().__init__(
+            id=self.content_switcher_id("Left"),
+            initial=self.component_id("ManagedTree"),
+            classes="content-switcher-left top-border-title",
+            **kwargs,
+        )
+
+    def on_mount(self) -> None:
+        self.border_title = chezmoi.dest_dir_str_spaced
+
+    def compose(self) -> ComposeResult:
+        yield ManagedTree(self.tab, classes="tree-widget")
+        yield FlatTree(self.tab, classes="tree-widget")
+        yield ExpandedTree(self.tab, classes="tree-widget")
+
+
+class ContentSwitcherRight(ContentSwitcher, TabIdMixin):
+    """Reusable ContentSwitcher for the right panel with path view widgets."""
+
+    def __init__(self, tab: TabLabel, **kwargs):
+        TabIdMixin.__init__(self, tab)
+        self.tab = tab
+        super().__init__(
+            id=self.content_switcher_id("Right"),
+            initial=self.component_id("PathView"),
+            classes="content-switcher-right top-border-title",
+            **kwargs,
+        )
+
+    def on_mount(self) -> None:
+        self.border_title = " path view "
+
+    def compose(self) -> ComposeResult:
+        yield PathView(self.tab)
+        yield DiffView(self.tab)
+        yield GitLog(self.tab)
+
+
+class TreeTabEventMixin:
+    def on_button_pressed(
+        self: CommonTabEvents, event: Button.Pressed
+    ) -> None:
         assert event.button.id is not None
         # Tree/List Switch
-        self.update_button_classes(event.button.id)
         if event.button.id == self.button_id("Tree"):
             self.query_one(
                 f"#{self.content_switcher_id('Left')}", ContentSwitcher
@@ -208,8 +238,9 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
                 f"#{self.content_switcher_id('Right')}", ContentSwitcher
             ).current = self.component_id("GitLog")
 
-    def on_tree_node_selected(self, event: ManagedTree.NodeSelected) -> None:
-        # event.stop()
+    def on_tree_node_selected(
+        self: CommonTabEvents, event: ManagedTree.NodeSelected
+    ) -> None:
         assert event.node.data is not None
         self.query_one(
             f"#{self.content_switcher_id('Right')}", Container
@@ -219,16 +250,16 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
         self.query_one(f"#{self.component_id('PathView')}", PathView).path = (
             event.node.data.path
         )
-
         self.query_one(f"#{self.component_id('DiffView')}", DiffView).path = (
             event.node.data.path
         )
-
         self.query_one(f"#{self.component_id('GitLog')}", GitLog).path = (
             event.node.data.path
         )
 
-    def on_switch_changed(self, event: Switch.Changed) -> None:
+    def on_switch_changed(
+        self: CommonTabEvents, event: Switch.Changed
+    ) -> None:
         event.stop()
         if event.switch.id == self.filter_switch_id("unchanged"):
             self.query_one(
@@ -242,7 +273,7 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
                 self.query_one(
                     f"#{self.content_switcher_id('Left')}", ContentSwitcher
                 ).current = self.component_id("ExpandedTree")
-            elif not event.value:
+            else:
                 self.query_one(
                     f"#{self.content_switcher_id('Left')}", ContentSwitcher
                 ).current = self.component_id("ManagedTree")
