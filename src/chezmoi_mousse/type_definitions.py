@@ -21,7 +21,7 @@ type ComponentName = Literal[TreeName, "PathView", "DiffView", "GitLog"]
 type FilterName = Literal[
     "expand_all", "unchanged", "unwanted", "unmanaged_dirs"
 ]
-type TabLabel = Literal["Apply", "Re-Add", "Add", "Doctor", "Diagram", "Log"]
+type TabName = Literal["Apply", "ReAdd", "Add", "Doctor", "Diagram", "Log"]
 
 if TYPE_CHECKING:
     from textual.containers import Container
