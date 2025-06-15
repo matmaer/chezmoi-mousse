@@ -25,6 +25,8 @@
     width: auto;
     max-width: 100%;
     &>.tree-widget {
+      margin-bottom: 1; /* to make sure bottom scrollbar remains visible */
+      min-width: 14;
       max-width: 100%;
       width: auto;
     }
