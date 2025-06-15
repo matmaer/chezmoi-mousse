@@ -1,24 +1,25 @@
 """Runs the textual App an monkey patches the scrollbar renderer."""
 
-import traceback
-
+import os
 from chezmoi_mousse.gui import ChezmoiGUI
 
 
 def main():
-
     app = ChezmoiGUI()
 
-    original_handle_exception = app._handle_exception
+    if os.environ.get("CHEZMOI_DEV") == "1":
+        import traceback
+        from pathlib import Path
 
-    # generate an unformatted stacktrace to copy/paste in AI dev tooling.
-    def patched_handle_exception(error):
-        with open("error.log", "w") as f:
-            traceback.print_exc(file=f)
-        original_handle_exception(error)
+        original_handle_exception = app._handle_exception
+        src_dir = Path(__file__).parent.parent
 
-    # MONKEY PATCH:
-    app._handle_exception = patched_handle_exception
+        def patched_handle_exception(error):
+            with open(src_dir / "error.log", "w") as f:
+                traceback.print_exc(file=f)
+            original_handle_exception(error)
+
+        app._handle_exception = patched_handle_exception
 
     app.run(inline=False, headless=False, mouse=True)
 
