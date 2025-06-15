@@ -1,4 +1,6 @@
-from typing import Literal
+from typing import Literal, Protocol, TypeVar, overload, Any
+
+T = TypeVar("T")
 
 # Type aliases not to be imported or used directly
 type OperationButtonLabel = Literal[
@@ -22,3 +24,19 @@ type FilterName = Literal[
     "expand_all", "unchanged", "unwanted", "unmanaged_dirs"
 ]
 type TabLabel = Literal["Apply", "Re-Add", "Add", "Doctor", "Diagram", "Log"]
+
+
+class SharedTabEvents(Protocol):
+    @overload
+    def query_one(self, some_widget_id: str) -> Any: ...
+    @overload
+    def query_one(
+        self, some_widget_id: str, some_textual_type: type[T]
+    ) -> T: ...
+    def query_one(
+        self, some_widget_id: str, some_textual_type: type[T] = ...
+    ) -> T: ...
+    def button_id(self, label: str) -> str: ...
+    def content_switcher_id(self, side: str) -> str: ...
+    def component_id(self, label: str) -> str: ...
+    def filter_switch_id(self, label: str) -> str: ...
