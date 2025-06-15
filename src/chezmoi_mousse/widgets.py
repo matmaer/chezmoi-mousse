@@ -38,51 +38,51 @@ from chezmoi_mousse.type_definitions import (
     ButtonLabel,
     ComponentName,
     FilterName,
-    TabLabel,
+    TabName,
 )
 
 
 class TabIdMixin:
-    def __init__(self, tab: TabLabel) -> None:
-        self.tab: TabLabel = tab
-        self.tab_main_horizontal_id = f"{self.tab}_main_horizontal"
-        self.filter_slider_id = f"{self.tab}_filter_slider"
-        self.tree_tab_switchers_id = f"{self.tab}_tree_tab_switchers"
+    def __init__(self, tab: TabName) -> None:
+        self.tab_name: TabName = tab
+        self.tab_main_horizontal_id = f"{self.tab_name}_main_horizontal"
+        self.filter_slider_id = f"{self.tab_name}_filter_slider"
+        self.tree_tab_switchers_id = f"{self.tab_name}_tree_tab_switchers"
 
     def button_id(self, button_label: ButtonLabel) -> str:
         # replace spaces with underscores to make it a valid id
         button_id = button_label.replace(" ", "_")
-        return f"{self.tab}_{button_id}_button"
+        return f"{self.tab_name}_{button_id}_button"
 
     def buttons_horizontal_id(self, area: Area) -> str:
-        return f"{self.tab}_{area}_buttons_horizontal"
+        return f"{self.tab_name}_{area}_buttons_horizontal"
 
     def button_vertical_id(self, button_label: ButtonLabel) -> str:
         """Generate an id for each button in a vertical container to center
         them by applying auto width and align on this container."""
         button_id = button_label.replace(" ", "_")
-        return f"{self.tab}_{button_id}_button_vertical"
+        return f"{self.tab_name}_{button_id}_button_vertical"
 
     def component_id(self, component_name: ComponentName) -> str:
         """Generate an id for items imported from components.py."""
-        return f"{self.tab}_{component_name}_component"
+        return f"{self.tab_name}_{component_name}_component"
 
     def content_switcher_id(self, area: Area) -> str:
-        return f"{self.tab}_{area}_content_switcher"
+        return f"{self.tab_name}_{area}_content_switcher"
 
     def filter_horizontal_id(self, filter_name: FilterName) -> str:
-        return f"{self.tab}_{filter_name}_filter_horizontal"
+        return f"{self.tab_name}_{filter_name}_filter_horizontal"
 
     def filter_label_id(self, filter_name: FilterName) -> str:
-        return f"{self.tab}_{filter_name}_filter_label"
+        return f"{self.tab_name}_{filter_name}_filter_label"
 
     def filter_switch_id(self, filter_name: FilterName) -> str:
-        return f"{self.tab}_{filter_name}_filter_switch"
+        return f"{self.tab_name}_{filter_name}_filter_switch"
 
     def tab_vertical_id(self, area: Area) -> str:
         """Generate an id for the main left and right vertical containers in a
         tab."""
-        return f"{self.tab}_{area}_vertical"
+        return f"{self.tab_name}_{area}_vertical"
 
 
 class TabButton(Button, TabIdMixin):
@@ -109,7 +109,7 @@ class GitLog(DataTable, TabIdMixin):
 
     path: reactive[Path | None] = reactive(None, init=False)
 
-    def __init__(self, tab: TabLabel, **kwargs) -> None:
+    def __init__(self, tab: TabName, **kwargs) -> None:
         TabIdMixin.__init__(self, tab)
         super().__init__(id=self.component_id("GitLog"), **kwargs)
 
@@ -173,7 +173,7 @@ class PathView(RichLog, TabIdMixin):
 
     path: reactive[Path | None] = reactive(None, init=False)
 
-    def __init__(self, tab: TabLabel, **kwargs) -> None:
+    def __init__(self, tab: TabName, **kwargs) -> None:
         TabIdMixin.__init__(self, tab)
         super().__init__(
             id=self.component_id("PathView"),
@@ -272,7 +272,7 @@ class DiffView(RichLog, TabIdMixin):
 
     path: reactive[Path | None] = reactive(None, init=False)
 
-    def __init__(self, tab: TabLabel, **kwargs) -> None:
+    def __init__(self, tab: TabName, **kwargs) -> None:
         TabIdMixin.__init__(self, tab)
         super().__init__(id=self.component_id("DiffView"), **kwargs)
 
@@ -285,7 +285,7 @@ class DiffView(RichLog, TabIdMixin):
         self.clear()
 
         diff_output: list[str]
-        status_files = chezmoi.status_paths[self.tab].files
+        status_files = chezmoi.status_paths[self.tab_name].files
 
         if self.path not in status_files:
             self.write(
@@ -296,12 +296,12 @@ class DiffView(RichLog, TabIdMixin):
             )
             return
 
-        if self.tab == "Apply":
+        if self.tab_name == "Apply":
             diff_output = chezmoi.run.apply_diff(self.path)
-        elif self.tab == "Re-Add":
+        elif self.tab_name == "Re-Add":
             diff_output = chezmoi.run.re_add_diff(self.path)
         else:
-            self.write(Text(f"Unknown tab: {self.tab}", style="dim"))
+            self.write(Text(f"Unknown tab: {self.tab_name}", style="dim"))
             return
 
         if not diff_output:
@@ -348,8 +348,8 @@ class TreeBase(Tree[NodeData]):
 
     unchanged: reactive[bool] = reactive(False, init=False)
 
-    def __init__(self, tab: TabLabel, **kwargs) -> None:
-        self.tab: TabLabel = tab
+    def __init__(self, tab: TabName, **kwargs) -> None:
+        self.tab_name: TabName = tab
         self.node_colors = {
             "Dir": theme.vars["text-primary"],
             "D": theme.vars["text-error"],
@@ -384,7 +384,7 @@ class TreeBase(Tree[NodeData]):
                 if node_data.path in f.parents
                 or node_data.path.parent == chezmoi.dest_dir
             ]
-            status_files = chezmoi.status_paths[self.tab].files
+            status_files = chezmoi.status_paths[self.tab_name].files
             if not self.unchanged:
                 return any(f in status_files for f in managed_files_in_sub_dir)
             else:
@@ -407,7 +407,7 @@ class TreeBase(Tree[NodeData]):
         status_code = "X"
         assert isinstance(tree_node.data, DirNodeData)
         file_paths = chezmoi.managed_file_paths_in_dir(tree_node.data.path)
-        status_files = chezmoi.status_paths[self.tab].files
+        status_files = chezmoi.status_paths[self.tab_name].files
         for file_path in file_paths:
             if file_path in status_files:
                 status_code = status_files[file_path]
@@ -421,7 +421,7 @@ class TreeBase(Tree[NodeData]):
     def add_nodes(self, tree_node: TreeNode) -> None:
         assert isinstance(tree_node.data, DirNodeData)
         dir_paths = chezmoi.managed_dir_paths_in_dir(tree_node.data.path)
-        status_dirs = chezmoi.status_paths[self.tab].dirs
+        status_dirs = chezmoi.status_paths[self.tab_name].dirs
 
         # Remove directory nodes that no longer match the filter
         for child in list(tree_node.children):
@@ -462,7 +462,7 @@ class TreeBase(Tree[NodeData]):
 
 class ManagedTree(TreeBase, TabIdMixin):
 
-    def __init__(self, tab: TabLabel, **kwargs) -> None:
+    def __init__(self, tab: TabName, **kwargs) -> None:
         TabIdMixin.__init__(self, tab)
         super().__init__(tab, id=self.component_id("ManagedTree"), **kwargs)
 
@@ -499,7 +499,7 @@ class ManagedTree(TreeBase, TabIdMixin):
 
 
 class ExpandedTree(TreeBase, TabIdMixin):
-    def __init__(self, tab: TabLabel, **kwargs) -> None:
+    def __init__(self, tab: TabName, **kwargs) -> None:
         TabIdMixin.__init__(self, tab)
         super().__init__(tab, id=self.component_id("ExpandedTree"), **kwargs)
 
@@ -525,7 +525,7 @@ class ExpandedTree(TreeBase, TabIdMixin):
 class FlatTree(TreeBase, TabIdMixin):
     unchanged: reactive[bool] = reactive(False, init=False)
 
-    def __init__(self, tab: TabLabel, **kwargs) -> None:
+    def __init__(self, tab: TabName, **kwargs) -> None:
         TabIdMixin.__init__(self, tab)
         super().__init__(tab, id=self.component_id("FlatTree"), **kwargs)
 
@@ -533,7 +533,7 @@ class FlatTree(TreeBase, TabIdMixin):
         self.add_flat_leaves()
 
     def add_flat_leaves(self) -> None:
-        status_files = chezmoi.status_paths[self.tab].files
+        status_files = chezmoi.status_paths[self.tab_name].files
         for file_path in status_files:
             node_data = FileNodeData(
                 path=file_path,

@@ -11,7 +11,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from subprocess import TimeoutExpired, run
 from typing import NamedTuple
-from chezmoi_mousse.type_definitions import TabLabel
+from chezmoi_mousse.type_definitions import TabName
 
 
 def callback_null_object(*args) -> None:
@@ -256,12 +256,12 @@ class Chezmoi:
         """
 
         def create_status_dict(
-            lines: list[str], *, tab_label: TabLabel
+            lines: list[str], *, tab_name: TabName
         ) -> dict[Path, str]:
-            if tab_label == "Apply":
+            if tab_name == "Apply":
                 status_codes = "ADM"
                 status_idx = 1
-            elif tab_label == "Re-Add":
+            elif tab_name == "ReAdd":
                 status_codes = "M"
                 status_idx = 0
             # list comprehension returns empty dict if no lines match
@@ -272,21 +272,21 @@ class Chezmoi:
             }
 
         apply_dirs = create_status_dict(
-            self.status_dirs.list_out, tab_label="Apply"
+            self.status_dirs.list_out, tab_name="Apply"
         )
         apply_files = create_status_dict(
-            self.status_files.list_out, tab_label="Apply"
+            self.status_files.list_out, tab_name="Apply"
         )
         re_add_dirs = create_status_dict(
-            self.status_dirs.list_out, tab_label="Re-Add"
+            self.status_dirs.list_out, tab_name="ReAdd"
         )
         re_add_files = create_status_dict(
-            self.status_files.list_out, tab_label="Re-Add"
+            self.status_files.list_out, tab_name="ReAdd"
         )
 
         return {
             "Apply": StatusDicts(dirs=apply_dirs, files=apply_files),
-            "Re-Add": StatusDicts(dirs=re_add_dirs, files=re_add_files),
+            "ReAdd": StatusDicts(dirs=re_add_dirs, files=re_add_files),
         }
 
     @property

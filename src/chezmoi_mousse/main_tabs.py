@@ -71,16 +71,16 @@ class ApplyTab(Horizontal, TabIdMixin, TreeTabEventMixin):
         with VerticalGroup(
             id=self.tab_vertical_id("Left"), classes="tab-left-vertical"
         ):
-            yield TabButtonsLeft(self.tab)
-            yield ContentSwitcherLeft(self.tab)
+            yield TabButtonsLeft(self.tab_name)
+            yield ContentSwitcherLeft(self.tab_name)
 
         with Vertical(
             id=self.tab_vertical_id("Right"), classes="tab-right-vertical"
         ):
-            yield TabButtonsRight(self.tab)
-            yield ContentSwitcherRight(self.tab)
+            yield TabButtonsRight(self.tab_name)
+            yield ContentSwitcherRight(self.tab_name)
 
-        yield TreeFilterSlider(self.tab)
+        yield TreeFilterSlider(self.tab_name)
 
     def action_apply_path(self) -> None:
         self.notify("to implement")
@@ -104,23 +104,23 @@ class ReAddTab(Horizontal, TabIdMixin, TreeTabEventMixin):
     ]
 
     def __init__(self) -> None:
-        TabIdMixin.__init__(self, "Re-Add")
+        TabIdMixin.__init__(self, "ReAdd")
         super().__init__(id=self.tab_main_horizontal_id)
 
     def compose(self) -> ComposeResult:
         with VerticalGroup(
             id=self.tab_vertical_id("Left"), classes="tab-left-vertical"
         ):
-            yield TabButtonsLeft(self.tab)
-            yield ContentSwitcherLeft(self.tab)
+            yield TabButtonsLeft(self.tab_name)
+            yield ContentSwitcherLeft(self.tab_name)
 
         with Vertical(
             id=self.tab_vertical_id("Right"), classes="tab-right-vertical"
         ):
-            yield TabButtonsRight(self.tab)
-            yield ContentSwitcherRight(self.tab)
+            yield TabButtonsRight(self.tab_name)
+            yield ContentSwitcherRight(self.tab_name)
 
-        yield TreeFilterSlider(self.tab)
+        yield TreeFilterSlider(self.tab_name)
 
     def action_re_add_path(self) -> None:
         self.notify("to implement")
@@ -162,18 +162,20 @@ class AddTab(Horizontal, TabIdMixin):
             id=self.tab_vertical_id("Right"),
             classes="tab-right-vertical top-border-title",
         ):
-            yield PathView(self.tab)
+            yield PathView(self.tab_name)
 
         with VerticalGroup(
             id=self.filter_slider_id, classes="filters-vertical"
         ):
             yield FilterSwitch(
-                self.tab,
+                self.tab_name,
                 filter_name="unmanaged_dirs",
                 classes="filter-horizontal padding-bottom-once",
             )
             yield FilterSwitch(
-                self.tab, filter_name="unwanted", classes="filter-horizontal"
+                self.tab_name,
+                filter_name="unwanted",
+                classes="filter-horizontal",
             )
 
     def on_mount(self) -> None:
@@ -226,7 +228,7 @@ class AddTab(Horizontal, TabIdMixin):
             tree.reload()
 
     def action_add_path(self) -> None:
-        self.notify(f"to_implement: {self.tab} tab action 'add_path'")
+        self.notify(f"to_implement: {self.tab_name} tab action 'add_path'")
 
     def action_toggle_filter_slider(self) -> None:
         """Toggle the visibility of the filter slider."""

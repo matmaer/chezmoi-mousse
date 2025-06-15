@@ -33,14 +33,14 @@ from chezmoi_mousse.config import filter_data
 from chezmoi_mousse.type_definitions import (
     FilterName,
     CommonTabEvents,
-    TabLabel,
+    TabName,
 )
 
 
 class FilterSwitch(HorizontalGroup, TabIdMixin):
 
     def __init__(
-        self, tab: TabLabel, *, filter_name: FilterName, **kwargs
+        self, tab: TabName, *, filter_name: FilterName, **kwargs
     ) -> None:
         TabIdMixin.__init__(self, tab)
         self.filter_name: FilterName = filter_name
@@ -58,25 +58,27 @@ class FilterSwitch(HorizontalGroup, TabIdMixin):
 
 class TreeFilterSlider(VerticalGroup, TabIdMixin):
 
-    def __init__(self, tab: TabLabel) -> None:
+    def __init__(self, tab: TabName) -> None:
         TabIdMixin.__init__(self, tab)
         super().__init__(id=self.filter_slider_id, classes="filters-vertical")
 
     def compose(self) -> ComposeResult:
         yield FilterSwitch(
-            self.tab,
+            self.tab_name,
             filter_name="unchanged",
             classes="filter-horizontal padding-bottom-once",
         )
         # TODO: fix unchanged filter not working when expand_all is on
         yield FilterSwitch(
-            self.tab, filter_name="expand_all", classes="filter-horizontal"
+            self.tab_name,
+            filter_name="expand_all",
+            classes="filter-horizontal",
         )
 
 
 class TabButtonsLeft(HorizontalGroup, TabIdMixin):
 
-    def __init__(self, tab: TabLabel, **kwargs) -> None:
+    def __init__(self, tab: TabName, **kwargs) -> None:
         TabIdMixin.__init__(self, tab)
         super().__init__(
             id=self.buttons_horizontal_id("Left"),
@@ -90,14 +92,14 @@ class TabButtonsLeft(HorizontalGroup, TabIdMixin):
             classes="single-button-vertical",
         ):
             yield TabButton(
-                self.tab, button_label="Tree", classes="tab-button"
+                self.tab_name, button_label="Tree", classes="tab-button"
             )
         with Vertical(
             id=self.button_vertical_id("List"),
             classes="single-button-vertical",
         ):
             yield TabButton(
-                self.tab, button_label="List", classes="tab-button"
+                self.tab_name, button_label="List", classes="tab-button"
             )
 
     def on_mount(self) -> None:
@@ -114,7 +116,7 @@ class TabButtonsLeft(HorizontalGroup, TabIdMixin):
 
 
 class TabButtonsRight(HorizontalGroup, TabIdMixin):
-    def __init__(self, tab: TabLabel, **kwargs) -> None:
+    def __init__(self, tab: TabName, **kwargs) -> None:
         TabIdMixin.__init__(self, tab)
         super().__init__(
             id=self.buttons_horizontal_id("Right"),
@@ -128,21 +130,21 @@ class TabButtonsRight(HorizontalGroup, TabIdMixin):
             classes="single-button-vertical",
         ):
             yield TabButton(
-                self.tab, button_label="Contents", classes="tab-button"
+                self.tab_name, button_label="Contents", classes="tab-button"
             )
         with Vertical(
             id=self.button_vertical_id("Diff"),
             classes="single-button-vertical",
         ):
             yield TabButton(
-                self.tab, button_label="Diff", classes="tab-button"
+                self.tab_name, button_label="Diff", classes="tab-button"
             )
         with Vertical(
             id=self.button_vertical_id("Git-Log"),
             classes="single-button-vertical",
         ):
             yield TabButton(
-                self.tab, button_label="Git-Log", classes="tab-button"
+                self.tab_name, button_label="Git-Log", classes="tab-button"
             )
 
     def on_mount(self) -> None:
@@ -169,9 +171,9 @@ class TabButtonsRight(HorizontalGroup, TabIdMixin):
 class ContentSwitcherLeft(ContentSwitcher, TabIdMixin):
     """Reusable ContentSwitcher for the left panel with tree widgets."""
 
-    def __init__(self, tab: TabLabel, **kwargs):
+    def __init__(self, tab: TabName, **kwargs):
         TabIdMixin.__init__(self, tab)
-        self.tab = tab
+        self.tab_name = tab
         super().__init__(
             id=self.content_switcher_id("Left"),
             initial=self.component_id("ManagedTree"),
@@ -183,17 +185,17 @@ class ContentSwitcherLeft(ContentSwitcher, TabIdMixin):
         self.border_title = chezmoi.dest_dir_str_spaced
 
     def compose(self) -> ComposeResult:
-        yield ManagedTree(self.tab, classes="tree-widget")
-        yield FlatTree(self.tab, classes="tree-widget")
-        yield ExpandedTree(self.tab, classes="tree-widget")
+        yield ManagedTree(self.tab_name, classes="tree-widget")
+        yield FlatTree(self.tab_name, classes="tree-widget")
+        yield ExpandedTree(self.tab_name, classes="tree-widget")
 
 
 class ContentSwitcherRight(ContentSwitcher, TabIdMixin):
     """Reusable ContentSwitcher for the right panel with path view widgets."""
 
-    def __init__(self, tab: TabLabel, **kwargs):
+    def __init__(self, tab: TabName, **kwargs):
         TabIdMixin.__init__(self, tab)
-        self.tab = tab
+        self.tab_name = tab
         super().__init__(
             id=self.content_switcher_id("Right"),
             initial=self.component_id("PathView"),
@@ -205,9 +207,9 @@ class ContentSwitcherRight(ContentSwitcher, TabIdMixin):
         self.border_title = " path view "
 
     def compose(self) -> ComposeResult:
-        yield PathView(self.tab)
-        yield DiffView(self.tab)
-        yield GitLog(self.tab)
+        yield PathView(self.tab_name)
+        yield DiffView(self.tab_name)
+        yield GitLog(self.tab_name)
 
 
 class TreeTabEventMixin:
