@@ -19,16 +19,18 @@
   margin-right: 2;
   width: auto;
   max-width: 50%;
-
+  min-width: 14;
   &>.content-switcher-left {
+    min-width: 14;
     width: auto;
     max-width: 100%;
     &>.tree-widget {
+      margin-bottom: 1; /* to make sure bottom scrollbar remains visible */
+      min-width: 14;
       max-width: 100%;
       width: auto;
     }
   }
-
   &>.dir-tree-widget {
     min-width: 14;
     max-width: 100%;
@@ -52,7 +54,6 @@
   /* offset-x: -100%; out if view if docked left */
   offset-x: -100%;
   transition: offset 380ms;
-
   /* applies to all Container classes that contain a single filter switch */
   &>.filter-horizontal {
     width: auto;
