@@ -48,7 +48,7 @@ class FilterSwitch(HorizontalGroup, TabIdMixin):
         super().__init__(id=self.filter_horizontal_id(filter_name), **kwargs)
 
     def compose(self) -> ComposeResult:
-        yield Switch(id=self.filter_switch_id(self.filter_name))
+        yield Switch(id=self.filter_item_id(self.filter_name))
         yield Label(
             filter_data[self.filter_name].label,
             id=self.filter_label_id(self.filter_name),
@@ -56,7 +56,7 @@ class FilterSwitch(HorizontalGroup, TabIdMixin):
         ).with_tooltip(tooltip=filter_data[self.filter_name].tooltip)
 
 
-class TreeFilterSlider(VerticalGroup, TabIdMixin):
+class FilterSlider(VerticalGroup, TabIdMixin):
 
     def __init__(self, tab: TabName) -> None:
         TabIdMixin.__init__(self, tab)
@@ -219,13 +219,25 @@ class TreeTabEventMixin:
         assert event.button.id is not None
         # Tree/List Switch
         if event.button.id == self.button_id("Tree"):
-            self.query_one(
-                f"#{self.content_switcher_id('Left')}", ContentSwitcher
-            ).current = self.component_id("ManagedTree")
+            expand_all_switch = self.query_one(
+                f"#{self.filter_item_id('expand_all')}", Switch
+            )
+            expand_all_switch.disabled = False
+            if expand_all_switch.value:
+                self.query_one(
+                    f"#{self.content_switcher_id('Left')}", ContentSwitcher
+                ).current = self.component_id("ExpandedTree")
+            else:
+                self.query_one(
+                    f"#{self.content_switcher_id('Left')}", ContentSwitcher
+                ).current = self.component_id("ManagedTree")
         elif event.button.id == self.button_id("List"):
             self.query_one(
                 f"#{self.content_switcher_id('Left')}", ContentSwitcher
             ).current = self.component_id("FlatTree")
+            self.query_one(
+                f"#{self.filter_item_id('expand_all')}", Switch
+            ).disabled = True
         # Contents/Diff/GitLog Switch
         elif event.button.id == self.button_id("Contents"):
             self.query_one(
@@ -263,14 +275,14 @@ class TreeTabEventMixin:
         self: CommonTabEvents, event: Switch.Changed
     ) -> None:
         event.stop()
-        if event.switch.id == self.filter_switch_id("unchanged"):
+        if event.switch.id == self.filter_item_id("unchanged"):
             self.query_one(
                 f"#{self.component_id('ManagedTree')}", ManagedTree
             ).unchanged = event.value
             self.query_one(
                 f"#{self.component_id('FlatTree')}", FlatTree
             ).unchanged = event.value
-        elif event.switch.id == self.filter_switch_id("expand_all"):
+        elif event.switch.id == self.filter_item_id("expand_all"):
             if event.value:
                 self.query_one(
                     f"#{self.content_switcher_id('Left')}", ContentSwitcher

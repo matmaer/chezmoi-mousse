@@ -6,6 +6,17 @@ from dataclasses import dataclass
 
 
 @dataclass(frozen=True)
+class Chars:
+    burger: str = "\N{IDENTICAL TO}"  # code point U+2261
+    gear: str = "\N{GEAR}"  # code point U+2699
+    bullet: str = "\N{BULLET}"  # code point U+2022
+    check_mark: str = "\N{HEAVY CHECK MARK}"  # code point U+2714
+
+
+chars = Chars()
+
+
+@dataclass(frozen=True)
 class Filter:
     tooltip: str
     label: str

@@ -48,7 +48,7 @@ from chezmoi_mousse.containers import (
     TabButtonsRight,
     ContentSwitcherLeft,
     ContentSwitcherRight,
-    TreeFilterSlider,
+    FilterSlider,
 )
 
 
@@ -80,7 +80,7 @@ class ApplyTab(Horizontal, TabIdMixin, TreeTabEventMixin):
             yield TabButtonsRight(self.tab_name)
             yield ContentSwitcherRight(self.tab_name)
 
-        yield TreeFilterSlider(self.tab_name)
+        yield FilterSlider(self.tab_name)
 
     def action_apply_path(self) -> None:
         self.notify("to implement")
@@ -120,7 +120,7 @@ class ReAddTab(Horizontal, TabIdMixin, TreeTabEventMixin):
             yield TabButtonsRight(self.tab_name)
             yield ContentSwitcherRight(self.tab_name)
 
-        yield TreeFilterSlider(self.tab_name)
+        yield FilterSlider(self.tab_name)
 
     def action_re_add_path(self) -> None:
         self.notify("to implement")
@@ -220,10 +220,10 @@ class AddTab(Horizontal, TabIdMixin):
         tree = self.query_one(
             f"#{self.component_id('AddTree')}", FilteredDirTree
         )
-        if event.switch.id == self.filter_switch_id("unmanaged_dirs"):
+        if event.switch.id == self.filter_item_id("unmanaged_dirs"):
             tree.unmanaged_dirs = event.value
             tree.reload()
-        elif event.switch.id == self.filter_switch_id("unwanted"):
+        elif event.switch.id == self.filter_item_id("unwanted"):
             tree.unwanted = event.value
             tree.reload()
 

@@ -297,6 +297,12 @@ class Chezmoi:
             if p not in self.status_file_paths
         ]
 
+    @property
+    def managed_dir_paths_without_status(self) -> list[Path]:
+        return [
+            p for p in self.managed_dir_paths if p not in self.status_dir_paths
+        ]
+
     def managed_file_paths_in_dir(self, dir_path: Path) -> list[Path]:
         return [f for f in self.managed_file_paths if f.parent == dir_path]
 

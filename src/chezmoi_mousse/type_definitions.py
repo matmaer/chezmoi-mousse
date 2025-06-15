@@ -25,7 +25,7 @@ type TabName = Literal["Apply", "ReAdd", "Add", "Doctor", "Diagram", "Log"]
 
 if TYPE_CHECKING:
     from textual.containers import Container
-    from textual.widgets import ContentSwitcher
+    from textual.widgets import Checkbox, ContentSwitcher, Switch
     from chezmoi_mousse.widgets import (
         PathView,
         DiffView,
@@ -36,14 +36,16 @@ if TYPE_CHECKING:
     )
 
     type TreeTabWidget = (
-        ContentSwitcher
+        Checkbox
         | Container
-        | PathView
+        | ContentSwitcher
         | DiffView
+        | ExpandedTree
+        | FlatTree
         | GitLog
         | ManagedTree
-        | FlatTree
-        | ExpandedTree
+        | PathView
+        | Switch
     )
 
     T = TypeVar("T", bound="TreeTabWidget")
@@ -54,7 +56,7 @@ if TYPE_CHECKING:
         def button_id(self, some_id: str) -> str: ...
         def content_switcher_id(self, some_id: str) -> str: ...
         def component_id(self, some_id: str) -> str: ...
-        def filter_switch_id(self, some_id: str) -> str: ...
+        def filter_item_id(self, some_id: str) -> str: ...
 
 else:
     # Runtime-compatible empty Protocol

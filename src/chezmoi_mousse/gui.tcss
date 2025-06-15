@@ -132,6 +132,31 @@ ModalScreen {
   border: none;
 }
 
+CheckBox {
+  margin: 0;
+  padding: 0;
+  background: $surface;
+  background-tint: $surface;
+
+  &>.toggle--button {
+    color: $error;
+    background: $surface;
+    background-tint: $surface;
+  }
+
+  &.-on>.toggle--button {
+    color: $success;
+  }
+
+  &:focus>.toggle--button {
+    text-style: none;
+  }
+
+  &:hover>.toggle--button {
+    text-style: bold;
+  }
+}
+
 Collapsible {
   padding: 0;
 }
@@ -255,62 +280,3 @@ Tree {
     }
   }
 }
-
-
-/*
-Operate {
-
-  & .operate-button {
-
-    &:disabled {
-      text-opacity: 0.6;
-    }
-
-    &:focus {
-      border-top: heavy $primary-lighten-2;
-    }
-
-    &:hover {
-      border-top: heavy $primary-lighten-3;
-      color: $accent-lighten-3;
-    }
-
-    &.-active {
-      border-top: heavy $primary-lighten-2;
-    }
-  }
-
-  #button_container {
-    height: 3;
-    align: center bottom;
-    dock: bottom;
-  }
-
-  & .operate-checkbox {
-    margin: 0;
-    padding: 0;
-    background: $surface;
-    background-tint: $surface;
-
-    &>.toggle--button {
-      color: $error;
-      background: $surface;
-      background-tint: $surface;
-    }
-
-    &.-on>.toggle--button {
-      color: $success;
-    }
-
-    &:focus>.toggle--button {
-      text-style: none;
-    }
-
-    &:hover>.toggle--button {
-      text-style: bold;
-
-    }
-  }
-}
-*/
-

@@ -21,6 +21,7 @@ from textual.content import Content
 from textual.reactive import reactive
 from textual.widgets import (
     Button,
+    Checkbox,
     DataTable,
     DirectoryTree,
     RichLog,
@@ -30,9 +31,8 @@ from textual.widgets import (
 from textual.widgets.tree import TreeNode
 
 import chezmoi_mousse.theme as theme
-from chezmoi_mousse import BULLET
 from chezmoi_mousse.chezmoi import chezmoi
-from chezmoi_mousse.config import unwanted
+from chezmoi_mousse.config import chars, unwanted
 from chezmoi_mousse.type_definitions import (
     Area,
     ButtonLabel,
@@ -76,13 +76,30 @@ class TabIdMixin:
     def filter_label_id(self, filter_name: FilterName) -> str:
         return f"{self.tab_name}_{filter_name}_filter_label"
 
-    def filter_switch_id(self, filter_name: FilterName) -> str:
+    def filter_item_id(self, filter_name: FilterName) -> str:
         return f"{self.tab_name}_{filter_name}_filter_switch"
 
     def tab_vertical_id(self, area: Area) -> str:
         """Generate an id for the main left and right vertical containers in a
         tab."""
         return f"{self.tab_name}_{area}_vertical"
+
+
+class CheckBox(Checkbox, TabIdMixin):
+    """Checkbox widget to be used in the filter sliders."""
+
+    BUTTON_INNER = chars.check_mark
+
+    def __init__(
+        self, tab: TabName, *, filter_name: FilterName, **kwargs
+    ) -> None:
+        TabIdMixin.__init__(self, tab)
+        super().__init__(
+            id=self.filter_item_id(filter_name), label="", **kwargs
+        )
+
+    def on_mount(self) -> None:
+        self.compact = True
 
 
 class TabButton(Button, TabIdMixin):
@@ -323,7 +340,7 @@ class DiffView(RichLog, TabIdMixin):
             elif line.startswith("+"):
                 self.write(Text(line, theme.vars["text-success"]))
             else:
-                self.write(Text(BULLET + line, style="dim"))
+                self.write(Text(chars.bullet + line, style="dim"))
 
 
 @dataclass
