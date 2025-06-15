@@ -249,7 +249,7 @@ class Chezmoi:
 
     @property
     def status_paths(self) -> dict[str, StatusDicts]:
-        """Returns a dict with keys "Apply" and "Re-Add", each mapping to a
+        """Returns a dict with keys "Apply" and "ReAdd", each mapping to a
         StatusDicts namedtuple containing a dirs and and files entry.
 
         These dicts maps output from chezmoi status as Path -> status_code.
