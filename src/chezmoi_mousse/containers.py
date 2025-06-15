@@ -182,7 +182,7 @@ class ContentSwitcherLeft(ContentSwitcher, TabIdMixin):
         )
 
     def on_mount(self) -> None:
-        self.border_title = chezmoi.dest_dir_str_spaced
+        self.border_title = chezmoi.dest_dir_str
 
     def compose(self) -> ComposeResult:
         yield ManagedTree(self.tab_name, classes="tree-widget")
@@ -204,7 +204,7 @@ class ContentSwitcherRight(ContentSwitcher, TabIdMixin):
         )
 
     def on_mount(self) -> None:
-        self.border_title = " path view "
+        self.border_title = chezmoi.dest_dir_str
 
     def compose(self) -> ComposeResult:
         yield PathView(self.tab_name)
@@ -259,7 +259,7 @@ class TreeTabEventMixin:
         self.query_one(
             f"#{self.content_switcher_id('Right')}", Container
         ).border_title = (
-            f" {event.node.data.path.relative_to(chezmoi.dest_dir)} "
+            f"{event.node.data.path.relative_to(chezmoi.dest_dir)}"
         )
         self.query_one(f"#{self.component_id('PathView')}", PathView).path = (
             event.node.data.path

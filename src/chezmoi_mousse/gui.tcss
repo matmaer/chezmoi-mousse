@@ -19,14 +19,14 @@
   margin-right: 2;
   width: auto;
   max-width: 50%;
-  min-width: 14;
+  min-width: 16;
   &>.content-switcher-left {
-    min-width: 14;
+    min-width: 16;
     width: auto;
     max-width: 100%;
     &>.tree-widget {
       margin-bottom: 1; /* to make sure bottom scrollbar remains visible */
-      min-width: 14;
+      min-width: 16;
       max-width: 100%;
       width: auto;
     }
@@ -72,6 +72,7 @@
 .tab-buttons-horizontal {
   height: 1;
   width: 100%;
+  align: center top;
   &>.single-button-vertical {
     align: center top;
     &>.tab-button {

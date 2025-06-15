@@ -6,7 +6,6 @@ command_log_callback function set by gui.py.
 """
 
 import ast
-import os
 from dataclasses import dataclass, field
 from pathlib import Path
 from subprocess import TimeoutExpired, run
@@ -214,10 +213,6 @@ class Chezmoi:
     @property
     def dest_dir_str(self) -> str:
         return self.dump_config.dict_out["destDir"]
-
-    @property
-    def dest_dir_str_spaced(self) -> str:
-        return f" {self.dump_config.dict_out['destDir']}{os.sep} "
 
     @property
     def autoadd_enabled(self) -> bool:

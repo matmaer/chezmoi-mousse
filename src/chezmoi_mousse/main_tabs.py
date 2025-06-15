@@ -181,10 +181,10 @@ class AddTab(Horizontal, TabIdMixin):
     def on_mount(self) -> None:
         self.query_one(
             f"#{self.tab_vertical_id("Right")}", Vertical
-        ).border_title = " path view "
+        ).border_title = chezmoi.dest_dir_str
         self.query_one(
             f"#{self.tab_vertical_id("Left")}", VerticalGroup
-        ).border_title = chezmoi.dest_dir_str_spaced
+        ).border_title = chezmoi.dest_dir_str
 
     def on_directory_tree_file_selected(
         self, event: FilteredDirTree.FileSelected
@@ -198,7 +198,7 @@ class AddTab(Horizontal, TabIdMixin):
         self.query_one(
             f"#{self.tab_vertical_id("Right")}", Vertical
         ).border_title = (
-            f" {event.node.data.path.relative_to(chezmoi.dest_dir)} "
+            f"{event.node.data.path.relative_to(chezmoi.dest_dir)}"
         )
 
     def on_directory_tree_directory_selected(
@@ -212,7 +212,7 @@ class AddTab(Horizontal, TabIdMixin):
         self.query_one(
             f"#{self.tab_vertical_id("Right")}", Vertical
         ).border_title = (
-            f" {event.node.data.path.relative_to(chezmoi.dest_dir)} "
+            f"{event.node.data.path.relative_to(chezmoi.dest_dir)}"
         )
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
