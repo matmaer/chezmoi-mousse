@@ -1,6 +1,4 @@
-from typing import Literal, Protocol, TypeVar, overload, Any
-
-T = TypeVar("T")
+from typing import Literal, Protocol, TypeVar, TYPE_CHECKING
 
 # Type aliases not to be imported or used directly
 type OperationButtonLabel = Literal[
@@ -25,18 +23,41 @@ type FilterName = Literal[
 ]
 type TabLabel = Literal["Apply", "Re-Add", "Add", "Doctor", "Diagram", "Log"]
 
+if TYPE_CHECKING:
+    from textual.containers import Container
+    from textual.widgets import ContentSwitcher
+    from chezmoi_mousse.widgets import (
+        PathView,
+        DiffView,
+        GitLog,
+        ManagedTree,
+        FlatTree,
+        ExpandedTree,
+    )
 
-class SharedTabEvents(Protocol):
-    @overload
-    def query_one(self, some_widget_id: str) -> Any: ...
-    @overload
-    def query_one(
-        self, some_widget_id: str, some_textual_type: type[T]
-    ) -> T: ...
-    def query_one(
-        self, some_widget_id: str, some_textual_type: type[T] = ...
-    ) -> T: ...
-    def button_id(self, label: str) -> str: ...
-    def content_switcher_id(self, side: str) -> str: ...
-    def component_id(self, label: str) -> str: ...
-    def filter_switch_id(self, label: str) -> str: ...
+    type TreeTabWidget = (
+        ContentSwitcher
+        | Container
+        | PathView
+        | DiffView
+        | GitLog
+        | ManagedTree
+        | FlatTree
+        | ExpandedTree
+    )
+
+    T = TypeVar("T", bound="TreeTabWidget")
+
+    class CommonTabEvents(Protocol):
+
+        def query_one(
+            self, some_widget_id: str, some_textual_type: type[T]
+        ) -> T: ...
+        def button_id(self, label: str) -> str: ...
+        def content_switcher_id(self, side: str) -> str: ...
+        def component_id(self, label: str) -> str: ...
+        def filter_switch_id(self, label: str) -> str: ...
+
+else:
+    # Runtime-compatible empty Protocol
+    class CommonTabEvents(Protocol): ...

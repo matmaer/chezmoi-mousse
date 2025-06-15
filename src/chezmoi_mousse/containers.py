@@ -10,7 +10,6 @@ These classes
 from textual.app import ComposeResult
 from textual.containers import (
     Container,
-    Horizontal,
     HorizontalGroup,
     Vertical,
     VerticalGroup,
@@ -31,7 +30,11 @@ from chezmoi_mousse.widgets import (
 )
 
 from chezmoi_mousse.config import filter_data
-from chezmoi_mousse.type_aliases import FilterName, TabLabel
+from chezmoi_mousse.type_definitions import (
+    FilterName,
+    CommonTabEvents,
+    TabLabel,
+)
 
 
 class FilterSwitch(HorizontalGroup, TabIdMixin):
@@ -207,29 +210,10 @@ class ContentSwitcherRight(ContentSwitcher, TabIdMixin):
         yield GitLog(self.tab)
 
 
-class TreeTabSwitchers(Horizontal, TabIdMixin):
-
-    def __init__(self, tab: TabLabel, **kwargs) -> None:
-        TabIdMixin.__init__(self, tab)
-        super().__init__(id=self.tree_tab_switchers_id, **kwargs)
-
-    def compose(self) -> ComposeResult:
-        with VerticalGroup(
-            id=self.tab_vertical_id("Left"), classes="tab-left-vertical"
-        ):
-            yield TabButtonsLeft(self.tab)
-            yield ContentSwitcherLeft(self.tab)
-
-        with Vertical(
-            id=self.tab_vertical_id("Right"), classes="tab-right-vertical"
-        ):
-            yield TabButtonsRight(self.tab)
-            yield ContentSwitcherRight(self.tab)
-
-        yield TreeFilterSlider(self.tab)
-
-    def on_button_pressed(self, event: Button.Pressed) -> None:
-        # event.stop()
+class TreeTabEventMixin:
+    def on_button_pressed(
+        self: CommonTabEvents, event: Button.Pressed
+    ) -> None:
         assert event.button.id is not None
         # Tree/List Switch
         if event.button.id == self.button_id("Tree"):
@@ -254,8 +238,9 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
                 f"#{self.content_switcher_id('Right')}", ContentSwitcher
             ).current = self.component_id("GitLog")
 
-    def on_tree_node_selected(self, event: ManagedTree.NodeSelected) -> None:
-        # event.stop()
+    def on_tree_node_selected(
+        self: CommonTabEvents, event: ManagedTree.NodeSelected
+    ) -> None:
         assert event.node.data is not None
         self.query_one(
             f"#{self.content_switcher_id('Right')}", Container
@@ -265,16 +250,16 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
         self.query_one(f"#{self.component_id('PathView')}", PathView).path = (
             event.node.data.path
         )
-
         self.query_one(f"#{self.component_id('DiffView')}", DiffView).path = (
             event.node.data.path
         )
-
         self.query_one(f"#{self.component_id('GitLog')}", GitLog).path = (
             event.node.data.path
         )
 
-    def on_switch_changed(self, event: Switch.Changed) -> None:
+    def on_switch_changed(
+        self: CommonTabEvents, event: Switch.Changed
+    ) -> None:
         event.stop()
         if event.switch.id == self.filter_switch_id("unchanged"):
             self.query_one(
@@ -288,7 +273,7 @@ class TreeTabSwitchers(Horizontal, TabIdMixin):
                 self.query_one(
                     f"#{self.content_switcher_id('Left')}", ContentSwitcher
                 ).current = self.component_id("ExpandedTree")
-            elif not event.value:
+            else:
                 self.query_one(
                     f"#{self.content_switcher_id('Left')}", ContentSwitcher
                 ).current = self.component_id("ManagedTree")
