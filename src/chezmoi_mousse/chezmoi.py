@@ -11,7 +11,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from subprocess import TimeoutExpired, run
 from typing import NamedTuple
-from chezmoi_mousse.type_aliases import TabLabel
+from chezmoi_mousse.type_definitions import TabLabel
 
 
 def callback_null_object(*args) -> None:
