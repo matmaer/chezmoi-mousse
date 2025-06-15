@@ -100,19 +100,14 @@ class TabButtonsLeft(HorizontalGroup, TabIdMixin):
     def on_mount(self) -> None:
         self.query_one(f"#{self.button_id('Tree')}").add_class("last-clicked")
 
-    def update_button_classes(self, button_id: str) -> None:
+    def on_button_pressed(self, event: Button.Pressed) -> None:
         lc = "last-clicked"
-        if button_id == self.button_id("Tree"):
+        if event.button.id == self.button_id("Tree"):
             self.query_one(f"#{self.button_id('List')}").remove_class(lc)
             self.query_one(f"#{self.button_id('Tree')}").add_class(lc)
-        elif button_id == self.button_id("List"):
+        elif event.button.id == self.button_id("List"):
             self.query_one(f"#{self.button_id('Tree')}").remove_class(lc)
             self.query_one(f"#{self.button_id('List')}").add_class(lc)
-
-    def on_button_pressed(self, event: Button.Pressed) -> None:
-        # event.stop()
-        assert event.button.id is not None
-        self.update_button_classes(event.button.id)
 
 
 class TabButtonsRight(HorizontalGroup, TabIdMixin):
@@ -152,25 +147,20 @@ class TabButtonsRight(HorizontalGroup, TabIdMixin):
             "last-clicked"
         )
 
-    def update_button_classes(self, button_id: str) -> None:
+    def on_button_pressed(self, event: Button.Pressed) -> None:
         lc = "last-clicked"
-        if button_id == self.button_id("Contents"):
+        if event.button.id == self.button_id("Contents"):
             self.query_one(f"#{self.button_id('Diff')}").remove_class(lc)
             self.query_one(f"#{self.button_id('Git-Log')}").remove_class(lc)
             self.query_one(f"#{self.button_id('Contents')}").add_class(lc)
-        elif button_id == self.button_id("Diff"):
+        elif event.button.id == self.button_id("Diff"):
             self.query_one(f"#{self.button_id('Contents')}").remove_class(lc)
             self.query_one(f"#{self.button_id('Git-Log')}").remove_class(lc)
             self.query_one(f"#{self.button_id('Diff')}").add_class(lc)
-        elif button_id == self.button_id("Git-Log"):
+        elif event.button.id == self.button_id("Git-Log"):
             self.query_one(f"#{self.button_id('Contents')}").remove_class(lc)
             self.query_one(f"#{self.button_id('Diff')}").remove_class(lc)
             self.query_one(f"#{self.button_id('Git-Log')}").add_class(lc)
-
-    def on_button_pressed(self, event: Button.Pressed) -> None:
-        # event.stop()
-        assert event.button.id is not None
-        self.update_button_classes(event.button.id)
 
 
 class ContentSwitcherLeft(ContentSwitcher, TabIdMixin):
