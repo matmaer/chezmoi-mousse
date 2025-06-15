@@ -119,7 +119,6 @@ class LoadingScreen(Screen):
             self.dismiss(COMMAND_LOG)
 
     def on_mount(self) -> None:
-        self.set_interval(interval=1.2, callback=self.all_workers_finished)
         # first run chezzmoi doctor as it is the most expensive command so the
         # other threads can run while it's being executed
         self.run_io_worker("doctor")
@@ -127,3 +126,4 @@ class LoadingScreen(Screen):
         # the doctor command has been removed from LONG_COMMANDS
         for arg_id in LONG_COMMANDS:
             self.run_io_worker(arg_id)
+        self.set_interval(interval=1.2, callback=self.all_workers_finished)
