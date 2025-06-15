@@ -27,12 +27,13 @@ if TYPE_CHECKING:
     from textual.containers import Container
     from textual.widgets import Checkbox, ContentSwitcher, Switch
     from chezmoi_mousse.widgets import (
-        PathView,
         DiffView,
+        ExpandedTree,
+        FlatTree,
         GitLog,
         ManagedTree,
-        FlatTree,
-        ExpandedTree,
+        PathView,
+        TreeBase,
     )
 
     type TreeTabWidget = (
@@ -46,6 +47,7 @@ if TYPE_CHECKING:
         | ManagedTree
         | PathView
         | Switch
+        | TreeBase
     )
 
     T = TypeVar("T", bound="TreeTabWidget")

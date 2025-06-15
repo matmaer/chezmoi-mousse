@@ -23,26 +23,111 @@ from chezmoi_mousse.widgets import (
     ExpandedTree,
     FlatTree,
     GitLog,
+    IdMixin,
     ManagedTree,
     PathView,
     TabButton,
-    TabIdMixin,
 )
 
 from chezmoi_mousse.config import filter_data
 from chezmoi_mousse.type_definitions import (
-    FilterName,
     CommonTabEvents,
+    FilterName,
     TabName,
 )
 
 
-class FilterSwitch(HorizontalGroup, TabIdMixin):
+class EventMixin:
+
+    def on_button_pressed(
+        self: CommonTabEvents, event: Button.Pressed
+    ) -> None:
+        assert event.button.id is not None
+        # Tree/List Switch
+        if event.button.id == self.button_id("Tree"):
+            expand_all_switch = self.query_one(
+                f"#{self.filter_item_id('expand_all')}", Switch
+            )
+            expand_all_switch.disabled = False
+            if expand_all_switch.value:
+                self.query_one(
+                    f"#{self.content_switcher_id('Left')}", ContentSwitcher
+                ).current = self.component_id("ExpandedTree")
+            else:
+                self.query_one(
+                    f"#{self.content_switcher_id('Left')}", ContentSwitcher
+                ).current = self.component_id("ManagedTree")
+        elif event.button.id == self.button_id("List"):
+            self.query_one(
+                f"#{self.content_switcher_id('Left')}", ContentSwitcher
+            ).current = self.component_id("FlatTree")
+            self.query_one(
+                f"#{self.filter_item_id('expand_all')}", Switch
+            ).disabled = True
+        # Contents/Diff/GitLog Switch
+        elif event.button.id == self.button_id("Contents"):
+            self.query_one(
+                f"#{self.content_switcher_id('Right')}", ContentSwitcher
+            ).current = self.component_id("PathView")
+        elif event.button.id == self.button_id("Diff"):
+            self.query_one(
+                f"#{self.content_switcher_id('Right')}", ContentSwitcher
+            ).current = self.component_id("DiffView")
+        elif event.button.id == self.button_id("Git-Log"):
+            self.query_one(
+                f"#{self.content_switcher_id('Right')}", ContentSwitcher
+            ).current = self.component_id("GitLog")
+
+    def on_tree_node_selected(
+        self: CommonTabEvents, event: ManagedTree.NodeSelected
+    ) -> None:
+        assert event.node.data is not None
+        self.query_one(
+            f"#{self.content_switcher_id('Right')}", Container
+        ).border_title = (
+            f"{event.node.data.path.relative_to(chezmoi.dest_dir)}"
+        )
+        self.query_one(f"#{self.component_id('PathView')}", PathView).path = (
+            event.node.data.path
+        )
+        self.query_one(f"#{self.component_id('DiffView')}", DiffView).path = (
+            event.node.data.path
+        )
+        self.query_one(f"#{self.component_id('GitLog')}", GitLog).path = (
+            event.node.data.path
+        )
+
+    def on_switch_changed(
+        self: CommonTabEvents, event: Switch.Changed
+    ) -> None:
+        event.stop()
+        if event.switch.id == self.filter_item_id("unchanged"):
+            self.query_one(
+                f"#{self.component_id("ExpandedTree")}", ExpandedTree
+            ).unchanged = event.value
+            self.query_one(
+                f"#{self.component_id('ManagedTree')}", ManagedTree
+            ).unchanged = event.value
+            self.query_one(
+                f"#{self.component_id('FlatTree')}", FlatTree
+            ).unchanged = event.value
+        elif event.switch.id == self.filter_item_id("expand_all"):
+            if event.value:
+                self.query_one(
+                    f"#{self.content_switcher_id('Left')}", ContentSwitcher
+                ).current = self.component_id("ExpandedTree")
+            else:
+                self.query_one(
+                    f"#{self.content_switcher_id('Left')}", ContentSwitcher
+                ).current = self.component_id("ManagedTree")
+
+
+class FilterSwitch(HorizontalGroup, IdMixin):
 
     def __init__(
         self, tab: TabName, *, filter_name: FilterName, **kwargs
     ) -> None:
-        TabIdMixin.__init__(self, tab)
+        IdMixin.__init__(self, tab)
         self.filter_name: FilterName = filter_name
         self.label = filter_data[self.filter_name].label
         super().__init__(id=self.filter_horizontal_id(filter_name), **kwargs)
@@ -56,10 +141,10 @@ class FilterSwitch(HorizontalGroup, TabIdMixin):
         ).with_tooltip(tooltip=filter_data[self.filter_name].tooltip)
 
 
-class FilterSlider(VerticalGroup, TabIdMixin):
+class FilterSlider(VerticalGroup, IdMixin):
 
     def __init__(self, tab: TabName) -> None:
-        TabIdMixin.__init__(self, tab)
+        IdMixin.__init__(self, tab)
         super().__init__(id=self.filter_slider_id, classes="filters-vertical")
 
     def compose(self) -> ComposeResult:
@@ -76,10 +161,10 @@ class FilterSlider(VerticalGroup, TabIdMixin):
         )
 
 
-class TabButtonsLeft(HorizontalGroup, TabIdMixin):
+class TabButtonsLeft(HorizontalGroup, IdMixin):
 
     def __init__(self, tab: TabName, **kwargs) -> None:
-        TabIdMixin.__init__(self, tab)
+        IdMixin.__init__(self, tab)
         super().__init__(
             id=self.buttons_horizontal_id("Left"),
             classes="tab-buttons-horizontal",
@@ -115,9 +200,9 @@ class TabButtonsLeft(HorizontalGroup, TabIdMixin):
             self.query_one(f"#{self.button_id('List')}").add_class(lc)
 
 
-class TabButtonsRight(HorizontalGroup, TabIdMixin):
+class TabButtonsRight(HorizontalGroup, IdMixin):
     def __init__(self, tab: TabName, **kwargs) -> None:
-        TabIdMixin.__init__(self, tab)
+        IdMixin.__init__(self, tab)
         super().__init__(
             id=self.buttons_horizontal_id("Right"),
             classes="tab-buttons-horizontal",
@@ -168,11 +253,11 @@ class TabButtonsRight(HorizontalGroup, TabIdMixin):
             self.query_one(f"#{self.button_id('Git-Log')}").add_class(lc)
 
 
-class ContentSwitcherLeft(ContentSwitcher, TabIdMixin):
+class ContentSwitcherLeft(ContentSwitcher, IdMixin):
     """Reusable ContentSwitcher for the left panel with tree widgets."""
 
     def __init__(self, tab: TabName, **kwargs):
-        TabIdMixin.__init__(self, tab)
+        IdMixin.__init__(self, tab)
         self.tab_name = tab
         super().__init__(
             id=self.content_switcher_id("Left"),
@@ -182,7 +267,7 @@ class ContentSwitcherLeft(ContentSwitcher, TabIdMixin):
         )
 
     def on_mount(self) -> None:
-        self.border_title = chezmoi.dest_dir_str_spaced
+        self.border_title = chezmoi.dest_dir_str
 
     def compose(self) -> ComposeResult:
         yield ManagedTree(self.tab_name, classes="tree-widget")
@@ -190,11 +275,11 @@ class ContentSwitcherLeft(ContentSwitcher, TabIdMixin):
         yield ExpandedTree(self.tab_name, classes="tree-widget")
 
 
-class ContentSwitcherRight(ContentSwitcher, TabIdMixin):
+class ContentSwitcherRight(ContentSwitcher, IdMixin):
     """Reusable ContentSwitcher for the right panel with path view widgets."""
 
     def __init__(self, tab: TabName, **kwargs):
-        TabIdMixin.__init__(self, tab)
+        IdMixin.__init__(self, tab)
         self.tab_name = tab
         super().__init__(
             id=self.content_switcher_id("Right"),
@@ -204,90 +289,9 @@ class ContentSwitcherRight(ContentSwitcher, TabIdMixin):
         )
 
     def on_mount(self) -> None:
-        self.border_title = " path view "
+        self.border_title = chezmoi.dest_dir_str
 
     def compose(self) -> ComposeResult:
         yield PathView(self.tab_name)
         yield DiffView(self.tab_name)
         yield GitLog(self.tab_name)
-
-
-class TreeTabEventMixin:
-    def on_button_pressed(
-        self: CommonTabEvents, event: Button.Pressed
-    ) -> None:
-        assert event.button.id is not None
-        # Tree/List Switch
-        if event.button.id == self.button_id("Tree"):
-            expand_all_switch = self.query_one(
-                f"#{self.filter_item_id('expand_all')}", Switch
-            )
-            expand_all_switch.disabled = False
-            if expand_all_switch.value:
-                self.query_one(
-                    f"#{self.content_switcher_id('Left')}", ContentSwitcher
-                ).current = self.component_id("ExpandedTree")
-            else:
-                self.query_one(
-                    f"#{self.content_switcher_id('Left')}", ContentSwitcher
-                ).current = self.component_id("ManagedTree")
-        elif event.button.id == self.button_id("List"):
-            self.query_one(
-                f"#{self.content_switcher_id('Left')}", ContentSwitcher
-            ).current = self.component_id("FlatTree")
-            self.query_one(
-                f"#{self.filter_item_id('expand_all')}", Switch
-            ).disabled = True
-        # Contents/Diff/GitLog Switch
-        elif event.button.id == self.button_id("Contents"):
-            self.query_one(
-                f"#{self.content_switcher_id('Right')}", ContentSwitcher
-            ).current = self.component_id("PathView")
-        elif event.button.id == self.button_id("Diff"):
-            self.query_one(
-                f"#{self.content_switcher_id('Right')}", ContentSwitcher
-            ).current = self.component_id("DiffView")
-        elif event.button.id == self.button_id("Git-Log"):
-            self.query_one(
-                f"#{self.content_switcher_id('Right')}", ContentSwitcher
-            ).current = self.component_id("GitLog")
-
-    def on_tree_node_selected(
-        self: CommonTabEvents, event: ManagedTree.NodeSelected
-    ) -> None:
-        assert event.node.data is not None
-        self.query_one(
-            f"#{self.content_switcher_id('Right')}", Container
-        ).border_title = (
-            f" {event.node.data.path.relative_to(chezmoi.dest_dir)} "
-        )
-        self.query_one(f"#{self.component_id('PathView')}", PathView).path = (
-            event.node.data.path
-        )
-        self.query_one(f"#{self.component_id('DiffView')}", DiffView).path = (
-            event.node.data.path
-        )
-        self.query_one(f"#{self.component_id('GitLog')}", GitLog).path = (
-            event.node.data.path
-        )
-
-    def on_switch_changed(
-        self: CommonTabEvents, event: Switch.Changed
-    ) -> None:
-        event.stop()
-        if event.switch.id == self.filter_item_id("unchanged"):
-            self.query_one(
-                f"#{self.component_id('ManagedTree')}", ManagedTree
-            ).unchanged = event.value
-            self.query_one(
-                f"#{self.component_id('FlatTree')}", FlatTree
-            ).unchanged = event.value
-        elif event.switch.id == self.filter_item_id("expand_all"):
-            if event.value:
-                self.query_one(
-                    f"#{self.content_switcher_id('Left')}", ContentSwitcher
-                ).current = self.component_id("ExpandedTree")
-            else:
-                self.query_one(
-                    f"#{self.content_switcher_id('Left')}", ContentSwitcher
-                ).current = self.component_id("ManagedTree")

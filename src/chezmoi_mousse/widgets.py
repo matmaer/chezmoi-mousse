@@ -9,7 +9,6 @@ These classes
 - don't import from main_tabs.py, gui.py or containers.py modules
 """
 
-import re
 from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
@@ -42,12 +41,12 @@ from chezmoi_mousse.type_definitions import (
 )
 
 
-class TabIdMixin:
+class IdMixin:
     def __init__(self, tab: TabName) -> None:
         self.tab_name: TabName = tab
         self.tab_main_horizontal_id = f"{self.tab_name}_main_horizontal"
         self.filter_slider_id = f"{self.tab_name}_filter_slider"
-        self.tree_tab_switchers_id = f"{self.tab_name}_tree_tab_switchers"
+        # self.tree_tab_switchers_id = f"{self.tab_name}_tree_tab_switchers"
 
     def button_id(self, button_label: ButtonLabel) -> str:
         # replace spaces with underscores to make it a valid id
@@ -85,7 +84,7 @@ class TabIdMixin:
         return f"{self.tab_name}_{area}_vertical"
 
 
-class CheckBox(Checkbox, TabIdMixin):
+class CheckBox(Checkbox, IdMixin):
     """Checkbox widget to be used in the filter sliders."""
 
     BUTTON_INNER = chars.check_mark
@@ -93,7 +92,7 @@ class CheckBox(Checkbox, TabIdMixin):
     def __init__(
         self, tab: TabName, *, filter_name: FilterName, **kwargs
     ) -> None:
-        TabIdMixin.__init__(self, tab)
+        IdMixin.__init__(self, tab)
         super().__init__(
             id=self.filter_item_id(filter_name), label="", **kwargs
         )
@@ -102,10 +101,10 @@ class CheckBox(Checkbox, TabIdMixin):
         self.compact = True
 
 
-class TabButton(Button, TabIdMixin):
+class TabButton(Button, IdMixin):
 
     def __init__(self, tab, *, button_label: ButtonLabel, **kwargs) -> None:
-        TabIdMixin.__init__(self, tab)
+        IdMixin.__init__(self, tab)
         super().__init__(
             label=button_label, id=self.button_id(button_label), **kwargs
         )
@@ -115,7 +114,7 @@ class TabButton(Button, TabIdMixin):
         self.compact = True
 
 
-class GitLog(DataTable, TabIdMixin):
+class GitLog(DataTable, IdMixin):
     """DataTable widget to display the output of the `git log` command, either
     for a specific path or the chezmoi repository as a whole.
 
@@ -127,7 +126,7 @@ class GitLog(DataTable, TabIdMixin):
     path: reactive[Path | None] = reactive(None, init=False)
 
     def __init__(self, tab: TabName, **kwargs) -> None:
-        TabIdMixin.__init__(self, tab)
+        IdMixin.__init__(self, tab)
         super().__init__(id=self.component_id("GitLog"), **kwargs)
 
     def on_mount(self) -> None:
@@ -172,18 +171,27 @@ class AutoWarning(Static):
     # not focussable https://textual.textualize.io/widgets/static/
 
     def on_mount(self) -> None:
-        auto_warning = ""
+        auto_warning = []
         if chezmoi.autocommit_enabled and not chezmoi.autopush_enabled:
-            auto_warning = '"Auto Commit" is enabled: added file(s) will also be committed.'
-        elif chezmoi.autocommit_enabled and chezmoi.autopush_enabled:
-            auto_warning = '"Auto Commit" and "Auto Push" are enabled: adding file(s) will also be committed and pushed to the remote.'
-
+            auto_warning.append(
+                '"Auto Commit" is enabled: added file(s) will also be committed.'
+            )
+        if chezmoi.autocommit_enabled and chezmoi.autopush_enabled:
+            auto_warning.append(
+                '"Auto Commit" and "Auto Push" are enabled: adding file(s) will also be committed and pushed to the remote.'
+            )
+        if chezmoi.autoadd_enabled:
+            auto_warning.append(
+                '"Auto Add" is enabled: files will be added automatically, don\'t use the GUI while editing files.'
+            )
         self.update(
-            Content.from_markup(f"[$text-warning italic]{auto_warning}[/]")
+            Content.from_markup(
+                f"[$text-warning italic]{' '.join(auto_warning)}[/]"
+            )
         )
 
 
-class PathView(RichLog, TabIdMixin):
+class PathView(RichLog, IdMixin):
     # focussable https://textual.textualize.io/widgets/rich_log/
 
     BINDINGS = [Binding(key="M,m", action="maximize", description="maximize")]
@@ -191,7 +199,7 @@ class PathView(RichLog, TabIdMixin):
     path: reactive[Path | None] = reactive(None, init=False)
 
     def __init__(self, tab: TabName, **kwargs) -> None:
-        TabIdMixin.__init__(self, tab)
+        IdMixin.__init__(self, tab)
         super().__init__(
             id=self.component_id("PathView"),
             auto_scroll=True,
@@ -201,35 +209,14 @@ class PathView(RichLog, TabIdMixin):
         )
 
     def on_mount(self) -> None:
-        text = "Click a file or directory, \nto show its contents."
+        text = "Click a file or directory, \nto show its contents.\n"
         self.write(Text(text, style="dim"))
-
-    def write_managed_dirs_in_dir(self) -> None:
-        assert isinstance(self.path, Path)
-        managed_dirs: list[Path] = chezmoi.managed_dir_paths_in_dir(self.path)
-        if managed_dirs:
-            self.write("\nManaged sub dirs:")
-            for p in managed_dirs:
-                self.write(str(p))
-
-    def write_managed_files_in_dir(self) -> None:
-        assert isinstance(self.path, Path)
-        managed_files: list[Path] = chezmoi.managed_file_paths_in_dir(
-            self.path
-        )
-        if managed_files:
-            self.write("\nManaged files:")
-            for p in managed_files:
-                self.write(str(p))
-
-    def write_unmanaged_files_in_dir(self) -> None:
-        assert isinstance(self.path, Path)
-        unmanaged_files: list[Path] = chezmoi.run.unmanaged_in_dir(self.path)
-        if unmanaged_files:
-            self.write("\nUnmanaged files:")
-            self.write('(switch to "AddTab" to add files)')
-            for p in unmanaged_files:
-                self.write(str(p))
+        self.write("Current directory:")
+        self.write(f"{chezmoi.dest_dir}")
+        self.write(Text("(destDir)\n", style="dim"))
+        self.write("Source directory:")
+        self.write(f"{chezmoi.source_dir}")
+        self.write(Text("(sourceDir)", style="dim"))
 
     def update_path_view(self) -> None:
         assert isinstance(self.path, Path)
@@ -266,7 +253,6 @@ class PathView(RichLog, TabIdMixin):
                 return
 
         except IsADirectoryError:
-
             if self.path in chezmoi.managed_dir_paths:
                 self.write(f"Managed directory: {self.path}")
             else:
@@ -282,7 +268,7 @@ class PathView(RichLog, TabIdMixin):
             self.update_path_view()
 
 
-class DiffView(RichLog, TabIdMixin):
+class DiffView(RichLog, IdMixin):
     # not focussable https://textual.textualize.io/widgets/static/
 
     BINDINGS = [Binding(key="M,m", action="maximize", description="maximize")]
@@ -290,7 +276,7 @@ class DiffView(RichLog, TabIdMixin):
     path: reactive[Path | None] = reactive(None, init=False)
 
     def __init__(self, tab: TabName, **kwargs) -> None:
-        TabIdMixin.__init__(self, tab)
+        IdMixin.__init__(self, tab)
         super().__init__(id=self.component_id("DiffView"), **kwargs)
 
     def on_mount(self) -> None:
@@ -302,7 +288,7 @@ class DiffView(RichLog, TabIdMixin):
         self.clear()
 
         diff_output: list[str]
-        status_files = chezmoi.status_paths[self.tab_name].files
+        status_files = chezmoi.managed_status[self.tab_name].files
 
         if self.path not in status_files:
             self.write(
@@ -315,7 +301,7 @@ class DiffView(RichLog, TabIdMixin):
 
         if self.tab_name == "Apply":
             diff_output = chezmoi.run.apply_diff(self.path)
-        elif self.tab_name == "Re-Add":
+        elif self.tab_name == "ReAdd":
             diff_output = chezmoi.run.re_add_diff(self.path)
         else:
             self.write(Text(f"Unknown tab: {self.tab_name}", style="dim"))
@@ -363,7 +349,7 @@ class FileNodeData(NodeData):
 class TreeBase(Tree[NodeData]):
     """Shows the tree widget on the left for Apply and Re-Add tabs."""
 
-    unchanged: reactive[bool] = reactive(False, init=False)
+    # unchanged: reactive[bool] = reactive(False, init=False)
 
     def __init__(self, tab: TabName, **kwargs) -> None:
         self.tab_name: TabName = tab
@@ -374,7 +360,7 @@ class TreeBase(Tree[NodeData]):
             "M": theme.vars["text-warning"],
         }
         root_node_data = DirNodeData(
-            path=chezmoi.dest_dir, found=True, status="M"
+            path=chezmoi.dest_dir, found=True, status="R"
         )
         super().__init__(label="root", data=root_node_data, **kwargs)
 
@@ -382,87 +368,103 @@ class TreeBase(Tree[NodeData]):
         self.guide_depth = 3
         self.show_root = False
 
-    def should_show_node(self, node_data: NodeData) -> bool:
-        if isinstance(node_data, FileNodeData):
-            if not self.unchanged:
-                return node_data.status != "X"
-            return True
-        elif isinstance(node_data, DirNodeData):
-            if node_data.path == chezmoi.dest_dir:
-                return True
-            managed_files_in_sub_dir = [
-                f
-                for f in chezmoi.managed_file_paths
-                if node_data.path in f.parents
-            ]
-            managed_dirs_in_sub_dir = [
-                f
-                for f in chezmoi.managed_dir_paths
-                if node_data.path in f.parents
-                or node_data.path.parent == chezmoi.dest_dir
-            ]
-            status_files = chezmoi.status_paths[self.tab_name].files
-            if not self.unchanged:
-                return any(f in status_files for f in managed_files_in_sub_dir)
-            else:
-                return (
-                    bool(managed_dirs_in_sub_dir)
-                    or bool(managed_files_in_sub_dir)
-                    and node_data.path in chezmoi.managed_dir_paths
-                )
-        return False
+    def create_dir_node_data(self, path: Path) -> DirNodeData:
+        """Create a DirNodeData instance for a given path."""
+        status_code = chezmoi.managed_status[self.tab_name].dirs[path]
+        if not status_code:
+            status_code = "X"
+        found = path.exists()
+        return DirNodeData(path=path, found=found, status=status_code)
 
-    def add_leaves(self, tree_node: TreeNode) -> None:
-        current_leafs = [
+    def create_file_node_data(self, path: Path) -> FileNodeData:
+        """Create a FileNodeData instance for a given path."""
+        status_code = chezmoi.managed_status[self.tab_name].files[path]
+        found = path.exists()
+        return FileNodeData(path=path, found=found, status=status_code)
+
+    def get_expanded_nodes(self) -> list[TreeNode]:
+        """Recursively get all current expanded nodes in the tree, always
+        including the root node."""
+        nodes = [self.root]
+
+        def collect_nodes(current_node: TreeNode) -> list[TreeNode]:
+            expanded = []
+            for child in current_node.children:
+                if child.is_expanded:
+                    expanded.append(child)
+                    expanded.extend(collect_nodes(child))
+            return expanded
+
+        nodes.extend(collect_nodes(self.root))
+        print(f"in get_expanded_nodes, TreeBase\nnodes:\n{nodes}")
+        return nodes
+
+    def should_show_dir_node(self, dir_path, unchanged: bool) -> bool:
+        if not unchanged:
+            has_status_files = chezmoi.dir_has_status_files(
+                self.tab_name, dir_path
+            )
+            has_status_dirs = chezmoi.dir_has_status_dirs(
+                self.tab_name, dir_path
+            )
+            return has_status_files or has_status_dirs
+        return True
+
+    def add_unchanged_leaves(self, tree_node: TreeNode) -> None:
+        assert isinstance(tree_node.data, DirNodeData)
+        unchanged_in_dir = chezmoi.files_without_status_in(
+            self.tab_name, tree_node.data.path
+        )
+        print(
+            f"in add_unchanged_leaves, Treebase\nunchanged_in_dir:\n{unchanged_in_dir}"
+        )
+        for file_path in unchanged_in_dir:
+            node_data = self.create_file_node_data(file_path)
+            node_label = self.style_label(node_data)
+            tree_node.add_leaf(label=node_label, data=node_data)
+
+    def remove_unchanged_leaves(self, tree_node: TreeNode) -> None:
+        current_unchanged_leaves = [
             leaf
             for leaf in tree_node.children
-            if isinstance(leaf.data, FileNodeData)
+            if isinstance(leaf.data, FileNodeData) and leaf.data.status == "X"
         ]
-        for leaf in current_leafs:
+        for leaf in current_unchanged_leaves:
             leaf.remove()
 
-        status_code = "X"
+    def add_status_leaves(self, tree_node: TreeNode) -> None:
         assert isinstance(tree_node.data, DirNodeData)
-        file_paths = chezmoi.managed_file_paths_in_dir(tree_node.data.path)
-        status_files = chezmoi.status_paths[self.tab_name].files
-        for file_path in file_paths:
-            if file_path in status_files:
-                status_code = status_files[file_path]
-            node_data = FileNodeData(
-                path=file_path, found=file_path.exists(), status=status_code
-            )
-            if self.should_show_node(node_data):
-                node_label = self.style_label(node_data)
-                tree_node.add_leaf(label=node_label, data=node_data)
+        status_file_paths = chezmoi.files_with_status_in(
+            self.tab_name, tree_node.data.path
+        )
+        for file in status_file_paths:
+            node_data = self.create_file_node_data(file)
+            node_label = self.style_label(node_data)
+            tree_node.add_leaf(label=node_label, data=node_data)
 
-    def add_nodes(self, tree_node: TreeNode) -> None:
+    def add_dir_nodes(self, tree_node: TreeNode, unchanged) -> None:
         assert isinstance(tree_node.data, DirNodeData)
-        dir_paths = chezmoi.managed_dir_paths_in_dir(tree_node.data.path)
-        status_dirs = chezmoi.status_paths[self.tab_name].dirs
-
-        # Remove directory nodes that no longer match the filter
-        for child in list(tree_node.children):
-            if isinstance(
-                child.data, DirNodeData
-            ) and not self.should_show_node(child.data):
-                child.remove()
-
-        # Add directory nodes that now match the filter
-        for dir_path in dir_paths:
-            status_code = "X"
-            if dir_path in status_dirs:
-                status_code = status_dirs[dir_path]
-            node_data = DirNodeData(
-                path=dir_path, found=dir_path.exists(), status=status_code
-            )
-            # Only add if not already present and should be shown
-            if self.should_show_node(node_data) and dir_path not in [
-                child.data.path
-                for child in tree_node.children
-                if isinstance(child.data, DirNodeData)
-            ]:
+        for dir_path in chezmoi.managed_dirs_in(tree_node.data.path):
+            if self.should_show_dir_node(dir_path, unchanged):
+                node_data = self.create_dir_node_data(dir_path)
                 node_label = self.style_label(node_data)
                 tree_node.add(label=node_label, data=node_data)
+
+    def remove_unchanged_dir_nodes(
+        self, tree_node: TreeNode, unchanged: bool
+    ) -> None:
+        assert isinstance(tree_node.data, DirNodeData)
+        dir_nodes = [
+            dir_node
+            for dir_node in tree_node.children
+            if isinstance(dir_node.data, DirNodeData)
+            and dir_node.data.status == "X"
+        ]
+        for dir_node in dir_nodes:
+            if dir_node.data is not None and not self.should_show_dir_node(
+                dir_node.data.path, unchanged
+            ):
+                dir_node.remove()
 
     def style_label(self, node_data: NodeData) -> Text:
         italic = False if node_data.found else True
@@ -477,48 +479,45 @@ class TreeBase(Tree[NodeData]):
         return Text(node_data.path.name, style=style)
 
 
-class ManagedTree(TreeBase, TabIdMixin):
+class ManagedTree(TreeBase, IdMixin):
+
+    unchanged: reactive[bool] = reactive(False, init=False)
 
     def __init__(self, tab: TabName, **kwargs) -> None:
-        TabIdMixin.__init__(self, tab)
-        super().__init__(tab, id=self.component_id("ManagedTree"), **kwargs)
+        IdMixin.__init__(self, tab)
+        super().__init__(
+            tab, id=self.component_id(component_name="ManagedTree"), **kwargs
+        )
 
     def on_mount(self) -> None:
-        self.add_nodes(self.root)
-        self.add_leaves(self.root)
+        self.add_dir_nodes(self.root, self.unchanged)
+        self.add_status_leaves(self.root)
 
     def on_tree_node_expanded(self, event: Tree.NodeExpanded) -> None:
-        event.stop()
-        self.add_nodes(event.node)
-        self.add_leaves(event.node)
-
-    def get_expanded_nodes(self) -> list[TreeNode]:
-        """Recursively get all current expanded nodes in the tree, always
-        including the root node."""
-        nodes = [self.root]  # Always start with the root node
-
-        def collect_nodes(current_node: TreeNode) -> list[TreeNode]:
-            expanded = []
-            for child in current_node.children:
-                if child.is_expanded:
-                    expanded.append(child)
-                    expanded.extend(collect_nodes(child))
-            return expanded
-
-        nodes.extend(collect_nodes(self.root))
-        return nodes
+        self.add_dir_nodes(event.node, self.unchanged)
+        self.add_status_leaves(event.node)
+        if self.unchanged:
+            self.add_unchanged_leaves(event.node)
+        else:
+            self.remove_unchanged_leaves(event.node)
 
     def watch_unchanged(self) -> None:
-        """Update the visible nodes based on the "show unchanged" filter."""
         for node in self.get_expanded_nodes():
-            self.add_nodes(node)
-            self.add_leaves(node)
+            if self.unchanged:
+                self.add_unchanged_leaves(node)
+            if not self.unchanged:
+                self.remove_unchanged_leaves(node)
 
 
-class ExpandedTree(TreeBase, TabIdMixin):
+class ExpandedTree(TreeBase, IdMixin):
+
+    unchanged: reactive[bool] = reactive(False, init=False)
+
     def __init__(self, tab: TabName, **kwargs) -> None:
-        TabIdMixin.__init__(self, tab)
-        super().__init__(tab, id=self.component_id("ExpandedTree"), **kwargs)
+        IdMixin.__init__(self, tab)
+        super().__init__(
+            tab, id=self.component_id(component_name="ExpandedTree"), **kwargs
+        )
 
     def on_mount(self) -> None:
         self.expand_all_nodes(self.root)
@@ -528,45 +527,64 @@ class ExpandedTree(TreeBase, TabIdMixin):
         if (
             node.data
             and isinstance(node.data, DirNodeData)
-            and self.should_show_node(node.data)
+            and self.should_show_dir_node(node.data.path, self.unchanged)
         ):
             if not node.is_expanded:
                 node.expand()
-                self.add_nodes(node)
-                self.add_leaves(node)
+                self.add_dir_nodes(node, self.unchanged)
+                self.add_status_leaves(node)
             for child in node.children:
                 if child.data and isinstance(child.data, DirNodeData):
                     self.expand_all_nodes(child)
 
+    def watch_unchanged(self) -> None:
+        expanded_nodes = self.get_expanded_nodes()
+        print(
+            f"in watch_unchanged, ExpandedTree:\nexpanded_nodes:\n{expanded_nodes}"
+        )
+        for tree_node in expanded_nodes:
+            if self.unchanged:
+                self.add_unchanged_leaves(tree_node)
+            if not self.unchanged:
+                self.remove_unchanged_leaves(tree_node)
 
-class FlatTree(TreeBase, TabIdMixin):
+
+class FlatTree(TreeBase, IdMixin):
+
     unchanged: reactive[bool] = reactive(False, init=False)
 
     def __init__(self, tab: TabName, **kwargs) -> None:
-        TabIdMixin.__init__(self, tab)
-        super().__init__(tab, id=self.component_id("FlatTree"), **kwargs)
+        IdMixin.__init__(self, tab)
+        super().__init__(
+            tab, id=self.component_id(component_name="FlatTree"), **kwargs
+        )
 
     def on_mount(self) -> None:
-        self.add_flat_leaves()
+        for file_path, status in chezmoi.managed_status[
+            self.tab_name
+        ].files.items():
+            if status != "X":
+                node_data = self.create_file_node_data(file_path)
+                node_label = self.style_label(node_data)
+                self.root.add_leaf(label=node_label, data=node_data)
 
-    def add_flat_leaves(self) -> None:
-        status_files = chezmoi.status_paths[self.tab_name].files
-        for file_path in status_files:
-            node_data = FileNodeData(
-                path=file_path,
-                found=file_path.exists(),
-                status=status_files[file_path],
-            )
-            node_label = self.style_label(node_data)
-            self.root.add_leaf(label=node_label, data=node_data)
+    def add_all_unchanged_files(self) -> None:
+        for file_path, status in chezmoi.managed_status[
+            self.tab_name
+        ].files.items():
+            if status == "X":
+                node_data = self.create_file_node_data(file_path)
+                node_label = self.style_label(node_data)
+                self.root.add_leaf(label=node_label, data=node_data)
+
+    def remove_flat_leaves(self) -> None:
+        self.remove_unchanged_leaves(self.root)
 
     def watch_unchanged(self) -> None:
-        for file_path in chezmoi.managed_file_paths_without_status:
-            node_data = FileNodeData(
-                path=file_path, found=file_path.exists(), status="X"
-            )
-            node_label = self.style_label(node_data)
-            self.root.add_leaf(label=node_label, data=node_data)
+        if self.unchanged:
+            self.add_all_unchanged_files()
+        elif not self.unchanged:
+            self.remove_flat_leaves()
 
 
 class FilteredDirTree(DirectoryTree):
@@ -641,7 +659,7 @@ class FilteredDirTree(DirectoryTree):
             if path.name in unwanted["dirs"]:
                 return True
         if path.is_file():
-            extension = re.match(r"\.[^.]*$", path.name)
+            extension = path.suffix
             if extension in unwanted["files"]:
                 return True
         return False

@@ -6,30 +6,25 @@ FLOW = """\
 │home directory│    │ working copy │    │  local repo  │    │ remote repo  │
 └──────┬───────┘    └──────┬───────┘    └──────┬───────┘    └──────┬───────┘
        │                   │                   │                   │
-       │    chezmoi add    │                   │                   │
-       │   chezmoi re-add  │                   │                   │
+       │                   │                   │                   │
+       │     Add Tab       │    autoCommit     │     git push      │
+       │   Re-Add Tab      │──────────────────>│──────────────────>│
        │──────────────────>│                   │                   │
-       │                   │                   │                   │
-       │   chezmoi apply   │                   │                   │
-       │<──────────────────│                   │                   │
-       │                   │                   │                   │
-       │  chezmoi status   │                   │                   │
-       │   chezmoi diff    │                   │                   │
-       │<─ ─ ─ ─ ─ ─ ─ ─ ─>│                   │     git push      │
-       │                   │                   │──────────────────>│
-       │                   │                   │                   │
-       │                   │           chezmoi git pull            │
-       │                   │<──────────────────────────────────────│
-       │                   │                   │                   │
-       │                   │    git commit     │                   │
-       │                   │──────────────────>│                   │
-       │                   │                   │                   │
-       │                   │    autoCommit     │                   │
-       │                   │──────────────────>│                   │
-       │                   │                   │                   │
-       │                   │                autoPush               │
+       │                   │                autopush               │
        │                   │──────────────────────────────────────>│
        │                   │                   │                   │
+       │                   │                   │                   │
+       │     Apply Tab     │     chezmoi init & chezmoi git pull   │
+       │<──────────────────│<──────────────────────────────────────│
+       │                   │                   │                   │
+       │     Diff View     │                   │                   │
+       │<─ ─ ─ ─ ─ ─ ─ ─ ─>│                   │                   │
+       │                   │                   │                   │
+       │                   │    chezmoi init & chezmoi git pull    │
+       │                   │<──────────────────────────────────────│
+       │                   │                   │                   │
+       │        chezmoi init --one-shot & chezmoi init --apply     │
+       │<──────────────────────────────────────────────────────────│
        │                   │                   │                   │
 ┌──────┴───────┐    ┌──────┴───────┐    ┌──────┴───────┐    ┌──────┴───────┐
 │ destination  │    │ target state │    │ source state │    │  git remote  │

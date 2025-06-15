@@ -6,11 +6,10 @@ command_log_callback function set by gui.py.
 """
 
 import ast
-import os
 from dataclasses import dataclass, field
 from pathlib import Path
 from subprocess import TimeoutExpired, run
-from typing import NamedTuple
+from typing import Literal, NamedTuple
 from chezmoi_mousse.type_definitions import TabName
 
 
@@ -53,8 +52,12 @@ SUBS = {
         "--path-style=source-absolute",
         "--include=files",
     ),
-    "status_dirs": ("status", "--path-style=absolute", "--include=dirs"),
-    "status_files": ("status", "--path-style=absolute", "--include=files"),
+    "dir_status_lines": ("status", "--path-style=absolute", "--include=dirs"),
+    "file_status_lines": (
+        "status",
+        "--path-style=absolute",
+        "--include=files",
+    ),
     "template_data": ("data", "--format=json"),
 }
 
@@ -126,24 +129,27 @@ class SubProcessCalls:
     def cat(self, file_path: Path) -> str:
         return subprocess_run(BASE + ("cat", str(file_path)))
 
-    def unmanaged_in_dir(self, dir_path: Path) -> list[Path]:
-        path_strings = subprocess_run(
-            BASE + ("unmanaged", "--path-style=absolute", str(dir_path))
-        ).splitlines()
-        # chezmoi can return the dir itself, eg when the dir is not managed
-        if len(path_strings) == 1 and path_strings[0] == str(dir_path):
-            return []
-        return [
-            p
-            for entry in path_strings
-            if (p := Path(entry)).parent == dir_path
-        ]
-
 
 # named tuple nested in StatusPaths, to enable dot notation access
 class StatusDicts(NamedTuple):
     dirs: dict[Path, str]
     files: dict[Path, str]
+
+    @property
+    def dirs_without_status(self) -> list[Path]:
+        return [path for path, status in self.dirs.items() if status == "X"]
+
+    @property
+    def files_without_status(self) -> list[Path]:
+        return [path for path, status in self.files.items() if status == "X"]
+
+    @property
+    def dirs_with_status(self) -> list[Path]:
+        return [path for path, status in self.dirs.items() if status != "X"]
+
+    @property
+    def files_with_status(self) -> list[Path]:
+        return [path for path, status in self.files.items() if status != "X"]
 
 
 @dataclass
@@ -184,8 +190,8 @@ class Chezmoi:
     managed_dirs: InputOutput
     managed_files_source: InputOutput
     managed_dirs_source: InputOutput
-    status_dirs: InputOutput
-    status_files: InputOutput
+    dir_status_lines: InputOutput
+    file_status_lines: InputOutput
     template_data: InputOutput
     perform = PerformChange()
     run = SubProcessCalls()
@@ -204,20 +210,12 @@ class Chezmoi:
         return Path(self.dump_config.dict_out["sourceDir"])
 
     @property
-    def source_dir_str(self) -> str:
-        return self.dump_config.dict_out["sourceDir"]
-
-    @property
     def dest_dir(self) -> Path:
         return Path(self.dump_config.dict_out["destDir"])
 
     @property
     def dest_dir_str(self) -> str:
         return self.dump_config.dict_out["destDir"]
-
-    @property
-    def dest_dir_str_spaced(self) -> str:
-        return f" {self.dump_config.dict_out['destDir']}{os.sep} "
 
     @property
     def autoadd_enabled(self) -> bool:
@@ -240,15 +238,7 @@ class Chezmoi:
         return [Path(p) for p in self.managed_files.list_out]
 
     @property
-    def status_dir_paths(self) -> list[Path]:
-        return [Path(line[3:]) for line in self.status_dirs.list_out]
-
-    @property
-    def status_file_paths(self) -> list[Path]:
-        return [Path(line[3:]) for line in self.status_files.list_out]
-
-    @property
-    def status_paths(self) -> dict[str, StatusDicts]:
+    def managed_status(self) -> dict[str, StatusDicts]:
         """Returns a dict with keys "Apply" and "ReAdd", each mapping to a
         StatusDicts namedtuple containing a dirs and and files entry.
 
@@ -256,58 +246,142 @@ class Chezmoi:
         """
 
         def create_status_dict(
-            lines: list[str], *, tab_name: TabName
+            tab_name: TabName, kind: Literal["dirs", "files"]
         ) -> dict[Path, str]:
+            to_return: dict[Path, str] = {}
+            if kind == "dirs":
+                managed_paths = self.managed_dir_paths
+                status_lines = self.dir_status_lines.list_out
+            elif kind == "files":
+                managed_paths = self.managed_file_paths
+                status_lines = self.file_status_lines.list_out
+
             if tab_name == "Apply":
                 status_codes = "ADM"
                 status_idx = 1
             elif tab_name == "ReAdd":
                 status_codes = "M"
                 status_idx = 0
-            # list comprehension returns empty dict if no lines match
-            return {
+
+            paths_with_status_dict = {
                 Path(line[3:]): line[status_idx]
-                for line in lines
+                for line in status_lines
                 if line[status_idx] in status_codes
             }
 
-        apply_dirs = create_status_dict(
-            self.status_dirs.list_out, tab_name="Apply"
-        )
-        apply_files = create_status_dict(
-            self.status_files.list_out, tab_name="Apply"
-        )
-        re_add_dirs = create_status_dict(
-            self.status_dirs.list_out, tab_name="ReAdd"
-        )
-        re_add_files = create_status_dict(
-            self.status_files.list_out, tab_name="ReAdd"
-        )
+            for path in managed_paths:
+                if path in paths_with_status_dict:
+                    to_return[path] = paths_with_status_dict[path]
+                else:
+                    to_return[path] = "X"
+            return to_return
+
+        apply_dirs = create_status_dict(tab_name="Apply", kind="dirs")
+        apply_files = create_status_dict(tab_name="Apply", kind="files")
+        re_add_dirs = create_status_dict(tab_name="ReAdd", kind="dirs")
+        re_add_files = create_status_dict(tab_name="ReAdd", kind="files")
 
         return {
             "Apply": StatusDicts(dirs=apply_dirs, files=apply_files),
             "ReAdd": StatusDicts(dirs=re_add_dirs, files=re_add_files),
         }
 
-    @property
-    def managed_file_paths_without_status(self) -> list[Path]:
+    def _validate_managed_dir_path(self, dir_path):
+        if (
+            dir_path != self.dest_dir
+            and dir_path not in self.managed_dir_paths
+        ):
+            raise ValueError(
+                f"{dir_path} is not {self.dest_dir} or a managed directory."
+            )
+
+    def managed_dirs_in(self, dir_path: Path) -> list[Path]:
+        # checks only direct children
+        self._validate_managed_dir_path(dir_path)
+        return [p for p in self.managed_dir_paths if p.parent == dir_path]
+
+    def managed_files_in(self, dir_path: Path) -> list[Path]:
+        # checks only direct children
+        self._validate_managed_dir_path(dir_path)
+        return [p for p in self.managed_file_paths if p.parent == dir_path]
+
+    def dirs_with_status_in(
+        # checks only direct children
+        self,
+        tab_name: TabName,
+        dir_path: Path,
+    ) -> list[Path]:
+        self._validate_managed_dir_path(dir_path)
         return [
             p
-            for p in self.managed_file_paths
-            if p not in self.status_file_paths
+            for p in self.managed_status[tab_name].dirs_with_status
+            if p.parent == dir_path
         ]
 
-    @property
-    def managed_dir_paths_without_status(self) -> list[Path]:
+    def files_with_status_in(
+        # checks only direct children
+        self,
+        tab_name: TabName,
+        dir_path: Path,
+    ) -> list[Path]:
+        self._validate_managed_dir_path(dir_path)
         return [
-            p for p in self.managed_dir_paths if p not in self.status_dir_paths
+            p
+            for p in self.managed_status[tab_name].files_with_status
+            if p.parent == dir_path
         ]
 
-    def managed_file_paths_in_dir(self, dir_path: Path) -> list[Path]:
-        return [f for f in self.managed_file_paths if f.parent == dir_path]
+    def dirs_without_status_in(
+        self,
+        tab_name: TabName,
+        dir_path: Path,
+        # checks only direct children
+    ) -> list[Path]:
+        self._validate_managed_dir_path(dir_path)
+        return [
+            p
+            for p in self.managed_status[tab_name].dirs_without_status
+            if p.parent == dir_path
+        ]
 
-    def managed_dir_paths_in_dir(self, dir_path: Path) -> list[Path]:
-        return [d for d in self.managed_dir_paths if d.parent == dir_path]
+    def files_without_status_in(
+        self, tab_name: TabName, dir_path: Path
+    ) -> list[Path]:
+        # checks only direct children
+        self._validate_managed_dir_path(dir_path)
+        return [
+            p
+            for p in self.managed_status[tab_name].files_without_status
+            if p.parent == dir_path
+        ]
+
+    def dir_has_managed_files(self, dir_path: Path) -> bool:
+        # checks for any, no matter how deep in subdirectories
+        self._validate_managed_dir_path(dir_path)
+        return any(f for f in self.managed_file_paths if dir_path in f.parents)
+
+    def dir_has_status_files(self, tab_name: TabName, dir_path: Path) -> bool:
+        # checks for any, no matter how deep in subdirectories
+        self._validate_managed_dir_path(dir_path)
+        return any(
+            f
+            for f, status in self.managed_status[tab_name].files.items()
+            if dir_path in f.parents and status != "X"
+        )
+
+    def dir_has_status_dirs(self, tab_name: TabName, dir_path: Path) -> bool:
+        # checks for any, no matter how deep in subdirectories
+        self._validate_managed_dir_path(dir_path)
+        status_dirs = self.managed_status[tab_name].dirs.items()
+        if dir_path.parent == self.dest_dir and dir_path in status_dirs:
+            # the parent is dest_dir, also return True because dest_dir is
+            # not present in the self.managed_status dict
+            return True
+        return any(
+            f
+            for f, status in status_dirs
+            if dir_path in f.parents and status != "X"
+        )
 
 
 chezmoi = Chezmoi()
