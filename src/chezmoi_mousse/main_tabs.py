@@ -44,6 +44,7 @@ from chezmoi_mousse.containers import (
     TabButtonsRight,
 )
 from chezmoi_mousse.widgets import FilteredDirTree, GitLog, PathView, RichLog
+from chezmoi_mousse.id_typing import TabSide
 
 
 class ApplyTab(Horizontal, IdMixin, EventMixin):
@@ -63,13 +64,14 @@ class ApplyTab(Horizontal, IdMixin, EventMixin):
 
     def compose(self) -> ComposeResult:
         with VerticalGroup(
-            id=self.tab_vertical_id("Left"), classes="tab-left-vertical"
+            id=self.tab_vertical_id(TabSide.left), classes="tab-left-vertical"
         ):
             yield TabButtonsLeft(self.tab_name)
             yield ContentSwitcherLeft(self.tab_name)
 
         with Vertical(
-            id=self.tab_vertical_id("Right"), classes="tab-right-vertical"
+            id=self.tab_vertical_id(TabSide.right),
+            classes="tab-right-vertical",
         ):
             yield TabButtonsRight(self.tab_name)
             yield ContentSwitcherRight(self.tab_name)
@@ -115,13 +117,14 @@ class ReAddTab(Horizontal, IdMixin, EventMixin):
 
     def compose(self) -> ComposeResult:
         with VerticalGroup(
-            id=self.tab_vertical_id("Left"), classes="tab-left-vertical"
+            id=self.tab_vertical_id(TabSide.left), classes="tab-left-vertical"
         ):
             yield TabButtonsLeft(self.tab_name)
             yield ContentSwitcherLeft(self.tab_name)
 
         with Vertical(
-            id=self.tab_vertical_id("Right"), classes="tab-right-vertical"
+            id=self.tab_vertical_id(TabSide.right),
+            classes="tab-right-vertical",
         ):
             yield TabButtonsRight(self.tab_name)
             yield ContentSwitcherRight(self.tab_name)
@@ -167,7 +170,7 @@ class AddTab(Horizontal, IdMixin):
 
     def compose(self) -> ComposeResult:
         with VerticalGroup(
-            id=self.tab_vertical_id("Left"),
+            id=self.tab_vertical_id(TabSide.left),
             classes="tab-left-vertical top-border-title",
         ):
             yield FilteredDirTree(
@@ -177,7 +180,7 @@ class AddTab(Horizontal, IdMixin):
             )
 
         with Vertical(
-            id=self.tab_vertical_id("Right"),
+            id=self.tab_vertical_id(TabSide.right),
             classes="tab-right-vertical top-border-title",
         ):
             yield PathView(self.tab_name)
@@ -198,10 +201,10 @@ class AddTab(Horizontal, IdMixin):
 
     def on_mount(self) -> None:
         self.query_one(
-            f"#{self.tab_vertical_id("Right")}", Vertical
+            f"#{self.tab_vertical_id(TabSide.right)}", Vertical
         ).border_title = chezmoi.dest_dir_str
         self.query_one(
-            f"#{self.tab_vertical_id("Left")}", VerticalGroup
+            f"#{self.tab_vertical_id(TabSide.left)}", VerticalGroup
         ).border_title = chezmoi.dest_dir_str
 
     def on_directory_tree_file_selected(
@@ -214,7 +217,7 @@ class AddTab(Horizontal, IdMixin):
             event.node.data.path
         )
         self.query_one(
-            f"#{self.tab_vertical_id("Right")}", Vertical
+            f"#{self.tab_vertical_id(TabSide.right)}", Vertical
         ).border_title = (
             f"{event.node.data.path.relative_to(chezmoi.dest_dir)}"
         )
@@ -228,7 +231,7 @@ class AddTab(Horizontal, IdMixin):
             event.node.data.path
         )
         self.query_one(
-            f"#{self.tab_vertical_id("Right")}", Vertical
+            f"#{self.tab_vertical_id(TabSide.right)}", Vertical
         ).border_title = (
             f"{event.node.data.path.relative_to(chezmoi.dest_dir)}"
         )
