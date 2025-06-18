@@ -37,13 +37,13 @@ from chezmoi_mousse.widgets import (
     GitLog,
     PathView,
     RichLog,
-    TabIdMixin,
+    IdMixin,
 )
 
 from chezmoi_mousse.config import pw_mgr_info
 from chezmoi_mousse.containers import (
     FilterSwitch,
-    TreeTabEventMixin,
+    EventMixin,
     TabButtonsLeft,
     TabButtonsRight,
     ContentSwitcherLeft,
@@ -52,7 +52,7 @@ from chezmoi_mousse.containers import (
 )
 
 
-class ApplyTab(Horizontal, TabIdMixin, TreeTabEventMixin):
+class ApplyTab(Horizontal, IdMixin, EventMixin):
 
     BINDINGS = [
         Binding(key="W,w", action="apply_path", description="chezmoi-apply"),
@@ -64,7 +64,7 @@ class ApplyTab(Horizontal, TabIdMixin, TreeTabEventMixin):
     ]
 
     def __init__(self) -> None:
-        TabIdMixin.__init__(self, "Apply")
+        IdMixin.__init__(self, "Apply")
         super().__init__(id=self.tab_main_horizontal_id)
 
     def compose(self) -> ComposeResult:
@@ -92,7 +92,7 @@ class ApplyTab(Horizontal, TabIdMixin, TreeTabEventMixin):
         ).toggle_class("-visible")
 
 
-class ReAddTab(Horizontal, TabIdMixin, TreeTabEventMixin):
+class ReAddTab(Horizontal, IdMixin, EventMixin):
 
     BINDINGS = [
         Binding(key="A,a", action="re_add_path", description="chezmoi-re-add"),
@@ -104,7 +104,7 @@ class ReAddTab(Horizontal, TabIdMixin, TreeTabEventMixin):
     ]
 
     def __init__(self) -> None:
-        TabIdMixin.__init__(self, "ReAdd")
+        IdMixin.__init__(self, "ReAdd")
         super().__init__(id=self.tab_main_horizontal_id)
 
     def compose(self) -> ComposeResult:
@@ -132,7 +132,7 @@ class ReAddTab(Horizontal, TabIdMixin, TreeTabEventMixin):
         ).toggle_class("-visible")
 
 
-class AddTab(Horizontal, TabIdMixin):
+class AddTab(Horizontal, IdMixin):
 
     BINDINGS = [
         Binding(key="A,a", action="add_path", description="chezmoi-add"),
@@ -144,7 +144,7 @@ class AddTab(Horizontal, TabIdMixin):
     ]
 
     def __init__(self) -> None:
-        TabIdMixin.__init__(self, "Add")
+        IdMixin.__init__(self, "Add")
         super().__init__(id=self.tab_main_horizontal_id)
 
     def compose(self) -> ComposeResult:
