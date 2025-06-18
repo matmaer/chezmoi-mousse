@@ -14,6 +14,7 @@ from textual.widgets import Button, ContentSwitcher, Label, Switch
 from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.config import filter_data
 from chezmoi_mousse.id_typing import (
+    TabButton,
     CommonTabEvents,
     FilterName,
     IdMixin,
@@ -27,7 +28,6 @@ from chezmoi_mousse.widgets import (
     GitLog,
     ManagedTree,
     PathView,
-    TabButton,
 )
 
 
@@ -44,7 +44,7 @@ class EventMixin:
     ) -> None:
         assert event.button.id is not None
         # Tree/List Switch
-        if event.button.id == self.button_id("Tree"):
+        if event.button.id == self.button_id(TabButton.tree_btn):
             expand_all_switch = self.query_one(
                 f"#{self.filter_switch_id('expand_all')}", Switch
             )
@@ -57,7 +57,7 @@ class EventMixin:
                 self.query_one(
                     f"#{self.content_switcher_id('Left')}", ContentSwitcher
                 ).current = self.component_id("ManagedTree")
-        elif event.button.id == self.button_id("List"):
+        elif event.button.id == self.button_id(TabButton.list_btn):
             self.query_one(
                 f"#{self.content_switcher_id('Left')}", ContentSwitcher
             ).current = self.component_id("FlatTree")
@@ -65,15 +65,15 @@ class EventMixin:
                 f"#{self.filter_switch_id('expand_all')}", Switch
             ).disabled = True
         # Contents/Diff/GitLog Switch
-        elif event.button.id == self.button_id("Contents"):
+        elif event.button.id == self.button_id(TabButton.contents_btn):
             self.query_one(
                 f"#{self.content_switcher_id('Right')}", ContentSwitcher
             ).current = self.component_id("PathView")
-        elif event.button.id == self.button_id("Diff"):
+        elif event.button.id == self.button_id(TabButton.diff_btn):
             self.query_one(
                 f"#{self.content_switcher_id('Right')}", ContentSwitcher
             ).current = self.component_id("DiffView")
-        elif event.button.id == self.button_id("Git-Log"):
+        elif event.button.id == self.button_id(TabButton.git_log_btn):
             self.query_one(
                 f"#{self.content_switcher_id('Right')}", ContentSwitcher
             ).current = self.component_id("GitLog")
@@ -153,31 +153,45 @@ class TabButtonsLeft(HorizontalGroup, IdMixin):
 
     def compose(self) -> ComposeResult:
         with Vertical(
-            id=self.button_vertical_id("Tree"),
+            id=self.button_vertical_id(TabButton.tree_btn),
             classes="single-button-vertical",
         ):
-            yield TabButton(
-                self.tab_name, button_label="Tree", classes="tab-button"
+            yield Button(
+                label=TabButton.tree_btn.value,
+                id=self.button_id(TabButton.tree_btn),
+                classes="tab-button",
             )
         with Vertical(
-            id=self.button_vertical_id("List"),
+            id=self.button_vertical_id(TabButton.list_btn),
             classes="single-button-vertical",
         ):
-            yield TabButton(
-                self.tab_name, button_label="List", classes="tab-button"
+            yield Button(
+                label=TabButton.list_btn.value,
+                id=self.button_id(TabButton.list_btn),
+                classes="tab-button",
             )
 
     def on_mount(self) -> None:
-        self.query_one(f"#{self.button_id('Tree')}").add_class("last-clicked")
+        self.query_one(f"#{self.button_id(TabButton.tree_btn)}").add_class(
+            "last-clicked"
+        )
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         lc = "last-clicked"
-        if event.button.id == self.button_id("Tree"):
-            self.query_one(f"#{self.button_id('List')}").remove_class(lc)
-            self.query_one(f"#{self.button_id('Tree')}").add_class(lc)
-        elif event.button.id == self.button_id("List"):
-            self.query_one(f"#{self.button_id('Tree')}").remove_class(lc)
-            self.query_one(f"#{self.button_id('List')}").add_class(lc)
+        if event.button.id == self.button_id(TabButton.tree_btn):
+            self.query_one(
+                f"#{self.button_id(TabButton.list_btn)}"
+            ).remove_class(lc)
+            self.query_one(f"#{self.button_id(TabButton.tree_btn)}").add_class(
+                lc
+            )
+        elif event.button.id == self.button_id(TabButton.list_btn):
+            self.query_one(
+                f"#{self.button_id(TabButton.tree_btn)}"
+            ).remove_class(lc)
+            self.query_one(f"#{self.button_id(TabButton.list_btn)}").add_class(
+                lc
+            )
 
 
 class TabButtonsRight(HorizontalGroup, IdMixin):
@@ -191,46 +205,70 @@ class TabButtonsRight(HorizontalGroup, IdMixin):
 
     def compose(self) -> ComposeResult:
         with Vertical(
-            id=self.button_vertical_id("Contents"),
+            id=self.button_vertical_id(TabButton.contents_btn),
             classes="single-button-vertical",
         ):
-            yield TabButton(
-                self.tab_name, button_label="Contents", classes="tab-button"
+            yield Button(
+                label=TabButton.contents_btn.value,
+                id=self.button_id(TabButton.contents_btn),
+                classes="tab-button",
             )
         with Vertical(
-            id=self.button_vertical_id("Diff"),
+            id=self.button_vertical_id(TabButton.diff_btn),
             classes="single-button-vertical",
         ):
-            yield TabButton(
-                self.tab_name, button_label="Diff", classes="tab-button"
+            yield Button(
+                label=TabButton.diff_btn.value,
+                id=self.button_id(TabButton.diff_btn),
+                classes="tab-button",
             )
         with Vertical(
-            id=self.button_vertical_id("Git-Log"),
+            id=self.button_vertical_id(TabButton.git_log_btn),
             classes="single-button-vertical",
         ):
-            yield TabButton(
-                self.tab_name, button_label="Git-Log", classes="tab-button"
+            yield Button(
+                label=TabButton.git_log_btn.value,
+                id=self.button_id(TabButton.git_log_btn),
+                classes="tab-button",
             )
 
     def on_mount(self) -> None:
-        self.query_one(f"#{self.button_id('Contents')}").add_class(
+        self.query_one(f"#{self.button_id(TabButton.contents_btn)}").add_class(
             "last-clicked"
         )
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         lc = "last-clicked"
-        if event.button.id == self.button_id("Contents"):
-            self.query_one(f"#{self.button_id('Diff')}").remove_class(lc)
-            self.query_one(f"#{self.button_id('Git-Log')}").remove_class(lc)
-            self.query_one(f"#{self.button_id('Contents')}").add_class(lc)
-        elif event.button.id == self.button_id("Diff"):
-            self.query_one(f"#{self.button_id('Contents')}").remove_class(lc)
-            self.query_one(f"#{self.button_id('Git-Log')}").remove_class(lc)
-            self.query_one(f"#{self.button_id('Diff')}").add_class(lc)
-        elif event.button.id == self.button_id("Git-Log"):
-            self.query_one(f"#{self.button_id('Contents')}").remove_class(lc)
-            self.query_one(f"#{self.button_id('Diff')}").remove_class(lc)
-            self.query_one(f"#{self.button_id('Git-Log')}").add_class(lc)
+        if event.button.id == self.button_id(TabButton.contents_btn):
+            self.query_one(
+                f"#{self.button_id(TabButton.diff_btn)}"
+            ).remove_class(lc)
+            self.query_one(
+                f"#{self.button_id(TabButton.git_log_btn)}"
+            ).remove_class(lc)
+            self.query_one(
+                f"#{self.button_id(TabButton.contents_btn)}"
+            ).add_class(lc)
+        elif event.button.id == self.button_id(TabButton.diff_btn):
+            self.query_one(
+                f"#{self.button_id(TabButton.contents_btn)}"
+            ).remove_class(lc)
+            self.query_one(
+                f"#{self.button_id(TabButton.git_log_btn)}"
+            ).remove_class(lc)
+            self.query_one(f"#{self.button_id(TabButton.diff_btn)}").add_class(
+                lc
+            )
+        elif event.button.id == self.button_id(TabButton.git_log_btn):
+            self.query_one(
+                f"#{self.button_id(TabButton.contents_btn)}"
+            ).remove_class(lc)
+            self.query_one(
+                f"#{self.button_id(TabButton.diff_btn)}"
+            ).remove_class(lc)
+            self.query_one(
+                f"#{self.button_id(TabButton.git_log_btn)}"
+            ).add_class(lc)
 
 
 class ContentSwitcherLeft(ContentSwitcher, IdMixin):

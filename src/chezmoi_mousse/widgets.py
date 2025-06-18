@@ -19,7 +19,6 @@ from textual.binding import Binding
 from textual.content import Content
 from textual.reactive import reactive
 from textual.widgets import (
-    Button,
     Checkbox,
     DataTable,
     DirectoryTree,
@@ -32,7 +31,7 @@ from textual.widgets.tree import TreeNode
 import chezmoi_mousse.theme as theme
 from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.config import chars, unwanted
-from chezmoi_mousse.id_typing import ButtonLabel, FilterName, IdMixin, TabName
+from chezmoi_mousse.id_typing import FilterName, IdMixin, TabName
 
 
 class CheckBox(Checkbox, IdMixin):
@@ -49,19 +48,6 @@ class CheckBox(Checkbox, IdMixin):
         )
 
     def on_mount(self) -> None:
-        self.compact = True
-
-
-class TabButton(Button, IdMixin):
-
-    def __init__(self, tab, *, button_label: ButtonLabel, **kwargs) -> None:
-        IdMixin.__init__(self, tab)
-        super().__init__(
-            label=button_label, id=self.button_id(button_label), **kwargs
-        )
-
-    def on_mount(self) -> None:
-        self.active_effect_duration = 0
         self.compact = True
 
 
