@@ -11,7 +11,7 @@ from pathlib import Path
 from subprocess import TimeoutExpired, run
 from typing import Literal, NamedTuple
 
-from chezmoi_mousse.type_definitions import TabName
+from chezmoi_mousse.id_typing import TabName
 
 
 def callback_null_object(*args) -> None:

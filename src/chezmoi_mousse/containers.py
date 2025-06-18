@@ -8,27 +8,23 @@ These classes
 """
 
 from textual.app import ComposeResult
-from textual.containers import (
-    Container,
-    HorizontalGroup,
-    Vertical,
-    VerticalGroup,
-)
+from textual.containers import Container, HorizontalGroup, Vertical
 from textual.widgets import Button, ContentSwitcher, Label, Switch
 
 from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.config import filter_data
-from chezmoi_mousse.type_definitions import (
+from chezmoi_mousse.id_typing import (
     CommonTabEvents,
     FilterName,
+    IdMixin,
     TabName,
+    TreeName,
 )
 from chezmoi_mousse.widgets import (
     DiffView,
     ExpandedTree,
     FlatTree,
     GitLog,
-    IdMixin,
     ManagedTree,
     PathView,
     TabButton,
@@ -37,6 +33,12 @@ from chezmoi_mousse.widgets import (
 
 class EventMixin:
 
+    def __init__(self, tab: TabName, tree_name: TreeName) -> None:
+        self.tab_name: TabName = tab
+        self.tree_name: TreeName = tree_name
+        self.tab_main_horizontal_id = f"{self.tab_name}_main_horizontal"
+        self.filter_slider_id = f"{self.tab_name}_filter_slider"
+
     def on_button_pressed(
         self: CommonTabEvents, event: Button.Pressed
     ) -> None:
@@ -44,7 +46,7 @@ class EventMixin:
         # Tree/List Switch
         if event.button.id == self.button_id("Tree"):
             expand_all_switch = self.query_one(
-                f"#{self.filter_item_id('expand_all')}", Switch
+                f"#{self.filter_switch_id('expand_all')}", Switch
             )
             expand_all_switch.disabled = False
             if expand_all_switch.value:
@@ -60,7 +62,7 @@ class EventMixin:
                 f"#{self.content_switcher_id('Left')}", ContentSwitcher
             ).current = self.component_id("FlatTree")
             self.query_one(
-                f"#{self.filter_item_id('expand_all')}", Switch
+                f"#{self.filter_switch_id('expand_all')}", Switch
             ).disabled = True
         # Contents/Diff/GitLog Switch
         elif event.button.id == self.button_id("Contents"):
@@ -99,7 +101,7 @@ class EventMixin:
         self: CommonTabEvents, event: Switch.Changed
     ) -> None:
         event.stop()
-        if event.switch.id == self.filter_item_id("unchanged"):
+        if event.switch.id == self.filter_switch_id("unchanged"):
             self.query_one(
                 f"#{self.component_id("ExpandedTree")}", ExpandedTree
             ).unchanged = event.value
@@ -109,7 +111,7 @@ class EventMixin:
             self.query_one(
                 f"#{self.component_id('FlatTree')}", FlatTree
             ).unchanged = event.value
-        elif event.switch.id == self.filter_item_id("expand_all"):
+        elif event.switch.id == self.filter_switch_id("expand_all"):
             if event.value:
                 self.query_one(
                     f"#{self.content_switcher_id('Left')}", ContentSwitcher
@@ -131,31 +133,12 @@ class FilterSwitch(HorizontalGroup, IdMixin):
         super().__init__(id=self.filter_horizontal_id(filter_name), **kwargs)
 
     def compose(self) -> ComposeResult:
-        yield Switch(id=self.filter_item_id(self.filter_name))
+        yield Switch(id=self.filter_switch_id(self.filter_name))
         yield Label(
             filter_data[self.filter_name].label,
             id=self.filter_label_id(self.filter_name),
             classes="filter-label",
         ).with_tooltip(tooltip=filter_data[self.filter_name].tooltip)
-
-
-class FilterSlider(VerticalGroup, IdMixin):
-
-    def __init__(self, tab: TabName) -> None:
-        IdMixin.__init__(self, tab)
-        super().__init__(id=self.filter_slider_id, classes="filters-vertical")
-
-    def compose(self) -> ComposeResult:
-        yield FilterSwitch(
-            self.tab_name,
-            filter_name="unchanged",
-            classes="filter-horizontal padding-bottom-once",
-        )
-        yield FilterSwitch(
-            self.tab_name,
-            filter_name="expand_all",
-            classes="filter-horizontal",
-        )
 
 
 class TabButtonsLeft(HorizontalGroup, IdMixin):

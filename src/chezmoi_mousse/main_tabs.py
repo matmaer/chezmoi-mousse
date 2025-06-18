@@ -38,18 +38,12 @@ from chezmoi_mousse.containers import (
     ContentSwitcherLeft,
     ContentSwitcherRight,
     EventMixin,
-    FilterSlider,
     FilterSwitch,
+    IdMixin,
     TabButtonsLeft,
     TabButtonsRight,
 )
-from chezmoi_mousse.widgets import (
-    FilteredDirTree,
-    GitLog,
-    IdMixin,
-    PathView,
-    RichLog,
-)
+from chezmoi_mousse.widgets import FilteredDirTree, GitLog, PathView, RichLog
 
 
 class ApplyTab(Horizontal, IdMixin, EventMixin):
@@ -80,7 +74,19 @@ class ApplyTab(Horizontal, IdMixin, EventMixin):
             yield TabButtonsRight(self.tab_name)
             yield ContentSwitcherRight(self.tab_name)
 
-        yield FilterSlider(self.tab_name)
+        with VerticalGroup(
+            id=self.filter_slider_id, classes="filters-vertical"
+        ):
+            yield FilterSwitch(
+                self.tab_name,
+                filter_name="unchanged",
+                classes="filter-horizontal padding-bottom-once",
+            )
+            yield FilterSwitch(
+                self.tab_name,
+                filter_name="expand_all",
+                classes="filter-horizontal",
+            )
 
     def action_apply_path(self) -> None:
         self.notify("to implement")
@@ -120,7 +126,19 @@ class ReAddTab(Horizontal, IdMixin, EventMixin):
             yield TabButtonsRight(self.tab_name)
             yield ContentSwitcherRight(self.tab_name)
 
-        yield FilterSlider(self.tab_name)
+        with VerticalGroup(
+            id=self.filter_slider_id, classes="filters-vertical"
+        ):
+            yield FilterSwitch(
+                self.tab_name,
+                filter_name="unchanged",
+                classes="filter-horizontal padding-bottom-once",
+            )
+            yield FilterSwitch(
+                self.tab_name,
+                filter_name="expand_all",
+                classes="filter-horizontal",
+            )
 
     def action_re_add_path(self) -> None:
         self.notify("to implement")
@@ -220,10 +238,10 @@ class AddTab(Horizontal, IdMixin):
         tree = self.query_one(
             f"#{self.component_id('AddTree')}", FilteredDirTree
         )
-        if event.switch.id == self.filter_item_id("unmanaged_dirs"):
+        if event.switch.id == self.filter_switch_id("unmanaged_dirs"):
             tree.unmanaged_dirs = event.value
             tree.reload()
-        elif event.switch.id == self.filter_item_id("unwanted"):
+        elif event.switch.id == self.filter_switch_id("unwanted"):
             tree.unwanted = event.value
             tree.reload()
 

@@ -32,56 +32,7 @@ from textual.widgets.tree import TreeNode
 import chezmoi_mousse.theme as theme
 from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.config import chars, unwanted
-from chezmoi_mousse.type_definitions import (
-    Area,
-    ButtonLabel,
-    ComponentName,
-    FilterName,
-    TabName,
-)
-
-
-class IdMixin:
-    def __init__(self, tab: TabName) -> None:
-        self.tab_name: TabName = tab
-        self.tab_main_horizontal_id = f"{self.tab_name}_main_horizontal"
-        self.filter_slider_id = f"{self.tab_name}_filter_slider"
-        # self.tree_tab_switchers_id = f"{self.tab_name}_tree_tab_switchers"
-
-    def button_id(self, button_label: ButtonLabel) -> str:
-        # replace spaces with underscores to make it a valid id
-        button_id = button_label.replace(" ", "_")
-        return f"{self.tab_name}_{button_id}_button"
-
-    def buttons_horizontal_id(self, area: Area) -> str:
-        return f"{self.tab_name}_{area}_buttons_horizontal"
-
-    def button_vertical_id(self, button_label: ButtonLabel) -> str:
-        """Generate an id for each button in a vertical container to center
-        them by applying auto width and align on this container."""
-        button_id = button_label.replace(" ", "_")
-        return f"{self.tab_name}_{button_id}_button_vertical"
-
-    def component_id(self, component_name: ComponentName) -> str:
-        """Generate an id for items imported from components.py."""
-        return f"{self.tab_name}_{component_name}_component"
-
-    def content_switcher_id(self, area: Area) -> str:
-        return f"{self.tab_name}_{area}_content_switcher"
-
-    def filter_horizontal_id(self, filter_name: FilterName) -> str:
-        return f"{self.tab_name}_{filter_name}_filter_horizontal"
-
-    def filter_label_id(self, filter_name: FilterName) -> str:
-        return f"{self.tab_name}_{filter_name}_filter_label"
-
-    def filter_item_id(self, filter_name: FilterName) -> str:
-        return f"{self.tab_name}_{filter_name}_filter_switch"
-
-    def tab_vertical_id(self, area: Area) -> str:
-        """Generate an id for the main left and right vertical containers in a
-        tab."""
-        return f"{self.tab_name}_{area}_vertical"
+from chezmoi_mousse.id_typing import ButtonLabel, FilterName, IdMixin, TabName
 
 
 class CheckBox(Checkbox, IdMixin):
@@ -94,7 +45,7 @@ class CheckBox(Checkbox, IdMixin):
     ) -> None:
         IdMixin.__init__(self, tab)
         super().__init__(
-            id=self.filter_item_id(filter_name), label="", **kwargs
+            id=self.filter_switch_id(filter_name), label="", **kwargs
         )
 
     def on_mount(self) -> None:
