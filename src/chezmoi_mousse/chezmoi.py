@@ -10,6 +10,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from subprocess import TimeoutExpired, run
 from typing import Literal, NamedTuple
+
 from chezmoi_mousse.type_definitions import TabName
 
 

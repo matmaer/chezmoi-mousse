@@ -20,9 +20,9 @@ from chezmoi_mousse.config import chars
 from chezmoi_mousse.main_tabs import (
     AddTab,
     ApplyTab,
+    CommandLog,
     DoctorTab,
     ReAddTab,
-    CommandLog,
 )
 from chezmoi_mousse.splash import LoadingScreen
 

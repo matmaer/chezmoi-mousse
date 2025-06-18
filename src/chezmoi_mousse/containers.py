@@ -16,8 +16,13 @@ from textual.containers import (
 )
 from textual.widgets import Button, ContentSwitcher, Label, Switch
 
-
 from chezmoi_mousse.chezmoi import chezmoi
+from chezmoi_mousse.config import filter_data
+from chezmoi_mousse.type_definitions import (
+    CommonTabEvents,
+    FilterName,
+    TabName,
+)
 from chezmoi_mousse.widgets import (
     DiffView,
     ExpandedTree,
@@ -27,13 +32,6 @@ from chezmoi_mousse.widgets import (
     ManagedTree,
     PathView,
     TabButton,
-)
-
-from chezmoi_mousse.config import filter_data
-from chezmoi_mousse.type_definitions import (
-    CommonTabEvents,
-    FilterName,
-    TabName,
 )
 
 
@@ -153,7 +151,6 @@ class FilterSlider(VerticalGroup, IdMixin):
             filter_name="unchanged",
             classes="filter-horizontal padding-bottom-once",
         )
-        # TODO: fix unchanged filter not working when expand_all is on
         yield FilterSwitch(
             self.tab_name,
             filter_name="expand_all",

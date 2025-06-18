@@ -1,6 +1,7 @@
 """Runs the textual App an monkey patches the scrollbar renderer."""
 
 import os
+
 from chezmoi_mousse.gui import ChezmoiGUI
 
 
