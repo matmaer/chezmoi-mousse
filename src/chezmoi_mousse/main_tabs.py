@@ -38,18 +38,13 @@ from chezmoi_mousse.containers import (
     ContentSwitcherLeft,
     ContentSwitcherRight,
     EventMixin,
-    FilterSlider,
     FilterSwitch,
+    IdMixin,
     TabButtonsLeft,
     TabButtonsRight,
 )
-from chezmoi_mousse.widgets import (
-    FilteredDirTree,
-    GitLog,
-    IdMixin,
-    PathView,
-    RichLog,
-)
+from chezmoi_mousse.id_typing import Component, MainTab, TabSide
+from chezmoi_mousse.widgets import FilteredDirTree, GitLog, PathView, RichLog
 
 
 class ApplyTab(Horizontal, IdMixin, EventMixin):
@@ -63,24 +58,38 @@ class ApplyTab(Horizontal, IdMixin, EventMixin):
         ),
     ]
 
-    def __init__(self) -> None:
-        IdMixin.__init__(self, "Apply")
+    def __init__(self, tab_key: MainTab) -> None:
+        IdMixin.__init__(self, MainTab.apply_tab)
+        self.tab_key: MainTab = tab_key
         super().__init__(id=self.tab_main_horizontal_id)
 
     def compose(self) -> ComposeResult:
         with VerticalGroup(
-            id=self.tab_vertical_id("Left"), classes="tab-left-vertical"
+            id=self.tab_vertical_id(TabSide.left), classes="tab-left-vertical"
         ):
-            yield TabButtonsLeft(self.tab_name)
-            yield ContentSwitcherLeft(self.tab_name)
+            yield TabButtonsLeft(self.tab_key)
+            yield ContentSwitcherLeft(self.tab_key)
 
         with Vertical(
-            id=self.tab_vertical_id("Right"), classes="tab-right-vertical"
+            id=self.tab_vertical_id(TabSide.right),
+            classes="tab-right-vertical",
         ):
-            yield TabButtonsRight(self.tab_name)
-            yield ContentSwitcherRight(self.tab_name)
+            yield TabButtonsRight(self.tab_key)
+            yield ContentSwitcherRight(self.tab_key)
 
-        yield FilterSlider(self.tab_name)
+        with VerticalGroup(
+            id=self.filter_slider_id, classes="filters-vertical"
+        ):
+            yield FilterSwitch(
+                self.tab_key,
+                filter_name="unchanged",
+                classes="filter-horizontal padding-bottom-once",
+            )
+            yield FilterSwitch(
+                self.tab_key,
+                filter_name="expand_all",
+                classes="filter-horizontal",
+            )
 
     def action_apply_path(self) -> None:
         self.notify("to implement")
@@ -103,24 +112,38 @@ class ReAddTab(Horizontal, IdMixin, EventMixin):
         ),
     ]
 
-    def __init__(self) -> None:
-        IdMixin.__init__(self, "ReAdd")
+    def __init__(self, tab_key: MainTab) -> None:
+        IdMixin.__init__(self, MainTab.re_add_tab)
+        self.tab_key: MainTab = tab_key
         super().__init__(id=self.tab_main_horizontal_id)
 
     def compose(self) -> ComposeResult:
         with VerticalGroup(
-            id=self.tab_vertical_id("Left"), classes="tab-left-vertical"
+            id=self.tab_vertical_id(TabSide.left), classes="tab-left-vertical"
         ):
-            yield TabButtonsLeft(self.tab_name)
-            yield ContentSwitcherLeft(self.tab_name)
+            yield TabButtonsLeft(self.tab_key)
+            yield ContentSwitcherLeft(self.tab_key)
 
         with Vertical(
-            id=self.tab_vertical_id("Right"), classes="tab-right-vertical"
+            id=self.tab_vertical_id(TabSide.right),
+            classes="tab-right-vertical",
         ):
-            yield TabButtonsRight(self.tab_name)
-            yield ContentSwitcherRight(self.tab_name)
+            yield TabButtonsRight(self.tab_key)
+            yield ContentSwitcherRight(self.tab_key)
 
-        yield FilterSlider(self.tab_name)
+        with VerticalGroup(
+            id=self.filter_slider_id, classes="filters-vertical"
+        ):
+            yield FilterSwitch(
+                self.tab_key,
+                filter_name="unchanged",
+                classes="filter-horizontal padding-bottom-once",
+            )
+            yield FilterSwitch(
+                self.tab_key,
+                filter_name="expand_all",
+                classes="filter-horizontal",
+            )
 
     def action_re_add_path(self) -> None:
         self.notify("to implement")
@@ -143,47 +166,48 @@ class AddTab(Horizontal, IdMixin):
         ),
     ]
 
-    def __init__(self) -> None:
-        IdMixin.__init__(self, "Add")
+    def __init__(self, tab_key: MainTab) -> None:
+        IdMixin.__init__(self, tab_key)
+        self.tab_key: MainTab = tab_key
         super().__init__(id=self.tab_main_horizontal_id)
 
     def compose(self) -> ComposeResult:
         with VerticalGroup(
-            id=self.tab_vertical_id("Left"),
+            id=self.tab_vertical_id(TabSide.left),
             classes="tab-left-vertical top-border-title",
         ):
             yield FilteredDirTree(
                 chezmoi.dest_dir,
-                id=self.component_id("AddTree"),
+                id=self.component_id(Component.add_tree),
                 classes="dir-tree-widget",
             )
 
         with Vertical(
-            id=self.tab_vertical_id("Right"),
+            id=self.tab_vertical_id(TabSide.right),
             classes="tab-right-vertical top-border-title",
         ):
-            yield PathView(self.tab_name)
+            yield PathView(self.tab_key)
 
         with VerticalGroup(
             id=self.filter_slider_id, classes="filters-vertical"
         ):
             yield FilterSwitch(
-                self.tab_name,
+                self.tab_key,
                 filter_name="unmanaged_dirs",
                 classes="filter-horizontal padding-bottom-once",
             )
             yield FilterSwitch(
-                self.tab_name,
+                self.tab_key,
                 filter_name="unwanted",
                 classes="filter-horizontal",
             )
 
     def on_mount(self) -> None:
         self.query_one(
-            f"#{self.tab_vertical_id("Right")}", Vertical
+            f"#{self.tab_vertical_id(TabSide.right)}", Vertical
         ).border_title = chezmoi.dest_dir_str
         self.query_one(
-            f"#{self.tab_vertical_id("Left")}", VerticalGroup
+            f"#{self.tab_vertical_id(TabSide.left)}", VerticalGroup
         ).border_title = chezmoi.dest_dir_str
 
     def on_directory_tree_file_selected(
@@ -192,11 +216,11 @@ class AddTab(Horizontal, IdMixin):
         event.stop()
 
         assert event.node.data is not None
-        self.query_one(f"#{self.component_id('PathView')}", PathView).path = (
-            event.node.data.path
-        )
         self.query_one(
-            f"#{self.tab_vertical_id("Right")}", Vertical
+            f"#{self.component_id(Component.path_view)}", PathView
+        ).path = event.node.data.path
+        self.query_one(
+            f"#{self.tab_vertical_id(TabSide.right)}", Vertical
         ).border_title = (
             f"{event.node.data.path.relative_to(chezmoi.dest_dir)}"
         )
@@ -206,11 +230,11 @@ class AddTab(Horizontal, IdMixin):
     ) -> None:
         event.stop()
         assert event.node.data is not None
-        self.query_one(f"#{self.component_id('PathView')}", PathView).path = (
-            event.node.data.path
-        )
         self.query_one(
-            f"#{self.tab_vertical_id("Right")}", Vertical
+            f"#{self.component_id(Component.path_view)}", PathView
+        ).path = event.node.data.path
+        self.query_one(
+            f"#{self.tab_vertical_id(TabSide.right)}", Vertical
         ).border_title = (
             f"{event.node.data.path.relative_to(chezmoi.dest_dir)}"
         )
@@ -218,12 +242,12 @@ class AddTab(Horizontal, IdMixin):
     def on_switch_changed(self, event: Switch.Changed) -> None:
         event.stop()
         tree = self.query_one(
-            f"#{self.component_id('AddTree')}", FilteredDirTree
+            f"#{self.component_id(Component.add_tree)}", FilteredDirTree
         )
-        if event.switch.id == self.filter_item_id("unmanaged_dirs"):
+        if event.switch.id == self.filter_switch_id("unmanaged_dirs"):
             tree.unmanaged_dirs = event.value
             tree.reload()
-        elif event.switch.id == self.filter_item_id("unwanted"):
+        elif event.switch.id == self.filter_switch_id("unwanted"):
             tree.unwanted = event.value
             tree.reload()
 
@@ -279,7 +303,7 @@ class DoctorTab(VerticalScroll):
         ]
 
         def compose(self) -> ComposeResult:
-            yield GitLog("Doctor")
+            yield GitLog(MainTab.doctor_tab)
 
         def on_mount(self) -> None:
             self.add_class("doctor-modal")
