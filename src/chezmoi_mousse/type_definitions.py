@@ -1,4 +1,4 @@
-from typing import Literal, Protocol, TypeVar, TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal, Protocol, TypeVar
 
 # Type aliases not to be imported or used directly
 type OperationButtonLabel = Literal[
@@ -26,6 +26,7 @@ type TabName = Literal["Apply", "ReAdd", "Add", "Doctor", "Diagram", "Log"]
 if TYPE_CHECKING:
     from textual.containers import Container
     from textual.widgets import Checkbox, ContentSwitcher, Switch
+
     from chezmoi_mousse.widgets import (
         DiffView,
         ExpandedTree,

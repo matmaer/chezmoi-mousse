@@ -396,7 +396,6 @@ class TreeBase(Tree[NodeData]):
             return expanded
 
         nodes.extend(collect_nodes(self.root))
-        print(f"in get_expanded_nodes, TreeBase\nnodes:\n{nodes}")
         return nodes
 
     def should_show_dir_node(self, dir_path, unchanged: bool) -> bool:
@@ -414,9 +413,6 @@ class TreeBase(Tree[NodeData]):
         assert isinstance(tree_node.data, DirNodeData)
         unchanged_in_dir = chezmoi.files_without_status_in(
             self.tab_name, tree_node.data.path
-        )
-        print(
-            f"in add_unchanged_leaves, Treebase\nunchanged_in_dir:\n{unchanged_in_dir}"
         )
         for file_path in unchanged_in_dir:
             node_data = self.create_file_node_data(file_path)
@@ -539,9 +535,6 @@ class ExpandedTree(TreeBase, IdMixin):
 
     def watch_unchanged(self) -> None:
         expanded_nodes = self.get_expanded_nodes()
-        print(
-            f"in watch_unchanged, ExpandedTree:\nexpanded_nodes:\n{expanded_nodes}"
-        )
         for tree_node in expanded_nodes:
             if self.unchanged:
                 self.add_unchanged_leaves(tree_node)

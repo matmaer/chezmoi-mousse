@@ -6,6 +6,7 @@ containers.
 """
 
 from datetime import datetime
+
 from rich.text import Text
 from textual.app import ComposeResult
 from textual.binding import Binding
@@ -29,26 +30,25 @@ from textual.widgets import (
     Switch,
 )
 
-import chezmoi_mousse.theme as theme
 import chezmoi_mousse.chezmoi
+import chezmoi_mousse.theme as theme
 from chezmoi_mousse.chezmoi import chezmoi
+from chezmoi_mousse.config import pw_mgr_info
+from chezmoi_mousse.containers import (
+    ContentSwitcherLeft,
+    ContentSwitcherRight,
+    EventMixin,
+    FilterSlider,
+    FilterSwitch,
+    TabButtonsLeft,
+    TabButtonsRight,
+)
 from chezmoi_mousse.widgets import (
     FilteredDirTree,
     GitLog,
+    IdMixin,
     PathView,
     RichLog,
-    IdMixin,
-)
-
-from chezmoi_mousse.config import pw_mgr_info
-from chezmoi_mousse.containers import (
-    FilterSwitch,
-    EventMixin,
-    TabButtonsLeft,
-    TabButtonsRight,
-    ContentSwitcherLeft,
-    ContentSwitcherRight,
-    FilterSlider,
 )
 
 
