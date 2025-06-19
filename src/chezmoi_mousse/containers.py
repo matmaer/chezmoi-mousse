@@ -280,14 +280,13 @@ class ButtonsTopRight(HorizontalGroup, IdMixin):
 class ContentSwitcherLeft(ContentSwitcher, IdMixin):
     """Reusable ContentSwitcher for the left panel with tree widgets."""
 
-    def __init__(self, tab_key: TabEnum, **kwargs):
+    def __init__(self, tab_key: TabEnum):
         IdMixin.__init__(self, tab_key)
         self.tab_key = tab_key
         super().__init__(
             id=self.content_switcher_id(SideStr.left),
             initial=self.component_id(ComponentStr.managed_tree),
             classes="content-switcher-left top-border-title",
-            **kwargs,
         )
 
     def on_mount(self) -> None:
@@ -302,14 +301,13 @@ class ContentSwitcherLeft(ContentSwitcher, IdMixin):
 class ContentSwitcherRight(ContentSwitcher, IdMixin):
     """Reusable ContentSwitcher for the right panel with path view widgets."""
 
-    def __init__(self, tab_key: TabEnum, **kwargs):
+    def __init__(self, tab_key: TabEnum):
         IdMixin.__init__(self, tab_key)
         self.tab_key = tab_key
         super().__init__(
             id=self.content_switcher_id(SideStr.right),
             initial=self.component_id(ComponentStr.path_view),
             classes="content-switcher-right top-border-title",
-            **kwargs,
         )
 
     def on_mount(self) -> None:
