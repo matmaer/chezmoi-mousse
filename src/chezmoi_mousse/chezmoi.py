@@ -115,8 +115,8 @@ class SubProcessCalls:
     state."""
 
     def git_log(self, path: Path) -> list[str]:
-        source_path = subprocess_run(BASE + ("source-path", str(path)))
-        long_command = BASE + SUBS["git_log"] + (str(source_path),)
+        source_path: str = subprocess_run(BASE + ("source-path", str(path)))
+        long_command = BASE + SUBS["git_log"] + (source_path,)
         return subprocess_run(long_command).splitlines()
 
     def apply_diff(self, file_path: Path) -> list[str]:
