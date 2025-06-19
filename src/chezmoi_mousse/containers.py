@@ -159,26 +159,19 @@ class ButtonsTopLeft(HorizontalGroup, IdMixin):
             id=self.buttons_horizontal_id(CornerStr.top_left),
             classes="tab-buttons-horizontal",
         )
+        self.buttons = (ButtonEnum.tree_btn, ButtonEnum.list_btn)
 
     def compose(self) -> ComposeResult:
-        with Vertical(
-            id=self.button_vertical_id(ButtonEnum.tree_btn),
-            classes="single-button-vertical",
-        ):
-            yield Button(
-                label=ButtonEnum.tree_btn.value,
-                id=self.button_id(ButtonEnum.tree_btn),
-                classes="tab-button",
-            )
-        with Vertical(
-            id=self.button_vertical_id(ButtonEnum.list_btn),
-            classes="single-button-vertical",
-        ):
-            yield Button(
-                label=ButtonEnum.list_btn.value,
-                id=self.button_id(ButtonEnum.list_btn),
-                classes="tab-button",
-            )
+        for button_enum in self.buttons:
+            with Vertical(
+                id=self.button_vertical_id(button_enum),
+                classes="single-button-vertical",
+            ):
+                yield Button(
+                    label=button_enum.value,
+                    id=self.button_id(button_enum),
+                    classes="tab-button",
+                )
 
     def on_mount(self) -> None:
         self.query_one(f"#{self.button_id(ButtonEnum.tree_btn)}").add_class(
@@ -210,35 +203,23 @@ class ButtonsTopRight(HorizontalGroup, IdMixin):
             id=self.buttons_horizontal_id(CornerStr.top_right),
             classes="tab-buttons-horizontal",
         )
+        self.buttons = (
+            ButtonEnum.contents_btn,
+            ButtonEnum.diff_btn,
+            ButtonEnum.git_log_btn,
+        )
 
     def compose(self) -> ComposeResult:
-        with Vertical(
-            id=self.button_vertical_id(ButtonEnum.contents_btn),
-            classes="single-button-vertical",
-        ):
-            yield Button(
-                label=ButtonEnum.contents_btn.value,
-                id=self.button_id(ButtonEnum.contents_btn),
-                classes="tab-button",
-            )
-        with Vertical(
-            id=self.button_vertical_id(ButtonEnum.diff_btn),
-            classes="single-button-vertical",
-        ):
-            yield Button(
-                label=ButtonEnum.diff_btn.value,
-                id=self.button_id(ButtonEnum.diff_btn),
-                classes="tab-button",
-            )
-        with Vertical(
-            id=self.button_vertical_id(ButtonEnum.git_log_btn),
-            classes="single-button-vertical",
-        ):
-            yield Button(
-                label=ButtonEnum.git_log_btn.value,
-                id=self.button_id(ButtonEnum.git_log_btn),
-                classes="tab-button",
-            )
+        for button_enum in self.buttons:
+            with Vertical(
+                id=self.button_vertical_id(button_enum),
+                classes="single-button-vertical",
+            ):
+                yield Button(
+                    label=button_enum.value,
+                    id=self.button_id(button_enum),
+                    classes="tab-button",
+                )
 
     def on_mount(self) -> None:
         self.query_one(
