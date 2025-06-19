@@ -123,22 +123,6 @@ class EventMixin:
                 ).current = self.component_id(ComponentStr.managed_tree)
 
 
-class FilterSwitch(HorizontalGroup, IdMixin):
-
-    def __init__(
-        self, tab_key: TabEnum, filter_enum: FilterEnum, **kwargs
-    ) -> None:
-        IdMixin.__init__(self, tab_key)
-        self.filter_enum = filter_enum
-        super().__init__(id=self.filter_horizontal_id(filter_enum), **kwargs)
-
-    def compose(self) -> ComposeResult:
-        yield Switch(id=self.filter_switch_id(self.filter_enum), value=False)
-        yield Label(
-            self.filter_enum.value, classes="filter-label"
-        ).with_tooltip(tooltip=filter_tooltips[self.filter_enum.name])
-
-
 class FilterSlider(VerticalGroup, IdMixin):
 
     def __init__(
@@ -155,14 +139,22 @@ class FilterSlider(VerticalGroup, IdMixin):
         )
 
     def compose(self) -> ComposeResult:
-        yield FilterSwitch(
-            self.tab_key,
-            self.filters[0],
+        with HorizontalGroup(
+            id=self.filter_horizontal_id(self.filters[0]),
             classes="filter-horizontal padding-bottom-once",
-        )
-        yield FilterSwitch(
-            self.tab_key, self.filters[1], classes="filter-horizontal"
-        )
+        ):
+            yield Switch(id=self.filter_switch_id(self.filters[0]))
+            yield Label(
+                self.filters[0].value, classes="filter-label"
+            ).with_tooltip(tooltip=filter_tooltips[self.filters[0].name])
+        with HorizontalGroup(
+            id=self.filter_horizontal_id(self.filters[1]),
+            classes="filter-horizontal",
+        ):
+            yield Switch(id=self.filter_switch_id(self.filters[1]))
+            yield Label(
+                self.filters[1].value, classes="filter-label"
+            ).with_tooltip(tooltip=filter_tooltips[self.filters[1].name])
 
 
 class ButtonEnumsLeft(HorizontalGroup, IdMixin):
