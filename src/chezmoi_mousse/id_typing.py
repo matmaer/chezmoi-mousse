@@ -32,7 +32,7 @@ class TabSide(StrEnum):
     right = auto()
 
 
-class Corner(StrEnum):
+class CornerStr(StrEnum):
     top_left = auto()
     top_right = auto()
     bottom_right = auto()
@@ -115,7 +115,7 @@ class IdMixin:
     def button_id(self, button_label: ButtonEnum) -> str:
         return f"{self.tab_name}_{button_label.name}"
 
-    def buttons_horizontal_id(self, corner: Corner) -> str:
+    def buttons_horizontal_id(self, corner: CornerStr) -> str:
         return f"{self.tab_name}_{corner}_horizontal"
 
     def button_vertical_id(self, button_label: ButtonEnum) -> str:

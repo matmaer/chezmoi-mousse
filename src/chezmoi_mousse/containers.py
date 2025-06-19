@@ -16,7 +16,7 @@ from chezmoi_mousse.config import filter_tooltips
 from chezmoi_mousse.id_typing import (
     CommonTabEvents,
     Component,
-    Corner,
+    CornerStr,
     FilterEnum,
     IdMixin,
     TabEnum,
@@ -144,7 +144,7 @@ class ButtonEnumsLeft(HorizontalGroup, IdMixin):
     def __init__(self, tab_key: TabEnum, **kwargs) -> None:
         IdMixin.__init__(self, tab_key)
         super().__init__(
-            id=self.buttons_horizontal_id(Corner.top_left),
+            id=self.buttons_horizontal_id(CornerStr.top_left),
             classes="tab-buttons-horizontal",
             **kwargs,
         )
@@ -196,7 +196,7 @@ class ButtonEnumsRight(HorizontalGroup, IdMixin):
     def __init__(self, tab_key: TabEnum, **kwargs) -> None:
         IdMixin.__init__(self, tab_key)
         super().__init__(
-            id=self.buttons_horizontal_id(Corner.top_right),
+            id=self.buttons_horizontal_id(CornerStr.top_right),
             classes="tab-buttons-horizontal",
             **kwargs,
         )
