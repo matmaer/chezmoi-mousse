@@ -99,7 +99,7 @@ class EventMixin:
         self: CommonTabEvents, event: Switch.Changed
     ) -> None:
         event.stop()
-        if event.switch.id == self.filter_switch_id("unchanged"):
+        if event.switch.id == self.filter_switch_id(Filter.unchanged.name):
             self.query_one(
                 f"#{self.component_id(Component.expanded_tree)}", ExpandedTree
             ).unchanged = event.value
@@ -109,7 +109,7 @@ class EventMixin:
             self.query_one(
                 f"#{self.component_id(Component.flat_tree)}", FlatTree
             ).unchanged = event.value
-        elif event.switch.id == self.filter_switch_id("expand_all"):
+        elif event.switch.id == self.filter_switch_id(Filter.expand_all.name):
             if event.value:
                 self.query_one(
                     f"#{self.content_switcher_id(TabSide.left)}",
