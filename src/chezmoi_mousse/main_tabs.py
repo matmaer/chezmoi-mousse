@@ -242,14 +242,10 @@ class AddTab(Horizontal, IdMixin):
         tree = self.query_one(
             f"#{self.component_id(ComponentStr.add_tree)}", FilteredDirTree
         )
-        if event.switch.id == self.filter_switch_id(
-            FilterEnum.unmanaged_dirs.name
-        ):
+        if event.switch.id == self.filter_switch_id(FilterEnum.unmanaged_dirs):
             tree.unmanaged_dirs = event.value
             tree.reload()
-        elif event.switch.id == self.filter_switch_id(
-            FilterEnum.unwanted.name
-        ):
+        elif event.switch.id == self.filter_switch_id(FilterEnum.unwanted):
             tree.unwanted = event.value
             tree.reload()
 

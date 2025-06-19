@@ -96,9 +96,9 @@ if TYPE_CHECKING:
         # this covers all "self.some_method()" calls in EventMixin
         def query_one(self, some_id: str, this_type: type[QRT]) -> QRT: ...
         def button_id(self, some_id: ButtonEnum) -> str: ...
-        def content_switcher_id(self, some_id: str) -> str: ...
-        def component_id(self, some_id: str) -> str: ...
-        def filter_switch_id(self, some_id: str) -> str: ...
+        def content_switcher_id(self, some_id: SideStr) -> str: ...
+        def component_id(self, some_id: ComponentStr) -> str: ...
+        def filter_switch_id(self, some_id: FilterEnum) -> str: ...
 
 else:
     # Runtime-compatible empty Protocol
@@ -120,7 +120,7 @@ class IdMixin:
     def button_vertical_id(self, button_label: ButtonEnum) -> str:
         return f"{self.tab_name}_{button_label.name}_vertical"
 
-    def component_id(self, component: str) -> str:
+    def component_id(self, component: ComponentStr) -> str:
         """Generate an id for items imported from components.py."""
         return f"{self.tab_name}_{component}_component"
 
@@ -130,8 +130,8 @@ class IdMixin:
     def filter_horizontal_id(self, filter_name: str) -> str:
         return f"{self.tab_name}_{filter_name}_filter_horizontal"
 
-    def filter_switch_id(self, filter_name: str) -> str:
-        return f"{self.tab_name}_{filter_name}_filter_switch"
+    def filter_switch_id(self, filter_enum: FilterEnum) -> str:
+        return f"{self.tab_name}_{filter_enum.name}_filter_switch"
 
     def tab_vertical_id(self, side: SideStr) -> str:
         return f"{self.tab_name}_{side}_vertical"

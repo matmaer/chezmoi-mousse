@@ -40,7 +40,7 @@ class EventMixin:
         # Tree/List Switch
         if event.button.id == self.button_id(ButtonEnum.tree_btn):
             expand_all_switch = self.query_one(
-                f"#{self.filter_switch_id(FilterEnum.expand_all.name)}", Switch
+                f"#{self.filter_switch_id(FilterEnum.expand_all)}", Switch
             )
             expand_all_switch.disabled = False
             if expand_all_switch.value:
@@ -58,7 +58,7 @@ class EventMixin:
                 f"#{self.content_switcher_id(SideStr.left)}", ContentSwitcher
             ).current = self.component_id(ComponentStr.flat_tree)
             self.query_one(
-                f"#{self.filter_switch_id(FilterEnum.expand_all.name)}", Switch
+                f"#{self.filter_switch_id(FilterEnum.expand_all)}", Switch
             ).disabled = True
         # Contents/Diff/GitLog Switch
         elif event.button.id == self.button_id(ButtonEnum.contents_btn):
@@ -95,7 +95,7 @@ class EventMixin:
 
     def on_switch_changed(self: EventProtocol, event: Switch.Changed) -> None:
         event.stop()
-        if event.switch.id == self.filter_switch_id(FilterEnum.unchanged.name):
+        if event.switch.id == self.filter_switch_id(FilterEnum.unchanged):
             self.query_one(
                 f"#{self.component_id(ComponentStr.expanded_tree)}",
                 ExpandedTree,
@@ -106,9 +106,7 @@ class EventMixin:
             self.query_one(
                 f"#{self.component_id(ComponentStr.flat_tree)}", FlatTree
             ).unchanged = event.value
-        elif event.switch.id == self.filter_switch_id(
-            FilterEnum.expand_all.name
-        ):
+        elif event.switch.id == self.filter_switch_id(FilterEnum.expand_all):
             if event.value:
                 self.query_one(
                     f"#{self.content_switcher_id(SideStr.left)}",
@@ -123,17 +121,20 @@ class EventMixin:
 
 class FilterSwitch(HorizontalGroup, IdMixin):
 
-    def __init__(self, tab_key: TabEnum, filter: FilterEnum, **kwargs) -> None:
+    def __init__(
+        self, tab_key: TabEnum, filter_enum: FilterEnum, **kwargs
+    ) -> None:
         IdMixin.__init__(self, tab_key)
-        self.filter_name = filter.name
-        self.filter_label = filter.value
-        super().__init__(id=self.filter_horizontal_id(filter.name), **kwargs)
+        self.filter_enum = filter_enum
+        super().__init__(
+            id=self.filter_horizontal_id(filter_enum.name), **kwargs
+        )
 
     def compose(self) -> ComposeResult:
-        yield Switch(id=self.filter_switch_id(self.filter_name), value=False)
-        yield Label(self.filter_label, classes="filter-label").with_tooltip(
-            tooltip=filter_tooltips[self.filter_name]
-        )
+        yield Switch(id=self.filter_switch_id(self.filter_enum), value=False)
+        yield Label(
+            self.filter_enum.value, classes="filter-label"
+        ).with_tooltip(tooltip=filter_tooltips[self.filter_enum.name])
 
 
 class ButtonEnumsLeft(HorizontalGroup, IdMixin):
