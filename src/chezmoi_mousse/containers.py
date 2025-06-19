@@ -81,6 +81,7 @@ class EventMixin:
     def on_tree_node_selected(
         self: EventProtocol, event: ManagedTree.NodeSelected
     ) -> None:
+        # TODO: use on decorator for each tree class because they all get updated
         assert event.node.data is not None
         self.query_one(
             f"#{self.content_switcher_id(SideStr.right)}", Container
