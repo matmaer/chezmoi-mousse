@@ -149,7 +149,7 @@ class FilterSlider(VerticalGroup, IdMixin):
                 ).with_tooltip(tooltip=filter_tooltips[filter_enum.name])
 
 
-class ButtonEnumsLeft(HorizontalGroup, IdMixin):
+class ButtonsTopLeft(HorizontalGroup, IdMixin):
 
     def __init__(self, tab_key: TabEnum, **kwargs) -> None:
         IdMixin.__init__(self, tab_key)
@@ -202,7 +202,7 @@ class ButtonEnumsLeft(HorizontalGroup, IdMixin):
             ).add_class(lc)
 
 
-class ButtonEnumsRight(HorizontalGroup, IdMixin):
+class ButtonsTopRight(HorizontalGroup, IdMixin):
     def __init__(self, tab_key: TabEnum, **kwargs) -> None:
         IdMixin.__init__(self, tab_key)
         super().__init__(
