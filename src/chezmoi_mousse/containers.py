@@ -126,17 +126,12 @@ class EventMixin:
 class FilterSlider(VerticalGroup, IdMixin):
 
     def __init__(
-        self,
-        tab_key: TabEnum,
-        filters: tuple[FilterEnum, FilterEnum],
-        **kwargs,
+        self, tab_key: TabEnum, filters: tuple[FilterEnum, FilterEnum]
     ) -> None:
         IdMixin.__init__(self, tab_key)
         self.tab_key = tab_key
         self.filters = filters
-        super().__init__(
-            id=self.filter_slider_id, classes="filters-vertical", **kwargs
-        )
+        super().__init__(id=self.filter_slider_id, classes="filters-vertical")
 
     def compose(self) -> ComposeResult:
         for filter_enum in self.filters:
