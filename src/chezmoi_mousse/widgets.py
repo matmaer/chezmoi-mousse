@@ -496,8 +496,8 @@ class FilteredDirTree(DirectoryTree):
     """Provides a fast DirectoryTree to explore any path in the destination
     directory which can be added to the chezmoi repository."""
 
-    unmanaged_dirs = reactive(False)
-    unwanted = reactive(False)
+    unmanaged_dirs: reactive[bool] = reactive(False)
+    unwanted: reactive[bool] = reactive(False)
 
     def on_mount(self) -> None:
         self.show_root = False
