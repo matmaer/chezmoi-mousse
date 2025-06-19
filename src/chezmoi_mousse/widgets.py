@@ -406,7 +406,8 @@ class ManagedTree(TreeBase, IdMixin):
         self.add_dir_nodes(self.root, self.unchanged)
         self.add_status_leaves(self.root)
 
-    def on_tree_node_expanded(self, event: Tree.NodeExpanded) -> None:
+    # TODO: fix nodes being added again when collapsing and expanding
+    def on_tree_node_expanded(self, event: TreeBase.NodeExpanded) -> None:
         self.add_dir_nodes(event.node, self.unchanged)
         self.add_status_leaves(event.node)
         if self.unchanged:
