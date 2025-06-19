@@ -50,7 +50,7 @@ class Component(StrEnum):
     git_log = auto()
 
 
-class Filter(Enum):
+class FilterEnum(Enum):
     expand_all = "expand all"
     unchanged = "show unchanged"
     unwanted = "show unwanted paths"

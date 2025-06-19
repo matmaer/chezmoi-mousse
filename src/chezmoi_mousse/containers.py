@@ -17,7 +17,7 @@ from chezmoi_mousse.id_typing import (
     CommonTabEvents,
     Component,
     Corner,
-    Filter,
+    FilterEnum,
     IdMixin,
     TabEnum,
     ButtonEnum,
@@ -42,7 +42,7 @@ class EventMixin:
         # Tree/List Switch
         if event.button.id == self.button_id(ButtonEnum.tree_btn):
             expand_all_switch = self.query_one(
-                f"#{self.filter_switch_id(Filter.expand_all.name)}", Switch
+                f"#{self.filter_switch_id(FilterEnum.expand_all.name)}", Switch
             )
             expand_all_switch.disabled = False
             if expand_all_switch.value:
@@ -60,7 +60,7 @@ class EventMixin:
                 f"#{self.content_switcher_id(TabSide.left)}", ContentSwitcher
             ).current = self.component_id(Component.flat_tree)
             self.query_one(
-                f"#{self.filter_switch_id(Filter.expand_all.name)}", Switch
+                f"#{self.filter_switch_id(FilterEnum.expand_all.name)}", Switch
             ).disabled = True
         # Contents/Diff/GitLog Switch
         elif event.button.id == self.button_id(ButtonEnum.contents_btn):
@@ -99,7 +99,7 @@ class EventMixin:
         self: CommonTabEvents, event: Switch.Changed
     ) -> None:
         event.stop()
-        if event.switch.id == self.filter_switch_id(Filter.unchanged.name):
+        if event.switch.id == self.filter_switch_id(FilterEnum.unchanged.name):
             self.query_one(
                 f"#{self.component_id(Component.expanded_tree)}", ExpandedTree
             ).unchanged = event.value
@@ -109,7 +109,9 @@ class EventMixin:
             self.query_one(
                 f"#{self.component_id(Component.flat_tree)}", FlatTree
             ).unchanged = event.value
-        elif event.switch.id == self.filter_switch_id(Filter.expand_all.name):
+        elif event.switch.id == self.filter_switch_id(
+            FilterEnum.expand_all.name
+        ):
             if event.value:
                 self.query_one(
                     f"#{self.content_switcher_id(TabSide.left)}",
@@ -124,7 +126,7 @@ class EventMixin:
 
 class FilterSwitch(HorizontalGroup, IdMixin):
 
-    def __init__(self, tab_key: TabEnum, filter: Filter, **kwargs) -> None:
+    def __init__(self, tab_key: TabEnum, filter: FilterEnum, **kwargs) -> None:
         IdMixin.__init__(self, tab_key)
         self.filter_name = filter.name
         self.filter_label = filter.value

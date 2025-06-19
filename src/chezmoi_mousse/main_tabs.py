@@ -43,7 +43,7 @@ from chezmoi_mousse.containers import (
     ButtonEnumsLeft,
     ButtonEnumsRight,
 )
-from chezmoi_mousse.id_typing import Component, Filter, TabEnum, TabSide
+from chezmoi_mousse.id_typing import Component, FilterEnum, TabEnum, TabSide
 from chezmoi_mousse.widgets import FilteredDirTree, GitLog, PathView, RichLog
 
 
@@ -82,11 +82,13 @@ class ApplyTab(Horizontal, IdMixin, EventMixin):
         ):
             yield FilterSwitch(
                 self.tab_key,
-                Filter.unchanged,
+                FilterEnum.unchanged,
                 classes="filter-horizontal padding-bottom-once",
             )
             yield FilterSwitch(
-                self.tab_key, Filter.expand_all, classes="filter-horizontal"
+                self.tab_key,
+                FilterEnum.expand_all,
+                classes="filter-horizontal",
             )
 
     def action_apply_path(self) -> None:
@@ -134,11 +136,13 @@ class ReAddTab(Horizontal, IdMixin, EventMixin):
         ):
             yield FilterSwitch(
                 self.tab_key,
-                Filter.unchanged,
+                FilterEnum.unchanged,
                 classes="filter-horizontal padding-bottom-once",
             )
             yield FilterSwitch(
-                self.tab_key, Filter.expand_all, classes="filter-horizontal"
+                self.tab_key,
+                FilterEnum.expand_all,
+                classes="filter-horizontal",
             )
 
     def action_re_add_path(self) -> None:
@@ -189,11 +193,11 @@ class AddTab(Horizontal, IdMixin):
         ):
             yield FilterSwitch(
                 self.tab_key,
-                Filter.unmanaged_dirs,
+                FilterEnum.unmanaged_dirs,
                 classes="filter-horizontal padding-bottom-once",
             )
             yield FilterSwitch(
-                self.tab_key, Filter.unwanted, classes="filter-horizontal"
+                self.tab_key, FilterEnum.unwanted, classes="filter-horizontal"
             )
 
     def on_mount(self) -> None:
@@ -239,11 +243,13 @@ class AddTab(Horizontal, IdMixin):
             f"#{self.component_id(Component.add_tree)}", FilteredDirTree
         )
         if event.switch.id == self.filter_switch_id(
-            Filter.unmanaged_dirs.name
+            FilterEnum.unmanaged_dirs.name
         ):
             tree.unmanaged_dirs = event.value
             tree.reload()
-        elif event.switch.id == self.filter_switch_id(Filter.unwanted.name):
+        elif event.switch.id == self.filter_switch_id(
+            FilterEnum.unwanted.name
+        ):
             tree.unwanted = event.value
             tree.reload()
 
