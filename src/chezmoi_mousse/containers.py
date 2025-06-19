@@ -180,20 +180,9 @@ class ButtonsTopLeft(HorizontalGroup, IdMixin):
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         lc = "last-clicked"
-        if event.button.id == self.button_id(ButtonEnum.tree_btn):
-            self.query_one(
-                f"#{self.button_id(ButtonEnum.list_btn)}"
-            ).remove_class(lc)
-            self.query_one(
-                f"#{self.button_id(ButtonEnum.tree_btn)}"
-            ).add_class(lc)
-        elif event.button.id == self.button_id(ButtonEnum.list_btn):
-            self.query_one(
-                f"#{self.button_id(ButtonEnum.tree_btn)}"
-            ).remove_class(lc)
-            self.query_one(
-                f"#{self.button_id(ButtonEnum.list_btn)}"
-            ).add_class(lc)
+        for button_enum in self.buttons:
+            self.query_one(f"#{self.button_id(button_enum)}").remove_class(lc)
+        event.button.add_class(lc)
 
 
 class ButtonsTopRight(HorizontalGroup, IdMixin):
@@ -230,19 +219,7 @@ class ButtonsTopRight(HorizontalGroup, IdMixin):
         lc = "last-clicked"
         for button_enum in self.buttons:
             self.query_one(f"#{self.button_id(button_enum)}").remove_class(lc)
-
-        if event.button.id == self.button_id(ButtonEnum.contents_btn):
-            self.query_one(
-                f"#{self.button_id(ButtonEnum.contents_btn)}"
-            ).add_class(lc)
-        elif event.button.id == self.button_id(ButtonEnum.diff_btn):
-            self.query_one(
-                f"#{self.button_id(ButtonEnum.diff_btn)}"
-            ).add_class(lc)
-        elif event.button.id == self.button_id(ButtonEnum.git_log_btn):
-            self.query_one(
-                f"#{self.button_id(ButtonEnum.git_log_btn)}"
-            ).add_class(lc)
+        event.button.add_class(lc)
 
 
 class ContentSwitcherLeft(ContentSwitcher, IdMixin):
