@@ -193,7 +193,6 @@ class DiffView(RichLog, IdMixin):
         super().__init__(
             id=self.component_id(ComponentStr.diff_view), **kwargs
         )
-        self.tab_name: str = tab_key.name
 
     def on_mount(self) -> None:
         self.write(
@@ -219,9 +218,6 @@ class DiffView(RichLog, IdMixin):
             diff_output = chezmoi.run.apply_diff(self.path)
         elif self.tab_name == TabEnum.re_add_tab.name:
             diff_output = chezmoi.run.re_add_diff(self.path)
-        else:
-            self.write(Text(f"Unknown tab: {self.tab_name}", style="dim"))
-            return
 
         if not diff_output:
             self.write(Text(f"chezmoi diff {self.path} returned no output."))
@@ -269,7 +265,6 @@ class TreeBase(Tree[NodeData]):
 
     def __init__(self, tab_key: TabEnum, **kwargs) -> None:
         self.tab_key = tab_key
-        self.tab_name: str = tab_key.name
         self.node_colors = {
             "Dir": theme.vars["text-primary"],
             "D": theme.vars["text-error"],
@@ -287,7 +282,7 @@ class TreeBase(Tree[NodeData]):
 
     def create_dir_node_data(self, path: Path) -> DirNodeData:
         """Create a DirNodeData instance for a given path."""
-        status_code = chezmoi.managed_status[self.tab_name].dirs[path]
+        status_code = chezmoi.managed_status[self.tab_key.name].dirs[path]
         if not status_code:
             status_code = "X"
         found = path.exists()
@@ -295,7 +290,7 @@ class TreeBase(Tree[NodeData]):
 
     def create_file_node_data(self, path: Path) -> FileNodeData:
         """Create a FileNodeData instance for a given path."""
-        status_code = chezmoi.managed_status[self.tab_name].files[path]
+        status_code = chezmoi.managed_status[self.tab_key.name].files[path]
         found = path.exists()
         return FileNodeData(path=path, found=found, status=status_code)
 

@@ -299,7 +299,7 @@ class Chezmoi:
             ),
         }
 
-    def _validate_managed_dir_path(self, dir_path):
+    def _validate_managed_dir_path(self, dir_path: Path) -> None:
         if (
             dir_path != self.dest_dir
             and dir_path not in self.managed_dir_paths

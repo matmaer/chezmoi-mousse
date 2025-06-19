@@ -190,7 +190,7 @@ class ChezmoiGUI(App):
         CommandLog.splash_command_log = new_splash_command_log
         self.push_screen("main_screen")
 
-    def on_theme_change(self, _, new_theme):
+    def on_theme_change(self, _, new_theme) -> None:
         new_theme_object: Theme | None = self.app.get_theme(new_theme)
         assert isinstance(new_theme_object, Theme)
         chezmoi_mousse.theme.vars = (

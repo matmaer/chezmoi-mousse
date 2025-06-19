@@ -59,7 +59,7 @@ class ApplyTab(Horizontal, IdMixin, EventMixin):
     ]
 
     def __init__(self, tab_key: TabEnum) -> None:
-        IdMixin.__init__(self, TabEnum.apply_tab)
+        IdMixin.__init__(self, tab_key)
         self.tab_key: TabEnum = tab_key
         super().__init__(id=self.tab_main_horizontal_id)
 
@@ -113,7 +113,7 @@ class ReAddTab(Horizontal, IdMixin, EventMixin):
     ]
 
     def __init__(self, tab_key: TabEnum) -> None:
-        IdMixin.__init__(self, TabEnum.re_add_tab)
+        IdMixin.__init__(self, tab_key)
         self.tab_key: TabEnum = tab_key
         super().__init__(id=self.tab_main_horizontal_id)
 
@@ -250,7 +250,7 @@ class AddTab(Horizontal, IdMixin):
             tree.reload()
 
     def action_add_path(self) -> None:
-        self.notify(f"to_implement: {self.tab_name} tab action 'add_path'")
+        self.notify("to_implement: tab action 'add_path'")
 
     def action_toggle_filter_slider(self) -> None:
         """Toggle the visibility of the filter slider."""
