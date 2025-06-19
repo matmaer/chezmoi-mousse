@@ -139,22 +139,19 @@ class FilterSlider(VerticalGroup, IdMixin):
         )
 
     def compose(self) -> ComposeResult:
-        with HorizontalGroup(
-            id=self.filter_horizontal_id(self.filters[0]),
-            classes="filter-horizontal padding-bottom-once",
-        ):
-            yield Switch(id=self.filter_switch_id(self.filters[0]))
-            yield Label(
-                self.filters[0].value, classes="filter-label"
-            ).with_tooltip(tooltip=filter_tooltips[self.filters[0].name])
-        with HorizontalGroup(
-            id=self.filter_horizontal_id(self.filters[1]),
-            classes="filter-horizontal",
-        ):
-            yield Switch(id=self.filter_switch_id(self.filters[1]))
-            yield Label(
-                self.filters[1].value, classes="filter-label"
-            ).with_tooltip(tooltip=filter_tooltips[self.filters[1].name])
+        for filter_enum in self.filters:
+            with HorizontalGroup(
+                id=self.filter_horizontal_id(filter_enum),
+                classes=(
+                    "filter-horizontal padding-bottom-once"
+                    if filter_enum == self.filters[0]
+                    else "filter-horizontal"
+                ),
+            ):
+                yield Switch(id=self.filter_switch_id(filter_enum))
+                yield Label(
+                    filter_enum.value, classes="filter-label"
+                ).with_tooltip(tooltip=filter_tooltips[filter_enum.name])
 
 
 class ButtonEnumsLeft(HorizontalGroup, IdMixin):
