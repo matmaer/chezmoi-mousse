@@ -57,7 +57,7 @@ class FilterEnum(Enum):
     unmanaged_dirs = "show unmanaged dirs"
 
 
-class Chars(Enum):
+class CharsEnum(Enum):
     burger = "\N{IDENTICAL TO}"  # code point U+2261
     gear = "\N{GEAR}"  # code point U+2699
     bullet = "\N{BULLET}"  # code point U+2022

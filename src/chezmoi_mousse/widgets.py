@@ -24,7 +24,7 @@ from textual.widgets.tree import TreeNode
 import chezmoi_mousse.theme as theme
 from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.config import unwanted
-from chezmoi_mousse.id_typing import Chars, ComponentStr, IdMixin, TabEnum
+from chezmoi_mousse.id_typing import CharsEnum, ComponentStr, IdMixin, TabEnum
 
 
 class GitLog(DataTable, IdMixin):
@@ -242,7 +242,7 @@ class DiffView(RichLog, IdMixin):
             elif line.startswith("+"):
                 self.write(Text(line, theme.vars["text-success"]))
             else:
-                self.write(Text(Chars.bullet.value + line, style="dim"))
+                self.write(Text(CharsEnum.bullet.value + line, style="dim"))
 
 
 @dataclass
