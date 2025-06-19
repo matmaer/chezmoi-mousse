@@ -27,7 +27,7 @@ class TabEnum(Enum):
     log_tab = "Log"
 
 
-class TabSide(StrEnum):
+class SideStr(StrEnum):
     left = auto()
     right = auto()
 
@@ -39,7 +39,7 @@ class CornerStr(StrEnum):
     bottom_left = auto()
 
 
-class Component(StrEnum):
+class ComponentStr(StrEnum):
     add_tree = auto()
     re_add_tree = auto()
     expanded_tree = auto()
@@ -125,7 +125,7 @@ class IdMixin:
         """Generate an id for items imported from components.py."""
         return f"{self.tab_name}_{component}_component"
 
-    def content_switcher_id(self, side: TabSide) -> str:
+    def content_switcher_id(self, side: SideStr) -> str:
         return f"{self.tab_name}_{side}_content_switcher"
 
     def filter_horizontal_id(self, filter_name: str) -> str:
@@ -134,5 +134,5 @@ class IdMixin:
     def filter_switch_id(self, filter_name: str) -> str:
         return f"{self.tab_name}_{filter_name}_filter_switch"
 
-    def tab_vertical_id(self, side: TabSide) -> str:
+    def tab_vertical_id(self, side: SideStr) -> str:
         return f"{self.tab_name}_{side}_vertical"

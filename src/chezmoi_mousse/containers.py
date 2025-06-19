@@ -15,13 +15,13 @@ from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.config import filter_tooltips
 from chezmoi_mousse.id_typing import (
     CommonTabEvents,
-    Component,
+    ComponentStr,
     CornerStr,
     FilterEnum,
     IdMixin,
     TabEnum,
     ButtonEnum,
-    TabSide,
+    SideStr,
 )
 from chezmoi_mousse.widgets import (
     DiffView,
@@ -47,52 +47,52 @@ class EventMixin:
             expand_all_switch.disabled = False
             if expand_all_switch.value:
                 self.query_one(
-                    f"#{self.content_switcher_id(TabSide.left)}",
+                    f"#{self.content_switcher_id(SideStr.left)}",
                     ContentSwitcher,
-                ).current = self.component_id(Component.expanded_tree)
+                ).current = self.component_id(ComponentStr.expanded_tree)
             else:
                 self.query_one(
-                    f"#{self.content_switcher_id(TabSide.left)}",
+                    f"#{self.content_switcher_id(SideStr.left)}",
                     ContentSwitcher,
-                ).current = self.component_id(Component.managed_tree)
+                ).current = self.component_id(ComponentStr.managed_tree)
         elif event.button.id == self.button_id(ButtonEnum.list_btn):
             self.query_one(
-                f"#{self.content_switcher_id(TabSide.left)}", ContentSwitcher
-            ).current = self.component_id(Component.flat_tree)
+                f"#{self.content_switcher_id(SideStr.left)}", ContentSwitcher
+            ).current = self.component_id(ComponentStr.flat_tree)
             self.query_one(
                 f"#{self.filter_switch_id(FilterEnum.expand_all.name)}", Switch
             ).disabled = True
         # Contents/Diff/GitLog Switch
         elif event.button.id == self.button_id(ButtonEnum.contents_btn):
             self.query_one(
-                f"#{self.content_switcher_id(TabSide.right)}", ContentSwitcher
-            ).current = self.component_id(Component.path_view)
+                f"#{self.content_switcher_id(SideStr.right)}", ContentSwitcher
+            ).current = self.component_id(ComponentStr.path_view)
         elif event.button.id == self.button_id(ButtonEnum.diff_btn):
             self.query_one(
-                f"#{self.content_switcher_id(TabSide.right)}", ContentSwitcher
-            ).current = self.component_id(Component.diff_view)
+                f"#{self.content_switcher_id(SideStr.right)}", ContentSwitcher
+            ).current = self.component_id(ComponentStr.diff_view)
         elif event.button.id == self.button_id(ButtonEnum.git_log_btn):
             self.query_one(
-                f"#{self.content_switcher_id(TabSide.right)}", ContentSwitcher
-            ).current = self.component_id(Component.git_log)
+                f"#{self.content_switcher_id(SideStr.right)}", ContentSwitcher
+            ).current = self.component_id(ComponentStr.git_log)
 
     def on_tree_node_selected(
         self: CommonTabEvents, event: ManagedTree.NodeSelected
     ) -> None:
         assert event.node.data is not None
         self.query_one(
-            f"#{self.content_switcher_id(TabSide.right)}", Container
+            f"#{self.content_switcher_id(SideStr.right)}", Container
         ).border_title = (
             f"{event.node.data.path.relative_to(chezmoi.dest_dir)}"
         )
         self.query_one(
-            f"#{self.component_id(Component.path_view)}", PathView
+            f"#{self.component_id(ComponentStr.path_view)}", PathView
         ).path = event.node.data.path
         self.query_one(
-            f"#{self.component_id(Component.diff_view)}", DiffView
+            f"#{self.component_id(ComponentStr.diff_view)}", DiffView
         ).path = event.node.data.path
         self.query_one(
-            f"#{self.component_id(Component.git_log)}", GitLog
+            f"#{self.component_id(ComponentStr.git_log)}", GitLog
         ).path = event.node.data.path
 
     def on_switch_changed(
@@ -101,27 +101,28 @@ class EventMixin:
         event.stop()
         if event.switch.id == self.filter_switch_id(FilterEnum.unchanged.name):
             self.query_one(
-                f"#{self.component_id(Component.expanded_tree)}", ExpandedTree
+                f"#{self.component_id(ComponentStr.expanded_tree)}",
+                ExpandedTree,
             ).unchanged = event.value
             self.query_one(
-                f"#{self.component_id(Component.managed_tree)}", ManagedTree
+                f"#{self.component_id(ComponentStr.managed_tree)}", ManagedTree
             ).unchanged = event.value
             self.query_one(
-                f"#{self.component_id(Component.flat_tree)}", FlatTree
+                f"#{self.component_id(ComponentStr.flat_tree)}", FlatTree
             ).unchanged = event.value
         elif event.switch.id == self.filter_switch_id(
             FilterEnum.expand_all.name
         ):
             if event.value:
                 self.query_one(
-                    f"#{self.content_switcher_id(TabSide.left)}",
+                    f"#{self.content_switcher_id(SideStr.left)}",
                     ContentSwitcher,
-                ).current = self.component_id(Component.expanded_tree)
+                ).current = self.component_id(ComponentStr.expanded_tree)
             else:
                 self.query_one(
-                    f"#{self.content_switcher_id(TabSide.left)}",
+                    f"#{self.content_switcher_id(SideStr.left)}",
                     ContentSwitcher,
-                ).current = self.component_id(Component.managed_tree)
+                ).current = self.component_id(ComponentStr.managed_tree)
 
 
 class FilterSwitch(HorizontalGroup, IdMixin):
@@ -276,8 +277,8 @@ class ContentSwitcherLeft(ContentSwitcher, IdMixin):
         IdMixin.__init__(self, tab_key)
         self.tab_key = tab_key
         super().__init__(
-            id=self.content_switcher_id(TabSide.left),
-            initial=self.component_id(Component.managed_tree),
+            id=self.content_switcher_id(SideStr.left),
+            initial=self.component_id(ComponentStr.managed_tree),
             classes="content-switcher-left top-border-title",
             **kwargs,
         )
@@ -298,8 +299,8 @@ class ContentSwitcherRight(ContentSwitcher, IdMixin):
         IdMixin.__init__(self, tab_key)
         self.tab_key = tab_key
         super().__init__(
-            id=self.content_switcher_id(TabSide.right),
-            initial=self.component_id(Component.path_view),
+            id=self.content_switcher_id(SideStr.right),
+            initial=self.component_id(ComponentStr.path_view),
             classes="content-switcher-right top-border-title",
             **kwargs,
         )

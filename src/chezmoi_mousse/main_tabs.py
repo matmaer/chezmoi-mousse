@@ -43,7 +43,7 @@ from chezmoi_mousse.containers import (
     ButtonEnumsLeft,
     ButtonEnumsRight,
 )
-from chezmoi_mousse.id_typing import Component, FilterEnum, TabEnum, TabSide
+from chezmoi_mousse.id_typing import ComponentStr, FilterEnum, TabEnum, SideStr
 from chezmoi_mousse.widgets import FilteredDirTree, GitLog, PathView, RichLog
 
 
@@ -65,13 +65,13 @@ class ApplyTab(Horizontal, IdMixin, EventMixin):
 
     def compose(self) -> ComposeResult:
         with VerticalGroup(
-            id=self.tab_vertical_id(TabSide.left), classes="tab-left-vertical"
+            id=self.tab_vertical_id(SideStr.left), classes="tab-left-vertical"
         ):
             yield ButtonEnumsLeft(self.tab_key)
             yield ContentSwitcherLeft(self.tab_key)
 
         with Vertical(
-            id=self.tab_vertical_id(TabSide.right),
+            id=self.tab_vertical_id(SideStr.right),
             classes="tab-right-vertical",
         ):
             yield ButtonEnumsRight(self.tab_key)
@@ -119,13 +119,13 @@ class ReAddTab(Horizontal, IdMixin, EventMixin):
 
     def compose(self) -> ComposeResult:
         with VerticalGroup(
-            id=self.tab_vertical_id(TabSide.left), classes="tab-left-vertical"
+            id=self.tab_vertical_id(SideStr.left), classes="tab-left-vertical"
         ):
             yield ButtonEnumsLeft(self.tab_key)
             yield ContentSwitcherLeft(self.tab_key)
 
         with Vertical(
-            id=self.tab_vertical_id(TabSide.right),
+            id=self.tab_vertical_id(SideStr.right),
             classes="tab-right-vertical",
         ):
             yield ButtonEnumsRight(self.tab_key)
@@ -173,17 +173,17 @@ class AddTab(Horizontal, IdMixin):
 
     def compose(self) -> ComposeResult:
         with VerticalGroup(
-            id=self.tab_vertical_id(TabSide.left),
+            id=self.tab_vertical_id(SideStr.left),
             classes="tab-left-vertical top-border-title",
         ):
             yield FilteredDirTree(
                 chezmoi.dest_dir,
-                id=self.component_id(Component.add_tree),
+                id=self.component_id(ComponentStr.add_tree),
                 classes="dir-tree-widget",
             )
 
         with Vertical(
-            id=self.tab_vertical_id(TabSide.right),
+            id=self.tab_vertical_id(SideStr.right),
             classes="tab-right-vertical top-border-title",
         ):
             yield PathView(self.tab_key)
@@ -202,10 +202,10 @@ class AddTab(Horizontal, IdMixin):
 
     def on_mount(self) -> None:
         self.query_one(
-            f"#{self.tab_vertical_id(TabSide.right)}", Vertical
+            f"#{self.tab_vertical_id(SideStr.right)}", Vertical
         ).border_title = chezmoi.dest_dir_str
         self.query_one(
-            f"#{self.tab_vertical_id(TabSide.left)}", VerticalGroup
+            f"#{self.tab_vertical_id(SideStr.left)}", VerticalGroup
         ).border_title = chezmoi.dest_dir_str
 
     def on_directory_tree_file_selected(
@@ -215,10 +215,10 @@ class AddTab(Horizontal, IdMixin):
 
         assert event.node.data is not None
         self.query_one(
-            f"#{self.component_id(Component.path_view)}", PathView
+            f"#{self.component_id(ComponentStr.path_view)}", PathView
         ).path = event.node.data.path
         self.query_one(
-            f"#{self.tab_vertical_id(TabSide.right)}", Vertical
+            f"#{self.tab_vertical_id(SideStr.right)}", Vertical
         ).border_title = (
             f"{event.node.data.path.relative_to(chezmoi.dest_dir)}"
         )
@@ -229,10 +229,10 @@ class AddTab(Horizontal, IdMixin):
         event.stop()
         assert event.node.data is not None
         self.query_one(
-            f"#{self.component_id(Component.path_view)}", PathView
+            f"#{self.component_id(ComponentStr.path_view)}", PathView
         ).path = event.node.data.path
         self.query_one(
-            f"#{self.tab_vertical_id(TabSide.right)}", Vertical
+            f"#{self.tab_vertical_id(SideStr.right)}", Vertical
         ).border_title = (
             f"{event.node.data.path.relative_to(chezmoi.dest_dir)}"
         )
@@ -240,7 +240,7 @@ class AddTab(Horizontal, IdMixin):
     def on_switch_changed(self, event: Switch.Changed) -> None:
         event.stop()
         tree = self.query_one(
-            f"#{self.component_id(Component.add_tree)}", FilteredDirTree
+            f"#{self.component_id(ComponentStr.add_tree)}", FilteredDirTree
         )
         if event.switch.id == self.filter_switch_id(
             FilterEnum.unmanaged_dirs.name

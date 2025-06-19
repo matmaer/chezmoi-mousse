@@ -24,7 +24,7 @@ from textual.widgets.tree import TreeNode
 import chezmoi_mousse.theme as theme
 from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.config import unwanted
-from chezmoi_mousse.id_typing import Chars, Component, IdMixin, TabEnum
+from chezmoi_mousse.id_typing import Chars, ComponentStr, IdMixin, TabEnum
 
 
 class GitLog(DataTable, IdMixin):
@@ -40,7 +40,7 @@ class GitLog(DataTable, IdMixin):
 
     def __init__(self, tab_key: TabEnum, **kwargs) -> None:
         IdMixin.__init__(self, tab_key)
-        super().__init__(id=self.component_id(Component.git_log), **kwargs)
+        super().__init__(id=self.component_id(ComponentStr.git_log), **kwargs)
 
     def on_mount(self) -> None:
         self.show_cursor = False
@@ -114,7 +114,7 @@ class PathView(RichLog, IdMixin):
     def __init__(self, tab_key: TabEnum, **kwargs) -> None:
         IdMixin.__init__(self, tab_key)
         super().__init__(
-            id=self.component_id(Component.path_view),
+            id=self.component_id(ComponentStr.path_view),
             auto_scroll=True,
             wrap=True,
             highlight=True,
@@ -190,7 +190,9 @@ class DiffView(RichLog, IdMixin):
 
     def __init__(self, tab_key: TabEnum, **kwargs) -> None:
         IdMixin.__init__(self, tab_key)
-        super().__init__(id=self.component_id(Component.diff_view), **kwargs)
+        super().__init__(
+            id=self.component_id(ComponentStr.diff_view), **kwargs
+        )
         self.tab_name: str = tab_key.name
 
     def on_mount(self) -> None:
@@ -397,7 +399,7 @@ class ManagedTree(TreeBase, IdMixin):
     def __init__(self, tab_key: TabEnum, **kwargs) -> None:
         IdMixin.__init__(self, tab_key)
         super().__init__(
-            tab_key, id=self.component_id(Component.managed_tree), **kwargs
+            tab_key, id=self.component_id(ComponentStr.managed_tree), **kwargs
         )
 
     def on_mount(self) -> None:
@@ -427,7 +429,7 @@ class ExpandedTree(TreeBase, IdMixin):
     def __init__(self, tab_key: TabEnum, **kwargs) -> None:
         IdMixin.__init__(self, tab_key)
         super().__init__(
-            tab_key, id=self.component_id(Component.expanded_tree), **kwargs
+            tab_key, id=self.component_id(ComponentStr.expanded_tree), **kwargs
         )
 
     def on_mount(self) -> None:
@@ -464,7 +466,7 @@ class FlatTree(TreeBase, IdMixin):
     def __init__(self, tab_key: TabEnum, **kwargs) -> None:
         IdMixin.__init__(self, tab_key)
         super().__init__(
-            tab_key, id=self.component_id(Component.flat_tree), **kwargs
+            tab_key, id=self.component_id(ComponentStr.flat_tree), **kwargs
         )
 
     def on_mount(self) -> None:
