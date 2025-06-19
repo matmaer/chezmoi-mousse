@@ -293,9 +293,9 @@ class ContentSwitcherLeft(ContentSwitcher, IdMixin):
         self.border_title = chezmoi.dest_dir_str
 
     def compose(self) -> ComposeResult:
-        yield ManagedTree(self.tab_key, classes="tree-widget")
-        yield FlatTree(self.tab_key, classes="tree-widget")
-        yield ExpandedTree(self.tab_key, classes="tree-widget")
+        yield ManagedTree(self.tab_key)
+        yield FlatTree(self.tab_key)
+        yield ExpandedTree(self.tab_key)
 
 
 class ContentSwitcherRight(ContentSwitcher, IdMixin):

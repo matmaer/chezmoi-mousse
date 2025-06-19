@@ -388,10 +388,12 @@ class ManagedTree(TreeBase, IdMixin):
 
     unchanged: reactive[bool] = reactive(False, init=False)
 
-    def __init__(self, tab_key: TabEnum, **kwargs) -> None:
+    def __init__(self, tab_key: TabEnum) -> None:
         IdMixin.__init__(self, tab_key)
         super().__init__(
-            tab_key, id=self.component_id(ComponentStr.managed_tree), **kwargs
+            tab_key,
+            id=self.component_id(ComponentStr.managed_tree),
+            classes="tree-widget",
         )
 
     def on_mount(self) -> None:
@@ -421,10 +423,12 @@ class ExpandedTree(TreeBase, IdMixin):
 
     unchanged: reactive[bool] = reactive(False, init=False)
 
-    def __init__(self, tab_key: TabEnum, **kwargs) -> None:
+    def __init__(self, tab_key: TabEnum) -> None:
         IdMixin.__init__(self, tab_key)
         super().__init__(
-            tab_key, id=self.component_id(ComponentStr.expanded_tree), **kwargs
+            tab_key,
+            id=self.component_id(ComponentStr.expanded_tree),
+            classes="tree-widget",
         )
 
     def on_mount(self) -> None:
@@ -458,10 +462,12 @@ class FlatTree(TreeBase, IdMixin):
 
     unchanged: reactive[bool] = reactive(False, init=False)
 
-    def __init__(self, tab_key: TabEnum, **kwargs) -> None:
+    def __init__(self, tab_key: TabEnum) -> None:
         IdMixin.__init__(self, tab_key)
         super().__init__(
-            tab_key, id=self.component_id(ComponentStr.flat_tree), **kwargs
+            tab_key,
+            id=self.component_id(ComponentStr.flat_tree),
+            classes="tree-widget",
         )
 
     def on_mount(self) -> None:
