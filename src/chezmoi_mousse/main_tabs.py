@@ -38,7 +38,7 @@ from chezmoi_mousse.containers import (
     ContentSwitcherLeft,
     ContentSwitcherRight,
     EventMixin,
-    FilterSwitch,
+    FilterSlider,
     IdMixin,
     ButtonEnumsLeft,
     ButtonEnumsRight,
@@ -77,19 +77,9 @@ class ApplyTab(Horizontal, IdMixin, EventMixin):
             yield ButtonEnumsRight(self.tab_key)
             yield ContentSwitcherRight(self.tab_key)
 
-        with VerticalGroup(
-            id=self.filter_slider_id, classes="filters-vertical"
-        ):
-            yield FilterSwitch(
-                self.tab_key,
-                FilterEnum.unchanged,
-                classes="filter-horizontal padding-bottom-once",
-            )
-            yield FilterSwitch(
-                self.tab_key,
-                FilterEnum.expand_all,
-                classes="filter-horizontal",
-            )
+        yield FilterSlider(
+            self.tab_key, filters=(FilterEnum.unchanged, FilterEnum.expand_all)
+        )
 
     def action_apply_path(self) -> None:
         self.notify("to implement")
@@ -131,19 +121,9 @@ class ReAddTab(Horizontal, IdMixin, EventMixin):
             yield ButtonEnumsRight(self.tab_key)
             yield ContentSwitcherRight(self.tab_key)
 
-        with VerticalGroup(
-            id=self.filter_slider_id, classes="filters-vertical"
-        ):
-            yield FilterSwitch(
-                self.tab_key,
-                FilterEnum.unchanged,
-                classes="filter-horizontal padding-bottom-once",
-            )
-            yield FilterSwitch(
-                self.tab_key,
-                FilterEnum.expand_all,
-                classes="filter-horizontal",
-            )
+        yield FilterSlider(
+            self.tab_key, filters=(FilterEnum.unchanged, FilterEnum.expand_all)
+        )
 
     def action_re_add_path(self) -> None:
         self.notify("to implement")
@@ -188,17 +168,10 @@ class AddTab(Horizontal, IdMixin):
         ):
             yield PathView(self.tab_key)
 
-        with VerticalGroup(
-            id=self.filter_slider_id, classes="filters-vertical"
-        ):
-            yield FilterSwitch(
-                self.tab_key,
-                FilterEnum.unmanaged_dirs,
-                classes="filter-horizontal padding-bottom-once",
-            )
-            yield FilterSwitch(
-                self.tab_key, FilterEnum.unwanted, classes="filter-horizontal"
-            )
+        yield FilterSlider(
+            self.tab_key,
+            filters=(FilterEnum.unmanaged_dirs, FilterEnum.unwanted),
+        )
 
     def on_mount(self) -> None:
         self.query_one(

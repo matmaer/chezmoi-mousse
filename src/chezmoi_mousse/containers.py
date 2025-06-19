@@ -8,7 +8,12 @@ These classes
 """
 
 from textual.app import ComposeResult
-from textual.containers import Container, HorizontalGroup, Vertical
+from textual.containers import (
+    Container,
+    HorizontalGroup,
+    Vertical,
+    VerticalGroup,
+)
 from textual.widgets import Button, ContentSwitcher, Label, Switch
 
 from chezmoi_mousse.chezmoi import chezmoi
@@ -132,6 +137,32 @@ class FilterSwitch(HorizontalGroup, IdMixin):
         yield Label(
             self.filter_enum.value, classes="filter-label"
         ).with_tooltip(tooltip=filter_tooltips[self.filter_enum.name])
+
+
+class FilterSlider(VerticalGroup, IdMixin):
+
+    def __init__(
+        self,
+        tab_key: TabEnum,
+        filters: tuple[FilterEnum, FilterEnum],
+        **kwargs,
+    ) -> None:
+        IdMixin.__init__(self, tab_key)
+        self.tab_key = tab_key
+        self.filters = filters
+        super().__init__(
+            id=self.filter_slider_id, classes="filters-vertical", **kwargs
+        )
+
+    def compose(self) -> ComposeResult:
+        yield FilterSwitch(
+            self.tab_key,
+            self.filters[0],
+            classes="filter-horizontal padding-bottom-once",
+        )
+        yield FilterSwitch(
+            self.tab_key, self.filters[1], classes="filter-horizontal"
+        )
 
 
 class ButtonEnumsLeft(HorizontalGroup, IdMixin):
