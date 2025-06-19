@@ -38,9 +38,9 @@ class GitLog(DataTable, IdMixin):
 
     path: reactive[Path | None] = reactive(None, init=False)
 
-    def __init__(self, tab_key: TabEnum, **kwargs) -> None:
+    def __init__(self, tab_key: TabEnum) -> None:
         IdMixin.__init__(self, tab_key)
-        super().__init__(id=self.component_id(ComponentStr.git_log), **kwargs)
+        super().__init__(id=self.component_id(ComponentStr.git_log))
 
     def on_mount(self) -> None:
         self.show_cursor = False
@@ -111,14 +111,13 @@ class PathView(RichLog, IdMixin):
 
     path: reactive[Path | None] = reactive(None, init=False)
 
-    def __init__(self, tab_key: TabEnum, **kwargs) -> None:
+    def __init__(self, tab_key: TabEnum) -> None:
         IdMixin.__init__(self, tab_key)
         super().__init__(
             id=self.component_id(ComponentStr.path_view),
             auto_scroll=True,
             wrap=True,
             highlight=True,
-            **kwargs,
         )
 
     def on_mount(self) -> None:
@@ -188,11 +187,9 @@ class DiffView(RichLog, IdMixin):
 
     path: reactive[Path | None] = reactive(None, init=False)
 
-    def __init__(self, tab_key: TabEnum, **kwargs) -> None:
+    def __init__(self, tab_key: TabEnum) -> None:
         IdMixin.__init__(self, tab_key)
-        super().__init__(
-            id=self.component_id(ComponentStr.diff_view), **kwargs
-        )
+        super().__init__(id=self.component_id(ComponentStr.diff_view))
 
     def on_mount(self) -> None:
         self.write(
