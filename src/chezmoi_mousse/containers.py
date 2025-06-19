@@ -14,7 +14,7 @@ from textual.widgets import Button, ContentSwitcher, Label, Switch
 from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.config import filter_tooltips
 from chezmoi_mousse.id_typing import (
-    CommonTabEvents,
+    EventProtocol,
     ComponentStr,
     CornerStr,
     FilterEnum,
@@ -35,9 +35,7 @@ from chezmoi_mousse.widgets import (
 
 class EventMixin:
 
-    def on_button_pressed(
-        self: CommonTabEvents, event: Button.Pressed
-    ) -> None:
+    def on_button_pressed(self: EventProtocol, event: Button.Pressed) -> None:
         assert event.button.id is not None
         # Tree/List Switch
         if event.button.id == self.button_id(ButtonEnum.tree_btn):
@@ -77,7 +75,7 @@ class EventMixin:
             ).current = self.component_id(ComponentStr.git_log)
 
     def on_tree_node_selected(
-        self: CommonTabEvents, event: ManagedTree.NodeSelected
+        self: EventProtocol, event: ManagedTree.NodeSelected
     ) -> None:
         assert event.node.data is not None
         self.query_one(
@@ -95,9 +93,7 @@ class EventMixin:
             f"#{self.component_id(ComponentStr.git_log)}", GitLog
         ).path = event.node.data.path
 
-    def on_switch_changed(
-        self: CommonTabEvents, event: Switch.Changed
-    ) -> None:
+    def on_switch_changed(self: EventProtocol, event: Switch.Changed) -> None:
         event.stop()
         if event.switch.id == self.filter_switch_id(FilterEnum.unchanged.name):
             self.query_one(

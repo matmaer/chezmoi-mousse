@@ -93,7 +93,7 @@ if TYPE_CHECKING:
 
     T = TypeVar("T", bound="TreeTabWidget")
 
-    class CommonTabEvents(Protocol):
+    class EventProtocol(Protocol):
 
         def query_one(self, some_id: str, this_type: type[T]) -> T: ...
         def button_id(self, some_id: ButtonEnum) -> str: ...
@@ -103,7 +103,7 @@ if TYPE_CHECKING:
 
 else:
     # Runtime-compatible empty Protocol
-    class CommonTabEvents(Protocol): ...
+    class EventProtocol(Protocol): ...
 
 
 class IdMixin:
