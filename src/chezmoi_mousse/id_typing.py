@@ -19,12 +19,12 @@ class TabButton(Enum):
 
 
 class MainTab(Enum):
-    add = "Add"
-    re_add = "Re-Add"
-    apply = "Apply"
-    doctor = "Doctor"
-    diagram = "Diagram"
-    log = "Log"
+    add_tab = "Add"
+    re_add_tab = "Re-Add"
+    apply_tab = "Apply"
+    doctor_tab = "Doctor"
+    diagram_tab = "Diagram"
+    log_tab = "Log"
 
 
 class TabSide(StrEnum):
@@ -32,16 +32,27 @@ class TabSide(StrEnum):
     right = auto()
 
 
-type TreeName = Literal["AddTree", "ExpandedTree", "FlatTree", "ManagedTree"]
-type SquareAreaName = Literal["TopLeft", "TopRight", "BottomRight"]
+class Corner(StrEnum):
+    top_left = auto()
+    top_right = auto()
+    bottom_right = auto()
+    bottom_left = auto()
 
 
-type Area = Literal[SquareAreaName]
-type ComponentName = Literal[TreeName, "PathView", "DiffView", "GitLog"]
+class Component(StrEnum):
+    add_tree = auto()
+    re_add_tree = auto()
+    expanded_tree = auto()
+    flat_tree = auto()
+    managed_tree = auto()
+    path_view = auto()
+    diff_view = auto()
+    git_log = auto()
+
+
 type FilterName = Literal[
     "expand_all", "unchanged", "unwanted", "unmanaged_dirs"
 ]
-type TabName = Literal["Apply", "ReAdd", "Add", "Doctor", "Diagram", "Log"]
 
 if TYPE_CHECKING:
     from textual.containers import Container
@@ -86,23 +97,23 @@ else:
 
 
 class IdMixin:
-    def __init__(self, tab: TabName) -> None:
-        self.tab_name: TabName = tab
-        self.tab_main_horizontal_id = f"{self.tab_name}_main_horizontal"
-        self.filter_slider_id = f"{self.tab_name}_filter_slider"
+    def __init__(self, tab_key: MainTab) -> None:
+        self.tab_main_horizontal_id = f"{tab_key.name}_main_horizontal"
+        self.filter_slider_id = f"{tab_key.name}_filter_slider"
+        self.tab_name: str = tab_key.name
 
     def button_id(self, button_label: TabButton) -> str:
         return f"{self.tab_name}_{button_label.name}"
 
-    def buttons_horizontal_id(self, area: Area) -> str:
-        return f"{self.tab_name}_{area}_horizontal"
+    def buttons_horizontal_id(self, corner: Corner) -> str:
+        return f"{self.tab_name}_{corner}_horizontal"
 
     def button_vertical_id(self, button_label: TabButton) -> str:
         return f"{self.tab_name}_{button_label.name}_vertical"
 
-    def component_id(self, component_name: ComponentName) -> str:
+    def component_id(self, component: str) -> str:
         """Generate an id for items imported from components.py."""
-        return f"{self.tab_name}_{component_name}_component"
+        return f"{self.tab_name}_{component}_component"
 
     def content_switcher_id(self, side: TabSide) -> str:
         return f"{self.tab_name}_{side}_content_switcher"

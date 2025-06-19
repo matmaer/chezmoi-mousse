@@ -18,37 +18,13 @@ from rich.text import Text
 from textual.binding import Binding
 from textual.content import Content
 from textual.reactive import reactive
-from textual.widgets import (
-    Checkbox,
-    DataTable,
-    DirectoryTree,
-    RichLog,
-    Static,
-    Tree,
-)
+from textual.widgets import DataTable, DirectoryTree, RichLog, Static, Tree
 from textual.widgets.tree import TreeNode
 
 import chezmoi_mousse.theme as theme
 from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.config import chars, unwanted
-from chezmoi_mousse.id_typing import FilterName, IdMixin, TabName
-
-
-class CheckBox(Checkbox, IdMixin):
-    """Checkbox widget to be used in the filter sliders."""
-
-    BUTTON_INNER = chars.check_mark
-
-    def __init__(
-        self, tab: TabName, *, filter_name: FilterName, **kwargs
-    ) -> None:
-        IdMixin.__init__(self, tab)
-        super().__init__(
-            id=self.filter_switch_id(filter_name), label="", **kwargs
-        )
-
-    def on_mount(self) -> None:
-        self.compact = True
+from chezmoi_mousse.id_typing import Component, IdMixin, MainTab
 
 
 class GitLog(DataTable, IdMixin):
@@ -62,9 +38,9 @@ class GitLog(DataTable, IdMixin):
 
     path: reactive[Path | None] = reactive(None, init=False)
 
-    def __init__(self, tab: TabName, **kwargs) -> None:
-        IdMixin.__init__(self, tab)
-        super().__init__(id=self.component_id("GitLog"), **kwargs)
+    def __init__(self, tab_key: MainTab, **kwargs) -> None:
+        IdMixin.__init__(self, tab_key)
+        super().__init__(id=self.component_id(Component.git_log), **kwargs)
 
     def on_mount(self) -> None:
         self.show_cursor = False
@@ -135,10 +111,10 @@ class PathView(RichLog, IdMixin):
 
     path: reactive[Path | None] = reactive(None, init=False)
 
-    def __init__(self, tab: TabName, **kwargs) -> None:
-        IdMixin.__init__(self, tab)
+    def __init__(self, tab_key: MainTab, **kwargs) -> None:
+        IdMixin.__init__(self, tab_key)
         super().__init__(
-            id=self.component_id("PathView"),
+            id=self.component_id(Component.path_view),
             auto_scroll=True,
             wrap=True,
             highlight=True,
@@ -212,9 +188,10 @@ class DiffView(RichLog, IdMixin):
 
     path: reactive[Path | None] = reactive(None, init=False)
 
-    def __init__(self, tab: TabName, **kwargs) -> None:
-        IdMixin.__init__(self, tab)
-        super().__init__(id=self.component_id("DiffView"), **kwargs)
+    def __init__(self, tab_key: MainTab, **kwargs) -> None:
+        IdMixin.__init__(self, tab_key)
+        super().__init__(id=self.component_id(Component.diff_view), **kwargs)
+        self.tab_name: str = tab_key.name
 
     def on_mount(self) -> None:
         self.write(
@@ -236,9 +213,9 @@ class DiffView(RichLog, IdMixin):
             )
             return
 
-        if self.tab_name == "Apply":
+        if self.tab_name == MainTab.apply_tab.name:
             diff_output = chezmoi.run.apply_diff(self.path)
-        elif self.tab_name == "ReAdd":
+        elif self.tab_name == MainTab.re_add_tab.name:
             diff_output = chezmoi.run.re_add_diff(self.path)
         else:
             self.write(Text(f"Unknown tab: {self.tab_name}", style="dim"))
@@ -288,8 +265,9 @@ class TreeBase(Tree[NodeData]):
 
     # unchanged: reactive[bool] = reactive(False, init=False)
 
-    def __init__(self, tab: TabName, **kwargs) -> None:
-        self.tab_name: TabName = tab
+    def __init__(self, tab_key: MainTab, **kwargs) -> None:
+        self.tab_key = tab_key
+        self.tab_name: str = tab_key.name
         self.node_colors = {
             "Dir": theme.vars["text-primary"],
             "D": theme.vars["text-error"],
@@ -338,10 +316,10 @@ class TreeBase(Tree[NodeData]):
     def should_show_dir_node(self, dir_path, unchanged: bool) -> bool:
         if not unchanged:
             has_status_files = chezmoi.dir_has_status_files(
-                self.tab_name, dir_path
+                self.tab_key, dir_path
             )
             has_status_dirs = chezmoi.dir_has_status_dirs(
-                self.tab_name, dir_path
+                self.tab_key, dir_path
             )
             return has_status_files or has_status_dirs
         return True
@@ -349,7 +327,7 @@ class TreeBase(Tree[NodeData]):
     def add_unchanged_leaves(self, tree_node: TreeNode) -> None:
         assert isinstance(tree_node.data, DirNodeData)
         unchanged_in_dir = chezmoi.files_without_status_in(
-            self.tab_name, tree_node.data.path
+            self.tab_key, tree_node.data.path
         )
         for file_path in unchanged_in_dir:
             node_data = self.create_file_node_data(file_path)
@@ -368,7 +346,7 @@ class TreeBase(Tree[NodeData]):
     def add_status_leaves(self, tree_node: TreeNode) -> None:
         assert isinstance(tree_node.data, DirNodeData)
         status_file_paths = chezmoi.files_with_status_in(
-            self.tab_name, tree_node.data.path
+            self.tab_key, tree_node.data.path
         )
         for file in status_file_paths:
             node_data = self.create_file_node_data(file)
@@ -416,10 +394,10 @@ class ManagedTree(TreeBase, IdMixin):
 
     unchanged: reactive[bool] = reactive(False, init=False)
 
-    def __init__(self, tab: TabName, **kwargs) -> None:
-        IdMixin.__init__(self, tab)
+    def __init__(self, tab_key: MainTab, **kwargs) -> None:
+        IdMixin.__init__(self, tab_key)
         super().__init__(
-            tab, id=self.component_id(component_name="ManagedTree"), **kwargs
+            tab_key, id=self.component_id(Component.managed_tree), **kwargs
         )
 
     def on_mount(self) -> None:
@@ -446,10 +424,10 @@ class ExpandedTree(TreeBase, IdMixin):
 
     unchanged: reactive[bool] = reactive(False, init=False)
 
-    def __init__(self, tab: TabName, **kwargs) -> None:
-        IdMixin.__init__(self, tab)
+    def __init__(self, tab_key: MainTab, **kwargs) -> None:
+        IdMixin.__init__(self, tab_key)
         super().__init__(
-            tab, id=self.component_id(component_name="ExpandedTree"), **kwargs
+            tab_key, id=self.component_id(Component.expanded_tree), **kwargs
         )
 
     def on_mount(self) -> None:
@@ -483,10 +461,10 @@ class FlatTree(TreeBase, IdMixin):
 
     unchanged: reactive[bool] = reactive(False, init=False)
 
-    def __init__(self, tab: TabName, **kwargs) -> None:
-        IdMixin.__init__(self, tab)
+    def __init__(self, tab_key: MainTab, **kwargs) -> None:
+        IdMixin.__init__(self, tab_key)
         super().__init__(
-            tab, id=self.component_id(component_name="FlatTree"), **kwargs
+            tab_key, id=self.component_id(Component.flat_tree), **kwargs
         )
 
     def on_mount(self) -> None:

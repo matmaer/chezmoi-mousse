@@ -11,7 +11,7 @@ from pathlib import Path
 from subprocess import TimeoutExpired, run
 from typing import Literal, NamedTuple
 
-from chezmoi_mousse.id_typing import TabName
+from chezmoi_mousse.id_typing import MainTab
 
 
 def callback_null_object(*args) -> None:
@@ -247,7 +247,7 @@ class Chezmoi:
         """
 
         def create_status_dict(
-            tab_name: TabName, kind: Literal["dirs", "files"]
+            tab_name: str, kind: Literal["dirs", "files"]
         ) -> dict[Path, str]:
             to_return: dict[Path, str] = {}
             if kind == "dirs":
@@ -257,10 +257,10 @@ class Chezmoi:
                 managed_paths = self.managed_file_paths
                 status_lines = self.file_status_lines.list_out
 
-            if tab_name == "Apply":
+            if tab_name == MainTab.apply_tab.name:
                 status_codes = "ADM"
                 status_idx = 1
-            elif tab_name == "ReAdd":
+            elif tab_name == MainTab.re_add_tab.name:
                 status_codes = "M"
                 status_idx = 0
 
@@ -277,14 +277,26 @@ class Chezmoi:
                     to_return[path] = "X"
             return to_return
 
-        apply_dirs = create_status_dict(tab_name="Apply", kind="dirs")
-        apply_files = create_status_dict(tab_name="Apply", kind="files")
-        re_add_dirs = create_status_dict(tab_name="ReAdd", kind="dirs")
-        re_add_files = create_status_dict(tab_name="ReAdd", kind="files")
+        apply_dirs = create_status_dict(
+            tab_name=MainTab.apply_tab.name, kind="dirs"
+        )
+        apply_files = create_status_dict(
+            tab_name=MainTab.apply_tab.name, kind="files"
+        )
+        re_add_dirs = create_status_dict(
+            tab_name=MainTab.re_add_tab.name, kind="dirs"
+        )
+        re_add_files = create_status_dict(
+            tab_name=MainTab.re_add_tab.name, kind="files"
+        )
 
         return {
-            "Apply": StatusDicts(dirs=apply_dirs, files=apply_files),
-            "ReAdd": StatusDicts(dirs=re_add_dirs, files=re_add_files),
+            MainTab.apply_tab.name: StatusDicts(
+                dirs=apply_dirs, files=apply_files
+            ),
+            MainTab.re_add_tab.name: StatusDicts(
+                dirs=re_add_dirs, files=re_add_files
+            ),
         }
 
     def _validate_managed_dir_path(self, dir_path):
@@ -309,50 +321,50 @@ class Chezmoi:
     def dirs_with_status_in(
         # checks only direct children
         self,
-        tab_name: TabName,
+        tab_key: MainTab,
         dir_path: Path,
     ) -> list[Path]:
         self._validate_managed_dir_path(dir_path)
         return [
             p
-            for p in self.managed_status[tab_name].dirs_with_status
+            for p in self.managed_status[tab_key.name].dirs_with_status
             if p.parent == dir_path
         ]
 
     def files_with_status_in(
         # checks only direct children
         self,
-        tab_name: TabName,
+        tab_key: MainTab,
         dir_path: Path,
     ) -> list[Path]:
         self._validate_managed_dir_path(dir_path)
         return [
             p
-            for p in self.managed_status[tab_name].files_with_status
+            for p in self.managed_status[tab_key.name].files_with_status
             if p.parent == dir_path
         ]
 
     def dirs_without_status_in(
         self,
-        tab_name: TabName,
+        tab_key: MainTab,
         dir_path: Path,
         # checks only direct children
     ) -> list[Path]:
         self._validate_managed_dir_path(dir_path)
         return [
             p
-            for p in self.managed_status[tab_name].dirs_without_status
+            for p in self.managed_status[tab_key.name].dirs_without_status
             if p.parent == dir_path
         ]
 
     def files_without_status_in(
-        self, tab_name: TabName, dir_path: Path
+        self, tab_key: MainTab, dir_path: Path
     ) -> list[Path]:
         # checks only direct children
         self._validate_managed_dir_path(dir_path)
         return [
             p
-            for p in self.managed_status[tab_name].files_without_status
+            for p in self.managed_status[tab_key.name].files_without_status
             if p.parent == dir_path
         ]
 
@@ -361,19 +373,19 @@ class Chezmoi:
         self._validate_managed_dir_path(dir_path)
         return any(f for f in self.managed_file_paths if dir_path in f.parents)
 
-    def dir_has_status_files(self, tab_name: TabName, dir_path: Path) -> bool:
+    def dir_has_status_files(self, tab_key: MainTab, dir_path: Path) -> bool:
         # checks for any, no matter how deep in subdirectories
         self._validate_managed_dir_path(dir_path)
         return any(
             f
-            for f, status in self.managed_status[tab_name].files.items()
+            for f, status in self.managed_status[tab_key.name].files.items()
             if dir_path in f.parents and status != "X"
         )
 
-    def dir_has_status_dirs(self, tab_name: TabName, dir_path: Path) -> bool:
+    def dir_has_status_dirs(self, tab_key: MainTab, dir_path: Path) -> bool:
         # checks for any, no matter how deep in subdirectories
         self._validate_managed_dir_path(dir_path)
-        status_dirs = self.managed_status[tab_name].dirs.items()
+        status_dirs = self.managed_status[tab_key.name].dirs.items()
         if dir_path.parent == self.dest_dir and dir_path in status_dirs:
             # the parent is dest_dir, also return True because dest_dir is
             # not present in the self.managed_status dict
