@@ -1,5 +1,5 @@
 from enum import Enum, StrEnum, auto
-from typing import TYPE_CHECKING, Literal, Protocol, TypeVar
+from typing import TYPE_CHECKING, Protocol, TypeVar
 
 
 class TabButton(Enum):
@@ -50,9 +50,12 @@ class Component(StrEnum):
     git_log = auto()
 
 
-type FilterName = Literal[
-    "expand_all", "unchanged", "unwanted", "unmanaged_dirs"
-]
+class Filter(Enum):
+    expand_all = "expand all"
+    unchanged = "show unchanged"
+    unwanted = "show unwanted paths"
+    unmanaged_dirs = "show unmanaged dirs"
+
 
 if TYPE_CHECKING:
     from textual.containers import Container
@@ -118,13 +121,10 @@ class IdMixin:
     def content_switcher_id(self, side: TabSide) -> str:
         return f"{self.tab_name}_{side}_content_switcher"
 
-    def filter_horizontal_id(self, filter_name: FilterName) -> str:
+    def filter_horizontal_id(self, filter_name: str) -> str:
         return f"{self.tab_name}_{filter_name}_filter_horizontal"
 
-    def filter_label_id(self, filter_name: FilterName) -> str:
-        return f"{self.tab_name}_{filter_name}_filter_label"
-
-    def filter_switch_id(self, filter_name: FilterName) -> str:
+    def filter_switch_id(self, filter_name: str) -> str:
         return f"{self.tab_name}_{filter_name}_filter_switch"
 
     def tab_vertical_id(self, side: TabSide) -> str:

@@ -12,12 +12,12 @@ from textual.containers import Container, HorizontalGroup, Vertical
 from textual.widgets import Button, ContentSwitcher, Label, Switch
 
 from chezmoi_mousse.chezmoi import chezmoi
-from chezmoi_mousse.config import filter_data
+from chezmoi_mousse.config import filter_tooltips
 from chezmoi_mousse.id_typing import (
     CommonTabEvents,
     Component,
     Corner,
-    FilterName,
+    Filter,
     IdMixin,
     MainTab,
     TabButton,
@@ -128,21 +128,17 @@ class EventMixin:
 
 class FilterSwitch(HorizontalGroup, IdMixin):
 
-    def __init__(
-        self, tab_key: MainTab, *, filter_name: FilterName, **kwargs
-    ) -> None:
+    def __init__(self, tab_key: MainTab, filter: Filter, **kwargs) -> None:
         IdMixin.__init__(self, tab_key)
-        self.filter_name: FilterName = filter_name
-        self.label = filter_data[self.filter_name].label
-        super().__init__(id=self.filter_horizontal_id(filter_name), **kwargs)
+        self.filter_name = filter.name
+        self.filter_label = filter.value
+        super().__init__(id=self.filter_horizontal_id(filter.name), **kwargs)
 
     def compose(self) -> ComposeResult:
-        yield Switch(id=self.filter_switch_id(self.filter_name))
-        yield Label(
-            filter_data[self.filter_name].label,
-            id=self.filter_label_id(self.filter_name),
-            classes="filter-label",
-        ).with_tooltip(tooltip=filter_data[self.filter_name].tooltip)
+        yield Switch(id=self.filter_switch_id(self.filter_name), value=False)
+        yield Label(self.filter_label, classes="filter-label").with_tooltip(
+            tooltip=filter_tooltips[self.filter_name]
+        )
 
 
 class TabButtonsLeft(HorizontalGroup, IdMixin):

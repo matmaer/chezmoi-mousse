@@ -43,7 +43,7 @@ from chezmoi_mousse.containers import (
     TabButtonsLeft,
     TabButtonsRight,
 )
-from chezmoi_mousse.id_typing import Component, MainTab, TabSide
+from chezmoi_mousse.id_typing import Component, Filter, MainTab, TabSide
 from chezmoi_mousse.widgets import FilteredDirTree, GitLog, PathView, RichLog
 
 
@@ -82,13 +82,11 @@ class ApplyTab(Horizontal, IdMixin, EventMixin):
         ):
             yield FilterSwitch(
                 self.tab_key,
-                filter_name="unchanged",
+                Filter.unchanged,
                 classes="filter-horizontal padding-bottom-once",
             )
             yield FilterSwitch(
-                self.tab_key,
-                filter_name="expand_all",
-                classes="filter-horizontal",
+                self.tab_key, Filter.expand_all, classes="filter-horizontal"
             )
 
     def action_apply_path(self) -> None:
@@ -136,13 +134,11 @@ class ReAddTab(Horizontal, IdMixin, EventMixin):
         ):
             yield FilterSwitch(
                 self.tab_key,
-                filter_name="unchanged",
+                Filter.unchanged,
                 classes="filter-horizontal padding-bottom-once",
             )
             yield FilterSwitch(
-                self.tab_key,
-                filter_name="expand_all",
-                classes="filter-horizontal",
+                self.tab_key, Filter.expand_all, classes="filter-horizontal"
             )
 
     def action_re_add_path(self) -> None:
@@ -193,13 +189,11 @@ class AddTab(Horizontal, IdMixin):
         ):
             yield FilterSwitch(
                 self.tab_key,
-                filter_name="unmanaged_dirs",
+                Filter.unmanaged_dirs,
                 classes="filter-horizontal padding-bottom-once",
             )
             yield FilterSwitch(
-                self.tab_key,
-                filter_name="unwanted",
-                classes="filter-horizontal",
+                self.tab_key, Filter.unwanted, classes="filter-horizontal"
             )
 
     def on_mount(self) -> None:
@@ -244,10 +238,12 @@ class AddTab(Horizontal, IdMixin):
         tree = self.query_one(
             f"#{self.component_id(Component.add_tree)}", FilteredDirTree
         )
-        if event.switch.id == self.filter_switch_id("unmanaged_dirs"):
+        if event.switch.id == self.filter_switch_id(
+            Filter.unmanaged_dirs.name
+        ):
             tree.unmanaged_dirs = event.value
             tree.reload()
-        elif event.switch.id == self.filter_switch_id("unwanted"):
+        elif event.switch.id == self.filter_switch_id(Filter.unwanted.name):
             tree.unwanted = event.value
             tree.reload()
 

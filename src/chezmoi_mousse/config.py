@@ -16,37 +16,19 @@ class Chars:
 chars = Chars()
 
 
-@dataclass(frozen=True)
-class Filter:
-    tooltip: str
-    label: str
-
-
-filter_data = {
-    "unmanaged_dirs": Filter(
-        tooltip=(
-            "The default (disabled), only shows directories which already contain managed files."
-            "This allows spotting new un-managed files in already managed directories."
-            "Enable to show all directories which contain un-managed files."
-        ),
-        label="show unmanaged dirs",
+filter_tooltips = {
+    "unmanaged_dirs": (
+        "The default (disabled), only shows directories which already contain managed files."
+        "This allows spotting new un-managed files in already managed directories."
+        "Enable to show all directories which contain un-managed files."
     ),
-    "unwanted": Filter(
-        tooltip=(
-            'Include files and directories considered as "unwanted" for a dotfile manager. '
-            "These include cache, temporary, trash (recycle bin) and other similar files or directories. "
-            'For example enable this to add files to your chezmoi repository which are in a directory named ".cache".'
-        ),
-        label="show unwanted paths",
+    "unwanted": (
+        'Include files and directories considered as "unwanted" for a dotfile manager. '
+        "These include cache, temporary, trash (recycle bin) and other similar files or directories. "
+        'For example enable this to add files to your chezmoi repository which are in a directory named ".cache".'
     ),
-    "expand_all": Filter(
-        tooltip=("Expand all directories in the Tree view."),
-        label="expand all",
-    ),
-    "unchanged": Filter(
-        label="show unchanged",
-        tooltip="Include files unchanged files which are not found in the 'chezmoi status' output.",
-    ),
+    "expand_all": "Expand all directories in the Tree view.",
+    "unchanged": "Include files unchanged files which are not found in the 'chezmoi status' output.",
 }
 
 unwanted = {
