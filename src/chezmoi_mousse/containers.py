@@ -126,9 +126,7 @@ class FilterSwitch(HorizontalGroup, IdMixin):
     ) -> None:
         IdMixin.__init__(self, tab_key)
         self.filter_enum = filter_enum
-        super().__init__(
-            id=self.filter_horizontal_id(filter_enum.name), **kwargs
-        )
+        super().__init__(id=self.filter_horizontal_id(filter_enum), **kwargs)
 
     def compose(self) -> ComposeResult:
         yield Switch(id=self.filter_switch_id(self.filter_enum), value=False)

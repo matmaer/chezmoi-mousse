@@ -94,7 +94,7 @@ if TYPE_CHECKING:
 
     class EventProtocol(Protocol):
         # this covers all "self.some_method()" calls in EventMixin
-        def query_one(self, some_id: str, this_type: type[QRT]) -> QRT: ...
+        def query_one(self, some_id: str, return_types: type[QRT]) -> QRT: ...
         def button_id(self, some_id: ButtonEnum) -> str: ...
         def content_switcher_id(self, some_id: SideStr) -> str: ...
         def component_id(self, some_id: ComponentStr) -> str: ...
@@ -127,8 +127,8 @@ class IdMixin:
     def content_switcher_id(self, side: SideStr) -> str:
         return f"{self.tab_name}_{side}_content_switcher"
 
-    def filter_horizontal_id(self, filter_name: str) -> str:
-        return f"{self.tab_name}_{filter_name}_filter_horizontal"
+    def filter_horizontal_id(self, filter_enum: FilterEnum) -> str:
+        return f"{self.tab_name}_{filter_enum.name}_filter_horizontal"
 
     def filter_switch_id(self, filter_enum: FilterEnum) -> str:
         return f"{self.tab_name}_{filter_enum.name}_filter_switch"
