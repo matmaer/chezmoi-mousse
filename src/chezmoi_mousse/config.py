@@ -1,21 +1,3 @@
-"""Contains settings like which strings filters use to decide what to filter,
-text displayed on widgets in the GUI and 3rd party information in the context
-of commands integrated in chezmoi."""
-
-from dataclasses import dataclass
-
-
-@dataclass(frozen=True)
-class Chars:
-    burger: str = "\N{IDENTICAL TO}"  # code point U+2261
-    gear: str = "\N{GEAR}"  # code point U+2699
-    bullet: str = "\N{BULLET}"  # code point U+2022
-    check_mark: str = "\N{HEAVY CHECK MARK}"  # code point U+2714
-
-
-chars = Chars()
-
-
 filter_tooltips = {
     "unmanaged_dirs": (
         "The default (disabled), only shows directories which already contain managed files."

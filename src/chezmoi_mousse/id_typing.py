@@ -57,6 +57,13 @@ class Filter(Enum):
     unmanaged_dirs = "show unmanaged dirs"
 
 
+class Chars(Enum):
+    burger = "\N{IDENTICAL TO}"  # code point U+2261
+    gear = "\N{GEAR}"  # code point U+2699
+    bullet = "\N{BULLET}"  # code point U+2022
+    check_mark = "\N{HEAVY CHECK MARK}"  # code point U+2714
+
+
 if TYPE_CHECKING:
     from textual.containers import Container
     from textual.widgets import ContentSwitcher, Switch
