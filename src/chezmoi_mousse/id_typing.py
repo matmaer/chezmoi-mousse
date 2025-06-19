@@ -65,6 +65,7 @@ class CharsEnum(Enum):
 
 
 if TYPE_CHECKING:
+    """The protocol for EventMixin methods and attributes."""
     from textual.containers import Container
     from textual.widgets import ContentSwitcher, Switch
 
@@ -75,27 +76,25 @@ if TYPE_CHECKING:
         GitLog,
         ManagedTree,
         PathView,
-        TreeBase,
     )
 
-    type TreeTabWidget = (
-        Container
-        | ContentSwitcher
-        | DiffView
-        | ExpandedTree
-        | FlatTree
-        | GitLog
-        | ManagedTree
-        | PathView
-        | Switch
-        | TreeBase
+    type QueryReturnTypes = (
+        Container  # query to set the top border text
+        | ContentSwitcher  # query to set the .current attribute
+        | DiffView  # query to update the reactive path attribute
+        | ExpandedTree  # query to update the reactive unchanged attribute
+        | FlatTree  # query to update the reactive unchanged attribute
+        | GitLog  # query to update the reactive path attribute
+        | ManagedTree  # query to update the reactive unchanged attribute
+        | PathView  # query to update the reactive path attribute
+        | Switch  # query to update reactives when a switch is toggled or update enabled/disabled state
     )
 
-    T = TypeVar("T", bound="TreeTabWidget")
+    QRT = TypeVar("QRT", bound="QueryReturnTypes")
 
     class EventProtocol(Protocol):
-
-        def query_one(self, some_id: str, this_type: type[T]) -> T: ...
+        # this covers all "self.some_method()" calls in EventMixin
+        def query_one(self, some_id: str, this_type: type[QRT]) -> QRT: ...
         def button_id(self, some_id: ButtonEnum) -> str: ...
         def content_switcher_id(self, some_id: str) -> str: ...
         def component_id(self, some_id: str) -> str: ...
