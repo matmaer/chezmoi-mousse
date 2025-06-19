@@ -64,7 +64,89 @@ from chezmoi_mousse.widgets import (
 )
 
 
-class ApplyTab(Horizontal, IdMixin):
+class BaseTab(Horizontal, IdMixin):
+
+    def update_right_side_content_switcher(self, path):
+        self.query_one(
+            f"#{self.content_switcher_id(SideStr.right)}", Container
+        ).border_title = f"{path.relative_to(chezmoi.dest_dir)}"
+        self.query_one(
+            f"#{self.component_id(ComponentStr.path_view)}", PathView
+        ).path = path
+        self.query_one(
+            f"#{self.component_id(ComponentStr.diff_view)}", DiffView
+        ).path = path
+        self.query_one(
+            f"#{self.component_id(ComponentStr.git_log)}", GitLog
+        ).path = path
+
+    def on_tree_node_selected(self, event: ManagedTree.NodeSelected) -> None:
+        assert event.node.data is not None
+        self.update_right_side_content_switcher(event.node.data.path)
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        # Tree/List Switch
+        if event.button.id == self.button_id(ButtonEnum.tree_btn):
+            expand_all_switch = self.query_one(
+                f"#{self.filter_switch_id(FilterEnum.expand_all)}", Switch
+            )
+            expand_all_switch.disabled = False
+            if expand_all_switch.value:
+                self.query_one(
+                    f"#{self.content_switcher_id(SideStr.left)}",
+                    ContentSwitcher,
+                ).current = self.component_id(ComponentStr.expanded_tree)
+            else:
+                self.query_one(
+                    f"#{self.content_switcher_id(SideStr.left)}",
+                    ContentSwitcher,
+                ).current = self.component_id(ComponentStr.managed_tree)
+        elif event.button.id == self.button_id(ButtonEnum.list_btn):
+            self.query_one(
+                f"#{self.content_switcher_id(SideStr.left)}", ContentSwitcher
+            ).current = self.component_id(ComponentStr.flat_tree)
+            self.query_one(
+                f"#{self.filter_switch_id(FilterEnum.expand_all)}", Switch
+            ).disabled = True
+        # Contents/Diff/GitLog Switch
+        elif event.button.id == self.button_id(ButtonEnum.contents_btn):
+            self.query_one(
+                f"#{self.content_switcher_id(SideStr.right)}", ContentSwitcher
+            ).current = self.component_id(ComponentStr.path_view)
+        elif event.button.id == self.button_id(ButtonEnum.diff_btn):
+            self.query_one(
+                f"#{self.content_switcher_id(SideStr.right)}", ContentSwitcher
+            ).current = self.component_id(ComponentStr.diff_view)
+        elif event.button.id == self.button_id(ButtonEnum.git_log_btn):
+            self.query_one(
+                f"#{self.content_switcher_id(SideStr.right)}", ContentSwitcher
+            ).current = self.component_id(ComponentStr.git_log)
+
+    def on_switch_changed(self, event: Switch.Changed) -> None:
+        event.stop()
+        if event.switch.id == self.filter_switch_id(FilterEnum.unchanged):
+            for comp_str, tree_cls in [
+                (ComponentStr.expanded_tree, ExpandedTree),
+                (ComponentStr.managed_tree, ManagedTree),
+                (ComponentStr.flat_tree, FlatTree),
+            ]:
+                self.query_one(
+                    f"#{self.component_id(comp_str)}", tree_cls
+                ).unchanged = event.value
+        elif event.switch.id == self.filter_switch_id(FilterEnum.expand_all):
+            if event.value:
+                self.query_one(
+                    f"#{self.content_switcher_id(SideStr.left)}",
+                    ContentSwitcher,
+                ).current = self.component_id(ComponentStr.expanded_tree)
+            else:
+                self.query_one(
+                    f"#{self.content_switcher_id(SideStr.left)}",
+                    ContentSwitcher,
+                ).current = self.component_id(ComponentStr.managed_tree)
+
+
+class ApplyTab(BaseTab):
 
     BINDINGS = [
         Binding(key="W,w", action="apply_path", description="chezmoi-apply"),
@@ -107,89 +189,8 @@ class ApplyTab(Horizontal, IdMixin):
             f"#{self.filter_slider_id}", VerticalGroup
         ).toggle_class("-visible")
 
-    def on_button_pressed(self, event: Button.Pressed) -> None:
-        # Tree/List Switch
-        if event.button.id == self.button_id(ButtonEnum.tree_btn):
-            expand_all_switch = self.query_one(
-                f"#{self.filter_switch_id(FilterEnum.expand_all)}", Switch
-            )
-            expand_all_switch.disabled = False
-            if expand_all_switch.value:
-                self.query_one(
-                    f"#{self.content_switcher_id(SideStr.left)}",
-                    ContentSwitcher,
-                ).current = self.component_id(ComponentStr.expanded_tree)
-            else:
-                self.query_one(
-                    f"#{self.content_switcher_id(SideStr.left)}",
-                    ContentSwitcher,
-                ).current = self.component_id(ComponentStr.managed_tree)
-        elif event.button.id == self.button_id(ButtonEnum.list_btn):
-            self.query_one(
-                f"#{self.content_switcher_id(SideStr.left)}", ContentSwitcher
-            ).current = self.component_id(ComponentStr.flat_tree)
-            self.query_one(
-                f"#{self.filter_switch_id(FilterEnum.expand_all)}", Switch
-            ).disabled = True
-        # Contents/Diff/GitLog Switch
-        elif event.button.id == self.button_id(ButtonEnum.contents_btn):
-            self.query_one(
-                f"#{self.content_switcher_id(SideStr.right)}", ContentSwitcher
-            ).current = self.component_id(ComponentStr.path_view)
-        elif event.button.id == self.button_id(ButtonEnum.diff_btn):
-            self.query_one(
-                f"#{self.content_switcher_id(SideStr.right)}", ContentSwitcher
-            ).current = self.component_id(ComponentStr.diff_view)
-        elif event.button.id == self.button_id(ButtonEnum.git_log_btn):
-            self.query_one(
-                f"#{self.content_switcher_id(SideStr.right)}", ContentSwitcher
-            ).current = self.component_id(ComponentStr.git_log)
 
-    def on_tree_node_selected(self, event: ManagedTree.NodeSelected) -> None:
-        # TODO: use on decorator for each tree class because they all get updated
-        assert event.node.data is not None
-        self.query_one(
-            f"#{self.content_switcher_id(SideStr.right)}", Container
-        ).border_title = (
-            f"{event.node.data.path.relative_to(chezmoi.dest_dir)}"
-        )
-        self.query_one(
-            f"#{self.component_id(ComponentStr.path_view)}", PathView
-        ).path = event.node.data.path
-        self.query_one(
-            f"#{self.component_id(ComponentStr.diff_view)}", DiffView
-        ).path = event.node.data.path
-        self.query_one(
-            f"#{self.component_id(ComponentStr.git_log)}", GitLog
-        ).path = event.node.data.path
-
-    def on_switch_changed(self, event: Switch.Changed) -> None:
-        event.stop()
-        if event.switch.id == self.filter_switch_id(FilterEnum.unchanged):
-            self.query_one(
-                f"#{self.component_id(ComponentStr.expanded_tree)}",
-                ExpandedTree,
-            ).unchanged = event.value
-            self.query_one(
-                f"#{self.component_id(ComponentStr.managed_tree)}", ManagedTree
-            ).unchanged = event.value
-            self.query_one(
-                f"#{self.component_id(ComponentStr.flat_tree)}", FlatTree
-            ).unchanged = event.value
-        elif event.switch.id == self.filter_switch_id(FilterEnum.expand_all):
-            if event.value:
-                self.query_one(
-                    f"#{self.content_switcher_id(SideStr.left)}",
-                    ContentSwitcher,
-                ).current = self.component_id(ComponentStr.expanded_tree)
-            else:
-                self.query_one(
-                    f"#{self.content_switcher_id(SideStr.left)}",
-                    ContentSwitcher,
-                ).current = self.component_id(ComponentStr.managed_tree)
-
-
-class ReAddTab(Horizontal, IdMixin):
+class ReAddTab(BaseTab):
 
     BINDINGS = [
         Binding(key="A,a", action="re_add_path", description="chezmoi-re-add"),
@@ -231,87 +232,6 @@ class ReAddTab(Horizontal, IdMixin):
         self.query_one(
             f"#{self.filter_slider_id}", VerticalGroup
         ).toggle_class("-visible")
-
-    def on_button_pressed(self, event: Button.Pressed) -> None:
-        # Tree/List Switch
-        if event.button.id == self.button_id(ButtonEnum.tree_btn):
-            expand_all_switch = self.query_one(
-                f"#{self.filter_switch_id(FilterEnum.expand_all)}", Switch
-            )
-            expand_all_switch.disabled = False
-            if expand_all_switch.value:
-                self.query_one(
-                    f"#{self.content_switcher_id(SideStr.left)}",
-                    ContentSwitcher,
-                ).current = self.component_id(ComponentStr.expanded_tree)
-            else:
-                self.query_one(
-                    f"#{self.content_switcher_id(SideStr.left)}",
-                    ContentSwitcher,
-                ).current = self.component_id(ComponentStr.managed_tree)
-        elif event.button.id == self.button_id(ButtonEnum.list_btn):
-            self.query_one(
-                f"#{self.content_switcher_id(SideStr.left)}", ContentSwitcher
-            ).current = self.component_id(ComponentStr.flat_tree)
-            self.query_one(
-                f"#{self.filter_switch_id(FilterEnum.expand_all)}", Switch
-            ).disabled = True
-        # Contents/Diff/GitLog Switch
-        elif event.button.id == self.button_id(ButtonEnum.contents_btn):
-            self.query_one(
-                f"#{self.content_switcher_id(SideStr.right)}", ContentSwitcher
-            ).current = self.component_id(ComponentStr.path_view)
-        elif event.button.id == self.button_id(ButtonEnum.diff_btn):
-            self.query_one(
-                f"#{self.content_switcher_id(SideStr.right)}", ContentSwitcher
-            ).current = self.component_id(ComponentStr.diff_view)
-        elif event.button.id == self.button_id(ButtonEnum.git_log_btn):
-            self.query_one(
-                f"#{self.content_switcher_id(SideStr.right)}", ContentSwitcher
-            ).current = self.component_id(ComponentStr.git_log)
-
-    def on_tree_node_selected(self, event: ManagedTree.NodeSelected) -> None:
-        # TODO: use on decorator for each tree class because they all get updated
-        assert event.node.data is not None
-        self.query_one(
-            f"#{self.content_switcher_id(SideStr.right)}", Container
-        ).border_title = (
-            f"{event.node.data.path.relative_to(chezmoi.dest_dir)}"
-        )
-        self.query_one(
-            f"#{self.component_id(ComponentStr.path_view)}", PathView
-        ).path = event.node.data.path
-        self.query_one(
-            f"#{self.component_id(ComponentStr.diff_view)}", DiffView
-        ).path = event.node.data.path
-        self.query_one(
-            f"#{self.component_id(ComponentStr.git_log)}", GitLog
-        ).path = event.node.data.path
-
-    def on_switch_changed(self, event: Switch.Changed) -> None:
-        event.stop()
-        if event.switch.id == self.filter_switch_id(FilterEnum.unchanged):
-            self.query_one(
-                f"#{self.component_id(ComponentStr.expanded_tree)}",
-                ExpandedTree,
-            ).unchanged = event.value
-            self.query_one(
-                f"#{self.component_id(ComponentStr.managed_tree)}", ManagedTree
-            ).unchanged = event.value
-            self.query_one(
-                f"#{self.component_id(ComponentStr.flat_tree)}", FlatTree
-            ).unchanged = event.value
-        elif event.switch.id == self.filter_switch_id(FilterEnum.expand_all):
-            if event.value:
-                self.query_one(
-                    f"#{self.content_switcher_id(SideStr.left)}",
-                    ContentSwitcher,
-                ).current = self.component_id(ComponentStr.expanded_tree)
-            else:
-                self.query_one(
-                    f"#{self.content_switcher_id(SideStr.left)}",
-                    ContentSwitcher,
-                ).current = self.component_id(ComponentStr.managed_tree)
 
 
 class AddTab(Horizontal, IdMixin):
