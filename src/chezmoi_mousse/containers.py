@@ -35,10 +35,6 @@ from chezmoi_mousse.widgets import (
 
 class EventMixin:
 
-    def __init__(self, tab_key: MainTab) -> None:
-        self.tab_main_horizontal_id = f"{tab_key.name}_main_horizontal"
-        self.filter_slider_id = f"{tab_key.name}_filter_slider"
-
     def on_button_pressed(
         self: CommonTabEvents, event: Button.Pressed
     ) -> None:
@@ -46,7 +42,7 @@ class EventMixin:
         # Tree/List Switch
         if event.button.id == self.button_id(TabButton.tree_btn):
             expand_all_switch = self.query_one(
-                f"#{self.filter_switch_id('expand_all')}", Switch
+                f"#{self.filter_switch_id(Filter.expand_all.name)}", Switch
             )
             expand_all_switch.disabled = False
             if expand_all_switch.value:
@@ -64,7 +60,7 @@ class EventMixin:
                 f"#{self.content_switcher_id(TabSide.left)}", ContentSwitcher
             ).current = self.component_id(Component.flat_tree)
             self.query_one(
-                f"#{self.filter_switch_id('expand_all')}", Switch
+                f"#{self.filter_switch_id(Filter.expand_all.name)}", Switch
             ).disabled = True
         # Contents/Diff/GitLog Switch
         elif event.button.id == self.button_id(TabButton.contents_btn):
