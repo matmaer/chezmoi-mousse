@@ -40,6 +40,7 @@ from chezmoi_mousse.widgets import (
 
 class EventMixin:
 
+    # TODO: bug, event handler on_tree_node_selected should be moved out of here
     def on_button_pressed(self: EventProtocol, event: Button.Pressed) -> None:
         # Tree/List Switch
         if event.button.id == self.button_id(ButtonEnum.tree_btn):
