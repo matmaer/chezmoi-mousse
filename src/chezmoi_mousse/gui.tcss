@@ -32,7 +32,7 @@
     }
   }
   &>.dir-tree-widget {
-    min-width: 14;
+    min-width: 16;
     max-width: 100%;
     width: auto;
   }
