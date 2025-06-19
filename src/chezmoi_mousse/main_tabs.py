@@ -40,8 +40,8 @@ from chezmoi_mousse.containers import (
     EventMixin,
     FilterSwitch,
     IdMixin,
-    TabButtonsLeft,
-    TabButtonsRight,
+    ButtonEnumsLeft,
+    ButtonEnumsRight,
 )
 from chezmoi_mousse.id_typing import Component, Filter, MainTab, TabSide
 from chezmoi_mousse.widgets import FilteredDirTree, GitLog, PathView, RichLog
@@ -67,14 +67,14 @@ class ApplyTab(Horizontal, IdMixin, EventMixin):
         with VerticalGroup(
             id=self.tab_vertical_id(TabSide.left), classes="tab-left-vertical"
         ):
-            yield TabButtonsLeft(self.tab_key)
+            yield ButtonEnumsLeft(self.tab_key)
             yield ContentSwitcherLeft(self.tab_key)
 
         with Vertical(
             id=self.tab_vertical_id(TabSide.right),
             classes="tab-right-vertical",
         ):
-            yield TabButtonsRight(self.tab_key)
+            yield ButtonEnumsRight(self.tab_key)
             yield ContentSwitcherRight(self.tab_key)
 
         with VerticalGroup(
@@ -119,14 +119,14 @@ class ReAddTab(Horizontal, IdMixin, EventMixin):
         with VerticalGroup(
             id=self.tab_vertical_id(TabSide.left), classes="tab-left-vertical"
         ):
-            yield TabButtonsLeft(self.tab_key)
+            yield ButtonEnumsLeft(self.tab_key)
             yield ContentSwitcherLeft(self.tab_key)
 
         with Vertical(
             id=self.tab_vertical_id(TabSide.right),
             classes="tab-right-vertical",
         ):
-            yield TabButtonsRight(self.tab_key)
+            yield ButtonEnumsRight(self.tab_key)
             yield ContentSwitcherRight(self.tab_key)
 
         with VerticalGroup(

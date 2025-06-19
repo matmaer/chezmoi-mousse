@@ -2,7 +2,7 @@ from enum import Enum, StrEnum, auto
 from typing import TYPE_CHECKING, Protocol, TypeVar
 
 
-class TabButton(Enum):
+class ButtonEnum(Enum):
     # tab buttons within a tab
     tree_btn = "Tree"
     list_btn = "List"
@@ -96,7 +96,7 @@ if TYPE_CHECKING:
     class CommonTabEvents(Protocol):
 
         def query_one(self, some_id: str, this_type: type[T]) -> T: ...
-        def button_id(self, some_id: TabButton) -> str: ...
+        def button_id(self, some_id: ButtonEnum) -> str: ...
         def content_switcher_id(self, some_id: str) -> str: ...
         def component_id(self, some_id: str) -> str: ...
         def filter_switch_id(self, some_id: str) -> str: ...
@@ -112,13 +112,13 @@ class IdMixin:
         self.filter_slider_id = f"{tab_key.name}_filter_slider"
         self.tab_name: str = tab_key.name
 
-    def button_id(self, button_label: TabButton) -> str:
+    def button_id(self, button_label: ButtonEnum) -> str:
         return f"{self.tab_name}_{button_label.name}"
 
     def buttons_horizontal_id(self, corner: Corner) -> str:
         return f"{self.tab_name}_{corner}_horizontal"
 
-    def button_vertical_id(self, button_label: TabButton) -> str:
+    def button_vertical_id(self, button_label: ButtonEnum) -> str:
         return f"{self.tab_name}_{button_label.name}_vertical"
 
     def component_id(self, component: str) -> str:
