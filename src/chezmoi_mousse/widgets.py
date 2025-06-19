@@ -258,8 +258,6 @@ class FileNodeData(NodeData):
 class TreeBase(Tree[NodeData]):
     """Shows the tree widget on the left for Apply and Re-Add tabs."""
 
-    # unchanged: reactive[bool] = reactive(False, init=False)
-
     def __init__(self, tab_key: TabEnum, **kwargs) -> None:
         self.tab_key = tab_key
         self.node_colors = {
