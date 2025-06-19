@@ -36,7 +36,6 @@ from chezmoi_mousse.widgets import (
 class EventMixin:
 
     def on_button_pressed(self: EventProtocol, event: Button.Pressed) -> None:
-        assert event.button.id is not None
         # Tree/List Switch
         if event.button.id == self.button_id(ButtonEnum.tree_btn):
             expand_all_switch = self.query_one(
