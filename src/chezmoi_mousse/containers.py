@@ -151,12 +151,11 @@ class FilterSlider(VerticalGroup, IdMixin):
 
 class ButtonsTopLeft(HorizontalGroup, IdMixin):
 
-    def __init__(self, tab_key: TabEnum, **kwargs) -> None:
+    def __init__(self, tab_key: TabEnum) -> None:
         IdMixin.__init__(self, tab_key)
         super().__init__(
             id=self.buttons_horizontal_id(CornerStr.top_left),
             classes="tab-buttons-horizontal",
-            **kwargs,
         )
 
     def compose(self) -> ComposeResult:
@@ -203,12 +202,11 @@ class ButtonsTopLeft(HorizontalGroup, IdMixin):
 
 
 class ButtonsTopRight(HorizontalGroup, IdMixin):
-    def __init__(self, tab_key: TabEnum, **kwargs) -> None:
+    def __init__(self, tab_key: TabEnum) -> None:
         IdMixin.__init__(self, tab_key)
         super().__init__(
             id=self.buttons_horizontal_id(CornerStr.top_right),
             classes="tab-buttons-horizontal",
-            **kwargs,
         )
 
     def compose(self) -> ComposeResult:
