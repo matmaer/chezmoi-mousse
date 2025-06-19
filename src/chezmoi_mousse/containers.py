@@ -19,7 +19,7 @@ from chezmoi_mousse.id_typing import (
     Corner,
     Filter,
     IdMixin,
-    MainTab,
+    TabEnum,
     ButtonEnum,
     TabSide,
 )
@@ -124,7 +124,7 @@ class EventMixin:
 
 class FilterSwitch(HorizontalGroup, IdMixin):
 
-    def __init__(self, tab_key: MainTab, filter: Filter, **kwargs) -> None:
+    def __init__(self, tab_key: TabEnum, filter: Filter, **kwargs) -> None:
         IdMixin.__init__(self, tab_key)
         self.filter_name = filter.name
         self.filter_label = filter.value
@@ -139,7 +139,7 @@ class FilterSwitch(HorizontalGroup, IdMixin):
 
 class ButtonEnumsLeft(HorizontalGroup, IdMixin):
 
-    def __init__(self, tab_key: MainTab, **kwargs) -> None:
+    def __init__(self, tab_key: TabEnum, **kwargs) -> None:
         IdMixin.__init__(self, tab_key)
         super().__init__(
             id=self.buttons_horizontal_id(Corner.top_left),
@@ -191,7 +191,7 @@ class ButtonEnumsLeft(HorizontalGroup, IdMixin):
 
 
 class ButtonEnumsRight(HorizontalGroup, IdMixin):
-    def __init__(self, tab_key: MainTab, **kwargs) -> None:
+    def __init__(self, tab_key: TabEnum, **kwargs) -> None:
         IdMixin.__init__(self, tab_key)
         super().__init__(
             id=self.buttons_horizontal_id(Corner.top_right),
@@ -270,7 +270,7 @@ class ButtonEnumsRight(HorizontalGroup, IdMixin):
 class ContentSwitcherLeft(ContentSwitcher, IdMixin):
     """Reusable ContentSwitcher for the left panel with tree widgets."""
 
-    def __init__(self, tab_key: MainTab, **kwargs):
+    def __init__(self, tab_key: TabEnum, **kwargs):
         IdMixin.__init__(self, tab_key)
         self.tab_key = tab_key
         super().__init__(
@@ -292,7 +292,7 @@ class ContentSwitcherLeft(ContentSwitcher, IdMixin):
 class ContentSwitcherRight(ContentSwitcher, IdMixin):
     """Reusable ContentSwitcher for the right panel with path view widgets."""
 
-    def __init__(self, tab_key: MainTab, **kwargs):
+    def __init__(self, tab_key: TabEnum, **kwargs):
         IdMixin.__init__(self, tab_key)
         self.tab_key = tab_key
         super().__init__(

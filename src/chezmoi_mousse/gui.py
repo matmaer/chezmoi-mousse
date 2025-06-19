@@ -16,7 +16,7 @@ from textual.widgets import Footer, Header, Static, TabbedContent, TabPane
 
 import chezmoi_mousse.theme
 from chezmoi_mousse import FLOW
-from chezmoi_mousse.id_typing import Chars, MainTab
+from chezmoi_mousse.id_typing import Chars, TabEnum
 from chezmoi_mousse.main_tabs import (
     AddTab,
     ApplyTab,
@@ -33,11 +33,11 @@ class MainScreen(Screen):
         yield Header(icon=Chars.burger.value)
         with TabbedContent():
             with TabPane("Apply", id="apply_tab_pane"):
-                yield ApplyTab(tab_key=MainTab.apply_tab)
+                yield ApplyTab(tab_key=TabEnum.apply_tab)
             with TabPane("Re-Add", id="re_add_tab_pane"):
-                yield ReAddTab(tab_key=MainTab.re_add_tab)
+                yield ReAddTab(tab_key=TabEnum.re_add_tab)
             with TabPane("Add", id="add_tab_pane"):
-                yield AddTab(tab_key=MainTab.add_tab)
+                yield AddTab(tab_key=TabEnum.add_tab)
             with TabPane("Doctor", id="doctor_tab_pane"):
                 yield DoctorTab(id="doctor_tab")
             with TabPane("Diagram", id="diagram_tab_pane"):

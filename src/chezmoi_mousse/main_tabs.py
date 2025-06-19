@@ -43,7 +43,7 @@ from chezmoi_mousse.containers import (
     ButtonEnumsLeft,
     ButtonEnumsRight,
 )
-from chezmoi_mousse.id_typing import Component, Filter, MainTab, TabSide
+from chezmoi_mousse.id_typing import Component, Filter, TabEnum, TabSide
 from chezmoi_mousse.widgets import FilteredDirTree, GitLog, PathView, RichLog
 
 
@@ -58,9 +58,9 @@ class ApplyTab(Horizontal, IdMixin, EventMixin):
         ),
     ]
 
-    def __init__(self, tab_key: MainTab) -> None:
-        IdMixin.__init__(self, MainTab.apply_tab)
-        self.tab_key: MainTab = tab_key
+    def __init__(self, tab_key: TabEnum) -> None:
+        IdMixin.__init__(self, TabEnum.apply_tab)
+        self.tab_key: TabEnum = tab_key
         super().__init__(id=self.tab_main_horizontal_id)
 
     def compose(self) -> ComposeResult:
@@ -110,9 +110,9 @@ class ReAddTab(Horizontal, IdMixin, EventMixin):
         ),
     ]
 
-    def __init__(self, tab_key: MainTab) -> None:
-        IdMixin.__init__(self, MainTab.re_add_tab)
-        self.tab_key: MainTab = tab_key
+    def __init__(self, tab_key: TabEnum) -> None:
+        IdMixin.__init__(self, TabEnum.re_add_tab)
+        self.tab_key: TabEnum = tab_key
         super().__init__(id=self.tab_main_horizontal_id)
 
     def compose(self) -> ComposeResult:
@@ -162,9 +162,9 @@ class AddTab(Horizontal, IdMixin):
         ),
     ]
 
-    def __init__(self, tab_key: MainTab) -> None:
+    def __init__(self, tab_key: TabEnum) -> None:
         IdMixin.__init__(self, tab_key)
-        self.tab_key: MainTab = tab_key
+        self.tab_key: TabEnum = tab_key
         super().__init__(id=self.tab_main_horizontal_id)
 
     def compose(self) -> ComposeResult:
@@ -299,7 +299,7 @@ class DoctorTab(VerticalScroll):
         ]
 
         def compose(self) -> ComposeResult:
-            yield GitLog(MainTab.doctor_tab)
+            yield GitLog(TabEnum.doctor_tab)
 
         def on_mount(self) -> None:
             self.add_class("doctor-modal")

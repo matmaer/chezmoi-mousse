@@ -18,7 +18,7 @@ class ButtonEnum(Enum):
     re_add_file_btn = "Re-Add File"
 
 
-class MainTab(Enum):
+class TabEnum(Enum):
     add_tab = "Add"
     re_add_tab = "Re-Add"
     apply_tab = "Apply"
@@ -107,7 +107,7 @@ else:
 
 
 class IdMixin:
-    def __init__(self, tab_key: MainTab) -> None:
+    def __init__(self, tab_key: TabEnum) -> None:
         self.tab_main_horizontal_id = f"{tab_key.name}_main_horizontal"
         self.filter_slider_id = f"{tab_key.name}_filter_slider"
         self.tab_name: str = tab_key.name

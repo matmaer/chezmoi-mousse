@@ -24,7 +24,7 @@ from textual.widgets.tree import TreeNode
 import chezmoi_mousse.theme as theme
 from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.config import unwanted
-from chezmoi_mousse.id_typing import Chars, Component, IdMixin, MainTab
+from chezmoi_mousse.id_typing import Chars, Component, IdMixin, TabEnum
 
 
 class GitLog(DataTable, IdMixin):
@@ -38,7 +38,7 @@ class GitLog(DataTable, IdMixin):
 
     path: reactive[Path | None] = reactive(None, init=False)
 
-    def __init__(self, tab_key: MainTab, **kwargs) -> None:
+    def __init__(self, tab_key: TabEnum, **kwargs) -> None:
         IdMixin.__init__(self, tab_key)
         super().__init__(id=self.component_id(Component.git_log), **kwargs)
 
@@ -111,7 +111,7 @@ class PathView(RichLog, IdMixin):
 
     path: reactive[Path | None] = reactive(None, init=False)
 
-    def __init__(self, tab_key: MainTab, **kwargs) -> None:
+    def __init__(self, tab_key: TabEnum, **kwargs) -> None:
         IdMixin.__init__(self, tab_key)
         super().__init__(
             id=self.component_id(Component.path_view),
@@ -188,7 +188,7 @@ class DiffView(RichLog, IdMixin):
 
     path: reactive[Path | None] = reactive(None, init=False)
 
-    def __init__(self, tab_key: MainTab, **kwargs) -> None:
+    def __init__(self, tab_key: TabEnum, **kwargs) -> None:
         IdMixin.__init__(self, tab_key)
         super().__init__(id=self.component_id(Component.diff_view), **kwargs)
         self.tab_name: str = tab_key.name
@@ -213,9 +213,9 @@ class DiffView(RichLog, IdMixin):
             )
             return
 
-        if self.tab_name == MainTab.apply_tab.name:
+        if self.tab_name == TabEnum.apply_tab.name:
             diff_output = chezmoi.run.apply_diff(self.path)
-        elif self.tab_name == MainTab.re_add_tab.name:
+        elif self.tab_name == TabEnum.re_add_tab.name:
             diff_output = chezmoi.run.re_add_diff(self.path)
         else:
             self.write(Text(f"Unknown tab: {self.tab_name}", style="dim"))
@@ -265,7 +265,7 @@ class TreeBase(Tree[NodeData]):
 
     # unchanged: reactive[bool] = reactive(False, init=False)
 
-    def __init__(self, tab_key: MainTab, **kwargs) -> None:
+    def __init__(self, tab_key: TabEnum, **kwargs) -> None:
         self.tab_key = tab_key
         self.tab_name: str = tab_key.name
         self.node_colors = {
@@ -394,7 +394,7 @@ class ManagedTree(TreeBase, IdMixin):
 
     unchanged: reactive[bool] = reactive(False, init=False)
 
-    def __init__(self, tab_key: MainTab, **kwargs) -> None:
+    def __init__(self, tab_key: TabEnum, **kwargs) -> None:
         IdMixin.__init__(self, tab_key)
         super().__init__(
             tab_key, id=self.component_id(Component.managed_tree), **kwargs
@@ -424,7 +424,7 @@ class ExpandedTree(TreeBase, IdMixin):
 
     unchanged: reactive[bool] = reactive(False, init=False)
 
-    def __init__(self, tab_key: MainTab, **kwargs) -> None:
+    def __init__(self, tab_key: TabEnum, **kwargs) -> None:
         IdMixin.__init__(self, tab_key)
         super().__init__(
             tab_key, id=self.component_id(Component.expanded_tree), **kwargs
@@ -461,7 +461,7 @@ class FlatTree(TreeBase, IdMixin):
 
     unchanged: reactive[bool] = reactive(False, init=False)
 
-    def __init__(self, tab_key: MainTab, **kwargs) -> None:
+    def __init__(self, tab_key: TabEnum, **kwargs) -> None:
         IdMixin.__init__(self, tab_key)
         super().__init__(
             tab_key, id=self.component_id(Component.flat_tree), **kwargs
