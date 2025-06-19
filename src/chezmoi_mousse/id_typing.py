@@ -1,5 +1,4 @@
 from enum import Enum, StrEnum, auto
-from typing import TYPE_CHECKING, Protocol, TypeVar
 
 
 class ButtonEnum(Enum):
@@ -62,47 +61,6 @@ class CharsEnum(Enum):
     gear = "\N{GEAR}"  # code point U+2699
     bullet = "\N{BULLET}"  # code point U+2022
     check_mark = "\N{HEAVY CHECK MARK}"  # code point U+2714
-
-
-if TYPE_CHECKING:
-    """The protocol for EventMixin methods and attributes."""
-    from textual.containers import Container
-    from textual.widgets import ContentSwitcher, Switch
-
-    from chezmoi_mousse.widgets import (
-        DiffView,
-        ExpandedTree,
-        FlatTree,
-        GitLog,
-        ManagedTree,
-        PathView,
-    )
-
-    type QueryReturnTypes = (
-        Container  # query to set the top border text
-        | ContentSwitcher  # query to set the .current attribute
-        | DiffView  # query to update the reactive path attribute
-        | ExpandedTree  # query to update the reactive unchanged attribute
-        | FlatTree  # query to update the reactive unchanged attribute
-        | GitLog  # query to update the reactive path attribute
-        | ManagedTree  # query to update the reactive unchanged attribute
-        | PathView  # query to update the reactive path attribute
-        | Switch  # query to update reactives when a switch is toggled or update enabled/disabled state
-    )
-
-    QRT = TypeVar("QRT", bound="QueryReturnTypes")
-
-    class EventProtocol(Protocol):
-        # this covers all "self.some_method()" calls in EventMixin
-        def query_one(self, some_id: str, return_types: type[QRT]) -> QRT: ...
-        def button_id(self, some_id: ButtonEnum) -> str: ...
-        def content_switcher_id(self, some_id: SideStr) -> str: ...
-        def component_id(self, some_id: ComponentStr) -> str: ...
-        def filter_switch_id(self, some_id: FilterEnum) -> str: ...
-
-else:
-    # Runtime-compatible empty Protocol
-    class EventProtocol(Protocol): ...
 
 
 class IdMixin:

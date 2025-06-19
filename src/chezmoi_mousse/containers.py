@@ -8,25 +8,19 @@ These classes
 """
 
 from textual.app import ComposeResult
-from textual.containers import (
-    Container,
-    HorizontalGroup,
-    Vertical,
-    VerticalGroup,
-)
+from textual.containers import HorizontalGroup, Vertical, VerticalGroup
 from textual.widgets import Button, ContentSwitcher, Label, Switch
 
 from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.config import filter_tooltips
 from chezmoi_mousse.id_typing import (
-    EventProtocol,
+    ButtonEnum,
     ComponentStr,
     CornerStr,
     FilterEnum,
     IdMixin,
-    TabEnum,
-    ButtonEnum,
     SideStr,
+    TabEnum,
 )
 from chezmoi_mousse.widgets import (
     DiffView,
@@ -36,93 +30,6 @@ from chezmoi_mousse.widgets import (
     ManagedTree,
     PathView,
 )
-
-
-class EventMixin:
-
-    # TODO: bug, event handler on_tree_node_selected should be moved out of here
-    def on_button_pressed(self: EventProtocol, event: Button.Pressed) -> None:
-        # Tree/List Switch
-        if event.button.id == self.button_id(ButtonEnum.tree_btn):
-            expand_all_switch = self.query_one(
-                f"#{self.filter_switch_id(FilterEnum.expand_all)}", Switch
-            )
-            expand_all_switch.disabled = False
-            if expand_all_switch.value:
-                self.query_one(
-                    f"#{self.content_switcher_id(SideStr.left)}",
-                    ContentSwitcher,
-                ).current = self.component_id(ComponentStr.expanded_tree)
-            else:
-                self.query_one(
-                    f"#{self.content_switcher_id(SideStr.left)}",
-                    ContentSwitcher,
-                ).current = self.component_id(ComponentStr.managed_tree)
-        elif event.button.id == self.button_id(ButtonEnum.list_btn):
-            self.query_one(
-                f"#{self.content_switcher_id(SideStr.left)}", ContentSwitcher
-            ).current = self.component_id(ComponentStr.flat_tree)
-            self.query_one(
-                f"#{self.filter_switch_id(FilterEnum.expand_all)}", Switch
-            ).disabled = True
-        # Contents/Diff/GitLog Switch
-        elif event.button.id == self.button_id(ButtonEnum.contents_btn):
-            self.query_one(
-                f"#{self.content_switcher_id(SideStr.right)}", ContentSwitcher
-            ).current = self.component_id(ComponentStr.path_view)
-        elif event.button.id == self.button_id(ButtonEnum.diff_btn):
-            self.query_one(
-                f"#{self.content_switcher_id(SideStr.right)}", ContentSwitcher
-            ).current = self.component_id(ComponentStr.diff_view)
-        elif event.button.id == self.button_id(ButtonEnum.git_log_btn):
-            self.query_one(
-                f"#{self.content_switcher_id(SideStr.right)}", ContentSwitcher
-            ).current = self.component_id(ComponentStr.git_log)
-
-    def on_tree_node_selected(
-        self: EventProtocol, event: ManagedTree.NodeSelected
-    ) -> None:
-        # TODO: use on decorator for each tree class because they all get updated
-        assert event.node.data is not None
-        self.query_one(
-            f"#{self.content_switcher_id(SideStr.right)}", Container
-        ).border_title = (
-            f"{event.node.data.path.relative_to(chezmoi.dest_dir)}"
-        )
-        self.query_one(
-            f"#{self.component_id(ComponentStr.path_view)}", PathView
-        ).path = event.node.data.path
-        self.query_one(
-            f"#{self.component_id(ComponentStr.diff_view)}", DiffView
-        ).path = event.node.data.path
-        self.query_one(
-            f"#{self.component_id(ComponentStr.git_log)}", GitLog
-        ).path = event.node.data.path
-
-    def on_switch_changed(self: EventProtocol, event: Switch.Changed) -> None:
-        event.stop()
-        if event.switch.id == self.filter_switch_id(FilterEnum.unchanged):
-            self.query_one(
-                f"#{self.component_id(ComponentStr.expanded_tree)}",
-                ExpandedTree,
-            ).unchanged = event.value
-            self.query_one(
-                f"#{self.component_id(ComponentStr.managed_tree)}", ManagedTree
-            ).unchanged = event.value
-            self.query_one(
-                f"#{self.component_id(ComponentStr.flat_tree)}", FlatTree
-            ).unchanged = event.value
-        elif event.switch.id == self.filter_switch_id(FilterEnum.expand_all):
-            if event.value:
-                self.query_one(
-                    f"#{self.content_switcher_id(SideStr.left)}",
-                    ContentSwitcher,
-                ).current = self.component_id(ComponentStr.expanded_tree)
-            else:
-                self.query_one(
-                    f"#{self.content_switcher_id(SideStr.left)}",
-                    ContentSwitcher,
-                ).current = self.component_id(ComponentStr.managed_tree)
 
 
 class FilterSlider(VerticalGroup, IdMixin):
