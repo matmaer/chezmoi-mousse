@@ -1,7 +1,7 @@
 """Convenience module to access derived colors managed by the textual
 ColorSystem.
 
-Var names accessible from the the vars dict. Updated on theme change by gui.py.
+Updated on theme change by gui.py.
 """
 
 from textual.theme import Theme

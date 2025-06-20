@@ -1,6 +1,4 @@
-"""Contains the main GUI application where the App class is being subclassed
-and the MainScreen class which is rendered after the LoadingScreen has
-completed running each chezmoi command."""
+# Patches the render_bar method to enable a slim horizontal scrollbar
 
 from math import ceil
 

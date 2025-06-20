@@ -1,5 +1,3 @@
-"""Contains constants used in the GUI."""
-
 # provisional diagrams until dynamically created
 FLOW = """\
 ┌──────────────┐    ┌──────────────┐    ┌──────────────┐    ┌──────────────┐

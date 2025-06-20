@@ -1,9 +1,4 @@
-"""Shows a splash screen with an animated fade effect and logs the loading
-process.
-
-The goal for initializing vars on module level is to have the animated fade run
-smoothly as soon as it's ready for being rendered.
-"""
+"""Initialize all data in the InputOutput dataclasses for chezmoi.py."""
 
 from collections import deque
 from pathlib import Path

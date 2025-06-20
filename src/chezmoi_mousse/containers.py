@@ -1,10 +1,8 @@
 """Contains classes used as container components in main_tabs.py.
 
-These classes
+Rules:
 - inherit from textual containers
 - are only reused in the main_tabs.py module
-- don't inherit from widgets which are not containers
-- only import from chezmoi_mousse config.py and mouse_types.py modules
 """
 
 from textual.app import ComposeResult

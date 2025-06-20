@@ -28,8 +28,7 @@ from chezmoi_mousse.id_typing import CharsEnum, ComponentStr, IdMixin, TabEnum
 
 
 class GitLog(DataTable, IdMixin):
-    """DataTable widget to display the output of the `git log` command, either
-    for a specific path or the chezmoi repository as a whole.
+    """DataTable widget to display the output of the `git log` command.
 
     Does not call the git command directly, calls it through chezmoi.
     """
@@ -77,10 +76,6 @@ class GitLog(DataTable, IdMixin):
 
 
 class AutoWarning(Static):
-    """Shows important information before the user performs a chezmoi.perform
-    command which could trigger other commands depending on the chezmoi
-    configuration."""
-
     # not focussable https://textual.textualize.io/widgets/static/
 
     def on_mount(self) -> None:
@@ -256,7 +251,7 @@ class FileNodeData(NodeData):
 
 
 class TreeBase(Tree[NodeData]):
-    """Shows the tree widget on the left for Apply and Re-Add tabs."""
+    """Base class for ManagedTree, FlatTree, and ExpandedTree."""
 
     def __init__(self, tab_key: TabEnum, **kwargs) -> None:
         self.tab_key = tab_key

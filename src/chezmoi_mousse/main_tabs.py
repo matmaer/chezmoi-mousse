@@ -65,6 +65,7 @@ from chezmoi_mousse.widgets import (
 
 
 class BaseTab(Horizontal, IdMixin):
+    """Base class for ApplyTab and ReAddTab."""
 
     def update_right_side_content_switcher(self, path):
         self.query_one(
@@ -180,7 +181,6 @@ class ApplyTab(BaseTab):
         )
 
     def action_toggle_filter_slider(self) -> None:
-        """Toggle the visibility of the filter slider."""
         self.query_one(
             f"#{self.filter_slider_id}", VerticalGroup
         ).toggle_class("-visible")
@@ -218,15 +218,6 @@ class ReAddTab(BaseTab):
         yield FilterSlider(
             self.tab_key, filters=(FilterEnum.unchanged, FilterEnum.expand_all)
         )
-
-    def action_re_add_path(self) -> None:
-        self.notify("to implement")
-
-    def action_toggle_filter_slider(self) -> None:
-        """Toggle the visibility of the filter slider."""
-        self.query_one(
-            f"#{self.filter_slider_id}", VerticalGroup
-        ).toggle_class("-visible")
 
 
 class AddTab(Horizontal, IdMixin):
