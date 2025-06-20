@@ -219,6 +219,11 @@ class ReAddTab(BaseTab):
             self.tab_key, filters=(FilterEnum.unchanged, FilterEnum.expand_all)
         )
 
+    def action_toggle_filter_slider(self) -> None:
+        self.query_one(
+            f"#{self.filter_slider_id}", VerticalGroup
+        ).toggle_class("-visible")
+
 
 class AddTab(Horizontal, IdMixin):
 
