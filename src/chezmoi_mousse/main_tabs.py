@@ -149,12 +149,11 @@ class BaseTab(Horizontal, IdMixin):
 class ApplyTab(BaseTab):
 
     BINDINGS = [
-        Binding(key="W,w", action="apply_path", description="chezmoi-apply"),
         Binding(
             key="F,f",
             action="toggle_filter_slider",
             description="toggle-filters",
-        ),
+        )
     ]
 
     def __init__(self, tab_key: TabEnum) -> None:
@@ -180,9 +179,6 @@ class ApplyTab(BaseTab):
             self.tab_key, filters=(FilterEnum.unchanged, FilterEnum.expand_all)
         )
 
-    def action_apply_path(self) -> None:
-        self.notify("to implement")
-
     def action_toggle_filter_slider(self) -> None:
         """Toggle the visibility of the filter slider."""
         self.query_one(
@@ -193,12 +189,11 @@ class ApplyTab(BaseTab):
 class ReAddTab(BaseTab):
 
     BINDINGS = [
-        Binding(key="A,a", action="re_add_path", description="chezmoi-re-add"),
         Binding(
             key="F,f",
             action="toggle_filter_slider",
             description="toggle-filters",
-        ),
+        )
     ]
 
     def __init__(self, tab_key: TabEnum) -> None:
@@ -237,12 +232,11 @@ class ReAddTab(BaseTab):
 class AddTab(Horizontal, IdMixin):
 
     BINDINGS = [
-        Binding(key="A,a", action="add_path", description="chezmoi-add"),
         Binding(
             key="F,f",
             action="toggle_filter_slider",
             description="toggle-filters",
-        ),
+        )
     ]
 
     def __init__(self, tab_key: TabEnum) -> None:
@@ -320,9 +314,6 @@ class AddTab(Horizontal, IdMixin):
         elif event.switch.id == self.filter_switch_id(FilterEnum.unwanted):
             tree.unwanted = event.value
             tree.reload()
-
-    def action_add_path(self) -> None:
-        self.notify("to_implement: tab action 'add_path'")
 
     def action_toggle_filter_slider(self) -> None:
         """Toggle the visibility of the filter slider."""
