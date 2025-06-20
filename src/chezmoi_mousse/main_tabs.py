@@ -321,61 +321,6 @@ class AddTab(Horizontal, IdMixin):
             f"#{self.filter_slider_id}", VerticalGroup
         ).toggle_class("-visible")
 
-    def on_button_pressed(self, event: Button.Pressed) -> None:
-        # Tree/List Switch
-        if event.button.id == self.button_id(ButtonEnum.tree_btn):
-            expand_all_switch = self.query_one(
-                f"#{self.filter_switch_id(FilterEnum.expand_all)}", Switch
-            )
-            expand_all_switch.disabled = False
-            if expand_all_switch.value:
-                self.query_one(
-                    f"#{self.content_switcher_id(SideStr.left)}",
-                    ContentSwitcher,
-                ).current = self.component_id(ComponentStr.expanded_tree)
-            else:
-                self.query_one(
-                    f"#{self.content_switcher_id(SideStr.left)}",
-                    ContentSwitcher,
-                ).current = self.component_id(ComponentStr.managed_tree)
-        elif event.button.id == self.button_id(ButtonEnum.list_btn):
-            self.query_one(
-                f"#{self.content_switcher_id(SideStr.left)}", ContentSwitcher
-            ).current = self.component_id(ComponentStr.flat_tree)
-            self.query_one(
-                f"#{self.filter_switch_id(FilterEnum.expand_all)}", Switch
-            ).disabled = True
-        # Contents/Diff/GitLog Switch
-        elif event.button.id == self.button_id(ButtonEnum.contents_btn):
-            self.query_one(
-                f"#{self.content_switcher_id(SideStr.right)}", ContentSwitcher
-            ).current = self.component_id(ComponentStr.path_view)
-        elif event.button.id == self.button_id(ButtonEnum.diff_btn):
-            self.query_one(
-                f"#{self.content_switcher_id(SideStr.right)}", ContentSwitcher
-            ).current = self.component_id(ComponentStr.diff_view)
-        elif event.button.id == self.button_id(ButtonEnum.git_log_btn):
-            self.query_one(
-                f"#{self.content_switcher_id(SideStr.right)}", ContentSwitcher
-            ).current = self.component_id(ComponentStr.git_log)
-
-    def on_tree_node_selected(self, event: ManagedTree.NodeSelected) -> None:
-        assert event.node.data is not None
-        self.query_one(
-            f"#{self.content_switcher_id(SideStr.right)}", Container
-        ).border_title = (
-            f"{event.node.data.path.relative_to(chezmoi.dest_dir)}"
-        )
-        self.query_one(
-            f"#{self.component_id(ComponentStr.path_view)}", PathView
-        ).path = event.node.data.path
-        self.query_one(
-            f"#{self.component_id(ComponentStr.diff_view)}", DiffView
-        ).path = event.node.data.path
-        self.query_one(
-            f"#{self.component_id(ComponentStr.git_log)}", GitLog
-        ).path = event.node.data.path
-
 
 class DoctorTab(VerticalScroll):
 
