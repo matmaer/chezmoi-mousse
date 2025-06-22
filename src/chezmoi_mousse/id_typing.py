@@ -18,9 +18,9 @@ class ButtonEnum(Enum):
 
 
 class TabEnum(Enum):
-    add_tab = "Add"
-    re_add_tab = "Re-Add"
     apply_tab = "Apply"
+    re_add_tab = "Re-Add"
+    add_tab = "Add"
     doctor_tab = "Doctor"
     diagram_tab = "Diagram"
     log_tab = "Log"
@@ -40,13 +40,13 @@ class CornerStr(StrEnum):
 
 class ComponentStr(StrEnum):
     add_tree = auto()
-    re_add_tree = auto()
+    diff_view = auto()
     expanded_tree = auto()
     flat_tree = auto()
+    git_log = auto()
     managed_tree = auto()
     path_view = auto()
-    diff_view = auto()
-    git_log = auto()
+    re_add_tree = auto()
 
 
 class FilterEnum(Enum):
@@ -57,16 +57,17 @@ class FilterEnum(Enum):
 
 
 class CharsEnum(Enum):
-    burger = "\N{IDENTICAL TO}"  # code point U+2261
-    gear = "\N{GEAR}"  # code point U+2699
     bullet = "\N{BULLET}"  # code point U+2022
+    burger = "\N{IDENTICAL TO}"  # code point U+2261
     check_mark = "\N{HEAVY CHECK MARK}"  # code point U+2714
+    gear = "\N{GEAR}"  # code point U+2699
 
 
 class IdMixin:
     def __init__(self, tab_key: TabEnum) -> None:
-        self.tab_main_horizontal_id = f"{tab_key.name}_main_horizontal"
         self.filter_slider_id = f"{tab_key.name}_filter_slider"
+        self.operate_diff = f"{tab_key.name}_operate_diff"
+        self.tab_main_horizontal_id = f"{tab_key.name}_main_horizontal"
         self.tab_name: str = tab_key.name
 
     def button_id(self, button_label: ButtonEnum) -> str:
