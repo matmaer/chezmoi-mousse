@@ -88,6 +88,9 @@
           text-style: none;
         }
       }
+      &:focus {
+        text-style: bold;
+      }
     }
 
   }
@@ -244,8 +247,10 @@ Toast {
 
 Tree {
   &>.tree--cursor {
-    text-style: none;
-    color: $accent-lighten-3;
+    color: $primary-lighten-3;
+    &:focus {
+      text-style: underline;
+    }
   }
 
   &>.tree--highlight-line {
@@ -253,7 +258,7 @@ Tree {
   }
 
   &>.tree--highlight {
-    text-style: bold;
+    text-style: none;
   }
 
   &>.tree--guides {
