@@ -157,27 +157,28 @@ class ApplyTab(BaseTab):
         )
     ]
 
-    def __init__(self, tab_key: TabEnum) -> None:
-        IdMixin.__init__(self, tab_key)
-        self.tab_key: TabEnum = tab_key
+    def __init__(self, tab_enum: TabEnum) -> None:
+        IdMixin.__init__(self, tab_enum)
+        self.tab_enum: TabEnum = tab_enum
         super().__init__(id=self.tab_main_horizontal_id)
 
     def compose(self) -> ComposeResult:
         with VerticalGroup(
             id=self.tab_vertical_id(SideStr.left), classes="tab-left-vertical"
         ):
-            yield ButtonsTopLeft(self.tab_key)
-            yield ContentSwitcherLeft(self.tab_key)
+            yield ButtonsTopLeft(self.tab_enum)
+            yield ContentSwitcherLeft(self.tab_enum)
 
         with Vertical(
             id=self.tab_vertical_id(SideStr.right),
             classes="tab-right-vertical",
         ):
-            yield ButtonsTopRight(self.tab_key)
-            yield ContentSwitcherRight(self.tab_key)
+            yield ButtonsTopRight(self.tab_enum)
+            yield ContentSwitcherRight(self.tab_enum)
 
         yield FilterSlider(
-            self.tab_key, filters=(FilterEnum.unchanged, FilterEnum.expand_all)
+            self.tab_enum,
+            filters=(FilterEnum.unchanged, FilterEnum.expand_all),
         )
 
     def action_toggle_filter_slider(self) -> None:
@@ -196,27 +197,28 @@ class ReAddTab(BaseTab):
         )
     ]
 
-    def __init__(self, tab_key: TabEnum) -> None:
-        IdMixin.__init__(self, tab_key)
-        self.tab_key: TabEnum = tab_key
+    def __init__(self, tab_enum: TabEnum) -> None:
+        IdMixin.__init__(self, tab_enum)
+        self.tab_enum: TabEnum = tab_enum
         super().__init__(id=self.tab_main_horizontal_id)
 
     def compose(self) -> ComposeResult:
         with VerticalGroup(
             id=self.tab_vertical_id(SideStr.left), classes="tab-left-vertical"
         ):
-            yield ButtonsTopLeft(self.tab_key)
-            yield ContentSwitcherLeft(self.tab_key)
+            yield ButtonsTopLeft(self.tab_enum)
+            yield ContentSwitcherLeft(self.tab_enum)
 
         with Vertical(
             id=self.tab_vertical_id(SideStr.right),
             classes="tab-right-vertical",
         ):
-            yield ButtonsTopRight(self.tab_key)
-            yield ContentSwitcherRight(self.tab_key)
+            yield ButtonsTopRight(self.tab_enum)
+            yield ContentSwitcherRight(self.tab_enum)
 
         yield FilterSlider(
-            self.tab_key, filters=(FilterEnum.unchanged, FilterEnum.expand_all)
+            self.tab_enum,
+            filters=(FilterEnum.unchanged, FilterEnum.expand_all),
         )
 
     def action_toggle_filter_slider(self) -> None:
@@ -235,9 +237,9 @@ class AddTab(Horizontal, IdMixin):
         )
     ]
 
-    def __init__(self, tab_key: TabEnum) -> None:
-        IdMixin.__init__(self, tab_key)
-        self.tab_key: TabEnum = tab_key
+    def __init__(self, tab_enum: TabEnum) -> None:
+        IdMixin.__init__(self, tab_enum)
+        self.tab_enum: TabEnum = tab_enum
         super().__init__(id=self.tab_main_horizontal_id)
 
     def compose(self) -> ComposeResult:
@@ -255,10 +257,10 @@ class AddTab(Horizontal, IdMixin):
             id=self.tab_vertical_id(SideStr.right),
             classes="tab-right-vertical top-border-title",
         ):
-            yield PathView(self.tab_key)
+            yield PathView(self.tab_enum)
 
         yield FilterSlider(
-            self.tab_key,
+            self.tab_enum,
             filters=(FilterEnum.unmanaged_dirs, FilterEnum.unwanted),
         )
 

@@ -33,10 +33,10 @@ from chezmoi_mousse.widgets import (
 class FilterSlider(VerticalGroup, IdMixin):
 
     def __init__(
-        self, tab_key: TabEnum, filters: tuple[FilterEnum, FilterEnum]
+        self, tab_enum: TabEnum, filters: tuple[FilterEnum, FilterEnum]
     ) -> None:
-        IdMixin.__init__(self, tab_key)
-        self.tab_key = tab_key
+        IdMixin.__init__(self, tab_enum)
+        self.tab_enum = tab_enum
         self.filters = filters
         super().__init__(id=self.filter_slider_id, classes="filters-vertical")
 
@@ -58,8 +58,8 @@ class FilterSlider(VerticalGroup, IdMixin):
 
 class ButtonsTopLeft(HorizontalGroup, IdMixin):
 
-    def __init__(self, tab_key: TabEnum) -> None:
-        IdMixin.__init__(self, tab_key)
+    def __init__(self, tab_enum: TabEnum) -> None:
+        IdMixin.__init__(self, tab_enum)
         super().__init__(
             id=self.buttons_horizontal_id(CornerStr.top_left),
             classes="tab-buttons-horizontal",
@@ -91,8 +91,8 @@ class ButtonsTopLeft(HorizontalGroup, IdMixin):
 
 
 class ButtonsTopRight(HorizontalGroup, IdMixin):
-    def __init__(self, tab_key: TabEnum) -> None:
-        IdMixin.__init__(self, tab_key)
+    def __init__(self, tab_enum: TabEnum) -> None:
+        IdMixin.__init__(self, tab_enum)
         super().__init__(
             id=self.buttons_horizontal_id(CornerStr.top_right),
             classes="tab-buttons-horizontal",
@@ -130,9 +130,9 @@ class ButtonsTopRight(HorizontalGroup, IdMixin):
 class ContentSwitcherLeft(ContentSwitcher, IdMixin):
     """Reusable ContentSwitcher for the left panel with tree widgets."""
 
-    def __init__(self, tab_key: TabEnum):
-        IdMixin.__init__(self, tab_key)
-        self.tab_key = tab_key
+    def __init__(self, tab_enum: TabEnum):
+        IdMixin.__init__(self, tab_enum)
+        self.tab_enum = tab_enum
         super().__init__(
             id=self.content_switcher_id(SideStr.left),
             initial=self.component_id(ComponentStr.managed_tree),
@@ -143,17 +143,17 @@ class ContentSwitcherLeft(ContentSwitcher, IdMixin):
         self.border_title = chezmoi.dest_dir_str
 
     def compose(self) -> ComposeResult:
-        yield ManagedTree(self.tab_key)
-        yield FlatTree(self.tab_key)
-        yield ExpandedTree(self.tab_key)
+        yield ManagedTree(self.tab_enum)
+        yield FlatTree(self.tab_enum)
+        yield ExpandedTree(self.tab_enum)
 
 
 class ContentSwitcherRight(ContentSwitcher, IdMixin):
     """Reusable ContentSwitcher for the right panel with path view widgets."""
 
-    def __init__(self, tab_key: TabEnum):
-        IdMixin.__init__(self, tab_key)
-        self.tab_key = tab_key
+    def __init__(self, tab_enum: TabEnum):
+        IdMixin.__init__(self, tab_enum)
+        self.tab_enum = tab_enum
         super().__init__(
             id=self.content_switcher_id(SideStr.right),
             initial=self.component_id(ComponentStr.path_view),
@@ -164,6 +164,6 @@ class ContentSwitcherRight(ContentSwitcher, IdMixin):
         self.border_title = chezmoi.dest_dir_str
 
     def compose(self) -> ComposeResult:
-        yield PathView(self.tab_key)
-        yield DiffView(self.tab_key)
-        yield GitLog(self.tab_key)
+        yield PathView(self.tab_enum)
+        yield DiffView(self.tab_enum)
+        yield GitLog(self.tab_enum)

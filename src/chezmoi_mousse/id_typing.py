@@ -64,11 +64,11 @@ class CharsEnum(Enum):
 
 
 class IdMixin:
-    def __init__(self, tab_key: TabEnum) -> None:
-        self.filter_slider_id = f"{tab_key.name}_filter_slider"
-        self.operate_diff = f"{tab_key.name}_operate_diff"
-        self.tab_main_horizontal_id = f"{tab_key.name}_main_horizontal"
-        self.tab_name: str = tab_key.name
+    def __init__(self, tab_enum: TabEnum) -> None:
+        self.filter_slider_id = f"{tab_enum.name}_filter_slider"
+        self.operate_diff = f"{tab_enum.name}_operate_diff"
+        self.tab_main_horizontal_id = f"{tab_enum.name}_main_horizontal"
+        self.tab_name: str = tab_enum.name
 
     def button_id(self, button_label: ButtonEnum) -> str:
         return f"{self.tab_name}_{button_label.name}"

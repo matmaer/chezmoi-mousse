@@ -37,8 +37,8 @@ class GitLog(DataTable, IdMixin):
 
     path: reactive[Path | None] = reactive(None, init=False)
 
-    def __init__(self, tab_key: TabEnum) -> None:
-        IdMixin.__init__(self, tab_key)
+    def __init__(self, tab_enum: TabEnum) -> None:
+        IdMixin.__init__(self, tab_enum)
         super().__init__(id=self.component_id(ComponentStr.git_log))
 
     def on_mount(self) -> None:
@@ -106,8 +106,8 @@ class PathView(RichLog, IdMixin):
 
     path: reactive[Path | None] = reactive(None, init=False)
 
-    def __init__(self, tab_key: TabEnum) -> None:
-        IdMixin.__init__(self, tab_key)
+    def __init__(self, tab_enum: TabEnum) -> None:
+        IdMixin.__init__(self, tab_enum)
         super().__init__(
             id=self.component_id(ComponentStr.path_view),
             auto_scroll=True,
@@ -182,8 +182,8 @@ class DiffView(RichLog, IdMixin):
 
     path: reactive[Path | None] = reactive(None, init=False)
 
-    def __init__(self, tab_key: TabEnum) -> None:
-        IdMixin.__init__(self, tab_key)
+    def __init__(self, tab_enum: TabEnum) -> None:
+        IdMixin.__init__(self, tab_enum)
         super().__init__(id=self.component_id(ComponentStr.diff_view))
 
     def on_mount(self) -> None:
@@ -253,8 +253,8 @@ class FileNodeData(NodeData):
 class TreeBase(Tree[NodeData]):
     """Base class for ManagedTree, FlatTree, and ExpandedTree."""
 
-    def __init__(self, tab_key: TabEnum, **kwargs) -> None:
-        self.tab_key = tab_key
+    def __init__(self, tab_enum: TabEnum, **kwargs) -> None:
+        self.tab_enum = tab_enum
         self.node_colors = {
             "Dir": theme.vars["text-primary"],
             "D": theme.vars["text-error"],
@@ -272,7 +272,7 @@ class TreeBase(Tree[NodeData]):
 
     def create_dir_node_data(self, path: Path) -> DirNodeData:
         """Create a DirNodeData instance for a given path."""
-        status_code = chezmoi.managed_status[self.tab_key.name].dirs[path]
+        status_code = chezmoi.managed_status[self.tab_enum.name].dirs[path]
         if not status_code:
             status_code = "X"
         found = path.exists()
@@ -280,7 +280,7 @@ class TreeBase(Tree[NodeData]):
 
     def create_file_node_data(self, path: Path) -> FileNodeData:
         """Create a FileNodeData instance for a given path."""
-        status_code = chezmoi.managed_status[self.tab_key.name].files[path]
+        status_code = chezmoi.managed_status[self.tab_enum.name].files[path]
         found = path.exists()
         return FileNodeData(path=path, found=found, status=status_code)
 
@@ -303,10 +303,10 @@ class TreeBase(Tree[NodeData]):
     def should_show_dir_node(self, dir_path, unchanged: bool) -> bool:
         if not unchanged:
             has_status_files = chezmoi.dir_has_status_files(
-                self.tab_key, dir_path
+                self.tab_enum, dir_path
             )
             has_status_dirs = chezmoi.dir_has_status_dirs(
-                self.tab_key, dir_path
+                self.tab_enum, dir_path
             )
             return has_status_files or has_status_dirs
         return True
@@ -314,7 +314,7 @@ class TreeBase(Tree[NodeData]):
     def add_unchanged_leaves(self, tree_node: TreeNode) -> None:
         assert isinstance(tree_node.data, DirNodeData)
         unchanged_in_dir = chezmoi.files_without_status_in(
-            self.tab_key, tree_node.data.path
+            self.tab_enum, tree_node.data.path
         )
         for file_path in unchanged_in_dir:
             node_data = self.create_file_node_data(file_path)
@@ -333,7 +333,7 @@ class TreeBase(Tree[NodeData]):
     def add_status_leaves(self, tree_node: TreeNode) -> None:
         assert isinstance(tree_node.data, DirNodeData)
         status_file_paths = chezmoi.files_with_status_in(
-            self.tab_key, tree_node.data.path
+            self.tab_enum, tree_node.data.path
         )
         for file in status_file_paths:
             node_data = self.create_file_node_data(file)
@@ -381,10 +381,10 @@ class ManagedTree(TreeBase, IdMixin):
 
     unchanged: reactive[bool] = reactive(False, init=False)
 
-    def __init__(self, tab_key: TabEnum) -> None:
-        IdMixin.__init__(self, tab_key)
+    def __init__(self, tab_enum: TabEnum) -> None:
+        IdMixin.__init__(self, tab_enum)
         super().__init__(
-            tab_key,
+            tab_enum,
             id=self.component_id(ComponentStr.managed_tree),
             classes="tree-widget",
         )
@@ -416,10 +416,10 @@ class ExpandedTree(TreeBase, IdMixin):
 
     unchanged: reactive[bool] = reactive(False, init=False)
 
-    def __init__(self, tab_key: TabEnum) -> None:
-        IdMixin.__init__(self, tab_key)
+    def __init__(self, tab_enum: TabEnum) -> None:
+        IdMixin.__init__(self, tab_enum)
         super().__init__(
-            tab_key,
+            tab_enum,
             id=self.component_id(ComponentStr.expanded_tree),
             classes="tree-widget",
         )
@@ -455,10 +455,10 @@ class FlatTree(TreeBase, IdMixin):
 
     unchanged: reactive[bool] = reactive(False, init=False)
 
-    def __init__(self, tab_key: TabEnum) -> None:
-        IdMixin.__init__(self, tab_key)
+    def __init__(self, tab_enum: TabEnum) -> None:
+        IdMixin.__init__(self, tab_enum)
         super().__init__(
-            tab_key,
+            tab_enum,
             id=self.component_id(ComponentStr.flat_tree),
             classes="tree-widget",
         )

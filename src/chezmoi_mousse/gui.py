@@ -31,11 +31,11 @@ class MainScreen(Screen):
         yield Header(icon=CharsEnum.burger.value)
         with TabbedContent():
             with TabPane("Apply", id="apply_tab_pane"):
-                yield ApplyTab(tab_key=TabEnum.apply_tab)
+                yield ApplyTab(tab_enum=TabEnum.apply_tab)
             with TabPane("Re-Add", id="re_add_tab_pane"):
-                yield ReAddTab(tab_key=TabEnum.re_add_tab)
+                yield ReAddTab(tab_enum=TabEnum.re_add_tab)
             with TabPane("Add", id="add_tab_pane"):
-                yield AddTab(tab_key=TabEnum.add_tab)
+                yield AddTab(tab_enum=TabEnum.add_tab)
             with TabPane("Doctor", id="doctor_tab_pane"):
                 yield DoctorTab(id="doctor_tab")
             with TabPane("Diagram", id="diagram_tab_pane"):
