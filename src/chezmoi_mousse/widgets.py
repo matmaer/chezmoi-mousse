@@ -176,7 +176,7 @@ class PathView(RichLog, IdMixin):
 
 
 class DiffView(RichLog, IdMixin):
-    # not focussable https://textual.textualize.io/widgets/static/
+    # focussable https://textual.textualize.io/widgets/rich_log/
 
     BINDINGS = [Binding(key="M,m", action="maximize", description="maximize")]
 
