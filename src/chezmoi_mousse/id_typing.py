@@ -66,7 +66,7 @@ class CharsEnum(Enum):
 class IdMixin:
     def __init__(self, tab_enum: TabEnum) -> None:
         self.filter_slider_id = f"{tab_enum.name}_filter_slider"
-        self.operate_diff = f"{tab_enum.name}_operate_diff"
+        self.filter_slider_qid = f"#{self.filter_slider_id}"
         self.tab_main_horizontal_id = f"{tab_enum.name}_main_horizontal"
         self.tab_name: str = tab_enum.name
 
@@ -106,3 +106,6 @@ class IdMixin:
 
     def tab_vertical_id(self, side: SideStr) -> str:
         return f"{self.tab_name}_{side}_vertical"
+
+    def tab_vertical_qid(self, side: SideStr) -> str:
+        return f"#{self.tab_vertical_id(side)}"

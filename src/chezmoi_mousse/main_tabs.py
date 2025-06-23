@@ -178,9 +178,9 @@ class ApplyTab(BaseTab):
         )
 
     def action_toggle_filter_slider(self) -> None:
-        self.query_one(
-            f"#{self.filter_slider_id}", VerticalGroup
-        ).toggle_class("-visible")
+        self.query_one(self.filter_slider_qid, VerticalGroup).toggle_class(
+            "-visible"
+        )
 
 
 class ReAddTab(BaseTab):
@@ -218,9 +218,9 @@ class ReAddTab(BaseTab):
         )
 
     def action_toggle_filter_slider(self) -> None:
-        self.query_one(
-            f"#{self.filter_slider_id}", VerticalGroup
-        ).toggle_class("-visible")
+        self.query_one(self.filter_slider_qid, VerticalGroup).toggle_class(
+            "-visible"
+        )
 
 
 class AddTab(Horizontal, IdMixin):
@@ -262,10 +262,10 @@ class AddTab(Horizontal, IdMixin):
 
     def on_mount(self) -> None:
         self.query_one(
-            f"#{self.tab_vertical_id(SideStr.right)}", Vertical
+            self.tab_vertical_qid(SideStr.right), Vertical
         ).border_title = chezmoi.dest_dir_str
         self.query_one(
-            f"#{self.tab_vertical_id(SideStr.left)}", VerticalGroup
+            self.tab_vertical_qid(SideStr.left), VerticalGroup
         ).border_title = chezmoi.dest_dir_str
 
     def on_directory_tree_file_selected(
@@ -278,7 +278,7 @@ class AddTab(Horizontal, IdMixin):
             self.component_qid(ComponentStr.path_view), PathView
         ).path = event.node.data.path
         self.query_one(
-            f"#{self.tab_vertical_id(SideStr.right)}", Vertical
+            self.tab_vertical_qid(SideStr.right), Vertical
         ).border_title = (
             f"{event.node.data.path.relative_to(chezmoi.dest_dir)}"
         )
@@ -292,7 +292,7 @@ class AddTab(Horizontal, IdMixin):
             self.component_qid(ComponentStr.path_view), PathView
         ).path = event.node.data.path
         self.query_one(
-            f"#{self.tab_vertical_id(SideStr.right)}", Vertical
+            self.tab_vertical_qid(SideStr.right), Vertical
         ).border_title = (
             f"{event.node.data.path.relative_to(chezmoi.dest_dir)}"
         )
@@ -311,9 +311,9 @@ class AddTab(Horizontal, IdMixin):
 
     def action_toggle_filter_slider(self) -> None:
         """Toggle the visibility of the filter slider."""
-        self.query_one(
-            f"#{self.filter_slider_id}", VerticalGroup
-        ).toggle_class("-visible")
+        self.query_one(self.filter_slider_qid, VerticalGroup).toggle_class(
+            "-visible"
+        )
 
 
 class DoctorTab(VerticalScroll):
