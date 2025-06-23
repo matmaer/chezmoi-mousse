@@ -73,6 +73,9 @@ class IdMixin:
     def button_id(self, button_label: ButtonEnum) -> str:
         return f"{self.tab_name}_{button_label.name}"
 
+    def button_qid(self, button_label: ButtonEnum) -> str:
+        return f"#{self.button_id(button_label)}"
+
     def buttons_horizontal_id(self, corner: CornerStr) -> str:
         return f"{self.tab_name}_{corner}_horizontal"
 
@@ -83,14 +86,23 @@ class IdMixin:
         """Generate an id for items imported from components.py."""
         return f"{self.tab_name}_{component}_component"
 
+    def component_qid(self, component: ComponentStr) -> str:
+        return f"#{self.component_id(component)}"
+
     def content_switcher_id(self, side: SideStr) -> str:
         return f"{self.tab_name}_{side}_content_switcher"
+
+    def content_switcher_qid(self, side: SideStr) -> str:
+        return f"#{self.content_switcher_id(side)}"
 
     def filter_horizontal_id(self, filter_enum: FilterEnum) -> str:
         return f"{self.tab_name}_{filter_enum.name}_filter_horizontal"
 
     def filter_switch_id(self, filter_enum: FilterEnum) -> str:
         return f"{self.tab_name}_{filter_enum.name}_filter_switch"
+
+    def filter_switch_qid(self, filter_enum: FilterEnum) -> str:
+        return f"#{self.filter_switch_id(filter_enum)}"
 
     def tab_vertical_id(self, side: SideStr) -> str:
         return f"{self.tab_name}_{side}_vertical"

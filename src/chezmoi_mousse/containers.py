@@ -79,14 +79,14 @@ class ButtonsTopLeft(HorizontalGroup, IdMixin):
                 )
 
     def on_mount(self) -> None:
-        self.query_one(f"#{self.button_id(ButtonEnum.tree_btn)}").add_class(
+        self.query_one(self.button_qid(ButtonEnum.tree_btn)).add_class(
             "last-clicked"
         )
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         lc = "last-clicked"
         for button_enum in self.buttons:
-            self.query_one(f"#{self.button_id(button_enum)}").remove_class(lc)
+            self.query_one(self.button_qid(button_enum)).remove_class(lc)
         event.button.add_class(lc)
 
 
@@ -116,14 +116,14 @@ class ButtonsTopRight(HorizontalGroup, IdMixin):
                 )
 
     def on_mount(self) -> None:
-        self.query_one(
-            f"#{self.button_id(ButtonEnum.contents_btn)}"
-        ).add_class("last-clicked")
+        self.query_one(self.button_qid(ButtonEnum.contents_btn)).add_class(
+            "last-clicked"
+        )
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         lc = "last-clicked"
         for button_enum in self.buttons:
-            self.query_one(f"#{self.button_id(button_enum)}").remove_class(lc)
+            self.query_one(self.button_qid(button_enum)).remove_class(lc)
         event.button.add_class(lc)
 
 
