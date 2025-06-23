@@ -7,6 +7,7 @@ These classes
 - don't call any query methods
 - don't apply tcss classes
 - don't import from main_tabs.py, gui.py or containers.py modules
+- don't have key bindings
 """
 
 from collections.abc import Iterable
@@ -15,7 +16,6 @@ from pathlib import Path
 
 from rich.style import Style
 from rich.text import Text
-from textual.binding import Binding
 from textual.content import Content
 from textual.reactive import reactive
 from textual.widgets import DataTable, DirectoryTree, RichLog, Static, Tree
@@ -102,8 +102,6 @@ class AutoWarning(Static):
 class PathView(RichLog, IdMixin):
     # focussable https://textual.textualize.io/widgets/rich_log/
 
-    BINDINGS = [Binding(key="M,m", action="maximize", description="maximize")]
-
     path: reactive[Path | None] = reactive(None, init=False)
 
     def __init__(self, tab_enum: TabEnum) -> None:
@@ -177,8 +175,6 @@ class PathView(RichLog, IdMixin):
 
 class DiffView(RichLog, IdMixin):
     # focussable https://textual.textualize.io/widgets/rich_log/
-
-    BINDINGS = [Binding(key="M,m", action="maximize", description="maximize")]
 
     path: reactive[Path | None] = reactive(None, init=False)
 
