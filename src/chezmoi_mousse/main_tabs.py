@@ -89,7 +89,7 @@ class BaseTab(Horizontal, IdMixin):
         # Tree/List Switch
         if event.button.id == self.button_id(ButtonEnum.tree_btn):
             expand_all_switch = self.query_one(
-                self.filter_switch_qid(FilterEnum.expand_all), Switch
+                self.switch_qid(FilterEnum.expand_all), Switch
             )
             expand_all_switch.disabled = False
             if expand_all_switch.value:
@@ -105,7 +105,7 @@ class BaseTab(Horizontal, IdMixin):
                 self.content_switcher_qid(SideStr.left), ContentSwitcher
             ).current = self.component_id(ComponentStr.flat_tree)
             self.query_one(
-                self.filter_switch_qid(FilterEnum.expand_all), Switch
+                self.switch_qid(FilterEnum.expand_all), Switch
             ).disabled = True
         # Contents/Diff/GitLog Switch
         elif event.button.id == self.button_id(ButtonEnum.contents_btn):
@@ -123,7 +123,7 @@ class BaseTab(Horizontal, IdMixin):
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
         event.stop()
-        if event.switch.id == self.filter_switch_id(FilterEnum.unchanged):
+        if event.switch.id == self.switch_id(FilterEnum.unchanged):
             for comp_str, tree_cls in [
                 (ComponentStr.expanded_tree, ExpandedTree),
                 (ComponentStr.managed_tree, ManagedTree),
@@ -132,7 +132,7 @@ class BaseTab(Horizontal, IdMixin):
                 self.query_one(
                     self.component_qid(comp_str), tree_cls
                 ).unchanged = event.value
-        elif event.switch.id == self.filter_switch_id(FilterEnum.expand_all):
+        elif event.switch.id == self.switch_id(FilterEnum.expand_all):
             if event.value:
                 self.query_one(
                     self.content_switcher_qid(SideStr.left), ContentSwitcher
@@ -302,10 +302,10 @@ class AddTab(Horizontal, IdMixin):
         tree = self.query_one(
             self.component_qid(ComponentStr.add_tree), FilteredDirTree
         )
-        if event.switch.id == self.filter_switch_id(FilterEnum.unmanaged_dirs):
+        if event.switch.id == self.switch_id(FilterEnum.unmanaged_dirs):
             tree.unmanaged_dirs = event.value
             tree.reload()
-        elif event.switch.id == self.filter_switch_id(FilterEnum.unwanted):
+        elif event.switch.id == self.switch_id(FilterEnum.unwanted):
             tree.unwanted = event.value
             tree.reload()
 

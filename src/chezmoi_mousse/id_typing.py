@@ -98,11 +98,11 @@ class IdMixin:
     def filter_horizontal_id(self, filter_enum: FilterEnum) -> str:
         return f"{self.tab_name}_{filter_enum.name}_filter_horizontal"
 
-    def filter_switch_id(self, filter_enum: FilterEnum) -> str:
+    def switch_id(self, filter_enum: FilterEnum) -> str:
         return f"{self.tab_name}_{filter_enum.name}_filter_switch"
 
-    def filter_switch_qid(self, filter_enum: FilterEnum) -> str:
-        return f"#{self.filter_switch_id(filter_enum)}"
+    def switch_qid(self, filter_enum: FilterEnum) -> str:
+        return f"#{self.switch_id(filter_enum)}"
 
     def tab_vertical_id(self, side: SideStr) -> str:
         return f"{self.tab_name}_{side}_vertical"

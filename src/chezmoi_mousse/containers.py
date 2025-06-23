@@ -50,7 +50,7 @@ class FilterSlider(VerticalGroup, IdMixin):
                     else "filter-horizontal"
                 ),
             ):
-                yield Switch(id=self.filter_switch_id(filter_enum))
+                yield Switch(id=self.switch_id(filter_enum))
                 yield Label(
                     filter_enum.value, classes="filter-label"
                 ).with_tooltip(tooltip=filter_tooltips[filter_enum.name])
