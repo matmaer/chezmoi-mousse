@@ -1,5 +1,5 @@
+[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue?logo=python)](https://www.python.org/downloads/release/python-3110/)
 [![Framework: Textual](https://img.shields.io/badge/framework-Textual-5967FF?logo=python)](https://www.textualize.io/)
-[![Python 3.13](https://img.shields.io/badge/python-3.13-blue?logo=python)](https://www.python.org/downloads/release/python-3130/)
 [![Pylint](https://github.com/matmaer/chezmoi-mousse/actions/workflows/pylint.yml/badge.svg?branch=master)](https://github.com/matmaer/chezmoi-mousse/actions/workflows/pylint.yml)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Linting: ruff](https://img.shields.io/badge/linting-ruff-blueviolet)](https://github.com/astral-sh/ruff)
@@ -11,7 +11,7 @@ Graphical user interface in the terminal for [chezmoi](https://github.com/twpayn
 
 - [Chezmoi](https://www.chezmoi.io/) is installed
 - Existing local `chezmoi` repository on disk (`chezmoi init` is not implemented)
-- [Python 3.13](https://www.python.org/) is installed
+- [Python 3.11+](https://www.python.org/) is installed
   (including [Textual](https://textual.textualize.io/) or run with [UV](https://docs.astral.sh/uv/getting-started/installation/))
 
 ## Available Chezmoi commands
