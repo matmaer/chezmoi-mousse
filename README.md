@@ -4,9 +4,6 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Linting: ruff](https://img.shields.io/badge/linting-ruff-blueviolet)](https://github.com/astral-sh/ruff)
 
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![Linting: ruff](https://img.shields.io/badge/linting-ruff-blueviolet)](https://github.com/astral-sh/ruff)
-
 
 Graphical user interface in the terminal for [chezmoi](https://github.com/twpayne/chezmoi). Built with [textual](https://github.com/Textualize/textual).
 
@@ -14,7 +11,7 @@ Graphical user interface in the terminal for [chezmoi](https://github.com/twpayn
 
 - [Chezmoi](https://www.chezmoi.io/) is installed
 - Existing local `chezmoi` repository on disk (`chezmoi init` is not implemented)
-- [Python 3.13](https://www.python.org/) is installed
+- [Python 3.11+](https://www.python.org/) is installed
   (including [Textual](https://textual.textualize.io/) or run with [UV](https://docs.astral.sh/uv/getting-started/installation/))
 
 ## Available Chezmoi commands
