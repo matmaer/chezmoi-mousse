@@ -24,54 +24,7 @@ from textual.widgets.tree import TreeNode
 import chezmoi_mousse.theme as theme
 from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.config import unwanted
-from chezmoi_mousse.id_typing import CharsEnum, ComponentStr, IdMixin, TabEnum
-
-
-class GitLogView(DataTable):
-    """DataTable widget to display the output of the `git log` command.
-
-    Does not call the git command directly, calls it through chezmoi.
-    """
-
-    # focussable  https://textual.textualize.io/widgets/data_table/
-
-    path: reactive[Path | None] = reactive(None, init=False)
-
-    def __init__(self, *, view_id: str) -> None:
-        super().__init__(id=view_id)
-
-    def on_mount(self) -> None:
-        self.show_cursor = False
-        if self.path is None:
-            self.populate_data_table(chezmoi.git_log.list_out)
-
-    def add_row_with_style(self, columns, style):
-        row = [Text(cell_text, style=style) for cell_text in columns]
-        self.add_row(*row)
-
-    def populate_data_table(self, cmd_output: list[str]) -> None:
-        styles = {
-            "ok": theme.vars["text-success"],
-            "warning": theme.vars["text-warning"],
-            "error": theme.vars["text-error"],
-        }
-        self.add_columns("COMMIT", "MESSAGE")
-        for line in cmd_output:
-            columns = line.split(";")
-            if columns[1].split(maxsplit=1)[0] == "Add":
-                self.add_row_with_style(columns, styles["ok"])
-            elif columns[1].split(maxsplit=1)[0] == "Update":
-                self.add_row_with_style(columns, styles["warning"])
-            elif columns[1].split(maxsplit=1)[0] == "Remove":
-                self.add_row_with_style(columns, styles["error"])
-            else:
-                self.add_row(*columns)
-
-    def watch_path(self) -> None:
-        assert isinstance(self.path, Path)
-        git_log_output = chezmoi.run.git_log(self.path)
-        self.clear(columns=True)
-        self.populate_data_table(git_log_output)
+from chezmoi_mousse.id_typing import CharsEnum, IdMixin, TabEnum, TreeStr
 
 
 class AutoWarning(Static):
@@ -227,6 +180,53 @@ class DiffView(RichLog):
                 self.write(Text(CharsEnum.bullet.value + line, style="dim"))
 
 
+class GitLogView(DataTable):
+    """DataTable widget to display the output of the `git log` command.
+
+    Does not call the git command directly, calls it through chezmoi.
+    """
+
+    # focussable  https://textual.textualize.io/widgets/data_table/
+
+    path: reactive[Path | None] = reactive(None, init=False)
+
+    def __init__(self, *, view_id: str) -> None:
+        super().__init__(id=view_id)
+
+    def on_mount(self) -> None:
+        self.show_cursor = False
+        if self.path is None:
+            self.populate_data_table(chezmoi.git_log.list_out)
+
+    def add_row_with_style(self, columns, style):
+        row = [Text(cell_text, style=style) for cell_text in columns]
+        self.add_row(*row)
+
+    def populate_data_table(self, cmd_output: list[str]) -> None:
+        styles = {
+            "ok": theme.vars["text-success"],
+            "warning": theme.vars["text-warning"],
+            "error": theme.vars["text-error"],
+        }
+        self.add_columns("COMMIT", "MESSAGE")
+        for line in cmd_output:
+            columns = line.split(";")
+            if columns[1].split(maxsplit=1)[0] == "Add":
+                self.add_row_with_style(columns, styles["ok"])
+            elif columns[1].split(maxsplit=1)[0] == "Update":
+                self.add_row_with_style(columns, styles["warning"])
+            elif columns[1].split(maxsplit=1)[0] == "Remove":
+                self.add_row_with_style(columns, styles["error"])
+            else:
+                self.add_row(*columns)
+
+    def watch_path(self) -> None:
+        assert isinstance(self.path, Path)
+        git_log_output = chezmoi.run.git_log(self.path)
+        self.clear(columns=True)
+        self.populate_data_table(git_log_output)
+
+
 @dataclass
 class NodeData:
     path: Path
@@ -379,7 +379,7 @@ class ManagedTree(TreeBase, IdMixin):
         IdMixin.__init__(self, tab_enum)
         super().__init__(
             tab_enum,
-            id=self.component_id(ComponentStr.managed_tree),
+            id=self.tree_id(TreeStr.managed_tree),
             classes="tree-widget",
         )
 
@@ -414,7 +414,7 @@ class ExpandedTree(TreeBase, IdMixin):
         IdMixin.__init__(self, tab_enum)
         super().__init__(
             tab_enum,
-            id=self.component_id(ComponentStr.expanded_tree),
+            id=self.tree_id(TreeStr.expanded_tree),
             classes="tree-widget",
         )
 
@@ -452,9 +452,7 @@ class FlatTree(TreeBase, IdMixin):
     def __init__(self, tab_enum: TabEnum) -> None:
         IdMixin.__init__(self, tab_enum)
         super().__init__(
-            tab_enum,
-            id=self.component_id(ComponentStr.flat_tree),
-            classes="tree-widget",
+            tab_enum, id=self.tree_id(TreeStr.flat_tree), classes="tree-widget"
         )
 
     def on_mount(self) -> None:

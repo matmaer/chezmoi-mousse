@@ -26,16 +26,10 @@ class TabEnum(Enum):
     log_tab = "Log"
 
 
-class PaneEnum(Enum):
-    apply_tab_pane = TabEnum.apply_tab
-    re_add_tab_pane = TabEnum.re_add_tab
-    add_tab_pane = TabEnum.add_tab
-    doctor_tab_pane = TabEnum.doctor_tab
-    diagram_tab_pane = TabEnum.diagram_tab
-    log_tab_pane = TabEnum.log_tab
-
-
-# class TabbedContent: ...
+class ViewEnum(Enum):
+    diff_view = "Diff View"
+    git_log_view = "Git Log View"
+    path_view = "Path View"
 
 
 class SideStr(StrEnum):
@@ -50,14 +44,11 @@ class CornerStr(StrEnum):
     bottom_left = auto()
 
 
-class ComponentStr(StrEnum):
+class TreeStr(StrEnum):
     add_tree = auto()
-    diff_view = auto()
     expanded_tree = auto()
     flat_tree = auto()
-    git_log_view = auto()
     managed_tree = auto()
-    path_view = auto()
     re_add_tree = auto()
 
 
@@ -94,13 +85,6 @@ class IdMixin:
     def button_vertical_id(self, button_label: ButtonEnum) -> str:
         return f"{self.tab_name}_{button_label.name}_vertical"
 
-    def component_id(self, component: ComponentStr) -> str:
-        """Generate an id for items imported from components.py."""
-        return f"{self.tab_name}_{component}_component"
-
-    def component_qid(self, component: ComponentStr) -> str:
-        return f"#{self.component_id(component)}"
-
     def content_switcher_id(self, side: SideStr) -> str:
         return f"{self.tab_name}_{side}_content_switcher"
 
@@ -121,3 +105,15 @@ class IdMixin:
 
     def tab_vertical_qid(self, side: SideStr) -> str:
         return f"#{self.tab_vertical_id(side)}"
+
+    def tree_id(self, tree: TreeStr) -> str:
+        return f"{self.tab_name}_{tree}_tree"
+
+    def tree_qid(self, tree: TreeStr) -> str:
+        return f"#{self.tree_id(tree)}"
+
+    def view_id(self, view_enum: ViewEnum) -> str:
+        return f"{self.tab_name}_{view_enum.name}"
+
+    def view_qid(self, view_enum: ViewEnum) -> str:
+        return f"#{self.view_id(view_enum)}"

@@ -43,14 +43,16 @@ from chezmoi_mousse.containers import (
     ContentSwitcherLeft,
     ContentSwitcherRight,
     FilterSlider,
+    ModalView,
 )
 from chezmoi_mousse.id_typing import (
     ButtonEnum,
-    ComponentStr,
     FilterEnum,
     IdMixin,
     SideStr,
     TabEnum,
+    TreeStr,
+    ViewEnum,
 )
 from chezmoi_mousse.widgets import (
     DiffView,
@@ -71,14 +73,10 @@ class BaseTab(Horizontal, IdMixin):
         self.query_one(
             self.content_switcher_qid(SideStr.right), Container
         ).border_title = f"{path.relative_to(chezmoi.dest_dir)}"
+        self.query_one(self.view_qid(ViewEnum.path_view), PathView).path = path
+        self.query_one(self.view_qid(ViewEnum.diff_view), DiffView).path = path
         self.query_one(
-            self.component_qid(ComponentStr.path_view), PathView
-        ).path = path
-        self.query_one(
-            self.component_qid(ComponentStr.diff_view), DiffView
-        ).path = path
-        self.query_one(
-            self.component_qid(ComponentStr.git_log_view), GitLogView
+            self.view_qid(ViewEnum.git_log_view), GitLogView
         ).path = path
 
     def on_tree_node_selected(self, event: ManagedTree.NodeSelected) -> None:
@@ -95,15 +93,15 @@ class BaseTab(Horizontal, IdMixin):
             if expand_all_switch.value:
                 self.query_one(
                     self.content_switcher_qid(SideStr.left), ContentSwitcher
-                ).current = self.component_id(ComponentStr.expanded_tree)
+                ).current = self.tree_id(TreeStr.expanded_tree)
             else:
                 self.query_one(
                     self.content_switcher_qid(SideStr.left), ContentSwitcher
-                ).current = self.component_id(ComponentStr.managed_tree)
+                ).current = self.tree_id(TreeStr.managed_tree)
         elif event.button.id == self.button_id(ButtonEnum.list_btn):
             self.query_one(
                 self.content_switcher_qid(SideStr.left), ContentSwitcher
-            ).current = self.component_id(ComponentStr.flat_tree)
+            ).current = self.tree_id(TreeStr.flat_tree)
             self.query_one(
                 self.switch_qid(FilterEnum.expand_all), Switch
             ).disabled = True
@@ -111,36 +109,39 @@ class BaseTab(Horizontal, IdMixin):
         elif event.button.id == self.button_id(ButtonEnum.contents_btn):
             self.query_one(
                 self.content_switcher_qid(SideStr.right), ContentSwitcher
-            ).current = self.component_id(ComponentStr.path_view)
+            ).current = self.view_id(ViewEnum.path_view)
+            ModalView.current_view = ViewEnum.path_view.name
         elif event.button.id == self.button_id(ButtonEnum.diff_btn):
             self.query_one(
                 self.content_switcher_qid(SideStr.right), ContentSwitcher
-            ).current = self.component_id(ComponentStr.diff_view)
+            ).current = self.view_id(ViewEnum.diff_view)
+            ModalView.current_view = ViewEnum.diff_view.name
         elif event.button.id == self.button_id(ButtonEnum.git_log_btn):
             self.query_one(
                 self.content_switcher_qid(SideStr.right), ContentSwitcher
-            ).current = self.component_id(ComponentStr.git_log_view)
+            ).current = self.view_id(ViewEnum.git_log_view)
+            ModalView.current_view = ViewEnum.git_log_view.name
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
         event.stop()
         if event.switch.id == self.switch_id(FilterEnum.unchanged):
             for comp_str, tree_cls in [
-                (ComponentStr.expanded_tree, ExpandedTree),
-                (ComponentStr.managed_tree, ManagedTree),
-                (ComponentStr.flat_tree, FlatTree),
+                (TreeStr.expanded_tree, ExpandedTree),
+                (TreeStr.managed_tree, ManagedTree),
+                (TreeStr.flat_tree, FlatTree),
             ]:
-                self.query_one(
-                    self.component_qid(comp_str), tree_cls
-                ).unchanged = event.value
+                self.query_one(self.tree_qid(comp_str), tree_cls).unchanged = (
+                    event.value
+                )
         elif event.switch.id == self.switch_id(FilterEnum.expand_all):
             if event.value:
                 self.query_one(
                     self.content_switcher_qid(SideStr.left), ContentSwitcher
-                ).current = self.component_id(ComponentStr.expanded_tree)
+                ).current = self.tree_id(TreeStr.expanded_tree)
             else:
                 self.query_one(
                     self.content_switcher_qid(SideStr.left), ContentSwitcher
-                ).current = self.component_id(ComponentStr.managed_tree)
+                ).current = self.tree_id(TreeStr.managed_tree)
 
 
 class ApplyTab(BaseTab):
@@ -245,7 +246,7 @@ class AddTab(Horizontal, IdMixin):
         ):
             yield FilteredDirTree(
                 chezmoi.dest_dir,
-                id=self.component_id(ComponentStr.add_tree),
+                id=self.tree_id(TreeStr.add_tree),
                 classes="dir-tree-widget",
             )
 
@@ -253,7 +254,7 @@ class AddTab(Horizontal, IdMixin):
             id=self.tab_vertical_id(SideStr.right),
             classes="tab-right-vertical top-border-title",
         ):
-            yield PathView(view_id=self.component_id(ComponentStr.path_view))
+            yield PathView(view_id=self.view_id(ViewEnum.path_view))
 
         yield FilterSlider(
             self.tab_enum,
@@ -274,9 +275,9 @@ class AddTab(Horizontal, IdMixin):
         event.stop()
 
         assert event.node.data is not None
-        self.query_one(
-            self.component_qid(ComponentStr.path_view), PathView
-        ).path = event.node.data.path
+        self.query_one(self.view_qid(ViewEnum.path_view), PathView).path = (
+            event.node.data.path
+        )
         self.query_one(
             self.tab_vertical_qid(SideStr.right), Vertical
         ).border_title = (
@@ -288,9 +289,9 @@ class AddTab(Horizontal, IdMixin):
     ) -> None:
         event.stop()
         assert event.node.data is not None
-        self.query_one(
-            self.component_qid(ComponentStr.path_view), PathView
-        ).path = event.node.data.path
+        self.query_one(self.view_qid(ViewEnum.path_view), PathView).path = (
+            event.node.data.path
+        )
         self.query_one(
             self.tab_vertical_qid(SideStr.right), Vertical
         ).border_title = (
@@ -299,9 +300,7 @@ class AddTab(Horizontal, IdMixin):
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
         event.stop()
-        tree = self.query_one(
-            self.component_qid(ComponentStr.add_tree), FilteredDirTree
-        )
+        tree = self.query_one(self.tree_qid(TreeStr.add_tree), FilteredDirTree)
         if event.switch.id == self.switch_id(FilterEnum.unmanaged_dirs):
             tree.unmanaged_dirs = event.value
             tree.reload()

@@ -15,6 +15,7 @@ from textual.widgets import Footer, Header, Static, TabbedContent, TabPane
 
 import chezmoi_mousse.theme
 from chezmoi_mousse import FLOW
+from chezmoi_mousse.containers import ModalView
 from chezmoi_mousse.id_typing import CharsEnum, TabEnum
 from chezmoi_mousse.main_tabs import (
     AddTab,
@@ -23,16 +24,12 @@ from chezmoi_mousse.main_tabs import (
     DoctorTab,
     ReAddTab,
 )
-
-
 from chezmoi_mousse.splash import LoadingScreen
 
 
 class MainScreen(Screen):
 
-    BINDINGS = [
-        Binding(key="M,m", action="maximize", description="maximize diff view")
-    ]
+    BINDINGS = [Binding(key="M,m", action="maximize", description="maximize")]
 
     def compose(self) -> ComposeResult:
         yield Header(icon=CharsEnum.burger.value)
@@ -53,16 +50,8 @@ class MainScreen(Screen):
                 )
         yield Footer()
 
-    # def action_maximize(self) -> None:
-    #     # stores, e.g. "apply_tab_pane"
-    #     active_pane_id = self.query_one(TabbedContent).active
-    #     # stores, e.g. "apply_tab"
-    #     id_mixin = IdMixin(PaneEnum[active_pane_id].value)
-    #     content_switcher_qid = id_mixin.content_switcher_qid(SideStr.right)
-    #     current_view_id = self.query_one(
-    #         content_switcher_qid, ContentSwitcher
-    #     ).current
-    #     active_path = current_view_id
+    def action_maximize(self) -> None:
+        self.app.push_screen(ModalView())
 
 
 class CustomScrollBarRender(ScrollBarRender):
