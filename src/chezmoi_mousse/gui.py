@@ -8,11 +8,9 @@ from rich.style import Style
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.containers import ScrollableContainer
-from textual.events import Click
-from textual.screen import ModalScreen, Screen
+from textual.screen import Screen
 from textual.scrollbar import ScrollBar, ScrollBarRender
 from textual.theme import Theme
-from textual.widget import Widget
 from textual.widgets import Footer, Header, Static, TabbedContent, TabPane
 
 import chezmoi_mousse.theme
@@ -28,34 +26,6 @@ from chezmoi_mousse.main_tabs import (
 
 
 from chezmoi_mousse.splash import LoadingScreen
-
-
-class MaximizeView(ModalScreen):
-    BINDINGS = [
-        Binding(
-            key="escape", action="dismiss", description="close", show=False
-        )
-    ]
-    component_id: str
-
-    def __init__(self, content_to_show: Widget) -> None:
-        self.content_to_show: Widget = content_to_show
-        super().__init__()
-
-    def compose(self) -> ComposeResult:
-        yield self.content_to_show
-
-    def on_mount(self) -> None:
-        self.add_class("doctor-modal")
-        # TODO: this border title text needs to come from an Enum
-        # probably 3 conditions depending on the content_to_show.id
-        self.border_title = f"{self.content_to_show.id}"
-        self.border_subtitle = "double click or escape key to close"
-
-    def on_click(self, event: Click) -> None:
-        event.stop()
-        if event.chain == 2:
-            self.dismiss()
 
 
 class MainScreen(Screen):
