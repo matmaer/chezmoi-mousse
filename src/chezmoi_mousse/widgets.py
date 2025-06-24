@@ -27,7 +27,7 @@ from chezmoi_mousse.config import unwanted
 from chezmoi_mousse.id_typing import CharsEnum, ComponentStr, IdMixin, TabEnum
 
 
-class GitLog(DataTable, IdMixin):
+class GitLogView(DataTable):
     """DataTable widget to display the output of the `git log` command.
 
     Does not call the git command directly, calls it through chezmoi.
@@ -37,9 +37,8 @@ class GitLog(DataTable, IdMixin):
 
     path: reactive[Path | None] = reactive(None, init=False)
 
-    def __init__(self, tab_enum: TabEnum) -> None:
-        IdMixin.__init__(self, tab_enum)
-        super().__init__(id=self.component_id(ComponentStr.git_log))
+    def __init__(self, *, view_id: str) -> None:
+        super().__init__(id=view_id)
 
     def on_mount(self) -> None:
         self.show_cursor = False
@@ -99,21 +98,20 @@ class AutoWarning(Static):
         )
 
 
-class PathView(RichLog, IdMixin):
+class PathView(RichLog):
     # focussable https://textual.textualize.io/widgets/rich_log/
 
     path: reactive[Path | None] = reactive(None, init=False)
 
-    def __init__(self, tab_enum: TabEnum) -> None:
-        IdMixin.__init__(self, tab_enum)
+    def __init__(self, *, view_id: str) -> None:
         super().__init__(
-            id=self.component_id(ComponentStr.path_view),
-            auto_scroll=True,
-            wrap=True,
-            highlight=True,
+            id=view_id, auto_scroll=True, wrap=True, highlight=True
         )
 
     def on_mount(self) -> None:
+        # If PathView is instantiated with a path kwarg, don't run the rest.
+        if self.path is not None:
+            return
         text = "Click a file or directory, \nto show its contents.\n"
         self.write(Text(text, style="dim"))
         self.write("Current directory:")
@@ -173,14 +171,14 @@ class PathView(RichLog, IdMixin):
             self.update_path_view()
 
 
-class DiffView(RichLog, IdMixin):
+class DiffView(RichLog):
     # focussable https://textual.textualize.io/widgets/rich_log/
 
     path: reactive[Path | None] = reactive(None, init=False)
 
-    def __init__(self, tab_enum: TabEnum) -> None:
-        IdMixin.__init__(self, tab_enum)
-        super().__init__(id=self.component_id(ComponentStr.diff_view))
+    def __init__(self, *, tab_name: str, view_id: str) -> None:
+        self.tab_name = tab_name
+        super().__init__(id=view_id)
 
     def on_mount(self) -> None:
         self.write(

@@ -57,7 +57,7 @@ from chezmoi_mousse.widgets import (
     ExpandedTree,
     FilteredDirTree,
     FlatTree,
-    GitLog,
+    GitLogView,
     ManagedTree,
     PathView,
     RichLog,
@@ -78,7 +78,7 @@ class BaseTab(Horizontal, IdMixin):
             self.component_qid(ComponentStr.diff_view), DiffView
         ).path = path
         self.query_one(
-            self.component_qid(ComponentStr.git_log), GitLog
+            self.component_qid(ComponentStr.git_log_view), GitLogView
         ).path = path
 
     def on_tree_node_selected(self, event: ManagedTree.NodeSelected) -> None:
@@ -119,7 +119,7 @@ class BaseTab(Horizontal, IdMixin):
         elif event.button.id == self.button_id(ButtonEnum.git_log_btn):
             self.query_one(
                 self.content_switcher_qid(SideStr.right), ContentSwitcher
-            ).current = self.component_id(ComponentStr.git_log)
+            ).current = self.component_id(ComponentStr.git_log_view)
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
         event.stop()
@@ -253,7 +253,7 @@ class AddTab(Horizontal, IdMixin):
             id=self.tab_vertical_id(SideStr.right),
             classes="tab-right-vertical top-border-title",
         ):
-            yield PathView(self.tab_enum)
+            yield PathView(view_id=self.component_id(ComponentStr.path_view))
 
         yield FilterSlider(
             self.tab_enum,
@@ -349,26 +349,26 @@ class DoctorTab(VerticalScroll):
             if event.chain == 2:
                 self.dismiss()
 
-    class GitLogModal(ModalScreen):
+    # class GitLogModal(ModalScreen):
 
-        BINDINGS = [
-            Binding(
-                key="escape", action="dismiss", description="close", show=False
-            )
-        ]
+    #     BINDINGS = [
+    #         Binding(
+    #             key="escape", action="dismiss", description="close", show=False
+    #         )
+    #     ]
 
-        def compose(self) -> ComposeResult:
-            yield GitLog(TabEnum.doctor_tab)
+    #     def compose(self) -> ComposeResult:
+    #         yield GitLogView(TabEnum.doctor_tab)
 
-        def on_mount(self) -> None:
-            self.add_class("doctor-modal")
-            self.border_title = "chezmoi git log - command output"
-            self.border_subtitle = "double click or escape to close"
+    #     def on_mount(self) -> None:
+    #         self.add_class("doctor-modal")
+    #         self.border_title = "chezmoi git log - command output"
+    #         self.border_subtitle = "double click or escape to close"
 
-        def on_click(self, event: Click) -> None:
-            event.stop()
-            if event.chain == 2:
-                self.dismiss()
+    #     def on_click(self, event: Click) -> None:
+    #         event.stop()
+    #         if event.chain == 2:
+    #             self.dismiss()
 
     def compose(self) -> ComposeResult:
 
@@ -439,8 +439,8 @@ class DoctorTab(VerticalScroll):
     def action_open_config(self) -> None:
         self.app.push_screen(DoctorTab.ConfigDumpModal())
 
-    def action_git_log(self) -> None:
-        self.app.push_screen(DoctorTab.GitLogModal())
+    # def action_git_log(self) -> None:
+    #     self.app.push_screen(DoctorTab.GitLogModal())
 
 
 class CommandLog(RichLog):

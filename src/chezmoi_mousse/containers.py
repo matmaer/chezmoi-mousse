@@ -24,7 +24,7 @@ from chezmoi_mousse.widgets import (
     DiffView,
     ExpandedTree,
     FlatTree,
-    GitLog,
+    GitLogView,
     ManagedTree,
     PathView,
 )
@@ -153,7 +153,7 @@ class ContentSwitcherRight(ContentSwitcher, IdMixin):
 
     def __init__(self, tab_enum: TabEnum):
         IdMixin.__init__(self, tab_enum)
-        self.tab_enum = tab_enum
+        self.tab_name = tab_enum.name
         super().__init__(
             id=self.content_switcher_id(SideStr.right),
             initial=self.component_id(ComponentStr.path_view),
@@ -164,6 +164,9 @@ class ContentSwitcherRight(ContentSwitcher, IdMixin):
         self.border_title = chezmoi.dest_dir_str
 
     def compose(self) -> ComposeResult:
-        yield PathView(self.tab_enum)
-        yield DiffView(self.tab_enum)
-        yield GitLog(self.tab_enum)
+        yield PathView(view_id=self.component_id(ComponentStr.path_view))
+        yield DiffView(
+            tab_name=self.tab_name,
+            view_id=self.component_id(ComponentStr.diff_view),
+        )
+        yield GitLogView(view_id=self.component_id(ComponentStr.git_log_view))

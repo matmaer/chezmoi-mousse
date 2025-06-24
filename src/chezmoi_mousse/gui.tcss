@@ -109,6 +109,11 @@ MainScreen {
   layers: filter_switches
 }
 
+MaximizeModal {
+  border: round $warning-darken-3;
+  margin-bottom: 1;
+}
+
 ModalScreen {
   &.doctor-modal {
     border: round $warning-darken-2;

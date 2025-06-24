@@ -26,6 +26,18 @@ class TabEnum(Enum):
     log_tab = "Log"
 
 
+class PaneEnum(Enum):
+    apply_tab_pane = TabEnum.apply_tab
+    re_add_tab_pane = TabEnum.re_add_tab
+    add_tab_pane = TabEnum.add_tab
+    doctor_tab_pane = TabEnum.doctor_tab
+    diagram_tab_pane = TabEnum.diagram_tab
+    log_tab_pane = TabEnum.log_tab
+
+
+# class TabbedContent: ...
+
+
 class SideStr(StrEnum):
     left = auto()
     right = auto()
@@ -43,7 +55,7 @@ class ComponentStr(StrEnum):
     diff_view = auto()
     expanded_tree = auto()
     flat_tree = auto()
-    git_log = auto()
+    git_log_view = auto()
     managed_tree = auto()
     path_view = auto()
     re_add_tree = auto()
@@ -99,7 +111,7 @@ class IdMixin:
         return f"{self.tab_name}_{filter_enum.name}_filter_horizontal"
 
     def switch_id(self, filter_enum: FilterEnum) -> str:
-        return f"{self.tab_name}_{filter_enum.name}_filter_switch"
+        return f"{self.tab_name}_{filter_enum.name}_switch"
 
     def switch_qid(self, filter_enum: FilterEnum) -> str:
         return f"#{self.switch_id(filter_enum)}"
