@@ -36,7 +36,7 @@ from chezmoi_mousse.widgets import (
 )
 
 
-class ModalView(ModalScreen):
+class ModalView(ModalScreen[PathView | DiffView | GitLogView], IdMixin):
     BINDINGS = [
         Binding(
             key="escape", action="dismiss", description="close", show=False
@@ -48,25 +48,24 @@ class ModalView(ModalScreen):
     current_path: Path | None = None
 
     def __init__(self) -> None:
-        if self.current_tab is None:
-            self.current_path = chezmoi.dest_dir
+        self.current_path = chezmoi.dest_dir
         super().__init__()
 
     def compose(self) -> ComposeResult:
-        if self.current_view == ViewEnum.path_view.name:
+        if self.current_view == ViewEnum.path_view:
             path_view = PathView(
                 view_id=f"{self.current_tab}_{self.current_view.name}_modal_view"
             )
             # path_view.path = self.current_path
             yield path_view
-        elif self.current_view == ViewEnum.diff_view.name:
+        elif self.current_view == ViewEnum.diff_view:
             diff_view = DiffView(
                 tab_name=self.current_tab.name,
                 view_id=f"{self.current_tab.name}_{self.current_view.name}_modal_view",
             )
             # diff_view.path = self.current_path
             yield diff_view
-        elif self.current_view == ViewEnum.git_log_view.name:
+        elif self.current_view == ViewEnum.git_log_view:
             git_log_view = GitLogView(
                 view_id=f"{self.current_tab.name}_{self.current_view.name}_modal_view"
             )

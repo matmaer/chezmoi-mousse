@@ -4,16 +4,16 @@ from chezmoi_mousse.chezmoi import Chezmoi
 
 
 @pytest.fixture
-def chezmoi_instance():
+def chezmoi_instance() -> Chezmoi:
     return Chezmoi()
 
 
 def test_chezmoi_instantiation():
-    instance = Chezmoi()
+    instance: Chezmoi = Chezmoi()
     assert isinstance(instance, Chezmoi)
 
 
-def test_has_expected_attributes(chezmoi_instance):
+def test_has_expected_attributes(chezmoi_instance: Chezmoi):
     # Check that main attributes exist
     for attr in [
         "dump_config",
@@ -29,7 +29,7 @@ def test_has_expected_attributes(chezmoi_instance):
         assert hasattr(chezmoi_instance, attr)
 
 
-def test_update_methods_exist(chezmoi_instance):
+def test_update_methods_exist(chezmoi_instance: Chezmoi):
     # Check that update methods exist for main attributes
     for attr in [
         "dump_config",
@@ -46,7 +46,8 @@ def test_update_methods_exist(chezmoi_instance):
         assert hasattr(obj, "update") and callable(obj.update)
 
 
-def test_update_and_output_types(chezmoi_instance):
+def test_update_and_output_types(chezmoi_instance: Chezmoi):
+
     # Call update and check output types for main attributes
     chezmoi_instance.dump_config.update()
     assert isinstance(chezmoi_instance.dump_config.dict_out, dict)
@@ -73,13 +74,38 @@ def test_update_and_output_types(chezmoi_instance):
     assert isinstance(chezmoi_instance.managed_dirs.list_out, list)
 
 
-def test_status_files_update(chezmoi_instance):
-    # Just ensure update does not raise
-    chezmoi_instance.status_files.update()
-
-
-def test_auto_flags(chezmoi_instance):
+def test_auto_flags(chezmoi_instance: Chezmoi):
     chezmoi_instance.dump_config.update()
     assert isinstance(chezmoi_instance.autoadd_enabled, bool)
     assert isinstance(chezmoi_instance.autocommit_enabled, bool)
     assert isinstance(chezmoi_instance.autopush_enabled, bool)
+
+
+def test_managed_dir_paths_type(chezmoi_instance: Chezmoi):
+    chezmoi_instance.managed_dirs.update()
+    paths = chezmoi_instance.managed_dir_paths
+    assert isinstance(paths, list)
+    for p in paths:
+        assert hasattr(p, "exists")  # Path object
+
+
+def test_managed_file_paths_type(chezmoi_instance: Chezmoi):
+    chezmoi_instance.managed_files.update()
+    paths = chezmoi_instance.managed_file_paths
+    assert isinstance(paths, list)
+    for p in paths:
+        assert hasattr(p, "exists")  # Path object
+
+
+def test_perform_add_and_apply_methods_exist(chezmoi_instance: Chezmoi):
+    assert hasattr(chezmoi_instance.perform, "add")
+    assert hasattr(chezmoi_instance.perform, "apply")
+    assert callable(chezmoi_instance.perform.add)
+    assert callable(chezmoi_instance.perform.apply)
+
+
+def test_run_git_log_and_cat_methods_exist(chezmoi_instance: Chezmoi):
+    assert hasattr(chezmoi_instance.run, "git_log")
+    assert hasattr(chezmoi_instance.run, "cat")
+    assert callable(chezmoi_instance.run.git_log)
+    assert callable(chezmoi_instance.run.cat)

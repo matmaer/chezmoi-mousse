@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from enum import Enum, StrEnum, auto
 
 
@@ -64,6 +65,12 @@ class CharsEnum(Enum):
     burger = "\N{IDENTICAL TO}"  # code point U+2261
     check_mark = "\N{HEAVY CHECK MARK}"  # code point U+2714
     gear = "\N{GEAR}"  # code point U+2699
+
+
+@dataclass
+class CommandLogEntry:
+    long_command: tuple[str, ...]
+    message: str = "no message was provided"
 
 
 class IdMixin:

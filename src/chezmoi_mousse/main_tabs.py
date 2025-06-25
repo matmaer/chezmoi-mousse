@@ -6,6 +6,7 @@ containers.
 """
 
 from datetime import datetime
+from pathlib import Path
 
 from rich.text import Text
 from textual.app import ComposeResult
@@ -47,6 +48,7 @@ from chezmoi_mousse.containers import (
 )
 from chezmoi_mousse.id_typing import (
     ButtonEnum,
+    CommandLogEntry,
     FilterEnum,
     IdMixin,
     SideStr,
@@ -61,15 +63,17 @@ from chezmoi_mousse.widgets import (
     FlatTree,
     GitLogView,
     ManagedTree,
+    NodeData,
     PathView,
     RichLog,
+    TreeBase,
 )
 
 
 class BaseTab(Horizontal, IdMixin):
     """Base class for ApplyTab and ReAddTab."""
 
-    def update_right_side_content_switcher(self, path):
+    def update_right_side_content_switcher(self, path: Path):
         self.query_one(
             self.content_switcher_qid(SideStr.right), Container
         ).border_title = f"{path.relative_to(chezmoi.dest_dir)}"
@@ -79,7 +83,9 @@ class BaseTab(Horizontal, IdMixin):
             self.view_qid(ViewEnum.git_log_view), GitLogView
         ).path = path
 
-    def on_tree_node_selected(self, event: ManagedTree.NodeSelected) -> None:
+    def on_tree_node_selected(
+        self, event: TreeBase.NodeSelected[NodeData]
+    ) -> None:
         assert event.node.data is not None
         self.update_right_side_content_switcher(event.node.data.path)
 
@@ -110,27 +116,30 @@ class BaseTab(Horizontal, IdMixin):
             self.query_one(
                 self.content_switcher_qid(SideStr.right), ContentSwitcher
             ).current = self.view_id(ViewEnum.path_view)
-            ModalView.current_view = ViewEnum.path_view.name
+            ModalView.current_view = ViewEnum.path_view
         elif event.button.id == self.button_id(ButtonEnum.diff_btn):
             self.query_one(
                 self.content_switcher_qid(SideStr.right), ContentSwitcher
             ).current = self.view_id(ViewEnum.diff_view)
-            ModalView.current_view = ViewEnum.diff_view.name
+            ModalView.current_view = ViewEnum.diff_view
         elif event.button.id == self.button_id(ButtonEnum.git_log_btn):
             self.query_one(
                 self.content_switcher_qid(SideStr.right), ContentSwitcher
             ).current = self.view_id(ViewEnum.git_log_view)
-            ModalView.current_view = ViewEnum.git_log_view.name
+            ModalView.current_view = ViewEnum.git_log_view
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
         event.stop()
         if event.switch.id == self.switch_id(FilterEnum.unchanged):
-            for comp_str, tree_cls in [
+            tree_pairs: list[
+                tuple[TreeStr, type[ExpandedTree | ManagedTree | FlatTree]]
+            ] = [
                 (TreeStr.expanded_tree, ExpandedTree),
                 (TreeStr.managed_tree, ManagedTree),
                 (TreeStr.flat_tree, FlatTree),
-            ]:
-                self.query_one(self.tree_qid(comp_str), tree_cls).unchanged = (
+            ]
+            for tree_str, tree_cls in tree_pairs:
+                self.query_one(self.tree_qid(tree_str), tree_cls).unchanged = (
                     event.value
                 )
         elif event.switch.id == self.switch_id(FilterEnum.expand_all):
@@ -327,7 +336,7 @@ class DoctorTab(VerticalScroll):
         ),
     ]
 
-    class ConfigDumpModal(ModalScreen):
+    class ConfigDumpModal(ModalScreen[Pretty]):
 
         BINDINGS = [
             Binding(
@@ -348,26 +357,26 @@ class DoctorTab(VerticalScroll):
             if event.chain == 2:
                 self.dismiss()
 
-    # class GitLogModal(ModalScreen):
+    class GitLogModal(ModalScreen[GitLogView]):
 
-    #     BINDINGS = [
-    #         Binding(
-    #             key="escape", action="dismiss", description="close", show=False
-    #         )
-    #     ]
+        BINDINGS = [
+            Binding(
+                key="escape", action="dismiss", description="close", show=False
+            )
+        ]
 
-    #     def compose(self) -> ComposeResult:
-    #         yield GitLogView(TabEnum.doctor_tab)
+        def compose(self) -> ComposeResult:
+            yield GitLogView(view_id=TabEnum.doctor_tab.name)
 
-    #     def on_mount(self) -> None:
-    #         self.add_class("doctor-modal")
-    #         self.border_title = "chezmoi git log - command output"
-    #         self.border_subtitle = "double click or escape to close"
+        def on_mount(self) -> None:
+            self.add_class("doctor-modal")
+            self.border_title = "chezmoi git log - command output"
+            self.border_subtitle = "double click or escape to close"
 
-    #     def on_click(self, event: Click) -> None:
-    #         event.stop()
-    #         if event.chain == 2:
-    #             self.dismiss()
+        def on_click(self, event: Click) -> None:
+            event.stop()
+            if event.chain == 2:
+                self.dismiss()
 
     def compose(self) -> ComposeResult:
 
@@ -397,7 +406,7 @@ class DoctorTab(VerticalScroll):
             "info": theme.vars["foreground-darken-1"],
         }
         list_view = self.query_exactly_one(ListView)
-        table = self.query_exactly_one(DataTable)
+        table: DataTable[Text] = self.query_exactly_one(DataTable[Text])
         doctor_rows = chezmoi.doctor.list_out
         table.add_columns(*doctor_rows[0].split())
 
@@ -438,21 +447,21 @@ class DoctorTab(VerticalScroll):
     def action_open_config(self) -> None:
         self.app.push_screen(DoctorTab.ConfigDumpModal())
 
-    # def action_git_log(self) -> None:
-    #     self.app.push_screen(DoctorTab.GitLogModal())
+    def action_git_log(self) -> None:
+        self.app.push_screen(DoctorTab.GitLogModal())
 
 
 class CommandLog(RichLog):
 
-    splash_command_log: list[tuple[list, str]] | None = None
+    splash_command_log: list[CommandLogEntry] | None = None
 
-    def add(self, chezmoi_io: tuple[list, str]) -> None:
+    def add(self, chezmoi_io: CommandLogEntry) -> None:
         time_stamp = datetime.now().strftime("%H:%M:%S")
         # Turn the full command list into string, remove elements not useful
         # to display in the log
-        trimmed_cmd = [
+        trimmed_cmd: list[str] = [
             _
-            for _ in chezmoi_io[0]
+            for _ in chezmoi_io.long_command
             if _
             not in (
                 "--no-pager"
@@ -470,13 +479,10 @@ class CommandLog(RichLog):
         ]
         pretty_cmd = " ".join(trimmed_cmd)
         self.write(f"{time_stamp} {pretty_cmd}")
-        if chezmoi_io[1]:
-            self.write(chezmoi_io[1])
-        else:
-            self.write("Output: to be implemented")
+        self.write(chezmoi_io.message)
 
     def on_mount(self) -> None:
-        def log_callback(chezmoi_io: tuple[list, str]) -> None:
+        def log_callback(chezmoi_io: CommandLogEntry) -> None:
             self.add(chezmoi_io)
 
         chezmoi_mousse.chezmoi.command_log_callback = log_callback

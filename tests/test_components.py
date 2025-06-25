@@ -1,11 +1,11 @@
+from pathlib import Path
 import pytest
-
 import chezmoi_mousse.main_tabs as main_tabs
 
 
 @pytest.fixture
-def dummy_path(tmp_path):
-    file = tmp_path / "dummy.txt"
+def dummy_path(tmp_path: Path):
+    file: Path = tmp_path / "dummy.txt"
     file.write_text("test")
     return file
 

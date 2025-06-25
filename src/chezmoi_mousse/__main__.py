@@ -10,15 +10,15 @@ def main():
         import traceback
         from pathlib import Path
 
-        original_handle_exception = app._handle_exception
+        original_handle_exception = app._handle_exception  # type: ignore[method-assign]
         src_dir = Path(__file__).parent.parent
 
-        def patched_handle_exception(error):
+        def patched_handle_exception(error: Exception):
             with open(src_dir / "error.log", "w") as f:
                 traceback.print_exc(file=f)
             original_handle_exception(error)
 
-        app._handle_exception = patched_handle_exception
+        app._handle_exception = patched_handle_exception  # type: ignore[method-assign]
 
     app.run(inline=False, headless=False, mouse=True)
 

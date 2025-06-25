@@ -1,24 +1,25 @@
 import ast
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 from subprocess import TimeoutExpired, run
-from typing import Literal, NamedTuple
+from typing import Any, Literal, NamedTuple
 
-from chezmoi_mousse.id_typing import TabEnum
+from chezmoi_mousse.id_typing import CommandLogEntry, TabEnum
 
 
-def callback_null_object(*args) -> None:
+def callback_null_object(entry: CommandLogEntry) -> None:
     pass
 
 
 # Used and re-assigned in gui.py to log commands
-command_log_callback = callback_null_object
+command_log_callback: Callable[[CommandLogEntry], None] = callback_null_object
 
 
 BASE = ("chezmoi", "--no-pager", "--color=off", "--no-tty", "--mode=file")
 
 # https://www.chezmoi.io/reference/command-line-flags/common/#available-entry-types
-SUBS = {
+SUBS: dict[str, tuple[str, ...]] = {
     "cat_config": ("cat-config",),
     "doctor": ("doctor",),
     "dump_config": ("dump-config", "--format=json"),
@@ -58,7 +59,7 @@ SUBS = {
 
 def subprocess_run(long_command: tuple[str, ...]) -> str:
     try:
-        result = run(
+        result: str = run(
             long_command,
             capture_output=True,
             check=True,  # raises exception for any non-zero return code
@@ -67,9 +68,14 @@ def subprocess_run(long_command: tuple[str, ...]) -> str:
             timeout=1,
         ).stdout.strip()
         if any(cmd in long_command for cmd in ("diff", "cat", "git")):
-            command_log_callback((long_command, "output displayed in gui"))
+            command_log_callback(
+                CommandLogEntry(
+                    long_command=long_command,
+                    message="output displayed in gui",
+                )
+            )
         else:
-            command_log_callback((long_command, result))
+            command_log_callback(CommandLogEntry(long_command, result))
         return result
     except TimeoutExpired as error:
         raise TimeoutExpired(
@@ -152,8 +158,8 @@ class InputOutput:
     long_command: tuple[str, ...]
     arg_id: str
     std_out: str = ""
-    dict_out: dict = field(default_factory=dict)
-    list_out: list[str] = field(default_factory=list)
+    dict_out: dict[str, Any] = field(default_factory=dict[str, Any])
+    list_out: list[str] = field(default_factory=list[str])
 
     @property
     def label(self):
@@ -163,12 +169,15 @@ class InputOutput:
         self.std_out = subprocess_run(self.long_command)
         self.list_out = self.std_out.splitlines()
         try:
-            # convert dict-like output from chezmoi commands, eg json output
-            self.dict_out = ast.literal_eval(
+            result: Any = ast.literal_eval(
                 self.std_out.replace("null", "None")
                 .replace("false", "False")
                 .replace("true", "True")
             )
+            if isinstance(result, dict):
+                self.dict_out: dict[str, Any] = result
+            else:
+                self.dict_out = {}
         except (SyntaxError, ValueError):
             self.dict_out = {}
 
@@ -192,7 +201,7 @@ class Chezmoi:
 
     def __init__(self) -> None:
 
-        self.long_commands = {}
+        self.long_commands: dict[str, tuple[str, ...]] = {}
 
         for arg_id, sub_cmd in SUBS.items():
             long_cmd = BASE + sub_cmd
@@ -243,6 +252,8 @@ class Chezmoi:
             tab_name: str, kind: Literal["dirs", "files"]
         ) -> dict[Path, str]:
             to_return: dict[Path, str] = {}
+            status_idx: int = 0
+            status_codes: str = ""
             if kind == "dirs":
                 managed_paths = self.managed_dir_paths
                 status_lines = self.dir_status_lines.list_out

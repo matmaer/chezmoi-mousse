@@ -16,7 +16,7 @@ from textual.widgets import Footer, Header, Static, TabbedContent, TabPane
 import chezmoi_mousse.theme
 from chezmoi_mousse import FLOW
 from chezmoi_mousse.containers import ModalView
-from chezmoi_mousse.id_typing import CharsEnum, TabEnum
+from chezmoi_mousse.id_typing import CharsEnum, CommandLogEntry, TabEnum
 from chezmoi_mousse.main_tabs import (
     AddTab,
     ApplyTab,
@@ -27,7 +27,7 @@ from chezmoi_mousse.main_tabs import (
 from chezmoi_mousse.splash import LoadingScreen
 
 
-class MainScreen(Screen):
+class MainScreen(Screen[None]):
 
     BINDINGS = [Binding(key="M,m", action="maximize", description="maximize")]
 
@@ -110,7 +110,7 @@ class CustomScrollBarRender(ScrollBarRender):
 
             segments = [upper_back_segment] * int(size)
             segments[end_index:] = [lower_back_segment] * (size - end_index)
-            if vertical or cls.SLIM_HORIZONTAL_BAR is None:
+            if vertical:
                 segments[start_index:end_index] = [
                     _Segment(
                         blank,
@@ -177,7 +177,7 @@ class CustomScrollBarRender(ScrollBarRender):
             )
 
 
-class ChezmoiGUI(App):
+class ChezmoiGUI(App[None]):
 
     CSS_PATH = "gui.tcss"
 
@@ -188,14 +188,16 @@ class ChezmoiGUI(App):
         self.title = "-  c h e z m o i  m o u s s e  -"
         self.register_theme(chezmoi_mousse.theme.chezmoi_mousse_dark)
         self.theme = "chezmoi-mousse-dark"
-        self.push_screen(LoadingScreen(), self.push_main_screen)
+        self.push_screen(LoadingScreen(), callback=self.push_main_screen)
         self.watch(self, "theme", self.on_theme_change, init=False)
 
-    def push_main_screen(self, new_splash_command_log) -> None:
-        CommandLog.splash_command_log = new_splash_command_log
+    def push_main_screen(
+        self, splash_command_log: list[CommandLogEntry] | None
+    ) -> None:
+        CommandLog.splash_command_log = splash_command_log or []
         self.push_screen("main_screen")
 
-    def on_theme_change(self, _, new_theme) -> None:
+    def on_theme_change(self, _: str, new_theme: str) -> None:
         new_theme_object: Theme | None = self.app.get_theme(new_theme)
         assert isinstance(new_theme_object, Theme)
         chezmoi_mousse.theme.vars = (

@@ -31,7 +31,7 @@ class AutoWarning(Static):
     # not focussable https://textual.textualize.io/widgets/static/
 
     def on_mount(self) -> None:
-        auto_warning = []
+        auto_warning: list[str] = []
         if chezmoi.autocommit_enabled and not chezmoi.autopush_enabled:
             auto_warning.append(
                 '"Auto Commit" is enabled: added file(s) will also be committed.'
@@ -141,7 +141,7 @@ class DiffView(RichLog):
     def watch_path(self) -> None:
         self.clear()
 
-        diff_output: list[str]
+        diff_output: list[str] = []
         status_files = chezmoi.managed_status[self.tab_name].files
 
         if self.path not in status_files:
@@ -180,7 +180,7 @@ class DiffView(RichLog):
                 self.write(Text(CharsEnum.bullet.value + line, style="dim"))
 
 
-class GitLogView(DataTable):
+class GitLogView(DataTable[Text]):
     """DataTable widget to display the output of the `git log` command.
 
     Does not call the git command directly, calls it through chezmoi.
@@ -198,8 +198,10 @@ class GitLogView(DataTable):
         if self.path is None:
             self.populate_data_table(chezmoi.git_log.list_out)
 
-    def add_row_with_style(self, columns, style):
-        row = [Text(cell_text, style=style) for cell_text in columns]
+    def add_row_with_style(self, columns: list[str], style: str) -> None:
+        row: Iterable[Text] = [
+            Text(cell_text, style=style) for cell_text in columns
+        ]
         self.add_row(*row)
 
     def populate_data_table(self, cmd_output: list[str]) -> None:
@@ -218,7 +220,7 @@ class GitLogView(DataTable):
             elif columns[1].split(maxsplit=1)[0] == "Remove":
                 self.add_row_with_style(columns, styles["error"])
             else:
-                self.add_row(*columns)
+                self.add_row(*(Text(cell) for cell in columns))
 
     def watch_path(self) -> None:
         assert isinstance(self.path, Path)
@@ -247,44 +249,58 @@ class FileNodeData(NodeData):
 class TreeBase(Tree[NodeData]):
     """Base class for ManagedTree, FlatTree, and ExpandedTree."""
 
-    def __init__(self, tab_enum: TabEnum, **kwargs) -> None:
-        self.tab_enum = tab_enum
-        self.node_colors = {
+    def __init__(
+        self,
+        tab_enum: TabEnum,
+        *,
+        id: str | None = None,
+        classes: str | None = None,
+    ) -> None:
+        self.tab_enum: TabEnum = tab_enum
+        self.node_colors: dict[str, str] = {
             "Dir": theme.vars["text-primary"],
             "D": theme.vars["text-error"],
             "A": theme.vars["text-success"],
             "M": theme.vars["text-warning"],
         }
-        root_node_data = DirNodeData(
+        root_node_data: DirNodeData = DirNodeData(
             path=chezmoi.dest_dir, found=True, status="R"
         )
-        super().__init__(label="root", data=root_node_data, **kwargs)
+        super().__init__(
+            label="root", data=root_node_data, id=id, classes=classes
+        )
 
     def on_mount(self) -> None:
-        self.guide_depth = 3
-        self.show_root = False
+        self.guide_depth: int = 3
+        self.show_root: bool = False
 
     def create_dir_node_data(self, path: Path) -> DirNodeData:
         """Create a DirNodeData instance for a given path."""
-        status_code = chezmoi.managed_status[self.tab_enum.name].dirs[path]
+        status_code: str = chezmoi.managed_status[self.tab_enum.name].dirs[
+            path
+        ]
         if not status_code:
             status_code = "X"
-        found = path.exists()
+        found: bool = path.exists()
         return DirNodeData(path=path, found=found, status=status_code)
 
     def create_file_node_data(self, path: Path) -> FileNodeData:
         """Create a FileNodeData instance for a given path."""
-        status_code = chezmoi.managed_status[self.tab_enum.name].files[path]
-        found = path.exists()
+        status_code: str = chezmoi.managed_status[self.tab_enum.name].files[
+            path
+        ]
+        found: bool = path.exists()
         return FileNodeData(path=path, found=found, status=status_code)
 
-    def get_expanded_nodes(self) -> list[TreeNode]:
+    def get_expanded_nodes(self) -> list[TreeNode[NodeData]]:
         """Recursively get all current expanded nodes in the tree, always
         including the root node."""
-        nodes = [self.root]
+        nodes: list[TreeNode[NodeData]] = [self.root]
 
-        def collect_nodes(current_node: TreeNode) -> list[TreeNode]:
-            expanded = []
+        def collect_nodes(
+            current_node: TreeNode[NodeData],
+        ) -> list[TreeNode[NodeData]]:
+            expanded: list[TreeNode[NodeData]] = []
             for child in current_node.children:
                 if child.is_expanded:
                     expanded.append(child)
@@ -294,29 +310,29 @@ class TreeBase(Tree[NodeData]):
         nodes.extend(collect_nodes(self.root))
         return nodes
 
-    def should_show_dir_node(self, dir_path, unchanged: bool) -> bool:
+    def should_show_dir_node(self, dir_path: Path, unchanged: bool) -> bool:
         if not unchanged:
-            has_status_files = chezmoi.dir_has_status_files(
+            has_status_files: bool = chezmoi.dir_has_status_files(
                 self.tab_enum, dir_path
             )
-            has_status_dirs = chezmoi.dir_has_status_dirs(
+            has_status_dirs: bool = chezmoi.dir_has_status_dirs(
                 self.tab_enum, dir_path
             )
             return has_status_files or has_status_dirs
         return True
 
-    def add_unchanged_leaves(self, tree_node: TreeNode) -> None:
+    def add_unchanged_leaves(self, tree_node: TreeNode[NodeData]) -> None:
         assert isinstance(tree_node.data, DirNodeData)
-        unchanged_in_dir = chezmoi.files_without_status_in(
+        unchanged_in_dir: list[Path] = chezmoi.files_without_status_in(
             self.tab_enum, tree_node.data.path
         )
         for file_path in unchanged_in_dir:
-            node_data = self.create_file_node_data(file_path)
-            node_label = self.style_label(node_data)
+            node_data: FileNodeData = self.create_file_node_data(file_path)
+            node_label: Text = self.style_label(node_data)
             tree_node.add_leaf(label=node_label, data=node_data)
 
-    def remove_unchanged_leaves(self, tree_node: TreeNode) -> None:
-        current_unchanged_leaves = [
+    def remove_unchanged_leaves(self, tree_node: TreeNode[NodeData]) -> None:
+        current_unchanged_leaves: list[TreeNode[NodeData]] = [
             leaf
             for leaf in tree_node.children
             if isinstance(leaf.data, FileNodeData) and leaf.data.status == "X"
@@ -324,29 +340,31 @@ class TreeBase(Tree[NodeData]):
         for leaf in current_unchanged_leaves:
             leaf.remove()
 
-    def add_status_leaves(self, tree_node: TreeNode) -> None:
+    def add_status_leaves(self, tree_node: TreeNode[NodeData]) -> None:
         assert isinstance(tree_node.data, DirNodeData)
-        status_file_paths = chezmoi.files_with_status_in(
+        status_file_paths: list[Path] = chezmoi.files_with_status_in(
             self.tab_enum, tree_node.data.path
         )
         for file in status_file_paths:
-            node_data = self.create_file_node_data(file)
-            node_label = self.style_label(node_data)
+            node_data: FileNodeData = self.create_file_node_data(file)
+            node_label: Text = self.style_label(node_data)
             tree_node.add_leaf(label=node_label, data=node_data)
 
-    def add_dir_nodes(self, tree_node: TreeNode, unchanged) -> None:
+    def add_dir_nodes(
+        self, tree_node: TreeNode[NodeData], unchanged: bool
+    ) -> None:
         assert isinstance(tree_node.data, DirNodeData)
         for dir_path in chezmoi.managed_dirs_in(tree_node.data.path):
             if self.should_show_dir_node(dir_path, unchanged):
-                node_data = self.create_dir_node_data(dir_path)
-                node_label = self.style_label(node_data)
+                node_data: DirNodeData = self.create_dir_node_data(dir_path)
+                node_label: Text = self.style_label(node_data)
                 tree_node.add(label=node_label, data=node_data)
 
     def remove_unchanged_dir_nodes(
-        self, tree_node: TreeNode, unchanged: bool
+        self, tree_node: TreeNode[NodeData], unchanged: bool
     ) -> None:
         assert isinstance(tree_node.data, DirNodeData)
-        dir_nodes = [
+        dir_nodes: list[TreeNode[NodeData]] = [
             dir_node
             for dir_node in tree_node.children
             if isinstance(dir_node.data, DirNodeData)
@@ -359,16 +377,16 @@ class TreeBase(Tree[NodeData]):
                 dir_node.remove()
 
     def style_label(self, node_data: NodeData) -> Text:
-        italic = False if node_data.found else True
+        italic: bool = False if node_data.found else True
         if node_data.status != "X":
-            style = Style(
+            styled = Style(
                 color=self.node_colors[node_data.status], italic=italic
             )
         elif isinstance(node_data, FileNodeData):
-            style = "dim"
+            styled = "dim"
         else:
-            style = self.node_colors["Dir"]
-        return Text(node_data.path.name, style=style)
+            styled = self.node_colors["Dir"]
+        return Text(node_data.path.name, style=styled)
 
 
 class ManagedTree(TreeBase, IdMixin):
@@ -387,7 +405,9 @@ class ManagedTree(TreeBase, IdMixin):
         self.add_dir_nodes(self.root, self.unchanged)
         self.add_status_leaves(self.root)
 
-    def on_tree_node_expanded(self, event: TreeBase.NodeExpanded) -> None:
+    def on_tree_node_expanded(
+        self, event: TreeBase.NodeExpanded[NodeData]
+    ) -> None:
         self.add_dir_nodes(event.node, self.unchanged)
         self.add_status_leaves(event.node)
         if self.unchanged:
@@ -395,7 +415,9 @@ class ManagedTree(TreeBase, IdMixin):
         else:
             self.remove_unchanged_leaves(event.node)
 
-    def on_tree_node_collapsed(self, event: TreeBase.NodeExpanded) -> None:
+    def on_tree_node_collapsed(
+        self, event: TreeBase.NodeExpanded[NodeData]
+    ) -> None:
         event.node.remove_children()
 
     def watch_unchanged(self) -> None:
@@ -421,7 +443,7 @@ class ExpandedTree(TreeBase, IdMixin):
     def on_mount(self) -> None:
         self.expand_all_nodes(self.root)
 
-    def expand_all_nodes(self, node: TreeNode) -> None:
+    def expand_all_nodes(self, node: TreeNode[NodeData]) -> None:
         """Recursively expand all directory nodes."""
         if (
             node.data

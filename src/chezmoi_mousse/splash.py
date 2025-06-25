@@ -8,11 +8,14 @@ from textual import work
 from textual.app import ComposeResult
 from textual.color import Gradient
 from textual.containers import Center, Middle
+from textual.geometry import Region
 from textual.screen import Screen
 from textual.strip import Strip
 from textual.widgets import RichLog, Static
+from textual.worker import WorkerState
 
 from chezmoi_mousse.chezmoi import chezmoi
+from chezmoi_mousse.id_typing import CommandLogEntry
 
 SPLASH = """\
  _______________________________ ___________________._
@@ -59,7 +62,7 @@ RICH_LOG.styles.color = "#0053AA"
 RICH_LOG.styles.margin = 0
 RICH_LOG.styles.padding = 0
 
-COMMAND_LOG: list[tuple[list, str]] = []
+COMMAND_LOG: list[CommandLogEntry] = []
 
 
 class AnimatedFade(Static):
@@ -70,7 +73,7 @@ class AnimatedFade(Static):
         self.styles.width = SPLASH_WIDTH
         self.styles.margin = 1
 
-    def render_lines(self, crop) -> list[Strip]:
+    def render_lines(self, crop: Region) -> list[Strip]:
         LINE_STYLES.rotate()
         return super().render_lines(crop)
 
@@ -81,7 +84,7 @@ class AnimatedFade(Static):
         self.set_interval(interval=0.05, callback=self.refresh)
 
 
-class LoadingScreen(Screen):
+class LoadingScreen(Screen[list[CommandLogEntry]]):
 
     def compose(self) -> ComposeResult:
         yield Middle(Center(AnimatedFade()), Center(RICH_LOG))
@@ -96,25 +99,26 @@ class LoadingScreen(Screen):
         self.app.call_from_thread(update_log)
 
     @work(thread=True, group="io_workers")
-    def run_io_worker(self, arg_id) -> None:
+    def run_io_worker(self, arg_id: str) -> None:
         io_class = getattr(chezmoi, arg_id)
         io_class.update()
         self.log_text(io_class.label)
         long_command = getattr(chezmoi, arg_id).long_command
         COMMAND_LOG.append(
-            (
-                long_command,
-                "output stored in an InputOutput dataclass by 'splash.py'.",
+            CommandLogEntry(
+                long_command=long_command,
+                message="output stored in an InputOutput dataclass by 'splash.py'.",
             )
         )
 
     def all_workers_finished(self) -> None:
         if all(
-            worker.state == "finished"
+            worker.state == WorkerState.SUCCESS
             for worker in self.app.workers
             if worker.group == "io_workers"
         ):
-            self.dismiss(COMMAND_LOG)
+            result: list[CommandLogEntry] = COMMAND_LOG
+            self.dismiss(result)
 
     def on_mount(self) -> None:
         # first run chezzmoi doctor, most expensive command
