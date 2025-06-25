@@ -18,19 +18,28 @@ class ButtonEnum(Enum):
     re_add_file_btn = "Re-Add File"
 
 
-class TabEnum(Enum):
-    apply_tab = "Apply"
-    re_add_tab = "Re-Add"
-    add_tab = "Add"
-    doctor_tab = "Doctor"
-    diagram_tab = "Diagram"
-    log_tab = "Log"
+class TabStr(StrEnum):
+    apply_tab = auto()
+    re_add_tab = auto()
+    add_tab = auto()
+    doctor_tab = auto()
+    diagram_tab = auto()
+    log_tab = auto()
 
 
-class ViewEnum(Enum):
-    diff_view = "Diff View"
-    git_log_view = "Git Log View"
-    path_view = "Path View"
+class PaneEnum(Enum):
+    apply = TabStr.apply_tab
+    re_add = TabStr.re_add_tab
+    add = TabStr.add_tab
+    doctor = TabStr.doctor_tab
+    diagram = TabStr.diagram_tab
+    log = TabStr.log_tab
+
+
+class ViewStr(StrEnum):
+    diff_view = auto()
+    git_log_view = auto()
+    path_view = auto()
 
 
 class SideStr(StrEnum):
@@ -74,11 +83,12 @@ class CommandLogEntry:
 
 
 class IdMixin:
-    def __init__(self, tab_enum: TabEnum) -> None:
-        self.filter_slider_id = f"{tab_enum.name}_filter_slider"
+    def __init__(self, tab_str: TabStr) -> None:
+        self.filter_slider_id = f"{tab_str}_filter_slider"
         self.filter_slider_qid = f"#{self.filter_slider_id}"
-        self.tab_main_horizontal_id = f"{tab_enum.name}_main_horizontal"
-        self.tab_name: str = tab_enum.name
+        self.tab_main_horizontal_id = f"{tab_str}_main_horizontal"
+        self.tab_main_horizontal_qid = f"#{tab_str}_main_horizontal"
+        self.tab_name: str = tab_str
 
     def button_id(self, button_label: ButtonEnum) -> str:
         return f"{self.tab_name}_{button_label.name}"
@@ -119,8 +129,8 @@ class IdMixin:
     def tree_qid(self, tree: TreeStr) -> str:
         return f"#{self.tree_id(tree)}"
 
-    def view_id(self, view_enum: ViewEnum) -> str:
-        return f"{self.tab_name}_{view_enum.name}"
+    def view_id(self, view_enum: ViewStr) -> str:
+        return f"{self.tab_name}_{view_enum}"
 
-    def view_qid(self, view_enum: ViewEnum) -> str:
+    def view_qid(self, view_enum: ViewStr) -> str:
         return f"#{self.view_id(view_enum)}"

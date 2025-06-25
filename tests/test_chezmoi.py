@@ -13,39 +13,6 @@ def test_chezmoi_instantiation():
     assert isinstance(instance, Chezmoi)
 
 
-def test_has_expected_attributes(chezmoi_instance: Chezmoi):
-    # Check that main attributes exist
-    for attr in [
-        "dump_config",
-        "template_data",
-        "doctor",
-        "cat_config",
-        "git_log",
-        "ignored",
-        "managed_files",
-        "managed_dirs",
-        "status_files",
-    ]:
-        assert hasattr(chezmoi_instance, attr)
-
-
-def test_update_methods_exist(chezmoi_instance: Chezmoi):
-    # Check that update methods exist for main attributes
-    for attr in [
-        "dump_config",
-        "template_data",
-        "doctor",
-        "cat_config",
-        "git_log",
-        "ignored",
-        "managed_files",
-        "managed_dirs",
-        "status_files",
-    ]:
-        obj = getattr(chezmoi_instance, attr)
-        assert hasattr(obj, "update") and callable(obj.update)
-
-
 def test_update_and_output_types(chezmoi_instance: Chezmoi):
 
     # Call update and check output types for main attributes

@@ -115,8 +115,9 @@ MaximizeModal {
 }
 
 ModalScreen {
-  &.doctor-modal {
-    border: round $warning-darken-2;
+  &.modal-view {
+    border-top: tab $foreground;
+    border-bottom: $foreground;
     margin-bottom: 1;
   }
 }

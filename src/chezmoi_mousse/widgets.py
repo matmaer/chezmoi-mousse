@@ -24,7 +24,7 @@ from textual.widgets.tree import TreeNode
 import chezmoi_mousse.theme as theme
 from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.config import unwanted
-from chezmoi_mousse.id_typing import CharsEnum, IdMixin, TabEnum, TreeStr
+from chezmoi_mousse.id_typing import CharsEnum, IdMixin, TabStr, TreeStr
 
 
 class AutoWarning(Static):
@@ -54,25 +54,12 @@ class AutoWarning(Static):
 class PathView(RichLog):
     # focussable https://textual.textualize.io/widgets/rich_log/
 
-    path: reactive[Path | None] = reactive(None, init=False)
+    path: reactive[Path | None] = reactive(None)
 
     def __init__(self, *, view_id: str) -> None:
         super().__init__(
             id=view_id, auto_scroll=True, wrap=True, highlight=True
         )
-
-    def on_mount(self) -> None:
-        # If PathView is instantiated with a path kwarg, don't run the rest.
-        if self.path is not None:
-            return
-        text = "Click a file or directory, \nto show its contents.\n"
-        self.write(Text(text, style="dim"))
-        self.write("Current directory:")
-        self.write(f"{chezmoi.dest_dir}")
-        self.write(Text("(destDir)\n", style="dim"))
-        self.write("Source directory:")
-        self.write(f"{chezmoi.source_dir}")
-        self.write(Text("(sourceDir)", style="dim"))
 
     def update_path_view(self) -> None:
         assert isinstance(self.path, Path)
@@ -109,7 +96,16 @@ class PathView(RichLog):
                 return
 
         except IsADirectoryError:
-            if self.path in chezmoi.managed_dir_paths:
+            if self.path == chezmoi.dest_dir:
+                text = "Click a file or directory, \nto show its contents.\n"
+                self.write(Text(text, style="dim"))
+                self.write("Current directory:")
+                self.write(f"{chezmoi.dest_dir}")
+                self.write(Text("(destDir)\n", style="dim"))
+                self.write("Source directory:")
+                self.write(f"{chezmoi.source_dir}")
+                self.write(Text("(sourceDir)", style="dim"))
+            elif self.path in chezmoi.managed_dir_paths:
                 self.write(f"Managed directory: {self.path}")
             else:
                 self.write(f"Unmanaged directory: {self.path}")
@@ -119,9 +115,10 @@ class PathView(RichLog):
             self.write(text)
 
     def watch_path(self) -> None:
-        if self.path is not None:
-            self.clear()
-            self.update_path_view()
+        if self.path is None:
+            self.path = chezmoi.dest_dir
+        self.clear()
+        self.update_path_view()
 
 
 class DiffView(RichLog):
@@ -153,9 +150,9 @@ class DiffView(RichLog):
             )
             return
 
-        if self.tab_name == TabEnum.apply_tab.name:
+        if self.tab_name == TabStr.apply_tab:
             diff_output = chezmoi.run.apply_diff(self.path)
-        elif self.tab_name == TabEnum.re_add_tab.name:
+        elif self.tab_name == TabStr.re_add_tab:
             diff_output = chezmoi.run.re_add_diff(self.path)
 
         if not diff_output:
@@ -251,12 +248,12 @@ class TreeBase(Tree[NodeData]):
 
     def __init__(
         self,
-        tab_enum: TabEnum,
+        tab_str: TabStr,
         *,
         id: str | None = None,
         classes: str | None = None,
     ) -> None:
-        self.tab_enum: TabEnum = tab_enum
+        self.tab_str: TabStr = tab_str
         self.node_colors: dict[str, str] = {
             "Dir": theme.vars["text-primary"],
             "D": theme.vars["text-error"],
@@ -276,9 +273,7 @@ class TreeBase(Tree[NodeData]):
 
     def create_dir_node_data(self, path: Path) -> DirNodeData:
         """Create a DirNodeData instance for a given path."""
-        status_code: str = chezmoi.managed_status[self.tab_enum.name].dirs[
-            path
-        ]
+        status_code: str = chezmoi.managed_status[self.tab_str].dirs[path]
         if not status_code:
             status_code = "X"
         found: bool = path.exists()
@@ -286,9 +281,7 @@ class TreeBase(Tree[NodeData]):
 
     def create_file_node_data(self, path: Path) -> FileNodeData:
         """Create a FileNodeData instance for a given path."""
-        status_code: str = chezmoi.managed_status[self.tab_enum.name].files[
-            path
-        ]
+        status_code: str = chezmoi.managed_status[self.tab_str].files[path]
         found: bool = path.exists()
         return FileNodeData(path=path, found=found, status=status_code)
 
@@ -313,10 +306,10 @@ class TreeBase(Tree[NodeData]):
     def should_show_dir_node(self, dir_path: Path, unchanged: bool) -> bool:
         if not unchanged:
             has_status_files: bool = chezmoi.dir_has_status_files(
-                self.tab_enum, dir_path
+                self.tab_str, dir_path
             )
             has_status_dirs: bool = chezmoi.dir_has_status_dirs(
-                self.tab_enum, dir_path
+                self.tab_str, dir_path
             )
             return has_status_files or has_status_dirs
         return True
@@ -324,7 +317,7 @@ class TreeBase(Tree[NodeData]):
     def add_unchanged_leaves(self, tree_node: TreeNode[NodeData]) -> None:
         assert isinstance(tree_node.data, DirNodeData)
         unchanged_in_dir: list[Path] = chezmoi.files_without_status_in(
-            self.tab_enum, tree_node.data.path
+            self.tab_str, tree_node.data.path
         )
         for file_path in unchanged_in_dir:
             node_data: FileNodeData = self.create_file_node_data(file_path)
@@ -343,7 +336,7 @@ class TreeBase(Tree[NodeData]):
     def add_status_leaves(self, tree_node: TreeNode[NodeData]) -> None:
         assert isinstance(tree_node.data, DirNodeData)
         status_file_paths: list[Path] = chezmoi.files_with_status_in(
-            self.tab_enum, tree_node.data.path
+            self.tab_str, tree_node.data.path
         )
         for file in status_file_paths:
             node_data: FileNodeData = self.create_file_node_data(file)
@@ -393,10 +386,10 @@ class ManagedTree(TreeBase, IdMixin):
 
     unchanged: reactive[bool] = reactive(False, init=False)
 
-    def __init__(self, tab_enum: TabEnum) -> None:
-        IdMixin.__init__(self, tab_enum)
+    def __init__(self, tab_str: TabStr) -> None:
+        IdMixin.__init__(self, tab_str)
         super().__init__(
-            tab_enum,
+            tab_str,
             id=self.tree_id(TreeStr.managed_tree),
             classes="tree-widget",
         )
@@ -432,10 +425,10 @@ class ExpandedTree(TreeBase, IdMixin):
 
     unchanged: reactive[bool] = reactive(False, init=False)
 
-    def __init__(self, tab_enum: TabEnum) -> None:
-        IdMixin.__init__(self, tab_enum)
+    def __init__(self, tab_str: TabStr) -> None:
+        IdMixin.__init__(self, tab_str)
         super().__init__(
-            tab_enum,
+            tab_str,
             id=self.tree_id(TreeStr.expanded_tree),
             classes="tree-widget",
         )
@@ -471,10 +464,10 @@ class FlatTree(TreeBase, IdMixin):
 
     unchanged: reactive[bool] = reactive(False, init=False)
 
-    def __init__(self, tab_enum: TabEnum) -> None:
-        IdMixin.__init__(self, tab_enum)
+    def __init__(self, tab_str: TabStr) -> None:
+        IdMixin.__init__(self, tab_str)
         super().__init__(
-            tab_enum, id=self.tree_id(TreeStr.flat_tree), classes="tree-widget"
+            tab_str, id=self.tree_id(TreeStr.flat_tree), classes="tree-widget"
         )
 
     def on_mount(self) -> None:

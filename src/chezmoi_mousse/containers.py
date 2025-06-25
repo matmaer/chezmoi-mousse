@@ -5,14 +5,9 @@ Rules:
 - are only reused in the main_tabs.py module
 """
 
-from pathlib import Path
-
 from textual.app import ComposeResult
-from textual.binding import Binding
 from textual.containers import HorizontalGroup, Vertical, VerticalGroup
-from textual.events import Click
-from textual.screen import ModalScreen
-from textual.widgets import Button, ContentSwitcher, Label, Static, Switch
+from textual.widgets import Button, ContentSwitcher, Label, Switch
 
 from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.config import filter_tooltips
@@ -22,9 +17,9 @@ from chezmoi_mousse.id_typing import (
     FilterEnum,
     IdMixin,
     SideStr,
-    TabEnum,
+    TabStr,
     TreeStr,
-    ViewEnum,
+    ViewStr,
 )
 from chezmoi_mousse.widgets import (
     DiffView,
@@ -36,64 +31,13 @@ from chezmoi_mousse.widgets import (
 )
 
 
-class ModalView(ModalScreen[PathView | DiffView | GitLogView], IdMixin):
-    BINDINGS = [
-        Binding(
-            key="escape", action="dismiss", description="close", show=False
-        )
-    ]
-    # current_path: Path
-    current_tab: TabEnum = TabEnum.apply_tab
-    current_view: ViewEnum = ViewEnum.path_view
-    current_path: Path | None = None
-
-    def __init__(self) -> None:
-        self.current_path = chezmoi.dest_dir
-        super().__init__()
-
-    def compose(self) -> ComposeResult:
-        if self.current_view == ViewEnum.path_view:
-            path_view = PathView(
-                view_id=f"{self.current_tab}_{self.current_view.name}_modal_view"
-            )
-            # path_view.path = self.current_path
-            yield path_view
-        elif self.current_view == ViewEnum.diff_view:
-            diff_view = DiffView(
-                tab_name=self.current_tab.name,
-                view_id=f"{self.current_tab.name}_{self.current_view.name}_modal_view",
-            )
-            # diff_view.path = self.current_path
-            yield diff_view
-        elif self.current_view == ViewEnum.git_log_view:
-            git_log_view = GitLogView(
-                view_id=f"{self.current_tab.name}_{self.current_view.name}_modal_view"
-            )
-            # git_log_view.path = self.current_path
-            yield git_log_view
-        return Static("no content to show", id="no-content")
-
-    def on_mount(self) -> None:
-        self.add_class("doctor-modal")
-        self.border_subtitle = "double click or escape key to close"
-        self.border_title = f"{self.current_tab} {self.current_view}"
-        # self.content_to_show = self.update_content()
-
-    # def update_content(self):
-
-    def on_click(self, event: Click) -> None:
-        event.stop()
-        if event.chain == 2:
-            self.dismiss()
-
-
 class FilterSlider(VerticalGroup, IdMixin):
 
     def __init__(
-        self, tab_enum: TabEnum, filters: tuple[FilterEnum, FilterEnum]
+        self, tab_str: TabStr, filters: tuple[FilterEnum, FilterEnum]
     ) -> None:
-        IdMixin.__init__(self, tab_enum)
-        self.tab_enum = tab_enum
+        IdMixin.__init__(self, tab_str)
+        self.tab_str = tab_str
         self.filters = filters
         super().__init__(id=self.filter_slider_id, classes="filters-vertical")
 
@@ -115,8 +59,8 @@ class FilterSlider(VerticalGroup, IdMixin):
 
 class ButtonsTopLeft(HorizontalGroup, IdMixin):
 
-    def __init__(self, tab_enum: TabEnum) -> None:
-        IdMixin.__init__(self, tab_enum)
+    def __init__(self, tab_str: TabStr) -> None:
+        IdMixin.__init__(self, tab_str)
         super().__init__(
             id=self.buttons_horizontal_id(CornerStr.top_left),
             classes="tab-buttons-horizontal",
@@ -148,8 +92,8 @@ class ButtonsTopLeft(HorizontalGroup, IdMixin):
 
 
 class ButtonsTopRight(HorizontalGroup, IdMixin):
-    def __init__(self, tab_enum: TabEnum) -> None:
-        IdMixin.__init__(self, tab_enum)
+    def __init__(self, tab_str: TabStr) -> None:
+        IdMixin.__init__(self, tab_str)
         super().__init__(
             id=self.buttons_horizontal_id(CornerStr.top_right),
             classes="tab-buttons-horizontal",
@@ -187,9 +131,9 @@ class ButtonsTopRight(HorizontalGroup, IdMixin):
 class ContentSwitcherLeft(ContentSwitcher, IdMixin):
     """Reusable ContentSwitcher for the left panel with tree widgets."""
 
-    def __init__(self, tab_enum: TabEnum):
-        IdMixin.__init__(self, tab_enum)
-        self.tab_enum = tab_enum
+    def __init__(self, tab_str: TabStr):
+        IdMixin.__init__(self, tab_str)
+        self.tab_str = tab_str
         super().__init__(
             id=self.content_switcher_id(SideStr.left),
             initial=self.tree_id(TreeStr.managed_tree),
@@ -200,20 +144,20 @@ class ContentSwitcherLeft(ContentSwitcher, IdMixin):
         self.border_title = chezmoi.dest_dir_str
 
     def compose(self) -> ComposeResult:
-        yield ManagedTree(self.tab_enum)
-        yield FlatTree(self.tab_enum)
-        yield ExpandedTree(self.tab_enum)
+        yield ManagedTree(self.tab_str)
+        yield FlatTree(self.tab_str)
+        yield ExpandedTree(self.tab_str)
 
 
 class ContentSwitcherRight(ContentSwitcher, IdMixin):
     """Reusable ContentSwitcher for the right panel with path view widgets."""
 
-    def __init__(self, tab_enum: TabEnum):
-        IdMixin.__init__(self, tab_enum)
-        self.tab_name = tab_enum.name
+    def __init__(self, tab_str: TabStr):
+        IdMixin.__init__(self, tab_str)
+        self.tab_name = tab_str
         super().__init__(
             id=self.content_switcher_id(SideStr.right),
-            initial=self.view_id(ViewEnum.path_view),
+            initial=self.view_id(ViewStr.path_view),
             classes="content-switcher-right top-border-title",
         )
 
@@ -221,8 +165,8 @@ class ContentSwitcherRight(ContentSwitcher, IdMixin):
         self.border_title = chezmoi.dest_dir_str
 
     def compose(self) -> ComposeResult:
-        yield PathView(view_id=self.view_id(ViewEnum.path_view))
+        yield PathView(view_id=self.view_id(ViewStr.path_view))
         yield DiffView(
-            tab_name=self.tab_name, view_id=self.view_id(ViewEnum.diff_view)
+            tab_name=self.tab_name, view_id=self.view_id(ViewStr.diff_view)
         )
-        yield GitLogView(view_id=self.view_id(ViewEnum.git_log_view))
+        yield GitLogView(view_id=self.view_id(ViewStr.git_log_view))

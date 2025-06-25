@@ -44,7 +44,6 @@ from chezmoi_mousse.containers import (
     ContentSwitcherLeft,
     ContentSwitcherRight,
     FilterSlider,
-    ModalView,
 )
 from chezmoi_mousse.id_typing import (
     ButtonEnum,
@@ -52,9 +51,9 @@ from chezmoi_mousse.id_typing import (
     FilterEnum,
     IdMixin,
     SideStr,
-    TabEnum,
+    TabStr,
     TreeStr,
-    ViewEnum,
+    ViewStr,
 )
 from chezmoi_mousse.widgets import (
     DiffView,
@@ -77,10 +76,10 @@ class BaseTab(Horizontal, IdMixin):
         self.query_one(
             self.content_switcher_qid(SideStr.right), Container
         ).border_title = f"{path.relative_to(chezmoi.dest_dir)}"
-        self.query_one(self.view_qid(ViewEnum.path_view), PathView).path = path
-        self.query_one(self.view_qid(ViewEnum.diff_view), DiffView).path = path
+        self.query_one(self.view_qid(ViewStr.path_view), PathView).path = path
+        self.query_one(self.view_qid(ViewStr.diff_view), DiffView).path = path
         self.query_one(
-            self.view_qid(ViewEnum.git_log_view), GitLogView
+            self.view_qid(ViewStr.git_log_view), GitLogView
         ).path = path
 
     def on_tree_node_selected(
@@ -115,18 +114,15 @@ class BaseTab(Horizontal, IdMixin):
         elif event.button.id == self.button_id(ButtonEnum.contents_btn):
             self.query_one(
                 self.content_switcher_qid(SideStr.right), ContentSwitcher
-            ).current = self.view_id(ViewEnum.path_view)
-            ModalView.current_view = ViewEnum.path_view
+            ).current = self.view_id(ViewStr.path_view)
         elif event.button.id == self.button_id(ButtonEnum.diff_btn):
             self.query_one(
                 self.content_switcher_qid(SideStr.right), ContentSwitcher
-            ).current = self.view_id(ViewEnum.diff_view)
-            ModalView.current_view = ViewEnum.diff_view
+            ).current = self.view_id(ViewStr.diff_view)
         elif event.button.id == self.button_id(ButtonEnum.git_log_btn):
             self.query_one(
                 self.content_switcher_qid(SideStr.right), ContentSwitcher
-            ).current = self.view_id(ViewEnum.git_log_view)
-            ModalView.current_view = ViewEnum.git_log_view
+            ).current = self.view_id(ViewStr.git_log_view)
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
         event.stop()
@@ -163,28 +159,27 @@ class ApplyTab(BaseTab):
         )
     ]
 
-    def __init__(self, tab_enum: TabEnum) -> None:
-        IdMixin.__init__(self, tab_enum)
-        self.tab_enum: TabEnum = tab_enum
+    def __init__(self, tab_str: TabStr) -> None:
+        IdMixin.__init__(self, tab_str)
+        self.tab_str: TabStr = tab_str
         super().__init__(id=self.tab_main_horizontal_id)
 
     def compose(self) -> ComposeResult:
         with VerticalGroup(
             id=self.tab_vertical_id(SideStr.left), classes="tab-left-vertical"
         ):
-            yield ButtonsTopLeft(self.tab_enum)
-            yield ContentSwitcherLeft(self.tab_enum)
+            yield ButtonsTopLeft(self.tab_str)
+            yield ContentSwitcherLeft(self.tab_str)
 
         with Vertical(
             id=self.tab_vertical_id(SideStr.right),
             classes="tab-right-vertical",
         ):
-            yield ButtonsTopRight(self.tab_enum)
-            yield ContentSwitcherRight(self.tab_enum)
+            yield ButtonsTopRight(self.tab_str)
+            yield ContentSwitcherRight(self.tab_str)
 
         yield FilterSlider(
-            self.tab_enum,
-            filters=(FilterEnum.unchanged, FilterEnum.expand_all),
+            self.tab_str, filters=(FilterEnum.unchanged, FilterEnum.expand_all)
         )
 
     def action_toggle_filter_slider(self) -> None:
@@ -203,28 +198,27 @@ class ReAddTab(BaseTab):
         )
     ]
 
-    def __init__(self, tab_enum: TabEnum) -> None:
-        IdMixin.__init__(self, tab_enum)
-        self.tab_enum: TabEnum = tab_enum
+    def __init__(self, tab_str: TabStr) -> None:
+        IdMixin.__init__(self, tab_str)
+        self.tab_str: TabStr = tab_str
         super().__init__(id=self.tab_main_horizontal_id)
 
     def compose(self) -> ComposeResult:
         with VerticalGroup(
             id=self.tab_vertical_id(SideStr.left), classes="tab-left-vertical"
         ):
-            yield ButtonsTopLeft(self.tab_enum)
-            yield ContentSwitcherLeft(self.tab_enum)
+            yield ButtonsTopLeft(self.tab_str)
+            yield ContentSwitcherLeft(self.tab_str)
 
         with Vertical(
             id=self.tab_vertical_id(SideStr.right),
             classes="tab-right-vertical",
         ):
-            yield ButtonsTopRight(self.tab_enum)
-            yield ContentSwitcherRight(self.tab_enum)
+            yield ButtonsTopRight(self.tab_str)
+            yield ContentSwitcherRight(self.tab_str)
 
         yield FilterSlider(
-            self.tab_enum,
-            filters=(FilterEnum.unchanged, FilterEnum.expand_all),
+            self.tab_str, filters=(FilterEnum.unchanged, FilterEnum.expand_all)
         )
 
     def action_toggle_filter_slider(self) -> None:
@@ -243,9 +237,9 @@ class AddTab(Horizontal, IdMixin):
         )
     ]
 
-    def __init__(self, tab_enum: TabEnum) -> None:
-        IdMixin.__init__(self, tab_enum)
-        self.tab_enum: TabEnum = tab_enum
+    def __init__(self, tab_str: TabStr) -> None:
+        IdMixin.__init__(self, tab_str)
+        self.tab_str: TabStr = tab_str
         super().__init__(id=self.tab_main_horizontal_id)
 
     def compose(self) -> ComposeResult:
@@ -263,10 +257,10 @@ class AddTab(Horizontal, IdMixin):
             id=self.tab_vertical_id(SideStr.right),
             classes="tab-right-vertical top-border-title",
         ):
-            yield PathView(view_id=self.view_id(ViewEnum.path_view))
+            yield PathView(view_id=self.view_id(ViewStr.path_view))
 
         yield FilterSlider(
-            self.tab_enum,
+            self.tab_str,
             filters=(FilterEnum.unmanaged_dirs, FilterEnum.unwanted),
         )
 
@@ -284,7 +278,7 @@ class AddTab(Horizontal, IdMixin):
         event.stop()
 
         assert event.node.data is not None
-        self.query_one(self.view_qid(ViewEnum.path_view), PathView).path = (
+        self.query_one(self.view_qid(ViewStr.path_view), PathView).path = (
             event.node.data.path
         )
         self.query_one(
@@ -298,7 +292,7 @@ class AddTab(Horizontal, IdMixin):
     ) -> None:
         event.stop()
         assert event.node.data is not None
-        self.query_one(self.view_qid(ViewEnum.path_view), PathView).path = (
+        self.query_one(self.view_qid(ViewStr.path_view), PathView).path = (
             event.node.data.path
         )
         self.query_one(
@@ -324,7 +318,7 @@ class AddTab(Horizontal, IdMixin):
         )
 
 
-class DoctorTab(VerticalScroll):
+class DoctorTab(VerticalScroll, IdMixin):
 
     BINDINGS = [
         Binding(key="C,c", action="open_config", description="chezmoi-config"),
@@ -335,6 +329,10 @@ class DoctorTab(VerticalScroll):
             tooltip="git log from your chezmoi repository",
         ),
     ]
+
+    def __init__(self, tab_str: TabStr) -> None:
+        IdMixin.__init__(self, tab_str)
+        super().__init__(id=tab_str)
 
     class ConfigDumpModal(ModalScreen[Pretty]):
 
@@ -366,7 +364,7 @@ class DoctorTab(VerticalScroll):
         ]
 
         def compose(self) -> ComposeResult:
-            yield GitLogView(view_id=TabEnum.doctor_tab.name)
+            yield GitLogView(view_id=TabStr.doctor_tab)
 
         def on_mount(self) -> None:
             self.add_class("doctor-modal")

@@ -18,6 +18,7 @@ def main():
                 traceback.print_exc(file=f)
             original_handle_exception(error)
 
+        # monkey patch
         app._handle_exception = patched_handle_exception  # type: ignore[method-assign]
 
     app.run(inline=False, headless=False, mouse=True)
