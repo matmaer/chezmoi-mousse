@@ -47,7 +47,7 @@ class ModalView(ModalScreen[None], IdMixin):
 
     def __init__(
         self,
-        path: Path,
+        path: Path | None = None,
         tab_name: TabStr = TabStr.apply_tab,
         view_name: str = ViewStr.path_view,
     ) -> None:
@@ -101,7 +101,9 @@ class MainScreen(Screen[None]):
                 yield DoctorTab(tab_str=TabStr.doctor_tab)
             with TabPane("Diagram", id=PaneEnum.diagram.name):
                 yield ScrollableContainer(
-                    Static(FLOW, id=PaneEnum.diagram.name)
+                    Static(
+                        FLOW, id=PaneEnum.diagram.name, classes="flow_diagram"
+                    )
                 )
             with TabPane("Log", id=PaneEnum.log.name):
                 yield CommandLog(id="cmd_log", highlight=True, max_lines=20000)

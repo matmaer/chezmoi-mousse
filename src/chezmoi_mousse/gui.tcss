@@ -122,7 +122,7 @@ ModalScreen {
   }
 }
 
-#flow_diagram {
+.flow_diagram {
   padding: 0 1 0 1;
   min-width: 80;
 }
