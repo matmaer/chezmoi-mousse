@@ -18,7 +18,6 @@ from textual.widgets import Footer, Header, Static, TabbedContent, TabPane
 import chezmoi_mousse.theme
 from chezmoi_mousse import FLOW
 from chezmoi_mousse.containers import ContentSwitcherRight
-from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.id_typing import (
     CharsEnum,
     CommandLogEntry,
@@ -108,6 +107,9 @@ class MainScreen(Screen[None]):
                 yield CommandLog(id="cmd_log", highlight=True, max_lines=20000)
         yield Footer()
 
+    def on_mount(self) -> None:
+        self.screen.focus()
+
     def action_maximize(self) -> None:
         active_pane = self.query_one(TabbedContent).active
         # tab id not known upon MainScreen init, so we init it here.
@@ -126,18 +128,14 @@ class MainScreen(Screen[None]):
                 right_switcher_widget = content_switcher_right.get_child_by_id(
                     current_view_id
                 )
-            view_name = ViewStr.path_view
-            path = chezmoi.dest_dir
 
-            if isinstance(right_switcher_widget, PathView):
-                view_name = ViewStr.path_view
-                path = getattr(right_switcher_widget, "path")
-            elif isinstance(right_switcher_widget, DiffView):
+            view_name = ViewStr.path_view
+            path = getattr(right_switcher_widget, "path")
+
+            if current_view_id == id_mixin.view_id(ViewStr.diff_view):
                 view_name = ViewStr.diff_view
-                path = getattr(right_switcher_widget, "path")
-            elif isinstance(right_switcher_widget, GitLogView):
+            elif current_view_id == id_mixin.view_id(ViewStr.git_log_view):
                 view_name = ViewStr.git_log_view
-                path = getattr(right_switcher_widget, "path")
 
             self.app.push_screen(
                 ModalView(
