@@ -80,9 +80,6 @@ class AnimatedFade(Static):
     def render_line(self, y: int) -> Strip:
         return Strip([Segment(SPLASH[y], style=LINE_STYLES[y])])
 
-    def on_mount(self) -> None:
-        self.set_interval(interval=0.05, callback=self.refresh)
-
 
 class LoadingScreen(Screen[list[CommandLogEntry]]):
 
@@ -121,9 +118,12 @@ class LoadingScreen(Screen[list[CommandLogEntry]]):
             self.dismiss(result)
 
     def on_mount(self) -> None:
+        animated_fade = self.query_one(AnimatedFade)
+        self.set_interval(interval=0.05, callback=animated_fade.refresh)
+        self.set_interval(interval=1, callback=self.all_workers_finished)
+
         # first run chezzmoi doctor, most expensive command
         self.run_io_worker("doctor")
         LONG_COMMANDS.pop("doctor")
         for arg_id in LONG_COMMANDS:
             self.run_io_worker(arg_id)
-        self.set_interval(interval=1, callback=self.all_workers_finished)

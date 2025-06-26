@@ -337,7 +337,7 @@ class ChezmoiGUI(App[None]):
     def push_main_screen(
         self, splash_command_log: list[CommandLogEntry] | None
     ) -> None:
-        CommandLog.splash_command_log = splash_command_log or []
+        CommandLog.splash_command_log = splash_command_log
         self.push_screen("main_screen")
 
     def on_theme_change(self, _: str, new_theme: str) -> None:

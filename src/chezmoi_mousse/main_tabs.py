@@ -9,6 +9,8 @@ from datetime import datetime
 from pathlib import Path
 
 from rich.text import Text
+
+from textual import work
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import (
@@ -479,12 +481,15 @@ class CommandLog(RichLog):
         self.write(f"{time_stamp} {pretty_cmd}")
         self.write(chezmoi_io.message)
 
+    def log_callback(self, chezmoi_io: CommandLogEntry) -> None:
+        self.add(chezmoi_io)
+
     def on_mount(self) -> None:
-        def log_callback(chezmoi_io: CommandLogEntry) -> None:
-            self.add(chezmoi_io)
+        chezmoi_mousse.chezmoi.command_log_callback = self.log_callback
+        self.write_splash_log()
 
-        chezmoi_mousse.chezmoi.command_log_callback = log_callback
-
+    @work(thread=True)
+    def write_splash_log(self) -> None:
         if self.splash_command_log is not None:
             for cmd in self.splash_command_log:
                 self.add(cmd)
