@@ -54,7 +54,7 @@
   /* offset-x: -100%; out if view if docked left */
   offset-x: -100%;
   transition: offset 380ms;
-  /* applies to all Container classes that contain a single filter switch */
+  /* applies to all Container classes which contain a single filter switch */
   &>.filter-horizontal {
     width: auto;
     &.padding-bottom-once {
@@ -96,6 +96,11 @@
   }
 }
 
+.flow_diagram {
+  padding: 0 1 0 1;
+  min-width: 80;
+}
+
 AutoWarning {
   height: auto;
   padding: 0 1 0 1;
@@ -120,11 +125,6 @@ ModalScreen {
     border-bottom: $foreground;
     margin-bottom: 1;
   }
-}
-
-.flow_diagram {
-  padding: 0 1 0 1;
-  min-width: 80;
 }
 
 /******************************************************************/
@@ -186,6 +186,7 @@ DataTable {
 }
 
 DirectoryTree {
+  /* TODO: let the tree cursor keep the same color */
   &>.directory-tree--folder {
     color: $primary-lighten-3;
     text-style: none;
@@ -253,7 +254,7 @@ Toast {
 
 Tree {
   &>.tree--cursor {
-    color: $primary-lighten-3;
+    /* TODO: let the tree cursor keep the same color */
   }
 
   &>.tree--highlight-line {
