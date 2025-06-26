@@ -58,7 +58,7 @@ class PathView(RichLog):
 
     def __init__(self, *, view_id: str) -> None:
         super().__init__(
-            id=view_id, auto_scroll=True, wrap=True, highlight=True
+            id=view_id, auto_scroll=False, wrap=True, highlight=True
         )
 
     def update_path_view(self) -> None:
@@ -128,7 +128,7 @@ class DiffView(RichLog):
 
     def __init__(self, *, tab_name: str, view_id: str) -> None:
         self.tab_name = tab_name
-        super().__init__(id=view_id)
+        super().__init__(id=view_id, auto_scroll=False, wrap=False)
 
     def on_mount(self) -> None:
         self.write(
