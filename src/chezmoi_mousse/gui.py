@@ -17,6 +17,7 @@ from textual.widgets import Footer, Header, Static, TabbedContent, TabPane
 
 import chezmoi_mousse.theme
 from chezmoi_mousse import FLOW
+from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.containers import ContentSwitcherRight
 from chezmoi_mousse.id_typing import (
     CharsEnum,
@@ -47,36 +48,48 @@ class ModalView(ModalScreen[None], IdMixin):
 
     def __init__(
         self,
+        border_title_text: str | None = None,
+        id_to_maximize: str | None = None,
         path: Path | None = None,
         tab_name: TabStr = TabStr.apply_tab,
-        view_name: str = ViewStr.path_view,
     ) -> None:
         IdMixin.__init__(self, tab_name)
+        self.border_title_text = border_title_text
         self.tab_name = tab_name
-        self.view_name = view_name
+        self.id_to_maximize = id_to_maximize
         self.path = path
+        if self.path is not None:
+            self.border_title_text = (
+                f" {self.path.relative_to(chezmoi.dest_dir)} "
+            )
+        self.modal_view_id = "modal_view"
+        self.modal_view_qid = f"#{self.modal_view_id}"
         super().__init__()
 
     def compose(self) -> ComposeResult:
-        if self.view_name == "path_view":
-            yield PathView(view_id=self.view_name)
-        elif self.view_name == "diff_view":
-            yield DiffView(tab_name=self.tab_name, view_id=self.view_name)
-        elif self.view_name == "git_log_view":
-            yield GitLogView(view_id=self.view_name)
+        if self.id_to_maximize == self.view_id(ViewStr.path_view):
+            yield PathView(view_id=self.modal_view_id)
+        elif self.id_to_maximize == self.view_id(ViewStr.diff_view):
+            yield DiffView(tab_name=self.tab_name, view_id=self.modal_view_id)
+        elif self.id_to_maximize == self.view_id(ViewStr.git_log_view):
+            yield GitLogView(view_id=self.modal_view_id)
+        elif self.id_to_maximize == PaneEnum.diagram.name:
+            yield ScrollableContainer(
+                Static(FLOW, id=self.modal_view_id, classes="flow_diagram")
+            )
 
     def on_mount(self) -> None:
         self.add_class("modal-view")
         self.border_subtitle = "double click or escape key to close"
 
-        if self.view_name == ViewStr.path_view:
-            self.query_one(f"#{self.view_name}", PathView).path = self.path
-        elif self.view_name == ViewStr.diff_view:
-            self.query_one(f"#{self.view_name}", DiffView).path = self.path
-        elif self.view_name == ViewStr.git_log_view:
-            self.query_one(f"#{self.view_name}", GitLogView).path = self.path
+        if self.id_to_maximize == self.view_id(ViewStr.path_view):
+            self.query_one(self.modal_view_qid, PathView).path = self.path
+        elif self.id_to_maximize == self.view_id(ViewStr.diff_view):
+            self.query_one(self.modal_view_qid, DiffView).path = self.path
+        elif self.id_to_maximize == self.view_id(ViewStr.git_log_view):
+            self.query_one(self.modal_view_qid, GitLogView).path = self.path
 
-        self.border_title = f"{self.path}"
+        self.border_title = self.border_title_text
 
     def on_click(self, event: Click) -> None:
         event.stop()
@@ -102,15 +115,20 @@ class MainScreen(Screen[None]):
             with TabPane("Diagram", id=PaneEnum.diagram.name):
                 yield ScrollableContainer(
                     Static(
-                        FLOW, id=PaneEnum.diagram.name, classes="flow_diagram"
+                        FLOW, id=PaneEnum.diagram.value, classes="flow_diagram"
                     )
                 )
             with TabPane("Log", id=PaneEnum.log.name):
-                yield CommandLog(id="cmd_log", highlight=True, max_lines=20000)
+                yield CommandLog(
+                    id=PaneEnum.log.value, highlight=True, max_lines=20000
+                )
         yield Footer()
 
     def on_mount(self) -> None:
         self.screen.focus()
+
+    def on_tabbed_content_tab_activated(self) -> None:
+        self.refresh_bindings()
 
     def action_maximize(self) -> None:
         active_pane = self.query_one(TabbedContent).active
@@ -131,29 +149,52 @@ class MainScreen(Screen[None]):
                     current_view_id
                 )
 
-            view_name = ViewStr.path_view
             path = getattr(right_switcher_widget, "path")
-
-            if current_view_id == id_mixin.view_id(ViewStr.diff_view):
-                view_name = ViewStr.diff_view
-            elif current_view_id == id_mixin.view_id(ViewStr.git_log_view):
-                view_name = ViewStr.git_log_view
 
             self.app.push_screen(
                 ModalView(
                     tab_name=PaneEnum[active_pane].value,
-                    view_name=view_name,
+                    id_to_maximize=current_view_id,
                     path=path,
                 )
             )
         elif id_mixin.tab_name == TabStr.add_tab:
-            self.notify("in add tab")
-        elif id_mixin.tab_name == TabStr.doctor_tab:
-            self.notify("in doctor tab")
+            current_view_qid = id_mixin.view_qid(ViewStr.path_view)
+            add_tab_path_view = self.query_one(current_view_qid, PathView)
+            path = getattr(add_tab_path_view, "path")
+            self.app.push_screen(
+                ModalView(
+                    tab_name=PaneEnum[active_pane].value,
+                    id_to_maximize=add_tab_path_view.id,
+                    path=path,
+                )
+            )
         elif id_mixin.tab_name == TabStr.diagram_tab:
-            self.notify("in diagram tab")
-        elif id_mixin.tab_name == TabStr.log_tab:
-            self.notify("in log tab")
+            diagram_static_id = PaneEnum.diagram.name
+            self.app.push_screen(
+                ModalView(
+                    tab_name=PaneEnum[active_pane].value,
+                    id_to_maximize=diagram_static_id,
+                    border_title_text=" chezmoi diagram ",
+                )
+            )
+
+    def check_action(
+        self, action: str, parameters: tuple[object, ...]
+    ) -> bool | None:
+        if action == "maximize":
+            active_pane = self.query_one(TabbedContent).active
+            # If no tab is active, return True because ApplyTab will be shown
+            # (app just started)
+            if not active_pane:
+                return True
+            id_mixin = IdMixin(tab_str=PaneEnum[active_pane].value)
+            if (
+                id_mixin.tab_name == TabStr.doctor_tab
+                or id_mixin.tab_name == TabStr.log_tab
+            ):
+                return False  # hide binding
+        return True
 
 
 class CustomScrollBarRender(ScrollBarRender):
