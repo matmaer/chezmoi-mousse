@@ -82,18 +82,18 @@ class Operate(ModalScreen[None], IdMixin):
         IdMixin.__init__(self, tab_name)
         self.tab_name = tab_name
         self.path = path
-        self.modal_view_id = "modal_view"
-        self.modal_view_qid = f"#{self.modal_view_id}"
+        self.diff_id = f"{tab_name}_operate_diff"
+        self.diff_qid = f"#{self.diff_id}"
         super().__init__()
 
     def compose(self) -> ComposeResult:
-        yield Static("operate modal")
-        yield Button("run this action")
+        yield DiffView(tab_name=self.tab_name, view_id=self.diff_id)
 
     def on_mount(self) -> None:
         self.add_class("operate")
         self.border_subtitle = " double click or escape key to cancel "
         self.border_title = f" {self.path} "
+        self.query_one(self.diff_qid, DiffView).path = self.path
 
     def on_click(self, event: Click) -> None:
         event.stop()
@@ -185,6 +185,10 @@ class BaseTab(Horizontal, IdMixin):
 
 class ApplyTab(BaseTab):
 
+    BINDINGS = [
+        Binding(key="C", action="apply_diff", description="chezmoi-apply")
+    ]
+
     def __init__(self, tab_str: TabStr) -> None:
         IdMixin.__init__(self, tab_str)
         self.tab_str: TabStr = tab_str
@@ -210,8 +214,8 @@ class ApplyTab(BaseTab):
             yield ButtonsHorizontal(
                 self.tab_str,
                 buttons=(
-                    ButtonEnum.contents_btn,
                     ButtonEnum.diff_btn,
+                    ButtonEnum.contents_btn,
                     ButtonEnum.git_log_btn,
                 ),
                 corner_str=CornerStr.top_right,
@@ -253,8 +257,8 @@ class ReAddTab(BaseTab):
             yield ButtonsHorizontal(
                 self.tab_str,
                 buttons=(
-                    ButtonEnum.contents_btn,
                     ButtonEnum.diff_btn,
+                    ButtonEnum.contents_btn,
                     ButtonEnum.git_log_btn,
                 ),
                 corner_str=CornerStr.top_right,

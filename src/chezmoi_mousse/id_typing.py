@@ -16,6 +16,7 @@ class ButtonEnum(Enum):
     apply_file_btn = "Apply File"
     re_add_directory_btn = "Re-Add Directory"
     re_add_file_btn = "Re-Add File"
+    cancel_btn = "Cancel"
 
 
 class TabStr(StrEnum):
