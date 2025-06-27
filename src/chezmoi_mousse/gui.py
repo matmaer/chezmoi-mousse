@@ -13,6 +13,7 @@ from textual.events import Click
 from textual.screen import ModalScreen, Screen
 from textual.scrollbar import ScrollBar, ScrollBarRender
 from textual.theme import Theme
+from textual.widget import Widget
 from textual.widgets import Footer, Header, Static, TabbedContent, TabPane
 
 import chezmoi_mousse.theme
@@ -36,6 +37,7 @@ from chezmoi_mousse.main_tabs import (
     ReAddTab,
 )
 from chezmoi_mousse.splash import LoadingScreen
+
 from chezmoi_mousse.widgets import DiffView, GitLogView, PathView
 
 
@@ -80,7 +82,7 @@ class ModalView(ModalScreen[None], IdMixin):
 
     def on_mount(self) -> None:
         self.add_class("modal-view")
-        self.border_subtitle = "double click or escape key to close"
+        self.border_subtitle = " double click or escape key to close "
 
         if self.id_to_maximize == self.view_id(ViewStr.path_view):
             self.query_one(self.modal_view_qid, PathView).path = self.path
@@ -135,49 +137,46 @@ class MainScreen(Screen[None]):
         # tab id not known upon MainScreen init, so we init it here.
         id_mixin = IdMixin(tab_str=PaneEnum[active_pane].value)
 
-        # Determine what view to show in the modal
-        if id_mixin.tab_name in (TabStr.apply_tab, TabStr.re_add_tab):
+        # Initialize modal parameters
+        tab_name = PaneEnum[active_pane].value
+        id_to_maximize: str | None = None
+        path: Path | None = None
+        border_title_text: str | None = None
 
+        if id_mixin.tab_name in (TabStr.apply_tab, TabStr.re_add_tab):
+            # Determine what view to show in the modal
             content_switcher_right = self.query_one(
                 id_mixin.content_switcher_qid(SideStr.right),
                 ContentSwitcherRight,
             )
-            current_view_id = content_switcher_right.current
-            right_switcher_widget = None
+            current_view_id: str | None = content_switcher_right.current
+
             if current_view_id:
-                right_switcher_widget = content_switcher_right.get_child_by_id(
-                    current_view_id
+                right_switcher_widget: Widget | None = (
+                    content_switcher_right.get_child_by_id(current_view_id)
                 )
+                id_to_maximize = current_view_id
+                path = getattr(right_switcher_widget, "path")
 
-            path = getattr(right_switcher_widget, "path")
-
-            self.app.push_screen(
-                ModalView(
-                    tab_name=PaneEnum[active_pane].value,
-                    id_to_maximize=current_view_id,
-                    path=path,
-                )
-            )
         elif id_mixin.tab_name == TabStr.add_tab:
             current_view_qid = id_mixin.view_qid(ViewStr.path_view)
             add_tab_path_view = self.query_one(current_view_qid, PathView)
+
+            id_to_maximize = add_tab_path_view.id
             path = getattr(add_tab_path_view, "path")
-            self.app.push_screen(
-                ModalView(
-                    tab_name=PaneEnum[active_pane].value,
-                    id_to_maximize=add_tab_path_view.id,
-                    path=path,
-                )
-            )
+
         elif id_mixin.tab_name == TabStr.diagram_tab:
-            diagram_static_id = PaneEnum.diagram.name
-            self.app.push_screen(
-                ModalView(
-                    tab_name=PaneEnum[active_pane].value,
-                    id_to_maximize=diagram_static_id,
-                    border_title_text=" chezmoi diagram ",
-                )
+            id_to_maximize = PaneEnum.diagram.name
+            border_title_text = " chezmoi diagram "
+
+        self.app.push_screen(
+            ModalView(
+                tab_name=tab_name,
+                id_to_maximize=id_to_maximize,
+                path=path,
+                border_title_text=border_title_text,
             )
+        )
 
     def check_action(
         self, action: str, parameters: tuple[object, ...]
