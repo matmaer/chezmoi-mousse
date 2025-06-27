@@ -154,7 +154,6 @@ class ContentSwitcherRight(ContentSwitcher, IdMixin):
 
     def __init__(self, tab_str: TabStr):
         IdMixin.__init__(self, tab_str)
-        self.tab_name = tab_str
         super().__init__(
             id=self.content_switcher_id(SideStr.right),
             initial=self.view_id(ViewStr.contents_view),

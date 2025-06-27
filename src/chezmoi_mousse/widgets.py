@@ -126,38 +126,62 @@ class DiffView(RichLog):
 
     path: reactive[Path | None] = reactive(None, init=False)
 
-    def __init__(self, *, tab_name: str, view_id: str) -> None:
+    def __init__(self, *, tab_name: TabStr, view_id: str) -> None:
         self.tab_name = tab_name
         super().__init__(id=view_id, auto_scroll=False, wrap=False)
 
     def on_mount(self) -> None:
-        self.write(
-            Text("Click a file  with status to show the diff.", style="dim")
-        )
+        self.path = chezmoi.dest_dir
 
     def watch_path(self) -> None:
         self.clear()
 
+        if self.path is None:
+            self.path = chezmoi.dest_dir
+
         diff_output: list[str] = []
         status_files = chezmoi.managed_status[self.tab_name].files
-
-        if self.path not in status_files:
+        # create a diff view if the current path is a directory
+        if (
+            self.path in chezmoi.managed_status[self.tab_name].dirs
+            or self.path == chezmoi.dest_dir
+        ):
+            status_files_in_dir = chezmoi.files_with_status_in(
+                self.tab_name, self.path
+            )
+            if not status_files_in_dir:
+                self.write(
+                    Text(
+                        "Directory does not contain changed files.",
+                        style="dim",
+                    )
+                )
+            else:
+                self.write(Text("Files in directory with changed status:"))
+                for file_path in status_files_in_dir:
+                    self.write(Text(f"{file_path}"))
+                    self.write(
+                        Text(
+                            "\nClick any file in the tree to see the diff.",
+                            style="dim",
+                        )
+                    )
+                return
+            return
+        # create a diff view if the current selected path is an unchanged file
+        elif self.path not in status_files:
             self.write(
                 Text(
-                    f"No diff available for {self.path}, file not present in chezmoi status output.",
+                    f"No diff available for {self.path},\n file is unchanged.",
                     style="dim",
                 )
             )
             return
-
+        # create the actual diff view for a changed file
         if self.tab_name == TabStr.apply_tab:
             diff_output = chezmoi.run.apply_diff(self.path)
         elif self.tab_name == TabStr.re_add_tab:
             diff_output = chezmoi.run.re_add_diff(self.path)
-
-        if not diff_output:
-            self.write(Text(f"chezmoi diff {self.path} returned no output."))
-            return
 
         diff_lines: list[str] = [
             line
@@ -166,7 +190,11 @@ class DiffView(RichLog):
             and line[0] in "+- "
             and not line.startswith(("+++", "---"))
         ]
-
+        if not diff_lines:
+            self.write(
+                Text("No diff available, probably only whitespace changes.")
+            )
+            return
         for line in diff_lines:
             line = line.rstrip("\n")
             if line.startswith("-"):

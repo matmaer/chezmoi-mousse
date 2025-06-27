@@ -58,7 +58,6 @@ class MaximizedView(ModalScreen[None], IdMixin):
     ) -> None:
         IdMixin.__init__(self, tab_name)
         self.border_title_text = border_title_text
-        self.tab_name = tab_name
         self.id_to_maximize = id_to_maximize
         self.path = path
         if self.path is not None:
