@@ -20,6 +20,8 @@ from textual.containers import (
     VerticalGroup,
     VerticalScroll,
 )
+from textual.events import Click
+from textual.screen import ModalScreen
 from textual.widgets import (
     Button,
     Collapsible,
@@ -67,6 +69,36 @@ from chezmoi_mousse.widgets import (
     RichLog,
     TreeBase,
 )
+
+
+class Operate(ModalScreen[None], IdMixin):
+    BINDINGS = [
+        Binding(
+            key="escape", action="dismiss", description="close", show=False
+        )
+    ]
+
+    def __init__(self, path: Path, tab_name: TabStr) -> None:
+        IdMixin.__init__(self, tab_name)
+        self.tab_name = tab_name
+        self.path = path
+        self.modal_view_id = "modal_view"
+        self.modal_view_qid = f"#{self.modal_view_id}"
+        super().__init__()
+
+    def compose(self) -> ComposeResult:
+        yield Static("operate modal")
+        yield Button("run this action")
+
+    def on_mount(self) -> None:
+        self.add_class("operate")
+        self.border_subtitle = " double click or escape key to cancel "
+        self.border_title = f" {self.path} "
+
+    def on_click(self, event: Click) -> None:
+        event.stop()
+        if event.chain == 2:
+            self.dismiss()
 
 
 class BaseTab(Horizontal, IdMixin):
