@@ -61,9 +61,12 @@ class ModalView(ModalScreen[None], IdMixin):
         self.id_to_maximize = id_to_maximize
         self.path = path
         if self.path is not None:
-            self.border_title_text = (
-                f" {self.path.relative_to(chezmoi.dest_dir)} "
-            )
+            if self.path == chezmoi.dest_dir:
+                self.border_title_text = f" {chezmoi.dest_dir} "
+            else:
+                self.border_title_text = (
+                    f" {self.path.relative_to(chezmoi.dest_dir)} "
+                )
         self.modal_view_id = "modal_view"
         self.modal_view_qid = f"#{self.modal_view_id}"
         super().__init__()
