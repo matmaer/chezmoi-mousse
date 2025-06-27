@@ -41,14 +41,14 @@ import chezmoi_mousse.theme as theme
 from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.config import pw_mgr_info
 from chezmoi_mousse.containers import (
-    ButtonsTopLeft,
-    ButtonsTopRight,
+    ButtonsHorizontal,
     ContentSwitcherLeft,
     ContentSwitcherRight,
     FilterSlider,
 )
 from chezmoi_mousse.id_typing import (
     ButtonEnum,
+    CornerStr,
     LogTabEntry,
     FilterEnum,
     IdMixin,
@@ -194,14 +194,28 @@ class ApplyTab(BaseTab):
         with VerticalGroup(
             id=self.tab_vertical_id(SideStr.left), classes="tab-left-vertical"
         ):
-            yield ButtonsTopLeft(self.tab_str)
+            # yield ButtonsTopLeft(self.tab_str)
+            yield ButtonsHorizontal(
+                self.tab_str,
+                buttons=(ButtonEnum.tree_btn, ButtonEnum.list_btn),
+                corner_str=CornerStr.top_left,
+            )
             yield ContentSwitcherLeft(self.tab_str)
 
         with Vertical(
             id=self.tab_vertical_id(SideStr.right),
             classes="tab-right-vertical",
         ):
-            yield ButtonsTopRight(self.tab_str)
+            # yield ButtonsTopRight(self.tab_str)
+            yield ButtonsHorizontal(
+                self.tab_str,
+                buttons=(
+                    ButtonEnum.contents_btn,
+                    ButtonEnum.diff_btn,
+                    ButtonEnum.git_log_btn,
+                ),
+                corner_str=CornerStr.top_right,
+            )
             yield ContentSwitcherRight(self.tab_str)
 
         yield FilterSlider(
@@ -225,14 +239,26 @@ class ReAddTab(BaseTab):
         with VerticalGroup(
             id=self.tab_vertical_id(SideStr.left), classes="tab-left-vertical"
         ):
-            yield ButtonsTopLeft(self.tab_str)
+            yield ButtonsHorizontal(
+                self.tab_str,
+                buttons=(ButtonEnum.tree_btn, ButtonEnum.list_btn),
+                corner_str=CornerStr.top_left,
+            )
             yield ContentSwitcherLeft(self.tab_str)
 
         with Vertical(
             id=self.tab_vertical_id(SideStr.right),
             classes="tab-right-vertical",
         ):
-            yield ButtonsTopRight(self.tab_str)
+            yield ButtonsHorizontal(
+                self.tab_str,
+                buttons=(
+                    ButtonEnum.contents_btn,
+                    ButtonEnum.diff_btn,
+                    ButtonEnum.git_log_btn,
+                ),
+                corner_str=CornerStr.top_right,
+            )
             yield ContentSwitcherRight(self.tab_str)
 
         yield FilterSlider(

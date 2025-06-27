@@ -57,15 +57,21 @@ class FilterSlider(VerticalGroup, IdMixin):
                 ).with_tooltip(tooltip=filter_tooltips[filter_enum.name])
 
 
-class ButtonsTopLeft(HorizontalGroup, IdMixin):
+class ButtonsHorizontal(HorizontalGroup, IdMixin):
 
-    def __init__(self, tab_str: TabStr) -> None:
+    def __init__(
+        self,
+        tab_str: TabStr,
+        *,
+        buttons: tuple[ButtonEnum, ...],
+        corner_str: CornerStr,
+    ) -> None:
         IdMixin.__init__(self, tab_str)
         super().__init__(
-            id=self.buttons_horizontal_id(CornerStr.top_left),
+            id=self.buttons_horizontal_id(corner_str),
             classes="tab-buttons-horizontal",
         )
-        self.buttons = (ButtonEnum.tree_btn, ButtonEnum.list_btn)
+        self.buttons = buttons
 
     def compose(self) -> ComposeResult:
         for button_enum in self.buttons:
@@ -80,44 +86,7 @@ class ButtonsTopLeft(HorizontalGroup, IdMixin):
                 )
 
     def on_mount(self) -> None:
-        self.query_one(self.button_qid(ButtonEnum.tree_btn)).add_class(
-            "last-clicked"
-        )
-
-    def on_button_pressed(self, event: Button.Pressed) -> None:
-        lc = "last-clicked"
-        for button_enum in self.buttons:
-            self.query_one(self.button_qid(button_enum)).remove_class(lc)
-        event.button.add_class(lc)
-
-
-class ButtonsTopRight(HorizontalGroup, IdMixin):
-    def __init__(self, tab_str: TabStr) -> None:
-        IdMixin.__init__(self, tab_str)
-        super().__init__(
-            id=self.buttons_horizontal_id(CornerStr.top_right),
-            classes="tab-buttons-horizontal",
-        )
-        self.buttons = (
-            ButtonEnum.diff_btn,
-            ButtonEnum.contents_btn,
-            ButtonEnum.git_log_btn,
-        )
-
-    def compose(self) -> ComposeResult:
-        for button_enum in self.buttons:
-            with Vertical(
-                id=self.button_vertical_id(button_enum),
-                classes="single-button-vertical",
-            ):
-                yield Button(
-                    label=button_enum.value,
-                    id=self.button_id(button_enum),
-                    classes="tab-button",
-                )
-
-    def on_mount(self) -> None:
-        self.query_one(self.button_qid(ButtonEnum.contents_btn)).add_class(
+        self.query_one(self.button_qid(self.buttons[0])).add_class(
             "last-clicked"
         )
 
@@ -129,7 +98,6 @@ class ButtonsTopRight(HorizontalGroup, IdMixin):
 
 
 class ContentSwitcherLeft(ContentSwitcher, IdMixin):
-    """Reusable ContentSwitcher for the left panel with tree widgets."""
 
     def __init__(self, tab_str: TabStr):
         IdMixin.__init__(self, tab_str)
