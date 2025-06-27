@@ -124,7 +124,7 @@ class IdMixin:
         return f"#{self.tab_vertical_id(side)}"
 
     def tree_id(self, tree: TreeStr) -> str:
-        return f"{self.tab_name}_{tree}_tree"
+        return f"{self.tab_name}_{tree}"
 
     def tree_qid(self, tree: TreeStr) -> str:
         return f"#{self.tree_id(tree)}"
