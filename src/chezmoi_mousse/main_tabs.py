@@ -183,14 +183,6 @@ class BaseTab(Horizontal, IdMixin):
 
 class ApplyTab(BaseTab):
 
-    BINDINGS = [
-        Binding(
-            key="F,f",
-            action="toggle_filter_slider",
-            description="toggle-filters",
-        )
-    ]
-
     def __init__(self, tab_str: TabStr) -> None:
         IdMixin.__init__(self, tab_str)
         self.tab_str: TabStr = tab_str
@@ -222,14 +214,6 @@ class ApplyTab(BaseTab):
 
 class ReAddTab(BaseTab):
 
-    BINDINGS = [
-        Binding(
-            key="F,f",
-            action="toggle_filter_slider",
-            description="toggle-filters",
-        )
-    ]
-
     def __init__(self, tab_str: TabStr) -> None:
         IdMixin.__init__(self, tab_str)
         self.tab_str: TabStr = tab_str
@@ -260,14 +244,6 @@ class ReAddTab(BaseTab):
 
 
 class AddTab(Horizontal, IdMixin):
-
-    BINDINGS = [
-        Binding(
-            key="F,f",
-            action="toggle_filter_slider",
-            description="toggle-filters",
-        )
-    ]
 
     def __init__(self, tab_str: TabStr) -> None:
         IdMixin.__init__(self, tab_str)

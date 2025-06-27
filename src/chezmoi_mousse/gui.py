@@ -10,6 +10,7 @@ from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.containers import ScrollableContainer
 from textual.events import Click
+from textual.reactive import reactive
 from textual.screen import ModalScreen, Screen
 from textual.scrollbar import ScrollBar, ScrollBarRender
 from textual.theme import Theme
@@ -104,7 +105,17 @@ class MaximizedView(ModalScreen[None], IdMixin):
 
 class MainScreen(Screen[None]):
 
-    BINDINGS = [Binding(key="M,m", action="maximize", description="maximize")]
+    BINDINGS = [
+        Binding(key="M,m", action="maximize", description="maximize"),
+        Binding(
+            key="F,f",
+            action="toggle_filter_slider",
+            description="toggle-filters",
+        ),
+    ]
+
+    # reactive var to track the current tab and refresh bindings when changed
+    active_pane = reactive("apply", bindings=True)
 
     def compose(self) -> ComposeResult:
         yield Header(icon=CharsEnum.burger.value)
@@ -129,11 +140,46 @@ class MainScreen(Screen[None]):
                 )
         yield Footer()
 
-    def on_mount(self) -> None:
-        self.screen.focus()
+    def on_tabbed_content_tab_activated(
+        self, event: TabbedContent.TabActivated
+    ) -> None:
+        """Update the reactive variable when a tab is activated."""
+        self.active_pane = event.tab.id
 
-    def on_tabbed_content_tab_activated(self) -> None:
-        self.refresh_bindings()
+    def check_action(
+        self, action: str, parameters: tuple[object, ...]
+    ) -> bool | None:
+
+        active_pane = self.query_one(TabbedContent).active
+
+        if action == "maximize":
+            # If no tab is active, return True because ApplyTab will be shown
+            # (app just started)
+            if not active_pane:
+                return True
+            # Once the app is running
+            id_mixin = IdMixin(tab_str=PaneEnum[active_pane].value)
+            if (
+                id_mixin.tab_name == TabStr.doctor_tab
+                or id_mixin.tab_name == TabStr.log_tab
+            ):
+                return False  # hide binding
+            return True
+
+        elif action == "toggle_filter_slider":
+
+            if not active_pane:
+                return True  # Show at startup (apply tab will be active)
+            return active_pane in ("apply", "re_add", "add")
+
+    def action_toggle_filter_slider(self) -> None:
+        # merely find the corresponding method in the active tab ant call it
+        active_pane = self.query_one(TabbedContent).active
+        if active_pane in ("apply", "re_add", "add"):
+            tab_pane = self.query_one(f"#{active_pane}", TabPane)
+            tab_widget = tab_pane.children[0]
+            if hasattr(tab_widget, "action_toggle_filter_slider"):
+                getattr(tab_widget, "action_toggle_filter_slider")()
 
     def action_maximize(self) -> None:
         active_pane = self.query_one(TabbedContent).active
@@ -180,23 +226,6 @@ class MainScreen(Screen[None]):
                 border_title_text=border_title_text,
             )
         )
-
-    def check_action(
-        self, action: str, parameters: tuple[object, ...]
-    ) -> bool | None:
-        if action == "maximize":
-            active_pane = self.query_one(TabbedContent).active
-            # If no tab is active, return True because ApplyTab will be shown
-            # (app just started)
-            if not active_pane:
-                return True
-            id_mixin = IdMixin(tab_str=PaneEnum[active_pane].value)
-            if (
-                id_mixin.tab_name == TabStr.doctor_tab
-                or id_mixin.tab_name == TabStr.log_tab
-            ):
-                return False  # hide binding
-        return True
 
 
 class CustomScrollBarRender(ScrollBarRender):
