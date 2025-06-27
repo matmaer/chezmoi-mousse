@@ -5,15 +5,15 @@ from pathlib import Path
 from subprocess import TimeoutExpired, run
 from typing import Any, Literal, NamedTuple
 
-from chezmoi_mousse.id_typing import CommandLogEntry, TabStr
+from chezmoi_mousse.id_typing import LogTabEntry, TabStr
 
 
-def callback_null_object(entry: CommandLogEntry) -> None:
+def callback_null_object(entry: LogTabEntry) -> None:
     pass
 
 
 # Used and re-assigned in gui.py to log commands
-command_log_callback: Callable[[CommandLogEntry], None] = callback_null_object
+log_tab_callback: Callable[[LogTabEntry], None] = callback_null_object
 
 
 BASE = ("chezmoi", "--no-pager", "--color=off", "--no-tty", "--mode=file")
@@ -68,14 +68,14 @@ def subprocess_run(long_command: tuple[str, ...]) -> str:
             timeout=1,
         ).stdout.strip()
         if any(cmd in long_command for cmd in ("diff", "cat", "git")):
-            command_log_callback(
-                CommandLogEntry(
+            log_tab_callback(
+                LogTabEntry(
                     long_command=long_command,
                     message="output displayed in gui",
                 )
             )
         else:
-            command_log_callback(CommandLogEntry(long_command, result))
+            log_tab_callback(LogTabEntry(long_command, result))
         return result
     except TimeoutExpired as error:
         raise TimeoutExpired(

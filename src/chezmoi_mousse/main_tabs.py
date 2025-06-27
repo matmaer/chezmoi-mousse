@@ -49,7 +49,7 @@ from chezmoi_mousse.containers import (
 )
 from chezmoi_mousse.id_typing import (
     ButtonEnum,
-    CommandLogEntry,
+    LogTabEntry,
     FilterEnum,
     IdMixin,
     SideStr,
@@ -396,11 +396,11 @@ class DoctorTab(VerticalScroll):
                 table.add_row(*row)
 
 
-class CommandLog(RichLog):
+class LogTab(RichLog):
 
-    splash_command_log: list[CommandLogEntry] | None = None
+    splash_log_tab: list[LogTabEntry] | None = None
 
-    def add(self, chezmoi_io: CommandLogEntry) -> None:
+    def add(self, chezmoi_io: LogTabEntry) -> None:
         time_stamp = datetime.now().strftime("%H:%M:%S")
         # Turn the full command list into string, remove elements not useful
         # to display in the log
@@ -426,15 +426,15 @@ class CommandLog(RichLog):
         self.write(f"{time_stamp} {pretty_cmd}")
         self.write(chezmoi_io.message)
 
-    def log_callback(self, chezmoi_io: CommandLogEntry) -> None:
+    def log_callback(self, chezmoi_io: LogTabEntry) -> None:
         self.add(chezmoi_io)
 
     def on_mount(self) -> None:
-        chezmoi_mousse.chezmoi.command_log_callback = self.log_callback
+        chezmoi_mousse.chezmoi.log_tab_callback = self.log_callback
         self.write_splash_log()
 
     @work(thread=True)
     def write_splash_log(self) -> None:
-        if self.splash_command_log is not None:
-            for cmd in self.splash_command_log:
+        if self.splash_log_tab is not None:
+            for cmd in self.splash_log_tab:
                 self.add(cmd)

@@ -23,7 +23,7 @@ from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.containers import ContentSwitcherRight
 from chezmoi_mousse.id_typing import (
     CharsEnum,
-    CommandLogEntry,
+    LogTabEntry,
     IdMixin,
     PaneEnum,
     SideStr,
@@ -33,7 +33,7 @@ from chezmoi_mousse.id_typing import (
 from chezmoi_mousse.main_tabs import (
     AddTab,
     ApplyTab,
-    CommandLog,
+    LogTab,
     DoctorTab,
     ReAddTab,
 )
@@ -135,7 +135,7 @@ class MainScreen(Screen[None]):
                     )
                 )
             with TabPane("Log", id=PaneEnum.log.name):
-                yield CommandLog(
+                yield LogTab(
                     id=PaneEnum.log.value, highlight=True, max_lines=20000
                 )
         yield Footer()
@@ -372,9 +372,9 @@ class ChezmoiGUI(App[None]):
         self.watch(self, "theme", self.on_theme_change, init=False)
 
     def push_main_screen(
-        self, splash_command_log: list[CommandLogEntry] | None
+        self, splash_log_tab: list[LogTabEntry] | None
     ) -> None:
-        CommandLog.splash_command_log = splash_command_log
+        LogTab.splash_log_tab = splash_log_tab
         self.push_screen("main_screen")
 
     def on_theme_change(self, _: str, new_theme: str) -> None:

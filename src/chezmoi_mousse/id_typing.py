@@ -77,7 +77,7 @@ class CharsEnum(Enum):
 
 
 @dataclass
-class CommandLogEntry:
+class LogTabEntry:
     long_command: tuple[str, ...]
     message: str = "no message was provided"
 

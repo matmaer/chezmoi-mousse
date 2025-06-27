@@ -15,7 +15,7 @@ from textual.widgets import RichLog, Static
 from textual.worker import WorkerState
 
 from chezmoi_mousse.chezmoi import chezmoi
-from chezmoi_mousse.id_typing import CommandLogEntry
+from chezmoi_mousse.id_typing import LogTabEntry
 
 SPLASH = """\
  _______________________________ ___________________._
@@ -62,7 +62,7 @@ RICH_LOG.styles.color = "#0053AA"
 RICH_LOG.styles.margin = 0
 RICH_LOG.styles.padding = 0
 
-COMMAND_LOG: list[CommandLogEntry] = []
+COMMAND_LOG: list[LogTabEntry] = []
 
 
 class AnimatedFade(Static):
@@ -81,7 +81,7 @@ class AnimatedFade(Static):
         return Strip([Segment(SPLASH[y], style=LINE_STYLES[y])])
 
 
-class LoadingScreen(Screen[list[CommandLogEntry]]):
+class LoadingScreen(Screen[list[LogTabEntry]]):
 
     def compose(self) -> ComposeResult:
         yield Middle(Center(AnimatedFade()), Center(RICH_LOG))
@@ -102,7 +102,7 @@ class LoadingScreen(Screen[list[CommandLogEntry]]):
         self.log_text(io_class.label)
         long_command = getattr(chezmoi, arg_id).long_command
         COMMAND_LOG.append(
-            CommandLogEntry(
+            LogTabEntry(
                 long_command=long_command,
                 message="output stored in an InputOutput dataclass by 'splash.py'.",
             )
@@ -114,7 +114,7 @@ class LoadingScreen(Screen[list[CommandLogEntry]]):
             for worker in self.app.workers
             if worker.group == "io_workers"
         ):
-            result: list[CommandLogEntry] = COMMAND_LOG
+            result: list[LogTabEntry] = COMMAND_LOG
             self.dismiss(result)
 
     def on_mount(self) -> None:
