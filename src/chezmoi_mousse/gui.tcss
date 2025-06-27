@@ -267,6 +267,7 @@ Toast {
 
 Tree {
   &>.tree--cursor {
+    text-style: none;
     /* TODO: let the tree cursor keep the same color */
   }
 
