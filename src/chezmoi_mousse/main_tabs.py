@@ -320,7 +320,6 @@ class AddTab(Horizontal, IdMixin):
             tree.reload()
 
     def action_toggle_filter_slider(self) -> None:
-        """Toggle the visibility of the filter slider."""
         self.query_one(self.filter_slider_qid, VerticalGroup).toggle_class(
             "-visible"
         )
