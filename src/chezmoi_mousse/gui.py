@@ -41,7 +41,7 @@ from chezmoi_mousse.splash import LoadingScreen
 from chezmoi_mousse.widgets import DiffView, GitLogView, PathView
 
 
-class ModalView(ModalScreen[None], IdMixin):
+class MaximizedView(ModalScreen[None], IdMixin):
     BINDINGS = [
         Binding(
             key="escape", action="dismiss", description="close", show=False
@@ -173,7 +173,7 @@ class MainScreen(Screen[None]):
             border_title_text = " chezmoi diagram "
 
         self.app.push_screen(
-            ModalView(
+            MaximizedView(
                 tab_name=tab_name,
                 id_to_maximize=id_to_maximize,
                 path=path,
