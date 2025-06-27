@@ -65,7 +65,7 @@ from chezmoi_mousse.widgets import (
     GitLogView,
     ManagedTree,
     NodeData,
-    PathView,
+    ContentsView,
     RichLog,
     TreeBase,
 )
@@ -108,7 +108,9 @@ class BaseTab(Horizontal, IdMixin):
         self.query_one(
             self.content_switcher_qid(SideStr.right), Container
         ).border_title = f"{path.relative_to(chezmoi.dest_dir)}"
-        self.query_one(self.view_qid(ViewStr.path_view), PathView).path = path
+        self.query_one(
+            self.view_qid(ViewStr.contents_view), ContentsView
+        ).path = path
         self.query_one(self.view_qid(ViewStr.diff_view), DiffView).path = path
         self.query_one(
             self.view_qid(ViewStr.git_log_view), GitLogView
@@ -146,7 +148,7 @@ class BaseTab(Horizontal, IdMixin):
         elif event.button.id == self.button_id(ButtonEnum.contents_btn):
             self.query_one(
                 self.content_switcher_qid(SideStr.right), ContentSwitcher
-            ).current = self.view_id(ViewStr.path_view)
+            ).current = self.view_id(ViewStr.contents_view)
         elif event.button.id == self.button_id(ButtonEnum.diff_btn):
             self.query_one(
                 self.content_switcher_qid(SideStr.right), ContentSwitcher
@@ -265,7 +267,7 @@ class AddTab(Horizontal, IdMixin):
             id=self.tab_vertical_id(SideStr.right),
             classes="tab-right-vertical top-border-title",
         ):
-            yield PathView(view_id=self.view_id(ViewStr.path_view))
+            yield ContentsView(view_id=self.view_id(ViewStr.contents_view))
 
         yield FilterSlider(
             self.tab_str,
@@ -286,9 +288,9 @@ class AddTab(Horizontal, IdMixin):
         event.stop()
 
         assert event.node.data is not None
-        self.query_one(self.view_qid(ViewStr.path_view), PathView).path = (
-            event.node.data.path
-        )
+        self.query_one(
+            self.view_qid(ViewStr.contents_view), ContentsView
+        ).path = event.node.data.path
         self.query_one(
             self.tab_vertical_qid(SideStr.right), Vertical
         ).border_title = (
@@ -300,9 +302,9 @@ class AddTab(Horizontal, IdMixin):
     ) -> None:
         event.stop()
         assert event.node.data is not None
-        self.query_one(self.view_qid(ViewStr.path_view), PathView).path = (
-            event.node.data.path
-        )
+        self.query_one(
+            self.view_qid(ViewStr.contents_view), ContentsView
+        ).path = event.node.data.path
         self.query_one(
             self.tab_vertical_qid(SideStr.right), Vertical
         ).border_title = (

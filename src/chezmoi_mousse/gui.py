@@ -39,7 +39,7 @@ from chezmoi_mousse.main_tabs import (
 )
 from chezmoi_mousse.splash import LoadingScreen
 
-from chezmoi_mousse.widgets import DiffView, GitLogView, PathView
+from chezmoi_mousse.widgets import DiffView, GitLogView, ContentsView
 
 
 class MaximizedView(ModalScreen[None], IdMixin):
@@ -73,8 +73,8 @@ class MaximizedView(ModalScreen[None], IdMixin):
         super().__init__()
 
     def compose(self) -> ComposeResult:
-        if self.id_to_maximize == self.view_id(ViewStr.path_view):
-            yield PathView(view_id=self.modal_view_id)
+        if self.id_to_maximize == self.view_id(ViewStr.contents_view):
+            yield ContentsView(view_id=self.modal_view_id)
         elif self.id_to_maximize == self.view_id(ViewStr.diff_view):
             yield DiffView(tab_name=self.tab_name, view_id=self.modal_view_id)
         elif self.id_to_maximize == self.view_id(ViewStr.git_log_view):
@@ -88,8 +88,8 @@ class MaximizedView(ModalScreen[None], IdMixin):
         self.add_class("modal-view")
         self.border_subtitle = " double click or escape key to close "
 
-        if self.id_to_maximize == self.view_id(ViewStr.path_view):
-            self.query_one(self.modal_view_qid, PathView).path = self.path
+        if self.id_to_maximize == self.view_id(ViewStr.contents_view):
+            self.query_one(self.modal_view_qid, ContentsView).path = self.path
         elif self.id_to_maximize == self.view_id(ViewStr.diff_view):
             self.query_one(self.modal_view_qid, DiffView).path = self.path
         elif self.id_to_maximize == self.view_id(ViewStr.git_log_view):
@@ -208,8 +208,8 @@ class MainScreen(Screen[None]):
                 path = getattr(right_switcher_widget, "path")
 
         elif id_mixin.tab_name == TabStr.add_tab:
-            current_view_qid = id_mixin.view_qid(ViewStr.path_view)
-            add_tab_path_view = self.query_one(current_view_qid, PathView)
+            current_view_qid = id_mixin.view_qid(ViewStr.contents_view)
+            add_tab_path_view = self.query_one(current_view_qid, ContentsView)
 
             id_to_maximize = add_tab_path_view.id
             path = getattr(add_tab_path_view, "path")

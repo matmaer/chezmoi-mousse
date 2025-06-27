@@ -39,7 +39,7 @@ class PaneEnum(Enum):
 class ViewStr(StrEnum):
     diff_view = auto()
     git_log_view = auto()
-    path_view = auto()
+    contents_view = auto()
 
 
 class SideStr(StrEnum):

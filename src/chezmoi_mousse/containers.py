@@ -27,7 +27,7 @@ from chezmoi_mousse.widgets import (
     FlatTree,
     GitLogView,
     ManagedTree,
-    PathView,
+    ContentsView,
 )
 
 
@@ -157,7 +157,7 @@ class ContentSwitcherRight(ContentSwitcher, IdMixin):
         self.tab_name = tab_str
         super().__init__(
             id=self.content_switcher_id(SideStr.right),
-            initial=self.view_id(ViewStr.path_view),
+            initial=self.view_id(ViewStr.contents_view),
             classes="content-switcher-right top-border-title",
         )
 
@@ -165,7 +165,7 @@ class ContentSwitcherRight(ContentSwitcher, IdMixin):
         self.border_title = chezmoi.dest_dir_str
 
     def compose(self) -> ComposeResult:
-        yield PathView(view_id=self.view_id(ViewStr.path_view))
+        yield ContentsView(view_id=self.view_id(ViewStr.contents_view))
         yield DiffView(
             tab_name=self.tab_name, view_id=self.view_id(ViewStr.diff_view)
         )

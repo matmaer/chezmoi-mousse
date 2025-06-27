@@ -51,7 +51,7 @@ class AutoWarning(Static):
         )
 
 
-class PathView(RichLog):
+class ContentsView(RichLog):
     # focussable https://textual.textualize.io/widgets/rich_log/
 
     path: reactive[Path | None] = reactive(None)
