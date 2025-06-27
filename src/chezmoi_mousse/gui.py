@@ -163,14 +163,18 @@ class MainScreen(Screen[None]):
                 id_mixin.tab_name == TabStr.doctor_tab
                 or id_mixin.tab_name == TabStr.log_tab
             ):
-                return False  # hide binding
+                return None  # show disabled binding
             return True
 
         elif action == "toggle_filter_slider":
 
             if not active_pane:
                 return True  # Show at startup (apply tab will be active)
-            return active_pane in ("apply", "re_add", "add")
+            if active_pane in ("apply", "re_add", "add"):
+                return True
+            else:
+                return None  # show disabled binding
+        return None  # show disabled binding
 
     def action_toggle_filter_slider(self) -> None:
         # merely find the corresponding method in the active tab ant call it
