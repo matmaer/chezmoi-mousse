@@ -17,6 +17,7 @@ from pathlib import Path
 from rich.style import Style
 from rich.text import Text
 from textual.content import Content
+from textual.events import Key
 from textual.reactive import reactive
 from textual.widgets import DataTable, DirectoryTree, RichLog, Static, Tree
 from textual.widgets.tree import TreeNode
@@ -206,13 +207,6 @@ class DiffView(RichLog):
 
 
 class GitLogView(DataTable[Text]):
-    """DataTable widget to display the output of the `git log` command.
-
-    Does not call the git command directly, calls it through chezmoi.
-    """
-
-    # focussable  https://textual.textualize.io/widgets/data_table/
-
     path: reactive[Path | None] = reactive(None, init=False)
 
     def __init__(self, *, view_id: str) -> None:
@@ -272,7 +266,6 @@ class FileNodeData(NodeData):
 
 
 class TreeBase(Tree[NodeData]):
-    """Base class for ManagedTree, FlatTree, and ExpandedTree."""
 
     def __init__(
         self,
@@ -281,12 +274,17 @@ class TreeBase(Tree[NodeData]):
         id: str | None = None,
         classes: str | None = None,
     ) -> None:
+        self._initial_render = True
+        self._first_focus = True
+        self._user_interacted = False
         self.tab_str: TabStr = tab_str
         self.node_colors: dict[str, str] = {
             "Dir": theme.vars["text-primary"],
             "D": theme.vars["text-error"],
             "A": theme.vars["text-success"],
             "M": theme.vars["text-warning"],
+            # Root node, invisible but needed because render_label override
+            "R": theme.vars["text-primary"],
         }
         root_node_data: DirNodeData = DirNodeData(
             path=chezmoi.dest_dir, found=True, status="R"
@@ -299,8 +297,28 @@ class TreeBase(Tree[NodeData]):
         self.guide_depth: int = 3
         self.show_root: bool = False
 
+    # 4 methods to provide tab navigation without intaraction with the tree
+    def on_key(self, event: Key) -> None:
+        if event.key in ("tab", "shift+tab"):
+            return
+        self._initial_render = False
+        self._user_interacted = True
+
+    def on_click(self) -> None:
+        self._initial_render = False
+        self._user_interacted = True
+
+    def on_focus(self) -> None:
+        if self._first_focus:
+            self._first_focus = False
+            self.refresh()
+
+    def on_blur(self) -> None:
+        if not self._user_interacted and not self._first_focus:
+            self._first_focus = True
+            self.refresh()
+
     def create_dir_node_data(self, path: Path) -> DirNodeData:
-        """Create a DirNodeData instance for a given path."""
         status_code: str = chezmoi.managed_status[self.tab_str].dirs[path]
         if not status_code:
             status_code = "X"
@@ -308,14 +326,12 @@ class TreeBase(Tree[NodeData]):
         return DirNodeData(path=path, found=found, status=status_code)
 
     def create_file_node_data(self, path: Path) -> FileNodeData:
-        """Create a FileNodeData instance for a given path."""
         status_code: str = chezmoi.managed_status[self.tab_str].files[path]
         found: bool = path.exists()
         return FileNodeData(path=path, found=found, status=status_code)
 
     def get_expanded_nodes(self) -> list[TreeNode[NodeData]]:
-        """Recursively get all current expanded nodes in the tree, always
-        including the root node."""
+        # Recursively calling collect_nodes
         nodes: list[TreeNode[NodeData]] = [self.root]
 
         def collect_nodes(
@@ -408,6 +424,55 @@ class TreeBase(Tree[NodeData]):
         else:
             styled = self.node_colors["Dir"]
         return Text(node_data.path.name, style=styled)
+
+    # Override render_label to preserve node colors when selected
+    def render_label(
+        self,
+        node: TreeNode[NodeData],
+        base_style: Style,
+        style: Style,  # needed for valid overriding
+    ) -> Text:
+        assert node.data is not None
+        node_label = self.style_label(node.data)
+
+        if node is self.cursor_node:
+            current_style = node_label.style
+            # Apply bold styling when tree is first focused
+            if not self._first_focus and self._initial_render:
+                if isinstance(current_style, str):
+                    cursor_style = Style.parse(current_style) + Style(
+                        bold=True
+                    )
+                else:
+                    cursor_style = current_style + Style(bold=True)
+                node_label = Text(node_label.plain, style=cursor_style)
+            # Apply underline styling only after actual user interaction
+            elif self._user_interacted:
+                if isinstance(current_style, str):
+                    cursor_style = Style.parse(current_style) + Style(
+                        underline=True
+                    )
+                else:
+                    cursor_style = current_style + Style(underline=True)
+                node_label = Text(node_label.plain, style=cursor_style)
+
+        if node.allow_expand:
+            # import this as render_label is not in its natural habitat
+            from textual.widgets._tree import TOGGLE_STYLE
+
+            prefix = (
+                (
+                    self.ICON_NODE_EXPANDED
+                    if node.is_expanded
+                    else self.ICON_NODE
+                ),
+                base_style + TOGGLE_STYLE,
+            )
+        else:
+            prefix = ("", base_style)
+
+        text = Text.assemble(prefix, node_label)
+        return text
 
 
 class ManagedTree(TreeBase, IdMixin):

@@ -266,13 +266,9 @@ Toast {
 }
 
 Tree {
-  &>.tree--cursor {
-    text-style: none;
-    /* TODO: let the tree cursor keep the same color */
-  }
 
   &>.tree--highlight-line {
-    text-style: none;
+    text-style: bold;
   }
 
   &>.tree--highlight {
