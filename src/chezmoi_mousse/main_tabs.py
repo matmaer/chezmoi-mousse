@@ -20,8 +20,6 @@ from textual.containers import (
     VerticalGroup,
     VerticalScroll,
 )
-from textual.events import Click
-from textual.screen import ModalScreen
 from textual.widgets import (
     Button,
     Collapsible,
@@ -320,63 +318,7 @@ class AddTab(Horizontal, IdMixin):
         )
 
 
-class DoctorTab(VerticalScroll, IdMixin):
-
-    BINDINGS = [
-        Binding(key="C,c", action="open_config", description="chezmoi-config"),
-        Binding(
-            key="G,g",
-            action="git_log",
-            description="show-git-log",
-            tooltip="git log from your chezmoi repository",
-        ),
-    ]
-
-    def __init__(self, tab_str: TabStr) -> None:
-        IdMixin.__init__(self, tab_str)
-        super().__init__(id=tab_str)
-
-    class ConfigDumpModal(ModalScreen[Pretty]):
-
-        BINDINGS = [
-            Binding(
-                key="escape", action="dismiss", description="close", show=False
-            )
-        ]
-
-        def compose(self) -> ComposeResult:
-            yield Pretty(chezmoi.dump_config.dict_out)
-
-        def on_mount(self) -> None:
-            self.add_class("doctor-modal")
-            self.border_title = "chezmoi dump-config - command output"
-            self.border_subtitle = "double click or escape to close"
-
-        def on_click(self, event: Click) -> None:
-            event.stop()
-            if event.chain == 2:
-                self.dismiss()
-
-    class GitLogModal(ModalScreen[GitLogView]):
-
-        BINDINGS = [
-            Binding(
-                key="escape", action="dismiss", description="close", show=False
-            )
-        ]
-
-        def compose(self) -> ComposeResult:
-            yield GitLogView(view_id=TabStr.doctor_tab)
-
-        def on_mount(self) -> None:
-            self.add_class("doctor-modal")
-            self.border_title = "chezmoi git log - command output"
-            self.border_subtitle = "double click or escape to close"
-
-        def on_click(self, event: Click) -> None:
-            event.stop()
-            if event.chain == 2:
-                self.dismiss()
+class DoctorTab(VerticalScroll):
 
     def compose(self) -> ComposeResult:
 
@@ -443,12 +385,6 @@ class DoctorTab(VerticalScroll, IdMixin):
             else:
                 row = [Text(cell_text) for cell_text in row]
                 table.add_row(*row)
-
-    def action_open_config(self) -> None:
-        self.app.push_screen(DoctorTab.ConfigDumpModal())
-
-    def action_git_log(self) -> None:
-        self.app.push_screen(DoctorTab.GitLogModal())
 
 
 class CommandLog(RichLog):

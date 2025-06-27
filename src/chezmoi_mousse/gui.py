@@ -116,7 +116,7 @@ class MainScreen(Screen[None]):
             with TabPane("Add", id=PaneEnum.add.name):
                 yield AddTab(tab_str=TabStr.add_tab)
             with TabPane("Doctor", id=PaneEnum.doctor.name):
-                yield DoctorTab(tab_str=TabStr.doctor_tab)
+                yield DoctorTab(id=TabStr.doctor_tab.value)
             with TabPane("Diagram", id=PaneEnum.diagram.name):
                 yield ScrollableContainer(
                     Static(
