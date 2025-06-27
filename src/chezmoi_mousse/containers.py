@@ -99,8 +99,8 @@ class ButtonsTopRight(HorizontalGroup, IdMixin):
             classes="tab-buttons-horizontal",
         )
         self.buttons = (
-            ButtonEnum.contents_btn,
             ButtonEnum.diff_btn,
+            ButtonEnum.contents_btn,
             ButtonEnum.git_log_btn,
         )
 
@@ -165,8 +165,8 @@ class ContentSwitcherRight(ContentSwitcher, IdMixin):
         self.border_title = chezmoi.dest_dir_str
 
     def compose(self) -> ComposeResult:
-        yield ContentsView(view_id=self.view_id(ViewStr.contents_view))
         yield DiffView(
             tab_name=self.tab_name, view_id=self.view_id(ViewStr.diff_view)
         )
+        yield ContentsView(view_id=self.view_id(ViewStr.contents_view))
         yield GitLogView(view_id=self.view_id(ViewStr.git_log_view))
