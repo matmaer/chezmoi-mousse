@@ -61,7 +61,7 @@ class ContentsView(RichLog):
             id=view_id, auto_scroll=False, wrap=True, highlight=True
         )
 
-    def update_path_view(self) -> None:
+    def update_contents_view(self) -> None:
         assert isinstance(self.path, Path)
         truncated = ""
         try:
@@ -118,7 +118,7 @@ class ContentsView(RichLog):
         if self.path is None:
             self.path = chezmoi.dest_dir
         self.clear()
-        self.update_path_view()
+        self.update_contents_view()
 
 
 class DiffView(RichLog):

@@ -209,10 +209,12 @@ class MainScreen(Screen[None]):
 
         elif id_mixin.tab_name == TabStr.add_tab:
             current_view_qid = id_mixin.view_qid(ViewStr.contents_view)
-            add_tab_path_view = self.query_one(current_view_qid, ContentsView)
+            add_tab_contents_view = self.query_one(
+                current_view_qid, ContentsView
+            )
 
-            id_to_maximize = add_tab_path_view.id
-            path = getattr(add_tab_path_view, "path")
+            id_to_maximize = add_tab_contents_view.id
+            path = getattr(add_tab_contents_view, "path")
 
         elif id_mixin.tab_name == TabStr.diagram_tab:
             id_to_maximize = PaneEnum.diagram.name
