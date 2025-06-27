@@ -121,8 +121,12 @@ MaximizeModal {
 
 ModalScreen {
   &.modal-view {
-    border-top: tab $foreground;
-    border-bottom: $foreground;
+    border-title-style: bold;
+    border-title-align: center;
+    border-subtitle-align: center;
+    border-subtitle-style: bold;
+    border-top: tab $foreground-darken-1;
+    border-bottom: tab $foreground-darken-1;
     margin-bottom: 1;
   }
 }
