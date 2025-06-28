@@ -370,10 +370,8 @@ class ChezmoiGUI(App[None]):
         self.push_screen(LoadingScreen(), callback=self.push_main_screen)
         self.watch(self, "theme", self.on_theme_change, init=False)
 
-    def push_main_screen(
-        self, splash_log_tab: list[LogTabEntry] | None
-    ) -> None:
-        LogTab.splash_log_tab = splash_log_tab
+    def push_main_screen(self, splash_log: list[LogTabEntry] | None) -> None:
+        LogTab.splash_log = splash_log
         self.push_screen("main_screen")
 
     def on_theme_change(self, _: str, new_theme: str) -> None:

@@ -494,7 +494,7 @@ class DoctorTab(VerticalScroll):
 
 class LogTab(RichLog):
 
-    splash_log_tab: list[LogTabEntry] | None = None
+    splash_log: list[LogTabEntry] | None = None
 
     def add(self, chezmoi_io: LogTabEntry) -> None:
         time_stamp = datetime.now().strftime("%H:%M:%S")
@@ -531,6 +531,6 @@ class LogTab(RichLog):
 
     @work(thread=True)
     def write_splash_log(self) -> None:
-        if self.splash_log_tab is not None:
-            for cmd in self.splash_log_tab:
+        if self.splash_log is not None:
+            for cmd in self.splash_log:
                 self.add(cmd)
