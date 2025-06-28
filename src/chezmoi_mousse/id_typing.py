@@ -77,8 +77,13 @@ class CharsEnum(Enum):
     burger = "\N{IDENTICAL TO}"
     check_mark = "\N{HEAVY CHECK MARK}"
     gear = "\N{GEAR}"
-    to_chezmoi = f"local {'\N{EM DASH}' * 3}\N{RIGHTWARDS ARROW} chezmoi"
-    from_chezmoi = f"local \N{LEFTWARDS ARROW}{'\N{EM DASH}' * 3} chezmoi"
+    apply = f"local \N{LEFTWARDS ARROW}{'\N{EM DASH}' * 3} chezmoi apply"
+    re_add = (
+        f"chezmoi re-add local {'\N{EM DASH}' * 3}\N{RIGHTWARDS ARROW} chezmoi"
+    )
+    add = (
+        f"chezmoi re-add local {'\N{EM DASH}' * 3}\N{RIGHTWARDS ARROW} chezmoi"
+    )
 
 
 @dataclass
@@ -134,8 +139,12 @@ class IdMixin:
     def tree_qid(self, tree: TreeStr) -> str:
         return f"#{self.tree_id(tree)}"
 
-    def view_id(self, view_enum: ViewStr) -> str:
+    def view_id(self, view_enum: ViewStr, operate: bool = False) -> str:
+        if operate is True:
+            return f"{self.tab_name}_{view_enum}_operate_modal"
         return f"{self.tab_name}_{view_enum}"
 
-    def view_qid(self, view_enum: ViewStr) -> str:
+    def view_qid(self, view_enum: ViewStr, operate: bool = False) -> str:
+        if operate is True:
+            return f"#{self.view_id(view_enum)}_operate_modal"
         return f"#{self.view_id(view_enum)}"
