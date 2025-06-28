@@ -1,4 +1,4 @@
-import ast
+import json
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -87,13 +87,10 @@ def subprocess_run(long_command: tuple[str, ...]) -> str:
 
 
 class PerformChange:
-    """Group of commands which either make changes on disk or in the chezmoi
-    repository.
+    """Group of commands which make changes on disk or in the chezmoi
+    repository."""
 
-    Verbose output is returned for logging.
-    """
-
-    base = BASE + ("--verbose", "--dry-run")
+    base = BASE + ("--verbose", "--dry-run", "--force")
     # TODO: remove --dry-run
 
     @staticmethod
@@ -169,16 +166,12 @@ class InputOutput:
         self.std_out = subprocess_run(self.long_command)
         self.list_out = self.std_out.splitlines()
         try:
-            result: Any = ast.literal_eval(
-                self.std_out.replace("null", "None")
-                .replace("false", "False")
-                .replace("true", "True")
-            )
+            result: Any = json.loads(self.std_out)
             if isinstance(result, dict):
                 self.dict_out: dict[str, Any] = result
             else:
                 self.dict_out = {}
-        except (SyntaxError, ValueError):
+        except (json.JSONDecodeError, ValueError):
             self.dict_out = {}
 
 
