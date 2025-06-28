@@ -159,13 +159,18 @@ class Operate(ModalScreen[None], IdMixin):
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
+        op_log = self.query_one(self.log_qid, RichLog)
         if event.button.id == self.button_id(ButtonEnum.apply_file_btn):
-            self.notify("Not yet implemented.")
+            self.notify(f"Not yet implemented for {op_log}.")
         elif event.button.id == self.button_id(ButtonEnum.re_add_file_btn):
-            self.notify("Not yet implemented.")
+            self.notify(f"Not yet implemented for {op_log}.")
         elif event.button.id == self.button_id(ButtonEnum.add_file_btn):
-            self.notify("Not yet implemented.")
+            self.notify(f"Not yet implemented for {op_log}.")
         elif event.button.id == self.button_id(ButtonEnum.cancel_apply_btn):
+            self.dismiss()
+        elif event.button.id == self.button_id(ButtonEnum.cancel_re_add_btn):
+            self.dismiss()
+        elif event.button.id == self.button_id(ButtonEnum.cancel_add_btn):
             self.dismiss()
 
 
@@ -333,14 +338,14 @@ class ApplyTab(BaseTab):
 
 class ReAddTab(BaseTab):
 
+    BINDINGS = [
+        Binding(key="C", action="re_add_diff", description="chezmoi-re-add")
+    ]
+
     def __init__(self, tab_str: TabStr) -> None:
         IdMixin.__init__(self, tab_str)
         self.tab_str: TabStr = tab_str
         super().__init__(id=self.tab_main_horizontal_id)
-
-    BINDINGS = [
-        Binding(key="C", action="re_add_diff", description="chezmoi-re-add")
-    ]
 
     def compose(self) -> ComposeResult:
         with VerticalGroup(
@@ -385,7 +390,7 @@ class ReAddTab(BaseTab):
                 self.tab_str,
                 buttons=(
                     ButtonEnum.re_add_file_btn,
-                    ButtonEnum.cancel_apply_btn,
+                    ButtonEnum.cancel_re_add_btn,
                 ),
                 path=current_path,
             )
@@ -393,6 +398,10 @@ class ReAddTab(BaseTab):
 
 
 class AddTab(Horizontal, IdMixin):
+
+    BINDINGS = [
+        Binding(key="C", action="add_contents", description="chezmoi-add")
+    ]
 
     def __init__(self, tab_str: TabStr) -> None:
         IdMixin.__init__(self, tab_str)
@@ -471,6 +480,19 @@ class AddTab(Horizontal, IdMixin):
     def action_toggle_filter_slider(self) -> None:
         self.query_one(self.filter_slider_qid, VerticalGroup).toggle_class(
             "-visible"
+        )
+
+    def action_add_contents(self) -> None:
+        contents_view = self.query_one(
+            self.view_qid(ViewStr.contents_view), ContentsView
+        )
+        current_path = getattr(contents_view, "path")
+        self.app.push_screen(
+            Operate(
+                self.tab_str,
+                buttons=(ButtonEnum.add_file_btn, ButtonEnum.cancel_add_btn),
+                path=current_path,
+            )
         )
 
 
