@@ -166,11 +166,11 @@ class Operate(ModalScreen[None], IdMixin):
             self.notify(f"Not yet implemented for {op_log}.")
         elif event.button.id == self.button_id(ButtonEnum.add_file_btn):
             self.notify(f"Not yet implemented for {op_log}.")
-        elif event.button.id == self.button_id(ButtonEnum.cancel_apply_btn):
-            self.dismiss()
-        elif event.button.id == self.button_id(ButtonEnum.cancel_re_add_btn):
-            self.dismiss()
-        elif event.button.id == self.button_id(ButtonEnum.cancel_add_btn):
+        elif event.button.id in (
+            self.button_id(ButtonEnum.cancel_apply_btn),
+            self.button_id(ButtonEnum.cancel_re_add_btn),
+            self.button_id(ButtonEnum.cancel_add_btn),
+        ):
             self.dismiss()
 
 
