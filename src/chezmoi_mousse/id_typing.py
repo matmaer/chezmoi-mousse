@@ -10,13 +10,15 @@ class ButtonEnum(Enum):
     diff_btn = "Diff"
     git_log_btn = "Git-Log"
     # operational buttons
-    add_directory_btn = "Add Directory"
-    add_file_btn = "Add File"
-    apply_directory_btn = "Apply Directory"
-    apply_file_btn = "Apply File"
-    re_add_directory_btn = "Re-Add Directory"
-    re_add_file_btn = "Re-Add File"
-    cancel_btn = "Cancel"
+    add_directory_btn = "Chezmoi Add Files"
+    add_file_btn = "Chezmoi Add File"
+    apply_directory_btn = "Chezmoi Apply Files"
+    apply_file_btn = "Chezmoi Apply"
+    re_add_directory_btn = "Chezmoi Re-Add Files"
+    re_add_file_btn = "Chezmoi Re-Add File"
+    cancel_apply_btn = "Cancel Apply"
+    cancel_re_add_btn = "Cancel Re-Add"
+    cancel_add_btn = "Cancel Add"
 
 
 class TabStr(StrEnum):
@@ -71,10 +73,12 @@ class FilterEnum(Enum):
 
 
 class CharsEnum(Enum):
-    bullet = "\N{BULLET}"  # code point U+2022
-    burger = "\N{IDENTICAL TO}"  # code point U+2261
-    check_mark = "\N{HEAVY CHECK MARK}"  # code point U+2714
-    gear = "\N{GEAR}"  # code point U+2699
+    bullet = "\N{BULLET}"
+    burger = "\N{IDENTICAL TO}"
+    check_mark = "\N{HEAVY CHECK MARK}"
+    gear = "\N{GEAR}"
+    to_chezmoi = f"local {'\N{EM DASH}' * 3}\N{RIGHTWARDS ARROW} chezmoi"
+    from_chezmoi = f"local \N{LEFTWARDS ARROW}{'\N{EM DASH}' * 3} chezmoi"
 
 
 @dataclass

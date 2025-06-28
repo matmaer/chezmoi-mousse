@@ -72,6 +72,12 @@ class ButtonsHorizontal(HorizontalGroup, IdMixin):
             classes="tab-buttons-horizontal",
         )
         self.buttons = buttons
+        self.button_class: str
+        self.corner_str: CornerStr = corner_str
+        if self.corner_str == CornerStr.bottom_right:
+            self.button_class = "operate-button"
+        else:
+            self.button_class = "tab-button"
 
     def compose(self) -> ComposeResult:
         for button_enum in self.buttons:
@@ -82,7 +88,7 @@ class ButtonsHorizontal(HorizontalGroup, IdMixin):
                 yield Button(
                     label=button_enum.value,
                     id=self.button_id(button_enum),
-                    classes="tab-button",
+                    classes=self.button_class,
                 )
 
     def on_mount(self) -> None:

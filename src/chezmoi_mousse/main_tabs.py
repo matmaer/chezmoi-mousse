@@ -48,6 +48,7 @@ from chezmoi_mousse.containers import (
 )
 from chezmoi_mousse.id_typing import (
     ButtonEnum,
+    CharsEnum,
     CornerStr,
     LogTabEntry,
     FilterEnum,
@@ -78,21 +79,35 @@ class Operate(ModalScreen[None], IdMixin):
         )
     ]
 
-    def __init__(self, path: Path, tab_name: TabStr) -> None:
+    def __init__(
+        self, tab_name: TabStr, *, path: Path, buttons: tuple[ButtonEnum, ...]
+    ) -> None:
         IdMixin.__init__(self, tab_name)
         self.tab_name = tab_name
         self.path = path
+        self.buttons = buttons
         self.diff_id = f"{tab_name}_operate_diff"
         self.diff_qid = f"#{self.diff_id}"
-        super().__init__()
+        super().__init__(id="operate_screen")
 
     def compose(self) -> ComposeResult:
+        yield Static(f" {self.path} ", classes="operate-top-static")
         yield DiffView(tab_name=self.tab_name, view_id=self.diff_id)
+        yield ButtonsHorizontal(
+            self.tab_name,
+            buttons=self.buttons,
+            corner_str=CornerStr.bottom_right,
+        )
 
     def on_mount(self) -> None:
-        self.add_class("operate")
-        self.border_subtitle = " double click or escape key to cancel "
-        self.border_title = f" {self.path} "
+        static_header = self.query_exactly_one(Static)
+        if (
+            self.tab_name == TabStr.add_tab
+            or self.tab_name == TabStr.re_add_tab
+        ):
+            static_header.border_title = f"{CharsEnum.to_chezmoi.value}"
+        else:
+            static_header.border_title = f"{CharsEnum.from_chezmoi.value}"
         self.query_one(self.diff_qid, DiffView).path = self.path
 
     def on_click(self, event: Click) -> None:
@@ -210,7 +225,6 @@ class ApplyTab(BaseTab):
             id=self.tab_vertical_id(SideStr.right),
             classes="tab-right-vertical",
         ):
-            # yield ButtonsTopRight(self.tab_str)
             yield ButtonsHorizontal(
                 self.tab_str,
                 buttons=(
@@ -226,9 +240,42 @@ class ApplyTab(BaseTab):
             self.tab_str, filters=(FilterEnum.unchanged, FilterEnum.expand_all)
         )
 
+    def check_action(
+        self, action: str, parameters: tuple[object, ...]
+    ) -> bool | None:
+
+        diff_button = self.query_one(self.button_qid(ButtonEnum.diff_btn))
+
+        content_switcher = self.query_one(
+            self.content_switcher_qid(SideStr.right), ContentSwitcher
+        )
+        # current returns the id of the currently active view
+        active_view_id: str | None = content_switcher.current
+        if active_view_id == self.view_id(
+            ViewStr.diff_view
+        ) or diff_button.has_class("last-clicked"):
+            return True
+        else:
+            return None
+
     def action_toggle_filter_slider(self) -> None:
         self.query_one(self.filter_slider_qid, VerticalGroup).toggle_class(
             "-visible"
+        )
+
+    def action_apply_diff(self) -> None:
+        diff_view = self.query_one(self.view_qid(ViewStr.diff_view), DiffView)
+        current_path = getattr(diff_view, "path")
+        self.notify(f"Applying diff for {current_path} in {self.tab_str}")
+        self.app.push_screen(
+            Operate(
+                self.tab_str,
+                buttons=(
+                    ButtonEnum.apply_file_btn,
+                    ButtonEnum.cancel_apply_btn,
+                ),
+                path=current_path,
+            )
         )
 
 

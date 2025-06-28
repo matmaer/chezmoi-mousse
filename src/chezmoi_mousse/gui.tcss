@@ -70,12 +70,13 @@
 }
 
 .tab-buttons-horizontal {
-  height: 1;
   width: 100%;
   align: center top;
   &>.single-button-vertical {
     align: center top;
+    height: auto;
     &>.tab-button {
+      height: 1;
       min-width: 4;
       text-style: none;
       &:hover {
@@ -92,8 +93,31 @@
         text-style: bold;
       }
     }
-
+    &>.operate-button {
+      border: round $primary;
+      border: round $panel-lighten-3;
+      color: $primary-lighten-3;
+      height: 3;
+      min-width: 20;
+      width: 100%;
+      text-style: none;
+      &:hover {
+        text-style: none;
+        color: $accent;
+      }
+      &:focus {
+        text-style: none;
+      }
+    }
   }
+}
+
+.operate-top-static {
+  align: center top;
+  content-align: center top;
+  border-title-align: center;
+  border: round $panel-lighten-3;
+  color: $primary-lighten-3;
 }
 
 .flow_diagram {
@@ -120,18 +144,18 @@ MaximizeModal {
 }
 
 ModalScreen {
+  border-title-align: center;
+  border-title-style: bold;
   &.modal-view {
-    border-title-style: bold;
-    border-title-align: center;
-    border-subtitle-align: center;
     border-subtitle-style: bold;
-    border-top: tab $foreground-darken-1;
-    border-bottom: tab $foreground-darken-1;
+    border-subtitle-align: center;
+    border-top: tab $foreground-darken-3;
+    border-bottom: tab $foreground-darken-3;
     margin-bottom: 1;
   }
   &.operate {
-    border-title-style: bold;
-    border-title-align: center;
+    # border-title-style: bold;
+    # border-title-align: center;
     border-top: panel $panel;
   }
 }
