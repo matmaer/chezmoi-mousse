@@ -129,13 +129,13 @@ AutoWarning {
   height: auto;
   padding: 0 1 0 1;
   margin: 0 1 0 1;
-  dock: top;
+  dock: bottom;
   text-align: center;
   border-bottom: dashed $panel;
 }
 
 MainScreen {
-  layers: filter_switches
+  layers: filter_switches;
 }
 
 MaximizeModal {

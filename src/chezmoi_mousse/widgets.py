@@ -35,15 +35,15 @@ class AutoWarning(Static):
         auto_warning: list[str] = []
         if chezmoi.autocommit_enabled and not chezmoi.autopush_enabled:
             auto_warning.append(
-                '"Auto Commit" is enabled: added file(s) will also be committed.'
+                '"Auto Commit" is enabled: files will also be committed.'
             )
-        if chezmoi.autocommit_enabled and chezmoi.autopush_enabled:
+        elif chezmoi.autocommit_enabled and chezmoi.autopush_enabled:
             auto_warning.append(
-                '"Auto Commit" and "Auto Push" are enabled: adding file(s) will also be committed and pushed to the remote.'
+                '"Auto Commit" and "Auto Push" are enabled: files will be committed and pushed to the remote.'
             )
-        if chezmoi.autoadd_enabled:
+        else:
             auto_warning.append(
-                '"Auto Add" is enabled: files will be added automatically, don\'t use the GUI while editing files.'
+                '"Auto Commit" and "Auto Push" are not enabled.'
             )
         self.update(
             Content.from_markup(

@@ -59,6 +59,7 @@ from chezmoi_mousse.id_typing import (
     ViewStr,
 )
 from chezmoi_mousse.widgets import (
+    AutoWarning,
     DiffView,
     ExpandedTree,
     FilteredDirTree,
@@ -91,16 +92,21 @@ class Operate(ModalScreen[None], IdMixin):
         super().__init__(id="operate_screen")
 
     def compose(self) -> ComposeResult:
-        yield Static(f" {self.path} ", classes="operate-top-static")
+        yield Static(
+            f" {self.path} ",
+            id="path_info_static",
+            classes="operate-top-static",
+        )
         yield DiffView(tab_name=self.tab_name, view_id=self.diff_id)
         yield ButtonsHorizontal(
             self.tab_name,
             buttons=self.buttons,
             corner_str=CornerStr.bottom_right,
         )
+        yield AutoWarning()
 
     def on_mount(self) -> None:
-        static_header = self.query_exactly_one(Static)
+        static_header = self.query_one("#path_info_static", Static)
         if (
             self.tab_name == TabStr.add_tab
             or self.tab_name == TabStr.re_add_tab
@@ -266,7 +272,6 @@ class ApplyTab(BaseTab):
     def action_apply_diff(self) -> None:
         diff_view = self.query_one(self.view_qid(ViewStr.diff_view), DiffView)
         current_path = getattr(diff_view, "path")
-        self.notify(f"Applying diff for {current_path} in {self.tab_str}")
         self.app.push_screen(
             Operate(
                 self.tab_str,
