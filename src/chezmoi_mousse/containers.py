@@ -124,7 +124,7 @@ class ContentSwitcherRight(ContentSwitcher, IdMixin):
         IdMixin.__init__(self, tab_str)
         super().__init__(
             id=self.content_switcher_id(SideStr.right),
-            initial=self.view_id(ViewStr.contents_view),
+            initial=self.view_id(ViewStr.diff_view),
             classes="content-switcher-right top-border-title",
         )
 
