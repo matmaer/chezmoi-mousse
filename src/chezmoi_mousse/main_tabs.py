@@ -89,21 +89,29 @@ class Operate(ModalScreen[None], IdMixin):
         self.buttons = buttons
         self.diff_id = f"{tab_name}_operate_diff"
         self.diff_qid = f"#{self.diff_id}"
-        super().__init__(id="operate_screen")
+        super().__init__(id="operate_screen", classes="operate-screen")
 
     def compose(self) -> ComposeResult:
-        yield Static(
-            f" {self.path} ",
-            id="path_info_static",
-            classes="operate-top-static",
-        )
-        yield DiffView(tab_name=self.tab_name, view_id=self.diff_id)
-        yield ButtonsHorizontal(
-            self.tab_name,
-            buttons=self.buttons,
-            corner_str=CornerStr.bottom_right,
-        )
-        yield AutoWarning()
+        with Vertical(id="operate_container", classes="operate-container"):
+            yield AutoWarning(classes="operate-auto-warning")
+            yield Static(
+                f"{self.path}",
+                id="path_info_static",
+                classes="operate-top-path",
+            )
+            with Container(
+                id="collapsible_container", classes="collapsible-container"
+            ):
+                yield Collapsible(
+                    DiffView(tab_name=self.tab_name, view_id=self.diff_id),
+                    classes="operate-collapsible",
+                    title="chezmoi diff view",
+                )
+            yield ButtonsHorizontal(
+                self.tab_name,
+                buttons=self.buttons,
+                corner_str=CornerStr.bottom_right,
+            )
 
     def on_mount(self) -> None:
         static_header = self.query_one("#path_info_static", Static)
@@ -114,7 +122,13 @@ class Operate(ModalScreen[None], IdMixin):
             static_header.border_title = f"{CharsEnum.to_chezmoi.value}"
         else:
             static_header.border_title = f"{CharsEnum.from_chezmoi.value}"
-        self.query_one(self.diff_qid, DiffView).path = self.path
+
+        operate_diff_view = self.query_one(self.diff_qid, DiffView)
+        operate_diff_view.add_class("operate-diff-view")
+        operate_diff_view.path = self.path
+        self.query_exactly_one(ButtonsHorizontal).add_class(
+            "operate-buttons-horizontal"
+        )
 
     def on_click(self, event: Click) -> None:
         event.stop()
