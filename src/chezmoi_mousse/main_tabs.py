@@ -20,7 +20,6 @@ from textual.containers import (
     VerticalGroup,
     VerticalScroll,
 )
-from textual.events import Click
 from textual.screen import ModalScreen
 from textual.widgets import (
     Button,
@@ -107,6 +106,7 @@ class Operate(ModalScreen[None], IdMixin):
                     classes="operate-collapsible",
                     title="chezmoi diff view",
                 )
+            yield RichLog(id="operate_log", classes="operate-log")
             yield ButtonsHorizontal(
                 self.tab_name,
                 buttons=self.buttons,
@@ -129,10 +129,18 @@ class Operate(ModalScreen[None], IdMixin):
         self.query_exactly_one(ButtonsHorizontal).add_class(
             "operate-buttons-horizontal"
         )
+        operate_log = self.query_one("#operate_log", RichLog)
+        operate_log.border_title = f"{self.tab_name} log"
 
-    def on_click(self, event: Click) -> None:
+    def on_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
-        if event.chain == 2:
+        if event.button.id == self.button_id(ButtonEnum.apply_file_btn):
+            self.notify("Not yet implemented.")
+        elif event.button.id == self.button_id(ButtonEnum.re_add_file_btn):
+            self.notify("Not yet implemented.")
+        elif event.button.id == self.button_id(ButtonEnum.add_file_btn):
+            self.notify("Not yet implemented.")
+        elif event.button.id == self.button_id(ButtonEnum.cancel_apply_btn):
             self.dismiss()
 
 
@@ -305,6 +313,10 @@ class ReAddTab(BaseTab):
         self.tab_str: TabStr = tab_str
         super().__init__(id=self.tab_main_horizontal_id)
 
+    BINDINGS = [
+        Binding(key="C", action="re_add_diff", description="chezmoi-re-add")
+    ]
+
     def compose(self) -> ComposeResult:
         with VerticalGroup(
             id=self.tab_vertical_id(SideStr.left), classes="tab-left-vertical"
@@ -338,6 +350,20 @@ class ReAddTab(BaseTab):
     def action_toggle_filter_slider(self) -> None:
         self.query_one(self.filter_slider_qid, VerticalGroup).toggle_class(
             "-visible"
+        )
+
+    def action_re_add_diff(self) -> None:
+        diff_view = self.query_one(self.view_qid(ViewStr.diff_view), DiffView)
+        current_path = getattr(diff_view, "path")
+        self.app.push_screen(
+            Operate(
+                self.tab_str,
+                buttons=(
+                    ButtonEnum.re_add_file_btn,
+                    ButtonEnum.cancel_apply_btn,
+                ),
+                path=current_path,
+            )
         )
 
 
