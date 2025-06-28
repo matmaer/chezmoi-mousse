@@ -86,27 +86,45 @@ class Operate(ModalScreen[None], IdMixin):
         self.tab_name = tab_name
         self.path = path
         self.buttons = buttons
-        self.diff_id = f"{tab_name}_operate_diff"
-        self.diff_qid = f"#{self.diff_id}"
+        self.diff_id = self.view_id(ViewStr.diff_view, operate=True)
+        self.diff_qid = self.view_qid(ViewStr.diff_view, operate=True)
+        self.contents_id = self.view_id(ViewStr.contents_view, operate=True)
+        self.contents_qid = self.view_qid(ViewStr.contents_view, operate=True)
+        self.info_id = f"{tab_name}_operation_info"
+        self.info_qid = f"#{self.info_id}"
+        self.log_id = f"{tab_name}_operate_log"
+        self.log_qid = f"#{self.log_id}"
         super().__init__(id="operate_screen", classes="operate-screen")
 
     def compose(self) -> ComposeResult:
         with Vertical(id="operate_container", classes="operate-container"):
-            yield AutoWarning(classes="operate-auto-warning")
-            yield Static(
-                f"{self.path}",
-                id="path_info_static",
-                classes="operate-top-path",
-            )
-            with Container(
-                id="collapsible_container", classes="collapsible-container"
+            if (
+                self.tab_name == TabStr.add_tab
+                or self.tab_name == TabStr.re_add_tab
             ):
-                yield Collapsible(
-                    DiffView(tab_name=self.tab_name, view_id=self.diff_id),
-                    classes="operate-collapsible",
-                    title="chezmoi diff view",
-                )
-            yield RichLog(id="operate_log", classes="operate-log")
+                yield AutoWarning(classes="operate-auto-warning")
+            yield Static(
+                f"{self.path}", id=self.info_id, classes="operate-top-path"
+            )
+            if self.tab_name == TabStr.add_tab:
+                with Container(
+                    id="collapsible_container", classes="collapsible-container"
+                ):
+                    yield Collapsible(
+                        ContentsView(view_id=self.contents_id),
+                        classes="operate-collapsible",
+                        title="file contents view",
+                    )
+            else:
+                with Container(
+                    id="collapsible_container", classes="collapsible-container"
+                ):
+                    yield Collapsible(
+                        DiffView(tab_name=self.tab_name, view_id=self.diff_id),
+                        classes="operate-collapsible",
+                        title="file diffs view",
+                    )
+            yield RichLog(id=self.log_id, classes="operate-log")
             yield ButtonsHorizontal(
                 self.tab_name,
                 buttons=self.buttons,
@@ -114,23 +132,30 @@ class Operate(ModalScreen[None], IdMixin):
             )
 
     def on_mount(self) -> None:
-        static_header = self.query_one("#path_info_static", Static)
-        if (
-            self.tab_name == TabStr.add_tab
-            or self.tab_name == TabStr.re_add_tab
-        ):
-            static_header.border_title = f"{CharsEnum.to_chezmoi.value}"
-        else:
-            static_header.border_title = f"{CharsEnum.from_chezmoi.value}"
+        # Set border titles
+        border_titles = {
+            TabStr.apply_tab: CharsEnum.apply.value,
+            TabStr.re_add_tab: CharsEnum.re_add.value,
+            TabStr.add_tab: CharsEnum.add.value,
+        }
+        operation_info = self.query_one(self.info_qid, Static)
+        operation_info.border_title = border_titles[self.tab_name]
+        self.query_one(self.log_qid, RichLog).border_title = (
+            f"{self.tab_name} log"
+        )
 
-        operate_diff_view = self.query_one(self.diff_qid, DiffView)
-        operate_diff_view.add_class("operate-diff-view")
-        operate_diff_view.path = self.path
+        # Query the relevant view based on the tab type
+        if self.tab_name == TabStr.add_tab:
+            view = self.query_one(self.contents_qid, ContentsView)
+        else:
+            view = self.query_one(self.diff_qid, DiffView)
+
+        # Set path and classes
+        view.path = self.path
+        view.add_class("operate-view")
         self.query_exactly_one(ButtonsHorizontal).add_class(
             "operate-buttons-horizontal"
         )
-        operate_log = self.query_one("#operate_log", RichLog)
-        operate_log.border_title = f"{self.tab_name} log"
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
