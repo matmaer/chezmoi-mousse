@@ -1,29 +1,23 @@
 """Test to ensure enum values in id_typing.py are actually used in the codebase."""
 
 import re
+import sys
 from enum import Enum
 from pathlib import Path
-from types import ModuleType
+
+# Add the source directory to Python path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+import chezmoi_mousse.id_typing as id_typing
 
 from test_utils import get_python_files_excluding
 
 
-def _get_id_typing_module() -> ModuleType:
-    """Import and return the id_typing module."""
-    import sys
-
-    sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
-    import chezmoi_mousse.id_typing as id_typing
-
-    return id_typing
-
-
-def _extract_enum_values(id_typing_module: ModuleType) -> dict[str, set[str]]:
+def _extract_enum_values() -> dict[str, set[str]]:
     """Extract all enum class names and their member names from id_typing module."""
     enum_values: dict[str, set[str]] = {}
 
-    for attr_name in dir(id_typing_module):
-        attr = getattr(id_typing_module, attr_name)
+    for attr_name in dir(id_typing):
+        attr = getattr(id_typing, attr_name)
 
         # Check if it's an Enum class (but not the base Enum classes themselves)
         if (
@@ -38,13 +32,9 @@ def _extract_enum_values(id_typing_module: ModuleType) -> dict[str, set[str]]:
 
 
 def test_no_unused_enum_values():
-    """Verify that all enum values defined in id_typing.py are actually used in the codebase.
-
-    This test prevents accumulation of unused enum values.
-    """
+    """Verify that all enum values defined in id_typing.py are actually used in the codebase."""
     # Get the id_typing module and extract enum values
-    id_typing_module = _get_id_typing_module()
-    enum_classes = _extract_enum_values(id_typing_module)
+    enum_classes = _extract_enum_values()
 
     # Get all Python files except id_typing.py itself
     python_files = get_python_files_excluding("id_typing.py")
@@ -104,7 +94,7 @@ def test_enum_usage_patterns():
     enum_usage_count = 0
 
     # Get enum class names to search for
-    enum_classes = _extract_enum_values(_get_id_typing_module())
+    enum_classes = _extract_enum_values()
 
     for py_file in python_files:
         content = py_file.read_text()
@@ -132,13 +122,12 @@ def test_no_hardcoded_enum_values():
     This test encourages using the enum constants instead of their string values.
     """
     python_files = get_python_files_excluding("id_typing.py")
-    id_typing_module = _get_id_typing_module()
 
     # Collect string values from Enums that could be hardcoded
     hardcodable_values: set[str] = set()
 
-    for attr_name in dir(id_typing_module):
-        attr = getattr(id_typing_module, attr_name)
+    for attr_name in dir(id_typing):
+        attr = getattr(id_typing, attr_name)
         if (
             isinstance(attr, type)
             and issubclass(attr, Enum)
