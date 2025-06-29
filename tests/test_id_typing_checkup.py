@@ -12,13 +12,12 @@ import chezmoi_mousse.id_typing as id_typing
 from test_utils import get_python_files_excluding
 
 
-def _extract_enum_values() -> dict[str, set[str]]:
-    """Extract all enum class names and their member names from id_typing module."""
-    enum_values: dict[str, set[str]] = {}
-
+def test_no_unused_enum_values():
+    """Verify that all enum values defined in id_typing.py are actually used in the codebase."""
+    # Extract enum classes and their members directly
+    enum_classes: dict[str, set[str]] = {}
     for attr_name in dir(id_typing):
         attr = getattr(id_typing, attr_name)
-
         # Check if it's an Enum class (but not the base Enum classes themselves)
         if (
             isinstance(attr, type)
@@ -26,15 +25,7 @@ def _extract_enum_values() -> dict[str, set[str]]:
             and attr is not Enum
             and not attr_name.startswith("_")  # Skip private attributes
         ):
-            enum_values[attr_name] = {member.name for member in attr}
-
-    return enum_values
-
-
-def test_no_unused_enum_values():
-    """Verify that all enum values defined in id_typing.py are actually used in the codebase."""
-    # Get the id_typing module and extract enum values
-    enum_classes = _extract_enum_values()
+            enum_classes[attr_name] = {member.name for member in attr}
 
     # Get all Python files except id_typing.py itself
     python_files = get_python_files_excluding("id_typing.py")
@@ -90,9 +81,6 @@ def test_enum_usage_patterns():
     id_typing_imports = 0
     enum_usage_count = 0
 
-    # Get enum class names to search for
-    enum_classes = _extract_enum_values()
-
     for py_file in python_files:
         content = py_file.read_text()
 
@@ -103,9 +91,16 @@ def test_enum_usage_patterns():
         ):
             id_typing_imports += 1
 
-        # Count enum usage
-        for enum_name in enum_classes:
-            enum_usage_count += content.count(f"{enum_name}.")
+        # Count enum usage by checking each enum class
+        for attr_name in dir(id_typing):
+            attr = getattr(id_typing, attr_name)
+            if (
+                isinstance(attr, type)
+                and issubclass(attr, Enum)
+                and attr is not Enum
+                and not attr_name.startswith("_")
+            ):
+                enum_usage_count += content.count(f"{attr_name}.")
 
     assert id_typing_imports > 0, "No imports from id_typing module found"
     assert (
