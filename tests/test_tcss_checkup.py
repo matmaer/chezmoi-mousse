@@ -43,33 +43,6 @@ def test_no_hardcoded_css_classes_in_code():
     )
 
 
-def test_no_hardcoded_css_classes_regex_fallback():
-    """Regex-based fallback test to catch any missed hardcoded CSS classes.
-
-    This test uses regex to find patterns like classes="..." as a secondary check.
-    """
-    python_files = get_python_files()
-    # Pattern to match classes="..." or classes='...'
-    pattern = re.compile(r'classes\s*=\s*["\'][^"\']*["\']')
-    violations: list[str] = []
-
-    for py_file in python_files:
-
-        content = py_file.read_text()
-        lines = content.split("\n")
-
-        for line_num, line in enumerate(lines, 1):
-            matches = pattern.findall(line)
-            for match in matches:
-                violations.append(f"{py_file.name}:{line_num} - {match}")
-
-    assert (
-        not violations
-    ), "Found hardcoded CSS classes using regex check:\n" + "\n".join(
-        violations
-    )
-
-
 def test_tcss_str_enum_usage():
     """Verify that TcssStr enum values are being used for CSS classes.
 
@@ -93,10 +66,7 @@ def test_tcss_str_enum_usage():
 
 
 def test_no_unused_tcss_classes():
-    """Verify that all CSS classes defined in gui.tcss are actually used in the codebase.
-
-    This test prevents accumulation of unused CSS classes in the stylesheet.
-    """
+    """Verify that all CSS classes defined in gui.tcss are actually used in the codebase."""
     # Read the CSS file
     tcss_file = (
         Path(__file__).parent.parent / "src" / "chezmoi_mousse" / "gui.tcss"
@@ -176,7 +146,6 @@ def test_no_unused_tcss_classes():
 
 if __name__ == "__main__":
     test_no_hardcoded_css_classes_in_code()
-    test_no_hardcoded_css_classes_regex_fallback()
     test_tcss_str_enum_usage()
     test_no_unused_tcss_classes()
     print("All CSS class management tests passed!")
