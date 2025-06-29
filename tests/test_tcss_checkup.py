@@ -6,16 +6,24 @@ import re
 from test_utils import get_python_files, get_tcss_file
 
 
-def test_no_hardcoded_css_classes_in_code():
-    """Verify that classes= parameters don't use hardcoded string literals."""
+def test_tcss_str_enum_proper_usage():
+    """Verify that TcssStr enum values are used correctly throughout the codebase.
+
+    - No hardcoded CSS classes in classes= parameters (should use TcssStr enum)
+    - TcssStr should only be used for classes= parameters, never for id= parameters
+    """
     python_files = get_python_files()
-    violations: list[str] = []
+    tcss_str_usage_count = 0
+    hardcoded_violations: list[str] = []
+    id_violations: list[str] = []
 
     for py_file in python_files:
-
         content = py_file.read_text()
 
-        # Parse the AST to find function calls with classes= keyword arguments
+        # Count occurrences of TcssStr usage
+        tcss_str_usage_count += content.count("TcssStr.")
+
+        # Parse the AST to find function calls with classes= and id= keyword arguments
         try:
             tree = ast.parse(content)
         except SyntaxError:
@@ -31,43 +39,10 @@ def test_no_hardcoded_css_classes_in_code():
                         ) and isinstance(keyword.value.value, str):
                             # Found a hardcoded string in classes=
                             line_num = keyword.value.lineno
-                            violations.append(
+                            hardcoded_violations.append(
                                 f'{py_file.name}:{line_num} - classes="{keyword.value.value}"'
                             )
-
-    assert (
-        not violations
-    ), "Found hardcoded CSS classes in classes= parameters:\n" + "\n".join(
-        violations
-    )
-
-
-def test_tcss_str_enum_proper_usage():
-    """Verify that TcssStr enum values are used correctly.
-
-    - TcssStr should be used significantly in the codebase
-    - TcssStr should only be used for classes= parameters, never for id= parameters
-    """
-    python_files = get_python_files()
-    tcss_str_usage_count = 0
-    violations: list[str] = []
-
-    for py_file in python_files:
-        content = py_file.read_text()
-
-        # Count occurrences of TcssStr usage
-        tcss_str_usage_count += content.count("TcssStr.")
-
-        # Parse the AST to find function calls with id= keyword arguments
-        try:
-            tree = ast.parse(content)
-        except SyntaxError:
-            continue
-
-        for node in ast.walk(tree):
-            if isinstance(node, ast.Call):
-                for keyword in node.keywords:
-                    if keyword.arg == "id":
+                    elif keyword.arg == "id":
                         # Check if the value uses TcssStr enum
                         if isinstance(keyword.value, ast.Attribute):
                             if (
@@ -75,9 +50,16 @@ def test_tcss_str_enum_proper_usage():
                                 and keyword.value.value.id == "TcssStr"
                             ):
                                 line_num = keyword.value.lineno
-                                violations.append(
+                                id_violations.append(
                                     f"{py_file.name}:{line_num} - id=TcssStr.{keyword.value.attr}"
                                 )
+
+    # Check for hardcoded CSS classes in classes= parameters
+    assert (
+        not hardcoded_violations
+    ), "Found hardcoded CSS classes in classes= parameters:\n" + "\n".join(
+        hardcoded_violations
+    )
 
     # Check for significant TcssStr usage
     assert (
@@ -85,10 +67,10 @@ def test_tcss_str_enum_proper_usage():
     ), f"Expected significant TcssStr usage, found only {tcss_str_usage_count} occurrences"
 
     # Check that TcssStr is not used for id= parameters
-    if violations:
+    if id_violations:
         assert False, (
             "Found TcssStr enum used for id= parameters (should only be used for classes=):\n"
-            + "\n".join(violations)
+            + "\n".join(id_violations)
             + "\nTcssStr should only be used for classes= parameters, not id= parameters."
         )
 
@@ -170,7 +152,6 @@ def test_no_unused_tcss_classes():
 
 
 if __name__ == "__main__":
-    test_no_hardcoded_css_classes_in_code()
     test_tcss_str_enum_proper_usage()
     test_no_unused_tcss_classes()
     print("All CSS class management tests passed!")
