@@ -44,11 +44,7 @@ def test_no_hardcoded_css_classes_in_code():
 
 
 def test_tcss_str_enum_usage():
-    """Verify that TcssStr enum values are being used for CSS classes.
-
-    This test checks that the codebase is actually using the TcssStr enum
-    for CSS class management.
-    """
+    """Verify that TcssStr enum values are being used for CSS classes."""
     python_files = get_python_files()
     tcss_str_usage_count = 0
 
@@ -148,4 +144,3 @@ if __name__ == "__main__":
     test_no_hardcoded_css_classes_in_code()
     test_tcss_str_enum_usage()
     test_no_unused_tcss_classes()
-    print("All CSS class management tests passed!")
