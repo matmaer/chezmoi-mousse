@@ -4,16 +4,12 @@ import ast
 import re
 from pathlib import Path
 
-
-def _get_python_files() -> list[Path]:
-    """Helper function to get Python files from the source directory."""
-    src_dir = Path(__file__).parent.parent / "src" / "chezmoi_mousse"
-    return [f for f in src_dir.glob("*.py") if not f.name.startswith("__")]
+from test_utils import get_python_files
 
 
 def test_no_hardcoded_css_classes_in_code():
     """Verify that classes= parameters don't use hardcoded string literals."""
-    python_files = _get_python_files()
+    python_files = get_python_files()
     violations: list[str] = []
 
     for py_file in python_files:
@@ -52,7 +48,7 @@ def test_no_hardcoded_css_classes_regex_fallback():
 
     This test uses regex to find patterns like classes="..." as a secondary check.
     """
-    python_files = _get_python_files()
+    python_files = get_python_files()
     # Pattern to match classes="..." or classes='...'
     pattern = re.compile(r'classes\s*=\s*["\'][^"\']*["\']')
     violations: list[str] = []
@@ -80,7 +76,7 @@ def test_tcss_str_enum_usage():
     This test checks that the codebase is actually using the TcssStr enum
     for CSS class management.
     """
-    python_files = _get_python_files()
+    python_files = get_python_files()
     tcss_str_usage_count = 0
 
     for py_file in python_files:
@@ -112,7 +108,7 @@ def test_no_unused_tcss_classes():
     defined_classes = set(css_class_pattern.findall(tcss_content))
 
     # Get all Python files
-    python_files = _get_python_files()
+    python_files = get_python_files()
     used_classes: set[str] = set()
 
     # Search for class usage in Python files

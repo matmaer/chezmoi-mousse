@@ -70,3 +70,11 @@ repos:
         files: ^(src/.*\.py|src/.*\.tcss)$
         pass_filenames: false
         description: "Verify CSS class management (no hardcoded classes, no unused TCSS classes)"
+      - id: id-typing-checkup
+        name: Enum Value Management Tests
+        entry: python
+        args: [tests/test_id_typing_checkup.py]
+        language: python
+        files: ^src/.*\.py$
+        pass_filenames: false
+        description: "Verify enum value management (no unused enum values, proper enum usage)"

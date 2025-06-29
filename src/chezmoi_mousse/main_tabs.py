@@ -95,11 +95,13 @@ class Operate(ModalScreen[None], IdMixin):
         self.info_qid = f"#{self.info_id}"
         self.log_id = f"{tab_name}_operate_log"
         self.log_qid = f"#{self.log_id}"
-        super().__init__(id="operate_screen", classes=TcssStr.operate_screen)
+        super().__init__(
+            id=TcssStr.operate_screen, classes=TcssStr.operate_screen
+        )
 
     def compose(self) -> ComposeResult:
         with Vertical(
-            id="operate_container", classes=TcssStr.operate_container
+            id=TcssStr.operate_container, classes=TcssStr.operate_container
         ):
             if (
                 self.tab_name == TabStr.add_tab
@@ -113,7 +115,7 @@ class Operate(ModalScreen[None], IdMixin):
             )
             if self.tab_name == TabStr.add_tab:
                 with Container(
-                    id="collapsible_container",
+                    id=TcssStr.collapsible_container,
                     classes=TcssStr.collapsible_container,
                 ):
                     yield Collapsible(
@@ -123,7 +125,7 @@ class Operate(ModalScreen[None], IdMixin):
                     )
             else:
                 with Container(
-                    id="collapsible_container",
+                    id=TcssStr.collapsible_container,
                     classes=TcssStr.collapsible_container,
                 ):
                     yield Collapsible(

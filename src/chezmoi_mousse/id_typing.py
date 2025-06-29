@@ -10,11 +10,11 @@ class ButtonEnum(Enum):
     diff_btn = "Diff"
     git_log_btn = "Git-Log"
     # operational buttons
-    add_directory_btn = "Chezmoi Add Files"
+    # add_directory_btn = "Chezmoi Add Files"
     add_file_btn = "Chezmoi Add File"
-    apply_directory_btn = "Chezmoi Apply Files"
+    # apply_directory_btn = "Chezmoi Apply Files"
     apply_file_btn = "Chezmoi Apply"
-    re_add_directory_btn = "Chezmoi Re-Add Files"
+    # re_add_directory_btn = "Chezmoi Re-Add Files"
     re_add_file_btn = "Chezmoi Re-Add File"
     cancel_apply_btn = "Cancel Apply"
     cancel_re_add_btn = "Cancel Re-Add"
@@ -54,7 +54,6 @@ class CornerStr(StrEnum):
     top_left = auto()
     top_right = auto()
     bottom_right = auto()
-    bottom_left = auto()
 
 
 class TreeStr(StrEnum):
@@ -62,7 +61,6 @@ class TreeStr(StrEnum):
     expanded_tree = auto()
     flat_tree = auto()
     managed_tree = auto()
-    re_add_tree = auto()
 
 
 class FilterEnum(Enum):
@@ -75,8 +73,8 @@ class FilterEnum(Enum):
 class CharsEnum(Enum):
     bullet = "\N{BULLET}"
     burger = "\N{IDENTICAL TO}"
-    check_mark = "\N{HEAVY CHECK MARK}"
-    gear = "\N{GEAR}"
+    # check_mark = "\N{HEAVY CHECK MARK}"
+    # gear = "\N{GEAR}"
     apply = f"local \N{LEFTWARDS ARROW}{'\N{EM DASH}' * 3} chezmoi apply"
     re_add = (
         f"chezmoi re-add local {'\N{EM DASH}' * 3}\N{RIGHTWARDS ARROW} chezmoi"
