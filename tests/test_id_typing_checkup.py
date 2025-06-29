@@ -37,11 +37,6 @@ def _extract_enum_values(id_typing_module: ModuleType) -> dict[str, set[str]]:
     return enum_values
 
 
-def _get_python_files_excluding_id_typing() -> list[Path]:
-    """Get Python files excluding id_typing.py itself."""
-    return get_python_files_excluding("id_typing.py")
-
-
 def test_no_unused_enum_values():
     """Verify that all enum values defined in id_typing.py are actually used in the codebase.
 
@@ -52,7 +47,7 @@ def test_no_unused_enum_values():
     enum_classes = _extract_enum_values(id_typing_module)
 
     # Get all Python files except id_typing.py itself
-    python_files = _get_python_files_excluding_id_typing()
+    python_files = get_python_files_excluding("id_typing.py")
 
     # Track usage for each enum class
     used_values: dict[str, set[str]] = {
@@ -104,7 +99,7 @@ def test_enum_usage_patterns():
 
     This test checks that the id_typing module is actually being imported and used.
     """
-    python_files = _get_python_files_excluding_id_typing()
+    python_files = get_python_files_excluding("id_typing.py")
     id_typing_imports = 0
     enum_usage_count = 0
 
@@ -136,7 +131,7 @@ def test_no_hardcoded_enum_values():
 
     This test encourages using the enum constants instead of their string values.
     """
-    python_files = _get_python_files_excluding_id_typing()
+    python_files = get_python_files_excluding("id_typing.py")
     id_typing_module = _get_id_typing_module()
 
     # Collect string values from Enums that could be hardcoded
