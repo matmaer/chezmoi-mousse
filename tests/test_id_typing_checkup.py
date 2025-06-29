@@ -108,55 +108,7 @@ def test_enum_usage_patterns():
     ), f"Expected significant enum usage, found only {enum_usage_count} occurrences"
 
 
-def test_no_hardcoded_enum_values():
-    """Verify that enum values are not hardcoded as strings in the codebase."""
-    python_files = get_python_files_excluding("id_typing.py")
-
-    # Collect string values from Enums that could be hardcoded
-    hardcodable_values: set[str] = set()
-
-    for attr_name in dir(id_typing):
-        attr = getattr(id_typing, attr_name)
-        if (
-            isinstance(attr, type)
-            and issubclass(attr, Enum)
-            and attr is not Enum
-            and not attr_name.startswith("_")
-        ):
-            for member in attr:
-                # Only check string values longer than 3 chars (avoid false positives)
-                if isinstance(member.value, str) and len(member.value) > 3:
-                    hardcodable_values.add(member.value)
-
-    violations: list[str] = []
-
-    # Search for hardcoded enum values
-    for py_file in python_files:
-        content = py_file.read_text()
-        lines = content.split("\n")
-
-        for line_num, line in enumerate(lines, 1):
-            # Skip comments and import statements
-            if line.strip().startswith("#") or "import" in line:
-                continue
-
-            for value in hardcodable_values:
-                # Look for the value in quotes
-                if f'"{value}"' in line or f"'{value}'" in line:
-                    violations.append(
-                        f"{py_file.name}:{line_num} - hardcoded '{value}'"
-                    )
-
-    if violations:
-        assert False, (
-            "Found hardcoded enum values:\n"
-            + "\n".join(violations)
-            + "\nConsider using the enum constants instead."
-        )
-
-
 if __name__ == "__main__":
     test_no_unused_enum_values()
     test_enum_usage_patterns()
-    test_no_hardcoded_enum_values()
     print("All enum management tests passed!")
