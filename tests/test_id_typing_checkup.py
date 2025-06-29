@@ -85,10 +85,7 @@ def test_no_unused_enum_values():
 
 
 def test_enum_usage_patterns():
-    """Verify that enums from id_typing.py are being used in the codebase.
-
-    This test checks that the id_typing module is actually being imported and used.
-    """
+    """Verify that enums from id_typing.py are being imported and used in the codebase."""
     python_files = get_python_files_excluding("id_typing.py")
     id_typing_imports = 0
     enum_usage_count = 0
@@ -117,10 +114,7 @@ def test_enum_usage_patterns():
 
 
 def test_no_hardcoded_enum_values():
-    """Verify that enum values are not hardcoded as strings in the codebase.
-
-    This test encourages using the enum constants instead of their string values.
-    """
+    """Verify that enum values are not hardcoded as strings in the codebase."""
     python_files = get_python_files_excluding("id_typing.py")
 
     # Collect string values from Enums that could be hardcoded
