@@ -2,9 +2,8 @@
 
 import ast
 import re
-from pathlib import Path
 
-from test_utils import get_python_files
+from test_utils import get_python_files, get_tcss_file
 
 
 def test_no_hardcoded_css_classes_in_code():
@@ -49,9 +48,7 @@ def test_tcss_str_enum_usage():
     tcss_str_usage_count = 0
 
     for py_file in python_files:
-
         content = py_file.read_text()
-
         # Count occurrences of TcssStr usage
         tcss_str_usage_count += content.count("TcssStr.")
 
@@ -64,10 +61,7 @@ def test_tcss_str_enum_usage():
 def test_no_unused_tcss_classes():
     """Verify that all CSS classes defined in gui.tcss are actually used in the codebase."""
     # Read the CSS file
-    tcss_file = (
-        Path(__file__).parent.parent / "src" / "chezmoi_mousse" / "gui.tcss"
-    )
-    tcss_content = tcss_file.read_text()
+    tcss_content = get_tcss_file().read_text()
 
     # Extract CSS class names (starting with .)
     css_class_pattern = re.compile(r"\.([a-zA-Z_][a-zA-Z0-9_-]*)")

@@ -12,3 +12,8 @@ def get_python_files() -> list[Path]:
 def get_python_files_excluding(excluded_filename: str) -> list[Path]:
     """Get Python files excluding a specific filename."""
     return [f for f in get_python_files() if f.name != excluded_filename]
+
+
+def get_tcss_file() -> Path:
+    """Get the path to the gui.tcss file."""
+    return Path(__file__).parent.parent / "src" / "chezmoi_mousse" / "gui.tcss"
