@@ -25,7 +25,13 @@ from textual.widgets.tree import TreeNode
 import chezmoi_mousse.theme as theme
 from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.config import unwanted
-from chezmoi_mousse.id_typing import CharsEnum, IdMixin, TabStr, TreeStr
+from chezmoi_mousse.id_typing import (
+    CharsEnum,
+    IdMixin,
+    TabStr,
+    TcssStr,
+    TreeStr,
+)
 
 
 class AutoWarning(Static):
@@ -484,7 +490,7 @@ class ManagedTree(TreeBase, IdMixin):
         super().__init__(
             tab_str,
             id=self.tree_id(TreeStr.managed_tree),
-            classes="tree-widget",
+            classes=TcssStr.tree_widget,
         )
 
     def on_mount(self) -> None:
@@ -523,7 +529,7 @@ class ExpandedTree(TreeBase, IdMixin):
         super().__init__(
             tab_str,
             id=self.tree_id(TreeStr.expanded_tree),
-            classes="tree-widget",
+            classes=TcssStr.tree_widget,
         )
 
     def on_mount(self) -> None:
@@ -560,7 +566,9 @@ class FlatTree(TreeBase, IdMixin):
     def __init__(self, tab_str: TabStr) -> None:
         IdMixin.__init__(self, tab_str)
         super().__init__(
-            tab_str, id=self.tree_id(TreeStr.flat_tree), classes="tree-widget"
+            tab_str,
+            id=self.tree_id(TreeStr.flat_tree),
+            classes=TcssStr.tree_widget,
         )
 
     def on_mount(self) -> None:

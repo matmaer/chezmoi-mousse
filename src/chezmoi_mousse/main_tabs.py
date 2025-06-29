@@ -54,6 +54,7 @@ from chezmoi_mousse.id_typing import (
     IdMixin,
     SideStr,
     TabStr,
+    TcssStr,
     TreeStr,
     ViewStr,
 )
@@ -94,37 +95,43 @@ class Operate(ModalScreen[None], IdMixin):
         self.info_qid = f"#{self.info_id}"
         self.log_id = f"{tab_name}_operate_log"
         self.log_qid = f"#{self.log_id}"
-        super().__init__(id="operate_screen", classes="operate-screen")
+        super().__init__(id="operate_screen", classes=TcssStr.operate_screen)
 
     def compose(self) -> ComposeResult:
-        with Vertical(id="operate_container", classes="operate-container"):
+        with Vertical(
+            id="operate_container", classes=TcssStr.operate_container
+        ):
             if (
                 self.tab_name == TabStr.add_tab
                 or self.tab_name == TabStr.re_add_tab
             ):
-                yield AutoWarning(classes="operate-auto-warning")
+                yield AutoWarning(classes=TcssStr.operate_auto_warning)
             yield Static(
-                f"{self.path}", id=self.info_id, classes="operate-top-path"
+                f"{self.path}",
+                id=self.info_id,
+                classes=TcssStr.operate_top_path,
             )
             if self.tab_name == TabStr.add_tab:
                 with Container(
-                    id="collapsible_container", classes="collapsible-container"
+                    id="collapsible_container",
+                    classes=TcssStr.collapsible_container,
                 ):
                     yield Collapsible(
                         ContentsView(view_id=self.contents_id),
-                        classes="operate-collapsible",
+                        classes=TcssStr.operate_collapsible,
                         title="file contents view",
                     )
             else:
                 with Container(
-                    id="collapsible_container", classes="collapsible-container"
+                    id="collapsible_container",
+                    classes=TcssStr.collapsible_container,
                 ):
                     yield Collapsible(
                         DiffView(tab_name=self.tab_name, view_id=self.diff_id),
-                        classes="operate-collapsible",
+                        classes=TcssStr.operate_collapsible,
                         title="file diffs view",
                     )
-            yield RichLog(id=self.log_id, classes="operate-log")
+            yield RichLog(id=self.log_id, classes=TcssStr.operate_log)
             yield ButtonsHorizontal(
                 self.tab_name,
                 buttons=self.buttons,
@@ -154,7 +161,7 @@ class Operate(ModalScreen[None], IdMixin):
         view.path = self.path
         view.add_class("operate-view")
         self.query_exactly_one(ButtonsHorizontal).add_class(
-            "operate-buttons-horizontal"
+            TcssStr.operate_buttons_horizontal
         )
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
@@ -269,7 +276,8 @@ class ApplyTab(BaseTab):
 
     def compose(self) -> ComposeResult:
         with VerticalGroup(
-            id=self.tab_vertical_id(SideStr.left), classes="tab-left-vertical"
+            id=self.tab_vertical_id(SideStr.left),
+            classes=TcssStr.tab_left_vertical,
         ):
             # yield ButtonsTopLeft(self.tab_str)
             yield ButtonsHorizontal(
@@ -281,7 +289,7 @@ class ApplyTab(BaseTab):
 
         with Vertical(
             id=self.tab_vertical_id(SideStr.right),
-            classes="tab-right-vertical",
+            classes=TcssStr.tab_right_vertical,
         ):
             yield ButtonsHorizontal(
                 self.tab_str,
@@ -349,7 +357,8 @@ class ReAddTab(BaseTab):
 
     def compose(self) -> ComposeResult:
         with VerticalGroup(
-            id=self.tab_vertical_id(SideStr.left), classes="tab-left-vertical"
+            id=self.tab_vertical_id(SideStr.left),
+            classes=TcssStr.tab_left_vertical,
         ):
             yield ButtonsHorizontal(
                 self.tab_str,
@@ -360,7 +369,7 @@ class ReAddTab(BaseTab):
 
         with Vertical(
             id=self.tab_vertical_id(SideStr.right),
-            classes="tab-right-vertical",
+            classes=TcssStr.tab_right_vertical,
         ):
             yield ButtonsHorizontal(
                 self.tab_str,
@@ -411,17 +420,17 @@ class AddTab(Horizontal, IdMixin):
     def compose(self) -> ComposeResult:
         with VerticalGroup(
             id=self.tab_vertical_id(SideStr.left),
-            classes="tab-left-vertical top-border-title",
+            classes=f"{TcssStr.tab_left_vertical} {TcssStr.top_border_title}",
         ):
             yield FilteredDirTree(
                 chezmoi.dest_dir,
                 id=self.tree_id(TreeStr.add_tree),
-                classes="dir-tree-widget",
+                classes=TcssStr.dir_tree_widget,
             )
 
         with Vertical(
             id=self.tab_vertical_id(SideStr.right),
-            classes="tab-right-vertical top-border-title",
+            classes=f"{TcssStr.tab_right_vertical} {TcssStr.top_border_title}",
         ):
             yield ContentsView(view_id=self.view_id(ViewStr.contents_view))
 

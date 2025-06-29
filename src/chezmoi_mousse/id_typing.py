@@ -81,9 +81,39 @@ class CharsEnum(Enum):
     re_add = (
         f"chezmoi re-add local {'\N{EM DASH}' * 3}\N{RIGHTWARDS ARROW} chezmoi"
     )
-    add = (
-        f"chezmoi re-add local {'\N{EM DASH}' * 3}\N{RIGHTWARDS ARROW} chezmoi"
-    )
+    add = f"chezmoi add local {'\N{EM DASH}' * 3}\N{RIGHTWARDS ARROW} chezmoi"
+
+
+class TcssStr(StrEnum):
+    # Main tabs classes
+    collapsible_container = auto()
+    dir_tree_widget = auto()
+    operate_auto_warning = auto()
+    operate_buttons_horizontal = auto()
+    operate_collapsible = auto()
+    operate_container = auto()
+    operate_log = auto()
+    operate_screen = auto()
+    operate_top_path = auto()
+    tab_left_vertical = auto()
+    tab_right_vertical = auto()
+    top_border_title = auto()
+
+    # Container classes
+    content_switcher_left = auto()
+    content_switcher_right = auto()
+    filter_horizontal = auto()
+    filter_label = auto()
+    filters_vertical = auto()
+    padding_bottom_once = auto()
+    single_button_vertical = auto()
+    tab_buttons_horizontal = auto()
+
+    # GUI classes
+    flow_diagram = auto()
+
+    # Widget classes
+    tree_widget = auto()
 
 
 @dataclass

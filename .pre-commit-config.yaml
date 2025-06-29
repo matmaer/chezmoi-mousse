@@ -59,3 +59,14 @@ repos:
         minimum_pre_commit_version: 2.9.2
         require_serial: true
         types_or: [python, pyi]
+
+  - repo: local
+    hooks:
+      - id: tcss-checkup
+        name: CSS Class Management Tests
+        entry: python
+        args: [tests/test_tcss_checkup.py]
+        language: python
+        files: ^(src/.*\.py|src/.*\.tcss)$
+        pass_filenames: false
+        description: "Verify CSS class management (no hardcoded classes, no unused TCSS classes)"

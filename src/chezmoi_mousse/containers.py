@@ -18,6 +18,7 @@ from chezmoi_mousse.id_typing import (
     IdMixin,
     SideStr,
     TabStr,
+    TcssStr,
     TreeStr,
     ViewStr,
 )
@@ -39,21 +40,23 @@ class FilterSlider(VerticalGroup, IdMixin):
         IdMixin.__init__(self, tab_str)
         self.tab_str = tab_str
         self.filters = filters
-        super().__init__(id=self.filter_slider_id, classes="filters-vertical")
+        super().__init__(
+            id=self.filter_slider_id, classes=TcssStr.filters_vertical
+        )
 
     def compose(self) -> ComposeResult:
         for filter_enum in self.filters:
             with HorizontalGroup(
                 id=self.filter_horizontal_id(filter_enum),
                 classes=(
-                    "filter-horizontal padding-bottom-once"
+                    f"{TcssStr.filter_horizontal} {TcssStr.padding_bottom_once}"
                     if filter_enum == self.filters[0]
-                    else "filter-horizontal"
+                    else TcssStr.filter_horizontal
                 ),
             ):
                 yield Switch(id=self.switch_id(filter_enum))
                 yield Label(
-                    filter_enum.value, classes="filter-label"
+                    filter_enum.value, classes=TcssStr.filter_label
                 ).with_tooltip(tooltip=filter_tooltips[filter_enum.name])
 
 
@@ -69,7 +72,7 @@ class ButtonsHorizontal(HorizontalGroup, IdMixin):
         IdMixin.__init__(self, tab_str)
         super().__init__(
             id=self.buttons_horizontal_id(corner_str),
-            classes="tab-buttons-horizontal",
+            classes=TcssStr.tab_buttons_horizontal,
         )
         self.buttons = buttons
         self.button_class: str
@@ -83,7 +86,7 @@ class ButtonsHorizontal(HorizontalGroup, IdMixin):
         for button_enum in self.buttons:
             with Vertical(
                 id=self.button_vertical_id(button_enum),
-                classes="single-button-vertical",
+                classes=TcssStr.single_button_vertical,
             ):
                 yield Button(
                     label=button_enum.value,
@@ -111,7 +114,7 @@ class ContentSwitcherLeft(ContentSwitcher, IdMixin):
         super().__init__(
             id=self.content_switcher_id(SideStr.left),
             initial=self.tree_id(TreeStr.managed_tree),
-            classes="content-switcher-left top-border-title",
+            classes=f"{TcssStr.content_switcher_left} {TcssStr.top_border_title}",
         )
 
     def on_mount(self) -> None:
@@ -131,7 +134,7 @@ class ContentSwitcherRight(ContentSwitcher, IdMixin):
         super().__init__(
             id=self.content_switcher_id(SideStr.right),
             initial=self.view_id(ViewStr.diff_view),
-            classes="content-switcher-right top-border-title",
+            classes=f"{TcssStr.content_switcher_right} {TcssStr.top_border_title}",
         )
 
     def on_mount(self) -> None:

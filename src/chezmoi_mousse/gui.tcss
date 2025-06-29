@@ -7,7 +7,7 @@
   min-width: 80;
 }
 
-.filters-vertical {
+.filters_vertical {
   align: left bottom;
   background-tint: $surface;
   background: $surface;
@@ -24,12 +24,12 @@
   offset-x: -100%;
   transition: offset 380ms;
   /* applies to all Container classes which contain a single filter switch */
-  &>.filter-horizontal {
+  &>.filter_horizontal {
     width: auto;
-    &.padding-bottom-once {
+    &.padding_bottom_once {
       padding-bottom: 1;
     }
-    &>.filter-label {
+    &>.filter_label {
       color: $foreground-darken-1;
     }
   }
@@ -38,46 +38,46 @@
   }
 }
 
-.tab-right-vertical {
-  .content-switcher-right {
+.tab_right_vertical {
+  .content_switcher_right {
     margin-bottom: 1;
     overflow-x: scroll;
   }
 }
 
-.top-border-title {
+.top_border_title {
   border-top: solid $primary;
   border-title-align: center;
   border-title-style: bold;
 }
 
-.tab-left-vertical {
+.tab_left_vertical {
   margin-right: 2;
   width: auto;
   max-width: 50%;
   min-width: 16;
-  &>.content-switcher-left {
+  &>.content_switcher_left {
     min-width: 16;
     width: auto;
     max-width: 100%;
-    &>.tree-widget {
+    &>.tree_widget {
       margin-bottom: 1; /* to make sure bottom scrollbar remains visible */
       min-width: 16;
       max-width: 100%;
       width: auto;
     }
   }
-  &>.dir-tree-widget {
+  &>.dir_tree_widget {
     min-width: 16;
     max-width: 100%;
     width: auto;
   }
 }
 
-.tab-buttons-horizontal {
+.tab_buttons_horizontal {
   width: 100%;
   align: center top;
-  &>.single-button-vertical {
+  &>.single_button_vertical {
     align: center top;
     height: auto;
     &>.tab-button {
@@ -101,24 +101,24 @@
   }
 }
 
-.operate-container {
+.operate_container {
   padding: 0 1 0 1;
   height: auto;
   border: thick $panel;
-  .operate-auto-warning {
+  .operate_auto_warning {
     text-align: center;
   }
-  .operate-top-path {
+  .operate_top_path {
     height: 3;
     border-title-align: center;
     text-align: center;
     border: round $foreground-darken-3;
     color: $accent;
   }
-  &>.collapsible-container{
+  &>.collapsible_container{
     margin: 0;
     padding: 0;
-      &>.operate-collapsible{
+      &>.operate_collapsible{
         margin-bottom: 1;
       }
   }
@@ -128,7 +128,7 @@
   }
   &>.operate-buttons-horizontal {
     height: 3;
-    &>.single-button-vertical {
+    &>.single_button_vertical {
       align: center top;
       &>.operate-button {
         border: round $primary;

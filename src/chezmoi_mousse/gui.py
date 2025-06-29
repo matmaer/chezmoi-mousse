@@ -28,6 +28,7 @@ from chezmoi_mousse.id_typing import (
     PaneEnum,
     SideStr,
     TabStr,
+    TcssStr,
     ViewStr,
 )
 from chezmoi_mousse.main_tabs import (
@@ -80,7 +81,9 @@ class MaximizedView(ModalScreen[None], IdMixin):
             yield GitLogView(view_id=self.modal_view_id)
         elif self.id_to_maximize == PaneEnum.diagram.name:
             yield ScrollableContainer(
-                Static(FLOW, id=self.modal_view_id, classes="flow_diagram")
+                Static(
+                    FLOW, id=self.modal_view_id, classes=TcssStr.flow_diagram
+                )
             )
 
     def on_mount(self) -> None:
@@ -130,7 +133,9 @@ class MainScreen(Screen[None]):
             with TabPane("Diagram", id=PaneEnum.diagram.name):
                 yield ScrollableContainer(
                     Static(
-                        FLOW, id=PaneEnum.diagram.value, classes="flow_diagram"
+                        FLOW,
+                        id=PaneEnum.diagram.value,
+                        classes=TcssStr.flow_diagram,
                     )
                 )
             with TabPane("Log", id=PaneEnum.log.name):
