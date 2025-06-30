@@ -9,7 +9,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 import chezmoi_mousse.id_typing as id_typing
 
-from test_utils import get_python_files_excluding
+from _test_utils import get_modules_to_test
 
 
 def test_no_unused_enum_values():
@@ -28,7 +28,7 @@ def test_no_unused_enum_values():
             enum_classes[attr_name] = {member.name for member in attr}
 
     # Get all Python files except id_typing.py itself
-    python_files = get_python_files_excluding("id_typing.py")
+    python_files = get_modules_to_test()
 
     # Track usage for each enum class
     used_values: dict[str, set[str]] = {
@@ -76,8 +76,7 @@ def test_no_unused_enum_values():
 
 
 def test_enum_usage_patterns():
-    """Verify that enums from id_typing.py are being imported and used in the codebase."""
-    python_files = get_python_files_excluding("id_typing.py")
+    python_files = get_modules_to_test()
     id_typing_imports = 0
     enum_usage_count = 0
 
