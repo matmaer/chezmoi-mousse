@@ -72,11 +72,10 @@ def test_no_unused_enum_values():
 
 
 def test_enum_usage_patterns():
-    python_files = get_modules_to_test()
     id_typing_imports = 0
     enum_usage_count = 0
 
-    for py_file in python_files:
+    for py_file in get_modules_to_test():
         content = py_file.read_text()
 
         # Count imports from id_typing

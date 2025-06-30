@@ -6,9 +6,9 @@ tcss_file_path: Path = Path("./src/chezmoi_mousse/gui.tcss")
 
 
 def get_modules_to_test() -> list[Path]:
-    all_modules = list(Path("./src/chezmoi_mousse").glob("*.py"))
+    src_dir = Path("./src/chezmoi_mousse")
     excluded_filename = "id_typing.py"
-    return [f for f in all_modules if f.name != excluded_filename]
+    return [f for f in src_dir.glob("*.py") if f.name != excluded_filename]
 
 
 def str_enum_classes_excluding_tcss() -> list[str]:
