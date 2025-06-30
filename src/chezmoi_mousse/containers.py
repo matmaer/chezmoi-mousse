@@ -80,7 +80,7 @@ class ButtonsHorizontal(HorizontalGroup, IdMixin):
         self.buttons = buttons
         self.button_class: str
         self.location: Location = location
-        if self.location == Location.left:
+        if self.location == Location.bottom:
             self.button_class = "operate-button"
         else:
             self.button_class = "tab-button"
