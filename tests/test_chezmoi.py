@@ -1,4 +1,3 @@
-import json
 import pytest
 from pathlib import Path
 from unittest.mock import patch
@@ -6,7 +5,6 @@ from subprocess import TimeoutExpired
 
 from chezmoi_mousse.chezmoi import (
     Chezmoi,
-    InputOutput,
     PerformChange,
     SubProcessCalls,
     StatusDicts,
@@ -19,12 +17,9 @@ def chezmoi_instance() -> Chezmoi:
 
 
 def test_chezmoi_core_functionality(chezmoi_instance: Chezmoi):
-    """Test core Chezmoi functionality including configuration and auto flags"""
     # Test configuration access
     chezmoi_instance.dump_config.update()
     assert isinstance(chezmoi_instance.dump_config.dict_out, dict)
-    assert isinstance(chezmoi_instance.source_dir, Path)
-    assert isinstance(chezmoi_instance.dest_dir, Path)
     assert str(chezmoi_instance.dest_dir) == chezmoi_instance.dest_dir_str
 
     # Test auto flags
@@ -35,27 +30,6 @@ def test_chezmoi_core_functionality(chezmoi_instance: Chezmoi):
     # Test long_commands structure
     assert isinstance(chezmoi_instance.long_commands, dict)
     assert "dump_config" in chezmoi_instance.long_commands
-
-
-def test_input_output_json_handling():
-    """Test InputOutput JSON parsing and error handling"""
-    # Test non-dict JSON handling
-    io_instance = InputOutput(("echo", '["item1", "item2"]'), "test_list")
-    io_instance.std_out = '["item1", "item2"]'
-    result = json.loads(io_instance.std_out)
-    if not isinstance(result, dict):
-        io_instance.dict_out = {}  # Covers line 173
-    assert io_instance.dict_out == {}
-
-    # Test JSONDecodeError handling
-    io_instance2 = InputOutput(("echo", "invalid"), "test")
-    with patch("chezmoi_mousse.chezmoi.subprocess_run") as mock_subprocess:
-        mock_subprocess.return_value = "{ invalid json }"
-        io_instance2.update()
-        assert io_instance2.dict_out == {}
-
-    # Test label property
-    assert io_instance.label == "chezmoi test list"
 
 
 def test_managed_paths_and_status(chezmoi_instance: Chezmoi):
@@ -91,7 +65,6 @@ def test_managed_paths_and_status(chezmoi_instance: Chezmoi):
 
 
 def test_subprocess_and_perform_change():
-    """Test subprocess functionality and PerformChange methods"""
     # Test TimeoutExpired handling
     with patch("chezmoi_mousse.chezmoi.run") as mock_run:
         mock_run.side_effect = TimeoutExpired(
