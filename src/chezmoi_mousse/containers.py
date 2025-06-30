@@ -70,17 +70,17 @@ class ButtonsHorizontal(HorizontalGroup, IdMixin):
         tab_str: TabStr,
         *,
         buttons: tuple[ButtonEnum, ...],
-        corner: Location,
+        location: Location,
     ) -> None:
         IdMixin.__init__(self, tab_str)
         super().__init__(
-            id=self.buttons_horizontal_id(corner),
+            id=self.buttons_horizontal_id(location),
             classes=TcssStr.tab_buttons_horizontal,
         )
         self.buttons = buttons
         self.button_class: str
-        self.corner: Location = corner
-        if self.corner == Location.bottom_right:
+        self.location: Location = location
+        if self.location == Location.left:
             self.button_class = "operate-button"
         else:
             self.button_class = "tab-button"

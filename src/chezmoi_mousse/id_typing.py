@@ -50,9 +50,6 @@ class Location(StrEnum):
     right = auto()
     bottom = auto()
     left = auto()
-    top_left = auto()
-    top_right = auto()
-    bottom_right = auto()
 
 
 class TreeStr(StrEnum):
@@ -133,8 +130,8 @@ class IdMixin:
     def button_qid(self, button_label: ButtonEnum) -> str:
         return f"#{self.button_id(button_label)}"
 
-    def buttons_horizontal_id(self, corner: Location) -> str:
-        return f"{self.tab_name}_{corner}_horizontal"
+    def buttons_horizontal_id(self, location: Location) -> str:
+        return f"{self.tab_name}_{location}_horizontal"
 
     def button_vertical_id(self, button_label: ButtonEnum) -> str:
         return f"{self.tab_name}_{button_label.name}_vertical"

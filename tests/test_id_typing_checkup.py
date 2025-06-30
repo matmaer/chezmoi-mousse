@@ -7,7 +7,7 @@ from functools import lru_cache
 import pytest
 
 from chezmoi_mousse.id_typing import IdMixin
-from tests._test_utils import get_modules_to_test
+from _test_utils import get_modules_to_test
 
 
 class MethodCallVisitor(ast.NodeVisitor):

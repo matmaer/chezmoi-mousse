@@ -132,9 +132,7 @@ class Operate(ModalScreen[None], IdMixin):
                     )
             yield RichLog(id=self.log_id, classes=TcssStr.operate_log)
             yield ButtonsHorizontal(
-                self.tab_name,
-                buttons=self.buttons,
-                corner=Location.bottom_right,
+                self.tab_name, buttons=self.buttons, location=Location.bottom
             )
 
     def on_mount(self) -> None:
@@ -282,7 +280,7 @@ class ApplyTab(BaseTab):
             yield ButtonsHorizontal(
                 self.tab_str,
                 buttons=(ButtonEnum.tree_btn, ButtonEnum.list_btn),
-                corner=Location.top_left,
+                location=Location.left,
             )
             yield ContentSwitcherLeft(self.tab_str)
 
@@ -297,7 +295,7 @@ class ApplyTab(BaseTab):
                     ButtonEnum.contents_btn,
                     ButtonEnum.git_log_btn,
                 ),
-                corner=Location.top_right,
+                location=Location.right,
             )
             yield ContentSwitcherRight(self.tab_str)
 
@@ -362,7 +360,7 @@ class ReAddTab(BaseTab):
             yield ButtonsHorizontal(
                 self.tab_str,
                 buttons=(ButtonEnum.tree_btn, ButtonEnum.list_btn),
-                corner=Location.top_left,
+                location=Location.left,
             )
             yield ContentSwitcherLeft(self.tab_str)
 
@@ -377,7 +375,7 @@ class ReAddTab(BaseTab):
                     ButtonEnum.contents_btn,
                     ButtonEnum.git_log_btn,
                 ),
-                corner=Location.top_right,
+                location=Location.right,
             )
             yield ContentSwitcherRight(self.tab_str)
 
