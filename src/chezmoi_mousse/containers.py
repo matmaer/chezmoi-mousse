@@ -22,12 +22,12 @@ from chezmoi_mousse.id_typing import (
     ViewStr,
 )
 from chezmoi_mousse.widgets import (
+    ContentsView,
     DiffView,
     ExpandedTree,
     FlatTree,
     GitLogView,
     ManagedTree,
-    ContentsView,
 )
 
 

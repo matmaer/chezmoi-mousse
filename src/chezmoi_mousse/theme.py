@@ -1,9 +1,3 @@
-"""Convenience module to access derived colors managed by the textual
-ColorSystem.
-
-Updated on theme change by gui.py.
-"""
-
 from textual.theme import Theme
 
 chezmoi_mousse_dark = Theme(
@@ -19,6 +13,5 @@ chezmoi_mousse_dark = Theme(
     success="#4EBF71",  # textual dark
     warning="#ffa62b",  # textual dark
 )
-
 
 vars = chezmoi_mousse_dark.to_color_system().generate()

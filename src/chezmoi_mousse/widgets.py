@@ -35,7 +35,6 @@ from chezmoi_mousse.id_typing import (
 
 
 class AutoWarning(Static):
-    # not focussable https://textual.textualize.io/widgets/static/
 
     def on_mount(self) -> None:
         auto_warning: list[str] = []
@@ -59,7 +58,6 @@ class AutoWarning(Static):
 
 
 class ContentsView(RichLog):
-    # focussable https://textual.textualize.io/widgets/rich_log/
 
     path: reactive[Path | None] = reactive(None)
 
@@ -129,7 +127,6 @@ class ContentsView(RichLog):
 
 
 class DiffView(RichLog):
-    # focussable https://textual.textualize.io/widgets/rich_log/
 
     path: reactive[Path | None] = reactive(None, init=False)
 
@@ -600,8 +597,6 @@ class FlatTree(TreeBase, IdMixin):
 
 
 class FilteredDirTree(DirectoryTree):
-    """Provides a fast DirectoryTree to explore any path in the destination
-    directory which can be added to the chezmoi repository."""
 
     unmanaged_dirs: reactive[bool] = reactive(False)
     unwanted: reactive[bool] = reactive(False)

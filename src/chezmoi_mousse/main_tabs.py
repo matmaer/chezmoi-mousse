@@ -1,15 +1,7 @@
-"""Contains the widgets used to compose the tabs on the main screen of chezmoi-
-mousse, except for the Log tab.
-
-Additionally, it contains widgets which are these tabs depend on, if they are
-containers.
-"""
-
 from datetime import datetime
 from pathlib import Path
 
 from rich.text import Text
-
 from textual import work
 from textual.app import ComposeResult
 from textual.binding import Binding
@@ -48,10 +40,10 @@ from chezmoi_mousse.containers import (
 from chezmoi_mousse.id_typing import (
     ButtonEnum,
     CharsEnum,
-    Location,
-    LogTabEntry,
     FilterEnum,
     IdMixin,
+    Location,
+    LogTabEntry,
     TabStr,
     TcssStr,
     TreeStr,
@@ -59,6 +51,7 @@ from chezmoi_mousse.id_typing import (
 )
 from chezmoi_mousse.widgets import (
     AutoWarning,
+    ContentsView,
     DiffView,
     ExpandedTree,
     FilteredDirTree,
@@ -66,7 +59,6 @@ from chezmoi_mousse.widgets import (
     GitLogView,
     ManagedTree,
     NodeData,
-    ContentsView,
     RichLog,
     TreeBase,
 )

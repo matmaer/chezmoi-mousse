@@ -1,5 +1,3 @@
-"""Initialize all data in the InputOutput dataclasses for chezmoi.py."""
-
 from collections import deque
 
 from rich.segment import Segment

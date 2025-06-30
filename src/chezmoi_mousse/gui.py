@@ -23,9 +23,9 @@ from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.containers import ContentSwitcherRight
 from chezmoi_mousse.id_typing import (
     CharsEnum,
-    LogTabEntry,
-    Location,
     IdMixin,
+    Location,
+    LogTabEntry,
     PaneEnum,
     TabStr,
     TcssStr,
@@ -34,13 +34,12 @@ from chezmoi_mousse.id_typing import (
 from chezmoi_mousse.main_tabs import (
     AddTab,
     ApplyTab,
-    LogTab,
     DoctorTab,
+    LogTab,
     ReAddTab,
 )
 from chezmoi_mousse.splash import LoadingScreen
-
-from chezmoi_mousse.widgets import DiffView, GitLogView, ContentsView
+from chezmoi_mousse.widgets import ContentsView, DiffView, GitLogView
 
 
 class MaximizedView(ModalScreen[None], IdMixin):
