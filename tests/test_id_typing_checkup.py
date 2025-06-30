@@ -57,7 +57,6 @@ def get_method_calls_from_source() -> set[str]:
 
 
 def test_all_idmixin_methods_are_used():
-    """Test that all IdMixin methods are being called somewhere in the codebase."""
     idmixin_methods = get_idmixin_methods()
     source_method_calls = get_method_calls_from_source()
     unused_methods = idmixin_methods - source_method_calls
@@ -68,15 +67,13 @@ def test_all_idmixin_methods_are_used():
 
 
 def test_idmixin_method_parameter_types():
-
     # Check method signatures for expected parameter types
     method_signatures: dict[str, inspect.Signature] = {}
     for name, method in inspect.getmembers(
         IdMixin, predicate=inspect.isfunction
     ):
         if not name.startswith("__"):
-            sig = inspect.signature(method)
-            method_signatures[name] = sig
+            method_signatures[name] = inspect.signature(method)
 
     # Verify that key enum types are being used in method parameters
     expected_parameter_types = {
@@ -88,18 +85,19 @@ def test_idmixin_method_parameter_types():
     }
 
     all_parameter_annotations: set[str] = set()
-    for name, sig in method_signatures.items():
+    for sig in method_signatures.values():
         for param_name, param in sig.parameters.items():
             if (
                 param_name != "self"
                 and param.annotation != inspect.Parameter.empty
             ):
                 # Extract type name from annotation
-                if hasattr(param.annotation, "__name__"):
-                    all_parameter_annotations.add(param.annotation.__name__)
-                else:
-                    # Handle more complex annotations like Union, etc.
-                    all_parameter_annotations.add(str(param.annotation))
+                annotation_name = (
+                    param.annotation.__name__
+                    if hasattr(param.annotation, "__name__")
+                    else str(param.annotation)
+                )
+                all_parameter_annotations.add(annotation_name)
 
     # Check that expected enum types are being used
     used_expected_types = expected_parameter_types.intersection(
