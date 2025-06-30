@@ -45,12 +45,11 @@ class ViewStr(StrEnum):
     contents_view = auto()
 
 
-class SideStr(StrEnum):
-    left = auto()
+class Location(StrEnum):
+    top = auto()
     right = auto()
-
-
-class CornerStr(StrEnum):
+    bottom = auto()
+    left = auto()
     top_left = auto()
     top_right = auto()
     bottom_right = auto()
@@ -100,10 +99,10 @@ class TcssStr(StrEnum):
     # Container classes
     content_switcher_left = auto()
     content_switcher_right = auto()
-    filter_horizontal = auto()
+    filter_horizontal_top = auto()
+    filter_horizontal_bottom = auto()
     filter_label = auto()
     filters_vertical = auto()
-    padding_bottom_once = auto()
     single_button_vertical = auto()
     tab_buttons_horizontal = auto()
 
@@ -134,20 +133,24 @@ class IdMixin:
     def button_qid(self, button_label: ButtonEnum) -> str:
         return f"#{self.button_id(button_label)}"
 
-    def buttons_horizontal_id(self, corner: CornerStr) -> str:
+    def buttons_horizontal_id(self, corner: Location) -> str:
         return f"{self.tab_name}_{corner}_horizontal"
 
     def button_vertical_id(self, button_label: ButtonEnum) -> str:
         return f"{self.tab_name}_{button_label.name}_vertical"
 
-    def content_switcher_id(self, side: SideStr) -> str:
+    def content_switcher_id(self, side: Location) -> str:
         return f"{self.tab_name}_{side}_content_switcher"
 
-    def content_switcher_qid(self, side: SideStr) -> str:
+    def content_switcher_qid(self, side: Location) -> str:
         return f"#{self.content_switcher_id(side)}"
 
-    def filter_horizontal_id(self, filter_enum: FilterEnum) -> str:
-        return f"{self.tab_name}_{filter_enum.name}_filter_horizontal"
+    def filter_horizontal_id(
+        self, filter_enum: FilterEnum, location: Location
+    ) -> str:
+        return (
+            f"{self.tab_name}_{filter_enum.name}_filter_horizontal_{location}"
+        )
 
     def switch_id(self, filter_enum: FilterEnum) -> str:
         return f"{self.tab_name}_{filter_enum.name}_switch"
@@ -155,10 +158,10 @@ class IdMixin:
     def switch_qid(self, filter_enum: FilterEnum) -> str:
         return f"#{self.switch_id(filter_enum)}"
 
-    def tab_vertical_id(self, side: SideStr) -> str:
+    def tab_vertical_id(self, side: Location) -> str:
         return f"{self.tab_name}_{side}_vertical"
 
-    def tab_vertical_qid(self, side: SideStr) -> str:
+    def tab_vertical_qid(self, side: Location) -> str:
         return f"#{self.tab_vertical_id(side)}"
 
     def tree_id(self, tree: TreeStr) -> str:

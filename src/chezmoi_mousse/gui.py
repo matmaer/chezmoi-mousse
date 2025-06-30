@@ -24,9 +24,9 @@ from chezmoi_mousse.containers import ContentSwitcherRight
 from chezmoi_mousse.id_typing import (
     CharsEnum,
     LogTabEntry,
+    Location,
     IdMixin,
     PaneEnum,
-    SideStr,
     TabStr,
     TcssStr,
     ViewStr,
@@ -203,7 +203,7 @@ class MainScreen(Screen[None]):
         if id_mixin.tab_name in (TabStr.apply_tab, TabStr.re_add_tab):
             # Determine what view to show in the modal
             content_switcher_right = self.query_one(
-                id_mixin.content_switcher_qid(SideStr.right),
+                id_mixin.content_switcher_qid(Location.right),
                 ContentSwitcherRight,
             )
             current_view_id: str | None = content_switcher_right.current

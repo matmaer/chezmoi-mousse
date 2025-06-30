@@ -48,11 +48,10 @@ from chezmoi_mousse.containers import (
 from chezmoi_mousse.id_typing import (
     ButtonEnum,
     CharsEnum,
-    CornerStr,
+    Location,
     LogTabEntry,
     FilterEnum,
     IdMixin,
-    SideStr,
     TabStr,
     TcssStr,
     TreeStr,
@@ -135,7 +134,7 @@ class Operate(ModalScreen[None], IdMixin):
             yield ButtonsHorizontal(
                 self.tab_name,
                 buttons=self.buttons,
-                corner_str=CornerStr.bottom_right,
+                corner=Location.bottom_right,
             )
 
     def on_mount(self) -> None:
@@ -186,7 +185,7 @@ class BaseTab(Horizontal, IdMixin):
 
     def update_right_side_content_switcher(self, path: Path):
         self.query_one(
-            self.content_switcher_qid(SideStr.right), Container
+            self.content_switcher_qid(Location.right), Container
         ).border_title = f"{path.relative_to(chezmoi.dest_dir)}"
         self.query_one(
             self.view_qid(ViewStr.contents_view), ContentsView
@@ -211,15 +210,15 @@ class BaseTab(Horizontal, IdMixin):
             expand_all_switch.disabled = False
             if expand_all_switch.value:
                 self.query_one(
-                    self.content_switcher_qid(SideStr.left), ContentSwitcher
+                    self.content_switcher_qid(Location.left), ContentSwitcher
                 ).current = self.tree_id(TreeStr.expanded_tree)
             else:
                 self.query_one(
-                    self.content_switcher_qid(SideStr.left), ContentSwitcher
+                    self.content_switcher_qid(Location.left), ContentSwitcher
                 ).current = self.tree_id(TreeStr.managed_tree)
         elif event.button.id == self.button_id(ButtonEnum.list_btn):
             self.query_one(
-                self.content_switcher_qid(SideStr.left), ContentSwitcher
+                self.content_switcher_qid(Location.left), ContentSwitcher
             ).current = self.tree_id(TreeStr.flat_tree)
             self.query_one(
                 self.switch_qid(FilterEnum.expand_all), Switch
@@ -227,15 +226,15 @@ class BaseTab(Horizontal, IdMixin):
         # Contents/Diff/GitLog Switch
         elif event.button.id == self.button_id(ButtonEnum.contents_btn):
             self.query_one(
-                self.content_switcher_qid(SideStr.right), ContentSwitcher
+                self.content_switcher_qid(Location.right), ContentSwitcher
             ).current = self.view_id(ViewStr.contents_view)
         elif event.button.id == self.button_id(ButtonEnum.diff_btn):
             self.query_one(
-                self.content_switcher_qid(SideStr.right), ContentSwitcher
+                self.content_switcher_qid(Location.right), ContentSwitcher
             ).current = self.view_id(ViewStr.diff_view)
         elif event.button.id == self.button_id(ButtonEnum.git_log_btn):
             self.query_one(
-                self.content_switcher_qid(SideStr.right), ContentSwitcher
+                self.content_switcher_qid(Location.right), ContentSwitcher
             ).current = self.view_id(ViewStr.git_log_view)
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
@@ -255,11 +254,11 @@ class BaseTab(Horizontal, IdMixin):
         elif event.switch.id == self.switch_id(FilterEnum.expand_all):
             if event.value:
                 self.query_one(
-                    self.content_switcher_qid(SideStr.left), ContentSwitcher
+                    self.content_switcher_qid(Location.left), ContentSwitcher
                 ).current = self.tree_id(TreeStr.expanded_tree)
             else:
                 self.query_one(
-                    self.content_switcher_qid(SideStr.left), ContentSwitcher
+                    self.content_switcher_qid(Location.left), ContentSwitcher
                 ).current = self.tree_id(TreeStr.managed_tree)
 
 
@@ -276,19 +275,19 @@ class ApplyTab(BaseTab):
 
     def compose(self) -> ComposeResult:
         with VerticalGroup(
-            id=self.tab_vertical_id(SideStr.left),
+            id=self.tab_vertical_id(Location.left),
             classes=TcssStr.tab_left_vertical,
         ):
             # yield ButtonsTopLeft(self.tab_str)
             yield ButtonsHorizontal(
                 self.tab_str,
                 buttons=(ButtonEnum.tree_btn, ButtonEnum.list_btn),
-                corner_str=CornerStr.top_left,
+                corner=Location.top_left,
             )
             yield ContentSwitcherLeft(self.tab_str)
 
         with Vertical(
-            id=self.tab_vertical_id(SideStr.right),
+            id=self.tab_vertical_id(Location.right),
             classes=TcssStr.tab_right_vertical,
         ):
             yield ButtonsHorizontal(
@@ -298,7 +297,7 @@ class ApplyTab(BaseTab):
                     ButtonEnum.contents_btn,
                     ButtonEnum.git_log_btn,
                 ),
-                corner_str=CornerStr.top_right,
+                corner=Location.top_right,
             )
             yield ContentSwitcherRight(self.tab_str)
 
@@ -313,7 +312,7 @@ class ApplyTab(BaseTab):
         diff_button = self.query_one(self.button_qid(ButtonEnum.diff_btn))
 
         content_switcher = self.query_one(
-            self.content_switcher_qid(SideStr.right), ContentSwitcher
+            self.content_switcher_qid(Location.right), ContentSwitcher
         )
         # current returns the id of the currently active view
         active_view_id: str | None = content_switcher.current
@@ -357,18 +356,18 @@ class ReAddTab(BaseTab):
 
     def compose(self) -> ComposeResult:
         with VerticalGroup(
-            id=self.tab_vertical_id(SideStr.left),
+            id=self.tab_vertical_id(Location.left),
             classes=TcssStr.tab_left_vertical,
         ):
             yield ButtonsHorizontal(
                 self.tab_str,
                 buttons=(ButtonEnum.tree_btn, ButtonEnum.list_btn),
-                corner_str=CornerStr.top_left,
+                corner=Location.top_left,
             )
             yield ContentSwitcherLeft(self.tab_str)
 
         with Vertical(
-            id=self.tab_vertical_id(SideStr.right),
+            id=self.tab_vertical_id(Location.right),
             classes=TcssStr.tab_right_vertical,
         ):
             yield ButtonsHorizontal(
@@ -378,7 +377,7 @@ class ReAddTab(BaseTab):
                     ButtonEnum.contents_btn,
                     ButtonEnum.git_log_btn,
                 ),
-                corner_str=CornerStr.top_right,
+                corner=Location.top_right,
             )
             yield ContentSwitcherRight(self.tab_str)
 
@@ -419,7 +418,7 @@ class AddTab(Horizontal, IdMixin):
 
     def compose(self) -> ComposeResult:
         with VerticalGroup(
-            id=self.tab_vertical_id(SideStr.left),
+            id=self.tab_vertical_id(Location.left),
             classes=f"{TcssStr.tab_left_vertical} {TcssStr.top_border_title}",
         ):
             yield FilteredDirTree(
@@ -429,7 +428,7 @@ class AddTab(Horizontal, IdMixin):
             )
 
         with Vertical(
-            id=self.tab_vertical_id(SideStr.right),
+            id=self.tab_vertical_id(Location.right),
             classes=f"{TcssStr.tab_right_vertical} {TcssStr.top_border_title}",
         ):
             yield ContentsView(view_id=self.view_id(ViewStr.contents_view))
@@ -441,10 +440,10 @@ class AddTab(Horizontal, IdMixin):
 
     def on_mount(self) -> None:
         self.query_one(
-            self.tab_vertical_qid(SideStr.right), Vertical
+            self.tab_vertical_qid(Location.right), Vertical
         ).border_title = chezmoi.dest_dir_str
         self.query_one(
-            self.tab_vertical_qid(SideStr.left), VerticalGroup
+            self.tab_vertical_qid(Location.left), VerticalGroup
         ).border_title = chezmoi.dest_dir_str
 
     def on_directory_tree_file_selected(
@@ -457,7 +456,7 @@ class AddTab(Horizontal, IdMixin):
             self.view_qid(ViewStr.contents_view), ContentsView
         ).path = event.node.data.path
         self.query_one(
-            self.tab_vertical_qid(SideStr.right), Vertical
+            self.tab_vertical_qid(Location.right), Vertical
         ).border_title = (
             f"{event.node.data.path.relative_to(chezmoi.dest_dir)}"
         )
@@ -471,7 +470,7 @@ class AddTab(Horizontal, IdMixin):
             self.view_qid(ViewStr.contents_view), ContentsView
         ).path = event.node.data.path
         self.query_one(
-            self.tab_vertical_qid(SideStr.right), Vertical
+            self.tab_vertical_qid(Location.right), Vertical
         ).border_title = (
             f"{event.node.data.path.relative_to(chezmoi.dest_dir)}"
         )

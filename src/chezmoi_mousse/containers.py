@@ -13,10 +13,9 @@ from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.config import filter_tooltips
 from chezmoi_mousse.id_typing import (
     ButtonEnum,
-    CornerStr,
     FilterEnum,
     IdMixin,
-    SideStr,
+    Location,
     TabStr,
     TcssStr,
     TreeStr,
@@ -39,25 +38,29 @@ class FilterSlider(VerticalGroup, IdMixin):
     ) -> None:
         IdMixin.__init__(self, tab_str)
         self.tab_str = tab_str
-        self.filters = filters
+        self.top_filter = filters[0]
+        self.bottom_filter = filters[1]
         super().__init__(
             id=self.filter_slider_id, classes=TcssStr.filters_vertical
         )
 
     def compose(self) -> ComposeResult:
-        for filter_enum in self.filters:
-            with HorizontalGroup(
-                id=self.filter_horizontal_id(filter_enum),
-                classes=(
-                    f"{TcssStr.filter_horizontal} {TcssStr.padding_bottom_once}"
-                    if filter_enum == self.filters[0]
-                    else TcssStr.filter_horizontal
-                ),
-            ):
-                yield Switch(id=self.switch_id(filter_enum))
-                yield Label(
-                    filter_enum.value, classes=TcssStr.filter_label
-                ).with_tooltip(tooltip=filter_tooltips[filter_enum.name])
+        with HorizontalGroup(
+            id=self.filter_horizontal_id(self.top_filter, Location.top),
+            classes=(TcssStr.filter_horizontal_top),
+        ):
+            yield Switch(id=self.switch_id(self.top_filter))
+            yield Label(
+                self.top_filter.value, classes=TcssStr.filter_label
+            ).with_tooltip(tooltip=filter_tooltips[self.top_filter.name])
+        with HorizontalGroup(
+            id=self.filter_horizontal_id(self.bottom_filter, Location.bottom),
+            classes=(TcssStr.filter_horizontal_bottom),
+        ):
+            yield Switch(id=self.switch_id(self.bottom_filter))
+            yield Label(
+                self.bottom_filter.value, classes=TcssStr.filter_label
+            ).with_tooltip(tooltip=filter_tooltips[self.bottom_filter.name])
 
 
 class ButtonsHorizontal(HorizontalGroup, IdMixin):
@@ -67,17 +70,17 @@ class ButtonsHorizontal(HorizontalGroup, IdMixin):
         tab_str: TabStr,
         *,
         buttons: tuple[ButtonEnum, ...],
-        corner_str: CornerStr,
+        corner: Location,
     ) -> None:
         IdMixin.__init__(self, tab_str)
         super().__init__(
-            id=self.buttons_horizontal_id(corner_str),
+            id=self.buttons_horizontal_id(corner),
             classes=TcssStr.tab_buttons_horizontal,
         )
         self.buttons = buttons
         self.button_class: str
-        self.corner_str: CornerStr = corner_str
-        if self.corner_str == CornerStr.bottom_right:
+        self.corner: Location = corner
+        if self.corner == Location.bottom_right:
             self.button_class = "operate-button"
         else:
             self.button_class = "tab-button"
@@ -112,7 +115,7 @@ class ContentSwitcherLeft(ContentSwitcher, IdMixin):
         IdMixin.__init__(self, tab_str)
         self.tab_str = tab_str
         super().__init__(
-            id=self.content_switcher_id(SideStr.left),
+            id=self.content_switcher_id(Location.left),
             initial=self.tree_id(TreeStr.managed_tree),
             classes=f"{TcssStr.content_switcher_left} {TcssStr.top_border_title}",
         )
@@ -132,7 +135,7 @@ class ContentSwitcherRight(ContentSwitcher, IdMixin):
     def __init__(self, tab_str: TabStr):
         IdMixin.__init__(self, tab_str)
         super().__init__(
-            id=self.content_switcher_id(SideStr.right),
+            id=self.content_switcher_id(Location.right),
             initial=self.view_id(ViewStr.diff_view),
             classes=f"{TcssStr.content_switcher_right} {TcssStr.top_border_title}",
         )
