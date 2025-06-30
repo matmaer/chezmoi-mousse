@@ -1,107 +1,112 @@
-"""Test to ensure enum values in id_typing.py are actually used in the codebase."""
+"""Test to check if all methods from the IdMixin are in use by modules in the src dir."""
 
-import re
-import sys
-from enum import Enum
-from pathlib import Path
+import ast
+import inspect
+from functools import lru_cache
 
-# Add the source directory to Python path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
-import chezmoi_mousse.id_typing as id_typing
+import pytest
 
-from _test_utils import get_modules_to_test
+from chezmoi_mousse.id_typing import IdMixin
+from tests._test_utils import get_modules_to_test
 
 
-def test_no_unused_enum_values():
-    # Extract enum classes and their members directly
-    enum_classes: dict[str, set[str]] = {}
-    for attr_name in dir(id_typing):
-        attr = getattr(id_typing, attr_name)
-        # Check if it's an Enum class (but not the base Enum classes themselves)
-        if (
-            isinstance(attr, type)
-            and issubclass(attr, Enum)
-            and attr is not Enum
-            and not attr_name.startswith("_")  # Skip private attributes
-        ):
-            enum_classes[attr_name] = {member.name for member in attr}
+class MethodCallVisitor(ast.NodeVisitor):
+    """AST visitor to find method calls on objects that might inherit from IdMixin."""
 
-    # Track usage for each enum class
-    used_values: dict[str, set[str]] = {
-        enum_name: set() for enum_name in enum_classes
+    def __init__(self):
+        self.method_calls: set[str] = set()
+
+    def visit_Attribute(self, node: ast.Attribute) -> None:
+        """Visit attribute access nodes to find method calls."""
+        # Check if this is a method call (attribute access followed by a call)
+        if isinstance(node.ctx, ast.Load):
+            self.method_calls.add(node.attr)
+        self.generic_visit(node)
+
+
+@lru_cache(maxsize=1)
+def get_idmixin_methods() -> set[str]:
+    """Get all method names from the IdMixin class (excluding __init__)."""
+    methods: set[str] = set()
+    for name, _ in inspect.getmembers(IdMixin, predicate=inspect.isfunction):
+        if not name.startswith("__"):  # Exclude special methods like __init__
+            methods.add(name)
+    return methods
+
+
+@lru_cache(maxsize=1)
+def get_method_calls_from_source() -> set[str]:
+    """Extract all method calls from Python files in src/chezmoi_mousse directory."""
+    modules_to_test = get_modules_to_test()
+    all_method_calls: set[str] = set()
+
+    for py_file in modules_to_test:
+        try:
+            with open(py_file, "r", encoding="utf-8") as file:
+                content = file.read()
+
+            tree = ast.parse(content, filename=str(py_file))
+            visitor = MethodCallVisitor()
+            visitor.visit(tree)
+            all_method_calls.update(visitor.method_calls)
+
+        except (SyntaxError, UnicodeDecodeError) as e:
+            pytest.fail(f"Error parsing {py_file}: {e}")
+
+    return all_method_calls
+
+
+def test_all_idmixin_methods_are_used():
+    """Test that all IdMixin methods are being called somewhere in the codebase."""
+    idmixin_methods = get_idmixin_methods()
+    source_method_calls = get_method_calls_from_source()
+    unused_methods = idmixin_methods - source_method_calls
+
+    assert (
+        len(unused_methods) == 0
+    ), f"The following IdMixin methods are not being used: {sorted(unused_methods)}"
+
+
+def test_idmixin_method_parameter_types():
+
+    # Check method signatures for expected parameter types
+    method_signatures: dict[str, inspect.Signature] = {}
+    for name, method in inspect.getmembers(
+        IdMixin, predicate=inspect.isfunction
+    ):
+        if not name.startswith("__"):
+            sig = inspect.signature(method)
+            method_signatures[name] = sig
+
+    # Verify that key enum types are being used in method parameters
+    expected_parameter_types = {
+        "ButtonEnum",
+        "Location",
+        "FilterEnum",
+        "TreeStr",
+        "ViewStr",
     }
 
-    # Search for enum usage in Python files
-    for py_file in get_modules_to_test():
-        content = py_file.read_text()
-
-        # Look for enum usage patterns
-        for enum_name, member_names in enum_classes.items():
-            # Pattern 1: EnumName.member_name
-            enum_pattern = re.compile(rf"{enum_name}\.(\w+)")
-            matches = enum_pattern.findall(content)
-            for match in matches:
-                if match in member_names:
-                    used_values[enum_name].add(match)
-
-            # Pattern 2: Direct string usage of enum values (for StrEnum)
-            for member_name in member_names:
-                # Check if the member name appears as a string or identifier
-                if member_name in content:
-                    used_values[enum_name].add(member_name)
-
-    # Find unused enum values
-    unused_values: dict[str, set[str]] = {}
-    for enum_name, all_members in enum_classes.items():
-        unused = all_members - used_values[enum_name]
-        if unused:
-            unused_values[enum_name] = unused
-
-    # Format error message
-    if unused_values:
-        error_lines = ["Found unused enum values in id_typing.py:"]
-        for enum_name, unused_members in unused_values.items():
-            error_lines.append(f"\n{enum_name}:")
-            for member in sorted(unused_members):
-                error_lines.append(f"  - {member}")
-        error_lines.append(
-            "\nConsider removing these unused enum values or verify they are actually needed."
-        )
-
-        assert False, "\n".join(error_lines)
-
-
-def test_enum_usage_patterns():
-    id_typing_imports = 0
-    enum_usage_count = 0
-
-    for py_file in get_modules_to_test():
-        content = py_file.read_text()
-
-        # Count imports from id_typing
-        if (
-            "from chezmoi_mousse.id_typing import" in content
-            or "import chezmoi_mousse.id_typing" in content
-        ):
-            id_typing_imports += 1
-
-        # Count enum usage by checking each enum class
-        for attr_name in dir(id_typing):
-            attr = getattr(id_typing, attr_name)
+    all_parameter_annotations: set[str] = set()
+    for name, sig in method_signatures.items():
+        for param_name, param in sig.parameters.items():
             if (
-                isinstance(attr, type)
-                and issubclass(attr, Enum)
-                and attr is not Enum
-                and not attr_name.startswith("_")
+                param_name != "self"
+                and param.annotation != inspect.Parameter.empty
             ):
-                enum_usage_count += content.count(f"{attr_name}.")
+                # Extract type name from annotation
+                if hasattr(param.annotation, "__name__"):
+                    all_parameter_annotations.add(param.annotation.__name__)
+                else:
+                    # Handle more complex annotations like Union, etc.
+                    all_parameter_annotations.add(str(param.annotation))
 
-    assert id_typing_imports > 0, "No imports from id_typing module found"
+    # Check that expected enum types are being used
+    used_expected_types = expected_parameter_types.intersection(
+        all_parameter_annotations
+    )
+
+    # This test passes if we find some expected parameter types
     assert (
-        enum_usage_count > 10
-    ), f"Expected significant enum usage, found only {enum_usage_count} occurrences"
-
-
-if __name__ == "__main__":
-    test_no_unused_enum_values()
-    test_enum_usage_patterns()
+        len(used_expected_types) > 0
+    ), "No expected enum parameter types found in IdMixin methods"

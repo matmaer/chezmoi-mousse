@@ -13,11 +13,8 @@ from _test_utils import tcss_file_path, get_modules_to_test
     "py_file", get_modules_to_test(), ids=lambda x: x.name
 )
 def test_no_hardcoded_css_classes(py_file: Path) -> None:
-    """Verify that classes= parameters don't use hardcoded string literals."""
-
     content = py_file.read_text()
     violations: list[str] = []
-
     # Parse the AST to find function calls with classes= keyword arguments
     tree = ast.parse(content)
 
@@ -43,7 +40,6 @@ def test_no_hardcoded_css_classes(py_file: Path) -> None:
 
 
 def test_no_unused_tcss_classes() -> None:
-    """Test that all CSS classes defined in gui.tcss are used in Python modules."""
     tcss_content = tcss_file_path.read_text()
 
     # Extract CSS class names (starting with .) - only lowercase and underscore-based classes
@@ -92,7 +88,3 @@ def test_no_unused_tcss_classes() -> None:
     assert (
         not unused_classes
     ), f"Found {len(unused_classes)} unused CSS classes: {sorted(unused_classes)}"
-
-
-if __name__ == "__main__":
-    test_no_unused_tcss_classes()
