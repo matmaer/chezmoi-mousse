@@ -13,7 +13,6 @@ from _test_utils import get_modules_to_test
 
 
 def test_no_unused_enum_values():
-    """Verify that all enum values defined in id_typing.py are actually used in the codebase."""
     # Extract enum classes and their members directly
     enum_classes: dict[str, set[str]] = {}
     for attr_name in dir(id_typing):
@@ -27,16 +26,13 @@ def test_no_unused_enum_values():
         ):
             enum_classes[attr_name] = {member.name for member in attr}
 
-    # Get all Python files except id_typing.py itself
-    python_files = get_modules_to_test()
-
     # Track usage for each enum class
     used_values: dict[str, set[str]] = {
         enum_name: set() for enum_name in enum_classes
     }
 
     # Search for enum usage in Python files
-    for py_file in python_files:
+    for py_file in get_modules_to_test():
         content = py_file.read_text()
 
         # Look for enum usage patterns
@@ -110,4 +106,3 @@ def test_enum_usage_patterns():
 if __name__ == "__main__":
     test_no_unused_enum_values()
     test_enum_usage_patterns()
-    print("All enum management tests passed!")

@@ -5,19 +5,16 @@ import re
 
 from _test_utils import get_modules_to_test, tcss_file_path
 
+PYTHON_FILES = get_modules_to_test()
+
 
 def test_tcss_str_enum_proper_usage():
-    """Verify that TcssStr enum values are used correctly throughout the codebase.
-
-    - No hardcoded CSS classes in classes= parameters (should use TcssStr enum)
-    - TcssStr should only be used for classes= parameters, never for id= parameters
-    """
-    python_files = get_modules_to_test()
+    """Verify that TcssStr entries are used correctly in the codebase."""
     tcss_str_usage_count = 0
     hardcoded_violations: list[str] = []
     id_violations: list[str] = []
 
-    for py_file in python_files:
+    for py_file in PYTHON_FILES:
         content = py_file.read_text()
 
         # Count occurrences of TcssStr usage
@@ -76,20 +73,16 @@ def test_tcss_str_enum_proper_usage():
 
 
 def test_no_unused_tcss_classes():
-    """Verify that all CSS classes defined in gui.tcss are actually used in the codebase."""
-    # Read the CSS file
+
     tcss_content = tcss_file_path.read_text()
 
     # Extract CSS class names (starting with .)
     css_class_pattern = re.compile(r"\.([a-zA-Z_][a-zA-Z0-9_-]*)")
     defined_classes = set(css_class_pattern.findall(tcss_content))
-
-    # Get all Python files
-    python_files = get_modules_to_test()
     used_classes: set[str] = set()
 
     # Search for class usage in Python files
-    for py_file in python_files:
+    for py_file in PYTHON_FILES:
         content = py_file.read_text()
 
         # Look for classes in TcssStr enum values
