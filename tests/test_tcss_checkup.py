@@ -67,7 +67,6 @@ def test_no_unused_tcss_classes() -> None:
                             ):
                                 used_classes.add(keyword.value.attr)
 
-                        # Check for f-strings that might contain TcssStr.class_name
                         elif isinstance(keyword.value, ast.JoinedStr):
                             for value in keyword.value.values:
                                 if isinstance(value, ast.FormattedValue):
