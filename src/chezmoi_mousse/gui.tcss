@@ -134,14 +134,15 @@
   }
   &>.collapsible_container{
     margin: 0;
+    height: auto;
     padding: 0;
       &>.operate_collapsible{
-        margin-bottom: 1;
+        # margin-bottom: 1;
       }
   }
-  .operate-diff-view {
-    margin-bottom: 1;
-    overflow-x: auto;
+  &>.operate_log {
+    height: auto;
+    min-height: 3;
   }
 }
 
