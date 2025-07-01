@@ -88,7 +88,7 @@
       &:hover {
         text-style: bold;
       }
-      &.last-clicked {
+      &.last_clicked {
         color: $accent;
         text-style: none;
         &:hover {

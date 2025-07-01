@@ -99,14 +99,15 @@ class ButtonsHorizontal(HorizontalGroup, IdMixin):
 
     def on_mount(self) -> None:
         self.query_one(self.button_qid(self.buttons[0])).add_class(
-            "last-clicked"
+            TcssStr.last_clicked
         )
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
-        lc = "last-clicked"
         for button_enum in self.buttons:
-            self.query_one(self.button_qid(button_enum)).remove_class(lc)
-        event.button.add_class(lc)
+            self.query_one(self.button_qid(button_enum)).remove_class(
+                TcssStr.last_clicked
+            )
+        event.button.add_class(TcssStr.last_clicked)
 
 
 class ContentSwitcherLeft(ContentSwitcher, IdMixin):

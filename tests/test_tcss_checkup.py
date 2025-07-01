@@ -83,6 +83,21 @@ def test_no_unused_tcss_classes() -> None:
                                         ):
                                             used_classes.add(value.value.attr)
 
+                # Check for add_class method calls with TcssStr attributes
+                if (
+                    isinstance(node.func, ast.Attribute)
+                    and node.func.attr == "add_class"
+                ):
+                    # Check if the first argument is a TcssStr attribute access
+                    first_arg = node.args[0]
+                    if isinstance(first_arg, ast.Attribute):
+                        if (
+                            isinstance(first_arg.value, ast.Name)
+                            and first_arg.value.id == "TcssStr"
+                            and first_arg.attr in defined_classes
+                        ):
+                            used_classes.add(first_arg.attr)
+
     unused_classes = defined_classes - used_classes
 
     assert (

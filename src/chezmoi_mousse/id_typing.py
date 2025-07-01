@@ -79,9 +79,16 @@ class CharsEnum(Enum):
 
 
 class TcssStr(StrEnum):
-    # Main tabs classes
     collapsible_container = auto()
+    content_switcher_left = auto()
+    content_switcher_right = auto()
     dir_tree_widget = auto()
+    filter_horizontal_bottom = auto()
+    filter_horizontal_top = auto()
+    filter_label = auto()
+    filters_vertical = auto()
+    flow_diagram = auto()
+    last_clicked = auto()
     operate_auto_warning = auto()
     operate_buttons_horizontal = auto()
     operate_collapsible = auto()
@@ -89,24 +96,13 @@ class TcssStr(StrEnum):
     operate_log = auto()
     operate_screen = auto()
     operate_top_path = auto()
+    single_button_vertical = auto()
+    tab_buttons_horizontal = auto()
     tab_left_vertical = auto()
     tab_right_vertical = auto()
     top_border_title = auto()
 
-    # Container classes
-    content_switcher_left = auto()
-    content_switcher_right = auto()
-    filter_horizontal_top = auto()
-    filter_horizontal_bottom = auto()
-    filter_label = auto()
-    filters_vertical = auto()
-    single_button_vertical = auto()
-    tab_buttons_horizontal = auto()
-
-    # GUI classes
-    flow_diagram = auto()
-
-    # Widget classes
+    # TODO dont set on classes in widget.py
     tree_widget = auto()
 
 

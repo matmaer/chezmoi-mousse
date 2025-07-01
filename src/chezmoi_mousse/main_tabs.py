@@ -308,7 +308,7 @@ class ApplyTab(BaseTab):
         active_view_id: str | None = content_switcher.current
         if active_view_id == self.view_id(
             ViewStr.diff_view
-        ) or diff_button.has_class("last-clicked"):
+        ) or diff_button.has_class(TcssStr.last_clicked):
             return True
         else:
             return None
