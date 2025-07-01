@@ -83,14 +83,15 @@ class TcssStr(StrEnum):
     content_switcher_left = auto()
     content_switcher_right = auto()
     dir_tree_widget = auto()
-    filter_horizontal_bottom = auto()
-    filter_horizontal_top = auto()
+    filter_horizontal = auto()
     filter_label = auto()
     filters_vertical = auto()
+    filter_horizontal_pad_bottom = auto()
     flow_diagram = auto()
     last_clicked = auto()
     modal_view = auto()
     operate_auto_warning = auto()
+    operate_button = auto()
     operate_buttons_horizontal = auto()
     operate_collapsible = auto()
     operate_container = auto()
@@ -98,6 +99,7 @@ class TcssStr(StrEnum):
     operate_screen = auto()
     operate_top_path = auto()
     single_button_vertical = auto()
+    tab_button = auto()
     tab_buttons_horizontal = auto()
     tab_left_vertical = auto()
     tab_right_vertical = auto()
@@ -145,6 +147,11 @@ class IdMixin:
         return (
             f"{self.tab_name}_{filter_enum.name}_filter_horizontal_{location}"
         )
+
+    def filter_horizontal_qid(
+        self, filter_enum: FilterEnum, location: Location
+    ) -> str:
+        return f"#{self.filter_horizontal_id(filter_enum, location)}"
 
     def switch_id(self, filter_enum: FilterEnum) -> str:
         return f"{self.tab_name}_{filter_enum.name}_switch"

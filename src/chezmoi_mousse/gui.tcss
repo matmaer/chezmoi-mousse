@@ -27,12 +27,11 @@
   .filter_label {
     color: $foreground-darken-1;
   }
-  &>.filter_horizontal_top {
+  &>.filter_horizontal {
     width: auto;
-    padding-bottom: 1;
   }
-  &>.filter_horizontal_bottom {
-    width: auto;
+  &>.filter_horizontal_pad_bottom {
+    padding-bottom: 1;
   }
   &.-visible {
     offset-x: 0%;
@@ -81,7 +80,7 @@
   &>.single_button_vertical {
     align: center top;
     height: auto;
-    &>.tab-button {
+    &>.tab_button {
       height: 1;
       min-width: 4;
       text-style: none;
@@ -99,7 +98,7 @@
         text-style: bold;
       }
     }
-    &>.operate-button {
+    &>.operate_button {
         border: round $primary;
         border: round $foreground-darken-3;
         color: $primary-lighten-3;

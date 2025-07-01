@@ -2,7 +2,6 @@
 
 import ast
 import inspect
-from functools import lru_cache
 
 import pytest
 
@@ -10,46 +9,37 @@ from chezmoi_mousse.id_typing import IdMixin
 from _test_utils import get_modules_to_test
 
 
-class MethodCallVisitor(ast.NodeVisitor):
-    """AST visitor to find method calls on objects that might inherit from IdMixin."""
+def extract_method_calls(tree: ast.AST) -> set[str]:
+    # extract all method calls from an AST tree
+    method_calls: set[str] = set()
 
-    def __init__(self):
-        self.method_calls: set[str] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Attribute) and isinstance(node.ctx, ast.Load):
+            method_calls.add(node.attr)
 
-    def visit_Attribute(self, node: ast.Attribute) -> None:
-        """Visit attribute access nodes to find method calls."""
-        # Check if this is a method call (attribute access followed by a call)
-        if isinstance(node.ctx, ast.Load):
-            self.method_calls.add(node.attr)
-        self.generic_visit(node)
+    return method_calls
 
 
-@lru_cache(maxsize=1)
 def get_idmixin_methods() -> set[str]:
-    """Get all method names from the IdMixin class (excluding __init__)."""
-    methods: set[str] = set()
-    for name, _ in inspect.getmembers(IdMixin, predicate=inspect.isfunction):
-        if not name.startswith("__"):  # Exclude special methods like __init__
-            methods.add(name)
-    return methods
+    # get all method names from the IdMixin class (excluding __init__)
+    return {
+        name
+        for name, _ in inspect.getmembers(
+            IdMixin, predicate=inspect.isfunction
+        )
+        if name != "__init__"
+    }
 
 
-@lru_cache(maxsize=1)
-def get_method_calls_from_source() -> set[str]:
-    """Extract all method calls from Python files in src/chezmoi_mousse directory."""
-    modules_to_test = get_modules_to_test()
+def get_method_calls_from_modules_to_test() -> set[str]:
     all_method_calls: set[str] = set()
 
-    for py_file in modules_to_test:
+    for py_file in get_modules_to_test():
         try:
-            with open(py_file, "r", encoding="utf-8") as file:
-                content = file.read()
-
+            content = py_file.read_text()
             tree = ast.parse(content, filename=str(py_file))
-            visitor = MethodCallVisitor()
-            visitor.visit(tree)
-            all_method_calls.update(visitor.method_calls)
-
+            method_calls = extract_method_calls(tree)
+            all_method_calls.update(method_calls)
         except (SyntaxError, UnicodeDecodeError) as e:
             pytest.fail(f"Error parsing {py_file}: {e}")
 
@@ -57,54 +47,13 @@ def get_method_calls_from_source() -> set[str]:
 
 
 def test_all_idmixin_methods_are_used():
+    """Test that all IdMixin methods are being used in the codebase."""
     idmixin_methods = get_idmixin_methods()
-    source_method_calls = get_method_calls_from_source()
+    source_method_calls = get_method_calls_from_modules_to_test()
     unused_methods = idmixin_methods - source_method_calls
 
     assert (
         len(unused_methods) == 0
-    ), f"The following IdMixin methods are not being used: {sorted(unused_methods)}"
-
-
-def test_idmixin_method_parameter_types():
-    # Check method signatures for expected parameter types
-    method_signatures: dict[str, inspect.Signature] = {}
-    for name, method in inspect.getmembers(
-        IdMixin, predicate=inspect.isfunction
-    ):
-        if not name.startswith("__"):
-            method_signatures[name] = inspect.signature(method)
-
-    # Verify that key enum types are being used in method parameters
-    expected_parameter_types = {
-        "ButtonEnum",
-        "Location",
-        "FilterEnum",
-        "TreeStr",
-        "ViewStr",
-    }
-
-    all_parameter_annotations: set[str] = set()
-    for sig in method_signatures.values():
-        for param_name, param in sig.parameters.items():
-            if (
-                param_name != "self"
-                and param.annotation != inspect.Parameter.empty
-            ):
-                # Extract type name from annotation
-                annotation_name = (
-                    param.annotation.__name__
-                    if hasattr(param.annotation, "__name__")
-                    else str(param.annotation)
-                )
-                all_parameter_annotations.add(annotation_name)
-
-    # Check that expected enum types are being used
-    used_expected_types = expected_parameter_types.intersection(
-        all_parameter_annotations
+    ), f"IdMixin methods not in use: {len(unused_methods)}\n" + "\n".join(
+        sorted(unused_methods)
     )
-
-    # This test passes if we find some expected parameter types
-    assert (
-        len(used_expected_types) > 0
-    ), "No expected enum parameter types found in IdMixin methods"

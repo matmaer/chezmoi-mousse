@@ -38,29 +38,29 @@ class FilterSlider(VerticalGroup, IdMixin):
     ) -> None:
         IdMixin.__init__(self, tab_str)
         self.tab_str = tab_str
-        self.top_filter = filters[0]
-        self.bottom_filter = filters[1]
+        self.filters = filters
         super().__init__(
             id=self.filter_slider_id, classes=TcssStr.filters_vertical
         )
 
     def compose(self) -> ComposeResult:
-        with HorizontalGroup(
-            id=self.filter_horizontal_id(self.top_filter, Location.top),
-            classes=(TcssStr.filter_horizontal_top),
-        ):
-            yield Switch(id=self.switch_id(self.top_filter))
-            yield Label(
-                self.top_filter.value, classes=TcssStr.filter_label
-            ).with_tooltip(tooltip=filter_tooltips[self.top_filter.name])
-        with HorizontalGroup(
-            id=self.filter_horizontal_id(self.bottom_filter, Location.bottom),
-            classes=(TcssStr.filter_horizontal_bottom),
-        ):
-            yield Switch(id=self.switch_id(self.bottom_filter))
-            yield Label(
-                self.bottom_filter.value, classes=TcssStr.filter_label
-            ).with_tooltip(tooltip=filter_tooltips[self.bottom_filter.name])
+        for filter_enum in self.filters:
+            if filter_enum in self.filters:
+                with HorizontalGroup(
+                    id=self.filter_horizontal_id(filter_enum, Location.top),
+                    classes=TcssStr.filter_horizontal,
+                ):
+                    yield Switch(id=self.switch_id(filter_enum))
+                    yield Label(
+                        filter_enum.value, classes=TcssStr.filter_label
+                    ).with_tooltip(tooltip=filter_tooltips[filter_enum.name])
+
+    def on_mount(self) -> None:
+        # add padding to the top filter horizontal group
+        self.query_one(
+            self.filter_horizontal_qid(self.filters[0], Location.top),
+            HorizontalGroup,
+        ).add_class(TcssStr.filter_horizontal_pad_bottom)
 
 
 class ButtonsHorizontal(HorizontalGroup, IdMixin):
@@ -80,10 +80,6 @@ class ButtonsHorizontal(HorizontalGroup, IdMixin):
         self.buttons = buttons
         self.button_class: str
         self.location: Location = location
-        if self.location == Location.bottom:
-            self.button_class = "operate-button"
-        else:
-            self.button_class = "tab-button"
 
     def compose(self) -> ComposeResult:
         for button_enum in self.buttons:
@@ -92,22 +88,31 @@ class ButtonsHorizontal(HorizontalGroup, IdMixin):
                 classes=TcssStr.single_button_vertical,
             ):
                 yield Button(
-                    label=button_enum.value,
-                    id=self.button_id(button_enum),
-                    classes=self.button_class,
+                    label=button_enum.value, id=self.button_id(button_enum)
                 )
 
     def on_mount(self) -> None:
-        self.query_one(self.button_qid(self.buttons[0])).add_class(
-            TcssStr.last_clicked
-        )
+        if self.location == Location.bottom:
+            for button_enum in self.buttons:
+                self.query_one(self.button_qid(button_enum)).add_class(
+                    TcssStr.operate_button
+                )
+        else:
+            for button_enum in self.buttons:
+                self.query_one(self.button_qid(button_enum)).add_class(
+                    TcssStr.tab_button
+                )
+                self.query_one(self.button_qid(self.buttons[0])).add_class(
+                    TcssStr.last_clicked
+                )
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
-        for button_enum in self.buttons:
-            self.query_one(self.button_qid(button_enum)).remove_class(
-                TcssStr.last_clicked
-            )
-        event.button.add_class(TcssStr.last_clicked)
+        if not self.location == Location.bottom:
+            for button_enum in self.buttons:
+                self.query_one(self.button_qid(button_enum)).remove_class(
+                    TcssStr.last_clicked
+                )
+            event.button.add_class(TcssStr.last_clicked)
 
 
 class ContentSwitcherLeft(ContentSwitcher, IdMixin):
