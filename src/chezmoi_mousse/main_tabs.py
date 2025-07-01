@@ -122,23 +122,29 @@ class Operate(ModalScreen[None], IdMixin):
                         classes=TcssStr.operate_collapsible,
                         title="file diffs view",
                     )
-            yield RichLog(id=self.log_id, classes=TcssStr.operate_log)
+            yield RichLog(
+                id=self.log_id, highlight=True, classes=TcssStr.operate_log
+            )
             yield ButtonsHorizontal(
                 self.tab_name, buttons=self.buttons, location=Location.bottom
             )
 
     def on_mount(self) -> None:
         # Set border titles
-        border_titles = {
+        info_border_titles = {
             TabStr.apply_tab: CharsEnum.apply.value,
             TabStr.re_add_tab: CharsEnum.re_add.value,
             TabStr.add_tab: CharsEnum.add.value,
         }
+        log_border_titles = {
+            TabStr.apply_tab: str(ButtonEnum.apply_file_btn.value).lower(),
+            TabStr.re_add_tab: str(ButtonEnum.re_add_file_btn.value).lower(),
+            TabStr.add_tab: str(ButtonEnum.add_file_btn.value).lower(),
+        }
         operation_info = self.query_one(self.info_qid, Static)
-        operation_info.border_title = border_titles[self.tab_name]
-        self.query_one(self.log_qid, RichLog).border_title = (
-            f"{self.tab_name} log"
-        )
+        operation_info.border_subtitle = info_border_titles[self.tab_name]
+        operate_log = self.query_one(self.log_qid, RichLog)
+        operate_log.border_title = f"{log_border_titles[self.tab_name]} log"
 
         # Query the relevant view based on the tab type
         if self.tab_name == TabStr.add_tab:
@@ -152,23 +158,52 @@ class Operate(ModalScreen[None], IdMixin):
             TcssStr.operate_buttons_horizontal
         )
 
+        # Add initial log entry
+        op_log = self.query_one(self.log_qid, RichLog)
+        timestamp = datetime.now().strftime("%H:%M:%S")
+        if self.tab_name == TabStr.apply_tab:
+            op_log.write(
+                f'[{timestamp}]Click "{ButtonEnum.apply_file_btn.value}" to run:'
+            )
+            op_log.write(f"[{timestamp}] chezmoi apply {self.path}")
+
     def on_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
-        # op_log = self.query_one(self.log_qid, RichLog)
+        op_log = self.query_one(self.log_qid, RichLog)
+        timestamp = datetime.now().strftime("%H:%M:%S")
+
         if event.button.id == self.button_id(ButtonEnum.apply_file_btn):
-            chezmoi.perform.apply(self.path)
+            op_log.write(f"[{timestamp}] Starting chezmoi apply operation")
+            try:
+                result = chezmoi.perform.apply(self.path)
+                op_log.write(f"[{timestamp}] Result from command:")
+                op_log.write(f"[{timestamp}] {result}")
+            except Exception as e:
+                op_log.write(
+                    f"[{timestamp}] [bold red]Error: {str(e)}[/bold red]"
+                )
             self.notify(f"running chezmoi apply on {self.path}")
+
         elif event.button.id == self.button_id(ButtonEnum.re_add_file_btn):
-            chezmoi.perform.re_add(self.path)
             self.notify(f"running chezmoi re-add on {self.path}")
+
         elif event.button.id == self.button_id(ButtonEnum.add_file_btn):
-            chezmoi.perform.add(self.path)
             self.notify(f"running chezmoi add on {self.path}")
-        elif event.button.id in (
-            self.button_id(ButtonEnum.cancel_apply_btn),
-            self.button_id(ButtonEnum.cancel_re_add_btn),
-            self.button_id(ButtonEnum.cancel_add_btn),
-        ):
+
+        elif event.button.id == self.button_id(ButtonEnum.cancel_apply_btn):
+            self.notify(
+                f"operation {ButtonEnum.apply_file_btn.value} cancelled"
+            )
+            self.dismiss()
+        elif event.button.id == self.button_id(ButtonEnum.cancel_re_add_btn):
+            self.notify(
+                f"operation {ButtonEnum.re_add_file_btn.value} cancelled"
+            )
+            self.dismiss()
+        elif event.button.id == self.button_id(ButtonEnum.cancel_add_btn):
+            self.notify(
+                f"operation {ButtonEnum.cancel_add_btn.value} cancelled"
+            )
             self.dismiss()
 
 

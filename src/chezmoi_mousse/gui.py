@@ -51,9 +51,9 @@ class MaximizedView(ModalScreen[None], IdMixin):
 
     def __init__(
         self,
-        border_title_text: str | None = None,
-        id_to_maximize: str | None = None,
-        path: Path | None = None,
+        border_title_text: str,
+        id_to_maximize: str | None,
+        path: Path | None,
         tab_name: TabStr = TabStr.apply_tab,
     ) -> None:
         IdMixin.__init__(self, tab_name)
@@ -196,8 +196,8 @@ class MainScreen(Screen[None]):
         # Initialize modal parameters
         tab_name = PaneEnum[active_pane].value
         id_to_maximize: str | None = None
-        path: Path | None = None
-        border_title_text: str | None = None
+        path_for_maximize: Path | None = None
+        border_title_text: str = ""
 
         if id_mixin.tab_name in (TabStr.apply_tab, TabStr.re_add_tab):
             # Determine what view to show in the modal
@@ -212,7 +212,7 @@ class MainScreen(Screen[None]):
                     content_switcher_right.get_child_by_id(current_view_id)
                 )
                 id_to_maximize = current_view_id
-                path = getattr(right_switcher_widget, "path")
+                path_for_maximize = getattr(right_switcher_widget, "path")
 
         elif id_mixin.tab_name == TabStr.add_tab:
             current_view_qid = id_mixin.view_qid(ViewStr.contents_view)
@@ -221,17 +221,18 @@ class MainScreen(Screen[None]):
             )
 
             id_to_maximize = add_tab_contents_view.id
-            path = getattr(add_tab_contents_view, "path")
+            path_for_maximize = getattr(add_tab_contents_view, "path")
 
         elif id_mixin.tab_name == TabStr.diagram_tab:
             id_to_maximize = PaneEnum.diagram.name
             border_title_text = " chezmoi diagram "
 
+        assert id_to_maximize is not None and path_for_maximize is not None
         self.app.push_screen(
             MaximizedView(
                 tab_name=tab_name,
                 id_to_maximize=id_to_maximize,
-                path=path,
+                path=path_for_maximize,
                 border_title_text=border_title_text,
             )
         )

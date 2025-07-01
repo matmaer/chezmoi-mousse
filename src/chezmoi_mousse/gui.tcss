@@ -126,7 +126,7 @@
   }
   .operate_top_path {
     height: 3;
-    border-title-align: center;
+    border-subtitle-align: center;
     text-align: center;
     border: round $foreground-darken-3;
     color: $accent;
@@ -136,10 +136,13 @@
     height: auto;
     padding: 0;
       &>.operate_collapsible{
-        # margin-bottom: 1;
       }
   }
   &>.operate_log {
+    border-top: $accent-darken-3;
+    border-title-align: center;
+    background: $surface;
+    background-tint: $surface;
     height: auto;
     min-height: 3;
   }
