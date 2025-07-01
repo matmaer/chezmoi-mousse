@@ -64,11 +64,6 @@ RICH_LOG.styles.padding = 0
 
 COMMAND_LOG: list[LogTabEntry] = []
 
-# Module-level timer references for better control
-fade_timer: Timer | None = None
-all_workers_timer: Timer | None = None
-temp_config_timer: Timer | None = None
-
 
 class AnimatedFade(Static):
 
@@ -87,6 +82,13 @@ class AnimatedFade(Static):
 
 
 class LoadingScreen(Screen[list[LogTabEntry]]):
+
+    def __init__(self) -> None:
+        super().__init__()
+        # Timers will be set in on_mount()
+        self.fade_timer: Timer
+        self.all_workers_timer: Timer
+        self.temp_config_timer: Timer
 
     def compose(self) -> ComposeResult:
         yield Middle(Center(AnimatedFade()), Center(RICH_LOG))
@@ -132,6 +134,7 @@ class LoadingScreen(Screen[list[LogTabEntry]]):
             if worker.group in ("doctor", "cat_config")
         ):
             if chezmoi.check_interactive():
+                self.temp_config_timer.stop()
                 temp_config_path: Path | None = (
                     chezmoi.create_temp_config_file()
                 )
@@ -160,16 +163,14 @@ class LoadingScreen(Screen[list[LogTabEntry]]):
             self.dismiss(result)
 
     def on_mount(self) -> None:
-        global fade_timer, all_workers_timer, temp_config_timer
-
         animated_fade = self.query_one(AnimatedFade)
-        fade_timer = self.set_interval(
+        self.fade_timer = self.set_interval(
             interval=0.05, callback=animated_fade.refresh
         )
-        all_workers_timer = self.set_interval(
+        self.all_workers_timer = self.set_interval(
             interval=1, callback=self.all_workers_finished
         )
-        temp_config_timer = self.set_interval(
+        self.temp_config_timer = self.set_interval(
             interval=0.1, callback=self.set_temp_config_file
         )
 

@@ -65,16 +65,14 @@ repos:
       - id: tcss-checkup
         name: CSS Class Management Tests
         entry: uv run pytest
-        args: [tests/test_tcss_checkup.py, -v]
+        args: [tests/test_tcss_classes.py, -v]
         language: system
         files: ^(src/.*\.py|src/.*\.tcss)$
         pass_filenames: false
-        description: "Verify CSS class management (no hardcoded classes, no unused TCSS classes)"
       - id: id-typing-checkup
         name: Enum Value Management Tests
         entry: uv run pytest
-        args: [tests/test_id_typing_checkup.py, -v]
+        args: [tests/test_id_typing.py, -v]
         language: system
         files: ^src/.*\.py$
         pass_filenames: false
-        description: "Verify enum value management (no unused enum values, proper enum usage)"
