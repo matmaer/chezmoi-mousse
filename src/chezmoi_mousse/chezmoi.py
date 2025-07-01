@@ -1,4 +1,5 @@
 import json
+import tempfile
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -388,6 +389,33 @@ class Chezmoi:
             for f, status in status_dirs
             if dir_path in f.parents and status != "X"
         )
+
+    def create_temp_config_file(self) -> Path:
+        """Creates a config file without the interactive option and returns the
+        path to this file."""
+        # find config file name so chezmoi can infer the format from temp file
+        config_file_name = None
+        for line in self.doctor.list_out:
+            if "config-file" in line and "found" in line:
+                # Example line: "ok config-file found ~/.config/chezmoi/chezmoi.toml, last modified ..."
+                parts = line.split("found ")
+                rel_path = Path(parts[1].split(",")[0].strip())
+                config_file_name = rel_path.name
+                break
+        # read and create config
+        config_text = self.cat_config.std_out
+        filtered_lines: list[str] = [
+            line
+            for line in config_text.splitlines()
+            if not line.startswith("Interactive")
+        ]
+        # write to new temp file
+        assert isinstance(config_file_name, str)
+        temp_file_path: Path = Path(tempfile.gettempdir()) / config_file_name
+        with open(temp_file_path, "w") as temp_file:
+            temp_file.write("\n".join(filtered_lines))
+        # path to the temp file
+        return temp_file_path
 
 
 chezmoi = Chezmoi()
