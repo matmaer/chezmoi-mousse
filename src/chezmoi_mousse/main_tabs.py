@@ -148,7 +148,6 @@ class Operate(ModalScreen[None], IdMixin):
 
         # Set path and classes
         view.path = self.path
-        view.add_class("operate-view")
         self.query_exactly_one(ButtonsHorizontal).add_class(
             TcssStr.operate_buttons_horizontal
         )

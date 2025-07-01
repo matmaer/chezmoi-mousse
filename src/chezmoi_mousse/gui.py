@@ -86,7 +86,7 @@ class MaximizedView(ModalScreen[None], IdMixin):
             )
 
     def on_mount(self) -> None:
-        self.add_class("modal-view")
+        self.add_class(TcssStr.modal_view)
         self.border_subtitle = " double click or escape key to close "
 
         if self.id_to_maximize == self.view_id(ViewStr.contents_view):

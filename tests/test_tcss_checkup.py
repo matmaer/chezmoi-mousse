@@ -22,7 +22,6 @@ def test_no_hardcoded_css_classes(py_file: Path) -> None:
         if isinstance(node, ast.Call):
             for keyword in node.keywords:
                 if keyword.arg == "classes":
-                    # Check if the value is a string literal
                     if isinstance(keyword.value, ast.Constant) and isinstance(
                         keyword.value.value, str
                     ):
@@ -31,6 +30,21 @@ def test_no_hardcoded_css_classes(py_file: Path) -> None:
                         violations.append(
                             f'{py_file}:{line_num} - classes="{keyword.value.value}"'
                         )
+            # Check for add_class method calls with hardcoded string arguments
+            if (
+                isinstance(node.func, ast.Attribute)
+                and node.func.attr == "add_class"
+                and len(node.args) >= 1
+            ):
+                first_arg = node.args[0]
+                if isinstance(first_arg, ast.Constant) and isinstance(
+                    first_arg.value, str
+                ):
+                    # Found a hardcoded string in add_class()
+                    line_num = first_arg.lineno
+                    violations.append(
+                        f'{py_file}:{line_num} - add_class("{first_arg.value}")'
+                    )
 
     assert (
         not violations

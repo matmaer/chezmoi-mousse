@@ -89,6 +89,7 @@ class TcssStr(StrEnum):
     filters_vertical = auto()
     flow_diagram = auto()
     last_clicked = auto()
+    modal_view = auto()
     operate_auto_warning = auto()
     operate_buttons_horizontal = auto()
     operate_collapsible = auto()

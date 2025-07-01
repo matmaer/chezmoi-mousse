@@ -154,7 +154,7 @@ ModalScreen {
   align: center middle;
   border-title-align: center;
   border-title-style: bold;
-  &.modal-view {
+  &.modal_view {
     border-subtitle-style: bold;
     border-subtitle-align: center;
     border-top: tab $foreground-darken-3;
