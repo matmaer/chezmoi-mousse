@@ -104,8 +104,6 @@ class TcssStr(StrEnum):
     tab_left_vertical = auto()
     tab_right_vertical = auto()
     top_border_title = auto()
-
-    # TODO dont set on classes in widget.py
     tree_widget = auto()
 
 
