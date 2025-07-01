@@ -154,13 +154,16 @@ class Operate(ModalScreen[None], IdMixin):
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
-        op_log = self.query_one(self.log_qid, RichLog)
+        # op_log = self.query_one(self.log_qid, RichLog)
         if event.button.id == self.button_id(ButtonEnum.apply_file_btn):
-            self.notify(f"Not yet implemented for {op_log}.")
+            chezmoi.perform.apply(self.path)
+            self.notify(f"running chezmoi apply on {self.path}")
         elif event.button.id == self.button_id(ButtonEnum.re_add_file_btn):
-            self.notify(f"Not yet implemented for {op_log}.")
+            chezmoi.perform.re_add(self.path)
+            self.notify(f"running chezmoi re-add on {self.path}")
         elif event.button.id == self.button_id(ButtonEnum.add_file_btn):
-            self.notify(f"Not yet implemented for {op_log}.")
+            chezmoi.perform.add(self.path)
+            self.notify(f"running chezmoi add on {self.path}")
         elif event.button.id in (
             self.button_id(ButtonEnum.cancel_apply_btn),
             self.button_id(ButtonEnum.cancel_re_add_btn),

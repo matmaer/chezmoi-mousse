@@ -1,4 +1,5 @@
 from collections import deque
+from pathlib import Path
 
 from rich.segment import Segment
 from rich.style import Style
@@ -9,6 +10,7 @@ from textual.containers import Center, Middle
 from textual.geometry import Region
 from textual.screen import Screen
 from textual.strip import Strip
+from textual.timer import Timer
 from textual.widgets import RichLog, Static
 from textual.worker import WorkerState
 
@@ -54,13 +56,18 @@ LOG_PADDING_WIDTH = 36
 LONG_COMMANDS = chezmoi.long_commands
 
 RICH_LOG = RichLog(id="loading_screen_log")
-RICH_LOG.styles.height = len(LONG_COMMANDS)
+RICH_LOG.styles.height = len(LONG_COMMANDS) + 2
 RICH_LOG.styles.width = LOG_PADDING_WIDTH + 9
 RICH_LOG.styles.color = "#0053AA"
 RICH_LOG.styles.margin = 0
 RICH_LOG.styles.padding = 0
 
 COMMAND_LOG: list[LogTabEntry] = []
+
+# Module-level timer references for better control
+fade_timer: Timer | None = None
+all_workers_timer: Timer | None = None
+temp_config_timer: Timer | None = None
 
 
 class AnimatedFade(Static):
@@ -93,35 +100,85 @@ class LoadingScreen(Screen[list[LogTabEntry]]):
 
         self.app.call_from_thread(update_log)
 
-    @work(thread=True, group="io_workers")
-    def run_io_worker(self, arg_id: str) -> None:
-        io_class = getattr(chezmoi, arg_id)
+    def run_command(self, attr: str) -> None:
+        io_class = getattr(chezmoi, attr)
         io_class.update()
         self.log_text(io_class.label)
-        long_command = getattr(chezmoi, arg_id).long_command
+        long_command = getattr(chezmoi, attr).long_command
         COMMAND_LOG.append(
             LogTabEntry(
                 long_command=long_command,
-                message="output stored in an InputOutput dataclass by 'splash.py'.",
+                message="output stored in InputOutput by 'splash.py'.",
             )
         )
+
+    @work(thread=True, group="io_workers")
+    def run_io_worker(self, arg_id: str) -> None:
+        self.run_command(arg_id)
+
+    @work(thread=True, group="doctor")
+    def run_doctor_worker(self) -> None:
+        self.run_command("doctor")
+
+    @work(thread=True, group="cat_config")
+    def run_cat_config_worker(self) -> None:
+        self.run_command("cat_config")
+
+    @work(thread=True, group="set_temp_config_file")
+    def set_temp_config_file(self) -> None:
+        if all(
+            worker.state == WorkerState.SUCCESS
+            for worker in self.app.workers
+            if worker.group in ("doctor", "cat_config")
+        ):
+            if chezmoi.check_interactive():
+                temp_config_path: Path | None = (
+                    chezmoi.create_temp_config_file()
+                )
+
+                from chezmoi_mousse.chezmoi import PerformChange
+
+                PerformChange.config_path = temp_config_path
+
+                self.log_text("create non interactive config")
+
+                COMMAND_LOG.append(
+                    LogTabEntry(
+                        ("Create non_interactive config",),
+                        message=f"Create temporary config file at {temp_config_path} excluding interactive option.",
+                    )
+                )
 
     def all_workers_finished(self) -> None:
         if all(
             worker.state == WorkerState.SUCCESS
             for worker in self.app.workers
-            if worker.group == "io_workers"
+            if worker.group
+            in ("io_workers", "doctor", "cat_config", "set_temp_config_file")
         ):
             result: list[LogTabEntry] = COMMAND_LOG
             self.dismiss(result)
 
     def on_mount(self) -> None:
+        global fade_timer, all_workers_timer, temp_config_timer
+
         animated_fade = self.query_one(AnimatedFade)
-        self.set_interval(interval=0.05, callback=animated_fade.refresh)
-        self.set_interval(interval=1, callback=self.all_workers_finished)
+        fade_timer = self.set_interval(
+            interval=0.05, callback=animated_fade.refresh
+        )
+        all_workers_timer = self.set_interval(
+            interval=1, callback=self.all_workers_finished
+        )
+        temp_config_timer = self.set_interval(
+            interval=0.1, callback=self.set_temp_config_file
+        )
 
         # first run chezzmoi doctor, most expensive command
-        self.run_io_worker("doctor")
+        self.run_doctor_worker()
+        # run cat config so the temp config file can be created
         LONG_COMMANDS.pop("doctor")
+        self.run_cat_config_worker()
+        LONG_COMMANDS.pop("cat_config")
+
         for arg_id in LONG_COMMANDS:
             self.run_io_worker(arg_id)

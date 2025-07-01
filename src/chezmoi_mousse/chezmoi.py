@@ -91,20 +91,30 @@ class PerformChange:
     """Group of commands which make changes on disk or in the chezmoi
     repository."""
 
-    base = BASE + ("--verbose", "--dry-run", "--force")
     # TODO: remove --dry-run
+    base = BASE + ("--verbose", "--dry-run", "--force", "--config")
+    config_path: Path | None = None
 
     @staticmethod
     def add(path: Path) -> str:
-        return subprocess_run(PerformChange.base + ("add", str(path)))
+        return subprocess_run(
+            PerformChange.base
+            + (str(PerformChange.config_path), "add", str(path))
+        )
 
     @staticmethod
     def re_add(path: Path) -> str:
-        return subprocess_run(PerformChange.base + ("re-add", str(path)))
+        return subprocess_run(
+            PerformChange.base
+            + (str(PerformChange.config_path), "re-add", str(path))
+        )
 
     @staticmethod
     def apply(path: Path) -> str:
-        return subprocess_run(PerformChange.base + ("apply", str(path)))
+        return subprocess_run(
+            PerformChange.base
+            + (str(PerformChange.config_path), "apply", str(path))
+        )
 
 
 class SubProcessCalls:
@@ -192,6 +202,7 @@ class Chezmoi:
     template_data: InputOutput
     perform = PerformChange()
     run = SubProcessCalls()
+    temp_config_path: Path
 
     def __init__(self) -> None:
 
@@ -390,31 +401,44 @@ class Chezmoi:
             if dir_path in f.parents and status != "X"
         )
 
+    def check_interactive(self) -> bool:
+        for line in self.cat_config.list_out:
+            if "interactive" in line.lower() and "true" in line.lower():
+                return True
+        return False
+
     def create_temp_config_file(self) -> Path:
-        """Creates a config file without the interactive option and returns the
-        path to this file."""
-        # find config file name so chezmoi can infer the format from temp file
-        config_file_name = None
-        for line in self.doctor.list_out:
+        # create temporary config file without interactive option, returns the
+        # path to this file, or None if no config file is found
+        config_file_name: str | None = None
+        for line in chezmoi.doctor.list_out:
             if "config-file" in line and "found" in line:
                 # Example line: "ok config-file found ~/.config/chezmoi/chezmoi.toml, last modified ..."
                 parts = line.split("found ")
-                rel_path = Path(parts[1].split(",")[0].strip())
-                config_file_name = rel_path.name
-                break
+                if len(parts) > 1:
+                    config_file_name = Path(
+                        parts[1].split(",")[0].strip()
+                    ).name
+                    break
+
+        if config_file_name is None:
+            raise RuntimeError(
+                "No config file found in chezmoi doctor output."
+            )
+
         # read and create config
         config_text = self.cat_config.std_out
         filtered_lines: list[str] = [
             line
             for line in config_text.splitlines()
-            if not line.startswith("Interactive")
+            if not line.lower().startswith("interactive")
         ]
+
         # write to new temp file
-        assert isinstance(config_file_name, str)
         temp_file_path: Path = Path(tempfile.gettempdir()) / config_file_name
         with open(temp_file_path, "w") as temp_file:
             temp_file.write("\n".join(filtered_lines))
-        # path to the temp file
+
         return temp_file_path
 
 
