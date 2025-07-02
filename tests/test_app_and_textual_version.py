@@ -32,3 +32,10 @@ def test_textual_version_is_latest():
 
     except requests.RequestException:
         pytest.fail("Cannot reach GitHub API.")
+
+
+def test_if_app_starts():
+    from chezmoi_mousse.gui import ChezmoiGUI
+
+    app = ChezmoiGUI()
+    assert app
