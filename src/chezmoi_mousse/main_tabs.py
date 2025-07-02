@@ -245,6 +245,29 @@ class BaseTab(Horizontal, IdMixin):
         self.query_one(
             self.view_qid(ViewStr.git_log_view), GitLogView
         ).path = path
+        # Refresh bindings when path changes for the operate bindings
+        self.refresh_bindings()
+
+    def check_action(
+        self, action: str, parameters: tuple[object, ...]
+    ) -> bool | None:
+        if action in ("apply_diff", "re_add_diff"):
+            diff_button = self.query_one(self.button_qid(ButtonEnum.diff_btn))
+
+            if diff_button.has_class(TcssStr.last_clicked):
+                active_path = self.query_one(
+                    self.view_qid(ViewStr.diff_view), DiffView
+                ).path
+                # Check if the current path has a diff available
+                tab_str = getattr(self, "tab_str")
+                if (
+                    active_path in chezmoi.managed_status[tab_str].files
+                    and chezmoi.managed_status[tab_str].files[active_path]
+                    != "X"
+                ):
+                    return True
+            return None
+        return None
 
     def on_tree_node_selected(
         self, event: TreeBase.NodeSelected[NodeData]
@@ -354,23 +377,6 @@ class ApplyTab(BaseTab):
         yield FilterSlider(
             self.tab_str, filters=(FilterEnum.unchanged, FilterEnum.expand_all)
         )
-
-    def check_action(
-        self, action: str, parameters: tuple[object, ...]
-    ) -> bool | None:
-
-        diff_button = self.query_one(self.button_qid(ButtonEnum.diff_btn))
-
-        content_switcher = self.query_one(
-            self.content_switcher_qid(Location.right), ContentSwitcher
-        )
-        active_view_id: str | None = content_switcher.current
-        if active_view_id == self.view_id(
-            ViewStr.diff_view
-        ) or diff_button.has_class(TcssStr.last_clicked):
-            return True
-        else:
-            return None
 
     def action_toggle_filter_slider(self) -> None:
         self.query_one(self.filter_slider_qid, VerticalGroup).toggle_class(
