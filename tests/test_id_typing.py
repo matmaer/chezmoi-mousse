@@ -45,3 +45,34 @@ def test_all_idmixin_methods_are_used():
     ), f"IdMixin methods not in use: {len(unused_methods)}\n" + "\n".join(
         sorted(unused_methods)
     )
+
+
+def test_no_hardcoded_ids():
+    violations: list[str] = []
+
+    for py_file in get_modules_to_test():
+        content = py_file.read_text()
+        tree = ast.parse(content, filename=str(py_file))
+
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Call):
+                for keyword in node.keywords:
+                    if (
+                        keyword.arg == "id"
+                        and isinstance(keyword.value, ast.Constant)
+                        and isinstance(keyword.value.value, str)
+                    ):
+                        violations.append(
+                            f'{py_file.name}:{keyword.lineno} - id="{keyword.value.value}"'
+                        )
+
+    if violations:
+        print(f"\nFound {len(violations)} hardcoded IDs:")
+        for violation in violations:
+            print(f"  {violation}")
+        print(
+            "\nIDs should be generated using IdMixin methods instead of hardcoded strings."
+        )
+        assert (
+            False
+        ), f"Found {len(violations)} hardcoded IDs (see details above)"

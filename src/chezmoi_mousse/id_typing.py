@@ -107,6 +107,13 @@ class TcssStr(StrEnum):
     tree_widget = auto()
 
 
+# added here to make the logic in test_no_hardcoded_ids work for all modules
+class SplashIdStr(StrEnum):
+    splash_rich_log_id = auto()
+    loading_screen_id = auto()
+    animated_fade_id = auto()
+
+
 @dataclass
 class LogTabEntry:
     long_command: tuple[str, ...]
@@ -117,6 +124,9 @@ class IdMixin:
     def __init__(self, tab_str: TabStr) -> None:
         self.filter_slider_id = f"{tab_str}_filter_slider"
         self.filter_slider_qid = f"#{self.filter_slider_id}"
+        self.operate_screen_id = f"{tab_str}_operate_screen"
+        self.operate_collapsible_id = f"{tab_str}_operate_collapsible"
+        self.operate_vertical_id = f"{tab_str}_operate_vertical"
         self.tab_main_horizontal_id = f"{tab_str}_main_horizontal"
         self.tab_main_horizontal_qid = f"#{self.tab_main_horizontal_id}"
         self.tab_name: TabStr = tab_str
