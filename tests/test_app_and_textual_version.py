@@ -220,3 +220,12 @@ def test_screen_instantiation(screen_class: str) -> None:
         instance = LoadingScreen()
 
     assert instance is not None
+
+
+@pytest.mark.parametrize("tree_path", ["/tmp/test_tree", "/home/user/test"])
+def test_filtered_dir_tree_instantiation(tree_path: str) -> None:
+    from chezmoi_mousse.widgets import FilteredDirTree
+
+    # FilteredDirTree doesn't depend on chezmoi, just needs a valid path
+    tree = FilteredDirTree(tree_path)
+    assert tree is not None
