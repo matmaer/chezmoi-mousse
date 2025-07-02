@@ -143,6 +143,9 @@ class MainScreen(Screen[None]):
                 )
         yield Footer()
 
+    def on_mount(self) -> None:
+        self.query_exactly_one(ApplyTab).focus()
+
     def on_tabbed_content_tab_activated(
         self, event: TabbedContent.TabActivated
     ) -> None:
