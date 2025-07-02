@@ -16,12 +16,15 @@ Graphical user interface in the terminal for [chezmoi](https://github.com/twpayn
 
 ## Available Chezmoi commands
 
-- [ ] `chezmoi add`
-- [ ] `chezmoi apply`
+- [ ] `chezmoi add` file
+- [ ] `chezmoi apply` file
+- [ ] `chezmoi re-add` file
+- [ ] `chezmoi add` directory
+- [ ] `chezmoi apply` directory
+- [ ] `chezmoi re-add` directory
 - [ ] `chezmoi destroy`
 - [ ] `chezmoi forget`
 - [ ] `chezmoi init`
-- [ ] `chezmoi re-add`
 - [x] `chezmoi cat-config`
 - [x] `chezmoi cat`
 - [x] `chezmoi config-dump`
