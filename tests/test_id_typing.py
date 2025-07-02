@@ -52,7 +52,6 @@ def test_all_idmixin_methods_are_used():
     "py_file", get_modules_to_test(), ids=lambda py_file: py_file.name
 )
 def test_no_hardcoded_ids(py_file: Path):
-    """Test that each module doesn't contain hardcoded ID strings."""
     violations: list[str] = []
 
     content = py_file.read_text()
