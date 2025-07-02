@@ -28,6 +28,7 @@ dev = [
     "pydeps>=3.0.1",
     "pylint>=3.3.6",
     "pytest>=8.3.5",
+    "pytest-asyncio>=0.25.1",
     "pytest-cov>=6.1.1",
     "pytest-memray>=1.7.0",
     "pytest-mock>=3.14.0",
