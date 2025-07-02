@@ -118,7 +118,7 @@ class IdMixin:
         self.filter_slider_id = f"{tab_str}_filter_slider"
         self.filter_slider_qid = f"#{self.filter_slider_id}"
         self.tab_main_horizontal_id = f"{tab_str}_main_horizontal"
-        self.tab_main_horizontal_qid = f"#{tab_str}_main_horizontal"
+        self.tab_main_horizontal_qid = f"#{self.tab_main_horizontal_id}"
         self.tab_name: TabStr = tab_str
 
     def button_id(self, button_label: ButtonEnum) -> str:

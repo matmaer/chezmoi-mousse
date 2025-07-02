@@ -146,7 +146,6 @@ class MainScreen(Screen[None]):
     def on_tabbed_content_tab_activated(
         self, event: TabbedContent.TabActivated
     ) -> None:
-        """Update the reactive variable when a tab is activated."""
         self.active_pane = event.tab.id
 
     def check_action(
@@ -157,7 +156,6 @@ class MainScreen(Screen[None]):
 
         if action == "maximize":
             # If no tab is active, return True because ApplyTab will be shown
-            # (app just started)
             if not active_pane:
                 return True
             # Once the app is running
@@ -215,9 +213,8 @@ class MainScreen(Screen[None]):
                 path_for_maximize = getattr(right_switcher_widget, "path")
 
         elif id_mixin.tab_name == TabStr.add_tab:
-            current_view_qid = id_mixin.view_qid(ViewStr.contents_view)
             add_tab_contents_view = self.query_one(
-                current_view_qid, ContentsView
+                id_mixin.view_qid(ViewStr.contents_view), ContentsView
             )
 
             id_to_maximize = add_tab_contents_view.id
@@ -227,7 +224,6 @@ class MainScreen(Screen[None]):
             id_to_maximize = PaneEnum.diagram.name
             border_title_text = " chezmoi diagram "
 
-        assert id_to_maximize is not None and path_for_maximize is not None
         self.app.push_screen(
             MaximizedView(
                 tab_name=tab_name,
