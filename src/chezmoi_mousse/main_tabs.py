@@ -329,7 +329,6 @@ class ApplyTab(BaseTab):
             id=self.tab_vertical_id(Location.left),
             classes=TcssStr.tab_left_vertical,
         ):
-            # yield ButtonsTopLeft(self.tab_str)
             yield ButtonsHorizontal(
                 self.tab_str,
                 buttons=(ButtonEnum.tree_btn, ButtonEnum.list_btn),
