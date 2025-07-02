@@ -364,7 +364,6 @@ class ApplyTab(BaseTab):
         content_switcher = self.query_one(
             self.content_switcher_qid(Location.right), ContentSwitcher
         )
-        # current returns the id of the currently active view
         active_view_id: str | None = content_switcher.current
         if active_view_id == self.view_id(
             ViewStr.diff_view
