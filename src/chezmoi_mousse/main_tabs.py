@@ -44,6 +44,7 @@ from chezmoi_mousse.id_typing import (
     IdMixin,
     Location,
     LogTabEntry,
+    OperateIdStr,
     TabStr,
     TcssStr,
     TreeStr,
@@ -82,15 +83,16 @@ class Operate(ModalScreen[None], IdMixin):
         self.diff_qid = self.view_qid(ViewStr.diff_view, operate=True)
         self.contents_id = self.view_id(ViewStr.contents_view, operate=True)
         self.contents_qid = self.view_qid(ViewStr.contents_view, operate=True)
-        self.info_id = f"{tab_name}_operation_info"
+        self.info_id = OperateIdStr.operate_top_path_id
         self.info_qid = f"#{self.info_id}"
-        self.log_id = f"{tab_name}_operate_log"
+        self.log_id = OperateIdStr.operate_log_id
         self.log_qid = f"#{self.log_id}"
-        super().__init__(id=self.operate_screen_id)
+        super().__init__(id=OperateIdStr.operate_screen_id)
 
     def compose(self) -> ComposeResult:
         with Vertical(
-            id=self.operate_vertical_id, classes=TcssStr.operate_container
+            id=OperateIdStr.operate_vertical_id,
+            classes=TcssStr.operate_container,
         ):
             if (
                 self.tab_name == TabStr.add_tab
@@ -104,7 +106,7 @@ class Operate(ModalScreen[None], IdMixin):
             )
             if self.tab_name == TabStr.add_tab:
                 with Container(
-                    id=self.operate_collapsible_id,
+                    id=OperateIdStr.operate_collapsible_id,
                     classes=TcssStr.collapsible_container,
                 ):
                     yield Collapsible(
@@ -114,7 +116,7 @@ class Operate(ModalScreen[None], IdMixin):
                     )
             else:
                 with Container(
-                    id=self.operate_collapsible_id,
+                    id=OperateIdStr.operate_collapsible_id,
                     classes=TcssStr.collapsible_container,
                 ):
                     yield Collapsible(
