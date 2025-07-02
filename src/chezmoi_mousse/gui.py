@@ -151,6 +151,17 @@ class MainScreen(Screen[None]):
     ) -> None:
         self.active_pane = event.tab.id
 
+        # Refresh bindings on the newly activated tab to ensure they reflect current state
+        if event.tab.id in ("apply", "re_add"):
+            # Get the tab widget and refresh its bindings
+            tab_pane = self.query_one(f"#{event.tab.id}", TabPane)
+            if tab_pane.children:
+                tab_widget = tab_pane.children[0]
+                # Focus the tab widget and use call_after_refresh to ensure mounting is complete
+                tab_widget.focus()
+                if hasattr(tab_widget, "refresh_bindings"):
+                    self.call_after_refresh(tab_widget.refresh_bindings)
+
     def check_action(
         self, action: str, parameters: tuple[object, ...]
     ) -> bool | None:
@@ -161,8 +172,11 @@ class MainScreen(Screen[None]):
             # If no tab is active, return True because ApplyTab will be shown
             if not active_pane:
                 return True
-            # Once the app is running
-            id_mixin = IdMixin(tab_str=PaneEnum[active_pane].value)
+            # Once the app is running - guard against empty active_pane
+            try:
+                id_mixin = IdMixin(tab_str=PaneEnum[active_pane].value)
+            except (KeyError, AttributeError):
+                return True
             if (
                 id_mixin.tab_name == TabStr.doctor_tab
                 or id_mixin.tab_name == TabStr.log_tab
@@ -178,6 +192,7 @@ class MainScreen(Screen[None]):
                 return True
             else:
                 return None  # show disabled binding
+
         return None  # show disabled binding
 
     def action_toggle_filter_slider(self) -> None:

@@ -252,7 +252,13 @@ class BaseTab(Horizontal, IdMixin):
         self, action: str, parameters: tuple[object, ...]
     ) -> bool | None:
         if action in ("apply_diff", "re_add_diff"):
-            diff_button = self.query_one(self.button_qid(ButtonEnum.diff_btn))
+            try:
+                diff_button = self.query_one(
+                    self.button_qid(ButtonEnum.diff_btn)
+                )
+            except Exception:
+                # If diff button not found, default to invisible
+                return False
 
             if diff_button.has_class(TcssStr.last_clicked):
                 active_path = self.query_one(
@@ -265,9 +271,11 @@ class BaseTab(Horizontal, IdMixin):
                     and chezmoi.managed_status[tab_str].files[active_path]
                     != "X"
                 ):
-                    return True
-            return None
-        return None
+                    return True  # Visible and clickable
+                else:
+                    return None  # Visible but disabled when diff view is active but no valid diff
+            return False  # Invisible when diff view is not active
+        return False
 
     def on_tree_node_selected(
         self, event: TreeBase.NodeSelected[NodeData]
@@ -302,14 +310,20 @@ class BaseTab(Horizontal, IdMixin):
             self.query_one(
                 self.content_switcher_qid(Location.right), ContentSwitcher
             ).current = self.view_id(ViewStr.contents_view)
+            # Refresh bindings when switching views
+            self.refresh_bindings()
         elif event.button.id == self.button_id(ButtonEnum.diff_btn):
             self.query_one(
                 self.content_switcher_qid(Location.right), ContentSwitcher
             ).current = self.view_id(ViewStr.diff_view)
+            # Refresh bindings when switching views
+            self.refresh_bindings()
         elif event.button.id == self.button_id(ButtonEnum.git_log_btn):
             self.query_one(
                 self.content_switcher_qid(Location.right), ContentSwitcher
             ).current = self.view_id(ViewStr.git_log_view)
+            # Refresh bindings when switching views
+            self.refresh_bindings()
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
         event.stop()
