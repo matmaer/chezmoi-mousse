@@ -2,6 +2,7 @@
 
 import ast
 import inspect
+from pathlib import Path
 
 import pytest
 
@@ -47,32 +48,32 @@ def test_all_idmixin_methods_are_used():
     )
 
 
-def test_no_hardcoded_ids():
+@pytest.mark.parametrize(
+    "py_file", get_modules_to_test(), ids=lambda py_file: py_file.name
+)
+def test_no_hardcoded_ids(py_file: Path):
+    """Test that each module doesn't contain hardcoded ID strings."""
     violations: list[str] = []
 
-    for py_file in get_modules_to_test():
-        content = py_file.read_text()
-        tree = ast.parse(content, filename=str(py_file))
+    content = py_file.read_text()
+    tree = ast.parse(content, filename=str(py_file))
 
-        for node in ast.walk(tree):
-            if isinstance(node, ast.Call):
-                for keyword in node.keywords:
-                    if (
-                        keyword.arg == "id"
-                        and isinstance(keyword.value, ast.Constant)
-                        and isinstance(keyword.value.value, str)
-                    ):
-                        violations.append(
-                            f'{py_file.name}:{keyword.lineno} - id="{keyword.value.value}"'
-                        )
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Call):
+            for keyword in node.keywords:
+                if (
+                    keyword.arg == "id"
+                    and isinstance(keyword.value, ast.Constant)
+                    and isinstance(keyword.value.value, str)
+                ):
+                    violations.append(
+                        f'Line {keyword.lineno}: id="{keyword.value.value}"'
+                    )
 
     if violations:
-        print(f"\nFound {len(violations)} hardcoded IDs:")
-        for violation in violations:
-            print(f"  {violation}")
-        print(
-            "\nIDs should be generated using IdMixin methods instead of hardcoded strings."
+        violation_details = "\n  ".join(violations)
+        pytest.fail(
+            f"Found {len(violations)} hardcoded ID(s) in {py_file.name}:\n"
+            f"  {violation_details}\n\n"
+            f"IDs should be generated using IdMixin methods instead of hardcoded strings."
         )
-        assert (
-            False
-        ), f"Found {len(violations)} hardcoded IDs (see details above)"
