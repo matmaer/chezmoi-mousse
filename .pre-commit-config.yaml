@@ -62,17 +62,9 @@ repos:
 
   - repo: local
     hooks:
-      - id: tcss-checkup
-        name: CSS Class Management Tests
+      - id: pytest
+        name: Run pytest
         entry: uv run pytest
-        args: [tests/test_tcss_classes.py, -v]
         language: system
-        files: ^(src/.*\.py|src/.*\.tcss)$
-        pass_filenames: false
-      - id: id-typing-checkup
-        name: Enum Value Management Tests
-        entry: uv run pytest
-        args: [tests/test_id_typing.py, -v]
-        language: system
-        files: ^src/.*\.py$
+        files: ^(src/.*\.py|tests/.*\.py)$
         pass_filenames: false
