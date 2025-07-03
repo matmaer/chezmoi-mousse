@@ -84,8 +84,8 @@ class Operate(ModalScreen[None], IdMixin):
         self.diff_qid = self.view_qid(ViewStr.diff_view, operate=True)
         self.contents_id = self.view_id(ViewStr.contents_view, operate=True)
         self.contents_qid = self.view_qid(ViewStr.contents_view, operate=True)
-        self.info_id = OperateIdStr.operate_top_path_id
-        self.info_qid = f"#{self.info_id}"
+        self.path_info_id = OperateIdStr.operate_top_path_id
+        self.info_qid = f"#{self.path_info_id}"
         self.log_id = OperateIdStr.operate_log_id
         self.log_qid = f"#{self.log_id}"
         super().__init__(id=OperateIdStr.operate_screen_id)
@@ -102,7 +102,7 @@ class Operate(ModalScreen[None], IdMixin):
                 yield AutoWarning(classes=TcssStr.operate_auto_warning)
             yield Static(
                 f"{self.path}",
-                id=self.info_id,
+                id=self.path_info_id,
                 classes=TcssStr.operate_top_path,
             )
             yield OperateInfo(tab_name=self.tab_name)
