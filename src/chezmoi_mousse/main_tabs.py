@@ -171,15 +171,15 @@ class Operate(ModalScreen[None], IdMixin):
         timestamp = datetime.now().strftime("%H:%M:%S")
         if self.tab_name == TabStr.apply_tab:
             op_log.write(
-                f"[{timestamp}] chezmoi apply {self.path}, ready to run."
+                f'[{timestamp}] "chezmoi apply {self.path}" ready to run.'
             )
         elif self.tab_name == TabStr.re_add_tab:
             op_log.write(
-                f"[{timestamp}] chezmoi re-add {self.path}, ready to run."
+                f'[{timestamp}] "chezmoi re-add {self.path}" ready to run.'
             )
         elif self.tab_name == TabStr.add_tab:
             op_log.write(
-                f"[{timestamp}] chezmoi add {self.path}, ready to run."
+                f'[{timestamp}] "chezmoi add {self.path}" ready to run.'
             )
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
