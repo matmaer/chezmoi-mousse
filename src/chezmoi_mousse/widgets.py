@@ -57,6 +57,17 @@ class AutoWarning(Static):
         )
 
 
+class OperateInfo(Static):
+    def __init__(self, tab_name: TabStr, *, id: str | None = None) -> None:
+        self.tab_name = tab_name
+        super().__init__(id=id)
+
+    def on_mount(self) -> None:
+        info_text = self.tab_name.operate_info()
+        if info_text:
+            self.update(info_text)
+
+
 class ContentsView(RichLog):
 
     path: reactive[Path | None] = reactive(None)
