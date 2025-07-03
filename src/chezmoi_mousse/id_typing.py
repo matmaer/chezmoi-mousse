@@ -10,11 +10,8 @@ class ButtonEnum(Enum):
     diff_btn = "Diff"
     git_log_btn = "Git-Log"
     # operational buttons
-    # add_directory_btn = "Chezmoi Add Files"
     add_file_btn = "Chezmoi Add File"
-    # apply_directory_btn = "Chezmoi Apply Files"
     apply_file_btn = "Chezmoi Apply"
-    # re_add_directory_btn = "Chezmoi Re-Add Files"
     re_add_file_btn = "Chezmoi Re-Add File"
     cancel_apply_btn = "Cancel Apply"
     cancel_re_add_btn = "Cancel Re-Add"
@@ -28,6 +25,15 @@ class TabStr(StrEnum):
     doctor_tab = auto()
     diagram_tab = auto()
     log_tab = auto()
+
+    def operate_info(self) -> str:
+        # info text currently used for info above the diff or contents in the Operate modal screen.
+        info_map = {
+            self.apply_tab: "The file will be modified! Red lines will be removed, green lines will be added.",
+            self.re_add_tab: "Chezmoi state will be updated! Red lines will be removed, green lines will be added.",
+            self.add_tab: "This path will be added to your chezmoi dotfile manager.",
+        }
+        return info_map.get(self, "")
 
 
 class PaneEnum(Enum):
@@ -117,6 +123,7 @@ class SplashIdStr(StrEnum):
 
 class OperateIdStr(StrEnum):
     operate_collapsible_id = auto()
+    operate_info_id = auto()
     operate_log_id = auto()
     operate_screen_id = auto()
     operate_top_path_id = auto()
