@@ -57,7 +57,7 @@ class AutoWarning(Static):
         )
 
 
-class OperateInfo(Static):
+class OperateWarning(Static):
     def __init__(self, tab_name: TabStr, *, id: str | None = None) -> None:
         self.tab_name = tab_name
         super().__init__(id=id)
