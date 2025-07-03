@@ -132,7 +132,10 @@ class Operate(ModalScreen[None], IdMixin):
                         title="file diffs view",
                     )
             yield RichLog(
-                id=self.log_id, highlight=True, classes=TcssStr.operate_log
+                id=self.log_id,
+                highlight=True,
+                wrap=True,
+                classes=TcssStr.operate_log,
             )
             yield ButtonsHorizontal(
                 self.tab_name, buttons=self.buttons, location=Location.bottom
