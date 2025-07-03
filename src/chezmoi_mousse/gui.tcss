@@ -288,10 +288,58 @@ Switch {
   }
 }
 
+# Toast {
+#   background: $surface;
+#   background-tint: $surface;
+#   content-align: center middle;
+# }
+
 Toast {
-  background: $surface;
-  background-tint: $surface;
+    width: 60;
+    max-width: 50%;
+    height: auto;
+    margin-top: 1;
+    visibility: visible;
+    padding: 1 1;
+    background: $panel-lighten-1;
+    link-background: initial;
+    link-color: $foreground;
+    link-style: underline;
+    link-background-hover: $primary;
+    link-color-hover: $foreground;
+    link-style-hover: bold not underline;
 }
+
+.toast--title {
+    text-style: bold;
+    color: $foreground;
+}
+
+Toast.-information {
+    border-left: outer $success;
+}
+
+Toast.-information .toast--title {
+    color: $text-success;
+}
+
+Toast.-warning {
+    border-left: outer $warning;
+}
+
+Toast.-warning .toast--title {
+    color: $text-warning;
+}
+
+Toast.-error {
+    border-left: outer $error;
+}
+
+Toast.-error .toast--title {
+    color: $text-error;
+}
+
+
 
 Tree {
   &>.tree--highlight-line {
