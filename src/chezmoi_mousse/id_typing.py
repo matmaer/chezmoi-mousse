@@ -2,6 +2,19 @@ from dataclasses import dataclass
 from enum import Enum, StrEnum, auto
 
 
+class CharsEnum(Enum):
+    add = f"chezmoi add local {'\N{EM DASH}' * 3}\N{RIGHTWARDS ARROW} chezmoi"
+    apply = f"local \N{LEFTWARDS ARROW}{'\N{EM DASH}' * 3} chezmoi apply"
+    bullet = "\N{BULLET}"
+    burger = "\N{IDENTICAL TO}"
+    # check_mark = "\N{HEAVY CHECK MARK}"
+    # gear = "\N{GEAR}"
+    re_add = (
+        f"chezmoi re-add local {'\N{EM DASH}' * 3}\N{RIGHTWARDS ARROW} chezmoi"
+    )
+    warning_sign = "\N{WARNING SIGN}"
+
+
 class ButtonEnum(Enum):
     # tab buttons within a tab
     tree_btn = "Tree"
@@ -70,19 +83,6 @@ class FilterEnum(Enum):
     unchanged = "show unchanged"
     unwanted = "show unwanted paths"
     unmanaged_dirs = "show unmanaged dirs"
-
-
-class CharsEnum(Enum):
-    add = f"chezmoi add local {'\N{EM DASH}' * 3}\N{RIGHTWARDS ARROW} chezmoi"
-    apply = f"local \N{LEFTWARDS ARROW}{'\N{EM DASH}' * 3} chezmoi apply"
-    bullet = "\N{BULLET}"
-    burger = "\N{IDENTICAL TO}"
-    # check_mark = "\N{HEAVY CHECK MARK}"
-    # gear = "\N{GEAR}"
-    re_add = (
-        f"chezmoi re-add local {'\N{EM DASH}' * 3}\N{RIGHTWARDS ARROW} chezmoi"
-    )
-    warning_sign = "\N{WARNING SIGN}"
 
 
 class TcssStr(StrEnum):
