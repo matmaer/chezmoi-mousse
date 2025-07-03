@@ -120,7 +120,11 @@ class Operate(ModalScreen[None], IdMixin):
                     classes=TcssStr.collapsible_container,
                 ):
                     yield Collapsible(
-                        DiffView(tab_name=self.tab_name, view_id=self.diff_id),
+                        DiffView(
+                            tab_name=self.tab_name,
+                            view_id=self.diff_id,
+                            classes=TcssStr.operate_diff,
+                        ),
                         classes=TcssStr.operate_collapsible,
                         title="file diffs view",
                     )

@@ -130,9 +130,13 @@ class DiffView(RichLog):
 
     path: reactive[Path | None] = reactive(None, init=False)
 
-    def __init__(self, *, tab_name: TabStr, view_id: str) -> None:
+    def __init__(
+        self, *, tab_name: TabStr, view_id: str, classes: str = ""
+    ) -> None:
         self.tab_name = tab_name
-        super().__init__(id=view_id, auto_scroll=False, wrap=False)
+        super().__init__(
+            id=view_id, auto_scroll=False, wrap=False, classes=classes
+        )
 
     def on_mount(self) -> None:
         self.path = chezmoi.dest_dir

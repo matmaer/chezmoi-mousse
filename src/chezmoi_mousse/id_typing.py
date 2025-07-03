@@ -98,6 +98,7 @@ class TcssStr(StrEnum):
     operate_log = auto()
     operate_screen = auto()
     operate_top_path = auto()
+    operate_diff = auto()
     single_button_vertical = auto()
     tab_button = auto()
     tab_buttons_horizontal = auto()

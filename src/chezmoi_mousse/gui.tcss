@@ -135,8 +135,11 @@
     margin: 0;
     height: auto;
     padding: 0;
-      &>.operate_collapsible{
+    &>.operate_collapsible {
+      .operate_diff {
+        height: auto;
       }
+    }
   }
   &>.operate_log {
     border-top: $accent-darken-3;
