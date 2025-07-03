@@ -217,8 +217,9 @@ class Operate(ModalScreen[None], IdMixin):
             self.dismiss()
 
     def hide_warnings(self) -> None:
-        self.query_exactly_one(OperateWarning).remove()
+        self.query_exactly_one(AutoWarning).remove()
         self.query_exactly_one(Collapsible).remove()
+        self.query_exactly_one(OperateWarning).remove()
 
 
 class BaseTab(Horizontal, IdMixin):
