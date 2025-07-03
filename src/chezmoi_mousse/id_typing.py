@@ -29,9 +29,9 @@ class TabStr(StrEnum):
     def operate_info(self) -> str:
         # info text currently used for info above the diff or contents in the Operate modal screen.
         info_map = {
-            self.apply_tab: "The file will be modified! Red lines will be removed, green lines will be added.",
-            self.re_add_tab: "Chezmoi state will be updated! Red lines will be removed, green lines will be added.",
-            self.add_tab: "This path will be added to your chezmoi dotfile manager.",
+            TabStr.apply_tab: "The file will be modified! Red lines will be removed, green lines will be added.",
+            TabStr.re_add_tab: "Chezmoi state will be updated! Red lines will be removed, green lines will be added.",
+            TabStr.add_tab: "This path will be added to your chezmoi dotfile manager.",
         }
         return info_map.get(self, "")
 
