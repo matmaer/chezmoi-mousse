@@ -73,15 +73,16 @@ class FilterEnum(Enum):
 
 
 class CharsEnum(Enum):
+    add = f"chezmoi add local {'\N{EM DASH}' * 3}\N{RIGHTWARDS ARROW} chezmoi"
+    apply = f"local \N{LEFTWARDS ARROW}{'\N{EM DASH}' * 3} chezmoi apply"
     bullet = "\N{BULLET}"
     burger = "\N{IDENTICAL TO}"
     # check_mark = "\N{HEAVY CHECK MARK}"
     # gear = "\N{GEAR}"
-    apply = f"local \N{LEFTWARDS ARROW}{'\N{EM DASH}' * 3} chezmoi apply"
     re_add = (
         f"chezmoi re-add local {'\N{EM DASH}' * 3}\N{RIGHTWARDS ARROW} chezmoi"
     )
-    add = f"chezmoi add local {'\N{EM DASH}' * 3}\N{RIGHTWARDS ARROW} chezmoi"
+    warning_sign = "\N{WARNING SIGN}"
 
 
 class TcssStr(StrEnum):
