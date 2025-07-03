@@ -103,7 +103,6 @@ class TcssStr(StrEnum):
     operate_collapsible = auto()
     operate_container = auto()
     operate_log = auto()
-    operate_screen = auto()
     operate_top_path = auto()
     operate_diff = auto()
     single_button_vertical = auto()

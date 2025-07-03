@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 
 from _test_utils import tcss_file_path, get_modules_to_test
+from chezmoi_mousse.id_typing import TcssStr
 
 
 def _is_tcssstr_attribute(node: ast.Attribute) -> bool:
@@ -151,3 +152,79 @@ def test_no_unused_tcss_classes() -> None:
     assert (
         not unused_classes
     ), f"Found {len(unused_classes)} unused CSS classes: {sorted(unused_classes)}"
+
+
+def test_all_tcss_str_entries_in_use() -> None:
+
+    # Get all TcssStr enum entries
+    all_tcss_entries = {entry.name for entry in TcssStr}
+
+    # Find used TcssStr entries in the codebase
+    used_entries: set[str] = set()
+
+    for py_file in get_modules_to_test():
+        content = py_file.read_text()
+        tree = ast.parse(content)
+
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Call):
+                # Check classes= keyword arguments
+                for keyword in node.keywords:
+                    if keyword.arg == "classes":
+                        # Direct TcssStr.class_name attribute access
+                        if isinstance(
+                            keyword.value, ast.Attribute
+                        ) and _is_tcssstr_attribute(keyword.value):
+                            used_entries.add(keyword.value.attr)
+
+                        # f-string with TcssStr attributes
+                        elif isinstance(keyword.value, ast.JoinedStr):
+                            for value in keyword.value.values:
+                                if (
+                                    isinstance(value, ast.FormattedValue)
+                                    and isinstance(value.value, ast.Attribute)
+                                    and _is_tcssstr_attribute(value.value)
+                                ):
+                                    used_entries.add(value.value.attr)
+
+                # Check add_class method calls
+                if (
+                    isinstance(node.func, ast.Attribute)
+                    and node.func.attr == "add_class"
+                    and len(node.args) >= 1
+                ):
+                    first_arg = node.args[0]
+                    if isinstance(
+                        first_arg, ast.Attribute
+                    ) and _is_tcssstr_attribute(first_arg):
+                        used_entries.add(first_arg.attr)
+
+                # Check remove_class method calls
+                if (
+                    isinstance(node.func, ast.Attribute)
+                    and node.func.attr == "remove_class"
+                    and len(node.args) >= 1
+                ):
+                    first_arg = node.args[0]
+                    if isinstance(
+                        first_arg, ast.Attribute
+                    ) and _is_tcssstr_attribute(first_arg):
+                        used_entries.add(first_arg.attr)
+
+                # Check has_class method calls
+                if (
+                    isinstance(node.func, ast.Attribute)
+                    and node.func.attr == "has_class"
+                    and len(node.args) >= 1
+                ):
+                    first_arg = node.args[0]
+                    if isinstance(
+                        first_arg, ast.Attribute
+                    ) and _is_tcssstr_attribute(first_arg):
+                        used_entries.add(first_arg.attr)
+
+    # Assert each TcssStr entry is in use
+    for entry_name in sorted(all_tcss_entries):
+        assert (
+            entry_name in used_entries
+        ), f"TcssStr.{entry_name} is not used in the codebase"
