@@ -99,7 +99,6 @@ class TcssStr(StrEnum):
     modal_view = auto()
     operate_auto_warning = auto()
     operate_button = auto()
-    operate_buttons_horizontal = auto()
     operate_collapsible = auto()
     operate_container = auto()
     operate_log = auto()

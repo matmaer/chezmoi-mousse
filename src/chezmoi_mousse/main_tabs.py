@@ -86,7 +86,7 @@ class Operate(ModalScreen[None], IdMixin):
         self.contents_id = self.view_id(ViewStr.contents_view, operate=True)
         self.contents_qid = self.view_qid(ViewStr.contents_view, operate=True)
         self.path_info_id = OperateIdStr.operate_top_path_id
-        self.info_qid = f"#{self.path_info_id}"
+        self.path_info_qid = f"#{self.path_info_id}"
         self.log_id = OperateIdStr.operate_log_id
         self.log_qid = f"#{self.log_id}"
         super().__init__(id=OperateIdStr.operate_screen_id)
@@ -150,40 +150,22 @@ class Operate(ModalScreen[None], IdMixin):
             TabStr.re_add_tab: str(ButtonEnum.re_add_file_btn.value).lower(),
             TabStr.add_tab: str(ButtonEnum.add_file_btn.value).lower(),
         }
-        self.query_one(self.info_qid, Static).border_subtitle = (
+        self.query_one(self.path_info_qid, Static).border_subtitle = (
             info_border_titles[self.tab_name]
-        )
-        self.query_one(self.log_qid, RichLog).border_title = (
-            f"{log_border_titles[self.tab_name]} log"
-        )
-
-        # Query the relevant view based on the tab type
-        if self.tab_name == TabStr.add_tab:
-            view = self.query_one(self.contents_qid, ContentsView)
-        else:
-            view = self.query_one(self.diff_qid, DiffView)
-
-        # Set path and classes
-        view.path = self.path
-        self.query_exactly_one(ButtonsHorizontal).add_class(
-            TcssStr.operate_buttons_horizontal
         )
 
         # Add initial log entry
-        op_log = self.query_one(self.log_qid, RichLog)
-        timestamp = datetime.now().strftime("%H:%M:%S")
-        if self.tab_name == TabStr.apply_tab:
-            op_log.write(
-                f'[{timestamp}] "chezmoi apply {self.path}" ready to run.'
-            )
-        elif self.tab_name == TabStr.re_add_tab:
-            op_log.write(
-                f'[{timestamp}] "chezmoi re-add {self.path}" ready to run.'
-            )
-        elif self.tab_name == TabStr.add_tab:
-            op_log.write(
-                f'[{timestamp}] "chezmoi add {self.path}" ready to run.'
-            )
+        operate_log = self.query_one(self.log_qid, RichLog)
+        operate_log.border_title = f"{log_border_titles[self.tab_name]} log"
+        operate_log.write(
+            f"[{datetime.now().strftime('%H:%M:%S')}] ready to run command"
+        )
+
+        # Set path for either diff or contents view
+        if self.tab_name == TabStr.add_tab:
+            self.query_one(self.contents_qid, ContentsView).path = self.path
+        else:
+            self.query_one(self.diff_qid, DiffView).path = self.path
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
@@ -191,40 +173,37 @@ class Operate(ModalScreen[None], IdMixin):
         timestamp = datetime.now().strftime("%H:%M:%S")
 
         if event.button.id == self.button_id(ButtonEnum.apply_file_btn):
-            self.query_one(
-                self.button_qid(ButtonEnum.apply_file_btn)
-            ).disabled = True
-            op_log.write(f"[{timestamp}] Starting apply operation")
-            op_log.write(f"[{timestamp}] Result from command:")
             op_log.write(f"[{timestamp}] {chezmoi.perform.apply(self.path)}")
+            self.query_one(
+                self.button_qid(ButtonEnum.apply_file_btn), Button
+            ).disabled = True
             self.query_one(
                 self.button_qid(ButtonEnum.cancel_apply_btn), Button
             ).label = "Close"
             self.command_has_been_run = True
+            self.hide_warnings()
 
         elif event.button.id == self.button_id(ButtonEnum.re_add_file_btn):
-            self.query_one(
-                self.button_qid(ButtonEnum.re_add_file_btn)
-            ).disabled = True
-            op_log.write(f"[{timestamp}] Starting re-add operation")
-            op_log.write(f"[{timestamp}] Result from command:")
             op_log.write(f"[{timestamp}] {chezmoi.perform.re_add(self.path)}")
+            self.query_one(
+                self.button_qid(ButtonEnum.re_add_file_btn), Button
+            ).disabled = True
             self.query_one(
                 self.button_qid(ButtonEnum.cancel_re_add_btn), Button
             ).label = "Close"
             self.command_has_been_run = True
+            self.hide_warnings()
 
         elif event.button.id == self.button_id(ButtonEnum.add_file_btn):
-            self.query_one(
-                self.button_qid(ButtonEnum.add_file_btn)
-            ).disabled = True
-            op_log.write(f"[{timestamp}] Starting add operation")
-            op_log.write(f"[{timestamp}] Result from command:")
             op_log.write(f"[{timestamp}] {chezmoi.perform.add(self.path)}")
+            self.query_one(
+                self.button_qid(ButtonEnum.add_file_btn), Button
+            ).disabled = True
             self.query_one(
                 self.button_qid(ButtonEnum.cancel_add_btn), Button
             ).label = "Close"
             self.command_has_been_run = True
+            self.hide_warnings()
 
         elif event.button.id in (
             self.button_id(ButtonEnum.cancel_apply_btn),
@@ -236,6 +215,10 @@ class Operate(ModalScreen[None], IdMixin):
             else:
                 self.notify("operation cancelled without changes")
             self.dismiss()
+
+    def hide_warnings(self) -> None:
+        self.query_exactly_one(OperateWarning).remove()
+        self.query_exactly_one(Collapsible).remove()
 
 
 class BaseTab(Horizontal, IdMixin):
