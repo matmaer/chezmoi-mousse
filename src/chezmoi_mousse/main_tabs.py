@@ -80,6 +80,7 @@ class Operate(ModalScreen[None], IdMixin):
         self.tab_name = tab_name
         self.path = path
         self.buttons = buttons
+        self.command_has_been_run = False
         self.diff_id = self.view_id(ViewStr.diff_view, operate=True)
         self.diff_qid = self.view_qid(ViewStr.diff_view, operate=True)
         self.contents_id = self.view_id(ViewStr.contents_view, operate=True)
@@ -199,6 +200,7 @@ class Operate(ModalScreen[None], IdMixin):
             self.query_one(
                 self.button_qid(ButtonEnum.cancel_apply_btn), Button
             ).label = "Close"
+            self.command_has_been_run = True
 
         elif event.button.id == self.button_id(ButtonEnum.re_add_file_btn):
             self.query_one(
@@ -210,6 +212,7 @@ class Operate(ModalScreen[None], IdMixin):
             self.query_one(
                 self.button_qid(ButtonEnum.cancel_re_add_btn), Button
             ).label = "Close"
+            self.command_has_been_run = True
 
         elif event.button.id == self.button_id(ButtonEnum.add_file_btn):
             self.query_one(
@@ -221,21 +224,17 @@ class Operate(ModalScreen[None], IdMixin):
             self.query_one(
                 self.button_qid(ButtonEnum.cancel_add_btn), Button
             ).label = "Close"
+            self.command_has_been_run = True
 
-        elif event.button.id == self.button_id(ButtonEnum.cancel_apply_btn):
-            self.notify(
-                f"operation {ButtonEnum.apply_file_btn.value} cancelled"
-            )
-            self.dismiss()
-        elif event.button.id == self.button_id(ButtonEnum.cancel_re_add_btn):
-            self.notify(
-                f"operation {ButtonEnum.re_add_file_btn.value} cancelled"
-            )
-            self.dismiss()
-        elif event.button.id == self.button_id(ButtonEnum.cancel_add_btn):
-            self.notify(
-                f"operation {ButtonEnum.cancel_add_btn.value} cancelled"
-            )
+        elif event.button.id in (
+            self.button_id(ButtonEnum.cancel_apply_btn),
+            self.button_id(ButtonEnum.cancel_re_add_btn),
+            self.button_id(ButtonEnum.cancel_add_btn),
+        ):
+            if self.command_has_been_run:
+                self.notify("operation completed, output available in Log tab")
+            else:
+                self.notify("operation cancelled without changes")
             self.dismiss()
 
 
