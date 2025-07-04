@@ -60,37 +60,34 @@ class AutoWarning(Static):
 class OperateInfo(Static):
 
     def __init__(self, tab_name: TabStr) -> None:
-        self.tab_name = tab_name
-        self.lines_to_write: list[str] = []
-        self.warning_text: str
-        self.char_str: CharsEnum
-        self.plus_line_text = "+ this line will be added"
-        self.minus_line_text = "- this line will be removed"
-        self.no_change_line_text = (
-            f"{CharsEnum.bullet} these lines will not be changed"
-        )
-        if tab_name == TabStr.apply_tab:
-            self.warning_text = "Your local file will be modified!"
-            self.char_str = CharsEnum.apply
-        elif tab_name == TabStr.re_add_tab:
-            self.warning_text = "Chezmoi state will be updated!"
-            self.char_str = CharsEnum.re_add
-        elif tab_name == TabStr.add_tab:
-            self.warning_text = (
-                "This path will be added to your chezmoi dotfile manager."
-            )
         super().__init__()
 
-    # info text currently used for info above the diff or contents in the Operate modal screen.
-    info_map = {
-        TabStr.apply_tab: "The file will be modified! Red lines will be removed, green lines will be added.",
-        TabStr.re_add_tab: "Chezmoi state will be updated! Red lines will be removed, green lines will be added.",
-        TabStr.add_tab: "This path will be added to your chezmoi dotfile manager.",
-    }
+        self.tab_name = tab_name
+        self.lines_to_write: list[str] = []
+        if tab_name == TabStr.apply_tab:
+            self.lines_to_write.append(
+                f"[$text-warning]{CharsEnum.warning_sign.value} local file will be modified {CharsEnum.warning_sign.value}[/]"
+            )
+        elif tab_name == TabStr.re_add_tab:
+            self.lines_to_write.append(
+                "[$text-warning]Chezmoi state will be updated:[/]"
+            )
+        elif tab_name == TabStr.add_tab:
+            self.lines_to_write.append(
+                "[$text-success-lighten-3]This path will be added to your chezmoi dotfile manager.[/]"
+            )
+        self.lines_to_write.append(
+            "[$text-success]+ these lines will be added[/]"
+        )
+        self.lines_to_write.append(
+            "[$text-error]- these lines will be removed[/]"
+        )
+        self.lines_to_write.append(
+            f"[dim]{CharsEnum.bullet.value} these lines will not be changed[/]"
+        )
 
     def on_mount(self) -> None:
-        info_text = self.info_map.get(self.tab_name, "")
-        self.update(f"{info_text}")
+        self.update("\n".join(self.lines_to_write))
 
 
 class ContentsView(RichLog):

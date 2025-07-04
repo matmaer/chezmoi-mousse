@@ -11,7 +11,7 @@ class CharsEnum(Enum):
     re_add = (
         f"chezmoi re-add local {'\N{EM DASH}' * 3}\N{RIGHTWARDS ARROW} chezmoi"
     )
-    # warning_sign = "\N{WARNING SIGN}"
+    warning_sign = "\N{WARNING SIGN}"
 
 
 class ButtonEnum(Enum):
