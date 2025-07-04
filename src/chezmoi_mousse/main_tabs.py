@@ -96,10 +96,7 @@ class Operate(ModalScreen[None], IdMixin):
             id=OperateIdStr.operate_vertical_id,
             classes=TcssStr.operate_container,
         ):
-            if (
-                self.tab_name == TabStr.add_tab
-                or self.tab_name == TabStr.re_add_tab
-            ):
+            if self.tab_name in (TabStr.add_tab, TabStr.re_add_tab):
                 yield AutoWarning(classes=TcssStr.operate_auto_warning)
             yield Static(
                 f"{self.path}",
@@ -220,7 +217,8 @@ class Operate(ModalScreen[None], IdMixin):
             self.dismiss()
 
     def hide_warnings(self) -> None:
-        self.query_exactly_one(AutoWarning).remove()
+        if self.tab_name in (TabStr.add_tab, TabStr.re_add_tab):
+            self.query_exactly_one(AutoWarning).remove()
         self.query_exactly_one(Collapsible).remove()
         self.query_exactly_one(OperateWarning).remove()
 
