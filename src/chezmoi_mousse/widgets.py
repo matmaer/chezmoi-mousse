@@ -59,9 +59,27 @@ class AutoWarning(Static):
 
 class OperateInfo(Static):
 
-    def __init__(self, tab_name: TabStr, *, id: str | None = None) -> None:
+    def __init__(self, tab_name: TabStr) -> None:
         self.tab_name = tab_name
-        super().__init__(id=id)
+        self.lines_to_write: list[str] = []
+        self.warning_text: str
+        self.char_str: CharsEnum
+        self.plus_line_text = "+ this line will be added"
+        self.minus_line_text = "- this line will be removed"
+        self.no_change_line_text = (
+            f"{CharsEnum.bullet} these lines will not be changed"
+        )
+        if tab_name == TabStr.apply_tab:
+            self.warning_text = "Your local file will be modified!"
+            self.char_str = CharsEnum.apply
+        elif tab_name == TabStr.re_add_tab:
+            self.warning_text = "Chezmoi state will be updated!"
+            self.char_str = CharsEnum.re_add
+        elif tab_name == TabStr.add_tab:
+            self.warning_text = (
+                "This path will be added to your chezmoi dotfile manager."
+            )
+        super().__init__()
 
     # info text currently used for info above the diff or contents in the Operate modal screen.
     info_map = {
