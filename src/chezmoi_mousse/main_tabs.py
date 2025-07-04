@@ -59,7 +59,7 @@ from chezmoi_mousse.widgets import (
     GitLogView,
     ManagedTree,
     NodeData,
-    OperateWarning,
+    OperateInfo,
     RichLog,
     TreeBase,
 )
@@ -102,7 +102,7 @@ class Operate(ModalScreen[None], IdMixin):
                 id=self.path_info_id,
                 classes=TcssStr.operate_top_path,
             )
-            yield OperateWarning(tab_name=self.tab_name)
+            yield OperateInfo(tab_name=self.tab_name)
             if self.tab_name == TabStr.add_tab:
                 with Container(
                     id=OperateIdStr.operate_collapsible_id,
@@ -219,7 +219,7 @@ class Operate(ModalScreen[None], IdMixin):
         if self.tab_name in (TabStr.add_tab, TabStr.re_add_tab):
             self.query_exactly_one(AutoWarning).remove()
         self.query_exactly_one(Collapsible).remove()
-        self.query_exactly_one(OperateWarning).remove()
+        self.query_exactly_one(OperateInfo).remove()
 
 
 class BaseTab(Horizontal, IdMixin):

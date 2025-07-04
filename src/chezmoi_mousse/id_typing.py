@@ -11,7 +11,7 @@ class CharsEnum(Enum):
     re_add = (
         f"chezmoi re-add local {'\N{EM DASH}' * 3}\N{RIGHTWARDS ARROW} chezmoi"
     )
-    warning_sign = "\N{WARNING SIGN}"
+    # warning_sign = "\N{WARNING SIGN}"
 
 
 class ButtonEnum(Enum):
@@ -37,15 +37,6 @@ class TabStr(StrEnum):
     doctor_tab = auto()
     diagram_tab = auto()
     log_tab = auto()
-
-    def operate_info(self) -> str:
-        # info text currently used for info above the diff or contents in the Operate modal screen.
-        info_map = {
-            TabStr.apply_tab: "The file will be modified! Red lines will be removed, green lines will be added.",
-            TabStr.re_add_tab: "Chezmoi state will be updated! Red lines will be removed, green lines will be added.",
-            TabStr.add_tab: "This path will be added to your chezmoi dotfile manager.",
-        }
-        return info_map.get(self, "")
 
 
 class PaneEnum(Enum):

@@ -57,17 +57,22 @@ class AutoWarning(Static):
         )
 
 
-class OperateWarning(Static):
-
-    warning = CharsEnum.warning_sign.value  # ⚠
+class OperateInfo(Static):
 
     def __init__(self, tab_name: TabStr, *, id: str | None = None) -> None:
         self.tab_name = tab_name
         super().__init__(id=id)
 
+    # info text currently used for info above the diff or contents in the Operate modal screen.
+    info_map = {
+        TabStr.apply_tab: "The file will be modified! Red lines will be removed, green lines will be added.",
+        TabStr.re_add_tab: "Chezmoi state will be updated! Red lines will be removed, green lines will be added.",
+        TabStr.add_tab: "This path will be added to your chezmoi dotfile manager.",
+    }
+
     def on_mount(self) -> None:
-        info_text = self.tab_name.operate_info()
-        self.update(f"{self.warning} {info_text} {self.warning}")
+        info_text = self.info_map.get(self.tab_name, "")
+        self.update(f"{info_text}")
 
 
 class ContentsView(RichLog):
