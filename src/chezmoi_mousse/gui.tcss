@@ -125,11 +125,11 @@
     text-align: center;
   }
   .operate_top_path {
-    height: 3;
+    height: auto;
     border-subtitle-align: center;
     text-align: center;
     border: round $foreground-darken-3;
-    color: $accent;
+    # color: $accent;
   }
   &>.collapsible_container{
     margin: 0;

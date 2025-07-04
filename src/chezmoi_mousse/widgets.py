@@ -59,11 +59,18 @@ class AutoWarning(Static):
 
 class OperateInfo(Static):
 
-    def __init__(self, tab_name: TabStr) -> None:
-        super().__init__()
+    def __init__(self, tab_name: TabStr, path: Path) -> None:
+        super().__init__(classes=TcssStr.operate_top_path)
 
         self.tab_name = tab_name
-        self.lines_to_write: list[str] = []
+        self.path = path
+        self.info_border_titles = {
+            TabStr.apply_tab: CharsEnum.apply.value,
+            TabStr.re_add_tab: CharsEnum.re_add.value,
+            TabStr.add_tab: CharsEnum.add.value,
+        }
+        self.lines_to_write: list[str] = [f"[$accent]{self.path}[/]"]
+
         if tab_name == TabStr.apply_tab:
             self.lines_to_write.append(
                 f"[$text-warning]{CharsEnum.warning_sign.value} local file will be modified {CharsEnum.warning_sign.value}[/]"
@@ -76,18 +83,17 @@ class OperateInfo(Static):
             self.lines_to_write.append(
                 "[$text-success-lighten-3]This path will be added to your chezmoi dotfile manager.[/]"
             )
-        self.lines_to_write.append(
-            "[$text-success]+ these lines will be added[/]"
-        )
-        self.lines_to_write.append(
-            "[$text-error]- these lines will be removed[/]"
-        )
-        self.lines_to_write.append(
-            f"[dim]{CharsEnum.bullet.value} these lines will not be changed[/]"
+        self.lines_to_write.extend(
+            [
+                "[$text-success]+ green lines will be added[/]",
+                "[$text-error]- red lines will be removed[/]",
+                f"[dim]{CharsEnum.bullet.value} dimmed lines for context will remain unchanged[/]",
+            ]
         )
 
     def on_mount(self) -> None:
         self.update("\n".join(self.lines_to_write))
+        self.border_subtitle = self.info_border_titles[self.tab_name]
 
 
 class ContentsView(RichLog):
