@@ -69,30 +69,33 @@ class OperateInfo(Static):
             TabStr.re_add_tab: CharsEnum.re_add.value,
             TabStr.add_tab: CharsEnum.add.value,
         }
-        self.lines_to_write: list[str] = [f"[$accent]{self.path}[/]"]
+        # self.lines_to_write: list[str] = [f"[$accent]{self.path}[/]"]
+        self.lines_to_write: list[str] = []
 
-        if tab_name == TabStr.apply_tab:
-            self.lines_to_write.append(
-                f"[$text-warning]{CharsEnum.warning_sign.value} local file will be modified {CharsEnum.warning_sign.value}[/]"
+        if tab_name in (TabStr.apply_tab, TabStr.re_add_tab):
+            if tab_name == TabStr.apply_tab:
+                self.lines_to_write.append(
+                    f"[$text-warning]{CharsEnum.warning_sign.value} local file will be modified {CharsEnum.warning_sign.value}[/]"
+                )
+            elif tab_name == TabStr.re_add_tab:
+                self.lines_to_write.append(
+                    "[$text-warning]Chezmoi state will be updated:[/]"
+                )
+            self.lines_to_write.extend(
+                [
+                    "[$text-success]+ green lines will be added[/]",
+                    "[$text-error]- red lines will be removed[/]",
+                    f"[dim]{CharsEnum.bullet.value} dimmed lines for context will remain unchanged[/]",
+                ]
             )
-        elif tab_name == TabStr.re_add_tab:
+        else:
             self.lines_to_write.append(
-                "[$text-warning]Chezmoi state will be updated:[/]"
+                "[$text-success]Path will be added to your chezmoi dotfile manager.[/]"
             )
-        elif tab_name == TabStr.add_tab:
-            self.lines_to_write.append(
-                "[$text-success-lighten-3]This path will be added to your chezmoi dotfile manager.[/]"
-            )
-        self.lines_to_write.extend(
-            [
-                "[$text-success]+ green lines will be added[/]",
-                "[$text-error]- red lines will be removed[/]",
-                f"[dim]{CharsEnum.bullet.value} dimmed lines for context will remain unchanged[/]",
-            ]
-        )
 
     def on_mount(self) -> None:
         self.update("\n".join(self.lines_to_write))
+        self.border_title = str(self.path)
         self.border_subtitle = self.info_border_titles[self.tab_name]
 
 

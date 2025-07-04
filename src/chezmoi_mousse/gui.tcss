@@ -126,6 +126,9 @@
   }
   .operate_top_path {
     height: auto;
+    border-title-align: center;
+    border-title-color: $accent;
+    border-subtitle-color: $accent;
     border-subtitle-align: center;
     text-align: center;
     border: round $foreground-darken-3;
