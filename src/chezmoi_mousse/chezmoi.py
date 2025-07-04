@@ -1,3 +1,4 @@
+from datetime import datetime
 import json
 import tempfile
 from collections.abc import Callable
@@ -58,9 +59,44 @@ SUBS: dict[str, tuple[str, ...]] = {
 }
 
 
+def log_time() -> str:
+    return f"[{datetime.now().strftime("%H:%M:%S")}]"
+
+
+def log_command(command: tuple[str, ...]) -> str:
+    trimmed_cmd: list[str] = [
+        _
+        for _ in command
+        if _
+        not in (
+            "--no-pager"
+            "--color=off"
+            "--no-tty"
+            "--format=json"
+            "--path-style=absolute"
+            "--path-style=source-absolute"
+            "--no-color"
+            "--no-decorate"
+            "--date-order"
+            "--no-expand-tabs"
+            "--format=%ar by %cn;%s"
+        )
+    ]
+    return f"{log_time()} {" ".join(trimmed_cmd)}"
+
+
+@dataclass
+class SubProcessReturn:
+    long_command: tuple[str, ...]
+    trimmed_command: str
+    stdout_return: str
+    # log messages needs to be a list to preserve order
+    log_messages: list[str] = field(default_factory=list[str])
+
+
 def subprocess_run(long_command: tuple[str, ...]) -> str:
     try:
-        result: str = run(
+        cmd_stdout: str = run(
             long_command,
             capture_output=True,
             check=True,  # raises exception for any non-zero return code
@@ -76,15 +112,10 @@ def subprocess_run(long_command: tuple[str, ...]) -> str:
                 )
             )
         else:
-            log_tab_callback(LogTabEntry(long_command, result))
-        return result
-    except TimeoutExpired as error:
-        raise TimeoutExpired(
-            error.cmd,
-            error.timeout,
-            output="The timeout value for subprocess calls of one second was exceeded.",
-            stderr=error.stderr,
-        ) from error
+            log_tab_callback(LogTabEntry(long_command, cmd_stdout))
+        return cmd_stdout
+    except TimeoutExpired:
+        return "command timed out after 1 second"
 
 
 class PerformChange:

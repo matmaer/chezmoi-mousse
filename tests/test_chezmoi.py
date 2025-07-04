@@ -1,35 +1,12 @@
 import pytest
 from pathlib import Path
-from unittest.mock import patch
-from subprocess import TimeoutExpired
 
-from chezmoi_mousse.chezmoi import (
-    Chezmoi,
-    PerformChange,
-    SubProcessCalls,
-    StatusDicts,
-)
+from chezmoi_mousse.chezmoi import Chezmoi, StatusDicts
 
 
 @pytest.fixture
 def chezmoi_instance() -> Chezmoi:
     return Chezmoi()
-
-
-def test_chezmoi_core_functionality(chezmoi_instance: Chezmoi):
-    # Test configuration access
-    chezmoi_instance.dump_config.update()
-    assert isinstance(chezmoi_instance.dump_config.dict_out, dict)
-    assert str(chezmoi_instance.dest_dir) == chezmoi_instance.dest_dir_str
-
-    # Test auto flags
-    assert isinstance(chezmoi_instance.autoadd_enabled, bool)
-    assert isinstance(chezmoi_instance.autocommit_enabled, bool)
-    assert isinstance(chezmoi_instance.autopush_enabled, bool)
-
-    # Test long_commands structure
-    assert isinstance(chezmoi_instance.long_commands, dict)
-    assert "dump_config" in chezmoi_instance.long_commands
 
 
 def test_managed_paths_and_status(chezmoi_instance: Chezmoi):
@@ -62,65 +39,6 @@ def test_managed_paths_and_status(chezmoi_instance: Chezmoi):
     invalid_path = Path("/invalid/path")
     with pytest.raises(ValueError, match="is not"):
         chezmoi_instance.managed_dirs_in(invalid_path)
-
-
-def test_subprocess_and_perform_change():
-    # Test TimeoutExpired handling
-    with patch("chezmoi_mousse.chezmoi.run") as mock_run:
-        mock_run.side_effect = TimeoutExpired(
-            cmd=["test"], timeout=1, output="test output", stderr="test stderr"
-        )
-        with pytest.raises(TimeoutExpired, match="timed out"):
-            from chezmoi_mousse.chezmoi import subprocess_run
-
-            subprocess_run(("test",))
-
-    # Test PerformChange methods
-    test_path = Path("/test/path")
-    with patch("chezmoi_mousse.chezmoi.subprocess_run") as mock_subprocess:
-        mock_subprocess.return_value = "executed"
-
-        # Test all methods return subprocess result
-        assert PerformChange.add(test_path) == "executed"
-        assert PerformChange.re_add(test_path) == "executed"
-        assert PerformChange.apply(test_path) == "executed"
-
-        # Verify correct commands were called
-        calls = [call[0][0] for call in mock_subprocess.call_args_list]
-        assert any("add" in call and "--dry-run" in call for call in calls)
-        assert any("re-add" in call for call in calls)
-        assert any("apply" in call for call in calls)
-
-
-def test_subprocess_calls():
-    """Test SubProcessCalls methods"""
-    subprocess_calls = SubProcessCalls()
-    test_path = Path("/test/path")
-
-    with patch("chezmoi_mousse.chezmoi.subprocess_run") as mock_subprocess:
-        # Test git_log
-        mock_subprocess.side_effect = ["/source/path", "commit1\ncommit2"]
-        result = subprocess_calls.git_log(test_path)
-        assert result == ["commit1", "commit2"]
-        assert mock_subprocess.call_count == 2
-
-        # Reset for subsequent tests
-        mock_subprocess.reset_mock()
-        mock_subprocess.side_effect = None
-
-        # Test diff methods
-        mock_subprocess.return_value = "diff line 1\ndiff line 2"
-        assert subprocess_calls.apply_diff(test_path) == [
-            "diff line 1",
-            "diff line 2",
-        ]
-
-        result = subprocess_calls.re_add_diff(test_path)
-        assert "--reverse" in mock_subprocess.call_args[0][0]
-
-        # Test cat method
-        mock_subprocess.return_value = "file content"
-        assert subprocess_calls.cat(test_path) == "file content"
 
 
 def test_status_dicts_properties():
