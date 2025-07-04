@@ -637,9 +637,6 @@ class LogTab(RichLog):
 
     splash_log: list[str] | None = None
 
-    # def add(self, log_text: str) -> None:
-    #     self.write(log_text)
-
     def log_callback(self, log_text: str) -> None:
         self.write(log_text)
 
