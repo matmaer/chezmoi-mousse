@@ -7,15 +7,11 @@ from pathlib import Path
 from subprocess import TimeoutExpired, run
 from typing import Any, Literal, NamedTuple
 
-from chezmoi_mousse.id_typing import LogTabEntry, TabStr
+from chezmoi_mousse.id_typing import TabStr
 
 
-def callback_null_object(entry: LogTabEntry) -> None:
-    pass
-
-
-# Used and re-assigned in gui.py to log commands
-log_tab_callback: Callable[[LogTabEntry], None] = callback_null_object
+# Used and re-assigned in gui.py to log commands, expect a string and return None
+log_tab_callback: Callable[[str], None] | None = None
 
 
 BASE = ("chezmoi", "--no-pager", "--color=off", "--no-tty", "--mode=file")
@@ -60,7 +56,7 @@ SUBS: dict[str, tuple[str, ...]] = {
 
 
 def log_time() -> str:
-    return f"[{datetime.now().strftime("%H:%M:%S")}]"
+    return f"[green]{datetime.now().strftime("%H:%M:%S")}[/]"
 
 
 def log_command(command: tuple[str, ...]) -> str:
@@ -72,6 +68,7 @@ def log_command(command: tuple[str, ...]) -> str:
             "--color=off"
             "--date-order"
             "--format=%ar by %cn;%s"
+            "--force"
             "--format=json"
             "--mode=file"
             "--no-color"
@@ -83,7 +80,15 @@ def log_command(command: tuple[str, ...]) -> str:
             "--path-style=source-absolute"
         )
     ]
-    return f"{log_time()} {" ".join(trimmed_cmd)}"
+    return f"[{log_time()}] [cyan]{" ".join(trimmed_cmd)}[/]"
+
+
+def log_output(output: str) -> str:
+    return f"[{log_time()}] [yellow]{output}[/]"
+
+
+def log_app_msg(message: str) -> str:
+    return f"[{log_time()}] [green]{message}[/]"
 
 
 @dataclass
@@ -105,17 +110,34 @@ def subprocess_run(long_command: tuple[str, ...]) -> str:
             text=True,  # returns stdout as str instead of bytes
             timeout=1,
         ).stdout.strip()
-        if any(cmd in long_command for cmd in ("diff", "cat", "git")):
-            log_tab_callback(
-                LogTabEntry(
-                    long_command=log_command(long_command),
-                    message="output displayed in gui",
+        if log_tab_callback:
+            log_tab_callback(log_command(long_command))
+            if "diff" in long_command:
+                log_tab_callback(log_output("diff lines shown in gui"))
+            elif "cat" in long_command:
+                log_tab_callback(log_output("file contents shown in gui"))
+            elif "git" in long_command and "log" in long_command:
+                log_tab_callback(log_output("git log table shown in gui"))
+            elif "chezmoi" in long_command and "apply" in long_command:
+                log_tab_callback(log_app_msg("chezmoi apply was successful"))
+            elif "chezmoi" in long_command and "re-add" in long_command:
+                log_tab_callback(log_app_msg("chezmoi re-add was successful"))
+            elif "chezmoi" in long_command and "add" in long_command:
+                log_tab_callback(log_app_msg("chezmoi add was successful"))
+            elif "chezmoi" in long_command and "source-path" in long_command:
+                log_tab_callback(
+                    log_app_msg("found path in chezmoi repository")
                 )
-            )
-        else:
-            log_tab_callback(
-                LogTabEntry(log_command(long_command), cmd_stdout)
-            )
+            elif not cmd_stdout:
+                log_tab_callback(
+                    log_output("no output or logging implemented")
+                )
+            elif cmd_stdout:
+                log_tab_callback(
+                    log_output(
+                        f"logging not implemented, first line of output:\n{cmd_stdout.splitlines()[0]}"
+                    )
+                )
         return cmd_stdout
     except TimeoutExpired:
         return "command timed out after 1 second"
@@ -126,7 +148,7 @@ class PerformChange:
     repository."""
 
     # TODO: remove --dry-run
-    base = BASE + ("--verbose", "--dry-run", "--force", "--config")
+    base = BASE + ("--dry-run", "--force", "--config")
     config_path: Path | None = None
 
     @staticmethod

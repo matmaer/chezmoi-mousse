@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from enum import Enum, StrEnum, auto
 
 
@@ -127,12 +126,6 @@ class OperateIdStr(StrEnum):
     operate_screen_id = auto()
     operate_top_path_id = auto()
     operate_vertical_id = auto()
-
-
-@dataclass
-class LogTabEntry:
-    long_command: str
-    message: str = "no message was provided"
 
 
 class IdMixin:

@@ -25,7 +25,6 @@ from chezmoi_mousse.id_typing import (
     CharsEnum,
     IdMixin,
     Location,
-    LogTabEntry,
     PaneEnum,
     TabStr,
     TcssStr,
@@ -139,7 +138,7 @@ class MainScreen(Screen[None]):
                 )
             with TabPane("Log", id=PaneEnum.log.name):
                 yield LogTab(
-                    id=PaneEnum.log.value, highlight=True, max_lines=20000
+                    id=PaneEnum.log.value, markup=True, max_lines=20000
                 )
         yield Footer()
 
@@ -389,7 +388,7 @@ class ChezmoiGUI(App[None]):
         self.push_screen(LoadingScreen(), callback=self.push_main_screen)
         self.watch(self, "theme", self.on_theme_change, init=False)
 
-    def push_main_screen(self, splash_log: list[LogTabEntry] | None) -> None:
+    def push_main_screen(self, splash_log: list[str] | None) -> None:
         LogTab.splash_log = splash_log
         self.push_screen("main_screen")
 

@@ -43,7 +43,6 @@ from chezmoi_mousse.id_typing import (
     FilterEnum,
     IdMixin,
     Location,
-    LogTabEntry,
     OperateIdStr,
     TabStr,
     TcssStr,
@@ -636,14 +635,13 @@ class DoctorTab(VerticalScroll):
 
 class LogTab(RichLog):
 
-    splash_log: list[LogTabEntry] | None = None
+    splash_log: list[str] | None = None
 
-    def add(self, chezmoi_io: LogTabEntry) -> None:
-        self.write(chezmoi_io.long_command)
-        self.write(chezmoi_io.message)
+    # def add(self, log_text: str) -> None:
+    #     self.write(log_text)
 
-    def log_callback(self, chezmoi_io: LogTabEntry) -> None:
-        self.add(chezmoi_io)
+    def log_callback(self, log_text: str) -> None:
+        self.write(log_text)
 
     def on_mount(self) -> None:
         chezmoi_mousse.chezmoi.log_tab_callback = self.log_callback
@@ -653,4 +651,4 @@ class LogTab(RichLog):
     def write_splash_log(self) -> None:
         if self.splash_log is not None:
             for cmd in self.splash_log:
-                self.add(cmd)
+                self.write(cmd)

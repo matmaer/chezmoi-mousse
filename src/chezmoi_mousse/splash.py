@@ -14,8 +14,8 @@ from textual.timer import Timer
 from textual.widgets import RichLog, Static
 from textual.worker import WorkerState
 
-from chezmoi_mousse.chezmoi import chezmoi, log_command
-from chezmoi_mousse.id_typing import LogTabEntry, SplashIdStr
+from chezmoi_mousse.chezmoi import chezmoi, log_app_msg, log_command
+from chezmoi_mousse.id_typing import SplashIdStr
 
 SPLASH = """\
  _______________________________ ___________________._
@@ -62,7 +62,7 @@ RICH_LOG.styles.color = "#0053AA"
 RICH_LOG.styles.margin = 0
 RICH_LOG.styles.padding = 0
 
-COMMAND_LOG: list[LogTabEntry] = []
+COMMAND_LOG: list[str] = []
 
 
 class AnimatedFade(Static):
@@ -81,7 +81,7 @@ class AnimatedFade(Static):
         return Strip([Segment(SPLASH[y], style=LINE_STYLES[y])])
 
 
-class LoadingScreen(Screen[list[LogTabEntry]]):
+class LoadingScreen(Screen[list[str]]):
 
     def __init__(self) -> None:
         super().__init__(id=SplashIdStr.loading_screen_id)
@@ -107,12 +107,7 @@ class LoadingScreen(Screen[list[LogTabEntry]]):
         io_class.update()
         self.log_text(io_class.label)
         long_command = getattr(chezmoi, attr).long_command
-        COMMAND_LOG.append(
-            LogTabEntry(
-                long_command=log_command(long_command),
-                message="output stored in InputOutput by 'splash.py'.",
-            )
-        )
+        COMMAND_LOG.append(log_command(long_command))
 
     @work(thread=True, group="io_workers")
     def run_io_worker(self, arg_id: str) -> None:
@@ -146,9 +141,8 @@ class LoadingScreen(Screen[list[LogTabEntry]]):
                 self.log_text("create non interactive config")
 
                 COMMAND_LOG.append(
-                    LogTabEntry(
-                        "Create non_interactive config",
-                        message=f"Create temporary config file at {temp_config_path} excluding interactive option.",
+                    log_app_msg(
+                        f"created temporary config file at {temp_config_path} excluding interactive option."
                     )
                 )
 
@@ -159,7 +153,13 @@ class LoadingScreen(Screen[list[LogTabEntry]]):
             if worker.group
             in ("io_workers", "doctor", "cat_config", "set_temp_config_file")
         ):
-            result: list[LogTabEntry] = COMMAND_LOG
+            COMMAND_LOG.append(
+                log_app_msg("command output stored in InputOutput dataclass")
+            )
+            COMMAND_LOG.append(
+                log_app_msg("--- splash.py finished loading ---")
+            )
+            result: list[str] = COMMAND_LOG
             self.dismiss(result)
 
     def on_mount(self) -> None:
