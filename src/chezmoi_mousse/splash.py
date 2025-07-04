@@ -14,7 +14,7 @@ from textual.timer import Timer
 from textual.widgets import RichLog, Static
 from textual.worker import WorkerState
 
-from chezmoi_mousse.chezmoi import chezmoi
+from chezmoi_mousse.chezmoi import chezmoi, log_command
 from chezmoi_mousse.id_typing import LogTabEntry, SplashIdStr
 
 SPLASH = """\
@@ -109,7 +109,7 @@ class LoadingScreen(Screen[list[LogTabEntry]]):
         long_command = getattr(chezmoi, attr).long_command
         COMMAND_LOG.append(
             LogTabEntry(
-                long_command=long_command,
+                long_command=log_command(long_command),
                 message="output stored in InputOutput by 'splash.py'.",
             )
         )
@@ -147,7 +147,7 @@ class LoadingScreen(Screen[list[LogTabEntry]]):
 
                 COMMAND_LOG.append(
                     LogTabEntry(
-                        ("Create non_interactive config",),
+                        "Create non_interactive config",
                         message=f"Create temporary config file at {temp_config_path} excluding interactive option.",
                     )
                 )

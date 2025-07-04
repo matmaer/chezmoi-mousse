@@ -131,7 +131,7 @@ class OperateIdStr(StrEnum):
 
 @dataclass
 class LogTabEntry:
-    long_command: tuple[str, ...]
+    long_command: str
     message: str = "no message was provided"
 
 

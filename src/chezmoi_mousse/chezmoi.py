@@ -69,17 +69,18 @@ def log_command(command: tuple[str, ...]) -> str:
         for _ in command
         if _
         not in (
-            "--no-pager"
             "--color=off"
-            "--no-tty"
+            "--date-order"
+            "--format=%ar by %cn;%s"
             "--format=json"
-            "--path-style=absolute"
-            "--path-style=source-absolute"
+            "--mode=file"
             "--no-color"
             "--no-decorate"
-            "--date-order"
             "--no-expand-tabs"
-            "--format=%ar by %cn;%s"
+            "--no-pager"
+            "--no-tty"
+            "--path-style=absolute"
+            "--path-style=source-absolute"
         )
     ]
     return f"{log_time()} {" ".join(trimmed_cmd)}"
@@ -107,12 +108,14 @@ def subprocess_run(long_command: tuple[str, ...]) -> str:
         if any(cmd in long_command for cmd in ("diff", "cat", "git")):
             log_tab_callback(
                 LogTabEntry(
-                    long_command=long_command,
+                    long_command=log_command(long_command),
                     message="output displayed in gui",
                 )
             )
         else:
-            log_tab_callback(LogTabEntry(long_command, cmd_stdout))
+            log_tab_callback(
+                LogTabEntry(log_command(long_command), cmd_stdout)
+            )
         return cmd_stdout
     except TimeoutExpired:
         return "command timed out after 1 second"

@@ -639,29 +639,7 @@ class LogTab(RichLog):
     splash_log: list[LogTabEntry] | None = None
 
     def add(self, chezmoi_io: LogTabEntry) -> None:
-        time_stamp = datetime.now().strftime("%H:%M:%S")
-        # Turn the full command list into string, remove elements not useful
-        # to display in the log
-        trimmed_cmd: list[str] = [
-            _
-            for _ in chezmoi_io.long_command
-            if _
-            not in (
-                "--no-pager"
-                "--color=off"
-                "--no-tty"
-                "--format=json"
-                "--path-style=absolute"
-                "--path-style=source-absolute"
-                "--no-color"
-                "--no-decorate"
-                "--date-order"
-                "--no-expand-tabs"
-                "--format=%ar by %cn;%s"
-            )
-        ]
-        pretty_cmd = " ".join(trimmed_cmd)
-        self.write(f"{time_stamp} {pretty_cmd}")
+        self.write(chezmoi_io.long_command)
         self.write(chezmoi_io.message)
 
     def log_callback(self, chezmoi_io: LogTabEntry) -> None:
