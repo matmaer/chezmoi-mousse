@@ -39,7 +39,6 @@ from chezmoi_mousse.containers import (
 )
 from chezmoi_mousse.id_typing import (
     ButtonEnum,
-    CharsEnum,
     FilterEnum,
     IdMixin,
     Location,
@@ -97,12 +96,12 @@ class Operate(ModalScreen[None], IdMixin):
         ):
             if self.tab_name in (TabStr.add_tab, TabStr.re_add_tab):
                 yield AutoWarning(classes=TcssStr.operate_auto_warning)
-            yield Static(
-                f"{self.path}",
+            yield OperateInfo(
                 id=self.path_info_id,
+                tab_name=self.tab_name,
+                path=self.path,
                 classes=TcssStr.operate_top_path,
             )
-            yield OperateInfo(tab_name=self.tab_name, path=self.path)
             if self.tab_name == TabStr.add_tab:
                 with Container(
                     id=OperateIdStr.operate_collapsible_id,
@@ -138,20 +137,11 @@ class Operate(ModalScreen[None], IdMixin):
             )
 
     def on_mount(self) -> None:
-        # Set border titles
-        info_border_titles = {
-            TabStr.apply_tab: CharsEnum.apply.value,
-            TabStr.re_add_tab: CharsEnum.re_add.value,
-            TabStr.add_tab: CharsEnum.add.value,
-        }
         log_border_titles = {
             TabStr.apply_tab: str(ButtonEnum.apply_file_btn.value).lower(),
             TabStr.re_add_tab: str(ButtonEnum.re_add_file_btn.value).lower(),
             TabStr.add_tab: str(ButtonEnum.add_file_btn.value).lower(),
         }
-        self.query_one(self.path_info_qid, Static).border_subtitle = (
-            info_border_titles[self.tab_name]
-        )
 
         # Add initial log entry
         operate_log = self.query_one(self.log_qid, RichLog)

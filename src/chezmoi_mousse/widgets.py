@@ -59,8 +59,10 @@ class AutoWarning(Static):
 
 class OperateInfo(Static):
 
-    def __init__(self, tab_name: TabStr, path: Path) -> None:
-        super().__init__(classes=TcssStr.operate_top_path)
+    def __init__(
+        self, tab_name: TabStr, *, path: Path, id: str, classes: str
+    ) -> None:
+        super().__init__(id=id, classes=classes)
 
         self.tab_name = tab_name
         self.path = path
