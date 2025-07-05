@@ -179,20 +179,27 @@ def test_content_switcher_instantiation(switcher_type: str) -> None:
 @pytest.mark.parametrize(
     "widget_class,view_id",
     [
-        ("AutoWarning", ""),  # AutoWarning doesn't use view_id
+        ("DiffView", "test_diff_view"),
         ("ContentsView", "test_contents_view"),
         ("GitLogView", "test_git_log_view"),
     ],
 )
-def test_widget_instantiation(widget_class: str, view_id: str) -> None:
-    from chezmoi_mousse.widgets import AutoWarning, ContentsView, GitLogView
+def test_view_widget_instantiation(widget_class: str, view_id: str) -> None:
+    from chezmoi_mousse.widgets import DiffView, ContentsView, GitLogView
+    from chezmoi_mousse.id_typing import TabStr
 
-    if widget_class == "AutoWarning":
-        widget = AutoWarning()
-    elif widget_class == "ContentsView":
-        widget = ContentsView(view_id=view_id)
-    else:  # GitLogView
-        widget = GitLogView(view_id=view_id)
+    widget_class_map: dict[str, type] = {
+        "DiffView": DiffView,
+        "ContentsView": ContentsView,
+        "GitLogView": GitLogView,
+    }
+
+    cls = widget_class_map[widget_class]
+
+    if widget_class == "DiffView":
+        widget = cls(tab_name=TabStr.apply_tab, view_id=view_id)
+    else:
+        widget = cls(view_id=view_id)
 
     assert widget is not None
 
