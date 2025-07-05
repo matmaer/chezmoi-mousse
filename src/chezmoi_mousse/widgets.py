@@ -16,6 +16,7 @@ from pathlib import Path
 
 from rich.style import Style
 from rich.text import Text
+
 from textual.content import Content
 from textual.events import Key
 from textual.reactive import reactive
@@ -36,69 +37,74 @@ from chezmoi_mousse.id_typing import (
 
 class AutoWarning(Static):
 
+    sign: str = CharsEnum.warning_sign.value
+
+    def __init__(self, *, tab_str: TabStr, classes: str) -> None:
+        super().__init__(classes=classes)
+        self.tab_str = tab_str
+
     def on_mount(self) -> None:
-        auto_warning: list[str] = []
-        if chezmoi.autocommit_enabled and not chezmoi.autopush_enabled:
-            auto_warning.append(
-                '"Auto Commit" is enabled: files will also be committed.'
+        warning_lines: list[str] = []
+        if self.tab_str in (TabStr.re_add_tab, TabStr.add_tab):
+            if chezmoi.autocommit_enabled:
+                warning_lines.append(
+                    f"{self.sign}  Auto commit is enabled: files will also be committed  {self.sign}"
+                )
+            if chezmoi.autopush_enabled:
+                warning_lines.append(
+                    f"{self.sign}  Auto push is enabled: files will be pushed to the remote  {self.sign}"
+                )
+            warning_lines.append(
+                f"{self.sign}  Dotfile manager will be updated with current local file  {self.sign}"
             )
-        elif chezmoi.autocommit_enabled and chezmoi.autopush_enabled:
-            auto_warning.append(
-                '"Auto Commit" and "Auto Push" are enabled: files will be committed and pushed to the remote.'
+        if self.tab_str == TabStr.apply_tab:
+            warning_lines.append(
+                f"{self.sign} Local file will be modified. {self.sign}"
             )
-        else:
-            auto_warning.append(
-                '"Auto Commit" and "Auto Push" are not enabled.'
-            )
-        self.update(
-            Content.from_markup(
-                f"[$text-warning italic]{' '.join(auto_warning)}[/]"
-            )
-        )
+
+        # Apply text-warning markup to each line
+        markup_lines = [
+            Content.from_markup(f"[$text-warning]{line}[/]")
+            for line in warning_lines
+        ]
+        self.update(Content("\n").join(markup_lines))
 
 
 class OperateInfo(Static):
 
+    bullet = CharsEnum.bullet.value
+
     def __init__(
-        self, tab_name: TabStr, *, path: Path, id: str, classes: str
+        self, tab_str: TabStr, *, path: Path, id: str, classes: str
     ) -> None:
         super().__init__(id=id, classes=classes)
 
-        self.tab_name = tab_name
+        self.tab_str = tab_str
         self.path = path
         self.info_border_titles = {
             TabStr.apply_tab: CharsEnum.apply.value,
             TabStr.re_add_tab: CharsEnum.re_add.value,
             TabStr.add_tab: CharsEnum.add.value,
         }
-        # self.lines_to_write: list[str] = [f"[$accent]{self.path}[/]"]
+
+    def on_mount(self) -> None:
         self.lines_to_write: list[str] = []
 
-        if tab_name in (TabStr.apply_tab, TabStr.re_add_tab):
-            if tab_name == TabStr.apply_tab:
-                self.lines_to_write.append(
-                    f"[$text-warning]{CharsEnum.warning_sign.value} local file will be modified {CharsEnum.warning_sign.value}[/]"
-                )
-            elif tab_name == TabStr.re_add_tab:
-                self.lines_to_write.append(
-                    "[$text-warning]Chezmoi state will be updated:[/]"
-                )
+        if self.tab_str in (TabStr.apply_tab, TabStr.re_add_tab):
             self.lines_to_write.extend(
                 [
                     "[$text-success]+ green lines will be added[/]",
                     "[$text-error]- red lines will be removed[/]",
-                    f"[dim]{CharsEnum.bullet.value} dimmed lines for context will remain unchanged[/]",
+                    f"[dim]{self.bullet} dimmed lines for context[/]",
                 ]
             )
         else:
             self.lines_to_write.append(
                 "[$text-success]Path will be added to your chezmoi dotfile manager.[/]"
             )
-
-    def on_mount(self) -> None:
         self.update("\n".join(self.lines_to_write))
         self.border_title = str(self.path)
-        self.border_subtitle = self.info_border_titles[self.tab_name]
+        self.border_subtitle = self.info_border_titles[self.tab_str]
 
 
 class ContentsView(RichLog):

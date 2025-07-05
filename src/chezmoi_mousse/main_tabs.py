@@ -93,11 +93,12 @@ class Operate(ModalScreen[None], IdMixin):
             id=OperateIdStr.operate_vertical_id,
             classes=TcssStr.operate_container,
         ):
-            if self.tab_name in (TabStr.add_tab, TabStr.re_add_tab):
-                yield AutoWarning(classes=TcssStr.operate_auto_warning)
+            yield AutoWarning(
+                tab_str=self.tab_name, classes=TcssStr.operate_auto_warning
+            )
             yield OperateInfo(
                 id=self.path_info_id,
-                tab_name=self.tab_name,
+                tab_str=self.tab_name,
                 path=self.path,
                 classes=TcssStr.operate_top_path,
             )
