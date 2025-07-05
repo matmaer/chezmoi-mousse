@@ -127,15 +127,13 @@
   .operate_top_path {
     height: auto;
     border-title-align: center;
-    border-title-color: $accent;
-    border-subtitle-color: $accent;
+    padding: 1;
     border-subtitle-align: center;
     text-align: center;
-    border: round $foreground-darken-3;
-    # color: $accent;
+    border: round $foreground;
   }
   &>.collapsible_container{
-    margin: 0;
+    margin: 1;
     height: auto;
     padding: 0;
     &>.operate_collapsible {
@@ -145,10 +143,8 @@
     }
   }
   &>.operate_log {
-    border-top: $accent-darken-3;
+    border-top: $foreground;
     border-title-align: center;
-    background: $surface;
-    background-tint: $surface;
     height: auto;
     min-height: 3;
   }
