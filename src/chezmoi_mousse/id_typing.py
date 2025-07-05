@@ -1,4 +1,14 @@
+from dataclasses import dataclass
 from enum import Enum, StrEnum, auto
+from pathlib import Path
+
+
+# needed by both widgets.py and overrides.py
+@dataclass
+class NodeData:
+    path: Path
+    found: bool
+    status: str
 
 
 class CharsEnum(Enum):

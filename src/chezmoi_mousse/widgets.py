@@ -16,11 +16,10 @@ from pathlib import Path
 
 from rich.style import Style
 from rich.text import Text
-
 from textual.content import Content
 from textual.events import Key
 from textual.reactive import reactive
-from textual.widgets import DataTable, DirectoryTree, RichLog, Static, Tree
+from textual.widgets import DataTable, DirectoryTree, RichLog, Static
 from textual.widgets.tree import TreeNode
 
 import chezmoi_mousse.theme as theme
@@ -29,10 +28,12 @@ from chezmoi_mousse.config import unwanted
 from chezmoi_mousse.id_typing import (
     CharsEnum,
     IdMixin,
+    NodeData,
     TabStr,
     TcssStr,
     TreeStr,
 )
+from chezmoi_mousse.overrides import CustomRenderLabel
 
 
 class AutoWarning(Static):
@@ -304,13 +305,6 @@ class GitLogView(DataTable[Text]):
 
 
 @dataclass
-class NodeData:
-    path: Path
-    found: bool
-    status: str
-
-
-@dataclass
 class DirNodeData(NodeData):
     pass
 
@@ -320,7 +314,7 @@ class FileNodeData(NodeData):
     pass
 
 
-class TreeBase(Tree[NodeData]):
+class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
 
     def __init__(
         self,
@@ -479,55 +473,6 @@ class TreeBase(Tree[NodeData]):
         else:
             styled = self.node_colors["Dir"]
         return Text(node_data.path.name, style=styled)
-
-    # Override render_label to preserve node colors when selected
-    def render_label(
-        self,
-        node: TreeNode[NodeData],
-        base_style: Style,
-        style: Style,  # needed for valid overriding
-    ) -> Text:
-        assert node.data is not None
-        node_label = self.style_label(node.data)
-
-        if node is self.cursor_node:
-            current_style = node_label.style
-            # Apply bold styling when tree is first focused
-            if not self._first_focus and self._initial_render:
-                if isinstance(current_style, str):
-                    cursor_style = Style.parse(current_style) + Style(
-                        bold=True
-                    )
-                else:
-                    cursor_style = current_style + Style(bold=True)
-                node_label = Text(node_label.plain, style=cursor_style)
-            # Apply underline styling only after actual user interaction
-            elif self._user_interacted:
-                if isinstance(current_style, str):
-                    cursor_style = Style.parse(current_style) + Style(
-                        underline=True
-                    )
-                else:
-                    cursor_style = current_style + Style(underline=True)
-                node_label = Text(node_label.plain, style=cursor_style)
-
-        if node.allow_expand:
-            # import this as render_label is not in its natural habitat
-            from textual.widgets._tree import TOGGLE_STYLE
-
-            prefix = (
-                (
-                    self.ICON_NODE_EXPANDED
-                    if node.is_expanded
-                    else self.ICON_NODE
-                ),
-                base_style + TOGGLE_STYLE,
-            )
-        else:
-            prefix = ("", base_style)
-
-        text = Text.assemble(prefix, node_label)
-        return text
 
 
 class ManagedTree(TreeBase, IdMixin):
