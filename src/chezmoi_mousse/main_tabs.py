@@ -2,7 +2,6 @@ from datetime import datetime
 from pathlib import Path
 
 from rich.text import Text
-from textual import work
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import (
@@ -27,7 +26,6 @@ from textual.widgets import (
     Switch,
 )
 
-import chezmoi_mousse.chezmoi
 import chezmoi_mousse.theme as theme
 from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.config import pw_mgr_info
@@ -622,21 +620,3 @@ class DoctorTab(VerticalScroll):
             else:
                 row = [Text(cell_text) for cell_text in row]
                 table.add_row(*row)
-
-
-class LogTab(RichLog):
-
-    splash_log: list[str] | None = None
-
-    def log_callback(self, log_text: str) -> None:
-        self.write(log_text)
-
-    def on_mount(self) -> None:
-        chezmoi_mousse.chezmoi.log_tab_callback = self.log_callback
-        self.write_splash_log()
-
-    @work(thread=True)
-    def write_splash_log(self) -> None:
-        if self.splash_log is not None:
-            for cmd in self.splash_log:
-                self.write(cmd)

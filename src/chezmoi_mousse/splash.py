@@ -14,7 +14,7 @@ from textual.timer import Timer
 from textual.widgets import RichLog, Static
 from textual.worker import WorkerState
 
-from chezmoi_mousse.chezmoi import chezmoi, log_app_msg, log_command
+from chezmoi_mousse.chezmoi import chezmoi, cmd_log
 from chezmoi_mousse.id_typing import SplashIdStr
 
 SPLASH = """\
@@ -62,8 +62,6 @@ RICH_LOG.styles.color = "#0053AA"
 RICH_LOG.styles.margin = 0
 RICH_LOG.styles.padding = 0
 
-COMMAND_LOG: list[str] = []
-
 
 class AnimatedFade(Static):
 
@@ -107,7 +105,7 @@ class LoadingScreen(Screen[list[str]]):
         io_class.update()
         self.log_text(io_class.label)
         long_command = getattr(chezmoi, attr).long_command
-        COMMAND_LOG.append(log_command(long_command))
+        cmd_log.log_command(long_command)
 
     @work(thread=True, group="io_workers")
     def run_io_worker(self, arg_id: str) -> None:
@@ -140,10 +138,8 @@ class LoadingScreen(Screen[list[str]]):
 
                 self.log_text("create non interactive config")
 
-                COMMAND_LOG.append(
-                    log_app_msg(
-                        f"created temporary config file at {temp_config_path} excluding interactive option."
-                    )
+                cmd_log.log_app_msg(
+                    f"created temporary config file at {temp_config_path} excluding interactive option."
                 )
 
     def all_workers_finished(self) -> None:
@@ -153,14 +149,14 @@ class LoadingScreen(Screen[list[str]]):
             if worker.group
             in ("io_workers", "doctor", "cat_config", "set_temp_config_file")
         ):
-            COMMAND_LOG.append(
-                log_app_msg("command output stored in InputOutput dataclass")
+
+            cmd_log.log_app_msg(
+                "command output stored in InputOutput dataclass"
             )
-            COMMAND_LOG.append(
-                log_app_msg("--- splash.py finished loading ---")
-            )
-            result: list[str] = COMMAND_LOG
-            self.dismiss(result)
+
+            cmd_log.log_app_msg("--- splash.py finished loading ---")
+
+            self.dismiss()
 
     def on_mount(self) -> None:
         animated_fade = self.query_exactly_one(AnimatedFade)

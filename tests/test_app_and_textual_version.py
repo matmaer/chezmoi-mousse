@@ -48,20 +48,13 @@ def test_if_app_starts():
         ("ReAddTab", "re_add_tab", "tab_str"),
         ("AddTab", "add_tab", "tab_str"),
         ("DoctorTab", "doctor_tab", "id_only"),
-        ("LogTab", "log_tab", "rich_log"),
     ],
 )
 def test_tab_instantiation(
     tab_class: str, tab_str: str, constructor_type: str
 ) -> None:
     """Test that each tab class can be instantiated."""
-    from chezmoi_mousse.main_tabs import (
-        ApplyTab,
-        ReAddTab,
-        AddTab,
-        DoctorTab,
-        LogTab,
-    )
+    from chezmoi_mousse.main_tabs import ApplyTab, ReAddTab, AddTab, DoctorTab
     from chezmoi_mousse.id_typing import TabStr
 
     tab_class_map: dict[str, type] = {
@@ -69,7 +62,6 @@ def test_tab_instantiation(
         "ReAddTab": ReAddTab,
         "AddTab": AddTab,
         "DoctorTab": DoctorTab,
-        "LogTab": LogTab,
     }
 
     tab_str_map = {

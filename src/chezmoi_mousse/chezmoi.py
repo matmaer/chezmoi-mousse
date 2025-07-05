@@ -1,17 +1,61 @@
 from datetime import datetime
 import json
 import tempfile
-from collections.abc import Callable
+
+# from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 from subprocess import TimeoutExpired, run
 from typing import Any, Literal, NamedTuple
+from textual.widgets import RichLog
 
-from chezmoi_mousse.id_typing import TabStr
+from chezmoi_mousse.id_typing import TabStr, PaneEnum
 
+
+class CommandLog(RichLog):
+    def __init__(self) -> None:
+        super().__init__(id=PaneEnum.log.value, markup=True, max_lines=20000)
+
+    def log_time(self) -> str:
+        return f"[green]{datetime.now().strftime('%H:%M:%S')}[/]"
+
+    def log_command(self, command: tuple[str, ...]) -> None:
+        trimmed_cmd: list[str] = [
+            _
+            for _ in command
+            if _
+            not in (
+                "--color=off"
+                "--date-order"
+                "--format=%ar by %cn;%s"
+                "--force"
+                "--format=json"
+                "--mode=file"
+                "--no-color"
+                "--no-decorate"
+                "--no-expand-tabs"
+                "--no-pager"
+                "--no-tty"
+                "--path-style=absolute"
+                "--path-style=source-absolute"
+            )
+        ]
+        self.write(f"[{self.log_time()}] [cyan]{" ".join(trimmed_cmd)}[/]")
+
+    def log_error(self, message: str) -> None:
+        self.write(f"[{self.log_time()}] [red]{message}[/]")
+
+    def log_output(self, message: str) -> None:
+        self.write(f"[{self.log_time()}] [yellow]{message}[/]")
+
+    def log_app_msg(self, message: str) -> None:
+        self.write(f"[{self.log_time()}] [green]{message}[/]")
+
+
+cmd_log = CommandLog()
 
 # Used and re-assigned in gui.py to log commands, expect a string and return None
-log_tab_callback: Callable[[str], None] | None = None
+# log_tab_callback: Callable[[str], None] | None = None
 
 
 BASE = ("chezmoi", "--no-pager", "--color=off", "--no-tty", "--mode=file")
@@ -55,42 +99,6 @@ SUBS: dict[str, tuple[str, ...]] = {
 }
 
 
-def log_time() -> str:
-    return f"[green]{datetime.now().strftime("%H:%M:%S")}[/]"
-
-
-def log_command(command: tuple[str, ...]) -> str:
-    trimmed_cmd: list[str] = [
-        _
-        for _ in command
-        if _
-        not in (
-            "--color=off"
-            "--date-order"
-            "--format=%ar by %cn;%s"
-            "--force"
-            "--format=json"
-            "--mode=file"
-            "--no-color"
-            "--no-decorate"
-            "--no-expand-tabs"
-            "--no-pager"
-            "--no-tty"
-            "--path-style=absolute"
-            "--path-style=source-absolute"
-        )
-    ]
-    return f"[{log_time()}] [cyan]{" ".join(trimmed_cmd)}[/]"
-
-
-def log_output(output: str) -> str:
-    return f"[{log_time()}] [yellow]{output}[/]"
-
-
-def log_app_msg(message: str) -> str:
-    return f"[{log_time()}] [green]{message}[/]"
-
-
 @dataclass
 class SubProcessReturn:
     long_command: tuple[str, ...]
@@ -110,34 +118,28 @@ def subprocess_run(long_command: tuple[str, ...]) -> str:
             text=True,  # returns stdout as str instead of bytes
             timeout=1,
         ).stdout.strip()
-        if log_tab_callback:
-            log_tab_callback(log_command(long_command))
-            if "diff" in long_command:
-                log_tab_callback(log_output("diff lines shown in gui"))
-            elif "cat" in long_command:
-                log_tab_callback(log_output("file contents shown in gui"))
-            elif "git" in long_command and "log" in long_command:
-                log_tab_callback(log_output("git log table shown in gui"))
-            elif "chezmoi" in long_command and "apply" in long_command:
-                log_tab_callback(log_app_msg("chezmoi apply was successful"))
-            elif "chezmoi" in long_command and "re-add" in long_command:
-                log_tab_callback(log_app_msg("chezmoi re-add was successful"))
-            elif "chezmoi" in long_command and "add" in long_command:
-                log_tab_callback(log_app_msg("chezmoi add was successful"))
-            elif "chezmoi" in long_command and "source-path" in long_command:
-                log_tab_callback(
-                    log_app_msg("found path in chezmoi repository")
-                )
-            elif not cmd_stdout:
-                log_tab_callback(
-                    log_output("no output or logging implemented")
-                )
-            elif cmd_stdout:
-                log_tab_callback(
-                    log_output(
-                        f"logging not implemented, first line of output:\n{cmd_stdout.splitlines()[0]}"
-                    )
-                )
+        cmd_log.log_command(long_command)
+        if "diff" in long_command:
+            cmd_log.log_output("diff lines shown in gui")
+        elif "cat" in long_command:
+            cmd_log.log_output("file contents shown in gui")
+        elif "git" in long_command and "log" in long_command:
+            cmd_log.log_output("git log table shown in gui")
+        elif "chezmoi" in long_command and "apply" in long_command:
+            cmd_log.log_app_msg("chezmoi apply was successful")
+        elif "chezmoi" in long_command and "re-add" in long_command:
+            cmd_log.log_app_msg("chezmoi re-add was successful")
+        elif "chezmoi" in long_command and "add" in long_command:
+            cmd_log.log_app_msg("chezmoi add was successful")
+        elif "chezmoi" in long_command and "source-path" in long_command:
+            cmd_log.log_app_msg("found path in chezmoi repository")
+        elif not cmd_stdout:
+            cmd_log.log_output("no output or logging implemented")
+        elif cmd_stdout:
+            cmd_log.log_output(
+                f"logging not implemented, first line of output:\n{cmd_stdout.splitlines()[0]}"
+            )
+
         return cmd_stdout
     except TimeoutExpired:
         return "command timed out after 1 second"

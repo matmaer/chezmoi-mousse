@@ -19,7 +19,7 @@ from textual.widgets import Footer, Header, Static, TabbedContent, TabPane
 
 import chezmoi_mousse.theme
 from chezmoi_mousse import FLOW
-from chezmoi_mousse.chezmoi import chezmoi
+from chezmoi_mousse.chezmoi import chezmoi, cmd_log
 from chezmoi_mousse.containers import ContentSwitcherRight
 from chezmoi_mousse.id_typing import (
     CharsEnum,
@@ -30,13 +30,7 @@ from chezmoi_mousse.id_typing import (
     TcssStr,
     ViewStr,
 )
-from chezmoi_mousse.main_tabs import (
-    AddTab,
-    ApplyTab,
-    DoctorTab,
-    LogTab,
-    ReAddTab,
-)
+from chezmoi_mousse.main_tabs import AddTab, ApplyTab, DoctorTab, ReAddTab
 from chezmoi_mousse.splash import LoadingScreen
 from chezmoi_mousse.widgets import ContentsView, DiffView, GitLogView
 
@@ -137,9 +131,8 @@ class MainScreen(Screen[None]):
                     )
                 )
             with TabPane("Log", id=PaneEnum.log.name):
-                yield LogTab(
-                    id=PaneEnum.log.value, markup=True, max_lines=20000
-                )
+                yield cmd_log
+
         yield Footer()
 
     def on_mount(self) -> None:
@@ -388,8 +381,7 @@ class ChezmoiGUI(App[None]):
         self.push_screen(LoadingScreen(), callback=self.push_main_screen)
         self.watch(self, "theme", self.on_theme_change, init=False)
 
-    def push_main_screen(self, splash_log: list[str] | None) -> None:
-        LogTab.splash_log = splash_log
+    def push_main_screen(self, _: object) -> None:
         self.push_screen("main_screen")
 
     def on_theme_change(self, _: str, new_theme: str) -> None:
