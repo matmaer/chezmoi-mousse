@@ -170,7 +170,6 @@ class Operate(ModalScreen[None], IdMixin):
                 self.button_qid(ButtonEnum.cancel_apply_btn), Button
             ).label = "Close"
             self.command_has_been_run = True
-            self.hide_warnings()
 
         elif event.button.id == self.button_id(ButtonEnum.re_add_file_btn):
             op_log.write(f"[{timestamp}] {chezmoi.perform.re_add(self.path)}")
@@ -181,7 +180,6 @@ class Operate(ModalScreen[None], IdMixin):
                 self.button_qid(ButtonEnum.cancel_re_add_btn), Button
             ).label = "Close"
             self.command_has_been_run = True
-            self.hide_warnings()
 
         elif event.button.id == self.button_id(ButtonEnum.add_file_btn):
             op_log.write(f"[{timestamp}] {chezmoi.perform.add(self.path)}")
@@ -192,7 +190,6 @@ class Operate(ModalScreen[None], IdMixin):
                 self.button_qid(ButtonEnum.cancel_add_btn), Button
             ).label = "Close"
             self.command_has_been_run = True
-            self.hide_warnings()
 
         elif event.button.id in (
             self.button_id(ButtonEnum.cancel_apply_btn),
@@ -204,12 +201,6 @@ class Operate(ModalScreen[None], IdMixin):
             else:
                 self.notify("operation cancelled without changes")
             self.dismiss()
-
-    def hide_warnings(self) -> None:
-        if self.tab_name in (TabStr.add_tab, TabStr.re_add_tab):
-            self.query_exactly_one(AutoWarning).remove()
-        self.query_exactly_one(Collapsible).remove()
-        self.query_exactly_one(OperateInfo).remove()
 
 
 class BaseTab(Horizontal, IdMixin):
