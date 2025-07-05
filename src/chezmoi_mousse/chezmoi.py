@@ -1,17 +1,16 @@
-from datetime import datetime
 import json
 import tempfile
 
-# from collections.abc import Callable
 from dataclasses import dataclass, field
+from datetime import datetime
 from pathlib import Path
 from subprocess import TimeoutExpired, run
 from typing import Any, Literal, NamedTuple
+
 from textual.widgets import RichLog
 
 from chezmoi_mousse import theme
-from chezmoi_mousse.id_typing import TabStr, PaneEnum
-
+from chezmoi_mousse.id_typing import PaneEnum, TabStr
 
 BASE = ("chezmoi", "--no-pager", "--color=off", "--no-tty", "--mode=file")
 

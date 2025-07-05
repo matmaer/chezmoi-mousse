@@ -1,11 +1,11 @@
 from pathlib import Path
+
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.containers import ScrollableContainer
 from textual.events import Click
 from textual.reactive import reactive
 from textual.screen import ModalScreen, Screen
-
 from textual.scrollbar import ScrollBar
 from textual.theme import Theme
 from textual.widget import Widget
@@ -24,8 +24,8 @@ from chezmoi_mousse.id_typing import (
     TcssStr,
     ViewStr,
 )
-from chezmoi_mousse.overrides import CustomScrollBarRender
 from chezmoi_mousse.main_tabs import AddTab, ApplyTab, DoctorTab, ReAddTab
+from chezmoi_mousse.overrides import CustomScrollBarRender
 from chezmoi_mousse.splash import LoadingScreen
 from chezmoi_mousse.widgets import ContentsView, DiffView, GitLogView
 
