@@ -249,9 +249,7 @@ class DiffView(RichLog):
             and not line.startswith(("+++", "---"))
         ]
         if not diff_lines:
-            self.write(
-                Text("No diff available, probably only whitespace changes.")
-            )
+            self.write(Text("No diff available."))
             return
         for line in diff_lines:
             line = line.rstrip("\n")
