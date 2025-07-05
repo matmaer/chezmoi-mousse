@@ -136,16 +136,13 @@ def subprocess_run(long_command: tuple[str, ...], update: bool = False) -> str:
             cmd_log.log_output("git log table shown in gui")
         elif "status" in long_command:
             cmd_log.log_output("status output shown in gui")
-        # not treat the PerformChange commands
-        elif "apply" in long_command:
-            cmd_log.log_app_msg("chezmoi apply was successful")
-        elif "re-add" in long_command:
-            cmd_log.log_app_msg("chezmoi re-add was successful")
-        elif "add" in long_command:
-            cmd_log.log_app_msg("chezmoi add was successful")
         return cmd_stdout
     except TimeoutExpired:
-        return "command timed out after 1 second"
+        cmd_log.log_error("command timeed out after 1 second")
+        return "failed"
+    except Exception as e:
+        cmd_log.log_error(f"command failed: {e}")
+        return "failed"
 
 
 class PerformChange:
@@ -157,25 +154,31 @@ class PerformChange:
     config_path: Path | None = None
 
     @staticmethod
-    def add(path: Path) -> str:
-        return subprocess_run(
+    def add(path: Path) -> None:
+        result = subprocess_run(
             PerformChange.base
             + (str(PerformChange.config_path), "add", str(path))
         )
+        if result != "failed":
+            cmd_log.log_app_msg("chezmoi add was successful")
 
     @staticmethod
-    def re_add(path: Path) -> str:
-        return subprocess_run(
+    def re_add(path: Path) -> None:
+        result = subprocess_run(
             PerformChange.base
             + (str(PerformChange.config_path), "re-add", str(path))
         )
+        if result != "failed":
+            cmd_log.log_app_msg("chezmoi re-add was successful")
 
     @staticmethod
-    def apply(path: Path) -> str:
-        return subprocess_run(
+    def apply(path: Path) -> None:
+        result = subprocess_run(
             PerformChange.base
             + (str(PerformChange.config_path), "apply", str(path))
         )
+        if result != "failed":
+            cmd_log.log_app_msg("chezmoi apply was successful")
 
 
 class SubProcessCalls:
