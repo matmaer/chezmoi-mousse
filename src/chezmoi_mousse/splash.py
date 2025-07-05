@@ -104,8 +104,6 @@ class LoadingScreen(Screen[list[str]]):
         io_class = getattr(chezmoi, attr)
         io_class.update()
         self.log_text(io_class.label)
-        long_command = getattr(chezmoi, attr).long_command
-        cmd_log.log_command(long_command)
 
     @work(thread=True, group="io_workers")
     def run_io_worker(self, arg_id: str) -> None:

@@ -9,53 +9,8 @@ from subprocess import TimeoutExpired, run
 from typing import Any, Literal, NamedTuple
 from textual.widgets import RichLog
 
+from chezmoi_mousse import theme
 from chezmoi_mousse.id_typing import TabStr, PaneEnum
-
-
-class CommandLog(RichLog):
-    def __init__(self) -> None:
-        super().__init__(id=PaneEnum.log.value, markup=True, max_lines=20000)
-
-    def log_time(self) -> str:
-        return f"[green]{datetime.now().strftime('%H:%M:%S')}[/]"
-
-    def log_command(self, command: tuple[str, ...]) -> None:
-        trimmed_cmd: list[str] = [
-            _
-            for _ in command
-            if _
-            not in (
-                "--color=off"
-                "--date-order"
-                "--format=%ar by %cn;%s"
-                "--force"
-                "--format=json"
-                "--mode=file"
-                "--no-color"
-                "--no-decorate"
-                "--no-expand-tabs"
-                "--no-pager"
-                "--no-tty"
-                "--path-style=absolute"
-                "--path-style=source-absolute"
-            )
-        ]
-        self.write(f"[{self.log_time()}] [cyan]{" ".join(trimmed_cmd)}[/]")
-
-    def log_error(self, message: str) -> None:
-        self.write(f"[{self.log_time()}] [red]{message}[/]")
-
-    def log_output(self, message: str) -> None:
-        self.write(f"[{self.log_time()}] [yellow]{message}[/]")
-
-    def log_app_msg(self, message: str) -> None:
-        self.write(f"[{self.log_time()}] [green]{message}[/]")
-
-
-cmd_log = CommandLog()
-
-# Used and re-assigned in gui.py to log commands, expect a string and return None
-# log_tab_callback: Callable[[str], None] | None = None
 
 
 BASE = ("chezmoi", "--no-pager", "--color=off", "--no-tty", "--mode=file")
@@ -99,16 +54,63 @@ SUBS: dict[str, tuple[str, ...]] = {
 }
 
 
-@dataclass
-class SubProcessReturn:
-    long_command: tuple[str, ...]
-    trimmed_command: str
-    stdout_return: str
-    # log messages needs to be a list to preserve order
-    log_messages: list[str] = field(default_factory=list[str])
+class CommandLog(RichLog):
+    def __init__(self) -> None:
+        super().__init__(
+            id=PaneEnum.log.value,
+            auto_scroll=True,
+            markup=True,
+            max_lines=20000,
+        )
+
+    def log_time(self) -> str:
+        return f"[green]{datetime.now().strftime('%H:%M:%S')}[/]"
+
+    def log_command(self, command: tuple[str, ...]) -> None:
+        trimmed_cmd: list[str] = [
+            _
+            for _ in command
+            if _
+            not in (
+                "--color=off"
+                "--date-order"
+                "--format=%ar by %cn;%s"
+                "--force"
+                "--format=json"
+                "--mode=file"
+                "--no-color"
+                "--no-decorate"
+                "--no-expand-tabs"
+                "--no-pager"
+                "--no-tty"
+                "--path-style=absolute"
+                "--path-style=source-absolute"
+            )
+        ]
+        self.write(
+            f"[{self.log_time()}] [{theme.vars["primary-lighten-3"]}]{" ".join(trimmed_cmd)}[/]"
+        )
+
+    def log_error(self, message: str) -> None:
+        self.write(
+            f"[{self.log_time()}] [{theme.vars["text-error"]}]{message}[/]"
+        )
+
+    def log_output(self, message: str) -> None:
+        self.write(
+            f"[{self.log_time()}] [{theme.vars["text-warning"]}]{message}[/]"
+        )
+
+    def log_app_msg(self, message: str) -> None:
+        self.write(
+            f"[{self.log_time()}] [{theme.vars["text-success"]}]{message}[/]"
+        )
 
 
-def subprocess_run(long_command: tuple[str, ...]) -> str:
+cmd_log = CommandLog()
+
+
+def subprocess_run(long_command: tuple[str, ...], update: bool = False) -> str:
     try:
         cmd_stdout: str = run(
             long_command,
@@ -118,28 +120,29 @@ def subprocess_run(long_command: tuple[str, ...]) -> str:
             text=True,  # returns stdout as str instead of bytes
             timeout=1,
         ).stdout.strip()
+        if update:
+            # let the logging be done in the InputOutput dataclass
+            # when calling subprocess_run from the InputOutput.update() method
+            return cmd_stdout
         cmd_log.log_command(long_command)
-        if "diff" in long_command:
+        # treat commands from SubProcessCalls
+        if "source-path" in long_command:
+            cmd_log.log_app_msg("source-path returned for next command")
+        elif "diff" in long_command:
             cmd_log.log_output("diff lines shown in gui")
         elif "cat" in long_command:
             cmd_log.log_output("file contents shown in gui")
         elif "git" in long_command and "log" in long_command:
             cmd_log.log_output("git log table shown in gui")
-        elif "chezmoi" in long_command and "apply" in long_command:
+        elif "status" in long_command:
+            cmd_log.log_output("status output shown in gui")
+        # not treat the PerformChange commands
+        elif "apply" in long_command:
             cmd_log.log_app_msg("chezmoi apply was successful")
-        elif "chezmoi" in long_command and "re-add" in long_command:
+        elif "re-add" in long_command:
             cmd_log.log_app_msg("chezmoi re-add was successful")
-        elif "chezmoi" in long_command and "add" in long_command:
+        elif "add" in long_command:
             cmd_log.log_app_msg("chezmoi add was successful")
-        elif "chezmoi" in long_command and "source-path" in long_command:
-            cmd_log.log_app_msg("found path in chezmoi repository")
-        elif not cmd_stdout:
-            cmd_log.log_output("no output or logging implemented")
-        elif cmd_stdout:
-            cmd_log.log_output(
-                f"logging not implemented, first line of output:\n{cmd_stdout.splitlines()[0]}"
-            )
-
         return cmd_stdout
     except TimeoutExpired:
         return "command timed out after 1 second"
@@ -232,7 +235,7 @@ class InputOutput:
         return f'chezmoi {self.arg_id.replace("_", " ")}'
 
     def update(self) -> None:
-        self.std_out = subprocess_run(self.long_command)
+        self.std_out = subprocess_run(self.long_command, update=True)
         self.list_out = self.std_out.splitlines()
         try:
             result: Any = json.loads(self.std_out)
@@ -242,6 +245,10 @@ class InputOutput:
                 self.dict_out = {}
         except (json.JSONDecodeError, ValueError):
             self.dict_out = {}
+
+        # Handle logging for update calls
+        cmd_log.log_command(self.long_command)
+        cmd_log.log_app_msg("data stored InputOutput dataclass")
 
 
 class Chezmoi:
@@ -395,10 +402,7 @@ class Chezmoi:
         ]
 
     def files_with_status_in(
-        # checks only direct children
-        self,
-        tab_str: TabStr,
-        dir_path: Path,
+        self, tab_str: TabStr, dir_path: Path
     ) -> list[Path]:
         self._validate_managed_dir_path(dir_path)
         return [
@@ -408,10 +412,7 @@ class Chezmoi:
         ]
 
     def dirs_without_status_in(
-        self,
-        tab_str: TabStr,
-        dir_path: Path,
-        # checks only direct children
+        self, tab_str: TabStr, dir_path: Path
     ) -> list[Path]:
         self._validate_managed_dir_path(dir_path)
         return [
@@ -423,7 +424,6 @@ class Chezmoi:
     def files_without_status_in(
         self, tab_str: TabStr, dir_path: Path
     ) -> list[Path]:
-        # checks only direct children
         self._validate_managed_dir_path(dir_path)
         return [
             p
