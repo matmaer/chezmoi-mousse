@@ -155,11 +155,12 @@ MainScreen {
   layers: filter_switches;
 }
 
-ModalScreen {
-  align: center middle;
+# ModalSMcreen {
+MaximizedView {
   border-title-align: center;
   border-title-style: bold;
   &.modal_view {
+    height: auto;
     border-subtitle-style: bold;
     border-subtitle-align: center;
     border-top: tab $foreground-darken-3;
@@ -258,6 +259,10 @@ Header {
   color: $primary;
   height: 2;
   text-style: bold;
+}
+
+ModalScreen {
+  align: center middle;
 }
 
 Switch {
