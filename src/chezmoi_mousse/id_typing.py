@@ -6,7 +6,7 @@ class CharsEnum(Enum):
     apply = f"local \N{LEFTWARDS ARROW}{'\N{EM DASH}' * 3} chezmoi apply"
     bullet = "\N{BULLET}"
     burger = "\N{IDENTICAL TO}"
-    # check_mark = "\N{HEAVY CHECK MARK}"
+    check_mark = "\N{HEAVY CHECK MARK}"
     # gear = "\N{GEAR}"
     re_add = (
         f"chezmoi re-add local {'\N{EM DASH}' * 3}\N{RIGHTWARDS ARROW} chezmoi"

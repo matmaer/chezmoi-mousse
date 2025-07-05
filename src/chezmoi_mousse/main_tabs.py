@@ -39,6 +39,7 @@ from chezmoi_mousse.containers import (
 )
 from chezmoi_mousse.id_typing import (
     ButtonEnum,
+    CharsEnum,
     FilterEnum,
     IdMixin,
     Location,
@@ -162,33 +163,42 @@ class Operate(ModalScreen[None], IdMixin):
         timestamp = datetime.now().strftime("%H:%M:%S")
 
         if event.button.id == self.button_id(ButtonEnum.apply_file_btn):
-            op_log.write(f"[{timestamp}] {chezmoi.perform.apply(self.path)}")
+            chezmoi.perform.apply(self.path)
             self.query_one(
                 self.button_qid(ButtonEnum.apply_file_btn), Button
             ).disabled = True
             self.query_one(
                 self.button_qid(ButtonEnum.cancel_apply_btn), Button
             ).label = "Close"
+            op_log.write(
+                f'[{timestamp}] {CharsEnum.check_mark.value} "chezmoi apply" command completed'
+            )
             self.command_has_been_run = True
 
         elif event.button.id == self.button_id(ButtonEnum.re_add_file_btn):
-            op_log.write(f"[{timestamp}] {chezmoi.perform.re_add(self.path)}")
+            chezmoi.perform.re_add(self.path)
             self.query_one(
                 self.button_qid(ButtonEnum.re_add_file_btn), Button
             ).disabled = True
             self.query_one(
                 self.button_qid(ButtonEnum.cancel_re_add_btn), Button
             ).label = "Close"
+            op_log.write(
+                f'[{timestamp}] {CharsEnum.check_mark.value} "chezmoi re-add" command completed'
+            )
             self.command_has_been_run = True
 
         elif event.button.id == self.button_id(ButtonEnum.add_file_btn):
-            op_log.write(f"[{timestamp}] {chezmoi.perform.add(self.path)}")
+            chezmoi.perform.add(self.path)
             self.query_one(
                 self.button_qid(ButtonEnum.add_file_btn), Button
             ).disabled = True
             self.query_one(
                 self.button_qid(ButtonEnum.cancel_add_btn), Button
             ).label = "Close"
+            op_log.write(
+                f'[{timestamp}] {CharsEnum.check_mark.value} "chezmoi add" command completed'
+            )
             self.command_has_been_run = True
 
         elif event.button.id in (
