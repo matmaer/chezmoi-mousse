@@ -75,10 +75,8 @@ class OperateInfo(Static):
 
     bullet = CharsEnum.bullet.value
 
-    def __init__(
-        self, tab_str: TabStr, *, path: Path, id: str, classes: str
-    ) -> None:
-        super().__init__(id=id, classes=classes)
+    def __init__(self, tab_str: TabStr, *, path: Path, classes: str) -> None:
+        super().__init__(classes=classes)
 
         self.tab_str = tab_str
         self.path = path
