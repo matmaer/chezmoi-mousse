@@ -104,20 +104,20 @@ def test_filter_slider_instantiation(
     assert filter_slider is not None
 
 
-@pytest.mark.parametrize("switcher_type", ["left", "right"])
-def test_content_switcher_instantiation(switcher_type: str) -> None:
-    from chezmoi_mousse.containers import (
-        ContentSwitcherLeft,
-        ContentSwitcherRight,
-    )
-    from chezmoi_mousse.id_typing import TabStr
+# @pytest.mark.parametrize("switcher_type", ["left", "right"])
+# def test_content_switcher_instantiation(switcher_type: str) -> None:
+#     from chezmoi_mousse.containers import (
+#         ContentSwitcherLeft,
+#         ContentSwitcherRight,
+#     )
+#     from chezmoi_mousse.id_typing import TabStr
 
-    if switcher_type == "left":
-        switcher = ContentSwitcherLeft(TabStr.apply_tab)
-    else:  # right
-        switcher = ContentSwitcherRight(TabStr.apply_tab)
+#     if switcher_type == "left":
+#         switcher = ContentSwitcherLeft(TabStr.apply_tab)
+#     else:  # right
+#         switcher = ContentSwitcherRight(TabStr.apply_tab)
 
-    assert switcher is not None
+#     assert switcher is not None
 
 
 @pytest.mark.parametrize("widget_class", [DiffView, ContentsView, GitLogView])

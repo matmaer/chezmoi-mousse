@@ -267,7 +267,14 @@ class ReadCommand:
         return subprocess_run(ReadCmd.cat.value + (str(file_path),))
 
     def git_log(self, path: Path) -> list[str]:
-        long_command = ReadCmd.git_log.value + (str(path),)
+        source_path: str = ""
+        if path == chezmoi.dest_dir:
+            source_path = str(chezmoi.source_dir)
+        else:
+            source_path = subprocess_run(
+                ReadCmd.source_path.value + (str(path),)
+            )
+        long_command = ReadCmd.git_log.value + (source_path,)
         return subprocess_run(long_command).splitlines()
 
     def re_add_diff(self, file_path: Path) -> list[str]:

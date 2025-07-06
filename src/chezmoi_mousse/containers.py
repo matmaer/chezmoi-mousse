@@ -19,16 +19,8 @@ from chezmoi_mousse.id_typing import (
     TabStr,
     TcssStr,
     TreeStr,
-    ViewStr,
 )
-from chezmoi_mousse.widgets import (
-    ContentsView,
-    DiffView,
-    ExpandedTree,
-    FlatTree,
-    GitLogView,
-    ManagedTree,
-)
+from chezmoi_mousse.widgets import ExpandedTree, FlatTree, ManagedTree
 
 
 class FilterSlider(VerticalGroup, IdMixin):
@@ -133,25 +125,3 @@ class ContentSwitcherLeft(ContentSwitcher, IdMixin):
         yield ManagedTree(self.tab_str)
         yield FlatTree(self.tab_str)
         yield ExpandedTree(self.tab_str)
-
-
-class ContentSwitcherRight(ContentSwitcher, IdMixin):
-    """Reusable ContentSwitcher for the right panel with path view widgets."""
-
-    def __init__(self, tab_str: TabStr):
-        IdMixin.__init__(self, tab_str)
-        super().__init__(
-            id=self.content_switcher_id(Location.right),
-            initial=self.view_id(ViewStr.diff_view),
-            classes=f"{TcssStr.content_switcher_right} {TcssStr.top_border_title}",
-        )
-
-    def on_mount(self) -> None:
-        self.border_title = chezmoi.dest_dir_str
-
-    def compose(self) -> ComposeResult:
-        yield DiffView(
-            tab_name=self.tab_name, view_id=self.view_id(ViewStr.diff_view)
-        )
-        yield ContentsView(view_id=self.view_id(ViewStr.contents_view))
-        yield GitLogView(view_id=self.view_id(ViewStr.git_log_view))

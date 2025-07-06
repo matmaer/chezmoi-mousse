@@ -269,7 +269,7 @@ class GitLogView(DataTable[Text]):
     def on_mount(self) -> None:
         self.show_cursor = False
         if self.path is None:
-            self.populate_data_table(chezmoi.git_log.list_out)
+            self.path = chezmoi.dest_dir
 
     def add_row_with_style(self, columns: list[str], style: str) -> None:
         row: Iterable[Text] = [

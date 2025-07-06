@@ -9,12 +9,18 @@ from textual.screen import ModalScreen, Screen
 from textual.scrollbar import ScrollBar
 from textual.theme import Theme
 from textual.widget import Widget
-from textual.widgets import Footer, Header, Static, TabbedContent, TabPane
+from textual.widgets import (
+    ContentSwitcher,
+    Footer,
+    Header,
+    Static,
+    TabbedContent,
+    TabPane,
+)
 
 import chezmoi_mousse.theme
 from chezmoi_mousse import FLOW
 from chezmoi_mousse.chezmoi import chezmoi, cmd_log
-from chezmoi_mousse.containers import ContentSwitcherRight
 from chezmoi_mousse.id_typing import (
     CharsEnum,
     IdMixin,
@@ -206,8 +212,7 @@ class MainScreen(Screen[None]):
         if id_mixin.tab_name in (TabStr.apply_tab, TabStr.re_add_tab):
             # Determine what view to show in the modal
             content_switcher_right = self.query_one(
-                id_mixin.content_switcher_qid(Location.right),
-                ContentSwitcherRight,
+                id_mixin.content_switcher_qid(Location.right), ContentSwitcher
             )
             current_view_id: str | None = content_switcher_right.current
 

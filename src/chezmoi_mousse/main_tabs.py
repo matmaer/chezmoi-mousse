@@ -31,7 +31,6 @@ from chezmoi_mousse.config import pw_mgr_info
 from chezmoi_mousse.containers import (
     ButtonsHorizontal,
     ContentSwitcherLeft,
-    ContentSwitcherRight,
     FilterSlider,
 )
 from chezmoi_mousse.id_typing import (
@@ -351,7 +350,17 @@ class ApplyTab(_BaseTab):
                 ),
                 location=Location.right,
             )
-            yield ContentSwitcherRight(self.tab_str)
+            with ContentSwitcher(
+                id=self.content_switcher_id(Location.right),
+                initial=self.view_id(ViewStr.diff_view),
+                classes=f"{TcssStr.content_switcher_right} {TcssStr.top_border_title}",
+            ):
+                yield DiffView(
+                    tab_name=self.tab_name,
+                    view_id=self.view_id(ViewStr.diff_view),
+                )
+                yield ContentsView(view_id=self.view_id(ViewStr.contents_view))
+                yield GitLogView(view_id=self.view_id(ViewStr.git_log_view))
 
         yield FilterSlider(
             self.tab_str, filters=(FilterEnum.unchanged, FilterEnum.expand_all)
@@ -413,7 +422,18 @@ class ReAddTab(_BaseTab):
                 ),
                 location=Location.right,
             )
-            yield ContentSwitcherRight(self.tab_str)
+
+            with ContentSwitcher(
+                id=self.content_switcher_id(Location.right),
+                initial=self.view_id(ViewStr.diff_view),
+                classes=f"{TcssStr.content_switcher_right} {TcssStr.top_border_title}",
+            ):
+                yield DiffView(
+                    tab_name=self.tab_name,
+                    view_id=self.view_id(ViewStr.diff_view),
+                )
+                yield ContentsView(view_id=self.view_id(ViewStr.contents_view))
+                yield GitLogView(view_id=self.view_id(ViewStr.git_log_view))
 
         yield FilterSlider(
             self.tab_str, filters=(FilterEnum.unchanged, FilterEnum.expand_all)
