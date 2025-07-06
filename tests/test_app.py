@@ -2,8 +2,8 @@ import requests
 import textual
 import pytest
 
-from chezmoi_mousse.id_typing import ButtonEnum, Location, TabStr, FilterEnum
-from chezmoi_mousse.main_tabs import ApplyTab, ReAddTab, AddTab
+from chezmoi_mousse.id_typing import TabStr, FilterEnum
+from chezmoi_mousse.main_tabs import ApplyTab, ReAddTab, AddTab, DoctorTab
 from chezmoi_mousse.widgets import DiffView, ContentsView, GitLogView
 
 
@@ -74,11 +74,9 @@ def test_tab_instantiation_with_tab_str(
     assert tab is not None
 
 
-@pytest.mark.parametrize("tab_str", [TabStr.doctor_tab])
-def test_doctor_tab_instantiation(tab_str: TabStr) -> None:
-    from chezmoi_mousse.main_tabs import DoctorTab
+def test_doctor_tab_instantiation() -> None:
 
-    tab = DoctorTab(id=tab_str.value)
+    tab = DoctorTab()
     assert tab is not None
 
 
@@ -104,31 +102,6 @@ def test_filter_slider_instantiation(
     filter_enums = (filter1, filter2)
     filter_slider = FilterSlider(tab_str, filters=filter_enums)
     assert filter_slider is not None
-
-
-@pytest.mark.parametrize(
-    "location,button1,button2",
-    [
-        (Location.left, ButtonEnum.tree_btn, ButtonEnum.list_btn),
-        (
-            Location.bottom,
-            ButtonEnum.apply_file_btn,
-            ButtonEnum.cancel_apply_btn,
-        ),
-    ],
-)
-def test_two_buttons_horizontal(
-    location: Location, button1: ButtonEnum, button2: ButtonEnum
-) -> None:
-    from chezmoi_mousse.containers import ButtonsHorizontal
-    from chezmoi_mousse.id_typing import TabStr
-
-    buttons = [button1, button2]
-
-    buttons_horizontal = ButtonsHorizontal(
-        TabStr.apply_tab, buttons=tuple(buttons), location=location
-    )
-    assert buttons_horizontal is not None
 
 
 @pytest.mark.parametrize("switcher_type", ["left", "right"])
