@@ -152,36 +152,41 @@ class PerformChange:
     base = BASE + ("--dry-run", "--force", "--config")
     config_path: Path | None = None
 
-    @staticmethod
-    def add(path: Path) -> None:
+    def _update_managed_status_data(self) -> None:
+        """Update all data that the managed_status property depends on."""
+        chezmoi.managed_dirs.update()
+        chezmoi.managed_files.update()
+        chezmoi.dir_status_lines.update()
+        chezmoi.file_status_lines.update()
+        cmd_log.log_app_msg("managed_status data updated")
+
+    def add(self, path: Path) -> None:
         result = subprocess_run(
-            PerformChange.base
-            + (str(PerformChange.config_path), "add", str(path))
+            self.base + (str(self.config_path), "add", str(path))
         )
         if result != "failed":
             cmd_log.log_app_msg("chezmoi add was successful")
+            self._update_managed_status_data()
         else:
             cmd_log.log_error("chezmoi add failed")
 
-    @staticmethod
-    def re_add(path: Path) -> None:
+    def re_add(self, path: Path) -> None:
         result = subprocess_run(
-            PerformChange.base
-            + (str(PerformChange.config_path), "re-add", str(path))
+            self.base + (str(self.config_path), "re-add", str(path))
         )
         if result != "failed":
             cmd_log.log_app_msg("chezmoi re-add was successful")
+            self._update_managed_status_data()
         else:
             cmd_log.log_error("chezmoi re-add failed")
 
-    @staticmethod
-    def apply(path: Path) -> None:
+    def apply(self, path: Path) -> None:
         result = subprocess_run(
-            PerformChange.base
-            + (str(PerformChange.config_path), "apply", str(path))
+            self.base + (str(self.config_path), "apply", str(path))
         )
         if result != "failed":
             cmd_log.log_app_msg("chezmoi apply was successful")
+            self._update_managed_status_data()
         else:
             cmd_log.log_error("chezmoi apply failed")
 
