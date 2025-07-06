@@ -212,8 +212,7 @@ class Operate(ModalScreen[None], IdMixin):
             self.dismiss()
 
 
-class BaseTab(Horizontal, IdMixin):
-    """Base class for ApplyTab and ReAddTab."""
+class _BaseTab(Horizontal, IdMixin):
 
     def update_right_side_content_switcher(self, path: Path):
         self.query_one(
@@ -331,7 +330,7 @@ class BaseTab(Horizontal, IdMixin):
                 ).current = self.tree_id(TreeStr.managed_tree)
 
 
-class ApplyTab(BaseTab):
+class ApplyTab(_BaseTab):
 
     BINDINGS = [
         Binding(key="C", action="apply_diff", description="chezmoi-apply")
@@ -393,7 +392,7 @@ class ApplyTab(BaseTab):
         )
 
 
-class ReAddTab(BaseTab):
+class ReAddTab(_BaseTab):
 
     BINDINGS = [
         Binding(key="C", action="re_add_diff", description="chezmoi-re-add")
