@@ -153,12 +153,18 @@ class PerformChange:
     config_path: Path | None = None
 
     def _update_managed_status_data(self) -> None:
-        """Update all data that the managed_status property depends on."""
+        # Update all data that the managed_status property depends on
         chezmoi.managed_dirs.update()
         chezmoi.managed_files.update()
         chezmoi.dir_status_lines.update()
         chezmoi.file_status_lines.update()
         cmd_log.log_app_msg("managed_status data updated")
+
+    def _update_status_data_only(self) -> None:
+        # Update only status data (for re-add and apply operations)
+        chezmoi.dir_status_lines.update()
+        chezmoi.file_status_lines.update()
+        cmd_log.log_app_msg("status data updated")
 
     def add(self, path: Path) -> None:
         result = subprocess_run(
@@ -166,7 +172,7 @@ class PerformChange:
         )
         if result != "failed":
             cmd_log.log_app_msg("chezmoi add was successful")
-            self._update_managed_status_data()
+            self._update_managed_status_data()  # Full update for add
         else:
             cmd_log.log_error("chezmoi add failed")
 
@@ -176,7 +182,7 @@ class PerformChange:
         )
         if result != "failed":
             cmd_log.log_app_msg("chezmoi re-add was successful")
-            self._update_managed_status_data()
+            self._update_status_data_only()  # Only status update for re-add
         else:
             cmd_log.log_error("chezmoi re-add failed")
 
@@ -186,7 +192,7 @@ class PerformChange:
         )
         if result != "failed":
             cmd_log.log_app_msg("chezmoi apply was successful")
-            self._update_managed_status_data()
+            self._update_status_data_only()  # Only status update for apply
         else:
             cmd_log.log_error("chezmoi apply failed")
 
