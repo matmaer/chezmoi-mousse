@@ -119,38 +119,58 @@ def test_filter_slider_instantiation(
 
 
 @pytest.mark.parametrize(
-    "location,button1,button2,button3",
+    "location,button1,button2",
     [
-        ("left", "tree_btn", "list_btn", None),
-        ("right", "diff_btn", "contents_btn", "git_log_btn"),
-        ("bottom", "apply_file_btn", "cancel_apply_btn", None),
+        ("left", "tree_btn", "list_btn"),
+        ("bottom", "apply_file_btn", "cancel_apply_btn"),
     ],
 )
-def test_buttons_horizontal_instantiation(
-    location: str, button1: str, button2: str, button3: str | None
+def test_buttons_horizontal_two_buttons(
+    location: str, button1: str, button2: str
 ) -> None:
+    """Test ButtonsHorizontal instantiation with two buttons."""
     from chezmoi_mousse.containers import ButtonsHorizontal
     from chezmoi_mousse.id_typing import TabStr, ButtonEnum, Location
 
-    location_map = {
-        "left": Location.left,
-        "right": Location.right,
-        "bottom": Location.bottom,
-    }
+    location_map = {"left": Location.left, "bottom": Location.bottom}
 
     button_map = {
         "tree_btn": ButtonEnum.tree_btn,
         "list_btn": ButtonEnum.list_btn,
-        "diff_btn": ButtonEnum.diff_btn,
-        "contents_btn": ButtonEnum.contents_btn,
-        "git_log_btn": ButtonEnum.git_log_btn,
         "apply_file_btn": ButtonEnum.apply_file_btn,
         "cancel_apply_btn": ButtonEnum.cancel_apply_btn,
     }
 
     buttons = [button_map[button1], button_map[button2]]
-    if button3 is not None:
-        buttons.append(button_map[button3])
+
+    buttons_horizontal = ButtonsHorizontal(
+        TabStr.apply_tab,
+        buttons=tuple(buttons),
+        location=location_map[location],
+    )
+    assert buttons_horizontal is not None
+
+
+@pytest.mark.parametrize(
+    "location,button1,button2,button3",
+    [("right", "diff_btn", "contents_btn", "git_log_btn")],
+)
+def test_buttons_horizontal_three_buttons(
+    location: str, button1: str, button2: str, button3: str
+) -> None:
+    """Test ButtonsHorizontal instantiation with three buttons."""
+    from chezmoi_mousse.containers import ButtonsHorizontal
+    from chezmoi_mousse.id_typing import TabStr, ButtonEnum, Location
+
+    location_map = {"right": Location.right}
+
+    button_map = {
+        "diff_btn": ButtonEnum.diff_btn,
+        "contents_btn": ButtonEnum.contents_btn,
+        "git_log_btn": ButtonEnum.git_log_btn,
+    }
+
+    buttons = [button_map[button1], button_map[button2], button_map[button3]]
 
     buttons_horizontal = ButtonsHorizontal(
         TabStr.apply_tab,
