@@ -30,8 +30,6 @@ BASE_OP = BASE + ("--dry-run", "--force", "--config")
 
 
 class AllCommands(Enum):
-    add = BASE_OP + ("add",)
-    apply = BASE_OP + ("apply",)
     cat = BASE + ("cat",)
     cat_config = BASE + ("cat-config",)
     doctor = BASE + ("doctor",)
@@ -69,7 +67,6 @@ class AllCommands(Enum):
         "--path-style=absolute",
         "--include=files",
     )
-    re_add = BASE_OP + ("re-add",)
     source_path = BASE + ("source-path",)
     template_data = BASE + ("data", "--format=json")
 
@@ -92,12 +89,6 @@ class ReadCmd(Enum):
     diff = AllCommands.diff.value
     git_log = AllCommands.git_log.value
     source_path = AllCommands.source_path.value
-
-
-class OpCmd(Enum):
-    add = AllCommands.add.value
-    apply = AllCommands.apply.value
-    re_add = AllCommands.re_add.value
 
 
 class CommandLog(RichLog):
@@ -220,10 +211,10 @@ def subprocess_run(long_command: CmdWords) -> str:
 
 class ChangeCommand:
     """Group of commands which make changes on disk or in the chezmoi
-    repository, does not store data in an InputOutput dataclass."""
+    repository."""
 
-    # TODO: remove anything not needed by the Tree widgets or the Doctor tab
-
+    # TODO: remove --dry-run
+    base = BASE + ("--dry-run", "--force", "--config")
     config_path: Path | None = None
 
     def _update_managed_status_data(self) -> None:
@@ -235,19 +226,34 @@ class ChangeCommand:
         cmd_log.log_app_msg("new data stored InputOutput dataclass")
 
     def add(self, path: Path) -> None:
-        command = OpCmd.add.value + (str(path),)
-        subprocess_run(command)
-        self._update_managed_status_data()
+        result = subprocess_run(
+            self.base + (str(self.config_path), "add", str(path))
+        )
+        if result != "failed":
+            cmd_log.log_app_msg("chezmoi add was successful")
+            self._update_managed_status_data()  # Full update for add
+        else:
+            cmd_log.log_error("chezmoi add failed")
 
     def re_add(self, path: Path) -> None:
-        command = OpCmd.re_add.value + (str(path),)
-        subprocess_run(command)
-        self._update_managed_status_data()
+        result = subprocess_run(
+            self.base + (str(self.config_path), "re-add", str(path))
+        )
+        if result != "failed":
+            cmd_log.log_app_msg("chezmoi re-add was successful")
+            self._update_managed_status_data()  # Only status update for re-add
+        else:
+            cmd_log.log_error("chezmoi re-add failed")
 
     def apply(self, path: Path) -> None:
-        command = OpCmd.apply.value + (str(path),)
-        subprocess_run(command)
-        self._update_managed_status_data()
+        result = subprocess_run(
+            self.base + (str(self.config_path), "apply", str(path))
+        )
+        if result != "failed":
+            cmd_log.log_app_msg("chezmoi apply was successful")
+            self._update_managed_status_data()  # Only status update for apply
+        else:
+            cmd_log.log_error("chezmoi apply failed")
 
 
 class ReadCommand:
