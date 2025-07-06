@@ -4,20 +4,20 @@ This project incorporates code from third-party libraries. The following section
 
 ## MIT Licensed Components
 
-### Textual Framework
+### chezmoi
 
-- **Project**: Textual
-- **Source**: https://github.com/Textualize/textual
-- **Copyright**: Copyright (c) 2021 Will McGugan
+- **Project**: chezmoi
+- **Source**: https://github.com/twpayne/chezmoi
+- **Copyright**: Copyright (c) 2018-2025 Tom Payne
 - **License**: MIT License
-- **Usage**: Primary UI framework for terminal user interface
+- **Usage**: Command-line tool that this application provides a GUI interface for
 
 #### Full MIT License Text
 
 ```
-MIT License
+The MIT License (MIT)
 
-Copyright (c) 2021 Will McGugan
+Copyright (c) 2018-2025 Tom Payne
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -38,20 +38,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### chezmoi
+### Textual Framework
 
-- **Project**: chezmoi
-- **Source**: https://github.com/twpayne/chezmoi
-- **Copyright**: Copyright (c) 2018-2025 Tom Payne
+- **Project**: Textual
+- **Source**: https://github.com/Textualize/textual
+- **Copyright**: Copyright (c) 2021 Will McGugan
 - **License**: MIT License
-- **Usage**: Command-line tool that this application provides a GUI interface for
+- **Usage**: Primary UI framework for terminal user interface
 
 #### Full MIT License Text
 
 ```
-The MIT License (MIT)
+MIT License
 
-Copyright (c) 2018-2025 Tom Payne
+Copyright (c) 2021 Will McGugan
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
