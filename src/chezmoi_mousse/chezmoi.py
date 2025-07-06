@@ -160,6 +160,8 @@ class PerformChange:
         )
         if result != "failed":
             cmd_log.log_app_msg("chezmoi add was successful")
+        else:
+            cmd_log.log_error("chezmoi add failed")
 
     @staticmethod
     def re_add(path: Path) -> None:
@@ -169,6 +171,8 @@ class PerformChange:
         )
         if result != "failed":
             cmd_log.log_app_msg("chezmoi re-add was successful")
+        else:
+            cmd_log.log_error("chezmoi re-add failed")
 
     @staticmethod
     def apply(path: Path) -> None:
@@ -178,6 +182,8 @@ class PerformChange:
         )
         if result != "failed":
             cmd_log.log_app_msg("chezmoi apply was successful")
+        else:
+            cmd_log.log_error("chezmoi apply failed")
 
 
 class SubProcessCalls:
