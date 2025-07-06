@@ -1,3 +1,4 @@
+from enum import Enum
 import json
 import tempfile
 
@@ -12,20 +13,41 @@ from textual.widgets import RichLog
 from chezmoi_mousse import theme
 from chezmoi_mousse.id_typing import (
     CharsEnum,
+    CmdWords,
     PaneEnum,
     TabStr,
     OperateIdStr,
     TcssStr,
 )
 
+
 BASE = ("chezmoi", "--no-pager", "--color=off", "--no-tty", "--mode=file")
 
+# TODO: remove --dry-run
+BASE_OP = BASE + ("--dry-run", "--force", "--config")
+
 # https://www.chezmoi.io/reference/command-line-flags/common/#available-entry-types
-SUBS: dict[str, tuple[str, ...]] = {
-    "cat_config": ("cat-config",),
-    "doctor": ("doctor",),
-    "dump_config": ("dump-config", "--format=json"),
-    "git_log": (
+
+
+class AllCommands(Enum):
+    add = BASE_OP + ("add",)
+    apply = BASE_OP + ("apply",)
+    cat = BASE + ("cat",)
+    cat_config = BASE + ("cat-config",)
+    doctor = BASE + ("doctor",)
+    dump_config = BASE + ("dump-config", "--format=json")
+    diff = BASE + ("diff",)
+    dir_status_lines = BASE + (
+        "status",
+        "--path-style=absolute",
+        "--include=dirs",
+    )
+    file_status_lines = BASE + (
+        "status",
+        "--path-style=absolute",
+        "--include=files",
+    )
+    git_log = BASE + (
         "git",
         "--",
         "log",
@@ -35,18 +57,47 @@ SUBS: dict[str, tuple[str, ...]] = {
         "--date-order",
         "--no-expand-tabs",
         "--format=%ar by %cn;%s",
-    ),
-    "ignored": ("ignored",),
-    "managed_dirs": ("managed", "--path-style=absolute", "--include=dirs"),
-    "managed_files": ("managed", "--path-style=absolute", "--include=files"),
-    "dir_status_lines": ("status", "--path-style=absolute", "--include=dirs"),
-    "file_status_lines": (
-        "status",
+    )
+    ignored = BASE + ("ignored",)
+    managed_dirs = BASE + (
+        "managed",
+        "--path-style=absolute",
+        "--include=dirs",
+    )
+    managed_files = BASE + (
+        "managed",
         "--path-style=absolute",
         "--include=files",
-    ),
-    "template_data": ("data", "--format=json"),
-}
+    )
+    re_add = BASE_OP + ("re-add",)
+    source_path = BASE + ("source-path",)
+    template_data = BASE + ("data", "--format=json")
+
+
+class IoCmd(Enum):
+    cat_config = AllCommands.cat_config.value
+    dir_status_lines = AllCommands.dir_status_lines.value
+    doctor = AllCommands.doctor.value
+    dump_config = AllCommands.dump_config.value
+    file_status_lines = AllCommands.file_status_lines.value
+    git_log = AllCommands.git_log.value
+    ignored = AllCommands.ignored.value
+    managed_dirs = AllCommands.managed_dirs.value
+    managed_files = AllCommands.managed_files.value
+    template_data = AllCommands.template_data.value
+
+
+class ReadCmd(Enum):
+    cat = AllCommands.cat.value
+    diff = AllCommands.diff.value
+    git_log = AllCommands.git_log.value
+    source_path = AllCommands.source_path.value
+
+
+class OpCmd(Enum):
+    add = AllCommands.add.value
+    apply = AllCommands.apply.value
+    re_add = AllCommands.re_add.value
 
 
 class CommandLog(RichLog):
@@ -62,7 +113,7 @@ class CommandLog(RichLog):
     def _log_time(self) -> str:
         return f"[green]{datetime.now().strftime('%H:%M:%S')}[/]"
 
-    def trimmed_cmd_str(self, command: tuple[str, ...]) -> str:
+    def trimmed_cmd_str(self, command: CmdWords) -> str:
         return " ".join(
             [
                 _
@@ -86,7 +137,7 @@ class CommandLog(RichLog):
             ]
         )
 
-    def log_command(self, command: tuple[str, ...]) -> str:
+    def log_command(self, command: CmdWords) -> str:
         trimmed_cmd = self.trimmed_cmd_str(command)
         log_time = f"[{self._log_time()}]"
         log_line = (
@@ -115,7 +166,7 @@ cmd_log = CommandLog(id=PaneEnum.log.value)
 op_log = CommandLog(id=OperateIdStr.operate_log_id, classes=TcssStr.op_log)
 
 
-def subprocess_run(long_command: tuple[str, ...]) -> str:
+def subprocess_run(long_command: CmdWords) -> str:
     check_mark = CharsEnum.check_mark.value
 
     try:
@@ -130,7 +181,7 @@ def subprocess_run(long_command: tuple[str, ...]) -> str:
             text=True,  # returns stdout as str instead of bytes
             timeout=1,
         ).stdout.strip()
-        # treat commands from LiveCommands
+        # treat commands from ReadCommand
         if "source-path" in long_command:
             cmd_log.log_app_msg("source-path returned for next command")
         elif "diff" in long_command:
@@ -167,12 +218,12 @@ def subprocess_run(long_command: tuple[str, ...]) -> str:
         return "failed"
 
 
-class PerformChange:
+class ChangeCommand:
     """Group of commands which make changes on disk or in the chezmoi
     repository, does not store data in an InputOutput dataclass."""
 
-    # TODO: remove --dry-run
-    base = BASE + ("--dry-run", "--force", "--config")
+    # TODO: remove anything not needed by the Tree widgets or the Doctor tab
+
     config_path: Path | None = None
 
     def _update_managed_status_data(self) -> None:
@@ -184,40 +235,42 @@ class PerformChange:
         cmd_log.log_app_msg("new data stored InputOutput dataclass")
 
     def add(self, path: Path) -> None:
-        command = self.base + (str(self.config_path), "add", str(path))
+        command = OpCmd.add.value + (str(path),)
         subprocess_run(command)
         self._update_managed_status_data()
 
     def re_add(self, path: Path) -> None:
-        command = self.base + (str(self.config_path), "re-add", str(path))
+        command = OpCmd.re_add.value + (str(path),)
         subprocess_run(command)
         self._update_managed_status_data()
 
     def apply(self, path: Path) -> None:
-        command = self.base + (str(self.config_path), "apply", str(path))
+        command = OpCmd.apply.value + (str(path),)
         subprocess_run(command)
         self._update_managed_status_data()
 
 
-class LiveCommands:
+class ReadCommand:
     """Group of commands that call subprocess.run() but do not store data in an
     InputOutput dataclass."""
 
-    def git_log(self, path: Path) -> list[str]:
-        source_path: str = subprocess_run(BASE + ("source-path", str(path)))
-        long_command = BASE + SUBS["git_log"] + (source_path,)
-        return subprocess_run(long_command).splitlines()
-
     def apply_diff(self, file_path: Path) -> list[str]:
-        long_command = BASE + ("diff", str(file_path))
-        return subprocess_run(long_command).splitlines()
-
-    def re_add_diff(self, file_path: Path) -> list[str]:
-        long_command = BASE + ("diff", str(file_path), "--reverse")
+        long_command = ReadCmd.diff.value + (str(file_path),)
         return subprocess_run(long_command).splitlines()
 
     def cat(self, file_path: Path) -> str:
-        return subprocess_run(BASE + ("cat", str(file_path)))
+        return subprocess_run(ReadCmd.cat.value + (str(file_path),))
+
+    def git_log(self, path: Path) -> list[str]:
+        source_path: str = subprocess_run(
+            ReadCmd.source_path.value + (str(path),)
+        )
+        long_command = ReadCmd.git_log.value + (source_path,)
+        return subprocess_run(long_command).splitlines()
+
+    def re_add_diff(self, file_path: Path) -> list[str]:
+        long_command = ReadCmd.diff.value + (str(file_path), "--reverse")
+        return subprocess_run(long_command).splitlines()
 
 
 # named tuple nested in StatusPaths, to enable dot notation access
@@ -245,7 +298,7 @@ class StatusDicts(NamedTuple):
 @dataclass
 class InputOutput:
 
-    long_command: tuple[str, ...]
+    long_command: CmdWords
     arg_id: str
     std_out: str = ""
     dict_out: dict[str, Any] = field(default_factory=dict[str, Any])
@@ -272,27 +325,30 @@ class InputOutput:
 class Chezmoi:
 
     cat_config: InputOutput
+    dir_status_lines: InputOutput
     doctor: InputOutput
     dump_config: InputOutput
+    file_status_lines: InputOutput
     git_log: InputOutput
     ignored: InputOutput
-    managed_files: InputOutput
     managed_dirs: InputOutput
-    dir_status_lines: InputOutput
-    file_status_lines: InputOutput
+    managed_files: InputOutput
+    perform = ChangeCommand()
     template_data: InputOutput
-    perform = PerformChange()
-    run = LiveCommands()
+    run = ReadCommand()
     temp_config_path: Path
 
     def __init__(self) -> None:
 
-        self.long_commands: dict[str, tuple[str, ...]] = {}
+        self.long_commands: dict[str, CmdWords] = {}
 
-        for arg_id, sub_cmd in SUBS.items():
-            long_cmd = BASE + sub_cmd
-            self.long_commands[arg_id] = long_cmd
-            setattr(self, arg_id, InputOutput(long_cmd, arg_id=arg_id))
+        for long_cmd in IoCmd:
+            self.long_commands[long_cmd.name] = long_cmd.value
+            setattr(
+                self,
+                long_cmd.name,
+                InputOutput(long_cmd.value, arg_id=long_cmd.name),
+            )
 
     @property
     def source_dir(self) -> Path:

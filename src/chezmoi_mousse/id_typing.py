@@ -11,6 +11,9 @@ class NodeData:
     status: str
 
 
+type CmdWords = tuple[str, ...]
+
+
 class CharsEnum(Enum):
     add = f"chezmoi add local {'\N{EM DASH}' * 3}\N{RIGHTWARDS ARROW} chezmoi"
     apply = f"local \N{LEFTWARDS ARROW}{'\N{EM DASH}' * 3} chezmoi apply"
@@ -133,6 +136,12 @@ class OperateIdStr(StrEnum):
     operate_log_id = auto()
     operate_top_path_id = auto()
     operate_vertical_id = auto()
+
+
+class CmdContextStr(StrEnum):
+    change_command = auto()
+    read_command = auto()
+    input_output_command = auto()
 
 
 class IdMixin:

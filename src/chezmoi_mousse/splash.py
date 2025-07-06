@@ -130,9 +130,9 @@ class LoadingScreen(Screen[list[str]]):
                     chezmoi.create_temp_config_file()
                 )
 
-                from chezmoi_mousse.chezmoi import PerformChange
+                from chezmoi_mousse.chezmoi import ChangeCommand
 
-                PerformChange.config_path = temp_config_path
+                ChangeCommand.config_path = temp_config_path
 
                 self.log_text("create non interactive config")
 
