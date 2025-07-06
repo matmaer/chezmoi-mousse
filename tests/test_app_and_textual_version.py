@@ -76,7 +76,6 @@ def test_tab_instantiation_with_tab_str(
 
 @pytest.mark.parametrize("tab_str", [TabStr.doctor_tab])
 def test_doctor_tab_instantiation(tab_str: TabStr) -> None:
-    """Test that DoctorTab with id constructor can be instantiated."""
     from chezmoi_mousse.main_tabs import DoctorTab
 
     tab = DoctorTab(id=tab_str.value)
@@ -118,10 +117,9 @@ def test_filter_slider_instantiation(
         ),
     ],
 )
-def test_buttons_horizontal_two_buttons(
+def test_two_buttons_horizontal(
     location: Location, button1: ButtonEnum, button2: ButtonEnum
 ) -> None:
-    """Test ButtonsHorizontal instantiation with two buttons."""
     from chezmoi_mousse.containers import ButtonsHorizontal
     from chezmoi_mousse.id_typing import TabStr
 
@@ -144,13 +142,12 @@ def test_buttons_horizontal_two_buttons(
         )
     ],
 )
-def test_buttons_horizontal_three_buttons(
+def test_three_buttons_horizontal(
     location: Location,
     button1: ButtonEnum,
     button2: ButtonEnum,
     button3: ButtonEnum,
 ) -> None:
-    """Test ButtonsHorizontal instantiation with three buttons."""
     from chezmoi_mousse.containers import ButtonsHorizontal
     from chezmoi_mousse.id_typing import TabStr
 
