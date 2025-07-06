@@ -2,6 +2,14 @@ import requests
 import textual
 import pytest
 
+from chezmoi_mousse.id_typing import (
+    ButtonEnum,
+    Location,
+    TabStr,
+    FilterEnum,
+    ViewStr,
+)
+
 
 def test_textual_version_is_latest():
     current_version = textual.__version__
@@ -42,46 +50,36 @@ def test_if_app_starts():
 
 
 @pytest.mark.parametrize(
-    "tab_class,tab_str,constructor_type",
+    "tab_class,tab_str",
     [
-        ("ApplyTab", "apply_tab", "tab_str"),
-        ("ReAddTab", "re_add_tab", "tab_str"),
-        ("AddTab", "add_tab", "tab_str"),
-        ("DoctorTab", "doctor_tab", "id_only"),
+        ("ApplyTab", TabStr.apply_tab),
+        ("ReAddTab", TabStr.re_add_tab),
+        ("AddTab", TabStr.add_tab),
     ],
 )
-def test_tab_instantiation(
-    tab_class: str, tab_str: str, constructor_type: str
+def test_tab_instantiation_with_tab_str(
+    tab_class: str, tab_str: TabStr
 ) -> None:
-    """Test that each tab class can be instantiated."""
-    from chezmoi_mousse.main_tabs import ApplyTab, ReAddTab, AddTab, DoctorTab
-    from chezmoi_mousse.id_typing import TabStr
+    """Test that tab classes with tab_str constructor can be instantiated."""
+    from chezmoi_mousse.main_tabs import ApplyTab, ReAddTab, AddTab
 
     tab_class_map: dict[str, type] = {
         "ApplyTab": ApplyTab,
         "ReAddTab": ReAddTab,
         "AddTab": AddTab,
-        "DoctorTab": DoctorTab,
-    }
-
-    tab_str_map = {
-        "apply_tab": TabStr.apply_tab,
-        "re_add_tab": TabStr.re_add_tab,
-        "add_tab": TabStr.add_tab,
-        "doctor_tab": TabStr.doctor_tab,
-        "log_tab": TabStr.log_tab,
     }
 
     cls = tab_class_map[tab_class]
-    tab_str_enum = tab_str_map[tab_str]
+    tab = cls(tab_str=tab_str)
+    assert tab is not None
 
-    if constructor_type == "id_only":
-        tab = cls(id=tab_str_enum.value)
-    elif constructor_type == "rich_log":
-        tab = cls(id=tab_str_enum.value, highlight=True, max_lines=20000)
-    else:  # tab_str
-        tab = cls(tab_str=tab_str_enum)
 
+@pytest.mark.parametrize("tab_str", [TabStr.doctor_tab])
+def test_doctor_tab_instantiation(tab_str: TabStr) -> None:
+    """Test that DoctorTab with id constructor can be instantiated."""
+    from chezmoi_mousse.main_tabs import DoctorTab
+
+    tab = DoctorTab(id=tab_str.value)
     assert tab is not None
 
 
@@ -93,89 +91,73 @@ def test_main_screen_instantiation() -> None:
 
 
 @pytest.mark.parametrize(
-    "filter_type,tab_str,filter1,filter2",
+    "tab_str,filter1,filter2",
     [
-        ("apply", "apply_tab", "unchanged", "expand_all"),
-        ("add", "add_tab", "unmanaged_dirs", "unwanted"),
+        (TabStr.apply_tab, FilterEnum.unchanged, FilterEnum.expand_all),
+        (TabStr.add_tab, FilterEnum.unmanaged_dirs, FilterEnum.unwanted),
     ],
 )
 def test_filter_slider_instantiation(
-    filter_type: str, tab_str: str, filter1: str, filter2: str
+    tab_str: TabStr, filter1: FilterEnum, filter2: FilterEnum
 ) -> None:
     from chezmoi_mousse.containers import FilterSlider
-    from chezmoi_mousse.id_typing import TabStr, FilterEnum
 
-    tab_str_map = {"apply_tab": TabStr.apply_tab, "add_tab": TabStr.add_tab}
-    filter_map = {
-        "unchanged": FilterEnum.unchanged,
-        "expand_all": FilterEnum.expand_all,
-        "unmanaged_dirs": FilterEnum.unmanaged_dirs,
-        "unwanted": FilterEnum.unwanted,
-    }
-
-    filter_enums = (filter_map[filter1], filter_map[filter2])
-    filter_slider = FilterSlider(tab_str_map[tab_str], filters=filter_enums)
+    filter_enums = (filter1, filter2)
+    filter_slider = FilterSlider(tab_str, filters=filter_enums)
     assert filter_slider is not None
 
 
 @pytest.mark.parametrize(
     "location,button1,button2",
     [
-        ("left", "tree_btn", "list_btn"),
-        ("bottom", "apply_file_btn", "cancel_apply_btn"),
+        (Location.left, ButtonEnum.tree_btn, ButtonEnum.list_btn),
+        (
+            Location.bottom,
+            ButtonEnum.apply_file_btn,
+            ButtonEnum.cancel_apply_btn,
+        ),
     ],
 )
 def test_buttons_horizontal_two_buttons(
-    location: str, button1: str, button2: str
+    location: Location, button1: ButtonEnum, button2: ButtonEnum
 ) -> None:
     """Test ButtonsHorizontal instantiation with two buttons."""
     from chezmoi_mousse.containers import ButtonsHorizontal
-    from chezmoi_mousse.id_typing import TabStr, ButtonEnum, Location
+    from chezmoi_mousse.id_typing import TabStr
 
-    location_map = {"left": Location.left, "bottom": Location.bottom}
-
-    button_map = {
-        "tree_btn": ButtonEnum.tree_btn,
-        "list_btn": ButtonEnum.list_btn,
-        "apply_file_btn": ButtonEnum.apply_file_btn,
-        "cancel_apply_btn": ButtonEnum.cancel_apply_btn,
-    }
-
-    buttons = [button_map[button1], button_map[button2]]
+    buttons = [button1, button2]
 
     buttons_horizontal = ButtonsHorizontal(
-        TabStr.apply_tab,
-        buttons=tuple(buttons),
-        location=location_map[location],
+        TabStr.apply_tab, buttons=tuple(buttons), location=location
     )
     assert buttons_horizontal is not None
 
 
 @pytest.mark.parametrize(
     "location,button1,button2,button3",
-    [("right", "diff_btn", "contents_btn", "git_log_btn")],
+    [
+        (
+            Location.right,
+            ButtonEnum.diff_btn,
+            ButtonEnum.contents_btn,
+            ButtonEnum.git_log_btn,
+        )
+    ],
 )
 def test_buttons_horizontal_three_buttons(
-    location: str, button1: str, button2: str, button3: str
+    location: Location,
+    button1: ButtonEnum,
+    button2: ButtonEnum,
+    button3: ButtonEnum,
 ) -> None:
     """Test ButtonsHorizontal instantiation with three buttons."""
     from chezmoi_mousse.containers import ButtonsHorizontal
-    from chezmoi_mousse.id_typing import TabStr, ButtonEnum, Location
+    from chezmoi_mousse.id_typing import TabStr
 
-    location_map = {"right": Location.right}
-
-    button_map = {
-        "diff_btn": ButtonEnum.diff_btn,
-        "contents_btn": ButtonEnum.contents_btn,
-        "git_log_btn": ButtonEnum.git_log_btn,
-    }
-
-    buttons = [button_map[button1], button_map[button2], button_map[button3]]
+    buttons = [button1, button2, button3]
 
     buttons_horizontal = ButtonsHorizontal(
-        TabStr.apply_tab,
-        buttons=tuple(buttons),
-        location=location_map[location],
+        TabStr.apply_tab, buttons=tuple(buttons), location=location
     )
     assert buttons_horizontal is not None
 
@@ -197,29 +179,27 @@ def test_content_switcher_instantiation(switcher_type: str) -> None:
 
 
 @pytest.mark.parametrize(
-    "widget_class,view_id",
-    [
-        ("DiffView", "test_diff_view"),
-        ("ContentsView", "test_contents_view"),
-        ("GitLogView", "test_git_log_view"),
-    ],
+    "view_type",
+    [ViewStr.diff_view, ViewStr.contents_view, ViewStr.git_log_view],
 )
-def test_view_widget_instantiation(widget_class: str, view_id: str) -> None:
+def test_view_widget_instantiation(view_type: ViewStr) -> None:
     from chezmoi_mousse.widgets import DiffView, ContentsView, GitLogView
-    from chezmoi_mousse.id_typing import TabStr
+    from typing import Any
 
-    widget_class_map: dict[str, type] = {
-        "DiffView": DiffView,
-        "ContentsView": ContentsView,
-        "GitLogView": GitLogView,
+    # Direct mapping from ViewStr to widget classes
+    widget_map: dict[ViewStr, type[Any]] = {
+        ViewStr.diff_view: DiffView,
+        ViewStr.contents_view: ContentsView,
+        ViewStr.git_log_view: GitLogView,
     }
 
-    cls = widget_class_map[widget_class]
+    cls = widget_map[view_type]
+    test_view_id = f"test_{view_type.value}"
 
-    if widget_class == "DiffView":
-        widget = cls(tab_name=TabStr.apply_tab, view_id=view_id)
+    if view_type == ViewStr.diff_view:
+        widget = cls(tab_name=TabStr.apply_tab, view_id=test_view_id)
     else:
-        widget = cls(view_id=view_id)
+        widget = cls(view_id=test_view_id)
 
     assert widget is not None
 
