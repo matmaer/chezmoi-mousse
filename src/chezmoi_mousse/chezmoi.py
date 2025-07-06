@@ -33,16 +33,6 @@ SUBS: dict[str, tuple[str, ...]] = {
     "ignored": ("ignored",),
     "managed_dirs": ("managed", "--path-style=absolute", "--include=dirs"),
     "managed_files": ("managed", "--path-style=absolute", "--include=files"),
-    "managed_dirs_source": (
-        "managed",
-        "--path-style=source-absolute",
-        "--include=dirs",
-    ),
-    "managed_files_source": (
-        "managed",
-        "--path-style=source-absolute",
-        "--include=files",
-    ),
     "dir_status_lines": ("status", "--path-style=absolute", "--include=dirs"),
     "file_status_lines": (
         "status",
@@ -279,8 +269,6 @@ class Chezmoi:
     ignored: InputOutput
     managed_files: InputOutput
     managed_dirs: InputOutput
-    managed_files_source: InputOutput
-    managed_dirs_source: InputOutput
     dir_status_lines: InputOutput
     file_status_lines: InputOutput
     template_data: InputOutput
