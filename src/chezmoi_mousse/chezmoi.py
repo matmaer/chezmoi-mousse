@@ -49,7 +49,7 @@ class AllCommands(Enum):
         "git",
         "--",
         "log",
-        "--max-count=100",
+        "--max-count=50",
         "--no-color",
         "--no-decorate",
         "--date-order",
@@ -77,7 +77,6 @@ class IoCmd(Enum):
     doctor = AllCommands.doctor.value
     dump_config = AllCommands.dump_config.value
     file_status_lines = AllCommands.file_status_lines.value
-    git_log = AllCommands.git_log.value
     ignored = AllCommands.ignored.value
     managed_dirs = AllCommands.managed_dirs.value
     managed_files = AllCommands.managed_files.value
@@ -268,10 +267,7 @@ class ReadCommand:
         return subprocess_run(ReadCmd.cat.value + (str(file_path),))
 
     def git_log(self, path: Path) -> list[str]:
-        source_path: str = subprocess_run(
-            ReadCmd.source_path.value + (str(path),)
-        )
-        long_command = ReadCmd.git_log.value + (source_path,)
+        long_command = ReadCmd.git_log.value + (str(path),)
         return subprocess_run(long_command).splitlines()
 
     def re_add_diff(self, file_path: Path) -> list[str]:
@@ -335,7 +331,6 @@ class Chezmoi:
     doctor: InputOutput
     dump_config: InputOutput
     file_status_lines: InputOutput
-    git_log: InputOutput
     ignored: InputOutput
     managed_dirs: InputOutput
     managed_files: InputOutput
