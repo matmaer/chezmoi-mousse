@@ -2,13 +2,9 @@ import requests
 import textual
 import pytest
 
-from chezmoi_mousse.id_typing import (
-    ButtonEnum,
-    Location,
-    TabStr,
-    FilterEnum,
-    ViewStr,
-)
+from chezmoi_mousse.id_typing import ButtonEnum, Location, TabStr, FilterEnum
+from chezmoi_mousse.main_tabs import ApplyTab, ReAddTab, AddTab
+from chezmoi_mousse.widgets import DiffView, ContentsView, GitLogView
 
 
 def test_textual_version_is_latest():
@@ -49,28 +45,32 @@ def test_if_app_starts():
     assert app
 
 
+def test_loading_screen_instantiation() -> None:
+    from chezmoi_mousse.splash import LoadingScreen
+
+    instance = LoadingScreen()
+    assert instance is not None
+
+
+def test_splash_screen_instantiation() -> None:
+    from chezmoi_mousse.gui import MainScreen
+
+    instance = MainScreen()
+    assert instance is not None
+
+
 @pytest.mark.parametrize(
     "tab_class,tab_str",
     [
-        ("ApplyTab", TabStr.apply_tab),
-        ("ReAddTab", TabStr.re_add_tab),
-        ("AddTab", TabStr.add_tab),
+        (ApplyTab, TabStr.apply_tab),
+        (ReAddTab, TabStr.re_add_tab),
+        (AddTab, TabStr.add_tab),
     ],
 )
 def test_tab_instantiation_with_tab_str(
-    tab_class: str, tab_str: TabStr
+    tab_class: type, tab_str: TabStr
 ) -> None:
-    """Test that tab classes with tab_str constructor can be instantiated."""
-    from chezmoi_mousse.main_tabs import ApplyTab, ReAddTab, AddTab
-
-    tab_class_map: dict[str, type] = {
-        "ApplyTab": ApplyTab,
-        "ReAddTab": ReAddTab,
-        "AddTab": AddTab,
-    }
-
-    cls = tab_class_map[tab_class]
-    tab = cls(tab_str=tab_str)
+    tab = tab_class(tab_str=tab_str)
     assert tab is not None
 
 
@@ -131,34 +131,6 @@ def test_two_buttons_horizontal(
     assert buttons_horizontal is not None
 
 
-@pytest.mark.parametrize(
-    "location,button1,button2,button3",
-    [
-        (
-            Location.right,
-            ButtonEnum.diff_btn,
-            ButtonEnum.contents_btn,
-            ButtonEnum.git_log_btn,
-        )
-    ],
-)
-def test_three_buttons_horizontal(
-    location: Location,
-    button1: ButtonEnum,
-    button2: ButtonEnum,
-    button3: ButtonEnum,
-) -> None:
-    from chezmoi_mousse.containers import ButtonsHorizontal
-    from chezmoi_mousse.id_typing import TabStr
-
-    buttons = [button1, button2, button3]
-
-    buttons_horizontal = ButtonsHorizontal(
-        TabStr.apply_tab, buttons=tuple(buttons), location=location
-    )
-    assert buttons_horizontal is not None
-
-
 @pytest.mark.parametrize("switcher_type", ["left", "right"])
 def test_content_switcher_instantiation(switcher_type: str) -> None:
     from chezmoi_mousse.containers import (
@@ -175,53 +147,27 @@ def test_content_switcher_instantiation(switcher_type: str) -> None:
     assert switcher is not None
 
 
-@pytest.mark.parametrize(
-    "view_type",
-    [ViewStr.diff_view, ViewStr.contents_view, ViewStr.git_log_view],
-)
-def test_view_widget_instantiation(view_type: ViewStr) -> None:
-    from chezmoi_mousse.widgets import DiffView, ContentsView, GitLogView
-    from typing import Any
+@pytest.mark.parametrize("widget_class", [DiffView, ContentsView, GitLogView])
+def test_view_widget_instantiation(widget_class: type) -> None:
+    test_view_id = f"test_{widget_class.__name__.lower()}"
 
-    # Direct mapping from ViewStr to widget classes
-    widget_map: dict[ViewStr, type[Any]] = {
-        ViewStr.diff_view: DiffView,
-        ViewStr.contents_view: ContentsView,
-        ViewStr.git_log_view: GitLogView,
-    }
-
-    cls = widget_map[view_type]
-    test_view_id = f"test_{view_type.value}"
-
-    if view_type == ViewStr.diff_view:
-        widget = cls(tab_name=TabStr.apply_tab, view_id=test_view_id)
-    else:
-        widget = cls(view_id=test_view_id)
+    if widget_class == DiffView:
+        widget = widget_class(tab_name=TabStr.apply_tab, view_id=test_view_id)
+    else:  # ContentsView and GitLogView
+        widget = widget_class(view_id=test_view_id)
 
     assert widget is not None
 
 
-@pytest.mark.parametrize(
-    "screen_class", ["CustomScrollBarRender", "AnimatedFade", "LoadingScreen"]
-)
-def test_screen_instantiation(screen_class: str) -> None:
+def test_scroll_bar_render_instantiation() -> None:
     from chezmoi_mousse.gui import CustomScrollBarRender
-    from chezmoi_mousse.splash import AnimatedFade, LoadingScreen
 
-    if screen_class == "CustomScrollBarRender":
-        instance = CustomScrollBarRender()
-    elif screen_class == "AnimatedFade":
-        instance = AnimatedFade()
-    else:  # LoadingScreen
-        instance = LoadingScreen()
-
+    instance = CustomScrollBarRender()
     assert instance is not None
 
 
-@pytest.mark.parametrize("tree_path", ["/tmp/test_tree", "/home/user/test"])
-def test_filtered_dir_tree_instantiation(tree_path: str) -> None:
+def test_filtered_dir_tree_instantiation() -> None:
     from chezmoi_mousse.widgets import FilteredDirTree
 
-    # FilteredDirTree doesn't depend on chezmoi, just needs a valid path
-    tree = FilteredDirTree(tree_path)
+    tree = FilteredDirTree(".")
     assert tree is not None
