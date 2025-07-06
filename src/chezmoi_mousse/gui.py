@@ -20,6 +20,7 @@ from chezmoi_mousse.id_typing import (
     IdMixin,
     Location,
     PaneEnum,
+    ScreenStr,
     TabStr,
     TcssStr,
     ViewStr,
@@ -30,7 +31,7 @@ from chezmoi_mousse.splash import LoadingScreen
 from chezmoi_mousse.widgets import ContentsView, DiffView, GitLogView
 
 
-class MaximizedView(ModalScreen[None], IdMixin):
+class Maximized(ModalScreen[None], IdMixin):
     BINDINGS = [
         Binding(
             key="escape", action="dismiss", description="close", show=False
@@ -57,7 +58,7 @@ class MaximizedView(ModalScreen[None], IdMixin):
                 )
         self.modal_view_id = "modal_view"
         self.modal_view_qid = f"#{self.modal_view_id}"
-        super().__init__()
+        super().__init__(id=ScreenStr.maximized_modal)
 
     def compose(self) -> ComposeResult:
         if self.id_to_maximize == self.view_id(ViewStr.contents_view):
@@ -230,7 +231,7 @@ class MainScreen(Screen[None]):
             border_title_text = " chezmoi diagram "
 
         self.app.push_screen(
-            MaximizedView(
+            Maximized(
                 tab_name=tab_name,
                 id_to_maximize=id_to_maximize,
                 path=path_for_maximize,
@@ -254,7 +255,7 @@ class ChezmoiGUI(App[None]):
         self.watch(self, "theme", self.on_theme_change, init=False)
 
     def push_main_screen(self, _: object) -> None:
-        self.push_screen("main_screen")
+        self.push_screen(ScreenStr.main_screen)
 
     def on_theme_change(self, _: str, new_theme: str) -> None:
         new_theme_object: Theme | None = self.app.get_theme(new_theme)

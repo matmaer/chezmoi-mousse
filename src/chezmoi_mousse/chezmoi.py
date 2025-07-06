@@ -10,7 +10,13 @@ from typing import Any, Literal, NamedTuple
 from textual.widgets import RichLog
 
 from chezmoi_mousse import theme
-from chezmoi_mousse.id_typing import PaneEnum, TabStr
+from chezmoi_mousse.id_typing import (
+    CharsEnum,
+    PaneEnum,
+    TabStr,
+    OperateIdStr,
+    TcssStr,
+)
 
 BASE = ("chezmoi", "--no-pager", "--color=off", "--no-tty", "--mode=file")
 
@@ -44,63 +50,78 @@ SUBS: dict[str, tuple[str, ...]] = {
 
 
 class CommandLog(RichLog):
-    def __init__(self) -> None:
+    def __init__(self, id: str, classes: str = "") -> None:
         super().__init__(
-            id=PaneEnum.log.value,
+            id=id,
             auto_scroll=True,
             markup=True,
             max_lines=20000,
+            classes=classes,
         )
 
-    def log_time(self) -> str:
+    def _log_time(self) -> str:
         return f"[green]{datetime.now().strftime('%H:%M:%S')}[/]"
 
-    def log_command(self, command: tuple[str, ...]) -> None:
-        trimmed_cmd: list[str] = [
-            _
-            for _ in command
-            if _
-            not in (
-                "--color=off"
-                "--date-order"
-                "--format=%ar by %cn;%s"
-                "--force"
-                "--format=json"
-                "--mode=file"
-                "--no-color"
-                "--no-decorate"
-                "--no-expand-tabs"
-                "--no-pager"
-                "--no-tty"
-                "--path-style=absolute"
-                "--path-style=source-absolute"
-            )
-        ]
-        self.write(
-            f"[{self.log_time()}] [{theme.vars["primary-lighten-3"]}]{" ".join(trimmed_cmd)}[/]"
+    def trimmed_cmd_str(self, command: tuple[str, ...]) -> str:
+        return " ".join(
+            [
+                _
+                for _ in command
+                if _
+                not in (
+                    "--color=off"
+                    "--config"
+                    "--date-order"
+                    "--format=%ar by %cn;%s"
+                    "--force"
+                    "--format=json"
+                    "--mode=file"
+                    "--no-color"
+                    "--no-decorate"
+                    "--no-expand-tabs"
+                    "--no-pager"
+                    "--no-tty"
+                    "--path-style=absolute"
+                )
+            ]
         )
+
+    def log_command(self, command: tuple[str, ...]) -> str:
+        trimmed_cmd = self.trimmed_cmd_str(command)
+        log_time = f"[{self._log_time()}]"
+        log_line = (
+            f"{log_time} [{theme.vars["primary-lighten-3"]}]{trimmed_cmd}[/]"
+        )
+        self.write(log_line)
+        return log_line  # used by the log in the Operate modalscreen
 
     def log_error(self, message: str) -> None:
         self.write(
-            f"[{self.log_time()}] [{theme.vars["text-error"]}]{message}[/]"
+            f"[{self._log_time()}] [{theme.vars["text-error"]}]{message}[/]"
         )
 
     def log_output(self, message: str) -> None:
         self.write(
-            f"[{self.log_time()}] [{theme.vars["text-warning"]}]{message}[/]"
+            f"[{self._log_time()}] [{theme.vars["text-warning"]}]{message}[/]"
         )
 
     def log_app_msg(self, message: str) -> None:
         self.write(
-            f"[{self.log_time()}] [{theme.vars["text-success"]}]{message}[/]"
+            f"[{self._log_time()}] [{theme.vars["text-success"]}]{message}[/]"
         )
 
 
-cmd_log = CommandLog()
+cmd_log = CommandLog(id=PaneEnum.log.value)
+op_log = CommandLog(id=OperateIdStr.operate_log_id, classes=TcssStr.op_log)
 
 
-def subprocess_run(long_command: tuple[str, ...], update: bool = False) -> str:
+def subprocess_run(long_command: tuple[str, ...]) -> str:
+    check_mark = CharsEnum.check_mark.value
+
     try:
+        cmd_log.log_command(long_command)
+        if any(verb in long_command for verb in ("apply", "re-add", "add")):
+            op_log.log_command(long_command)
         cmd_stdout: str = run(
             long_command,
             capture_output=True,
@@ -109,25 +130,37 @@ def subprocess_run(long_command: tuple[str, ...], update: bool = False) -> str:
             text=True,  # returns stdout as str instead of bytes
             timeout=1,
         ).stdout.strip()
-        if update:
-            # let the logging be done in the InputOutput dataclass
-            # when calling subprocess_run from the InputOutput.update() method
-            return cmd_stdout
-        cmd_log.log_command(long_command)
-        # treat commands from SubProcessCalls
+        # treat commands from LiveCommands
         if "source-path" in long_command:
             cmd_log.log_app_msg("source-path returned for next command")
         elif "diff" in long_command:
-            cmd_log.log_output("diff lines shown in gui")
+            cmd_log.log_output("diff lines ready to render in gui")
         elif "cat" in long_command:
-            cmd_log.log_output("file contents shown in gui")
+            cmd_log.log_output("file contents ready to render in gui")
         elif "git" in long_command and "log" in long_command:
-            cmd_log.log_output("git log table shown in gui")
+            cmd_log.log_output("git log table ready to render in gui")
+        elif "managed" in long_command:
+            cmd_log.log_output(
+                "managed paths updated in InputOutput dataclass"
+            )
         elif "status" in long_command:
-            cmd_log.log_output("status output shown in gui")
+            cmd_log.log_output("status output ready to render in gui")
+        elif "apply" in long_command:
+            cmd_log.log_app_msg(f"{check_mark} apply command successful")
+            op_log.log_app_msg(f"{check_mark} apply command successful")
+        elif "re-add" in long_command:
+            cmd_log.log_app_msg(f"{check_mark} re-add command successful")
+            op_log.log_app_msg(f"{check_mark} re-add command successful")
+        elif "add" in long_command:
+            cmd_log.log_app_msg(f"{check_mark} add command successful")
+            op_log.log_app_msg(f"{check_mark} add command successful")
+        else:
+            cmd_log.log_app_msg(
+                "command successful, but no specific logging for it"
+            )
         return cmd_stdout
     except TimeoutExpired:
-        cmd_log.log_error("command timeed out after 1 second")
+        cmd_log.log_error("command timed out after 1 second")
         return "failed"
     except Exception as e:
         cmd_log.log_error(f"command failed: {e}")
@@ -136,60 +169,39 @@ def subprocess_run(long_command: tuple[str, ...], update: bool = False) -> str:
 
 class PerformChange:
     """Group of commands which make changes on disk or in the chezmoi
-    repository."""
+    repository, does not store data in an InputOutput dataclass."""
 
     # TODO: remove --dry-run
     base = BASE + ("--dry-run", "--force", "--config")
     config_path: Path | None = None
 
     def _update_managed_status_data(self) -> None:
-        # Update all data that the managed_status property depends on
+        # Update data that the managed_status property depends on
         chezmoi.managed_dirs.update()
         chezmoi.managed_files.update()
         chezmoi.dir_status_lines.update()
         chezmoi.file_status_lines.update()
-        cmd_log.log_app_msg("managed_status data updated")
-
-    def _update_status_data_only(self) -> None:
-        # Update only status data (for re-add and apply operations)
-        chezmoi.dir_status_lines.update()
-        chezmoi.file_status_lines.update()
-        cmd_log.log_app_msg("status data updated")
+        cmd_log.log_app_msg("new data stored InputOutput dataclass")
 
     def add(self, path: Path) -> None:
-        result = subprocess_run(
-            self.base + (str(self.config_path), "add", str(path))
-        )
-        if result != "failed":
-            cmd_log.log_app_msg("chezmoi add was successful")
-            self._update_managed_status_data()  # Full update for add
-        else:
-            cmd_log.log_error("chezmoi add failed")
+        command = self.base + (str(self.config_path), "add", str(path))
+        subprocess_run(command)
+        self._update_managed_status_data()
 
     def re_add(self, path: Path) -> None:
-        result = subprocess_run(
-            self.base + (str(self.config_path), "re-add", str(path))
-        )
-        if result != "failed":
-            cmd_log.log_app_msg("chezmoi re-add was successful")
-            self._update_status_data_only()  # Only status update for re-add
-        else:
-            cmd_log.log_error("chezmoi re-add failed")
+        command = self.base + (str(self.config_path), "re-add", str(path))
+        subprocess_run(command)
+        self._update_managed_status_data()
 
     def apply(self, path: Path) -> None:
-        result = subprocess_run(
-            self.base + (str(self.config_path), "apply", str(path))
-        )
-        if result != "failed":
-            cmd_log.log_app_msg("chezmoi apply was successful")
-            self._update_status_data_only()  # Only status update for apply
-        else:
-            cmd_log.log_error("chezmoi apply failed")
+        command = self.base + (str(self.config_path), "apply", str(path))
+        subprocess_run(command)
+        self._update_managed_status_data()
 
 
-class SubProcessCalls:
-    """Group of commands that call subprocess.run() but do not change any
-    state."""
+class LiveCommands:
+    """Group of commands that call subprocess.run() but do not store data in an
+    InputOutput dataclass."""
 
     def git_log(self, path: Path) -> list[str]:
         source_path: str = subprocess_run(BASE + ("source-path", str(path)))
@@ -244,7 +256,7 @@ class InputOutput:
         return f'chezmoi {self.arg_id.replace("_", " ")}'
 
     def update(self) -> None:
-        self.std_out = subprocess_run(self.long_command, update=True)
+        self.std_out = subprocess_run(self.long_command)
         self.list_out = self.std_out.splitlines()
         try:
             result: Any = json.loads(self.std_out)
@@ -252,12 +264,9 @@ class InputOutput:
                 self.dict_out: dict[str, Any] = result
             else:
                 self.dict_out = {}
+
         except (json.JSONDecodeError, ValueError):
             self.dict_out = {}
-
-        # Handle logging for update calls
-        cmd_log.log_command(self.long_command)
-        cmd_log.log_app_msg("data stored InputOutput dataclass")
 
 
 class Chezmoi:
@@ -273,7 +282,7 @@ class Chezmoi:
     file_status_lines: InputOutput
     template_data: InputOutput
     perform = PerformChange()
-    run = SubProcessCalls()
+    run = LiveCommands()
     temp_config_path: Path
 
     def __init__(self) -> None:

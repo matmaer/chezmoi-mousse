@@ -58,6 +58,13 @@ class PaneEnum(Enum):
     log = TabStr.log_tab
 
 
+class ScreenStr(StrEnum):
+    main_screen = auto()
+    maximized_modal = auto()
+    operate_modal = auto()
+    splash_screen = auto()
+
+
 class ViewStr(StrEnum):
     diff_view = auto()
     git_log_view = auto()
@@ -101,7 +108,7 @@ class TcssStr(StrEnum):
     operate_button = auto()
     operate_collapsible = auto()
     operate_container = auto()
-    operate_log = auto()
+    op_log = auto()
     operate_top_path = auto()
     operate_diff = auto()
     single_button_vertical = auto()
@@ -124,7 +131,6 @@ class OperateIdStr(StrEnum):
     operate_collapsible_id = auto()
     operate_info_id = auto()
     operate_log_id = auto()
-    operate_screen_id = auto()
     operate_top_path_id = auto()
     operate_vertical_id = auto()
 

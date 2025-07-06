@@ -1,4 +1,3 @@
-from datetime import datetime
 from pathlib import Path
 
 from rich.text import Text
@@ -27,7 +26,7 @@ from textual.widgets import (
 )
 
 import chezmoi_mousse.theme as theme
-from chezmoi_mousse.chezmoi import chezmoi
+from chezmoi_mousse.chezmoi import chezmoi, op_log
 from chezmoi_mousse.config import pw_mgr_info
 from chezmoi_mousse.containers import (
     ButtonsHorizontal,
@@ -42,6 +41,7 @@ from chezmoi_mousse.id_typing import (
     IdMixin,
     Location,
     OperateIdStr,
+    ScreenStr,
     TabStr,
     TcssStr,
     TreeStr,
@@ -70,6 +70,8 @@ class Operate(ModalScreen[None], IdMixin):
         )
     ]
 
+    check_mark = CharsEnum.check_mark.value
+
     def __init__(
         self, tab_name: TabStr, *, path: Path, buttons: tuple[ButtonEnum, ...]
     ) -> None:
@@ -84,7 +86,7 @@ class Operate(ModalScreen[None], IdMixin):
         self.contents_qid = self.view_qid(ViewStr.contents_view, operate=True)
         self.log_id = OperateIdStr.operate_log_id
         self.log_qid = f"#{self.log_id}"
-        super().__init__(id=OperateIdStr.operate_screen_id)
+        super().__init__(id=ScreenStr.operate_modal)
 
     def compose(self) -> ComposeResult:
         with Vertical(
@@ -123,12 +125,7 @@ class Operate(ModalScreen[None], IdMixin):
                         classes=TcssStr.operate_collapsible,
                         title="file diffs view",
                     )
-            yield RichLog(
-                id=self.log_id,
-                highlight=True,
-                wrap=True,
-                classes=TcssStr.operate_log,
-            )
+            yield op_log
             yield ButtonsHorizontal(
                 self.tab_name, buttons=self.buttons, location=Location.bottom
             )
@@ -141,22 +138,22 @@ class Operate(ModalScreen[None], IdMixin):
         }
 
         # Add initial log entry
-        operate_log = self.query_one(self.log_qid, RichLog)
-        operate_log.border_title = f"{log_border_titles[self.tab_name]} log"
-        operate_log.write(
-            f"[{datetime.now().strftime('%H:%M:%S')}] ready to run command"
+        self.query_one(self.log_qid, RichLog).border_title = (
+            f"{log_border_titles[self.tab_name]} log"
         )
-
         # Set path for either diff or contents view
         if self.tab_name == TabStr.add_tab:
             self.query_one(self.contents_qid, ContentsView).path = self.path
-        else:
+            op_log.log_app_msg("--- ready to run chezmoi add ---")
+        elif self.tab_name in (TabStr.apply_tab, TabStr.re_add_tab):
             self.query_one(self.diff_qid, DiffView).path = self.path
+            if self.tab_name == TabStr.apply_tab:
+                op_log.log_app_msg("--- ready to run chezmoi apply ---")
+            elif self.tab_name == TabStr.re_add_tab:
+                op_log.log_app_msg("--- ready to run chezmoi re-add ---")
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
-        op_log = self.query_one(self.log_qid, RichLog)
-        timestamp = datetime.now().strftime("%H:%M:%S")
 
         if event.button.id == self.button_id(ButtonEnum.apply_file_btn):
             chezmoi.perform.apply(self.path)
@@ -166,9 +163,6 @@ class Operate(ModalScreen[None], IdMixin):
             self.query_one(
                 self.button_qid(ButtonEnum.cancel_apply_btn), Button
             ).label = "Close"
-            op_log.write(
-                f'[{timestamp}] {CharsEnum.check_mark.value} "chezmoi apply" command completed'
-            )
             self.command_has_been_run = True
 
         elif event.button.id == self.button_id(ButtonEnum.re_add_file_btn):
@@ -179,9 +173,6 @@ class Operate(ModalScreen[None], IdMixin):
             self.query_one(
                 self.button_qid(ButtonEnum.cancel_re_add_btn), Button
             ).label = "Close"
-            op_log.write(
-                f'[{timestamp}] {CharsEnum.check_mark.value} "chezmoi re-add" command completed'
-            )
             self.command_has_been_run = True
 
         elif event.button.id == self.button_id(ButtonEnum.add_file_btn):
@@ -192,9 +183,6 @@ class Operate(ModalScreen[None], IdMixin):
             self.query_one(
                 self.button_qid(ButtonEnum.cancel_add_btn), Button
             ).label = "Close"
-            op_log.write(
-                f'[{timestamp}] {CharsEnum.check_mark.value} "chezmoi add" command completed'
-            )
             self.command_has_been_run = True
 
         elif event.button.id in (
@@ -203,7 +191,7 @@ class Operate(ModalScreen[None], IdMixin):
             self.button_id(ButtonEnum.cancel_add_btn),
         ):
             if self.command_has_been_run:
-                self.notify("operation completed, output available in Log tab")
+                self.notify("operation completed")
             else:
                 self.notify("operation cancelled without changes")
             self.dismiss()
