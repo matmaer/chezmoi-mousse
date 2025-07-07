@@ -23,7 +23,7 @@ from textual.widgets import DataTable, DirectoryTree, RichLog, Static
 from textual.widgets.tree import TreeNode
 
 import chezmoi_mousse.theme as theme
-from chezmoi_mousse.chezmoi import chezmoi
+from chezmoi_mousse.chezmoi import chezmoi, cmd_log
 from chezmoi_mousse.config import unwanted
 from chezmoi_mousse.id_typing import (
     CharsEnum,
@@ -117,14 +117,17 @@ class ContentsView(RichLog):
 
     def update_contents_view(self) -> None:
         assert isinstance(self.path, Path)
-        truncated = ""
+        truncated_message = ""
+        cmd_log.log_read_file(self.path)
         try:
             if self.path.is_file() and self.path.stat().st_size > 150 * 1024:
-                truncated = (
+                truncated_message = (
                     "\n\n------ File content truncated to 150 KiB ------\n"
                 )
-        except PermissionError as error:
-            self.write(error.strerror)
+        except PermissionError as e:
+            self.write(e.strerror)
+            cmd_log.log_error("Permission denied")
+            cmd_log.log_exception(f"{e}")
             return
 
         try:
@@ -132,11 +135,17 @@ class ContentsView(RichLog):
                 file_content = file.read(150 * 1024)
                 if not file_content.strip():
                     self.write("File contains only whitespace")
+                    cmd_log.log_error(
+                        "File is empty or contains only whitespace"
+                    )
                 else:
-                    self.write(file_content + truncated)
+                    self.write(file_content + truncated_message)
+                    cmd_log.log_output("Read file successful")
 
-        except UnicodeDecodeError:
+        except UnicodeDecodeError as e:
             self.write(f"{self.path} cannot be decoded as UTF-8.")
+            cmd_log.log_error("File cannot be decoded as UTF-8")
+            cmd_log.log_exception(f"{e}")
             return
 
         except FileNotFoundError:
@@ -144,7 +153,9 @@ class ContentsView(RichLog):
             # does not exist
             if self.path in chezmoi.managed_file_paths:
                 if not chezmoi.run.cat(self.path).strip():
-                    self.write("File contains only whitespace")
+                    message = "File contains only whitespace"
+                    self.write(message)
+                    cmd_log.log_error(message)
                 else:
                     self.write(chezmoi.run.cat(self.path))
                 return
@@ -163,10 +174,13 @@ class ContentsView(RichLog):
                 self.write(f"Managed directory: {self.path}")
             else:
                 self.write(f"Unmanaged directory: {self.path}")
+            cmd_log.log_output("Directory info displayed")
 
         except OSError as error:
             text = Text(f"Error reading {self.path}: {error}")
             self.write(text)
+            cmd_log.log_error("Error reading file")
+            cmd_log.log_exception(f"{error}")
 
     def watch_path(self) -> None:
         if self.path is None:
