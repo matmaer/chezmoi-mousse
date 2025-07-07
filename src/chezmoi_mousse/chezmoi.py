@@ -181,7 +181,10 @@ def subprocess_run(long_command: CmdWords) -> str:
             )
         elif "status" in long_command:
             cmd_log.log_output("status output ready to render in gui")
-        elif any(verb in long_command for verb in ("apply", "re-add", "add")):
+        elif any(
+            verb in long_command
+            for verb in (PaneEnum.apply.name, "re-add", "add")
+        ):
             cmd_log.log_app_msg(
                 f"{check_mark} command successful, subprocess exit code 0"
             )
@@ -189,9 +192,7 @@ def subprocess_run(long_command: CmdWords) -> str:
                 f"{check_mark} command successful, subprocess exit code 0"
             )
         else:
-            cmd_log.log_app_msg(
-                "command successful, but no specific logging for it"
-            )
+            cmd_log.log_app_msg("command successful, no specific logging")
         return cmd_stdout
     except TimeoutExpired:
         cmd_log.log_error("command timed out after 1 second")
