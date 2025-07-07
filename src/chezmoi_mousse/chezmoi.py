@@ -215,7 +215,8 @@ def subprocess_run(long_command: CmdWords, time_out: float = 1) -> str:
             )
             cmd_log.log_app_msg(message)
             op_log.log_app_msg(message)
-            op_log.log_output(f"{cmd_stdout}")
+            if cmd_stdout:
+                op_log.log_output(f"{cmd_stdout}")
         else:
             cmd_log.log_app_msg("command successful, no specific logging")
         return cmd_stdout
