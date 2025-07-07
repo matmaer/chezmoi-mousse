@@ -175,12 +175,11 @@ class CommandLog(RichLog):
     def log_exception(self, message: str) -> None:
         self.write(f"{theme.vars["text-disabled"]}]{message}[/]")
 
-    def log_read_file(self, file_path: Path) -> None:
-        # If a file is not read with chezmoi cat but directly from disk,
-        # also log a command with the same style. Used in ContentsView.
+    # used by the ContentsView class
+    def log_read_path(self, file_path: Path) -> None:
         self.write(
             f"[{self._log_time()}] [{theme.vars["primary-lighten-3"]}]"
-            f"Reading file: {file_path}[/]"
+            f"Get path contents for {file_path}[/]"
         )
 
 

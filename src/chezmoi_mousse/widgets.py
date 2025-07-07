@@ -118,7 +118,7 @@ class ContentsView(RichLog):
     def update_contents_view(self) -> None:
         assert isinstance(self.path, Path)
         truncated_message = ""
-        cmd_log.log_read_file(self.path)
+        cmd_log.log_read_path(self.path)
         try:
             if self.path.is_file() and self.path.stat().st_size > 150 * 1024:
                 truncated_message = (
