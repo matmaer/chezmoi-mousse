@@ -23,11 +23,6 @@ from chezmoi_mousse.id_typing import (
 
 BASE = ("chezmoi", "--no-pager", "--color=off", "--no-tty", "--mode=file")
 
-# TODO: remove --dry-run
-BASE_OP = BASE + ("--dry-run", "--force", "--config")
-
-# https://www.chezmoi.io/reference/command-line-flags/common/#available-entry-types
-
 
 class AllCommands(Enum):
     cat = BASE + ("cat",)
@@ -160,7 +155,6 @@ def subprocess_run(long_command: CmdWords) -> str:
     check_mark = CharsEnum.check_mark.value
 
     try:
-        cmd_log.log_command(long_command)
         if any(verb in long_command for verb in ("apply", "re-add", "add")):
             op_log.log_command(long_command)
         cmd_stdout: str = run(
@@ -171,6 +165,7 @@ def subprocess_run(long_command: CmdWords) -> str:
             text=True,  # returns stdout as str instead of bytes
             timeout=1,
         ).stdout.strip()
+        cmd_log.log_command(long_command)
         # treat commands from ReadCommand
         if "source-path" in long_command:
             cmd_log.log_app_msg("source-path returned for next command")
@@ -186,15 +181,13 @@ def subprocess_run(long_command: CmdWords) -> str:
             )
         elif "status" in long_command:
             cmd_log.log_output("status output ready to render in gui")
-        elif "apply" in long_command:
-            cmd_log.log_app_msg(f"{check_mark} apply command successful")
-            op_log.log_app_msg(f"{check_mark} apply command successful")
-        elif "re-add" in long_command:
-            cmd_log.log_app_msg(f"{check_mark} re-add command successful")
-            op_log.log_app_msg(f"{check_mark} re-add command successful")
-        elif "add" in long_command:
-            cmd_log.log_app_msg(f"{check_mark} add command successful")
-            op_log.log_app_msg(f"{check_mark} add command successful")
+        elif any(verb in long_command for verb in ("apply", "re-add", "add")):
+            cmd_log.log_app_msg(
+                f"{check_mark} command successful, subprocess exit code 0"
+            )
+            op_log.log_app_msg(
+                f"{check_mark} command successful, subprocess exit code 0"
+            )
         else:
             cmd_log.log_app_msg(
                 "command successful, but no specific logging for it"
