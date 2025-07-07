@@ -24,24 +24,50 @@ from chezmoi_mousse.id_typing import (
 BASE = ("chezmoi", "--no-pager", "--color=off", "--no-tty", "--mode=file")
 
 
+class InputOutputVerbs(Enum):
+    # mapping of names to chezmoi verbs which store data in an InputOutput
+    # dataclass
+
+    cat_config = "cat-config"
+    data = "data"
+    doctor = "doctor"
+    dump_config = "dump-config"
+    ignored = "ignored"
+    managed = "managed"
+    status = "status"
+
+
+class ReadVerbs(Enum):
+    diff = "diff"
+    git = "git"
+    source_path = "source-path"
+    cat = "cat"
+
+
+class OperateVerbs(Enum):
+    apply = "apply"
+    re_add = "re-add"
+    add = "add"
+
+
 class AllCommands(Enum):
-    cat = BASE + ("cat",)
-    cat_config = BASE + ("cat-config",)
-    doctor = BASE + ("doctor",)
-    dump_config = BASE + ("dump-config", "--format=json")
-    diff = BASE + ("diff",)
+    cat = BASE + (ReadVerbs.cat.value,)
+    cat_config = BASE + (InputOutputVerbs.cat_config.value,)
+    doctor = BASE + (InputOutputVerbs.doctor.value,)
+    dump_config = BASE + (InputOutputVerbs.dump_config.value, "--format=json")
+    diff = BASE + (ReadVerbs.diff.value,)
     dir_status_lines = BASE + (
-        "status",
+        InputOutputVerbs.status.value,
         "--path-style=absolute",
         "--include=dirs",
     )
     file_status_lines = BASE + (
-        "status",
+        InputOutputVerbs.status.value,
         "--path-style=absolute",
         "--include=files",
     )
     git_log = BASE + (
-        "git",
+        ReadVerbs.git.value,
         "--",
         "log",
         "--max-count=50",
@@ -51,19 +77,19 @@ class AllCommands(Enum):
         "--no-expand-tabs",
         "--format=%ar by %cn;%s",
     )
-    ignored = BASE + ("ignored",)
+    ignored = BASE + (InputOutputVerbs.ignored.value,)
     managed_dirs = BASE + (
-        "managed",
+        InputOutputVerbs.managed.value,
         "--path-style=absolute",
         "--include=dirs",
     )
     managed_files = BASE + (
-        "managed",
+        InputOutputVerbs.managed.value,
         "--path-style=absolute",
         "--include=files",
     )
-    source_path = BASE + ("source-path",)
-    template_data = BASE + ("data", "--format=json")
+    source_path = BASE + (ReadVerbs.source_path.value,)
+    template_data = BASE + (InputOutputVerbs.data.value, "--format=json")
 
 
 class IoCmd(Enum):
@@ -155,8 +181,6 @@ def subprocess_run(long_command: CmdWords) -> str:
     check_mark = CharsEnum.check_mark.value
 
     try:
-        if any(verb in long_command for verb in ("apply", "re-add", "add")):
-            op_log.log_command(long_command)
         cmd_stdout: str = run(
             long_command,
             capture_output=True,
@@ -166,35 +190,20 @@ def subprocess_run(long_command: CmdWords) -> str:
             timeout=1,
         ).stdout.strip()
         cmd_log.log_command(long_command)
-        # treat commands from ReadCommand
-        if "source-path" in long_command:
-            cmd_log.log_app_msg("source-path returned for next command")
-        elif "diff" in long_command:
-            cmd_log.log_output("diff lines ready to render in gui")
-        elif "cat" in long_command:
-            cmd_log.log_output("file contents ready to render in gui")
-        elif "git" in long_command and "log" in long_command:
-            cmd_log.log_output("git log table ready to render in gui")
-        elif "managed" in long_command:
-            cmd_log.log_output(
-                "managed paths updated in InputOutput dataclass"
-            )
-        elif "status" in long_command:
-            cmd_log.log_output("status output ready to render in gui")
-        elif any(
-            verb in long_command
-            for verb in (
-                PaneEnum.apply.name,
-                PaneEnum.re_add.name,
-                PaneEnum.add.name,
-            )
-        ):
-            cmd_log.log_app_msg(
+        if any(verb.value in long_command for verb in OperateVerbs):
+            op_log.log_command(long_command)
+        if any(verb.value in long_command for verb in InputOutputVerbs):
+            cmd_log.log_output("InputOutput command successful")
+            return cmd_stdout
+        elif any(verb.value in long_command for verb in ReadVerbs):
+            cmd_log.log_output("Read command successful")
+            return cmd_stdout
+        elif any(verb.value in long_command for verb in OperateVerbs):
+            message = (
                 f"{check_mark} command successful, subprocess exit code 0"
             )
-            op_log.log_app_msg(
-                f"{check_mark} command successful, subprocess exit code 0"
-            )
+            cmd_log.log_app_msg(message)
+            op_log.log_app_msg(message)
         else:
             cmd_log.log_app_msg("command successful, no specific logging")
         return cmd_stdout
@@ -220,37 +229,20 @@ class ChangeCommand:
         chezmoi.managed_files.update()
         chezmoi.dir_status_lines.update()
         chezmoi.file_status_lines.update()
-        cmd_log.log_app_msg("new data stored InputOutput dataclass")
 
     def add(self, path: Path) -> None:
-        result = subprocess_run(
-            self.base + (str(self.config_path), "add", str(path))
-        )
-        if result != "failed":
-            cmd_log.log_app_msg("chezmoi add was successful")
-            self._update_managed_status_data()  # Full update for add
-        else:
-            cmd_log.log_error("chezmoi add failed")
+        subprocess_run(self.base + (str(self.config_path), "add", str(path)))
+        self._update_managed_status_data()
 
     def re_add(self, path: Path) -> None:
-        result = subprocess_run(
+        subprocess_run(
             self.base + (str(self.config_path), "re-add", str(path))
         )
-        if result != "failed":
-            cmd_log.log_app_msg("chezmoi re-add was successful")
-            self._update_managed_status_data()  # Only status update for re-add
-        else:
-            cmd_log.log_error("chezmoi re-add failed")
+        self._update_managed_status_data()
 
     def apply(self, path: Path) -> None:
-        result = subprocess_run(
-            self.base + (str(self.config_path), "apply", str(path))
-        )
-        if result != "failed":
-            cmd_log.log_app_msg("chezmoi apply was successful")
-            self._update_managed_status_data()  # Only status update for apply
-        else:
-            cmd_log.log_error("chezmoi apply failed")
+        subprocess_run(self.base + (str(self.config_path), "apply", str(path)))
+        self._update_managed_status_data()
 
 
 class ReadCommand:
