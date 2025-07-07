@@ -20,6 +20,7 @@ class CharsEnum(Enum):
     bullet = "\N{BULLET}"
     burger = "\N{IDENTICAL TO}"
     check_mark = "\N{HEAVY CHECK MARK}"
+    x_mark = "\N{HEAVY MULTIPLICATION X}"
     # gear = "\N{GEAR}"
     re_add = (
         f"chezmoi re-add local {'\N{EM DASH}' * 3}\N{RIGHTWARDS ARROW} chezmoi"

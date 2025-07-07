@@ -5,7 +5,7 @@ import tempfile
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from subprocess import TimeoutExpired, run
+from subprocess import run
 from typing import Any, Literal, NamedTuple
 
 from textual.widgets import RichLog
@@ -38,10 +38,10 @@ class InputOutputVerbs(Enum):
 
 
 class ReadVerbs(Enum):
+    cat = "cat"
     diff = "diff"
     git = "git"
     source_path = "source-path"
-    cat = "cat"
 
 
 class OperateVerbs(Enum):
@@ -172,13 +172,17 @@ class CommandLog(RichLog):
             f"[{self._log_time()}] [{theme.vars["text-success"]}]{message}[/]"
         )
 
+    def log_exception(self, message: str) -> None:
+        self.write(f"{theme.vars["text-disabled"]}]{message}[/]")
+
 
 cmd_log = CommandLog(id=PaneEnum.log.value)
 op_log = CommandLog(id=OperateIdStr.operate_log_id, classes=TcssStr.op_log)
 
 
-def subprocess_run(long_command: CmdWords) -> str:
+def subprocess_run(long_command: CmdWords, time_out: float = 1) -> str:
     check_mark = CharsEnum.check_mark.value
+    x_mark = CharsEnum.x_mark.value
 
     try:
         cmd_stdout: str = run(
@@ -204,14 +208,16 @@ def subprocess_run(long_command: CmdWords) -> str:
             )
             cmd_log.log_app_msg(message)
             op_log.log_app_msg(message)
+            op_log.log_output(f"{cmd_stdout}")
         else:
             cmd_log.log_app_msg("command successful, no specific logging")
         return cmd_stdout
-    except TimeoutExpired:
-        cmd_log.log_error("command timed out after 1 second")
-        return "failed"
     except Exception as e:
-        cmd_log.log_error(f"command failed: {e}")
+        if any(verb.value in long_command for verb in OperateVerbs):
+            op_log.log_error(f"{x_mark} command failed")
+        else:
+            cmd_log.log_error("command failed")
+        cmd_log.log_exception(f"{e}")
         return "failed"
 
 
