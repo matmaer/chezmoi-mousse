@@ -183,7 +183,11 @@ def subprocess_run(long_command: CmdWords) -> str:
             cmd_log.log_output("status output ready to render in gui")
         elif any(
             verb in long_command
-            for verb in (PaneEnum.apply.name, "re-add", "add")
+            for verb in (
+                PaneEnum.apply.name,
+                PaneEnum.re_add.name,
+                PaneEnum.add.name,
+            )
         ):
             cmd_log.log_app_msg(
                 f"{check_mark} command successful, subprocess exit code 0"
