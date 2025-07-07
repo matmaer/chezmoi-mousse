@@ -30,7 +30,7 @@ from chezmoi_mousse.chezmoi import chezmoi, op_log
 from chezmoi_mousse.config import pw_mgr_info
 from chezmoi_mousse.containers import (
     ButtonsHorizontal,
-    ContentSwitcherLeft,
+    TreeContentSwitcher,
     FilterSlider,
 )
 from chezmoi_mousse.id_typing import (
@@ -335,7 +335,7 @@ class ApplyTab(_BaseTab):
                 buttons=(ButtonEnum.tree_btn, ButtonEnum.list_btn),
                 location=Location.left,
             )
-            yield ContentSwitcherLeft(self.tab_str)
+            yield TreeContentSwitcher(self.tab_str)
 
         with Vertical(
             id=self.tab_vertical_id(Location.right),
@@ -407,7 +407,7 @@ class ReAddTab(_BaseTab):
                 buttons=(ButtonEnum.tree_btn, ButtonEnum.list_btn),
                 location=Location.left,
             )
-            yield ContentSwitcherLeft(self.tab_str)
+            yield TreeContentSwitcher(self.tab_str)
 
         with Vertical(
             id=self.tab_vertical_id(Location.right),

@@ -107,7 +107,7 @@ class ButtonsHorizontal(HorizontalGroup, IdMixin):
             event.button.add_class(TcssStr.last_clicked)
 
 
-class ContentSwitcherLeft(ContentSwitcher, IdMixin):
+class TreeContentSwitcher(ContentSwitcher, IdMixin):
 
     def __init__(self, tab_str: TabStr):
         IdMixin.__init__(self, tab_str)
