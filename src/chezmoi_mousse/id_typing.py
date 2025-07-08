@@ -124,13 +124,6 @@ class TcssStr(StrEnum):
     tree_widget = auto()
 
 
-# added here to make the logic in test_no_hardcoded_ids work for all modules
-class SplashIdStr(StrEnum):
-    animated_fade_id = auto()
-    loading_screen_id = auto()
-    splash_rich_log_id = auto()
-
-
 class OperateIdStr(StrEnum):
     operate_collapsible_id = auto()
     operate_info_id = auto()

@@ -1,4 +1,6 @@
+import tempfile
 from collections import deque
+from enum import auto, StrEnum
 from pathlib import Path
 
 from rich.segment import Segment
@@ -14,8 +16,7 @@ from textual.timer import Timer
 from textual.widgets import RichLog, Static
 from textual.worker import WorkerState
 
-from chezmoi_mousse.chezmoi import chezmoi, cmd_log
-from chezmoi_mousse.id_typing import SplashIdStr
+from chezmoi_mousse.chezmoi import ChangeCommand, chezmoi, cmd_log
 
 SPLASH = """\
  _______________________________ ___________________._
@@ -31,6 +32,33 @@ SPLASH = """\
 """.replace(
     "===", "=\u200b=\u200b="
 ).splitlines()
+
+
+# added to make the logic in test_no_hardcoded_ids pass for splash.py
+class SplashIdStr(StrEnum):
+    animated_fade_id = auto()
+    loading_screen_id = auto()
+    splash_rich_log_id = auto()
+
+
+def modify_config_non_interactive(list_of_strings: list[str]) -> list[str]:
+    result: list[str] = []
+
+    replacements = [
+        ("true", "false"),
+        ("on", "off"),
+        ("1", "0"),
+        ("yes", "no"),
+    ]
+
+    for line in list_of_strings:
+        if "interactive" in line.lower():
+            for old, new in replacements:
+                line = line.replace(old, new)
+            result.append(line)
+        else:
+            result.append(line)
+    return result
 
 
 def create_deque() -> deque[Style]:
@@ -119,26 +147,60 @@ class LoadingScreen(Screen[list[str]]):
 
     @work(thread=True, group="set_temp_config_file")
     def set_temp_config_file(self) -> None:
-        if all(
+        if not all(
             worker.state == WorkerState.SUCCESS
             for worker in self.app.workers
             if worker.group in ("doctor", "cat_config")
         ):
-            if chezmoi.check_interactive():
-                self.temp_config_timer.stop()
-                temp_config_path: Path | None = (
-                    chezmoi.create_temp_config_file()
-                )
+            return
+        self.temp_config_timer.stop()
+        config_file_path: Path | None = None
+        # get config file name from doctor output
+        for line in chezmoi.doctor.list_out:
+            if "config-file" in line and "found" in line:
+                # Example line: "ok config-file found ~/.config/chezmoi/chezmoi.toml, last modified ..."
+                parts = line.split("found ")
+                if len(parts) > 1:
+                    config_file_path = Path(parts[1].split(",")[0].strip())
+                    break
 
-                from chezmoi_mousse.chezmoi import ChangeCommand
+        if config_file_path is None:
+            raise RuntimeError(
+                "No config file found in chezmoi doctor output."
+            )
+        else:
+            cmd_log.log_app_msg(f"found config file {config_file_path}")
 
-                ChangeCommand.config_path = temp_config_path
+        # read and create config
+        config_lines = [
+            line
+            for line in chezmoi.cat_config.std_out.splitlines()
+            if line.strip()
+        ]
 
-                self.log_text("create non interactive config")
+        if not any("interactive" in line.lower() for line in config_lines):
+            cmd_log.log_app_msg(
+                "No interactive entry found in config, using file as is."
+            )
+            ChangeCommand.config_path = config_file_path
+            return
 
-                cmd_log.log_app_msg(
-                    f"created temporary config file at {temp_config_path} excluding interactive option."
-                )
+        new_config_lines: list[str] = modify_config_non_interactive(
+            config_lines
+        )
+        new_config_str = "\n".join(new_config_lines)
+
+        temp_file_path: Path = (
+            Path(tempfile.gettempdir()) / config_file_path.name
+        )
+        with open(temp_file_path, "w") as temp_file:
+            temp_file.write(new_config_str)
+        cmd_log.log_app_msg(f"created non-interactive config {temp_file_path}")
+        cmd_log.log_dimmed(new_config_str)
+
+        ChangeCommand.config_path = temp_file_path
+
+        self.log_text("Non interactive config")
 
     def all_workers_finished(self) -> None:
         if all(
@@ -147,13 +209,7 @@ class LoadingScreen(Screen[list[str]]):
             if worker.group
             in ("io_workers", "doctor", "cat_config", "set_temp_config_file")
         ):
-
-            cmd_log.log_app_msg(
-                "command output stored in InputOutput dataclass"
-            )
-
             cmd_log.log_app_msg("--- splash.py finished loading ---")
-
             self.dismiss()
 
     def on_mount(self) -> None:

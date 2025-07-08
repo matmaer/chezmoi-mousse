@@ -1,5 +1,4 @@
 import json
-import tempfile
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
@@ -7,6 +6,7 @@ from pathlib import Path
 from subprocess import run
 from typing import Any, Literal, NamedTuple
 
+from rich.markup import escape
 from textual.widgets import RichLog
 
 from chezmoi_mousse import BASE_CMD, CM_CFG, theme
@@ -156,17 +156,25 @@ class CommandLog(RichLog):
         )
 
     def log_output(self, message: str) -> None:
-        self.write(
-            f"[{self._log_time()}] [{theme.vars["text-warning"]}]{message}[/]"
-        )
+        lines = message.splitlines()
+        for line in lines:
+            if line.strip():
+                escaped_line = escape(line)
+                self.write(
+                    f"[{self._log_time()}] [{theme.vars["text-warning"]}]{escaped_line}[/]"
+                )
 
     def log_app_msg(self, message: str) -> None:
         self.write(
             f"[{self._log_time()}] [{theme.vars["text-success"]}]{message}[/]"
         )
 
-    def log_exception(self, message: str) -> None:
-        self.write(f"{theme.vars["text-disabled"]}]{message}[/]")
+    def log_dimmed(self, message: str) -> None:
+        lines: list[str] = message.splitlines()
+        for line in lines:
+            if line.strip():
+                escaped_line = escape(line)
+                self.write(f"[{theme.vars["text-disabled"]}]{escaped_line}[/]")
 
     # used by the ContentsView class
     def log_read_path(self, file_path: Path) -> None:
@@ -218,7 +226,7 @@ def subprocess_run(long_command: CmdWords, time_out: float = 1) -> str:
             op_log.log_error(f"{x_mark} command failed")
         else:
             cmd_log.log_error("command failed")
-        cmd_log.log_exception(f"{e}")
+        cmd_log.log_dimmed(f"{e}")
         return "failed"
 
 
@@ -510,46 +518,6 @@ class Chezmoi:
             for f, status in status_dirs
             if dir_path in f.parents and status != "X"
         )
-
-    def check_interactive(self) -> bool:
-        for line in self.cat_config.list_out:
-            if "interactive" in line.lower() and "true" in line.lower():
-                return True
-        return False
-
-    def create_temp_config_file(self) -> Path:
-        # create temporary config file without interactive option, returns the
-        # path to this file, or None if no config file is found
-        config_file_name: str | None = None
-        for line in self.doctor.list_out:
-            if "config-file" in line and "found" in line:
-                # Example line: "ok config-file found ~/.config/chezmoi/chezmoi.toml, last modified ..."
-                parts = line.split("found ")
-                if len(parts) > 1:
-                    config_file_name = Path(
-                        parts[1].split(",")[0].strip()
-                    ).name
-                    break
-
-        if config_file_name is None:
-            raise RuntimeError(
-                "No config file found in chezmoi doctor output."
-            )
-
-        # read and create config
-        config_text = self.cat_config.std_out
-        filtered_lines: list[str] = [
-            line
-            for line in config_text.splitlines()
-            if not line.lower().startswith("interactive")
-        ]
-
-        # write to new temp file
-        temp_file_path: Path = Path(tempfile.gettempdir()) / config_file_name
-        with open(temp_file_path, "w") as temp_file:
-            temp_file.write("\n".join(filtered_lines))
-
-        return temp_file_path
 
 
 chezmoi = Chezmoi()

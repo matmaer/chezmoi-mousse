@@ -127,7 +127,7 @@ class ContentsView(RichLog):
         except PermissionError as e:
             self.write(e.strerror)
             cmd_log.log_error("Permission denied")
-            cmd_log.log_exception(f"{e}")
+            cmd_log.log_dimmed(f"{e}")
             return
 
         try:
@@ -145,7 +145,7 @@ class ContentsView(RichLog):
         except UnicodeDecodeError as e:
             self.write(f"{self.path} cannot be decoded as UTF-8.")
             cmd_log.log_error("File cannot be decoded as UTF-8")
-            cmd_log.log_exception(f"{e}")
+            cmd_log.log_dimmed(f"{e}")
             return
 
         except FileNotFoundError:
@@ -180,7 +180,7 @@ class ContentsView(RichLog):
             text = Text(f"Error reading {self.path}: {error}")
             self.write(text)
             cmd_log.log_error("Error reading file")
-            cmd_log.log_exception(f"{error}")
+            cmd_log.log_dimmed(f"{error}")
 
     def watch_path(self) -> None:
         if self.path is None:
