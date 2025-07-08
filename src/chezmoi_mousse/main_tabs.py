@@ -30,8 +30,8 @@ from chezmoi_mousse.chezmoi import chezmoi, op_log
 from chezmoi_mousse.config import pw_mgr_info
 from chezmoi_mousse.containers import (
     ButtonsHorizontal,
-    TreeContentSwitcher,
     FilterSlider,
+    TreeContentSwitcher,
 )
 from chezmoi_mousse.id_typing import (
     ButtonEnum,

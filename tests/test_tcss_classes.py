@@ -5,8 +5,8 @@ import re
 from pathlib import Path
 
 import pytest
+from _test_utils import get_modules_to_test, tcss_file_path
 
-from _test_utils import tcss_file_path, get_modules_to_test
 from chezmoi_mousse.id_typing import TcssStr
 
 

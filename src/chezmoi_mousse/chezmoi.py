@@ -1,9 +1,8 @@
-from enum import Enum
 import json
 import tempfile
-
 from dataclasses import dataclass, field
 from datetime import datetime
+from enum import Enum
 from pathlib import Path
 from subprocess import run
 from typing import Any, Literal, NamedTuple
@@ -14,12 +13,11 @@ from chezmoi_mousse import theme
 from chezmoi_mousse.id_typing import (
     CharsEnum,
     CmdWords,
+    OperateIdStr,
     PaneEnum,
     TabStr,
-    OperateIdStr,
     TcssStr,
 )
-
 
 BASE = ("chezmoi", "--no-pager", "--color=off", "--no-tty", "--mode=file")
 

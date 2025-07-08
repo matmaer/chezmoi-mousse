@@ -1,8 +1,9 @@
 import ast
-import pytest
 from pathlib import Path
-import chezmoi_mousse.id_typing as id_typing
 
+import pytest
+
+import chezmoi_mousse.id_typing as id_typing
 
 tcss_file_path: Path = Path("./src/chezmoi_mousse/gui.tcss")
 

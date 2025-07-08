@@ -1,11 +1,11 @@
+import pytest
 import requests
 import textual
-import pytest
 
 from chezmoi_mousse.gui import MainScreen
-from chezmoi_mousse.splash import LoadingScreen
 from chezmoi_mousse.id_typing import TabStr
-from chezmoi_mousse.main_tabs import ApplyTab, ReAddTab, AddTab, DoctorTab
+from chezmoi_mousse.main_tabs import AddTab, ApplyTab, DoctorTab, ReAddTab
+from chezmoi_mousse.splash import LoadingScreen
 
 
 def test_textual_version_is_latest():

@@ -5,12 +5,12 @@ import inspect
 from pathlib import Path
 
 import pytest
+from _test_utils import (
+    get_method_calls_from_modules_to_test,
+    get_modules_to_test,
+)
 
 from chezmoi_mousse.id_typing import IdMixin
-from _test_utils import (
-    get_modules_to_test,
-    get_method_calls_from_modules_to_test,
-)
 
 
 def test_all_idmixin_methods_are_used():
