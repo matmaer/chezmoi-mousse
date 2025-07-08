@@ -19,10 +19,10 @@ except Exception as e:
 class ChezmoiConfig:
     def __init__(self, config: dict[str, Any]):
         self.destDir: Path = Path(config["destDir"])
-        self.source_dir: Path = Path(config["sourceDir"])
-        self.auto_add: bool = config["git"]["autoadd"]
-        self.auto_commit: bool = config["git"]["autocommit"]
-        self.auto_push: bool = config["git"]["autopush"]
+        self.sourceDir: Path = Path(config["sourceDir"])
+        self.autoadd: bool = config["git"]["autoadd"]
+        self.autocommit: bool = config["git"]["autocommit"]
+        self.autopush: bool = config["git"]["autopush"]
         self.interactive: bool = config["interactive"]
         self.mode: str = config["mode"]
         self.tempDir: str = config["tempDir"]
