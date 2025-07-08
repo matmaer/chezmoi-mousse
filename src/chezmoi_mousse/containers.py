@@ -42,7 +42,7 @@ class FilterSlider(VerticalGroup, IdMixin):
                     id=self.filter_horizontal_id(filter_enum, Location.top),
                     classes=TcssStr.filter_horizontal,
                 ):
-                    yield Switch(id=self.switch_id(filter_enum))
+                    yield Switch(id=self.switch_id(filter_enum), value=False)
                     yield Label(
                         filter_enum.value, classes=TcssStr.filter_label
                     ).with_tooltip(tooltip=filter_tooltips[filter_enum.name])
