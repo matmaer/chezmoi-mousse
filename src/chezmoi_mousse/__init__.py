@@ -1,8 +1,8 @@
 import json
 import sys
 from pathlib import Path
-from typing import Any
 from subprocess import run
+from typing import Any
 
 chezmoi_config: dict[str, Any]
 
