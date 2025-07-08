@@ -2,14 +2,17 @@ import json
 import sys
 from pathlib import Path
 from typing import Any
-
-from chezmoi_mousse.chezmoi import BASE, subprocess_run
+from subprocess import run
 
 chezmoi_config: dict[str, Any]
 
+
+BASE_CMD = ("chezmoi", "--no-pager", "--color=off", "--no-tty", "--mode=file")
+
+
 try:
     chezmoi_config: dict[str, Any] = json.loads(
-        subprocess_run(BASE + ("dump-config",))
+        run(BASE_CMD + ("dump-config",), capture_output=True, text=True).stdout
     )
 except Exception as e:
     print(f"Failed run chezmoi dump-config: {e}", file=sys.stderr)
