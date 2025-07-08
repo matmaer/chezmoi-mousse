@@ -112,16 +112,16 @@ wheels = [
 
 [[package]]
 name = "alembic"
-version = "1.16.2"
+version = "1.16.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "mako" },
     { name = "sqlalchemy" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/9c/35/116797ff14635e496bbda0c168987f5326a6555b09312e9b817e360d1f56/alembic-1.16.2.tar.gz", hash = "sha256:e53c38ff88dadb92eb22f8b150708367db731d58ad7e9d417c9168ab516cbed8", size = 1963563, upload-time = "2025-06-16T18:05:08.566Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/b9/40/28683414cc8711035a65256ca689e159471aa9ef08e8741ad1605bc01066/alembic-1.16.3.tar.gz", hash = "sha256:18ad13c1f40a5796deee4b2346d1a9c382f44b8af98053897484fa6cf88025e4", size = 1967462, upload-time = "2025-07-08T18:57:50.991Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/dd/e2/88e425adac5ad887a087c38d04fe2030010572a3e0e627f8a6e8c33eeda8/alembic-1.16.2-py3-none-any.whl", hash = "sha256:5f42e9bd0afdbd1d5e3ad856c01754530367debdebf21ed6894e34af52b3bb03", size = 242717, upload-time = "2025-06-16T18:05:10.27Z" },
+    { url = "https://files.pythonhosted.org/packages/e6/68/1dea77887af7304528ea944c355d769a7ccc4599d3a23bd39182486deb42/alembic-1.16.3-py3-none-any.whl", hash = "sha256:70a7c7829b792de52d08ca0e3aefaf060687cb8ed6bebfa557e597a1a5e5a481", size = 246933, upload-time = "2025-07-08T18:57:52.793Z" },
 ]
 
 [[package]]
@@ -1669,7 +1669,7 @@ wheels = [
 
 [[package]]
 name = "textual"
-version = "3.6.0"
+version = "3.7.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "markdown-it-py", extra = ["linkify", "plugins"] },
@@ -1677,9 +1677,9 @@ dependencies = [
     { name = "rich" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/62/68/faec325fa8ff1680233c0588a0a1577745c49bf278a741a11ffd184dec4b/textual-3.6.0.tar.gz", hash = "sha256:d86b666e34758392a4a1aefc4b781b17d0d001419d24e4d47c277f36c20b1222", size = 1593210, upload-time = "2025-07-06T07:57:09.294Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/e3/71/78d56783bbf7f77b635d3e3debd4deca52449ea1bfd2f4f0c1204f3d59d4/textual-3.7.0.tar.gz", hash = "sha256:d5cb710b4691a2d9b9075ff2dc9ebecf2d8369c893af3354dad344960c91d7c9", size = 1603085, upload-time = "2025-07-07T20:55:17.167Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/12/63/d8624c3d2cf01544a878c4a7340b057efa5b7a89a5ac77faef7d95429141/textual-3.6.0-py3-none-any.whl", hash = "sha256:8b2fafe17b1805fd608092ab2f99b6ddeaff1809f1d5de6820bf5db5b6c51c28", size = 689551, upload-time = "2025-07-06T07:57:07.559Z" },
+    { url = "https://files.pythonhosted.org/packages/21/aa/d76e57eea60baabda1bc64e8fabdc1bf540dded3d5034c9f07462505e61d/textual-3.7.0-py3-none-any.whl", hash = "sha256:761352ada0427ef7e5405c0b01d9df6fafd773cba09338955249a8b45988c3fc", size = 691342, upload-time = "2025-07-07T20:55:15.421Z" },
 ]
 
 [[package]]
