@@ -521,7 +521,7 @@ class Chezmoi:
         # create temporary config file without interactive option, returns the
         # path to this file, or None if no config file is found
         config_file_name: str | None = None
-        for line in chezmoi.doctor.list_out:
+        for line in self.doctor.list_out:
             if "config-file" in line and "found" in line:
                 # Example line: "ok config-file found ~/.config/chezmoi/chezmoi.toml, last modified ..."
                 parts = line.split("found ")
