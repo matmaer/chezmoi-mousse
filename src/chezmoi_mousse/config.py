@@ -39,6 +39,7 @@ unwanted = {
         "Desktop",
         "Documents",
         "Downloads",
+        "extensions",
         "go-build",
         "node_modules",
         "Pictures",
