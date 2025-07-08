@@ -56,13 +56,6 @@ class Maximized(ModalScreen[None], IdMixin):
         self.border_title_text = border_title_text
         self.id_to_maximize = id_to_maximize
         self.path = path
-        if self.path is not None:
-            if self.path == CM_CFG.destDir:
-                self.border_title_text = f" {CM_CFG.destDir} "
-            else:
-                self.border_title_text = (
-                    f" {self.path.relative_to(CM_CFG.destDir)} "
-                )
         self.modal_view_id = "modal_view"
         self.modal_view_qid = f"#{self.modal_view_id}"
         super().__init__(id=ScreenStr.maximized_modal)
@@ -92,6 +85,12 @@ class Maximized(ModalScreen[None], IdMixin):
         elif self.id_to_maximize == self.view_id(ViewStr.git_log_view):
             self.query_one(self.modal_view_qid, GitLogView).path = self.path
 
+        if self.path == CM_CFG.destDir or self.path is None:
+            self.border_title_text = str(CM_CFG.destDir)
+        else:
+            self.border_title_text = (
+                f" {self.path.relative_to(CM_CFG.destDir)} "
+            )
         self.border_title = self.border_title_text
 
     def on_click(self, event: Click) -> None:
