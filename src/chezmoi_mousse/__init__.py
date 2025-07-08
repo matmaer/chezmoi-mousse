@@ -12,7 +12,11 @@ BASE_CMD = ("chezmoi", "--no-pager", "--color=off", "--no-tty", "--mode=file")
 
 try:
     chezmoi_config: dict[str, Any] = json.loads(
-        run(BASE_CMD + ("dump-config",), capture_output=True, text=True).stdout
+        run(
+            BASE_CMD + ("dump-config", "--format=json"),
+            capture_output=True,
+            text=True,
+        ).stdout
     )
 except Exception as e:
     print(f"Failed run chezmoi dump-config: {e}", file=sys.stderr)

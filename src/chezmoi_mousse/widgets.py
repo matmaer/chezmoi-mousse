@@ -23,6 +23,7 @@ from textual.widgets import DataTable, DirectoryTree, RichLog, Static
 from textual.widgets.tree import TreeNode
 
 import chezmoi_mousse.theme as theme
+from chezmoi_mousse import CM_CFG
 from chezmoi_mousse.chezmoi import chezmoi, cmd_log
 from chezmoi_mousse.config import unwanted
 from chezmoi_mousse.id_typing import (
@@ -47,11 +48,11 @@ class AutoWarning(Static):
     def on_mount(self) -> None:
         warning_lines: list[str] = []
         if self.tab_str in (TabStr.re_add_tab, TabStr.add_tab):
-            if chezmoi.autocommit_enabled:
+            if CM_CFG.autocommit:
                 warning_lines.append(
                     f"{self.sign}  Auto commit is enabled: files will also be committed  {self.sign}"
                 )
-            if chezmoi.autopush_enabled:
+            if CM_CFG.autopush:
                 warning_lines.append(
                     f"{self.sign}  Auto push is enabled: files will be pushed to the remote  {self.sign}"
                 )
@@ -161,14 +162,14 @@ class ContentsView(RichLog):
                 return
 
         except IsADirectoryError:
-            if self.path == chezmoi.dest_dir:
+            if self.path == CM_CFG.destDir:
                 text = "Click a file or directory, \nto show its contents.\n"
                 self.write(Text(text, style="dim"))
                 self.write("Current directory:")
-                self.write(f"{chezmoi.dest_dir}")
+                self.write(f"{CM_CFG.destDir}")
                 self.write(Text("(destDir)\n", style="dim"))
                 self.write("Source directory:")
-                self.write(f"{chezmoi.source_dir}")
+                self.write(f"{CM_CFG.sourceDir}")
                 self.write(Text("(sourceDir)", style="dim"))
             elif self.path in chezmoi.managed_dir_paths:
                 self.write(f"Managed directory: {self.path}")
@@ -184,7 +185,7 @@ class ContentsView(RichLog):
 
     def watch_path(self) -> None:
         if self.path is None:
-            self.path = chezmoi.dest_dir
+            self.path = CM_CFG.destDir
         self.clear()
         self.update_contents_view()
 
@@ -202,20 +203,20 @@ class DiffView(RichLog):
         )
 
     def on_mount(self) -> None:
-        self.path = chezmoi.dest_dir
+        self.path = CM_CFG.destDir
 
     def watch_path(self) -> None:
         self.clear()
 
         if self.path is None:
-            self.path = chezmoi.dest_dir
+            self.path = CM_CFG.destDir
 
         diff_output: list[str] = []
         status_files = chezmoi.managed_status[self.tab_name].files
         # create a diff view if the current path is a directory
         if (
             self.path in chezmoi.managed_status[self.tab_name].dirs
-            or self.path == chezmoi.dest_dir
+            or self.path == CM_CFG.destDir
         ):
             status_files_in_dir = chezmoi.files_with_status_in(
                 self.tab_name, self.path
@@ -283,7 +284,7 @@ class GitLogView(DataTable[Text]):
     def on_mount(self) -> None:
         self.show_cursor = False
         if self.path is None:
-            self.path = chezmoi.dest_dir
+            self.path = CM_CFG.destDir
 
     def add_row_with_style(self, columns: list[str], style: str) -> None:
         row: Iterable[Text] = [
@@ -348,7 +349,7 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
             "R": theme.vars["text-primary"],
         }
         root_node_data: DirNodeData = DirNodeData(
-            path=chezmoi.dest_dir, found=True, status="R"
+            path=CM_CFG.destDir, found=True, status="R"
         )
         super().__init__(
             label="root", data=root_node_data, id=id, classes=classes
@@ -626,8 +627,7 @@ class FilteredDirTree(DirectoryTree):
                 if (
                     p.is_file()
                     and (
-                        p.parent in managed_dirs
-                        or p.parent == chezmoi.dest_dir
+                        p.parent in managed_dirs or p.parent == CM_CFG.destDir
                     )
                     and not self.is_unwanted_path(p)
                     and p not in managed_files
@@ -653,8 +653,7 @@ class FilteredDirTree(DirectoryTree):
                 if (
                     p.is_file()
                     and (
-                        p.parent in managed_dirs
-                        or p.parent == chezmoi.dest_dir
+                        p.parent in managed_dirs or p.parent == CM_CFG.destDir
                     )
                     and p not in managed_files
                 )

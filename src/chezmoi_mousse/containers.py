@@ -9,7 +9,7 @@ from textual.app import ComposeResult
 from textual.containers import HorizontalGroup, Vertical, VerticalGroup
 from textual.widgets import Button, ContentSwitcher, Label, Switch
 
-from chezmoi_mousse.chezmoi import chezmoi
+from chezmoi_mousse import CM_CFG
 from chezmoi_mousse.config import filter_tooltips
 from chezmoi_mousse.id_typing import (
     ButtonEnum,
@@ -119,7 +119,7 @@ class TreeContentSwitcher(ContentSwitcher, IdMixin):
         )
 
     def on_mount(self) -> None:
-        self.border_title = chezmoi.dest_dir_str
+        self.border_title = str(CM_CFG.destDir)
 
     def compose(self) -> ComposeResult:
         yield ManagedTree(self.tab_str)

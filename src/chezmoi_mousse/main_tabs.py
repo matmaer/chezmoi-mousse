@@ -25,7 +25,7 @@ from textual.widgets import (
     Switch,
 )
 
-import chezmoi_mousse.theme as theme
+from chezmoi_mousse import CM_CFG, theme
 from chezmoi_mousse.chezmoi import chezmoi, op_log
 from chezmoi_mousse.config import pw_mgr_info
 from chezmoi_mousse.containers import (
@@ -201,7 +201,7 @@ class _BaseTab(Horizontal, IdMixin):
     def update_right_side_content_switcher(self, path: Path):
         self.query_one(
             self.content_switcher_qid(Location.right), Container
-        ).border_title = f"{path.relative_to(chezmoi.dest_dir)}"
+        ).border_title = f"{path.relative_to(CM_CFG.destDir)}"
         self.query_one(
             self.view_qid(ViewStr.contents_view), ContentsView
         ).path = path
@@ -476,7 +476,7 @@ class AddTab(Horizontal, IdMixin):
             classes=f"{TcssStr.tab_left_vertical} {TcssStr.top_border_title}",
         ):
             yield FilteredDirTree(
-                chezmoi.dest_dir,
+                CM_CFG.destDir,
                 id=self.tree_id(TreeStr.add_tree),
                 classes=TcssStr.dir_tree_widget,
             )
@@ -495,10 +495,10 @@ class AddTab(Horizontal, IdMixin):
     def on_mount(self) -> None:
         self.query_one(
             self.tab_vertical_qid(Location.right), Vertical
-        ).border_title = chezmoi.dest_dir_str
+        ).border_title = str(CM_CFG.destDir)
         self.query_one(
             self.tab_vertical_qid(Location.left), VerticalGroup
-        ).border_title = chezmoi.dest_dir_str
+        ).border_title = str(CM_CFG.destDir)
 
     def on_directory_tree_file_selected(
         self, event: FilteredDirTree.FileSelected
@@ -511,9 +511,7 @@ class AddTab(Horizontal, IdMixin):
         ).path = event.node.data.path
         self.query_one(
             self.tab_vertical_qid(Location.right), Vertical
-        ).border_title = (
-            f"{event.node.data.path.relative_to(chezmoi.dest_dir)}"
-        )
+        ).border_title = f"{event.node.data.path.relative_to(CM_CFG.destDir)}"
 
     def on_directory_tree_directory_selected(
         self, event: FilteredDirTree.DirectorySelected
@@ -525,9 +523,7 @@ class AddTab(Horizontal, IdMixin):
         ).path = event.node.data.path
         self.query_one(
             self.tab_vertical_qid(Location.right), Vertical
-        ).border_title = (
-            f"{event.node.data.path.relative_to(chezmoi.dest_dir)}"
-        )
+        ).border_title = f"{event.node.data.path.relative_to(CM_CFG.destDir)}"
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
         event.stop()

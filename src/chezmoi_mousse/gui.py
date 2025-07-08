@@ -19,7 +19,8 @@ from textual.widgets import (
 )
 
 import chezmoi_mousse.theme
-from chezmoi_mousse.chezmoi import chezmoi, cmd_log
+from chezmoi_mousse import CM_CFG
+from chezmoi_mousse.chezmoi import cmd_log
 from chezmoi_mousse.config import FLOW
 from chezmoi_mousse.id_typing import (
     CharsEnum,
@@ -56,11 +57,11 @@ class Maximized(ModalScreen[None], IdMixin):
         self.id_to_maximize = id_to_maximize
         self.path = path
         if self.path is not None:
-            if self.path == chezmoi.dest_dir:
-                self.border_title_text = f" {chezmoi.dest_dir} "
+            if self.path == CM_CFG.destDir:
+                self.border_title_text = f" {CM_CFG.destDir} "
             else:
                 self.border_title_text = (
-                    f" {self.path.relative_to(chezmoi.dest_dir)} "
+                    f" {self.path.relative_to(CM_CFG.destDir)} "
                 )
         self.modal_view_id = "modal_view"
         self.modal_view_qid = f"#{self.modal_view_id}"

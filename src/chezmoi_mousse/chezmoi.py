@@ -9,7 +9,7 @@ from typing import Any, Literal, NamedTuple
 
 from textual.widgets import RichLog
 
-from chezmoi_mousse import theme
+from chezmoi_mousse import BASE_CMD, CM_CFG, theme
 from chezmoi_mousse.id_typing import (
     CharsEnum,
     CmdWords,
@@ -19,8 +19,6 @@ from chezmoi_mousse.id_typing import (
     TcssStr,
 )
 
-BASE = ("chezmoi", "--no-pager", "--color=off", "--no-tty", "--mode=file")
-
 
 class InputOutputVerbs(Enum):
     # mapping of names to chezmoi verbs which store data in an InputOutput
@@ -29,7 +27,6 @@ class InputOutputVerbs(Enum):
     cat_config = "cat-config"
     data = "data"
     doctor = "doctor"
-    dump_config = "dump-config"
     ignored = "ignored"
     managed = "managed"
     status = "status"
@@ -49,22 +46,21 @@ class OperateVerbs(Enum):
 
 
 class AllCommands(Enum):
-    cat = BASE + (ReadVerbs.cat.value,)
-    cat_config = BASE + (InputOutputVerbs.cat_config.value,)
-    doctor = BASE + (InputOutputVerbs.doctor.value,)
-    dump_config = BASE + (InputOutputVerbs.dump_config.value, "--format=json")
-    diff = BASE + (ReadVerbs.diff.value,)
-    dir_status_lines = BASE + (
+    cat = BASE_CMD + (ReadVerbs.cat.value,)
+    cat_config = BASE_CMD + (InputOutputVerbs.cat_config.value,)
+    doctor = BASE_CMD + (InputOutputVerbs.doctor.value,)
+    diff = BASE_CMD + (ReadVerbs.diff.value,)
+    dir_status_lines = BASE_CMD + (
         InputOutputVerbs.status.value,
         "--path-style=absolute",
         "--include=dirs",
     )
-    file_status_lines = BASE + (
+    file_status_lines = BASE_CMD + (
         InputOutputVerbs.status.value,
         "--path-style=absolute",
         "--include=files",
     )
-    git_log = BASE + (
+    git_log = BASE_CMD + (
         ReadVerbs.git.value,
         "--",
         "log",
@@ -75,26 +71,25 @@ class AllCommands(Enum):
         "--no-expand-tabs",
         "--format=%ar by %cn;%s",
     )
-    ignored = BASE + (InputOutputVerbs.ignored.value,)
-    managed_dirs = BASE + (
+    ignored = BASE_CMD + (InputOutputVerbs.ignored.value,)
+    managed_dirs = BASE_CMD + (
         InputOutputVerbs.managed.value,
         "--path-style=absolute",
         "--include=dirs",
     )
-    managed_files = BASE + (
+    managed_files = BASE_CMD + (
         InputOutputVerbs.managed.value,
         "--path-style=absolute",
         "--include=files",
     )
-    source_path = BASE + (ReadVerbs.source_path.value,)
-    template_data = BASE + (InputOutputVerbs.data.value, "--format=json")
+    source_path = BASE_CMD + (ReadVerbs.source_path.value,)
+    template_data = BASE_CMD + (InputOutputVerbs.data.value, "--format=json")
 
 
 class IoCmd(Enum):
     cat_config = AllCommands.cat_config.value
     dir_status_lines = AllCommands.dir_status_lines.value
     doctor = AllCommands.doctor.value
-    dump_config = AllCommands.dump_config.value
     file_status_lines = AllCommands.file_status_lines.value
     ignored = AllCommands.ignored.value
     managed_dirs = AllCommands.managed_dirs.value
@@ -232,7 +227,7 @@ class ChangeCommand:
     repository."""
 
     # TODO: remove --dry-run
-    base = BASE + ("--dry-run", "--force", "--config")
+    base = BASE_CMD + ("--dry-run", "--force", "--config")
     config_path: Path | None = None
 
     def _update_managed_status_data(self) -> None:
@@ -270,8 +265,8 @@ class ReadCommand:
 
     def git_log(self, path: Path) -> list[str]:
         source_path: str = ""
-        if path == chezmoi.dest_dir:
-            source_path = str(chezmoi.source_dir)
+        if path == CM_CFG.destDir:
+            source_path = str(CM_CFG.sourceDir)
         else:
             source_path = subprocess_run(
                 ReadCmd.source_path.value + (str(path),)
@@ -338,7 +333,6 @@ class Chezmoi:
     cat_config: InputOutput
     dir_status_lines: InputOutput
     doctor: InputOutput
-    dump_config: InputOutput
     file_status_lines: InputOutput
     ignored: InputOutput
     managed_dirs: InputOutput
@@ -359,30 +353,6 @@ class Chezmoi:
                 long_cmd.name,
                 InputOutput(long_cmd.value, arg_id=long_cmd.name),
             )
-
-    @property
-    def source_dir(self) -> Path:
-        return Path(self.dump_config.dict_out["sourceDir"])
-
-    @property
-    def dest_dir(self) -> Path:
-        return Path(self.dump_config.dict_out["destDir"])
-
-    @property
-    def dest_dir_str(self) -> str:
-        return self.dump_config.dict_out["destDir"]
-
-    @property
-    def autoadd_enabled(self) -> bool:
-        return self.dump_config.dict_out["git"]["autoadd"]
-
-    @property
-    def autocommit_enabled(self) -> bool:
-        return self.dump_config.dict_out["git"]["autocommit"]
-
-    @property
-    def autopush_enabled(self) -> bool:
-        return self.dump_config.dict_out["git"]["autopush"]
 
     @property
     def managed_dir_paths(self) -> list[Path]:
@@ -453,11 +423,11 @@ class Chezmoi:
 
     def _validate_managed_dir_path(self, dir_path: Path) -> None:
         if (
-            dir_path != self.dest_dir
+            dir_path != CM_CFG.destDir
             and dir_path not in self.managed_dir_paths
         ):
             raise ValueError(
-                f"{dir_path} is not {self.dest_dir} or a managed directory."
+                f"{dir_path} is not {CM_CFG.destDir} or a managed directory."
             )
 
     def managed_dirs_in(self, dir_path: Path) -> list[Path]:
@@ -531,7 +501,7 @@ class Chezmoi:
         # checks for any, no matter how deep in subdirectories
         self._validate_managed_dir_path(dir_path)
         status_dirs = self.managed_status[tab_str].dirs.items()
-        if dir_path.parent == self.dest_dir and dir_path in status_dirs:
+        if dir_path.parent == CM_CFG.destDir and dir_path in status_dirs:
             # the parent is dest_dir, also return True because dest_dir is
             # not present in the self.managed_status dict
             return True

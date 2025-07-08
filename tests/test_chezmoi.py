@@ -4,6 +4,8 @@ import pytest
 
 from chezmoi_mousse.chezmoi import Chezmoi, StatusDicts
 
+from chezmoi_mousse import CM_CFG
+
 
 @pytest.fixture
 def chezmoi_instance() -> Chezmoi:
@@ -11,11 +13,10 @@ def chezmoi_instance() -> Chezmoi:
 
 
 def test_managed_paths_and_status(chezmoi_instance: Chezmoi):
-    """Test managed paths, status, and directory filtering"""
+    """Test managed paths and status"""
     from chezmoi_mousse.id_typing import TabStr
 
     # Setup data
-    chezmoi_instance.dump_config.update()
     chezmoi_instance.managed_dirs.update()
     chezmoi_instance.managed_files.update()
     chezmoi_instance.dir_status_lines.update()
@@ -31,7 +32,7 @@ def test_managed_paths_and_status(chezmoi_instance: Chezmoi):
     assert TabStr.apply_tab in status and TabStr.re_add_tab in status
 
     # Test directory filtering with dest_dir
-    dest_dir = chezmoi_instance.dest_dir
+    dest_dir = CM_CFG.destDir
     assert isinstance(chezmoi_instance.managed_dirs_in(dest_dir), list)
     assert isinstance(chezmoi_instance.managed_files_in(dest_dir), list)
     assert isinstance(chezmoi_instance.dir_has_managed_files(dest_dir), bool)
