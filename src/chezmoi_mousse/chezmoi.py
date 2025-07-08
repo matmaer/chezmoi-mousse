@@ -198,7 +198,7 @@ def subprocess_run(long_command: CmdWords, time_out: float = 1) -> str:
             check=True,  # raises exception for any non-zero return code
             shell=False,
             text=True,  # returns stdout as str instead of bytes
-            timeout=1,
+            timeout=5,  # maybe optimize for circumstances later on
         ).stdout.strip()
         cmd_log.log_command(long_command)
         if any(verb.value in long_command for verb in OperateVerbs):
