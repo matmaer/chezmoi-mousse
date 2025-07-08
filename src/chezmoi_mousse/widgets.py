@@ -636,7 +636,7 @@ class FilteredDirTree(DirectoryTree):
         managed_dirs = chezmoi.managed_dir_paths
         managed_files = chezmoi.managed_file_paths
 
-        # Switches: Red - Green (default)
+        # Switches: Red - Red (default)
         if not self.unmanaged_dirs and not self.unwanted:
             return (
                 p
