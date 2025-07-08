@@ -16,7 +16,7 @@ from textual.timer import Timer
 from textual.widgets import RichLog, Static
 from textual.worker import WorkerState
 
-from chezmoi_mousse.chezmoi import ChangeCommand, chezmoi, cmd_log
+from chezmoi_mousse.chezmoi import chezmoi, cmd_log
 
 SPLASH = """\
  _______________________________ ___________________._
@@ -182,7 +182,6 @@ class LoadingScreen(Screen[list[str]]):
             cmd_log.log_app_msg(
                 "No interactive entry found in config, using file as is."
             )
-            ChangeCommand.config_path = config_file_path
             return
 
         new_config_lines: list[str] = modify_config_non_interactive(
@@ -197,8 +196,6 @@ class LoadingScreen(Screen[list[str]]):
             temp_file.write(new_config_str)
         cmd_log.log_app_msg(f"created non-interactive config {temp_file_path}")
         cmd_log.log_dimmed(new_config_str)
-
-        ChangeCommand.config_path = temp_file_path
 
         self.log_text("Non interactive config")
 

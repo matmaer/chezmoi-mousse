@@ -554,7 +554,11 @@ class AddTab(Horizontal, IdMixin):
         )
 
 
-class DoctorTab(VerticalScroll):
+class DoctorTab(VerticalScroll, IdMixin):
+
+    def __init__(self, tab_str: TabStr) -> None:
+        IdMixin.__init__(self, tab_str)
+        super().__init__(id=self.tab_main_horizontal_id)
 
     def compose(self) -> ComposeResult:
 
@@ -575,8 +579,8 @@ class DoctorTab(VerticalScroll):
             )
             yield Collapsible(ListView(), title="Commands Not Found")
 
-    def on_mount(self) -> None:
-
+    # do not put this in the on_mount method as textual manages this
+    def populate_doctor_data(self) -> None:
         styles = {
             "ok": theme.vars["text-success"],
             "warning": theme.vars["text-warning"],
@@ -585,10 +589,12 @@ class DoctorTab(VerticalScroll):
         }
         list_view = self.query_exactly_one(ListView)
         table: DataTable[Text] = self.query_exactly_one(DataTable[Text])
-        doctor_rows = chezmoi.doctor.list_out
-        table.add_columns(*doctor_rows[0].split())
 
-        for line in doctor_rows[1:]:
+        # Add columns if they don't exist
+        if not table.columns:
+            table.add_columns(*chezmoi.doctor.list_out[0].split())
+
+        for line in chezmoi.doctor.list_out[1:]:
             row = tuple(line.split(maxsplit=2))
             if row[0] == "info" and "not found in $PATH" in row[2]:
                 if row[1] in pw_mgr_info:
@@ -621,3 +627,19 @@ class DoctorTab(VerticalScroll):
             else:
                 row = [Text(cell_text) for cell_text in row]
                 table.add_row(*row)
+
+        collapsibles = self.query(Collapsible)
+        for collapsible in collapsibles:
+            title = collapsible.title
+            if "template data" in title:
+                # Update the Pretty widget with latest template data
+                pretty_widget = collapsible.query_one(Pretty)
+                pretty_widget.update(chezmoi.template_data.dict_out)
+            elif "cat-config" in title:
+                # Update the Pretty widget with latest cat-config data
+                pretty_widget = collapsible.query_one(Pretty)
+                pretty_widget.update(chezmoi.cat_config.list_out)
+            elif "ignored" in title:
+                # Update the Pretty widget with latest ignored data
+                pretty_widget = collapsible.query_one(Pretty)
+                pretty_widget.update(chezmoi.ignored.list_out)

@@ -5,7 +5,7 @@ from textual.binding import Binding
 from textual.containers import ScrollableContainer
 from textual.events import Click
 from textual.reactive import reactive
-from textual.screen import ModalScreen, Screen
+from textual.screen import ModalScreen
 from textual.scrollbar import ScrollBar
 from textual.theme import Theme
 from textual.widget import Widget
@@ -99,7 +99,9 @@ class Maximized(ModalScreen[None], IdMixin):
             self.dismiss()
 
 
-class MainScreen(Screen[None]):
+class ChezmoiGUI(App[None]):
+
+    CSS_PATH = "gui.tcss"
 
     BINDINGS = [
         Binding(key="M,m", action="maximize", description="maximize"),
@@ -123,7 +125,7 @@ class MainScreen(Screen[None]):
             with TabPane("Add", id=PaneEnum.add.name):
                 yield AddTab(tab_str=TabStr.add_tab)
             with TabPane("Doctor", id=PaneEnum.doctor.name):
-                yield DoctorTab(id=TabStr.doctor_tab.value)
+                yield DoctorTab(tab_str=TabStr.doctor_tab)
             with TabPane("Diagram", id=PaneEnum.diagram.name):
                 yield ScrollableContainer(
                     Static(
@@ -138,7 +140,34 @@ class MainScreen(Screen[None]):
         yield Footer()
 
     def on_mount(self) -> None:
+        ScrollBar.renderer = CustomScrollBarRender  # monkey patch
+        self.title = "-  c h e z m o i  m o u s s e  -"
+        self.register_theme(chezmoi_mousse.theme.chezmoi_mousse_dark)
+        self.theme = "chezmoi-mousse-dark"
+        self.push_screen(LoadingScreen(), callback=self.refresh_widgets)
+        self.watch(self, "theme", self.on_theme_change, init=False)
         self.query_exactly_one(ApplyTab).focus()
+
+    def on_theme_change(self, _: str, new_theme: str) -> None:
+        new_theme_object: Theme | None = self.app.get_theme(new_theme)
+        assert isinstance(new_theme_object, Theme)
+        chezmoi_mousse.theme.vars = (
+            new_theme_object.to_color_system().generate()
+        )
+
+    def refresh_widgets(self, _: object) -> None:
+        doctor_tab = self.query_one(DoctorTab)
+        doctor_tab.populate_doctor_data()
+
+        # Refresh all tree widgets that have refresh_tree_data method
+        try:
+            all_widgets = self.query("*")
+            for widget in all_widgets:
+                if hasattr(widget, "refresh_tree_data"):
+                    getattr(widget, "refresh_tree_data")()
+
+        except Exception as e:
+            self.notify(f"Failed to refresh trees: {e}")
 
     def on_tabbed_content_tab_activated(
         self, event: TabbedContent.TabActivated
@@ -242,29 +271,4 @@ class MainScreen(Screen[None]):
                 path=path_for_maximize,
                 border_title_text=border_title_text,
             )
-        )
-
-
-class ChezmoiGUI(App[None]):
-
-    CSS_PATH = "gui.tcss"
-
-    SCREENS = {"main_screen": MainScreen}
-
-    def on_mount(self) -> None:
-        ScrollBar.renderer = CustomScrollBarRender  # monkey patch
-        self.title = "-  c h e z m o i  m o u s s e  -"
-        self.register_theme(chezmoi_mousse.theme.chezmoi_mousse_dark)
-        self.theme = "chezmoi-mousse-dark"
-        self.push_screen(LoadingScreen(), callback=self.push_main_screen)
-        self.watch(self, "theme", self.on_theme_change, init=False)
-
-    def push_main_screen(self, _: object) -> None:
-        self.push_screen(ScreenStr.main_screen)
-
-    def on_theme_change(self, _: str, new_theme: str) -> None:
-        new_theme_object: Theme | None = self.app.get_theme(new_theme)
-        assert isinstance(new_theme_object, Theme)
-        chezmoi_mousse.theme.vars = (
-            new_theme_object.to_color_system().generate()
         )

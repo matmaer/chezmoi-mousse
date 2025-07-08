@@ -499,7 +499,13 @@ class ManagedTree(TreeBase, IdMixin):
             classes=TcssStr.tree_widget,
         )
 
-    def on_mount(self) -> None:
+    # def on_mount(self) -> None:
+    #     # Don't populate data here - it will be done via refresh_tree_data()
+    #     pass
+
+    def refresh_tree_data(self) -> None:
+        """Refresh the tree with latest chezmoi data."""
+        self.root.remove_children()
         self.add_dir_nodes(self.root, self.unchanged)
         self.add_status_leaves(self.root)
 
@@ -539,6 +545,12 @@ class ExpandedTree(TreeBase, IdMixin):
         )
 
     def on_mount(self) -> None:
+        # Don't populate data here - it will be done via refresh_tree_data()
+        pass
+
+    def refresh_tree_data(self) -> None:
+        """Refresh the tree with latest chezmoi data."""
+        self.root.remove_children()
         self.expand_all_nodes(self.root)
 
     def expand_all_nodes(self, node: TreeNode[NodeData]) -> None:
@@ -578,6 +590,12 @@ class FlatTree(TreeBase, IdMixin):
         )
 
     def on_mount(self) -> None:
+        # Don't populate data here - it will be done via refresh_tree_data()
+        pass
+
+    def refresh_tree_data(self) -> None:
+        """Refresh the tree with latest chezmoi data."""
+        self.root.remove_children()
         for file_path, status in chezmoi.managed_status[
             self.tab_name
         ].files.items():

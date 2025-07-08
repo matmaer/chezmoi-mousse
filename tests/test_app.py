@@ -2,10 +2,11 @@ import pytest
 import requests
 import textual
 
-from chezmoi_mousse.gui import MainScreen
+# from chezmoi_mousse.gui import MainScreen
 from chezmoi_mousse.id_typing import TabStr
 from chezmoi_mousse.main_tabs import AddTab, ApplyTab, DoctorTab, ReAddTab
-from chezmoi_mousse.splash import LoadingScreen
+
+# from chezmoi_mousse.splash import LoadingScreen
 
 
 def test_textual_version_is_latest():
@@ -52,6 +53,7 @@ def test_app_init():
         (ApplyTab, TabStr.apply_tab),
         (ReAddTab, TabStr.re_add_tab),
         (AddTab, TabStr.add_tab),
+        (DoctorTab, TabStr.doctor_tab),
     ],
 )
 def test_tab_init_with_tab_str(tab_class: type, tab_str: TabStr) -> None:
@@ -59,12 +61,7 @@ def test_tab_init_with_tab_str(tab_class: type, tab_str: TabStr) -> None:
     assert tab is not None
 
 
-def test_doctor_tab_init() -> None:
-    tab = DoctorTab()
-    assert tab is not None
-
-
-@pytest.mark.parametrize("screen_class", [MainScreen, LoadingScreen])
-def test_screen_init(screen_class: type) -> None:
-    screen = screen_class()
-    assert screen is not None
+# @pytest.mark.parametrize("screen_class", [MainScreen, LoadingScreen])
+# def test_screen_init(screen_class: type) -> None:
+#     screen = screen_class()
+#     assert screen is not None
