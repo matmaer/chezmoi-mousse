@@ -19,8 +19,8 @@ from textual.widgets import (
 )
 
 import chezmoi_mousse.theme
-from chezmoi_mousse import FLOW
 from chezmoi_mousse.chezmoi import chezmoi, cmd_log
+from chezmoi_mousse.config import FLOW
 from chezmoi_mousse.id_typing import (
     CharsEnum,
     IdMixin,
