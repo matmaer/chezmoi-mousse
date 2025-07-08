@@ -37,11 +37,6 @@ def test_managed_paths_and_status(chezmoi_instance: Chezmoi):
     assert isinstance(chezmoi_instance.managed_files_in(dest_dir), list)
     assert isinstance(chezmoi_instance.dir_has_managed_files(dest_dir), bool)
 
-    # Test validation error
-    invalid_path = Path("/invalid/path")
-    with pytest.raises(ValueError, match="is not"):
-        chezmoi_instance.managed_dirs_in(invalid_path)
-
 
 def test_status_dicts_properties():
     """Test StatusDicts filtering properties"""

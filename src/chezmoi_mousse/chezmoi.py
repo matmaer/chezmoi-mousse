@@ -429,23 +429,14 @@ class Chezmoi:
             ),
         }
 
-    def _validate_managed_dir_path(self, dir_path: Path) -> None:
-        if (
-            dir_path != CM_CFG.destDir
-            and dir_path not in self.managed_dir_paths
-        ):
-            raise ValueError(
-                f"{dir_path} is not {CM_CFG.destDir} or a managed directory."
-            )
-
     def managed_dirs_in(self, dir_path: Path) -> list[Path]:
         # checks only direct children
-        self._validate_managed_dir_path(dir_path)
+
         return [p for p in self.managed_dir_paths if p.parent == dir_path]
 
     def managed_files_in(self, dir_path: Path) -> list[Path]:
         # checks only direct children
-        self._validate_managed_dir_path(dir_path)
+
         return [p for p in self.managed_file_paths if p.parent == dir_path]
 
     def dirs_with_status_in(
@@ -454,7 +445,7 @@ class Chezmoi:
         tab_str: TabStr,
         dir_path: Path,
     ) -> list[Path]:
-        self._validate_managed_dir_path(dir_path)
+
         return [
             p
             for p in self.managed_status[tab_str].dirs_with_status
@@ -464,7 +455,7 @@ class Chezmoi:
     def files_with_status_in(
         self, tab_str: TabStr, dir_path: Path
     ) -> list[Path]:
-        self._validate_managed_dir_path(dir_path)
+
         return [
             p
             for p in self.managed_status[tab_str].files_with_status
@@ -474,7 +465,7 @@ class Chezmoi:
     def dirs_without_status_in(
         self, tab_str: TabStr, dir_path: Path
     ) -> list[Path]:
-        self._validate_managed_dir_path(dir_path)
+
         return [
             p
             for p in self.managed_status[tab_str].dirs_without_status
@@ -484,7 +475,7 @@ class Chezmoi:
     def files_without_status_in(
         self, tab_str: TabStr, dir_path: Path
     ) -> list[Path]:
-        self._validate_managed_dir_path(dir_path)
+
         return [
             p
             for p in self.managed_status[tab_str].files_without_status
@@ -493,12 +484,12 @@ class Chezmoi:
 
     def dir_has_managed_files(self, dir_path: Path) -> bool:
         # checks for any, no matter how deep in subdirectories
-        self._validate_managed_dir_path(dir_path)
+
         return any(f for f in self.managed_file_paths if dir_path in f.parents)
 
     def dir_has_status_files(self, tab_str: TabStr, dir_path: Path) -> bool:
         # checks for any, no matter how deep in subdirectories
-        self._validate_managed_dir_path(dir_path)
+
         return any(
             f
             for f, status in self.managed_status[tab_str].files.items()
@@ -507,7 +498,7 @@ class Chezmoi:
 
     def dir_has_status_dirs(self, tab_str: TabStr, dir_path: Path) -> bool:
         # checks for any, no matter how deep in subdirectories
-        self._validate_managed_dir_path(dir_path)
+
         status_dirs = self.managed_status[tab_str].dirs.items()
         if dir_path.parent == CM_CFG.destDir and dir_path in status_dirs:
             # the parent is dest_dir, also return True because dest_dir is
