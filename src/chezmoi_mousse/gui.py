@@ -86,7 +86,7 @@ class Maximized(ModalScreen[None], IdMixin):
             self.query_one(self.modal_view_qid, GitLogView).path = self.path
 
         if self.path == CM_CFG.destDir or self.path is None:
-            self.border_title_text = str(CM_CFG.destDir)
+            self.border_title_text = f" {CM_CFG.destDir} "
         else:
             self.border_title_text = (
                 f" {self.path.relative_to(CM_CFG.destDir)} "
