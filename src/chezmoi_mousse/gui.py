@@ -30,12 +30,21 @@ from chezmoi_mousse.id_typing import (
     ScreenStr,
     TabStr,
     TcssStr,
+    TreeStr,
     ViewStr,
 )
 from chezmoi_mousse.main_tabs import AddTab, ApplyTab, DoctorTab, ReAddTab
 from chezmoi_mousse.overrides import CustomScrollBarRender
 from chezmoi_mousse.splash import LoadingScreen
-from chezmoi_mousse.widgets import ContentsView, DiffView, GitLogView
+from chezmoi_mousse.widgets import (
+    ContentsView,
+    DiffView,
+    GitLogView,
+    ManagedTree,
+    FlatTree,
+    ExpandedTree,
+    FilteredDirTree,
+)
 
 
 class Maximized(ModalScreen[None], IdMixin):
@@ -156,18 +165,35 @@ class ChezmoiGUI(App[None]):
         )
 
     def refresh_widgets(self, _: object) -> None:
-        doctor_tab = self.query_one(DoctorTab)
-        doctor_tab.populate_doctor_data()
 
-        # Refresh all tree widgets that have refresh_tree_data method
-        try:
-            all_widgets = self.query("*")
-            for widget in all_widgets:
-                if hasattr(widget, "refresh_tree_data"):
-                    getattr(widget, "refresh_tree_data")()
+        # TODO: check the new textual property decorator
+        self.query_one(
+            IdMixin(tab_str=TabStr.apply_tab).tree_qid(TreeStr.managed_tree),
+            ManagedTree,
+        ).refresh_tree_data()
+        self.query_one(
+            IdMixin(tab_str=TabStr.apply_tab).tree_qid(TreeStr.flat_tree),
+            FlatTree,
+        ).refresh_tree_data()
+        self.query_one(
+            IdMixin(tab_str=TabStr.apply_tab).tree_qid(TreeStr.expanded_tree),
+            ExpandedTree,
+        ).refresh_tree_data()
+        self.query_one(
+            IdMixin(tab_str=TabStr.re_add_tab).tree_qid(TreeStr.managed_tree),
+            ManagedTree,
+        ).refresh_tree_data()
+        self.query_one(
+            IdMixin(tab_str=TabStr.re_add_tab).tree_qid(TreeStr.flat_tree),
+            FlatTree,
+        ).refresh_tree_data()
+        self.query_one(
+            IdMixin(tab_str=TabStr.re_add_tab).tree_qid(TreeStr.expanded_tree),
+            ExpandedTree,
+        ).refresh_tree_data()
 
-        except Exception as e:
-            self.notify(f"Failed to refresh trees: {e}")
+        self.query_one(DoctorTab).populate_doctor_data()
+        self.query_one(FilteredDirTree).refresh_tree_data()
 
     def on_tabbed_content_tab_activated(
         self, event: TabbedContent.TabActivated
