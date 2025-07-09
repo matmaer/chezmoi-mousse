@@ -115,11 +115,12 @@ class TreeContentSwitcher(ContentSwitcher, IdMixin):
         super().__init__(
             id=self.content_switcher_id(Location.left),
             initial=self.tree_id(TreeStr.managed_tree),
-            classes=f"{TcssStr.content_switcher_left} {TcssStr.top_border_title}",
         )
 
     def on_mount(self) -> None:
         self.border_title = str(CM_CFG.destDir)
+        self.add_class(TcssStr.content_switcher_left)
+        self.add_class(TcssStr.top_border_title)
 
     def compose(self) -> ComposeResult:
         yield ManagedTree(self.tab_str)
