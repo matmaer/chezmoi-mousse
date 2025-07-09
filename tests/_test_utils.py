@@ -8,10 +8,11 @@ import chezmoi_mousse.id_typing as id_typing
 tcss_file_path: Path = Path("./src/chezmoi_mousse/gui.tcss")
 
 
-def get_modules_to_test() -> list[Path]:
+def get_modules_to_test(exclude_file_names: list[str] = []) -> list[Path]:
     src_dir = Path("./src/chezmoi_mousse")
-    excluded_filename = "id_typing.py"
-    return [f for f in src_dir.glob("*.py") if f.name != excluded_filename]
+    return [
+        f for f in src_dir.glob("*.py") if f.name not in exclude_file_names
+    ]
 
 
 def str_enum_classes_excluding_tcss() -> list[str]:
