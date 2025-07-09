@@ -92,14 +92,8 @@ class Operate(ModalScreen[None], IdMixin):
             id=OperateIdStr.operate_vertical_id,
             classes=TcssStr.operate_container,
         ):
-            yield AutoWarning(
-                tab_str=self.tab_name, classes=TcssStr.operate_auto_warning
-            )
-            yield OperateInfo(
-                tab_str=self.tab_name,
-                path=self.path,
-                classes=TcssStr.operate_top_path,
-            )
+            yield AutoWarning(tab_str=self.tab_name)
+            yield OperateInfo(tab_str=self.tab_name, path=self.path)
             if self.tab_name == TabStr.add_tab:
                 with Container(
                     id=OperateIdStr.operate_collapsible_id,
@@ -116,11 +110,7 @@ class Operate(ModalScreen[None], IdMixin):
                     classes=TcssStr.collapsible_container,
                 ):
                     yield Collapsible(
-                        DiffView(
-                            tab_name=self.tab_name,
-                            view_id=self.diff_id,
-                            classes=TcssStr.operate_diff,
-                        ),
+                        DiffView(tab_name=self.tab_name, view_id=self.diff_id),
                         classes=TcssStr.operate_collapsible,
                         title="file diffs view",
                     )
@@ -135,6 +125,11 @@ class Operate(ModalScreen[None], IdMixin):
             TabStr.re_add_tab: str(ButtonEnum.re_add_file_btn.value).lower(),
             TabStr.add_tab: str(ButtonEnum.add_file_btn.value).lower(),
         }
+        self.query_exactly_one(AutoWarning).add_class(
+            TcssStr.operate_auto_warning
+        )
+        self.query_exactly_one(OperateInfo).add_class(TcssStr.operate_top_path)
+        self.query_exactly_one(DiffView).add_class(TcssStr.operate_diff)
 
         # Add initial log entry
         self.query_one(self.log_qid, RichLog).border_title = (
@@ -430,7 +425,6 @@ class ReAddTab(_BaseTab):
             with ContentSwitcher(
                 id=self.content_switcher_id(Location.right),
                 initial=self.view_id(ViewStr.diff_view),
-                classes=f"{TcssStr.content_switcher_right} {TcssStr.top_border_title}",
             ):
                 yield DiffView(
                     tab_name=self.tab_name,
@@ -447,6 +441,11 @@ class ReAddTab(_BaseTab):
         self.query_one(
             self.tab_vertical_qid(Location.right), Vertical
         ).add_class(TcssStr.tab_right_vertical)
+        content_switcher_right = self.query_one(
+            self.content_switcher_id(Location.right), ContentSwitcher
+        )
+        content_switcher_right.add_class(TcssStr.content_switcher_right)
+        content_switcher_right.add_class(TcssStr.top_border_title)
 
     def action_toggle_filter_slider(self) -> None:
         self.query_one(self.filter_slider_qid, VerticalGroup).toggle_class(

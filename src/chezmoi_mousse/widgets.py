@@ -40,8 +40,8 @@ class AutoWarning(Static):
 
     sign: str = CharsEnum.warning_sign.value
 
-    def __init__(self, *, tab_str: TabStr, classes: str) -> None:
-        super().__init__(classes=classes)
+    def __init__(self, *, tab_str: TabStr) -> None:
+        super().__init__()
         self.tab_str = tab_str
 
     def on_mount(self) -> None:
@@ -75,8 +75,8 @@ class OperateInfo(Static):
 
     bullet = CharsEnum.bullet.value
 
-    def __init__(self, tab_str: TabStr, *, path: Path, classes: str) -> None:
-        super().__init__(classes=classes)
+    def __init__(self, tab_str: TabStr, *, path: Path) -> None:
+        super().__init__()
 
         self.tab_str = tab_str
         self.path = path
@@ -193,13 +193,9 @@ class DiffView(RichLog):
 
     path: reactive[Path | None] = reactive(None, init=False)
 
-    def __init__(
-        self, *, tab_name: TabStr, view_id: str, classes: str = ""
-    ) -> None:
+    def __init__(self, *, tab_name: TabStr, view_id: str) -> None:
         self.tab_name = tab_name
-        super().__init__(
-            id=view_id, auto_scroll=False, wrap=False, classes=classes
-        )
+        super().__init__(id=view_id, auto_scroll=False, wrap=False)
 
     def on_mount(self) -> None:
         self.path = CM_CFG.destDir
@@ -350,9 +346,7 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
         root_node_data: DirNodeData = DirNodeData(
             path=CM_CFG.destDir, found=True, status="R"
         )
-        super().__init__(
-            label="root", data=root_node_data, id=id, classes=classes
-        )
+        super().__init__(label="root", data=root_node_data, id=id)
 
     def on_mount(self) -> None:
         self.guide_depth: int = 3
