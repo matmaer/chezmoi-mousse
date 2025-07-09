@@ -628,10 +628,6 @@ class FilteredDirTree(DirectoryTree):
     unmanaged_dirs: reactive[bool] = reactive(False)
     unwanted: reactive[bool] = reactive(False)
 
-    def on_mount(self) -> None:
-        self.show_root = False
-        self.guide_depth = 3
-
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
         managed_dirs = chezmoi.managed_dir_paths
         managed_files = chezmoi.managed_file_paths
