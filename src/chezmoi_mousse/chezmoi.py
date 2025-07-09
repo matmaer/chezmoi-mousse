@@ -149,7 +149,7 @@ class CommandLog(RichLog):
             f"[{self._log_time()}] [{theme.vars["text-error"]}]{message}[/]"
         )
 
-    def log_output(self, message: str) -> None:
+    def log_warding(self, message: str) -> None:
         lines = message.splitlines()
         for line in lines:
             if line.strip():
@@ -158,7 +158,7 @@ class CommandLog(RichLog):
                     f"[{self._log_time()}] [{theme.vars["text-warning"]}]{escaped_line}[/]"
                 )
 
-    def log_app_msg(self, message: str) -> None:
+    def log_success(self, message: str) -> None:
         self.write(
             f"[{self._log_time()}] [{theme.vars["text-success"]}]{message}[/]"
         )
@@ -209,12 +209,12 @@ def subprocess_run(long_command: CmdWords, time_out: float = 1) -> str:
             message = (
                 f"{check_mark} command successful, subprocess exit code 0"
             )
-            cmd_log.log_app_msg(message)
-            op_log.log_app_msg(message)
+            cmd_log.log_success(message)
+            op_log.log_success(message)
             if cmd_stdout:
                 op_log.log_output(f"{cmd_stdout}")
         else:
-            cmd_log.log_app_msg("command successful, no specific logging")
+            cmd_log.log_success("command successful, no specific logging")
         return cmd_stdout
     except Exception as e:
         if any(verb.value in long_command for verb in OperateVerbs):

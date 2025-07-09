@@ -169,7 +169,7 @@ class LoadingScreen(Screen[list[str]]):
                 "No config file found in chezmoi doctor output."
             )
         else:
-            cmd_log.log_app_msg(f"found config file {config_file_path}")
+            cmd_log.log_success(f"found config file {config_file_path}")
 
         # read and create config
         config_lines = [
@@ -179,7 +179,7 @@ class LoadingScreen(Screen[list[str]]):
         ]
 
         if not any("interactive" in line.lower() for line in config_lines):
-            cmd_log.log_app_msg(
+            cmd_log.log_success(
                 "No interactive entry found in config, using file as is."
             )
             ChangeCommand.config_path = config_file_path
@@ -195,7 +195,7 @@ class LoadingScreen(Screen[list[str]]):
         )
         with open(temp_file_path, "w") as temp_file:
             temp_file.write(new_config_str)
-        cmd_log.log_app_msg(f"created non-interactive config {temp_file_path}")
+        cmd_log.log_success(f"created non-interactive config {temp_file_path}")
         cmd_log.log_dimmed(new_config_str)
 
         ChangeCommand.config_path = temp_file_path
@@ -209,7 +209,7 @@ class LoadingScreen(Screen[list[str]]):
             if worker.group
             in ("io_workers", "doctor", "cat_config", "set_temp_config_file")
         ):
-            cmd_log.log_app_msg("--- splash.py finished loading ---")
+            cmd_log.log_success("--- splash.py finished loading ---")
             self.dismiss()
 
     def on_mount(self) -> None:
