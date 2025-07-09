@@ -499,10 +499,6 @@ class ManagedTree(TreeBase, IdMixin):
             classes=TcssStr.tree_widget,
         )
 
-    # def on_mount(self) -> None:
-    #     # Don't populate data here - it will be done via refresh_tree_data()
-    #     pass
-
     def refresh_tree_data(self) -> None:
         """Refresh the tree with latest chezmoi data."""
         self.root.remove_children()
