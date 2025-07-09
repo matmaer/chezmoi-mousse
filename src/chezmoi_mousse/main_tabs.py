@@ -337,10 +337,7 @@ class ApplyTab(_BaseTab):
             )
             yield TreeContentSwitcher(self.tab_str)
 
-        with Vertical(
-            id=self.tab_vertical_id(Location.right),
-            classes=TcssStr.tab_right_vertical,
-        ):
+        with Vertical(id=self.tab_vertical_id(Location.right)):
             yield ButtonsHorizontal(
                 self.tab_str,
                 buttons=(
@@ -353,7 +350,6 @@ class ApplyTab(_BaseTab):
             with ContentSwitcher(
                 id=self.content_switcher_id(Location.right),
                 initial=self.view_id(ViewStr.diff_view),
-                classes=f"{TcssStr.content_switcher_right} {TcssStr.top_border_title}",
             ):
                 yield DiffView(
                     tab_name=self.tab_name,
@@ -365,6 +361,17 @@ class ApplyTab(_BaseTab):
         yield FilterSlider(
             self.tab_str, filters=(FilterEnum.unchanged, FilterEnum.expand_all)
         )
+
+    def on_mount(self) -> None:
+        right_side = self.query_one(
+            self.tab_vertical_qid(Location.right), Vertical
+        )
+        right_side.add_class(TcssStr.tab_right_vertical)
+        right_side_content_switcher = self.query_one(
+            self.content_switcher_qid(Location.right), ContentSwitcher
+        )
+        right_side_content_switcher.add_class(TcssStr.content_switcher_right)
+        right_side_content_switcher.add_class(TcssStr.top_border_title)
 
     def action_toggle_filter_slider(self) -> None:
         self.query_one(self.filter_slider_qid, VerticalGroup).toggle_class(
@@ -409,10 +416,7 @@ class ReAddTab(_BaseTab):
             )
             yield TreeContentSwitcher(self.tab_str)
 
-        with Vertical(
-            id=self.tab_vertical_id(Location.right),
-            classes=TcssStr.tab_right_vertical,
-        ):
+        with Vertical(id=self.tab_vertical_id(Location.right)):
             yield ButtonsHorizontal(
                 self.tab_str,
                 buttons=(
@@ -438,6 +442,11 @@ class ReAddTab(_BaseTab):
         yield FilterSlider(
             self.tab_str, filters=(FilterEnum.unchanged, FilterEnum.expand_all)
         )
+
+    def on_mount(self) -> None:
+        self.query_one(
+            self.tab_vertical_qid(Location.right), Vertical
+        ).add_class(TcssStr.tab_right_vertical)
 
     def action_toggle_filter_slider(self) -> None:
         self.query_one(self.filter_slider_qid, VerticalGroup).toggle_class(
@@ -471,20 +480,14 @@ class AddTab(Horizontal, IdMixin):
         super().__init__(id=self.tab_main_horizontal_id)
 
     def compose(self) -> ComposeResult:
-        with VerticalGroup(
-            id=self.tab_vertical_id(Location.left),
-            classes=f"{TcssStr.tab_left_vertical} {TcssStr.top_border_title}",
-        ):
+        with VerticalGroup(id=self.tab_vertical_id(Location.left)):
             yield FilteredDirTree(
                 CM_CFG.destDir,
                 id=self.tree_id(TreeStr.add_tree),
                 classes=TcssStr.dir_tree_widget,
             )
 
-        with Vertical(
-            id=self.tab_vertical_id(Location.right),
-            classes=f"{TcssStr.tab_right_vertical} {TcssStr.top_border_title}",
-        ):
+        with Vertical(id=self.tab_vertical_id(Location.right)):
             yield ContentsView(view_id=self.view_id(ViewStr.contents_view))
 
         yield FilterSlider(
@@ -493,12 +496,18 @@ class AddTab(Horizontal, IdMixin):
         )
 
     def on_mount(self) -> None:
-        self.query_one(
+        right_side = self.query_one(
             self.tab_vertical_qid(Location.right), Vertical
-        ).border_title = str(CM_CFG.destDir)
-        self.query_one(
+        )
+        right_side.border_title = str(CM_CFG.destDir)
+        right_side.add_class(TcssStr.tab_right_vertical)
+        right_side.add_class(TcssStr.top_border_title)
+        left_side = self.query_one(
             self.tab_vertical_qid(Location.left), VerticalGroup
-        ).border_title = str(CM_CFG.destDir)
+        )
+        left_side.border_title = str(CM_CFG.destDir)
+        left_side.add_class(TcssStr.tab_left_vertical)
+        left_side.add_class(TcssStr.top_border_title)
 
     def on_directory_tree_file_selected(
         self, event: FilteredDirTree.FileSelected
