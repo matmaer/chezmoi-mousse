@@ -138,11 +138,9 @@ class CommandLog(RichLog):
     def log_command(self, command: CmdWords) -> str:
         trimmed_cmd = self.trimmed_cmd_str(command)
         log_time = f"[{self._log_time()}]"
-        log_line = (
-            f"{log_time} [{theme.vars["primary-lighten-3"]}]{trimmed_cmd}[/]"
-        )
+        log_color = theme.vars["primary-lighten-3"]
+        log_line = f"{log_time} [{log_color}]{trimmed_cmd}[/]"
         self.write(log_line)
-        return log_line  # used by the log in the Operate modalscreen
 
     def log_error(self, message: str) -> None:
         self.write(
