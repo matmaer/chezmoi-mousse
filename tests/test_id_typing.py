@@ -35,3 +35,30 @@ def test_no_hardcoded_ids(py_file: Path):
             f"  {violation_details}\n\n"
             f"IDs should be generated using IdMixin methods instead of hardcoded strings."
         )
+
+
+# TODO: implement checkup of StrEnum and Enum member usage
+
+
+# import inspect
+# from enum import Enum, StrEnum
+# from pathlib import Path
+
+
+# import chezmoi_mousse.id_typing as id_typing
+
+
+# def all_id_typing_enum_classes() -> list[str]:
+#     return [
+#         name
+#         for name, cls in inspect.getmembers(id_typing, inspect.isclass)
+#         if issubclass(cls, Enum)
+#     ]
+
+
+# def id_typing_all_str_enum_classes() -> list[str]:
+#     return [
+#         name
+#         for name, cls in inspect.getmembers(id_typing, inspect.isclass)
+#         if issubclass(cls, StrEnum)
+#     ]
