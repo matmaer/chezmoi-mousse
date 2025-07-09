@@ -509,6 +509,10 @@ class AddTab(Horizontal, IdMixin):
         left_side.add_class(TcssStr.tab_left_vertical)
         left_side.add_class(TcssStr.top_border_title)
 
+        tree = self.query_one(self.tree_qid(TreeStr.add_tree), FilteredDirTree)
+        tree.show_root = False
+        tree.guide_depth = 3
+
     def on_directory_tree_file_selected(
         self, event: FilteredDirTree.FileSelected
     ) -> None:
