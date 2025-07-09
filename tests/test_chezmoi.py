@@ -60,3 +60,26 @@ def test_status_dicts_properties():
     assert len(status_dicts.files_without_status) == 2  # X status items
     assert len(status_dicts.dirs_with_status) == 2  # M, A status items
     assert len(status_dicts.files_with_status) == 2  # M, D status items
+
+
+# TODO: check inspect module for more tests
+# def properties_in_object(object_name: object) -> InspectOut:
+#     return [
+#         (name, obj)
+#         for name, obj in inspect.getmembers_static(object_name)
+#         if isinstance(obj, property) and not name.startswith("_")
+#     ]
+
+
+# def routines_in_object(object_name: object) -> InspectOut:
+#     return [
+#         (name, obj)
+#         for name, obj in inspect.getmembers_static(
+#             object_name, inspect.ismethod
+#         )
+#         if not name.startswith("_") and not name.startswith("_")
+#     ]
+
+
+# chezmoi_routines: InspectOut = routines_in_object(Chezmoi)
+# chezmoi_properties: InspectOut = properties_in_object(Chezmoi)
