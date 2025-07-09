@@ -13,7 +13,7 @@ filter_tooltips = {
     "unchanged": "Include files unchanged files which are not found in the 'chezmoi status' output.",
 }
 
-unwanted = {
+unwanted_names = {
     "dirs": {
         "__pycache__",
         ".build",

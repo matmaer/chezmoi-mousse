@@ -24,7 +24,7 @@ from textual.widgets.tree import TreeNode
 
 from chezmoi_mousse import CM_CFG, theme
 from chezmoi_mousse.chezmoi import chezmoi, cmd_log
-from chezmoi_mousse.config import unwanted
+from chezmoi_mousse.config import unwanted_names
 from chezmoi_mousse.id_typing import (
     CharsEnum,
     IdMixin,
@@ -688,10 +688,10 @@ class FilteredDirTree(DirectoryTree):
 
     def is_unwanted_path(self, path: Path) -> bool:
         if path.is_dir():
-            if path.name in unwanted["dirs"]:
+            if path.name in unwanted_names["dirs"]:
                 return True
         if path.is_file():
             extension = path.suffix
-            if extension in unwanted["files"]:
+            if extension in unwanted_names["files"]:
                 return True
         return False
