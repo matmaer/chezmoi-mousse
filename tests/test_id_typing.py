@@ -62,3 +62,19 @@ def test_no_hardcoded_ids(py_file: Path):
 #         for name, cls in inspect.getmembers(id_typing, inspect.isclass)
 #         if issubclass(cls, StrEnum)
 #     ]
+
+
+# def all_id_mixin_methods() -> list[str]:
+#     return [
+#         name
+#         for name, _ in inspect.getmembers(
+#             IdMixin, predicate=inspect.isfunction
+#         )
+#         if not name.startswith("_")
+#     ]
+
+
+# def all_id_mixin_init_params() -> list[str]:
+
+#     sig = inspect.signature(IdMixin.__init__)
+#     return [param for param in sig.parameters.keys() if param != "self"]
