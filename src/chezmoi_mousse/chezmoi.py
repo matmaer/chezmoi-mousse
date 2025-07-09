@@ -135,11 +135,11 @@ class CommandLog(RichLog):
             ]
         )
 
-    def log_command(self, command: CmdWords) -> str:
+    def log_command(self, command: CmdWords) -> None:
         trimmed_cmd = self.trimmed_cmd_str(command)
-        log_time = f"[{self._log_time()}]"
-        log_color = theme.vars["primary-lighten-3"]
-        log_line = f"{log_time} [{log_color}]{trimmed_cmd}[/]"
+        time = f"[{self._log_time()}]"
+        color = theme.vars["primary-lighten-3"]
+        log_line = f"{time} [{color}]{trimmed_cmd}[/]"
         self.write(log_line)
 
     def log_error(self, message: str) -> None:
@@ -149,11 +149,12 @@ class CommandLog(RichLog):
 
     def log_warning(self, message: str) -> None:
         lines = message.splitlines()
+        warning_color = theme.vars["text-warning"]
         for line in lines:
             if line.strip():
                 escaped_line = escape(line)
                 self.write(
-                    f"[{self._log_time()}] [{theme.vars["text-warning"]}]{escaped_line}[/]"
+                    f"[{self._log_time()}] [{warning_color}]{escaped_line}[/]"
                 )
 
     def log_success(self, message: str) -> None:
