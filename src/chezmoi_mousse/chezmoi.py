@@ -105,14 +105,8 @@ class ReadCmd(Enum):
 
 
 class CommandLog(RichLog):
-    def __init__(self, id: str, classes: str = "") -> None:
-        super().__init__(
-            id=id,
-            auto_scroll=True,
-            markup=True,
-            max_lines=20000,
-            classes=classes,
-        )
+    def __init__(self, id: str) -> None:
+        super().__init__(id=id, auto_scroll=True, markup=True, max_lines=20000)
 
     def _log_time(self) -> str:
         return f"[green]{datetime.now().strftime('%H:%M:%S')}[/]"
@@ -185,7 +179,8 @@ class CommandLog(RichLog):
 
 
 cmd_log = CommandLog(id=PaneEnum.log.value)
-op_log = CommandLog(id=OperateIdStr.operate_log_id, classes=TcssStr.op_log)
+op_log = CommandLog(id=OperateIdStr.operate_log_id)
+op_log.add_class(TcssStr.op_log)
 
 
 def subprocess_run(long_command: CmdWords, time_out: float = 1) -> str:
