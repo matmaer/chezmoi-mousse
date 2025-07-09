@@ -311,15 +311,17 @@ class InputOutput:
     arg_id: str
     std_out: str = ""
     dict_out: dict[str, Any] = field(default_factory=dict[str, Any])
-    list_out: list[str] = field(default_factory=list[str])
 
     @property
     def label(self):
         return f'chezmoi {self.arg_id.replace("_", " ")}'
 
+    @property
+    def list_out(self):
+        return self.std_out.splitlines()
+
     def update(self) -> None:
         self.std_out = subprocess_run(self.long_command)
-        self.list_out = self.std_out.splitlines()
         try:
             result: Any = json.loads(self.std_out)
             if isinstance(result, dict):
