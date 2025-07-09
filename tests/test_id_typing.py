@@ -5,10 +5,7 @@ import inspect
 from pathlib import Path
 
 import pytest
-from _test_utils import (
-    get_method_calls_from_modules_to_test,
-    get_modules_to_test,
-)
+from _test_utils import get_method_calls_from_modules_to_test, modules_to_test
 
 from chezmoi_mousse.id_typing import IdMixin
 
@@ -32,7 +29,7 @@ def test_all_idmixin_methods_are_used():
 
 
 @pytest.mark.parametrize(
-    "py_file", get_modules_to_test(), ids=lambda py_file: py_file.name
+    "py_file", modules_to_test(), ids=lambda py_file: py_file.name
 )
 def test_no_hardcoded_ids(py_file: Path):
     violations: list[str] = []

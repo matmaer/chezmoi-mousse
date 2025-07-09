@@ -5,7 +5,7 @@ import re
 from pathlib import Path
 
 import pytest
-from _test_utils import get_modules_to_test, tcss_file_path
+from _test_utils import modules_to_test, tcss_file_path
 
 from chezmoi_mousse.id_typing import TcssStr
 
@@ -14,9 +14,7 @@ def _is_tcssstr_attribute(node: ast.Attribute) -> bool:
     return isinstance(node.value, ast.Name) and node.value.id == "TcssStr"
 
 
-@pytest.mark.parametrize(
-    "py_file", get_modules_to_test(), ids=lambda x: x.name
-)
+@pytest.mark.parametrize("py_file", modules_to_test(), ids=lambda x: x.name)
 def test_no_hardcoded_css_classes(py_file: Path) -> None:
     content = py_file.read_text()
     violations: list[str] = []
@@ -54,9 +52,7 @@ def test_no_hardcoded_css_classes(py_file: Path) -> None:
     )
 
 
-@pytest.mark.parametrize(
-    "py_file", get_modules_to_test(), ids=lambda x: x.name
-)
+@pytest.mark.parametrize("py_file", modules_to_test(), ids=lambda x: x.name)
 def test_only_tcssstr_attributes(py_file: Path) -> None:
     content = py_file.read_text()
     violations: list[str] = []
@@ -106,7 +102,7 @@ def test_no_unused_tcss_classes() -> None:
 
     used_classes: set[str] = set()
 
-    for py_file in get_modules_to_test():
+    for py_file in modules_to_test():
         content = py_file.read_text()
         tree = ast.parse(content)
 
@@ -162,7 +158,7 @@ def test_all_tcss_str_entries_in_use() -> None:
     # Find used TcssStr entries in the codebase
     used_entries: set[str] = set()
 
-    for py_file in get_modules_to_test():
+    for py_file in modules_to_test():
         content = py_file.read_text()
         tree = ast.parse(content)
 

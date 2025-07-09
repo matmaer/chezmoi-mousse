@@ -8,7 +8,7 @@ import chezmoi_mousse.id_typing as id_typing
 tcss_file_path: Path = Path("./src/chezmoi_mousse/gui.tcss")
 
 
-def get_modules_to_test(exclude_file_names: list[str] = []) -> list[Path]:
+def modules_to_test(exclude_file_names: list[str] = []) -> list[Path]:
     src_dir = Path("./src/chezmoi_mousse")
     return [
         f for f in src_dir.glob("*.py") if f.name not in exclude_file_names
@@ -56,7 +56,7 @@ def enum_values() -> list[str]:
 def get_method_calls_from_modules_to_test() -> set[str]:
     all_method_calls: set[str] = set()
 
-    for py_file in get_modules_to_test():
+    for py_file in modules_to_test():
         try:
             content = py_file.read_text()
             tree = ast.parse(content, filename=str(py_file))
