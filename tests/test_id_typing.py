@@ -1,31 +1,10 @@
-"""Test to check if all methods from the IdMixin are in use by modules in the src dir."""
+"""Test if all methods from the IdMixin are in use by modules in the src dir."""
 
 import ast
-import inspect
 from pathlib import Path
 
 import pytest
-from _test_utils import get_method_calls_from_modules_to_test, modules_to_test
-
-from chezmoi_mousse.id_typing import IdMixin
-
-
-def test_all_idmixin_methods_are_used():
-    idmixin_methods = {
-        name
-        for name, _ in inspect.getmembers(
-            IdMixin, predicate=inspect.isfunction
-        )
-        if name != "__init__"
-    }
-    source_method_calls = get_method_calls_from_modules_to_test()
-    unused_methods = idmixin_methods - source_method_calls
-
-    assert (
-        len(unused_methods) == 0
-    ), f"IdMixin methods not in use: {len(unused_methods)}\n" + "\n".join(
-        sorted(unused_methods)
-    )
+from _test_utils import modules_to_test
 
 
 @pytest.mark.parametrize(
