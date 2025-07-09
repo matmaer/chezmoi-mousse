@@ -25,7 +25,7 @@ def extract_tcss_classes(path: Path) -> list[str]:
 @pytest.mark.parametrize(
     "tcss_class", extract_tcss_classes(Path("./src/chezmoi_mousse/gui.tcss"))
 )
-def test_no_unused_tcss_classes(tcss_class: str) -> None:
+def test_no_unused(tcss_class: str) -> None:
     is_used = False
     for py_file in modules_to_test():
         if tcss_class in py_file.read_text():
@@ -39,7 +39,7 @@ def test_no_unused_tcss_classes(tcss_class: str) -> None:
 @pytest.mark.parametrize(
     "py_file", modules_to_test(), ids=lambda py_file: py_file.name
 )
-def test_valid_tcss_args(py_file: Path) -> None:
+def test_no_hardcoded(py_file: Path) -> None:
     violations: list[str] = []
     tree = ast.parse(py_file.read_text())
 
