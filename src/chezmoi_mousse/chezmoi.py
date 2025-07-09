@@ -143,38 +143,33 @@ class CommandLog(RichLog):
         self.write(log_line)
 
     def log_error(self, message: str) -> None:
-        self.write(
-            f"[{self._log_time()}] [{theme.vars["text-error"]}]{message}[/]"
-        )
+        color = theme.vars["text-error"]
+        self.write(f"[{self._log_time()}] [{color}]{message}[/]")
 
     def log_warning(self, message: str) -> None:
         lines = message.splitlines()
-        warning_color = theme.vars["text-warning"]
-        for line in lines:
-            if line.strip():
-                escaped_line = escape(line)
-                self.write(
-                    f"[{self._log_time()}] [{warning_color}]{escaped_line}[/]"
-                )
+        color = theme.vars["text-warning"]
+        for line in [line for line in lines if line.strip()]:
+            escaped_line = escape(line)
+            self.write(f"[{self._log_time()}] [{color}]{escaped_line}[/]")
 
     def log_success(self, message: str) -> None:
-        self.write(
-            f"[{self._log_time()}] [{theme.vars["text-success"]}]{message}[/]"
-        )
+        color = theme.vars["text-success"]
+        self.write(f"[{self._log_time()}] [{color}]{message}[/]")
 
     def log_dimmed(self, message: str) -> None:
         lines: list[str] = message.splitlines()
+        color = theme.vars["text-disabled"]
         for line in lines:
             if line.strip():
                 escaped_line = escape(line)
-                self.write(f"[{theme.vars["text-disabled"]}]{escaped_line}[/]")
+                self.write(f"[{color}]{escaped_line}[/]")
 
     # used by the ContentsView class
     def log_read_path(self, file_path: Path) -> None:
-        self.write(
-            f"[{self._log_time()}] [{theme.vars["primary-lighten-3"]}]"
-            f"Get path contents for {file_path}[/]"
-        )
+        color = theme.vars["primary-lighten-1"]
+        time = self._log_time()
+        self.write(f"[{time}] [{color}] Get path contents for {file_path}[/]")
 
 
 cmd_log = CommandLog(id=PaneEnum.log.value)
