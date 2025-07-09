@@ -216,7 +216,7 @@ class ChezmoiGUI(App[None]):
             else:
                 return None  # show disabled binding
 
-        return None  # show disabled binding
+        return True  # show disabled binding
 
     def action_toggle_filter_slider(self) -> None:
         # merely find the corresponding method in the active tab ant call it
