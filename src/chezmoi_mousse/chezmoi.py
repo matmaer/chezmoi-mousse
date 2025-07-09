@@ -1,5 +1,5 @@
 import json
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
@@ -310,7 +310,7 @@ class InputOutput:
     long_command: CmdWords
     arg_id: str
     std_out: str = ""
-    dict_out: dict[str, Any] = field(default_factory=dict[str, Any])
+    # dict_out: dict[str, Any] = field(default_factory=dict[str, Any])
 
     @property
     def label(self):
@@ -320,17 +320,16 @@ class InputOutput:
     def list_out(self):
         return self.std_out.splitlines()
 
+    @property
+    def dict_out(self) -> dict[str, Any]:
+        try:
+            result: dict[str, Any] = json.loads(self.std_out)
+            return result
+        except (json.JSONDecodeError, ValueError):
+            return {}
+
     def update(self) -> None:
         self.std_out = subprocess_run(self.long_command)
-        try:
-            result: Any = json.loads(self.std_out)
-            if isinstance(result, dict):
-                self.dict_out: dict[str, Any] = result
-            else:
-                self.dict_out = {}
-
-        except (json.JSONDecodeError, ValueError):
-            self.dict_out = {}
 
 
 class Chezmoi:
