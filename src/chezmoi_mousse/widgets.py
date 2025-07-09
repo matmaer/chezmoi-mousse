@@ -691,3 +691,7 @@ class FilteredDirTree(DirectoryTree):
             if extension in unwanted_names["files"]:
                 return True
         return False
+
+    def refresh_tree_data(self) -> None:
+        """Refresh the tree with latest chezmoi data."""
+        self.reload()
