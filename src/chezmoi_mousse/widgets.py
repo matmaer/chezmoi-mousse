@@ -140,7 +140,7 @@ class ContentsView(RichLog):
                     )
                 else:
                     self.write(file_content + truncated_message)
-                    cmd_log.log_output("Read file successful")
+                    cmd_log.log_warning("Read file successful")
 
         except UnicodeDecodeError as e:
             self.write(f"{self.path} cannot be decoded as UTF-8.")
@@ -174,7 +174,7 @@ class ContentsView(RichLog):
                 self.write(f"Managed directory: {self.path}")
             else:
                 self.write(f"Unmanaged directory: {self.path}")
-            cmd_log.log_output("Directory info displayed")
+            cmd_log.log_warning("Directory info displayed")
 
         except OSError as error:
             text = Text(f"Error reading {self.path}: {error}")
@@ -311,9 +311,9 @@ class GitLogView(DataTable[Text]):
 
     def watch_path(self) -> None:
         assert isinstance(self.path, Path)
-        git_log_output = chezmoi.run.git_log(self.path)
+        git_log_warning = chezmoi.run.git_log(self.path)
         self.clear(columns=True)
-        self.populate_data_table(git_log_output)
+        self.populate_data_table(git_log_warning)
 
 
 @dataclass

@@ -149,7 +149,7 @@ class CommandLog(RichLog):
             f"[{self._log_time()}] [{theme.vars["text-error"]}]{message}[/]"
         )
 
-    def log_warding(self, message: str) -> None:
+    def log_warning(self, message: str) -> None:
         lines = message.splitlines()
         for line in lines:
             if line.strip():
@@ -200,10 +200,10 @@ def subprocess_run(long_command: CmdWords, time_out: float = 1) -> str:
         if any(verb.value in long_command for verb in OperateVerbs):
             op_log.log_command(long_command)
         if any(verb.value in long_command for verb in InputOutputVerbs):
-            cmd_log.log_output("InputOutput command successful")
+            cmd_log.log_warning("InputOutput command successful")
             return cmd_stdout
         elif any(verb.value in long_command for verb in ReadVerbs):
-            cmd_log.log_output("Read command successful")
+            cmd_log.log_warning("Read command successful")
             return cmd_stdout
         elif any(verb.value in long_command for verb in OperateVerbs):
             message = (
@@ -212,7 +212,7 @@ def subprocess_run(long_command: CmdWords, time_out: float = 1) -> str:
             cmd_log.log_success(message)
             op_log.log_success(message)
             if cmd_stdout:
-                op_log.log_output(f"{cmd_stdout}")
+                op_log.log_warning(f"{cmd_stdout}")
         else:
             cmd_log.log_success("command successful, no specific logging")
         return cmd_stdout
