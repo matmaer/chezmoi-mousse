@@ -63,10 +63,8 @@ class PaneEnum(Enum):
 
 
 class ScreenStr(StrEnum):
-    main_screen = auto()
     maximized_modal = auto()
     operate_modal = auto()
-    splash_screen = auto()
 
 
 class ViewStr(StrEnum):
@@ -126,16 +124,8 @@ class TcssStr(StrEnum):
 
 class OperateIdStr(StrEnum):
     operate_collapsible_id = auto()
-    operate_info_id = auto()
     operate_log_id = auto()
-    operate_top_path_id = auto()
     operate_vertical_id = auto()
-
-
-class CmdContextStr(StrEnum):
-    change_command = auto()
-    read_command = auto()
-    input_output_command = auto()
 
 
 class IdMixin:
