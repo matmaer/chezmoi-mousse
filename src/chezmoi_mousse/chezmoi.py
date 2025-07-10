@@ -424,24 +424,6 @@ class Chezmoi:
 
         return [p for p in self.managed_dir_paths if p.parent == dir_path]
 
-    def managed_files_in(self, dir_path: Path) -> list[Path]:
-        # checks only direct children
-
-        return [p for p in self.managed_file_paths if p.parent == dir_path]
-
-    def dirs_with_status_in(
-        # checks only direct children
-        self,
-        tab_str: TabStr,
-        dir_path: Path,
-    ) -> list[Path]:
-
-        return [
-            p
-            for p in self.managed_status[tab_str].dirs_with_status
-            if p.parent == dir_path
-        ]
-
     def files_with_status_in(
         self, tab_str: TabStr, dir_path: Path
     ) -> list[Path]:
@@ -449,16 +431,6 @@ class Chezmoi:
         return [
             p
             for p in self.managed_status[tab_str].files_with_status
-            if p.parent == dir_path
-        ]
-
-    def dirs_without_status_in(
-        self, tab_str: TabStr, dir_path: Path
-    ) -> list[Path]:
-
-        return [
-            p
-            for p in self.managed_status[tab_str].dirs_without_status
             if p.parent == dir_path
         ]
 
@@ -471,11 +443,6 @@ class Chezmoi:
             for p in self.managed_status[tab_str].files_without_status
             if p.parent == dir_path
         ]
-
-    def dir_has_managed_files(self, dir_path: Path) -> bool:
-        # checks for any, no matter how deep in subdirectories
-
-        return any(f for f in self.managed_file_paths if dir_path in f.parents)
 
     def dir_has_status_files(self, tab_str: TabStr, dir_path: Path) -> bool:
         # checks for any, no matter how deep in subdirectories
