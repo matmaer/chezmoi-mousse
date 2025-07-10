@@ -155,13 +155,16 @@ class ChezmoiGUI(App[None]):
         yield Footer()
 
     def on_mount(self) -> None:
+        cmd_log.log_success("App initialized successfully")
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
         self.title = "-  c h e z m o i  m o u s s e  -"
         self.register_theme(chezmoi_mousse.theme.chezmoi_mousse_dark)
-        self.theme = "chezmoi-mousse-dark"
+        theme_name = "chezmoi-mousse-dark"
+        self.theme = theme_name
+        cmd_log.log_success(f"Theme set to {theme_name}")
+        cmd_log.log_warning("starting loading screen")
         self.push_screen(LoadingScreen(), callback=self.refresh_widgets)
         self.watch(self, "theme", self.on_theme_change, init=False)
-        self.query_exactly_one(ApplyTab).focus()
 
     def on_theme_change(self, _: str, new_theme: str) -> None:
         new_theme_object: Theme | None = self.app.get_theme(new_theme)
@@ -169,6 +172,7 @@ class ChezmoiGUI(App[None]):
         chezmoi_mousse.theme.vars = (
             new_theme_object.to_color_system().generate()
         )
+        cmd_log.log_success(f"Theme set to {new_theme}")
 
     def on_operation_completed(self, message: OperationCompleted) -> None:
         # TODO: the path is available in message.path, refresh specific tree
