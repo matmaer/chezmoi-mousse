@@ -109,7 +109,7 @@ class CommandLog(RichLog):
         super().__init__(id=id, auto_scroll=True, markup=True, max_lines=20000)
 
     def _log_time(self) -> str:
-        return f"[green]{datetime.now().strftime('%H:%M:%S')}[/]"
+        return f"[[green]{datetime.now().strftime('%H:%M:%S')}[/]]"
 
     def trimmed_cmd_str(self, command: CmdWords) -> str:
         return " ".join(
@@ -137,35 +137,36 @@ class CommandLog(RichLog):
 
     def log_command(self, command: CmdWords) -> None:
         trimmed_cmd = self.trimmed_cmd_str(command)
-        time = f"[{self._log_time()}]"
+        time = self._log_time()
         color = theme.vars["primary-lighten-3"]
         log_line = f"{time} [{color}]{trimmed_cmd}[/]"
         self.write(log_line)
 
     def log_error(self, message: str) -> None:
         color = theme.vars["text-error"]
-        self.write(f"[{self._log_time()}] [{color}]{message}[/]")
+        time = self._log_time()
+        self.write(f"{time} [{color}]{message}[/]")
 
     def log_warning(self, message: str) -> None:
         lines = message.splitlines()
         color = theme.vars["text-warning"]
         for line in [line for line in lines if line.strip()]:
             escaped_line = escape(line)
-            self.write(f"[{self._log_time()}] [{color}]{escaped_line}[/]")
+            self.write(f"{self._log_time()} [{color}]{escaped_line}[/]")
 
     def log_success(self, message: str) -> None:
         color = theme.vars["text-success"]
-        self.write(f"[{self._log_time()}] [{color}]{message}[/]")
+        self.write(f"{self._log_time()} [{color}]{message}[/]")
 
     def log_dimmed(self, message: str) -> None:
-        time = [{self._log_time()}]
+        time = self._log_time()
         lines: list[str] = message.splitlines()
         color = theme.vars["text-disabled"]
         if len(lines) == 1:
             escaped_line = escape(lines[0])
-            self.write(f"[{time}] [{color}]{escaped_line}[/]")
+            self.write(f"{time} [{color}]{escaped_line}[/]")
         if len(lines) > 1:
-            self.write(f"[{time}] [{color}]Multi line output:[/]")
+            self.write(f"{time} [{color}]multi line info:[/]")
         for line in lines:
             if line.strip():
                 escaped_line = escape(line)
@@ -175,7 +176,7 @@ class CommandLog(RichLog):
     def log_read_path(self, file_path: Path) -> None:
         color = theme.vars["primary-lighten-1"]
         time = self._log_time()
-        self.write(f"[{time}] [{color}]Read {file_path}[/]")
+        self.write(f"{time} [{color}]Read {file_path}[/]")
 
 
 cmd_log = CommandLog(id=PaneEnum.log.value)
