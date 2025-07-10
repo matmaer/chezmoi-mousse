@@ -442,7 +442,7 @@ class ReAddTab(_BaseTab):
             self.tab_vertical_qid(Location.right), Vertical
         ).add_class(TcssStr.tab_right_vertical)
         content_switcher_right = self.query_one(
-            self.content_switcher_id(Location.right), ContentSwitcher
+            self.content_switcher_qid(Location.right), ContentSwitcher
         )
         content_switcher_right.add_class(TcssStr.content_switcher_right)
         content_switcher_right.add_class(TcssStr.top_border_title)
