@@ -230,7 +230,7 @@ DataTable {
 }
 
 DirectoryTree {
-  /* TODO: let the tree cursor keep the same color */
+
   &>.directory-tree--folder {
     color: $primary-lighten-3;
     text-style: none;
