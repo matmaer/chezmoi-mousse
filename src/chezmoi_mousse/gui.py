@@ -175,9 +175,6 @@ class ChezmoiGUI(App[None]):
         cmd_log.log_success(f"Theme set to {new_theme}")
 
     def on_operation_completed(self, message: OperationCompleted) -> None:
-        # TODO: implement the refresh for FilteredDirTree or check to do it
-        # with the filter on the DirectoryTree
-
         managed_trees = self.query(ManagedTree)
         for tree in managed_trees:
             tree.remove_node_path(path=message.path)
@@ -189,6 +186,8 @@ class ChezmoiGUI(App[None]):
         expanded_trees = self.query(ExpandedTree)
         for tree in expanded_trees:
             tree.remove_node_path(path=message.path)
+
+        self.query_one(FilteredDirTree).reload()
 
         self.notify("Tree views updated")
 
@@ -215,12 +214,11 @@ class ChezmoiGUI(App[None]):
             IdMixin(TabStr.re_add_tab).tree_qid(TreeStr.expanded_tree),
             ExpandedTree,
         ).refresh_tree_data()
-        self.query_one(FilteredDirTree).refresh_tree_data()
+        self.query_one(FilteredDirTree).reload()
 
     def refresh_widgets(self, _: object) -> None:
         self.refresh_all_trees()
         self.query_one(DoctorTab).populate_doctor_data()
-        self.query_one(FilteredDirTree).refresh_tree_data()
 
     def on_tabbed_content_tab_activated(
         self, event: TabbedContent.TabActivated
