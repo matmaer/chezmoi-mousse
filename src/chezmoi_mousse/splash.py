@@ -128,25 +128,24 @@ class LoadingScreen(Screen[list[str]]):
 
         self.app.call_from_thread(update_log)
 
-    def run_command(self, attr: str) -> None:
-        io_class = getattr(chezmoi, attr)
+    @work(thread=True, group="io_workers")
+    def run_io_worker(self, arg_id: str) -> None:
+        io_class = getattr(chezmoi, arg_id)
         io_class.update()
         self.log_text(io_class.label)
 
-    @work(thread=True, group="io_workers")
-    def run_io_worker(self, arg_id: str) -> None:
-        self.run_command(arg_id)
-
     @work(thread=True, group="doctor")
     def run_doctor_worker(self) -> None:
-        self.run_command("doctor")
+        io_class = getattr(chezmoi, "doctor")
+        io_class.update()
+        self.log_text(io_class.label)
 
     @work(thread=True, group="set_temp_config_file")
     def set_temp_config_file(self) -> None:
         if not all(
             worker.state == WorkerState.SUCCESS
             for worker in self.app.workers
-            if worker.group in ("doctor",)
+            if worker.group == "doctor"
         ):
             return
         self.temp_config_timer.stop()

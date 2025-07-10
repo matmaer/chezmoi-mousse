@@ -220,10 +220,9 @@ def subprocess_run(long_command: CmdWords, time_out: float = 1) -> str:
         return cmd_stdout
     except Exception as e:
         if any(verb.value in long_command for verb in OperateVerbs):
-            op_log.log_error(f"{x_mark} command failed")
-        else:
-            cmd_log.log_error("command failed")
-        cmd_log.log_dimmed(f"{e}")
+            op_log.log_error(f"{x_mark} command failed {e}")
+            cmd_log.log_error(f"{x_mark} command failed {e}")
+
         return "failed"
 
 
