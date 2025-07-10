@@ -158,8 +158,14 @@ class CommandLog(RichLog):
         self.write(f"[{self._log_time()}] [{color}]{message}[/]")
 
     def log_dimmed(self, message: str) -> None:
+        time = [{self._log_time()}]
         lines: list[str] = message.splitlines()
         color = theme.vars["text-disabled"]
+        if len(lines) == 1:
+            escaped_line = escape(lines[0])
+            self.write(f"[{time}] [{color}]{escaped_line}[/]")
+        if len(lines) > 1:
+            self.write(f"[{time}] [{color}]Multi line output:[/]")
         for line in lines:
             if line.strip():
                 escaped_line = escape(line)
@@ -169,7 +175,7 @@ class CommandLog(RichLog):
     def log_read_path(self, file_path: Path) -> None:
         color = theme.vars["primary-lighten-1"]
         time = self._log_time()
-        self.write(f"[{time}] [{color}]Get path contents for {file_path}[/]")
+        self.write(f"[{time}] [{color}]Read {file_path}[/]")
 
 
 cmd_log = CommandLog(id=PaneEnum.log.value)

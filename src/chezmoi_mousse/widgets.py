@@ -122,30 +122,30 @@ class ContentsView(RichLog):
         try:
             if self.path.is_file() and self.path.stat().st_size > 150 * 1024:
                 truncated_message = (
-                    "\n\n------ File content truncated to 150 KiB ------\n"
+                    "\n\n--- File content truncated to 150 KiB ---\n"
+                )
+                cmd_log.log_warning(
+                    f"File {self.path} is larger than 150 KiB, truncating output."
                 )
         except PermissionError as e:
             self.write(e.strerror)
-            cmd_log.log_error("Permission denied")
-            cmd_log.log_dimmed(f"{e}")
+            cmd_log.log_error(f"Permission denied to read {self.path}")
             return
 
         try:
             with open(self.path, "rt", encoding="utf-8") as file:
                 file_content = file.read(150 * 1024)
                 if not file_content.strip():
-                    self.write("File contains only whitespace")
-                    cmd_log.log_error(
-                        "File is empty or contains only whitespace"
-                    )
+                    message = "File is empty or contains only whitespace"
+                    self.write(message)
+                    cmd_log.log_error(message)
                 else:
                     self.write(file_content + truncated_message)
-                    cmd_log.log_warning("Read file successful")
+                    cmd_log.log_warning("File content displayed")
 
-        except UnicodeDecodeError as e:
+        except UnicodeDecodeError:
             self.write(f"{self.path} cannot be decoded as UTF-8.")
             cmd_log.log_error("File cannot be decoded as UTF-8")
-            cmd_log.log_dimmed(f"{e}")
             return
 
         except FileNotFoundError:
