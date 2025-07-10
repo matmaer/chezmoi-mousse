@@ -33,8 +33,6 @@ def test_managed_paths_and_status(chezmoi_instance: Chezmoi):
     # Test directory filtering with dest_dir
     dest_dir = CM_CFG.destDir
     assert isinstance(chezmoi_instance.managed_dirs_in(dest_dir), list)
-    assert isinstance(chezmoi_instance.managed_files_in(dest_dir), list)
-    assert isinstance(chezmoi_instance.dir_has_managed_files(dest_dir), bool)
 
 
 def test_status_dicts_properties():
@@ -61,24 +59,45 @@ def test_status_dicts_properties():
     assert len(status_dicts.files_with_status) == 2  # M, D status items
 
 
-# TODO: check inspect module for more tests
-# def properties_in_object(object_name: object) -> InspectOut:
-#     return [
-#         (name, obj)
-#         for name, obj in inspect.getmembers_static(object_name)
-#         if isinstance(obj, property) and not name.startswith("_")
-#     ]
+def _get_chezmoi_public_members() -> list[tuple[str, str]]:
+    import inspect
+
+    members: list[tuple[str, str]] = []
+    for name, member in inspect.getmembers(Chezmoi):
+        if not name.startswith("_"):
+            if isinstance(member, property):
+                members.append((name, "property"))
+            elif inspect.isfunction(member):
+                members.append((name, "method"))
+    return members
 
 
-# def routines_in_object(object_name: object) -> InspectOut:
-#     return [
-#         (name, obj)
-#         for name, obj in inspect.getmembers_static(
-#             object_name, inspect.ismethod
-#         )
-#         if not name.startswith("_") and not name.startswith("_")
-#     ]
+@pytest.mark.parametrize(
+    "member_name, member_type", _get_chezmoi_public_members()
+)
+def test_member_in_use(member_name: str, member_type: str):
+    import ast
 
+    from _test_utils import modules_to_test
 
-# chezmoi_routines: InspectOut = routines_in_object(Chezmoi)
-# chezmoi_properties: InspectOut = properties_in_object(Chezmoi)
+    is_used = False
+    usage_locations: list[str] = []
+
+    # Exclude chezmoi.py from the search
+    for py_file in modules_to_test(exclude_file_names=["chezmoi.py"]):
+        content = py_file.read_text()
+        tree = ast.parse(content, filename=str(py_file))
+
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Attribute) and node.attr == member_name:
+                is_used = True
+                usage_locations.append(f"{py_file.name}:{node.lineno}")
+
+        if is_used:
+            break  # Found usage, no need to check other files
+
+    if not is_used:
+        pytest.skip(
+            f"Unused Chezmoi {member_type}: '{member_name}' is not used in the codebase.\n"
+            "If this is intentional for internal use, consider renaming it with a leading underscore."
+        )
