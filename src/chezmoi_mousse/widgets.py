@@ -527,10 +527,6 @@ class ExpandedTree(TreeBase, IdMixin):
         IdMixin.__init__(self, tab_str)
         super().__init__(tab_str, id=self.tree_id(TreeStr.expanded_tree))
 
-    def on_mount(self) -> None:
-        # Don't populate data here - it will be done via refresh_tree_data()
-        pass
-
     def refresh_tree_data(self) -> None:
         """Refresh the tree with latest chezmoi data."""
         self.root.remove_children()

@@ -10,6 +10,7 @@ from textual.containers import (
     VerticalGroup,
     VerticalScroll,
 )
+from textual.message import Message
 from textual.screen import ModalScreen
 from textual.widgets import (
     Button,
@@ -62,7 +63,13 @@ from chezmoi_mousse.widgets import (
 )
 
 
-class Operate(ModalScreen[None], IdMixin):
+class OperationCompleted(Message):
+    def __init__(self, path: Path | None) -> None:
+        self.path = path
+        super().__init__()
+
+
+class Operate(ModalScreen[Path | None], IdMixin):
     BINDINGS = [
         Binding(
             key="escape", action="dismiss", description="close", show=False
@@ -78,7 +85,7 @@ class Operate(ModalScreen[None], IdMixin):
         self.tab_name = tab_name
         self.path = path
         self.buttons = buttons
-        self.command_has_been_run = False
+        self.command_executed = False
         self.diff_id = self.view_id(ViewStr.diff_view, operate=True)
         self.diff_qid = self.view_qid(ViewStr.diff_view, operate=True)
         self.contents_id = self.view_id(ViewStr.contents_view, operate=True)
@@ -129,7 +136,8 @@ class Operate(ModalScreen[None], IdMixin):
             TcssStr.operate_auto_warning
         )
         self.query_exactly_one(OperateInfo).add_class(TcssStr.operate_top_path)
-        self.query_exactly_one(DiffView).add_class(TcssStr.operate_diff)
+        if self.tab_name in (TabStr.apply_tab, TabStr.re_add_tab):
+            self.query_exactly_one(DiffView).add_class(TcssStr.operate_diff)
 
         # Add initial log entry
         self.query_one(self.log_qid, RichLog).border_title = (
@@ -148,6 +156,7 @@ class Operate(ModalScreen[None], IdMixin):
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
+        notify_message = f"Operation completed for {self.path.name}"
 
         if event.button.id == self.button_id(ButtonEnum.apply_file_btn):
             chezmoi.perform.apply(self.path)
@@ -157,7 +166,8 @@ class Operate(ModalScreen[None], IdMixin):
             self.query_one(
                 self.button_qid(ButtonEnum.cancel_apply_btn), Button
             ).label = "Close"
-            self.command_has_been_run = True
+            self.notify(notify_message)
+            self.command_executed = True
 
         elif event.button.id == self.button_id(ButtonEnum.re_add_file_btn):
             chezmoi.perform.re_add(self.path)
@@ -167,7 +177,8 @@ class Operate(ModalScreen[None], IdMixin):
             self.query_one(
                 self.button_qid(ButtonEnum.cancel_re_add_btn), Button
             ).label = "Close"
-            self.command_has_been_run = True
+            self.notify(notify_message)
+            self.command_executed = True
 
         elif event.button.id == self.button_id(ButtonEnum.add_file_btn):
             chezmoi.perform.add(self.path)
@@ -177,18 +188,17 @@ class Operate(ModalScreen[None], IdMixin):
             self.query_one(
                 self.button_qid(ButtonEnum.cancel_add_btn), Button
             ).label = "Close"
-            self.command_has_been_run = True
+            self.notify(notify_message)
+            self.command_executed = True
 
         elif event.button.id in (
             self.button_id(ButtonEnum.cancel_apply_btn),
             self.button_id(ButtonEnum.cancel_re_add_btn),
             self.button_id(ButtonEnum.cancel_add_btn),
         ):
-            if self.command_has_been_run:
-                self.notify("operation completed")
-            else:
-                self.notify("operation cancelled without changes")
-            self.dismiss()
+            if not self.command_executed:
+                self.notify("No changes were made")
+            self.dismiss(None)
 
 
 class _BaseTab(Horizontal, IdMixin):
@@ -230,11 +240,11 @@ class _BaseTab(Horizontal, IdMixin):
                     and chezmoi.managed_status[tab_str].files[active_path]
                     != "X"
                 ):
-                    return True  # Visible and clickable
+                    return True  # active
                 else:
-                    return None  # Visible but disabled when diff view is active but no valid diff
-            return False  # Invisible when diff view is not active
-        return False
+                    return None  # disabled
+            return None
+        return False  # hidden
 
     def on_tree_node_selected(
         self, event: TreeBase.NodeSelected[NodeData]
@@ -384,8 +394,14 @@ class ApplyTab(_BaseTab):
                     ButtonEnum.cancel_apply_btn,
                 ),
                 path=current_path,
-            )
+            ),
+            callback=self.message_for_gui,
         )
+
+    def message_for_gui(self, path: Path | None) -> None:
+        # will refresh the trees by gui.py with on_operation_completed
+        if path is not None:
+            self.post_message(OperationCompleted(path=path))
 
 
 class ReAddTab(_BaseTab):
@@ -463,8 +479,14 @@ class ReAddTab(_BaseTab):
                     ButtonEnum.cancel_re_add_btn,
                 ),
                 path=current_path,
-            )
+            ),
+            callback=self.message_for_gui,
         )
+
+    def message_for_gui(self, path: Path | None) -> None:
+        # will refresh the trees by gui.py with on_operation_completed
+        if path is not None:
+            self.post_message(OperationCompleted(path=path))
 
 
 class AddTab(Horizontal, IdMixin):
@@ -562,8 +584,14 @@ class AddTab(Horizontal, IdMixin):
                 self.tab_str,
                 buttons=(ButtonEnum.add_file_btn, ButtonEnum.cancel_add_btn),
                 path=current_path,
-            )
+            ),
+            callback=self.message_for_gui,
         )
+
+    def message_for_gui(self, path: Path | None) -> None:
+        # will refresh the trees by gui.py with on_operation_completed
+        if path is not None:
+            self.post_message(OperationCompleted(path=path))
 
 
 class DoctorTab(VerticalScroll, IdMixin):

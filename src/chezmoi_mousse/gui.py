@@ -33,7 +33,13 @@ from chezmoi_mousse.id_typing import (
     TreeStr,
     ViewStr,
 )
-from chezmoi_mousse.main_tabs import AddTab, ApplyTab, DoctorTab, ReAddTab
+from chezmoi_mousse.main_tabs import (
+    AddTab,
+    ApplyTab,
+    DoctorTab,
+    OperationCompleted,
+    ReAddTab,
+)
 from chezmoi_mousse.overrides import CustomScrollBarRender
 from chezmoi_mousse.splash import LoadingScreen
 from chezmoi_mousse.widgets import (
@@ -164,9 +170,13 @@ class ChezmoiGUI(App[None]):
             new_theme_object.to_color_system().generate()
         )
 
-    def refresh_widgets(self, _: object) -> None:
+    def on_operation_completed(self, message: OperationCompleted) -> None:
+        # TODO: the path is available in message.path, refresh specific tree
+        # nodes instead of all trees
+        self.refresh_all_trees()
+        self.notify("Tree views updated")
 
-        # TODO: check the new textual property decorator
+    def refresh_all_trees(self) -> None:
         self.query_one(
             IdMixin(tab_str=TabStr.apply_tab).tree_qid(TreeStr.managed_tree),
             ManagedTree,
@@ -191,7 +201,10 @@ class ChezmoiGUI(App[None]):
             IdMixin(tab_str=TabStr.re_add_tab).tree_qid(TreeStr.expanded_tree),
             ExpandedTree,
         ).refresh_tree_data()
+        self.query_one(FilteredDirTree).refresh_tree_data()
 
+    def refresh_widgets(self, _: object) -> None:
+        self.refresh_all_trees()
         self.query_one(DoctorTab).populate_doctor_data()
         self.query_one(FilteredDirTree).refresh_tree_data()
 
