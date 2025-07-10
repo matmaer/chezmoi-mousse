@@ -1,10 +1,14 @@
 """Test if all methods from the IdMixin are in use by modules in the src dir."""
 
 import ast
+import inspect
+from enum import StrEnum
 from pathlib import Path
 
 import pytest
 from _test_utils import modules_to_test
+
+import chezmoi_mousse.id_typing as id_typing
 
 
 @pytest.mark.parametrize(
@@ -37,44 +41,33 @@ def test_no_hardcoded_ids(py_file: Path):
         )
 
 
-# TODO: implement checkup of StrEnum and Enum member usage
+def get_str_enum_members() -> list[StrEnum]:
+    """Helper to get all members of all StrEnum classes in id_typing."""
+    members: list[StrEnum] = []
+    for _, enum_class in inspect.getmembers(id_typing, inspect.isclass):
+        if issubclass(enum_class, StrEnum) and enum_class is not StrEnum:
+            for member in enum_class:
+                members.append(member)
+    return members
 
 
-# import inspect
-# from enum import Enum, StrEnum
-# from pathlib import Path
+@pytest.mark.parametrize(
+    "str_enum_member",
+    get_str_enum_members(),
+    ids=lambda member: f"{member.__class__.__name__}.{member.name}",
+)
+def test_str_enum_members_in_use(str_enum_member: StrEnum):
+    """Check if a StrEnum member is used in any of the source files."""
+    search_term = str(str_enum_member.value)
+    found = False
+    for py_file in modules_to_test(exclude_file_names=["id_typing.py"]):
+        content = py_file.read_text()
+        if search_term in content:
+            found = True
+            break
 
-
-# import chezmoi_mousse.id_typing as id_typing
-
-
-# def all_id_typing_enum_classes() -> list[str]:
-#     return [
-#         name
-#         for name, cls in inspect.getmembers(id_typing, inspect.isclass)
-#         if issubclass(cls, Enum)
-#     ]
-
-
-# def id_typing_all_str_enum_classes() -> list[str]:
-#     return [
-#         name
-#         for name, cls in inspect.getmembers(id_typing, inspect.isclass)
-#         if issubclass(cls, StrEnum)
-#     ]
-
-
-# def all_id_mixin_methods() -> list[str]:
-#     return [
-#         name
-#         for name, _ in inspect.getmembers(
-#             IdMixin, predicate=inspect.isfunction
-#         )
-#         if not name.startswith("_")
-#     ]
-
-
-# def all_id_mixin_init_params() -> list[str]:
-
-#     sig = inspect.signature(IdMixin.__init__)
-#     return [param for param in sig.parameters.keys() if param != "self"]
+    if not found:
+        pytest.skip(
+            f"'{str_enum_member.name}' from {str_enum_member.__class__.__name__} "
+            "is not in use."
+        )
