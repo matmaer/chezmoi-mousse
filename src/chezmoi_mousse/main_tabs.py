@@ -600,7 +600,7 @@ class DoctorTab(VerticalScroll, IdMixin):
             yield DataTable(show_cursor=False)
         with VerticalGroup():
             yield Collapsible(
-                Pretty(chezmoi.template_data.dict_out),
+                Pretty(chezmoi.run.template_data()),
                 title="chezmoi data (template data)",
             )
             yield Collapsible(
@@ -665,11 +665,7 @@ class DoctorTab(VerticalScroll, IdMixin):
         collapsibles = self.query(Collapsible)
         for collapsible in collapsibles:
             title = collapsible.title
-            if "template data" in title:
-                # Update the Pretty widget with latest template data
-                pretty_widget = collapsible.query_one(Pretty)
-                pretty_widget.update(chezmoi.template_data.dict_out)
-            elif "cat-config" in title:
+            if "cat-config" in title:
                 # Update the Pretty widget with latest cat-config data
                 pretty_widget = collapsible.query_one(Pretty)
                 pretty_widget.update(chezmoi.cat_config.list_out)

@@ -25,7 +25,6 @@ class InputOutputVerbs(Enum):
     # dataclass
 
     cat_config = "cat-config"
-    data = "data"
     doctor = "doctor"
     managed = "managed"
     status = "status"
@@ -33,6 +32,7 @@ class InputOutputVerbs(Enum):
 
 class ReadVerbs(Enum):
     cat = "cat"
+    data = "data"
     diff = "diff"
     git = "git"
     ignored = "ignored"
@@ -83,7 +83,7 @@ class AllCommands(Enum):
         "--include=files",
     )
     source_path = BASE_CMD + (ReadVerbs.source_path.value,)
-    template_data = BASE_CMD + (InputOutputVerbs.data.value, "--format=json")
+    template_data = BASE_CMD + (ReadVerbs.data.value, "--format=json")
 
 
 class IoCmd(Enum):
@@ -93,7 +93,6 @@ class IoCmd(Enum):
     file_status_lines = AllCommands.file_status_lines.value
     managed_dirs = AllCommands.managed_dirs.value
     managed_files = AllCommands.managed_files.value
-    template_data = AllCommands.template_data.value
 
 
 class ReadCmd(Enum):
@@ -102,6 +101,7 @@ class ReadCmd(Enum):
     git_log = AllCommands.git_log.value
     ignored = AllCommands.ignored.value
     source_path = AllCommands.source_path.value
+    template_data = AllCommands.template_data.value
 
 
 class CommandLog(RichLog):
@@ -281,6 +281,9 @@ class ReadCommand:
     def ignored(self) -> list[str]:
         return subprocess_run(ReadCmd.ignored.value).splitlines()
 
+    def template_data(self) -> list[str]:
+        return subprocess_run(ReadCmd.template_data.value).splitlines()
+
     def re_add_diff(self, file_path: Path) -> list[str]:
         long_command = ReadCmd.diff.value + (str(file_path), "--reverse")
         return subprocess_run(long_command).splitlines()
@@ -345,7 +348,6 @@ class Chezmoi:
     managed_dirs: InputOutput
     managed_files: InputOutput
     perform = ChangeCommand()
-    template_data: InputOutput
     run = ReadCommand()
     temp_config_path: Path
 
