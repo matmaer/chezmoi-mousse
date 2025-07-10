@@ -111,6 +111,7 @@ class ContentsView(RichLog):
     path: reactive[Path | None] = reactive(None)
 
     def __init__(self, *, view_id: str) -> None:
+        self.view_id = view_id
         super().__init__(
             id=view_id, auto_scroll=False, wrap=True, highlight=True
         )
@@ -118,7 +119,6 @@ class ContentsView(RichLog):
     def update_contents_view(self) -> None:
         assert isinstance(self.path, Path)
         truncated_message = ""
-        cmd_log.log_read_path(self.path)
         try:
             if self.path.is_file() and self.path.stat().st_size > 150 * 1024:
                 truncated_message = (
@@ -155,7 +155,6 @@ class ContentsView(RichLog):
                 if not chezmoi.run.cat(self.path).strip():
                     message = "File contains only whitespace"
                     self.write(message)
-                    cmd_log.log_error(message)
                 else:
                     self.write(chezmoi.run.cat(self.path))
                 return
@@ -174,7 +173,6 @@ class ContentsView(RichLog):
                 self.write(f"Managed directory: {self.path}")
             else:
                 self.write(f"Unmanaged directory: {self.path}")
-            cmd_log.log_warning("Directory info displayed")
 
         except OSError as error:
             text = Text(f"Error reading {self.path}: {error}")

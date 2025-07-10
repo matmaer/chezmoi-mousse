@@ -173,10 +173,10 @@ class CommandLog(RichLog):
                 self.write(f"[{color}]{escaped_line}[/]")
 
     # used by the ContentsView class
-    def log_read_path(self, file_path: Path) -> None:
+    def log_read_path(self, message: str) -> None:
         color = theme.vars["primary-lighten-1"]
         time = self._log_time()
-        self.write(f"{time} [{color}]Read {file_path}[/]")
+        self.write(f"{time} [{color}]{message}[/]")
 
 
 cmd_log = CommandLog(id=PaneEnum.log.value)
