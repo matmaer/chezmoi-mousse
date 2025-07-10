@@ -27,7 +27,6 @@ class InputOutputVerbs(Enum):
     cat_config = "cat-config"
     data = "data"
     doctor = "doctor"
-    ignored = "ignored"
     managed = "managed"
     status = "status"
 
@@ -36,6 +35,7 @@ class ReadVerbs(Enum):
     cat = "cat"
     diff = "diff"
     git = "git"
+    ignored = "ignored"
     source_path = "source-path"
 
 
@@ -71,7 +71,7 @@ class AllCommands(Enum):
         "--no-expand-tabs",
         "--format=%ar by %cn;%s",
     )
-    ignored = BASE_CMD + (InputOutputVerbs.ignored.value,)
+    ignored = BASE_CMD + (ReadVerbs.ignored.value,)
     managed_dirs = BASE_CMD + (
         InputOutputVerbs.managed.value,
         "--path-style=absolute",
@@ -91,7 +91,6 @@ class IoCmd(Enum):
     dir_status_lines = AllCommands.dir_status_lines.value
     doctor = AllCommands.doctor.value
     file_status_lines = AllCommands.file_status_lines.value
-    ignored = AllCommands.ignored.value
     managed_dirs = AllCommands.managed_dirs.value
     managed_files = AllCommands.managed_files.value
     template_data = AllCommands.template_data.value
@@ -101,6 +100,7 @@ class ReadCmd(Enum):
     cat = AllCommands.cat.value
     diff = AllCommands.diff.value
     git_log = AllCommands.git_log.value
+    ignored = AllCommands.ignored.value
     source_path = AllCommands.source_path.value
 
 
@@ -278,6 +278,9 @@ class ReadCommand:
         long_command = ReadCmd.git_log.value + (source_path,)
         return subprocess_run(long_command).splitlines()
 
+    def ignored(self) -> list[str]:
+        return subprocess_run(ReadCmd.ignored.value).splitlines()
+
     def re_add_diff(self, file_path: Path) -> list[str]:
         long_command = ReadCmd.diff.value + (str(file_path), "--reverse")
         return subprocess_run(long_command).splitlines()
@@ -339,7 +342,6 @@ class Chezmoi:
     dir_status_lines: InputOutput
     doctor: InputOutput
     file_status_lines: InputOutput
-    ignored: InputOutput
     managed_dirs: InputOutput
     managed_files: InputOutput
     perform = ChangeCommand()

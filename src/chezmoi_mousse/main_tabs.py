@@ -608,7 +608,7 @@ class DoctorTab(VerticalScroll, IdMixin):
                 title="chezmoi cat-config (contents of config-file)",
             )
             yield Collapsible(
-                Pretty(chezmoi.ignored.list_out),
+                Pretty(chezmoi.run.ignored()),
                 title="chezmoi ignored (git ignore in source-dir)",
             )
             yield Collapsible(ListView(), title="Commands Not Found")
@@ -673,7 +673,3 @@ class DoctorTab(VerticalScroll, IdMixin):
                 # Update the Pretty widget with latest cat-config data
                 pretty_widget = collapsible.query_one(Pretty)
                 pretty_widget.update(chezmoi.cat_config.list_out)
-            elif "ignored" in title:
-                # Update the Pretty widget with latest ignored data
-                pretty_widget = collapsible.query_one(Pretty)
-                pretty_widget.update(chezmoi.ignored.list_out)
