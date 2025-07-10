@@ -13,36 +13,14 @@ from chezmoi_mousse import BASE_CMD, CM_CFG, theme
 from chezmoi_mousse.id_typing import (
     CharsEnum,
     CmdWords,
+    InputOutputVerbs,
     OperateIdStr,
+    OperateVerbs,
     PaneEnum,
+    ReadVerbs,
     TabStr,
     TcssStr,
 )
-
-
-class InputOutputVerbs(Enum):
-    # mapping of names to chezmoi verbs which store data in an InputOutput
-    # dataclass
-
-    doctor = "doctor"
-    managed = "managed"
-    status = "status"
-
-
-class ReadVerbs(Enum):
-    cat = "cat"
-    data = "data"
-    cat_config = "cat-config"
-    diff = "diff"
-    git = "git"
-    ignored = "ignored"
-    source_path = "source-path"
-
-
-class OperateVerbs(Enum):
-    apply = "apply"
-    re_add = "re-add"
-    add = "add"
 
 
 class AllCommands(Enum):

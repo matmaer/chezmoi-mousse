@@ -14,6 +14,28 @@ class NodeData:
 type CmdWords = tuple[str, ...]
 
 
+class InputOutputVerbs(StrEnum):
+    doctor = auto()
+    managed = auto()
+    status = auto()
+
+
+class ReadVerbs(Enum):
+    cat = "cat"
+    data = "data"
+    cat_config = "cat-config"
+    diff = "diff"
+    git = "git"
+    ignored = "ignored"
+    source_path = "source-path"
+
+
+class OperateVerbs(Enum):
+    apply = "apply"
+    re_add = "re-add"
+    add = "add"
+
+
 class CharsEnum(Enum):
     add = f"chezmoi add local {'\N{EM DASH}' * 3}\N{RIGHTWARDS ARROW} chezmoi"
     apply = f"local \N{LEFTWARDS ARROW}{'\N{EM DASH}' * 3} chezmoi apply"
