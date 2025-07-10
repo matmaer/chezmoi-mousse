@@ -169,7 +169,7 @@ class CommandLog(RichLog):
     def log_read_path(self, file_path: Path) -> None:
         color = theme.vars["primary-lighten-1"]
         time = self._log_time()
-        self.write(f"[{time}] [{color}] Get path contents for {file_path}[/]")
+        self.write(f"[{time}] [{color}]Get path contents for {file_path}[/]")
 
 
 cmd_log = CommandLog(id=PaneEnum.log.value)
