@@ -165,7 +165,7 @@ class CommandLog(RichLog):
         color = theme.vars["text-disabled"]
         if len(lines) == 1:
             escaped_line = escape(lines[0])
-            self.write(f"{time} [{single_line_color}]{escaped_line}[/]")
+            self.write(f"{time} [{color}]{escaped_line}[/]")
         if len(lines) > 1:
             self.write(f"{time} [{single_line_color}]multi line info:[/]")
         for line in lines:
