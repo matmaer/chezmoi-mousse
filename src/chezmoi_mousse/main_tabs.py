@@ -202,8 +202,8 @@ class Operate(ModalScreen[Path], IdMixin):
     def handle_dismiss(self):
         """Called when the screen is dismissed."""
         if not self.command_executed:
-            op_log.log_warning(f"Operation cancelled for {self.path.name}")
-            self.notify("No changes were made.")
+            op_log.log_dimmed(f"Operation cancelled for {self.path.name}")
+            self.notify("No changes were made")
         self.dismiss(self.path)
 
     def action_esc_dismiss(self) -> None:
