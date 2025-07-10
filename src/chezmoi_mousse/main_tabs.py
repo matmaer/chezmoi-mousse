@@ -412,7 +412,7 @@ class ApplyTab(_BaseTab):
                 ),
                 path=current_path,
             ),
-            callback=self.callback(current_path),
+            callback=self.callback,
         )
 
 
@@ -492,7 +492,7 @@ class ReAddTab(_BaseTab):
                 ),
                 path=current_path,
             ),
-            callback=self.callback(current_path),
+            callback=self.callback,
         )
 
 
