@@ -2,9 +2,8 @@ from pathlib import Path
 
 import pytest
 
-from chezmoi_mousse.chezmoi import Chezmoi, StatusDicts
-
 from chezmoi_mousse import CM_CFG
+from chezmoi_mousse.chezmoi import Chezmoi, StatusDicts
 
 
 @pytest.fixture
