@@ -186,7 +186,9 @@ class LoadingScreen(Screen[list[str]]):
         )
         with open(temp_file_path, "w") as temp_file:
             temp_file.write(new_config_str)
-        cmd_log.log_success(f"created non-interactive config {temp_file_path}")
+        cmd_log.log_success(
+            f"created non-interactive config {temp_file_path}, output:"
+        )
         cmd_log.log_dimmed(new_config_str)
 
         ChangeCommand.config_path = temp_file_path

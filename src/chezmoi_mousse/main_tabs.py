@@ -146,13 +146,13 @@ class Operate(ModalScreen[Path | None], IdMixin):
         # Set path for either diff or contents view
         if self.tab_name == TabStr.add_tab:
             self.query_one(self.contents_qid, ContentsView).path = self.path
-            op_log.log_success("--- ready to run chezmoi add ---")
+            op_log.log_warning("--- ready to run chezmoi add ---")
         elif self.tab_name in (TabStr.apply_tab, TabStr.re_add_tab):
             self.query_one(self.diff_qid, DiffView).path = self.path
             if self.tab_name == TabStr.apply_tab:
-                op_log.log_success("--- ready to run chezmoi apply ---")
+                op_log.log_warning("--- ready to run chezmoi apply ---")
             elif self.tab_name == TabStr.re_add_tab:
-                op_log.log_success("--- ready to run chezmoi re-add ---")
+                op_log.log_warning("--- ready to run chezmoi re-add ---")
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()

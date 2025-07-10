@@ -159,15 +159,10 @@ class CommandLog(RichLog):
         self.write(f"{self._log_time()} [{color}]{message}[/]")
 
     def log_dimmed(self, message: str) -> None:
-        time = self._log_time()
+        if message.strip() == "":
+            return
         lines: list[str] = message.splitlines()
-        single_line_color = theme.vars["text-success"]
         color = theme.vars["text-disabled"]
-        if len(lines) == 1:
-            escaped_line = escape(lines[0])
-            self.write(f"{time} [{color}]{escaped_line}[/]")
-        if len(lines) > 1:
-            self.write(f"{time} [{single_line_color}]multi line info:[/]")
         for line in lines:
             if line.strip():
                 escaped_line = escape(line)
@@ -201,28 +196,34 @@ def subprocess_run(long_command: CmdWords, time_out: float = 1) -> str:
         cmd_log.log_command(long_command)
         if any(verb.value in long_command for verb in OperateVerbs):
             op_log.log_command(long_command)
+            if cmd_stdout.strip() == "":
+                msg = f"{check_mark} Command successful, no output"
+                op_log.log_success(msg)
+                cmd_log.log_success(msg)
+            else:
+                msg = f"{check_mark} Command successful, output:"
+                op_log.log_success(msg)
+                cmd_log.log_success(msg)
+                op_log.log_dimmed(cmd_stdout)
+                cmd_log.log_dimmed(cmd_stdout)
+            return cmd_stdout
         if any(verb.value in long_command for verb in InputOutputVerbs):
-            cmd_log.log_warning("InputOutput command successful")
+            cmd_log.log_warning(
+                "Subprocess call successful: InputOutput data updated"
+            )
             return cmd_stdout
         elif any(verb.value in long_command for verb in ReadVerbs):
-            cmd_log.log_warning("Read command successful")
+            cmd_log.log_warning("Subprocess call successful")
             return cmd_stdout
-        elif any(verb.value in long_command for verb in OperateVerbs):
-            message = (
-                f"{check_mark} command successful, subprocess exit code 0"
-            )
-            cmd_log.log_success(message)
-            op_log.log_success(message)
-            if cmd_stdout:
-                op_log.log_warning(f"{cmd_stdout}")
         else:
-            cmd_log.log_success("command successful, no specific logging")
+            cmd_log.log_success(
+                "Subprocess call successful, no specific logging implemented"
+            )
         return cmd_stdout
     except Exception as e:
         if any(verb.value in long_command for verb in OperateVerbs):
-            op_log.log_error(f"{x_mark} command failed {e}")
-            cmd_log.log_error(f"{x_mark} command failed {e}")
-
+            op_log.log_error(f"{x_mark} Command failed {e}")
+            cmd_log.log_error(f"{x_mark} Command failed {e}")
         return "failed"
 
 
