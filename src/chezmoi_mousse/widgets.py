@@ -138,13 +138,11 @@ class ContentsView(RichLog):
                 if not file_content.strip():
                     message = "File is empty or contains only whitespace"
                     self.write(message)
-                    cmd_log.log_error(message)
                 else:
                     self.write(file_content + truncated_message)
 
         except UnicodeDecodeError:
             self.write(f"{self.path} cannot be decoded as UTF-8.")
-            cmd_log.log_error("File cannot be decoded as UTF-8")
             return
 
         except FileNotFoundError:
@@ -177,7 +175,6 @@ class ContentsView(RichLog):
             text = Text(f"Error reading {self.path}: {error}")
             self.write(text)
             cmd_log.log_error("Error reading file")
-            cmd_log.log_dimmed(f"{error}")
 
     def watch_path(self) -> None:
         if self.path is None:

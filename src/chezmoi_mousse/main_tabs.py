@@ -221,13 +221,7 @@ class _BaseTab(Horizontal, IdMixin):
         self, action: str, parameters: tuple[object, ...]
     ) -> bool | None:
         if action in ("apply_diff", "re_add_diff"):
-            try:
-                diff_button = self.query_one(
-                    self.button_qid(ButtonEnum.diff_btn)
-                )
-            except Exception:
-                # If diff button not found, default to invisible
-                return False
+            diff_button = self.query_one(self.button_qid(ButtonEnum.diff_btn))
 
             if diff_button.has_class(TcssStr.last_clicked):
                 active_path = self.query_one(
