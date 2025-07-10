@@ -13,18 +13,26 @@ Graphical user interface in the terminal for [chezmoi](https://github.com/twpayn
 - Existing local `chezmoi` repository on disk (`chezmoi init` is not implemented)
 - [Python 3.11+](https://www.python.org/) is installed
   (including [Textual](https://textual.textualize.io/) or run with [UV](https://docs.astral.sh/uv/getting-started/installation/))
+- Can be safely tested as no write operations are enabled by default.
 
 ## Available Chezmoi commands
 
-- [ ] `chezmoi add` file
-- [ ] `chezmoi apply` file
-- [ ] `chezmoi re-add` file
+> enable write operations by setting an env var ENABLE_CHANGES=1
+
+### Write Operations
+
+- [x] `chezmoi add` file
+- [x] `chezmoi apply` file
+- [x] `chezmoi re-add` file
 - [ ] `chezmoi add` directory
 - [ ] `chezmoi apply` directory
 - [ ] `chezmoi re-add` directory
 - [ ] `chezmoi destroy`
 - [ ] `chezmoi forget`
 - [ ] `chezmoi init`
+
+### Read Operations
+
 - [x] `chezmoi cat-config`
 - [x] `chezmoi cat`
 - [x] `chezmoi config-dump`
