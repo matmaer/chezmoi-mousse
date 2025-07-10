@@ -141,16 +141,12 @@ class LoadingScreen(Screen[list[str]]):
     def run_doctor_worker(self) -> None:
         self.run_command("doctor")
 
-    @work(thread=True, group="cat_config")
-    def run_cat_config_worker(self) -> None:
-        self.run_command("cat_config")
-
     @work(thread=True, group="set_temp_config_file")
     def set_temp_config_file(self) -> None:
         if not all(
             worker.state == WorkerState.SUCCESS
             for worker in self.app.workers
-            if worker.group in ("doctor", "cat_config")
+            if worker.group in ("doctor",)
         ):
             return
         self.temp_config_timer.stop()
@@ -172,11 +168,7 @@ class LoadingScreen(Screen[list[str]]):
             cmd_log.log_success(f"found config file {config_file_path}")
 
         # read and create config
-        config_lines = [
-            line
-            for line in chezmoi.cat_config.std_out.splitlines()
-            if line.strip()
-        ]
+        config_lines = chezmoi.run.cat_config()
 
         if not any("interactive" in line.lower() for line in config_lines):
             cmd_log.log_success(
@@ -206,8 +198,7 @@ class LoadingScreen(Screen[list[str]]):
         if all(
             worker.state == WorkerState.SUCCESS
             for worker in self.app.workers
-            if worker.group
-            in ("io_workers", "doctor", "cat_config", "set_temp_config_file")
+            if worker.group in ("io_workers", "doctor", "set_temp_config_file")
         ):
             cmd_log.log_success("--- splash.py finished loading ---")
             self.dismiss()
@@ -228,8 +219,6 @@ class LoadingScreen(Screen[list[str]]):
         self.run_doctor_worker()
         # run cat config so the temp config file can be created
         LONG_COMMANDS.pop("doctor")
-        self.run_cat_config_worker()
-        LONG_COMMANDS.pop("cat_config")
 
         for arg_id in LONG_COMMANDS:
             self.run_io_worker(arg_id)

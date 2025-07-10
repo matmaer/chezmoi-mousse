@@ -149,7 +149,7 @@ class ContentsView(RichLog):
             # FileNotFoundError is raised both when a file or a directory
             # does not exist
             if self.path in chezmoi.managed_file_paths:
-                if not chezmoi.run.cat(self.path).strip():
+                if not chezmoi.run.cat(self.path):
                     message = "File contains only whitespace"
                     self.write(message)
                 else:

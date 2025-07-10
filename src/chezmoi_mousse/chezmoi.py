@@ -24,7 +24,6 @@ class InputOutputVerbs(Enum):
     # mapping of names to chezmoi verbs which store data in an InputOutput
     # dataclass
 
-    cat_config = "cat-config"
     doctor = "doctor"
     managed = "managed"
     status = "status"
@@ -33,6 +32,7 @@ class InputOutputVerbs(Enum):
 class ReadVerbs(Enum):
     cat = "cat"
     data = "data"
+    cat_config = "cat-config"
     diff = "diff"
     git = "git"
     ignored = "ignored"
@@ -47,7 +47,7 @@ class OperateVerbs(Enum):
 
 class AllCommands(Enum):
     cat = BASE_CMD + (ReadVerbs.cat.value,)
-    cat_config = BASE_CMD + (InputOutputVerbs.cat_config.value,)
+    cat_config = BASE_CMD + (ReadVerbs.cat_config.value,)
     doctor = BASE_CMD + (InputOutputVerbs.doctor.value,)
     diff = BASE_CMD + (ReadVerbs.diff.value,)
     dir_status_lines = BASE_CMD + (
@@ -87,7 +87,6 @@ class AllCommands(Enum):
 
 
 class IoCmd(Enum):
-    cat_config = AllCommands.cat_config.value
     dir_status_lines = AllCommands.dir_status_lines.value
     doctor = AllCommands.doctor.value
     file_status_lines = AllCommands.file_status_lines.value
@@ -97,6 +96,7 @@ class IoCmd(Enum):
 
 class ReadCmd(Enum):
     cat = AllCommands.cat.value
+    cat_config = AllCommands.cat_config.value
     diff = AllCommands.diff.value
     git_log = AllCommands.git_log.value
     ignored = AllCommands.ignored.value
@@ -161,12 +161,13 @@ class CommandLog(RichLog):
     def log_dimmed(self, message: str) -> None:
         time = self._log_time()
         lines: list[str] = message.splitlines()
+        single_line_color = theme.vars["text-success"]
         color = theme.vars["text-disabled"]
         if len(lines) == 1:
             escaped_line = escape(lines[0])
-            self.write(f"{time} [{color}]{escaped_line}[/]")
+            self.write(f"{time} [{single_line_color}]{escaped_line}[/]")
         if len(lines) > 1:
-            self.write(f"{time} [{color}]multi line info:[/]")
+            self.write(f"{time} [{single_line_color}]multi line info:[/]")
         for line in lines:
             if line.strip():
                 escaped_line = escape(line)
@@ -264,8 +265,17 @@ class ReadCommand:
         long_command = ReadCmd.diff.value + (str(file_path),)
         return subprocess_run(long_command).splitlines()
 
-    def cat(self, file_path: Path) -> str:
-        return subprocess_run(ReadCmd.cat.value + (str(file_path),))
+    def cat(self, file_path: Path) -> list[str]:
+        return subprocess_run(
+            ReadCmd.cat.value + (str(file_path),)
+        ).splitlines()
+
+    def cat_config(self) -> list[str]:
+        return [
+            line
+            for line in subprocess_run(ReadCmd.cat_config.value).splitlines()
+            if line.strip()
+        ]
 
     def git_log(self, path: Path) -> list[str]:
         source_path: str = ""
@@ -341,7 +351,6 @@ class InputOutput:
 
 class Chezmoi:
 
-    cat_config: InputOutput
     dir_status_lines: InputOutput
     doctor: InputOutput
     file_status_lines: InputOutput

@@ -197,7 +197,8 @@ class Operate(ModalScreen[Path | None], IdMixin):
             self.button_id(ButtonEnum.cancel_add_btn),
         ):
             if not self.command_executed:
-                self.notify("No changes were made")
+                op_log.log_warning(f"Operation cancelled for {self.path.name}")
+                self.notify("No changes were made.")
             self.dismiss(None)
 
 
@@ -604,7 +605,7 @@ class DoctorTab(VerticalScroll, IdMixin):
                 title="chezmoi data (template data)",
             )
             yield Collapsible(
-                Pretty(chezmoi.cat_config.list_out),
+                Pretty(chezmoi.run.cat_config()),
                 title="chezmoi cat-config (contents of config-file)",
             )
             yield Collapsible(
@@ -668,4 +669,4 @@ class DoctorTab(VerticalScroll, IdMixin):
             if "cat-config" in title:
                 # Update the Pretty widget with latest cat-config data
                 pretty_widget = collapsible.query_one(Pretty)
-                pretty_widget.update(chezmoi.cat_config.list_out)
+                pretty_widget.update(chezmoi.run.cat_config())
