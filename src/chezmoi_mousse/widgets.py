@@ -40,13 +40,13 @@ class AutoWarning(Static):
 
     sign: str = CharsEnum.warning_sign.value
 
-    def __init__(self, *, tab_str: TabStr) -> None:
+    def __init__(self, tab_name: TabStr) -> None:
         super().__init__()
-        self.tab_str = tab_str
+        self.tab_name = tab_name
 
     def on_mount(self) -> None:
         warning_lines: list[str] = []
-        if self.tab_str in (TabStr.re_add_tab, TabStr.add_tab):
+        if self.tab_name in (TabStr.re_add_tab, TabStr.add_tab):
             if CM_CFG.autocommit:
                 warning_lines.append(
                     f"{self.sign}  Auto commit is enabled: files will also be committed  {self.sign}"
@@ -58,7 +58,7 @@ class AutoWarning(Static):
             warning_lines.append(
                 f"{self.sign}  Dotfile manager will be updated with current local file  {self.sign}"
             )
-        if self.tab_str == TabStr.apply_tab:
+        if self.tab_name == TabStr.apply_tab:
             warning_lines.append(
                 f"{self.sign} Local file will be modified. {self.sign}"
             )
@@ -75,10 +75,10 @@ class OperateInfo(Static):
 
     bullet = CharsEnum.bullet.value
 
-    def __init__(self, tab_str: TabStr, *, path: Path) -> None:
+    def __init__(self, tab_name: TabStr, path: Path) -> None:
         super().__init__()
 
-        self.tab_str = tab_str
+        self.tab_name = tab_name
         self.path = path
         self.info_border_titles = {
             TabStr.apply_tab: CharsEnum.apply.value,
@@ -89,7 +89,7 @@ class OperateInfo(Static):
     def on_mount(self) -> None:
         self.lines_to_write: list[str] = []
 
-        if self.tab_str in (TabStr.apply_tab, TabStr.re_add_tab):
+        if self.tab_name in (TabStr.apply_tab, TabStr.re_add_tab):
             self.lines_to_write.extend(
                 [
                     "[$text-success]+ green lines will be added[/]",
@@ -103,7 +103,7 @@ class OperateInfo(Static):
             )
         self.update("\n".join(self.lines_to_write))
         self.border_title = str(self.path)
-        self.border_subtitle = self.info_border_titles[self.tab_str]
+        self.border_subtitle = self.info_border_titles[self.tab_name]
 
 
 class ContentsView(RichLog):
@@ -320,7 +320,7 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
 
     def __init__(
         self,
-        tab_str: TabStr,
+        tab_name: TabStr,
         *,
         id: str | None = None,
         # classes: str | None = None,
@@ -328,7 +328,7 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
         self._initial_render = True
         self._first_focus = True
         self._user_interacted = False
-        self.tab_str: TabStr = tab_str
+        self.tab_name: TabStr = tab_name
         self.node_colors: dict[str, str] = {
             "Dir": theme.vars["text-primary"],
             "D": theme.vars["text-error"],
@@ -369,14 +369,14 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
             self.refresh()
 
     def create_dir_node_data(self, path: Path) -> DirNodeData:
-        status_code: str = chezmoi.managed_status[self.tab_str].dirs[path]
+        status_code: str = chezmoi.managed_status[self.tab_name].dirs[path]
         if not status_code:
             status_code = "X"
         found: bool = path.exists()
         return DirNodeData(path=path, found=found, status=status_code)
 
     def create_file_node_data(self, path: Path) -> FileNodeData:
-        status_code: str = chezmoi.managed_status[self.tab_str].files[path]
+        status_code: str = chezmoi.managed_status[self.tab_name].files[path]
         found: bool = path.exists()
         return FileNodeData(path=path, found=found, status=status_code)
 
@@ -400,10 +400,10 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
     def should_show_dir_node(self, dir_path: Path, unchanged: bool) -> bool:
         if not unchanged:
             has_status_files: bool = chezmoi.dir_has_status_files(
-                self.tab_str, dir_path
+                self.tab_name, dir_path
             )
             has_status_dirs: bool = chezmoi.dir_has_status_dirs(
-                self.tab_str, dir_path
+                self.tab_name, dir_path
             )
             return has_status_files or has_status_dirs
         return True
@@ -411,7 +411,7 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
     def add_unchanged_leaves(self, tree_node: TreeNode[NodeData]) -> None:
         assert isinstance(tree_node.data, DirNodeData)
         unchanged_in_dir: list[Path] = chezmoi.files_without_status_in(
-            self.tab_str, tree_node.data.path
+            self.tab_name, tree_node.data.path
         )
         for file_path in unchanged_in_dir:
             node_data: FileNodeData = self.create_file_node_data(file_path)
@@ -430,7 +430,7 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
     def add_status_leaves(self, tree_node: TreeNode[NodeData]) -> None:
         assert isinstance(tree_node.data, DirNodeData)
         status_file_paths: list[Path] = chezmoi.files_with_status_in(
-            self.tab_str, tree_node.data.path
+            self.tab_name, tree_node.data.path
         )
         for file in status_file_paths:
             node_data: FileNodeData = self.create_file_node_data(file)
@@ -480,9 +480,9 @@ class ManagedTree(TreeBase, IdMixin):
 
     unchanged: reactive[bool] = reactive(False, init=False)
 
-    def __init__(self, tab_str: TabStr) -> None:
-        IdMixin.__init__(self, tab_str)
-        super().__init__(tab_str, id=self.tree_id(TreeStr.managed_tree))
+    def __init__(self, tab_name: TabStr) -> None:
+        IdMixin.__init__(self, tab_name)
+        super().__init__(tab_name, id=self.tree_id(TreeStr.managed_tree))
 
     def refresh_tree_data(self) -> None:
         """Refresh the tree with latest chezmoi data."""
@@ -524,9 +524,9 @@ class ExpandedTree(TreeBase, IdMixin):
 
     unchanged: reactive[bool] = reactive(False, init=False)
 
-    def __init__(self, tab_str: TabStr) -> None:
-        IdMixin.__init__(self, tab_str)
-        super().__init__(tab_str, id=self.tree_id(TreeStr.expanded_tree))
+    def __init__(self, tab_name: TabStr) -> None:
+        IdMixin.__init__(self, tab_name)
+        super().__init__(tab_name, id=self.tree_id(TreeStr.expanded_tree))
 
     def refresh_tree_data(self) -> None:
         """Refresh the tree with latest chezmoi data."""
@@ -567,9 +567,9 @@ class FlatTree(TreeBase, IdMixin):
 
     unchanged: reactive[bool] = reactive(False, init=False)
 
-    def __init__(self, tab_str: TabStr) -> None:
-        IdMixin.__init__(self, tab_str)
-        super().__init__(tab_str, id=self.tree_id(TreeStr.flat_tree))
+    def __init__(self, tab_name: TabStr) -> None:
+        IdMixin.__init__(self, tab_name)
+        super().__init__(tab_name, id=self.tree_id(TreeStr.flat_tree))
 
     def on_mount(self) -> None:
         # Don't populate data here - it will be done via refresh_tree_data()

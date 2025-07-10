@@ -26,10 +26,9 @@ from chezmoi_mousse.widgets import ExpandedTree, FlatTree, ManagedTree
 class FilterSlider(VerticalGroup, IdMixin):
 
     def __init__(
-        self, tab_str: TabStr, filters: tuple[FilterEnum, FilterEnum]
+        self, tab_name: TabStr, filters: tuple[FilterEnum, FilterEnum]
     ) -> None:
-        IdMixin.__init__(self, tab_str)
-        self.tab_str = tab_str
+        IdMixin.__init__(self, tab_name)
         self.filters = filters
         super().__init__(
             id=self.filter_slider_id, classes=TcssStr.filters_vertical
@@ -59,12 +58,12 @@ class ButtonsHorizontal(HorizontalGroup, IdMixin):
 
     def __init__(
         self,
-        tab_str: TabStr,
+        tab_name: TabStr,
         *,
         buttons: tuple[ButtonEnum, ...],
         location: Location,
     ) -> None:
-        IdMixin.__init__(self, tab_str)
+        IdMixin.__init__(self, tab_name)
         super().__init__(
             id=self.buttons_horizontal_id(location),
             classes=TcssStr.tab_buttons_horizontal,
@@ -109,9 +108,8 @@ class ButtonsHorizontal(HorizontalGroup, IdMixin):
 
 class TreeContentSwitcher(ContentSwitcher, IdMixin):
 
-    def __init__(self, tab_str: TabStr):
-        IdMixin.__init__(self, tab_str)
-        self.tab_str = tab_str
+    def __init__(self, tab_name: TabStr):
+        IdMixin.__init__(self, tab_name)
         super().__init__(
             id=self.content_switcher_id(Location.left),
             initial=self.tree_id(TreeStr.managed_tree),
@@ -123,6 +121,6 @@ class TreeContentSwitcher(ContentSwitcher, IdMixin):
         self.add_class(TcssStr.top_border_title)
 
     def compose(self) -> ComposeResult:
-        yield ManagedTree(self.tab_str)
-        yield FlatTree(self.tab_str)
-        yield ExpandedTree(self.tab_str)
+        yield ManagedTree(self.tab_name)
+        yield FlatTree(self.tab_name)
+        yield ExpandedTree(self.tab_name)

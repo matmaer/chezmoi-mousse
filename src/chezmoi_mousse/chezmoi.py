@@ -445,38 +445,38 @@ class Chezmoi:
         return [p for p in self.managed_dir_paths if p.parent == dir_path]
 
     def files_with_status_in(
-        self, tab_str: TabStr, dir_path: Path
+        self, tab_name: TabStr, dir_path: Path
     ) -> list[Path]:
 
         return [
             p
-            for p in self.managed_status[tab_str].files_with_status
+            for p in self.managed_status[tab_name].files_with_status
             if p.parent == dir_path
         ]
 
     def files_without_status_in(
-        self, tab_str: TabStr, dir_path: Path
+        self, tab_name: TabStr, dir_path: Path
     ) -> list[Path]:
 
         return [
             p
-            for p in self.managed_status[tab_str].files_without_status
+            for p in self.managed_status[tab_name].files_without_status
             if p.parent == dir_path
         ]
 
-    def dir_has_status_files(self, tab_str: TabStr, dir_path: Path) -> bool:
+    def dir_has_status_files(self, tab_name: TabStr, dir_path: Path) -> bool:
         # checks for any, no matter how deep in subdirectories
 
         return any(
             f
-            for f, status in self.managed_status[tab_str].files.items()
+            for f, status in self.managed_status[tab_name].files.items()
             if dir_path in f.parents and status != "X"
         )
 
-    def dir_has_status_dirs(self, tab_str: TabStr, dir_path: Path) -> bool:
+    def dir_has_status_dirs(self, tab_name: TabStr, dir_path: Path) -> bool:
         # checks for any, no matter how deep in subdirectories
 
-        status_dirs = self.managed_status[tab_str].dirs.items()
+        status_dirs = self.managed_status[tab_name].dirs.items()
         if dir_path.parent == CM_CFG.destDir and dir_path in status_dirs:
             # the parent is dest_dir, also return True because dest_dir is
             # not present in the self.managed_status dict

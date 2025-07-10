@@ -134,13 +134,13 @@ class ChezmoiGUI(App[None]):
         yield Header(icon=CharsEnum.burger.value)
         with TabbedContent():
             with TabPane("Apply", id=PaneEnum.apply.name):
-                yield ApplyTab(tab_str=TabStr.apply_tab)
+                yield ApplyTab(tab_name=TabStr.apply_tab)
             with TabPane("Re-Add", id=PaneEnum.re_add.name):
-                yield ReAddTab(tab_str=TabStr.re_add_tab)
+                yield ReAddTab(tab_name=TabStr.re_add_tab)
             with TabPane("Add", id=PaneEnum.add.name):
-                yield AddTab(tab_str=TabStr.add_tab)
+                yield AddTab(tab_name=TabStr.add_tab)
             with TabPane("Doctor", id=PaneEnum.doctor.name):
-                yield DoctorTab(tab_str=TabStr.doctor_tab)
+                yield DoctorTab(tab_name=TabStr.doctor_tab)
             with TabPane("Diagram", id=PaneEnum.diagram.name):
                 yield ScrollableContainer(
                     Static(
@@ -194,27 +194,25 @@ class ChezmoiGUI(App[None]):
 
     def refresh_all_trees(self) -> None:
         self.query_one(
-            IdMixin(tab_str=TabStr.apply_tab).tree_qid(TreeStr.managed_tree),
+            IdMixin(TabStr.apply_tab).tree_qid(TreeStr.managed_tree),
             ManagedTree,
         ).refresh_tree_data()
         self.query_one(
-            IdMixin(tab_str=TabStr.apply_tab).tree_qid(TreeStr.flat_tree),
-            FlatTree,
+            IdMixin(TabStr.apply_tab).tree_qid(TreeStr.flat_tree), FlatTree
         ).refresh_tree_data()
         self.query_one(
-            IdMixin(tab_str=TabStr.apply_tab).tree_qid(TreeStr.expanded_tree),
+            IdMixin(TabStr.apply_tab).tree_qid(TreeStr.expanded_tree),
             ExpandedTree,
         ).refresh_tree_data()
         self.query_one(
-            IdMixin(tab_str=TabStr.re_add_tab).tree_qid(TreeStr.managed_tree),
+            IdMixin(TabStr.re_add_tab).tree_qid(TreeStr.managed_tree),
             ManagedTree,
         ).refresh_tree_data()
         self.query_one(
-            IdMixin(tab_str=TabStr.re_add_tab).tree_qid(TreeStr.flat_tree),
-            FlatTree,
+            IdMixin(TabStr.re_add_tab).tree_qid(TreeStr.flat_tree), FlatTree
         ).refresh_tree_data()
         self.query_one(
-            IdMixin(tab_str=TabStr.re_add_tab).tree_qid(TreeStr.expanded_tree),
+            IdMixin(TabStr.re_add_tab).tree_qid(TreeStr.expanded_tree),
             ExpandedTree,
         ).refresh_tree_data()
         self.query_one(FilteredDirTree).refresh_tree_data()
@@ -252,7 +250,7 @@ class ChezmoiGUI(App[None]):
                 return True
             # Once the app is running - guard against empty active_pane
             try:
-                id_mixin = IdMixin(tab_str=PaneEnum[active_pane].value)
+                id_mixin = IdMixin(PaneEnum[active_pane].value)
             except (KeyError, AttributeError):
                 return True
             if (
@@ -285,7 +283,7 @@ class ChezmoiGUI(App[None]):
     def action_maximize(self) -> None:
         active_pane = self.query_one(TabbedContent).active
         # tab id not known upon MainScreen init, so we init it here.
-        id_mixin = IdMixin(tab_str=PaneEnum[active_pane].value)
+        id_mixin = IdMixin(PaneEnum[active_pane].value)
 
         # Initialize modal parameters
         tab_name = PaneEnum[active_pane].value

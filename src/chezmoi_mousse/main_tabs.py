@@ -84,7 +84,6 @@ class Operate(ModalScreen[Path], IdMixin):
         self, tab_name: TabStr, *, path: Path, buttons: tuple[ButtonEnum, ...]
     ) -> None:
         IdMixin.__init__(self, tab_name)
-        self.tab_name = tab_name
         self.path = path
         self.buttons = buttons
         self.command_executed = False
@@ -101,8 +100,8 @@ class Operate(ModalScreen[Path], IdMixin):
             id=OperateIdStr.operate_vertical_id,
             classes=TcssStr.operate_container,
         ):
-            yield AutoWarning(tab_str=self.tab_name)
-            yield OperateInfo(tab_str=self.tab_name, path=self.path)
+            yield AutoWarning(self.tab_name)
+            yield OperateInfo(self.tab_name, self.path)
             if self.tab_name == TabStr.add_tab:
                 with Container(
                     id=OperateIdStr.operate_collapsible_id,
@@ -213,14 +212,15 @@ class Operate(ModalScreen[Path], IdMixin):
 
 class _BaseTab(Horizontal, IdMixin):
 
-    def __init__(self, id: str) -> None:
+    def __init__(self, tab_name: TabStr) -> None:
+        IdMixin.__init__(self, tab_name)
         # this will cast my type to the textual callback type, we need the
         # second None to be compatible with the textual callback signature
         # however down the line this avoids taking care of the None type
         self.callback = cast(
             Callable[[Path | None], None], self.message_for_gui
         )
-        super().__init__(id=id)
+        super().__init__(id=self.tab_main_horizontal_id)
 
     def update_right_side_content_switcher(self, path: Path):
         self.query_one(
@@ -247,16 +247,18 @@ class _BaseTab(Horizontal, IdMixin):
                     self.view_qid(ViewStr.diff_view), DiffView
                 ).path
                 # Check if the current path has a diff available
-                tab_str = getattr(self, "tab_str")
+                tab_name = getattr(self, "tab_name")
                 if (
-                    active_path in chezmoi.managed_status[tab_str].files
-                    and chezmoi.managed_status[tab_str].files[active_path]
+                    active_path in chezmoi.managed_status[tab_name].files
+                    and chezmoi.managed_status[tab_name].files[active_path]
                     != "X"
                 ):
                     return True  # active
                 else:
                     return None  # disabled
             return None
+        elif action in ("add_contents"):
+            return True
         return False  # hidden
 
     def on_tree_node_selected(
@@ -333,7 +335,7 @@ class _BaseTab(Horizontal, IdMixin):
 
     def message_for_gui(self, path: Path) -> None:
         # will refresh the trees by gui.py with on_operation_completed
-        self.post_message(OperationCompleted(path=path))
+        self.post_message(OperationCompleted(path))
 
 
 class ApplyTab(_BaseTab):
@@ -342,10 +344,8 @@ class ApplyTab(_BaseTab):
         Binding(key="C", action="apply_diff", description="chezmoi-apply")
     ]
 
-    def __init__(self, tab_str: TabStr) -> None:
-        IdMixin.__init__(self, tab_str)
-        self.tab_str: TabStr = tab_str
-        super().__init__(id=self.tab_main_horizontal_id)
+    def __init__(self, tab_name: TabStr) -> None:
+        super().__init__(tab_name)
 
     def compose(self) -> ComposeResult:
         with VerticalGroup(
@@ -353,15 +353,15 @@ class ApplyTab(_BaseTab):
             classes=TcssStr.tab_left_vertical,
         ):
             yield ButtonsHorizontal(
-                self.tab_str,
+                self.tab_name,
                 buttons=(ButtonEnum.tree_btn, ButtonEnum.list_btn),
                 location=Location.left,
             )
-            yield TreeContentSwitcher(self.tab_str)
+            yield TreeContentSwitcher(self.tab_name)
 
         with Vertical(id=self.tab_vertical_id(Location.right)):
             yield ButtonsHorizontal(
-                self.tab_str,
+                self.tab_name,
                 buttons=(
                     ButtonEnum.diff_btn,
                     ButtonEnum.contents_btn,
@@ -381,7 +381,8 @@ class ApplyTab(_BaseTab):
                 yield GitLogView(view_id=self.view_id(ViewStr.git_log_view))
 
         yield FilterSlider(
-            self.tab_str, filters=(FilterEnum.unchanged, FilterEnum.expand_all)
+            self.tab_name,
+            filters=(FilterEnum.unchanged, FilterEnum.expand_all),
         )
 
     def on_mount(self) -> None:
@@ -405,7 +406,7 @@ class ApplyTab(_BaseTab):
         current_path = getattr(diff_view, "path")
         self.app.push_screen(
             Operate(
-                self.tab_str,
+                self.tab_name,
                 buttons=(
                     ButtonEnum.apply_file_btn,
                     ButtonEnum.cancel_apply_btn,
@@ -422,10 +423,8 @@ class ReAddTab(_BaseTab):
         Binding(key="C", action="re_add_diff", description="chezmoi-re-add")
     ]
 
-    def __init__(self, tab_str: TabStr) -> None:
-        IdMixin.__init__(self, tab_str)
-        self.tab_str: TabStr = tab_str
-        super().__init__(id=self.tab_main_horizontal_id)
+    def __init__(self, tab_name: TabStr) -> None:
+        super().__init__(tab_name)
 
     def compose(self) -> ComposeResult:
         with VerticalGroup(
@@ -433,15 +432,15 @@ class ReAddTab(_BaseTab):
             classes=TcssStr.tab_left_vertical,
         ):
             yield ButtonsHorizontal(
-                self.tab_str,
+                self.tab_name,
                 buttons=(ButtonEnum.tree_btn, ButtonEnum.list_btn),
                 location=Location.left,
             )
-            yield TreeContentSwitcher(self.tab_str)
+            yield TreeContentSwitcher(self.tab_name)
 
         with Vertical(id=self.tab_vertical_id(Location.right)):
             yield ButtonsHorizontal(
-                self.tab_str,
+                self.tab_name,
                 buttons=(
                     ButtonEnum.diff_btn,
                     ButtonEnum.contents_btn,
@@ -462,7 +461,8 @@ class ReAddTab(_BaseTab):
                 yield GitLogView(view_id=self.view_id(ViewStr.git_log_view))
 
         yield FilterSlider(
-            self.tab_str, filters=(FilterEnum.unchanged, FilterEnum.expand_all)
+            self.tab_name,
+            filters=(FilterEnum.unchanged, FilterEnum.expand_all),
         )
 
     def on_mount(self) -> None:
@@ -485,7 +485,7 @@ class ReAddTab(_BaseTab):
         current_path = getattr(diff_view, "path")
         self.app.push_screen(
             Operate(
-                self.tab_str,
+                self.tab_name,
                 buttons=(
                     ButtonEnum.re_add_file_btn,
                     ButtonEnum.cancel_re_add_btn,
@@ -496,16 +496,14 @@ class ReAddTab(_BaseTab):
         )
 
 
-class AddTab(Horizontal, IdMixin):
+class AddTab(_BaseTab):
 
     BINDINGS = [
         Binding(key="C", action="add_contents", description="chezmoi-add")
     ]
 
-    def __init__(self, tab_str: TabStr) -> None:
-        IdMixin.__init__(self, tab_str)
-        self.tab_str: TabStr = tab_str
-        super().__init__(id=self.tab_main_horizontal_id)
+    def __init__(self, tab_name: TabStr) -> None:
+        super().__init__(tab_name)
 
     def compose(self) -> ComposeResult:
         with VerticalGroup(id=self.tab_vertical_id(Location.left)):
@@ -519,7 +517,7 @@ class AddTab(Horizontal, IdMixin):
             yield ContentsView(view_id=self.view_id(ViewStr.contents_view))
 
         yield FilterSlider(
-            self.tab_str,
+            self.tab_name,
             filters=(FilterEnum.unmanaged_dirs, FilterEnum.unwanted),
         )
 
@@ -586,25 +584,20 @@ class AddTab(Horizontal, IdMixin):
             self.view_qid(ViewStr.contents_view), ContentsView
         )
         current_path = getattr(contents_view, "path")
-        callback = cast(Callable[[Path | None], None], self.message_for_gui)
         self.app.push_screen(
             Operate(
-                self.tab_str,
+                self.tab_name,
                 buttons=(ButtonEnum.add_file_btn, ButtonEnum.cancel_add_btn),
                 path=current_path,
             ),
-            callback=callback,
+            callback=self.callback,
         )
-
-    def message_for_gui(self, path: Path) -> None:
-        # will refresh the trees by gui.py with on_operation_completed
-        self.post_message(OperationCompleted(path=path))
 
 
 class DoctorTab(VerticalScroll, IdMixin):
 
-    def __init__(self, tab_str: TabStr) -> None:
-        IdMixin.__init__(self, tab_str)
+    def __init__(self, tab_name: TabStr) -> None:
+        IdMixin.__init__(self, tab_name)
         super().__init__(id=self.tab_main_horizontal_id)
 
     def compose(self) -> ComposeResult:
