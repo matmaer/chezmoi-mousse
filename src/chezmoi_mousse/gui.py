@@ -39,11 +39,11 @@ from chezmoi_mousse.splash import LoadingScreen
 from chezmoi_mousse.widgets import (
     ContentsView,
     DiffView,
-    GitLogView,
-    ManagedTree,
-    FlatTree,
     ExpandedTree,
     FilteredDirTree,
+    FlatTree,
+    GitLogView,
+    ManagedTree,
 )
 
 

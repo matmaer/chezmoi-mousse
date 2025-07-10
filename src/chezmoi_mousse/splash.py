@@ -1,6 +1,6 @@
 import tempfile
 from collections import deque
-from enum import auto, StrEnum
+from enum import StrEnum, auto
 from pathlib import Path
 
 from rich.segment import Segment
