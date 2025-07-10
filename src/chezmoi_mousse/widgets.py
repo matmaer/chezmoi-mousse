@@ -329,7 +329,7 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
         tab_str: TabStr,
         *,
         id: str | None = None,
-        classes: str | None = None,
+        # classes: str | None = None,
     ) -> None:
         self._initial_render = True
         self._first_focus = True
@@ -351,6 +351,7 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
     def on_mount(self) -> None:
         self.guide_depth: int = 3
         self.show_root: bool = False
+        self.add_class(TcssStr.tree_widget)
 
     # 4 methods to provide tab navigation without intaraction with the tree
     def on_key(self, event: Key) -> None:
@@ -487,11 +488,7 @@ class ManagedTree(TreeBase, IdMixin):
 
     def __init__(self, tab_str: TabStr) -> None:
         IdMixin.__init__(self, tab_str)
-        super().__init__(
-            tab_str,
-            id=self.tree_id(TreeStr.managed_tree),
-            classes=TcssStr.tree_widget,
-        )
+        super().__init__(tab_str, id=self.tree_id(TreeStr.managed_tree))
 
     def refresh_tree_data(self) -> None:
         """Refresh the tree with latest chezmoi data."""
@@ -528,11 +525,7 @@ class ExpandedTree(TreeBase, IdMixin):
 
     def __init__(self, tab_str: TabStr) -> None:
         IdMixin.__init__(self, tab_str)
-        super().__init__(
-            tab_str,
-            id=self.tree_id(TreeStr.expanded_tree),
-            classes=TcssStr.tree_widget,
-        )
+        super().__init__(tab_str, id=self.tree_id(TreeStr.expanded_tree))
 
     def on_mount(self) -> None:
         # Don't populate data here - it will be done via refresh_tree_data()
@@ -573,11 +566,7 @@ class FlatTree(TreeBase, IdMixin):
 
     def __init__(self, tab_str: TabStr) -> None:
         IdMixin.__init__(self, tab_str)
-        super().__init__(
-            tab_str,
-            id=self.tree_id(TreeStr.flat_tree),
-            classes=TcssStr.tree_widget,
-        )
+        super().__init__(tab_str, id=self.tree_id(TreeStr.flat_tree))
 
     def on_mount(self) -> None:
         # Don't populate data here - it will be done via refresh_tree_data()
