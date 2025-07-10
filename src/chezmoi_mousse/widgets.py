@@ -512,6 +512,13 @@ class ManagedTree(TreeBase, IdMixin):
             if not self.unchanged:
                 self.remove_unchanged_leaves(node)
 
+    # TODO: move to base class
+    def remove_node_path(self, path: Path) -> None:
+        # find corresponding node for the given path
+        for node in self.get_expanded_nodes():
+            if node.data and node.data.path == path:
+                node.remove()
+
 
 class ExpandedTree(TreeBase, IdMixin):
 
@@ -540,6 +547,12 @@ class ExpandedTree(TreeBase, IdMixin):
             for child in node.children:
                 if child.data and isinstance(child.data, DirNodeData):
                     self.expand_all_nodes(child)
+
+    def remove_node_path(self, path: Path) -> None:
+        # find corresponding node for the given path
+        for node in self.get_expanded_nodes():
+            if node.data and node.data.path == path:
+                node.remove()
 
     def watch_unchanged(self) -> None:
         expanded_nodes = self.get_expanded_nodes()
@@ -584,6 +597,12 @@ class FlatTree(TreeBase, IdMixin):
 
     def remove_flat_leaves(self) -> None:
         self.remove_unchanged_leaves(self.root)
+
+    def remove_node_path(self, path: Path) -> None:
+        # find corresponding node for the given path
+        for node in self.root.children:
+            if node.data and node.data.path == path:
+                node.remove()
 
     def watch_unchanged(self) -> None:
         if self.unchanged:

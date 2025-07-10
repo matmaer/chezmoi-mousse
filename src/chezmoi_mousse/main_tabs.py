@@ -1,4 +1,6 @@
+from collections.abc import Callable
 from pathlib import Path
+from typing import cast
 
 from rich.text import Text
 from textual.app import ComposeResult
@@ -64,15 +66,15 @@ from chezmoi_mousse.widgets import (
 
 
 class OperationCompleted(Message):
-    def __init__(self, path: Path | None) -> None:
+    def __init__(self, path: Path) -> None:
         self.path = path
         super().__init__()
 
 
-class Operate(ModalScreen[Path | None], IdMixin):
+class Operate(ModalScreen[Path], IdMixin):
     BINDINGS = [
         Binding(
-            key="escape", action="dismiss", description="close", show=False
+            key="escape", action="esc_dismiss", description="close", show=False
         )
     ]
 
@@ -196,13 +198,29 @@ class Operate(ModalScreen[Path | None], IdMixin):
             self.button_id(ButtonEnum.cancel_re_add_btn),
             self.button_id(ButtonEnum.cancel_add_btn),
         ):
-            if not self.command_executed:
-                op_log.log_warning(f"Operation cancelled for {self.path.name}")
-                self.notify("No changes were made.")
-            self.dismiss(None)
+            self.handle_dismiss()
+
+    def handle_dismiss(self):
+        """Called when the screen is dismissed."""
+        if not self.command_executed:
+            op_log.log_warning(f"Operation cancelled for {self.path.name}")
+            self.notify("No changes were made.")
+        self.dismiss(self.path)
+
+    def action_esc_dismiss(self) -> None:
+        self.handle_dismiss()
 
 
 class _BaseTab(Horizontal, IdMixin):
+
+    def __init__(self, id: str) -> None:
+        # this will cast my type to the textual callback type, we need the
+        # second None to be compatible with the textual callback signature
+        # however down the line this avoids taking care of the None type
+        self.callback = cast(
+            Callable[[Path | None], None], self.message_for_gui
+        )
+        super().__init__(id=id)
 
     def update_right_side_content_switcher(self, path: Path):
         self.query_one(
@@ -313,6 +331,10 @@ class _BaseTab(Horizontal, IdMixin):
                     self.content_switcher_qid(Location.left), ContentSwitcher
                 ).current = self.tree_id(TreeStr.managed_tree)
 
+    def message_for_gui(self, path: Path) -> None:
+        # will refresh the trees by gui.py with on_operation_completed
+        self.post_message(OperationCompleted(path=path))
+
 
 class ApplyTab(_BaseTab):
 
@@ -390,13 +412,8 @@ class ApplyTab(_BaseTab):
                 ),
                 path=current_path,
             ),
-            callback=self.message_for_gui,
+            callback=self.callback(current_path),
         )
-
-    def message_for_gui(self, path: Path | None) -> None:
-        # will refresh the trees by gui.py with on_operation_completed
-        if path is not None:
-            self.post_message(OperationCompleted(path=path))
 
 
 class ReAddTab(_BaseTab):
@@ -475,13 +492,8 @@ class ReAddTab(_BaseTab):
                 ),
                 path=current_path,
             ),
-            callback=self.message_for_gui,
+            callback=self.callback(current_path),
         )
-
-    def message_for_gui(self, path: Path | None) -> None:
-        # will refresh the trees by gui.py with on_operation_completed
-        if path is not None:
-            self.post_message(OperationCompleted(path=path))
 
 
 class AddTab(Horizontal, IdMixin):
@@ -574,19 +586,19 @@ class AddTab(Horizontal, IdMixin):
             self.view_qid(ViewStr.contents_view), ContentsView
         )
         current_path = getattr(contents_view, "path")
+        callback = cast(Callable[[Path | None], None], self.message_for_gui)
         self.app.push_screen(
             Operate(
                 self.tab_str,
                 buttons=(ButtonEnum.add_file_btn, ButtonEnum.cancel_add_btn),
                 path=current_path,
             ),
-            callback=self.message_for_gui,
+            callback=callback,
         )
 
-    def message_for_gui(self, path: Path | None) -> None:
+    def message_for_gui(self, path: Path) -> None:
         # will refresh the trees by gui.py with on_operation_completed
-        if path is not None:
-            self.post_message(OperationCompleted(path=path))
+        self.post_message(OperationCompleted(path=path))
 
 
 class DoctorTab(VerticalScroll, IdMixin):

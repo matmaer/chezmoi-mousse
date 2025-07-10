@@ -175,9 +175,21 @@ class ChezmoiGUI(App[None]):
         cmd_log.log_success(f"Theme set to {new_theme}")
 
     def on_operation_completed(self, message: OperationCompleted) -> None:
-        # TODO: the path is available in message.path, refresh specific tree
-        # nodes instead of all trees
-        self.refresh_all_trees()
+        # TODO: implement the refresh for FilteredDirTree or check to do it
+        # with the filter on the DirectoryTree
+
+        managed_trees = self.query(ManagedTree)
+        for tree in managed_trees:
+            tree.remove_node_path(path=message.path)
+
+        flat_trees = self.query(FlatTree)
+        for tree in flat_trees:
+            tree.remove_node_path(path=message.path)
+
+        expanded_trees = self.query(ExpandedTree)
+        for tree in expanded_trees:
+            tree.remove_node_path(path=message.path)
+
         self.notify("Tree views updated")
 
     def refresh_all_trees(self) -> None:
