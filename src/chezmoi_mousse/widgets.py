@@ -141,7 +141,6 @@ class ContentsView(RichLog):
                     cmd_log.log_error(message)
                 else:
                     self.write(file_content + truncated_message)
-                    cmd_log.log_warning("File content displayed")
 
         except UnicodeDecodeError:
             self.write(f"{self.path} cannot be decoded as UTF-8.")
