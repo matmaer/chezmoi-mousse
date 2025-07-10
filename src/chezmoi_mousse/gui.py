@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 from textual.app import App, ComposeResult
@@ -155,6 +156,14 @@ class ChezmoiGUI(App[None]):
         yield Footer()
 
     def on_mount(self) -> None:
+        if os.environ.get("CHEZMOI_DEV") == "1":
+            self.notify("Running in development mode", severity="information")
+        if os.environ.get("CHEZMOI_CHANGES") == "1":
+            self.notify(
+                "Changes mode enabled, operations will be executed",
+                severity="warning",
+            )
+
         cmd_log.log_success("App initialized successfully")
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
         self.title = "-  c h e z m o i  m o u s s e  -"
