@@ -17,7 +17,7 @@ Graphical user interface in the terminal for [chezmoi](https://github.com/twpayn
 
 ## Available Chezmoi commands
 
-> enable write operations by setting an env var ENABLE_CHANGES=1
+> enable write operations by setting an env var MOUSSE_ENABLE_CHANGES=1
 
 ### Write Operations
 

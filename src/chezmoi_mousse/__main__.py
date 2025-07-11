@@ -6,7 +6,7 @@ from chezmoi_mousse.gui import ChezmoiGUI
 def main():
     app = ChezmoiGUI()
 
-    if os.environ.get("CHEZMOI_DEV") == "1":
+    if os.environ.get("MOUSSE_DEV") == "1":
         import traceback
         from pathlib import Path
 

@@ -1,4 +1,5 @@
 import json
+import os
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
@@ -210,9 +211,19 @@ class ChangeCommand:
     """Group of commands which make changes on disk or in the chezmoi
     repository."""
 
-    # TODO: remove --dry-run
-    base = BASE_CMD + ("--dry-run", "--force", "--config")
     config_path: Path | None = None
+
+    def __init__(self, enable_changes: bool = False) -> None:
+        if os.environ.get("MOUSSE_ENABLE_CHANGES") == "1":
+            self.base = BASE_CMD + ("--force", "--config")
+            cmd_log.log_warning(
+                "Changes mode enabled, operations will be executed"
+            )
+        else:
+            self.base = BASE_CMD + ("--dry-run", "--force", "--config")
+            cmd_log.log_warning(
+                "Changes mode disabled, operations will dry-run only"
+            )
 
     def _update_managed_status_data(self) -> None:
         # Update data that the managed_status property depends on
