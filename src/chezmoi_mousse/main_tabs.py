@@ -27,7 +27,7 @@ from textual.widgets import (
 )
 
 from chezmoi_mousse import CM_CFG, theme
-from chezmoi_mousse.chezmoi import chezmoi  # , op_log
+from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.config import FLOW, pw_mgr_info
 from chezmoi_mousse.containers import (
     ButtonsHorizontal,
