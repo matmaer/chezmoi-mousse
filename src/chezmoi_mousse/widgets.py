@@ -571,10 +571,6 @@ class FlatTree(TreeBase, IdMixin):
         IdMixin.__init__(self, tab_name)
         super().__init__(tab_name, id=self.tree_id(TreeStr.flat_tree))
 
-    def on_mount(self) -> None:
-        # Don't populate data here - it will be done via refresh_tree_data()
-        pass
-
     def refresh_tree_data(self) -> None:
         """Refresh the tree with latest chezmoi data."""
         self.root.remove_children()
