@@ -4,6 +4,7 @@
 
 .doctor_vertical {
   &>.doctor_collapsible {
+    height: auto;
     .doctor_table {
       margin-bottom: 1;
     }
