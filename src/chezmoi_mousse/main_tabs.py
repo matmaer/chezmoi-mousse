@@ -58,7 +58,7 @@ from chezmoi_mousse.widgets import (
 )
 
 
-class _BaseTab(Horizontal, IdMixin):
+class OperateTabsBase(Horizontal, IdMixin):
 
     def __init__(self, tab_name: TabStr) -> None:
         IdMixin.__init__(self, tab_name)
@@ -186,7 +186,7 @@ class _BaseTab(Horizontal, IdMixin):
         self.post_message(OperationCompleted(path))
 
 
-class ApplyTab(_BaseTab):
+class ApplyTab(OperateTabsBase):
 
     BINDINGS = [
         Binding(key="C", action="apply_diff", description="chezmoi-apply")
@@ -265,7 +265,7 @@ class ApplyTab(_BaseTab):
         )
 
 
-class ReAddTab(_BaseTab):
+class ReAddTab(OperateTabsBase):
 
     BINDINGS = [
         Binding(key="C", action="re_add_diff", description="chezmoi-re-add")
@@ -344,7 +344,7 @@ class ReAddTab(_BaseTab):
         )
 
 
-class AddTab(_BaseTab):
+class AddTab(OperateTabsBase):
 
     BINDINGS = [
         Binding(key="C", action="add_contents", description="chezmoi-add")
