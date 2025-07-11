@@ -11,7 +11,6 @@ from textual.containers import (
     ScrollableContainer,
     Vertical,
     VerticalGroup,
-    VerticalScroll,
 )
 from textual.widgets import (
     Button,
@@ -443,7 +442,7 @@ class AddTab(OperateTabsBase):
         )
 
 
-class DoctorTab(VerticalScroll, IdMixin):
+class DoctorTab(ScrollableContainer, IdMixin):
 
     def __init__(self, tab_name: TabStr) -> None:
         IdMixin.__init__(self, tab_name)
@@ -458,19 +457,18 @@ class DoctorTab(VerticalScroll, IdMixin):
 
         yield Collapsible(self.doctor_table, title="chezmoi doctor output")
         yield Collapsible(
-            ScrollableContainer(Static(FLOW, classes=TcssStr.flow_diagram)),
-            title="chezmoi diagram",
+            Static(FLOW, classes=TcssStr.flow_diagram), title="chezmoi diagram"
         )
         yield Collapsible(
-            ScrollableContainer(Pretty(chezmoi.run.template_data())),
+            Pretty(chezmoi.run.template_data()),
             title="chezmoi data (template data)",
         )
         yield Collapsible(
-            ScrollableContainer(Pretty(chezmoi.run.cat_config())),
+            Pretty(chezmoi.run.cat_config()),
             title="chezmoi cat-config (contents of config-file)",
         )
         yield Collapsible(
-            ScrollableContainer(Pretty(chezmoi.run.ignored())),
+            Pretty(chezmoi.run.ignored()),
             title="chezmoi ignored (git ignore in source-dir)",
         )
         yield Collapsible(ListView(), title="Commands Not Found")
