@@ -82,9 +82,9 @@ class ChezmoiGUI(App[None]):
         yield Footer()
 
     def on_mount(self) -> None:
-        if os.environ.get("CHEZMOI_DEV") == "1":
+        if os.environ.get("MOUSSE_DEV") == "1":
             self.notify("Running in development mode", severity="information")
-        if os.environ.get("ENABLE_CHANGES") == "1":
+        if os.environ.get("MOUSSE_ENABLE_CHANGES") == "1":
             self.notify(
                 "Changes mode enabled, operations will be executed",
                 severity="warning",
