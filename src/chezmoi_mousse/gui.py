@@ -76,14 +76,6 @@ class ChezmoiGUI(App[None]):
                 yield AddTab(tab_name=TabStr.add_tab)
             with TabPane("Doctor", id=PaneEnum.doctor.name):
                 yield DoctorTab(tab_name=TabStr.doctor_tab)
-            # with TabPane("Diagram", id=PaneEnum.diagram.name):
-            #     yield ScrollableContainer(
-            #         Static(
-            #             FLOW,
-            #             id=PaneEnum.diagram.value,
-            #             classes=TcssStr.flow_diagram,
-            #         )
-            #     )
             with TabPane("Log", id=PaneEnum.log.name):
                 yield cmd_log
 
