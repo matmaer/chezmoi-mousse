@@ -4,9 +4,7 @@ from pathlib import Path
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.containers import ScrollableContainer
-from textual.events import Click
 from textual.reactive import reactive
-from textual.screen import ModalScreen
 from textual.scrollbar import ScrollBar
 from textual.theme import Theme
 from textual.widget import Widget
@@ -20,7 +18,6 @@ from textual.widgets import (
 )
 
 import chezmoi_mousse.theme
-from chezmoi_mousse import CM_CFG
 from chezmoi_mousse.chezmoi import cmd_log
 from chezmoi_mousse.config import FLOW
 from chezmoi_mousse.id_typing import (
@@ -28,7 +25,6 @@ from chezmoi_mousse.id_typing import (
     IdMixin,
     Location,
     PaneEnum,
-    ScreenStr,
     TabStr,
     TcssStr,
     TreeStr,
@@ -42,77 +38,15 @@ from chezmoi_mousse.main_tabs import (
     ReAddTab,
 )
 from chezmoi_mousse.overrides import CustomScrollBarRender
+from chezmoi_mousse.screens import Maximized
 from chezmoi_mousse.splash import LoadingScreen
 from chezmoi_mousse.widgets import (
     ContentsView,
-    DiffView,
     ExpandedTree,
     FilteredDirTree,
     FlatTree,
-    GitLogView,
     ManagedTree,
 )
-
-
-class Maximized(ModalScreen[None], IdMixin):
-    BINDINGS = [
-        Binding(
-            key="escape", action="dismiss", description="close", show=False
-        )
-    ]
-
-    def __init__(
-        self,
-        border_title_text: str,
-        id_to_maximize: str | None,
-        path: Path | None,
-        tab_name: TabStr = TabStr.apply_tab,
-    ) -> None:
-        IdMixin.__init__(self, tab_name)
-        self.border_title_text = border_title_text
-        self.id_to_maximize = id_to_maximize
-        self.path = path
-        self.modal_view_id = "modal_view"
-        self.modal_view_qid = f"#{self.modal_view_id}"
-        super().__init__(id=ScreenStr.maximized_modal)
-
-    def compose(self) -> ComposeResult:
-        if self.id_to_maximize == self.view_id(ViewStr.contents_view):
-            yield ContentsView(view_id=self.modal_view_id)
-        elif self.id_to_maximize == self.view_id(ViewStr.diff_view):
-            yield DiffView(tab_name=self.tab_name, view_id=self.modal_view_id)
-        elif self.id_to_maximize == self.view_id(ViewStr.git_log_view):
-            yield GitLogView(view_id=self.modal_view_id)
-        elif self.id_to_maximize == PaneEnum.diagram.name:
-            yield ScrollableContainer(
-                Static(
-                    FLOW, id=self.modal_view_id, classes=TcssStr.flow_diagram
-                )
-            )
-
-    def on_mount(self) -> None:
-        self.add_class(TcssStr.modal_view)
-        self.border_subtitle = " double click or escape key to close "
-
-        if self.id_to_maximize == self.view_id(ViewStr.contents_view):
-            self.query_one(self.modal_view_qid, ContentsView).path = self.path
-        elif self.id_to_maximize == self.view_id(ViewStr.diff_view):
-            self.query_one(self.modal_view_qid, DiffView).path = self.path
-        elif self.id_to_maximize == self.view_id(ViewStr.git_log_view):
-            self.query_one(self.modal_view_qid, GitLogView).path = self.path
-
-        if self.path == CM_CFG.destDir or self.path is None:
-            self.border_title_text = f" {CM_CFG.destDir} "
-        else:
-            self.border_title_text = (
-                f" {self.path.relative_to(CM_CFG.destDir)} "
-            )
-        self.border_title = self.border_title_text
-
-    def on_click(self, event: Click) -> None:
-        event.stop()
-        if event.chain == 2:
-            self.dismiss()
 
 
 class ChezmoiGUI(App[None]):
