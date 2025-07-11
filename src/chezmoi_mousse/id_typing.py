@@ -31,9 +31,10 @@ class ReadVerbs(Enum):
 
 
 class OperateVerbs(Enum):
-    apply = "apply"
-    re_add = "re-add"
     add = "add"
+    apply = "apply"
+    forget = "forget"
+    re_add = "re-add"
 
 
 class CharsEnum(Enum):

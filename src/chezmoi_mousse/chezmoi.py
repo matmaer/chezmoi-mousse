@@ -38,6 +38,7 @@ class AllCommands(Enum):
         "--path-style=absolute",
         "--include=files",
     )
+    forget = BASE_CMD + (OperateVerbs.forget.value,)
     git_log = BASE_CMD + (
         ReadVerbs.git.value,
         "--",
