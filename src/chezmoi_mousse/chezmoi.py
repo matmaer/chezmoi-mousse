@@ -246,6 +246,13 @@ class ChangeCommand:
         subprocess_run(self.base + (str(self.config_path), "apply", str(path)))
         self._update_managed_status_data()
 
+    def forget(self, path: Path) -> None:
+        subprocess_run(
+            self.base + (str(self.config_path), "forget", str(path))
+        )
+        self._update_managed_status_data()
+        op_log.log_warning("--- ready to run forget command ---")
+
 
 class ReadCommand:
     """Group of commands that call subprocess.run() but do not store data in an
