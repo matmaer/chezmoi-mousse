@@ -1,15 +1,15 @@
 import os
 from pathlib import Path
 
+from textual import on
 from textual.app import App, ComposeResult
 from textual.binding import Binding
-
-# from textual.containers import ScrollableContainer
 from textual.reactive import reactive
 from textual.scrollbar import ScrollBar
 from textual.theme import Theme
 from textual.widget import Widget
-from textual.widgets import (  # Static,
+from textual.widgets import (
+    Button,
     ContentSwitcher,
     Footer,
     Header,
@@ -19,9 +19,9 @@ from textual.widgets import (  # Static,
 
 import chezmoi_mousse.theme
 from chezmoi_mousse.chezmoi import cmd_log
-
-# from chezmoi_mousse.config import FLOW
-from chezmoi_mousse.id_typing import (  # TcssStr,
+from chezmoi_mousse.containers import ButtonsHorizontal
+from chezmoi_mousse.id_typing import (
+    ButtonEnum,
     CharsEnum,
     IdMixin,
     Location,
@@ -30,18 +30,13 @@ from chezmoi_mousse.id_typing import (  # TcssStr,
     TreeStr,
     ViewStr,
 )
-from chezmoi_mousse.main_tabs import (
-    AddTab,
-    ApplyTab,
-    DoctorTab,
-    OperationCompleted,
-    ReAddTab,
-)
+from chezmoi_mousse.main_tabs import AddTab, ApplyTab, DoctorTab, ReAddTab
 from chezmoi_mousse.overrides import CustomScrollBarRender
-from chezmoi_mousse.screens import Maximized
+from chezmoi_mousse.screens import Maximized, Operate, OperateMessage
 from chezmoi_mousse.splash import LoadingScreen
 from chezmoi_mousse.widgets import (
     ContentsView,
+    DiffView,
     ExpandedTree,
     FilteredDirTree,
     FlatTree,
@@ -70,10 +65,33 @@ class ChezmoiGUI(App[None]):
         with TabbedContent():
             with TabPane("Apply", id=PaneEnum.apply.name):
                 yield ApplyTab(tab_name=TabStr.apply_tab)
+                yield ButtonsHorizontal(
+                    TabStr.apply_tab,
+                    buttons=(
+                        ButtonEnum.apply_file_btn,
+                        ButtonEnum.forget_btn,
+                        ButtonEnum.destroy_btn,
+                    ),
+                    location=Location.bottom,
+                )
             with TabPane("Re-Add", id=PaneEnum.re_add.name):
                 yield ReAddTab(tab_name=TabStr.re_add_tab)
+                yield ButtonsHorizontal(
+                    TabStr.re_add_tab,
+                    buttons=(
+                        ButtonEnum.re_add_file_btn,
+                        ButtonEnum.forget_btn,
+                        ButtonEnum.destroy_btn,
+                    ),
+                    location=Location.bottom,
+                )
             with TabPane("Add", id=PaneEnum.add.name):
                 yield AddTab(tab_name=TabStr.add_tab)
+                yield ButtonsHorizontal(
+                    TabStr.add_tab,
+                    buttons=(ButtonEnum.add_file_btn, ButtonEnum.add_dir_btn),
+                    location=Location.bottom,
+                )
             with TabPane("Doctor", id=PaneEnum.doctor.name):
                 yield DoctorTab(tab_name=TabStr.doctor_tab)
             with TabPane("Log", id=PaneEnum.log.name):
@@ -109,18 +127,20 @@ class ChezmoiGUI(App[None]):
         )
         cmd_log.log_success(f"Theme set to {new_theme}")
 
-    def on_operation_completed(self, message: OperationCompleted) -> None:
+    @on(OperateMessage)
+    def handle_operate_result(self, message: OperateMessage) -> None:
         managed_trees = self.query(ManagedTree)
+
         for tree in managed_trees:
-            tree.remove_node_path(path=message.path)
+            tree.remove_node_path(path=message.dismiss_data.path)
 
         flat_trees = self.query(FlatTree)
         for tree in flat_trees:
-            tree.remove_node_path(path=message.path)
+            tree.remove_node_path(path=message.dismiss_data.path)
 
         expanded_trees = self.query(ExpandedTree)
         for tree in expanded_trees:
-            tree.remove_node_path(path=message.path)
+            tree.remove_node_path(path=message.dismiss_data.path)
 
         self.query_one(FilteredDirTree).reload()
 
@@ -254,3 +274,63 @@ class ChezmoiGUI(App[None]):
                 border_title_text=border_title_text,
             )
         )
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        active_pane = self.query_one(TabbedContent).active
+        # tab id not known upon MainScreen init, so we init it here.
+        id_mixin = IdMixin(PaneEnum[active_pane].value)
+
+        if event.button.id == id_mixin.button_id(ButtonEnum.apply_file_btn):
+            self.notify(f"button pressed: {event.button.id}")
+            diff_view = self.query_one(
+                id_mixin.view_qid(ViewStr.diff_view), DiffView
+            )
+            current_path = getattr(diff_view, "path")
+            self.push_screen(
+                Operate(
+                    id_mixin.tab_name,
+                    path=current_path,
+                    buttons=(
+                        ButtonEnum.apply_file_btn,
+                        ButtonEnum.operate_dismiss_btn,
+                    ),
+                )
+            )
+
+        elif event.button.id == id_mixin.button_id(ButtonEnum.re_add_file_btn):
+            diff_view = self.query_one(
+                id_mixin.view_qid(ViewStr.diff_view), DiffView
+            )
+            current_path = getattr(diff_view, "path")
+            self.app.push_screen(
+                Operate(
+                    id_mixin.tab_name,
+                    buttons=(
+                        ButtonEnum.re_add_file_btn,
+                        ButtonEnum.operate_dismiss_btn,
+                    ),
+                    path=current_path,
+                )
+            )
+
+        elif event.button.id == id_mixin.button_id(ButtonEnum.forget_btn):
+            self.notify(f"button not yet implemented: {event.button.id}")
+        elif event.button.id == id_mixin.button_id(ButtonEnum.destroy_btn):
+            self.notify(f"button not yet implemented: {event.button.id}")
+        elif event.button.id == id_mixin.button_id(ButtonEnum.add_file_btn):
+            diff_view = self.query_one(
+                id_mixin.view_qid(ViewStr.contents_view), ContentsView
+            )
+            current_path = getattr(diff_view, "path")
+            self.app.push_screen(
+                Operate(
+                    id_mixin.tab_name,
+                    buttons=(
+                        ButtonEnum.add_file_btn,
+                        ButtonEnum.operate_dismiss_btn,
+                    ),
+                    path=current_path,
+                )
+            )
+        elif event.button.id == id_mixin.button_id(ButtonEnum.add_dir_btn):
+            self.notify(f"button not yet implemented: {event.button.id}")

@@ -1,6 +1,4 @@
-from collections.abc import Callable
 from pathlib import Path
-from typing import cast
 
 from rich.text import Text
 from textual.app import ComposeResult
@@ -44,7 +42,6 @@ from chezmoi_mousse.id_typing import (
     TreeStr,
     ViewStr,
 )
-from chezmoi_mousse.screens import Operate, OperationCompleted
 from chezmoi_mousse.widgets import (
     ContentsView,
     DiffView,
@@ -62,12 +59,6 @@ class OperateTabsBase(Horizontal, IdMixin):
 
     def __init__(self, tab_name: TabStr) -> None:
         IdMixin.__init__(self, tab_name)
-        # this will cast my type to the textual callback type, we need the
-        # second None to be compatible with the textual callback signature
-        # however down the line this avoids taking care of the None type
-        self.callback = cast(
-            Callable[[Path | None], None], self.message_for_gui
-        )
         super().__init__(id=self.tab_main_horizontal_id)
 
     def update_right_side_content_switcher(self, path: Path):
@@ -83,31 +74,6 @@ class OperateTabsBase(Horizontal, IdMixin):
         ).path = path
         # Refresh bindings when path changes for the operate bindings
         self.refresh_bindings()
-
-    def check_action(
-        self, action: str, parameters: tuple[object, ...]
-    ) -> bool | None:
-        if action in ("apply_diff", "re_add_diff"):
-            diff_button = self.query_one(self.button_qid(ButtonEnum.diff_btn))
-
-            if diff_button.has_class(TcssStr.last_clicked):
-                active_path = self.query_one(
-                    self.view_qid(ViewStr.diff_view), DiffView
-                ).path
-                # Check if the current path has a diff available
-                tab_name = getattr(self, "tab_name")
-                if (
-                    active_path in chezmoi.managed_status[tab_name].files
-                    and chezmoi.managed_status[tab_name].files[active_path]
-                    != "X"
-                ):
-                    return True  # active
-                else:
-                    return None  # disabled
-            return None
-        elif action in ("add_contents"):
-            return True
-        return False  # hidden
 
     def on_tree_node_selected(
         self, event: TreeBase.NodeSelected[NodeData]
@@ -181,16 +147,8 @@ class OperateTabsBase(Horizontal, IdMixin):
                     self.content_switcher_qid(Location.left), ContentSwitcher
                 ).current = self.tree_id(TreeStr.managed_tree)
 
-    def message_for_gui(self, path: Path) -> None:
-        # will refresh the trees by gui.py with on_operation_completed
-        self.post_message(OperationCompleted(path))
-
 
 class ApplyTab(OperateTabsBase):
-
-    BINDINGS = [
-        Binding(key="C", action="apply_diff", description="chezmoi-apply")
-    ]
 
     def __init__(self, tab_name: TabStr) -> None:
         super().__init__(tab_name)
@@ -247,21 +205,6 @@ class ApplyTab(OperateTabsBase):
     def action_toggle_filter_slider(self) -> None:
         self.query_one(self.filter_slider_qid, VerticalGroup).toggle_class(
             "-visible"
-        )
-
-    def action_apply_diff(self) -> None:
-        diff_view = self.query_one(self.view_qid(ViewStr.diff_view), DiffView)
-        current_path = getattr(diff_view, "path")
-        self.app.push_screen(
-            Operate(
-                self.tab_name,
-                buttons=(
-                    ButtonEnum.apply_file_btn,
-                    ButtonEnum.cancel_apply_btn,
-                ),
-                path=current_path,
-            ),
-            callback=self.callback,
         )
 
 
@@ -328,27 +271,8 @@ class ReAddTab(OperateTabsBase):
             "-visible"
         )
 
-    def action_re_add_diff(self) -> None:
-        diff_view = self.query_one(self.view_qid(ViewStr.diff_view), DiffView)
-        current_path = getattr(diff_view, "path")
-        self.app.push_screen(
-            Operate(
-                self.tab_name,
-                buttons=(
-                    ButtonEnum.re_add_file_btn,
-                    ButtonEnum.cancel_re_add_btn,
-                ),
-                path=current_path,
-            ),
-            callback=self.callback,
-        )
-
 
 class AddTab(OperateTabsBase):
-
-    BINDINGS = [
-        Binding(key="C", action="add_contents", description="chezmoi-add")
-    ]
 
     def __init__(self, tab_name: TabStr) -> None:
         super().__init__(tab_name)
@@ -425,20 +349,6 @@ class AddTab(OperateTabsBase):
     def action_toggle_filter_slider(self) -> None:
         self.query_one(self.filter_slider_qid, VerticalGroup).toggle_class(
             "-visible"
-        )
-
-    def action_add_contents(self) -> None:
-        contents_view = self.query_one(
-            self.view_qid(ViewStr.contents_view), ContentsView
-        )
-        current_path = getattr(contents_view, "path")
-        self.app.push_screen(
-            Operate(
-                self.tab_name,
-                buttons=(ButtonEnum.add_file_btn, ButtonEnum.cancel_add_btn),
-                path=current_path,
-            ),
-            callback=self.callback,
         )
 
 

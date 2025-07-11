@@ -106,16 +106,20 @@
       }
     }
     &>.operate_button {
-        border: round $primary;
-        border: round $foreground-darken-3;
+        background: $surface;
+        background-tint: $surface;
+        border-top: wide $primary-darken-3;
+        border-bottom: inner $surface;
         color: $primary-lighten-3;
         height: 3;
-        min-width: 20;
+        margin: 0 2 0 2;
+        min-width: 10;
         width: 100%;
         text-style: none;
         &:hover {
           text-style: none;
           color: $accent;
+          border-top: wide $accent-darken-3;
         }
         &:focus {
           text-style: none;
@@ -255,9 +259,10 @@ DirectoryTree {
 }
 
 Footer {
-  height: 3;
-  border-top: dashed $panel-lighten-1;
-  border-bottom: dashed $panel;
+  height: 2;
+  border-bottom: inner $surface;
+  background: $surface;
+  background-tint: $surface;
 }
 
 Header {
@@ -308,8 +313,8 @@ Toast {
     margin-top: 1;
     visibility: visible;
     padding: 1 1;
-    background: $surface;
-    background-tint: $surface;
+    background: $surface-lighten-2;
+    background-tint: $surface-lighten-2;
     link-background: initial;
     link-color: $foreground;
     link-style: underline;

@@ -59,12 +59,13 @@ class ButtonEnum(Enum):
     diff_btn = "Diff"
     git_log_btn = "Git-Log"
     # operational buttons
-    add_file_btn = "Chezmoi Add File"
-    apply_file_btn = "Chezmoi Apply"
-    re_add_file_btn = "Chezmoi Re-Add File"
-    cancel_apply_btn = "Cancel Apply"
-    cancel_re_add_btn = "Cancel Re-Add"
-    cancel_add_btn = "Cancel Add"
+    add_file_btn = "Add File"
+    add_dir_btn = "Add Directory"
+    apply_file_btn = "Apply"
+    re_add_file_btn = "Re-Add File"
+    operate_dismiss_btn = "Cancel"
+    destroy_btn = "Destroy"
+    forget_btn = "Forget"
 
 
 class TabStr(StrEnum):
@@ -73,6 +74,13 @@ class TabStr(StrEnum):
     add_tab = auto()
     doctor_tab = auto()
     log_tab = auto()
+
+
+@dataclass
+class OperateDismissData:
+    path: Path
+    operation_executed: bool
+    tab_name: TabStr
 
 
 class PaneEnum(Enum):

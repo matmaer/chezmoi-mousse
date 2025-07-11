@@ -16,6 +16,7 @@ from chezmoi_mousse.id_typing import (
     CharsEnum,
     IdMixin,
     Location,
+    OperateDismissData,
     OperateIdStr,
     ScreenStr,
     TabStr,
@@ -32,13 +33,13 @@ from chezmoi_mousse.widgets import (
 )
 
 
-class OperationCompleted(Message):
-    def __init__(self, path: Path) -> None:
-        self.path = path
+class OperateMessage(Message):
+    def __init__(self, dismiss_data: OperateDismissData) -> None:
+        self.dismiss_data: OperateDismissData = dismiss_data
         super().__init__()
 
 
-class Operate(ModalScreen[Path], IdMixin):
+class Operate(ModalScreen[None], IdMixin):
     BINDINGS = [
         Binding(
             key="escape", action="esc_dismiss", description="close", show=False
@@ -53,13 +54,15 @@ class Operate(ModalScreen[Path], IdMixin):
         IdMixin.__init__(self, tab_name)
         self.path = path
         self.buttons = buttons
-        self.command_executed = False
         self.diff_id = self.view_id(ViewStr.diff_view, operate=True)
         self.diff_qid = self.view_qid(ViewStr.diff_view, operate=True)
         self.contents_id = self.view_id(ViewStr.contents_view, operate=True)
         self.contents_qid = self.view_qid(ViewStr.contents_view, operate=True)
         self.log_id = OperateIdStr.operate_log_id
         self.log_qid = f"#{self.log_id}"
+        self.operate_dismiss_data: OperateDismissData = OperateDismissData(
+            path=self.path, operation_executed=False, tab_name=self.tab_name
+        )
         super().__init__(id=ScreenStr.operate_modal)
 
     def compose(self) -> ComposeResult:
@@ -124,7 +127,6 @@ class Operate(ModalScreen[Path], IdMixin):
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
-        notify_message = f"Operation completed for {self.path.name}"
 
         if event.button.id == self.button_id(ButtonEnum.apply_file_btn):
             chezmoi.perform.apply(self.path)
@@ -132,10 +134,9 @@ class Operate(ModalScreen[Path], IdMixin):
                 self.button_qid(ButtonEnum.apply_file_btn), Button
             ).disabled = True
             self.query_one(
-                self.button_qid(ButtonEnum.cancel_apply_btn), Button
+                self.button_qid(ButtonEnum.operate_dismiss_btn), Button
             ).label = "Close"
-            self.notify(notify_message)
-            self.command_executed = True
+            self.operate_dismiss_data.operation_executed = True
 
         elif event.button.id == self.button_id(ButtonEnum.re_add_file_btn):
             chezmoi.perform.re_add(self.path)
@@ -143,10 +144,9 @@ class Operate(ModalScreen[Path], IdMixin):
                 self.button_qid(ButtonEnum.re_add_file_btn), Button
             ).disabled = True
             self.query_one(
-                self.button_qid(ButtonEnum.cancel_re_add_btn), Button
+                self.button_qid(ButtonEnum.operate_dismiss_btn), Button
             ).label = "Close"
-            self.notify(notify_message)
-            self.command_executed = True
+            self.operate_dismiss_data.operation_executed = True
 
         elif event.button.id == self.button_id(ButtonEnum.add_file_btn):
             chezmoi.perform.add(self.path)
@@ -154,27 +154,23 @@ class Operate(ModalScreen[Path], IdMixin):
                 self.button_qid(ButtonEnum.add_file_btn), Button
             ).disabled = True
             self.query_one(
-                self.button_qid(ButtonEnum.cancel_add_btn), Button
+                self.button_qid(ButtonEnum.operate_dismiss_btn), Button
             ).label = "Close"
-            self.notify(notify_message)
-            self.command_executed = True
+            self.operate_dismiss_data.operation_executed = True
 
-        elif event.button.id in (
-            self.button_id(ButtonEnum.cancel_apply_btn),
-            self.button_id(ButtonEnum.cancel_re_add_btn),
-            self.button_id(ButtonEnum.cancel_add_btn),
-        ):
-            self.handle_dismiss()
+        elif event.button.id == self.button_id(ButtonEnum.operate_dismiss_btn):
+            self.handle_dismiss(self.operate_dismiss_data)
 
-    def handle_dismiss(self):
-        """Called when the screen is dismissed."""
-        if not self.command_executed:
+    def handle_dismiss(self, dismiss_data: OperateDismissData) -> None:
+        if not dismiss_data.operation_executed:
             op_log.log_dimmed(f"Operation cancelled for {self.path.name}")
             self.notify("No changes were made")
-        self.dismiss(self.path)
+        # before dismissing, set the OperateMessage to the app
+        self.app.post_message(OperateMessage(dismiss_data=dismiss_data))
+        self.dismiss()
 
     def action_esc_dismiss(self) -> None:
-        self.handle_dismiss()
+        self.handle_dismiss(self.operate_dismiss_data)
 
 
 class Maximized(ModalScreen[None], IdMixin):
