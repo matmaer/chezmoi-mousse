@@ -65,7 +65,7 @@ def test_str_enum_members_in_use(str_enum_member: StrEnum):
             break
 
     if not found:
-        pytest.skip(
+        pytest.fail(
             f"'{str_enum_member.name}' from {str_enum_member.__class__.__name__} "
             "is not in use."
         )
@@ -96,7 +96,7 @@ def test_enum_members_in_use(str_enum_member: Enum):
             break
 
     if not found:
-        pytest.skip(
+        pytest.fail(
             f"'{str_enum_member.name}' from {str_enum_member.__class__.__name__} "
             "is not in use."
         )

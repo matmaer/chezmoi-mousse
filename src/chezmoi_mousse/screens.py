@@ -2,15 +2,14 @@ from pathlib import Path
 
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import Container, ScrollableContainer, Vertical
+from textual.containers import Container, Vertical
 from textual.events import Click
 from textual.message import Message
 from textual.screen import ModalScreen
-from textual.widgets import Button, Collapsible, Static
+from textual.widgets import Button, Collapsible
 
 from chezmoi_mousse import CM_CFG
 from chezmoi_mousse.chezmoi import chezmoi, op_log
-from chezmoi_mousse.config import FLOW
 from chezmoi_mousse.containers import ButtonsHorizontal
 from chezmoi_mousse.id_typing import (
     ButtonEnum,
@@ -18,7 +17,6 @@ from chezmoi_mousse.id_typing import (
     IdMixin,
     Location,
     OperateIdStr,
-    PaneEnum,
     ScreenStr,
     TabStr,
     TcssStr,
@@ -208,12 +206,6 @@ class Maximized(ModalScreen[None], IdMixin):
             yield DiffView(tab_name=self.tab_name, view_id=self.modal_view_id)
         elif self.id_to_maximize == self.view_id(ViewStr.git_log_view):
             yield GitLogView(view_id=self.modal_view_id)
-        elif self.id_to_maximize == PaneEnum.diagram.name:
-            yield ScrollableContainer(
-                Static(
-                    FLOW, id=self.modal_view_id, classes=TcssStr.flow_diagram
-                )
-            )
 
     def on_mount(self) -> None:
         self.add_class(TcssStr.modal_view)

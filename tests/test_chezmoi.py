@@ -46,7 +46,7 @@ def test_member_in_use(member_name: str, member_type: str):
             break  # Found usage, no need to check other files
 
     if not is_used:
-        pytest.skip(
+        pytest.fail(
             f"Unused Chezmoi {member_type}: '{member_name}' is not used in the codebase.\n"
             "If this is intentional for internal use, consider renaming it with a leading underscore."
         )

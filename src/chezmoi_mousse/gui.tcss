@@ -2,9 +2,15 @@
 /* tcss classes */
 /****************/
 
-.flow_diagram {
-  padding: 0 1 0 1;
-  min-width: 80;
+.doctor_vertical {
+  &>.doctor_collapsible {
+    .doctor_table {
+      margin-bottom: 1;
+    }
+    .flow_diagram {
+      min-width: 78;
+    }
+  }
 }
 
 .filters_vertical {
@@ -212,12 +218,9 @@ CheckBox {
   }
 }
 
-Collapsible {
-  padding: 0;
-}
-
 CollapsibleTitle {
   color: $primary-lighten-3;
+  padding: 0;
   &:hover {
     text-style: bold;
   }

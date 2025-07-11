@@ -71,7 +71,6 @@ class TabStr(StrEnum):
     re_add_tab = auto()
     add_tab = auto()
     doctor_tab = auto()
-    diagram_tab = auto()
     log_tab = auto()
 
 
@@ -80,7 +79,6 @@ class PaneEnum(Enum):
     re_add = TabStr.re_add_tab
     add = TabStr.add_tab
     doctor = TabStr.doctor_tab
-    diagram = TabStr.diagram_tab
     log = TabStr.log_tab
 
 
@@ -121,6 +119,9 @@ class TcssStr(StrEnum):
     content_switcher_left = auto()
     content_switcher_right = auto()
     dir_tree_widget = auto()
+    doctor_vertical = auto()
+    doctor_collapsible = auto()
+    doctor_table = auto()
     filter_horizontal = auto()
     filter_label = auto()
     filters_vertical = auto()

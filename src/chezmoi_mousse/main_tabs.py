@@ -8,6 +8,7 @@ from textual.binding import Binding
 from textual.containers import (
     Container,
     Horizontal,
+    ScrollableContainer,
     Vertical,
     VerticalGroup,
     VerticalScroll,
@@ -28,7 +29,7 @@ from textual.widgets import (
 
 from chezmoi_mousse import CM_CFG, theme
 from chezmoi_mousse.chezmoi import chezmoi  # , op_log
-from chezmoi_mousse.config import pw_mgr_info
+from chezmoi_mousse.config import FLOW, pw_mgr_info
 from chezmoi_mousse.containers import (
     ButtonsHorizontal,
     FilterSlider,
@@ -446,26 +447,38 @@ class DoctorTab(VerticalScroll, IdMixin):
 
     def __init__(self, tab_name: TabStr) -> None:
         IdMixin.__init__(self, tab_name)
-        super().__init__(id=self.tab_main_horizontal_id)
+        self.doctor_table: DataTable[Text] = DataTable(
+            classes=TcssStr.doctor_table, show_cursor=False
+        )
+        super().__init__(
+            id=self.tab_main_horizontal_id, classes=TcssStr.doctor_vertical
+        )
 
     def compose(self) -> ComposeResult:
 
-        with Horizontal():
-            yield DataTable(show_cursor=False)
-        with VerticalGroup():
-            yield Collapsible(
-                Pretty(chezmoi.run.template_data()),
-                title="chezmoi data (template data)",
-            )
-            yield Collapsible(
-                Pretty(chezmoi.run.cat_config()),
-                title="chezmoi cat-config (contents of config-file)",
-            )
-            yield Collapsible(
-                Pretty(chezmoi.run.ignored()),
-                title="chezmoi ignored (git ignore in source-dir)",
-            )
-            yield Collapsible(ListView(), title="Commands Not Found")
+        yield Collapsible(self.doctor_table, title="chezmoi doctor output")
+        yield Collapsible(
+            ScrollableContainer(Static(FLOW, classes=TcssStr.flow_diagram)),
+            title="chezmoi diagram",
+        )
+        yield Collapsible(
+            ScrollableContainer(Pretty(chezmoi.run.template_data())),
+            title="chezmoi data (template data)",
+        )
+        yield Collapsible(
+            ScrollableContainer(Pretty(chezmoi.run.cat_config())),
+            title="chezmoi cat-config (contents of config-file)",
+        )
+        yield Collapsible(
+            ScrollableContainer(Pretty(chezmoi.run.ignored())),
+            title="chezmoi ignored (git ignore in source-dir)",
+        )
+        yield Collapsible(ListView(), title="Commands Not Found")
+
+    def on_mount(self) -> None:
+        collapsibles = self.query(Collapsible)
+        for collapsible in collapsibles:
+            collapsible.add_class(TcssStr.doctor_collapsible)
 
     # do not put this in the on_mount method as textual manages this
     def populate_doctor_data(self) -> None:
@@ -476,11 +489,9 @@ class DoctorTab(VerticalScroll, IdMixin):
             "info": theme.vars["foreground-darken-1"],
         }
         list_view = self.query_exactly_one(ListView)
-        table: DataTable[Text] = self.query_exactly_one(DataTable[Text])
-
         # Add columns if they don't exist
-        if not table.columns:
-            table.add_columns(*chezmoi.doctor.list_out[0].split())
+        if not self.doctor_table.columns:
+            self.doctor_table.add_columns(*chezmoi.doctor.list_out[0].split())
 
         for line in chezmoi.doctor.list_out[1:]:
             row = tuple(line.split(maxsplit=2))
@@ -505,21 +516,13 @@ class DoctorTab(VerticalScroll, IdMixin):
                     Text(cell_text, style=f"{styles[row[0]]}")
                     for cell_text in row
                 ]
-                table.add_row(*row)
+                self.doctor_table.add_row(*row)
             elif row[0] == "info" and row[2] == "not set":
                 row = [
                     Text(cell_text, style=styles["warning"])
                     for cell_text in row
                 ]
-                table.add_row(*row)
+                self.doctor_table.add_row(*row)
             else:
                 row = [Text(cell_text) for cell_text in row]
-                table.add_row(*row)
-
-        collapsibles = self.query(Collapsible)
-        for collapsible in collapsibles:
-            title = collapsible.title
-            if "cat-config" in title:
-                # Update the Pretty widget with latest cat-config data
-                pretty_widget = collapsible.query_one(Pretty)
-                pretty_widget.update(chezmoi.run.cat_config())
+                self.doctor_table.add_row(*row)

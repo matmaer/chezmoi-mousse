@@ -3,30 +3,30 @@ from pathlib import Path
 
 from textual.app import App, ComposeResult
 from textual.binding import Binding
-from textual.containers import ScrollableContainer
+
+# from textual.containers import ScrollableContainer
 from textual.reactive import reactive
 from textual.scrollbar import ScrollBar
 from textual.theme import Theme
 from textual.widget import Widget
-from textual.widgets import (
+from textual.widgets import (  # Static,
     ContentSwitcher,
     Footer,
     Header,
-    Static,
     TabbedContent,
     TabPane,
 )
 
 import chezmoi_mousse.theme
 from chezmoi_mousse.chezmoi import cmd_log
-from chezmoi_mousse.config import FLOW
-from chezmoi_mousse.id_typing import (
+
+# from chezmoi_mousse.config import FLOW
+from chezmoi_mousse.id_typing import (  # TcssStr,
     CharsEnum,
     IdMixin,
     Location,
     PaneEnum,
     TabStr,
-    TcssStr,
     TreeStr,
     ViewStr,
 )
@@ -76,14 +76,14 @@ class ChezmoiGUI(App[None]):
                 yield AddTab(tab_name=TabStr.add_tab)
             with TabPane("Doctor", id=PaneEnum.doctor.name):
                 yield DoctorTab(tab_name=TabStr.doctor_tab)
-            with TabPane("Diagram", id=PaneEnum.diagram.name):
-                yield ScrollableContainer(
-                    Static(
-                        FLOW,
-                        id=PaneEnum.diagram.value,
-                        classes=TcssStr.flow_diagram,
-                    )
-                )
+            # with TabPane("Diagram", id=PaneEnum.diagram.name):
+            #     yield ScrollableContainer(
+            #         Static(
+            #             FLOW,
+            #             id=PaneEnum.diagram.value,
+            #             classes=TcssStr.flow_diagram,
+            #         )
+            #     )
             with TabPane("Log", id=PaneEnum.log.name):
                 yield cmd_log
 
@@ -253,10 +253,6 @@ class ChezmoiGUI(App[None]):
 
             id_to_maximize = add_tab_contents_view.id
             path_for_maximize = getattr(add_tab_contents_view, "path")
-
-        elif id_mixin.tab_name == TabStr.diagram_tab:
-            id_to_maximize = PaneEnum.diagram.name
-            border_title_text = " chezmoi diagram "
 
         self.app.push_screen(
             Maximized(
