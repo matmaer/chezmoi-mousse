@@ -73,16 +73,18 @@ class TabStr(StrEnum):
     apply_tab = auto()
     re_add_tab = auto()
     add_tab = auto()
+    init_tab = auto()
     doctor_tab = auto()
     log_tab = auto()
 
 
 class PaneEnum(Enum):
-    apply = TabStr.apply_tab
-    re_add = TabStr.re_add_tab
     add = TabStr.add_tab
+    apply = TabStr.apply_tab
     doctor = TabStr.doctor_tab
+    init = TabStr.init_tab
     log = TabStr.log_tab
+    re_add = TabStr.re_add_tab
 
 
 class ScreenStr(StrEnum):

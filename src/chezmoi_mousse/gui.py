@@ -30,7 +30,13 @@ from chezmoi_mousse.id_typing import (
     TreeStr,
     ViewStr,
 )
-from chezmoi_mousse.main_tabs import AddTab, ApplyTab, DoctorTab, ReAddTab
+from chezmoi_mousse.main_tabs import (
+    AddTab,
+    ApplyTab,
+    DoctorTab,
+    InitTab,
+    ReAddTab,
+)
 from chezmoi_mousse.overrides import CustomScrollBarRender
 from chezmoi_mousse.screens import Maximized, Operate, OperateMessage
 from chezmoi_mousse.splash import LoadingScreen
@@ -91,6 +97,8 @@ class ChezmoiGUI(App[None]):
                     buttons=(ButtonEnum.add_file_btn, ButtonEnum.add_dir_btn),
                     location=Location.bottom,
                 )
+            with TabPane("Init", id=PaneEnum.init.name):
+                yield InitTab(tab_name=TabStr.init_tab)
             with TabPane("Doctor", id=PaneEnum.doctor.name):
                 yield DoctorTab(tab_name=TabStr.doctor_tab)
             with TabPane("Log", id=PaneEnum.log.name):

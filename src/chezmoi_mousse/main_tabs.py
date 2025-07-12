@@ -352,6 +352,19 @@ class AddTab(OperateTabsBase):
         )
 
 
+class InitTab(Horizontal, IdMixin):
+
+    def __init__(self, tab_name: TabStr) -> None:
+        IdMixin.__init__(self, tab_name)
+        super().__init__(id=self.tab_main_horizontal_id)
+
+    def compose(self) -> ComposeResult:
+        yield Static(
+            "[$success bold]chezmoi init[/]\n[$text-disabled]not yet implemented[/]",
+            markup=True,
+        )
+
+
 class DoctorTab(ScrollableContainer, IdMixin):
 
     def __init__(self, tab_name: TabStr) -> None:
