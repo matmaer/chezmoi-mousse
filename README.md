@@ -1,4 +1,4 @@
-[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue?logo=python)](https://www.python.org/downloads/release/python-3110/)
+[![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue?logo=python)](https://www.python.org/downloads/release/python-3120/)
 [![Framework: Textual](https://img.shields.io/badge/framework-Textual-5967FF?logo=python)](https://www.textualize.io/)
 [![Pylint](https://github.com/matmaer/chezmoi-mousse/actions/workflows/pylint.yml/badge.svg?branch=master)](https://github.com/matmaer/chezmoi-mousse/actions/workflows/pylint.yml)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
@@ -11,7 +11,7 @@ Graphical user interface in the terminal for [chezmoi](https://github.com/twpayn
 
 - [Chezmoi](https://www.chezmoi.io/) is installed
 - Existing local `chezmoi` repository on disk (`chezmoi init` is not implemented)
-- [Python 3.11+](https://www.python.org/) is installed
+- [Python 3.12+](https://www.python.org/) is installed
   (including [Textual](https://textual.textualize.io/) or run with [UV](https://docs.astral.sh/uv/getting-started/installation/))
 - Can be safely tested as no write operations are enabled by default.
 
