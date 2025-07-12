@@ -138,6 +138,10 @@ class CommandLog(RichLog):
         color = theme.vars["text-success"]
         self.write(f"{self._log_time()} [{color}]{message}[/]")
 
+    def log_ready_to_run(self, message: str) -> None:
+        color = theme.vars["accent-darken-3"]
+        self.write(f"{self._log_time()} [{color}]{message}[/]")
+
     def log_dimmed(self, message: str) -> None:
         if message.strip() == "":
             return
@@ -177,11 +181,13 @@ def subprocess_run(long_command: CmdWords, time_out: float = 1) -> str:
         if any(verb.value in long_command for verb in OperateVerbs):
             op_log.log_command(long_command)
             if cmd_stdout.strip() == "":
-                msg = f"{check_mark} Command successful, no output"
+                msg = f"{check_mark} Command made changes successfully, no output"
                 op_log.log_success(msg)
                 cmd_log.log_success(msg)
             else:
-                msg = f"{check_mark} Command successful, output:"
+                msg = (
+                    f"{check_mark} Command made changes successfully, output:"
+                )
                 op_log.log_success(msg)
                 cmd_log.log_success(msg)
                 op_log.log_dimmed(cmd_stdout)
@@ -251,7 +257,12 @@ class ChangeCommand:
             self.base + (str(self.config_path), "forget", str(path))
         )
         self._update_managed_status_data()
-        op_log.log_warning("--- ready to run forget command ---")
+
+    def destroy(self, path: Path) -> None:
+        subprocess_run(
+            self.base + (str(self.config_path), "destroy", str(path))
+        )
+        self._update_managed_status_data()
 
 
 class ReadCommand:

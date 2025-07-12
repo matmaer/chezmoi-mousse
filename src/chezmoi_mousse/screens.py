@@ -9,7 +9,7 @@ from textual.screen import ModalScreen
 from textual.widgets import Button, Collapsible
 
 from chezmoi_mousse import CM_CFG
-from chezmoi_mousse.chezmoi import chezmoi, op_log
+from chezmoi_mousse.chezmoi import chezmoi, cmd_log, op_log
 from chezmoi_mousse.containers import ButtonsHorizontal
 from chezmoi_mousse.id_typing import (
     ButtonEnum,
@@ -18,6 +18,7 @@ from chezmoi_mousse.id_typing import (
     Location,
     OperateDismissData,
     OperateIdStr,
+    OperateVerbs,
     ScreenStr,
     TabStr,
     TcssStr,
@@ -114,28 +115,52 @@ class Operate(ModalScreen[None], IdMixin):
         self.query_one(self.log_qid, RichLog).border_title = (
             f"{log_border_titles[self.tab_name]} log"
         )
-        # Set path for either diff or contents view
+        # Set path for either diff or contents view in the Operate screen
         if self.tab_name == TabStr.add_tab:
             self.query_one(self.contents_qid, ContentsView).path = self.path
-            op_log.log_warning("--- ready to run chezmoi add ---")
         elif self.tab_name in (TabStr.apply_tab, TabStr.re_add_tab):
             self.query_one(self.diff_qid, DiffView).path = self.path
-            if self.tab_name == TabStr.apply_tab:
-                op_log.log_warning("--- ready to run chezmoi apply ---")
-            elif self.tab_name == TabStr.re_add_tab:
-                op_log.log_warning("--- ready to run chezmoi re-add ---")
+        self.write_initial_log_msg()
+
+    def write_initial_log_msg(self) -> None:
+        command = "chezmoi "
+        if self.buttons[0] == ButtonEnum.forget_btn:
+            command += OperateVerbs.forget.value
+        elif self.buttons[0] == ButtonEnum.destroy_btn:
+            command += OperateVerbs.destroy.value
+        elif self.tab_name == TabStr.add_tab:
+            command += OperateVerbs.add.value
+        elif self.tab_name == TabStr.apply_tab:
+            command += OperateVerbs.apply.value
+        elif self.tab_name == TabStr.re_add_tab:
+            command += OperateVerbs.re_add.value
+        cmd_log.log_ready_to_run(
+            f"Ready to run command: {command} {self.path}"
+        )
+        op_log.log_ready_to_run(f"Ready to run command: {command} {self.path}")
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
+
+        if any(
+            event.button.id == self.button_id(btn)
+            for btn in (
+                ButtonEnum.apply_file_btn,
+                ButtonEnum.re_add_file_btn,
+                ButtonEnum.add_file_btn,
+                ButtonEnum.forget_btn,
+                ButtonEnum.destroy_btn,
+            )
+        ):
+            self.query_one(
+                self.button_qid(ButtonEnum.operate_dismiss_btn), Button
+            ).label = "Close"
 
         if event.button.id == self.button_id(ButtonEnum.apply_file_btn):
             chezmoi.perform.apply(self.path)
             self.query_one(
                 self.button_qid(ButtonEnum.apply_file_btn), Button
             ).disabled = True
-            self.query_one(
-                self.button_qid(ButtonEnum.operate_dismiss_btn), Button
-            ).label = "Close"
             self.operate_dismiss_data.operation_executed = True
 
         elif event.button.id == self.button_id(ButtonEnum.re_add_file_btn):
@@ -143,9 +168,6 @@ class Operate(ModalScreen[None], IdMixin):
             self.query_one(
                 self.button_qid(ButtonEnum.re_add_file_btn), Button
             ).disabled = True
-            self.query_one(
-                self.button_qid(ButtonEnum.operate_dismiss_btn), Button
-            ).label = "Close"
             self.operate_dismiss_data.operation_executed = True
 
         elif event.button.id == self.button_id(ButtonEnum.add_file_btn):
@@ -153,9 +175,13 @@ class Operate(ModalScreen[None], IdMixin):
             self.query_one(
                 self.button_qid(ButtonEnum.add_file_btn), Button
             ).disabled = True
+            self.operate_dismiss_data.operation_executed = True
+
+        elif event.button.id == self.button_id(ButtonEnum.forget_btn):
+            chezmoi.perform.forget(self.path)
             self.query_one(
-                self.button_qid(ButtonEnum.operate_dismiss_btn), Button
-            ).label = "Close"
+                self.button_qid(ButtonEnum.forget_btn), Button
+            ).disabled = True
             self.operate_dismiss_data.operation_executed = True
 
         elif event.button.id == self.button_id(ButtonEnum.operate_dismiss_btn):
@@ -163,9 +189,11 @@ class Operate(ModalScreen[None], IdMixin):
 
     def handle_dismiss(self, dismiss_data: OperateDismissData) -> None:
         if not dismiss_data.operation_executed:
-            op_log.log_dimmed(f"Operation cancelled for {self.path.name}")
+            msg = f"Operation cancelled for {self.path.name}"
+            cmd_log.log_success(msg)
+            op_log.log_success(msg)
             self.notify("No changes were made")
-        # before dismissing, set the OperateMessage to the app
+        # send the needed data to the app, logging will be handled there
         self.app.post_message(OperateMessage(dismiss_data=dismiss_data))
         self.dismiss()
 

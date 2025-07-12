@@ -36,7 +36,6 @@ from chezmoi_mousse.screens import Maximized, Operate, OperateMessage
 from chezmoi_mousse.splash import LoadingScreen
 from chezmoi_mousse.widgets import (
     ContentsView,
-    DiffView,
     ExpandedTree,
     FilteredDirTree,
     FlatTree,
@@ -143,8 +142,6 @@ class ChezmoiGUI(App[None]):
             tree.remove_node_path(path=message.dismiss_data.path)
 
         self.query_one(FilteredDirTree).reload()
-
-        self.notify("Tree views updated")
 
     def refresh_all_trees(self) -> None:
         self.query_one(
@@ -279,13 +276,17 @@ class ChezmoiGUI(App[None]):
         active_pane = self.query_one(TabbedContent).active
         # tab id not known upon MainScreen init, so we init it here.
         id_mixin = IdMixin(PaneEnum[active_pane].value)
+        # For each operate tab, the contents view will always contain the
+        # most recent path.
+        # This path is updated in OperateTabsBase or AddTab for all 3 views
+        # Here the active pane var inits the id_mixin with the correct id
+        # and Operate handles the rest.
+        contents_view = self.query_one(
+            id_mixin.view_qid(ViewStr.contents_view), ContentsView
+        )
+        current_path = getattr(contents_view, "path")
 
         if event.button.id == id_mixin.button_id(ButtonEnum.apply_file_btn):
-            self.notify(f"button pressed: {event.button.id}")
-            diff_view = self.query_one(
-                id_mixin.view_qid(ViewStr.diff_view), DiffView
-            )
-            current_path = getattr(diff_view, "path")
             self.push_screen(
                 Operate(
                     id_mixin.tab_name,
@@ -296,12 +297,7 @@ class ChezmoiGUI(App[None]):
                     ),
                 )
             )
-
         elif event.button.id == id_mixin.button_id(ButtonEnum.re_add_file_btn):
-            diff_view = self.query_one(
-                id_mixin.view_qid(ViewStr.diff_view), DiffView
-            )
-            current_path = getattr(diff_view, "path")
             self.app.push_screen(
                 Operate(
                     id_mixin.tab_name,
@@ -312,21 +308,34 @@ class ChezmoiGUI(App[None]):
                     path=current_path,
                 )
             )
-
-        elif event.button.id == id_mixin.button_id(ButtonEnum.forget_btn):
-            self.notify(f"button not yet implemented: {event.button.id}")
-        elif event.button.id == id_mixin.button_id(ButtonEnum.destroy_btn):
-            self.notify(f"button not yet implemented: {event.button.id}")
         elif event.button.id == id_mixin.button_id(ButtonEnum.add_file_btn):
-            diff_view = self.query_one(
-                id_mixin.view_qid(ViewStr.contents_view), ContentsView
-            )
-            current_path = getattr(diff_view, "path")
             self.app.push_screen(
                 Operate(
                     id_mixin.tab_name,
                     buttons=(
                         ButtonEnum.add_file_btn,
+                        ButtonEnum.operate_dismiss_btn,
+                    ),
+                    path=current_path,
+                )
+            )
+        elif event.button.id == id_mixin.button_id(ButtonEnum.forget_btn):
+            self.app.push_screen(
+                Operate(
+                    id_mixin.tab_name,
+                    buttons=(
+                        ButtonEnum.forget_btn,
+                        ButtonEnum.operate_dismiss_btn,
+                    ),
+                    path=current_path,
+                )
+            )
+        elif event.button.id == id_mixin.button_id(ButtonEnum.destroy_btn):
+            self.app.push_screen(
+                Operate(
+                    id_mixin.tab_name,
+                    buttons=(
+                        ButtonEnum.destroy_btn,
                         ButtonEnum.operate_dismiss_btn,
                     ),
                     path=current_path,

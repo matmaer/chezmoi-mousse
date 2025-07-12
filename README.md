@@ -27,8 +27,8 @@ Graphical user interface in the terminal for [chezmoi](https://github.com/twpayn
 - [ ] `chezmoi add` directory
 - [ ] `chezmoi apply` directory
 - [ ] `chezmoi re-add` directory
-- [ ] `chezmoi destroy`
-- [ ] `chezmoi forget`
+- [x] `chezmoi destroy`
+- [x] `chezmoi forget`
 - [ ] `chezmoi init`
 
 ### Read Operations

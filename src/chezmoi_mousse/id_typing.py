@@ -33,6 +33,7 @@ class ReadVerbs(Enum):
 class OperateVerbs(Enum):
     add = "add"
     apply = "apply"
+    destroy = "destroy"
     forget = "forget"
     re_add = "re-add"
 
