@@ -609,7 +609,11 @@ class FlatTree(TreeBase, IdMixin):
     def remove_node_path(self, path: Path) -> None:
         # find corresponding node for the given path
         for node in self.root.children:
-            if node.data and node.data.path == path:
+            if (
+                node.data
+                and node.data.path == path
+                and node.data.path != CM_CFG.destDir
+            ):
                 node.remove()
 
     def watch_unchanged(self) -> None:
