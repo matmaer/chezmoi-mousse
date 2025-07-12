@@ -77,13 +77,6 @@ class TabStr(StrEnum):
     log_tab = auto()
 
 
-@dataclass
-class OperateDismissData:
-    path: Path
-    operation_executed: bool
-    tab_name: TabStr
-
-
 class PaneEnum(Enum):
     apply = TabStr.apply_tab
     re_add = TabStr.re_add_tab

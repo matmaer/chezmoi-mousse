@@ -4,7 +4,6 @@ from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Container, Vertical
 from textual.events import Click
-from textual.message import Message
 from textual.screen import ModalScreen
 from textual.widgets import Button, Collapsible
 
@@ -16,7 +15,6 @@ from chezmoi_mousse.id_typing import (
     CharsEnum,
     IdMixin,
     Location,
-    OperateDismissData,
     OperateIdStr,
     OperateVerbs,
     ScreenStr,
@@ -24,6 +22,7 @@ from chezmoi_mousse.id_typing import (
     TcssStr,
     ViewStr,
 )
+from chezmoi_mousse.messages import OperateDismissData, OperateMessage
 from chezmoi_mousse.widgets import (
     AutoWarning,
     ContentsView,
@@ -32,12 +31,6 @@ from chezmoi_mousse.widgets import (
     OperateInfo,
     RichLog,
 )
-
-
-class OperateMessage(Message):
-    def __init__(self, dismiss_data: OperateDismissData) -> None:
-        self.dismiss_data: OperateDismissData = dismiss_data
-        super().__init__()
 
 
 class Operate(ModalScreen[None], IdMixin):
