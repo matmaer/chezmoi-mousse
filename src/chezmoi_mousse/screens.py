@@ -203,13 +203,11 @@ class Maximized(ModalScreen[None], IdMixin):
 
     def __init__(
         self,
-        border_title_text: str,
         id_to_maximize: str | None,
         path: Path | None,
         tab_name: TabStr = TabStr.apply_tab,
     ) -> None:
         IdMixin.__init__(self, tab_name)
-        self.border_title_text = border_title_text
         self.id_to_maximize = id_to_maximize
         self.path = path
         self.modal_view_id = "modal_view"

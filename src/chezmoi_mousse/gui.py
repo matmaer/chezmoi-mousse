@@ -239,7 +239,6 @@ class ChezmoiGUI(App[None]):
         tab_name = PaneEnum[active_pane].value
         id_to_maximize: str | None = None
         path_for_maximize: Path | None = None
-        border_title_text: str = ""
 
         if id_mixin.tab_name in (TabStr.apply_tab, TabStr.re_add_tab):
             # Determine what view to show in the modal
@@ -268,7 +267,6 @@ class ChezmoiGUI(App[None]):
                 tab_name=tab_name,
                 id_to_maximize=id_to_maximize,
                 path=path_for_maximize,
-                border_title_text=border_title_text,
             )
         )
 
