@@ -458,8 +458,12 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
             and dir_node.data.status == "X"
         ]
         for dir_node in dir_nodes:
-            if dir_node.data is not None and not self.should_show_dir_node(
-                dir_node.data.path, unchanged
+            if (
+                dir_node.data is not None
+                and not self.should_show_dir_node(
+                    dir_node.data.path, unchanged
+                )
+                and dir_node.data.path != CM_CFG.destDir
             ):
                 dir_node.remove()
 
@@ -516,7 +520,11 @@ class ManagedTree(TreeBase, IdMixin):
     def remove_node_path(self, path: Path) -> None:
         # find corresponding node for the given path
         for node in self.get_expanded_nodes():
-            if node.data and node.data.path == path:
+            if (
+                node.data
+                and node.data.path == path
+                and node.data.path != CM_CFG.destDir
+            ):
                 node.remove()
 
 
@@ -551,7 +559,11 @@ class ExpandedTree(TreeBase, IdMixin):
     def remove_node_path(self, path: Path) -> None:
         # find corresponding node for the given path
         for node in self.get_expanded_nodes():
-            if node.data and node.data.path == path:
+            if (
+                node.data
+                and node.data.path == path
+                and node.data.path != CM_CFG.destDir
+            ):
                 node.remove()
 
     def watch_unchanged(self) -> None:
