@@ -304,7 +304,7 @@ class ChezmoiGUI(App[None]):
                 )
             )
         elif event.button.id == id_mixin.button_id(ButtonEnum.re_add_file_btn):
-            self.app.push_screen(
+            self.push_screen(
                 Operate(
                     id_mixin.tab_name,
                     buttons=(
@@ -315,7 +315,7 @@ class ChezmoiGUI(App[None]):
                 )
             )
         elif event.button.id == id_mixin.button_id(ButtonEnum.add_file_btn):
-            self.app.push_screen(
+            self.push_screen(
                 Operate(
                     id_mixin.tab_name,
                     buttons=(
@@ -326,7 +326,7 @@ class ChezmoiGUI(App[None]):
                 )
             )
         elif event.button.id == id_mixin.button_id(ButtonEnum.forget_btn):
-            self.app.push_screen(
+            self.push_screen(
                 Operate(
                     id_mixin.tab_name,
                     buttons=(
@@ -337,7 +337,7 @@ class ChezmoiGUI(App[None]):
                 )
             )
         elif event.button.id == id_mixin.button_id(ButtonEnum.destroy_btn):
-            self.app.push_screen(
+            self.push_screen(
                 Operate(
                     id_mixin.tab_name,
                     buttons=(
