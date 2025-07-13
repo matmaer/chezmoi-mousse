@@ -59,18 +59,17 @@ Graphical user interface in the terminal for [chezmoi](https://github.com/twpayn
 
 ## Start
 
-Feedback is welcome before the app is packaged and supports changing state, it's very safe to test currently.
+> Don't run the python command in a `chezmoi cd` invoked shell, unless you want to test.
 
 Required: `chezmoi` command available and existing `chezmoi` repository.
 
-Clone this repository and cd into the `src` directory of the cloned repository.
+Clone repo and cd into the `src` directory of the cloned repo.
 
 Then run `python -m chezmoi_mousse`
 
 If you don't have `textual` installed but the `uv` command is available:
 `uv run --with textual -m chezmoi_mousse`
 
-(Don't run the app in a `chezmoi cd` invoked shell, it doesn't do anything bad as the app only performs read-only operations but it will crash.)
 
 - [x] python -m chezmoi_mousse (Python 3.13 with `textual` installed)
 - [x] uv run --with textual -m chezmoi_mousse
