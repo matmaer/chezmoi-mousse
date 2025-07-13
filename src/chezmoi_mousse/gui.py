@@ -18,7 +18,7 @@ from textual.widgets import (
 )
 
 import chezmoi_mousse.theme
-from chezmoi_mousse.chezmoi import cmd_log
+from chezmoi_mousse.chezmoi import CM_CFG, cmd_log
 from chezmoi_mousse.containers import ButtonsHorizontal
 from chezmoi_mousse.id_typing import (
     ButtonEnum,
@@ -37,8 +37,9 @@ from chezmoi_mousse.main_tabs import (
     InitTab,
     ReAddTab,
 )
+from chezmoi_mousse.messages import OperateMessage
 from chezmoi_mousse.overrides import CustomScrollBarRender
-from chezmoi_mousse.screens import Maximized, Operate, OperateMessage
+from chezmoi_mousse.screens import Maximized, Operate
 from chezmoi_mousse.splash import LoadingScreen
 from chezmoi_mousse.widgets import (
     ContentsView,
@@ -74,8 +75,8 @@ class ChezmoiGUI(App[None]):
                     TabStr.apply_tab,
                     buttons=(
                         ButtonEnum.apply_file_btn,
-                        ButtonEnum.forget_btn,
-                        ButtonEnum.destroy_btn,
+                        ButtonEnum.forget_file_btn,
+                        ButtonEnum.destroy_file_btn,
                     ),
                     location=Location.bottom,
                 )
@@ -85,8 +86,8 @@ class ChezmoiGUI(App[None]):
                     TabStr.re_add_tab,
                     buttons=(
                         ButtonEnum.re_add_file_btn,
-                        ButtonEnum.forget_btn,
-                        ButtonEnum.destroy_btn,
+                        ButtonEnum.forget_file_btn,
+                        ButtonEnum.destroy_file_btn,
                     ),
                     location=Location.bottom,
                 )
@@ -114,6 +115,10 @@ class ChezmoiGUI(App[None]):
                 "Changes mode enabled, operations will be executed",
                 severity="warning",
             )
+        add_dir_btn = self.query_one(
+            IdMixin(TabStr.add_tab).button_qid(ButtonEnum.add_dir_btn), Button
+        )
+        add_dir_btn.disabled = True
 
         cmd_log.log_success("App initialized successfully")
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
@@ -286,12 +291,9 @@ class ChezmoiGUI(App[None]):
         )
         current_path = getattr(contents_view, "path")
 
-        from chezmoi_mousse import CM_CFG
-
         if current_path == CM_CFG.destDir:
             self.notify(
-                "Operation not possiblef for the destination directory.",
-                severity="warning",
+                "Operation not possible for destDir.", severity="error"
             )
             return
 
@@ -328,27 +330,27 @@ class ChezmoiGUI(App[None]):
                     path=current_path,
                 )
             )
-        elif event.button.id == id_mixin.button_id(ButtonEnum.forget_btn):
+        elif event.button.id == id_mixin.button_id(ButtonEnum.forget_file_btn):
             self.push_screen(
                 Operate(
                     id_mixin.tab_name,
                     buttons=(
-                        ButtonEnum.forget_btn,
+                        ButtonEnum.forget_file_btn,
                         ButtonEnum.operate_dismiss_btn,
                     ),
                     path=current_path,
                 )
             )
-        elif event.button.id == id_mixin.button_id(ButtonEnum.destroy_btn):
+        elif event.button.id == id_mixin.button_id(
+            ButtonEnum.destroy_file_btn
+        ):
             self.push_screen(
                 Operate(
                     id_mixin.tab_name,
                     buttons=(
-                        ButtonEnum.destroy_btn,
+                        ButtonEnum.destroy_file_btn,
                         ButtonEnum.operate_dismiss_btn,
                     ),
                     path=current_path,
                 )
             )
-        elif event.button.id == id_mixin.button_id(ButtonEnum.add_dir_btn):
-            self.notify(f"button not yet implemented: {event.button.id}")

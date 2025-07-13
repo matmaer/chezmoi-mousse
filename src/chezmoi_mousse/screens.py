@@ -8,7 +8,7 @@ from textual.screen import ModalScreen
 from textual.widgets import Button, Collapsible
 
 from chezmoi_mousse import CM_CFG
-from chezmoi_mousse.chezmoi import chezmoi, cmd_log, op_log
+from chezmoi_mousse.chezmoi import OperateData, chezmoi, cmd_log, op_log
 from chezmoi_mousse.containers import ButtonsHorizontal
 from chezmoi_mousse.id_typing import (
     ButtonEnum,
@@ -22,7 +22,7 @@ from chezmoi_mousse.id_typing import (
     TcssStr,
     ViewStr,
 )
-from chezmoi_mousse.messages import OperateDismissData, OperateMessage
+from chezmoi_mousse.messages import OperateMessage
 from chezmoi_mousse.widgets import (
     AutoWarning,
     ContentsView,
@@ -47,14 +47,14 @@ class Operate(ModalScreen[None], IdMixin):
     ) -> None:
         IdMixin.__init__(self, tab_name)
         self.path = path
-        self.buttons = buttons
+        self.buttons: tuple[ButtonEnum, ...] = buttons
         self.diff_id = self.view_id(ViewStr.diff_view, operate=True)
         self.diff_qid = self.view_qid(ViewStr.diff_view, operate=True)
         self.contents_id = self.view_id(ViewStr.contents_view, operate=True)
         self.contents_qid = self.view_qid(ViewStr.contents_view, operate=True)
         self.log_id = OperateIdStr.operate_log_id
         self.log_qid = f"#{self.log_id}"
-        self.operate_dismiss_data: OperateDismissData = OperateDismissData(
+        self.operate_dismiss_data: OperateData = OperateData(
             path=self.path, operation_executed=False, tab_name=self.tab_name
         )
         super().__init__(id=ScreenStr.operate_modal)
@@ -117,9 +117,9 @@ class Operate(ModalScreen[None], IdMixin):
 
     def write_initial_log_msg(self) -> None:
         command = "chezmoi "
-        if self.buttons[0] == ButtonEnum.forget_btn:
+        if self.buttons[0] == ButtonEnum.forget_file_btn:
             command += OperateVerbs.forget.value
-        elif self.buttons[0] == ButtonEnum.destroy_btn:
+        elif self.buttons[0] == ButtonEnum.destroy_file_btn:
             command += OperateVerbs.destroy.value
         elif self.tab_name == TabStr.add_tab:
             command += OperateVerbs.add.value
@@ -141,8 +141,8 @@ class Operate(ModalScreen[None], IdMixin):
                 ButtonEnum.apply_file_btn,
                 ButtonEnum.re_add_file_btn,
                 ButtonEnum.add_file_btn,
-                ButtonEnum.forget_btn,
-                ButtonEnum.destroy_btn,
+                ButtonEnum.forget_file_btn,
+                ButtonEnum.destroy_file_btn,
             )
         ):
             self.query_one(
@@ -170,24 +170,24 @@ class Operate(ModalScreen[None], IdMixin):
             ).disabled = True
             self.operate_dismiss_data.operation_executed = True
 
-        elif event.button.id == self.button_id(ButtonEnum.forget_btn):
+        elif event.button.id == self.button_id(ButtonEnum.forget_file_btn):
             chezmoi.perform.forget(self.path)
             self.query_one(
-                self.button_qid(ButtonEnum.forget_btn), Button
+                self.button_qid(ButtonEnum.forget_file_btn), Button
             ).disabled = True
             self.operate_dismiss_data.operation_executed = True
 
-        elif event.button.id == self.button_id(ButtonEnum.destroy_btn):
+        elif event.button.id == self.button_id(ButtonEnum.destroy_file_btn):
             chezmoi.perform.destroy(self.path)
             self.query_one(
-                self.button_qid(ButtonEnum.destroy_btn), Button
+                self.button_qid(ButtonEnum.destroy_file_btn), Button
             ).disabled = True
             self.operate_dismiss_data.operation_executed = True
 
         elif event.button.id == self.button_id(ButtonEnum.operate_dismiss_btn):
             self.handle_dismiss(self.operate_dismiss_data)
 
-    def handle_dismiss(self, dismiss_data: OperateDismissData) -> None:
+    def handle_dismiss(self, dismiss_data: OperateData) -> None:
         if not dismiss_data.operation_executed:
             msg = f"Operation cancelled for {self.path.name}"
             cmd_log.log_success(msg)

@@ -57,19 +57,30 @@ class CharsEnum(Enum):
 
 class ButtonEnum(Enum):
     # tab buttons within a tab
-    tree_btn = "Tree"
-    list_btn = "List"
     contents_btn = "Contents"
     diff_btn = "Diff"
     git_log_btn = "Git-Log"
-    # operational buttons
+    list_btn = "List"
+    tree_btn = "Tree"
+    # general operational buttons, does not include add as we're immediately
+    # rendering add_file_btn or add_dir_btn because forget and destroy
+    # operations are not relevant
+    # chezmoi_apply_btn = "Chezmoi Apply"
+    # chezmoi_destroy_btn = "Chezmoi Destroy"
+    # chezmoi_forget_btn = "Chezmoi Forget"
+    # chezmoi_re_add_btn = "Chezmoi Re-Add"
+    # operational buttons in Operate modal screen
+    add_dir_btn = "Add Dir"
     add_file_btn = "Add File"
-    add_dir_btn = "Add Directory"
-    apply_file_btn = "Apply"
-    re_add_file_btn = "Re-Add File"
+    # apply_dir_btn = "Apply Dir"
+    apply_file_btn = "Apply File"
+    # destroy_dir_btn = "Destroy Dir"
+    destroy_file_btn = "Destroy File"
+    # forget_dir_btn = "Forget Dir"
+    forget_file_btn = "Forget File"
     operate_dismiss_btn = "Cancel"
-    destroy_btn = "Destroy"
-    forget_btn = "Forget"
+    # re_add_dir_btn = "Re-Add Dir"
+    re_add_file_btn = "Re-Add File"
 
 
 class TabStr(StrEnum):

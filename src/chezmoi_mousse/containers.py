@@ -84,9 +84,11 @@ class ButtonsHorizontal(HorizontalGroup, IdMixin):
     def on_mount(self) -> None:
         if self.location == Location.bottom:
             for button_enum in self.buttons:
-                self.query_one(self.button_qid(button_enum)).add_class(
-                    TcssStr.operate_button
-                )
+                button = self.query_one(self.button_qid(button_enum))
+                button.add_class(TcssStr.operate_button)
+                # button.disabled = True
+                # button.tooltip = "select a file to enable operations"
+
         else:
             for button_enum in self.buttons:
                 self.query_one(self.button_qid(button_enum)).add_class(
