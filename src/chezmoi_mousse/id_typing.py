@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from enum import Enum, StrEnum, auto
 from pathlib import Path
+from typing import Any
 
 
 # needed by both widgets.py and overrides.py
@@ -12,6 +13,8 @@ class NodeData:
 
 
 type CmdWords = tuple[str, ...]
+type ParsedJson = dict[str, Any]
+type StatusDict = dict[Path, str]
 
 
 class InputOutputVerbs(StrEnum):

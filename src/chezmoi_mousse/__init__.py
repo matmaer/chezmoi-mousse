@@ -2,16 +2,17 @@ import json
 import sys
 from pathlib import Path
 from subprocess import run
-from typing import Any
 
-chezmoi_config: dict[str, Any]
+from .id_typing import ParsedJson
+
+chezmoi_config: ParsedJson
 
 
 BASE_CMD = ("chezmoi", "--no-pager", "--color=off", "--no-tty", "--mode=file")
 
 
 try:
-    chezmoi_config: dict[str, Any] = json.loads(
+    chezmoi_config: ParsedJson = json.loads(
         run(
             BASE_CMD + ("dump-config", "--format=json"),
             capture_output=True,
@@ -24,7 +25,7 @@ except Exception as e:
 
 
 class ChezmoiConfig:
-    def __init__(self, config: dict[str, Any]):
+    def __init__(self, config: ParsedJson):
         self.destDir: Path = Path(config["destDir"])
         self.sourceDir: Path = Path(config["sourceDir"])
         self.autoadd: bool = config["git"]["autoadd"]

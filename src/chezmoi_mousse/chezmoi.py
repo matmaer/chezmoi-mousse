@@ -5,7 +5,7 @@ from datetime import datetime
 from enum import Enum
 from pathlib import Path
 from subprocess import run
-from typing import Any, Literal, NamedTuple
+from typing import Literal, NamedTuple
 
 from rich.markup import escape
 from textual.widgets import RichLog
@@ -18,7 +18,9 @@ from chezmoi_mousse.id_typing import (
     OperateIdStr,
     OperateVerbs,
     PaneEnum,
+    ParsedJson,
     ReadVerbs,
+    StatusDict,
     TabStr,
     TcssStr,
 )
@@ -309,8 +311,8 @@ class ReadCommand:
 
 # named tuple nested in StatusPaths, to enable dot notation access
 class StatusDicts(NamedTuple):
-    dirs: dict[Path, str]
-    files: dict[Path, str]
+    dirs: StatusDict
+    files: StatusDict
 
     @property
     def dirs_without_status(self) -> list[Path]:
@@ -335,7 +337,6 @@ class InputOutput:
     long_command: CmdWords
     arg_id: str
     std_out: str = ""
-    # dict_out: dict[str, Any] = field(default_factory=dict[str, Any])
 
     @property
     def label(self):
@@ -346,9 +347,9 @@ class InputOutput:
         return self.std_out.splitlines()
 
     @property
-    def dict_out(self) -> dict[str, Any]:
+    def dict_out(self) -> ParsedJson:
         try:
-            result: dict[str, Any] = json.loads(self.std_out)
+            result: ParsedJson = json.loads(self.std_out)
             return result
         except (json.JSONDecodeError, ValueError):
             return {}
@@ -397,9 +398,9 @@ class Chezmoi:
         """
 
         def create_status_dict(
-            tab_name: str, kind: Literal["dirs", "files"]
-        ) -> dict[Path, str]:
-            to_return: dict[Path, str] = {}
+            tab_name: TabStr, kind: Literal["dirs", "files"]
+        ) -> StatusDict:
+            to_return: StatusDict = {}
             status_idx: int = 0
             status_codes: str = ""
             if kind == "dirs":
