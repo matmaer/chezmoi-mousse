@@ -128,7 +128,7 @@ class ChezmoiGUI(App[None]):
         self.theme = theme_name
         cmd_log.log_success(f"Theme set to {theme_name}")
         cmd_log.log_warning("starting loading screen")
-        self.push_screen(LoadingScreen(), callback=self.refresh_widgets)
+        self.push_screen(LoadingScreen(), callback=self.first_mount_refresh)
         self.watch(self, "theme", self.on_theme_change, init=False)
 
     def on_theme_change(self, _: str, new_theme: str) -> None:
@@ -139,24 +139,7 @@ class ChezmoiGUI(App[None]):
         )
         cmd_log.log_success(f"Theme set to {new_theme}")
 
-    @on(OperateMessage)
-    def handle_operate_result(self, message: OperateMessage) -> None:
-        managed_trees = self.query(ManagedTree)
-
-        for tree in managed_trees:
-            tree.remove_node_path(path=message.dismiss_data.path)
-
-        flat_trees = self.query(FlatTree)
-        for tree in flat_trees:
-            tree.remove_node_path(path=message.dismiss_data.path)
-
-        expanded_trees = self.query(ExpandedTree)
-        for tree in expanded_trees:
-            tree.remove_node_path(path=message.dismiss_data.path)
-
-        self.query_one(FilteredDirTree).reload()
-
-    def refresh_all_trees(self) -> None:
+    def first_mount_refresh(self, _: object) -> None:
         self.query_one(
             IdMixin(TabStr.apply_tab).tree_qid(TreeStr.managed_tree),
             ManagedTree,
@@ -180,10 +163,24 @@ class ChezmoiGUI(App[None]):
             ExpandedTree,
         ).refresh_tree_data()
         self.query_one(FilteredDirTree).reload()
-
-    def refresh_widgets(self, _: object) -> None:
-        self.refresh_all_trees()
         self.query_one(DoctorTab).populate_doctor_data()
+
+    @on(OperateMessage)
+    def handle_operate_result(self, message: OperateMessage) -> None:
+        managed_trees = self.query(ManagedTree)
+
+        for tree in managed_trees:
+            tree.remove_node_path(path=message.dismiss_data.path)
+
+        flat_trees = self.query(FlatTree)
+        for tree in flat_trees:
+            tree.remove_node_path(path=message.dismiss_data.path)
+
+        expanded_trees = self.query(ExpandedTree)
+        for tree in expanded_trees:
+            tree.remove_node_path(path=message.dismiss_data.path)
+
+        self.query_one(FilteredDirTree).reload()
 
     def on_tabbed_content_tab_activated(
         self, event: TabbedContent.TabActivated
