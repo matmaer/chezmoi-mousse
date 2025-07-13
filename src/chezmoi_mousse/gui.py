@@ -140,29 +140,24 @@ class ChezmoiGUI(App[None]):
         cmd_log.log_success(f"Theme set to {new_theme}")
 
     def first_mount_refresh(self, _: object) -> None:
-        self.query_one(
-            IdMixin(TabStr.apply_tab).tree_qid(TreeStr.managed_tree),
-            ManagedTree,
-        ).refresh_tree_data()
-        self.query_one(
-            IdMixin(TabStr.apply_tab).tree_qid(TreeStr.flat_tree), FlatTree
-        ).refresh_tree_data()
-        self.query_one(
-            IdMixin(TabStr.apply_tab).tree_qid(TreeStr.expanded_tree),
-            ExpandedTree,
-        ).refresh_tree_data()
-        self.query_one(
-            IdMixin(TabStr.re_add_tab).tree_qid(TreeStr.managed_tree),
-            ManagedTree,
-        ).refresh_tree_data()
-        self.query_one(
-            IdMixin(TabStr.re_add_tab).tree_qid(TreeStr.flat_tree), FlatTree
-        ).refresh_tree_data()
-        self.query_one(
-            IdMixin(TabStr.re_add_tab).tree_qid(TreeStr.expanded_tree),
-            ExpandedTree,
-        ).refresh_tree_data()
+        # Refresh Tree widgets
+        tab_tree_cls_list: list[
+            tuple[TabStr, TreeStr, type[ManagedTree | FlatTree | ExpandedTree]]
+        ] = [
+            (TabStr.apply_tab, TreeStr.managed_tree, ManagedTree),
+            (TabStr.apply_tab, TreeStr.flat_tree, FlatTree),
+            (TabStr.apply_tab, TreeStr.expanded_tree, ExpandedTree),
+            (TabStr.re_add_tab, TreeStr.managed_tree, ManagedTree),
+            (TabStr.re_add_tab, TreeStr.flat_tree, FlatTree),
+            (TabStr.re_add_tab, TreeStr.expanded_tree, ExpandedTree),
+        ]
+        for tab, tree, tree_cls in tab_tree_cls_list:
+            self.query_one(
+                IdMixin(tab).tree_qid(tree), tree_cls
+            ).refresh_tree_data()
+        # Refresh DirectoryTree
         self.query_one(FilteredDirTree).reload()
+        # Refresh DoctorTab
         self.query_one(DoctorTab).populate_doctor_data()
 
     @on(OperateMessage)
