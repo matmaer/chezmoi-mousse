@@ -280,17 +280,20 @@ class ChezmoiGUI(App[None]):
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         active_pane = self.query_one(TabbedContent).active
-        # tab id not known upon MainScreen init, so we init it here.
         id_mixin = IdMixin(PaneEnum[active_pane].value)
-        # For each operate tab, the contents view will always contain the
-        # most recent path.
-        # This path is updated in OperateTabsBase or AddTab for all 3 views
-        # Here the active pane var inits the id_mixin with the correct id
-        # and Operate handles the rest.
         contents_view = self.query_one(
             id_mixin.view_qid(ViewStr.contents_view), ContentsView
         )
         current_path = getattr(contents_view, "path")
+
+        from chezmoi_mousse import CM_CFG
+
+        if current_path == CM_CFG.destDir:
+            self.notify(
+                "Operation not possiblef for the destination directory.",
+                severity="warning",
+            )
+            return
 
         if event.button.id == id_mixin.button_id(ButtonEnum.apply_file_btn):
             self.push_screen(
