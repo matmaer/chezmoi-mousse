@@ -177,6 +177,13 @@ class Operate(ModalScreen[None], IdMixin):
             ).disabled = True
             self.operate_dismiss_data.operation_executed = True
 
+        elif event.button.id == self.button_id(ButtonEnum.destroy_btn):
+            chezmoi.perform.destroy(self.path)
+            self.query_one(
+                self.button_qid(ButtonEnum.destroy_btn), Button
+            ).disabled = True
+            self.operate_dismiss_data.operation_executed = True
+
         elif event.button.id == self.button_id(ButtonEnum.operate_dismiss_btn):
             self.handle_dismiss(self.operate_dismiss_data)
 
