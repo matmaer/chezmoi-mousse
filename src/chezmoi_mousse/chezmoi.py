@@ -18,7 +18,6 @@ from chezmoi_mousse.id_typing import (
     InputOutputVerbs,
     OperateIdStr,
     OperateVerbs,
-    PaneEnum,
     ParsedJson,
     ReadVerbs,
     StatusDict,
@@ -172,7 +171,7 @@ class CommandLog(RichLog):
         self.write(f"{time} [{color}]{message}[/]")
 
 
-cmd_log = CommandLog(id=PaneEnum.log.value)
+cmd_log = CommandLog(id=TabStr.log_tab)
 op_log = CommandLog(id=OperateIdStr.operate_log_id)
 op_log.add_class(TcssStr.op_log)
 

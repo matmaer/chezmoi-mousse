@@ -1,13 +1,12 @@
 import os
 from pathlib import Path
+from typing import Any
 
 from textual import on
 from textual.app import App, ComposeResult
 from textual.binding import Binding
-from textual.reactive import reactive
 from textual.scrollbar import ScrollBar
 from textual.theme import Theme
-from textual.widget import Widget
 from textual.widgets import (
     Button,
     ContentSwitcher,
@@ -63,14 +62,22 @@ class ChezmoiGUI(App[None]):
         ),
     ]
 
-    # reactive var to track the current tab and refresh bindings when changed
-    active_pane = reactive("apply", bindings=True)
+    def __init__(self, *args: Any, **kwargs: Any):
+        super().__init__(*args, **kwargs)
+
+        self.pane_id_map: dict[str, IdMixin] = {
+            PaneEnum.apply.name: IdMixin(PaneEnum.apply.value),
+            PaneEnum.re_add.name: IdMixin(PaneEnum.re_add.value),
+            PaneEnum.add.name: IdMixin(PaneEnum.add.value),
+            PaneEnum.doctor.name: IdMixin(PaneEnum.doctor.value),
+            PaneEnum.init.name: IdMixin(PaneEnum.init.value),
+        }
 
     def compose(self) -> ComposeResult:
         yield Header(icon=CharsEnum.burger.value)
         with TabbedContent():
             with TabPane("Apply", id=PaneEnum.apply.name):
-                yield ApplyTab(tab_name=TabStr.apply_tab)
+                yield ApplyTab(tab_name=PaneEnum.apply.value)
                 yield ButtonsHorizontal(
                     TabStr.apply_tab,
                     buttons=(
@@ -81,7 +88,7 @@ class ChezmoiGUI(App[None]):
                     location=Location.bottom,
                 )
             with TabPane("Re-Add", id=PaneEnum.re_add.name):
-                yield ReAddTab(tab_name=TabStr.re_add_tab)
+                yield ReAddTab(tab_name=PaneEnum.re_add.value)
                 yield ButtonsHorizontal(
                     TabStr.re_add_tab,
                     buttons=(
@@ -92,7 +99,7 @@ class ChezmoiGUI(App[None]):
                     location=Location.bottom,
                 )
             with TabPane("Add", id=PaneEnum.add.name):
-                yield AddTab(tab_name=TabStr.add_tab)
+                yield AddTab(tab_name=PaneEnum.add.value)
                 yield ButtonsHorizontal(
                     TabStr.add_tab,
                     buttons=(ButtonEnum.add_file_btn, ButtonEnum.add_dir_btn),
@@ -101,7 +108,7 @@ class ChezmoiGUI(App[None]):
             with TabPane("Init", id=PaneEnum.init.name):
                 yield InitTab(tab_name=TabStr.init_tab)
             with TabPane("Doctor", id=PaneEnum.doctor.name):
-                yield DoctorTab(tab_name=TabStr.doctor_tab)
+                yield DoctorTab(tab_name=PaneEnum.doctor.value)
             with TabPane("Log", id=PaneEnum.log.name):
                 yield cmd_log
 
@@ -116,7 +123,10 @@ class ChezmoiGUI(App[None]):
                 severity="warning",
             )
         add_dir_btn = self.query_one(
-            IdMixin(TabStr.add_tab).button_qid(ButtonEnum.add_dir_btn), Button
+            self.pane_id_map[PaneEnum.add.name].button_qid(
+                ButtonEnum.add_dir_btn
+            ),
+            Button,
         )
         add_dir_btn.disabled = True
 
@@ -127,12 +137,12 @@ class ChezmoiGUI(App[None]):
         theme_name = "chezmoi-mousse-dark"
         self.theme = theme_name
         cmd_log.log_success(f"Theme set to {theme_name}")
-        cmd_log.log_warning("starting loading screen")
+        cmd_log.log_warning("Start loading screen")
         self.push_screen(LoadingScreen(), callback=self.first_mount_refresh)
         self.watch(self, "theme", self.on_theme_change, init=False)
 
     def on_theme_change(self, _: str, new_theme: str) -> None:
-        new_theme_object: Theme | None = self.app.get_theme(new_theme)
+        new_theme_object: Theme | None = self.get_theme(new_theme)
         assert isinstance(new_theme_object, Theme)
         chezmoi_mousse.theme.vars = (
             new_theme_object.to_color_system().generate()
@@ -140,25 +150,30 @@ class ChezmoiGUI(App[None]):
         cmd_log.log_success(f"Theme set to {new_theme}")
 
     def first_mount_refresh(self, _: object) -> None:
-        # Refresh Tree widgets
-        tab_tree_cls_list: list[
-            tuple[TabStr, TreeStr, type[ManagedTree | FlatTree | ExpandedTree]]
+        # Trees to refresh for each tab
+        tree_types: list[
+            tuple[TreeStr, type[ManagedTree | FlatTree | ExpandedTree]]
         ] = [
-            (TabStr.apply_tab, TreeStr.managed_tree, ManagedTree),
-            (TabStr.apply_tab, TreeStr.flat_tree, FlatTree),
-            (TabStr.apply_tab, TreeStr.expanded_tree, ExpandedTree),
-            (TabStr.re_add_tab, TreeStr.managed_tree, ManagedTree),
-            (TabStr.re_add_tab, TreeStr.flat_tree, FlatTree),
-            (TabStr.re_add_tab, TreeStr.expanded_tree, ExpandedTree),
+            (TreeStr.managed_tree, ManagedTree),
+            (TreeStr.flat_tree, FlatTree),
+            (TreeStr.expanded_tree, ExpandedTree),
         ]
-        for tab, tree, tree_cls in tab_tree_cls_list:
-            self.query_one(
-                IdMixin(tab).tree_qid(tree), tree_cls
-            ).refresh_tree_data()
+        # Refresh apply and re_add trees
+        for tab_name in (PaneEnum.apply.name, PaneEnum.re_add.name):
+            id_mixin = self.pane_id_map[tab_name]
+            for tree_str, tree_cls in tree_types:
+                self.query_one(
+                    id_mixin.tree_qid(tree_str), tree_cls
+                ).refresh_tree_data()
         # Refresh DirectoryTree
         self.query_one(FilteredDirTree).reload()
         # Refresh DoctorTab
         self.query_one(DoctorTab).populate_doctor_data()
+
+    def on_tabbed_content_tab_activated(
+        self, event: TabbedContent.TabActivated
+    ) -> None:
+        self.refresh_bindings()
 
     @on(OperateMessage)
     def handle_operate_result(self, message: OperateMessage) -> None:
@@ -169,87 +184,60 @@ class ChezmoiGUI(App[None]):
 
         self.query_one(FilteredDirTree).reload()
 
-    def on_tabbed_content_tab_activated(
-        self, event: TabbedContent.TabActivated
-    ) -> None:
-        self.active_pane = event.tab.id
-
-        # Refresh bindings on the newly activated tab to ensure they reflect current state
-        if event.tab.id in ("apply", "re_add"):
-            # Get the tab widget and refresh its bindings
-            tab_pane = self.query_one(f"#{event.tab.id}", TabPane)
-            if tab_pane.children:
-                tab_widget = tab_pane.children[0]
-                # Focus the tab widget and use call_after_refresh to ensure mounting is complete
-                tab_widget.focus()
-                if hasattr(tab_widget, "refresh_bindings"):
-                    self.call_after_refresh(tab_widget.refresh_bindings)
-
     def check_action(
         self, action: str, parameters: tuple[object, ...]
     ) -> bool | None:
 
-        active_pane = self.query_one(TabbedContent).active
-
         if action == "maximize":
-            # If no tab is active, return True because ApplyTab will be shown
-            if not active_pane:
-                return True
-            # Once the app is running - guard against empty active_pane
-            try:
-                id_mixin = IdMixin(PaneEnum[active_pane].value)
-            except (KeyError, AttributeError):
-                return True
-            if (
-                id_mixin.tab_name == TabStr.doctor_tab
-                or id_mixin.tab_name == TabStr.log_tab
+            if self.query_one(TabbedContent).active in (
+                PaneEnum.doctor.name,
+                PaneEnum.log.name,
+                PaneEnum.init.name,
             ):
-                return None  # show disabled binding
+                return None
             return True
 
         elif action == "toggle_filter_slider":
-
-            if not active_pane:
-                return True  # Show at startup (apply tab will be active)
-            if active_pane in ("apply", "re_add", "add"):
+            if self.query_one(TabbedContent).active in (
+                PaneEnum.apply.name,
+                PaneEnum.re_add.name,
+                PaneEnum.add.name,
+            ):
                 return True
-            else:
-                return None  # show disabled binding
+            return None
 
-        return True  # show disabled binding
+        return True
 
     def action_toggle_filter_slider(self) -> None:
         # merely find the corresponding method in the active tab ant call it
-        active_pane = self.query_one(TabbedContent).active
-        if active_pane in ("apply", "re_add", "add"):
-            tab_pane = self.query_one(f"#{active_pane}", TabPane)
+        if self.query_one(TabbedContent).active in (
+            PaneEnum.apply.name,
+            PaneEnum.re_add.name,
+            PaneEnum.add.name,
+        ):
+            tab_pane = self.query_one(
+                f"#{self.query_one(TabbedContent).active}", TabPane
+            )
             tab_widget = tab_pane.children[0]
             if hasattr(tab_widget, "action_toggle_filter_slider"):
                 getattr(tab_widget, "action_toggle_filter_slider")()
 
     def action_maximize(self) -> None:
-        active_pane = self.query_one(TabbedContent).active
-        # tab id not known upon MainScreen init, so we init it here.
-        id_mixin = IdMixin(PaneEnum[active_pane].value)
+        id_mixin = self.pane_id_map[self.query_one(TabbedContent).active]
 
         # Initialize modal parameters
-        tab_name = PaneEnum[active_pane].value
         id_to_maximize: str | None = None
         path_for_maximize: Path | None = None
 
         if id_mixin.tab_name in (TabStr.apply_tab, TabStr.re_add_tab):
             # Determine what view to show in the modal
-            content_switcher_right = self.query_one(
+            id_to_maximize: str | None = self.query_one(
                 id_mixin.content_switcher_qid(Location.right), ContentSwitcher
+            ).current
+            active_widget = self.query_one(
+                id_mixin.view_qid(ViewStr(id_to_maximize)), ContentsView
             )
-            current_view_id: str | None = content_switcher_right.current
-
-            if current_view_id:
-                right_switcher_widget: Widget | None = (
-                    content_switcher_right.get_child_by_id(current_view_id)
-                )
-                id_to_maximize = current_view_id
-                path_for_maximize = getattr(right_switcher_widget, "path")
+            path_for_maximize = getattr(active_widget, "path")
 
         elif id_mixin.tab_name == TabStr.add_tab:
             add_tab_contents_view = self.query_one(
@@ -261,80 +249,37 @@ class ChezmoiGUI(App[None]):
 
         self.app.push_screen(
             Maximized(
-                tab_name=tab_name,
+                tab_name=id_mixin.tab_name,
                 id_to_maximize=id_to_maximize,
                 path=path_for_maximize,
             )
         )
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
-        active_pane = self.query_one(TabbedContent).active
-        id_mixin = IdMixin(PaneEnum[active_pane].value)
+        id_mixin = self.pane_id_map[self.query_one(TabbedContent).active]
         contents_view = self.query_one(
             id_mixin.view_qid(ViewStr.contents_view), ContentsView
         )
         current_path = getattr(contents_view, "path")
 
-        if current_path == CM_CFG.destDir:
-            self.notify(
-                "Operation not possible for destDir.", severity="error"
-            )
-            return
-
-        if event.button.id == id_mixin.button_id(ButtonEnum.apply_file_btn):
-            self.push_screen(
-                Operate(
-                    id_mixin.tab_name,
-                    path=current_path,
-                    buttons=(
-                        ButtonEnum.apply_file_btn,
-                        ButtonEnum.operate_dismiss_btn,
-                    ),
-                )
-            )
-        elif event.button.id == id_mixin.button_id(ButtonEnum.re_add_file_btn):
-            self.push_screen(
-                Operate(
-                    id_mixin.tab_name,
-                    buttons=(
-                        ButtonEnum.re_add_file_btn,
-                        ButtonEnum.operate_dismiss_btn,
-                    ),
-                    path=current_path,
-                )
-            )
-        elif event.button.id == id_mixin.button_id(ButtonEnum.add_file_btn):
-            self.push_screen(
-                Operate(
-                    id_mixin.tab_name,
-                    buttons=(
-                        ButtonEnum.add_file_btn,
-                        ButtonEnum.operate_dismiss_btn,
-                    ),
-                    path=current_path,
-                )
-            )
-        elif event.button.id == id_mixin.button_id(ButtonEnum.forget_file_btn):
-            self.push_screen(
-                Operate(
-                    id_mixin.tab_name,
-                    buttons=(
-                        ButtonEnum.forget_file_btn,
-                        ButtonEnum.operate_dismiss_btn,
-                    ),
-                    path=current_path,
-                )
-            )
-        elif event.button.id == id_mixin.button_id(
-            ButtonEnum.destroy_file_btn
+        if event.button.label in (
+            ButtonEnum.apply_file_btn.value,
+            ButtonEnum.re_add_file_btn.value,
+            ButtonEnum.add_file_btn.value,
+            ButtonEnum.forget_file_btn.value,
+            ButtonEnum.destroy_file_btn.value,
         ):
+            if current_path == CM_CFG.destDir or current_path is None:
+                self.notify(
+                    "Operation not possible for destDir.", severity="error"
+                )
+                return
+
+            btn_enum = ButtonEnum(event.button.label)
             self.push_screen(
                 Operate(
                     id_mixin.tab_name,
-                    buttons=(
-                        ButtonEnum.destroy_file_btn,
-                        ButtonEnum.operate_dismiss_btn,
-                    ),
                     path=current_path,
+                    buttons=(btn_enum, ButtonEnum.operate_dismiss_btn),
                 )
             )

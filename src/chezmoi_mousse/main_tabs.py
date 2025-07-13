@@ -2,7 +2,6 @@ from pathlib import Path
 
 from rich.text import Text
 from textual.app import ComposeResult
-from textual.binding import Binding
 from textual.containers import (
     Container,
     Horizontal,
@@ -72,8 +71,6 @@ class OperateTabsBase(Horizontal, IdMixin):
         self.query_one(
             self.view_qid(ViewStr.git_log_view), GitLogView
         ).path = path
-        # Refresh bindings when path changes for the operate bindings
-        self.refresh_bindings()
 
     def on_tree_node_selected(
         self, event: TreeBase.NodeSelected[NodeData]
@@ -108,20 +105,16 @@ class OperateTabsBase(Horizontal, IdMixin):
             self.query_one(
                 self.content_switcher_qid(Location.right), ContentSwitcher
             ).current = self.view_id(ViewStr.contents_view)
-            # Refresh bindings when switching views
-            self.refresh_bindings()
+
         elif event.button.id == self.button_id(ButtonEnum.diff_btn):
             self.query_one(
                 self.content_switcher_qid(Location.right), ContentSwitcher
             ).current = self.view_id(ViewStr.diff_view)
-            # Refresh bindings when switching views
-            self.refresh_bindings()
+
         elif event.button.id == self.button_id(ButtonEnum.git_log_btn):
             self.query_one(
                 self.content_switcher_qid(Location.right), ContentSwitcher
             ).current = self.view_id(ViewStr.git_log_view)
-            # Refresh bindings when switching views
-            self.refresh_bindings()
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
         event.stop()
@@ -209,10 +202,6 @@ class ApplyTab(OperateTabsBase):
 
 
 class ReAddTab(OperateTabsBase):
-
-    BINDINGS = [
-        Binding(key="C", action="re_add_diff", description="chezmoi-re-add")
-    ]
 
     def __init__(self, tab_name: TabStr) -> None:
         super().__init__(tab_name)
