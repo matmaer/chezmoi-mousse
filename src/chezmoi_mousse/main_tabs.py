@@ -37,6 +37,7 @@ from chezmoi_mousse.id_typing import (
     FilterEnum,
     IdMixin,
     Location,
+    PrettyIdEnum,
     TabStr,
     TcssStr,
     TreeStr,
@@ -443,23 +444,34 @@ class DoctorTab(ScrollableContainer, IdMixin):
         yield Collapsible(
             Static(FLOW, classes=TcssStr.flow_diagram), title="chezmoi diagram"
         )
-        yield Collapsible(
-            Pretty(chezmoi.run.template_data()),
-            title="chezmoi data (template data)",
-        )
-        yield Collapsible(
-            Pretty(chezmoi.run.cat_config()),
-            title="chezmoi cat-config (contents of config-file)",
-        )
-        yield Collapsible(
-            Pretty(chezmoi.run.ignored()),
-            title="chezmoi ignored (git ignore in source-dir)",
-        )
+        with Collapsible(title=PrettyIdEnum.doctor_template_data.value):
+            yield Pretty(
+                "placeholder", id=PrettyIdEnum.doctor_template_data.name
+            )
+        with Collapsible(title=PrettyIdEnum.doctor_cat_config.value):
+            yield Pretty("placeholder", id=PrettyIdEnum.doctor_cat_config.name)
+        with Collapsible(title=PrettyIdEnum.doctor_ignored.value):
+            yield Pretty("placeholder", id=PrettyIdEnum.doctor_ignored.name)
         yield Collapsible(ListView(), title="Commands Not Found")
 
     def on_mount(self) -> None:
         for collapsible in self.query(Collapsible):
             collapsible.add_class(TcssStr.doctor_collapsible)
+
+    def on_collapsible_expanded(self, event: Collapsible.Expanded) -> None:
+        event.stop()
+        if event.collapsible.title == PrettyIdEnum.doctor_template_data.value:
+            event.collapsible.query_one(
+                PrettyIdEnum.doctor_template_data.qid, Pretty
+            ).update(chezmoi.run.template_data())
+        elif event.collapsible.title == PrettyIdEnum.doctor_cat_config.value:
+            event.collapsible.query_one(
+                PrettyIdEnum.doctor_cat_config.qid, Pretty
+            ).update(chezmoi.run.cat_config())
+        elif event.collapsible.title == PrettyIdEnum.doctor_ignored.value:
+            event.collapsible.query_one(
+                PrettyIdEnum.doctor_ignored.qid, Pretty
+            ).update(chezmoi.run.ignored())
 
     # do not put this in the on_mount method as textual manages this
     def populate_doctor_data(self) -> None:

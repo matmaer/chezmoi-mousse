@@ -175,6 +175,16 @@ class OperateIdStr(StrEnum):
         return f"#{self.name}"
 
 
+class PrettyIdEnum(Enum):
+    doctor_cat_config = "chezmoi cat-config (contents of config-file)"
+    doctor_template_data = "chezmoi template-data (contents of template-file)"
+    doctor_ignored = "chezmoi ignored (git ignore in source-dir)"
+
+    @property
+    def qid(self) -> str:
+        return f"#{self.name}"
+
+
 class IdMixin:
     def __init__(self, tab_name: TabStr) -> None:
         self.filter_slider_id = f"{tab_name}_filter_slider"
