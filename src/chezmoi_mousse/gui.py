@@ -115,21 +115,6 @@ class ChezmoiGUI(App[None]):
         yield Footer()
 
     def on_mount(self) -> None:
-        if os.environ.get("MOUSSE_DEV") == "1":
-            self.notify("Running in development mode", severity="information")
-        if os.environ.get("MOUSSE_ENABLE_CHANGES") == "1":
-            self.notify(
-                "Changes mode enabled, operations will be executed",
-                severity="warning",
-            )
-        add_dir_btn = self.query_one(
-            self.pane_id_map[PaneEnum.add.name].button_qid(
-                ButtonEnum.add_dir_btn
-            ),
-            Button,
-        )
-        add_dir_btn.disabled = True
-
         cmd_log.log_success("App initialized successfully")
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
         self.title = "-  c h e z m o i  m o u s s e  -"
@@ -150,6 +135,20 @@ class ChezmoiGUI(App[None]):
         cmd_log.log_success(f"Theme set to {new_theme}")
 
     def first_mount_refresh(self, _: object) -> None:
+        if os.environ.get("MOUSSE_DEV") == "1":
+            self.notify("Running in development mode", severity="information")
+        if os.environ.get("MOUSSE_ENABLE_CHANGES") == "1":
+            self.notify(
+                "Changes mode enabled, operations will be executed",
+                severity="warning",
+            )
+        add_dir_btn = self.query_one(
+            self.pane_id_map[PaneEnum.add.name].button_qid(
+                ButtonEnum.add_dir_btn
+            ),
+            Button,
+        )
+        add_dir_btn.disabled = True
         # Trees to refresh for each tab
         tree_types: list[
             tuple[TreeStr, type[ManagedTree | FlatTree | ExpandedTree]]
