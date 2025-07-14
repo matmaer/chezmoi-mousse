@@ -146,22 +146,36 @@ class Operate(ModalScreen[None], IdMixin):
                 self.button_qid(ButtonEnum.operate_dismiss_btn), Button
             ).label = "Close"
 
-        # Refactored repeated button event handling into a loop
-        button_actions = [
-            (ButtonEnum.apply_file_btn, chezmoi.perform.apply),
-            (ButtonEnum.re_add_file_btn, chezmoi.perform.re_add),
-            (ButtonEnum.add_file_btn, chezmoi.perform.add),
-            (ButtonEnum.forget_file_btn, chezmoi.perform.forget),
-            (ButtonEnum.destroy_file_btn, chezmoi.perform.destroy),
-        ]
-        for btn_enum, action in button_actions:
-            if event.button.id == self.button_id(btn_enum):
-                action(self.path)  # run the perform command with the path
-                self.query_one(self.button_qid(btn_enum), Button).disabled = (
-                    True
-                )
-                self.operate_dismiss_data.operation_executed = True
-                break
+        # Refactored: use a dictionary for button actions
+        button_actions = {
+            self.button_id(ButtonEnum.apply_file_btn): (
+                ButtonEnum.apply_file_btn,
+                chezmoi.perform.apply,
+            ),
+            self.button_id(ButtonEnum.re_add_file_btn): (
+                ButtonEnum.re_add_file_btn,
+                chezmoi.perform.re_add,
+            ),
+            self.button_id(ButtonEnum.add_file_btn): (
+                ButtonEnum.add_file_btn,
+                chezmoi.perform.add,
+            ),
+            self.button_id(ButtonEnum.forget_file_btn): (
+                ButtonEnum.forget_file_btn,
+                chezmoi.perform.forget,
+            ),
+            self.button_id(ButtonEnum.destroy_file_btn): (
+                ButtonEnum.destroy_file_btn,
+                chezmoi.perform.destroy,
+            ),
+        }
+        btn_id = str(event.button.id) if event.button.id is not None else ""
+        btn_action = button_actions.get(btn_id)
+        if btn_action:
+            btn_enum, action = btn_action
+            action(self.path)
+            self.query_one(self.button_qid(btn_enum), Button).disabled = True
+            self.operate_dismiss_data.operation_executed = True
 
         if event.button.id == self.button_id(ButtonEnum.operate_dismiss_btn):
             self.handle_dismiss(self.operate_dismiss_data)
