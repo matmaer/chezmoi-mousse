@@ -25,6 +25,7 @@ Graphical user interface in the terminal for [chezmoi](https://github.com/twpayn
 - [x] `chezmoi apply` file
 - [x] `chezmoi re-add` file
 - [ ] `chezmoi add` directory
+- [ ] `chezmoi add --encrypt` file
 - [ ] `chezmoi apply` directory
 - [ ] `chezmoi re-add` directory
 - [x] `chezmoi destroy`
@@ -49,7 +50,6 @@ Graphical user interface in the terminal for [chezmoi](https://github.com/twpayn
 
 ### implemented features
 
-- [ ] file encryption
 - [ ] import files from archives
 - [ ] password manager
 - [ ] scripts
