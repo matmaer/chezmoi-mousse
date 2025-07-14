@@ -38,6 +38,9 @@ class ChezmoiConfig:
 
 try:
     CM_CFG = ChezmoiConfig(chezmoi_config)
+    if CM_CFG.mode != "file":
+        print(f"Currently only file mode is supported, got {CM_CFG.mode}")
+        sys.exit(1)
 except Exception as e:
     print(f"Failed to create ChezmoiConfig: {e}", file=sys.stderr)
     sys.exit(1)
