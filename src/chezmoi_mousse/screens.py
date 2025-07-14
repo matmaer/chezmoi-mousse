@@ -146,42 +146,24 @@ class Operate(ModalScreen[None], IdMixin):
                 self.button_qid(ButtonEnum.operate_dismiss_btn), Button
             ).label = "Close"
 
-        if event.button.id == self.button_id(ButtonEnum.apply_file_btn):
-            chezmoi.perform.apply(self.path)
-            self.query_one(
-                self.button_qid(ButtonEnum.apply_file_btn), Button
-            ).disabled = True
-            self.operate_dismiss_data.operation_executed = True
+        # Refactored repeated button event handling into a loop
+        button_actions = [
+            (ButtonEnum.apply_file_btn, chezmoi.perform.apply),
+            (ButtonEnum.re_add_file_btn, chezmoi.perform.re_add),
+            (ButtonEnum.add_file_btn, chezmoi.perform.add),
+            (ButtonEnum.forget_file_btn, chezmoi.perform.forget),
+            (ButtonEnum.destroy_file_btn, chezmoi.perform.destroy),
+        ]
+        for btn_enum, action in button_actions:
+            if event.button.id == self.button_id(btn_enum):
+                action(self.path)  # run the perform command with the path
+                self.query_one(self.button_qid(btn_enum), Button).disabled = (
+                    True
+                )
+                self.operate_dismiss_data.operation_executed = True
+                break
 
-        elif event.button.id == self.button_id(ButtonEnum.re_add_file_btn):
-            chezmoi.perform.re_add(self.path)
-            self.query_one(
-                self.button_qid(ButtonEnum.re_add_file_btn), Button
-            ).disabled = True
-            self.operate_dismiss_data.operation_executed = True
-
-        elif event.button.id == self.button_id(ButtonEnum.add_file_btn):
-            chezmoi.perform.add(self.path)
-            self.query_one(
-                self.button_qid(ButtonEnum.add_file_btn), Button
-            ).disabled = True
-            self.operate_dismiss_data.operation_executed = True
-
-        elif event.button.id == self.button_id(ButtonEnum.forget_file_btn):
-            chezmoi.perform.forget(self.path)
-            self.query_one(
-                self.button_qid(ButtonEnum.forget_file_btn), Button
-            ).disabled = True
-            self.operate_dismiss_data.operation_executed = True
-
-        elif event.button.id == self.button_id(ButtonEnum.destroy_file_btn):
-            chezmoi.perform.destroy(self.path)
-            self.query_one(
-                self.button_qid(ButtonEnum.destroy_file_btn), Button
-            ).disabled = True
-            self.operate_dismiss_data.operation_executed = True
-
-        elif event.button.id == self.button_id(ButtonEnum.operate_dismiss_btn):
+        if event.button.id == self.button_id(ButtonEnum.operate_dismiss_btn):
             self.handle_dismiss(self.operate_dismiss_data)
 
     def handle_dismiss(self, dismiss_data: OperateData) -> None:
