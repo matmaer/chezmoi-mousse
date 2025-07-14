@@ -72,11 +72,58 @@ class OperateTabsBase(Horizontal, IdMixin):
             self.view_qid(ViewStr.git_log_view), GitLogView
         ).path = path
 
+    def disable_buttons(
+        self, buttons_to_update: tuple[ButtonEnum, ...]
+    ) -> None:
+        for button_enum in buttons_to_update:
+            button = self.app.query_one(self.button_qid(button_enum), Button)
+            button.disabled = True
+            if button_enum == ButtonEnum.add_dir_btn:
+                button.tooltip = "not yet implemented"
+                continue
+            button.tooltip = "select a file to enable operations"
+
+    def enable_buttons(
+        self, buttons_to_update: tuple[ButtonEnum, ...]
+    ) -> None:
+        for button_enum in buttons_to_update:
+            button = self.app.query_one(self.button_qid(button_enum), Button)
+            if button_enum == ButtonEnum.add_dir_btn:
+                button.tooltip = "not yet implemented"
+                continue
+            button.disabled = False
+            button.tooltip = None
+
     def on_tree_node_selected(
         self, event: TreeBase.NodeSelected[NodeData]
     ) -> None:
         assert event.node.data is not None
         self.update_right_side_content_switcher(event.node.data.path)
+
+        buttons_to_update: tuple[ButtonEnum, ...] = ()
+        if self.tab_name == TabStr.apply_tab:
+            buttons_to_update = (
+                ButtonEnum.apply_file_btn,
+                ButtonEnum.forget_file_btn,
+                ButtonEnum.destroy_file_btn,
+            )
+        elif self.tab_name == TabStr.re_add_tab:
+            buttons_to_update = (
+                ButtonEnum.re_add_file_btn,
+                ButtonEnum.forget_file_btn,
+                ButtonEnum.destroy_file_btn,
+            )
+        elif self.tab_name == TabStr.add_tab:
+            buttons_to_update = (
+                ButtonEnum.add_file_btn,
+                ButtonEnum.add_dir_btn,
+            )
+        else:
+            return
+        if event.node.allow_expand:
+            self.disable_buttons(buttons_to_update)
+        else:
+            self.enable_buttons(buttons_to_update)
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         # Tree/List Switch
@@ -194,6 +241,13 @@ class ApplyTab(OperateTabsBase):
         )
         right_side_content_switcher.add_class(TcssStr.content_switcher_right)
         right_side_content_switcher.add_class(TcssStr.top_border_title)
+        self.disable_buttons(
+            (
+                ButtonEnum.apply_file_btn,
+                ButtonEnum.forget_file_btn,
+                ButtonEnum.destroy_file_btn,
+            )
+        )
 
     def action_toggle_filter_slider(self) -> None:
         self.query_one(self.filter_slider_qid, VerticalGroup).toggle_class(
@@ -254,6 +308,13 @@ class ReAddTab(OperateTabsBase):
         )
         content_switcher_right.add_class(TcssStr.content_switcher_right)
         content_switcher_right.add_class(TcssStr.top_border_title)
+        self.disable_buttons(
+            (
+                ButtonEnum.re_add_file_btn,
+                ButtonEnum.forget_file_btn,
+                ButtonEnum.destroy_file_btn,
+            )
+        )
 
     def action_toggle_filter_slider(self) -> None:
         self.query_one(self.filter_slider_qid, VerticalGroup).toggle_class(
@@ -299,6 +360,7 @@ class AddTab(OperateTabsBase):
         tree = self.query_one(self.tree_qid(TreeStr.add_tree), FilteredDirTree)
         tree.show_root = False
         tree.guide_depth = 3
+        self.disable_buttons((ButtonEnum.add_file_btn, ButtonEnum.add_dir_btn))
 
     def on_directory_tree_file_selected(
         self, event: FilteredDirTree.FileSelected
@@ -312,6 +374,7 @@ class AddTab(OperateTabsBase):
         self.query_one(
             self.tab_vertical_qid(Location.right), Vertical
         ).border_title = f"{event.node.data.path.relative_to(CM_CFG.destDir)}"
+        self.enable_buttons((ButtonEnum.add_file_btn,))
 
     def on_directory_tree_directory_selected(
         self, event: FilteredDirTree.DirectorySelected
@@ -324,6 +387,7 @@ class AddTab(OperateTabsBase):
         self.query_one(
             self.tab_vertical_qid(Location.right), Vertical
         ).border_title = f"{event.node.data.path.relative_to(CM_CFG.destDir)}"
+        self.disable_buttons((ButtonEnum.add_file_btn,))
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
         event.stop()

@@ -17,7 +17,7 @@ from textual.widgets import (
 )
 
 import chezmoi_mousse.theme
-from chezmoi_mousse.chezmoi import CM_CFG, cmd_log
+from chezmoi_mousse.chezmoi import cmd_log
 from chezmoi_mousse.containers import ButtonsHorizontal
 from chezmoi_mousse.id_typing import (
     ButtonEnum,
@@ -269,12 +269,6 @@ class ChezmoiGUI(App[None]):
             ButtonEnum.forget_file_btn.value,
             ButtonEnum.destroy_file_btn.value,
         ):
-            if current_path == CM_CFG.destDir or current_path is None:
-                self.notify(
-                    "Operation not possible for destDir.", severity="error"
-                )
-                return
-
             btn_enum = ButtonEnum(event.button.label)
             self.push_screen(
                 Operate(
