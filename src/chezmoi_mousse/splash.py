@@ -114,7 +114,6 @@ class LoadingScreen(Screen[list[str]]):
         # Timers will be set in on_mount()
         self.fade_timer: Timer
         self.all_workers_timer: Timer
-        self.temp_config_timer: Timer
 
     def compose(self) -> ComposeResult:
         yield Middle(Center(AnimatedFade()), Center(RICH_LOG))
@@ -136,44 +135,36 @@ class LoadingScreen(Screen[list[str]]):
 
     @work(thread=True, group="doctor")
     def run_doctor_worker(self) -> None:
+        config_file_path: Path | None = None
         io_class = getattr(chezmoi, "doctor")
         io_class.update()
         self.log_text(io_class.label)
-
-    @work(thread=True, group="set_temp_config_file")
-    def set_temp_config_file(self) -> None:
-        if not all(
-            worker.state == WorkerState.SUCCESS
-            for worker in self.app.workers
-            if worker.group == "doctor"
-        ):
-            return
-        self.temp_config_timer.stop()
-        config_file_path: Path | None = None
-        # get config file name from doctor output
-        for line in chezmoi.doctor.list_out:
+        # get config file name from doctor output to run self.set_temp_config_file
+        for line in io_class.list_out:
+            # Example line: "ok config-file found ~/.config/chezmoi/chezmoi.toml, last modified ..."
             if "config-file" in line and "found" in line:
-                # Example line: "ok config-file found ~/.config/chezmoi/chezmoi.toml, last modified ..."
                 parts = line.split("found ")
                 if len(parts) > 1:
                     config_file_path = Path(parts[1].split(",")[0].strip())
                     break
-
-        if config_file_path is None:
+        else:
             raise RuntimeError(
                 "No config file found in chezmoi doctor output."
             )
-        else:
-            cmd_log.log_success(f"found config file {config_file_path}")
+        cmd_log.log_success(
+            f"found config file {config_file_path} in doctor output"
+        )
+        self.set_temp_config_file(config_file_path)
 
+    @work(thread=True, group="io_workers")
+    def set_temp_config_file(self, config_file_path: Path) -> None:
         # read and create config
         config_lines = chezmoi.run.cat_config()
+        self.log_text("chezmoi cat config")
 
         if not any("interactive" in line.lower() for line in config_lines):
-            cmd_log.log_success(
-                "No interactive entry found in config, using file as is."
-            )
             ChangeCommand.config_path = config_file_path
+            cmd_log.log_success(f"Config path set to {config_file_path}.")
             return
 
         new_config_lines: list[str] = modify_config_non_interactive(
@@ -190,10 +181,9 @@ class LoadingScreen(Screen[list[str]]):
             f"created non-interactive config {temp_file_path}, output:"
         )
         cmd_log.log_dimmed(new_config_str)
-
         ChangeCommand.config_path = temp_file_path
-
-        self.log_text("Non interactive config")
+        cmd_log.log_success(f"Config path set to {config_file_path}.")
+        self.log_text("Non-interactive config")
 
     def all_workers_finished(self) -> None:
         if all(
@@ -212,13 +202,9 @@ class LoadingScreen(Screen[list[str]]):
         self.all_workers_timer = self.set_interval(
             interval=1, callback=self.all_workers_finished
         )
-        self.temp_config_timer = self.set_interval(
-            interval=0.1, callback=self.set_temp_config_file
-        )
 
         # first run chezzmoi doctor, most expensive command
         self.run_doctor_worker()
-        # run cat config so the temp config file can be created
         LONG_COMMANDS.pop("doctor")
 
         for arg_id in LONG_COMMANDS:
