@@ -110,6 +110,7 @@ class ViewStr(StrEnum):
     diff_view = auto()
     git_log_view = auto()
     contents_view = auto()
+    doctor_table = auto()
 
 
 class Location(StrEnum):
@@ -226,12 +227,12 @@ class IdMixin:
     def tree_qid(self, tree: TreeStr) -> str:
         return f"#{self.tree_id(tree)}"
 
-    def view_id(self, view_enum: ViewStr, operate: bool = False) -> str:
+    def view_id(self, view: ViewStr, operate: bool = False) -> str:
         if operate is True:
-            return f"{self.tab_name}_{view_enum}_operate_modal"
-        return f"{self.tab_name}_{view_enum}"
+            return f"{self.tab_name}_{view}"
+        return f"{self.tab_name}_{view}"
 
-    def view_qid(self, view_enum: ViewStr, operate: bool = False) -> str:
+    def view_qid(self, view: ViewStr, operate: bool = False) -> str:
         if operate is True:
-            return f"#{self.view_id(view_enum)}_operate_modal"
-        return f"#{self.view_id(view_enum)}"
+            return f"#{self.view_id(view)}"
+        return f"#{self.view_id(view)}"

@@ -394,10 +394,9 @@ class AddTab(OperateTabsBase):
         tree = self.query_one(self.tree_qid(TreeStr.add_tree), FilteredDirTree)
         if event.switch.id == self.switch_id(FilterEnum.unmanaged_dirs):
             tree.unmanaged_dirs = event.value
-            tree.reload()
         elif event.switch.id == self.switch_id(FilterEnum.unwanted):
             tree.unwanted = event.value
-            tree.reload()
+        tree.reload()
 
     def action_toggle_filter_slider(self) -> None:
         self.query_one(self.filter_slider_qid, VerticalGroup).toggle_class(
@@ -422,16 +421,24 @@ class DoctorTab(ScrollableContainer, IdMixin):
 
     def __init__(self, tab_name: TabStr) -> None:
         IdMixin.__init__(self, tab_name)
-        self.doctor_table: DataTable[Text] = DataTable(
-            classes=TcssStr.doctor_table, show_cursor=False
-        )
         super().__init__(
             id=self.tab_main_horizontal_id, classes=TcssStr.doctor_vertical
         )
+        self.dr_style = {
+            "ok": theme.vars["text-success"],
+            "warning": theme.vars["text-warning"],
+            "error": theme.vars["text-error"],
+            "info": theme.vars["foreground-darken-1"],
+        }
 
     def compose(self) -> ComposeResult:
 
-        yield Collapsible(self.doctor_table, title="chezmoi doctor output")
+        with Collapsible(title="chezmoi doctor output"):
+            yield DataTable[Text](
+                id=ViewStr.doctor_table,
+                classes=TcssStr.doctor_table,
+                show_cursor=False,
+            )
         yield Collapsible(
             Static(FLOW, classes=TcssStr.flow_diagram), title="chezmoi diagram"
         )
@@ -450,53 +457,50 @@ class DoctorTab(ScrollableContainer, IdMixin):
         yield Collapsible(ListView(), title="Commands Not Found")
 
     def on_mount(self) -> None:
-        collapsibles = self.query(Collapsible)
-        for collapsible in collapsibles:
+        for collapsible in self.query(Collapsible):
             collapsible.add_class(TcssStr.doctor_collapsible)
 
     # do not put this in the on_mount method as textual manages this
     def populate_doctor_data(self) -> None:
-        styles = {
-            "ok": theme.vars["text-success"],
-            "warning": theme.vars["text-warning"],
-            "error": theme.vars["text-error"],
-            "info": theme.vars["foreground-darken-1"],
-        }
-        list_view = self.query_exactly_one(ListView)
-        # Add columns if they don't exist
-        if not self.doctor_table.columns:
-            self.doctor_table.add_columns(*chezmoi.doctor.list_out[0].split())
+        doctor_table: DataTable[Text] = self.get_widget_by_id(
+            ViewStr.doctor_table, DataTable[Text]
+        )
+        doctor_table.add_columns(*chezmoi.doctor.list_out[0].split())
 
         for line in chezmoi.doctor.list_out[1:]:
             row = tuple(line.split(maxsplit=2))
             if row[0] == "info" and "not found in $PATH" in row[2]:
-                if row[1] in pw_mgr_info:
-                    list_view.append(
-                        ListItem(
-                            Link(row[1], url=pw_mgr_info[row[1]]["link"]),
-                            Static(pw_mgr_info[row[1]]["description"]),
-                        )
-                    )
-                elif row[1] not in pw_mgr_info:
-                    list_view.append(
-                        ListItem(
-                            # color accent as that's how links are styled by default
-                            Static(f"[$accent-muted]{row[1]}[/]", markup=True),
-                            Label("Not Found in $PATH."),
-                        )
-                    )
+                self.populate_list_view_collapsible(row[1])
             elif row[0] == "ok" or row[0] == "warning" or row[0] == "error":
                 row = [
-                    Text(cell_text, style=f"{styles[row[0]]}")
+                    Text(cell_text, style=f"{self.dr_style[row[0]]}")
                     for cell_text in row
                 ]
-                self.doctor_table.add_row(*row)
+                doctor_table.add_row(*row)
             elif row[0] == "info" and row[2] == "not set":
                 row = [
-                    Text(cell_text, style=styles["warning"])
+                    Text(cell_text, style=self.dr_style["warning"])
                     for cell_text in row
                 ]
-                self.doctor_table.add_row(*row)
+                doctor_table.add_row(*row)
             else:
                 row = [Text(cell_text) for cell_text in row]
-                self.doctor_table.add_row(*row)
+                doctor_table.add_row(*row)
+
+    def populate_list_view_collapsible(self, row_var: str) -> None:
+        list_view = self.query_exactly_one(ListView)
+        if row_var in pw_mgr_info:
+            list_view.append(
+                ListItem(
+                    Link(row_var, url=pw_mgr_info[row_var]["link"]),
+                    Static(pw_mgr_info[row_var]["description"]),
+                )
+            )
+        elif row_var not in pw_mgr_info:
+            list_view.append(
+                ListItem(
+                    # color accent as that's how links are styled by default
+                    Static(f"[$accent-muted]{row_var}[/]", markup=True),
+                    Label("Not Found in $PATH."),
+                )
+            )
