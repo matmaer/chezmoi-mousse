@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import cast
 
 from rich.text import Text
 from textual.app import ComposeResult
@@ -462,8 +463,11 @@ class DoctorTab(ScrollableContainer, IdMixin):
 
     # do not put this in the on_mount method as textual manages this
     def populate_doctor_data(self) -> None:
-        doctor_table: DataTable[Text] = self.get_widget_by_id(
-            ViewStr.doctor_table.name, DataTable
+        # cast datatype as there's no other way because we have to handle
+        # non generic type and a subscribed type for runtime and type checking
+        doctor_table = cast(
+            DataTable[Text],
+            self.get_widget_by_id(ViewStr.doctor_table.name, DataTable),
         )
         doctor_table.add_columns(*chezmoi.doctor.list_out[0].split())
 
