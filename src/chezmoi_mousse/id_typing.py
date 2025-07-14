@@ -166,9 +166,13 @@ class TcssStr(StrEnum):
 
 
 class OperateIdStr(StrEnum):
-    operate_collapsible_id = auto()
-    operate_log_id = auto()
-    operate_vertical_id = auto()
+    operate_collapsible = auto()
+    operate_log = auto()
+    operate_vertical = auto()
+
+    @property
+    def qid(self) -> str:
+        return f"#{self.name}"
 
 
 class IdMixin:

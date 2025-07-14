@@ -172,7 +172,7 @@ class CommandLog(RichLog):
 
 
 cmd_log = CommandLog(id=TabStr.log_tab)
-op_log = CommandLog(id=OperateIdStr.operate_log_id)
+op_log = CommandLog(id=OperateIdStr.operate_log)
 op_log.add_class(TcssStr.op_log)
 
 

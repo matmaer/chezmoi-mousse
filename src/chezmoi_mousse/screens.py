@@ -52,8 +52,6 @@ class Operate(ModalScreen[None], IdMixin):
         self.diff_qid = self.view_qid(ViewStr.diff_view, operate=True)
         self.contents_id = self.view_id(ViewStr.contents_view, operate=True)
         self.contents_qid = self.view_qid(ViewStr.contents_view, operate=True)
-        self.log_id = OperateIdStr.operate_log_id
-        self.log_qid = f"#{self.log_id}"
         self.operate_dismiss_data: OperateData = OperateData(
             path=self.path, operation_executed=False, tab_name=self.tab_name
         )
@@ -61,14 +59,13 @@ class Operate(ModalScreen[None], IdMixin):
 
     def compose(self) -> ComposeResult:
         with Vertical(
-            id=OperateIdStr.operate_vertical_id,
-            classes=TcssStr.operate_container,
+            id=OperateIdStr.operate_vertical, classes=TcssStr.operate_container
         ):
             yield AutoWarning(self.tab_name)
             yield OperateInfo(self.tab_name, self.path)
             if self.tab_name == TabStr.add_tab:
                 with Container(
-                    id=OperateIdStr.operate_collapsible_id,
+                    id=OperateIdStr.operate_collapsible,
                     classes=TcssStr.collapsible_container,
                 ):
                     yield Collapsible(
@@ -78,7 +75,7 @@ class Operate(ModalScreen[None], IdMixin):
                     )
             else:
                 with Container(
-                    id=OperateIdStr.operate_collapsible_id,
+                    id=OperateIdStr.operate_collapsible,
                     classes=TcssStr.collapsible_container,
                 ):
                     yield Collapsible(
@@ -105,7 +102,7 @@ class Operate(ModalScreen[None], IdMixin):
             self.query_exactly_one(DiffView).add_class(TcssStr.operate_diff)
 
         # Add initial log entry
-        self.query_one(self.log_qid, RichLog).border_title = (
+        self.query_one(OperateIdStr.operate_log.qid, RichLog).border_title = (
             f"{log_border_titles[self.tab_name]} log"
         )
         # Set path for either diff or contents view in the Operate screen
