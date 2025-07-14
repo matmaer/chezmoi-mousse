@@ -189,7 +189,7 @@ class LoadingScreen(Screen[list[str]]):
         if all(
             worker.state == WorkerState.SUCCESS
             for worker in self.app.workers
-            if worker.group in ("io_workers", "doctor", "set_temp_config_file")
+            if worker.group in ("io_workers", "doctor")
         ):
             cmd_log.log_success("--- splash.py finished loading ---")
             self.dismiss()
