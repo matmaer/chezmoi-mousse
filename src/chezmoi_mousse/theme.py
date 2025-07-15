@@ -6,7 +6,7 @@ chezmoi_mousse_dark = Theme(
     accent="#F187FB",
     background="#000000",
     error="#ba3c5b",  # textual dark
-    foreground="#DEDAE1",
+    foreground="#DCDCDC",
     primary="#0178D4",  # textual dark
     secondary="#004578",  # textual dark
     surface="#101010",  # see also textual/theme.py
@@ -17,12 +17,14 @@ chezmoi_mousse_dark = Theme(
 chezmoi_mousse_light = Theme(
     name="chezmoi-mousse-light",
     dark=False,
+    background="#DEDEDE",
     foreground="#000000",
-    primary="#006DC0",
-    accent="#BF13CF",
-    warning="#9D5B00",
-    error="#a80014",
+    primary="#0060AA",
+    accent="#790084",
+    warning="#AE6600",
+    error="#c50017",
     success="#007324",
+    surface="#B8B8B8",
 )
 
 vars = chezmoi_mousse_dark.to_color_system().generate()
