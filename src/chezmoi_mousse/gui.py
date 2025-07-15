@@ -179,7 +179,7 @@ class ChezmoiGUI(App[None]):
 
         for tree_cls in (ManagedTree, FlatTree, ExpandedTree):
             for tree in self.query(tree_cls):
-                tree.remove_node_path(path=message.dismiss_data.path)
+                tree.remove_node_path(node_path=message.dismiss_data.path)
 
         self.query_one(FilteredDirTree).reload()
 
