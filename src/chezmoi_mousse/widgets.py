@@ -414,12 +414,12 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
     # node visibility methods
     def dir_has_status_files(self, tab_name: TabStr, dir_path: Path) -> bool:
         # checks for any, no matter how deep in subdirectories
+        files_dict: dict[Path, str] = {}
         if tab_name == TabStr.apply_tab:
             files_dict = managed_status.apply_files
         elif tab_name == TabStr.re_add_tab:
             files_dict = managed_status.re_add_files
-        else:
-            raise ValueError(f"Unknown tab_name: {tab_name}")
+
         return any(
             f
             for f, status in files_dict.items()
@@ -428,12 +428,11 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
 
     def dir_has_status_dirs(self, tab_name: TabStr, dir_path: Path) -> bool:
         # checks for any, no matter how deep in subdirectories
+        dirs_dict: dict[Path, str] = {}
         if tab_name == TabStr.apply_tab:
             dirs_dict = managed_status.apply_dirs
         elif tab_name == TabStr.re_add_tab:
             dirs_dict = managed_status.re_add_dirs
-        else:
-            raise ValueError(f"Unknown tab_name: {tab_name}")
         if dir_path.parent == CM_CFG.destDir and dir_path in dirs_dict:
             # the parent is dest_dir, also return True because dest_dir is
             # not present in the self.managed_status dict
@@ -667,12 +666,11 @@ class FlatTree(TreeBase, IdMixin):
     def refresh_tree_data(self) -> None:
         """Refresh the tree with latest chezmoi data."""
         self.root.remove_children()
+        files_dict: dict[Path, str] = {}
         if self.tab_name == TabStr.apply_tab:
             files_dict = managed_status.apply_files
         elif self.tab_name == TabStr.re_add_tab:
             files_dict = managed_status.re_add_files
-        else:
-            raise ValueError(f"Unknown tab_name: {self.tab_name}")
         for file_path, status in files_dict.items():
             if status != "X":
                 node_data = self.create_file_node_data(path=file_path)
@@ -680,12 +678,11 @@ class FlatTree(TreeBase, IdMixin):
                 self.root.add_leaf(label=node_label, data=node_data)
 
     def add_all_unchanged_files(self) -> None:
+        files_dict: dict[Path, str] = {}
         if self.tab_name == TabStr.apply_tab:
             files_dict = managed_status.apply_files
         elif self.tab_name == TabStr.re_add_tab:
             files_dict = managed_status.re_add_files
-        else:
-            raise ValueError(f"Unknown tab_name: {self.tab_name}")
         for file_path, status in files_dict.items():
             if status == "X":
                 node_data = self.create_file_node_data(path=file_path)
