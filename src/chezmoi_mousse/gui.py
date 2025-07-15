@@ -118,6 +118,7 @@ class ChezmoiGUI(App[None]):
         cmd_log.log_success("App initialized successfully")
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
         self.title = "-  c h e z m o i  m o u s s e  -"
+        self.register_theme(chezmoi_mousse.theme.chezmoi_mousse_light)
         self.register_theme(chezmoi_mousse.theme.chezmoi_mousse_dark)
         theme_name = "chezmoi-mousse-dark"
         self.theme = theme_name

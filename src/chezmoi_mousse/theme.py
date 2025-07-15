@@ -14,4 +14,15 @@ chezmoi_mousse_dark = Theme(
     warning="#ffa62b",  # textual dark
 )
 
+chezmoi_mousse_light = Theme(
+    name="chezmoi-mousse-light",
+    dark=False,
+    foreground="#000000",
+    primary="#006DC0",
+    accent="#BF13CF",
+    warning="#9D5B00",
+    error="#a80014",
+    success="#007324",
+)
+
 vars = chezmoi_mousse_dark.to_color_system().generate()
