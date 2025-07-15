@@ -543,11 +543,7 @@ class ExpandedTree(TreeBase, IdMixin):
 
     def expand_all_nodes(self, node: TreeNode[NodeData]) -> None:
         """Recursively expand all directory nodes."""
-        if (
-            node.data
-            and isinstance(node.data, DirNodeData)
-            and self.should_show_dir_node(node.data.path, self.unchanged)
-        ):
+        if node.data and isinstance(node.data, DirNodeData):
             if not node.is_expanded:
                 node.expand()
                 self.add_dir_nodes(node, self.unchanged)
