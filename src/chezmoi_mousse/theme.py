@@ -21,9 +21,6 @@ chezmoi_mousse_light = Theme(
     foreground="#000000",
     primary="#0060AA",
     accent="#790084",
-    warning="#AE6600",
-    error="#c50017",
-    success="#007324",
     surface="#B8B8B8",
 )
 
