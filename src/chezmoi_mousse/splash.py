@@ -203,7 +203,7 @@ class LoadingScreen(Screen[list[str]]):
             interval=1, callback=self.all_workers_finished
         )
 
-        # first run chezzmoi doctor, most expensive command
+        # first run chezmoi doctor, most expensive command
         self.run_doctor_worker()
         LONG_COMMANDS.pop("doctor")
 
