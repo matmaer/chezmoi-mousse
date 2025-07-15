@@ -384,6 +384,7 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
     # create node data methods
     def create_dir_node_data(self, *, path: Path) -> DirNodeData:
         assert path != CM_CFG.destDir, "Root node should not be created again"
+        assert path in chezmoi.managed_dir_paths
         status_code: str = chezmoi.managed_status[self.tab_name].dirs[path]
         if not status_code:
             status_code = "X"
@@ -391,6 +392,7 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
         return DirNodeData(path=path, found=found, status=status_code)
 
     def create_file_node_data(self, *, path: Path) -> FileNodeData:
+        assert path in chezmoi.managed_file_paths
         status_code: str = chezmoi.managed_status[self.tab_name].files[path]
         if not status_code:
             status_code = "X"
@@ -478,8 +480,19 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
         status_file_paths: list[Path] = chezmoi.files_with_status_in(
             self.tab_name, tree_node.data.path
         )
+        # get current visible leaves
+        current_leaves: list[TreeNode[NodeData]] = [
+            leaf
+            for leaf in tree_node.children
+            if isinstance(leaf.data, FileNodeData)
+        ]
+        current_leaf_paths = [
+            leaf.data.path for leaf in current_leaves if leaf.data
+        ]
         for file in status_file_paths:
             node_data: FileNodeData = self.create_file_node_data(path=file)
+            if node_data.path in current_leaf_paths:
+                continue
             node_label: Text = self.style_label(node_data)
             tree_node.add_leaf(label=node_label, data=node_data)
 
@@ -487,7 +500,19 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
         self, *, tree_node: TreeNode[NodeData], show_unchanged: bool
     ) -> None:
         assert isinstance(tree_node.data, DirNodeData)
+
+        # get current visible leaves
+        current_dirs: list[TreeNode[NodeData]] = [
+            leaf
+            for leaf in tree_node.children
+            if isinstance(leaf.data, DirNodeData)
+        ]
+        current_dir_paths = [
+            dir_node.data.path for dir_node in current_dirs if dir_node.data
+        ]
         for dir_path in chezmoi.managed_dirs_in(tree_node.data.path):
+            if dir_path in current_dir_paths:
+                continue
             if self.should_show_dir_node(
                 dir_path=dir_path, show_unchanged=show_unchanged
             ):
@@ -577,6 +602,16 @@ class ExpandedTree(TreeBase, IdMixin):
         """Refresh the tree with latest chezmoi data."""
         self.root.remove_children()
         self.expand_all_nodes(self.root)
+
+    def on_tree_node_expanded(
+        self, event: TreeBase.NodeExpanded[NodeData]
+    ) -> None:
+        self.add_dir_nodes(tree_node=event.node, show_unchanged=self.unchanged)
+        self.add_status_leaves(tree_node=event.node)
+        if self.unchanged:
+            self.add_unchanged_leaves(tree_node=event.node)
+        else:
+            self.remove_unchanged_leaves(tree_node=event.node)
 
     def expand_all_nodes(self, node: TreeNode[NodeData]) -> None:
         """Recursively expand all directory nodes."""
