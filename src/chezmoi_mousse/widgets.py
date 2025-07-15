@@ -389,23 +389,25 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
     def create_dir_node_data(self, *, path: Path) -> DirNodeData:
         assert path != CM_CFG.destDir, "Root node should not be created again"
         assert path in managed_status.dir_paths
+        status_code: str = ""
         if self.tab_name == TabStr.apply_tab:
             status_code: str = managed_status.apply_dirs[path]
         elif self.tab_name == TabStr.re_add_tab:
             status_code: str = managed_status.re_add_dirs[path]
-        else:
-            raise ValueError(f"Unknown tab_name: {self.tab_name}")
+        if not status_code:
+            status_code = "X"
         found: bool = path.exists()
         return DirNodeData(path=path, found=found, status=status_code)
 
     def create_file_node_data(self, *, path: Path) -> FileNodeData:
         assert path in managed_status.file_paths
+        status_code: str = ""
         if self.tab_name == TabStr.apply_tab:
             status_code: str = managed_status.apply_files[path]
         elif self.tab_name == TabStr.re_add_tab:
             status_code: str = managed_status.re_add_files[path]
-        else:
-            raise ValueError(f"Unknown tab_name: {self.tab_name}")
+        if not status_code:
+            status_code = "X"
         found: bool = path.exists()
         return FileNodeData(path=path, found=found, status=status_code)
 
