@@ -368,7 +368,22 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
             self._first_focus = True
             self.refresh()
 
+    # the styling method for the node labels
+    def style_label(self, node_data: NodeData) -> Text:
+        italic: bool = False if node_data.found else True
+        if node_data.status != "X":
+            styled = Style(
+                color=self.node_colors[node_data.status], italic=italic
+            )
+        elif isinstance(node_data, FileNodeData):
+            styled = "dim"
+        else:
+            styled = self.node_colors["Dir"]
+        return Text(node_data.path.name, style=styled)
+
+    # create node data methods
     def create_dir_node_data(self, *, path: Path) -> DirNodeData:
+        assert path != CM_CFG.destDir, "Root node should not be created again"
         status_code: str = chezmoi.managed_status[self.tab_name].dirs[path]
         if not status_code:
             status_code = "X"
@@ -377,9 +392,47 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
 
     def create_file_node_data(self, *, path: Path) -> FileNodeData:
         status_code: str = chezmoi.managed_status[self.tab_name].files[path]
+        if not status_code:
+            status_code = "X"
         found: bool = path.exists()
         return FileNodeData(path=path, found=found, status=status_code)
 
+    # node visibility methods
+    def dir_has_status_files(self, tab_name: TabStr, dir_path: Path) -> bool:
+        # checks for any, no matter how deep in subdirectories
+        return any(
+            f
+            for f, status in chezmoi.managed_status[tab_name].files.items()
+            if dir_path in f.parents and status != "X"
+        )
+
+    def dir_has_status_dirs(self, tab_name: TabStr, dir_path: Path) -> bool:
+        # checks for any, no matter how deep in subdirectories
+        status_dirs = chezmoi.managed_status[tab_name].dirs.items()
+        if dir_path.parent == CM_CFG.destDir and dir_path in status_dirs:
+            # the parent is dest_dir, also return True because dest_dir is
+            # not present in the self.managed_status dict
+            return True
+        return any(
+            f
+            for f, status in status_dirs
+            if dir_path in f.parents and status != "X"
+        )
+
+    def should_show_dir_node(
+        self, *, dir_path: Path, show_unchanged: bool
+    ) -> bool:
+        if show_unchanged:
+            return True
+        has_status_files: bool = self.dir_has_status_files(
+            self.tab_name, dir_path
+        )
+        has_status_dirs: bool = self.dir_has_status_dirs(
+            self.tab_name, dir_path
+        )
+        return has_status_files or has_status_dirs
+
+    # node add/remove methods
     def get_expanded_nodes(self) -> list[TreeNode[NodeData]]:
         # Recursively calling collect_nodes
         nodes: list[TreeNode[NodeData]] = [self.root]
@@ -396,19 +449,6 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
 
         nodes.extend(collect_nodes(self.root))
         return nodes
-
-    def should_show_dir_node(
-        self, *, dir_path: Path, show_unchanged: bool
-    ) -> bool:
-        if show_unchanged:
-            return True
-        has_status_files: bool = chezmoi.dir_has_status_files(
-            self.tab_name, dir_path
-        )
-        has_status_dirs: bool = chezmoi.dir_has_status_dirs(
-            self.tab_name, dir_path
-        )
-        return has_status_files or has_status_dirs
 
     def add_unchanged_leaves(self, *, tree_node: TreeNode[NodeData]) -> None:
         assert isinstance(tree_node.data, DirNodeData)
@@ -477,18 +517,6 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
             ):
                 dir_node.remove()
 
-    def style_label(self, node_data: NodeData) -> Text:
-        italic: bool = False if node_data.found else True
-        if node_data.status != "X":
-            styled = Style(
-                color=self.node_colors[node_data.status], italic=italic
-            )
-        elif isinstance(node_data, FileNodeData):
-            styled = "dim"
-        else:
-            styled = self.node_colors["Dir"]
-        return Text(node_data.path.name, style=styled)
-
     def remove_node_path(self, *, node_path: Path) -> None:
         # find corresponding node for the given path
         for node in self.get_expanded_nodes():
@@ -553,12 +581,10 @@ class ExpandedTree(TreeBase, IdMixin):
     def expand_all_nodes(self, node: TreeNode[NodeData]) -> None:
         """Recursively expand all directory nodes."""
         if node.data and isinstance(node.data, DirNodeData):
-            if not node.is_expanded:
-                node.expand()
-                self.add_dir_nodes(
-                    tree_node=node, show_unchanged=self.unchanged
-                )
-                self.add_status_leaves(tree_node=node)
+            # if not node.is_expanded:
+            node.expand()
+            self.add_dir_nodes(tree_node=node, show_unchanged=self.unchanged)
+            self.add_status_leaves(tree_node=node)
             for child in node.children:
                 if child.data and isinstance(child.data, DirNodeData):
                     self.expand_all_nodes(child)

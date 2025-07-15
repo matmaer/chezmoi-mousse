@@ -483,28 +483,5 @@ class Chezmoi:
             if p.parent == dir_path
         ]
 
-    def dir_has_status_files(self, tab_name: TabStr, dir_path: Path) -> bool:
-        # checks for any, no matter how deep in subdirectories
-
-        return any(
-            f
-            for f, status in self.managed_status[tab_name].files.items()
-            if dir_path in f.parents and status != "X"
-        )
-
-    def dir_has_status_dirs(self, tab_name: TabStr, dir_path: Path) -> bool:
-        # checks for any, no matter how deep in subdirectories
-
-        status_dirs = self.managed_status[tab_name].dirs.items()
-        if dir_path.parent == CM_CFG.destDir and dir_path in status_dirs:
-            # the parent is dest_dir, also return True because dest_dir is
-            # not present in the self.managed_status dict
-            return True
-        return any(
-            f
-            for f, status in status_dirs
-            if dir_path in f.parents and status != "X"
-        )
-
 
 chezmoi = Chezmoi()
