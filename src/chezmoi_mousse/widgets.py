@@ -23,7 +23,7 @@ from textual.widgets import DataTable, DirectoryTree, RichLog, Static
 from textual.widgets.tree import TreeNode
 
 from chezmoi_mousse import CM_CFG, theme
-from chezmoi_mousse.chezmoi import chezmoi, cmd_log
+from chezmoi_mousse.chezmoi import chezmoi, cmd_log, managed_status
 from chezmoi_mousse.config import unwanted_names
 from chezmoi_mousse.id_typing import (
     CharsEnum,
@@ -148,7 +148,7 @@ class ContentsView(RichLog):
         except FileNotFoundError:
             # FileNotFoundError is raised both when a file or a directory
             # does not exist
-            if self.path in chezmoi.managed_file_paths:
+            if self.path in managed_status.file_paths:
                 if not chezmoi.run.cat(self.path):
                     message = "File contains only whitespace"
                     self.write(message)
@@ -166,7 +166,7 @@ class ContentsView(RichLog):
                 self.write("Source directory:")
                 self.write(f"{CM_CFG.sourceDir}")
                 self.write(Text("(sourceDir)", style="dim"))
-            elif self.path in chezmoi.managed_dir_paths:
+            elif self.path in managed_status.dir_paths:
                 self.write(f"Managed directory: {self.path}")
             else:
                 self.write(f"Unmanaged directory: {self.path}")
@@ -201,13 +201,17 @@ class DiffView(RichLog):
             self.path = CM_CFG.destDir
 
         diff_output: list[str] = []
-        status_files = chezmoi.managed_status[self.tab_name].files
+        if self.tab_name == TabStr.apply_tab:
+            status_files = managed_status.apply_files
+            status_dirs = managed_status.apply_dirs
+        elif self.tab_name == TabStr.re_add_tab:
+            status_files = managed_status.re_add_files
+            status_dirs = managed_status.re_add_dirs
+        else:
+            raise ValueError(f"Wrong tab_name passed: {self.tab_name}")
         # create a diff view if the current path is a directory
-        if (
-            self.path in chezmoi.managed_status[self.tab_name].dirs
-            or self.path == CM_CFG.destDir
-        ):
-            status_files_in_dir = chezmoi.files_with_status_in(
+        if self.path in status_dirs or self.path == CM_CFG.destDir:
+            status_files_in_dir = managed_status.files_with_status_in(
                 self.tab_name, self.path
             )
             if not status_files_in_dir:
@@ -384,40 +388,57 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
     # create node data methods
     def create_dir_node_data(self, *, path: Path) -> DirNodeData:
         assert path != CM_CFG.destDir, "Root node should not be created again"
-        assert path in chezmoi.managed_dir_paths
-        status_code: str = chezmoi.managed_status[self.tab_name].dirs[path]
-        if not status_code:
-            status_code = "X"
+        assert path in managed_status.dir_paths
+        if self.tab_name == TabStr.apply_tab:
+            status_code: str = managed_status.apply_dirs[path]
+        elif self.tab_name == TabStr.re_add_tab:
+            status_code: str = managed_status.re_add_dirs[path]
+        else:
+            raise ValueError(f"Unknown tab_name: {self.tab_name}")
         found: bool = path.exists()
         return DirNodeData(path=path, found=found, status=status_code)
 
     def create_file_node_data(self, *, path: Path) -> FileNodeData:
-        assert path in chezmoi.managed_file_paths
-        status_code: str = chezmoi.managed_status[self.tab_name].files[path]
-        if not status_code:
-            status_code = "X"
+        assert path in managed_status.file_paths
+        if self.tab_name == TabStr.apply_tab:
+            status_code: str = managed_status.apply_files[path]
+        elif self.tab_name == TabStr.re_add_tab:
+            status_code: str = managed_status.re_add_files[path]
+        else:
+            raise ValueError(f"Unknown tab_name: {self.tab_name}")
         found: bool = path.exists()
         return FileNodeData(path=path, found=found, status=status_code)
 
     # node visibility methods
     def dir_has_status_files(self, tab_name: TabStr, dir_path: Path) -> bool:
         # checks for any, no matter how deep in subdirectories
+        if tab_name == TabStr.apply_tab:
+            files_dict = managed_status.apply_files
+        elif tab_name == TabStr.re_add_tab:
+            files_dict = managed_status.re_add_files
+        else:
+            raise ValueError(f"Unknown tab_name: {tab_name}")
         return any(
             f
-            for f, status in chezmoi.managed_status[tab_name].files.items()
+            for f, status in files_dict.items()
             if dir_path in f.parents and status != "X"
         )
 
     def dir_has_status_dirs(self, tab_name: TabStr, dir_path: Path) -> bool:
         # checks for any, no matter how deep in subdirectories
-        status_dirs = chezmoi.managed_status[tab_name].dirs.items()
-        if dir_path.parent == CM_CFG.destDir and dir_path in status_dirs:
+        if tab_name == TabStr.apply_tab:
+            dirs_dict = managed_status.apply_dirs
+        elif tab_name == TabStr.re_add_tab:
+            dirs_dict = managed_status.re_add_dirs
+        else:
+            raise ValueError(f"Unknown tab_name: {tab_name}")
+        if dir_path.parent == CM_CFG.destDir and dir_path in dirs_dict:
             # the parent is dest_dir, also return True because dest_dir is
             # not present in the self.managed_status dict
             return True
         return any(
             f
-            for f, status in status_dirs
+            for f, status in dirs_dict.items()
             if dir_path in f.parents and status != "X"
         )
 
@@ -454,7 +475,7 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
 
     def add_unchanged_leaves(self, *, tree_node: TreeNode[NodeData]) -> None:
         assert isinstance(tree_node.data, DirNodeData)
-        unchanged_in_dir: list[Path] = chezmoi.files_without_status_in(
+        unchanged_in_dir: list[Path] = managed_status.files_without_status_in(
             self.tab_name, tree_node.data.path
         )
         for file_path in unchanged_in_dir:
@@ -477,7 +498,7 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
 
     def add_status_leaves(self, *, tree_node: TreeNode[NodeData]) -> None:
         assert isinstance(tree_node.data, DirNodeData)
-        status_file_paths: list[Path] = chezmoi.files_with_status_in(
+        status_file_paths: list[Path] = managed_status.files_with_status_in(
             self.tab_name, tree_node.data.path
         )
         # get current visible leaves
@@ -510,7 +531,7 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
         current_dir_paths = [
             dir_node.data.path for dir_node in current_dirs if dir_node.data
         ]
-        for dir_path in chezmoi.managed_dirs_in(tree_node.data.path):
+        for dir_path in managed_status.managed_dirs_in(tree_node.data.path):
             if dir_path in current_dir_paths:
                 continue
             if self.should_show_dir_node(
@@ -644,18 +665,26 @@ class FlatTree(TreeBase, IdMixin):
     def refresh_tree_data(self) -> None:
         """Refresh the tree with latest chezmoi data."""
         self.root.remove_children()
-        for file_path, status in chezmoi.managed_status[
-            self.tab_name
-        ].files.items():
+        if self.tab_name == TabStr.apply_tab:
+            files_dict = managed_status.apply_files
+        elif self.tab_name == TabStr.re_add_tab:
+            files_dict = managed_status.re_add_files
+        else:
+            raise ValueError(f"Unknown tab_name: {self.tab_name}")
+        for file_path, status in files_dict.items():
             if status != "X":
                 node_data = self.create_file_node_data(path=file_path)
                 node_label = self.style_label(node_data)
                 self.root.add_leaf(label=node_label, data=node_data)
 
     def add_all_unchanged_files(self) -> None:
-        for file_path, status in chezmoi.managed_status[
-            self.tab_name
-        ].files.items():
+        if self.tab_name == TabStr.apply_tab:
+            files_dict = managed_status.apply_files
+        elif self.tab_name == TabStr.re_add_tab:
+            files_dict = managed_status.re_add_files
+        else:
+            raise ValueError(f"Unknown tab_name: {self.tab_name}")
+        for file_path, status in files_dict.items():
             if status == "X":
                 node_data = self.create_file_node_data(path=file_path)
                 node_label = self.style_label(node_data)
@@ -677,8 +706,8 @@ class FilteredDirTree(DirectoryTree):
     unwanted: reactive[bool] = reactive(False)
 
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
-        managed_dirs = chezmoi.managed_dir_paths
-        managed_files = chezmoi.managed_file_paths
+        managed_dirs = managed_status.dir_paths
+        managed_files = managed_status.file_paths
 
         # Switches: Red - Red (default)
         if not self.unmanaged_dirs and not self.unwanted:

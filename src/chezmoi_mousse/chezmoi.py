@@ -5,7 +5,7 @@ from datetime import datetime
 from enum import Enum
 from pathlib import Path
 from subprocess import run
-from typing import Literal, NamedTuple
+from typing import Literal
 
 from rich.markup import escape
 from textual.widgets import RichLog
@@ -319,28 +319,6 @@ class ReadCommand:
         return subprocess_run(long_command).splitlines()
 
 
-# named tuple nested in StatusPaths, to enable dot notation access
-class StatusDicts(NamedTuple):
-    dirs: StatusDict
-    files: StatusDict
-
-    @property
-    def dirs_without_status(self) -> list[Path]:
-        return [path for path, status in self.dirs.items() if status == "X"]
-
-    @property
-    def files_without_status(self) -> list[Path]:
-        return [path for path, status in self.files.items() if status == "X"]
-
-    @property
-    def dirs_with_status(self) -> list[Path]:
-        return [path for path, status in self.dirs.items() if status != "X"]
-
-    @property
-    def files_with_status(self) -> list[Path]:
-        return [path for path, status in self.files.items() if status != "X"]
-
-
 @dataclass
 class InputOutput:
 
@@ -391,97 +369,105 @@ class Chezmoi:
                 InputOutput(long_cmd.value, arg_id=long_cmd.name),
             )
 
-    @property
-    def managed_dir_paths(self) -> list[Path]:
-        return [Path(p) for p in self.managed_dirs.list_out]
+
+chezmoi = Chezmoi()
+
+
+class ManagedStatus:
+
+    def __init__(self, chezmoi: Chezmoi):
+        self.chezmoi = chezmoi
 
     @property
-    def managed_file_paths(self) -> list[Path]:
-        return [Path(p) for p in self.managed_files.list_out]
+    def dir_paths(self) -> list[Path]:
+        return [Path(p) for p in self.chezmoi.managed_dirs.list_out]
 
     @property
-    def managed_status(self) -> dict[str, StatusDicts]:
-        """Returns a dict with keys "Apply" and "ReAdd", each mapping to a
-        StatusDicts namedtuple containing a dirs and and files entry.
+    def file_paths(self) -> list[Path]:
+        return [Path(p) for p in self.chezmoi.managed_files.list_out]
 
-        These dicts maps output from chezmoi status as Path -> status_code.
-        """
+    def _create_status_dict(
+        self, tab_name: TabStr, kind: Literal["dirs", "files"]
+    ) -> StatusDict:
+        to_return: StatusDict = {}
+        status_idx: int = 0
+        status_codes: str = ""
+        if kind == "dirs":
+            managed_paths = self.dir_paths
+            status_lines = self.chezmoi.dir_status_lines.list_out
+        elif kind == "files":
+            managed_paths = self.file_paths
+            status_lines = self.chezmoi.file_status_lines.list_out
 
-        def create_status_dict(
-            tab_name: TabStr, kind: Literal["dirs", "files"]
-        ) -> StatusDict:
-            to_return: StatusDict = {}
-            status_idx: int = 0
-            status_codes: str = ""
-            if kind == "dirs":
-                managed_paths = self.managed_dir_paths
-                status_lines = self.dir_status_lines.list_out
-            elif kind == "files":
-                managed_paths = self.managed_file_paths
-                status_lines = self.file_status_lines.list_out
+        if tab_name == TabStr.apply_tab:
+            status_codes = "ADM"
+            status_idx = 1
+        elif tab_name == TabStr.re_add_tab:
+            status_codes = "M"
+            status_idx = 0
 
-            if tab_name == TabStr.apply_tab:
-                status_codes = "ADM"
-                status_idx = 1
-            elif tab_name == TabStr.re_add_tab:
-                status_codes = "M"
-                status_idx = 0
-
-            paths_with_status_dict = {
-                Path(line[3:]): line[status_idx]
-                for line in status_lines
-                if line[status_idx] in status_codes
-            }
-
-            for path in managed_paths:
-                if path in paths_with_status_dict:
-                    to_return[path] = paths_with_status_dict[path]
-                else:
-                    to_return[path] = "X"
-            return to_return
-
-        apply_dirs = create_status_dict(tab_name=TabStr.apply_tab, kind="dirs")
-        apply_files = create_status_dict(
-            tab_name=TabStr.apply_tab, kind="files"
-        )
-        re_add_dirs = create_status_dict(
-            tab_name=TabStr.re_add_tab, kind="dirs"
-        )
-        re_add_files = create_status_dict(
-            tab_name=TabStr.re_add_tab, kind="files"
-        )
-
-        return {
-            TabStr.apply_tab: StatusDicts(dirs=apply_dirs, files=apply_files),
-            TabStr.re_add_tab: StatusDicts(
-                dirs=re_add_dirs, files=re_add_files
-            ),
+        paths_with_status_dict = {
+            Path(line[3:]): line[status_idx]
+            for line in status_lines
+            if line[status_idx] in status_codes
         }
+
+        for path in managed_paths:
+            if path in paths_with_status_dict:
+                to_return[path] = paths_with_status_dict[path]
+            else:
+                to_return[path] = "X"
+        return to_return
+
+    @property
+    def apply_dirs(self) -> StatusDict:
+        return self._create_status_dict(TabStr.apply_tab, "dirs")
+
+    @property
+    def apply_files(self) -> StatusDict:
+        return self._create_status_dict(TabStr.apply_tab, "files")
+
+    @property
+    def re_add_dirs(self) -> StatusDict:
+        return self._create_status_dict(TabStr.re_add_tab, "dirs")
+
+    @property
+    def re_add_files(self) -> StatusDict:
+        return self._create_status_dict(TabStr.re_add_tab, "files")
 
     def managed_dirs_in(self, dir_path: Path) -> list[Path]:
         # checks only direct children
-
-        return [p for p in self.managed_dir_paths if p.parent == dir_path]
+        return [p for p in self.dir_paths if p.parent == dir_path]
 
     def files_with_status_in(
         self, tab_name: TabStr, dir_path: Path
     ) -> list[Path]:
-
+        if tab_name == TabStr.apply_tab:
+            files_dict = self.apply_files
+        elif tab_name == TabStr.re_add_tab:
+            files_dict = self.re_add_files
+        else:
+            raise ValueError(f"Unknown tab_name: {tab_name}")
         return [
             p
-            for p in self.managed_status[tab_name].files_with_status
-            if p.parent == dir_path
+            for p, status in files_dict.items()
+            if status != "X" and p.parent == dir_path
         ]
 
     def files_without_status_in(
         self, tab_name: TabStr, dir_path: Path
     ) -> list[Path]:
-
+        if tab_name == TabStr.apply_tab:
+            files_dict = self.apply_files
+        elif tab_name == TabStr.re_add_tab:
+            files_dict = self.re_add_files
+        else:
+            raise ValueError(f"Unknown tab_name: {tab_name}")
         return [
             p
-            for p in self.managed_status[tab_name].files_without_status
-            if p.parent == dir_path
+            for p, status in files_dict.items()
+            if status == "X" and p.parent == dir_path
         ]
 
 
-chezmoi = Chezmoi()
+managed_status = ManagedStatus(chezmoi)
