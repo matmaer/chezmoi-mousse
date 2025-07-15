@@ -65,12 +65,3 @@ repos:
         minimum_pre_commit_version: 2.9.2
         require_serial: true
         types_or: [python, pyi]
-
-  - repo: local
-    hooks:
-      - id: pytest
-        name: Run pytest
-        entry: uv run pytest
-        language: system
-        files: ^(src/.*\.py|tests/.*\.py)$
-        pass_filenames: false
