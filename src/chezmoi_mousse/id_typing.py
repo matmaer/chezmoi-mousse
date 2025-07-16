@@ -42,17 +42,16 @@ class OperateVerbs(Enum):
 
 
 class CharsEnum(Enum):
-    add = f"chezmoi add local {'\N{EM DASH}' * 3}\N{RIGHTWARDS ARROW} chezmoi"
-    apply = f"local \N{LEFTWARDS ARROW}{'\N{EM DASH}' * 3} chezmoi apply"
-    bullet = "\N{BULLET}"
-    burger = "\N{IDENTICAL TO}"
-    check_mark = "\N{HEAVY CHECK MARK}"
-    x_mark = "\N{HEAVY MULTIPLICATION X}"
-    # gear = "\N{GEAR}"
-    re_add = (
-        f"chezmoi re-add local {'\N{EM DASH}' * 3}\N{RIGHTWARDS ARROW} chezmoi"
-    )
-    warning_sign = "\N{WARNING SIGN}"
+    add = f"chezmoi add local {'\u2014' * 3}\u2192 chezmoi"  # '\N{EM DASH}', '\N{RIGHTWARDS ARROW}'
+    apply = f"local \u2190{'\u2014' * 3} chezmoi apply"  # '\N{LEFTWARDS ARROW}', '\N{EM DASH}'
+    bullet = "\u2022"  # '\N{BULLET}'
+    burger = "\u2261"  # '\N{IDENTICAL TO}'
+    check_mark = "\u2714"  # '\N{HEAVY CHECK MARK}'
+    x_mark = "\u2716"  # '\N{HEAVY MULTIPLICATION X}'
+    # gear = "\u2699"  # '\N{GEAR}'
+    re_add = f"chezmoi re-add local {'\u2014' * 3}\u2192 chezmoi"  # '\N{EM DASH}', '\N{RIGHTWARDS ARROW}'
+    warning_sign = "\u26a0"  # '\N{WARNING SIGN}'
+    lower_three_quarters_block = "\u2583"  # '\N{LOWER THREE QUARTERS BLOCK}'
 
 
 class ButtonEnum(Enum):

@@ -10,13 +10,13 @@ from textual.scrollbar import ScrollBarRender
 from textual.widgets import Tree
 from textual.widgets.tree import TreeNode
 
-from chezmoi_mousse.id_typing import NodeData
+from chezmoi_mousse.id_typing import CharsEnum, NodeData
 
 
 class CustomScrollBarRender(ScrollBarRender):
     """Used to monkey path the textual ScrollBar.renderer method in gui.py."""
 
-    SLIM_HORIZONTAL_BAR = "▃"
+    SLIM_HORIZONTAL_BAR = CharsEnum.lower_three_quarters_block.value
 
     @classmethod
     def render_bar(
