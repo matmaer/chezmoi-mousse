@@ -76,7 +76,7 @@ def create_deque() -> deque[Style]:
 
 
 LINE_STYLES = create_deque()
-LINE_STYLES.rotate(-2)
+LINE_STYLES.rotate(-3)
 SPLASH_HEIGHT = len(SPLASH)
 SPLASH_WIDTH = len(max(SPLASH, key=len))
 
