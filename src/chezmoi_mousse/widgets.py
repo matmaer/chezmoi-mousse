@@ -427,16 +427,16 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
         )
 
     def dir_has_status_dirs(self, tab_name: TabStr, dir_path: Path) -> bool:
+        assert dir_path != CM_CFG.destDir
         # checks for any, direct children or no matter how deep in subdirs
         dirs_dict: dict[Path, str] = {}
         if tab_name == TabStr.apply_tab:
             dirs_dict = managed_status.apply_dirs
         elif tab_name == TabStr.re_add_tab:
             dirs_dict = managed_status.re_add_dirs
-        if dir_path.parent == CM_CFG.destDir and dir_path in dirs_dict:
-            # the parent is dest_dir, also return True because dest_dir is
-            # not present in the self.managed_status dict
+        if dir_path in dirs_dict and dirs_dict[dir_path] != "X":
             return True
+
         return any(
             f
             for f, status in dirs_dict.items()
