@@ -130,7 +130,7 @@
 
 /* ModalScreen class */
 .operate_container {
-  padding: 0 1 0 1;
+  padding: 0 2 0 2;
   height: auto;
   border: thick $panel;
   .operate_auto_warning {
