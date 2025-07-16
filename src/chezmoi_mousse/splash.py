@@ -196,11 +196,11 @@ class LoadingScreen(Screen[list[str]]):
 
     def on_mount(self) -> None:
         animated_fade = self.query_exactly_one(AnimatedFade)
-        self.fade_timer = self.set_interval(
-            interval=0.05, callback=animated_fade.refresh
-        )
         self.all_workers_timer = self.set_interval(
             interval=1, callback=self.all_workers_finished
+        )
+        self.fade_timer = self.set_interval(
+            interval=0.05, callback=animated_fade.refresh
         )
 
         # first run chezmoi doctor, most expensive command
