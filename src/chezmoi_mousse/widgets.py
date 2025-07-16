@@ -608,8 +608,14 @@ class ManagedTree(TreeBase, IdMixin):
         for node in self.get_expanded_nodes():
             if self.unchanged:
                 self.add_unchanged_leaves(tree_node=node)
+                self.add_dir_nodes(
+                    tree_node=node, show_unchanged=self.unchanged
+                )
             if not self.unchanged:
                 self.remove_unchanged_leaves(tree_node=node)
+                self.remove_unchanged_dir_nodes(
+                    tree_node=node, show_unchanged=self.unchanged
+                )
 
 
 class ExpandedTree(TreeBase, IdMixin):
