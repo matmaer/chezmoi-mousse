@@ -86,7 +86,7 @@ LONG_COMMANDS = chezmoi.long_commands
 RICH_LOG = RichLog(id=SplashIdStr.splash_rich_log_id)
 RICH_LOG.styles.height = len(LONG_COMMANDS) + 2
 RICH_LOG.styles.width = LOG_PADDING_WIDTH + 9
-RICH_LOG.styles.color = "#0053AA"
+RICH_LOG.styles.color = "#0057B3"
 RICH_LOG.styles.margin = 0
 RICH_LOG.styles.padding = 0
 
