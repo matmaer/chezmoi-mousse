@@ -413,7 +413,7 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
 
     # node visibility methods
     def dir_has_status_files(self, tab_name: TabStr, dir_path: Path) -> bool:
-        # checks for any, no matter how deep in subdirectories
+        # checks for any, direct children or no matter how deep in subdirs
         files_dict: dict[Path, str] = {}
         if tab_name == TabStr.apply_tab:
             files_dict = managed_status.apply_files
@@ -427,7 +427,7 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
         )
 
     def dir_has_status_dirs(self, tab_name: TabStr, dir_path: Path) -> bool:
-        # checks for any, no matter how deep in subdirectories
+        # checks for any, direct children or no matter how deep in subdirs
         dirs_dict: dict[Path, str] = {}
         if tab_name == TabStr.apply_tab:
             dirs_dict = managed_status.apply_dirs
@@ -444,7 +444,7 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
         )
 
     def should_show_dir_node(
-        self, *, dir_path: Path, show_unchanged: bool
+        self, *, dir_path: Path, show_unchanged: bool = False
     ) -> bool:
         if show_unchanged:
             return True
@@ -519,7 +519,7 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
             tree_node.add_leaf(label=node_label, data=node_data)
 
     def add_dir_nodes(
-        self, *, tree_node: TreeNode[NodeData], show_unchanged: bool
+        self, *, tree_node: TreeNode[NodeData], show_unchanged: bool = False
     ) -> None:
         assert isinstance(tree_node.data, DirNodeData)
 
@@ -545,7 +545,7 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
                 tree_node.add(label=node_label, data=node_data)
 
     def remove_unchanged_dir_nodes(
-        self, *, tree_node: TreeNode[NodeData], show_unchanged: bool
+        self, *, tree_node: TreeNode[NodeData], show_unchanged: bool = False
     ) -> None:
         assert isinstance(tree_node.data, DirNodeData)
         dir_nodes: list[TreeNode[NodeData]] = [
