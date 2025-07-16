@@ -657,8 +657,14 @@ class ExpandedTree(TreeBase, IdMixin):
         for tree_node in expanded_nodes:
             if self.unchanged:
                 self.add_unchanged_leaves(tree_node=tree_node)
+                self.add_dir_nodes(
+                    tree_node=tree_node, show_unchanged=self.unchanged
+                )
             if not self.unchanged:
                 self.remove_unchanged_leaves(tree_node=tree_node)
+                self.remove_unchanged_dir_nodes(
+                    tree_node=tree_node, show_unchanged=self.unchanged
+                )
 
 
 class FlatTree(TreeBase, IdMixin):
