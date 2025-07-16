@@ -442,12 +442,11 @@ class ManagedStatus:
     def files_with_status_in(
         self, tab_name: TabStr, dir_path: Path
     ) -> list[Path]:
+        files_dict: StatusDict = {}
         if tab_name == TabStr.apply_tab:
             files_dict = self.apply_files
         elif tab_name == TabStr.re_add_tab:
             files_dict = self.re_add_files
-        else:
-            raise ValueError(f"Unknown tab_name: {tab_name}")
         return [
             p
             for p, status in files_dict.items()
@@ -457,12 +456,11 @@ class ManagedStatus:
     def files_without_status_in(
         self, tab_name: TabStr, dir_path: Path
     ) -> list[Path]:
+        files_dict: StatusDict = {}
         if tab_name == TabStr.apply_tab:
             files_dict = self.apply_files
         elif tab_name == TabStr.re_add_tab:
             files_dict = self.re_add_files
-        else:
-            raise ValueError(f"Unknown tab_name: {tab_name}")
         return [
             p
             for p, status in files_dict.items()
