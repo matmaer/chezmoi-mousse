@@ -61,13 +61,6 @@ class ButtonEnum(Enum):
     git_log_btn = "Git-Log"
     list_btn = "List"
     tree_btn = "Tree"
-    # general operational buttons, does not include add as we're immediately
-    # rendering add_file_btn or add_dir_btn because forget and destroy
-    # operations are not relevant
-    # chezmoi_apply_btn = "Chezmoi Apply"
-    # chezmoi_destroy_btn = "Chezmoi Destroy"
-    # chezmoi_forget_btn = "Chezmoi Forget"
-    # chezmoi_re_add_btn = "Chezmoi Re-Add"
     # operational buttons in Operate modal screen
     add_dir_btn = "Add Dir"
     add_file_btn = "Add File"
