@@ -16,7 +16,7 @@ from chezmoi_mousse.id_typing import CharsEnum, NodeData
 class CustomScrollBarRender(ScrollBarRender):
     """Used to monkey path the textual ScrollBar.renderer method in gui.py."""
 
-    SLIM_HORIZONTAL_BAR = CharsEnum.lower_three_quarters_block.value
+    SLIM_HORIZONTAL_BAR = CharsEnum.lower_three_eighths_block.value
 
     @classmethod
     def render_bar(

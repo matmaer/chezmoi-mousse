@@ -51,7 +51,7 @@ class CharsEnum(Enum):
     # gear = "\u2699"  # '\N{GEAR}'
     re_add = f"chezmoi re-add local {'\u2014' * 3}\u2192 chezmoi"  # '\N{EM DASH}', '\N{RIGHTWARDS ARROW}'
     warning_sign = "\u26a0"  # '\N{WARNING SIGN}'
-    lower_three_quarters_block = "\u2583"  # '\N{LOWER THREE QUARTERS BLOCK}'
+    lower_three_eighths_block = "\N{LOWER THREE EIGHTHS BLOCK}"  # "\u2583"
 
 
 class ButtonEnum(Enum):
