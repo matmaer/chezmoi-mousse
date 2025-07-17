@@ -231,7 +231,7 @@ class ChezmoiGUI(App[None]):
 
         if id_mixin.tab_name in (TabStr.apply_tab, TabStr.re_add_tab):
             # Determine what view to show in the modal
-            id_to_maximize: str | None = self.query_one(
+            id_to_maximize = self.query_one(
                 id_mixin.content_switcher_qid(Location.right), ContentSwitcher
             ).current
             active_widget = self.query_one(f"#{id_to_maximize}")

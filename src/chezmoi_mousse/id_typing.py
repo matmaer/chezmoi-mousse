@@ -42,14 +42,14 @@ class OperateVerbs(Enum):
 
 
 class CharsEnum(Enum):
-    add = f"chezmoi add local {'\u2014' * 3}\u2192 chezmoi"  # '\N{EM DASH}', '\N{RIGHTWARDS ARROW}'
-    apply = f"local \u2190{'\u2014' * 3} chezmoi apply"  # '\N{LEFTWARDS ARROW}', '\N{EM DASH}'
+    add = f"local{'\u2014' * 3}\u2192 chezmoi"  # '\N{EM DASH}', '\N{RIGHTWARDS ARROW}'
+    apply = f"local \u2190{'\u2014' * 3} chezmoi"  # '\N{LEFTWARDS ARROW}', '\N{EM DASH}'
     bullet = "\u2022"  # '\N{BULLET}'
     burger = "\u2261"  # '\N{IDENTICAL TO}'
     check_mark = "\u2714"  # '\N{HEAVY CHECK MARK}'
     x_mark = "\u2716"  # '\N{HEAVY MULTIPLICATION X}'
     # gear = "\u2699"  # '\N{GEAR}'
-    re_add = f"chezmoi re-add local {'\u2014' * 3}\u2192 chezmoi"  # '\N{EM DASH}', '\N{RIGHTWARDS ARROW}'
+    re_add = f"local {'\u2014' * 3}\u2192 chezmoi"  # '\N{EM DASH}', '\N{RIGHTWARDS ARROW}'
     warning_sign = "\u26a0"  # '\N{WARNING SIGN}'
     lower_3_8ths_block = "\u2583"  # "\N{LOWER THREE EIGHTHS BLOCK}"
 
