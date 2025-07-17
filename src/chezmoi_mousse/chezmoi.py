@@ -285,6 +285,10 @@ class ReadCommand:
         long_command = ReadCmd.diff.value + (str(file_path),)
         return subprocess_run(long_command).splitlines()
 
+    def add_diff(self, file_path: Path) -> list[str]:
+        long_command = ReadCmd.diff.value + (str(file_path),)
+        return subprocess_run(long_command).splitlines()
+
     def cat(self, file_path: Path) -> list[str]:
         return subprocess_run(
             ReadCmd.cat.value + (str(file_path),)
