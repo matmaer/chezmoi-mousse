@@ -17,20 +17,17 @@ type ParsedJson = dict[str, Any]
 type StatusDict = dict[Path, str]
 
 
-class IoVerbsStr(StrEnum):
-    doctor = auto()
-    managed = auto()
-    status = auto()
-
-
 class ReadVerbs(Enum):
     cat = "cat"
-    data = "data"
     cat_config = "cat-config"
+    data = "data"
     diff = "diff"
+    doctor = "doctor"
     git = "git"
     ignored = "ignored"
+    managed = "managed"
     source_path = "source-path"
+    status = "status"
 
 
 class OperateVerbs(Enum):

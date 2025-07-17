@@ -15,7 +15,6 @@ from chezmoi_mousse.id_typing import (
     ButtonEnum,
     CharsEnum,
     CmdWords,
-    IoVerbsStr,
     ModalIdStr,
     OperateVerbs,
     ParsedJson,
@@ -39,15 +38,15 @@ class OperateData:
 class AllCommands(Enum):
     cat = BASE_CMD + (ReadVerbs.cat.value,)
     cat_config = BASE_CMD + (ReadVerbs.cat_config.value,)
-    doctor = BASE_CMD + (IoVerbsStr.doctor.value,)
+    doctor = BASE_CMD + (ReadVerbs.doctor.value,)
     diff = BASE_CMD + (ReadVerbs.diff.value,)
     dir_status_lines = BASE_CMD + (
-        IoVerbsStr.status.value,
+        ReadVerbs.status.value,
         "--path-style=absolute",
         "--include=dirs",
     )
     file_status_lines = BASE_CMD + (
-        IoVerbsStr.status.value,
+        ReadVerbs.status.value,
         "--path-style=absolute",
         "--include=files",
     )
@@ -65,12 +64,12 @@ class AllCommands(Enum):
     )
     ignored = BASE_CMD + (ReadVerbs.ignored.value,)
     managed_dirs = BASE_CMD + (
-        IoVerbsStr.managed.value,
+        ReadVerbs.managed.value,
         "--path-style=absolute",
         "--include=dirs",
     )
     managed_files = BASE_CMD + (
-        IoVerbsStr.managed.value,
+        ReadVerbs.managed.value,
         "--path-style=absolute",
         "--include=files",
     )
@@ -205,7 +204,7 @@ def subprocess_run(long_command: CmdWords, time_out: float = 1) -> str:
                 op_log.log_dimmed(cmd_stdout)
                 cmd_log.log_dimmed(cmd_stdout)
             return cmd_stdout
-        if any(verb.value in long_command for verb in IoVerbsStr):
+        if any(verb.value in long_command for verb in ReadVerbs):
             cmd_log.log_warning(
                 "Subprocess call successful: InputOutput data updated"
             )
