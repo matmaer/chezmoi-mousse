@@ -93,11 +93,6 @@ class PaneEnum(Enum):
     re_add = TabStr.re_add_tab
 
 
-class ScreenStr(StrEnum):
-    maximized_modal = auto()
-    operate_modal = auto()
-
-
 class ViewStr(StrEnum):
     diff_view = auto()
     git_log_view = auto()
@@ -140,14 +135,13 @@ class TcssStr(StrEnum):
     filter_horizontal_pad_bottom = auto()
     flow_diagram = auto()
     last_clicked = auto()
-    modal_view = auto()
+    modal_base = auto()
     operate_auto_warning = auto()
     operate_button = auto()
     operate_collapsible = auto()
-    operate_container = auto()
+    modal_container = auto()
     op_log = auto()
     operate_top_path = auto()
-    operate_diff = auto()
     single_button_vertical = auto()
     tab_button = auto()
     tab_buttons_horizontal = auto()
@@ -157,9 +151,17 @@ class TcssStr(StrEnum):
     tree_widget = auto()
 
 
-class OperateIdStr(StrEnum):
+class ModalIdStr(StrEnum):
+    maximized_modal = auto()
+    maximized_vertical = auto()
+    modal_contents_view = auto()
+    modal_diff_view = auto()
+    modal_git_log_view = auto()
+    operate_auto_warning = auto()
     operate_collapsible = auto()
+    operate_info = auto()
     operate_log = auto()
+    operate_modal = auto()
     operate_vertical = auto()
 
     @property
@@ -233,12 +235,8 @@ class IdMixin:
     def tree_qid(self, tree: TreeStr) -> str:
         return f"#{self.tree_id(tree)}"
 
-    def view_id(self, view: ViewStr, operate: bool = False) -> str:
-        if operate is True:
-            return f"{self.tab_name}_{view}"
+    def view_id(self, view: ViewStr) -> str:
         return f"{self.tab_name}_{view}"
 
-    def view_qid(self, view: ViewStr, operate: bool = False) -> str:
-        if operate is True:
-            return f"#{self.view_id(view)}"
+    def view_qid(self, view: ViewStr) -> str:
         return f"#{self.view_id(view)}"

@@ -15,9 +15,8 @@ from chezmoi_mousse.id_typing import (
     CharsEnum,
     IdMixin,
     Location,
-    OperateIdStr,
+    ModalIdStr,
     OperateVerbs,
-    ScreenStr,
     TabStr,
     TcssStr,
     ViewStr,
@@ -48,38 +47,39 @@ class Operate(ModalScreen[None], IdMixin):
         IdMixin.__init__(self, tab_name)
         self.path = path
         self.buttons: tuple[ButtonEnum, ...] = buttons
-        self.diff_id = self.view_id(ViewStr.diff_view, operate=True)
-        self.diff_qid = self.view_qid(ViewStr.diff_view, operate=True)
-        self.contents_id = self.view_id(ViewStr.contents_view, operate=True)
-        self.contents_qid = self.view_qid(ViewStr.contents_view, operate=True)
         self.operate_dismiss_data: OperateData = OperateData(
             path=self.path, operation_executed=False, tab_name=self.tab_name
         )
-        super().__init__(id=ScreenStr.operate_modal)
+        super().__init__(
+            id=ModalIdStr.operate_modal, classes=TcssStr.modal_base
+        )
 
     def compose(self) -> ComposeResult:
         with Vertical(
-            id=OperateIdStr.operate_vertical, classes=TcssStr.operate_container
+            id=ModalIdStr.operate_vertical, classes=TcssStr.modal_container
         ):
             yield AutoWarning(self.tab_name)
             yield OperateInfo(self.tab_name, self.path)
             if self.tab_name == TabStr.add_tab:
                 with Container(
-                    id=OperateIdStr.operate_collapsible,
+                    id=ModalIdStr.operate_collapsible,
                     classes=TcssStr.collapsible_container,
                 ):
                     yield Collapsible(
-                        ContentsView(view_id=self.contents_id),
+                        ContentsView(view_id=ModalIdStr.modal_contents_view),
                         classes=TcssStr.operate_collapsible,
                         title="file contents view",
                     )
             else:
                 with Container(
-                    id=OperateIdStr.operate_collapsible,
+                    id=ModalIdStr.operate_collapsible,
                     classes=TcssStr.collapsible_container,
                 ):
                     yield Collapsible(
-                        DiffView(tab_name=self.tab_name, view_id=self.diff_id),
+                        DiffView(
+                            tab_name=self.tab_name,
+                            view_id=ModalIdStr.modal_diff_view,
+                        ),
                         classes=TcssStr.operate_collapsible,
                         title="file diffs view",
                     )
@@ -94,22 +94,23 @@ class Operate(ModalScreen[None], IdMixin):
             TabStr.re_add_tab: str(ButtonEnum.re_add_file_btn.value).lower(),
             TabStr.add_tab: str(ButtonEnum.add_file_btn.value).lower(),
         }
-        self.query_exactly_one(AutoWarning).add_class(
-            TcssStr.operate_auto_warning
-        )
-        self.query_exactly_one(OperateInfo).add_class(TcssStr.operate_top_path)
-        if self.tab_name in (TabStr.apply_tab, TabStr.re_add_tab):
-            self.query_exactly_one(DiffView).add_class(TcssStr.operate_diff)
-
+        if (
+            self.tab_name == TabStr.apply_tab
+            or self.tab_name == TabStr.re_add_tab
+        ):
+            # Set path for the modal diff view
+            self.query_one(ModalIdStr.modal_diff_view.qid, DiffView).path = (
+                self.path
+            )
+        elif self.tab_name == TabStr.add_tab:
+            # Set path for the modal contents view
+            self.query_one(
+                ModalIdStr.modal_contents_view.qid, ContentsView
+            ).path = self.path
         # Add initial log entry
-        self.query_one(OperateIdStr.operate_log.qid, RichLog).border_title = (
+        self.query_one(ModalIdStr.operate_log.qid, RichLog).border_title = (
             f"{log_border_titles[self.tab_name]} log"
         )
-        # Set path for either diff or contents view in the Operate screen
-        if self.tab_name == TabStr.add_tab:
-            self.query_one(self.contents_qid, ContentsView).path = self.path
-        elif self.tab_name in (TabStr.apply_tab, TabStr.re_add_tab):
-            self.query_one(self.diff_qid, DiffView).path = self.path
         self.write_initial_log_msg()
 
     def write_initial_log_msg(self) -> None:
@@ -184,28 +185,38 @@ class Maximized(ModalScreen[None], IdMixin):
         IdMixin.__init__(self, tab_name)
         self.id_to_maximize = id_to_maximize
         self.path = path
-        self.modal_view_id = "modal_view"
-        self.modal_view_qid = f"#{self.modal_view_id}"
-        super().__init__(id=ScreenStr.maximized_modal)
+        super().__init__(
+            id=ModalIdStr.maximized_modal.name, classes=TcssStr.modal_base
+        )
 
     def compose(self) -> ComposeResult:
-        if self.id_to_maximize == self.view_id(ViewStr.contents_view):
-            yield ContentsView(view_id=self.modal_view_id)
-        elif self.id_to_maximize == self.view_id(ViewStr.diff_view):
-            yield DiffView(tab_name=self.tab_name, view_id=self.modal_view_id)
-        elif self.id_to_maximize == self.view_id(ViewStr.git_log_view):
-            yield GitLogView(view_id=self.modal_view_id)
+        with Vertical(
+            id=ModalIdStr.maximized_vertical, classes=TcssStr.modal_container
+        ):
+            if self.id_to_maximize == self.view_id(ViewStr.contents_view):
+                yield ContentsView(view_id=ModalIdStr.modal_contents_view)
+            elif self.id_to_maximize == self.view_id(ViewStr.diff_view):
+                yield DiffView(
+                    tab_name=self.tab_name, view_id=ModalIdStr.modal_diff_view
+                )
+            elif self.id_to_maximize == self.view_id(ViewStr.git_log_view):
+                yield GitLogView(view_id=ModalIdStr.modal_git_log_view)
 
     def on_mount(self) -> None:
-        self.add_class(TcssStr.modal_view)
         self.border_subtitle = " double click or escape key to close "
 
         if self.id_to_maximize == self.view_id(ViewStr.contents_view):
-            self.query_one(self.modal_view_qid, ContentsView).path = self.path
+            self.query_one(
+                ModalIdStr.modal_contents_view.qid, ContentsView
+            ).path = self.path
         elif self.id_to_maximize == self.view_id(ViewStr.diff_view):
-            self.query_one(self.modal_view_qid, DiffView).path = self.path
+            self.query_one(ModalIdStr.modal_diff_view.qid, DiffView).path = (
+                self.path
+            )
         elif self.id_to_maximize == self.view_id(ViewStr.git_log_view):
-            self.query_one(self.modal_view_qid, GitLogView).path = self.path
+            self.query_one(
+                ModalIdStr.modal_git_log_view.qid, GitLogView
+            ).path = self.path
 
         if self.path == CM_CFG.destDir or self.path is None:
             self.border_title_text = f" {CM_CFG.destDir} "

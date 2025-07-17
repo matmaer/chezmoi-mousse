@@ -28,6 +28,7 @@ from chezmoi_mousse.config import unwanted_names
 from chezmoi_mousse.id_typing import (
     CharsEnum,
     IdMixin,
+    ModalIdStr,
     NodeData,
     TabStr,
     TcssStr,
@@ -41,7 +42,10 @@ class AutoWarning(Static):
     sign: str = CharsEnum.warning_sign.value
 
     def __init__(self, tab_name: TabStr) -> None:
-        super().__init__()
+        super().__init__(
+            id=ModalIdStr.operate_auto_warning,
+            classes=TcssStr.operate_auto_warning,
+        )
         self.tab_name = tab_name
 
     def on_mount(self) -> None:
@@ -76,7 +80,9 @@ class OperateInfo(Static):
     bullet = CharsEnum.bullet.value
 
     def __init__(self, tab_name: TabStr, path: Path) -> None:
-        super().__init__()
+        super().__init__(
+            id=ModalIdStr.operate_info, classes=TcssStr.operate_top_path
+        )
 
         self.tab_name = tab_name
         self.path = path
@@ -111,7 +117,6 @@ class ContentsView(RichLog):
     path: reactive[Path | None] = reactive(None)
 
     def __init__(self, *, view_id: str) -> None:
-        self.view_id = view_id
         super().__init__(
             id=view_id, auto_scroll=False, wrap=True, highlight=True
         )
@@ -190,6 +195,8 @@ class DiffView(RichLog):
     def __init__(self, *, tab_name: TabStr, view_id: str) -> None:
         self.tab_name = tab_name
         super().__init__(id=view_id, auto_scroll=False, wrap=False)
+        self.status_dirs: dict[Path, str] = {}
+        self.status_files: dict[Path, str] = {}
 
     def on_mount(self) -> None:
         self.path = CM_CFG.destDir
@@ -202,15 +209,14 @@ class DiffView(RichLog):
 
         diff_output: list[str] = []
         if self.tab_name == TabStr.apply_tab:
-            status_files = managed_status.apply_files
-            status_dirs = managed_status.apply_dirs
+            self.status_files = managed_status.apply_files
+            self.status_dirs = managed_status.apply_dirs
         elif self.tab_name == TabStr.re_add_tab:
-            status_files = managed_status.re_add_files
-            status_dirs = managed_status.re_add_dirs
-        else:
-            raise ValueError(f"Wrong tab_name passed: {self.tab_name}")
+            self.status_files = managed_status.re_add_files
+            self.status_dirs = managed_status.re_add_dirs
+
         # create a diff view if the current path is a directory
-        if self.path in status_dirs or self.path == CM_CFG.destDir:
+        if self.path in self.status_dirs or self.path == CM_CFG.destDir:
             status_files_in_dir = managed_status.files_with_status_in(
                 self.tab_name, self.path
             )
@@ -234,7 +240,7 @@ class DiffView(RichLog):
                 return
             return
         # create a diff view if the current selected path is an unchanged file
-        elif self.path not in status_files:
+        elif self.path not in self.status_files:
             self.write(
                 Text(
                     f"No diff available for {self.path},\n file is unchanged.",

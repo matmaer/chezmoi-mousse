@@ -129,10 +129,15 @@
 }
 
 /* ModalScreen class */
-.operate_container {
+.modal_base {
+  align: center middle;
+  content-align: center middle;
   padding: 0 2 0 2;
   height: auto;
-  border: thick $panel;
+  width: auto;
+  border: $accent-darken-3;
+  border-title-style: bold;
+  border-subtitle-style: bold;
   .operate_auto_warning {
     text-align: center;
   }
@@ -140,19 +145,10 @@
     height: auto;
     border-title-align: center;
     border-subtitle-style: bold;
-    margin: 1 0 1 0;
     border-subtitle-align: center;
+    margin: 1 0 1 0;
     text-align: center;
     border: round $foreground;
-  }
-  &>.collapsible_container{
-    height: auto;
-    padding: 0;
-    &>.operate_collapsible {
-      .operate_diff {
-        height: auto;
-      }
-    }
   }
   &>.op_log {
     border-top: $foreground;
@@ -168,19 +164,6 @@ MainScreen {
   layers: filter_switches;
 }
 
-/* ModalScreen class */
-Maximized {
-  border-title-align: center;
-  border-title-style: bold;
-  &.modal_view {
-    height: auto;
-    border-subtitle-style: bold;
-    border-subtitle-align: center;
-    border-top: tab $foreground-darken-3;
-    border-bottom: tab $foreground-darken-3;
-    margin-bottom: 1;
-  }
-}
 
 /******************************************************************/
 /* App default TCSS which are different than the textual defaults */
@@ -221,6 +204,10 @@ CheckBox {
   &:hover>.toggle--button {
     text-style: bold;
   }
+}
+
+Collapsible {
+  margin-bottom: 1;
 }
 
 CollapsibleTitle {
@@ -351,8 +338,6 @@ Toast.-error {
 Toast.-error .toast--title {
     color: $text-error;
 }
-
-
 
 Tree {
   &>.tree--highlight-line {

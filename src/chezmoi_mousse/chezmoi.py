@@ -16,7 +16,7 @@ from chezmoi_mousse.id_typing import (
     CharsEnum,
     CmdWords,
     InputOutputVerbs,
-    OperateIdStr,
+    ModalIdStr,
     OperateVerbs,
     ParsedJson,
     ReadVerbs,
@@ -172,7 +172,7 @@ class CommandLog(RichLog):
 
 
 cmd_log = CommandLog(id=TabStr.log_tab)
-op_log = CommandLog(id=OperateIdStr.operate_log)
+op_log = CommandLog(id=ModalIdStr.operate_log)
 op_log.add_class(TcssStr.op_log)
 
 
