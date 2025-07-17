@@ -12,7 +12,7 @@ from chezmoi_mousse.chezmoi import OperateData, chezmoi, cmd_log, op_log
 from chezmoi_mousse.containers import ButtonsHorizontal
 from chezmoi_mousse.id_typing import (
     ButtonEnum,
-    CharsEnum,
+    Chars,
     IdMixin,
     Location,
     ModalIdStr,
@@ -39,7 +39,7 @@ class Operate(ModalScreen[None], IdMixin):
         )
     ]
 
-    check_mark = CharsEnum.check_mark.value
+    check_mark = Chars.check_mark.value
 
     def __init__(
         self, tab_name: TabStr, *, path: Path, buttons: tuple[ButtonEnum, ...]

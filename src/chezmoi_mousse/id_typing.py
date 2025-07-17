@@ -38,7 +38,7 @@ class OperateVerbs(Enum):
     re_add = "re-add"
 
 
-class CharsEnum(Enum):
+class Chars(Enum):
     add = f"local{'\u2014' * 3}\u2192 chezmoi"  # '\N{EM DASH}', '\N{RIGHTWARDS ARROW}'
     apply = f"local \u2190{'\u2014' * 3} chezmoi"  # '\N{LEFTWARDS ARROW}', '\N{EM DASH}'
     bullet = "\u2022"  # '\N{BULLET}'
@@ -81,7 +81,7 @@ class TabStr(StrEnum):
     log_tab = auto()
 
 
-class PaneEnum(Enum):
+class Panes(Enum):
     add = TabStr.add_tab
     apply = TabStr.apply_tab
     doctor = TabStr.doctor_tab

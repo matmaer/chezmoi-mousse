@@ -13,7 +13,7 @@ from textual.widgets import RichLog
 from chezmoi_mousse import BASE_CMD, CM_CFG, theme
 from chezmoi_mousse.id_typing import (
     ButtonEnum,
-    CharsEnum,
+    Chars,
     CmdWords,
     ModalIdStr,
     OperateVerbs,
@@ -176,8 +176,8 @@ op_log.add_class(TcssStr.op_log)
 
 
 def subprocess_run(long_command: CmdWords, time_out: float = 1) -> str:
-    check_mark = CharsEnum.check_mark.value
-    x_mark = CharsEnum.x_mark.value
+    check_mark = Chars.check_mark.value
+    x_mark = Chars.x_mark.value
 
     try:
         cmd_stdout: str = run(

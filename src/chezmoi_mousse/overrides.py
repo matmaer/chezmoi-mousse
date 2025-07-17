@@ -10,7 +10,7 @@ from textual.scrollbar import ScrollBarRender
 from textual.widgets import Tree
 from textual.widgets.tree import TreeNode
 
-from chezmoi_mousse.id_typing import CharsEnum, NodeData
+from chezmoi_mousse.id_typing import Chars, NodeData
 
 
 class CustomScrollBarRender(ScrollBarRender):
@@ -122,7 +122,7 @@ class CustomScrollBarRender(ScrollBarRender):
                 ] * int(size)
                 for i in range(start_index, end_index):
                     segments[i] = _Segment(
-                        CharsEnum.lower_3_8ths_block.value * width_thickness,
+                        Chars.lower_3_8ths_block.value * width_thickness,
                         _Style(bgcolor=back, color=bar, meta=foreground_meta),
                     )
         else:

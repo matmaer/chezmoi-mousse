@@ -26,7 +26,7 @@ from chezmoi_mousse import CM_CFG, theme
 from chezmoi_mousse.chezmoi import chezmoi, cmd_log, managed_status
 from chezmoi_mousse.config import unwanted_names
 from chezmoi_mousse.id_typing import (
-    CharsEnum,
+    Chars,
     IdMixin,
     ModalIdStr,
     NodeData,
@@ -39,7 +39,7 @@ from chezmoi_mousse.overrides import CustomRenderLabel
 
 class AutoWarning(Static):
 
-    sign: str = CharsEnum.warning_sign.value
+    sign: str = Chars.warning_sign.value
 
     def __init__(self, tab_name: TabStr) -> None:
         super().__init__(
@@ -77,7 +77,7 @@ class AutoWarning(Static):
 
 class OperateInfo(Static):
 
-    bullet = CharsEnum.bullet.value
+    bullet = Chars.bullet.value
 
     def __init__(self, tab_name: TabStr, path: Path) -> None:
         super().__init__(
@@ -87,9 +87,9 @@ class OperateInfo(Static):
         self.tab_name = tab_name
         self.path = path
         self.info_border_titles = {
-            TabStr.apply_tab: CharsEnum.apply.value,
-            TabStr.re_add_tab: CharsEnum.re_add.value,
-            TabStr.add_tab: CharsEnum.add.value,
+            TabStr.apply_tab: Chars.apply.value,
+            TabStr.re_add_tab: Chars.re_add.value,
+            TabStr.add_tab: Chars.add.value,
         }
 
     def on_mount(self) -> None:
@@ -271,7 +271,7 @@ class DiffView(RichLog):
             elif line.startswith("+"):
                 self.write(Text(line, theme.vars["text-success"]))
             else:
-                self.write(Text(CharsEnum.bullet.value + line, style="dim"))
+                self.write(Text(Chars.bullet.value + line, style="dim"))
 
 
 class GitLogView(DataTable[Text]):
