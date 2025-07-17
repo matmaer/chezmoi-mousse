@@ -20,7 +20,7 @@ import chezmoi_mousse.theme
 from chezmoi_mousse.chezmoi import cmd_log
 from chezmoi_mousse.containers import ButtonsHorizontal
 from chezmoi_mousse.id_typing import (
-    ButtonEnum,
+    Buttons,
     Chars,
     IdMixin,
     Location,
@@ -81,9 +81,9 @@ class ChezmoiGUI(App[None]):
                 yield ButtonsHorizontal(
                     TabStr.apply_tab,
                     buttons=(
-                        ButtonEnum.apply_file_btn,
-                        ButtonEnum.forget_file_btn,
-                        ButtonEnum.destroy_file_btn,
+                        Buttons.apply_file_btn,
+                        Buttons.forget_file_btn,
+                        Buttons.destroy_file_btn,
                     ),
                     location=Location.bottom,
                 )
@@ -92,9 +92,9 @@ class ChezmoiGUI(App[None]):
                 yield ButtonsHorizontal(
                     TabStr.re_add_tab,
                     buttons=(
-                        ButtonEnum.re_add_file_btn,
-                        ButtonEnum.forget_file_btn,
-                        ButtonEnum.destroy_file_btn,
+                        Buttons.re_add_file_btn,
+                        Buttons.forget_file_btn,
+                        Buttons.destroy_file_btn,
                     ),
                     location=Location.bottom,
                 )
@@ -102,7 +102,7 @@ class ChezmoiGUI(App[None]):
                 yield AddTab(tab_name=Panes.add.value)
                 yield ButtonsHorizontal(
                     TabStr.add_tab,
-                    buttons=(ButtonEnum.add_file_btn, ButtonEnum.add_dir_btn),
+                    buttons=(Buttons.add_file_btn, Buttons.add_dir_btn),
                     location=Location.bottom,
                 )
             with TabPane("Init", id=Panes.init.name):
@@ -144,9 +144,7 @@ class ChezmoiGUI(App[None]):
                 severity="warning",
             )
         add_dir_btn = self.query_one(
-            self.pane_id_map[Panes.add.name].button_qid(
-                ButtonEnum.add_dir_btn
-            ),
+            self.pane_id_map[Panes.add.name].button_qid(Buttons.add_dir_btn),
             Button,
         )
         add_dir_btn.disabled = True
@@ -261,17 +259,17 @@ class ChezmoiGUI(App[None]):
         current_path = getattr(contents_view, "path")
 
         if event.button.label in (
-            ButtonEnum.apply_file_btn.value,
-            ButtonEnum.re_add_file_btn.value,
-            ButtonEnum.add_file_btn.value,
-            ButtonEnum.forget_file_btn.value,
-            ButtonEnum.destroy_file_btn.value,
+            Buttons.apply_file_btn.value,
+            Buttons.re_add_file_btn.value,
+            Buttons.add_file_btn.value,
+            Buttons.forget_file_btn.value,
+            Buttons.destroy_file_btn.value,
         ):
-            btn_enum = ButtonEnum(event.button.label)
+            btn_enum = Buttons(event.button.label)
             self.push_screen(
                 Operate(
                     id_mixin.tab_name,
                     path=current_path,
-                    buttons=(btn_enum, ButtonEnum.operate_dismiss_btn),
+                    buttons=(btn_enum, Buttons.operate_dismiss_btn),
                 )
             )

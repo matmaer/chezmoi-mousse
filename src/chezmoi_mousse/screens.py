@@ -11,7 +11,7 @@ from chezmoi_mousse import CM_CFG
 from chezmoi_mousse.chezmoi import OperateData, chezmoi, cmd_log, op_log
 from chezmoi_mousse.containers import ButtonsHorizontal
 from chezmoi_mousse.id_typing import (
-    ButtonEnum,
+    Buttons,
     Chars,
     IdMixin,
     Location,
@@ -42,11 +42,11 @@ class Operate(ModalScreen[None], IdMixin):
     check_mark = Chars.check_mark.value
 
     def __init__(
-        self, tab_name: TabStr, *, path: Path, buttons: tuple[ButtonEnum, ...]
+        self, tab_name: TabStr, *, path: Path, buttons: tuple[Buttons, ...]
     ) -> None:
         IdMixin.__init__(self, tab_name)
         self.path = path
-        self.buttons: tuple[ButtonEnum, ...] = buttons
+        self.buttons: tuple[Buttons, ...] = buttons
         self.operate_dismiss_data: OperateData = OperateData(
             path=self.path, operation_executed=False, tab_name=self.tab_name
         )
@@ -101,9 +101,9 @@ class Operate(ModalScreen[None], IdMixin):
 
     def write_initial_log_msg(self) -> None:
         command = "chezmoi "
-        if self.buttons[0] == ButtonEnum.forget_file_btn:
+        if self.buttons[0] == Buttons.forget_file_btn:
             command += OperateVerbs.forget.value
-        elif self.buttons[0] == ButtonEnum.destroy_file_btn:
+        elif self.buttons[0] == Buttons.destroy_file_btn:
             command += OperateVerbs.destroy.value
         elif self.tab_name == TabStr.add_tab:
             command += OperateVerbs.add.value
@@ -120,16 +120,16 @@ class Operate(ModalScreen[None], IdMixin):
         event.stop()
         # Refactored repeated button event handling into a loop
         button_actions = [
-            (ButtonEnum.apply_file_btn, chezmoi.perform.apply),
-            (ButtonEnum.re_add_file_btn, chezmoi.perform.re_add),
-            (ButtonEnum.add_file_btn, chezmoi.perform.add),
-            (ButtonEnum.forget_file_btn, chezmoi.perform.forget),
-            (ButtonEnum.destroy_file_btn, chezmoi.perform.destroy),
+            (Buttons.apply_file_btn, chezmoi.perform.apply),
+            (Buttons.re_add_file_btn, chezmoi.perform.re_add),
+            (Buttons.add_file_btn, chezmoi.perform.add),
+            (Buttons.forget_file_btn, chezmoi.perform.forget),
+            (Buttons.destroy_file_btn, chezmoi.perform.destroy),
         ]
         for btn_enum, action in button_actions:
             if event.button.id == self.button_id(btn_enum):
                 self.query_one(
-                    self.button_qid(ButtonEnum.operate_dismiss_btn), Button
+                    self.button_qid(Buttons.operate_dismiss_btn), Button
                 ).label = "Close"
                 action(self.path)  # run the perform command with the path
                 self.query_one(self.button_qid(btn_enum), Button).disabled = (
@@ -138,7 +138,7 @@ class Operate(ModalScreen[None], IdMixin):
                 self.operate_dismiss_data.operation_executed = True
                 break
 
-        if event.button.id == self.button_id(ButtonEnum.operate_dismiss_btn):
+        if event.button.id == self.button_id(Buttons.operate_dismiss_btn):
             self.handle_dismiss(self.operate_dismiss_data)
 
     def handle_dismiss(self, dismiss_data: OperateData) -> None:

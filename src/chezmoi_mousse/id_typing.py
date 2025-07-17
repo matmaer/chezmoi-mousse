@@ -51,7 +51,7 @@ class Chars(Enum):
     lower_3_8ths_block = "\u2583"  # "\N{LOWER THREE EIGHTHS BLOCK}"
 
 
-class ButtonEnum(Enum):
+class Buttons(Enum):
     # tab buttons within a tab
     contents_btn = "Contents"
     diff_btn = "Diff"
@@ -182,16 +182,16 @@ class IdMixin:
         self.tab_main_horizontal_qid = f"#{self.tab_main_horizontal_id}"
         self.tab_name: TabStr = tab_name
 
-    def button_id(self, button_label: ButtonEnum) -> str:
+    def button_id(self, button_label: Buttons) -> str:
         return f"{self.tab_name}_{button_label.name}"
 
-    def button_qid(self, button_label: ButtonEnum) -> str:
+    def button_qid(self, button_label: Buttons) -> str:
         return f"#{self.button_id(button_label)}"
 
     def buttons_horizontal_id(self, location: Location) -> str:
         return f"{self.tab_name}_{location}_horizontal"
 
-    def button_vertical_id(self, button_label: ButtonEnum) -> str:
+    def button_vertical_id(self, button_label: Buttons) -> str:
         return f"{self.tab_name}_{button_label.name}_vertical"
 
     def content_switcher_id(self, side: Location) -> str:

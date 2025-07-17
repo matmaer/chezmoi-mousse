@@ -12,7 +12,7 @@ from textual.widgets import Button, ContentSwitcher, Label, Switch
 from chezmoi_mousse import CM_CFG
 from chezmoi_mousse.config import filter_tooltips
 from chezmoi_mousse.id_typing import (
-    ButtonEnum,
+    Buttons,
     FilterEnum,
     IdMixin,
     Location,
@@ -59,7 +59,7 @@ class ButtonsHorizontal(HorizontalGroup, IdMixin):
         self,
         tab_name: TabStr,
         *,
-        buttons: tuple[ButtonEnum, ...],
+        buttons: tuple[Buttons, ...],
         location: Location,
     ) -> None:
         IdMixin.__init__(self, tab_name)
