@@ -234,9 +234,7 @@ class ChezmoiGUI(App[None]):
             id_to_maximize: str | None = self.query_one(
                 id_mixin.content_switcher_qid(Location.right), ContentSwitcher
             ).current
-            active_widget = self.query_one(
-                id_mixin.view_qid(ViewStr(id_to_maximize)), ContentsView
-            )
+            active_widget = self.query_one(f"#{id_to_maximize}")
             path_for_maximize = getattr(active_widget, "path")
 
         elif id_mixin.tab_name == TabStr.add_tab:
