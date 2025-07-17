@@ -89,11 +89,6 @@ class Operate(ModalScreen[None], IdMixin):
             )
 
     def on_mount(self) -> None:
-        log_border_titles = {
-            TabStr.apply_tab: str(ButtonEnum.apply_file_btn.value).lower(),
-            TabStr.re_add_tab: str(ButtonEnum.re_add_file_btn.value).lower(),
-            TabStr.add_tab: str(ButtonEnum.add_file_btn.value).lower(),
-        }
         if (
             self.tab_name == TabStr.apply_tab
             or self.tab_name == TabStr.re_add_tab
@@ -109,7 +104,7 @@ class Operate(ModalScreen[None], IdMixin):
             ).path = self.path
         # Add initial log entry
         self.query_one(ModalIdStr.operate_log.qid, RichLog).border_title = (
-            f"{log_border_titles[self.tab_name]} log"
+            " Operate Log "
         )
         self.write_initial_log_msg()
 
