@@ -15,8 +15,6 @@ import chezmoi_mousse.id_typing as id_typing
     "py_file", modules_to_test(), ids=lambda py_file: py_file.name
 )
 def test_no_hardcoded_ids(py_file: Path):
-    violations: list[str] = []
-
     content = py_file.read_text()
     tree = ast.parse(content, filename=str(py_file))
 
@@ -28,23 +26,19 @@ def test_no_hardcoded_ids(py_file: Path):
                     and isinstance(keyword.value, ast.Constant)
                     and isinstance(keyword.value.value, str)
                 ):
-                    violations.append(
+                    pytest.fail(
                         f'Line {keyword.lineno}: id="{keyword.value.value}"'
                     )
-
-    if violations:
-        violation_details = "\n  ".join(violations)
-        pytest.fail(
-            f"Found {len(violations)} hardcoded ID(s) in {py_file.name}:\n"
-            f"  {violation_details}\n\n"
-            f"IDs should be generated using IdMixin methods instead of hardcoded strings."
-        )
 
 
 def _get_str_enum_members() -> list[StrEnum]:
     members: list[StrEnum] = []
     for _, enum_class in inspect.getmembers(id_typing, inspect.isclass):
-        if issubclass(enum_class, StrEnum) and enum_class is not StrEnum:
+        if (
+            issubclass(enum_class, StrEnum)
+            # exclude TcssStr since it's tested in test_tcss.py
+            and enum_class.__name__ != "TcssStr"
+        ):
             for member in enum_class:
                 members.append(member)
     return members
@@ -75,7 +69,7 @@ def _get_enum_members() -> list[Enum]:
 
     members: list[Enum] = []
     for _, enum_class in inspect.getmembers(id_typing, inspect.isclass):
-        if issubclass(enum_class, Enum) and enum_class is not StrEnum:
+        if issubclass(enum_class, Enum):
             for member in enum_class:
                 members.append(member)
     return members

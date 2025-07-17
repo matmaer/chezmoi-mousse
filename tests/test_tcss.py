@@ -11,6 +11,7 @@ from chezmoi_mousse.id_typing import TcssStr
 
 classes_kw = "classes"
 add_class_method = "add_class"
+exclude_files = ["id_typing.py", "__init__.py", "__main__.py"]
 
 
 def extract_tcss_classes(path: Path) -> list[str]:
@@ -27,7 +28,7 @@ def extract_tcss_classes(path: Path) -> list[str]:
 )
 def test_no_unused(tcss_class: str) -> None:
     is_used = False
-    for py_file in modules_to_test():
+    for py_file in modules_to_test(exclude_file_names=exclude_files):
         if tcss_class in py_file.read_text():
             is_used = True
             break  # Found it, no need to check other files
@@ -37,10 +38,11 @@ def test_no_unused(tcss_class: str) -> None:
 
 
 @pytest.mark.parametrize(
-    "py_file", modules_to_test(), ids=lambda py_file: py_file.name
+    "py_file",
+    modules_to_test(exclude_file_names=exclude_files),
+    ids=lambda py_file: py_file.name,
 )
 def test_no_hardcoded(py_file: Path) -> None:
-    violations: list[str] = []
     tree = ast.parse(py_file.read_text())
 
     for node in ast.walk(tree):
@@ -57,7 +59,7 @@ def test_no_hardcoded(py_file: Path) -> None:
                         TcssStr, keyword.value.attr
                     )  # attribute exists in TcssStr
                 ):
-                    violations.append(
+                    pytest.fail(
                         f"{py_file} line {keyword.lineno}: {keyword.value}"
                     )
 
@@ -71,10 +73,6 @@ def test_no_hardcoded(py_file: Path) -> None:
             if isinstance(first_arg, ast.Constant) and isinstance(
                 first_arg.value, str
             ):
-                violations.append(
+                pytest.fail(
                     f'{py_file}:{first_arg.lineno} - add_class("{first_arg.value}")'
                 )
-
-        assert not violations, "Found hardcoded CSS classes:\n" + "\n".join(
-            violations
-        )

@@ -2,6 +2,8 @@ import pytest
 
 from chezmoi_mousse.chezmoi import Chezmoi, ManagedStatus
 
+exclude_files = ["chezmoi.py"]
+
 
 def _get_chezmoi_public_members() -> list[tuple[str, str]]:
     import inspect
@@ -40,38 +42,20 @@ def test_chezmoi_member_in_use(member_name: str, member_type: str):
     from _test_utils import modules_to_test
 
     is_used = False
-    usage_locations: list[str] = []
 
-    # Exclude chezmoi.py from the search
-    for py_file in modules_to_test():
+    for py_file in modules_to_test(exclude_file_names=exclude_files):
         content = py_file.read_text()
         tree = ast.parse(content, filename=str(py_file))
-
-        if py_file.name != "chezmoi.py":
-            # For all files except chezmoi.py, count all usages
-            for node in ast.walk(tree):
-                if (
-                    isinstance(node, ast.Attribute)
-                    and node.attr == member_name
-                ):
-                    is_used = True
-                    usage_locations.append(f"{py_file.name}:{node.lineno}")
-            if is_used:
-                break
 
         for node in ast.walk(tree):
             if isinstance(node, ast.Attribute) and node.attr == member_name:
                 is_used = True
-                usage_locations.append(f"{py_file.name}:{node.lineno}")
-
+                break  # Found usage
         if is_used:
-            break  # Found usage, no need to check other files
+            break  # No need to check other files
 
     if not is_used:
-        pytest.fail(
-            f"Unused Chezmoi {member_type}: '{member_name}' is not used in the codebase.\n"
-            "If this is intentional for internal use, consider renaming it with a leading underscore."
-        )
+        pytest.fail(f"Not in use: {member_name} {member_type}")
 
 
 @pytest.mark.parametrize(
@@ -83,23 +67,20 @@ def test_managed_status_member_in_use(member_name: str, member_type: str):
     from _test_utils import modules_to_test
 
     is_used = False
-    usage_locations: list[str] = []
 
     # Exclude chezmoi.py from the search
-    for py_file in modules_to_test(exclude_file_names=["chezmoi.py"]):
+    for py_file in modules_to_test(exclude_file_names=exclude_files):
         content = py_file.read_text()
         tree = ast.parse(content, filename=str(py_file))
 
         for node in ast.walk(tree):
             if isinstance(node, ast.Attribute) and node.attr == member_name:
                 is_used = True
-                usage_locations.append(f"{py_file.name}:{node.lineno}")
 
         if is_used:
             break  # Found usage, no need to check other files
 
     if not is_used:
         pytest.fail(
-            f"Unused Chezmoi {member_type}: '{member_name}' is not used in the codebase.\n"
-            "If this is intentional for internal use, consider renaming it with a leading underscore."
+            f"Unused Chezmoi {member_type}: '{member_name}' not in use.\n"
         )
