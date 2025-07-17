@@ -52,12 +52,8 @@ def test_no_hardcoded(py_file: Path) -> None:
         for keyword in node.keywords:
             if keyword.arg == classes_kw:  # classes= keyword is used
                 if not (
-                    isinstance(
-                        keyword.value, ast.Attribute
-                    )  # value is an attribute
-                    and hasattr(
-                        TcssStr, keyword.value.attr
-                    )  # attribute exists in TcssStr
+                    isinstance(keyword.value, ast.Attribute)
+                    and hasattr(TcssStr, keyword.value.attr)
                 ):
                     pytest.fail(
                         f"{py_file} line {keyword.lineno}: {keyword.value}"
