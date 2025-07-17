@@ -17,7 +17,7 @@ type ParsedJson = dict[str, Any]
 type StatusDict = dict[Path, str]
 
 
-class InputOutputVerbs(StrEnum):
+class IoVerbsStr(StrEnum):
     doctor = auto()
     managed = auto()
     status = auto()
