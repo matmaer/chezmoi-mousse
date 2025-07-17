@@ -130,27 +130,25 @@
 
 /* ModalScreen class */
 .modal_base {
-  align: center middle;
-  content-align: center middle;
   padding: 0 2 0 2;
-  height: auto;
-  width: auto;
   border: $accent-darken-3;
   border-title-style: bold;
   border-subtitle-style: bold;
   .operate_auto_warning {
+    height: auto;
     text-align: center;
   }
   .operate_top_path {
     height: auto;
     border-title-align: center;
+    border-title-style: bold;
     border-subtitle-style: bold;
     border-subtitle-align: center;
     margin: 1 0 1 0;
     text-align: center;
     border: round $foreground;
   }
-  &>.op_log {
+  .op_log {
     border-top: $foreground;
     border-title-align: center;
     height: auto;

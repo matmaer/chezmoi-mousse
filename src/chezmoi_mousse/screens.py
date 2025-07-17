@@ -2,7 +2,7 @@ from pathlib import Path
 
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import Container, Vertical
+from textual.containers import Vertical
 from textual.events import Click
 from textual.screen import ModalScreen
 from textual.widgets import Button, Collapsible
@@ -61,27 +61,18 @@ class Operate(ModalScreen[None], IdMixin):
             yield AutoWarning(self.tab_name)
             yield OperateInfo(self.tab_name, self.path)
             if self.tab_name == TabStr.add_tab:
-                with Container(
-                    id=ModalIdStr.operate_collapsible,
-                    classes=TcssStr.collapsible_container,
+                with Collapsible(
+                    id=ModalIdStr.operate_collapsible, title="File Contents"
                 ):
-                    yield Collapsible(
-                        ContentsView(view_id=ModalIdStr.modal_contents_view),
-                        classes=TcssStr.operate_collapsible,
-                        title="file contents view",
-                    )
+                    yield ContentsView(view_id=ModalIdStr.modal_contents_view)
+
             else:
-                with Container(
-                    id=ModalIdStr.operate_collapsible,
-                    classes=TcssStr.collapsible_container,
+                with Collapsible(
+                    id=ModalIdStr.operate_collapsible, title="File Differences"
                 ):
-                    yield Collapsible(
-                        DiffView(
-                            tab_name=self.tab_name,
-                            view_id=ModalIdStr.modal_diff_view,
-                        ),
-                        classes=TcssStr.operate_collapsible,
-                        title="file diffs view",
+                    yield DiffView(
+                        tab_name=self.tab_name,
+                        view_id=ModalIdStr.modal_diff_view,
                     )
             yield op_log
             yield ButtonsHorizontal(

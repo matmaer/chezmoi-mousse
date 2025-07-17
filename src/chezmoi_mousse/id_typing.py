@@ -122,7 +122,6 @@ class FilterEnum(Enum):
 
 
 class TcssStr(StrEnum):
-    collapsible_container = auto()
     content_switcher_left = auto()
     content_switcher_right = auto()
     dir_tree_widget = auto()
@@ -138,7 +137,6 @@ class TcssStr(StrEnum):
     modal_base = auto()
     operate_auto_warning = auto()
     operate_button = auto()
-    operate_collapsible = auto()
     modal_container = auto()
     op_log = auto()
     operate_top_path = auto()
