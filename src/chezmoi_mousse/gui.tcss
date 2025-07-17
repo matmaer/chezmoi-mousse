@@ -130,7 +130,6 @@
 
 /* ModalScreen class */
 .modal_base {
-  padding: 0 2 0 2;
   border: $accent-darken-3;
   border-title-style: bold;
   border-subtitle-style: bold;
@@ -144,13 +143,14 @@
     border-title-style: bold;
     border-subtitle-style: bold;
     border-subtitle-align: center;
-    margin: 1 0 1 0;
+    margin: 0 1 0 1;
     text-align: center;
     border: round $foreground;
   }
   .op_log {
     border-top: $foreground;
     border-title-align: center;
+    padding: 0 1 0 1;
     height: auto;
     min-height: 3;
     max-height: 9;
