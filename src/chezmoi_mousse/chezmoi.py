@@ -253,6 +253,12 @@ class ChangeCommand:
         subprocess_run(self.base + (str(self.config_path), "add", str(path)))
         self._update_managed_status_data()
 
+    def add_encrypted(self, path: Path) -> None:
+        subprocess_run(
+            self.base + (str(self.config_path), "add", "--encrypt", str(path))
+        )
+        self._update_managed_status_data()
+
     def re_add(self, path: Path) -> None:
         subprocess_run(
             self.base + (str(self.config_path), "re-add", str(path))
