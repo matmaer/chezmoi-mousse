@@ -82,8 +82,9 @@ If you don't have `textual` installed but the `uv` command is available:
   - [ ] single executable
   - [x] unpackaged
 - [x] Linux
-  - [ ] single executable
   - [ ] AppImage
+  - [ ] briefcase
   - [ ] flatpak
+  - [ ] single executable
   - [ ] snap
   - [x] unpackaged
