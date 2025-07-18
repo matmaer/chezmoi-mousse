@@ -14,70 +14,77 @@ command_filters = [
     "--path-style=absolute"
 ]
 
+from enum import StrEnum
+
+
+class UnwantedDir(StrEnum):
+    __pycache__ = "__pycache__"
+    dot_build = ".build"
+    dot_bundle = ".bundle"
+    dot_cache = ".cache"
+    dot_dart_tool = ".dart_tool"
+    dot_DS_Store = ".DS_Store"
+    dot_git = ".git"
+    dot_ipynb_checkpoints = ".ipynb_checkpoints"
+    dot_mozilla = ".mozilla"
+    dot_mypy_cache = ".mypy_cache"
+    dot_parcel_cache = ".parcel_cache"
+    dot_pytest_cache = ".pytest_cache"
+    dot_ssh = ".ssh"
+    dot_Trash = ".Trash"
+    dot_venv = ".venv"
+    bin = "bin"
+    cache = "cache"
+    Cache = "Cache"
+    CMakeFiles = "CMakeFiles"
+    Crash_Reports = "Crash Reports"
+    DerivedData = "DerivedData"
+    Desktop = "Desktop"
+    Documents = "Documents"
+    Downloads = "Downloads"
+    extensions = "extensions"
+    go_build = "go-build"
+    node_modules = "node_modules"
+    Pictures = "Pictures"
+    Public = "Public"
+    Recent = "Recent"
+    temp = "temp"
+    Temp = "Temp"
+    tmp = "tmp"
+    trash = "trash"
+    Trash = "Trash"
+    Videos = "Videos"
+
+
+class UnwantedFile(StrEnum):
+    AppImage = ".AppImage"
+    bak = ".bak"
+    cache = ".cache"
+    coverage = ".coverage"
+    doc = ".doc"
+    docx = ".docx"
+    egg_info = ".egg-info"
+    gz = ".gz"
+    kdbx = ".kdbx"
+    lock = ".lock"
+    pdf = ".pdf"
+    pid = ".pid"
+    ppt = ".ppt"
+    pptx = ".pptx"
+    rar = ".rar"
+    swp = ".swp"
+    tar = ".tar"
+    temp = ".temp"
+    tgz = ".tgz"
+    tmp = ".tmp"
+    xls = ".xls"
+    xlsx = ".xlsx"
+    zip = ".zip"
+
+
 unwanted_names = {
-    "dirs": {
-        "__pycache__",
-        ".build",
-        ".bundle",
-        ".cache",
-        ".dart_tool",
-        ".DS_Store",
-        ".git",
-        ".ipynb_checkpoints",
-        ".mozilla",
-        ".mypy_cache",
-        ".parcel_cache",
-        ".pytest_cache",
-        ".ssh",
-        ".Trash",
-        ".venv",
-        "bin",
-        "cache",
-        "Cache",
-        "CMakeFiles",
-        "Crash Reports",
-        "DerivedData",
-        "Desktop",
-        "Documents",
-        "Downloads",
-        "extensions",
-        "go-build",
-        "node_modules",
-        "Pictures",
-        "Public",
-        "Recent",
-        "temp",
-        "Temp",
-        "tmp",
-        "trash",
-        "Trash",
-        "Videos",
-    },
-    "files": {
-        ".AppImage",
-        ".bak",
-        ".cache",
-        ".coverage",
-        ".doc",
-        ".docx",
-        ".egg-info",
-        ".gz",
-        ".kdbx",
-        ".lock",
-        ".pdf",
-        ".pid",
-        ".ppt",
-        ".pptx",
-        ".rar",
-        ".swp",
-        ".tar",
-        ".temp",
-        ".tgz",
-        ".tmp",
-        ".xls",
-        ".xlsx",
-        ".zip",
-    },
+    "dirs": set(item.value for item in UnwantedDir),
+    "files": set(item.value for item in UnwantedFile),
 }
 
 
