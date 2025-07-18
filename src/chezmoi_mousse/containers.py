@@ -10,10 +10,10 @@ from textual.containers import HorizontalGroup, Vertical, VerticalGroup
 from textual.widgets import Button, ContentSwitcher, Label, Switch
 
 from chezmoi_mousse import CM_CFG
-from chezmoi_mousse.config import filter_tooltips
+
 from chezmoi_mousse.id_typing import (
     Buttons,
-    FilterEnum,
+    Filters,
     IdMixin,
     Location,
     TabStr,
@@ -26,7 +26,7 @@ from chezmoi_mousse.widgets import ExpandedTree, FlatTree, ManagedTree
 class FilterSlider(VerticalGroup, IdMixin):
 
     def __init__(
-        self, tab_name: TabStr, filters: tuple[FilterEnum, FilterEnum]
+        self, tab_name: TabStr, filters: tuple[Filters, Filters]
     ) -> None:
         IdMixin.__init__(self, tab_name)
         self.filters = filters
@@ -42,8 +42,8 @@ class FilterSlider(VerticalGroup, IdMixin):
             ):
                 yield Switch(id=self.switch_id(filter_enum), value=False)
                 yield Label(
-                    filter_enum.value, classes=TcssStr.filter_label
-                ).with_tooltip(tooltip=filter_tooltips[filter_enum.name])
+                    filter_enum.value.label, classes=TcssStr.filter_label
+                ).with_tooltip(tooltip=filter_enum.value.tooltip)
 
     def on_mount(self) -> None:
         # add padding to the top filter horizontal group

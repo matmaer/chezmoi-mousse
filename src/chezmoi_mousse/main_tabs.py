@@ -34,7 +34,7 @@ from chezmoi_mousse.containers import (
 )
 from chezmoi_mousse.id_typing import (
     Buttons,
-    FilterEnum,
+    Filters,
     IdMixin,
     Location,
     PrettyIdEnum,
@@ -124,7 +124,7 @@ class OperateTabsBase(Horizontal, IdMixin):
         # Tree/List Switch
         if event.button.id == self.button_id(Buttons.tree_btn):
             expand_all_switch = self.query_one(
-                self.switch_qid(FilterEnum.expand_all), Switch
+                self.switch_qid(Filters.expand_all), Switch
             )
             expand_all_switch.disabled = False
             if expand_all_switch.value:
@@ -140,7 +140,7 @@ class OperateTabsBase(Horizontal, IdMixin):
                 self.content_switcher_qid(Location.left), ContentSwitcher
             ).current = self.tree_id(TreeStr.flat_tree)
             self.query_one(
-                self.switch_qid(FilterEnum.expand_all), Switch
+                self.switch_qid(Filters.expand_all), Switch
             ).disabled = True
         # Contents/Diff/GitLog Switch
         elif event.button.id == self.button_id(Buttons.contents_btn):
@@ -160,7 +160,7 @@ class OperateTabsBase(Horizontal, IdMixin):
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
         event.stop()
-        if event.switch.id == self.switch_id(FilterEnum.unchanged):
+        if event.switch.id == self.switch_id(Filters.unchanged):
             tree_pairs: list[
                 tuple[TreeStr, type[ExpandedTree | ManagedTree | FlatTree]]
             ] = [
@@ -172,7 +172,7 @@ class OperateTabsBase(Horizontal, IdMixin):
                 self.query_one(self.tree_qid(tree_str), tree_cls).unchanged = (
                     event.value
                 )
-        elif event.switch.id == self.switch_id(FilterEnum.expand_all):
+        elif event.switch.id == self.switch_id(Filters.expand_all):
             if event.value:
                 self.query_one(
                     self.content_switcher_qid(Location.left), ContentSwitcher
@@ -222,8 +222,7 @@ class ApplyTab(OperateTabsBase):
                 yield GitLogView(view_id=self.view_id(ViewStr.git_log_view))
 
         yield FilterSlider(
-            self.tab_name,
-            filters=(FilterEnum.unchanged, FilterEnum.expand_all),
+            self.tab_name, filters=(Filters.unchanged, Filters.expand_all)
         )
 
     def on_mount(self) -> None:
@@ -290,8 +289,7 @@ class ReAddTab(OperateTabsBase):
                 yield GitLogView(view_id=self.view_id(ViewStr.git_log_view))
 
         yield FilterSlider(
-            self.tab_name,
-            filters=(FilterEnum.unchanged, FilterEnum.expand_all),
+            self.tab_name, filters=(Filters.unchanged, Filters.expand_all)
         )
 
     def on_mount(self) -> None:
@@ -334,8 +332,7 @@ class AddTab(OperateTabsBase):
             yield ContentsView(view_id=self.view_id(ViewStr.contents_view))
 
         yield FilterSlider(
-            self.tab_name,
-            filters=(FilterEnum.unmanaged_dirs, FilterEnum.unwanted),
+            self.tab_name, filters=(Filters.unmanaged_dirs, Filters.unwanted)
         )
 
     def on_mount(self) -> None:
@@ -387,9 +384,9 @@ class AddTab(OperateTabsBase):
     def on_switch_changed(self, event: Switch.Changed) -> None:
         event.stop()
         tree = self.query_one(self.tree_qid(TreeStr.add_tree), FilteredDirTree)
-        if event.switch.id == self.switch_id(FilterEnum.unmanaged_dirs):
+        if event.switch.id == self.switch_id(Filters.unmanaged_dirs):
             tree.unmanaged_dirs = event.value
-        elif event.switch.id == self.switch_id(FilterEnum.unwanted):
+        elif event.switch.id == self.switch_id(Filters.unwanted):
             tree.unwanted = event.value
         tree.reload()
 

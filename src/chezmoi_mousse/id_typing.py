@@ -4,17 +4,17 @@ from pathlib import Path
 from typing import Any
 
 
+type CmdWords = tuple[str, ...]
+type ParsedJson = dict[str, Any]
+type StatusDict = dict[Path, str]
+
+
 # needed by both widgets.py and overrides.py
 @dataclass
 class NodeData:
     path: Path
     found: bool
     status: str
-
-
-type CmdWords = tuple[str, ...]
-type ParsedJson = dict[str, Any]
-type StatusDict = dict[Path, str]
 
 
 class ReadVerbs(Enum):
@@ -111,11 +111,40 @@ class TreeStr(StrEnum):
     managed_tree = auto()
 
 
-class FilterEnum(Enum):
-    expand_all = "expand all"
-    unchanged = "show unchanged"
-    unwanted = "show unwanted paths"
-    unmanaged_dirs = "show unmanaged dirs"
+@dataclass(frozen=True)
+class FilterData:
+    label: str
+    tooltip: str
+
+
+class Filters(Enum):
+    unmanaged_dirs = FilterData(
+        "show unmanaged dirs",
+        "The default (disabled), only shows directories which already contain \
+            managed files.\n\
+        This allows spotting new unmanaged files in already managed \
+            directories.\n\
+        Enable to show all directories which contain unmanaged files.",
+    )
+    unwanted = FilterData(
+        "show unwanted paths",
+        "Include files and directories considered as 'unwanted' for a dotfile \
+            manager. \n\
+        These include cache, temporary, trash (recycle bin) and other similar \
+            files or directories. \n\
+        For example enable this to add files to your chezmoi repository which \
+            are in a directory named '.cache'.",
+    )
+    unchanged = FilterData(
+        "show unchanged files",
+        "Include files unchanged files which are not found in the 'chezmoi \
+            status' output.",
+    )
+    expand_all = FilterData(
+        "expand all dirs",
+        "Expand all managed directories.  Depending on the \n\
+            unchanged switch.",
+    )
 
 
 class TcssStr(StrEnum):
@@ -201,21 +230,21 @@ class IdMixin:
         return f"#{self.content_switcher_id(side)}"
 
     def filter_horizontal_id(
-        self, filter_enum: FilterEnum, location: Location
+        self, filter_enum: Filters, location: Location
     ) -> str:
         return (
             f"{self.tab_name}_{filter_enum.name}_filter_horizontal_{location}"
         )
 
     def filter_horizontal_qid(
-        self, filter_enum: FilterEnum, location: Location
+        self, filter_enum: Filters, location: Location
     ) -> str:
         return f"#{self.filter_horizontal_id(filter_enum, location)}"
 
-    def switch_id(self, filter_enum: FilterEnum) -> str:
+    def switch_id(self, filter_enum: Filters) -> str:
         return f"{self.tab_name}_{filter_enum.name}_switch"
 
-    def switch_qid(self, filter_enum: FilterEnum) -> str:
+    def switch_qid(self, filter_enum: Filters) -> str:
         return f"#{self.switch_id(filter_enum)}"
 
     def tab_vertical_id(self, side: Location) -> str:
