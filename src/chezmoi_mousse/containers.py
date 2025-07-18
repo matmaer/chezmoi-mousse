@@ -50,7 +50,7 @@ class FilterSlider(VerticalGroup, IdMixin):
         self.query_one(
             self.filter_horizontal_qid(self.filters[0], Location.top),
             HorizontalGroup,
-        ).add_class(TcssStr.filter_horizontal_pad_bottom)
+        ).add_class(TcssStr.pad_bottom)
 
 
 class ButtonsHorizontal(HorizontalGroup, IdMixin):

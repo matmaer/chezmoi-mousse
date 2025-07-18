@@ -14,21 +14,6 @@ command_filters = [
     "--path-style=absolute"
 ]
 
-filter_tooltips = {
-    "unmanaged_dirs": (
-        "The default (disabled), only shows directories which already contain managed files."
-        "This allows spotting new un-managed files in already managed directories."
-        "Enable to show all directories which contain un-managed files."
-    ),
-    "unwanted": (
-        'Include files and directories considered as "unwanted" for a dotfile manager. '
-        "These include cache, temporary, trash (recycle bin) and other similar files or directories. "
-        'For example enable this to add files to your chezmoi repository which are in a directory named ".cache".'
-    ),
-    "expand_all": "Expand all directories in the Tree view.",
-    "unchanged": "Include files unchanged files which are not found in the 'chezmoi status' output.",
-}
-
 unwanted_names = {
     "dirs": {
         "__pycache__",

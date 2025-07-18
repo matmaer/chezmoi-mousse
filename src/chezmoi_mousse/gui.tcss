@@ -37,7 +37,7 @@
   &>.filter_horizontal {
     width: auto;
   }
-  &>.filter_horizontal_pad_bottom {
+  &>.pad_bottom {
     padding-bottom: 1;
   }
   &.-visible {

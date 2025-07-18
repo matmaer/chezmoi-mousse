@@ -157,7 +157,7 @@ class TcssStr(StrEnum):
     filter_horizontal = auto()
     filter_label = auto()
     filters_vertical = auto()
-    filter_horizontal_pad_bottom = auto()
+    pad_bottom = auto()
     flow_diagram = auto()
     last_clicked = auto()
     modal_base = auto()
