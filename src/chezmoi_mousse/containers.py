@@ -86,23 +86,24 @@ class ButtonsHorizontal(HorizontalGroup, IdMixin):
             for button_enum in self.buttons:
                 button = self.query_one(self.button_qid(button_enum))
                 button.add_class(TcssStr.operate_button)
+            return
 
-        else:
-            for button_enum in self.buttons:
-                self.query_one(self.button_qid(button_enum)).add_class(
-                    TcssStr.tab_button
-                )
-                self.query_one(self.button_qid(self.buttons[0])).add_class(
-                    TcssStr.last_clicked
-                )
+        for button_enum in self.buttons:
+            self.query_one(self.button_qid(button_enum)).add_class(
+                TcssStr.tab_button
+            )
+            self.query_one(self.button_qid(self.buttons[0])).add_class(
+                TcssStr.last_clicked
+            )
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
-        if not self.location == Location.bottom:
-            for button_enum in self.buttons:
-                self.query_one(self.button_qid(button_enum)).remove_class(
-                    TcssStr.last_clicked
-                )
-            event.button.add_class(TcssStr.last_clicked)
+        if self.location == Location.bottom:
+            return
+        for button_enum in self.buttons:
+            self.query_one(self.button_qid(button_enum)).remove_class(
+                TcssStr.last_clicked
+            )
+        event.button.add_class(TcssStr.last_clicked)
 
 
 class TreeContentSwitcher(ContentSwitcher, IdMixin):
