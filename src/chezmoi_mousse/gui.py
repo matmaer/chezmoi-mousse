@@ -17,7 +17,7 @@ from textual.widgets import (
 )
 
 import chezmoi_mousse.theme
-from chezmoi_mousse.chezmoi import cmd_log
+from chezmoi_mousse.chezmoi import cmd_log, CM_CFG
 from chezmoi_mousse.containers import ButtonsHorizontal
 from chezmoi_mousse.id_typing import (
     Buttons,
@@ -225,7 +225,7 @@ class ChezmoiGUI(App[None]):
 
         # Initialize modal parameters
         id_to_maximize: str | None = None
-        path_for_maximize: Path | None = None
+        current_path: Path = CM_CFG.destDir
 
         if id_mixin.tab_name in (TabStr.apply_tab, TabStr.re_add_tab):
             # Determine what view to show in the modal
@@ -233,7 +233,7 @@ class ChezmoiGUI(App[None]):
                 id_mixin.content_switcher_qid(Location.right), ContentSwitcher
             ).current
             active_widget = self.query_one(f"#{id_to_maximize}")
-            path_for_maximize = getattr(active_widget, "path")
+            current_path = getattr(active_widget, "path")
 
         elif id_mixin.tab_name == TabStr.add_tab:
             add_tab_contents_view = self.query_one(
@@ -241,13 +241,12 @@ class ChezmoiGUI(App[None]):
             )
 
             id_to_maximize = add_tab_contents_view.id
-            path_for_maximize = getattr(add_tab_contents_view, "path")
-
+            current_path = getattr(add_tab_contents_view, "path")
         self.app.push_screen(
             Maximized(
                 tab_name=id_mixin.tab_name,
                 id_to_maximize=id_to_maximize,
-                path=path_for_maximize,
+                path=current_path,
             )
         )
 
