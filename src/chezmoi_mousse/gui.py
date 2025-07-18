@@ -136,7 +136,7 @@ class ChezmoiGUI(App[None]):
         cmd_log.log_success(f"Theme set to {new_theme}")
 
     def first_mount_refresh(self, _: object) -> None:
-        if os.environ.get("MOUSSE_DEV") == "1":
+        if os.environ.get("CHEZMOI_MOUSSE_DEV") == "1":
             self.notify("Running in development mode", severity="information")
         if os.environ.get("MOUSSE_ENABLE_CHANGES") == "1":
             self.notify(
