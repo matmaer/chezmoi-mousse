@@ -32,27 +32,45 @@ from chezmoi_mousse.widgets import (
 )
 
 
-class Operate(ModalScreen[None], IdMixin):
+class ModalBase(ModalScreen[None], IdMixin):
+
     BINDINGS = [
         Binding(
             key="escape", action="esc_dismiss", description="close", show=False
         )
     ]
 
+    def __init__(
+        self, tab_name: TabStr, path: Path, *, modal_id: ModalIdStr
+    ) -> None:
+        self.path = path
+        IdMixin.__init__(self, tab_name)
+        super().__init__(id=modal_id, classes=TcssStr.modal_base)
+
+    def handle_dismiss(self, dismiss_data: OperateData) -> None:
+        if not dismiss_data.operation_executed:
+            msg = f"Operation cancelled for {self.path.name}"
+            cmd_log.log_success(msg)
+            op_log.log_success(msg)
+            self.notify("No changes were made")
+        # send the needed data to the app, logging will be handled there
+        self.app.post_message(OperateMessage(dismiss_data=dismiss_data))
+        self.dismiss()
+
+
+class Operate(ModalBase, IdMixin):
+
     check_mark = Chars.check_mark.value
 
     def __init__(
         self, tab_name: TabStr, *, path: Path, buttons: tuple[Buttons, ...]
     ) -> None:
-        IdMixin.__init__(self, tab_name)
         self.path = path
         self.buttons: tuple[Buttons, ...] = buttons
         self.operate_dismiss_data: OperateData = OperateData(
-            path=self.path, operation_executed=False, tab_name=self.tab_name
+            path=self.path, operation_executed=False, tab_name=tab_name
         )
-        super().__init__(
-            id=ModalIdStr.operate_modal, classes=TcssStr.modal_base
-        )
+        super().__init__(tab_name, path, modal_id=ModalIdStr.operate_modal)
 
     def compose(self) -> ComposeResult:
         with Vertical(
@@ -141,39 +159,22 @@ class Operate(ModalScreen[None], IdMixin):
         if event.button.id == self.button_id(Buttons.operate_dismiss_btn):
             self.handle_dismiss(self.operate_dismiss_data)
 
-    def handle_dismiss(self, dismiss_data: OperateData) -> None:
-        if not dismiss_data.operation_executed:
-            msg = f"Operation cancelled for {self.path.name}"
-            cmd_log.log_success(msg)
-            op_log.log_success(msg)
-            self.notify("No changes were made")
-        # send the needed data to the app, logging will be handled there
-        self.app.post_message(OperateMessage(dismiss_data=dismiss_data))
-        self.dismiss()
-
     def action_esc_dismiss(self) -> None:
         self.handle_dismiss(self.operate_dismiss_data)
 
 
-class Maximized(ModalScreen[None], IdMixin):
-    BINDINGS = [
-        Binding(
-            key="escape", action="dismiss", description="close", show=False
-        )
-    ]
+class Maximized(ModalBase, IdMixin):
 
     def __init__(
         self,
         id_to_maximize: str | None,
-        path: Path | None,
+        path: Path,
         tab_name: TabStr = TabStr.apply_tab,
     ) -> None:
         IdMixin.__init__(self, tab_name)
         self.id_to_maximize = id_to_maximize
         self.path = path
-        super().__init__(
-            id=ModalIdStr.maximized_modal.name, classes=TcssStr.modal_base
-        )
+        super().__init__(tab_name, path, modal_id=ModalIdStr.maximized_modal)
 
     def compose(self) -> ComposeResult:
         with Vertical(
@@ -204,7 +205,7 @@ class Maximized(ModalScreen[None], IdMixin):
                 ModalIdStr.modal_git_log_view.qid, GitLogView
             ).path = self.path
 
-        if self.path == CM_CFG.destDir or self.path is None:
+        if self.path == CM_CFG.destDir:
             self.border_title_text = f" {CM_CFG.destDir} "
         else:
             self.border_title_text = (
@@ -216,3 +217,6 @@ class Maximized(ModalScreen[None], IdMixin):
         event.stop()
         if event.chain == 2:
             self.dismiss()
+
+    def action_esc_dismiss(self) -> None:
+        self.dismiss()
