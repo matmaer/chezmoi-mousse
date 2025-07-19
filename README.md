@@ -75,16 +75,16 @@ If you don't have `textual` installed but the `uv` command is available:
 - [x] uv run --with textual -m chezmoi_mousse
 - [x] Windows
   - [ ] app store
-  - [ ] single executable
+  - [ ] signed executable
   - [x] unpackaged
 - [x] Apple
   - [ ] app store
-  - [ ] single executable
+  - [ ] signed executable
   - [x] unpackaged
 - [x] Linux
   - [ ] AppImage
   - [ ] briefcase
   - [ ] flatpak
-  - [ ] single executable
+  - [ ] shared public key executable
   - [ ] snap
   - [x] unpackaged
