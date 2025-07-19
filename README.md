@@ -85,6 +85,6 @@ If you don't have `textual` installed but the `uv` command is available:
   - [ ] AppImage
   - [ ] briefcase
   - [ ] flatpak
-  - [ ] shared public key executable
+  - [ ] public key list signed executable
   - [ ] snap
   - [x] unpackaged
