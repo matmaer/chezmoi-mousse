@@ -2,14 +2,9 @@ import json
 import sys
 from pathlib import Path
 from subprocess import run
-
 from .id_typing import ParsedJson
 
-chezmoi_config: ParsedJson
-
-
 BASE_CMD = ("chezmoi", "--no-pager", "--color=off", "--no-tty", "--mode=file")
-
 
 try:
     chezmoi_config: ParsedJson = json.loads(
