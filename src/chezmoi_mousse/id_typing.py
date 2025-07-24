@@ -61,24 +61,20 @@ class Buttons(Enum):
     # operational buttons in Operate modal screen
     add_dir_btn = "Add Dir"
     add_file_btn = "Add File"
-    # apply_dir_btn = "Apply Dir"
     apply_file_btn = "Apply File"
-    # destroy_dir_btn = "Destroy Dir"
     destroy_file_btn = "Destroy File"
-    # forget_dir_btn = "Forget Dir"
     forget_file_btn = "Forget File"
     operate_dismiss_btn = "Cancel"
-    # re_add_dir_btn = "Re-Add Dir"
     re_add_file_btn = "Re-Add File"
 
 
 class TabStr(StrEnum):
-    apply_tab = auto()
-    re_add_tab = auto()
     add_tab = auto()
-    init_tab = auto()
+    apply_tab = auto()
     doctor_tab = auto()
+    init_tab = auto()
     log_tab = auto()
+    re_add_tab = auto()
 
 
 class Panes(Enum):
@@ -91,10 +87,10 @@ class Panes(Enum):
 
 
 class ViewStr(StrEnum):
-    diff_view = auto()
-    git_log_view = auto()
     contents_view = auto()
+    diff_view = auto()
     doctor_table = auto()
+    git_log_view = auto()
 
 
 class Location(StrEnum):
@@ -151,21 +147,21 @@ class TcssStr(StrEnum):
     content_switcher_left = auto()
     content_switcher_right = auto()
     dir_tree_widget = auto()
-    doctor_vertical = auto()
     doctor_collapsible = auto()
     doctor_table = auto()
+    doctor_vertical = auto()
     filter_horizontal = auto()
     filter_label = auto()
     filters_vertical = auto()
-    pad_bottom = auto()
     flow_diagram = auto()
     last_clicked = auto()
     modal_base = auto()
-    operate_auto_warning = auto()
-    operate_button = auto()
     modal_container = auto()
     op_log = auto()
+    operate_auto_warning = auto()
+    operate_button = auto()
     operate_top_path = auto()
+    pad_bottom = auto()
     single_button_vertical = auto()
     tab_button = auto()
     tab_buttons_horizontal = auto()
@@ -195,8 +191,8 @@ class ModalIdStr(StrEnum):
 
 class PrettyIdEnum(Enum):
     doctor_cat_config = "chezmoi cat-config (contents of config-file)"
-    doctor_template_data = "chezmoi template-data (contents of template-file)"
     doctor_ignored = "chezmoi ignored (git ignore in source-dir)"
+    doctor_template_data = "chezmoi template-data (contents of template-file)"
 
     @property
     def qid(self) -> str:
