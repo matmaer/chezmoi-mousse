@@ -182,6 +182,11 @@ class OperateTabsBase(Horizontal, IdMixin):
                     self.content_switcher_qid(Location.left), ContentSwitcher
                 ).current = self.tree_id(TreeStr.managed_tree)
 
+    def action_toggle_filter_slider(self) -> None:
+        self.query_one(self.filter_slider_qid, VerticalGroup).toggle_class(
+            "-visible"
+        )
+
 
 class ApplyTab(OperateTabsBase):
 
@@ -243,11 +248,6 @@ class ApplyTab(OperateTabsBase):
             )
         )
 
-    def action_toggle_filter_slider(self) -> None:
-        self.query_one(self.filter_slider_qid, VerticalGroup).toggle_class(
-            "-visible"
-        )
-
 
 class ReAddTab(OperateTabsBase):
 
@@ -307,11 +307,6 @@ class ReAddTab(OperateTabsBase):
                 Buttons.forget_file_btn,
                 Buttons.destroy_file_btn,
             )
-        )
-
-    def action_toggle_filter_slider(self) -> None:
-        self.query_one(self.filter_slider_qid, VerticalGroup).toggle_class(
-            "-visible"
         )
 
 
@@ -389,11 +384,6 @@ class AddTab(OperateTabsBase):
         elif event.switch.id == self.switch_id(Filters.unwanted):
             tree.unwanted = event.value
         tree.reload()
-
-    def action_toggle_filter_slider(self) -> None:
-        self.query_one(self.filter_slider_qid, VerticalGroup).toggle_class(
-            "-visible"
-        )
 
 
 class InitTab(Horizontal, IdMixin):
