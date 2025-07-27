@@ -114,7 +114,7 @@ class OperateInfo(Static):
 
 class ContentsView(RichLog):
 
-    path: reactive[Path | None] = reactive(None)
+    path: reactive[Path | None] = reactive(None, init=False)
 
     def __init__(self, *, view_id: str) -> None:
         super().__init__(
@@ -719,8 +719,8 @@ class FlatTree(TreeBase, IdMixin):
 
 class FilteredDirTree(DirectoryTree):
 
-    unmanaged_dirs: reactive[bool] = reactive(False)
-    unwanted: reactive[bool] = reactive(False)
+    unmanaged_dirs: reactive[bool] = reactive(False, init=False)
+    unwanted: reactive[bool] = reactive(False, init=False)
 
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
         managed_dirs = managed_status.dir_paths
