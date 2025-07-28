@@ -2,6 +2,10 @@
 /* tcss classes */
 /****************/
 
+
+# “$text-success on $success-muted”
+
+
 .doctor_vertical {
   &>.doctor_collapsible {
     height: auto;
@@ -128,7 +132,6 @@
   }
 }
 
-/* ModalScreen class */
 .modal_base {
   border: $accent-darken-3;
   border-title-style: bold;
@@ -163,9 +166,9 @@ MainScreen {
 }
 
 
-/******************************************************************/
-/* App default TCSS which are different than the textual defaults */
-/******************************************************************/
+/***********************************/
+/* textual default tcss overrides  */
+/***********************************/
 
 /* todo: avoid "*"" selector */
 
