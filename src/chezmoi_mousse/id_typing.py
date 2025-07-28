@@ -189,8 +189,8 @@ class ModalIdStr(StrEnum):
         return f"#{self.name}"
 
 
-class PrettyIdEnum(Enum):
-    doctor_cat_config = "chezmoi cat-config (contents of config-file)"
+class DoctorEnum(Enum):
+    cat_config = "chezmoi cat-config (contents of config-file)"
     doctor_ignored = "chezmoi ignored (git ignore in source-dir)"
     doctor_template_data = "chezmoi template-data (contents of template-file)"
 
