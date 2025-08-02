@@ -116,30 +116,36 @@ class FilterData:
 class Filters(Enum):
     unmanaged_dirs = FilterData(
         "show unmanaged dirs",
-        "The default (disabled), only shows directories which already contain \
-            managed files.\
-        This allows spotting new unmanaged files in already managed \
-            directories.\
-        Enable to show all directories which contain unmanaged files.",
+        (
+            "The default (disabled), only shows directories which already "
+            "contain managed files. This allows spotting new unmanaged files "
+            "in already managed directories. Enable to show all directories "
+            "which contain unmanaged files."
+        ),
     )
     unwanted = FilterData(
         "show unwanted paths",
-        "Include files and directories considered as 'unwanted' for a dotfile \
-            manager. \
-        These include cache, temporary, trash (recycle bin) and other similar \
-            files or directories. \
-        For example enable this to add files to your chezmoi repository which \
-            are in a directory named '.cache'.",
+        (
+            "Include files and directories considered as 'unwanted' for a "
+            "dotfile manager. These include cache, temporary, trash (recycle "
+            "bin) and other similar files or directories. For example enable "
+            "this to add files to your chezmoi repository which are in a "
+            "directory named '.cache'."
+        ),
     )
     unchanged = FilterData(
         "show unchanged files",
-        "Include files unchanged files which are not found in the 'chezmoi \
-            status' output.",
+        (
+            "Include files unchanged files which are not found in the "
+            "'chezmoi status' output."
+        ),
     )
     expand_all = FilterData(
         "expand all dirs",
-        "Expand all managed directories.  Depending on the\
-            unchanged switch.",
+        (
+            "Expand all managed directories. Depending on the unchanged "
+            "switch."
+        ),
     )
 
 
