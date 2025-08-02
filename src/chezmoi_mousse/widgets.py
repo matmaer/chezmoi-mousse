@@ -64,7 +64,7 @@ class AutoWarning(Static):
             )
         if self.tab_name == TabStr.apply_tab:
             warning_lines.append(
-                f"{self.sign} Local file will be modified. {self.sign}"
+                f"{self.sign} Local file will be modified {self.sign}"
             )
 
         # Apply text-warning markup to each line
