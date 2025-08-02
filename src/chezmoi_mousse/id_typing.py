@@ -117,17 +117,17 @@ class Filters(Enum):
     unmanaged_dirs = FilterData(
         "show unmanaged dirs",
         "The default (disabled), only shows directories which already contain \
-            managed files.\n\
+            managed files.\
         This allows spotting new unmanaged files in already managed \
-            directories.\n\
+            directories.\
         Enable to show all directories which contain unmanaged files.",
     )
     unwanted = FilterData(
         "show unwanted paths",
         "Include files and directories considered as 'unwanted' for a dotfile \
-            manager. \n\
+            manager. \
         These include cache, temporary, trash (recycle bin) and other similar \
-            files or directories. \n\
+            files or directories. \
         For example enable this to add files to your chezmoi repository which \
             are in a directory named '.cache'.",
     )
@@ -138,7 +138,7 @@ class Filters(Enum):
     )
     expand_all = FilterData(
         "expand all dirs",
-        "Expand all managed directories.  Depending on the \n\
+        "Expand all managed directories.  Depending on the\
             unchanged switch.",
     )
 
