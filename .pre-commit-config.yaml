@@ -17,7 +17,7 @@ repos:
         args: [--ignore-words=.codespell-ignore-words]
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: check-added-large-files
       - id: check-ast
@@ -33,7 +33,7 @@ repos:
   # When running with --fix, Ruff's lint hook should be placed BEFORE Black
   # as Ruff's fix behavior can output code changes that require reformatting.
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.12.4
+    rev: v0.12.8
     hooks:
       - id: ruff-check
         types_or: [ python, pyi ]
@@ -47,7 +47,7 @@ repos:
         args: ["--profile", "black"]
 
   - repo: https://github.com/PyCQA/docformatter
-    rev: v1.7.7
+    rev: v1.7.8-rc1
     hooks:
       - id: docformatter
         args: [--in-place, --recursive, --wrap-summaries=79, --wrap-descriptions=79]
