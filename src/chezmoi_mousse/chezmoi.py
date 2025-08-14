@@ -244,18 +244,17 @@ class ChangeCommand:
     """Group of commands which make changes on disk or in the chezmoi
     repository."""
 
-    config_path: Path | None = None
-
-    def __init__(self, enable_changes: bool = False) -> None:
-        if os.environ.get("MOUSSE_ENABLE_CHANGES") == "1":
-            self.base = BASE_CMD + ("--force", "--config")
-            cmd_log.log_warning(
-                "Changes mode enabled, operations will be executed"
-            )
-        else:
-            self.base = BASE_CMD + ("--dry-run", "--force", "--config")
+    def __init__(self) -> None:
+        self.config_path: Path | None = None  # var set by splash.py
+        self.base_cmd: CmdWords = BASE_CMD + ("--force",)
+        if os.environ.get("MOUSSE_ENABLE_CHANGES") != "1":
+            self.base_cmd = BASE_CMD + ("--dry-run",)
             cmd_log.log_warning(
                 "Changes mode disabled, operations will dry-run only"
+            )
+        else:
+            cmd_log.log_warning(
+                "Changes mode enabled, operations will be executed"
             )
 
     def _update_managed_status_data(self) -> None:
@@ -265,36 +264,31 @@ class ChangeCommand:
         chezmoi.dir_status_lines.update()
         chezmoi.file_status_lines.update()
 
+    def append_config_to_base_command(self, new_path: Path) -> None:
+        self.base_cmd = BASE_CMD + ("--config", str(new_path))
+
     def add(self, path: Path) -> None:
-        subprocess_run(self.base + (str(self.config_path), "add", str(path)))
+        subprocess_run(self.base_cmd + ("add", str(path)))
         self._update_managed_status_data()
 
     def add_encrypted(self, path: Path) -> None:
-        subprocess_run(
-            self.base + (str(self.config_path), "add", "--encrypt", str(path))
-        )
+        subprocess_run(self.base_cmd + ("add", "--encrypt", str(path)))
         self._update_managed_status_data()
 
     def re_add(self, path: Path) -> None:
-        subprocess_run(
-            self.base + (str(self.config_path), "re-add", str(path))
-        )
+        subprocess_run(self.base_cmd + ("re-add", str(path)))
         self._update_managed_status_data()
 
     def apply(self, path: Path) -> None:
-        subprocess_run(self.base + (str(self.config_path), "apply", str(path)))
+        subprocess_run(self.base_cmd + ("apply", str(path)))
         self._update_managed_status_data()
 
     def forget(self, path: Path) -> None:
-        subprocess_run(
-            self.base + (str(self.config_path), "forget", str(path))
-        )
+        subprocess_run(self.base_cmd + ("forget", str(path)))
         self._update_managed_status_data()
 
     def destroy(self, path: Path) -> None:
-        subprocess_run(
-            self.base + (str(self.config_path), "destroy", str(path))
-        )
+        subprocess_run(self.base_cmd + ("destroy", str(path)))
         self._update_managed_status_data()
 
 

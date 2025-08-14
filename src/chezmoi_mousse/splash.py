@@ -16,7 +16,8 @@ from textual.timer import Timer
 from textual.widgets import RichLog, Static
 from textual.worker import WorkerState
 
-from chezmoi_mousse.chezmoi import ChangeCommand, chezmoi, cmd_log
+from chezmoi_mousse import CM_CFG
+from chezmoi_mousse.chezmoi import chezmoi, cmd_log
 
 SPLASH = """\
  _______________________________ ___________________._
@@ -41,7 +42,7 @@ class SplashIdStr(StrEnum):
     splash_rich_log_id = auto()
 
 
-def modify_config_non_interactive(list_of_strings: list[str]) -> list[str]:
+def create_non_interactive_config(list_of_strings: list[str]) -> str:
     result: list[str] = []
 
     replacements = [
@@ -58,7 +59,7 @@ def modify_config_non_interactive(list_of_strings: list[str]) -> list[str]:
             result.append(line)
         else:
             result.append(line)
-    return result
+    return "\n".join(result)
 
 
 def create_deque() -> deque[Style]:
@@ -143,7 +144,11 @@ class LoadingScreen(Screen[list[str]]):
         io_class = getattr(chezmoi, "doctor")
         io_class.update()
         self.log_text(io_class.label)
-        # get config file name from doctor output to run self.set_temp_config_file
+        # if not interactive config, the base command is already correct the change commands
+        if not CM_CFG.interactive:
+            return
+        cmd_log.log_warning("--interactive flag found in config")
+        # get config file name from doctor output
         for line in io_class.list_out:
             # Example line: "ok config-file found ~/.config/chezmoi/chezmoi.toml, last modified ..."
             if "config-file" in line and "found" in line:
@@ -155,38 +160,23 @@ class LoadingScreen(Screen[list[str]]):
             raise RuntimeError(
                 "No config file found in chezmoi doctor output."
             )
-        cmd_log.log_success(
-            f"found config file {config_file_path} in doctor output"
-        )
-        self.set_temp_config_file(config_file_path)
-
-    @work(thread=True, group="io_workers")
-    def set_temp_config_file(self, config_file_path: Path) -> None:
-        # read and create config
-        config_lines = chezmoi.run.cat_config()
-        self.log_text("chezmoi cat config")
-
-        if not any("interactive" in line.lower() for line in config_lines):
-            ChangeCommand.config_path = config_file_path
-            cmd_log.log_success(f"Config path set to {config_file_path}.")
-            return
-
-        new_config_lines: list[str] = modify_config_non_interactive(
-            config_lines
-        )
-        new_config_str = "\n".join(new_config_lines)
-
         temp_file_path: Path = (
             Path(tempfile.gettempdir()) / config_file_path.name
         )
+        # read and create non-interactive config
+        config_lines = chezmoi.run.cat_config()
+        self.log_text("chezmoi cat config")
+        new_config_str: str = create_non_interactive_config(config_lines)
+
         with open(temp_file_path, "w") as temp_file:
             temp_file.write(new_config_str)
         cmd_log.log_success(
             f"created non-interactive config {temp_file_path}, output:"
         )
         cmd_log.log_dimmed(new_config_str)
-        ChangeCommand.config_path = temp_file_path
-        cmd_log.log_success(f"Config path set to {config_file_path}.")
+        # update the base command to include the --config flag for the change commands
+        chezmoi.perform.append_config_to_base_command(temp_file_path)
+        cmd_log.log_success(f"Config path set to {temp_file_path}.")
         self.log_text("Non-interactive config")
 
     def all_workers_finished(self) -> None:
@@ -206,8 +196,8 @@ class LoadingScreen(Screen[list[str]]):
         self.fade_timer = self.set_interval(
             interval=0.05, callback=animated_fade.refresh
         )
-
-        # first run chezmoi doctor, most expensive command
+        # first run chezmoi doctor, most expensive command. Also creates
+        # a non-interactive config if needed for chezmoi ChangeCommand commands
         self.run_doctor_worker()
         LONG_COMMANDS.pop("doctor")
 
