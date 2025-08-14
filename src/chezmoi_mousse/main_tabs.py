@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import cast
 
 from rich.text import Text
 from textual.app import ComposeResult
@@ -408,21 +407,23 @@ class DoctorTab(ScrollableContainer, IdMixin):
         )
         self.dr_style = {
             "ok": theme.vars["text-success"],
-            "warning": theme.vars["text-warning"],
-            "error": theme.vars["text-error"],
             "info": theme.vars["foreground-darken-1"],
+            "warning": theme.vars["text-warning"],
+            "failed": theme.vars["text-error"],
+            "error": theme.vars["text-error"],
         }
 
     def compose(self) -> ComposeResult:
 
-        with Collapsible(title="chezmoi doctor output"):
+        with Collapsible(title=DoctorEnum.doctor.value):
             yield DataTable[Text](
                 id=ViewStr.doctor_table.name,
                 classes=TcssStr.doctor_table,
                 show_cursor=False,
             )
         yield Collapsible(
-            Static(FLOW, classes=TcssStr.flow_diagram), title="chezmoi diagram"
+            Static(FLOW, classes=TcssStr.flow_diagram),
+            title=DoctorEnum.diagram.value,
         )
         with Collapsible(title=DoctorEnum.doctor_template_data.value):
             yield Pretty(
@@ -440,7 +441,9 @@ class DoctorTab(ScrollableContainer, IdMixin):
 
     def on_collapsible_expanded(self, event: Collapsible.Expanded) -> None:
         event.stop()
-        if event.collapsible.title == DoctorEnum.doctor_template_data.value:
+        if event.collapsible.title == DoctorEnum.doctor.value:
+            self.populate_doctor_data()
+        elif event.collapsible.title == DoctorEnum.doctor_template_data.value:
             event.collapsible.query_one(
                 DoctorEnum.doctor_template_data.qid, Pretty
             ).update(chezmoi.run.template_data())
@@ -453,21 +456,21 @@ class DoctorTab(ScrollableContainer, IdMixin):
                 DoctorEnum.doctor_ignored.qid, Pretty
             ).update(chezmoi.run.ignored())
 
-    # do not put this in the on_mount method as textual manages this
     def populate_doctor_data(self) -> None:
         # cast datatype as there's no other way because we have to handle
         # non generic type and a subscribed type for runtime and type checking
-        doctor_table = cast(
-            DataTable[Text],
-            self.get_widget_by_id(ViewStr.doctor_table.name, DataTable),
-        )
+        # doctor_table = cast(
+        #     DataTable[Text],
+        #     self.get_widget_by_id(ViewStr.doctor_table.name, DataTable),
+        # )
+        doctor_table: DataTable[Text] = self.query_one(DataTable[Text])
         doctor_table.add_columns(*chezmoi.doctor.list_out[0].split())
 
         for line in chezmoi.doctor.list_out[1:]:
             row = tuple(line.split(maxsplit=2))
             if row[0] == "info" and "not found in $PATH" in row[2]:
                 self.populate_list_view_collapsible(row[1])
-            elif row[0] == "ok" or row[0] == "warning" or row[0] == "error":
+            elif row[0] in ["ok", "warning", "error", "failed"]:
                 row = [
                     Text(cell_text, style=f"{self.dr_style[row[0]]}")
                     for cell_text in row

@@ -165,8 +165,6 @@ class ChezmoiGUI(App[None]):
                 ).refresh_tree_data()
         # Refresh DirectoryTree
         self.query_one(FilteredDirTree).reload()
-        # Refresh DoctorTab
-        self.query_one(DoctorTab).populate_doctor_data()
 
     def on_tabbed_content_tab_activated(
         self, event: TabbedContent.TabActivated

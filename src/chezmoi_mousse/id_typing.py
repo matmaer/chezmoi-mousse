@@ -196,6 +196,8 @@ class ModalIdStr(StrEnum):
 
 
 class DoctorEnum(Enum):
+    doctor = "chezmoi doctor output (diagnostic information)"
+    diagram = "chezmoi diagram (how operations are applied)"
     cat_config = "chezmoi cat-config (contents of config-file)"
     doctor_ignored = "chezmoi ignored (git ignore in source-dir)"
     doctor_template_data = "chezmoi template-data (contents of template-file)"
