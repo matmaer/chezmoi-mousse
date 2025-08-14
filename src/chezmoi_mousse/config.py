@@ -1,3 +1,6 @@
+from enum import StrEnum
+
+
 command_filters = [
     "--color=off"
     "--config"
@@ -13,8 +16,6 @@ command_filters = [
     "--no-tty"
     "--path-style=absolute"
 ]
-
-from enum import StrEnum
 
 
 class UnwantedDir(StrEnum):
