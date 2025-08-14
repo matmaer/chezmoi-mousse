@@ -17,17 +17,20 @@ class NodeData:
     status: str
 
 
+class IoVerbs(Enum):
+    doctor = "doctor"
+    managed = "managed"
+    status = "status"
+
+
 class ReadVerbs(Enum):
     cat = "cat"
     cat_config = "cat-config"
     data = "data"
     diff = "diff"
-    doctor = "doctor"
     git = "git"
     ignored = "ignored"
-    managed = "managed"
     source_path = "source-path"
-    status = "status"
 
 
 class OperateVerbs(Enum):

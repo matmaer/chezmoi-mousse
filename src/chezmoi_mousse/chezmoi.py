@@ -15,6 +15,7 @@ from chezmoi_mousse.id_typing import (
     Buttons,
     Chars,
     CmdWords,
+    IoVerbs,
     ModalIdStr,
     OperateVerbs,
     ParsedJson,
@@ -38,15 +39,15 @@ class OperateData:
 class AllCommands(Enum):
     cat = BASE_CMD + (ReadVerbs.cat.value,)
     cat_config = BASE_CMD + (ReadVerbs.cat_config.value,)
-    doctor = BASE_CMD + (ReadVerbs.doctor.value,)
+    doctor = BASE_CMD + (IoVerbs.doctor.value,)
     diff = BASE_CMD + (ReadVerbs.diff.value,)
     dir_status_lines = BASE_CMD + (
-        ReadVerbs.status.value,
+        IoVerbs.status.value,
         "--path-style=absolute",
         "--include=dirs",
     )
     file_status_lines = BASE_CMD + (
-        ReadVerbs.status.value,
+        IoVerbs.status.value,
         "--path-style=absolute",
         "--include=files",
     )
@@ -64,12 +65,12 @@ class AllCommands(Enum):
     )
     ignored = BASE_CMD + (ReadVerbs.ignored.value,)
     managed_dirs = BASE_CMD + (
-        ReadVerbs.managed.value,
+        IoVerbs.managed.value,
         "--path-style=absolute",
         "--include=dirs",
     )
     managed_files = BASE_CMD + (
-        ReadVerbs.managed.value,
+        IoVerbs.managed.value,
         "--path-style=absolute",
         "--include=files",
     )
@@ -122,6 +123,7 @@ class CommandLog(RichLog):
                     "--no-pager"
                     "--no-tty"
                     "--path-style=absolute"
+                    "--progress=false"
                 )
             ]
         )
@@ -205,7 +207,7 @@ def subprocess_run(long_command: CmdWords, time_out: float = 1) -> str:
                 op_log.log_dimmed(cmd_stdout)
                 cmd_log.log_dimmed(cmd_stdout)
             return cmd_stdout
-        if any(verb.value in long_command for verb in ReadVerbs):
+        if any(verb.value in long_command for verb in IoVerbs):
             cmd_log.log_warning(
                 "Subprocess call successful: InputOutput data updated"
             )
