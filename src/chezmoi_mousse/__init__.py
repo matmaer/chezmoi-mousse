@@ -4,7 +4,14 @@ from pathlib import Path
 from subprocess import run
 from .id_typing import ParsedJson
 
-BASE_CMD = ("chezmoi", "--no-pager", "--color=off", "--no-tty", "--mode=file")
+BASE_CMD = (
+    "chezmoi",
+    "--no-pager",
+    "--color=off",
+    "--no-tty",
+    "--mode=file",
+    "--progress=false",
+)
 
 try:
     chezmoi_config: ParsedJson = json.loads(
