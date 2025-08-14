@@ -303,7 +303,7 @@ class ReadCommand:
         return [
             line
             for line in subprocess_run(ReadCmd.cat_config.value).splitlines()
-            if line.strip()
+            if line.strip()  # Filter out empty lines from config output
         ]
 
     def git_log(self, path: Path) -> list[str]:
