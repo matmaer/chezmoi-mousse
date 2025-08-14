@@ -206,17 +206,12 @@ class ChezmoiGUI(App[None]):
 
     def action_toggle_filter_slider(self) -> None:
         # merely find the corresponding method in the active tab ant call it
-        if self.query_one(TabbedContent).active in (
-            Panes.apply.name,
-            Panes.re_add.name,
-            Panes.add.name,
-        ):
-            tab_pane = self.query_one(
-                f"#{self.query_one(TabbedContent).active}", TabPane
-            )
-            tab_widget = tab_pane.children[0]
-            if hasattr(tab_widget, "action_toggle_filter_slider"):
-                getattr(tab_widget, "action_toggle_filter_slider")()
+        tab_pane = self.query_one(
+            f"#{self.query_one(TabbedContent).active}", TabPane
+        )
+        tab_widget = tab_pane.children[0]
+        if hasattr(tab_widget, "action_toggle_filter_slider"):
+            getattr(tab_widget, "action_toggle_filter_slider")()  # call it
 
     def action_maximize(self) -> None:
         id_mixin = self.pane_id_map[self.query_one(TabbedContent).active]
