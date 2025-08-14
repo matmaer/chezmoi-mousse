@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from subprocess import run
+import subprocess
 from typing import Literal
 
 from rich.markup import escape
@@ -178,9 +178,10 @@ op_log.add_class(TcssStr.op_log)
 def subprocess_run(long_command: CmdWords, time_out: float = 1) -> str:
     check_mark = Chars.check_mark.value
     x_mark = Chars.x_mark.value
+    warning_sign = Chars.warning_sign.value
 
     try:
-        cmd_stdout: str = run(
+        cmd_stdout = subprocess.run(
             long_command,
             capture_output=True,
             check=True,  # raises exception for any non-zero return code
@@ -218,9 +219,16 @@ def subprocess_run(long_command: CmdWords, time_out: float = 1) -> str:
             )
         return cmd_stdout
     except Exception as e:
+        if "doctor" in long_command and isinstance(
+            e, subprocess.CalledProcessError
+        ):
+            op_log.log_warning(
+                f"{warning_sign} chezmoi doctor has a non-zero exit code"
+            )
+            return e.stdout.strip()
         if any(verb.value in long_command for verb in OperateVerbs):
             op_log.log_error(f"{x_mark} Command failed {e}")
-            cmd_log.log_error(f"{x_mark} Command failed {e}")
+        cmd_log.log_error(f"{x_mark} Command failed {e}")
         return "failed"
 
 
