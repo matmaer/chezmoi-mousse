@@ -1,23 +1,6 @@
 from enum import StrEnum
 
 
-command_filters = [
-    "--color=off"
-    "--config"
-    "--date-order"
-    "--format=%ar by %cn;%s"
-    "--force"
-    "--format=json"
-    "--mode=file"
-    "--no-color"
-    "--no-decorate"
-    "--no-expand-tabs"
-    "--no-pager"
-    "--no-tty"
-    "--path-style=absolute"
-]
-
-
 class UnwantedDir(StrEnum):
     __pycache__ = "__pycache__"
     dot_build = ".build"
