@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 from typing import Any
 
@@ -136,13 +135,6 @@ class ChezmoiGUI(App[None]):
         cmd_log.log_success(f"Theme set to {new_theme}")
 
     def first_mount_refresh(self, _: object) -> None:
-        if os.environ.get("CHEZMOI_MOUSSE_DEV") == "1":
-            self.notify("Running in development mode", severity="information")
-        if os.environ.get("MOUSSE_ENABLE_CHANGES") == "1":
-            self.notify(
-                "Changes mode enabled, operations will be executed",
-                severity="warning",
-            )
         add_dir_btn = self.query_one(
             self.pane_id_map[Panes.add.name].button_qid(Buttons.add_dir_btn),
             Button,
