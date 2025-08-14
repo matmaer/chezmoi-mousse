@@ -21,14 +21,15 @@ except Exception as e:
 
 class ChezmoiConfig:
     def __init__(self, config: ParsedJson):
-        self.destDir: Path = Path(config["destDir"])
-        self.sourceDir: Path = Path(config["sourceDir"])
         self.autoadd: bool = config["git"]["autoadd"]
         self.autocommit: bool = config["git"]["autocommit"]
         self.autopush: bool = config["git"]["autopush"]
+        self.configPath: Path | None = None
+        self.destDir: Path = Path(config["destDir"])
         self.interactive: bool = config["interactive"]
         self.mode: str = config["mode"]
-        self.tempDir: str = config["tempDir"]
+        self.sourceDir: Path = Path(config["sourceDir"])
+        self.tempDir: Path = Path(config["tempDir"])
 
 
 try:
