@@ -31,7 +31,6 @@ class ChezmoiConfig:
         self.autoadd: bool = config["git"]["autoadd"]
         self.autocommit: bool = config["git"]["autocommit"]
         self.autopush: bool = config["git"]["autopush"]
-        self.configPath: Path | None = None
         self.destDir: Path = Path(config["destDir"])
         self.interactive: bool = config["interactive"]
         self.mode: str = config["mode"]
