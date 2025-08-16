@@ -15,6 +15,7 @@ from chezmoi_mousse.id_typing import (
     Buttons,
     Chars,
     CmdWords,
+    Id,
     IoVerbs,
     ModalIdStr,
     Mro,
@@ -185,7 +186,7 @@ class CommandLog(RichLog):
         self.write(f"{self._log_time()} [{color}]{message}[/]")
 
 
-cmd_log = CommandLog(id=TabStr.log_tab)
+cmd_log = CommandLog(id=Id.log.tab_name)
 op_log = CommandLog(id=ModalIdStr.operate_log)
 op_log.add_class(TcssStr.op_log)
 
