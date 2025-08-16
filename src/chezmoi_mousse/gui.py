@@ -228,13 +228,13 @@ class ChezmoiGUI(App[None]):
             id_to_maximize = add_tab_contents_view.id
             current_path = getattr(add_tab_contents_view, "path")
 
-            self.push_screen(
-                Maximized(
-                    tab_name=id_mixin.tab_name,
-                    id_to_maximize=id_to_maximize,
-                    path=current_path,
-                )
+        self.push_screen(
+            Maximized(
+                tab_name=id_mixin.tab_name,
+                id_to_maximize=id_to_maximize,
+                path=current_path,
             )
+        )
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         id_mixin = self.pane_id_map[self.query_one(TabbedContent).active]

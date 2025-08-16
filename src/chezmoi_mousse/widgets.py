@@ -278,12 +278,7 @@ class GitLogView(DataTable[Text]):
     path: reactive[Path | None] = reactive(None, init=False)
 
     def __init__(self, *, view_id: str) -> None:
-        super().__init__(id=view_id)
-
-    def on_mount(self) -> None:
-        self.show_cursor = False
-        if self.path is None:
-            self.path = CM_CFG.destDir
+        super().__init__(id=view_id, show_cursor=False)
 
     def add_row_with_style(self, columns: list[str], style: str) -> None:
         row: Iterable[Text] = [
@@ -311,9 +306,8 @@ class GitLogView(DataTable[Text]):
 
     def watch_path(self) -> None:
         assert isinstance(self.path, Path)
-        git_log_warning = chezmoi.run.git_log(self.path)
         self.clear(columns=True)
-        self.populate_data_table(git_log_warning)
+        self.populate_data_table(chezmoi.run.git_log(self.path))
 
 
 @dataclass
