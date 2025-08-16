@@ -46,6 +46,7 @@ config = ".pre-commit-config.yaml"
 [tool.pytest.ini_options]
 addopts = "--color=auto --tb=no -s --no-header -v --no-summary --cov --cov-report=xml:ignored/coverage.xml"
 testpaths = ["tests"]
+python_files = ["test_*.py"]
 
 [tool.coverage.run]
 omit = [
