@@ -194,7 +194,7 @@ if os.environ.get("CHEZMOI_MOUSSE_DEV") == "1":
     cmd_log.log_ready_to_run("Running in development mode")
 
 
-def subprocess_run(long_command: CmdWords, time_out: float = 1) -> str:
+def _run_cmd(long_command: CmdWords, time_out: float = 1) -> str:
     check_mark = Chars.check_mark.value
     x_mark = Chars.x_mark.value
     warning_sign = Chars.warning_sign.value
@@ -279,27 +279,27 @@ class ChangeCommand:
         self.base_cmd = BASE_CMD + ("--config", str(new_path))
 
     def add(self, path: Path) -> None:
-        subprocess_run(self.base_cmd + ("add", str(path)))
+        _run_cmd(self.base_cmd + ("add", str(path)))
         self._update_managed_status_data()
 
     def add_encrypted(self, path: Path) -> None:
-        subprocess_run(self.base_cmd + ("add", "--encrypt", str(path)))
+        _run_cmd(self.base_cmd + ("add", "--encrypt", str(path)))
         self._update_managed_status_data()
 
     def re_add(self, path: Path) -> None:
-        subprocess_run(self.base_cmd + ("re-add", str(path)))
+        _run_cmd(self.base_cmd + ("re-add", str(path)))
         self._update_managed_status_data()
 
     def apply(self, path: Path) -> None:
-        subprocess_run(self.base_cmd + ("apply", str(path)))
+        _run_cmd(self.base_cmd + ("apply", str(path)))
         self._update_managed_status_data()
 
     def forget(self, path: Path) -> None:
-        subprocess_run(self.base_cmd + ("forget", str(path)))
+        _run_cmd(self.base_cmd + ("forget", str(path)))
         self._update_managed_status_data()
 
     def destroy(self, path: Path) -> None:
-        subprocess_run(self.base_cmd + ("destroy", str(path)))
+        _run_cmd(self.base_cmd + ("destroy", str(path)))
         self._update_managed_status_data()
 
 
@@ -309,21 +309,19 @@ class ReadCommand:
 
     def apply_diff(self, file_path: Path) -> list[str]:
         long_command = ReadCmd.diff.value + (str(file_path),)
-        return subprocess_run(long_command).splitlines()
+        return _run_cmd(long_command).splitlines()
 
     def add_diff(self, file_path: Path) -> list[str]:
         long_command = ReadCmd.diff.value + (str(file_path),)
-        return subprocess_run(long_command).splitlines()
+        return _run_cmd(long_command).splitlines()
 
     def cat(self, file_path: Path) -> list[str]:
-        return subprocess_run(
-            ReadCmd.cat.value + (str(file_path),)
-        ).splitlines()
+        return _run_cmd(ReadCmd.cat.value + (str(file_path),)).splitlines()
 
     def cat_config(self) -> list[str]:
         return [
             line
-            for line in subprocess_run(ReadCmd.cat_config.value).splitlines()
+            for line in _run_cmd(ReadCmd.cat_config.value).splitlines()
             if line.strip()  # Filter out empty lines from config output
         ]
 
@@ -332,21 +330,19 @@ class ReadCommand:
         if path == CM_CFG.destDir:
             source_path = str(CM_CFG.sourceDir)
         else:
-            source_path = subprocess_run(
-                ReadCmd.source_path.value + (str(path),)
-            )
+            source_path = _run_cmd(ReadCmd.source_path.value + (str(path),))
         long_command = ReadCmd.git_log.value + (source_path,)
-        return subprocess_run(long_command).splitlines()
+        return _run_cmd(long_command).splitlines()
 
     def ignored(self) -> list[str]:
-        return subprocess_run(ReadCmd.ignored.value).splitlines()
+        return _run_cmd(ReadCmd.ignored.value).splitlines()
 
     def template_data(self) -> list[str]:
-        return subprocess_run(ReadCmd.template_data.value).splitlines()
+        return _run_cmd(ReadCmd.template_data.value).splitlines()
 
     def re_add_diff(self, file_path: Path) -> list[str]:
         long_command = ReadCmd.diff.value + (str(file_path), "--reverse")
-        return subprocess_run(long_command).splitlines()
+        return _run_cmd(long_command).splitlines()
 
 
 @dataclass
@@ -373,7 +369,7 @@ class InputOutput:
             return {}
 
     def update(self) -> None:
-        self.std_out = subprocess_run(self.long_command)
+        self.std_out = _run_cmd(self.long_command)
 
 
 class Chezmoi:
