@@ -17,6 +17,7 @@ from chezmoi_mousse.id_typing import (
     CmdWords,
     IoVerbs,
     ModalIdStr,
+    Mro,
     OperateVerbs,
     ParsedJson,
     ReadVerbs,
@@ -155,6 +156,19 @@ class CommandLog(RichLog):
         color = theme.vars["accent-darken-3"]
         self.write(f"{self._log_time()} [{color}]{message}[/]")
 
+    def log_mro(self, mro: Mro) -> None:
+        if os.environ.get("CHEZMOI_MOUSSE_DEV") != "1":
+            return
+        color = theme.vars["accent-darken-2"]
+        self.write(f"{self._log_time()} [{color}]Method Resolution Order:[/]")
+        pretty_mro = " -> ".join(
+            f"{cls.__module__}.{cls.__qualname__}\n"
+            for cls in mro
+            if "typing.Generic" not in f"{cls.__module__}.{cls.__qualname__}"
+            and "builtins.object" not in f"{cls.__module__}.{cls.__qualname__}"
+        )
+        self.log_dimmed(f"{pretty_mro}")
+
     def log_dimmed(self, message: str) -> None:
         if message.strip() == "":
             return
@@ -168,8 +182,7 @@ class CommandLog(RichLog):
     # used by the ContentsView class
     def log_read_path(self, message: str) -> None:
         color = theme.vars["primary-lighten-1"]
-        time = self._log_time()
-        self.write(f"{time} [{color}]{message}[/]")
+        self.write(f"{self._log_time()} [{color}]{message}[/]")
 
 
 cmd_log = CommandLog(id=TabStr.log_tab)
