@@ -10,7 +10,6 @@ from textual.containers import HorizontalGroup, Vertical, VerticalGroup
 from textual.widgets import Button, ContentSwitcher, Label, Switch
 
 from chezmoi_mousse import CM_CFG
-
 from chezmoi_mousse.id_typing import (
     Buttons,
     Filters,

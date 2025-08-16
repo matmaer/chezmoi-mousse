@@ -1,10 +1,10 @@
 import json
 import os
+import subprocess
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-import subprocess
 from typing import Literal
 
 from rich.markup import escape

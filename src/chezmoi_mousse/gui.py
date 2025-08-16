@@ -16,7 +16,7 @@ from textual.widgets import (
 )
 
 import chezmoi_mousse.theme
-from chezmoi_mousse.chezmoi import cmd_log, CM_CFG
+from chezmoi_mousse.chezmoi import CM_CFG, cmd_log
 from chezmoi_mousse.containers import ButtonsHorizontal
 from chezmoi_mousse.id_typing import (
     Buttons,

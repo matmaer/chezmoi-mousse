@@ -3,7 +3,6 @@ from enum import Enum, StrEnum, auto
 from pathlib import Path
 from typing import Any
 
-
 type CmdWords = tuple[str, ...]
 type Mro = tuple[type, ...]
 type ParsedJson = dict[str, Any]

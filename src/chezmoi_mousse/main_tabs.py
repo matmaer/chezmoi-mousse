@@ -33,10 +33,10 @@ from chezmoi_mousse.containers import (
 )
 from chezmoi_mousse.id_typing import (
     Buttons,
+    DoctorEnum,
     Filters,
     IdMixin,
     Location,
-    DoctorEnum,
     TabStr,
     TcssStr,
     TreeStr,

@@ -2,6 +2,7 @@ import json
 import sys
 from pathlib import Path
 from subprocess import run
+
 from .id_typing import ParsedJson
 
 BASE_CMD = (
