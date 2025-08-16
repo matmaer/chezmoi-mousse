@@ -270,3 +270,13 @@ class IdMixin:
 
     def view_qid(self, view: ViewStr) -> str:
         return f"#{self.view_id(view)}"
+
+
+@dataclass(frozen=True)
+class Id:
+    apply: IdMixin = IdMixin(TabStr.apply_tab)
+    re_add: IdMixin = IdMixin(TabStr.re_add_tab)
+    add: IdMixin = IdMixin(TabStr.add_tab)
+    init: IdMixin = IdMixin(TabStr.init_tab)
+    doctor: IdMixin = IdMixin(TabStr.doctor_tab)
+    log: IdMixin = IdMixin(TabStr.log_tab)

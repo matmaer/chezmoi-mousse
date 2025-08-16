@@ -35,6 +35,7 @@ from chezmoi_mousse.id_typing import (
     Buttons,
     DoctorEnum,
     Filters,
+    Id,
     IdMixin,
     Location,
     TabStr,
@@ -398,12 +399,12 @@ class InitTab(Horizontal, IdMixin):
         )
 
 
-class DoctorTab(ScrollableContainer, IdMixin):
+class DoctorTab(ScrollableContainer):
 
-    def __init__(self, tab_name: TabStr) -> None:
-        IdMixin.__init__(self, tab_name)
+    def __init__(self) -> None:
         super().__init__(
-            id=self.tab_main_horizontal_id, classes=TcssStr.doctor_vertical
+            id=Id.doctor.tab_main_horizontal_id,
+            classes=TcssStr.doctor_vertical,
         )
         self.dr_style = {
             "ok": theme.vars["text-success"],
@@ -457,12 +458,6 @@ class DoctorTab(ScrollableContainer, IdMixin):
             ).update(chezmoi.run.ignored())
 
     def populate_doctor_data(self) -> None:
-        # cast datatype as there's no other way because we have to handle
-        # non generic type and a subscribed type for runtime and type checking
-        # doctor_table = cast(
-        #     DataTable[Text],
-        #     self.get_widget_by_id(ViewStr.doctor_table.name, DataTable),
-        # )
         doctor_table: DataTable[Text] = self.query_one(DataTable[Text])
         doctor_table.add_columns(*chezmoi.doctor.list_out[0].split())
 
