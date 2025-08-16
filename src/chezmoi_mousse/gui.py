@@ -65,18 +65,18 @@ class ChezmoiGUI(App[None]):
         super().__init__(*args, **kwargs)
 
         self.pane_id_map: dict[str, IdMixin] = {
-            Panes.apply.name: IdMixin(Panes.apply.value),
-            Panes.re_add.name: IdMixin(Panes.re_add.value),
-            Panes.add.name: IdMixin(Panes.add.value),
-            Panes.doctor.name: IdMixin(Panes.doctor.value),
-            Panes.init.name: IdMixin(Panes.init.value),
+            Panes.apply_pane.name: IdMixin(Panes.apply_pane.value),
+            Panes.re_add_pane.name: IdMixin(Panes.re_add_pane.value),
+            Panes.add_pane.name: IdMixin(Panes.add_pane.value),
+            Panes.doctor_pane.name: IdMixin(Panes.doctor_pane.value),
+            Panes.init_pane.name: IdMixin(Panes.init_pane.value),
         }
 
     def compose(self) -> ComposeResult:
         yield Header(icon=Chars.burger.value)
         with TabbedContent():
-            with TabPane("Apply", id=Panes.apply.name):
-                yield ApplyTab(tab_name=Panes.apply.value)
+            with TabPane("Apply", id=Panes.apply_pane.name):
+                yield ApplyTab(tab_name=Panes.apply_pane.value)
                 yield ButtonsHorizontal(
                     TabStr.apply_tab,
                     buttons=(
@@ -86,8 +86,8 @@ class ChezmoiGUI(App[None]):
                     ),
                     location=Location.bottom,
                 )
-            with TabPane("Re-Add", id=Panes.re_add.name):
-                yield ReAddTab(tab_name=Panes.re_add.value)
+            with TabPane("Re-Add", id=Panes.re_add_pane.name):
+                yield ReAddTab(tab_name=Panes.re_add_pane.value)
                 yield ButtonsHorizontal(
                     TabStr.re_add_tab,
                     buttons=(
@@ -97,18 +97,18 @@ class ChezmoiGUI(App[None]):
                     ),
                     location=Location.bottom,
                 )
-            with TabPane("Add", id=Panes.add.name):
-                yield AddTab(tab_name=Panes.add.value)
+            with TabPane("Add", id=Panes.add_pane.name):
+                yield AddTab(tab_name=Panes.add_pane.value)
                 yield ButtonsHorizontal(
                     TabStr.add_tab,
                     buttons=(Buttons.add_file_btn, Buttons.add_dir_btn),
                     location=Location.bottom,
                 )
-            with TabPane("Init", id=Panes.init.name):
+            with TabPane("Init", id=Panes.init_pane.name):
                 yield InitTab(tab_name=TabStr.init_tab)
-            with TabPane("Doctor", id=Panes.doctor.name):
-                yield DoctorTab(tab_name=Panes.doctor.value)
-            with TabPane("Log", id=Panes.log.name):
+            with TabPane("Doctor", id=Panes.doctor_pane.name):
+                yield DoctorTab()
+            with TabPane("Log", id=Panes.log_pane.name):
                 yield cmd_log
 
         yield Footer()
@@ -136,7 +136,9 @@ class ChezmoiGUI(App[None]):
 
     def first_mount_refresh(self, _: object) -> None:
         add_dir_btn = self.query_one(
-            self.pane_id_map[Panes.add.name].button_qid(Buttons.add_dir_btn),
+            self.pane_id_map[Panes.add_pane.name].button_qid(
+                Buttons.add_dir_btn
+            ),
             Button,
         )
         add_dir_btn.disabled = True
@@ -149,7 +151,7 @@ class ChezmoiGUI(App[None]):
             (TreeStr.expanded_tree, ExpandedTree),
         ]
         # Refresh apply and re_add trees
-        for tab_name in (Panes.apply.name, Panes.re_add.name):
+        for tab_name in (Panes.apply_pane.name, Panes.re_add_pane.name):
             id_mixin = self.pane_id_map[tab_name]
             for tree_str, tree_cls in tree_types:
                 self.query_one(
@@ -178,18 +180,18 @@ class ChezmoiGUI(App[None]):
 
         if action == "maximize":
             if self.query_one(TabbedContent).active in (
-                Panes.doctor.name,
-                Panes.log.name,
-                Panes.init.name,
+                Panes.doctor_pane.name,
+                Panes.log_pane.name,
+                Panes.init_pane.name,
             ):
                 return None
             return True
 
         elif action == "toggle_filter_slider":
             if self.query_one(TabbedContent).active in (
-                Panes.apply.name,
-                Panes.re_add.name,
-                Panes.add.name,
+                Panes.apply_pane.name,
+                Panes.re_add_pane.name,
+                Panes.add_pane.name,
             ):
                 return True
             return None

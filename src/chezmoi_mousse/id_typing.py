@@ -81,12 +81,12 @@ class TabStr(StrEnum):
 
 
 class Panes(Enum):
-    add = TabStr.add_tab
-    apply = TabStr.apply_tab
-    doctor = TabStr.doctor_tab
-    init = TabStr.init_tab
-    log = TabStr.log_tab
-    re_add = TabStr.re_add_tab
+    add_pane = TabStr.add_tab
+    apply_pane = TabStr.apply_tab
+    doctor_pane = TabStr.doctor_tab
+    init_pane = TabStr.init_tab
+    log_pane = TabStr.log_tab
+    re_add_pane = TabStr.re_add_tab
 
 
 class ViewStr(StrEnum):
