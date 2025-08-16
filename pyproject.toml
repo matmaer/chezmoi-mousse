@@ -1,11 +1,11 @@
 [project]
 name = "chezmoi-mousse"
 version = "0.1.0"
-description = "Add your description here"
+description = "Visual interface in the terminal for the chezmoi dotfile managar, with a wink to the mouse."
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "textual>=3.1.1",
+    "textual>=5.3.0",
 ]
 
 [project.urls]
