@@ -192,8 +192,6 @@ op_log.add_class(TcssStr.op_log)
 
 if os.environ.get("CHEZMOI_MOUSSE_DEV") == "1":
     cmd_log.log_ready_to_run("Running in development mode")
-else:
-    cmd_log.log_warning("Changes mode enabled, operations will be executed")
 
 
 def subprocess_run(long_command: CmdWords, time_out: float = 1) -> str:
