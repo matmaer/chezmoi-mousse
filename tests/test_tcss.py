@@ -15,7 +15,6 @@ exclude_files = ["id_typing.py", "__init__.py", "__main__.py"]
 
 
 def extract_tcss_classes(path: Path) -> list[str]:
-
     pattern = r"(?:^|\s)[.&][^a-z]*([a-z][a-z_]*(?=.*_)[a-z_]*)(?=\s|$)"
     with open(path, "r") as f:
         content = f.read()
@@ -23,18 +22,41 @@ def extract_tcss_classes(path: Path) -> list[str]:
     return matches
 
 
-@pytest.mark.parametrize(
-    "tcss_class", extract_tcss_classes(Path("./src/chezmoi_mousse/gui.tcss"))
-)
-def test_no_unused(tcss_class: str) -> None:
-    is_used = False
-    for py_file in modules_to_test(exclude_file_names=exclude_files):
-        if tcss_class in py_file.read_text():
-            is_used = True
-            break  # Found it, no need to check other files
+def get_used_tcss_members() -> set[str]:
+    """Get all TcssStr enum members that are used in Python code."""
+    used_members: set[str] = set()
 
-    if not is_used:
-        pytest.fail(f"unused tcss class: {tcss_class}")
+    for py_file in modules_to_test(exclude_file_names=exclude_files):
+        content = py_file.read_text()
+        # Find TcssStr.member_name patterns
+        for member in TcssStr:
+            if f"TcssStr.{member.name}" in content:
+                used_members.add(member.name)
+
+    return used_members
+
+
+@pytest.mark.parametrize("tcss_member", [member.name for member in TcssStr])
+def test_tcss_member_in_use(tcss_member: str) -> None:
+    """Test that each TcssStr member is both defined in gui.tcss AND used in Python code."""
+    tcss_classes = extract_tcss_classes(Path("./src/chezmoi_mousse/gui.tcss"))
+    used_members = get_used_tcss_members()
+
+    is_in_tcss = tcss_member in tcss_classes
+    is_used_in_python = tcss_member in used_members
+
+    if not is_in_tcss and not is_used_in_python:
+        pytest.fail(
+            f"TcssStr.{tcss_member} is neither in gui.tcss nor used in Python code"
+        )
+    elif not is_in_tcss:
+        pytest.fail(
+            f"TcssStr.{tcss_member} is used in Python but not defined in gui.tcss"
+        )
+    elif not is_used_in_python:
+        pytest.fail(
+            f"TcssStr.{tcss_member} is defined in gui.tcss but not used in Python code"
+        )
 
 
 @pytest.mark.parametrize(
