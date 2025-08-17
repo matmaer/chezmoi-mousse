@@ -224,6 +224,7 @@ class ChezmoiGUI(App[None]):
         )
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
+        event.stop()
         active_pane_id = self.query_one(TabbedContent).active
         id_mixin = Id.get_tab_ids_from_pane_id(pane_id=active_pane_id)
         contents_view = self.query_one(

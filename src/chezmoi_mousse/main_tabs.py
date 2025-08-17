@@ -102,6 +102,7 @@ class OperateTabsBase(Horizontal):
     def on_tree_node_selected(
         self, event: TreeBase.NodeSelected[NodeData]
     ) -> None:
+        event.stop()
         assert event.node.data is not None
         self.update_right_side_content_switcher(event.node.data.path)
 
@@ -129,6 +130,7 @@ class OperateTabsBase(Horizontal):
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         # Tree/List Switch
+        event.stop()
         if event.button.id == self.tab_ids.button_id(Buttons.tree_btn):
             expand_all_switch = self.query_one(
                 self.tab_ids.switch_qid(Filters.expand_all), Switch

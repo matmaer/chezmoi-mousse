@@ -595,6 +595,7 @@ class ManagedTree(TreeBase):
     def on_tree_node_expanded(
         self, event: TreeBase.NodeExpanded[NodeData]
     ) -> None:
+        event.stop()
         self.add_dir_nodes(tree_node=event.node, show_unchanged=self.unchanged)
         self.add_status_leaves(tree_node=event.node)
         if self.unchanged:
@@ -605,6 +606,7 @@ class ManagedTree(TreeBase):
     def on_tree_node_collapsed(
         self, event: TreeBase.NodeExpanded[NodeData]
     ) -> None:
+        event.stop()
         event.node.remove_children()
 
     def watch_unchanged(self) -> None:
@@ -640,6 +642,7 @@ class ExpandedTree(TreeBase):
     def on_tree_node_expanded(
         self, event: TreeBase.NodeExpanded[NodeData]
     ) -> None:
+        event.stop()
         self.add_dir_nodes(tree_node=event.node, show_unchanged=self.unchanged)
         self.add_status_leaves(tree_node=event.node)
         if self.unchanged:
