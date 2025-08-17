@@ -60,7 +60,7 @@ class ModalBase(ModalScreen[None]):
 
 class Operate(ModalBase):
 
-    # TODO: add auto height for diff view and content view
+    # TODO: fix invisible horizontal scrollbar in DiffView
     # TODO: add content view when screen is pushed from Apply or Re-Add tab after clicking destroy or forget
 
     check_mark = Chars.check_mark.value
