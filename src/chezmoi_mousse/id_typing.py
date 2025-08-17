@@ -158,7 +158,6 @@ class TcssStr(StrEnum):
     flow_diagram = auto()
     last_clicked = auto()
     modal_base = auto()
-    modal_container = auto()
     op_log = auto()
     operate_auto_warning = auto()
     operate_button = auto()

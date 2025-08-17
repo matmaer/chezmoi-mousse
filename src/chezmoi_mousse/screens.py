@@ -84,9 +84,7 @@ class Operate(ModalBase):
         )
 
     def compose(self) -> ComposeResult:
-        with Vertical(
-            id=ModalIdStr.operate_vertical, classes=TcssStr.modal_container
-        ):
+        with Vertical(id=ModalIdStr.operate_vertical):
             yield AutoWarning(self.tab_name)
             yield OperateInfo(self.tab_name, self.path)
             if self.tab_name == TabStr.add_tab:
@@ -193,9 +191,7 @@ class Maximized(ModalBase):
         )
 
     def compose(self) -> ComposeResult:
-        with Vertical(
-            id=ModalIdStr.maximized_vertical, classes=TcssStr.modal_container
-        ):
+        with Vertical(id=ModalIdStr.maximized_vertical):
             if self.id_to_maximize == self.tab_ids.view_id(
                 ViewStr.contents_view
             ):
