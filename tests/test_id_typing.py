@@ -44,17 +44,37 @@ def _get_str_enum_members() -> list[StrEnum]:
     return members
 
 
+def _get_search_terms_for_member(str_enum_member: StrEnum) -> list[str]:
+    search_terms = [str(str_enum_member.value)]
+    # Handle indirect usage patterns
+    if str_enum_member.__class__.__name__ == "TabStr":
+        # TabStr members could be used indirectly through Id enum
+        # Map TabStr members to their corresponding Id enum names
+        tab_to_id_mapping = {
+            "init_tab": "Id.init",
+            "log_tab": "Id.doctor",
+            "apply_tab": "Id.apply",
+            "re_add_tab": "Id.re_add",
+            "add_tab": "Id.add",
+        }
+        if str_enum_member.name in tab_to_id_mapping:
+            search_terms.append(tab_to_id_mapping[str_enum_member.name])
+
+    return search_terms
+
+
 @pytest.mark.parametrize(
     "str_enum_member",
     _get_str_enum_members(),
     ids=lambda member: f"{member.__class__.__name__}.{member.name}",
 )
 def test_str_enum_members_in_use(str_enum_member: StrEnum):
-    search_term = str(str_enum_member.value)
+    search_terms = _get_search_terms_for_member(str_enum_member)
     found = False
+
     for py_file in modules_to_test(exclude_file_names=["id_typing.py"]):
         content = py_file.read_text()
-        if search_term in content:
+        if any(search_term in content for search_term in search_terms):
             found = True
             break
 
