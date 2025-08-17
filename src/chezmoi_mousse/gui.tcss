@@ -207,13 +207,8 @@ CheckBox {
   }
 }
 
-Collapsible {
-  margin-bottom: 1;
-}
-
 CollapsibleTitle {
   color: $primary-lighten-3;
-  padding: 0;
   &:hover {
     text-style: bold;
   }
