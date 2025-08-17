@@ -66,22 +66,23 @@ def test_str_enum_members_in_use(str_enum_member: StrEnum):
 
 
 def _get_enum_members() -> list[Enum]:
-
     members: list[Enum] = []
     for _, enum_class in inspect.getmembers(id_typing, inspect.isclass):
-        if issubclass(enum_class, Enum):
+        if issubclass(enum_class, Enum) and not issubclass(
+            enum_class, StrEnum
+        ):
             for member in enum_class:
                 members.append(member)
     return members
 
 
 @pytest.mark.parametrize(
-    "str_enum_member",
+    "enum_member",
     _get_enum_members(),
     ids=lambda member: f"{member.__class__.__name__}.{member.name}",
 )
-def test_enum_members_in_use(str_enum_member: Enum):
-    search_term = str(str_enum_member.name)
+def test_enum_members_in_use(enum_member: Enum):
+    search_term = str(enum_member.name)
     found = False
     for py_file in modules_to_test(exclude_file_names=["id_typing.py"]):
         content = py_file.read_text()
@@ -91,6 +92,6 @@ def test_enum_members_in_use(str_enum_member: Enum):
 
     if not found:
         pytest.fail(
-            f"'{str_enum_member.name}' from {str_enum_member.__class__.__name__} "
+            f"'{enum_member.name}' from {enum_member.__class__.__name__} "
             "is not in use."
         )
