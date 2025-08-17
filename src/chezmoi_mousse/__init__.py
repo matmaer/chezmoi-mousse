@@ -12,6 +12,8 @@ BASE_CMD = (
     "--no-tty",
     "--mode=file",
     "--progress=false",
+    "--interactive=false",
+    "--force",
 )
 
 try:

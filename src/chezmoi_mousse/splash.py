@@ -1,7 +1,5 @@
-import tempfile
 from collections import deque
 from enum import StrEnum, auto
-from pathlib import Path
 
 from rich.segment import Segment
 from rich.style import Style
@@ -16,7 +14,6 @@ from textual.timer import Timer
 from textual.widgets import RichLog, Static
 from textual.worker import WorkerState
 
-from chezmoi_mousse import CM_CFG
 from chezmoi_mousse.chezmoi import chezmoi, cmd_log
 
 SPLASH = """\
@@ -40,26 +37,6 @@ class SplashIdStr(StrEnum):
     animated_fade_id = auto()
     loading_screen_id = auto()
     splash_rich_log_id = auto()
-
-
-def create_non_interactive_config(list_of_strings: list[str]) -> str:
-    result: list[str] = []
-
-    replacements = [
-        ("true", "false"),
-        ("on", "off"),
-        ("1", "0"),
-        ("yes", "no"),
-    ]
-
-    for line in list_of_strings:
-        if "interactive" in line.lower():
-            for old, new in replacements:
-                line = line.replace(old, new)
-            result.append(line)
-        else:
-            result.append(line)
-    return "\n".join(result)
 
 
 def create_deque() -> deque[Style]:
@@ -138,52 +115,11 @@ class LoadingScreen(Screen[list[str]]):
         io_class.update()
         self.log_text(io_class.label)
 
-    @work(thread=True, group="doctor")
-    def run_doctor_worker(self) -> None:
-        config_file_path: Path | None = None
-        io_class = getattr(chezmoi, "doctor")
-        io_class.update()
-        self.log_text(io_class.label)
-        # if not interactive config, the base command is already correct the change commands
-        if not CM_CFG.interactive:
-            return
-        cmd_log.log_warning("--interactive flag found in config")
-        # get config file name from doctor output
-        for line in io_class.list_out:
-            # Example line: "ok config-file found ~/.config/chezmoi/chezmoi.toml, last modified ..."
-            if "config-file" in line and "found" in line:
-                parts = line.split("found ")
-                if len(parts) > 1:
-                    config_file_path = Path(parts[1].split(",")[0].strip())
-                    break
-        else:
-            raise RuntimeError(
-                "No config file found in chezmoi doctor output."
-            )
-        temp_file_path: Path = (
-            Path(tempfile.gettempdir()) / config_file_path.name
-        )
-        # read and create non-interactive config
-        config_lines = chezmoi.run.cat_config()
-        self.log_text("chezmoi cat config")
-        new_config_str: str = create_non_interactive_config(config_lines)
-
-        with open(temp_file_path, "w") as temp_file:
-            temp_file.write(new_config_str)
-        cmd_log.log_success(
-            f"created non-interactive config {temp_file_path}, output:"
-        )
-        cmd_log.log_dimmed(new_config_str)
-        # update the base command to include the --config flag for the change commands
-        chezmoi.perform.append_config_to_base_command(temp_file_path)
-        cmd_log.log_success(f"Config path set to {temp_file_path}.")
-        self.log_text("Non-interactive config")
-
     def all_workers_finished(self) -> None:
         if all(
             worker.state == WorkerState.SUCCESS
             for worker in self.app.workers
-            if worker.group in ("io_workers", "doctor")
+            if worker.group == "io_workers"
         ):
             cmd_log.log_success("--- splash.py finished loading ---")
             self.dismiss()
@@ -196,9 +132,8 @@ class LoadingScreen(Screen[list[str]]):
         self.fade_timer = self.set_interval(
             interval=0.05, callback=animated_fade.refresh
         )
-        # first run chezmoi doctor, most expensive command. Also creates
-        # a non-interactive config if needed for chezmoi ChangeCommand commands
-        self.run_doctor_worker()
+        # first run chezmoi doctor, most expensive command
+        self.run_io_worker("doctor")
         LONG_COMMANDS.pop("doctor")
 
         for arg_id in LONG_COMMANDS:

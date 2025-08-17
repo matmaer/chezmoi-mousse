@@ -113,7 +113,6 @@ class CommandLog(RichLog):
                 if _
                 not in (
                     "--color=off"
-                    "--config"
                     "--date-order"
                     "--format=%ar by %cn;%s"
                     "--force"
@@ -126,6 +125,8 @@ class CommandLog(RichLog):
                     "--no-tty"
                     "--path-style=absolute"
                     "--progress=false"
+                    "--interactive=false",
+                    "--force",
                 )
             ]
         )
@@ -257,8 +258,7 @@ class ChangeCommand:
     repository."""
 
     def __init__(self) -> None:
-        self.config_path: Path | None = None  # var set by splash.py
-        self.base_cmd: CmdWords = BASE_CMD + ("--force",)
+        self.base_cmd = BASE_CMD
         if os.environ.get("MOUSSE_ENABLE_CHANGES") != "1":
             self.base_cmd = BASE_CMD + ("--dry-run",)
             cmd_log.log_warning(
@@ -275,9 +275,6 @@ class ChangeCommand:
         chezmoi.managed_files.update()
         chezmoi.dir_status_lines.update()
         chezmoi.file_status_lines.update()
-
-    def append_config_to_base_command(self, new_path: Path) -> None:
-        self.base_cmd = BASE_CMD + ("--config", str(new_path))
 
     def add(self, path: Path) -> None:
         _run_cmd(self.base_cmd + ("add", str(path)))
@@ -382,7 +379,6 @@ class Chezmoi:
     managed_files: InputOutput
     perform = ChangeCommand()
     run = ReadCommand()
-    temp_config_path: Path
 
     def __init__(self) -> None:
 
