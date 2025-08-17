@@ -115,7 +115,6 @@ class CommandLog(RichLog):
                     "--color=off"
                     "--date-order"
                     "--format=%ar by %cn;%s"
-                    "--force"
                     "--format=json"
                     "--mode=file"
                     "--no-color"
@@ -125,8 +124,8 @@ class CommandLog(RichLog):
                     "--no-tty"
                     "--path-style=absolute"
                     "--progress=false"
-                    "--interactive=false",
-                    "--force",
+                    "--interactive=false"
+                    "--force"
                 )
             ]
         )
