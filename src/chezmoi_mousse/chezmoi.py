@@ -76,6 +76,7 @@ class AllCommands(Enum):
         "--path-style=absolute",
         "--include=files",
     )
+    purge = BASE_CMD + (OperateVerbs.purge.value, "--force")
     source_path = BASE_CMD + (ReadVerbs.source_path.value,)
     template_data = BASE_CMD + (ReadVerbs.data.value, "--format=json")
 

@@ -421,10 +421,15 @@ class InitTab(Horizontal):
         super().__init__(id=Id.init.tab_main_horizontal_id)
 
     def compose(self) -> ComposeResult:
-        yield Static(
-            "[$success bold]chezmoi init[/]\n[$text-disabled]not yet implemented[/]",
-            markup=True,
-        )
+        with Vertical():
+            yield Static("[$success bold]chezmoi init[/]", markup=True)
+            yield Static(
+                "[$foreground-darken-1]not yet implemented[/]", markup=True
+            )
+            yield Static("[$success bold]chezmoi purge[/]", markup=True)
+            yield Static(
+                "[$foreground-darken-1]not yet implemented[/]", markup=True
+            )
 
 
 class DoctorTab(ScrollableContainer):

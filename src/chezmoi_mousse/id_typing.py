@@ -38,6 +38,7 @@ class OperateVerbs(Enum):
     apply = "apply"
     destroy = "destroy"
     forget = "forget"
+    purge = "purge"
     re_add = "re-add"
 
 
