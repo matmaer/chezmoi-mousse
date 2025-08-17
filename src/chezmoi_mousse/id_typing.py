@@ -62,7 +62,6 @@ class Buttons(Enum):
     list_btn = "List"
     tree_btn = "Tree"
     # operational buttons in Operate modal screen
-    # TODO: also create unique id's for the destroy, forget and dismiss buttons
     add_dir_btn = "Add Dir"
     add_file_btn = "Add File"
     apply_file_btn = "Apply File"
