@@ -22,24 +22,28 @@ from chezmoi_mousse.id_typing import (
 from chezmoi_mousse.widgets import ExpandedTree, FlatTree, ManagedTree
 
 
-class FilterSlider(VerticalGroup, IdMixin):
+class FilterSlider(VerticalGroup):
 
     def __init__(
-        self, tab_name: TabStr, filters: tuple[Filters, Filters]
+        self, *, tab_ids: IdMixin, filters: tuple[Filters, Filters]
     ) -> None:
-        IdMixin.__init__(self, tab_name)
         self.filters = filters
         super().__init__(
-            id=self.filter_slider_id, classes=TcssStr.filters_vertical
+            id=tab_ids.filter_slider_id, classes=TcssStr.filters_vertical
         )
+        self.tab_ids = tab_ids
 
     def compose(self) -> ComposeResult:
         for filter_enum in self.filters:
             with HorizontalGroup(
-                id=self.filter_horizontal_id(filter_enum, Location.top),
+                id=self.tab_ids.filter_horizontal_id(
+                    filter_enum, Location.top
+                ),
                 classes=TcssStr.filter_horizontal,
             ):
-                yield Switch(id=self.switch_id(filter_enum), value=False)
+                yield Switch(
+                    id=self.tab_ids.switch_id(filter_enum), value=False
+                )
                 yield Label(
                     filter_enum.value.label, classes=TcssStr.filter_label
                 ).with_tooltip(tooltip=filter_enum.value.tooltip)
@@ -47,51 +51,53 @@ class FilterSlider(VerticalGroup, IdMixin):
     def on_mount(self) -> None:
         # add padding to the top filter horizontal group
         self.query_one(
-            self.filter_horizontal_qid(self.filters[0], Location.top),
+            self.tab_ids.filter_horizontal_qid(self.filters[0], Location.top),
             HorizontalGroup,
         ).add_class(TcssStr.pad_bottom)
 
 
-class ButtonsHorizontal(HorizontalGroup, IdMixin):
+class ButtonsHorizontal(HorizontalGroup):
 
     def __init__(
         self,
-        tab_name: TabStr,
         *,
+        tab_ids: IdMixin,
         buttons: tuple[Buttons, ...],
         location: Location,
     ) -> None:
-        IdMixin.__init__(self, tab_name)
-        super().__init__(
-            id=self.buttons_horizontal_id(location),
-            classes=TcssStr.tab_buttons_horizontal,
-        )
         self.buttons = buttons
         self.button_class: str
         self.location: Location = location
+        self.tab_ids: IdMixin = tab_ids
+        self.tab_name: TabStr = tab_ids.tab_name
+        super().__init__(
+            id=tab_ids.buttons_horizontal_id(self.location),
+            classes=TcssStr.tab_buttons_horizontal,
+        )
 
     def compose(self) -> ComposeResult:
         for button_enum in self.buttons:
             with Vertical(
-                id=self.button_vertical_id(button_enum),
+                id=self.tab_ids.button_vertical_id(button_enum),
                 classes=TcssStr.single_button_vertical,
             ):
                 yield Button(
-                    label=button_enum.value, id=self.button_id(button_enum)
+                    label=button_enum.value,
+                    id=self.tab_ids.button_id(button_enum),
                 )
 
     def on_mount(self) -> None:
         if self.location == Location.bottom:
             for button_enum in self.buttons:
-                button = self.query_one(self.button_qid(button_enum))
+                button = self.query_one(self.tab_ids.button_qid(button_enum))
                 button.add_class(TcssStr.operate_button)
             return
 
         for button_enum in self.buttons:
-            self.query_one(self.button_qid(button_enum)).add_class(
+            self.query_one(self.tab_ids.button_qid(button_enum)).add_class(
                 TcssStr.tab_button
             )
-            self.query_one(self.button_qid(self.buttons[0])).add_class(
+            self.query_one(self.tab_ids.button_qid(self.buttons[0])).add_class(
                 TcssStr.last_clicked
             )
 
@@ -99,19 +105,19 @@ class ButtonsHorizontal(HorizontalGroup, IdMixin):
         if self.location == Location.bottom:
             return
         for button_enum in self.buttons:
-            self.query_one(self.button_qid(button_enum)).remove_class(
+            self.query_one(self.tab_ids.button_qid(button_enum)).remove_class(
                 TcssStr.last_clicked
             )
         event.button.add_class(TcssStr.last_clicked)
 
 
-class TreeContentSwitcher(ContentSwitcher, IdMixin):
+class TreeContentSwitcher(ContentSwitcher):
 
-    def __init__(self, tab_name: TabStr):
-        IdMixin.__init__(self, tab_name)
+    def __init__(self, tab_ids: IdMixin):
+        self.tab_ids = tab_ids
         super().__init__(
-            id=self.content_switcher_id(Location.left),
-            initial=self.tree_id(TreeStr.managed_tree),
+            id=self.tab_ids.content_switcher_id(Location.left),
+            initial=self.tab_ids.tree_id(TreeStr.managed_tree),
         )
 
     def on_mount(self) -> None:
@@ -120,6 +126,6 @@ class TreeContentSwitcher(ContentSwitcher, IdMixin):
         self.add_class(TcssStr.top_border_title)
 
     def compose(self) -> ComposeResult:
-        yield ManagedTree(self.tab_name)
-        yield FlatTree(self.tab_name)
-        yield ExpandedTree(self.tab_name)
+        yield ManagedTree(tab_ids=self.tab_ids)
+        yield FlatTree(tab_ids=self.tab_ids)
+        yield ExpandedTree(tab_ids=self.tab_ids)

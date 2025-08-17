@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Any
 
 from textual import on
 from textual.app import App, ComposeResult
@@ -22,7 +21,6 @@ from chezmoi_mousse.id_typing import (
     Buttons,
     Chars,
     Id,
-    IdMixin,
     Location,
     TabStr,
     TreeStr,
@@ -61,24 +59,13 @@ class ChezmoiGUI(App[None]):
         ),
     ]
 
-    def __init__(self, *args: Any, **kwargs: Any):
-        super().__init__(*args, **kwargs)
-
-        self.pane_id_map: dict[str, IdMixin] = {
-            Id.apply.tab_pane_id: Id.apply,
-            Id.re_add.tab_pane_id: Id.re_add,
-            Id.add.tab_pane_id: Id.add,
-            Id.doctor.tab_pane_id: Id.doctor,
-            Id.init.tab_pane_id: Id.init,
-        }
-
     def compose(self) -> ComposeResult:
         yield Header(icon=Chars.burger.value)
         with TabbedContent():
             with TabPane("Apply", id=Id.apply.tab_pane_id):
                 yield ApplyTab()
                 yield ButtonsHorizontal(
-                    TabStr.apply_tab,
+                    tab_ids=Id.apply,
                     buttons=(
                         Buttons.apply_file_btn,
                         Buttons.forget_file_btn,
@@ -89,7 +76,7 @@ class ChezmoiGUI(App[None]):
             with TabPane("Re-Add", id=Id.re_add.tab_pane_id):
                 yield ReAddTab()
                 yield ButtonsHorizontal(
-                    TabStr.re_add_tab,
+                    tab_ids=Id.re_add,
                     buttons=(
                         Buttons.re_add_file_btn,
                         Buttons.forget_file_btn,
@@ -100,7 +87,7 @@ class ChezmoiGUI(App[None]):
             with TabPane("Add", id=Id.add.tab_pane_id):
                 yield AddTab()
                 yield ButtonsHorizontal(
-                    TabStr.add_tab,
+                    tab_ids=Id.add,
                     buttons=(Buttons.add_file_btn, Buttons.add_dir_btn),
                     location=Location.bottom,
                 )
@@ -205,7 +192,8 @@ class ChezmoiGUI(App[None]):
             getattr(tab_widget, "action_toggle_filter_slider")()  # call it
 
     def action_maximize(self) -> None:
-        id_mixin = self.pane_id_map[self.query_one(TabbedContent).active]
+        active_pane_id = self.query_one(TabbedContent).active
+        id_mixin = Id.get_tab_ids_from_pane_id(pane_id=active_pane_id)
 
         # Initialize modal parameters
         id_to_maximize: str | None = None
@@ -229,14 +217,15 @@ class ChezmoiGUI(App[None]):
 
         self.push_screen(
             Maximized(
-                tab_name=id_mixin.tab_name,
+                tab_ids=id_mixin,
                 id_to_maximize=id_to_maximize,
                 path=current_path,
             )
         )
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
-        id_mixin = self.pane_id_map[self.query_one(TabbedContent).active]
+        active_pane_id = self.query_one(TabbedContent).active
+        id_mixin = Id.get_tab_ids_from_pane_id(pane_id=active_pane_id)
         contents_view = self.query_one(
             id_mixin.view_qid(ViewStr.contents_view), ContentsView
         )
@@ -252,7 +241,7 @@ class ChezmoiGUI(App[None]):
             btn_enum = Buttons(event.button.label)
             self.push_screen(
                 Operate(
-                    id_mixin.tab_name,
+                    tab_ids=id_mixin,
                     path=current_path,
                     buttons=(btn_enum, Buttons.operate_dismiss_btn),
                 )

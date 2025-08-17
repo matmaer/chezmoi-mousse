@@ -66,6 +66,7 @@ class OperateTabsBase(Horizontal):
         self.query_one(
             self.tab_ids.content_switcher_qid(Location.right), Container
         ).border_title = f"{path.relative_to(CM_CFG.destDir)}"
+        # TODO: update on_button_press for each individual button
         self.query_one(
             self.tab_ids.view_qid(ViewStr.contents_view), ContentsView
         ).path = path
@@ -213,15 +214,15 @@ class ApplyTab(OperateTabsBase):
             classes=TcssStr.tab_left_vertical,
         ):
             yield ButtonsHorizontal(
-                Id.apply.tab_name,
+                tab_ids=Id.apply,
                 buttons=(Buttons.tree_btn, Buttons.list_btn),
                 location=Location.left,
             )
-            yield TreeContentSwitcher(Id.apply.tab_name)
+            yield TreeContentSwitcher(tab_ids=Id.apply)
 
         with Vertical(id=Id.apply.tab_vertical_id(Location.right)):
             yield ButtonsHorizontal(
-                Id.apply.tab_name,
+                tab_ids=Id.apply,
                 buttons=(
                     Buttons.diff_btn,
                     Buttons.contents_btn,
@@ -245,7 +246,7 @@ class ApplyTab(OperateTabsBase):
                 )
 
         yield FilterSlider(
-            Id.apply.tab_name, filters=(Filters.unchanged, Filters.expand_all)
+            tab_ids=Id.apply, filters=(Filters.unchanged, Filters.expand_all)
         )
 
     def on_mount(self) -> None:
@@ -278,15 +279,15 @@ class ReAddTab(OperateTabsBase):
             classes=TcssStr.tab_left_vertical,
         ):
             yield ButtonsHorizontal(
-                Id.re_add.tab_name,
+                tab_ids=Id.re_add,
                 buttons=(Buttons.tree_btn, Buttons.list_btn),
                 location=Location.left,
             )
-            yield TreeContentSwitcher(Id.re_add.tab_name)
+            yield TreeContentSwitcher(tab_ids=Id.re_add)
 
         with Vertical(id=Id.re_add.tab_vertical_id(Location.right)):
             yield ButtonsHorizontal(
-                Id.re_add.tab_name,
+                tab_ids=Id.re_add,
                 buttons=(
                     Buttons.diff_btn,
                     Buttons.contents_btn,
@@ -311,7 +312,7 @@ class ReAddTab(OperateTabsBase):
                 )
 
         yield FilterSlider(
-            Id.re_add.tab_name, filters=(Filters.unchanged, Filters.expand_all)
+            tab_ids=Id.re_add, filters=(Filters.unchanged, Filters.expand_all)
         )
 
     def on_mount(self) -> None:
@@ -349,7 +350,7 @@ class AddTab(OperateTabsBase):
             yield ContentsView(view_id=Id.add.view_id(ViewStr.contents_view))
 
         yield FilterSlider(
-            Id.add.tab_name, filters=(Filters.unmanaged_dirs, Filters.unwanted)
+            tab_ids=Id.add, filters=(Filters.unmanaged_dirs, Filters.unwanted)
         )
 
     def on_mount(self) -> None:

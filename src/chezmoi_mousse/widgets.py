@@ -575,13 +575,16 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
                 node.remove()
 
 
-class ManagedTree(TreeBase, IdMixin):
+class ManagedTree(TreeBase):
 
     unchanged: reactive[bool] = reactive(False, init=False)
 
-    def __init__(self, tab_name: TabStr) -> None:
-        IdMixin.__init__(self, tab_name)
-        super().__init__(tab_name, id=self.tree_id(TreeStr.managed_tree))
+    def __init__(self, *, tab_ids: IdMixin) -> None:
+        self.tab_ids = tab_ids
+        super().__init__(
+            self.tab_ids.tab_name,
+            id=self.tab_ids.tree_id(TreeStr.managed_tree),
+        )
 
     def refresh_tree_data(self) -> None:
         """Refresh the tree with latest chezmoi data."""
@@ -618,13 +621,16 @@ class ManagedTree(TreeBase, IdMixin):
                 )
 
 
-class ExpandedTree(TreeBase, IdMixin):
+class ExpandedTree(TreeBase):
 
     unchanged: reactive[bool] = reactive(False, init=False)
 
-    def __init__(self, tab_name: TabStr) -> None:
-        IdMixin.__init__(self, tab_name)
-        super().__init__(tab_name, id=self.tree_id(TreeStr.expanded_tree))
+    def __init__(self, tab_ids: IdMixin) -> None:
+        self.tab_ids = tab_ids
+        super().__init__(
+            self.tab_ids.tab_name,
+            id=self.tab_ids.tree_id(TreeStr.expanded_tree),
+        )
 
     def refresh_tree_data(self) -> None:
         """Refresh the tree with latest chezmoi data."""
@@ -667,13 +673,16 @@ class ExpandedTree(TreeBase, IdMixin):
                 )
 
 
-class FlatTree(TreeBase, IdMixin):
+class FlatTree(TreeBase):
 
     unchanged: reactive[bool] = reactive(False, init=False)
 
-    def __init__(self, tab_name: TabStr) -> None:
-        IdMixin.__init__(self, tab_name)
-        super().__init__(tab_name, id=self.tree_id(TreeStr.flat_tree))
+    def __init__(self, tab_ids: IdMixin) -> None:
+        self.tab_ids = tab_ids
+        self.tab_name = self.tab_ids.tab_name
+        super().__init__(
+            self.tab_name, id=self.tab_ids.tree_id(TreeStr.flat_tree)
+        )
 
     def refresh_tree_data(self) -> None:
         """Refresh the tree with latest chezmoi data."""

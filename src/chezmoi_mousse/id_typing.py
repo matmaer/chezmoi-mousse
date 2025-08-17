@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 from enum import Enum, StrEnum, auto
 from pathlib import Path
 from typing import Any
@@ -62,6 +62,7 @@ class Buttons(Enum):
     list_btn = "List"
     tree_btn = "Tree"
     # operational buttons in Operate modal screen
+    # TODO: also create unique id's for the destroy, forget and dismiss buttons
     add_dir_btn = "Add Dir"
     add_file_btn = "Add File"
     apply_file_btn = "Apply File"
@@ -276,3 +277,19 @@ class Id:
     init: IdMixin = IdMixin(TabStr.init_tab)
     doctor: IdMixin = IdMixin(TabStr.doctor_tab)
     log: IdMixin = IdMixin(TabStr.log_tab)
+
+    _pane_id_map: dict[str, IdMixin] | None = None
+
+    @classmethod
+    def get_tab_ids_from_pane_id(cls, pane_id: str) -> IdMixin:
+
+        if cls._pane_id_map is None:
+            cls._pane_id_map = {}
+            for field in fields(cls):
+                field_value = getattr(cls, field.name)
+                if isinstance(field_value, IdMixin):
+                    cls._pane_id_map[field_value.tab_pane_id] = field_value
+
+        if pane_id in cls._pane_id_map:
+            return cls._pane_id_map[pane_id]
+        raise ValueError(f"No IdMixin found for pane_id: {pane_id}")

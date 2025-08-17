@@ -32,7 +32,7 @@ from chezmoi_mousse.widgets import (
 )
 
 
-class ModalBase(ModalScreen[None], IdMixin):
+class ModalBase(ModalScreen[None]):
 
     BINDINGS = [
         Binding(
@@ -41,10 +41,10 @@ class ModalBase(ModalScreen[None], IdMixin):
     ]
 
     def __init__(
-        self, tab_name: TabStr, path: Path, *, modal_id: ModalIdStr
+        self, *, tab_ids: IdMixin, modal_id: ModalIdStr, path: Path
     ) -> None:
         self.path = path
-        IdMixin.__init__(self, tab_name)
+        self.tab_ids = tab_ids
         super().__init__(id=modal_id, classes=TcssStr.modal_base)
 
     def handle_dismiss(self, dismiss_data: OperateData) -> None:
@@ -58,19 +58,30 @@ class ModalBase(ModalScreen[None], IdMixin):
         self.dismiss()
 
 
-class Operate(ModalBase, IdMixin):
+class Operate(ModalBase):
+
+    # TODO: add auto height for diff view
+    # TODO: add content view when screen is pushed from the Add tab
 
     check_mark = Chars.check_mark.value
 
     def __init__(
-        self, tab_name: TabStr, *, path: Path, buttons: tuple[Buttons, ...]
+        self, *, tab_ids: IdMixin, path: Path, buttons: tuple[Buttons, ...]
     ) -> None:
-        self.path = path
         self.buttons: tuple[Buttons, ...] = buttons
+        self.path = path
+        self.tab_ids = tab_ids
+        self.tab_name = tab_ids.tab_name
         self.operate_dismiss_data: OperateData = OperateData(
-            path=self.path, operation_executed=False, tab_name=tab_name
+            path=self.path,
+            operation_executed=False,
+            tab_name=self.tab_ids.tab_name,
         )
-        super().__init__(tab_name, path, modal_id=ModalIdStr.operate_modal)
+        super().__init__(
+            tab_ids=self.tab_ids,
+            path=self.path,
+            modal_id=ModalIdStr.operate_modal,
+        )
 
     def compose(self) -> ComposeResult:
         with Vertical(
@@ -94,7 +105,9 @@ class Operate(ModalBase, IdMixin):
                     )
             yield op_log
             yield ButtonsHorizontal(
-                self.tab_name, buttons=self.buttons, location=Location.bottom
+                tab_ids=self.tab_ids,
+                buttons=self.buttons,
+                location=Location.bottom,
             )
 
     def on_mount(self) -> None:
@@ -145,62 +158,71 @@ class Operate(ModalBase, IdMixin):
             (Buttons.destroy_file_btn, chezmoi.perform.destroy),
         ]
         for btn_enum, action in button_actions:
-            if event.button.id == self.button_id(btn_enum):
+            if event.button.id == self.tab_ids.button_id(btn_enum):
                 self.query_one(
-                    self.button_qid(Buttons.operate_dismiss_btn), Button
+                    self.tab_ids.button_qid(Buttons.operate_dismiss_btn),
+                    Button,
                 ).label = "Close"
                 action(self.path)  # run the perform command with the path
-                self.query_one(self.button_qid(btn_enum), Button).disabled = (
-                    True
-                )
+                self.query_one(
+                    self.tab_ids.button_qid(btn_enum), Button
+                ).disabled = True
                 self.operate_dismiss_data.operation_executed = True
                 break
 
-        if event.button.id == self.button_id(Buttons.operate_dismiss_btn):
+        if event.button.id == self.tab_ids.button_id(
+            Buttons.operate_dismiss_btn
+        ):
             self.handle_dismiss(self.operate_dismiss_data)
 
     def action_esc_dismiss(self) -> None:
         self.handle_dismiss(self.operate_dismiss_data)
 
 
-class Maximized(ModalBase, IdMixin):
+class Maximized(ModalBase):
 
     def __init__(
-        self,
-        id_to_maximize: str | None,
-        path: Path,
-        tab_name: TabStr = TabStr.apply_tab,
+        self, *, id_to_maximize: str | None, path: Path, tab_ids: IdMixin
     ) -> None:
-        IdMixin.__init__(self, tab_name)
         self.id_to_maximize = id_to_maximize
         self.path = path
-        super().__init__(tab_name, path, modal_id=ModalIdStr.maximized_modal)
+        self.tab_ids = tab_ids
+        self.tab_name: TabStr = tab_ids.tab_name
+        super().__init__(
+            tab_ids=tab_ids, path=path, modal_id=ModalIdStr.maximized_modal
+        )
 
     def compose(self) -> ComposeResult:
         with Vertical(
             id=ModalIdStr.maximized_vertical, classes=TcssStr.modal_container
         ):
-            if self.id_to_maximize == self.view_id(ViewStr.contents_view):
+            if self.id_to_maximize == self.tab_ids.view_id(
+                ViewStr.contents_view
+            ):
                 yield ContentsView(view_id=ModalIdStr.modal_contents_view)
-            elif self.id_to_maximize == self.view_id(ViewStr.diff_view):
+            elif self.id_to_maximize == self.tab_ids.view_id(
+                ViewStr.diff_view
+            ):
                 yield DiffView(
                     tab_name=self.tab_name, view_id=ModalIdStr.modal_diff_view
                 )
-            elif self.id_to_maximize == self.view_id(ViewStr.git_log_view):
+            elif self.id_to_maximize == self.tab_ids.view_id(
+                ViewStr.git_log_view
+            ):
                 yield GitLogView(view_id=ModalIdStr.modal_git_log_view)
 
     def on_mount(self) -> None:
         self.border_subtitle = " double click or escape key to close "
 
-        if self.id_to_maximize == self.view_id(ViewStr.contents_view):
+        if self.id_to_maximize == self.tab_ids.view_id(ViewStr.contents_view):
             self.query_one(
                 ModalIdStr.modal_contents_view.qid, ContentsView
             ).path = self.path
-        elif self.id_to_maximize == self.view_id(ViewStr.diff_view):
+        elif self.id_to_maximize == self.tab_ids.view_id(ViewStr.diff_view):
             self.query_one(ModalIdStr.modal_diff_view.qid, DiffView).path = (
                 self.path
             )
-        elif self.id_to_maximize == self.view_id(ViewStr.git_log_view):
+        elif self.id_to_maximize == self.tab_ids.view_id(ViewStr.git_log_view):
             self.query_one(
                 ModalIdStr.modal_git_log_view.qid, GitLogView
             ).path = self.path
