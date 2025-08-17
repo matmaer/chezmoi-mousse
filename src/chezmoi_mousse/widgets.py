@@ -27,9 +27,9 @@ from chezmoi_mousse.chezmoi import chezmoi, cmd_log, managed_status
 from chezmoi_mousse.config import unwanted_names
 from chezmoi_mousse.id_typing import (
     Chars,
-    IdMixin,
     ModalIdStr,
     NodeData,
+    TabIds,
     TabStr,
     TcssStr,
     TreeStr,
@@ -579,7 +579,7 @@ class ManagedTree(TreeBase):
 
     unchanged: reactive[bool] = reactive(False, init=False)
 
-    def __init__(self, *, tab_ids: IdMixin) -> None:
+    def __init__(self, *, tab_ids: TabIds) -> None:
         self.tab_ids = tab_ids
         super().__init__(
             self.tab_ids.tab_name,
@@ -625,7 +625,7 @@ class ExpandedTree(TreeBase):
 
     unchanged: reactive[bool] = reactive(False, init=False)
 
-    def __init__(self, tab_ids: IdMixin) -> None:
+    def __init__(self, tab_ids: TabIds) -> None:
         self.tab_ids = tab_ids
         super().__init__(
             self.tab_ids.tab_name,
@@ -677,7 +677,7 @@ class FlatTree(TreeBase):
 
     unchanged: reactive[bool] = reactive(False, init=False)
 
-    def __init__(self, tab_ids: IdMixin) -> None:
+    def __init__(self, tab_ids: TabIds) -> None:
         self.tab_ids = tab_ids
         self.tab_name = self.tab_ids.tab_name
         super().__init__(

@@ -13,10 +13,10 @@ from chezmoi_mousse.containers import ButtonsHorizontal
 from chezmoi_mousse.id_typing import (
     Buttons,
     Chars,
-    IdMixin,
     Location,
     ModalIdStr,
     OperateVerbs,
+    TabIds,
     TabStr,
     TcssStr,
     ViewStr,
@@ -41,7 +41,7 @@ class ModalBase(ModalScreen[None]):
     ]
 
     def __init__(
-        self, *, tab_ids: IdMixin, modal_id: ModalIdStr, path: Path
+        self, *, tab_ids: TabIds, modal_id: ModalIdStr, path: Path
     ) -> None:
         self.path = path
         self.tab_ids = tab_ids
@@ -66,7 +66,7 @@ class Operate(ModalBase):
     check_mark = Chars.check_mark.value
 
     def __init__(
-        self, *, tab_ids: IdMixin, path: Path, buttons: tuple[Buttons, ...]
+        self, *, tab_ids: TabIds, path: Path, buttons: tuple[Buttons, ...]
     ) -> None:
         self.buttons: tuple[Buttons, ...] = buttons
         self.path = path
@@ -182,7 +182,7 @@ class Operate(ModalBase):
 class Maximized(ModalBase):
 
     def __init__(
-        self, *, id_to_maximize: str | None, path: Path, tab_ids: IdMixin
+        self, *, id_to_maximize: str | None, path: Path, tab_ids: TabIds
     ) -> None:
         self.id_to_maximize = id_to_maximize
         self.path = path

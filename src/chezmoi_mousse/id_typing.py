@@ -205,7 +205,7 @@ class DoctorEnum(Enum):
         return f"#{self.name}"
 
 
-class IdMixin:
+class TabIds:
     def __init__(self, tab_name: TabStr) -> None:
         self.filter_slider_id = f"{tab_name}_filter_slider"
         self.filter_slider_qid = f"#{self.filter_slider_id}"
@@ -271,25 +271,25 @@ class IdMixin:
 
 @dataclass(frozen=True)
 class Id:
-    apply: IdMixin = IdMixin(TabStr.apply_tab)
-    re_add: IdMixin = IdMixin(TabStr.re_add_tab)
-    add: IdMixin = IdMixin(TabStr.add_tab)
-    init: IdMixin = IdMixin(TabStr.init_tab)
-    doctor: IdMixin = IdMixin(TabStr.doctor_tab)
-    log: IdMixin = IdMixin(TabStr.log_tab)
+    apply: TabIds = TabIds(TabStr.apply_tab)
+    re_add: TabIds = TabIds(TabStr.re_add_tab)
+    add: TabIds = TabIds(TabStr.add_tab)
+    init: TabIds = TabIds(TabStr.init_tab)
+    doctor: TabIds = TabIds(TabStr.doctor_tab)
+    log: TabIds = TabIds(TabStr.log_tab)
 
-    _pane_id_map: dict[str, IdMixin] | None = None
+    _pane_id_map: dict[str, TabIds] | None = None
 
     @classmethod
-    def get_tab_ids_from_pane_id(cls, pane_id: str) -> IdMixin:
+    def get_tab_ids_from_pane_id(cls, pane_id: str) -> TabIds:
 
         if cls._pane_id_map is None:
             cls._pane_id_map = {}
             for field in fields(cls):
                 field_value = getattr(cls, field.name)
-                if isinstance(field_value, IdMixin):
+                if isinstance(field_value, TabIds):
                     cls._pane_id_map[field_value.tab_pane_id] = field_value
 
         if pane_id in cls._pane_id_map:
             return cls._pane_id_map[pane_id]
-        raise ValueError(f"No IdMixin found for pane_id: {pane_id}")
+        raise ValueError(f"No TabIds found for pane_id: {pane_id}")

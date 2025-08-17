@@ -36,8 +36,8 @@ from chezmoi_mousse.id_typing import (
     DoctorEnum,
     Filters,
     Id,
-    IdMixin,
     Location,
+    TabIds,
     TabStr,
     TcssStr,
     TreeStr,
@@ -58,7 +58,7 @@ from chezmoi_mousse.widgets import (
 
 class OperateTabsBase(Horizontal):
 
-    def __init__(self, *, tab_ids: IdMixin) -> None:
+    def __init__(self, *, tab_ids: TabIds) -> None:
         self.tab_ids = tab_ids
         super().__init__(id=tab_ids.tab_name)
 

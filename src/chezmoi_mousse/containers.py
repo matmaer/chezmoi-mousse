@@ -13,8 +13,8 @@ from chezmoi_mousse import CM_CFG
 from chezmoi_mousse.id_typing import (
     Buttons,
     Filters,
-    IdMixin,
     Location,
+    TabIds,
     TabStr,
     TcssStr,
     TreeStr,
@@ -25,7 +25,7 @@ from chezmoi_mousse.widgets import ExpandedTree, FlatTree, ManagedTree
 class FilterSlider(VerticalGroup):
 
     def __init__(
-        self, *, tab_ids: IdMixin, filters: tuple[Filters, Filters]
+        self, *, tab_ids: TabIds, filters: tuple[Filters, Filters]
     ) -> None:
         self.filters = filters
         super().__init__(
@@ -61,14 +61,14 @@ class ButtonsHorizontal(HorizontalGroup):
     def __init__(
         self,
         *,
-        tab_ids: IdMixin,
+        tab_ids: TabIds,
         buttons: tuple[Buttons, ...],
         location: Location,
     ) -> None:
         self.buttons = buttons
         self.button_class: str
         self.location: Location = location
-        self.tab_ids: IdMixin = tab_ids
+        self.tab_ids: TabIds = tab_ids
         self.tab_name: TabStr = tab_ids.tab_name
         super().__init__(
             id=tab_ids.buttons_horizontal_id(self.location),
@@ -113,7 +113,7 @@ class ButtonsHorizontal(HorizontalGroup):
 
 class TreeContentSwitcher(ContentSwitcher):
 
-    def __init__(self, tab_ids: IdMixin):
+    def __init__(self, tab_ids: TabIds):
         self.tab_ids = tab_ids
         super().__init__(
             id=self.tab_ids.content_switcher_id(Location.left),
