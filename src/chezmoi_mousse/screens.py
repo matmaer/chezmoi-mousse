@@ -61,7 +61,6 @@ class ModalBase(ModalScreen[None]):
 class Operate(ModalBase):
 
     # TODO: fix invisible horizontal scrollbar in DiffView
-    # TODO: add content view when screen is pushed from Apply or Re-Add tab after clicking destroy or forget
 
     check_mark = Chars.check_mark.value
 
@@ -87,13 +86,10 @@ class Operate(ModalBase):
         with Vertical(id=ModalIdStr.operate_vertical):
             yield AutoWarning(self.tab_name)
             yield OperateInfo(self.tab_name, self.path)
-            if self.tab_name == TabStr.add_tab:
-                with Collapsible(
-                    id=ModalIdStr.operate_collapsible, title="File Contents"
-                ):
-                    yield ContentsView(view_id=ModalIdStr.modal_contents_view)
-
-            else:
+            if (
+                Buttons.apply_file_btn in self.buttons
+                or Buttons.re_add_file_btn in self.buttons
+            ):
                 with Collapsible(
                     id=ModalIdStr.operate_collapsible, title="File Differences"
                 ):
@@ -101,6 +97,12 @@ class Operate(ModalBase):
                         tab_name=self.tab_name,
                         view_id=ModalIdStr.modal_diff_view,
                     )
+            else:
+                with Collapsible(
+                    id=ModalIdStr.operate_collapsible, title="File Contents"
+                ):
+                    yield ContentsView(view_id=ModalIdStr.modal_contents_view)
+
             yield op_log
             yield ButtonsHorizontal(
                 tab_ids=self.tab_ids,
@@ -112,12 +114,15 @@ class Operate(ModalBase):
         if (
             self.tab_name == TabStr.apply_tab
             or self.tab_name == TabStr.re_add_tab
+        ) and (
+            Buttons.apply_file_btn in self.buttons
+            or Buttons.re_add_file_btn in self.buttons
         ):
             # Set path for the modal diff view
             self.query_one(ModalIdStr.modal_diff_view.qid, DiffView).path = (
                 self.path
             )
-        elif self.tab_name == TabStr.add_tab:
+        else:
             # Set path for the modal contents view
             self.query_one(
                 ModalIdStr.modal_contents_view.qid, ContentsView
