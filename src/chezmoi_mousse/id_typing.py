@@ -80,15 +80,6 @@ class TabStr(StrEnum):
     re_add_tab = auto()
 
 
-class Panes(Enum):
-    add_pane = TabStr.add_tab
-    apply_pane = TabStr.apply_tab
-    doctor_pane = TabStr.doctor_tab
-    init_pane = TabStr.init_tab
-    log_pane = TabStr.log_tab
-    re_add_pane = TabStr.re_add_tab
-
-
 class ViewStr(StrEnum):
     contents_view = auto()
     diff_view = auto()
@@ -204,6 +195,9 @@ class DoctorEnum(Enum):
     cat_config = "chezmoi cat-config (contents of config-file)"
     doctor_ignored = "chezmoi ignored (git ignore in source-dir)"
     doctor_template_data = "chezmoi template-data (contents of template-file)"
+    commands_not_found = (
+        "chezmoi supported commands not found (ignore if not needed)"
+    )
 
     @property
     def qid(self) -> str:
@@ -214,6 +208,8 @@ class IdMixin:
     def __init__(self, tab_name: TabStr) -> None:
         self.filter_slider_id = f"{tab_name}_filter_slider"
         self.filter_slider_qid = f"#{self.filter_slider_id}"
+        self.tab_pane_id = f"{tab_name}_pane"
+        self.tab_pane_qid = f"#{self.tab_pane_id}"
         self.tab_main_horizontal_id = f"{tab_name}_main_horizontal"
         self.tab_name: TabStr = tab_name
 

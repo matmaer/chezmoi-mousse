@@ -56,27 +56,31 @@ from chezmoi_mousse.widgets import (
 )
 
 
-class OperateTabsBase(Horizontal, IdMixin):
+class OperateTabsBase(Horizontal):
 
-    def __init__(self, tab_name: TabStr) -> None:
-        IdMixin.__init__(self, tab_name)
-        super().__init__(id=self.tab_main_horizontal_id)
+    def __init__(self, *, tab_ids: IdMixin) -> None:
+        self.tab_ids = tab_ids
+        super().__init__(id=tab_ids.tab_name)
 
     def update_right_side_content_switcher(self, path: Path):
         self.query_one(
-            self.content_switcher_qid(Location.right), Container
+            self.tab_ids.content_switcher_qid(Location.right), Container
         ).border_title = f"{path.relative_to(CM_CFG.destDir)}"
         self.query_one(
-            self.view_qid(ViewStr.contents_view), ContentsView
+            self.tab_ids.view_qid(ViewStr.contents_view), ContentsView
         ).path = path
-        self.query_one(self.view_qid(ViewStr.diff_view), DiffView).path = path
         self.query_one(
-            self.view_qid(ViewStr.git_log_view), GitLogView
+            self.tab_ids.view_qid(ViewStr.diff_view), DiffView
+        ).path = path
+        self.query_one(
+            self.tab_ids.view_qid(ViewStr.git_log_view), GitLogView
         ).path = path
 
     def disable_buttons(self, buttons_to_update: tuple[Buttons, ...]) -> None:
         for button_enum in buttons_to_update:
-            button = self.app.query_one(self.button_qid(button_enum), Button)
+            button = self.app.query_one(
+                self.tab_ids.button_qid(button_enum), Button
+            )
             button.disabled = True
             if button_enum == Buttons.add_dir_btn:
                 button.tooltip = "not yet implemented"
@@ -85,7 +89,9 @@ class OperateTabsBase(Horizontal, IdMixin):
 
     def enable_buttons(self, buttons_to_update: tuple[Buttons, ...]) -> None:
         for button_enum in buttons_to_update:
-            button = self.app.query_one(self.button_qid(button_enum), Button)
+            button = self.app.query_one(
+                self.tab_ids.button_qid(button_enum), Button
+            )
             if button_enum == Buttons.add_dir_btn:
                 button.tooltip = "not yet implemented"
                 continue
@@ -99,19 +105,19 @@ class OperateTabsBase(Horizontal, IdMixin):
         self.update_right_side_content_switcher(event.node.data.path)
 
         buttons_to_update: tuple[Buttons, ...] = ()
-        if self.tab_name == TabStr.apply_tab:
+        if self.tab_ids.tab_name == TabStr.apply_tab:
             buttons_to_update = (
                 Buttons.apply_file_btn,
                 Buttons.forget_file_btn,
                 Buttons.destroy_file_btn,
             )
-        elif self.tab_name == TabStr.re_add_tab:
+        elif self.tab_ids.tab_name == TabStr.re_add_tab:
             buttons_to_update = (
                 Buttons.re_add_file_btn,
                 Buttons.forget_file_btn,
                 Buttons.destroy_file_btn,
             )
-        elif self.tab_name == TabStr.add_tab:
+        elif self.tab_ids.tab_name == TabStr.add_tab:
             buttons_to_update = (Buttons.add_file_btn, Buttons.add_dir_btn)
         else:
             return
@@ -122,45 +128,51 @@ class OperateTabsBase(Horizontal, IdMixin):
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         # Tree/List Switch
-        if event.button.id == self.button_id(Buttons.tree_btn):
+        if event.button.id == self.tab_ids.button_id(Buttons.tree_btn):
             expand_all_switch = self.query_one(
-                self.switch_qid(Filters.expand_all), Switch
+                self.tab_ids.switch_qid(Filters.expand_all), Switch
             )
             expand_all_switch.disabled = False
             if expand_all_switch.value:
                 self.query_one(
-                    self.content_switcher_qid(Location.left), ContentSwitcher
-                ).current = self.tree_id(TreeStr.expanded_tree)
+                    self.tab_ids.content_switcher_qid(Location.left),
+                    ContentSwitcher,
+                ).current = self.tab_ids.tree_id(TreeStr.expanded_tree)
             else:
                 self.query_one(
-                    self.content_switcher_qid(Location.left), ContentSwitcher
-                ).current = self.tree_id(TreeStr.managed_tree)
-        elif event.button.id == self.button_id(Buttons.list_btn):
+                    self.tab_ids.content_switcher_qid(Location.left),
+                    ContentSwitcher,
+                ).current = self.tab_ids.tree_id(TreeStr.managed_tree)
+        elif event.button.id == self.tab_ids.button_id(Buttons.list_btn):
             self.query_one(
-                self.content_switcher_qid(Location.left), ContentSwitcher
-            ).current = self.tree_id(TreeStr.flat_tree)
+                self.tab_ids.content_switcher_qid(Location.left),
+                ContentSwitcher,
+            ).current = self.tab_ids.tree_id(TreeStr.flat_tree)
             self.query_one(
-                self.switch_qid(Filters.expand_all), Switch
+                self.tab_ids.switch_qid(Filters.expand_all), Switch
             ).disabled = True
         # Contents/Diff/GitLog Switch
-        elif event.button.id == self.button_id(Buttons.contents_btn):
+        elif event.button.id == self.tab_ids.button_id(Buttons.contents_btn):
             self.query_one(
-                self.content_switcher_qid(Location.right), ContentSwitcher
-            ).current = self.view_id(ViewStr.contents_view)
+                self.tab_ids.content_switcher_qid(Location.right),
+                ContentSwitcher,
+            ).current = self.tab_ids.view_id(ViewStr.contents_view)
 
-        elif event.button.id == self.button_id(Buttons.diff_btn):
+        elif event.button.id == self.tab_ids.button_id(Buttons.diff_btn):
             self.query_one(
-                self.content_switcher_qid(Location.right), ContentSwitcher
-            ).current = self.view_id(ViewStr.diff_view)
+                self.tab_ids.content_switcher_qid(Location.right),
+                ContentSwitcher,
+            ).current = self.tab_ids.view_id(ViewStr.diff_view)
 
-        elif event.button.id == self.button_id(Buttons.git_log_btn):
+        elif event.button.id == self.tab_ids.button_id(Buttons.git_log_btn):
             self.query_one(
-                self.content_switcher_qid(Location.right), ContentSwitcher
-            ).current = self.view_id(ViewStr.git_log_view)
+                self.tab_ids.content_switcher_qid(Location.right),
+                ContentSwitcher,
+            ).current = self.tab_ids.view_id(ViewStr.git_log_view)
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
         event.stop()
-        if event.switch.id == self.switch_id(Filters.unchanged):
+        if event.switch.id == self.tab_ids.switch_id(Filters.unchanged):
             tree_pairs: list[
                 tuple[TreeStr, type[ExpandedTree | ManagedTree | FlatTree]]
             ] = [
@@ -169,45 +181,47 @@ class OperateTabsBase(Horizontal, IdMixin):
                 (TreeStr.flat_tree, FlatTree),
             ]
             for tree_str, tree_cls in tree_pairs:
-                self.query_one(self.tree_qid(tree_str), tree_cls).unchanged = (
-                    event.value
-                )
-        elif event.switch.id == self.switch_id(Filters.expand_all):
+                self.query_one(
+                    self.tab_ids.tree_qid(tree_str), tree_cls
+                ).unchanged = event.value
+        elif event.switch.id == self.tab_ids.switch_id(Filters.expand_all):
             if event.value:
                 self.query_one(
-                    self.content_switcher_qid(Location.left), ContentSwitcher
-                ).current = self.tree_id(TreeStr.expanded_tree)
+                    self.tab_ids.content_switcher_qid(Location.left),
+                    ContentSwitcher,
+                ).current = self.tab_ids.tree_id(TreeStr.expanded_tree)
             else:
                 self.query_one(
-                    self.content_switcher_qid(Location.left), ContentSwitcher
-                ).current = self.tree_id(TreeStr.managed_tree)
+                    self.tab_ids.content_switcher_qid(Location.left),
+                    ContentSwitcher,
+                ).current = self.tab_ids.tree_id(TreeStr.managed_tree)
 
     def action_toggle_filter_slider(self) -> None:
-        self.query_one(self.filter_slider_qid, VerticalGroup).toggle_class(
-            "-visible"
-        )
+        self.query_one(
+            self.tab_ids.filter_slider_qid, VerticalGroup
+        ).toggle_class("-visible")
 
 
 class ApplyTab(OperateTabsBase):
 
-    def __init__(self, tab_name: TabStr) -> None:
-        super().__init__(tab_name)
+    def __init__(self) -> None:
+        super().__init__(tab_ids=Id.apply)
 
     def compose(self) -> ComposeResult:
         with VerticalGroup(
-            id=self.tab_vertical_id(Location.left),
+            id=Id.apply.tab_vertical_id(Location.left),
             classes=TcssStr.tab_left_vertical,
         ):
             yield ButtonsHorizontal(
-                self.tab_name,
+                Id.apply.tab_name,
                 buttons=(Buttons.tree_btn, Buttons.list_btn),
                 location=Location.left,
             )
-            yield TreeContentSwitcher(self.tab_name)
+            yield TreeContentSwitcher(Id.apply.tab_name)
 
-        with Vertical(id=self.tab_vertical_id(Location.right)):
+        with Vertical(id=Id.apply.tab_vertical_id(Location.right)):
             yield ButtonsHorizontal(
-                self.tab_name,
+                Id.apply.tab_name,
                 buttons=(
                     Buttons.diff_btn,
                     Buttons.contents_btn,
@@ -216,27 +230,31 @@ class ApplyTab(OperateTabsBase):
                 location=Location.right,
             )
             with ContentSwitcher(
-                id=self.content_switcher_id(Location.right),
-                initial=self.view_id(ViewStr.diff_view),
+                id=Id.apply.content_switcher_id(Location.right),
+                initial=Id.apply.view_id(ViewStr.diff_view),
             ):
                 yield DiffView(
-                    tab_name=self.tab_name,
-                    view_id=self.view_id(ViewStr.diff_view),
+                    tab_name=Id.apply.tab_name,
+                    view_id=Id.apply.view_id(ViewStr.diff_view),
                 )
-                yield ContentsView(view_id=self.view_id(ViewStr.contents_view))
-                yield GitLogView(view_id=self.view_id(ViewStr.git_log_view))
+                yield ContentsView(
+                    view_id=Id.apply.view_id(ViewStr.contents_view)
+                )
+                yield GitLogView(
+                    view_id=Id.apply.view_id(ViewStr.git_log_view)
+                )
 
         yield FilterSlider(
-            self.tab_name, filters=(Filters.unchanged, Filters.expand_all)
+            Id.apply.tab_name, filters=(Filters.unchanged, Filters.expand_all)
         )
 
     def on_mount(self) -> None:
         right_side = self.query_one(
-            self.tab_vertical_qid(Location.right), Vertical
+            Id.apply.tab_vertical_qid(Location.right), Vertical
         )
         right_side.add_class(TcssStr.tab_right_vertical)
         right_side_content_switcher = self.query_one(
-            self.content_switcher_qid(Location.right), ContentSwitcher
+            Id.apply.content_switcher_qid(Location.right), ContentSwitcher
         )
         right_side_content_switcher.add_class(TcssStr.content_switcher_right)
         right_side_content_switcher.add_class(TcssStr.top_border_title)
@@ -251,24 +269,24 @@ class ApplyTab(OperateTabsBase):
 
 class ReAddTab(OperateTabsBase):
 
-    def __init__(self, tab_name: TabStr) -> None:
-        super().__init__(tab_name)
+    def __init__(self) -> None:
+        super().__init__(tab_ids=Id.re_add)
 
     def compose(self) -> ComposeResult:
         with VerticalGroup(
-            id=self.tab_vertical_id(Location.left),
+            id=Id.re_add.tab_vertical_id(Location.left),
             classes=TcssStr.tab_left_vertical,
         ):
             yield ButtonsHorizontal(
-                self.tab_name,
+                Id.re_add.tab_name,
                 buttons=(Buttons.tree_btn, Buttons.list_btn),
                 location=Location.left,
             )
-            yield TreeContentSwitcher(self.tab_name)
+            yield TreeContentSwitcher(Id.re_add.tab_name)
 
-        with Vertical(id=self.tab_vertical_id(Location.right)):
+        with Vertical(id=Id.re_add.tab_vertical_id(Location.right)):
             yield ButtonsHorizontal(
-                self.tab_name,
+                Id.re_add.tab_name,
                 buttons=(
                     Buttons.diff_btn,
                     Buttons.contents_btn,
@@ -278,26 +296,30 @@ class ReAddTab(OperateTabsBase):
             )
 
             with ContentSwitcher(
-                id=self.content_switcher_id(Location.right),
-                initial=self.view_id(ViewStr.diff_view),
+                id=Id.re_add.content_switcher_id(Location.right),
+                initial=Id.re_add.view_id(ViewStr.diff_view),
             ):
                 yield DiffView(
-                    tab_name=self.tab_name,
-                    view_id=self.view_id(ViewStr.diff_view),
+                    tab_name=Id.re_add.tab_name,
+                    view_id=Id.re_add.view_id(ViewStr.diff_view),
                 )
-                yield ContentsView(view_id=self.view_id(ViewStr.contents_view))
-                yield GitLogView(view_id=self.view_id(ViewStr.git_log_view))
+                yield ContentsView(
+                    view_id=Id.re_add.view_id(ViewStr.contents_view)
+                )
+                yield GitLogView(
+                    view_id=Id.re_add.view_id(ViewStr.git_log_view)
+                )
 
         yield FilterSlider(
-            self.tab_name, filters=(Filters.unchanged, Filters.expand_all)
+            Id.re_add.tab_name, filters=(Filters.unchanged, Filters.expand_all)
         )
 
     def on_mount(self) -> None:
         self.query_one(
-            self.tab_vertical_qid(Location.right), Vertical
+            Id.re_add.tab_vertical_qid(Location.right), Vertical
         ).add_class(TcssStr.tab_right_vertical)
         content_switcher_right = self.query_one(
-            self.content_switcher_qid(Location.right), ContentSwitcher
+            Id.re_add.content_switcher_qid(Location.right), ContentSwitcher
         )
         content_switcher_right.add_class(TcssStr.content_switcher_right)
         content_switcher_right.add_class(TcssStr.top_border_title)
@@ -312,39 +334,41 @@ class ReAddTab(OperateTabsBase):
 
 class AddTab(OperateTabsBase):
 
-    def __init__(self, tab_name: TabStr) -> None:
-        super().__init__(tab_name)
+    def __init__(self) -> None:
+        super().__init__(tab_ids=Id.add)
 
     def compose(self) -> ComposeResult:
-        with VerticalGroup(id=self.tab_vertical_id(Location.left)):
+        with VerticalGroup(id=Id.add.tab_vertical_id(Location.left)):
             yield FilteredDirTree(
                 CM_CFG.destDir,
-                id=self.tree_id(TreeStr.add_tree),
+                id=Id.add.tree_id(TreeStr.add_tree),
                 classes=TcssStr.dir_tree_widget,
             )
 
-        with Vertical(id=self.tab_vertical_id(Location.right)):
-            yield ContentsView(view_id=self.view_id(ViewStr.contents_view))
+        with Vertical(id=Id.add.tab_vertical_id(Location.right)):
+            yield ContentsView(view_id=Id.add.view_id(ViewStr.contents_view))
 
         yield FilterSlider(
-            self.tab_name, filters=(Filters.unmanaged_dirs, Filters.unwanted)
+            Id.add.tab_name, filters=(Filters.unmanaged_dirs, Filters.unwanted)
         )
 
     def on_mount(self) -> None:
         right_side = self.query_one(
-            self.tab_vertical_qid(Location.right), Vertical
+            Id.add.tab_vertical_qid(Location.right), Vertical
         )
         right_side.border_title = str(CM_CFG.destDir)
         right_side.add_class(TcssStr.tab_right_vertical)
         right_side.add_class(TcssStr.top_border_title)
         left_side = self.query_one(
-            self.tab_vertical_qid(Location.left), VerticalGroup
+            Id.add.tab_vertical_qid(Location.left), VerticalGroup
         )
         left_side.border_title = str(CM_CFG.destDir)
         left_side.add_class(TcssStr.tab_left_vertical)
         left_side.add_class(TcssStr.top_border_title)
 
-        tree = self.query_one(self.tree_qid(TreeStr.add_tree), FilteredDirTree)
+        tree = self.query_one(
+            Id.add.tree_qid(TreeStr.add_tree), FilteredDirTree
+        )
         tree.show_root = False
         tree.guide_depth = 3
         self.disable_buttons((Buttons.add_file_btn, Buttons.add_dir_btn))
@@ -356,10 +380,10 @@ class AddTab(OperateTabsBase):
 
         assert event.node.data is not None
         self.query_one(
-            self.view_qid(ViewStr.contents_view), ContentsView
+            Id.add.view_qid(ViewStr.contents_view), ContentsView
         ).path = event.node.data.path
         self.query_one(
-            self.tab_vertical_qid(Location.right), Vertical
+            Id.add.tab_vertical_qid(Location.right), Vertical
         ).border_title = f"{event.node.data.path.relative_to(CM_CFG.destDir)}"
         self.enable_buttons((Buttons.add_file_btn,))
 
@@ -369,28 +393,29 @@ class AddTab(OperateTabsBase):
         event.stop()
         assert event.node.data is not None
         self.query_one(
-            self.view_qid(ViewStr.contents_view), ContentsView
+            Id.add.view_qid(ViewStr.contents_view), ContentsView
         ).path = event.node.data.path
         self.query_one(
-            self.tab_vertical_qid(Location.right), Vertical
+            Id.add.tab_vertical_qid(Location.right), Vertical
         ).border_title = f"{event.node.data.path.relative_to(CM_CFG.destDir)}"
         self.disable_buttons((Buttons.add_file_btn,))
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
         event.stop()
-        tree = self.query_one(self.tree_qid(TreeStr.add_tree), FilteredDirTree)
-        if event.switch.id == self.switch_id(Filters.unmanaged_dirs):
+        tree = self.query_one(
+            Id.add.tree_qid(TreeStr.add_tree), FilteredDirTree
+        )
+        if event.switch.id == Id.add.switch_id(Filters.unmanaged_dirs):
             tree.unmanaged_dirs = event.value
-        elif event.switch.id == self.switch_id(Filters.unwanted):
+        elif event.switch.id == Id.add.switch_id(Filters.unwanted):
             tree.unwanted = event.value
         tree.reload()
 
 
-class InitTab(Horizontal, IdMixin):
+class InitTab(Horizontal):
 
-    def __init__(self, tab_name: TabStr) -> None:
-        IdMixin.__init__(self, tab_name)
-        super().__init__(id=self.tab_main_horizontal_id)
+    def __init__(self) -> None:
+        super().__init__(id=Id.init.tab_main_horizontal_id)
 
     def compose(self) -> ComposeResult:
         yield Static(
@@ -434,7 +459,10 @@ class DoctorTab(ScrollableContainer):
             yield Pretty("placeholder", id=DoctorEnum.cat_config.name)
         with Collapsible(title=DoctorEnum.doctor_ignored.value):
             yield Pretty("placeholder", id=DoctorEnum.doctor_ignored.name)
-        yield Collapsible(ListView(), title="Commands Not Found")
+        yield Collapsible(
+            ListView(id=DoctorEnum.commands_not_found.name),
+            title=DoctorEnum.commands_not_found.value,
+        )
 
     def on_mount(self) -> None:
         for collapsible in self.query(Collapsible):
