@@ -15,7 +15,7 @@ exclude_files = ["id_typing.py", "__init__.py", "__main__.py"]
 
 
 def extract_tcss_classes(path: Path) -> list[str]:
-    pattern = r"(?:^|\s)[.&][^a-z]*([a-z][a-z_]*(?=.*_)[a-z_]*)(?=\s|$)"
+    pattern = r"(?:^|\s)[.&][^a-z]*([a-z][a-z_]*(?=.*_)[a-z_]*)(?=\s|,|$)"
     with open(path, "r") as f:
         content = f.read()
         matches = re.findall(pattern, content, re.MULTILINE)

@@ -119,7 +119,11 @@ class ContentsView(RichLog):
 
     def __init__(self, *, view_id: str) -> None:
         super().__init__(
-            id=view_id, auto_scroll=False, wrap=True, highlight=True
+            id=view_id,
+            auto_scroll=False,
+            wrap=True,
+            highlight=True,
+            classes=TcssStr.content_view,
         )
 
     def update_contents_view(self) -> None:
@@ -195,7 +199,12 @@ class DiffView(RichLog):
 
     def __init__(self, *, tab_name: TabStr, view_id: str) -> None:
         self.tab_name = tab_name
-        super().__init__(id=view_id, auto_scroll=False, wrap=False)
+        super().__init__(
+            id=view_id,
+            auto_scroll=False,
+            wrap=False,
+            classes=TcssStr.diff_view,
+        )
         self.status_dirs: PathDict = {}
         self.status_files: PathDict = {}
 

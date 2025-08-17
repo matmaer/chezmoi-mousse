@@ -5,6 +5,10 @@
 
 # “$text-success on $success-muted”
 
+.diff_view, .content_view {
+  height: auto;
+  max-height: 1fr;
+}
 
 .doctor_vertical {
   &>.doctor_collapsible {
@@ -87,7 +91,6 @@
 
 .tab_buttons_horizontal {
   width: 100%;
-  align: center top;
   &>.single_button_vertical {
     align: center top;
     height: auto;
