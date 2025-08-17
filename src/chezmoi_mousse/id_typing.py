@@ -42,8 +42,8 @@ class OperateVerbs(Enum):
 
 
 class Chars(Enum):
-    add = f"local{'\u2014' * 3}\u2192 chezmoi"  # '\N{EM DASH}', '\N{RIGHTWARDS ARROW}'
-    apply = f"local \u2190{'\u2014' * 3} chezmoi"  # '\N{LEFTWARDS ARROW}', '\N{EM DASH}'
+    add_file_info_border = f"local {'\u2014' * 3}\u2192 chezmoi"  # '\N{EM DASH}', '\N{RIGHTWARDS ARROW}'
+    apply_file_info_border = f"local \u2190{'\u2014' * 3} chezmoi"  # '\N{LEFTWARDS ARROW}', '\N{EM DASH}'
     bullet = "\u2022"  # '\N{BULLET}'
     burger = "\u2261"  # '\N{IDENTICAL TO}'
     check_mark = "\u2714"  # '\N{HEAVY CHECK MARK}'
@@ -52,6 +52,22 @@ class Chars(Enum):
     re_add = f"local {'\u2014' * 3}\u2192 chezmoi"  # '\N{EM DASH}', '\N{RIGHTWARDS ARROW}'
     warning_sign = "\u26a0"  # '\N{WARNING SIGN}'
     lower_3_8ths_block = "\u2583"  # "\N{LOWER THREE EIGHTHS BLOCK}"
+
+
+class OperateHelp(Enum):
+    # TODO parse the available text from chezmoi, currently some of this text  is copy/pasted from chezmoi.io
+    apply_warning = f"{Chars.warning_sign.value} Local file will be modified {Chars.warning_sign.value}"
+    auto_commit = f"{Chars.warning_sign.value}  Auto commit is enabled: files will also be committed  {Chars.warning_sign.value}"
+    autopush = f"{Chars.warning_sign.value}  Auto push is enabled: files will be pushed to the remote  {Chars.warning_sign.value}"
+    re_add_warning = f"{Chars.warning_sign.value}  Dotfile manager will be updated with current local file  {Chars.warning_sign.value}"
+    destroy_warning = (
+        "The destroy command permanently removes files both from your home directory and chezmoi's source directory.\n"
+        "Only run chezmoi destroy if you have a separate backup of your home directory and your source directory.\n"
+        "If you want chezmoi to stop managing the file use forget instead.\n"
+        "If you want to remove all traces of chezmoi from your system use purge instead, see the Init tab."
+    )
+    forget_info = "Remove targets from the source state, i.e. stop managing them. targets must have entries in the source state. They cannot be externals."
+    destroy_info = "Remove target from the source state, the destination directory, and the state."
 
 
 class Buttons(Enum):

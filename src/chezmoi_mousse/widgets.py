@@ -26,9 +26,11 @@ from chezmoi_mousse import CM_CFG, theme
 from chezmoi_mousse.chezmoi import chezmoi, cmd_log, managed_status
 from chezmoi_mousse.config import unwanted_names
 from chezmoi_mousse.id_typing import (
+    Buttons,
     Chars,
     ModalIdStr,
     NodeData,
+    OperateHelp,
     PathDict,
     TabIds,
     TabStr,
@@ -53,20 +55,12 @@ class AutoWarning(Static):
         warning_lines: list[str] = []
         if self.tab_name in (TabStr.re_add_tab, TabStr.add_tab):
             if CM_CFG.autocommit:
-                warning_lines.append(
-                    f"{self.sign}  Auto commit is enabled: files will also be committed  {self.sign}"
-                )
+                warning_lines.append(OperateHelp.auto_commit.value)
             if CM_CFG.autopush:
-                warning_lines.append(
-                    f"{self.sign}  Auto push is enabled: files will be pushed to the remote  {self.sign}"
-                )
-            warning_lines.append(
-                f"{self.sign}  Dotfile manager will be updated with current local file  {self.sign}"
-            )
+                warning_lines.append(OperateHelp.autopush.value)
+            warning_lines.append(OperateHelp.re_add_warning.value)
         if self.tab_name == TabStr.apply_tab:
-            warning_lines.append(
-                f"{self.sign} Local file will be modified {self.sign}"
-            )
+            warning_lines.append(OperateHelp.apply_warning.value)
 
         # Apply text-warning markup to each line
         markup_lines = [
@@ -80,23 +74,28 @@ class OperateInfo(Static):
 
     bullet = Chars.bullet.value
 
-    def __init__(self, tab_name: TabStr, path: Path) -> None:
+    def __init__(self, operate_btn: Buttons, path: Path) -> None:
         super().__init__(
             id=ModalIdStr.operate_info, classes=TcssStr.operate_top_path
         )
 
-        self.tab_name = tab_name
+        self.operate_btn = operate_btn
         self.path = path
         self.info_border_titles = {
-            TabStr.apply_tab: Chars.apply.value,
-            TabStr.re_add_tab: Chars.re_add.value,
-            TabStr.add_tab: Chars.add.value,
+            Buttons.apply_file_btn: Chars.apply_file_info_border.value,
+            Buttons.re_add_file_btn: Chars.add_file_info_border.value,
+            Buttons.add_file_btn: Chars.add_file_info_border.value,
+            Buttons.forget_file_btn: " forget file ",
+            Buttons.destroy_file_btn: " destroy file ",
         }
 
     def on_mount(self) -> None:
         self.lines_to_write: list[str] = []
 
-        if self.tab_name in (TabStr.apply_tab, TabStr.re_add_tab):
+        if (
+            Buttons.apply_file_btn == self.operate_btn
+            or Buttons.re_add_file_btn == self.operate_btn
+        ):
             self.lines_to_write.extend(
                 [
                     "[$text-success]+ green lines will be added[/]",
@@ -110,7 +109,7 @@ class OperateInfo(Static):
             )
         self.update("\n".join(self.lines_to_write))
         self.border_title = str(self.path)
-        self.border_subtitle = self.info_border_titles[self.tab_name]
+        self.border_subtitle = self.info_border_titles[self.operate_btn]
 
 
 class ContentsView(RichLog):

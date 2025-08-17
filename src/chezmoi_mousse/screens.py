@@ -68,6 +68,7 @@ class Operate(ModalBase):
         self, *, tab_ids: TabIds, path: Path, buttons: tuple[Buttons, ...]
     ) -> None:
         self.buttons: tuple[Buttons, ...] = buttons
+        self.main_operate_btn = self.buttons[0]
         self.path = path
         self.tab_ids = tab_ids
         self.tab_name = tab_ids.tab_name
@@ -85,10 +86,10 @@ class Operate(ModalBase):
     def compose(self) -> ComposeResult:
         with Vertical(id=ModalIdStr.operate_vertical):
             yield AutoWarning(self.tab_name)
-            yield OperateInfo(self.tab_name, self.path)
+            yield OperateInfo(self.main_operate_btn, self.path)
             if (
-                Buttons.apply_file_btn in self.buttons
-                or Buttons.re_add_file_btn in self.buttons
+                Buttons.apply_file_btn == self.main_operate_btn
+                or Buttons.re_add_file_btn == self.main_operate_btn
             ):
                 with Collapsible(
                     id=ModalIdStr.operate_collapsible, title="File Differences"

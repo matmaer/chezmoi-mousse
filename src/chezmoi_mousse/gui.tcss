@@ -160,7 +160,6 @@
     height: auto;
     min-height: 3;
     max-height: 9;
-    margin-top: 1;
   }
 }
 
