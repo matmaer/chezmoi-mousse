@@ -16,7 +16,6 @@ from pathlib import Path
 
 from rich.style import Style
 from rich.text import Text
-from textual.content import Content
 from textual.events import Key
 from textual.reactive import reactive
 from textual.widgets import DataTable, DirectoryTree, RichLog, Static
@@ -38,36 +37,6 @@ from chezmoi_mousse.id_typing import (
     TreeStr,
 )
 from chezmoi_mousse.overrides import CustomRenderLabel
-
-
-class AutoWarning(Static):
-
-    sign: str = Chars.warning_sign.value
-
-    def __init__(self, tab_name: TabStr) -> None:
-        super().__init__(
-            id=ModalIdStr.operate_auto_warning,
-            classes=TcssStr.operate_auto_warning,
-        )
-        self.tab_name = tab_name
-
-    def on_mount(self) -> None:
-        warning_lines: list[str] = []
-        if self.tab_name in (TabStr.re_add_tab, TabStr.add_tab):
-            if CM_CFG.autocommit:
-                warning_lines.append(OperateHelp.auto_commit.value)
-            if CM_CFG.autopush:
-                warning_lines.append(OperateHelp.autopush.value)
-            warning_lines.append(OperateHelp.re_add_warning.value)
-        if self.tab_name == TabStr.apply_tab:
-            warning_lines.append(OperateHelp.apply_warning.value)
-
-        # Apply text-warning markup to each line
-        markup_lines = [
-            Content.from_markup(f"[$text-warning]{line}[/]")
-            for line in warning_lines
-        ]
-        self.update(Content("\n").join(markup_lines))
 
 
 class OperateInfo(Static):
@@ -92,21 +61,29 @@ class OperateInfo(Static):
     def on_mount(self) -> None:
         self.lines_to_write: list[str] = []
 
+        # OperateHelp.apply is a warning, looks better above the diff color info
+        if Buttons.apply_file_btn == self.operate_btn:
+            self.lines_to_write.append(OperateHelp.apply.value)
+        # show git auto warnings
+        if not Buttons.apply_file_btn == self.operate_btn:
+            if CM_CFG.autocommit:
+                self.lines_to_write.append(OperateHelp.auto_commit.value)
+            if CM_CFG.autopush:
+                self.lines_to_write.append(OperateHelp.autopush.value)
+        # show git diff color info
         if (
             Buttons.apply_file_btn == self.operate_btn
             or Buttons.re_add_file_btn == self.operate_btn
         ):
-            self.lines_to_write.extend(
-                [
-                    "[$text-success]+ green lines will be added[/]",
-                    "[$text-error]- red lines will be removed[/]",
-                    f"[dim]{self.bullet} dimmed lines for context[/]",
-                ]
-            )
-        else:
-            self.lines_to_write.append(
-                "[$text-success]Path will be added to your chezmoi dotfile manager.[/]"
-            )
+            self.lines_to_write.extend(OperateHelp.diff_color.value)
+        elif Buttons.re_add_file_btn == self.operate_btn:
+            self.lines_to_write.append(OperateHelp.re_add.value)
+        elif Buttons.add_file_btn == self.operate_btn:
+            self.lines_to_write.append(OperateHelp.add.value)
+        elif Buttons.forget_file_btn == self.operate_btn:
+            self.lines_to_write.append(OperateHelp.forget.value)
+        elif Buttons.destroy_file_btn == self.operate_btn:
+            self.lines_to_write.extend(OperateHelp.destroy.value)
         self.update("\n".join(self.lines_to_write))
         self.border_title = str(self.path)
         self.border_subtitle = self.info_border_titles[self.operate_btn]

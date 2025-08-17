@@ -2,7 +2,7 @@ from pathlib import Path
 
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import Vertical
+from textual.containers import Vertical, VerticalGroup
 from textual.events import Click
 from textual.screen import ModalScreen
 from textual.widgets import Button, Collapsible
@@ -12,7 +12,6 @@ from chezmoi_mousse.chezmoi import OperateData, chezmoi, cmd_log, op_log
 from chezmoi_mousse.containers import ButtonsHorizontal
 from chezmoi_mousse.id_typing import (
     Buttons,
-    Chars,
     Location,
     ModalIdStr,
     OperateVerbs,
@@ -23,7 +22,6 @@ from chezmoi_mousse.id_typing import (
 )
 from chezmoi_mousse.messages import OperateMessage
 from chezmoi_mousse.widgets import (
-    AutoWarning,
     ContentsView,
     DiffView,
     GitLogView,
@@ -46,6 +44,7 @@ class ModalBase(ModalScreen[None]):
         self.path = path
         self.tab_ids = tab_ids
         super().__init__(id=modal_id, classes=TcssStr.modal_base)
+        self.border_subtitle = " double click or escape key to close "
 
     def handle_dismiss(self, dismiss_data: OperateData) -> None:
         if not dismiss_data.operation_executed:
@@ -59,10 +58,6 @@ class ModalBase(ModalScreen[None]):
 
 
 class Operate(ModalBase):
-
-    # TODO: fix invisible horizontal scrollbar in DiffView
-
-    check_mark = Chars.check_mark.value
 
     def __init__(
         self, *, tab_ids: TabIds, path: Path, buttons: tuple[Buttons, ...]
@@ -85,7 +80,6 @@ class Operate(ModalBase):
 
     def compose(self) -> ComposeResult:
         with Vertical(id=ModalIdStr.operate_vertical):
-            yield AutoWarning(self.tab_name)
             yield OperateInfo(self.main_operate_btn, self.path)
             if (
                 Buttons.apply_file_btn == self.main_operate_btn
@@ -103,13 +97,13 @@ class Operate(ModalBase):
                     id=ModalIdStr.operate_collapsible, title="File Contents"
                 ):
                     yield ContentsView(view_id=ModalIdStr.modal_contents_view)
-
-            yield op_log
-            yield ButtonsHorizontal(
-                tab_ids=self.tab_ids,
-                buttons=self.buttons,
-                location=Location.bottom,
-            )
+            with VerticalGroup():
+                yield ButtonsHorizontal(
+                    tab_ids=self.tab_ids,
+                    buttons=self.buttons,
+                    location=Location.bottom,
+                )
+                yield op_log
 
     def on_mount(self) -> None:
         if (
@@ -182,6 +176,11 @@ class Operate(ModalBase):
     def action_esc_dismiss(self) -> None:
         self.handle_dismiss(self.operate_dismiss_data)
 
+    def on_click(self, event: Click) -> None:
+        event.stop()
+        if event.chain == 2:
+            self.handle_dismiss(self.operate_dismiss_data)
+
 
 class Maximized(ModalBase):
 
@@ -214,8 +213,6 @@ class Maximized(ModalBase):
                 yield GitLogView(view_id=ModalIdStr.modal_git_log_view)
 
     def on_mount(self) -> None:
-        self.border_subtitle = " double click or escape key to close "
-
         if self.id_to_maximize == self.tab_ids.view_id(ViewStr.contents_view):
             self.query_one(
                 ModalIdStr.modal_contents_view.qid, ContentsView

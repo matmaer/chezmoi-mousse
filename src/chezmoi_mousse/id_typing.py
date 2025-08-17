@@ -56,19 +56,28 @@ class Chars(Enum):
 
 
 class OperateHelp(Enum):
-    # TODO parse the available text from chezmoi, currently some of this text  is copy/pasted from chezmoi.io
-    apply_warning = f"{Chars.warning_sign.value} Local file will be modified {Chars.warning_sign.value}"
-    auto_commit = f"{Chars.warning_sign.value}  Auto commit is enabled: files will also be committed  {Chars.warning_sign.value}"
-    autopush = f"{Chars.warning_sign.value}  Auto push is enabled: files will be pushed to the remote  {Chars.warning_sign.value}"
-    re_add_warning = f"{Chars.warning_sign.value}  Dotfile manager will be updated with current local file  {Chars.warning_sign.value}"
-    destroy_warning = (
-        "The destroy command permanently removes files both from your home directory and chezmoi's source directory.\n"
-        "Only run chezmoi destroy if you have a separate backup of your home directory and your source directory.\n"
-        "If you want chezmoi to stop managing the file use forget instead.\n"
-        "If you want to remove all traces of chezmoi from your system use purge instead, see the Init tab."
+    add = "[$text-primary]Path will be added to your chezmoi dotfile manager source state.[/]"
+    apply = "[$text-primary]Local file (target state) in the destination directory will be modified.[/]"
+    auto_commit = f"[$text-warning]{Chars.warning_sign.value} Auto commit is enabled: files will also be committed.{Chars.warning_sign.value}[/]"
+    autopush = f"[$text-warning]{Chars.warning_sign.value} Auto push is enabled: files will be pushed to the remote.{Chars.warning_sign.value}[/]"
+    # TODO f"If you want to remove all traces of chezmoi from your system use purge instead, see the Init tab. {Chars.warning_sign.value}[/]"
+    # "If you want chezmoi to stop managing the file use forget instead.\n" -> create links for this
+    destroy = (
+        "[$text-primary]Remove target from the source state, the destination directory, and the state.[/]",
+        "[$text-error]The destroy command permanently removes files both from your home directory and chezmoi's source directory.[/]",
+        "[$text-error]Only run chezmoi destroy if you have a separate backup of your home directory and your source directory.[/]",
     )
-    forget_info = "Remove targets from the source state, i.e. stop managing them. targets must have entries in the source state. They cannot be externals."
-    destroy_info = "Remove target from the source state, the destination directory, and the state."
+    diff_color = (
+        "[$text-success]+ green lines will be added[/]",
+        "[$text-error]- red lines will be removed[/]",
+        f"[dim]{Chars.bullet.value} dimmed lines for context[/]",
+    )
+    # TODO chezmoi forget help: "Targets must have entries in the source state. They cannot be externals."
+    # -> disable forget button in that case
+    forget = "[$text-primary]Remove targets from the source state, i.e. stop managing them.[/]"
+    re_add = (
+        "[$text-primary]Overwrite  will be updated with current local file[/]"
+    )
 
 
 class Buttons(Enum):
@@ -175,8 +184,7 @@ class TcssStr(StrEnum):
     flow_diagram = auto()
     last_clicked = auto()
     modal_base = auto()
-    op_log = auto()
-    operate_auto_warning = auto()
+    operate_log = auto()
     operate_button = auto()
     operate_top_path = auto()
     pad_bottom = auto()

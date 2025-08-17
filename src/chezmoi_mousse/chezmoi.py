@@ -189,7 +189,7 @@ class CommandLog(RichLog):
 
 cmd_log = CommandLog(id=Id.log.tab_name)
 op_log = CommandLog(id=ModalIdStr.operate_log)
-op_log.add_class(TcssStr.op_log)
+op_log.add_class(TcssStr.operate_log)
 
 
 if os.environ.get("CHEZMOI_MOUSSE_DEV") == "1":

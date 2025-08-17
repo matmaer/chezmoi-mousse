@@ -92,7 +92,7 @@
 .tab_buttons_horizontal {
   width: 100%;
   &>.single_button_vertical {
-    align: center top;
+    align: center middle;
     height: auto;
     &>.tab_button {
       height: 1;
@@ -139,27 +139,22 @@
   border: $accent-darken-3;
   border-title-style: bold;
   border-subtitle-style: bold;
-  .operate_auto_warning {
-    height: auto;
-    text-align: center;
-  }
   .operate_top_path {
     height: auto;
     border-title-align: center;
-    border-title-style: bold;
-    border-subtitle-style: bold;
     border-subtitle-align: center;
     margin: 0 1 0 1;
     text-align: center;
     border: round $foreground;
   }
-  .op_log {
+  .operate_log {
     border-top: $foreground;
     border-title-align: center;
+    dock: bottom;
     padding: 0 1 0 1;
     height: auto;
     min-height: 3;
-    max-height: 9;
+    max-height: 1fr;
   }
 }
 
