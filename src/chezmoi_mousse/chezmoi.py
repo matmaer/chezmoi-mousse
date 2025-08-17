@@ -21,8 +21,8 @@ from chezmoi_mousse.id_typing import (
     Mro,
     OperateVerbs,
     ParsedJson,
+    PathDict,
     ReadVerbs,
-    StatusDict,
     TabStr,
     TcssStr,
 )
@@ -410,8 +410,8 @@ class ManagedStatus:
 
     def _create_status_dict(
         self, tab_name: TabStr, kind: Literal["dirs", "files"]
-    ) -> StatusDict:
-        to_return: StatusDict = {}
+    ) -> PathDict:
+        to_return: PathDict = {}
         status_idx: int = 0
         status_codes: str = ""
         if kind == "dirs":
@@ -442,19 +442,19 @@ class ManagedStatus:
         return to_return
 
     @property
-    def apply_dirs(self) -> StatusDict:
+    def apply_dirs(self) -> PathDict:
         return self._create_status_dict(TabStr.apply_tab, "dirs")
 
     @property
-    def apply_files(self) -> StatusDict:
+    def apply_files(self) -> PathDict:
         return self._create_status_dict(TabStr.apply_tab, "files")
 
     @property
-    def re_add_dirs(self) -> StatusDict:
+    def re_add_dirs(self) -> PathDict:
         return self._create_status_dict(TabStr.re_add_tab, "dirs")
 
     @property
-    def re_add_files(self) -> StatusDict:
+    def re_add_files(self) -> PathDict:
         return self._create_status_dict(TabStr.re_add_tab, "files")
 
     def managed_dirs_in(self, dir_path: Path) -> list[Path]:
@@ -464,7 +464,7 @@ class ManagedStatus:
     def files_with_status_in(
         self, tab_name: TabStr, dir_path: Path
     ) -> list[Path]:
-        files_dict: StatusDict = {}
+        files_dict: PathDict = {}
         if tab_name == TabStr.apply_tab:
             files_dict = self.apply_files
         elif tab_name == TabStr.re_add_tab:
@@ -478,7 +478,7 @@ class ManagedStatus:
     def files_without_status_in(
         self, tab_name: TabStr, dir_path: Path
     ) -> list[Path]:
-        files_dict: StatusDict = {}
+        files_dict: PathDict = {}
         if tab_name == TabStr.apply_tab:
             files_dict = self.apply_files
         elif tab_name == TabStr.re_add_tab:

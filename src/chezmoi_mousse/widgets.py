@@ -29,6 +29,7 @@ from chezmoi_mousse.id_typing import (
     Chars,
     ModalIdStr,
     NodeData,
+    PathDict,
     TabIds,
     TabStr,
     TcssStr,
@@ -195,8 +196,8 @@ class DiffView(RichLog):
     def __init__(self, *, tab_name: TabStr, view_id: str) -> None:
         self.tab_name = tab_name
         super().__init__(id=view_id, auto_scroll=False, wrap=False)
-        self.status_dirs: dict[Path, str] = {}
-        self.status_files: dict[Path, str] = {}
+        self.status_dirs: PathDict = {}
+        self.status_files: PathDict = {}
 
     def on_mount(self) -> None:
         self.path = CM_CFG.destDir
@@ -414,7 +415,7 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
     # node visibility methods
     def dir_has_status_files(self, tab_name: TabStr, dir_path: Path) -> bool:
         # checks for any, direct children or no matter how deep in subdirs
-        files_dict: dict[Path, str] = {}
+        files_dict: PathDict = {}
         if tab_name == TabStr.apply_tab:
             files_dict = managed_status.apply_files
         elif tab_name == TabStr.re_add_tab:
@@ -429,7 +430,7 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
     def dir_has_status_dirs(self, tab_name: TabStr, dir_path: Path) -> bool:
         assert dir_path != CM_CFG.destDir
         # checks for any, direct children or no matter how deep in subdirs
-        dirs_dict: dict[Path, str] = {}
+        dirs_dict: PathDict = {}
         if tab_name == TabStr.apply_tab:
             dirs_dict = managed_status.apply_dirs
         elif tab_name == TabStr.re_add_tab:
@@ -690,7 +691,7 @@ class FlatTree(TreeBase):
     def refresh_tree_data(self) -> None:
         """Refresh the tree with latest chezmoi data."""
         self.root.remove_children()
-        files_dict: dict[Path, str] = {}
+        files_dict: PathDict = {}
         if self.tab_name == TabStr.apply_tab:
             files_dict = managed_status.apply_files
         elif self.tab_name == TabStr.re_add_tab:
@@ -702,7 +703,7 @@ class FlatTree(TreeBase):
                 self.root.add_leaf(label=node_label, data=node_data)
 
     def add_all_unchanged_files(self) -> None:
-        files_dict: dict[Path, str] = {}
+        files_dict: PathDict = {}
         if self.tab_name == TabStr.apply_tab:
             files_dict = managed_status.apply_files
         elif self.tab_name == TabStr.re_add_tab:

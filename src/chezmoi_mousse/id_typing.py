@@ -6,7 +6,7 @@ from typing import Any
 type CmdWords = tuple[str, ...]
 type Mro = tuple[type, ...]
 type ParsedJson = dict[str, Any]
-type StatusDict = dict[Path, str]
+type PathDict = dict[Path, str]
 
 
 # needed by both widgets.py and overrides.py
@@ -146,6 +146,8 @@ class Filters(Enum):
 class TcssStr(StrEnum):
     content_switcher_left = auto()
     content_switcher_right = auto()
+    content_view = auto()
+    diff_view = auto()
     dir_tree_widget = auto()
     doctor_collapsible = auto()
     doctor_table = auto()
