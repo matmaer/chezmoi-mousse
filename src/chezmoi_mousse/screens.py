@@ -229,12 +229,9 @@ class Maximized(ModalBase):
             ).path = self.path
 
         if self.path == CM_CFG.destDir:
-            self.border_title_text = f" {CM_CFG.destDir} "
+            self.border_title = f" {CM_CFG.destDir} "
         else:
-            self.border_title_text = (
-                f" {self.path.relative_to(CM_CFG.destDir)} "
-            )
-        self.border_title = self.border_title_text
+            self.border_title = f" {self.path.relative_to(CM_CFG.destDir)} "
 
     def on_click(self, event: Click) -> None:
         event.stop()
