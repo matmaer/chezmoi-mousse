@@ -433,8 +433,8 @@ class InitTab(Horizontal):
             yield ButtonsHorizontal(
                 tab_ids=Id.init,
                 buttons=(
-                    Buttons.new_repo_tab,
                     Buttons.clone_repo_tab,
+                    Buttons.new_repo_tab,
                     Buttons.purge_repo_tab,
                 ),
                 location=Location.top,
@@ -443,8 +443,8 @@ class InitTab(Horizontal):
                 id=Id.init.content_switcher_id(Location.top),
                 initial=Id.init.view_id(ViewStr.init_new_view),
             ):
-                yield InitNewRepo(tab_ids=Id.init)
                 yield InitCloneRepo(tab_ids=Id.init)
+                yield InitNewRepo(tab_ids=Id.init)
                 yield InitPurgeRepo(tab_ids=Id.init)
 
     def on_mount(self) -> None:
