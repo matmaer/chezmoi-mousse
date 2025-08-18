@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from rich.text import Text
+from textual import on
 from textual.app import ComposeResult
 from textual.containers import (
     Container,
@@ -453,19 +454,20 @@ class InitTab(Horizontal):
         buttons_horizontal.add_class(TcssStr.init_tab_buttons)
         buttons_horizontal.border_subtitle = " chezmoi init "
 
-    def on_button_pressed(self, event: Button.Pressed) -> None:
+    @on(Button.Pressed)
+    def set_content_switcher_current(self, event: Button.Pressed) -> None:
         event.stop()
-        if event.button.id == Id.init.button_id(Buttons.new_repo_btn):
+        if event.button.id == Id.init.button_id(Buttons.new_repo_tab):
             self.query_one(
                 Id.init.content_switcher_qid(Location.top), ContentSwitcher
             ).current = Id.init.view_id(ViewStr.init_new_view)
 
-        elif event.button.id == Id.init.button_id(Buttons.clone_repo_btn):
+        elif event.button.id == Id.init.button_id(Buttons.clone_repo_tab):
             self.query_one(
                 Id.init.content_switcher_qid(Location.top), ContentSwitcher
             ).current = Id.init.view_id(ViewStr.init_clone_view)
 
-        elif event.button.id == Id.init.button_id(Buttons.purge_repo_btn):
+        elif event.button.id == Id.init.button_id(Buttons.purge_repo_tab):
             self.query_one(
                 Id.init.content_switcher_qid(Location.top), ContentSwitcher
             ).current = Id.init.view_id(ViewStr.init_purge_view)
