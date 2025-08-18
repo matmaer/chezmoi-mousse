@@ -150,20 +150,20 @@ class Operate(ModalBase):
     def on_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
         # Refactored repeated button event handling into a loop
-        button_actions = [
+        button_commands = [
             (Buttons.apply_file_btn, chezmoi.perform.apply),
             (Buttons.re_add_file_btn, chezmoi.perform.re_add),
             (Buttons.add_file_btn, chezmoi.perform.add),
             (Buttons.forget_file_btn, chezmoi.perform.forget),
             (Buttons.destroy_file_btn, chezmoi.perform.destroy),
         ]
-        for btn_enum, action in button_actions:
+        for btn_enum, btn_cmd in button_commands:
             if event.button.id == self.tab_ids.button_id(btn_enum):
                 self.query_one(
                     self.tab_ids.button_qid(Buttons.operate_dismiss_btn),
                     Button,
                 ).label = "Close"
-                action(self.path)  # run the perform command with the path
+                btn_cmd(self.path)  # run the perform command with the path
                 self.query_one(
                     self.tab_ids.button_qid(btn_enum), Button
                 ).disabled = True
