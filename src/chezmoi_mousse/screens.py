@@ -39,22 +39,20 @@ class ModalBase(ModalScreen[None]):
     ]
 
     def __init__(
-        self, *, tab_ids: TabIds, modal_id: ModalIdStr, path: Path
+        self, *, modal_id: ModalIdStr, path: Path | None = None
     ) -> None:
+        self.modal_id = modal_id
         self.path = path
-        self.tab_ids = tab_ids
-        super().__init__(id=modal_id.name, classes=TcssStr.modal_base)
-        self.border_subtitle = " double click or escape key to close "
+        super().__init__(id=self.modal_id.name, classes=TcssStr.modal_base)
 
-    def handle_dismiss(self, dismiss_data: OperateData) -> None:
-        if not dismiss_data.operation_executed:
-            msg = f"Operation cancelled for {self.path.name}"
-            cmd_log.log_success(msg)
-            op_log.log_success(msg)
-            self.notify("No changes were made")
-        # send the needed data to the app, logging will be handled there
-        self.app.post_message(OperateMessage(dismiss_data=dismiss_data))
-        self.dismiss()
+    def on_click(self, event: Click) -> None:
+        event.stop()
+        if event.chain == 2 and self.modal_id != ModalIdStr.operate_modal:
+            self.dismiss()
+
+    def action_esc_dismiss(self) -> None:
+        if self.modal_id != ModalIdStr.operate_modal:
+            self.dismiss()
 
 
 class Operate(ModalBase):
@@ -72,12 +70,10 @@ class Operate(ModalBase):
             operation_executed=False,
             tab_name=self.tab_ids.tab_name,
         )
-        super().__init__(
-            tab_ids=self.tab_ids,
-            path=self.path,
-            modal_id=ModalIdStr.operate_modal,
-        )
+        super().__init__(path=self.path, modal_id=ModalIdStr.operate_modal)
 
+    # TODO: implement auto expand: make sure the operate buttons and operate
+    # log are not pushed out of view
     def compose(self) -> ComposeResult:
         with Vertical(id=ModalIdStr.operate_vertical):
             yield OperateInfo(
@@ -108,6 +104,7 @@ class Operate(ModalBase):
                 yield op_log
 
     def on_mount(self) -> None:
+        self.border_subtitle = " escape key to close "
         if (
             self.tab_name == TabStr.apply_tab
             or self.tab_name == TabStr.re_add_tab
@@ -178,10 +175,15 @@ class Operate(ModalBase):
     def action_esc_dismiss(self) -> None:
         self.handle_dismiss(self.operate_dismiss_data)
 
-    def on_click(self, event: Click) -> None:
-        event.stop()
-        if event.chain == 2:
-            self.handle_dismiss(self.operate_dismiss_data)
+    def handle_dismiss(self, dismiss_data: OperateData) -> None:
+        if not dismiss_data.operation_executed and self.path:
+            msg = f"Operation cancelled for {self.path.name}"
+            cmd_log.log_success(msg)
+            op_log.log_success(msg)
+            self.notify("No changes were made")
+        # send the needed data to the app, logging will be handled there
+        self.app.post_message(OperateMessage(dismiss_data=dismiss_data))
+        self.dismiss()
 
 
 class Maximized(ModalBase):
@@ -193,9 +195,7 @@ class Maximized(ModalBase):
         self.path = path
         self.tab_ids = tab_ids
         self.tab_name: TabStr = tab_ids.tab_name
-        super().__init__(
-            tab_ids=tab_ids, path=path, modal_id=ModalIdStr.maximized_modal
-        )
+        super().__init__(path=path, modal_id=ModalIdStr.maximized_modal)
 
     def compose(self) -> ComposeResult:
         with Vertical(id=ModalIdStr.maximized_vertical):
@@ -215,6 +215,7 @@ class Maximized(ModalBase):
                 yield GitLogView(view_id=ModalIdStr.modal_git_log_view)
 
     def on_mount(self) -> None:
+        self.border_subtitle = " double click or escape key to close "
         if self.id_to_maximize == self.tab_ids.view_id(ViewStr.contents_view):
             self.query_one(
                 ModalIdStr.modal_contents_view.qid, ContentsView
