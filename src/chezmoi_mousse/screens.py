@@ -43,7 +43,7 @@ class ModalBase(ModalScreen[None]):
     ) -> None:
         self.path = path
         self.tab_ids = tab_ids
-        super().__init__(id=modal_id, classes=TcssStr.modal_base)
+        super().__init__(id=modal_id.name, classes=TcssStr.modal_base)
         self.border_subtitle = " double click or escape key to close "
 
     def handle_dismiss(self, dismiss_data: OperateData) -> None:
