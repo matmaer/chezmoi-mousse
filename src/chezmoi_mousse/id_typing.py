@@ -194,6 +194,7 @@ class TcssStr(StrEnum):
     filter_label = auto()
     filters_vertical = auto()
     flow_diagram = auto()
+    init_tab_buttons = auto()
     last_clicked = auto()
     modal_base = auto()
     operate_log = auto()

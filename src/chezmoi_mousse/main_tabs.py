@@ -446,6 +446,13 @@ class InitTab(Horizontal):
                 yield InitCloneRepo(tab_ids=Id.init)
                 yield InitPurgeRepo(tab_ids=Id.init)
 
+    def on_mount(self) -> None:
+        buttons_horizontal = self.query_one(
+            Id.init.buttons_horizontal_qid(Location.top), ButtonsHorizontal
+        )
+        buttons_horizontal.add_class(TcssStr.init_tab_buttons)
+        buttons_horizontal.border_subtitle = " chezmoi init "
+
     def on_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
         if event.button.id == Id.init.button_id(Buttons.new_repo_btn):

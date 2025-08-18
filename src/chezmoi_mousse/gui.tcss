@@ -91,6 +91,11 @@
 
 .tab_buttons_horizontal {
   width: 100%;
+  &.init_tab_buttons {
+    border-bottom: $primary;
+    border-subtitle-style: bold;
+    border-subtitle-align: center;
+  }
   &>.single_button_vertical {
     align: center middle;
     height: auto;
@@ -109,7 +114,7 @@
         }
       }
       &:focus {
-        text-style: bold;
+        text-style: none;
       }
     }
     &>.operate_button {
