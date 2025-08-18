@@ -26,7 +26,6 @@ from chezmoi_mousse.id_typing import (
     Id,
     Location,
     TabIds,
-    TabStr,
     TcssStr,
     TreeStr,
     ViewStr,
@@ -78,10 +77,8 @@ class ButtonsHorizontal(HorizontalGroup):
         location: Location,
     ) -> None:
         self.buttons = buttons
-        self.button_class: str
         self.location: Location = location
         self.tab_ids: TabIds = tab_ids
-        self.tab_name: TabStr = tab_ids.tab_name
         super().__init__(
             id=tab_ids.buttons_horizontal_id(self.location),
             classes=TcssStr.tab_buttons_horizontal,
