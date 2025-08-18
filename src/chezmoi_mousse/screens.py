@@ -80,7 +80,9 @@ class Operate(ModalBase):
 
     def compose(self) -> ComposeResult:
         with Vertical(id=ModalIdStr.operate_vertical):
-            yield OperateInfo(self.main_operate_btn, self.path)
+            yield OperateInfo(
+                operate_btn=self.main_operate_btn, path=self.path
+            )
             if (
                 Buttons.apply_file_btn == self.main_operate_btn
                 or Buttons.re_add_file_btn == self.main_operate_btn

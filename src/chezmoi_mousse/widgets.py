@@ -43,7 +43,7 @@ class OperateInfo(Static):
 
     bullet = Chars.bullet.value
 
-    def __init__(self, operate_btn: Buttons, path: Path) -> None:
+    def __init__(self, *, operate_btn: Buttons, path: Path) -> None:
         super().__init__(
             id=ModalIdStr.operate_info, classes=TcssStr.operate_top_path
         )
