@@ -217,7 +217,6 @@ class ModalIdStr(StrEnum):
     modal_contents_view = auto()
     modal_diff_view = auto()
     modal_git_log_view = auto()
-    operate_auto_warning = auto()
     operate_collapsible = auto()
     operate_info = auto()
     operate_log = auto()
