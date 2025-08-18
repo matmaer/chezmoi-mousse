@@ -251,17 +251,20 @@ class TabIds:
         self.tab_main_horizontal_id = f"{tab_name}_main_horizontal"
         self.tab_name: TabStr = tab_name
 
-    def button_id(self, button_label: Buttons) -> str:
-        return f"{self.tab_name}_{button_label.name}"
+    def button_id(self, btn_enum: Buttons) -> str:
+        return f"{self.tab_name}_{btn_enum.name}"
 
-    def button_qid(self, button_label: Buttons) -> str:
-        return f"#{self.button_id(button_label)}"
+    def button_qid(self, btn_enum: Buttons) -> str:
+        return f"#{self.button_id(btn_enum)}"
 
     def buttons_horizontal_id(self, location: Location) -> str:
         return f"{self.tab_name}_{location}_horizontal"
 
-    def button_vertical_id(self, button_label: Buttons) -> str:
-        return f"{self.tab_name}_{button_label.name}_vertical"
+    def buttons_horizontal_qid(self, location: Location) -> str:
+        return f"#{self.buttons_horizontal_id(location)}"
+
+    def button_vertical_id(self, btn_enum: Buttons) -> str:
+        return f"{self.tab_name}_{btn_enum.name}_vertical"
 
     def content_switcher_id(self, side: Location) -> str:
         return f"{self.tab_name}_{side}_content_switcher"
