@@ -83,11 +83,11 @@ class OperateHelp(Enum):
 
 class Buttons(Enum):
     # tab buttons within a tab
-    contents_btn = "Contents"
-    diff_btn = "Diff"
-    git_log_btn = "Git-Log"
-    list_btn = "List"
-    tree_btn = "Tree"
+    contents_tab = "Contents"
+    diff_tab = "Diff"
+    git_log_tab = "Git-Log"
+    list_tab = "List"
+    tree_tab = "Tree"
     # operational buttons in Operate modal screen
     add_dir_btn = "Add Dir"
     add_file_btn = "Add File"

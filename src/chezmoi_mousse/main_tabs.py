@@ -134,7 +134,7 @@ class OperateTabsBase(Horizontal):
     def on_button_pressed(self, event: Button.Pressed) -> None:
         # Tree/List Switch
         event.stop()
-        if event.button.id == self.tab_ids.button_id(Buttons.tree_btn):
+        if event.button.id == self.tab_ids.button_id(Buttons.tree_tab):
             expand_all_switch = self.query_one(
                 self.tab_ids.switch_qid(Filters.expand_all), Switch
             )
@@ -149,7 +149,7 @@ class OperateTabsBase(Horizontal):
                     self.tab_ids.content_switcher_qid(Location.left),
                     ContentSwitcher,
                 ).current = self.tab_ids.tree_id(TreeStr.managed_tree)
-        elif event.button.id == self.tab_ids.button_id(Buttons.list_btn):
+        elif event.button.id == self.tab_ids.button_id(Buttons.list_tab):
             self.query_one(
                 self.tab_ids.content_switcher_qid(Location.left),
                 ContentSwitcher,
@@ -158,19 +158,19 @@ class OperateTabsBase(Horizontal):
                 self.tab_ids.switch_qid(Filters.expand_all), Switch
             ).disabled = True
         # Contents/Diff/GitLog Switch
-        elif event.button.id == self.tab_ids.button_id(Buttons.contents_btn):
+        elif event.button.id == self.tab_ids.button_id(Buttons.contents_tab):
             self.query_one(
                 self.tab_ids.content_switcher_qid(Location.right),
                 ContentSwitcher,
             ).current = self.tab_ids.view_id(ViewStr.contents_view)
 
-        elif event.button.id == self.tab_ids.button_id(Buttons.diff_btn):
+        elif event.button.id == self.tab_ids.button_id(Buttons.diff_tab):
             self.query_one(
                 self.tab_ids.content_switcher_qid(Location.right),
                 ContentSwitcher,
             ).current = self.tab_ids.view_id(ViewStr.diff_view)
 
-        elif event.button.id == self.tab_ids.button_id(Buttons.git_log_btn):
+        elif event.button.id == self.tab_ids.button_id(Buttons.git_log_tab):
             self.query_one(
                 self.tab_ids.content_switcher_qid(Location.right),
                 ContentSwitcher,
@@ -220,7 +220,7 @@ class ApplyTab(OperateTabsBase):
         ):
             yield ButtonsHorizontal(
                 tab_ids=Id.apply,
-                buttons=(Buttons.tree_btn, Buttons.list_btn),
+                buttons=(Buttons.tree_tab, Buttons.list_tab),
                 location=Location.left,
             )
             yield TreeContentSwitcher(tab_ids=Id.apply)
@@ -229,9 +229,9 @@ class ApplyTab(OperateTabsBase):
             yield ButtonsHorizontal(
                 tab_ids=Id.apply,
                 buttons=(
-                    Buttons.diff_btn,
-                    Buttons.contents_btn,
-                    Buttons.git_log_btn,
+                    Buttons.diff_tab,
+                    Buttons.contents_tab,
+                    Buttons.git_log_tab,
                 ),
                 location=Location.right,
             )
@@ -285,7 +285,7 @@ class ReAddTab(OperateTabsBase):
         ):
             yield ButtonsHorizontal(
                 tab_ids=Id.re_add,
-                buttons=(Buttons.tree_btn, Buttons.list_btn),
+                buttons=(Buttons.tree_tab, Buttons.list_tab),
                 location=Location.left,
             )
             yield TreeContentSwitcher(tab_ids=Id.re_add)
@@ -294,9 +294,9 @@ class ReAddTab(OperateTabsBase):
             yield ButtonsHorizontal(
                 tab_ids=Id.re_add,
                 buttons=(
-                    Buttons.diff_btn,
-                    Buttons.contents_btn,
-                    Buttons.git_log_btn,
+                    Buttons.diff_tab,
+                    Buttons.contents_tab,
+                    Buttons.git_log_tab,
                 ),
                 location=Location.right,
             )
