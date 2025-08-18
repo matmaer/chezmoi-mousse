@@ -246,4 +246,4 @@ class InvalidInputModal(ModalBase):
 
     def on_mount(self) -> None:
         self.border_subtitle = " double click or escape key to close "
-        self.query_exactly_one(Pretty).add_class("invalid_input")
+        self.query_exactly_one(Pretty).add_class(TcssStr.invalid_input)
