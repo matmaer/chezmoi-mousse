@@ -33,9 +33,9 @@ from chezmoi_mousse.main_tabs import (
     InitTab,
     ReAddTab,
 )
-from chezmoi_mousse.messages import OperateMessage
+from chezmoi_mousse.messages import InvalidInputMessage, OperateMessage
 from chezmoi_mousse.overrides import CustomScrollBarRender
-from chezmoi_mousse.screens import Maximized, Operate
+from chezmoi_mousse.screens import InvalidInputModal, Maximized, Operate
 from chezmoi_mousse.splash import LoadingScreen
 from chezmoi_mousse.widgets import (
     ContentsView,
@@ -157,6 +157,10 @@ class ChezmoiGUI(App[None]):
                 tree.remove_node_path(node_path=message.dismiss_data.path)
 
         self.query_one(FilteredDirTree).reload()
+
+    @on(InvalidInputMessage)
+    def handle_invalid_input(self, message: InvalidInputMessage) -> None:
+        self.push_screen(InvalidInputModal(descriptions=message.reasons))
 
     def check_action(
         self, action: str, parameters: tuple[object, ...]

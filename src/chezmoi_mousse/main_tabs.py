@@ -441,7 +441,7 @@ class InitTab(Horizontal):
             )
             with ContentSwitcher(
                 id=Id.init.content_switcher_id(Location.top),
-                initial=Id.init.view_id(ViewStr.init_new_view),
+                initial=Id.init.view_id(ViewStr.init_clone_view),
             ):
                 yield InitCloneRepo(tab_ids=Id.init)
                 yield InitNewRepo(tab_ids=Id.init)

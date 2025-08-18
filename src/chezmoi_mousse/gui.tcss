@@ -161,6 +161,10 @@
     min-height: 3;
     max-height: 1fr;
   }
+  .invalid_input {
+    height: auto;
+    width: auto;
+  }
 }
 
 MainScreen {

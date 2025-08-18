@@ -195,6 +195,7 @@ class TcssStr(StrEnum):
     filters_vertical = auto()
     flow_diagram = auto()
     init_tab_buttons = auto()
+    invalid_input = auto()
     last_clicked = auto()
     modal_base = auto()
     operate_log = auto()
@@ -222,6 +223,7 @@ class ModalIdStr(StrEnum):
     operate_log = auto()
     operate_modal = auto()
     operate_vertical = auto()
+    invalid_input_modal = auto()
 
     @property
     def qid(self) -> str:

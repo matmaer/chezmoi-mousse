@@ -14,7 +14,6 @@ from textual.widgets import (
     ContentSwitcher,
     Input,
     Label,
-    Pretty,
     Static,
     Switch,
 )
@@ -30,6 +29,7 @@ from chezmoi_mousse.id_typing import (
     TreeStr,
     ViewStr,
 )
+from chezmoi_mousse.messages import InvalidInputMessage
 from chezmoi_mousse.widgets import ExpandedTree, FlatTree, ManagedTree
 
 
@@ -150,26 +150,13 @@ class InitNewRepo(Vertical):
         super().__init__(id=self.tab_ids.view_id(ViewStr.init_new_view))
 
     def compose(self) -> ComposeResult:
-        yield Label("Init chezmoi from a remote Git repository")
-        yield Input(
-            placeholder="Enter repository URL",
-            validate_on=["submitted"],
-            validators=URL(),
+        yield Label("Initialize a new chezmoi git repository")
+        yield Input(placeholder="Enter config file path")
+        yield ButtonsHorizontal(
+            tab_ids=Id.init,
+            buttons=(Buttons.new_repo_btn,),
+            location=Location.bottom,
         )
-        yield Pretty([])
-
-    @on(Input.Submitted)
-    def show_invalid_reasons(self, event: Input.Submitted) -> None:
-        # Updating the UI to show the reasons why validation failed
-        if (
-            event.validation_result is not None
-            and not event.validation_result.is_valid
-        ):
-            self.query_one(Pretty).update(
-                event.validation_result.failure_descriptions
-            )
-        else:
-            self.query_one(Pretty).update([])
 
 
 class InitCloneRepo(Vertical):
@@ -179,12 +166,31 @@ class InitCloneRepo(Vertical):
         super().__init__(id=self.tab_ids.view_id(ViewStr.init_clone_view))
 
     def compose(self) -> ComposeResult:
-        yield Static(f"{self.tab_name} Init clone repo")
+        yield Static(
+            "Clone a remote chezmoi git repository and optionally apply"
+        )
+        yield Input(
+            placeholder="Enter repository URL",
+            validate_on=["submitted"],
+            validators=URL(),
+        )
         yield ButtonsHorizontal(
             tab_ids=Id.init,
             buttons=(Buttons.clone_repo_btn, Buttons.clear_btn),
             location=Location.bottom,
         )
+
+    @on(Input.Submitted)
+    def show_invalid_reasons(self, event: Input.Submitted) -> None:
+        if (
+            event.validation_result is not None
+            and not event.validation_result.is_valid
+        ):
+            self.app.post_message(
+                InvalidInputMessage(
+                    reasons=event.validation_result.failure_descriptions
+                )
+            )
 
 
 class InitPurgeRepo(Vertical):
@@ -195,3 +201,8 @@ class InitPurgeRepo(Vertical):
 
     def compose(self) -> ComposeResult:
         yield Static(f"{self.tab_name} Init purge repo")
+        yield ButtonsHorizontal(
+            tab_ids=Id.init,
+            buttons=(Buttons.purge_repo_btn,),
+            location=Location.bottom,
+        )
