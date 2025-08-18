@@ -38,6 +38,7 @@ class OperateVerbs(Enum):
     apply = "apply"
     destroy = "destroy"
     forget = "forget"
+    init = "init"
     purge = "purge"
     re_add = "re-add"
 
@@ -95,6 +96,14 @@ class Buttons(Enum):
     forget_file_btn = "Forget File"
     operate_dismiss_btn = "Cancel"
     re_add_file_btn = "Re-Add File"
+    # init tab buttons
+    new_repo_tab = "New"
+    purge_repo_tab = "Purge"
+    clone_repo_tab = "Clone"
+    new_repo_btn = "Initialize New Repo"
+    purge_repo_btn = "Purge Existing Repo"
+    clone_repo_btn = "Clone Existing Repo"
+    clear_btn = "Clear Input"
 
 
 class TabStr(StrEnum):
@@ -111,6 +120,9 @@ class ViewStr(StrEnum):
     diff_view = auto()
     doctor_table = auto()
     git_log_view = auto()
+    init_new_view = auto()
+    init_clone_view = auto()
+    init_purge_view = auto()
 
 
 class Location(StrEnum):

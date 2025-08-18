@@ -252,6 +252,49 @@ Header {
   text-style: bold;
 }
 
+/* Input default css */
+Input {
+  background: $surface;
+  color: $foreground;
+  padding: 0 2;
+  border: tall $border-blurred;
+  width: 100%;
+  height: 3;
+  scrollbar-size-horizontal: 0;
+
+  &.-textual-compact {
+      border: none !important;
+      height: 1;
+      padding: 0;
+      &.-invalid {
+          background-tint: $error 20%;
+      }
+  }
+
+  &:focus {
+      border: tall $border;
+      background-tint: $foreground 5%;
+  }
+  &>.input--cursor {
+      background: $input-cursor-background;
+      color: $input-cursor-foreground;
+      text-style: $input-cursor-text-style;
+  }
+  &>.input--selection {
+      background: $input-selection-background;
+  }
+  &>.input--placeholder, &>.input--suggestion {
+      color: $text-disabled;
+  }
+  &.-invalid {
+      border: tall $error 60%;
+  }
+  &.-invalid:focus {
+      border: tall $error;
+  }
+}
+
+
 ModalScreen {
   align: center middle;
 }

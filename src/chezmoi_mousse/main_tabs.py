@@ -29,6 +29,9 @@ from chezmoi_mousse.config import FLOW, pw_mgr_info
 from chezmoi_mousse.containers import (
     ButtonsHorizontal,
     FilterSlider,
+    InitCloneRepo,
+    InitNewRepo,
+    InitPurgeRepo,
     TreeContentSwitcher,
 )
 from chezmoi_mousse.id_typing import (
@@ -426,10 +429,39 @@ class InitTab(Horizontal):
             yield Static(
                 "[$foreground-darken-1]not yet implemented[/]", markup=True
             )
-            yield Static("[$success bold]chezmoi purge[/]", markup=True)
-            yield Static(
-                "[$foreground-darken-1]not yet implemented[/]", markup=True
+            yield ButtonsHorizontal(
+                tab_ids=Id.init,
+                buttons=(
+                    Buttons.new_repo_tab,
+                    Buttons.clone_repo_tab,
+                    Buttons.purge_repo_tab,
+                ),
+                location=Location.top,
             )
+            with ContentSwitcher(
+                id=Id.init.content_switcher_id(Location.top),
+                initial=Id.init.view_id(ViewStr.init_new_view),
+            ):
+                yield InitNewRepo(tab_ids=Id.init)
+                yield InitCloneRepo(tab_ids=Id.init)
+                yield InitPurgeRepo(tab_ids=Id.init)
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        event.stop()
+        if event.button.id == Id.init.button_id(Buttons.new_repo_btn):
+            self.query_one(
+                Id.init.content_switcher_qid(Location.top), ContentSwitcher
+            ).current = Id.init.view_id(ViewStr.init_new_view)
+
+        elif event.button.id == Id.init.button_id(Buttons.clone_repo_btn):
+            self.query_one(
+                Id.init.content_switcher_qid(Location.top), ContentSwitcher
+            ).current = Id.init.view_id(ViewStr.init_clone_view)
+
+        elif event.button.id == Id.init.button_id(Buttons.purge_repo_btn):
+            self.query_one(
+                Id.init.content_switcher_qid(Location.top), ContentSwitcher
+            ).current = Id.init.view_id(ViewStr.init_purge_view)
 
 
 class DoctorTab(ScrollableContainer):
