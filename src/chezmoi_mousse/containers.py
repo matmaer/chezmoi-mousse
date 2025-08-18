@@ -110,9 +110,12 @@ class ButtonsHorizontal(HorizontalGroup):
                 TcssStr.last_clicked
             )
 
-    def on_button_pressed(self, event: Button.Pressed) -> None:
+    @on(Button.Pressed)
+    def update_tab_btn_last_clicked(self, event: Button.Pressed) -> None:
+        # tab buttons never on bottom, non-tab buttons, always on bottom
         if self.location == Location.bottom:
             return
+        # update last_clicked class
         for button_enum in self.buttons:
             self.query_one(self.tab_ids.button_qid(button_enum)).remove_class(
                 TcssStr.last_clicked
