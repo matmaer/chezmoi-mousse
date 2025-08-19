@@ -455,7 +455,7 @@ class InitTab(Horizontal):
         buttons_horizontal.border_subtitle = " chezmoi init "
 
     @on(Button.Pressed)
-    def set_content_switcher_current(self, event: Button.Pressed) -> None:
+    def handle_init_buttons(self, event: Button.Pressed) -> None:
         event.stop()
         if event.button.id == Id.init.button_id(Buttons.new_repo_tab):
             self.query_one(
@@ -471,6 +471,12 @@ class InitTab(Horizontal):
             self.query_one(
                 Id.init.content_switcher_qid(Location.top), ContentSwitcher
             ).current = Id.init.view_id(ViewStr.init_purge_view)
+        elif event.button.id == Id.init.button_id(Buttons.clone_repo_btn):
+            self.notify("Clone repository button pressed")
+        elif event.button.id == Id.init.button_id(Buttons.new_repo_btn):
+            self.notify("New repository button pressed")
+        elif event.button.id == Id.init.button_id(Buttons.purge_repo_btn):
+            self.notify("Purge repository button pressed")
 
 
 class DoctorTab(ScrollableContainer):
