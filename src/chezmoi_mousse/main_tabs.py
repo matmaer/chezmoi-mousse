@@ -70,7 +70,6 @@ class OperateTabsBase(Horizontal):
         self.query_one(
             self.tab_ids.content_switcher_qid(Location.right), Container
         ).border_title = f"{path.relative_to(CM_CFG.destDir)}"
-        # TODO: update on_button_press for each individual button
         self.query_one(
             self.tab_ids.view_qid(ViewStr.contents_view), ContentsView
         ).path = path
