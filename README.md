@@ -48,7 +48,7 @@ Graphical user interface in the terminal for [chezmoi](https://github.com/twpayn
 - [x] `chezmoi unmanaged`
 
 
-### implemented features
+### Implemented features
 
 - [ ] import files from archives
 - [ ] password manager
@@ -56,6 +56,212 @@ Graphical user interface in the terminal for [chezmoi](https://github.com/twpayn
 - [ ] templates
 - [x] filemode
 - [x] read commands
+
+### Implemented configuration options
+
+**Legend:**
+
+- :green_circle: Follow user configuration
+- :green_square: Provided by this app
+- :negative_squared_cross_mark: Not in scope
+- :bulb: Follows user config with warning
+- :black_circle: Unknown, help wanted or to be documented
+
+Top level
+
+- :green_circle: cacheDir
+- :green_square: color
+- :green_circle: data
+- :green_circle: destDir
+- :black_circle: encryption
+- :black_circle: env
+- :negative_squared_cross_mark: format
+- :green_square: interactive
+- :black_circle: mode
+- :green_square: pager
+- :green_square: pagerArgs
+- :black_circle: persistentState
+- :green_square: progress
+- :black_circle: scriptEnv
+- :black_circle: scriptTempDir
+- :green_circle: sourceDir
+- :green_circle: tempDir
+- :green_circle: umask
+- :black_circle: useBuiltinAge
+- :black_circle: useBuiltinGit
+- :green_square: verbose
+- :black_circle: workingTree
+
+add
+- :black_circle: add.encrypt
+- :black_circle: add.secrets
+- :black_circle: add.templateSymlinks
+
+age
+- :black_circle: age.args
+- :black_circle: age.command
+- :black_circle: age.identities
+- :black_circle: age.identity
+- :black_circle: age.passphrase
+- :black_circle: age.recipient
+- :black_circle: age.recipients
+- :black_circle: age.recipientsFile
+- :black_circle: age.recipientsFiles
+- :black_circle: age.suffix
+- :black_circle: age.symmetric
+
+awsSecretsManager
+- :black_circle: awsSecretsManager.profile
+- :black_circle: awsSecretsManager.region
+
+azureKeyVault
+- :black_circle: azureKeyVault.defaultVault
+
+bitwarden
+- :black_circle: bitwarden.command
+- :black_circle: bitwarden.unlock
+
+bitwardenSecrets
+- :black_circle: bitwardenSecrets.command
+
+cd
+- :negative_squared_cross_mark: cd.args
+- :negative_squared_cross_mark: cd.command
+
+dashlane
+- :black_circle: dashlane.args
+- :black_circle: dashlane.command
+
+diff
+- :green_square: diff.args
+- :black_circle: diff.command
+- :green_square: diff.exclude
+- :green_square: diff.pager
+- :green_square: diff.pagerArgs
+- :green_square: diff.reverse
+- :black_circle: diff.scriptContents
+
+doppler
+- :black_circle: doppler.args
+- :black_circle: doppler.command
+- :black_circle: doppler.config
+- :black_circle: doppler.project
+
+edit
+- :black_circle: edit.apply
+- :black_circle: edit.args
+- :black_circle: edit.command
+- :black_circle: edit.hardlink
+- :black_circle: edit.minDuration
+- :black_circle: edit.watch
+
+ejson
+- :black_circle: ejson.key
+- :black_circle: ejson.keyDir
+
+git
+- :black_circle: git.autoAdd
+- :bulb: git.autoCommit
+- :bulb: git.autoPush
+- :black_circle: git.command
+- :black_circle: git.commitMessageTemplate
+- :black_circle: git.commitMessageTemplateFile
+- :black_circle: git.lfs
+
+gitHub
+- :black_circle: gitHub.refreshPeriod
+
+gopass
+- :black_circle: gopass.command
+- :black_circle: gopass.mode
+
+gpg
+- :black_circle: gpg.args
+- :black_circle: gpg.command
+- :black_circle: gpg.recipient
+- :black_circle: gpg.recipients
+- :black_circle: gpg.suffix
+- :black_circle: gpg.symmetric
+
+hooks
+- :black_circle: hooks.command.post.args
+- :black_circle: hooks.command.post.command
+- :black_circle: hooks.command.pre.args
+- :black_circle: hooks.command.pre.command
+
+interpreters
+- :black_circle: interpreters.extension.args
+- :black_circle: interpreters.extension.command
+
+keepassxc
+- :black_circle: keepassxc.args
+- :black_circle: keepassxc.command
+- :black_circle: keepassxc.database
+- :black_circle: keepassxc.mode
+- :black_circle: keepassxc.prompt
+
+keeper
+- :black_circle: keeper.args
+- :black_circle: keeper.command
+
+lastpass
+- :black_circle: lastpass.command
+
+merge
+- :black_circle: merge.args
+- :black_circle: merge.command
+
+onepassword
+- :black_circle: onepassword.cache
+- :black_circle: onepassword.command
+- :black_circle: onepassword.mode
+- :black_circle: onepassword.prompt
+
+pass
+- :black_circle: pass.command
+
+passhole
+- :black_circle: passhole.args
+- :black_circle: passhole.command
+- :black_circle: passhole.prompt
+
+pinentry
+- :black_circle: pinentry.args
+- :black_circle: pinentry.command
+- :black_circle: pinentry.options
+
+rbw
+- :black_circle: rbw.command
+
+secret
+- :black_circle: secret.args
+- :black_circle: secret.command
+
+status
+- :green_square: status.pathStyle
+- :green_square: status.exclude
+
+template
+- :black_circle: template.options
+
+textconv
+- :black_cirblack_circlecle: textconv.
+
+update
+- :black_circle: update.apply
+- :black_circle: update.args
+- :black_circle: update.command
+- :black_circle: update.recurseSubmodules
+
+vault
+- :black_circle: vault.command
+
+verify
+- :black_circle: verify.exclude
+
+warnings
+- :black_circle: warnings
+
 
 ## Start
 
