@@ -76,7 +76,7 @@ Top level
 - :green_circle: destDir
 - :black_circle: encryption
 - :black_circle: env
-- :negative_squared_cross_mark: format
+- :green_circle: format
 - :green_square: interactive
 - :black_circle: mode
 - :green_square: pager
