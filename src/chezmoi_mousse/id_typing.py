@@ -17,6 +17,87 @@ class NodeData:
     status: str
 
 
+class TabStr(StrEnum):
+    add_tab = auto()
+    apply_tab = auto()
+    doctor_tab = auto()
+    init_tab = auto()
+    log_tab = auto()
+    re_add_tab = auto()
+
+
+class ViewStr(StrEnum):
+    contents_view = auto()
+    diff_view = auto()
+    doctor_table = auto()
+    git_log_view = auto()
+    init_new_view = auto()
+    init_clone_view = auto()
+    init_purge_view = auto()
+
+
+class Location(StrEnum):
+    top = auto()
+    right = auto()
+    bottom = auto()
+    left = auto()
+
+
+class TreeStr(StrEnum):
+    add_tree = auto()
+    expanded_tree = auto()
+    flat_tree = auto()
+    managed_tree = auto()
+
+
+class TcssStr(StrEnum):
+    content_switcher_left = auto()
+    content_switcher_right = auto()
+    content_view = auto()
+    diff_view = auto()
+    dir_tree_widget = auto()
+    doctor_collapsible = auto()
+    doctor_table = auto()
+    doctor_vertical = auto()
+    filter_horizontal = auto()
+    filter_label = auto()
+    filters_vertical = auto()
+    flow_diagram = auto()
+    init_tab_buttons = auto()
+    invalid_input = auto()
+    last_clicked = auto()
+    modal_base = auto()
+    operate_log = auto()
+    operate_button = auto()
+    operate_top_path = auto()
+    pad_bottom = auto()
+    single_button_vertical = auto()
+    tab_button = auto()
+    tab_buttons_horizontal = auto()
+    tab_left_vertical = auto()
+    tab_right_vertical = auto()
+    top_border_title = auto()
+    tree_widget = auto()
+
+
+class ModalIdStr(StrEnum):
+    maximized_modal = auto()
+    maximized_vertical = auto()
+    modal_contents_view = auto()
+    modal_diff_view = auto()
+    modal_git_log_view = auto()
+    operate_collapsible = auto()
+    operate_info = auto()
+    operate_log = auto()
+    operate_modal = auto()
+    operate_vertical = auto()
+    invalid_input_modal = auto()
+
+    @property
+    def qid(self) -> str:
+        return f"#{self.name}"
+
+
 class IoVerbs(Enum):
     doctor = "doctor"
     managed = "managed"
@@ -106,39 +187,6 @@ class Buttons(Enum):
     clear_btn = "Clear Input"
 
 
-class TabStr(StrEnum):
-    add_tab = auto()
-    apply_tab = auto()
-    doctor_tab = auto()
-    init_tab = auto()
-    log_tab = auto()
-    re_add_tab = auto()
-
-
-class ViewStr(StrEnum):
-    contents_view = auto()
-    diff_view = auto()
-    doctor_table = auto()
-    git_log_view = auto()
-    init_new_view = auto()
-    init_clone_view = auto()
-    init_purge_view = auto()
-
-
-class Location(StrEnum):
-    top = auto()
-    right = auto()
-    bottom = auto()
-    left = auto()
-
-
-class TreeStr(StrEnum):
-    add_tree = auto()
-    expanded_tree = auto()
-    flat_tree = auto()
-    managed_tree = auto()
-
-
 @dataclass(frozen=True)
 class FilterData:
     label: str
@@ -179,54 +227,6 @@ class Filters(Enum):
             "switch."
         ),
     )
-
-
-class TcssStr(StrEnum):
-    content_switcher_left = auto()
-    content_switcher_right = auto()
-    content_view = auto()
-    diff_view = auto()
-    dir_tree_widget = auto()
-    doctor_collapsible = auto()
-    doctor_table = auto()
-    doctor_vertical = auto()
-    filter_horizontal = auto()
-    filter_label = auto()
-    filters_vertical = auto()
-    flow_diagram = auto()
-    init_tab_buttons = auto()
-    invalid_input = auto()
-    last_clicked = auto()
-    modal_base = auto()
-    operate_log = auto()
-    operate_button = auto()
-    operate_top_path = auto()
-    pad_bottom = auto()
-    single_button_vertical = auto()
-    tab_button = auto()
-    tab_buttons_horizontal = auto()
-    tab_left_vertical = auto()
-    tab_right_vertical = auto()
-    top_border_title = auto()
-    tree_widget = auto()
-
-
-class ModalIdStr(StrEnum):
-    maximized_modal = auto()
-    maximized_vertical = auto()
-    modal_contents_view = auto()
-    modal_diff_view = auto()
-    modal_git_log_view = auto()
-    operate_collapsible = auto()
-    operate_info = auto()
-    operate_log = auto()
-    operate_modal = auto()
-    operate_vertical = auto()
-    invalid_input_modal = auto()
-
-    @property
-    def qid(self) -> str:
-        return f"#{self.name}"
 
 
 class DoctorEnum(Enum):
