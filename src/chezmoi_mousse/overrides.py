@@ -14,7 +14,7 @@ from chezmoi_mousse.id_typing import Chars, NodeData
 
 
 class CustomScrollBarRender(ScrollBarRender):
-    """Used to monkey path the textual ScrollBar.renderer method in gui.py."""
+    # Used to monkey patch the textual ScrollBar.renderer method in gui.py.
 
     @classmethod
     def render_bar(
