@@ -149,12 +149,12 @@ doppler
 - :black_circle: doppler.project
 
 edit
-- :green_square: edit.apply
-- :green_square: edit.args
-- :green_square: edit.command
-- :green_square: edit.hardlink
-- :green_square: edit.minDuration
-- :green_square: edit.watch
+- :negative_squared_cross_mark: edit.apply
+- :negative_squared_cross_mark: edit.args
+- :negative_squared_cross_mark: edit.command
+- :negative_squared_cross_mark: edit.hardlink
+- :negative_squared_cross_mark: edit.minDuration
+- :negative_squared_cross_mark: edit.watch
 
 ejson
 - :black_circle: ejson.key
