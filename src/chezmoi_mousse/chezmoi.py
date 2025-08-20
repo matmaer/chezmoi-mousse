@@ -272,27 +272,29 @@ class ChangeCommand:
         chezmoi.file_status_lines.update()
 
     def add(self, path: Path) -> None:
-        _run_cmd(self.base_cmd + ("add", str(path)))
+        _run_cmd(self.base_cmd + (OperateVerbs.add.value, str(path)))
         self._update_managed_status_data()
 
     def add_encrypted(self, path: Path) -> None:
-        _run_cmd(self.base_cmd + ("add", "--encrypt", str(path)))
+        _run_cmd(
+            self.base_cmd + (OperateVerbs.add.value, "--encrypt", str(path))
+        )
         self._update_managed_status_data()
 
     def re_add(self, path: Path) -> None:
-        _run_cmd(self.base_cmd + ("re-add", str(path)))
+        _run_cmd(self.base_cmd + (OperateVerbs.re_add.value, str(path)))
         self._update_managed_status_data()
 
     def apply(self, path: Path) -> None:
-        _run_cmd(self.base_cmd + ("apply", str(path)))
+        _run_cmd(self.base_cmd + (OperateVerbs.apply.value, str(path)))
         self._update_managed_status_data()
 
     def forget(self, path: Path) -> None:
-        _run_cmd(self.base_cmd + ("forget", str(path)))
+        _run_cmd(self.base_cmd + (OperateVerbs.forget.value, str(path)))
         self._update_managed_status_data()
 
     def destroy(self, path: Path) -> None:
-        _run_cmd(self.base_cmd + ("destroy", str(path)))
+        _run_cmd(self.base_cmd + (OperateVerbs.destroy.value, str(path)))
         self._update_managed_status_data()
 
 
