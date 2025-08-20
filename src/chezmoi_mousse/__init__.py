@@ -1,6 +1,7 @@
 import json
 import sys
 from pathlib import Path
+from shutil import which
 from subprocess import run
 
 from .id_typing import ParsedJson
@@ -15,6 +16,14 @@ BASE_CMD = (
     "--interactive=false",
     "--force",
 )
+
+# Check if git command is available
+if not which("chezmoi"):
+    print("Error: chezmoi command not found.", file=sys.stderr)
+    sys.exit(1)
+elif not which("git"):
+    print("Error: git command not found.", file=sys.stderr)
+    sys.exit(1)
 
 try:
     chezmoi_config: ParsedJson = json.loads(

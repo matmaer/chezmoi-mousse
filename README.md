@@ -65,6 +65,7 @@ Graphical user interface in the terminal for [chezmoi](https://github.com/twpayn
 - :green_square: Provided by this app
 - :negative_squared_cross_mark: Not in scope
 - :bulb: Follows user config with warning
+- :large_blue_diamond: Checked at app init
 - :black_circle: Unknown, help wanted or to be documented
 
 Top level
@@ -148,12 +149,12 @@ doppler
 - :black_circle: doppler.project
 
 edit
-- :black_circle: edit.apply
-- :black_circle: edit.args
-- :black_circle: edit.command
-- :black_circle: edit.hardlink
-- :black_circle: edit.minDuration
-- :black_circle: edit.watch
+- :green_square: edit.apply
+- :green_square: edit.args
+- :green_square: edit.command
+- :green_square: edit.hardlink
+- :green_square: edit.minDuration
+- :green_square: edit.watch
 
 ejson
 - :black_circle: ejson.key
@@ -163,7 +164,7 @@ git
 - :black_circle: git.autoAdd
 - :bulb: git.autoCommit
 - :bulb: git.autoPush
-- :black_circle: git.command
+- :large_blue_diamond: git.command
 - :black_circle: git.commitMessageTemplate
 - :black_circle: git.commitMessageTemplateFile
 - :black_circle: git.lfs
