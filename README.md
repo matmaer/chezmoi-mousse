@@ -78,7 +78,7 @@ Top level
 - :black_circle: env
 - :green_circle: format
 - :green_square: interactive
-- :black_circle: mode
+- :large_blue_diamond: mode (file mode only)
 - :green_square: pager
 - :green_square: pagerArgs
 - :black_circle: persistentState
