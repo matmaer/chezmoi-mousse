@@ -61,8 +61,8 @@ class OperateHelp(Enum):
     apply = "[$text-primary]Local file (target state) in the destination directory will be modified.[/]"
     auto_commit = f"[$text-warning]{Chars.warning_sign.value} Auto commit is enabled: files will also be committed.{Chars.warning_sign.value}[/]"
     autopush = f"[$text-warning]{Chars.warning_sign.value} Auto push is enabled: files will be pushed to the remote.{Chars.warning_sign.value}[/]"
-    # TODO f"If you want to remove all traces of chezmoi from your system use purge instead, see the Init tab. {Chars.warning_sign.value}[/]"
-    # "If you want chezmoi to stop managing the file use forget instead.\n" -> create links for this
+    # TODO from chezmoi help: If you want to remove all traces of chezmoi from your system use purge instead, see the Init tab. If you want chezmoi to stop managing the file use forget instead.
+    # ---> create links for this to the other tabs
     destroy = (
         "[$text-primary]Remove target from the source state, the destination directory, and the state.[/]",
         "[$text-error]The destroy command permanently removes files both from your home directory and chezmoi's source directory.[/]",
