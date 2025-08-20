@@ -197,9 +197,6 @@ if os.environ.get("CHEZMOI_MOUSSE_DEV") == "1":
 
 
 def _run_cmd(long_command: CmdWords, time_out: float = 1) -> str:
-    check_mark = Chars.check_mark.value
-    x_mark = Chars.x_mark.value
-    warning_sign = Chars.warning_sign.value
 
     try:
         cmd_stdout = subprocess.run(
@@ -214,13 +211,11 @@ def _run_cmd(long_command: CmdWords, time_out: float = 1) -> str:
         if any(verb.value in long_command for verb in OperateVerbs):
             op_log.log_command(long_command)
             if cmd_stdout.strip() == "":
-                msg = f"{check_mark} Command made changes successfully, no output"
+                msg = f"{Chars.check_mark.value} Command made changes successfully, no output"
                 op_log.log_success(msg)
                 cmd_log.log_success(msg)
             else:
-                msg = (
-                    f"{check_mark} Command made changes successfully, output:"
-                )
+                msg = f"{Chars.check_mark.value} Command made changes successfully, output:"
                 op_log.log_success(msg)
                 cmd_log.log_success(msg)
                 op_log.log_dimmed(cmd_stdout)
@@ -244,12 +239,12 @@ def _run_cmd(long_command: CmdWords, time_out: float = 1) -> str:
             e, subprocess.CalledProcessError
         ):
             op_log.log_warning(
-                f"{warning_sign} chezmoi doctor has a non-zero exit code"
+                f"{Chars.warning_sign.value} chezmoi doctor has a non-zero exit code"
             )
             return e.stdout.strip()
         if any(verb.value in long_command for verb in OperateVerbs):
-            op_log.log_error(f"{x_mark} Command failed {e}")
-        cmd_log.log_error(f"{x_mark} Command failed {e}")
+            op_log.log_error(f"{Chars.x_mark.value} Command failed {e}")
+        cmd_log.log_error(f"{Chars.x_mark.value} Command failed {e}")
         return "failed"
 
 
