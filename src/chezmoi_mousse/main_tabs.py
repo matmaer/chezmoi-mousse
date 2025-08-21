@@ -64,21 +64,28 @@ class OperateTabsBase(Horizontal):
 
     def __init__(self, *, tab_ids: TabIds) -> None:
         self.tab_ids = tab_ids
+        self.current_path: Path | None = None
         super().__init__(id=tab_ids.tab_name)
+
+    def update_diff_view(self, path: Path):
+        self.query_one(
+            self.tab_ids.view_qid(ViewStr.diff_view), DiffView
+        ).path = path
+
+    def update_contents_view(self, path: Path):
+        self.query_one(
+            self.tab_ids.view_qid(ViewStr.contents_view), ContentsView
+        ).path = path
+
+    def update_git_log_view(self, path: Path):
+        self.query_one(
+            self.tab_ids.view_qid(ViewStr.git_log_view), GitLogView
+        ).path = path
 
     def update_right_side_content_switcher(self, path: Path):
         self.query_one(
             self.tab_ids.content_switcher_qid(Location.right), Container
         ).border_title = f"{path.relative_to(CM_CFG.destDir)}"
-        self.query_one(
-            self.tab_ids.view_qid(ViewStr.contents_view), ContentsView
-        ).path = path
-        self.query_one(
-            self.tab_ids.view_qid(ViewStr.diff_view), DiffView
-        ).path = path
-        self.query_one(
-            self.tab_ids.view_qid(ViewStr.git_log_view), GitLogView
-        ).path = path
 
     def disable_buttons(self, buttons_to_update: tuple[Buttons, ...]) -> None:
         for button_enum in buttons_to_update:
@@ -108,6 +115,10 @@ class OperateTabsBase(Horizontal):
         event.stop()
         assert event.node.data is not None
         self.update_right_side_content_switcher(event.node.data.path)
+        self.current_path = event.node.data.path
+        self.update_diff_view(event.node.data.path)
+        self.update_contents_view(event.node.data.path)
+        self.update_git_log_view(event.node.data.path)
 
         buttons_to_update: tuple[Buttons, ...] = ()
         if self.tab_ids.tab_name == TabStr.apply_tab:
@@ -263,7 +274,7 @@ class ApplyTab(OperateTabsBase):
             Id.apply.content_switcher_qid(Location.right), ContentSwitcher
         )
         right_side_content_switcher.add_class(TcssStr.content_switcher_right)
-        right_side_content_switcher.add_class(TcssStr.top_border_title)
+        right_side_content_switcher.add_class(TcssStr.border_title_top)
         self.disable_buttons(
             (
                 Buttons.apply_file_btn,
@@ -328,7 +339,7 @@ class ReAddTab(OperateTabsBase):
             Id.re_add.content_switcher_qid(Location.right), ContentSwitcher
         )
         content_switcher_right.add_class(TcssStr.content_switcher_right)
-        content_switcher_right.add_class(TcssStr.top_border_title)
+        content_switcher_right.add_class(TcssStr.border_title_top)
         self.disable_buttons(
             (
                 Buttons.re_add_file_btn,
@@ -364,13 +375,13 @@ class AddTab(OperateTabsBase):
         )
         right_side.border_title = str(CM_CFG.destDir)
         right_side.add_class(TcssStr.tab_right_vertical)
-        right_side.add_class(TcssStr.top_border_title)
+        right_side.add_class(TcssStr.border_title_top)
         left_side = self.query_one(
             Id.add.tab_vertical_qid(Location.left), VerticalGroup
         )
         left_side.border_title = str(CM_CFG.destDir)
         left_side.add_class(TcssStr.tab_left_vertical)
-        left_side.add_class(TcssStr.top_border_title)
+        left_side.add_class(TcssStr.border_title_top)
 
         tree = self.query_one(
             Id.add.tree_qid(TreeStr.add_tree), FilteredDirTree
@@ -450,7 +461,7 @@ class InitTab(Horizontal):
         buttons_horizontal = self.query_one(
             Id.init.buttons_horizontal_qid(Location.top), ButtonsHorizontal
         )
-        buttons_horizontal.add_class(TcssStr.init_tab_buttons)
+        buttons_horizontal.add_class(TcssStr.border_title_bottom)
         buttons_horizontal.border_subtitle = " chezmoi init "
 
     @on(Button.Pressed)

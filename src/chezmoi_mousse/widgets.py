@@ -163,8 +163,6 @@ class ContentsView(RichLog):
             cmd_log.log_error("Error reading file")
 
     def watch_path(self) -> None:
-        if self.path is None:
-            self.path = CM_CFG.destDir
         self.clear()
         self.update_contents_view()
 
@@ -183,9 +181,6 @@ class DiffView(RichLog):
         )
         self.status_dirs: PathDict = {}
         self.status_files: PathDict = {}
-
-    def on_mount(self) -> None:
-        self.path = CM_CFG.destDir
 
     def watch_path(self) -> None:
         self.clear()

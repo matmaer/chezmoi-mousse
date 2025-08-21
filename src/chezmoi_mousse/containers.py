@@ -135,7 +135,7 @@ class TreeContentSwitcher(ContentSwitcher):
     def on_mount(self) -> None:
         self.border_title = str(CM_CFG.destDir)
         self.add_class(TcssStr.content_switcher_left)
-        self.add_class(TcssStr.top_border_title)
+        self.add_class(TcssStr.border_title_top)
 
     def compose(self) -> ComposeResult:
         yield ManagedTree(tab_ids=self.tab_ids)

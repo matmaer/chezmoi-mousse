@@ -51,6 +51,8 @@ class TreeStr(StrEnum):
 
 
 class TcssStr(StrEnum):
+    border_title_bottom = auto()
+    border_title_top = auto()
     content_switcher_left = auto()
     content_switcher_right = auto()
     content_view = auto()
@@ -63,12 +65,11 @@ class TcssStr(StrEnum):
     filter_label = auto()
     filters_vertical = auto()
     flow_diagram = auto()
-    init_tab_buttons = auto()
     invalid_input = auto()
     last_clicked = auto()
     modal_base = auto()
-    operate_log = auto()
     operate_button = auto()
+    operate_log = auto()
     operate_top_path = auto()
     pad_bottom = auto()
     single_button_vertical = auto()
@@ -76,7 +77,6 @@ class TcssStr(StrEnum):
     tab_buttons_horizontal = auto()
     tab_left_vertical = auto()
     tab_right_vertical = auto()
-    top_border_title = auto()
     tree_widget = auto()
 
 

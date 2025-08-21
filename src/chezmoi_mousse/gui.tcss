@@ -60,10 +60,16 @@
   }
 }
 
-.top_border_title {
+.border_title_top {
   border-top: solid $primary;
   border-title-align: center;
   border-title-style: bold;
+}
+
+.border_title_bottom {
+  border-bottom: $primary;
+  border-subtitle-style: bold;
+  border-subtitle-align: center;
 }
 
 .tab_left_vertical {
@@ -91,11 +97,6 @@
 
 .tab_buttons_horizontal {
   width: 100%;
-  &.init_tab_buttons {
-    border-bottom: $primary;
-    border-subtitle-style: bold;
-    border-subtitle-align: center;
-  }
   &>.single_button_vertical {
     align: center middle;
     height: auto;
@@ -176,7 +177,7 @@ MainScreen {
 /* textual default tcss overrides  */
 /***********************************/
 
-/* todo: avoid "*"" selector */
+/* todo: avoid "*" selector */
 
 * {
   background-tint: $background;
