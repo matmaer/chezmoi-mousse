@@ -73,11 +73,6 @@ class OperateTabsBase(Horizontal):
             self.tab_ids.view_qid(ViewStr.git_log_view), GitLogView
         ).path = path
 
-    def update_right_side_content_switcher(self, path: Path):
-        self.query_one(
-            self.tab_ids.content_switcher_qid(Location.right), Container
-        ).border_title = f"{path.relative_to(CM_CFG.destDir)}"
-
     def disable_buttons(self, buttons_to_update: tuple[Buttons, ...]) -> None:
         for button_enum in buttons_to_update:
             button = self.app.query_one(
@@ -105,10 +100,19 @@ class OperateTabsBase(Horizontal):
     ) -> None:
         event.stop()
         assert event.node.data is not None
-        self.update_right_side_content_switcher(event.node.data.path)
+        self.query_one(
+            self.tab_ids.content_switcher_qid(Location.right), Container
+        ).border_title = f"{event.node.data.path.relative_to(CM_CFG.destDir)}"
         self.current_path = event.node.data.path
         self.update_diff_view(event.node.data.path)
-        self.update_contents_view(event.node.data.path)
+
+        # self.update_contents_view(event.node.data.path)
+        current_view = self.query_one(
+            self.tab_ids.content_switcher_qid(Location.right), ContentSwitcher
+        ).current
+        if current_view == self.tab_ids.view_id(ViewStr.contents_view):
+            self.update_contents_view(event.node.data.path)
+
         self.update_git_log_view(event.node.data.path)
 
         buttons_to_update: tuple[Buttons, ...] = ()
@@ -126,8 +130,8 @@ class OperateTabsBase(Horizontal):
             )
         elif self.tab_ids.tab_name == TabStr.add_tab:
             buttons_to_update = (Buttons.add_file_btn, Buttons.add_dir_btn)
-        else:
-            return
+        # else:
+        #     return
         if event.node.allow_expand:
             self.disable_buttons(buttons_to_update)
         else:
@@ -165,6 +169,8 @@ class OperateTabsBase(Horizontal):
                 self.tab_ids.content_switcher_qid(Location.right),
                 ContentSwitcher,
             ).current = self.tab_ids.view_id(ViewStr.contents_view)
+            if self.current_path is not None:
+                self.update_contents_view(self.current_path)
 
         elif event.button.id == self.tab_ids.button_id(Buttons.diff_tab):
             self.query_one(
