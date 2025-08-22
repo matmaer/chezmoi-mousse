@@ -189,7 +189,11 @@ class Operate(ModalBase):
 class Maximized(ModalBase):
 
     def __init__(
-        self, *, id_to_maximize: str | None, path: Path, tab_ids: TabIds
+        self,
+        *,
+        id_to_maximize: str | None,
+        path: Path | None = None,
+        tab_ids: TabIds,
     ) -> None:
         self.id_to_maximize = id_to_maximize
         self.path = path
@@ -231,7 +235,7 @@ class Maximized(ModalBase):
 
         if self.path == CM_CFG.destDir:
             self.border_title = f" {CM_CFG.destDir} "
-        else:
+        elif self.path is not None:
             self.border_title = f" {self.path.relative_to(CM_CFG.destDir)} "
 
 

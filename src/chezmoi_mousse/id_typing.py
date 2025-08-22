@@ -144,6 +144,10 @@ class OperateHelp(Enum):
     autopush = f"[$text-warning]{Chars.warning_sign.value} Auto push is enabled: files will be pushed to the remote.{Chars.warning_sign.value}[/]"
     # TODO from chezmoi help: If you want to remove all traces of chezmoi from your system use purge instead. If you want chezmoi to stop managing the file use forget instead.
     # ---> create links for this to the other tabs
+    changes_mode_disabled = (
+        "Changes mode disabled, operations will dry-run only"
+    )
+    changes_mode_enabled = "Changes mode enabled, operations will run."
     destroy = (
         "[$text-primary]Remove target from the source state, the destination directory, and the state.[/]",
         "[$text-error]The destroy command permanently removes files both from your home directory and chezmoi's source directory.[/]",

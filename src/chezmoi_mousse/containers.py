@@ -5,9 +5,17 @@ Rules:
 - are only reused in the main_tabs.py module
 """
 
+from pathlib import Path
+
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import HorizontalGroup, Vertical, VerticalGroup
+from textual.containers import (
+    Container,
+    Horizontal,
+    HorizontalGroup,
+    Vertical,
+    VerticalGroup,
+)
 from textual.validation import URL
 from textual.widgets import (
     Button,
@@ -25,12 +33,181 @@ from chezmoi_mousse.id_typing import (
     Id,
     Location,
     TabIds,
+    TabStr,
     TcssStr,
     TreeStr,
     ViewStr,
 )
 from chezmoi_mousse.messages import InvalidInputMessage
-from chezmoi_mousse.widgets import ExpandedTree, FlatTree, ManagedTree
+from chezmoi_mousse.widgets import (
+    ContentsView,
+    DiffView,
+    ExpandedTree,
+    FlatTree,
+    GitLogView,
+    ManagedTree,
+    NodeData,
+    TreeBase,
+)
+
+
+class OperateTabsBase(Horizontal):
+
+    def __init__(self, *, tab_ids: TabIds) -> None:
+        self.tab_ids = tab_ids
+        self.current_path: Path | None = None
+        super().__init__(id=tab_ids.tab_name)
+
+    def update_diff_view(self, path: Path):
+        self.query_one(
+            self.tab_ids.view_qid(ViewStr.diff_view), DiffView
+        ).path = path
+
+    def update_contents_view(self, path: Path):
+        self.query_one(
+            self.tab_ids.view_qid(ViewStr.contents_view), ContentsView
+        ).path = path
+
+    def update_git_log_view(self, path: Path):
+        self.query_one(
+            self.tab_ids.view_qid(ViewStr.git_log_view), GitLogView
+        ).path = path
+
+    def update_right_side_content_switcher(self, path: Path):
+        self.query_one(
+            self.tab_ids.content_switcher_qid(Location.right), Container
+        ).border_title = f"{path.relative_to(CM_CFG.destDir)}"
+
+    def disable_buttons(self, buttons_to_update: tuple[Buttons, ...]) -> None:
+        for button_enum in buttons_to_update:
+            button = self.app.query_one(
+                self.tab_ids.button_qid(button_enum), Button
+            )
+            button.disabled = True
+            if button_enum == Buttons.add_dir_btn:
+                button.tooltip = "not yet implemented"
+                continue
+            button.tooltip = "select a file to enable operations"
+
+    def enable_buttons(self, buttons_to_update: tuple[Buttons, ...]) -> None:
+        for button_enum in buttons_to_update:
+            button = self.app.query_one(
+                self.tab_ids.button_qid(button_enum), Button
+            )
+            if button_enum == Buttons.add_dir_btn:
+                button.tooltip = "not yet implemented"
+                continue
+            button.disabled = False
+            button.tooltip = None
+
+    def on_tree_node_selected(
+        self, event: TreeBase.NodeSelected[NodeData]
+    ) -> None:
+        event.stop()
+        assert event.node.data is not None
+        self.update_right_side_content_switcher(event.node.data.path)
+        self.current_path = event.node.data.path
+        self.update_diff_view(event.node.data.path)
+        self.update_contents_view(event.node.data.path)
+        self.update_git_log_view(event.node.data.path)
+
+        buttons_to_update: tuple[Buttons, ...] = ()
+        if self.tab_ids.tab_name == TabStr.apply_tab:
+            buttons_to_update = (
+                Buttons.apply_file_btn,
+                Buttons.forget_file_btn,
+                Buttons.destroy_file_btn,
+            )
+        elif self.tab_ids.tab_name == TabStr.re_add_tab:
+            buttons_to_update = (
+                Buttons.re_add_file_btn,
+                Buttons.forget_file_btn,
+                Buttons.destroy_file_btn,
+            )
+        elif self.tab_ids.tab_name == TabStr.add_tab:
+            buttons_to_update = (Buttons.add_file_btn, Buttons.add_dir_btn)
+        else:
+            return
+        if event.node.allow_expand:
+            self.disable_buttons(buttons_to_update)
+        else:
+            self.enable_buttons(buttons_to_update)
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        # Tree/List Switch
+        event.stop()
+        if event.button.id == self.tab_ids.button_id(Buttons.tree_tab):
+            expand_all_switch = self.query_one(
+                self.tab_ids.switch_qid(Filters.expand_all), Switch
+            )
+            expand_all_switch.disabled = False
+            if expand_all_switch.value:
+                self.query_one(
+                    self.tab_ids.content_switcher_qid(Location.left),
+                    ContentSwitcher,
+                ).current = self.tab_ids.tree_id(TreeStr.expanded_tree)
+            else:
+                self.query_one(
+                    self.tab_ids.content_switcher_qid(Location.left),
+                    ContentSwitcher,
+                ).current = self.tab_ids.tree_id(TreeStr.managed_tree)
+        elif event.button.id == self.tab_ids.button_id(Buttons.list_tab):
+            self.query_one(
+                self.tab_ids.content_switcher_qid(Location.left),
+                ContentSwitcher,
+            ).current = self.tab_ids.tree_id(TreeStr.flat_tree)
+            self.query_one(
+                self.tab_ids.switch_qid(Filters.expand_all), Switch
+            ).disabled = True
+        # Contents/Diff/GitLog Switch
+        elif event.button.id == self.tab_ids.button_id(Buttons.contents_tab):
+            self.query_one(
+                self.tab_ids.content_switcher_qid(Location.right),
+                ContentSwitcher,
+            ).current = self.tab_ids.view_id(ViewStr.contents_view)
+
+        elif event.button.id == self.tab_ids.button_id(Buttons.diff_tab):
+            self.query_one(
+                self.tab_ids.content_switcher_qid(Location.right),
+                ContentSwitcher,
+            ).current = self.tab_ids.view_id(ViewStr.diff_view)
+
+        elif event.button.id == self.tab_ids.button_id(Buttons.git_log_tab):
+            self.query_one(
+                self.tab_ids.content_switcher_qid(Location.right),
+                ContentSwitcher,
+            ).current = self.tab_ids.view_id(ViewStr.git_log_view)
+
+    def on_switch_changed(self, event: Switch.Changed) -> None:
+        event.stop()
+        if event.switch.id == self.tab_ids.switch_id(Filters.unchanged):
+            tree_pairs: list[
+                tuple[TreeStr, type[ExpandedTree | ManagedTree | FlatTree]]
+            ] = [
+                (TreeStr.expanded_tree, ExpandedTree),
+                (TreeStr.managed_tree, ManagedTree),
+                (TreeStr.flat_tree, FlatTree),
+            ]
+            for tree_str, tree_cls in tree_pairs:
+                self.query_one(
+                    self.tab_ids.tree_qid(tree_str), tree_cls
+                ).unchanged = event.value
+        elif event.switch.id == self.tab_ids.switch_id(Filters.expand_all):
+            if event.value:
+                self.query_one(
+                    self.tab_ids.content_switcher_qid(Location.left),
+                    ContentSwitcher,
+                ).current = self.tab_ids.tree_id(TreeStr.expanded_tree)
+            else:
+                self.query_one(
+                    self.tab_ids.content_switcher_qid(Location.left),
+                    ContentSwitcher,
+                ).current = self.tab_ids.tree_id(TreeStr.managed_tree)
+
+    def action_toggle_filter_slider(self) -> None:
+        self.query_one(
+            self.tab_ids.filter_slider_qid, VerticalGroup
+        ).toggle_class("-visible")
 
 
 class FilterSlider(VerticalGroup):

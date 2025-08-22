@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 from textual import on
@@ -22,6 +23,7 @@ from chezmoi_mousse.id_typing import (
     Chars,
     Id,
     Location,
+    OperateHelp,
     TabStr,
     TreeStr,
     ViewStr,
@@ -97,7 +99,6 @@ class ChezmoiGUI(App[None]):
                 yield DoctorTab()
             with TabPane("Log", id=Id.log.tab_pane_id):
                 yield cmd_log
-
         yield Footer()
 
     def on_mount(self) -> None:
@@ -112,6 +113,11 @@ class ChezmoiGUI(App[None]):
         cmd_log.log_warning("Start loading screen")
         self.push_screen(LoadingScreen(), callback=self.first_mount_refresh)
         self.watch(self, "theme", self.on_theme_change, init=False)
+
+        if os.environ.get("MOUSSE_ENABLE_CHANGES") == "1":
+            self.notify(
+                OperateHelp.changes_mode_enabled.value, severity="warning"
+            )
 
     def on_theme_change(self, _: str, new_theme: str) -> None:
         new_theme_object: Theme | None = self.get_theme(new_theme)
@@ -136,7 +142,6 @@ class ChezmoiGUI(App[None]):
         ]
         # Refresh apply and re_add trees
         for tab_ids in (Id.apply, Id.re_add):
-            # id_mixin = self.pane_id_map[tab_name]
             for tree_str, tree_cls in tree_types:
                 self.query_one(
                     tab_ids.tree_qid(tree_str), tree_cls

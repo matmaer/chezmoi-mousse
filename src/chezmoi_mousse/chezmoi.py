@@ -19,6 +19,7 @@ from chezmoi_mousse.id_typing import (
     IoVerbs,
     ModalIdStr,
     Mro,
+    OperateHelp,
     OperateVerbs,
     ParsedJson,
     PathDict,
@@ -256,13 +257,9 @@ class ChangeCommand:
         self.base_cmd = BASE_CMD
         if os.environ.get("MOUSSE_ENABLE_CHANGES") != "1":
             self.base_cmd = BASE_CMD + ("--dry-run",)
-            cmd_log.log_warning(
-                "Changes mode disabled, operations will dry-run only"
-            )
+            cmd_log.log_warning(OperateHelp.changes_mode_disabled.value)
         else:
-            cmd_log.log_warning(
-                "Changes mode enabled, operations will be executed"
-            )
+            cmd_log.log_warning(OperateHelp.changes_mode_enabled.value)
 
     def _update_managed_status_data(self) -> None:
         # Update data that the managed_status property depends on
