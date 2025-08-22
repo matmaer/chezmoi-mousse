@@ -112,8 +112,10 @@ class OperateTabsBase(Horizontal):
         ).current
         if current_view == self.tab_ids.view_id(ViewStr.contents_view):
             self.update_contents_view(event.node.data.path)
-
-        self.update_git_log_view(event.node.data.path)
+        elif current_view == self.tab_ids.view_id(ViewStr.diff_view):
+            self.update_diff_view(event.node.data.path)
+        elif current_view == self.tab_ids.view_id(ViewStr.git_log_view):
+            self.update_git_log_view(event.node.data.path)
 
         buttons_to_update: tuple[Buttons, ...] = ()
         if self.tab_ids.tab_name == TabStr.apply_tab:
@@ -165,20 +167,24 @@ class OperateTabsBase(Horizontal):
             ).disabled = True
         # Contents/Diff/GitLog Switch
         elif event.button.id == self.tab_ids.button_id(Buttons.contents_tab):
+            if self.current_path is not None:
+                self.update_contents_view(self.current_path)
             self.query_one(
                 self.tab_ids.content_switcher_qid(Location.right),
                 ContentSwitcher,
             ).current = self.tab_ids.view_id(ViewStr.contents_view)
-            if self.current_path is not None:
-                self.update_contents_view(self.current_path)
 
         elif event.button.id == self.tab_ids.button_id(Buttons.diff_tab):
+            if self.current_path is not None:
+                self.update_diff_view(self.current_path)
             self.query_one(
                 self.tab_ids.content_switcher_qid(Location.right),
                 ContentSwitcher,
             ).current = self.tab_ids.view_id(ViewStr.diff_view)
 
         elif event.button.id == self.tab_ids.button_id(Buttons.git_log_tab):
+            if self.current_path is not None:
+                self.update_git_log_view(self.current_path)
             self.query_one(
                 self.tab_ids.content_switcher_qid(Location.right),
                 ContentSwitcher,
