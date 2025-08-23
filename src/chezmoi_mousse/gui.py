@@ -244,13 +244,8 @@ class ChezmoiGUI(App[None]):
         current_view_id = self.query_one(
             tab_ids.content_switcher_qid(Location.right), ContentSwitcher
         ).current
-        print(current_view_id)
         current_view = self.query_one(f"#{current_view_id}")
-        current_path = getattr(current_view, "current_path")
-
-        # contents_view = self.query_one(
-        #     current_tab_ids.view_qid(ViewStr.contents_view), ContentsView
-        # )
+        current_path = getattr(current_view, "path")
 
         if event.button.label in (
             OperateBtn.apply_file.value,
