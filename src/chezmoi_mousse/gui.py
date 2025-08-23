@@ -241,11 +241,17 @@ class ChezmoiGUI(App[None]):
         event.stop()
         active_pane_id = self.query_one(TabbedContent).active
         tab_ids = Id.get_tab_ids_from_pane_id(pane_id=active_pane_id)
-        current_view_id = self.query_one(
-            tab_ids.content_switcher_qid(Location.right), ContentSwitcher
-        ).current
-        current_view = self.query_one(f"#{current_view_id}")
-        current_path = getattr(current_view, "path")
+        if active_pane_id == Id.add.tab_pane_id:
+            add_tab_contents_view = self.query_one(
+                tab_ids.view_qid(ViewStr.contents_view), ContentsView
+            )
+            current_path = getattr(add_tab_contents_view, "path")
+        else:
+            current_view_id = self.query_one(
+                tab_ids.content_switcher_qid(Location.right), ContentSwitcher
+            ).current
+            current_view = self.query_one(f"#{current_view_id}")
+            current_path = getattr(current_view, "path")
 
         if event.button.label in (
             OperateBtn.apply_file.value,
