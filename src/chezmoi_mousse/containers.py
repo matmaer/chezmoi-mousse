@@ -1,8 +1,8 @@
 """Contains classes used as container components in main_tabs.py.
 
 Rules:
-- inherit from textual containers or is a ModalScreen
 - are only reused in the main_tabs.py module
+- inherit from textual.containers classes
 """
 
 from pathlib import Path
