@@ -49,6 +49,9 @@ from chezmoi_mousse.widgets import (
 
 
 class ChezmoiGUI(App[None]):
+    def __init__(self):
+        super().__init__()
+        self.loading_screen_dismissed = False
 
     CSS_PATH = "gui.tcss"
 
@@ -146,6 +149,7 @@ class ChezmoiGUI(App[None]):
                 ).refresh_tree_data()
         # Refresh DirectoryTree
         self.query_one(FilteredDirTree).reload()
+        self.loading_screen_dismissed = True
 
     def on_tabbed_content_tab_activated(
         self, event: TabbedContent.TabActivated
@@ -168,6 +172,9 @@ class ChezmoiGUI(App[None]):
     def check_action(
         self, action: str, parameters: tuple[object, ...]
     ) -> bool | None:
+        # Prevent actions before loading screen is dismissed
+        if not self.loading_screen_dismissed:
+            return None
 
         if action == "maximize":
             if self.query_one(TabbedContent).active in (
