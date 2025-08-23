@@ -284,9 +284,9 @@ class ButtonsHorizontal(HorizontalGroup):
             self.query_one(self.tab_ids.button_qid(button_enum)).add_class(
                 TcssStr.tab_button
             )
-            self.query_one(self.tab_ids.button_qid(self.buttons[0])).add_class(
-                TcssStr.last_clicked
-            )
+        self.query_one(self.tab_ids.button_qid(self.buttons[0])).add_class(
+            TcssStr.last_clicked
+        )
 
     @on(Button.Pressed)
     def update_tab_btn_last_clicked(self, event: Button.Pressed) -> None:
@@ -312,8 +312,7 @@ class TreeContentSwitcher(ContentSwitcher):
 
     def on_mount(self) -> None:
         self.border_title = str(CM_CFG.destDir)
-        self.add_class(TcssStr.content_switcher_left)
-        self.add_class(TcssStr.border_title_top)
+        self.add_class(TcssStr.content_switcher_left, TcssStr.border_title_top)
 
     def compose(self) -> ComposeResult:
         yield ManagedTree(tab_ids=self.tab_ids)

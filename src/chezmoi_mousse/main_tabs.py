@@ -99,11 +99,9 @@ class ApplyTab(OperateTabsBase):
             Id.apply.tab_vertical_qid(Location.right), Vertical
         )
         right_side.add_class(TcssStr.tab_right_vertical)
-        right_side_content_switcher = self.query_one(
+        self.query_one(
             Id.apply.content_switcher_qid(Location.right), ContentSwitcher
-        )
-        right_side_content_switcher.add_class(TcssStr.content_switcher_right)
-        right_side_content_switcher.add_class(TcssStr.border_title_top)
+        ).add_class(TcssStr.content_switcher_right, TcssStr.border_title_top)
         self.disable_buttons(
             (
                 OperateBtn.apply_file,
@@ -160,11 +158,9 @@ class ReAddTab(OperateTabsBase):
         self.query_one(
             Id.re_add.tab_vertical_qid(Location.right), Vertical
         ).add_class(TcssStr.tab_right_vertical)
-        content_switcher_right = self.query_one(
+        self.query_one(
             Id.re_add.content_switcher_qid(Location.right), ContentSwitcher
-        )
-        content_switcher_right.add_class(TcssStr.content_switcher_right)
-        content_switcher_right.add_class(TcssStr.border_title_top)
+        ).add_class(TcssStr.content_switcher_right, TcssStr.border_title_top)
         self.disable_buttons(
             (
                 OperateBtn.re_add_file,
@@ -199,14 +195,16 @@ class AddTab(OperateTabsBase):
             Id.add.tab_vertical_qid(Location.right), Vertical
         )
         right_side.border_title = str(CM_CFG.destDir)
-        right_side.add_class(TcssStr.tab_right_vertical)
-        right_side.add_class(TcssStr.border_title_top)
+        right_side.add_class(
+            TcssStr.tab_right_vertical, TcssStr.border_title_top
+        )
         left_side = self.query_one(
             Id.add.tab_vertical_qid(Location.left), VerticalGroup
         )
         left_side.border_title = str(CM_CFG.destDir)
-        left_side.add_class(TcssStr.tab_left_vertical)
-        left_side.add_class(TcssStr.border_title_top)
+        left_side.add_class(
+            TcssStr.tab_left_vertical, TcssStr.border_title_top
+        )
 
         tree = self.query_one(
             Id.add.tree_qid(TreeStr.add_tree), FilteredDirTree
