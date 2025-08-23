@@ -38,6 +38,8 @@ def _get_str_enum_members() -> list[StrEnum]:
             issubclass(enum_class, StrEnum)
             # exclude TcssStr since it's tested in test_tcss.py
             and enum_class.__name__ != "TcssStr"
+            # exclude strings used for filtering DirectoryTree
+            and enum_class.__name__ not in ["UnwantedDirs", "UnwantedFiles"]
         ):
             for member in enum_class:
                 members.append(member)
@@ -68,7 +70,7 @@ def _get_search_terms_for_member(str_enum_member: StrEnum) -> list[str]:
     _get_str_enum_members(),
     ids=lambda member: f"{member.__class__.__name__}.{member.name}",
 )
-def test_str_enum_members_in_use(str_enum_member: StrEnum):
+def test_strenum_members_in_use(str_enum_member: StrEnum):
     search_terms = _get_search_terms_for_member(str_enum_member)
     found = False
 
