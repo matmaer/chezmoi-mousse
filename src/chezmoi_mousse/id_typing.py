@@ -12,8 +12,8 @@ type PathDict = dict[Path, str]
 # needed by both widgets.py and overrides.py
 @dataclass
 class NodeData:
-    path: Path
     found: bool
+    path: Path
     status: str
 
 
@@ -31,16 +31,16 @@ class ViewStr(StrEnum):
     diff_view = auto()
     doctor_table = auto()
     git_log_view = auto()
-    init_new_view = auto()
     init_clone_view = auto()
+    init_new_view = auto()
     init_purge_view = auto()
 
 
 class Location(StrEnum):
-    top = auto()
-    right = auto()
     bottom = auto()
     left = auto()
+    right = auto()
+    top = auto()
 
 
 class TreeStr(StrEnum):
@@ -81,6 +81,7 @@ class TcssStr(StrEnum):
 
 
 class ModalIdStr(StrEnum):
+    invalid_input_modal = auto()
     maximized_modal = auto()
     maximized_vertical = auto()
     modal_contents_view = auto()
@@ -91,7 +92,6 @@ class ModalIdStr(StrEnum):
     operate_log = auto()
     operate_modal = auto()
     operate_vertical = auto()
-    invalid_input_modal = auto()
 
     @property
     def qid(self) -> str:
@@ -130,11 +130,11 @@ class Chars(Enum):
     bullet = "\u2022"  # '\N{BULLET}'
     burger = "\u2261"  # '\N{IDENTICAL TO}'
     check_mark = "\u2714"  # '\N{HEAVY CHECK MARK}'
-    x_mark = "\u2716"  # '\N{HEAVY MULTIPLICATION X}'
     # gear = "\u2699"  # '\N{GEAR}'
+    lower_3_8ths_block = "\u2583"  # "\N{LOWER THREE EIGHTHS BLOCK}"
     re_add = f"local {'\u2014' * 3}\u2192 chezmoi"  # '\N{EM DASH}', '\N{RIGHTWARDS ARROW}'
     warning_sign = "\u26a0"  # '\N{WARNING SIGN}'
-    lower_3_8ths_block = "\u2583"  # "\N{LOWER THREE EIGHTHS BLOCK}"
+    x_mark = "\u2716"  # '\N{HEAVY MULTIPLICATION X}'
 
 
 class OperateHelp(Enum):
@@ -182,13 +182,13 @@ class Buttons(Enum):
     operate_dismiss_btn = "Cancel"
     re_add_file_btn = "Re-Add File"
     # init tab buttons
-    new_repo_tab = "New"
-    purge_repo_tab = "Purge"
+    clear_btn = "Clear Input"
+    clone_repo_btn = "Clone Existing Repo"
     clone_repo_tab = "Clone"
     new_repo_btn = "Initialize New Repo"
+    new_repo_tab = "New"
     purge_repo_btn = "Purge Existing Repo"
-    clone_repo_btn = "Clone Existing Repo"
-    clear_btn = "Clear Input"
+    purge_repo_tab = "Purge"
 
 
 @dataclass(frozen=True)
@@ -198,6 +198,20 @@ class FilterData:
 
 
 class Filters(Enum):
+    expand_all = FilterData(
+        "expand all dirs",
+        (
+            "Expand all managed directories. Depending on the unchanged "
+            "switch."
+        ),
+    )
+    unchanged = FilterData(
+        "show unchanged files",
+        (
+            "Include files unchanged files which are not found in the "
+            "'chezmoi status' output."
+        ),
+    )
     unmanaged_dirs = FilterData(
         "show unmanaged dirs",
         (
@@ -217,31 +231,17 @@ class Filters(Enum):
             "directory named '.cache'."
         ),
     )
-    unchanged = FilterData(
-        "show unchanged files",
-        (
-            "Include files unchanged files which are not found in the "
-            "'chezmoi status' output."
-        ),
-    )
-    expand_all = FilterData(
-        "expand all dirs",
-        (
-            "Expand all managed directories. Depending on the unchanged "
-            "switch."
-        ),
-    )
 
 
 class DoctorEnum(Enum):
-    doctor = "chezmoi doctor output (diagnostic information)"
-    diagram = "chezmoi diagram (how operations are applied)"
     cat_config = "chezmoi cat-config (contents of config-file)"
-    doctor_ignored = "chezmoi ignored (git ignore in source-dir)"
-    doctor_template_data = "chezmoi template-data (contents of template-file)"
     commands_not_found = (
         "chezmoi supported commands not found (ignore if not needed)"
     )
+    diagram = "chezmoi diagram (how operations are applied)"
+    doctor = "chezmoi doctor output (diagnostic information)"
+    doctor_ignored = "chezmoi ignored (git ignore in source-dir)"
+    doctor_template_data = "chezmoi template-data (contents of template-file)"
 
     @property
     def qid(self) -> str:
@@ -252,10 +252,10 @@ class TabIds:
     def __init__(self, tab_name: TabStr) -> None:
         self.filter_slider_id = f"{tab_name}_filter_slider"
         self.filter_slider_qid = f"#{self.filter_slider_id}"
-        self.tab_pane_id = f"{tab_name}_pane"
-        self.tab_pane_qid = f"#{self.tab_pane_id}"
         self.tab_main_horizontal_id = f"{tab_name}_main_horizontal"
         self.tab_name: TabStr = tab_name
+        self.tab_pane_id = f"{tab_name}_pane"
+        self.tab_pane_qid = f"#{self.tab_pane_id}"
 
     def button_id(self, btn_enum: Buttons) -> str:
         return f"{self.tab_name}_{btn_enum.name}"
@@ -317,12 +317,12 @@ class TabIds:
 
 @dataclass(frozen=True)
 class Id:
-    apply: TabIds = TabIds(TabStr.apply_tab)
-    re_add: TabIds = TabIds(TabStr.re_add_tab)
     add: TabIds = TabIds(TabStr.add_tab)
-    init: TabIds = TabIds(TabStr.init_tab)
+    apply: TabIds = TabIds(TabStr.apply_tab)
     doctor: TabIds = TabIds(TabStr.doctor_tab)
+    init: TabIds = TabIds(TabStr.init_tab)
     log: TabIds = TabIds(TabStr.log_tab)
+    re_add: TabIds = TabIds(TabStr.re_add_tab)
 
     _pane_id_map: dict[str, TabIds] | None = None
 
