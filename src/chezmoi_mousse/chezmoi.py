@@ -101,8 +101,10 @@ class ReadCmd(Enum):
 
 
 class CommandLog(RichLog):
-    def __init__(self, id: str) -> None:
-        super().__init__(id=id, auto_scroll=True, markup=True, max_lines=20000)
+    def __init__(self, rich_log_id: str) -> None:
+        super().__init__(
+            id=rich_log_id, auto_scroll=True, markup=True, max_lines=20000
+        )
 
     def _log_time(self) -> str:
         return f"[[green]{datetime.now().strftime('%H:%M:%S')}[/]]"
@@ -188,8 +190,8 @@ class CommandLog(RichLog):
         self.write(f"{self._log_time()} [{color}]{message}[/]")
 
 
-cmd_log = CommandLog(id=Id.log.tab_name)
-op_log = CommandLog(id=ModalIdStr.operate_log)
+cmd_log = CommandLog(rich_log_id=Id.log.tab_name)
+op_log = CommandLog(rich_log_id=ModalIdStr.operate_log)
 op_log.add_class(TcssStr.operate_log)
 
 
