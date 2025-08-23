@@ -32,6 +32,9 @@ from chezmoi_mousse.id_typing import (
     Filters,
     Id,
     Location,
+    OperateBtn,
+    OperateButtons,
+    TabBtn,
     TabIds,
     TabStr,
     TcssStr,
@@ -58,23 +61,23 @@ class OperateTabsBase(Horizontal):
         self.current_path: Path | None = None
         super().__init__(id=tab_ids.tab_name)
 
-    def disable_buttons(self, buttons_to_update: tuple[Buttons, ...]) -> None:
+    def disable_buttons(self, buttons_to_update: OperateButtons) -> None:
         for button_enum in buttons_to_update:
             button = self.app.query_one(
                 self.tab_ids.button_qid(button_enum), Button
             )
             button.disabled = True
-            if button_enum == Buttons.add_dir_btn:
+            if button_enum == OperateBtn.add_dir:
                 button.tooltip = "not yet implemented"
                 continue
             button.tooltip = "select a file to enable operations"
 
-    def enable_buttons(self, buttons_to_update: tuple[Buttons, ...]) -> None:
+    def enable_buttons(self, buttons_to_update: OperateButtons) -> None:
         for button_enum in buttons_to_update:
             button = self.app.query_one(
                 self.tab_ids.button_qid(button_enum), Button
             )
-            if button_enum == Buttons.add_dir_btn:
+            if button_enum == OperateBtn.add_dir:
                 button.tooltip = "not yet implemented"
                 continue
             button.disabled = False
@@ -106,22 +109,24 @@ class OperateTabsBase(Horizontal):
             ).path = self.current_path
 
         # enable/disable operation buttons depending on selected node
-        buttons_to_update: tuple[Buttons, ...] = ()
+        buttons_to_update: OperateButtons = ()
         if self.tab_ids.tab_name == TabStr.apply_tab:
             buttons_to_update = (
-                Buttons.apply_file_btn,
-                Buttons.forget_file_btn,
-                Buttons.destroy_file_btn,
+                OperateBtn.apply_file,
+                OperateBtn.forget_file,
+                OperateBtn.destroy_file,
             )
         elif self.tab_ids.tab_name == TabStr.re_add_tab:
             buttons_to_update = (
-                Buttons.re_add_file_btn,
-                Buttons.forget_file_btn,
-                Buttons.destroy_file_btn,
+                OperateBtn.re_add_file,
+                OperateBtn.forget_file,
+                OperateBtn.destroy_file,
             )
         elif self.tab_ids.tab_name == TabStr.add_tab:
-            buttons_to_update = (Buttons.add_file_btn, Buttons.add_dir_btn)
-        if event.node.allow_expand:
+            buttons_to_update = (OperateBtn.add_file, OperateBtn.add_dir)
+        if event.node.allow_expand or current_view == self.tab_ids.view_id(
+            ViewStr.git_log_view
+        ):
             self.disable_buttons(buttons_to_update)
         else:
             self.enable_buttons(buttons_to_update)
@@ -132,7 +137,7 @@ class OperateTabsBase(Horizontal):
         expand_all_switch = self.query_one(
             self.tab_ids.switch_qid(Filters.expand_all), Switch
         )
-        if event.button.id == self.tab_ids.button_id(Buttons.tree_tab):
+        if event.button.id == self.tab_ids.button_id(TabBtn.tree):
             expand_all_switch.disabled = False
             if expand_all_switch.value:
                 self.query_one(
@@ -144,14 +149,14 @@ class OperateTabsBase(Horizontal):
                     self.tab_ids.content_switcher_qid(Location.left),
                     ContentSwitcher,
                 ).current = self.tab_ids.tree_id(TreeStr.managed_tree)
-        elif event.button.id == self.tab_ids.button_id(Buttons.list_tab):
+        elif event.button.id == self.tab_ids.button_id(TabBtn.list):
             self.query_one(
                 self.tab_ids.content_switcher_qid(Location.left),
                 ContentSwitcher,
             ).current = self.tab_ids.tree_id(TreeStr.flat_tree)
             expand_all_switch.disabled = True
         # Contents/Diff/GitLog Switch
-        elif event.button.id == self.tab_ids.button_id(Buttons.contents_tab):
+        elif event.button.id == self.tab_ids.button_id(TabBtn.contents):
             self.query_one(
                 self.tab_ids.content_switcher_qid(Location.right),
                 ContentSwitcher,
@@ -160,7 +165,7 @@ class OperateTabsBase(Horizontal):
                 self.tab_ids.view_qid(ViewStr.contents_view), ContentsView
             ).path = self.current_path
 
-        elif event.button.id == self.tab_ids.button_id(Buttons.diff_tab):
+        elif event.button.id == self.tab_ids.button_id(TabBtn.diff):
             self.query_one(
                 self.tab_ids.content_switcher_qid(Location.right),
                 ContentSwitcher,
@@ -169,7 +174,7 @@ class OperateTabsBase(Horizontal):
                 self.tab_ids.view_qid(ViewStr.diff_view), DiffView
             ).path = self.current_path
 
-        elif event.button.id == self.tab_ids.button_id(Buttons.git_log_tab):
+        elif event.button.id == self.tab_ids.button_id(TabBtn.git_log):
             self.query_one(
                 self.tab_ids.content_switcher_qid(Location.right),
                 ContentSwitcher,
@@ -247,11 +252,7 @@ class FilterSlider(VerticalGroup):
 class ButtonsHorizontal(HorizontalGroup):
 
     def __init__(
-        self,
-        *,
-        tab_ids: TabIds,
-        buttons: tuple[Buttons, ...],
-        location: Location,
+        self, *, tab_ids: TabIds, buttons: Buttons, location: Location
     ) -> None:
         self.buttons = buttons
         self.location: Location = location
@@ -331,7 +332,7 @@ class InitNewRepo(Vertical):
         yield Input(placeholder="Enter config file path")
         yield ButtonsHorizontal(
             tab_ids=Id.init,
-            buttons=(Buttons.new_repo_btn,),
+            buttons=(OperateBtn.new_repo,),
             location=Location.bottom,
         )
 
@@ -353,7 +354,7 @@ class InitCloneRepo(Vertical):
         )
         yield ButtonsHorizontal(
             tab_ids=Id.init,
-            buttons=(Buttons.clone_repo_btn, Buttons.clear_btn),
+            buttons=(OperateBtn.clone_repo, OperateBtn.clear),
             location=Location.bottom,
         )
 
@@ -380,6 +381,6 @@ class InitPurgeRepo(Vertical):
         yield Static(f"{self.tab_name} Init purge repo")
         yield ButtonsHorizontal(
             tab_ids=Id.init,
-            buttons=(Buttons.purge_repo_btn,),
+            buttons=(OperateBtn.purge_repo,),
             location=Location.bottom,
         )

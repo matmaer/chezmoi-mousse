@@ -3,10 +3,13 @@ from enum import Enum, StrEnum, auto
 from pathlib import Path
 from typing import Any
 
+type Buttons = OperateButtons | TabButtons
 type CmdWords = tuple[str, ...]
 type Mro = tuple[type, ...]
+type OperateButtons = tuple[OperateBtn, ...]
 type ParsedJson = dict[str, Any]
 type PathDict = dict[Path, str]
+type TabButtons = tuple[TabBtn, ...]
 
 
 # needed by both widgets.py and overrides.py
@@ -166,29 +169,30 @@ class OperateHelp(Enum):
     )
 
 
-class Buttons(Enum):
-    # tab buttons within a tab
-    contents_tab = "Contents"
-    diff_tab = "Diff"
-    git_log_tab = "Git-Log"
-    list_tab = "List"
-    tree_tab = "Tree"
-    # operational buttons in Operate modal screen
-    add_dir_btn = "Add Dir"
-    add_file_btn = "Add File"
-    apply_file_btn = "Apply File"
-    destroy_file_btn = "Destroy File"
-    forget_file_btn = "Forget File"
-    operate_dismiss_btn = "Cancel"
-    re_add_file_btn = "Re-Add File"
-    # init tab buttons
-    clear_btn = "Clear Input"
-    clone_repo_btn = "Clone Existing Repo"
-    clone_repo_tab = "Clone"
-    new_repo_btn = "Initialize New Repo"
-    new_repo_tab = "New"
-    purge_repo_btn = "Purge Existing Repo"
-    purge_repo_tab = "Purge"
+class TabBtn(Enum):
+    # Tab buttons for content switcher within a main tab
+    clone_repo = "Clone"
+    contents = "Contents"
+    diff = "Diff"
+    git_log = "Git-Log"
+    list = "List"
+    new_repo = "New"
+    purge_repo = "Purge"
+    tree = "Tree"
+
+
+class OperateBtn(Enum):
+    add_dir = "Add Dir"
+    add_file = "Add File"
+    apply_file = "Apply File"
+    clear = "Clear Input"
+    clone_repo = "Clone Existing Repo"
+    destroy_file = "Destroy File"
+    forget_file = "Forget File"
+    new_repo = "Initialize New Repo"
+    operate_dismiss = "Cancel"
+    purge_repo = "Purge Existing Repo"
+    re_add_file = "Re-Add File"
 
 
 @dataclass(frozen=True)
@@ -257,10 +261,10 @@ class TabIds:
         self.tab_pane_id = f"{tab_name}_pane"
         self.tab_pane_qid = f"#{self.tab_pane_id}"
 
-    def button_id(self, btn_enum: Buttons) -> str:
+    def button_id(self, btn_enum: OperateBtn | TabBtn) -> str:
         return f"{self.tab_name}_{btn_enum.name}"
 
-    def button_qid(self, btn_enum: Buttons) -> str:
+    def button_qid(self, btn_enum: OperateBtn | TabBtn) -> str:
         return f"#{self.button_id(btn_enum)}"
 
     def buttons_horizontal_id(self, location: Location) -> str:
@@ -269,7 +273,7 @@ class TabIds:
     def buttons_horizontal_qid(self, location: Location) -> str:
         return f"#{self.buttons_horizontal_id(location)}"
 
-    def button_vertical_id(self, btn_enum: Buttons) -> str:
+    def button_vertical_id(self, btn_enum: OperateBtn | TabBtn) -> str:
         return f"{self.tab_name}_{btn_enum.name}_vertical"
 
     def content_switcher_id(self, side: Location) -> str:

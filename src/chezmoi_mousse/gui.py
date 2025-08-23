@@ -19,10 +19,10 @@ import chezmoi_mousse.theme
 from chezmoi_mousse.chezmoi import CM_CFG, cmd_log
 from chezmoi_mousse.containers import ButtonsHorizontal
 from chezmoi_mousse.id_typing import (
-    Buttons,
     Chars,
     Id,
     Location,
+    OperateBtn,
     OperateHelp,
     TabStr,
     TreeStr,
@@ -69,9 +69,9 @@ class ChezmoiGUI(App[None]):
                 yield ButtonsHorizontal(
                     tab_ids=Id.apply,
                     buttons=(
-                        Buttons.apply_file_btn,
-                        Buttons.forget_file_btn,
-                        Buttons.destroy_file_btn,
+                        OperateBtn.apply_file,
+                        OperateBtn.forget_file,
+                        OperateBtn.destroy_file,
                     ),
                     location=Location.bottom,
                 )
@@ -80,9 +80,9 @@ class ChezmoiGUI(App[None]):
                 yield ButtonsHorizontal(
                     tab_ids=Id.re_add,
                     buttons=(
-                        Buttons.re_add_file_btn,
-                        Buttons.forget_file_btn,
-                        Buttons.destroy_file_btn,
+                        OperateBtn.re_add_file,
+                        OperateBtn.forget_file,
+                        OperateBtn.destroy_file,
                     ),
                     location=Location.bottom,
                 )
@@ -90,7 +90,7 @@ class ChezmoiGUI(App[None]):
                 yield AddTab()
                 yield ButtonsHorizontal(
                     tab_ids=Id.add,
-                    buttons=(Buttons.add_file_btn, Buttons.add_dir_btn),
+                    buttons=(OperateBtn.add_file, OperateBtn.add_dir),
                     location=Location.bottom,
                 )
             with TabPane("Init", id=Id.init.tab_pane_id):
@@ -128,10 +128,8 @@ class ChezmoiGUI(App[None]):
         cmd_log.log_success(f"Theme set to {new_theme}")
 
     def first_mount_refresh(self, _: object) -> None:
-        add_dir_btn = self.query_one(
-            Id.add.button_qid(Buttons.add_dir_btn), Button
-        )
-        add_dir_btn.disabled = True
+        add_dir = self.query_one(Id.add.button_qid(OperateBtn.add_dir), Button)
+        add_dir.disabled = True
         # Trees to refresh for each tab
         tree_types: list[
             tuple[TreeStr, type[ManagedTree | FlatTree | ExpandedTree]]
@@ -235,24 +233,30 @@ class ChezmoiGUI(App[None]):
     def on_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
         active_pane_id = self.query_one(TabbedContent).active
-        id_mixin = Id.get_tab_ids_from_pane_id(pane_id=active_pane_id)
-        contents_view = self.query_one(
-            id_mixin.view_qid(ViewStr.contents_view), ContentsView
-        )
-        current_path = getattr(contents_view, "path")
+        tab_ids = Id.get_tab_ids_from_pane_id(pane_id=active_pane_id)
+        current_view_id = self.query_one(
+            tab_ids.content_switcher_qid(Location.right), ContentSwitcher
+        ).current
+        print(current_view_id)
+        current_view = self.query_one(f"#{current_view_id}")
+        current_path = getattr(current_view, "current_path")
+
+        # contents_view = self.query_one(
+        #     current_tab_ids.view_qid(ViewStr.contents_view), ContentsView
+        # )
 
         if event.button.label in (
-            Buttons.apply_file_btn.value,
-            Buttons.re_add_file_btn.value,
-            Buttons.add_file_btn.value,
-            Buttons.forget_file_btn.value,
-            Buttons.destroy_file_btn.value,
+            OperateBtn.apply_file.value,
+            OperateBtn.re_add_file.value,
+            OperateBtn.add_file.value,
+            OperateBtn.forget_file.value,
+            OperateBtn.destroy_file.value,
         ):
-            btn_enum = Buttons(event.button.label)
+            btn_enum = OperateBtn(event.button.label)
             self.push_screen(
                 Operate(
-                    tab_ids=id_mixin,
+                    tab_ids=tab_ids,
                     path=current_path,
-                    buttons=(btn_enum, Buttons.operate_dismiss_btn),
+                    buttons=(btn_enum, OperateBtn.operate_dismiss),
                 )
             )

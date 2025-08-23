@@ -12,13 +12,13 @@ from textual.widgets import RichLog
 
 from chezmoi_mousse import BASE_CMD, CM_CFG, theme
 from chezmoi_mousse.id_typing import (
-    Buttons,
     Chars,
     CmdWords,
     Id,
     IoVerbs,
     ModalIdStr,
     Mro,
+    OperateBtn,
     OperateHelp,
     OperateVerbs,
     ParsedJson,
@@ -35,7 +35,7 @@ class OperateData:
     operation_executed: bool = False
     tab_name: TabStr | None = None
     found: bool | None = None
-    button_name: Buttons | None = None
+    button_name: OperateBtn | None = None
     is_file: bool | None = None
 
 

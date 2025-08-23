@@ -11,9 +11,10 @@ from chezmoi_mousse import CM_CFG
 from chezmoi_mousse.chezmoi import OperateData, chezmoi, cmd_log, op_log
 from chezmoi_mousse.containers import ButtonsHorizontal
 from chezmoi_mousse.id_typing import (
-    Buttons,
     Location,
     ModalIdStr,
+    OperateBtn,
+    OperateButtons,
     OperateVerbs,
     TabIds,
     TabStr,
@@ -58,9 +59,9 @@ class ModalBase(ModalScreen[None]):
 class Operate(ModalBase):
 
     def __init__(
-        self, *, tab_ids: TabIds, path: Path, buttons: tuple[Buttons, ...]
+        self, *, tab_ids: TabIds, path: Path, buttons: OperateButtons
     ) -> None:
-        self.buttons: tuple[Buttons, ...] = buttons
+        self.buttons: OperateButtons = buttons
         self.main_operate_btn = self.buttons[0]
         self.path = path
         self.tab_ids = tab_ids
@@ -80,8 +81,8 @@ class Operate(ModalBase):
                 operate_btn=self.main_operate_btn, path=self.path
             )
             if (
-                Buttons.apply_file_btn == self.main_operate_btn
-                or Buttons.re_add_file_btn == self.main_operate_btn
+                OperateBtn.apply_file == self.main_operate_btn
+                or OperateBtn.re_add_file == self.main_operate_btn
             ):
                 with Collapsible(
                     id=ModalIdStr.operate_collapsible, title="File Differences"
@@ -109,8 +110,8 @@ class Operate(ModalBase):
             self.tab_name == TabStr.apply_tab
             or self.tab_name == TabStr.re_add_tab
         ) and (
-            Buttons.apply_file_btn in self.buttons
-            or Buttons.re_add_file_btn in self.buttons
+            OperateBtn.apply_file in self.buttons
+            or OperateBtn.re_add_file in self.buttons
         ):
             # Set path for the modal diff view
             self.query_one(ModalIdStr.modal_diff_view.qid, DiffView).path = (
@@ -129,9 +130,9 @@ class Operate(ModalBase):
 
     def write_initial_log_msg(self) -> None:
         command = "chezmoi "
-        if self.buttons[0] == Buttons.forget_file_btn:
+        if self.buttons[0] == OperateBtn.forget_file:
             command += OperateVerbs.forget.value
-        elif self.buttons[0] == Buttons.destroy_file_btn:
+        elif self.buttons[0] == OperateBtn.destroy_file:
             command += OperateVerbs.destroy.value
         elif self.tab_name == TabStr.add_tab:
             command += OperateVerbs.add.value
@@ -148,17 +149,16 @@ class Operate(ModalBase):
         event.stop()
         # Refactored repeated button event handling into a loop
         button_commands = [
-            (Buttons.apply_file_btn, chezmoi.perform.apply),
-            (Buttons.re_add_file_btn, chezmoi.perform.re_add),
-            (Buttons.add_file_btn, chezmoi.perform.add),
-            (Buttons.forget_file_btn, chezmoi.perform.forget),
-            (Buttons.destroy_file_btn, chezmoi.perform.destroy),
+            (OperateBtn.apply_file, chezmoi.perform.apply),
+            (OperateBtn.re_add_file, chezmoi.perform.re_add),
+            (OperateBtn.add_file, chezmoi.perform.add),
+            (OperateBtn.forget_file, chezmoi.perform.forget),
+            (OperateBtn.destroy_file, chezmoi.perform.destroy),
         ]
         for btn_enum, btn_cmd in button_commands:
             if event.button.id == self.tab_ids.button_id(btn_enum):
                 self.query_one(
-                    self.tab_ids.button_qid(Buttons.operate_dismiss_btn),
-                    Button,
+                    self.tab_ids.button_qid(OperateBtn.operate_dismiss), Button
                 ).label = "Close"
                 btn_cmd(self.path)  # run the perform command with the path
                 self.query_one(
@@ -168,7 +168,7 @@ class Operate(ModalBase):
                 break
 
         if event.button.id == self.tab_ids.button_id(
-            Buttons.operate_dismiss_btn
+            OperateBtn.operate_dismiss
         ):
             self.handle_dismiss(self.operate_dismiss_data)
 

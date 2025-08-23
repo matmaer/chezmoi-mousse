@@ -34,11 +34,12 @@ from chezmoi_mousse.containers import (
     TreeContentSwitcher,
 )
 from chezmoi_mousse.id_typing import (
-    Buttons,
     DoctorEnum,
     Filters,
     Id,
     Location,
+    OperateBtn,
+    TabBtn,
     TcssStr,
     TreeStr,
     ViewStr,
@@ -63,7 +64,7 @@ class ApplyTab(OperateTabsBase):
         ):
             yield ButtonsHorizontal(
                 tab_ids=Id.apply,
-                buttons=(Buttons.tree_tab, Buttons.list_tab),
+                buttons=(TabBtn.tree, TabBtn.list),
                 location=Location.left,
             )
             yield TreeContentSwitcher(tab_ids=Id.apply)
@@ -71,11 +72,7 @@ class ApplyTab(OperateTabsBase):
         with Vertical(id=Id.apply.tab_vertical_id(Location.right)):
             yield ButtonsHorizontal(
                 tab_ids=Id.apply,
-                buttons=(
-                    Buttons.diff_tab,
-                    Buttons.contents_tab,
-                    Buttons.git_log_tab,
-                ),
+                buttons=(TabBtn.diff, TabBtn.contents, TabBtn.git_log),
                 location=Location.right,
             )
             with ContentSwitcher(
@@ -109,9 +106,9 @@ class ApplyTab(OperateTabsBase):
         right_side_content_switcher.add_class(TcssStr.border_title_top)
         self.disable_buttons(
             (
-                Buttons.apply_file_btn,
-                Buttons.forget_file_btn,
-                Buttons.destroy_file_btn,
+                OperateBtn.apply_file,
+                OperateBtn.forget_file,
+                OperateBtn.destroy_file,
             )
         )
 
@@ -128,7 +125,7 @@ class ReAddTab(OperateTabsBase):
         ):
             yield ButtonsHorizontal(
                 tab_ids=Id.re_add,
-                buttons=(Buttons.tree_tab, Buttons.list_tab),
+                buttons=(TabBtn.tree, TabBtn.list),
                 location=Location.left,
             )
             yield TreeContentSwitcher(tab_ids=Id.re_add)
@@ -136,11 +133,7 @@ class ReAddTab(OperateTabsBase):
         with Vertical(id=Id.re_add.tab_vertical_id(Location.right)):
             yield ButtonsHorizontal(
                 tab_ids=Id.re_add,
-                buttons=(
-                    Buttons.diff_tab,
-                    Buttons.contents_tab,
-                    Buttons.git_log_tab,
-                ),
+                buttons=(TabBtn.diff, TabBtn.contents, TabBtn.git_log),
                 location=Location.right,
             )
 
@@ -174,9 +167,9 @@ class ReAddTab(OperateTabsBase):
         content_switcher_right.add_class(TcssStr.border_title_top)
         self.disable_buttons(
             (
-                Buttons.re_add_file_btn,
-                Buttons.forget_file_btn,
-                Buttons.destroy_file_btn,
+                OperateBtn.re_add_file,
+                OperateBtn.forget_file,
+                OperateBtn.destroy_file,
             )
         )
 
@@ -220,7 +213,7 @@ class AddTab(OperateTabsBase):
         )
         tree.show_root = False
         tree.guide_depth = 3
-        self.disable_buttons((Buttons.add_file_btn, Buttons.add_dir_btn))
+        self.disable_buttons((OperateBtn.add_file, OperateBtn.add_dir))
 
     def on_directory_tree_file_selected(
         self, event: FilteredDirTree.FileSelected
@@ -234,7 +227,7 @@ class AddTab(OperateTabsBase):
         self.query_one(
             Id.add.tab_vertical_qid(Location.right), Vertical
         ).border_title = f"{event.node.data.path.relative_to(CM_CFG.destDir)}"
-        self.enable_buttons((Buttons.add_file_btn,))
+        self.enable_buttons((OperateBtn.add_file,))
 
     def on_directory_tree_directory_selected(
         self, event: FilteredDirTree.DirectorySelected
@@ -247,7 +240,7 @@ class AddTab(OperateTabsBase):
         self.query_one(
             Id.add.tab_vertical_qid(Location.right), Vertical
         ).border_title = f"{event.node.data.path.relative_to(CM_CFG.destDir)}"
-        self.disable_buttons((Buttons.add_file_btn,))
+        self.disable_buttons((OperateBtn.add_file,))
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
         event.stop()
@@ -275,9 +268,9 @@ class InitTab(Horizontal):
             yield ButtonsHorizontal(
                 tab_ids=Id.init,
                 buttons=(
-                    Buttons.clone_repo_tab,
-                    Buttons.new_repo_tab,
-                    Buttons.purge_repo_tab,
+                    TabBtn.clone_repo,
+                    TabBtn.new_repo,
+                    TabBtn.purge_repo,
                 ),
                 location=Location.top,
             )
@@ -299,25 +292,25 @@ class InitTab(Horizontal):
     @on(Button.Pressed)
     def handle_init_buttons(self, event: Button.Pressed) -> None:
         event.stop()
-        if event.button.id == Id.init.button_id(Buttons.new_repo_tab):
+        if event.button.id == Id.init.button_id(TabBtn.new_repo):
             self.query_one(
                 Id.init.content_switcher_qid(Location.top), ContentSwitcher
             ).current = Id.init.view_id(ViewStr.init_new_view)
 
-        elif event.button.id == Id.init.button_id(Buttons.clone_repo_tab):
+        elif event.button.id == Id.init.button_id(TabBtn.clone_repo):
             self.query_one(
                 Id.init.content_switcher_qid(Location.top), ContentSwitcher
             ).current = Id.init.view_id(ViewStr.init_clone_view)
 
-        elif event.button.id == Id.init.button_id(Buttons.purge_repo_tab):
+        elif event.button.id == Id.init.button_id(TabBtn.purge_repo):
             self.query_one(
                 Id.init.content_switcher_qid(Location.top), ContentSwitcher
             ).current = Id.init.view_id(ViewStr.init_purge_view)
-        elif event.button.id == Id.init.button_id(Buttons.clone_repo_btn):
+        elif event.button.id == Id.init.button_id(OperateBtn.clone_repo):
             self.notify("Clone repository button pressed")
-        elif event.button.id == Id.init.button_id(Buttons.new_repo_btn):
+        elif event.button.id == Id.init.button_id(OperateBtn.new_repo):
             self.notify("New repository button pressed")
-        elif event.button.id == Id.init.button_id(Buttons.purge_repo_btn):
+        elif event.button.id == Id.init.button_id(OperateBtn.purge_repo):
             self.notify("Purge repository button pressed")
 
 

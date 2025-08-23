@@ -25,10 +25,10 @@ from chezmoi_mousse import CM_CFG, theme
 from chezmoi_mousse.chezmoi import chezmoi, cmd_log, managed_status
 from chezmoi_mousse.config import unwanted_names
 from chezmoi_mousse.id_typing import (
-    Buttons,
     Chars,
     ModalIdStr,
     NodeData,
+    OperateBtn,
     OperateHelp,
     PathDict,
     TabIds,
@@ -43,7 +43,7 @@ class OperateInfo(Static):
 
     bullet = Chars.bullet.value
 
-    def __init__(self, *, operate_btn: Buttons, path: Path) -> None:
+    def __init__(self, *, operate_btn: OperateBtn, path: Path) -> None:
         super().__init__(
             id=ModalIdStr.operate_info, classes=TcssStr.operate_top_path
         )
@@ -51,38 +51,38 @@ class OperateInfo(Static):
         self.operate_btn = operate_btn
         self.path = path
         self.info_border_titles = {
-            Buttons.apply_file_btn: Chars.apply_file_info_border.value,
-            Buttons.re_add_file_btn: Chars.add_file_info_border.value,
-            Buttons.add_file_btn: Chars.add_file_info_border.value,
-            Buttons.forget_file_btn: " forget file ",
-            Buttons.destroy_file_btn: " destroy file ",
+            OperateBtn.apply_file: Chars.apply_file_info_border.value,
+            OperateBtn.re_add_file: Chars.add_file_info_border.value,
+            OperateBtn.add_file: Chars.add_file_info_border.value,
+            OperateBtn.forget_file: " forget file ",
+            OperateBtn.destroy_file: " destroy file ",
         }
 
     def on_mount(self) -> None:
         self.lines_to_write: list[str] = []
 
         # OperateHelp.apply is a warning, looks better above the diff color info
-        if Buttons.apply_file_btn == self.operate_btn:
+        if OperateBtn.apply_file == self.operate_btn:
             self.lines_to_write.append(OperateHelp.apply.value)
         # show git auto warnings
-        if not Buttons.apply_file_btn == self.operate_btn:
+        if not OperateBtn.apply_file == self.operate_btn:
             if CM_CFG.autocommit:
                 self.lines_to_write.append(OperateHelp.auto_commit.value)
             if CM_CFG.autopush:
                 self.lines_to_write.append(OperateHelp.autopush.value)
         # show git diff color info
         if (
-            Buttons.apply_file_btn == self.operate_btn
-            or Buttons.re_add_file_btn == self.operate_btn
+            OperateBtn.apply_file == self.operate_btn
+            or OperateBtn.re_add_file == self.operate_btn
         ):
             self.lines_to_write.extend(OperateHelp.diff_color.value)
-        elif Buttons.re_add_file_btn == self.operate_btn:
+        elif OperateBtn.re_add_file == self.operate_btn:
             self.lines_to_write.append(OperateHelp.re_add.value)
-        elif Buttons.add_file_btn == self.operate_btn:
+        elif OperateBtn.add_file == self.operate_btn:
             self.lines_to_write.append(OperateHelp.add.value)
-        elif Buttons.forget_file_btn == self.operate_btn:
+        elif OperateBtn.forget_file == self.operate_btn:
             self.lines_to_write.append(OperateHelp.forget.value)
-        elif Buttons.destroy_file_btn == self.operate_btn:
+        elif OperateBtn.destroy_file == self.operate_btn:
             self.lines_to_write.extend(OperateHelp.destroy.value)
         self.update("\n".join(self.lines_to_write))
         self.border_title = str(self.path)
