@@ -303,13 +303,7 @@ class FileNodeData(NodeData):
 
 class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
 
-    def __init__(
-        self,
-        tab_name: TabStr,
-        *,
-        id: str | None = None,
-        # classes: str | None = None,
-    ) -> None:
+    def __init__(self, tab_name: TabStr, *, id: str | None = None) -> None:
         self._initial_render = True
         self._first_focus = True
         self._user_interacted = False
@@ -634,7 +628,6 @@ class ExpandedTree(TreeBase):
     def expand_all_nodes(self, node: TreeNode[NodeData]) -> None:
         """Recursively expand all directory nodes."""
         if node.data and isinstance(node.data, DirNodeData):
-            # if not node.is_expanded:
             node.expand()
             self.add_dir_nodes(tree_node=node, show_unchanged=self.unchanged)
             self.add_status_leaves(tree_node=node)
