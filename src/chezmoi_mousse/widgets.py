@@ -103,6 +103,14 @@ class ContentsView(RichLog):
             classes=TcssStr.content_view,
         )
 
+    def on_mount(self) -> None:
+        self.write(
+            Text(
+                f"Destination directory is {CM_CFG.destDir}, click a file or directory to view its contents.",
+                style="dim",
+            )
+        )
+
     def update_contents_view(self) -> None:
         assert isinstance(self.path, Path)
         truncated_message = ""
@@ -183,6 +191,14 @@ class DiffView(RichLog):
         self.status_dirs: PathDict = {}
         self.status_files: PathDict = {}
 
+    def on_mount(self) -> None:
+        self.write(
+            Text(
+                f"Destination directory is {CM_CFG.destDir}, click a file or directory to view its contents.",
+                style="dim",
+            )
+        )
+
     def watch_path(self) -> None:
         self.clear()
 
@@ -261,6 +277,9 @@ class GitLogView(DataTable[Text]):
 
     def __init__(self, *, view_id: str) -> None:
         super().__init__(id=view_id, show_cursor=False)
+
+    def on_mount(self) -> None:
+        self.populate_data_table(chezmoi.run.git_log(CM_CFG.destDir))
 
     def add_row_with_style(self, columns: list[str], style: str) -> None:
         row: Iterable[Text] = [
