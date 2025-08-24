@@ -22,7 +22,7 @@
   }
 }
 
-.filters_vertical {
+.switches_vertical {
   align: left bottom;
   background-tint: $surface;
   background: $surface;
@@ -30,7 +30,7 @@
   border-right: round $primary;
   border-top: round $primary;
   dock: bottom;
-  layer: filter_switches;
+  layer: switch_slider;
   margin-bottom: 3;
   max-width: 95%;
   padding-right: 2;
@@ -38,11 +38,11 @@
   /* offset-x: -100%; out if view if docked left */
   offset-x: -100%;
   transition: offset 380ms;
-  /* applies to all Container classes which contain a single filter switch */
-  .filter_label {
+  /* applies to all Container classes which contain a single switch */
+  .switch_label {
     color: $foreground-darken-1;
   }
-  &>.filter_horizontal {
+  &>.switch_horizontal {
     width: auto;
   }
   &>.pad_bottom {
@@ -169,7 +169,7 @@
 }
 
 MainScreen {
-  layers: filter_switches;
+  layers: switch_slider;
 }
 
 

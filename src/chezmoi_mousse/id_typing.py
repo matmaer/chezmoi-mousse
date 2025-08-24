@@ -129,9 +129,6 @@ class TcssStr(StrEnum):
     doctor_collapsible = auto()
     doctor_table = auto()
     doctor_vertical = auto()
-    filter_horizontal = auto()
-    filter_label = auto()
-    filters_vertical = auto()
     flow_diagram = auto()
     invalid_input = auto()
     last_clicked = auto()
@@ -141,6 +138,9 @@ class TcssStr(StrEnum):
     operate_top_path = auto()
     pad_bottom = auto()
     single_button_vertical = auto()
+    switch_horizontal = auto()
+    switch_label = auto()
+    switches_vertical = auto()
     tab_button = auto()
     tab_buttons_horizontal = auto()
     tab_left_vertical = auto()
@@ -264,33 +264,33 @@ class OperateBtn(Enum):
 
 
 @dataclass(frozen=True)
-class FilterData:
+class SwitchData:
     label: str
     tooltip: str
 
 
 class Switches(Enum):
-    clone_and_apply = FilterData(
+    clone_and_apply = SwitchData(
         "init and apply", ("run chezmoi init with --apply flag.")
     )
-    expand_all = FilterData(
+    expand_all = SwitchData(
         "expand all dirs",
         (
             "Expand all managed directories. Depending on the unchanged "
             "switch."
         ),
     )
-    guess_url = FilterData(
+    guess_url = SwitchData(
         "chezmoi guess", ("Submit with `chezmoi --guess-repo-url`.")
     )
-    unchanged = FilterData(
+    unchanged = SwitchData(
         "show unchanged files",
         (
             "Include files unchanged files which are not found in the "
             "'chezmoi status' output."
         ),
     )
-    unmanaged_dirs = FilterData(
+    unmanaged_dirs = SwitchData(
         "show unmanaged dirs",
         (
             "The default (disabled), only shows directories which already "
@@ -299,7 +299,7 @@ class Switches(Enum):
             "which contain unmanaged files."
         ),
     )
-    unwanted = FilterData(
+    unwanted = SwitchData(
         "show unwanted paths",
         (
             "Include files and directories considered as 'unwanted' for a "
@@ -328,10 +328,10 @@ class DoctorEnum(Enum):
 
 class TabIds:
     def __init__(self, tab_name: TabStr) -> None:
-        self.filter_slider_id = f"{tab_name}_filter_slider"
-        self.filter_slider_qid = f"#{self.filter_slider_id}"
         self.log_id = f"{tab_name}_log"
         self.log_qid = f"#{self.log_id}"
+        self.switches_slider_id = f"{tab_name}_switches_slider"
+        self.switches_slider_qid = f"#{self.switches_slider_id}"
         self.tab_main_horizontal_id = f"{tab_name}_main_horizontal"
         self.tab_name: TabStr = tab_name
         self.tab_pane_id = f"{tab_name}_pane"
@@ -359,23 +359,23 @@ class TabIds:
     def content_switcher_qid(self, side: Location) -> str:
         return f"#{self.content_switcher_id(side)}"
 
-    def filter_horizontal_id(
-        self, filter_enum: Switches, location: Location
+    def switch_horizontal_id(
+        self, switch_enum: Switches, location: Location
     ) -> str:
         return (
-            f"{self.tab_name}_{filter_enum.name}_filter_horizontal_{location}"
+            f"{self.tab_name}_{switch_enum.name}_switch_horizontal_{location}"
         )
 
-    def filter_horizontal_qid(
-        self, filter_enum: Switches, location: Location
+    def switch_horizontal_qid(
+        self, switch_enum: Switches, location: Location
     ) -> str:
-        return f"#{self.filter_horizontal_id(filter_enum, location)}"
+        return f"#{self.switch_horizontal_id(switch_enum, location)}"
 
-    def switch_id(self, filter_enum: Switches) -> str:
-        return f"{self.tab_name}_{filter_enum.name}_switch"
+    def switch_id(self, switch_enum: Switches) -> str:
+        return f"{self.tab_name}_{switch_enum.name}_switch"
 
-    def switch_qid(self, filter_enum: Switches) -> str:
-        return f"#{self.switch_id(filter_enum)}"
+    def switch_qid(self, switch_enum: Switches) -> str:
+        return f"#{self.switch_id(switch_enum)}"
 
     def tab_vertical_id(self, side: Location) -> str:
         return f"{self.tab_name}_{side}_vertical"

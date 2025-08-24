@@ -58,9 +58,9 @@ class ChezmoiGUI(App[None]):
     BINDINGS = [
         Binding(key="M,m", action="maximize", description="maximize"),
         Binding(
-            key="F,f",
-            action="toggle_filter_slider",
-            description="toggle-filters",
+            key="T,t",
+            action="toggle_switch_slider",
+            description="toggle-switches",
         ),
     ]
 
@@ -183,7 +183,7 @@ class ChezmoiGUI(App[None]):
             ):
                 return None
             return True
-        elif action == "toggle_filter_slider":
+        elif action == "toggle_switch_slider":
             if self.query_one(TabbedContent).active in (
                 Id.apply.tab_pane_id,
                 Id.re_add.tab_pane_id,
@@ -195,14 +195,14 @@ class ChezmoiGUI(App[None]):
 
         return True
 
-    def action_toggle_filter_slider(self) -> None:
+    def action_toggle_switch_slider(self) -> None:
         # merely find the corresponding method in the active tab ant call it
         tab_pane = self.query_one(
             f"#{self.query_one(TabbedContent).active}", TabPane
         )
         tab_widget = tab_pane.children[0]
-        if hasattr(tab_widget, "action_toggle_filter_slider"):
-            getattr(tab_widget, "action_toggle_filter_slider")()  # call it
+        if hasattr(tab_widget, "action_toggle_switch_slider"):
+            getattr(tab_widget, "action_toggle_switch_slider")()  # call it
 
     def action_maximize(self) -> None:
         active_pane_id = self.query_one(TabbedContent).active

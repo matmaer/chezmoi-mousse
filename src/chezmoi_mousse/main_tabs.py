@@ -21,11 +21,11 @@ from chezmoi_mousse.chezmoi import chezmoi, init_log
 from chezmoi_mousse.config import FLOW, pw_mgr_info
 from chezmoi_mousse.containers import (
     ButtonsHorizontal,
-    FilterSlider,
     InitCloneRepo,
     InitNewRepo,
     InitPurgeRepo,
     OperateTabsBase,
+    SwitchSlider,
     TreeContentSwitcher,
 )
 from chezmoi_mousse.id_typing import (
@@ -85,8 +85,9 @@ class ApplyTab(OperateTabsBase):
                     view_id=Id.apply.view_id(ViewStr.git_log_view)
                 )
 
-        yield FilterSlider(
-            tab_ids=Id.apply, filters=(Switches.unchanged, Switches.expand_all)
+        yield SwitchSlider(
+            tab_ids=Id.apply,
+            switches=(Switches.unchanged, Switches.expand_all),
         )
 
     def on_mount(self) -> None:
@@ -145,9 +146,9 @@ class ReAddTab(OperateTabsBase):
                     view_id=Id.re_add.view_id(ViewStr.git_log_view)
                 )
 
-        yield FilterSlider(
+        yield SwitchSlider(
             tab_ids=Id.re_add,
-            filters=(Switches.unchanged, Switches.expand_all),
+            switches=(Switches.unchanged, Switches.expand_all),
         )
 
     def on_mount(self) -> None:
@@ -182,9 +183,9 @@ class AddTab(OperateTabsBase):
         with Vertical(id=Id.add.tab_vertical_id(Location.right)):
             yield ContentsView(view_id=Id.add.view_id(ViewStr.contents_view))
 
-        yield FilterSlider(
+        yield SwitchSlider(
             tab_ids=Id.add,
-            filters=(Switches.unmanaged_dirs, Switches.unwanted),
+            switches=(Switches.unmanaged_dirs, Switches.unwanted),
         )
 
     def on_mount(self) -> None:
@@ -278,9 +279,9 @@ class InitTab(OperateTabsBase):
                 yield InitPurgeRepo(tab_ids=Id.init)
 
             yield init_log
-        yield FilterSlider(
+        yield SwitchSlider(
             tab_ids=Id.init,
-            filters=(Switches.guess_url, Switches.clone_and_apply),
+            switches=(Switches.guess_url, Switches.clone_and_apply),
         )
 
     def on_mount(self) -> None:

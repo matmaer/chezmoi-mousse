@@ -211,42 +211,42 @@ class OperateTabsBase(Horizontal):
                     ContentSwitcher,
                 ).current = self.tab_ids.tree_id(TreeStr.managed_tree)
 
-    def action_toggle_filter_slider(self) -> None:
+    def action_toggle_switch_slider(self) -> None:
         self.query_one(
-            self.tab_ids.filter_slider_qid, VerticalGroup
+            self.tab_ids.switches_slider_qid, VerticalGroup
         ).toggle_class("-visible")
 
 
-class FilterSlider(VerticalGroup):
+class SwitchSlider(VerticalGroup):
 
     def __init__(
-        self, *, tab_ids: TabIds, filters: tuple[Switches, Switches]
+        self, *, tab_ids: TabIds, switches: tuple[Switches, Switches]
     ) -> None:
-        self.filters = filters
+        self.switches = switches
         super().__init__(
-            id=tab_ids.filter_slider_id, classes=TcssStr.filters_vertical
+            id=tab_ids.switches_slider_id, classes=TcssStr.switches_vertical
         )
         self.tab_ids = tab_ids
 
     def compose(self) -> ComposeResult:
-        for filter_enum in self.filters:
+        for switch_enum in self.switches:
             with HorizontalGroup(
-                id=self.tab_ids.filter_horizontal_id(
-                    filter_enum, Location.top
+                id=self.tab_ids.switch_horizontal_id(
+                    switch_enum, Location.top
                 ),
-                classes=TcssStr.filter_horizontal,
+                classes=TcssStr.switch_horizontal,
             ):
                 yield Switch(
-                    id=self.tab_ids.switch_id(filter_enum), value=False
+                    id=self.tab_ids.switch_id(switch_enum), value=False
                 )
                 yield Label(
-                    filter_enum.value.label, classes=TcssStr.filter_label
-                ).with_tooltip(tooltip=filter_enum.value.tooltip)
+                    switch_enum.value.label, classes=TcssStr.switch_label
+                ).with_tooltip(tooltip=switch_enum.value.tooltip)
 
     def on_mount(self) -> None:
-        # add padding to the top filter horizontal group
+        # add padding to the top switch horizontal group
         self.query_one(
-            self.tab_ids.filter_horizontal_qid(self.filters[0], Location.top),
+            self.tab_ids.switch_horizontal_qid(self.switches[0], Location.top),
             HorizontalGroup,
         ).add_class(TcssStr.pad_bottom)
 
@@ -348,7 +348,7 @@ class InitCloneRepo(Vertical):
         yield Static(
             "Clone a remote chezmoi git repository and optionally apply"
         )
-        # TODO: Use filter slider to add switches:
+        # TODO: Use switch slider to add switches:
         # enable guess feature from chezmoi
         # clone and also apply
         yield Input(
