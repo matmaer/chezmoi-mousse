@@ -258,7 +258,6 @@ class OperateBtn(Enum):
     add_dir = "Add Dir"
     add_file = "Add File"
     apply_file = "Apply File"
-    clear = "Clear Input"
     clone_repo = "Clone Existing Repo"
     destroy_file = "Destroy File"
     forget_file = "Forget File"
@@ -335,7 +334,8 @@ class TabIds:
         self.tab_pane_qid = f"#{self.tab_pane_id}"
 
     def button_id(self, btn_enum: OperateBtn | TabBtn) -> str:
-        return f"{self.tab_name}_{btn_enum.name}"
+        suffix = "_op_btn" if isinstance(btn_enum, OperateBtn) else "_tab_btn"
+        return f"{self.tab_name}_{btn_enum.name}{suffix}"
 
     def button_qid(self, btn_enum: OperateBtn | TabBtn) -> str:
         return f"#{self.button_id(btn_enum)}"

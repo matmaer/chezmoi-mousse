@@ -353,7 +353,7 @@ class InitCloneRepo(Vertical):
         )
         yield ButtonsHorizontal(
             tab_ids=Id.init,
-            buttons=(OperateBtn.clone_repo, OperateBtn.clear),
+            buttons=(OperateBtn.clone_repo,),
             location=Location.bottom,
         )
 
