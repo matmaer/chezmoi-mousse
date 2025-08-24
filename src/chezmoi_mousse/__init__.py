@@ -17,7 +17,6 @@ BASE_CMD = (
     "--force",
 )
 
-# Check if git command is available
 if not which("chezmoi"):
     print("Error: chezmoi command not found.", file=sys.stderr)
     sys.exit(1)
@@ -44,7 +43,6 @@ class ChezmoiConfig:
         self.autocommit: bool = config["git"]["autocommit"]
         self.autopush: bool = config["git"]["autopush"]
         self.destDir: Path = Path(config["destDir"])
-        self.interactive: bool = config["interactive"]
         self.mode: str = config["mode"]
         self.sourceDir: Path = Path(config["sourceDir"])
         self.tempDir: Path = Path(config["tempDir"])
