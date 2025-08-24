@@ -42,8 +42,6 @@ from chezmoi_mousse.overrides import CustomRenderLabel
 
 class OperateInfo(Static):
 
-    bullet = Chars.bullet.value
-
     def __init__(self, *, operate_btn: OperateBtn, path: Path) -> None:
         super().__init__(
             id=ModalIdStr.operate_info, classes=TcssStr.operate_top_path
