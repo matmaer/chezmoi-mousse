@@ -205,6 +205,14 @@ class Chars(Enum):
     x_mark = "\u2716"  # '\N{HEAVY MULTIPLICATION X}'
 
 
+class InfoBorderTitles(Enum):
+    apply_file = Chars.apply_file_info_border.value
+    re_add_file = Chars.add_file_info_border.value
+    add_file = Chars.add_file_info_border.value
+    forget_file = " forget file "
+    destroy_file = " destroy file "
+
+
 class OperateHelp(Enum):
     add = "[$text-primary]Path will be added to your chezmoi dotfile manager source state.[/]"
     apply = "[$text-primary]Local file (target state) in the destination directory will be modified.[/]"

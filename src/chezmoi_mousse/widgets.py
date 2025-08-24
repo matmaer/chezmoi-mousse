@@ -25,6 +25,7 @@ from chezmoi_mousse import CM_CFG, theme
 from chezmoi_mousse.chezmoi import chezmoi, cmd_log, managed_status
 from chezmoi_mousse.id_typing import (
     Chars,
+    InfoBorderTitles,
     ModalIdStr,
     NodeData,
     OperateBtn,
@@ -49,13 +50,13 @@ class OperateInfo(Static):
 
         self.operate_btn = operate_btn
         self.path = path
-        self.info_border_titles = {
-            OperateBtn.apply_file: Chars.apply_file_info_border.value,
-            OperateBtn.re_add_file: Chars.add_file_info_border.value,
-            OperateBtn.add_file: Chars.add_file_info_border.value,
-            OperateBtn.forget_file: " forget file ",
-            OperateBtn.destroy_file: " destroy file ",
-        }
+        # self.info_border_titles = {
+        #     OperateBtn.apply_file: Chars.apply_file_info_border.value,
+        #     OperateBtn.re_add_file: Chars.add_file_info_border.value,
+        #     OperateBtn.add_file: Chars.add_file_info_border.value,
+        #     OperateBtn.forget_file: " forget file ",
+        #     OperateBtn.destroy_file: " destroy file ",
+        # }
 
     def on_mount(self) -> None:
         self.lines_to_write: list[str] = []
@@ -85,7 +86,7 @@ class OperateInfo(Static):
             self.lines_to_write.extend(OperateHelp.destroy.value)
         self.update("\n".join(self.lines_to_write))
         self.border_title = str(self.path)
-        self.border_subtitle = self.info_border_titles[self.operate_btn]
+        self.border_subtitle = InfoBorderTitles[self.operate_btn.name].value
 
 
 class ContentsView(RichLog):
