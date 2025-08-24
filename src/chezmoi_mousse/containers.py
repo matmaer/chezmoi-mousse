@@ -346,6 +346,9 @@ class InitCloneRepo(Vertical):
         yield Static(
             "Clone a remote chezmoi git repository and optionally apply"
         )
+        # TODO: Use filter slider to add switches:
+        # enable guess feature from chezmoi
+        # clone and also apply
         yield Input(
             placeholder="Enter repository URL",
             validate_on=["submitted"],
