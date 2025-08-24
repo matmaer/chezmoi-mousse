@@ -229,12 +229,6 @@ class DiffView(RichLog):
                 self.write(Text("Files in directory with changed status:"))
                 for file_path in status_files_in_dir:
                     self.write(Text(f"{file_path}"))
-                    self.write(
-                        Text(
-                            "\nClick any file in the tree to see the diff.",
-                            style="dim",
-                        )
-                    )
                 return
             return
         # create a diff view if the current selected path is an unchanged file
