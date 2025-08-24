@@ -130,6 +130,8 @@ class TcssStr(StrEnum):
     doctor_table = auto()
     doctor_vertical = auto()
     flow_diagram = auto()
+    input_field = auto()
+    input_select = auto()
     invalid_input = auto()
     last_clicked = auto()
     modal_base = auto()

@@ -259,7 +259,8 @@ class InitTab(OperateTabsBase):
     def compose(self) -> ComposeResult:
         with Vertical():
             yield Static(
-                "[$error bold]chezmoi init and purge WIP[/]", markup=True
+                "[$error bold]chezmoi init and purge WORK IN PROGRESS, do not use[/]",
+                markup=True,
             )
             yield ButtonsHorizontal(
                 tab_ids=Id.init,
@@ -274,11 +275,11 @@ class InitTab(OperateTabsBase):
                 id=Id.init.content_switcher_id(Location.top),
                 initial=Id.init.view_id(ViewStr.init_clone_view),
             ):
-                yield InitCloneRepo(tab_ids=Id.init)
-                yield InitNewRepo(tab_ids=Id.init)
-                yield InitPurgeRepo(tab_ids=Id.init)
-
+                yield InitCloneRepo()
+                yield InitNewRepo()
+                yield InitPurgeRepo()
             yield init_log
+
         yield SwitchSlider(
             tab_ids=Id.init,
             switches=(Switches.guess_url, Switches.clone_and_apply),

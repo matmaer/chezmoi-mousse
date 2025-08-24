@@ -22,6 +22,7 @@ from textual.widgets import (
     ContentSwitcher,
     Input,
     Label,
+    Select,
     Static,
     Switch,
 )
@@ -334,11 +335,29 @@ class TreeContentSwitcher(ContentSwitcher):
         yield ExpandedTree(tab_ids=self.tab_ids)
 
 
+class InputHorizontal(HorizontalGroup):
+
+    def compose(self) -> ComposeResult:
+        with Vertical():
+            yield Select[str].from_values(
+                ["https", "ssh"],
+                classes=TcssStr.input_select,
+                value="https",
+                allow_blank=False,
+                type_to_search=False,
+            )
+        with Vertical():
+            yield Input(
+                placeholder="Enter repository URL",
+                validate_on=["submitted"],
+                validators=URL(),
+                classes=TcssStr.input_field,
+            )
+
+
 class InitNewRepo(Vertical):
-    def __init__(self, tab_ids: TabIds) -> None:
-        self.tab_ids = tab_ids
-        self.tab_name = self.tab_ids.tab_name
-        super().__init__(id=self.tab_ids.view_id(ViewStr.init_new_view))
+    def __init__(self) -> None:
+        super().__init__(id=Id.init.view_id(ViewStr.init_new_view))
 
     def compose(self) -> ComposeResult:
         yield Label("Initialize a new chezmoi git repository")
@@ -351,23 +370,16 @@ class InitNewRepo(Vertical):
 
 
 class InitCloneRepo(Vertical):
-    def __init__(self, tab_ids: TabIds) -> None:
-        self.tab_ids = tab_ids
-        self.tab_name = self.tab_ids.tab_name
-        super().__init__(id=self.tab_ids.view_id(ViewStr.init_clone_view))
+    def __init__(self) -> None:
+        super().__init__(id=Id.init.view_id(ViewStr.init_clone_view))
 
     def compose(self) -> ComposeResult:
         yield Static(
             "Clone a remote chezmoi git repository and optionally apply"
         )
-        # TODO: Use switch slider to add switches:
-        # enable guess feature from chezmoi
-        # clone and also apply
-        yield Input(
-            placeholder="Enter repository URL",
-            validate_on=["submitted"],
-            validators=URL(),
-        )
+        # TODO: implement guess feature from chezmoi
+        # TODO: add selection for https or ssh
+        yield InputHorizontal()
         yield ButtonsHorizontal(
             tab_ids=Id.init,
             buttons=(OperateBtn.clone_repo,),
@@ -388,10 +400,8 @@ class InitCloneRepo(Vertical):
 
 
 class InitPurgeRepo(Vertical):
-    def __init__(self, tab_ids: TabIds) -> None:
-        self.tab_ids = tab_ids
-        self.tab_name = self.tab_ids.tab_name
-        super().__init__(id=self.tab_ids.view_id(ViewStr.init_purge_view))
+    def __init__(self) -> None:
+        super().__init__(id=Id.init.view_id(ViewStr.init_purge_view))
 
     def compose(self) -> ComposeResult:
         yield Static(
