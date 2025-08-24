@@ -35,10 +35,10 @@ from chezmoi_mousse.containers import (
 )
 from chezmoi_mousse.id_typing import (
     DoctorEnum,
-    Filters,
     Id,
     Location,
     OperateBtn,
+    Switches,
     TabBtn,
     TcssStr,
     TreeStr,
@@ -91,7 +91,7 @@ class ApplyTab(OperateTabsBase):
                 )
 
         yield FilterSlider(
-            tab_ids=Id.apply, filters=(Filters.unchanged, Filters.expand_all)
+            tab_ids=Id.apply, filters=(Switches.unchanged, Switches.expand_all)
         )
 
     def on_mount(self) -> None:
@@ -151,7 +151,8 @@ class ReAddTab(OperateTabsBase):
                 )
 
         yield FilterSlider(
-            tab_ids=Id.re_add, filters=(Filters.unchanged, Filters.expand_all)
+            tab_ids=Id.re_add,
+            filters=(Switches.unchanged, Switches.expand_all),
         )
 
     def on_mount(self) -> None:
@@ -187,7 +188,8 @@ class AddTab(OperateTabsBase):
             yield ContentsView(view_id=Id.add.view_id(ViewStr.contents_view))
 
         yield FilterSlider(
-            tab_ids=Id.add, filters=(Filters.unmanaged_dirs, Filters.unwanted)
+            tab_ids=Id.add,
+            filters=(Switches.unmanaged_dirs, Switches.unwanted),
         )
 
     def on_mount(self) -> None:
@@ -245,9 +247,9 @@ class AddTab(OperateTabsBase):
         tree = self.query_one(
             Id.add.tree_qid(TreeStr.add_tree), FilteredDirTree
         )
-        if event.switch.id == Id.add.switch_id(Filters.unmanaged_dirs):
+        if event.switch.id == Id.add.switch_id(Switches.unmanaged_dirs):
             tree.unmanaged_dirs = event.value
-        elif event.switch.id == Id.add.switch_id(Filters.unwanted):
+        elif event.switch.id == Id.add.switch_id(Switches.unwanted):
             tree.unwanted = event.value
         tree.reload()
 

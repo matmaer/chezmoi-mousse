@@ -273,13 +273,19 @@ class FilterData:
     tooltip: str
 
 
-class Filters(Enum):
+class Switches(Enum):
+    clone_and_apply = FilterData(
+        "init and apply", ("run chezmoi init with --apply flag.")
+    )
     expand_all = FilterData(
         "expand all dirs",
         (
             "Expand all managed directories. Depending on the unchanged "
             "switch."
         ),
+    )
+    guess_url = FilterData(
+        "chezmoi guess", ("Submit with `chezmoi --guess-repo-url`.")
     )
     unchanged = FilterData(
         "show unchanged files",
@@ -356,21 +362,21 @@ class TabIds:
         return f"#{self.content_switcher_id(side)}"
 
     def filter_horizontal_id(
-        self, filter_enum: Filters, location: Location
+        self, filter_enum: Switches, location: Location
     ) -> str:
         return (
             f"{self.tab_name}_{filter_enum.name}_filter_horizontal_{location}"
         )
 
     def filter_horizontal_qid(
-        self, filter_enum: Filters, location: Location
+        self, filter_enum: Switches, location: Location
     ) -> str:
         return f"#{self.filter_horizontal_id(filter_enum, location)}"
 
-    def switch_id(self, filter_enum: Filters) -> str:
+    def switch_id(self, filter_enum: Switches) -> str:
         return f"{self.tab_name}_{filter_enum.name}_switch"
 
-    def switch_qid(self, filter_enum: Filters) -> str:
+    def switch_qid(self, filter_enum: Switches) -> str:
         return f"#{self.switch_id(filter_enum)}"
 
     def tab_vertical_id(self, side: Location) -> str:

@@ -29,11 +29,11 @@ from textual.widgets import (
 from chezmoi_mousse import CM_CFG
 from chezmoi_mousse.id_typing import (
     Buttons,
-    Filters,
     Id,
     Location,
     OperateBtn,
     OperateButtons,
+    Switches,
     TabBtn,
     TabIds,
     TabStr,
@@ -135,7 +135,7 @@ class OperateTabsBase(Horizontal):
         # Tree/List Switch
         event.stop()
         expand_all_switch = self.query_one(
-            self.tab_ids.switch_qid(Filters.expand_all), Switch
+            self.tab_ids.switch_qid(Switches.expand_all), Switch
         )
         if event.button.id == self.tab_ids.button_id(TabBtn.tree):
             expand_all_switch.disabled = False
@@ -185,7 +185,7 @@ class OperateTabsBase(Horizontal):
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
         event.stop()
-        if event.switch.id == self.tab_ids.switch_id(Filters.unchanged):
+        if event.switch.id == self.tab_ids.switch_id(Switches.unchanged):
             tree_pairs: list[
                 tuple[TreeStr, type[ExpandedTree | ManagedTree | FlatTree]]
             ] = [
@@ -197,7 +197,7 @@ class OperateTabsBase(Horizontal):
                 self.query_one(
                     self.tab_ids.tree_qid(tree_str), tree_cls
                 ).unchanged = event.value
-        elif event.switch.id == self.tab_ids.switch_id(Filters.expand_all):
+        elif event.switch.id == self.tab_ids.switch_id(Switches.expand_all):
             if event.value:
                 self.query_one(
                     self.tab_ids.content_switcher_qid(Location.left),
@@ -218,7 +218,7 @@ class OperateTabsBase(Horizontal):
 class FilterSlider(VerticalGroup):
 
     def __init__(
-        self, *, tab_ids: TabIds, filters: tuple[Filters, Filters]
+        self, *, tab_ids: TabIds, filters: tuple[Switches, Switches]
     ) -> None:
         self.filters = filters
         super().__init__(
