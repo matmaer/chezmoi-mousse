@@ -1,12 +1,7 @@
 from rich.text import Text
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import (
-    Horizontal,
-    ScrollableContainer,
-    Vertical,
-    VerticalGroup,
-)
+from textual.containers import ScrollableContainer, Vertical, VerticalGroup
 from textual.widgets import (
     Button,
     Collapsible,
@@ -254,10 +249,10 @@ class AddTab(OperateTabsBase):
         tree.reload()
 
 
-class InitTab(Horizontal):
+class InitTab(OperateTabsBase):
 
     def __init__(self) -> None:
-        super().__init__(id=Id.init.tab_main_horizontal_id)
+        super().__init__(tab_ids=Id.init)
 
     def compose(self) -> ComposeResult:
         with Vertical():
@@ -281,6 +276,11 @@ class InitTab(Horizontal):
                 yield InitCloneRepo(tab_ids=Id.init)
                 yield InitNewRepo(tab_ids=Id.init)
                 yield InitPurgeRepo(tab_ids=Id.init)
+
+        yield FilterSlider(
+            tab_ids=Id.init,
+            filters=(Switches.guess_url, Switches.clone_and_apply),
+        )
 
     def on_mount(self) -> None:
         buttons_horizontal = self.query_one(

@@ -134,10 +134,10 @@ class OperateTabsBase(Horizontal):
     def on_button_pressed(self, event: Button.Pressed) -> None:
         # Tree/List Switch
         event.stop()
-        expand_all_switch = self.query_one(
-            self.tab_ids.switch_qid(Switches.expand_all), Switch
-        )
         if event.button.id == self.tab_ids.button_id(TabBtn.tree):
+            expand_all_switch = self.query_one(
+                self.tab_ids.switch_qid(Switches.expand_all), Switch
+            )
             expand_all_switch.disabled = False
             if expand_all_switch.value:
                 self.query_one(
@@ -151,10 +151,12 @@ class OperateTabsBase(Horizontal):
                 ).current = self.tab_ids.tree_id(TreeStr.managed_tree)
         elif event.button.id == self.tab_ids.button_id(TabBtn.list):
             self.query_one(
+                self.tab_ids.switch_qid(Switches.expand_all), Switch
+            ).disabled = True
+            self.query_one(
                 self.tab_ids.content_switcher_qid(Location.left),
                 ContentSwitcher,
             ).current = self.tab_ids.tree_id(TreeStr.flat_tree)
-            expand_all_switch.disabled = True
         # Contents/Diff/GitLog Switch
         elif event.button.id == self.tab_ids.button_id(TabBtn.contents):
             self.query_one(

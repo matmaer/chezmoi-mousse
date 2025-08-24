@@ -175,7 +175,6 @@ class ChezmoiGUI(App[None]):
         # Prevent actions before loading screen is dismissed
         if not self.loading_screen_dismissed:
             return None
-
         if action == "maximize":
             if self.query_one(TabbedContent).active in (
                 Id.doctor.tab_pane_id,
@@ -184,12 +183,12 @@ class ChezmoiGUI(App[None]):
             ):
                 return None
             return True
-
         elif action == "toggle_filter_slider":
             if self.query_one(TabbedContent).active in (
                 Id.apply.tab_pane_id,
                 Id.re_add.tab_pane_id,
                 Id.add.tab_pane_id,
+                Id.init.tab_pane_id,
             ):
                 return True
             return None
