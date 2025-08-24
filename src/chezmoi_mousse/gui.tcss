@@ -7,9 +7,9 @@
 
 
 .input_select {
-  background-tint: $panel-lighten-1;
-  background: $panel-lighten-1;
-  border: wide $panel-lighten-1;
+  background-tint: $panel;
+  background: $panel;
+  border: wide $panel;
   color: $foreground;
   height: 3;
   width: 9;
@@ -23,8 +23,8 @@
     height: 4;
     width: auto;
     &:focus {
-      background: $panel;
-      background-tint: $panel;
+      background: $panel-lighten-1;
+      background-tint: $panel-lighten-1;
     }
   }
   &.-expanded {
@@ -35,16 +35,16 @@
     }
   }
   SelectCurrent {
-    background-tint: $panel-lighten-1;
-    background: $panel-lighten-1;
+    background-tint: $panel;
+    background: $panel;
     color: $foreground;
     height: auto;
     padding: 0;
     width: 1fr;
 
     Static#label {
-      background-tint: $panel-lighten-1;
-      background: $panel-lighten-1;
+      background-tint: $panel;
+      background: $panel;
       color: $foreground;
       height: 1;
       width: 1fr;
