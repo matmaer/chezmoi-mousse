@@ -162,7 +162,6 @@
     padding: 0 1 0 1;
   }
   &>.invalid_input {
-    border: yellow;
     height: auto;
     width: auto;
   }
