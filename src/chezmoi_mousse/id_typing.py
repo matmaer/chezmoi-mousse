@@ -334,6 +334,8 @@ class TabIds:
     def __init__(self, tab_name: TabStr) -> None:
         self.filter_slider_id = f"{tab_name}_filter_slider"
         self.filter_slider_qid = f"#{self.filter_slider_id}"
+        self.log_id = f"{tab_name}_log"
+        self.log_qid = f"#{self.log_id}"
         self.tab_main_horizontal_id = f"{tab_name}_main_horizontal"
         self.tab_name: TabStr = tab_name
         self.tab_pane_id = f"{tab_name}_pane"

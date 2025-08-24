@@ -190,7 +190,9 @@ class CommandLog(RichLog):
         self.write(f"{self._log_time()} [{color}]{message}[/]")
 
 
-cmd_log = CommandLog(rich_log_id=Id.log.tab_name)
+cmd_log = CommandLog(rich_log_id=Id.log.log_id)
+init_log = CommandLog(rich_log_id=Id.init.log_id)
+
 op_log = CommandLog(rich_log_id=ModalIdStr.operate_log)
 op_log.add_class(TcssStr.operate_log)
 
@@ -212,17 +214,36 @@ def _run_cmd(long_command: CmdWords, time_out: float = 1) -> str:
         ).stdout.strip()
         cmd_log.log_command(long_command)
         if any(verb.value in long_command for verb in OperateVerbs):
-            op_log.log_command(long_command)
+            if (
+                OperateVerbs.init.value in long_command
+                or OperateVerbs.purge.value in long_command
+            ):
+                init_log.log_command(long_command)
+            else:
+                op_log.log_command(long_command)
             if cmd_stdout.strip() == "":
                 msg = f"{Chars.check_mark.value} Command made changes successfully, no output"
-                op_log.log_success(msg)
                 cmd_log.log_success(msg)
+                if (
+                    OperateVerbs.init.value in long_command
+                    or OperateVerbs.purge.value in long_command
+                ):
+                    init_log.log_success(msg)
+                else:
+                    op_log.log_success(msg)
             else:
                 msg = f"{Chars.check_mark.value} Command made changes successfully, output:"
-                op_log.log_success(msg)
                 cmd_log.log_success(msg)
-                op_log.log_dimmed(cmd_stdout)
                 cmd_log.log_dimmed(cmd_stdout)
+                if (
+                    OperateVerbs.init.value in long_command
+                    or OperateVerbs.purge.value in long_command
+                ):
+                    init_log.log_success(msg)
+                else:
+                    op_log.log_success(msg)
+                    op_log.log_dimmed(cmd_stdout)
+
             return cmd_stdout
         if any(verb.value in long_command for verb in IoVerbs):
             cmd_log.log_warning(
@@ -288,13 +309,22 @@ class ChangeCommand:
         _run_cmd(self.base_cmd + (OperateVerbs.apply.value, str(path)))
         self._update_managed_status_data()
 
+    def destroy(self, path: Path) -> None:
+        _run_cmd(self.base_cmd + (OperateVerbs.destroy.value, str(path)))
+        self._update_managed_status_data()
+
     def forget(self, path: Path) -> None:
         _run_cmd(self.base_cmd + (OperateVerbs.forget.value, str(path)))
         self._update_managed_status_data()
 
-    def destroy(self, path: Path) -> None:
-        _run_cmd(self.base_cmd + (OperateVerbs.destroy.value, str(path)))
-        self._update_managed_status_data()
+    def init_clone_repo(self, repo_url: str) -> None:
+        _run_cmd(self.base_cmd + (OperateVerbs.init.value, repo_url))
+
+    def init_new_repo(self) -> None:
+        _run_cmd(self.base_cmd + (OperateVerbs.init.value,))
+
+    def purge(self) -> None:
+        _run_cmd(self.base_cmd + (OperateVerbs.purge.value,))
 
 
 class ReadCommand:

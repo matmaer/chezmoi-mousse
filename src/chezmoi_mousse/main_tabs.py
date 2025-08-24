@@ -17,7 +17,7 @@ from textual.widgets import (
 )
 
 from chezmoi_mousse import CM_CFG, theme
-from chezmoi_mousse.chezmoi import chezmoi
+from chezmoi_mousse.chezmoi import chezmoi, init_log
 from chezmoi_mousse.config import FLOW, pw_mgr_info
 from chezmoi_mousse.containers import (
     ButtonsHorizontal,
@@ -253,12 +253,12 @@ class InitTab(OperateTabsBase):
 
     def __init__(self) -> None:
         super().__init__(tab_ids=Id.init)
+        self.repo_url = "fake-repo-url"
 
     def compose(self) -> ComposeResult:
         with Vertical():
-            yield Static("[$success bold]chezmoi init[/]", markup=True)
             yield Static(
-                "[$foreground-darken-1]not yet implemented[/]", markup=True
+                "[$error bold]chezmoi init and purge WIP[/]", markup=True
             )
             yield ButtonsHorizontal(
                 tab_ids=Id.init,
@@ -277,6 +277,7 @@ class InitTab(OperateTabsBase):
                 yield InitNewRepo(tab_ids=Id.init)
                 yield InitPurgeRepo(tab_ids=Id.init)
 
+            yield init_log
         yield FilterSlider(
             tab_ids=Id.init,
             filters=(Switches.guess_url, Switches.clone_and_apply),
@@ -288,9 +289,12 @@ class InitTab(OperateTabsBase):
         )
         buttons_horizontal.add_class(TcssStr.border_title_bottom)
         buttons_horizontal.border_subtitle = " chezmoi init "
+        init_log.add_class(TcssStr.operate_log)
+        init_log.log_success("Ready to run chezmoi commands.")
+        init_log.border_title = " Init Log "
 
     @on(Button.Pressed)
-    def handle_init_buttons(self, event: Button.Pressed) -> None:
+    def handle_init_tab_buttons(self, event: Button.Pressed) -> None:
         event.stop()
         if event.button.id == Id.init.button_id(TabBtn.new_repo):
             self.query_one(
@@ -306,12 +310,25 @@ class InitTab(OperateTabsBase):
             self.query_one(
                 Id.init.content_switcher_qid(Location.top), ContentSwitcher
             ).current = Id.init.view_id(ViewStr.init_purge_view)
-        elif event.button.id == Id.init.button_id(OperateBtn.clone_repo):
-            self.notify("Clone repository button pressed")
+
+    @on(Button.Pressed)
+    def handle_operation_button(self, event: Button.Pressed) -> None:
+        event.stop()
+        if event.button.id == Id.init.button_id(OperateBtn.clone_repo):
+            chezmoi.perform.init_clone_repo(self.repo_url)
+            self.query_one(
+                self.tab_ids.button_qid(OperateBtn.clone_repo), Button
+            ).disabled = True
         elif event.button.id == Id.init.button_id(OperateBtn.new_repo):
-            self.notify("New repository button pressed")
+            chezmoi.perform.init_new_repo()
+            self.query_one(
+                self.tab_ids.button_qid(OperateBtn.new_repo), Button
+            ).disabled = True
         elif event.button.id == Id.init.button_id(OperateBtn.purge_repo):
-            self.notify("Purge repository button pressed")
+            chezmoi.perform.purge()
+            self.query_one(
+                self.tab_ids.button_qid(OperateBtn.purge_repo), Button
+            ).disabled = True
 
 
 class DoctorTab(ScrollableContainer):

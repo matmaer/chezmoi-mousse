@@ -141,6 +141,16 @@
   }
 }
 
+.operate_log {
+  border-title-align: center;
+  border-top: $foreground;
+  dock: bottom;
+  height: auto;
+  max-height: 1fr;
+  min-height: 3;
+  padding: 0 1 0 1;
+}
+
 .modal_base {
   border: $accent-darken-3;
   border-title-style: bold;
@@ -151,15 +161,6 @@
     border: round $foreground;
     margin: 0 1 0 1;
     text-align: center;
-  }
-  .operate_log {
-    border-title-align: center;
-    border-top: $foreground;
-    dock: bottom;
-    height: auto;
-    max-height: 1fr;
-    min-height: 3;
-    padding: 0 1 0 1;
   }
   &>.invalid_input {
     height: auto;
