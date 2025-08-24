@@ -198,19 +198,16 @@ class Chars(Enum):
     bullet = "\u2022"  # '\N{BULLET}'
     burger = "\u2261"  # '\N{IDENTICAL TO}'
     check_mark = "\u2714"  # '\N{HEAVY CHECK MARK}'
+    destroy_file_info_border = "\u274c destroy file \u274c"  # '\N{CROSS MARK}'
+    forget_file_info_border = (
+        "\u2716 forget file \u2716"  # '\N{HEAVY MULTIPLICATION X}'
+    )
     # gear = "\u2699"  # '\N{GEAR}'
     lower_3_8ths_block = "\u2583"  # "\N{LOWER THREE EIGHTHS BLOCK}"
     re_add = f"local {'\u2014' * 3}\u2192 chezmoi"  # '\N{EM DASH}', '\N{RIGHTWARDS ARROW}'
+    re_add_file_info_border = f"local {'\u2014' * 3}\u2192 chezmoi"  # '\N{EM DASH}', '\N{RIGHTWARDS ARROW}'
     warning_sign = "\u26a0"  # '\N{WARNING SIGN}'
     x_mark = "\u2716"  # '\N{HEAVY MULTIPLICATION X}'
-
-
-class InfoBorderTitles(Enum):
-    apply_file = Chars.apply_file_info_border.value
-    re_add_file = Chars.add_file_info_border.value
-    add_file = Chars.add_file_info_border.value
-    forget_file = " forget file "
-    destroy_file = " destroy file "
 
 
 class OperateHelp(Enum):
@@ -226,8 +223,7 @@ class OperateHelp(Enum):
     changes_mode_enabled = "Changes mode enabled, operations will run."
     destroy = (
         "[$text-primary]Remove target from the source state, the destination directory, and the state.[/]",
-        "[$text-error]The destroy command permanently removes files both from your home directory and chezmoi's source directory.[/]",
-        "[$text-error]Only run chezmoi destroy if you have a separate backup of your home directory and your source directory.[/]",
+        "[$text-error]The destroy command permanently removes files both from your home directory and chezmoi's source directory, make sure you have a backup![/]",
     )
     diff_color = (
         "[$text-success]+ green lines will be added[/]",

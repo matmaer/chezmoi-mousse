@@ -25,7 +25,6 @@ from chezmoi_mousse import CM_CFG, theme
 from chezmoi_mousse.chezmoi import chezmoi, cmd_log, managed_status
 from chezmoi_mousse.id_typing import (
     Chars,
-    InfoBorderTitles,
     ModalIdStr,
     NodeData,
     OperateBtn,
@@ -52,34 +51,38 @@ class OperateInfo(Static):
         self.path = path
 
     def on_mount(self) -> None:
-        self.lines_to_write: list[str] = []
+        self.border_title = str(self.path)
+        lines_to_write: list[str] = []
 
-        # OperateHelp.apply is a warning, looks better above the diff color info
+        # show command help and set the subtitle
         if OperateBtn.apply_file == self.operate_btn:
-            self.lines_to_write.append(OperateHelp.apply.value)
+            lines_to_write.append(OperateHelp.apply.value)
+            self.border_subtitle = Chars.apply_file_info_border.value
+        elif OperateBtn.re_add_file == self.operate_btn:
+            lines_to_write.append(OperateHelp.re_add.value)
+            self.border_subtitle = Chars.re_add_file_info_border.value
+        elif OperateBtn.add_file == self.operate_btn:
+            lines_to_write.append(OperateHelp.add.value)
+            self.border_subtitle = Chars.add_file_info_border.value
+        elif OperateBtn.forget_file == self.operate_btn:
+            lines_to_write.append(OperateHelp.forget.value)
+            self.border_subtitle = Chars.forget_file_info_border.value
+        elif OperateBtn.destroy_file == self.operate_btn:
+            lines_to_write.extend(OperateHelp.destroy.value)
+            self.border_subtitle = Chars.destroy_file_info_border.value
         # show git auto warnings
         if not OperateBtn.apply_file == self.operate_btn:
             if CM_CFG.autocommit:
-                self.lines_to_write.append(OperateHelp.auto_commit.value)
+                lines_to_write.append(OperateHelp.auto_commit.value)
             if CM_CFG.autopush:
-                self.lines_to_write.append(OperateHelp.autopush.value)
+                lines_to_write.append(OperateHelp.autopush.value)
         # show git diff color info
         if (
             OperateBtn.apply_file == self.operate_btn
             or OperateBtn.re_add_file == self.operate_btn
         ):
-            self.lines_to_write.extend(OperateHelp.diff_color.value)
-        elif OperateBtn.re_add_file == self.operate_btn:
-            self.lines_to_write.append(OperateHelp.re_add.value)
-        elif OperateBtn.add_file == self.operate_btn:
-            self.lines_to_write.append(OperateHelp.add.value)
-        elif OperateBtn.forget_file == self.operate_btn:
-            self.lines_to_write.append(OperateHelp.forget.value)
-        elif OperateBtn.destroy_file == self.operate_btn:
-            self.lines_to_write.extend(OperateHelp.destroy.value)
-        self.update("\n".join(self.lines_to_write))
-        self.border_title = str(self.path)
-        self.border_subtitle = InfoBorderTitles[self.operate_btn.name].value
+            lines_to_write.extend(OperateHelp.diff_color.value)
+        self.update("\n".join(lines_to_write))
 
 
 class ContentsView(RichLog):
