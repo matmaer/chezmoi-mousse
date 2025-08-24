@@ -131,9 +131,10 @@ class OperateTabsBase(Horizontal):
         else:
             self.enable_buttons(buttons_to_update)
 
-    def on_button_pressed(self, event: Button.Pressed) -> None:
-        # Tree/List Switch
+    @on(Button.Pressed, ".tab_button")
+    def handle_tab_buttons(self, event: Button.Pressed) -> None:
         event.stop()
+        # Tree/List Content Switcher
         if event.button.id == self.tab_ids.button_id(TabBtn.tree):
             expand_all_switch = self.query_one(
                 self.tab_ids.switch_qid(Switches.expand_all), Switch
@@ -157,7 +158,7 @@ class OperateTabsBase(Horizontal):
                 self.tab_ids.content_switcher_qid(Location.left),
                 ContentSwitcher,
             ).current = self.tab_ids.tree_id(TreeStr.flat_tree)
-        # Contents/Diff/GitLog Switch
+        # Contents/Diff/GitLog Content Switcher
         elif event.button.id == self.tab_ids.button_id(TabBtn.contents):
             self.query_one(
                 self.tab_ids.content_switcher_qid(Location.right),
@@ -166,7 +167,6 @@ class OperateTabsBase(Horizontal):
             self.query_one(
                 self.tab_ids.view_qid(ViewStr.contents_view), ContentsView
             ).path = self.current_path
-
         elif event.button.id == self.tab_ids.button_id(TabBtn.diff):
             self.query_one(
                 self.tab_ids.content_switcher_qid(Location.right),
@@ -175,7 +175,6 @@ class OperateTabsBase(Horizontal):
             self.query_one(
                 self.tab_ids.view_qid(ViewStr.diff_view), DiffView
             ).path = self.current_path
-
         elif event.button.id == self.tab_ids.button_id(TabBtn.git_log):
             self.query_one(
                 self.tab_ids.content_switcher_qid(Location.right),
@@ -184,6 +183,19 @@ class OperateTabsBase(Horizontal):
             self.query_one(
                 self.tab_ids.view_qid(ViewStr.git_log_view), GitLogView
             ).path = self.current_path
+        # Init Content Switcher
+        elif event.button.id == Id.init.button_id(TabBtn.new_repo):
+            self.query_one(
+                Id.init.content_switcher_qid(Location.top), ContentSwitcher
+            ).current = Id.init.view_id(ViewStr.init_new_view)
+        elif event.button.id == Id.init.button_id(TabBtn.clone_repo):
+            self.query_one(
+                Id.init.content_switcher_qid(Location.top), ContentSwitcher
+            ).current = Id.init.view_id(ViewStr.init_clone_view)
+        elif event.button.id == Id.init.button_id(TabBtn.purge_repo):
+            self.query_one(
+                Id.init.content_switcher_qid(Location.top), ContentSwitcher
+            ).current = Id.init.view_id(ViewStr.init_purge_view)
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
         event.stop()
@@ -382,7 +394,9 @@ class InitPurgeRepo(Vertical):
         super().__init__(id=self.tab_ids.view_id(ViewStr.init_purge_view))
 
     def compose(self) -> ComposeResult:
-        yield Static(f"{self.tab_name} Init purge repo")
+        yield Static(
+            "Remove chezmoi's configuration, state, and source directory, but leave the target state intact."
+        )
         yield ButtonsHorizontal(
             tab_ids=Id.init,
             buttons=(OperateBtn.purge_repo,),

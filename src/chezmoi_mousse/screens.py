@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from textual import on
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Vertical, VerticalGroup
@@ -145,7 +146,8 @@ class Operate(ModalBase):
         )
         op_log.log_ready_to_run(f"Ready to run command: {command} {self.path}")
 
-    def on_button_pressed(self, event: Button.Pressed) -> None:
+    @on(Button.Pressed, ".operate_button")
+    def handle_operate_buttons(self, event: Button.Pressed) -> None:
         event.stop()
         button_commands = [
             (OperateBtn.apply_file, chezmoi.perform.apply),

@@ -236,15 +236,26 @@ class ChezmoiGUI(App[None]):
             )
         )
 
-    def on_button_pressed(self, event: Button.Pressed) -> None:
+    @on(Button.Pressed, ".operate_button")
+    def handle_push_operate_modal(self, event: Button.Pressed) -> None:
         event.stop()
+        if event.button.label not in (
+            OperateBtn.apply_file.value,
+            OperateBtn.re_add_file.value,
+            OperateBtn.add_file.value,
+            OperateBtn.forget_file.value,
+            OperateBtn.destroy_file.value,
+        ):
+            return
         active_pane_id = self.query_one(TabbedContent).active
         tab_ids = Id.get_tab_ids_from_pane_id(pane_id=active_pane_id)
-        if active_pane_id == Id.add.tab_pane_id:
+        # handle Add tab operation button
+        if tab_ids.tab_name == TabStr.add_tab:
             add_tab_contents_view = self.query_one(
                 tab_ids.view_qid(ViewStr.contents_view), ContentsView
             )
             current_path = getattr(add_tab_contents_view, "path")
+        # handle Apply and Re-Add tab operation button
         else:
             current_view_id = self.query_one(
                 tab_ids.content_switcher_qid(Location.right), ContentSwitcher
@@ -252,18 +263,11 @@ class ChezmoiGUI(App[None]):
             current_view = self.query_one(f"#{current_view_id}")
             current_path = getattr(current_view, "path")
 
-        if event.button.label in (
-            OperateBtn.apply_file.value,
-            OperateBtn.re_add_file.value,
-            OperateBtn.add_file.value,
-            OperateBtn.forget_file.value,
-            OperateBtn.destroy_file.value,
-        ):
-            btn_enum = OperateBtn(event.button.label)
-            self.push_screen(
-                Operate(
-                    tab_ids=tab_ids,
-                    path=current_path,
-                    buttons=(btn_enum, OperateBtn.operate_dismiss),
-                )
+        btn_enum = OperateBtn(event.button.label)
+        self.push_screen(
+            Operate(
+                tab_ids=tab_ids,
+                path=current_path,
+                buttons=(btn_enum, OperateBtn.operate_dismiss),
             )
+        )

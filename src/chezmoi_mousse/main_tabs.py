@@ -254,7 +254,7 @@ class InitTab(OperateTabsBase):
 
     def __init__(self) -> None:
         super().__init__(tab_ids=Id.init)
-        self.repo_url = "fake-repo-url"
+        self.repo_url: str | None = None
 
     def compose(self) -> ComposeResult:
         with Vertical():
@@ -294,29 +294,11 @@ class InitTab(OperateTabsBase):
         init_log.log_success("Ready to run chezmoi commands.")
         init_log.border_title = " Init Log "
 
-    @on(Button.Pressed)
-    def handle_init_tab_buttons(self, event: Button.Pressed) -> None:
-        event.stop()
-        if event.button.id == Id.init.button_id(TabBtn.new_repo):
-            self.query_one(
-                Id.init.content_switcher_qid(Location.top), ContentSwitcher
-            ).current = Id.init.view_id(ViewStr.init_new_view)
-
-        elif event.button.id == Id.init.button_id(TabBtn.clone_repo):
-            self.query_one(
-                Id.init.content_switcher_qid(Location.top), ContentSwitcher
-            ).current = Id.init.view_id(ViewStr.init_clone_view)
-
-        elif event.button.id == Id.init.button_id(TabBtn.purge_repo):
-            self.query_one(
-                Id.init.content_switcher_qid(Location.top), ContentSwitcher
-            ).current = Id.init.view_id(ViewStr.init_purge_view)
-
-    @on(Button.Pressed)
+    @on(Button.Pressed, ".operate_button")
     def handle_operation_button(self, event: Button.Pressed) -> None:
         event.stop()
         if event.button.id == Id.init.button_id(OperateBtn.clone_repo):
-            chezmoi.perform.init_clone_repo(self.repo_url)
+            chezmoi.perform.init_clone_repo(str(self.repo_url))
             self.query_one(
                 self.tab_ids.button_qid(OperateBtn.clone_repo), Button
             ).disabled = True
