@@ -147,7 +147,6 @@ class Operate(ModalBase):
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
-        # Refactored repeated button event handling into a loop
         button_commands = [
             (OperateBtn.apply_file, chezmoi.perform.apply),
             (OperateBtn.re_add_file, chezmoi.perform.re_add),
