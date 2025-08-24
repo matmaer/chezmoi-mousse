@@ -50,13 +50,6 @@ class OperateInfo(Static):
 
         self.operate_btn = operate_btn
         self.path = path
-        # self.info_border_titles = {
-        #     OperateBtn.apply_file: Chars.apply_file_info_border.value,
-        #     OperateBtn.re_add_file: Chars.add_file_info_border.value,
-        #     OperateBtn.add_file: Chars.add_file_info_border.value,
-        #     OperateBtn.forget_file: " forget file ",
-        #     OperateBtn.destroy_file: " destroy file ",
-        # }
 
     def on_mount(self) -> None:
         self.lines_to_write: list[str] = []
