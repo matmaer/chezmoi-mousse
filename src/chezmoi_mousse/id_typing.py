@@ -1,3 +1,7 @@
+"""Contains type aliases, dataclasses, enums and the TabIds and Id class to
+enable setting widget id's without hardcoded strings or generated the id
+dynamically."""
+
 from dataclasses import dataclass, fields
 from enum import Enum
 from pathlib import Path

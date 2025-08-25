@@ -1,3 +1,5 @@
+"""Contains only StrEnum classes or pure constants."""
+
 from enum import StrEnum, auto
 
 
