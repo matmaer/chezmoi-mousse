@@ -390,11 +390,16 @@ class DoctorTab(ScrollableContainer):
 
     @on(Button.Pressed, Id.doctor.button_qid(OperateBtn.refresh_doctor_data))
     def on_refresh_doctor_data(self, event: Button.Pressed) -> None:
+        chezmoi.doctor.update()
+        self.doctor_data = chezmoi.doctor.list_out
+        self.query_one(DataTable[Text]).clear()
         self.populate_doctor_data()
+        self.notify("Doctor data refreshed")
 
     def populate_doctor_data(self) -> None:
         doctor_table: DataTable[Text] = self.query_one(DataTable[Text])
-        doctor_table.add_columns(*self.doctor_data[0].split())
+        if not doctor_table.columns:
+            doctor_table.add_columns(*self.doctor_data[0].split())
 
         for line in self.doctor_data[1:]:
             row = tuple(line.split(maxsplit=2))
