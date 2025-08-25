@@ -61,19 +61,21 @@
   background-tint: $background;
   color: $text;
   padding: 0 1;
-  border: wide $panel-lighten-1;
+  border: wide $panel;
+  border-left: none;
   width: 100%;
   height: 3;
   scrollbar-size-horizontal: 0;
 
   &:focus {
-    border: wide $panel-lighten-3;
+    border: wide $panel-lighten-1;
+    border-left: none;
     background: $background;
     background-tint: $background;
   }
   &>.input--cursor {
-    background: $foreground-darken-1;
-    background-tint: $foreground-darken-1;
+    background: $foreground-darken-3;
+    background-tint: $foreground-darken-3;
     color: green;
     text-style: none;
   }
@@ -85,7 +87,6 @@
   }
   &>.input--placeholder, &>.input--suggestion {
     color: $text-disabled;
-    # background: yellow;
   }
   &.-invalid {
     border: solid $error 60%;
@@ -93,6 +94,15 @@
   &.-invalid:focus {
     border: solid $error;
   }
+}
+
+.input_select_vertical {
+  height: 3;
+  width: auto;
+}
+
+.input_field_vertical {
+  height: 3;
 }
 
 .diff_view, .content_view {

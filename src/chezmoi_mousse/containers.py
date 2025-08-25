@@ -338,7 +338,7 @@ class TreeContentSwitcher(ContentSwitcher):
 class InputHorizontal(HorizontalGroup):
 
     def compose(self) -> ComposeResult:
-        with Vertical():
+        with Vertical(classes=TcssStr.input_select_vertical):
             yield Select[str].from_values(
                 ["https", "ssh"],
                 classes=TcssStr.input_select,
@@ -346,7 +346,7 @@ class InputHorizontal(HorizontalGroup):
                 allow_blank=False,
                 type_to_search=False,
             )
-        with Vertical():
+        with Vertical(classes=TcssStr.input_field_vertical):
             yield Input(
                 placeholder="Enter repository URL",
                 validate_on=["submitted"],
