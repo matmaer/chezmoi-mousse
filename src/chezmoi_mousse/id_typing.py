@@ -242,17 +242,11 @@ class TabIds:
     def content_switcher_qid(self, side: Location) -> str:
         return f"#{self.content_switcher_id(side)}"
 
-    def switch_horizontal_id(
-        self, switch_enum: Switches, location: Location
-    ) -> str:
-        return (
-            f"{self.tab_name}_{switch_enum.name}_switch_horizontal_{location}"
-        )
+    def switch_horizontal_id(self, switch_enum: Switches) -> str:
+        return f"{self.tab_name}_{switch_enum.name}_switch_horizontal"
 
-    def switch_horizontal_qid(
-        self, switch_enum: Switches, location: Location
-    ) -> str:
-        return f"#{self.switch_horizontal_id(switch_enum, location)}"
+    def switch_horizontal_qid(self, switch_enum: Switches) -> str:
+        return f"#{self.switch_horizontal_id(switch_enum)}"
 
     def switch_id(self, switch_enum: Switches) -> str:
         return f"{self.tab_name}_{switch_enum.name}_switch"
