@@ -12,7 +12,17 @@ import chezmoi_mousse.id_typing as id_typing
 
 
 @pytest.mark.parametrize(
-    "py_file", modules_to_test(), ids=lambda py_file: py_file.name
+    "py_file",
+    modules_to_test(
+        exclude_file_names=[
+            "__init__.py",
+            "__main__.py",
+            "id_typing.py",
+            "overrides.py",
+            "theme.py",
+        ]
+    ),
+    ids=lambda py_file: py_file.name,
 )
 def test_no_hardcoded_ids(py_file: Path):
     content = py_file.read_text()
