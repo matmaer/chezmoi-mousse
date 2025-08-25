@@ -27,6 +27,7 @@ def test_no_hardcoded_ids(py_file: Path):
                     and isinstance(keyword.value.value, str)
                 ):
                     pytest.fail(
+                        f"\nFound hardcoded id=\n"
                         f'Line {keyword.lineno}: id="{keyword.value.value}"'
                     )
 
@@ -36,9 +37,11 @@ def _get_str_enum_members() -> list[StrEnum]:
     for _, enum_class in inspect.getmembers(id_typing, inspect.isclass):
         if (
             issubclass(enum_class, StrEnum)
+            and enum_class is not StrEnum  # exclude the StrEnum class itself
             # exclude TcssStr since it's tested in test_tcss.py
             and enum_class.__name__ != "TcssStr"
             # exclude strings used for filtering DirectoryTree
+            # exclude PwMgrInfo members since they are dynamically generated
             and enum_class.__name__ not in ["UnwantedDirs", "UnwantedFiles"]
         ):
             for member in enum_class:
@@ -46,23 +49,43 @@ def _get_str_enum_members() -> list[StrEnum]:
     return members
 
 
-def _get_search_terms_for_member(str_enum_member: StrEnum) -> list[str]:
-    search_terms = [str(str_enum_member.value)]
-    # Handle indirect usage patterns
-    if str_enum_member.__class__.__name__ == "TabStr":
-        # TabStr members could be used indirectly through Id enum
-        # Map TabStr members to their corresponding Id enum names
-        tab_to_id_mapping = {
-            "init_tab": "Id.init",
-            "log_tab": "Id.doctor",
-            "apply_tab": "Id.apply",
-            "re_add_tab": "Id.re_add",
-            "add_tab": "Id.add",
-        }
-        if str_enum_member.name in tab_to_id_mapping:
-            search_terms.append(tab_to_id_mapping[str_enum_member.name])
+def _find_enum_usage_in_file(
+    py_file: Path, enum_class_name: str, member_name: str
+) -> tuple[bool, bool]:
+    """Find if enum member is used and if .value is unnecessarily used.
 
-    return search_terms
+    Returns:
+        (found_usage, has_unnecessary_value_usage)
+    """
+    content = py_file.read_text()
+    tree = ast.parse(content, filename=str(py_file))
+
+    found_usage = False
+    unnecessary_value_usage = False
+
+    for node in ast.walk(tree):
+        # Look for Attribute nodes like EnumClass.member
+        if isinstance(node, ast.Attribute):
+            # Check for EnumClass.member usage
+            if (
+                isinstance(node.value, ast.Name)
+                and node.value.id == enum_class_name
+                and node.attr == member_name
+            ):
+                found_usage = True
+
+            # Check for unnecessary .value usage: EnumClass.member.value
+            elif (
+                isinstance(node.value, ast.Attribute)
+                and isinstance(node.value.value, ast.Name)
+                and node.value.value.id == enum_class_name
+                and node.value.attr == member_name
+                and node.attr == "value"
+            ):
+                unnecessary_value_usage = True
+                found_usage = True  # It's still usage, just bad usage
+
+    return found_usage, unnecessary_value_usage
 
 
 @pytest.mark.parametrize(
@@ -71,27 +94,63 @@ def _get_search_terms_for_member(str_enum_member: StrEnum) -> list[str]:
     ids=lambda member: f"{member.__class__.__name__}.{member.name}",
 )
 def test_strenum_members_in_use(str_enum_member: StrEnum):
-    search_terms = _get_search_terms_for_member(str_enum_member)
+    enum_class_name = str_enum_member.__class__.__name__
+    member_name = str_enum_member.name
+
     found = False
+    unnecessary_value_usage = False
 
     for py_file in modules_to_test(exclude_file_names=["id_typing.py"]):
-        content = py_file.read_text()
-        if any(search_term in content for search_term in search_terms):
+        file_found, file_unnecessary = _find_enum_usage_in_file(
+            py_file, enum_class_name, member_name
+        )
+        if file_found:
             found = True
-            break
+        if file_unnecessary:
+            unnecessary_value_usage = True
+
+    # Special case for TabStr members that might be used indirectly through Id enum
+    if not found and enum_class_name == "TabStr":
+        tab_to_id_mapping = {
+            "init_tab": "init",
+            "log_tab": "doctor",
+            "apply_tab": "apply",
+            "re_add_tab": "re_add",
+            "add_tab": "add",
+        }
+        if member_name in tab_to_id_mapping:
+            id_member_name = tab_to_id_mapping[member_name]
+            for py_file in modules_to_test(
+                exclude_file_names=["id_typing.py"]
+            ):
+                file_found, _ = _find_enum_usage_in_file(
+                    py_file, "Id", id_member_name
+                )
+                if file_found:
+                    found = True
+                    break
 
     if not found:
         pytest.fail(
-            f"'{str_enum_member.name}' from {str_enum_member.__class__.__name__} "
-            "is not in use."
+            f"\n'{member_name}' from {enum_class_name}\n" "Not in use."
+        )
+
+    elif unnecessary_value_usage:
+        pytest.fail(
+            f"\n'{member_name}' from {enum_class_name}\n"
+            "Uses unnecessary .value attribute. StrEnum members are already strings."
         )
 
 
 def _get_enum_members() -> list[Enum]:
     members: list[Enum] = []
     for _, enum_class in inspect.getmembers(id_typing, inspect.isclass):
-        if issubclass(enum_class, Enum) and not issubclass(
-            enum_class, StrEnum
+        if (
+            issubclass(enum_class, Enum)
+            and not issubclass(enum_class, StrEnum)
+            and enum_class is not Enum  # exclude the Enum base class itself
+            # exclude PwMgrInfo members since they are dynamically generated
+            and enum_class.__name__ != "PwMgrInfo"
         ):
             for member in enum_class:
                 members.append(member)
@@ -104,16 +163,19 @@ def _get_enum_members() -> list[Enum]:
     ids=lambda member: f"{member.__class__.__name__}.{member.name}",
 )
 def test_enum_members_in_use(enum_member: Enum):
-    search_term = str(enum_member.name)
+    enum_class_name = enum_member.__class__.__name__
+    member_name = enum_member.name
+
     found = False
     for py_file in modules_to_test(exclude_file_names=["id_typing.py"]):
-        content = py_file.read_text()
-        if search_term in content:
+        file_found, _ = _find_enum_usage_in_file(
+            py_file, enum_class_name, member_name
+        )
+        if file_found:
             found = True
             break
 
     if not found:
         pytest.fail(
-            f"'{enum_member.name}' from {enum_member.__class__.__name__} "
-            "is not in use."
+            f"\n'{member_name}' from {enum_class_name}\n" "Not in use."
         )
