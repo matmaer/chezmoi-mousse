@@ -1,3 +1,7 @@
+# TODO: basic app tests
+
+# https://github.com/Zaloog/kanban-tui/tree/main/tests/app_tests
+
 # from textual.widgets import Button
 
 # from chezmoi_mousse.gui import ChezmoiGUI
