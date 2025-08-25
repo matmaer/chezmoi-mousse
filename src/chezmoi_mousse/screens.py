@@ -132,15 +132,15 @@ class Operate(ModalBase):
     def write_initial_log_msg(self) -> None:
         command = "chezmoi "
         if self.buttons[0] == OperateBtn.forget_file:
-            command += OperateVerbs.forget.value
+            command += OperateVerbs.forget
         elif self.buttons[0] == OperateBtn.destroy_file:
-            command += OperateVerbs.destroy.value
+            command += OperateVerbs.destroy
         elif self.tab_name == TabStr.add_tab:
-            command += OperateVerbs.add.value
+            command += OperateVerbs.add
         elif self.tab_name == TabStr.apply_tab:
-            command += OperateVerbs.apply.value
+            command += OperateVerbs.apply
         elif self.tab_name == TabStr.re_add_tab:
-            command += OperateVerbs.re_add.value
+            command += OperateVerbs.re_add
         cmd_log.log_ready_to_run(
             f"Ready to run command: {command} {self.path}"
         )

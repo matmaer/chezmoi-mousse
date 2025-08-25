@@ -40,23 +40,23 @@ class OperateData:
 
 
 class AllCommands(Enum):
-    cat = BASE_CMD + (ReadVerbs.cat.value,)
-    cat_config = BASE_CMD + (ReadVerbs.cat_config.value,)
-    doctor = BASE_CMD + (IoVerbs.doctor.value,)
-    diff = BASE_CMD + (ReadVerbs.diff.value,)
+    cat = BASE_CMD + (ReadVerbs.cat,)
+    cat_config = BASE_CMD + (ReadVerbs.cat_config,)
+    doctor = BASE_CMD + (IoVerbs.doctor,)
+    diff = BASE_CMD + (ReadVerbs.diff,)
     dir_status_lines = BASE_CMD + (
-        IoVerbs.status.value,
+        IoVerbs.status,
         "--path-style=absolute",
         "--include=dirs",
     )
     file_status_lines = BASE_CMD + (
-        IoVerbs.status.value,
+        IoVerbs.status,
         "--path-style=absolute",
         "--include=files",
     )
-    forget = BASE_CMD + (OperateVerbs.forget.value,)
+    forget = BASE_CMD + (OperateVerbs.forget,)
     git_log = BASE_CMD + (
-        ReadVerbs.git.value,
+        ReadVerbs.git,
         "--",
         "log",
         "--max-count=50",
@@ -66,20 +66,20 @@ class AllCommands(Enum):
         "--no-expand-tabs",
         "--format=%ar by %cn;%s",
     )
-    ignored = BASE_CMD + (ReadVerbs.ignored.value,)
+    ignored = BASE_CMD + (ReadVerbs.ignored,)
     managed_dirs = BASE_CMD + (
-        IoVerbs.managed.value,
+        IoVerbs.managed,
         "--path-style=absolute",
         "--include=dirs",
     )
     managed_files = BASE_CMD + (
-        IoVerbs.managed.value,
+        IoVerbs.managed,
         "--path-style=absolute",
         "--include=files",
     )
-    purge = BASE_CMD + (OperateVerbs.purge.value, "--force")
-    source_path = BASE_CMD + (ReadVerbs.source_path.value,)
-    template_data = BASE_CMD + (ReadVerbs.data.value, "--format=json")
+    purge = BASE_CMD + (OperateVerbs.purge, "--force")
+    source_path = BASE_CMD + (ReadVerbs.source_path,)
+    template_data = BASE_CMD + (ReadVerbs.data, "--format=json")
 
 
 class IoCmd(Enum):
@@ -213,10 +213,10 @@ def _run_cmd(long_command: CmdWords, time_out: float = 1) -> str:
             timeout=5,  # maybe optimize for circumstances later on
         ).stdout.strip()
         cmd_log.log_command(long_command)
-        if any(verb.value in long_command for verb in OperateVerbs):
+        if any(verb in long_command for verb in OperateVerbs):
             if (
-                OperateVerbs.init.value in long_command
-                or OperateVerbs.purge.value in long_command
+                OperateVerbs.init in long_command
+                or OperateVerbs.purge in long_command
             ):
                 init_log.log_command(long_command)
             else:
@@ -225,8 +225,8 @@ def _run_cmd(long_command: CmdWords, time_out: float = 1) -> str:
                 msg = f"{Chars.check_mark.value} Command made changes successfully, no output"
                 cmd_log.log_success(msg)
                 if (
-                    OperateVerbs.init.value in long_command
-                    or OperateVerbs.purge.value in long_command
+                    OperateVerbs.init in long_command
+                    or OperateVerbs.purge in long_command
                 ):
                     init_log.log_success(msg)
                 else:
@@ -236,8 +236,8 @@ def _run_cmd(long_command: CmdWords, time_out: float = 1) -> str:
                 cmd_log.log_success(msg)
                 cmd_log.log_dimmed(cmd_stdout)
                 if (
-                    OperateVerbs.init.value in long_command
-                    or OperateVerbs.purge.value in long_command
+                    OperateVerbs.init in long_command
+                    or OperateVerbs.purge in long_command
                 ):
                     init_log.log_success(msg)
                 else:
@@ -245,12 +245,12 @@ def _run_cmd(long_command: CmdWords, time_out: float = 1) -> str:
                     op_log.log_dimmed(cmd_stdout)
 
             return cmd_stdout
-        if any(verb.value in long_command for verb in IoVerbs):
+        if any(verb in long_command for verb in IoVerbs):
             cmd_log.log_warning(
                 "Subprocess call successful: InputOutput data updated"
             )
             return cmd_stdout
-        elif any(verb.value in long_command for verb in ReadVerbs):
+        elif any(verb in long_command for verb in ReadVerbs):
             cmd_log.log_warning("Subprocess call successful")
             return cmd_stdout
         else:
@@ -266,7 +266,7 @@ def _run_cmd(long_command: CmdWords, time_out: float = 1) -> str:
                 f"{Chars.warning_sign.value} chezmoi doctor has a non-zero exit code"
             )
             return e.stdout.strip()
-        if any(verb.value in long_command for verb in OperateVerbs):
+        if any(verb in long_command for verb in OperateVerbs):
             op_log.log_error(f"{Chars.x_mark.value} Command failed {e}")
         cmd_log.log_error(f"{Chars.x_mark.value} Command failed {e}")
         return "failed"
@@ -292,39 +292,37 @@ class ChangeCommand:
         chezmoi.file_status_lines.update()
 
     def add(self, path: Path) -> None:
-        _run_cmd(self.base_cmd + (OperateVerbs.add.value, str(path)))
+        _run_cmd(self.base_cmd + (OperateVerbs.add, str(path)))
         self._update_managed_status_data()
 
     def add_encrypted(self, path: Path) -> None:
-        _run_cmd(
-            self.base_cmd + (OperateVerbs.add.value, "--encrypt", str(path))
-        )
+        _run_cmd(self.base_cmd + (OperateVerbs.add, "--encrypt", str(path)))
         self._update_managed_status_data()
 
     def re_add(self, path: Path) -> None:
-        _run_cmd(self.base_cmd + (OperateVerbs.re_add.value, str(path)))
+        _run_cmd(self.base_cmd + (OperateVerbs.re_add, str(path)))
         self._update_managed_status_data()
 
     def apply(self, path: Path) -> None:
-        _run_cmd(self.base_cmd + (OperateVerbs.apply.value, str(path)))
+        _run_cmd(self.base_cmd + (OperateVerbs.apply, str(path)))
         self._update_managed_status_data()
 
     def destroy(self, path: Path) -> None:
-        _run_cmd(self.base_cmd + (OperateVerbs.destroy.value, str(path)))
+        _run_cmd(self.base_cmd + (OperateVerbs.destroy, str(path)))
         self._update_managed_status_data()
 
     def forget(self, path: Path) -> None:
-        _run_cmd(self.base_cmd + (OperateVerbs.forget.value, str(path)))
+        _run_cmd(self.base_cmd + (OperateVerbs.forget, str(path)))
         self._update_managed_status_data()
 
     def init_clone_repo(self, repo_url: str) -> None:
-        _run_cmd(self.base_cmd + (OperateVerbs.init.value, repo_url))
+        _run_cmd(self.base_cmd + (OperateVerbs.init, repo_url))
 
     def init_new_repo(self) -> None:
-        _run_cmd(self.base_cmd + (OperateVerbs.init.value,))
+        _run_cmd(self.base_cmd + (OperateVerbs.init,))
 
     def purge(self) -> None:
-        _run_cmd(self.base_cmd + (OperateVerbs.purge.value,))
+        _run_cmd(self.base_cmd + (OperateVerbs.purge,))
 
 
 class ReadCommand:

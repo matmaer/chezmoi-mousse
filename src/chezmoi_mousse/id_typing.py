@@ -170,13 +170,13 @@ class ModalIdStr(StrEnum):
         return f"#{self.name}"
 
 
-class IoVerbs(Enum):
+class IoVerbs(StrEnum):
     doctor = "doctor"
     managed = "managed"
     status = "status"
 
 
-class ReadVerbs(Enum):
+class ReadVerbs(StrEnum):
     cat = "cat"
     cat_config = "cat-config"
     data = "data"
@@ -186,7 +186,7 @@ class ReadVerbs(Enum):
     source_path = "source-path"
 
 
-class OperateVerbs(Enum):
+class OperateVerbs(StrEnum):
     add = "add"
     apply = "apply"
     destroy = "destroy"
