@@ -333,29 +333,36 @@ class DoctorTab(ScrollableContainer):
 
     def compose(self) -> ComposeResult:
 
-        with Collapsible(title=DoctorCollapsibles.doctor.value):
-            yield DataTable[Text](
+        yield Collapsible(
+            DataTable[Text](
                 id=ViewStr.doctor_table.name,
                 classes=TcssStr.doctor_table,
                 show_cursor=False,
-            )
+            ),
+            ButtonsHorizontal(
+                tab_ids=Id.doctor,
+                buttons=(OperateBtn.refresh_doctor_data,),
+                location=Location.bottom,
+            ),
+            title=DoctorCollapsibles.doctor,
+        )
         yield Collapsible(
             Static(FLOW, classes=TcssStr.flow_diagram),
-            title=DoctorCollapsibles.diagram.value,
+            title=DoctorCollapsibles.diagram,
         )
-        with Collapsible(title=DoctorCollapsibles.doctor_template_data.value):
+        with Collapsible(title=DoctorCollapsibles.doctor_template_data):
             yield Pretty(
                 "placeholder", id=DoctorCollapsibles.doctor_template_data.name
             )
-        with Collapsible(title=DoctorCollapsibles.cat_config.value):
+        with Collapsible(title=DoctorCollapsibles.cat_config):
             yield Pretty("placeholder", id=DoctorCollapsibles.cat_config.name)
-        with Collapsible(title=DoctorCollapsibles.doctor_ignored.value):
+        with Collapsible(title=DoctorCollapsibles.doctor_ignored):
             yield Pretty(
                 "placeholder", id=DoctorCollapsibles.doctor_ignored.name
             )
         yield Collapsible(
             ListView(id=DoctorCollapsibles.pw_mgr_info.name),
-            title=DoctorCollapsibles.pw_mgr_info.value,
+            title=DoctorCollapsibles.pw_mgr_info,
         )
 
     def on_mount(self) -> None:
@@ -380,6 +387,10 @@ class DoctorTab(ScrollableContainer):
             event.collapsible.query_one(
                 DoctorCollapsibles.doctor_ignored.qid, Pretty
             ).update(chezmoi.run.ignored())
+
+    @on(Button.Pressed, Id.doctor.button_qid(OperateBtn.refresh_doctor_data))
+    def on_refresh_doctor_data(self, event: Button.Pressed) -> None:
+        self.populate_doctor_data()
 
     def populate_doctor_data(self) -> None:
         doctor_table: DataTable[Text] = self.query_one(DataTable[Text])

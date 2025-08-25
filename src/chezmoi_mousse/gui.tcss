@@ -112,9 +112,12 @@
 
 .doctor_vertical {
   &>.doctor_collapsible {
-    height: auto;
     .doctor_table {
-      margin-bottom: 1;
+      /* can be hidden because it's in a scrollable container so vertical scroll is already available */
+      overflow-y: hidden;
+      height: auto;
+      /* max-height needed or the operate button to refresh below, doesn't show up */
+      max-height: 100;
     }
     .flow_diagram {
       min-width: 78;

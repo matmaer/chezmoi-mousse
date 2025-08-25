@@ -265,6 +265,7 @@ class OperateBtn(Enum):
     operate_dismiss = "Cancel"
     purge_repo = "Purge Existing Repo"
     re_add_file = "Re-Add File"
+    refresh_doctor_data = "Re-run 'chezmoi doctor' command (refresh data)"
 
 
 @dataclass(frozen=True)
