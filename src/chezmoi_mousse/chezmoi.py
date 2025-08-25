@@ -11,21 +11,23 @@ from rich.markup import escape
 from textual.widgets import RichLog
 
 from chezmoi_mousse import BASE_CMD, CM_CFG, theme
-from chezmoi_mousse.id_typing import (
+from chezmoi_mousse.constants import (
     Chars,
-    CmdWords,
-    Id,
     IoVerbs,
     ModalIdStr,
-    Mro,
-    OperateBtn,
-    OperateHelp,
     OperateVerbs,
-    ParsedJson,
-    PathDict,
     ReadVerbs,
     TabStr,
     TcssStr,
+)
+from chezmoi_mousse.id_typing import (
+    CmdWords,
+    Id,
+    Mro,
+    OperateBtn,
+    OperateHelp,
+    ParsedJson,
+    PathDict,
 )
 
 

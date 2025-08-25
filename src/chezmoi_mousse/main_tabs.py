@@ -17,7 +17,7 @@ from textual.widgets import (
 
 from chezmoi_mousse import CM_CFG, theme
 from chezmoi_mousse.chezmoi import chezmoi, init_log
-from chezmoi_mousse.constants import FLOW
+from chezmoi_mousse.constants import FLOW, DoctorCollapsibles, TcssStr
 from chezmoi_mousse.containers import (
     ButtonsHorizontal,
     InitCloneRepo,
@@ -28,14 +28,12 @@ from chezmoi_mousse.containers import (
     TreeContentSwitcher,
 )
 from chezmoi_mousse.id_typing import (
-    DoctorCollapsibles,
     Id,
     Location,
     OperateBtn,
     PwMgrInfo,
     Switches,
     TabBtn,
-    TcssStr,
     TreeStr,
     ViewStr,
 )

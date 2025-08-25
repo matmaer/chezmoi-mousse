@@ -10,16 +10,14 @@ from textual.widgets import Button, Collapsible, Pretty
 
 from chezmoi_mousse import CM_CFG
 from chezmoi_mousse.chezmoi import OperateData, chezmoi, cmd_log, op_log
+from chezmoi_mousse.constants import ModalIdStr, OperateVerbs, TcssStr
 from chezmoi_mousse.containers import ButtonsHorizontal
 from chezmoi_mousse.id_typing import (
     Location,
-    ModalIdStr,
     OperateBtn,
     OperateButtons,
-    OperateVerbs,
     TabIds,
     TabStr,
-    TcssStr,
     ViewStr,
 )
 from chezmoi_mousse.messages import OperateMessage

@@ -23,19 +23,21 @@ from textual.widgets.tree import TreeNode
 
 from chezmoi_mousse import CM_CFG, theme
 from chezmoi_mousse.chezmoi import chezmoi, cmd_log, managed_status
+from chezmoi_mousse.constants import (
+    ModalIdStr,
+    TcssStr,
+    UnwantedDirs,
+    UnwantedFiles,
+)
 from chezmoi_mousse.id_typing import (
     Chars,
-    ModalIdStr,
     NodeData,
     OperateBtn,
     OperateHelp,
     PathDict,
     TabIds,
     TabStr,
-    TcssStr,
     TreeStr,
-    UnwantedDirs,
-    UnwantedFiles,
 )
 from chezmoi_mousse.overrides import CustomRenderLabel
 

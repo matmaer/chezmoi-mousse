@@ -28,19 +28,21 @@ from textual.widgets import (
 )
 
 from chezmoi_mousse import CM_CFG
+from chezmoi_mousse.constants import (
+    Location,
+    TabStr,
+    TcssStr,
+    TreeStr,
+    ViewStr,
+)
 from chezmoi_mousse.id_typing import (
     Buttons,
     Id,
-    Location,
     OperateBtn,
     OperateButtons,
     Switches,
     TabBtn,
     TabIds,
-    TabStr,
-    TcssStr,
-    TreeStr,
-    ViewStr,
 )
 from chezmoi_mousse.messages import InvalidInputMessage
 from chezmoi_mousse.widgets import (

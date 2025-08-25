@@ -17,17 +17,9 @@ from textual.widgets import (
 
 import chezmoi_mousse.theme
 from chezmoi_mousse.chezmoi import CM_CFG, cmd_log
+from chezmoi_mousse.constants import Chars, Location, TabStr, TreeStr, ViewStr
 from chezmoi_mousse.containers import ButtonsHorizontal
-from chezmoi_mousse.id_typing import (
-    Chars,
-    Id,
-    Location,
-    OperateBtn,
-    OperateHelp,
-    TabStr,
-    TreeStr,
-    ViewStr,
-)
+from chezmoi_mousse.id_typing import Id, OperateBtn, OperateHelp
 from chezmoi_mousse.main_tabs import (
     AddTab,
     ApplyTab,
