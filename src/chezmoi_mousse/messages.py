@@ -1,6 +1,6 @@
 from textual.message import Message
 
-from chezmoi_mousse.chezmoi import OperateData
+from chezmoi_mousse.id_typing import OperateData
 
 
 class OperateMessage(Message):

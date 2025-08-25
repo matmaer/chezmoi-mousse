@@ -24,21 +24,10 @@ from chezmoi_mousse.id_typing import (
     CmdWords,
     Id,
     Mro,
-    OperateBtn,
     OperateHelp,
     ParsedJson,
     PathDict,
 )
-
-
-@dataclass
-class OperateData:
-    path: Path = CM_CFG.destDir
-    operation_executed: bool = False
-    tab_name: TabStr | None = None
-    found: bool | None = None
-    button_name: OperateBtn | None = None
-    is_file: bool | None = None
 
 
 class AllCommands(Enum):

@@ -76,6 +76,16 @@ class OperateBtn(Enum):
     refresh_doctor_data = "Re-run 'chezmoi doctor' command (refresh data)"
 
 
+@dataclass
+class OperateData:
+    path: Path | None = None
+    operation_executed: bool = False
+    tab_name: TabStr | None = None
+    found: bool | None = None
+    button_name: OperateBtn | None = None
+    is_file: bool | None = None
+
+
 @dataclass(frozen=True)
 class SwitchData:
     label: str

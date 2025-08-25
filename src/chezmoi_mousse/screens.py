@@ -9,13 +9,14 @@ from textual.screen import ModalScreen
 from textual.widgets import Button, Collapsible
 
 from chezmoi_mousse import CM_CFG
-from chezmoi_mousse.chezmoi import OperateData, chezmoi, cmd_log, op_log
+from chezmoi_mousse.chezmoi import chezmoi, cmd_log, op_log
 from chezmoi_mousse.constants import ModalIdStr, OperateVerbs, TcssStr
 from chezmoi_mousse.containers import ButtonsHorizontal
 from chezmoi_mousse.id_typing import (
     Location,
     OperateBtn,
     OperateButtons,
+    OperateData,
     TabIds,
     TabStr,
     ViewStr,
