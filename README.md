@@ -61,7 +61,7 @@ Graphical user interface in the terminal for [chezmoi](https://github.com/twpayn
 
 **Legend:**
 
-- :green_circle: Follow user configuration
+- :green_circle: Follow user configuration or chezmoi defaults
 - :green_square: Provided by this app
 - :negative_squared_cross_mark: Not in scope
 - :bulb: Follows user config with warning
@@ -135,7 +135,7 @@ dashlane
 
 diff
 - :green_square: diff.args
-- :black_circle: diff.command
+- :green_square: diff.command
 - :green_square: diff.exclude
 - :green_square: diff.pager
 - :green_square: diff.pagerArgs
@@ -165,8 +165,8 @@ git
 - :bulb: git.autoCommit
 - :bulb: git.autoPush
 - :large_blue_diamond: git.command
-- :black_circle: git.commitMessageTemplate
-- :black_circle: git.commitMessageTemplateFile
+- :green_circle: git.commitMessageTemplate
+- :green_circle: git.commitMessageTemplateFile
 - :black_circle: git.lfs
 
 gitHub
