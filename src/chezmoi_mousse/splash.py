@@ -85,10 +85,6 @@ class AnimatedFade(Static):
         return Strip([Segment(SPLASH[y], style=LINE_STYLES[y])])
 
 
-ANIMATED_FADE = AnimatedFade()
-LOADING_SCREEN_COMPOSE = Middle(Center(ANIMATED_FADE), Center(RICH_LOG))
-
-
 class LoadingScreen(Screen[list[str]]):
 
     def __init__(self) -> None:
@@ -98,7 +94,7 @@ class LoadingScreen(Screen[list[str]]):
         self.all_workers_timer: Timer
 
     def compose(self) -> ComposeResult:
-        yield LOADING_SCREEN_COMPOSE
+        yield Middle(Center(AnimatedFade()), Center(RICH_LOG))
 
     def log_text(self, log_label: str) -> None:
         padding = LOG_PADDING_WIDTH - len(log_label)
