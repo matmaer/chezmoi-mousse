@@ -289,9 +289,7 @@ class InitTab(OperateTabsBase):
         )
         buttons_horizontal.add_class(TcssStr.border_title_bottom)
         buttons_horizontal.border_subtitle = " chezmoi init "
-        init_log.add_class(TcssStr.operate_log)
         init_log.log_success("Ready to run chezmoi commands.")
-        init_log.border_title = " Init Log "
 
     @on(Button.Pressed, ".operate_button")
     def handle_operation_button(self, event: Button.Pressed) -> None:

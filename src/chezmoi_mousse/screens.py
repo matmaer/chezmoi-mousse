@@ -27,7 +27,6 @@ from chezmoi_mousse.widgets import (
     DiffView,
     GitLogView,
     OperateInfo,
-    RichLog,
 )
 
 
@@ -122,10 +121,6 @@ class Operate(ModalBase):
             self.query_one(
                 ModalIdStr.modal_contents_view.qid, ContentsView
             ).path = self.path
-        # Add initial log entry
-        self.query_one(ModalIdStr.operate_log.qid, RichLog).border_title = (
-            " Operate Log "
-        )
         self.write_initial_log_msg()
 
     def write_initial_log_msg(self) -> None:

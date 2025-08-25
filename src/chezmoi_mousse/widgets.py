@@ -101,9 +101,11 @@ class ContentsView(RichLog):
 
     def on_mount(self) -> None:
         self.write(
+            Text(f"Destination directory is {CM_CFG.destDir}.", style="dim")
+        )
+        self.write(
             Text(
-                f"Destination directory is {CM_CFG.destDir}, click a file or directory to view its contents.",
-                style="dim",
+                "Click a file or directory to view its contents.", style="dim"
             )
         )
 
@@ -189,9 +191,11 @@ class DiffView(RichLog):
 
     def on_mount(self) -> None:
         self.write(
+            Text(f"Destination directory is {CM_CFG.destDir}.", style="dim")
+        )
+        self.write(
             Text(
-                f"Destination directory is {CM_CFG.destDir}, click a file or directory to view its contents.",
-                style="dim",
+                "Click a file or directory to view its contents.", style="dim"
             )
         )
 

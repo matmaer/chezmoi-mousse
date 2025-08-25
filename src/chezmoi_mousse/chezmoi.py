@@ -93,9 +93,18 @@ class ReadCmd(Enum):
 
 class CommandLog(RichLog):
     def __init__(self, rich_log_id: str) -> None:
+        self.rich_log_id = rich_log_id
         super().__init__(
-            id=rich_log_id, auto_scroll=True, markup=True, max_lines=20000
+            id=self.rich_log_id, auto_scroll=True, markup=True, max_lines=10000
         )
+
+    def on_mount(self) -> None:
+        if self.rich_log_id == Id.init.log_id:
+            self.border_title = " Init Log "
+            self.add_class(TcssStr.operate_log)
+        elif self.rich_log_id == ModalIdStr.operate_log:
+            self.border_title = " Operate Log "
+            self.add_class(TcssStr.operate_log)
 
     def _log_time(self) -> str:
         return f"[[green]{datetime.now().strftime('%H:%M:%S')}[/]]"
@@ -183,9 +192,7 @@ class CommandLog(RichLog):
 
 cmd_log = CommandLog(rich_log_id=Id.log.log_id)
 init_log = CommandLog(rich_log_id=Id.init.log_id)
-
 op_log = CommandLog(rich_log_id=ModalIdStr.operate_log)
-op_log.add_class(TcssStr.operate_log)
 
 
 if os.environ.get("CHEZMOI_MOUSSE_DEV") == "1":
@@ -271,7 +278,7 @@ class ChangeCommand:
         self.base_cmd = BASE_CMD
         if os.environ.get("MOUSSE_ENABLE_CHANGES") != "1":
             self.base_cmd = BASE_CMD + ("--dry-run",)
-            cmd_log.log_warning(OperateHelp.changes_mode_disabled.value)
+            cmd_log.log_ready_to_run(OperateHelp.changes_mode_disabled.value)
         else:
             cmd_log.log_warning(OperateHelp.changes_mode_enabled.value)
 
