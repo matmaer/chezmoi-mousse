@@ -5,7 +5,6 @@ These classes
 - are not containers, but can be focussable or not
 - don't override the parents' compose method
 - don't call any query methods
-- don't apply tcss classes
 - don't import from main_tabs.py, gui.py or containers.py modules
 - don't have key bindings
 """
