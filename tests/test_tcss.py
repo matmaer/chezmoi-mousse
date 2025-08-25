@@ -21,7 +21,7 @@ exclude_files = [
 
 
 def extract_tcss_classes(path: Path) -> list[str]:
-    pattern = r"(?:^|\s)[.&][^a-z]*([a-z][a-z_]*(?=.*_)[a-z_]*)(?=\s|,|$)"
+    pattern = r"[.][^a-z]*([a-z][a-z_]*(?=.*_)[a-z_]*)(?=\s|,|$)"
     with open(path, "r") as f:
         content = f.read()
         matches = re.findall(pattern, content, re.MULTILINE)
@@ -33,11 +33,17 @@ def get_used_tcss_members() -> set[str]:
     used_members: set[str] = set()
 
     for py_file in modules_to_test(exclude_file_names=exclude_files):
-        content = py_file.read_text()
-        # Find TcssStr.member_name patterns
-        for member in TcssStr:
-            if f"TcssStr.{member.name}" in content:
-                used_members.add(member.name)
+        tree = ast.parse(py_file.read_text())
+
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Attribute):
+                # Check for TcssStr.member_name patterns
+                if (
+                    isinstance(node.value, ast.Name)
+                    and node.value.id == "TcssStr"
+                    and hasattr(TcssStr, node.attr)
+                ):
+                    used_members.add(node.attr)
 
     return used_members
 
