@@ -161,7 +161,7 @@ def test_enum_members_in_use(enum_member: Enum):
     member_name = enum_member.name
 
     found = False
-    for py_file in modules_to_test(exclude_file_names=["id_typing.py"]):
+    for py_file in modules_to_test():
         file_found, _ = _find_enum_usage_in_file(
             py_file, enum_class_name, member_name
         )
