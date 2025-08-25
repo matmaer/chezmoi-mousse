@@ -81,7 +81,6 @@
   }
   &>.input--selection {
     color: $text-success;
-    # background: $input-selection-background;
     background: $surface-lighten-3;
     background-tint: $surface-lighten-3;
   }
@@ -89,10 +88,12 @@
     color: $text-disabled;
   }
   &.-invalid {
-    border: solid $error 60%;
+    border: wide $error 30%;
+    border-left: none;
   }
   &.-invalid:focus {
-    border: solid $error;
+    border: wide $error 50%;
+    border-left: none;
   }
 }
 
@@ -264,10 +265,6 @@
     border: round $foreground;
     margin: 0 1 0 1;
     text-align: center;
-  }
-  &>.invalid_input {
-    height: auto;
-    width: auto;
   }
 }
 

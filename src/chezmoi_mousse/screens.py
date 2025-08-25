@@ -6,7 +6,7 @@ from textual.binding import Binding
 from textual.containers import Vertical, VerticalGroup
 from textual.events import Click
 from textual.screen import ModalScreen
-from textual.widgets import Button, Collapsible, Pretty
+from textual.widgets import Button, Collapsible
 
 from chezmoi_mousse import CM_CFG
 from chezmoi_mousse.chezmoi import OperateData, chezmoi, cmd_log, op_log
@@ -236,17 +236,3 @@ class Maximized(ModalBase):
             self.border_title = f" {CM_CFG.destDir} "
         elif self.path is not None:
             self.border_title = f" {self.path.relative_to(CM_CFG.destDir)} "
-
-
-class InvalidInputModal(ModalBase):
-
-    def __init__(self, *, descriptions: list[str]) -> None:
-        super().__init__(modal_id=ModalIdStr.invalid_input_modal)
-        self.descriptions = descriptions
-
-    def compose(self) -> ComposeResult:
-        yield Pretty(self.descriptions)
-
-    def on_mount(self) -> None:
-        self.border_subtitle = " double click or escape key to close "
-        self.query_exactly_one(Pretty).add_class(TcssStr.invalid_input)

@@ -16,7 +16,7 @@ from textual.widgets import (
 )
 
 import chezmoi_mousse.theme
-from chezmoi_mousse.chezmoi import CM_CFG, cmd_log
+from chezmoi_mousse.chezmoi import CM_CFG, cmd_log, init_log
 from chezmoi_mousse.constants import Chars, Location, TabStr, TreeStr, ViewStr
 from chezmoi_mousse.containers import ButtonsHorizontal
 from chezmoi_mousse.id_typing import Id, OperateBtn, OperateHelp
@@ -29,7 +29,7 @@ from chezmoi_mousse.main_tabs import (
 )
 from chezmoi_mousse.messages import InvalidInputMessage, OperateMessage
 from chezmoi_mousse.overrides import CustomScrollBarRender
-from chezmoi_mousse.screens import InvalidInputModal, Maximized, Operate
+from chezmoi_mousse.screens import Maximized, Operate
 from chezmoi_mousse.splash import LoadingScreen
 from chezmoi_mousse.widgets import (
     ContentsView,
@@ -159,7 +159,8 @@ class ChezmoiGUI(App[None]):
 
     @on(InvalidInputMessage)
     def handle_invalid_input(self, message: InvalidInputMessage) -> None:
-        self.push_screen(InvalidInputModal(descriptions=message.reasons))
+        text_lines = "\n".join(message.reasons)
+        init_log.log_warning(f"Invalid input detected: {text_lines}")
 
     def check_action(
         self, action: str, parameters: tuple[object, ...]
