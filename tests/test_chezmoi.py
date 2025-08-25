@@ -26,7 +26,7 @@ def test_chezmoi_member_in_use(member_name: str, member_type: str):
             break  # No need to check other files
 
     if not is_used:
-        pytest.fail(f"Not in use: {member_name} {member_type}")
+        pytest.fail(f"\nNot in use: {member_name} {member_type}")
 
 
 @pytest.mark.parametrize(
@@ -48,6 +48,4 @@ def test_managed_status_member_in_use(member_name: str, member_type: str):
             break  # Found usage, no need to check other files
 
     if not is_used:
-        pytest.fail(
-            f"Unused Chezmoi {member_type}: '{member_name}' not in use.\n"
-        )
+        pytest.fail(f"\nNot in use: {member_name} {member_type}")

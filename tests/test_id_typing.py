@@ -27,8 +27,7 @@ def test_no_hardcoded_ids(py_file: Path):
                     and isinstance(keyword.value.value, str)
                 ):
                     pytest.fail(
-                        f"\nFound hardcoded id=\n"
-                        f'Line {keyword.lineno}: id="{keyword.value.value}"'
+                        f"\nHardcoded id: line {keyword.lineno}: {keyword.value.value}"
                     )
 
 
@@ -100,7 +99,7 @@ def test_strenum_members_in_use(str_enum_member: StrEnum):
     found = False
     unnecessary_value_usage = False
 
-    for py_file in modules_to_test(exclude_file_names=["id_typing.py"]):
+    for py_file in modules_to_test():
         file_found, file_unnecessary = _find_enum_usage_in_file(
             py_file, enum_class_name, member_name
         )
@@ -120,9 +119,7 @@ def test_strenum_members_in_use(str_enum_member: StrEnum):
         }
         if member_name in tab_to_id_mapping:
             id_member_name = tab_to_id_mapping[member_name]
-            for py_file in modules_to_test(
-                exclude_file_names=["id_typing.py"]
-            ):
+            for py_file in modules_to_test():
                 file_found, _ = _find_enum_usage_in_file(
                     py_file, "Id", id_member_name
                 )
@@ -131,14 +128,11 @@ def test_strenum_members_in_use(str_enum_member: StrEnum):
                     break
 
     if not found:
-        pytest.fail(
-            f"\n'{member_name}' from {enum_class_name}\n" "Not in use."
-        )
+        pytest.fail(f"\n{member_name} from {enum_class_name} not in use.")
 
     elif unnecessary_value_usage:
         pytest.fail(
-            f"\n'{member_name}' from {enum_class_name}\n"
-            "Uses unnecessary .value attribute. StrEnum members are already strings."
+            f"\n{member_name} from {enum_class_name}: uses unnecessary .value attribute."
         )
 
 
@@ -176,6 +170,4 @@ def test_enum_members_in_use(enum_member: Enum):
             break
 
     if not found:
-        pytest.fail(
-            f"\n'{member_name}' from {enum_class_name}\n" "Not in use."
-        )
+        pytest.fail(f"\n{member_name} from {enum_class_name} not in use.")

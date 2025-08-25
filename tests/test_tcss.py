@@ -7,11 +7,17 @@ from pathlib import Path
 import pytest
 from _test_utils import modules_to_test
 
-from chezmoi_mousse.id_typing import TcssStr
+from chezmoi_mousse.constants import TcssStr
 
 classes_kw = "classes"
 add_class_method = "add_class"
-exclude_files = ["id_typing.py", "__init__.py", "__main__.py"]
+exclude_files = [
+    "id_typing.py",
+    "__init__.py",
+    "__main__.py",
+    "constants.py",
+    "chezmoi.py",
+]
 
 
 def extract_tcss_classes(path: Path) -> list[str]:
@@ -47,15 +53,15 @@ def test_tcss_member_in_use(tcss_member: str) -> None:
 
     if not is_in_tcss and not is_used_in_python:
         pytest.fail(
-            f"TcssStr.{tcss_member} is neither in gui.tcss nor used in Python code"
+            f"\nTcssStr.{tcss_member} is neither in gui.tcss nor used in Python code"
         )
     elif not is_in_tcss:
         pytest.fail(
-            f"TcssStr.{tcss_member} is used in Python but not defined in gui.tcss"
+            f"\nTcssStr.{tcss_member} is used in Python but not defined in gui.tcss"
         )
     elif not is_used_in_python:
         pytest.fail(
-            f"TcssStr.{tcss_member} is defined in gui.tcss but not used in Python code"
+            f"\nTcssStr.{tcss_member} is defined in gui.tcss but not used in Python code"
         )
 
 
@@ -78,7 +84,7 @@ def test_no_hardcoded(py_file: Path) -> None:
                     and hasattr(TcssStr, keyword.value.attr)
                 ):
                     pytest.fail(
-                        f"{py_file} line {keyword.lineno}: {keyword.value}"
+                        f"\n{py_file} line {keyword.lineno}: {keyword.value}: hardcoded tcss class"
                     )
 
         # Check add_class method calls for string literals
@@ -92,5 +98,5 @@ def test_no_hardcoded(py_file: Path) -> None:
                 first_arg.value, str
             ):
                 pytest.fail(
-                    f'{py_file}:{first_arg.lineno} - add_class("{first_arg.value}")'
+                    f'\n{py_file}:{first_arg.lineno} - add_class("{first_arg.value}"): hardcoded tcss class'
                 )
