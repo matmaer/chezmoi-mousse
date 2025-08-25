@@ -196,7 +196,7 @@ class OperateVerbs(StrEnum):
     re_add = "re-add"
 
 
-class Chars(Enum):
+class Chars(StrEnum):
     add_file_info_border = f"local {'\u2014' * 3}\u2192 chezmoi"  # '\N{EM DASH}', '\N{RIGHTWARDS ARROW}'
     apply_file_info_border = f"local \u2190{'\u2014' * 3} chezmoi"  # '\N{LEFTWARDS ARROW}', '\N{EM DASH}'
     bullet = "\u2022"  # '\N{BULLET}'
@@ -217,8 +217,8 @@ class Chars(Enum):
 class OperateHelp(Enum):
     add = "[$text-primary]Path will be added to your chezmoi dotfile manager source state.[/]"
     apply = "[$text-primary]Local file (target state) in the destination directory will be modified.[/]"
-    auto_commit = f"[$text-warning]{Chars.warning_sign.value} Auto commit is enabled: files will also be committed.{Chars.warning_sign.value}[/]"
-    autopush = f"[$text-warning]{Chars.warning_sign.value} Auto push is enabled: files will be pushed to the remote.{Chars.warning_sign.value}[/]"
+    auto_commit = f"[$text-warning]{Chars.warning_sign} Auto commit is enabled: files will also be committed.{Chars.warning_sign}[/]"
+    autopush = f"[$text-warning]{Chars.warning_sign} Auto push is enabled: files will be pushed to the remote.{Chars.warning_sign}[/]"
     # TODO from chezmoi help: If you want to remove all traces of chezmoi from your system use purge instead. If you want chezmoi to stop managing the file use forget instead.
     # ---> create links for this to the other tabs
     changes_mode_disabled = (
@@ -232,7 +232,7 @@ class OperateHelp(Enum):
     diff_color = (
         "[$text-success]+ green lines will be added[/]",
         "[$text-error]- red lines will be removed[/]",
-        f"[dim]{Chars.bullet.value} dimmed lines for context[/]",
+        f"[dim]{Chars.bullet} dimmed lines for context[/]",
     )
     # TODO chezmoi forget help: "Targets must have entries in the source state. They cannot be externals."
     # -> disable forget button in that case

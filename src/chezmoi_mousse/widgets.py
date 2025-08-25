@@ -57,19 +57,19 @@ class OperateInfo(Static):
         # show command help and set the subtitle
         if OperateBtn.apply_file == self.operate_btn:
             lines_to_write.append(OperateHelp.apply.value)
-            self.border_subtitle = Chars.apply_file_info_border.value
+            self.border_subtitle = Chars.apply_file_info_border
         elif OperateBtn.re_add_file == self.operate_btn:
             lines_to_write.append(OperateHelp.re_add.value)
-            self.border_subtitle = Chars.re_add_file_info_border.value
+            self.border_subtitle = Chars.re_add_file_info_border
         elif OperateBtn.add_file == self.operate_btn:
             lines_to_write.append(OperateHelp.add.value)
-            self.border_subtitle = Chars.add_file_info_border.value
+            self.border_subtitle = Chars.add_file_info_border
         elif OperateBtn.forget_file == self.operate_btn:
             lines_to_write.append(OperateHelp.forget.value)
-            self.border_subtitle = Chars.forget_file_info_border.value
+            self.border_subtitle = Chars.forget_file_info_border
         elif OperateBtn.destroy_file == self.operate_btn:
             lines_to_write.extend(OperateHelp.destroy.value)
-            self.border_subtitle = Chars.destroy_file_info_border.value
+            self.border_subtitle = Chars.destroy_file_info_border
         # show git auto warnings
         if not OperateBtn.apply_file == self.operate_btn:
             if CM_CFG.autocommit:
@@ -258,7 +258,7 @@ class DiffView(RichLog):
             elif line.startswith("+"):
                 self.write(Text(line, theme.vars["text-success"]))
             else:
-                self.write(Text(Chars.bullet.value + line, style="dim"))
+                self.write(Text(Chars.bullet + line, style="dim"))
 
 
 class GitLogView(DataTable[Text]):

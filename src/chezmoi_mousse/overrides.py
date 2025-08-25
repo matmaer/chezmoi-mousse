@@ -122,7 +122,7 @@ class CustomScrollBarRender(ScrollBarRender):
                 ] * int(size)
                 for i in range(start_index, end_index):
                     segments[i] = _Segment(
-                        Chars.lower_3_8ths_block.value * width_thickness,
+                        Chars.lower_3_8ths_block * width_thickness,
                         _Style(bgcolor=back, color=bar, meta=foreground_meta),
                     )
         else:

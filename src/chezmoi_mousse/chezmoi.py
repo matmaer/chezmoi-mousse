@@ -222,7 +222,7 @@ def _run_cmd(long_command: CmdWords, time_out: float = 1) -> str:
             else:
                 op_log.log_command(long_command)
             if cmd_stdout.strip() == "":
-                msg = f"{Chars.check_mark.value} Command made changes successfully, no output"
+                msg = f"{Chars.check_mark} Command made changes successfully, no output"
                 cmd_log.log_success(msg)
                 if (
                     OperateVerbs.init in long_command
@@ -232,7 +232,7 @@ def _run_cmd(long_command: CmdWords, time_out: float = 1) -> str:
                 else:
                     op_log.log_success(msg)
             else:
-                msg = f"{Chars.check_mark.value} Command made changes successfully, output:"
+                msg = f"{Chars.check_mark} Command made changes successfully, output:"
                 cmd_log.log_success(msg)
                 cmd_log.log_dimmed(cmd_stdout)
                 if (
@@ -263,12 +263,12 @@ def _run_cmd(long_command: CmdWords, time_out: float = 1) -> str:
             e, subprocess.CalledProcessError
         ):
             op_log.log_warning(
-                f"{Chars.warning_sign.value} chezmoi doctor has a non-zero exit code"
+                f"{Chars.warning_sign} chezmoi doctor has a non-zero exit code"
             )
             return e.stdout.strip()
         if any(verb in long_command for verb in OperateVerbs):
-            op_log.log_error(f"{Chars.x_mark.value} Command failed {e}")
-        cmd_log.log_error(f"{Chars.x_mark.value} Command failed {e}")
+            op_log.log_error(f"{Chars.x_mark} Command failed {e}")
+        cmd_log.log_error(f"{Chars.x_mark} Command failed {e}")
         return "failed"
 
 

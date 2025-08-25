@@ -65,7 +65,7 @@ class ChezmoiGUI(App[None]):
     ]
 
     def compose(self) -> ComposeResult:
-        yield Header(icon=Chars.burger.value)
+        yield Header(icon=Chars.burger)
         with TabbedContent():
             with TabPane("Apply", id=Id.apply.tab_pane_id):
                 yield ApplyTab()
