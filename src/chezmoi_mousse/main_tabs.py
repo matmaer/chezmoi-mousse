@@ -7,7 +7,6 @@ from textual.widgets import (
     Collapsible,
     ContentSwitcher,
     DataTable,
-    Label,
     Link,
     ListItem,
     ListView,
@@ -18,7 +17,7 @@ from textual.widgets import (
 
 from chezmoi_mousse import CM_CFG, theme
 from chezmoi_mousse.chezmoi import chezmoi, init_log
-from chezmoi_mousse.config import FLOW, pw_mgr_info
+from chezmoi_mousse.config import FLOW
 from chezmoi_mousse.containers import (
     ButtonsHorizontal,
     InitCloneRepo,
@@ -29,10 +28,11 @@ from chezmoi_mousse.containers import (
     TreeContentSwitcher,
 )
 from chezmoi_mousse.id_typing import (
-    DoctorEnum,
+    DoctorCollapsibles,
     Id,
     Location,
     OperateBtn,
+    PwMgrInfo,
     Switches,
     TabBtn,
     TcssStr,
@@ -329,10 +329,11 @@ class DoctorTab(ScrollableContainer):
             "failed": theme.vars["text-error"],
             "error": theme.vars["text-error"],
         }
+        self.doctor_data: list[str] = []
 
     def compose(self) -> ComposeResult:
 
-        with Collapsible(title=DoctorEnum.doctor.value):
+        with Collapsible(title=DoctorCollapsibles.doctor.value):
             yield DataTable[Text](
                 id=ViewStr.doctor_table.name,
                 classes=TcssStr.doctor_table,
@@ -340,80 +341,84 @@ class DoctorTab(ScrollableContainer):
             )
         yield Collapsible(
             Static(FLOW, classes=TcssStr.flow_diagram),
-            title=DoctorEnum.diagram.value,
+            title=DoctorCollapsibles.diagram.value,
         )
-        with Collapsible(title=DoctorEnum.doctor_template_data.value):
+        with Collapsible(title=DoctorCollapsibles.doctor_template_data.value):
             yield Pretty(
-                "placeholder", id=DoctorEnum.doctor_template_data.name
+                "placeholder", id=DoctorCollapsibles.doctor_template_data.name
             )
-        with Collapsible(title=DoctorEnum.cat_config.value):
-            yield Pretty("placeholder", id=DoctorEnum.cat_config.name)
-        with Collapsible(title=DoctorEnum.doctor_ignored.value):
-            yield Pretty("placeholder", id=DoctorEnum.doctor_ignored.name)
+        with Collapsible(title=DoctorCollapsibles.cat_config.value):
+            yield Pretty("placeholder", id=DoctorCollapsibles.cat_config.name)
+        with Collapsible(title=DoctorCollapsibles.doctor_ignored.value):
+            yield Pretty(
+                "placeholder", id=DoctorCollapsibles.doctor_ignored.name
+            )
         yield Collapsible(
-            ListView(id=DoctorEnum.commands_not_found.name),
-            title=DoctorEnum.commands_not_found.value,
+            ListView(id=DoctorCollapsibles.pw_mgr_info.name),
+            title=DoctorCollapsibles.pw_mgr_info.value,
         )
 
     def on_mount(self) -> None:
         for collapsible in self.query(Collapsible):
             collapsible.add_class(TcssStr.doctor_collapsible)
 
+    @on(Collapsible.Expanded, ".doctor_collapsible")
     def on_collapsible_expanded(self, event: Collapsible.Expanded) -> None:
         event.stop()
-        if event.collapsible.title == DoctorEnum.doctor.value:
+        if not self.doctor_data:
+            self.doctor_data = chezmoi.doctor.list_out
             self.populate_doctor_data()
-        elif event.collapsible.title == DoctorEnum.doctor_template_data.value:
+        if event.collapsible.title == DoctorCollapsibles.doctor_template_data:
             event.collapsible.query_one(
-                DoctorEnum.doctor_template_data.qid, Pretty
+                DoctorCollapsibles.doctor_template_data.qid, Pretty
             ).update(chezmoi.run.template_data())
-        elif event.collapsible.title == DoctorEnum.cat_config.value:
+        elif event.collapsible.title == DoctorCollapsibles.cat_config:
             event.collapsible.query_one(
-                DoctorEnum.cat_config.qid, Pretty
+                DoctorCollapsibles.cat_config.qid, Pretty
             ).update(chezmoi.run.cat_config())
-        elif event.collapsible.title == DoctorEnum.doctor_ignored.value:
+        elif event.collapsible.title == DoctorCollapsibles.doctor_ignored:
             event.collapsible.query_one(
-                DoctorEnum.doctor_ignored.qid, Pretty
+                DoctorCollapsibles.doctor_ignored.qid, Pretty
             ).update(chezmoi.run.ignored())
 
     def populate_doctor_data(self) -> None:
         doctor_table: DataTable[Text] = self.query_one(DataTable[Text])
-        doctor_table.add_columns(*chezmoi.doctor.list_out[0].split())
+        doctor_table.add_columns(*self.doctor_data[0].split())
 
-        for line in chezmoi.doctor.list_out[1:]:
+        for line in self.doctor_data[1:]:
             row = tuple(line.split(maxsplit=2))
             if row[0] == "info" and "not found in $PATH" in row[2]:
-                self.populate_list_view_collapsible(row[1])
+                self.populate_pw_mgr_info_collapsible(row[1])
+                new_row = [
+                    Text(cell_text, style=self.dr_style["info"])
+                    for cell_text in row
+                ]
+                doctor_table.add_row(*new_row)
             elif row[0] in ["ok", "warning", "error", "failed"]:
-                row = [
+                new_row = [
                     Text(cell_text, style=f"{self.dr_style[row[0]]}")
                     for cell_text in row
                 ]
-                doctor_table.add_row(*row)
+                doctor_table.add_row(*new_row)
             elif row[0] == "info" and row[2] == "not set":
-                row = [
+                self.populate_pw_mgr_info_collapsible(row[1])
+                new_row = [
                     Text(cell_text, style=self.dr_style["warning"])
                     for cell_text in row
                 ]
-                doctor_table.add_row(*row)
+                doctor_table.add_row(*new_row)
             else:
                 row = [Text(cell_text) for cell_text in row]
                 doctor_table.add_row(*row)
 
-    def populate_list_view_collapsible(self, row_var: str) -> None:
+    def populate_pw_mgr_info_collapsible(self, row_var: str) -> None:
         list_view = self.query_exactly_one(ListView)
-        if row_var in pw_mgr_info:
-            list_view.append(
-                ListItem(
-                    Link(row_var, url=pw_mgr_info[row_var]["link"]),
-                    Static(pw_mgr_info[row_var]["description"]),
+        for pw_mgr in PwMgrInfo:
+            if pw_mgr.value.doctor_check == row_var:
+                list_view.append(
+                    ListItem(
+                        Link(row_var, url=pw_mgr.value.link),
+                        Static(pw_mgr.value.description),
+                    )
                 )
-            )
-        elif row_var not in pw_mgr_info:
-            list_view.append(
-                ListItem(
-                    # color accent as that's how links are styled by default
-                    Static(f"[$accent-muted]{row_var}[/]", markup=True),
-                    Label("Not Found in $PATH."),
-                )
-            )
+                break

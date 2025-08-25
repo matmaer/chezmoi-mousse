@@ -315,19 +315,88 @@ class Switches(Enum):
     )
 
 
-class DoctorEnum(Enum):
+class DoctorCollapsibles(StrEnum):
     cat_config = "chezmoi cat-config (contents of config-file)"
-    commands_not_found = (
-        "chezmoi supported commands not found (ignore if not needed)"
-    )
     diagram = "chezmoi diagram (how operations are applied)"
     doctor = "chezmoi doctor output (diagnostic information)"
     doctor_ignored = "chezmoi ignored (git ignore in source-dir)"
     doctor_template_data = "chezmoi template-data (contents of template-file)"
+    pw_mgr_info = "supported password managers (link and description)"
 
     @property
     def qid(self) -> str:
         return f"#{self.name}"
+
+
+@dataclass
+class PwMgrData:
+    doctor_check: str
+    description: str
+    link: str
+    doctor_message: str | None = None
+
+
+class PwMgrInfo(Enum):
+    age_command = PwMgrData(
+        doctor_check="age-command",
+        description="A simple, modern and secure file encryption tool",
+        link="https://github.com/FiloSottile/age",
+    )
+    bitwarden_command = PwMgrData(
+        doctor_check="bitwarden-command",
+        description="Bitwarden Password Manager",
+        link="https://github.com/bitwarden/cli",
+    )
+    bitwarden_secrets_command = PwMgrData(
+        doctor_check="bitwarden-secrets-command",
+        description="Bitwarden Secrets Manager CLI for managing secrets securely.",
+        link="https://github.com/bitwarden/bitwarden-secrets",
+    )
+    doppler_command = PwMgrData(
+        doctor_check="doppler-command",
+        description="The Doppler CLI for managing secrets, configs, and environment variables.",
+        link="https://github.com/DopplerHQ/cli",
+    )
+    gopass_command = PwMgrData(
+        doctor_check="gopass-command",
+        description="The slightly more awesome standard unix password manager for teams.",
+        link="https://github.com/gopasspw/gopass",
+    )
+    keeper_command = PwMgrData(
+        doctor_check="keeper-command",
+        description="An interface to Keeper® Password Manager",
+        link="https://github.com/Keeper-Security/Commander",
+    )
+    keepassxc_command = PwMgrData(
+        doctor_check="keepassxc-command",
+        description="Cross-platform community-driven port of Keepass password manager",
+        link="https://keepassxc.org/",
+    )
+    lpass_command = PwMgrData(
+        doctor_check="lpass-command",
+        description="Old LastPass CLI for accessing your LastPass vault.",
+        link="https://github.com/lastpass/lastpass-cli",
+    )
+    pass_command = PwMgrData(
+        doctor_check="pass-command",
+        description="Stores, retrieves, generates, and synchronizes passwords securely",
+        link="https://www.passwordstore.org/",
+    )
+    pinentry_command = PwMgrData(
+        doctor_check="pinentry-command",
+        description="Collection of simple PIN or passphrase entry dialogs which utilize the Assuan protocol",
+        link="https://gnupg.org/related_software/pinentry/",
+    )
+    rbw_command = PwMgrData(
+        doctor_check="rbw-command",
+        description="Unofficial Bitwarden CLI",
+        link="https://git.tozt.net/rbw",
+    )
+    vault_command = PwMgrData(
+        doctor_check="vault-command",
+        description="A tool for managing secrets",
+        link="https://vaultproject.io/",
+    )
 
 
 class TabIds:
