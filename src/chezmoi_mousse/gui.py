@@ -190,10 +190,9 @@ class ChezmoiGUI(App[None]):
 
     def action_toggle_switch_slider(self) -> None:
         # merely find the corresponding method in the active tab ant call it
-        tab_pane = self.query_one(
+        tab_widget = self.query_one(
             f"#{self.query_one(TabbedContent).active}", TabPane
-        )
-        tab_widget = tab_pane.children[0]
+        ).children[0]
         if hasattr(tab_widget, "action_toggle_switch_slider"):
             getattr(tab_widget, "action_toggle_switch_slider")()  # call it
 
