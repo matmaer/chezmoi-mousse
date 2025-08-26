@@ -9,7 +9,6 @@ from typing import Any
 
 from chezmoi_mousse.constants import Chars, Location, TabStr, TreeStr, ViewStr
 
-type Buttons = OperateButtons | TabButtons
 type CmdWords = tuple[str, ...]
 type Mro = tuple[type, ...]
 type OperateButtons = tuple[OperateBtn, ...]

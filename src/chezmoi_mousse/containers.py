@@ -36,12 +36,12 @@ from chezmoi_mousse.constants import (
     ViewStr,
 )
 from chezmoi_mousse.id_typing import (
-    Buttons,
     Id,
     OperateBtn,
     OperateButtons,
     Switches,
     TabBtn,
+    TabButtons,
     TabIds,
 )
 from chezmoi_mousse.messages import InvalidInputMessage
@@ -267,7 +267,11 @@ class SwitchSlider(VerticalGroup):
 class ButtonsHorizontal(HorizontalGroup):
 
     def __init__(
-        self, *, tab_ids: TabIds, buttons: Buttons, location: Location
+        self,
+        *,
+        tab_ids: TabIds,
+        buttons: OperateButtons | TabButtons,
+        location: Location,
     ) -> None:
         self.buttons = buttons
         self.location: Location = location
