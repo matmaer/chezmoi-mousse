@@ -233,11 +233,11 @@ class ChezmoiGUI(App[None]):
     def handle_push_operate_modal(self, event: Button.Pressed) -> None:
         event.stop()
         if event.button.label not in (
-            OperateBtn.apply_file.value,
-            OperateBtn.re_add_file.value,
-            OperateBtn.add_file.value,
-            OperateBtn.forget_file.value,
-            OperateBtn.destroy_file.value,
+            OperateBtn.apply_file,
+            OperateBtn.re_add_file,
+            OperateBtn.add_file,
+            OperateBtn.forget_file,
+            OperateBtn.destroy_file,
         ):
             return
         active_pane_id = self.query_one(TabbedContent).active
