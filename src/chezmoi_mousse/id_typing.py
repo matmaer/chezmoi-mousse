@@ -7,7 +7,15 @@ from enum import Enum
 from pathlib import Path
 from typing import Any
 
-from chezmoi_mousse.constants import Chars, Location, TabStr, TreeStr, ViewStr
+from chezmoi_mousse.constants import (
+    Chars,
+    Location,
+    OperateBtn,
+    TabBtn,
+    TabStr,
+    TreeStr,
+    ViewStr,
+)
 
 type CmdWords = tuple[str, ...]
 type Mro = tuple[type, ...]
@@ -51,32 +59,6 @@ class OperateHelp(Enum):
     re_add = (
         "[$text-primary]Overwrite  will be updated with current local file[/]"
     )
-
-
-class TabBtn(Enum):
-    # Tab buttons for content switcher within a main tab
-    clone_repo = "Clone"
-    contents = "Contents"
-    diff = "Diff"
-    git_log = "Git-Log"
-    list = "List"
-    new_repo = "New"
-    purge_repo = "Purge"
-    tree = "Tree"
-
-
-class OperateBtn(Enum):
-    add_dir = "Add Dir"
-    add_file = "Add File"
-    apply_file = "Apply File"
-    clone_repo = "Clone Existing Repo"
-    destroy_file = "Destroy File"
-    forget_file = "Forget File"
-    new_repo = "Initialize New Repo"
-    operate_dismiss = "Cancel"
-    purge_repo = "Purge Existing Repo"
-    re_add_file = "Re-Add File"
-    refresh_doctor_data = "Re-run 'chezmoi doctor' command (refresh data)"
 
 
 @dataclass

@@ -65,6 +65,20 @@ class ModalIdStr(StrEnum):
         return f"#{self.name}"
 
 
+class OperateBtn(StrEnum):
+    add_dir = "Add Dir"
+    add_file = "Add File"
+    apply_file = "Apply File"
+    clone_repo = "Clone Existing Repo"
+    destroy_file = "Destroy File"
+    forget_file = "Forget File"
+    new_repo = "Initialize New Repo"
+    operate_dismiss = "Cancel"
+    purge_repo = "Purge Existing Repo"
+    re_add_file = "Re-Add File"
+    refresh_doctor_data = "Re-run 'chezmoi doctor' command (refresh data)"
+
+
 class OperateVerbs(StrEnum):
     add = "add"
     apply = "apply"
@@ -89,6 +103,18 @@ class SplashIdStr(StrEnum):
     animated_fade_id = auto()
     loading_screen_id = auto()
     splash_rich_log_id = auto()
+
+
+class TabBtn(StrEnum):
+    # Tab buttons for content switcher within a main tab
+    clone_repo = "Clone"
+    contents = "Contents"
+    diff = "Diff"
+    git_log = "Git-Log"
+    list = "List"
+    new_repo = "New"
+    purge_repo = "Purge"
+    tree = "Tree"
 
 
 class TabStr(StrEnum):

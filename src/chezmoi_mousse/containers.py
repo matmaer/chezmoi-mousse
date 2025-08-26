@@ -30,6 +30,8 @@ from textual.widgets import (
 from chezmoi_mousse import CM_CFG
 from chezmoi_mousse.constants import (
     Location,
+    OperateBtn,
+    TabBtn,
     TabStr,
     TcssStr,
     TreeStr,
@@ -37,10 +39,8 @@ from chezmoi_mousse.constants import (
 )
 from chezmoi_mousse.id_typing import (
     Id,
-    OperateBtn,
     OperateButtons,
     Switches,
-    TabBtn,
     TabButtons,
     TabIds,
 )
