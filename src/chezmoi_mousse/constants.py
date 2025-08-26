@@ -85,6 +85,12 @@ class ReadVerbs(StrEnum):
     source_path = "source-path"
 
 
+class SplashIdStr(StrEnum):
+    animated_fade_id = auto()
+    loading_screen_id = auto()
+    splash_rich_log_id = auto()
+
+
 class TabStr(StrEnum):
     add_tab = auto()
     apply_tab = auto()
@@ -207,6 +213,22 @@ class ViewStr(StrEnum):
     init_clone_view = auto()
     init_new_view = auto()
     init_purge_view = auto()
+
+
+SPLASH = """\
+ _______________________________ ___________________._
+|       |   |   |    ___|___    |    '    |       |   |
+|    ===|       |     __|     __|         |   |   |   |
+|       |   |   |       |       |   |ˇ|   |       |   |
+`-------^---^---^-------^-------^---' '---^-------^---'
+   ____ ____ _______ ___ ___ _______ _______ _______
+  |    ˇ    |       |   |   |    ___|    ___|    ___|
+  |         |   |   |   |   |__     |__     |     __|
+  |   |ˇ|   |       |       |       |       |       |
+  '---' '---^-------^-------^-------^-------^-------'
+""".replace(
+    "===", "=\u200b=\u200b="
+).splitlines()
 
 
 # provisional diagrams until dynamically created

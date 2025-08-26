@@ -1,5 +1,4 @@
 from collections import deque
-from enum import StrEnum, auto
 
 from rich.segment import Segment
 from rich.style import Style
@@ -15,28 +14,7 @@ from textual.widgets import RichLog, Static
 from textual.worker import WorkerState
 
 from chezmoi_mousse.chezmoi import chezmoi, cmd_log
-
-SPLASH = """\
- _______________________________ ___________________._
-|       |   |   |    ___|___    |    '    |       |   |
-|    ===|       |     __|     __|         |   |   |   |
-|       |   |   |       |       |   |ˇ|   |       |   |
-`-------^---^---^-------^-------^---' '---^-------^---'
-   ____ ____ _______ ___ ___ _______ _______ _______
-  |    ˇ    |       |   |   |    ___|    ___|    ___|
-  |         |   |   |   |   |__     |__     |     __|
-  |   |ˇ|   |       |       |       |       |       |
-  '---' '---^-------^-------^-------^-------^-------'
-""".replace(
-    "===", "=\u200b=\u200b="
-).splitlines()
-
-
-# added to make the logic in test_no_hardcoded_ids pass for splash.py
-class SplashIdStr(StrEnum):
-    animated_fade_id = auto()
-    loading_screen_id = auto()
-    splash_rich_log_id = auto()
+from chezmoi_mousse.constants import SPLASH, SplashIdStr
 
 
 def create_deque() -> deque[Style]:
