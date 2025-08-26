@@ -57,7 +57,7 @@ class OperateHelp(Enum):
     # -> disable forget button in that case
     forget = "[$text-primary]Remove targets from the source state, i.e. stop managing them.[/]"
     re_add = (
-        "[$text-primary]Overwrite  will be updated with current local file[/]"
+        "[$text-primary]Overwrite the source state with current local file[/]"
     )
 
 
