@@ -11,13 +11,7 @@ from chezmoi_mousse.constants import TcssStr
 
 classes_kw = "classes"
 add_class_method = "add_class"
-exclude_files = [
-    "id_typing.py",
-    "__init__.py",
-    "__main__.py",
-    "constants.py",
-    "chezmoi.py",
-]
+exclude_files = ["id_typing.py", "__init__.py", "__main__.py", "constants.py"]
 
 
 def extract_tcss_classes(path: Path) -> list[str]:
@@ -49,7 +43,7 @@ def get_used_tcss_members() -> set[str]:
 
 
 @pytest.mark.parametrize("tcss_member", [member.name for member in TcssStr])
-def test_tcss_member_in_use(tcss_member: str) -> None:
+def test_tcss_members(tcss_member: str) -> None:
     """Test that each TcssStr member is both defined in gui.tcss AND used in Python code."""
     tcss_classes = extract_tcss_classes(Path("./src/chezmoi_mousse/gui.tcss"))
     used_members = get_used_tcss_members()
