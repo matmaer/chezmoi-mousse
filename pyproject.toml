@@ -39,3 +39,9 @@ addopts = "--color=auto --tb=no -s --no-header -v --no-summary"
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 asyncio_mode = "auto"
+
+
+[tool.black]
+line-length = 79
+skip-magic-trailing-comma = true
+target-version = ["py313"]
