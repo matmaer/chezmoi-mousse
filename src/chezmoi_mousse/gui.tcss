@@ -2,9 +2,7 @@
 /* tcss classes */
 /****************/
 
-
-# “$text-success on $success-muted”
-
+/* TODO “$text-success on $success-muted” */
 
 .input_select {
   background-tint: $panel;
@@ -127,23 +125,18 @@
 }
 
 .switches_vertical {
-  align: left bottom;
   background-tint: $surface;
   background: $surface;
-  border-bottom: round $primary;
-  border-right: round $primary;
-  border-top: round $primary;
+  border: round $primary;
+  border-left: none;
   dock: bottom;
-  layer: switch_slider;
-  margin-bottom: 3;
-  max-width: 95%;
-  padding-right: 2;
-  width: auto;
-  /* offset-x: -100%; out if view if docked left */
-  offset-x: -100%;
+  layer: switches;
+  offset-x: 0%;
+  padding-right: 1;
   transition: offset 380ms;
-  /* applies to all Container classes which contain a single switch */
-  .switch_label {
+  width: auto;
+
+  Label.switch_label {
     color: $foreground-darken-1;
   }
   &>.switch_horizontal {
@@ -153,7 +146,7 @@
     padding-bottom: 1;
   }
   &.-visible {
-    offset-x: 0%;
+    offset-x: -100%;
   }
 }
 
@@ -268,10 +261,6 @@
   }
 }
 
-MainScreen {
-  layers: switch_slider;
-}
-
 
 /***********************************/
 /* textual default tcss overrides  */
@@ -353,6 +342,7 @@ Footer {
   border-bottom: inner $surface;
   background: $surface;
   background-tint: $surface;
+  min-width: 60;
 }
 
 Header {
@@ -360,123 +350,8 @@ Header {
   color: $primary;
   height: 2;
   text-style: bold;
+  min-width: 60;
 }
-
-/* Input default css
-Input {
-  background: $surface;
-  color: $foreground;
-  padding: 0 2;
-  border: tall $border-blurred;
-  width: 100%;
-  height: 3;
-  scrollbar-size-horizontal: 0;
-
-  &.-textual-compact {
-      border: none !important;
-      height: 1;
-      padding: 0;
-      &.-invalid {
-          background-tint: $error 20%;
-      }
-  }
-
-  &:focus {
-      border: tall $border;
-      background-tint: $foreground 5%;
-  }
-  &>.input--cursor {
-      background: $input-cursor-background;
-      color: $input-cursor-foreground;
-      text-style: $input-cursor-text-style;
-  }
-  &>.input--selection {
-      background: $input-selection-background;
-  }
-  &>.input--placeholder, &>.input--suggestion {
-      color: $text-disabled;
-  }
-  &.-invalid {
-      border: tall $error 60%;
-  }
-  &.-invalid:focus {
-      border: tall $error;
-  }
-
-*/
-
-/*Select default tcss
-
-SelectCurrent {
-  border: tall $border-blurred;
-  color: $foreground;
-  background: $surface;
-  width: 1fr;
-  height: auto;
-  padding: 0 2;
-
-  Static#label {
-    width: 1fr;
-    height: auto;
-    color: $foreground 50%;
-    background: transparent;
-  }
-
-  &.-has-value Static#label {
-    color: $foreground;
-  }
-
-  .arrow {
-    box-sizing: content-box;
-    width: 1;
-    height: 1;
-    padding: 0 0 0 1;
-    color: $foreground 50%;
-    background: transparent;
-  }
-}
-
-
-Select {
-  height: auto;
-  color: $foreground;
-
-  &:focus > SelectCurrent {
-    border: tall $border;
-    background-tint: $foreground 5%;
-  }
-
-  & > SelectOverlay {
-    width: 1fr;
-    display: none;
-    height: auto;
-    max-height: 12;
-    overlay: screen;
-    constrain: none inside;
-    color: $foreground;
-    border: tall $border-blurred;
-    background: $surface;
-    &:focus {
-        background-tint: $foreground 5%;
-    }
-    & > .option-list--option {
-        padding: 0 1;
-    }
-  }
-
-  &.-expanded {
-    .down-arrow {
-        display: none;
-    }
-    .up-arrow {
-        display: block;
-    }
-    & > SelectOverlay {
-        display: block;
-    }
-  }
-}
-*/
 
 ModalScreen {
   align: center middle;
@@ -510,6 +385,10 @@ Switch {
   }
 }
 
+TabbedContent {
+  min-height: 15;
+  min-width: 60;
+}
 
 Toast {
     content-align: center middle;
