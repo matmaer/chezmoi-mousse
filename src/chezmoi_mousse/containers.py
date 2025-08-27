@@ -276,10 +276,7 @@ class ButtonsHorizontal(HorizontalGroup):
         self.buttons = buttons
         self.location: Location = location
         self.tab_ids: TabIds = tab_ids
-        super().__init__(
-            id=tab_ids.buttons_horizontal_id(self.location),
-            classes=TcssStr.tab_buttons_horizontal,
-        )
+        super().__init__(id=tab_ids.buttons_horizontal_id(self.location))
 
     def compose(self) -> ComposeResult:
         for button_enum in self.buttons:
@@ -294,11 +291,12 @@ class ButtonsHorizontal(HorizontalGroup):
 
     def on_mount(self) -> None:
         if self.location == Location.bottom:
+            self.add_class(TcssStr.operate_buttons_horizontal)
             for button_enum in self.buttons:
                 button = self.query_one(self.tab_ids.button_qid(button_enum))
                 button.add_class(TcssStr.operate_button)
             return
-
+        self.add_class(TcssStr.tab_buttons_horizontal)
         for button_enum in self.buttons:
             self.query_one(self.tab_ids.button_qid(button_enum)).add_class(
                 TcssStr.tab_button

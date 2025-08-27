@@ -194,47 +194,52 @@
 
 .tab_buttons_horizontal {
   width: 100%;
+  height: 1;
   &>.single_button_vertical {
     align: center middle;
-    height: auto;
-    &>.tab_button {
-      height: 1;
-      min-width: 4;
+  }
+}
+
+.operate_buttons_horizontal {
+  width: 100%;
+  height: 3;
+}
+
+.tab_button {
+  min-width: 4;
+  text-style: none;
+  &:hover {
+    text-style: bold;
+  }
+  &.last_clicked {
+    color: $accent;
+    text-style: none;
+    &:hover {
       text-style: none;
-      &:hover {
-        text-style: bold;
-      }
-      &.last_clicked {
-        color: $accent;
-        text-style: none;
-        &:hover {
-          text-style: none;
-        }
-      }
-      &:focus {
-        text-style: none;
-      }
     }
-    &>.operate_button {
-        background: $surface;
-        background-tint: $surface;
-        border-top: wide $primary-darken-3;
-        border-bottom: inner $surface;
-        color: $primary-lighten-3;
-        height: 3;
-        margin: 0 2 0 2;
-        min-width: 10;
-        width: 100%;
-        text-style: none;
-        &:hover {
-          text-style: none;
-          color: $accent;
-          border-top: wide $accent-darken-3;
-        }
-        &:focus {
-          text-style: none;
-        }
-      }
+  }
+  &:focus {
+    text-style: none;
+  }
+}
+
+.operate_button {
+  background: $surface;
+  background-tint: $surface;
+  border-top: wide $primary-darken-3;
+  border-bottom: inner $surface;
+  color: $primary-lighten-3;
+  margin: 0 2 0 2;
+  min-width: 10;
+  width: 100%;
+  text-style: none;
+  &:hover {
+    text-style: none;
+    color: $accent;
+    border-top: wide $accent-darken-3;
+  }
+  &:focus {
+    text-style: none;
   }
 }
 
@@ -252,7 +257,7 @@
   border: $accent-darken-3;
   border-title-style: bold;
   border-subtitle-style: bold;
-  .operate_top_path {
+    .operate_top_path {
     border-subtitle-align: center;
     border-title-align: center;
     border: round $foreground;

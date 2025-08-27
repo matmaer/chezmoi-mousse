@@ -144,6 +144,7 @@ class TcssStr(StrEnum):
     input_select_vertical = auto()
     last_clicked = auto()
     modal_base = auto()
+    operate_buttons_horizontal = auto()
     operate_button = auto()
     operate_log = auto()
     operate_top_path = auto()
