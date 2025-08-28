@@ -292,11 +292,11 @@ class ButtonsHorizontal(HorizontalGroup):
 
     def on_mount(self) -> None:
         if self.location == Location.bottom:
-            self.add_class(TcssStr.operate_buttons_horizontal)
-            for button_enum in self.buttons:
-                button = self.query_one(self.tab_ids.button_qid(button_enum))
-                button.add_class(TcssStr.operate_button)
-            return
+            self.add_operate_button_classes()
+        else:
+            self.add_tab_button_classes()
+
+    def add_tab_button_classes(self) -> None:
         self.add_class(TcssStr.tab_buttons_horizontal)
         for button_enum in self.buttons:
             self.query_one(self.tab_ids.button_qid(button_enum)).add_class(
@@ -305,6 +305,12 @@ class ButtonsHorizontal(HorizontalGroup):
         self.query_one(self.tab_ids.button_qid(self.buttons[0])).add_class(
             TcssStr.last_clicked
         )
+
+    def add_operate_button_classes(self) -> None:
+        self.add_class(TcssStr.operate_buttons_horizontal)
+        for button_enum in self.buttons:
+            button = self.query_one(self.tab_ids.button_qid(button_enum))
+            button.add_class(TcssStr.operate_button)
 
     @on(Button.Pressed, ".tab_button")
     def update_tab_btn_last_clicked(self, event: Button.Pressed) -> None:
