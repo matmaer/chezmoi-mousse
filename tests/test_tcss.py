@@ -100,3 +100,16 @@ def test_no_hardcoded(py_file: Path) -> None:
                 pytest.fail(
                     f'\n{py_file}:{first_arg.lineno} - add_class("{first_arg.value}"): hardcoded tcss class'
                 )
+
+
+@pytest.mark.parametrize(
+    "tcss_class", extract_tcss_classes(Path("./src/chezmoi_mousse/gui.tcss"))
+)
+def test_no_orphaned_tcss_classes(tcss_class: str) -> None:
+    """Test that each CSS class in gui.tcss is also defined as a TcssStr enum member."""
+    tcss_enum_members = {member.name for member in TcssStr}
+
+    if tcss_class not in tcss_enum_members:
+        pytest.fail(
+            f"\nOrphaned CSS class '{tcss_class}' found in gui.tcss (not in TcssStr enum)"
+        )
