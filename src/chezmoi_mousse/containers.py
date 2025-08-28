@@ -28,6 +28,7 @@ from textual.widgets import (
 )
 
 from chezmoi_mousse import CM_CFG
+from chezmoi_mousse.chezmoi import init_log
 from chezmoi_mousse.constants import (
     Location,
     OperateBtn,
@@ -378,11 +379,14 @@ class InitCloneRepo(Vertical):
         # TODO: implement guess feature from chezmoi
         # TODO: add selection for https or ssh
         yield InputHorizontal()
-        yield ButtonsHorizontal(
-            tab_ids=Id.init,
-            buttons=(OperateBtn.clone_repo,),
-            location=Location.bottom,
-        )
+
+        with VerticalGroup(classes=TcssStr.operate_docked_bottom):
+            yield ButtonsHorizontal(
+                tab_ids=Id.init,
+                buttons=(OperateBtn.clone_repo,),
+                location=Location.bottom,
+            )
+            yield init_log
 
     @on(Input.Submitted)
     def show_invalid_reasons(self, event: Input.Submitted) -> None:

@@ -72,8 +72,6 @@ class Operate(ModalBase):
         )
         super().__init__(path=self.path, modal_id=ModalIdStr.operate_modal)
 
-    # TODO: implement auto expand: make sure the operate buttons and operate
-    # log are not pushed out of view
     def compose(self) -> ComposeResult:
         with Vertical(id=ModalIdStr.operate_vertical):
             yield OperateInfo(
@@ -95,7 +93,7 @@ class Operate(ModalBase):
                     id=ModalIdStr.operate_collapsible, title="File Contents"
                 ):
                     yield ContentsView(view_id=ModalIdStr.modal_contents_view)
-            with VerticalGroup():
+            with VerticalGroup(classes=TcssStr.operate_docked_bottom):
                 yield ButtonsHorizontal(
                     tab_ids=self.tab_ids,
                     buttons=self.buttons,

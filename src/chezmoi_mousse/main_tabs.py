@@ -276,7 +276,6 @@ class InitTab(OperateTabsBase):
                 yield InitCloneRepo()
                 yield InitNewRepo()
                 yield InitPurgeRepo()
-            yield init_log
 
         yield SwitchSlider(
             tab_ids=Id.init,

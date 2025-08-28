@@ -146,6 +146,7 @@ class TcssStr(StrEnum):
     modal_base = auto()
     operate_buttons_horizontal = auto()
     operate_button = auto()
+    operate_docked_bottom = auto()
     operate_log = auto()
     operate_top_path = auto()
     pad_bottom = auto()

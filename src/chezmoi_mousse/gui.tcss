@@ -243,13 +243,12 @@
   }
 }
 
-.operate_log {
+.operate_log{
   border-title-align: center;
   border-top: $foreground;
   dock: bottom;
   height: auto;
-  max-height: 1fr;
-  min-height: 3;
+  max-height: 10;
   padding: 0 1 0 1;
 }
 
@@ -257,12 +256,15 @@
   border: $accent-darken-3;
   border-title-style: bold;
   border-subtitle-style: bold;
-    .operate_top_path {
+  .operate_top_path {
     border-subtitle-align: center;
     border-title-align: center;
     border: round $foreground;
     margin: 0 1 0 1;
     text-align: center;
+  }
+  VerticalGroup.operate_docked_bottom {
+    dock: bottom;
   }
 }
 
