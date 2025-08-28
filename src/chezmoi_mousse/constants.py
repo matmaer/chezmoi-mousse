@@ -56,7 +56,7 @@ class ModalIdStr(StrEnum):
     modal_git_log_view = auto()
     operate_collapsible = auto()
     operate_info = auto()
-    operate_log = auto()
+    operate_modal_log = auto()
     operate_modal = auto()
     operate_vertical = auto()
 

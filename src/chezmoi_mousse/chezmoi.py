@@ -92,17 +92,17 @@ class ReadCmd(Enum):
 
 
 class CommandLog(RichLog):
-    def __init__(self, rich_log_id: str) -> None:
-        self.rich_log_id = rich_log_id
+    def __init__(self, log_id: str) -> None:
+        self.log_id = log_id
         super().__init__(
-            id=self.rich_log_id, auto_scroll=True, markup=True, max_lines=10000
+            id=self.log_id, auto_scroll=True, markup=True, max_lines=10000
         )
 
     def on_mount(self) -> None:
-        if self.rich_log_id == Id.init.log_id:
+        if self.log_id == Id.init.log_id:
             self.border_title = " Init Log "
             self.add_class(TcssStr.operate_log)
-        elif self.rich_log_id == ModalIdStr.operate_log:
+        elif self.log_id == ModalIdStr.operate_modal_log:
             self.border_title = " Operate Log "
             self.add_class(TcssStr.operate_log)
 
@@ -190,9 +190,9 @@ class CommandLog(RichLog):
         self.write(f"{self._log_time()} [{color}]{message}[/]")
 
 
-cmd_log = CommandLog(rich_log_id=Id.log.log_id)
-init_log = CommandLog(rich_log_id=Id.init.log_id)
-op_log = CommandLog(rich_log_id=ModalIdStr.operate_log)
+cmd_log = CommandLog(log_id=Id.log.log_id)
+init_log = CommandLog(log_id=Id.init.log_id)
+op_log = CommandLog(log_id=ModalIdStr.operate_modal_log)
 
 
 if os.environ.get("CHEZMOI_MOUSSE_DEV") == "1":
