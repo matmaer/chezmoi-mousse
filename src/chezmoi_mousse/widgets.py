@@ -328,10 +328,11 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
             "A": theme.vars["text-success"],
             "M": theme.vars["text-warning"],
             # Root node, invisible but needed because render_label override
-            "R": theme.vars["text-primary"],
+            # Use "F" for fake, as R is in use by chezmoi for Run
+            "F": theme.vars["text-primary"],
         }
         root_node_data: DirNodeData = DirNodeData(
-            path=CM_CFG.destDir, found=True, status="R"
+            path=CM_CFG.destDir, found=True, status="F"
         )
         super().__init__(label="root", data=root_node_data, id=id)
 
