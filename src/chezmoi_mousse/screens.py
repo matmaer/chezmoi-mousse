@@ -3,10 +3,10 @@ from pathlib import Path
 from textual import on
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import Vertical, VerticalGroup
+from textual.containers import Center, Middle, Vertical, VerticalGroup
 from textual.events import Click
 from textual.screen import ModalScreen
-from textual.widgets import Button, Collapsible
+from textual.widgets import Button, Collapsible, Link, Static
 
 from chezmoi_mousse.chezmoi import chezmoi, chezmoi_config, cmd_log, op_log
 from chezmoi_mousse.constants import ModalIdStr, OperateVerbs, TcssStr
@@ -231,3 +231,17 @@ class Maximized(ModalBase):
             self.border_title = (
                 f" {self.path.relative_to(chezmoi_config.destDir)} "
             )
+
+
+class ChezmoiCommandNotFound(ModalBase):
+    def compose(self) -> ComposeResult:
+        # temporary modal till I have something better
+        # TODO: improve modal with install instructions and not display the modal full screen
+        with Middle():
+            yield Center(
+                Static(
+                    "\n\nChezmoi is not installed, please install it first as it's not bundled with this application.\n\n"
+                )
+            )
+            with Center():
+                yield Link("chezmoi.io", url="https://chezmoi.io/install")

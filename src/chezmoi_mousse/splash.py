@@ -16,6 +16,7 @@ from textual.worker import WorkerState
 
 from chezmoi_mousse.chezmoi import CHEZMOI_COMMAND_FOUND, chezmoi, cmd_log
 from chezmoi_mousse.constants import SPLASH, SplashIdStr
+from chezmoi_mousse.custom_theme import vars as theme_vars
 
 
 def create_deque() -> deque[Style]:
@@ -85,11 +86,13 @@ class LoadingScreen(Screen[list[str]]):
         self.app.call_from_thread(update_log)
 
     @work(thread=True, group="io_workers")
-    def handle_unavailable_chezmoi_command(self, log_label: str) -> None:
-        padding = LOG_PADDING_WIDTH - len(log_label)
-        log_text = f"{log_label} {' ' * padding} not found"
-        RICH_LOG.write(log_text)
-        cmd_log.log_error("chezmoi command not found")
+    def handle_unavailable_chezmoi_command(self) -> None:
+        message = "chezmoi command ................. not found"
+        color = theme_vars["text-warning"]
+        RICH_LOG.styles.margin = 1
+        RICH_LOG.markup = True
+        RICH_LOG.styles.width = len(message) + 2
+        RICH_LOG.write(f"[{color}]{message}[/]")
         sleep(0.5)
 
     @work(thread=True, group="io_workers")
@@ -118,9 +121,7 @@ class LoadingScreen(Screen[list[str]]):
         )
 
         if not CHEZMOI_COMMAND_FOUND:
-            self.handle_unavailable_chezmoi_command(
-                log_label="chezmoi command"
-            )
+            self.handle_unavailable_chezmoi_command()
             cmd_log.log_error("chezmoi command not found")
             return
         else:

@@ -16,8 +16,20 @@ from textual.widgets import (
 )
 
 import chezmoi_mousse.custom_theme
-from chezmoi_mousse.chezmoi import chezmoi_config, cmd_log, init_log
-from chezmoi_mousse.constants import Chars, Location, TabStr, TreeStr, ViewStr
+from chezmoi_mousse.chezmoi import (  # CHEZMOI_COMMAND_FOUND,
+    CHEZMOI_COMMAND_FOUND,
+    chezmoi_config,
+    cmd_log,
+    init_log,
+)
+from chezmoi_mousse.constants import (
+    Chars,
+    Location,
+    ModalIdStr,
+    TabStr,
+    TreeStr,
+    ViewStr,
+)
 from chezmoi_mousse.containers import ButtonsHorizontal
 from chezmoi_mousse.id_typing import Id, OperateBtn, OperateHelp
 from chezmoi_mousse.main_tabs import (
@@ -29,7 +41,7 @@ from chezmoi_mousse.main_tabs import (
 )
 from chezmoi_mousse.messages import InvalidInputMessage, OperateMessage
 from chezmoi_mousse.overrides import CustomScrollBarRender
-from chezmoi_mousse.screens import Maximized, Operate
+from chezmoi_mousse.screens import ChezmoiCommandNotFound, Maximized, Operate
 from chezmoi_mousse.splash import LoadingScreen
 from chezmoi_mousse.widgets import (
     ContentsView,
@@ -42,8 +54,8 @@ from chezmoi_mousse.widgets import (
 
 class ChezmoiGUI(App[None]):
     def __init__(self):
-        super().__init__()
         self.loading_screen_dismissed = False
+        super().__init__()
 
     CSS_PATH = "gui.tcss"
 
@@ -57,7 +69,6 @@ class ChezmoiGUI(App[None]):
     ]
 
     def compose(self) -> ComposeResult:
-        yield Header(icon=Chars.burger)
         with TabbedContent():
             with TabPane("Apply", id=Id.apply.tab_pane_id):
                 yield ApplyTab()
@@ -94,6 +105,7 @@ class ChezmoiGUI(App[None]):
                 yield DoctorTab()
             with TabPane("Log", id=Id.log.tab_pane_id):
                 yield cmd_log
+        yield Header(icon=Chars.burger)
         yield Footer()
 
     def on_mount(self) -> None:
@@ -123,6 +135,12 @@ class ChezmoiGUI(App[None]):
         cmd_log.log_success(f"Theme set to {new_theme}")
 
     def first_mount_refresh(self, _: object) -> None:
+        if CHEZMOI_COMMAND_FOUND:
+            self.push_screen(
+                ChezmoiCommandNotFound(
+                    modal_id=ModalIdStr.modal_chezmoi_command_not_found
+                )
+            )
         add_dir = self.query_one(Id.add.button_qid(OperateBtn.add_dir), Button)
         add_dir.disabled = True
         # Trees to refresh for each tab

@@ -52,6 +52,7 @@ class ModalIdStr(StrEnum):
     invalid_input_modal = auto()
     maximized_modal = auto()
     maximized_vertical = auto()
+    modal_chezmoi_command_not_found = auto()
     modal_contents_view = auto()
     modal_diff_view = auto()
     modal_git_log_view = auto()

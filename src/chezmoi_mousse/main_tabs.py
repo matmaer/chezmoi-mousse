@@ -16,7 +16,12 @@ from textual.widgets import (
 )
 
 import chezmoi_mousse.custom_theme as theme
-from chezmoi_mousse.chezmoi import chezmoi, chezmoi_config, init_log
+from chezmoi_mousse.chezmoi import (
+    CHEZMOI_COMMAND_FOUND,
+    chezmoi,
+    chezmoi_config,
+    init_log,
+)
 from chezmoi_mousse.constants import FLOW, DoctorCollapsibles, TcssStr
 from chezmoi_mousse.containers import (
     ButtonsHorizontal,
@@ -331,8 +336,8 @@ class DoctorTab(ScrollableContainer):
         self.doctor_data: list[str] = []
 
     def compose(self) -> ComposeResult:
-
         yield Collapsible(
+            # TODO: center table
             DataTable[Text](
                 id=ViewStr.doctor_table.name,
                 classes=TcssStr.doctor_table,
@@ -371,7 +376,7 @@ class DoctorTab(ScrollableContainer):
     @on(Collapsible.Expanded, ".doctor_collapsible")
     def on_collapsible_expanded(self, event: Collapsible.Expanded) -> None:
         event.stop()
-        if not self.doctor_data:
+        if not self.doctor_data and CHEZMOI_COMMAND_FOUND:
             self.doctor_data = chezmoi.doctor.list_out
             self.populate_doctor_data()
         if event.collapsible.title == DoctorCollapsibles.doctor_template_data:
@@ -389,6 +394,8 @@ class DoctorTab(ScrollableContainer):
 
     @on(Button.Pressed, Id.doctor.button_qid(OperateBtn.refresh_doctor_data))
     def on_refresh_doctor_data(self, event: Button.Pressed) -> None:
+        if not CHEZMOI_COMMAND_FOUND:
+            return
         chezmoi.doctor.update()
         self.doctor_data = chezmoi.doctor.list_out
         self.query_one(DataTable[Text]).clear()
