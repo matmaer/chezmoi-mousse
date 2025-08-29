@@ -51,7 +51,7 @@ class AllCommands(Enum):
         "--path-style=absolute",
         "--include=dirs",
     )
-    dump_config = (BASE_CMD + (IoVerbs.dump_config, "--format=json"),)
+    dump_config = BASE_CMD + (IoVerbs.dump_config, "--format=json")
     file_status_lines = BASE_CMD + (
         IoVerbs.status,
         "--path-style=absolute",
@@ -88,6 +88,7 @@ class AllCommands(Enum):
 class IoCmd(Enum):
     dir_status_lines = AllCommands.dir_status_lines.value
     doctor = AllCommands.doctor.value
+    dump_config = AllCommands.dump_config.value
     file_status_lines = AllCommands.file_status_lines.value
     managed_dirs = AllCommands.managed_dirs.value
     managed_files = AllCommands.managed_files.value
@@ -387,8 +388,8 @@ class ChezmoiConfig:
     destDir: Path = Path.home()
     sourceDir: Path | None = None
 
-    def update_config_class(self, long_command: CmdWords) -> None:
-        parsed_config: ParsedJson = json.loads(_run_cmd(long_command))
+    def update_config_class(self, dump_config_stdout: str) -> None:
+        parsed_config: ParsedJson = json.loads(dump_config_stdout)
         self.autoadd = parsed_config["git"]["autoadd"]
         self.autocommit = parsed_config["git"]["autocommit"]
         self.autopush = parsed_config["git"]["autopush"]
@@ -423,9 +424,9 @@ class InputOutput:
             return {}
 
     def update(self) -> None:
-        if IoVerbs.dump_config in self.long_command:
-            chezmoi_config.update_config_class(self.long_command)
         self.std_out = _run_cmd(self.long_command)
+        if IoVerbs.dump_config in self.long_command:
+            chezmoi_config.update_config_class(self.std_out)
 
 
 class Chezmoi:
