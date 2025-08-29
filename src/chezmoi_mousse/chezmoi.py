@@ -405,6 +405,8 @@ class InputOutput:
 
     long_command: CmdWords
     arg_id: str
+    # fields with defaults should go after non-default fields
+    config_dump: ChezmoiConfig | None = None
     std_out: str = ""
 
     @property
@@ -431,6 +433,7 @@ class InputOutput:
 
 class Chezmoi:
 
+    config_dump: InputOutput
     dir_status_lines: InputOutput
     doctor: InputOutput
     file_status_lines: InputOutput
