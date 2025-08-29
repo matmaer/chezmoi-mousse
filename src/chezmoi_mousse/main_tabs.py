@@ -16,8 +16,7 @@ from textual.widgets import (
 )
 
 import chezmoi_mousse.custom_theme as theme
-from chezmoi_mousse import CM_CFG
-from chezmoi_mousse.chezmoi import chezmoi, init_log
+from chezmoi_mousse.chezmoi import chezmoi, chezmoi_config, init_log
 from chezmoi_mousse.constants import FLOW, DoctorCollapsibles, TcssStr
 from chezmoi_mousse.containers import (
     ButtonsHorizontal,
@@ -174,7 +173,7 @@ class AddTab(OperateTabsBase):
     def compose(self) -> ComposeResult:
         with VerticalGroup(id=Id.add.tab_vertical_id(Location.left)):
             yield FilteredDirTree(
-                CM_CFG.destDir,
+                chezmoi_config.destDir,
                 id=Id.add.tree_id(TreeStr.add_tree),
                 classes=TcssStr.dir_tree_widget,
             )
@@ -191,14 +190,14 @@ class AddTab(OperateTabsBase):
         right_side = self.query_one(
             Id.add.tab_vertical_qid(Location.right), Vertical
         )
-        right_side.border_title = str(CM_CFG.destDir)
+        right_side.border_title = str(chezmoi_config.destDir)
         right_side.add_class(
             TcssStr.tab_right_vertical, TcssStr.border_title_top
         )
         left_side = self.query_one(
             Id.add.tab_vertical_qid(Location.left), VerticalGroup
         )
-        left_side.border_title = str(CM_CFG.destDir)
+        left_side.border_title = str(chezmoi_config.destDir)
         left_side.add_class(
             TcssStr.tab_left_vertical, TcssStr.border_title_top
         )
@@ -221,7 +220,9 @@ class AddTab(OperateTabsBase):
         ).path = event.node.data.path
         self.query_one(
             Id.add.tab_vertical_qid(Location.right), Vertical
-        ).border_title = f"{event.node.data.path.relative_to(CM_CFG.destDir)}"
+        ).border_title = (
+            f"{event.node.data.path.relative_to(chezmoi_config.destDir)}"
+        )
         self.enable_buttons((OperateBtn.add_file,))
 
     def on_directory_tree_directory_selected(
@@ -234,7 +235,9 @@ class AddTab(OperateTabsBase):
         ).path = event.node.data.path
         self.query_one(
             Id.add.tab_vertical_qid(Location.right), Vertical
-        ).border_title = f"{event.node.data.path.relative_to(CM_CFG.destDir)}"
+        ).border_title = (
+            f"{event.node.data.path.relative_to(chezmoi_config.destDir)}"
+        )
         self.disable_buttons((OperateBtn.add_file,))
 
     def on_switch_changed(self, event: Switch.Changed) -> None:

@@ -8,8 +8,7 @@ from textual.events import Click
 from textual.screen import ModalScreen
 from textual.widgets import Button, Collapsible
 
-from chezmoi_mousse import CM_CFG
-from chezmoi_mousse.chezmoi import chezmoi, cmd_log, op_log
+from chezmoi_mousse.chezmoi import chezmoi, chezmoi_config, cmd_log, op_log
 from chezmoi_mousse.constants import ModalIdStr, OperateVerbs, TcssStr
 from chezmoi_mousse.containers import ButtonsHorizontal
 from chezmoi_mousse.id_typing import (
@@ -28,6 +27,33 @@ from chezmoi_mousse.widgets import (
     GitLogView,
     OperateInfo,
 )
+
+# import json
+# import sys
+# from pathlib import Path
+# from shutil import which
+# from subprocess import run
+
+# from .id_typing import ParsedJson
+
+# if not which("chezmoi"):
+#     print("Error: chezmoi command not found.", file=sys.stderr)
+#     sys.exit(1)
+# elif not which("git"):
+#     print("Error: git command not found.", file=sys.stderr)
+#     sys.exit(1)
+
+# try:
+#     chezmoi_config: ParsedJson = json.loads(
+#         run(
+#             BASE_CMD + ("dump-config", "--format=json"),
+#             capture_output=True,
+#             text=True,
+#         ).stdout
+#     )
+# except Exception as e:
+#     print(f"Failed run chezmoi dump-config: {e}", file=sys.stderr)
+#     sys.exit(1)
 
 
 class ModalBase(ModalScreen[None]):
@@ -226,7 +252,9 @@ class Maximized(ModalBase):
                 ModalIdStr.modal_git_log_view.qid, GitLogView
             ).path = self.path
 
-        if self.path == CM_CFG.destDir:
-            self.border_title = f" {CM_CFG.destDir} "
+        if self.path == chezmoi_config.destDir:
+            self.border_title = f" {chezmoi_config.destDir} "
         elif self.path is not None:
-            self.border_title = f" {self.path.relative_to(CM_CFG.destDir)} "
+            self.border_title = (
+                f" {self.path.relative_to(chezmoi_config.destDir)} "
+            )

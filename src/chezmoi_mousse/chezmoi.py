@@ -11,7 +11,6 @@ from rich.markup import escape
 from textual.widgets import RichLog
 
 import chezmoi_mousse.custom_theme as theme
-from chezmoi_mousse import BASE_CMD, CM_CFG
 from chezmoi_mousse.constants import (
     Chars,
     IoVerbs,
@@ -28,6 +27,36 @@ from chezmoi_mousse.id_typing import (
     OperateHelp,
     ParsedJson,
     PathDict,
+)
+
+
+@dataclass
+class ChezmoiConfig:
+    autoadd: bool = False
+    autocommit: bool = False
+    autopush: bool = False
+    destDir: Path = Path.home()
+    sourceDir: Path | None = None
+
+    def update_config_class(self, config: ParsedJson) -> None:
+        self.autoadd = config["git"]["autoadd"]
+        self.autocommit = config["git"]["autocommit"]
+        self.autopush = config["git"]["autopush"]
+        self.destDir = Path(config["destDir"])
+        self.sourceDir = Path(config["sourceDir"])
+
+
+chezmoi_config = ChezmoiConfig()
+
+BASE_CMD = (
+    "chezmoi",
+    "--no-pager",
+    "--color=off",
+    "--no-tty",
+    "--mode=file",
+    "--progress=false",
+    "--interactive=false",
+    "--force",
 )
 
 
@@ -348,8 +377,10 @@ class ReadCommand:
 
     def git_log(self, path: Path) -> list[str]:
         source_path: str = ""
-        if path == CM_CFG.destDir:
-            source_path = str(CM_CFG.sourceDir)
+        if not chezmoi_config.sourceDir:
+            return []
+        if path == chezmoi_config.destDir:
+            source_path = str(chezmoi_config.sourceDir)
         else:
             source_path = _run_cmd(ReadCmd.source_path.value + (str(path),))
         long_command = ReadCmd.git_log.value + (source_path,)

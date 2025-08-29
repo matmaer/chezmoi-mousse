@@ -16,7 +16,7 @@ from textual.widgets import (
 )
 
 import chezmoi_mousse.custom_theme
-from chezmoi_mousse.chezmoi import CM_CFG, cmd_log, init_log
+from chezmoi_mousse.chezmoi import chezmoi_config, cmd_log, init_log
 from chezmoi_mousse.constants import Chars, Location, TabStr, TreeStr, ViewStr
 from chezmoi_mousse.containers import ButtonsHorizontal
 from chezmoi_mousse.id_typing import Id, OperateBtn, OperateHelp
@@ -202,7 +202,7 @@ class ChezmoiGUI(App[None]):
 
         # Initialize modal parameters
         id_to_maximize: str | None = None
-        current_path: Path = CM_CFG.destDir
+        current_path: Path = chezmoi_config.destDir
 
         if tab_ids.tab_name in (TabStr.apply_tab, TabStr.re_add_tab):
             # Determine what view to show in the modal
