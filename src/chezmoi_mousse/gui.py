@@ -135,7 +135,7 @@ class ChezmoiGUI(App[None]):
         cmd_log.log_success(f"Theme set to {new_theme}")
 
     def first_mount_refresh(self, _: object) -> None:
-        if CHEZMOI_COMMAND_FOUND:
+        if not CHEZMOI_COMMAND_FOUND:
             self.push_screen(
                 ChezmoiCommandNotFound(
                     modal_id=ModalIdStr.modal_chezmoi_command_not_found
