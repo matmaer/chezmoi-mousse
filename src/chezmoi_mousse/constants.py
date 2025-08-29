@@ -145,6 +145,8 @@ class TcssStr(StrEnum):
     input_field_vertical = auto()
     input_select = auto()
     input_select_vertical = auto()
+    install_help_modal = auto()
+    internet_links = auto()
     last_clicked = auto()
     modal_base = auto()
     operate_buttons_horizontal = auto()

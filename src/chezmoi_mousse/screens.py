@@ -234,14 +234,23 @@ class Maximized(ModalBase):
 
 
 class ChezmoiCommandNotFound(ModalBase):
+
+    def on_mount(self) -> None:
+        self.border_subtitle = " double click or escape key to close "
+        self.add_class(TcssStr.install_help_modal)
+
     def compose(self) -> ComposeResult:
         # temporary modal till I have something better
         # TODO: improve modal with install instructions and not display the modal full screen
         with Middle():
             yield Center(
                 Static(
-                    "\n\nChezmoi is not installed, please install it first as it's not bundled with this application.\n\n"
+                    "\n\nChezmoi is not installed, please install it first as it's not bundled with this application.\n\nYou can still explore the app but there will be no data or operations available.\n\n"
                 )
             )
             with Center():
-                yield Link("chezmoi.io", url="https://chezmoi.io/install")
+                yield Link(
+                    "chezmoi.io",
+                    url="https://chezmoi.io/install",
+                    classes=TcssStr.internet_links,
+                )
