@@ -1,4 +1,5 @@
 from collections import deque
+from shutil import which
 
 from rich.segment import Segment
 from rich.style import Style
@@ -99,6 +100,13 @@ class LoadingScreen(Screen[list[str]]):
             self.dismiss()
 
     def on_mount(self) -> None:
+
+        chezmoi_command = which("chezmoi")
+        if not chezmoi_command:
+            self.notify("chezmoi command not found")
+        else:
+            self.notify(f"chezmoi command found: {chezmoi_command}")
+
         animated_fade = self.query_exactly_one(AnimatedFade)
         self.all_workers_timer = self.set_interval(
             interval=1, callback=self.all_workers_finished

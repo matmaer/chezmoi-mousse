@@ -93,6 +93,7 @@ class ReadVerbs(StrEnum):
     cat = "cat"
     cat_config = "cat-config"
     data = "data"
+    dump_config = "dump-config"
     diff = "diff"
     git = "git"
     ignored = "ignored"

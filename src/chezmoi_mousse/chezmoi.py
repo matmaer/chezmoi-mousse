@@ -29,25 +29,6 @@ from chezmoi_mousse.id_typing import (
     PathDict,
 )
 
-
-@dataclass
-class ChezmoiConfig:
-    autoadd: bool = False
-    autocommit: bool = False
-    autopush: bool = False
-    destDir: Path = Path.home()
-    sourceDir: Path | None = None
-
-    def update_config_class(self, config: ParsedJson) -> None:
-        self.autoadd = config["git"]["autoadd"]
-        self.autocommit = config["git"]["autocommit"]
-        self.autopush = config["git"]["autopush"]
-        self.destDir = Path(config["destDir"])
-        self.sourceDir = Path(config["sourceDir"])
-
-
-chezmoi_config = ChezmoiConfig()
-
 BASE_CMD = (
     "chezmoi",
     "--no-pager",
@@ -70,6 +51,7 @@ class AllCommands(Enum):
         "--path-style=absolute",
         "--include=dirs",
     )
+    dump_config = (BASE_CMD + (ReadVerbs.dump_config, "--format=json"),)
     file_status_lines = BASE_CMD + (
         IoVerbs.status,
         "--path-style=absolute",
@@ -298,6 +280,26 @@ def _run_cmd(long_command: CmdWords, time_out: float = 1) -> str:
             op_log.log_error(f"{Chars.x_mark} Command failed {e}")
         cmd_log.log_error(f"{Chars.x_mark} Command failed {e}")
         return "failed"
+
+
+@dataclass
+class ChezmoiConfig:
+    autoadd: bool = False
+    autocommit: bool = False
+    autopush: bool = False
+    destDir: Path = Path.home()
+    sourceDir: Path | None = None
+
+    def update_config_class(self, long_command: CmdWords) -> None:
+        parsed_config: ParsedJson = json.loads(_run_cmd(long_command))
+        self.autoadd = parsed_config["git"]["autoadd"]
+        self.autocommit = parsed_config["git"]["autocommit"]
+        self.autopush = parsed_config["git"]["autopush"]
+        self.destDir = Path(parsed_config["destDir"])
+        self.sourceDir = Path(parsed_config["sourceDir"])
+
+
+chezmoi_config = ChezmoiConfig()
 
 
 class ChangeCommand:

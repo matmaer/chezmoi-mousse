@@ -28,33 +28,6 @@ from chezmoi_mousse.widgets import (
     OperateInfo,
 )
 
-# import json
-# import sys
-# from pathlib import Path
-# from shutil import which
-# from subprocess import run
-
-# from .id_typing import ParsedJson
-
-# if not which("chezmoi"):
-#     print("Error: chezmoi command not found.", file=sys.stderr)
-#     sys.exit(1)
-# elif not which("git"):
-#     print("Error: git command not found.", file=sys.stderr)
-#     sys.exit(1)
-
-# try:
-#     chezmoi_config: ParsedJson = json.loads(
-#         run(
-#             BASE_CMD + ("dump-config", "--format=json"),
-#             capture_output=True,
-#             text=True,
-#         ).stdout
-#     )
-# except Exception as e:
-#     print(f"Failed run chezmoi dump-config: {e}", file=sys.stderr)
-#     sys.exit(1)
-
 
 class ModalBase(ModalScreen[None]):
 
