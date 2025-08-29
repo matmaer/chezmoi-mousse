@@ -36,6 +36,7 @@ class DoctorCollapsibles(StrEnum):
 
 class IoVerbs(StrEnum):
     doctor = "doctor"
+    dump_config = "dump-config"
     managed = "managed"
     status = "status"
 
@@ -93,7 +94,7 @@ class ReadVerbs(StrEnum):
     cat = "cat"
     cat_config = "cat-config"
     data = "data"
-    dump_config = "dump-config"
+
     diff = "diff"
     git = "git"
     ignored = "ignored"

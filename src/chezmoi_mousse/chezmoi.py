@@ -51,7 +51,7 @@ class AllCommands(Enum):
         "--path-style=absolute",
         "--include=dirs",
     )
-    dump_config = (BASE_CMD + (ReadVerbs.dump_config, "--format=json"),)
+    dump_config = (BASE_CMD + (IoVerbs.dump_config, "--format=json"),)
     file_status_lines = BASE_CMD + (
         IoVerbs.status,
         "--path-style=absolute",
@@ -282,26 +282,6 @@ def _run_cmd(long_command: CmdWords, time_out: float = 1) -> str:
         return "failed"
 
 
-@dataclass
-class ChezmoiConfig:
-    autoadd: bool = False
-    autocommit: bool = False
-    autopush: bool = False
-    destDir: Path = Path.home()
-    sourceDir: Path | None = None
-
-    def update_config_class(self, long_command: CmdWords) -> None:
-        parsed_config: ParsedJson = json.loads(_run_cmd(long_command))
-        self.autoadd = parsed_config["git"]["autoadd"]
-        self.autocommit = parsed_config["git"]["autocommit"]
-        self.autopush = parsed_config["git"]["autopush"]
-        self.destDir = Path(parsed_config["destDir"])
-        self.sourceDir = Path(parsed_config["sourceDir"])
-
-
-chezmoi_config = ChezmoiConfig()
-
-
 class ChangeCommand:
     """Group of commands which make changes on disk or in the chezmoi
     repository."""
@@ -400,6 +380,26 @@ class ReadCommand:
 
 
 @dataclass
+class ChezmoiConfig:
+    autoadd: bool = False
+    autocommit: bool = False
+    autopush: bool = False
+    destDir: Path = Path.home()
+    sourceDir: Path | None = None
+
+    def update_config_class(self, long_command: CmdWords) -> None:
+        parsed_config: ParsedJson = json.loads(_run_cmd(long_command))
+        self.autoadd = parsed_config["git"]["autoadd"]
+        self.autocommit = parsed_config["git"]["autocommit"]
+        self.autopush = parsed_config["git"]["autopush"]
+        self.destDir = Path(parsed_config["destDir"])
+        self.sourceDir = Path(parsed_config["sourceDir"])
+
+
+chezmoi_config = ChezmoiConfig()
+
+
+@dataclass
 class InputOutput:
 
     long_command: CmdWords
@@ -423,6 +423,8 @@ class InputOutput:
             return {}
 
     def update(self) -> None:
+        if IoVerbs.dump_config in self.long_command:
+            chezmoi_config.update_config_class(self.long_command)
         self.std_out = _run_cmd(self.long_command)
 
 
