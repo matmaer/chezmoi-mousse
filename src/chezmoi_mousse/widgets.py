@@ -20,7 +20,8 @@ from textual.reactive import reactive
 from textual.widgets import DataTable, DirectoryTree, RichLog, Static
 from textual.widgets.tree import TreeNode
 
-from chezmoi_mousse import CM_CFG, theme
+import chezmoi_mousse.custom_theme as theme
+from chezmoi_mousse import CM_CFG
 from chezmoi_mousse.chezmoi import chezmoi, cmd_log, managed_status
 from chezmoi_mousse.constants import (
     ModalIdStr,

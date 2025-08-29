@@ -10,7 +10,8 @@ from typing import Literal
 from rich.markup import escape
 from textual.widgets import RichLog
 
-from chezmoi_mousse import BASE_CMD, CM_CFG, theme
+import chezmoi_mousse.custom_theme as theme
+from chezmoi_mousse import BASE_CMD, CM_CFG
 from chezmoi_mousse.constants import (
     Chars,
     IoVerbs,

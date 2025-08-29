@@ -15,7 +15,7 @@ from textual.widgets import (
     TabPane,
 )
 
-import chezmoi_mousse.theme
+import chezmoi_mousse.custom_theme
 from chezmoi_mousse.chezmoi import CM_CFG, cmd_log, init_log
 from chezmoi_mousse.constants import Chars, Location, TabStr, TreeStr, ViewStr
 from chezmoi_mousse.containers import ButtonsHorizontal
@@ -100,8 +100,8 @@ class ChezmoiGUI(App[None]):
         cmd_log.log_success("App initialized successfully")
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
         self.title = "-  c h e z m o i  m o u s s e  -"
-        self.register_theme(chezmoi_mousse.theme.chezmoi_mousse_light)
-        self.register_theme(chezmoi_mousse.theme.chezmoi_mousse_dark)
+        self.register_theme(chezmoi_mousse.custom_theme.chezmoi_mousse_light)
+        self.register_theme(chezmoi_mousse.custom_theme.chezmoi_mousse_dark)
         theme_name = "chezmoi-mousse-dark"
         self.theme = theme_name
         cmd_log.log_success(f"Theme set to {theme_name}")
@@ -117,7 +117,7 @@ class ChezmoiGUI(App[None]):
     def on_theme_change(self, _: str, new_theme: str) -> None:
         new_theme_object: Theme | None = self.get_theme(new_theme)
         assert isinstance(new_theme_object, Theme)
-        chezmoi_mousse.theme.vars = (
+        chezmoi_mousse.custom_theme.vars = (
             new_theme_object.to_color_system().generate()
         )
         cmd_log.log_success(f"Theme set to {new_theme}")
