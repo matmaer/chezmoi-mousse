@@ -1,5 +1,5 @@
 from collections import deque
-from shutil import which
+from time import sleep
 
 from rich.segment import Segment
 from rich.style import Style
@@ -14,7 +14,7 @@ from textual.timer import Timer
 from textual.widgets import RichLog, Static
 from textual.worker import WorkerState
 
-from chezmoi_mousse.chezmoi import chezmoi, cmd_log
+from chezmoi_mousse.chezmoi import CHEZMOI_COMMAND_FOUND, chezmoi, cmd_log
 from chezmoi_mousse.constants import SPLASH, SplashIdStr
 
 
@@ -85,6 +85,14 @@ class LoadingScreen(Screen[list[str]]):
         self.app.call_from_thread(update_log)
 
     @work(thread=True, group="io_workers")
+    def handle_unavailable_chezmoi_command(self, log_label: str) -> None:
+        padding = LOG_PADDING_WIDTH - len(log_label)
+        log_text = f"{log_label} {' ' * padding} not found"
+        RICH_LOG.write(log_text)
+        cmd_log.log_error("chezmoi command not found")
+        sleep(0.5)
+
+    @work(thread=True, group="io_workers")
     def run_io_worker(self, arg_id: str) -> None:
         io_class = getattr(chezmoi, arg_id)
         io_class.update()
@@ -101,12 +109,6 @@ class LoadingScreen(Screen[list[str]]):
 
     def on_mount(self) -> None:
 
-        chezmoi_command = which("chezmoi")
-        if not chezmoi_command:
-            self.notify("chezmoi command not found")
-        else:
-            self.notify(f"chezmoi command found: {chezmoi_command}")
-
         animated_fade = self.query_exactly_one(AnimatedFade)
         self.all_workers_timer = self.set_interval(
             interval=1, callback=self.all_workers_finished
@@ -114,6 +116,18 @@ class LoadingScreen(Screen[list[str]]):
         self.fade_timer = self.set_interval(
             interval=0.05, callback=animated_fade.refresh
         )
+
+        if not CHEZMOI_COMMAND_FOUND:
+            self.handle_unavailable_chezmoi_command(
+                log_label="chezmoi command"
+            )
+            cmd_log.log_error("chezmoi command not found")
+            return
+        else:
+            cmd_log.log_success(
+                f"chezmoi command found: {CHEZMOI_COMMAND_FOUND}"
+            )
+
         # first run chezmoi doctor, most expensive command
         self.run_io_worker("doctor")
         LONG_COMMANDS.pop("doctor")

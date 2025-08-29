@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
+from shutil import which
 from typing import Literal
 
 from rich.markup import escape
@@ -28,6 +29,8 @@ from chezmoi_mousse.id_typing import (
     ParsedJson,
     PathDict,
 )
+
+CHEZMOI_COMMAND_FOUND = which("chezmoi")
 
 BASE_CMD = (
     "chezmoi",
@@ -213,6 +216,9 @@ if os.environ.get("CHEZMOI_MOUSSE_DEV") == "1":
 
 
 def _run_cmd(long_command: CmdWords, time_out: float = 1) -> str:
+
+    if not CHEZMOI_COMMAND_FOUND:
+        return ""
 
     try:
         cmd_stdout = subprocess.run(
