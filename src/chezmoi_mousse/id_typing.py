@@ -193,13 +193,11 @@ class PwMgrInfo(Enum):
 class TabIds:
     def __init__(self, tab_name: TabStr) -> None:
         self.log_id = f"{tab_name}_log"
-        self.log_qid = f"#{self.log_id}"
         self.switches_slider_id = f"{tab_name}_switches_slider"
         self.switches_slider_qid = f"#{self.switches_slider_id}"
         self.tab_main_horizontal_id = f"{tab_name}_main_horizontal"
         self.tab_name: TabStr = tab_name
         self.tab_pane_id = f"{tab_name}_pane"
-        self.tab_pane_qid = f"#{self.tab_pane_id}"
 
     def button_id(self, btn_enum: OperateBtn | TabBtn) -> str:
         suffix = "_op_btn" if isinstance(btn_enum, OperateBtn) else "_tab_btn"
