@@ -183,9 +183,7 @@ class AddTab(OperateTabsBase):
                 id=Id.add.tree_id(TreeStr.add_tree),
                 classes=TcssStr.dir_tree_widget,
             )
-
-        with Vertical(id=Id.add.tab_vertical_id(Location.right)):
-            yield ContentsView(view_id=Id.add.view_id(ViewStr.contents_view))
+        yield ContentsView(view_id=Id.add.view_id(ViewStr.contents_view))
 
         yield SwitchSlider(
             tab_ids=Id.add,
@@ -193,13 +191,11 @@ class AddTab(OperateTabsBase):
         )
 
     def on_mount(self) -> None:
-        right_side = self.query_one(
-            Id.add.tab_vertical_qid(Location.right), Vertical
+        contents_view = self.query_one(
+            Id.add.view_qid(ViewStr.contents_view), ContentsView
         )
-        right_side.border_title = str(chezmoi_config.destDir)
-        right_side.add_class(
-            TcssStr.tab_right_vertical, TcssStr.border_title_top
-        )
+        contents_view.border_title = str(chezmoi_config.destDir)
+        contents_view.add_class(TcssStr.border_title_top)
         left_side = self.query_one(
             Id.add.tab_vertical_qid(Location.left), VerticalGroup
         )
@@ -221,12 +217,11 @@ class AddTab(OperateTabsBase):
         event.stop()
 
         assert event.node.data is not None
-        self.query_one(
+        contents_view = self.query_one(
             Id.add.view_qid(ViewStr.contents_view), ContentsView
-        ).path = event.node.data.path
-        self.query_one(
-            Id.add.tab_vertical_qid(Location.right), Vertical
-        ).border_title = (
+        )
+        contents_view.path = event.node.data.path
+        contents_view.border_title = (
             f"{event.node.data.path.relative_to(chezmoi_config.destDir)}"
         )
         self.enable_buttons((OperateBtn.add_file,))
@@ -236,12 +231,11 @@ class AddTab(OperateTabsBase):
     ) -> None:
         event.stop()
         assert event.node.data is not None
-        self.query_one(
+        contents_view = self.query_one(
             Id.add.view_qid(ViewStr.contents_view), ContentsView
-        ).path = event.node.data.path
-        self.query_one(
-            Id.add.tab_vertical_qid(Location.right), Vertical
-        ).border_title = (
+        )
+        contents_view.path = event.node.data.path
+        contents_view.border_title = (
             f"{event.node.data.path.relative_to(chezmoi_config.destDir)}"
         )
         self.disable_buttons((OperateBtn.add_file,))
