@@ -49,7 +49,7 @@ class Location(StrEnum):
 
 
 class ModalIdStr(StrEnum):
-    invalid_input_modal = auto()
+    install_help_tree = auto()
     maximized_modal = auto()
     maximized_vertical = auto()
     modal_chezmoi_command_not_found = auto()
@@ -95,7 +95,6 @@ class ReadVerbs(StrEnum):
     cat = "cat"
     cat_config = "cat-config"
     data = "data"
-
     diff = "diff"
     git = "git"
     ignored = "ignored"
@@ -145,7 +144,7 @@ class TcssStr(StrEnum):
     input_field_vertical = auto()
     input_select = auto()
     input_select_vertical = auto()
-    install_help_modal = auto()
+    install_help_vertical = auto()
     internet_links = auto()
     last_clicked = auto()
     modal_base = auto()

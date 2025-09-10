@@ -264,23 +264,26 @@
 .modal_base {
   border: $accent-darken-3;
   border-title-style: bold;
-  border-subtitle-style: bold;
   margin: 0 1 0 1;
+  padding-left: 1;
   .operate_top_path {
     border-subtitle-align: center;
     border-title-align: center;
     border: round $foreground;
     text-align: center;
   }
-  &.install_help_modal {
-    padding: 10;
-  }
-
   VerticalGroup.operate_docked_bottom {
     dock: bottom;
   }
+  .install_help_vertical {
+    & > Link {
+      margin: 1 0 1 0;
+    }
+    & > Tree {
+      color: $primary-lighten-3;
+    }
+  }
 }
-
 
 /***********************************/
 /* textual default tcss overrides  */

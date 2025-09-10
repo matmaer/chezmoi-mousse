@@ -3,7 +3,7 @@ from pathlib import Path
 from textual import on
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import Center, Middle, Vertical, VerticalGroup
+from textual.containers import Vertical, VerticalGroup
 from textual.events import Click
 from textual.screen import ModalScreen
 from textual.widgets import Button, Collapsible, Link, Static
@@ -22,6 +22,7 @@ from chezmoi_mousse.id_typing import (
 )
 from chezmoi_mousse.messages import OperateMessage
 from chezmoi_mousse.widgets import (
+    ChezmoiInstallHelp,
     ContentsView,
     DiffView,
     GitLogView,
@@ -237,20 +238,26 @@ class ChezmoiCommandNotFound(ModalBase):
 
     def on_mount(self) -> None:
         self.border_subtitle = " double click or escape key to close "
-        self.add_class(TcssStr.install_help_modal)
 
     def compose(self) -> ComposeResult:
         # temporary modal till I have something better
         # TODO: improve modal with install instructions and not display the modal full screen
-        with Middle():
-            yield Center(
-                Static(
-                    "\n\nChezmoi is not installed, please install it first as it's not bundled with this application.\n\nYou can still explore the app but there will be no data or operations available.\n\n"
+        with Vertical(classes=TcssStr.install_help_vertical):
+            yield Static(
+                (
+                    "Chezmoi is not installed, it is not bundled with this "
+                    "application. "
+                    "This is intentional to avoid the need for privileged "
+                    "access like root or admin by the app.\n\n"
+                    "You can explore the app but there will be no data or "
+                    "operations available."
                 )
             )
-            with Center():
-                yield Link(
-                    "chezmoi.io",
-                    url="https://chezmoi.io/install",
-                    classes=TcssStr.internet_links,
-                )
+            yield Link(
+                "chezmoi.io/install",
+                url="https://chezmoi.io/install",
+                classes=TcssStr.internet_links,
+            )
+            yield ChezmoiInstallHelp(
+                label=" Install chezmoi ", id=ModalIdStr.install_help_tree
+            )
