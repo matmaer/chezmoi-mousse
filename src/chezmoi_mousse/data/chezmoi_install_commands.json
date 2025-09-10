@@ -19,8 +19,10 @@
     "Scoop": "scoop install chezmoi",
     "Winget": "winget install twpayne.chezmoi"
   },
-  "FreeBSD": "pkg install chezmoi",
-  "OpenIndiana": "pkg install application/chezmoi",
+  "Unix-like systems": {
+    "FreeBSD": "pkg install chezmoi",
+    "OpenIndiana": "pkg install application/chezmoi"
+  },
   "Cross-Platform": {
     "asdf": "asdf plugin add chezmoi && asdf install chezmoi v2.65.1",
     "mise": "mise use --global chezmoi@v2.65.1",
