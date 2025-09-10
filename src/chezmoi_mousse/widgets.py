@@ -269,8 +269,8 @@ class DiffView(RichLog):
             if line.strip()  # filter lines containing only spaces
             and (
                 line[0] in "+- "
-                or line.startswith("old")
-                or line.startswith("new")
+                or line.startswith("old mode")
+                or line.startswith("new mode")
             )
             and not line.startswith(("+++", "---"))
         ]
@@ -283,6 +283,21 @@ class DiffView(RichLog):
                 self.write(Text(line, theme.vars["text-error"]))
             elif line.startswith("+"):
                 self.write(Text(line, theme.vars["text-success"]))
+            elif line.startswith("old mode"):
+                self.write(
+                    Text(
+                        "Permissions will be changed:",
+                        theme.vars["foreground"],
+                    )
+                )
+                self.write(
+                    Text(f" {Chars.bullet} {line}", theme.vars["foreground"])
+                )
+            elif line.startswith("new mode"):
+                self.write(
+                    Text(f" {Chars.bullet} {line}\n", theme.vars["foreground"])
+                )
+
             else:
                 self.write(Text(Chars.bullet + line, style="dim"))
 
