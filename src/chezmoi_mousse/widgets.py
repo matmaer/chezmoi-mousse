@@ -284,20 +284,10 @@ class DiffView(RichLog):
             elif line.startswith("+"):
                 self.write(Text(line, theme.vars["text-success"]))
             elif line.startswith("old mode"):
-                self.write(
-                    Text(
-                        "Permissions will be changed:",
-                        theme.vars["foreground"],
-                    )
-                )
-                self.write(
-                    Text(f" {Chars.bullet} {line}", theme.vars["foreground"])
-                )
+                self.write("Permissions/mode will be changed:")
+                self.write(f" {Chars.bullet} {line}")
             elif line.startswith("new mode"):
-                self.write(
-                    Text(f" {Chars.bullet} {line}\n", theme.vars["foreground"])
-                )
-
+                self.write(f" {Chars.bullet} {line}\n")
             else:
                 self.write(Text(Chars.bullet + line, style="dim"))
 
