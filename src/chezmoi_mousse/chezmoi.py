@@ -501,11 +501,25 @@ class ManagedStatus:
             status_codes = "M"
             status_idx = 0
 
-        paths_with_status_dict = {
-            Path(line[3:]): line[status_idx]
-            for line in status_lines
-            if line[status_idx] in status_codes
-        }
+        paths_with_status_dict = {}
+        if tab_name == TabStr.re_add_tab:
+            # For re_add_tab, include files with "M" at status_idx=0 OR
+            # files with space at status_idx=0 AND "M" at status_idx=1
+            for line in status_lines:
+                if line[status_idx] in status_codes or (
+                    line[status_idx] == " " and line[1] == "M"
+                ):
+                    paths_with_status_dict[Path(line[3:])] = (
+                        line[status_idx]
+                        if line[status_idx] != " "
+                        else line[1]
+                    )
+        else:
+            paths_with_status_dict = {
+                Path(line[3:]): line[status_idx]
+                for line in status_lines
+                if line[status_idx] in status_codes
+            }
 
         for path in managed_paths:
             if path in paths_with_status_dict:
