@@ -267,7 +267,11 @@ class DiffView(RichLog):
             line
             for line in diff_output
             if line.strip()  # filter lines containing only spaces
-            and line[0] in "+- "
+            and (
+                line[0] in "+- "
+                or line.startswith("old")
+                or line.startswith("new")
+            )
             and not line.startswith(("+++", "---"))
         ]
         if not diff_lines:
