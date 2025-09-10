@@ -221,14 +221,18 @@ def _run_cmd(long_command: CmdWords, time_out: float = 1) -> str:
         return ""
 
     try:
-        cmd_stdout = subprocess.run(
-            long_command,
-            capture_output=True,
-            check=True,  # raises exception for any non-zero return code
-            shell=False,
-            text=True,  # returns stdout as str instead of bytes
-            timeout=5,  # maybe optimize for circumstances later on
-        ).stdout.strip()
+        cmd_stdout = (
+            subprocess.run(
+                long_command,
+                capture_output=True,
+                check=True,  # raises exception for any non-zero return code
+                shell=False,
+                text=True,  # returns stdout as str instead of bytes
+                timeout=5,  # maybe optimize for circumstances later on
+            )
+            .stdout.lstrip("\n")
+            .rstrip()
+        )
         cmd_log.log_command(long_command)
         if any(verb in long_command for verb in OperateVerbs):
             if (
