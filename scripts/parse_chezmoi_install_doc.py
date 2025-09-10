@@ -89,16 +89,14 @@ def pre_process_file() -> list[str]:
     result = content_list[1:split_idx]  # OS-specific commands
     result.append("Cross-Platform")  # Add a header and indent cross-platform
     result.extend(f"    {line}" for line in content_list[split_idx + 1 :])
-    # find index of line starting with FreeBSD
     freebsd_idx = next(
         (i for i, line in enumerate(result) if line.startswith("FreeBSD"))
     )
     # insert a list item before FreeBSD
     result.insert(freebsd_idx, "Unix-like systems")
-    # increase indent for the next four lines
+    # increase indent for the next four lines (FreeBSD and OpenIndiana commands)
     for i in range(freebsd_idx + 1, freebsd_idx + 5):
         result[i] = f"    {result[i]}"
-
     return result
 
 
