@@ -7,6 +7,8 @@ from textual.widgets import (
     Collapsible,
     ContentSwitcher,
     DataTable,
+    Input,
+    Label,
     Link,
     ListItem,
     ListView,
@@ -26,7 +28,6 @@ from chezmoi_mousse.constants import FLOW, DoctorCollapsibles, TcssStr
 from chezmoi_mousse.containers import (
     ButtonsHorizontal,
     InitCloneRepo,
-    InitNewRepo,
     InitPurgeRepo,
     OperateTabsBase,
     SwitchSlider,
@@ -265,10 +266,6 @@ class InitTab(OperateTabsBase):
 
     def compose(self) -> ComposeResult:
         with Vertical():
-            yield Static(
-                "[$error bold]chezmoi init and purge WORK IN PROGRESS, do not use[/]",
-                markup=True,
-            )
             yield ButtonsHorizontal(
                 tab_ids=Id.init,
                 buttons=(
@@ -281,9 +278,17 @@ class InitTab(OperateTabsBase):
             with ContentSwitcher(
                 id=Id.init.content_switcher_id(Location.top),
                 initial=Id.init.view_id(ViewStr.init_clone_view),
+                classes=TcssStr.border_title_top,
             ):
                 yield InitCloneRepo()
-                yield InitNewRepo()
+                with Vertical(id=Id.init.view_id(ViewStr.init_new_view)):
+                    yield Label("Initialize a new chezmoi git repository")
+                    yield Input(placeholder="Enter config file path")
+                    yield ButtonsHorizontal(
+                        tab_ids=Id.init,
+                        buttons=(OperateBtn.new_repo,),
+                        location=Location.bottom,
+                    )
                 yield InitPurgeRepo()
 
         yield SwitchSlider(
@@ -292,11 +297,6 @@ class InitTab(OperateTabsBase):
         )
 
     def on_mount(self) -> None:
-        buttons_horizontal = self.query_one(
-            Id.init.buttons_horizontal_qid(Location.top), ButtonsHorizontal
-        )
-        buttons_horizontal.add_class(TcssStr.border_title_bottom)
-        buttons_horizontal.border_subtitle = " chezmoi init "
         init_log.log_success("Ready to run chezmoi commands.")
 
     @on(Button.Pressed, ".operate_button")

@@ -361,18 +361,18 @@ class InputHorizontal(HorizontalGroup):
             )
 
 
-class InitNewRepo(Vertical):
-    def __init__(self) -> None:
-        super().__init__(id=Id.init.view_id(ViewStr.init_new_view))
+# class InitNewRepo(Vertical):
+#     def __init__(self) -> None:
+#         super().__init__(id=Id.init.view_id(ViewStr.init_new_view))
 
-    def compose(self) -> ComposeResult:
-        yield Label("Initialize a new chezmoi git repository")
-        yield Input(placeholder="Enter config file path")
-        yield ButtonsHorizontal(
-            tab_ids=Id.init,
-            buttons=(OperateBtn.new_repo,),
-            location=Location.bottom,
-        )
+#     def compose(self) -> ComposeResult:
+#         yield Label("Initialize a new chezmoi git repository")
+#         yield Input(placeholder="Enter config file path")
+#         yield ButtonsHorizontal(
+#             tab_ids=Id.init,
+#             buttons=(OperateBtn.new_repo,),
+#             location=Location.bottom,
+#         )
 
 
 class InitCloneRepo(Vertical):
