@@ -68,7 +68,10 @@ class ApplyTab(OperateTabsBase):
             )
             yield TreeContentSwitcher(tab_ids=Id.apply)
 
-        with Vertical(id=Id.apply.tab_vertical_id(Location.right)):
+        with Vertical(
+            id=Id.apply.tab_vertical_id(Location.right),
+            classes=TcssStr.tab_right_vertical,
+        ):
             yield ButtonsHorizontal(
                 tab_ids=Id.apply,
                 buttons=(TabBtn.diff, TabBtn.contents, TabBtn.git_log),
@@ -95,10 +98,6 @@ class ApplyTab(OperateTabsBase):
         )
 
     def on_mount(self) -> None:
-        right_side = self.query_one(
-            Id.apply.tab_vertical_qid(Location.right), Vertical
-        )
-        right_side.add_class(TcssStr.tab_right_vertical)
         self.query_one(
             Id.apply.content_switcher_qid(Location.right), ContentSwitcher
         ).add_class(TcssStr.content_switcher_right, TcssStr.border_title_top)
