@@ -42,29 +42,6 @@ def get_used_tcss_members() -> set[str]:
     return used_members
 
 
-@pytest.mark.parametrize("tcss_member", [member.name for member in TcssStr])
-def test_tcss_members(tcss_member: str) -> None:
-    """Test that each TcssStr member is both defined in gui.tcss AND used in Python code."""
-    tcss_classes = extract_tcss_classes(Path("./src/chezmoi_mousse/gui.tcss"))
-    used_members = get_used_tcss_members()
-
-    is_in_tcss = tcss_member in tcss_classes
-    is_used_in_python = tcss_member in used_members
-
-    if not is_in_tcss and not is_used_in_python:
-        pytest.fail(
-            f"\nTcssStr.{tcss_member} is neither in gui.tcss nor used in Python code"
-        )
-    elif not is_in_tcss:
-        pytest.fail(
-            f"\nTcssStr.{tcss_member} is used in Python but not defined in gui.tcss"
-        )
-    elif not is_used_in_python:
-        pytest.fail(
-            f"\nTcssStr.{tcss_member} is defined in gui.tcss but not used in Python code"
-        )
-
-
 @pytest.mark.parametrize(
     "py_file",
     modules_to_test(exclude_file_names=exclude_files),

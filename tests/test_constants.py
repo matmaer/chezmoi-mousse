@@ -1,31 +1,21 @@
 """Test if all members from the StrEnum classes in constants.py are in use"""
 
-import inspect
 from enum import StrEnum
 
 import pytest
-from _test_utils import find_enum_usage_in_file, modules_to_test
+from _test_utils import (
+    find_enum_usage_in_file,
+    get_strenum_classes,
+    modules_to_test,
+)
 
 import chezmoi_mousse.constants as constants
 
 
-def _get_strenum_classes() -> list[type[StrEnum]]:
-    classes: list[type[StrEnum]] = []
-    for _, enum_class in inspect.getmembers(constants, inspect.isclass):
-        if (
-            issubclass(enum_class, StrEnum)
-            and enum_class is not StrEnum  # exclude the StrEnum class itself
-            # exclude TcssStr since it's tested in test_tcss.py
-            # exclude strings used for filtering DirectoryTree
-            and enum_class.__name__
-            not in ["TcssStr", "UnwantedDirs", "UnwantedFiles"]
-        ):
-            classes.append(enum_class)
-    return classes
-
-
 @pytest.mark.parametrize(
-    "str_enum_class", _get_strenum_classes(), ids=lambda cls: cls.__name__
+    "str_enum_class",
+    get_strenum_classes(constants),
+    ids=lambda cls: cls.__name__,
 )
 def test_strenum_members_in_use(str_enum_class: type[StrEnum]):
     enum_class_name = str_enum_class.__name__
