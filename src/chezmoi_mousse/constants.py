@@ -129,7 +129,6 @@ class TabStr(StrEnum):
 
 
 class TcssStr(StrEnum):
-    border_title_bottom = auto()
     border_title_top = auto()
     content_switcher_left = auto()
     content_switcher_right = auto()

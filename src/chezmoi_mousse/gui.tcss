@@ -163,12 +163,6 @@
   border-title-style: bold;
 }
 
-.border_title_bottom {
-  border-bottom: $primary;
-  border-subtitle-style: bold;
-  border-subtitle-align: center;
-}
-
 .tab_left_vertical {
   margin-right: 2;
   width: auto;
