@@ -34,9 +34,11 @@ from chezmoi_mousse.constants import (
     TcssStr,
     UnwantedDirs,
     UnwantedFiles,
+    ViewName,
 )
 from chezmoi_mousse.id_typing import (
     Chars,
+    ModalIds,
     NodeData,
     OperateBtn,
     OperateHelp,
@@ -295,8 +297,11 @@ class DiffView(RichLog):
 class GitLogView(DataTable[Text]):
     path: reactive[Path | None] = reactive(None, init=False)
 
-    def __init__(self, *, view_id: str) -> None:
-        super().__init__(id=view_id, show_cursor=False)
+    def __init__(self, *, ids: TabIds | ModalIds) -> None:
+        self.ids = ids
+        super().__init__(
+            id=self.ids.view_id(ViewName.git_log_view), show_cursor=False
+        )
 
     def on_mount(self) -> None:
         self.populate_data_table(chezmoi.run.git_log(chezmoi_config.destDir))

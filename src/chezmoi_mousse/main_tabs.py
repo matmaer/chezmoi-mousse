@@ -88,9 +88,7 @@ class ApplyTab(OperateTabsBase):
                 yield ContentsView(
                     view_id=Id.apply.view_id(ViewName.contents_view)
                 )
-                yield GitLogView(
-                    view_id=Id.apply.view_id(ViewName.git_log_view)
-                )
+                yield GitLogView(ids=Id.apply)
 
         yield SwitchSlider(
             tab_ids=Id.apply,
@@ -145,9 +143,7 @@ class ReAddTab(OperateTabsBase):
                 yield ContentsView(
                     view_id=Id.re_add.view_id(ViewName.contents_view)
                 )
-                yield GitLogView(
-                    view_id=Id.re_add.view_id(ViewName.git_log_view)
-                )
+                yield GitLogView(ids=Id.re_add)
 
         yield SwitchSlider(
             tab_ids=Id.re_add,

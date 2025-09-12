@@ -215,9 +215,7 @@ class Maximized(ModalBase):
             elif self.id_to_maximize == self.tab_ids.view_id(
                 ViewName.git_log_view
             ):
-                yield GitLogView(
-                    view_id=Id.maximized_modal.view_id(ViewName.git_log_view)
-                )
+                yield GitLogView(ids=Id.maximized_modal)
 
     def on_mount(self) -> None:
         self.border_subtitle = " double click or escape key to close "
