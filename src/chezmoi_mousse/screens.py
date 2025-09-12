@@ -39,9 +39,8 @@ class ModalBase(ModalScreen[None]):
         )
     ]
 
-    def __init__(self, *, modal_id: str, path: Path | None = None) -> None:
+    def __init__(self, *, modal_id: str) -> None:
         self.modal_id = modal_id
-        self.path = path
         super().__init__(id=self.modal_id, classes=TcssStr.modal_base)
 
     def on_click(self, event: Click) -> None:
@@ -69,7 +68,7 @@ class Operate(ModalBase):
             operation_executed=False,
             tab_name=self.tab_ids.tab_name,
         )
-        super().__init__(path=self.path, modal_id=Id.operate_modal.modal_id)
+        super().__init__(modal_id=Id.operate_modal.modal_id)
 
     def compose(self) -> ComposeResult:
         with Vertical():
@@ -195,7 +194,7 @@ class Maximized(ModalBase):
         self.path = path
         self.tab_ids = tab_ids
         self.tab_name: TabName = tab_ids.tab_name
-        super().__init__(path=path, modal_id=Id.maximized_modal.modal_id)
+        super().__init__(modal_id=Id.maximized_modal.modal_id)
 
     def compose(self) -> ComposeResult:
         with Vertical():
