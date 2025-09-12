@@ -130,7 +130,9 @@ class ChezmoiGUI(App[None]):
     def first_mount_refresh(self, _: object) -> None:
         if not CHEZMOI_COMMAND_FOUND:
             self.push_screen(InstallHelp())
-        add_dir = self.query_one(Id.add.button_qid(OperateBtn.add_dir), Button)
+        add_dir = self.query_one(
+            Id.add.button_id("#", btn=OperateBtn.add_dir), Button
+        )
         add_dir.disabled = True
         # Trees to refresh for each tab
         tree_types: list[

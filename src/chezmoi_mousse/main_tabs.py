@@ -291,20 +291,20 @@ class InitTab(OperateTabsBase):
     @on(Button.Pressed, ".operate_button")
     def handle_operation_button(self, event: Button.Pressed) -> None:
         event.stop()
-        if event.button.id == Id.init.button_id(OperateBtn.clone_repo):
+        if event.button.id == Id.init.button_id(btn=OperateBtn.clone_repo):
             chezmoi.perform.init_clone_repo(str(self.repo_url))
             self.query_one(
-                self.tab_ids.button_qid(OperateBtn.clone_repo), Button
+                self.tab_ids.button_id("#", btn=OperateBtn.clone_repo), Button
             ).disabled = True
-        elif event.button.id == Id.init.button_id(OperateBtn.new_repo):
+        elif event.button.id == Id.init.button_id(btn=OperateBtn.new_repo):
             chezmoi.perform.init_new_repo()
             self.query_one(
-                self.tab_ids.button_qid(OperateBtn.new_repo), Button
+                self.tab_ids.button_id("#", btn=OperateBtn.new_repo), Button
             ).disabled = True
-        elif event.button.id == Id.init.button_id(OperateBtn.purge_repo):
+        elif event.button.id == Id.init.button_id(btn=OperateBtn.purge_repo):
             chezmoi.perform.purge()
             self.query_one(
-                self.tab_ids.button_qid(OperateBtn.purge_repo), Button
+                self.tab_ids.button_id("#", btn=OperateBtn.purge_repo), Button
             ).disabled = True
 
 
@@ -376,7 +376,10 @@ class DoctorTab(ScrollableContainer):
                 DoctorCollapsibles.doctor_ignored.qid, Pretty
             ).update(chezmoi.run.ignored())
 
-    @on(Button.Pressed, Id.doctor.button_qid(OperateBtn.refresh_doctor_data))
+    @on(
+        Button.Pressed,
+        Id.doctor.button_id("#", btn=OperateBtn.refresh_doctor_data),
+    )
     def on_refresh_doctor_data(self, event: Button.Pressed) -> None:
         if not CHEZMOI_COMMAND_FOUND:
             return

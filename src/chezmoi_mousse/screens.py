@@ -151,19 +151,22 @@ class Operate(ModalBase):
             (OperateBtn.destroy_file, chezmoi.perform.destroy),
         ]
         for btn_enum, btn_cmd in button_commands:
-            if event.button.id == self.tab_ids.button_id(btn_enum):
+            if event.button.id == self.tab_ids.button_id(btn=btn_enum):
                 self.query_one(
-                    self.tab_ids.button_qid(OperateBtn.operate_dismiss), Button
+                    self.tab_ids.button_id(
+                        "#", btn=OperateBtn.operate_dismiss
+                    ),
+                    Button,
                 ).label = "Close"
                 btn_cmd(self.path)  # run the perform command with the path
                 self.query_one(
-                    self.tab_ids.button_qid(btn_enum), Button
+                    self.tab_ids.button_id("#", btn=btn_enum), Button
                 ).disabled = True
                 self.operate_dismiss_data.operation_executed = True
                 break
 
         if event.button.id == self.tab_ids.button_id(
-            OperateBtn.operate_dismiss
+            btn=OperateBtn.operate_dismiss
         ):
             self.handle_dismiss(self.operate_dismiss_data)
 

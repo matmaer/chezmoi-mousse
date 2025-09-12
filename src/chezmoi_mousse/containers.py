@@ -67,7 +67,7 @@ class OperateTabsBase(Horizontal):
     def disable_buttons(self, buttons_to_update: OperateButtons) -> None:
         for button_enum in buttons_to_update:
             button = self.app.query_one(
-                self.tab_ids.button_qid(button_enum), Button
+                self.tab_ids.button_id("#", btn=button_enum), Button
             )
             button.disabled = True
             if button_enum == OperateBtn.add_dir:
@@ -78,7 +78,7 @@ class OperateTabsBase(Horizontal):
     def enable_buttons(self, buttons_to_update: OperateButtons) -> None:
         for button_enum in buttons_to_update:
             button = self.app.query_one(
-                self.tab_ids.button_qid(button_enum), Button
+                self.tab_ids.button_id("#", btn=button_enum), Button
             )
             if button_enum == OperateBtn.add_dir:
                 button.tooltip = "not yet implemented"
@@ -140,7 +140,7 @@ class OperateTabsBase(Horizontal):
     def handle_tab_buttons(self, event: Button.Pressed) -> None:
         event.stop()
         # Tree/List Content Switcher
-        if event.button.id == self.tab_ids.button_id(TabBtn.tree):
+        if event.button.id == self.tab_ids.button_id(btn=TabBtn.tree):
             expand_all_switch = self.query_one(
                 self.tab_ids.switch_qid(Switches.expand_all), Switch
             )
@@ -155,7 +155,7 @@ class OperateTabsBase(Horizontal):
                     self.tab_ids.content_switcher_qid(Area.left),
                     ContentSwitcher,
                 ).current = self.tab_ids.tree_id(TreeName.managed_tree)
-        elif event.button.id == self.tab_ids.button_id(TabBtn.list):
+        elif event.button.id == self.tab_ids.button_id(btn=TabBtn.list):
             self.query_one(
                 self.tab_ids.switch_qid(Switches.expand_all), Switch
             ).disabled = True
@@ -163,21 +163,21 @@ class OperateTabsBase(Horizontal):
                 self.tab_ids.content_switcher_qid(Area.left), ContentSwitcher
             ).current = self.tab_ids.tree_id(TreeName.flat_tree)
         # Contents/Diff/GitLog Content Switcher
-        elif event.button.id == self.tab_ids.button_id(TabBtn.contents):
+        elif event.button.id == self.tab_ids.button_id(btn=TabBtn.contents):
             self.query_one(
                 self.tab_ids.content_switcher_qid(Area.right), ContentSwitcher
             ).current = self.tab_ids.view_id(ViewName.contents_view)
             self.query_one(
                 self.tab_ids.view_qid(ViewName.contents_view), ContentsView
             ).path = self.current_path
-        elif event.button.id == self.tab_ids.button_id(TabBtn.diff):
+        elif event.button.id == self.tab_ids.button_id(btn=TabBtn.diff):
             self.query_one(
                 self.tab_ids.content_switcher_qid(Area.right), ContentSwitcher
             ).current = self.tab_ids.view_id(ViewName.diff_view)
             self.query_one(
                 self.tab_ids.view_qid(ViewName.diff_view), DiffView
             ).path = self.current_path
-        elif event.button.id == self.tab_ids.button_id(TabBtn.git_log):
+        elif event.button.id == self.tab_ids.button_id(btn=TabBtn.git_log):
             self.query_one(
                 self.tab_ids.content_switcher_qid(Area.right), ContentSwitcher
             ).current = self.tab_ids.view_id(ViewName.git_log_view)
@@ -185,15 +185,15 @@ class OperateTabsBase(Horizontal):
                 self.tab_ids.view_qid(ViewName.git_log_view), GitLogView
             ).path = self.current_path
         # Init Content Switcher
-        elif event.button.id == Id.init.button_id(TabBtn.new_repo):
+        elif event.button.id == Id.init.button_id(btn=TabBtn.new_repo):
             self.query_one(
                 Id.init.content_switcher_qid(Area.top), ContentSwitcher
             ).current = Id.init.view_id(ViewName.init_new_view)
-        elif event.button.id == Id.init.button_id(TabBtn.clone_repo):
+        elif event.button.id == Id.init.button_id(btn=TabBtn.clone_repo):
             self.query_one(
                 Id.init.content_switcher_qid(Area.top), ContentSwitcher
             ).current = Id.init.view_id(ViewName.init_clone_view)
-        elif event.button.id == Id.init.button_id(TabBtn.purge_repo):
+        elif event.button.id == Id.init.button_id(btn=TabBtn.purge_repo):
             self.query_one(
                 Id.init.content_switcher_qid(Area.top), ContentSwitcher
             ).current = Id.init.view_id(ViewName.init_purge_view)
@@ -285,7 +285,7 @@ class ButtonsHorizontal(HorizontalGroup):
             ):
                 yield Button(
                     label=button_enum.value,
-                    id=self.tab_ids.button_id(button_enum),
+                    id=self.tab_ids.button_id(btn=button_enum),
                 )
 
     def on_mount(self) -> None:
@@ -297,25 +297,27 @@ class ButtonsHorizontal(HorizontalGroup):
     def add_tab_button_classes(self) -> None:
         self.add_class(TcssStr.tab_buttons_horizontal)
         for button_enum in self.buttons:
-            self.query_one(self.tab_ids.button_qid(button_enum)).add_class(
-                TcssStr.tab_button
-            )
-        self.query_one(self.tab_ids.button_qid(self.buttons[0])).add_class(
-            TcssStr.last_clicked
-        )
+            self.query_one(
+                self.tab_ids.button_id("#", btn=button_enum)
+            ).add_class(TcssStr.tab_button)
+        self.query_one(
+            self.tab_ids.button_id("#", btn=self.buttons[0])
+        ).add_class(TcssStr.last_clicked)
 
     def add_operate_button_classes(self) -> None:
         self.add_class(TcssStr.operate_buttons_horizontal)
         for button_enum in self.buttons:
-            button = self.query_one(self.tab_ids.button_qid(button_enum))
+            button = self.query_one(
+                self.tab_ids.button_id("#", btn=button_enum)
+            )
             button.add_class(TcssStr.operate_button)
 
     @on(Button.Pressed, ".tab_button")
     def update_tab_btn_last_clicked(self, event: Button.Pressed) -> None:
         for button_enum in self.buttons:
-            self.query_one(self.tab_ids.button_qid(button_enum)).remove_class(
-                TcssStr.last_clicked
-            )
+            self.query_one(
+                self.tab_ids.button_id("#", btn=button_enum)
+            ).remove_class(TcssStr.last_clicked)
         event.button.add_class(TcssStr.last_clicked)
 
 

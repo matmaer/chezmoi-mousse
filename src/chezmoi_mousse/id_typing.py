@@ -212,12 +212,9 @@ class TabIds:
         self.tab_name: TabName = tab_name
         self.tab_pane_id = f"{tab_name}_pane"
 
-    def button_id(self, btn_enum: OperateBtn | TabBtn) -> str:
-        suffix = "_op_btn" if isinstance(btn_enum, OperateBtn) else "_tab_btn"
-        return f"{self.tab_name}_{btn_enum.name}{suffix}"
-
-    def button_qid(self, btn_enum: OperateBtn | TabBtn) -> str:
-        return f"#{self.button_id(btn_enum)}"
+    def button_id(self, qid: str = "", *, btn: OperateBtn | TabBtn) -> str:
+        suffix = "_op_btn" if isinstance(btn, OperateBtn) else "_tab_btn"
+        return f"{qid}{self.tab_name}_{btn.name}{suffix}"
 
     def buttons_horizontal_id(self, area: Area) -> str:
         return f"{self.tab_name}_{area}_horizontal"
