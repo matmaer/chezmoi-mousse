@@ -41,7 +41,7 @@ from chezmoi_mousse.main_tabs import (
 )
 from chezmoi_mousse.messages import InvalidInputMessage, OperateMessage
 from chezmoi_mousse.overrides import CustomScrollBarRender
-from chezmoi_mousse.screens import ChezmoiCommandNotFound, Maximized, Operate
+from chezmoi_mousse.screens import InstallHelp, Maximized, Operate
 from chezmoi_mousse.splash import LoadingScreen
 from chezmoi_mousse.widgets import (
     ContentsView,
@@ -137,7 +137,7 @@ class ChezmoiGUI(App[None]):
     def first_mount_refresh(self, _: object) -> None:
         if not CHEZMOI_COMMAND_FOUND:
             self.push_screen(
-                ChezmoiCommandNotFound(
+                InstallHelp(
                     modal_id=ModalIdStr.modal_chezmoi_command_not_found
                 )
             )

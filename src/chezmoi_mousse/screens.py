@@ -234,7 +234,7 @@ class Maximized(ModalBase):
             )
 
 
-class ChezmoiCommandNotFound(ModalBase):
+class InstallHelp(ModalBase):
 
     def on_mount(self) -> None:
         self.border_subtitle = " double click or escape key to close "
