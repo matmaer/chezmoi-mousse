@@ -16,7 +16,7 @@ from textual.widgets import (
 )
 
 import chezmoi_mousse.custom_theme
-from chezmoi_mousse.chezmoi import (  # CHEZMOI_COMMAND_FOUND,
+from chezmoi_mousse.chezmoi import (
     CHEZMOI_COMMAND_FOUND,
     chezmoi_config,
     cmd_log,
