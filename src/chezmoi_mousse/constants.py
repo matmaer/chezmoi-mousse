@@ -3,6 +3,13 @@
 from enum import StrEnum, auto
 
 
+class Area(StrEnum):
+    bottom = auto()
+    left = auto()
+    right = auto()
+    top = auto()
+
+
 class Chars(StrEnum):
     add_file_info_border = f"local {'\u2014' * 3}\u2192 chezmoi"  # '\N{EM DASH}', '\N{RIGHTWARDS ARROW}'
     apply_file_info_border = f"local \u2190{'\u2014' * 3} chezmoi"  # '\N{LEFTWARDS ARROW}', '\N{EM DASH}'
@@ -41,17 +48,11 @@ class IoVerbs(StrEnum):
     status = "status"
 
 
-class Area(StrEnum):
-    bottom = auto()
-    left = auto()
-    right = auto()
-    top = auto()
-
-
-class LogIdStr(StrEnum):
+class LogIds(StrEnum):
     operate_log = auto()
     app_log = auto()
     init_log = auto()
+    verbose_log = auto()
 
 
 class ModalName(StrEnum):
