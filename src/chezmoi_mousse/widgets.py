@@ -112,13 +112,11 @@ class ContentsView(RichLog):
     def on_mount(self) -> None:
         self.write(
             Text(
-                f"Destination directory is {chezmoi_config.destDir}.",
+                (
+                    f"Destination directory is {chezmoi_config.destDir}.\n"
+                    "Click a file or directory to view its contents."
+                ),
                 style="dim",
-            )
-        )
-        self.write(
-            Text(
-                "Click a file or directory to view its contents.", style="dim"
             )
         )
 
@@ -156,16 +154,21 @@ class ContentsView(RichLog):
             # does not exist
             if self.path in managed_status.file_paths:
                 if not chezmoi.run.cat(self.path):
-                    message = "File contains only whitespace"
-                    self.write(message)
+                    self.write(
+                        Text("File contains only whitespace", style="dim")
+                    )
                 else:
                     self.write(chezmoi.run.cat(self.path))
                 return
 
         except IsADirectoryError:
             if self.path == chezmoi_config.destDir:
-                text = "Click a file or directory, \nto show its contents.\n"
-                self.write(Text(text, style="dim"))
+                self.write(
+                    Text(
+                        "Click a file or directory to show its contents.\n",
+                        style="dim",
+                    )
+                )
                 self.write("Current directory:")
                 self.write(f"{chezmoi_config.destDir}")
                 self.write(Text("(destDir)\n", style="dim"))
@@ -178,8 +181,7 @@ class ContentsView(RichLog):
                 self.write(f"Unmanaged directory: {self.path}")
 
         except OSError as error:
-            text = Text(f"Error reading {self.path}: {error}")
-            self.write(text)
+            self.write(Text(f"Error reading {self.path}: {error}"))
             cmd_log.log_error("Error reading file")
 
     def watch_path(self) -> None:
@@ -205,13 +207,11 @@ class DiffView(RichLog):
     def on_mount(self) -> None:
         self.write(
             Text(
-                f"Destination directory is {chezmoi_config.destDir}.",
+                (
+                    f"Destination directory is {chezmoi_config.destDir}.\n"
+                    "Click a file or directory to view its contents."
+                ),
                 style="dim",
-            )
-        )
-        self.write(
-            Text(
-                "Click a file or directory to view its contents.", style="dim"
             )
         )
 
