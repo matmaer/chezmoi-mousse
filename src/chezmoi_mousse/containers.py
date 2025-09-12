@@ -62,7 +62,7 @@ class OperateTabsBase(Horizontal):
     def __init__(self, *, tab_ids: TabIds) -> None:
         self.tab_ids = tab_ids
         self.current_path: Path | None = None
-        super().__init__(id=tab_ids.tab_name)
+        super().__init__(id=self.tab_ids.tab_name)
 
     def disable_buttons(self, buttons_to_update: OperateButtons) -> None:
         for button_enum in buttons_to_update:
@@ -240,10 +240,11 @@ class SwitchSlider(VerticalGroup):
         self, *, tab_ids: TabIds, switches: tuple[Switches, Switches]
     ) -> None:
         self.switches = switches
-        super().__init__(
-            id=tab_ids.switches_slider_id, classes=TcssStr.switches_vertical
-        )
         self.tab_ids = tab_ids
+        super().__init__(
+            id=self.tab_ids.switches_slider_id,
+            classes=TcssStr.switches_vertical,
+        )
 
     def compose(self) -> ComposeResult:
         for switch_enum in self.switches:
@@ -278,7 +279,7 @@ class ButtonsHorizontal(HorizontalGroup):
         self.buttons = buttons
         self.location: Location = location
         self.tab_ids: TabIds = tab_ids
-        super().__init__(id=tab_ids.buttons_horizontal_id(self.location))
+        super().__init__(id=self.tab_ids.buttons_horizontal_id(self.location))
 
     def compose(self) -> ComposeResult:
         for button_enum in self.buttons:
