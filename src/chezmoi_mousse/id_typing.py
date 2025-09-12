@@ -15,7 +15,7 @@ from chezmoi_mousse.constants import (
     TabBtn,
     TabName,
     TreeName,
-    ViewStr,
+    ViewName,
 )
 
 type CmdWords = tuple[str, ...]
@@ -251,10 +251,10 @@ class TabIds:
     def tree_qid(self, tree: TreeName) -> str:
         return f"#{self.tree_id(tree)}"
 
-    def view_id(self, view: ViewStr) -> str:
+    def view_id(self, view: ViewName) -> str:
         return f"{self.tab_name}_{view}"
 
-    def view_qid(self, view: ViewStr) -> str:
+    def view_qid(self, view: ViewName) -> str:
         return f"#{self.view_id(view)}"
 
 

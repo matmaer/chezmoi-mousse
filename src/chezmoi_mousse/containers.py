@@ -35,7 +35,7 @@ from chezmoi_mousse.constants import (
     TabName,
     TcssStr,
     TreeName,
-    ViewStr,
+    ViewName,
 )
 from chezmoi_mousse.id_typing import (
     Id,
@@ -100,17 +100,17 @@ class OperateTabsBase(Horizontal):
         current_view = self.query_one(
             self.tab_ids.content_switcher_qid(Location.right), ContentSwitcher
         ).current
-        if current_view == self.tab_ids.view_id(ViewStr.contents_view):
+        if current_view == self.tab_ids.view_id(ViewName.contents_view):
             self.query_one(
-                self.tab_ids.view_qid(ViewStr.contents_view), ContentsView
+                self.tab_ids.view_qid(ViewName.contents_view), ContentsView
             ).path = self.current_path
-        elif current_view == self.tab_ids.view_id(ViewStr.diff_view):
+        elif current_view == self.tab_ids.view_id(ViewName.diff_view):
             self.query_one(
-                self.tab_ids.view_qid(ViewStr.diff_view), DiffView
+                self.tab_ids.view_qid(ViewName.diff_view), DiffView
             ).path = self.current_path
-        elif current_view == self.tab_ids.view_id(ViewStr.git_log_view):
+        elif current_view == self.tab_ids.view_id(ViewName.git_log_view):
             self.query_one(
-                self.tab_ids.view_qid(ViewStr.git_log_view), GitLogView
+                self.tab_ids.view_qid(ViewName.git_log_view), GitLogView
             ).path = self.current_path
 
         # enable/disable operation buttons depending on selected node
@@ -130,7 +130,7 @@ class OperateTabsBase(Horizontal):
         elif self.tab_ids.tab_name == TabName.add_tab:
             buttons_to_update = (OperateBtn.add_file, OperateBtn.add_dir)
         if event.node.allow_expand or current_view == self.tab_ids.view_id(
-            ViewStr.git_log_view
+            ViewName.git_log_view
         ):
             self.disable_buttons(buttons_to_update)
         else:
@@ -168,39 +168,39 @@ class OperateTabsBase(Horizontal):
             self.query_one(
                 self.tab_ids.content_switcher_qid(Location.right),
                 ContentSwitcher,
-            ).current = self.tab_ids.view_id(ViewStr.contents_view)
+            ).current = self.tab_ids.view_id(ViewName.contents_view)
             self.query_one(
-                self.tab_ids.view_qid(ViewStr.contents_view), ContentsView
+                self.tab_ids.view_qid(ViewName.contents_view), ContentsView
             ).path = self.current_path
         elif event.button.id == self.tab_ids.button_id(TabBtn.diff):
             self.query_one(
                 self.tab_ids.content_switcher_qid(Location.right),
                 ContentSwitcher,
-            ).current = self.tab_ids.view_id(ViewStr.diff_view)
+            ).current = self.tab_ids.view_id(ViewName.diff_view)
             self.query_one(
-                self.tab_ids.view_qid(ViewStr.diff_view), DiffView
+                self.tab_ids.view_qid(ViewName.diff_view), DiffView
             ).path = self.current_path
         elif event.button.id == self.tab_ids.button_id(TabBtn.git_log):
             self.query_one(
                 self.tab_ids.content_switcher_qid(Location.right),
                 ContentSwitcher,
-            ).current = self.tab_ids.view_id(ViewStr.git_log_view)
+            ).current = self.tab_ids.view_id(ViewName.git_log_view)
             self.query_one(
-                self.tab_ids.view_qid(ViewStr.git_log_view), GitLogView
+                self.tab_ids.view_qid(ViewName.git_log_view), GitLogView
             ).path = self.current_path
         # Init Content Switcher
         elif event.button.id == Id.init.button_id(TabBtn.new_repo):
             self.query_one(
                 Id.init.content_switcher_qid(Location.top), ContentSwitcher
-            ).current = Id.init.view_id(ViewStr.init_new_view)
+            ).current = Id.init.view_id(ViewName.init_new_view)
         elif event.button.id == Id.init.button_id(TabBtn.clone_repo):
             self.query_one(
                 Id.init.content_switcher_qid(Location.top), ContentSwitcher
-            ).current = Id.init.view_id(ViewStr.init_clone_view)
+            ).current = Id.init.view_id(ViewName.init_clone_view)
         elif event.button.id == Id.init.button_id(TabBtn.purge_repo):
             self.query_one(
                 Id.init.content_switcher_qid(Location.top), ContentSwitcher
-            ).current = Id.init.view_id(ViewStr.init_purge_view)
+            ).current = Id.init.view_id(ViewName.init_purge_view)
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
         event.stop()
@@ -364,7 +364,7 @@ class InputHorizontal(HorizontalGroup):
 
 # class InitNewRepo(Vertical):
 #     def __init__(self) -> None:
-#         super().__init__(id=Id.init.view_id(ViewStr.init_new_view))
+#         super().__init__(id=Id.init.view_id(ViewName.init_new_view))
 
 #     def compose(self) -> ComposeResult:
 #         yield Label("Initialize a new chezmoi git repository")
@@ -378,7 +378,7 @@ class InputHorizontal(HorizontalGroup):
 
 class InitCloneRepo(Vertical):
     def __init__(self) -> None:
-        super().__init__(id=Id.init.view_id(ViewStr.init_clone_view))
+        super().__init__(id=Id.init.view_id(ViewName.init_clone_view))
 
     def compose(self) -> ComposeResult:
         yield Static(
@@ -411,7 +411,7 @@ class InitCloneRepo(Vertical):
 
 class InitPurgeRepo(Vertical):
     def __init__(self) -> None:
-        super().__init__(id=Id.init.view_id(ViewStr.init_purge_view))
+        super().__init__(id=Id.init.view_id(ViewName.init_purge_view))
 
     def compose(self) -> ComposeResult:
         yield Static(

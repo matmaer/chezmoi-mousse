@@ -28,7 +28,7 @@ from chezmoi_mousse.constants import (
     ModalIdStr,
     TabName,
     TreeName,
-    ViewStr,
+    ViewName,
 )
 from chezmoi_mousse.containers import ButtonsHorizontal
 from chezmoi_mousse.id_typing import Id, OperateBtn, OperateHelp
@@ -232,7 +232,7 @@ class ChezmoiGUI(App[None]):
 
         elif tab_ids.tab_name == TabName.add_tab:
             add_tab_contents_view = self.query_one(
-                tab_ids.view_qid(ViewStr.contents_view), ContentsView
+                tab_ids.view_qid(ViewName.contents_view), ContentsView
             )
 
             id_to_maximize = add_tab_contents_view.id
@@ -262,7 +262,7 @@ class ChezmoiGUI(App[None]):
         # handle Add tab operation button
         if tab_ids.tab_name == TabName.add_tab:
             add_tab_contents_view = self.query_one(
-                tab_ids.view_qid(ViewStr.contents_view), ContentsView
+                tab_ids.view_qid(ViewName.contents_view), ContentsView
             )
             current_path = getattr(add_tab_contents_view, "path")
         # handle Apply and Re-Add tab operation button

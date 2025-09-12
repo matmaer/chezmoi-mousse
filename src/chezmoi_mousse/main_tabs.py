@@ -41,7 +41,7 @@ from chezmoi_mousse.id_typing import (
     Switches,
     TabBtn,
     TreeName,
-    ViewStr,
+    ViewName,
 )
 from chezmoi_mousse.widgets import (
     ContentsView,
@@ -79,17 +79,17 @@ class ApplyTab(OperateTabsBase):
             )
             with ContentSwitcher(
                 id=Id.apply.content_switcher_id(Location.right),
-                initial=Id.apply.view_id(ViewStr.diff_view),
+                initial=Id.apply.view_id(ViewName.diff_view),
             ):
                 yield DiffView(
                     tab_name=Id.apply.tab_name,
-                    view_id=Id.apply.view_id(ViewStr.diff_view),
+                    view_id=Id.apply.view_id(ViewName.diff_view),
                 )
                 yield ContentsView(
-                    view_id=Id.apply.view_id(ViewStr.contents_view)
+                    view_id=Id.apply.view_id(ViewName.contents_view)
                 )
                 yield GitLogView(
-                    view_id=Id.apply.view_id(ViewStr.git_log_view)
+                    view_id=Id.apply.view_id(ViewName.git_log_view)
                 )
 
         yield SwitchSlider(
@@ -136,17 +136,17 @@ class ReAddTab(OperateTabsBase):
 
             with ContentSwitcher(
                 id=Id.re_add.content_switcher_id(Location.right),
-                initial=Id.re_add.view_id(ViewStr.diff_view),
+                initial=Id.re_add.view_id(ViewName.diff_view),
             ):
                 yield DiffView(
                     tab_name=Id.re_add.tab_name,
-                    view_id=Id.re_add.view_id(ViewStr.diff_view),
+                    view_id=Id.re_add.view_id(ViewName.diff_view),
                 )
                 yield ContentsView(
-                    view_id=Id.re_add.view_id(ViewStr.contents_view)
+                    view_id=Id.re_add.view_id(ViewName.contents_view)
                 )
                 yield GitLogView(
-                    view_id=Id.re_add.view_id(ViewStr.git_log_view)
+                    view_id=Id.re_add.view_id(ViewName.git_log_view)
                 )
 
         yield SwitchSlider(
@@ -182,7 +182,7 @@ class AddTab(OperateTabsBase):
                 id=Id.add.tree_id(TreeName.add_tree),
                 classes=TcssStr.dir_tree_widget,
             )
-        yield ContentsView(view_id=Id.add.view_id(ViewStr.contents_view))
+        yield ContentsView(view_id=Id.add.view_id(ViewName.contents_view))
 
         yield SwitchSlider(
             tab_ids=Id.add,
@@ -191,7 +191,7 @@ class AddTab(OperateTabsBase):
 
     def on_mount(self) -> None:
         contents_view = self.query_one(
-            Id.add.view_qid(ViewStr.contents_view), ContentsView
+            Id.add.view_qid(ViewName.contents_view), ContentsView
         )
         contents_view.border_title = str(chezmoi_config.destDir)
         contents_view.add_class(TcssStr.border_title_top)
@@ -217,7 +217,7 @@ class AddTab(OperateTabsBase):
 
         assert event.node.data is not None
         contents_view = self.query_one(
-            Id.add.view_qid(ViewStr.contents_view), ContentsView
+            Id.add.view_qid(ViewName.contents_view), ContentsView
         )
         contents_view.path = event.node.data.path
         contents_view.border_title = (
@@ -231,7 +231,7 @@ class AddTab(OperateTabsBase):
         event.stop()
         assert event.node.data is not None
         contents_view = self.query_one(
-            Id.add.view_qid(ViewStr.contents_view), ContentsView
+            Id.add.view_qid(ViewName.contents_view), ContentsView
         )
         contents_view.path = event.node.data.path
         contents_view.border_title = (
@@ -270,11 +270,11 @@ class InitTab(OperateTabsBase):
             )
             with ContentSwitcher(
                 id=Id.init.content_switcher_id(Location.top),
-                initial=Id.init.view_id(ViewStr.init_clone_view),
+                initial=Id.init.view_id(ViewName.init_clone_view),
                 classes=TcssStr.border_title_top,
             ):
                 yield InitCloneRepo()
-                with Vertical(id=Id.init.view_id(ViewStr.init_new_view)):
+                with Vertical(id=Id.init.view_id(ViewName.init_new_view)):
                     yield Label("Initialize a new chezmoi git repository")
                     yield Input(placeholder="Enter config file path")
                     yield ButtonsHorizontal(
@@ -332,7 +332,7 @@ class DoctorTab(ScrollableContainer):
         yield Collapsible(
             # TODO: center table
             DataTable[Text](
-                id=ViewStr.doctor_table.name,
+                id=ViewName.doctor_table.name,
                 classes=TcssStr.doctor_table,
                 show_cursor=False,
             ),

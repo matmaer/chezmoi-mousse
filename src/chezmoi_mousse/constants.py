@@ -247,7 +247,7 @@ class UnwantedFiles(StrEnum):
     zip = ".zip"
 
 
-class ViewStr(StrEnum):
+class ViewName(StrEnum):
     contents_view = auto()
     diff_view = auto()
     doctor_table = auto()

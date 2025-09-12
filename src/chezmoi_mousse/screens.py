@@ -18,7 +18,7 @@ from chezmoi_mousse.id_typing import (
     OperateData,
     TabIds,
     TabName,
-    ViewStr,
+    ViewName,
 )
 from chezmoi_mousse.messages import OperateMessage
 from chezmoi_mousse.widgets import (
@@ -197,31 +197,33 @@ class Maximized(ModalBase):
     def compose(self) -> ComposeResult:
         with Vertical(id=ModalIdStr.maximized_vertical):
             if self.id_to_maximize == self.tab_ids.view_id(
-                ViewStr.contents_view
+                ViewName.contents_view
             ):
                 yield ContentsView(view_id=ModalIdStr.modal_contents_view)
             elif self.id_to_maximize == self.tab_ids.view_id(
-                ViewStr.diff_view
+                ViewName.diff_view
             ):
                 yield DiffView(
                     tab_name=self.tab_name, view_id=ModalIdStr.modal_diff_view
                 )
             elif self.id_to_maximize == self.tab_ids.view_id(
-                ViewStr.git_log_view
+                ViewName.git_log_view
             ):
                 yield GitLogView(view_id=ModalIdStr.modal_git_log_view)
 
     def on_mount(self) -> None:
         self.border_subtitle = " double click or escape key to close "
-        if self.id_to_maximize == self.tab_ids.view_id(ViewStr.contents_view):
+        if self.id_to_maximize == self.tab_ids.view_id(ViewName.contents_view):
             self.query_one(
                 ModalIdStr.modal_contents_view.qid, ContentsView
             ).path = self.path
-        elif self.id_to_maximize == self.tab_ids.view_id(ViewStr.diff_view):
+        elif self.id_to_maximize == self.tab_ids.view_id(ViewName.diff_view):
             self.query_one(ModalIdStr.modal_diff_view.qid, DiffView).path = (
                 self.path
             )
-        elif self.id_to_maximize == self.tab_ids.view_id(ViewStr.git_log_view):
+        elif self.id_to_maximize == self.tab_ids.view_id(
+            ViewName.git_log_view
+        ):
             self.query_one(
                 ModalIdStr.modal_git_log_view.qid, GitLogView
             ).path = self.path
