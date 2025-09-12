@@ -266,9 +266,9 @@ class DiffView(RichLog):
             return
         # create the actual diff view for a changed file
         if not self.reverse:
-            diff_output = chezmoi.run.apply_diff(self.path)
+            diff_output = chezmoi.run.diff(self.path)
         elif self.reverse:
-            diff_output = chezmoi.run.re_add_diff(self.path)
+            diff_output = chezmoi.run.diff_reversed(self.path)
 
         diff_lines: list[str] = [
             line

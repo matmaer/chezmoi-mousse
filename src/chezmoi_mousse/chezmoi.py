@@ -97,18 +97,6 @@ class IoCmd(Enum):
     managed_files = AllCommands.managed_files.value
 
 
-class ReadCmd(Enum):
-    cat = AllCommands.cat.value
-    cat_config = AllCommands.cat_config.value
-    diff = AllCommands.diff.value
-    git_log = AllCommands.git_log.value
-    ignored = AllCommands.ignored.value
-    managed_dirs = AllCommands.managed_dirs.value
-    managed_files = AllCommands.managed_files.value
-    source_path = AllCommands.source_path.value
-    template_data = AllCommands.template_data.value
-
-
 class CommandLog(RichLog):
     def __init__(self, log_id: str) -> None:
         self.log_id = log_id
@@ -347,23 +335,23 @@ class ReadCommand:
     """Group of commands that call subprocess.run() but do not store data in an
     InputOutput dataclass."""
 
-    def apply_diff(self, file_path: Path) -> list[str]:
-        long_command = ReadCmd.diff.value + (str(file_path),)
-        return _run_cmd(long_command).splitlines()
-
-    def add_diff(self, file_path: Path) -> list[str]:
-        long_command = ReadCmd.diff.value + (str(file_path),)
-        return _run_cmd(long_command).splitlines()
-
     def cat(self, file_path: Path) -> list[str]:
-        return _run_cmd(ReadCmd.cat.value + (str(file_path),)).splitlines()
+        return _run_cmd(AllCommands.cat.value + (str(file_path),)).splitlines()
 
     def cat_config(self) -> list[str]:
         return [
             line
-            for line in _run_cmd(ReadCmd.cat_config.value).splitlines()
+            for line in _run_cmd(AllCommands.cat_config.value).splitlines()
             if line.strip()  # Filter out empty lines from config output
         ]
+
+    def diff(self, file_path: Path) -> list[str]:
+        long_command = AllCommands.diff.value + (str(file_path),)
+        return _run_cmd(long_command).splitlines()
+
+    def diff_reversed(self, file_path: Path) -> list[str]:
+        long_command = AllCommands.diff.value + (str(file_path), "--reverse")
+        return _run_cmd(long_command).splitlines()
 
     def git_log(self, path: Path) -> list[str]:
         source_path: str = ""
@@ -372,27 +360,25 @@ class ReadCommand:
         if path == chezmoi_config.destDir:
             source_path = str(chezmoi_config.sourceDir)
         else:
-            source_path = _run_cmd(ReadCmd.source_path.value + (str(path),))
-        long_command = ReadCmd.git_log.value + (source_path,)
+            source_path = _run_cmd(
+                AllCommands.source_path.value + (str(path),)
+            )
+        long_command = AllCommands.git_log.value + (source_path,)
         return _run_cmd(long_command).splitlines()
 
     def ignored(self) -> list[str]:
-        return _run_cmd(ReadCmd.ignored.value).splitlines()
+        return _run_cmd(AllCommands.ignored.value).splitlines()
 
     def managed_dirs(self) -> list[Path]:
-        managed_dirs = _run_cmd(ReadCmd.managed_dirs.value).splitlines()
+        managed_dirs = _run_cmd(AllCommands.managed_dirs.value).splitlines()
         return [Path(item) for item in managed_dirs]
 
     def managed_files(self) -> list[Path]:
-        managed_files = _run_cmd(ReadCmd.managed_files.value).splitlines()
+        managed_files = _run_cmd(AllCommands.managed_files.value).splitlines()
         return [Path(item) for item in managed_files]
 
     def template_data(self) -> list[str]:
-        return _run_cmd(ReadCmd.template_data.value).splitlines()
-
-    def re_add_diff(self, file_path: Path) -> list[str]:
-        long_command = ReadCmd.diff.value + (str(file_path), "--reverse")
-        return _run_cmd(long_command).splitlines()
+        return _run_cmd(AllCommands.template_data.value).splitlines()
 
 
 @dataclass
