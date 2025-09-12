@@ -41,7 +41,7 @@ class IoVerbs(StrEnum):
     status = "status"
 
 
-class Location(StrEnum):
+class Area(StrEnum):
     bottom = auto()
     left = auto()
     right = auto()

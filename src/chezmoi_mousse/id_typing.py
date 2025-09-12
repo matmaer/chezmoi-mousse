@@ -8,8 +8,8 @@ from pathlib import Path
 from typing import Any
 
 from chezmoi_mousse.constants import (
+    Area,
     Chars,
-    Location,
     ModalName,
     OperateBtn,
     TabBtn,
@@ -219,19 +219,19 @@ class TabIds:
     def button_qid(self, btn_enum: OperateBtn | TabBtn) -> str:
         return f"#{self.button_id(btn_enum)}"
 
-    def buttons_horizontal_id(self, location: Location) -> str:
-        return f"{self.tab_name}_{location}_horizontal"
+    def buttons_horizontal_id(self, area: Area) -> str:
+        return f"{self.tab_name}_{area}_horizontal"
 
-    def buttons_horizontal_qid(self, location: Location) -> str:
-        return f"#{self.buttons_horizontal_id(location)}"
+    def buttons_horizontal_qid(self, area: Area) -> str:
+        return f"#{self.buttons_horizontal_id(area)}"
 
     def button_vertical_id(self, btn_enum: OperateBtn | TabBtn) -> str:
         return f"{self.tab_name}_{btn_enum.name}_vertical"
 
-    def content_switcher_id(self, side: Location) -> str:
+    def content_switcher_id(self, side: Area) -> str:
         return f"{self.tab_name}_{side}_content_switcher"
 
-    def content_switcher_qid(self, side: Location) -> str:
+    def content_switcher_qid(self, side: Area) -> str:
         return f"#{self.content_switcher_id(side)}"
 
     def switch_horizontal_id(self, switch_enum: Switches) -> str:
@@ -246,10 +246,10 @@ class TabIds:
     def switch_qid(self, switch_enum: Switches) -> str:
         return f"#{self.switch_id(switch_enum)}"
 
-    def tab_vertical_id(self, side: Location) -> str:
+    def tab_vertical_id(self, side: Area) -> str:
         return f"{self.tab_name}_{side}_vertical"
 
-    def tab_vertical_qid(self, side: Location) -> str:
+    def tab_vertical_qid(self, side: Area) -> str:
         return f"#{self.tab_vertical_id(side)}"
 
     def tree_id(self, tree: TreeName) -> str:

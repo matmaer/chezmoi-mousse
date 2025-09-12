@@ -22,13 +22,7 @@ from chezmoi_mousse.chezmoi import (  # CHEZMOI_COMMAND_FOUND,
     cmd_log,
     init_log,
 )
-from chezmoi_mousse.constants import (
-    Chars,
-    Location,
-    TabName,
-    TreeName,
-    ViewName,
-)
+from chezmoi_mousse.constants import Area, Chars, TabName, TreeName, ViewName
 from chezmoi_mousse.containers import ButtonsHorizontal
 from chezmoi_mousse.id_typing import Id, OperateBtn, OperateHelp
 from chezmoi_mousse.main_tabs import (
@@ -78,7 +72,7 @@ class ChezmoiGUI(App[None]):
                         OperateBtn.forget_file,
                         OperateBtn.destroy_file,
                     ),
-                    location=Location.bottom,
+                    area=Area.bottom,
                 )
             with TabPane("Re-Add", id=Id.re_add.tab_pane_id):
                 yield ReAddTab()
@@ -89,14 +83,14 @@ class ChezmoiGUI(App[None]):
                         OperateBtn.forget_file,
                         OperateBtn.destroy_file,
                     ),
-                    location=Location.bottom,
+                    area=Area.bottom,
                 )
             with TabPane("Add", id=Id.add.tab_pane_id):
                 yield AddTab()
                 yield ButtonsHorizontal(
                     tab_ids=Id.add,
                     buttons=(OperateBtn.add_file, OperateBtn.add_dir),
-                    location=Location.bottom,
+                    area=Area.bottom,
                 )
             with TabPane("Init", id=Id.init.tab_pane_id):
                 yield InitTab()
@@ -220,7 +214,7 @@ class ChezmoiGUI(App[None]):
         if tab_ids.tab_name in (TabName.apply_tab, TabName.re_add_tab):
             # Determine what view to show in the modal
             id_to_maximize = self.query_one(
-                tab_ids.content_switcher_qid(Location.right), ContentSwitcher
+                tab_ids.content_switcher_qid(Area.right), ContentSwitcher
             ).current
             active_widget = self.query_one(f"#{id_to_maximize}")
             current_path = getattr(active_widget, "path")
@@ -263,7 +257,7 @@ class ChezmoiGUI(App[None]):
         # handle Apply and Re-Add tab operation button
         else:
             current_view_id = self.query_one(
-                tab_ids.content_switcher_qid(Location.right), ContentSwitcher
+                tab_ids.content_switcher_qid(Area.right), ContentSwitcher
             ).current
             current_view = self.query_one(f"#{current_view_id}")
             current_path = getattr(current_view, "path")

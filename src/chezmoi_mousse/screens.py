@@ -12,8 +12,8 @@ from chezmoi_mousse.chezmoi import chezmoi, chezmoi_config, cmd_log, op_log
 from chezmoi_mousse.constants import ModalIdStr, OperateVerbs, TcssStr
 from chezmoi_mousse.containers import ButtonsHorizontal
 from chezmoi_mousse.id_typing import (
+    Area,
     Id,
-    Location,
     OperateBtn,
     OperateButtons,
     OperateData,
@@ -100,7 +100,7 @@ class Operate(ModalBase):
                 yield ButtonsHorizontal(
                     tab_ids=self.tab_ids,
                     buttons=self.buttons,
-                    location=Location.bottom,
+                    area=Area.bottom,
                 )
                 yield op_log
 

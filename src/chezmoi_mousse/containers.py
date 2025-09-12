@@ -29,7 +29,7 @@ from textual.widgets import (
 
 from chezmoi_mousse.chezmoi import chezmoi_config, init_log
 from chezmoi_mousse.constants import (
-    Location,
+    Area,
     OperateBtn,
     TabBtn,
     TabName,
@@ -93,12 +93,12 @@ class OperateTabsBase(Horizontal):
         assert event.node.data is not None
         self.current_path = event.node.data.path
         self.query_one(
-            self.tab_ids.content_switcher_qid(Location.right), Container
+            self.tab_ids.content_switcher_qid(Area.right), Container
         ).border_title = (
             f"{self.current_path.relative_to(chezmoi_config.destDir)}"
         )
         current_view = self.query_one(
-            self.tab_ids.content_switcher_qid(Location.right), ContentSwitcher
+            self.tab_ids.content_switcher_qid(Area.right), ContentSwitcher
         ).current
         if current_view == self.tab_ids.view_id(ViewName.contents_view):
             self.query_one(
@@ -147,12 +147,12 @@ class OperateTabsBase(Horizontal):
             expand_all_switch.disabled = False
             if expand_all_switch.value:
                 self.query_one(
-                    self.tab_ids.content_switcher_qid(Location.left),
+                    self.tab_ids.content_switcher_qid(Area.left),
                     ContentSwitcher,
                 ).current = self.tab_ids.tree_id(TreeName.expanded_tree)
             else:
                 self.query_one(
-                    self.tab_ids.content_switcher_qid(Location.left),
+                    self.tab_ids.content_switcher_qid(Area.left),
                     ContentSwitcher,
                 ).current = self.tab_ids.tree_id(TreeName.managed_tree)
         elif event.button.id == self.tab_ids.button_id(TabBtn.list):
@@ -160,30 +160,26 @@ class OperateTabsBase(Horizontal):
                 self.tab_ids.switch_qid(Switches.expand_all), Switch
             ).disabled = True
             self.query_one(
-                self.tab_ids.content_switcher_qid(Location.left),
-                ContentSwitcher,
+                self.tab_ids.content_switcher_qid(Area.left), ContentSwitcher
             ).current = self.tab_ids.tree_id(TreeName.flat_tree)
         # Contents/Diff/GitLog Content Switcher
         elif event.button.id == self.tab_ids.button_id(TabBtn.contents):
             self.query_one(
-                self.tab_ids.content_switcher_qid(Location.right),
-                ContentSwitcher,
+                self.tab_ids.content_switcher_qid(Area.right), ContentSwitcher
             ).current = self.tab_ids.view_id(ViewName.contents_view)
             self.query_one(
                 self.tab_ids.view_qid(ViewName.contents_view), ContentsView
             ).path = self.current_path
         elif event.button.id == self.tab_ids.button_id(TabBtn.diff):
             self.query_one(
-                self.tab_ids.content_switcher_qid(Location.right),
-                ContentSwitcher,
+                self.tab_ids.content_switcher_qid(Area.right), ContentSwitcher
             ).current = self.tab_ids.view_id(ViewName.diff_view)
             self.query_one(
                 self.tab_ids.view_qid(ViewName.diff_view), DiffView
             ).path = self.current_path
         elif event.button.id == self.tab_ids.button_id(TabBtn.git_log):
             self.query_one(
-                self.tab_ids.content_switcher_qid(Location.right),
-                ContentSwitcher,
+                self.tab_ids.content_switcher_qid(Area.right), ContentSwitcher
             ).current = self.tab_ids.view_id(ViewName.git_log_view)
             self.query_one(
                 self.tab_ids.view_qid(ViewName.git_log_view), GitLogView
@@ -191,15 +187,15 @@ class OperateTabsBase(Horizontal):
         # Init Content Switcher
         elif event.button.id == Id.init.button_id(TabBtn.new_repo):
             self.query_one(
-                Id.init.content_switcher_qid(Location.top), ContentSwitcher
+                Id.init.content_switcher_qid(Area.top), ContentSwitcher
             ).current = Id.init.view_id(ViewName.init_new_view)
         elif event.button.id == Id.init.button_id(TabBtn.clone_repo):
             self.query_one(
-                Id.init.content_switcher_qid(Location.top), ContentSwitcher
+                Id.init.content_switcher_qid(Area.top), ContentSwitcher
             ).current = Id.init.view_id(ViewName.init_clone_view)
         elif event.button.id == Id.init.button_id(TabBtn.purge_repo):
             self.query_one(
-                Id.init.content_switcher_qid(Location.top), ContentSwitcher
+                Id.init.content_switcher_qid(Area.top), ContentSwitcher
             ).current = Id.init.view_id(ViewName.init_purge_view)
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
@@ -219,12 +215,12 @@ class OperateTabsBase(Horizontal):
         elif event.switch.id == self.tab_ids.switch_id(Switches.expand_all):
             if event.value:
                 self.query_one(
-                    self.tab_ids.content_switcher_qid(Location.left),
+                    self.tab_ids.content_switcher_qid(Area.left),
                     ContentSwitcher,
                 ).current = self.tab_ids.tree_id(TreeName.expanded_tree)
             else:
                 self.query_one(
-                    self.tab_ids.content_switcher_qid(Location.left),
+                    self.tab_ids.content_switcher_qid(Area.left),
                     ContentSwitcher,
                 ).current = self.tab_ids.tree_id(TreeName.managed_tree)
 
@@ -274,12 +270,12 @@ class ButtonsHorizontal(HorizontalGroup):
         *,
         tab_ids: TabIds,
         buttons: OperateButtons | TabButtons,
-        location: Location,
+        area: Area,
     ) -> None:
         self.buttons = buttons
-        self.location: Location = location
+        self.area: Area = area
         self.tab_ids: TabIds = tab_ids
-        super().__init__(id=self.tab_ids.buttons_horizontal_id(self.location))
+        super().__init__(id=self.tab_ids.buttons_horizontal_id(self.area))
 
     def compose(self) -> ComposeResult:
         for button_enum in self.buttons:
@@ -293,7 +289,7 @@ class ButtonsHorizontal(HorizontalGroup):
                 )
 
     def on_mount(self) -> None:
-        if self.location == Location.bottom:
+        if self.area == Area.bottom:
             self.add_operate_button_classes()
         else:
             self.add_tab_button_classes()
@@ -328,7 +324,7 @@ class TreeContentSwitcher(ContentSwitcher):
     def __init__(self, tab_ids: TabIds):
         self.tab_ids = tab_ids
         super().__init__(
-            id=self.tab_ids.content_switcher_id(Location.left),
+            id=self.tab_ids.content_switcher_id(Area.left),
             initial=self.tab_ids.tree_id(TreeName.managed_tree),
         )
 
@@ -362,20 +358,6 @@ class InputHorizontal(HorizontalGroup):
             )
 
 
-# class InitNewRepo(Vertical):
-#     def __init__(self) -> None:
-#         super().__init__(id=Id.init.view_id(ViewName.init_new_view))
-
-#     def compose(self) -> ComposeResult:
-#         yield Label("Initialize a new chezmoi git repository")
-#         yield Input(placeholder="Enter config file path")
-#         yield ButtonsHorizontal(
-#             tab_ids=Id.init,
-#             buttons=(OperateBtn.new_repo,),
-#             location=Location.bottom,
-#         )
-
-
 class InitCloneRepo(Vertical):
     def __init__(self) -> None:
         super().__init__(id=Id.init.view_id(ViewName.init_clone_view))
@@ -385,14 +367,14 @@ class InitCloneRepo(Vertical):
             "Clone a remote chezmoi git repository and optionally apply"
         )
         # TODO: implement guess feature from chezmoi
-        # TODO: add selection for https or ssh
+        # TODO: add selection for https(with PAT token) or ssh
         yield InputHorizontal()
 
         with VerticalGroup(classes=TcssStr.operate_docked_bottom):
             yield ButtonsHorizontal(
                 tab_ids=Id.init,
                 buttons=(OperateBtn.clone_repo,),
-                location=Location.bottom,
+                area=Area.bottom,
             )
             yield init_log
 
@@ -418,7 +400,5 @@ class InitPurgeRepo(Vertical):
             "Remove chezmoi's configuration, state, and source directory, but leave the target state intact."
         )
         yield ButtonsHorizontal(
-            tab_ids=Id.init,
-            buttons=(OperateBtn.purge_repo,),
-            location=Location.bottom,
+            tab_ids=Id.init, buttons=(OperateBtn.purge_repo,), area=Area.bottom
         )
