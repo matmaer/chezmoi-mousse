@@ -367,11 +367,12 @@ class FileNodeData(NodeData):
 
 class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
 
-    def __init__(self, tab_name: TabStr, *, id: str | None = None) -> None:
+    def __init__(self, tab_ids: TabIds, *, tree_type: TreeStr) -> None:
+        self.tab_ids = tab_ids
         self._initial_render = True
         self._first_focus = True
         self._user_interacted = False
-        self.tab_name: TabStr = tab_name
+        self.tab_name: TabStr = tab_ids.tab_name
         self.node_colors: dict[str, str] = {
             "Dir": theme.vars["text-primary"],
             "D": theme.vars["text-error"],
@@ -384,7 +385,11 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
         root_node_data: DirNodeData = DirNodeData(
             path=chezmoi_config.destDir, found=True, status="F"
         )
-        super().__init__(label="root", data=root_node_data, id=id)
+        super().__init__(
+            label="root",
+            data=root_node_data,
+            id=self.tab_ids.tree_id(tree_type),
+        )
 
     def on_mount(self) -> None:
         self.guide_depth: int = 3
@@ -623,10 +628,7 @@ class ManagedTree(TreeBase):
 
     def __init__(self, *, tab_ids: TabIds) -> None:
         self.tab_ids = tab_ids
-        super().__init__(
-            self.tab_ids.tab_name,
-            id=self.tab_ids.tree_id(TreeStr.managed_tree),
-        )
+        super().__init__(self.tab_ids, tree_type=TreeStr.managed_tree)
 
     def refresh_tree_data(self) -> None:
         """Refresh the tree with latest chezmoi data."""
@@ -671,10 +673,7 @@ class ExpandedTree(TreeBase):
 
     def __init__(self, tab_ids: TabIds) -> None:
         self.tab_ids = tab_ids
-        super().__init__(
-            self.tab_ids.tab_name,
-            id=self.tab_ids.tree_id(TreeStr.expanded_tree),
-        )
+        super().__init__(self.tab_ids, tree_type=TreeStr.expanded_tree)
 
     def refresh_tree_data(self) -> None:
         """Refresh the tree with latest chezmoi data."""
@@ -724,9 +723,7 @@ class FlatTree(TreeBase):
     def __init__(self, tab_ids: TabIds) -> None:
         self.tab_ids = tab_ids
         self.tab_name = self.tab_ids.tab_name
-        super().__init__(
-            self.tab_name, id=self.tab_ids.tree_id(TreeStr.flat_tree)
-        )
+        super().__init__(self.tab_ids, tree_type=TreeStr.flat_tree)
 
     def refresh_tree_data(self) -> None:
         """Refresh the tree with latest chezmoi data."""
