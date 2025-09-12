@@ -144,9 +144,9 @@ class ChezmoiGUI(App[None]):
         ]
         # Refresh apply and re_add trees
         for tab_ids in (Id.apply, Id.re_add):
-            for tree_str, tree_cls in tree_types:
+            for tree_name, tree_cls in tree_types:
                 self.query_one(
-                    tab_ids.tree_qid(tree_str), tree_cls
+                    tab_ids.tree_id("#", tree=tree_name), tree_cls
                 ).refresh_tree_data()
         # Refresh DirectoryTree
         self.query_one(FilteredDirTree).reload()

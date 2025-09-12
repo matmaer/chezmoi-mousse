@@ -150,12 +150,12 @@ class OperateTabsBase(Horizontal):
                 self.query_one(
                     self.tab_ids.content_switcher_id("#", area=Area.left),
                     ContentSwitcher,
-                ).current = self.tab_ids.tree_id(TreeName.expanded_tree)
+                ).current = self.tab_ids.tree_id(tree=TreeName.expanded_tree)
             else:
                 self.query_one(
                     self.tab_ids.content_switcher_id("#", area=Area.left),
                     ContentSwitcher,
-                ).current = self.tab_ids.tree_id(TreeName.managed_tree)
+                ).current = self.tab_ids.tree_id(tree=TreeName.managed_tree)
         elif event.button.id == self.tab_ids.button_id(btn=TabBtn.list):
             self.query_one(
                 self.tab_ids.switch_id("#", switch=Switches.expand_all), Switch
@@ -163,7 +163,7 @@ class OperateTabsBase(Horizontal):
             self.query_one(
                 self.tab_ids.content_switcher_id("#", area=Area.left),
                 ContentSwitcher,
-            ).current = self.tab_ids.tree_id(TreeName.flat_tree)
+            ).current = self.tab_ids.tree_id(tree=TreeName.flat_tree)
         # Contents/Diff/GitLog Content Switcher
         elif event.button.id == self.tab_ids.button_id(btn=TabBtn.contents):
             self.query_one(
@@ -220,7 +220,7 @@ class OperateTabsBase(Horizontal):
             ]
             for tree_str, tree_cls in tree_pairs:
                 self.query_one(
-                    self.tab_ids.tree_qid(tree_str), tree_cls
+                    self.tab_ids.tree_id("#", tree=tree_str), tree_cls
                 ).unchanged = event.value
         elif event.switch.id == self.tab_ids.switch_id(
             switch=Switches.expand_all
@@ -229,12 +229,12 @@ class OperateTabsBase(Horizontal):
                 self.query_one(
                     self.tab_ids.content_switcher_id("#", area=Area.left),
                     ContentSwitcher,
-                ).current = self.tab_ids.tree_id(TreeName.expanded_tree)
+                ).current = self.tab_ids.tree_id(tree=TreeName.expanded_tree)
             else:
                 self.query_one(
                     self.tab_ids.content_switcher_id("#", area=Area.left),
                     ContentSwitcher,
-                ).current = self.tab_ids.tree_id(TreeName.managed_tree)
+                ).current = self.tab_ids.tree_id(tree=TreeName.managed_tree)
 
     def action_toggle_switch_slider(self) -> None:
         self.query_one(
@@ -339,7 +339,7 @@ class TreeContentSwitcher(ContentSwitcher):
         self.tab_ids = tab_ids
         super().__init__(
             id=self.tab_ids.content_switcher_id(area=Area.left),
-            initial=self.tab_ids.tree_id(TreeName.managed_tree),
+            initial=self.tab_ids.tree_id(tree=TreeName.managed_tree),
         )
 
     def on_mount(self) -> None:

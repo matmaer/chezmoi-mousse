@@ -393,7 +393,7 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
         super().__init__(
             label="root",
             data=root_node_data,
-            id=self.tab_ids.tree_id(tree_type),
+            id=self.tab_ids.tree_id(tree=tree_type),
         )
 
     def on_mount(self) -> None:

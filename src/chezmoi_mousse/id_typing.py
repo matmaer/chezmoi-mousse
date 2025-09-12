@@ -234,11 +234,8 @@ class TabIds:
     def tab_vertical_id(self, qid: str = "", *, area: Area) -> str:
         return f"{qid}{self.tab_name}_{area}_vertical"
 
-    def tree_id(self, tree: TreeName) -> str:
-        return f"{self.tab_name}_{tree}"
-
-    def tree_qid(self, tree: TreeName) -> str:
-        return f"#{self.tree_id(tree)}"
+    def tree_id(self, qid: str = "", *, tree: TreeName) -> str:
+        return f"{qid}{self.tab_name}_{tree}"
 
     def view_id(self, view: ViewName) -> str:
         return f"{self.tab_name}_{view}"
