@@ -112,7 +112,7 @@ class ReadVerbs(StrEnum):
     source_path = "source-path"
 
 
-class SplashIdStr(StrEnum):
+class SplashIds(StrEnum):
     animated_fade_id = auto()
     loading_screen_id = auto()
     splash_rich_log_id = auto()
