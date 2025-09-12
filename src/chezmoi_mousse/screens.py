@@ -12,6 +12,7 @@ from chezmoi_mousse.chezmoi import chezmoi, chezmoi_config, cmd_log, op_log
 from chezmoi_mousse.constants import ModalIdStr, OperateVerbs, TcssStr
 from chezmoi_mousse.containers import ButtonsHorizontal
 from chezmoi_mousse.id_typing import (
+    Id,
     Location,
     OperateBtn,
     OperateButtons,
@@ -38,20 +39,18 @@ class ModalBase(ModalScreen[None]):
         )
     ]
 
-    def __init__(
-        self, *, modal_id: ModalIdStr, path: Path | None = None
-    ) -> None:
+    def __init__(self, *, modal_id: str, path: Path | None = None) -> None:
         self.modal_id = modal_id
         self.path = path
-        super().__init__(id=self.modal_id.name, classes=TcssStr.modal_base)
+        super().__init__(id=self.modal_id, classes=TcssStr.modal_base)
 
     def on_click(self, event: Click) -> None:
         event.stop()
-        if event.chain == 2 and self.modal_id != ModalIdStr.operate_modal:
+        if event.chain == 2 and self.modal_id != Id.operate_modal.modal_id:
             self.dismiss()
 
     def action_esc_dismiss(self) -> None:
-        if self.modal_id != ModalIdStr.operate_modal:
+        if self.modal_id != Id.operate_modal.modal_id:
             self.dismiss()
 
 
@@ -70,10 +69,10 @@ class Operate(ModalBase):
             operation_executed=False,
             tab_name=self.tab_ids.tab_name,
         )
-        super().__init__(path=self.path, modal_id=ModalIdStr.operate_modal)
+        super().__init__(path=self.path, modal_id=Id.operate_modal.modal_id)
 
     def compose(self) -> ComposeResult:
-        with Vertical(id=ModalIdStr.operate_vertical):
+        with Vertical():
             yield OperateInfo(
                 operate_btn=self.main_operate_btn, path=self.path
             )
@@ -86,13 +85,17 @@ class Operate(ModalBase):
                 ):
                     yield DiffView(
                         tab_name=self.tab_name,
-                        view_id=ModalIdStr.modal_diff_view,
+                        view_id=Id.operate_modal.view_id(ViewName.diff_view),
                     )
             else:
                 with Collapsible(
                     id=ModalIdStr.operate_collapsible, title="File Contents"
                 ):
-                    yield ContentsView(view_id=ModalIdStr.modal_contents_view)
+                    yield ContentsView(
+                        view_id=Id.operate_modal.view_id(
+                            ViewName.contents_view
+                        )
+                    )
             with VerticalGroup(classes=TcssStr.operate_docked_bottom):
                 yield ButtonsHorizontal(
                     tab_ids=self.tab_ids,
@@ -111,13 +114,13 @@ class Operate(ModalBase):
             or OperateBtn.re_add_file in self.buttons
         ):
             # Set path for the modal diff view
-            self.query_one(ModalIdStr.modal_diff_view.qid, DiffView).path = (
-                self.path
-            )
+            self.query_one(
+                Id.operate_modal.view_qid(ViewName.diff_view), DiffView
+            ).path = self.path
         else:
             # Set path for the modal contents view
             self.query_one(
-                ModalIdStr.modal_contents_view.qid, ContentsView
+                Id.operate_modal.view_qid(ViewName.contents_view), ContentsView
             ).path = self.path
         self.write_initial_log_msg()
 
@@ -192,40 +195,46 @@ class Maximized(ModalBase):
         self.path = path
         self.tab_ids = tab_ids
         self.tab_name: TabName = tab_ids.tab_name
-        super().__init__(path=path, modal_id=ModalIdStr.maximized_modal)
+        super().__init__(path=path, modal_id=Id.maximized_modal.modal_id)
 
     def compose(self) -> ComposeResult:
-        with Vertical(id=ModalIdStr.maximized_vertical):
+        with Vertical():
             if self.id_to_maximize == self.tab_ids.view_id(
                 ViewName.contents_view
             ):
-                yield ContentsView(view_id=ModalIdStr.modal_contents_view)
+                yield ContentsView(
+                    view_id=Id.maximized_modal.view_id(ViewName.contents_view)
+                )
             elif self.id_to_maximize == self.tab_ids.view_id(
                 ViewName.diff_view
             ):
                 yield DiffView(
-                    tab_name=self.tab_name, view_id=ModalIdStr.modal_diff_view
+                    tab_name=self.tab_name,
+                    view_id=Id.maximized_modal.view_id(ViewName.diff_view),
                 )
             elif self.id_to_maximize == self.tab_ids.view_id(
                 ViewName.git_log_view
             ):
-                yield GitLogView(view_id=ModalIdStr.modal_git_log_view)
+                yield GitLogView(
+                    view_id=Id.maximized_modal.view_id(ViewName.git_log_view)
+                )
 
     def on_mount(self) -> None:
         self.border_subtitle = " double click or escape key to close "
         if self.id_to_maximize == self.tab_ids.view_id(ViewName.contents_view):
             self.query_one(
-                ModalIdStr.modal_contents_view.qid, ContentsView
+                Id.maximized_modal.view_qid(ViewName.contents_view),
+                ContentsView,
             ).path = self.path
         elif self.id_to_maximize == self.tab_ids.view_id(ViewName.diff_view):
-            self.query_one(ModalIdStr.modal_diff_view.qid, DiffView).path = (
-                self.path
-            )
+            self.query_one(
+                Id.maximized_modal.view_qid(ViewName.diff_view), DiffView
+            ).path = self.path
         elif self.id_to_maximize == self.tab_ids.view_id(
             ViewName.git_log_view
         ):
             self.query_one(
-                ModalIdStr.modal_git_log_view.qid, GitLogView
+                Id.maximized_modal.view_qid(ViewName.git_log_view), GitLogView
             ).path = self.path
 
         if self.path == chezmoi_config.destDir:
@@ -238,12 +247,13 @@ class Maximized(ModalBase):
 
 class InstallHelp(ModalBase):
 
+    def __init__(self) -> None:
+        super().__init__(modal_id=Id.install_help_modal.modal_id)
+
     def on_mount(self) -> None:
         self.border_subtitle = " double click or escape key to close "
 
     def compose(self) -> ComposeResult:
-        # temporary modal till I have something better
-        # TODO: improve modal with install instructions and not display the modal full screen
         with Vertical(classes=TcssStr.install_help_vertical):
             yield Static(
                 (

@@ -62,20 +62,8 @@ class ModalName(StrEnum):
 
 class ModalIdStr(StrEnum):
     install_help_tree = auto()
-    maximized_modal = auto()
-    maximized_vertical = auto()
-    modal_chezmoi_command_not_found = auto()
-    modal_contents_view = auto()
-    modal_diff_view = auto()
-    modal_git_log_view = auto()
     operate_collapsible = auto()
     operate_info = auto()
-    operate_modal = auto()
-    operate_vertical = auto()
-
-    @property
-    def qid(self) -> str:
-        return f"#{self.name}"
 
 
 class OperateBtn(StrEnum):

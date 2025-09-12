@@ -194,6 +194,13 @@ class PwMgrInfo(Enum):
 class ModalIds:
     def __init__(self, modal_name: ModalName) -> None:
         self.modal_name = modal_name
+        self.modal_id = f"{modal_name}_id"
+
+    def view_id(self, view: ViewName) -> str:
+        return f"{self.modal_name}_{view}"
+
+    def view_qid(self, view: ViewName) -> str:
+        return f"#{self.view_id(view)}"
 
 
 class TabIds:
@@ -266,6 +273,9 @@ class Id:
     init: TabIds = TabIds(TabName.init_tab)
     log: TabIds = TabIds(TabName.log_tab)
     re_add: TabIds = TabIds(TabName.re_add_tab)
+    operate_modal: ModalIds = ModalIds(ModalName.operate)
+    maximized_modal: ModalIds = ModalIds(ModalName.maximized)
+    install_help_modal: ModalIds = ModalIds(ModalName.install_help)
 
     _pane_id_map: dict[str, TabIds] | None = None
 
