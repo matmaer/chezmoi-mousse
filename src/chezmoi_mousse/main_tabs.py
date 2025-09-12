@@ -81,10 +81,7 @@ class ApplyTab(OperateTabsBase):
                 id=Id.apply.content_switcher_id(area=Area.right),
                 initial=Id.apply.view_id(view=ViewName.diff_view),
             ):
-                yield DiffView(
-                    tab_name=Id.apply.tab_name,
-                    view_id=Id.apply.view_id(view=ViewName.diff_view),
-                )
+                yield DiffView(ids=Id.apply, reverse=False)
                 yield ContentsView(
                     view_id=Id.apply.view_id(view=ViewName.contents_view)
                 )
@@ -136,10 +133,7 @@ class ReAddTab(OperateTabsBase):
                 id=Id.re_add.content_switcher_id(area=Area.right),
                 initial=Id.re_add.view_id(view=ViewName.diff_view),
             ):
-                yield DiffView(
-                    tab_name=Id.re_add.tab_name,
-                    view_id=Id.re_add.view_id(view=ViewName.diff_view),
-                )
+                yield DiffView(ids=Id.re_add, reverse=True)
                 yield ContentsView(
                     view_id=Id.re_add.view_id(view=ViewName.contents_view)
                 )

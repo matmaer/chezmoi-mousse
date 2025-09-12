@@ -63,6 +63,9 @@ class Operate(ModalBase):
         self.path = path
         self.tab_ids = tab_ids
         self.tab_name = tab_ids.tab_name
+        self.reverse: bool = (
+            False if self.tab_name == TabName.apply_tab else True
+        )
         self.operate_dismiss_data: OperateData = OperateData(
             path=self.path,
             operation_executed=False,
@@ -82,12 +85,7 @@ class Operate(ModalBase):
                 with Collapsible(
                     id=ModalIdStr.operate_collapsible, title="File Differences"
                 ):
-                    yield DiffView(
-                        tab_name=self.tab_name,
-                        view_id=Id.operate_modal.view_id(
-                            view=ViewName.diff_view
-                        ),
-                    )
+                    yield DiffView(ids=Id.operate_modal, reverse=self.reverse)
             else:
                 with Collapsible(
                     id=ModalIdStr.operate_collapsible, title="File Contents"
@@ -201,6 +199,9 @@ class Maximized(ModalBase):
         self.path = path
         self.tab_ids = tab_ids
         self.tab_name: TabName = tab_ids.tab_name
+        self.reverse: bool = (
+            False if self.tab_name == TabName.apply_tab else True
+        )
         super().__init__(modal_id=Id.maximized_modal.modal_id)
 
     def compose(self) -> ComposeResult:
@@ -216,12 +217,7 @@ class Maximized(ModalBase):
             elif self.id_to_maximize == self.tab_ids.view_id(
                 view=ViewName.diff_view
             ):
-                yield DiffView(
-                    tab_name=self.tab_name,
-                    view_id=Id.maximized_modal.view_id(
-                        view=ViewName.diff_view
-                    ),
-                )
+                yield DiffView(ids=Id.maximized_modal, reverse=self.reverse)
             elif self.id_to_maximize == self.tab_ids.view_id(
                 view=ViewName.git_log_view
             ):

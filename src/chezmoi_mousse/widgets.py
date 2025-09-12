@@ -193,10 +193,11 @@ class DiffView(RichLog):
 
     path: reactive[Path | None] = reactive(None, init=False)
 
-    def __init__(self, *, tab_name: TabName, view_id: str) -> None:
-        self.tab_name = tab_name
+    def __init__(self, *, ids: TabIds | ModalIds, reverse: bool) -> None:
+        self.ids = ids
+        self.reverse = reverse
         super().__init__(
-            id=view_id,
+            id=self.ids.view_id(view=ViewName.diff_view),
             auto_scroll=False,
             wrap=False,
             classes=TcssStr.diff_view,
@@ -222,10 +223,10 @@ class DiffView(RichLog):
             self.path = chezmoi_config.destDir
 
         diff_output: list[str] = []
-        if self.tab_name == TabName.apply_tab:
+        if not self.reverse:
             self.status_files = managed_status.apply_files
             self.status_dirs = managed_status.apply_dirs
-        elif self.tab_name == TabName.re_add_tab:
+        elif self.reverse:
             self.status_files = managed_status.re_add_files
             self.status_dirs = managed_status.re_add_dirs
 
@@ -234,8 +235,11 @@ class DiffView(RichLog):
             self.path in self.status_dirs
             or self.path == chezmoi_config.destDir
         ):
+            tab_name = (
+                TabName.re_add_tab if self.reverse else TabName.apply_tab
+            )
             status_files_in_dir = managed_status.files_with_status_in(
-                self.tab_name, self.path
+                tab_name, self.path
             )
             if not status_files_in_dir:
                 self.write(
@@ -260,9 +264,9 @@ class DiffView(RichLog):
             )
             return
         # create the actual diff view for a changed file
-        if self.tab_name == TabName.apply_tab:
+        if not self.reverse:
             diff_output = chezmoi.run.apply_diff(self.path)
-        elif self.tab_name == TabName.re_add_tab:
+        elif self.reverse:
             diff_output = chezmoi.run.re_add_diff(self.path)
 
         diff_lines: list[str] = [
