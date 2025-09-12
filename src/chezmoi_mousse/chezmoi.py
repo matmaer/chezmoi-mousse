@@ -103,6 +103,8 @@ class ReadCmd(Enum):
     diff = AllCommands.diff.value
     git_log = AllCommands.git_log.value
     ignored = AllCommands.ignored.value
+    managed_dirs = AllCommands.managed_dirs.value
+    managed_files = AllCommands.managed_files.value
     source_path = AllCommands.source_path.value
     template_data = AllCommands.template_data.value
 
@@ -381,6 +383,14 @@ class ReadCommand:
 
     def ignored(self) -> list[str]:
         return _run_cmd(ReadCmd.ignored.value).splitlines()
+
+    def managed_dirs(self) -> list[Path]:
+        managed_dirs = _run_cmd(ReadCmd.managed_dirs.value).splitlines()
+        return [Path(item) for item in managed_dirs]
+
+    def managed_files(self) -> list[Path]:
+        managed_files = _run_cmd(ReadCmd.managed_files.value).splitlines()
+        return [Path(item) for item in managed_files]
 
     def template_data(self) -> list[str]:
         return _run_cmd(ReadCmd.template_data.value).splitlines()
