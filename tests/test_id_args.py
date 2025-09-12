@@ -45,13 +45,6 @@ def test_ids(py_file: Path):
                     invalid_ids.append(
                         f"\nHardcoded id: line {keyword.lineno}: {keyword.value.value}"
                     )
-                # Check if the value for the id is any of the StrEnum members, which is valid
-                # if isinstance(keyword.value, ast.Attribute):
-                #     if keyword.value not in strenum_members:
-                #         invalid_ids.append(
-                #             f"\nInvalid id attribute: line {keyword.lineno}: {ast.unparse(keyword.value)}"
-                #         )
-
                 # Check if the value for the id is any attribute from the Id class
                 root_name = get_root_class_name(keyword.value)
                 if root_name is not None:
