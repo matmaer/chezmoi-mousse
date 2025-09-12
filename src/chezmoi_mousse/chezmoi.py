@@ -470,16 +470,13 @@ chezmoi = Chezmoi()
 
 class ManagedStatus:
 
-    def __init__(self, chezmoi: Chezmoi):
-        self.chezmoi = chezmoi
-
     @property
     def dir_paths(self) -> list[Path]:
-        return [Path(p) for p in self.chezmoi.managed_dirs.list_out]
+        return [Path(p) for p in chezmoi.managed_dirs.list_out]
 
     @property
     def file_paths(self) -> list[Path]:
-        return [Path(p) for p in self.chezmoi.managed_files.list_out]
+        return [Path(p) for p in chezmoi.managed_files.list_out]
 
     def _create_status_dict(
         self, tab_name: TabName, kind: Literal["dirs", "files"]
@@ -489,10 +486,10 @@ class ManagedStatus:
         status_codes: str = ""
         if kind == "dirs":
             managed_paths = self.dir_paths
-            status_lines = self.chezmoi.dir_status_lines.list_out
+            status_lines = chezmoi.dir_status_lines.list_out
         elif kind == "files":
             managed_paths = self.file_paths
-            status_lines = self.chezmoi.file_status_lines.list_out
+            status_lines = chezmoi.file_status_lines.list_out
 
         if tab_name == TabName.apply_tab:
             status_codes = "ADM"
@@ -577,4 +574,4 @@ class ManagedStatus:
         ]
 
 
-managed_status = ManagedStatus(chezmoi)
+managed_status = ManagedStatus()
