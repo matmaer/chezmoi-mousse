@@ -40,7 +40,7 @@ from chezmoi_mousse.id_typing import (
     PwMgrInfo,
     Switches,
     TabBtn,
-    TreeStr,
+    TreeName,
     ViewStr,
 )
 from chezmoi_mousse.widgets import (
@@ -179,7 +179,7 @@ class AddTab(OperateTabsBase):
         with VerticalGroup(id=Id.add.tab_vertical_id(Location.left)):
             yield FilteredDirTree(
                 chezmoi_config.destDir,
-                id=Id.add.tree_id(TreeStr.add_tree),
+                id=Id.add.tree_id(TreeName.add_tree),
                 classes=TcssStr.dir_tree_widget,
             )
         yield ContentsView(view_id=Id.add.view_id(ViewStr.contents_view))
@@ -204,7 +204,7 @@ class AddTab(OperateTabsBase):
         )
 
         tree = self.query_one(
-            Id.add.tree_qid(TreeStr.add_tree), FilteredDirTree
+            Id.add.tree_qid(TreeName.add_tree), FilteredDirTree
         )
         tree.show_root = False
         tree.guide_depth = 3
@@ -242,7 +242,7 @@ class AddTab(OperateTabsBase):
     def on_switch_changed(self, event: Switch.Changed) -> None:
         event.stop()
         tree = self.query_one(
-            Id.add.tree_qid(TreeStr.add_tree), FilteredDirTree
+            Id.add.tree_qid(TreeName.add_tree), FilteredDirTree
         )
         if event.switch.id == Id.add.switch_id(Switches.unmanaged_dirs):
             tree.unmanaged_dirs = event.value

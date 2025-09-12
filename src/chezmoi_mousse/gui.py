@@ -27,7 +27,7 @@ from chezmoi_mousse.constants import (
     Location,
     ModalIdStr,
     TabName,
-    TreeStr,
+    TreeName,
     ViewStr,
 )
 from chezmoi_mousse.containers import ButtonsHorizontal
@@ -145,11 +145,11 @@ class ChezmoiGUI(App[None]):
         add_dir.disabled = True
         # Trees to refresh for each tab
         tree_types: list[
-            tuple[TreeStr, type[ManagedTree | FlatTree | ExpandedTree]]
+            tuple[TreeName, type[ManagedTree | FlatTree | ExpandedTree]]
         ] = [
-            (TreeStr.managed_tree, ManagedTree),
-            (TreeStr.flat_tree, FlatTree),
-            (TreeStr.expanded_tree, ExpandedTree),
+            (TreeName.managed_tree, ManagedTree),
+            (TreeName.flat_tree, FlatTree),
+            (TreeName.expanded_tree, ExpandedTree),
         ]
         # Refresh apply and re_add trees
         for tab_ids in (Id.apply, Id.re_add):

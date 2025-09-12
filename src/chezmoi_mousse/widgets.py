@@ -44,7 +44,7 @@ from chezmoi_mousse.id_typing import (
     PathDict,
     TabIds,
     TabName,
-    TreeStr,
+    TreeName,
 )
 from chezmoi_mousse.overrides import CustomRenderLabel
 
@@ -367,7 +367,7 @@ class FileNodeData(NodeData):
 
 class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
 
-    def __init__(self, tab_ids: TabIds, *, tree_type: TreeStr) -> None:
+    def __init__(self, tab_ids: TabIds, *, tree_type: TreeName) -> None:
         self.tab_ids = tab_ids
         self._initial_render = True
         self._first_focus = True
@@ -628,7 +628,7 @@ class ManagedTree(TreeBase):
 
     def __init__(self, *, tab_ids: TabIds) -> None:
         self.tab_ids = tab_ids
-        super().__init__(self.tab_ids, tree_type=TreeStr.managed_tree)
+        super().__init__(self.tab_ids, tree_type=TreeName.managed_tree)
 
     def refresh_tree_data(self) -> None:
         """Refresh the tree with latest chezmoi data."""
@@ -673,7 +673,7 @@ class ExpandedTree(TreeBase):
 
     def __init__(self, tab_ids: TabIds) -> None:
         self.tab_ids = tab_ids
-        super().__init__(self.tab_ids, tree_type=TreeStr.expanded_tree)
+        super().__init__(self.tab_ids, tree_type=TreeName.expanded_tree)
 
     def refresh_tree_data(self) -> None:
         """Refresh the tree with latest chezmoi data."""
@@ -723,7 +723,7 @@ class FlatTree(TreeBase):
     def __init__(self, tab_ids: TabIds) -> None:
         self.tab_ids = tab_ids
         self.tab_name = self.tab_ids.tab_name
-        super().__init__(self.tab_ids, tree_type=TreeStr.flat_tree)
+        super().__init__(self.tab_ids, tree_type=TreeName.flat_tree)
 
     def refresh_tree_data(self) -> None:
         """Refresh the tree with latest chezmoi data."""

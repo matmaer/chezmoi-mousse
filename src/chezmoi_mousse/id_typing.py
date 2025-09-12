@@ -14,7 +14,7 @@ from chezmoi_mousse.constants import (
     OperateBtn,
     TabBtn,
     TabName,
-    TreeStr,
+    TreeName,
     ViewStr,
 )
 
@@ -245,10 +245,10 @@ class TabIds:
     def tab_vertical_qid(self, side: Location) -> str:
         return f"#{self.tab_vertical_id(side)}"
 
-    def tree_id(self, tree: TreeStr) -> str:
+    def tree_id(self, tree: TreeName) -> str:
         return f"{self.tab_name}_{tree}"
 
-    def tree_qid(self, tree: TreeStr) -> str:
+    def tree_qid(self, tree: TreeName) -> str:
         return f"#{self.tree_id(tree)}"
 
     def view_id(self, view: ViewStr) -> str:
