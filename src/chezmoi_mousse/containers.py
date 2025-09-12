@@ -253,7 +253,7 @@ class SwitchSlider(VerticalGroup):
     def compose(self) -> ComposeResult:
         for switch_enum in self.switches:
             with HorizontalGroup(
-                id=self.tab_ids.switch_horizontal_id(switch_enum),
+                id=self.tab_ids.switch_horizontal_id(switch=switch_enum),
                 classes=TcssStr.switch_horizontal,
             ):
                 yield Switch(
@@ -266,7 +266,7 @@ class SwitchSlider(VerticalGroup):
     def on_mount(self) -> None:
         # add padding to the top switch horizontal group
         self.query_one(
-            self.tab_ids.switch_horizontal_qid(self.switches[0]),
+            self.tab_ids.switch_horizontal_id("#", switch=self.switches[0]),
             HorizontalGroup,
         ).add_class(TcssStr.pad_bottom)
 
