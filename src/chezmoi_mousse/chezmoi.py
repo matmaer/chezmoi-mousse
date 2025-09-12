@@ -481,7 +481,7 @@ class ManagedStatus:
     def _create_status_dict(
         self, tab_name: TabName, kind: Literal["dirs", "files"]
     ) -> PathDict:
-        to_return: PathDict = {}
+        path_dict: PathDict = {}
         status_idx: int = 0
         status_codes: str = ""
         if kind == "dirs":
@@ -520,10 +520,10 @@ class ManagedStatus:
 
         for path in managed_paths:
             if path in paths_with_status_dict:
-                to_return[path] = paths_with_status_dict[path]
+                path_dict[path] = paths_with_status_dict[path]
             else:
-                to_return[path] = "X"
-        return to_return
+                path_dict[path] = "X"
+        return path_dict
 
     @property
     def apply_dirs(self) -> PathDict:
