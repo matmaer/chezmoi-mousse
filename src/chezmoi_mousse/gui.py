@@ -26,7 +26,7 @@ from chezmoi_mousse.constants import (
     Chars,
     Location,
     ModalIdStr,
-    TabStr,
+    TabName,
     TreeStr,
     ViewStr,
 )
@@ -222,7 +222,7 @@ class ChezmoiGUI(App[None]):
         id_to_maximize: str | None = None
         current_path: Path = chezmoi_config.destDir
 
-        if tab_ids.tab_name in (TabStr.apply_tab, TabStr.re_add_tab):
+        if tab_ids.tab_name in (TabName.apply_tab, TabName.re_add_tab):
             # Determine what view to show in the modal
             id_to_maximize = self.query_one(
                 tab_ids.content_switcher_qid(Location.right), ContentSwitcher
@@ -230,7 +230,7 @@ class ChezmoiGUI(App[None]):
             active_widget = self.query_one(f"#{id_to_maximize}")
             current_path = getattr(active_widget, "path")
 
-        elif tab_ids.tab_name == TabStr.add_tab:
+        elif tab_ids.tab_name == TabName.add_tab:
             add_tab_contents_view = self.query_one(
                 tab_ids.view_qid(ViewStr.contents_view), ContentsView
             )
@@ -260,7 +260,7 @@ class ChezmoiGUI(App[None]):
         active_pane_id = self.query_one(TabbedContent).active
         tab_ids = Id.get_tab_ids_from_pane_id(pane_id=active_pane_id)
         # handle Add tab operation button
-        if tab_ids.tab_name == TabStr.add_tab:
+        if tab_ids.tab_name == TabName.add_tab:
             add_tab_contents_view = self.query_one(
                 tab_ids.view_qid(ViewStr.contents_view), ContentsView
             )

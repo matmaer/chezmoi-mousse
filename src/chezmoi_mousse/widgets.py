@@ -43,7 +43,7 @@ from chezmoi_mousse.id_typing import (
     ParsedJson,
     PathDict,
     TabIds,
-    TabStr,
+    TabName,
     TreeStr,
 )
 from chezmoi_mousse.overrides import CustomRenderLabel
@@ -189,7 +189,7 @@ class DiffView(RichLog):
 
     path: reactive[Path | None] = reactive(None, init=False)
 
-    def __init__(self, *, tab_name: TabStr, view_id: str) -> None:
+    def __init__(self, *, tab_name: TabName, view_id: str) -> None:
         self.tab_name = tab_name
         super().__init__(
             id=view_id,
@@ -220,10 +220,10 @@ class DiffView(RichLog):
             self.path = chezmoi_config.destDir
 
         diff_output: list[str] = []
-        if self.tab_name == TabStr.apply_tab:
+        if self.tab_name == TabName.apply_tab:
             self.status_files = managed_status.apply_files
             self.status_dirs = managed_status.apply_dirs
-        elif self.tab_name == TabStr.re_add_tab:
+        elif self.tab_name == TabName.re_add_tab:
             self.status_files = managed_status.re_add_files
             self.status_dirs = managed_status.re_add_dirs
 
@@ -258,9 +258,9 @@ class DiffView(RichLog):
             )
             return
         # create the actual diff view for a changed file
-        if self.tab_name == TabStr.apply_tab:
+        if self.tab_name == TabName.apply_tab:
             diff_output = chezmoi.run.apply_diff(self.path)
-        elif self.tab_name == TabStr.re_add_tab:
+        elif self.tab_name == TabName.re_add_tab:
             diff_output = chezmoi.run.re_add_diff(self.path)
 
         diff_lines: list[str] = [
@@ -372,7 +372,7 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
         self._initial_render = True
         self._first_focus = True
         self._user_interacted = False
-        self.tab_name: TabStr = tab_ids.tab_name
+        self.tab_name: TabName = tab_ids.tab_name
         self.node_colors: dict[str, str] = {
             "Dir": theme.vars["text-primary"],
             "D": theme.vars["text-error"],
@@ -437,9 +437,9 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
         ), "Root node should not be created again"
         assert path in managed_status.dir_paths
         status_code: str = ""
-        if self.tab_name == TabStr.apply_tab:
+        if self.tab_name == TabName.apply_tab:
             status_code: str = managed_status.apply_dirs[path]
-        elif self.tab_name == TabStr.re_add_tab:
+        elif self.tab_name == TabName.re_add_tab:
             status_code: str = managed_status.re_add_dirs[path]
         if not status_code:
             status_code = "X"
@@ -449,9 +449,9 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
     def create_file_node_data(self, *, path: Path) -> FileNodeData:
         assert path in managed_status.file_paths
         status_code: str = ""
-        if self.tab_name == TabStr.apply_tab:
+        if self.tab_name == TabName.apply_tab:
             status_code: str = managed_status.apply_files[path]
-        elif self.tab_name == TabStr.re_add_tab:
+        elif self.tab_name == TabName.re_add_tab:
             status_code: str = managed_status.re_add_files[path]
         if not status_code:
             status_code = "X"
@@ -459,12 +459,12 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
         return FileNodeData(path=path, found=found, status=status_code)
 
     # node visibility methods
-    def dir_has_status_files(self, tab_name: TabStr, dir_path: Path) -> bool:
+    def dir_has_status_files(self, tab_name: TabName, dir_path: Path) -> bool:
         # checks for any, direct children or no matter how deep in subdirs
         files_dict: PathDict = {}
-        if tab_name == TabStr.apply_tab:
+        if tab_name == TabName.apply_tab:
             files_dict = managed_status.apply_files
-        elif tab_name == TabStr.re_add_tab:
+        elif tab_name == TabName.re_add_tab:
             files_dict = managed_status.re_add_files
 
         return any(
@@ -473,13 +473,13 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
             if dir_path in f.parents and status != "X"
         )
 
-    def dir_has_status_dirs(self, tab_name: TabStr, dir_path: Path) -> bool:
+    def dir_has_status_dirs(self, tab_name: TabName, dir_path: Path) -> bool:
         assert dir_path != chezmoi_config.destDir
         # checks for any, direct children or no matter how deep in subdirs
         dirs_dict: PathDict = {}
-        if tab_name == TabStr.apply_tab:
+        if tab_name == TabName.apply_tab:
             dirs_dict = managed_status.apply_dirs
-        elif tab_name == TabStr.re_add_tab:
+        elif tab_name == TabName.re_add_tab:
             dirs_dict = managed_status.re_add_dirs
         if dir_path in dirs_dict and dirs_dict[dir_path] != "X":
             return True
@@ -729,9 +729,9 @@ class FlatTree(TreeBase):
         """Refresh the tree with latest chezmoi data."""
         self.root.remove_children()
         files_dict: PathDict = {}
-        if self.tab_name == TabStr.apply_tab:
+        if self.tab_name == TabName.apply_tab:
             files_dict = managed_status.apply_files
-        elif self.tab_name == TabStr.re_add_tab:
+        elif self.tab_name == TabName.re_add_tab:
             files_dict = managed_status.re_add_files
         for file_path, status in files_dict.items():
             if status != "X":
@@ -741,9 +741,9 @@ class FlatTree(TreeBase):
 
     def add_all_unchanged_files(self) -> None:
         files_dict: PathDict = {}
-        if self.tab_name == TabStr.apply_tab:
+        if self.tab_name == TabName.apply_tab:
             files_dict = managed_status.apply_files
-        elif self.tab_name == TabStr.re_add_tab:
+        elif self.tab_name == TabName.re_add_tab:
             files_dict = managed_status.re_add_files
         for file_path, status in files_dict.items():
             if status == "X":

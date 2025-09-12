@@ -17,7 +17,7 @@ from chezmoi_mousse.id_typing import (
     OperateButtons,
     OperateData,
     TabIds,
-    TabStr,
+    TabName,
     ViewStr,
 )
 from chezmoi_mousse.messages import OperateMessage
@@ -104,8 +104,8 @@ class Operate(ModalBase):
     def on_mount(self) -> None:
         self.border_subtitle = " escape key to close "
         if (
-            self.tab_name == TabStr.apply_tab
-            or self.tab_name == TabStr.re_add_tab
+            self.tab_name == TabName.apply_tab
+            or self.tab_name == TabName.re_add_tab
         ) and (
             OperateBtn.apply_file in self.buttons
             or OperateBtn.re_add_file in self.buttons
@@ -127,11 +127,11 @@ class Operate(ModalBase):
             command += OperateVerbs.forget
         elif self.buttons[0] == OperateBtn.destroy_file:
             command += OperateVerbs.destroy
-        elif self.tab_name == TabStr.add_tab:
+        elif self.tab_name == TabName.add_tab:
             command += OperateVerbs.add
-        elif self.tab_name == TabStr.apply_tab:
+        elif self.tab_name == TabName.apply_tab:
             command += OperateVerbs.apply
-        elif self.tab_name == TabStr.re_add_tab:
+        elif self.tab_name == TabName.re_add_tab:
             command += OperateVerbs.re_add
         cmd_log.log_ready_to_run(
             f"Ready to run command: {command} {self.path}"
@@ -191,7 +191,7 @@ class Maximized(ModalBase):
         self.id_to_maximize = id_to_maximize
         self.path = path
         self.tab_ids = tab_ids
-        self.tab_name: TabStr = tab_ids.tab_name
+        self.tab_name: TabName = tab_ids.tab_name
         super().__init__(path=path, modal_id=ModalIdStr.maximized_modal)
 
     def compose(self) -> ComposeResult:

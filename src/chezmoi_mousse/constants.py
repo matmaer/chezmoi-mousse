@@ -124,7 +124,7 @@ class TabBtn(StrEnum):
     tree = "Tree"
 
 
-class TabStr(StrEnum):
+class TabName(StrEnum):
     add_tab = auto()
     apply_tab = auto()
     doctor_tab = auto()

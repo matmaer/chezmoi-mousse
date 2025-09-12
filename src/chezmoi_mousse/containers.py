@@ -32,7 +32,7 @@ from chezmoi_mousse.constants import (
     Location,
     OperateBtn,
     TabBtn,
-    TabStr,
+    TabName,
     TcssStr,
     TreeStr,
     ViewStr,
@@ -115,19 +115,19 @@ class OperateTabsBase(Horizontal):
 
         # enable/disable operation buttons depending on selected node
         buttons_to_update: OperateButtons = ()
-        if self.tab_ids.tab_name == TabStr.apply_tab:
+        if self.tab_ids.tab_name == TabName.apply_tab:
             buttons_to_update = (
                 OperateBtn.apply_file,
                 OperateBtn.forget_file,
                 OperateBtn.destroy_file,
             )
-        elif self.tab_ids.tab_name == TabStr.re_add_tab:
+        elif self.tab_ids.tab_name == TabName.re_add_tab:
             buttons_to_update = (
                 OperateBtn.re_add_file,
                 OperateBtn.forget_file,
                 OperateBtn.destroy_file,
             )
-        elif self.tab_ids.tab_name == TabStr.add_tab:
+        elif self.tab_ids.tab_name == TabName.add_tab:
             buttons_to_update = (OperateBtn.add_file, OperateBtn.add_dir)
         if event.node.allow_expand or current_view == self.tab_ids.view_id(
             ViewStr.git_log_view

@@ -18,7 +18,7 @@ from chezmoi_mousse.constants import (
     LogIdStr,
     OperateVerbs,
     ReadVerbs,
-    TabStr,
+    TabName,
     TcssStr,
 )
 from chezmoi_mousse.id_typing import (
@@ -482,7 +482,7 @@ class ManagedStatus:
         return [Path(p) for p in self.chezmoi.managed_files.list_out]
 
     def _create_status_dict(
-        self, tab_name: TabStr, kind: Literal["dirs", "files"]
+        self, tab_name: TabName, kind: Literal["dirs", "files"]
     ) -> PathDict:
         to_return: PathDict = {}
         status_idx: int = 0
@@ -494,15 +494,15 @@ class ManagedStatus:
             managed_paths = self.file_paths
             status_lines = self.chezmoi.file_status_lines.list_out
 
-        if tab_name == TabStr.apply_tab:
+        if tab_name == TabName.apply_tab:
             status_codes = "ADM"
             status_idx = 1
-        elif tab_name == TabStr.re_add_tab:
+        elif tab_name == TabName.re_add_tab:
             status_codes = "M"
             status_idx = 0
 
         paths_with_status_dict = {}
-        if tab_name == TabStr.re_add_tab:
+        if tab_name == TabName.re_add_tab:
             # For re_add_tab, include files with "M" at status_idx=0 OR
             # files with space at status_idx=0 AND "M" at status_idx=1
             for line in status_lines:
@@ -530,31 +530,31 @@ class ManagedStatus:
 
     @property
     def apply_dirs(self) -> PathDict:
-        return self._create_status_dict(TabStr.apply_tab, "dirs")
+        return self._create_status_dict(TabName.apply_tab, "dirs")
 
     @property
     def apply_files(self) -> PathDict:
-        return self._create_status_dict(TabStr.apply_tab, "files")
+        return self._create_status_dict(TabName.apply_tab, "files")
 
     @property
     def re_add_dirs(self) -> PathDict:
-        return self._create_status_dict(TabStr.re_add_tab, "dirs")
+        return self._create_status_dict(TabName.re_add_tab, "dirs")
 
     @property
     def re_add_files(self) -> PathDict:
-        return self._create_status_dict(TabStr.re_add_tab, "files")
+        return self._create_status_dict(TabName.re_add_tab, "files")
 
     def managed_dirs_in(self, dir_path: Path) -> list[Path]:
         # checks only direct children
         return [p for p in self.dir_paths if p.parent == dir_path]
 
     def files_with_status_in(
-        self, tab_name: TabStr, dir_path: Path
+        self, tab_name: TabName, dir_path: Path
     ) -> list[Path]:
         files_dict: PathDict = {}
-        if tab_name == TabStr.apply_tab:
+        if tab_name == TabName.apply_tab:
             files_dict = self.apply_files
-        elif tab_name == TabStr.re_add_tab:
+        elif tab_name == TabName.re_add_tab:
             files_dict = self.re_add_files
         return [
             p
@@ -563,12 +563,12 @@ class ManagedStatus:
         ]
 
     def files_without_status_in(
-        self, tab_name: TabStr, dir_path: Path
+        self, tab_name: TabName, dir_path: Path
     ) -> list[Path]:
         files_dict: PathDict = {}
-        if tab_name == TabStr.apply_tab:
+        if tab_name == TabName.apply_tab:
             files_dict = self.apply_files
-        elif tab_name == TabStr.re_add_tab:
+        elif tab_name == TabName.re_add_tab:
             files_dict = self.re_add_files
         return [
             p

@@ -12,7 +12,7 @@ from chezmoi_mousse.constants import (
     Location,
     OperateBtn,
     TabBtn,
-    TabStr,
+    TabName,
     TreeStr,
     ViewStr,
 )
@@ -65,7 +65,7 @@ class OperateHelp(Enum):
 class OperateData:
     path: Path | None = None
     operation_executed: bool = False
-    tab_name: TabStr | None = None
+    tab_name: TabName | None = None
     found: bool | None = None
     button_name: OperateBtn | None = None
     is_file: bool | None = None
@@ -191,12 +191,12 @@ class PwMgrInfo(Enum):
 
 
 class TabIds:
-    def __init__(self, tab_name: TabStr) -> None:
+    def __init__(self, tab_name: TabName) -> None:
         self.log_id = f"{tab_name}_log"
         self.switches_slider_id = f"{tab_name}_switches_slider"
         self.switches_slider_qid = f"#{self.switches_slider_id}"
         self.tab_main_horizontal_id = f"{tab_name}_main_horizontal"
-        self.tab_name: TabStr = tab_name
+        self.tab_name: TabName = tab_name
         self.tab_pane_id = f"{tab_name}_pane"
 
     def button_id(self, btn_enum: OperateBtn | TabBtn) -> str:
@@ -254,12 +254,12 @@ class TabIds:
 
 @dataclass(frozen=True)
 class Id:
-    add: TabIds = TabIds(TabStr.add_tab)
-    apply: TabIds = TabIds(TabStr.apply_tab)
-    doctor: TabIds = TabIds(TabStr.doctor_tab)
-    init: TabIds = TabIds(TabStr.init_tab)
-    log: TabIds = TabIds(TabStr.log_tab)
-    re_add: TabIds = TabIds(TabStr.re_add_tab)
+    add: TabIds = TabIds(TabName.add_tab)
+    apply: TabIds = TabIds(TabName.apply_tab)
+    doctor: TabIds = TabIds(TabName.doctor_tab)
+    init: TabIds = TabIds(TabName.init_tab)
+    log: TabIds = TabIds(TabName.log_tab)
+    re_add: TabIds = TabIds(TabName.re_add_tab)
 
     _pane_id_map: dict[str, TabIds] | None = None
 
