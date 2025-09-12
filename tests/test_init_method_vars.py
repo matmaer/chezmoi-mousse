@@ -31,7 +31,7 @@ if not _ATTR_NAMES_BY_FILE:
 @pytest.mark.parametrize(
     "py_file", modules_to_test(), ids=lambda py_file: py_file.name
 )
-def test_no_unused_self_vars(py_file: Path):
+def test_self_vars(py_file: Path):
     content = py_file.read_text(encoding="utf-8")
     tree = ast.parse(content, filename=str(py_file))
 
