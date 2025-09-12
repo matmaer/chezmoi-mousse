@@ -216,7 +216,8 @@ class ChezmoiGUI(App[None]):
         if tab_ids.tab_name in (TabName.apply_tab, TabName.re_add_tab):
             # Determine what view to show in the modal
             id_to_maximize = self.query_one(
-                tab_ids.content_switcher_qid(Area.right), ContentSwitcher
+                tab_ids.content_switcher_id("#", area=Area.right),
+                ContentSwitcher,
             ).current
             active_widget = self.query_one(f"#{id_to_maximize}")
             current_path = getattr(active_widget, "path")
@@ -259,7 +260,8 @@ class ChezmoiGUI(App[None]):
         # handle Apply and Re-Add tab operation button
         else:
             current_view_id = self.query_one(
-                tab_ids.content_switcher_qid(Area.right), ContentSwitcher
+                tab_ids.content_switcher_id("#", area=Area.right),
+                ContentSwitcher,
             ).current
             current_view = self.query_one(f"#{current_view_id}")
             current_path = getattr(current_view, "path")

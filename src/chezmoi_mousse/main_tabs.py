@@ -78,7 +78,7 @@ class ApplyTab(OperateTabsBase):
                 area=Area.right,
             )
             with ContentSwitcher(
-                id=Id.apply.content_switcher_id(Area.right),
+                id=Id.apply.content_switcher_id(area=Area.right),
                 initial=Id.apply.view_id(ViewName.diff_view),
             ):
                 yield DiffView(
@@ -97,7 +97,7 @@ class ApplyTab(OperateTabsBase):
 
     def on_mount(self) -> None:
         self.query_one(
-            Id.apply.content_switcher_qid(Area.right), ContentSwitcher
+            Id.apply.content_switcher_id("#", area=Area.right), ContentSwitcher
         ).add_class(TcssStr.content_switcher_right, TcssStr.border_title_top)
         self.disable_buttons(
             (
@@ -133,7 +133,7 @@ class ReAddTab(OperateTabsBase):
             )
 
             with ContentSwitcher(
-                id=Id.re_add.content_switcher_id(Area.right),
+                id=Id.re_add.content_switcher_id(area=Area.right),
                 initial=Id.re_add.view_id(ViewName.diff_view),
             ):
                 yield DiffView(
@@ -155,7 +155,8 @@ class ReAddTab(OperateTabsBase):
             Id.re_add.tab_vertical_qid(Area.right), Vertical
         ).add_class(TcssStr.tab_right_vertical)
         self.query_one(
-            Id.re_add.content_switcher_qid(Area.right), ContentSwitcher
+            Id.re_add.content_switcher_id("#", area=Area.right),
+            ContentSwitcher,
         ).add_class(TcssStr.content_switcher_right, TcssStr.border_title_top)
         self.disable_buttons(
             (
@@ -265,7 +266,7 @@ class InitTab(OperateTabsBase):
                 area=Area.top,
             )
             with ContentSwitcher(
-                id=Id.init.content_switcher_id(Area.top),
+                id=Id.init.content_switcher_id(area=Area.top),
                 initial=Id.init.view_id(ViewName.init_clone_view),
                 classes=TcssStr.border_title_top,
             ):

@@ -93,12 +93,13 @@ class OperateTabsBase(Horizontal):
         assert event.node.data is not None
         self.current_path = event.node.data.path
         self.query_one(
-            self.tab_ids.content_switcher_qid(Area.right), Container
+            self.tab_ids.content_switcher_id("#", area=Area.right), Container
         ).border_title = (
             f"{self.current_path.relative_to(chezmoi_config.destDir)}"
         )
         current_view = self.query_one(
-            self.tab_ids.content_switcher_qid(Area.right), ContentSwitcher
+            self.tab_ids.content_switcher_id("#", area=Area.right),
+            ContentSwitcher,
         ).current
         if current_view == self.tab_ids.view_id(ViewName.contents_view):
             self.query_one(
@@ -147,12 +148,12 @@ class OperateTabsBase(Horizontal):
             expand_all_switch.disabled = False
             if expand_all_switch.value:
                 self.query_one(
-                    self.tab_ids.content_switcher_qid(Area.left),
+                    self.tab_ids.content_switcher_id("#", area=Area.left),
                     ContentSwitcher,
                 ).current = self.tab_ids.tree_id(TreeName.expanded_tree)
             else:
                 self.query_one(
-                    self.tab_ids.content_switcher_qid(Area.left),
+                    self.tab_ids.content_switcher_id("#", area=Area.left),
                     ContentSwitcher,
                 ).current = self.tab_ids.tree_id(TreeName.managed_tree)
         elif event.button.id == self.tab_ids.button_id(btn=TabBtn.list):
@@ -160,26 +161,30 @@ class OperateTabsBase(Horizontal):
                 self.tab_ids.switch_qid(Switches.expand_all), Switch
             ).disabled = True
             self.query_one(
-                self.tab_ids.content_switcher_qid(Area.left), ContentSwitcher
+                self.tab_ids.content_switcher_id("#", area=Area.left),
+                ContentSwitcher,
             ).current = self.tab_ids.tree_id(TreeName.flat_tree)
         # Contents/Diff/GitLog Content Switcher
         elif event.button.id == self.tab_ids.button_id(btn=TabBtn.contents):
             self.query_one(
-                self.tab_ids.content_switcher_qid(Area.right), ContentSwitcher
+                self.tab_ids.content_switcher_id("#", area=Area.right),
+                ContentSwitcher,
             ).current = self.tab_ids.view_id(ViewName.contents_view)
             self.query_one(
                 self.tab_ids.view_qid(ViewName.contents_view), ContentsView
             ).path = self.current_path
         elif event.button.id == self.tab_ids.button_id(btn=TabBtn.diff):
             self.query_one(
-                self.tab_ids.content_switcher_qid(Area.right), ContentSwitcher
+                self.tab_ids.content_switcher_id("#", area=Area.right),
+                ContentSwitcher,
             ).current = self.tab_ids.view_id(ViewName.diff_view)
             self.query_one(
                 self.tab_ids.view_qid(ViewName.diff_view), DiffView
             ).path = self.current_path
         elif event.button.id == self.tab_ids.button_id(btn=TabBtn.git_log):
             self.query_one(
-                self.tab_ids.content_switcher_qid(Area.right), ContentSwitcher
+                self.tab_ids.content_switcher_id("#", area=Area.right),
+                ContentSwitcher,
             ).current = self.tab_ids.view_id(ViewName.git_log_view)
             self.query_one(
                 self.tab_ids.view_qid(ViewName.git_log_view), GitLogView
@@ -187,15 +192,18 @@ class OperateTabsBase(Horizontal):
         # Init Content Switcher
         elif event.button.id == Id.init.button_id(btn=TabBtn.new_repo):
             self.query_one(
-                Id.init.content_switcher_qid(Area.top), ContentSwitcher
+                Id.init.content_switcher_id("#", area=Area.top),
+                ContentSwitcher,
             ).current = Id.init.view_id(ViewName.init_new_view)
         elif event.button.id == Id.init.button_id(btn=TabBtn.clone_repo):
             self.query_one(
-                Id.init.content_switcher_qid(Area.top), ContentSwitcher
+                Id.init.content_switcher_id("#", area=Area.top),
+                ContentSwitcher,
             ).current = Id.init.view_id(ViewName.init_clone_view)
         elif event.button.id == Id.init.button_id(btn=TabBtn.purge_repo):
             self.query_one(
-                Id.init.content_switcher_qid(Area.top), ContentSwitcher
+                Id.init.content_switcher_id("#", area=Area.top),
+                ContentSwitcher,
             ).current = Id.init.view_id(ViewName.init_purge_view)
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
@@ -215,12 +223,12 @@ class OperateTabsBase(Horizontal):
         elif event.switch.id == self.tab_ids.switch_id(Switches.expand_all):
             if event.value:
                 self.query_one(
-                    self.tab_ids.content_switcher_qid(Area.left),
+                    self.tab_ids.content_switcher_id("#", area=Area.left),
                     ContentSwitcher,
                 ).current = self.tab_ids.tree_id(TreeName.expanded_tree)
             else:
                 self.query_one(
-                    self.tab_ids.content_switcher_qid(Area.left),
+                    self.tab_ids.content_switcher_id("#", area=Area.left),
                     ContentSwitcher,
                 ).current = self.tab_ids.tree_id(TreeName.managed_tree)
 
@@ -326,7 +334,7 @@ class TreeContentSwitcher(ContentSwitcher):
     def __init__(self, tab_ids: TabIds):
         self.tab_ids = tab_ids
         super().__init__(
-            id=self.tab_ids.content_switcher_id(Area.left),
+            id=self.tab_ids.content_switcher_id(area=Area.left),
             initial=self.tab_ids.tree_id(TreeName.managed_tree),
         )
 

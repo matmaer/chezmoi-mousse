@@ -219,17 +219,11 @@ class TabIds:
     def buttons_horizontal_id(self, area: Area) -> str:
         return f"{self.tab_name}_{area}_horizontal"
 
-    def buttons_horizontal_qid(self, area: Area) -> str:
-        return f"#{self.buttons_horizontal_id(area)}"
-
     def button_vertical_id(self, btn_enum: OperateBtn | TabBtn) -> str:
         return f"{self.tab_name}_{btn_enum.name}_vertical"
 
-    def content_switcher_id(self, side: Area) -> str:
-        return f"{self.tab_name}_{side}_content_switcher"
-
-    def content_switcher_qid(self, side: Area) -> str:
-        return f"#{self.content_switcher_id(side)}"
+    def content_switcher_id(self, qid: str = "", *, area: Area) -> str:
+        return f"{qid}{self.tab_name}_{area}_content_switcher"
 
     def switch_horizontal_id(self, switch_enum: Switches) -> str:
         return f"{self.tab_name}_{switch_enum.name}_switch_horizontal"
