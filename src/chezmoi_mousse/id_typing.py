@@ -228,11 +228,8 @@ class TabIds:
     def switch_horizontal_id(self, qid: str = "", *, switch: Switches) -> str:
         return f"{qid}{self.tab_name}_{switch.name}_switch_horizontal"
 
-    def switch_id(self, switch_enum: Switches) -> str:
-        return f"{self.tab_name}_{switch_enum.name}_switch"
-
-    def switch_qid(self, switch_enum: Switches) -> str:
-        return f"#{self.switch_id(switch_enum)}"
+    def switch_id(self, qid: str = "", *, switch: Switches) -> str:
+        return f"{qid}{self.tab_name}_{switch.name}_switch"
 
     def tab_vertical_id(self, side: Area) -> str:
         return f"{self.tab_name}_{side}_vertical"

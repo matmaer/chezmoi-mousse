@@ -143,7 +143,7 @@ class OperateTabsBase(Horizontal):
         # Tree/List Content Switcher
         if event.button.id == self.tab_ids.button_id(btn=TabBtn.tree):
             expand_all_switch = self.query_one(
-                self.tab_ids.switch_qid(Switches.expand_all), Switch
+                self.tab_ids.switch_id("#", switch=Switches.expand_all), Switch
             )
             expand_all_switch.disabled = False
             if expand_all_switch.value:
@@ -158,7 +158,7 @@ class OperateTabsBase(Horizontal):
                 ).current = self.tab_ids.tree_id(TreeName.managed_tree)
         elif event.button.id == self.tab_ids.button_id(btn=TabBtn.list):
             self.query_one(
-                self.tab_ids.switch_qid(Switches.expand_all), Switch
+                self.tab_ids.switch_id("#", switch=Switches.expand_all), Switch
             ).disabled = True
             self.query_one(
                 self.tab_ids.content_switcher_id("#", area=Area.left),
@@ -208,7 +208,9 @@ class OperateTabsBase(Horizontal):
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
         event.stop()
-        if event.switch.id == self.tab_ids.switch_id(Switches.unchanged):
+        if event.switch.id == self.tab_ids.switch_id(
+            switch=Switches.unchanged
+        ):
             tree_pairs: list[
                 tuple[TreeName, type[ExpandedTree | ManagedTree | FlatTree]]
             ] = [
@@ -220,7 +222,9 @@ class OperateTabsBase(Horizontal):
                 self.query_one(
                     self.tab_ids.tree_qid(tree_str), tree_cls
                 ).unchanged = event.value
-        elif event.switch.id == self.tab_ids.switch_id(Switches.expand_all):
+        elif event.switch.id == self.tab_ids.switch_id(
+            switch=Switches.expand_all
+        ):
             if event.value:
                 self.query_one(
                     self.tab_ids.content_switcher_id("#", area=Area.left),
@@ -257,7 +261,7 @@ class SwitchSlider(VerticalGroup):
                 classes=TcssStr.switch_horizontal,
             ):
                 yield Switch(
-                    id=self.tab_ids.switch_id(switch_enum), value=False
+                    id=self.tab_ids.switch_id(switch=switch_enum), value=False
                 )
                 yield Label(
                     switch_enum.value.label, classes=TcssStr.switch_label

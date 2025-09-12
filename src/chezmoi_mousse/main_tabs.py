@@ -241,9 +241,9 @@ class AddTab(OperateTabsBase):
         tree = self.query_one(
             Id.add.tree_qid(TreeName.add_tree), FilteredDirTree
         )
-        if event.switch.id == Id.add.switch_id(Switches.unmanaged_dirs):
+        if event.switch.id == Id.add.switch_id(switch=Switches.unmanaged_dirs):
             tree.unmanaged_dirs = event.value
-        elif event.switch.id == Id.add.switch_id(Switches.unwanted):
+        elif event.switch.id == Id.add.switch_id(switch=Switches.unwanted):
             tree.unwanted = event.value
         tree.reload()
 
