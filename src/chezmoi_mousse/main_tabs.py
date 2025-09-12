@@ -330,12 +330,7 @@ class DoctorTab(ScrollableContainer):
 
     def compose(self) -> ComposeResult:
         yield Collapsible(
-            # TODO: center table
-            DataTable[Text](
-                id=ViewName.doctor_table.name,
-                classes=TcssStr.doctor_table,
-                show_cursor=False,
-            ),
+            DataTable[Text](classes=TcssStr.doctor_table, show_cursor=False),
             ButtonsHorizontal(
                 tab_ids=Id.doctor,
                 buttons=(OperateBtn.refresh_doctor_data,),

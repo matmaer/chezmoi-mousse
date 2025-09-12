@@ -250,7 +250,6 @@ class UnwantedFiles(StrEnum):
 class ViewName(StrEnum):
     contents_view = auto()
     diff_view = auto()
-    doctor_table = auto()
     git_log_view = auto()
     init_clone_view = auto()
     init_new_view = auto()
