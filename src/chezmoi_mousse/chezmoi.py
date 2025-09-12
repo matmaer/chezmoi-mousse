@@ -202,11 +202,6 @@ class CommandLog(RichLog):
                 escaped_line = escape(line)
                 self.write(f"[{color}]{escaped_line}[/]")
 
-    # used by the ContentsView class
-    def log_read_path(self, message: str) -> None:
-        color = theme.vars["primary-lighten-1"]
-        self.write(f"{self._log_time()} [{color}]{message}[/]")
-
 
 cmd_log = CommandLog(log_id=LogIdStr.app_log)
 init_log = CommandLog(log_id=LogIdStr.init_log)
