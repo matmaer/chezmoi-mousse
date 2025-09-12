@@ -88,15 +88,6 @@ class AllCommands(Enum):
     template_data = BASE_CMD + (ReadVerbs.data, "--format=json")
 
 
-class IoCmd(Enum):
-    dir_status_lines = AllCommands.dir_status_lines.value
-    doctor = AllCommands.doctor.value
-    dump_config = AllCommands.dump_config.value
-    file_status_lines = AllCommands.file_status_lines.value
-    managed_dirs = AllCommands.managed_dirs.value
-    managed_files = AllCommands.managed_files.value
-
-
 class CommandLog(RichLog):
     def __init__(self, log_id: str) -> None:
         self.log_id = log_id
@@ -444,10 +435,18 @@ class Chezmoi:
     run = ReadCommand()
 
     def __init__(self) -> None:
+        self.io_cmds: list[AllCommands] = [
+            AllCommands.dir_status_lines,
+            AllCommands.doctor,
+            AllCommands.dump_config,
+            AllCommands.file_status_lines,
+            AllCommands.managed_dirs,
+            AllCommands.managed_files,
+        ]
 
         self.long_commands: dict[str, CmdWords] = {}
 
-        for long_cmd in IoCmd:
+        for long_cmd in self.io_cmds:
             self.long_commands[long_cmd.name] = long_cmd.value
             setattr(
                 self,
