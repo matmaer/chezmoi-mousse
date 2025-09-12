@@ -100,9 +100,10 @@ class ContentsView(RichLog):
 
     path: reactive[Path | None] = reactive(None, init=False)
 
-    def __init__(self, *, view_id: str) -> None:
+    def __init__(self, *, ids: TabIds | ModalIds) -> None:
+        self.ids = ids
         super().__init__(
-            id=view_id,
+            id=self.ids.view_id(view=ViewName.contents_view),
             auto_scroll=False,
             wrap=True,
             highlight=True,

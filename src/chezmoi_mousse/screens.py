@@ -90,11 +90,7 @@ class Operate(ModalBase):
                 with Collapsible(
                     id=ModalIdStr.operate_collapsible, title="File Contents"
                 ):
-                    yield ContentsView(
-                        view_id=Id.operate_modal.view_id(
-                            view=ViewName.contents_view
-                        )
-                    )
+                    yield ContentsView(ids=Id.operate_modal)
             with VerticalGroup(classes=TcssStr.operate_docked_bottom):
                 yield ButtonsHorizontal(
                     tab_ids=self.tab_ids,
@@ -209,11 +205,7 @@ class Maximized(ModalBase):
             if self.id_to_maximize == self.tab_ids.view_id(
                 view=ViewName.contents_view
             ):
-                yield ContentsView(
-                    view_id=Id.maximized_modal.view_id(
-                        view=ViewName.contents_view
-                    )
-                )
+                yield ContentsView(ids=Id.maximized_modal)
             elif self.id_to_maximize == self.tab_ids.view_id(
                 view=ViewName.diff_view
             ):

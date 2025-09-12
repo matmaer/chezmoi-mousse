@@ -82,9 +82,7 @@ class ApplyTab(OperateTabsBase):
                 initial=Id.apply.view_id(view=ViewName.diff_view),
             ):
                 yield DiffView(ids=Id.apply, reverse=False)
-                yield ContentsView(
-                    view_id=Id.apply.view_id(view=ViewName.contents_view)
-                )
+                yield ContentsView(ids=Id.apply)
                 yield GitLogView(ids=Id.apply)
 
         yield SwitchSlider(
@@ -134,9 +132,7 @@ class ReAddTab(OperateTabsBase):
                 initial=Id.re_add.view_id(view=ViewName.diff_view),
             ):
                 yield DiffView(ids=Id.re_add, reverse=True)
-                yield ContentsView(
-                    view_id=Id.re_add.view_id(view=ViewName.contents_view)
-                )
+                yield ContentsView(ids=Id.re_add)
                 yield GitLogView(ids=Id.re_add)
 
         yield SwitchSlider(
@@ -173,7 +169,7 @@ class AddTab(OperateTabsBase):
                 id=Id.add.tree_id(tree=TreeName.add_tree),
                 classes=TcssStr.dir_tree_widget,
             )
-        yield ContentsView(view_id=Id.add.view_id(view=ViewName.contents_view))
+        yield ContentsView(ids=Id.add)
 
         yield SwitchSlider(
             tab_ids=Id.add,
