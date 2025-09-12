@@ -60,10 +60,11 @@ def test_ids(py_file: Path):
                             invalid_ids.append(
                                 f"\nInvalid id expression: line {keyword.lineno}: {ast.unparse(keyword.value)} (invalid attribute chain)"
                             )
-                    elif root_name in [
-                        cls.__name__ for cls in strenum_classes
-                    ]:
-                        # valid usage of StrEnum member as id, do nothing
+                    elif (
+                        root_name in [cls.__name__ for cls in strenum_classes]
+                        or root_name == "self"
+                    ):
+                        # valid usage of StrEnum member or an id I passed to create an instance (self)
                         pass
                     else:
                         invalid_ids.append(
