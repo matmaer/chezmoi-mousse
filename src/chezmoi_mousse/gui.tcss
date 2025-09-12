@@ -256,20 +256,28 @@
 }
 
 .modal_base {
-  border: $accent-darken-3;
+  border-bottom:  $accent-darken-3;
   border-title-style: bold;
-  margin: 0 1 0 1;
-  padding-left: 1;
-  .operate_top_path {
+  overflow-y: hidden;
+  .operate_info {
     border-subtitle-align: center;
     border-title-align: center;
     border: round $foreground;
     text-align: center;
+    dock: top;
   }
-  VerticalGroup.operate_docked_bottom {
-    dock: bottom;
+  &.operate_modal {
+    border-top: none;
+    border-bottom: $primary;
+    &>.operate_bottom_vertical_group {
+      dock: bottom;
+    }
   }
-  .install_help_vertical {
+  &.maximized_modal {
+    border-top: wide $primary-darken-3;
+  }
+  &>.install_help_vertical {
+    border-top: $accent-darken-3;
     & > Link {
       margin: 1 0 1 0;
     }
@@ -278,6 +286,7 @@
     }
   }
 }
+
 
 /***********************************/
 /* textual default tcss overrides  */

@@ -6,7 +6,7 @@ from textual.binding import Binding
 from textual.containers import Vertical, VerticalGroup
 from textual.events import Click
 from textual.screen import ModalScreen
-from textual.widgets import Button, Collapsible, Link, Static
+from textual.widgets import Button, Link, Static
 
 from chezmoi_mousse.chezmoi import chezmoi, chezmoi_config, cmd_log, op_log
 from chezmoi_mousse.constants import ModalIdStr, OperateVerbs, TcssStr
@@ -74,32 +74,22 @@ class Operate(ModalBase):
         super().__init__(modal_id=Id.operate_modal.modal_id)
 
     def compose(self) -> ComposeResult:
-        with Vertical():
-            yield OperateInfo(
-                operate_btn=self.main_operate_btn, path=self.path
+        yield OperateInfo(operate_btn=self.main_operate_btn, path=self.path)
+        if (
+            OperateBtn.apply_file == self.main_operate_btn
+            or OperateBtn.re_add_file == self.main_operate_btn
+        ):
+            yield DiffView(ids=Id.operate_modal, reverse=self.reverse)
+        else:
+            yield ContentsView(ids=Id.operate_modal)
+        with VerticalGroup(classes=TcssStr.operate_bottom_vertical_group):
+            yield ButtonsHorizontal(
+                tab_ids=self.tab_ids, buttons=self.buttons, area=Area.bottom
             )
-            if (
-                OperateBtn.apply_file == self.main_operate_btn
-                or OperateBtn.re_add_file == self.main_operate_btn
-            ):
-                with Collapsible(
-                    id=ModalIdStr.operate_collapsible, title="File Differences"
-                ):
-                    yield DiffView(ids=Id.operate_modal, reverse=self.reverse)
-            else:
-                with Collapsible(
-                    id=ModalIdStr.operate_collapsible, title="File Contents"
-                ):
-                    yield ContentsView(ids=Id.operate_modal)
-            with VerticalGroup(classes=TcssStr.operate_docked_bottom):
-                yield ButtonsHorizontal(
-                    tab_ids=self.tab_ids,
-                    buttons=self.buttons,
-                    area=Area.bottom,
-                )
-                yield op_log
+            yield op_log
 
     def on_mount(self) -> None:
+        self.add_class(TcssStr.operate_modal)
         self.border_subtitle = " escape key to close "
         if (
             self.tab_name == TabName.apply_tab
@@ -216,6 +206,7 @@ class Maximized(ModalBase):
                 yield GitLogView(ids=Id.maximized_modal)
 
     def on_mount(self) -> None:
+        self.add_class(TcssStr.maximized_modal)
         self.border_subtitle = " double click or escape key to close "
         if self.id_to_maximize == self.tab_ids.view_id(
             view=ViewName.contents_view

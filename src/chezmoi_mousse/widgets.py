@@ -55,7 +55,7 @@ class OperateInfo(Static):
 
     def __init__(self, *, operate_btn: OperateBtn, path: Path) -> None:
         super().__init__(
-            id=ModalIdStr.operate_info, classes=TcssStr.operate_top_path
+            id=ModalIdStr.operate_info, classes=TcssStr.operate_info
         )
 
         self.operate_btn = operate_btn

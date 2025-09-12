@@ -388,7 +388,7 @@ class InitCloneRepo(Vertical):
         # TODO: add selection for https(with PAT token) or ssh
         yield InputHorizontal()
 
-        with VerticalGroup(classes=TcssStr.operate_docked_bottom):
+        with VerticalGroup(classes=TcssStr.operate_bottom_vertical_group):
             yield ButtonsHorizontal(
                 tab_ids=Id.init,
                 buttons=(OperateBtn.clone_repo,),
