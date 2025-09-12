@@ -300,7 +300,7 @@ class GitLogView(DataTable[Text]):
     def __init__(self, *, ids: TabIds | ModalIds) -> None:
         self.ids = ids
         super().__init__(
-            id=self.ids.view_id(ViewName.git_log_view), show_cursor=False
+            id=self.ids.view_id(view=ViewName.git_log_view), show_cursor=False
         )
 
     def on_mount(self) -> None:

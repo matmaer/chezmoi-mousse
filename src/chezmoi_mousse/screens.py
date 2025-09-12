@@ -84,7 +84,9 @@ class Operate(ModalBase):
                 ):
                     yield DiffView(
                         tab_name=self.tab_name,
-                        view_id=Id.operate_modal.view_id(ViewName.diff_view),
+                        view_id=Id.operate_modal.view_id(
+                            view=ViewName.diff_view
+                        ),
                     )
             else:
                 with Collapsible(
@@ -92,7 +94,7 @@ class Operate(ModalBase):
                 ):
                     yield ContentsView(
                         view_id=Id.operate_modal.view_id(
-                            ViewName.contents_view
+                            view=ViewName.contents_view
                         )
                     )
             with VerticalGroup(classes=TcssStr.operate_docked_bottom):
@@ -114,12 +116,14 @@ class Operate(ModalBase):
         ):
             # Set path for the modal diff view
             self.query_one(
-                Id.operate_modal.view_qid(ViewName.diff_view), DiffView
+                Id.operate_modal.view_id("#", view=ViewName.diff_view),
+                DiffView,
             ).path = self.path
         else:
             # Set path for the modal contents view
             self.query_one(
-                Id.operate_modal.view_qid(ViewName.contents_view), ContentsView
+                Id.operate_modal.view_id("#", view=ViewName.contents_view),
+                ContentsView,
             ).path = self.path
         self.write_initial_log_msg()
 
@@ -202,39 +206,49 @@ class Maximized(ModalBase):
     def compose(self) -> ComposeResult:
         with Vertical():
             if self.id_to_maximize == self.tab_ids.view_id(
-                ViewName.contents_view
+                view=ViewName.contents_view
             ):
                 yield ContentsView(
-                    view_id=Id.maximized_modal.view_id(ViewName.contents_view)
+                    view_id=Id.maximized_modal.view_id(
+                        view=ViewName.contents_view
+                    )
                 )
             elif self.id_to_maximize == self.tab_ids.view_id(
-                ViewName.diff_view
+                view=ViewName.diff_view
             ):
                 yield DiffView(
                     tab_name=self.tab_name,
-                    view_id=Id.maximized_modal.view_id(ViewName.diff_view),
+                    view_id=Id.maximized_modal.view_id(
+                        view=ViewName.diff_view
+                    ),
                 )
             elif self.id_to_maximize == self.tab_ids.view_id(
-                ViewName.git_log_view
+                view=ViewName.git_log_view
             ):
                 yield GitLogView(ids=Id.maximized_modal)
 
     def on_mount(self) -> None:
         self.border_subtitle = " double click or escape key to close "
-        if self.id_to_maximize == self.tab_ids.view_id(ViewName.contents_view):
-            self.query_one(
-                Id.maximized_modal.view_qid(ViewName.contents_view),
-                ContentsView,
-            ).path = self.path
-        elif self.id_to_maximize == self.tab_ids.view_id(ViewName.diff_view):
-            self.query_one(
-                Id.maximized_modal.view_qid(ViewName.diff_view), DiffView
-            ).path = self.path
-        elif self.id_to_maximize == self.tab_ids.view_id(
-            ViewName.git_log_view
+        if self.id_to_maximize == self.tab_ids.view_id(
+            view=ViewName.contents_view
         ):
             self.query_one(
-                Id.maximized_modal.view_qid(ViewName.git_log_view), GitLogView
+                Id.maximized_modal.view_id("#", view=ViewName.contents_view),
+                ContentsView,
+            ).path = self.path
+        elif self.id_to_maximize == self.tab_ids.view_id(
+            view=ViewName.diff_view
+        ):
+            self.query_one(
+                Id.maximized_modal.view_id("#", view=ViewName.diff_view),
+                DiffView,
+            ).path = self.path
+        elif self.id_to_maximize == self.tab_ids.view_id(
+            view=ViewName.git_log_view
+        ):
+            self.query_one(
+                Id.maximized_modal.view_id("#", view=ViewName.git_log_view),
+                GitLogView,
             ).path = self.path
 
         if self.path == chezmoi_config.destDir:

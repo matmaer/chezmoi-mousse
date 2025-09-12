@@ -196,11 +196,8 @@ class ModalIds:
         self.modal_name = modal_name
         self.modal_id = f"{modal_name}_id"
 
-    def view_id(self, view: ViewName) -> str:
-        return f"{self.modal_name}_{view}"
-
-    def view_qid(self, view: ViewName) -> str:
-        return f"#{self.view_id(view)}"
+    def view_id(self, qid: str = "", *, view: ViewName) -> str:
+        return f"{qid}{self.modal_name}_{view}"
 
 
 class TabIds:
@@ -237,11 +234,8 @@ class TabIds:
     def tree_id(self, qid: str = "", *, tree: TreeName) -> str:
         return f"{qid}{self.tab_name}_{tree}"
 
-    def view_id(self, view: ViewName) -> str:
-        return f"{self.tab_name}_{view}"
-
-    def view_qid(self, view: ViewName) -> str:
-        return f"#{self.view_id(view)}"
+    def view_id(self, qid: str = "", *, view: ViewName) -> str:
+        return f"{qid}{self.tab_name}_{view}"
 
 
 @dataclass(frozen=True)
