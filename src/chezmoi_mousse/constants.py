@@ -48,6 +48,12 @@ class Location(StrEnum):
     top = auto()
 
 
+class LogIdStr(StrEnum):
+    operate_log = auto()
+    app_log = auto()
+    init_log = auto()
+
+
 class ModalIdStr(StrEnum):
     install_help_tree = auto()
     maximized_modal = auto()
@@ -58,7 +64,6 @@ class ModalIdStr(StrEnum):
     modal_git_log_view = auto()
     operate_collapsible = auto()
     operate_info = auto()
-    operate_modal_log = auto()
     operate_modal = auto()
     operate_vertical = auto()
 

@@ -15,7 +15,7 @@ import chezmoi_mousse.custom_theme as theme
 from chezmoi_mousse.constants import (
     Chars,
     IoVerbs,
-    ModalIdStr,
+    LogIdStr,
     OperateVerbs,
     ReadVerbs,
     TabStr,
@@ -118,7 +118,7 @@ class CommandLog(RichLog):
         if self.log_id == Id.init.log_id:
             self.border_title = " Init Log "
             self.add_class(TcssStr.operate_log)
-        elif self.log_id == ModalIdStr.operate_modal_log:
+        elif self.log_id == LogIdStr.operate_log:
             self.border_title = " Operate Log "
             self.add_class(TcssStr.operate_log)
 
@@ -206,9 +206,9 @@ class CommandLog(RichLog):
         self.write(f"{self._log_time()} [{color}]{message}[/]")
 
 
-cmd_log = CommandLog(log_id=Id.log.log_id)
-init_log = CommandLog(log_id=Id.init.log_id)
-op_log = CommandLog(log_id=ModalIdStr.operate_modal_log)
+cmd_log = CommandLog(log_id=LogIdStr.app_log)
+init_log = CommandLog(log_id=LogIdStr.init_log)
+op_log = CommandLog(log_id=LogIdStr.operate_log)
 
 
 if os.environ.get("CHEZMOI_MOUSSE_DEV") == "1":
