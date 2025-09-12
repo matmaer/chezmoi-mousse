@@ -10,6 +10,7 @@ from typing import Any
 from chezmoi_mousse.constants import (
     Chars,
     Location,
+    ModalName,
     OperateBtn,
     TabBtn,
     TabName,
@@ -188,6 +189,11 @@ class PwMgrInfo(Enum):
         description="A tool for managing secrets",
         link="https://vaultproject.io/",
     )
+
+
+class ModalIds:
+    def __init__(self, modal_name: ModalName) -> None:
+        self.modal_name = modal_name
 
 
 class TabIds:

@@ -54,6 +54,12 @@ class LogIdStr(StrEnum):
     init_log = auto()
 
 
+class ModalName(StrEnum):
+    install_help = auto()
+    maximized = auto()
+    operate = auto()
+
+
 class ModalIdStr(StrEnum):
     install_help_tree = auto()
     maximized_modal = auto()
