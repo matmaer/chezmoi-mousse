@@ -58,7 +58,7 @@ class ApplyTab(OperateTabsBase):
 
     def compose(self) -> ComposeResult:
         with VerticalGroup(
-            id=Id.apply.tab_vertical_id(Area.left),
+            id=Id.apply.tab_vertical_id(area=Area.left),
             classes=TcssStr.tab_left_vertical,
         ):
             yield ButtonsHorizontal(
@@ -69,7 +69,7 @@ class ApplyTab(OperateTabsBase):
             yield TreeContentSwitcher(tab_ids=Id.apply)
 
         with Vertical(
-            id=Id.apply.tab_vertical_id(Area.right),
+            id=Id.apply.tab_vertical_id(area=Area.right),
             classes=TcssStr.tab_right_vertical,
         ):
             yield ButtonsHorizontal(
@@ -115,7 +115,7 @@ class ReAddTab(OperateTabsBase):
 
     def compose(self) -> ComposeResult:
         with VerticalGroup(
-            id=Id.re_add.tab_vertical_id(Area.left),
+            id=Id.re_add.tab_vertical_id(area=Area.left),
             classes=TcssStr.tab_left_vertical,
         ):
             yield ButtonsHorizontal(
@@ -125,7 +125,7 @@ class ReAddTab(OperateTabsBase):
             )
             yield TreeContentSwitcher(tab_ids=Id.re_add)
 
-        with Vertical(id=Id.re_add.tab_vertical_id(Area.right)):
+        with Vertical(id=Id.re_add.tab_vertical_id(area=Area.right)):
             yield ButtonsHorizontal(
                 tab_ids=Id.re_add,
                 buttons=(TabBtn.diff, TabBtn.contents, TabBtn.git_log),
@@ -152,7 +152,7 @@ class ReAddTab(OperateTabsBase):
 
     def on_mount(self) -> None:
         self.query_one(
-            Id.re_add.tab_vertical_qid(Area.right), Vertical
+            Id.re_add.tab_vertical_id("#", area=Area.right), Vertical
         ).add_class(TcssStr.tab_right_vertical)
         self.query_one(
             Id.re_add.content_switcher_id("#", area=Area.right),
@@ -173,7 +173,7 @@ class AddTab(OperateTabsBase):
         super().__init__(tab_ids=Id.add)
 
     def compose(self) -> ComposeResult:
-        with VerticalGroup(id=Id.add.tab_vertical_id(Area.left)):
+        with VerticalGroup(id=Id.add.tab_vertical_id(area=Area.left)):
             yield FilteredDirTree(
                 chezmoi_config.destDir,
                 id=Id.add.tree_id(TreeName.add_tree),
@@ -193,7 +193,7 @@ class AddTab(OperateTabsBase):
         contents_view.border_title = str(chezmoi_config.destDir)
         contents_view.add_class(TcssStr.border_title_top)
         left_side = self.query_one(
-            Id.add.tab_vertical_qid(Area.left), VerticalGroup
+            Id.add.tab_vertical_id("#", area=Area.left), VerticalGroup
         )
         left_side.border_title = str(chezmoi_config.destDir)
         left_side.add_class(

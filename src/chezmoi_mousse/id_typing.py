@@ -231,11 +231,8 @@ class TabIds:
     def switch_id(self, qid: str = "", *, switch: Switches) -> str:
         return f"{qid}{self.tab_name}_{switch.name}_switch"
 
-    def tab_vertical_id(self, side: Area) -> str:
-        return f"{self.tab_name}_{side}_vertical"
-
-    def tab_vertical_qid(self, side: Area) -> str:
-        return f"#{self.tab_vertical_id(side)}"
+    def tab_vertical_id(self, qid: str = "", *, area: Area) -> str:
+        return f"{qid}{self.tab_name}_{area}_vertical"
 
     def tree_id(self, tree: TreeName) -> str:
         return f"{self.tab_name}_{tree}"
