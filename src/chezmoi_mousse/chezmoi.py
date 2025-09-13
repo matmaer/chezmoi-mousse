@@ -30,18 +30,44 @@ from chezmoi_mousse.id_typing import (
     PathDict,
 )
 
-CHEZMOI_COMMAND = which("chezmoi")
+CHEZMOI = "chezmoi"
 
-BASE_CMD = (
-    "chezmoi",
-    "--no-pager",
-    "--color=off",
-    "--no-tty",
-    "--mode=file",
-    "--progress=false",
-    "--interactive=false",
-    "--force",
-)
+# shutil handles the exception, returns None if command is not found
+CHEZMOI_COMMAND: str | None = which(CHEZMOI)
+
+
+class GlobalArgs(Enum):
+    COLOR = ("--color=off",)
+    FORCE = ("--force",)
+    INTERACTIVE = ("--interactive=false",)
+    MODE = ("--mode=file",)
+    CHEZMOI_PAGER = ("--no-pager",)
+    PROGRESS = ("--progress=false",)
+    TTY = ("--no-tty",)
+
+
+BASE_CMD = (CHEZMOI,) + tuple(arg.value[0] for arg in GlobalArgs)
+
+
+class VerbArgs(Enum):
+    # arg for 'chezmoi git', meaning chezmoi calls "chezmoi git -- log")
+    FORMAT_JSON = ("--format=json",)
+    GIT_LOG = ("--", "log")
+    INCLUDE_DIRS = ("--include=dirs",)
+    INCLUDE_FILES = ("--include=files",)
+    PATH_STYLE_ABSOLUTE = ("--path-style=absolute",)
+
+
+class GitLogArgs(Enum):
+    """Args passed by 'chezmoi git' to 'git log'."""
+
+    DATE_ORDER = ("--date-order",)
+    FORMAT_STR = ("--format=%ar by %cn;%s",)
+    GIT_PAGER = ("--no-pager",)
+    MAX_COUNT = ("--max-count=50",)
+    NO_COLOR = ("--no-color",)
+    NO_DECORATE = ("--no-decorate",)
+    NO_EXPAND_TABS = ("--no-expand-tabs",)
 
 
 class AllCommands(Enum):
@@ -51,41 +77,48 @@ class AllCommands(Enum):
     diff = BASE_CMD + (ReadVerbs.diff,)
     dir_status_lines = BASE_CMD + (
         IoVerbs.status,
-        "--path-style=absolute",
-        "--include=dirs",
+        *VerbArgs.PATH_STYLE_ABSOLUTE.value,
+        *VerbArgs.INCLUDE_DIRS.value,
     )
-    dump_config = BASE_CMD + (IoVerbs.dump_config, "--format=json")
+    dump_config = BASE_CMD + (*VerbArgs.FORMAT_JSON.value, IoVerbs.dump_config)
     file_status_lines = BASE_CMD + (
         IoVerbs.status,
-        "--path-style=absolute",
-        "--include=files",
+        *VerbArgs.PATH_STYLE_ABSOLUTE.value,
+        *VerbArgs.INCLUDE_FILES.value,
     )
     forget = BASE_CMD + (OperateVerbs.forget,)
-    git_log = BASE_CMD + (
-        ReadVerbs.git,
-        "--",
-        "log",
-        "--max-count=50",
-        "--no-color",
-        "--no-decorate",
-        "--date-order",
-        "--no-expand-tabs",
-        "--format=%ar by %cn;%s",
+    git_log = (
+        BASE_CMD
+        + (ReadVerbs.git,)
+        + VerbArgs.GIT_LOG.value
+        + GitLogArgs.DATE_ORDER.value
+        + GitLogArgs.FORMAT_STR.value
+        + GitLogArgs.GIT_PAGER.value
+        + GitLogArgs.MAX_COUNT.value
+        + GitLogArgs.NO_COLOR.value
+        + GitLogArgs.NO_DECORATE.value
+        + GitLogArgs.NO_EXPAND_TABS.value
     )
+
     ignored = BASE_CMD + (ReadVerbs.ignored,)
     managed_dirs = BASE_CMD + (
         IoVerbs.managed,
-        "--path-style=absolute",
-        "--include=dirs",
+        *VerbArgs.PATH_STYLE_ABSOLUTE.value,
+        *VerbArgs.INCLUDE_DIRS.value,
     )
     managed_files = BASE_CMD + (
         IoVerbs.managed,
-        "--path-style=absolute",
-        "--include=files",
+        *VerbArgs.PATH_STYLE_ABSOLUTE.value,
+        *VerbArgs.INCLUDE_FILES.value,
     )
-    purge = BASE_CMD + (OperateVerbs.purge, "--force")
+    re_add = BASE_CMD + (
+        IoVerbs.managed,
+        *VerbArgs.PATH_STYLE_ABSOLUTE.value,
+        *VerbArgs.INCLUDE_FILES.value,
+    )
+    purge = BASE_CMD + (OperateVerbs.purge,)
     source_path = BASE_CMD + (ReadVerbs.source_path,)
-    template_data = BASE_CMD + (ReadVerbs.data, "--format=json")
+    template_data = BASE_CMD + (*VerbArgs.FORMAT_JSON.value, ReadVerbs.data)
 
 
 class CommandLog(RichLog):
