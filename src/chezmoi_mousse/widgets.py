@@ -23,12 +23,7 @@ from textual.widgets import DataTable, DirectoryTree, RichLog, Static, Tree
 from textual.widgets.tree import TreeNode
 
 import chezmoi_mousse.custom_theme as theme
-from chezmoi_mousse.chezmoi import (
-    chezmoi,
-    chezmoi_config,
-    cmd_log,
-    managed_status,
-)
+from chezmoi_mousse.chezmoi import chezmoi, cmd_log, managed_status
 from chezmoi_mousse.constants import (
     ModalIdStr,
     TcssStr,
@@ -83,9 +78,9 @@ class OperateInfo(Static):
             self.border_subtitle = Chars.destroy_file_info_border
         # show git auto warnings
         if not OperateBtn.apply_file == self.operate_btn:
-            if chezmoi_config.autocommit:
+            if chezmoi.git_cfg_autocommit:
                 lines_to_write.append(OperateHelp.auto_commit.value)
-            if chezmoi_config.autopush:
+            if chezmoi.git_cfg_autopush:
                 lines_to_write.append(OperateHelp.autopush.value)
         # show git diff color info
         if (
@@ -114,7 +109,7 @@ class ContentsView(RichLog):
         self.write(
             Text(
                 (
-                    f"Destination directory is {chezmoi_config.destDir}.\n"
+                    f"Destination directory is {chezmoi.destDir}.\n"
                     "Click a file or directory to view its contents."
                 ),
                 style="dim",
@@ -163,7 +158,7 @@ class ContentsView(RichLog):
                 return
 
         except IsADirectoryError:
-            if self.path == chezmoi_config.destDir:
+            if self.path == chezmoi.destDir:
                 self.write(
                     Text(
                         "Click a file or directory to show its contents.\n",
@@ -171,10 +166,10 @@ class ContentsView(RichLog):
                     )
                 )
                 self.write("Current directory:")
-                self.write(f"{chezmoi_config.destDir}")
+                self.write(f"{chezmoi.destDir}")
                 self.write(Text("(destDir)\n", style="dim"))
                 self.write("Source directory:")
-                self.write(f"{chezmoi_config.sourceDir}")
+                self.write(f"{chezmoi.sourceDir}")
                 self.write(Text("(sourceDir)", style="dim"))
             elif self.path in managed_status.dir_paths:
                 self.write(f"Managed directory: {self.path}")
@@ -210,7 +205,7 @@ class DiffView(RichLog):
         self.write(
             Text(
                 (
-                    f"Destination directory is {chezmoi_config.destDir}.\n"
+                    f"Destination directory is {chezmoi.destDir}.\n"
                     "Click a file or directory to view its contents."
                 ),
                 style="dim",
@@ -221,7 +216,7 @@ class DiffView(RichLog):
         self.clear()
 
         if self.path is None:
-            self.path = chezmoi_config.destDir
+            self.path = chezmoi.destDir
 
         diff_output: list[str] = []
         if not self.reverse:
@@ -232,10 +227,7 @@ class DiffView(RichLog):
             self.status_dirs = managed_status.re_add_dirs
 
         # create a diff view if the current path is a directory
-        if (
-            self.path in self.status_dirs
-            or self.path == chezmoi_config.destDir
-        ):
+        if self.path in self.status_dirs or self.path == chezmoi.destDir:
             tab_name = (
                 TabName.re_add_tab if self.reverse else TabName.apply_tab
             )
@@ -300,16 +292,13 @@ class DiffView(RichLog):
 
 
 class GitLogView(DataTable[Text]):
-    path: reactive[Path | None] = reactive(None, init=False)
+    path: reactive[Path | None] = reactive(chezmoi.destDir, init=False)
 
     def __init__(self, *, ids: TabIds | ModalIds) -> None:
         self.ids = ids
         super().__init__(
             id=self.ids.view_id(view=ViewName.git_log_view), show_cursor=False
         )
-
-    def on_mount(self) -> None:
-        self.populate_data_table(chezmoi.run.git_log(chezmoi_config.destDir))
 
     def add_row_with_style(self, columns: list[str], style: str) -> None:
         row: Iterable[Text] = [
@@ -336,7 +325,8 @@ class GitLogView(DataTable[Text]):
                 self.add_row(*(Text(cell) for cell in columns))
 
     def watch_path(self) -> None:
-        assert isinstance(self.path, Path)
+        if self.path is None:
+            self.path = chezmoi.destDir
         self.clear(columns=True)
         self.populate_data_table(chezmoi.run.git_log(self.path))
 
@@ -393,7 +383,7 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
             "F": theme.vars["text-primary"],
         }
         root_node_data: DirNodeData = DirNodeData(
-            path=chezmoi_config.destDir, found=True, status="F"
+            path=chezmoi.destDir, found=True, status="F"
         )
         super().__init__(
             label="root",
@@ -442,9 +432,7 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
 
     # create node data methods
     def create_dir_node_data(self, *, path: Path) -> DirNodeData:
-        assert (
-            path != chezmoi_config.destDir
-        ), "Root node should not be created again"
+        assert path != chezmoi.destDir, "Root node should not be created again"
         assert path in managed_status.dir_paths
         status_code: str = ""
         if self.tab_name == TabName.apply_tab:
@@ -484,7 +472,7 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
         )
 
     def dir_has_status_dirs(self, tab_name: TabName, dir_path: Path) -> bool:
-        assert dir_path != chezmoi_config.destDir
+        assert dir_path != chezmoi.destDir
         # checks for any, direct children or no matter how deep in subdirs
         dirs_dict: PathDict = {}
         if tab_name == TabName.apply_tab:
@@ -617,7 +605,7 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
                 and not self.should_show_dir_node(
                     dir_path=dir_node.data.path, show_unchanged=show_unchanged
                 )
-                and dir_node.data.path != chezmoi_config.destDir
+                and dir_node.data.path != chezmoi.destDir
             ):
                 dir_node.remove()
 
@@ -627,7 +615,7 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
             if (
                 node.data
                 and node.data.path == node_path
-                and node.data.path != chezmoi_config.destDir
+                and node.data.path != chezmoi.destDir
             ):
                 node.remove()
 
@@ -788,8 +776,7 @@ class FilteredDirTree(DirectoryTree):
                 if (
                     p.is_file()
                     and (
-                        p.parent in managed_dirs
-                        or p.parent == chezmoi_config.destDir
+                        p.parent in managed_dirs or p.parent == chezmoi.destDir
                     )
                     and not self.is_unwanted_path(p)
                     and p not in managed_files
@@ -815,8 +802,7 @@ class FilteredDirTree(DirectoryTree):
                 if (
                     p.is_file()
                     and (
-                        p.parent in managed_dirs
-                        or p.parent == chezmoi_config.destDir
+                        p.parent in managed_dirs or p.parent == chezmoi.destDir
                     )
                     and p not in managed_files
                 )

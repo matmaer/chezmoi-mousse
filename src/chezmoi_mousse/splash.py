@@ -127,6 +127,9 @@ class LoadingScreen(Screen[list[str]]):
         else:
             cmd_log.log_success(f"chezmoi command found: {CHEZMOI_COMMAND}")
 
+        # chezmoi dump-config is run during the Chezmoi class init
+        LONG_COMMANDS.pop("dump_config")
+
         # first run chezmoi doctor, most expensive command
         self.run_io_worker("doctor")
         LONG_COMMANDS.pop("doctor")

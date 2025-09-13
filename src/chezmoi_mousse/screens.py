@@ -8,7 +8,7 @@ from textual.events import Click
 from textual.screen import ModalScreen
 from textual.widgets import Button, Link, Static
 
-from chezmoi_mousse.chezmoi import chezmoi, chezmoi_config, op_log
+from chezmoi_mousse.chezmoi import chezmoi, op_log
 from chezmoi_mousse.constants import ModalIdStr, OperateVerbs, TcssStr
 from chezmoi_mousse.containers import ButtonsHorizontal
 from chezmoi_mousse.id_typing import (
@@ -226,12 +226,10 @@ class Maximized(ModalBase):
                 GitLogView,
             ).path = self.path
 
-        if self.path == chezmoi_config.destDir:
-            self.border_title = f" {chezmoi_config.destDir} "
+        if self.path == chezmoi.destDir:
+            self.border_title = f" {chezmoi.destDir} "
         elif self.path is not None:
-            self.border_title = (
-                f" {self.path.relative_to(chezmoi_config.destDir)} "
-            )
+            self.border_title = f" {self.path.relative_to(chezmoi.destDir)} "
 
 
 class InstallHelp(ModalBase):

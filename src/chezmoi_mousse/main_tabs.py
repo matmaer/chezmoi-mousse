@@ -18,12 +18,7 @@ from textual.widgets import (
 )
 
 import chezmoi_mousse.custom_theme as theme
-from chezmoi_mousse.chezmoi import (
-    CHEZMOI_COMMAND,
-    chezmoi,
-    chezmoi_config,
-    init_log,
-)
+from chezmoi_mousse.chezmoi import CHEZMOI_COMMAND, chezmoi, init_log
 from chezmoi_mousse.constants import FLOW, DoctorCollapsibles, TcssStr
 from chezmoi_mousse.containers import (
     ButtonsHorizontal,
@@ -165,7 +160,7 @@ class AddTab(OperateTabsBase):
     def compose(self) -> ComposeResult:
         with VerticalGroup(id=Id.add.tab_vertical_id(area=Area.left)):
             yield FilteredDirTree(
-                chezmoi_config.destDir,
+                chezmoi.destDir,
                 id=Id.add.tree_id(tree=TreeName.add_tree),
                 classes=TcssStr.dir_tree_widget,
             )
@@ -180,12 +175,12 @@ class AddTab(OperateTabsBase):
         contents_view = self.query_one(
             Id.add.view_id("#", view=ViewName.contents_view), ContentsView
         )
-        contents_view.border_title = str(chezmoi_config.destDir)
+        contents_view.border_title = str(chezmoi.destDir)
         contents_view.add_class(TcssStr.border_title_top)
         left_side = self.query_one(
             Id.add.tab_vertical_id("#", area=Area.left), VerticalGroup
         )
-        left_side.border_title = str(chezmoi_config.destDir)
+        left_side.border_title = str(chezmoi.destDir)
         left_side.add_class(
             TcssStr.tab_left_vertical, TcssStr.border_title_top
         )
@@ -208,7 +203,7 @@ class AddTab(OperateTabsBase):
         )
         contents_view.path = event.node.data.path
         contents_view.border_title = (
-            f"{event.node.data.path.relative_to(chezmoi_config.destDir)}"
+            f"{event.node.data.path.relative_to(chezmoi.destDir)}"
         )
         self.enable_buttons((OperateBtn.add_file,))
 
@@ -222,7 +217,7 @@ class AddTab(OperateTabsBase):
         )
         contents_view.path = event.node.data.path
         contents_view.border_title = (
-            f"{event.node.data.path.relative_to(chezmoi_config.destDir)}"
+            f"{event.node.data.path.relative_to(chezmoi.destDir)}"
         )
         self.disable_buttons((OperateBtn.add_file,))
 

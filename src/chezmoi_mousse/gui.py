@@ -16,12 +16,7 @@ from textual.widgets import (
 )
 
 import chezmoi_mousse.custom_theme
-from chezmoi_mousse.chezmoi import (
-    CHEZMOI_COMMAND,
-    chezmoi_config,
-    cmd_log,
-    init_log,
-)
+from chezmoi_mousse.chezmoi import CHEZMOI_COMMAND, chezmoi, cmd_log, init_log
 from chezmoi_mousse.constants import Area, Chars, TabName, TreeName, ViewName
 from chezmoi_mousse.containers import ButtonsHorizontal
 from chezmoi_mousse.id_typing import Id, OperateBtn, OperateHelp
@@ -128,12 +123,10 @@ class ChezmoiGUI(App[None]):
         cmd_log.log_success(f"Theme set to {new_theme}")
 
     def first_mount_refresh(self, _: object) -> None:
+        self.loading_screen_dismissed = True
         if not CHEZMOI_COMMAND:
             self.push_screen(InstallHelp())
-        add_dir = self.query_one(
-            Id.add.button_id("#", btn=OperateBtn.add_dir), Button
-        )
-        add_dir.disabled = True
+            return
         # Trees to refresh for each tab
         tree_types: list[
             tuple[TreeName, type[ManagedTree | FlatTree | ExpandedTree]]
@@ -150,7 +143,6 @@ class ChezmoiGUI(App[None]):
                 ).refresh_tree_data()
         # Refresh DirectoryTree
         self.query_one(FilteredDirTree).reload()
-        self.loading_screen_dismissed = True
 
     def on_tabbed_content_tab_activated(
         self, event: TabbedContent.TabActivated
@@ -206,12 +198,14 @@ class ChezmoiGUI(App[None]):
             getattr(tab_widget, "action_toggle_switch_slider")()  # call it
 
     def action_maximize(self) -> None:
+        if not self.loading_screen_dismissed:
+            return
         active_pane_id = self.query_one(TabbedContent).active
         tab_ids = Id.get_tab_ids_from_pane_id(pane_id=active_pane_id)
 
         # Initialize modal parameters
         id_to_maximize: str | None = None
-        current_path: Path = chezmoi_config.destDir
+        current_path: Path | None = chezmoi.destDir
 
         if tab_ids.tab_name in (TabName.apply_tab, TabName.re_add_tab):
             # Determine what view to show in the modal

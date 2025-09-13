@@ -18,7 +18,6 @@ from chezmoi_mousse.constants import (
     ViewName,
 )
 
-type CmdWords = tuple[str, ...]
 type Mro = tuple[type, ...]
 type OperateButtons = tuple[OperateBtn, ...]
 type ParsedJson = dict[str, Any]

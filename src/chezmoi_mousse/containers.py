@@ -27,7 +27,7 @@ from textual.widgets import (
     Switch,
 )
 
-from chezmoi_mousse.chezmoi import chezmoi_config, init_log
+from chezmoi_mousse.chezmoi import chezmoi, init_log
 from chezmoi_mousse.constants import (
     Area,
     OperateBtn,
@@ -94,9 +94,7 @@ class OperateTabsBase(Horizontal):
         self.current_path = event.node.data.path
         self.query_one(
             self.tab_ids.content_switcher_id("#", area=Area.right), Container
-        ).border_title = (
-            f"{self.current_path.relative_to(chezmoi_config.destDir)}"
-        )
+        ).border_title = f"{self.current_path.relative_to(chezmoi.destDir)}"
         current_view = self.query_one(
             self.tab_ids.content_switcher_id("#", area=Area.right),
             ContentSwitcher,
@@ -347,7 +345,7 @@ class TreeContentSwitcher(ContentSwitcher):
         )
 
     def on_mount(self) -> None:
-        self.border_title = str(chezmoi_config.destDir)
+        self.border_title = str(chezmoi.destDir)
         self.add_class(TcssStr.content_switcher_left, TcssStr.border_title_top)
 
     def compose(self) -> ComposeResult:
