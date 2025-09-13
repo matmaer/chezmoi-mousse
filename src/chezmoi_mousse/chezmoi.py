@@ -30,7 +30,7 @@ from chezmoi_mousse.id_typing import (
     PathDict,
 )
 
-CHEZMOI_COMMAND_FOUND = which("chezmoi")
+CHEZMOI_COMMAND = which("chezmoi")
 
 BASE_CMD = (
     "chezmoi",
@@ -193,7 +193,7 @@ if os.environ.get("CHEZMOI_MOUSSE_DEV") == "1":
 
 def _run_cmd(long_command: CmdWords, time_out: float = 1) -> str:
 
-    if not CHEZMOI_COMMAND_FOUND:
+    if not CHEZMOI_COMMAND:
         return ""
 
     try:

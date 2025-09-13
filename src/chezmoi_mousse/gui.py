@@ -17,7 +17,7 @@ from textual.widgets import (
 
 import chezmoi_mousse.custom_theme
 from chezmoi_mousse.chezmoi import (
-    CHEZMOI_COMMAND_FOUND,
+    CHEZMOI_COMMAND,
     chezmoi_config,
     cmd_log,
     init_log,
@@ -128,7 +128,7 @@ class ChezmoiGUI(App[None]):
         cmd_log.log_success(f"Theme set to {new_theme}")
 
     def first_mount_refresh(self, _: object) -> None:
-        if not CHEZMOI_COMMAND_FOUND:
+        if not CHEZMOI_COMMAND:
             self.push_screen(InstallHelp())
         add_dir = self.query_one(
             Id.add.button_id("#", btn=OperateBtn.add_dir), Button

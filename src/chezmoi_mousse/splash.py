@@ -14,7 +14,7 @@ from textual.timer import Timer
 from textual.widgets import RichLog, Static
 from textual.worker import WorkerState
 
-from chezmoi_mousse.chezmoi import CHEZMOI_COMMAND_FOUND, chezmoi, cmd_log
+from chezmoi_mousse.chezmoi import CHEZMOI_COMMAND, chezmoi, cmd_log
 from chezmoi_mousse.constants import SPLASH, SplashIds
 from chezmoi_mousse.custom_theme import vars as theme_vars
 
@@ -120,14 +120,12 @@ class LoadingScreen(Screen[list[str]]):
             interval=0.05, callback=animated_fade.refresh
         )
 
-        if not CHEZMOI_COMMAND_FOUND:
+        if not CHEZMOI_COMMAND:
             self.handle_unavailable_chezmoi_command()
             cmd_log.log_error("chezmoi command not found")
             return
         else:
-            cmd_log.log_success(
-                f"chezmoi command found: {CHEZMOI_COMMAND_FOUND}"
-            )
+            cmd_log.log_success(f"chezmoi command found: {CHEZMOI_COMMAND}")
 
         # first run chezmoi doctor, most expensive command
         self.run_io_worker("doctor")
