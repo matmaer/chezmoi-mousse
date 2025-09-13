@@ -8,7 +8,7 @@ from textual.events import Click
 from textual.screen import ModalScreen
 from textual.widgets import Button, Link, Static
 
-from chezmoi_mousse.chezmoi import chezmoi, chezmoi_config, cmd_log, op_log
+from chezmoi_mousse.chezmoi import chezmoi, chezmoi_config, op_log
 from chezmoi_mousse.constants import ModalIdStr, OperateVerbs, TcssStr
 from chezmoi_mousse.containers import ButtonsHorizontal
 from chezmoi_mousse.id_typing import (
@@ -123,9 +123,6 @@ class Operate(ModalBase):
             command += OperateVerbs.apply
         elif self.tab_name == TabName.re_add_tab:
             command += OperateVerbs.re_add
-        cmd_log.log_ready_to_run(
-            f"Ready to run command: {command} {self.path}"
-        )
         op_log.log_ready_to_run(f"Ready to run command: {command} {self.path}")
 
     @on(Button.Pressed, ".operate_button")
@@ -164,7 +161,6 @@ class Operate(ModalBase):
     def handle_dismiss(self, dismiss_data: OperateData) -> None:
         if not dismiss_data.operation_executed and self.path:
             msg = f"Operation cancelled for {self.path.name}"
-            cmd_log.log_success(msg)
             op_log.log_success(msg)
             self.notify("No changes were made")
         # send the needed data to the app, logging will be handled there
