@@ -3,7 +3,7 @@ import os
 import subprocess
 from dataclasses import dataclass
 from datetime import datetime
-from enum import Enum, StrEnum, unique
+from enum import Enum
 from pathlib import Path
 from shutil import which
 from types import SimpleNamespace
@@ -21,50 +21,56 @@ from chezmoi_mousse.constants import (
     ReadVerbs,
     TabName,
     TcssStr,
+    ViewName,
 )
-from chezmoi_mousse.id_typing import Id, Mro, OperateHelp, ParsedJson, PathDict
+from chezmoi_mousse.id_typing import (
+    Id,
+    Mro,
+    OperateHelp,
+    ParsedJson,
+    PathDict,
+    TabIds,
+)
 
 CHEZMOI = "chezmoi"
 
-CHEZMOI_COMMAND: str | None = which(CHEZMOI)
+CHEZMOI_COMMAND_FOUND = which(CHEZMOI)
+
+CHEZMOI_COMMAND: str = CHEZMOI_COMMAND_FOUND or CHEZMOI
 
 
-BASE_CMD: list[str] = [
-    "chezmoi",
-    "--color=off",
-    "--force",
-    "--interactive=false",
-    "--mode=file",
-    "--no-pager",
-    "--progress=false",
-    "--no-tty",
-]
-
-
-@unique
-class OperateArgs(StrEnum):
-    # Optional global args that may be added to BASE_CMD as needed
+class GlobalArgs(Enum):
+    default_args = [
+        "--color=off",
+        "--force",
+        "--interactive=false",
+        "--mode=file",
+        "--no-pager",
+        "--no-tty",
+        "--progress=false",
+    ]
     dry_run = "--dry-run"
     verbose = "--verbose"
 
 
-class VerbArgs(StrEnum):
+BASE_CMD = [CHEZMOI_COMMAND] + GlobalArgs.default_args.value
+
+
+class VerbArgs(Enum):
     format_json = "--format=json"
     include_dirs = "--include=dirs"
     include_files = "--include=files"
     path_style_absolute = "--path-style=absolute"
-
-
-GIT_LOG_ARGS = [
-    "--",
-    "log",
-    "--date-order",
-    "--format=%ar by %cn;%s",
-    "--max-count=50",
-    "--no-color",
-    "--no-decorate",
-    "--no-expand-tabs",
-]
+    git_log = [
+        "--",
+        "log",
+        "--date-order",
+        "--format=%ar by %cn;%s",
+        "--max-count=50",
+        "--no-color",
+        "--no-decorate",
+        "--no-expand-tabs",
+    ]
 
 
 class AllCommands(Enum):
@@ -74,84 +80,86 @@ class AllCommands(Enum):
     diff = BASE_CMD + [ReadVerbs.diff]
     dir_status_lines = BASE_CMD + [
         IoVerbs.status,
-        VerbArgs.path_style_absolute,
-        VerbArgs.include_dirs,
+        VerbArgs.path_style_absolute.value,
+        VerbArgs.include_dirs.value,
     ]
-    dump_config = BASE_CMD + [VerbArgs.format_json, IoVerbs.dump_config]
+    dump_config = BASE_CMD + [VerbArgs.format_json.value, IoVerbs.dump_config]
     file_status_lines = BASE_CMD + [
         IoVerbs.status,
-        VerbArgs.path_style_absolute,
-        VerbArgs.include_files,
+        VerbArgs.path_style_absolute.value,
+        VerbArgs.include_files.value,
     ]
     forget = BASE_CMD + [OperateVerbs.forget]
-    git_log = BASE_CMD + [ReadVerbs.git] + GIT_LOG_ARGS
+    git_log = BASE_CMD + [ReadVerbs.git] + VerbArgs.git_log.value
     ignored = BASE_CMD + [ReadVerbs.ignored]
     init = BASE_CMD + [OperateVerbs.init]
     managed_dirs = BASE_CMD + [
         IoVerbs.managed,
-        VerbArgs.path_style_absolute,
-        VerbArgs.include_dirs,
+        VerbArgs.path_style_absolute.value,
+        VerbArgs.include_dirs.value,
     ]
     managed_files = BASE_CMD + [
         IoVerbs.managed,
-        VerbArgs.path_style_absolute,
-        VerbArgs.include_files,
+        VerbArgs.path_style_absolute.value,
+        VerbArgs.include_files.value,
     ]
     re_add = BASE_CMD + [
         IoVerbs.managed,
-        VerbArgs.path_style_absolute,
-        VerbArgs.include_files,
+        VerbArgs.path_style_absolute.value,
+        VerbArgs.include_files.value,
     ]
     purge = BASE_CMD + [OperateVerbs.purge]
     source_path = BASE_CMD + [ReadVerbs.source_path]
-    template_data = BASE_CMD + [VerbArgs.format_json, ReadVerbs.data]
+    template_data = BASE_CMD + [VerbArgs.format_json.value, ReadVerbs.data]
 
 
 class CommandLog(RichLog):
-    def __init__(self, log_id: str) -> None:
-        self.log_id = log_id
+    def __init__(
+        self, *, ids: TabIds | LogIds, view_name: ViewName | None = None
+    ) -> None:
+        self.ids = ids
+        self.view_name = view_name
+        if self.view_name is not None and isinstance(self.ids, TabIds):
+            self.rich_log_id = self.ids.view_id(view=self.view_name)
+        elif isinstance(self.ids, LogIds):
+            self.rich_log_id = self.ids.value
         super().__init__(
-            id=self.log_id, auto_scroll=True, markup=True, max_lines=10000
+            id=self.rich_log_id, auto_scroll=True, markup=True, max_lines=10000
         )
 
     def on_mount(self) -> None:
-        if self.log_id == Id.init.log_id:
+        if self.id == LogIds.init_log:
+            self.add_class(TcssStr.border_title_top)
             self.border_title = " Init Log "
             self.add_class(TcssStr.operate_log)
-        elif self.log_id == LogIds.operate_log:
+        elif self.id == LogIds.operate_log:
+            self.add_class(TcssStr.border_title_top)
             self.border_title = " Operate Log "
             self.add_class(TcssStr.operate_log)
+        else:
+            self.add_class(TcssStr.log_views)
 
     def _log_time(self) -> str:
         return f"[[green]{datetime.now().strftime('%H:%M:%S')}[/]]"
 
-    def _trimmed_cmd_str(self, command: list[str]) -> str:
-        return " ".join(
+    def _pretty_cmd_str(self, command: list[str]) -> str:
+        filter_git_log_args = VerbArgs.git_log.value[2:]
+        return f"{CHEZMOI} " + " ".join(
             [
                 _
-                for _ in command
+                for _ in command[1:]
                 if _
-                not in (
-                    "--color=off"
-                    "--date-order"
-                    "--format=%ar by %cn;%s"
-                    "--format=json"
-                    "--mode=file"
-                    "--no-color"
-                    "--no-decorate"
-                    "--no-expand-tabs"
-                    "--no-pager"
-                    "--no-tty"
-                    "--path-style=absolute"
-                    "--progress=false"
-                    "--interactive=false"
-                    "--force"
-                )
+                not in GlobalArgs.default_args.value
+                + filter_git_log_args
+                + [
+                    VerbArgs.format_json.value,
+                    VerbArgs.path_style_absolute.value,
+                ]
             ]
         )
 
     def log_command(self, command: list[str]) -> None:
-        trimmed_cmd = self._trimmed_cmd_str(command)
+        trimmed_cmd = self._pretty_cmd_str(command)
         time = self._log_time()
         color = theme.vars["primary-lighten-3"]
         log_line = f"{time} [{color}]{trimmed_cmd}[/]"
@@ -177,6 +185,22 @@ class CommandLog(RichLog):
         color = theme.vars["accent-darken-3"]
         self.write(f"{self._log_time()} [{color}]{message}[/]")
 
+    def log_dimmed(self, message: str) -> None:
+        if message.strip() == "":
+            return
+        lines: list[str] = message.splitlines()
+        color = theme.vars["text-disabled"]
+        for line in lines:
+            if line.strip():
+                escaped_line = escape(line)
+                self.write(f"[{color}]{escaped_line}[/]")
+
+
+class DebugLog(CommandLog):
+
+    def __init__(self) -> None:
+        super().__init__(ids=LogIds.debug_log)
+
     def log_mro(self, mro: Mro) -> None:
         if os.environ.get("CHEZMOI_MOUSSE_DEV") != "1":
             return
@@ -190,24 +214,15 @@ class CommandLog(RichLog):
         )
         self.log_dimmed(f"{pretty_mro}")
 
-    def log_dimmed(self, message: str) -> None:
-        if message.strip() == "":
-            return
-        lines: list[str] = message.splitlines()
-        color = theme.vars["text-disabled"]
-        for line in lines:
-            if line.strip():
-                escaped_line = escape(line)
-                self.write(f"[{color}]{escaped_line}[/]")
 
-
-cmd_log = CommandLog(log_id=LogIds.app_log)
-init_log = CommandLog(log_id=LogIds.init_log)
-op_log = CommandLog(log_id=LogIds.operate_log)
-verbose_log = CommandLog(log_id=LogIds.verbose_log)
+app_log = CommandLog(ids=Id.logs, view_name=ViewName.app_log_view)
+debug_log = DebugLog()
+init_log = CommandLog(ids=LogIds.init_log)
+op_log = CommandLog(ids=LogIds.operate_log)
+output_log = CommandLog(ids=Id.logs, view_name=ViewName.output_log_view)
 
 if os.environ.get("CHEZMOI_MOUSSE_DEV") == "1":
-    cmd_log.log_ready_to_run("Running in development mode")
+    app_log.log_ready_to_run("Running in development mode")
 
 
 def _run_cmd(long_command: list[str]) -> str:
@@ -227,7 +242,14 @@ def _run_cmd(long_command: list[str]) -> str:
             .stdout.lstrip("\n")
             .rstrip()
         )
-        cmd_log.log_command(long_command)
+        app_log.log_command(long_command)
+        output_log.log_command(long_command)
+        # log all commands stdout to output_log
+        if cmd_stdout.strip() == "":
+            output_log.log_dimmed("Command returned no output on stdout")
+        else:
+            output_log.log_dimmed(cmd_stdout)
+        # handle operate logging
         if any(verb in long_command for verb in OperateVerbs):
             if (
                 OperateVerbs.init in long_command
@@ -238,7 +260,7 @@ def _run_cmd(long_command: list[str]) -> str:
                 op_log.log_command(long_command)
             if cmd_stdout.strip() == "":
                 msg = f"{Chars.check_mark} Command made changes successfully, no output"
-                cmd_log.log_success(msg)
+                app_log.log_success(msg)
                 if (
                     OperateVerbs.init in long_command
                     or OperateVerbs.purge in long_command
@@ -247,31 +269,32 @@ def _run_cmd(long_command: list[str]) -> str:
                 else:
                     op_log.log_success(msg)
             else:
-                msg = f"{Chars.check_mark} Command made changes successfully, output:"
-                cmd_log.log_success(msg)
-                cmd_log.log_dimmed(cmd_stdout)
+                app_log.log_success(
+                    f"{Chars.check_mark} Exit status 0, stdout logged to output log"
+                )
+                msg = f"{Chars.check_mark} Command ran successfully, exit status 0"
                 if (
                     OperateVerbs.init in long_command
                     or OperateVerbs.purge in long_command
                 ):
                     init_log.log_success(msg)
+                    init_log.log_dimmed(cmd_stdout)
                 else:
                     op_log.log_success(msg)
                     op_log.log_dimmed(cmd_stdout)
 
             return cmd_stdout
+        # handle IoVerb logging
         if any(verb in long_command for verb in IoVerbs):
-            cmd_log.log_warning(
-                "Subprocess call successful: InputOutput data updated"
+            app_log.log_warning(
+                "InputOutput data updated for processing in the app"
             )
             return cmd_stdout
         elif any(verb in long_command for verb in ReadVerbs):
-            cmd_log.log_warning("Subprocess call successful")
+            app_log.log_warning("Data available to display in the app")
             return cmd_stdout
         else:
-            cmd_log.log_success(
-                "Subprocess call successful, no specific logging implemented"
-            )
+            app_log.log_error("No specific logging implemented")
         return cmd_stdout
     except Exception as e:
         if "doctor" in long_command and isinstance(
@@ -283,7 +306,7 @@ def _run_cmd(long_command: list[str]) -> str:
             return e.stdout.strip()
         if any(verb in long_command for verb in OperateVerbs):
             op_log.log_error(f"{Chars.x_mark} Command failed {e}")
-        cmd_log.log_error(f"{Chars.x_mark} Command failed {e}")
+        app_log.log_error(f"{Chars.x_mark} Command failed {e}")
         return "failed"
 
 
@@ -294,10 +317,10 @@ class ChangeCommand:
     def __init__(self) -> None:
         self.base_cmd: list[str] = BASE_CMD
         if os.environ.get("MOUSSE_ENABLE_CHANGES") != "1":
-            self.base_cmd = BASE_CMD + ["--dry-run"]
-            cmd_log.log_ready_to_run(OperateHelp.changes_mode_disabled.value)
+            self.base_cmd = BASE_CMD + [GlobalArgs.dry_run.value]
+            app_log.log_ready_to_run(OperateHelp.changes_mode_disabled.value)
         else:
-            cmd_log.log_warning(OperateHelp.changes_mode_enabled.value)
+            app_log.log_warning(OperateHelp.changes_mode_enabled.value)
 
     def _update_managed_status_data(self) -> None:
         # Update data that the managed_status property depends on
@@ -457,18 +480,24 @@ class Chezmoi:
 
     @property
     def config(self):
-        self._names.autoadd = self.config_dump.dict_out["git"]["autoadd"]
-        self._names.autocommit = self.config_dump.dict_out["git"]["autocommit"]
-        self._names.autopush = self.config_dump.dict_out["git"]["autopush"]
+        self._names.autoadd = self.config_dump.dict_out.get("git", {}).get(
+            "autoadd", False
+        )
+        self._names.autocommit = self.config_dump.dict_out.get("git", {}).get(
+            "autocommit", False
+        )
+        self._names.autopush = self.config_dump.dict_out.get("git", {}).get(
+            "autopush", False
+        )
         return self._names
 
     @property
     def destDir(self) -> Path:
-        return Path(self.config_dump.dict_out["destDir"])
+        return Path(self.config_dump.dict_out.get("destDir", ""))
 
     @property
     def sourceDir(self) -> Path:
-        return Path(self.config_dump.dict_out["sourceDir"])
+        return Path(self.config_dump.dict_out.get("sourceDir", ""))
 
 
 chezmoi = Chezmoi()

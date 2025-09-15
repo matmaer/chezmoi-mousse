@@ -49,10 +49,9 @@ class IoVerbs(StrEnum):
 
 
 class LogIds(StrEnum):
-    operate_log = auto()
-    app_log = auto()
+    debug_log = auto()
     init_log = auto()
-    verbose_log = auto()
+    operate_log = auto()
 
 
 class ModalName(StrEnum):
@@ -108,6 +107,7 @@ class SplashIds(StrEnum):
 
 class TabBtn(StrEnum):
     # Tab buttons for content switcher within a main tab
+    app_log = "App"
     clone_repo = "Clone"
     contents = "Contents"
     diff = "Diff"
@@ -116,6 +116,7 @@ class TabBtn(StrEnum):
     new_repo = "New"
     purge_repo = "Purge"
     tree = "Tree"
+    output_log = "Output"
 
 
 class TabName(StrEnum):
@@ -145,6 +146,7 @@ class TcssStr(StrEnum):
     install_help_vertical = auto()
     internet_links = auto()
     last_clicked = auto()
+    log_views = auto()
     maximized_modal = auto()
     modal_base = auto()
     operate_buttons_horizontal = auto()
@@ -244,6 +246,8 @@ class ViewName(StrEnum):
     init_clone_view = auto()
     init_new_view = auto()
     init_purge_view = auto()
+    app_log_view = auto()
+    output_log_view = auto()
 
 
 SPLASH = """\

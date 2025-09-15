@@ -63,7 +63,7 @@ class OperateTabsBase(Horizontal, AppType):
     def __init__(self, *, tab_ids: TabIds) -> None:
         self.tab_ids = tab_ids
         self.current_path: Path | None = None
-        super().__init__(id=self.tab_ids.tab_name)
+        super().__init__(id=self.tab_ids.tab_container_id)
 
     def disable_buttons(self, buttons_to_update: OperateButtons) -> None:
         for button_enum in buttons_to_update:

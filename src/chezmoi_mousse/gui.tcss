@@ -4,6 +4,10 @@
 
 /* TODO “$text-success on $success-muted” */
 
+.log_views {
+  margin-bottom: 1;
+}
+
 .input_select {
   background-tint: $panel;
   background: $panel;

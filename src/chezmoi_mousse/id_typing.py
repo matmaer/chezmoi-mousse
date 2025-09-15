@@ -212,10 +212,9 @@ class ModalIds:
 
 class TabIds:
     def __init__(self, tab_name: TabName) -> None:
-        self.log_id = f"{tab_name}_log"
         self.switches_slider_id = f"{tab_name}_switches_slider"
         self.switches_slider_qid = f"#{self.switches_slider_id}"
-        self.tab_main_horizontal_id = f"{tab_name}_main_horizontal"
+        self.tab_container_id = f"{tab_name}_main_horizontal"
         self.tab_name: TabName = tab_name
         self.tab_pane_id = f"{tab_name}_pane"
 
@@ -254,7 +253,7 @@ class Id:
     apply: TabIds = TabIds(TabName.apply_tab)
     doctor: TabIds = TabIds(TabName.doctor_tab)
     init: TabIds = TabIds(TabName.init_tab)
-    log: TabIds = TabIds(TabName.log_tab)
+    logs: TabIds = TabIds(TabName.log_tab)
     re_add: TabIds = TabIds(TabName.re_add_tab)
     operate_modal: ModalIds = ModalIds(ModalName.operate)
     maximized_modal: ModalIds = ModalIds(ModalName.maximized)

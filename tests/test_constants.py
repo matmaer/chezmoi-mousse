@@ -35,7 +35,6 @@ def test_strenum_members_in_use(str_enum_class: type[StrEnum]):
     for member in str_enum_class:
         member_name = member.name
         found = False
-        unnecessary_value_usage = False
 
         for py_file in modules:
             usage_found, value_unnecessary = find_enum_usage_in_file(
@@ -44,12 +43,12 @@ def test_strenum_members_in_use(str_enum_class: type[StrEnum]):
             if usage_found:
                 found = True
             if value_unnecessary:
-                unnecessary_value_usage = True
+                members_with_unnecessary_value.append(
+                    f"{member_name} in {py_file.parts[-1]}"
+                )
 
         if not found:
             unused_members.append(member_name)
-        elif unnecessary_value_usage:
-            members_with_unnecessary_value.append(member_name)
 
     # Report failures
     if unused_members:

@@ -16,8 +16,20 @@ from textual.widgets import (
 )
 
 import chezmoi_mousse.custom_theme
-from chezmoi_mousse.chezmoi import CHEZMOI_COMMAND, chezmoi, cmd_log, init_log
-from chezmoi_mousse.constants import Area, Chars, TabName, TreeName, ViewName
+from chezmoi_mousse.chezmoi import (
+    CHEZMOI_COMMAND_FOUND,
+    app_log,
+    chezmoi,
+    init_log,
+)
+from chezmoi_mousse.constants import (
+    Area,
+    Chars,
+    TabBtn,
+    TabName,
+    TreeName,
+    ViewName,
+)
 from chezmoi_mousse.containers import ButtonsHorizontal
 from chezmoi_mousse.id_typing import Id, OperateBtn, OperateHelp
 from chezmoi_mousse.main_tabs import (
@@ -25,6 +37,7 @@ from chezmoi_mousse.main_tabs import (
     ApplyTab,
     DoctorTab,
     InitTab,
+    LogTab,
     ReAddTab,
 )
 from chezmoi_mousse.messages import InvalidInputMessage, OperateMessage
@@ -91,21 +104,21 @@ class ChezmoiGUI(App[None]):
                 yield InitTab()
             with TabPane("Doctor", id=Id.doctor.tab_pane_id):
                 yield DoctorTab()
-            with TabPane("Log", id=Id.log.tab_pane_id):
-                yield cmd_log
+            with TabPane("Logs", id=Id.logs.tab_pane_id):
+                yield LogTab()
         yield Header(icon=Chars.burger)
         yield Footer()
 
     def on_mount(self) -> None:
-        cmd_log.log_success("App initialized successfully")
+        app_log.log_success("App initialized successfully")
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
         self.title = "-  c h e z m o i  m o u s s e  -"
         self.register_theme(chezmoi_mousse.custom_theme.chezmoi_mousse_light)
         self.register_theme(chezmoi_mousse.custom_theme.chezmoi_mousse_dark)
         theme_name = "chezmoi-mousse-dark"
         self.theme = theme_name
-        cmd_log.log_success(f"Theme set to {theme_name}")
-        cmd_log.log_warning("Start loading screen")
+        app_log.log_success(f"Theme set to {theme_name}")
+        app_log.log_warning("Start loading screen")
         self.push_screen(LoadingScreen(), callback=self.first_mount_refresh)
         self.watch(self, "theme", self.on_theme_change, init=False)
 
@@ -120,17 +133,19 @@ class ChezmoiGUI(App[None]):
         chezmoi_mousse.custom_theme.vars = (
             new_theme_object.to_color_system().generate()
         )
-        cmd_log.log_success(f"Theme set to {new_theme}")
+        app_log.log_success(f"Theme set to {new_theme}")
 
     def first_mount_refresh(self, _: object) -> None:
         self.loading_screen_dismissed = True
-        cmd_log.log_success("--- splash.py finished loading ---")
-        if not CHEZMOI_COMMAND:
-            cmd_log.log_error("chezmoi command not found")
+        app_log.log_success("--- splash.py finished loading ---")
+        if not CHEZMOI_COMMAND_FOUND:
+            app_log.log_error("chezmoi command not found")
             self.push_screen(InstallHelp())
             return
         else:
-            cmd_log.log_success(f"chezmoi command found: {CHEZMOI_COMMAND}")
+            app_log.log_success(
+                f"chezmoi command found: {CHEZMOI_COMMAND_FOUND}"
+            )
         # Trees to refresh for each tab
         tree_types: list[
             tuple[TreeName, type[ManagedTree | FlatTree | ExpandedTree]]
@@ -176,7 +191,7 @@ class ChezmoiGUI(App[None]):
         if action == "maximize":
             if self.query_one(TabbedContent).active in (
                 Id.doctor.tab_pane_id,
-                Id.log.tab_pane_id,
+                Id.logs.tab_pane_id,
                 Id.init.tab_pane_id,
             ):
                 return None
@@ -264,11 +279,40 @@ class ChezmoiGUI(App[None]):
             current_view = self.query_one(f"#{current_view_id}")
             current_path = getattr(current_view, "path")
 
-        btn_enum = OperateBtn(event.button.label)
         self.push_screen(
             Operate(
                 tab_ids=tab_ids,
                 path=current_path,
-                buttons=(btn_enum, OperateBtn.operate_dismiss),
+                buttons=(
+                    OperateBtn(event.button.label),
+                    OperateBtn.operate_dismiss,
+                ),
             )
         )
+
+    @on(Button.Pressed, ".tab_button")
+    def handle_logs_tab_buttons(self, event: Button.Pressed) -> None:
+        event.stop()
+        if event.button.label not in (TabBtn.app_log, TabBtn.output_log):
+            return
+        active_pane_id = self.query_one(TabbedContent).active
+        tab_ids = Id.get_tab_ids_from_pane_id(pane_id=active_pane_id)
+        # AppLog/OutputLog Content Switcher
+        if event.button.id == tab_ids.button_id(btn=TabBtn.app_log):
+            content_switcher = self.query_one(
+                tab_ids.content_switcher_id("#", area=Area.top),
+                ContentSwitcher,
+            )
+            content_switcher.current = tab_ids.view_id(
+                view=ViewName.app_log_view
+            )
+            content_switcher.border_title = "App Log "
+        elif event.button.id == tab_ids.button_id(btn=TabBtn.output_log):
+            content_switcher = self.query_one(
+                tab_ids.content_switcher_id("#", area=Area.top),
+                ContentSwitcher,
+            )
+            content_switcher.current = tab_ids.view_id(
+                view=ViewName.output_log_view
+            )
+            content_switcher.border_title = " Commands With Raw Stdout"

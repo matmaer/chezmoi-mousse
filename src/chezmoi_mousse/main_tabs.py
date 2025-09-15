@@ -1,7 +1,12 @@
 from rich.text import Text
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import ScrollableContainer, Vertical, VerticalGroup
+from textual.containers import (
+    Container,
+    ScrollableContainer,
+    Vertical,
+    VerticalGroup,
+)
 from textual.widgets import (
     Button,
     Collapsible,
@@ -18,7 +23,13 @@ from textual.widgets import (
 )
 
 import chezmoi_mousse.custom_theme as theme
-from chezmoi_mousse.chezmoi import CHEZMOI_COMMAND, chezmoi, init_log
+from chezmoi_mousse.chezmoi import (
+    CHEZMOI_COMMAND_FOUND,
+    app_log,
+    chezmoi,
+    init_log,
+    output_log,
+)
 from chezmoi_mousse.constants import FLOW, DoctorCollapsibles, TcssStr
 from chezmoi_mousse.containers import (
     ButtonsHorizontal,
@@ -298,8 +309,7 @@ class DoctorTab(ScrollableContainer):
 
     def __init__(self) -> None:
         super().__init__(
-            id=Id.doctor.tab_main_horizontal_id,
-            classes=TcssStr.doctor_vertical,
+            id=Id.doctor.tab_container_id, classes=TcssStr.doctor_vertical
         )
         self.dr_style = {
             "ok": theme.vars["text-success"],
@@ -346,7 +356,7 @@ class DoctorTab(ScrollableContainer):
     @on(Collapsible.Expanded, ".doctor_collapsible")
     def on_collapsible_expanded(self, event: Collapsible.Expanded) -> None:
         event.stop()
-        if not self.doctor_data and CHEZMOI_COMMAND:
+        if not self.doctor_data and CHEZMOI_COMMAND_FOUND:
             self.doctor_data = chezmoi.doctor.list_out
             self.populate_doctor_data()
         if event.collapsible.title == DoctorCollapsibles.doctor_template_data:
@@ -367,7 +377,7 @@ class DoctorTab(ScrollableContainer):
         Id.doctor.button_id("#", btn=OperateBtn.refresh_doctor_data),
     )
     def on_refresh_doctor_data(self, event: Button.Pressed) -> None:
-        if not CHEZMOI_COMMAND:
+        if not CHEZMOI_COMMAND_FOUND:
             return
         chezmoi.doctor.update()
         self.doctor_data = chezmoi.doctor.list_out
@@ -417,3 +427,27 @@ class DoctorTab(ScrollableContainer):
                     )
                 )
                 break
+
+
+class LogTab(Container):
+
+    def __init__(self) -> None:
+        super().__init__(id=Id.logs.tab_container_id)
+
+    def compose(self) -> ComposeResult:
+
+        yield ButtonsHorizontal(
+            tab_ids=Id.logs,
+            buttons=(TabBtn.app_log, TabBtn.output_log),
+            area=Area.top,
+        )
+        with ContentSwitcher(
+            id=Id.logs.content_switcher_id(area=Area.top),
+            initial=Id.logs.view_id(view=ViewName.app_log_view),
+            classes=TcssStr.border_title_top,
+        ):
+            yield app_log
+            yield output_log
+
+    def on_mount(self) -> None:
+        self.query_exactly_one(ContentSwitcher).border_title = " App Log "

@@ -23,7 +23,7 @@ from textual.widgets import DataTable, DirectoryTree, RichLog, Static, Tree
 from textual.widgets.tree import TreeNode
 
 import chezmoi_mousse.custom_theme as theme
-from chezmoi_mousse.chezmoi import chezmoi, cmd_log, managed_status
+from chezmoi_mousse.chezmoi import app_log, chezmoi, managed_status
 from chezmoi_mousse.constants import (
     ModalIdStr,
     TcssStr,
@@ -124,12 +124,12 @@ class ContentsView(RichLog):
                 truncated_message = (
                     "\n\n--- File content truncated to 150 KiB ---\n"
                 )
-                cmd_log.log_warning(
+                app_log.log_warning(
                     f"File {self.path} is larger than 150 KiB, truncating output."
                 )
         except PermissionError as e:
             self.write(e.strerror)
-            cmd_log.log_error(f"Permission denied to read {self.path}")
+            app_log.log_error(f"Permission denied to read {self.path}")
             return
 
         try:
@@ -178,7 +178,7 @@ class ContentsView(RichLog):
 
         except OSError as error:
             self.write(Text(f"Error reading {self.path}: {error}"))
-            cmd_log.log_error("Error reading file")
+            app_log.log_error("Error reading file")
 
     def watch_path(self) -> None:
         self.clear()
