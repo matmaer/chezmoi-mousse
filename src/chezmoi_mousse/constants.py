@@ -49,6 +49,20 @@ class Area(StrEnum):
     top = auto()
 
 
+class BorderTitle(StrEnum):
+    # border_title = top border
+    app_log = " App Log "
+    init_log = " Init Log "
+    install_chezmoi = " Install chezmoi "
+    operante_log = " Operate Log "
+    output_log = " Commands With Raw Stdout "
+
+
+class BorderSubTitles(StrEnum):
+    # border_title = top border
+    ...
+
+
 class Chars(StrEnum):
     add_file_info_border = f"local {'\u2014' * 3}\u2192 chezmoi"  # '\N{EM DASH}', '\N{RIGHTWARDS ARROW}'
     apply_file_info_border = f"local \u2190{'\u2014' * 3} chezmoi"  # '\N{LEFTWARDS ARROW}', '\N{EM DASH}'

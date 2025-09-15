@@ -14,6 +14,7 @@ from textual.widgets import RichLog
 
 import chezmoi_mousse.custom_theme as theme
 from chezmoi_mousse.constants import (
+    BorderTitle,
     Chars,
     IoVerbs,
     LogIds,
@@ -130,11 +131,11 @@ class CommandLog(RichLog):
     def on_mount(self) -> None:
         if self.id == LogIds.init_log:
             self.add_class(TcssStr.border_title_top)
-            self.border_title = " Init Log "
+            self.border_title = BorderTitle.init_log
             self.add_class(TcssStr.operate_log)
         elif self.id == LogIds.operate_log:
             self.add_class(TcssStr.border_title_top)
-            self.border_title = " Operate Log "
+            self.border_title = BorderTitle.operante_log
             self.add_class(TcssStr.operate_log)
         else:
             self.add_class(TcssStr.log_views)

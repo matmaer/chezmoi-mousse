@@ -30,7 +30,12 @@ from chezmoi_mousse.chezmoi import (
     init_log,
     output_log,
 )
-from chezmoi_mousse.constants import FLOW, DoctorCollapsibles, TcssStr
+from chezmoi_mousse.constants import (
+    FLOW,
+    BorderTitle,
+    DoctorCollapsibles,
+    TcssStr,
+)
 from chezmoi_mousse.containers import (
     ButtonsHorizontal,
     InitCloneRepo,
@@ -450,4 +455,6 @@ class LogTab(Container):
             yield output_log
 
     def on_mount(self) -> None:
-        self.query_exactly_one(ContentSwitcher).border_title = " App Log "
+        self.query_exactly_one(ContentSwitcher).border_title = (
+            BorderTitle.app_log
+        )

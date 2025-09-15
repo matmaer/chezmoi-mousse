@@ -25,6 +25,7 @@ from textual.widgets.tree import TreeNode
 import chezmoi_mousse.custom_theme as theme
 from chezmoi_mousse.chezmoi import app_log, chezmoi, managed_status
 from chezmoi_mousse.constants import (
+    BorderTitle,
     ModalIdStr,
     TcssStr,
     UnwantedDirs,
@@ -341,7 +342,7 @@ class ChezmoiInstallHelp(Tree[ParsedJson]):
         )
         self.show_root = False
         data_file = pkg_root / "data" / "chezmoi_install_commands.json"
-        self.border_title = " Install chezmoi "
+        self.border_title = BorderTitle.install_chezmoi
         install_help: ParsedJson = json.loads(data_file.read_text())
         for k, v in install_help.items():
             self.root.add(label=k, data=v)

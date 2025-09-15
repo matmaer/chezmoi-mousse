@@ -24,6 +24,7 @@ from chezmoi_mousse.chezmoi import (
 )
 from chezmoi_mousse.constants import (
     Area,
+    BorderTitle,
     Chars,
     TabBtn,
     TabName,
@@ -306,7 +307,7 @@ class ChezmoiGUI(App[None]):
             content_switcher.current = tab_ids.view_id(
                 view=ViewName.app_log_view
             )
-            content_switcher.border_title = "App Log "
+            content_switcher.border_title = BorderTitle.app_log
         elif event.button.id == tab_ids.button_id(btn=TabBtn.output_log):
             content_switcher = self.query_one(
                 tab_ids.content_switcher_id("#", area=Area.top),
@@ -315,4 +316,4 @@ class ChezmoiGUI(App[None]):
             content_switcher.current = tab_ids.view_id(
                 view=ViewName.output_log_view
             )
-            content_switcher.border_title = " Commands With Raw Stdout"
+            content_switcher.border_title = BorderTitle.output_log
