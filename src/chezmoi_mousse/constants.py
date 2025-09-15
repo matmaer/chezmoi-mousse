@@ -208,6 +208,7 @@ class UnwantedDirs(StrEnum):
     Recent = "Recent"
     temp = "temp"
     Temp = "Temp"
+    Templates = "Templates"
     tmp = "tmp"
     trash = "trash"
     Trash = "Trash"
