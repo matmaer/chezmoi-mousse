@@ -1,10 +1,15 @@
 """Test if all Enum members from id_typing.py are in use."""
 
+import ast
 import inspect
 from enum import Enum, StrEnum
 
 import pytest
-from _test_utils import find_enum_usage_in_file, modules_to_test
+from _test_utils import (
+    find_enum_usage_in_file,
+    get_class_public_members,
+    modules_to_test,
+)
 
 import chezmoi_mousse.id_typing as id_typing
 
@@ -51,3 +56,66 @@ def test_enum_members_in_use(enum_member: Enum):
 
     if not found:
         pytest.fail(f"\n{member_name} from {enum_class_name} not in use.")
+
+
+@pytest.mark.parametrize(
+    "member_name, member_type", get_class_public_members(id_typing.TabIds)
+)
+def test_tabids_member_in_use(member_name: str, member_type: str):
+    is_used = False
+
+    for py_file in modules_to_test(exclude_file_names=["id_typing.py"]):
+        content = py_file.read_text()
+        tree = ast.parse(content, filename=str(py_file))
+
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Attribute) and node.attr == member_name:
+                is_used = True
+                break  # Found usage
+        if is_used:
+            break  # No need to check other files
+
+    if not is_used:
+        pytest.fail(f"\nNot in use: {member_name} {member_type}")
+
+
+@pytest.mark.parametrize(
+    "member_name, member_type", get_class_public_members(id_typing.ModalIds)
+)
+def test_modalids_member_in_use(member_name: str, member_type: str):
+    is_used = False
+
+    for py_file in modules_to_test(exclude_file_names=["id_typing.py"]):
+        content = py_file.read_text()
+        tree = ast.parse(content, filename=str(py_file))
+
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Attribute) and node.attr == member_name:
+                is_used = True
+                break  # Found usage
+        if is_used:
+            break  # No need to check other files
+
+    if not is_used:
+        pytest.fail(f"\nNot in use: {member_name} {member_type}")
+
+
+@pytest.mark.parametrize(
+    "member_name, member_type", get_class_public_members(id_typing.Id)
+)
+def test_id_member_in_use(member_name: str, member_type: str):
+    is_used = False
+
+    for py_file in modules_to_test(exclude_file_names=["id_typing.py"]):
+        content = py_file.read_text()
+        tree = ast.parse(content, filename=str(py_file))
+
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Attribute) and node.attr == member_name:
+                is_used = True
+                break  # Found usage
+        if is_used:
+            break  # No need to check other files
+
+    if not is_used:
+        pytest.fail(f"\nNot in use: {member_name} {member_type}")
