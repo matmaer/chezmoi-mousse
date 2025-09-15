@@ -58,9 +58,9 @@ class BorderTitle(StrEnum):
     output_log = " Commands With Raw Stdout "
 
 
-class BorderSubTitles(StrEnum):
-    # border_title = top border
-    ...
+class BorderSubTitle(StrEnum):
+    esc_to_close = " escape key to close "
+    double_click_esc_to_close = " double click or escape key to close "
 
 
 class Chars(StrEnum):

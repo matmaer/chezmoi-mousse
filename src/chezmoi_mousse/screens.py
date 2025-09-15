@@ -9,7 +9,12 @@ from textual.screen import Screen
 from textual.widgets import Button, Link, Static
 
 from chezmoi_mousse.chezmoi import chezmoi, op_log
-from chezmoi_mousse.constants import ModalIdStr, OperateVerbs, TcssStr
+from chezmoi_mousse.constants import (
+    BorderSubTitle,
+    ModalIdStr,
+    OperateVerbs,
+    TcssStr,
+)
 from chezmoi_mousse.containers import ButtonsHorizontal
 from chezmoi_mousse.id_typing import (
     AppType,
@@ -91,7 +96,7 @@ class Operate(ScreensBase, AppType):
 
     def on_mount(self) -> None:
         self.add_class(TcssStr.operate_modal)
-        self.border_subtitle = " escape key to close "
+        self.border_subtitle = BorderSubTitle.esc_to_close
         if (
             self.tab_name == TabName.apply_tab
             or self.tab_name == TabName.re_add_tab
@@ -204,7 +209,7 @@ class Maximized(ScreensBase):
 
     def on_mount(self) -> None:
         self.add_class(TcssStr.maximized_modal)
-        self.border_subtitle = " double click or escape key to close "
+        self.border_subtitle = BorderSubTitle.double_click_esc_to_close
         if self.id_to_maximize == self.tab_ids.view_id(
             view=ViewName.contents_view
         ):
@@ -239,7 +244,7 @@ class InstallHelp(ScreensBase):
         super().__init__(modal_id=Id.install_help_modal.modal_id)
 
     def on_mount(self) -> None:
-        self.border_subtitle = " double click or escape key to close "
+        self.border_subtitle = BorderSubTitle.double_click_esc_to_close
 
     def compose(self) -> ComposeResult:
         with Vertical(classes=TcssStr.install_help_vertical):
