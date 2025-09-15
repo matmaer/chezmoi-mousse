@@ -5,7 +5,7 @@ from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Vertical, VerticalGroup
 from textual.events import Click
-from textual.screen import ModalScreen
+from textual.screen import Screen
 from textual.widgets import Button, Link, Static
 
 from chezmoi_mousse.chezmoi import chezmoi, op_log
@@ -32,7 +32,7 @@ from chezmoi_mousse.widgets import (
 )
 
 
-class ModalBase(ModalScreen[None]):
+class ScreensBase(Screen[None]):
 
     BINDINGS = [
         Binding(
@@ -54,7 +54,7 @@ class ModalBase(ModalScreen[None]):
             self.dismiss()
 
 
-class Operate(ModalBase, AppType):
+class Operate(ScreensBase, AppType):
 
     def __init__(
         self, *, tab_ids: TabIds, path: Path, buttons: OperateButtons
@@ -169,7 +169,7 @@ class Operate(ModalBase, AppType):
         self.dismiss()
 
 
-class Maximized(ModalBase):
+class Maximized(ScreensBase):
 
     def __init__(
         self,
@@ -233,7 +233,7 @@ class Maximized(ModalBase):
             self.border_title = f" {self.path.relative_to(chezmoi.destDir)} "
 
 
-class InstallHelp(ModalBase):
+class InstallHelp(ScreensBase):
 
     def __init__(self) -> None:
         super().__init__(modal_id=Id.install_help_modal.modal_id)
