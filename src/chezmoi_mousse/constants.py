@@ -2,6 +2,45 @@
 
 from enum import StrEnum, auto
 
+#######################################################################
+# StrEnum classes used for id's, should be integrated in id_typing.py #
+#######################################################################
+
+
+class DoctorCollapsibles(StrEnum):
+    cat_config = "chezmoi cat-config (contents of config-file)"
+    diagram = "chezmoi diagram (how operations are applied)"
+    doctor = "chezmoi doctor output (diagnostic information)"
+    doctor_ignored = "chezmoi ignored (git ignore in source-dir)"
+    doctor_template_data = "chezmoi template-data (contents of template-file)"
+    pw_mgr_info = "supported password managers (link and description)"
+
+    @property
+    def qid(self) -> str:
+        return f"#{self.name}"
+
+
+class LogIds(StrEnum):
+    debug_log = auto()
+    init_log = auto()
+    operate_log = auto()
+
+
+class ModalIdStr(StrEnum):
+    install_help_tree = auto()
+    operate_info = auto()
+
+
+class SplashIds(StrEnum):
+    animated_fade_id = auto()
+    loading_screen_id = auto()
+    splash_rich_log_id = auto()
+
+
+########################
+# Pure StrEnum classes #
+########################
+
 
 class Area(StrEnum):
     bottom = auto()
@@ -28,19 +67,6 @@ class Chars(StrEnum):
     x_mark = "\u2716"  # '\N{HEAVY MULTIPLICATION X}'
 
 
-class DoctorCollapsibles(StrEnum):
-    cat_config = "chezmoi cat-config (contents of config-file)"
-    diagram = "chezmoi diagram (how operations are applied)"
-    doctor = "chezmoi doctor output (diagnostic information)"
-    doctor_ignored = "chezmoi ignored (git ignore in source-dir)"
-    doctor_template_data = "chezmoi template-data (contents of template-file)"
-    pw_mgr_info = "supported password managers (link and description)"
-
-    @property
-    def qid(self) -> str:
-        return f"#{self.name}"
-
-
 class IoVerbs(StrEnum):
     doctor = "doctor"
     dump_config = "dump-config"
@@ -48,21 +74,10 @@ class IoVerbs(StrEnum):
     status = "status"
 
 
-class LogIds(StrEnum):
-    debug_log = auto()
-    init_log = auto()
-    operate_log = auto()
-
-
 class ModalName(StrEnum):
     install_help = auto()
     maximized = auto()
     operate = auto()
-
-
-class ModalIdStr(StrEnum):
-    install_help_tree = auto()
-    operate_info = auto()
 
 
 class OperateBtn(StrEnum):
@@ -97,12 +112,6 @@ class ReadVerbs(StrEnum):
     git = "git"
     ignored = "ignored"
     source_path = "source-path"
-
-
-class SplashIds(StrEnum):
-    animated_fade_id = auto()
-    loading_screen_id = auto()
-    splash_rich_log_id = auto()
 
 
 class TabBtn(StrEnum):
