@@ -226,8 +226,11 @@ if os.environ.get("CHEZMOI_MOUSSE_DEV") == "1":
 
 
 def _run_cmd(long_command: list[str]) -> str:
-    if not CHEZMOI_COMMAND:
+    if not CHEZMOI_COMMAND_FOUND:
         return ""
+
+    # TODO: implement spinner for commands taking a bit longer like operations
+    # TODO: set different timeout values depending on nature of command
 
     try:
         cmd_stdout = (
