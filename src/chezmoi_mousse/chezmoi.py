@@ -124,7 +124,7 @@ class CommandLog(RichLog):
     def _log_time(self) -> str:
         return f"[[green]{datetime.now().strftime('%H:%M:%S')}[/]]"
 
-    def trimmed_cmd_str(self, command: list[str]) -> str:
+    def _trimmed_cmd_str(self, command: list[str]) -> str:
         return " ".join(
             [
                 _
@@ -150,7 +150,7 @@ class CommandLog(RichLog):
         )
 
     def log_command(self, command: list[str]) -> None:
-        trimmed_cmd = self.trimmed_cmd_str(command)
+        trimmed_cmd = self._trimmed_cmd_str(command)
         time = self._log_time()
         color = theme.vars["primary-lighten-3"]
         log_line = f"{time} [{color}]{trimmed_cmd}[/]"
