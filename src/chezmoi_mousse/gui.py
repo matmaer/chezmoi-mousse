@@ -124,9 +124,13 @@ class ChezmoiGUI(App[None]):
 
     def first_mount_refresh(self, _: object) -> None:
         self.loading_screen_dismissed = True
+        cmd_log.log_success("--- splash.py finished loading ---")
         if not CHEZMOI_COMMAND:
+            cmd_log.log_error("chezmoi command not found")
             self.push_screen(InstallHelp())
             return
+        else:
+            cmd_log.log_success(f"chezmoi command found: {CHEZMOI_COMMAND}")
         # Trees to refresh for each tab
         tree_types: list[
             tuple[TreeName, type[ManagedTree | FlatTree | ExpandedTree]]

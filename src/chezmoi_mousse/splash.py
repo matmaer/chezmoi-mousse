@@ -14,7 +14,7 @@ from textual.timer import Timer
 from textual.widgets import RichLog, Static
 from textual.worker import WorkerState
 
-from chezmoi_mousse.chezmoi import CHEZMOI_COMMAND, chezmoi, cmd_log
+from chezmoi_mousse.chezmoi import CHEZMOI_COMMAND, chezmoi
 from chezmoi_mousse.constants import SPLASH, SplashIds
 from chezmoi_mousse.custom_theme import vars as theme_vars
 
@@ -86,7 +86,7 @@ class LoadingScreen(Screen[list[str]]):
         self.app.call_from_thread(update_log)
 
     @work(thread=True, group="io_workers")
-    def handle_unavailable_chezmoi_command(self) -> None:
+    def log_unavailable_chezmoi_command(self) -> None:
         message = "chezmoi command ................. not found"
         color = theme_vars["text-warning"]
         RICH_LOG.styles.margin = 1
@@ -107,7 +107,6 @@ class LoadingScreen(Screen[list[str]]):
             for worker in self.app.workers
             if worker.group == "io_workers"
         ):
-            cmd_log.log_success("--- splash.py finished loading ---")
             self.dismiss()
 
     def on_mount(self) -> None:
@@ -121,11 +120,8 @@ class LoadingScreen(Screen[list[str]]):
         )
 
         if not CHEZMOI_COMMAND:
-            self.handle_unavailable_chezmoi_command()
-            cmd_log.log_error("chezmoi command not found")
+            self.log_unavailable_chezmoi_command()
             return
-        else:
-            cmd_log.log_success(f"chezmoi command found: {CHEZMOI_COMMAND}")
 
         # chezmoi dump-config is run during the Chezmoi class init
         LONG_COMMANDS.pop("dump_config")
