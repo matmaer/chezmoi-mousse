@@ -12,6 +12,7 @@ from chezmoi_mousse.chezmoi import chezmoi, op_log
 from chezmoi_mousse.constants import ModalIdStr, OperateVerbs, TcssStr
 from chezmoi_mousse.containers import ButtonsHorizontal
 from chezmoi_mousse.id_typing import (
+    AppType,
     Area,
     Id,
     OperateBtn,
@@ -53,7 +54,7 @@ class ModalBase(ModalScreen[None]):
             self.dismiss()
 
 
-class Operate(ModalBase):
+class Operate(ModalBase, AppType):
 
     def __init__(
         self, *, tab_ids: TabIds, path: Path, buttons: OperateButtons

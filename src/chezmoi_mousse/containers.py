@@ -38,6 +38,7 @@ from chezmoi_mousse.constants import (
     ViewName,
 )
 from chezmoi_mousse.id_typing import (
+    AppType,
     Id,
     OperateButtons,
     Switches,
@@ -57,7 +58,7 @@ from chezmoi_mousse.widgets import (
 )
 
 
-class OperateTabsBase(Horizontal):
+class OperateTabsBase(Horizontal, AppType):
 
     def __init__(self, *, tab_ids: TabIds) -> None:
         self.tab_ids = tab_ids
@@ -374,7 +375,8 @@ class InputHorizontal(HorizontalGroup):
             )
 
 
-class InitCloneRepo(Vertical):
+class InitCloneRepo(Vertical, AppType):
+
     def __init__(self) -> None:
         super().__init__(id=Id.init.view_id(view=ViewName.init_clone_view))
 

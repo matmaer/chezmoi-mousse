@@ -5,7 +5,7 @@ dynamically."""
 from dataclasses import dataclass, fields
 from enum import Enum
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from chezmoi_mousse.constants import (
     Area,
@@ -18,11 +18,22 @@ from chezmoi_mousse.constants import (
     ViewName,
 )
 
+if TYPE_CHECKING:
+    from chezmoi_mousse.gui import ChezmoiGUI
+
 type Mro = tuple[type, ...]
 type OperateButtons = tuple[OperateBtn, ...]
 type ParsedJson = dict[str, Any]
 type PathDict = dict[Path, str]
 type TabButtons = tuple[TabBtn, ...]
+
+
+class AppType:
+    """Mixin to provide proper typing for self.app in Textual widgets and
+    screens."""
+
+    if TYPE_CHECKING:
+        app: "ChezmoiGUI"
 
 
 # needed by both widgets.py and overrides.py

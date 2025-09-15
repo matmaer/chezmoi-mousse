@@ -17,6 +17,7 @@ from textual.worker import WorkerState
 from chezmoi_mousse.chezmoi import CHEZMOI_COMMAND, chezmoi
 from chezmoi_mousse.constants import SPLASH, SplashIds
 from chezmoi_mousse.custom_theme import vars as theme_vars
+from chezmoi_mousse.id_typing import AppType
 
 
 def create_deque() -> deque[Style]:
@@ -65,7 +66,7 @@ class AnimatedFade(Static):
         return Strip([Segment(SPLASH[y], style=LINE_STYLES[y])])
 
 
-class LoadingScreen(Screen[list[str]]):
+class LoadingScreen(Screen[list[str]], AppType):
 
     def __init__(self) -> None:
         super().__init__(id=SplashIds.loading_screen_id)
