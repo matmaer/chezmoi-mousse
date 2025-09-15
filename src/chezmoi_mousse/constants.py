@@ -201,6 +201,7 @@ class UnwantedDirs(StrEnum):
     Downloads = "Downloads"
     extensions = "extensions"
     go_build = "go-build"
+    Music = "Music"
     node_modules = "node_modules"
     Pictures = "Pictures"
     Public = "Public"
