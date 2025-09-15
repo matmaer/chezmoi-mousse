@@ -78,9 +78,9 @@ class OperateInfo(Static):
             self.border_subtitle = Chars.destroy_file_info_border
         # show git auto warnings
         if not OperateBtn.apply_file == self.operate_btn:
-            if chezmoi.git_cfg_autocommit:
+            if chezmoi.config.autocommit:
                 lines_to_write.append(OperateHelp.auto_commit.value)
-            if chezmoi.git_cfg_autopush:
+            if chezmoi.config.autopush:
                 lines_to_write.append(OperateHelp.autopush.value)
         # show git diff color info
         if (

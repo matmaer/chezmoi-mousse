@@ -6,6 +6,7 @@ from datetime import datetime
 from enum import Enum, StrEnum, unique
 from pathlib import Path
 from shutil import which
+from types import SimpleNamespace
 from typing import Literal
 
 from rich.markup import escape
@@ -415,7 +416,8 @@ class InputOutput:
 
 class Chezmoi:
 
-    config_dump: InputOutput
+    _config_dump: InputOutput
+    _names = SimpleNamespace()
     dir_status_lines: InputOutput
     doctor: InputOutput
     file_status_lines: InputOutput
@@ -454,16 +456,11 @@ class Chezmoi:
                 )
 
     @property
-    def git_cfg_autoadd(self) -> bool:
-        return self.config_dump.dict_out["git"]["autoadd"]
-
-    @property
-    def git_cfg_autocommit(self) -> bool:
-        return self.config_dump.dict_out["git"]["autocommit"]
-
-    @property
-    def git_cfg_autopush(self) -> bool:
-        return self.config_dump.dict_out["git"]["autopush"]
+    def config(self):
+        self._names.autoadd = self.config_dump.dict_out["git"]["autoadd"]
+        self._names.autocommit = self.config_dump.dict_out["git"]["autocommit"]
+        self._names.autopush = self.config_dump.dict_out["git"]["autopush"]
+        return self._names
 
     @property
     def destDir(self) -> Path:
