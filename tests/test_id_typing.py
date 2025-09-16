@@ -82,7 +82,7 @@ def test_tabids_member_in_use(member_name: str, member_type: str):
 @pytest.mark.parametrize(
     "member_name, member_type", get_class_public_members(id_typing.ScreenIds)
 )
-def test_modalids_member_in_use(member_name: str, member_type: str):
+def test_screen_ids_member_in_use(member_name: str, member_type: str):
     is_used = False
 
     for py_file in modules_to_test(exclude_file_names=["id_typing.py"]):
