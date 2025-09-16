@@ -163,7 +163,7 @@
     .config_tab_label {
       background-tint: $surface-lighten-1;
       background: $surface-lighten-1;
-      border-bottom: ascii $surface-lighten-1;
+      border-bottom: inner $surface-lighten-1;
       border-top: inner $surface-lighten-1;
       color: $text-accent;
       padding: 0 1;
@@ -245,8 +245,8 @@
   width: 100%;
   height: 3;
   .operate_button {
-    background-tint: $surface;
-    background: $surface;
+    background-tint: $surface-lighten-1;
+    background: $surface-lighten-1;
     border-top: wide $primary-darken-3;
     border-bottom: wide $surface;
     color: $primary-lighten-3;
@@ -390,13 +390,13 @@ DirectoryTree {
 }
 
 Footer {
-  background-tint: $surface;
-  background: $surface;
+  background-tint: $surface-lighten-1;
+  background: $surface-lighten-1;
   min-width: 50;
 }
 
 Header {
-  border-bottom: dashed $panel-lighten-1;
+  border-bottom: dashed $surface-lighten-3;
   color: $primary;
   height: 2;
   text-style: bold;
