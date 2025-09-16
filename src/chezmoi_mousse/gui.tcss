@@ -128,6 +128,8 @@
   }
 }
 
+/* TODO: create css class for the switches container to group and reuse all related tcss code */
+
 .switches_vertical {
   background-tint: $surface;
   background: $surface;
