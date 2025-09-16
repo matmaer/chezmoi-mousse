@@ -223,12 +223,12 @@ class ChezmoiGUI(App[None]):
         active_pane_id = self.query_one(TabbedContent).active
         tab_ids = Id.get_tab_ids_from_pane_id(pane_id=active_pane_id)
 
-        # Initialize modal parameters
+        # Initialize screen parameters
         id_to_maximize: str | None = None
         current_path: Path | None = chezmoi.destDir
 
         if tab_ids.tab_name in (TabName.apply_tab, TabName.re_add_tab):
-            # Determine what view to show in the modal
+            # Determine what view to show in the screen
             id_to_maximize = self.query_one(
                 tab_ids.content_switcher_id("#", area=Area.right),
                 ContentSwitcher,
@@ -253,7 +253,7 @@ class ChezmoiGUI(App[None]):
         )
 
     @on(Button.Pressed, ".operate_button")
-    def handle_push_operate_modal(self, event: Button.Pressed) -> None:
+    def handle_push_operate_screen(self, event: Button.Pressed) -> None:
         event.stop()
         if event.button.label not in (
             OperateBtn.apply_file,

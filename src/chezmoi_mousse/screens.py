@@ -11,8 +11,8 @@ from textual.widgets import Button, Link, Static
 from chezmoi_mousse.chezmoi import chezmoi, op_log
 from chezmoi_mousse.constants import (
     BorderSubTitle,
-    ModalIdStr,
     OperateVerbs,
+    ScreenStr,
     TcssStr,
 )
 from chezmoi_mousse.containers import ButtonsHorizontal
@@ -45,17 +45,17 @@ class ScreensBase(Screen[None]):
         )
     ]
 
-    def __init__(self, *, modal_id: str) -> None:
-        self.modal_id = modal_id
-        super().__init__(id=self.modal_id, classes=TcssStr.modal_base)
+    def __init__(self, *, screen_id: str) -> None:
+        self.screen_id = screen_id
+        super().__init__(id=self.screen_id, classes=TcssStr.screen_base)
 
     def on_click(self, event: Click) -> None:
         event.stop()
-        if event.chain == 2 and self.modal_id != Id.operate_modal.modal_id:
+        if event.chain == 2 and self.screen_id != Id.operate_screen.screen_id:
             self.dismiss()
 
     def action_esc_dismiss(self) -> None:
-        if self.modal_id != Id.operate_modal.modal_id:
+        if self.screen_id != Id.operate_screen.screen_id:
             self.dismiss()
 
 
@@ -77,7 +77,7 @@ class Operate(ScreensBase, AppType):
             operation_executed=False,
             tab_name=self.tab_ids.tab_name,
         )
-        super().__init__(modal_id=Id.operate_modal.modal_id)
+        super().__init__(screen_id=Id.operate_screen.screen_id)
 
     def compose(self) -> ComposeResult:
         yield OperateInfo(operate_btn=self.main_operate_btn, path=self.path)
@@ -85,9 +85,9 @@ class Operate(ScreensBase, AppType):
             OperateBtn.apply_file == self.main_operate_btn
             or OperateBtn.re_add_file == self.main_operate_btn
         ):
-            yield DiffView(ids=Id.operate_modal, reverse=self.reverse)
+            yield DiffView(ids=Id.operate_screen, reverse=self.reverse)
         else:
-            yield ContentsView(ids=Id.operate_modal)
+            yield ContentsView(ids=Id.operate_screen)
         with VerticalGroup(classes=TcssStr.operate_bottom_vertical_group):
             yield ButtonsHorizontal(
                 tab_ids=self.tab_ids, buttons=self.buttons, area=Area.bottom
@@ -95,7 +95,7 @@ class Operate(ScreensBase, AppType):
             yield op_log
 
     def on_mount(self) -> None:
-        self.add_class(TcssStr.operate_modal)
+        self.add_class(TcssStr.operate_screen)
         self.border_subtitle = BorderSubTitle.esc_to_close
         if (
             self.tab_name == TabName.apply_tab
@@ -104,15 +104,15 @@ class Operate(ScreensBase, AppType):
             OperateBtn.apply_file in self.buttons
             or OperateBtn.re_add_file in self.buttons
         ):
-            # Set path for the modal diff view
+            # Set path for the screen diff view
             self.query_one(
-                Id.operate_modal.view_id("#", view=ViewName.diff_view),
+                Id.operate_screen.view_id("#", view=ViewName.diff_view),
                 DiffView,
             ).path = self.path
         else:
-            # Set path for the modal contents view
+            # Set path for the screen contents view
             self.query_one(
-                Id.operate_modal.view_id("#", view=ViewName.contents_view),
+                Id.operate_screen.view_id("#", view=ViewName.contents_view),
                 ContentsView,
             ).path = self.path
         self.write_initial_log_msg()
@@ -190,45 +190,45 @@ class Maximized(ScreensBase):
         self.reverse: bool = (
             False if self.tab_name == TabName.apply_tab else True
         )
-        super().__init__(modal_id=Id.maximized_modal.modal_id)
+        super().__init__(screen_id=Id.maximized_screen.screen_id)
 
     def compose(self) -> ComposeResult:
         with Vertical():
             if self.id_to_maximize == self.tab_ids.view_id(
                 view=ViewName.contents_view
             ):
-                yield ContentsView(ids=Id.maximized_modal)
+                yield ContentsView(ids=Id.maximized_screen)
             elif self.id_to_maximize == self.tab_ids.view_id(
                 view=ViewName.diff_view
             ):
-                yield DiffView(ids=Id.maximized_modal, reverse=self.reverse)
+                yield DiffView(ids=Id.maximized_screen, reverse=self.reverse)
             elif self.id_to_maximize == self.tab_ids.view_id(
                 view=ViewName.git_log_view
             ):
-                yield GitLogView(ids=Id.maximized_modal)
+                yield GitLogView(ids=Id.maximized_screen)
 
     def on_mount(self) -> None:
-        self.add_class(TcssStr.maximized_modal)
+        self.add_class(TcssStr.maximized_screen)
         self.border_subtitle = BorderSubTitle.double_click_esc_to_close
         if self.id_to_maximize == self.tab_ids.view_id(
             view=ViewName.contents_view
         ):
             self.query_one(
-                Id.maximized_modal.view_id("#", view=ViewName.contents_view),
+                Id.maximized_screen.view_id("#", view=ViewName.contents_view),
                 ContentsView,
             ).path = self.path
         elif self.id_to_maximize == self.tab_ids.view_id(
             view=ViewName.diff_view
         ):
             self.query_one(
-                Id.maximized_modal.view_id("#", view=ViewName.diff_view),
+                Id.maximized_screen.view_id("#", view=ViewName.diff_view),
                 DiffView,
             ).path = self.path
         elif self.id_to_maximize == self.tab_ids.view_id(
             view=ViewName.git_log_view
         ):
             self.query_one(
-                Id.maximized_modal.view_id("#", view=ViewName.git_log_view),
+                Id.maximized_screen.view_id("#", view=ViewName.git_log_view),
                 GitLogView,
             ).path = self.path
 
@@ -241,7 +241,7 @@ class Maximized(ScreensBase):
 class InstallHelp(ScreensBase):
 
     def __init__(self) -> None:
-        super().__init__(modal_id=Id.install_help_modal.modal_id)
+        super().__init__(screen_id=Id.install_help_screen.screen_id)
 
     def on_mount(self) -> None:
         self.border_subtitle = BorderSubTitle.double_click_esc_to_close
@@ -264,5 +264,5 @@ class InstallHelp(ScreensBase):
                 classes=TcssStr.internet_links,
             )
             yield ChezmoiInstallHelp(
-                label=" Install chezmoi ", id=ModalIdStr.install_help_tree
+                label=" Install chezmoi ", id=ScreenStr.install_help_tree
             )

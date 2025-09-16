@@ -26,7 +26,7 @@ class LogIds(StrEnum):
     operate_log = auto()
 
 
-class ModalIdStr(StrEnum):
+class ScreenStr(StrEnum):
     install_help_tree = auto()
     operate_info = auto()
 
@@ -82,7 +82,7 @@ class IoVerbs(StrEnum):
     status = "status"
 
 
-class ModalName(StrEnum):
+class ScreenName(StrEnum):
     install_help = auto()
     maximized = auto()
     operate = auto()
@@ -164,14 +164,14 @@ class TcssStr(StrEnum):
     internet_links = auto()
     last_clicked = auto()
     log_views = auto()
-    maximized_modal = auto()
-    modal_base = auto()
+    maximized_screen = auto()
+    screen_base = auto()
     operate_buttons_horizontal = auto()
     operate_button = auto()
     operate_bottom_vertical_group = auto()
     operate_log = auto()
     operate_info = auto()
-    operate_modal = auto()
+    operate_screen = auto()
     pad_bottom = auto()
     single_button_vertical = auto()
     switch_horizontal = auto()

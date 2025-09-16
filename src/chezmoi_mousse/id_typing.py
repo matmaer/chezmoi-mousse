@@ -10,8 +10,8 @@ from typing import TYPE_CHECKING, Any
 from chezmoi_mousse.constants import (
     Area,
     Chars,
-    ModalName,
     OperateBtn,
+    ScreenName,
     TabBtn,
     TabName,
     TreeName,
@@ -251,13 +251,13 @@ class TabIds:
         return f"{qid}{self.tab_name}_{view}"
 
 
-class ModalIds:
-    def __init__(self, modal_name: ModalName) -> None:
-        self.modal_name = modal_name
-        self.modal_id = f"{modal_name}_id"
+class ScreenIds:
+    def __init__(self, screen_name: ScreenName) -> None:
+        self.screen_name = screen_name
+        self.screen_id = f"{screen_name}_id"
 
     def view_id(self, qid: str = "", *, view: ViewName) -> str:
-        return f"{qid}{self.modal_name}_{view}"
+        return f"{qid}{self.screen_name}_{view}"
 
 
 @dataclass(frozen=True)
@@ -268,9 +268,9 @@ class Id:
     init: TabIds = TabIds(TabName.init_tab)
     logs: TabIds = TabIds(TabName.log_tab)
     re_add: TabIds = TabIds(TabName.re_add_tab)
-    operate_modal: ModalIds = ModalIds(ModalName.operate)
-    maximized_modal: ModalIds = ModalIds(ModalName.maximized)
-    install_help_modal: ModalIds = ModalIds(ModalName.install_help)
+    operate_screen: ScreenIds = ScreenIds(ScreenName.operate)
+    maximized_screen: ScreenIds = ScreenIds(ScreenName.maximized)
+    install_help_screen: ScreenIds = ScreenIds(ScreenName.install_help)
     splash_id = SplashIds()
 
     _pane_id_map: dict[str, TabIds] | None = None

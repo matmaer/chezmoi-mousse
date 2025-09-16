@@ -261,7 +261,7 @@
   }
 }
 
-.modal_base {
+.screen_base {
   border-bottom:  $accent-darken-3;
   border-title-style: bold;
   overflow-y: hidden;
@@ -272,14 +272,14 @@
     text-align: center;
     dock: top;
   }
-  &.operate_modal {
+  &.operate_screen {
     border-top: none;
     border-bottom: $primary;
     &>.operate_bottom_vertical_group {
       dock: bottom;
     }
   }
-  &.maximized_modal {
+  &.maximized_screen {
     border-top: wide $primary-darken-3;
   }
   &>.install_help_vertical {

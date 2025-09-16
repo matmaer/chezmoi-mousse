@@ -26,7 +26,7 @@ import chezmoi_mousse.custom_theme as theme
 from chezmoi_mousse.chezmoi import app_log, chezmoi, managed_status
 from chezmoi_mousse.constants import (
     BorderTitle,
-    ModalIdStr,
+    ScreenStr,
     TcssStr,
     UnwantedDirs,
     UnwantedFiles,
@@ -34,12 +34,12 @@ from chezmoi_mousse.constants import (
 )
 from chezmoi_mousse.id_typing import (
     Chars,
-    ModalIds,
     NodeData,
     OperateBtn,
     OperateHelp,
     ParsedJson,
     PathDict,
+    ScreenIds,
     TabIds,
     TabName,
     TreeName,
@@ -51,7 +51,7 @@ class OperateInfo(Static):
 
     def __init__(self, *, operate_btn: OperateBtn, path: Path) -> None:
         super().__init__(
-            id=ModalIdStr.operate_info, classes=TcssStr.operate_info
+            id=ScreenStr.operate_info, classes=TcssStr.operate_info
         )
 
         self.operate_btn = operate_btn
@@ -96,7 +96,7 @@ class ContentsView(RichLog):
 
     path: reactive[Path | None] = reactive(None, init=False)
 
-    def __init__(self, *, ids: TabIds | ModalIds) -> None:
+    def __init__(self, *, ids: TabIds | ScreenIds) -> None:
         self.ids = ids
         super().__init__(
             id=self.ids.view_id(view=ViewName.contents_view),
@@ -190,7 +190,7 @@ class DiffView(RichLog):
 
     path: reactive[Path | None] = reactive(None, init=False)
 
-    def __init__(self, *, ids: TabIds | ModalIds, reverse: bool) -> None:
+    def __init__(self, *, ids: TabIds | ScreenIds, reverse: bool) -> None:
         self.ids = ids
         self.reverse = reverse
         super().__init__(
@@ -295,7 +295,7 @@ class DiffView(RichLog):
 class GitLogView(DataTable[Text]):
     path: reactive[Path | None] = reactive(chezmoi.destDir, init=False)
 
-    def __init__(self, *, ids: TabIds | ModalIds) -> None:
+    def __init__(self, *, ids: TabIds | ScreenIds) -> None:
         self.ids = ids
         super().__init__(
             id=self.ids.view_id(view=ViewName.git_log_view), show_cursor=False
