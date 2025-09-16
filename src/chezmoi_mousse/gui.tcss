@@ -390,8 +390,8 @@ DirectoryTree {
 }
 
 Footer {
-  background-tint: $surface-lighten-1;
-  background: $surface-lighten-1;
+  background-tint: $surface;
+  background: $surface;
   min-width: 50;
 }
 
