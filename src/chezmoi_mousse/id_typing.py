@@ -29,19 +29,56 @@ type TabButtons = tuple[TabBtn, ...]
 
 
 class AppType:
-    """Mixin to provide proper typing for self.app in Textual widgets and
-    screens."""
+    """Type hint for self.app attributes in widgets and screens."""
 
     if TYPE_CHECKING:
         app: "ChezmoiGUI"
 
 
-# needed by both widgets.py and overrides.py
+##############################
+# dataclass decorated classes:
+
+
 @dataclass
 class NodeData:
     found: bool
     path: Path
     status: str
+
+
+@dataclass
+class OperateData:
+    path: Path | None = None
+    operation_executed: bool = False
+    tab_name: TabName | None = None
+    found: bool | None = None
+    button_name: OperateBtn | None = None
+    is_file: bool | None = None
+
+
+@dataclass
+class PwMgrData:
+    doctor_check: str
+    description: str
+    link: str
+    doctor_message: str | None = None
+
+
+@dataclass(frozen=True)
+class SplashIds:
+    animated_fade = "animated_fade"
+    loading_screen = "loading_screen"
+    splash_log = "splash_log"
+
+
+@dataclass(frozen=True)
+class SwitchData:
+    label: str
+    tooltip: str
+
+
+###############
+# Enum classes:
 
 
 class OperateHelp(Enum):
@@ -70,22 +107,6 @@ class OperateHelp(Enum):
     re_add = (
         "[$text-primary]Overwrite the source state with current local file[/]"
     )
-
-
-@dataclass
-class OperateData:
-    path: Path | None = None
-    operation_executed: bool = False
-    tab_name: TabName | None = None
-    found: bool | None = None
-    button_name: OperateBtn | None = None
-    is_file: bool | None = None
-
-
-@dataclass(frozen=True)
-class SwitchData:
-    label: str
-    tooltip: str
 
 
 class Switches(Enum):
@@ -128,14 +149,6 @@ class Switches(Enum):
             "directory named '.cache'."
         ),
     )
-
-
-@dataclass
-class PwMgrData:
-    doctor_check: str
-    description: str
-    link: str
-    doctor_message: str | None = None
 
 
 class PwMgrInfo(Enum):
@@ -201,15 +214,6 @@ class PwMgrInfo(Enum):
     )
 
 
-class ModalIds:
-    def __init__(self, modal_name: ModalName) -> None:
-        self.modal_name = modal_name
-        self.modal_id = f"{modal_name}_id"
-
-    def view_id(self, qid: str = "", *, view: ViewName) -> str:
-        return f"{qid}{self.modal_name}_{view}"
-
-
 class TabIds:
     def __init__(self, tab_name: TabName) -> None:
         self.switches_slider_id = f"{tab_name}_switches_slider"
@@ -247,6 +251,15 @@ class TabIds:
         return f"{qid}{self.tab_name}_{view}"
 
 
+class ModalIds:
+    def __init__(self, modal_name: ModalName) -> None:
+        self.modal_name = modal_name
+        self.modal_id = f"{modal_name}_id"
+
+    def view_id(self, qid: str = "", *, view: ViewName) -> str:
+        return f"{qid}{self.modal_name}_{view}"
+
+
 @dataclass(frozen=True)
 class Id:
     add: TabIds = TabIds(TabName.add_tab)
@@ -258,6 +271,7 @@ class Id:
     operate_modal: ModalIds = ModalIds(ModalName.operate)
     maximized_modal: ModalIds = ModalIds(ModalName.maximized)
     install_help_modal: ModalIds = ModalIds(ModalName.install_help)
+    splash_id = SplashIds()
 
     _pane_id_map: dict[str, TabIds] | None = None
 

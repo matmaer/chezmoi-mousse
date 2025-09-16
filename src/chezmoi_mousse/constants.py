@@ -31,12 +31,6 @@ class ModalIdStr(StrEnum):
     operate_info = auto()
 
 
-class SplashIds(StrEnum):
-    animated_fade_id = auto()
-    loading_screen_id = auto()
-    splash_rich_log_id = auto()
-
-
 ########################
 # Pure StrEnum classes #
 ########################

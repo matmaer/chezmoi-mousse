@@ -15,9 +15,9 @@ from textual.widgets import RichLog, Static
 from textual.worker import WorkerState
 
 from chezmoi_mousse.chezmoi import CHEZMOI_COMMAND, chezmoi
-from chezmoi_mousse.constants import SPLASH, SplashIds
+from chezmoi_mousse.constants import SPLASH
 from chezmoi_mousse.custom_theme import vars as theme_vars
-from chezmoi_mousse.id_typing import AppType
+from chezmoi_mousse.id_typing import AppType, Id
 
 
 def create_deque() -> deque[Style]:
@@ -42,7 +42,7 @@ SPLASH_WIDTH = len(max(SPLASH, key=len))
 LOG_PADDING_WIDTH = 36
 LONG_COMMANDS = chezmoi.long_commands
 
-RICH_LOG = RichLog(id=SplashIds.splash_rich_log_id)
+RICH_LOG = RichLog(id=Id.splash_id.splash_log)
 RICH_LOG.styles.height = len(LONG_COMMANDS) + 2
 RICH_LOG.styles.width = LOG_PADDING_WIDTH + 9
 RICH_LOG.styles.color = "#0057B3"
@@ -53,7 +53,7 @@ RICH_LOG.styles.padding = 0
 class AnimatedFade(Static):
 
     def __init__(self) -> None:
-        super().__init__(id=SplashIds.animated_fade_id)
+        super().__init__(id=Id.splash_id.animated_fade)
         self.styles.height = SPLASH_HEIGHT
         self.styles.width = SPLASH_WIDTH
         self.styles.margin = 1
@@ -69,7 +69,7 @@ class AnimatedFade(Static):
 class LoadingScreen(Screen[list[str]], AppType):
 
     def __init__(self) -> None:
-        super().__init__(id=SplashIds.loading_screen_id)
+        super().__init__(id=Id.splash_id.loading_screen)
         # Timers will be set in on_mount()
         self.fade_timer: Timer
         self.all_workers_timer: Timer
