@@ -362,7 +362,7 @@ Footer {
   border-bottom: inner $surface;
   background: $surface;
   background-tint: $surface;
-  min-width: 60;
+  min-width: 50;
 }
 
 Header {
@@ -370,7 +370,11 @@ Header {
   color: $primary;
   height: 2;
   text-style: bold;
-  min-width: 60;
+  min-width: 50;
+}
+
+TabbedContent {
+  min-width: 50;
 }
 
 Switch {
