@@ -169,15 +169,18 @@
   max-width: 50%;
   min-width: 16;
   &>.content_switcher_left {
+    min-width: 16;
     width: auto;
     max-width: 100%;
     &>.tree_widget {
+      min-width: 16;
       margin-bottom: 1; /* to make sure bottom scrollbar remains visible */
       max-width: 100%;
       width: auto;
     }
   }
   &>.dir_tree_widget {
+    min-width: 16;
     max-width: 100%;
     width: auto;
   }
@@ -186,6 +189,7 @@
 .tab_buttons_horizontal {
   width: 100%;
   height: 1;
+  min-width: 16;
   &>.single_button_vertical {
     align: center middle;
   }
@@ -212,15 +216,15 @@
   width: 100%;
   height: 3;
   .operate_button {
-    background: $surface;
     background-tint: $surface;
+    background: $surface;
     border-top: wide $primary-darken-3;
-    border-bottom: inner $surface;
+    border-bottom: wide $surface;
     color: $primary-lighten-3;
     margin: 0 2 0 2;
     min-width: 10;
-    width: 100%;
     text-style: none;
+    width: 100%;
     &:hover {
       text-style: none;
       color: $accent;
@@ -358,10 +362,8 @@ DirectoryTree {
 }
 
 Footer {
-  height: 2;
-  border-bottom: inner $surface;
-  background: $surface;
   background-tint: $surface;
+  background: $surface;
   min-width: 50;
 }
 
@@ -402,7 +404,6 @@ Switch {
 }
 
 TabbedContent {
-  min-height: 15;
   min-width: 50;
 }
 
