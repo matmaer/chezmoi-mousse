@@ -71,6 +71,7 @@ class ChezmoiGUI(App[None]):
     ]
 
     def compose(self) -> ComposeResult:
+        yield Header(icon=Chars.burger)
         with TabbedContent():
             with TabPane("Apply", id=Id.apply.tab_pane_id):
                 yield ApplyTab()
@@ -107,7 +108,6 @@ class ChezmoiGUI(App[None]):
                 yield DoctorTab()
             with TabPane("Logs", id=Id.logs.tab_pane_id):
                 yield LogTab()
-        yield Header(icon=Chars.burger)
         yield Footer()
 
     def on_mount(self) -> None:
