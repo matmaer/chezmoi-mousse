@@ -373,10 +373,6 @@ Header {
   min-width: 50;
 }
 
-TabbedContent {
-  min-width: 50;
-}
-
 Switch {
   background: $surface;
   background-tint: $surface;
@@ -407,7 +403,7 @@ Switch {
 
 TabbedContent {
   min-height: 15;
-  min-width: 60;
+  min-width: 50;
 }
 
 Toast {
