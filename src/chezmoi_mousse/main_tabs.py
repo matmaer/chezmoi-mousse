@@ -435,7 +435,7 @@ class DoctorTab(ScrollableContainer):
                 break
 
 
-class LogTab(Container):
+class LogsTab(Container):
 
     def __init__(self) -> None:
         super().__init__(id=Id.logs.tab_container_id)

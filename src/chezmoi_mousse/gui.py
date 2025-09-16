@@ -38,7 +38,7 @@ from chezmoi_mousse.main_tabs import (
     ApplyTab,
     DoctorTab,
     InitTab,
-    LogTab,
+    LogsTab,
     ReAddTab,
 )
 from chezmoi_mousse.messages import InvalidInputMessage, OperateMessage
@@ -107,7 +107,7 @@ class ChezmoiGUI(App[None]):
             with TabPane("Doctor", id=Id.doctor.tab_pane_id):
                 yield DoctorTab()
             with TabPane("Logs", id=Id.logs.tab_pane_id):
-                yield LogTab()
+                yield LogsTab()
         yield Footer()
 
     def on_mount(self) -> None:
