@@ -5,7 +5,7 @@ import re
 from pathlib import Path
 
 import pytest
-from _test_utils import modules_to_test
+from _test_utils import get_strenum_member_names, modules_to_test
 
 from chezmoi_mousse.constants import TcssStr
 
@@ -89,4 +89,19 @@ def test_no_orphaned_tcss_classes(tcss_class: str) -> None:
     if tcss_class not in tcss_enum_members:
         pytest.fail(
             f"\nOrphaned CSS class '{tcss_class}' found in gui.tcss (not in TcssStr enum)"
+        )
+
+
+@pytest.mark.parametrize(
+    "tcss_member",
+    get_strenum_member_names(TcssStr),
+    ids=lambda tcss_member: tcss_member.attr,
+)
+def test_no_orphaned_tcss_members(tcss_member: ast.Attribute) -> None:
+    """Test that each TcssStr enum member has a corresponding class in gui.tcss."""
+    tcss_classes = extract_tcss_classes(Path("./src/chezmoi_mousse/gui.tcss"))
+
+    if tcss_member.attr not in tcss_classes:
+        pytest.fail(
+            f"\nOrphaned TcssStr member '{tcss_member.attr}' found (no corresponding CSS class in gui.tcss)"
         )
