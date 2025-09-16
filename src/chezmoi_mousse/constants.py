@@ -10,7 +10,6 @@ from enum import StrEnum, auto
 class DoctorCollapsibles(StrEnum):
     cat_config = "chezmoi cat-config (contents of config-file)"
     diagram = "chezmoi diagram (how operations are applied)"
-    doctor = "chezmoi doctor output (diagnostic information)"
     doctor_ignored = "chezmoi ignored (git ignore in source-dir)"
     doctor_template_data = "chezmoi template-data (contents of template-file)"
     pw_mgr_info = "supported password managers (link and description)"
@@ -139,6 +138,7 @@ class TabBtn(StrEnum):
 class TabName(StrEnum):
     add_tab = auto()
     apply_tab = auto()
+    config_tab = auto()
     doctor_tab = auto()
     init_tab = auto()
     log_tab = auto()
@@ -150,9 +150,9 @@ class TcssStr(StrEnum):
     content_switcher_left = auto()
     content_switcher_right = auto()
     dir_tree_widget = auto()
-    doctor_collapsible = auto()
-    doctor_table = auto()
+    config_tab_collapsible = auto()
     doctor_vertical = auto()
+    doctor_vertical_group = auto()
     flow_diagram = auto()
     input_field = auto()
     input_field_vertical = auto()
@@ -162,14 +162,14 @@ class TcssStr(StrEnum):
     internet_links = auto()
     last_clicked = auto()
     log_views = auto()
-    screen_base = auto()
-    operate_buttons_horizontal = auto()
-    operate_button = auto()
     operate_bottom_vertical_group = auto()
-    operate_log = auto()
+    operate_button = auto()
+    operate_buttons_horizontal = auto()
     operate_info = auto()
+    operate_log = auto()
     operate_screen = auto()
     pad_bottom = auto()
+    screen_base = auto()
     single_button_vertical = auto()
     switch_horizontal = auto()
     switch_label = auto()

@@ -108,20 +108,23 @@
   height: 3;
 }
 
-.doctor_vertical {
-  &>.doctor_collapsible {
-    .doctor_table {
-      /* can be hidden because it's in a scrollable container so vertical scroll is already available */
-      overflow-y: hidden;
-      height: auto;
-      /* max-height needed or the operate button to refresh below, doesn't show up */
-      max-height: 100;
-    }
-    .flow_diagram {
-      min-width: 78;
-    }
+.config_tab_collapsible {
+  .flow_diagram {
+    min-width: 78;
   }
 }
+
+.doctor_vertical {
+  .doctor_vertical_group {
+    dock: bottom;
+    height: auto;
+  }
+  & CollapsibleTitle {
+    margin: 0;
+    padding: 0;
+  }
+}
+
 
 .switches_vertical {
   background-tint: $surface;

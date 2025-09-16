@@ -36,6 +36,7 @@ from chezmoi_mousse.id_typing import Id, OperateBtn, OperateHelp
 from chezmoi_mousse.main_tabs import (
     AddTab,
     ApplyTab,
+    ConfigTab,
     DoctorTab,
     InitTab,
     LogsTab,
@@ -104,10 +105,12 @@ class ChezmoiGUI(App[None]):
                 )
             with TabPane("Init", id=Id.init.tab_pane_id):
                 yield InitTab()
-            with TabPane("Doctor", id=Id.doctor.tab_pane_id):
-                yield DoctorTab()
             with TabPane("Logs", id=Id.logs.tab_pane_id):
                 yield LogsTab()
+            with TabPane("Config", id=Id.doctor.tab_pane_id):
+                yield ConfigTab()
+            with TabPane("Doctor", id=Id.config.tab_pane_id):
+                yield DoctorTab()
         yield Footer()
 
     def on_mount(self) -> None:
@@ -163,6 +166,8 @@ class ChezmoiGUI(App[None]):
                 ).refresh_tree_data()
         # Refresh DirectoryTree
         self.query_one(FilteredDirTree).reload()
+        # Populate Doctor DataTable
+        self.query_exactly_one(DoctorTab).populate_doctor_data()
 
     def on_tabbed_content_tab_activated(
         self, event: TabbedContent.TabActivated

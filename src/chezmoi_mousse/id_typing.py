@@ -218,7 +218,7 @@ class TabIds:
     def __init__(self, tab_name: TabName) -> None:
         self.switches_slider_id = f"{tab_name}_switches_slider"
         self.switches_slider_qid = f"#{self.switches_slider_id}"
-        self.tab_container_id = f"{tab_name}_main_horizontal"
+        self.tab_container_id = f"{tab_name}_container_id"
         self.tab_name: TabName = tab_name
         self.tab_pane_id = f"{tab_name}_pane"
 
@@ -234,6 +234,9 @@ class TabIds:
 
     def content_switcher_id(self, qid: str = "", *, area: Area) -> str:
         return f"{qid}{self.tab_name}_{area}_content_switcher"
+
+    def datatable_id(self, qid: str = "") -> str:
+        return f"{qid}{self.tab_name}_datatable"
 
     def switch_horizontal_id(self, qid: str = "", *, switch: Switches) -> str:
         return f"{qid}{self.tab_name}_{switch.name}_switch_horizontal"
@@ -264,6 +267,7 @@ class ScreenIds:
 class Id:
     add: TabIds = TabIds(TabName.add_tab)
     apply: TabIds = TabIds(TabName.apply_tab)
+    config: TabIds = TabIds(TabName.config_tab)
     doctor: TabIds = TabIds(TabName.doctor_tab)
     init: TabIds = TabIds(TabName.init_tab)
     logs: TabIds = TabIds(TabName.log_tab)

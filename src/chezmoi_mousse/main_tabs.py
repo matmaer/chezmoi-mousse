@@ -311,31 +311,15 @@ class InitTab(OperateTabsBase):
             ).disabled = True
 
 
-class DoctorTab(ScrollableContainer):
+class ConfigTab(ScrollableContainer):
 
     def __init__(self) -> None:
         super().__init__(
-            id=Id.doctor.tab_container_id, classes=TcssStr.doctor_vertical
+            id=Id.config.tab_container_id
+            # classes=TcssStr.doctor_vertical
         )
-        self.dr_style = {
-            "ok": theme.vars["text-success"],
-            "info": theme.vars["foreground-darken-1"],
-            "warning": theme.vars["text-warning"],
-            "failed": theme.vars["text-error"],
-            "error": theme.vars["text-error"],
-        }
-        self.doctor_data: list[str] = []
 
     def compose(self) -> ComposeResult:
-        yield Collapsible(
-            DataTable[Text](classes=TcssStr.doctor_table, show_cursor=False),
-            ButtonsHorizontal(
-                tab_ids=Id.doctor,
-                buttons=(OperateBtn.refresh_doctor_data,),
-                area=Area.bottom,
-            ),
-            title=DoctorCollapsibles.doctor,
-        )
         yield Collapsible(
             Static(FLOW, classes=TcssStr.flow_diagram),
             title=DoctorCollapsibles.diagram,
@@ -357,14 +341,11 @@ class DoctorTab(ScrollableContainer):
 
     def on_mount(self) -> None:
         for collapsible in self.query(Collapsible):
-            collapsible.add_class(TcssStr.doctor_collapsible)
+            collapsible.add_class(TcssStr.config_tab_collapsible)
 
-    @on(Collapsible.Expanded, ".doctor_collapsible")
+    @on(Collapsible.Expanded, ".config_tab_collapsible")
     def on_collapsible_expanded(self, event: Collapsible.Expanded) -> None:
         event.stop()
-        if not self.doctor_data and CHEZMOI_COMMAND_FOUND:
-            self.doctor_data = chezmoi.doctor.list_out
-            self.populate_doctor_data()
         if event.collapsible.title == DoctorCollapsibles.doctor_template_data:
             event.collapsible.query_one(
                 DoctorCollapsibles.doctor_template_data.qid, Pretty
@@ -378,25 +359,62 @@ class DoctorTab(ScrollableContainer):
                 DoctorCollapsibles.doctor_ignored.qid, Pretty
             ).update(chezmoi.run.ignored())
 
+
+class DoctorTab(Vertical):
+
+    def __init__(self) -> None:
+        super().__init__(
+            id=Id.doctor.tab_container_id, classes=TcssStr.doctor_vertical
+        )
+        self.dr_style = {
+            "ok": theme.vars["text-success"],
+            "info": theme.vars["foreground-darken-1"],
+            "warning": theme.vars["text-warning"],
+            "failed": theme.vars["text-error"],
+            "error": theme.vars["text-error"],
+        }
+
+    def compose(self) -> ComposeResult:
+        yield DataTable[Text](id=Id.doctor.datatable_id(), show_cursor=False)
+        with VerticalGroup(classes=TcssStr.doctor_vertical_group):
+            yield ButtonsHorizontal(
+                tab_ids=Id.doctor,
+                buttons=(OperateBtn.refresh_doctor_data,),
+                area=Area.bottom,
+            )
+
+            yield Collapsible(
+                ListView(id=DoctorCollapsibles.pw_mgr_info.name),
+                title=DoctorCollapsibles.pw_mgr_info,
+            )
+
     @on(
         Button.Pressed,
         Id.doctor.button_id("#", btn=OperateBtn.refresh_doctor_data),
     )
     def on_refresh_doctor_data(self, event: Button.Pressed) -> None:
         if not CHEZMOI_COMMAND_FOUND:
-            return
+            self.notify(
+                "The chezmoi command is not available", severity="error"
+            )
         chezmoi.doctor.update()
-        self.doctor_data = chezmoi.doctor.list_out
         self.query_one(DataTable[Text]).clear()
         self.populate_doctor_data()
         self.notify("Doctor data refreshed")
 
     def populate_doctor_data(self) -> None:
+        if not CHEZMOI_COMMAND_FOUND:
+            self.notify(
+                "The chezmoi command is not available", severity="error"
+            )
+        if not chezmoi.doctor.list_out:
+            return
         doctor_table: DataTable[Text] = self.query_one(DataTable[Text])
+        doctor_data = chezmoi.doctor.list_out
         if not doctor_table.columns:
-            doctor_table.add_columns(*self.doctor_data[0].split())
+            doctor_table.add_columns(*doctor_data[0].split())
 
-        for line in self.doctor_data[1:]:
+        for line in doctor_data[1:]:
             row = tuple(line.split(maxsplit=2))
             if row[0] == "info" and "not found in $PATH" in row[2]:
                 self.populate_pw_mgr_info_collapsible(row[1])
