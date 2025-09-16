@@ -373,10 +373,6 @@ Header {
   min-width: 60;
 }
 
-ModalScreen {
-  align: center middle;
-}
-
 Switch {
   background: $surface;
   background-tint: $surface;
