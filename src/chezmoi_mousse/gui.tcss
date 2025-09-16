@@ -262,6 +262,7 @@
 }
 
 .screen_base {
+  border-top: wide $primary-darken-3;
   border-bottom:  $accent-darken-3;
   border-title-style: bold;
   overflow-y: hidden;
@@ -278,9 +279,6 @@
     &>.operate_bottom_vertical_group {
       dock: bottom;
     }
-  }
-  &.maximized_screen {
-    border-top: wide $primary-darken-3;
   }
   &>.install_help_vertical {
     border-top: $accent-darken-3;

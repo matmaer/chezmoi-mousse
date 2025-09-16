@@ -164,7 +164,6 @@ class TcssStr(StrEnum):
     internet_links = auto()
     last_clicked = auto()
     log_views = auto()
-    maximized_screen = auto()
     screen_base = auto()
     operate_buttons_horizontal = auto()
     operate_button = auto()

@@ -80,7 +80,7 @@ def test_tabids_member_in_use(member_name: str, member_type: str):
 
 
 @pytest.mark.parametrize(
-    "member_name, member_type", get_class_public_members(id_typing.ModalIds)
+    "member_name, member_type", get_class_public_members(id_typing.ScreenIds)
 )
 def test_modalids_member_in_use(member_name: str, member_type: str):
     is_used = False
