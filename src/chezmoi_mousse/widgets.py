@@ -103,7 +103,6 @@ class ContentsView(RichLog):
             auto_scroll=False,
             wrap=True,
             highlight=True,
-            classes=TcssStr.content_view,
         )
 
     def on_mount(self) -> None:
@@ -197,7 +196,6 @@ class DiffView(RichLog):
             id=self.ids.view_id(view=ViewName.diff_view),
             auto_scroll=False,
             wrap=False,
-            classes=TcssStr.diff_view,
         )
         self.status_dirs: PathDict = {}
         self.status_files: PathDict = {}

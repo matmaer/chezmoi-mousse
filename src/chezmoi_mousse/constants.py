@@ -149,8 +149,6 @@ class TcssStr(StrEnum):
     border_title_top = auto()
     content_switcher_left = auto()
     content_switcher_right = auto()
-    content_view = auto()
-    diff_view = auto()
     dir_tree_widget = auto()
     doctor_collapsible = auto()
     doctor_table = auto()

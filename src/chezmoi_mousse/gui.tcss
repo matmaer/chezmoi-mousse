@@ -108,11 +108,6 @@
   height: 3;
 }
 
-.diff_view, .content_view {
-  height: auto;
-  max-height: 1fr;
-}
-
 .doctor_vertical {
   &>.doctor_collapsible {
     .doctor_table {
