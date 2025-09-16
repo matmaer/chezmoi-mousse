@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Any
 from chezmoi_mousse.constants import (
     Area,
     Chars,
+    NavigateBtn,
     OperateBtn,
     ScreenName,
     TabBtn,
@@ -26,6 +27,7 @@ type OperateButtons = tuple[OperateBtn, ...]
 type ParsedJson = dict[str, Any]
 type PathDict = dict[Path, str]
 type TabButtons = tuple[TabBtn, ...]
+type VerticalButtons = tuple[NavigateBtn, ...]
 
 
 class AppType:
@@ -222,8 +224,15 @@ class TabIds:
         self.tab_name: TabName = tab_name
         self.tab_pane_id = f"{tab_name}_pane"
 
-    def button_id(self, qid: str = "", *, btn: OperateBtn | TabBtn) -> str:
-        suffix = "_op_btn" if isinstance(btn, OperateBtn) else "_tab_btn"
+    def button_id(
+        self, qid: str = "", *, btn: OperateBtn | TabBtn | NavigateBtn
+    ) -> str:
+        if isinstance(btn, OperateBtn):
+            suffix = "op_btn"
+        elif isinstance(btn, TabBtn):
+            suffix = "tab_btn"
+        else:
+            suffix = "nav_btn"
         return f"{qid}{self.tab_name}_{btn.name}{suffix}"
 
     def buttons_horizontal_id(self, area: Area) -> str:
@@ -231,6 +240,9 @@ class TabIds:
 
     def button_vertical_id(self, btn_enum: OperateBtn | TabBtn) -> str:
         return f"{self.tab_name}_{btn_enum.name}_vertical"
+
+    def buttons_vertical_group_id(self, area: Area) -> str:
+        return f"{self.tab_name}_{area}_vertical"
 
     def content_switcher_id(self, qid: str = "", *, area: Area) -> str:
         return f"{qid}{self.tab_name}_{area}_content_switcher"

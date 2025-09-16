@@ -1,12 +1,7 @@
 from rich.text import Text
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import (
-    Container,
-    ScrollableContainer,
-    Vertical,
-    VerticalGroup,
-)
+from textual.containers import Container, Horizontal, Vertical, VerticalGroup
 from textual.widgets import (
     Button,
     Collapsible,
@@ -38,6 +33,7 @@ from chezmoi_mousse.constants import (
 )
 from chezmoi_mousse.containers import (
     ButtonsHorizontal,
+    ButtonsVertical,
     InitCloneRepo,
     InitPurgeRepo,
     OperateTabsBase,
@@ -47,6 +43,7 @@ from chezmoi_mousse.containers import (
 from chezmoi_mousse.id_typing import (
     Area,
     Id,
+    NavigateBtn,
     OperateBtn,
     PwMgrInfo,
     Switches,
@@ -311,53 +308,85 @@ class InitTab(OperateTabsBase):
             ).disabled = True
 
 
-class ConfigTab(ScrollableContainer):
+class ConfigTab(Horizontal):
 
     def __init__(self) -> None:
-        super().__init__(
-            id=Id.config.tab_container_id
-            # classes=TcssStr.doctor_vertical
-        )
+        super().__init__(id=Id.config.tab_container_id)
 
     def compose(self) -> ComposeResult:
-        yield Collapsible(
-            Static(FLOW, classes=TcssStr.flow_diagram),
-            title=DoctorCollapsibles.diagram,
-        )
-        with Collapsible(title=DoctorCollapsibles.doctor_template_data):
-            yield Pretty(
-                "placeholder", id=DoctorCollapsibles.doctor_template_data.name
+
+        with VerticalGroup(
+            id=Id.config.tab_vertical_id(area=Area.left),
+            classes=TcssStr.tab_left_vertical,
+        ):
+            yield ButtonsVertical(
+                tab_ids=Id.config,
+                buttons=(
+                    NavigateBtn.cat_config,
+                    NavigateBtn.ignored,
+                    NavigateBtn.template_data,
+                    NavigateBtn.diagram,
+                ),
+                area=Area.left,
             )
-        with Collapsible(title=DoctorCollapsibles.cat_config):
-            yield Pretty("placeholder", id=DoctorCollapsibles.cat_config.name)
-        with Collapsible(title=DoctorCollapsibles.doctor_ignored):
-            yield Pretty(
-                "placeholder", id=DoctorCollapsibles.doctor_ignored.name
-            )
-        yield Collapsible(
-            ListView(id=DoctorCollapsibles.pw_mgr_info.name),
-            title=DoctorCollapsibles.pw_mgr_info,
-        )
+
+        with Vertical(
+            id=Id.config.tab_vertical_id(area=Area.right),
+            classes=TcssStr.tab_right_vertical,
+        ):
+            with ContentSwitcher(
+                id=Id.config.content_switcher_id(area=Area.right),
+                initial=Id.config.view_id(view=ViewName.cat_config),
+            ):
+                yield Vertical(
+                    Label('"chezmoi cat-config" output'),
+                    Pretty(chezmoi.run.cat_config()),
+                    id=Id.config.view_id(view=ViewName.cat_config),
+                )
+                yield Vertical(
+                    Label('"chezmoi ignored" output'),
+                    Pretty(chezmoi.run.ignored()),
+                    id=Id.config.view_id(view=ViewName.config_ignored),
+                )
+                yield Vertical(
+                    Label('"chezmoi data" output'),
+                    Pretty(chezmoi.run.template_data()),
+                    id=Id.config.view_id(view=ViewName.template_data),
+                )
+                yield Vertical(
+                    Label("chezmoi diagram"),
+                    Static(FLOW, classes=TcssStr.flow_diagram),
+                    id=Id.config.view_id(view=ViewName.diagram),
+                )
 
     def on_mount(self) -> None:
-        for collapsible in self.query(Collapsible):
-            collapsible.add_class(TcssStr.config_tab_collapsible)
+        self.query(Label).add_class(TcssStr.config_tab_label)
+        self.query_exactly_one(ContentSwitcher).add_class(
+            TcssStr.content_switcher_right
+        )
 
-    @on(Collapsible.Expanded, ".config_tab_collapsible")
-    def on_collapsible_expanded(self, event: Collapsible.Expanded) -> None:
+    @on(Button.Pressed, ".navigate_button")
+    def update_contents(self, event: Button.Pressed) -> None:
         event.stop()
-        if event.collapsible.title == DoctorCollapsibles.doctor_template_data:
-            event.collapsible.query_one(
-                DoctorCollapsibles.doctor_template_data.qid, Pretty
-            ).update(chezmoi.run.template_data())
-        elif event.collapsible.title == DoctorCollapsibles.cat_config:
-            event.collapsible.query_one(
-                DoctorCollapsibles.cat_config.qid, Pretty
-            ).update(chezmoi.run.cat_config())
-        elif event.collapsible.title == DoctorCollapsibles.doctor_ignored:
-            event.collapsible.query_one(
-                DoctorCollapsibles.doctor_ignored.qid, Pretty
-            ).update(chezmoi.run.ignored())
+        content_switcher = self.query_exactly_one(ContentSwitcher)
+        if event.button.id == Id.config.button_id(
+            btn=(NavigateBtn.cat_config)
+        ):
+            content_switcher.current = Id.config.view_id(
+                view=ViewName.cat_config
+            )
+        elif event.button.id == Id.config.button_id(btn=NavigateBtn.ignored):
+            content_switcher.current = Id.config.view_id(
+                view=ViewName.config_ignored
+            )
+        elif event.button.id == Id.config.button_id(
+            btn=NavigateBtn.template_data
+        ):
+            content_switcher.current = Id.config.view_id(
+                view=ViewName.template_data
+            )
+        elif event.button.id == Id.config.button_id(btn=NavigateBtn.diagram):
+            content_switcher.current = Id.config.view_id(view=ViewName.diagram)
 
 
 class DoctorTab(Vertical):

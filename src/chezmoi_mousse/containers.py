@@ -44,6 +44,7 @@ from chezmoi_mousse.id_typing import (
     Switches,
     TabButtons,
     TabIds,
+    VerticalButtons,
 )
 from chezmoi_mousse.messages import InvalidInputMessage
 from chezmoi_mousse.widgets import (
@@ -284,7 +285,7 @@ class ButtonsHorizontal(HorizontalGroup):
         self,
         *,
         tab_ids: TabIds,
-        buttons: OperateButtons | TabButtons,
+        buttons: TabButtons | OperateButtons,
         area: Area,
     ) -> None:
         self.buttons = buttons
@@ -334,6 +335,30 @@ class ButtonsHorizontal(HorizontalGroup):
                 self.tab_ids.button_id("#", btn=button_enum)
             ).remove_class(TcssStr.last_clicked)
         event.button.add_class(TcssStr.last_clicked)
+
+
+class ButtonsVertical(VerticalGroup):
+
+    def __init__(
+        self, *, tab_ids: TabIds, buttons: VerticalButtons, area: Area
+    ) -> None:
+        self.buttons: VerticalButtons = buttons
+        self.area: Area = area
+        self.tab_ids: TabIds = tab_ids
+        super().__init__(
+            id=self.tab_ids.buttons_vertical_group_id(self.area),
+            classes=TcssStr.navigate_buttons_vertical,
+        )
+
+    def compose(self) -> ComposeResult:
+        for button_enum in self.buttons:
+            yield Button(
+                label=button_enum.value,
+                variant="primary",
+                flat=True,
+                classes=TcssStr.navigate_button,
+                id=self.tab_ids.button_id(btn=button_enum),
+            )
 
 
 class TreeContentSwitcher(ContentSwitcher):

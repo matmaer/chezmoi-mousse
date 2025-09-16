@@ -8,10 +8,6 @@ from enum import StrEnum, auto
 
 
 class DoctorCollapsibles(StrEnum):
-    cat_config = "chezmoi cat-config (contents of config-file)"
-    diagram = "chezmoi diagram (how operations are applied)"
-    doctor_ignored = "chezmoi ignored (git ignore in source-dir)"
-    doctor_template_data = "chezmoi template-data (contents of template-file)"
     pw_mgr_info = "supported password managers (link and description)"
 
     @property
@@ -147,10 +143,10 @@ class TabName(StrEnum):
 
 class TcssStr(StrEnum):
     border_title_top = auto()
+    config_tab_label = auto()
     content_switcher_left = auto()
     content_switcher_right = auto()
     dir_tree_widget = auto()
-    config_tab_collapsible = auto()
     doctor_vertical = auto()
     doctor_vertical_group = auto()
     flow_diagram = auto()
@@ -162,6 +158,8 @@ class TcssStr(StrEnum):
     internet_links = auto()
     last_clicked = auto()
     log_views = auto()
+    navigate_button = auto()
+    navigate_buttons_vertical = auto()
     operate_bottom_vertical_group = auto()
     operate_button = auto()
     operate_buttons_horizontal = auto()
@@ -264,6 +262,17 @@ class ViewName(StrEnum):
     init_purge_view = auto()
     app_log_view = auto()
     output_log_view = auto()
+    cat_config = auto()
+    config_ignored = auto()
+    template_data = auto()
+    diagram = auto()
+
+
+class NavigateBtn(StrEnum):
+    cat_config = "cat config"
+    diagram = "diagram"
+    ignored = "ignored"
+    template_data = "template data"
 
 
 SPLASH = """\

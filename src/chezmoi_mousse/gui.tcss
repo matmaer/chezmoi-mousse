@@ -37,6 +37,7 @@
     }
   }
   SelectCurrent {
+    border: none;
     background-tint: $panel;
     background: $panel;
     color: $foreground;
@@ -108,10 +109,8 @@
   height: 3;
 }
 
-.config_tab_collapsible {
-  .flow_diagram {
-    min-width: 78;
-  }
+.flow_diagram {
+  min-width: 78;
 }
 
 .doctor_vertical {
@@ -124,7 +123,6 @@
     padding: 0;
   }
 }
-
 
 .switches_vertical {
   background-tint: $surface;
@@ -139,7 +137,12 @@
   transition: offset 380ms;
   width: auto;
 
+  & Switch {
+    border: none;
+  }
+
   Label.switch_label {
+    border: none;
     color: $foreground-darken-1;
   }
   &>.switch_horizontal {
@@ -157,6 +160,16 @@
   .content_switcher_right {
     margin-bottom: 1;
     overflow-x: scroll;
+    .config_tab_label {
+      background-tint: $surface-lighten-1;
+      background: $surface-lighten-1;
+      border-bottom: ascii $surface-lighten-1;
+      border-top: inner $surface-lighten-1;
+      color: $text-accent;
+      padding: 0 1;
+      text-align: center;
+      width: 100%;
+    }
   }
 }
 
@@ -182,10 +195,22 @@
       width: auto;
     }
   }
-  &>.dir_tree_widget {
+  & .dir_tree_widget {
     min-width: 16;
     max-width: 100%;
     width: auto;
+  }
+  & .navigate_buttons_vertical {
+    width: auto;
+    & .navigate_button {
+      background-tint: initial;
+      width: 100%;
+      min-width: 17;
+      &:focus {
+        color: $accent;
+        text-style: none;
+      }
+    }
   }
 }
 
@@ -197,6 +222,7 @@
     align: center middle;
   }
   .tab_button {
+    border: none;
     min-width: 4;
     text-style: none;
     &:hover {
@@ -224,7 +250,7 @@
     border-top: wide $primary-darken-3;
     border-bottom: wide $surface;
     color: $primary-lighten-3;
-    margin: 0 2 0 2;
+    margin: 0 2;
     min-width: 10;
     text-style: none;
     width: 100%;
@@ -258,7 +284,7 @@
 
   &>.install_help_vertical {
     & > Link {
-      margin: 1 0 1 0;
+      margin: 1 0;
     }
     & > Tree {
       color: $primary-lighten-3;
@@ -284,7 +310,7 @@
       dock: bottom;
       height: auto;
       max-height: 10;
-      padding: 0 1 0 1;
+      padding: 0 1;
     }
   }
 }
@@ -302,7 +328,6 @@
   scrollbar-background-active: $background;
   scrollbar-background-hover: $background;
   scrollbar-corner-color: $background;
-  border: none;
 }
 
 CheckBox {
