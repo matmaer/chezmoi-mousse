@@ -123,8 +123,6 @@
   }
 }
 
-/* TODO: create css class for the switches container to group and reuse all related tcss code */
-
 .switches_vertical {
   background-tint: $surface;
   background: $surface;
@@ -132,6 +130,7 @@
   border-left: none;
   dock: bottom;
   layer: switches;
+  margin-bottom: 1;  /* make sure horizontal scrollbar on layer below is visible */
   offset-x: 0%;
   padding-right: 1;
   transition: offset 380ms;
@@ -170,18 +169,15 @@
   max-width: 50%;
   min-width: 16;
   &>.content_switcher_left {
-    min-width: 16;
     width: auto;
     max-width: 100%;
     &>.tree_widget {
       margin-bottom: 1; /* to make sure bottom scrollbar remains visible */
-      min-width: 16;
       max-width: 100%;
       width: auto;
     }
   }
   &>.dir_tree_widget {
-    min-width: 16;
     max-width: 100%;
     width: auto;
   }
@@ -236,15 +232,6 @@
   }
 }
 
-.operate_log {
-  border-title-align: center;
-  border-top: $foreground;
-  dock: bottom;
-  height: auto;
-  max-height: 10;
-  padding: 0 1 0 1;
-}
-
 .internet_links {
   color: $text-primary;
   text-style: underline;
@@ -257,26 +244,12 @@
 }
 
 .screen_base {
-  border-top: wide $primary-darken-3;
-  border-bottom:  $accent-darken-3;
+  border-top: wide $primary-darken-2;
+  border-bottom: $primary-darken-2;
   border-title-style: bold;
   overflow-y: hidden;
-  .operate_info {
-    border-subtitle-align: center;
-    border-title-align: center;
-    border: round $foreground;
-    text-align: center;
-    dock: top;
-  }
-  &.operate_screen {
-    border-top: none;
-    border-bottom: $primary;
-    &>.operate_bottom_vertical_group {
-      dock: bottom;
-    }
-  }
+
   &>.install_help_vertical {
-    border-top: $accent-darken-3;
     & > Link {
       margin: 1 0 1 0;
     }
@@ -284,8 +257,30 @@
       color: $primary-lighten-3;
     }
   }
-}
 
+  &.operate_screen {
+    border-top: none;
+    &.operate_bottom_vertical_group {
+      dock: bottom;
+    }
+    &>.operate_info {
+      border-subtitle-align: center;
+      border-title-align: center;
+      border: round $foreground;
+      text-align: center;
+      dock: top;
+    }
+    .operate_log {
+      border-title-align: center;
+      border-top: $foreground;
+      border-title-style: none;
+      dock: bottom;
+      height: auto;
+      max-height: 10;
+      padding: 0 1 0 1;
+    }
+  }
+}
 
 /***********************************/
 /* textual default tcss overrides  */

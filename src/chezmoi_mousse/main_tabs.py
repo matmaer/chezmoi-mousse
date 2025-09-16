@@ -180,7 +180,8 @@ class AddTab(OperateTabsBase):
                 id=Id.add.tree_id(tree=TreeName.add_tree),
                 classes=TcssStr.dir_tree_widget,
             )
-        yield ContentsView(ids=Id.add)
+        with Vertical(id=Id.add.tab_vertical_id(area=Area.right)):
+            yield ContentsView(ids=Id.add)
 
         yield SwitchSlider(
             tab_ids=Id.add,
