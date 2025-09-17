@@ -17,26 +17,30 @@ Graphical user interface in the terminal for [chezmoi](https://github.com/twpayn
 
 ## Available Chezmoi commands
 
-> enable write operations by setting an env var MOUSSE_ENABLE_CHANGES=1
+> Enable write operations by setting an env var MOUSSE_ENABLE_CHANGES=1
+
+> The list below is a limited subset of availabble chezmoi commands, run `chezmoi help` in your terminal to see all commands.  Commands below without a checkmark are being implemented, missing commands could be out of scope or take a while.
 
 ### Write Operations
 
 - [x] `chezmoi add` file
 - [x] `chezmoi apply` file
-- [x] `chezmoi re-add` file
 - [ ] `chezmoi add` directory
 - [ ] `chezmoi add --encrypt` file
 - [ ] `chezmoi apply` directory
-- [ ] `chezmoi re-add` directory
 - [x] `chezmoi destroy`
+- [ ] `chezmoi edit`
 - [x] `chezmoi forget`
 - [ ] `chezmoi init`
+- [ ] `chezmoi purge`
+- [x] `chezmoi re-add` file
+- [ ] `chezmoi re-add` directory
 
 ### Read Operations
 
-- [x] `chezmoi cat-config`
 - [x] `chezmoi cat`
-- [x] `chezmoi config-dump`
+- [x] `chezmoi cat-config`
+- [x] `chezmoi dump-config`
 - [x] `chezmoi data`
 - [x] `chezmoi diff`
 - [x] `chezmoi doctor`
@@ -47,15 +51,10 @@ Graphical user interface in the terminal for [chezmoi](https://github.com/twpayn
 - [x] `chezmoi status`
 - [x] `chezmoi unmanaged`
 
+### Other Operations
 
-### Implemented features
+- [ ] `chezmoi archive`
 
-- [ ] import files from archives
-- [ ] password manager
-- [ ] scripts
-- [ ] templates
-- [x] filemode
-- [x] read commands
 
 ### Implemented configuration options
 
@@ -65,8 +64,8 @@ Graphical user interface in the terminal for [chezmoi](https://github.com/twpayn
 - :green_square: Provided by this app
 - :negative_squared_cross_mark: Not in scope
 - :bulb: Follows user config with warning
-- :large_blue_diamond: Checked at app init
-- :black_circle: Unknown, help wanted or to be documented
+- :large_blue_diamond: the app only runs the chezmoi command
+- :black_circle: Under development, help wanted or to be documented
 
 Top level
 
@@ -78,7 +77,7 @@ Top level
 - :black_circle: env
 - :green_circle: format
 - :green_square: interactive
-- :large_blue_diamond: mode (file mode only)
+- :negative_squared_cross_mark: mode (only file mode is supported)
 - :green_square: pager
 - :green_square: pagerArgs
 - :black_circle: persistentState
@@ -89,7 +88,7 @@ Top level
 - :green_circle: tempDir
 - :green_circle: umask
 - :black_circle: useBuiltinAge
-- :black_circle: useBuiltinGit
+- :green_square: useBuiltinGit (`chezmoi git` is used to render any git related output)
 - :green_square: verbose
 - :black_circle: workingTree
 
@@ -126,8 +125,8 @@ bitwardenSecrets
 - :black_circle: bitwardenSecrets.command
 
 cd
-- :negative_squared_cross_mark: cd.args
-- :negative_squared_cross_mark: cd.command
+- :black_circle: cd.args
+- :black_circle: cd.command
 
 dashlane
 - :black_circle: dashlane.args
@@ -135,7 +134,7 @@ dashlane
 
 diff
 - :green_square: diff.args
-- :green_square: diff.command
+- :large_blue_diamond: diff.command (`chezmoi diff` is used to render any diff related output)
 - :green_square: diff.exclude
 - :green_square: diff.pager
 - :green_square: diff.pagerArgs
@@ -149,12 +148,12 @@ doppler
 - :black_circle: doppler.project
 
 edit
-- :negative_squared_cross_mark: edit.apply
-- :negative_squared_cross_mark: edit.args
-- :negative_squared_cross_mark: edit.command
-- :negative_squared_cross_mark: edit.hardlink
-- :negative_squared_cross_mark: edit.minDuration
-- :negative_squared_cross_mark: edit.watch
+- :black_circle: edit.apply
+- :black_circle: edit.args
+- :black_circle: edit.command
+- :black_circle: edit.hardlink
+- :black_circle: edit.minDuration
+- :black_circle: edit.watch
 
 ejson
 - :black_circle: ejson.key
@@ -246,7 +245,7 @@ template
 - :black_circle: template.options
 
 textconv
-- :black_cirblack_circlecle: textconv.
+- :black_circle: textconv
 
 update
 - :black_circle: update.apply
@@ -278,7 +277,7 @@ If you don't have `textual` installed but the `uv` command is available:
 `uv run --with textual -m chezmoi_mousse`
 
 
-- [x] python -m chezmoi_mousse (Python 3.13 with `textual` installed)
+- [x] python -m chezmoi_mousse (Python 3.13 with the latest `textual` version installed)
 - [x] uv run --with textual -m chezmoi_mousse
 - [x] Windows
   - [ ] app store
