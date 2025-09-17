@@ -316,6 +316,11 @@
   overflow-y: scroll;
 }
 
+TabbedContent {
+  min-height: 20;
+  min-width: 35;
+}
+
 /***********************************/
 /* textual default tcss overrides  */
 /***********************************/
@@ -393,7 +398,8 @@ DirectoryTree {
 Footer {
   background-tint: $surface;
   background: $surface;
-  min-width: 50;
+  height: 1;
+  min-width: 35;
 }
 
 Header {
@@ -401,7 +407,7 @@ Header {
   color: $primary;
   height: 2;
   text-style: bold;
-  min-width: 50;
+  min-width: 35;
 }
 
 Switch {
@@ -433,7 +439,7 @@ Switch {
 }
 
 TabbedContent {
-  min-width: 50;
+  min-width: 35;
 }
 
 Toast {
