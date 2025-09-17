@@ -216,13 +216,7 @@ class CommandLog(RichLog):
                 escaped_line = escape(line)
                 self.write(f"[{color}]{escaped_line}[/]")
 
-
-class DebugLog(CommandLog):
-
-    def __init__(self) -> None:
-        super().__init__(ids=LogIds.debug_log)
-
-    def log_mro(self, mro: Mro) -> None:
+    def mro(self, mro: Mro) -> None:
         color = theme.vars["accent-darken-2"]
         self.write(f"{self._log_time()} [{color}]Method Resolution Order:[/]")
         pretty_mro = " -> ".join(
@@ -235,7 +229,7 @@ class DebugLog(CommandLog):
 
 
 app_log = CommandLog(ids=Id.logs, view_name=ViewName.app_log_view)
-debug_log = DebugLog()
+debug_log = CommandLog(ids=Id.logs, view_name=ViewName.debug_log_view)
 init_log = CommandLog(ids=LogIds.init_log)
 op_log = CommandLog(ids=LogIds.operate_log)
 # TODO: implement output log as a list of collapsibles, currently too much

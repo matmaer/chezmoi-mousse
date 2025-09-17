@@ -16,7 +16,6 @@ class DoctorCollapsibles(StrEnum):
 
 
 class LogIds(StrEnum):
-    debug_log = auto()
     init_log = auto()
     operate_log = auto()
 
@@ -41,6 +40,7 @@ class Area(StrEnum):
 class BorderTitle(StrEnum):
     # border_title = top border
     app_log = " App Log "
+    debug_log = " Debug Log "
     init_log = " Init Log "
     install_chezmoi = " Install chezmoi "
     operante_log = " Operate Log "
@@ -136,6 +136,7 @@ class TabBtn(StrEnum):
     list = "List"
     tree = "Tree"
     output_log = "Output"
+    debug_log = "Debug"
 
 
 class TabName(StrEnum):
@@ -261,6 +262,7 @@ class UnwantedFiles(StrEnum):
 
 class ViewName(StrEnum):
     contents_view = auto()
+    debug_log_view = auto()
     diff_view = auto()
     git_log_view = auto()
     init_clone_view = auto()

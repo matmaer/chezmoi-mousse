@@ -16,15 +16,7 @@ from textual.widgets import (
 
 import chezmoi_mousse.custom_theme
 from chezmoi_mousse.chezmoi import chezmoi
-from chezmoi_mousse.constants import (
-    Area,
-    BorderTitle,
-    Chars,
-    TabBtn,
-    TabName,
-    TreeName,
-    ViewName,
-)
+from chezmoi_mousse.constants import Area, Chars, TabName, TreeName, ViewName
 from chezmoi_mousse.containers import ButtonsHorizontal
 from chezmoi_mousse.id_typing import Id, OperateBtn, OperateHelp
 from chezmoi_mousse.main_tabs import (
@@ -292,30 +284,3 @@ class ChezmoiGUI(App[None]):
                 ),
             )
         )
-
-    @on(Button.Pressed, ".tab_button")
-    def handle_logs_tab_buttons(self, event: Button.Pressed) -> None:
-        event.stop()
-        if event.button.label not in (TabBtn.app_log, TabBtn.output_log):
-            return
-        active_pane_id = self.query_one(TabbedContent).active
-        tab_ids = Id.get_tab_ids_from_pane_id(pane_id=active_pane_id)
-        # AppLog/OutputLog Content Switcher
-        if event.button.id == tab_ids.button_id(btn=TabBtn.app_log):
-            content_switcher = self.query_one(
-                tab_ids.content_switcher_id("#", area=Area.top),
-                ContentSwitcher,
-            )
-            content_switcher.current = tab_ids.view_id(
-                view=ViewName.app_log_view
-            )
-            content_switcher.border_title = BorderTitle.app_log
-        elif event.button.id == tab_ids.button_id(btn=TabBtn.output_log):
-            content_switcher = self.query_one(
-                tab_ids.content_switcher_id("#", area=Area.top),
-                ContentSwitcher,
-            )
-            content_switcher.current = tab_ids.view_id(
-                view=ViewName.output_log_view
-            )
-            content_switcher.border_title = BorderTitle.output_log

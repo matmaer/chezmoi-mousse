@@ -26,7 +26,13 @@ from textual.widgets import (
 )
 
 import chezmoi_mousse.custom_theme as theme
-from chezmoi_mousse.chezmoi import app_log, chezmoi, init_log, output_log
+from chezmoi_mousse.chezmoi import (
+    app_log,
+    chezmoi,
+    debug_log,
+    init_log,
+    output_log,
+)
 from chezmoi_mousse.constants import (
     FLOW,
     BorderTitle,
@@ -579,13 +585,15 @@ class LogsTab(Container):
 
     def __init__(self) -> None:
         super().__init__(id=Id.logs.tab_container_id)
+        self.tab_buttons = (TabBtn.app_log, TabBtn.output_log)
+        if chezmoi.app_cfg.dev_mode:
+            # add button to the tuple
+            self.tab_buttons += (TabBtn.debug_log,)
 
     def compose(self) -> ComposeResult:
 
         yield ButtonsHorizontal(
-            tab_ids=Id.logs,
-            buttons=(TabBtn.app_log, TabBtn.output_log),
-            area=Area.top,
+            tab_ids=Id.logs, buttons=self.tab_buttons, area=Area.top
         )
         with ContentSwitcher(
             id=Id.logs.content_switcher_id(area=Area.top),
@@ -594,8 +602,46 @@ class LogsTab(Container):
         ):
             yield app_log
             yield output_log
+            if chezmoi.app_cfg.dev_mode:
+                yield debug_log
 
     def on_mount(self) -> None:
         self.query_exactly_one(ContentSwitcher).border_title = (
             BorderTitle.app_log
         )
+        if chezmoi.app_cfg.dev_mode:
+            debug_log.ready_to_run("Debug log ready to capture logs.")
+
+    @on(Button.Pressed, ".tab_button")
+    def handle_logs_tab_buttons(self, event: Button.Pressed) -> None:
+        event.stop()
+        # AppLog/OutputLog/DebugLog Content Switcher
+        if event.button.id == Id.logs.button_id(btn=TabBtn.app_log):
+            content_switcher = self.query_one(
+                Id.logs.content_switcher_id("#", area=Area.top),
+                ContentSwitcher,
+            )
+            content_switcher.current = Id.logs.view_id(
+                view=ViewName.app_log_view
+            )
+            content_switcher.border_title = BorderTitle.app_log
+        elif event.button.id == Id.logs.button_id(btn=TabBtn.output_log):
+            content_switcher = self.query_one(
+                Id.logs.content_switcher_id("#", area=Area.top),
+                ContentSwitcher,
+            )
+            content_switcher.current = Id.logs.view_id(
+                view=ViewName.output_log_view
+            )
+            content_switcher.border_title = BorderTitle.output_log
+        elif chezmoi.app_cfg.dev_mode and event.button.id == Id.logs.button_id(
+            btn=TabBtn.debug_log
+        ):
+            content_switcher = self.query_one(
+                Id.logs.content_switcher_id("#", area=Area.top),
+                ContentSwitcher,
+            )
+            content_switcher.current = Id.logs.view_id(
+                view=ViewName.debug_log_view
+            )
+            content_switcher.border_title = BorderTitle.debug_log
