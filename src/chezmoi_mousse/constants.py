@@ -77,10 +77,14 @@ class IoVerbs(StrEnum):
     status = "status"
 
 
-class ScreenName(StrEnum):
-    install_help = auto()
-    maximized = auto()
-    operate = auto()
+class NavBtn(StrEnum):
+    cat_config = "Cat Config"
+    clone_repo = "Clone"
+    diagram = "Diagram"
+    ignored = "Ignored"
+    new_repo = "New Repo"
+    purge_repo = "Purge Repo"
+    template_data = "Template Data"
 
 
 class OperateBtn(StrEnum):
@@ -117,16 +121,19 @@ class ReadVerbs(StrEnum):
     source_path = "source-path"
 
 
+class ScreenName(StrEnum):
+    install_help = auto()
+    maximized = auto()
+    operate = auto()
+
+
 class TabBtn(StrEnum):
     # Tab buttons for content switcher within a main tab
     app_log = "App"
-    clone_repo = "Clone"
     contents = "Contents"
     diff = "Diff"
     git_log = "Git-Log"
     list = "List"
-    new_repo = "New"
-    purge_repo = "Purge"
     tree = "Tree"
     output_log = "Output"
 
@@ -266,13 +273,6 @@ class ViewName(StrEnum):
     config_ignored = auto()
     template_data = auto()
     diagram = auto()
-
-
-class NavigateBtn(StrEnum):
-    cat_config = "cat config"
-    diagram = "diagram"
-    ignored = "ignored"
-    template_data = "template data"
 
 
 SPLASH = """\

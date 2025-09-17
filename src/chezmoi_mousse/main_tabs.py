@@ -43,7 +43,7 @@ from chezmoi_mousse.containers import (
 from chezmoi_mousse.id_typing import (
     Area,
     Id,
-    NavigateBtn,
+    NavBtn,
     OperateBtn,
     PwMgrInfo,
     Switches,
@@ -322,10 +322,10 @@ class ConfigTab(Horizontal):
             yield ButtonsVertical(
                 tab_ids=Id.config,
                 buttons=(
-                    NavigateBtn.cat_config,
-                    NavigateBtn.ignored,
-                    NavigateBtn.template_data,
-                    NavigateBtn.diagram,
+                    NavBtn.cat_config,
+                    NavBtn.ignored,
+                    NavBtn.template_data,
+                    NavBtn.diagram,
                 ),
                 area=Area.left,
             )
@@ -369,23 +369,19 @@ class ConfigTab(Horizontal):
     def update_contents(self, event: Button.Pressed) -> None:
         event.stop()
         content_switcher = self.query_exactly_one(ContentSwitcher)
-        if event.button.id == Id.config.button_id(
-            btn=(NavigateBtn.cat_config)
-        ):
+        if event.button.id == Id.config.button_id(btn=(NavBtn.cat_config)):
             content_switcher.current = Id.config.view_id(
                 view=ViewName.cat_config
             )
-        elif event.button.id == Id.config.button_id(btn=NavigateBtn.ignored):
+        elif event.button.id == Id.config.button_id(btn=NavBtn.ignored):
             content_switcher.current = Id.config.view_id(
                 view=ViewName.config_ignored
             )
-        elif event.button.id == Id.config.button_id(
-            btn=NavigateBtn.template_data
-        ):
+        elif event.button.id == Id.config.button_id(btn=NavBtn.template_data):
             content_switcher.current = Id.config.view_id(
                 view=ViewName.template_data
             )
-        elif event.button.id == Id.config.button_id(btn=NavigateBtn.diagram):
+        elif event.button.id == Id.config.button_id(btn=NavBtn.diagram):
             content_switcher.current = Id.config.view_id(view=ViewName.diagram)
 
 

@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Any
 from chezmoi_mousse.constants import (
     Area,
     Chars,
-    NavigateBtn,
+    NavBtn,
     OperateBtn,
     ScreenName,
     TabBtn,
@@ -27,7 +27,7 @@ type OperateButtons = tuple[OperateBtn, ...]
 type ParsedJson = dict[str, Any]
 type PathDict = dict[Path, str]
 type TabButtons = tuple[TabBtn, ...]
-type VerticalButtons = tuple[NavigateBtn, ...]
+type VerticalButtons = tuple[NavBtn, ...]
 
 
 class AppType:
@@ -225,7 +225,7 @@ class TabIds:
         self.tab_pane_id = f"{tab_name}_pane"
 
     def button_id(
-        self, qid: str = "", *, btn: OperateBtn | TabBtn | NavigateBtn
+        self, qid: str = "", *, btn: OperateBtn | TabBtn | NavBtn
     ) -> str:
         if isinstance(btn, OperateBtn):
             suffix = "op_btn"
