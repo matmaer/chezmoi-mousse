@@ -764,8 +764,12 @@ class FlatTree(TreeBase):
 class FilteredDirTree(DirectoryTree):
 
     unmanaged_dirs: reactive[bool] = reactive(False, init=False)
-    # TODO: add chezmoi sourceDir to the unwanted paths filter, this cannot be # done in the unwanted_files enum because it depends on the system the app
-    # runs on
+    # TODO: add chezmoi sourceDir to the unwanted paths filter, this cannot be
+    # # done in the unwanted_files enum because it depends on the system the
+    # app runs on.
+    # TODO: add filter switch to see already added files as otherwise when
+    # wanting to add a file which was already added, you have to check if the
+    # file exists outside of the chezmoi-mousse app
     unwanted: reactive[bool] = reactive(False, init=False)
 
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
