@@ -260,6 +260,11 @@ def _run_cmd(long_command: list[str]) -> str:
 
     # TODO: implement spinner for commands taking a bit longer like operations
     # TODO: set different timeout values depending on nature of command
+    # TODO: implement 'chezmoi verify' to display or it looks weird if the
+    # Apply and Re-Add tab Tree widgets are empty.
+    # Put a message in these Tree widgets if the chezmoi
+    # command is not available or it could be confused with a situation where
+    # "chezmoi verify" exits with status 0
 
     try:
         cmd_stdout = (
