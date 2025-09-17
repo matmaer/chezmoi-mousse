@@ -166,7 +166,6 @@ class ChezmoiGUI(App[None]):
     @on(OperateMessage)
     def handle_operate_result(self, message: OperateMessage) -> None:
         assert isinstance(message.dismiss_data.path, Path)
-        chezmoi.debug_log.success(str(message.dismiss_data))
         for tree_cls in (ManagedTree, FlatTree, ExpandedTree):
             for tree in self.query(tree_cls):
                 tree.remove_node_path(node_path=message.dismiss_data.path)

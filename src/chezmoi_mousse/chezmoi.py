@@ -169,6 +169,8 @@ class CommandLog(RichLog):
             self.add_class(TcssStr.border_title_top)
             self.border_title = BorderTitle.operante_log
             self.add_class(TcssStr.bottom_docked_log)
+        elif self.ids == Id.logs and self.view_name == ViewName.debug_log_view:
+            self.ready_to_run("Debug log ready to capture logs.")
         else:
             self.add_class(TcssStr.log_views)
 

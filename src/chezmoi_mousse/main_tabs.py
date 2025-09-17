@@ -609,8 +609,6 @@ class LogsTab(Container):
         self.query_exactly_one(ContentSwitcher).border_title = (
             BorderTitle.app_log
         )
-        if chezmoi.app_cfg.dev_mode:
-            debug_log.ready_to_run("Debug log ready to capture logs.")
 
     @on(Button.Pressed, ".tab_button")
     def handle_logs_tab_buttons(self, event: Button.Pressed) -> None:
