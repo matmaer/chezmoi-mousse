@@ -522,6 +522,14 @@ class Chezmoi:
         return self._names
 
     @property
+    def log(self):
+        self._names.init = init_log
+        self._names.app = app_log
+        self._names.debug = debug_log
+        self._names.operate = op_log
+        return self._names
+
+    @property
     def destDir(self) -> Path:
         return Path(self.config_dump.dict_out.get("destDir", ""))
 
