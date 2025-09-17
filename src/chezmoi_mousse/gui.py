@@ -101,13 +101,13 @@ class ChezmoiGUI(App[None]):
         yield Footer()
 
     def on_mount(self) -> None:
-        chezmoi.log.app.success("App initialized successfully")
+        chezmoi.app_log.success("App initialized successfully")
         if not chezmoi.app_cfg.chezmoi_found:
-            chezmoi.log.app.error("chezmoi command not found")
+            chezmoi.app_log.error("chezmoi command not found")
             self.push_screen(InstallHelp())
             return
         else:
-            chezmoi.log.app.success(
+            chezmoi.app_log.success(
                 f"chezmoi command found: {chezmoi.app_cfg.chezmoi_found}"
             )
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
@@ -116,8 +116,8 @@ class ChezmoiGUI(App[None]):
         self.register_theme(chezmoi_mousse.custom_theme.chezmoi_mousse_dark)
         theme_name = "chezmoi-mousse-dark"
         self.theme = theme_name
-        chezmoi.log.app.success(f"Theme set to {theme_name}")
-        chezmoi.log.app.warning("Start loading screen")
+        chezmoi.app_log.success(f"Theme set to {theme_name}")
+        chezmoi.app_log.warning("Start loading screen")
         self.push_screen(LoadingScreen(), callback=self.first_mount_refresh)
         self.watch(self, "theme", self.on_theme_change, init=False)
 
@@ -132,11 +132,11 @@ class ChezmoiGUI(App[None]):
         chezmoi_mousse.custom_theme.vars = (
             new_theme_object.to_color_system().generate()
         )
-        chezmoi.log.app.success(f"Theme set to {new_theme}")
+        chezmoi.app_log.success(f"Theme set to {new_theme}")
 
     def first_mount_refresh(self, _: object) -> None:
         self.loading_screen_dismissed = True
-        chezmoi.log.app.success("--- splash.py finished loading ---")
+        chezmoi.app_log.success("--- splash.py finished loading ---")
         # TODO: Do the refresh in the loading screen after other loading tasks
         # were completed
         # Trees to refresh for each tab
@@ -166,6 +166,7 @@ class ChezmoiGUI(App[None]):
     @on(OperateMessage)
     def handle_operate_result(self, message: OperateMessage) -> None:
         assert isinstance(message.dismiss_data.path, Path)
+        chezmoi.debug_log.success(str(message.dismiss_data))
         for tree_cls in (ManagedTree, FlatTree, ExpandedTree):
             for tree in self.query(tree_cls):
                 tree.remove_node_path(node_path=message.dismiss_data.path)
@@ -175,7 +176,7 @@ class ChezmoiGUI(App[None]):
     @on(InvalidInputMessage)
     def handle_invalid_input(self, message: InvalidInputMessage) -> None:
         text_lines = "\n".join(message.reasons)
-        chezmoi.log.init.warning(f"Invalid input detected: {text_lines}")
+        chezmoi.init_log.warning(f"Invalid input detected: {text_lines}")
 
     def check_action(
         self, action: str, parameters: tuple[object, ...]

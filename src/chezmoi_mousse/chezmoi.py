@@ -516,12 +516,20 @@ class Chezmoi:
         return self._names
 
     @property
-    def log(self):
-        self._names.init = init_log
-        self._names.app = app_log
-        self._names.debug = debug_log
-        self._names.operate = op_log
-        return self._names
+    def app_log(self):
+        return app_log
+
+    @property
+    def debug_log(self):
+        return debug_log
+
+    @property
+    def init_log(self):
+        return init_log
+
+    @property
+    def op_log(self):
+        return op_log
 
     @property
     def destDir(self) -> Path:
