@@ -30,7 +30,7 @@ for cls in strenum_classes:
     modules_to_test(exclude_file_names=to_exclude),
     ids=lambda py_file: py_file.name,
 )
-def test_ids(py_file: Path):
+def test_args(py_file: Path):
     # the id= argument is only used in some object.call(), so get call nodes
     call_nodes: list[ast.Call] = get_ast_call_nodes(py_file)
 

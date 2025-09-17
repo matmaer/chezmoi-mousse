@@ -11,7 +11,7 @@ exclude_files = ["chezmoi.py"]
 @pytest.mark.parametrize(
     "member_name, member_type", get_class_public_members(Chezmoi)
 )
-def test_chezmoi_member_in_use(member_name: str, member_type: str):
+def test_member_in_use(member_name: str, member_type: str):
     is_used = False
 
     for py_file in modules_to_test(exclude_file_names=exclude_files):
