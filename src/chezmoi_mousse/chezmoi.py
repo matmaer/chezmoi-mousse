@@ -179,34 +179,34 @@ class CommandLog(RichLog):
             ]
         )
 
-    def log_command(self, command: list[str]) -> None:
+    def command(self, command: list[str]) -> None:
         trimmed_cmd = self._pretty_cmd_str(command)
         time = self._log_time()
         color = theme.vars["primary-lighten-3"]
         log_line = f"{time} [{color}]{trimmed_cmd}[/]"
         self.write(log_line)
 
-    def log_error(self, message: str) -> None:
+    def error(self, message: str) -> None:
         color = theme.vars["text-error"]
         time = self._log_time()
         self.write(f"{time} [{color}]{message}[/]")
 
-    def log_warning(self, message: str) -> None:
+    def warning(self, message: str) -> None:
         lines = message.splitlines()
         color = theme.vars["text-warning"]
         for line in [line for line in lines if line.strip()]:
             escaped_line = escape(line)
             self.write(f"{self._log_time()} [{color}]{escaped_line}[/]")
 
-    def log_success(self, message: str) -> None:
+    def success(self, message: str) -> None:
         color = theme.vars["text-success"]
         self.write(f"{self._log_time()} [{color}]{message}[/]")
 
-    def log_ready_to_run(self, message: str) -> None:
+    def ready_to_run(self, message: str) -> None:
         color = theme.vars["accent-darken-3"]
         self.write(f"{self._log_time()} [{color}]{message}[/]")
 
-    def log_dimmed(self, message: str) -> None:
+    def dimmed(self, message: str) -> None:
         if message.strip() == "":
             return
         lines: list[str] = message.splitlines()
@@ -231,7 +231,7 @@ class DebugLog(CommandLog):
             if "typing.Generic" not in f"{cls.__module__}.{cls.__qualname__}"
             and "builtins.object" not in f"{cls.__module__}.{cls.__qualname__}"
         )
-        self.log_dimmed(f"{pretty_mro}")
+        self.dimmed(f"{pretty_mro}")
 
 
 app_log = CommandLog(ids=Id.logs, view_name=ViewName.app_log_view)
@@ -243,7 +243,7 @@ op_log = CommandLog(ids=LogIds.operate_log)
 output_log = CommandLog(ids=Id.logs, view_name=ViewName.output_log_view)
 
 if APP_CFG.dev_mode:
-    app_log.log_ready_to_run("Running in development mode")
+    app_log.ready_to_run("Running in development mode")
 
 
 def _run_cmd(long_command: list[str]) -> str:
@@ -266,34 +266,34 @@ def _run_cmd(long_command: list[str]) -> str:
             .stdout.lstrip("\n")
             .rstrip()
         )
-        app_log.log_command(long_command)
-        output_log.log_command(long_command)
+        app_log.command(long_command)
+        output_log.command(long_command)
         # log all commands stdout to output_log
         if cmd_stdout.strip() == "":
-            output_log.log_dimmed("Command returned no output on stdout")
+            output_log.dimmed("Command returned no output on stdout")
         else:
-            output_log.log_dimmed(cmd_stdout)
+            output_log.dimmed(cmd_stdout)
         # handle operate logging
         if any(verb in long_command for verb in OperateVerbs):
             if (
                 OperateVerbs.init in long_command
                 or OperateVerbs.purge in long_command
             ):
-                init_log.log_command(long_command)
+                init_log.command(long_command)
             else:
-                op_log.log_command(long_command)
+                op_log.command(long_command)
             if cmd_stdout.strip() == "":
                 msg = f"{Chars.check_mark} Command made changes successfully, no output"
-                app_log.log_success(msg)
+                app_log.success(msg)
                 if (
                     OperateVerbs.init in long_command
                     or OperateVerbs.purge in long_command
                 ):
-                    init_log.log_success(msg)
+                    init_log.success(msg)
                 else:
-                    op_log.log_success(msg)
+                    op_log.success(msg)
             else:
-                app_log.log_success(
+                app_log.success(
                     f"{Chars.check_mark} Exit status 0, stdout logged to output log"
                 )
                 msg = f"{Chars.check_mark} Command ran successfully, exit status 0"
@@ -301,36 +301,36 @@ def _run_cmd(long_command: list[str]) -> str:
                     OperateVerbs.init in long_command
                     or OperateVerbs.purge in long_command
                 ):
-                    init_log.log_success(msg)
-                    init_log.log_dimmed(cmd_stdout)
+                    init_log.success(msg)
+                    init_log.dimmed(cmd_stdout)
                 else:
-                    op_log.log_success(msg)
-                    op_log.log_dimmed(cmd_stdout)
+                    op_log.success(msg)
+                    op_log.dimmed(cmd_stdout)
 
             return cmd_stdout
         # handle IoVerb logging
         if any(verb in long_command for verb in IoVerbs):
-            app_log.log_warning(
+            app_log.warning(
                 "InputOutput data updated for processing in the app"
             )
             return cmd_stdout
         elif any(verb in long_command for verb in ReadVerbs):
-            app_log.log_warning("Data available to display in the app")
+            app_log.warning("Data available to display in the app")
             return cmd_stdout
         else:
-            app_log.log_error("No specific logging implemented")
+            app_log.error("No specific logging implemented")
         return cmd_stdout
     except Exception as e:
         if "doctor" in long_command and isinstance(
             e, subprocess.CalledProcessError
         ):
-            op_log.log_warning(
+            op_log.warning(
                 f"{Chars.warning_sign} chezmoi doctor has a non-zero exit code"
             )
             return e.stdout.strip()
         if any(verb in long_command for verb in OperateVerbs):
-            op_log.log_error(f"{Chars.x_mark} Command failed {e}")
-        app_log.log_error(f"{Chars.x_mark} Command failed {e}")
+            op_log.error(f"{Chars.x_mark} Command failed {e}")
+        app_log.error(f"{Chars.x_mark} Command failed {e}")
         return "failed"
 
 
@@ -342,9 +342,9 @@ class ChangeCommand:
         self.base_cmd: list[str] = BASE_CMD
         if not APP_CFG.changes_enabled:
             self.base_cmd = BASE_CMD + [GlobalArgs.dry_run.value]
-            app_log.log_ready_to_run(OperateHelp.changes_mode_disabled.value)
+            app_log.ready_to_run(OperateHelp.changes_mode_disabled.value)
         else:
-            app_log.log_warning(OperateHelp.changes_mode_enabled.value)
+            app_log.warning(OperateHelp.changes_mode_enabled.value)
 
     def _update_managed_status_data(self) -> None:
         # Update data that the managed_status property depends on

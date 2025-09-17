@@ -129,7 +129,7 @@ class Operate(ScreensBase, AppType):
             command += OperateVerbs.apply
         elif self.tab_name == TabName.re_add_tab:
             command += OperateVerbs.re_add
-        op_log.log_ready_to_run(f"Ready to run command: {command} {self.path}")
+        op_log.ready_to_run(f"Ready to run command: {command} {self.path}")
 
     @on(Button.Pressed, ".operate_button")
     def handle_operate_buttons(self, event: Button.Pressed) -> None:
@@ -167,7 +167,7 @@ class Operate(ScreensBase, AppType):
     def handle_dismiss(self, dismiss_data: OperateData) -> None:
         if not dismiss_data.operation_executed and self.path:
             msg = f"Operation cancelled for {self.path.name}"
-            op_log.log_success(msg)
+            op_log.success(msg)
             self.notify("No changes were made")
         # send the needed data to the app, logging will be handled there
         self.app.post_message(OperateMessage(dismiss_data=dismiss_data))

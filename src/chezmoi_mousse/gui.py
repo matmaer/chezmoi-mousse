@@ -109,13 +109,13 @@ class ChezmoiGUI(App[None]):
         yield Footer()
 
     def on_mount(self) -> None:
-        app_log.log_success("App initialized successfully")
+        app_log.success("App initialized successfully")
         if not chezmoi.app_cfg.chezmoi_found:
-            app_log.log_error("chezmoi command not found")
+            app_log.error("chezmoi command not found")
             self.push_screen(InstallHelp())
             return
         else:
-            app_log.log_success(
+            app_log.success(
                 f"chezmoi command found: {chezmoi.app_cfg.chezmoi_found}"
             )
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
@@ -124,8 +124,8 @@ class ChezmoiGUI(App[None]):
         self.register_theme(chezmoi_mousse.custom_theme.chezmoi_mousse_dark)
         theme_name = "chezmoi-mousse-dark"
         self.theme = theme_name
-        app_log.log_success(f"Theme set to {theme_name}")
-        app_log.log_warning("Start loading screen")
+        app_log.success(f"Theme set to {theme_name}")
+        app_log.warning("Start loading screen")
         self.push_screen(LoadingScreen(), callback=self.first_mount_refresh)
         self.watch(self, "theme", self.on_theme_change, init=False)
 
@@ -140,11 +140,11 @@ class ChezmoiGUI(App[None]):
         chezmoi_mousse.custom_theme.vars = (
             new_theme_object.to_color_system().generate()
         )
-        app_log.log_success(f"Theme set to {new_theme}")
+        app_log.success(f"Theme set to {new_theme}")
 
     def first_mount_refresh(self, _: object) -> None:
         self.loading_screen_dismissed = True
-        app_log.log_success("--- splash.py finished loading ---")
+        app_log.success("--- splash.py finished loading ---")
         # TODO: Do the refresh in the loading screen after other loading tasks
         # were completed
         # Trees to refresh for each tab
@@ -183,7 +183,7 @@ class ChezmoiGUI(App[None]):
     @on(InvalidInputMessage)
     def handle_invalid_input(self, message: InvalidInputMessage) -> None:
         text_lines = "\n".join(message.reasons)
-        init_log.log_warning(f"Invalid input detected: {text_lines}")
+        init_log.warning(f"Invalid input detected: {text_lines}")
 
     def check_action(
         self, action: str, parameters: tuple[object, ...]
