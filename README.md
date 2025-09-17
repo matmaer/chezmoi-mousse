@@ -50,6 +50,7 @@ Graphical user interface in the terminal for [chezmoi](https://github.com/twpayn
 - [x] `chezmoi source-dir`
 - [x] `chezmoi status`
 - [x] `chezmoi unmanaged`
+- [ ] `chezmoi verify`
 
 ### Other Operations
 
