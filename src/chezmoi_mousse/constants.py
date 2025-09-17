@@ -150,6 +150,7 @@ class TabName(StrEnum):
 
 class TcssStr(StrEnum):
     border_title_top = auto()
+    bottom_docked_log = auto()
     config_tab_label = auto()
     content_switcher_left = auto()
     content_switcher_right = auto()
@@ -171,7 +172,6 @@ class TcssStr(StrEnum):
     operate_button = auto()
     operate_buttons_horizontal = auto()
     operate_info = auto()
-    operate_log = auto()
     operate_screen = auto()
     pad_bottom = auto()
     screen_base = auto()

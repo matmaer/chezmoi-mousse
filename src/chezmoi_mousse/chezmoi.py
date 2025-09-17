@@ -132,11 +132,11 @@ class CommandLog(RichLog):
         if self.id == LogIds.init_log:
             self.add_class(TcssStr.border_title_top)
             self.border_title = BorderTitle.init_log
-            self.add_class(TcssStr.operate_log)
+            self.add_class(TcssStr.bottom_docked_log)
         elif self.id == LogIds.operate_log:
             self.add_class(TcssStr.border_title_top)
             self.border_title = BorderTitle.operante_log
-            self.add_class(TcssStr.operate_log)
+            self.add_class(TcssStr.bottom_docked_log)
         else:
             self.add_class(TcssStr.log_views)
 

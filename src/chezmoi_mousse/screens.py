@@ -88,7 +88,7 @@ class Operate(ScreensBase, AppType):
             yield DiffView(ids=Id.operate_screen, reverse=self.reverse)
         else:
             yield ContentsView(ids=Id.operate_screen)
-        with VerticalGroup(classes=TcssStr.operate_bottom_vertical_group):
+        with VerticalGroup():
             yield ButtonsHorizontal(
                 tab_ids=self.tab_ids, buttons=self.buttons, area=Area.bottom
             )

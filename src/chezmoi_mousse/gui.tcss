@@ -4,6 +4,12 @@
 
 /* TODO “$text-success on $success-muted” */
 
+.border_title_top {
+  border-top: solid $primary;
+  border-title-align: center;
+  border-title-style: bold;
+}
+
 .log_views {
   margin-bottom: 1;
 }
@@ -173,12 +179,6 @@
   }
 }
 
-.border_title_top {
-  border-top: solid $primary;
-  border-title-align: center;
-  border-title-style: bold;
-}
-
 .tab_left_vertical {
   margin-right: 2;
   width: auto;
@@ -200,16 +200,17 @@
     max-width: 100%;
     width: auto;
   }
-  & .navigate_buttons_vertical {
-    width: auto;
-    & .navigate_button {
-      background-tint: initial;
-      width: 100%;
-      min-width: 17;
-      &:focus {
-        color: $accent;
-        text-style: none;
-      }
+}
+
+.navigate_buttons_vertical {
+  width: auto;
+  & .navigate_button {
+    background-tint: initial;
+    width: 100%;
+    min-width: 17;
+    &:focus {
+      color: $accent;
+      text-style: none;
     }
   }
 }
@@ -293,9 +294,6 @@
 
   &.operate_screen {
     border-top: none;
-    &.operate_bottom_vertical_group {
-      dock: bottom;
-    }
     &>.operate_info {
       border-subtitle-align: center;
       border-title-align: center;
@@ -303,16 +301,19 @@
       text-align: center;
       dock: top;
     }
-    .operate_log {
-      border-title-align: center;
-      border-top: $foreground;
-      border-title-style: none;
-      dock: bottom;
-      height: auto;
-      max-height: 10;
-      padding: 0 1;
-    }
   }
+}
+
+.bottom_docked_log {
+  border-title-align: center;
+  border-top: $foreground;
+  border-title-style: none;
+  dock: bottom;
+  height: auto;
+  min-height: 3;
+  max-height:8;
+  height: auto;
+  overflow-y: scroll;
 }
 
 /***********************************/
