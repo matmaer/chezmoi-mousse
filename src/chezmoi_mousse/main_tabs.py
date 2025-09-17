@@ -1,7 +1,14 @@
 from rich.text import Text
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import Container, Horizontal, Vertical, VerticalGroup
+from textual.containers import (
+    Container,
+    Horizontal,
+    HorizontalGroup,
+    Vertical,
+    VerticalGroup,
+)
+from textual.validation import URL
 from textual.widgets import (
     Button,
     Collapsible,
@@ -13,6 +20,7 @@ from textual.widgets import (
     ListItem,
     ListView,
     Pretty,
+    Select,
     Static,
     Switch,
 )
@@ -34,13 +42,12 @@ from chezmoi_mousse.constants import (
 from chezmoi_mousse.containers import (
     ButtonsHorizontal,
     ButtonsVertical,
-    InitCloneRepo,
-    InitPurgeRepo,
     OperateTabsBase,
     SwitchSlider,
     TreeContentSwitcher,
 )
 from chezmoi_mousse.id_typing import (
+    AppType,
     Area,
     Id,
     NavBtn,
@@ -51,6 +58,7 @@ from chezmoi_mousse.id_typing import (
     TreeName,
     ViewName,
 )
+from chezmoi_mousse.messages import InvalidInputMessage
 from chezmoi_mousse.widgets import (
     ContentsView,
     DiffView,
@@ -247,46 +255,133 @@ class AddTab(OperateTabsBase):
         tree.reload()
 
 
-class InitTab(OperateTabsBase):
+class InitTab(Vertical, AppType):
 
     def __init__(self) -> None:
-        super().__init__(tab_ids=Id.init)
+        super().__init__(id=Id.init.tab_container_id)
         self.repo_url: str | None = None
 
     def compose(self) -> ComposeResult:
-        with Vertical():
-            yield ButtonsHorizontal(
+        with Horizontal():
+            yield ButtonsVertical(
                 tab_ids=Id.init,
                 buttons=(
-                    TabBtn.clone_repo,
-                    TabBtn.new_repo,
-                    TabBtn.purge_repo,
+                    NavBtn.new_repo,
+                    NavBtn.clone_repo,
+                    NavBtn.purge_repo,
                 ),
-                area=Area.top,
+                area=Area.left,
             )
-            with ContentSwitcher(
-                id=Id.init.content_switcher_id(area=Area.top),
-                initial=Id.init.view_id(view=ViewName.init_clone_view),
-                classes=TcssStr.border_title_top,
+            with Vertical(
+                id=Id.init.tab_vertical_id(area=Area.right),
+                classes=TcssStr.tab_right_vertical,
             ):
-                yield InitCloneRepo()
-                with Vertical(id=Id.init.view_id(view=ViewName.init_new_view)):
-                    yield Label("Initialize a new chezmoi git repository")
-                    yield Input(placeholder="Enter config file path")
-                    yield ButtonsHorizontal(
-                        tab_ids=Id.init,
-                        buttons=(OperateBtn.new_repo,),
-                        area=Area.bottom,
+                with ContentSwitcher(
+                    id=Id.init.content_switcher_id(area=Area.right),
+                    initial=Id.init.view_id(view=ViewName.init_new_view),
+                    classes=TcssStr.content_switcher_right,
+                ):
+                    # New Repo Content
+                    yield Vertical(
+                        Label("Initialize new chezmoi git repository"),
+                        Input(placeholder="Enter config file path"),
+                        ButtonsHorizontal(
+                            tab_ids=Id.init,
+                            buttons=(OperateBtn.new_repo,),
+                            area=Area.bottom,
+                        ),
+                        id=Id.init.view_id(view=ViewName.init_new_view),
                     )
-                yield InitPurgeRepo()
-
-        yield SwitchSlider(
-            tab_ids=Id.init,
-            switches=(Switches.guess_url, Switches.clone_and_apply),
-        )
+                    # Clone Repo Content
+                    yield Vertical(
+                        Label("Clone existing chezmoi git repository"),
+                        # TODO: implement guess feature from chezmoi
+                        # TODO: add selection for https(with PAT token) or ssh
+                        HorizontalGroup(
+                            Vertical(
+                                Select[str].from_values(
+                                    ["https", "ssh"],
+                                    classes=TcssStr.input_select,
+                                    value="https",
+                                    allow_blank=False,
+                                    type_to_search=False,
+                                ),
+                                classes=TcssStr.input_select_vertical,
+                            ),
+                            Vertical(
+                                Input(
+                                    placeholder="Enter repository URL",
+                                    validate_on=["submitted"],
+                                    validators=URL(),
+                                    classes=TcssStr.input_field,
+                                ),
+                                classes=TcssStr.input_field_vertical,
+                            ),
+                        ),
+                        ButtonsHorizontal(
+                            tab_ids=Id.init,
+                            buttons=(OperateBtn.clone_repo,),
+                            area=Area.bottom,
+                        ),
+                        id=Id.init.view_id(view=ViewName.init_clone_view),
+                    )
+                    # Purge chezmoi repo
+                    yield Vertical(
+                        Label("Purge current chezmoi git repository"),
+                        Static(
+                            "Remove chezmoi's configuration, state, and source directory, but leave the target state intact."
+                        ),
+                        ButtonsHorizontal(
+                            tab_ids=Id.init,
+                            buttons=(OperateBtn.purge_repo,),
+                            area=Area.bottom,
+                        ),
+                        id=Id.init.view_id(view=ViewName.init_purge_view),
+                    )
+            yield SwitchSlider(
+                tab_ids=Id.init,
+                switches=(Switches.guess_url, Switches.clone_and_apply),
+            )
+        yield init_log  # this has bottom_log
 
     def on_mount(self) -> None:
+        self.query(Label).add_class(TcssStr.config_tab_label)
         init_log.log_success("Ready to run chezmoi commands.")
+        self.query_exactly_one(ButtonsVertical).add_class(
+            TcssStr.tab_left_vertical
+        )
+
+    @on(Input.Submitted)
+    def show_invalid_reasons(self, event: Input.Submitted) -> None:
+        if (
+            event.validation_result is not None
+            and not event.validation_result.is_valid
+        ):
+            self.app.post_message(
+                InvalidInputMessage(
+                    reasons=event.validation_result.failure_descriptions
+                )
+            )
+
+    @on(Button.Pressed, ".navigate_button")
+    def handle_navigation_buttons(self, event: Button.Pressed) -> None:
+        event.stop()
+        # Init Content Switcher
+        if event.button.id == Id.init.button_id(btn=NavBtn.new_repo):
+            self.query_one(
+                Id.init.content_switcher_id("#", area=Area.right),
+                ContentSwitcher,
+            ).current = Id.init.view_id(view=ViewName.init_new_view)
+        elif event.button.id == Id.init.button_id(btn=NavBtn.clone_repo):
+            self.query_one(
+                Id.init.content_switcher_id("#", area=Area.right),
+                ContentSwitcher,
+            ).current = Id.init.view_id(view=ViewName.init_clone_view)
+        elif event.button.id == Id.init.button_id(btn=NavBtn.purge_repo):
+            self.query_one(
+                Id.init.content_switcher_id("#", area=Area.right),
+                ContentSwitcher,
+            ).current = Id.init.view_id(view=ViewName.init_purge_view)
 
     @on(Button.Pressed, ".operate_button")
     def handle_operation_button(self, event: Button.Pressed) -> None:
@@ -294,18 +389,23 @@ class InitTab(OperateTabsBase):
         if event.button.id == Id.init.button_id(btn=OperateBtn.clone_repo):
             chezmoi.perform.init_clone_repo(str(self.repo_url))
             self.query_one(
-                self.tab_ids.button_id("#", btn=OperateBtn.clone_repo), Button
+                Id.init.button_id("#", btn=OperateBtn.clone_repo), Button
             ).disabled = True
         elif event.button.id == Id.init.button_id(btn=OperateBtn.new_repo):
             chezmoi.perform.init_new_repo()
             self.query_one(
-                self.tab_ids.button_id("#", btn=OperateBtn.new_repo), Button
+                Id.init.button_id("#", btn=OperateBtn.new_repo), Button
             ).disabled = True
         elif event.button.id == Id.init.button_id(btn=OperateBtn.purge_repo):
             chezmoi.perform.purge()
             self.query_one(
-                self.tab_ids.button_id("#", btn=OperateBtn.purge_repo), Button
+                Id.init.button_id("#", btn=OperateBtn.purge_repo), Button
             ).disabled = True
+
+    def action_toggle_switch_slider(self) -> None:
+        self.query_one(
+            Id.init.switches_slider_qid, VerticalGroup
+        ).toggle_class("-visible")
 
 
 class ConfigTab(Horizontal):

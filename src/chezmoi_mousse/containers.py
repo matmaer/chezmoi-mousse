@@ -16,18 +16,9 @@ from textual.containers import (
     Vertical,
     VerticalGroup,
 )
-from textual.validation import URL
-from textual.widgets import (
-    Button,
-    ContentSwitcher,
-    Input,
-    Label,
-    Select,
-    Static,
-    Switch,
-)
+from textual.widgets import Button, ContentSwitcher, Label, Switch
 
-from chezmoi_mousse.chezmoi import chezmoi, init_log
+from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.constants import (
     Area,
     OperateBtn,
@@ -39,14 +30,12 @@ from chezmoi_mousse.constants import (
 )
 from chezmoi_mousse.id_typing import (
     AppType,
-    Id,
     OperateButtons,
     Switches,
     TabButtons,
     TabIds,
     VerticalButtons,
 )
-from chezmoi_mousse.messages import InvalidInputMessage
 from chezmoi_mousse.widgets import (
     ContentsView,
     DiffView,
@@ -193,22 +182,6 @@ class OperateTabsBase(Horizontal, AppType):
                 self.tab_ids.view_id("#", view=ViewName.git_log_view),
                 GitLogView,
             ).path = self.current_path
-        # Init Content Switcher
-        elif event.button.id == Id.init.button_id(btn=TabBtn.new_repo):
-            self.query_one(
-                Id.init.content_switcher_id("#", area=Area.top),
-                ContentSwitcher,
-            ).current = Id.init.view_id(view=ViewName.init_new_view)
-        elif event.button.id == Id.init.button_id(btn=TabBtn.clone_repo):
-            self.query_one(
-                Id.init.content_switcher_id("#", area=Area.top),
-                ContentSwitcher,
-            ).current = Id.init.view_id(view=ViewName.init_clone_view)
-        elif event.button.id == Id.init.button_id(btn=TabBtn.purge_repo):
-            self.query_one(
-                Id.init.content_switcher_id("#", area=Area.top),
-                ContentSwitcher,
-            ).current = Id.init.view_id(view=ViewName.init_purge_view)
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
         event.stop()
@@ -378,70 +351,3 @@ class TreeContentSwitcher(ContentSwitcher):
         yield ManagedTree(tab_ids=self.tab_ids)
         yield FlatTree(tab_ids=self.tab_ids)
         yield ExpandedTree(tab_ids=self.tab_ids)
-
-
-class InputHorizontal(HorizontalGroup):
-
-    def compose(self) -> ComposeResult:
-        with Vertical(classes=TcssStr.input_select_vertical):
-            yield Select[str].from_values(
-                ["https", "ssh"],
-                classes=TcssStr.input_select,
-                value="https",
-                allow_blank=False,
-                type_to_search=False,
-            )
-        with Vertical(classes=TcssStr.input_field_vertical):
-            yield Input(
-                placeholder="Enter repository URL",
-                validate_on=["submitted"],
-                validators=URL(),
-                classes=TcssStr.input_field,
-            )
-
-
-class InitCloneRepo(Vertical, AppType):
-
-    def __init__(self) -> None:
-        super().__init__(id=Id.init.view_id(view=ViewName.init_clone_view))
-
-    def compose(self) -> ComposeResult:
-        yield Static(
-            "Clone a remote chezmoi git repository and optionally apply"
-        )
-        # TODO: implement guess feature from chezmoi
-        # TODO: add selection for https(with PAT token) or ssh
-        yield InputHorizontal()
-
-        with VerticalGroup(classes=TcssStr.operate_bottom_vertical_group):
-            yield ButtonsHorizontal(
-                tab_ids=Id.init,
-                buttons=(OperateBtn.clone_repo,),
-                area=Area.bottom,
-            )
-            yield init_log
-
-    @on(Input.Submitted)
-    def show_invalid_reasons(self, event: Input.Submitted) -> None:
-        if (
-            event.validation_result is not None
-            and not event.validation_result.is_valid
-        ):
-            self.app.post_message(
-                InvalidInputMessage(
-                    reasons=event.validation_result.failure_descriptions
-                )
-            )
-
-
-class InitPurgeRepo(Vertical):
-    def __init__(self) -> None:
-        super().__init__(id=Id.init.view_id(view=ViewName.init_purge_view))
-
-    def compose(self) -> ComposeResult:
-        yield Static(
-            "Remove chezmoi's configuration, state, and source directory, but leave the target state intact."
-        )
-        yield ButtonsHorizontal(
-            tab_ids=Id.init, buttons=(OperateBtn.purge_repo,), area=Area.bottom
-        )

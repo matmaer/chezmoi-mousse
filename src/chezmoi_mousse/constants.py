@@ -168,7 +168,6 @@ class TcssStr(StrEnum):
     log_views = auto()
     navigate_button = auto()
     navigate_buttons_vertical = auto()
-    operate_bottom_vertical_group = auto()
     operate_button = auto()
     operate_buttons_horizontal = auto()
     operate_info = auto()
