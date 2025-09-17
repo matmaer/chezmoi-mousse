@@ -340,7 +340,7 @@ class InitTab(Vertical, AppType):
 
     def on_mount(self) -> None:
         self.query(Label).add_class(TcssStr.config_tab_label)
-        init_log.success("Ready to run chezmoi commands.")
+        chezmoi.log.init.success("Ready to run chezmoi commands.")
         self.query_exactly_one(ButtonsVertical).add_class(
             TcssStr.tab_left_vertical
         )
