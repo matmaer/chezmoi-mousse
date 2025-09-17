@@ -40,7 +40,7 @@ SPLASH_HEIGHT = len(SPLASH)
 SPLASH_WIDTH = len(max(SPLASH, key=len))
 
 LOG_PADDING_WIDTH = 36
-LONG_COMMANDS = chezmoi.long_commands
+LONG_COMMANDS = chezmoi.io_commands
 
 RICH_LOG = RichLog(id=Id.splash_id.splash_log)
 RICH_LOG.styles.height = len(LONG_COMMANDS) + 2
@@ -125,9 +125,6 @@ class LoadingScreen(Screen[list[str]], AppType):
         if not chezmoi.app_cfg.chezmoi_found:
             self.log_unavailable_chezmoi_command()
             return
-
-        # chezmoi dump-config is run during the Chezmoi class init
-        LONG_COMMANDS.pop("dump_config")
 
         # first run chezmoi doctor, most expensive command
         self.run_io_worker("doctor")

@@ -228,11 +228,11 @@ class TabIds:
         self, qid: str = "", *, btn: OperateBtn | TabBtn | NavBtn
     ) -> str:
         if isinstance(btn, OperateBtn):
-            suffix = "op_btn"
+            suffix = "_op_btn"
         elif isinstance(btn, TabBtn):
-            suffix = "tab_btn"
+            suffix = "_tab_btn"
         else:
-            suffix = "nav_btn"
+            suffix = "_nav_btn"
         return f"{qid}{self.tab_name}_{btn.name}{suffix}"
 
     def buttons_horizontal_id(self, area: Area) -> str:

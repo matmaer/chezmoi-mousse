@@ -60,90 +60,9 @@ class AppConfig:
 APP_CFG = AppConfig()
 
 
-# @dataclass
-# class FakeAppConfig:
-#     name = "chezmoi"
-#     which_chezmoi = None
-#     changes_enabled = False
-#     dev_mode = True
-#     exe = "exit"
-#     chezmoi_found = False
-
-# APP_CFG = FakeAppConfig()
-
-
-class GlobalArgs(Enum):
-    default_args = [
-        "--color=off",
-        "--force",
-        "--interactive=false",
-        "--mode=file",
-        "--no-pager",
-        "--no-tty",
-        "--progress=false",
-    ]
-    dry_run = "--dry-run"
-    verbose = "--verbose"
-
-
-BASE_CMD = [APP_CFG.exe] + GlobalArgs.default_args.value
-
-
-class VerbArgs(Enum):
-    format_json = "--format=json"
-    include_dirs = "--include=dirs"
-    include_files = "--include=files"
-    path_style_absolute = "--path-style=absolute"
-    git_log = [
-        "--",
-        "log",
-        "--date-order",
-        "--format=%ar by %cn;%s",
-        "--max-count=50",
-        "--no-color",
-        "--no-decorate",
-        "--no-expand-tabs",
-    ]
-
-
-class AllCommands(Enum):
-    cat = BASE_CMD + [ReadVerbs.cat]
-    cat_config = BASE_CMD + [ReadVerbs.cat_config]
-    doctor = BASE_CMD + [IoVerbs.doctor]
-    diff = BASE_CMD + [ReadVerbs.diff]
-    dir_status_lines = BASE_CMD + [
-        IoVerbs.status,
-        VerbArgs.path_style_absolute.value,
-        VerbArgs.include_dirs.value,
-    ]
-    dump_config = BASE_CMD + [VerbArgs.format_json.value, IoVerbs.dump_config]
-    file_status_lines = BASE_CMD + [
-        IoVerbs.status,
-        VerbArgs.path_style_absolute.value,
-        VerbArgs.include_files.value,
-    ]
-    forget = BASE_CMD + [OperateVerbs.forget]
-    git_log = BASE_CMD + [ReadVerbs.git] + VerbArgs.git_log.value
-    ignored = BASE_CMD + [ReadVerbs.ignored]
-    init = BASE_CMD + [OperateVerbs.init]
-    managed_dirs = BASE_CMD + [
-        IoVerbs.managed,
-        VerbArgs.path_style_absolute.value,
-        VerbArgs.include_dirs.value,
-    ]
-    managed_files = BASE_CMD + [
-        IoVerbs.managed,
-        VerbArgs.path_style_absolute.value,
-        VerbArgs.include_files.value,
-    ]
-    re_add = BASE_CMD + [
-        IoVerbs.managed,
-        VerbArgs.path_style_absolute.value,
-        VerbArgs.include_files.value,
-    ]
-    purge = BASE_CMD + [OperateVerbs.purge]
-    source_path = BASE_CMD + [ReadVerbs.source_path]
-    template_data = BASE_CMD + [VerbArgs.format_json.value, ReadVerbs.data]
+########################
+# Create Log instances #
+########################
 
 
 class CommandLog(RichLog):
@@ -157,7 +76,11 @@ class CommandLog(RichLog):
         elif isinstance(self.ids, LogIds):
             self.rich_log_id = self.ids.value
         super().__init__(
-            id=self.rich_log_id, auto_scroll=True, markup=True, max_lines=10000
+            id=self.rich_log_id,
+            auto_scroll=True,
+            markup=True,
+            max_lines=10000,
+            wrap=True,
         )
 
     def on_mount(self) -> None:
@@ -169,8 +92,11 @@ class CommandLog(RichLog):
             self.add_class(TcssStr.border_title_top)
             self.border_title = BorderTitle.operante_log
             self.add_class(TcssStr.bottom_docked_log)
-        elif self.ids == Id.logs and self.view_name == ViewName.debug_log_view:
-            self.ready_to_run("Debug log ready to capture logs.")
+        elif self.ids == Id.logs:
+            if self.view_name == ViewName.app_log_view and APP_CFG.dev_mode:
+                app_log.ready_to_run("Running in development mode")
+            elif self.view_name == ViewName.debug_log_view:
+                self.ready_to_run("Debug log ready to capture logs.")
         else:
             self.add_class(TcssStr.log_views)
 
@@ -178,13 +104,13 @@ class CommandLog(RichLog):
         return f"[[green]{datetime.now().strftime('%H:%M:%S')}[/]]"
 
     def _pretty_cmd_str(self, command: list[str]) -> str:
-        filter_git_log_args = VerbArgs.git_log.value[2:]
+        filter_git_log_args = VerbArgs.git_log.value[3:]
         return f"{APP_CFG.name} " + " ".join(
             [
                 _
                 for _ in command[1:]
                 if _
-                not in GlobalArgs.default_args.value
+                not in Cmd.default_args.value
                 + filter_git_log_args
                 + [
                     VerbArgs.format_json.value,
@@ -246,25 +172,83 @@ app_log = CommandLog(ids=Id.logs, view_name=ViewName.app_log_view)
 debug_log = CommandLog(ids=Id.logs, view_name=ViewName.debug_log_view)
 init_log = CommandLog(ids=LogIds.init_log)
 op_log = CommandLog(ids=LogIds.operate_log)
-# TODO: implement output log as a list of collapsibles, currently too much
-# scrolling is involved, it's hard to retrieve older command output
+# TODO: implement output log as a list of collapsibles
 output_log = CommandLog(ids=Id.logs, view_name=ViewName.output_log_view)
 
-if APP_CFG.dev_mode:
-    app_log.ready_to_run("Running in development mode")
+
+#######################
+# Define Enum classes #
+#######################
+
+
+class Cmd(Enum):
+    chezmoi = [APP_CFG.exe]
+    default_args = [
+        "--color=off",
+        "--force",
+        "--interactive=false",
+        "--mode=file",
+        "--no-pager",
+        "--no-tty",
+        "--progress=false",
+    ]
+    default = chezmoi + default_args
+    dry_run = default + ["--dry-run"]
+
+
+class VerbArgs(Enum):
+    format_json = "--format=json"
+    include_dirs = "--include=dirs"
+    include_files = "--include=files"
+    path_style_absolute = "--path-style=absolute"
+    git_log = [
+        "--",
+        "--no-pager",
+        "log",
+        "--date-order",
+        "--format=%ar by %cn;%s",
+        "--max-count=50",
+        "--no-color",
+        "--no-decorate",
+        "--no-expand-tabs",
+    ]
+
+
+class IoCmd(Enum):
+    doctor = Cmd.default.value + [IoVerbs.doctor]
+    dir_status_lines = Cmd.default.value + [
+        IoVerbs.status,
+        VerbArgs.path_style_absolute.value,
+        VerbArgs.include_dirs.value,
+    ]
+    file_status_lines = Cmd.default.value + [
+        IoVerbs.status,
+        VerbArgs.path_style_absolute.value,
+        VerbArgs.include_files.value,
+    ]
+    managed_dirs = Cmd.default.value + [
+        IoVerbs.managed,
+        VerbArgs.path_style_absolute.value,
+        VerbArgs.include_dirs.value,
+    ]
+    managed_files = Cmd.default.value + [
+        IoVerbs.managed,
+        VerbArgs.path_style_absolute.value,
+        VerbArgs.include_files.value,
+    ]
 
 
 def _run_cmd(long_command: list[str]) -> str:
     if not APP_CFG.chezmoi_found:
         return ""
+    # if a command contains failed, earlier on another command failed
+    elif "failed" in long_command:
+        return ""
 
     # TODO: implement spinner for commands taking a bit longer like operations
     # TODO: set different timeout values depending on nature of command
-    # TODO: implement 'chezmoi verify' to display or it looks weird if the
-    # Apply and Re-Add tab Tree widgets are empty.
-    # Put a message in these Tree widgets if the chezmoi
-    # command is not available or it could be confused with a situation where
-    # "chezmoi verify" exits with status 0
+    # TODO: implement 'chezmoi verify', if exit 0, display message in Tree
+    # widgets inform the user why the Tree widget is empty
 
     try:
         cmd_stdout = (
@@ -274,7 +258,7 @@ def _run_cmd(long_command: list[str]) -> str:
                 check=True,  # raises exception for any non-zero return code
                 shell=False,
                 text=True,  # returns stdout as str instead of bytes
-                timeout=5,  # maybe optimize for circumstances later on
+                timeout=5,
             )
             .stdout.lstrip("\n")
             .rstrip()
@@ -322,7 +306,7 @@ def _run_cmd(long_command: list[str]) -> str:
 
             return cmd_stdout
         # handle IoVerb logging
-        if any(verb in long_command for verb in IoVerbs):
+        if long_command in IoCmd:
             app_log.warning(
                 "InputOutput data updated for processing in the app"
             )
@@ -334,16 +318,36 @@ def _run_cmd(long_command: list[str]) -> str:
             app_log.error("No specific logging implemented")
         return cmd_stdout
     except Exception as e:
-        if "doctor" in long_command and isinstance(
-            e, subprocess.CalledProcessError
-        ):
-            op_log.warning(
-                f"{Chars.warning_sign} chezmoi doctor has a non-zero exit code"
-            )
-            return e.stdout.strip()
+
+        # log to output_log
+        output_log.command(long_command)
+        attribs = [
+            a
+            for a in dir(e)
+            if not a.startswith("_")
+            and a not in ["add_note", "with_traceback"]
+        ]
+        dimmed_msg = ""
+        output_log.error("An error occurred, exception data:")
+        for attr in attribs:
+            dimmed_msg += f"{attr}:\n{getattr(e, attr)}\n"
+        output_log.dimmed(dimmed_msg)
+
+        # log to app_log, op_log, init_log
+        cmd_failed_msg = f"{Chars.x_mark} Command failed, exception logged to Output log, see Logs tab"
+
+        # log to app_log
+        app_log.command(long_command)
+        app_log.error(cmd_failed_msg)
+
+        # log to op_log or init_log
         if any(verb in long_command for verb in OperateVerbs):
-            op_log.error(f"{Chars.x_mark} Command failed {e}")
-        app_log.error(f"{Chars.x_mark} Command failed {e}")
+            if "init" in long_command:
+                init_log.command(long_command)
+                init_log.error(cmd_failed_msg)
+                return "failed"
+            op_log.command(long_command)
+            op_log.error(cmd_failed_msg)
         return "failed"
 
 
@@ -352,44 +356,30 @@ class ChangeCommand:
     repository."""
 
     def __init__(self) -> None:
-        self.base_cmd: list[str] = BASE_CMD
+        self.base_cmd: list[str] = Cmd.default.value
         if not APP_CFG.changes_enabled:
-            self.base_cmd = BASE_CMD + [GlobalArgs.dry_run.value]
+            self.base_cmd = Cmd.dry_run.value
             app_log.ready_to_run(OperateHelp.changes_mode_disabled.value)
         else:
             app_log.warning(OperateHelp.changes_mode_enabled.value)
 
-    def _update_managed_status_data(self) -> None:
-        # Update data that the managed_status property depends on
-        # TODO: do not run when operation is cancelled and properly update
-        # Tree and DirectoryTree widgets after a relevant operation
-        chezmoi.managed_dirs.update()
-        chezmoi.managed_files.update()
-        chezmoi.dir_status_lines.update()
-        chezmoi.file_status_lines.update()
-
     def add(self, path: Path) -> None:
         _run_cmd(self.base_cmd + [OperateVerbs.add, str(path)])
-        self._update_managed_status_data()
 
     def add_encrypted(self, path: Path) -> None:
         _run_cmd(self.base_cmd + [OperateVerbs.add, "--encrypt", str(path)])
-        self._update_managed_status_data()
 
     def re_add(self, path: Path) -> None:
         _run_cmd(self.base_cmd + [OperateVerbs.re_add, str(path)])
-        self._update_managed_status_data()
 
     def apply(self, path: Path) -> None:
         _run_cmd(self.base_cmd + [OperateVerbs.apply, str(path)])
 
     def destroy(self, path: Path) -> None:
         _run_cmd(self.base_cmd + [OperateVerbs.destroy, str(path)])
-        self._update_managed_status_data()
 
     def forget(self, path: Path) -> None:
         _run_cmd(self.base_cmd + [OperateVerbs.forget, str(path)])
-        self._update_managed_status_data()
 
     def init_clone_repo(self, repo_url: str) -> None:
         _run_cmd(self.base_cmd + [OperateVerbs.init, repo_url])
@@ -399,54 +389,76 @@ class ChangeCommand:
 
     def purge(self) -> None:
         _run_cmd(self.base_cmd + [OperateVerbs.purge])
-        self._update_managed_status_data()
 
 
 class ReadCommand:
-    """Group of commands that call subprocess.run() but do not store data in an
-    InputOutput dataclass."""
+
+    def __init__(self, *, dest_dir: Path, source_dir: Path):
+        self.dest_dir = dest_dir
+        self.source_dir = source_dir
+
+    @staticmethod  # called in Chezmoi __init__
+    def dump_config():
+        command = Cmd.default.value + [
+            VerbArgs.format_json.value,
+            IoVerbs.dump_config,
+        ]
+        return _run_cmd(command)
 
     def cat(self, file_path: Path) -> list[str]:
-        return _run_cmd(AllCommands.cat.value + [str(file_path)]).splitlines()
+        return _run_cmd(
+            Cmd.default.value + [ReadVerbs.cat] + [str(file_path)]
+        ).splitlines()
 
     def cat_config(self) -> list[str]:
         return [
             line
-            for line in _run_cmd(AllCommands.cat_config.value).splitlines()
+            for line in _run_cmd(
+                Cmd.default.value + [ReadVerbs.cat_config.value]
+            ).splitlines()
             if line.strip()  # Filter out empty lines from config output
         ]
 
     def diff(self, file_path: Path) -> list[str]:
-        return _run_cmd(AllCommands.diff.value + [str(file_path)]).splitlines()
+        return _run_cmd(
+            Cmd.default.value + [ReadVerbs.diff.value] + [str(file_path)]
+        ).splitlines()
 
     def diff_reversed(self, file_path: Path) -> list[str]:
         return _run_cmd(
-            AllCommands.diff.value + [str(file_path), "--reverse"]
+            Cmd.default.value
+            + [ReadVerbs.diff.value]
+            + [str(file_path), "--reverse"]
         ).splitlines()
 
     def git_log(self, path: Path) -> list[str]:
-        source_path: str = ""
-        if not chezmoi.sourceDir:
-            return []
-        if path == chezmoi.destDir:
-            source_path = str(chezmoi.sourceDir)
-        else:
-            source_path = _run_cmd(AllCommands.source_path.value + [str(path)])
-        return _run_cmd(AllCommands.git_log.value + [source_path]).splitlines()
+        source_path = self.source_path(path)
+        command = (
+            Cmd.default.value
+            + [ReadVerbs.git.value]
+            + VerbArgs.git_log.value
+            + [str(source_path)]
+        )
+        return _run_cmd(command).splitlines()
 
     def ignored(self) -> list[str]:
-        return _run_cmd(AllCommands.ignored.value).splitlines()
+        return _run_cmd(
+            Cmd.default.value + [ReadVerbs.ignored.value]
+        ).splitlines()
 
-    def managed_dirs(self) -> list[Path]:
-        managed_dirs = _run_cmd(AllCommands.managed_dirs.value).splitlines()
-        return [Path(item) for item in managed_dirs]
-
-    def managed_files(self) -> list[Path]:
-        managed_files = _run_cmd(AllCommands.managed_files.value).splitlines()
-        return [Path(item) for item in managed_files]
+    def source_path(self, path: Path) -> Path:
+        if path == self.dest_dir:
+            return self.source_dir
+        return Path(
+            _run_cmd(
+                Cmd.default.value + [ReadVerbs.source_path.value] + [str(path)]
+            )
+        )
 
     def template_data(self) -> list[str]:
-        return _run_cmd(AllCommands.template_data.value).splitlines()
+        return _run_cmd(
+            Cmd.default.value + [ReadVerbs.data.value]
+        ).splitlines()
 
 
 @dataclass
@@ -478,7 +490,6 @@ class InputOutput:
 
 class Chezmoi:
 
-    _config_dump: InputOutput
     _names = SimpleNamespace()
     dir_status_lines: InputOutput
     doctor: InputOutput
@@ -486,36 +497,31 @@ class Chezmoi:
     managed_dirs: InputOutput
     managed_files: InputOutput
     perform = ChangeCommand()
-    run = ReadCommand()
 
     def __init__(self) -> None:
-        self.io_cmds: list[AllCommands] = [
-            AllCommands.dir_status_lines,
-            AllCommands.doctor,
-            AllCommands.dump_config,
-            AllCommands.file_status_lines,
-            AllCommands.managed_dirs,
-            AllCommands.managed_files,
+        self.config_dump: ParsedJson = json.loads(ReadCommand.dump_config())
+        self.destDir: Path = Path(self.config_dump["destDir"])
+        self.sourceDir: Path = Path(self.config_dump["sourceDir"])
+        self.run = ReadCommand(
+            dest_dir=Path(self.config_dump["destDir"]),
+            source_dir=Path(self.config_dump["sourceDir"]),
+        )
+
+        self.io_commands: dict[str, list[str]] = {}
+        io_cmds: list[IoCmd] = [
+            IoCmd.dir_status_lines,
+            IoCmd.doctor,
+            IoCmd.file_status_lines,
+            IoCmd.managed_dirs,
+            IoCmd.managed_files,
         ]
-
-        self.long_commands: dict[str, list[str]] = {}
-
-        for long_cmd in self.io_cmds:
-            self.long_commands[long_cmd.name] = long_cmd.value
-            if long_cmd == AllCommands.dump_config:
-                setattr(
-                    self,
-                    long_cmd.name,
-                    InputOutput(long_cmd.value, arg_id=long_cmd.name),
-                )
-                self.config_dump = getattr(self, long_cmd.name)
-                self.config_dump.update()
-            else:
-                setattr(
-                    self,
-                    long_cmd.name,
-                    InputOutput(long_cmd.value, arg_id=long_cmd.name),
-                )
+        for long_cmd in io_cmds:
+            self.io_commands[long_cmd.name] = long_cmd.value
+            setattr(
+                self,
+                long_cmd.name,
+                InputOutput(long_cmd.value, arg_id=long_cmd.name),
+            )
 
     @property
     def app_cfg(self):
@@ -523,15 +529,9 @@ class Chezmoi:
 
     @property
     def config(self):
-        self._names.autoadd = self.config_dump.dict_out.get("git", {}).get(
-            "autoadd", False
-        )
-        self._names.autocommit = self.config_dump.dict_out.get("git", {}).get(
-            "autocommit", False
-        )
-        self._names.autopush = self.config_dump.dict_out.get("git", {}).get(
-            "autopush", False
-        )
+        self._names.autoadd = self.config_dump["git"]["autoadd"]
+        self._names.autocommit = self.config_dump["git"]["autocommit"]
+        self._names.autopush = self.config_dump["git"]["autopush"]
         return self._names
 
     @property
@@ -550,13 +550,15 @@ class Chezmoi:
     def op_log(self):
         return op_log
 
-    @property
-    def destDir(self) -> Path:
-        return Path(self.config_dump.dict_out.get("destDir", ""))
 
-    @property
-    def sourceDir(self) -> Path:
-        return Path(self.config_dump.dict_out.get("sourceDir", ""))
+# def _update_managed_status_data() -> None:
+#     # Update data that the managed_status property depends on
+#     # TODO: do not run when operation is cancelled and properly update
+#     # Tree and DirectoryTree widgets after a relevant operation
+#     chezmoi.managed_dirs.update()
+#     chezmoi.managed_files.update()
+#     chezmoi.dir_status_lines.update()
+#     chezmoi.file_status_lines.update()
 
 
 chezmoi = Chezmoi()

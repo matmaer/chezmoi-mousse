@@ -291,7 +291,7 @@ class DiffView(RichLog):
 
 
 class GitLogView(DataTable[Text]):
-    path: reactive[Path | None] = reactive(chezmoi.destDir, init=False)
+    path: reactive[Path | None] = reactive(None)
 
     # TODO: implement footer binding to toggle text wrap in second column
     # of the datatable
@@ -308,14 +308,15 @@ class GitLogView(DataTable[Text]):
         ]
         self.add_row(*row)
 
-    def populate_data_table(self, cmd_output: list[str]) -> None:
+    def populate_data_table(self, path: Path) -> None:
+        self.clear(columns=True)
+        self.add_columns("COMMIT", "MESSAGE")
         styles = {
             "ok": theme.vars["text-success"],
             "warning": theme.vars["text-warning"],
             "error": theme.vars["text-error"],
         }
-        self.add_columns("COMMIT", "MESSAGE")
-        for line in cmd_output:
+        for line in chezmoi.run.git_log(path):
             columns = line.split(";")
             if columns[1].split(maxsplit=1)[0] == "Add":
                 self.add_row_with_style(columns, styles["ok"])
@@ -327,10 +328,10 @@ class GitLogView(DataTable[Text]):
                 self.add_row(*(Text(cell) for cell in columns))
 
     def watch_path(self) -> None:
-        if self.path is None:
-            self.path = chezmoi.destDir
-        self.clear(columns=True)
-        self.populate_data_table(chezmoi.run.git_log(self.path))
+        # This is needed to avoid triggering the populate_data_table method when textual is initializing
+        if not self.path:
+            return
+        self.populate_data_table(self.path)
 
 
 class ChezmoiInstallHelp(Tree[ParsedJson]):

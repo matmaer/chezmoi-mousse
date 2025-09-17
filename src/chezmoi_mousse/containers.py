@@ -52,7 +52,7 @@ class OperateTabsBase(Horizontal, AppType):
 
     def __init__(self, *, tab_ids: TabIds) -> None:
         self.tab_ids = tab_ids
-        self.current_path: Path | None = None
+        self.current_path: Path = chezmoi.destDir
         super().__init__(id=self.tab_ids.tab_container_id)
 
     def disable_buttons(self, buttons_to_update: OperateButtons) -> None:
