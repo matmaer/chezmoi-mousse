@@ -31,6 +31,7 @@ Graphical user interface in the terminal for [chezmoi](https://github.com/twpayn
 - [x] `chezmoi destroy`
 - [ ] `chezmoi edit`
 - [x] `chezmoi forget`
+- [ ] `chezoi generate`
 - [ ] `chezmoi init`
 - [ ] `chezmoi purge`
 - [x] `chezmoi re-add` file
