@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 
 from textual import on
@@ -16,12 +15,7 @@ from textual.widgets import (
 )
 
 import chezmoi_mousse.custom_theme
-from chezmoi_mousse.chezmoi import (
-    CHEZMOI_COMMAND_FOUND,
-    app_log,
-    chezmoi,
-    init_log,
-)
+from chezmoi_mousse.chezmoi import app_log, chezmoi, init_log
 from chezmoi_mousse.constants import (
     Area,
     BorderTitle,
@@ -116,13 +110,13 @@ class ChezmoiGUI(App[None]):
 
     def on_mount(self) -> None:
         app_log.log_success("App initialized successfully")
-        if not CHEZMOI_COMMAND_FOUND:
+        if not chezmoi.app_cfg.chezmoi_found:
             app_log.log_error("chezmoi command not found")
             self.push_screen(InstallHelp())
             return
         else:
             app_log.log_success(
-                f"chezmoi command found: {CHEZMOI_COMMAND_FOUND}"
+                f"chezmoi command found: {chezmoi.app_cfg.chezmoi_found}"
             )
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
         self.title = "-  c h e z m o i  m o u s s e  -"
@@ -135,7 +129,7 @@ class ChezmoiGUI(App[None]):
         self.push_screen(LoadingScreen(), callback=self.first_mount_refresh)
         self.watch(self, "theme", self.on_theme_change, init=False)
 
-        if os.environ.get("MOUSSE_ENABLE_CHANGES") == "1":
+        if chezmoi.app_cfg.changes_enabled:
             self.notify(
                 OperateHelp.changes_mode_enabled.value, severity="warning"
             )

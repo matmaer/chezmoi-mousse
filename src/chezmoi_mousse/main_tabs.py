@@ -26,13 +26,7 @@ from textual.widgets import (
 )
 
 import chezmoi_mousse.custom_theme as theme
-from chezmoi_mousse.chezmoi import (
-    CHEZMOI_COMMAND_FOUND,
-    app_log,
-    chezmoi,
-    init_log,
-    output_log,
-)
+from chezmoi_mousse.chezmoi import app_log, chezmoi, init_log, output_log
 from chezmoi_mousse.constants import (
     FLOW,
     BorderTitle,
@@ -519,7 +513,7 @@ class DoctorTab(Vertical):
         Id.doctor.button_id("#", btn=OperateBtn.refresh_doctor_data),
     )
     def on_refresh_doctor_data(self, event: Button.Pressed) -> None:
-        if not CHEZMOI_COMMAND_FOUND:
+        if not chezmoi.app_cfg.chezmoi_found:
             self.notify(
                 "The chezmoi command is not available", severity="error"
             )
@@ -529,7 +523,7 @@ class DoctorTab(Vertical):
         self.notify("Doctor data refreshed")
 
     def populate_doctor_data(self) -> None:
-        if not CHEZMOI_COMMAND_FOUND:
+        if not chezmoi.app_cfg.chezmoi_found:
             self.notify(
                 "The chezmoi command is not available", severity="error"
             )

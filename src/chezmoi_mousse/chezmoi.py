@@ -33,14 +33,31 @@ from chezmoi_mousse.id_typing import (
     TabIds,
 )
 
-CHEZMOI = "chezmoi"
+
+@dataclass
+class AppConfig:
+    """Configuration for the chezmoi-mousse application."""
+
+    name: str = "chezmoi"
+    which_chezmoi: str | None = None
+    dev_mode: bool = False
+    changes_enabled: bool = False
+
+    def __post_init__(self):
+        self.dev_mode = os.environ.get("CHEZMOI_MOUSSE_DEV") == "1"
+        self.changes_enabled = os.environ.get("MOUSSE_ENABLE_CHANGES") == "1"
+        self.which_chezmoi = which(self.name)
+
+    @property
+    def chezmoi_found(self) -> bool:
+        return True if self.which_chezmoi else False
+
+    @property
+    def exe(self) -> str:
+        return self.which_chezmoi or "exit"
 
 
-# TODO: implement startup simulating command not found and centralize other
-# startup flags like DEV mode and enable changes, maybe in __main__.py
-CHEZMOI_COMMAND_FOUND = which(CHEZMOI)
-
-CHEZMOI_COMMAND: str = CHEZMOI_COMMAND_FOUND or CHEZMOI
+APP_CFG = AppConfig()
 
 
 class GlobalArgs(Enum):
@@ -57,7 +74,7 @@ class GlobalArgs(Enum):
     verbose = "--verbose"
 
 
-BASE_CMD = [CHEZMOI_COMMAND] + GlobalArgs.default_args.value
+BASE_CMD = [APP_CFG.exe] + GlobalArgs.default_args.value
 
 
 class VerbArgs(Enum):
@@ -148,7 +165,7 @@ class CommandLog(RichLog):
 
     def _pretty_cmd_str(self, command: list[str]) -> str:
         filter_git_log_args = VerbArgs.git_log.value[2:]
-        return f"{CHEZMOI} " + " ".join(
+        return f"{APP_CFG.name} " + " ".join(
             [
                 _
                 for _ in command[1:]
@@ -206,8 +223,6 @@ class DebugLog(CommandLog):
         super().__init__(ids=LogIds.debug_log)
 
     def log_mro(self, mro: Mro) -> None:
-        if os.environ.get("CHEZMOI_MOUSSE_DEV") != "1":
-            return
         color = theme.vars["accent-darken-2"]
         self.write(f"{self._log_time()} [{color}]Method Resolution Order:[/]")
         pretty_mro = " -> ".join(
@@ -227,12 +242,12 @@ op_log = CommandLog(ids=LogIds.operate_log)
 # scrolling is involved, it's hard to retrieve older command output
 output_log = CommandLog(ids=Id.logs, view_name=ViewName.output_log_view)
 
-if os.environ.get("CHEZMOI_MOUSSE_DEV") == "1":
+if APP_CFG.dev_mode:
     app_log.log_ready_to_run("Running in development mode")
 
 
 def _run_cmd(long_command: list[str]) -> str:
-    if not CHEZMOI_COMMAND_FOUND:
+    if not APP_CFG.chezmoi_found:
         return ""
 
     # TODO: implement spinner for commands taking a bit longer like operations
@@ -325,7 +340,7 @@ class ChangeCommand:
 
     def __init__(self) -> None:
         self.base_cmd: list[str] = BASE_CMD
-        if os.environ.get("MOUSSE_ENABLE_CHANGES") != "1":
+        if not APP_CFG.changes_enabled:
             self.base_cmd = BASE_CMD + [GlobalArgs.dry_run.value]
             app_log.log_ready_to_run(OperateHelp.changes_mode_disabled.value)
         else:
@@ -488,6 +503,10 @@ class Chezmoi:
                     long_cmd.name,
                     InputOutput(long_cmd.value, arg_id=long_cmd.name),
                 )
+
+    @property
+    def app_cfg(self):
+        return APP_CFG
 
     @property
     def config(self):
