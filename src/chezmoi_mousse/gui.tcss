@@ -222,22 +222,28 @@
   &>.single_button_vertical {
     align: center middle;
   }
-  .tab_button {
+  & .tab_button {
     border: none;
     min-width: 4;
-    text-style: none;
+    text-style: bold;
+    color: $foreground 50%;
     &:hover {
-      text-style: bold;
-    }
-    &.last_clicked {
-      color: $accent;
-      text-style: none;
-      &:hover {
-        text-style: none;
-      }
+      color: $foreground;
     }
     &:focus {
-      text-style: none;
+      text-style: bold;
+      color: $text-accent 80%;
+    }
+    &.last_clicked {
+      color: $text-accent 80%;
+      text-style: bold;
+      &:hover {
+        color: $text-accent 80%;
+      }
+      &:focus {
+        text-style: bold;
+        color: $text-accent 80%;
+      }
     }
   }
 }
@@ -314,11 +320,6 @@
   max-height:8;
   height: auto;
   overflow-y: scroll;
-}
-
-TabbedContent {
-  min-height: 20;
-  min-width: 35;
 }
 
 /***********************************/
@@ -439,7 +440,20 @@ Switch {
 }
 
 TabbedContent {
+  /* don't support anything smaller */
+  min-height: 20;
   min-width: 35;
+  /* center the tab buttons on top */
+  & #tabs-list {
+    width: auto;
+    align: center top;
+  }
+  & Tab {
+    margin: 0 2;
+  }
+  & Tabs {
+    margin: 0 2;
+  }
 }
 
 Toast {
