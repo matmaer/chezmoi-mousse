@@ -25,8 +25,9 @@ Graphical user interface in the terminal for [chezmoi](https://github.com/twpayn
 
 - [x] `chezmoi add` file
 - [ ] `chezmoi add` directory
-- [x] `chezmoi apply` file
 - [ ] `chezmoi add --encrypt` file
+- [ ] `chezmoi add --encrypt` directory
+- [x] `chezmoi apply` file
 - [ ] `chezmoi apply` directory
 - [x] `chezmoi destroy` file
 - [ ] `chezmoi destroy` directory
