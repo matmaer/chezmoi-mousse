@@ -102,6 +102,7 @@ class ChezmoiGUI(App[None]):
 
     def on_mount(self) -> None:
         chezmoi.app_log.success("App initialized successfully")
+        # TODO: inform user only file mode is supported if detected in the user config
         if not chezmoi.app_cfg.chezmoi_found:
             chezmoi.app_log.error("chezmoi command not found")
             self.push_screen(InstallHelp())
