@@ -64,7 +64,6 @@ Graphical user interface in the terminal for [chezmoi](https://github.com/twpayn
 - :green_square: Provided by this app
 - :negative_squared_cross_mark: Not in scope
 - :bulb: Follows user config with warning
-- :large_blue_diamond: the app only runs the chezmoi command
 - :black_circle: Under development, help wanted or to be documented
 
 Top level
@@ -88,7 +87,7 @@ Top level
 - :green_circle: tempDir
 - :green_circle: umask
 - :black_circle: useBuiltinAge
-- :green_square: useBuiltinGit (`chezmoi git` is used to render any git related output)
+- :negative_squared_cross_mark: useBuiltinGit (`chezmoi git` is used to render any git related output)
 - :green_square: verbose
 - :black_circle: workingTree
 
@@ -134,7 +133,7 @@ dashlane
 
 diff
 - :green_square: diff.args
-- :large_blue_diamond: diff.command (`chezmoi diff` is used to render any diff related output)
+- :negative_squared_cross_mark: diff.command (`chezmoi diff` is used to render any diff related output)
 - :green_square: diff.exclude
 - :green_square: diff.pager
 - :green_square: diff.pagerArgs
