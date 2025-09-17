@@ -60,6 +60,18 @@ class AppConfig:
 APP_CFG = AppConfig()
 
 
+# @dataclass
+# class FakeAppConfig:
+#     name = "chezmoi"
+#     which_chezmoi = None
+#     changes_enabled = False
+#     dev_mode = True
+#     exe = "exit"
+#     chezmoi_found = False
+
+# APP_CFG = FakeAppConfig()
+
+
 class GlobalArgs(Enum):
     default_args = [
         "--color=off",
