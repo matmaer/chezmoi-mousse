@@ -434,6 +434,7 @@ class ConfigTab(Horizontal):
             id=Id.config.tab_vertical_id(area=Area.right),
             classes=TcssStr.tab_right_vertical,
         ):
+            # TODO: make sure scrollbars appear when there's overflow
             with ContentSwitcher(
                 id=Id.config.content_switcher_id(area=Area.right),
                 initial=Id.config.view_id(view=ViewName.cat_config),
@@ -579,6 +580,8 @@ class DoctorTab(Vertical):
 
 
 class LogsTab(Container):
+
+    # TODO: implement maximized key binding
 
     def __init__(self) -> None:
         super().__init__(id=Id.logs.tab_container_id)

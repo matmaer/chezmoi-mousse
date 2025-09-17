@@ -57,6 +57,7 @@ from chezmoi_mousse.widgets import (
 
 class ChezmoiGUI(App[None]):
     def __init__(self):
+        # TODO: check why this was implemented and if still needed
         self.loading_screen_dismissed = False
         super().__init__()
 
@@ -150,6 +151,8 @@ class ChezmoiGUI(App[None]):
     def first_mount_refresh(self, _: object) -> None:
         self.loading_screen_dismissed = True
         app_log.log_success("--- splash.py finished loading ---")
+        # TODO: Do the refresh in the loading screen after other loading tasks
+        # were completed
         # Trees to refresh for each tab
         tree_types: list[
             tuple[TreeName, type[ManagedTree | FlatTree | ExpandedTree]]

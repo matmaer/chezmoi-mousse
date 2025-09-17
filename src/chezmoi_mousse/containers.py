@@ -156,6 +156,8 @@ class OperateTabsBase(Horizontal, AppType):
                 ContentSwitcher,
             ).current = self.tab_ids.tree_id(tree=TreeName.flat_tree)
         # Contents/Diff/GitLog Content Switcher
+        # TODO create method to update reactive paths on widgets, only if the
+        # selected path in the Tree or DirectoryTree actually changed
         elif event.button.id == self.tab_ids.button_id(btn=TabBtn.contents):
             self.query_one(
                 self.tab_ids.content_switcher_id("#", area=Area.right),

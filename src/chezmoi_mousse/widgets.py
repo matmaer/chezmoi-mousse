@@ -101,7 +101,7 @@ class ContentsView(RichLog):
         super().__init__(
             id=self.ids.view_id(view=ViewName.contents_view),
             auto_scroll=False,
-            wrap=True,
+            wrap=True,  # TODO: implement footer binding to toggle wrap
             highlight=True,
         )
 
@@ -195,7 +195,7 @@ class DiffView(RichLog):
         super().__init__(
             id=self.ids.view_id(view=ViewName.diff_view),
             auto_scroll=False,
-            wrap=False,
+            wrap=False,  # TODO: implement footer binding to toggle wrap
         )
         self.status_dirs: PathDict = {}
         self.status_files: PathDict = {}
@@ -292,6 +292,9 @@ class DiffView(RichLog):
 
 class GitLogView(DataTable[Text]):
     path: reactive[Path | None] = reactive(chezmoi.destDir, init=False)
+
+    # TODO: implement footer binding to toggle text wrap in second column
+    # of the datatable
 
     def __init__(self, *, ids: TabIds | ScreenIds) -> None:
         self.ids = ids

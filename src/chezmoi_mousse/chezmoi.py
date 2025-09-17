@@ -35,6 +35,9 @@ from chezmoi_mousse.id_typing import (
 
 CHEZMOI = "chezmoi"
 
+
+# TODO: implement startup simulating command not found and centralize other
+# startup flags like DEV mode and enable changes, maybe in __main__.py
 CHEZMOI_COMMAND_FOUND = which(CHEZMOI)
 
 CHEZMOI_COMMAND: str = CHEZMOI_COMMAND_FOUND or CHEZMOI
@@ -220,6 +223,8 @@ app_log = CommandLog(ids=Id.logs, view_name=ViewName.app_log_view)
 debug_log = DebugLog()
 init_log = CommandLog(ids=LogIds.init_log)
 op_log = CommandLog(ids=LogIds.operate_log)
+# TODO: implement output log as a list of collapsibles, currently too much
+# scrolling is involved, it's hard to retrieve older command output
 output_log = CommandLog(ids=Id.logs, view_name=ViewName.output_log_view)
 
 if os.environ.get("CHEZMOI_MOUSSE_DEV") == "1":
@@ -328,6 +333,8 @@ class ChangeCommand:
 
     def _update_managed_status_data(self) -> None:
         # Update data that the managed_status property depends on
+        # TODO: do not run when operation is cancelled and properly update
+        # Tree and DirectoryTree widgets after a relevant operation
         chezmoi.managed_dirs.update()
         chezmoi.managed_files.update()
         chezmoi.dir_status_lines.update()

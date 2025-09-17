@@ -70,7 +70,9 @@ class LoadingScreen(Screen[list[str]], AppType):
 
     def __init__(self) -> None:
         super().__init__(id=Id.splash_id.loading_screen)
-        # Timers will be set in on_mount()
+
+        # TODO add logic so screen does not get dismissed in the "middle" of a
+        # fade, looks better
         self.fade_timer: Timer
         self.all_workers_timer: Timer
 
