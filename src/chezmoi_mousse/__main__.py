@@ -1,11 +1,11 @@
-from chezmoi_mousse.chezmoi import chezmoi
+from chezmoi_mousse.chezmoi import APP_CFG
 from chezmoi_mousse.gui import ChezmoiGUI
 
 
 def main():
     app = ChezmoiGUI()
 
-    if chezmoi.app_cfg.dev_mode:
+    if APP_CFG.dev_mode:
         """Patched app._handle_exception method which will save a stacktrace to
         error.log in the source directory in case an exception occurs."""
         import traceback
