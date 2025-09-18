@@ -46,11 +46,18 @@ class AppConfig:
     def __post_init__(self):
         self.dev_mode = os.environ.get("CHEZMOI_MOUSSE_DEV") == "1"
         self.changes_enabled = os.environ.get("MOUSSE_ENABLE_CHANGES") == "1"
+        self.pretend_chezmoi_not_found = (
+            os.environ.get("PREDEND_CHEZMOI_NOT_FOUND") == "1"
+        )
         self.which_chezmoi = which(self.name)
 
     @property
     def chezmoi_found(self) -> bool:
-        return True if self.which_chezmoi else False
+        return (
+            True
+            if self.which_chezmoi and not self.pretend_chezmoi_not_found
+            else False
+        )
 
     @property
     def exe(self) -> str:
