@@ -285,12 +285,13 @@
 }
 
 .screen_base {
-  border-top: outer $primary-darken-3;
+  border-top: tab $primary-darken-3;
   border-bottom: $primary;
   border-title-style: bold;
   overflow-y: hidden;
 
   .install_help {
+    border-top: wide $primary-darken-3;
     padding: 0 2;
     content-align: center middle;
     & Button {
