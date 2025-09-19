@@ -14,7 +14,7 @@ from textual.timer import Timer
 from textual.widgets import RichLog, Static
 from textual.worker import WorkerState
 
-from chezmoi_mousse.chezmoi import APP_CFG, chezmoi
+from chezmoi_mousse.chezmoi import APP_CFG
 from chezmoi_mousse.constants import SPLASH
 from chezmoi_mousse.custom_theme import vars as theme_vars
 from chezmoi_mousse.id_typing import AppType, Id
@@ -40,14 +40,17 @@ SPLASH_HEIGHT = len(SPLASH)
 SPLASH_WIDTH = len(max(SPLASH, key=len))
 
 LOG_PADDING_WIDTH = 36
-LONG_COMMANDS = chezmoi.io_commands
 
-RICH_LOG = RichLog(id=Id.splash_id.splash_log)
-RICH_LOG.styles.height = len(LONG_COMMANDS) + 2
-RICH_LOG.styles.width = LOG_PADDING_WIDTH + 9
-RICH_LOG.styles.color = "#0057B3"
-RICH_LOG.styles.margin = 0
-RICH_LOG.styles.padding = 0
+
+class SplashLog(RichLog, AppType):
+    def __init__(self, len_long_cmds: int = 0) -> None:
+        super().__init__(id=Id.splash_id.splash_log)
+
+        self.styles.height = len_long_cmds + 2
+        self.styles.width = LOG_PADDING_WIDTH + 9
+        self.styles.color = "#0057B3"
+        self.styles.margin = 0
+        self.styles.padding = 0
 
 
 class AnimatedFade(Static):
@@ -69,6 +72,8 @@ class AnimatedFade(Static):
 class LoadingScreen(Screen[list[str]], AppType):
 
     def __init__(self) -> None:
+        self.long_commands = self.app.chezmoi.io_commands.copy()
+        self.rich_log = SplashLog(len_long_cmds=len(self.long_commands))
         super().__init__(id=Id.splash_id.loading_screen)
 
         # TODO add logic so screen does not get dismissed in the "middle" of a
@@ -77,14 +82,14 @@ class LoadingScreen(Screen[list[str]], AppType):
         self.all_workers_timer: Timer
 
     def compose(self) -> ComposeResult:
-        yield Middle(Center(AnimatedFade()), Center(RICH_LOG))
+        yield Middle(Center(AnimatedFade()), Center(self.rich_log))
 
     def log_text(self, log_label: str) -> None:
         padding = LOG_PADDING_WIDTH - len(log_label)
         log_text = f"{log_label} {'.' * padding} loaded"
 
         def update_log():
-            RICH_LOG.write(log_text)
+            self.rich_log.write(log_text)
 
         self.app.call_from_thread(update_log)
 
@@ -92,15 +97,15 @@ class LoadingScreen(Screen[list[str]], AppType):
     def log_unavailable_chezmoi_command(self) -> None:
         message = "chezmoi command ................. not found"
         color = theme_vars["text-primary"]
-        RICH_LOG.styles.margin = 1
-        RICH_LOG.markup = True
-        RICH_LOG.styles.width = len(message) + 2
-        RICH_LOG.write(f"[{color}]{message}[/]")
+        self.rich_log.styles.margin = 1
+        self.rich_log.markup = True
+        self.rich_log.styles.width = len(message) + 2
+        self.rich_log.write(f"[{color}]{message}[/]")
         sleep(0.5)
 
     @work(thread=True, group="io_workers")
     def run_io_worker(self, arg_id: str) -> None:
-        io_class = getattr(chezmoi, arg_id)
+        io_class = getattr(self.app.chezmoi, arg_id)
         io_class.update()
         self.log_text(io_class.label)
 
@@ -128,7 +133,7 @@ class LoadingScreen(Screen[list[str]], AppType):
 
         # first run chezmoi doctor, most expensive command
         self.run_io_worker("doctor")
-        LONG_COMMANDS.pop("doctor")
+        self.long_commands.pop("doctor")
 
-        for arg_id in LONG_COMMANDS:
+        for arg_id in self.long_commands:
             self.run_io_worker(arg_id)

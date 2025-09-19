@@ -15,7 +15,7 @@ from textual.widgets import (
 )
 
 import chezmoi_mousse.custom_theme
-from chezmoi_mousse.chezmoi import chezmoi
+from chezmoi_mousse.chezmoi import Chezmoi
 from chezmoi_mousse.constants import Area, Chars, TabName, TreeName, ViewName
 from chezmoi_mousse.containers import OperateBtnHorizontal
 from chezmoi_mousse.id_typing import Id, OperateBtn, OperateHelp
@@ -43,8 +43,9 @@ from chezmoi_mousse.widgets import (
 
 class ChezmoiGUI(App[None]):
     def __init__(self):
-        # TODO: check why this was implemented and if still needed
-        self.loading_screen_dismissed = False
+        self.chezmoi = Chezmoi()
+        self.destDir = self.chezmoi.destDir
+        self.sourceDir = self.chezmoi.sourceDir
         super().__init__()
 
     CSS_PATH = "gui.tcss"
@@ -98,7 +99,7 @@ class ChezmoiGUI(App[None]):
         yield Footer()
 
     def on_mount(self) -> None:
-        chezmoi.app_log.success("App initialized successfully")
+        self.chezmoi.app_log.success("App initialized successfully")
         # TODO: inform user only file mode is supported if detected in the user config
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
         self.title = "-  c h e z m o i  m o u s s e  -"
@@ -106,16 +107,16 @@ class ChezmoiGUI(App[None]):
         self.register_theme(chezmoi_mousse.custom_theme.chezmoi_mousse_dark)
         theme_name = "chezmoi-mousse-dark"
         self.theme = theme_name
-        chezmoi.app_log.success(f"Theme set to {theme_name}")
-        if chezmoi.app_cfg.chezmoi_found:
-            chezmoi.app_log.success(
-                f"chezmoi command found: {chezmoi.app_cfg.chezmoi_found}"
+        self.chezmoi.app_log.success(f"Theme set to {theme_name}")
+        if self.chezmoi.app_cfg.chezmoi_found:
+            self.chezmoi.app_log.success(
+                f"chezmoi command found: {self.chezmoi.app_cfg.chezmoi_found}"
             )
-        chezmoi.app_log.warning("Start loading screen")
+        self.chezmoi.app_log.warning("Start loading screen")
         self.push_screen(LoadingScreen(), callback=self.first_mount_refresh)
         self.watch(self, "theme", self.on_theme_change, init=False)
 
-        if chezmoi.app_cfg.changes_enabled:
+        if self.chezmoi.app_cfg.changes_enabled:
             self.notify(
                 OperateHelp.changes_mode_enabled.value, severity="warning"
             )
@@ -126,14 +127,13 @@ class ChezmoiGUI(App[None]):
         chezmoi_mousse.custom_theme.vars = (
             new_theme_object.to_color_system().generate()
         )
-        chezmoi.app_log.success(f"Theme set to {new_theme}")
+        self.chezmoi.app_log.success(f"Theme set to {new_theme}")
 
     def first_mount_refresh(self, _: object) -> None:
-        if not chezmoi.app_cfg.chezmoi_found:
+        if not self.chezmoi.app_cfg.chezmoi_found:
             self.push_screen(InstallHelp())
             return
-        self.loading_screen_dismissed = True
-        chezmoi.app_log.success("--- splash.py finished loading ---")
+        self.chezmoi.app_log.success("--- splash.py finished loading ---")
         # TODO: Do the refresh in the loading screen after other loading tasks
         # were completed
         # Trees to refresh for each tab
@@ -163,7 +163,7 @@ class ChezmoiGUI(App[None]):
     @on(OperateMessage)
     def handle_operate_result(self, message: OperateMessage) -> None:
         assert isinstance(message.dismiss_data.path, Path)
-        chezmoi.update_managed_status_data()
+        self.chezmoi.update_managed_status_data()
         managed_trees = self.query(ManagedTree)
         for tree in managed_trees:
             tree.remove_node_path(node_path=message.dismiss_data.path)
@@ -178,14 +178,11 @@ class ChezmoiGUI(App[None]):
     @on(InvalidInputMessage)
     def handle_invalid_input(self, message: InvalidInputMessage) -> None:
         text_lines = "\n".join(message.reasons)
-        chezmoi.init_log.warning(f"Invalid input detected: {text_lines}")
+        self.chezmoi.init_log.warning(f"Invalid input detected: {text_lines}")
 
     def check_action(
         self, action: str, parameters: tuple[object, ...]
     ) -> bool | None:
-        # Prevent actions before loading screen is dismissed
-        if not self.loading_screen_dismissed:
-            return None
         if action == "maximize":
             if self.query_one(TabbedContent).active in (
                 Id.doctor.tab_pane_id,
@@ -215,8 +212,6 @@ class ChezmoiGUI(App[None]):
             getattr(tab_widget, "action_toggle_switch_slider")()  # call it
 
     def action_maximize(self) -> None:
-        if not self.loading_screen_dismissed:
-            return
         active_pane_id = self.query_one(TabbedContent).active
         tab_ids = Id.get_tab_ids_from_pane_id(pane_id=active_pane_id)
 

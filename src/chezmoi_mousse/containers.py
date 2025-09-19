@@ -18,7 +18,6 @@ from textual.containers import (
 )
 from textual.widgets import Button, ContentSwitcher, Label, Switch
 
-from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.constants import (
     Area,
     OperateBtn,
@@ -52,7 +51,7 @@ class OperateTabsBase(Horizontal, AppType):
 
     def __init__(self, *, tab_ids: TabIds) -> None:
         self.tab_ids = tab_ids
-        self.current_path: Path = chezmoi.destDir
+        self.current_path: Path = self.app.destDir
         super().__init__(id=self.tab_ids.tab_container_id)
 
     def disable_buttons(self, buttons_to_update: OperateButtons) -> None:
@@ -81,11 +80,12 @@ class OperateTabsBase(Horizontal, AppType):
         self, event: TreeBase.NodeSelected[NodeData]
     ) -> None:
         event.stop()
+
         assert event.node.data is not None
         self.current_path = event.node.data.path
         self.query_one(
             self.tab_ids.content_switcher_id("#", area=Area.right), Container
-        ).border_title = f"{self.current_path.relative_to(chezmoi.destDir)}"
+        ).border_title = f"{self.current_path.relative_to(self.app.destDir)}"
         current_view = self.query_one(
             self.tab_ids.content_switcher_id("#", area=Area.right),
             ContentSwitcher,
@@ -104,20 +104,6 @@ class OperateTabsBase(Horizontal, AppType):
                 self.tab_ids.view_id("#", view=ViewName.git_log_view),
                 GitLogView,
             ).path = self.current_path
-
-        chezmoi.debug_log.warning(f"{self.tab_ids.tab_name}")
-        # chezmoi.debug_log.success(f"{[c for c in event.node.children]}")
-        # chezmoi.debug_log.error(f"{event.node.parent}")
-        # chezmoi.debug_log.debug_attrs(event.node)
-        # chezmoi.debug_log.debug_mro(tuple(self.__class__.mro()))
-
-        # construct NodeDataContext for message
-        # assert event.node.parent.data is not None
-        # context = NodeDataContext(
-        #     parent=event.node.parent.data,
-        #     node_data=event.node.data,
-        #     leaves=[child.data for child in event.node.children if child.data],
-        # )
 
         # enable/disable operation buttons depending on selected node
         buttons_to_update: OperateButtons = ()
@@ -344,7 +330,7 @@ class ButtonsVertical(VerticalGroup):
             )
 
 
-class TreeContentSwitcher(ContentSwitcher):
+class TreeContentSwitcher(ContentSwitcher, AppType):
 
     def __init__(self, tab_ids: TabIds):
         self.tab_ids = tab_ids
@@ -354,7 +340,7 @@ class TreeContentSwitcher(ContentSwitcher):
         )
 
     def on_mount(self) -> None:
-        self.border_title = str(chezmoi.destDir)
+        self.border_title = str(self.app.destDir)
         self.add_class(TcssStr.content_switcher_left, TcssStr.border_title_top)
 
     def compose(self) -> ComposeResult:

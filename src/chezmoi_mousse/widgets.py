@@ -21,7 +21,6 @@ from textual.widgets import DataTable, DirectoryTree, RichLog, Static
 from textual.widgets.tree import TreeNode
 
 import chezmoi_mousse.custom_theme as theme
-from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.constants import (
     TcssStr,
     UnwantedDirs,
@@ -29,6 +28,7 @@ from chezmoi_mousse.constants import (
     ViewName,
 )
 from chezmoi_mousse.id_typing import (
+    AppType,
     Chars,
     NodeData,
     OperateBtn,
@@ -42,13 +42,13 @@ from chezmoi_mousse.id_typing import (
 from chezmoi_mousse.overrides import CustomRenderLabel
 
 
-class OperateInfo(Static):
+class OperateInfo(Static, AppType):
 
     def __init__(self, *, operate_btn: OperateBtn, path: Path) -> None:
         super().__init__(classes=TcssStr.operate_info)
 
         self.operate_btn = operate_btn
-        self.path = path
+        self.path = Path()
 
     def on_mount(self) -> None:
         self.border_title = str(self.path)
@@ -72,9 +72,9 @@ class OperateInfo(Static):
             self.border_subtitle = Chars.destroy_file_info_border
         # show git auto warnings
         if not OperateBtn.apply_file == self.operate_btn:
-            if chezmoi.config.autocommit:
+            if self.app.chezmoi.config.autocommit:
                 lines_to_write.append(OperateHelp.auto_commit.value)
-            if chezmoi.config.autopush:
+            if self.app.chezmoi.config.autopush:
                 lines_to_write.append(OperateHelp.autopush.value)
         # show git diff color info
         if (
@@ -85,9 +85,9 @@ class OperateInfo(Static):
         self.update("\n".join(lines_to_write))
 
 
-class ContentsView(RichLog):
+class ContentsView(RichLog, AppType):
 
-    path: reactive[Path] = reactive(chezmoi.destDir)
+    path: reactive[Path | None] = reactive(None, init=False)
 
     def __init__(self, *, ids: TabIds | ScreenIds) -> None:
         self.ids = ids
@@ -102,7 +102,7 @@ class ContentsView(RichLog):
         self.write(
             Text(
                 (
-                    f"Destination directory is {chezmoi.destDir}.\n"
+                    f"Destination directory is {self.app.destDir}.\n"
                     "Click a file or directory to view its contents."
                 ),
                 style="dim",
@@ -111,17 +111,21 @@ class ContentsView(RichLog):
 
     def update_contents_view(self) -> None:
         truncated_message = ""
+        if self.path is None:
+            return
         try:
             if self.path.is_file() and self.path.stat().st_size > 150 * 1024:
                 truncated_message = (
                     "\n\n--- File content truncated to 150 KiB ---\n"
                 )
-                chezmoi.app_log.warning(
+                self.app.chezmoi.app_log.warning(
                     f"File {self.path} is larger than 150 KiB, truncating output."
                 )
         except PermissionError as e:
             self.write(e.strerror)
-            chezmoi.app_log.error(f"Permission denied to read {self.path}")
+            self.app.chezmoi.app_log.error(
+                f"Permission denied to read {self.path}"
+            )
             return
 
         try:
@@ -140,17 +144,17 @@ class ContentsView(RichLog):
         except FileNotFoundError:
             # FileNotFoundError is raised both when a file or a directory
             # does not exist
-            if self.path in chezmoi.file_paths:
-                if not chezmoi.run.cat(self.path):
+            if self.path in self.app.chezmoi.file_paths:
+                if not self.app.chezmoi.run.cat(self.path):
                     self.write(
                         Text("File contains only whitespace", style="dim")
                     )
                 else:
-                    self.write(chezmoi.run.cat(self.path))
+                    self.write(self.app.chezmoi.run.cat(self.path))
                 return
 
         except IsADirectoryError:
-            if self.path == chezmoi.destDir:
+            if self.path == self.app.destDir:
                 self.write(
                     Text(
                         "Click a file or directory to show its contents.\n",
@@ -158,28 +162,30 @@ class ContentsView(RichLog):
                     )
                 )
                 self.write("Current directory:")
-                self.write(f"{chezmoi.destDir}")
+                self.write(f"{self.app.destDir}")
                 self.write(Text("(destDir)\n", style="dim"))
                 self.write("Source directory:")
-                self.write(f"{chezmoi.sourceDir}")
+                self.write(f"{self.app.sourceDir}")
                 self.write(Text("(sourceDir)", style="dim"))
-            elif self.path in chezmoi.dir_paths:
+            elif self.path in self.app.chezmoi.dir_paths:
                 self.write(f"Managed directory: {self.path}")
             else:
                 self.write(f"Unmanaged directory: {self.path}")
 
         except OSError as error:
             self.write(Text(f"Error reading {self.path}: {error}"))
-            chezmoi.app_log.error("Error reading file")
+            self.app.chezmoi.app_log.error("Error reading file")
 
     def watch_path(self) -> None:
+        if self.path is None:
+            return
         self.clear()
         self.update_contents_view()
 
 
-class DiffView(RichLog):
+class DiffView(RichLog, AppType):
 
-    path: reactive[Path] = reactive(chezmoi.destDir)
+    path: reactive[Path | None] = reactive(None, init=False)
 
     def __init__(self, *, ids: TabIds | ScreenIds, reverse: bool) -> None:
         self.ids = ids
@@ -196,7 +202,7 @@ class DiffView(RichLog):
         self.write(
             Text(
                 (
-                    f"Destination directory is {chezmoi.destDir}.\n"
+                    f"Destination directory is {self.app.destDir}.\n"
                     "Click a file or directory to view its contents."
                 ),
                 style="dim",
@@ -204,22 +210,24 @@ class DiffView(RichLog):
         )
 
     def watch_path(self) -> None:
+        if self.path is None:
+            return
         self.clear()
 
         diff_output: list[str] = []
         if not self.reverse:
-            self.status_files = chezmoi.apply_files
-            self.status_dirs = chezmoi.apply_dirs
+            self.status_files = self.app.chezmoi.apply_files
+            self.status_dirs = self.app.chezmoi.apply_dirs
         elif self.reverse:
-            self.status_files = chezmoi.re_add_files
-            self.status_dirs = chezmoi.re_add_dirs
+            self.status_files = self.app.chezmoi.re_add_files
+            self.status_dirs = self.app.chezmoi.re_add_dirs
 
         # create a diff view if the current path is a directory
-        if self.path in self.status_dirs or self.path == chezmoi.destDir:
+        if self.path in self.status_dirs or self.path == self.app.destDir:
             tab_name = (
                 TabName.re_add_tab if self.reverse else TabName.apply_tab
             )
-            status_files_in_dir = chezmoi.files_with_status_in(
+            status_files_in_dir = self.app.chezmoi.files_with_status_in(
                 tab_name, self.path
             )
             if not status_files_in_dir:
@@ -246,9 +254,9 @@ class DiffView(RichLog):
             return
         # create the actual diff view for a changed file
         if not self.reverse:
-            diff_output = chezmoi.run.diff(self.path)
+            diff_output = self.app.chezmoi.run.diff(self.path)
         elif self.reverse:
-            diff_output = chezmoi.run.diff_reversed(self.path)
+            diff_output = self.app.chezmoi.run.diff_reversed(self.path)
 
         diff_lines: list[str] = [
             line
@@ -279,9 +287,9 @@ class DiffView(RichLog):
                 self.write(Text(Chars.bullet + line, style="dim"))
 
 
-class GitLogView(DataTable[Text]):
+class GitLogView(DataTable[Text], AppType):
 
-    path: reactive[Path] = reactive(chezmoi.destDir)
+    path: reactive[Path | None] = reactive(None, init=False)
 
     # TODO: implement footer binding to toggle text wrap in second column
     # of the datatable
@@ -306,7 +314,7 @@ class GitLogView(DataTable[Text]):
             "warning": theme.vars["text-warning"],
             "error": theme.vars["text-error"],
         }
-        for line in chezmoi.run.git_log(path):
+        for line in self.app.chezmoi.run.git_log(path):
             columns = line.split(";")
             if columns[1].split(maxsplit=1)[0] == "Add":
                 self.add_row_with_style(columns, styles["ok"])
@@ -318,6 +326,8 @@ class GitLogView(DataTable[Text]):
                 self.add_row(*(Text(cell) for cell in columns))
 
     def watch_path(self) -> None:
+        if self.path is None:
+            return
         self.populate_data_table(self.path)
 
 
@@ -331,7 +341,7 @@ class FileNodeData(NodeData):
     pass
 
 
-class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
+class TreeBase(CustomRenderLabel, AppType):  # instead of Tree[NodeData]
 
     def __init__(self, tab_ids: TabIds, *, tree_type: TreeName) -> None:
         self.tab_ids = tab_ids
@@ -349,7 +359,7 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
             "F": theme.vars["text-primary"],
         }
         root_node_data: DirNodeData = DirNodeData(
-            path=chezmoi.destDir, found=True, status="F"
+            path=self.app.destDir, found=True, status="F"
         )
         super().__init__(
             label="root",
@@ -400,9 +410,9 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
     def create_dir_node_data(self, *, path: Path) -> DirNodeData:
         status_code: str = ""
         if self.tab_name == TabName.apply_tab:
-            status_code: str = chezmoi.apply_dirs[path]
+            status_code: str = self.app.chezmoi.apply_dirs[path]
         elif self.tab_name == TabName.re_add_tab:
-            status_code: str = chezmoi.re_add_dirs[path]
+            status_code: str = self.app.chezmoi.re_add_dirs[path]
         if not status_code:
             status_code = "X"
         found: bool = path.exists()
@@ -411,9 +421,9 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
     def create_file_node_data(self, *, path: Path) -> FileNodeData:
         status_code: str = ""
         if self.tab_name == TabName.apply_tab:
-            status_code: str = chezmoi.apply_files[path]
+            status_code: str = self.app.chezmoi.apply_files[path]
         elif self.tab_name == TabName.re_add_tab:
-            status_code: str = chezmoi.re_add_files[path]
+            status_code: str = self.app.chezmoi.re_add_files[path]
         if not status_code:
             status_code = "X"
         found: bool = path.exists()
@@ -424,9 +434,9 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
         # checks for any, direct children or no matter how deep in subdirs
         files_dict: PathDict = {}
         if tab_name == TabName.apply_tab:
-            files_dict = chezmoi.apply_files
+            files_dict = self.app.chezmoi.apply_files
         elif tab_name == TabName.re_add_tab:
-            files_dict = chezmoi.re_add_files
+            files_dict = self.app.chezmoi.re_add_files
 
         return any(
             f
@@ -438,9 +448,9 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
         # checks for any, direct children or no matter how deep in subdirs
         dirs_dict: PathDict = {}
         if tab_name == TabName.apply_tab:
-            dirs_dict = chezmoi.apply_dirs
+            dirs_dict = self.app.chezmoi.apply_dirs
         elif tab_name == TabName.re_add_tab:
-            dirs_dict = chezmoi.re_add_dirs
+            dirs_dict = self.app.chezmoi.re_add_dirs
         if dir_path in dirs_dict and dirs_dict[dir_path] != "X":
             return True
 
@@ -483,8 +493,10 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
 
     def add_unchanged_leaves(self, *, tree_node: TreeNode[NodeData]) -> None:
         assert isinstance(tree_node.data, DirNodeData)
-        unchanged_in_dir: list[Path] = chezmoi.files_without_status_in(
-            self.tab_name, tree_node.data.path
+        unchanged_in_dir: list[Path] = (
+            self.app.chezmoi.files_without_status_in(
+                self.tab_name, tree_node.data.path
+            )
         )
         for file_path in unchanged_in_dir:
             node_data: FileNodeData = self.create_file_node_data(
@@ -506,7 +518,7 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
 
     def add_status_leaves(self, *, tree_node: TreeNode[NodeData]) -> None:
         assert isinstance(tree_node.data, DirNodeData)
-        status_file_paths: list[Path] = chezmoi.files_with_status_in(
+        status_file_paths: list[Path] = self.app.chezmoi.files_with_status_in(
             self.tab_name, tree_node.data.path
         )
         # get current visible leaves
@@ -539,7 +551,7 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
         current_dir_paths = [
             dir_node.data.path for dir_node in current_dirs if dir_node.data
         ]
-        for dir_path in chezmoi.managed_dirs_in(tree_node.data.path):
+        for dir_path in self.app.chezmoi.managed_dirs_in(tree_node.data.path):
             if dir_path in current_dir_paths:
                 continue
             if self.should_show_dir_node(
@@ -567,7 +579,7 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
                 and not self.should_show_dir_node(
                     dir_path=dir_node.data.path, show_unchanged=show_unchanged
                 )
-                and dir_node.data.path != chezmoi.destDir
+                and dir_node.data.path != self.app.destDir
             ):
                 dir_node.remove()
 
@@ -578,7 +590,7 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
             if (
                 node.data
                 and node.data.path == node_path
-                and node.data.path != chezmoi.destDir
+                and node.data.path != self.app.destDir
             ):
                 parents_with_removeable_nodes.append(node.parent)
                 node.remove()
@@ -687,7 +699,7 @@ class ExpandedTree(TreeBase):
                 )
 
 
-class FlatTree(TreeBase):
+class FlatTree(TreeBase, AppType):
 
     unchanged: reactive[bool] = reactive(False, init=False)
 
@@ -701,9 +713,9 @@ class FlatTree(TreeBase):
         self.root.remove_children()
         files_dict: PathDict = {}
         if self.tab_name == TabName.apply_tab:
-            files_dict = chezmoi.apply_files
+            files_dict = self.app.chezmoi.apply_files
         elif self.tab_name == TabName.re_add_tab:
-            files_dict = chezmoi.re_add_files
+            files_dict = self.app.chezmoi.re_add_files
         for file_path, status in files_dict.items():
             if status != "X":
                 node_data = self.create_file_node_data(path=file_path)
@@ -713,9 +725,9 @@ class FlatTree(TreeBase):
     def add_all_unchanged_files(self) -> None:
         files_dict: PathDict = {}
         if self.tab_name == TabName.apply_tab:
-            files_dict = chezmoi.apply_files
+            files_dict = self.app.chezmoi.apply_files
         elif self.tab_name == TabName.re_add_tab:
-            files_dict = chezmoi.re_add_files
+            files_dict = self.app.chezmoi.re_add_files
         for file_path, status in files_dict.items():
             if status == "X":
                 node_data = self.create_file_node_data(path=file_path)
@@ -732,7 +744,7 @@ class FlatTree(TreeBase):
             self.remove_flat_leaves()
 
 
-class FilteredDirTree(DirectoryTree):
+class FilteredDirTree(DirectoryTree, AppType):
 
     unmanaged_dirs: reactive[bool] = reactive(False, init=False)
     # TODO: add filter switch to see already added files as otherwise when
@@ -741,8 +753,8 @@ class FilteredDirTree(DirectoryTree):
     unwanted: reactive[bool] = reactive(False, init=False)
 
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
-        managed_dirs = chezmoi.dir_paths
-        managed_files = chezmoi.file_paths
+        managed_dirs = self.app.chezmoi.dir_paths
+        managed_files = self.app.chezmoi.file_paths
 
         # Switches: Red - Red (default)
         if not self.unmanaged_dirs and not self.unwanted:
@@ -752,7 +764,8 @@ class FilteredDirTree(DirectoryTree):
                 if (
                     p.is_file()
                     and (
-                        p.parent in managed_dirs or p.parent == chezmoi.destDir
+                        p.parent in managed_dirs
+                        or p.parent == self.app.destDir
                     )
                     and not self.is_unwanted_path(p)
                     and p not in managed_files
@@ -778,7 +791,8 @@ class FilteredDirTree(DirectoryTree):
                 if (
                     p.is_file()
                     and (
-                        p.parent in managed_dirs or p.parent == chezmoi.destDir
+                        p.parent in managed_dirs
+                        or p.parent == self.app.destDir
                     )
                     and p not in managed_files
                 )

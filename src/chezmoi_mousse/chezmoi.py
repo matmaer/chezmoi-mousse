@@ -569,6 +569,10 @@ class Chezmoi:
         return op_log
 
     @property
+    def output_log(self):
+        return output_log
+
+    @property
     def dir_paths(self) -> list[Path]:
         return [Path(p) for p in self.managed_dirs.list_out]
 
@@ -680,6 +684,3 @@ class Chezmoi:
             else:
                 path_dict[path] = "X"
         return path_dict
-
-
-chezmoi = Chezmoi()

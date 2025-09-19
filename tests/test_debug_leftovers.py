@@ -28,15 +28,32 @@ class DebugStatementVisitor(ast.NodeVisitor):
                     f"debug_log.{node.func.attr}() call at line {node.lineno}"
                 )
 
-            # Check for chezmoi.debug_log.some_method() calls
+            # Check for self.chezmoi.debug_log.some_method() calls
             elif (
                 isinstance(node.func.value, ast.Attribute)
-                and isinstance(node.func.value.value, ast.Name)
-                and node.func.value.value.id == "chezmoi"
+                and isinstance(node.func.value.value, ast.Attribute)
+                and isinstance(node.func.value.value.value, ast.Name)
+                and node.func.value.value.value.id == "self"
+                and node.func.value.value.attr == "chezmoi"
                 and node.func.value.attr == "debug_log"
             ):
                 self.debug_statements.append(
-                    f"chezmoi.debug_log.{node.func.attr}() call at line {node.lineno}"
+                    f"self.chezmoi.debug_log.{node.func.attr}() call at line {node.lineno}"
+                )
+
+            # Check for self.app.chezmoi.debug_log.some_method() calls
+            elif (
+                isinstance(node.func.value, ast.Attribute)
+                and isinstance(node.func.value.value, ast.Attribute)
+                and isinstance(node.func.value.value.value, ast.Attribute)
+                and isinstance(node.func.value.value.value.value, ast.Name)
+                and node.func.value.value.value.value.id == "self"
+                and node.func.value.value.value.attr == "app"
+                and node.func.value.value.attr == "chezmoi"
+                and node.func.value.attr == "debug_log"
+            ):
+                self.debug_statements.append(
+                    f"self.app.chezmoi.debug_log.{node.func.attr}() call at line {node.lineno}"
                 )
 
         # Call this to continue traversing child nodes recursively

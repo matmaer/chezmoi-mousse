@@ -12,7 +12,6 @@ from textual.events import Click
 from textual.screen import Screen
 from textual.widgets import Button, Collapsible, Label, Link, Pretty, Tree
 
-from chezmoi_mousse.chezmoi import chezmoi, op_log
 from chezmoi_mousse.constants import BorderSubTitle, OperateVerbs, TcssStr
 from chezmoi_mousse.containers import OperateBtnHorizontal
 from chezmoi_mousse.id_typing import (
@@ -65,7 +64,7 @@ class ScreensBase(Screen[None], AppType):
             self.app.exit()
 
 
-class Operate(ScreensBase):
+class Operate(ScreensBase, AppType):
 
     def __init__(
         self, *, tab_ids: TabIds, path: Path, buttons: OperateButtons
@@ -98,7 +97,7 @@ class Operate(ScreensBase):
             yield OperateBtnHorizontal(
                 tab_ids=self.tab_ids, buttons=self.buttons
             )
-            yield op_log
+            yield self.app.chezmoi.op_log
 
     def on_mount(self) -> None:
         self.add_class(TcssStr.operate_screen)
@@ -135,7 +134,7 @@ class Operate(ScreensBase):
             command += OperateVerbs.apply
         elif self.tab_name == TabName.re_add_tab:
             command += OperateVerbs.re_add
-        chezmoi.op_log.ready_to_run(
+        self.app.chezmoi.op_log.ready_to_run(
             f"Ready to run command: {command} {self.path}"
         )
 
@@ -143,11 +142,11 @@ class Operate(ScreensBase):
     def handle_operate_buttons(self, event: Button.Pressed) -> None:
         event.stop()
         button_commands = [
-            (OperateBtn.apply_file, chezmoi.perform.apply),
-            (OperateBtn.re_add_file, chezmoi.perform.re_add),
-            (OperateBtn.add_file, chezmoi.perform.add),
-            (OperateBtn.forget_file, chezmoi.perform.forget),
-            (OperateBtn.destroy_file, chezmoi.perform.destroy),
+            (OperateBtn.apply_file, self.app.chezmoi.perform.apply),
+            (OperateBtn.re_add_file, self.app.chezmoi.perform.re_add),
+            (OperateBtn.add_file, self.app.chezmoi.perform.add),
+            (OperateBtn.forget_file, self.app.chezmoi.perform.forget),
+            (OperateBtn.destroy_file, self.app.chezmoi.perform.destroy),
         ]
         for btn_enum, btn_cmd in button_commands:
             if event.button.id == self.tab_ids.button_id(btn=btn_enum):
@@ -175,7 +174,7 @@ class Operate(ScreensBase):
     def handle_dismiss(self, dismiss_data: OperateData) -> None:
         if not dismiss_data.operation_executed and self.path:
             msg = f"Operation cancelled for {self.path.name}"
-            chezmoi.op_log.success(msg)
+            self.app.chezmoi.op_log.success(msg)
             self.notify("No changes were made")
         # send the needed data to the app, logging will be handled there
         self.app.post_message(OperateMessage(dismiss_data=dismiss_data))
@@ -246,10 +245,10 @@ class Maximized(ScreensBase):
                     GitLogView,
                 ).path = self.path
 
-        if self.path == chezmoi.destDir:
-            self.border_title = f" {chezmoi.destDir} "
+        if self.path == self.app.destDir:
+            self.border_title = f" {self.app.destDir} "
         elif self.path is not None:
-            self.border_title = f" {self.path.relative_to(chezmoi.destDir)} "
+            self.border_title = f" {self.path.relative_to(self.app.destDir)} "
 
 
 class InstallHelp(ScreensBase):

@@ -26,13 +26,6 @@ from textual.widgets import (
 )
 
 import chezmoi_mousse.custom_theme as theme
-from chezmoi_mousse.chezmoi import (
-    app_log,
-    chezmoi,
-    debug_log,
-    init_log,
-    output_log,
-)
 from chezmoi_mousse.constants import FLOW, BorderTitle, TcssStr
 from chezmoi_mousse.containers import (
     ButtonsVertical,
@@ -169,7 +162,7 @@ class ReAddTab(OperateTabsBase):
         )
 
 
-class AddTab(OperateTabsBase):
+class AddTab(OperateTabsBase, AppType):
 
     def __init__(self) -> None:
         super().__init__(tab_ids=Id.add)
@@ -177,7 +170,7 @@ class AddTab(OperateTabsBase):
     def compose(self) -> ComposeResult:
         with VerticalGroup(id=Id.add.tab_vertical_id(area=Area.left)):
             yield FilteredDirTree(
-                chezmoi.destDir,
+                self.app.destDir,
                 id=Id.add.tree_id(tree=TreeName.add_tree),
                 classes=TcssStr.dir_tree_widget,
             )
@@ -193,12 +186,12 @@ class AddTab(OperateTabsBase):
         contents_view = self.query_one(
             Id.add.view_id("#", view=ViewName.contents_view), ContentsView
         )
-        contents_view.border_title = str(chezmoi.destDir)
+        contents_view.border_title = str(self.app.destDir)
         contents_view.add_class(TcssStr.border_title_top)
         left_side = self.query_one(
             Id.add.tab_vertical_id("#", area=Area.left), VerticalGroup
         )
-        left_side.border_title = str(chezmoi.destDir)
+        left_side.border_title = str(self.app.destDir)
         left_side.add_class(
             TcssStr.tab_left_vertical, TcssStr.border_title_top
         )
@@ -221,7 +214,7 @@ class AddTab(OperateTabsBase):
         )
         contents_view.path = event.node.data.path
         contents_view.border_title = (
-            f"{event.node.data.path.relative_to(chezmoi.destDir)}"
+            f"{event.node.data.path.relative_to(self.app.destDir)}"
         )
         self.enable_buttons((OperateBtn.add_file,))
 
@@ -235,7 +228,7 @@ class AddTab(OperateTabsBase):
         )
         contents_view.path = event.node.data.path
         contents_view.border_title = (
-            f"{event.node.data.path.relative_to(chezmoi.destDir)}"
+            f"{event.node.data.path.relative_to(self.app.destDir)}"
         )
         self.disable_buttons((OperateBtn.add_file,))
 
@@ -332,11 +325,11 @@ class InitTab(Vertical, AppType):
                 tab_ids=Id.init,
                 switches=(Switches.guess_url, Switches.clone_and_apply),
             )
-        yield init_log  # this has bottom_log
+        yield self.app.chezmoi.init_log
 
     def on_mount(self) -> None:
         self.query(Label).add_class(TcssStr.config_tab_label)
-        chezmoi.init_log.success("Ready to run chezmoi commands.")
+        self.app.chezmoi.init_log.success("Ready to run chezmoi commands.")
         self.query_exactly_one(ButtonsVertical).add_class(
             TcssStr.tab_left_vertical
         )
@@ -377,17 +370,17 @@ class InitTab(Vertical, AppType):
     def handle_operation_button(self, event: Button.Pressed) -> None:
         event.stop()
         if event.button.id == Id.init.button_id(btn=OperateBtn.clone_repo):
-            chezmoi.perform.init_clone_repo(str(self.repo_url))
+            self.app.chezmoi.perform.init_clone_repo(str(self.repo_url))
             self.query_one(
                 Id.init.button_id("#", btn=OperateBtn.clone_repo), Button
             ).disabled = True
         elif event.button.id == Id.init.button_id(btn=OperateBtn.new_repo):
-            chezmoi.perform.init_new_repo()
+            self.app.chezmoi.perform.init_new_repo()
             self.query_one(
                 Id.init.button_id("#", btn=OperateBtn.new_repo), Button
             ).disabled = True
         elif event.button.id == Id.init.button_id(btn=OperateBtn.purge_repo):
-            chezmoi.perform.purge()
+            self.app.chezmoi.perform.purge()
             self.query_one(
                 Id.init.button_id("#", btn=OperateBtn.purge_repo), Button
             ).disabled = True
@@ -398,7 +391,7 @@ class InitTab(Vertical, AppType):
         ).toggle_class("-visible")
 
 
-class ConfigTab(Horizontal):
+class ConfigTab(Horizontal, AppType):
 
     def __init__(self) -> None:
         super().__init__(id=Id.config.tab_container_id)
@@ -431,17 +424,17 @@ class ConfigTab(Horizontal):
             ):
                 yield Vertical(
                     Label('"chezmoi cat-config" output'),
-                    Pretty(chezmoi.run.cat_config()),
+                    Pretty(self.app.chezmoi.run.cat_config()),
                     id=Id.config.view_id(view=ViewName.cat_config),
                 )
                 yield Vertical(
                     Label('"chezmoi ignored" output'),
-                    Pretty(chezmoi.run.ignored()),
+                    Pretty(self.app.chezmoi.run.ignored()),
                     id=Id.config.view_id(view=ViewName.config_ignored),
                 )
                 yield Vertical(
                     Label('"chezmoi data" output'),
-                    Pretty(chezmoi.run.template_data()),
+                    Pretty(self.app.chezmoi.run.template_data()),
                     id=Id.config.view_id(view=ViewName.template_data),
                 )
                 yield Vertical(
@@ -476,7 +469,7 @@ class ConfigTab(Horizontal):
             content_switcher.current = Id.config.view_id(view=ViewName.diagram)
 
 
-class DoctorTab(Vertical):
+class DoctorTab(Vertical, AppType):
 
     def __init__(self) -> None:
         super().__init__(
@@ -501,7 +494,7 @@ class DoctorTab(Vertical):
     def populate_doctor_data(self) -> None:
 
         doctor_table: DataTable[Text] = self.query_one(DataTable[Text])
-        doctor_data = chezmoi.doctor.list_out
+        doctor_data = self.app.chezmoi.doctor.list_out
         if not doctor_table.columns:
             doctor_table.add_columns(*doctor_data[0].split())
 
@@ -544,15 +537,14 @@ class DoctorTab(Vertical):
                 break
 
 
-class LogsTab(Container):
+class LogsTab(Container, AppType):
 
     # TODO: implement maximized key binding
 
     def __init__(self) -> None:
         super().__init__(id=Id.logs.tab_container_id)
         self.tab_buttons = (TabBtn.app_log, TabBtn.output_log)
-        if chezmoi.app_cfg.dev_mode:
-            # add button to the tuple
+        if self.app.chezmoi.app_cfg.dev_mode:
             self.tab_buttons += (TabBtn.debug_log,)
 
     def compose(self) -> ComposeResult:
@@ -565,10 +557,10 @@ class LogsTab(Container):
             initial=Id.logs.view_id(view=ViewName.app_log_view),
             classes=TcssStr.border_title_top,
         ):
-            yield app_log
-            yield output_log
-            if chezmoi.app_cfg.dev_mode:
-                yield debug_log
+            yield self.app.chezmoi.app_log
+            yield self.app.chezmoi.output_log
+            if self.app.chezmoi.app_cfg.dev_mode:
+                yield self.app.chezmoi.debug_log
 
     def on_mount(self) -> None:
         self.query_exactly_one(ContentSwitcher).border_title = (
@@ -597,8 +589,9 @@ class LogsTab(Container):
                 view=ViewName.output_log_view
             )
             content_switcher.border_title = BorderTitle.output_log
-        elif chezmoi.app_cfg.dev_mode and event.button.id == Id.logs.button_id(
-            btn=TabBtn.debug_log
+        elif (
+            self.app.chezmoi.app_cfg.dev_mode
+            and event.button.id == Id.logs.button_id(btn=TabBtn.debug_log)
         ):
             content_switcher = self.query_one(
                 Id.logs.content_switcher_id("#", area=Area.top),
