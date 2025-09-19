@@ -35,8 +35,8 @@ from chezmoi_mousse.chezmoi import (
 )
 from chezmoi_mousse.constants import FLOW, BorderTitle, TcssStr
 from chezmoi_mousse.containers import (
-    ButtonsHorizontal,
     ButtonsVertical,
+    OperateBtnHorizontal,
     OperateTabsBase,
     SwitchSlider,
     TabBtnHorizontal,
@@ -125,7 +125,7 @@ class ReAddTab(OperateTabsBase):
             id=Id.re_add.tab_vertical_id(area=Area.left),
             classes=TcssStr.tab_left_vertical,
         ):
-            yield ButtonsHorizontal(
+            yield TabBtnHorizontal(
                 tab_ids=Id.re_add,
                 buttons=(TabBtn.tree, TabBtn.list),
                 area=Area.left,
@@ -133,7 +133,7 @@ class ReAddTab(OperateTabsBase):
             yield TreeContentSwitcher(tab_ids=Id.re_add)
 
         with Vertical(id=Id.re_add.tab_vertical_id(area=Area.right)):
-            yield ButtonsHorizontal(
+            yield TabBtnHorizontal(
                 tab_ids=Id.re_add,
                 buttons=(TabBtn.diff, TabBtn.contents, TabBtn.git_log),
                 area=Area.right,
@@ -281,10 +281,8 @@ class InitTab(Vertical, AppType):
                     yield Vertical(
                         Label("Initialize new chezmoi git repository"),
                         Input(placeholder="Enter config file path"),
-                        ButtonsHorizontal(
-                            tab_ids=Id.init,
-                            buttons=(OperateBtn.new_repo,),
-                            area=Area.bottom,
+                        OperateBtnHorizontal(
+                            tab_ids=Id.init, buttons=(OperateBtn.new_repo,)
                         ),
                         id=Id.init.view_id(view=ViewName.init_new_view),
                     )
@@ -314,10 +312,8 @@ class InitTab(Vertical, AppType):
                                 classes=TcssStr.input_field_vertical,
                             ),
                         ),
-                        ButtonsHorizontal(
-                            tab_ids=Id.init,
-                            buttons=(OperateBtn.clone_repo,),
-                            area=Area.bottom,
+                        OperateBtnHorizontal(
+                            tab_ids=Id.init, buttons=(OperateBtn.clone_repo,)
                         ),
                         id=Id.init.view_id(view=ViewName.init_clone_view),
                     )
@@ -327,10 +323,8 @@ class InitTab(Vertical, AppType):
                         Static(
                             "Remove chezmoi's configuration, state, and source directory, but leave the target state intact."
                         ),
-                        ButtonsHorizontal(
-                            tab_ids=Id.init,
-                            buttons=(OperateBtn.purge_repo,),
-                            area=Area.bottom,
+                        OperateBtnHorizontal(
+                            tab_ids=Id.init, buttons=(OperateBtn.purge_repo,)
                         ),
                         id=Id.init.view_id(view=ViewName.init_purge_view),
                     )
@@ -563,7 +557,7 @@ class LogsTab(Container):
 
     def compose(self) -> ComposeResult:
 
-        yield ButtonsHorizontal(
+        yield TabBtnHorizontal(
             tab_ids=Id.logs, buttons=self.tab_buttons, area=Area.top
         )
         with ContentSwitcher(

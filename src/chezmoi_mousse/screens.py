@@ -14,10 +14,9 @@ from textual.widgets import Button, Collapsible, Label, Link, Pretty, Tree
 
 from chezmoi_mousse.chezmoi import chezmoi, op_log
 from chezmoi_mousse.constants import BorderSubTitle, OperateVerbs, TcssStr
-from chezmoi_mousse.containers import ButtonsHorizontal
+from chezmoi_mousse.containers import OperateBtnHorizontal
 from chezmoi_mousse.id_typing import (
     AppType,
-    Area,
     Id,
     OperateBtn,
     OperateButtons,
@@ -96,8 +95,8 @@ class Operate(ScreensBase):
         else:
             yield ContentsView(ids=Id.operate_screen)
         with VerticalGroup():
-            yield ButtonsHorizontal(
-                tab_ids=self.tab_ids, buttons=self.buttons, area=Area.bottom
+            yield OperateBtnHorizontal(
+                tab_ids=self.tab_ids, buttons=self.buttons
             )
             yield op_log
 

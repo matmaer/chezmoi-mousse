@@ -17,7 +17,7 @@ from textual.widgets import (
 import chezmoi_mousse.custom_theme
 from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.constants import Area, Chars, TabName, TreeName, ViewName
-from chezmoi_mousse.containers import ButtonsHorizontal
+from chezmoi_mousse.containers import OperateBtnHorizontal
 from chezmoi_mousse.id_typing import Id, OperateBtn, OperateHelp
 from chezmoi_mousse.main_tabs import (
     AddTab,
@@ -63,32 +63,29 @@ class ChezmoiGUI(App[None]):
         with TabbedContent():
             with TabPane("Apply", id=Id.apply.tab_pane_id):
                 yield ApplyTab()
-                yield ButtonsHorizontal(
+                yield OperateBtnHorizontal(
                     tab_ids=Id.apply,
                     buttons=(
                         OperateBtn.apply_file,
                         OperateBtn.forget_file,
                         OperateBtn.destroy_file,
                     ),
-                    area=Area.bottom,
                 )
             with TabPane("Re-Add", id=Id.re_add.tab_pane_id):
                 yield ReAddTab()
-                yield ButtonsHorizontal(
+                yield OperateBtnHorizontal(
                     tab_ids=Id.re_add,
                     buttons=(
                         OperateBtn.re_add_file,
                         OperateBtn.forget_file,
                         OperateBtn.destroy_file,
                     ),
-                    area=Area.bottom,
                 )
             with TabPane("Add", id=Id.add.tab_pane_id):
                 yield AddTab()
-                yield ButtonsHorizontal(
+                yield OperateBtnHorizontal(
                     tab_ids=Id.add,
                     buttons=(OperateBtn.add_file, OperateBtn.add_dir),
-                    area=Area.bottom,
                 )
             with TabPane("Init", id=Id.init.tab_pane_id):
                 yield InitTab()

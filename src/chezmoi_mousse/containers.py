@@ -293,14 +293,6 @@ class ButtonsHorizontal(HorizontalGroup):
                     id=self.tab_ids.button_id(btn=button_enum),
                 )
 
-    def on_mount(self) -> None:
-        if self.area == Area.bottom:
-            self.add_operate_button_classes()
-
-    def add_operate_button_classes(self) -> None:
-        self.add_class(TcssStr.operate_buttons_horizontal)
-        self.query(Button).add_class(TcssStr.operate_button)
-
 
 class TabBtnHorizontal(ButtonsHorizontal):
     def __init__(self, *, tab_ids: TabIds, buttons: TabButtons, area: Area):
@@ -317,6 +309,15 @@ class TabBtnHorizontal(ButtonsHorizontal):
     def update_tab_btn_last_clicked(self, event: Button.Pressed) -> None:
         self.query(Button).remove_class(TcssStr.last_clicked)
         event.button.add_class(TcssStr.last_clicked)
+
+
+class OperateBtnHorizontal(ButtonsHorizontal):
+    def __init__(self, *, tab_ids: TabIds, buttons: OperateButtons):
+        super().__init__(tab_ids=tab_ids, buttons=buttons, area=Area.bottom)
+
+    def on_mount(self) -> None:
+        self.add_class(TcssStr.operate_buttons_horizontal)
+        self.query(Button).add_class(TcssStr.operate_button)
 
 
 class ButtonsVertical(VerticalGroup):
