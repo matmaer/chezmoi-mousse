@@ -14,6 +14,7 @@ Graphical user interface in the terminal for [chezmoi](https://github.com/twpayn
 - [Python 3.12+](https://www.python.org/) is installed
   (including [Textual](https://textual.textualize.io/) or run with [UV](https://docs.astral.sh/uv/getting-started/installation/))
 - Can be safely tested as no write operations are enabled by default.
+- The current implementation has only been used or tested with autocommit enabled.
 
 ## Available Chezmoi commands
 
@@ -92,7 +93,7 @@ Top level
 - :green_circle: tempDir
 - :green_circle: umask
 - :black_circle: useBuiltinAge
-- :negative_squared_cross_mark: useBuiltinGit (`chezmoi git` is used to render any git related output)
+- :green_circle: useBuiltinGit (`chezmoi git` is used to render any git related output)
 - :green_square: verbose
 - :black_circle: workingTree
 
@@ -138,7 +139,7 @@ dashlane
 
 diff
 - :green_square: diff.args
-- :negative_squared_cross_mark: diff.command (`chezmoi diff` is used to render any diff related output)
+- :green_circle: diff.command (`chezmoi diff` is used to render any diff related output)
 - :green_square: diff.exclude
 - :green_square: diff.pager
 - :green_square: diff.pagerArgs
