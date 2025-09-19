@@ -39,6 +39,7 @@ from chezmoi_mousse.containers import (
     ButtonsVertical,
     OperateTabsBase,
     SwitchSlider,
+    TabBtnHorizontal,
     TreeContentSwitcher,
 )
 from chezmoi_mousse.id_typing import (
@@ -72,7 +73,7 @@ class ApplyTab(OperateTabsBase):
             id=Id.apply.tab_vertical_id(area=Area.left),
             classes=TcssStr.tab_left_vertical,
         ):
-            yield ButtonsHorizontal(
+            yield TabBtnHorizontal(
                 tab_ids=Id.apply,
                 buttons=(TabBtn.tree, TabBtn.list),
                 area=Area.left,
@@ -83,7 +84,7 @@ class ApplyTab(OperateTabsBase):
             id=Id.apply.tab_vertical_id(area=Area.right),
             classes=TcssStr.tab_right_vertical,
         ):
-            yield ButtonsHorizontal(
+            yield TabBtnHorizontal(
                 tab_ids=Id.apply,
                 buttons=(TabBtn.diff, TabBtn.contents, TabBtn.git_log),
                 area=Area.right,

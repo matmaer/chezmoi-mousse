@@ -105,6 +105,20 @@ class OperateTabsBase(Horizontal, AppType):
                 GitLogView,
             ).path = self.current_path
 
+        chezmoi.debug_log.warning(f"{self.tab_ids.tab_name}")
+        # chezmoi.debug_log.success(f"{[c for c in event.node.children]}")
+        # chezmoi.debug_log.error(f"{event.node.parent}")
+        # chezmoi.debug_log.debug_attrs(event.node)
+        # chezmoi.debug_log.debug_mro(tuple(self.__class__.mro()))
+
+        # construct NodeDataContext for message
+        # assert event.node.parent.data is not None
+        # context = NodeDataContext(
+        #     parent=event.node.parent.data,
+        #     node_data=event.node.data,
+        #     leaves=[child.data for child in event.node.children if child.data],
+        # )
+
         # enable/disable operation buttons depending on selected node
         buttons_to_update: OperateButtons = ()
         if self.tab_ids.tab_name == TabName.apply_tab:
@@ -282,26 +296,26 @@ class ButtonsHorizontal(HorizontalGroup):
     def on_mount(self) -> None:
         if self.area == Area.bottom:
             self.add_operate_button_classes()
-        else:
-            self.add_tab_button_classes()
 
-    def add_tab_button_classes(self) -> None:
+    def add_operate_button_classes(self) -> None:
+        self.add_class(TcssStr.operate_buttons_horizontal)
+        self.query(Button).add_class(TcssStr.operate_button)
+
+
+class TabBtnHorizontal(ButtonsHorizontal):
+    def __init__(self, *, tab_ids: TabIds, buttons: TabButtons, area: Area):
+        super().__init__(tab_ids=tab_ids, buttons=buttons, area=area)
+
+    def on_mount(self) -> None:
         self.add_class(TcssStr.tab_buttons_horizontal)
         self.query(Button).add_class(TcssStr.tab_button)
         self.query_one(
             self.tab_ids.button_id("#", btn=self.buttons[0])
         ).add_class(TcssStr.last_clicked)
 
-    def add_operate_button_classes(self) -> None:
-        self.add_class(TcssStr.operate_buttons_horizontal)
-        self.query(Button).add_class(TcssStr.operate_button)
-
     @on(Button.Pressed, ".tab_button")
     def update_tab_btn_last_clicked(self, event: Button.Pressed) -> None:
-        for button_enum in self.buttons:
-            self.query_one(
-                self.tab_ids.button_id("#", btn=button_enum)
-            ).remove_class(TcssStr.last_clicked)
+        self.query(Button).remove_class(TcssStr.last_clicked)
         event.button.add_class(TcssStr.last_clicked)
 
 
