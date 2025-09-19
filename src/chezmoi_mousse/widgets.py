@@ -29,7 +29,6 @@ from chezmoi_mousse.constants import (
     ViewName,
 )
 from chezmoi_mousse.id_typing import (
-    AppType,
     Chars,
     NodeData,
     OperateBtn,
@@ -86,7 +85,7 @@ class OperateInfo(Static):
         self.update("\n".join(lines_to_write))
 
 
-class ContentsView(RichLog, AppType):
+class ContentsView(RichLog):
 
     path: reactive[Path] = reactive(chezmoi.destDir)
 
@@ -174,13 +173,11 @@ class ContentsView(RichLog, AppType):
             chezmoi.app_log.error("Error reading file")
 
     def watch_path(self) -> None:
-        if not self.app.loading_screen_dismissed:
-            return
         self.clear()
         self.update_contents_view()
 
 
-class DiffView(RichLog, AppType):
+class DiffView(RichLog):
 
     path: reactive[Path] = reactive(chezmoi.destDir)
 
@@ -207,8 +204,6 @@ class DiffView(RichLog, AppType):
         )
 
     def watch_path(self) -> None:
-        if not self.app.loading_screen_dismissed:
-            return
         self.clear()
 
         diff_output: list[str] = []
@@ -284,7 +279,7 @@ class DiffView(RichLog, AppType):
                 self.write(Text(Chars.bullet + line, style="dim"))
 
 
-class GitLogView(DataTable[Text], AppType):
+class GitLogView(DataTable[Text]):
 
     path: reactive[Path] = reactive(chezmoi.destDir)
 
@@ -323,8 +318,6 @@ class GitLogView(DataTable[Text], AppType):
                 self.add_row(*(Text(cell) for cell in columns))
 
     def watch_path(self) -> None:
-        if not self.app.loading_screen_dismissed:
-            return
         self.populate_data_table(self.path)
 
 
