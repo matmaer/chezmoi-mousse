@@ -50,6 +50,7 @@ class BorderTitle(StrEnum):
 class BorderSubTitle(StrEnum):
     esc_to_close = " escape key to close "
     double_click_esc_to_close = " double click or escape key to close "
+    esc_to_exit_app = " escape key to exit app"
 
 
 class Chars(StrEnum):
