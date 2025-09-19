@@ -49,6 +49,16 @@ class NodeData:
 
 
 @dataclass
+class DirNodeData(NodeData):
+    pass
+
+
+@dataclass
+class FileNodeData(NodeData):
+    pass
+
+
+@dataclass
 class OperateData:
     path: Path | None = None
     operation_executed: bool = False

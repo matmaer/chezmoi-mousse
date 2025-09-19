@@ -10,7 +10,6 @@ These classes
 """
 
 from collections.abc import Iterable
-from dataclasses import dataclass
 from pathlib import Path
 
 from rich.style import Style
@@ -30,6 +29,8 @@ from chezmoi_mousse.constants import (
 from chezmoi_mousse.id_typing import (
     AppType,
     Chars,
+    DirNodeData,
+    FileNodeData,
     NodeData,
     OperateBtn,
     OperateHelp,
@@ -291,8 +292,7 @@ class GitLogView(DataTable[Text], AppType):
 
     path: reactive[Path | None] = reactive(None, init=False)
 
-    # TODO: implement footer binding to toggle text wrap in second column
-    # of the datatable
+    # TODO: implement footer binding to toggle text wrap in second column of the datatable
 
     def __init__(self, *, ids: TabIds | ScreenIds) -> None:
         self.ids = ids
@@ -329,16 +329,6 @@ class GitLogView(DataTable[Text], AppType):
         if self.path is None:
             return
         self.populate_data_table(self.path)
-
-
-@dataclass
-class DirNodeData(NodeData):
-    pass
-
-
-@dataclass
-class FileNodeData(NodeData):
-    pass
 
 
 class TreeBase(CustomRenderLabel, AppType):  # instead of Tree[NodeData]
