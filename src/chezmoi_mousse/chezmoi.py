@@ -506,13 +506,25 @@ class Chezmoi:
     perform = ChangeCommand()
 
     def __init__(self) -> None:
-        self.config_dump: ParsedJson = json.loads(ReadCommand.dump_config())
-        self.destDir: Path = Path(self.config_dump["destDir"])
-        self.sourceDir: Path = Path(self.config_dump["sourceDir"])
-        self.run = ReadCommand(
-            dest_dir=Path(self.config_dump["destDir"]),
-            source_dir=Path(self.config_dump["sourceDir"]),
-        )
+        self.destDir = Path()
+        self.sourceDir: Path = Path()
+        if not APP_CFG.chezmoi_found:
+            self.run = ReadCommand(
+                dest_dir=self.destDir, source_dir=self.sourceDir
+            )
+        else:
+            self.config_dump: ParsedJson = json.loads(
+                ReadCommand.dump_config()
+            )
+            self.destDir: Path = Path(self.config_dump["destDir"])
+            self.sourceDir: Path = Path(self.config_dump["sourceDir"])
+            self.run = ReadCommand(
+                dest_dir=self.destDir, source_dir=self.sourceDir
+            )
+            self.run = ReadCommand(
+                dest_dir=Path(self.config_dump["destDir"]),
+                source_dir=Path(self.config_dump["sourceDir"]),
+            )
 
         self.io_commands: dict[str, list[str]] = {}
         io_cmds: list[IoCmd] = [
