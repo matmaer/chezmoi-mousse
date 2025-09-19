@@ -21,7 +21,7 @@ from textual.widgets import DataTable, DirectoryTree, RichLog, Static
 from textual.widgets.tree import TreeNode
 
 import chezmoi_mousse.custom_theme as theme
-from chezmoi_mousse.chezmoi import chezmoi, managed_status
+from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.constants import (
     ScreenStr,
     TcssStr,
@@ -144,7 +144,7 @@ class ContentsView(RichLog):
         except FileNotFoundError:
             # FileNotFoundError is raised both when a file or a directory
             # does not exist
-            if self.path in managed_status.file_paths:
+            if self.path in chezmoi.file_paths:
                 if not chezmoi.run.cat(self.path):
                     self.write(
                         Text("File contains only whitespace", style="dim")
@@ -167,7 +167,7 @@ class ContentsView(RichLog):
                 self.write("Source directory:")
                 self.write(f"{chezmoi.sourceDir}")
                 self.write(Text("(sourceDir)", style="dim"))
-            elif self.path in managed_status.dir_paths:
+            elif self.path in chezmoi.dir_paths:
                 self.write(f"Managed directory: {self.path}")
             else:
                 self.write(f"Unmanaged directory: {self.path}")
@@ -215,18 +215,18 @@ class DiffView(RichLog):
 
         diff_output: list[str] = []
         if not self.reverse:
-            self.status_files = managed_status.apply_files
-            self.status_dirs = managed_status.apply_dirs
+            self.status_files = chezmoi.apply_files
+            self.status_dirs = chezmoi.apply_dirs
         elif self.reverse:
-            self.status_files = managed_status.re_add_files
-            self.status_dirs = managed_status.re_add_dirs
+            self.status_files = chezmoi.re_add_files
+            self.status_dirs = chezmoi.re_add_dirs
 
         # create a diff view if the current path is a directory
         if self.path in self.status_dirs or self.path == chezmoi.destDir:
             tab_name = (
                 TabName.re_add_tab if self.reverse else TabName.apply_tab
             )
-            status_files_in_dir = managed_status.files_with_status_in(
+            status_files_in_dir = chezmoi.files_with_status_in(
                 tab_name, self.path
             )
             if not status_files_in_dir:
@@ -408,24 +408,24 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
     # create node data methods
     def create_dir_node_data(self, *, path: Path) -> DirNodeData:
         assert path != chezmoi.destDir, "Root node should not be created again"
-        assert path in managed_status.dir_paths
+        assert path in chezmoi.dir_paths
         status_code: str = ""
         if self.tab_name == TabName.apply_tab:
-            status_code: str = managed_status.apply_dirs[path]
+            status_code: str = chezmoi.apply_dirs[path]
         elif self.tab_name == TabName.re_add_tab:
-            status_code: str = managed_status.re_add_dirs[path]
+            status_code: str = chezmoi.re_add_dirs[path]
         if not status_code:
             status_code = "X"
         found: bool = path.exists()
         return DirNodeData(path=path, found=found, status=status_code)
 
     def create_file_node_data(self, *, path: Path) -> FileNodeData:
-        assert path in managed_status.file_paths
+        assert path in chezmoi.file_paths
         status_code: str = ""
         if self.tab_name == TabName.apply_tab:
-            status_code: str = managed_status.apply_files[path]
+            status_code: str = chezmoi.apply_files[path]
         elif self.tab_name == TabName.re_add_tab:
-            status_code: str = managed_status.re_add_files[path]
+            status_code: str = chezmoi.re_add_files[path]
         if not status_code:
             status_code = "X"
         found: bool = path.exists()
@@ -436,9 +436,9 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
         # checks for any, direct children or no matter how deep in subdirs
         files_dict: PathDict = {}
         if tab_name == TabName.apply_tab:
-            files_dict = managed_status.apply_files
+            files_dict = chezmoi.apply_files
         elif tab_name == TabName.re_add_tab:
-            files_dict = managed_status.re_add_files
+            files_dict = chezmoi.re_add_files
 
         return any(
             f
@@ -451,9 +451,9 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
         # checks for any, direct children or no matter how deep in subdirs
         dirs_dict: PathDict = {}
         if tab_name == TabName.apply_tab:
-            dirs_dict = managed_status.apply_dirs
+            dirs_dict = chezmoi.apply_dirs
         elif tab_name == TabName.re_add_tab:
-            dirs_dict = managed_status.re_add_dirs
+            dirs_dict = chezmoi.re_add_dirs
         if dir_path in dirs_dict and dirs_dict[dir_path] != "X":
             return True
 
@@ -496,7 +496,7 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
 
     def add_unchanged_leaves(self, *, tree_node: TreeNode[NodeData]) -> None:
         assert isinstance(tree_node.data, DirNodeData)
-        unchanged_in_dir: list[Path] = managed_status.files_without_status_in(
+        unchanged_in_dir: list[Path] = chezmoi.files_without_status_in(
             self.tab_name, tree_node.data.path
         )
         for file_path in unchanged_in_dir:
@@ -519,7 +519,7 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
 
     def add_status_leaves(self, *, tree_node: TreeNode[NodeData]) -> None:
         assert isinstance(tree_node.data, DirNodeData)
-        status_file_paths: list[Path] = managed_status.files_with_status_in(
+        status_file_paths: list[Path] = chezmoi.files_with_status_in(
             self.tab_name, tree_node.data.path
         )
         # get current visible leaves
@@ -552,7 +552,7 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
         current_dir_paths = [
             dir_node.data.path for dir_node in current_dirs if dir_node.data
         ]
-        for dir_path in managed_status.managed_dirs_in(tree_node.data.path):
+        for dir_path in chezmoi.managed_dirs_in(tree_node.data.path):
             if dir_path in current_dir_paths:
                 continue
             if self.should_show_dir_node(
@@ -714,9 +714,9 @@ class FlatTree(TreeBase):
         self.root.remove_children()
         files_dict: PathDict = {}
         if self.tab_name == TabName.apply_tab:
-            files_dict = managed_status.apply_files
+            files_dict = chezmoi.apply_files
         elif self.tab_name == TabName.re_add_tab:
-            files_dict = managed_status.re_add_files
+            files_dict = chezmoi.re_add_files
         for file_path, status in files_dict.items():
             if status != "X":
                 node_data = self.create_file_node_data(path=file_path)
@@ -726,9 +726,9 @@ class FlatTree(TreeBase):
     def add_all_unchanged_files(self) -> None:
         files_dict: PathDict = {}
         if self.tab_name == TabName.apply_tab:
-            files_dict = managed_status.apply_files
+            files_dict = chezmoi.apply_files
         elif self.tab_name == TabName.re_add_tab:
-            files_dict = managed_status.re_add_files
+            files_dict = chezmoi.re_add_files
         for file_path, status in files_dict.items():
             if status == "X":
                 node_data = self.create_file_node_data(path=file_path)
@@ -757,8 +757,8 @@ class FilteredDirTree(DirectoryTree):
     unwanted: reactive[bool] = reactive(False, init=False)
 
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
-        managed_dirs = managed_status.dir_paths
-        managed_files = managed_status.file_paths
+        managed_dirs = chezmoi.dir_paths
+        managed_files = chezmoi.file_paths
 
         # Switches: Red - Red (default)
         if not self.unmanaged_dirs and not self.unwanted:

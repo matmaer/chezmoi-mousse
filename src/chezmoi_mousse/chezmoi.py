@@ -559,6 +559,30 @@ class Chezmoi:
     def op_log(self):
         return op_log
 
+    @property
+    def dir_paths(self) -> list[Path]:
+        return [Path(p) for p in self.managed_dirs.list_out]
+
+    @property
+    def file_paths(self) -> list[Path]:
+        return [Path(p) for p in self.managed_files.list_out]
+
+    @property
+    def apply_dirs(self) -> PathDict:
+        return self.create_status_dict(TabName.apply_tab, "dirs")
+
+    @property
+    def apply_files(self) -> PathDict:
+        return self.create_status_dict(TabName.apply_tab, "files")
+
+    @property
+    def re_add_dirs(self) -> PathDict:
+        return self.create_status_dict(TabName.re_add_tab, "dirs")
+
+    @property
+    def re_add_files(self) -> PathDict:
+        return self.create_status_dict(TabName.re_add_tab, "files")
+
     def update_managed_status_data(self) -> None:
         # Update data that the managed_status property depends on
         # TODO: do not run when operation is cancelled and properly update
@@ -569,21 +593,7 @@ class Chezmoi:
         self.dir_status_lines.update()
         self.file_status_lines.update()
 
-
-chezmoi = Chezmoi()
-
-
-class ManagedStatus:
-
-    @property
-    def dir_paths(self) -> list[Path]:
-        return [Path(p) for p in chezmoi.managed_dirs.list_out]
-
-    @property
-    def file_paths(self) -> list[Path]:
-        return [Path(p) for p in chezmoi.managed_files.list_out]
-
-    def _create_status_dict(
+    def create_status_dict(
         self, tab_name: TabName, kind: Literal["dirs", "files"]
     ) -> PathDict:
         path_dict: PathDict = {}
@@ -591,10 +601,10 @@ class ManagedStatus:
         status_codes: str = ""
         if kind == "dirs":
             managed_paths = self.dir_paths
-            status_lines = chezmoi.dir_status_lines.list_out
+            status_lines = self.dir_status_lines.list_out
         elif kind == "files":
             managed_paths = self.file_paths
-            status_lines = chezmoi.file_status_lines.list_out
+            status_lines = self.file_status_lines.list_out
 
         if tab_name == TabName.apply_tab:
             status_codes = "ADM"
@@ -630,22 +640,6 @@ class ManagedStatus:
                 path_dict[path] = "X"
         return path_dict
 
-    @property
-    def apply_dirs(self) -> PathDict:
-        return self._create_status_dict(TabName.apply_tab, "dirs")
-
-    @property
-    def apply_files(self) -> PathDict:
-        return self._create_status_dict(TabName.apply_tab, "files")
-
-    @property
-    def re_add_dirs(self) -> PathDict:
-        return self._create_status_dict(TabName.re_add_tab, "dirs")
-
-    @property
-    def re_add_files(self) -> PathDict:
-        return self._create_status_dict(TabName.re_add_tab, "files")
-
     def managed_dirs_in(self, dir_path: Path) -> list[Path]:
         # checks only direct children
         return [p for p in self.dir_paths if p.parent == dir_path]
@@ -679,4 +673,4 @@ class ManagedStatus:
         ]
 
 
-managed_status = ManagedStatus()
+chezmoi = Chezmoi()
