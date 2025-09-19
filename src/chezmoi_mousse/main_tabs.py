@@ -519,20 +519,14 @@ class DoctorTab(Vertical):
         Id.doctor.button_id("#", btn=OperateBtn.refresh_doctor_data),
     )
     def on_refresh_doctor_data(self, event: Button.Pressed) -> None:
-        if not chezmoi.app_cfg.chezmoi_found:
-            self.notify(
-                "The chezmoi command is not available", severity="error"
-            )
+
         chezmoi.doctor.update()
         self.query_one(DataTable[Text]).clear()
         self.populate_doctor_data()
         self.notify("Doctor data refreshed")
 
     def populate_doctor_data(self) -> None:
-        if not chezmoi.app_cfg.chezmoi_found:
-            self.notify(
-                "The chezmoi command is not available", severity="error"
-            )
+
         if not chezmoi.doctor.list_out:
             return
         doctor_table: DataTable[Text] = self.query_one(DataTable[Text])

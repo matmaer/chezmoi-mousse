@@ -1,20 +1,19 @@
+import json
+import os
+from importlib.resources import files
 from pathlib import Path
 
+from rich.text import Text
 from textual import on
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import Vertical, VerticalGroup
+from textual.containers import Center, Horizontal, Vertical, VerticalGroup
 from textual.events import Click
 from textual.screen import Screen
-from textual.widgets import Button, Link, Static
+from textual.widgets import Button, Collapsible, Label, Link, Pretty, Tree
 
 from chezmoi_mousse.chezmoi import chezmoi, op_log
-from chezmoi_mousse.constants import (
-    BorderSubTitle,
-    OperateVerbs,
-    ScreenStr,
-    TcssStr,
-)
+from chezmoi_mousse.constants import BorderSubTitle, OperateVerbs, TcssStr
 from chezmoi_mousse.containers import ButtonsHorizontal
 from chezmoi_mousse.id_typing import (
     AppType,
@@ -23,13 +22,13 @@ from chezmoi_mousse.id_typing import (
     OperateBtn,
     OperateButtons,
     OperateData,
+    ParsedJson,
     TabIds,
     TabName,
     ViewName,
 )
 from chezmoi_mousse.messages import OperateMessage
 from chezmoi_mousse.widgets import (
-    ChezmoiInstallHelp,
     ContentsView,
     DiffView,
     GitLogView,
@@ -37,7 +36,7 @@ from chezmoi_mousse.widgets import (
 )
 
 
-class ScreensBase(Screen[None]):
+class ScreensBase(Screen[None], AppType):
 
     BINDINGS = [
         Binding(
@@ -51,15 +50,23 @@ class ScreensBase(Screen[None]):
 
     def on_click(self, event: Click) -> None:
         event.stop()
-        if event.chain == 2 and self.screen_id != Id.operate_screen.screen_id:
+        if (
+            event.chain == 2
+            and self.screen_id == Id.maximized_screen.screen_id
+        ):
             self.dismiss()
 
     def action_esc_dismiss(self) -> None:
-        if self.screen_id != Id.operate_screen.screen_id:
+        if self.screen_id in [
+            Id.maximized_screen.screen_id,
+            Id.operate_screen.screen_id,
+        ]:
             self.dismiss()
+        elif self.screen_id == Id.install_help_screen.screen_id:
+            self.app.exit()
 
 
-class Operate(ScreensBase, AppType):
+class Operate(ScreensBase):
 
     def __init__(
         self, *, tab_ids: TabIds, path: Path, buttons: OperateButtons
@@ -243,27 +250,50 @@ class InstallHelp(ScreensBase):
 
     def __init__(self) -> None:
         super().__init__(screen_id=Id.install_help_screen.screen_id)
-
-    def on_mount(self) -> None:
-        self.border_subtitle = BorderSubTitle.double_click_esc_to_close
+        self.path_env = os.environ.get("PATH") or ""
 
     def compose(self) -> ComposeResult:
-        with Vertical(classes=TcssStr.install_help_vertical):
-            yield Static(
-                (
-                    "Chezmoi is not installed, it is not bundled with this "
-                    "application. "
-                    "This is intentional to avoid the need for privileged "
-                    "access like root or admin by the app.\n\n"
-                    "You can explore the app but there will be no data or "
-                    "operations available."
+        with Vertical(classes=TcssStr.install_help):
+            yield Center(Label(("Chezmoi is not installed or not found.")))
+            if not self.path_env:
+                yield Center(Label(("The $PATH variable is empty")))
+            else:
+                yield Collapsible(
+                    Pretty(self.path_env),
+                    title="'chezmoi' command not found in any search path",
                 )
-            )
-            yield Link(
-                "chezmoi.io/install",
-                url="https://chezmoi.io/install",
-                classes=TcssStr.internet_links,
-            )
-            yield ChezmoiInstallHelp(
-                label=" Install chezmoi ", id=ScreenStr.install_help_tree
-            )
+            with Horizontal():
+                with VerticalGroup():
+                    yield Tree(label=" Install chezmoi ")
+                with VerticalGroup():
+                    yield Link(
+                        "chezmoi.io/install",
+                        url="https://chezmoi.io/install",
+                        classes=TcssStr.internet_links,
+                    )
+                    yield Button("exit app", variant="primary", flat=True)
+
+    def on_mount(self) -> None:
+        self.border_subtitle = BorderSubTitle.esc_to_exit_app
+        help_tree: Tree[ParsedJson] = self.query_exactly_one(Tree[ParsedJson])
+        help_tree.show_root = False
+        pkg_root = (
+            Path(str(files(__package__)))
+            if __package__
+            else Path(__file__).resolve().parent
+        )
+        data_file: Path = pkg_root / "data" / "chezmoi_install_commands.json"
+        install_help: ParsedJson = json.loads(data_file.read_text())
+        for k, v in install_help.items():
+            help_tree.root.add(label=k, data=v)
+        for child in help_tree.root.children:
+            assert child.data is not None
+            install_commands: dict[str, str] = child.data
+            for k, v in install_commands.items():
+                child_label = Text(k, style="warning")
+                new_child = child.add(label=child_label)
+                cmd_label = Text(v)
+                new_child.add_leaf(label=cmd_label)
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        self.app.exit()

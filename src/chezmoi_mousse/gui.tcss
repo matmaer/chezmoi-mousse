@@ -285,17 +285,45 @@
 }
 
 .screen_base {
-  border-top: wide $primary-darken-2;
-  border-bottom: $primary-darken-2;
+  border-top: outer $primary-darken-3;
+  border-bottom: $primary;
   border-title-style: bold;
   overflow-y: hidden;
 
-  &>.install_help_vertical {
-    & > Link {
-      margin: 1 0;
+  .install_help {
+    padding: 0 2;
+    content-align: center middle;
+    & Button {
+      background-tint: initial;
+      width: 24;
     }
-    & > Tree {
+    & Tree {
+      width: auto;
+      padding: 0 1;
+      margin-right: 2;
       color: $primary-lighten-3;
+    }
+    & VerticalGroup {
+      width: auto;
+      & Link {
+        background: $primary-muted;
+        background-tint: $primary-muted;
+        border: block $primary-muted;
+        content-align: center middle;
+        color: $text-primary;
+        text-style: bold;
+        width: 24;
+        &:hover {
+          color: $text;
+          background: $primary;
+          background-tint: $primary;
+          border: block $primary;
+        }
+      }
+      & Label {
+        border: wide $background;
+        align: center middle;
+      }
     }
   }
 

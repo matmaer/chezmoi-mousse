@@ -9,23 +9,20 @@ These classes
 - don't have key bindings
 """
 
-import json
 from collections.abc import Iterable
 from dataclasses import dataclass
-from importlib.resources import files
 from pathlib import Path
 
 from rich.style import Style
 from rich.text import Text
 from textual.events import Key
 from textual.reactive import reactive
-from textual.widgets import DataTable, DirectoryTree, RichLog, Static, Tree
+from textual.widgets import DataTable, DirectoryTree, RichLog, Static
 from textual.widgets.tree import TreeNode
 
 import chezmoi_mousse.custom_theme as theme
 from chezmoi_mousse.chezmoi import chezmoi, managed_status
 from chezmoi_mousse.constants import (
-    BorderTitle,
     ScreenStr,
     TcssStr,
     UnwantedDirs,
@@ -37,7 +34,6 @@ from chezmoi_mousse.id_typing import (
     NodeData,
     OperateBtn,
     OperateHelp,
-    ParsedJson,
     PathDict,
     ScreenIds,
     TabIds,
@@ -332,30 +328,6 @@ class GitLogView(DataTable[Text]):
         if not self.path:
             return
         self.populate_data_table(self.path)
-
-
-class ChezmoiInstallHelp(Tree[ParsedJson]):
-
-    def on_mount(self) -> None:
-        pkg_root = (
-            files(__package__)
-            if __package__
-            else Path(__file__).resolve().parent
-        )
-        self.show_root = False
-        data_file = pkg_root / "data" / "chezmoi_install_commands.json"
-        self.border_title = BorderTitle.install_chezmoi
-        install_help: ParsedJson = json.loads(data_file.read_text())
-        for k, v in install_help.items():
-            self.root.add(label=k, data=v)
-        for child in self.root.children:
-            assert child.data is not None
-            install_commands: dict[str, str] = child.data
-            for k, v in install_commands.items():
-                child_label = Text(k, style=theme.vars["text-warning"])
-                new_child = child.add(label=child_label)
-                cmd_label = Text(v, style=theme.vars["foreground"])
-                new_child.add_leaf(label=cmd_label)
 
 
 @dataclass

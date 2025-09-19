@@ -21,7 +21,6 @@ class LogIds(StrEnum):
 
 
 class ScreenStr(StrEnum):
-    install_help_tree = auto()
     operate_info = auto()
 
 
@@ -50,7 +49,7 @@ class BorderTitle(StrEnum):
 class BorderSubTitle(StrEnum):
     esc_to_close = " escape key to close "
     double_click_esc_to_close = " double click or escape key to close "
-    esc_to_exit_app = " escape key to exit app"
+    esc_to_exit_app = " escape key to exit app "
 
 
 class Chars(StrEnum):
@@ -164,7 +163,7 @@ class TcssStr(StrEnum):
     input_field_vertical = auto()
     input_select = auto()
     input_select_vertical = auto()
-    install_help_vertical = auto()
+    install_help = auto()
     internet_links = auto()
     last_clicked = auto()
     log_views = auto()
