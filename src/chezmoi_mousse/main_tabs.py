@@ -33,12 +33,7 @@ from chezmoi_mousse.chezmoi import (
     init_log,
     output_log,
 )
-from chezmoi_mousse.constants import (
-    FLOW,
-    BorderTitle,
-    DoctorCollapsibles,
-    TcssStr,
-)
+from chezmoi_mousse.constants import FLOW, BorderTitle, TcssStr
 from chezmoi_mousse.containers import (
     ButtonsHorizontal,
     ButtonsVertical,
@@ -503,32 +498,13 @@ class DoctorTab(Vertical):
     def compose(self) -> ComposeResult:
         yield DataTable[Text](id=Id.doctor.datatable_id(), show_cursor=False)
         with VerticalGroup(classes=TcssStr.doctor_vertical_group):
-            yield ButtonsHorizontal(
-                tab_ids=Id.doctor,
-                buttons=(OperateBtn.refresh_doctor_data,),
-                area=Area.bottom,
-            )
 
             yield Collapsible(
-                ListView(id=DoctorCollapsibles.pw_mgr_info.name),
-                title=DoctorCollapsibles.pw_mgr_info,
+                ListView(), title="Password managers not found in $PATH"
             )
-
-    @on(
-        Button.Pressed,
-        Id.doctor.button_id("#", btn=OperateBtn.refresh_doctor_data),
-    )
-    def on_refresh_doctor_data(self, event: Button.Pressed) -> None:
-
-        chezmoi.doctor.update()
-        self.query_one(DataTable[Text]).clear()
-        self.populate_doctor_data()
-        self.notify("Doctor data refreshed")
 
     def populate_doctor_data(self) -> None:
 
-        if not chezmoi.doctor.list_out:
-            return
         doctor_table: DataTable[Text] = self.query_one(DataTable[Text])
         doctor_data = chezmoi.doctor.list_out
         if not doctor_table.columns:

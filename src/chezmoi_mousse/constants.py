@@ -2,28 +2,6 @@
 
 from enum import StrEnum, auto
 
-#######################################################################
-# StrEnum classes used for id's, should be integrated in id_typing.py #
-#######################################################################
-
-
-class DoctorCollapsibles(StrEnum):
-    pw_mgr_info = "supported password managers (link and description)"
-
-    @property
-    def qid(self) -> str:
-        return f"#{self.name}"
-
-
-class LogIds(StrEnum):
-    init_log = auto()
-    operate_log = auto()
-
-
-########################
-# Pure StrEnum classes #
-########################
-
 
 class Area(StrEnum):
     bottom = auto()
@@ -57,7 +35,7 @@ class Chars(StrEnum):
     forget_file_info_border = (
         "\u2716 forget file \u2716"  # '\N{HEAVY MULTIPLICATION X}'
     )
-    gear = "\u2699"  # '\N{GEAR}'
+    # gear = "\u2699"  # '\N{GEAR}'
     lower_3_8ths_block = "\u2583"  # "\N{LOWER THREE EIGHTHS BLOCK}"
     re_add = f"local {'\u2014' * 3}\u2192 chezmoi"  # '\N{EM DASH}', '\N{RIGHTWARDS ARROW}'
     re_add_file_info_border = f"local {'\u2014' * 3}\u2192 chezmoi"  # '\N{EM DASH}', '\N{RIGHTWARDS ARROW}'
@@ -93,7 +71,6 @@ class OperateBtn(StrEnum):
     operate_dismiss = "Cancel"
     purge_repo = "Purge Existing Repo"
     re_add_file = "Re-Add File"
-    refresh_doctor_data = "Re-run 'chezmoi doctor' command (refresh data)"
 
 
 class OperateVerbs(StrEnum):

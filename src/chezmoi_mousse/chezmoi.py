@@ -3,7 +3,7 @@ import os
 import subprocess
 from dataclasses import dataclass
 from datetime import datetime
-from enum import Enum
+from enum import Enum, StrEnum, auto
 from pathlib import Path
 from shutil import which
 from types import SimpleNamespace
@@ -17,7 +17,6 @@ from chezmoi_mousse.constants import (
     BorderTitle,
     Chars,
     IoVerbs,
-    LogIds,
     OperateVerbs,
     ReadVerbs,
     TabName,
@@ -70,6 +69,11 @@ APP_CFG = AppConfig()
 ########################
 # Create Log instances #
 ########################
+
+
+class LogIds(StrEnum):
+    init_log = auto()
+    operate_log = auto()
 
 
 class CommandLog(RichLog):
@@ -569,19 +573,19 @@ class Chezmoi:
 
     @property
     def apply_dirs(self) -> PathDict:
-        return self.create_status_dict(TabName.apply_tab, "dirs")
+        return self._create_status_dict(TabName.apply_tab, "dirs")
 
     @property
     def apply_files(self) -> PathDict:
-        return self.create_status_dict(TabName.apply_tab, "files")
+        return self._create_status_dict(TabName.apply_tab, "files")
 
     @property
     def re_add_dirs(self) -> PathDict:
-        return self.create_status_dict(TabName.re_add_tab, "dirs")
+        return self._create_status_dict(TabName.re_add_tab, "dirs")
 
     @property
     def re_add_files(self) -> PathDict:
-        return self.create_status_dict(TabName.re_add_tab, "files")
+        return self._create_status_dict(TabName.re_add_tab, "files")
 
     def update_managed_status_data(self) -> None:
         # Update data that the managed_status property depends on
@@ -593,7 +597,7 @@ class Chezmoi:
         self.dir_status_lines.update()
         self.file_status_lines.update()
 
-    def create_status_dict(
+    def _create_status_dict(
         self, tab_name: TabName, kind: Literal["dirs", "files"]
     ) -> PathDict:
         path_dict: PathDict = {}
