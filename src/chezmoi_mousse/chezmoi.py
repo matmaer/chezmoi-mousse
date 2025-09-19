@@ -47,7 +47,7 @@ class AppConfig:
         self.dev_mode = os.environ.get("CHEZMOI_MOUSSE_DEV") == "1"
         self.changes_enabled = os.environ.get("MOUSSE_ENABLE_CHANGES") == "1"
         self.pretend_chezmoi_not_found = (
-            os.environ.get("PREDEND_CHEZMOI_NOT_FOUND") == "1"
+            os.environ.get("PRETEND_CHEZMOI_NOT_FOUND") == "1"
         )
         self.which_chezmoi = which(self.name)
 
