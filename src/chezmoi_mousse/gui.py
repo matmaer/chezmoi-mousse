@@ -168,6 +168,7 @@ class ChezmoiGUI(App[None]):
         assert isinstance(message.dismiss_data.path, Path)
         for tree_cls in (ManagedTree, FlatTree, ExpandedTree):
             for tree in self.query(tree_cls):
+                # TODO: nodes don't get removed in the GUI after an operation
                 tree.remove_node_path(node_path=message.dismiss_data.path)
 
         self.query_one(FilteredDirTree).reload()
