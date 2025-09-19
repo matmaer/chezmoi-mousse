@@ -559,15 +559,15 @@ class Chezmoi:
     def op_log(self):
         return op_log
 
-
-# def _update_managed_status_data() -> None:
-#     # Update data that the managed_status property depends on
-#     # TODO: do not run when operation is cancelled and properly update
-#     # Tree and DirectoryTree widgets after a relevant operation
-#     chezmoi.managed_dirs.update()
-#     chezmoi.managed_files.update()
-#     chezmoi.dir_status_lines.update()
-#     chezmoi.file_status_lines.update()
+    def update_managed_status_data(self) -> None:
+        # Update data that the managed_status property depends on
+        # TODO: do not run when operation is cancelled and properly update
+        # Tree widgets after a relevant operation
+        # DirectoryTree refreshes correctly
+        self.managed_dirs.update()
+        self.managed_files.update()
+        self.dir_status_lines.update()
+        self.file_status_lines.update()
 
 
 chezmoi = Chezmoi()

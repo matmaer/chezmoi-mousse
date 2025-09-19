@@ -166,11 +166,16 @@ class ChezmoiGUI(App[None]):
     @on(OperateMessage)
     def handle_operate_result(self, message: OperateMessage) -> None:
         assert isinstance(message.dismiss_data.path, Path)
-        for tree_cls in (ManagedTree, FlatTree, ExpandedTree):
-            for tree in self.query(tree_cls):
-                # TODO: nodes don't get removed in the GUI after an operation
-                tree.remove_node_path(node_path=message.dismiss_data.path)
-
+        chezmoi.update_managed_status_data()
+        managed_trees = self.query(ManagedTree)
+        for tree in managed_trees:
+            tree.remove_node_path(node_path=message.dismiss_data.path)
+        flat_trees = self.query(FlatTree)
+        for tree in flat_trees:
+            tree.remove_node_path(node_path=message.dismiss_data.path)
+        expanded_trees = self.query(ExpandedTree)
+        for tree in expanded_trees:
+            tree.remove_node_path(node_path=message.dismiss_data.path)
         self.query_one(FilteredDirTree).reload()
 
     @on(InvalidInputMessage)

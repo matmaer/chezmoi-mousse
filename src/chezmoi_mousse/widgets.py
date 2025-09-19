@@ -586,13 +586,24 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
 
     def remove_node_path(self, *, node_path: Path) -> None:
         # find corresponding node for the given path
+        parents_with_removeable_nodes: list[TreeNode[NodeData] | None] = []
         for node in self.get_expanded_nodes():
             if (
                 node.data
                 and node.data.path == node_path
                 and node.data.path != chezmoi.destDir
             ):
+                parents_with_removeable_nodes.append(node.parent)
                 node.remove()
+        # after removing the node, check if the parent dir node contains any leaves
+        for parent in parents_with_removeable_nodes:
+            if (
+                parent is not None
+                and parent.data
+                and isinstance(parent.data, DirNodeData)
+            ):
+                parent.remove()
+        self.refresh()
 
 
 class ManagedTree(TreeBase):
