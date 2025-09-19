@@ -168,7 +168,7 @@ git
 - :black_circle: git.autoAdd
 - :bulb: git.autoCommit
 - :bulb: git.autoPush
-- :large_blue_diamond: git.command
+- :green_circle: git.command (`chezmoi git -- <git_command>` is used to run `git`)
 - :green_circle: git.commitMessageTemplate
 - :green_circle: git.commitMessageTemplateFile
 - :black_circle: git.lfs
