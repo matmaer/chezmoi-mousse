@@ -41,7 +41,6 @@ class BorderTitle(StrEnum):
     app_log = " App Log "
     debug_log = " Debug Log "
     init_log = " Init Log "
-    install_chezmoi = " Install chezmoi "
     operante_log = " Operate Log "
     output_log = " Commands With Raw Stdout "
 
