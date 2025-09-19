@@ -587,6 +587,38 @@ class Chezmoi:
     def re_add_files(self) -> PathDict:
         return self._create_status_dict(TabName.re_add_tab, "files")
 
+    def files_with_status_in(
+        self, tab_name: TabName, dir_path: Path
+    ) -> list[Path]:
+        files_dict: PathDict = {}
+        if tab_name == TabName.apply_tab:
+            files_dict = self.apply_files
+        elif tab_name == TabName.re_add_tab:
+            files_dict = self.re_add_files
+        return [
+            p
+            for p, status in files_dict.items()
+            if status != "X" and p.parent == dir_path
+        ]
+
+    def files_without_status_in(
+        self, tab_name: TabName, dir_path: Path
+    ) -> list[Path]:
+        files_dict: PathDict = {}
+        if tab_name == TabName.apply_tab:
+            files_dict = self.apply_files
+        elif tab_name == TabName.re_add_tab:
+            files_dict = self.re_add_files
+        return [
+            p
+            for p, status in files_dict.items()
+            if status == "X" and p.parent == dir_path
+        ]
+
+    def managed_dirs_in(self, dir_path: Path) -> list[Path]:
+        # checks only direct children
+        return [p for p in self.dir_paths if p.parent == dir_path]
+
     def update_managed_status_data(self) -> None:
         # Update data that the managed_status property depends on
         # TODO: do not run when operation is cancelled and properly update
@@ -643,38 +675,6 @@ class Chezmoi:
             else:
                 path_dict[path] = "X"
         return path_dict
-
-    def managed_dirs_in(self, dir_path: Path) -> list[Path]:
-        # checks only direct children
-        return [p for p in self.dir_paths if p.parent == dir_path]
-
-    def files_with_status_in(
-        self, tab_name: TabName, dir_path: Path
-    ) -> list[Path]:
-        files_dict: PathDict = {}
-        if tab_name == TabName.apply_tab:
-            files_dict = self.apply_files
-        elif tab_name == TabName.re_add_tab:
-            files_dict = self.re_add_files
-        return [
-            p
-            for p, status in files_dict.items()
-            if status != "X" and p.parent == dir_path
-        ]
-
-    def files_without_status_in(
-        self, tab_name: TabName, dir_path: Path
-    ) -> list[Path]:
-        files_dict: PathDict = {}
-        if tab_name == TabName.apply_tab:
-            files_dict = self.apply_files
-        elif tab_name == TabName.re_add_tab:
-            files_dict = self.re_add_files
-        return [
-            p
-            for p, status in files_dict.items()
-            if status == "X" and p.parent == dir_path
-        ]
 
 
 chezmoi = Chezmoi()
