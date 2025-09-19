@@ -223,10 +223,6 @@ class ChezmoiGUI(App[None]):
         active_pane_id = self.query_one(TabbedContent).active
         tab_ids = Id.get_tab_ids_from_pane_id(pane_id=active_pane_id)
 
-        # Initialize screen parameters
-        id_to_maximize: str | None = None
-        current_path: Path | None = chezmoi.destDir
-
         if tab_ids.tab_name in (TabName.apply_tab, TabName.re_add_tab):
             # Determine what view to show in the screen
             id_to_maximize = self.query_one(
@@ -243,6 +239,9 @@ class ChezmoiGUI(App[None]):
 
             id_to_maximize = add_tab_contents_view.id
             current_path = getattr(add_tab_contents_view, "path")
+        else:
+            self.notify("Cannot maximize this widget", severity="error")
+            return
 
         self.push_screen(
             Maximized(

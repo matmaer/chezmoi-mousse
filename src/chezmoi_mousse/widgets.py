@@ -30,6 +30,7 @@ from chezmoi_mousse.constants import (
     ViewName,
 )
 from chezmoi_mousse.id_typing import (
+    AppType,
     Chars,
     NodeData,
     OperateBtn,
@@ -88,9 +89,9 @@ class OperateInfo(Static):
         self.update("\n".join(lines_to_write))
 
 
-class ContentsView(RichLog):
+class ContentsView(RichLog, AppType):
 
-    path: reactive[Path | None] = reactive(None, init=False)
+    path: reactive[Path] = reactive(chezmoi.destDir)
 
     def __init__(self, *, ids: TabIds | ScreenIds) -> None:
         self.ids = ids
@@ -113,7 +114,6 @@ class ContentsView(RichLog):
         )
 
     def update_contents_view(self) -> None:
-        assert isinstance(self.path, Path)
         truncated_message = ""
         try:
             if self.path.is_file() and self.path.stat().st_size > 150 * 1024:
@@ -177,13 +177,15 @@ class ContentsView(RichLog):
             chezmoi.app_log.error("Error reading file")
 
     def watch_path(self) -> None:
+        if not self.app.loading_screen_dismissed:
+            return
         self.clear()
         self.update_contents_view()
 
 
-class DiffView(RichLog):
+class DiffView(RichLog, AppType):
 
-    path: reactive[Path | None] = reactive(None, init=False)
+    path: reactive[Path] = reactive(chezmoi.destDir)
 
     def __init__(self, *, ids: TabIds | ScreenIds, reverse: bool) -> None:
         self.ids = ids
@@ -208,10 +210,9 @@ class DiffView(RichLog):
         )
 
     def watch_path(self) -> None:
+        if not self.app.loading_screen_dismissed:
+            return
         self.clear()
-
-        if self.path is None:
-            self.path = chezmoi.destDir
 
         diff_output: list[str] = []
         if not self.reverse:
@@ -286,8 +287,9 @@ class DiffView(RichLog):
                 self.write(Text(Chars.bullet + line, style="dim"))
 
 
-class GitLogView(DataTable[Text]):
-    path: reactive[Path | None] = reactive(None)
+class GitLogView(DataTable[Text], AppType):
+
+    path: reactive[Path] = reactive(chezmoi.destDir)
 
     # TODO: implement footer binding to toggle text wrap in second column
     # of the datatable
@@ -324,8 +326,7 @@ class GitLogView(DataTable[Text]):
                 self.add_row(*(Text(cell) for cell in columns))
 
     def watch_path(self) -> None:
-        # This is needed to avoid triggering the populate_data_table method when textual is initializing
-        if not self.path:
+        if not self.app.loading_screen_dismissed:
             return
         self.populate_data_table(self.path)
 
@@ -407,8 +408,6 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
 
     # create node data methods
     def create_dir_node_data(self, *, path: Path) -> DirNodeData:
-        assert path != chezmoi.destDir, "Root node should not be created again"
-        assert path in chezmoi.dir_paths
         status_code: str = ""
         if self.tab_name == TabName.apply_tab:
             status_code: str = chezmoi.apply_dirs[path]
@@ -420,7 +419,6 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
         return DirNodeData(path=path, found=found, status=status_code)
 
     def create_file_node_data(self, *, path: Path) -> FileNodeData:
-        assert path in chezmoi.file_paths
         status_code: str = ""
         if self.tab_name == TabName.apply_tab:
             status_code: str = chezmoi.apply_files[path]
@@ -447,7 +445,6 @@ class TreeBase(CustomRenderLabel):  # instead of Tree[NodeData]
         )
 
     def dir_has_status_dirs(self, tab_name: TabName, dir_path: Path) -> bool:
-        assert dir_path != chezmoi.destDir
         # checks for any, direct children or no matter how deep in subdirs
         dirs_dict: PathDict = {}
         if tab_name == TabName.apply_tab:
@@ -748,9 +745,6 @@ class FlatTree(TreeBase):
 class FilteredDirTree(DirectoryTree):
 
     unmanaged_dirs: reactive[bool] = reactive(False, init=False)
-    # TODO: add chezmoi sourceDir to the unwanted paths filter, this cannot be
-    # # done in the unwanted_files enum because it depends on the system the
-    # app runs on.
     # TODO: add filter switch to see already added files as otherwise when
     # wanting to add a file which was already added, you have to check if the
     # file exists outside of the chezmoi-mousse app

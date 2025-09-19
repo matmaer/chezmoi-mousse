@@ -221,24 +221,31 @@ class Maximized(ScreensBase):
         if self.id_to_maximize == self.tab_ids.view_id(
             view=ViewName.contents_view
         ):
-            self.query_one(
-                Id.maximized_screen.view_id("#", view=ViewName.contents_view),
-                ContentsView,
-            ).path = self.path
+            if self.path is not None:
+                self.query_one(
+                    Id.maximized_screen.view_id(
+                        "#", view=ViewName.contents_view
+                    ),
+                    ContentsView,
+                ).path = self.path
         elif self.id_to_maximize == self.tab_ids.view_id(
             view=ViewName.diff_view
         ):
-            self.query_one(
-                Id.maximized_screen.view_id("#", view=ViewName.diff_view),
-                DiffView,
-            ).path = self.path
+            if self.path is not None:
+                self.query_one(
+                    Id.maximized_screen.view_id("#", view=ViewName.diff_view),
+                    DiffView,
+                ).path = self.path
         elif self.id_to_maximize == self.tab_ids.view_id(
             view=ViewName.git_log_view
         ):
-            self.query_one(
-                Id.maximized_screen.view_id("#", view=ViewName.git_log_view),
-                GitLogView,
-            ).path = self.path
+            if self.path is not None:
+                self.query_one(
+                    Id.maximized_screen.view_id(
+                        "#", view=ViewName.git_log_view
+                    ),
+                    GitLogView,
+                ).path = self.path
 
         if self.path == chezmoi.destDir:
             self.border_title = f" {chezmoi.destDir} "
