@@ -96,7 +96,7 @@ class LoadingScreen(Screen[list[str]], AppType):
         RICH_LOG.markup = True
         RICH_LOG.styles.width = len(message) + 2
         RICH_LOG.write(f"[{color}]{message}[/]")
-        sleep(0.5)
+        sleep(1)
 
     @work(thread=True, group="io_workers")
     def run_io_worker(self, arg_id: str) -> None:

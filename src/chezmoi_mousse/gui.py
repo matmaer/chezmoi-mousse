@@ -103,14 +103,6 @@ class ChezmoiGUI(App[None]):
     def on_mount(self) -> None:
         chezmoi.app_log.success("App initialized successfully")
         # TODO: inform user only file mode is supported if detected in the user config
-        if not chezmoi.app_cfg.chezmoi_found:
-            chezmoi.app_log.error("chezmoi command not found")
-            self.push_screen(InstallHelp())
-            return
-        else:
-            chezmoi.app_log.success(
-                f"chezmoi command found: {chezmoi.app_cfg.chezmoi_found}"
-            )
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
         self.title = "-  c h e z m o i  m o u s s e  -"
         self.register_theme(chezmoi_mousse.custom_theme.chezmoi_mousse_light)
@@ -118,6 +110,10 @@ class ChezmoiGUI(App[None]):
         theme_name = "chezmoi-mousse-dark"
         self.theme = theme_name
         chezmoi.app_log.success(f"Theme set to {theme_name}")
+        if chezmoi.app_cfg.chezmoi_found:
+            chezmoi.app_log.success(
+                f"chezmoi command found: {chezmoi.app_cfg.chezmoi_found}"
+            )
         chezmoi.app_log.warning("Start loading screen")
         self.push_screen(LoadingScreen(), callback=self.first_mount_refresh)
         self.watch(self, "theme", self.on_theme_change, init=False)
@@ -136,6 +132,9 @@ class ChezmoiGUI(App[None]):
         chezmoi.app_log.success(f"Theme set to {new_theme}")
 
     def first_mount_refresh(self, _: object) -> None:
+        if not chezmoi.app_cfg.chezmoi_found:
+            self.push_screen(InstallHelp())
+            return
         self.loading_screen_dismissed = True
         chezmoi.app_log.success("--- splash.py finished loading ---")
         # TODO: Do the refresh in the loading screen after other loading tasks
