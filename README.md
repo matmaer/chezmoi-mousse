@@ -272,7 +272,7 @@ warnings
 
 > Don't run the python command in a `chezmoi cd` invoked shell, unless you want to test.
 
-If the `chezmoi` command is not available, a screen will be shown with the value for $PATH and a link to [chezmoi.io/install](chezmoi.io/install), along with parsed install commands from the [`chezmoi` repository]((https://github.com/twpayne/chezmoi/blob/master/assets/chezmoi.io/docs/install.md.tmpl)) created with [Material for MkDocs](https://squidfunk.github.io/mkdocs-material/).
+If the `chezmoi` command is not available, a screen will be shown with the value for $PATH and a link to [chezmoi.io/install](chezmoi.io/install), along with parsed install commands from the [chezmoi repository]((https://github.com/twpayne/chezmoi/blob/master/assets/chezmoi.io/docs/install.md.tmpl)) which uses the excellent [Material for MkDocs](https://squidfunk.github.io/mkdocs-material/) framework.
 
 Clone repo and cd into the `src` directory of the cloned repo.
 
