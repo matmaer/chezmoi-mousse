@@ -283,7 +283,7 @@ If you don't have `textual` installed but the `uv` command is available:
 
 
 - [x] python -m chezmoi_mousse (Python 3.13 with the latest `textual` version installed)
-- [x] uv run --with textual -m chezmoi_mousse
+- [x] `uv run --with textual -m chezmoi_mousse`
 - [x] Windows
   - [ ] app store
   - [ ] signed executable
@@ -293,9 +293,9 @@ If you don't have `textual` installed but the `uv` command is available:
   - [ ] signed executable
   - [x] unpackaged
 - [x] Linux
-  - [ ] AppImage
+  - [ ] [AppImage](https://appimage.org/)
   - [ ] briefcase
-  - [ ] flatpak
+  - [ ] [flatpak](https://flatpak.org/)
   - [ ] public key list signed executable
-  - [ ] snap
+  - [ ] [snap](https://snapcraft.io/)
   - [x] unpackaged
