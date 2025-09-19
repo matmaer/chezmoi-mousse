@@ -421,20 +421,20 @@ class ReadCommand:
         return [
             line
             for line in _run_cmd(
-                Cmd.default.value + [ReadVerbs.cat_config.value]
+                Cmd.default.value + [ReadVerbs.cat_config]
             ).splitlines()
             if line.strip()  # Filter out empty lines from config output
         ]
 
     def diff(self, file_path: Path) -> list[str]:
         return _run_cmd(
-            Cmd.default.value + [ReadVerbs.diff.value] + [str(file_path)]
+            Cmd.default.value + [ReadVerbs.diff] + [str(file_path)]
         ).splitlines()
 
     def diff_reversed(self, file_path: Path) -> list[str]:
         return _run_cmd(
             Cmd.default.value
-            + [ReadVerbs.diff.value]
+            + [ReadVerbs.diff]
             + [str(file_path), "--reverse"]
         ).splitlines()
 
@@ -442,30 +442,24 @@ class ReadCommand:
         source_path = self.source_path(path)
         command = (
             Cmd.default.value
-            + [ReadVerbs.git.value]
+            + [ReadVerbs.git]
             + VerbArgs.git_log.value
             + [str(source_path)]
         )
         return _run_cmd(command).splitlines()
 
     def ignored(self) -> list[str]:
-        return _run_cmd(
-            Cmd.default.value + [ReadVerbs.ignored.value]
-        ).splitlines()
+        return _run_cmd(Cmd.default.value + [ReadVerbs.ignored]).splitlines()
 
     def source_path(self, path: Path) -> Path:
         if path == self.dest_dir:
             return self.source_dir
         return Path(
-            _run_cmd(
-                Cmd.default.value + [ReadVerbs.source_path.value] + [str(path)]
-            )
+            _run_cmd(Cmd.default.value + [ReadVerbs.source_path] + [str(path)])
         )
 
     def template_data(self) -> list[str]:
-        return _run_cmd(
-            Cmd.default.value + [ReadVerbs.data.value]
-        ).splitlines()
+        return _run_cmd(Cmd.default.value + [ReadVerbs.data]).splitlines()
 
 
 @dataclass
