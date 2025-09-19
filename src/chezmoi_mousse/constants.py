@@ -20,10 +20,6 @@ class LogIds(StrEnum):
     operate_log = auto()
 
 
-class ScreenStr(StrEnum):
-    operate_info = auto()
-
-
 ########################
 # Pure StrEnum classes #
 ########################

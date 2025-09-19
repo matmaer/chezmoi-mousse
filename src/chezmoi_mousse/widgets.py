@@ -23,7 +23,6 @@ from textual.widgets.tree import TreeNode
 import chezmoi_mousse.custom_theme as theme
 from chezmoi_mousse.chezmoi import chezmoi
 from chezmoi_mousse.constants import (
-    ScreenStr,
     TcssStr,
     UnwantedDirs,
     UnwantedFiles,
@@ -47,9 +46,7 @@ from chezmoi_mousse.overrides import CustomRenderLabel
 class OperateInfo(Static):
 
     def __init__(self, *, operate_btn: OperateBtn, path: Path) -> None:
-        super().__init__(
-            id=ScreenStr.operate_info, classes=TcssStr.operate_info
-        )
+        super().__init__(classes=TcssStr.operate_info)
 
         self.operate_btn = operate_btn
         self.path = path
