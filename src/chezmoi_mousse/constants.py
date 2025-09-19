@@ -42,8 +42,8 @@ class BorderTitle(StrEnum):
 
 
 class BorderSubTitle(StrEnum):
-    esc_to_close = " escape key to close "
     double_click_esc_to_close = " double click or escape key to close "
+    esc_to_close = " escape key to close "
     esc_to_exit_app = " escape key to exit app "
 
 
@@ -57,7 +57,7 @@ class Chars(StrEnum):
     forget_file_info_border = (
         "\u2716 forget file \u2716"  # '\N{HEAVY MULTIPLICATION X}'
     )
-    # gear = "\u2699"  # '\N{GEAR}'
+    gear = "\u2699"  # '\N{GEAR}'
     lower_3_8ths_block = "\u2583"  # "\N{LOWER THREE EIGHTHS BLOCK}"
     re_add = f"local {'\u2014' * 3}\u2192 chezmoi"  # '\N{EM DASH}', '\N{RIGHTWARDS ARROW}'
     re_add_file_info_border = f"local {'\u2014' * 3}\u2192 chezmoi"  # '\N{EM DASH}', '\N{RIGHTWARDS ARROW}'
@@ -126,12 +126,12 @@ class TabBtn(StrEnum):
     # Tab buttons for content switcher within a main tab
     app_log = "App"
     contents = "Contents"
+    debug_log = "Debug"
     diff = "Diff"
     git_log = "Git-Log"
     list = "List"
-    tree = "Tree"
     output_log = "Output"
-    debug_log = "Debug"
+    tree = "Tree"
 
 
 class TabName(StrEnum):
@@ -256,19 +256,19 @@ class UnwantedFiles(StrEnum):
 
 
 class ViewName(StrEnum):
+    app_log_view = auto()
+    cat_config = auto()
+    config_ignored = auto()
     contents_view = auto()
     debug_log_view = auto()
+    diagram = auto()
     diff_view = auto()
     git_log_view = auto()
     init_clone_view = auto()
     init_new_view = auto()
     init_purge_view = auto()
-    app_log_view = auto()
     output_log_view = auto()
-    cat_config = auto()
-    config_ignored = auto()
     template_data = auto()
-    diagram = auto()
 
 
 SPLASH = """\
