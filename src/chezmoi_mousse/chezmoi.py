@@ -167,7 +167,7 @@ class CommandLog(RichLog):
                 escaped_line = escape(line)
                 self.write(f"[{color}]{escaped_line}[/]")
 
-    def mro(self, mro: Mro) -> None:
+    def debug_mro(self, mro: Mro) -> None:
         color = theme.vars["accent-darken-2"]
         self.write(f"{self._log_time()} [{color}]Method Resolution Order:[/]")
         pretty_mro = " -> ".join(
@@ -177,6 +177,11 @@ class CommandLog(RichLog):
             and "builtins.object" not in f"{cls.__module__}.{cls.__qualname__}"
         )
         self.dimmed(f"{pretty_mro}")
+
+    def debug_attrs(self, obj: object) -> None:
+        members = [attr for attr in dir(obj) if not attr.startswith("_")]
+        self.ready_to_run(f"{obj.__class__.__name__} attributes:")
+        self.dimmed(", ".join(members))
 
 
 app_log = CommandLog(ids=Id.logs, view_name=ViewName.app_log_view)
