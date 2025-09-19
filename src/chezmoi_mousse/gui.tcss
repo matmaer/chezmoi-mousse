@@ -291,14 +291,14 @@
   overflow-y: hidden;
 
   .install_help {
-    border-top: wide $primary-darken-3;
-    padding: 0 2;
+    padding: 1 2;
     content-align: center middle;
     & Button {
       background-tint: initial;
-      width: 24;
+      width: 22;
     }
     & Tree {
+      border: round $primary;
       width: auto;
       padding: 0 1;
       margin-right: 2;
@@ -313,7 +313,7 @@
         content-align: center middle;
         color: $text-primary;
         text-style: bold;
-        width: 24;
+        width: 22;
         &:hover {
           color: $text;
           background: $primary;
