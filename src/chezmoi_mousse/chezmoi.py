@@ -501,7 +501,7 @@ class Chezmoi:
 
     def __init__(self) -> None:
         self.destDir = Path()
-        self.sourceDir: Path = Path()
+        self.sourceDir = Path()
         if not APP_CFG.chezmoi_found:
             self.run = ReadCommand(
                 dest_dir=self.destDir, source_dir=self.sourceDir
