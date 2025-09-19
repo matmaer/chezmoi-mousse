@@ -269,16 +269,17 @@ class InstallHelp(ScreensBase):
                     Pretty(self.path_env),
                     title="'chezmoi' command not found in any search path",
                 )
-            with Horizontal():
-                with VerticalGroup():
+
+            with Center():
+                with Horizontal():
                     yield Tree(label=" Install chezmoi ")
-                with VerticalGroup():
-                    yield Link(
-                        "chezmoi.io/install",
-                        url="https://chezmoi.io/install",
-                        classes=TcssStr.internet_links,
-                    )
-                    yield Button("exit app", variant="primary", flat=True)
+                    with VerticalGroup():
+                        yield Link(
+                            "chezmoi.io/install",
+                            url="https://chezmoi.io/install",
+                            classes=TcssStr.internet_links,
+                        )
+                        yield Button("exit app", variant="primary", flat=True)
 
     def on_mount(self) -> None:
         self.border_subtitle = BorderSubTitle.esc_to_exit_app

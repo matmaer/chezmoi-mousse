@@ -91,12 +91,12 @@ class LoadingScreen(Screen[list[str]], AppType):
     @work(thread=True, group="io_workers")
     def log_unavailable_chezmoi_command(self) -> None:
         message = "chezmoi command ................. not found"
-        color = theme_vars["text-warning"]
+        color = theme_vars["text-primary"]
         RICH_LOG.styles.margin = 1
         RICH_LOG.markup = True
         RICH_LOG.styles.width = len(message) + 2
         RICH_LOG.write(f"[{color}]{message}[/]")
-        sleep(1)
+        sleep(0.5)
 
     @work(thread=True, group="io_workers")
     def run_io_worker(self, arg_id: str) -> None:
