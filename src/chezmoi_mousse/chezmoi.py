@@ -521,10 +521,6 @@ class Chezmoi:
             self.run = ReadCommand(
                 dest_dir=self.destDir, source_dir=self.sourceDir
             )
-            self.run = ReadCommand(
-                dest_dir=Path(self.config_dump["destDir"]),
-                source_dir=Path(self.config_dump["sourceDir"]),
-            )
 
         self.io_commands: dict[str, list[str]] = {}
         io_cmds: list[IoCmd] = [
