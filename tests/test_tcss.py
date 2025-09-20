@@ -9,9 +9,10 @@ from _test_utils import get_strenum_member_names, modules_to_test
 
 from chezmoi_mousse.constants import TcssStr
 
-classes_kw = "classes"
 add_class_method = "add_class"
+classes_kw = "classes"
 exclude_files = ["id_typing.py", "__init__.py", "__main__.py", "constants.py"]
+tcss_path = Path("./src/chezmoi_mousse/data/gui.tcss")
 
 
 def extract_tcss_classes(path: Path) -> list[str]:
@@ -79,9 +80,7 @@ def test_no_hardcoded(py_file: Path) -> None:
                 )
 
 
-@pytest.mark.parametrize(
-    "tcss_class", extract_tcss_classes(Path("./src/chezmoi_mousse/gui.tcss"))
-)
+@pytest.mark.parametrize("tcss_class", extract_tcss_classes(tcss_path))
 def test_no_orphaned_gui_tcss_classes(tcss_class: str) -> None:
     """Test that each CSS class in gui.tcss is also defined as a TcssStr enum member."""
     tcss_enum_members = {member.name for member in TcssStr}
@@ -99,7 +98,7 @@ def test_no_orphaned_gui_tcss_classes(tcss_class: str) -> None:
 )
 def test_no_orphaned_tcss_str_members(tcss_member: ast.Attribute) -> None:
     """Test that each TcssStr enum member has a corresponding class in gui.tcss."""
-    tcss_classes = extract_tcss_classes(Path("./src/chezmoi_mousse/gui.tcss"))
+    tcss_classes = extract_tcss_classes(tcss_path)
 
     if tcss_member.attr not in tcss_classes:
         pytest.fail(

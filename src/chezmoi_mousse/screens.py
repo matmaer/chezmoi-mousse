@@ -12,8 +12,8 @@ from textual.events import Click
 from textual.screen import Screen
 from textual.widgets import Button, Collapsible, Label, Link, Pretty, Tree
 
+from chezmoi_mousse.button_groups import OperateBtnHorizontal
 from chezmoi_mousse.constants import BorderSubTitle, OperateVerbs, TcssStr
-from chezmoi_mousse.containers import OperateBtnHorizontal
 from chezmoi_mousse.id_typing import (
     AppType,
     Id,

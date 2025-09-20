@@ -15,9 +15,9 @@ from textual.widgets import (
 )
 
 import chezmoi_mousse.custom_theme
+from chezmoi_mousse.button_groups import OperateBtnHorizontal
 from chezmoi_mousse.chezmoi import Chezmoi
 from chezmoi_mousse.constants import Area, Chars, TabName, TreeName, ViewName
-from chezmoi_mousse.containers import OperateBtnHorizontal
 from chezmoi_mousse.id_typing import Id, OperateBtn, OperateHelp
 from chezmoi_mousse.main_tabs import (
     AddTab,
@@ -48,7 +48,7 @@ class ChezmoiGUI(App[None]):
         self.sourceDir = self.chezmoi.sourceDir
         super().__init__()
 
-    CSS_PATH = "gui.tcss"
+    CSS_PATH = "data/gui.tcss"
 
     BINDINGS = [
         Binding(key="M,m", action="maximize", description="maximize"),

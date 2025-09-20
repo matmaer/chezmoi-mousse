@@ -26,12 +26,10 @@ from textual.widgets import (
 )
 
 import chezmoi_mousse.custom_theme as theme
+from chezmoi_mousse.button_groups import ButtonsVertical, OperateBtnHorizontal
 from chezmoi_mousse.constants import FLOW, BorderTitle, TcssStr
-from chezmoi_mousse.containers import (
-    ButtonsVertical,
-    OperateBtnHorizontal,
-    OperateTabsBase,
-    SwitchSlider,
+from chezmoi_mousse.containers import OperateTabsBase, SwitchSlider
+from chezmoi_mousse.content_switchers import (
     TabBtnHorizontal,
     TreeContentSwitcher,
     ViewContentSwitcher,
