@@ -34,6 +34,7 @@ from chezmoi_mousse.containers import (
     SwitchSlider,
     TabBtnHorizontal,
     TreeContentSwitcher,
+    ViewContentSwitcher,
 )
 from chezmoi_mousse.id_typing import (
     AppType,
@@ -48,12 +49,7 @@ from chezmoi_mousse.id_typing import (
     ViewName,
 )
 from chezmoi_mousse.messages import InvalidInputMessage
-from chezmoi_mousse.widgets import (
-    ContentsView,
-    DiffView,
-    FilteredDirTree,
-    GitLogView,
-)
+from chezmoi_mousse.widgets import ContentsView, FilteredDirTree
 
 
 class ApplyTab(OperateTabsBase):
@@ -62,43 +58,12 @@ class ApplyTab(OperateTabsBase):
         super().__init__(tab_ids=Id.apply)
 
     def compose(self) -> ComposeResult:
-        with VerticalGroup(
-            id=Id.apply.tab_vertical_id(area=Area.left),
-            classes=TcssStr.tab_left_vertical,
-        ):
-            yield TabBtnHorizontal(
-                tab_ids=Id.apply,
-                buttons=(TabBtn.tree, TabBtn.list),
-                area=Area.left,
-            )
-            yield TreeContentSwitcher(tab_ids=Id.apply)
-
-        with Vertical(
-            id=Id.apply.tab_vertical_id(area=Area.right),
-            classes=TcssStr.tab_right_vertical,
-        ):
-            yield TabBtnHorizontal(
-                tab_ids=Id.apply,
-                buttons=(TabBtn.diff, TabBtn.contents, TabBtn.git_log),
-                area=Area.right,
-            )
-            with ContentSwitcher(
-                id=Id.apply.content_switcher_id(area=Area.right),
-                initial=Id.apply.view_id(view=ViewName.diff_view),
-            ):
-                yield DiffView(ids=Id.apply, reverse=False)
-                yield ContentsView(ids=Id.apply)
-                yield GitLogView(ids=Id.apply)
-
+        yield TreeContentSwitcher(tab_ids=Id.apply)
+        yield ViewContentSwitcher(tab_ids=Id.apply, diff_reverse=False)
         yield SwitchSlider(
             tab_ids=Id.apply,
             switches=(Switches.unchanged, Switches.expand_all),
         )
-
-    def on_mount(self) -> None:
-        self.query_one(
-            Id.apply.content_switcher_id("#", area=Area.right), ContentSwitcher
-        ).add_class(TcssStr.content_switcher_right, TcssStr.border_title_top)
 
 
 class ReAddTab(OperateTabsBase):
@@ -107,45 +72,12 @@ class ReAddTab(OperateTabsBase):
         super().__init__(tab_ids=Id.re_add)
 
     def compose(self) -> ComposeResult:
-        with VerticalGroup(
-            id=Id.re_add.tab_vertical_id(area=Area.left),
-            classes=TcssStr.tab_left_vertical,
-        ):
-            yield TabBtnHorizontal(
-                tab_ids=Id.re_add,
-                buttons=(TabBtn.tree, TabBtn.list),
-                area=Area.left,
-            )
-            yield TreeContentSwitcher(tab_ids=Id.re_add)
-
-        with Vertical(id=Id.re_add.tab_vertical_id(area=Area.right)):
-            yield TabBtnHorizontal(
-                tab_ids=Id.re_add,
-                buttons=(TabBtn.diff, TabBtn.contents, TabBtn.git_log),
-                area=Area.right,
-            )
-
-            with ContentSwitcher(
-                id=Id.re_add.content_switcher_id(area=Area.right),
-                initial=Id.re_add.view_id(view=ViewName.diff_view),
-            ):
-                yield DiffView(ids=Id.re_add, reverse=True)
-                yield ContentsView(ids=Id.re_add)
-                yield GitLogView(ids=Id.re_add)
-
+        yield TreeContentSwitcher(tab_ids=Id.re_add)
+        yield ViewContentSwitcher(tab_ids=Id.re_add, diff_reverse=True)
         yield SwitchSlider(
             tab_ids=Id.re_add,
             switches=(Switches.unchanged, Switches.expand_all),
         )
-
-    def on_mount(self) -> None:
-        self.query_one(
-            Id.re_add.tab_vertical_id("#", area=Area.right), Vertical
-        ).add_class(TcssStr.tab_right_vertical)
-        self.query_one(
-            Id.re_add.content_switcher_id("#", area=Area.right),
-            ContentSwitcher,
-        ).add_class(TcssStr.content_switcher_right, TcssStr.border_title_top)
 
 
 class AddTab(OperateTabsBase, AppType):

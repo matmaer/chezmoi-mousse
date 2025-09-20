@@ -215,6 +215,7 @@ class Maximized(ScreensBase):
                 yield GitLogView(ids=Id.maximized_screen)
 
     def on_mount(self) -> None:
+        self.add_class(TcssStr.border_title_top)
         self.border_subtitle = BorderSubTitle.double_click_esc_to_close
         if self.id_to_maximize == self.tab_ids.view_id(
             view=ViewName.contents_view

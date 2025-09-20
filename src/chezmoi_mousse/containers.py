@@ -91,20 +91,13 @@ class OperateTabsBase(Horizontal, AppType):
             ContentSwitcher,
         ).current
         if current_view == self.tab_ids.view_id(view=ViewName.contents_view):
-            self.query_one(
-                self.tab_ids.view_id("#", view=ViewName.contents_view),
-                ContentsView,
-            ).path = self.current_path
+            self.query_exactly_one(ContentsView).path = self.current_path
         elif current_view == self.tab_ids.view_id(view=ViewName.diff_view):
-            self.query_one(
-                self.tab_ids.view_id("#", view=ViewName.diff_view), DiffView
-            ).path = self.current_path
+            self.query_exactly_one(DiffView).path = self.current_path
         elif current_view == self.tab_ids.view_id(view=ViewName.git_log_view):
-            self.query_one(
-                self.tab_ids.view_id("#", view=ViewName.git_log_view),
-                GitLogView,
-            ).path = self.current_path
+            self.query_exactly_one(GitLogView).path = self.current_path
 
+        # Contents/Diff/GitLog Content Switcher
         # enable/disable operation buttons depending on selected node
         buttons_to_update: OperateButtons = ()
         if self.tab_ids.tab_name == TabName.apply_tab:
@@ -131,59 +124,23 @@ class OperateTabsBase(Horizontal, AppType):
     @on(Button.Pressed, ".tab_button")
     def handle_tab_buttons(self, event: Button.Pressed) -> None:
         event.stop()
-        # Tree/List Content Switcher
+        expand_all_switch = self.query_one(
+            self.tab_ids.switch_id("#", switch=Switches.expand_all), Switch
+        )
+        # enable or disable expand all switch
         if event.button.id == self.tab_ids.button_id(btn=TabBtn.tree):
-            expand_all_switch = self.query_one(
-                self.tab_ids.switch_id("#", switch=Switches.expand_all), Switch
-            )
             expand_all_switch.disabled = False
-            if expand_all_switch.value:
-                self.query_one(
-                    self.tab_ids.content_switcher_id("#", area=Area.left),
-                    ContentSwitcher,
-                ).current = self.tab_ids.tree_id(tree=TreeName.expanded_tree)
-            else:
-                self.query_one(
-                    self.tab_ids.content_switcher_id("#", area=Area.left),
-                    ContentSwitcher,
-                ).current = self.tab_ids.tree_id(tree=TreeName.managed_tree)
         elif event.button.id == self.tab_ids.button_id(btn=TabBtn.list):
-            self.query_one(
-                self.tab_ids.switch_id("#", switch=Switches.expand_all), Switch
-            ).disabled = True
-            self.query_one(
-                self.tab_ids.content_switcher_id("#", area=Area.left),
-                ContentSwitcher,
-            ).current = self.tab_ids.tree_id(tree=TreeName.flat_tree)
+            expand_all_switch.disabled = True
         # Contents/Diff/GitLog Content Switcher
-        # TODO create method to update reactive paths on widgets, only if the
-        # selected path in the Tree or DirectoryTree actually changed
-        elif event.button.id == self.tab_ids.button_id(btn=TabBtn.contents):
-            self.query_one(
-                self.tab_ids.content_switcher_id("#", area=Area.right),
-                ContentSwitcher,
-            ).current = self.tab_ids.view_id(view=ViewName.contents_view)
-            self.query_one(
-                self.tab_ids.view_id("#", view=ViewName.contents_view),
-                ContentsView,
-            ).path = self.current_path
+        # TODO only set the reactive var if the selected path in the Tree a
+        # ctually changed
+        if event.button.id == self.tab_ids.button_id(btn=TabBtn.contents):
+            self.query_exactly_one(ContentsView).path = self.current_path
         elif event.button.id == self.tab_ids.button_id(btn=TabBtn.diff):
-            self.query_one(
-                self.tab_ids.content_switcher_id("#", area=Area.right),
-                ContentSwitcher,
-            ).current = self.tab_ids.view_id(view=ViewName.diff_view)
-            self.query_one(
-                self.tab_ids.view_id("#", view=ViewName.diff_view), DiffView
-            ).path = self.current_path
+            self.query_exactly_one(DiffView).path = self.current_path
         elif event.button.id == self.tab_ids.button_id(btn=TabBtn.git_log):
-            self.query_one(
-                self.tab_ids.content_switcher_id("#", area=Area.right),
-                ContentSwitcher,
-            ).current = self.tab_ids.view_id(view=ViewName.git_log_view)
-            self.query_one(
-                self.tab_ids.view_id("#", view=ViewName.git_log_view),
-                GitLogView,
-            ).path = self.current_path
+            self.query_exactly_one(GitLogView).path = self.current_path
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
         event.stop()
@@ -204,6 +161,9 @@ class OperateTabsBase(Horizontal, AppType):
         elif event.switch.id == self.tab_ids.switch_id(
             switch=Switches.expand_all
         ):
+            self.query_exactly_one(TreeContentSwitcher).expand_all_state = (
+                event.value
+            )
             if event.value:
                 self.query_one(
                     self.tab_ids.content_switcher_id("#", area=Area.left),
@@ -376,20 +336,92 @@ class ButtonsVertical(VerticalGroup):
             )
 
 
-class TreeContentSwitcher(ContentSwitcher, AppType):
+class TreeContentSwitcher(VerticalGroup, AppType):
 
     def __init__(self, tab_ids: TabIds):
         self.tab_ids = tab_ids
+        # updated by OperateTabsBase in on_switch_changed method
+        self.expand_all_state: bool = False
         super().__init__(
+            id=self.tab_ids.tab_vertical_id(area=Area.left),
+            classes=TcssStr.tab_left_vertical,
+        )
+
+    def compose(self) -> ComposeResult:
+        yield TabBtnHorizontal(
+            tab_ids=self.tab_ids,
+            buttons=(TabBtn.tree, TabBtn.list),
+            area=Area.left,
+        )
+        with ContentSwitcher(
             id=self.tab_ids.content_switcher_id(area=Area.left),
             initial=self.tab_ids.tree_id(tree=TreeName.managed_tree),
-        )
+        ):
+            yield ManagedTree(tab_ids=self.tab_ids)
+            yield FlatTree(tab_ids=self.tab_ids)
+            yield ExpandedTree(tab_ids=self.tab_ids)
 
     def on_mount(self) -> None:
         self.border_title = str(self.app.destDir)
-        self.add_class(TcssStr.content_switcher_left, TcssStr.border_title_top)
+        self.query_exactly_one(ContentSwitcher).add_class(
+            TcssStr.content_switcher_left, TcssStr.border_title_top
+        )
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        # Tree/List Content Switcher
+        if event.button.id == self.tab_ids.button_id(btn=TabBtn.tree):
+            if self.expand_all_state:
+                self.query_exactly_one(ContentSwitcher).current = (
+                    self.tab_ids.tree_id(tree=TreeName.expanded_tree)
+                )
+            else:
+                self.query_exactly_one(ContentSwitcher).current = (
+                    self.tab_ids.tree_id(tree=TreeName.managed_tree)
+                )
+        elif event.button.id == self.tab_ids.button_id(btn=TabBtn.list):
+            self.query_exactly_one(ContentSwitcher).current = (
+                self.tab_ids.tree_id(tree=TreeName.flat_tree)
+            )
+
+
+class ViewContentSwitcher(Vertical, AppType):
+    def __init__(self, *, tab_ids: TabIds, diff_reverse: bool):
+        self.tab_ids = tab_ids
+        self.reverse = diff_reverse
+        super().__init__(
+            id=self.tab_ids.tab_vertical_id(area=Area.right),
+            classes=TcssStr.tab_right_vertical,
+        )
 
     def compose(self) -> ComposeResult:
-        yield ManagedTree(tab_ids=self.tab_ids)
-        yield FlatTree(tab_ids=self.tab_ids)
-        yield ExpandedTree(tab_ids=self.tab_ids)
+        yield TabBtnHorizontal(
+            tab_ids=self.tab_ids,
+            buttons=(TabBtn.diff, TabBtn.contents, TabBtn.git_log),
+            area=Area.right,
+        )
+        with ContentSwitcher(
+            id=self.tab_ids.content_switcher_id(area=Area.right),
+            initial=self.tab_ids.view_id(view=ViewName.diff_view),
+        ):
+            yield DiffView(ids=self.tab_ids, reverse=self.reverse)
+            yield ContentsView(ids=self.tab_ids)
+            yield GitLogView(ids=self.tab_ids)
+
+    def on_mount(self) -> None:
+        self.query_one(ContentSwitcher).add_class(
+            TcssStr.content_switcher_right, TcssStr.border_title_top
+        )
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.id == self.tab_ids.button_id(btn=TabBtn.contents):
+            self.query_exactly_one(ContentSwitcher).current = (
+                self.tab_ids.view_id(view=ViewName.contents_view)
+            )
+        elif event.button.id == self.tab_ids.button_id(btn=TabBtn.diff):
+            self.query_exactly_one(ContentSwitcher).current = (
+                self.tab_ids.view_id(view=ViewName.diff_view)
+            )
+        elif event.button.id == self.tab_ids.button_id(btn=TabBtn.git_log):
+            self.query_exactly_one(ContentSwitcher).current = (
+                self.tab_ids.view_id(view=ViewName.git_log_view)
+            )
