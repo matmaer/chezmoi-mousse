@@ -308,6 +308,49 @@ class OperateBtnHorizontal(ButtonsHorizontal):
             button.disabled = True
 
 
+class OperateBtnContentSwitcher(ContentSwitcher, AppType):
+
+    def __init__(self, tab_ids: TabIds):
+        self.tab_ids = tab_ids
+
+        if self.tab_ids.tab_name == TabName.apply_tab:
+            self.file_buttons: OperateButtons = (
+                OperateBtn.apply_file,
+                OperateBtn.forget_file,
+                OperateBtn.destroy_file,
+            )
+
+            self.dir_buttons: OperateButtons = (
+                OperateBtn.apply_dir,
+                OperateBtn.forget_dir,
+                OperateBtn.destroy_dir,
+            )
+        elif self.tab_ids.tab_name == TabName.re_add_tab:
+            self.file_buttons: OperateButtons = (
+                OperateBtn.re_add_file,
+                OperateBtn.forget_file,
+                OperateBtn.destroy_file,
+            )
+            self.dir_buttons: OperateButtons = (
+                OperateBtn.re_add_dir,
+                OperateBtn.forget_dir,
+                OperateBtn.destroy_dir,
+            )
+
+        super().__init__(
+            id=self.tab_ids.content_switcher_id(area=Area.bottom),
+            initial=self.tab_ids.content_switcher_id(area=Area.bottom),
+        )
+
+    def compose(self) -> ComposeResult:
+        yield OperateBtnHorizontal(
+            tab_ids=self.tab_ids, buttons=self.file_buttons
+        )
+        yield OperateBtnHorizontal(
+            tab_ids=self.tab_ids, buttons=self.dir_buttons
+        )
+
+
 class ButtonsVertical(VerticalGroup):
 
     def __init__(

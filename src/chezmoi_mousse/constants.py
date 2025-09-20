@@ -63,13 +63,17 @@ class NavBtn(StrEnum):
 class OperateBtn(StrEnum):
     add_dir = "Add Dir"
     add_file = "Add File"
+    apply_dir = "Apply Dir"
     apply_file = "Apply File"
     clone_repo = "Clone Existing Repo"
+    destroy_dir = "Destroy Dir"
     destroy_file = "Destroy File"
+    forget_dir = "Forget Dir"
     forget_file = "Forget File"
     new_repo = "Initialize New Repo"
     operate_dismiss = "Cancel"
     purge_repo = "Purge Existing Repo"
+    re_add_dir = "Re-Add Dir"
     re_add_file = "Re-Add File"
 
 
