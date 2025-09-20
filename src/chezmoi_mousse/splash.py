@@ -107,7 +107,7 @@ class LoadingScreen(Screen[list[str]], AppType):
     def all_workers_finished(self) -> None:
         if all(
             worker.state == WorkerState.SUCCESS
-            for worker in self.app.workers
+            for worker in self.workers
             if worker.group == "io_workers"
         ):
             self.dismiss()
