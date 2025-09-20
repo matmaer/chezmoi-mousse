@@ -342,6 +342,7 @@ class OperateBtnContentSwitcher(ContentSwitcher, AppType):
             initial=self.tab_ids.content_switcher_id(area=Area.bottom),
         )
 
+    # TODO fix issue two widgets with same id
     def compose(self) -> ComposeResult:
         yield OperateBtnHorizontal(
             tab_ids=self.tab_ids, buttons=self.file_buttons
