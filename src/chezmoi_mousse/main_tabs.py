@@ -256,7 +256,7 @@ class InitTab(Vertical, AppType):
             event.validation_result is not None
             and not event.validation_result.is_valid
         ):
-            self.app.post_message(
+            self.post_message(
                 InvalidInputMessage(
                     reasons=event.validation_result.failure_descriptions
                 )
