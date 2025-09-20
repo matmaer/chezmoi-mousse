@@ -104,12 +104,11 @@ class CommandLog(RichLog):
             self.border_title = BorderTitle.operante_log
             self.add_class(TcssStr.bottom_docked_log)
         elif self.ids == Id.logs:
+            self.add_class(TcssStr.log_views)
             if self.view_name == ViewName.app_log_view and APP_CFG.dev_mode:
                 app_log.ready_to_run("Running in development mode")
             elif self.view_name == ViewName.debug_log_view:
                 self.ready_to_run("Debug log ready to capture logs.")
-        else:
-            self.add_class(TcssStr.log_views)
 
     def _log_time(self) -> str:
         return f"[[green]{datetime.now().strftime('%H:%M:%S')}[/]]"
