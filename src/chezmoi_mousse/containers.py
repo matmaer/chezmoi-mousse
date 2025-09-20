@@ -304,6 +304,8 @@ class OperateBtnHorizontal(ButtonsHorizontal):
     def on_mount(self) -> None:
         self.add_class(TcssStr.operate_buttons_horizontal)
         self.query(Button).add_class(TcssStr.operate_button)
+        for button in self.query(Button):
+            button.disabled = True
 
 
 class ButtonsVertical(VerticalGroup):

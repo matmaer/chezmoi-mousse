@@ -99,13 +99,6 @@ class ApplyTab(OperateTabsBase):
         self.query_one(
             Id.apply.content_switcher_id("#", area=Area.right), ContentSwitcher
         ).add_class(TcssStr.content_switcher_right, TcssStr.border_title_top)
-        self.disable_buttons(
-            (
-                OperateBtn.apply_file,
-                OperateBtn.forget_file,
-                OperateBtn.destroy_file,
-            )
-        )
 
 
 class ReAddTab(OperateTabsBase):
@@ -153,13 +146,6 @@ class ReAddTab(OperateTabsBase):
             Id.re_add.content_switcher_id("#", area=Area.right),
             ContentSwitcher,
         ).add_class(TcssStr.content_switcher_right, TcssStr.border_title_top)
-        self.disable_buttons(
-            (
-                OperateBtn.re_add_file,
-                OperateBtn.forget_file,
-                OperateBtn.destroy_file,
-            )
-        )
 
 
 class AddTab(OperateTabsBase, AppType):
