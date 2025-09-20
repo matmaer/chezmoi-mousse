@@ -14,7 +14,6 @@ from textual.timer import Timer
 from textual.widgets import RichLog, Static
 from textual.worker import WorkerState
 
-from chezmoi_mousse.chezmoi import APP_CFG
 from chezmoi_mousse.constants import SPLASH
 from chezmoi_mousse.custom_theme import vars as theme_vars
 from chezmoi_mousse.id_typing import AppType, Id
@@ -122,7 +121,7 @@ class LoadingScreen(Screen[list[str]], AppType):
             interval=0.05, callback=animated_fade.refresh
         )
 
-        if not APP_CFG.chezmoi_found:
+        if not self.app.chezmoi.app_cfg.chezmoi_found:
             self.log_unavailable_chezmoi_command()
             return
 
