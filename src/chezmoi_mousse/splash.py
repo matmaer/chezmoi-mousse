@@ -19,32 +19,12 @@ from chezmoi_mousse.constants import SPLASH
 from chezmoi_mousse.custom_theme import vars as theme_vars
 from chezmoi_mousse.id_typing import AppType, Id
 
-
-def create_deque() -> deque[Style]:
-    start_color = "#0178D4"
-    end_color = "#F187FB"
-
-    fade = [start_color] * 8
-    gradient = Gradient.from_colors(start_color, end_color, quality=6)
-    fade.extend([color.hex for color in gradient.colors])
-    gradient.colors.reverse()
-    fade.extend([color.hex for color in gradient.colors])
-
-    line_styles = deque([Style(color=color, bold=True) for color in fade])
-    return line_styles
-
-
-LINE_STYLES = create_deque()
-LINE_STYLES.rotate(-3)
-SPLASH_HEIGHT = len(SPLASH)
-SPLASH_WIDTH = len(max(SPLASH, key=len))
-
 LOG_PADDING_WIDTH = 36
 
 
 class SplashLog(RichLog, AppType):
     def __init__(self, len_long_cmds: int = 0) -> None:
-        super().__init__(id=Id.splash_id.splash_log)
+        super().__init__()
 
         self.styles.height = len_long_cmds + 2
         self.styles.width = LOG_PADDING_WIDTH + 9
@@ -57,16 +37,31 @@ class AnimatedFade(Static):
 
     def __init__(self) -> None:
         super().__init__(id=Id.splash_id.animated_fade)
-        self.styles.height = SPLASH_HEIGHT
-        self.styles.width = SPLASH_WIDTH
+        self.line_styles = self.create_deque()
+        self.line_styles.rotate(-3)
+        self.styles.height = len(SPLASH)
+        self.styles.width = len(max(SPLASH, key=len))
         self.styles.margin = 1
 
     def render_lines(self, crop: Region) -> list[Strip]:
-        LINE_STYLES.rotate()
+        self.line_styles.rotate()
         return super().render_lines(crop)
 
     def render_line(self, y: int) -> Strip:
-        return Strip([Segment(SPLASH[y], style=LINE_STYLES[y])])
+        return Strip([Segment(SPLASH[y], style=self.line_styles[y])])
+
+    def create_deque(self) -> deque[Style]:
+        start_color = "#0178D4"
+        end_color = "#F187FB"
+
+        fade = [start_color] * 8
+        gradient = Gradient.from_colors(start_color, end_color, quality=6)
+        fade.extend([color.hex for color in gradient.colors])
+        gradient.colors.reverse()
+        fade.extend([color.hex for color in gradient.colors])
+
+        line_styles = deque([Style(color=color, bold=True) for color in fade])
+        return line_styles
 
 
 class LoadingScreen(Screen[list[str]], AppType):
