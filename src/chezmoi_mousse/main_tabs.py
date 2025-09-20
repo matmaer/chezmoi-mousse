@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from rich.text import Text
 from textual import on
 from textual.app import ComposeResult
@@ -85,8 +87,9 @@ class AddTab(OperateTabsBase, AppType):
 
     def compose(self) -> ComposeResult:
         with VerticalGroup(id=Id.add.tab_vertical_id(area=Area.left)):
+            # Will set path in on_mount when app is available
             yield FilteredDirTree(
-                self.app.destDir,
+                Path(),
                 id=Id.add.tree_id(tree=TreeName.add_tree),
                 classes=TcssStr.dir_tree_widget,
             )
@@ -115,6 +118,7 @@ class AddTab(OperateTabsBase, AppType):
         tree = self.query_one(
             Id.add.tree_id("#", tree=TreeName.add_tree), FilteredDirTree
         )
+        tree.path = self.app.destDir
         tree.show_root = False
         tree.guide_depth = 3
         self.disable_buttons((OperateBtn.add_file, OperateBtn.add_dir))
@@ -460,8 +464,6 @@ class LogsTab(Container, AppType):
     def __init__(self) -> None:
         super().__init__(id=Id.logs.tab_container_id)
         self.tab_buttons = (TabBtn.app_log, TabBtn.output_log)
-        if self.app.chezmoi.app_cfg.dev_mode:
-            self.tab_buttons += (TabBtn.debug_log,)
 
     def compose(self) -> ComposeResult:
 
@@ -482,6 +484,8 @@ class LogsTab(Container, AppType):
         self.query_exactly_one(ContentSwitcher).border_title = (
             BorderTitle.app_log
         )
+        if self.app.chezmoi.app_cfg.dev_mode:
+            self.tab_buttons += (TabBtn.debug_log,)
 
     @on(Button.Pressed, ".tab_button")
     def handle_logs_tab_buttons(self, event: Button.Pressed) -> None:

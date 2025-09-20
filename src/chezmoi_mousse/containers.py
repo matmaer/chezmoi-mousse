@@ -44,7 +44,7 @@ class OperateTabsBase(Horizontal, AppType):
 
     def __init__(self, *, tab_ids: TabIds) -> None:
         self.tab_ids = tab_ids
-        self.current_path: Path = self.app.destDir
+        self.current_path: Path | None = None
         super().__init__(id=self.tab_ids.tab_container_id)
 
     def disable_buttons(self, buttons_to_update: OperateButtons) -> None:
@@ -118,6 +118,8 @@ class OperateTabsBase(Horizontal, AppType):
     @on(Button.Pressed, ".tab_button")
     def handle_tab_buttons(self, event: Button.Pressed) -> None:
         event.stop()
+        if self.current_path is None:
+            self.current_path = self.app.destDir
         expand_all_switch = self.query_one(
             self.tab_ids.switch_id("#", switch=Switches.expand_all), Switch
         )

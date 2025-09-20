@@ -324,8 +324,9 @@ class TreeBase(CustomRenderLabel, AppType):  # instead of Tree[NodeData]
             # Use "F" for fake, as R is in use by chezmoi for Run
             "F": theme.vars["text-primary"],
         }
+        # Initialize with a placeholder path, will be set properly in on_mount
         root_node_data: DirNodeData = DirNodeData(
-            path=self.app.destDir, found=True, status="F"
+            path=Path("."), found=True, status="F"
         )
         super().__init__(
             label="root",
@@ -337,6 +338,8 @@ class TreeBase(CustomRenderLabel, AppType):  # instead of Tree[NodeData]
         self.guide_depth: int = 3
         self.show_root: bool = False
         self.add_class(TcssStr.tree_widget)
+        if self.root.data:
+            self.root.data.path = self.app.destDir
 
     # 4 methods to provide tab navigation without intaraction with the tree
     def on_key(self, event: Key) -> None:
