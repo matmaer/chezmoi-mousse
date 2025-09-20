@@ -172,13 +172,24 @@ class DebugLog(CommandLog):
     def mro(self, mro: Mro) -> None:
         color = theme.vars["accent-darken-2"]
         self.write(f"{self._log_time()} [{color}]Method Resolution Order:[/]")
+
+        exclude = {
+            "typing.Generic",
+            "builtins.object",
+            "textual.dom.DOMNode",
+            "textual.message_pump.MessagePump",
+            "chezmoi_mousse.id_typing.AppType",
+        }
+
         pretty_mro = " -> ".join(
-            f"{cls.__module__}.{cls.__qualname__}\n"
+            f"{qname}\n"
             for cls in mro
-            if "typing.Generic" not in f"{cls.__module__}.{cls.__qualname__}"
-            and "builtins.object" not in f"{cls.__module__}.{cls.__qualname__}"
+            if not any(
+                e in (qname := f"{cls.__module__}.{cls.__qualname__}")
+                for e in exclude
+            )
         )
-        self.dimmed(f"{pretty_mro}")
+        self.dimmed(pretty_mro)
 
     def list_attr(self, obj: object) -> None:
         members = [attr for attr in dir(obj) if not attr.startswith("_")]
