@@ -3,14 +3,7 @@ from pathlib import Path
 from rich.text import Text
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import (
-    Container,
-    Horizontal,
-    HorizontalGroup,
-    Vertical,
-    VerticalGroup,
-)
-from textual.validation import URL
+from textual.containers import Container, Horizontal, Vertical, VerticalGroup
 from textual.widgets import (
     Button,
     Collapsible,
@@ -22,16 +15,16 @@ from textual.widgets import (
     ListItem,
     ListView,
     Pretty,
-    Select,
     Static,
     Switch,
 )
 
 import chezmoi_mousse.custom_theme as theme
-from chezmoi_mousse.button_groups import ButtonsVertical, OperateBtnHorizontal
+from chezmoi_mousse.button_groups import ButtonsVertical
 from chezmoi_mousse.constants import FLOW, BorderTitle, TcssStr
 from chezmoi_mousse.containers import OperateTabsBase, SwitchSlider
 from chezmoi_mousse.content_switchers import (
+    ConfigTabContentSwitcher,
     TabBtnHorizontal,
     TreeContentSwitcher,
     ViewContentSwitcher,
@@ -171,81 +164,82 @@ class InitTab(Vertical, AppType):
         self.repo_url: str | None = None
 
     def compose(self) -> ComposeResult:
-        with Horizontal():
-            yield ButtonsVertical(
-                tab_ids=Id.init,
-                buttons=(
-                    NavBtn.new_repo,
-                    NavBtn.clone_repo,
-                    NavBtn.purge_repo,
-                ),
-                area=Area.left,
-            )
-            with Vertical(
-                id=Id.init.tab_vertical_id(area=Area.right),
-                classes=TcssStr.tab_right_vertical,
-            ):
-                with ContentSwitcher(
-                    id=Id.init.content_switcher_id(area=Area.right),
-                    initial=Id.init.view_id(view=ViewName.init_new_view),
-                    classes=TcssStr.content_switcher_right,
-                ):
-                    # New Repo Content
-                    yield Vertical(
-                        Label("Initialize new chezmoi git repository"),
-                        Input(placeholder="Enter config file path"),
-                        OperateBtnHorizontal(
-                            tab_ids=Id.init, buttons=(OperateBtn.new_repo,)
-                        ),
-                        id=Id.init.view_id(view=ViewName.init_new_view),
-                    )
-                    # Clone Repo Content
-                    yield Vertical(
-                        Label("Clone existing chezmoi git repository"),
-                        # TODO: implement guess feature from chezmoi
-                        # TODO: add selection for https(with PAT token) or ssh
-                        HorizontalGroup(
-                            Vertical(
-                                Select[str].from_values(
-                                    ["https", "ssh"],
-                                    classes=TcssStr.input_select,
-                                    value="https",
-                                    allow_blank=False,
-                                    type_to_search=False,
-                                ),
-                                classes=TcssStr.input_select_vertical,
-                            ),
-                            Vertical(
-                                Input(
-                                    placeholder="Enter repository URL",
-                                    validate_on=["submitted"],
-                                    validators=URL(),
-                                    classes=TcssStr.input_field,
-                                ),
-                                classes=TcssStr.input_field_vertical,
-                            ),
-                        ),
-                        OperateBtnHorizontal(
-                            tab_ids=Id.init, buttons=(OperateBtn.clone_repo,)
-                        ),
-                        id=Id.init.view_id(view=ViewName.init_clone_view),
-                    )
-                    # Purge chezmoi repo
-                    yield Vertical(
-                        Label("Purge current chezmoi git repository"),
-                        Static(
-                            "Remove chezmoi's configuration, state, and source directory, but leave the target state intact."
-                        ),
-                        OperateBtnHorizontal(
-                            tab_ids=Id.init, buttons=(OperateBtn.purge_repo,)
-                        ),
-                        id=Id.init.view_id(view=ViewName.init_purge_view),
-                    )
-            yield SwitchSlider(
-                tab_ids=Id.init,
-                switches=(Switches.guess_url, Switches.clone_and_apply),
-            )
+        yield ConfigTabContentSwitcher(tab_ids=Id.init)
+        # with Horizontal():
+        #     yield ButtonsVertical(
+        #         tab_ids=Id.init,
+        #         buttons=(
+        #             NavBtn.new_repo,
+        #             NavBtn.clone_repo,
+        #             NavBtn.purge_repo,
+        #         ),
+        #         area=Area.left,
+        #     )
+        # with Vertical(
+        #     id=Id.init.tab_vertical_id(area=Area.right),
+        #     classes=TcssStr.tab_right_vertical,
+        # ):
+        #     with ContentSwitcher(
+        #         id=Id.init.content_switcher_id(area=Area.right),
+        #         initial=Id.init.view_id(view=ViewName.init_new_view),
+        #         classes=TcssStr.content_switcher_right,
+        #     ):
+        #         # New Repo Content
+        #         yield Vertical(
+        #             Label("Initialize new chezmoi git repository"),
+        #             Input(placeholder="Enter config file path"),
+        #             OperateBtnHorizontal(
+        #                 tab_ids=Id.init, buttons=(OperateBtn.new_repo,)
+        #             ),
+        #             id=Id.init.view_id(view=ViewName.init_new_view),
+        #         )
+        #         # Clone Repo Content
+        #         yield Vertical(
+        #             Label("Clone existing chezmoi git repository"),
+        #             # TODO: implement guess feature from chezmoi
+        #             # TODO: add selection for https(with PAT token) or ssh
+        #             HorizontalGroup(
+        #                 Vertical(
+        #                     Select[str].from_values(
+        #                         ["https", "ssh"],
+        #                         classes=TcssStr.input_select,
+        #                         value="https",
+        #                         allow_blank=False,
+        #                         type_to_search=False,
+        #                     ),
+        #                     classes=TcssStr.input_select_vertical,
+        #                 ),
+        #                 Vertical(
+        #                     Input(
+        #                         placeholder="Enter repository URL",
+        #                         validate_on=["submitted"],
+        #                         validators=URL(),
+        #                         classes=TcssStr.input_field,
+        #                     ),
+        #                     classes=TcssStr.input_field_vertical,
+        #                 ),
+        #             ),
+        #             OperateBtnHorizontal(
+        #                 tab_ids=Id.init, buttons=(OperateBtn.clone_repo,)
+        #             ),
+        #             id=Id.init.view_id(view=ViewName.init_clone_view),
+        #         )
+        #         # Purge chezmoi repo
+        #         yield Vertical(
+        #             Label("Purge current chezmoi git repository"),
+        #             Static(
+        #                 "Remove chezmoi's configuration, state, and source directory, but leave the target state intact."
+        #             ),
+        #             OperateBtnHorizontal(
+        #                 tab_ids=Id.init, buttons=(OperateBtn.purge_repo,)
+        #             ),
+        #             id=Id.init.view_id(view=ViewName.init_purge_view),
+        #         )
         yield self.app.chezmoi.init_log
+        yield SwitchSlider(
+            tab_ids=Id.init,
+            switches=(Switches.guess_url, Switches.clone_and_apply),
+        )
 
     def on_mount(self) -> None:
         self.query(Label).add_class(TcssStr.config_tab_label)
