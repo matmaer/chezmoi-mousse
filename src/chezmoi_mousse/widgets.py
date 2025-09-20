@@ -101,19 +101,14 @@ class ContentsView(RichLog, AppType):
 
     def on_mount(self) -> None:
         self.write(
-            Text(
-                (
-                    f"Destination directory is {self.app.destDir}.\n"
-                    "Click a file or directory to view its contents."
-                ),
-                style="dim",
-            )
+            Text("Click a file or directory to see its contents", style="dim")
         )
 
-    def update_contents_view(self) -> None:
-        truncated_message = ""
-        if self.path is None:
+    def watch_path(self) -> None:
+        if self.path is None or self.path == self.app.destDir:
             return
+        self.clear()
+        truncated_message = ""
         try:
             if self.path.is_file() and self.path.stat().st_size > 150 * 1024:
                 truncated_message = (
@@ -155,20 +150,7 @@ class ContentsView(RichLog, AppType):
                 return
 
         except IsADirectoryError:
-            if self.path == self.app.destDir:
-                self.write(
-                    Text(
-                        "Click a file or directory to show its contents.\n",
-                        style="dim",
-                    )
-                )
-                self.write("Current directory:")
-                self.write(f"{self.app.destDir}")
-                self.write(Text("(destDir)\n", style="dim"))
-                self.write("Source directory:")
-                self.write(f"{self.app.sourceDir}")
-                self.write(Text("(sourceDir)", style="dim"))
-            elif self.path in self.app.chezmoi.dir_paths:
+            if self.path in self.app.chezmoi.dir_paths:
                 self.write(f"Managed directory: {self.path}")
             else:
                 self.write(f"Unmanaged directory: {self.path}")
@@ -176,12 +158,6 @@ class ContentsView(RichLog, AppType):
         except OSError as error:
             self.write(Text(f"Error reading {self.path}: {error}"))
             self.app.chezmoi.app_log.error("Error reading file")
-
-    def watch_path(self) -> None:
-        if self.path is None:
-            return
-        self.clear()
-        self.update_contents_view()
 
 
 class DiffView(RichLog, AppType):
@@ -200,19 +176,19 @@ class DiffView(RichLog, AppType):
         self.status_files: PathDict = {}
 
     def on_mount(self) -> None:
-        self.write(
-            Text(
-                (
-                    f"Destination directory is {self.app.destDir}.\n"
-                    "Click a file or directory to view its contents."
-                ),
-                style="dim",
-            )
-        )
+        self.highlight = True
+        self.write(Text("Click a file to see the diff.\n", style="dim"))
+        self.write("Current directory:")
+        self.write(f"{self.app.destDir}")
+        self.write(Text("(destDir)\n", style="dim"))
+        self.write("Source directory:")
+        self.write(f"{self.app.sourceDir}")
+        self.write(Text("(sourceDir)", style="dim"))
 
     def watch_path(self) -> None:
-        if self.path is None:
+        if self.path is None or self.path == self.app.destDir:
             return
+
         self.clear()
 
         diff_output: list[str] = []
@@ -241,7 +217,7 @@ class DiffView(RichLog, AppType):
             else:
                 self.write(Text("Files in directory with changed status:"))
                 for file_path in status_files_in_dir:
-                    self.write(Text(f"{file_path}"))
+                    self.write(Text(f"{file_path}", theme.vars["text-accent"]))
                 return
             return
         # create a diff view if the current selected path is an unchanged file
