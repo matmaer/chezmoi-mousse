@@ -19,6 +19,7 @@ dev = [
     "ipython>=9.1.0",
     "isort>=6.0.1",
     "memray>=1.17.1",
+    "mypy>=1.18.2",
     "pre-commit>=4.2.0",
     "profiler>=0.1.0",
     "pydeps>=3.0.1",
