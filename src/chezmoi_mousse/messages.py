@@ -1,6 +1,6 @@
 from textual.message import Message
 
-from chezmoi_mousse.id_typing import OperateData
+from chezmoi_mousse.id_typing import CurrentTreeNodes, OperateData
 
 
 class OperateMessage(Message):
@@ -12,4 +12,10 @@ class OperateMessage(Message):
 class InvalidInputMessage(Message):
     def __init__(self, reasons: list[str]) -> None:
         self.reasons = reasons
+        super().__init__()
+
+
+class CurrentTreeNodesMessage(Message):
+    def __init__(self, current_tree_nodes: CurrentTreeNodes) -> None:
+        self.current_tree_nodes = current_tree_nodes
         super().__init__()

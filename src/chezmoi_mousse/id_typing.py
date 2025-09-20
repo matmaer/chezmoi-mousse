@@ -2,7 +2,7 @@
 enable setting widget id's without hardcoded strings or generated the id
 dynamically."""
 
-from dataclasses import dataclass, fields
+from dataclasses import dataclass, field, fields
 from enum import Enum
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
@@ -56,6 +56,23 @@ class DirNodeData(NodeData):
 @dataclass
 class FileNodeData(NodeData):
     pass
+
+
+@dataclass
+class CurrentTreeNodes:
+    managed: DirNodeData | FileNodeData
+    flat_tree: DirNodeData | FileNodeData
+    expanded_tree: DirNodeData | FileNodeData
+    flat_tree: DirNodeData | FileNodeData
+    managed_children: list[DirNodeData | FileNodeData] = field(
+        default_factory=list[DirNodeData | FileNodeData]
+    )
+    flat_tree_children: list[DirNodeData | FileNodeData] = field(
+        default_factory=list[DirNodeData | FileNodeData]
+    )
+    expanded_tree_children: list[DirNodeData | FileNodeData] = field(
+        default_factory=list[DirNodeData | FileNodeData]
+    )
 
 
 @dataclass
