@@ -80,8 +80,9 @@ class OperateTabsBase(Horizontal, AppType):
         self, event: TreeBase.NodeSelected[NodeData]
     ) -> None:
         event.stop()
-
         assert event.node.data is not None
+        if event.node.data.path == self.app.destDir:
+            return
         self.current_path = event.node.data.path
         self.query_one(
             self.tab_ids.content_switcher_id("#", area=Area.right), Container
