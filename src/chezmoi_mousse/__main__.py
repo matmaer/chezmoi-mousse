@@ -1,11 +1,12 @@
-from chezmoi_mousse.chezmoi import APP_CFG
+import os
+
 from chezmoi_mousse.gui import ChezmoiGUI
 
 
 def main():
     app = ChezmoiGUI()
 
-    if APP_CFG.dev_mode:
+    if os.environ.get("MOUSSE_ENABLE_CHANGES") == "1":
         """Patched app._handle_exception method which will save a stacktrace to
         error.log in the source directory in case an exception occurs."""
         import traceback
