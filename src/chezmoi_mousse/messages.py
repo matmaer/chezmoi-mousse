@@ -9,12 +9,6 @@ class OperateMessage(Message):
         super().__init__()
 
 
-class InvalidInputMessage(Message):
-    def __init__(self, reasons: list[str]) -> None:
-        self.reasons = reasons
-        super().__init__()
-
-
 class CurrentTreeNodesMessage(Message):
     def __init__(self, current_tree_nodes: CurrentTreeNodes) -> None:
         self.current_tree_nodes = current_tree_nodes

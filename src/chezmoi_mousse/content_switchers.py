@@ -21,6 +21,7 @@ from chezmoi_mousse.button_groups import (
     OperateBtnHorizontal,
     TabBtnHorizontal,
 )
+from chezmoi_mousse.chezmoi import INIT_CFG
 from chezmoi_mousse.constants import (
     FLOW,
     Area,
@@ -33,6 +34,7 @@ from chezmoi_mousse.constants import (
     ViewName,
 )
 from chezmoi_mousse.id_typing import AppType, TabIds
+from chezmoi_mousse.pretty_logs import app_log, debug_log, output_log
 from chezmoi_mousse.widgets import (
     ContentsView,
     DiffView,
@@ -91,7 +93,7 @@ class TreeSwitcher(VerticalGroup, AppType):
             )
 
 
-class ViewSwitcher(Vertical, AppType):
+class ViewSwitcher(Vertical):
     def __init__(self, *, tab_ids: TabIds, diff_reverse: bool):
         self.tab_ids = tab_ids
         self.reverse = diff_reverse
@@ -138,11 +140,7 @@ class InitTabSwitcher(Horizontal):
 
     def __init__(self, tab_ids: TabIds):
         self.tab_ids = tab_ids
-        # updated by OperateTabsBase in on_switch_changed method
-        super().__init__(
-            id=self.tab_ids.tab_vertical_id(area=Area.right),
-            classes=TcssStr.tab_right_vertical,
-        )
+        super().__init__(id=self.tab_ids.tab_vertical_id(area=Area.right))
 
     def compose(self) -> ComposeResult:
         yield ButtonsVertical(
@@ -308,7 +306,7 @@ class LogsTabSwitcher(Vertical, AppType):
 
     def compose(self) -> ComposeResult:
         tab_buttons = (TabBtn.app_log, TabBtn.output_log)
-        if self.app.chezmoi.app_cfg.dev_mode:
+        if INIT_CFG.dev_mode:
             tab_buttons += (TabBtn.debug_log,)
 
         yield TabBtnHorizontal(
@@ -319,10 +317,10 @@ class LogsTabSwitcher(Vertical, AppType):
             initial=self.tab_ids.view_id(view=ViewName.app_log_view),
             classes=TcssStr.border_title_top,
         ):
-            yield self.app.chezmoi.app_log
-            yield self.app.chezmoi.output_log
-            if self.app.chezmoi.app_cfg.dev_mode:
-                yield self.app.chezmoi.debug_log
+            yield app_log
+            yield output_log
+            if INIT_CFG.dev_mode:
+                yield debug_log
 
     def on_mount(self) -> None:
         self.query_exactly_one(ContentSwitcher).border_title = (
@@ -341,9 +339,8 @@ class LogsTabSwitcher(Vertical, AppType):
                 view=ViewName.output_log_view
             )
             switcher.border_title = BorderTitle.output_log
-        elif (
-            self.app.chezmoi.app_cfg.dev_mode
-            and event.button.id == self.tab_ids.button_id(btn=TabBtn.debug_log)
+        elif INIT_CFG.dev_mode and event.button.id == self.tab_ids.button_id(
+            btn=TabBtn.debug_log
         ):
             switcher.current = self.tab_ids.view_id(
                 view=ViewName.debug_log_view

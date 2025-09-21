@@ -14,6 +14,7 @@ from textual.timer import Timer
 from textual.widgets import RichLog, Static
 from textual.worker import WorkerState
 
+from chezmoi_mousse.chezmoi import INIT_CFG
 from chezmoi_mousse.constants import SPLASH
 from chezmoi_mousse.custom_theme import vars as theme_vars
 from chezmoi_mousse.id_typing import AppType, Id
@@ -101,7 +102,7 @@ class LoadingScreen(Screen[list[str]], AppType):
     def run_io_worker(self, arg_id: str) -> None:
         io_class = getattr(self.app.chezmoi, arg_id)
         io_class.update()
-        self.log_text(io_class.label)
+        self.log_text(f'chezmoi {arg_id.replace("_", " ")}')
 
     def all_workers_finished(self) -> None:
         if all(
@@ -121,7 +122,7 @@ class LoadingScreen(Screen[list[str]], AppType):
             interval=0.05, callback=animated_fade.refresh
         )
 
-        if not self.app.chezmoi.app_cfg.chezmoi_found:
+        if not INIT_CFG.chezmoi_found:
             self.log_unavailable_chezmoi_command()
             return
 

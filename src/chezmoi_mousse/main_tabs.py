@@ -36,7 +36,7 @@ from chezmoi_mousse.content_switchers import (
     ViewSwitcher,
 )
 from chezmoi_mousse.id_typing import AppType, Id, PwMgrInfo, Switches
-from chezmoi_mousse.messages import InvalidInputMessage
+from chezmoi_mousse.pretty_logs import CommandLog, LogIds
 from chezmoi_mousse.widgets import ContentsView, FilteredDirTree
 
 
@@ -152,7 +152,7 @@ class AddTab(OperateTabsBase, AppType):
         tree.reload()
 
 
-class InitTab(Vertical, AppType):
+class InitTab(Horizontal, AppType):
 
     def __init__(self) -> None:
         super().__init__(id=Id.init.tab_container_id)
@@ -160,7 +160,7 @@ class InitTab(Vertical, AppType):
 
     def compose(self) -> ComposeResult:
         yield InitTabSwitcher(tab_ids=Id.init)
-        yield self.app.chezmoi.init_log
+        yield CommandLog(ids=LogIds.init_log)
         yield SwitchSlider(
             tab_ids=Id.init,
             switches=(Switches.guess_url, Switches.clone_and_apply),
@@ -168,21 +168,24 @@ class InitTab(Vertical, AppType):
 
     def on_mount(self) -> None:
         self.query(Label).add_class(TcssStr.config_tab_label)
-        self.app.chezmoi.init_log.success("Ready to run chezmoi commands.")
+        self.query_exactly_one(CommandLog).success(
+            "Ready to run chezmoi commands."
+        )
         self.query_exactly_one(ButtonsVertical).add_class(
             TcssStr.tab_left_vertical
         )
 
     @on(Input.Submitted)
-    def show_invalid_reasons(self, event: Input.Submitted) -> None:
+    def log_invalid_reasons(self, event: Input.Submitted) -> None:
         if (
             event.validation_result is not None
             and not event.validation_result.is_valid
         ):
-            self.post_message(
-                InvalidInputMessage(
-                    reasons=event.validation_result.failure_descriptions
-                )
+            text_lines = "\n".join(
+                event.validation_result.failure_descriptions
+            )
+            self.query_exactly_one(CommandLog).warning(
+                f"Invalid input detected: {text_lines}"
             )
 
     @on(Button.Pressed, ".operate_button")

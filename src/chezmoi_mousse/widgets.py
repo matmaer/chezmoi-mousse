@@ -20,6 +20,7 @@ from textual.widgets import DataTable, DirectoryTree, RichLog, Static
 from textual.widgets.tree import TreeNode
 
 import chezmoi_mousse.custom_theme as theme
+from chezmoi_mousse.chezmoi import INIT_CFG
 from chezmoi_mousse.constants import (
     TcssStr,
     UnwantedDirs,
@@ -41,6 +42,7 @@ from chezmoi_mousse.id_typing import (
     TreeName,
 )
 from chezmoi_mousse.overrides import CustomRenderLabel
+from chezmoi_mousse.pretty_logs import app_log
 
 
 class OperateInfo(Static, AppType):
@@ -73,9 +75,9 @@ class OperateInfo(Static, AppType):
             self.border_subtitle = Chars.destroy_file_info_border
         # show git auto warnings
         if not OperateBtn.apply_file == self.operate_btn:
-            if self.app.chezmoi.config.autocommit:
+            if INIT_CFG.git_autocommit:
                 lines_to_write.append(OperateHelp.auto_commit.value)
-            if self.app.chezmoi.config.autopush:
+            if INIT_CFG.git_autopush:
                 lines_to_write.append(OperateHelp.autopush.value)
         # show git diff color info
         if (
@@ -114,14 +116,12 @@ class ContentsView(RichLog, AppType):
                 truncated_message = (
                     "\n\n--- File content truncated to 150 KiB ---\n"
                 )
-                self.app.chezmoi.app_log.warning(
+                app_log.warning(
                     f"File {self.path} is larger than 150 KiB, truncating output."
                 )
         except PermissionError as e:
             self.write(e.strerror)
-            self.app.chezmoi.app_log.error(
-                f"Permission denied to read {self.path}"
-            )
+            app_log.error(f"Permission denied to read {self.path}")
             return
 
         try:
@@ -157,7 +157,7 @@ class ContentsView(RichLog, AppType):
 
         except OSError as error:
             self.write(Text(f"Error reading {self.path}: {error}"))
-            self.app.chezmoi.app_log.error("Error reading file")
+            app_log.error("Error reading file")
 
 
 class DiffView(RichLog, AppType):
