@@ -102,6 +102,8 @@ class Operate(ScreensBase, AppType):
     def on_mount(self) -> None:
         self.add_class(TcssStr.operate_screen)
         self.border_subtitle = BorderSubTitle.esc_to_close
+        for button in self.query(Button):
+            button.disabled = False
         if (
             self.tab_name == TabName.apply_tab
             or self.tab_name == TabName.re_add_tab
