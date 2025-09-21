@@ -3,7 +3,7 @@ from pathlib import Path
 from rich.text import Text
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import Container, Horizontal, Vertical, VerticalGroup
+from textual.containers import Horizontal, Vertical, VerticalGroup
 from textual.widgets import (
     Button,
     Collapsible,
@@ -20,27 +20,24 @@ from textual.widgets import (
 
 import chezmoi_mousse.custom_theme as theme
 from chezmoi_mousse.button_groups import ButtonsVertical
-from chezmoi_mousse.constants import BorderTitle, TcssStr
+from chezmoi_mousse.constants import (
+    Area,
+    NavBtn,
+    OperateBtn,
+    TabBtn,
+    TcssStr,
+    TreeName,
+    ViewName,
+)
 from chezmoi_mousse.containers import OperateTabsBase, SwitchSlider
 from chezmoi_mousse.content_switchers import (
     ConfigTabContentSwitcher,
     InitTabContentSwitcher,
-    TabBtnHorizontal,
+    LogsTabContentSwitcher,
     TreeContentSwitcher,
     ViewContentSwitcher,
 )
-from chezmoi_mousse.id_typing import (
-    AppType,
-    Area,
-    Id,
-    NavBtn,
-    OperateBtn,
-    PwMgrInfo,
-    Switches,
-    TabBtn,
-    TreeName,
-    ViewName,
-)
+from chezmoi_mousse.id_typing import AppType, Id, PwMgrInfo, Switches
 from chezmoi_mousse.messages import InvalidInputMessage
 from chezmoi_mousse.widgets import ContentsView, FilteredDirTree
 
@@ -337,67 +334,11 @@ class DoctorTab(Vertical, AppType):
                 break
 
 
-class LogsTab(Container, AppType):
-
-    # TODO: implement maximized key binding
+class LogsTab(Vertical, AppType):
 
     def __init__(self) -> None:
-        super().__init__(id=Id.logs.tab_container_id)
         self.tab_buttons = (TabBtn.app_log, TabBtn.output_log)
+        super().__init__(id=Id.logs.tab_container_id)
 
     def compose(self) -> ComposeResult:
-
-        yield TabBtnHorizontal(
-            tab_ids=Id.logs, buttons=self.tab_buttons, area=Area.top
-        )
-        with ContentSwitcher(
-            id=Id.logs.content_switcher_id(area=Area.top),
-            initial=Id.logs.view_id(view=ViewName.app_log_view),
-            classes=TcssStr.border_title_top,
-        ):
-            yield self.app.chezmoi.app_log
-            yield self.app.chezmoi.output_log
-            if self.app.chezmoi.app_cfg.dev_mode:
-                yield self.app.chezmoi.debug_log
-
-    def on_mount(self) -> None:
-        self.query_exactly_one(ContentSwitcher).border_title = (
-            BorderTitle.app_log
-        )
-        if self.app.chezmoi.app_cfg.dev_mode:
-            self.tab_buttons += (TabBtn.debug_log,)
-
-    @on(Button.Pressed, ".tab_button")
-    def handle_logs_tab_buttons(self, event: Button.Pressed) -> None:
-        event.stop()
-        # AppLog/OutputLog/DebugLog Content Switcher
-        if event.button.id == Id.logs.button_id(btn=TabBtn.app_log):
-            content_switcher = self.query_one(
-                Id.logs.content_switcher_id("#", area=Area.top),
-                ContentSwitcher,
-            )
-            content_switcher.current = Id.logs.view_id(
-                view=ViewName.app_log_view
-            )
-            content_switcher.border_title = BorderTitle.app_log
-        elif event.button.id == Id.logs.button_id(btn=TabBtn.output_log):
-            content_switcher = self.query_one(
-                Id.logs.content_switcher_id("#", area=Area.top),
-                ContentSwitcher,
-            )
-            content_switcher.current = Id.logs.view_id(
-                view=ViewName.output_log_view
-            )
-            content_switcher.border_title = BorderTitle.output_log
-        elif (
-            self.app.chezmoi.app_cfg.dev_mode
-            and event.button.id == Id.logs.button_id(btn=TabBtn.debug_log)
-        ):
-            content_switcher = self.query_one(
-                Id.logs.content_switcher_id("#", area=Area.top),
-                ContentSwitcher,
-            )
-            content_switcher.current = Id.logs.view_id(
-                view=ViewName.debug_log_view
-            )
-            content_switcher.border_title = BorderTitle.debug_log
+        yield LogsTabContentSwitcher(tab_ids=Id.logs)
