@@ -14,17 +14,17 @@ from textual.widgets import (
     Link,
     ListItem,
     ListView,
-    Pretty,
     Static,
     Switch,
 )
 
 import chezmoi_mousse.custom_theme as theme
 from chezmoi_mousse.button_groups import ButtonsVertical
-from chezmoi_mousse.constants import FLOW, BorderTitle, TcssStr
+from chezmoi_mousse.constants import BorderTitle, TcssStr
 from chezmoi_mousse.containers import OperateTabsBase, SwitchSlider
 from chezmoi_mousse.content_switchers import (
     ConfigTabContentSwitcher,
+    InitTabContentSwitcher,
     TabBtnHorizontal,
     TreeContentSwitcher,
     ViewContentSwitcher,
@@ -164,77 +164,7 @@ class InitTab(Vertical, AppType):
         self.repo_url: str | None = None
 
     def compose(self) -> ComposeResult:
-        yield ConfigTabContentSwitcher(tab_ids=Id.init)
-        # with Horizontal():
-        #     yield ButtonsVertical(
-        #         tab_ids=Id.init,
-        #         buttons=(
-        #             NavBtn.new_repo,
-        #             NavBtn.clone_repo,
-        #             NavBtn.purge_repo,
-        #         ),
-        #         area=Area.left,
-        #     )
-        # with Vertical(
-        #     id=Id.init.tab_vertical_id(area=Area.right),
-        #     classes=TcssStr.tab_right_vertical,
-        # ):
-        #     with ContentSwitcher(
-        #         id=Id.init.content_switcher_id(area=Area.right),
-        #         initial=Id.init.view_id(view=ViewName.init_new_view),
-        #         classes=TcssStr.content_switcher_right,
-        #     ):
-        #         # New Repo Content
-        #         yield Vertical(
-        #             Label("Initialize new chezmoi git repository"),
-        #             Input(placeholder="Enter config file path"),
-        #             OperateBtnHorizontal(
-        #                 tab_ids=Id.init, buttons=(OperateBtn.new_repo,)
-        #             ),
-        #             id=Id.init.view_id(view=ViewName.init_new_view),
-        #         )
-        #         # Clone Repo Content
-        #         yield Vertical(
-        #             Label("Clone existing chezmoi git repository"),
-        #             # TODO: implement guess feature from chezmoi
-        #             # TODO: add selection for https(with PAT token) or ssh
-        #             HorizontalGroup(
-        #                 Vertical(
-        #                     Select[str].from_values(
-        #                         ["https", "ssh"],
-        #                         classes=TcssStr.input_select,
-        #                         value="https",
-        #                         allow_blank=False,
-        #                         type_to_search=False,
-        #                     ),
-        #                     classes=TcssStr.input_select_vertical,
-        #                 ),
-        #                 Vertical(
-        #                     Input(
-        #                         placeholder="Enter repository URL",
-        #                         validate_on=["submitted"],
-        #                         validators=URL(),
-        #                         classes=TcssStr.input_field,
-        #                     ),
-        #                     classes=TcssStr.input_field_vertical,
-        #                 ),
-        #             ),
-        #             OperateBtnHorizontal(
-        #                 tab_ids=Id.init, buttons=(OperateBtn.clone_repo,)
-        #             ),
-        #             id=Id.init.view_id(view=ViewName.init_clone_view),
-        #         )
-        #         # Purge chezmoi repo
-        #         yield Vertical(
-        #             Label("Purge current chezmoi git repository"),
-        #             Static(
-        #                 "Remove chezmoi's configuration, state, and source directory, but leave the target state intact."
-        #             ),
-        #             OperateBtnHorizontal(
-        #                 tab_ids=Id.init, buttons=(OperateBtn.purge_repo,)
-        #             ),
-        #             id=Id.init.view_id(view=ViewName.init_purge_view),
-        #         )
+        yield InitTabContentSwitcher(tab_ids=Id.init)
         yield self.app.chezmoi.init_log
         yield SwitchSlider(
             tab_ids=Id.init,
@@ -311,51 +241,7 @@ class ConfigTab(Horizontal, AppType):
         super().__init__(id=Id.config.tab_container_id)
 
     def compose(self) -> ComposeResult:
-
-        with VerticalGroup(
-            id=Id.config.tab_vertical_id(area=Area.left),
-            classes=TcssStr.tab_left_vertical,
-        ):
-            yield ButtonsVertical(
-                tab_ids=Id.config,
-                buttons=(
-                    NavBtn.cat_config,
-                    NavBtn.ignored,
-                    NavBtn.template_data,
-                    NavBtn.diagram,
-                ),
-                area=Area.left,
-            )
-
-        with Vertical(
-            id=Id.config.tab_vertical_id(area=Area.right),
-            classes=TcssStr.tab_right_vertical,
-        ):
-            # TODO: make sure scrollbars appear when there's overflow
-            with ContentSwitcher(
-                id=Id.config.content_switcher_id(area=Area.right),
-                initial=Id.config.view_id(view=ViewName.cat_config),
-            ):
-                yield Vertical(
-                    Label('"chezmoi cat-config" output'),
-                    Pretty(self.app.chezmoi.run.cat_config()),
-                    id=Id.config.view_id(view=ViewName.cat_config),
-                )
-                yield Vertical(
-                    Label('"chezmoi ignored" output'),
-                    Pretty(self.app.chezmoi.run.ignored()),
-                    id=Id.config.view_id(view=ViewName.config_ignored),
-                )
-                yield Vertical(
-                    Label('"chezmoi data" output'),
-                    Pretty(self.app.chezmoi.run.template_data()),
-                    id=Id.config.view_id(view=ViewName.template_data),
-                )
-                yield Vertical(
-                    Label("chezmoi diagram"),
-                    Static(FLOW, classes=TcssStr.flow_diagram),
-                    id=Id.config.view_id(view=ViewName.diagram),
-                )
+        yield ConfigTabContentSwitcher(Id.config)
 
     def on_mount(self) -> None:
         self.query(Label).add_class(TcssStr.config_tab_label)
