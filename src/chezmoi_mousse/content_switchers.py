@@ -43,7 +43,7 @@ from chezmoi_mousse.widgets import (
 )
 
 
-class TreeContentSwitcher(VerticalGroup, AppType):
+class TreeSwitcher(VerticalGroup, AppType):
 
     def __init__(self, tab_ids: TabIds):
         self.tab_ids = tab_ids
@@ -91,7 +91,7 @@ class TreeContentSwitcher(VerticalGroup, AppType):
             )
 
 
-class ViewContentSwitcher(Vertical, AppType):
+class ViewSwitcher(Vertical, AppType):
     def __init__(self, *, tab_ids: TabIds, diff_reverse: bool):
         self.tab_ids = tab_ids
         self.reverse = diff_reverse
@@ -115,7 +115,7 @@ class ViewContentSwitcher(Vertical, AppType):
             yield GitLogView(ids=self.tab_ids)
 
     def on_mount(self) -> None:
-        self.query_one(ContentSwitcher).add_class(
+        self.query_exactly_one(ContentSwitcher).add_class(
             TcssStr.content_switcher_right, TcssStr.border_title_top
         )
 
@@ -134,7 +134,7 @@ class ViewContentSwitcher(Vertical, AppType):
             )
 
 
-class InitTabContentSwitcher(Horizontal):
+class InitTabSwitcher(Horizontal):
 
     def __init__(self, tab_ids: TabIds):
         self.tab_ids = tab_ids
@@ -207,8 +207,24 @@ class InitTabContentSwitcher(Horizontal):
                 id=self.tab_ids.view_id(view=ViewName.init_purge_view),
             )
 
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        event.stop()
+        switcher = self.query_exactly_one(ContentSwitcher)
+        if event.button.id == self.tab_ids.button_id(btn=NavBtn.new_repo):
+            switcher.current = self.tab_ids.view_id(
+                view=ViewName.init_new_view
+            )
+        elif event.button.id == self.tab_ids.button_id(btn=NavBtn.clone_repo):
+            switcher.current = self.tab_ids.view_id(
+                view=ViewName.init_clone_view
+            )
+        elif event.button.id == self.tab_ids.button_id(btn=NavBtn.purge_repo):
+            switcher.current = self.tab_ids.view_id(
+                view=ViewName.init_purge_view
+            )
 
-class ConfigTabContentSwitcher(Horizontal, AppType):
+
+class ConfigTabSwitcher(Horizontal, AppType):
 
     def __init__(self, tab_ids: TabIds):
         self.tab_ids = tab_ids
@@ -264,8 +280,26 @@ class ConfigTabContentSwitcher(Horizontal, AppType):
                     id=self.tab_ids.view_id(view=ViewName.diagram),
                 )
 
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        event.stop()
+        switcher = self.query_exactly_one(ContentSwitcher)
+        if event.button.id == self.tab_ids.button_id(btn=(NavBtn.cat_config)):
+            switcher.current = self.tab_ids.view_id(view=ViewName.cat_config)
+        elif event.button.id == self.tab_ids.button_id(btn=NavBtn.ignored):
+            switcher.current = self.tab_ids.view_id(
+                view=ViewName.config_ignored
+            )
+        elif event.button.id == self.tab_ids.button_id(
+            btn=NavBtn.template_data
+        ):
+            switcher.current = self.tab_ids.view_id(
+                view=ViewName.template_data
+            )
+        elif event.button.id == self.tab_ids.button_id(btn=NavBtn.diagram):
+            switcher.current = self.tab_ids.view_id(view=ViewName.diagram)
 
-class LogsTabContentSwitcher(Vertical, AppType):
+
+class LogsTabSwitcher(Vertical, AppType):
 
     def __init__(self, tab_ids: TabIds):
         self.tab_ids = tab_ids
@@ -297,23 +331,21 @@ class LogsTabContentSwitcher(Vertical, AppType):
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
-        content_switcher = self.query_exactly_one(ContentSwitcher)
+        switcher = self.query_exactly_one(ContentSwitcher)
 
         if event.button.id == self.tab_ids.button_id(btn=TabBtn.app_log):
-            content_switcher.current = self.tab_ids.view_id(
-                view=ViewName.app_log_view
-            )
-            content_switcher.border_title = BorderTitle.app_log
+            switcher.current = self.tab_ids.view_id(view=ViewName.app_log_view)
+            switcher.border_title = BorderTitle.app_log
         elif event.button.id == self.tab_ids.button_id(btn=TabBtn.output_log):
-            content_switcher.current = self.tab_ids.view_id(
+            switcher.current = self.tab_ids.view_id(
                 view=ViewName.output_log_view
             )
-            content_switcher.border_title = BorderTitle.output_log
+            switcher.border_title = BorderTitle.output_log
         elif (
             self.app.chezmoi.app_cfg.dev_mode
             and event.button.id == self.tab_ids.button_id(btn=TabBtn.debug_log)
         ):
-            content_switcher.current = self.tab_ids.view_id(
+            switcher.current = self.tab_ids.view_id(
                 view=ViewName.debug_log_view
             )
-            content_switcher.border_title = BorderTitle.debug_log
+            switcher.border_title = BorderTitle.debug_log

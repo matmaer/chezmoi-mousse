@@ -7,7 +7,6 @@ from textual.containers import Horizontal, Vertical, VerticalGroup
 from textual.widgets import (
     Button,
     Collapsible,
-    ContentSwitcher,
     DataTable,
     Input,
     Label,
@@ -22,7 +21,6 @@ import chezmoi_mousse.custom_theme as theme
 from chezmoi_mousse.button_groups import ButtonsVertical
 from chezmoi_mousse.constants import (
     Area,
-    NavBtn,
     OperateBtn,
     TabBtn,
     TcssStr,
@@ -31,11 +29,11 @@ from chezmoi_mousse.constants import (
 )
 from chezmoi_mousse.containers import OperateTabsBase, SwitchSlider
 from chezmoi_mousse.content_switchers import (
-    ConfigTabContentSwitcher,
-    InitTabContentSwitcher,
-    LogsTabContentSwitcher,
-    TreeContentSwitcher,
-    ViewContentSwitcher,
+    ConfigTabSwitcher,
+    InitTabSwitcher,
+    LogsTabSwitcher,
+    TreeSwitcher,
+    ViewSwitcher,
 )
 from chezmoi_mousse.id_typing import AppType, Id, PwMgrInfo, Switches
 from chezmoi_mousse.messages import InvalidInputMessage
@@ -48,8 +46,8 @@ class ApplyTab(OperateTabsBase):
         super().__init__(tab_ids=Id.apply)
 
     def compose(self) -> ComposeResult:
-        yield TreeContentSwitcher(tab_ids=Id.apply)
-        yield ViewContentSwitcher(tab_ids=Id.apply, diff_reverse=False)
+        yield TreeSwitcher(tab_ids=Id.apply)
+        yield ViewSwitcher(tab_ids=Id.apply, diff_reverse=False)
         yield SwitchSlider(
             tab_ids=Id.apply,
             switches=(Switches.unchanged, Switches.expand_all),
@@ -62,8 +60,8 @@ class ReAddTab(OperateTabsBase):
         super().__init__(tab_ids=Id.re_add)
 
     def compose(self) -> ComposeResult:
-        yield TreeContentSwitcher(tab_ids=Id.re_add)
-        yield ViewContentSwitcher(tab_ids=Id.re_add, diff_reverse=True)
+        yield TreeSwitcher(tab_ids=Id.re_add)
+        yield ViewSwitcher(tab_ids=Id.re_add, diff_reverse=True)
         yield SwitchSlider(
             tab_ids=Id.re_add,
             switches=(Switches.unchanged, Switches.expand_all),
@@ -161,7 +159,7 @@ class InitTab(Vertical, AppType):
         self.repo_url: str | None = None
 
     def compose(self) -> ComposeResult:
-        yield InitTabContentSwitcher(tab_ids=Id.init)
+        yield InitTabSwitcher(tab_ids=Id.init)
         yield self.app.chezmoi.init_log
         yield SwitchSlider(
             tab_ids=Id.init,
@@ -186,26 +184,6 @@ class InitTab(Vertical, AppType):
                     reasons=event.validation_result.failure_descriptions
                 )
             )
-
-    @on(Button.Pressed, ".navigate_button")
-    def handle_navigation_buttons(self, event: Button.Pressed) -> None:
-        event.stop()
-        # Init Content Switcher
-        if event.button.id == Id.init.button_id(btn=NavBtn.new_repo):
-            self.query_one(
-                Id.init.content_switcher_id("#", area=Area.right),
-                ContentSwitcher,
-            ).current = Id.init.view_id(view=ViewName.init_new_view)
-        elif event.button.id == Id.init.button_id(btn=NavBtn.clone_repo):
-            self.query_one(
-                Id.init.content_switcher_id("#", area=Area.right),
-                ContentSwitcher,
-            ).current = Id.init.view_id(view=ViewName.init_clone_view)
-        elif event.button.id == Id.init.button_id(btn=NavBtn.purge_repo):
-            self.query_one(
-                Id.init.content_switcher_id("#", area=Area.right),
-                ContentSwitcher,
-            ).current = Id.init.view_id(view=ViewName.init_purge_view)
 
     @on(Button.Pressed, ".operate_button")
     def handle_operation_button(self, event: Button.Pressed) -> None:
@@ -238,32 +216,10 @@ class ConfigTab(Horizontal, AppType):
         super().__init__(id=Id.config.tab_container_id)
 
     def compose(self) -> ComposeResult:
-        yield ConfigTabContentSwitcher(Id.config)
+        yield ConfigTabSwitcher(Id.config)
 
     def on_mount(self) -> None:
         self.query(Label).add_class(TcssStr.config_tab_label)
-        self.query_exactly_one(ContentSwitcher).add_class(
-            TcssStr.content_switcher_right
-        )
-
-    @on(Button.Pressed, ".navigate_button")
-    def update_contents(self, event: Button.Pressed) -> None:
-        event.stop()
-        content_switcher = self.query_exactly_one(ContentSwitcher)
-        if event.button.id == Id.config.button_id(btn=(NavBtn.cat_config)):
-            content_switcher.current = Id.config.view_id(
-                view=ViewName.cat_config
-            )
-        elif event.button.id == Id.config.button_id(btn=NavBtn.ignored):
-            content_switcher.current = Id.config.view_id(
-                view=ViewName.config_ignored
-            )
-        elif event.button.id == Id.config.button_id(btn=NavBtn.template_data):
-            content_switcher.current = Id.config.view_id(
-                view=ViewName.template_data
-            )
-        elif event.button.id == Id.config.button_id(btn=NavBtn.diagram):
-            content_switcher.current = Id.config.view_id(view=ViewName.diagram)
 
 
 class DoctorTab(Vertical, AppType):
@@ -341,4 +297,4 @@ class LogsTab(Vertical, AppType):
         super().__init__(id=Id.logs.tab_container_id)
 
     def compose(self) -> ComposeResult:
-        yield LogsTabContentSwitcher(tab_ids=Id.logs)
+        yield LogsTabSwitcher(tab_ids=Id.logs)

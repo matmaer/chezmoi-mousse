@@ -26,7 +26,7 @@ from chezmoi_mousse.constants import (
     TreeName,
     ViewName,
 )
-from chezmoi_mousse.content_switchers import TreeContentSwitcher
+from chezmoi_mousse.content_switchers import TreeSwitcher
 from chezmoi_mousse.id_typing import AppType, OperateButtons, Switches, TabIds
 from chezmoi_mousse.widgets import (
     ContentsView,
@@ -157,9 +157,7 @@ class OperateTabsBase(Horizontal, AppType):
         elif event.switch.id == self.tab_ids.switch_id(
             switch=Switches.expand_all
         ):
-            self.query_exactly_one(TreeContentSwitcher).expand_all_state = (
-                event.value
-            )
+            self.query_exactly_one(TreeSwitcher).expand_all_state = event.value
             if event.value:
                 self.query_one(
                     self.tab_ids.content_switcher_id("#", area=Area.left),
