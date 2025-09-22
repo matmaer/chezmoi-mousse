@@ -140,13 +140,17 @@ class ContentsView(RichLog, AppType):
         except FileNotFoundError:
             # FileNotFoundError is raised both when a file or a directory
             # does not exist
+            if self.path in self.app.chezmoi.dir_paths:
+                self.write(f"Managed directory: {self.path}")
+                return
             if self.path in self.app.chezmoi.file_paths:
-                if not self.app.chezmoi.run.cat(self.path):
+                cat_output = self.app.chezmoi.run.cat(self.path)
+                if cat_output == []:
                     self.write(
                         Text("File contains only whitespace", style="dim")
                     )
                 else:
-                    self.write(self.app.chezmoi.run.cat(self.path))
+                    self.write(cat_output)
                 return
 
         except IsADirectoryError:
