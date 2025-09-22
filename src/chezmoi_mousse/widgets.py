@@ -20,7 +20,7 @@ from textual.widgets import DataTable, DirectoryTree, RichLog, Static
 from textual.widgets.tree import TreeNode
 
 import chezmoi_mousse.custom_theme as theme
-from chezmoi_mousse.chezmoi import INIT_CFG
+from chezmoi_mousse.chezmoi import INIT_CFG, ReadCmd
 from chezmoi_mousse.constants import (
     TcssStr,
     UnwantedDirs,
@@ -28,6 +28,7 @@ from chezmoi_mousse.constants import (
     ViewName,
 )
 from chezmoi_mousse.id_typing import (
+    Any,
     AppType,
     Chars,
     DirNodeData,
@@ -144,13 +145,13 @@ class ContentsView(RichLog, AppType):
                 self.write(f"Managed directory: {self.path}")
                 return
             if self.path in self.app.chezmoi.file_paths:
-                cat_output = self.app.chezmoi.run.cat(self.path)
-                if cat_output == []:
+                cat_output = self.app.chezmoi.read(ReadCmd.cat, self.path)
+                if cat_output == "":
                     self.write(
                         Text("File contains only whitespace", style="dim")
                     )
                 else:
-                    self.write(cat_output)
+                    self.write(cat_output.splitlines())
                 return
 
         except IsADirectoryError:
@@ -235,9 +236,13 @@ class DiffView(RichLog, AppType):
             return
         # create the actual diff view for a changed file
         if not self.reverse:
-            diff_output = self.app.chezmoi.run.diff(self.path)
+            diff_output = self.app.chezmoi.read(
+                ReadCmd.diff, self.path
+            ).splitlines()
         elif self.reverse:
-            diff_output = self.app.chezmoi.run.diff_reversed(self.path)
+            diff_output = self.app.chezmoi.read(
+                ReadCmd.diff_reverse, self.path
+            ).splitlines()
 
         diff_lines: list[str] = [
             line
@@ -271,11 +276,17 @@ class DiffView(RichLog, AppType):
 class GitLogView(DataTable[Text], AppType):
 
     path: reactive[Path | None] = reactive(None, init=False)
+    new_content: reactive[str | None] = reactive(None, init=False)
 
     # TODO: implement footer binding to toggle text wrap in second column of the datatable
 
     def __init__(self, *, ids: TabIds | ScreenIds) -> None:
         self.ids = ids
+        self.row_styles = {
+            "ok": theme.vars["text-success"],
+            "warning": theme.vars["text-warning"],
+            "error": theme.vars["text-error"],
+        }
         super().__init__(
             id=self.ids.view_id(view=ViewName.git_log_view), show_cursor=False
         )
@@ -285,6 +296,18 @@ class GitLogView(DataTable[Text], AppType):
             Text(cell_text, style=style) for cell_text in columns
         ]
         self.add_row(*row)
+
+    def render_invalid_data(self, new_data: Any):
+        self.clear(columns=True)
+        self.add_column("INVALID DATA RECEIVED")
+        if new_data == "":
+            self.add_row(Text("received an empty string"))
+            return
+        if type(new_data) is not str:
+            self.add_row(Text(f"Received invalid data type: {type(new_data)}"))
+            self.add_row(Text(str(new_data)))
+            return
+        raise ValueError("Unhandled invalid data in GitLogView")
 
     def populate_data_table(self, path: Path) -> None:
         self.clear(columns=True)
@@ -305,10 +328,36 @@ class GitLogView(DataTable[Text], AppType):
             else:
                 self.add_row(*(Text(cell) for cell in columns))
 
+    def render_new_data_table(self, new_content: Any) -> None:
+        self.clear(columns=True)
+        if type(new_content) is not str:
+            self.render_invalid_data(new_content)
+        try:
+            self.add_columns("COMMIT", "MESSAGE")
+            for line in new_content.splitlines():
+                columns = line.split(";")
+                if columns[1].split(maxsplit=1)[0] == "Add":
+                    self.add_row_with_style(columns, self.row_styles["ok"])
+                elif columns[1].split(maxsplit=1)[0] == "Update":
+                    self.add_row_with_style(
+                        columns, self.row_styles["warning"]
+                    )
+                elif columns[1].split(maxsplit=1)[0] == "Remove":
+                    self.add_row_with_style(columns, self.row_styles["error"])
+                else:
+                    self.add_row(*(Text(cell) for cell in columns))
+        except:  # noqa: E722
+            self.render_invalid_data(new_content)
+
     def watch_path(self) -> None:
         if self.path is None:
             return
         self.populate_data_table(self.path)
+
+    def watch_new_data(self):
+        if self.new_content is None:
+            return
+        self.render_new_data_table(self.new_content)
 
 
 class TreeBase(CustomRenderLabel, AppType):  # instead of Tree[NodeData]

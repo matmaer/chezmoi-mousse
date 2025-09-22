@@ -59,20 +59,12 @@ class FileNodeData(NodeData):
 
 
 @dataclass
-class CurrentTreeNodes:
-    managed: DirNodeData | FileNodeData
-    flat_tree: DirNodeData | FileNodeData
-    expanded_tree: DirNodeData | FileNodeData
-    flat_tree: DirNodeData | FileNodeData
-    managed_children: list[DirNodeData | FileNodeData] = field(
-        default_factory=list[DirNodeData | FileNodeData]
-    )
-    flat_tree_children: list[DirNodeData | FileNodeData] = field(
-        default_factory=list[DirNodeData | FileNodeData]
-    )
-    expanded_tree_children: list[DirNodeData | FileNodeData] = field(
-        default_factory=list[DirNodeData | FileNodeData]
-    )
+class SelectedNodeContext:
+    tree_name: TreeName
+    node_data: DirNodeData | FileNodeData
+    node_parent: DirNodeData | None = None
+    node_leafs: list[FileNodeData] = field(default_factory=list[FileNodeData])
+    node_subdirs: list[DirNodeData] = field(default_factory=list[DirNodeData])
 
 
 @dataclass

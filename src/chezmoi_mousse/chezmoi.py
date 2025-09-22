@@ -54,6 +54,10 @@ class ReadCmd(Enum):
     cat_config = GlobalCmd.live_run.value + [ReadVerbs.cat_config]
     data = GlobalCmd.live_run.value + [ReadVerbs.data]
     diff = GlobalCmd.live_run.value + [ReadVerbs.diff]
+    diff_reverse = GlobalCmd.live_run.value + [
+        ReadVerbs.diff,
+        VerbArgs.reverse.value,
+    ]
     dir_status_lines = GlobalCmd.live_run.value + [
         IoVerbs.status,
         VerbArgs.path_style_absolute.value,
@@ -406,18 +410,23 @@ class Chezmoi:
         cmd = read_cmd.value
         if path is not None:
             cmd = cmd + [str(path)]
-        result = (
-            run(
-                cmd,
-                capture_output=True,
-                shell=False,
-                text=True,  # returns stdout as str instead of bytes
-                timeout=5,
-            )
-            .stdout.lstrip("\n")
-            .rstrip()
+        # CompletedProcess type arg is str as we use text=True
+        result: CompletedProcess[str] = run(
+            cmd, capture_output=True, shell=False, text=True, timeout=5
         )
-        return result
+        if result.returncode != 0:
+            # TODO callback to log stderr
+            return ""
+        if result.stdout == "":
+            # TODO callback to log stderr
+            return ""
+        # remove trailing and leading new lines but NOT leading whitespace
+        stdout = result.stdout.lstrip("\n").rstrip()
+        # remove intermediate empty lines
+        return "\n".join(
+            # TODO callback to log stderr
+            [line for line in stdout.splitlines() if line.strip()]
+        )
 
     def files_with_status_in(
         self, tab_name: TabName, dir_path: Path
