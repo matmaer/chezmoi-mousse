@@ -1,3 +1,5 @@
+import json
+
 from textual.app import ComposeResult
 from textual.containers import (
     Horizontal,
@@ -21,7 +23,7 @@ from chezmoi_mousse.button_groups import (
     OperateBtnHorizontal,
     TabBtnHorizontal,
 )
-from chezmoi_mousse.chezmoi import INIT_CFG
+from chezmoi_mousse.chezmoi import INIT_CFG, ReadCmd
 from chezmoi_mousse.constants import (
     FLOW,
     Area,
@@ -259,17 +261,21 @@ class ConfigTabSwitcher(Horizontal, AppType):
             ):
                 yield Vertical(
                     Label('"chezmoi cat-config" output'),
-                    Pretty(self.app.chezmoi.run.cat_config()),
+                    Pretty(
+                        self.app.chezmoi.read(ReadCmd.cat_config).splitlines()
+                    ),
                     id=self.tab_ids.view_id(view=ViewName.cat_config),
                 )
                 yield Vertical(
                     Label('"chezmoi ignored" output'),
-                    Pretty(self.app.chezmoi.run.ignored()),
+                    Pretty(
+                        self.app.chezmoi.read(ReadCmd.ignored).splitlines()
+                    ),
                     id=self.tab_ids.view_id(view=ViewName.config_ignored),
                 )
                 yield Vertical(
                     Label('"chezmoi data" output'),
-                    Pretty(self.app.chezmoi.run.template_data()),
+                    Pretty(json.loads(self.app.chezmoi.read(ReadCmd.data))),
                     id=self.tab_ids.view_id(view=ViewName.template_data),
                 )
                 yield Vertical(

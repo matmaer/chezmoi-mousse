@@ -1,7 +1,7 @@
 import json
 import os
 import tempfile
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
 from shutil import which
@@ -10,8 +10,6 @@ from typing import Literal
 
 from chezmoi_mousse.constants import IoVerbs, OperateVerbs, ReadVerbs, TabName
 from chezmoi_mousse.id_typing import ParsedJson, PathDict
-
-# Vars needed both by InitConfig and Chezmoi class
 
 CHEZMOI_CMD = "chezmoi"
 
@@ -32,6 +30,7 @@ class GlobalCmd(Enum):
 
 
 class VerbArgs(Enum):
+    encrypt = "--encrypt"
     format_json = "--format=json"
     git_log = [
         "--",
@@ -198,6 +197,44 @@ class ChangeCommand:
         _run_cmd(self.base_cmd + [OperateVerbs.purge])
 
 
+@dataclass
+class ChangeCmd:
+
+    base_cmd: list[str] = field(default_factory=list[str])
+
+    def add(self) -> list[str]:
+        return self.base_cmd + [OperateVerbs.add]
+
+    def add_encrypted(self) -> list[str]:
+        return self.base_cmd + [OperateVerbs.add, VerbArgs.encrypt.value]
+
+    def re_add(self) -> list[str]:
+        return self.base_cmd + [OperateVerbs.re_add]
+
+    def apply(self) -> list[str]:
+        return self.base_cmd + [OperateVerbs.apply]
+
+    def destroy(self) -> list[str]:
+        return self.base_cmd + [OperateVerbs.destroy]
+
+    def forget(self) -> list[str]:
+        return self.base_cmd + [OperateVerbs.forget]
+
+    def init_clone_repo(self) -> list[str]:
+        return self.base_cmd + [OperateVerbs.init]
+
+    def init_new_repo(self) -> list[str]:
+        return self.base_cmd + [OperateVerbs.init]
+
+    def purge(self) -> list[str]:
+        return self.base_cmd + [OperateVerbs.purge]
+
+    def __post_init__(self, dry_run: bool = False) -> None:
+        self.base_cmd: list[str] = GlobalCmd.dry_run.value
+        if not INIT_CFG.changes_enabled:
+            self.base_cmd = GlobalCmd.dry_run.value
+
+
 class ReadCommand:
     """Used for backwards compatibility, will be removed in future."""
 
@@ -315,6 +352,7 @@ class Chezmoi:
         self.run = ReadCommand(
             dest_dir=INIT_CFG.destDir, source_dir=INIT_CFG.sourceDir
         )
+        self.change_cmd = ChangeCmd()
         if INIT_CFG.config_dump is None:
             self.config_dump = {}
         else:
@@ -353,12 +391,33 @@ class Chezmoi:
         return self._create_status_dict(TabName.apply_tab, "files")
 
     @property
+    def read_cmd(self) -> type[ReadCmd]:
+        return ReadCmd
+
+    @property
     def re_add_dirs(self) -> PathDict:
         return self._create_status_dict(TabName.re_add_tab, "dirs")
 
     @property
     def re_add_files(self) -> PathDict:
         return self._create_status_dict(TabName.re_add_tab, "files")
+
+    def read(self, read_cmd: ReadCmd, path: Path | None = None) -> str:
+        cmd = read_cmd.value
+        if path is not None:
+            cmd = cmd + [str(path)]
+        result = (
+            run(
+                cmd,
+                capture_output=True,
+                shell=False,
+                text=True,  # returns stdout as str instead of bytes
+                timeout=5,
+            )
+            .stdout.lstrip("\n")
+            .rstrip()
+        )
+        return result
 
     def files_with_status_in(
         self, tab_name: TabName, dir_path: Path
