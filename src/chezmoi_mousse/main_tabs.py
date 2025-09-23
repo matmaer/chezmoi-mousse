@@ -74,12 +74,12 @@ class AddTab(OperateTabsBase, AppType):
         super().__init__(tab_ids=Id.add)
 
     def compose(self) -> ComposeResult:
-        with VerticalGroup(id=Id.add.tab_vertical_id(area=Area.left)):
-            # Will set path in on_mount when app is available
+        with VerticalGroup(
+            id=Id.add.tab_vertical_id(area=Area.left),
+            classes=TcssStr.tab_left_vertical,
+        ):
             yield FilteredDirTree(
-                Path(),
-                id=Id.add.tree_id(tree=TreeName.add_tree),
-                classes=TcssStr.dir_tree_widget,
+                Path.home(), id=Id.add.tree_id(tree=TreeName.add_tree)
             )
         with Vertical(id=Id.add.tab_vertical_id(area=Area.right)):
             yield ContentsView(tab_ids=Id.add)
@@ -90,25 +90,16 @@ class AddTab(OperateTabsBase, AppType):
         )
 
     def on_mount(self) -> None:
-        contents_view = self.query_one(
-            Id.add.view_id("#", view=ViewName.contents_view), ContentsView
-        )
-        contents_view.border_title = str(self.app.destDir)
+        contents_view = self.query_exactly_one(ContentsView)
         contents_view.add_class(TcssStr.border_title_top)
-        left_side = self.query_one(
-            Id.add.tab_vertical_id("#", area=Area.left), VerticalGroup
-        )
-        left_side.border_title = str(self.app.destDir)
-        left_side.add_class(
-            TcssStr.tab_left_vertical, TcssStr.border_title_top
-        )
+        contents_view.border_title = str(self.app.destDir)
 
-        tree = self.query_one(
-            Id.add.tree_id("#", tree=TreeName.add_tree), FilteredDirTree
-        )
-        tree.path = self.app.destDir
-        tree.show_root = False
-        tree.guide_depth = 3
+        dir_tree = self.query_exactly_one(FilteredDirTree)
+        dir_tree.add_class(TcssStr.dir_tree_widget, TcssStr.border_title_top)
+        dir_tree.border_title = str(self.app.destDir)
+        dir_tree.path = self.app.destDir
+        dir_tree.show_root = False
+        dir_tree.guide_depth = 3
         self.disable_buttons((OperateBtn.add_file, OperateBtn.add_dir))
 
     def on_directory_tree_file_selected(

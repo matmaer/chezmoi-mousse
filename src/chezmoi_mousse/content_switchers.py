@@ -95,7 +95,7 @@ class TreeSwitcher(VerticalGroup, AppType):
             )
 
 
-class ViewSwitcher(Vertical):
+class ViewSwitcher(Vertical, AppType):
     def __init__(self, *, tab_ids: TabIds, diff_reverse: bool):
         self.tab_ids = tab_ids
         self.reverse = diff_reverse

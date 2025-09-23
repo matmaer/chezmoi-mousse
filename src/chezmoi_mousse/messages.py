@@ -34,3 +34,17 @@ class TreeNodeDataMsg(Message):
     def __init__(self, node_context: TreeNodeData) -> None:
         self.node_context = node_context
         super().__init__()
+
+
+@dataclass
+class ViewSwitcherData:
+    btn_id: str
+    content_switcher_id: str
+    current_view_id: str
+
+
+@dataclass
+class ViewSwitcherDataMsg(Message):
+    def __init__(self, msg_data: ViewSwitcherData) -> None:
+        self.msg_data = msg_data
+        super().__init__()

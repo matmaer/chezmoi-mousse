@@ -407,6 +407,7 @@ class Chezmoi:
         return self._create_status_dict(TabName.re_add_tab, "files")
 
     def read(self, read_cmd: ReadCmd, path: Path | None = None) -> str:
+        # TODO callback to log stderr
         cmd = read_cmd.value
         if path is not None:
             cmd = cmd + [str(path)]
@@ -415,16 +416,13 @@ class Chezmoi:
             cmd, capture_output=True, shell=False, text=True, timeout=5
         )
         if result.returncode != 0:
-            # TODO callback to log stderr
             return ""
         if result.stdout == "":
-            # TODO callback to log stderr
             return ""
         # remove trailing and leading new lines but NOT leading whitespace
         stdout = result.stdout.lstrip("\n").rstrip()
         # remove intermediate empty lines
         return "\n".join(
-            # TODO callback to log stderr
             [line for line in stdout.splitlines() if line.strip()]
         )
 

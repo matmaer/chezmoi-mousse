@@ -27,7 +27,7 @@ from chezmoi_mousse.constants import (
 )
 from chezmoi_mousse.content_switchers import TreeSwitcher
 from chezmoi_mousse.id_typing import AppType, OperateButtons, Switches, TabIds
-from chezmoi_mousse.messages import TreeNodeData, TreeNodeDataMsg
+from chezmoi_mousse.messages import TreeNodeDataMsg
 from chezmoi_mousse.widgets import (
     ContentsView,
     DiffView,
@@ -42,6 +42,7 @@ class OperateTabsBase(Horizontal, AppType):
 
     def __init__(self, *, tab_ids: TabIds) -> None:
         self.tab_ids = tab_ids
+        self.tab_name = tab_ids.tab_name
         self.current_path: Path | None = None
         super().__init__(id=self.tab_ids.tab_container_id)
 
@@ -67,14 +68,7 @@ class OperateTabsBase(Horizontal, AppType):
             button.disabled = False
             button.tooltip = None
 
-    @on(TreeNodeDataMsg)
-    def handle_tree_node_selected(self, event: TreeNodeDataMsg) -> None:
-        event_data: TreeNodeData = event.node_context
-        event.stop()
-        selected_path = event_data.node_data.path
-        self.query_one(
-            self.tab_ids.content_switcher_id("#", area=Area.right), Container
-        ).border_title = f"{selected_path.relative_to(self.app.destDir)}"
+    def update_view_path(self, path: Path) -> None:
         current_view_id = self.query_one(
             self.tab_ids.content_switcher_id("#", area=Area.right),
             ContentSwitcher,
@@ -82,36 +76,47 @@ class OperateTabsBase(Horizontal, AppType):
         if current_view_id == self.tab_ids.view_id(
             view=ViewName.contents_view
         ):
-            self.query_exactly_one(ContentsView).path = selected_path
+            self.query_exactly_one(ContentsView).path = path
         elif current_view_id == self.tab_ids.view_id(view=ViewName.diff_view):
-            self.query_exactly_one(DiffView).path = selected_path
+            self.query_exactly_one(DiffView).path = path
         elif current_view_id == self.tab_ids.view_id(
             view=ViewName.git_log_view
         ):
-            self.query_exactly_one(GitLogView).path = selected_path
+            self.query_exactly_one(GitLogView).path = path
+
+    @on(TreeNodeDataMsg)
+    def handle_tree_node_selected(self, event: TreeNodeDataMsg) -> None:
+        event.stop()
+        selected_path = event.node_context.node_data.path
+        self.query_one(
+            self.tab_ids.content_switcher_id("#", area=Area.right), Container
+        ).border_title = f"{selected_path.relative_to(self.app.destDir)}"
+        self.current_path = selected_path
+        self.update_view_path(selected_path)
 
     @on(Button.Pressed, ".tab_button")
-    def update_reactive_paths(self, event: Button.Pressed) -> None:
-        event.stop()
-        if self.current_path is None:
-            self.current_path = self.app.destDir
-        expand_all_switch = self.query_one(
-            self.tab_ids.switch_id("#", switch=Switches.expand_all), Switch
-        )
-        # enable or disable expand all switch
+    def handle_expand_all_switch(self, event: Button.Pressed) -> None:
+        switch_id = self.tab_ids.switch_id("#", switch=Switches.expand_all)
+        expand_all_switch = self.query_one(switch_id, Switch)
         if event.button.id == self.tab_ids.button_id(btn=TabBtn.tree):
             expand_all_switch.disabled = False
         elif event.button.id == self.tab_ids.button_id(btn=TabBtn.list):
             expand_all_switch.disabled = True
-        # Contents/Diff/GitLog Content Switcher
-        # TODO only set the reactive var if the selected path in the Tree a
-        # ctually changed
+
+    @on(Button.Pressed, ".tab_button")
+    def maybe_update_view_path(self, event: Button.Pressed) -> None:
         if event.button.id == self.tab_ids.button_id(btn=TabBtn.contents):
-            self.query_exactly_one(ContentsView).path = self.current_path
+            view_path = self.query_exactly_one(ContentsView).path
         elif event.button.id == self.tab_ids.button_id(btn=TabBtn.diff):
-            self.query_exactly_one(DiffView).path = self.current_path
+            view_path = self.query_exactly_one(DiffView).path
         elif event.button.id == self.tab_ids.button_id(btn=TabBtn.git_log):
-            self.query_exactly_one(GitLogView).path = self.current_path
+            view_path = self.query_exactly_one(GitLogView).path
+        else:
+            return
+        if self.current_path is None or view_path is None:
+            self.current_path = self.app.destDir
+        if view_path != self.current_path:
+            self.update_view_path(self.current_path)
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
         event.stop()
