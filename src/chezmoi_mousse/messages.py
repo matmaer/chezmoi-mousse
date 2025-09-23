@@ -22,26 +22,15 @@ class OperateDataMsg(Message):
 
 
 @dataclass
-class ApplyReAddViewTabBtn:
-    pass
-
-
-@dataclass
 class TreeNodeData:
     tree_name: TreeName
     node_data: DirNodeData | FileNodeData
     node_parent: DirNodeData | None = None
-    node_leafs: list[FileNodeData] = field(default_factory=list[FileNodeData])
+    node_leaves: list[FileNodeData] = field(default_factory=list[FileNodeData])
     node_subdirs: list[DirNodeData] = field(default_factory=list[DirNodeData])
 
 
 class TreeNodeDataMsg(Message):
-    def __init__(self, node_context: TreeNodeData) -> None:
-        self.node_context = node_context
-        super().__init__()
-
-
-class ApplyReAddViewTabBtnMsg(Message):
     def __init__(self, node_context: TreeNodeData) -> None:
         self.node_context = node_context
         super().__init__()

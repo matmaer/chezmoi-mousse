@@ -90,14 +90,14 @@ class Operate(ScreensBase, AppType):
             OperateBtn.apply_file == self.main_operate_btn
             or OperateBtn.re_add_file == self.main_operate_btn
         ):
-            yield DiffView(ids=Id.operate_screen, reverse=self.reverse)
+            yield DiffView(tab_ids=Id.operate_screen, reverse=self.reverse)
         else:
-            yield ContentsView(ids=Id.operate_screen)
+            yield ContentsView(tab_ids=Id.operate_screen)
         with VerticalGroup():
             yield OperateBtnHorizontal(
                 tab_ids=self.tab_ids, buttons=self.buttons
             )
-            yield CommandLog(ids=LogIds.operate_log)
+            yield CommandLog(tab_ids=LogIds.operate_log)
 
     def on_mount(self) -> None:
         self.add_class(TcssStr.operate_screen)
@@ -207,15 +207,17 @@ class Maximized(ScreensBase):
             if self.id_to_maximize == self.tab_ids.view_id(
                 view=ViewName.contents_view
             ):
-                yield ContentsView(ids=Id.maximized_screen)
+                yield ContentsView(tab_ids=Id.maximized_screen)
             elif self.id_to_maximize == self.tab_ids.view_id(
                 view=ViewName.diff_view
             ):
-                yield DiffView(ids=Id.maximized_screen, reverse=self.reverse)
+                yield DiffView(
+                    tab_ids=Id.maximized_screen, reverse=self.reverse
+                )
             elif self.id_to_maximize == self.tab_ids.view_id(
                 view=ViewName.git_log_view
             ):
-                yield GitLogView(ids=Id.maximized_screen)
+                yield GitLogView(tab_ids=Id.maximized_screen)
 
     def on_mount(self) -> None:
         self.add_class(TcssStr.border_title_top)

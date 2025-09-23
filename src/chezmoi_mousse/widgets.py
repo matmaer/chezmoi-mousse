@@ -95,10 +95,10 @@ class ContentsView(RichLog, AppType):
 
     path: reactive[Path | None] = reactive(None, init=False)
 
-    def __init__(self, *, ids: TabIds | ScreenIds) -> None:
-        self.ids = ids
+    def __init__(self, *, tab_ids: TabIds | ScreenIds) -> None:
+        self.tab_ids = tab_ids
         super().__init__(
-            id=self.ids.view_id(view=ViewName.contents_view),
+            id=self.tab_ids.view_id(view=ViewName.contents_view),
             auto_scroll=False,
             wrap=True,  # TODO: implement footer binding to toggle wrap
             highlight=True,
@@ -171,11 +171,11 @@ class DiffView(RichLog, AppType):
 
     path: reactive[Path | None] = reactive(None, init=False)
 
-    def __init__(self, *, ids: TabIds | ScreenIds, reverse: bool) -> None:
-        self.ids = ids
+    def __init__(self, *, tab_ids: TabIds | ScreenIds, reverse: bool) -> None:
+        self.tab_ids = tab_ids
         self.reverse = reverse
         super().__init__(
-            id=self.ids.view_id(view=ViewName.diff_view),
+            id=self.tab_ids.view_id(view=ViewName.diff_view),
             auto_scroll=False,
             wrap=False,  # TODO: implement footer binding to toggle wrap
         )
@@ -282,15 +282,16 @@ class GitLogView(DataTable[Text], AppType):
 
     # TODO: implement footer binding to toggle text wrap in second column of the datatable
 
-    def __init__(self, *, ids: TabIds | ScreenIds) -> None:
-        self.ids = ids
+    def __init__(self, *, tab_ids: TabIds | ScreenIds) -> None:
+        self.tab_ids = tab_ids
         self.row_styles = {
             "ok": theme.vars["text-success"],
             "warning": theme.vars["text-warning"],
             "error": theme.vars["text-error"],
         }
         super().__init__(
-            id=self.ids.view_id(view=ViewName.git_log_view), show_cursor=False
+            id=self.tab_ids.view_id(view=ViewName.git_log_view),
+            show_cursor=False,
         )
 
     def add_row_with_style(self, columns: list[str], style: str) -> None:
@@ -414,7 +415,7 @@ class TreeBase(CustomRenderLabel, AppType):  # instead of Tree[NodeData]
             tree_name=self.tree_name,
             node_data=event.node.data,
             node_parent=parent_data,
-            node_leafs=[
+            node_leaves=[
                 child.data
                 for child in event.node.children
                 if isinstance(child.data, FileNodeData)

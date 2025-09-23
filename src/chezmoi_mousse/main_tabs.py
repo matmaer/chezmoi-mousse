@@ -82,7 +82,7 @@ class AddTab(OperateTabsBase, AppType):
                 classes=TcssStr.dir_tree_widget,
             )
         with Vertical(id=Id.add.tab_vertical_id(area=Area.right)):
-            yield ContentsView(ids=Id.add)
+            yield ContentsView(tab_ids=Id.add)
 
         yield SwitchSlider(
             tab_ids=Id.add,
@@ -160,7 +160,7 @@ class InitTab(Horizontal, AppType):
 
     def compose(self) -> ComposeResult:
         yield InitTabSwitcher(tab_ids=Id.init)
-        yield CommandLog(ids=LogIds.init_log)
+        yield CommandLog(tab_ids=LogIds.init_log)
         yield SwitchSlider(
             tab_ids=Id.init,
             switches=(Switches.guess_url, Switches.clone_and_apply),

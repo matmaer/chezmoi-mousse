@@ -114,9 +114,9 @@ class ViewSwitcher(Vertical):
             id=self.tab_ids.content_switcher_id(area=Area.right),
             initial=self.tab_ids.view_id(view=ViewName.diff_view),
         ):
-            yield DiffView(ids=self.tab_ids, reverse=self.reverse)
-            yield ContentsView(ids=self.tab_ids)
-            yield GitLogView(ids=self.tab_ids)
+            yield DiffView(tab_ids=self.tab_ids, reverse=self.reverse)
+            yield ContentsView(tab_ids=self.tab_ids)
+            yield GitLogView(tab_ids=self.tab_ids)
 
     def on_mount(self) -> None:
         self.query_exactly_one(ContentSwitcher).add_class(

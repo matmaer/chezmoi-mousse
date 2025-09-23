@@ -17,14 +17,14 @@ class LogIds(StrEnum):
 
 class CommandLog(RichLog):
     def __init__(
-        self, *, ids: TabIds | LogIds, view_name: ViewName | None = None
+        self, *, tab_ids: TabIds | LogIds, view_name: ViewName | None = None
     ) -> None:
-        self.ids = ids
+        self.tab_ids = tab_ids
         self.view_name = view_name
-        if self.view_name is not None and isinstance(self.ids, TabIds):
-            self.rich_log_id = self.ids.view_id(view=self.view_name)
-        elif isinstance(self.ids, LogIds):
-            self.rich_log_id = self.ids.value
+        if self.view_name is not None and isinstance(self.tab_ids, TabIds):
+            self.rich_log_id = self.tab_ids.view_id(view=self.view_name)
+        elif isinstance(self.tab_ids, LogIds):
+            self.rich_log_id = self.tab_ids.value
         super().__init__(
             id=self.rich_log_id,
             auto_scroll=True,
@@ -42,7 +42,7 @@ class CommandLog(RichLog):
             self.add_class(TcssStr.border_title_top)
             self.border_title = BorderTitle.operante_log
             self.add_class(TcssStr.bottom_docked_log)
-        elif self.ids == Id.logs:
+        elif self.tab_ids == Id.logs:
             self.add_class(TcssStr.log_views)
             if self.view_name == ViewName.app_log_view:
                 if INIT_CFG.dev_mode:
@@ -141,10 +141,10 @@ class DebugLog(CommandLog):
         self.dimmed(", ".join(members))
 
 
-app_log = CommandLog(ids=Id.logs, view_name=ViewName.app_log_view)
-debug_log = DebugLog(ids=Id.logs, view_name=ViewName.debug_log_view)
+app_log = CommandLog(tab_ids=Id.logs, view_name=ViewName.app_log_view)
+debug_log = DebugLog(tab_ids=Id.logs, view_name=ViewName.debug_log_view)
 # TODO: implement output log as a list of collapsibles
-output_log = CommandLog(ids=Id.logs, view_name=ViewName.output_log_view)
+output_log = CommandLog(tab_ids=Id.logs, view_name=ViewName.output_log_view)
 
 
 # class CommandLogger:
