@@ -28,7 +28,7 @@ from chezmoi_mousse.main_tabs import (
     LogsTab,
     ReAddTab,
 )
-from chezmoi_mousse.messages import OperateMessage
+from chezmoi_mousse.messages import OperateDataMsg
 from chezmoi_mousse.overrides import CustomScrollBarRender
 from chezmoi_mousse.pretty_logs import app_log
 from chezmoi_mousse.screens import InstallHelp, Maximized, Operate
@@ -159,8 +159,8 @@ class ChezmoiGUI(App["ChezmoiGUI"]):
     ) -> None:
         self.refresh_bindings()
 
-    @on(OperateMessage)
-    def handle_operate_result(self, message: OperateMessage) -> None:
+    @on(OperateDataMsg)
+    def handle_operate_result(self, message: OperateDataMsg) -> None:
         assert isinstance(message.dismiss_data.path, Path)
         self.chezmoi.update_managed_status_data()
         managed_trees = self.query(ManagedTree)

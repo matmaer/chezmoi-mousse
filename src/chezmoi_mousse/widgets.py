@@ -14,9 +14,10 @@ from pathlib import Path
 
 from rich.style import Style
 from rich.text import Text
+from textual import on
 from textual.events import Key
 from textual.reactive import reactive
-from textual.widgets import DataTable, DirectoryTree, RichLog, Static
+from textual.widgets import DataTable, DirectoryTree, RichLog, Static, Tree
 from textual.widgets.tree import TreeNode
 
 import chezmoi_mousse.custom_theme as theme
@@ -42,6 +43,7 @@ from chezmoi_mousse.id_typing import (
     TabName,
     TreeName,
 )
+from chezmoi_mousse.messages import TreeNodeData, TreeNodeDataMsg
 from chezmoi_mousse.overrides import CustomRenderLabel
 from chezmoi_mousse.pretty_logs import app_log
 
@@ -362,7 +364,8 @@ class GitLogView(DataTable[Text], AppType):
 
 class TreeBase(CustomRenderLabel, AppType):  # instead of Tree[NodeData]
 
-    def __init__(self, tab_ids: TabIds, *, tree_type: TreeName) -> None:
+    def __init__(self, tab_ids: TabIds, *, tree_name: TreeName) -> None:
+        self.tree_name = tree_name
         self.tab_ids = tab_ids
         self._initial_render = True
         self._first_focus = True
@@ -384,7 +387,7 @@ class TreeBase(CustomRenderLabel, AppType):  # instead of Tree[NodeData]
         super().__init__(
             label="root",
             data=root_node_data,
-            id=self.tab_ids.tree_id(tree=tree_type),
+            id=self.tab_ids.tree_id(tree=tree_name),
         )
 
     def on_mount(self) -> None:
@@ -393,6 +396,36 @@ class TreeBase(CustomRenderLabel, AppType):  # instead of Tree[NodeData]
         self.add_class(TcssStr.tree_widget)
         if self.root.data:
             self.root.data.path = self.app.destDir
+
+    @on(Tree.NodeSelected)
+    def send_node_context(
+        self, event: Tree.NodeSelected[DirNodeData | FileNodeData]
+    ) -> None:
+        if event.node == self.root:
+            return
+        assert event.node.data is not None
+        parent_data = (
+            event.node.parent.data
+            if event.node.parent is not None
+            and isinstance(event.node.parent.data, DirNodeData)
+            else None
+        )
+        node_context = TreeNodeData(
+            tree_name=self.tree_name,
+            node_data=event.node.data,
+            node_parent=parent_data,
+            node_leafs=[
+                child.data
+                for child in event.node.children
+                if isinstance(child.data, FileNodeData)
+            ],
+            node_subdirs=[
+                child.data
+                for child in event.node.children
+                if isinstance(child.data, DirNodeData)
+            ],
+        )
+        self.post_message(TreeNodeDataMsg(node_context))
 
     # 4 methods to provide tab navigation without intaraction with the tree
     def on_key(self, event: Key) -> None:
@@ -633,7 +666,7 @@ class ManagedTree(TreeBase):
 
     def __init__(self, *, tab_ids: TabIds) -> None:
         self.tab_ids = tab_ids
-        super().__init__(self.tab_ids, tree_type=TreeName.managed_tree)
+        super().__init__(self.tab_ids, tree_name=TreeName.managed_tree)
 
     def refresh_tree_data(self) -> None:
         """Refresh the tree with latest chezmoi data."""
@@ -678,7 +711,7 @@ class ExpandedTree(TreeBase):
 
     def __init__(self, tab_ids: TabIds) -> None:
         self.tab_ids = tab_ids
-        super().__init__(self.tab_ids, tree_type=TreeName.expanded_tree)
+        super().__init__(self.tab_ids, tree_name=TreeName.expanded_tree)
 
     def refresh_tree_data(self) -> None:
         """Refresh the tree with latest chezmoi data."""
@@ -728,7 +761,7 @@ class FlatTree(TreeBase, AppType):
     def __init__(self, tab_ids: TabIds) -> None:
         self.tab_ids = tab_ids
         self.tab_name = self.tab_ids.tab_name
-        super().__init__(self.tab_ids, tree_type=TreeName.flat_tree)
+        super().__init__(self.tab_ids, tree_name=TreeName.flat_tree)
 
     def refresh_tree_data(self) -> None:
         """Refresh the tree with latest chezmoi data."""

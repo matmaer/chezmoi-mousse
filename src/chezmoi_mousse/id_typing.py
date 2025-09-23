@@ -2,7 +2,7 @@
 enable setting widget id's without hardcoded strings or generated the id
 dynamically."""
 
-from dataclasses import dataclass, field, fields
+from dataclasses import dataclass, fields
 from enum import Enum
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
@@ -37,8 +37,8 @@ class AppType:
         app: "ChezmoiGUI"
 
 
-##############################
-# dataclass decorated classes:
+#############
+# dataclasses
 
 
 @dataclass
@@ -56,25 +56,6 @@ class DirNodeData(NodeData):
 @dataclass
 class FileNodeData(NodeData):
     pass
-
-
-@dataclass
-class SelectedNodeContext:
-    tree_name: TreeName
-    node_data: DirNodeData | FileNodeData
-    node_parent: DirNodeData | None = None
-    node_leafs: list[FileNodeData] = field(default_factory=list[FileNodeData])
-    node_subdirs: list[DirNodeData] = field(default_factory=list[DirNodeData])
-
-
-@dataclass
-class OperateData:
-    path: Path | None = None
-    operation_executed: bool = False
-    tab_name: TabName | None = None
-    found: bool | None = None
-    button_name: OperateBtn | None = None
-    is_file: bool | None = None
 
 
 @dataclass

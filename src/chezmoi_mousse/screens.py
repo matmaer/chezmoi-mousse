@@ -19,13 +19,12 @@ from chezmoi_mousse.id_typing import (
     Id,
     OperateBtn,
     OperateButtons,
-    OperateData,
     ParsedJson,
     TabIds,
     TabName,
     ViewName,
 )
-from chezmoi_mousse.messages import OperateMessage
+from chezmoi_mousse.messages import OperateData, OperateDataMsg
 from chezmoi_mousse.pretty_logs import CommandLog, LogIds
 from chezmoi_mousse.widgets import (
     ContentsView,
@@ -181,7 +180,7 @@ class Operate(ScreensBase, AppType):
             )
             self.notify("No changes were made")
         # send the needed data to the app, logging will be handled there
-        self.app.post_message(OperateMessage(dismiss_data=dismiss_data))
+        self.app.post_message(OperateDataMsg(dismiss_data=dismiss_data))
         self.dismiss()
 
 

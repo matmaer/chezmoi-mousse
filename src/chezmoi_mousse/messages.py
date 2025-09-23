@@ -1,15 +1,47 @@
+from dataclasses import dataclass, field
+from pathlib import Path
+
+from id_typing import DirNodeData, FileNodeData, OperateBtn, TabName, TreeName
 from textual.message import Message
 
-from chezmoi_mousse.id_typing import CurrentTreeNodes, OperateData
+
+@dataclass
+class OperateData:
+    path: Path | None = None
+    operation_executed: bool = False
+    tab_name: TabName | None = None
+    found: bool | None = None
+    button_name: OperateBtn | None = None
+    is_file: bool | None = None
 
 
-class OperateMessage(Message):
+class OperateDataMsg(Message):
     def __init__(self, dismiss_data: OperateData) -> None:
         self.dismiss_data: OperateData = dismiss_data
         super().__init__()
 
 
-class CurrentTreeNodesMessage(Message):
-    def __init__(self, current_tree_nodes: CurrentTreeNodes) -> None:
-        self.current_tree_nodes = current_tree_nodes
+@dataclass
+class ApplyReAddViewTabBtn:
+    pass
+
+
+@dataclass
+class TreeNodeData:
+    tree_name: TreeName
+    node_data: DirNodeData | FileNodeData
+    node_parent: DirNodeData | None = None
+    node_leafs: list[FileNodeData] = field(default_factory=list[FileNodeData])
+    node_subdirs: list[DirNodeData] = field(default_factory=list[DirNodeData])
+
+
+class TreeNodeDataMsg(Message):
+    def __init__(self, node_context: TreeNodeData) -> None:
+        self.node_context = node_context
+        super().__init__()
+
+
+class ApplyReAddViewTabBtnMsg(Message):
+    def __init__(self, node_context: TreeNodeData) -> None:
+        self.node_context = node_context
         super().__init__()
