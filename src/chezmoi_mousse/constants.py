@@ -43,13 +43,6 @@ class Chars(StrEnum):
     x_mark = "\u2716"  # '\N{HEAVY MULTIPLICATION X}'
 
 
-class IoVerbs(StrEnum):
-    doctor = "doctor"
-    dump_config = "dump-config"
-    managed = "managed"
-    status = "status"
-
-
 class NavBtn(StrEnum):
     cat_config = "Cat Config"
     clone_repo = "Clone"
@@ -92,9 +85,13 @@ class ReadVerbs(StrEnum):
     cat_config = "cat-config"
     data = "data"
     diff = "diff"
+    doctor = "doctor"
+    dump_config = "dump-config"
     git = "git"
     ignored = "ignored"
+    managed = "managed"
     source_path = "source-path"
+    status = "status"
 
 
 class ScreenName(StrEnum):

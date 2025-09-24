@@ -1,4 +1,6 @@
 from collections import deque
+from dataclasses import fields
+from threading import Lock
 from time import sleep
 
 from rich.segment import Segment
@@ -14,22 +16,20 @@ from textual.timer import Timer
 from textual.widgets import RichLog, Static
 from textual.worker import WorkerState
 
-from chezmoi_mousse.chezmoi import INIT_CFG
+from chezmoi_mousse.chezmoi import INIT_CFG, ReadCmd, VerbArgs
 from chezmoi_mousse.constants import SPLASH
 from chezmoi_mousse.custom_theme import vars as theme_vars
-from chezmoi_mousse.id_typing import AppType, Id
+from chezmoi_mousse.id_typing import AppType, Id, SplashReturnData
 
-LOG_PADDING_WIDTH = 36
+LOG_PADDING_WIDTH = 41
 
 
 class SplashLog(RichLog, AppType):
-    def __init__(self, len_long_cmds: int = 0) -> None:
+    def __init__(self) -> None:
         super().__init__()
-
-        self.styles.height = len_long_cmds + 2
         self.styles.width = LOG_PADDING_WIDTH + 9
-        self.styles.color = "#0057B3"
-        self.styles.margin = 0
+        self.styles.color = "#6DB2FF"
+        self.styles.margin = 1
         self.styles.padding = 0
 
 
@@ -64,11 +64,12 @@ class AnimatedFade(Static):
         return line_styles
 
 
-class LoadingScreen(Screen[list[str]], AppType):
+class LoadingScreen(Screen[SplashReturnData], AppType):
 
     def __init__(self) -> None:
-        self.long_commands = self.app.chezmoi.io_commands.copy()
-        self.rich_log = SplashLog(len_long_cmds=len(self.long_commands))
+        self.splash_return_data = SplashReturnData()
+        self.data_lock = Lock()  # Add thread lock
+        self.rich_log = SplashLog()
         super().__init__(id=Id.splash_id.loading_screen)
 
         # TODO add logic so screen does not get dismissed in the "middle" of a
@@ -79,14 +80,25 @@ class LoadingScreen(Screen[list[str]], AppType):
     def compose(self) -> ComposeResult:
         yield Middle(Center(AnimatedFade()), Center(self.rich_log))
 
-    def log_text(self, log_label: str) -> None:
-        padding = LOG_PADDING_WIDTH - len(log_label)
-        log_text = f"{log_label} {'.' * padding} loaded"
+    def update_and_log(self, field_name: str, cmd_output: str) -> None:
+        command_value = getattr(ReadCmd, field_name).value
+        cmd_text = (
+            self.app.chezmoi.stripped_cmd(command_value)
+            .replace(VerbArgs.include_dirs.value, "dirs")
+            .replace(VerbArgs.include_files.value, "files")
+        )
+        padding = LOG_PADDING_WIDTH - len(cmd_text)
+        log_text = f"{cmd_text} {'.' * padding} loaded"
 
         def update_log():
             self.rich_log.write(log_text)
 
+        def update_data():
+            with self.data_lock:  # Thread-safe update
+                setattr(self.splash_return_data, field_name, cmd_output)
+
         self.app.call_from_thread(update_log)
+        update_data()  # Call directly since it's now thread-safe
 
     @work(thread=True, group="io_workers")
     def log_unavailable_chezmoi_command(self) -> None:
@@ -99,10 +111,12 @@ class LoadingScreen(Screen[list[str]], AppType):
         sleep(0.5)
 
     @work(thread=True, group="io_workers")
-    def run_io_worker(self, arg_id: str) -> None:
-        io_class = getattr(self.app.chezmoi, arg_id)
-        io_class.update()
-        self.log_text(f'chezmoi {arg_id.replace("_", " ")}')
+    def run_read_cmd(self, field_name: str) -> None:
+
+        command_to_run = getattr(ReadCmd, field_name)
+        cmd_output = self.app.chezmoi.read(command_to_run)
+
+        self.update_and_log(field_name, cmd_output)
 
     def all_workers_finished(self) -> None:
         if all(
@@ -110,7 +124,7 @@ class LoadingScreen(Screen[list[str]], AppType):
             for worker in self.workers
             if worker.group == "io_workers"
         ):
-            self.dismiss()
+            self.dismiss(self.splash_return_data)
 
     def on_mount(self) -> None:
 
@@ -126,9 +140,7 @@ class LoadingScreen(Screen[list[str]], AppType):
             self.log_unavailable_chezmoi_command()
             return
 
-        # first run chezmoi doctor, most expensive command
-        self.run_io_worker("doctor")
-        self.long_commands.pop("doctor")
-
-        for arg_id in self.long_commands:
-            self.run_io_worker(arg_id)
+        field_names = [field.name for field in fields(SplashReturnData)]
+        self.rich_log.styles.height = len(field_names) + 2
+        for field_name in field_names:
+            self.run_read_cmd(field_name)

@@ -18,7 +18,12 @@ import chezmoi_mousse.custom_theme
 from chezmoi_mousse.button_groups import OperateBtnHorizontal
 from chezmoi_mousse.chezmoi import INIT_CFG, Chezmoi
 from chezmoi_mousse.constants import Area, Chars, TabName, TreeName, ViewName
-from chezmoi_mousse.id_typing import Id, OperateBtn, OperateHelp
+from chezmoi_mousse.id_typing import (
+    Id,
+    OperateBtn,
+    OperateHelp,
+    SplashReturnData,
+)
 from chezmoi_mousse.main_tabs import (
     AddTab,
     ApplyTab,
@@ -112,7 +117,7 @@ class ChezmoiGUI(App["ChezmoiGUI"]):
         if INIT_CFG.chezmoi_found:
             app_log.success(f"chezmoi command found: {INIT_CFG.chezmoi_found}")
         app_log.warning("Start loading screen")
-        self.push_screen(LoadingScreen(), callback=self.first_mount_refresh)
+        self.push_screen(LoadingScreen(), callback=self.handle_return_data)
         self.watch(self, "theme", self.on_theme_change, init=False)
 
         if INIT_CFG.changes_enabled:
@@ -128,13 +133,24 @@ class ChezmoiGUI(App["ChezmoiGUI"]):
         )
         app_log.success(f"Theme set to {new_theme}")
 
-    def first_mount_refresh(self, _: object) -> None:
+    def handle_return_data(self, return_data: SplashReturnData | None) -> None:
+        if return_data is None:
+            # Handle the case where no data was returned (though this shouldn't happen in your case)
+            app_log.error("No data returned from splash screen")
+            return
         if not INIT_CFG.chezmoi_found:
             self.push_screen(InstallHelp())
             return
         app_log.success("--- splash.py finished loading ---")
-        # TODO: Do the refresh in the loading screen after other loading tasks
-        # were completed
+        # Populate Doctor DataTable
+        doctor_tab = self.query_exactly_one(DoctorTab)
+        doctor_tab.doctor_output = return_data.doctor
+        doctor_tab.populate_doctor_data()
+        # Cache outputs
+        self.chezmoi.managed_dirs = return_data.managed_dirs
+        self.chezmoi.managed_files = return_data.managed_files
+        self.chezmoi.dir_status_lines = return_data.dir_status_lines
+        self.chezmoi.file_status_lines = return_data.file_status_lines
         # Trees to refresh for each tab
         tree_types: list[
             tuple[TreeName, type[ManagedTree | FlatTree | ExpandedTree]]
@@ -151,8 +167,6 @@ class ChezmoiGUI(App["ChezmoiGUI"]):
                 ).refresh_tree_data()
         # Refresh DirectoryTree
         self.query_one(FilteredDirTree).reload()
-        # Populate Doctor DataTable
-        self.query_exactly_one(DoctorTab).populate_doctor_data()
 
     def on_tabbed_content_tab_activated(
         self, event: TabbedContent.TabActivated
@@ -162,7 +176,6 @@ class ChezmoiGUI(App["ChezmoiGUI"]):
     @on(OperateDataMsg)
     def handle_operate_result(self, message: OperateDataMsg) -> None:
         assert isinstance(message.dismiss_data.path, Path)
-        self.chezmoi.update_managed_status_data()
         managed_trees = self.query(ManagedTree)
         for tree in managed_trees:
             tree.remove_node_path(node_path=message.dismiss_data.path)

@@ -8,7 +8,7 @@ from shutil import which
 from subprocess import CompletedProcess, run
 from typing import Literal
 
-from chezmoi_mousse.constants import IoVerbs, OperateVerbs, ReadVerbs, TabName
+from chezmoi_mousse.constants import OperateVerbs, ReadVerbs, TabName
 from chezmoi_mousse.id_typing import ParsedJson, PathDict
 
 # TODO: implement 'chezmoi verify', if exit 0, display message in Tree
@@ -63,17 +63,17 @@ class ReadCmd(Enum):
         VerbArgs.reverse.value,
     ]
     dir_status_lines = GlobalCmd.live_run.value + [
-        IoVerbs.status,
+        ReadVerbs.status,
         VerbArgs.path_style_absolute.value,
         VerbArgs.include_dirs.value,
     ]
-    doctor = GlobalCmd.live_run.value + [IoVerbs.doctor]
+    doctor = GlobalCmd.live_run.value + [ReadVerbs.doctor]
     dump_config = GlobalCmd.live_run.value + [
         VerbArgs.format_json.value,
-        IoVerbs.dump_config,
+        ReadVerbs.dump_config,
     ]
     file_status_lines = GlobalCmd.live_run.value + [
-        IoVerbs.status,
+        ReadVerbs.status,
         VerbArgs.path_style_absolute.value,
         VerbArgs.include_files.value,
     ]
@@ -82,12 +82,12 @@ class ReadCmd(Enum):
     )
     ignored = GlobalCmd.live_run.value + [ReadVerbs.ignored]
     managed_dirs = GlobalCmd.live_run.value + [
-        IoVerbs.managed,
+        ReadVerbs.managed,
         VerbArgs.path_style_absolute.value,
         VerbArgs.include_dirs.value,
     ]
     managed_files = GlobalCmd.live_run.value + [
-        IoVerbs.managed,
+        ReadVerbs.managed,
         VerbArgs.path_style_absolute.value,
         VerbArgs.include_files.value,
     ]
@@ -275,6 +275,24 @@ class Chezmoi:
     def re_add_files(self) -> PathDict:
         return self._create_status_dict(TabName.re_add_tab, "files")
 
+    def stripped_cmd(self, long_command: list[str]) -> str:
+        git_log_to_strip = [
+            word for word in VerbArgs.git_log.value if word != "log"
+        ]
+        return " ".join(
+            [
+                word
+                for word in long_command
+                if word not in GlobalCmd.default_args.value
+                and word
+                not in (
+                    VerbArgs.path_style_absolute.value,
+                    VerbArgs.format_json.value,
+                )
+                and word not in git_log_to_strip
+            ]
+        )
+
     def read(self, read_cmd: ReadCmd, path: Path | None = None) -> str:
         cmd = read_cmd.value
         if path is not None:
@@ -282,20 +300,6 @@ class Chezmoi:
         # CompletedProcess type arg is str as we use text=True
         result: CompletedProcess[str] = run(
             cmd, capture_output=True, shell=False, text=True, timeout=1
-        )
-        if result.returncode != 0:
-            return ""
-        if result.stdout == "":
-            return ""
-        # remove trailing and leading new lines but NOT leading whitespace
-        stdout = result.stdout.lstrip("\n").rstrip()
-        # remove intermediate empty lines
-        return "\n".join(
-            [line for line in stdout.splitlines() if line.strip()]
-        )
-
-        result: CompletedProcess[str] = run(
-            cmd, capture_output=True, shell=False, text=True, timeout=5
         )
         if result.returncode != 0:
             return ""
