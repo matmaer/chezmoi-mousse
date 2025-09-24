@@ -163,22 +163,21 @@
   }
 }
 
-.tab_right_vertical {
-  .content_switcher_right {
-    margin-bottom: 1;
-    overflow-x: scroll;
-    .config_tab_label {
-      background-tint: $surface-lighten-1;
-      background: $surface-lighten-1;
-      border-bottom: inner $surface-lighten-1;
-      border-top: inner $surface-lighten-1;
-      color: $text-accent;
-      padding: 0 1;
-      text-align: center;
-      width: 100%;
-    }
+.nav_content_switcher {
+  margin-bottom: 1;
+  overflow-x: scroll;
+  .config_tab_label {
+    background-tint: $surface-lighten-1;
+    background: $surface-lighten-1;
+    border-bottom: inner $surface-lighten-1;
+    border-top: inner $surface-lighten-1;
+    color: $text-accent;
+    padding: 0 1;
+    text-align: center;
+    width: 100%;
   }
 }
+
 
 .tab_left_vertical {
   margin-right: 2;

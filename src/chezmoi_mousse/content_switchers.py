@@ -97,17 +97,11 @@ class ViewSwitcher(Vertical, AppType):
         with ContentSwitcher(
             id=self.tab_ids.content_switcher_id(area=Area.right),
             initial=self.tab_ids.view_id(view=ViewName.diff_view),
+            classes=TcssStr.border_title_top,
         ):
             yield DiffView(tab_ids=self.tab_ids, reverse=self.reverse)
             yield ContentsView(tab_ids=self.tab_ids)
             yield GitLogView(tab_ids=self.tab_ids)
-
-    def on_mount(self) -> None:
-        self.query_exactly_one(ContentSwitcher).add_class(
-            TcssStr.content_switcher_right, TcssStr.border_title_top
-        )
-
-    # Button handling done in OperateTabsBase
 
 
 class InitTabSwitcher(Horizontal):
@@ -125,7 +119,7 @@ class InitTabSwitcher(Horizontal):
         with ContentSwitcher(
             id=self.tab_ids.content_switcher_id(area=Area.right),
             initial=self.tab_ids.view_id(view=ViewName.init_new_view),
-            classes=TcssStr.content_switcher_right,
+            classes=TcssStr.nav_content_switcher,
         ):
             # New Repo Content
             yield Vertical(
@@ -229,6 +223,7 @@ class ConfigTabSwitcher(Horizontal, AppType):
             with ContentSwitcher(
                 id=self.tab_ids.content_switcher_id(area=Area.right),
                 initial=self.tab_ids.view_id(view=ViewName.cat_config),
+                classes=TcssStr.nav_content_switcher,
             ):
                 yield Vertical(
                     Label('"chezmoi cat-config" output'),
