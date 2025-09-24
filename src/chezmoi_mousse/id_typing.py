@@ -73,6 +73,15 @@ class SplashIds:
     splash_log = "splash_log"
 
 
+@dataclass
+class SplashReturnData:
+    doctor: str = ""
+    dir_status_lines: str = ""
+    file_status_lines: str = ""
+    managed_dirs: str = ""
+    managed_files: str = ""
+
+
 @dataclass(frozen=True)
 class SwitchData:
     label: str
