@@ -11,6 +11,10 @@ from typing import Literal
 from chezmoi_mousse.constants import IoVerbs, OperateVerbs, ReadVerbs, TabName
 from chezmoi_mousse.id_typing import ParsedJson, PathDict
 
+# TODO: implement 'chezmoi verify', if exit 0, display message in Tree
+# widgets inform the user why the Tree widget is empty
+# TODO: implement spinner for commands taking a bit longer like operations
+
 CHEZMOI_CMD = "chezmoi"
 
 
@@ -125,27 +129,12 @@ class InitConfig:
 INIT_CFG = InitConfig()
 
 
-@dataclass
-class ReadCmdCache:
-    dir_status_lines: CompletedProcess[str] | None = None
-    doctor: CompletedProcess[str] | None = None
-    file_status_lines: CompletedProcess[str] | None = None
-    managed_dirs: CompletedProcess[str] | None = None
-    managed_files: CompletedProcess[str] | None = None
-
-
 def _run_cmd(long_command: list[str]) -> CompletedProcess[str] | None:
     if not INIT_CFG.chezmoi_found:
         return None
     # if a command contains failed, earlier on another command failed
     elif "failed" in long_command:
         return None
-
-    # TODO: implement spinner for commands taking a bit longer like operations
-    # TODO: set different timeout values depending on nature of command
-    # TODO: implement 'chezmoi verify', if exit 0, display message in Tree
-    # widgets inform the user why the Tree widget is empty
-
     return run(
         long_command,
         capture_output=True,
@@ -229,32 +218,10 @@ class ChangeCmd:
             self.base_cmd = GlobalCmd.dry_run.value
 
 
-@dataclass
-class InputOutput:
-
-    long_command: list[str]
-    arg_id: str
-    std_out: str = ""
-
-    def update(self) -> None:
-        result: CompletedProcess[str] | None = _run_cmd(self.long_command)
-        if result is None:
-            self.std_out = ""
-        else:
-            self.std_out = result.stdout
-
-
 class Chezmoi:
-
-    dir_status_lines: InputOutput  # for backwards compatibility
-    doctor: InputOutput  # for backwards compatibility
-    file_status_lines: InputOutput  # for backwards compatibility
-    managed_dirs: InputOutput  # for backwards compatibility
-    managed_files: InputOutput  # for backwards compatibility
-    perform = ChangeCommand()  # for backwards compatibility
+    perform = ChangeCommand()
 
     def __init__(self) -> None:
-        self.change_cmd = ChangeCmd()
         if INIT_CFG.config_dump is None:
             self.config_dump = {}
         else:
@@ -268,21 +235,21 @@ class Chezmoi:
             ReadCmd.managed_dirs,
             ReadCmd.managed_files,
         ]
-        for long_cmd in io_cmds:
-            self.io_commands[long_cmd.name] = long_cmd.value
-            setattr(
-                self,
-                long_cmd.name,
-                InputOutput(long_cmd.value, arg_id=long_cmd.name),
-            )
+        # Initialize managed_dirs and managed_files as empty strings
+        self.managed_dirs = ""
+        self.managed_files = ""
+        self.dir_status_lines = ""
+        self.file_status_lines = ""
+        for cmd in io_cmds:
+            setattr(self, cmd.name, (cmd.value, ""))
 
     @property
     def dir_paths(self) -> list[Path]:
-        return [Path(p) for p in self.managed_dirs.std_out.splitlines()]
+        return [Path(p) for p in self.managed_dirs.splitlines()]
 
     @property
     def file_paths(self) -> list[Path]:
-        return [Path(p) for p in self.managed_files.std_out.splitlines()]
+        return [Path(p) for p in self.managed_files.splitlines()]
 
     @property
     def apply_dirs(self) -> PathDict:
@@ -297,6 +264,10 @@ class Chezmoi:
         return ReadCmd
 
     @property
+    def change_cmd(self) -> type[ChangeCmd]:
+        return ChangeCmd
+
+    @property
     def re_add_dirs(self) -> PathDict:
         return self._create_status_dict(TabName.re_add_tab, "dirs")
 
@@ -305,11 +276,24 @@ class Chezmoi:
         return self._create_status_dict(TabName.re_add_tab, "files")
 
     def read(self, read_cmd: ReadCmd, path: Path | None = None) -> str:
-        # TODO callback to log stderr
         cmd = read_cmd.value
         if path is not None:
             cmd = cmd + [str(path)]
         # CompletedProcess type arg is str as we use text=True
+        result: CompletedProcess[str] = run(
+            cmd, capture_output=True, shell=False, text=True, timeout=1
+        )
+        if result.returncode != 0:
+            return ""
+        if result.stdout == "":
+            return ""
+        # remove trailing and leading new lines but NOT leading whitespace
+        stdout = result.stdout.lstrip("\n").rstrip()
+        # remove intermediate empty lines
+        return "\n".join(
+            [line for line in stdout.splitlines() if line.strip()]
+        )
+
         result: CompletedProcess[str] = run(
             cmd, capture_output=True, shell=False, text=True, timeout=5
         )
@@ -356,16 +340,6 @@ class Chezmoi:
         # checks only direct children
         return [p for p in self.dir_paths if p.parent == dir_path]
 
-    def update_managed_status_data(self) -> None:
-        # Update data that the managed_status property depends on
-        # TODO: do not run when operation is cancelled and properly update
-        # Tree widgets after a relevant operation
-        # DirectoryTree refreshes correctly
-        self.managed_dirs.update()
-        self.managed_files.update()
-        self.dir_status_lines_old.update()
-        self.file_status_lines.update()
-
     def _create_status_dict(
         self, tab_name: TabName, kind: Literal["dirs", "files"]
     ) -> PathDict:
@@ -374,10 +348,10 @@ class Chezmoi:
         status_codes: str = ""
         if kind == "dirs":
             managed_paths = self.dir_paths
-            status_lines = self.dir_status_lines_old.std_out.splitlines()
+            status_lines = self.dir_status_lines.splitlines()
         elif kind == "files":
             managed_paths = self.file_paths
-            status_lines = self.file_status_lines.std_out.splitlines()
+            status_lines = self.file_status_lines.splitlines()
 
         if tab_name == TabName.apply_tab:
             status_codes = "ADM"
