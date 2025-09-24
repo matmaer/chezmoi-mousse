@@ -1,8 +1,15 @@
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from id_typing import DirNodeData, FileNodeData, OperateBtn, TabName, TreeName
 from textual.message import Message
+
+from chezmoi_mousse.id_typing import (
+    DirNodeData,
+    FileNodeData,
+    OperateBtn,
+    TabName,
+    TreeName,
+)
 
 
 @dataclass

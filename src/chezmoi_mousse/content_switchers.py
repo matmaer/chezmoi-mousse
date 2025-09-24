@@ -78,22 +78,6 @@ class TreeSwitcher(VerticalGroup, AppType):
             TcssStr.content_switcher_left, TcssStr.border_title_top
         )
 
-    def on_button_pressed(self, event: Button.Pressed) -> None:
-        # Tree/List Content Switcher
-        if event.button.id == self.tab_ids.button_id(btn=TabBtn.tree):
-            if self.expand_all_state:
-                self.query_exactly_one(ContentSwitcher).current = (
-                    self.tab_ids.tree_id(tree=TreeName.expanded_tree)
-                )
-            else:
-                self.query_exactly_one(ContentSwitcher).current = (
-                    self.tab_ids.tree_id(tree=TreeName.managed_tree)
-                )
-        elif event.button.id == self.tab_ids.button_id(btn=TabBtn.list):
-            self.query_exactly_one(ContentSwitcher).current = (
-                self.tab_ids.tree_id(tree=TreeName.flat_tree)
-            )
-
 
 class ViewSwitcher(Vertical, AppType):
     def __init__(self, *, tab_ids: TabIds, diff_reverse: bool):
@@ -123,19 +107,7 @@ class ViewSwitcher(Vertical, AppType):
             TcssStr.content_switcher_right, TcssStr.border_title_top
         )
 
-    def on_button_pressed(self, event: Button.Pressed) -> None:
-        if event.button.id == self.tab_ids.button_id(btn=TabBtn.contents):
-            self.query_exactly_one(ContentSwitcher).current = (
-                self.tab_ids.view_id(view=ViewName.contents_view)
-            )
-        elif event.button.id == self.tab_ids.button_id(btn=TabBtn.diff):
-            self.query_exactly_one(ContentSwitcher).current = (
-                self.tab_ids.view_id(view=ViewName.diff_view)
-            )
-        elif event.button.id == self.tab_ids.button_id(btn=TabBtn.git_log):
-            self.query_exactly_one(ContentSwitcher).current = (
-                self.tab_ids.view_id(view=ViewName.git_log_view)
-            )
+    # Button handling done in OperateTabsBase
 
 
 class InitTabSwitcher(Horizontal):
@@ -228,7 +200,6 @@ class ConfigTabSwitcher(Horizontal, AppType):
 
     def __init__(self, tab_ids: TabIds):
         self.tab_ids = tab_ids
-        # updated by OperateTabsBase in on_switch_changed method
         super().__init__(
             id=self.tab_ids.tab_vertical_id(area=Area.right),
             classes=TcssStr.tab_right_vertical,

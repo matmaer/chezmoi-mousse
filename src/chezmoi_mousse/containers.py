@@ -9,24 +9,19 @@ from pathlib import Path
 
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import (
-    Container,
-    Horizontal,
-    HorizontalGroup,
-    VerticalGroup,
-)
+from textual.containers import Horizontal, HorizontalGroup, VerticalGroup
 from textual.widgets import Button, ContentSwitcher, Label, Switch
 
 from chezmoi_mousse.constants import (
     Area,
-    OperateBtn,
     TabBtn,
+    TabName,
     TcssStr,
     TreeName,
     ViewName,
 )
 from chezmoi_mousse.content_switchers import TreeSwitcher
-from chezmoi_mousse.id_typing import AppType, OperateButtons, Switches, TabIds
+from chezmoi_mousse.id_typing import AppType, Switches, TabIds
 from chezmoi_mousse.messages import TreeNodeDataMsg
 from chezmoi_mousse.widgets import (
     ContentsView,
@@ -41,37 +36,39 @@ from chezmoi_mousse.widgets import (
 class OperateTabsBase(Horizontal, AppType):
 
     def __init__(self, *, tab_ids: TabIds) -> None:
+        self.current_path: Path | None = None
         self.tab_ids = tab_ids
         self.tab_name = tab_ids.tab_name
-        self.current_path: Path | None = None
-        super().__init__(id=self.tab_ids.tab_container_id)
+        self.expand_all_state = False
+        self.view_switcher_id = self.tab_ids.content_switcher_id(
+            area=Area.right
+        )
+        self.view_switcher_qid = self.tab_ids.content_switcher_id(
+            "#", area=Area.right
+        )
+        self.tree_switcher_id = self.tab_ids.content_switcher_id(
+            "#", area=Area.left
+        )
+        self.tree_switcher_qid = self.tab_ids.content_switcher_id(
+            "#", area=Area.left
+        )
+        self.diff_tab_btn = tab_ids.button_id(btn=TabBtn.diff)
+        self.contents_tab_btn = tab_ids.button_id(btn=TabBtn.contents)
+        self.git_log_tab_btn = tab_ids.button_id(btn=TabBtn.git_log)
+        super().__init__(id=tab_ids.tab_container_id)
 
-    def disable_buttons(self, buttons_to_update: OperateButtons) -> None:
-        for button_enum in buttons_to_update:
-            button = self.app.query_one(
-                self.tab_ids.button_id("#", btn=button_enum), Button
-            )
-            button.disabled = True
-            if button_enum == OperateBtn.add_dir:
-                button.tooltip = "not yet implemented"
-                continue
-            button.tooltip = "select a file to enable operations"
-
-    def enable_buttons(self, buttons_to_update: OperateButtons) -> None:
-        for button_enum in buttons_to_update:
-            button = self.app.query_one(
-                self.tab_ids.button_id("#", btn=button_enum), Button
-            )
-            if button_enum == OperateBtn.add_dir:
-                button.tooltip = "not yet implemented"
-                continue
-            button.disabled = False
-            button.tooltip = None
+    def on_mount(self) -> None:
+        if self.tab_name in (TabName.apply_tab, TabName.re_add_tab):
+            self.query_one(
+                self.view_switcher_qid, ContentSwitcher
+            ).border_title = str(self.app.destDir)
+            self.query_one(
+                self.tree_switcher_qid, ContentSwitcher
+            ).border_title = str(self.app.destDir)
 
     def update_view_path(self, path: Path) -> None:
         current_view_id = self.query_one(
-            self.tab_ids.content_switcher_id("#", area=Area.right),
-            ContentSwitcher,
+            self.view_switcher_qid, ContentSwitcher
         ).current
         if current_view_id == self.tab_ids.view_id(
             view=ViewName.contents_view
@@ -84,32 +81,12 @@ class OperateTabsBase(Horizontal, AppType):
         ):
             self.query_exactly_one(GitLogView).path = path
 
-    @on(TreeNodeDataMsg)
-    def handle_tree_node_selected(self, event: TreeNodeDataMsg) -> None:
-        event.stop()
-        selected_path = event.node_context.node_data.path
-        self.query_one(
-            self.tab_ids.content_switcher_id("#", area=Area.right), Container
-        ).border_title = f"{selected_path.relative_to(self.app.destDir)}"
-        self.current_path = selected_path
-        self.update_view_path(selected_path)
-
-    @on(Button.Pressed, ".tab_button")
-    def handle_expand_all_switch(self, event: Button.Pressed) -> None:
-        switch_id = self.tab_ids.switch_id("#", switch=Switches.expand_all)
-        expand_all_switch = self.query_one(switch_id, Switch)
-        if event.button.id == self.tab_ids.button_id(btn=TabBtn.tree):
-            expand_all_switch.disabled = False
-        elif event.button.id == self.tab_ids.button_id(btn=TabBtn.list):
-            expand_all_switch.disabled = True
-
-    @on(Button.Pressed, ".tab_button")
     def maybe_update_view_path(self, event: Button.Pressed) -> None:
-        if event.button.id == self.tab_ids.button_id(btn=TabBtn.contents):
+        if event.button.id == self.contents_tab_btn:
             view_path = self.query_exactly_one(ContentsView).path
-        elif event.button.id == self.tab_ids.button_id(btn=TabBtn.diff):
+        elif event.button.id == self.diff_tab_btn:
             view_path = self.query_exactly_one(DiffView).path
-        elif event.button.id == self.tab_ids.button_id(btn=TabBtn.git_log):
+        elif event.button.id == self.git_log_tab_btn:
             view_path = self.query_exactly_one(GitLogView).path
         else:
             return
@@ -117,6 +94,61 @@ class OperateTabsBase(Horizontal, AppType):
             self.current_path = self.app.destDir
         if view_path != self.current_path:
             self.update_view_path(self.current_path)
+
+    @on(TreeNodeDataMsg)
+    def handle_tree_node_selected(self, event: TreeNodeDataMsg) -> None:
+        event.stop()
+        selected_path = event.node_context.node_data.path
+        self.query_one(
+            self.view_switcher_qid, ContentSwitcher
+        ).border_title = f"{selected_path.relative_to(self.app.destDir)}"
+        self.current_path = selected_path
+        self.update_view_path(selected_path)
+
+    @on(Button.Pressed, f".{TcssStr.tab_button}")
+    def enable_expand_all_switch(self, event: Button.Pressed) -> None:
+        expand_all_switch = self.query_one(
+            self.tab_ids.switch_id("#", switch=Switches.expand_all), Switch
+        )
+        if event.button.id == self.tab_ids.button_id(btn=TabBtn.tree):
+            expand_all_switch.disabled = False
+        elif event.button.id == self.tab_ids.button_id(btn=TabBtn.list):
+            expand_all_switch.disabled = True
+
+    @on(Button.Pressed, f".{TcssStr.tab_button}")
+    def update_view_switcher_content(self, event: Button.Pressed) -> None:
+        view_switcher = self.query_one(self.view_switcher_qid, ContentSwitcher)
+        if event.button.id == self.contents_tab_btn:
+            view_switcher.current = self.tab_ids.view_id(
+                view=ViewName.contents_view
+            )
+        elif event.button.id == self.diff_tab_btn:
+            view_switcher.current = self.tab_ids.view_id(
+                view=ViewName.diff_view
+            )
+        elif event.button.id == self.git_log_tab_btn:
+            view_switcher.current = self.tab_ids.view_id(
+                view=ViewName.git_log_view
+            )
+        self.maybe_update_view_path(event=event)
+
+    @on(Button.Pressed, f".{TcssStr.tab_button}")
+    def update_tree_switcher_content(self, event: Button.Pressed) -> None:
+        tree_switcher = self.query_one(self.tree_switcher_qid, ContentSwitcher)
+        if event.button.id == self.tab_ids.button_id(btn=TabBtn.tree):
+            if self.expand_all_state:
+                tree_switcher.current = self.tab_ids.tree_id(
+                    tree=TreeName.expanded_tree
+                )
+            else:
+                tree_switcher.current = self.tab_ids.tree_id(
+                    tree=TreeName.managed_tree
+                )
+        elif event.button.id == self.tab_ids.button_id(btn=TabBtn.list):
+            tree_switcher.current = self.tab_ids.tree_id(
+                tree=TreeName.flat_tree
+            )
+        self.maybe_update_view_path(event=event)
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
         event.stop()
@@ -137,17 +169,19 @@ class OperateTabsBase(Horizontal, AppType):
         elif event.switch.id == self.tab_ids.switch_id(
             switch=Switches.expand_all
         ):
+            self.expand_all_state = event.value
             self.query_exactly_one(TreeSwitcher).expand_all_state = event.value
+            tree_switcher = self.query_one(
+                self.tree_switcher_qid, ContentSwitcher
+            )
             if event.value:
-                self.query_one(
-                    self.tab_ids.content_switcher_id("#", area=Area.left),
-                    ContentSwitcher,
-                ).current = self.tab_ids.tree_id(tree=TreeName.expanded_tree)
+                tree_switcher.current = self.tab_ids.tree_id(
+                    tree=TreeName.expanded_tree
+                )
             else:
-                self.query_one(
-                    self.tab_ids.content_switcher_id("#", area=Area.left),
-                    ContentSwitcher,
-                ).current = self.tab_ids.tree_id(tree=TreeName.managed_tree)
+                tree_switcher.current = self.tab_ids.tree_id(
+                    tree=TreeName.managed_tree
+                )
 
     def action_toggle_switch_slider(self) -> None:
         self.query_one(

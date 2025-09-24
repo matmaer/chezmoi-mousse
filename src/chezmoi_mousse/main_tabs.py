@@ -100,7 +100,6 @@ class AddTab(OperateTabsBase, AppType):
         dir_tree.path = self.app.destDir
         dir_tree.show_root = False
         dir_tree.guide_depth = 3
-        self.disable_buttons((OperateBtn.add_file, OperateBtn.add_dir))
 
     def on_directory_tree_file_selected(
         self, event: FilteredDirTree.FileSelected
@@ -113,9 +112,8 @@ class AddTab(OperateTabsBase, AppType):
         )
         contents_view.path = event.node.data.path
         contents_view.border_title = (
-            f"{event.node.data.path.relative_to(self.app.destDir)}"
+            f" {event.node.data.path.relative_to(self.app.destDir)} "
         )
-        self.enable_buttons((OperateBtn.add_file,))
 
     def on_directory_tree_directory_selected(
         self, event: FilteredDirTree.DirectorySelected
@@ -127,9 +125,8 @@ class AddTab(OperateTabsBase, AppType):
         )
         contents_view.path = event.node.data.path
         contents_view.border_title = (
-            f"{event.node.data.path.relative_to(self.app.destDir)}"
+            f" {event.node.data.path.relative_to(self.app.destDir)} "
         )
-        self.disable_buttons((OperateBtn.add_file,))
 
     def on_switch_changed(self, event: Switch.Changed) -> None:
         event.stop()
