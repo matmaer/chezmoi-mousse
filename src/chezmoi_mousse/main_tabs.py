@@ -238,7 +238,7 @@ class DoctorTab(Vertical, AppType):
     def populate_doctor_data(self) -> None:
 
         doctor_table: DataTable[Text] = self.query_one(DataTable[Text])
-        doctor_data = self.app.chezmoi.doctor.list_out
+        doctor_data = self.app.chezmoi.doctor.std_out.splitlines()
         if not doctor_table.columns:
             doctor_table.add_columns(*doctor_data[0].split())
 

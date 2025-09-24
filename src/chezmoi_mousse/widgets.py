@@ -328,7 +328,6 @@ class GitLogView(DataTable[Text], AppType):
             "warning": theme.vars["text-warning"],
             "error": theme.vars["text-error"],
         }
-        # for line in self.app.chezmoi.run.git_log(path):
         for line in cmd_output.splitlines():
             columns = line.split(";")
             if columns[1].split(maxsplit=1)[0] == "Add":

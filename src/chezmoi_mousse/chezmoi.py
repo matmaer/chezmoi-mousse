@@ -125,16 +125,6 @@ class InitConfig:
 INIT_CFG = InitConfig()
 
 
-class IoCmd(Enum):
-    """For backwards compatibility, will be removed in future."""
-
-    doctor = ReadCmd.doctor.value
-    dir_status_lines = ReadCmd.dir_status_lines.value
-    file_status_lines = ReadCmd.file_status_lines.value
-    managed_dirs = ReadCmd.managed_dirs.value
-    managed_files = ReadCmd.managed_files.value
-
-
 @dataclass
 class ReadCmdCache:
     dir_status_lines: CompletedProcess[str] | None = None
@@ -239,101 +229,12 @@ class ChangeCmd:
             self.base_cmd = GlobalCmd.dry_run.value
 
 
-class ReadCommand:
-    """Used for backwards compatibility, will be removed in future."""
-
-    def __init__(self, *, dest_dir: Path, source_dir: Path):
-        self.dest_dir = dest_dir
-        self.source_dir = source_dir
-
-    def cat(self, file_path: Path) -> list[str]:
-        result: CompletedProcess[str] | None = _run_cmd(
-            GlobalCmd.live_run.value + [ReadVerbs.cat] + [str(file_path)]
-        )
-        if result is None:
-            return []
-        return result.stdout.lstrip("\n").rstrip().splitlines()
-
-    def cat_config(self) -> list[str]:
-        result: CompletedProcess[str] | None = _run_cmd(
-            GlobalCmd.live_run.value + [ReadVerbs.cat_config]
-        )
-        if result is None:
-            return []
-        return [
-            line
-            for line in result.stdout.lstrip("\n").rstrip().splitlines()
-            if line.strip()  # Filter out empty lines from config output
-        ]
-
-    def diff(self, file_path: Path) -> list[str]:
-        result: CompletedProcess[str] | None = _run_cmd(
-            GlobalCmd.live_run.value + [ReadVerbs.diff] + [str(file_path)]
-        )
-        if result is None:
-            return []
-        return result.stdout.lstrip("\n").rstrip().splitlines()
-
-    def diff_reversed(self, file_path: Path) -> list[str]:
-        result: CompletedProcess[str] | None = _run_cmd(
-            GlobalCmd.live_run.value
-            + [ReadVerbs.diff]
-            + [VerbArgs.reverse.value, str(file_path)]
-        )
-        if result is None:
-            return []
-        return result.stdout.lstrip("\n").rstrip().splitlines()
-
-    def git_log(self, path: Path) -> list[str]:
-        source_path = self.source_path(path)
-        command = (
-            GlobalCmd.live_run.value
-            + [ReadVerbs.git]
-            + VerbArgs.git_log.value
-            + [str(source_path)]
-        )
-        result: CompletedProcess[str] | None = _run_cmd(command)
-        if result is None:
-            return []
-        return result.stdout.lstrip("\n").rstrip().splitlines()
-
-    def ignored(self) -> list[str]:
-        result: CompletedProcess[str] | None = _run_cmd(
-            GlobalCmd.live_run.value + [ReadVerbs.ignored]
-        )
-        if result is None:
-            return []
-        return result.stdout.lstrip("\n").rstrip().splitlines()
-
-    def source_path(self, path: Path) -> Path:
-        if path == self.dest_dir:
-            return self.source_dir
-        result: CompletedProcess[str] | None = _run_cmd(
-            GlobalCmd.live_run.value + [ReadVerbs.source_path] + [str(path)]
-        )
-        if result is None:
-            return Path()
-        return Path(result.stdout.strip())
-
-    def template_data(self) -> list[str]:
-        result: CompletedProcess[str] | None = _run_cmd(
-            GlobalCmd.live_run.value + [ReadVerbs.data]
-        )
-        if result is None:
-            return []
-        return result.stdout.lstrip("\n").rstrip().splitlines()
-
-
 @dataclass
 class InputOutput:
 
     long_command: list[str]
     arg_id: str
     std_out: str = ""
-
-    @property
-    def list_out(self):
-        return self.std_out.splitlines()
 
     def update(self) -> None:
         result: CompletedProcess[str] | None = _run_cmd(self.long_command)
@@ -353,9 +254,6 @@ class Chezmoi:
     perform = ChangeCommand()  # for backwards compatibility
 
     def __init__(self) -> None:
-        self.run = ReadCommand(
-            dest_dir=INIT_CFG.destDir, source_dir=INIT_CFG.sourceDir
-        )
         self.change_cmd = ChangeCmd()
         if INIT_CFG.config_dump is None:
             self.config_dump = {}
@@ -363,12 +261,12 @@ class Chezmoi:
             self.config_dump = INIT_CFG.config_dump
 
         self.io_commands: dict[str, list[str]] = {}
-        io_cmds: list[IoCmd] = [
-            IoCmd.dir_status_lines,
-            IoCmd.doctor,
-            IoCmd.file_status_lines,
-            IoCmd.managed_dirs,
-            IoCmd.managed_files,
+        io_cmds: list[ReadCmd] = [
+            ReadCmd.dir_status_lines,
+            ReadCmd.doctor,
+            ReadCmd.file_status_lines,
+            ReadCmd.managed_dirs,
+            ReadCmd.managed_files,
         ]
         for long_cmd in io_cmds:
             self.io_commands[long_cmd.name] = long_cmd.value
@@ -380,11 +278,11 @@ class Chezmoi:
 
     @property
     def dir_paths(self) -> list[Path]:
-        return [Path(p) for p in self.managed_dirs.list_out]
+        return [Path(p) for p in self.managed_dirs.std_out.splitlines()]
 
     @property
     def file_paths(self) -> list[Path]:
-        return [Path(p) for p in self.managed_files.list_out]
+        return [Path(p) for p in self.managed_files.std_out.splitlines()]
 
     @property
     def apply_dirs(self) -> PathDict:
@@ -465,7 +363,7 @@ class Chezmoi:
         # DirectoryTree refreshes correctly
         self.managed_dirs.update()
         self.managed_files.update()
-        self.dir_status_lines.update()
+        self.dir_status_lines_old.update()
         self.file_status_lines.update()
 
     def _create_status_dict(
@@ -476,10 +374,10 @@ class Chezmoi:
         status_codes: str = ""
         if kind == "dirs":
             managed_paths = self.dir_paths
-            status_lines = self.dir_status_lines.list_out
+            status_lines = self.dir_status_lines_old.std_out.splitlines()
         elif kind == "files":
             managed_paths = self.file_paths
-            status_lines = self.file_status_lines.list_out
+            status_lines = self.file_status_lines.std_out.splitlines()
 
         if tab_name == TabName.apply_tab:
             status_codes = "ADM"

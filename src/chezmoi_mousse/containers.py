@@ -38,7 +38,7 @@ class OperateTabsBase(Horizontal, AppType):
     def __init__(self, *, tab_ids: TabIds) -> None:
         self.current_path: Path | None = None
         self.tab_ids = tab_ids
-        self.tab_name = tab_ids.tab_name
+        self.tab_name = self.tab_ids.tab_name
         self.expand_all_state = False
         self.view_switcher_id = self.tab_ids.content_switcher_id(
             area=Area.right
@@ -55,7 +55,7 @@ class OperateTabsBase(Horizontal, AppType):
         self.diff_tab_btn = tab_ids.button_id(btn=TabBtn.diff)
         self.contents_tab_btn = tab_ids.button_id(btn=TabBtn.contents)
         self.git_log_tab_btn = tab_ids.button_id(btn=TabBtn.git_log)
-        super().__init__(id=tab_ids.tab_container_id)
+        super().__init__(id=self.tab_ids.tab_container_id)
 
     def on_mount(self) -> None:
         if self.tab_name in (TabName.apply_tab, TabName.re_add_tab):
