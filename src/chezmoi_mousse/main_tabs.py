@@ -216,9 +216,7 @@ class ConfigTab(Horizontal, AppType):
 class DoctorTab(Vertical, AppType):
 
     def __init__(self) -> None:
-        super().__init__(
-            id=Id.doctor.tab_container_id, classes=TcssStr.doctor_vertical
-        )
+        self.doctor_output: str | None = None
         self.dr_style = {
             "ok": theme.vars["text-success"],
             "info": theme.vars["foreground-darken-1"],
@@ -226,6 +224,9 @@ class DoctorTab(Vertical, AppType):
             "failed": theme.vars["text-error"],
             "error": theme.vars["text-error"],
         }
+        super().__init__(
+            id=Id.doctor.tab_container_id, classes=TcssStr.doctor_vertical
+        )
 
     def compose(self) -> ComposeResult:
         yield DataTable[Text](id=Id.doctor.datatable_id(), show_cursor=False)
@@ -236,9 +237,10 @@ class DoctorTab(Vertical, AppType):
             )
 
     def populate_doctor_data(self) -> None:
-
+        if self.doctor_output is None:
+            return
         doctor_table: DataTable[Text] = self.query_one(DataTable[Text])
-        doctor_data = self.app.chezmoi.doctor.std_out.splitlines()
+        doctor_data: list[str] = self.doctor_output.splitlines()
         if not doctor_table.columns:
             doctor_table.add_columns(*doctor_data[0].split())
 
