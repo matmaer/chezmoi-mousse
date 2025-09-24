@@ -19,6 +19,7 @@ from textual.widgets import (
 
 import chezmoi_mousse.custom_theme as theme
 from chezmoi_mousse.button_groups import ButtonsVertical
+from chezmoi_mousse.chezmoi import ChangeCmd
 from chezmoi_mousse.constants import (
     Area,
     OperateBtn,
@@ -180,17 +181,17 @@ class InitTab(Horizontal, AppType):
     def handle_operation_button(self, event: Button.Pressed) -> None:
         event.stop()
         if event.button.id == Id.init.button_id(btn=OperateBtn.clone_repo):
-            self.app.chezmoi.perform.init_clone_repo(str(self.repo_url))
+            self.app.chezmoi.perform(ChangeCmd.init, self.repo_url)
             self.query_one(
                 Id.init.button_id("#", btn=OperateBtn.clone_repo), Button
             ).disabled = True
         elif event.button.id == Id.init.button_id(btn=OperateBtn.new_repo):
-            self.app.chezmoi.perform.init_new_repo()
+            self.app.chezmoi.perform(ChangeCmd.init)
             self.query_one(
                 Id.init.button_id("#", btn=OperateBtn.new_repo), Button
             ).disabled = True
         elif event.button.id == Id.init.button_id(btn=OperateBtn.purge_repo):
-            self.app.chezmoi.perform.purge()
+            self.app.chezmoi.perform(ChangeCmd.purge)
             self.query_one(
                 Id.init.button_id("#", btn=OperateBtn.purge_repo), Button
             ).disabled = True

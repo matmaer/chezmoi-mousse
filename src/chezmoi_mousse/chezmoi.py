@@ -1,14 +1,14 @@
 import json
 import os
 import tempfile
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 from shutil import which
 from subprocess import CompletedProcess, run
 from typing import Literal
 
-from chezmoi_mousse.constants import OperateVerbs, ReadVerbs, TabName
+from chezmoi_mousse.constants import TabName
 from chezmoi_mousse.id_typing import ParsedJson, PathDict
 
 # TODO: implement 'chezmoi verify', if exit 0, display message in Tree
@@ -53,45 +53,72 @@ class VerbArgs(Enum):
     reverse = "--reverse"
 
 
+class ReadVerbs(Enum):
+    cat = "cat"
+    cat_config = "cat-config"
+    data = "data"
+    diff = "diff"
+    doctor = "doctor"
+    dump_config = "dump-config"
+    git = "git"
+    ignored = "ignored"
+    managed = "managed"
+    source_path = "source-path"
+    status = "status"
+
+
 class ReadCmd(Enum):
-    cat = GlobalCmd.live_run.value + [ReadVerbs.cat]
-    cat_config = GlobalCmd.live_run.value + [ReadVerbs.cat_config]
-    data = GlobalCmd.live_run.value + [ReadVerbs.data]
-    diff = GlobalCmd.live_run.value + [ReadVerbs.diff]
+    cat = GlobalCmd.live_run.value + [ReadVerbs.cat.value]
+    cat_config = GlobalCmd.live_run.value + [ReadVerbs.cat_config.value]
+    data = GlobalCmd.live_run.value + [ReadVerbs.data.value]
+    diff = GlobalCmd.live_run.value + [ReadVerbs.diff.value]
     diff_reverse = GlobalCmd.live_run.value + [
-        ReadVerbs.diff,
+        ReadVerbs.diff.value,
         VerbArgs.reverse.value,
     ]
     dir_status_lines = GlobalCmd.live_run.value + [
-        ReadVerbs.status,
+        ReadVerbs.status.value,
         VerbArgs.path_style_absolute.value,
         VerbArgs.include_dirs.value,
     ]
-    doctor = GlobalCmd.live_run.value + [ReadVerbs.doctor]
+    doctor = GlobalCmd.live_run.value + [ReadVerbs.doctor.value]
     dump_config = GlobalCmd.live_run.value + [
         VerbArgs.format_json.value,
-        ReadVerbs.dump_config,
+        ReadVerbs.dump_config.value,
     ]
     file_status_lines = GlobalCmd.live_run.value + [
-        ReadVerbs.status,
+        ReadVerbs.status.value,
         VerbArgs.path_style_absolute.value,
         VerbArgs.include_files.value,
     ]
     git_log = (
-        GlobalCmd.live_run.value + [ReadVerbs.git] + VerbArgs.git_log.value
+        GlobalCmd.live_run.value
+        + [ReadVerbs.git.value]
+        + VerbArgs.git_log.value
     )
-    ignored = GlobalCmd.live_run.value + [ReadVerbs.ignored]
+    ignored = GlobalCmd.live_run.value + [ReadVerbs.ignored.value]
     managed_dirs = GlobalCmd.live_run.value + [
-        ReadVerbs.managed,
+        ReadVerbs.managed.value,
         VerbArgs.path_style_absolute.value,
         VerbArgs.include_dirs.value,
     ]
     managed_files = GlobalCmd.live_run.value + [
-        ReadVerbs.managed,
+        ReadVerbs.managed.value,
         VerbArgs.path_style_absolute.value,
         VerbArgs.include_files.value,
     ]
-    source_path = GlobalCmd.live_run.value + [ReadVerbs.source_path]
+    source_path = GlobalCmd.live_run.value + [ReadVerbs.source_path.value]
+
+
+class ChangeCmd(Enum):
+    add = ["add"]
+    add_encrypt = ["add", VerbArgs.encrypt.value]
+    apply = ["apply"]
+    destroy = ["destroy"]
+    forget = ["forget"]
+    init = ["init"]
+    purge = ["purge"]
+    re_add = ["re-add"]
 
 
 @dataclass
@@ -129,98 +156,7 @@ class InitConfig:
 INIT_CFG = InitConfig()
 
 
-def _run_cmd(long_command: list[str]) -> CompletedProcess[str] | None:
-    if not INIT_CFG.chezmoi_found:
-        return None
-    # if a command contains failed, earlier on another command failed
-    elif "failed" in long_command:
-        return None
-    return run(
-        long_command,
-        capture_output=True,
-        shell=False,
-        text=True,  # returns stdout as str instead of bytes
-        timeout=5,
-    )
-
-
-class ChangeCommand:
-    """Used for backwards compatibility, will be removed in future."""
-
-    def __init__(self) -> None:
-        self.base_cmd: list[str] = GlobalCmd.live_run.value
-        if not INIT_CFG.changes_enabled:
-            self.base_cmd = GlobalCmd.dry_run.value
-
-    def add(self, path: Path) -> None:
-        _run_cmd(self.base_cmd + [OperateVerbs.add, str(path)])
-
-    def add_encrypted(self, path: Path) -> None:
-        _run_cmd(self.base_cmd + [OperateVerbs.add, "--encrypt", str(path)])
-
-    def re_add(self, path: Path) -> None:
-        _run_cmd(self.base_cmd + [OperateVerbs.re_add, str(path)])
-
-    def apply(self, path: Path) -> None:
-        _run_cmd(self.base_cmd + [OperateVerbs.apply, str(path)])
-
-    def destroy(self, path: Path) -> None:
-        _run_cmd(self.base_cmd + [OperateVerbs.destroy, str(path)])
-
-    def forget(self, path: Path) -> None:
-        _run_cmd(self.base_cmd + [OperateVerbs.forget, str(path)])
-
-    def init_clone_repo(self, repo_url: str) -> None:
-        _run_cmd(self.base_cmd + [OperateVerbs.init, repo_url])
-
-    def init_new_repo(self) -> None:
-        _run_cmd(self.base_cmd + [OperateVerbs.init])
-
-    def purge(self) -> None:
-        _run_cmd(self.base_cmd + [OperateVerbs.purge])
-
-
-@dataclass
-class ChangeCmd:
-
-    base_cmd: list[str] = field(default_factory=list[str])
-
-    def add(self) -> list[str]:
-        return self.base_cmd + [OperateVerbs.add]
-
-    def add_encrypted(self) -> list[str]:
-        return self.base_cmd + [OperateVerbs.add, VerbArgs.encrypt.value]
-
-    def re_add(self) -> list[str]:
-        return self.base_cmd + [OperateVerbs.re_add]
-
-    def apply(self) -> list[str]:
-        return self.base_cmd + [OperateVerbs.apply]
-
-    def destroy(self) -> list[str]:
-        return self.base_cmd + [OperateVerbs.destroy]
-
-    def forget(self) -> list[str]:
-        return self.base_cmd + [OperateVerbs.forget]
-
-    def init_clone_repo(self) -> list[str]:
-        return self.base_cmd + [OperateVerbs.init]
-
-    def init_new_repo(self) -> list[str]:
-        return self.base_cmd + [OperateVerbs.init]
-
-    def purge(self) -> list[str]:
-        return self.base_cmd + [OperateVerbs.purge]
-
-    def __post_init__(self, dry_run: bool = False) -> None:
-        self.base_cmd: list[str] = GlobalCmd.dry_run.value
-        if not INIT_CFG.changes_enabled:
-            self.base_cmd = GlobalCmd.dry_run.value
-
-
 class Chezmoi:
-    perform = ChangeCommand()
-
     def __init__(self) -> None:
         if INIT_CFG.config_dump is None:
             self.config_dump = {}
@@ -264,7 +200,7 @@ class Chezmoi:
         return ReadCmd
 
     @property
-    def change_cmd(self) -> type[ChangeCmd]:
+    def change_sub_cmd(self) -> type[ChangeCmd]:
         return ChangeCmd
 
     @property
@@ -294,17 +230,43 @@ class Chezmoi:
         )
 
     def read(self, read_cmd: ReadCmd, path: Path | None = None) -> str:
-        cmd = read_cmd.value
+        command: list[str] = read_cmd.value
         if path is not None:
-            cmd = cmd + [str(path)]
+            command: list[str] = command + [str(path)]
         # CompletedProcess type arg is str as we use text=True
         result: CompletedProcess[str] = run(
-            cmd, capture_output=True, shell=False, text=True, timeout=1
+            command, capture_output=True, shell=False, text=True, timeout=1
         )
         if result.returncode != 0:
             return ""
         if result.stdout == "":
             return ""
+        # remove trailing and leading new lines but NOT leading whitespace
+        stdout = result.stdout.lstrip("\n").rstrip()
+        # remove intermediate empty lines
+        return "\n".join(
+            [line for line in stdout.splitlines() if line.strip()]
+        )
+
+    def perform(
+        self, change_sub_cmd: ChangeCmd, change_arg: str | None = None
+    ) -> str:
+        if INIT_CFG.changes_enabled:
+            base_cmd: list[str] = GlobalCmd.live_run.value
+        else:
+            base_cmd: list[str] = GlobalCmd.dry_run.value
+        sub_cmd: list[str] = change_sub_cmd.value
+        command: list[str] = base_cmd + sub_cmd
+        if change_arg is not None:
+            command: list[str] = command + [change_arg]
+        # CompletedProcess type arg is str as we use text=True
+        result: CompletedProcess[str] = run(
+            command, capture_output=True, shell=False, text=True, timeout=5
+        )
+        if result.returncode != 0:
+            return ""
+        if result.stdout == "":
+            return "No output"
         # remove trailing and leading new lines but NOT leading whitespace
         stdout = result.stdout.lstrip("\n").rstrip()
         # remove intermediate empty lines

@@ -13,7 +13,8 @@ from textual.screen import Screen
 from textual.widgets import Button, Collapsible, Label, Link, Pretty, Tree
 
 from chezmoi_mousse.button_groups import OperateBtnHorizontal
-from chezmoi_mousse.constants import BorderSubTitle, OperateVerbs, TcssStr
+from chezmoi_mousse.chezmoi import ChangeCmd
+from chezmoi_mousse.constants import BorderSubTitle, TcssStr
 from chezmoi_mousse.id_typing import (
     AppType,
     Id,
@@ -125,17 +126,18 @@ class Operate(ScreensBase, AppType):
         self.write_initial_log_msg()
 
     def write_initial_log_msg(self) -> None:
-        command = "chezmoi "
         if self.buttons[0] == OperateBtn.forget_file:
-            command += OperateVerbs.forget
+            command = ChangeCmd.forget.value
         elif self.buttons[0] == OperateBtn.destroy_file:
-            command += OperateVerbs.destroy
+            command = ChangeCmd.destroy
         elif self.tab_name == TabName.add_tab:
-            command += OperateVerbs.add
+            command = ChangeCmd.add
         elif self.tab_name == TabName.apply_tab:
-            command += OperateVerbs.apply
+            command = ChangeCmd.apply
         elif self.tab_name == TabName.re_add_tab:
-            command += OperateVerbs.re_add
+            command = ChangeCmd.re_add
+        else:
+            raise ValueError("Command not found")
         self.query_exactly_one(CommandLog).ready_to_run(
             f"Ready to run command: {command} {self.path}"
         )
@@ -144,11 +146,36 @@ class Operate(ScreensBase, AppType):
     def handle_operate_buttons(self, event: Button.Pressed) -> None:
         event.stop()
         button_commands = [
-            (OperateBtn.apply_file, self.app.chezmoi.perform.apply),
-            (OperateBtn.re_add_file, self.app.chezmoi.perform.re_add),
-            (OperateBtn.add_file, self.app.chezmoi.perform.add),
-            (OperateBtn.forget_file, self.app.chezmoi.perform.forget),
-            (OperateBtn.destroy_file, self.app.chezmoi.perform.destroy),
+            (
+                OperateBtn.apply_file,
+                lambda: self.app.chezmoi.perform(
+                    ChangeCmd.apply, str(self.path)
+                ),
+            ),
+            (
+                OperateBtn.re_add_file,
+                lambda: self.app.chezmoi.perform(
+                    ChangeCmd.re_add, str(self.path)
+                ),
+            ),
+            (
+                OperateBtn.add_file,
+                lambda: self.app.chezmoi.perform(
+                    ChangeCmd.add, str(self.path)
+                ),
+            ),
+            (
+                OperateBtn.forget_file,
+                lambda: self.app.chezmoi.perform(
+                    ChangeCmd.forget, str(self.path)
+                ),
+            ),
+            (
+                OperateBtn.destroy_file,
+                lambda: self.app.chezmoi.perform(
+                    ChangeCmd.destroy, str(self.path)
+                ),
+            ),
         ]
         for btn_enum, btn_cmd in button_commands:
             if event.button.id == self.tab_ids.button_id(btn=btn_enum):
@@ -158,7 +185,7 @@ class Operate(ScreensBase, AppType):
                     ),
                     Button,
                 ).label = "Close"
-                btn_cmd(self.path)  # run the perform command with the path
+                btn_cmd()
                 self.query_one(
                     self.tab_ids.button_id("#", btn=btn_enum), Button
                 ).disabled = True
@@ -187,11 +214,7 @@ class Operate(ScreensBase, AppType):
 class Maximized(ScreensBase):
 
     def __init__(
-        self,
-        *,
-        id_to_maximize: str | None,
-        path: Path | None = None,
-        tab_ids: TabIds,
+        self, *, id_to_maximize: str | None, path: Path | None, tab_ids: TabIds
     ) -> None:
         self.id_to_maximize = id_to_maximize
         self.path = path

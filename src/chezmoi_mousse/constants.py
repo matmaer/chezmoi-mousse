@@ -70,30 +70,6 @@ class OperateBtn(StrEnum):
     re_add_file = "Re-Add File"
 
 
-class OperateVerbs(StrEnum):
-    add = "add"
-    apply = "apply"
-    destroy = "destroy"
-    forget = "forget"
-    init = "init"
-    purge = "purge"
-    re_add = "re-add"
-
-
-class ReadVerbs(StrEnum):
-    cat = "cat"
-    cat_config = "cat-config"
-    data = "data"
-    diff = "diff"
-    doctor = "doctor"
-    dump_config = "dump-config"
-    git = "git"
-    ignored = "ignored"
-    managed = "managed"
-    source_path = "source-path"
-    status = "status"
-
-
 class ScreenName(StrEnum):
     install_help = auto()
     maximized = auto()
