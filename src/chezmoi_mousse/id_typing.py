@@ -22,7 +22,7 @@ from chezmoi_mousse.constants import (
 if TYPE_CHECKING:
     from chezmoi_mousse.gui import ChezmoiGUI
 
-type Mro = tuple[type, ...]
+
 type OperateButtons = tuple[OperateBtn, ...]
 type ParsedJson = dict[str, Any]
 type PathDict = dict[Path, str]

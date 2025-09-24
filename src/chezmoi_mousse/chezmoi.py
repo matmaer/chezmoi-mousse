@@ -2,18 +2,24 @@ import json
 import os
 import tempfile
 from dataclasses import dataclass
+from datetime import datetime
 from enum import Enum
 from pathlib import Path
 from shutil import which
 from subprocess import CompletedProcess, run
 from typing import Literal
 
-from chezmoi_mousse.constants import TabName
-from chezmoi_mousse.id_typing import ParsedJson, PathDict
+from rich.markup import escape
+from textual.widgets import RichLog
+
+import chezmoi_mousse.custom_theme as theme
+from chezmoi_mousse.constants import TabName, TcssStr
+from chezmoi_mousse.id_typing import OperateHelp, ParsedJson, PathDict
 
 # TODO: implement 'chezmoi verify', if exit 0, display message in Tree
 # widgets inform the user why the Tree widget is empty
 # TODO: implement spinner for commands taking a bit longer like operations
+
 
 CHEZMOI_CMD = "chezmoi"
 
@@ -121,6 +127,14 @@ class ChangeCmd(Enum):
     re_add = ["re-add"]
 
 
+class LogsEnum(Enum):
+    app_log = " App Log "
+    debug_log = " Debug Log "
+    init_log = " Init Log "
+    operate_log = " Operate Log "
+    output_log = " Commands With Raw Stdout "
+
+
 @dataclass
 class InitConfig:
     changes_enabled: bool = os.environ.get("MOUSSE_ENABLE_CHANGES") == "1"
@@ -151,19 +165,177 @@ class InitConfig:
                 self.git_autoadd = self.config_dump["git"]["autoadd"]
                 self.git_autocommit = self.config_dump["git"]["autocommit"]
                 self.git_autopush = self.config_dump["git"]["autopush"]
+            else:
+                self.config_dump = {}
 
 
 INIT_CFG = InitConfig()
 
 
+class CommandLogBase(RichLog):
+
+    def _log_time(self) -> str:
+        return f"[[green]{datetime.now().strftime('%H:%M:%S')}[/]]"
+
+    def pretty_cmd_str(self, command: list[str]) -> str:
+        filter_git_log_args = VerbArgs.git_log.value[3:]
+        return "chezmoi " + " ".join(
+            [
+                _
+                for _ in command[1:]
+                if _
+                not in GlobalCmd.default_args.value
+                + filter_git_log_args
+                + [
+                    VerbArgs.format_json.value,
+                    VerbArgs.path_style_absolute.value,
+                ]
+            ]
+        )
+
+    def command(self, command: list[str]) -> None:
+        trimmed_cmd = self.pretty_cmd_str(command)
+        time = self._log_time()
+        color = theme.vars["primary-lighten-3"]
+        log_line = f"{time} [{color}]{trimmed_cmd}[/]"
+        self.write(log_line)
+
+    def error(self, message: str) -> None:
+        color = theme.vars["text-error"]
+        time = self._log_time()
+        self.write(f"{time} [{color}]{message}[/]")
+
+    def warning(self, message: str) -> None:
+        lines = message.splitlines()
+        color = theme.vars["text-warning"]
+        for line in [line for line in lines if line.strip()]:
+            escaped_line = escape(line)
+            self.write(f"{self._log_time()} [{color}]{escaped_line}[/]")
+
+    def success(self, message: str) -> None:
+        color = theme.vars["text-success"]
+        self.write(f"{self._log_time()} [{color}]{message}[/]")
+
+    def ready_to_run(self, message: str) -> None:
+        color = theme.vars["accent-darken-3"]
+        self.write(f"{self._log_time()} [{color}]{message}[/]")
+
+    def dimmed(self, message: str) -> None:
+        if message.strip() == "":
+            return
+        lines: list[str] = message.splitlines()
+        color = theme.vars["text-disabled"]
+        for line in lines:
+            if line.strip():
+                escaped_line = escape(line)
+                self.write(f"[{color}]{escaped_line}[/]")
+
+
+class AppLog(CommandLogBase):
+    def __init__(self) -> None:
+        super().__init__(
+            id=LogsEnum.app_log.name, markup=True, max_lines=10000
+        )
+
+    def on_mount(self) -> None:
+        self.add_class(TcssStr.log_views)
+        if INIT_CFG.dev_mode:
+            self.ready_to_run("Running in development mode")
+        if not INIT_CFG.changes_enabled:
+            self.ready_to_run(OperateHelp.changes_mode_disabled.value)
+        else:
+            self.warning(OperateHelp.changes_mode_enabled.value)
+
+
+class DebugLog(CommandLogBase):
+
+    type Mro = tuple[type, ...]
+
+    def __init__(self) -> None:
+        super().__init__(
+            id=LogsEnum.debug_log.name, markup=True, max_lines=10000
+        )
+
+    def on_mount(self) -> None:
+        self.add_class(TcssStr.log_views)
+        self.ready_to_run("Debug log ready to capture logs.")
+
+    def mro(self, mro: Mro) -> None:
+        color = theme.vars["accent-darken-2"]
+        self.write(f"{self._log_time()} [{color}]Method Resolution Order:[/]")
+
+        exclude = {
+            "typing.Generic",
+            "builtins.object",
+            "textual.dom.DOMNode",
+            "textual.message_pump.MessagePump",
+            "chezmoi_mousse.id_typing.AppType",
+        }
+
+        pretty_mro = " -> ".join(
+            f"{qname}\n"
+            for cls in mro
+            if not any(
+                e in (qname := f"{cls.__module__}.{cls.__qualname__}")
+                for e in exclude
+            )
+        )
+        self.dimmed(pretty_mro)
+
+    def list_attr(self, obj: object) -> None:
+        members = [attr for attr in dir(obj) if not attr.startswith("_")]
+        self.ready_to_run(f"{obj.__class__.__name__} attributes:")
+        self.dimmed(", ".join(members))
+
+
+class InitLog(CommandLogBase):
+
+    def __init__(self) -> None:
+        super().__init__(
+            id=LogsEnum.init_log.name, markup=True, max_lines=10000
+        )
+
+    def on_mount(self) -> None:
+        self.add_class(TcssStr.border_title_top, TcssStr.bottom_docked_log)
+        self.border_title = LogsEnum.init_log.value
+        self.ready_to_run("Init log ready to capture logs.")
+
+
+class OperateLog(CommandLogBase):
+
+    def __init__(self) -> None:
+        super().__init__(
+            id=LogsEnum.operate_log.name, markup=True, max_lines=10000
+        )
+
+    def on_mount(self) -> None:
+        self.add_class(TcssStr.border_title_top, TcssStr.bottom_docked_log)
+        self.border_title = LogsEnum.operate_log.value
+        self.ready_to_run("Operate log ready to capture logs.")
+
+
+class OutputLog(CommandLogBase):
+
+    def __init__(self) -> None:
+        super().__init__(
+            id=LogsEnum.output_log.name, markup=True, max_lines=10000
+        )
+
+    def on_mount(self) -> None:
+        self.add_class(TcssStr.log_views)
+        self.ready_to_run("Output log ready to capture logs.")
+
+
+app_log = AppLog()
+debug_log = DebugLog()
+init_log = InitLog()
+op_log = OperateLog()
+output_log = OutputLog()
+
+
 class Chezmoi:
     def __init__(self) -> None:
-        if INIT_CFG.config_dump is None:
-            self.config_dump = {}
-        else:
-            self.config_dump = INIT_CFG.config_dump
 
-        self.io_commands: dict[str, list[str]] = {}
         io_cmds: list[ReadCmd] = [
             ReadCmd.dir_status_lines,
             ReadCmd.doctor,
@@ -176,8 +348,57 @@ class Chezmoi:
         self.managed_files = ""
         self.dir_status_lines = ""
         self.file_status_lines = ""
+
         for cmd in io_cmds:
             setattr(self, cmd.name, (cmd.value, ""))
+
+    # PRE INIT CONFIG
+
+    @property
+    def init_cfg(self) -> InitConfig:
+        return INIT_CFG
+
+    @property
+    def destDir(self) -> Path:
+        return self.init_cfg.destDir
+
+    @property
+    def sourceDir(self) -> Path:
+        return self.init_cfg.sourceDir
+
+    # PRE INITIALIZED LOGS
+
+    @property
+    def app_log(self) -> AppLog:
+        return app_log
+
+    @property
+    def debug_log(self) -> DebugLog:
+        return debug_log
+
+    @property
+    def init_log(self) -> InitLog:
+        return init_log
+
+    @property
+    def op_log(self) -> OperateLog:
+        return op_log
+
+    @property
+    def output_log(self) -> OutputLog:
+        return output_log
+
+    # COMMAND TYPES
+
+    @property
+    def _read_cmd(self) -> type[ReadCmd]:
+        return ReadCmd
+
+    @property
+    def _change_cmd(self) -> type[ChangeCmd]:
+        return ChangeCmd
+
+    # CACHED CHEZMOI CMD OUTPUTS
 
     @property
     def dir_paths(self) -> list[Path]:
@@ -196,14 +417,6 @@ class Chezmoi:
         return self._create_status_dict(TabName.apply_tab, "files")
 
     @property
-    def read_cmd(self) -> type[ReadCmd]:
-        return ReadCmd
-
-    @property
-    def change_sub_cmd(self) -> type[ChangeCmd]:
-        return ChangeCmd
-
-    @property
     def re_add_dirs(self) -> PathDict:
         return self._create_status_dict(TabName.re_add_tab, "dirs")
 
@@ -211,23 +424,28 @@ class Chezmoi:
     def re_add_files(self) -> PathDict:
         return self._create_status_dict(TabName.re_add_tab, "files")
 
+    # METHODS
+
+    # def stripped_cmd(self, long_command: list[str]) -> str:
+    #     git_log_to_strip = [
+    #         word for word in VerbArgs.git_log.value if word != "log"
+    #     ]
+    #     return " ".join(
+    #         [
+    #             word
+    #             for word in long_command
+    #             if word not in GlobalCmd.default_args.value
+    #             and word
+    #             not in (
+    #                 VerbArgs.path_style_absolute.value,
+    #                 VerbArgs.format_json.value,
+    #             )
+    #             and word not in git_log_to_strip
+    #         ]
+    #     )
+
     def stripped_cmd(self, long_command: list[str]) -> str:
-        git_log_to_strip = [
-            word for word in VerbArgs.git_log.value if word != "log"
-        ]
-        return " ".join(
-            [
-                word
-                for word in long_command
-                if word not in GlobalCmd.default_args.value
-                and word
-                not in (
-                    VerbArgs.path_style_absolute.value,
-                    VerbArgs.format_json.value,
-                )
-                and word not in git_log_to_strip
-            ]
-        )
+        return self.app_log.pretty_cmd_str(long_command)
 
     def read(self, read_cmd: ReadCmd, path: Path | None = None) -> str:
         command: list[str] = read_cmd.value
@@ -237,35 +455,55 @@ class Chezmoi:
         result: CompletedProcess[str] = run(
             command, capture_output=True, shell=False, text=True, timeout=1
         )
+        self.app_log.command(command)
+        self.output_log.command(command)
         if result.returncode != 0:
+            self.app_log.error(
+                f"Command failed with exit code {result.returncode}"
+            )
             return ""
         if result.stdout == "":
+            self.app_log.success(
+                "Command ran successfully and returned no output"
+            )
             return ""
         # remove trailing and leading new lines but NOT leading whitespace
         stdout = result.stdout.lstrip("\n").rstrip()
         # remove intermediate empty lines
-        return "\n".join(
+        result_str: str = "\n".join(
             [line for line in stdout.splitlines() if line.strip()]
         )
+        self.app_log.success("Command ran successfully")
+        self.output_log.dimmed(result_str)
+        return result_str
 
     def perform(
         self, change_sub_cmd: ChangeCmd, change_arg: str | None = None
     ) -> str:
-        if INIT_CFG.changes_enabled:
+        if self.init_cfg.changes_enabled:
             base_cmd: list[str] = GlobalCmd.live_run.value
         else:
             base_cmd: list[str] = GlobalCmd.dry_run.value
         sub_cmd: list[str] = change_sub_cmd.value
         command: list[str] = base_cmd + sub_cmd
+
         if change_arg is not None:
             command: list[str] = command + [change_arg]
         # CompletedProcess type arg is str as we use text=True
         result: CompletedProcess[str] = run(
             command, capture_output=True, shell=False, text=True, timeout=5
         )
+        self.app_log.command(command)
+        self.output_log.command(command)
         if result.returncode != 0:
+            self.app_log.error(
+                f"Command failed with exit code {result.returncode}"
+            )
             return ""
         if result.stdout == "":
+            self.app_log.success(
+                "Command ran successfully and returned no output"
+            )
             return "No output"
         # remove trailing and leading new lines but NOT leading whitespace
         stdout = result.stdout.lstrip("\n").rstrip()

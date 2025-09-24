@@ -21,7 +21,7 @@ from textual.widgets import DataTable, DirectoryTree, RichLog, Static, Tree
 from textual.widgets.tree import TreeNode
 
 import chezmoi_mousse.custom_theme as theme
-from chezmoi_mousse.chezmoi import INIT_CFG, ReadCmd
+from chezmoi_mousse.chezmoi import ReadCmd
 from chezmoi_mousse.constants import (
     TcssStr,
     UnwantedDirs,
@@ -45,7 +45,6 @@ from chezmoi_mousse.id_typing import (
 )
 from chezmoi_mousse.messages import TreeNodeData, TreeNodeDataMsg
 from chezmoi_mousse.overrides import CustomRenderLabel
-from chezmoi_mousse.pretty_logs import app_log
 
 
 class OperateInfo(Static, AppType):
@@ -78,9 +77,9 @@ class OperateInfo(Static, AppType):
             self.border_subtitle = Chars.destroy_file_info_border
         # show git auto warnings
         if not OperateBtn.apply_file == self.operate_btn:
-            if INIT_CFG.git_autocommit:
+            if self.app.chezmoi.init_cfg.git_autocommit:
                 lines_to_write.append(OperateHelp.auto_commit.value)
-            if INIT_CFG.git_autopush:
+            if self.app.chezmoi.init_cfg.git_autopush:
                 lines_to_write.append(OperateHelp.autopush.value)
         # show git diff color info
         if (
@@ -119,12 +118,14 @@ class ContentsView(RichLog, AppType):
                 truncated_message = (
                     "\n\n--- File content truncated to 150 KiB ---\n"
                 )
-                app_log.warning(
+                self.app.chezmoi.app_log.warning(
                     f"File {self.path} is larger than 150 KiB, truncating output."
                 )
         except PermissionError as e:
             self.write(e.strerror)
-            app_log.error(f"Permission denied to read {self.path}")
+            self.app.chezmoi.app_log.error(
+                f"Permission denied to read {self.path}"
+            )
             return
 
         try:
@@ -164,7 +165,9 @@ class ContentsView(RichLog, AppType):
 
         except OSError as error:
             self.write(Text(f"Error reading {self.path}: {error}"))
-            app_log.error("Error reading file")
+            self.app.chezmoi.app_log.error(
+                f"Error reading {self.path}: {error}"
+            )
 
 
 class DiffView(RichLog, AppType):

@@ -16,7 +16,7 @@ from textual.widgets import (
 
 import chezmoi_mousse.custom_theme
 from chezmoi_mousse.button_groups import OperateBtnHorizontal
-from chezmoi_mousse.chezmoi import INIT_CFG, Chezmoi
+from chezmoi_mousse.chezmoi import Chezmoi
 from chezmoi_mousse.constants import Area, Chars, TabName, TreeName, ViewName
 from chezmoi_mousse.id_typing import (
     Id,
@@ -35,7 +35,6 @@ from chezmoi_mousse.main_tabs import (
 )
 from chezmoi_mousse.messages import OperateDataMsg
 from chezmoi_mousse.overrides import CustomScrollBarRender
-from chezmoi_mousse.pretty_logs import app_log
 from chezmoi_mousse.screens import InstallHelp, Maximized, Operate
 from chezmoi_mousse.splash import LoadingScreen
 from chezmoi_mousse.widgets import (
@@ -49,9 +48,9 @@ from chezmoi_mousse.widgets import (
 
 class ChezmoiGUI(App["ChezmoiGUI"]):
     def __init__(self):
-        self.destDir = INIT_CFG.destDir
-        self.sourceDir = INIT_CFG.sourceDir
         self.chezmoi = Chezmoi()
+        self.destDir = self.chezmoi.destDir
+        self.sourceDir = self.chezmoi.sourceDir
         super().__init__()
 
     CSS_PATH = "data/gui.tcss"
@@ -105,7 +104,7 @@ class ChezmoiGUI(App["ChezmoiGUI"]):
         yield Footer()
 
     def on_mount(self) -> None:
-        app_log.success("App initialized successfully")
+        self.chezmoi.app_log.success("App initialized successfully")
         # TODO: inform user only file mode is supported if detected in the user config
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
         self.title = "-  c h e z m o i  m o u s s e  -"
@@ -113,14 +112,16 @@ class ChezmoiGUI(App["ChezmoiGUI"]):
         self.register_theme(chezmoi_mousse.custom_theme.chezmoi_mousse_dark)
         theme_name = "chezmoi-mousse-dark"
         self.theme = theme_name
-        app_log.success(f"Theme set to {theme_name}")
-        if INIT_CFG.chezmoi_found:
-            app_log.success(f"chezmoi command found: {INIT_CFG.chezmoi_found}")
-        app_log.warning("Start loading screen")
+        self.chezmoi.app_log.success(f"Theme set to {theme_name}")
+        if self.chezmoi.init_cfg.chezmoi_found:
+            self.chezmoi.app_log.success(
+                f"chezmoi command found: {self.chezmoi.init_cfg.chezmoi_found}"
+            )
+        self.chezmoi.app_log.warning("Start loading screen")
         self.push_screen(LoadingScreen(), callback=self.handle_return_data)
         self.watch(self, "theme", self.on_theme_change, init=False)
 
-        if INIT_CFG.changes_enabled:
+        if self.chezmoi.init_cfg.changes_enabled:
             self.notify(
                 OperateHelp.changes_mode_enabled.value, severity="warning"
             )
@@ -131,17 +132,17 @@ class ChezmoiGUI(App["ChezmoiGUI"]):
         chezmoi_mousse.custom_theme.vars = (
             new_theme_object.to_color_system().generate()
         )
-        app_log.success(f"Theme set to {new_theme}")
+        self.chezmoi.app_log.success(f"Theme set to {new_theme}")
 
     def handle_return_data(self, return_data: SplashReturnData | None) -> None:
         if return_data is None:
             # Handle the case where no data was returned (though this shouldn't happen in your case)
-            app_log.error("No data returned from splash screen")
+            self.chezmoi.app_log.error("No data returned from splash screen")
             return
-        if not INIT_CFG.chezmoi_found:
+        if not self.chezmoi.init_cfg.chezmoi_found:
             self.push_screen(InstallHelp())
             return
-        app_log.success("--- splash.py finished loading ---")
+        self.chezmoi.app_log.success("--- splash.py finished loading ---")
         # Populate Doctor DataTable
         doctor_tab = self.query_exactly_one(DoctorTab)
         doctor_tab.doctor_output = return_data.doctor

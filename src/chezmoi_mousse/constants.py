@@ -10,15 +10,6 @@ class Area(StrEnum):
     top = auto()
 
 
-class BorderTitle(StrEnum):
-    # border_title = top border
-    app_log = " App Log "
-    debug_log = " Debug Log "
-    init_log = " Init Log "
-    operante_log = " Operate Log "
-    output_log = " Commands With Raw Stdout "
-
-
 class BorderSubTitle(StrEnum):
     double_click_esc_to_close = " double click or escape key to close "
     esc_to_close = " escape key to close "

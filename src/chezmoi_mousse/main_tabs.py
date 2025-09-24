@@ -37,7 +37,6 @@ from chezmoi_mousse.content_switchers import (
     ViewSwitcher,
 )
 from chezmoi_mousse.id_typing import AppType, Id, PwMgrInfo, Switches
-from chezmoi_mousse.pretty_logs import CommandLog, LogIds
 from chezmoi_mousse.widgets import ContentsView, FilteredDirTree
 
 
@@ -149,7 +148,7 @@ class InitTab(Horizontal, AppType):
 
     def compose(self) -> ComposeResult:
         yield InitTabSwitcher(tab_ids=Id.init)
-        yield CommandLog(tab_ids=LogIds.init_log)
+        yield self.app.chezmoi.init_log
         yield SwitchSlider(
             tab_ids=Id.init,
             switches=(Switches.guess_url, Switches.clone_and_apply),
@@ -157,9 +156,7 @@ class InitTab(Horizontal, AppType):
 
     def on_mount(self) -> None:
         self.query(Label).add_class(TcssStr.config_tab_label)
-        self.query_exactly_one(CommandLog).success(
-            "Ready to run chezmoi commands."
-        )
+        self.app.chezmoi.init_log.success("Ready to run chezmoi commands.")
         self.query_exactly_one(ButtonsVertical).add_class(
             TcssStr.tab_left_vertical
         )
@@ -173,7 +170,7 @@ class InitTab(Horizontal, AppType):
             text_lines = "\n".join(
                 event.validation_result.failure_descriptions
             )
-            self.query_exactly_one(CommandLog).warning(
+            self.app.chezmoi.init_log.warning(
                 f"Invalid input detected: {text_lines}"
             )
 

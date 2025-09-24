@@ -26,7 +26,6 @@ from chezmoi_mousse.id_typing import (
     ViewName,
 )
 from chezmoi_mousse.messages import OperateData, OperateDataMsg
-from chezmoi_mousse.pretty_logs import CommandLog, LogIds
 from chezmoi_mousse.widgets import (
     ContentsView,
     DiffView,
@@ -98,7 +97,7 @@ class Operate(ScreensBase, AppType):
             yield OperateBtnHorizontal(
                 tab_ids=self.tab_ids, buttons=self.buttons
             )
-            yield CommandLog(tab_ids=LogIds.operate_log)
+            yield self.app.chezmoi.op_log
 
     def on_mount(self) -> None:
         self.add_class(TcssStr.operate_screen)
@@ -138,7 +137,7 @@ class Operate(ScreensBase, AppType):
             command = ChangeCmd.re_add
         else:
             raise ValueError("Command not found")
-        self.query_exactly_one(CommandLog).ready_to_run(
+        self.app.chezmoi.op_log.ready_to_run(
             f"Ready to run command: {command} {self.path}"
         )
 
@@ -202,7 +201,7 @@ class Operate(ScreensBase, AppType):
 
     def handle_dismiss(self, dismiss_data: OperateData) -> None:
         if not dismiss_data.operation_executed and self.path:
-            self.query_exactly_one(CommandLog).success(
+            self.app.chezmoi.op_log.success(
                 f"Operation cancelled for {self.path.name}"
             )
             self.notify("No changes were made")

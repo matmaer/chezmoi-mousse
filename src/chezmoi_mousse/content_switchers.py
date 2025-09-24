@@ -23,11 +23,10 @@ from chezmoi_mousse.button_groups import (
     OperateBtnHorizontal,
     TabBtnHorizontal,
 )
-from chezmoi_mousse.chezmoi import INIT_CFG, ReadCmd
+from chezmoi_mousse.chezmoi import LogsEnum, ReadCmd
 from chezmoi_mousse.constants import (
     FLOW,
     Area,
-    BorderTitle,
     NavBtn,
     OperateBtn,
     TabBtn,
@@ -36,7 +35,6 @@ from chezmoi_mousse.constants import (
     ViewName,
 )
 from chezmoi_mousse.id_typing import AppType, TabIds
-from chezmoi_mousse.pretty_logs import app_log, debug_log, output_log
 from chezmoi_mousse.widgets import (
     ContentsView,
     DiffView,
@@ -273,12 +271,11 @@ class LogsTabSwitcher(Vertical, AppType):
 
     def __init__(self, tab_ids: TabIds):
         self.tab_ids = tab_ids
-        self.tab_buttons = (TabBtn.app_log, TabBtn.output_log)
         super().__init__()
 
     def compose(self) -> ComposeResult:
         tab_buttons = (TabBtn.app_log, TabBtn.output_log)
-        if INIT_CFG.dev_mode:
+        if self.app.chezmoi.init_cfg.dev_mode:
             tab_buttons += (TabBtn.debug_log,)
 
         yield TabBtnHorizontal(
@@ -289,32 +286,24 @@ class LogsTabSwitcher(Vertical, AppType):
             initial=self.tab_ids.view_id(view=ViewName.app_log_view),
             classes=TcssStr.border_title_top,
         ):
-            yield app_log
-            yield output_log
-            if INIT_CFG.dev_mode:
-                yield debug_log
-
-    def on_mount(self) -> None:
-        self.query_exactly_one(ContentSwitcher).border_title = (
-            BorderTitle.app_log
-        )
+            yield self.app.chezmoi.app_log
+            yield self.app.chezmoi.output_log
+            if self.app.chezmoi.init_cfg.dev_mode:
+                yield self.app.chezmoi.debug_log
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
         switcher = self.query_exactly_one(ContentSwitcher)
 
         if event.button.id == self.tab_ids.button_id(btn=TabBtn.app_log):
-            switcher.current = self.tab_ids.view_id(view=ViewName.app_log_view)
-            switcher.border_title = BorderTitle.app_log
+            switcher.current = LogsEnum.app_log.name
+            switcher.border_title = self.app.chezmoi.app_log.border_title
         elif event.button.id == self.tab_ids.button_id(btn=TabBtn.output_log):
-            switcher.current = self.tab_ids.view_id(
-                view=ViewName.output_log_view
-            )
-            switcher.border_title = BorderTitle.output_log
-        elif INIT_CFG.dev_mode and event.button.id == self.tab_ids.button_id(
-            btn=TabBtn.debug_log
+            switcher.current = LogsEnum.output_log.name
+            switcher.border_title = self.app.chezmoi.output_log.border_title
+        elif (
+            self.app.chezmoi.init_cfg.dev_mode
+            and event.button.id == self.tab_ids.button_id(btn=TabBtn.debug_log)
         ):
-            switcher.current = self.tab_ids.view_id(
-                view=ViewName.debug_log_view
-            )
-            switcher.border_title = BorderTitle.debug_log
+            switcher.current = LogsEnum.debug_log.name
+            switcher.border_title = self.app.chezmoi.debug_log.border_title
