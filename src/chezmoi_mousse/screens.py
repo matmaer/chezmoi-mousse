@@ -93,13 +93,12 @@ class Operate(ScreensBase, AppType):
             yield DiffView(tab_ids=Id.operate_screen, reverse=self.reverse)
         else:
             yield ContentsView(tab_ids=Id.operate_screen)
-        with VerticalGroup():
             yield OperateBtnHorizontal(
                 tab_ids=self.tab_ids, buttons=self.buttons
             )
-            yield self.app.chezmoi.op_log
 
     def on_mount(self) -> None:
+        self.app.notify(f"Path is {self.path}")
         self.add_class(TcssStr.operate_screen)
         self.border_subtitle = BorderSubTitle.esc_to_close
         for button in self.query(Button):
@@ -122,24 +121,6 @@ class Operate(ScreensBase, AppType):
                 Id.operate_screen.view_id("#", view=ViewName.contents_view),
                 ContentsView,
             ).path = self.path
-        self.write_initial_log_msg()
-
-    def write_initial_log_msg(self) -> None:
-        if self.buttons[0] == OperateBtn.forget_file:
-            command = ChangeCmd.forget.value
-        elif self.buttons[0] == OperateBtn.destroy_file:
-            command = ChangeCmd.destroy
-        elif self.tab_name == TabName.add_tab:
-            command = ChangeCmd.add
-        elif self.tab_name == TabName.apply_tab:
-            command = ChangeCmd.apply
-        elif self.tab_name == TabName.re_add_tab:
-            command = ChangeCmd.re_add
-        else:
-            raise ValueError("Command not found")
-        self.app.chezmoi.op_log.ready_to_run(
-            f"Ready to run command: {command} {self.path}"
-        )
 
     @on(Button.Pressed, f".{TcssStr.operate_button}")
     def handle_operate_buttons(self, event: Button.Pressed) -> None:
@@ -194,18 +175,17 @@ class Operate(ScreensBase, AppType):
         if event.button.id == self.tab_ids.button_id(
             btn=OperateBtn.operate_dismiss
         ):
-            self.handle_dismiss(self.operate_dismiss_data)
+            self.handle_dismiss()
 
     def action_esc_dismiss(self) -> None:
-        self.handle_dismiss(self.operate_dismiss_data)
+        self.handle_dismiss()
 
-    def handle_dismiss(self, dismiss_data: OperateData) -> None:
-        if not dismiss_data.operation_executed and self.path:
-            self.app.chezmoi.op_log.success(
-                f"Operation cancelled for {self.path.name}"
-            )
+    def handle_dismiss(self) -> None:
+        if not self.operate_dismiss_data.operation_executed and self.path:
             self.notify("No changes were made")
-        self.app.post_message(OperateDataMsg(dismiss_data=dismiss_data))
+        self.app.post_message(
+            OperateDataMsg(dismiss_data=self.operate_dismiss_data)
+        )
         self.dismiss()
 
 

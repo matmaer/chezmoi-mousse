@@ -131,7 +131,6 @@ class LogsEnum(Enum):
     app_log = " App Log "
     debug_log = " Debug Log "
     init_log = " Init Log "
-    operate_log = " Operate Log "
     output_log = " Commands With Raw Stdout "
 
 
@@ -301,19 +300,6 @@ class InitLog(CommandLogBase):
         self.ready_to_run("Init log ready to capture logs.")
 
 
-class OperateLog(CommandLogBase):
-
-    def __init__(self) -> None:
-        super().__init__(
-            id=LogsEnum.operate_log.name, markup=True, max_lines=10000
-        )
-
-    def on_mount(self) -> None:
-        self.add_class(TcssStr.border_title_top, TcssStr.bottom_docked_log)
-        self.border_title = LogsEnum.operate_log.value
-        self.ready_to_run("Operate log ready to capture logs.")
-
-
 class OutputLog(CommandLogBase):
 
     def __init__(self) -> None:
@@ -329,7 +315,6 @@ class OutputLog(CommandLogBase):
 app_log = AppLog()
 debug_log = DebugLog()
 init_log = InitLog()
-op_log = OperateLog()
 output_log = OutputLog()
 
 
@@ -379,10 +364,6 @@ class Chezmoi:
     @property
     def init_log(self) -> InitLog:
         return init_log
-
-    @property
-    def op_log(self) -> OperateLog:
-        return op_log
 
     @property
     def output_log(self) -> OutputLog:
