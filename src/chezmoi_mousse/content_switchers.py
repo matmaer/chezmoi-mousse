@@ -1,5 +1,6 @@
 import json
 
+from textual import on
 from textual.app import ComposeResult
 from textual.containers import (
     Horizontal,
@@ -171,8 +172,8 @@ class InitTabSwitcher(Horizontal):
                 id=self.tab_ids.view_id(view=ViewName.init_purge_view),
             )
 
-    def on_button_pressed(self, event: Button.Pressed) -> None:
-        event.stop()
+    @on(Button.Pressed, f".{TcssStr.navigate_button}")
+    def switch_content(self, event: Button.Pressed) -> None:
         switcher = self.query_exactly_one(ContentSwitcher)
         if event.button.id == self.tab_ids.button_id(btn=NavBtn.new_repo):
             switcher.current = self.tab_ids.view_id(
@@ -248,7 +249,8 @@ class ConfigTabSwitcher(Horizontal, AppType):
                     id=self.tab_ids.view_id(view=ViewName.diagram),
                 )
 
-    def on_button_pressed(self, event: Button.Pressed) -> None:
+    @on(Button.Pressed, f".{TcssStr.navigate_button}")
+    def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
         switcher = self.query_exactly_one(ContentSwitcher)
         if event.button.id == self.tab_ids.button_id(btn=(NavBtn.cat_config)):
@@ -291,7 +293,8 @@ class LogsTabSwitcher(Vertical, AppType):
             if self.app.chezmoi.init_cfg.dev_mode:
                 yield self.app.chezmoi.debug_log
 
-    def on_button_pressed(self, event: Button.Pressed) -> None:
+    @on(Button.Pressed, f".{TcssStr.tab_button}")
+    def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
         switcher = self.query_exactly_one(ContentSwitcher)
 

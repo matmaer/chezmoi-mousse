@@ -17,7 +17,14 @@ from textual.widgets import (
 import chezmoi_mousse.custom_theme
 from chezmoi_mousse.button_groups import OperateBtnHorizontal
 from chezmoi_mousse.chezmoi import Chezmoi
-from chezmoi_mousse.constants import Area, Chars, TabName, TreeName, ViewName
+from chezmoi_mousse.constants import (
+    Area,
+    Chars,
+    TabName,
+    TcssStr,
+    TreeName,
+    ViewName,
+)
 from chezmoi_mousse.id_typing import (
     Id,
     OperateBtn,
@@ -251,7 +258,7 @@ class ChezmoiGUI(App["ChezmoiGUI"]):
             )
         )
 
-    @on(Button.Pressed, ".operate_button")
+    @on(Button.Pressed, f".{TcssStr.operate_button}")
     def handle_push_operate_screen(self, event: Button.Pressed) -> None:
         event.stop()
         if event.button.label not in (

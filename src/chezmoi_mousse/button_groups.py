@@ -82,7 +82,7 @@ class TabBtnHorizontal(ButtonsHorizontal):
             self.tab_ids.button_id("#", btn=self.buttons[0])
         ).add_class(TcssStr.last_clicked)
 
-    @on(Button.Pressed, ".tab_button")
+    @on(Button.Pressed, f".{TcssStr.tab_button}")
     def update_tab_btn_last_clicked(self, event: Button.Pressed) -> None:
         self.query(Button).remove_class(TcssStr.last_clicked)
         event.button.add_class(TcssStr.last_clicked)

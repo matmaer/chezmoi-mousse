@@ -115,7 +115,8 @@ class AddTab(OperateTabsBase, AppType):
             f" {event.node.data.path.relative_to(self.app.destDir)} "
         )
 
-    def on_directory_tree_directory_selected(
+    @on(FilteredDirTree.DirectorySelected)
+    def update_contents_view_and_title(
         self, event: FilteredDirTree.DirectorySelected
     ) -> None:
         event.stop()
@@ -128,7 +129,8 @@ class AddTab(OperateTabsBase, AppType):
             f" {event.node.data.path.relative_to(self.app.destDir)} "
         )
 
-    def on_switch_changed(self, event: Switch.Changed) -> None:
+    @on(Switch.Changed)
+    def handle_filter_switches(self, event: Switch.Changed) -> None:
         event.stop()
         tree = self.query_one(
             Id.add.tree_id("#", tree=TreeName.add_tree), FilteredDirTree
@@ -174,7 +176,7 @@ class InitTab(Horizontal, AppType):
                 f"Invalid input detected: {text_lines}"
             )
 
-    @on(Button.Pressed, ".operate_button")
+    @on(Button.Pressed, f".{TcssStr.operate_button}")
     def handle_operation_button(self, event: Button.Pressed) -> None:
         event.stop()
         if event.button.id == Id.init.button_id(btn=OperateBtn.clone_repo):

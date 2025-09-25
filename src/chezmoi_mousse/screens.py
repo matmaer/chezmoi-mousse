@@ -141,7 +141,7 @@ class Operate(ScreensBase, AppType):
             f"Ready to run command: {command} {self.path}"
         )
 
-    @on(Button.Pressed, ".operate_button")
+    @on(Button.Pressed, f".{TcssStr.operate_button}")
     def handle_operate_buttons(self, event: Button.Pressed) -> None:
         event.stop()
         button_commands = [
@@ -329,5 +329,6 @@ class InstallHelp(ScreensBase):
                 cmd_label = Text(v)
                 new_child.add_leaf(label=cmd_label)
 
-    def on_button_pressed(self, event: Button.Pressed) -> None:
+    @on(Button.Pressed)
+    def exit_application(self, event: Button.Pressed) -> None:
         self.app.exit()
