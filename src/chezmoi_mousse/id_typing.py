@@ -66,13 +66,6 @@ class PwMgrData:
     doctor_message: str | None = None
 
 
-@dataclass(frozen=True)
-class SplashIds:
-    animated_fade = "animated_fade"
-    loading_screen = "loading_screen"
-    splash_log = "splash_log"
-
-
 @dataclass
 class SplashReturnData:
     doctor: str = ""
@@ -296,7 +289,6 @@ class Id:
     operate_screen: ScreenIds = ScreenIds(ScreenName.operate)
     maximized_screen: ScreenIds = ScreenIds(ScreenName.maximized)
     install_help_screen: ScreenIds = ScreenIds(ScreenName.install_help)
-    splash_id = SplashIds()
 
     _pane_id_map: dict[str, TabIds] | None = None
 

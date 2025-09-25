@@ -19,7 +19,7 @@ from textual.worker import WorkerState
 from chezmoi_mousse.chezmoi import ReadCmd, VerbArgs
 from chezmoi_mousse.constants import SPLASH
 from chezmoi_mousse.custom_theme import vars as theme_vars
-from chezmoi_mousse.id_typing import AppType, Id, SplashReturnData
+from chezmoi_mousse.id_typing import AppType, SplashReturnData
 
 LOG_PADDING_WIDTH = 41
 
@@ -36,7 +36,7 @@ class SplashLog(RichLog, AppType):
 class AnimatedFade(Static):
 
     def __init__(self) -> None:
-        super().__init__(id=Id.splash_id.animated_fade)
+        super().__init__()
         self.line_styles = self.create_deque()
         self.line_styles.rotate(-3)
         self.styles.height = len(SPLASH)
@@ -70,7 +70,7 @@ class LoadingScreen(Screen[SplashReturnData], AppType):
         self.splash_return_data = SplashReturnData()
         self.data_lock = Lock()  # Add thread lock
         self.rich_log = SplashLog()
-        super().__init__(id=Id.splash_id.loading_screen)
+        super().__init__()
 
         # TODO add logic so screen does not get dismissed in the "middle" of a
         # fade, looks better

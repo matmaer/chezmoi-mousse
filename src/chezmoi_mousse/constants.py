@@ -205,14 +205,12 @@ class ViewName(StrEnum):
     cat_config = auto()
     config_ignored = auto()
     contents_view = auto()
-    debug_log_view = auto()
     diagram = auto()
     diff_view = auto()
     git_log_view = auto()
     init_clone_view = auto()
     init_new_view = auto()
     init_purge_view = auto()
-    output_log_view = auto()
     template_data = auto()
 
 
