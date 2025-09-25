@@ -24,7 +24,7 @@ from chezmoi_mousse.constants import (
     Area,
     OperateBtn,
     TabBtn,
-    TcssStr,
+    Tcss,
     TreeName,
     ViewName,
 )
@@ -76,7 +76,7 @@ class AddTab(OperateTabsBase, AppType):
     def compose(self) -> ComposeResult:
         with VerticalGroup(
             id=Id.add.tab_vertical_id(area=Area.left),
-            classes=TcssStr.tab_left_vertical,
+            classes=Tcss.tab_left_vertical,
         ):
             yield FilteredDirTree(
                 Path.home(), id=Id.add.tree_id(tree=TreeName.add_tree)
@@ -91,11 +91,11 @@ class AddTab(OperateTabsBase, AppType):
 
     def on_mount(self) -> None:
         contents_view = self.query_exactly_one(ContentsView)
-        contents_view.add_class(TcssStr.border_title_top)
+        contents_view.add_class(Tcss.border_title_top)
         contents_view.border_title = str(self.app.destDir)
 
         dir_tree = self.query_exactly_one(FilteredDirTree)
-        dir_tree.add_class(TcssStr.dir_tree_widget, TcssStr.border_title_top)
+        dir_tree.add_class(Tcss.dir_tree_widget, Tcss.border_title_top)
         dir_tree.border_title = str(self.app.destDir)
         dir_tree.path = self.app.destDir
         dir_tree.show_root = False
@@ -157,10 +157,10 @@ class InitTab(Horizontal, AppType):
         )
 
     def on_mount(self) -> None:
-        self.query(Label).add_class(TcssStr.config_tab_label)
+        self.query(Label).add_class(Tcss.config_tab_label)
         self.app.chezmoi.init_log.success("Ready to run chezmoi commands.")
         self.query_exactly_one(ButtonsVertical).add_class(
-            TcssStr.tab_left_vertical
+            Tcss.tab_left_vertical
         )
 
     @on(Input.Submitted)
@@ -176,7 +176,7 @@ class InitTab(Horizontal, AppType):
                 f"Invalid input detected: {text_lines}"
             )
 
-    @on(Button.Pressed, f".{TcssStr.operate_button}")
+    @on(Button.Pressed, f".{Tcss.operate_button}")
     def handle_operation_button(self, event: Button.Pressed) -> None:
         event.stop()
         if event.button.id == Id.init.button_id(btn=OperateBtn.clone_repo):
@@ -210,7 +210,7 @@ class ConfigTab(Horizontal, AppType):
         yield ConfigTabSwitcher(Id.config)
 
     def on_mount(self) -> None:
-        self.query(Label).add_class(TcssStr.config_tab_label)
+        self.query(Label).add_class(Tcss.config_tab_label)
 
 
 class DoctorTab(Vertical, AppType):
@@ -225,12 +225,12 @@ class DoctorTab(Vertical, AppType):
             "error": theme.vars["text-error"],
         }
         super().__init__(
-            id=Id.doctor.tab_container_id, classes=TcssStr.doctor_vertical
+            id=Id.doctor.tab_container_id, classes=Tcss.doctor_vertical
         )
 
     def compose(self) -> ComposeResult:
         yield DataTable[Text](id=Id.doctor.datatable_id(), show_cursor=False)
-        with VerticalGroup(classes=TcssStr.doctor_vertical_group):
+        with VerticalGroup(classes=Tcss.doctor_vertical_group):
 
             yield Collapsible(
                 ListView(), title="Password managers not found in $PATH"

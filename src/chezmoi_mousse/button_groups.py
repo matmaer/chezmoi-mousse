@@ -3,7 +3,7 @@ from textual.app import ComposeResult
 from textual.containers import HorizontalGroup, Vertical, VerticalGroup
 from textual.widgets import Button
 
-from chezmoi_mousse.constants import Area, TcssStr
+from chezmoi_mousse.constants import Area, Tcss
 from chezmoi_mousse.id_typing import (
     OperateButtons,
     TabButtons,
@@ -30,7 +30,7 @@ class ButtonsHorizontal(HorizontalGroup):
         for button_enum in self.buttons:
             with Vertical(
                 id=self.tab_ids.button_vertical_id(button_enum),
-                classes=TcssStr.single_button_vertical,
+                classes=Tcss.single_button_vertical,
             ):
                 yield Button(
                     label=button_enum.value,
@@ -48,7 +48,7 @@ class ButtonsVertical(VerticalGroup):
         self.tab_ids: TabIds = tab_ids
         super().__init__(
             id=self.tab_ids.buttons_vertical_group_id(self.area),
-            classes=TcssStr.navigate_buttons_vertical,
+            classes=Tcss.nav_buttons_vertical,
         )
 
     def compose(self) -> ComposeResult:
@@ -57,7 +57,7 @@ class ButtonsVertical(VerticalGroup):
                 label=button_enum.value,
                 variant="primary",
                 flat=True,
-                classes=TcssStr.navigate_button,
+                classes=Tcss.nav_button,
                 id=self.tab_ids.button_id(btn=button_enum),
             )
 
@@ -67,9 +67,9 @@ class OperateBtnHorizontal(ButtonsHorizontal):
         super().__init__(tab_ids=tab_ids, buttons=buttons, area=Area.bottom)
 
     def on_mount(self) -> None:
-        self.add_class(TcssStr.operate_buttons_horizontal)
+        self.add_class(Tcss.operate_buttons_horizontal)
         for btn in self.query(Button):
-            btn.add_class(TcssStr.operate_button)
+            btn.add_class(Tcss.operate_button)
             btn.disabled = True
 
 
@@ -78,13 +78,13 @@ class TabBtnHorizontal(ButtonsHorizontal):
         super().__init__(tab_ids=tab_ids, buttons=buttons, area=area)
 
     def on_mount(self) -> None:
-        self.add_class(TcssStr.tab_buttons_horizontal)
-        self.query(Button).add_class(TcssStr.tab_button)
+        self.add_class(Tcss.tab_buttons_horizontal)
+        self.query(Button).add_class(Tcss.tab_button)
         self.query_one(
             self.tab_ids.button_id("#", btn=self.buttons[0])
-        ).add_class(TcssStr.last_clicked)
+        ).add_class(Tcss.last_clicked)
 
-    @on(Button.Pressed, f".{TcssStr.tab_button}")
+    @on(Button.Pressed, f".{Tcss.tab_button}")
     def update_tab_btn_last_clicked(self, event: Button.Pressed) -> None:
-        self.query(Button).remove_class(TcssStr.last_clicked)
-        event.button.add_class(TcssStr.last_clicked)
+        self.query(Button).remove_class(Tcss.last_clicked)
+        event.button.add_class(Tcss.last_clicked)

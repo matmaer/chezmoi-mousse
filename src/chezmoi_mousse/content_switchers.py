@@ -31,7 +31,7 @@ from chezmoi_mousse.constants import (
     NavBtn,
     OperateBtn,
     TabBtn,
-    TcssStr,
+    Tcss,
     TreeName,
     ViewName,
 )
@@ -54,7 +54,7 @@ class TreeSwitcher(VerticalGroup, AppType):
         self.expand_all_state: bool = False
         super().__init__(
             id=self.tab_ids.tab_vertical_id(area=Area.left),
-            classes=TcssStr.tab_left_vertical,
+            classes=Tcss.tab_left_vertical,
         )
 
     def compose(self) -> ComposeResult:
@@ -74,7 +74,7 @@ class TreeSwitcher(VerticalGroup, AppType):
     def on_mount(self) -> None:
         self.border_title = str(self.app.destDir)
         self.query_exactly_one(ContentSwitcher).add_class(
-            TcssStr.content_switcher_left, TcssStr.border_title_top
+            Tcss.content_switcher_left, Tcss.border_title_top
         )
 
 
@@ -84,7 +84,7 @@ class ViewSwitcher(Vertical, AppType):
         self.reverse = diff_reverse
         super().__init__(
             id=self.tab_ids.tab_vertical_id(area=Area.right),
-            classes=TcssStr.tab_right_vertical,
+            classes=Tcss.tab_right_vertical,
         )
 
     def compose(self) -> ComposeResult:
@@ -96,7 +96,7 @@ class ViewSwitcher(Vertical, AppType):
         with ContentSwitcher(
             id=self.tab_ids.content_switcher_id(area=Area.right),
             initial=self.tab_ids.view_id(view=ViewName.diff_view),
-            classes=TcssStr.border_title_top,
+            classes=Tcss.border_title_top,
         ):
             yield DiffView(tab_ids=self.tab_ids, reverse=self.reverse)
             yield ContentsView(tab_ids=self.tab_ids)
@@ -118,7 +118,7 @@ class InitTabSwitcher(Horizontal):
         with ContentSwitcher(
             id=self.tab_ids.content_switcher_id(area=Area.right),
             initial=self.tab_ids.view_id(view=ViewName.init_new_view),
-            classes=TcssStr.nav_content_switcher,
+            classes=Tcss.nav_content_switcher,
         ):
             # New Repo Content
             yield Vertical(
@@ -138,21 +138,21 @@ class InitTabSwitcher(Horizontal):
                     Vertical(
                         Select[str].from_values(
                             ["https", "ssh"],
-                            classes=TcssStr.input_select,
+                            classes=Tcss.input_select,
                             value="https",
                             allow_blank=False,
                             type_to_search=False,
                         ),
-                        classes=TcssStr.input_select_vertical,
+                        classes=Tcss.input_select_vertical,
                     ),
                     Vertical(
                         Input(
                             placeholder="Enter repository URL",
                             validate_on=["submitted"],
                             validators=URL(),
-                            classes=TcssStr.input_field,
+                            classes=Tcss.input_field,
                         ),
-                        classes=TcssStr.input_field_vertical,
+                        classes=Tcss.input_field_vertical,
                     ),
                 ),
                 OperateBtnHorizontal(
@@ -172,7 +172,7 @@ class InitTabSwitcher(Horizontal):
                 id=self.tab_ids.view_id(view=ViewName.init_purge_view),
             )
 
-    @on(Button.Pressed, f".{TcssStr.navigate_button}")
+    @on(Button.Pressed, f".{Tcss.nav_button}")
     def switch_content(self, event: Button.Pressed) -> None:
         switcher = self.query_exactly_one(ContentSwitcher)
         if event.button.id == self.tab_ids.button_id(btn=NavBtn.new_repo):
@@ -195,13 +195,13 @@ class ConfigTabSwitcher(Horizontal, AppType):
         self.tab_ids = tab_ids
         super().__init__(
             id=self.tab_ids.tab_vertical_id(area=Area.right),
-            classes=TcssStr.tab_right_vertical,
+            classes=Tcss.tab_right_vertical,
         )
 
     def compose(self) -> ComposeResult:
         with VerticalGroup(
             id=self.tab_ids.tab_vertical_id(area=Area.left),
-            classes=TcssStr.tab_left_vertical,
+            classes=Tcss.tab_left_vertical,
         ):
             yield ButtonsVertical(
                 tab_ids=self.tab_ids,
@@ -216,13 +216,13 @@ class ConfigTabSwitcher(Horizontal, AppType):
 
         with Vertical(
             id=self.tab_ids.tab_vertical_id(area=Area.right),
-            classes=TcssStr.tab_right_vertical,
+            classes=Tcss.tab_right_vertical,
         ):
             # TODO: make sure scrollbars appear when there's overflow
             with ContentSwitcher(
                 id=self.tab_ids.content_switcher_id(area=Area.right),
                 initial=self.tab_ids.view_id(view=ViewName.cat_config),
-                classes=TcssStr.nav_content_switcher,
+                classes=Tcss.nav_content_switcher,
             ):
                 yield Vertical(
                     Label('"chezmoi cat-config" output'),
@@ -245,11 +245,11 @@ class ConfigTabSwitcher(Horizontal, AppType):
                 )
                 yield Vertical(
                     Label("chezmoi diagram"),
-                    Static(FLOW, classes=TcssStr.flow_diagram),
+                    Static(FLOW, classes=Tcss.flow_diagram),
                     id=self.tab_ids.view_id(view=ViewName.diagram),
                 )
 
-    @on(Button.Pressed, f".{TcssStr.navigate_button}")
+    @on(Button.Pressed, f".{Tcss.nav_button}")
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
         switcher = self.query_exactly_one(ContentSwitcher)
@@ -286,14 +286,14 @@ class LogsTabSwitcher(Vertical, AppType):
         with ContentSwitcher(
             id=self.tab_ids.content_switcher_id(area=Area.top),
             initial=self.tab_ids.view_id(view=ViewName.app_log_view),
-            classes=TcssStr.border_title_top,
+            classes=Tcss.border_title_top,
         ):
             yield self.app.chezmoi.app_log
             yield self.app.chezmoi.output_log
             if self.app.chezmoi.init_cfg.dev_mode:
                 yield self.app.chezmoi.debug_log
 
-    @on(Button.Pressed, f".{TcssStr.tab_button}")
+    @on(Button.Pressed, f".{Tcss.tab_button}")
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
         switcher = self.query_exactly_one(ContentSwitcher)

@@ -14,7 +14,7 @@ from textual.widgets import Button, Collapsible, Label, Link, Pretty, Tree
 
 from chezmoi_mousse.button_groups import OperateBtnHorizontal
 from chezmoi_mousse.chezmoi import ChangeCmd
-from chezmoi_mousse.constants import BorderSubTitle, TcssStr
+from chezmoi_mousse.constants import BorderSubTitle, Tcss
 from chezmoi_mousse.id_typing import (
     AppType,
     Id,
@@ -44,7 +44,7 @@ class ScreensBase(Screen[None], AppType):
 
     def __init__(self, *, screen_id: str) -> None:
         self.screen_id = screen_id
-        super().__init__(id=self.screen_id, classes=TcssStr.screen_base)
+        super().__init__(id=self.screen_id, classes=Tcss.screen_base)
 
     def on_click(self, event: Click) -> None:
         event.stop()
@@ -99,7 +99,7 @@ class Operate(ScreensBase, AppType):
 
     def on_mount(self) -> None:
         self.app.notify(f"Path is {self.path}")
-        self.add_class(TcssStr.operate_screen)
+        self.add_class(Tcss.operate_screen)
         self.border_subtitle = BorderSubTitle.esc_to_close
         for button in self.query(Button):
             button.disabled = False
@@ -122,7 +122,7 @@ class Operate(ScreensBase, AppType):
                 ContentsView,
             ).path = self.path
 
-    @on(Button.Pressed, f".{TcssStr.operate_button}")
+    @on(Button.Pressed, f".{Tcss.operate_button}")
     def handle_operate_buttons(self, event: Button.Pressed) -> None:
         event.stop()
         button_commands = [
@@ -221,7 +221,7 @@ class Maximized(ScreensBase):
                 yield GitLogView(tab_ids=Id.maximized_screen)
 
     def on_mount(self) -> None:
-        self.add_class(TcssStr.border_title_top)
+        self.add_class(Tcss.border_title_top)
         self.border_subtitle = BorderSubTitle.double_click_esc_to_close
         if self.id_to_maximize == self.tab_ids.view_id(
             view=ViewName.contents_view
@@ -265,7 +265,7 @@ class InstallHelp(ScreensBase):
         self.path_env = os.environ.get("PATH") or ""
 
     def compose(self) -> ComposeResult:
-        with Vertical(classes=TcssStr.install_help):
+        with Vertical(classes=Tcss.install_help):
             yield Center(Label(("Chezmoi is not installed or not found.")))
             if not self.path_env:
                 yield Center(Label(("The $PATH variable is empty")))
@@ -282,7 +282,7 @@ class InstallHelp(ScreensBase):
                         yield Link(
                             "chezmoi.io/install",
                             url="https://chezmoi.io/install",
-                            classes=TcssStr.internet_links,
+                            classes=Tcss.internet_links,
                         )
                         yield Button("exit app", variant="primary", flat=True)
 

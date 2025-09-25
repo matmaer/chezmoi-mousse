@@ -13,7 +13,7 @@ from rich.markup import escape
 from textual.widgets import RichLog
 
 import chezmoi_mousse.custom_theme as theme
-from chezmoi_mousse.constants import TabName, TcssStr
+from chezmoi_mousse.constants import TabName, Tcss
 from chezmoi_mousse.id_typing import OperateHelp, ParsedJson, PathDict
 
 # TODO: implement 'chezmoi verify', if exit 0, display message in Tree
@@ -237,7 +237,7 @@ class AppLog(CommandLogBase):
         )
 
     def on_mount(self) -> None:
-        self.add_class(TcssStr.log_views)
+        self.add_class(Tcss.log_views)
         if INIT_CFG.dev_mode:
             self.ready_to_run("Running in development mode")
         if not INIT_CFG.changes_enabled:
@@ -256,7 +256,7 @@ class DebugLog(CommandLogBase):
         )
 
     def on_mount(self) -> None:
-        self.add_class(TcssStr.log_views)
+        self.add_class(Tcss.log_views)
         self.ready_to_run("Debug log ready to capture logs.")
 
     def mro(self, mro: Mro) -> None:
@@ -295,7 +295,7 @@ class InitLog(CommandLogBase):
         )
 
     def on_mount(self) -> None:
-        self.add_class(TcssStr.border_title_top, TcssStr.bottom_docked_log)
+        self.add_class(Tcss.border_title_top, Tcss.bottom_docked_log)
         self.border_title = LogsEnum.init_log.value
         self.ready_to_run("Init log ready to capture logs.")
 
@@ -308,7 +308,7 @@ class OutputLog(CommandLogBase):
         )
 
     def on_mount(self) -> None:
-        self.add_class(TcssStr.log_views)
+        self.add_class(Tcss.log_views)
         self.ready_to_run("Output log ready to capture logs.")
 
 

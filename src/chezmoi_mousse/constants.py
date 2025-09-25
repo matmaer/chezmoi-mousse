@@ -89,7 +89,7 @@ class TabName(StrEnum):
     re_add_tab = auto()
 
 
-class TcssStr(StrEnum):
+class Tcss(StrEnum):
     border_title_top = auto()
     bottom_docked_log = auto()
     config_tab_label = auto()
@@ -107,8 +107,8 @@ class TcssStr(StrEnum):
     last_clicked = auto()
     log_views = auto()
     nav_content_switcher = auto()
-    navigate_button = auto()
-    navigate_buttons_vertical = auto()
+    nav_button = auto()
+    nav_buttons_vertical = auto()
     operate_button = auto()
     operate_buttons_horizontal = auto()
     operate_info = auto()

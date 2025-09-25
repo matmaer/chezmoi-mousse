@@ -21,7 +21,7 @@ from chezmoi_mousse.constants import (
     Area,
     Chars,
     TabName,
-    TcssStr,
+    Tcss,
     TreeName,
     ViewName,
 )
@@ -262,7 +262,7 @@ class ChezmoiGUI(App["ChezmoiGUI"]):
             )
         )
 
-    @on(Button.Pressed, f".{TcssStr.operate_button}")
+    @on(Button.Pressed, f".{Tcss.operate_button}")
     def handle_push_operate_screen(self, event: Button.Pressed) -> None:
         event.stop()
         if event.button.label not in (

@@ -202,9 +202,9 @@
   }
 }
 
-.navigate_buttons_vertical {
+.nav_buttons_vertical {
   width: auto;
-  & .navigate_button {
+  & .nav_button {
     background-tint: initial;
     width: 100%;
     min-width: 17;

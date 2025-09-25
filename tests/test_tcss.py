@@ -1,4 +1,4 @@
-"""Test to ensure CSS classes are properly managed through TcssStr enum."""
+"""Test to ensure CSS classes are properly managed through Tcss enum."""
 
 import ast
 import re
@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 from _test_utils import get_strenum_member_names, modules_to_test
 
-from chezmoi_mousse.constants import TcssStr
+from chezmoi_mousse.constants import Tcss
 
 add_class_method = "add_class"
 classes_kw = "classes"
@@ -24,7 +24,7 @@ def extract_tcss_classes(path: Path) -> list[str]:
 
 
 def get_used_tcss_members() -> set[str]:
-    """Get all TcssStr enum members that are used in Python code."""
+    """Get all Tcss enum members that are used in Python code."""
     used_members: set[str] = set()
 
     for py_file in modules_to_test(exclude_file_names=exclude_files):
@@ -32,11 +32,11 @@ def get_used_tcss_members() -> set[str]:
 
         for node in ast.walk(tree):
             if isinstance(node, ast.Attribute):
-                # Check for TcssStr.member_name patterns
+                # Check for Tcss.member_name patterns
                 if (
                     isinstance(node.value, ast.Name)
-                    and node.value.id == "TcssStr"
-                    and hasattr(TcssStr, node.attr)
+                    and node.value.id == "Tcss"
+                    and hasattr(Tcss, node.attr)
                 ):
                     used_members.add(node.attr)
 
@@ -59,7 +59,7 @@ def test_no_hardcoded(py_file: Path) -> None:
             if keyword.arg == classes_kw:  # classes= keyword is used
                 if not (
                     isinstance(keyword.value, ast.Attribute)
-                    and hasattr(TcssStr, keyword.value.attr)
+                    and hasattr(Tcss, keyword.value.attr)
                 ):
                     pytest.fail(
                         f"\n{py_file} line {keyword.lineno}: {keyword.value}: hardcoded tcss class"
@@ -82,25 +82,25 @@ def test_no_hardcoded(py_file: Path) -> None:
 
 @pytest.mark.parametrize("tcss_class", extract_tcss_classes(tcss_path))
 def test_no_orphaned_gui_tcss_classes(tcss_class: str) -> None:
-    """Test that each CSS class in gui.tcss is also defined as a TcssStr enum member."""
-    tcss_enum_members = {member.name for member in TcssStr}
+    """Test that each CSS class in gui.tcss is also defined as a Tcss enum member."""
+    tcss_enum_members = {member.name for member in Tcss}
 
     if tcss_class not in tcss_enum_members:
         pytest.fail(
-            f"\nOrphaned CSS class '{tcss_class}' found in gui.tcss (not in TcssStr enum)"
+            f"\nOrphaned CSS class '{tcss_class}' found in gui.tcss (not in Tcss enum)"
         )
 
 
 @pytest.mark.parametrize(
     "tcss_member",
-    get_strenum_member_names(TcssStr),
+    get_strenum_member_names(Tcss),
     ids=lambda tcss_member: tcss_member.attr,
 )
 def test_no_orphaned_tcss_str_members(tcss_member: ast.Attribute) -> None:
-    """Test that each TcssStr enum member has a corresponding class in gui.tcss."""
+    """Test that each Tcss enum member has a corresponding class in gui.tcss."""
     tcss_classes = extract_tcss_classes(tcss_path)
 
     if tcss_member.attr not in tcss_classes:
         pytest.fail(
-            f"\nOrphaned TcssStr member '{tcss_member.attr}' found (no corresponding CSS class in gui.tcss)"
+            f"\nOrphaned Tcss member '{tcss_member.attr}' found (no corresponding CSS class in gui.tcss)"
         )

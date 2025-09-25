@@ -23,7 +23,7 @@ from textual.widgets.tree import TreeNode
 import chezmoi_mousse.custom_theme as theme
 from chezmoi_mousse.chezmoi import ReadCmd
 from chezmoi_mousse.constants import (
-    TcssStr,
+    Tcss,
     UnwantedDirs,
     UnwantedFiles,
     ViewName,
@@ -50,7 +50,7 @@ from chezmoi_mousse.overrides import CustomRenderLabel
 class OperateInfo(Static, AppType):
 
     def __init__(self, *, operate_btn: OperateBtn, path: Path) -> None:
-        super().__init__(classes=TcssStr.operate_info)
+        super().__init__(classes=Tcss.operate_info)
 
         self.operate_btn = operate_btn
         self.path = Path()
@@ -386,7 +386,7 @@ class TreeBase(CustomRenderLabel, AppType):  # instead of Tree[NodeData]
     def on_mount(self) -> None:
         self.guide_depth: int = 3
         self.show_root: bool = False
-        self.add_class(TcssStr.tree_widget)
+        self.add_class(Tcss.tree_widget)
         if self.root.data:
             self.root.data.path = self.app.destDir
 

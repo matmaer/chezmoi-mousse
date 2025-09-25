@@ -16,7 +16,7 @@ from chezmoi_mousse.constants import (
     Area,
     TabBtn,
     TabName,
-    TcssStr,
+    Tcss,
     TreeName,
     ViewName,
 )
@@ -104,7 +104,7 @@ class OperateTabsBase(Horizontal, AppType):
         self.current_path = selected_path
         self.update_view_path(selected_path)
 
-    @on(Button.Pressed, f".{TcssStr.tab_button}")
+    @on(Button.Pressed, f".{Tcss.tab_button}")
     def toggle_expand_all_switch_enabled_disabled_state(
         self, event: Button.Pressed
     ) -> None:
@@ -116,7 +116,7 @@ class OperateTabsBase(Horizontal, AppType):
         elif event.button.id == self.tab_ids.button_id(btn=TabBtn.list):
             expand_all_switch.disabled = True
 
-    @on(Button.Pressed, f".{TcssStr.tab_button}")
+    @on(Button.Pressed, f".{Tcss.tab_button}")
     def switch_content_and_update_view(self, event: Button.Pressed) -> None:
         view_switcher = self.query_one(self.view_switcher_qid, ContentSwitcher)
         if event.button.id == self.contents_tab_btn:
@@ -133,7 +133,7 @@ class OperateTabsBase(Horizontal, AppType):
             )
         self.maybe_update_view_path(event=event)
 
-    @on(Button.Pressed, f".{TcssStr.tab_button}")
+    @on(Button.Pressed, f".{Tcss.tab_button}")
     def switch_tree_content_view(self, event: Button.Pressed) -> None:
         tree_switcher = self.query_one(self.tree_switcher_qid, ContentSwitcher)
         if event.button.id == self.tab_ids.button_id(btn=TabBtn.tree):
@@ -198,21 +198,20 @@ class SwitchSlider(VerticalGroup):
         self.switches = switches
         self.tab_ids = tab_ids
         super().__init__(
-            id=self.tab_ids.switches_slider_id,
-            classes=TcssStr.switches_vertical,
+            id=self.tab_ids.switches_slider_id, classes=Tcss.switches_vertical
         )
 
     def compose(self) -> ComposeResult:
         for switch_enum in self.switches:
             with HorizontalGroup(
                 id=self.tab_ids.switch_horizontal_id(switch=switch_enum),
-                classes=TcssStr.switch_horizontal,
+                classes=Tcss.switch_horizontal,
             ):
                 yield Switch(
                     id=self.tab_ids.switch_id(switch=switch_enum), value=False
                 )
                 yield Label(
-                    switch_enum.value.label, classes=TcssStr.switch_label
+                    switch_enum.value.label, classes=Tcss.switch_label
                 ).with_tooltip(tooltip=switch_enum.value.tooltip)
 
     def on_mount(self) -> None:
@@ -220,4 +219,4 @@ class SwitchSlider(VerticalGroup):
         self.query_one(
             self.tab_ids.switch_horizontal_id("#", switch=self.switches[0]),
             HorizontalGroup,
-        ).add_class(TcssStr.pad_bottom)
+        ).add_class(Tcss.pad_bottom)
