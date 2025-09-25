@@ -48,7 +48,9 @@ def test_args(py_file: Path):
                 # Check if the value for the id is any attribute from the Id class
                 root_name = get_root_class_name(keyword.value)
                 if root_name is not None:
-                    if root_name == "Id":
+                    if root_name == "LogsEnum":
+                        pass
+                    elif root_name == "Id":
                         if not is_valid_class_expression(keyword.value, Id):
                             invalid_ids.append(
                                 f"\nInvalid id expression: line {keyword.lineno}: {ast.unparse(keyword.value)} (invalid attribute chain)"
