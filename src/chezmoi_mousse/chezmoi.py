@@ -13,7 +13,7 @@ from rich.markup import escape
 from textual.widgets import RichLog
 
 import chezmoi_mousse.custom_theme as theme
-from chezmoi_mousse.constants import TabName, Tcss
+from chezmoi_mousse.constants import Chars, TabName, Tcss
 from chezmoi_mousse.id_typing import OperateHelp, ParsedJson, PathDict
 
 # TODO: implement 'chezmoi verify', if exit 0, display message in Tree
@@ -192,7 +192,7 @@ class CommandLogBase(RichLog):
             ]
         )
 
-    def command(self, command: list[str]) -> None:
+    def _log_command(self, command: list[str]) -> None:
         trimmed_cmd = self.pretty_cmd_str(command)
         time = self._log_time()
         color = theme.vars["primary-lighten-3"]
@@ -231,10 +231,14 @@ class CommandLogBase(RichLog):
 
 
 class AppLog(CommandLogBase):
+
     def __init__(self) -> None:
         super().__init__(
             id=LogsEnum.app_log.name, markup=True, max_lines=10000
         )
+        success = f"{Chars.check_mark} Success"
+        self.succes_no_output = f"{success}, no output"
+        self.success_with_output = f"{success}, output processed in UI"
 
     def on_mount(self) -> None:
         self.add_class(Tcss.log_views)
@@ -244,6 +248,20 @@ class AppLog(CommandLogBase):
             self.ready_to_run(OperateHelp.changes_mode_disabled.value)
         else:
             self.warning(OperateHelp.changes_mode_enabled.value)
+
+    def completed_process(
+        self, completed_process: CompletedProcess[str]
+    ) -> None:
+        self._log_command(completed_process.args)
+        if completed_process.returncode == 0:
+            if completed_process.stdout == "":
+                self.success(self.succes_no_output)
+            else:
+                self.success(self.success_with_output)
+        else:
+            self.error(
+                f"{Chars.x_mark} Command failed with exit code {completed_process.returncode}, stderr logged to Output log"
+            )
 
 
 class DebugLog(CommandLogBase):
@@ -310,6 +328,21 @@ class OutputLog(CommandLogBase):
     def on_mount(self) -> None:
         self.add_class(Tcss.log_views)
         self.ready_to_run("Output log ready to capture logs.")
+
+    def completed_process(
+        self, completed_process: CompletedProcess[str]
+    ) -> None:
+        self._log_command(completed_process.args)
+        if completed_process.returncode == 0:
+            self.success("success, stdout:")
+            if completed_process.stdout == "":
+                self.dimmed("No output on stdout")
+            else:
+                self.dimmed(completed_process.stdout)
+        else:
+            self.error("failed, stderr:")
+            self.dimmed(f"{completed_process.stderr}")
+        self.refresh()
 
 
 app_log = AppLog()
@@ -410,6 +443,19 @@ class Chezmoi:
     def stripped_cmd(self, long_command: list[str]) -> str:
         return self.app_log.pretty_cmd_str(long_command)
 
+    def strip_stdout(self, stdout: str):
+        # remove trailing and leading new lines but NOT leading whitespace
+        stripped = stdout.lstrip("\n").rstrip()
+        # remove intermediate empty lines
+        return "\n".join(
+            [line for line in stripped.splitlines() if line.strip()]
+        )
+
+    def log_in_app_and_output_log(self, result: CompletedProcess[str]):
+        result.stdout = self.strip_stdout(result.stdout)
+        self.app_log.completed_process(result)
+        self.output_log.completed_process(result)
+
     def read(self, read_cmd: ReadCmd, path: Path | None = None) -> str:
         command: list[str] = read_cmd.value
         if path is not None:
@@ -418,61 +464,25 @@ class Chezmoi:
         result: CompletedProcess[str] = run(
             command, capture_output=True, shell=False, text=True, timeout=1
         )
-        self.app_log.command(command)
-        self.output_log.command(command)
-        if result.returncode != 0:
-            self.app_log.error(
-                f"Command failed with exit code {result.returncode}"
-            )
-            return ""
-        if result.stdout == "":
-            self.app_log.success(
-                "Command ran successfully and returned no output"
-            )
-            return ""
-        # remove trailing and leading new lines but NOT leading whitespace
-        stdout = result.stdout.lstrip("\n").rstrip()
-        # remove intermediate empty lines
-        result_str: str = "\n".join(
-            [line for line in stdout.splitlines() if line.strip()]
-        )
-        self.app_log.success("Command ran successfully")
-        self.output_log.dimmed(result_str)
-        return result_str
+        self.log_in_app_and_output_log(result)
+        return self.strip_stdout(result.stdout)
 
     def perform(
         self, change_sub_cmd: ChangeCmd, change_arg: str | None = None
-    ) -> str:
+    ) -> None:
         if self.init_cfg.changes_enabled:
             base_cmd: list[str] = GlobalCmd.live_run.value
         else:
             base_cmd: list[str] = GlobalCmd.dry_run.value
-        sub_cmd: list[str] = change_sub_cmd.value
-        command: list[str] = base_cmd + sub_cmd
+        command: list[str] = base_cmd + change_sub_cmd.value
 
         if change_arg is not None:
             command: list[str] = command + [change_arg]
-        # CompletedProcess type arg is str as we use text=True
-        result: CompletedProcess[str] = run(
-            command, capture_output=True, shell=False, text=True, timeout=5
-        )
-        self.app_log.command(command)
-        self.output_log.command(command)
-        if result.returncode != 0:
-            self.app_log.error(
-                f"Command failed with exit code {result.returncode}"
+
+        self.log_in_app_and_output_log(
+            run(
+                command, capture_output=True, shell=False, text=True, timeout=5
             )
-            return ""
-        if result.stdout == "":
-            self.app_log.success(
-                "Command ran successfully and returned no output"
-            )
-            return "No output"
-        # remove trailing and leading new lines but NOT leading whitespace
-        stdout = result.stdout.lstrip("\n").rstrip()
-        # remove intermediate empty lines
-        return "\n".join(
-            [line for line in stdout.splitlines() if line.strip()]
         )
 
     def files_with_status_in(

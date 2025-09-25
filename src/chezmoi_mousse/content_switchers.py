@@ -276,7 +276,6 @@ class LogsTabSwitcher(Vertical, AppType):
         )
         with ContentSwitcher(
             id=self.tab_ids.content_switcher_id(area=Area.top),
-            initial=self.tab_ids.view_id(view=ViewName.app_log_view),
             classes=Tcss.border_title_top,
         ):
             yield self.app.chezmoi.app_log

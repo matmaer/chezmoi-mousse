@@ -124,7 +124,7 @@ class ChezmoiGUI(App["ChezmoiGUI"]):
             self.chezmoi.app_log.success(
                 f"chezmoi command found: {self.chezmoi.init_cfg.chezmoi_found}"
             )
-        self.chezmoi.app_log.warning("Start loading screen")
+        self.chezmoi.app_log.ready_to_run("--- Start loading screen ---")
         self.push_screen(
             LoadingScreen(), callback=self.handle_splash_return_data
         )
@@ -153,7 +153,7 @@ class ChezmoiGUI(App["ChezmoiGUI"]):
         if not self.chezmoi.init_cfg.chezmoi_found:
             self.push_screen(InstallHelp())
             return
-        self.chezmoi.app_log.success("--- splash.py finished loading ---")
+        self.chezmoi.app_log.ready_to_run("--- Loading screen completed ---")
         # Populate Doctor DataTable
         doctor_tab = self.query_exactly_one(DoctorTab)
         doctor_tab.doctor_output = return_data.doctor
@@ -164,7 +164,7 @@ class ChezmoiGUI(App["ChezmoiGUI"]):
         self.chezmoi.dir_status_lines = return_data.dir_status_lines
         self.chezmoi.file_status_lines = return_data.file_status_lines
         # Trees to refresh for each tab
-        tree_types: list[
+        trees: list[
             tuple[TreeName, type[ManagedTree | FlatTree | ExpandedTree]]
         ] = [
             (TreeName.managed_tree, ManagedTree),
@@ -173,12 +173,17 @@ class ChezmoiGUI(App["ChezmoiGUI"]):
         ]
         # Refresh apply and re_add trees
         for tab_ids in (Id.apply, Id.re_add):
-            for tree_name, tree_cls in tree_types:
+            for tree_name, tree_cls in trees:
                 self.query_one(
                     tab_ids.tree_id("#", tree=tree_name), tree_cls
                 ).refresh_tree_data()
         # Refresh DirectoryTree
         self.query_one(FilteredDirTree).reload()
+        # Refresh logs
+        content_switcher = self.query_one(
+            Id.logs.content_switcher_id("#", area=Area.top), ContentSwitcher
+        )
+        content_switcher.current = self.chezmoi.app_log.id
 
     def on_tabbed_content_tab_activated(
         self, event: TabbedContent.TabActivated
