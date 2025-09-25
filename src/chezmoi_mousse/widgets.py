@@ -391,7 +391,7 @@ class TreeBase(CustomRenderLabel, AppType):  # instead of Tree[NodeData]
             self.root.data.path = self.app.destDir
 
     @on(Tree.NodeSelected)
-    def send_node_context(
+    def send_node_context_message(
         self, event: Tree.NodeSelected[DirNodeData | FileNodeData]
     ) -> None:
         if event.node == self.root:

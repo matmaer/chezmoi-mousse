@@ -205,7 +205,6 @@ class Operate(ScreensBase, AppType):
                 f"Operation cancelled for {self.path.name}"
             )
             self.notify("No changes were made")
-        # send the needed data to the app, logging will be handled there
         self.app.post_message(OperateDataMsg(dismiss_data=dismiss_data))
         self.dismiss()
 

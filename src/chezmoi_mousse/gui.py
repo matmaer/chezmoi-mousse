@@ -125,7 +125,9 @@ class ChezmoiGUI(App["ChezmoiGUI"]):
                 f"chezmoi command found: {self.chezmoi.init_cfg.chezmoi_found}"
             )
         self.chezmoi.app_log.warning("Start loading screen")
-        self.push_screen(LoadingScreen(), callback=self.handle_return_data)
+        self.push_screen(
+            LoadingScreen(), callback=self.handle_splash_return_data
+        )
         self.watch(self, "theme", self.on_theme_change, init=False)
 
         if self.chezmoi.init_cfg.changes_enabled:
@@ -141,7 +143,9 @@ class ChezmoiGUI(App["ChezmoiGUI"]):
         )
         self.chezmoi.app_log.success(f"Theme set to {new_theme}")
 
-    def handle_return_data(self, return_data: SplashReturnData | None) -> None:
+    def handle_splash_return_data(
+        self, return_data: SplashReturnData | None
+    ) -> None:
         if return_data is None:
             # Handle the case where no data was returned (though this shouldn't happen in your case)
             self.chezmoi.app_log.error("No data returned from splash screen")
