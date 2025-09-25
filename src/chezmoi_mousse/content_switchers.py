@@ -82,10 +82,7 @@ class ViewSwitcher(Vertical, AppType):
     def __init__(self, *, tab_ids: TabIds, diff_reverse: bool):
         self.tab_ids = tab_ids
         self.reverse = diff_reverse
-        super().__init__(
-            id=self.tab_ids.tab_vertical_id(area=Area.right),
-            classes=Tcss.tab_right_vertical,
-        )
+        super().__init__(id=self.tab_ids.tab_vertical_id(area=Area.right))
 
     def compose(self) -> ComposeResult:
         yield TabBtnHorizontal(
@@ -193,10 +190,7 @@ class ConfigTabSwitcher(Horizontal, AppType):
 
     def __init__(self, tab_ids: TabIds):
         self.tab_ids = tab_ids
-        super().__init__(
-            id=self.tab_ids.tab_vertical_id(area=Area.right),
-            classes=Tcss.tab_right_vertical,
-        )
+        super().__init__(id=self.tab_ids.tab_vertical_id(area=Area.right))
 
     def compose(self) -> ComposeResult:
         with VerticalGroup(
@@ -214,10 +208,7 @@ class ConfigTabSwitcher(Horizontal, AppType):
                 area=Area.left,
             )
 
-        with Vertical(
-            id=self.tab_ids.tab_vertical_id(area=Area.right),
-            classes=Tcss.tab_right_vertical,
-        ):
+        with Vertical(id=self.tab_ids.tab_vertical_id(area=Area.right)):
             # TODO: make sure scrollbars appear when there's overflow
             with ContentSwitcher(
                 id=self.tab_ids.content_switcher_id(area=Area.right),

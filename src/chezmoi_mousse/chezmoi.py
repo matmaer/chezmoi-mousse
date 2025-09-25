@@ -407,24 +407,6 @@ class Chezmoi:
 
     # METHODS
 
-    # def stripped_cmd(self, long_command: list[str]) -> str:
-    #     git_log_to_strip = [
-    #         word for word in VerbArgs.git_log.value if word != "log"
-    #     ]
-    #     return " ".join(
-    #         [
-    #             word
-    #             for word in long_command
-    #             if word not in GlobalCmd.default_args.value
-    #             and word
-    #             not in (
-    #                 VerbArgs.path_style_absolute.value,
-    #                 VerbArgs.format_json.value,
-    #             )
-    #             and word not in git_log_to_strip
-    #         ]
-    #     )
-
     def stripped_cmd(self, long_command: list[str]) -> str:
         return self.app_log.pretty_cmd_str(long_command)
 

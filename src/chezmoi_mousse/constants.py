@@ -122,7 +122,6 @@ class Tcss(StrEnum):
     tab_button = auto()
     tab_buttons_horizontal = auto()
     tab_left_vertical = auto()
-    tab_right_vertical = auto()
     tree_widget = auto()
 
 
