@@ -27,7 +27,7 @@ type OperateButtons = tuple[OperateBtn, ...]
 type ParsedJson = dict[str, Any]
 type PathDict = dict[Path, str]
 type TabButtons = tuple[TabBtn, ...]
-type VerticalButtons = tuple[NavBtn, ...]
+type NavButtons = tuple[NavBtn, ...]
 
 
 class AppType:

@@ -5,10 +5,10 @@ from textual.widgets import Button
 
 from chezmoi_mousse.constants import Area, Tcss
 from chezmoi_mousse.id_typing import (
+    NavButtons,
     OperateButtons,
     TabButtons,
     TabIds,
-    VerticalButtons,
 )
 
 
@@ -41,9 +41,9 @@ class ButtonsHorizontal(HorizontalGroup):
 class ButtonsVertical(VerticalGroup):
 
     def __init__(
-        self, *, tab_ids: TabIds, buttons: VerticalButtons, area: Area
+        self, *, tab_ids: TabIds, buttons: NavButtons, area: Area
     ) -> None:
-        self.buttons: VerticalButtons = buttons
+        self.buttons: NavButtons = buttons
         self.area: Area = area
         self.tab_ids: TabIds = tab_ids
         super().__init__(
