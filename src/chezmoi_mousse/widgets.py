@@ -345,10 +345,13 @@ class GitLogView(DataTable[Text], AppType):
     def watch_path(self) -> None:
         if self.path is None:
             return
-        source_path: Path = Path(
-            self.app.chezmoi.read(ReadCmd.source_path, self.path)
-        )
-        cmd_output = self.app.chezmoi.read(ReadCmd.git_log, source_path)
+        if self.path == self.app.destDir:
+            cmd_output = self.app.chezmoi.read(ReadCmd.git_log)
+        else:
+            source_path = Path(
+                self.app.chezmoi.read(ReadCmd.source_path, self.path)
+            )
+            cmd_output = self.app.chezmoi.read(ReadCmd.git_log, source_path)
         try:
             self.populate_data_table(cmd_output)
         except:  # noqa: E722
