@@ -1,7 +1,7 @@
 import json
 import os
 import tempfile
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
@@ -14,7 +14,12 @@ from textual.widgets import RichLog
 
 import chezmoi_mousse.custom_theme as theme
 from chezmoi_mousse.constants import Chars, TabName, Tcss
-from chezmoi_mousse.id_typing import OperateHelp, ParsedJson, PathDict
+from chezmoi_mousse.id_typing import (
+    OperateHelp,
+    ParsedJson,
+    PathDict,
+    SplashReturnData,
+)
 
 # TODO: implement 'chezmoi verify', if exit 0, display message in Tree
 # widgets inform the user why the Tree widget is empty
@@ -174,6 +179,31 @@ class InitConfig:
 
 
 INIT_CFG = InitConfig()
+
+
+@dataclass
+class DirPathStatus:
+    path: Path
+    status: str
+
+
+@dataclass
+class FilePathStatus:
+    path: Path
+    status: str
+
+
+@dataclass
+class ManagedStatus:
+
+    managed_dirs: list[Path] = field(default_factory=list[Path])
+    managed_files: list[Path] = field(default_factory=list[Path])
+    status_dirs: list[DirPathStatus] = field(
+        default_factory=list[DirPathStatus]
+    )
+    status_files: list[FilePathStatus] = field(
+        default_factory=list[FilePathStatus]
+    )
 
 
 class CommandLogBase(RichLog):
@@ -355,16 +385,10 @@ debug_log = DebugLog()
 init_log = InitLog()
 output_log = OutputLog()
 
+managed_status = ManagedStatus()
+
 
 class Chezmoi:
-
-    def __init__(self) -> None:
-
-        # Initialize managed_dirs and managed_files as empty strings
-        self.managed_dirs = ""
-        self.managed_files = ""
-        self.dir_status_lines = ""
-        self.file_status_lines = ""
 
     # PRE INIT CONFIG
 
@@ -398,6 +422,10 @@ class Chezmoi:
     def output_log(self) -> OutputLog:
         return output_log
 
+    @property
+    def managed_status(self) -> ManagedStatus:
+        return managed_status
+
     # COMMAND TYPES
 
     @property
@@ -409,14 +437,6 @@ class Chezmoi:
         return ChangeCmd
 
     # CACHED CHEZMOI CMD OUTPUTS
-
-    @property
-    def dir_paths(self) -> list[Path]:
-        return [Path(p) for p in self.managed_dirs.splitlines()]
-
-    @property
-    def file_paths(self) -> list[Path]:
-        return [Path(p) for p in self.managed_files.splitlines()]
 
     @property
     def apply_dirs(self) -> PathDict:
@@ -481,6 +501,49 @@ class Chezmoi:
             )
         )
 
+    def refresh_managed_status(
+        self, splash_data: SplashReturnData | None = None
+    ) -> None:
+        if splash_data is not None:
+            managed_status.managed_dirs = [
+                Path(line)
+                for line in splash_data.managed_dirs.splitlines()
+                if line.strip()
+            ]
+            managed_status.managed_files = [
+                Path(line)
+                for line in splash_data.managed_files.splitlines()
+                if line.strip()
+            ]
+            managed_status.status_dirs = [
+                DirPathStatus(Path(line[3:]), line[:2])
+                for line in splash_data.dir_status_lines.splitlines()
+                if len(line) > 3
+            ]
+            managed_status.status_files = [
+                FilePathStatus(Path(line[3:]), line[:2])
+                for line in splash_data.file_status_lines.splitlines()
+                if len(line) > 3
+            ]
+            return
+        # get data from chezmoi managed stdout
+        managed_status.managed_dirs = [
+            Path(line) for line in self.read(ReadCmd.managed_dirs).splitlines()
+        ]
+        managed_status.managed_files = [
+            Path(line)
+            for line in self.read(ReadCmd.managed_files).splitlines()
+        ]
+        # get data from chezmoi status stdout
+        managed_status.status_dirs = [
+            DirPathStatus(Path(line[3:]), line[:2])
+            for line in self.read(ReadCmd.dir_status_lines).splitlines()
+        ]
+        managed_status.status_files = [
+            FilePathStatus(Path(line[3:]), line[:2])
+            for line in self.read(ReadCmd.file_status_lines).splitlines()
+        ]
+
     def files_with_status_in(
         self, tab_name: TabName, dir_path: Path
     ) -> list[Path]:
@@ -511,7 +574,7 @@ class Chezmoi:
 
     def managed_dirs_in(self, dir_path: Path) -> list[Path]:
         # checks only direct children
-        return [p for p in self.dir_paths if p.parent == dir_path]
+        return [p for p in managed_status.managed_dirs if p.parent == dir_path]
 
     def _create_status_dict(
         self, tab_name: TabName, kind: Literal["dirs", "files"]
@@ -520,11 +583,11 @@ class Chezmoi:
         status_idx: int = 0
         status_codes: str = ""
         if kind == "dirs":
-            managed_paths = self.dir_paths
-            status_lines = self.dir_status_lines.splitlines()
+            managed_paths = managed_status.managed_dirs
+            status_lines = [str(p) for p in managed_status.status_dirs]
         elif kind == "files":
-            managed_paths = self.file_paths
-            status_lines = self.file_status_lines.splitlines()
+            managed_paths = managed_status.managed_files
+            status_lines = [str(p) for p in managed_status.status_files]
 
         if tab_name == TabName.apply_tab:
             status_codes = "ADM"

@@ -1,5 +1,5 @@
 from collections.abc import Iterable, Iterator
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import StrEnum, auto
 from pathlib import Path
 from typing import Literal
@@ -13,30 +13,6 @@ from textual.worker import Worker
 
 from chezmoi_mousse.constants import Chars, UnwantedDirs, UnwantedFiles
 from chezmoi_mousse.id_typing import Any, AppType
-
-
-@dataclass
-class DirPathStatus:
-    path: Path
-    status: str
-
-
-@dataclass
-class FilePathStatus:
-    path: Path
-    status: str
-
-
-@dataclass
-class StatusPaths:
-    managed_dirs: list[Path] = field(default_factory=list[Path])
-    managed_files: list[Path] = field(default_factory=list[Path])
-    status_dirs: list[DirPathStatus] = field(
-        default_factory=list[DirPathStatus]
-    )
-    status_files: list[FilePathStatus] = field(
-        default_factory=list[FilePathStatus]
-    )
 
 
 class DirTreeName(StrEnum):
@@ -164,58 +140,6 @@ class ReAddDirTree(VirtualDirTreeBase):
 class AddDirTree(VirtualDirTreeBase):
     pass
 
-    # def refresh_status_paths_dataclass(
-    #     self, splash_data: SplashReturnData | None = None
-    # ) -> None:
-    #     if splash_data is not None:
-    #         managed_dir_paths = [
-    #             Path(line)
-    #             for line in SplashReturnData.managed_dirs.splitlines()
-    #         ]
-    #         managed_file_paths = [
-    #             Path(line)
-    #             for line in SplashReturnData.managed_files.splitlines()
-    #         ]
-    #         status_dir_paths = [
-    #             PathStatus(Path(line[3:]), StatusCodes(line[:2]))
-    #             for line in SplashReturnData.dir_status_lines.splitlines()
-    #         ]
-    #         status_file_paths = [
-    #             PathStatus(Path(line[3:]), StatusCodes(line[:2]))
-    #             for line in SplashReturnData.file_status_lines.splitlines()
-    #         ]
-    #         self.status_paths = StatusPaths(
-    #             managed_dirs=managed_dir_paths,
-    #             managed_files=managed_file_paths,
-    #             status_dirs=status_dir_paths,
-    #             status_files=status_file_paths,
-    #         )
-    #         return
-    #     # get data from chezmoi managed stdout
-    #     managed_dir_paths: list[Path] = [
-    #         Path(line) for line in self.read(ReadCmd.managed_dirs).splitlines()
-    #     ]
-    #     managed_file_paths: list[Path] = [
-    #         Path(line)
-    #         for line in self.read(ReadCmd.managed_files).splitlines()
-    #     ]
-    #     # get data from chezmoi status stdout
-    #     status_dir_paths: list[PathStatus] = [
-    #         PathStatus(Path(line[3:]), StatusCodes(line[:2]))
-    #         for line in self.read(ReadCmd.dir_status_lines).splitlines()
-    #     ]
-    #     status_file_paths: list[PathStatus] = [
-    #         PathStatus(Path(line[3:]), StatusCodes(line[:2]))
-    #         for line in self.read(ReadCmd.file_status_lines).splitlines()
-    #     ]
-
-    #     self.status_paths = StatusPaths(
-    #         managed_dirs=managed_dir_paths,
-    #         managed_files=managed_file_paths,
-    #         status_dirs=status_dir_paths,
-    #         status_files=status_file_paths,
-    #     )
-
 
 class FilteredDirTree(DirectoryTree, AppType):
 
@@ -226,8 +150,8 @@ class FilteredDirTree(DirectoryTree, AppType):
     unwanted: reactive[bool] = reactive(False, init=False)
 
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
-        managed_dirs = self.app.chezmoi.dir_paths
-        managed_files = self.app.chezmoi.file_paths
+        managed_dirs = self.app.chezmoi.managed_status.managed_dirs
+        managed_files = self.app.chezmoi.managed_status.managed_files
 
         # Switches: Red - Red (default)
         if not self.unmanaged_dirs and not self.unwanted:
