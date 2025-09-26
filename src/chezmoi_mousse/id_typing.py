@@ -63,7 +63,6 @@ class PwMgrData:
     doctor_check: str
     description: str
     link: str
-    doctor_message: str | None = None
 
 
 @dataclass
