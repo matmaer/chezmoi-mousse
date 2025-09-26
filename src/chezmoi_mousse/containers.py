@@ -207,9 +207,7 @@ class SwitchSlider(VerticalGroup):
                 id=self.tab_ids.switch_horizontal_id(switch=switch_enum),
                 classes=Tcss.switch_horizontal,
             ):
-                yield Switch(
-                    id=self.tab_ids.switch_id(switch=switch_enum), value=False
-                )
+                yield Switch(id=self.tab_ids.switch_id(switch=switch_enum))
                 yield Label(
                     switch_enum.value.label, classes=Tcss.switch_label
                 ).with_tooltip(tooltip=switch_enum.value.tooltip)
