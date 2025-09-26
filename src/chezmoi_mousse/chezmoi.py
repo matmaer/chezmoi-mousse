@@ -57,6 +57,7 @@ class VerbArgs(Enum):
     include_files = "--include=files"
     path_style_absolute = "--path-style=absolute"
     reverse = "--reverse"
+    tree = "--tree"
 
 
 class ReadVerbs(Enum):
@@ -112,6 +113,11 @@ class ReadCmd(Enum):
         ReadVerbs.managed.value,
         VerbArgs.path_style_absolute.value,
         VerbArgs.include_files.value,
+    ]
+    managed_tree = GlobalCmd.live_run.value + [
+        ReadVerbs.managed.value,
+        VerbArgs.path_style_absolute.value,
+        VerbArgs.tree.value,
     ]
     source_path = GlobalCmd.live_run.value + [ReadVerbs.source_path.value]
 
