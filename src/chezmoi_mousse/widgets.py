@@ -679,9 +679,9 @@ class ManagedTree(TreeBase):
         else:
             self.remove_unchanged_leaves(tree_node=event.node)
 
-    @on(TreeBase.NodeExpanded)
+    @on(TreeBase.NodeCollapsed)
     def remove_node_children(
-        self, event: TreeBase.NodeExpanded[NodeData]
+        self, event: TreeBase.NodeCollapsed[NodeData]
     ) -> None:
         event.node.remove_children()
 
