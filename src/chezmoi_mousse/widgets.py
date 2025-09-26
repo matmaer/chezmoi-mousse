@@ -17,31 +17,29 @@ from rich.text import Text
 from textual import on
 from textual.events import Key
 from textual.reactive import reactive
-from textual.widgets import DataTable, DirectoryTree, RichLog, Static, Tree
+from textual.widgets import DataTable, RichLog, Static, Tree
 from textual.widgets.tree import TreeNode
 
 import chezmoi_mousse.custom_theme as theme
 from chezmoi_mousse.chezmoi import ReadCmd
 from chezmoi_mousse.constants import (
+    Chars,
+    OperateBtn,
+    TabName,
     Tcss,
-    UnwantedDirs,
-    UnwantedFiles,
+    TreeName,
     ViewName,
 )
 from chezmoi_mousse.id_typing import (
     Any,
     AppType,
-    Chars,
     DirNodeData,
     FileNodeData,
     NodeData,
-    OperateBtn,
     OperateHelp,
     PathDict,
     ScreenIds,
     TabIds,
-    TabName,
-    TreeName,
 )
 from chezmoi_mousse.messages import TreeNodeData, TreeNodeDataMsg
 from chezmoi_mousse.overrides import CustomRenderLabel
@@ -794,84 +792,3 @@ class FlatTree(TreeBase, AppType):
             self.add_all_unchanged_files()
         elif not self.unchanged:
             self.remove_flat_leaves()
-
-
-class FilteredDirTree(DirectoryTree, AppType):
-
-    unmanaged_dirs: reactive[bool] = reactive(False, init=False)
-    # TODO: add filter switch to see already added files as otherwise when
-    # wanting to add a file which was already added, you have to check if the
-    # file exists outside of the chezmoi-mousse app
-    unwanted: reactive[bool] = reactive(False, init=False)
-
-    def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
-        managed_dirs = self.app.chezmoi.dir_paths
-        managed_files = self.app.chezmoi.file_paths
-
-        # Switches: Red - Red (default)
-        if not self.unmanaged_dirs and not self.unwanted:
-            return (
-                p
-                for p in paths
-                if (
-                    p.is_file()
-                    and (
-                        p.parent in managed_dirs
-                        or p.parent == self.app.destDir
-                    )
-                    and not self.is_unwanted_path(p)
-                    and p not in managed_files
-                )
-                or (
-                    p.is_dir()
-                    and not self.is_unwanted_path(p)
-                    and p in managed_dirs
-                )
-            )
-        # Switches: Green - Red
-        elif self.unmanaged_dirs and not self.unwanted:
-            return (
-                p
-                for p in paths
-                if p not in managed_files and not self.is_unwanted_path(p)
-            )
-        # Switches: Red - Green
-        elif not self.unmanaged_dirs and self.unwanted:
-            return (
-                p
-                for p in paths
-                if (
-                    p.is_file()
-                    and (
-                        p.parent in managed_dirs
-                        or p.parent == self.app.destDir
-                    )
-                    and p not in managed_files
-                )
-                or (p.is_dir() and p in managed_dirs)
-            )
-        # Switches: Green - Green, include all unmanaged paths
-        elif self.unmanaged_dirs and self.unwanted:
-            return (
-                p
-                for p in paths
-                if p.is_dir() or (p.is_file() and p not in managed_files)
-            )
-        else:
-            return paths
-
-    def is_unwanted_path(self, path: Path) -> bool:
-        if path.is_dir():
-            try:
-                UnwantedDirs(path.name)
-                return True
-            except ValueError:
-                pass
-        if path.is_file():
-            extension = path.suffix
-            try:
-                UnwantedFiles(extension)
-                return True
-            except ValueError:
-                pass
-        return False

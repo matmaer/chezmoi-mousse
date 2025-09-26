@@ -36,8 +36,9 @@ from chezmoi_mousse.content_switchers import (
     TreeSwitcher,
     ViewSwitcher,
 )
+from chezmoi_mousse.dir_tree_base import FilteredDirTree
 from chezmoi_mousse.id_typing import AppType, Id, PwMgrInfo, Switches
-from chezmoi_mousse.widgets import ContentsView, FilteredDirTree
+from chezmoi_mousse.widgets import ContentsView
 
 
 class ApplyTab(OperateTabsBase):

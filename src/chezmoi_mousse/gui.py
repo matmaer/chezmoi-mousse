@@ -25,6 +25,7 @@ from chezmoi_mousse.constants import (
     TreeName,
     ViewName,
 )
+from chezmoi_mousse.dir_tree_base import FilteredDirTree
 from chezmoi_mousse.id_typing import (
     Id,
     OperateBtn,
@@ -47,7 +48,6 @@ from chezmoi_mousse.splash import LoadingScreen
 from chezmoi_mousse.widgets import (
     ContentsView,
     ExpandedTree,
-    FilteredDirTree,
     FlatTree,
     ManagedTree,
 )
