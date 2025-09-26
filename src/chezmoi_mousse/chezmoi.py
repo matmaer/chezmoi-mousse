@@ -506,24 +506,18 @@ class Chezmoi:
     ) -> None:
         if splash_data is not None:
             managed_status.managed_dirs = [
-                Path(line)
-                for line in splash_data.managed_dirs.splitlines()
-                if line.strip()
+                Path(line) for line in splash_data.managed_dirs.splitlines()
             ]
             managed_status.managed_files = [
-                Path(line)
-                for line in splash_data.managed_files.splitlines()
-                if line.strip()
+                Path(line) for line in splash_data.managed_files.splitlines()
             ]
             managed_status.status_dirs = [
                 DirPathStatus(Path(line[3:]), line[:2])
                 for line in splash_data.dir_status_lines.splitlines()
-                if len(line) > 3
             ]
             managed_status.status_files = [
                 FilePathStatus(Path(line[3:]), line[:2])
                 for line in splash_data.file_status_lines.splitlines()
-                if len(line) > 3
             ]
             return
         # get data from chezmoi managed stdout
@@ -584,10 +578,16 @@ class Chezmoi:
         status_codes: str = ""
         if kind == "dirs":
             managed_paths = managed_status.managed_dirs
-            status_lines = [str(p) for p in managed_status.status_dirs]
+            status_lines = [
+                p.status + " " + str(p.path)
+                for p in managed_status.status_dirs
+            ]
         elif kind == "files":
             managed_paths = managed_status.managed_files
-            status_lines = [str(p) for p in managed_status.status_files]
+            status_lines = [
+                p.status + " " + str(p.path)
+                for p in managed_status.status_files
+            ]
 
         if tab_name == TabName.apply_tab:
             status_codes = "ADM"
