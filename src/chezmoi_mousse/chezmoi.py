@@ -385,10 +385,13 @@ debug_log = DebugLog()
 init_log = InitLog()
 output_log = OutputLog()
 
-managed_status = ManagedStatus()
+# managed = ManagedStatus()
 
 
 class Chezmoi:
+
+    def __init__(self) -> None:
+        self.managed = ManagedStatus()
 
     # PRE INIT CONFIG
 
@@ -421,10 +424,6 @@ class Chezmoi:
     @property
     def output_log(self) -> OutputLog:
         return output_log
-
-    @property
-    def managed_status(self) -> ManagedStatus:
-        return managed_status
 
     # COMMAND TYPES
 
@@ -501,39 +500,39 @@ class Chezmoi:
             )
         )
 
-    def refresh_managed_status(
+    def refresh_managed(
         self, splash_data: SplashReturnData | None = None
     ) -> None:
         if splash_data is not None:
-            managed_status.dirs = [
+            self.managed.dirs = [
                 Path(line) for line in splash_data.managed_dirs.splitlines()
             ]
-            managed_status.files = [
+            self.managed.files = [
                 Path(line) for line in splash_data.managed_files.splitlines()
             ]
-            managed_status.status_dirs = [
+            self.managed.status_dirs = [
                 DirPathStatus(Path(line[3:]), line[:2])
                 for line in splash_data.dir_status_lines.splitlines()
             ]
-            managed_status.status_files = [
+            self.managed.status_files = [
                 FilePathStatus(Path(line[3:]), line[:2])
                 for line in splash_data.file_status_lines.splitlines()
             ]
             return
         # get data from chezmoi managed stdout
-        managed_status.dirs = [
+        self.managed.dirs = [
             Path(line) for line in self.read(ReadCmd.managed_dirs).splitlines()
         ]
-        managed_status.files = [
+        self.managed.files = [
             Path(line)
             for line in self.read(ReadCmd.managed_files).splitlines()
         ]
         # get data from chezmoi status stdout
-        managed_status.status_dirs = [
+        self.managed.status_dirs = [
             DirPathStatus(Path(line[3:]), line[:2])
             for line in self.read(ReadCmd.dir_status_lines).splitlines()
         ]
-        managed_status.status_files = [
+        self.managed.status_files = [
             FilePathStatus(Path(line[3:]), line[:2])
             for line in self.read(ReadCmd.file_status_lines).splitlines()
         ]
@@ -568,7 +567,7 @@ class Chezmoi:
 
     def managed_dirs_in(self, dir_path: Path) -> list[Path]:
         # checks only direct children
-        return [p for p in managed_status.dirs if p.parent == dir_path]
+        return [p for p in self.managed.dirs if p.parent == dir_path]
 
     def _create_status_dict(
         self, tab_name: TabName, kind: Literal["dirs", "files"]
@@ -577,16 +576,14 @@ class Chezmoi:
         status_idx: int = 0
         status_codes: str = ""
         if kind == "dirs":
-            managed_paths = managed_status.dirs
+            managed_paths = self.managed.dirs
             status_lines = [
-                p.status + " " + str(p.path)
-                for p in managed_status.status_dirs
+                p.status + " " + str(p.path) for p in self.managed.status_dirs
             ]
         elif kind == "files":
-            managed_paths = managed_status.files
+            managed_paths = self.managed.files
             status_lines = [
-                p.status + " " + str(p.path)
-                for p in managed_status.status_files
+                p.status + " " + str(p.path) for p in self.managed.status_files
             ]
 
         if tab_name == TabName.apply_tab:

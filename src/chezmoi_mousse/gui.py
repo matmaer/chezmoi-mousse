@@ -158,7 +158,7 @@ class ChezmoiGUI(App["ChezmoiGUI"]):
         doctor_tab = self.query_exactly_one(DoctorTab)
         doctor_tab.doctor_output = return_data.doctor
         doctor_tab.populate_doctor_data()
-        self.chezmoi.refresh_managed_status(return_data)
+        self.chezmoi.refresh_managed(return_data)
         # Trees to refresh for each tab
         trees: list[
             tuple[TreeName, type[ManagedTree | FlatTree | ExpandedTree]]
