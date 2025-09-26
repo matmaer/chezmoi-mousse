@@ -25,7 +25,7 @@ from chezmoi_mousse.constants import (
     TreeName,
     ViewName,
 )
-from chezmoi_mousse.directory_trees import FilteredDirTree
+from chezmoi_mousse.directory_tree import FilteredDirTree
 from chezmoi_mousse.id_typing import (
     Id,
     OperateBtn,

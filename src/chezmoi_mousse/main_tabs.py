@@ -36,7 +36,7 @@ from chezmoi_mousse.content_switchers import (
     TreeSwitcher,
     ViewSwitcher,
 )
-from chezmoi_mousse.directory_trees import FilteredDirTree
+from chezmoi_mousse.directory_tree import FilteredDirTree
 from chezmoi_mousse.id_typing import AppType, Id, PwMgrInfo, Switches
 from chezmoi_mousse.widgets import ContentsView
 
