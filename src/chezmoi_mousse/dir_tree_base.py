@@ -1,5 +1,5 @@
 from collections.abc import Iterator
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import StrEnum, auto
 from pathlib import Path
 from typing import Literal
@@ -12,6 +12,30 @@ from textual.worker import Worker
 
 from chezmoi_mousse.constants import Chars
 from chezmoi_mousse.id_typing import Any
+
+
+@dataclass
+class DirPathStatus:
+    path: Path
+    status: str
+
+
+@dataclass
+class FilePathStatus:
+    path: Path
+    status: str
+
+
+@dataclass
+class StatusPaths:
+    managed_dirs: list[Path] = field(default_factory=list[Path])
+    managed_files: list[Path] = field(default_factory=list[Path])
+    status_dirs: list[DirPathStatus] = field(
+        default_factory=list[DirPathStatus]
+    )
+    status_files: list[FilePathStatus] = field(
+        default_factory=list[FilePathStatus]
+    )
 
 
 class DirTreeName(StrEnum):
@@ -106,7 +130,7 @@ class VirtualTree(Tree[VirtualNode]):
         return text
 
 
-class VirtualDirTree(DirectoryTree):
+class VirtualDirTreeBase(DirectoryTree):
     ICON_NODE_EXPANDED = Chars.down_triangle
     ICON_NODE = Chars.right_triangle
     ICON_FILE = " "
@@ -126,3 +150,67 @@ class VirtualDirTree(DirectoryTree):
         """Override base class method so it also returns non-existing paths
         which do exist in the chezmoi repository."""
         ...
+
+
+class ApplyDirTree(VirtualDirTreeBase):
+    pass
+
+
+class ReAddDirTree(VirtualDirTreeBase):
+    pass
+
+
+class AddDirTree(VirtualDirTreeBase):
+    pass
+
+    # def refresh_status_paths_dataclass(
+    #     self, splash_data: SplashReturnData | None = None
+    # ) -> None:
+    #     if splash_data is not None:
+    #         managed_dir_paths = [
+    #             Path(line)
+    #             for line in SplashReturnData.managed_dirs.splitlines()
+    #         ]
+    #         managed_file_paths = [
+    #             Path(line)
+    #             for line in SplashReturnData.managed_files.splitlines()
+    #         ]
+    #         status_dir_paths = [
+    #             PathStatus(Path(line[3:]), StatusCodes(line[:2]))
+    #             for line in SplashReturnData.dir_status_lines.splitlines()
+    #         ]
+    #         status_file_paths = [
+    #             PathStatus(Path(line[3:]), StatusCodes(line[:2]))
+    #             for line in SplashReturnData.file_status_lines.splitlines()
+    #         ]
+    #         self.status_paths = StatusPaths(
+    #             managed_dirs=managed_dir_paths,
+    #             managed_files=managed_file_paths,
+    #             status_dirs=status_dir_paths,
+    #             status_files=status_file_paths,
+    #         )
+    #         return
+    #     # get data from chezmoi managed stdout
+    #     managed_dir_paths: list[Path] = [
+    #         Path(line) for line in self.read(ReadCmd.managed_dirs).splitlines()
+    #     ]
+    #     managed_file_paths: list[Path] = [
+    #         Path(line)
+    #         for line in self.read(ReadCmd.managed_files).splitlines()
+    #     ]
+    #     # get data from chezmoi status stdout
+    #     status_dir_paths: list[PathStatus] = [
+    #         PathStatus(Path(line[3:]), StatusCodes(line[:2]))
+    #         for line in self.read(ReadCmd.dir_status_lines).splitlines()
+    #     ]
+    #     status_file_paths: list[PathStatus] = [
+    #         PathStatus(Path(line[3:]), StatusCodes(line[:2]))
+    #         for line in self.read(ReadCmd.file_status_lines).splitlines()
+    #     ]
+
+    #     self.status_paths = StatusPaths(
+    #         managed_dirs=managed_dir_paths,
+    #         managed_files=managed_file_paths,
+    #         status_dirs=status_dir_paths,
+    #         status_files=status_file_paths,
+    #     )

@@ -1,7 +1,7 @@
 import json
 import os
 import tempfile
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
@@ -356,53 +356,15 @@ init_log = InitLog()
 output_log = OutputLog()
 
 
-@dataclass
-class StatusCodes:
-    status_codes: str = ""
-
-    @property
-    def apply_status(self) -> str:
-        return self.status_codes[1]
-
-    @property
-    def re_add_status(self) -> str:
-        return self.status_codes[0]
-
-
-@dataclass
-class PathStatus:
-    path: Path = Path.home()
-    status: StatusCodes = StatusCodes()
-
-
-@dataclass
-class StatusPaths:
-    managed_dirs: list[Path] = field(default_factory=list[Path])
-    managed_files: list[Path] = field(default_factory=list[Path])
-    status_dirs: list[PathStatus] = field(default_factory=list[PathStatus])
-    status_files: list[PathStatus] = field(default_factory=list[PathStatus])
-
-
 class Chezmoi:
+
     def __init__(self) -> None:
 
-        io_cmds: list[ReadCmd] = [
-            ReadCmd.dir_status_lines,
-            ReadCmd.doctor,
-            ReadCmd.file_status_lines,
-            ReadCmd.managed_dirs,
-            ReadCmd.managed_files,
-        ]
         # Initialize managed_dirs and managed_files as empty strings
         self.managed_dirs = ""
         self.managed_files = ""
         self.dir_status_lines = ""
         self.file_status_lines = ""
-
-        self.status_paths: StatusPaths | None = None
-
-        for cmd in io_cmds:
-            setattr(self, cmd.name, (cmd.value, ""))
 
     # PRE INIT CONFIG
 
@@ -597,29 +559,3 @@ class Chezmoi:
             else:
                 path_dict[path] = "X"
         return path_dict
-
-    def refresh_status_paths_dataclass(self) -> None:
-        # get data from chezmoi managed stdout
-        managed_dir_paths: list[Path] = [
-            Path(line) for line in self.read(ReadCmd.managed_dirs).splitlines()
-        ]
-        managed_file_paths: list[Path] = [
-            Path(line)
-            for line in self.read(ReadCmd.managed_files).splitlines()
-        ]
-        # get data from chezmoi status stdout
-        status_dir_paths: list[PathStatus] = [
-            PathStatus(Path(line[3:]), StatusCodes(line[:2]))
-            for line in self.read(ReadCmd.dir_status_lines).splitlines()
-        ]
-        status_file_paths: list[PathStatus] = [
-            PathStatus(Path(line[3:]), StatusCodes(line[:2]))
-            for line in self.read(ReadCmd.file_status_lines).splitlines()
-        ]
-
-        self.status_paths = StatusPaths(
-            managed_dirs=managed_dir_paths,
-            managed_files=managed_file_paths,
-            status_dirs=status_dir_paths,
-            status_files=status_file_paths,
-        )
