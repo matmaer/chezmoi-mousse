@@ -6,8 +6,11 @@ from enum import Enum, StrEnum
 
 import pytest
 from _test_utils import (
+    find_dataclass_field_usage,
     find_enum_usage_in_file,
     get_class_public_members,
+    get_dataclass_fields,
+    get_dataclasses_from_module,
     modules_to_test,
 )
 
@@ -119,3 +122,40 @@ def test_id_members_in_use(member_name: str, member_type: str):
 
     if not is_used:
         pytest.fail(f"\nNot in use: {member_name} {member_type}")
+
+
+def _get_dataclass_field_params() -> list[tuple[str, str, str]]:
+    """Get all dataclass fields as test parameters."""
+    params: list[tuple[str, str, str]] = []
+    dataclasses = get_dataclasses_from_module(id_typing)
+
+    for dataclass_type in dataclasses:
+        fields = get_dataclass_fields(dataclass_type)
+        for field_name, field_type in fields:
+            params.append((dataclass_type.__name__, field_name, field_type))
+
+    return params
+
+
+@pytest.mark.parametrize(
+    "dataclass_name,field_name,field_type",
+    _get_dataclass_field_params(),
+    ids=lambda param: (
+        f"{param[0]}.{param[1]}" if isinstance(param, tuple) else str(param)
+    ),
+)
+def test_dataclass_fields_in_use(
+    dataclass_name: str, field_name: str, field_type: str
+):
+    """Test that all dataclass fields are accessed somewhere in the codebase."""
+    found = False
+
+    for py_file in modules_to_test(exclude_file_names=["id_typing.py"]):
+        if find_dataclass_field_usage(py_file, dataclass_name, field_name):
+            found = True
+            break
+
+    if not found:
+        pytest.fail(
+            f"\n{dataclass_name}.{field_name} ({field_type}) not in use."
+        )

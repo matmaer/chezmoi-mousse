@@ -1,5 +1,6 @@
 import ast
 import inspect
+from dataclasses import fields, is_dataclass
 from enum import StrEnum
 from pathlib import Path
 from types import ModuleType
@@ -146,3 +147,65 @@ def get_root_class_name(node: ast.AST) -> str | None:
     elif isinstance(node, ast.Call):
         return get_root_class_name(node.func)
     return None
+
+
+def get_dataclasses_from_module(module: ModuleType) -> list[type]:
+    dataclass_types: list[type] = []
+    for _, cls in inspect.getmembers(module, inspect.isclass):
+        if is_dataclass(cls) and cls.__module__ == module.__name__:
+            dataclass_types.append(cls)
+    return dataclass_types
+
+
+def get_dataclass_fields(dataclass_type: type) -> list[tuple[str, str]]:
+    field_info: list[tuple[str, str]] = []
+    for field in fields(dataclass_type):
+        field_info.append((field.name, str(field.type)))
+    return field_info
+
+
+def find_dataclass_field_usage(
+    py_file: Path, dataclass_name: str, field_name: str
+) -> bool:
+    """
+    This looks for patterns like:
+    - obj.field_name (attribute access)
+    - obj.field_name = value (attribute assignment)
+    - SomeClass(field_name=value) (constructor with keyword argument)
+    """
+    content = py_file.read_text()
+    tree = ast.parse(content, filename=str(py_file))
+
+    for node in ast.walk(tree):
+        # Check for attribute access: obj.field_name
+        if isinstance(node, ast.Attribute) and node.attr == field_name:
+            return True
+
+        # Check for attribute assignment: obj.field_name = value
+        if isinstance(node, ast.Assign):
+            for target in node.targets:
+                if (
+                    isinstance(target, ast.Attribute)
+                    and target.attr == field_name
+                ):
+                    return True
+
+        # Check for constructor calls with keyword arguments: SomeClass(field_name=value)
+        if isinstance(node, ast.Call):
+            for keyword in node.keywords:
+                if keyword.arg == field_name:
+                    # Check if this is likely a constructor for our dataclass
+                    if (
+                        isinstance(node.func, ast.Name)
+                        and node.func.id == dataclass_name
+                    ):
+                        return True
+                    # Also check for cases where the constructor is accessed via attribute
+                    # e.g., module.SomeClass(field_name=value)
+                    elif (
+                        isinstance(node.func, ast.Attribute)
+                        and node.func.attr == dataclass_name
+                    ):
+                        return True
+
+    return False
