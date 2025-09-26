@@ -196,8 +196,8 @@ class FilePathStatus:
 @dataclass
 class ManagedStatus:
 
-    managed_dirs: list[Path] = field(default_factory=list[Path])
-    managed_files: list[Path] = field(default_factory=list[Path])
+    dirs: list[Path] = field(default_factory=list[Path])
+    files: list[Path] = field(default_factory=list[Path])
     status_dirs: list[DirPathStatus] = field(
         default_factory=list[DirPathStatus]
     )
@@ -505,10 +505,10 @@ class Chezmoi:
         self, splash_data: SplashReturnData | None = None
     ) -> None:
         if splash_data is not None:
-            managed_status.managed_dirs = [
+            managed_status.dirs = [
                 Path(line) for line in splash_data.managed_dirs.splitlines()
             ]
-            managed_status.managed_files = [
+            managed_status.files = [
                 Path(line) for line in splash_data.managed_files.splitlines()
             ]
             managed_status.status_dirs = [
@@ -521,10 +521,10 @@ class Chezmoi:
             ]
             return
         # get data from chezmoi managed stdout
-        managed_status.managed_dirs = [
+        managed_status.dirs = [
             Path(line) for line in self.read(ReadCmd.managed_dirs).splitlines()
         ]
-        managed_status.managed_files = [
+        managed_status.files = [
             Path(line)
             for line in self.read(ReadCmd.managed_files).splitlines()
         ]
@@ -568,7 +568,7 @@ class Chezmoi:
 
     def managed_dirs_in(self, dir_path: Path) -> list[Path]:
         # checks only direct children
-        return [p for p in managed_status.managed_dirs if p.parent == dir_path]
+        return [p for p in managed_status.dirs if p.parent == dir_path]
 
     def _create_status_dict(
         self, tab_name: TabName, kind: Literal["dirs", "files"]
@@ -577,13 +577,13 @@ class Chezmoi:
         status_idx: int = 0
         status_codes: str = ""
         if kind == "dirs":
-            managed_paths = managed_status.managed_dirs
+            managed_paths = managed_status.dirs
             status_lines = [
                 p.status + " " + str(p.path)
                 for p in managed_status.status_dirs
             ]
         elif kind == "files":
-            managed_paths = managed_status.managed_files
+            managed_paths = managed_status.files
             status_lines = [
                 p.status + " " + str(p.path)
                 for p in managed_status.status_files
