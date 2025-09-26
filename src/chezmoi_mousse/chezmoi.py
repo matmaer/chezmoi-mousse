@@ -459,7 +459,7 @@ class Chezmoi:
     def stripped_cmd(self, long_command: list[str]) -> str:
         return self.app_log.pretty_cmd_str(long_command)
 
-    def strip_stdout(self, stdout: str):
+    def _strip_stdout(self, stdout: str):
         # remove trailing and leading new lines but NOT leading whitespace
         stripped = stdout.lstrip("\n").rstrip()
         # remove intermediate empty lines
@@ -467,8 +467,8 @@ class Chezmoi:
             [line for line in stripped.splitlines() if line.strip()]
         )
 
-    def log_in_app_and_output_log(self, result: CompletedProcess[str]):
-        result.stdout = self.strip_stdout(result.stdout)
+    def _log_in_app_and_output_log(self, result: CompletedProcess[str]):
+        result.stdout = self._strip_stdout(result.stdout)
         self.app_log.completed_process(result)
         self.output_log.completed_process(result)
 
@@ -480,8 +480,8 @@ class Chezmoi:
         result: CompletedProcess[str] = run(
             command, capture_output=True, shell=False, text=True, timeout=1
         )
-        self.log_in_app_and_output_log(result)
-        return self.strip_stdout(result.stdout)
+        self._log_in_app_and_output_log(result)
+        return self._strip_stdout(result.stdout)
 
     def perform(
         self, change_sub_cmd: ChangeCmd, change_arg: str | None = None
@@ -495,7 +495,7 @@ class Chezmoi:
         if change_arg is not None:
             command: list[str] = command + [change_arg]
 
-        self.log_in_app_and_output_log(
+        self._log_in_app_and_output_log(
             run(
                 command, capture_output=True, shell=False, text=True, timeout=5
             )
