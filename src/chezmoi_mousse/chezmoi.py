@@ -305,7 +305,7 @@ class DebugLog(CommandLogBase):
 
     def __init__(self) -> None:
         super().__init__(
-            id=LogsEnum.debug_log.name, markup=True, max_lines=10000
+            id=LogsEnum.debug_log.name, markup=True, max_lines=10000, wrap=True
         )
 
     def on_mount(self) -> None:
