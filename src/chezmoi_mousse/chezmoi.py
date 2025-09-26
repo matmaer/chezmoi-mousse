@@ -116,7 +116,6 @@ class ReadCmd(Enum):
     ]
     managed_tree = GlobalCmd.live_run.value + [
         ReadVerbs.managed.value,
-        VerbArgs.path_style_absolute.value,
         VerbArgs.tree.value,
     ]
     source_path = GlobalCmd.live_run.value + [ReadVerbs.source_path.value]
