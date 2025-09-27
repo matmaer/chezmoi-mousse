@@ -3,6 +3,7 @@
 import ast
 import inspect
 from enum import Enum, StrEnum
+from pathlib import Path
 
 import pytest
 from _test_utils import (
@@ -11,9 +12,11 @@ from _test_utils import (
     get_class_public_members,
     get_dataclass_fields,
     get_dataclasses_from_module,
+    get_strenum_classes,
     modules_to_test,
 )
 
+import chezmoi_mousse.constants as constants
 import chezmoi_mousse.id_typing as id_typing
 
 
@@ -159,3 +162,30 @@ def test_dataclass_fields_in_use(
         pytest.fail(
             f"\n{dataclass_name}.{field_name} ({field_type}) not in use."
         )
+
+
+exclude_files = ["__init__.py", "__main__.py"]
+
+
+@pytest.mark.parametrize(
+    "py_file",
+    modules_to_test(exclude_file_names=exclude_files),
+    ids=lambda py_file: py_file.name,
+)
+def test_imports_via(py_file: Path) -> None:
+    """Test that modules do not import classes from id_typing.py that exist in constants.py."""
+    class_names = [cls.__name__ for cls in get_strenum_classes(constants)]
+    tree = ast.parse(py_file.read_text())
+    results: list[str] = []
+    for node in ast.walk(tree):
+        if (
+            isinstance(node, ast.ImportFrom)
+            and node.module == "chezmoi_mousse.id_typing"
+        ):
+            for alias in node.names:
+                if alias.name in class_names:
+                    results.append(
+                        f"{py_file.name} imports {alias.name} from id_typing"
+                    )
+    if results:
+        pytest.fail("\n".join(results))
