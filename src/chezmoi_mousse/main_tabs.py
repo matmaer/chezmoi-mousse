@@ -190,6 +190,16 @@ class InitTab(Horizontal, AppType):
         ).toggle_class("-visible")
 
 
+class LogsTab(Vertical, AppType):
+
+    def __init__(self) -> None:
+        self.tab_buttons = (TabBtn.app_log, TabBtn.output_log)
+        super().__init__(id=Id.logs.tab_container_id)
+
+    def compose(self) -> ComposeResult:
+        yield LogsTabSwitcher(tab_ids=Id.logs)
+
+
 class ConfigTab(Horizontal, AppType):
 
     def __init__(self) -> None:
@@ -199,17 +209,7 @@ class ConfigTab(Horizontal, AppType):
         yield ConfigTabSwitcher(Id.config)
 
     def on_mount(self) -> None:
-        self.query(Label).add_class(Tcss.config_tab_label)
-
-
-class LogsTab(Vertical, AppType):
-
-    def __init__(self) -> None:
-        self.tab_buttons = (TabBtn.app_log, TabBtn.output_log)
-        super().__init__(id=Id.logs.tab_container_id)
-
-    def compose(self) -> ComposeResult:
-        yield LogsTabSwitcher(tab_ids=Id.logs)
+        self.query(Label).add_class(Tcss.section_label)
 
 
 class HelpTab(Vertical):
