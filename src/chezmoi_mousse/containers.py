@@ -12,7 +12,7 @@ from textual.app import ComposeResult
 from textual.containers import Horizontal, HorizontalGroup, VerticalGroup
 from textual.widgets import Button, ContentSwitcher, Label, Switch
 
-from chezmoi_mousse.constants import (
+from chezmoi_mousse._str_enums import (
     Area,
     TabBtn,
     TabName,

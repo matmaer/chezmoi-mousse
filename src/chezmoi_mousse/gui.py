@@ -15,9 +15,7 @@ from textual.widgets import (
 )
 
 import chezmoi_mousse.custom_theme
-from chezmoi_mousse.button_groups import OperateBtnHorizontal
-from chezmoi_mousse.chezmoi import Chezmoi
-from chezmoi_mousse.constants import (
+from chezmoi_mousse._str_enums import (
     Area,
     Chars,
     TabName,
@@ -25,6 +23,8 @@ from chezmoi_mousse.constants import (
     TreeName,
     ViewName,
 )
+from chezmoi_mousse.button_groups import OperateBtnHorizontal
+from chezmoi_mousse.chezmoi import Chezmoi
 from chezmoi_mousse.directory_tree import FilteredDirTree
 from chezmoi_mousse.id_typing import (
     Id,

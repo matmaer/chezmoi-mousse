@@ -20,13 +20,7 @@ from textual.widgets import (
     Static,
 )
 
-from chezmoi_mousse.button_groups import (
-    NavButtonsVertical,
-    OperateBtnHorizontal,
-    TabBtnHorizontal,
-)
-from chezmoi_mousse.chezmoi import LogsEnum, ReadCmd
-from chezmoi_mousse.constants import (
+from chezmoi_mousse._str_enums import (
     FLOW,
     Area,
     NavBtn,
@@ -36,6 +30,12 @@ from chezmoi_mousse.constants import (
     TreeName,
     ViewName,
 )
+from chezmoi_mousse.button_groups import (
+    NavButtonsVertical,
+    OperateBtnHorizontal,
+    TabBtnHorizontal,
+)
+from chezmoi_mousse.chezmoi import LogsEnum, ReadCmd
 from chezmoi_mousse.id_typing import AppType, TabIds
 from chezmoi_mousse.widgets import (
     ContentsView,

@@ -3,7 +3,7 @@ from textual.app import ComposeResult
 from textual.containers import HorizontalGroup, Vertical, VerticalGroup
 from textual.widgets import Button
 
-from chezmoi_mousse.constants import Area, NavBtn, OperateBtn, TabBtn, Tcss
+from chezmoi_mousse._str_enums import Area, NavBtn, OperateBtn, TabBtn, Tcss
 from chezmoi_mousse.id_typing import TabIds
 
 

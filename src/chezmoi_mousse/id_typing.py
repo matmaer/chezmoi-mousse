@@ -7,7 +7,7 @@ from enum import Enum
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from chezmoi_mousse.constants import (
+from chezmoi_mousse._str_enums import (
     Area,
     Chars,
     NavBtn,

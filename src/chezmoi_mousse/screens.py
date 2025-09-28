@@ -12,9 +12,9 @@ from textual.events import Click
 from textual.screen import Screen
 from textual.widgets import Button, Collapsible, Label, Link, Pretty, Tree
 
+from chezmoi_mousse._str_enums import BorderSubTitle, Tcss
 from chezmoi_mousse.button_groups import OperateBtnHorizontal
 from chezmoi_mousse.chezmoi import ChangeCmd
-from chezmoi_mousse.constants import BorderSubTitle, Tcss
 from chezmoi_mousse.id_typing import (
     AppType,
     Id,

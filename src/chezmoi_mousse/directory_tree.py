@@ -5,7 +5,7 @@ from pathlib import Path
 from textual.reactive import reactive
 from textual.widgets import DirectoryTree
 
-from chezmoi_mousse.constants import Chars
+from chezmoi_mousse._str_enums import Chars
 from chezmoi_mousse.id_typing import AppType
 
 

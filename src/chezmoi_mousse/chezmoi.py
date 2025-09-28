@@ -13,7 +13,7 @@ from rich.markup import escape
 from textual.widgets import RichLog
 
 import chezmoi_mousse.custom_theme as theme
-from chezmoi_mousse.constants import Chars, TabName, Tcss
+from chezmoi_mousse._str_enums import Chars, TabName, Tcss
 from chezmoi_mousse.id_typing import (
     OperateHelp,
     ParsedJson,

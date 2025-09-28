@@ -5,9 +5,7 @@ from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical, VerticalGroup
 from textual.widgets import Button, Input, Label, Switch
 
-from chezmoi_mousse.button_groups import NavButtonsVertical
-from chezmoi_mousse.chezmoi import ChangeCmd
-from chezmoi_mousse.constants import (
+from chezmoi_mousse._str_enums import (
     Area,
     OperateBtn,
     TabBtn,
@@ -15,6 +13,8 @@ from chezmoi_mousse.constants import (
     TreeName,
     ViewName,
 )
+from chezmoi_mousse.button_groups import NavButtonsVertical
+from chezmoi_mousse.chezmoi import ChangeCmd
 from chezmoi_mousse.containers import OperateTabsBase, SwitchSlider
 from chezmoi_mousse.content_switchers import (
     ConfigTabSwitcher,
