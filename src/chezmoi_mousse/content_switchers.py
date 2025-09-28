@@ -21,7 +21,6 @@ from textual.widgets import (
 )
 
 from chezmoi_mousse._str_enums import (
-    FLOW,
     Area,
     NavBtn,
     OperateBtn,
@@ -275,6 +274,37 @@ class ConfigTabSwitcher(Horizontal, AppType):
 
 class HelpTabSwitcher(Horizontal, AppType):
 
+    # provisional diagrams until dynamically created
+    FLOW_DIAGRAM = """\
+┌──────────────┐    ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
+│home directory│    │ working copy │    │  local repo  │    │ remote repo  │
+└──────┬───────┘    └──────┬───────┘    └──────┬───────┘    └──────┬───────┘
+       │                   │                   │                   │
+       │                   │                   │                   │
+       │     Add Tab       │    autoCommit     │     git push      │
+       │   Re-Add Tab      │──────────────────>│──────────────────>│
+       │──────────────────>│                   │                   │
+       │                   │                autopush               │
+       │                   │──────────────────────────────────────>│
+       │                   │                   │                   │
+       │                   │                   │                   │
+       │     Apply Tab     │     chezmoi init & chezmoi git pull   │
+       │<──────────────────│<──────────────────────────────────────│
+       │                   │                   │                   │
+       │     Diff View     │                   │                   │
+       │<─ ─ ─ ─ ─ ─ ─ ─ ─>│                   │                   │
+       │                   │                   │                   │
+       │                   │    chezmoi init & chezmoi git pull    │
+       │                   │<──────────────────────────────────────│
+       │                   │                   │                   │
+       │        chezmoi init --one-shot & chezmoi init --apply     │
+       │<──────────────────────────────────────────────────────────│
+       │                   │                   │                   │
+┌──────┴───────┐    ┌──────┴───────┐    ┌──────┴───────┐    ┌──────┴───────┐
+│ destination  │    │ target state │    │ source state │    │  git remote  │
+└──────────────┘    └──────────────┘    └──────────────┘    └──────────────┘
+"""
+
     def __init__(self, tab_ids: TabIds):
         self.tab_ids = tab_ids
         super().__init__(id=self.tab_ids.tab_vertical_id(area=Area.right))
@@ -291,13 +321,13 @@ class HelpTabSwitcher(Horizontal, AppType):
         with Vertical(id=self.tab_ids.tab_vertical_id(area=Area.right)):
             with ContentSwitcher(
                 id=self.tab_ids.content_switcher_id(area=Area.right),
-                initial=self.tab_ids.view_id(view=ViewName.cat_config),
+                initial=self.tab_ids.view_id(view=ViewName.flow_diagram),
                 classes=Tcss.nav_content_switcher,
             ):
                 yield Vertical(
                     Label("chezmoi diagram"),
-                    Static(FLOW, classes=Tcss.flow_diagram),
-                    id=self.tab_ids.view_id(view=ViewName.diagram),
+                    Static(self.FLOW_DIAGRAM, classes=Tcss.flow_diagram),
+                    id=self.tab_ids.view_id(view=ViewName.flow_diagram),
                 )
 
     @on(Button.Pressed, f".{Tcss.nav_button}")
@@ -305,7 +335,7 @@ class HelpTabSwitcher(Horizontal, AppType):
         event.stop()
         switcher = self.query_exactly_one(ContentSwitcher)
         if event.button.id == self.tab_ids.button_id(btn=NavBtn.diagram):
-            switcher.current = self.tab_ids.view_id(view=ViewName.diagram)
+            switcher.current = self.tab_ids.view_id(view=ViewName.flow_diagram)
 
 
 class LogsTabSwitcher(Vertical, AppType):
