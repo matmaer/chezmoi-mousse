@@ -75,7 +75,6 @@ class TabBtnHorizontal(ButtonsHorizontal):
         super().__init__(tab_ids=tab_ids, buttons=buttons, area=area)
 
     def on_mount(self) -> None:
-        self.add_class(Tcss.tab_buttons_horizontal)
         self.query(Button).add_class(Tcss.tab_button)
         self.query_one(
             self.tab_ids.button_id("#", btn=self.buttons[0])

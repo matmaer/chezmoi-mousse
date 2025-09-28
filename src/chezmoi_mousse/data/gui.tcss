@@ -169,39 +169,6 @@
   }
 }
 
-.tab_buttons_horizontal {
-  width: 100%;
-  height: 1;
-  min-width: 16;
-  &>.single_button_vertical {
-    align: center middle;
-  }
-  & .tab_button {
-    border: none;
-    min-width: 4;
-    text-style: bold;
-    color: $foreground 50%;
-    &:hover {
-      color: $foreground;
-    }
-    &:focus {
-      text-style: bold;
-      color: $text-accent 80%;
-    }
-    &.last_clicked {
-      color: $text-accent 80%;
-      text-style: bold;
-      &:hover {
-        color: $text-accent 80%;
-      }
-      &:focus {
-        text-style: bold;
-        color: $text-accent 80%;
-      }
-    }
-  }
-}
-
 .internet_links {
   color: $text-primary;
   text-style: underline;
@@ -345,6 +312,39 @@ SwitchSlider {
   }
   &.-visible {
     offset-x: -100%;
+  }
+}
+
+TabBtnHorizontal {
+  width: 100%;
+  height: 1;
+  min-width: 16;
+  &>.single_button_vertical {
+    align: center middle;
+  }
+  & .tab_button {
+    border: none;
+    min-width: 4;
+    text-style: bold;
+    color: $foreground 50%;
+    &:hover {
+      color: $foreground;
+    }
+    &:focus {
+      text-style: bold;
+      color: $text-accent 80%;
+    }
+    &.last_clicked {
+      color: $text-accent 80%;
+      text-style: bold;
+      &:hover {
+        color: $text-accent 80%;
+      }
+      &:focus {
+        text-style: bold;
+        color: $text-accent 80%;
+      }
+    }
   }
 }
 
