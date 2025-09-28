@@ -12,7 +12,7 @@ from textual.events import Click
 from textual.screen import Screen
 from textual.widgets import Button, Collapsible, Label, Link, Pretty, Tree
 
-from chezmoi_mousse._str_enums import BorderSubTitle, Tcss
+from chezmoi_mousse._str_enums import ScreenBorderSubTitle, Tcss
 from chezmoi_mousse.button_groups import OperateBtnHorizontal
 from chezmoi_mousse.chezmoi import ChangeCmd
 from chezmoi_mousse.id_typing import (
@@ -99,7 +99,7 @@ class Operate(ScreensBase, AppType):
     def on_mount(self) -> None:
         self.app.notify(f"Path is {self.path}")
         self.add_class(Tcss.operate_screen)
-        self.border_subtitle = BorderSubTitle.esc_to_close
+        self.border_subtitle = ScreenBorderSubTitle.esc_to_close
         for button in self.query(Button):
             button.disabled = False
         if (
@@ -221,7 +221,7 @@ class Maximized(ScreensBase):
 
     def on_mount(self) -> None:
         self.add_class(Tcss.border_title_top)
-        self.border_subtitle = BorderSubTitle.double_click_esc_to_close
+        self.border_subtitle = ScreenBorderSubTitle.double_click_esc_to_close
         if self.id_to_maximize == self.tab_ids.view_id(
             view=ViewName.contents_view
         ):
@@ -286,7 +286,7 @@ class InstallHelp(ScreensBase):
                         yield Button("exit app", variant="primary", flat=True)
 
     def on_mount(self) -> None:
-        self.border_subtitle = BorderSubTitle.esc_to_exit_app
+        self.border_subtitle = ScreenBorderSubTitle.esc_to_exit_app
         help_tree: Tree[ParsedJson] = self.query_exactly_one(Tree[ParsedJson])
         help_tree.show_root = False
         pkg_root = (

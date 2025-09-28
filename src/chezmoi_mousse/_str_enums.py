@@ -10,7 +10,7 @@ class Area(StrEnum):
     top = auto()
 
 
-class BorderSubTitle(StrEnum):
+class ScreenBorderSubTitle(StrEnum):
     double_click_esc_to_close = " double click or escape key to close "
     esc_to_close = " escape key to close "
     esc_to_exit_app = " escape key to exit app "
