@@ -111,7 +111,6 @@ class Tcss(StrEnum):
     last_clicked = auto()
     log_views = auto()
     nav_button = auto()
-    nav_buttons_vertical = auto()
     nav_content_switcher = auto()
     operate_button = auto()
     operate_info = auto()

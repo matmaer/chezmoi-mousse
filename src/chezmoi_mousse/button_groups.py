@@ -46,10 +46,7 @@ class ButtonsVertical(VerticalGroup):
         self.buttons: NavButtons = buttons
         self.area: Area = area
         self.tab_ids: TabIds = tab_ids
-        super().__init__(
-            id=self.tab_ids.buttons_vertical_group_id(self.area),
-            classes=Tcss.nav_buttons_vertical,
-        )
+        super().__init__(id=self.tab_ids.buttons_vertical_group_id(self.area))
 
     def compose(self) -> ComposeResult:
         for button_enum in self.buttons:
