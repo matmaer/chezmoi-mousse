@@ -37,6 +37,7 @@ from chezmoi_mousse.main_tabs import (
     ApplyTab,
     ConfigTab,
     DoctorTab,
+    HelpTab,
     InitTab,
     LogsTab,
     ReAddTab,
@@ -108,6 +109,8 @@ class ChezmoiGUI(App["ChezmoiGUI"]):
                 yield ConfigTab()
             with TabPane("Doctor", id=Id.config.tab_pane_id):
                 yield DoctorTab()
+            with TabPane("Help"):
+                yield HelpTab()
         yield Footer()
 
     def on_mount(self) -> None:

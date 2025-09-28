@@ -86,6 +86,7 @@ class TabName(StrEnum):
     apply_tab = auto()
     config_tab = auto()
     doctor_tab = auto()
+    help_tab = auto()
     init_tab = auto()
     log_tab = auto()
     re_add_tab = auto()

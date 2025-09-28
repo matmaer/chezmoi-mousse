@@ -31,6 +31,7 @@ from chezmoi_mousse.constants import (
 from chezmoi_mousse.containers import OperateTabsBase, SwitchSlider
 from chezmoi_mousse.content_switchers import (
     ConfigTabSwitcher,
+    HelpTabSwitcher,
     InitTabSwitcher,
     LogsTabSwitcher,
     TreeSwitcher,
@@ -292,3 +293,12 @@ class LogsTab(Vertical, AppType):
 
     def compose(self) -> ComposeResult:
         yield LogsTabSwitcher(tab_ids=Id.logs)
+
+
+class HelpTab(Vertical):
+
+    def __init__(self) -> None:
+        super().__init__(id=Id.help.tab_container_id)
+
+    def compose(self) -> ComposeResult:
+        yield HelpTabSwitcher(tab_ids=Id.help)
