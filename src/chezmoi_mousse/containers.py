@@ -197,9 +197,7 @@ class SwitchSlider(VerticalGroup):
     ) -> None:
         self.switches = switches
         self.tab_ids = tab_ids
-        super().__init__(
-            id=self.tab_ids.switches_slider_id, classes=Tcss.switches_vertical
-        )
+        super().__init__(id=self.tab_ids.switches_slider_id)
 
     def compose(self) -> ComposeResult:
         for switch_enum in self.switches:

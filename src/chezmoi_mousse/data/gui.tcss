@@ -129,37 +129,6 @@
   }
 }
 
-.switches_vertical {
-  background-tint: $surface;
-  background: $surface;
-  border: round $primary;
-  border-left: none;
-  dock: bottom;
-  layer: switches;
-  margin-bottom: 1;  /* make sure horizontal scrollbar on layer below is visible */
-  offset-x: 0%;
-  padding-right: 1;
-  transition: offset 380ms;
-  width: auto;
-
-  & Switch {
-    border: none;
-  }
-  Label.switch_label {
-    border: none;
-    color: $foreground-darken-1;
-  }
-  &>.switch_horizontal {
-    width: auto;
-  }
-  &>.pad_bottom {
-    padding-bottom: 1;
-  }
-  &.-visible {
-    offset-x: -100%;
-  }
-}
-
 .section_label {
     background-tint: $surface-lighten-1;
     background: $surface-lighten-1;
@@ -347,6 +316,38 @@
 }
 
 
+/**********************/
+/* Type Selector tcss */
+/**********************/
+
+SwitchSlider {
+  background-tint: $surface;
+  background: $surface;
+  border: round $primary;
+  border-left: none;
+  dock: bottom;
+  layer: switches;
+  margin-bottom: 1;  /* make sure horizontal scrollbar on layer below is visible */
+  offset-x: 0%;
+  padding-right: 1;
+  transition: offset 380ms;
+  width: auto;
+
+  & .switch_label {
+    color: $foreground-darken-1;
+    width: auto;
+  }
+  &>.switch_horizontal {
+    width: auto;
+  }
+  &>.pad_bottom {
+    padding-bottom: 1;
+  }
+  &.-visible {
+    offset-x: -100%;
+  }
+}
+
 /***********************************/
 /* textual default tcss overrides  */
 /***********************************/
@@ -436,12 +437,15 @@ Header {
   min-width: 35;
 }
 
-# Label {
-# }
+Label {
+  border: none;
+  width: auto;
+}
 
 Switch {
   background: $surface;
   background-tint: $surface;
+  border: none;
 
   &>.switch--slider {
     color: $error-darken-3;
