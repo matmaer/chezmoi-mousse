@@ -38,7 +38,7 @@ class ButtonsHorizontal(HorizontalGroup):
                 )
 
 
-class ButtonsVertical(VerticalGroup):
+class NavButtonsVertical(VerticalGroup):
 
     def __init__(
         self, *, tab_ids: TabIds, buttons: NavButtons, area: Area

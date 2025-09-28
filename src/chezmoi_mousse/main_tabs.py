@@ -5,7 +5,7 @@ from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical, VerticalGroup
 from textual.widgets import Button, Input, Label, Switch
 
-from chezmoi_mousse.button_groups import ButtonsVertical
+from chezmoi_mousse.button_groups import NavButtonsVertical
 from chezmoi_mousse.chezmoi import ChangeCmd
 from chezmoi_mousse.constants import (
     Area,
@@ -148,7 +148,7 @@ class InitTab(Horizontal, AppType):
     def on_mount(self) -> None:
         self.query(Label).add_class(Tcss.section_label)
         self.app.chezmoi.init_log.success("Ready to run chezmoi commands.")
-        self.query_exactly_one(ButtonsVertical).add_class(
+        self.query_exactly_one(NavButtonsVertical).add_class(
             Tcss.tab_left_vertical
         )
 

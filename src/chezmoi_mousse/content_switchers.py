@@ -21,7 +21,7 @@ from textual.widgets import (
 )
 
 from chezmoi_mousse.button_groups import (
-    ButtonsVertical,
+    NavButtonsVertical,
     OperateBtnHorizontal,
     TabBtnHorizontal,
 )
@@ -110,7 +110,7 @@ class InitTabSwitcher(Horizontal):
         super().__init__(id=self.tab_ids.tab_vertical_id(area=Area.right))
 
     def compose(self) -> ComposeResult:
-        yield ButtonsVertical(
+        yield NavButtonsVertical(
             tab_ids=self.tab_ids,
             buttons=(NavBtn.new_repo, NavBtn.clone_repo, NavBtn.purge_repo),
             area=Area.left,
@@ -200,7 +200,7 @@ class ConfigTabSwitcher(Horizontal, AppType):
             id=self.tab_ids.tab_vertical_id(area=Area.left),
             classes=Tcss.tab_left_vertical,
         ):
-            yield ButtonsVertical(
+            yield NavButtonsVertical(
                 tab_ids=self.tab_ids,
                 buttons=(
                     NavBtn.doctor,
@@ -284,7 +284,7 @@ class HelpTabSwitcher(Horizontal, AppType):
             id=self.tab_ids.tab_vertical_id(area=Area.left),
             classes=Tcss.tab_left_vertical,
         ):
-            yield ButtonsVertical(
+            yield NavButtonsVertical(
                 tab_ids=self.tab_ids, buttons=(NavBtn.diagram,), area=Area.left
             )
 

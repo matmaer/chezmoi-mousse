@@ -283,7 +283,7 @@
 /* Type Selector tcss */
 /**********************/
 
-ButtonsVertical {
+NavButtonsVertical {
   width: auto;
   & .nav_button {
     background-tint: initial;
