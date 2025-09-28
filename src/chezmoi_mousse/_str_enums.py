@@ -10,12 +10,6 @@ class Area(StrEnum):
     top = auto()
 
 
-class ScreenBorderSubTitle(StrEnum):
-    double_click_esc_to_close = " double click or escape key to close "
-    esc_to_close = " escape key to close "
-    esc_to_exit_app = " escape key to exit app "
-
-
 class Chars(StrEnum):
     add_file_info_border = f"local {'\u2014' * 3}\u2192 chezmoi"  # '\N{EM DASH}', '\N{RIGHTWARDS ARROW}'
     apply_file_info_border = f"local \u2190{'\u2014' * 3} chezmoi"  # '\N{LEFTWARDS ARROW}', '\N{EM DASH}'
@@ -91,39 +85,6 @@ class TabName(StrEnum):
     init_tab = auto()
     log_tab = auto()
     re_add_tab = auto()
-
-
-class Tcss(StrEnum):
-    border_title_top = auto()
-    bottom_docked_log = auto()
-    content_switcher_left = auto()
-    dir_tree_widget = auto()
-    doctor_listview = auto()
-    doctor_table = auto()
-    doctor_vertical_scroll = auto()
-    flow_diagram = auto()
-    input_field = auto()
-    input_field_vertical = auto()
-    input_select = auto()
-    input_select_vertical = auto()
-    install_help = auto()
-    internet_links = auto()
-    last_clicked = auto()
-    log_views = auto()
-    nav_button = auto()
-    nav_content_switcher = auto()
-    operate_button = auto()
-    operate_info = auto()
-    operate_screen = auto()
-    pad_bottom = auto()
-    screen_base = auto()
-    section_label = auto()
-    single_button_vertical = auto()
-    switch_horizontal = auto()
-    switch_label = auto()
-    tab_button = auto()
-    tab_left_vertical = auto()
-    tree_widget = auto()
 
 
 class TreeName(StrEnum):

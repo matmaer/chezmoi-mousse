@@ -20,22 +20,23 @@ from textual.widgets import (
     Static,
 )
 
-from chezmoi_mousse._str_enums import (
-    Area,
-    NavBtn,
-    OperateBtn,
-    TabBtn,
-    Tcss,
-    TreeName,
-    ViewName,
-)
 from chezmoi_mousse.button_groups import (
     NavButtonsVertical,
     OperateBtnHorizontal,
     TabBtnHorizontal,
 )
 from chezmoi_mousse.chezmoi import LogsEnum, ReadCmd
-from chezmoi_mousse.id_typing import AppType, TabIds
+from chezmoi_mousse.id_typing import (
+    AppType,
+    Area,
+    NavBtn,
+    OperateBtn,
+    TabBtn,
+    TabIds,
+    Tcss,
+    TreeName,
+    ViewName,
+)
 from chezmoi_mousse.widgets import (
     ContentsView,
     DiffView,

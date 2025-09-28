@@ -3,7 +3,7 @@ enable setting widget id's without hardcoded strings or generated the id
 dynamically."""
 
 from dataclasses import dataclass, fields
-from enum import Enum
+from enum import Enum, StrEnum, auto
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -79,6 +79,41 @@ class SwitchData:
 
 ###############
 # Enum classes:
+
+# temporarily putting this class in this module
+
+
+class Tcss(StrEnum):
+    border_title_top = auto()
+    bottom_docked_log = auto()
+    content_switcher_left = auto()
+    dir_tree_widget = auto()
+    doctor_listview = auto()
+    doctor_table = auto()
+    doctor_vertical_scroll = auto()
+    flow_diagram = auto()
+    input_field = auto()
+    input_field_vertical = auto()
+    input_select = auto()
+    input_select_vertical = auto()
+    install_help = auto()
+    internet_links = auto()
+    last_clicked = auto()
+    log_views = auto()
+    nav_button = auto()
+    nav_content_switcher = auto()
+    operate_button = auto()
+    operate_info = auto()
+    operate_screen = auto()
+    pad_bottom = auto()
+    screen_base = auto()
+    section_label = auto()
+    single_button_vertical = auto()
+    switch_horizontal = auto()
+    switch_label = auto()
+    tab_button = auto()
+    tab_left_vertical = auto()
+    tree_widget = auto()
 
 
 class OperateHelp(Enum):
@@ -271,6 +306,14 @@ class ScreenIds:
     def __init__(self, screen_name: ScreenName) -> None:
         self.screen_name = screen_name
         self.screen_id = f"{screen_name}_id"
+        self.border_subtitle_dict = {
+            ScreenName.maximized: " double click or escape key to close ",
+            ScreenName.operate: " escape key to close ",
+            ScreenName.install_help: " escape key to exit app ",
+        }
+
+    def border_subtitle(self):
+        return self.border_subtitle_dict[self.screen_name]
 
     def view_id(self, qid: str = "", *, view: ViewName) -> str:
         return f"{qid}{self.screen_name}_{view}"

@@ -13,12 +13,14 @@ from rich.markup import escape
 from textual.widgets import RichLog
 
 import chezmoi_mousse.custom_theme as theme
-from chezmoi_mousse._str_enums import Chars, TabName, Tcss
 from chezmoi_mousse.id_typing import (
+    Chars,
     OperateHelp,
     ParsedJson,
     PathDict,
     SplashReturnData,
+    TabName,
+    Tcss,
 )
 
 # TODO: implement 'chezmoi verify', if exit 0, display message in Tree

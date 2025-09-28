@@ -29,27 +29,25 @@ from textual.widgets import (
 from textual.widgets.tree import TreeNode
 
 import chezmoi_mousse.custom_theme as theme
-from chezmoi_mousse._str_enums import (
-    Chars,
-    OperateBtn,
-    TabName,
-    Tcss,
-    TreeName,
-    ViewName,
-)
 from chezmoi_mousse.chezmoi import ReadCmd
 from chezmoi_mousse.id_typing import (
     Any,
     AppType,
+    Chars,
     DirNodeData,
     FileNodeData,
     Id,
     NodeData,
+    OperateBtn,
     OperateHelp,
     PathDict,
     PwMgrInfo,
     ScreenIds,
     TabIds,
+    TabName,
+    Tcss,
+    TreeName,
+    ViewName,
 )
 from chezmoi_mousse.messages import TreeNodeData, TreeNodeDataMsg
 from chezmoi_mousse.overrides import CustomRenderLabel

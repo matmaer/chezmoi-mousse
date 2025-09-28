@@ -15,22 +15,20 @@ from textual.widgets import (
 )
 
 import chezmoi_mousse.custom_theme
-from chezmoi_mousse._str_enums import (
-    Area,
-    Chars,
-    TabName,
-    Tcss,
-    TreeName,
-    ViewName,
-)
 from chezmoi_mousse.button_groups import OperateBtnHorizontal
 from chezmoi_mousse.chezmoi import Chezmoi
 from chezmoi_mousse.directory_tree import FilteredDirTree
 from chezmoi_mousse.id_typing import (
+    Area,
+    Chars,
     Id,
     OperateBtn,
     OperateHelp,
     SplashReturnData,
+    TabName,
+    Tcss,
+    TreeName,
+    ViewName,
 )
 from chezmoi_mousse.main_tabs import (
     AddTab,

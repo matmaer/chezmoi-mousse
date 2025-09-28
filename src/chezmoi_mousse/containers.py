@@ -12,16 +12,18 @@ from textual.app import ComposeResult
 from textual.containers import Horizontal, HorizontalGroup, VerticalGroup
 from textual.widgets import Button, ContentSwitcher, Label, Switch
 
-from chezmoi_mousse._str_enums import (
+from chezmoi_mousse.content_switchers import TreeSwitcher
+from chezmoi_mousse.id_typing import (
+    AppType,
     Area,
+    Switches,
     TabBtn,
+    TabIds,
     TabName,
     Tcss,
     TreeName,
     ViewName,
 )
-from chezmoi_mousse.content_switchers import TreeSwitcher
-from chezmoi_mousse.id_typing import AppType, Switches, TabIds
 from chezmoi_mousse.messages import TreeNodeDataMsg
 from chezmoi_mousse.widgets import (
     ContentsView,
