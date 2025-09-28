@@ -219,11 +219,17 @@ class PwMgrInfo(Enum):
 
 class TabIds:
     def __init__(self, tab_name: TabName) -> None:
-        self.switches_slider_id = f"{tab_name}_switches_slider"
-        self.switches_slider_qid = f"#{self.switches_slider_id}"
         self.tab_container_id = f"{tab_name}_container_id"
         self.tab_name: TabName = tab_name
         self.tab_pane_id = f"{tab_name}_pane"
+
+        # id's for which there's only one widget for each self.tab_name
+        self.datatable_id = f"{tab_name}_datatable"
+        self.datatable_qid = f"#{self.datatable_id}"
+        self.listview_id = f"{tab_name}_listview"
+        self.listview_qid = f"#{self.listview_id}"
+        self.switches_slider_id = f"{tab_name}_switches_slider"
+        self.switches_slider_qid = f"#{self.switches_slider_id}"
 
     def button_id(
         self, qid: str = "", *, btn: OperateBtn | TabBtn | NavBtn
@@ -247,9 +253,6 @@ class TabIds:
 
     def content_switcher_id(self, qid: str = "", *, area: Area) -> str:
         return f"{qid}{self.tab_name}_{area}_content_switcher"
-
-    def datatable_id(self, qid: str = "") -> str:
-        return f"{qid}{self.tab_name}_datatable"
 
     def switch_horizontal_id(self, qid: str = "", *, switch: Switches) -> str:
         return f"{qid}{self.tab_name}_{switch.name}_switch_horizontal"

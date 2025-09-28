@@ -1,23 +1,10 @@
 from pathlib import Path
 
-from rich.text import Text
 from textual import on
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical, VerticalGroup
-from textual.widgets import (
-    Button,
-    Collapsible,
-    DataTable,
-    Input,
-    Label,
-    Link,
-    ListItem,
-    ListView,
-    Static,
-    Switch,
-)
+from textual.widgets import Button, Input, Label, Switch
 
-import chezmoi_mousse.custom_theme as theme
 from chezmoi_mousse.button_groups import ButtonsVertical
 from chezmoi_mousse.chezmoi import ChangeCmd
 from chezmoi_mousse.constants import (
@@ -38,7 +25,7 @@ from chezmoi_mousse.content_switchers import (
     ViewSwitcher,
 )
 from chezmoi_mousse.directory_tree import FilteredDirTree
-from chezmoi_mousse.id_typing import AppType, Id, PwMgrInfo, Switches
+from chezmoi_mousse.id_typing import AppType, Id, Switches
 from chezmoi_mousse.widgets import ContentsView
 
 
@@ -159,7 +146,7 @@ class InitTab(Horizontal, AppType):
         )
 
     def on_mount(self) -> None:
-        self.query(Label).add_class(Tcss.config_tab_label)
+        self.query(Label).add_class(Tcss.section_label)
         self.app.chezmoi.init_log.success("Ready to run chezmoi commands.")
         self.query_exactly_one(ButtonsVertical).add_class(
             Tcss.tab_left_vertical
@@ -213,76 +200,6 @@ class ConfigTab(Horizontal, AppType):
 
     def on_mount(self) -> None:
         self.query(Label).add_class(Tcss.config_tab_label)
-
-
-class DoctorTab(Vertical, AppType):
-
-    def __init__(self) -> None:
-        self.doctor_output: str | None = None
-        self.dr_style = {
-            "ok": theme.vars["text-success"],
-            "info": theme.vars["foreground-darken-1"],
-            "warning": theme.vars["text-warning"],
-            "failed": theme.vars["text-error"],
-            "error": theme.vars["text-error"],
-        }
-        super().__init__(
-            id=Id.doctor.tab_container_id, classes=Tcss.doctor_vertical
-        )
-
-    def compose(self) -> ComposeResult:
-        yield DataTable[Text](id=Id.doctor.datatable_id(), show_cursor=False)
-        with VerticalGroup(classes=Tcss.doctor_vertical_group):
-
-            yield Collapsible(
-                ListView(), title="Password managers not found in $PATH"
-            )
-
-    def populate_doctor_data(self) -> None:
-        if self.doctor_output is None:
-            return
-        doctor_table: DataTable[Text] = self.query_one(DataTable[Text])
-        doctor_data: list[str] = self.doctor_output.splitlines()
-        if not doctor_table.columns:
-            doctor_table.add_columns(*doctor_data[0].split())
-
-        for line in doctor_data[1:]:
-            row = tuple(line.split(maxsplit=2))
-            if row[0] == "info" and "not found in $PATH" in row[2]:
-                self.populate_pw_mgr_info_collapsible(row[1])
-                new_row = [
-                    Text(cell_text, style=self.dr_style["info"])
-                    for cell_text in row
-                ]
-                doctor_table.add_row(*new_row)
-            elif row[0] in ["ok", "warning", "error", "failed"]:
-                new_row = [
-                    Text(cell_text, style=f"{self.dr_style[row[0]]}")
-                    for cell_text in row
-                ]
-                doctor_table.add_row(*new_row)
-            elif row[0] == "info" and row[2] == "not set":
-                self.populate_pw_mgr_info_collapsible(row[1])
-                new_row = [
-                    Text(cell_text, style=self.dr_style["warning"])
-                    for cell_text in row
-                ]
-                doctor_table.add_row(*new_row)
-            else:
-                row = [Text(cell_text) for cell_text in row]
-                doctor_table.add_row(*row)
-
-    def populate_pw_mgr_info_collapsible(self, row_var: str) -> None:
-        list_view = self.query_exactly_one(ListView)
-        for pw_mgr in PwMgrInfo:
-            if pw_mgr.value.doctor_check == row_var:
-                list_view.append(
-                    ListItem(
-                        Link(row_var, url=pw_mgr.value.link),
-                        Static(pw_mgr.value.description),
-                    )
-                )
-                break
 
 
 class LogsTab(Vertical, AppType):

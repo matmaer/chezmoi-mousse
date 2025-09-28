@@ -120,16 +120,16 @@
   min-width: 78;
 }
 
-.doctor_vertical {
-  .doctor_vertical_group {
-    dock: bottom;
+.doctor_vertical_scroll {
+  .doctor_table {
+    overflow-y: hidden;
+  }
+  .doctor_listview {
     height: auto;
   }
-  & CollapsibleTitle {
-    margin: 0;
-    padding: 0;
-  }
 }
+
+
 
 .switches_vertical {
   background-tint: $surface;
@@ -147,7 +147,6 @@
   & Switch {
     border: none;
   }
-
   Label.switch_label {
     border: none;
     color: $foreground-darken-1;
@@ -163,10 +162,22 @@
   }
 }
 
+.section_label {
+    background-tint: $surface-lighten-1;
+    background: $surface-lighten-1;
+    border-bottom: inner $surface-lighten-1;
+    border-top: inner $surface-lighten-1;
+    color: $text-accent;
+    padding: 0 1;
+    text-align: center;
+    width: 100%;
+  }
+
+
 .nav_content_switcher {
   margin-bottom: 1;
   overflow-x: scroll;
-  .config_tab_label {
+  & .config_tab_label {
     background-tint: $surface-lighten-1;
     background: $surface-lighten-1;
     border-bottom: inner $surface-lighten-1;
@@ -348,6 +359,7 @@
   overflow-y: scroll;
 }
 
+
 /***********************************/
 /* textual default tcss overrides  */
 /***********************************/
@@ -436,6 +448,9 @@ Header {
   text-style: bold;
   min-width: 35;
 }
+
+# Label {
+# }
 
 Switch {
   background: $surface;

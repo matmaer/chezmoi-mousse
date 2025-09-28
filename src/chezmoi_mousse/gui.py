@@ -36,7 +36,6 @@ from chezmoi_mousse.main_tabs import (
     AddTab,
     ApplyTab,
     ConfigTab,
-    DoctorTab,
     HelpTab,
     InitTab,
     LogsTab,
@@ -48,6 +47,8 @@ from chezmoi_mousse.screens import InstallHelp, Maximized, Operate
 from chezmoi_mousse.splash import LoadingScreen
 from chezmoi_mousse.widgets import (
     ContentsView,
+    DoctorListView,
+    DoctorTable,
     ExpandedTree,
     FlatTree,
     ManagedTree,
@@ -107,8 +108,6 @@ class ChezmoiGUI(App["ChezmoiGUI"]):
                 yield LogsTab()
             with TabPane("Config", id=Id.doctor.tab_pane_id):
                 yield ConfigTab()
-            with TabPane("Doctor", id=Id.config.tab_pane_id):
-                yield DoctorTab()
             with TabPane("Help"):
                 yield HelpTab()
         yield Footer()
@@ -158,9 +157,13 @@ class ChezmoiGUI(App["ChezmoiGUI"]):
             return
         self.chezmoi.app_log.ready_to_run("--- Loading screen completed ---")
         # Populate Doctor DataTable
-        doctor_tab = self.query_exactly_one(DoctorTab)
-        doctor_tab.doctor_output = return_data.doctor
-        doctor_tab.populate_doctor_data()
+        pw_mgr_cmds: list[str] = self.query_one(
+            Id.doctor.datatable_qid, DoctorTable
+        ).populate_doctor_data(return_data.doctor.splitlines())
+        self.query_one(
+            Id.doctor.listview_qid, DoctorListView
+        ).populate_listview(pw_mgr_cmds)
+        # refresh chezmoi managed and status data
         self.chezmoi.refresh_managed(return_data)
         # Trees to refresh for each tab
         trees: list[

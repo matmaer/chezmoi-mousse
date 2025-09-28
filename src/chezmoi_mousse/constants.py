@@ -40,6 +40,7 @@ class NavBtn(StrEnum):
     cat_config = "Cat Config"
     clone_repo = "Clone"
     diagram = "Diagram"
+    doctor = "Doctor"
     ignored = "Ignored"
     new_repo = "New Repo"
     purge_repo = "Purge Repo"
@@ -49,17 +50,17 @@ class NavBtn(StrEnum):
 class OperateBtn(StrEnum):
     add_dir = "Add Dir"
     add_file = "Add File"
-    apply_dir = "Apply Dir"
+    # apply_dir = "Apply Dir"
     apply_file = "Apply File"
     clone_repo = "Clone Existing Repo"
-    destroy_dir = "Destroy Dir"
+    # destroy_dir = "Destroy Dir"
     destroy_file = "Destroy File"
-    forget_dir = "Forget Dir"
+    # forget_dir = "Forget Dir"
     forget_file = "Forget File"
     new_repo = "Initialize New Repo"
     operate_dismiss = "Cancel"
     purge_repo = "Purge Existing Repo"
-    re_add_dir = "Re-Add Dir"
+    # re_add_dir = "Re-Add Dir"
     re_add_file = "Re-Add File"
 
 
@@ -98,8 +99,9 @@ class Tcss(StrEnum):
     config_tab_label = auto()
     content_switcher_left = auto()
     dir_tree_widget = auto()
-    doctor_vertical = auto()
-    doctor_vertical_group = auto()
+    doctor_listview = auto()
+    doctor_table = auto()
+    doctor_vertical_scroll = auto()
     flow_diagram = auto()
     input_field = auto()
     input_field_vertical = auto()
@@ -109,15 +111,16 @@ class Tcss(StrEnum):
     internet_links = auto()
     last_clicked = auto()
     log_views = auto()
-    nav_content_switcher = auto()
     nav_button = auto()
     nav_buttons_vertical = auto()
+    nav_content_switcher = auto()
     operate_button = auto()
     operate_buttons_horizontal = auto()
     operate_info = auto()
     operate_screen = auto()
     pad_bottom = auto()
     screen_base = auto()
+    section_label = auto()
     single_button_vertical = auto()
     switch_horizontal = auto()
     switch_label = auto()
@@ -136,11 +139,11 @@ class TreeName(StrEnum):
 
 
 class ViewName(StrEnum):
-    app_log_view = auto()
     cat_config = auto()
     config_ignored = auto()
     contents_view = auto()
     diagram = auto()
+    doctor = auto()
     diff_view = auto()
     git_log_view = auto()
     init_clone_view = auto()

@@ -7,6 +7,7 @@ from textual.containers import (
     HorizontalGroup,
     Vertical,
     VerticalGroup,
+    VerticalScroll,
 )
 from textual.validation import URL
 from textual.widgets import (
@@ -39,6 +40,8 @@ from chezmoi_mousse.id_typing import AppType, TabIds
 from chezmoi_mousse.widgets import (
     ContentsView,
     DiffView,
+    DoctorListView,
+    DoctorTable,
     ExpandedTree,
     FlatTree,
     GitLogView,
@@ -200,6 +203,7 @@ class ConfigTabSwitcher(Horizontal, AppType):
             yield ButtonsVertical(
                 tab_ids=self.tab_ids,
                 buttons=(
+                    NavBtn.doctor,
                     NavBtn.cat_config,
                     NavBtn.ignored,
                     NavBtn.template_data,
@@ -211,9 +215,22 @@ class ConfigTabSwitcher(Horizontal, AppType):
             # TODO: make sure scrollbars appear when there's overflow
             with ContentSwitcher(
                 id=self.tab_ids.content_switcher_id(area=Area.right),
-                initial=self.tab_ids.view_id(view=ViewName.cat_config),
+                initial=self.tab_ids.view_id(view=ViewName.doctor),
                 classes=Tcss.nav_content_switcher,
             ):
+                yield VerticalScroll(
+                    Label(
+                        '"chezmoi doctor" output', classes=Tcss.section_label
+                    ),
+                    DoctorTable(),
+                    Label(
+                        "Password managers not found in $PATH",
+                        classes=Tcss.section_label,
+                    ),
+                    DoctorListView(),
+                    id=self.tab_ids.view_id(view=ViewName.doctor),
+                    classes=Tcss.doctor_vertical_scroll,
+                )
                 yield Vertical(
                     Label('"chezmoi cat-config" output'),
                     Pretty(
@@ -238,7 +255,11 @@ class ConfigTabSwitcher(Horizontal, AppType):
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
         switcher = self.query_exactly_one(ContentSwitcher)
-        if event.button.id == self.tab_ids.button_id(btn=(NavBtn.cat_config)):
+        if event.button.id == self.tab_ids.button_id(btn=(NavBtn.doctor)):
+            switcher.current = self.tab_ids.view_id(view=ViewName.doctor)
+        elif event.button.id == self.tab_ids.button_id(
+            btn=(NavBtn.cat_config)
+        ):
             switcher.current = self.tab_ids.view_id(view=ViewName.cat_config)
         elif event.button.id == self.tab_ids.button_id(btn=NavBtn.ignored):
             switcher.current = self.tab_ids.view_id(
