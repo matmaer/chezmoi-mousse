@@ -17,9 +17,23 @@ from textual.widgets import RichLog, Static
 from textual.worker import WorkerState
 
 from chezmoi_mousse.chezmoi import ReadCmd, VerbArgs
-from chezmoi_mousse.constants import SPLASH
 from chezmoi_mousse.custom_theme import vars as theme_vars
 from chezmoi_mousse.id_typing import AppType, SplashReturnData
+
+SPLASH = """\
+ _______________________________ ___________________._
+|       |   |   |    ___|___    |    '    |       |   |
+|    ===|       |     __|     __|         |   |   |   |
+|       |   |   |       |       |   |ˇ|   |       |   |
+`-------^---^---^-------^-------^---' '---^-------^---'
+   ____ ____ _______ ___ ___ _______ _______ _______
+  |    ˇ    |       |   |   |    ___|    ___|    ___|
+  |         |   |   |   |   |__     |__     |     __|
+  |   |ˇ|   |       |       |       |       |       |
+  '---' '---^-------^-------^-------^-------^-------'
+""".replace(
+    "===", "=\u200b=\u200b="
+).splitlines()
 
 LOG_PADDING_WIDTH = 41
 
