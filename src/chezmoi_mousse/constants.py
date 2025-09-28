@@ -114,7 +114,6 @@ class Tcss(StrEnum):
     nav_buttons_vertical = auto()
     nav_content_switcher = auto()
     operate_button = auto()
-    operate_buttons_horizontal = auto()
     operate_info = auto()
     operate_screen = auto()
     pad_bottom = auto()
