@@ -3,13 +3,8 @@ from textual.app import ComposeResult
 from textual.containers import HorizontalGroup, Vertical, VerticalGroup
 from textual.widgets import Button
 
-from chezmoi_mousse.constants import Area, Tcss
-from chezmoi_mousse.id_typing import (
-    NavButtons,
-    OperateButtons,
-    TabButtons,
-    TabIds,
-)
+from chezmoi_mousse.constants import Area, NavBtn, OperateBtn, TabBtn, Tcss
+from chezmoi_mousse.id_typing import TabIds
 
 
 class ButtonsHorizontal(HorizontalGroup):
@@ -18,7 +13,7 @@ class ButtonsHorizontal(HorizontalGroup):
         self,
         *,
         tab_ids: TabIds,
-        buttons: TabButtons | OperateButtons,
+        buttons: tuple[TabBtn, ...] | tuple[OperateBtn, ...],
         area: Area,
     ) -> None:
         self.buttons = buttons
@@ -41,9 +36,9 @@ class ButtonsHorizontal(HorizontalGroup):
 class NavButtonsVertical(VerticalGroup):
 
     def __init__(
-        self, *, tab_ids: TabIds, buttons: NavButtons, area: Area
+        self, *, tab_ids: TabIds, buttons: tuple[NavBtn, ...], area: Area
     ) -> None:
-        self.buttons: NavButtons = buttons
+        self.buttons: tuple[NavBtn, ...] = buttons
         self.area: Area = area
         self.tab_ids: TabIds = tab_ids
         super().__init__(id=self.tab_ids.buttons_vertical_group_id(self.area))
@@ -60,7 +55,7 @@ class NavButtonsVertical(VerticalGroup):
 
 
 class OperateBtnHorizontal(ButtonsHorizontal):
-    def __init__(self, *, tab_ids: TabIds, buttons: OperateButtons):
+    def __init__(self, *, tab_ids: TabIds, buttons: tuple[OperateBtn, ...]):
         super().__init__(tab_ids=tab_ids, buttons=buttons, area=Area.bottom)
 
     def on_mount(self) -> None:
@@ -71,7 +66,9 @@ class OperateBtnHorizontal(ButtonsHorizontal):
 
 
 class TabBtnHorizontal(ButtonsHorizontal):
-    def __init__(self, *, tab_ids: TabIds, buttons: TabButtons, area: Area):
+    def __init__(
+        self, *, tab_ids: TabIds, buttons: tuple[TabBtn, ...], area: Area
+    ):
         super().__init__(tab_ids=tab_ids, buttons=buttons, area=area)
 
     def on_mount(self) -> None:

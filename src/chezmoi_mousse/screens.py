@@ -19,7 +19,6 @@ from chezmoi_mousse.id_typing import (
     AppType,
     Id,
     OperateBtn,
-    OperateButtons,
     ParsedJson,
     TabIds,
     TabName,
@@ -67,9 +66,9 @@ class ScreensBase(Screen[None], AppType):
 class Operate(ScreensBase, AppType):
 
     def __init__(
-        self, *, tab_ids: TabIds, path: Path, buttons: OperateButtons
+        self, *, tab_ids: TabIds, path: Path, buttons: tuple[OperateBtn, ...]
     ) -> None:
-        self.buttons: OperateButtons = buttons
+        self.buttons: tuple[OperateBtn, ...] = buttons
         self.main_operate_btn = self.buttons[0]
         self.path = path
         self.tab_ids = tab_ids

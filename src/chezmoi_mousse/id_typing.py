@@ -23,11 +23,8 @@ if TYPE_CHECKING:
     from chezmoi_mousse.gui import ChezmoiGUI
 
 
-type OperateButtons = tuple[OperateBtn, ...]
 type ParsedJson = dict[str, Any]
 type PathDict = dict[Path, str]
-type TabButtons = tuple[TabBtn, ...]
-type NavButtons = tuple[NavBtn, ...]
 
 
 class AppType:
