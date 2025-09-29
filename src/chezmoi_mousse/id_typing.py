@@ -146,7 +146,7 @@ class OperateHelp(Enum):
 
 class Switches(Enum):
     clone_and_apply = SwitchData(
-        "init and apply", ("run chezmoi init with --apply flag.")
+        "init and apply", "run chezmoi init with --apply flag."
     )
     expand_all = SwitchData(
         "expand all dirs",
@@ -156,7 +156,7 @@ class Switches(Enum):
         ),
     )
     guess_url = SwitchData(
-        "chezmoi guess", ("Submit with `chezmoi --guess-repo-url`.")
+        "chezmoi guess", "Submit with `chezmoi --guess-repo-url`."
     )
     unchanged = SwitchData(
         "show unchanged files",
