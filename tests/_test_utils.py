@@ -21,9 +21,9 @@ def get_class_public_members(class_object: type) -> list[tuple[str, str]]:
         if not name.startswith("_"):
             if isinstance(member, property):
                 members.append((name, "property"))
-            elif inspect.isfunction(member):
+            elif callable(member):  # This catches all callable types
                 members.append((name, "method"))
-            elif not callable(member):
+            else:
                 members.append((name, "attribute"))
     return members
 
