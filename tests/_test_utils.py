@@ -167,45 +167,19 @@ def get_dataclass_fields(dataclass_type: type) -> list[tuple[str, str]]:
 def find_dataclass_field_usage(
     py_file: Path, dataclass_name: str, field_name: str
 ) -> bool:
-    """
-    This looks for patterns like:
-    - obj.field_name (attribute access)
-    - obj.field_name = value (attribute assignment)
-    - SomeClass(field_name=value) (constructor with keyword argument)
-    """
     content = py_file.read_text()
     tree = ast.parse(content, filename=str(py_file))
 
     for node in ast.walk(tree):
-        # Check for attribute access: obj.field_name
+        # Check for direct attribute access: obj.field_name
         if isinstance(node, ast.Attribute) and node.attr == field_name:
             return True
-
-        # Check for attribute assignment: obj.field_name = value
-        if isinstance(node, ast.Assign):
-            for target in node.targets:
-                if (
-                    isinstance(target, ast.Attribute)
-                    and target.attr == field_name
-                ):
-                    return True
-
-        # Check for constructor calls with keyword arguments: SomeClass(field_name=value)
-        if isinstance(node, ast.Call):
-            for keyword in node.keywords:
-                if keyword.arg == field_name:
-                    # Check if this is likely a constructor for our dataclass
-                    if (
-                        isinstance(node.func, ast.Name)
-                        and node.func.id == dataclass_name
-                    ):
-                        return True
-                    # Also check for cases where the constructor is accessed via attribute
-                    # e.g., module.SomeClass(field_name=value)
-                    elif (
-                        isinstance(node.func, ast.Attribute)
-                        and node.func.attr == dataclass_name
-                    ):
-                        return True
-
+        # Check for class-level access: ClassName.field_name
+        if (
+            isinstance(node, ast.Attribute)
+            and isinstance(node.value, ast.Name)
+            and node.value.id == dataclass_name
+            and node.attr == field_name
+        ):
+            return True
     return False
