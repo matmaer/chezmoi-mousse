@@ -2,7 +2,7 @@
 
 import ast
 import inspect
-from enum import Enum, StrEnum
+from enum import Enum
 from pathlib import Path
 
 import pytest
@@ -16,7 +16,7 @@ from _test_utils import (
     modules_to_test,
 )
 
-import chezmoi_mousse.constants as constants
+import chezmoi_mousse._str_enums as str_enums
 import chezmoi_mousse.id_typing as id_typing
 
 
@@ -25,10 +25,10 @@ def _get_enum_members() -> list[Enum]:
     for _, enum_class in inspect.getmembers(id_typing, inspect.isclass):
         if (
             issubclass(enum_class, Enum)
-            and not issubclass(enum_class, StrEnum)
-            and enum_class is not Enum  # exclude the Enum base class itself
             # exclude PwMgrInfo members since they are dynamically generated
             and enum_class.__name__ != "PwMgrInfo"
+            # exclude classes that are imported from other modules
+            and enum_class.__module__ == "chezmoi_mousse.id_typing"
         ):
             for member in enum_class:
                 members.append(member)
@@ -46,12 +46,7 @@ def test_enum_members_in_use(enum_member: Enum):
 
     found = False
     for py_file in modules_to_test(
-        exclude_file_names=[
-            "__init__.py",
-            "__main__.py",
-            "custom_theme.py",
-            "overrides.py",
-        ]
+        exclude_file_names=["__init__.py", "__main__.py", "custom_theme.py"]
     ):
         file_found, _ = find_enum_usage_in_file(
             py_file, enum_class_name, member_name
@@ -154,6 +149,9 @@ def test_dataclass_fields_in_use(
     found = False
 
     for py_file in modules_to_test(exclude_file_names=["id_typing.py"]):
+        # only test public fields
+        if field_name.startswith("_"):
+            return
         if find_dataclass_field_usage(py_file, dataclass_name, field_name):
             found = True
             break
@@ -164,7 +162,7 @@ def test_dataclass_fields_in_use(
         )
 
 
-exclude_files = ["__init__.py", "__main__.py"]
+exclude_files = ["__init__.py", "__main__.py", "id_typing.py"]
 
 
 @pytest.mark.parametrize(
@@ -173,14 +171,14 @@ exclude_files = ["__init__.py", "__main__.py"]
     ids=lambda py_file: py_file.name,
 )
 def test_imports_via(py_file: Path) -> None:
-    """Test that modules do not import classes from id_typing.py that exist in constants.py."""
-    class_names = [cls.__name__ for cls in get_strenum_classes(constants)]
+    """Test that modules only import classes from id_typing.py that exist in _str_enums.py."""
+    class_names = [cls.__name__ for cls in get_strenum_classes(str_enums)]
     tree = ast.parse(py_file.read_text())
     results: list[str] = []
     for node in ast.walk(tree):
         if (
             isinstance(node, ast.ImportFrom)
-            and node.module == "chezmoi_mousse.id_typing"
+            and not node.module == "chezmoi_mousse.id_typing"
         ):
             for alias in node.names:
                 if alias.name in class_names:

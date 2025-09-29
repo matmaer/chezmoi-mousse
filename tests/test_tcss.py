@@ -7,11 +7,11 @@ from pathlib import Path
 import pytest
 from _test_utils import get_strenum_member_names, modules_to_test
 
-from chezmoi_mousse.constants import Tcss
+from chezmoi_mousse.id_typing import Tcss
 
 add_class_method = "add_class"
 classes_kw = "classes"
-exclude_files = ["id_typing.py", "__init__.py", "__main__.py", "constants.py"]
+exclude_files = ["id_typing.py", "__init__.py", "__main__.py", "_str_enums.py"]
 tcss_path = Path("./src/chezmoi_mousse/data/gui.tcss")
 
 

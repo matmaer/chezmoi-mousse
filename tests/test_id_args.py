@@ -13,12 +13,12 @@ from _test_utils import (
     modules_to_test,
 )
 
-import chezmoi_mousse.constants as constants
+import chezmoi_mousse._str_enums as str_enums
 from chezmoi_mousse.id_typing import Id
 
 # exclude some files not of interest
 to_exclude = ["__init__.py", "__main__.py", "custom_theme.py", "overrides.py"]
-strenum_classes = get_strenum_classes(constants)
+strenum_classes = get_strenum_classes(str_enums)
 strenum_members: list[ast.Attribute] = []
 for cls in strenum_classes:
     members = get_strenum_member_names(cls)

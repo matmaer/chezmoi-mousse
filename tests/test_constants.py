@@ -1,4 +1,4 @@
-"""Test if all members from the StrEnum classes in constants.py are in use"""
+"""Test if all members from the StrEnum classes in _str_enums.py are in use"""
 
 from enum import StrEnum
 
@@ -9,12 +9,12 @@ from _test_utils import (
     modules_to_test,
 )
 
-import chezmoi_mousse.constants as constants
+import chezmoi_mousse._str_enums as str_enums
 
 
 @pytest.mark.parametrize(
     "str_enum_class",
-    get_strenum_classes(constants),
+    get_strenum_classes(str_enums),
     ids=lambda cls: cls.__name__,
 )
 def test_strenum_members_in_use(str_enum_class: type[StrEnum]):
@@ -24,7 +24,7 @@ def test_strenum_members_in_use(str_enum_class: type[StrEnum]):
             "__init__.py",
             "__main__.py",
             "custom_theme.py",
-            "constants.py",
+            "_str_enums.py",
         ]
     )
 
