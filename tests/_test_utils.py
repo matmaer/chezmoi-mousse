@@ -4,6 +4,7 @@ from dataclasses import fields, is_dataclass
 from enum import StrEnum
 from pathlib import Path
 from types import ModuleType
+from typing import Any
 
 
 def get_module_paths(exclude_file_names: list[str] = []) -> list[Path]:
@@ -42,83 +43,82 @@ def get_class_public_members_strings(
     return members
 
 
-# def get_class_public_member_objects(
-#     class_object: type,
-# ) -> dict[str, list[Any]] | None:
-#     """
-#     Get public member objects of a class, categorized into properties, methods, and attributes.
-#     Uses AST to parse the class source and identify defined members, then retrieves the objects.
-#     Includes both annotated and non-annotated attributes, excluding type objects.
-#     """
-#     import inspect
+def get_class_public_member_objects(
+    class_object: type,
+) -> dict[str, list[Any]] | None:
+    """
+    Get public member objects of a class, categorized into properties, methods, and attributes.
+    Uses AST to parse the class source and identify defined members, then retrieves the objects.
+    Includes both annotated and non-annotated attributes, excluding type objects.
+    """
 
-#     try:
-#         source = inspect.getsource(class_object)
-#     except (OSError, TypeError):
-#         # If source cannot be retrieved, return None
-#         return None
+    try:
+        source = inspect.getsource(class_object)
+    except (OSError, TypeError):
+        # If source cannot be retrieved, return None
+        return None
 
-#     tree = ast.parse(source)
+    tree = ast.parse(source)
 
-#     class_def = None
-#     for node in ast.walk(tree):
-#         if isinstance(node, ast.ClassDef):
-#             class_def = node
-#             break
+    class_def = None
+    for node in ast.walk(tree):
+        if isinstance(node, ast.ClassDef):
+            class_def = node
+            break
 
-#     if not class_def:
-#         return None
+    if not class_def:
+        return None
 
-#     public_members: set[str] = set()
+    public_members: set[str] = set()
 
-#     for node in class_def.body:
-#         if isinstance(node, ast.FunctionDef) and not node.name.startswith("_"):
-#             public_members.add(node.name)
-#         elif isinstance(node, ast.Assign):
-#             for target in node.targets:
-#                 if isinstance(target, ast.Name) and not target.id.startswith(
-#                     "_"
-#                 ):
-#                     public_members.add(target.id)
-#         elif isinstance(node, ast.AnnAssign):
-#             # Include annotated attributes (with or without assignment)
-#             if isinstance(
-#                 node.target, ast.Name
-#             ) and not node.target.id.startswith("_"):
-#                 public_members.add(node.target.id)
-#         # Check for properties (functions with @property decorator)
-#         elif (
-#             isinstance(node, ast.FunctionDef)
-#             and any(
-#                 (isinstance(d, ast.Name) and d.id == "property")
-#                 or (isinstance(d, ast.Attribute) and d.attr == "property")
-#                 for d in node.decorator_list
-#             )
-#             and not node.name.startswith("_")
-#         ):
-#             public_members.add(node.name)
+    for node in class_def.body:
+        if isinstance(node, ast.FunctionDef) and not node.name.startswith("_"):
+            public_members.add(node.name)
+        elif isinstance(node, ast.Assign):
+            for target in node.targets:
+                if isinstance(target, ast.Name) and not target.id.startswith(
+                    "_"
+                ):
+                    public_members.add(target.id)
+        elif isinstance(node, ast.AnnAssign):
+            # Include annotated attributes (with or without assignment)
+            if isinstance(
+                node.target, ast.Name
+            ) and not node.target.id.startswith("_"):
+                public_members.add(node.target.id)
+        # Check for properties (functions with @property decorator)
+        elif (
+            isinstance(node, ast.FunctionDef)
+            and any(
+                (isinstance(d, ast.Name) and d.id == "property")
+                or (isinstance(d, ast.Attribute) and d.attr == "property")
+                for d in node.decorator_list
+            )
+            and not node.name.startswith("_")
+        ):
+            public_members.add(node.name)
 
-#     # Retrieve objects and categorize
-#     result: dict[str, list[Any]] = {
-#         "property": [],
-#         "method": [],
-#         "attribute": [],
-#     }
-#     for name in public_members:
-#         try:
-#             obj = getattr(class_object, name)
-#             if isinstance(obj, property):
-#                 result["property"].append(obj)
-#             elif callable(obj):
-#                 result["method"].append(obj)
-#             else:
-#                 # Exclude type objects from attributes
-#                 if not isinstance(obj, type):
-#                     result["attribute"].append(obj)
-#         except AttributeError:
-#             pass  # Skip if not accessible
+    # Retrieve objects and categorize
+    result: dict[str, list[Any]] = {
+        "property": [],
+        "method": [],
+        "attribute": [],
+    }
+    for name in public_members:
+        try:
+            obj = getattr(class_object, name)
+            if isinstance(obj, property):
+                result["property"].append(obj)
+            elif callable(obj):
+                result["method"].append(obj)
+            else:
+                # Exclude type objects from attributes
+                if not isinstance(obj, type):
+                    result["attribute"].append(obj)
+        except AttributeError:
+            pass  # Skip if not accessible
 
-#     return result
+    return result
 
 
 # def test_class_members_in_use(class_object: type):
