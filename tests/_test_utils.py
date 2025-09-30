@@ -51,14 +51,7 @@ def get_class_public_member_objects(
     Uses AST to parse the class source and identify defined members, then retrieves the objects.
     Includes both annotated and non-annotated attributes, excluding type objects.
     """
-
-    try:
-        source = inspect.getsource(class_object)
-    except (OSError, TypeError):
-        # If source cannot be retrieved, return None
-        return None
-
-    tree = ast.parse(source)
+    tree = ast.parse(inspect.getsource(class_object))
 
     class_def = None
     for node in ast.walk(tree):
