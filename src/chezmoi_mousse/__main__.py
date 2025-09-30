@@ -1,4 +1,4 @@
-from chezmoi_mousse.run_app import RunApp
+from chezmoi_mousse.run_app import run_app
 
 if __name__ == "__main__":
-    RunApp()
+    run_app()
