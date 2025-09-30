@@ -8,7 +8,7 @@ import pytest
 from _test_utils import (
     find_dataclass_field_usage,
     find_enum_usage_in_file,
-    get_class_public_members_old,
+    get_class_public_members_strings,
     get_dataclass_fields,
     get_dataclasses_from_module,
     get_module_paths,
@@ -55,7 +55,8 @@ def test_enum_members_in_use(enum_member: Enum):
 
 
 @pytest.mark.parametrize(
-    "member_name, member_type", get_class_public_members_old(id_typing.TabIds)
+    "member_name, member_type",
+    get_class_public_members_strings(id_typing.TabIds),
 )
 def test_tabids_member_in_use(member_name: str, member_type: str):
     is_used = False
@@ -77,7 +78,7 @@ def test_tabids_member_in_use(member_name: str, member_type: str):
 
 @pytest.mark.parametrize(
     "member_name, member_type",
-    get_class_public_members_old(id_typing.ScreenIds),
+    get_class_public_members_strings(id_typing.ScreenIds),
 )
 def test_screen_ids_member_in_use(member_name: str, member_type: str):
     is_used = False
@@ -98,7 +99,7 @@ def test_screen_ids_member_in_use(member_name: str, member_type: str):
 
 
 @pytest.mark.parametrize(
-    "member_name, member_type", get_class_public_members_old(id_typing.Id)
+    "member_name, member_type", get_class_public_members_strings(id_typing.Id)
 )
 def test_id_members_in_use(member_name: str, member_type: str):
     is_used = False

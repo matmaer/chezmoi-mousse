@@ -25,7 +25,9 @@ def get_module_classes(module: ModuleType) -> list[type] | None:
     return classes
 
 
-def get_class_public_members_old(class_object: type) -> list[tuple[str, str]]:
+def get_class_public_members_strings(
+    class_object: type,
+) -> list[tuple[str, str]]:
     import inspect
 
     members: list[tuple[str, str]] = []

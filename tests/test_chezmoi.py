@@ -1,7 +1,7 @@
 import ast
 
 import pytest
-from _test_utils import get_class_public_members_old, get_module_paths
+from _test_utils import get_class_public_members_strings, get_module_paths
 
 from chezmoi_mousse.chezmoi import Chezmoi
 
@@ -9,7 +9,7 @@ exclude_files = ["chezmoi.py"]
 
 
 @pytest.mark.parametrize(
-    "member_name, member_type", get_class_public_members_old(Chezmoi)
+    "member_name, member_type", get_class_public_members_strings(Chezmoi)
 )
 def test_member_in_use(member_name: str, member_type: str):
     is_used = False
