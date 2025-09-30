@@ -1,7 +1,7 @@
 import ast
 
 import pytest
-from _test_utils import get_class_public_members, modules_to_test
+from _test_utils import get_class_public_members_old, get_module_paths
 
 from chezmoi_mousse.chezmoi import Chezmoi
 
@@ -9,12 +9,12 @@ exclude_files = ["chezmoi.py"]
 
 
 @pytest.mark.parametrize(
-    "member_name, member_type", get_class_public_members(Chezmoi)
+    "member_name, member_type", get_class_public_members_old(Chezmoi)
 )
 def test_member_in_use(member_name: str, member_type: str):
     is_used = False
 
-    for py_file in modules_to_test(exclude_file_names=exclude_files):
+    for py_file in get_module_paths(exclude_file_names=exclude_files):
         content = py_file.read_text()
         tree = ast.parse(content, filename=str(py_file))
 

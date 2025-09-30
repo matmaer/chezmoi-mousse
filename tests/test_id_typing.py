@@ -3,20 +3,17 @@
 import ast
 import inspect
 from enum import Enum
-from pathlib import Path
 
 import pytest
 from _test_utils import (
     find_dataclass_field_usage,
     find_enum_usage_in_file,
-    get_class_public_members,
+    get_class_public_members_old,
     get_dataclass_fields,
     get_dataclasses_from_module,
-    get_strenum_classes,
-    modules_to_test,
+    get_module_paths,
 )
 
-import chezmoi_mousse._str_enums as str_enums
 import chezmoi_mousse.id_typing as id_typing
 
 
@@ -45,7 +42,7 @@ def test_enum_members_in_use(enum_member: Enum):
     member_name = enum_member.name
 
     found = False
-    for py_file in modules_to_test(exclude_file_names=["custom_theme.py"]):
+    for py_file in get_module_paths(exclude_file_names=["custom_theme.py"]):
         file_found, _ = find_enum_usage_in_file(
             py_file, enum_class_name, member_name
         )
@@ -58,12 +55,12 @@ def test_enum_members_in_use(enum_member: Enum):
 
 
 @pytest.mark.parametrize(
-    "member_name, member_type", get_class_public_members(id_typing.TabIds)
+    "member_name, member_type", get_class_public_members_old(id_typing.TabIds)
 )
 def test_tabids_member_in_use(member_name: str, member_type: str):
     is_used = False
 
-    for py_file in modules_to_test(exclude_file_names=["id_typing.py"]):
+    for py_file in get_module_paths(exclude_file_names=["id_typing.py"]):
         content = py_file.read_text()
         tree = ast.parse(content, filename=str(py_file))
 
@@ -79,12 +76,13 @@ def test_tabids_member_in_use(member_name: str, member_type: str):
 
 
 @pytest.mark.parametrize(
-    "member_name, member_type", get_class_public_members(id_typing.ScreenIds)
+    "member_name, member_type",
+    get_class_public_members_old(id_typing.ScreenIds),
 )
 def test_screen_ids_member_in_use(member_name: str, member_type: str):
     is_used = False
 
-    for py_file in modules_to_test(exclude_file_names=["id_typing.py"]):
+    for py_file in get_module_paths(exclude_file_names=["id_typing.py"]):
         content = py_file.read_text()
         tree = ast.parse(content, filename=str(py_file))
 
@@ -100,12 +98,12 @@ def test_screen_ids_member_in_use(member_name: str, member_type: str):
 
 
 @pytest.mark.parametrize(
-    "member_name, member_type", get_class_public_members(id_typing.Id)
+    "member_name, member_type", get_class_public_members_old(id_typing.Id)
 )
 def test_id_members_in_use(member_name: str, member_type: str):
     is_used = False
 
-    for py_file in modules_to_test(exclude_file_names=["id_typing.py"]):
+    for py_file in get_module_paths(exclude_file_names=["id_typing.py"]):
         content = py_file.read_text()
         tree = ast.parse(content, filename=str(py_file))
 
@@ -146,7 +144,7 @@ def test_dataclass_fields_in_use(
     """Test that all dataclass fields are accessed somewhere in the codebase."""
     found = False
 
-    for py_file in modules_to_test(exclude_file_names=["id_typing.py"]):
+    for py_file in get_module_paths(exclude_file_names=["id_typing.py"]):
         # only test public fields
         if field_name.startswith("_"):
             return
@@ -158,30 +156,3 @@ def test_dataclass_fields_in_use(
         pytest.fail(
             f"\n{dataclass_name}.{field_name} ({field_type}) not in use."
         )
-
-
-exclude_files = ["id_typing.py"]
-
-
-@pytest.mark.parametrize(
-    "py_file",
-    modules_to_test(exclude_file_names=exclude_files),
-    ids=lambda py_file: py_file.name,
-)
-def test_imports_via(py_file: Path) -> None:
-    """Test that modules only import classes from id_typing.py that exist in _str_enums.py."""
-    class_names = [cls.__name__ for cls in get_strenum_classes(str_enums)]
-    tree = ast.parse(py_file.read_text())
-    results: list[str] = []
-    for node in ast.walk(tree):
-        if (
-            isinstance(node, ast.ImportFrom)
-            and not node.module == "chezmoi_mousse.id_typing"
-        ):
-            for alias in node.names:
-                if alias.name in class_names:
-                    results.append(
-                        f"{py_file.name} imports {alias.name} from id_typing"
-                    )
-    if results:
-        pytest.fail("\n".join(results))

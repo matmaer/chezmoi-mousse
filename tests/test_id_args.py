@@ -6,11 +6,11 @@ from pathlib import Path
 import pytest
 from _test_utils import (
     get_ast_call_nodes,
+    get_module_paths,
     get_root_class_name,
     get_strenum_classes,
     get_strenum_member_names,
     is_valid_class_expression,
-    modules_to_test,
 )
 
 import chezmoi_mousse._str_enums as str_enums
@@ -26,7 +26,7 @@ for cls in strenum_classes:
 
 @pytest.mark.parametrize(
     "py_file",
-    modules_to_test(exclude_file_names=to_exclude),
+    get_module_paths(exclude_file_names=to_exclude),
     ids=lambda py_file: py_file.name,
 )
 def test_args(py_file: Path):

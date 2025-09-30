@@ -5,7 +5,7 @@ import re
 from pathlib import Path
 
 import pytest
-from _test_utils import get_strenum_member_names, modules_to_test
+from _test_utils import get_module_paths, get_strenum_member_names
 
 from chezmoi_mousse.id_typing import Tcss
 
@@ -27,7 +27,7 @@ def get_used_tcss_members() -> set[str]:
     """Get all Tcss enum members that are used in Python code."""
     used_members: set[str] = set()
 
-    for py_file in modules_to_test(exclude_file_names=exclude_files):
+    for py_file in get_module_paths(exclude_file_names=exclude_files):
         tree = ast.parse(py_file.read_text())
 
         for node in ast.walk(tree):
@@ -45,7 +45,7 @@ def get_used_tcss_members() -> set[str]:
 
 @pytest.mark.parametrize(
     "py_file",
-    modules_to_test(exclude_file_names=exclude_files),
+    get_module_paths(exclude_file_names=exclude_files),
     ids=lambda py_file: py_file.name,
 )
 def test_no_hardcoded(py_file: Path) -> None:

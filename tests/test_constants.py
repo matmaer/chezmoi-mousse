@@ -5,8 +5,8 @@ from enum import StrEnum
 import pytest
 from _test_utils import (
     find_enum_usage_in_file,
+    get_module_paths,
     get_strenum_classes,
-    modules_to_test,
 )
 
 import chezmoi_mousse._str_enums as str_enums
@@ -19,7 +19,7 @@ import chezmoi_mousse._str_enums as str_enums
 )
 def test_strenum_members_in_use(str_enum_class: type[StrEnum]):
     enum_class_name = str_enum_class.__name__
-    modules = modules_to_test(
+    modules = get_module_paths(
         exclude_file_names=["custom_theme.py", "_str_enums.py"]
     )
 
