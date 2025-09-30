@@ -13,6 +13,16 @@ def modules_to_test(exclude_file_names: list[str] = []) -> list[Path]:
     return [f for f in src_dir.glob("*.py") if f.name not in all_excludes]
 
 
+def get_module_classes(module: ModuleType) -> list[type]:
+    """Get all class objects defined in a module."""
+    classes: list[type] = []
+    for _, obj in inspect.getmembers(module, inspect.isclass):
+        # Only include classes defined in this module (not imported ones)
+        if obj.__module__ == module.__name__:
+            classes.append(obj)
+    return classes
+
+
 def get_class_public_members(class_object: type) -> list[tuple[str, str]]:
     import inspect
 
