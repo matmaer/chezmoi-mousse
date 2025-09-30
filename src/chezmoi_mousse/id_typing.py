@@ -324,7 +324,6 @@ class Id:
     add: TabIds = TabIds(TabName.add_tab)
     apply: TabIds = TabIds(TabName.apply_tab)
     config: TabIds = TabIds(TabName.config_tab)
-    doctor: TabIds = TabIds(TabName.doctor_tab)
     help: TabIds = TabIds(TabName.help_tab)
     init: TabIds = TabIds(TabName.init_tab)
     logs: TabIds = TabIds(TabName.log_tab)

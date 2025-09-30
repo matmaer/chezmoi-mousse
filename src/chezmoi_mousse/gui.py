@@ -104,7 +104,7 @@ class ChezmoiGUI(App["ChezmoiGUI"]):
                 yield InitTab()
             with TabPane("Logs", id=Id.logs.tab_pane_id):
                 yield LogsTab()
-            with TabPane("Config", id=Id.doctor.tab_pane_id):
+            with TabPane("Config", id=Id.config.tab_pane_id):
                 yield ConfigTab()
             with TabPane("Help"):
                 yield HelpTab()
@@ -156,10 +156,10 @@ class ChezmoiGUI(App["ChezmoiGUI"]):
         self.chezmoi.app_log.ready_to_run("--- Loading screen completed ---")
         # Populate Doctor DataTable
         pw_mgr_cmds: list[str] = self.query_one(
-            Id.doctor.datatable_qid, DoctorTable
+            Id.config.datatable_qid, DoctorTable
         ).populate_doctor_data(return_data.doctor.splitlines())
         self.query_one(
-            Id.doctor.listview_qid, DoctorListView
+            Id.config.listview_qid, DoctorListView
         ).populate_listview(pw_mgr_cmds)
         # refresh chezmoi managed and status data
         self.chezmoi.refresh_managed(return_data)
@@ -209,7 +209,7 @@ class ChezmoiGUI(App["ChezmoiGUI"]):
     ) -> bool | None:
         if action == "maximize":
             if self.query_one(TabbedContent).active in (
-                Id.doctor.tab_pane_id,
+                Id.config.tab_pane_id,
                 Id.logs.tab_pane_id,
                 Id.init.tab_pane_id,
             ):

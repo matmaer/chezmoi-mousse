@@ -814,7 +814,7 @@ class DoctorTable(DataTable[Text]):
         }
         self.pw_mgr_commands: list[str] = []
         super().__init__(
-            id=Id.doctor.datatable_id,
+            id=Id.config.datatable_id,
             show_cursor=False,
             classes=Tcss.doctor_table,
         )
@@ -855,7 +855,7 @@ class DoctorTable(DataTable[Text]):
 class DoctorListView(ListView):
     def __init__(self) -> None:
         super().__init__(
-            id=Id.doctor.listview_id, classes=Tcss.doctor_listview
+            id=Id.config.listview_id, classes=Tcss.doctor_listview
         )
 
     def populate_listview(self, pw_mgr_commands: list[str]) -> None:
