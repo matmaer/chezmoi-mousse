@@ -11,7 +11,7 @@ from chezmoi_mousse.id_typing import Tcss
 
 add_class_method = "add_class"
 classes_kw = "classes"
-exclude_files = ["id_typing.py", "__init__.py", "__main__.py", "_str_enums.py"]
+exclude_files = ["id_typing.py", "_str_enums.py"]
 tcss_path = Path("./src/chezmoi_mousse/data/gui.tcss")
 
 

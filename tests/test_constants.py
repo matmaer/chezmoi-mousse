@@ -20,12 +20,7 @@ import chezmoi_mousse._str_enums as str_enums
 def test_strenum_members_in_use(str_enum_class: type[StrEnum]):
     enum_class_name = str_enum_class.__name__
     modules = modules_to_test(
-        exclude_file_names=[
-            "__init__.py",
-            "__main__.py",
-            "custom_theme.py",
-            "_str_enums.py",
-        ]
+        exclude_file_names=["custom_theme.py", "_str_enums.py"]
     )
 
     members_with_unnecessary_value: list[str] = []

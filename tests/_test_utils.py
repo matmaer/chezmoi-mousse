@@ -8,9 +8,9 @@ from types import ModuleType
 
 def modules_to_test(exclude_file_names: list[str] = []) -> list[Path]:
     src_dir = Path("./src/chezmoi_mousse")
-    return [
-        f for f in src_dir.glob("*.py") if f.name not in exclude_file_names
-    ]
+    default_excludes = ["__main__.py", "__init__.py"]
+    all_excludes = default_excludes + exclude_file_names
+    return [f for f in src_dir.glob("*.py") if f.name not in all_excludes]
 
 
 def get_class_public_members(class_object: type) -> list[tuple[str, str]]:
@@ -70,12 +70,7 @@ def find_enum_usage_in_file(
 def get_strenum_classes(from_module: ModuleType) -> list[type[StrEnum]]:
     classes: list[type[StrEnum]] = []
     for _, enum_class in inspect.getmembers(from_module, inspect.isclass):
-        if (
-            issubclass(enum_class, StrEnum)
-            and enum_class is not StrEnum  # exclude the StrEnum class itself
-            # exclude strings used for filtering DirectoryTree
-            and enum_class.__name__ not in ["UnwantedDirs", "UnwantedFiles"]
-        ):
+        if issubclass(enum_class, StrEnum):
             classes.append(enum_class)
     return classes
 

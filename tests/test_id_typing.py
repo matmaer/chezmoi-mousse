@@ -45,9 +45,7 @@ def test_enum_members_in_use(enum_member: Enum):
     member_name = enum_member.name
 
     found = False
-    for py_file in modules_to_test(
-        exclude_file_names=["__init__.py", "__main__.py", "custom_theme.py"]
-    ):
+    for py_file in modules_to_test(exclude_file_names=["custom_theme.py"]):
         file_found, _ = find_enum_usage_in_file(
             py_file, enum_class_name, member_name
         )
@@ -162,7 +160,7 @@ def test_dataclass_fields_in_use(
         )
 
 
-exclude_files = ["__init__.py", "__main__.py", "id_typing.py"]
+exclude_files = ["id_typing.py"]
 
 
 @pytest.mark.parametrize(

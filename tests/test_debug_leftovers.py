@@ -4,8 +4,6 @@ from pathlib import Path
 import pytest
 from _test_utils import modules_to_test
 
-exclude_files = ["__init__.py"]
-
 
 class DebugStatementVisitor(ast.NodeVisitor):
 
@@ -62,9 +60,7 @@ class DebugStatementVisitor(ast.NodeVisitor):
 
 
 @pytest.mark.parametrize(
-    "py_file",
-    modules_to_test(exclude_file_names=exclude_files),
-    ids=lambda py_file: py_file.name,
+    "py_file", modules_to_test(), ids=lambda py_file: py_file.name
 )
 def test_leftovers(py_file: Path) -> None:
 
