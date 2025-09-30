@@ -80,7 +80,11 @@ def test_no_hardcoded(py_file: Path) -> None:
                 )
 
 
-@pytest.mark.parametrize("tcss_class", extract_tcss_classes(tcss_path))
+@pytest.mark.parametrize(
+    "tcss_class",
+    extract_tcss_classes(tcss_path),
+    ids=lambda tcss_class: tcss_class,
+)
 def test_no_orphaned_gui_tcss_classes(tcss_class: str) -> None:
     """Test that each CSS class in gui.tcss is also defined as a Tcss enum member."""
     tcss_enum_members = {member.name for member in Tcss}
