@@ -1,12 +1,7 @@
 import json
 
 from textual.app import ComposeResult
-from textual.containers import (
-    HorizontalGroup,
-    Vertical,
-    VerticalGroup,
-    VerticalScroll,
-)
+from textual.containers import HorizontalGroup, Vertical, VerticalScroll
 from textual.validation import URL
 from textual.widgets import (
     ContentSwitcher,
@@ -17,13 +12,12 @@ from textual.widgets import (
     Static,
 )
 
-from chezmoi_mousse.button_groups import OperateBtnHorizontal, TabBtnHorizontal
+from chezmoi_mousse.button_groups import OperateBtnHorizontal
 from chezmoi_mousse.chezmoi import ReadCmd
 from chezmoi_mousse.id_typing import (
     AppType,
     Area,
     OperateBtn,
-    TabBtn,
     TabIds,
     Tcss,
     TreeName,
@@ -41,58 +35,38 @@ from chezmoi_mousse.widgets import (
 )
 
 
-class TreeSwitcher(VerticalGroup, AppType):
+class TreeSwitcher(ContentSwitcher):
 
     def __init__(self, tab_ids: TabIds):
         self.tab_ids = tab_ids
         # updated by OperateTabsBase in on_switch_changed method
         self.expand_all_state: bool = False
         super().__init__(
-            id=self.tab_ids.tab_vertical_id(area=Area.left),
-            classes=Tcss.tab_left_vertical,
+            id=self.tab_ids.content_switcher_id(area=Area.left),
+            initial=self.tab_ids.tree_id(tree=TreeName.managed_tree),
+            classes=Tcss.content_switcher_left,
         )
 
     def compose(self) -> ComposeResult:
-        yield TabBtnHorizontal(
-            tab_ids=self.tab_ids,
-            buttons=(TabBtn.tree, TabBtn.list),
-            area=Area.left,
-        )
-        with ContentSwitcher(
-            id=self.tab_ids.content_switcher_id(area=Area.left),
-            initial=self.tab_ids.tree_id(tree=TreeName.managed_tree),
-        ):
-            yield ManagedTree(tab_ids=self.tab_ids)
-            yield FlatTree(tab_ids=self.tab_ids)
-            yield ExpandedTree(tab_ids=self.tab_ids)
-
-    def on_mount(self) -> None:
-        self.border_title = str(self.app.destDir)
-        self.query_exactly_one(ContentSwitcher).add_class(
-            Tcss.content_switcher_left, Tcss.border_title_top
-        )
+        yield ManagedTree(tab_ids=self.tab_ids)
+        yield FlatTree(tab_ids=self.tab_ids)
+        yield ExpandedTree(tab_ids=self.tab_ids)
 
 
-class ViewSwitcher(Vertical, AppType):
+class ViewSwitcher(ContentSwitcher):
     def __init__(self, *, tab_ids: TabIds, diff_reverse: bool):
         self.tab_ids = tab_ids
         self.reverse = diff_reverse
-        super().__init__(id=self.tab_ids.tab_vertical_id(area=Area.right))
-
-    def compose(self) -> ComposeResult:
-        yield TabBtnHorizontal(
-            tab_ids=self.tab_ids,
-            buttons=(TabBtn.diff, TabBtn.contents, TabBtn.git_log),
-            area=Area.right,
-        )
-        with ContentSwitcher(
+        super().__init__(
             id=self.tab_ids.content_switcher_id(area=Area.right),
             initial=self.tab_ids.view_id(view=ViewName.diff_view),
             classes=Tcss.border_title_top,
-        ):
-            yield DiffView(tab_ids=self.tab_ids, reverse=self.reverse)
-            yield ContentsView(tab_ids=self.tab_ids)
-            yield GitLogView(tab_ids=self.tab_ids)
+        )
+
+    def compose(self) -> ComposeResult:
+        yield DiffView(tab_ids=self.tab_ids, reverse=self.reverse)
+        yield ContentsView(tab_ids=self.tab_ids)
+        yield GitLogView(tab_ids=self.tab_ids)
 
 
 class InitTabSwitcher(ContentSwitcher):

@@ -38,8 +38,23 @@ class ApplyTab(OperateTabsBase):
         super().__init__(tab_ids=Id.apply)
 
     def compose(self) -> ComposeResult:
-        yield TreeSwitcher(tab_ids=Id.apply)
-        yield ViewSwitcher(tab_ids=Id.apply, diff_reverse=False)
+        with Vertical(
+            id=Id.apply.tab_vertical_id(area=Area.left),
+            classes=Tcss.tab_left_vertical,
+        ):
+            yield TabBtnHorizontal(
+                tab_ids=self.tab_ids,
+                buttons=(TabBtn.tree, TabBtn.list),
+                area=Area.left,
+            )
+            yield TreeSwitcher(tab_ids=Id.apply)
+        with Vertical(id=Id.apply.tab_vertical_id(area=Area.right)):
+            yield TabBtnHorizontal(
+                tab_ids=Id.apply,
+                buttons=(TabBtn.diff, TabBtn.contents, TabBtn.git_log),
+                area=Area.right,
+            )
+            yield ViewSwitcher(tab_ids=Id.apply, diff_reverse=False)
         yield SwitchSlider(
             tab_ids=Id.apply,
             switches=(Switches.unchanged, Switches.expand_all),
@@ -52,8 +67,23 @@ class ReAddTab(OperateTabsBase):
         super().__init__(tab_ids=Id.re_add)
 
     def compose(self) -> ComposeResult:
-        yield TreeSwitcher(tab_ids=Id.re_add)
-        yield ViewSwitcher(tab_ids=Id.re_add, diff_reverse=True)
+        with Vertical(
+            id=Id.re_add.tab_vertical_id(area=Area.left),
+            classes=Tcss.tab_left_vertical,
+        ):
+            yield TabBtnHorizontal(
+                tab_ids=self.tab_ids,
+                buttons=(TabBtn.tree, TabBtn.list),
+                area=Area.left,
+            )
+            yield TreeSwitcher(tab_ids=Id.re_add)
+        with Vertical(id=Id.re_add.tab_vertical_id(area=Area.right)):
+            yield TabBtnHorizontal(
+                tab_ids=Id.re_add,
+                buttons=(TabBtn.diff, TabBtn.contents, TabBtn.git_log),
+                area=Area.right,
+            )
+            yield ViewSwitcher(tab_ids=Id.re_add, diff_reverse=True)
         yield SwitchSlider(
             tab_ids=Id.re_add,
             switches=(Switches.unchanged, Switches.expand_all),

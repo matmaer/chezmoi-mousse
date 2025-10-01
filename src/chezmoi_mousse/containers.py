@@ -49,7 +49,7 @@ class OperateTabsBase(Horizontal, AppType):
             "#", area=Area.right
         )
         self.tree_switcher_id = self.tab_ids.content_switcher_id(
-            "#", area=Area.left
+            area=Area.left
         )
         self.tree_switcher_qid = self.tab_ids.content_switcher_id(
             "#", area=Area.left
@@ -67,6 +67,9 @@ class OperateTabsBase(Horizontal, AppType):
             self.query_one(
                 self.tree_switcher_qid, ContentSwitcher
             ).border_title = str(self.app.destDir)
+            self.query_one(self.tree_switcher_qid, ContentSwitcher).add_class(
+                Tcss.border_title_top
+            )
 
     def update_view_path(self, path: Path) -> None:
         current_view_id = self.query_one(
