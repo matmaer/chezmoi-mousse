@@ -230,10 +230,18 @@ class ConfigTab(Horizontal, AppType):
             switcher.current = Id.config.view_id(view=ViewName.template_data)
 
 
-class HelpTab(Vertical):
+class HelpTab(Horizontal):
 
     def __init__(self) -> None:
         super().__init__(id=Id.help.tab_container_id)
 
     def compose(self) -> ComposeResult:
+        yield NavButtonsVertical(tab_ids=Id.help, buttons=(NavBtn.diagram,))
         yield HelpTabSwitcher(tab_ids=Id.help)
+
+    @on(Button.Pressed, f".{Tcss.nav_button}")
+    def switch_content(self, event: Button.Pressed) -> None:
+        event.stop()
+        switcher = self.query_exactly_one(HelpTabSwitcher)
+        if event.button.id == Id.help.button_id(btn=NavBtn.diagram):
+            switcher.current = Id.help.view_id(view=ViewName.flow_diagram)

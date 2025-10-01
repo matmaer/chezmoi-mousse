@@ -3,7 +3,6 @@ import json
 from textual import on
 from textual.app import ComposeResult
 from textual.containers import (
-    Horizontal,
     HorizontalGroup,
     Vertical,
     VerticalGroup,
@@ -20,16 +19,11 @@ from textual.widgets import (
     Static,
 )
 
-from chezmoi_mousse.button_groups import (
-    NavButtonsVertical,
-    OperateBtnHorizontal,
-    TabBtnHorizontal,
-)
+from chezmoi_mousse.button_groups import OperateBtnHorizontal, TabBtnHorizontal
 from chezmoi_mousse.chezmoi import LogsEnum, ReadCmd
 from chezmoi_mousse.id_typing import (
     AppType,
     Area,
-    NavBtn,
     OperateBtn,
     TabBtn,
     TabIds,
@@ -215,7 +209,7 @@ class ConfigTabSwitcher(ContentSwitcher, AppType):
         )
 
 
-class HelpTabSwitcher(Horizontal, AppType):
+class HelpTabSwitcher(ContentSwitcher, AppType):
 
     # provisional diagrams until dynamically created
     FLOW_DIAGRAM = """\
@@ -250,35 +244,19 @@ class HelpTabSwitcher(Horizontal, AppType):
 
     def __init__(self, tab_ids: TabIds):
         self.tab_ids = tab_ids
-        super().__init__(id=self.tab_ids.tab_vertical_id(area=Area.right))
+        super().__init__(
+            id=self.tab_ids.content_switcher_id(area=Area.right),
+            initial=self.tab_ids.view_id(view=ViewName.flow_diagram),
+            classes=Tcss.nav_content_switcher,
+        )
 
     def compose(self) -> ComposeResult:
-        with VerticalGroup(
-            id=self.tab_ids.tab_vertical_id(area=Area.left),
-            classes=Tcss.tab_left_vertical,
-        ):
-            yield NavButtonsVertical(
-                tab_ids=self.tab_ids, buttons=(NavBtn.diagram,)
-            )
 
-        with Vertical(id=self.tab_ids.tab_vertical_id(area=Area.right)):
-            with ContentSwitcher(
-                id=self.tab_ids.content_switcher_id(area=Area.right),
-                initial=self.tab_ids.view_id(view=ViewName.flow_diagram),
-                classes=Tcss.nav_content_switcher,
-            ):
-                yield Vertical(
-                    Label("chezmoi diagram", classes=Tcss.section_label),
-                    Static(self.FLOW_DIAGRAM, classes=Tcss.flow_diagram),
-                    id=self.tab_ids.view_id(view=ViewName.flow_diagram),
-                )
-
-    @on(Button.Pressed, f".{Tcss.nav_button}")
-    def switch_content(self, event: Button.Pressed) -> None:
-        event.stop()
-        switcher = self.query_exactly_one(ContentSwitcher)
-        if event.button.id == self.tab_ids.button_id(btn=NavBtn.diagram):
-            switcher.current = self.tab_ids.view_id(view=ViewName.flow_diagram)
+        yield Vertical(
+            Label("chezmoi diagram", classes=Tcss.section_label),
+            Static(self.FLOW_DIAGRAM, classes=Tcss.flow_diagram),
+            id=self.tab_ids.view_id(view=ViewName.flow_diagram),
+        )
 
 
 class LogsTabSwitcher(Vertical, AppType):
