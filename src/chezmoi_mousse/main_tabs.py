@@ -141,10 +141,6 @@ class InitTab(Horizontal, AppType):
 
     def compose(self) -> ComposeResult:
         yield InitTabSwitcher(tab_ids=Id.init)
-        yield SwitchSlider(
-            tab_ids=Id.init,
-            switches=(Switches.guess_url, Switches.clone_and_apply),
-        )
 
     def on_mount(self) -> None:
         self.query(Label).add_class(Tcss.section_label)

@@ -145,18 +145,12 @@ class OperateHelp(Enum):
 
 
 class Switches(Enum):
-    clone_and_apply = SwitchData(
-        "init and apply", "run chezmoi init with --apply flag."
-    )
     expand_all = SwitchData(
         "expand all dirs",
         (
             "Expand all managed directories. Depending on the unchanged "
             "switch."
         ),
-    )
-    guess_url = SwitchData(
-        "chezmoi guess", "Submit with `chezmoi --guess-repo-url`."
     )
     unchanged = SwitchData(
         "show unchanged files",
