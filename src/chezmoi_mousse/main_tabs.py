@@ -211,10 +211,37 @@ class ConfigTab(Horizontal, AppType):
         super().__init__(id=Id.config.tab_container_id)
 
     def compose(self) -> ComposeResult:
+        with VerticalGroup(
+            id=Id.config.tab_vertical_id(area=Area.left),
+            classes=Tcss.tab_left_vertical,
+        ):
+            yield NavButtonsVertical(
+                tab_ids=Id.config,
+                buttons=(
+                    NavBtn.doctor,
+                    NavBtn.cat_config,
+                    NavBtn.ignored,
+                    NavBtn.template_data,
+                ),
+                area=Area.left,
+            )
         yield ConfigTabSwitcher(Id.config)
 
     def on_mount(self) -> None:
         self.query(Label).add_class(Tcss.section_label)
+
+    @on(Button.Pressed, f".{Tcss.nav_button}")
+    def switch_content(self, event: Button.Pressed) -> None:
+        event.stop()
+        switcher = self.query_exactly_one(ConfigTabSwitcher)
+        if event.button.id == Id.config.button_id(btn=(NavBtn.doctor)):
+            switcher.current = Id.config.view_id(view=ViewName.doctor)
+        elif event.button.id == Id.config.button_id(btn=(NavBtn.cat_config)):
+            switcher.current = Id.config.view_id(view=ViewName.cat_config)
+        elif event.button.id == Id.config.button_id(btn=NavBtn.ignored):
+            switcher.current = Id.config.view_id(view=ViewName.config_ignored)
+        elif event.button.id == Id.config.button_id(btn=NavBtn.template_data):
+            switcher.current = Id.config.view_id(view=ViewName.template_data)
 
 
 class HelpTab(Vertical):
