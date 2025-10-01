@@ -150,7 +150,7 @@ class LoadingScreen(Screen[SplashReturnData], AppType):
             interval=0.05, callback=animated_fade.refresh
         )
 
-        if not self.app.chezmoi.init_cfg.chezmoi_found:
+        if not self.app.chezmoi.chezmoi_found:
             self.log_unavailable_chezmoi_command()
             return
 

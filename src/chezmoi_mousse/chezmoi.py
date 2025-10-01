@@ -15,7 +15,6 @@ from textual.widgets import RichLog
 import chezmoi_mousse.custom_theme as theme
 from chezmoi_mousse.id_typing import (
     Chars,
-    OperateHelp,
     ParsedJson,
     PathDict,
     SplashReturnData,
@@ -147,43 +146,6 @@ class LogsEnum(Enum):
 
 
 @dataclass
-class InitConfig:
-    changes_enabled: bool = os.environ.get("MOUSSE_ENABLE_CHANGES") == "1"
-    chezmoi_cmd = CHEZMOI_CMD
-    chezmoi_found: bool = which(CHEZMOI_CMD) is not None
-    config_dump: ParsedJson | None = None
-    destDir: Path = Path.home()
-    dev_mode: bool = os.environ.get("CHEZMOI_MOUSSE_DEV") == "1"
-    git_autoadd: bool = False
-    git_autocommit: bool = False
-    git_autopush: bool = False
-    sourceDir: Path = Path(tempfile.gettempdir())
-
-    def __post_init__(self):
-        if os.environ.get("PRETEND_CHEZMOI_NOT_FOUND") == "1":
-            self.chezmoi_found = False
-        if self.chezmoi_found:
-            result: CompletedProcess[str] = run(
-                ReadCmd.dump_config.value,
-                capture_output=True,
-                shell=False,
-                text=True,  # returns stdout as str instead of bytes
-            )
-            self.config_dump = json.loads(result.stdout)
-            if self.config_dump is not None:
-                self.destDir = Path(self.config_dump["destDir"])
-                self.sourceDir = Path(self.config_dump["sourceDir"])
-                self.git_autoadd = self.config_dump["git"]["autoadd"]
-                self.git_autocommit = self.config_dump["git"]["autocommit"]
-                self.git_autopush = self.config_dump["git"]["autopush"]
-            else:
-                self.config_dump = {}
-
-
-INIT_CFG = InitConfig()
-
-
-@dataclass
 class DirPathStatus:
     path: Path
     status: str
@@ -271,20 +233,14 @@ class AppLog(CommandLogBase):
 
     def __init__(self) -> None:
         super().__init__(
-            id=LogsEnum.app_log.name, markup=True, max_lines=10000
+            id=LogsEnum.app_log.name,
+            markup=True,
+            max_lines=10000,
+            classes=Tcss.log_views,
         )
         success = f"{Chars.check_mark} Success"
         self.succes_no_output = f"{success}, no output"
         self.success_with_output = f"{success}, output processed in UI"
-
-    def on_mount(self) -> None:
-        self.add_class(Tcss.log_views)
-        if INIT_CFG.dev_mode:
-            self.ready_to_run("Running in development mode")
-        if not INIT_CFG.changes_enabled:
-            self.ready_to_run(OperateHelp.changes_mode_disabled.value)
-        else:
-            self.warning(OperateHelp.changes_mode_enabled.value)
 
     def completed_process(
         self, completed_process: CompletedProcess[str]
@@ -307,7 +263,11 @@ class DebugLog(CommandLogBase):
 
     def __init__(self) -> None:
         super().__init__(
-            id=LogsEnum.debug_log.name, markup=True, max_lines=10000, wrap=True
+            id=LogsEnum.debug_log.name,
+            markup=True,
+            max_lines=10000,
+            wrap=True,
+            classes=Tcss.log_views,
         )
 
     def on_mount(self) -> None:
@@ -369,43 +329,43 @@ class OutputLog(CommandLogBase):
         self.refresh()
 
 
-app_log = AppLog()
-debug_log = DebugLog()
-output_log = OutputLog()
-
-
 class Chezmoi:
 
     def __init__(self) -> None:
+        self.app_log = AppLog()
+        self.debug_log = DebugLog()
+        self.output_log = OutputLog()
+
+        self.chezmoi_found = (
+            which(CHEZMOI_CMD) is not None
+            and os.environ.get("PRETEND_CHEZMOI_NOT_FOUND") != "1"
+        )
+        self.changes_enabled: bool = (
+            os.environ.get("MOUSSE_ENABLE_CHANGES") == "1"
+        )
+        self.config_dump = {}
+        self.dev_mode: bool = os.environ.get("CHEZMOI_MOUSSE_DEV") == "1"
+        self.config_dump: ParsedJson | None = None
+        self.destDir: Path = Path.home()
+        self.git_autoadd: bool = False
+        self.git_autocommit: bool = False
+        self.git_autopush: bool = False
         self.managed = ManagedStatus()
-
-    # PRE INIT CONFIG
-
-    @property
-    def init_cfg(self) -> InitConfig:
-        return INIT_CFG
-
-    @property
-    def destDir(self) -> Path:
-        return self.init_cfg.destDir
-
-    @property
-    def sourceDir(self) -> Path:
-        return self.init_cfg.sourceDir
-
-    # PRE INITIALIZED LOGS
-
-    @property
-    def app_log(self) -> AppLog:
-        return app_log
-
-    @property
-    def debug_log(self) -> DebugLog:
-        return debug_log
-
-    @property
-    def output_log(self) -> OutputLog:
-        return output_log
+        self.sourceDir: Path = Path(tempfile.gettempdir())
+        if self.chezmoi_found:
+            result: CompletedProcess[str] = run(
+                ReadCmd.dump_config.value,
+                capture_output=True,
+                shell=False,
+                text=True,  # returns stdout as str instead of bytes
+            )
+            self.config_dump = json.loads(result.stdout)
+            if self.config_dump is not None:
+                self.destDir = Path(self.config_dump["destDir"])
+                self.sourceDir = Path(self.config_dump["sourceDir"])
+                self.git_autoadd = self.config_dump["git"]["autoadd"]
+                self.git_autocommit = self.config_dump["git"]["autocommit"]
+                self.git_autopush = self.config_dump["git"]["autopush"]
 
     # COMMAND TYPES
 
@@ -467,7 +427,7 @@ class Chezmoi:
     def perform(
         self, change_sub_cmd: ChangeCmd, change_arg: str | None = None
     ) -> None:
-        if self.init_cfg.changes_enabled:
+        if self.changes_enabled:
             base_cmd: list[str] = GlobalCmd.live_run.value
         else:
             base_cmd: list[str] = GlobalCmd.dry_run.value

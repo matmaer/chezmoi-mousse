@@ -54,8 +54,8 @@ from chezmoi_mousse.widgets import (
 
 
 class ChezmoiGUI(App["ChezmoiGUI"]):
-    def __init__(self):
-        self.chezmoi = Chezmoi()
+    def __init__(self, chezmoi_instance: Chezmoi):
+        self.chezmoi = chezmoi_instance
         self.destDir = self.chezmoi.destDir
         self.sourceDir = self.chezmoi.sourceDir
         super().__init__()
@@ -120,20 +120,15 @@ class ChezmoiGUI(App["ChezmoiGUI"]):
         theme_name = "chezmoi-mousse-dark"
         self.theme = theme_name
         self.chezmoi.app_log.success(f"Theme set to {theme_name}")
-        if self.chezmoi.init_cfg.chezmoi_found:
+        if self.chezmoi.chezmoi_found:
             self.chezmoi.app_log.success(
-                f"chezmoi command found: {self.chezmoi.init_cfg.chezmoi_found}"
+                f"chezmoi command found: {self.chezmoi.chezmoi_found}"
             )
         self.chezmoi.app_log.ready_to_run("--- Start loading screen ---")
         self.push_screen(
-            LoadingScreen(), callback=self.handle_splash_return_data
+            LoadingScreen(), callback=self.run_post_splash_actions
         )
         self.watch(self, "theme", self.on_theme_change, init=False)
-
-        if self.chezmoi.init_cfg.changes_enabled:
-            self.notify(
-                OperateHelp.changes_mode_enabled.value, severity="warning"
-            )
 
     def on_theme_change(self, _: str, new_theme: str) -> None:
         new_theme_object: Theme | None = self.get_theme(new_theme)
@@ -143,14 +138,14 @@ class ChezmoiGUI(App["ChezmoiGUI"]):
         )
         self.chezmoi.app_log.success(f"Theme set to {new_theme}")
 
-    def handle_splash_return_data(
+    def run_post_splash_actions(
         self, return_data: SplashReturnData | None
     ) -> None:
         if return_data is None:
             # Handle the case where no data was returned (though this shouldn't happen in your case)
             self.chezmoi.app_log.error("No data returned from splash screen")
             return
-        if not self.chezmoi.init_cfg.chezmoi_found:
+        if not self.chezmoi.chezmoi_found:
             self.push_screen(InstallHelp())
             return
         self.chezmoi.app_log.ready_to_run("--- Loading screen completed ---")
@@ -184,6 +179,20 @@ class ChezmoiGUI(App["ChezmoiGUI"]):
             Id.logs.content_switcher_id("#", area=Area.top), ContentSwitcher
         )
         content_switcher.current = self.chezmoi.app_log.id
+        if self.chezmoi.dev_mode:
+            self.notify('Running in "dev mode"', severity="information")
+        self.notify_changes_enabled()
+
+    def notify_changes_enabled(self):
+        # Notify app startup mode
+        if self.chezmoi.changes_enabled:
+            self.notify(
+                OperateHelp.changes_mode_enabled.value, severity="warning"
+            )
+        else:
+            self.notify(
+                OperateHelp.changes_mode_disabled.value, severity="information"
+            )
 
     def on_tabbed_content_tab_activated(
         self, event: TabbedContent.TabActivated

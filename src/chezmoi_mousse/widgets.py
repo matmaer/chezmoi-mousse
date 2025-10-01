@@ -83,9 +83,9 @@ class OperateInfo(Static, AppType):
             self.border_subtitle = Chars.destroy_file_info_border
         # show git auto warnings
         if not OperateBtn.apply_file == self.operate_btn:
-            if self.app.chezmoi.init_cfg.git_autocommit:
+            if self.app.chezmoi.git_autocommit:
                 lines_to_write.append(OperateHelp.auto_commit.value)
-            if self.app.chezmoi.init_cfg.git_autopush:
+            if self.app.chezmoi.git_autopush:
                 lines_to_write.append(OperateHelp.autopush.value)
         # show git diff color info
         if (

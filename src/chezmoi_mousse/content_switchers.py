@@ -347,7 +347,7 @@ class LogsTabSwitcher(Vertical, AppType):
 
     def compose(self) -> ComposeResult:
         tab_buttons = (TabBtn.app_log, TabBtn.output_log)
-        if self.app.chezmoi.init_cfg.dev_mode:
+        if self.app.chezmoi.dev_mode:
             tab_buttons += (TabBtn.debug_log,)
 
         yield TabBtnHorizontal(
@@ -359,7 +359,7 @@ class LogsTabSwitcher(Vertical, AppType):
         ):
             yield self.app.chezmoi.app_log
             yield self.app.chezmoi.output_log
-            if self.app.chezmoi.init_cfg.dev_mode:
+            if self.app.chezmoi.dev_mode:
                 yield self.app.chezmoi.debug_log
 
     @on(Button.Pressed, f".{Tcss.tab_button}")
@@ -374,7 +374,7 @@ class LogsTabSwitcher(Vertical, AppType):
             switcher.current = LogsEnum.output_log.name
             switcher.border_title = self.app.chezmoi.output_log.border_title
         elif (
-            self.app.chezmoi.init_cfg.dev_mode
+            self.app.chezmoi.dev_mode
             and event.button.id == self.tab_ids.button_id(btn=TabBtn.debug_log)
         ):
             switcher.current = LogsEnum.debug_log.name

@@ -1,19 +1,22 @@
+import os
 import traceback
-from os import environ
 from pathlib import Path
 
+from chezmoi_mousse.chezmoi import Chezmoi
 from chezmoi_mousse.gui import ChezmoiGUI
+
+chezmoi = Chezmoi()
 
 
 def run_app():
 
-    if environ.get("CHEZMOI_MOUSSE_DEV") == "1":
+    if os.environ.get("CHEZMOI_MOUSSE_DEV") == "1":
 
         src_dir = Path(__file__).parent.parent
 
         # Save stacktrace in case an exception occurs on App class init.
         try:
-            app = ChezmoiGUI()
+            app = ChezmoiGUI(chezmoi_instance=chezmoi)
         except Exception:
             with open(src_dir / "stack_trace.txt", "w") as f:
                 traceback.print_exc(file=f)
@@ -35,5 +38,5 @@ def run_app():
         app.run()
 
     else:
-        app = ChezmoiGUI()
+        app = ChezmoiGUI(chezmoi_instance=chezmoi)
         app.run()
