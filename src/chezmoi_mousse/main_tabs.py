@@ -21,6 +21,7 @@ from chezmoi_mousse.id_typing import (
     AppType,
     Area,
     Id,
+    NavBtn,
     OperateBtn,
     Switches,
     TabBtn,
@@ -140,6 +141,11 @@ class InitTab(Horizontal, AppType):
         self.repo_url: str | None = None
 
     def compose(self) -> ComposeResult:
+        yield NavButtonsVertical(
+            tab_ids=Id.init,
+            buttons=(NavBtn.new_repo, NavBtn.clone_repo, NavBtn.purge_repo),
+            area=Area.left,
+        )
         yield InitTabSwitcher(tab_ids=Id.init)
 
     def on_mount(self) -> None:
@@ -159,6 +165,16 @@ class InitTab(Horizontal, AppType):
             )
             self.app.notify(text_lines, severity="error")
 
+    @on(Button.Pressed, f".{Tcss.nav_button}")
+    def switch_content(self, event: Button.Pressed) -> None:
+        switcher = self.query_exactly_one(InitTabSwitcher)
+        if event.button.id == Id.init.button_id(btn=NavBtn.new_repo):
+            switcher.current = Id.init.view_id(view=ViewName.init_new_view)
+        elif event.button.id == Id.init.button_id(btn=NavBtn.clone_repo):
+            switcher.current = Id.init.view_id(view=ViewName.init_clone_view)
+        elif event.button.id == Id.init.button_id(btn=NavBtn.purge_repo):
+            switcher.current = Id.init.view_id(view=ViewName.init_purge_view)
+
     @on(Button.Pressed, f".{Tcss.operate_button}")
     def handle_operation_button(self, event: Button.Pressed) -> None:
         event.stop()
@@ -177,11 +193,6 @@ class InitTab(Horizontal, AppType):
             self.query_one(
                 Id.init.button_id("#", btn=OperateBtn.purge_repo), Button
             ).disabled = True
-
-    def action_toggle_switch_slider(self) -> None:
-        self.query_one(
-            Id.init.switches_slider_qid, VerticalGroup
-        ).toggle_class("-visible")
 
 
 class LogsTab(Vertical, AppType):

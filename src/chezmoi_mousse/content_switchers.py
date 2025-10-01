@@ -103,90 +103,68 @@ class ViewSwitcher(Vertical, AppType):
             yield GitLogView(tab_ids=self.tab_ids)
 
 
-class InitTabSwitcher(Horizontal):
+class InitTabSwitcher(ContentSwitcher):
 
     def __init__(self, tab_ids: TabIds):
         self.tab_ids = tab_ids
-        super().__init__(id=self.tab_ids.tab_vertical_id(area=Area.right))
-
-    def compose(self) -> ComposeResult:
-        yield NavButtonsVertical(
-            tab_ids=self.tab_ids,
-            buttons=(NavBtn.new_repo, NavBtn.clone_repo, NavBtn.purge_repo),
-            area=Area.left,
-        )
-        with ContentSwitcher(
+        super().__init__(
             id=self.tab_ids.content_switcher_id(area=Area.right),
             initial=self.tab_ids.view_id(view=ViewName.init_new_view),
             classes=Tcss.nav_content_switcher,
-        ):
-            # New Repo Content
-            yield Vertical(
-                Label("Initialize new chezmoi git repository"),
-                Input(placeholder="Enter config file path"),
-                OperateBtnHorizontal(
-                    tab_ids=self.tab_ids, buttons=(OperateBtn.new_repo,)
-                ),
-                id=self.tab_ids.view_id(view=ViewName.init_new_view),
-            )
-            # Clone Repo Content
-            yield Vertical(
-                Label("Clone existing chezmoi git repository"),
-                # TODO: implement guess feature from chezmoi
-                # TODO: add selection for https(with PAT token) or ssh
-                HorizontalGroup(
-                    Vertical(
-                        Select[str].from_values(
-                            ["https", "ssh"],
-                            classes=Tcss.input_select,
-                            value="https",
-                            allow_blank=False,
-                            type_to_search=False,
-                        ),
-                        classes=Tcss.input_select_vertical,
-                    ),
-                    Vertical(
-                        Input(
-                            placeholder="Enter repository URL",
-                            validate_on=["submitted"],
-                            validators=URL(),
-                            classes=Tcss.input_field,
-                        ),
-                        classes=Tcss.input_field_vertical,
-                    ),
-                ),
-                OperateBtnHorizontal(
-                    tab_ids=self.tab_ids, buttons=(OperateBtn.clone_repo,)
-                ),
-                id=self.tab_ids.view_id(view=ViewName.init_clone_view),
-            )
-            # Purge chezmoi repo
-            yield Vertical(
-                Label("Purge current chezmoi git repository"),
-                Static(
-                    "Remove chezmoi's configuration, state, and source directory, but leave the target state intact."
-                ),
-                OperateBtnHorizontal(
-                    tab_ids=self.tab_ids, buttons=(OperateBtn.purge_repo,)
-                ),
-                id=self.tab_ids.view_id(view=ViewName.init_purge_view),
-            )
+        )
 
-    @on(Button.Pressed, f".{Tcss.nav_button}")
-    def switch_content(self, event: Button.Pressed) -> None:
-        switcher = self.query_exactly_one(ContentSwitcher)
-        if event.button.id == self.tab_ids.button_id(btn=NavBtn.new_repo):
-            switcher.current = self.tab_ids.view_id(
-                view=ViewName.init_new_view
-            )
-        elif event.button.id == self.tab_ids.button_id(btn=NavBtn.clone_repo):
-            switcher.current = self.tab_ids.view_id(
-                view=ViewName.init_clone_view
-            )
-        elif event.button.id == self.tab_ids.button_id(btn=NavBtn.purge_repo):
-            switcher.current = self.tab_ids.view_id(
-                view=ViewName.init_purge_view
-            )
+    def compose(self) -> ComposeResult:
+        # New Repo Content
+        yield Vertical(
+            Label("Initialize new chezmoi git repository"),
+            Input(placeholder="Enter config file path"),
+            OperateBtnHorizontal(
+                tab_ids=self.tab_ids, buttons=(OperateBtn.new_repo,)
+            ),
+            id=self.tab_ids.view_id(view=ViewName.init_new_view),
+        )
+        # Clone Repo Content
+        yield Vertical(
+            Label("Clone existing chezmoi git repository"),
+            # TODO: implement guess feature from chezmoi
+            # TODO: add selection for https(with PAT token) or ssh
+            HorizontalGroup(
+                Vertical(
+                    Select[str].from_values(
+                        ["https", "ssh"],
+                        classes=Tcss.input_select,
+                        value="https",
+                        allow_blank=False,
+                        type_to_search=False,
+                    ),
+                    classes=Tcss.input_select_vertical,
+                ),
+                Vertical(
+                    Input(
+                        placeholder="Enter repository URL",
+                        validate_on=["submitted"],
+                        validators=URL(),
+                        classes=Tcss.input_field,
+                    ),
+                    classes=Tcss.input_field_vertical,
+                ),
+            ),
+            OperateBtnHorizontal(
+                tab_ids=self.tab_ids, buttons=(OperateBtn.clone_repo,)
+            ),
+            id=self.tab_ids.view_id(view=ViewName.init_clone_view),
+        )
+        # Purge chezmoi repo
+        yield Vertical(
+            Label("Purge current chezmoi git repository"),
+            Static(
+                "Remove chezmoi's configuration, state, and source directory, but leave the target state intact."
+            ),
+            OperateBtnHorizontal(
+                tab_ids=self.tab_ids, buttons=(OperateBtn.purge_repo,)
+            ),
+            id=self.tab_ids.view_id(view=ViewName.init_purge_view),
+        )
 
 
 class ConfigTabSwitcher(Horizontal, AppType):
