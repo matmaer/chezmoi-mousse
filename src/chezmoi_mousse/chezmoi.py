@@ -342,19 +342,6 @@ class DebugLog(CommandLogBase):
         self.dimmed(", ".join(members))
 
 
-class InitLog(CommandLogBase):
-
-    def __init__(self) -> None:
-        super().__init__(
-            id=LogsEnum.init_log.name, markup=True, max_lines=10000
-        )
-
-    def on_mount(self) -> None:
-        self.add_class(Tcss.border_title_top, Tcss.bottom_docked_log)
-        self.border_title = LogsEnum.init_log.value
-        self.ready_to_run("Init log ready to capture logs.")
-
-
 class OutputLog(CommandLogBase):
 
     def __init__(self) -> None:
@@ -384,10 +371,7 @@ class OutputLog(CommandLogBase):
 
 app_log = AppLog()
 debug_log = DebugLog()
-init_log = InitLog()
 output_log = OutputLog()
-
-# managed = ManagedStatus()
 
 
 class Chezmoi:
@@ -418,10 +402,6 @@ class Chezmoi:
     @property
     def debug_log(self) -> DebugLog:
         return debug_log
-
-    @property
-    def init_log(self) -> InitLog:
-        return init_log
 
     @property
     def output_log(self) -> OutputLog:

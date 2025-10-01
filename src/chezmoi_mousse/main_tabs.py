@@ -141,7 +141,6 @@ class InitTab(Horizontal, AppType):
 
     def compose(self) -> ComposeResult:
         yield InitTabSwitcher(tab_ids=Id.init)
-        yield self.app.chezmoi.init_log
         yield SwitchSlider(
             tab_ids=Id.init,
             switches=(Switches.guess_url, Switches.clone_and_apply),
@@ -149,7 +148,6 @@ class InitTab(Horizontal, AppType):
 
     def on_mount(self) -> None:
         self.query(Label).add_class(Tcss.section_label)
-        self.app.chezmoi.init_log.success("Ready to run chezmoi commands.")
         self.query_exactly_one(NavButtonsVertical).add_class(
             Tcss.tab_left_vertical
         )
@@ -160,12 +158,10 @@ class InitTab(Horizontal, AppType):
             event.validation_result is not None
             and not event.validation_result.is_valid
         ):
-            text_lines = "\n".join(
+            text_lines: str = "\n".join(
                 event.validation_result.failure_descriptions
             )
-            self.app.chezmoi.init_log.warning(
-                f"Invalid input detected: {text_lines}"
-            )
+            self.app.notify(text_lines, severity="error")
 
     @on(Button.Pressed, f".{Tcss.operate_button}")
     def handle_operation_button(self, event: Button.Pressed) -> None:
