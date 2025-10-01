@@ -116,7 +116,10 @@ class InitTabSwitcher(ContentSwitcher):
     def compose(self) -> ComposeResult:
         # New Repo Content
         yield Vertical(
-            Label("Initialize new chezmoi git repository"),
+            Label(
+                "Initialize new chezmoi git repository",
+                classes=Tcss.section_label,
+            ),
             Input(placeholder="Enter config file path"),
             OperateBtnHorizontal(
                 tab_ids=self.tab_ids, buttons=(OperateBtn.new_repo,)
@@ -125,7 +128,10 @@ class InitTabSwitcher(ContentSwitcher):
         )
         # Clone Repo Content
         yield Vertical(
-            Label("Clone existing chezmoi git repository"),
+            Label(
+                "Clone existing chezmoi git repository",
+                classes=Tcss.section_label,
+            ),
             # TODO: implement guess feature from chezmoi
             # TODO: add selection for https(with PAT token) or ssh
             HorizontalGroup(
@@ -156,7 +162,10 @@ class InitTabSwitcher(ContentSwitcher):
         )
         # Purge chezmoi repo
         yield Vertical(
-            Label("Purge current chezmoi git repository"),
+            Label(
+                "Purge current chezmoi git repository",
+                classes=Tcss.section_label,
+            ),
             Static(
                 "Remove chezmoi's configuration, state, and source directory, but leave the target state intact."
             ),
@@ -190,17 +199,17 @@ class ConfigTabSwitcher(ContentSwitcher, AppType):
             classes=Tcss.doctor_vertical_scroll,
         )
         yield Vertical(
-            Label('"chezmoi cat-config" output'),
+            Label('"chezmoi cat-config" output', classes=Tcss.section_label),
             Pretty(self.app.chezmoi.read(ReadCmd.cat_config).splitlines()),
             id=self.tab_ids.view_id(view=ViewName.cat_config),
         )
         yield Vertical(
-            Label('"chezmoi ignored" output'),
+            Label('"chezmoi ignored" output', classes=Tcss.section_label),
             Pretty(self.app.chezmoi.read(ReadCmd.ignored).splitlines()),
             id=self.tab_ids.view_id(view=ViewName.config_ignored),
         )
         yield Vertical(
-            Label('"chezmoi data" output'),
+            Label('"chezmoi data" output', classes=Tcss.section_label),
             Pretty(json.loads(self.app.chezmoi.read(ReadCmd.data))),
             id=self.tab_ids.view_id(view=ViewName.template_data),
         )
@@ -249,7 +258,7 @@ class HelpTabSwitcher(Horizontal, AppType):
             classes=Tcss.tab_left_vertical,
         ):
             yield NavButtonsVertical(
-                tab_ids=self.tab_ids, buttons=(NavBtn.diagram,), area=Area.left
+                tab_ids=self.tab_ids, buttons=(NavBtn.diagram,)
             )
 
         with Vertical(id=self.tab_ids.tab_vertical_id(area=Area.right)):
@@ -259,7 +268,7 @@ class HelpTabSwitcher(Horizontal, AppType):
                 classes=Tcss.nav_content_switcher,
             ):
                 yield Vertical(
-                    Label("chezmoi diagram"),
+                    Label("chezmoi diagram", classes=Tcss.section_label),
                     Static(self.FLOW_DIAGRAM, classes=Tcss.flow_diagram),
                     id=self.tab_ids.view_id(view=ViewName.flow_diagram),
                 )

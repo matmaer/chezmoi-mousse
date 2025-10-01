@@ -42,12 +42,11 @@ class ButtonsHorizontal(HorizontalGroup):
 class NavButtonsVertical(VerticalGroup):
 
     def __init__(
-        self, *, tab_ids: TabIds, buttons: tuple[NavBtn, ...], area: Area
+        self, *, tab_ids: TabIds, buttons: tuple[NavBtn, ...]
     ) -> None:
         self.buttons: tuple[NavBtn, ...] = buttons
-        self.area: Area = area
         self.tab_ids: TabIds = tab_ids
-        super().__init__(id=self.tab_ids.buttons_vertical_group_id(self.area))
+        super().__init__(id=self.tab_ids.buttons_vertical_group_id(Area.left))
 
     def compose(self) -> ComposeResult:
         for button_enum in self.buttons:

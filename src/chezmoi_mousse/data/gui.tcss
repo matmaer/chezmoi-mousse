@@ -252,6 +252,7 @@
 
 NavButtonsVertical {
   width: auto;
+  margin-right: 2;
   & .nav_button {
     background-tint: initial;
     width: 100%;

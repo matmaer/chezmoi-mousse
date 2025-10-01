@@ -3,7 +3,7 @@ from pathlib import Path
 from textual import on
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical, VerticalGroup
-from textual.widgets import Button, Input, Label, Switch
+from textual.widgets import Button, Input, Switch
 
 from chezmoi_mousse.button_groups import NavButtonsVertical
 from chezmoi_mousse.chezmoi import ChangeCmd
@@ -144,15 +144,8 @@ class InitTab(Horizontal, AppType):
         yield NavButtonsVertical(
             tab_ids=Id.init,
             buttons=(NavBtn.new_repo, NavBtn.clone_repo, NavBtn.purge_repo),
-            area=Area.left,
         )
         yield InitTabSwitcher(tab_ids=Id.init)
-
-    def on_mount(self) -> None:
-        self.query(Label).add_class(Tcss.section_label)
-        self.query_exactly_one(NavButtonsVertical).add_class(
-            Tcss.tab_left_vertical
-        )
 
     @on(Input.Submitted)
     def log_invalid_reasons(self, event: Input.Submitted) -> None:
@@ -167,6 +160,7 @@ class InitTab(Horizontal, AppType):
 
     @on(Button.Pressed, f".{Tcss.nav_button}")
     def switch_content(self, event: Button.Pressed) -> None:
+        event.stop()
         switcher = self.query_exactly_one(InitTabSwitcher)
         if event.button.id == Id.init.button_id(btn=NavBtn.new_repo):
             switcher.current = Id.init.view_id(view=ViewName.init_new_view)
@@ -211,24 +205,16 @@ class ConfigTab(Horizontal, AppType):
         super().__init__(id=Id.config.tab_container_id)
 
     def compose(self) -> ComposeResult:
-        with VerticalGroup(
-            id=Id.config.tab_vertical_id(area=Area.left),
-            classes=Tcss.tab_left_vertical,
-        ):
-            yield NavButtonsVertical(
-                tab_ids=Id.config,
-                buttons=(
-                    NavBtn.doctor,
-                    NavBtn.cat_config,
-                    NavBtn.ignored,
-                    NavBtn.template_data,
-                ),
-                area=Area.left,
-            )
+        yield NavButtonsVertical(
+            tab_ids=Id.config,
+            buttons=(
+                NavBtn.doctor,
+                NavBtn.cat_config,
+                NavBtn.ignored,
+                NavBtn.template_data,
+            ),
+        )
         yield ConfigTabSwitcher(Id.config)
-
-    def on_mount(self) -> None:
-        self.query(Label).add_class(Tcss.section_label)
 
     @on(Button.Pressed, f".{Tcss.nav_button}")
     def switch_content(self, event: Button.Pressed) -> None:
