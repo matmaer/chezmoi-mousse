@@ -5,8 +5,8 @@ from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical, VerticalGroup
 from textual.widgets import Button, Input, Switch
 
-from chezmoi_mousse.button_groups import NavButtonsVertical
-from chezmoi_mousse.chezmoi import ChangeCmd
+from chezmoi_mousse.button_groups import NavButtonsVertical, TabBtnHorizontal
+from chezmoi_mousse.chezmoi import ChangeCmd, LogsEnum
 from chezmoi_mousse.containers import OperateTabsBase, SwitchSlider
 from chezmoi_mousse.content_switchers import (
     ConfigTabSwitcher,
@@ -196,7 +196,32 @@ class LogsTab(Vertical, AppType):
         super().__init__(id=Id.logs.tab_container_id)
 
     def compose(self) -> ComposeResult:
+        tab_buttons = (TabBtn.app_log, TabBtn.output_log)
+        if self.app.chezmoi.dev_mode:
+            tab_buttons += (TabBtn.debug_log,)
+
+        yield TabBtnHorizontal(
+            tab_ids=Id.logs, buttons=tab_buttons, area=Area.top
+        )
         yield LogsTabSwitcher(tab_ids=Id.logs)
+
+    @on(Button.Pressed, f".{Tcss.tab_button}")
+    def switch_content(self, event: Button.Pressed) -> None:
+        event.stop()
+        switcher = self.query_exactly_one(LogsTabSwitcher)
+
+        if event.button.id == Id.logs.button_id(btn=TabBtn.app_log):
+            switcher.current = LogsEnum.app_log.name
+            switcher.border_title = self.app.chezmoi.app_log.border_title
+        elif event.button.id == Id.logs.button_id(btn=TabBtn.output_log):
+            switcher.current = LogsEnum.output_log.name
+            switcher.border_title = self.app.chezmoi.output_log.border_title
+        elif (
+            self.app.chezmoi.dev_mode
+            and event.button.id == Id.logs.button_id(btn=TabBtn.debug_log)
+        ):
+            switcher.current = LogsEnum.debug_log.name
+            switcher.border_title = self.app.chezmoi.debug_log.border_title
 
 
 class ConfigTab(Horizontal, AppType):
