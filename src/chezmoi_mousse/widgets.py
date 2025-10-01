@@ -26,6 +26,7 @@ from textual.widgets import (
     Static,
     Tree,
 )
+from textual.widgets._tree import TOGGLE_STYLE
 from textual.widgets.tree import TreeNode
 
 import chezmoi_mousse.custom_theme as theme
@@ -50,7 +51,6 @@ from chezmoi_mousse.id_typing import (
     ViewName,
 )
 from chezmoi_mousse.messages import TreeNodeData, TreeNodeDataMsg
-from chezmoi_mousse.overrides import CustomRenderLabel
 
 
 class OperateInfo(Static, AppType):
@@ -364,7 +364,7 @@ class GitLogView(DataTable[Text], AppType):
             self.render_invalid_data(cmd_output)
 
 
-class TreeBase(CustomRenderLabel, AppType):  # instead of Tree[NodeData]
+class TreeBase(Tree[NodeData], AppType):
 
     def __init__(self, tab_ids: TabIds, *, tree_name: TreeName) -> None:
         self.tree_name = tree_name
@@ -660,6 +660,61 @@ class TreeBase(CustomRenderLabel, AppType):  # instead of Tree[NodeData]
             ):
                 parent.remove()
         self.refresh()
+
+    def _apply_cursor_style(self, node_label: Text, is_cursor: bool) -> Text:
+        """Helper to apply cursor-specific styling to a node label."""
+        if not is_cursor:
+            return node_label
+
+        current_style = node_label.style
+        # Apply bold styling when tree is first focused
+        if not self._first_focus and self._initial_render:
+            if isinstance(current_style, str):
+                cursor_style = Style.parse(current_style) + Style(bold=True)
+            else:
+                cursor_style = current_style + Style(bold=True)
+            return Text(node_label.plain, style=cursor_style)
+        # Apply underline styling only after actual user interaction
+        elif self._user_interacted:
+            if isinstance(current_style, str):
+                cursor_style = Style.parse(current_style) + Style(
+                    underline=True
+                )
+            else:
+                cursor_style = current_style + Style(underline=True)
+            return Text(node_label.plain, style=cursor_style)
+
+        return node_label  # No changes if conditions not met
+
+    def render_label(
+        self,
+        node: TreeNode[NodeData],
+        base_style: Style,
+        style: Style,  # needed for valid overriding
+    ) -> Text:
+        assert node.data is not None
+        # Get base styling from style_label
+        node_label = self.style_label(node.data)
+
+        # Apply cursor styling via helper
+        node_label = self._apply_cursor_style(
+            node_label, node is self.cursor_node
+        )
+
+        if node.allow_expand:
+            prefix = (
+                (
+                    self.ICON_NODE_EXPANDED
+                    if node.is_expanded
+                    else self.ICON_NODE
+                ),
+                base_style + TOGGLE_STYLE,
+            )
+        else:
+            prefix = ("", base_style)
+
+        text = Text.assemble(prefix, node_label)
+        return text
 
 
 class ManagedTree(TreeBase):

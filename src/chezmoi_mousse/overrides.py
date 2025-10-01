@@ -5,12 +5,9 @@ from math import ceil
 from rich.color import Color
 from rich.segment import Segment, Segments
 from rich.style import Style
-from rich.text import Text
 from textual.scrollbar import ScrollBarRender
-from textual.widgets import Tree
-from textual.widgets.tree import TreeNode
 
-from chezmoi_mousse.id_typing import Chars, NodeData
+from chezmoi_mousse.id_typing import Chars
 
 
 class CustomScrollBarRender(ScrollBarRender):
@@ -134,69 +131,3 @@ class CustomScrollBarRender(ScrollBarRender):
             return Segments(
                 (segments + [_Segment.line()]) * thickness, new_lines=False
             )
-
-
-class CustomRenderLabel(Tree[NodeData]):
-    """Base class for TreeBase with custom render_label override."""
-
-    # These attributes should be defined by subclasses
-    _first_focus: bool
-    _initial_render: bool
-    _user_interacted: bool
-
-    def style_label(self, node_data: NodeData) -> Text:
-        """Style the label for a node.
-
-        Must be implemented by subclasses.
-        """
-        raise NotImplementedError(
-            "style_label must be implemented by subclasses"
-        )
-
-    def render_label(
-        self,
-        node: TreeNode[NodeData],
-        base_style: Style,
-        style: Style,  # needed for valid overriding
-    ) -> Text:
-        assert node.data is not None
-        node_label = self.style_label(node.data)
-
-        if node is self.cursor_node:
-            current_style = node_label.style
-            # Apply bold styling when tree is first focused
-            if not self._first_focus and self._initial_render:
-                if isinstance(current_style, str):
-                    cursor_style = Style.parse(current_style) + Style(
-                        bold=True
-                    )
-                else:
-                    cursor_style = current_style + Style(bold=True)
-                node_label = Text(node_label.plain, style=cursor_style)
-            # Apply underline styling only after actual user interaction
-            elif self._user_interacted:
-                if isinstance(current_style, str):
-                    cursor_style = Style.parse(current_style) + Style(
-                        underline=True
-                    )
-                else:
-                    cursor_style = current_style + Style(underline=True)
-                node_label = Text(node_label.plain, style=cursor_style)
-
-        if node.allow_expand:
-            # import this as render_label is not in its natural habitat
-            from textual.widgets._tree import TOGGLE_STYLE
-
-            prefix = (
-                (
-                    self.ICON_NODE_EXPANDED
-                    if node.is_expanded
-                    else self.ICON_NODE
-                ),
-                base_style + TOGGLE_STYLE,
-            )
-        else:
-            prefix = ("", base_style)
-
-        text = Text.assemble(prefix, node_label)
-        return text
