@@ -233,19 +233,6 @@
   }
 }
 
-.bottom_docked_log {
-  border-title-align: center;
-  border-top: $foreground;
-  border-title-style: none;
-  dock: bottom;
-  height: auto;
-  min-height: 3;
-  max-height:8;
-  height: auto;
-  overflow-y: scroll;
-}
-
-
 /**********************/
 /* Type Selector tcss */
 /**********************/

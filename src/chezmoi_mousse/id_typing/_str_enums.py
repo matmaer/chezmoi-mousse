@@ -88,7 +88,6 @@ class TabName(StrEnum):
 
 class Tcss(StrEnum):
     border_title_top = auto()
-    bottom_docked_log = auto()
     content_switcher_left = auto()
     dir_tree_widget = auto()
     doctor_listview = auto()
