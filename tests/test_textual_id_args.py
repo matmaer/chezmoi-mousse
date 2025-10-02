@@ -1,37 +1,12 @@
 """Test if no hard coded id's or tcss strings are used."""
 
 import ast
-from enum import StrEnum
 from pathlib import Path
-from types import ModuleType
 
 import pytest
-from _test_utils import get_module_paths, get_strenum_member_names
+from _test_utils import get_module_paths, get_str_enum_classes
 
-import chezmoi_mousse.id_typing._str_enums as str_enums
 from chezmoi_mousse.id_typing import Id
-
-
-def _get_strenum_classes(from_module: ModuleType) -> list[type[StrEnum]]:
-    if from_module.__file__ is None:
-        return []
-    source = Path(from_module.__file__).read_text()
-    tree = ast.parse(source)
-    classes: list[type[StrEnum]] = []
-    for node in ast.walk(tree):
-        if isinstance(node, ast.ClassDef):
-            # Check if StrEnum is in the bases (assuming direct import)
-            if any(
-                (isinstance(base, ast.Name) and base.id == "StrEnum")
-                for base in node.bases
-            ):
-                try:
-                    cls = getattr(from_module, node.name)
-                    if issubclass(cls, StrEnum):
-                        classes.append(cls)
-                except AttributeError:
-                    pass
-    return classes
 
 
 def _get_root_class_name(node: ast.AST) -> str | None:
@@ -90,23 +65,13 @@ def _is_valid_class_expression(node: ast.AST, cls: type) -> bool:
     return result is not None
 
 
-to_exclude = ["custom_theme.py", "overrides.py"]
-strenum_classes = _get_strenum_classes(str_enums)
-strenum_members: list[ast.Attribute] = []
-for cls in strenum_classes:
-    members = get_strenum_member_names(cls)
-    strenum_members.extend(members)
-
-
 @pytest.mark.parametrize(
-    "py_file",
-    get_module_paths(exclude_file_names=to_exclude),
-    ids=lambda py_file: py_file.name,
+    "py_file", get_module_paths(), ids=lambda py_file: py_file.name
 )
 def test_args(py_file: Path):
     # the id= argument is only used in some object.call(), so get call nodes
     call_nodes: list[ast.Call] = _get_ast_call_nodes(py_file)
-
+    str_enum_classes = get_str_enum_classes()
     invalid_ids: list[str] = []
     for node in call_nodes:
         for keyword in node.keywords:
@@ -129,7 +94,7 @@ def test_args(py_file: Path):
                                 f"\nInvalid id expression: line {keyword.lineno}: {ast.unparse(keyword.value)} (invalid attribute chain)"
                             )
                     elif (
-                        root_name in [cls.__name__ for cls in strenum_classes]
+                        root_name in [cls.__name__ for cls in str_enum_classes]
                         or root_name == "self"
                     ):
                         # valid usage of StrEnum member or an id I passed to create an instance (self)

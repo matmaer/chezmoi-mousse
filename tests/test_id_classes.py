@@ -24,6 +24,39 @@ def _get_class_public_members_strings(
     return members
 
 
+class UsageFinder(ast.NodeVisitor):
+    def __init__(self, member_name: str, exclude_class_name: str):
+        self.member_name = member_name
+        self.exclude_class_name = exclude_class_name
+        self.found = False
+
+    def visit_Attribute(self, node: ast.Attribute):
+        if node.attr == self.member_name:
+            self.found = True
+        self.generic_visit(node)  # recurse into nested attributes
+
+    def visit_Assign(self, node: ast.Assign):
+        for target in node.targets:
+            if (
+                isinstance(target, ast.Attribute)
+                and target.attr == self.member_name
+            ):
+                self.found = True
+        self.generic_visit(node)  # recurse into nested attributes
+
+    def visit_ClassDef(self, node: ast.ClassDef):
+        if node.name == self.exclude_class_name:
+            # Visit the __init__ method to check for usage there
+            for item in node.body:
+                if (
+                    isinstance(item, ast.FunctionDef)
+                    and item.name == "__init__"
+                ):
+                    self.visit(item)
+        else:
+            self.generic_visit(node)
+
+
 @pytest.mark.parametrize(
     "member_name, member_type",
     _get_class_public_members_strings(id_classes.TabIds),
@@ -35,15 +68,14 @@ def _get_class_public_members_strings(
 def test_tabids_member_in_use(member_name: str, member_type: str):
     is_used = False
 
-    for py_file in get_module_paths(exclude_file_names=["id_typing.py"]):
+    for py_file in get_module_paths():
         content = py_file.read_text()
         tree = ast.parse(content, filename=str(py_file))
 
-        for node in ast.walk(tree):
-            if isinstance(node, ast.Attribute) and node.attr == member_name:
-                is_used = True
-                break  # Found usage
-        if is_used:
+        finder = UsageFinder(member_name, exclude_class_name="TabIds")
+        finder.visit(tree)
+        if finder.found:
+            is_used = True
             break  # No need to check other files
 
     if not is_used:
@@ -61,15 +93,14 @@ def test_tabids_member_in_use(member_name: str, member_type: str):
 def test_screen_ids_member_in_use(member_name: str, member_type: str):
     is_used = False
 
-    for py_file in get_module_paths(exclude_file_names=["id_typing.py"]):
+    for py_file in get_module_paths():
         content = py_file.read_text()
         tree = ast.parse(content, filename=str(py_file))
 
-        for node in ast.walk(tree):
-            if isinstance(node, ast.Attribute) and node.attr == member_name:
-                is_used = True
-                break  # Found usage
-        if is_used:
+        finder = UsageFinder(member_name, exclude_class_name="ScreenIds")
+        finder.visit(tree)
+        if finder.found:
+            is_used = True
             break  # No need to check other files
 
     if not is_used:
@@ -84,15 +115,14 @@ def test_screen_ids_member_in_use(member_name: str, member_type: str):
 def test_id_members_in_use(member_name: str, member_type: str):
     is_used = False
 
-    for py_file in get_module_paths(exclude_file_names=["id_typing.py"]):
+    for py_file in get_module_paths():
         content = py_file.read_text()
         tree = ast.parse(content, filename=str(py_file))
 
-        for node in ast.walk(tree):
-            if isinstance(node, ast.Attribute) and node.attr == member_name:
-                is_used = True
-                break  # Found usage
-        if is_used:
+        finder = UsageFinder(member_name, exclude_class_name="Id")
+        finder.visit(tree)
+        if finder.found:
+            is_used = True
             break  # No need to check other files
 
     if not is_used:

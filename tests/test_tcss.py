@@ -5,14 +5,31 @@ import re
 from pathlib import Path
 
 import pytest
-from _test_utils import get_module_paths, get_strenum_member_names
+from _test_utils import get_module_paths, get_str_enum_classes
 
 from chezmoi_mousse.id_typing.enums import Tcss
 
 add_class_method = "add_class"
 classes_kw = "classes"
-exclude_files = ["id_typing.py", "_str_enums.py"]
 tcss_path = Path("./src/chezmoi_mousse/data/gui.tcss")
+
+
+def get_str_enum_member_names(
+    class_name: str | None = None,
+) -> list[ast.Attribute]:
+    attributes: list[ast.Attribute] = []
+    for enum_class in get_str_enum_classes():
+        if class_name is not None and enum_class.__name__ != class_name:
+            continue
+        class_name_attr = enum_class.__name__
+        for member_name in enum_class.__members__.keys():
+            attr = ast.Attribute(
+                value=ast.Name(id=class_name_attr, ctx=ast.Load()),
+                attr=member_name,
+                ctx=ast.Load(),
+            )
+            attributes.append(attr)
+    return attributes
 
 
 def extract_tcss_classes(path: Path) -> list[str]:
@@ -27,7 +44,7 @@ def get_used_tcss_members() -> set[str]:
     """Get all Tcss enum members that are used in Python code."""
     used_members: set[str] = set()
 
-    for py_file in get_module_paths(exclude_file_names=exclude_files):
+    for py_file in get_module_paths():
         tree = ast.parse(py_file.read_text())
 
         for node in ast.walk(tree):
@@ -44,9 +61,7 @@ def get_used_tcss_members() -> set[str]:
 
 
 @pytest.mark.parametrize(
-    "py_file",
-    get_module_paths(exclude_file_names=exclude_files),
-    ids=lambda py_file: py_file.name,
+    "py_file", get_module_paths(), ids=lambda py_file: py_file.name
 )
 def test_no_hardcoded(py_file: Path) -> None:
     tree = ast.parse(py_file.read_text())
@@ -97,7 +112,7 @@ def test_no_orphaned_gui_tcss_classes(tcss_class: str) -> None:
 
 @pytest.mark.parametrize(
     "tcss_member",
-    get_strenum_member_names(Tcss),
+    get_str_enum_member_names("Tcss"),
     ids=lambda tcss_member: tcss_member.attr,
 )
 def test_no_orphaned_tcss_str_members(tcss_member: ast.Attribute) -> None:
