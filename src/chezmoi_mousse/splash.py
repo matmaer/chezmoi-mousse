@@ -81,7 +81,13 @@ class AnimatedFade(Static):
 class LoadingScreen(Screen[SplashReturnData], AppType):
 
     def __init__(self) -> None:
-        self.splash_return_data = SplashReturnData()
+        self.splash_return_data = SplashReturnData(
+            doctor="",
+            dir_status_lines="",
+            file_status_lines="",
+            managed_dirs="",
+            managed_files="",
+        )
         self.data_lock = Lock()  # Add thread lock
         self.rich_log = SplashLog()
         super().__init__()

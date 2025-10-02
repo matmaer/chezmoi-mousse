@@ -14,16 +14,8 @@ from textual.widgets import Button, Collapsible, Label, Link, Pretty, Tree
 
 from chezmoi_mousse.button_groups import OperateBtnHorizontal
 from chezmoi_mousse.chezmoi import ChangeCmd
-from chezmoi_mousse.id_typing import (
-    AppType,
-    Id,
-    OperateBtn,
-    ParsedJson,
-    TabIds,
-    TabName,
-    Tcss,
-    ViewName,
-)
+from chezmoi_mousse.id_typing import AppType, Id, ParsedJson, TabIds
+from chezmoi_mousse.id_typing.enums import OperateBtn, TabName, Tcss, ViewName
 from chezmoi_mousse.messages import OperateData, OperateDataMsg
 from chezmoi_mousse.widgets import (
     ContentsView,

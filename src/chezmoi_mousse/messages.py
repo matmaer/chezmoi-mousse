@@ -3,13 +3,8 @@ from pathlib import Path
 
 from textual.message import Message
 
-from chezmoi_mousse.id_typing import (
-    DirNodeData,
-    FileNodeData,
-    OperateBtn,
-    TabName,
-    TreeName,
-)
+from chezmoi_mousse.id_typing import DirNodeData, FileNodeData
+from chezmoi_mousse.id_typing.enums import OperateBtn, TabName, TreeName
 
 
 @dataclass

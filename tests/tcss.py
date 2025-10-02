@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 from _test_utils import get_module_paths, get_strenum_member_names
 
-from chezmoi_mousse.id_typing import Tcss
+from chezmoi_mousse.id_typing.enums import Tcss
 
 add_class_method = "add_class"
 classes_kw = "classes"

@@ -14,11 +14,10 @@ from textual.widgets import (
 
 from chezmoi_mousse.button_groups import OperateBtnHorizontal
 from chezmoi_mousse.chezmoi import ReadCmd
-from chezmoi_mousse.id_typing import (
-    AppType,
+from chezmoi_mousse.id_typing import AppType, TabIds
+from chezmoi_mousse.id_typing.enums import (
     Area,
     OperateBtn,
-    TabIds,
     Tcss,
     TreeName,
     ViewName,

@@ -13,14 +13,8 @@ from rich.markup import escape
 from textual.widgets import RichLog
 
 import chezmoi_mousse.custom_theme as theme
-from chezmoi_mousse.id_typing import (
-    Chars,
-    ParsedJson,
-    PathDict,
-    SplashReturnData,
-    TabName,
-    Tcss,
-)
+from chezmoi_mousse.id_typing import ParsedJson, PathDict, SplashReturnData
+from chezmoi_mousse.id_typing.enums import Chars, TabName, Tcss
 
 # TODO: implement 'chezmoi verify', if exit 0, display message in Tree
 # widgets inform the user why the Tree widget is empty

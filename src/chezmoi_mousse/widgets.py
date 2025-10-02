@@ -34,17 +34,19 @@ from chezmoi_mousse.chezmoi import ReadCmd
 from chezmoi_mousse.id_typing import (
     Any,
     AppType,
-    Chars,
     DirNodeData,
     FileNodeData,
     Id,
     NodeData,
-    OperateBtn,
-    OperateHelp,
     PathDict,
-    PwMgrInfo,
     ScreenIds,
     TabIds,
+)
+from chezmoi_mousse.id_typing.enums import (
+    Chars,
+    OperateBtn,
+    OperateHelp,
+    PwMgrInfo,
     TabName,
     Tcss,
     TreeName,

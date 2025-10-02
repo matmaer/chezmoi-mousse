@@ -8,7 +8,7 @@ from types import ModuleType
 import pytest
 from _test_utils import get_module_paths, get_strenum_member_names
 
-import chezmoi_mousse._str_enums as str_enums
+import chezmoi_mousse.id_typing._str_enums as str_enums
 from chezmoi_mousse.id_typing import Id
 
 

@@ -18,13 +18,12 @@ import chezmoi_mousse.custom_theme
 from chezmoi_mousse.button_groups import OperateBtnHorizontal
 from chezmoi_mousse.chezmoi import Chezmoi
 from chezmoi_mousse.directory_tree import FilteredDirTree
-from chezmoi_mousse.id_typing import (
+from chezmoi_mousse.id_typing import Id, SplashReturnData
+from chezmoi_mousse.id_typing.enums import (
     Area,
     Chars,
-    Id,
     OperateBtn,
     OperateHelp,
-    SplashReturnData,
     TabName,
     Tcss,
     TreeName,

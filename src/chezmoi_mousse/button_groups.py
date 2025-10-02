@@ -3,12 +3,12 @@ from textual.app import ComposeResult
 from textual.containers import HorizontalGroup, Vertical, VerticalGroup
 from textual.widgets import Button
 
-from chezmoi_mousse.id_typing import (
+from chezmoi_mousse.id_typing import TabIds
+from chezmoi_mousse.id_typing.enums import (
     Area,
     NavBtn,
     OperateBtn,
     TabBtn,
-    TabIds,
     Tcss,
 )
 

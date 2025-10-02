@@ -13,12 +13,11 @@ from textual.containers import Horizontal, HorizontalGroup, VerticalGroup
 from textual.widgets import Button, ContentSwitcher, Label, Switch
 
 from chezmoi_mousse.content_switchers import TreeSwitcher
-from chezmoi_mousse.id_typing import (
-    AppType,
+from chezmoi_mousse.id_typing import AppType, TabIds
+from chezmoi_mousse.id_typing.enums import (
     Area,
     Switches,
     TabBtn,
-    TabIds,
     TabName,
     Tcss,
     TreeName,

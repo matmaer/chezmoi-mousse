@@ -8,7 +8,7 @@ from types import ModuleType
 import pytest
 from _test_utils import get_module_paths
 
-import chezmoi_mousse._str_enums as str_enums
+import chezmoi_mousse.id_typing._str_enums as str_enums
 
 
 def _get_strenum_classes(from_module: ModuleType) -> list[type[StrEnum]]:

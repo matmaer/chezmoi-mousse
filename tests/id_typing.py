@@ -5,7 +5,7 @@ import ast
 import pytest
 from _test_utils import get_module_paths
 
-import chezmoi_mousse.id_typing as id_typing
+import chezmoi_mousse.id_typing as id_classes
 
 
 def _get_class_public_members_strings(
@@ -26,9 +26,10 @@ def _get_class_public_members_strings(
 
 @pytest.mark.parametrize(
     "member_name, member_type",
-    _get_class_public_members_strings(id_typing.TabIds),
+    _get_class_public_members_strings(id_classes.TabIds),
     ids=[
-        name for name, _ in _get_class_public_members_strings(id_typing.TabIds)
+        name
+        for name, _ in _get_class_public_members_strings(id_classes.TabIds)
     ],
 )
 def test_tabids_member_in_use(member_name: str, member_type: str):
@@ -51,10 +52,10 @@ def test_tabids_member_in_use(member_name: str, member_type: str):
 
 @pytest.mark.parametrize(
     "member_name, member_type",
-    _get_class_public_members_strings(id_typing.ScreenIds),
+    _get_class_public_members_strings(id_classes.ScreenIds),
     ids=[
         name
-        for name, _ in _get_class_public_members_strings(id_typing.ScreenIds)
+        for name, _ in _get_class_public_members_strings(id_classes.ScreenIds)
     ],
 )
 def test_screen_ids_member_in_use(member_name: str, member_type: str):
@@ -77,8 +78,8 @@ def test_screen_ids_member_in_use(member_name: str, member_type: str):
 
 @pytest.mark.parametrize(
     "member_name, member_type",
-    _get_class_public_members_strings(id_typing.Id),
-    ids=[name for name, _ in _get_class_public_members_strings(id_typing.Id)],
+    _get_class_public_members_strings(id_classes.Id),
+    ids=[name for name, _ in _get_class_public_members_strings(id_classes.Id)],
 )
 def test_id_members_in_use(member_name: str, member_type: str):
     is_used = False
