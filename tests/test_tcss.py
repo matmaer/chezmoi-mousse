@@ -5,31 +5,13 @@ import re
 from pathlib import Path
 
 import pytest
-from _test_utils import get_module_paths, get_str_enum_classes
+from _test_utils import get_modules_importing_class
 
 from chezmoi_mousse.id_typing.enums import Tcss
 
 add_class_method = "add_class"
 classes_kw = "classes"
 tcss_path = Path("./src/chezmoi_mousse/data/gui.tcss")
-
-
-def get_str_enum_member_names(
-    class_name: str | None = None,
-) -> list[ast.Attribute]:
-    attributes: list[ast.Attribute] = []
-    for enum_class in get_str_enum_classes():
-        if class_name is not None and enum_class.__name__ != class_name:
-            continue
-        class_name_attr = enum_class.__name__
-        for member_name in enum_class.__members__.keys():
-            attr = ast.Attribute(
-                value=ast.Name(id=class_name_attr, ctx=ast.Load()),
-                attr=member_name,
-                ctx=ast.Load(),
-            )
-            attributes.append(attr)
-    return attributes
 
 
 def extract_tcss_classes(path: Path) -> list[str]:
@@ -40,28 +22,35 @@ def extract_tcss_classes(path: Path) -> list[str]:
     return matches
 
 
-def get_used_tcss_members() -> set[str]:
-    """Get all Tcss enum members that are used in Python code."""
-    used_members: set[str] = set()
+def test_no_orphaned() -> None:
+    tcss_classes = set(extract_tcss_classes(tcss_path))
+    tcss_enum_members = {member.name for member in Tcss}
 
-    for py_file in get_module_paths():
-        tree = ast.parse(py_file.read_text())
+    orphaned_classes = tcss_classes - tcss_enum_members
+    orphaned_members = tcss_enum_members - tcss_classes
 
-        for node in ast.walk(tree):
-            if isinstance(node, ast.Attribute):
-                # Check for Tcss.member_name patterns
-                if (
-                    isinstance(node.value, ast.Name)
-                    and node.value.id == "Tcss"
-                    and hasattr(Tcss, node.attr)
-                ):
-                    used_members.add(node.attr)
+    result = ""
+    if orphaned_classes:
+        orphaned_list = "\n".join(
+            f"- {cls}" for cls in sorted(orphaned_classes)
+        )
+        result += f"\nOrphaned gui.tcss classes (not found in Tcss):\n{orphaned_list}\n"
 
-    return used_members
+    if orphaned_members:
+        orphaned_list = "\n".join(
+            f"- {mem}" for mem in sorted(orphaned_members)
+        )
+        result += f"\nOrphaned Tcss members (not found in gui.tcss):\n{orphaned_list}\n"
+
+    # make sure we only make one pytest.fail call
+    if result:
+        pytest.fail(f"\n{result}")
 
 
 @pytest.mark.parametrize(
-    "py_file", get_module_paths(), ids=lambda py_file: py_file.name
+    "py_file",
+    get_modules_importing_class(class_name="Tcss"),
+    ids=lambda py_file: py_file.name,
 )
 def test_no_hardcoded(py_file: Path) -> None:
     tree = ast.parse(py_file.read_text())
@@ -93,33 +82,3 @@ def test_no_hardcoded(py_file: Path) -> None:
                 pytest.fail(
                     f'\n{py_file}:{first_arg.lineno} - add_class("{first_arg.value}"): hardcoded tcss class'
                 )
-
-
-@pytest.mark.parametrize(
-    "tcss_class",
-    extract_tcss_classes(tcss_path),
-    ids=lambda tcss_class: tcss_class,
-)
-def test_no_orphaned_gui_tcss_classes(tcss_class: str) -> None:
-    """Test that each CSS class in gui.tcss is also defined as a Tcss enum member."""
-    tcss_enum_members = {member.name for member in Tcss}
-
-    if tcss_class not in tcss_enum_members:
-        pytest.fail(
-            f"\nOrphaned CSS class '{tcss_class}' found in gui.tcss (not in Tcss enum)"
-        )
-
-
-@pytest.mark.parametrize(
-    "tcss_member",
-    get_str_enum_member_names("Tcss"),
-    ids=lambda tcss_member: tcss_member.attr,
-)
-def test_no_orphaned_tcss_str_members(tcss_member: ast.Attribute) -> None:
-    """Test that each Tcss enum member has a corresponding class in gui.tcss."""
-    tcss_classes = extract_tcss_classes(tcss_path)
-
-    if tcss_member.attr not in tcss_classes:
-        pytest.fail(
-            f"\nOrphaned Tcss member '{tcss_member.attr}' found (no corresponding CSS class in gui.tcss)"
-        )

@@ -1,9 +1,10 @@
 """Test if all Enum members from id_typing.py are in use."""
 
 import ast
+from pathlib import Path
 
 import pytest
-from _test_utils import get_module_paths
+from _test_utils import get_modules_importing_class
 
 import chezmoi_mousse.id_typing as id_classes
 
@@ -67,12 +68,19 @@ class UsageFinder(ast.NodeVisitor):
 )
 def test_tabids_member_in_use(member_name: str, member_type: str):
     is_used = False
+    class_name = "TabIds"
 
-    for py_file in get_module_paths():
+    # the test should run on all modules importing TabIds and the Id class as
+    # the TabIds members can be accessed via an Id attribute
+    paths_to_check: set[Path] = set(
+        get_modules_importing_class(class_name)
+        + get_modules_importing_class("Id")
+    )
+    for py_file in paths_to_check:
         content = py_file.read_text()
         tree = ast.parse(content, filename=str(py_file))
 
-        finder = UsageFinder(member_name, exclude_class_name="TabIds")
+        finder = UsageFinder(member_name, exclude_class_name=class_name)
         finder.visit(tree)
         if finder.found:
             is_used = True
@@ -92,12 +100,19 @@ def test_tabids_member_in_use(member_name: str, member_type: str):
 )
 def test_screen_ids_member_in_use(member_name: str, member_type: str):
     is_used = False
+    class_name = "ScreenIds"
 
-    for py_file in get_module_paths():
+    # the test should run on all modules importing ScreenIds and the Id class
+    # as the ScreenIds members can be accessed via an Id attribute
+    paths_to_check: set[Path] = set(
+        get_modules_importing_class(class_name)
+        + get_modules_importing_class("Id")
+    )
+    for py_file in paths_to_check:
         content = py_file.read_text()
         tree = ast.parse(content, filename=str(py_file))
 
-        finder = UsageFinder(member_name, exclude_class_name="ScreenIds")
+        finder = UsageFinder(member_name, exclude_class_name=class_name)
         finder.visit(tree)
         if finder.found:
             is_used = True
@@ -114,12 +129,13 @@ def test_screen_ids_member_in_use(member_name: str, member_type: str):
 )
 def test_id_members_in_use(member_name: str, member_type: str):
     is_used = False
+    class_name = "Id"
 
-    for py_file in get_module_paths():
+    for py_file in get_modules_importing_class(class_name):
         content = py_file.read_text()
         tree = ast.parse(content, filename=str(py_file))
 
-        finder = UsageFinder(member_name, exclude_class_name="Id")
+        finder = UsageFinder(member_name, exclude_class_name=class_name)
         finder.visit(tree)
         if finder.found:
             is_used = True

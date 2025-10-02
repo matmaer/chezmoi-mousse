@@ -8,10 +8,9 @@ from _test_utils import get_module_ast_tree, get_module_paths
 
 
 class UsageFinder(ast.NodeVisitor):
-    def __init__(self, class_name: str, debug: bool = False):
+    def __init__(self, class_name: str):
         self.class_name = class_name
         self.usages: set[str] = set()
-        self.debug = debug
 
     def visit_Attribute(self, node: ast.Attribute):
         # Check if this is an attribute access on the target class (e.g., Tcss.some_member or Chars.some_member)
@@ -20,8 +19,6 @@ class UsageFinder(ast.NodeVisitor):
             and node.value.id == self.class_name
         ):
             self.usages.add(node.attr)
-            if self.debug:
-                print(f"Found usage: {self.class_name}.{node.attr}")
 
 
 def get_str_enum_assign_members(class_def: ast.ClassDef) -> list[ast.Assign]:
@@ -60,11 +57,8 @@ def test_members_in_use(str_enum_class_def: ast.ClassDef):
     for module_path in get_module_paths(
         exclude_paths=[Path("id_typing", "_str_enums.py")]
     ):
-        print(f"Checking usages in {module_path}")
         tree = get_module_ast_tree(module_path)
-        finder = UsageFinder(
-            str_enum_class_def.name, debug=False
-        )  # Set debug=True for logging during runs
+        finder = UsageFinder(str_enum_class_def.name)
         finder.visit(tree)
         usages.update(finder.usages)
 
