@@ -2,9 +2,9 @@
 generated the id dynamically when subclassing or to query a widget."""
 
 from dataclasses import dataclass
+from enum import Enum
 
-from chezmoi_mousse.id_typing._enums import Switches
-from chezmoi_mousse.id_typing._str_enums import (
+from chezmoi_mousse.id_typing.enums import (
     Area,
     NavBtn,
     OperateBtn,
@@ -15,7 +15,42 @@ from chezmoi_mousse.id_typing._str_enums import (
     ViewName,
 )
 
-__all__ = ["Id", "ScreenIds", "TabIds"]
+__all__ = ["Id", "ScreenIds", "Switches", "TabIds"]
+
+
+class Switches(Enum):
+    expand_all = (
+        "expand_all",
+        "expand all dirs",
+        "Expand all managed directories. Depending on the unchanged switch.",
+    )
+    unchanged = (
+        "unchanged",
+        "show unchanged files",
+        "Include files unchanged files which are not found in the 'chezmoi status' output.",
+    )
+    unmanaged_dirs = (
+        "unmanaged_dirs",
+        "show unmanaged dirs",
+        "The default (disabled), only shows directories which already contain managed files. This allows spotting new unmanaged files in already managed directories. Enable to show all directories which contain unmanaged files.",
+    )
+    unwanted = (
+        "unwanted",
+        "show unwanted paths",
+        "Include files and directories considered as 'unwanted' for a dotfile manager. These include cache, temporary, trash (recycle bin) and other similar files or directories. For example enable this to add files to your repository which are in a directory named '.cache'.",
+    )
+
+    @property
+    def switch_name(self) -> str:
+        return self.value[0]
+
+    @property
+    def label(self) -> str:
+        return self.value[1]
+
+    @property
+    def tooltip(self) -> str:
+        return self.value[2]
 
 
 class TabIds:
@@ -56,10 +91,10 @@ class TabIds:
         return f"{qid}{self.tab_name}_{area}_content_switcher"
 
     def switch_horizontal_id(self, qid: str = "", *, switch: Switches) -> str:
-        return f"{qid}{self.tab_name}_{switch.name}_switch_horizontal"
+        return f"{qid}{self.tab_name}_{switch.switch_name}_switch_horizontal"
 
     def switch_id(self, qid: str = "", *, switch: Switches) -> str:
-        return f"{qid}{self.tab_name}_{switch.name}_switch"
+        return f"{qid}{self.tab_name}_{switch.switch_name}_switch"
 
     def tab_vertical_id(self, qid: str = "", *, area: Area) -> str:
         return f"{qid}{self.tab_name}_{area}_vertical"

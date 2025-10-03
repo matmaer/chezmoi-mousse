@@ -5,12 +5,18 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from chezmoi_mousse.id_typing._id_classes import Id, ScreenIds, TabIds
+from chezmoi_mousse.id_typing._id_classes import (
+    Id,
+    ScreenIds,
+    Switches,
+    TabIds,
+)
 
 __all__ = [
     # imports from id_classes.py
     "Id",
     "ScreenIds",
+    "Switches",
     "TabIds",
     # module types
     "Any",

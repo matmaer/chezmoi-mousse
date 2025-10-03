@@ -13,10 +13,9 @@ from textual.containers import Horizontal, HorizontalGroup, VerticalGroup
 from textual.widgets import Button, ContentSwitcher, Label, Switch
 
 from chezmoi_mousse.content_switchers import TreeSwitcher
-from chezmoi_mousse.id_typing import AppType, TabIds
+from chezmoi_mousse.id_typing import AppType, Switches, TabIds
 from chezmoi_mousse.id_typing.enums import (
     Area,
-    Switches,
     TabBtn,
     Tcss,
     TreeName,
@@ -186,8 +185,8 @@ class SwitchSlider(VerticalGroup):
             ):
                 yield Switch(id=self.tab_ids.switch_id(switch=switch_enum))
                 yield Label(
-                    switch_enum.value.label, classes=Tcss.switch_label
-                ).with_tooltip(tooltip=switch_enum.value.tooltip)
+                    switch_enum.label, classes=Tcss.switch_label
+                ).with_tooltip(tooltip=switch_enum.tooltip)
 
     def on_mount(self) -> None:
         # add padding to the top switch horizontal group

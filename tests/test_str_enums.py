@@ -1,4 +1,4 @@
-"""Test if all members from the StrEnum classes in _str_enums.py are in use"""
+"""Test if all members from the StrEnum classes in enums.py are in use"""
 
 import ast
 from pathlib import Path
@@ -31,7 +31,7 @@ def get_str_enum_assign_members(class_def: ast.ClassDef) -> list[ast.Assign]:
 
 
 def get_id_typing_str_enum_class_defs() -> list[ast.ClassDef]:
-    str_enum_file = Path("src/chezmoi_mousse/id_typing/_str_enums.py")
+    str_enum_file = Path("src/chezmoi_mousse/id_typing/enums.py")
     tree = ast.parse(str_enum_file.read_text())
     class_defs: list[ast.ClassDef] = []
     for node in ast.walk(tree):
@@ -55,7 +55,7 @@ def test_members_in_use(str_enum_class_def: ast.ClassDef):
     # Collect all usages of this class's attributes across all modules
     usages: set[str] = set()
     for module_path in get_module_paths(
-        exclude_paths=[Path("id_typing", "_str_enums.py")]
+        exclude_paths=[Path("id_typing", "enums.py")]
     ):
         tree = get_module_ast_tree(module_path)
         finder = UsageFinder(str_enum_class_def.name)

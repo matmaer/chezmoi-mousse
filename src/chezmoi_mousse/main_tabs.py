@@ -17,12 +17,11 @@ from chezmoi_mousse.content_switchers import (
     ViewSwitcher,
 )
 from chezmoi_mousse.directory_tree import FilteredDirTree
-from chezmoi_mousse.id_typing import AppType, Id
+from chezmoi_mousse.id_typing import AppType, Id, Switches
 from chezmoi_mousse.id_typing.enums import (
     Area,
     NavBtn,
     OperateBtn,
-    Switches,
     TabBtn,
     Tcss,
     TreeName,
