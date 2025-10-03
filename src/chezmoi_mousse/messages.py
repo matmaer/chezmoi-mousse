@@ -12,19 +12,20 @@ from chezmoi_mousse.id_typing.enums import (
 )
 
 
-@dataclass
-class OperateDismissData:
-    path: Path | None = None
-    operation_executed: bool = False
-    tab_name: TabName | None = None
-    found: bool | None = None
-    button_name: OperateBtn | None = None
-    is_file: bool | None = None
-
-
 class OperateDismissMsg(Message):
-    def __init__(self, dismiss_data: OperateDismissData) -> None:
-        self.dismiss_data: OperateDismissData = dismiss_data
+    def __init__(
+        self,
+        button_name: OperateBtn | None = None,
+        found: bool | None = None,
+        operation_executed: bool | None = None,
+        path: Path | None = None,
+        tab_name: TabName | None = None,
+    ) -> None:
+        self.button_name = button_name
+        self.found = found
+        self.operation_executed = operation_executed
+        self.path = path
+        self.tab_name = tab_name
         super().__init__()
 
 

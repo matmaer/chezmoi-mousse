@@ -200,16 +200,16 @@ class ChezmoiGUI(App["ChezmoiGUI"]):
 
     @on(OperateDismissMsg)
     def handle_operate_result(self, message: OperateDismissMsg) -> None:
-        assert isinstance(message.dismiss_data.path, Path)
+        assert isinstance(message.path, Path)
         managed_trees = self.query(ManagedTree)
         for tree in managed_trees:
-            tree.remove_node_path(node_path=message.dismiss_data.path)
+            tree.remove_node_path(node_path=message.path)
         flat_trees = self.query(FlatTree)
         for tree in flat_trees:
-            tree.remove_node_path(node_path=message.dismiss_data.path)
+            tree.remove_node_path(node_path=message.path)
         expanded_trees = self.query(ExpandedTree)
         for tree in expanded_trees:
-            tree.remove_node_path(node_path=message.dismiss_data.path)
+            tree.remove_node_path(node_path=message.path)
         self.query_one(FilteredDirTree).reload()
 
     def check_action(
