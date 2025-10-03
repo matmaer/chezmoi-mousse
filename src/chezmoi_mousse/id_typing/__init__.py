@@ -1,31 +1,24 @@
 """Expose dataclasses and classes from _id_classes.py and types from
 _types.py."""
 
+from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from chezmoi_mousse.id_typing._id_classes import (
-    Id,
-    NodeData,
-    ScreenIds,
-    SplashReturnData,
-    TabIds,
-)
-
-# from chezmoi_mousse.id_typing._types import Any, AppType, ParsedJson, PathDict
+from chezmoi_mousse.id_typing._id_classes import Id, ScreenIds, TabIds
 
 __all__ = [
     # imports from id_classes.py
     "Id",
-    "NodeData",
     "ScreenIds",
-    "SplashReturnData",
     "TabIds",
     # module types
     "Any",
     "AppType",
+    "NodeData",
     "ParsedJson",
     "PathDict",
+    "SplashReturnData",
 ]
 
 type ParsedJson = dict[str, Any]
@@ -40,3 +33,20 @@ class AppType:
 
     if TYPE_CHECKING:
         app: "ChezmoiGUI"
+
+
+@dataclass
+class NodeData:
+    found: bool
+    path: Path
+    status: str
+    is_dir: bool
+
+
+@dataclass
+class SplashReturnData:
+    doctor: str
+    dir_status_lines: str
+    file_status_lines: str
+    managed_dirs: str
+    managed_files: str

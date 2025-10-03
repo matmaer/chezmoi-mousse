@@ -2,7 +2,6 @@
 generated the id dynamically when subclassing or to query a widget."""
 
 from dataclasses import dataclass, fields
-from pathlib import Path
 
 from chezmoi_mousse.id_typing._enums import Switches
 from chezmoi_mousse.id_typing._str_enums import (
@@ -16,28 +15,7 @@ from chezmoi_mousse.id_typing._str_enums import (
     ViewName,
 )
 
-__all__ = ["Id", "NodeData", "ScreenIds", "SplashReturnData", "TabIds"]
-
-
-#############
-# dataclasses
-
-
-@dataclass
-class NodeData:
-    found: bool
-    path: Path
-    status: str
-    is_dir: bool
-
-
-@dataclass
-class SplashReturnData:
-    doctor: str
-    dir_status_lines: str
-    file_status_lines: str
-    managed_dirs: str
-    managed_files: str
+__all__ = ["Id", "ScreenIds", "TabIds"]
 
 
 class TabIds:
