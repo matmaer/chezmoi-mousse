@@ -2,6 +2,20 @@
 
 from enum import StrEnum, auto
 
+__all__ = [
+    "Area",
+    "Chars",
+    "NavBtn",
+    "OperateBtn",
+    "OperateHelp",
+    "ScreenName",
+    "TabBtn",
+    "TabName",
+    "Tcss",
+    "TreeName",
+    "ViewName",
+]
+
 
 class Area(StrEnum):
     bottom = auto()
