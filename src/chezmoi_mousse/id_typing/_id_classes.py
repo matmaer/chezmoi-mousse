@@ -16,15 +16,7 @@ from chezmoi_mousse.id_typing._str_enums import (
     ViewName,
 )
 
-__all__ = [
-    "DirNodeData",
-    "FileNodeData",
-    "Id",
-    "NodeData",
-    "ScreenIds",
-    "SplashReturnData",
-    "TabIds",
-]
+__all__ = ["Id", "NodeData", "ScreenIds", "SplashReturnData", "TabIds"]
 
 
 #############
@@ -36,16 +28,7 @@ class NodeData:
     found: bool
     path: Path
     status: str
-
-
-@dataclass
-class DirNodeData(NodeData):
-    pass
-
-
-@dataclass
-class FileNodeData(NodeData):
-    pass
+    is_dir: bool
 
 
 @dataclass

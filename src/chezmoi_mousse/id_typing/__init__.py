@@ -2,8 +2,6 @@
 _types.py."""
 
 from chezmoi_mousse.id_typing._id_classes import (
-    DirNodeData,
-    FileNodeData,
     Id,
     NodeData,
     ScreenIds,
@@ -14,8 +12,6 @@ from chezmoi_mousse.id_typing._types import Any, AppType, ParsedJson, PathDict
 
 __all__ = [
     # imports from id_classes.py
-    "DirNodeData",
-    "FileNodeData",
     "Id",
     "NodeData",
     "ScreenIds",

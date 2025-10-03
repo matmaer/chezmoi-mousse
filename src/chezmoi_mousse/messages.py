@@ -3,7 +3,7 @@ from pathlib import Path
 
 from textual.message import Message
 
-from chezmoi_mousse.id_typing import DirNodeData, FileNodeData
+from chezmoi_mousse.id_typing import NodeData
 from chezmoi_mousse.id_typing.enums import OperateBtn, TabName, TreeName
 
 
@@ -26,10 +26,10 @@ class OperateDataMsg(Message):
 @dataclass
 class TreeNodeData:
     tree_name: TreeName
-    node_data: DirNodeData | FileNodeData
-    node_parent: DirNodeData | None = None
-    node_leaves: list[FileNodeData] = field(default_factory=list[FileNodeData])
-    node_subdirs: list[DirNodeData] = field(default_factory=list[DirNodeData])
+    node_data: NodeData
+    node_parent: NodeData
+    node_leaves: list[NodeData] = field(default_factory=list[NodeData])
+    node_subdirs: list[NodeData] = field(default_factory=list[NodeData])
 
 
 class TreeNodeDataMsg(Message):

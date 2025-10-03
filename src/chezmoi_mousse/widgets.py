@@ -34,8 +34,6 @@ from chezmoi_mousse.chezmoi import ReadCmd
 from chezmoi_mousse.id_typing import (
     Any,
     AppType,
-    DirNodeData,
-    FileNodeData,
     Id,
     NodeData,
     PathDict,
@@ -385,13 +383,13 @@ class TreeBase(Tree[NodeData], AppType):
             "F": theme.vars["text-primary"],
         }
         # Initialize with a placeholder path, will be set properly in on_mount
-        root_node_data: DirNodeData = DirNodeData(
-            path=Path("."), found=True, status="F"
+        root_node_data = NodeData(
+            path=Path("."), is_dir=True, found=True, status="F"
         )
         super().__init__(
             label="root",
             data=root_node_data,
-            id=self.tab_ids.tree_id(tree=tree_name),
+            id=self.tab_ids.tree_id(tree=self.tree_name),
         )
 
     def on_mount(self) -> None:
@@ -403,32 +401,32 @@ class TreeBase(Tree[NodeData], AppType):
 
     @on(Tree.NodeSelected)
     def send_node_context_message(
-        self, event: Tree.NodeSelected[DirNodeData | FileNodeData]
+        self, event: Tree.NodeSelected[NodeData]
     ) -> None:
         if event.node == self.root:
             return
-        assert event.node.data is not None
-        parent_data = (
-            event.node.parent.data
-            if event.node.parent is not None
-            and isinstance(event.node.parent.data, DirNodeData)
-            else None
-        )
-        node_context = TreeNodeData(
-            tree_name=self.tree_name,
-            node_data=event.node.data,
-            node_parent=parent_data,
-            node_leaves=[
-                child.data
-                for child in event.node.children
-                if isinstance(child.data, FileNodeData)
-            ],
-            node_subdirs=[
-                child.data
-                for child in event.node.children
-                if isinstance(child.data, DirNodeData)
-            ],
-        )
+        if (
+            event.node.parent is not None
+            and event.node.parent.data is not None
+            and event.node.data is not None
+        ):
+            node_context = TreeNodeData(
+                tree_name=self.tree_name,
+                node_data=event.node.data,
+                node_parent=event.node.parent.data,
+                node_leaves=[
+                    child.data
+                    for child in event.node.children
+                    if child.data is not None and child.data.is_dir is False
+                ],
+                node_subdirs=[
+                    child.data
+                    for child in event.node.children
+                    if child.data is not None and child.data.is_dir is True
+                ],
+            )
+        else:
+            return
         self.post_message(TreeNodeDataMsg(node_context))
 
     # 4 methods to provide tab navigation without intaraction with the tree
@@ -459,14 +457,14 @@ class TreeBase(Tree[NodeData], AppType):
             styled = Style(
                 color=self.node_colors[node_data.status], italic=italic
             )
-        elif isinstance(node_data, FileNodeData):
+        elif not node_data.is_dir:
             styled = "dim"
         else:
             styled = self.node_colors["Dir"]
         return Text(node_data.path.name, style=styled)
 
     # create node data methods
-    def create_dir_node_data(self, *, path: Path) -> DirNodeData:
+    def create_dir_node_data(self, *, path: Path) -> NodeData:
         status_code: str = ""
         if self.tab_name == TabName.apply_tab:
             status_code: str = self.app.chezmoi.apply_dirs[path]
@@ -475,9 +473,11 @@ class TreeBase(Tree[NodeData], AppType):
         if not status_code:
             status_code = "X"
         found: bool = path.exists()
-        return DirNodeData(path=path, found=found, status=status_code)
+        return NodeData(
+            path=path, is_dir=True, found=found, status=status_code
+        )
 
-    def create_file_node_data(self, *, path: Path) -> FileNodeData:
+    def create_file_node_data(self, *, path: Path) -> NodeData:
         status_code: str = ""
         if self.tab_name == TabName.apply_tab:
             status_code: str = self.app.chezmoi.apply_files[path]
@@ -486,7 +486,9 @@ class TreeBase(Tree[NodeData], AppType):
         if not status_code:
             status_code = "X"
         found: bool = path.exists()
-        return FileNodeData(path=path, found=found, status=status_code)
+        return NodeData(
+            path=path, is_dir=False, found=found, status=status_code
+        )
 
     # node visibility methods
     def dir_has_status_files(self, tab_name: TabName, dir_path: Path) -> bool:
@@ -551,16 +553,15 @@ class TreeBase(Tree[NodeData], AppType):
         return nodes
 
     def add_unchanged_leaves(self, *, tree_node: TreeNode[NodeData]) -> None:
-        assert isinstance(tree_node.data, DirNodeData)
+        if tree_node.data is None:
+            return
         unchanged_in_dir: list[Path] = (
             self.app.chezmoi.files_without_status_in(
                 self.tab_name, tree_node.data.path
             )
         )
         for file_path in unchanged_in_dir:
-            node_data: FileNodeData = self.create_file_node_data(
-                path=file_path
-            )
+            node_data: NodeData = self.create_file_node_data(path=file_path)
             node_label: Text = self.style_label(node_data)
             tree_node.add_leaf(label=node_label, data=node_data)
 
@@ -570,13 +571,16 @@ class TreeBase(Tree[NodeData], AppType):
         current_unchanged_leaves: list[TreeNode[NodeData]] = [
             leaf
             for leaf in tree_node.children
-            if isinstance(leaf.data, FileNodeData) and leaf.data.status == "X"
+            if leaf.data is not None
+            and leaf.data.is_dir is False
+            and leaf.data.status == "X"
         ]
         for leaf in current_unchanged_leaves:
             leaf.remove()
 
     def add_status_leaves(self, *, tree_node: TreeNode[NodeData]) -> None:
-        assert isinstance(tree_node.data, DirNodeData)
+        if tree_node.data is None:
+            return
         status_file_paths: list[Path] = self.app.chezmoi.files_with_status_in(
             self.tab_name, tree_node.data.path
         )
@@ -584,13 +588,13 @@ class TreeBase(Tree[NodeData], AppType):
         current_leaves: list[TreeNode[NodeData]] = [
             leaf
             for leaf in tree_node.children
-            if isinstance(leaf.data, FileNodeData)
+            if isinstance(leaf.data, NodeData)
         ]
         current_leaf_paths = [
             leaf.data.path for leaf in current_leaves if leaf.data
         ]
         for file in status_file_paths:
-            node_data: FileNodeData = self.create_file_node_data(path=file)
+            node_data: NodeData = self.create_file_node_data(path=file)
             if node_data.path in current_leaf_paths:
                 continue
             node_label: Text = self.style_label(node_data)
@@ -599,13 +603,13 @@ class TreeBase(Tree[NodeData], AppType):
     def add_dir_nodes(
         self, *, tree_node: TreeNode[NodeData], show_unchanged: bool = False
     ) -> None:
-        assert isinstance(tree_node.data, DirNodeData)
-
+        if tree_node.data is None:
+            return
         # get current visible leaves
         current_dirs: list[TreeNode[NodeData]] = [
             leaf
             for leaf in tree_node.children
-            if isinstance(leaf.data, DirNodeData)
+            if leaf.data and leaf.data.is_dir is True
         ]
         current_dir_paths = [
             dir_node.data.path for dir_node in current_dirs if dir_node.data
@@ -616,20 +620,18 @@ class TreeBase(Tree[NodeData], AppType):
             if self.should_show_dir_node(
                 dir_path=dir_path, show_unchanged=show_unchanged
             ):
-                node_data: DirNodeData = self.create_dir_node_data(
-                    path=dir_path
-                )
+                node_data: NodeData = self.create_dir_node_data(path=dir_path)
                 node_label: Text = self.style_label(node_data)
                 tree_node.add(label=node_label, data=node_data)
 
     def remove_unchanged_dir_nodes(
         self, *, tree_node: TreeNode[NodeData], show_unchanged: bool = False
     ) -> None:
-        assert isinstance(tree_node.data, DirNodeData)
         dir_nodes: list[TreeNode[NodeData]] = [
             dir_node
             for dir_node in tree_node.children
-            if isinstance(dir_node.data, DirNodeData)
+            if dir_node.data is not None
+            and dir_node.data.is_dir is True
             and dir_node.data.status == "X"
         ]
         for dir_node in dir_nodes:
@@ -657,8 +659,8 @@ class TreeBase(Tree[NodeData], AppType):
         for parent in parents_with_removeable_nodes:
             if (
                 parent is not None
-                and parent.data
-                and isinstance(parent.data, DirNodeData)
+                and parent.data is not None
+                and parent.data.is_dir is True
             ):
                 parent.remove()
         self.refresh()
@@ -694,8 +696,9 @@ class TreeBase(Tree[NodeData], AppType):
         base_style: Style,
         style: Style,  # needed for valid overriding
     ) -> Text:
-        assert node.data is not None
         # Get base styling from style_label
+        if node.data is None:
+            return Text("Node data is None")
         node_label = self.style_label(node.data)
 
         # Apply cursor styling via helper
@@ -791,12 +794,12 @@ class ExpandedTree(TreeBase):
 
     def expand_all_nodes(self, node: TreeNode[NodeData]) -> None:
         """Recursively expand all directory nodes."""
-        if node.data and isinstance(node.data, DirNodeData):
+        if node.data is not None and node.data.is_dir is True:
             node.expand()
             self.add_dir_nodes(tree_node=node, show_unchanged=self.unchanged)
             self.add_status_leaves(tree_node=node)
             for child in node.children:
-                if child.data and isinstance(child.data, DirNodeData):
+                if child.data is not None and child.data.is_dir is True:
                     self.expand_all_nodes(child)
 
     def watch_unchanged(self) -> None:
