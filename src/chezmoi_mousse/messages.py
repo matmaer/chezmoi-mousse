@@ -13,7 +13,7 @@ from chezmoi_mousse.id_typing.enums import (
 
 
 @dataclass
-class OperateData:
+class OperateDismissData:
     path: Path | None = None
     operation_executed: bool = False
     tab_name: TabName | None = None
@@ -22,14 +22,14 @@ class OperateData:
     is_file: bool | None = None
 
 
-class OperateDataMsg(Message):
-    def __init__(self, dismiss_data: OperateData) -> None:
-        self.dismiss_data: OperateData = dismiss_data
+class OperateDismissMsg(Message):
+    def __init__(self, dismiss_data: OperateDismissData) -> None:
+        self.dismiss_data: OperateDismissData = dismiss_data
         super().__init__()
 
 
 @dataclass
-class TreeNodeData:
+class TreeNodeSelectedData:
     tree_name: TreeName
     node_data: NodeData
     node_parent: NodeData
@@ -37,8 +37,8 @@ class TreeNodeData:
     node_subdirs: list[NodeData] = field(default_factory=list[NodeData])
 
 
-class TreeNodeDataMsg(Message):
-    def __init__(self, node_context: TreeNodeData) -> None:
+class TreeNodeSelectedMsg(Message):
+    def __init__(self, node_context: TreeNodeSelectedData) -> None:
         self.node_context = node_context
         super().__init__()
 
@@ -47,10 +47,10 @@ class TreeNodeDataMsg(Message):
 class OperateBtnPressedData:
     tab_name: TabName
     operate_help: OperateHelp
-    tree_node_data: TreeNodeData
+    tree_node_data: TreeNodeSelectedData
 
 
-class OperateBtnDataMsg(Message):
+class OperateBtnPressedMsg(Message):
 
     def __init__(self, btn_data: OperateBtnPressedData) -> None:
         self.btn_data = btn_data

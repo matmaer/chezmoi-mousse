@@ -23,7 +23,7 @@ from chezmoi_mousse.id_typing.enums import (
     TreeName,
     ViewName,
 )
-from chezmoi_mousse.messages import TreeNodeDataMsg
+from chezmoi_mousse.messages import TreeNodeSelectedMsg
 from chezmoi_mousse.widgets import (
     ContentsView,
     DiffView,
@@ -85,8 +85,8 @@ class OperateTabsBase(Horizontal, AppType):
         ):
             self.query_exactly_one(GitLogView).path = path
 
-    @on(TreeNodeDataMsg)
-    def handle_tree_node_selected(self, event: TreeNodeDataMsg) -> None:
+    @on(TreeNodeSelectedMsg)
+    def handle_tree_node_selected(self, event: TreeNodeSelectedMsg) -> None:
         selected_path = event.node_context.node_data.path
         self.query_one(
             self.view_switcher_qid, ContentSwitcher

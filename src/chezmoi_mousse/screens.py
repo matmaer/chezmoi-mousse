@@ -16,7 +16,7 @@ from chezmoi_mousse.button_groups import OperateBtnHorizontal
 from chezmoi_mousse.chezmoi import ChangeCmd
 from chezmoi_mousse.id_typing import AppType, Id, ParsedJson, TabIds
 from chezmoi_mousse.id_typing.enums import OperateBtn, TabName, Tcss, ViewName
-from chezmoi_mousse.messages import OperateData, OperateDataMsg
+from chezmoi_mousse.messages import OperateDismissData, OperateDismissMsg
 from chezmoi_mousse.widgets import (
     ContentsView,
     DiffView,
@@ -68,7 +68,7 @@ class Operate(ScreensBase, AppType):
         self.reverse: bool = (
             False if self.tab_name == TabName.apply_tab else True
         )
-        self.operate_dismiss_data: OperateData = OperateData(
+        self.operate_dismiss_data: OperateDismissData = OperateDismissData(
             path=self.path,
             operation_executed=False,
             tab_name=self.tab_ids.tab_name,
@@ -175,7 +175,7 @@ class Operate(ScreensBase, AppType):
         if not self.operate_dismiss_data.operation_executed and self.path:
             self.notify("No changes were made")
         self.app.post_message(
-            OperateDataMsg(dismiss_data=self.operate_dismiss_data)
+            OperateDismissMsg(dismiss_data=self.operate_dismiss_data)
         )
         self.dismiss()
 

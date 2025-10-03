@@ -50,7 +50,7 @@ from chezmoi_mousse.id_typing.enums import (
     TreeName,
     ViewName,
 )
-from chezmoi_mousse.messages import TreeNodeData, TreeNodeDataMsg
+from chezmoi_mousse.messages import TreeNodeSelectedData, TreeNodeSelectedMsg
 
 
 class OperateInfo(Static, AppType):
@@ -410,7 +410,7 @@ class TreeBase(Tree[NodeData], AppType):
             and event.node.parent.data is not None
             and event.node.data is not None
         ):
-            node_context = TreeNodeData(
+            node_context = TreeNodeSelectedData(
                 tree_name=self.tree_name,
                 node_data=event.node.data,
                 node_parent=event.node.parent.data,
@@ -427,7 +427,7 @@ class TreeBase(Tree[NodeData], AppType):
             )
         else:
             return
-        self.post_message(TreeNodeDataMsg(node_context))
+        self.post_message(TreeNodeSelectedMsg(node_context))
 
     # 4 methods to provide tab navigation without intaraction with the tree
     def on_key(self, event: Key) -> None:
