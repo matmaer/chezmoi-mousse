@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 
 from textual.message import Message
@@ -29,18 +29,20 @@ class OperateDismissMsg(Message):
         super().__init__()
 
 
-@dataclass
-class TreeNodeSelectedData:
-    tree_name: TreeName
-    node_data: NodeData
-    node_parent: NodeData
-    node_leaves: list[NodeData] = field(default_factory=list[NodeData])
-    node_subdirs: list[NodeData] = field(default_factory=list[NodeData])
-
-
 class TreeNodeSelectedMsg(Message):
-    def __init__(self, node_context: TreeNodeSelectedData) -> None:
-        self.node_context = node_context
+    def __init__(
+        self,
+        node_data: NodeData | None = None,
+        node_leaves: list[NodeData] | None = None,
+        node_parent: NodeData | None = None,
+        node_subdirs: list[NodeData] | None = None,
+        tree_name: TreeName | None = None,
+    ) -> None:
+        self.node_data = node_data
+        self.node_leaves = node_leaves if node_leaves is not None else []
+        self.node_parent = node_parent
+        self.node_subdirs = node_subdirs if node_subdirs is not None else []
+        self.tree_name = tree_name
         super().__init__()
 
 
@@ -48,7 +50,6 @@ class TreeNodeSelectedMsg(Message):
 class OperateBtnPressedData:
     tab_name: TabName
     operate_help: OperateHelp
-    tree_node_data: TreeNodeSelectedData
 
 
 class OperateBtnPressedMsg(Message):

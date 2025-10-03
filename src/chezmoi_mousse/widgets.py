@@ -50,7 +50,7 @@ from chezmoi_mousse.id_typing.enums import (
     TreeName,
     ViewName,
 )
-from chezmoi_mousse.messages import TreeNodeSelectedData, TreeNodeSelectedMsg
+from chezmoi_mousse.messages import TreeNodeSelectedMsg
 
 
 class OperateInfo(Static, AppType):
@@ -372,6 +372,7 @@ class TreeBase(Tree[NodeData], AppType):
         self._initial_render = True
         self._first_focus = True
         self._user_interacted = False
+        self.node_selected_msg = TreeNodeSelectedMsg()
         self.tab_name: TabName = tab_ids.tab_name
         self.node_colors: dict[str, str] = {
             "Dir": theme.vars["text-primary"],
@@ -410,7 +411,7 @@ class TreeBase(Tree[NodeData], AppType):
             and event.node.parent.data is not None
             and event.node.data is not None
         ):
-            node_context = TreeNodeSelectedData(
+            self.node_selected_msg = TreeNodeSelectedMsg(
                 tree_name=self.tree_name,
                 node_data=event.node.data,
                 node_parent=event.node.parent.data,
@@ -427,7 +428,7 @@ class TreeBase(Tree[NodeData], AppType):
             )
         else:
             return
-        self.post_message(TreeNodeSelectedMsg(node_context))
+        self.post_message(self.node_selected_msg)
 
     # 4 methods to provide tab navigation without intaraction with the tree
     def on_key(self, event: Key) -> None:

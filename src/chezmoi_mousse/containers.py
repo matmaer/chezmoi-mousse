@@ -87,7 +87,9 @@ class OperateTabsBase(Horizontal, AppType):
 
     @on(TreeNodeSelectedMsg)
     def handle_tree_node_selected(self, event: TreeNodeSelectedMsg) -> None:
-        selected_path = event.node_context.node_data.path
+        if event.node_data is None:
+            return
+        selected_path = event.node_data.path
         self.query_one(
             self.view_switcher_qid, ContentSwitcher
         ).border_title = f"{selected_path.relative_to(self.app.destDir)}"
