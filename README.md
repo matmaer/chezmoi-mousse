@@ -4,15 +4,10 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Linting: ruff](https://img.shields.io/badge/linting-ruff-blueviolet)](https://github.com/astral-sh/ruff)
 
-
 Graphical user interface in the terminal for [chezmoi](https://github.com/twpayne/chezmoi). Built with [textual](https://github.com/Textualize/textual).
 
 ## Current Use Case
 
-- [Chezmoi](https://www.chezmoi.io/) is installed
-- Existing local `chezmoi` repository on disk (`chezmoi init` is not implemented)
-- [Python 3.12+](https://www.python.org/) is installed
-  (including [Textual](https://textual.textualize.io/) or run with [UV](https://docs.astral.sh/uv/getting-started/installation/))
 - Can be safely tested as no write operations are enabled by default.
 - The current implementation has only been used or tested with autocommit enabled.
 
@@ -272,18 +267,26 @@ warnings
 
 > Don't run the python command in a `chezmoi cd` invoked shell, unless you want to test.
 
-If the `chezmoi` command is not available, a screen will be shown with the value for $PATH and a link to [chezmoi.io/install](chezmoi.io/install), along with parsed install commands from the [chezmoi repository]((https://github.com/twpayne/chezmoi/blob/master/assets/chezmoi.io/docs/install.md.tmpl)) which uses the excellent [Material for MkDocs](https://squidfunk.github.io/mkdocs-material/) framework.
+> If the `chezmoi` command is not available, a screen will be shown with the value for $PATH and a link to [chezmoi.io/install](chezmoi.io/install), along with parsed install commands from the [chezmoi repository]((https://github.com/twpayne/chezmoi/blob/master/assets/chezmoi.io/docs/install.md.tmpl)) which uses the excellent [Material for MkDocs](https://squidfunk.github.io/mkdocs-material/) framework.
 
-Clone repo and cd into the `src` directory of the cloned repo.
+On the command line, clone the repository:
 
-Then run `python -m chezmoi_mousse`
+`git clone https://github.com/matmaer/chezmoi-mousse.git`
 
-If you don't have `textual` installed but the `uv` command is available:
-`uv run --with textual -m chezmoi_mousse`
+Change directory into the `src` directory of the cloned repository.
 
+`cd chezmoi-mousse` `cd src`
 
-- [x] python -m chezmoi_mousse (Python 3.13 with the latest `textual` version installed)
-- [x] `uv run --with textual -m chezmoi_mousse`
+The easiest way is to run with the app with `uv`, [install uv](https://docs.astral.sh/uv/getting-started/installation/) on your platform, an then run:
+
+`uv run --no-dev --python 3.13 --with textual -m chezmoi_mousse`
+
+If Python 3.13 with the latest `textual` version is available, you can run:
+
+`python -m chezmoi_mousse`
+
+### Platform packaging
+
 - [x] Windows
   - [ ] app store
   - [ ] signed executable
