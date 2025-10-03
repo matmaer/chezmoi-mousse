@@ -1,7 +1,7 @@
 """Contains classes to enable setting widget id's without hardcoded strings or
 generated the id dynamically when subclassing or to query a widget."""
 
-from dataclasses import dataclass, fields
+from dataclasses import dataclass
 
 from chezmoi_mousse.id_typing._enums import Switches
 from chezmoi_mousse.id_typing._str_enums import (
@@ -95,24 +95,8 @@ class Id:
     config: TabIds = TabIds(TabName.config_tab)
     help: TabIds = TabIds(TabName.help_tab)
     init: TabIds = TabIds(TabName.init_tab)
-    logs: TabIds = TabIds(TabName.log_tab)
+    logs: TabIds = TabIds(TabName.logs_tab)
     re_add: TabIds = TabIds(TabName.re_add_tab)
     operate_screen: ScreenIds = ScreenIds(ScreenName.operate)
     maximized_screen: ScreenIds = ScreenIds(ScreenName.maximized)
     install_help_screen: ScreenIds = ScreenIds(ScreenName.install_help)
-
-    _pane_id_map: dict[str, TabIds] | None = None
-
-    @classmethod
-    def get_tab_ids_from_pane_id(cls, pane_id: str) -> TabIds:
-
-        if cls._pane_id_map is None:
-            cls._pane_id_map = {}
-            for field in fields(cls):
-                field_value = getattr(cls, field.name)
-                if isinstance(field_value, TabIds):
-                    cls._pane_id_map[field_value.tab_pane_id] = field_value
-
-        if pane_id in cls._pane_id_map:
-            return cls._pane_id_map[pane_id]
-        raise ValueError(f"No TabIds found for pane_id: {pane_id}")

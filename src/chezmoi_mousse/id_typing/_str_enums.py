@@ -111,13 +111,13 @@ class TabBtn(StrEnum):
 
 
 class TabName(StrEnum):
-    add_tab = auto()
-    apply_tab = auto()
-    config_tab = auto()
-    help_tab = auto()
-    init_tab = auto()
-    log_tab = auto()
-    re_add_tab = auto()
+    add_tab = "Add"
+    apply_tab = "Apply"
+    config_tab = "Config"
+    help_tab = "Help"
+    init_tab = "Init"
+    logs_tab = "Log"
+    re_add_tab = "Re-Add"
 
 
 class Tcss(StrEnum):

@@ -34,25 +34,29 @@ from chezmoi_mousse.widgets import (
 )
 
 
-class TreeSwitcher(ContentSwitcher):
+class TreeSwitcher(ContentSwitcher, AppType):
 
     def __init__(self, tab_ids: TabIds):
         self.tab_ids = tab_ids
-        # updated by OperateTabsBase in on_switch_changed method
-        self.expand_all_state: bool = False
         super().__init__(
             id=self.tab_ids.content_switcher_id(area=Area.left),
             initial=self.tab_ids.tree_id(tree=TreeName.managed_tree),
             classes=Tcss.content_switcher_left,
         )
+        # updated by OperateTabsBase in on_switch_changed method
+        self.expand_all_state: bool = False
 
     def compose(self) -> ComposeResult:
         yield ManagedTree(tab_ids=self.tab_ids)
         yield FlatTree(tab_ids=self.tab_ids)
         yield ExpandedTree(tab_ids=self.tab_ids)
 
+    def on_mount(self) -> None:
+        self.border_title = str(self.app.destDir)
+        self.add_class(Tcss.border_title_top)
 
-class ViewSwitcher(ContentSwitcher):
+
+class ViewSwitcher(ContentSwitcher, AppType):
     def __init__(self, *, tab_ids: TabIds, diff_reverse: bool):
         self.tab_ids = tab_ids
         self.reverse = diff_reverse
@@ -66,6 +70,10 @@ class ViewSwitcher(ContentSwitcher):
         yield DiffView(tab_ids=self.tab_ids, reverse=self.reverse)
         yield ContentsView(tab_ids=self.tab_ids)
         yield GitLogView(tab_ids=self.tab_ids)
+
+    def on_mount(self) -> None:
+        self.border_title = str(self.app.destDir)
+        self.add_class(Tcss.border_title_top)
 
 
 class InitTabSwitcher(ContentSwitcher):

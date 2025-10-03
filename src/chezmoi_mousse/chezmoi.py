@@ -506,7 +506,9 @@ class Chezmoi:
         return [p for p in self.managed.dirs if p.parent == dir_path]
 
     def _create_status_dict(
-        self, tab_name: TabName, kind: Literal["dirs", "files"]
+        self,
+        tab_name: Literal[TabName.apply_tab, TabName.re_add_tab],
+        kind: Literal["dirs", "files"],
     ) -> PathDict:
         path_dict: PathDict = {}
         status_idx: int = 0

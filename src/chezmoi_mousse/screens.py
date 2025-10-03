@@ -186,7 +186,7 @@ class Maximized(ScreensBase):
         self.id_to_maximize = id_to_maximize
         self.path = path
         self.tab_ids = tab_ids
-        self.tab_name: TabName = tab_ids.tab_name
+        self.tab_name = self.tab_ids.tab_name
         self.reverse: bool = (
             False if self.tab_name == TabName.apply_tab else True
         )
