@@ -67,19 +67,19 @@ class OperateInfo(Static, AppType):
 
         # show command help and set the subtitle
         if OperateBtn.apply_file == self.operate_btn:
-            lines_to_write.append(OperateHelp.apply.value)
+            lines_to_write.append(OperateHelp.apply_file.value)
             self.border_subtitle = Chars.apply_file_info_border
         elif OperateBtn.re_add_file == self.operate_btn:
-            lines_to_write.append(OperateHelp.re_add.value)
+            lines_to_write.append(OperateHelp.re_add_file.value)
             self.border_subtitle = Chars.re_add_file_info_border
         elif OperateBtn.add_file == self.operate_btn:
             lines_to_write.append(OperateHelp.add.value)
             self.border_subtitle = Chars.add_file_info_border
         elif OperateBtn.forget_file == self.operate_btn:
-            lines_to_write.append(OperateHelp.forget.value)
+            lines_to_write.append(OperateHelp.forget_file.value)
             self.border_subtitle = Chars.forget_file_info_border
         elif OperateBtn.destroy_file == self.operate_btn:
-            lines_to_write.extend(OperateHelp.destroy.value)
+            lines_to_write.extend(OperateHelp.destroy_file.value)
             self.border_subtitle = Chars.destroy_file_info_border
         # show git auto warnings
         if not OperateBtn.apply_file == self.operate_btn:

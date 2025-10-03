@@ -1,9 +1,10 @@
-from chezmoi_mousse.id_typing._enums import OperateHelp, PwMgrInfo, Switches
+from chezmoi_mousse.id_typing._enums import PwMgrInfo, Switches
 from chezmoi_mousse.id_typing._str_enums import (
     Area,
     Chars,
     NavBtn,
     OperateBtn,
+    OperateHelp,
     ScreenName,
     TabBtn,
     TabName,
@@ -14,7 +15,6 @@ from chezmoi_mousse.id_typing._str_enums import (
 
 __all__ = [
     # enums
-    "OperateHelp",
     "PwMgrInfo",
     "Switches",
     # str enums
@@ -22,6 +22,7 @@ __all__ = [
     "Chars",
     "NavBtn",
     "OperateBtn",
+    "OperateHelp",
     "ScreenName",
     "TabBtn",
     "TabName",

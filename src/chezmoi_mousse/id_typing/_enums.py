@@ -1,33 +1,7 @@
 from dataclasses import dataclass
 from enum import Enum
 
-from chezmoi_mousse.id_typing._str_enums import Chars
-
-__all__ = ["OperateHelp", "PwMgrInfo", "Switches"]
-
-
-class OperateHelp(Enum):
-    add = "[$text-primary]Path will be added to your chezmoi dotfile manager source state.[/]"
-    apply = "[$text-primary]Local file (target state) in the destination directory will be modified.[/]"
-    auto_commit = f"[$text-warning]{Chars.warning_sign} Auto commit is enabled: files will also be committed.{Chars.warning_sign}[/]"
-    autopush = f"[$text-warning]{Chars.warning_sign} Auto push is enabled: files will be pushed to the remote.{Chars.warning_sign}[/]"
-    changes_mode_disabled = (
-        "Changes mode disabled, operations will dry-run only"
-    )
-    changes_mode_enabled = "Changes mode enabled, operations will run."
-    destroy = (
-        "[$text-primary]Remove target from the source state, the destination directory, and the state.[/]",
-        "[$text-error]The destroy command permanently removes files both from your home directory and chezmoi's source directory, make sure you have a backup![/]",
-    )
-    diff_color = (
-        "[$text-success]+ green lines will be added[/]",
-        "[$text-error]- red lines will be removed[/]",
-        f"[dim]{Chars.bullet} dimmed lines for context[/]",
-    )
-    forget = "[$text-primary]Remove targets from the source state, i.e. stop managing them.[/]"
-    re_add = (
-        "[$text-primary]Overwrite the source state with current local file[/]"
-    )
+__all__ = ["PwMgrInfo", "Switches"]
 
 
 class PwMgrInfo(Enum):

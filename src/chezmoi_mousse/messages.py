@@ -4,7 +4,12 @@ from pathlib import Path
 from textual.message import Message
 
 from chezmoi_mousse.id_typing import NodeData
-from chezmoi_mousse.id_typing.enums import OperateBtn, TabName, TreeName
+from chezmoi_mousse.id_typing.enums import (
+    OperateBtn,
+    OperateHelp,
+    TabName,
+    TreeName,
+)
 
 
 @dataclass
@@ -39,14 +44,14 @@ class TreeNodeDataMsg(Message):
 
 
 @dataclass
-class ViewSwitcherData:
-    btn_id: str
-    content_switcher_id: str
-    current_view_id: str
+class OperateBtnPressedData:
+    tab_name: TabName
+    operate_help: OperateHelp
+    tree_node_data: TreeNodeData
 
 
-@dataclass
-class ViewSwitcherDataMsg(Message):
-    def __init__(self, msg_data: ViewSwitcherData) -> None:
-        self.msg_data = msg_data
+class OperateBtnDataMsg(Message):
+
+    def __init__(self, btn_data: OperateBtnPressedData) -> None:
+        self.btn_data = btn_data
         super().__init__()
