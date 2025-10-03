@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from pathlib import Path
 
 from textual.message import Message
@@ -46,14 +45,13 @@ class TreeNodeSelectedMsg(Message):
         super().__init__()
 
 
-@dataclass
-class OperateBtnPressedData:
-    tab_name: TabName
-    operate_help: OperateHelp
-
-
 class OperateBtnPressedMsg(Message):
 
-    def __init__(self, btn_data: OperateBtnPressedData) -> None:
-        self.btn_data = btn_data
+    def __init__(
+        self,
+        tab_name: TabName | None = None,
+        operate_help: OperateHelp | None = None,
+    ) -> None:
+        self.tab_name = tab_name
+        self.operate_help = operate_help
         super().__init__()
