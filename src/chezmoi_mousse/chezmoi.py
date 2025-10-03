@@ -323,12 +323,17 @@ class OutputLog(CommandLogBase):
         self.refresh()
 
 
+app_log = AppLog()
+debug_log = DebugLog()
+output_log = OutputLog()
+
+
 class Chezmoi:
 
     def __init__(self) -> None:
-        self.app_log = AppLog()
-        self.debug_log = DebugLog()
-        self.output_log = OutputLog()
+        self.app_log = app_log
+        self.debug_log = debug_log
+        self.output_log = output_log
 
         self.chezmoi_found = (
             which(CHEZMOI_CMD) is not None
