@@ -31,7 +31,7 @@ class ScreensBase(Screen[None], AppType):
 
     def __init__(self, *, screen_id: str) -> None:
         self.screen_id = screen_id
-        super().__init__(id=self.screen_id, classes=Tcss.screen_base)
+        super().__init__(id=self.screen_id, classes=Tcss.screen_base.name)
 
     def on_click(self, event: Click) -> None:
         event.stop()
@@ -83,7 +83,7 @@ class Operate(ScreensBase, AppType):
 
     def on_mount(self) -> None:
         self.app.notify(f"Path is {self.path}")
-        self.add_class(Tcss.operate_screen)
+        self.add_class(Tcss.operate_screen.name)
         self.border_subtitle = Id.operate_screen.border_subtitle()
         for button in self.query(Button):
             button.disabled = False
@@ -106,7 +106,7 @@ class Operate(ScreensBase, AppType):
                 ContentsView,
             ).path = self.path
 
-    @on(Button.Pressed, f".{Tcss.operate_button}")
+    @on(Button.Pressed, Tcss.operate_button.value)
     def handle_operate_buttons(self, event: Button.Pressed) -> None:
         event.stop()
         button_commands = [
@@ -202,7 +202,7 @@ class Maximized(ScreensBase):
                 yield GitLogView(tab_ids=Id.maximized_screen)
 
     def on_mount(self) -> None:
-        self.add_class(Tcss.border_title_top)
+        self.add_class(Tcss.border_title_top.name)
         self.border_subtitle = self.border_subtitle = (
             Id.maximized_screen.border_subtitle()
         )
@@ -248,7 +248,7 @@ class InstallHelp(ScreensBase):
         self.path_env = os.environ.get("PATH") or ""
 
     def compose(self) -> ComposeResult:
-        with Vertical(classes=Tcss.install_help):
+        with Vertical(classes=Tcss.install_help.name):
             yield Center(Label(("Chezmoi is not installed or not found.")))
             if not self.path_env:
                 yield Center(Label(("The $PATH variable is empty")))
@@ -265,7 +265,7 @@ class InstallHelp(ScreensBase):
                         yield Link(
                             "chezmoi.io/install",
                             url="https://chezmoi.io/install",
-                            classes=Tcss.internet_links,
+                            classes=Tcss.internet_links.name,
                         )
                         yield Button("exit app", variant="primary", flat=True)
 

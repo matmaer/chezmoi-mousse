@@ -40,7 +40,7 @@ class ApplyTab(OperateTabsBase):
     def compose(self) -> ComposeResult:
         with Vertical(
             id=Id.apply.tab_vertical_id(area=Area.left),
-            classes=Tcss.tab_left_vertical,
+            classes=Tcss.tab_left_vertical.name,
         ):
             yield TabBtnHorizontal(
                 tab_ids=self.tab_ids,
@@ -69,7 +69,7 @@ class ReAddTab(OperateTabsBase):
     def compose(self) -> ComposeResult:
         with Vertical(
             id=Id.re_add.tab_vertical_id(area=Area.left),
-            classes=Tcss.tab_left_vertical,
+            classes=Tcss.tab_left_vertical.name,
         ):
             yield TabBtnHorizontal(
                 tab_ids=self.tab_ids,
@@ -98,7 +98,7 @@ class AddTab(OperateTabsBase, AppType):
     def compose(self) -> ComposeResult:
         with VerticalGroup(
             id=Id.add.tab_vertical_id(area=Area.left),
-            classes=Tcss.tab_left_vertical,
+            classes=Tcss.tab_left_vertical.name,
         ):
             yield FilteredDirTree(
                 Path.home(), id=Id.add.tree_id(tree=TreeName.add_tree)
@@ -113,11 +113,13 @@ class AddTab(OperateTabsBase, AppType):
 
     def on_mount(self) -> None:
         contents_view = self.query_exactly_one(ContentsView)
-        contents_view.add_class(Tcss.border_title_top)
+        contents_view.add_class(Tcss.border_title_top.name)
         contents_view.border_title = str(self.app.destDir)
 
         dir_tree = self.query_exactly_one(FilteredDirTree)
-        dir_tree.add_class(Tcss.dir_tree_widget, Tcss.border_title_top)
+        dir_tree.add_class(
+            Tcss.dir_tree_widget.name, Tcss.border_title_top.name
+        )
         dir_tree.border_title = str(self.app.destDir)
         dir_tree.path = self.app.destDir
         dir_tree.show_root = False
@@ -188,7 +190,7 @@ class InitTab(Horizontal, AppType):
             )
             self.app.notify(text_lines, severity="error")
 
-    @on(Button.Pressed, f".{Tcss.nav_button}")
+    @on(Button.Pressed, Tcss.nav_button.value)
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
         switcher = self.query_exactly_one(InitTabSwitcher)
@@ -199,7 +201,7 @@ class InitTab(Horizontal, AppType):
         elif event.button.id == Id.init.button_id(btn=NavBtn.purge_repo):
             switcher.current = Id.init.view_id(view=ViewName.init_purge_view)
 
-    @on(Button.Pressed, f".{Tcss.operate_button}")
+    @on(Button.Pressed, Tcss.operate_button.value)
     def handle_operation_button(self, event: Button.Pressed) -> None:
         event.stop()
         if event.button.id == Id.init.button_id(btn=OperateBtn.clone_repo):
@@ -235,7 +237,7 @@ class LogsTab(Vertical, AppType):
         )
         yield LogsTabSwitcher(tab_ids=Id.logs)
 
-    @on(Button.Pressed, f".{Tcss.tab_button}")
+    @on(Button.Pressed, Tcss.tab_button.value)
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
         switcher = self.query_exactly_one(LogsTabSwitcher)
@@ -271,7 +273,7 @@ class ConfigTab(Horizontal, AppType):
         # mount lazily as the compose method includes subprocess calls
         yield Lazy(ConfigTabSwitcher(Id.config))
 
-    @on(Button.Pressed, f".{Tcss.nav_button}")
+    @on(Button.Pressed, Tcss.nav_button.value)
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
         switcher = self.query_exactly_one(ConfigTabSwitcher)
@@ -294,7 +296,7 @@ class HelpTab(Horizontal):
         yield NavButtonsVertical(tab_ids=Id.help, buttons=(NavBtn.diagram,))
         yield HelpTabSwitcher(tab_ids=Id.help)
 
-    @on(Button.Pressed, f".{Tcss.nav_button}")
+    @on(Button.Pressed, Tcss.nav_button.value)
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
         switcher = self.query_exactly_one(HelpTabSwitcher)

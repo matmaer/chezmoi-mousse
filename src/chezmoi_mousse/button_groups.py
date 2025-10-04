@@ -31,7 +31,7 @@ class ButtonsHorizontal(HorizontalGroup):
         for button_enum in self.buttons:
             with Vertical(
                 id=self.tab_ids.button_vertical_id(button_enum),
-                classes=Tcss.single_button_vertical,
+                classes=Tcss.single_button_vertical.name,
             ):
                 yield Button(
                     label=button_enum.value,
@@ -54,7 +54,7 @@ class NavButtonsVertical(VerticalGroup):
                 label=button_enum.value,
                 variant="primary",
                 flat=True,
-                classes=Tcss.nav_button,
+                classes=Tcss.nav_button.name,
                 id=self.tab_ids.button_id(btn=button_enum),
             )
 
@@ -65,7 +65,7 @@ class OperateBtnHorizontal(ButtonsHorizontal):
 
     def on_mount(self) -> None:
         for btn in self.query(Button):
-            btn.add_class(Tcss.operate_button)
+            btn.add_class(Tcss.operate_button.name)
             btn.disabled = True
 
 
@@ -76,12 +76,12 @@ class TabBtnHorizontal(ButtonsHorizontal):
         super().__init__(tab_ids=tab_ids, buttons=buttons, area=area)
 
     def on_mount(self) -> None:
-        self.query(Button).add_class(Tcss.tab_button)
+        self.query(Button).add_class(Tcss.tab_button.name)
         self.query_one(
             self.tab_ids.button_id("#", btn=self.buttons[0])
-        ).add_class(Tcss.last_clicked)
+        ).add_class(Tcss.last_clicked.name)
 
-    @on(Button.Pressed, f".{Tcss.tab_button}")
+    @on(Button.Pressed, f".{Tcss.tab_button.name}")
     def update_tab_btn_last_clicked(self, event: Button.Pressed) -> None:
-        self.query(Button).remove_class(Tcss.last_clicked)
-        event.button.add_class(Tcss.last_clicked)
+        self.query(Button).remove_class(Tcss.last_clicked.name)
+        event.button.add_class(Tcss.last_clicked.name)

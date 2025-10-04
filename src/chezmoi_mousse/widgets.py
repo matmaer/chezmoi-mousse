@@ -48,7 +48,7 @@ from chezmoi_mousse.messages import TreeNodeSelectedMsg
 class OperateInfo(Static, AppType):
 
     def __init__(self, *, operate_btn: OperateBtn, path: Path) -> None:
-        super().__init__(classes=Tcss.operate_info)
+        super().__init__(classes=Tcss.operate_info.name)
 
         self.operate_btn = operate_btn
         self.path = Path()
@@ -199,7 +199,7 @@ class TreeBase(Tree[NodeData], AppType):
     def on_mount(self) -> None:
         self.guide_depth: int = 3
         self.show_root: bool = False
-        self.add_class(Tcss.tree_widget)
+        self.add_class(Tcss.tree_widget.name)
         if self.root.data:
             self.root.data.path = self.app.destDir
 
@@ -679,7 +679,7 @@ class DoctorTable(DataTable[Text]):
         super().__init__(
             id=Id.config.datatable_id,
             show_cursor=False,
-            classes=Tcss.doctor_table,
+            classes=Tcss.doctor_table.name,
         )
 
     def populate_doctor_data(self, doctor_data: list[str]) -> list[str]:
@@ -787,7 +787,7 @@ class DoctorListView(ListView):
 
     def __init__(self) -> None:
         super().__init__(
-            id=Id.config.listview_id, classes=Tcss.doctor_listview
+            id=Id.config.listview_id, classes=Tcss.doctor_listview.name
         )
 
     def populate_listview(self, pw_mgr_commands: list[str]) -> None:

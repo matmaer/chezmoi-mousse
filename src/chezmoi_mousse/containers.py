@@ -74,7 +74,7 @@ class OperateTabsBase(Horizontal, AppType):
         self.current_path = selected_path
         self.update_view_path(selected_path)
 
-    @on(Button.Pressed, f".{Tcss.tab_button}")
+    @on(Button.Pressed, Tcss.tab_button.value)
     def handle_tab_button_pressed(self, event: Button.Pressed) -> None:
         # switch content and update view
         if event.button.id in (
@@ -179,11 +179,11 @@ class SwitchSlider(VerticalGroup):
         for switch_enum in self.switches:
             with HorizontalGroup(
                 id=self.tab_ids.switch_horizontal_id(switch=switch_enum),
-                classes=Tcss.switch_horizontal,
+                classes=Tcss.switch_horizontal.name,
             ):
                 yield Switch(id=self.tab_ids.switch_id(switch=switch_enum))
                 yield Label(
-                    switch_enum.label, classes=Tcss.switch_label
+                    switch_enum.label, classes=Tcss.switch_label.name
                 ).with_tooltip(tooltip=switch_enum.tooltip)
 
     def on_mount(self) -> None:
@@ -191,4 +191,4 @@ class SwitchSlider(VerticalGroup):
         self.query_one(
             self.tab_ids.switch_horizontal_id("#", switch=self.switches[0]),
             HorizontalGroup,
-        ).add_class(Tcss.pad_bottom)
+        ).add_class(Tcss.pad_bottom.name)

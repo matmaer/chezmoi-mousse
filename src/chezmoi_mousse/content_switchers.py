@@ -46,7 +46,7 @@ class TreeSwitcher(ContentSwitcher, AppType):
         super().__init__(
             id=self.tab_ids.content_switcher_id(area=Area.left),
             initial=self.tab_ids.tree_id(tree=TreeName.managed_tree),
-            classes=Tcss.content_switcher_left,
+            classes=Tcss.content_switcher_left.name,
         )
         # updated by OperateTabsBase in on_switch_changed method
         self.expand_all_state: bool = False
@@ -58,7 +58,7 @@ class TreeSwitcher(ContentSwitcher, AppType):
 
     def on_mount(self) -> None:
         self.border_title = str(self.app.destDir)
-        self.add_class(Tcss.border_title_top)
+        self.add_class(Tcss.border_title_top.name)
 
 
 class ViewSwitcher(ContentSwitcher, AppType):
@@ -68,7 +68,7 @@ class ViewSwitcher(ContentSwitcher, AppType):
         super().__init__(
             id=self.tab_ids.content_switcher_id(area=Area.right),
             initial=self.tab_ids.view_id(view=ViewName.diff_view),
-            classes=Tcss.border_title_top,
+            classes=Tcss.border_title_top.name,
         )
 
     def compose(self) -> ComposeResult:
@@ -78,7 +78,7 @@ class ViewSwitcher(ContentSwitcher, AppType):
 
     def on_mount(self) -> None:
         self.border_title = str(self.app.destDir)
-        self.add_class(Tcss.border_title_top)
+        self.add_class(Tcss.border_title_top.name)
 
 
 class InitTabSwitcher(ContentSwitcher):
@@ -88,7 +88,7 @@ class InitTabSwitcher(ContentSwitcher):
         super().__init__(
             id=self.tab_ids.content_switcher_id(area=Area.right),
             initial=self.tab_ids.view_id(view=ViewName.init_new_view),
-            classes=Tcss.nav_content_switcher,
+            classes=Tcss.nav_content_switcher.name,
         )
 
     def compose(self) -> ComposeResult:
@@ -96,7 +96,7 @@ class InitTabSwitcher(ContentSwitcher):
         yield Vertical(
             Label(
                 "Initialize new chezmoi git repository",
-                classes=Tcss.section_label,
+                classes=Tcss.section_label.name,
             ),
             Input(placeholder="Enter config file path"),
             OperateBtnHorizontal(
@@ -108,7 +108,7 @@ class InitTabSwitcher(ContentSwitcher):
         yield Vertical(
             Label(
                 "Clone existing chezmoi git repository",
-                classes=Tcss.section_label,
+                classes=Tcss.section_label.name,
             ),
             # TODO: implement guess feature from chezmoi
             # TODO: add selection for https(with PAT token) or ssh
@@ -116,21 +116,21 @@ class InitTabSwitcher(ContentSwitcher):
                 Vertical(
                     Select[str].from_values(
                         ["https", "ssh"],
-                        classes=Tcss.input_select,
+                        classes=Tcss.input_select.name,
                         value="https",
                         allow_blank=False,
                         type_to_search=False,
                     ),
-                    classes=Tcss.input_select_vertical,
+                    classes=Tcss.input_select_vertical.name,
                 ),
                 Vertical(
                     Input(
                         placeholder="Enter repository URL",
                         validate_on=["submitted"],
                         validators=URL(),
-                        classes=Tcss.input_field,
+                        classes=Tcss.input_field.name,
                     ),
-                    classes=Tcss.input_field_vertical,
+                    classes=Tcss.input_field_vertical.name,
                 ),
             ),
             OperateBtnHorizontal(
@@ -142,7 +142,7 @@ class InitTabSwitcher(ContentSwitcher):
         yield Vertical(
             Label(
                 "Purge current chezmoi git repository",
-                classes=Tcss.section_label,
+                classes=Tcss.section_label.name,
             ),
             Static(
                 "Remove chezmoi's configuration, state, and source directory, but leave the target state intact."
@@ -161,33 +161,35 @@ class ConfigTabSwitcher(ContentSwitcher, AppType):
         super().__init__(
             id=self.tab_ids.content_switcher_id(area=Area.right),
             initial=self.tab_ids.view_id(view=ViewName.doctor),
-            classes=Tcss.nav_content_switcher,
+            classes=Tcss.nav_content_switcher.name,
         )
 
     def compose(self) -> ComposeResult:
         yield VerticalScroll(
-            Label('"chezmoi doctor" output', classes=Tcss.section_label),
+            Label('"chezmoi doctor" output', classes=Tcss.section_label.name),
             DoctorTable(),
             Label(
                 "Password managers not found in $PATH",
-                classes=Tcss.section_label,
+                classes=Tcss.section_label.name,
             ),
             DoctorListView(),
             id=self.tab_ids.view_id(view=ViewName.doctor),
-            classes=Tcss.doctor_vertical_scroll,
+            classes=Tcss.doctor_vertical_scroll.name,
         )
         yield Vertical(
-            Label('"chezmoi cat-config" output', classes=Tcss.section_label),
+            Label(
+                '"chezmoi cat-config" output', classes=Tcss.section_label.name
+            ),
             Pretty(self.app.chezmoi.read(ReadCmd.cat_config).splitlines()),
             id=self.tab_ids.view_id(view=ViewName.cat_config),
         )
         yield Vertical(
-            Label('"chezmoi ignored" output', classes=Tcss.section_label),
+            Label('"chezmoi ignored" output', classes=Tcss.section_label.name),
             Pretty(self.app.chezmoi.read(ReadCmd.ignored).splitlines()),
             id=self.tab_ids.view_id(view=ViewName.config_ignored),
         )
         yield Vertical(
-            Label('"chezmoi data" output', classes=Tcss.section_label),
+            Label('"chezmoi data" output', classes=Tcss.section_label.name),
             Pretty(json.loads(self.app.chezmoi.read(ReadCmd.data))),
             id=self.tab_ids.view_id(view=ViewName.template_data),
         )
@@ -231,14 +233,14 @@ class HelpTabSwitcher(ContentSwitcher):
         super().__init__(
             id=self.tab_ids.content_switcher_id(area=Area.right),
             initial=self.tab_ids.view_id(view=ViewName.flow_diagram),
-            classes=Tcss.nav_content_switcher,
+            classes=Tcss.nav_content_switcher.name,
         )
 
     def compose(self) -> ComposeResult:
 
         yield Vertical(
-            Label("chezmoi diagram", classes=Tcss.section_label),
-            Static(self.FLOW_DIAGRAM, classes=Tcss.flow_diagram),
+            Label("chezmoi diagram", classes=Tcss.section_label.name),
+            Static(self.FLOW_DIAGRAM, classes=Tcss.flow_diagram.name),
             id=self.tab_ids.view_id(view=ViewName.flow_diagram),
         )
 
@@ -249,7 +251,7 @@ class LogsTabSwitcher(ContentSwitcher, AppType):
         self.tab_ids = tab_ids
         super().__init__(
             id=self.tab_ids.content_switcher_id(area=Area.top),
-            classes=Tcss.border_title_top,
+            classes=Tcss.border_title_top.name,
         )
 
     def compose(self) -> ComposeResult:

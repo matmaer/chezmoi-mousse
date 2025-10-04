@@ -128,35 +128,35 @@ class TabName(StrEnum):
 
 
 class Tcss(StrEnum):
-    border_title_top = auto()
-    content_switcher_left = auto()
-    dir_tree_widget = auto()
-    doctor_listview = auto()
-    doctor_table = auto()
-    doctor_vertical_scroll = auto()
-    flow_diagram = auto()
-    input_field = auto()
-    input_field_vertical = auto()
-    input_select = auto()
-    input_select_vertical = auto()
-    install_help = auto()
-    internet_links = auto()
-    last_clicked = auto()
-    log_views = auto()
-    nav_button = auto()
-    nav_content_switcher = auto()
-    operate_button = auto()
-    operate_info = auto()
-    operate_screen = auto()
-    pad_bottom = auto()
-    screen_base = auto()
-    section_label = auto()
-    single_button_vertical = auto()
-    switch_horizontal = auto()
-    switch_label = auto()
-    tab_button = auto()
-    tab_left_vertical = auto()
-    tree_widget = auto()
+    border_title_top = ".border_title_top"
+    content_switcher_left = ".content_switcher_left"
+    dir_tree_widget = ".dir_tree_widget"
+    doctor_listview = ".doctor_listview"
+    doctor_table = ".doctor_table"
+    doctor_vertical_scroll = ".doctor_vertical_scroll"
+    flow_diagram = ".flow_diagram"
+    input_field = ".input_field"
+    input_field_vertical = ".input_field_vertical"
+    input_select = ".input_select"
+    input_select_vertical = ".input_select_vertical"
+    install_help = ".install_help"
+    internet_links = ".internet_links"
+    last_clicked = ".last_clicked"
+    log_views = ".log_views"
+    nav_button = ".nav_button"
+    nav_content_switcher = ".nav_content_switcher"
+    operate_button = ".operate_button"
+    operate_info = ".operate_info"
+    operate_screen = ".operate_screen"
+    pad_bottom = ".pad_bottom"
+    screen_base = ".screen_base"
+    section_label = ".section_label"
+    single_button_vertical = ".single_button_vertical"
+    switch_horizontal = ".switch_horizontal"
+    switch_label = ".switch_label"
+    tab_button = ".tab_button"
+    tab_left_vertical = ".tab_left_vertical"
+    tree_widget = ".tree_widget"
 
 
 class TreeName(StrEnum):

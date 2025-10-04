@@ -289,7 +289,7 @@ class AppLog(CommandLogBase, AppType):
             id=LogName.app_log.name,
             markup=True,
             max_lines=10000,
-            classes=Tcss.log_views,
+            classes=Tcss.log_views.name,
         )
         success = f"{Chars.check_mark} Success"
         self.succes_no_output = f"{success}, no output"
@@ -325,7 +325,7 @@ class DebugLog(CommandLogBase, AppType):
             markup=True,
             max_lines=10000,
             wrap=True,
-            classes=Tcss.log_views,
+            classes=Tcss.log_views.name,
         )
 
     def completed_process(
@@ -338,7 +338,7 @@ class DebugLog(CommandLogBase, AppType):
     def on_mount(self) -> None:
         self.app.debug_log = self
         self.app.chezmoi.debug_log = self.completed_process
-        self.add_class(Tcss.log_views)
+        self.add_class(Tcss.log_views.name)
         self.ready_to_run("Debug log ready to capture logs.")
 
     def mro(self, mro: Mro) -> None:
@@ -376,7 +376,7 @@ class OutputLog(CommandLogBase, AppType):
             id=LogName.output_log.name,
             markup=True,
             max_lines=10000,
-            classes=Tcss.log_views,
+            classes=Tcss.log_views.name,
         )
 
     def completed_process(
