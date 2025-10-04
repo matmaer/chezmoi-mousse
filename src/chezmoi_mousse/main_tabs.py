@@ -20,6 +20,7 @@ from chezmoi_mousse.directory_tree import FilteredDirTree
 from chezmoi_mousse.id_typing import AppType, Id, Switches
 from chezmoi_mousse.id_typing.enums import (
     Area,
+    LogName,
     NavBtn,
     OperateBtn,
     TabBtn,
@@ -27,7 +28,6 @@ from chezmoi_mousse.id_typing.enums import (
     TreeName,
     ViewName,
 )
-from chezmoi_mousse.logs_tab import LogsEnum
 from chezmoi_mousse.widgets import ContentsView
 
 
@@ -240,19 +240,17 @@ class LogsTab(Vertical, AppType):
         switcher = self.query_exactly_one(LogsTabSwitcher)
 
         if event.button.id == Id.logs.button_id(btn=TabBtn.app_log):
-            switcher.current = LogsEnum.app_log.name
-            switcher.border_title = self.app.chezmoi.app_log.border_title
+            switcher.current = LogName.app_log.name
+            switcher.border_title = LogName.app_log.value
         elif event.button.id == Id.logs.button_id(btn=TabBtn.output_log):
-            switcher.current = LogsEnum.output_log.name
-            switcher.border_title = self.app.chezmoi.output_log.border_title
+            switcher.current = LogName.output_log.name
+            switcher.border_title = LogName.output_log.value
         elif (
             self.app.chezmoi.dev_mode
             and event.button.id == Id.logs.button_id(btn=TabBtn.debug_log)
         ):
-            switcher.current = "debug_log"
-            switcher.border_title = " Debug Log "
-            # switcher.current = LogsEnum.debug_log.name
-            # switcher.border_title = self.app.chezmoi.debug_log.border_title
+            switcher.current = LogName.debug_log.name
+            switcher.border_title = LogName.debug_log.value
 
 
 class ConfigTab(Horizontal, AppType):

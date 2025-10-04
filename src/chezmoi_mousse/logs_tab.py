@@ -7,7 +7,7 @@ from textual.widgets import RichLog
 
 import chezmoi_mousse.custom_theme as theme
 from chezmoi_mousse.id_typing import AppType
-from chezmoi_mousse.id_typing.enums import Chars, Tcss
+from chezmoi_mousse.id_typing.enums import Chars, LogName, Tcss
 
 
 class GlobalCmd(Enum):
@@ -44,13 +44,6 @@ class VerbArgs(Enum):
     path_style_absolute = "--path-style=absolute"
     reverse = "--reverse"
     tree = "--tree"
-
-
-class LogsEnum(Enum):
-    app_log = " App Log "
-    debug_log = " Debug Log "
-    init_log = " Init Log "
-    output_log = " Commands With Raw Stdout "
 
 
 class CommandLogBase(RichLog):
@@ -116,7 +109,7 @@ class AppLog(CommandLogBase):
 
     def __init__(self) -> None:
         super().__init__(
-            id=LogsEnum.app_log.name,
+            id=LogName.app_log.name,
             markup=True,
             max_lines=10000,
             classes=Tcss.log_views,
@@ -146,7 +139,7 @@ class DebugLog(CommandLogBase, AppType):
 
     def __init__(self) -> None:
         super().__init__(
-            id=LogsEnum.debug_log.name,
+            id=LogName.debug_log.name,
             markup=True,
             max_lines=10000,
             wrap=True,
@@ -194,7 +187,7 @@ class OutputLog(CommandLogBase):
 
     def __init__(self) -> None:
         super().__init__(
-            id=LogsEnum.output_log.name, markup=True, max_lines=10000
+            id=LogName.output_log.name, markup=True, max_lines=10000
         )
 
     def on_mount(self) -> None:

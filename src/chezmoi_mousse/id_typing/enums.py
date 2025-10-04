@@ -5,6 +5,7 @@ from enum import StrEnum, auto
 __all__ = [
     "Area",
     "Chars",
+    "LogName",
     "NavBtn",
     "OperateBtn",
     "OperateHelp",
@@ -41,6 +42,13 @@ class Chars(StrEnum):
     right_triangle = "\u25b6 "  # '\N{BLACK RIGHT-POINTING TRIANGLE}'
     warning_sign = "\u26a0"  # '\N{WARNING SIGN}'
     x_mark = "\u2716"  # '\N{HEAVY MULTIPLICATION X}'
+
+
+class LogName(StrEnum):
+    app_log = " App Log "
+    debug_log = " Debug Log "
+    init_log = " Init Log "
+    output_log = " Commands With Raw Stdout "
 
 
 class NavBtn(StrEnum):
