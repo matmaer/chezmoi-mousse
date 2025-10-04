@@ -26,7 +26,6 @@ from textual.widgets.tree import TreeNode
 import chezmoi_mousse.custom_theme as theme
 from chezmoi_mousse.chezmoi import ReadCmd
 from chezmoi_mousse.id_typing import (
-    Any,
     AppType,
     Id,
     NodeData,
@@ -113,7 +112,7 @@ class GitLogView(DataTable[Text], AppType):
         ]
         self.add_row(*row)
 
-    def render_invalid_data(self, new_data: Any):
+    def render_invalid_data(self, new_data: str):
         self.clear(columns=True)
         self.add_column(
             Text("INVALID DATA RECEIVED", self.row_styles["error"])

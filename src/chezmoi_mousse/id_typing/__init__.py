@@ -13,7 +13,6 @@ from chezmoi_mousse.id_typing._id_classes import (
 )
 
 __all__ = [
-    "Any",
     "AppType",
     "NodeData",
     "ParsedJson",
