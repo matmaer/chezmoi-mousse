@@ -28,9 +28,9 @@ from chezmoi_mousse import (
     NodeData,
     OperateBtn,
     OperateHelp,
+    PaneBtn,
     PathDict,
     ReadCmd,
-    TabName,
     Tcss,
     TreeName,
     ViewName,
@@ -274,9 +274,9 @@ class TreeBase(Tree[NodeData], AppType):
     # create node data methods
     def create_dir_node_data(self, *, path: Path) -> NodeData:
         status_code: str = ""
-        if self.tab_ids.tab_name == TabName.apply_tab.name:
+        if self.tab_ids.tab_name == PaneBtn.apply_tab.name:
             status_code: str = self.app.chezmoi.apply_dirs[path]
-        elif self.tab_ids.tab_name == TabName.re_add_tab.name:
+        elif self.tab_ids.tab_name == PaneBtn.re_add_tab.name:
             status_code: str = self.app.chezmoi.re_add_dirs[path]
         if not status_code:
             status_code = "X"
@@ -287,9 +287,9 @@ class TreeBase(Tree[NodeData], AppType):
 
     def create_file_node_data(self, *, path: Path) -> NodeData:
         status_code: str = ""
-        if self.tab_ids.tab_name == TabName.apply_tab.name:
+        if self.tab_ids.tab_name == PaneBtn.apply_tab.name:
             status_code: str = self.app.chezmoi.apply_files[path]
-        elif self.tab_ids.tab_name == TabName.re_add_tab.name:
+        elif self.tab_ids.tab_name == PaneBtn.re_add_tab.name:
             status_code: str = self.app.chezmoi.re_add_files[path]
         if not status_code:
             status_code = "X"
@@ -302,9 +302,9 @@ class TreeBase(Tree[NodeData], AppType):
     def dir_has_status_files(self, tab_name: str, dir_path: Path) -> bool:
         # checks for any, direct children or no matter how deep in subdirs
         files_dict: PathDict = {}
-        if tab_name == TabName.apply_tab.name:
+        if tab_name == PaneBtn.apply_tab.name:
             files_dict = self.app.chezmoi.apply_files
-        elif tab_name == TabName.re_add_tab.name:
+        elif tab_name == PaneBtn.re_add_tab.name:
             files_dict = self.app.chezmoi.re_add_files
 
         return any(
@@ -316,9 +316,9 @@ class TreeBase(Tree[NodeData], AppType):
     def dir_has_status_dirs(self, tab_name: str, dir_path: Path) -> bool:
         # checks for any, direct children or no matter how deep in subdirs
         dirs_dict: PathDict = {}
-        if tab_name == TabName.apply_tab.name:
+        if tab_name == PaneBtn.apply_tab.name:
             dirs_dict = self.app.chezmoi.apply_dirs
-        elif tab_name == TabName.re_add_tab.name:
+        elif tab_name == PaneBtn.re_add_tab.name:
             dirs_dict = self.app.chezmoi.re_add_dirs
         if dir_path in dirs_dict and dirs_dict[dir_path] != "X":
             return True
@@ -637,9 +637,9 @@ class FlatTree(TreeBase, AppType):
         """Refresh the tree with latest chezmoi data."""
         self.root.remove_children()
         files_dict: PathDict = {}
-        if self.tab_ids.tab_name == TabName.apply_tab.name:
+        if self.tab_ids.tab_name == PaneBtn.apply_tab.name:
             files_dict = self.app.chezmoi.apply_files
-        elif self.tab_ids.tab_name == TabName.re_add_tab.name:
+        elif self.tab_ids.tab_name == PaneBtn.re_add_tab.name:
             files_dict = self.app.chezmoi.re_add_files
         for file_path, status in files_dict.items():
             if status != "X":
@@ -649,9 +649,9 @@ class FlatTree(TreeBase, AppType):
 
     def add_all_unchanged_files(self) -> None:
         files_dict: PathDict = {}
-        if self.tab_ids.tab_name == TabName.apply_tab.name:
+        if self.tab_ids.tab_name == PaneBtn.apply_tab.name:
             files_dict = self.app.chezmoi.apply_files
-        elif self.tab_ids.tab_name == TabName.re_add_tab.name:
+        elif self.tab_ids.tab_name == PaneBtn.re_add_tab.name:
             files_dict = self.app.chezmoi.re_add_files
         for file_path, status in files_dict.items():
             if status == "X":

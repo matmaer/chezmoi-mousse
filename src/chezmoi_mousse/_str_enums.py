@@ -11,7 +11,7 @@ __all__ = [
     "OperateHelp",
     "ScreenName",
     "TabBtn",
-    "TabName",
+    "PaneBtn",
     "Tcss",
     "TreeName",
     "ViewName",
@@ -117,7 +117,7 @@ class TabBtn(StrEnum):
     tree = "Tree"
 
 
-class TabName(StrEnum):
+class PaneBtn(StrEnum):
     add_tab = "Add"
     apply_tab = "Apply"
     config_tab = "Config"

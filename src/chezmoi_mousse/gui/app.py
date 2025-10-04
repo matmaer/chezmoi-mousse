@@ -21,8 +21,8 @@ from chezmoi_mousse import (
     LogName,
     OperateBtn,
     OperateHelp,
+    PaneBtn,
     SplashReturnData,
-    TabName,
     Tcss,
     TreeName,
     ViewName,
@@ -102,7 +102,7 @@ class ChezmoiGUI(App[None]):
     def compose(self) -> ComposeResult:
         yield Header(icon=Chars.burger)
         with TabbedContent():
-            with TabPane(TabName.apply_tab.value, id=TabName.apply_tab.name):
+            with TabPane(PaneBtn.apply_tab.value, id=PaneBtn.apply_tab.name):
                 yield ApplyTab()
                 yield OperateBtnHorizontal(
                     tab_ids=Id.apply,
@@ -112,7 +112,7 @@ class ChezmoiGUI(App[None]):
                         OperateBtn.destroy_file,
                     ),
                 )
-            with TabPane(TabName.re_add_tab.value, id=TabName.re_add_tab.name):
+            with TabPane(PaneBtn.re_add_tab.value, id=PaneBtn.re_add_tab.name):
                 yield ReAddTab()
                 yield OperateBtnHorizontal(
                     tab_ids=Id.re_add,
@@ -122,19 +122,19 @@ class ChezmoiGUI(App[None]):
                         OperateBtn.destroy_file,
                     ),
                 )
-            with TabPane(TabName.add_tab.value, id=TabName.add_tab.name):
+            with TabPane(PaneBtn.add_tab.value, id=PaneBtn.add_tab.name):
                 yield AddTab()
                 yield OperateBtnHorizontal(
                     tab_ids=Id.add,
                     buttons=(OperateBtn.add_file, OperateBtn.add_dir),
                 )
-            with TabPane(TabName.init_tab.value, id=TabName.init_tab.name):
+            with TabPane(PaneBtn.init_tab.value, id=PaneBtn.init_tab.name):
                 yield InitTab()
-            with TabPane(TabName.logs_tab.value, id=TabName.logs_tab.name):
+            with TabPane(PaneBtn.logs_tab.value, id=PaneBtn.logs_tab.name):
                 yield LogsTab()
-            with TabPane(TabName.config_tab.value, id=TabName.config_tab.name):
+            with TabPane(PaneBtn.config_tab.value, id=PaneBtn.config_tab.name):
                 yield ConfigTab()
-            with TabPane(TabName.help_tab.value, id=TabName.help_tab.name):
+            with TabPane(PaneBtn.help_tab.value, id=PaneBtn.help_tab.name):
                 yield HelpTab()
         yield Footer()
 
@@ -284,7 +284,7 @@ class ChezmoiGUI(App[None]):
         id_to_maximize: str | None = None
         tab_ids: TabIds | None = None
 
-        if active_tab_id == TabName.apply_tab.name:
+        if active_tab_id == PaneBtn.apply_tab.name:
             active_widget_id = self.query_one(
                 Id.apply.content_switcher_id("#", area=Area.right),
                 ContentSwitcher,
@@ -294,7 +294,7 @@ class ChezmoiGUI(App[None]):
             id_to_maximize = active_widget.id
             tab_ids = getattr(Id, "apply")
 
-        elif active_tab_id == TabName.re_add_tab.name:
+        elif active_tab_id == PaneBtn.re_add_tab.name:
             # Determine what view to show in the screen
             active_widget_id = self.query_one(
                 Id.re_add.content_switcher_id("#", area=Area.right),
@@ -305,7 +305,7 @@ class ChezmoiGUI(App[None]):
             id_to_maximize = active_widget.id
             tab_ids = getattr(Id, "re_add")
 
-        elif active_tab_id == TabName.add_tab.name:
+        elif active_tab_id == PaneBtn.add_tab.name:
             contents_view = self.query_one(
                 Id.add.view_id("#", view=ViewName.contents_view), ContentsView
             )
@@ -338,13 +338,13 @@ class ChezmoiGUI(App[None]):
         tab_ids: TabIds | None = None
         active_tab_id = self.query_one(TabbedContent).active
         # handle Add tab operation button
-        if active_tab_id == TabName.add_tab.name:
+        if active_tab_id == PaneBtn.add_tab.name:
             add_tab_contents_view = self.query_one(
                 Id.add.view_id("#", view=ViewName.contents_view), ContentsView
             )
             current_path = getattr(add_tab_contents_view, "path")
         # handle Apply tab operation button
-        elif active_tab_id == TabName.apply_tab.name:
+        elif active_tab_id == PaneBtn.apply_tab.name:
             current_view_id = self.query_one(
                 Id.apply.content_switcher_id("#", area=Area.right),
                 ContentSwitcher,
@@ -352,7 +352,7 @@ class ChezmoiGUI(App[None]):
             current_view = self.query_one(f"#{current_view_id}")
             current_path = getattr(current_view, "path")
         # handle Re-Add tab operation button
-        elif active_tab_id == TabName.re_add_tab.name:
+        elif active_tab_id == PaneBtn.re_add_tab.name:
             current_view_id = self.query_one(
                 Id.re_add.content_switcher_id("#", area=Area.right),
                 ContentSwitcher,

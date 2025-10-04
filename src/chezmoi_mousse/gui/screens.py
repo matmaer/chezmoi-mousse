@@ -15,8 +15,8 @@ from textual.widgets import Button, Collapsible, Label, Link, Pretty, Tree
 from chezmoi_mousse import (
     ChangeCmd,
     OperateBtn,
+    PaneBtn,
     ParsedJson,
-    TabName,
     Tcss,
     ViewName,
 )
@@ -67,7 +67,7 @@ class Operate(ScreensBase, AppType):
         self.path = path
         self.tab_ids = tab_ids
         self.reverse: bool = (
-            False if self.tab_ids.tab_name == TabName.apply_tab.name else True
+            False if self.tab_ids.tab_name == PaneBtn.apply_tab.name else True
         )
         self.operate_dismiss_msg = OperateDismissMsg(
             path=self.path, operation_executed=False
@@ -94,8 +94,8 @@ class Operate(ScreensBase, AppType):
         for button in self.query(Button):
             button.disabled = False
         if (
-            self.tab_ids.tab_name == TabName.apply_tab.name
-            or self.tab_ids.tab_name == TabName.re_add_tab.name
+            self.tab_ids.tab_name == PaneBtn.apply_tab.name
+            or self.tab_ids.tab_name == PaneBtn.re_add_tab.name
         ) and (
             OperateBtn.apply_file in self.buttons
             or OperateBtn.re_add_file in self.buttons
@@ -186,7 +186,7 @@ class Maximized(ScreensBase):
         self.path = path
         self.tab_ids = tab_ids
         self.reverse: bool = (
-            False if self.tab_ids.tab_name == TabName.apply_tab.name else True
+            False if self.tab_ids.tab_name == PaneBtn.apply_tab.name else True
         )
         super().__init__(screen_id=Id.maximized_screen.screen_id)
 

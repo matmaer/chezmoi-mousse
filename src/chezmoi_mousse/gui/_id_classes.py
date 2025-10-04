@@ -8,9 +8,9 @@ from chezmoi_mousse import (
     Area,
     NavBtn,
     OperateBtn,
+    PaneBtn,
     ScreenName,
     TabBtn,
-    TabName,
     TreeName,
     ViewName,
 )
@@ -50,7 +50,7 @@ class Switches(Enum):
 
 
 class TabIds:
-    def __init__(self, tab_name: TabName) -> None:
+    def __init__(self, tab_name: PaneBtn) -> None:
         self.tab_container_id = f"{tab_name}_container_id"
         self.tab_name: str = tab_name.name
 
@@ -120,13 +120,13 @@ class ScreenIds:
 
 @dataclass(frozen=True)
 class Id:
-    add: TabIds = TabIds(TabName.add_tab)
-    apply: TabIds = TabIds(TabName.apply_tab)
-    config: TabIds = TabIds(TabName.config_tab)
-    help: TabIds = TabIds(TabName.help_tab)
-    init: TabIds = TabIds(TabName.init_tab)
-    logs: TabIds = TabIds(TabName.logs_tab)
-    re_add: TabIds = TabIds(TabName.re_add_tab)
+    add: TabIds = TabIds(PaneBtn.add_tab)
+    apply: TabIds = TabIds(PaneBtn.apply_tab)
+    config: TabIds = TabIds(PaneBtn.config_tab)
+    help: TabIds = TabIds(PaneBtn.help_tab)
+    init: TabIds = TabIds(PaneBtn.init_tab)
+    logs: TabIds = TabIds(PaneBtn.logs_tab)
+    re_add: TabIds = TabIds(PaneBtn.re_add_tab)
     operate_screen: ScreenIds = ScreenIds(ScreenName.operate)
     maximized_screen: ScreenIds = ScreenIds(ScreenName.maximized)
     install_help_screen: ScreenIds = ScreenIds(ScreenName.install_help)

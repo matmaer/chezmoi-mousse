@@ -7,10 +7,10 @@ from typing import Literal
 from chezmoi_mousse import (
     ChangeCmd,
     GlobalCmd,
+    PaneBtn,
     PathDict,
     ReadCmd,
     SplashReturnData,
-    TabName,
 )
 
 # TODO: implement 'chezmoi verify', if exit 0, display message in Tree
@@ -71,19 +71,19 @@ class Chezmoi:
 
     @property
     def apply_dirs(self) -> PathDict:
-        return self._create_status_dict(TabName.apply_tab, "dirs")
+        return self._create_status_dict(PaneBtn.apply_tab, "dirs")
 
     @property
     def apply_files(self) -> PathDict:
-        return self._create_status_dict(TabName.apply_tab, "files")
+        return self._create_status_dict(PaneBtn.apply_tab, "files")
 
     @property
     def re_add_dirs(self) -> PathDict:
-        return self._create_status_dict(TabName.re_add_tab, "dirs")
+        return self._create_status_dict(PaneBtn.re_add_tab, "dirs")
 
     @property
     def re_add_files(self) -> PathDict:
-        return self._create_status_dict(TabName.re_add_tab, "files")
+        return self._create_status_dict(PaneBtn.re_add_tab, "files")
 
     # METHODS
 
@@ -179,9 +179,9 @@ class Chezmoi:
         self, tab_name: str, dir_path: Path
     ) -> list[Path]:
         files_dict: PathDict = {}
-        if tab_name == TabName.apply_tab.name:
+        if tab_name == PaneBtn.apply_tab.name:
             files_dict = self.apply_files
-        elif tab_name == TabName.re_add_tab.name:
+        elif tab_name == PaneBtn.re_add_tab.name:
             files_dict = self.re_add_files
         return [
             p
@@ -193,9 +193,9 @@ class Chezmoi:
         self, tab_name: str, dir_path: Path
     ) -> list[Path]:
         files_dict: PathDict = {}
-        if tab_name == TabName.apply_tab.name:
+        if tab_name == PaneBtn.apply_tab.name:
             files_dict = self.apply_files
-        elif tab_name == TabName.re_add_tab.name:
+        elif tab_name == PaneBtn.re_add_tab.name:
             files_dict = self.re_add_files
         return [
             p
@@ -209,7 +209,7 @@ class Chezmoi:
 
     def _create_status_dict(
         self,
-        tab_name: Literal[TabName.apply_tab, TabName.re_add_tab],
+        tab_name: Literal[PaneBtn.apply_tab, PaneBtn.re_add_tab],
         kind: Literal["dirs", "files"],
     ) -> PathDict:
         path_dict: PathDict = {}
@@ -226,15 +226,15 @@ class Chezmoi:
                 p.status + " " + str(p.path) for p in self.managed.status_files
             ]
 
-        if tab_name == TabName.apply_tab:
+        if tab_name == PaneBtn.apply_tab:
             status_codes = "ADM"
             status_idx = 1
-        elif tab_name == TabName.re_add_tab:
+        elif tab_name == PaneBtn.re_add_tab:
             status_codes = "M"
             status_idx = 0
 
         paths_with_status_dict = {}
-        if tab_name == TabName.re_add_tab:
+        if tab_name == PaneBtn.re_add_tab:
             # For re_add_tab, include files with "M" at status_idx=0 OR
             # files with space at status_idx=0 AND "M" at status_idx=1
             for line in status_lines:
