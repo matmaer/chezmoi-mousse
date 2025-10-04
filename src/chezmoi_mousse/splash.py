@@ -1,5 +1,7 @@
 from collections import deque
 from dataclasses import fields
+from json import loads
+from pathlib import Path
 from threading import Lock
 from time import sleep
 
@@ -102,22 +104,6 @@ class LoadingScreen(Screen[SplashReturnData], AppType):
     def compose(self) -> ComposeResult:
         yield Middle(Center(AnimatedFade()), Center(self.rich_log))
 
-    # def load_config_dump(self):
-    #     if self.app.chezmoi_found:
-    #         result: CompletedProcess[str] = run(
-    #             ReadCmd.dump_config.value,
-    #             capture_output=True,
-    #             shell=False,
-    #             text=True,  # returns stdout as str instead of bytes
-    #         )
-    #         self.app.config_dump = json.loads(result.stdout)
-    #         if self.config_dump is not None:
-    #             self.destDir = Path(self.config_dump["destDir"])
-    #             self.sourceDir = Path(self.config_dump["sourceDir"])
-    #             self.git_autoadd = self.config_dump["git"]["autoadd"]
-    #             self.git_autocommit = self.config_dump["git"]["autocommit"]
-    #             self.git_autopush = self.config_dump["git"]["autopush"]
-
     def update_and_log(self, field_name: str, cmd_output: str) -> None:
         command_value = getattr(ReadCmd, field_name).value
         cmd_text = "cmd from splash screen"
@@ -148,6 +134,16 @@ class LoadingScreen(Screen[SplashReturnData], AppType):
         self.rich_log.styles.width = len(message) + 2
         self.rich_log.write(f"[{color}]{message}[/]")
         sleep(0.5)
+
+    def load_config_dump(self) -> None:
+        std_out = self.app.chezmoi.read(ReadCmd.dump_config)
+        config_dump = loads(std_out)
+        if config_dump is not None:
+            self.app.destDir = Path(config_dump["destDir"])
+            self.app.sourceDir = Path(config_dump["sourceDir"])
+            self.app.git_autoadd = config_dump["git"]["autoadd"]
+            self.app.git_autocommit = config_dump["git"]["autocommit"]
+            self.app.git_autopush = config_dump["git"]["autopush"]
 
     @work(thread=True, group="io_workers")
     def run_read_cmd(self, field_name: str) -> None:
