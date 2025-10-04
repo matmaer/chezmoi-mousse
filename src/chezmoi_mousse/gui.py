@@ -110,7 +110,7 @@ class ChezmoiGUI(App["ChezmoiGUI"]):
         yield Footer()
 
     def on_mount(self) -> None:
-        self.chezmoi.app_log.success("App initialized successfully")
+        # self.chezmoi.app_log.success("App initialized successfully")
         # TODO: inform user only file mode is supported if detected in the user config
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
         self.title = "-  c h e z m o i  m o u s s e  -"
@@ -118,12 +118,12 @@ class ChezmoiGUI(App["ChezmoiGUI"]):
         self.register_theme(chezmoi_mousse.custom_theme.chezmoi_mousse_dark)
         theme_name = "chezmoi-mousse-dark"
         self.theme = theme_name
-        self.chezmoi.app_log.success(f"Theme set to {theme_name}")
-        if self.chezmoi.chezmoi_found:
-            self.chezmoi.app_log.success(
-                f"chezmoi command found: {self.chezmoi.chezmoi_found}"
-            )
-        self.chezmoi.app_log.ready_to_run("--- Start loading screen ---")
+        # self.chezmoi.app_log.success(f"Theme set to {theme_name}")
+        # if self.chezmoi.chezmoi_found:
+        #     self.chezmoi.app_log.success(
+        #         f"chezmoi command found: {self.chezmoi.chezmoi_found}"
+        #     )
+        # self.chezmoi.app_log.ready_to_run("--- Start loading screen ---")
         self.push_screen(
             LoadingScreen(), callback=self.run_post_splash_actions
         )
@@ -135,19 +135,19 @@ class ChezmoiGUI(App["ChezmoiGUI"]):
         chezmoi_mousse.custom_theme.vars = (
             new_theme_object.to_color_system().generate()
         )
-        self.chezmoi.app_log.success(f"Theme set to {new_theme}")
+        # self.chezmoi.app_log.success(f"Theme set to {new_theme}")
 
     def run_post_splash_actions(
         self, return_data: SplashReturnData | None
     ) -> None:
         if return_data is None:
             # Handle the case where no data was returned (though this shouldn't happen in your case)
-            self.chezmoi.app_log.error("No data returned from splash screen")
+            # self.chezmoi.app_log.error("No data returned from splash screen")
             return
         if not self.chezmoi.chezmoi_found:
             self.push_screen(InstallHelp())
             return
-        self.chezmoi.app_log.ready_to_run("--- Loading screen completed ---")
+        # self.chezmoi.app_log.ready_to_run("--- Loading screen completed ---")
         # Populate Doctor DataTable
         pw_mgr_cmds: list[str] = self.query_one(
             Id.config.datatable_qid, DoctorTable
@@ -174,10 +174,10 @@ class ChezmoiGUI(App["ChezmoiGUI"]):
         # Refresh DirectoryTree
         self.query_one(FilteredDirTree).reload()
         # Refresh logs
-        content_switcher = self.query_one(
-            Id.logs.content_switcher_id("#", area=Area.top), ContentSwitcher
-        )
-        content_switcher.current = self.chezmoi.app_log.id
+        # content_switcher = self.query_one(
+        #     Id.logs.content_switcher_id("#", area=Area.top), ContentSwitcher
+        # )
+        # content_switcher.current = self.chezmoi.app_log.id
         if self.chezmoi.dev_mode:
             self.notify('Running in "dev mode"', severity="information")
         self.notify_changes_enabled()

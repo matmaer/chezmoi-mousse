@@ -22,7 +22,7 @@ from chezmoi_mousse.id_typing.enums import (
     TreeName,
     ViewName,
 )
-from chezmoi_mousse.logs_tab import DebugLog
+from chezmoi_mousse.logs_tab import AppLog, DebugLog
 from chezmoi_mousse.widgets import (
     ContentsView,
     DiffView,
@@ -249,7 +249,7 @@ class LogsTabSwitcher(ContentSwitcher, AppType):
         )
 
     def compose(self) -> ComposeResult:
-        yield self.app.chezmoi.app_log
+        yield AppLog()
         yield self.app.chezmoi.output_log
         if self.app.chezmoi.dev_mode:
             yield DebugLog()

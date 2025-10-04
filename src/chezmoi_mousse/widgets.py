@@ -125,14 +125,14 @@ class ContentsView(RichLog, AppType):
                 truncated_message = (
                     "\n\n--- File content truncated to 150 KiB ---\n"
                 )
-                self.app.chezmoi.app_log.warning(
-                    f"File {self.path} is larger than 150 KiB, truncating output."
-                )
+                # self.app.chezmoi.app_log.warning(
+                #     f"File {self.path} is larger than 150 KiB, truncating output."
+                # )
         except PermissionError as e:
             self.write(e.strerror)
-            self.app.chezmoi.app_log.error(
-                f"Permission denied to read {self.path}"
-            )
+            # self.app.chezmoi.app_log.error(
+            #     f"Permission denied to read {self.path}"
+            # )
             return
 
         try:
@@ -172,9 +172,9 @@ class ContentsView(RichLog, AppType):
 
         except OSError as error:
             self.write(Text(f"Error reading {self.path}: {error}"))
-            self.app.chezmoi.app_log.error(
-                f"Error reading {self.path}: {error}"
-            )
+            # self.app.chezmoi.app_log.error(
+            #     f"Error reading {self.path}: {error}"
+            # )
 
 
 class DiffView(RichLog, AppType):

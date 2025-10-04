@@ -11,7 +11,7 @@ from typing import Literal
 
 from chezmoi_mousse.id_typing import ParsedJson, PathDict, SplashReturnData
 from chezmoi_mousse.id_typing.enums import TabName
-from chezmoi_mousse.logs_tab import AppLog, OutputLog
+from chezmoi_mousse.logs_tab import OutputLog
 
 # TODO: implement 'chezmoi verify', if exit 0, display message in Tree
 # widgets inform the user why the Tree widget is empty
@@ -154,7 +154,7 @@ class ManagedStatus:
     )
 
 
-app_log = AppLog()
+# app_log = AppLog()
 output_log = OutputLog()
 
 
@@ -162,8 +162,9 @@ class Chezmoi:
 
     def __init__(self) -> None:
         # will send string to callback, not list of strings, it's just the Callable signature
-        self.debug_log_callback: Callable[[str], None] | None = None
-        self.app_log = app_log
+        self.debug_log: Callable[[str], None] | None = None
+        self.app_log: Callable[[CompletedProcess[str]], None] | None = None
+        # self.app_log = app_log
         self.output_log = output_log
 
         self.chezmoi_found = (
@@ -227,8 +228,8 @@ class Chezmoi:
 
     # METHODS
 
-    def stripped_cmd(self, long_command: list[str]) -> str:
-        return self.app_log.pretty_cmd_str(long_command)
+    # def stripped_cmd(self, long_command: list[str]) -> str:
+    #     return self.app_log.pretty_cmd_str(long_command)
 
     def _strip_stdout(self, stdout: str):
         # remove trailing and leading new lines but NOT leading whitespace
@@ -240,7 +241,8 @@ class Chezmoi:
 
     def _log_in_app_and_output_log(self, result: CompletedProcess[str]):
         result.stdout = self._strip_stdout(result.stdout)
-        self.app_log.completed_process(result)
+        if self.app_log is not None:
+            self.app_log(result)
         self.output_log.completed_process(result)
 
     def read(self, read_cmd: ReadCmd, path: Path | None = None) -> str:
@@ -252,8 +254,8 @@ class Chezmoi:
             command, capture_output=True, shell=False, text=True, timeout=1
         )
         self._log_in_app_and_output_log(result)
-        if self.debug_log_callback is not None:
-            self.debug_log_callback(f"run {command}")
+        if self.debug_log is not None:
+            self.debug_log(f"run {command}")
         return self._strip_stdout(result.stdout)
 
     def perform(

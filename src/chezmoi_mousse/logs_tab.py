@@ -105,7 +105,7 @@ class CommandLogBase(RichLog):
                 self.write(f"[{color}]{escaped_line}[/]")
 
 
-class AppLog(CommandLogBase):
+class AppLog(CommandLogBase, AppType):
 
     def __init__(self) -> None:
         super().__init__(
@@ -118,6 +118,8 @@ class AppLog(CommandLogBase):
         self.succes_no_output = f"{success}, no output"
         self.success_with_output = f"{success}, output processed in UI"
 
+    # def update_debug_log(self, log_message: str) -> None:
+    #     self.write(log_message)
     def completed_process(
         self, completed_process: CompletedProcess[str]
     ) -> None:
@@ -131,6 +133,9 @@ class AppLog(CommandLogBase):
             self.error(
                 f"{Chars.x_mark} Command failed with exit code {completed_process.returncode}, stderr logged to Output log"
             )
+
+    def on_mount(self) -> None:
+        self.app.chezmoi.app_log = self.completed_process
 
 
 class DebugLog(CommandLogBase, AppType):
@@ -150,7 +155,7 @@ class DebugLog(CommandLogBase, AppType):
         self.write(log_message)
 
     def on_mount(self) -> None:
-        self.app.chezmoi.debug_log_callback = self.update_debug_log
+        self.app.chezmoi.debug_log = self.update_debug_log
         self.write("in debug log view")
         self.add_class(Tcss.log_views)
         self.ready_to_run("Debug log ready to capture logs.")
