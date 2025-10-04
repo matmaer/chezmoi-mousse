@@ -17,12 +17,8 @@ from chezmoi_mousse.chezmoi import ChangeCmd
 from chezmoi_mousse.id_typing import AppType, Id, ParsedJson, TabIds
 from chezmoi_mousse.id_typing.enums import OperateBtn, TabName, Tcss, ViewName
 from chezmoi_mousse.messages import OperateDismissMsg
-from chezmoi_mousse.widgets import (
-    ContentsView,
-    DiffView,
-    GitLogView,
-    OperateInfo,
-)
+from chezmoi_mousse.rich_logs import ContentsView, DiffView
+from chezmoi_mousse.widgets import GitLogView, OperateInfo
 
 
 class ScreensBase(Screen[None], AppType):

@@ -22,9 +22,8 @@ from chezmoi_mousse.id_typing.enums import (
     ViewName,
 )
 from chezmoi_mousse.messages import TreeNodeSelectedMsg
+from chezmoi_mousse.rich_logs import ContentsView, DiffView
 from chezmoi_mousse.widgets import (
-    ContentsView,
-    DiffView,
     ExpandedTree,
     FlatTree,
     GitLogView,

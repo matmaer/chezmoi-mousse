@@ -22,10 +22,14 @@ from chezmoi_mousse.id_typing.enums import (
     TreeName,
     ViewName,
 )
-from chezmoi_mousse.logs_tab import AppLog, DebugLog, OutputLog
-from chezmoi_mousse.widgets import (
+from chezmoi_mousse.rich_logs import (
+    AppLog,
     ContentsView,
+    DebugLog,
     DiffView,
+    OutputLog,
+)
+from chezmoi_mousse.widgets import (
     DoctorListView,
     DoctorTable,
     ExpandedTree,

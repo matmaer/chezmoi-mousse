@@ -20,7 +20,7 @@ from textual.worker import WorkerState
 from chezmoi_mousse.custom_theme import vars as theme_vars
 from chezmoi_mousse.id_typing import AppType, SplashReturnData
 from chezmoi_mousse.id_typing.enums import ReadCmd, VerbArgs
-from chezmoi_mousse.logs_tab import AppLog
+from chezmoi_mousse.rich_logs import AppLog
 
 SPLASH = """\
  _______________________________ ___________________._

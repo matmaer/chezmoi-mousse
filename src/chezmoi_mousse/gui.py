@@ -40,10 +40,10 @@ from chezmoi_mousse.main_tabs import (
 )
 from chezmoi_mousse.messages import OperateDismissMsg
 from chezmoi_mousse.overrides import CustomScrollBarRender
+from chezmoi_mousse.rich_logs import ContentsView
 from chezmoi_mousse.screens import InstallHelp, Maximized, Operate
 from chezmoi_mousse.splash import LoadingScreen
 from chezmoi_mousse.widgets import (
-    ContentsView,
     DoctorListView,
     DoctorTable,
     ExpandedTree,

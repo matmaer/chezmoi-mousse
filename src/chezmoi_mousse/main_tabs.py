@@ -28,7 +28,7 @@ from chezmoi_mousse.id_typing.enums import (
     TreeName,
     ViewName,
 )
-from chezmoi_mousse.widgets import ContentsView
+from chezmoi_mousse.rich_logs import ContentsView
 
 
 class ApplyTab(OperateTabsBase):
