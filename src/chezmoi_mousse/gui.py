@@ -250,7 +250,7 @@ class ChezmoiGUI(App[None]):
             ):
                 return None
             return True
-        elif action == "toggle_switch_slider":
+        if action == "toggle_switch_slider":
             if self.query_one(TabbedContent).active in (
                 Id.apply.tab_name,
                 Id.re_add.tab_name,
