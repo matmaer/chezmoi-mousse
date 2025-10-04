@@ -13,12 +13,24 @@ class UsageFinder(ast.NodeVisitor):
         self.usages: set[str] = set()
 
     def visit_Attribute(self, node: ast.Attribute):
-        # Check if this is an attribute access on the target class (e.g., Tcss.some_member or Chars.some_member)
+        # Check for direct access: SomeClass.some_member
         if (
             isinstance(node.value, ast.Name)
             and node.value.id == self.class_name
         ):
             self.usages.add(node.attr)
+
+        # Check for chained access: SomeClass.some_member.name or SomeClass.some_member.value
+        elif (
+            isinstance(node.value, ast.Attribute)
+            and isinstance(node.value.value, ast.Name)
+            and node.value.value.id == self.class_name
+            and node.attr in ("name", "value")
+        ):
+            self.usages.add(node.value.attr)
+
+        # Continue visiting child nodes
+        self.generic_visit(node)
 
 
 def get_str_enum_assign_members(class_def: ast.ClassDef) -> list[ast.Assign]:
@@ -62,8 +74,14 @@ def test_members_in_use(str_enum_class_def: ast.ClassDef):
         finder.visit(tree)
         usages.update(finder.usages)
 
-    # Check each member is used
+    # Find members not in use
+    not_in_use: list[str] = []
     for member_name in member_names:
-        assert (
-            member_name in usages
-        ), f"Member {str_enum_class_def.name}.{member_name} is not used in any module."
+        if member_name not in usages:
+            not_in_use.append(
+                f"Member {str_enum_class_def.name}.{member_name} is not used in any module."
+            )
+
+    # Report all unused members at once
+    if not_in_use:
+        pytest.fail("\n".join(not_in_use))
