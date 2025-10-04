@@ -3,6 +3,7 @@ from pathlib import Path
 from textual import on
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical, VerticalGroup
+from textual.lazy import Lazy
 from textual.widgets import Button, Input, Switch
 
 from chezmoi_mousse.button_groups import NavButtonsVertical, TabBtnHorizontal
@@ -226,7 +227,7 @@ class LogsTab(Vertical, AppType):
 
     def compose(self) -> ComposeResult:
         tab_buttons = (TabBtn.app_log, TabBtn.output_log)
-        if self.app.chezmoi.dev_mode:
+        if self.app.dev_mode:
             tab_buttons += (TabBtn.debug_log,)
 
         yield TabBtnHorizontal(
@@ -245,9 +246,8 @@ class LogsTab(Vertical, AppType):
         elif event.button.id == Id.logs.button_id(btn=TabBtn.output_log):
             switcher.current = LogName.output_log.name
             switcher.border_title = LogName.output_log.value
-        elif (
-            self.app.chezmoi.dev_mode
-            and event.button.id == Id.logs.button_id(btn=TabBtn.debug_log)
+        elif self.app.dev_mode and event.button.id == Id.logs.button_id(
+            btn=TabBtn.debug_log
         ):
             switcher.current = LogName.debug_log.name
             switcher.border_title = LogName.debug_log.value
@@ -268,7 +268,8 @@ class ConfigTab(Horizontal, AppType):
                 NavBtn.template_data,
             ),
         )
-        yield ConfigTabSwitcher(Id.config)
+        # mount lazily as the compose method includes subprocess calls
+        yield Lazy(ConfigTabSwitcher(Id.config))
 
     @on(Button.Pressed, f".{Tcss.nav_button}")
     def switch_content(self, event: Button.Pressed) -> None:

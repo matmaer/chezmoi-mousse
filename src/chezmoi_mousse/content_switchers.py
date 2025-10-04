@@ -255,5 +255,5 @@ class LogsTabSwitcher(ContentSwitcher, AppType):
     def compose(self) -> ComposeResult:
         yield AppLog()
         yield OutputLog()
-        if self.app.chezmoi.dev_mode:
+        if self.app.dev_mode:
             yield DebugLog()

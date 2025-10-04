@@ -102,6 +102,22 @@ class LoadingScreen(Screen[SplashReturnData], AppType):
     def compose(self) -> ComposeResult:
         yield Middle(Center(AnimatedFade()), Center(self.rich_log))
 
+    # def load_config_dump(self):
+    #     if self.app.chezmoi_found:
+    #         result: CompletedProcess[str] = run(
+    #             ReadCmd.dump_config.value,
+    #             capture_output=True,
+    #             shell=False,
+    #             text=True,  # returns stdout as str instead of bytes
+    #         )
+    #         self.app.config_dump = json.loads(result.stdout)
+    #         if self.config_dump is not None:
+    #             self.destDir = Path(self.config_dump["destDir"])
+    #             self.sourceDir = Path(self.config_dump["sourceDir"])
+    #             self.git_autoadd = self.config_dump["git"]["autoadd"]
+    #             self.git_autocommit = self.config_dump["git"]["autocommit"]
+    #             self.git_autopush = self.config_dump["git"]["autopush"]
+
     def update_and_log(self, field_name: str, cmd_output: str) -> None:
         command_value = getattr(ReadCmd, field_name).value
         cmd_text = "cmd from splash screen"
@@ -159,7 +175,7 @@ class LoadingScreen(Screen[SplashReturnData], AppType):
             interval=0.05, callback=animated_fade.refresh
         )
 
-        if not self.app.chezmoi.chezmoi_found:
+        if not self.app.chezmoi_found:
             self.log_unavailable_chezmoi_command()
             return
 

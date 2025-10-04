@@ -22,6 +22,7 @@ from chezmoi_mousse.id_typing import Id, SplashReturnData, TabIds
 from chezmoi_mousse.id_typing.enums import (
     Area,
     Chars,
+    LogName,
     OperateBtn,
     OperateHelp,
     TabName,
@@ -40,7 +41,7 @@ from chezmoi_mousse.main_tabs import (
 )
 from chezmoi_mousse.messages import OperateDismissMsg
 from chezmoi_mousse.overrides import CustomScrollBarRender
-from chezmoi_mousse.rich_logs import ContentsView
+from chezmoi_mousse.rich_logs import AppLog, ContentsView, DebugLog, OutputLog
 from chezmoi_mousse.screens import InstallHelp, Maximized, Operate
 from chezmoi_mousse.splash import LoadingScreen
 from chezmoi_mousse.widgets import (
@@ -52,11 +53,31 @@ from chezmoi_mousse.widgets import (
 )
 
 
-class ChezmoiGUI(App["ChezmoiGUI"]):
-    def __init__(self, chezmoi_instance: Chezmoi):
-        self.chezmoi = chezmoi_instance
-        self.destDir = self.chezmoi.destDir
-        self.sourceDir = self.chezmoi.sourceDir
+class ChezmoiGUI(App[None]):
+    def __init__(
+        self,
+        changes_enabled: bool,
+        chezmoi_found: bool,
+        dev_mode: bool,
+        provisional_dest_dir: Path,
+        provisional_source_dir: Path,
+    ):
+        self.changes_enabled = changes_enabled
+        self.chezmoi_found = chezmoi_found
+        self.destDir: Path = provisional_dest_dir
+        self.dev_mode = dev_mode
+        self.sourceDir: Path = provisional_source_dir
+
+        self.app_log: AppLog | None = None
+        self.output_log: OutputLog | None = None
+        self.debug_log: DebugLog | None = None
+
+        self.git_autoadd: bool = False
+        self.git_autocommit: bool = False
+        self.git_autopush: bool = False
+
+        self.chezmoi = Chezmoi(changes_enabled=self.changes_enabled)
+
         super().__init__()
 
     CSS_PATH = "data/gui.tcss"
@@ -110,7 +131,8 @@ class ChezmoiGUI(App["ChezmoiGUI"]):
         yield Footer()
 
     def on_mount(self) -> None:
-        # self.chezmoi.app_log.success("App initialized successfully")
+        if self.app_log:
+            self.app_log.success("App initialized successfully")
         # TODO: inform user only file mode is supported if detected in the user config
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
         self.title = "-  c h e z m o i  m o u s s e  -"
@@ -118,12 +140,14 @@ class ChezmoiGUI(App["ChezmoiGUI"]):
         self.register_theme(chezmoi_mousse.custom_theme.chezmoi_mousse_dark)
         theme_name = "chezmoi-mousse-dark"
         self.theme = theme_name
-        # self.chezmoi.app_log.success(f"Theme set to {theme_name}")
-        # if self.chezmoi.chezmoi_found:
-        #     self.chezmoi.app_log.success(
-        #         f"chezmoi command found: {self.chezmoi.chezmoi_found}"
-        #     )
-        # self.chezmoi.app_log.ready_to_run("--- Start loading screen ---")
+        if self.app_log:
+            self.app_log.success(f"Theme set to {theme_name}")
+        if self.chezmoi_found and self.app_log:
+            self.app_log.success(
+                f"chezmoi command found: {self.chezmoi_found}"
+            )
+        if self.app_log:
+            self.app_log.ready_to_run("--- Start loading screen ---")
         self.push_screen(
             LoadingScreen(), callback=self.run_post_splash_actions
         )
@@ -135,19 +159,22 @@ class ChezmoiGUI(App["ChezmoiGUI"]):
         chezmoi_mousse.custom_theme.vars = (
             new_theme_object.to_color_system().generate()
         )
-        # self.chezmoi.app_log.success(f"Theme set to {new_theme}")
+        if self.app_log is not None:
+            self.app_log.success(f"Theme set to {new_theme}")
 
     def run_post_splash_actions(
         self, return_data: SplashReturnData | None
     ) -> None:
         if return_data is None:
-            # Handle the case where no data was returned (though this shouldn't happen in your case)
-            # self.chezmoi.app_log.error("No data returned from splash screen")
+            if self.app_log is not None:
+                self.app_log.error("No data returned from splash screen")
             return
-        if not self.chezmoi.chezmoi_found:
+
+        if not self.chezmoi_found:
             self.push_screen(InstallHelp())
             return
-        # self.chezmoi.app_log.ready_to_run("--- Loading screen completed ---")
+        if self.app_log is not None:
+            self.app_log.ready_to_run("--- Loading screen completed ---")
         # Populate Doctor DataTable
         pw_mgr_cmds: list[str] = self.query_one(
             Id.config.datatable_qid, DoctorTable
@@ -173,18 +200,18 @@ class ChezmoiGUI(App["ChezmoiGUI"]):
                 ).refresh_tree_data()
         # Refresh DirectoryTree
         self.query_one(FilteredDirTree).reload()
-        # Refresh logs
-        # content_switcher = self.query_one(
-        #     Id.logs.content_switcher_id("#", area=Area.top), ContentSwitcher
-        # )
-        # content_switcher.current = self.chezmoi.app_log.id
-        if self.chezmoi.dev_mode:
+        # make the app_log appear first time the main Logs tab is opened
+        content_switcher = self.query_one(
+            Id.logs.content_switcher_id("#", area=Area.top), ContentSwitcher
+        )
+        content_switcher.current = LogName.app_log.name
+        if self.dev_mode:
             self.notify('Running in "dev mode"', severity="information")
         self.notify_changes_enabled()
 
     def notify_changes_enabled(self):
         # Notify app startup mode
-        if self.chezmoi.changes_enabled:
+        if self.changes_enabled:
             self.notify(
                 OperateHelp.changes_mode_enabled.value, severity="warning"
             )

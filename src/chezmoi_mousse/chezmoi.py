@@ -1,14 +1,10 @@
-import json
-import os
-import tempfile
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
-from shutil import which
 from subprocess import CompletedProcess, run
 from typing import Literal
 
-from chezmoi_mousse.id_typing import ParsedJson, PathDict, SplashReturnData
+from chezmoi_mousse.id_typing import PathDict, SplashReturnData
 from chezmoi_mousse.id_typing.enums import (
     ChangeCmd,
     GlobalCmd,
@@ -48,41 +44,14 @@ class ManagedStatus:
 
 class Chezmoi:
 
-    def __init__(self) -> None:
-        self.debug_log: Callable[[str], None] | None = None
+    def __init__(self, *, changes_enabled: bool) -> None:
+        self.changes_enabled = changes_enabled
+
         self.app_log: Callable[[CompletedProcess[str]], None] | None = None
+        self.debug_log: Callable[[CompletedProcess[str]], None] | None = None
         self.output_log: Callable[[CompletedProcess[str]], None] | None = None
 
-        self.chezmoi_found = (
-            which("chezmoi") is not None
-            and os.environ.get("PRETEND_CHEZMOI_NOT_FOUND") != "1"
-        )
-        self.changes_enabled: bool = (
-            os.environ.get("MOUSSE_ENABLE_CHANGES") == "1"
-        )
-        self.config_dump = {}
-        self.dev_mode: bool = os.environ.get("CHEZMOI_MOUSSE_DEV") == "1"
-        self.config_dump: ParsedJson | None = None
-        self.destDir: Path = Path.home()
-        self.git_autoadd: bool = False
-        self.git_autocommit: bool = False
-        self.git_autopush: bool = False
         self.managed = ManagedStatus()
-        self.sourceDir: Path = Path(tempfile.gettempdir())
-        if self.chezmoi_found:
-            result: CompletedProcess[str] = run(
-                ReadCmd.dump_config.value,
-                capture_output=True,
-                shell=False,
-                text=True,  # returns stdout as str instead of bytes
-            )
-            self.config_dump = json.loads(result.stdout)
-            if self.config_dump is not None:
-                self.destDir = Path(self.config_dump["destDir"])
-                self.sourceDir = Path(self.config_dump["sourceDir"])
-                self.git_autoadd = self.config_dump["git"]["autoadd"]
-                self.git_autocommit = self.config_dump["git"]["autocommit"]
-                self.git_autopush = self.config_dump["git"]["autopush"]
 
     # COMMAND TYPES
 
@@ -138,8 +107,6 @@ class Chezmoi:
             command, capture_output=True, shell=False, text=True, timeout=1
         )
         self._log_in_app_and_output_log(result)
-        if self.debug_log is not None:
-            self.debug_log(f"run {command}")
         return self._strip_stdout(result.stdout)
 
     def perform(

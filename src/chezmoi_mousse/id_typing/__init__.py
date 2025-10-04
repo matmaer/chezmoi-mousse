@@ -13,18 +13,17 @@ from chezmoi_mousse.id_typing._id_classes import (
 )
 
 __all__ = [
-    # imports from id_classes.py
-    "Id",
-    "ScreenIds",
-    "Switches",
-    "TabIds",
-    # module types
     "Any",
     "AppType",
     "NodeData",
     "ParsedJson",
     "PathDict",
     "SplashReturnData",
+    # imports from id_classes.py
+    "Id",
+    "ScreenIds",
+    "Switches",
+    "TabIds",
 ]
 
 type ParsedJson = dict[str, Any]
