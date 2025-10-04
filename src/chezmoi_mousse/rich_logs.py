@@ -308,7 +308,6 @@ class AppLog(CommandLogBase, AppType):
             self.error(
                 f"{Chars.x_mark} Command failed with exit code {completed_process.returncode}, stderr logged to Output log"
             )
-        self.refresh()
 
     def on_mount(self) -> None:
         self.app.app_log = self
@@ -333,13 +332,10 @@ class DebugLog(CommandLogBase, AppType):
     ) -> None:
         self._log_command(completed_process.args)
         self.dimmed(f"{dir(completed_process)}")
-        self.refresh()
 
     def on_mount(self) -> None:
         self.app.debug_log = self
         self.app.chezmoi.debug_log = self.completed_process
-        self.add_class(Tcss.log_views.name)
-        self.ready_to_run("Debug log ready to capture logs.")
 
     def mro(self, mro: Mro) -> None:
         color = theme.vars["accent-darken-2"]
@@ -392,7 +388,6 @@ class OutputLog(CommandLogBase, AppType):
         else:
             self.error("failed, stderr:")
             self.dimmed(f"{completed_process.stderr}")
-        self.refresh()
 
     def on_mount(self) -> None:
         self.app.output_log = self
