@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 from _test_utils import get_modules_importing_class
 
-import chezmoi_mousse.id_typing as id_classes
+import chezmoi_mousse.gui._id_classes as id_classes
 
 # @pytest.mark.parametrize(
 #     "class_name, class_def",

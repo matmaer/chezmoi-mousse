@@ -7,7 +7,9 @@ from rich.segment import Segment, Segments
 from rich.style import Style
 from textual.scrollbar import ScrollBarRender
 
-from chezmoi_mousse.id_typing.enums import Chars
+from chezmoi_mousse import Chars
+
+__all__ = ["CustomScrollBarRender"]
 
 
 class CustomScrollBarRender(ScrollBarRender):

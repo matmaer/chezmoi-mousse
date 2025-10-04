@@ -12,24 +12,18 @@ from textual.widgets import (
     Static,
 )
 
-from chezmoi_mousse.button_groups import OperateBtnHorizontal
-from chezmoi_mousse.chezmoi import ReadCmd
-from chezmoi_mousse.id_typing import AppType, TabIds
-from chezmoi_mousse.id_typing.enums import (
-    Area,
-    OperateBtn,
-    Tcss,
-    TreeName,
-    ViewName,
-)
-from chezmoi_mousse.rich_logs import (
+from chezmoi_mousse import Area, OperateBtn, Tcss, TreeName, ViewName
+from chezmoi_mousse.gui import AppType, TabIds
+from chezmoi_mousse.gui._chezmoi import ReadCmd
+from chezmoi_mousse.gui.button_groups import OperateBtnHorizontal
+from chezmoi_mousse.gui.rich_logs import (
     AppLog,
     ContentsView,
     DebugLog,
     DiffView,
     OutputLog,
 )
-from chezmoi_mousse.widgets import (
+from chezmoi_mousse.gui.widgets import (
     DoctorListView,
     DoctorTable,
     ExpandedTree,
@@ -37,6 +31,15 @@ from chezmoi_mousse.widgets import (
     GitLogView,
     ManagedTree,
 )
+
+__all__ = [
+    "ConfigTabSwitcher",
+    "HelpTabSwitcher",
+    "InitTabSwitcher",
+    "LogsTabSwitcher",
+    "TreeSwitcher",
+    "ViewSwitcher",
+]
 
 
 class TreeSwitcher(ContentSwitcher, AppType):

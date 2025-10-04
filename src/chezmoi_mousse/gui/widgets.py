@@ -23,26 +23,30 @@ from textual.widgets import DataTable, Link, ListItem, ListView, Static, Tree
 from textual.widgets._tree import TOGGLE_STYLE
 from textual.widgets.tree import TreeNode
 
-import chezmoi_mousse.custom_theme as theme
-from chezmoi_mousse.chezmoi import ReadCmd
-from chezmoi_mousse.id_typing import (
-    AppType,
-    Id,
-    NodeData,
-    PathDict,
-    ScreenIds,
-    TabIds,
-)
-from chezmoi_mousse.id_typing.enums import (
+from chezmoi_mousse import (
     Chars,
+    NodeData,
     OperateBtn,
     OperateHelp,
+    PathDict,
+    ReadCmd,
     TabName,
     Tcss,
     TreeName,
     ViewName,
 )
-from chezmoi_mousse.messages import TreeNodeSelectedMsg
+from chezmoi_mousse.gui import AppType, Id, ScreenIds, TabIds
+from chezmoi_mousse.gui.custom_theme import custom_vars
+from chezmoi_mousse.gui.messages import TreeNodeSelectedMsg
+
+__all__ = [
+    "GitLogView",
+    "TreeBase",
+    "ManagedTree",
+    "ExpandedTree",
+    "FlatTree",
+    "OperateInfo",
+]
 
 
 class OperateInfo(Static, AppType):
@@ -97,9 +101,9 @@ class GitLogView(DataTable[Text], AppType):
     def __init__(self, *, tab_ids: TabIds | ScreenIds) -> None:
         self.tab_ids = tab_ids
         self.row_styles = {
-            "ok": theme.vars["text-success"],
-            "warning": theme.vars["text-warning"],
-            "error": theme.vars["text-error"],
+            "ok": custom_vars["text-success"],
+            "warning": custom_vars["text-warning"],
+            "error": custom_vars["text-error"],
         }
         super().__init__(
             id=self.tab_ids.view_id(view=ViewName.git_log_view),
@@ -137,9 +141,9 @@ class GitLogView(DataTable[Text], AppType):
         self.clear(columns=True)
         self.add_columns("COMMIT", "MESSAGE")
         styles = {
-            "ok": theme.vars["text-success"],
-            "warning": theme.vars["text-warning"],
-            "error": theme.vars["text-error"],
+            "ok": custom_vars["text-success"],
+            "warning": custom_vars["text-warning"],
+            "error": custom_vars["text-error"],
         }
         for line in cmd_output.splitlines():
             columns = line.split(";")
@@ -178,13 +182,13 @@ class TreeBase(Tree[NodeData], AppType):
         self._user_interacted = False
         self.node_selected_msg = TreeNodeSelectedMsg()
         self.node_colors: dict[str, str] = {
-            "Dir": theme.vars["text-primary"],
-            "D": theme.vars["text-error"],
-            "A": theme.vars["text-success"],
-            "M": theme.vars["text-warning"],
+            "Dir": custom_vars["text-primary"],
+            "D": custom_vars["text-error"],
+            "A": custom_vars["text-success"],
+            "M": custom_vars["text-warning"],
             # Root node, invisible but needed because render_label override
             # Use "F" for fake, as R is in use by chezmoi for Run
-            "F": theme.vars["text-primary"],
+            "F": custom_vars["text-primary"],
         }
         # Initialize with a placeholder path, will be set properly in on_mount
         root_node_data = NodeData(
@@ -669,11 +673,11 @@ class DoctorTable(DataTable[Text]):
 
     def __init__(self) -> None:
         self.dr_style = {
-            "ok": theme.vars["text-success"],
-            "info": theme.vars["foreground-darken-1"],
-            "warning": theme.vars["text-warning"],
-            "failed": theme.vars["text-error"],
-            "error": theme.vars["text-error"],
+            "ok": custom_vars["text-success"],
+            "info": custom_vars["foreground-darken-1"],
+            "warning": custom_vars["text-warning"],
+            "failed": custom_vars["text-error"],
+            "error": custom_vars["text-error"],
         }
         self.pw_mgr_commands: list[str] = []
         super().__init__(

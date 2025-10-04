@@ -5,8 +5,10 @@ from pathlib import Path
 from textual.reactive import reactive
 from textual.widgets import DirectoryTree
 
-from chezmoi_mousse.id_typing import AppType
-from chezmoi_mousse.id_typing.enums import Chars
+from chezmoi_mousse import Chars
+from chezmoi_mousse.gui import AppType
+
+__all__ = ["FilteredDirTree"]
 
 
 class UnwantedDirs(StrEnum):

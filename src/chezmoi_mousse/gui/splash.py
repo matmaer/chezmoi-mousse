@@ -18,10 +18,13 @@ from textual.timer import Timer
 from textual.widgets import RichLog, Static
 from textual.worker import WorkerState
 
-from chezmoi_mousse.custom_theme import vars as theme_vars
-from chezmoi_mousse.id_typing import AppType, SplashReturnData
-from chezmoi_mousse.id_typing.enums import ReadCmd, VerbArgs
-from chezmoi_mousse.rich_logs import AppLog
+from chezmoi_mousse import ReadCmd, SplashReturnData, VerbArgs
+from chezmoi_mousse.gui import AppType
+from chezmoi_mousse.gui.custom_theme import custom_vars
+from chezmoi_mousse.gui.rich_logs import AppLog
+
+__all__ = ["LoadingScreen"]
+
 
 SPLASH = """\
  _______________________________ ___________________._
@@ -127,7 +130,7 @@ class LoadingScreen(Screen[SplashReturnData], AppType):
     @work(thread=True, group="io_workers")
     def log_unavailable_chezmoi_command(self) -> None:
         message = "chezmoi command ................. not found"
-        color = theme_vars["text-primary"]
+        color = custom_vars["text-primary"]
         self.rich_log.styles.margin = 1
         self.rich_log.markup = True
         self.rich_log.styles.width = len(message) + 2

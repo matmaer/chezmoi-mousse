@@ -7,7 +7,8 @@ from pathlib import Path
 import pytest
 from _test_utils import get_module_paths
 
-from chezmoi_mousse.id_typing import Id, _str_enums
+import chezmoi_mousse._str_enums as _str_enums
+from chezmoi_mousse.gui._id_classes import Id
 
 
 def _get_str_enum_classes() -> list[type[StrEnum]]:

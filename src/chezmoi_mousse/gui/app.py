@@ -14,23 +14,24 @@ from textual.widgets import (
     TabPane,
 )
 
-import chezmoi_mousse.custom_theme
-from chezmoi_mousse.button_groups import OperateBtnHorizontal
-from chezmoi_mousse.chezmoi import Chezmoi
-from chezmoi_mousse.directory_tree import FilteredDirTree
-from chezmoi_mousse.id_typing import Id, SplashReturnData, TabIds
-from chezmoi_mousse.id_typing.enums import (
+import chezmoi_mousse.gui.custom_theme as custom_theme
+from chezmoi_mousse import (
     Area,
     Chars,
     LogName,
     OperateBtn,
     OperateHelp,
+    SplashReturnData,
     TabName,
     Tcss,
     TreeName,
     ViewName,
 )
-from chezmoi_mousse.main_tabs import (
+from chezmoi_mousse.gui import Id, TabIds
+from chezmoi_mousse.gui._chezmoi import Chezmoi
+from chezmoi_mousse.gui.button_groups import OperateBtnHorizontal
+from chezmoi_mousse.gui.directory_tree import FilteredDirTree
+from chezmoi_mousse.gui.main_tabs import (
     AddTab,
     ApplyTab,
     ConfigTab,
@@ -39,18 +40,25 @@ from chezmoi_mousse.main_tabs import (
     LogsTab,
     ReAddTab,
 )
-from chezmoi_mousse.messages import OperateDismissMsg
-from chezmoi_mousse.overrides import CustomScrollBarRender
-from chezmoi_mousse.rich_logs import AppLog, ContentsView, DebugLog, OutputLog
-from chezmoi_mousse.screens import InstallHelp, Maximized, Operate
-from chezmoi_mousse.splash import LoadingScreen
-from chezmoi_mousse.widgets import (
+from chezmoi_mousse.gui.messages import OperateDismissMsg
+from chezmoi_mousse.gui.overrides import CustomScrollBarRender
+from chezmoi_mousse.gui.rich_logs import (
+    AppLog,
+    ContentsView,
+    DebugLog,
+    OutputLog,
+)
+from chezmoi_mousse.gui.screens import InstallHelp, Maximized, Operate
+from chezmoi_mousse.gui.splash import LoadingScreen
+from chezmoi_mousse.gui.widgets import (
     DoctorListView,
     DoctorTable,
     ExpandedTree,
     FlatTree,
     ManagedTree,
 )
+
+__all__ = ["ChezmoiGUI"]
 
 
 class ChezmoiGUI(App[None]):
@@ -136,8 +144,8 @@ class ChezmoiGUI(App[None]):
         # TODO: inform user only file mode is supported if detected in the user config
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
         self.title = "-  c h e z m o i  m o u s s e  -"
-        self.register_theme(chezmoi_mousse.custom_theme.chezmoi_mousse_light)
-        self.register_theme(chezmoi_mousse.custom_theme.chezmoi_mousse_dark)
+        self.register_theme(custom_theme.chezmoi_mousse_light)
+        self.register_theme(custom_theme.chezmoi_mousse_dark)
         theme_name = "chezmoi-mousse-dark"
         self.theme = theme_name
         if self.app_log:
@@ -156,7 +164,7 @@ class ChezmoiGUI(App[None]):
     def on_theme_change(self, _: str, new_theme: str) -> None:
         new_theme_object: Theme | None = self.get_theme(new_theme)
         assert isinstance(new_theme_object, Theme)
-        chezmoi_mousse.custom_theme.vars = (
+        custom_theme.custom_vars = (
             new_theme_object.to_color_system().generate()
         )
         if self.app_log is not None:

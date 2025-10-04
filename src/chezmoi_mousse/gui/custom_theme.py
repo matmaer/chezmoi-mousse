@@ -24,4 +24,4 @@ chezmoi_mousse_light = Theme(
     surface="#B8B8B8",
 )
 
-vars = chezmoi_mousse_dark.to_color_system().generate()
+custom_vars = chezmoi_mousse_dark.to_color_system().generate()

@@ -6,21 +6,9 @@ from textual.containers import Horizontal, Vertical, VerticalGroup
 from textual.lazy import Lazy
 from textual.widgets import Button, Input, Switch
 
-from chezmoi_mousse.button_groups import NavButtonsVertical, TabBtnHorizontal
-from chezmoi_mousse.chezmoi import ChangeCmd
-from chezmoi_mousse.containers import OperateTabsBase, SwitchSlider
-from chezmoi_mousse.content_switchers import (
-    ConfigTabSwitcher,
-    HelpTabSwitcher,
-    InitTabSwitcher,
-    LogsTabSwitcher,
-    TreeSwitcher,
-    ViewSwitcher,
-)
-from chezmoi_mousse.directory_tree import FilteredDirTree
-from chezmoi_mousse.id_typing import AppType, Id, Switches
-from chezmoi_mousse.id_typing.enums import (
+from chezmoi_mousse import (
     Area,
+    ChangeCmd,
     LogName,
     NavBtn,
     OperateBtn,
@@ -29,7 +17,32 @@ from chezmoi_mousse.id_typing.enums import (
     TreeName,
     ViewName,
 )
-from chezmoi_mousse.rich_logs import ContentsView
+from chezmoi_mousse.gui import AppType, Id, Switches
+from chezmoi_mousse.gui.button_groups import (
+    NavButtonsVertical,
+    TabBtnHorizontal,
+)
+from chezmoi_mousse.gui.containers import OperateTabsBase, SwitchSlider
+from chezmoi_mousse.gui.content_switchers import (
+    ConfigTabSwitcher,
+    HelpTabSwitcher,
+    InitTabSwitcher,
+    LogsTabSwitcher,
+    TreeSwitcher,
+    ViewSwitcher,
+)
+from chezmoi_mousse.gui.directory_tree import FilteredDirTree
+from chezmoi_mousse.gui.rich_logs import ContentsView
+
+__all__ = [
+    "AddTab",
+    "ApplyTab",
+    "ConfigTab",
+    "HelpTab",
+    "InitTab",
+    "LogsTab",
+    "ReAddTab",
+]
 
 
 class ApplyTab(OperateTabsBase):

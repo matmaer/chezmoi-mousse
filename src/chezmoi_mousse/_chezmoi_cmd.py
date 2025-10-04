@@ -1,6 +1,6 @@
 from enum import Enum
 
-__all__ = ["GlobalCmd", "VerbArgs", "ReadVerbs", "ReadCmd", "ChangeCmd"]
+__all__ = ["ChangeCmd", "GlobalCmd", "ReadCmd", "ReadVerbs", "VerbArgs"]
 
 
 class GlobalCmd(Enum):

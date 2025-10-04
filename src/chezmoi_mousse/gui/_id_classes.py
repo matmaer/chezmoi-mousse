@@ -4,7 +4,7 @@ generated the id dynamically when subclassing or to query a widget."""
 from dataclasses import dataclass
 from enum import Enum
 
-from chezmoi_mousse.id_typing.enums import (
+from chezmoi_mousse import (
     Area,
     NavBtn,
     OperateBtn,

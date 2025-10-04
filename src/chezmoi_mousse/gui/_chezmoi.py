@@ -4,17 +4,21 @@ from pathlib import Path
 from subprocess import CompletedProcess, run
 from typing import Literal
 
-from chezmoi_mousse.id_typing import PathDict, SplashReturnData
-from chezmoi_mousse.id_typing.enums import (
+from chezmoi_mousse import (
     ChangeCmd,
     GlobalCmd,
+    PathDict,
     ReadCmd,
+    SplashReturnData,
     TabName,
 )
 
 # TODO: implement 'chezmoi verify', if exit 0, display message in Tree
 # widgets inform the user why the Tree widget is empty
 # TODO: implement spinner for commands taking a bit longer like operations
+
+
+__all__ = ["Chezmoi"]
 
 
 @dataclass

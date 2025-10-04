@@ -12,13 +12,19 @@ from textual.events import Click
 from textual.screen import Screen
 from textual.widgets import Button, Collapsible, Label, Link, Pretty, Tree
 
-from chezmoi_mousse.button_groups import OperateBtnHorizontal
-from chezmoi_mousse.chezmoi import ChangeCmd
-from chezmoi_mousse.id_typing import AppType, Id, ParsedJson, TabIds
-from chezmoi_mousse.id_typing.enums import OperateBtn, TabName, Tcss, ViewName
-from chezmoi_mousse.messages import OperateDismissMsg
-from chezmoi_mousse.rich_logs import ContentsView, DiffView
-from chezmoi_mousse.widgets import GitLogView, OperateInfo
+from chezmoi_mousse import (
+    ChangeCmd,
+    OperateBtn,
+    ParsedJson,
+    TabName,
+    Tcss,
+    ViewName,
+)
+from chezmoi_mousse.gui import AppType, Id, TabIds
+from chezmoi_mousse.gui.button_groups import OperateBtnHorizontal
+from chezmoi_mousse.gui.messages import OperateDismissMsg
+from chezmoi_mousse.gui.rich_logs import ContentsView, DiffView
+from chezmoi_mousse.gui.widgets import GitLogView, OperateInfo
 
 
 class ScreensBase(Screen[None], AppType):
