@@ -18,7 +18,6 @@ from textual.timer import Timer
 from textual.widgets import RichLog, Static
 from textual.worker import WorkerState
 
-# from chezmoi_mousse.chezmoi import ReadCmd, VerbArgs
 from chezmoi_mousse.custom_theme import vars as theme_vars
 from chezmoi_mousse.id_typing import AppType, SplashReturnData
 from chezmoi_mousse.id_typing.enums import ReadCmd, VerbArgs
@@ -135,16 +134,6 @@ class LoadingScreen(Screen[SplashReturnData], AppType):
         self.rich_log.write(f"[{color}]{message}[/]")
         sleep(0.5)
 
-    def load_config_dump(self) -> None:
-        std_out = self.app.chezmoi.read(ReadCmd.dump_config)
-        config_dump = loads(std_out)
-        if config_dump is not None:
-            self.app.destDir = Path(config_dump["destDir"])
-            self.app.sourceDir = Path(config_dump["sourceDir"])
-            self.app.git_autoadd = config_dump["git"]["autoadd"]
-            self.app.git_autocommit = config_dump["git"]["autocommit"]
-            self.app.git_autopush = config_dump["git"]["autopush"]
-
     @work(thread=True, group="io_workers")
     def run_read_cmd(self, field_name: str) -> None:
 
@@ -156,10 +145,21 @@ class LoadingScreen(Screen[SplashReturnData], AppType):
     def all_workers_finished(self) -> None:
         if all(
             worker.state == WorkerState.SUCCESS
-            for worker in self.workers
+            for worker in self.app.workers
             if worker.group == "io_workers"
         ):
             self.dismiss(self.splash_return_data)
+
+    @work(thread=True, group="config_loader")
+    def load_config_dump(self) -> None:
+        std_out = self.app.chezmoi.read(ReadCmd.dump_config)
+        config_dump = loads(std_out)
+        if config_dump is not None:
+            self.app.destDir = Path(config_dump["destDir"])
+            self.app.sourceDir = Path(config_dump["sourceDir"])
+            self.app.git_autoadd = config_dump["git"]["autoadd"]
+            self.app.git_autocommit = config_dump["git"]["autocommit"]
+            self.app.git_autopush = config_dump["git"]["autopush"]
 
     def on_mount(self) -> None:
 
