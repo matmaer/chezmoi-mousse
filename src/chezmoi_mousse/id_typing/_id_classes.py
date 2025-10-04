@@ -52,8 +52,7 @@ class Switches(Enum):
 class TabIds:
     def __init__(self, tab_name: TabName) -> None:
         self.tab_container_id = f"{tab_name}_container_id"
-        self.tab_name: TabName = tab_name
-        self.tab_pane_id = f"{tab_name}_pane"
+        self.tab_name: str = tab_name.name
 
         # id's for which there's only one widget for each self.tab_name
         self.datatable_id = f"{tab_name}_datatable"
