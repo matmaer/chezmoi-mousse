@@ -6,7 +6,7 @@ from textual.containers import Horizontal, Vertical, VerticalGroup
 from textual.widgets import Button, Input, Switch
 
 from chezmoi_mousse.button_groups import NavButtonsVertical, TabBtnHorizontal
-from chezmoi_mousse.chezmoi import ChangeCmd, LogsEnum
+from chezmoi_mousse.chezmoi import ChangeCmd
 from chezmoi_mousse.containers import OperateTabsBase, SwitchSlider
 from chezmoi_mousse.content_switchers import (
     ConfigTabSwitcher,
@@ -27,6 +27,7 @@ from chezmoi_mousse.id_typing.enums import (
     TreeName,
     ViewName,
 )
+from chezmoi_mousse.logs_tab import LogsEnum
 from chezmoi_mousse.widgets import ContentsView
 
 
@@ -248,8 +249,10 @@ class LogsTab(Vertical, AppType):
             self.app.chezmoi.dev_mode
             and event.button.id == Id.logs.button_id(btn=TabBtn.debug_log)
         ):
-            switcher.current = LogsEnum.debug_log.name
-            switcher.border_title = self.app.chezmoi.debug_log.border_title
+            switcher.current = "debug_log"
+            switcher.border_title = " Debug Log "
+            # switcher.current = LogsEnum.debug_log.name
+            # switcher.border_title = self.app.chezmoi.debug_log.border_title
 
 
 class ConfigTab(Horizontal, AppType):
