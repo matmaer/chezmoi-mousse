@@ -1,5 +1,4 @@
 from datetime import datetime
-from enum import Enum
 from subprocess import CompletedProcess
 
 from rich.markup import escape
@@ -7,43 +6,13 @@ from textual.widgets import RichLog
 
 import chezmoi_mousse.custom_theme as theme
 from chezmoi_mousse.id_typing import AppType
-from chezmoi_mousse.id_typing.enums import Chars, LogName, Tcss
-
-
-class GlobalCmd(Enum):
-    chezmoi = ["chezmoi"]
-    default_args = [
-        "--color=off",
-        "--force",
-        "--interactive=false",
-        "--mode=file",
-        "--no-pager",
-        "--no-tty",
-        "--progress=false",
-    ]
-    live_run = chezmoi + default_args
-    dry_run = live_run + ["--dry-run"]
-
-
-class VerbArgs(Enum):
-    encrypt = "--encrypt"
-    format_json = "--format=json"
-    git_log = [
-        "--",
-        "--no-pager",
-        "log",
-        "--date-order",
-        "--format=%ar by %cn;%s",
-        "--max-count=50",
-        "--no-color",
-        "--no-decorate",
-        "--no-expand-tabs",
-    ]
-    include_dirs = "--include=dirs"
-    include_files = "--include=files"
-    path_style_absolute = "--path-style=absolute"
-    reverse = "--reverse"
-    tree = "--tree"
+from chezmoi_mousse.id_typing.enums import (
+    Chars,
+    GlobalCmd,
+    LogName,
+    Tcss,
+    VerbArgs,
+)
 
 
 class CommandLogBase(RichLog):
@@ -51,7 +20,8 @@ class CommandLogBase(RichLog):
     def _log_time(self) -> str:
         return f"[[green]{datetime.now().strftime('%H:%M:%S')}[/]]"
 
-    def pretty_cmd_str(self, command: list[str]) -> str:
+    @staticmethod
+    def pretty_cmd_str(command: list[str]) -> str:
         filter_git_log_args = VerbArgs.git_log.value[3:]
         return "chezmoi " + " ".join(
             [

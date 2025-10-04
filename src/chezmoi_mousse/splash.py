@@ -16,9 +16,11 @@ from textual.timer import Timer
 from textual.widgets import RichLog, Static
 from textual.worker import WorkerState
 
-from chezmoi_mousse.chezmoi import ReadCmd  # , VerbArgs
+# from chezmoi_mousse.chezmoi import ReadCmd, VerbArgs
 from chezmoi_mousse.custom_theme import vars as theme_vars
 from chezmoi_mousse.id_typing import AppType, SplashReturnData
+from chezmoi_mousse.id_typing.enums import ReadCmd, VerbArgs
+from chezmoi_mousse.logs_tab import AppLog
 
 SPLASH = """\
  _______________________________ ___________________._
@@ -101,13 +103,13 @@ class LoadingScreen(Screen[SplashReturnData], AppType):
         yield Middle(Center(AnimatedFade()), Center(self.rich_log))
 
     def update_and_log(self, field_name: str, cmd_output: str) -> None:
-        # command_value = getattr(ReadCmd, field_name).value
+        command_value = getattr(ReadCmd, field_name).value
         cmd_text = "cmd from splash screen"
-        # cmd_text = (
-        #     self.app.chezmoi.stripped_cmd(command_value)
-        #     .replace(VerbArgs.include_dirs.value, "dirs")
-        #     .replace(VerbArgs.include_files.value, "files")
-        # )
+        cmd_text = (
+            AppLog.pretty_cmd_str(command_value)
+            .replace(VerbArgs.include_dirs.value, "dirs")
+            .replace(VerbArgs.include_files.value, "files")
+        )
         padding = LOG_PADDING_WIDTH - len(cmd_text)
         log_text = f"{cmd_text} {'.' * padding} loaded"
 
