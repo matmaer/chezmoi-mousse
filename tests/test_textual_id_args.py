@@ -1,12 +1,21 @@
 """Test if no hard coded id's or tcss strings are used."""
 
 import ast
+from enum import StrEnum
 from pathlib import Path
 
 import pytest
-from _test_utils import get_module_paths, get_str_enum_classes
+from _test_utils import get_module_paths
 
-from chezmoi_mousse.id_typing import Id
+from chezmoi_mousse.id_typing import Id, _str_enums
+
+
+def _get_str_enum_classes() -> list[type[StrEnum]]:
+    return [
+        cls
+        for cls in _str_enums.__dict__.values()
+        if isinstance(cls, type) and issubclass(cls, StrEnum)
+    ]
 
 
 def _get_root_class_name(node: ast.AST) -> str | None:
@@ -71,7 +80,7 @@ def _is_valid_class_expression(node: ast.AST, cls: type) -> bool:
 def test_args(py_file: Path):
     # the id= argument is only used in some object.call(), so get call nodes
     call_nodes: list[ast.Call] = _get_ast_call_nodes(py_file)
-    str_enum_classes = get_str_enum_classes()
+    str_enum_classes = _get_str_enum_classes()
     invalid_ids: list[str] = []
     for node in call_nodes:
         for keyword in node.keywords:
