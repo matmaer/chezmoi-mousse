@@ -44,7 +44,7 @@ class NavButtonsVertical(VerticalGroup):
     ) -> None:
         self.buttons: tuple[NavBtn, ...] = buttons
         self.tab_ids: TabIds = tab_ids
-        super().__init__(id=self.tab_ids.buttons_vertical_group_id(Area.left))
+        super().__init__()
 
     def compose(self) -> ComposeResult:
         for button_enum in self.buttons:

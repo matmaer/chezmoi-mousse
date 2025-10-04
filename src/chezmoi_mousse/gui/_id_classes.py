@@ -76,9 +76,6 @@ class TabIds:
     def buttons_horizontal_id(self, area: Area) -> str:
         return f"{self.tab_name}_{area}_horizontal"
 
-    def buttons_vertical_group_id(self, area: Area) -> str:
-        return f"{self.tab_name}_{area}_vertical"
-
     def content_switcher_id(self, qid: str = "", *, area: Area) -> str:
         return f"{qid}{self.tab_name}_{area}_content_switcher"
 
