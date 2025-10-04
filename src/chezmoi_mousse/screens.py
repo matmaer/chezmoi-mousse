@@ -265,7 +265,6 @@ class InstallHelp(ScreensBase):
                         yield Link(
                             "chezmoi.io/install",
                             url="https://chezmoi.io/install",
-                            classes=Tcss.internet_links.name,
                         )
                         yield Button("exit app", variant="primary", flat=True)
 

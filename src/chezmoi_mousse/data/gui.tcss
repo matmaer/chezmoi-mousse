@@ -169,16 +169,6 @@
   }
 }
 
-.internet_links {
-  color: $text-primary;
-  text-style: underline;
-  &:hover {
-    color: $accent;
-  }
-  &:focus {
-    text-style: bold;
-  }
-}
 
 .screen_base {
   border-bottom: $primary;

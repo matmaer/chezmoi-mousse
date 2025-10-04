@@ -140,7 +140,6 @@ class Tcss(StrEnum):
     input_select = ".input_select"
     input_select_vertical = ".input_select_vertical"
     install_help = ".install_help"
-    internet_links = ".internet_links"
     last_clicked = ".last_clicked"
     log_views = ".log_views"
     nav_button = ".nav_button"
