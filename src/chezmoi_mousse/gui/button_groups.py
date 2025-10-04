@@ -30,10 +30,7 @@ class ButtonsHorizontal(HorizontalGroup):
 
     def compose(self) -> ComposeResult:
         for button_enum in self.buttons:
-            with Vertical(
-                id=self.tab_ids.button_vertical_id(button_enum),
-                classes=Tcss.single_button_vertical.name,
-            ):
+            with Vertical(classes=Tcss.single_button_vertical.name):
                 yield Button(
                     label=button_enum.value,
                     id=self.tab_ids.button_id(btn=button_enum),

@@ -76,9 +76,6 @@ class TabIds:
     def buttons_horizontal_id(self, area: Area) -> str:
         return f"{self.tab_name}_{area}_horizontal"
 
-    def button_vertical_id(self, btn_enum: OperateBtn | TabBtn) -> str:
-        return f"{self.tab_name}_{btn_enum.name}_vertical"
-
     def buttons_vertical_group_id(self, area: Area) -> str:
         return f"{self.tab_name}_{area}_vertical"
 
