@@ -166,14 +166,14 @@ class TreeName(StrEnum):
 
 
 class ViewName(StrEnum):
-    cat_config = auto()
-    config_ignored = auto()
+    cat_config_view = auto()
+    git_ignored_view = auto()
     contents_view = auto()
-    flow_diagram = auto()
-    doctor = auto()
+    diagram_view = auto()
+    doctor_view = auto()
     diff_view = auto()
     git_log_view = auto()
     init_clone_view = auto()
     init_new_view = auto()
     init_purge_view = auto()
-    template_data = auto()
+    template_data_view = auto()

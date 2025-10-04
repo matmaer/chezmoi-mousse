@@ -291,13 +291,17 @@ class ConfigTab(Horizontal, AppType):
         event.stop()
         switcher = self.query_exactly_one(ConfigTabSwitcher)
         if event.button.id == Id.config.button_id(btn=(NavBtn.doctor)):
-            switcher.current = Id.config.view_id(view=ViewName.doctor)
+            switcher.current = Id.config.view_id(view=ViewName.doctor_view)
         elif event.button.id == Id.config.button_id(btn=(NavBtn.cat_config)):
-            switcher.current = Id.config.view_id(view=ViewName.cat_config)
+            switcher.current = Id.config.view_id(view=ViewName.cat_config_view)
         elif event.button.id == Id.config.button_id(btn=NavBtn.ignored):
-            switcher.current = Id.config.view_id(view=ViewName.config_ignored)
+            switcher.current = Id.config.view_id(
+                view=ViewName.git_ignored_view
+            )
         elif event.button.id == Id.config.button_id(btn=NavBtn.template_data):
-            switcher.current = Id.config.view_id(view=ViewName.template_data)
+            switcher.current = Id.config.view_id(
+                view=ViewName.template_data_view
+            )
 
 
 class HelpTab(Horizontal):
@@ -314,4 +318,4 @@ class HelpTab(Horizontal):
         event.stop()
         switcher = self.query_exactly_one(HelpTabSwitcher)
         if event.button.id == Id.help.button_id(btn=NavBtn.diagram):
-            switcher.current = Id.help.view_id(view=ViewName.flow_diagram)
+            switcher.current = Id.help.view_id(view=ViewName.diagram_view)

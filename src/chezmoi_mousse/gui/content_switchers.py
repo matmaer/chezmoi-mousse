@@ -163,7 +163,7 @@ class ConfigTabSwitcher(ContentSwitcher, AppType):
         self.tab_ids = tab_ids
         super().__init__(
             id=self.tab_ids.content_switcher_id(area=Area.right),
-            initial=self.tab_ids.view_id(view=ViewName.doctor),
+            initial=self.tab_ids.view_id(view=ViewName.doctor_view),
             classes=Tcss.nav_content_switcher.name,
         )
 
@@ -176,7 +176,7 @@ class ConfigTabSwitcher(ContentSwitcher, AppType):
                 classes=Tcss.section_label.name,
             ),
             DoctorListView(),
-            id=self.tab_ids.view_id(view=ViewName.doctor),
+            id=self.tab_ids.view_id(view=ViewName.doctor_view),
             classes=Tcss.doctor_vertical_scroll.name,
         )
         yield Vertical(
@@ -184,17 +184,17 @@ class ConfigTabSwitcher(ContentSwitcher, AppType):
                 '"chezmoi cat-config" output', classes=Tcss.section_label.name
             ),
             Pretty(self.app.chezmoi.read(ReadCmd.cat_config).splitlines()),
-            id=self.tab_ids.view_id(view=ViewName.cat_config),
+            id=self.tab_ids.view_id(view=ViewName.cat_config_view),
         )
         yield Vertical(
             Label('"chezmoi ignored" output', classes=Tcss.section_label.name),
             Pretty(self.app.chezmoi.read(ReadCmd.ignored).splitlines()),
-            id=self.tab_ids.view_id(view=ViewName.config_ignored),
+            id=self.tab_ids.view_id(view=ViewName.git_ignored_view),
         )
         yield Vertical(
             Label('"chezmoi data" output', classes=Tcss.section_label.name),
             Pretty(json.loads(self.app.chezmoi.read(ReadCmd.data))),
-            id=self.tab_ids.view_id(view=ViewName.template_data),
+            id=self.tab_ids.view_id(view=ViewName.template_data_view),
         )
 
 
@@ -235,7 +235,7 @@ class HelpTabSwitcher(ContentSwitcher):
         self.tab_ids = tab_ids
         super().__init__(
             id=self.tab_ids.content_switcher_id(area=Area.right),
-            initial=self.tab_ids.view_id(view=ViewName.flow_diagram),
+            initial=self.tab_ids.view_id(view=ViewName.diagram_view),
             classes=Tcss.nav_content_switcher.name,
         )
 
@@ -244,7 +244,7 @@ class HelpTabSwitcher(ContentSwitcher):
         yield Vertical(
             Label("chezmoi diagram", classes=Tcss.section_label.name),
             Static(self.FLOW_DIAGRAM, classes=Tcss.flow_diagram.name),
-            id=self.tab_ids.view_id(view=ViewName.flow_diagram),
+            id=self.tab_ids.view_id(view=ViewName.diagram_view),
         )
 
 
