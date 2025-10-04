@@ -1,8 +1,5 @@
 import ast
-from enum import StrEnum
 from pathlib import Path
-
-import chezmoi_mousse.id_typing.enums
 
 
 def get_module_paths(
@@ -27,18 +24,24 @@ def get_module_ast_tree(module_path: Path) -> ast.AST:
     return ast.parse(module_path.read_text())
 
 
-def get_str_enum_classes() -> list[type[StrEnum]]:
-    return [
-        cls
-        for cls in chezmoi_mousse.id_typing.enums.__dict__.values()
-        if isinstance(cls, type) and issubclass(cls, StrEnum)
-    ]
+def get_module_ast_class_defs(module_path: Path) -> list[ast.ClassDef]:
+    module_ast_tree = get_module_ast_tree(module_path)
+    class_defs: list[ast.ClassDef] = []
+    for node in ast.walk(module_ast_tree):
+        if isinstance(node, ast.ClassDef):
+            class_defs.append(node)
+    return class_defs
 
 
-def get_modules_importing_class(class_name: str) -> list[Path]:
+def get_modules_importing_class(
+    class_name: str,
+    exclude_paths: list[Path] = [],
+    exclude_id_typing: bool = False,
+) -> list[Path]:
     modules: list[Path] = []
     for module_path in get_module_paths(
-        exclude_paths=[Path("id_typing", "enums.py")]
+        exclude_paths=exclude_paths + exclude_paths,
+        exclude_id_typing=exclude_id_typing,
     ):
         tree = ast.parse(module_path.read_text())
         for node in ast.walk(tree):

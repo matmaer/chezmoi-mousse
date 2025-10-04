@@ -49,7 +49,7 @@ def test_no_orphaned() -> None:
 
 @pytest.mark.parametrize(
     "py_file",
-    get_modules_importing_class(class_name="Tcss"),
+    get_modules_importing_class(class_name="Tcss", exclude_id_typing=True),
     ids=lambda py_file: py_file.name,
 )
 def test_no_hardcoded(py_file: Path) -> None:

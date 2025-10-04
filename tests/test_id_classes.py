@@ -8,6 +8,15 @@ from _test_utils import get_modules_importing_class
 
 import chezmoi_mousse.id_typing as id_classes
 
+# @pytest.mark.parametrize(
+#     "class_name, class_def",
+#     get_module_ast_class_defs(Path("id_typing", "_id_classes.py")),
+#     ids=lambda class_def: class_def.name,
+# )
+# def test_class_members_in_use(class_name: str, class_def: ast.ClassDef):
+#     modules_to_check: set[Path] = set(get_modules_importing_class(class_name))
+#     ...
+
 
 def _get_class_public_members_strings(
     class_object: type,
