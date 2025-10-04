@@ -60,14 +60,11 @@ class Operate(ScreensBase, AppType):
         self.main_operate_btn = self.buttons[0]
         self.path = path
         self.tab_ids = tab_ids
-        self.tab_name = tab_ids.tab_name
         self.reverse: bool = (
-            False if self.tab_name == TabName.apply_tab else True
+            False if self.tab_ids.tab_name == TabName.apply_tab.name else True
         )
         self.operate_dismiss_msg = OperateDismissMsg(
-            path=self.path,
-            operation_executed=False,
-            tab_name=self.tab_ids.tab_name,
+            path=self.path, operation_executed=False
         )
         super().__init__(screen_id=Id.operate_screen.screen_id)
 
@@ -91,8 +88,8 @@ class Operate(ScreensBase, AppType):
         for button in self.query(Button):
             button.disabled = False
         if (
-            self.tab_name == TabName.apply_tab
-            or self.tab_name == TabName.re_add_tab
+            self.tab_ids.tab_name == TabName.apply_tab.name
+            or self.tab_ids.tab_name == TabName.re_add_tab.name
         ) and (
             OperateBtn.apply_file in self.buttons
             or OperateBtn.re_add_file in self.buttons
@@ -182,9 +179,8 @@ class Maximized(ScreensBase):
         self.id_to_maximize = id_to_maximize
         self.path = path
         self.tab_ids = tab_ids
-        self.tab_name = self.tab_ids.tab_name
         self.reverse: bool = (
-            False if self.tab_name == TabName.apply_tab else True
+            False if self.tab_ids.tab_name == TabName.apply_tab.name else True
         )
         super().__init__(screen_id=Id.maximized_screen.screen_id)
 

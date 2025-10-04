@@ -165,12 +165,12 @@ class Chezmoi:
         ]
 
     def files_with_status_in(
-        self, tab_name: TabName, dir_path: Path
+        self, tab_name: str, dir_path: Path
     ) -> list[Path]:
         files_dict: PathDict = {}
-        if tab_name == TabName.apply_tab:
+        if tab_name == TabName.apply_tab.name:
             files_dict = self.apply_files
-        elif tab_name == TabName.re_add_tab:
+        elif tab_name == TabName.re_add_tab.name:
             files_dict = self.re_add_files
         return [
             p
@@ -179,12 +179,12 @@ class Chezmoi:
         ]
 
     def files_without_status_in(
-        self, tab_name: TabName, dir_path: Path
+        self, tab_name: str, dir_path: Path
     ) -> list[Path]:
         files_dict: PathDict = {}
-        if tab_name == TabName.apply_tab:
+        if tab_name == TabName.apply_tab.name:
             files_dict = self.apply_files
-        elif tab_name == TabName.re_add_tab:
+        elif tab_name == TabName.re_add_tab.name:
             files_dict = self.re_add_files
         return [
             p

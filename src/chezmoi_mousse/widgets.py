@@ -177,7 +177,6 @@ class TreeBase(Tree[NodeData], AppType):
         self._first_focus = True
         self._user_interacted = False
         self.node_selected_msg = TreeNodeSelectedMsg()
-        self.tab_name: TabName = tab_ids.tab_name
         self.node_colors: dict[str, str] = {
             "Dir": theme.vars["text-primary"],
             "D": theme.vars["text-error"],
@@ -271,9 +270,9 @@ class TreeBase(Tree[NodeData], AppType):
     # create node data methods
     def create_dir_node_data(self, *, path: Path) -> NodeData:
         status_code: str = ""
-        if self.tab_name == TabName.apply_tab:
+        if self.tab_ids.tab_name == TabName.apply_tab.name:
             status_code: str = self.app.chezmoi.apply_dirs[path]
-        elif self.tab_name == TabName.re_add_tab:
+        elif self.tab_ids.tab_name == TabName.re_add_tab.name:
             status_code: str = self.app.chezmoi.re_add_dirs[path]
         if not status_code:
             status_code = "X"
@@ -284,9 +283,9 @@ class TreeBase(Tree[NodeData], AppType):
 
     def create_file_node_data(self, *, path: Path) -> NodeData:
         status_code: str = ""
-        if self.tab_name == TabName.apply_tab:
+        if self.tab_ids.tab_name == TabName.apply_tab.name:
             status_code: str = self.app.chezmoi.apply_files[path]
-        elif self.tab_name == TabName.re_add_tab:
+        elif self.tab_ids.tab_name == TabName.re_add_tab.name:
             status_code: str = self.app.chezmoi.re_add_files[path]
         if not status_code:
             status_code = "X"
@@ -296,12 +295,12 @@ class TreeBase(Tree[NodeData], AppType):
         )
 
     # node visibility methods
-    def dir_has_status_files(self, tab_name: TabName, dir_path: Path) -> bool:
+    def dir_has_status_files(self, tab_name: str, dir_path: Path) -> bool:
         # checks for any, direct children or no matter how deep in subdirs
         files_dict: PathDict = {}
-        if tab_name == TabName.apply_tab:
+        if tab_name == TabName.apply_tab.name:
             files_dict = self.app.chezmoi.apply_files
-        elif tab_name == TabName.re_add_tab:
+        elif tab_name == TabName.re_add_tab.name:
             files_dict = self.app.chezmoi.re_add_files
 
         return any(
@@ -310,12 +309,12 @@ class TreeBase(Tree[NodeData], AppType):
             if dir_path in f.parents and status != "X"
         )
 
-    def dir_has_status_dirs(self, tab_name: TabName, dir_path: Path) -> bool:
+    def dir_has_status_dirs(self, tab_name: str, dir_path: Path) -> bool:
         # checks for any, direct children or no matter how deep in subdirs
         dirs_dict: PathDict = {}
-        if tab_name == TabName.apply_tab:
+        if tab_name == TabName.apply_tab.name:
             dirs_dict = self.app.chezmoi.apply_dirs
-        elif tab_name == TabName.re_add_tab:
+        elif tab_name == TabName.re_add_tab.name:
             dirs_dict = self.app.chezmoi.re_add_dirs
         if dir_path in dirs_dict and dirs_dict[dir_path] != "X":
             return True
@@ -332,10 +331,10 @@ class TreeBase(Tree[NodeData], AppType):
         if show_unchanged:
             return True
         has_status_files: bool = self.dir_has_status_files(
-            self.tab_name, dir_path
+            self.tab_ids.tab_name, dir_path
         )
         has_status_dirs: bool = self.dir_has_status_dirs(
-            self.tab_name, dir_path
+            self.tab_ids.tab_name, dir_path
         )
         return has_status_files or has_status_dirs
 
@@ -362,7 +361,7 @@ class TreeBase(Tree[NodeData], AppType):
             return
         unchanged_in_dir: list[Path] = (
             self.app.chezmoi.files_without_status_in(
-                self.tab_name, tree_node.data.path
+                self.tab_ids.tab_name, tree_node.data.path
             )
         )
         for file_path in unchanged_in_dir:
@@ -387,7 +386,7 @@ class TreeBase(Tree[NodeData], AppType):
         if tree_node.data is None:
             return
         status_file_paths: list[Path] = self.app.chezmoi.files_with_status_in(
-            self.tab_name, tree_node.data.path
+            self.tab_ids.tab_name, tree_node.data.path
         )
         # get current visible leaves
         current_leaves: list[TreeNode[NodeData]] = [
@@ -628,16 +627,15 @@ class FlatTree(TreeBase, AppType):
 
     def __init__(self, tab_ids: TabIds) -> None:
         self.tab_ids = tab_ids
-        self.tab_name = self.tab_ids.tab_name
         super().__init__(self.tab_ids, tree_name=TreeName.flat_tree)
 
     def refresh_tree_data(self) -> None:
         """Refresh the tree with latest chezmoi data."""
         self.root.remove_children()
         files_dict: PathDict = {}
-        if self.tab_name == TabName.apply_tab:
+        if self.tab_ids.tab_name == TabName.apply_tab.name:
             files_dict = self.app.chezmoi.apply_files
-        elif self.tab_name == TabName.re_add_tab:
+        elif self.tab_ids.tab_name == TabName.re_add_tab.name:
             files_dict = self.app.chezmoi.re_add_files
         for file_path, status in files_dict.items():
             if status != "X":
@@ -647,9 +645,9 @@ class FlatTree(TreeBase, AppType):
 
     def add_all_unchanged_files(self) -> None:
         files_dict: PathDict = {}
-        if self.tab_name == TabName.apply_tab:
+        if self.tab_ids.tab_name == TabName.apply_tab.name:
             files_dict = self.app.chezmoi.apply_files
-        elif self.tab_name == TabName.re_add_tab:
+        elif self.tab_ids.tab_name == TabName.re_add_tab.name:
             files_dict = self.app.chezmoi.re_add_files
         for file_path, status in files_dict.items():
             if status == "X":

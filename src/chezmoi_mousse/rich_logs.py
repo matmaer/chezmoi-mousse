@@ -154,7 +154,9 @@ class DiffView(RichLog, AppType):
         # create a diff view if the current path is a directory
         if self.path in self.status_dirs or self.path == self.app.destDir:
             tab_name = (
-                TabName.re_add_tab if self.reverse else TabName.apply_tab
+                TabName.re_add_tab.name
+                if self.reverse
+                else TabName.apply_tab.name
             )
             status_files_in_dir = self.app.chezmoi.files_with_status_in(
                 tab_name, self.path

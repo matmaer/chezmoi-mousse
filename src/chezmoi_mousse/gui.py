@@ -244,18 +244,18 @@ class ChezmoiGUI(App[None]):
     ) -> bool | None:
         if action == "maximize":
             if self.query_one(TabbedContent).active in (
-                Id.config.tab_pane_id,
-                Id.logs.tab_pane_id,
-                Id.init.tab_pane_id,
+                Id.config.tab_name,
+                Id.logs.tab_name,
+                Id.init.tab_name,
             ):
                 return None
             return True
         elif action == "toggle_switch_slider":
             if self.query_one(TabbedContent).active in (
-                Id.apply.tab_pane_id,
-                Id.re_add.tab_pane_id,
-                Id.add.tab_pane_id,
-                Id.init.tab_pane_id,
+                Id.apply.tab_name,
+                Id.re_add.tab_name,
+                Id.add.tab_name,
+                Id.init.tab_name,
             ):
                 return True
             return None

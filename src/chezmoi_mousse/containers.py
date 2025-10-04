@@ -36,7 +36,6 @@ class OperateTabsBase(Horizontal, AppType):
     def __init__(self, *, tab_ids: TabIds) -> None:
         self.current_path: Path | None = None
         self.tab_ids = tab_ids
-        self.tab_name = self.tab_ids.tab_name
         super().__init__(id=self.tab_ids.tab_container_id)
         self.diff_tab_btn = tab_ids.button_id(btn=TabBtn.diff)
         self.contents_tab_btn = tab_ids.button_id(btn=TabBtn.contents)

@@ -3,12 +3,7 @@ from pathlib import Path
 from textual.message import Message
 
 from chezmoi_mousse.id_typing import NodeData
-from chezmoi_mousse.id_typing.enums import (
-    OperateBtn,
-    OperateHelp,
-    TabName,
-    TreeName,
-)
+from chezmoi_mousse.id_typing.enums import OperateBtn, OperateHelp, TreeName
 
 
 class OperateDismissMsg(Message):
@@ -18,13 +13,11 @@ class OperateDismissMsg(Message):
         found: bool | None = None,
         operation_executed: bool | None = None,
         path: Path | None = None,
-        tab_name: TabName | None = None,
     ) -> None:
         self.button_name = button_name
         self.found = found
         self.operation_executed = operation_executed
         self.path = path
-        self.tab_name = tab_name
         super().__init__()
 
 
@@ -47,11 +40,6 @@ class TreeNodeSelectedMsg(Message):
 
 class OperateBtnPressedMsg(Message):
 
-    def __init__(
-        self,
-        tab_name: TabName | None = None,
-        operate_help: OperateHelp | None = None,
-    ) -> None:
-        self.tab_name = tab_name
+    def __init__(self, operate_help: OperateHelp | None = None) -> None:
         self.operate_help = operate_help
         super().__init__()
