@@ -102,9 +102,16 @@ class Chezmoi:
         command: list[str] = read_cmd.value
         if path is not None:
             command: list[str] = command + [str(path)]
-        # CompletedProcess type arg is str as we use text=True
+        if read_cmd == ReadCmd.doctor:
+            time_out = 3
+        else:
+            time_out = 1
         result: CompletedProcess[str] = run(
-            command, capture_output=True, shell=False, text=True, timeout=1
+            command,
+            capture_output=True,
+            shell=False,
+            text=True,
+            timeout=time_out,
         )
         self._log_in_app_and_output_log(result)
         return self._strip_stdout(result.stdout)
