@@ -3,11 +3,8 @@ from enum import Enum
 __all__ = ["GlobalCmd", "VerbArgs", "ReadVerbs", "ReadCmd", "ChangeCmd"]
 
 
-CHEZMOI_CMD = "chezmoi"
-
-
 class GlobalCmd(Enum):
-    chezmoi = [CHEZMOI_CMD]
+    chezmoi = ["chezmoi"]
     default_args = [
         "--color=off",
         "--force",
