@@ -118,8 +118,6 @@ class AppLog(CommandLogBase, AppType):
         self.succes_no_output = f"{success}, no output"
         self.success_with_output = f"{success}, output processed in UI"
 
-    # def update_debug_log(self, log_message: str) -> None:
-    #     self.write(log_message)
     def completed_process(
         self, completed_process: CompletedProcess[str]
     ) -> None:
@@ -188,16 +186,15 @@ class DebugLog(CommandLogBase, AppType):
         self.dimmed(", ".join(members))
 
 
-class OutputLog(CommandLogBase):
+class OutputLog(CommandLogBase, AppType):
 
     def __init__(self) -> None:
         super().__init__(
-            id=LogName.output_log.name, markup=True, max_lines=10000
+            id=LogName.output_log.name,
+            markup=True,
+            max_lines=10000,
+            classes=Tcss.log_views,
         )
-
-    def on_mount(self) -> None:
-        self.add_class(Tcss.log_views)
-        self.ready_to_run("Output log ready to capture logs.")
 
     def completed_process(
         self, completed_process: CompletedProcess[str]
@@ -213,3 +210,6 @@ class OutputLog(CommandLogBase):
             self.error("failed, stderr:")
             self.dimmed(f"{completed_process.stderr}")
         self.refresh()
+
+    def on_mount(self) -> None:
+        self.app.chezmoi.output_log = self.completed_process

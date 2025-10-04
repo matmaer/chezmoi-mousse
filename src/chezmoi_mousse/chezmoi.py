@@ -11,7 +11,6 @@ from typing import Literal
 
 from chezmoi_mousse.id_typing import ParsedJson, PathDict, SplashReturnData
 from chezmoi_mousse.id_typing.enums import TabName
-from chezmoi_mousse.logs_tab import OutputLog
 
 # TODO: implement 'chezmoi verify', if exit 0, display message in Tree
 # widgets inform the user why the Tree widget is empty
@@ -155,7 +154,7 @@ class ManagedStatus:
 
 
 # app_log = AppLog()
-output_log = OutputLog()
+# output_log = OutputLog()
 
 
 class Chezmoi:
@@ -164,8 +163,9 @@ class Chezmoi:
         # will send string to callback, not list of strings, it's just the Callable signature
         self.debug_log: Callable[[str], None] | None = None
         self.app_log: Callable[[CompletedProcess[str]], None] | None = None
+        self.output_log: Callable[[CompletedProcess[str]], None] | None = None
         # self.app_log = app_log
-        self.output_log = output_log
+        # self.output_log = output_log
 
         self.chezmoi_found = (
             which(CHEZMOI_CMD) is not None
@@ -243,7 +243,8 @@ class Chezmoi:
         result.stdout = self._strip_stdout(result.stdout)
         if self.app_log is not None:
             self.app_log(result)
-        self.output_log.completed_process(result)
+        if self.output_log is not None:
+            self.output_log(result)
 
     def read(self, read_cmd: ReadCmd, path: Path | None = None) -> str:
         command: list[str] = read_cmd.value
