@@ -6,10 +6,12 @@ from pathlib import Path
 
 from textual.theme import Theme
 
+from chezmoi_mousse import Chezmoi
 from chezmoi_mousse.gui.app import ChezmoiGUI, PreRunData
 
 
 def run_app():
+
     chezmoi_mousse_dark = Theme(
         name="chezmoi-mousse-dark",
         dark=True,
@@ -44,7 +46,10 @@ def run_app():
     home_dir: Path = Path.home()
     temp_dir = Path(tempfile.gettempdir())
 
+    chezmoi_instance = Chezmoi(changes_enabled=changes_enabled)
+
     pre_run_data = PreRunData(
+        chezmoi_instance=chezmoi_instance,
         chezmoi_mousse_dark=chezmoi_mousse_dark,
         chezmoi_mousse_light=chezmoi_mousse_light,
         custom_theme_vars=custom_theme_vars,

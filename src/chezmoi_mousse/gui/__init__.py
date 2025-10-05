@@ -2,17 +2,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from chezmoi_mousse.gui._id_classes import Id, ScreenIds, Switches, TabIds
-
-__all__ = [
-    "AppType",
-    "Id",
-    "NodeData",
-    "ScreenIds",
-    "SplashReturnData",
-    "Switches",
-    "TabIds",
-]
+__all__ = ["AppType", "NodeData", "SplashReturnData"]
 
 if TYPE_CHECKING:
     from chezmoi_mousse.gui.app import ChezmoiGUI
