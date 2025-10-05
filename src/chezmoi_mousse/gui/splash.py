@@ -1,8 +1,5 @@
 from collections import deque
 from dataclasses import fields
-from json import loads
-from pathlib import Path
-from threading import Lock
 from time import sleep
 
 from rich.segment import Segment
@@ -18,9 +15,8 @@ from textual.timer import Timer
 from textual.widgets import RichLog, Static
 from textual.worker import WorkerState
 
-from chezmoi_mousse import ReadCmd, SplashReturnData, VerbArgs
-from chezmoi_mousse.gui import AppType
-from chezmoi_mousse.gui.custom_theme import custom_vars
+from chezmoi_mousse import ReadCmd, VerbArgs
+from chezmoi_mousse.gui import AppType, SplashReturnData
 from chezmoi_mousse.gui.rich_logs import AppLog
 
 __all__ = ["LoadingScreen"]
@@ -80,22 +76,25 @@ class AnimatedFade(Static):
         gradient.colors.reverse()
         fade.extend([color.hex for color in gradient.colors])
 
-        line_styles = deque([Style(color=color, bold=True) for color in fade])
+        line_styles = deque(
+            [Style(color=color, bgcolor="black", bold=True) for color in fade]
+        )
         return line_styles
+
+
+dir_status_lines: str = ""
+doctor: str = ""
+dump_config: str = ""
+file_status_lines: str = ""
+managed_dirs: str = ""
+managed_files: str = ""
 
 
 class LoadingScreen(Screen[SplashReturnData], AppType):
 
-    def __init__(self) -> None:
-        self.splash_return_data = SplashReturnData(
-            doctor="",
-            dir_status_lines="",
-            file_status_lines="",
-            managed_dirs="",
-            managed_files="",
-        )
-        self.data_lock = Lock()  # Add thread lock
-        self.rich_log = SplashLog()
+    def __init__(self, chezmoi_found: bool) -> None:
+        self.chezmoi_found = chezmoi_found
+
         super().__init__()
 
         # TODO add logic so screen does not get dismissed in the "middle" of a
@@ -104,44 +103,38 @@ class LoadingScreen(Screen[SplashReturnData], AppType):
         self.all_workers_timer: Timer
 
     def compose(self) -> ComposeResult:
-        yield Middle(Center(AnimatedFade()), Center(self.rich_log))
+        yield Middle(Center(AnimatedFade()), Center(SplashLog()))
 
     def update_and_log(self, field_name: str, cmd_output: str) -> None:
-        command_value = getattr(ReadCmd, field_name).value
-        cmd_text = "cmd from splash screen"
-        cmd_text = (
-            AppLog.pretty_cmd_str(command_value)
-            .replace(VerbArgs.include_dirs.value, "dirs")
-            .replace(VerbArgs.include_files.value, "files")
-        )
-        padding = LOG_PADDING_WIDTH - len(cmd_text)
-        log_text = f"{cmd_text} {'.' * padding} loaded"
+        # log_text = "something went wrong"
+        if not self.chezmoi_found:
+            cmd_text = "chezmoi command"
+            self.log_text_suffix = "not found"
+            padding = LOG_PADDING_WIDTH - len(cmd_text)
+            log_text = f"{cmd_text} {'.' * padding} not found"
+        else:
+            command_value = getattr(ReadCmd, field_name).value
+            cmd_text = (
+                AppLog.pretty_cmd_str(command_value)
+                .replace(VerbArgs.include_dirs.value, "dirs")
+                .replace(VerbArgs.include_files.value, "files")
+            )
+            padding = LOG_PADDING_WIDTH - len(cmd_text)
 
-        def update_log():
-            self.rich_log.write(log_text)
+            log_text = f"{cmd_text} {'.' * padding} loaded"
 
-        def update_data():
-            with self.data_lock:  # Thread-safe update
-                setattr(self.splash_return_data, field_name, cmd_output)
+        def update_log() -> None:
+            splash_log = self.query_exactly_one(SplashLog)
+            splash_log.write(log_text)
 
         self.app.call_from_thread(update_log)
-        update_data()  # Call directly since it's now thread-safe
-
-    @work(thread=True, group="io_workers")
-    def log_unavailable_chezmoi_command(self) -> None:
-        message = "chezmoi command ................. not found"
-        color = custom_vars["text-primary"]
-        self.rich_log.styles.margin = 1
-        self.rich_log.markup = True
-        self.rich_log.styles.width = len(message) + 2
-        self.rich_log.write(f"[{color}]{message}[/]")
-        sleep(0.5)
 
     @work(thread=True, group="io_workers")
     def run_read_cmd(self, field_name: str) -> None:
 
         command_to_run = getattr(ReadCmd, field_name)
         cmd_output = self.app.chezmoi.read(command_to_run)
+        globals()[field_name] = cmd_output
 
         self.update_and_log(field_name, cmd_output)
 
@@ -151,18 +144,22 @@ class LoadingScreen(Screen[SplashReturnData], AppType):
             for worker in self.app.workers
             if worker.group == "io_workers"
         ):
-            self.dismiss(self.splash_return_data)
+            if self.chezmoi_found is False:
+                # prevent screen dismissal too quickly
+                sleep(0.5)
+                self.dismiss(None)
+                return
 
-    @work(thread=True, group="config_loader")
-    def load_config_dump(self) -> None:
-        std_out = self.app.chezmoi.read(ReadCmd.dump_config)
-        config_dump = loads(std_out)
-        if config_dump is not None:
-            self.app.destDir = Path(config_dump["destDir"])
-            self.app.sourceDir = Path(config_dump["sourceDir"])
-            self.app.git_autoadd = config_dump["git"]["autoadd"]
-            self.app.git_autocommit = config_dump["git"]["autocommit"]
-            self.app.git_autopush = config_dump["git"]["autopush"]
+            self.dismiss(
+                SplashReturnData(
+                    dir_status_lines=globals()["dir_status_lines"],
+                    doctor=globals()["doctor"],
+                    dump_config=globals()["dump_config"],
+                    file_status_lines=globals()["file_status_lines"],
+                    managed_dirs=globals()["managed_dirs"],
+                    managed_files=globals()["managed_files"],
+                )
+            )
 
     def on_mount(self) -> None:
 
@@ -173,12 +170,14 @@ class LoadingScreen(Screen[SplashReturnData], AppType):
         self.fade_timer = self.set_interval(
             interval=0.05, callback=animated_fade.refresh
         )
+        splash_log = self.query_exactly_one(SplashLog)
 
-        if not self.app.chezmoi_found:
-            self.log_unavailable_chezmoi_command()
+        if not self.chezmoi_found:
+            splash_log.styles.height = 3
+            self.update_and_log("", "")
             return
 
         field_names = [field.name for field in fields(SplashReturnData)]
-        self.rich_log.styles.height = len(field_names) + 2
+        splash_log.styles.height = len(field_names) + 2
         for field_name in field_names:
             self.run_read_cmd(field_name)

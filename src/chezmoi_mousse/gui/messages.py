@@ -2,7 +2,8 @@ from pathlib import Path
 
 from textual.message import Message
 
-from chezmoi_mousse import NodeData, OperateBtn, OperateHelp, TreeName
+from chezmoi_mousse import OperateBtn, OperateHelp, TreeName
+from chezmoi_mousse.gui import NodeData
 
 __all__ = ["OperateDismissMsg", "TreeNodeSelectedMsg", "OperateBtnPressedMsg"]
 

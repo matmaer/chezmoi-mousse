@@ -14,8 +14,8 @@ from textual.widgets import (
 
 from chezmoi_mousse import Area, OperateBtn, Tcss, TreeName, ViewName
 from chezmoi_mousse.gui import AppType, TabIds
-from chezmoi_mousse.gui._chezmoi import ReadCmd
 from chezmoi_mousse.gui.button_groups import OperateBtnHorizontal
+from chezmoi_mousse.gui.chezmoi import ReadCmd
 from chezmoi_mousse.gui.rich_logs import (
     AppLog,
     ContentsView,
@@ -80,6 +80,13 @@ class ViewSwitcher(ContentSwitcher, AppType):
         yield GitLogView(tab_ids=self.tab_ids)
 
     def on_mount(self) -> None:
+        git_log_view = self.query_one(GitLogView)
+        git_log_view.row_styles = {
+            "ok": self.app.custom_theme_vars["text-success"],
+            "warning": self.app.custom_theme_vars["text-warning"],
+            "error": self.app.custom_theme_vars["text-error"],
+        }
+
         self.border_title = str(self.app.destDir)
         self.add_class(Tcss.border_title_top.name)
 
@@ -183,18 +190,37 @@ class ConfigTabSwitcher(ContentSwitcher, AppType):
             Label(
                 '"chezmoi cat-config" output', classes=Tcss.section_label.name
             ),
-            Pretty(self.app.chezmoi.read(ReadCmd.cat_config).splitlines()),
+            Pretty("<cat-config>", id=ViewName.pretty_cat_config_view),
             id=self.tab_ids.view_id(view=ViewName.cat_config_view),
         )
         yield Vertical(
             Label('"chezmoi ignored" output', classes=Tcss.section_label.name),
-            Pretty(self.app.chezmoi.read(ReadCmd.ignored).splitlines()),
+            Pretty("<ignored>", id=ViewName.pretty_ignored_view),
             id=self.tab_ids.view_id(view=ViewName.git_ignored_view),
         )
         yield Vertical(
             Label('"chezmoi data" output', classes=Tcss.section_label.name),
-            Pretty(json.loads(self.app.chezmoi.read(ReadCmd.data))),
-            id=self.tab_ids.view_id(view=ViewName.template_data_view),
+            Pretty("<template_data>", id=ViewName.pretty_template_data_view),
+        )
+
+    def on_mount(self) -> None:
+        pretty_cat_config = self.query_one(
+            f"#{ViewName.pretty_cat_config_view}", Pretty
+        )
+        pretty_cat_config.update(
+            self.app.chezmoi.read(ReadCmd.cat_config).splitlines()
+        )
+        pretty_ignored = self.query_one(
+            f"#{ViewName.pretty_ignored_view}", Pretty
+        )
+        pretty_ignored.update(
+            self.app.chezmoi.read(ReadCmd.ignored).splitlines()
+        )
+        pretty_template_data = self.query_one(
+            f"#{ViewName.pretty_template_data_view}", Pretty
+        )
+        pretty_template_data.update(
+            json.loads(self.app.chezmoi.read(ReadCmd.data))
         )
 
 

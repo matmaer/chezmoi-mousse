@@ -30,7 +30,6 @@ from chezmoi_mousse import (
     ViewName,
 )
 from chezmoi_mousse.gui import AppType, ScreenIds, TabIds
-from chezmoi_mousse.gui.custom_theme import custom_vars
 
 __all__ = ["AppLog", "DebugLog", "OutputLog", "ContentsView", "DiffView"]
 
@@ -117,6 +116,7 @@ class ContentsView(RichLog, AppType):
 
 class DiffView(RichLog, AppType):
 
+    # TODO: RULES violation
     path: reactive[Path | None] = reactive(None, init=False)
 
     def __init__(self, *, tab_ids: TabIds | ScreenIds, reverse: bool) -> None:
@@ -134,10 +134,10 @@ class DiffView(RichLog, AppType):
         self.highlight = True
         self.write(Text("Click a file to see the diff.\n", style="dim"))
         self.write("Current directory:")
-        self.write(f"{self.app.destDir}")
+        self.write(f"{self.path}")
         self.write(Text("(destDir)\n", style="dim"))
         self.write("Source directory:")
-        self.write(f"{self.app.sourceDir}")
+        self.write(f"{self.path}")
         self.write(Text("(sourceDir)", style="dim"))
 
     def watch_path(self) -> None:
@@ -175,7 +175,10 @@ class DiffView(RichLog, AppType):
                 self.write(Text("Files in directory with changed status:"))
                 for file_path in status_files_in_dir:
                     self.write(
-                        Text(f"{file_path}", custom_vars["text-accent"])
+                        Text(
+                            f"{file_path}",
+                            self.app.custom_theme_vars["text-accent"],
+                        )
                     )
                 return
             return
@@ -215,9 +218,13 @@ class DiffView(RichLog, AppType):
         for line in diff_lines:
             line = line.rstrip("\n")
             if line.startswith("-"):
-                self.write(Text(line, custom_vars["text-error"]))
+                self.write(
+                    Text(line, self.app.custom_theme_vars["text-error"])
+                )
             elif line.startswith("+"):
-                self.write(Text(line, custom_vars["text-success"]))
+                self.write(
+                    Text(line, self.app.custom_theme_vars["text-success"])
+                )
             elif line.startswith("old mode"):
                 self.write("Permissions/mode will be changed:")
                 self.write(f" {Chars.bullet} {line}")
@@ -227,7 +234,7 @@ class DiffView(RichLog, AppType):
                 self.write(Text(Chars.bullet + line, style="dim"))
 
 
-class CommandLogBase(RichLog):
+class CommandLogBase(RichLog, AppType):
 
     def _log_time(self) -> str:
         return f"[[green]{datetime.now().strftime('%H:%M:%S')}[/]]"
@@ -252,35 +259,35 @@ class CommandLogBase(RichLog):
     def _log_command(self, command: list[str]) -> None:
         trimmed_cmd = self.pretty_cmd_str(command)
         time = self._log_time()
-        color = custom_vars["primary-lighten-3"]
+        color = self.app.custom_theme_vars["primary-lighten-3"]
         log_line = f"{time} [{color}]{trimmed_cmd}[/]"
         self.write(log_line)
 
     def error(self, message: str) -> None:
-        color = custom_vars["text-error"]
+        color = self.app.custom_theme_vars["text-error"]
         time = self._log_time()
         self.write(f"{time} [{color}]{message}[/]")
 
     def warning(self, message: str) -> None:
         lines = message.splitlines()
-        color = custom_vars["text-warning"]
+        color = self.app.custom_theme_vars["text-warning"]
         for line in [line for line in lines if line.strip()]:
             escaped_line = escape(line)
             self.write(f"{self._log_time()} [{color}]{escaped_line}[/]")
 
     def success(self, message: str) -> None:
-        color = custom_vars["text-success"]
+        color = self.app.custom_theme_vars["text-success"]
         self.write(f"{self._log_time()} [{color}]{message}[/]")
 
     def ready_to_run(self, message: str) -> None:
-        color = custom_vars["accent-darken-3"]
+        color = self.app.custom_theme_vars["accent-darken-3"]
         self.write(f"{self._log_time()} [{color}]{message}[/]")
 
     def dimmed(self, message: str) -> None:
         if message.strip() == "":
             return
         lines: list[str] = message.splitlines()
-        color = custom_vars["text-disabled"]
+        color = self.app.custom_theme_vars["text-disabled"]
         for line in lines:
             if line.strip():
                 escaped_line = escape(line)
@@ -343,7 +350,7 @@ class DebugLog(CommandLogBase, AppType):
         self.app.chezmoi.debug_log = self.completed_process
 
     def mro(self, mro: Mro) -> None:
-        color = custom_vars["accent-darken-2"]
+        color = self.app.custom_theme_vars["accent-darken-2"]
         self.write(f"{self._log_time()} [{color}]Method Resolution Order:[/]")
 
         exclude = {

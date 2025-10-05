@@ -4,14 +4,8 @@ from pathlib import Path
 from subprocess import CompletedProcess, run
 from typing import Literal
 
-from chezmoi_mousse import (
-    ChangeCmd,
-    GlobalCmd,
-    PaneBtn,
-    PathDict,
-    ReadCmd,
-    SplashReturnData,
-)
+from chezmoi_mousse import ChangeCmd, GlobalCmd, PaneBtn, PathDict, ReadCmd
+from chezmoi_mousse.gui import SplashReturnData
 
 # TODO: implement 'chezmoi verify', if exit 0, display message in Tree
 # widgets inform the user why the Tree widget is empty

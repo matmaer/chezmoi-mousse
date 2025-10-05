@@ -1,13 +1,19 @@
-"""Contains classes used as widgets by the main_tabs.py module.
+"""Contains classes which inherit from textual widgets."""
 
-These classes
-- inherit directly from built in textual widgets
-- are not containers, but can be focussable or not
-- don't override the parents' compose method
-- don't call any query methods
-- don't import from main_tabs.py, gui.py or containers.py modules
-- don't have key bindings
-"""
+# RULES: These classes
+# - inherit directly from built in textual widgets
+# - are not containers, but can be focussable or not
+# - don't override the parents' compose method
+# - don't call any query methods
+# - don't import from main_tabs.py, gui.py or containers.py modules
+# - don't have key bindings
+# - don't access any self.app in their __init__ method
+# - don't access self.app attributes in their on_mount method which are updated after the loading screen completes in the App class on_mount method
+# don't init any textual classes in the __init__  or on_mount method
+
+# TODO: consider base classes which are reused in multiple places and
+# other classes which are only used in one place, and handle reactive vars accordingly, and update the RULES above. They can be set multiple times in different places, which should be avoided.
+
 
 from collections.abc import Iterable
 from dataclasses import dataclass
@@ -25,7 +31,6 @@ from textual.widgets.tree import TreeNode
 
 from chezmoi_mousse import (
     Chars,
-    NodeData,
     OperateBtn,
     OperateHelp,
     PaneBtn,
@@ -35,8 +40,7 @@ from chezmoi_mousse import (
     TreeName,
     ViewName,
 )
-from chezmoi_mousse.gui import AppType, Id, ScreenIds, TabIds
-from chezmoi_mousse.gui.custom_theme import custom_vars
+from chezmoi_mousse.gui import AppType, Id, NodeData, ScreenIds, TabIds
 from chezmoi_mousse.gui.messages import TreeNodeSelectedMsg
 
 __all__ = [
@@ -51,14 +55,11 @@ __all__ = [
 
 class OperateInfo(Static, AppType):
 
-    def __init__(self, *, operate_btn: OperateBtn, path: Path) -> None:
+    def __init__(self, *, operate_btn: OperateBtn) -> None:
         super().__init__(classes=Tcss.operate_info.name)
-
         self.operate_btn = operate_btn
-        self.path = Path()
 
     def on_mount(self) -> None:
-        self.border_title = str(self.path)
         lines_to_write: list[str] = []
 
         # show command help and set the subtitle
@@ -78,6 +79,7 @@ class OperateInfo(Static, AppType):
             lines_to_write.extend(OperateHelp.destroy_file.value)
             self.border_subtitle = Chars.destroy_file_info_border
         # show git auto warnings
+        # TODO: RULES violation, accesses self.app.git_autocommit and self.app.git_autopush
         if not OperateBtn.apply_file == self.operate_btn:
             if self.app.git_autocommit:
                 lines_to_write.append(OperateHelp.auto_commit.value)
@@ -94,17 +96,15 @@ class OperateInfo(Static, AppType):
 
 class GitLogView(DataTable[Text], AppType):
 
+    # TODO: RULES violation
     path: reactive[Path | None] = reactive(None, init=False)
 
     # TODO: implement footer binding to toggle text wrap in second column of the datatable
 
     def __init__(self, *, tab_ids: TabIds | ScreenIds) -> None:
         self.tab_ids = tab_ids
-        self.row_styles = {
-            "ok": custom_vars["text-success"],
-            "warning": custom_vars["text-warning"],
-            "error": custom_vars["text-error"],
-        }
+        # TODO: handle this in a better way
+        self.row_styles = {"ok": "green", "warning": "yellow", "error": "red"}
         super().__init__(
             id=self.tab_ids.view_id(view=ViewName.git_log_view),
             show_cursor=False,
@@ -141,9 +141,9 @@ class GitLogView(DataTable[Text], AppType):
         self.clear(columns=True)
         self.add_columns("COMMIT", "MESSAGE")
         styles = {
-            "ok": custom_vars["text-success"],
-            "warning": custom_vars["text-warning"],
-            "error": custom_vars["text-error"],
+            "ok": self.app.custom_theme_vars["text-success"],
+            "warning": self.app.custom_theme_vars["text-warning"],
+            "error": self.app.custom_theme_vars["text-error"],
         }
         for line in cmd_output.splitlines():
             columns = line.split(";")
@@ -157,6 +157,7 @@ class GitLogView(DataTable[Text], AppType):
                 self.add_row(*(Text(cell) for cell in columns))
 
     def watch_path(self) -> None:
+        # TODO: RULES violation, accesses self.app.destDir
         if self.path is None:
             return
         if self.path == self.app.destDir:
@@ -180,37 +181,35 @@ class TreeBase(Tree[NodeData], AppType):
         self._initial_render = True
         self._first_focus = True
         self._user_interacted = False
-        self.node_selected_msg = TreeNodeSelectedMsg()
-        self.node_colors: dict[str, str] = {
-            "Dir": custom_vars["text-primary"],
-            "D": custom_vars["text-error"],
-            "A": custom_vars["text-success"],
-            "M": custom_vars["text-warning"],
-            # Root node, invisible but needed because render_label override
-            # Use "F" for fake, as R is in use by chezmoi for Run
-            "F": custom_vars["text-primary"],
-        }
-        # Initialize with a placeholder path, will be set properly in on_mount
-        root_node_data = NodeData(
-            path=Path("."), is_dir=True, found=True, status="F"
-        )
         super().__init__(
-            label="root",
-            data=root_node_data,
-            id=self.tab_ids.tree_id(tree=self.tree_name),
+            label="root", id=self.tab_ids.tree_id(tree=self.tree_name)
         )
 
     def on_mount(self) -> None:
+        self.node_colors: dict[str, str] = {
+            "Dir": self.app.custom_theme_vars["text-primary"],
+            "D": self.app.custom_theme_vars["text-error"],
+            "A": self.app.custom_theme_vars["text-success"],
+            "M": self.app.custom_theme_vars["text-warning"],
+            # Root node, invisible but needed because render_label override
+            # Use "F" for fake, as R is in use by chezmoi for Run
+            "F": self.app.custom_theme_vars["text-primary"],
+        }
         self.guide_depth: int = 3
         self.show_root: bool = False
         self.add_class(Tcss.tree_widget.name)
-        if self.root.data:
-            self.root.data.path = self.app.destDir
 
     @on(Tree.NodeSelected)
     def send_node_context_message(
         self, event: Tree.NodeSelected[NodeData]
     ) -> None:
+        if event.node.data is not None and event.node.data.path == Path(
+            "/home/mm/"
+        ):
+            self.notify("Tree.NodeSelected /home/mm/", severity="error")
+            print(
+                "Root node selected, solve issue as it depends on self.app.destDir"
+            )
         if event.node == self.root:
             return
         if (
@@ -260,6 +259,11 @@ class TreeBase(Tree[NodeData], AppType):
 
     # the styling method for the node labels
     def style_label(self, node_data: NodeData) -> Text:
+        if node_data.path == Path("/home/mm/"):
+            self.notify(
+                "TreeBase.style_label tries to style the root node",
+                severity="error",
+            )
         italic: bool = False if node_data.found else True
         if node_data.status != "X":
             styled = Style(
@@ -273,6 +277,11 @@ class TreeBase(Tree[NodeData], AppType):
 
     # create node data methods
     def create_dir_node_data(self, *, path: Path) -> NodeData:
+        if path == Path("/home/mm/"):
+            self.notify(
+                "TreeBase.create_dir_node_data is accessing the root node",
+                severity="warning",
+            )
         status_code: str = ""
         if self.tab_ids.tab_name == PaneBtn.apply_tab.name:
             status_code: str = self.app.chezmoi.apply_dirs[path]
@@ -300,6 +309,11 @@ class TreeBase(Tree[NodeData], AppType):
 
     # node visibility methods
     def dir_has_status_files(self, tab_name: str, dir_path: Path) -> bool:
+        if dir_path == Path("/home/mm/"):
+            self.notify(
+                "TreeBase.dir_has_status_files is accessing the root node",
+                severity="warning",
+            )
         # checks for any, direct children or no matter how deep in subdirs
         files_dict: PathDict = {}
         if tab_name == PaneBtn.apply_tab.name:
@@ -314,6 +328,11 @@ class TreeBase(Tree[NodeData], AppType):
         )
 
     def dir_has_status_dirs(self, tab_name: str, dir_path: Path) -> bool:
+        if dir_path == Path("/home/mm/"):
+            self.notify(
+                "TreeBase.dir_has_status_dirs is accessing the root node",
+                severity="warning",
+            )
         # checks for any, direct children or no matter how deep in subdirs
         dirs_dict: PathDict = {}
         if tab_name == PaneBtn.apply_tab.name:
@@ -532,6 +551,7 @@ class TreeBase(Tree[NodeData], AppType):
 
 class ManagedTree(TreeBase):
 
+    # TODO: RULES violation, reactive var in base class
     unchanged: reactive[bool] = reactive(False, init=False)
 
     def __init__(self, *, tab_ids: TabIds) -> None:
@@ -539,6 +559,7 @@ class ManagedTree(TreeBase):
         super().__init__(self.tab_ids, tree_name=TreeName.managed_tree)
 
     def refresh_tree_data(self) -> None:
+        # TODO: check if still needed after RULES fixes
         """Refresh the tree with latest chezmoi data."""
         self.root.remove_children()
         self.add_dir_nodes(tree_node=self.root, show_unchanged=self.unchanged)
@@ -548,6 +569,7 @@ class ManagedTree(TreeBase):
     def update_node_children(
         self, event: TreeBase.NodeExpanded[NodeData]
     ) -> None:
+        # TODO: check if this runs during init or on_mount for the root node
         self.add_dir_nodes(tree_node=event.node, show_unchanged=self.unchanged)
         self.add_status_leaves(tree_node=event.node)
         if self.unchanged:
@@ -577,6 +599,7 @@ class ManagedTree(TreeBase):
 
 class ExpandedTree(TreeBase):
 
+    # TODO: RULES violation, reactive var in base class
     unchanged: reactive[bool] = reactive(False, init=False)
 
     def __init__(self, tab_ids: TabIds) -> None:
@@ -627,6 +650,7 @@ class ExpandedTree(TreeBase):
 
 class FlatTree(TreeBase, AppType):
 
+    # TODO: RULES violation, reactive var in base class
     unchanged: reactive[bool] = reactive(False, init=False)
 
     def __init__(self, tab_ids: TabIds) -> None:
@@ -669,16 +693,9 @@ class FlatTree(TreeBase, AppType):
             self.remove_flat_leaves()
 
 
-class DoctorTable(DataTable[Text]):
+class DoctorTable(DataTable[Text], AppType):
 
     def __init__(self) -> None:
-        self.dr_style = {
-            "ok": custom_vars["text-success"],
-            "info": custom_vars["foreground-darken-1"],
-            "warning": custom_vars["text-warning"],
-            "failed": custom_vars["text-error"],
-            "error": custom_vars["text-error"],
-        }
         self.pw_mgr_commands: list[str] = []
         super().__init__(
             id=Id.config.datatable_id,
@@ -687,6 +704,14 @@ class DoctorTable(DataTable[Text]):
         )
 
     def populate_doctor_data(self, doctor_data: list[str]) -> list[str]:
+        # TODO: create reactive var to run this so the app reacts on chezmoi config changes while running
+        self.dr_style = {
+            "ok": self.app.custom_theme_vars["text-success"],
+            "info": self.app.custom_theme_vars["foreground-darken-1"],
+            "warning": self.app.custom_theme_vars["text-warning"],
+            "failed": self.app.custom_theme_vars["text-error"],
+            "error": self.app.custom_theme_vars["text-error"],
+        }
 
         if not self.columns:
             self.add_columns(*doctor_data[0].split())

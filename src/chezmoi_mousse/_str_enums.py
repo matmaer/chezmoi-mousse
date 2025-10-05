@@ -177,3 +177,6 @@ class ViewName(StrEnum):
     init_new_view = auto()
     init_purge_view = auto()
     template_data_view = auto()
+    pretty_cat_config_view = auto()
+    pretty_ignored_view = auto()
+    pretty_template_data_view = auto()

@@ -75,7 +75,7 @@ class Operate(ScreensBase, AppType):
         super().__init__(screen_id=Id.operate_screen.screen_id)
 
     def compose(self) -> ComposeResult:
-        yield OperateInfo(operate_btn=self.main_operate_btn, path=self.path)
+        yield OperateInfo(operate_btn=self.main_operate_btn)
         if (
             OperateBtn.apply_file == self.main_operate_btn
             or OperateBtn.re_add_file == self.main_operate_btn
@@ -91,6 +91,15 @@ class Operate(ScreensBase, AppType):
         self.app.notify(f"Path is {self.path}")
         self.add_class(Tcss.operate_screen.name)
         self.border_subtitle = Id.operate_screen.border_subtitle()
+        # Update the OperateInfo top border title
+        operate_info = self.query_exactly_one(OperateInfo)
+        operate_info.border_title = (
+            f" {self.path.relative_to(self.app.destDir)} "
+        )
+        # Set path for the screen diff view
+        diff_view = self.query_one(
+            Id.operate_screen.view_id("#", view=ViewName.diff_view), DiffView
+        )
         for button in self.query(Button):
             button.disabled = False
         if (
@@ -100,17 +109,14 @@ class Operate(ScreensBase, AppType):
             OperateBtn.apply_file in self.buttons
             or OperateBtn.re_add_file in self.buttons
         ):
-            # Set path for the screen diff view
-            self.query_one(
-                Id.operate_screen.view_id("#", view=ViewName.diff_view),
-                DiffView,
-            ).path = self.path
+            diff_view.path = self.path
         else:
             # Set path for the screen contents view
-            self.query_one(
+            contents_view = self.query_one(
                 Id.operate_screen.view_id("#", view=ViewName.contents_view),
                 ContentsView,
-            ).path = self.path
+            )
+            contents_view.path = self.path
 
     @on(Button.Pressed, Tcss.operate_button.value)
     def handle_operate_buttons(self, event: Button.Pressed) -> None:

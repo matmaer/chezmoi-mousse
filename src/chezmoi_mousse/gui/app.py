@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from pathlib import Path
 
 from textual import on
@@ -14,7 +15,6 @@ from textual.widgets import (
     TabPane,
 )
 
-import chezmoi_mousse.gui.custom_theme as custom_theme
 from chezmoi_mousse import (
     Area,
     Chars,
@@ -22,14 +22,13 @@ from chezmoi_mousse import (
     OperateBtn,
     OperateHelp,
     PaneBtn,
-    SplashReturnData,
     Tcss,
     TreeName,
     ViewName,
 )
-from chezmoi_mousse.gui import Id, TabIds
-from chezmoi_mousse.gui._chezmoi import Chezmoi
+from chezmoi_mousse.gui import Id, SplashReturnData, TabIds
 from chezmoi_mousse.gui.button_groups import OperateBtnHorizontal
+from chezmoi_mousse.gui.chezmoi import Chezmoi
 from chezmoi_mousse.gui.directory_tree import FilteredDirTree
 from chezmoi_mousse.gui.main_tabs import (
     AddTab,
@@ -58,23 +57,32 @@ from chezmoi_mousse.gui.widgets import (
     ManagedTree,
 )
 
-__all__ = ["ChezmoiGUI"]
+__all__ = ["ChezmoiGUI", "PreRunData"]
+
+
+@dataclass
+class PreRunData:
+    chezmoi_mousse_dark: Theme
+    chezmoi_mousse_light: Theme
+    custom_theme_vars: dict[str, str]
+    changes_enabled: bool
+    chezmoi_found: bool
+    dev_mode: bool
+    home_dir: Path
+    temp_dir: Path
 
 
 class ChezmoiGUI(App[None]):
-    def __init__(
-        self,
-        changes_enabled: bool,
-        chezmoi_found: bool,
-        dev_mode: bool,
-        provisional_dest_dir: Path,
-        provisional_source_dir: Path,
-    ):
-        self.changes_enabled = changes_enabled
-        self.chezmoi_found = chezmoi_found
-        self.destDir: Path = provisional_dest_dir
-        self.dev_mode = dev_mode
-        self.sourceDir: Path = provisional_source_dir
+    def __init__(self, pre_run_data: PreRunData) -> None:
+        self.chezmoi_mousse_dark = pre_run_data.chezmoi_mousse_dark
+        self.chezmoi_mousse_light = pre_run_data.chezmoi_mousse_light
+        self.custom_theme_vars = pre_run_data.custom_theme_vars
+
+        self.changes_enabled = pre_run_data.changes_enabled
+        self.chezmoi_found = pre_run_data.chezmoi_found
+        self.destDir: Path = pre_run_data.home_dir
+        self.dev_mode = pre_run_data.dev_mode
+        self.sourceDir: Path = pre_run_data.temp_dir
 
         self.app_log: AppLog | None = None
         self.output_log: OutputLog | None = None
@@ -100,6 +108,8 @@ class ChezmoiGUI(App[None]):
     ]
 
     def compose(self) -> ComposeResult:
+        if self.chezmoi_found is False:
+            return
         yield Header(icon=Chars.burger)
         with TabbedContent():
             with TabPane(PaneBtn.apply_tab.value, id=PaneBtn.apply_tab.name):
@@ -139,15 +149,23 @@ class ChezmoiGUI(App[None]):
         yield Footer()
 
     def on_mount(self) -> None:
+        self.register_theme(self.chezmoi_mousse_light)
+        self.register_theme(self.chezmoi_mousse_dark)
+        theme_name = "chezmoi-mousse-dark"
+        self.theme = theme_name
+
+        if self.chezmoi_found is False:
+            self.push_screen(
+                LoadingScreen(chezmoi_found=self.chezmoi_found),
+                callback=self.run_post_splash_actions,
+            )
+            return
+        # Only continue if chezmoi is found
         if self.app_log:
             self.app_log.success("App initialized successfully")
         # TODO: inform user only file mode is supported if detected in the user config
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
         self.title = "-  c h e z m o i  m o u s s e  -"
-        self.register_theme(custom_theme.chezmoi_mousse_light)
-        self.register_theme(custom_theme.chezmoi_mousse_dark)
-        theme_name = "chezmoi-mousse-dark"
-        self.theme = theme_name
         if self.app_log:
             self.app_log.success(f"Theme set to {theme_name}")
         if self.chezmoi_found and self.app_log:
@@ -157,16 +175,14 @@ class ChezmoiGUI(App[None]):
         if self.app_log:
             self.app_log.ready_to_run("--- Start loading screen ---")
         self.push_screen(
-            LoadingScreen(), callback=self.run_post_splash_actions
+            LoadingScreen(chezmoi_found=self.chezmoi_found),
+            callback=self.run_post_splash_actions,
         )
-        self.watch(self, "theme", self.on_theme_change, init=False)
 
     def on_theme_change(self, _: str, new_theme: str) -> None:
         new_theme_object: Theme | None = self.get_theme(new_theme)
         assert isinstance(new_theme_object, Theme)
-        custom_theme.custom_vars = (
-            new_theme_object.to_color_system().generate()
-        )
+        self.custom_theme_vars = new_theme_object.to_color_system().generate()
         if self.app_log is not None:
             self.app_log.success(f"Theme set to {new_theme}")
 
@@ -174,11 +190,6 @@ class ChezmoiGUI(App[None]):
         self, return_data: SplashReturnData | None
     ) -> None:
         if return_data is None:
-            if self.app_log is not None:
-                self.app_log.error("No data returned from splash screen")
-            return
-
-        if not self.chezmoi_found:
             self.push_screen(InstallHelp())
             return
         if self.app_log is not None:
