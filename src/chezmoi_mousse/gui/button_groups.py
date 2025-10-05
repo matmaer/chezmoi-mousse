@@ -64,7 +64,6 @@ class OperateBtnHorizontal(ButtonsHorizontal):
     def on_mount(self) -> None:
         for btn in self.query(Button):
             btn.add_class(Tcss.operate_button.name)
-            btn.disabled = True
 
 
 class TabBtnHorizontal(ButtonsHorizontal):
