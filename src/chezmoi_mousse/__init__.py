@@ -1,5 +1,4 @@
 from importlib.metadata import PackageNotFoundError, version
-from pathlib import Path
 from typing import Any
 
 from chezmoi_mousse._chezmoi_cmd import (
@@ -7,6 +6,7 @@ from chezmoi_mousse._chezmoi_cmd import (
     Chezmoi,
     GlobalCmd,
     ManagedStatusData,
+    PathDict,
     ReadCmd,
     ReadVerbs,
     VerbArgs,
@@ -66,4 +66,3 @@ except PackageNotFoundError:
     __version__ = "dev"
 
 type ParsedJson = dict[str, Any]
-type PathDict = dict[Path, str]

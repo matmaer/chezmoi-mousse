@@ -5,17 +5,18 @@ from pathlib import Path
 from subprocess import CompletedProcess, run
 from typing import Literal
 
-from chezmoi_mousse import PathDict
-
 __all__ = [
     "ChangeCmd",
     "Chezmoi",
     "GlobalCmd",
     "ManagedStatusData",
+    "PathDict",
     "ReadCmd",
     "ReadVerbs",
     "VerbArgs",
 ]
+
+type PathDict = dict[Path, str]
 
 
 class GlobalCmd(Enum):
@@ -88,6 +89,10 @@ class ReadCmd(Enum):
         + VerbArgs.git_log.value
     )
     ignored = GlobalCmd.live_run.value + [ReadVerbs.ignored.value]
+    managed = GlobalCmd.live_run.value + [
+        ReadVerbs.managed.value,
+        VerbArgs.path_style_absolute.value,
+    ]
     managed_dirs = GlobalCmd.live_run.value + [
         ReadVerbs.managed.value,
         VerbArgs.path_style_absolute.value,
@@ -99,6 +104,10 @@ class ReadCmd(Enum):
         VerbArgs.include_files.value,
     ]
     source_path = GlobalCmd.live_run.value + [ReadVerbs.source_path.value]
+    status = GlobalCmd.live_run.value + [
+        ReadVerbs.status.value,
+        VerbArgs.path_style_absolute.value,
+    ]
     status_dirs = GlobalCmd.live_run.value + [
         ReadVerbs.status.value,
         VerbArgs.path_style_absolute.value,
@@ -125,62 +134,132 @@ class ChangeCmd(Enum):
 @dataclass
 class ManagedStatusData:
 
-    managed_dirs: str = ""  # stdout from ReadCmd.managed_dirs
-    managed_files: str = ""  # stdout from ReadCmd.managed_files
-    status_dirs: str = ""  # stdout from ReadCmd.status_dirs
-    status_files: str = ""  # stdout from ReadCmd.status_files
+    all_paths_stdout: str = ""  # stdout from ReadCmd.managed
+    managed_dirs_stdout: str = ""  # stdout from ReadCmd.managed_dirs
+    managed_files_stdout: str = ""  # stdout from ReadCmd.managed_files
+    status_dirs_stdout: str = ""  # stdout from ReadCmd.status_dirs
+    status_files_stdout: str = ""  # stdout from ReadCmd.status_files
+    status_paths_stdout: str = ""  # stdout from ReadCmd.status
+
+    # PROPERTIES RETURNING ALL PATHS FOR A SUBSET
 
     @property
-    def managed_dir_paths(self) -> list[Path]:
-        return [Path(line) for line in self.managed_dirs.splitlines()]
+    def all_paths(self) -> list[Path]:
+        return [Path(line) for line in self.all_paths_stdout.splitlines()]
 
     @property
-    def managed_file_paths(self) -> list[Path]:
-        return [Path(line) for line in self.managed_files.splitlines()]
+    def all_dirs(self) -> list[Path]:
+        return [Path(line) for line in self.managed_dirs_stdout.splitlines()]
 
     @property
-    def all_file_paths_with_status(self) -> PathDict:
+    def all_files(self) -> list[Path]:
+        return [Path(line) for line in self.managed_files_stdout.splitlines()]
+
+    @property
+    def all_status_paths_dict(self) -> PathDict:
         return {
-            Path(line[3:]): line[:2] for line in self.status_files.splitlines()
+            Path(line[3:]): line[:2]
+            for line in self.status_paths_stdout.splitlines()
+        }
+
+    # PROPERTIES RETURNING ALL STATUS PATHS BY OPERATION TYPE
+
+    # chezmoi status codes processed: A, D, M, or a space
+    # "node status" codes:
+    #   X (no status but managed)
+
+    @property
+    def apply_status_paths_dict(self) -> PathDict:
+        return {
+            (key): value[1]
+            for key, value in self.all_status_paths_dict.items()
+            if value in "ADM"
         }
 
     @property
-    def all_dir_paths_with_status(self) -> PathDict:
+    def re_add_status_paths_dict(self) -> PathDict:
         return {
-            Path(line[3:]): line[:2] for line in self.status_dirs.splitlines()
+            key: value[0]
+            for key, value in self.all_status_paths_dict.items()
+            if value[0] == "M" or (value[0] == " " and value[1] == "M")
         }
 
-    def paths_with_status(
-        self,
-        operation_type: Literal["apply", "re_add"],
-        path_type: Literal["files", "dirs"],
-    ) -> PathDict:
+    # FUNCTIONS RETURNING A BOOL
 
-        if path_type == "dirs" and operation_type == "apply":
-            return {
-                key: value[1]
-                for key, value in self.all_dir_paths_with_status.items()
-                if value[1] in "ADM"
+    def has_paths_in(self, dir_path: Path) -> bool:
+        return any(p for p in self.all_paths if p.is_relative_to(dir_path))
+
+    def has_status_paths_in(
+        self, operation_type: Literal["apply", "re_add"], dir_path: Path
+    ) -> bool:
+
+        if operation_type == "apply":
+            status_paths = {
+                key: value
+                for key, value in self.apply_status_paths_dict.items()
+                if value in "ADM"
             }
-        elif path_type == "files" and operation_type == "apply":
-            return {
-                key: value[0]
-                for key, value in self.all_file_paths_with_status.items()
-                if value[0] in "ADM"
-            }
-        elif path_type == "dirs" and operation_type == "re_add":
-            return {
-                key: value[0]
-                for key, value in self.all_dir_paths_with_status.items()
+        elif operation_type == "re_add":
+            status_paths = {
+                key: value
+                for key, value in self.re_add_status_paths_dict.items()
                 if value[0] == "M" or (value[0] == " " and value[1] == "M")
             }
-        elif path_type == "files" and operation_type == "re_add":
-            return {
-                key: value[0]
-                for key, value in self.all_file_paths_with_status.items()
-                if value[0] == "M" or (value[0] == " " and value[1] == "M")
-            }
-        return {}
+
+        return any(key.is_relative_to(dir_path) for key in status_paths.keys())
+
+    # FUNCTIONS RETURNING A LIST OF PATHS FOR IMMEDIATE CHILDREN
+
+    def dirs_in(self, dir_path: Path) -> list[Path]:
+        return [p for p in self.all_dirs if p.parent == dir_path]
+
+    def files_in(self, dir_path: Path) -> list[Path]:
+        return [p for p in self.all_files if p.parent == dir_path]
+
+    def files_with_status_in(
+        self, operation_type: Literal["apply", "re_add"], dir_path: Path
+    ) -> list[Path]:
+        if operation_type == "apply":
+            return [
+                p
+                for p in self.apply_status_paths_dict
+                if p.parent == dir_path and p in self.all_files
+            ]
+        else:
+            return [
+                p
+                for p in self.re_add_status_paths_dict
+                if p.parent == dir_path and p in self.all_files
+            ]
+
+    def dirs_with_status_in(
+        self, operation_type: Literal["apply", "re_add"], dir_path: Path
+    ) -> list[Path]:
+        if operation_type == "apply":
+            return [
+                p
+                for p in self.apply_status_paths_dict
+                if p.parent == dir_path and p in self.all_dirs
+            ]
+        else:
+            return [
+                p
+                for p in self.re_add_status_paths_dict
+                if p.parent == dir_path and p in self.all_dirs
+            ]
+
+    # FUNCTION RETURNING THE STATUS CODE FOR A PATH
+
+    def status_code(
+        self, operation_type: Literal["apply", "re_add"], path: Path
+    ) -> str:
+        # returns the status code for a given path
+        # uses one of the properties above to get the status code depending on
+        # the operation_type and path_types
+        if operation_type == "apply":
+            return self.apply_status_paths_dict[path]
+        else:
+            return self.re_add_status_paths_dict[path]
 
 
 class Chezmoi:
@@ -197,7 +276,7 @@ class Chezmoi:
 
         # We need to cache this for Tree widgets and update it after running
         # and update it after running related ChangeCmd commands
-        self.managed_status_data = ManagedStatusData()
+        self.managed_paths = ManagedStatusData()
 
     # COMMAND TYPES
 
@@ -260,66 +339,19 @@ class Chezmoi:
             )
         )
 
-    def refresh_managed_status_data(self) -> ManagedStatusData:
+    def refresh_managed_paths_data(self) -> ManagedStatusData:
         # get data from chezmoi managed stdout
-        self.managed_status_data.managed_dirs = self.read(ReadCmd.managed_dirs)
-        self.managed_status_data.managed_files = self.read(
+        self.managed_paths.all_paths_stdout = self.read(ReadCmd.managed)
+        self.managed_paths.status_paths_stdout = self.read(ReadCmd.status)
+        self.managed_paths.managed_dirs_stdout = self.read(
+            ReadCmd.managed_dirs
+        )  # noqa: E501 #
+        self.managed_paths.managed_files_stdout = self.read(
             ReadCmd.managed_files
         )
         # get data from chezmoi status stdout
-        self.managed_status_data.status_dirs = self.read(ReadCmd.status_dirs)
-        self.managed_status_data.status_files = self.read(ReadCmd.status_files)
-        return self.managed_status_data
-
-    def child_files_with_status(
-        self, pane_name: Literal["apply", "re_add"], dir_path: Path
-    ) -> list[Path]:
-        # only returns immediate subfiles
-        paths_with_status = self.managed_status_data.paths_with_status(
-            pane_name, "files"
+        self.managed_paths.status_dirs_stdout = self.read(ReadCmd.status_dirs)
+        self.managed_paths.status_files_stdout = self.read(
+            ReadCmd.status_files
         )
-        return [p for p in paths_with_status if p.parent == dir_path]
-
-    def has_any_child_file_with_status(
-        self, pane_name: Literal["apply", "re_add"], dir_path: Path
-    ) -> bool:
-        return any(
-            p
-            for p in self.managed_status_data.managed_file_paths
-            if p
-            in self.managed_status_data.paths_with_status(pane_name, "files")
-            and p.is_relative_to(dir_path)
-        )
-
-    def child_files_without_status(
-        self, pane_name: Literal["apply", "re_add"], dir_path: Path
-    ) -> list[Path]:
-        paths_with_status = self.managed_status_data.paths_with_status(
-            pane_name, "files"
-        )
-        return [
-            p
-            for p in self.managed_status_data.managed_file_paths
-            if p not in paths_with_status and p.parent == dir_path
-        ]
-
-    def has_any_child_file_without_status(
-        self, pane_name: Literal["apply", "re_add"], dir_path: Path
-    ) -> bool:
-        return any(
-            p
-            for p in self.managed_status_data.managed_file_paths
-            if p
-            not in self.managed_status_data.paths_with_status(
-                pane_name, "files"
-            )
-            and p.is_relative_to(dir_path)
-        )
-
-    def managed_child_dirs_in(self, dir_path: Path) -> list[Path]:
-        # only returns immediate subdirs
-        return [
-            p
-            for p in self.managed_status_data.managed_dir_paths
-            if p.parent == dir_path
-        ]
+        return self.managed_paths
