@@ -14,13 +14,15 @@ from textual.widgets import Button, Collapsible, Label, Link, Pretty, Tree
 
 from chezmoi_mousse import (
     ChangeCmd,
+    Id,
     OperateBtn,
     PaneBtn,
     ParsedJson,
+    TabIds,
     Tcss,
     ViewName,
 )
-from chezmoi_mousse.gui import AppType, Id, TabIds
+from chezmoi_mousse.gui import AppType
 from chezmoi_mousse.gui.button_groups import OperateBtnHorizontal
 from chezmoi_mousse.gui.messages import OperateDismissMsg
 from chezmoi_mousse.gui.rich_logs import ContentsView, DiffView

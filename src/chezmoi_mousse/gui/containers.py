@@ -12,8 +12,16 @@ from textual.app import ComposeResult
 from textual.containers import Horizontal, HorizontalGroup, VerticalGroup
 from textual.widgets import Button, ContentSwitcher, Label, Switch
 
-from chezmoi_mousse import Area, TabBtn, Tcss, TreeName, ViewName
-from chezmoi_mousse.gui import AppType, Switches, TabIds
+from chezmoi_mousse import (
+    Area,
+    Switches,
+    TabBtn,
+    TabIds,
+    Tcss,
+    TreeName,
+    ViewName,
+)
+from chezmoi_mousse.gui import AppType
 from chezmoi_mousse.gui.content_switchers import TreeSwitcher
 from chezmoi_mousse.gui.messages import TreeNodeSelectedMsg
 from chezmoi_mousse.gui.rich_logs import ContentsView, DiffView

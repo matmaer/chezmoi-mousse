@@ -85,13 +85,12 @@ class FilteredDirTree(DirectoryTree, AppType):
     ICON_FILE = " "
 
     unmanaged_dirs: reactive[bool] = reactive(False, init=False)
-    # TODO: In contents view on a directory, render simple list of managed
-    # leaves and their status
     unwanted: reactive[bool] = reactive(False, init=False)
 
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
-        managed_dirs = self.app.chezmoi.managed.dirs
-        managed_files = self.app.chezmoi.managed.files
+
+        managed_dirs = self.app.chezmoi.managed_paths.all_dirs
+        managed_files = self.app.chezmoi.managed_paths.all_files
 
         # Switches: Red - Red (default)
         if not self.unmanaged_dirs and not self.unwanted:

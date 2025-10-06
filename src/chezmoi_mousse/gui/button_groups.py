@@ -3,8 +3,7 @@ from textual.app import ComposeResult
 from textual.containers import HorizontalGroup, Vertical, VerticalGroup
 from textual.widgets import Button
 
-from chezmoi_mousse import Area, NavBtn, OperateBtn, TabBtn, Tcss
-from chezmoi_mousse.gui import TabIds
+from chezmoi_mousse import Area, NavBtn, OperateBtn, TabBtn, TabIds, Tcss
 
 __all__ = [
     "ButtonsHorizontal",
