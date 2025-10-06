@@ -161,6 +161,7 @@ class LoadingScreen(Screen[SplashReturnData], AppType):
                     managed_files=globals()["managed_files"],
                     status_dirs=globals()["status_dirs"],
                     status_files=globals()["status_files"],
+                    status_paths=globals()["status_paths"],
                 )
             )
 

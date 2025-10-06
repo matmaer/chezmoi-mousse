@@ -36,3 +36,4 @@ class SplashReturnData:
     managed_files: str
     status_dirs: str
     status_files: str
+    status_paths: str

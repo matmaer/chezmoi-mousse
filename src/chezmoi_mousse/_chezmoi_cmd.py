@@ -88,7 +88,7 @@ class ReadCmd(Enum):
         VerbArgs.include_files.value,
     ]
     source_path = GlobalCmd.live_run.value + [ReadVerbs.source_path.value]
-    status = GlobalCmd.live_run.value + [
+    status_paths = GlobalCmd.live_run.value + [
         ReadVerbs.status.value,
         VerbArgs.path_style_absolute.value,
     ]
