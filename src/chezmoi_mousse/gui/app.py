@@ -18,7 +18,6 @@ from textual.widgets import (
 from chezmoi_mousse import (
     Area,
     Chars,
-    Chezmoi,
     Id,
     LogName,
     OperateBtn,
@@ -31,6 +30,7 @@ from chezmoi_mousse import (
 )
 from chezmoi_mousse.gui import SplashReturnData
 from chezmoi_mousse.gui.button_groups import OperateBtnHorizontal
+from chezmoi_mousse.gui.chezmoi import Chezmoi
 from chezmoi_mousse.gui.directory_tree import FilteredDirTree
 from chezmoi_mousse.gui.main_tabs import (
     AddTab,
@@ -152,6 +152,23 @@ class ChezmoiGUI(App[None]):
         yield Footer()
 
     def on_mount(self) -> None:
+        app_logger = self.query_one(f"#{LogName.app_log.name}", AppLog)
+        self.app_log = app_logger
+        self.chezmoi.app_log = app_logger
+
+        output_logger = self.query_one(
+            f"#{LogName.output_log.name}", OutputLog
+        )
+        self.output_log = output_logger
+        self.chezmoi.output_log = output_logger
+
+        if self.dev_mode is True:
+            debug_logger = self.query_one(
+                f"#{LogName.debug_log.name}", DebugLog
+            )
+            self.debug_log = debug_logger
+            self.chezmoi.debug_log = debug_logger
+
         self.register_theme(self.chezmoi_mousse_light)
         self.register_theme(self.chezmoi_mousse_dark)
         theme_name = "chezmoi-mousse-dark"

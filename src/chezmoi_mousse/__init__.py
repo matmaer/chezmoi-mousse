@@ -1,13 +1,10 @@
 from importlib.metadata import PackageNotFoundError, version
-from typing import Any
+from pathlib import Path
+from typing import Any, Literal
 
 from chezmoi_mousse._chezmoi_cmd import (
-    ActiveTab,
     ChangeCmd,
-    Chezmoi,
     GlobalCmd,
-    ManagedStatusData,
-    PathDict,
     ReadCmd,
     ReadVerbs,
     VerbArgs,
@@ -32,14 +29,10 @@ __all__ = [
     # from this file
     "__version__",
     "Any",
-    "ActiveTab",
     "ParsedJson",
-    "PathDict",
     # from _chezmoi_cmd.py
     "ChangeCmd",
-    "Chezmoi",
     "GlobalCmd",
-    "ManagedStatusData",
     "ReadCmd",
     "ReadVerbs",
     "VerbArgs",
@@ -68,4 +61,6 @@ try:
 except PackageNotFoundError:
     __version__ = "dev"
 
+type ActiveTab = Literal[PaneBtn.apply_tab, PaneBtn.re_add_tab]
 type ParsedJson = dict[str, Any]
+type PathDict = dict[Path, str]

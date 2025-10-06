@@ -322,10 +322,6 @@ class AppLog(CommandLogBase, AppType):
                 f"{Chars.x_mark} Command failed with exit code {completed_process.returncode}, stderr logged to Output log"
             )
 
-    def on_mount(self) -> None:
-        self.app.app_log = self
-        self.app.chezmoi.call_app_log = self.completed_process
-
 
 class DebugLog(CommandLogBase, AppType):
 
@@ -373,10 +369,6 @@ class DebugLog(CommandLogBase, AppType):
         self.ready_to_run(f"{obj.__class__.__name__} attributes:")
         self.dimmed(", ".join(members))
 
-    def on_mount(self) -> None:
-        self.app.debug_log = self
-        self.app.chezmoi.call_debug_log = self.completed_process
-
 
 class OutputLog(CommandLogBase, AppType):
 
@@ -401,7 +393,3 @@ class OutputLog(CommandLogBase, AppType):
         else:
             self.error("failed, stderr:")
             self.dimmed(f"{completed_process.stderr}")
-
-    def on_mount(self) -> None:
-        self.app.output_log = self
-        self.app.chezmoi.call_output_log = self.completed_process
