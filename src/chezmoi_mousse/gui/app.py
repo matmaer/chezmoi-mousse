@@ -194,12 +194,6 @@ class ChezmoiGUI(App[None]):
             callback=self.run_post_splash_actions,
         )
 
-    def on_theme_change(self, _: str, new_theme: str) -> None:
-        new_theme_object: Theme | None = self.get_theme(new_theme)
-        assert isinstance(new_theme_object, Theme)
-        self.custom_theme_vars = new_theme_object.to_color_system().generate()
-        self.app_log.success(f"Theme set to {new_theme}")
-
     def run_post_splash_actions(
         self, return_data: SplashReturnData | None
     ) -> None:
@@ -383,3 +377,10 @@ class ChezmoiGUI(App[None]):
                 ),
             )
         )
+
+    def on_theme_change(self, _: str, new_theme: str) -> None:
+        # TODO: this should not be necessary anymore, use textual app attributes
+        new_theme_object: Theme | None = self.get_theme(new_theme)
+        assert isinstance(new_theme_object, Theme)
+        self.custom_theme_vars = new_theme_object.to_color_system().generate()
+        self.app_log.success(f"Theme set to {new_theme}")
