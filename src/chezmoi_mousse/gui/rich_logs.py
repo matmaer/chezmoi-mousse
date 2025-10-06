@@ -89,10 +89,10 @@ class ContentsView(RichLog, AppType):
         except FileNotFoundError:
             # FileNotFoundError is raised both when a file or a directory
             # does not exist
-            if self.path in self.app.chezmoi.managed_paths.all_dirs:
+            if self.path in self.app.chezmoi.managed_dirs:
                 self.write(f"Managed directory: {self.path}")
                 return
-            if self.path in self.app.chezmoi.managed_paths.all_files:
+            if self.path in self.app.chezmoi.managed_files:
                 cat_output = self.app.chezmoi.read(ReadCmd.cat, self.path)
                 if cat_output == "":
                     self.write(
@@ -103,7 +103,7 @@ class ContentsView(RichLog, AppType):
                 return
 
         except IsADirectoryError:
-            if self.path in self.app.chezmoi.managed_paths.all_dirs:
+            if self.path in self.app.chezmoi.managed_dirs:
                 self.write(f"Managed directory: {self.path}")
             else:
                 self.write(f"Unmanaged directory: {self.path}")
@@ -240,8 +240,7 @@ class CommandLogBase(RichLog, AppType):
     def _log_time(self) -> str:
         return f"[[green]{datetime.now().strftime('%H:%M:%S')}[/]]"
 
-    @staticmethod
-    def pretty_cmd_str(command: list[str]) -> str:
+    def pretty_cmd_str(self, command: list[str]) -> str:
         filter_git_log_args = VerbArgs.git_log.value[3:]
         return "chezmoi " + " ".join(
             [
@@ -380,9 +379,24 @@ class OutputLog(CommandLogBase, AppType):
             classes=Tcss.log_views.name,
         )
 
+    def _trim_stdout(self, stdout: str):
+        # remove trailing and leading new lines but NOT leading whitespace
+        stripped = stdout.lstrip("\n").rstrip()
+        # remove intermediate empty lines
+        return "\n".join(
+            [line for line in stripped.splitlines() if line.strip()]
+        )
+
     def completed_process(
-        self, completed_process: CompletedProcess[str]
+        self, completed_process: CompletedProcess[str], trimmed: bool = True
     ) -> None:
+        if trimmed:
+            completed_process.stdout = self._trim_stdout(
+                completed_process.stdout
+            )
+            completed_process.stderr = self._trim_stdout(
+                completed_process.stderr
+            )
         self._log_command(completed_process.args)
         if completed_process.returncode == 0:
             self.success("success, stdout:")

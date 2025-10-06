@@ -17,7 +17,6 @@ from textual.worker import WorkerState
 
 from chezmoi_mousse import ReadCmd, VerbArgs
 from chezmoi_mousse.gui import AppType, SplashReturnData
-from chezmoi_mousse.gui.rich_logs import AppLog
 
 __all__ = ["LoadingScreen"]
 
@@ -118,7 +117,7 @@ class LoadingScreen(Screen[SplashReturnData], AppType):
         else:
             command_value = getattr(ReadCmd, field_name).value
             cmd_text = (
-                AppLog.pretty_cmd_str(command_value)
+                self.app.app_log.pretty_cmd_str(command_value)
                 .replace(VerbArgs.include_dirs.value, "dirs")
                 .replace(VerbArgs.include_files.value, "files")
             )

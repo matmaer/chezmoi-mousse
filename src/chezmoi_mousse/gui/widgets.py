@@ -343,7 +343,7 @@ class TreeBase(Tree[NodeData], AppType):
         ]
         if tree_node.data is None:
             return
-        status_files = self.app.chezmoi.managed_paths.status_files_in(
+        status_files = self.app.chezmoi.status_files_in(
             self.active_tab, tree_node.data.path
         )
         for file_path, status_code in status_files.items():
@@ -367,10 +367,8 @@ class TreeBase(Tree[NodeData], AppType):
         ]
         if tree_node.data is None:
             return
-        files_without_status = (
-            self.app.chezmoi.managed_paths.files_without_status_in(
-                self.active_tab, tree_node.data.path
-            )
+        files_without_status = self.app.chezmoi.files_without_status_in(
+            self.active_tab, tree_node.data.path
         )
         for file_path, status_code in files_without_status.items():
             if file_path in current_leaves_without_status:
@@ -420,7 +418,7 @@ class TreeBase(Tree[NodeData], AppType):
         ]
         if tree_node.data is None:
             return
-        dir_paths = self.app.chezmoi.managed_paths.status_dirs_in(
+        dir_paths = self.app.chezmoi.status_dirs_in(
             self.active_tab, tree_node.data.path
         )
         for dir_path, status_code in dir_paths.items():
@@ -445,7 +443,7 @@ class TreeBase(Tree[NodeData], AppType):
             and dir_node.data.is_leaf is False
             and dir_node.data.status != "X"
         ]
-        dir_paths = self.app.chezmoi.managed_paths.dirs_without_status_in(
+        dir_paths = self.app.chezmoi.dirs_without_status_in(
             self.active_tab, tree_node.data.path
         )
         for dir_path, status_code in dir_paths.items():
@@ -597,17 +595,10 @@ class FlatTree(TreeBase, AppType):
     unchanged: reactive[bool] = reactive(False, init=False)
 
     def __init__(self, tab_ids: TabIds) -> None:
-        self.tab_ids = tab_ids
-        if self.tab_ids.tab_name == PaneBtn.apply_tab.name:
-            self.active_tab: ActiveTab = PaneBtn.apply_tab
-        else:
-            self.active_tab: ActiveTab = PaneBtn.re_add_tab
-        super().__init__(self.tab_ids, tree_name=TreeName.flat_tree)
+        super().__init__(tab_ids, tree_name=TreeName.flat_tree)
 
     def populate_root_node(self) -> None:
-        status_files = self.app.chezmoi.managed_paths.all_status_files(
-            self.active_tab
-        )
+        status_files = self.app.chezmoi.all_status_files(self.active_tab)
         for file_path, status_code in status_files.items():
             node_data: NodeData = self.create_node_data(
                 path=file_path, is_leaf=True, status_code=status_code
@@ -616,10 +607,8 @@ class FlatTree(TreeBase, AppType):
             self.root.add_leaf(label=node_label, data=node_data)
 
     def watch_unchanged(self) -> None:
-        files_without_status = (
-            self.app.chezmoi.managed_paths.all_files_without_status(
-                self.active_tab
-            )
+        files_without_status = self.app.chezmoi.managed_files_without_status(
+            self.active_tab
         )
         if self.unchanged:
             for file_path, status_code in files_without_status.items():

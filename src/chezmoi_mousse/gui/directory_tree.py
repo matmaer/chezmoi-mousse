@@ -89,8 +89,8 @@ class FilteredDirTree(DirectoryTree, AppType):
 
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
 
-        managed_dirs = self.app.chezmoi.managed_paths.all_dirs
-        managed_files = self.app.chezmoi.managed_paths.all_files
+        managed_dirs = self.app.chezmoi.managed_dirs
+        managed_files = self.app.chezmoi.managed_files
 
         # Switches: Red - Red (default)
         if not self.unmanaged_dirs and not self.unwanted:
