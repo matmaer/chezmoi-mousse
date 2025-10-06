@@ -216,6 +216,34 @@ class ManagedStatusData:
     def files_in(self, dir_path: Path) -> list[Path]:
         return [p for p in self.all_files if p.parent == dir_path]
 
+    def all_status_files(self, active_tab: ActiveTab) -> PathDict:
+        if active_tab == PaneBtn.apply_tab:
+            return {
+                path: status
+                for path, status in self._apply_status_paths.items()
+                if path in self.all_files and status != "X"
+            }
+        else:
+            return {
+                path: status
+                for path, status in self._re_add_status_paths.items()
+                if path in self.all_files and status != "X"
+            }
+
+    def all_files_without_status(self, active_tab: ActiveTab) -> PathDict:
+        if active_tab == PaneBtn.apply_tab:
+            return {
+                path: status
+                for path, status in self._apply_status_paths.items()
+                if path in self.all_files and status == "X"
+            }
+        else:
+            return {
+                path: status
+                for path, status in self._re_add_status_paths.items()
+                if path in self.all_files and status == "X"
+            }
+
     def status_files_in(
         self, active_tab: ActiveTab, dir_path: Path
     ) -> PathDict:
