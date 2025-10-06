@@ -151,11 +151,11 @@ class ManagedStatusData:
         return [Path(line) for line in self.all_paths_stdout.splitlines()]
 
     @property
-    def _all_dirs(self) -> list[Path]:
+    def all_dirs(self) -> list[Path]:
         return [Path(line) for line in self.managed_dirs_stdout.splitlines()]
 
     @property
-    def _all_files(self) -> list[Path]:
+    def all_files(self) -> list[Path]:
         return [Path(line) for line in self.managed_files_stdout.splitlines()]
 
     @property
@@ -211,10 +211,10 @@ class ManagedStatusData:
     # FUNCTIONS RETURNING A LIST OF PATHS FOR IMMEDIATE CHILDREN
 
     def dirs_in(self, dir_path: Path) -> list[Path]:
-        return [p for p in self._all_dirs if p.parent == dir_path]
+        return [p for p in self.all_dirs if p.parent == dir_path]
 
     def files_in(self, dir_path: Path) -> list[Path]:
-        return [p for p in self._all_files if p.parent == dir_path]
+        return [p for p in self.all_files if p.parent == dir_path]
 
     def status_files_in(
         self, active_tab: ActiveTab, dir_path: Path
@@ -223,13 +223,13 @@ class ManagedStatusData:
             return {
                 path: status
                 for path, status in self._apply_status_paths.items()
-                if path.parent == dir_path and path in self._all_files
+                if path.parent == dir_path and path in self.all_files
             }
         else:
             return {
                 path: status
                 for path, status in self._re_add_status_paths.items()
-                if path.parent == dir_path and path in self._all_files
+                if path.parent == dir_path and path in self.all_files
             }
 
     def status_dirs_in(
@@ -239,13 +239,13 @@ class ManagedStatusData:
             return {
                 path: status
                 for path, status in self._apply_status_paths.items()
-                if path.parent == dir_path and path in self._all_dirs
+                if path.parent == dir_path and path in self.all_dirs
             }
         else:
             return {
                 path: status
                 for path, status in self._re_add_status_paths.items()
-                if path.parent == dir_path and path in self._all_dirs
+                if path.parent == dir_path and path in self.all_dirs
             }
 
     def files_without_status_in(
@@ -254,14 +254,14 @@ class ManagedStatusData:
         if active_tab == PaneBtn.apply_tab:
             return {
                 path: "X"
-                for path in self._all_files
+                for path in self.all_files
                 if path.parent == dir_path
                 and path not in self._apply_status_paths
             }
         else:
             return {
                 path: "X"
-                for path in self._all_files
+                for path in self.all_files
                 if path.parent == dir_path
                 and path not in self._re_add_status_paths
             }
@@ -272,14 +272,14 @@ class ManagedStatusData:
         if active_tab == PaneBtn.apply_tab:
             return {
                 path: "X"
-                for path in self._all_dirs
+                for path in self.all_dirs
                 if path.parent == dir_path
                 and path not in self._apply_status_paths
             }
         else:
             return {
                 path: "X"
-                for path in self._all_dirs
+                for path in self.all_dirs
                 if path.parent == dir_path
                 and path not in self._re_add_status_paths
             }
