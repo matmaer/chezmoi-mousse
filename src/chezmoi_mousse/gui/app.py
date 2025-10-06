@@ -91,9 +91,9 @@ class ChezmoiGUI(App[None]):
         self.dev_mode = pre_run_data.dev_mode
         self.sourceDir: Path = pre_run_data.temp_dir
 
-        self.app_log: AppLog | None = None
-        self.output_log: OutputLog | None = None
-        self.debug_log: DebugLog | None = None
+        self.app_log: AppLog
+        self.output_log: OutputLog
+        self.debug_log: DebugLog
 
         self.git_autoadd: bool = False
         self.git_autocommit: bool = False
@@ -164,19 +164,14 @@ class ChezmoiGUI(App[None]):
             )
             return
         # Only continue if chezmoi is found
-        if self.app_log:
-            self.app_log.success("App initialized successfully")
+        self.app_log.success("App initialized successfully")
         # TODO: inform user only file mode is supported if detected in the user config
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
         self.title = "-  c h e z m o i  m o u s s e  -"
-        if self.app_log:
-            self.app_log.success(f"Theme set to {theme_name}")
-        if self.chezmoi_found and self.app_log:
-            self.app_log.success(
-                f"chezmoi command found: {self.chezmoi_found}"
-            )
-        if self.app_log:
-            self.app_log.ready_to_run("--- Start loading screen ---")
+
+        self.app_log.success(f"Theme set to {theme_name}")
+        self.app_log.success(f"chezmoi command found: {self.chezmoi_found}")
+        self.app_log.ready_to_run("--- Start loading screen ---")
         self.push_screen(
             LoadingScreen(chezmoi_found=self.chezmoi_found),
             callback=self.run_post_splash_actions,
@@ -186,8 +181,7 @@ class ChezmoiGUI(App[None]):
         new_theme_object: Theme | None = self.get_theme(new_theme)
         assert isinstance(new_theme_object, Theme)
         self.custom_theme_vars = new_theme_object.to_color_system().generate()
-        if self.app_log is not None:
-            self.app_log.success(f"Theme set to {new_theme}")
+        self.app_log.success(f"Theme set to {new_theme}")
 
     def run_post_splash_actions(
         self, return_data: SplashReturnData | None
@@ -195,8 +189,7 @@ class ChezmoiGUI(App[None]):
         if return_data is None:
             self.push_screen(InstallHelp())
             return
-        if self.app_log is not None:
-            self.app_log.ready_to_run("--- Loading screen completed ---")
+        self.app_log.ready_to_run("--- Loading screen completed ---")
         # Populate Doctor DataTable
         pw_mgr_cmds: list[str] = self.query_one(
             Id.config.datatable_qid, DoctorTable
@@ -205,7 +198,17 @@ class ChezmoiGUI(App[None]):
             Id.config.listview_qid, DoctorListView
         ).populate_listview(pw_mgr_cmds)
         # refresh chezmoi managed and status data
-        # self.chezmoi.refresh_managed_status(return_data)
+        self.chezmoi.managed_paths.status_dirs_stdout = return_data.status_dirs
+        self.chezmoi.managed_paths.status_files_stdout = (
+            return_data.status_files
+        )
+        self.chezmoi.managed_paths.managed_dirs_stdout = (
+            return_data.managed_dirs
+        )
+        self.chezmoi.managed_paths.managed_files_stdout = (
+            return_data.managed_files
+        )
+
         # Trees to refresh for each tab
         trees: list[
             tuple[TreeName, type[ManagedTree | FlatTree | ExpandedTree]]

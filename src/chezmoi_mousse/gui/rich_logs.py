@@ -346,9 +346,6 @@ class DebugLog(CommandLogBase, AppType):
         self._log_command(completed_process.args)
         self.dimmed(f"{dir(completed_process)}")
 
-    def on_mount(self) -> None:
-        self.app.debug_log = self
-
     def mro(self, mro: Mro) -> None:
         color = self.app.custom_theme_vars["accent-darken-2"]
         self.write(f"{self._log_time()} [{color}]Method Resolution Order:[/]")
@@ -375,6 +372,10 @@ class DebugLog(CommandLogBase, AppType):
         members = [attr for attr in dir(obj) if not attr.startswith("_")]
         self.ready_to_run(f"{obj.__class__.__name__} attributes:")
         self.dimmed(", ".join(members))
+
+    def on_mount(self) -> None:
+        self.app.debug_log = self
+        self.app.chezmoi.call_debug_log = self.completed_process
 
 
 class OutputLog(CommandLogBase, AppType):

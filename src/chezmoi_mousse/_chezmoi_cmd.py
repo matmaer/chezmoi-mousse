@@ -323,6 +323,9 @@ class Chezmoi:
         self.call_app_log: Callable[[CompletedProcess[str]], None] | None = (
             None
         )
+        self.call_debug_log: Callable[[CompletedProcess[str]], None] | None = (
+            None
+        )
         self.call_output_log: (
             Callable[[CompletedProcess[str]], None] | None
         ) = None
