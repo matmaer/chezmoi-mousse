@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from pathlib import Path
 from subprocess import CompletedProcess, run
 
@@ -13,14 +12,24 @@ from chezmoi_mousse import (
 from chezmoi_mousse.gui.rich_logs import AppLog, DebugLog, OutputLog
 
 
-@dataclass
-class ManagedStatusData:
+class Chezmoi:
 
-    managed_dirs_stdout: str = ""  # stdout from ReadCmd.managed_dirs
-    managed_files_stdout: str = ""  # stdout from ReadCmd.managed_files
-    status_dirs_stdout: str = ""  # stdout from ReadCmd.status_dirs
-    status_files_stdout: str = ""  # stdout from ReadCmd.status_files
-    status_paths_stdout: str = ""  # stdout from ReadCmd.status
+    def __init__(self, *, changes_enabled: bool, dev_mode: bool) -> None:
+
+        # set by main App class in its on_mount method
+        self._changes_enabled = changes_enabled
+        self._app_log: AppLog
+        self._output_log: OutputLog
+
+        # cached command outputs
+        self._managed_dirs_stdout: str = ""  # ReadCmd.managed_dirs
+        self._managed_files_stdout: str = ""  # ReadCmd.managed_files
+        self._status_dirs_stdout: str = ""  # ReadCmd.status_dirs
+        self._status_files_stdout: str = ""  # ReadCmd.status_files
+        self._status_paths_stdout: str = ""  # ReadCmd.status
+
+        if dev_mode:
+            self._debug_log: DebugLog | None = None
 
     # PROPERTIES RETURNING ALL PATHS FOR A SUBSET
 
@@ -36,7 +45,7 @@ class ManagedStatusData:
     def _all_status_paths_dict(self) -> PathDict:
         return {
             Path(line[3:]): line[:2]
-            for line in self.status_paths_stdout.splitlines()
+            for line in self._status_paths_stdout.splitlines()
         }
 
     # PROPERTIES RETURNING ALL STATUS PATHS BY OPERATION TYPE
@@ -60,6 +69,67 @@ class ManagedStatusData:
             for key, value in self._all_status_paths_dict.items()
             if value[0] == "M" or (value[0] == " " and value[1] == "M")
         }
+
+    # COMMAND TYPES
+
+    def _strip_stdout(self, stdout: str):
+        # remove trailing and leading new lines but NOT leading whitespace
+        stripped = stdout.lstrip("\n").rstrip()
+        # remove intermediate empty lines
+        return "\n".join(
+            [line for line in stripped.splitlines() if line.strip()]
+        )
+
+    def _log_in_app_and_output_log(self, result: CompletedProcess[str]):
+        result.stdout = self._strip_stdout(result.stdout)
+        self._app_log.completed_process(result)
+        self._output_log.completed_process(result)
+
+    def read(self, read_cmd: ReadCmd, path: Path | None = None) -> str:
+        command: list[str] = read_cmd.value
+        if path is not None:
+            command: list[str] = command + [str(path)]
+        if read_cmd == ReadCmd.doctor:
+            time_out = 3
+        else:
+            time_out = 1
+        result: CompletedProcess[str] = run(
+            command,
+            capture_output=True,
+            shell=False,
+            text=True,
+            timeout=time_out,
+        )
+        self._log_in_app_and_output_log(result)
+        return self._strip_stdout(result.stdout)
+
+    def perform(
+        self, change_sub_cmd: ChangeCmd, change_arg: str | None = None
+    ) -> None:
+        if self._changes_enabled:
+            base_cmd: list[str] = GlobalCmd.live_run.value
+        else:
+            base_cmd: list[str] = GlobalCmd.dry_run.value
+        command: list[str] = base_cmd + change_sub_cmd.value
+
+        if change_arg is not None:
+            command: list[str] = command + [change_arg]
+
+        self._log_in_app_and_output_log(
+            run(
+                command, capture_output=True, shell=False, text=True, timeout=5
+            )
+        )
+
+    def refresh_managed_paths_data(self):
+        # get data from chezmoi managed stdout
+        self.managed_dirs_stdout = self.read(
+            ReadCmd.managed_dirs
+        )  # noqa: E501 #
+        self.managed_files_stdout = self.read(ReadCmd.managed_files)
+        # get data from chezmoi status stdout
+        self.status_dirs_stdout = self.read(ReadCmd.status_dirs)
+        self.status_files_stdout = self.read(ReadCmd.status_files)
 
     def has_status_paths_in(
         self, active_tab: ActiveTab, dir_path: Path
@@ -191,82 +261,3 @@ class ManagedStatusData:
             return self._apply_status_paths[path]
         else:
             return self._re_add_status_paths[path]
-
-
-class Chezmoi:
-
-    def __init__(self, *, changes_enabled: bool, dev_mode: bool) -> None:
-        self.changes_enabled = changes_enabled
-        self.app_log: AppLog
-        self.output_log: OutputLog
-
-        if dev_mode:
-            self.debug_log: DebugLog | None = None
-
-        self.managed_paths = ManagedStatusData()
-
-    # COMMAND TYPES
-
-    def _strip_stdout(self, stdout: str):
-        # remove trailing and leading new lines but NOT leading whitespace
-        stripped = stdout.lstrip("\n").rstrip()
-        # remove intermediate empty lines
-        return "\n".join(
-            [line for line in stripped.splitlines() if line.strip()]
-        )
-
-    def _log_in_app_and_output_log(self, result: CompletedProcess[str]):
-        result.stdout = self._strip_stdout(result.stdout)
-        self.app_log.completed_process(result)
-        self.output_log.completed_process(result)
-
-    def read(self, read_cmd: ReadCmd, path: Path | None = None) -> str:
-        command: list[str] = read_cmd.value
-        if path is not None:
-            command: list[str] = command + [str(path)]
-        if read_cmd == ReadCmd.doctor:
-            time_out = 3
-        else:
-            time_out = 1
-        result: CompletedProcess[str] = run(
-            command,
-            capture_output=True,
-            shell=False,
-            text=True,
-            timeout=time_out,
-        )
-        self._log_in_app_and_output_log(result)
-        return self._strip_stdout(result.stdout)
-
-    def perform(
-        self, change_sub_cmd: ChangeCmd, change_arg: str | None = None
-    ) -> None:
-        if self.changes_enabled:
-            base_cmd: list[str] = GlobalCmd.live_run.value
-        else:
-            base_cmd: list[str] = GlobalCmd.dry_run.value
-        command: list[str] = base_cmd + change_sub_cmd.value
-
-        if change_arg is not None:
-            command: list[str] = command + [change_arg]
-
-        self._log_in_app_and_output_log(
-            run(
-                command, capture_output=True, shell=False, text=True, timeout=5
-            )
-        )
-
-    def refresh_managed_paths_data(self) -> ManagedStatusData:
-        # get data from chezmoi managed stdout
-        self.managed_paths.managed_dirs_stdout = self.read(
-            ReadCmd.managed_dirs
-        )  # noqa: E501 #
-        self.managed_paths.managed_files_stdout = self.read(
-            ReadCmd.managed_files
-        )
-        # get data from chezmoi status stdout
-        self.managed_paths.status_dirs_stdout = self.read(ReadCmd.status_dirs)
-        self.managed_paths.status_files_stdout = self.read(
-            ReadCmd.status_files
-        )
-        return self.managed_paths
