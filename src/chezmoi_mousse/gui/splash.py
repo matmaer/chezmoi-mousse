@@ -40,7 +40,7 @@ SPLASH = """\
 LOG_PADDING_WIDTH = 41
 
 
-class SplashLog(RichLog, AppType):
+class SplashLog(RichLog):
     def __init__(self) -> None:
         super().__init__()
         self.styles.width = LOG_PADDING_WIDTH + 9
@@ -141,7 +141,7 @@ class LoadingScreen(Screen[SplashReturnData], AppType):
     def all_workers_finished(self) -> None:
         if all(
             worker.state == WorkerState.SUCCESS
-            for worker in self.app.workers
+            for worker in self.screen.workers
             if worker.group == "io_workers"
         ):
             if self.chezmoi_found is False:
