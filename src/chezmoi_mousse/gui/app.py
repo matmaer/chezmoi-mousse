@@ -18,17 +18,19 @@ from textual.widgets import (
 from chezmoi_mousse import (
     Area,
     Chars,
+    Chezmoi,
+    Id,
     LogName,
     OperateBtn,
     OperateHelp,
     PaneBtn,
+    TabIds,
     Tcss,
     TreeName,
     ViewName,
 )
-from chezmoi_mousse.gui import Id, SplashReturnData, TabIds
+from chezmoi_mousse.gui import SplashReturnData
 from chezmoi_mousse.gui.button_groups import OperateBtnHorizontal
-from chezmoi_mousse.gui.chezmoi import Chezmoi
 from chezmoi_mousse.gui.directory_tree import FilteredDirTree
 from chezmoi_mousse.gui.main_tabs import (
     AddTab,
@@ -39,7 +41,6 @@ from chezmoi_mousse.gui.main_tabs import (
     LogsTab,
     ReAddTab,
 )
-from chezmoi_mousse.gui.messages import OperateDismissMsg
 from chezmoi_mousse.gui.overrides import CustomScrollBarRender
 from chezmoi_mousse.gui.rich_logs import (
     AppLog,
@@ -59,14 +60,19 @@ from chezmoi_mousse.gui.widgets import (
 
 __all__ = ["ChezmoiGUI", "PreRunData"]
 
+# TODO: implement 'chezmoi verify', if exit 0, display message in Tree
+# widgets inform the user why the Tree widget is empty
+# TODO: implement spinner for commands taking a bit longer like operations
+
 
 @dataclass
 class PreRunData:
+    chezmoi_instance: Chezmoi
+    changes_enabled: bool
+    chezmoi_found: bool
     chezmoi_mousse_dark: Theme
     chezmoi_mousse_light: Theme
     custom_theme_vars: dict[str, str]
-    changes_enabled: bool
-    chezmoi_found: bool
     dev_mode: bool
     home_dir: Path
     temp_dir: Path
@@ -74,12 +80,13 @@ class PreRunData:
 
 class ChezmoiGUI(App[None]):
     def __init__(self, pre_run_data: PreRunData) -> None:
+
+        self.chezmoi = pre_run_data.chezmoi_instance
+        self.changes_enabled = pre_run_data.changes_enabled
+        self.chezmoi_found = pre_run_data.chezmoi_found
         self.chezmoi_mousse_dark = pre_run_data.chezmoi_mousse_dark
         self.chezmoi_mousse_light = pre_run_data.chezmoi_mousse_light
         self.custom_theme_vars = pre_run_data.custom_theme_vars
-
-        self.changes_enabled = pre_run_data.changes_enabled
-        self.chezmoi_found = pre_run_data.chezmoi_found
         self.destDir: Path = pre_run_data.home_dir
         self.dev_mode = pre_run_data.dev_mode
         self.sourceDir: Path = pre_run_data.temp_dir
@@ -91,8 +98,6 @@ class ChezmoiGUI(App[None]):
         self.git_autoadd: bool = False
         self.git_autocommit: bool = False
         self.git_autopush: bool = False
-
-        self.chezmoi = Chezmoi(changes_enabled=self.changes_enabled)
 
         super().__init__()
 
@@ -108,8 +113,6 @@ class ChezmoiGUI(App[None]):
     ]
 
     def compose(self) -> ComposeResult:
-        if self.chezmoi_found is False:
-            return
         yield Header(icon=Chars.burger)
         with TabbedContent():
             with TabPane(PaneBtn.apply_tab.value, id=PaneBtn.apply_tab.name):
@@ -202,7 +205,7 @@ class ChezmoiGUI(App[None]):
             Id.config.listview_qid, DoctorListView
         ).populate_listview(pw_mgr_cmds)
         # refresh chezmoi managed and status data
-        self.chezmoi.refresh_managed(return_data)
+        # self.chezmoi.refresh_managed_status(return_data)
         # Trees to refresh for each tab
         trees: list[
             tuple[TreeName, type[ManagedTree | FlatTree | ExpandedTree]]
@@ -216,7 +219,7 @@ class ChezmoiGUI(App[None]):
             for tree_name, tree_cls in trees:
                 self.query_one(
                     tab_ids.tree_id("#", tree=tree_name), tree_cls
-                ).refresh_tree_data()
+                ).populate_root_node()
         # Refresh DirectoryTree
         self.query_one(FilteredDirTree).reload()
         # make the app_log appear first time the main Logs tab is opened
@@ -243,20 +246,6 @@ class ChezmoiGUI(App[None]):
         self, event: TabbedContent.TabActivated
     ) -> None:
         self.refresh_bindings()
-
-    @on(OperateDismissMsg)
-    def handle_operate_result(self, message: OperateDismissMsg) -> None:
-        assert isinstance(message.path, Path)
-        managed_trees = self.query(ManagedTree)
-        for tree in managed_trees:
-            tree.remove_node_path(node_path=message.path)
-        flat_trees = self.query(FlatTree)
-        for tree in flat_trees:
-            tree.remove_node_path(node_path=message.path)
-        expanded_trees = self.query(ExpandedTree)
-        for tree in expanded_trees:
-            tree.remove_node_path(node_path=message.path)
-        self.query_one(FilteredDirTree).reload()
 
     def check_action(
         self, action: str, parameters: tuple[object, ...]

@@ -22,14 +22,15 @@ from chezmoi_mousse import (
     Chars,
     GlobalCmd,
     LogName,
-    PaneBtn,
     PathDict,
     ReadCmd,
+    ScreenIds,
+    TabIds,
     Tcss,
     VerbArgs,
     ViewName,
 )
-from chezmoi_mousse.gui import AppType, ScreenIds, TabIds
+from chezmoi_mousse.gui import AppType
 
 __all__ = ["AppLog", "DebugLog", "OutputLog", "ContentsView", "DiffView"]
 
@@ -88,10 +89,10 @@ class ContentsView(RichLog, AppType):
         except FileNotFoundError:
             # FileNotFoundError is raised both when a file or a directory
             # does not exist
-            if self.path in self.app.chezmoi.managed.dirs:
+            if self.path in self.app.chezmoi.managed_paths.all_dirs:
                 self.write(f"Managed directory: {self.path}")
                 return
-            if self.path in self.app.chezmoi.managed.files:
+            if self.path in self.app.chezmoi.managed_paths.all_files:
                 cat_output = self.app.chezmoi.read(ReadCmd.cat, self.path)
                 if cat_output == "":
                     self.write(
@@ -102,7 +103,7 @@ class ContentsView(RichLog, AppType):
                 return
 
         except IsADirectoryError:
-            if self.path in self.app.chezmoi.managed.dirs:
+            if self.path in self.app.chezmoi.managed_paths.all_dirs:
                 self.write(f"Managed directory: {self.path}")
             else:
                 self.write(f"Unmanaged directory: {self.path}")
@@ -147,50 +148,50 @@ class DiffView(RichLog, AppType):
         self.clear()
 
         diff_output: list[str] = []
-        if not self.reverse:
-            self.status_files = self.app.chezmoi.apply_files
-            self.status_dirs = self.app.chezmoi.apply_dirs
-        elif self.reverse:
-            self.status_files = self.app.chezmoi.re_add_files
-            self.status_dirs = self.app.chezmoi.re_add_dirs
+        # if not self.reverse:
+        #     self.status_files = self.app.chezmoi.apply_files
+        #     self.status_dirs = self.app.chezmoi.apply_dirs
+        # elif self.reverse:
+        #     self.status_files = self.app.chezmoi.re_add_files
+        #     self.status_dirs = self.app.chezmoi.re_add_dirs
 
         # create a diff view if the current path is a directory
-        if self.path in self.status_dirs or self.path == self.app.destDir:
-            tab_name = (
-                PaneBtn.re_add_tab.name
-                if self.reverse
-                else PaneBtn.apply_tab.name
-            )
-            status_files_in_dir = self.app.chezmoi.files_with_status_in(
-                tab_name, self.path
-            )
-            if not status_files_in_dir:
-                self.write(
-                    Text(
-                        "Directory does not contain changed files.",
-                        style="dim",
-                    )
-                )
-            else:
-                self.write(Text("Files in directory with changed status:"))
-                for file_path in status_files_in_dir:
-                    self.write(
-                        Text(
-                            f"{file_path}",
-                            self.app.custom_theme_vars["text-accent"],
-                        )
-                    )
-                return
-            return
+        # if self.path in self.status_dirs or self.path == self.app.destDir:
+        #     tab_name = (
+        #         PaneBtn.re_add_tab.name
+        #         if self.reverse
+        #         else PaneBtn.apply_tab.name
+        #     )
+        #     status_files_in_dir = self.app.chezmoi.files_with_status_in(
+        #         tab_name, self.path
+        #     )
+        #     if not status_files_in_dir:
+        #         self.write(
+        #             Text(
+        #                 "Directory does not contain changed files.",
+        #                 style="dim",
+        #             )
+        #         )
+        #     else:
+        #         self.write(Text("Files in directory with changed status:"))
+        #         for file_path in status_files_in_dir:
+        #             self.write(
+        #                 Text(
+        #                     f"{file_path}",
+        #                     self.app.custom_theme_vars["text-accent"],
+        #                 )
+        #             )
+        #         return
+        #     return
         # create a diff view if the current selected path is an unchanged file
-        elif self.path not in self.status_files:
-            self.write(
-                Text(
-                    f"No diff available for {self.path},\n file is unchanged.",
-                    style="dim",
-                )
-            )
-            return
+        # elif self.path not in self.status_files:
+        #     self.write(
+        #         Text(
+        #             f"No diff available for {self.path},\n file is unchanged.",
+        #             style="dim",
+        #         )
+        #     )
+        #     return
         # create the actual diff view for a changed file
         if not self.reverse:
             diff_output = self.app.chezmoi.read(
@@ -323,7 +324,7 @@ class AppLog(CommandLogBase, AppType):
 
     def on_mount(self) -> None:
         self.app.app_log = self
-        self.app.chezmoi.app_log = self.completed_process
+        self.app.chezmoi.call_app_log = self.completed_process
 
 
 class DebugLog(CommandLogBase, AppType):
@@ -347,7 +348,6 @@ class DebugLog(CommandLogBase, AppType):
 
     def on_mount(self) -> None:
         self.app.debug_log = self
-        self.app.chezmoi.debug_log = self.completed_process
 
     def mro(self, mro: Mro) -> None:
         color = self.app.custom_theme_vars["accent-darken-2"]
@@ -403,4 +403,4 @@ class OutputLog(CommandLogBase, AppType):
 
     def on_mount(self) -> None:
         self.app.output_log = self
-        self.app.chezmoi.output_log = self.completed_process
+        self.app.chezmoi.call_output_log = self.completed_process

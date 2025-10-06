@@ -1,5 +1,5 @@
 from importlib.metadata import PackageNotFoundError, version
-from typing import Any, Literal
+from typing import Any
 
 from chezmoi_mousse._chezmoi_cmd import (
     ActiveTab,
@@ -33,7 +33,6 @@ __all__ = [
     "__version__",
     "Any",
     "ActiveTab",
-    "Literal",
     "ParsedJson",
     "PathDict",
     # from _chezmoi_cmd.py

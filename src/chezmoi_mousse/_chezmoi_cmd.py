@@ -3,8 +3,9 @@ from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 from subprocess import CompletedProcess, run
+from typing import Literal
 
-from chezmoi_mousse import Literal, PaneBtn
+from chezmoi_mousse._str_enums import PaneBtn
 
 __all__ = [
     "ActiveTab",
