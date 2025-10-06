@@ -138,7 +138,6 @@ class ChangeCmd(Enum):
 @dataclass
 class ManagedStatusData:
 
-    all_paths_stdout: str = ""  # stdout from ReadCmd.managed
     managed_dirs_stdout: str = ""  # stdout from ReadCmd.managed_dirs
     managed_files_stdout: str = ""  # stdout from ReadCmd.managed_files
     status_dirs_stdout: str = ""  # stdout from ReadCmd.status_dirs
@@ -146,10 +145,6 @@ class ManagedStatusData:
     status_paths_stdout: str = ""  # stdout from ReadCmd.status
 
     # PROPERTIES RETURNING ALL PATHS FOR A SUBSET
-
-    @property
-    def _all_paths(self) -> list[Path]:
-        return [Path(line) for line in self.all_paths_stdout.splitlines()]
 
     @property
     def all_dirs(self) -> list[Path]:
@@ -187,11 +182,6 @@ class ManagedStatusData:
             for key, value in self._all_status_paths_dict.items()
             if value[0] == "M" or (value[0] == " " and value[1] == "M")
         }
-
-    def has_paths(self, dir_path: Path) -> bool:
-        return any(
-            path for path in self._all_paths if path.is_relative_to(dir_path)
-        )
 
     def has_status_paths_in(
         self, active_tab: ActiveTab, dir_path: Path
@@ -404,8 +394,6 @@ class Chezmoi:
 
     def refresh_managed_paths_data(self) -> ManagedStatusData:
         # get data from chezmoi managed stdout
-        self.managed_paths.all_paths_stdout = self.read(ReadCmd.managed)
-        self.managed_paths.status_paths_stdout = self.read(ReadCmd.status)
         self.managed_paths.managed_dirs_stdout = self.read(
             ReadCmd.managed_dirs
         )  # noqa: E501 #
