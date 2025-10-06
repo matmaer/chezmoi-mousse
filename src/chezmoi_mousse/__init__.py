@@ -1,7 +1,8 @@
 from importlib.metadata import PackageNotFoundError, version
-from typing import Any
+from typing import Any, Literal
 
 from chezmoi_mousse._chezmoi_cmd import (
+    ActiveTab,
     ChangeCmd,
     Chezmoi,
     GlobalCmd,
@@ -30,6 +31,9 @@ from chezmoi_mousse._str_enums import (
 __all__ = [
     # from this file
     "__version__",
+    "Any",
+    "ActiveTab",
+    "Literal",
     "ParsedJson",
     "PathDict",
     # from _chezmoi_cmd.py

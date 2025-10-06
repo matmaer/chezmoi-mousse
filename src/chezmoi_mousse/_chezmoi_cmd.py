@@ -3,9 +3,11 @@ from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 from subprocess import CompletedProcess, run
-from typing import Literal
+
+from chezmoi_mousse import Literal, PaneBtn
 
 __all__ = [
+    "ActiveTab",
     "ChangeCmd",
     "Chezmoi",
     "GlobalCmd",
@@ -17,6 +19,7 @@ __all__ = [
 ]
 
 type PathDict = dict[Path, str]
+type ActiveTab = Literal[PaneBtn.apply_tab, PaneBtn.re_add_tab]
 
 
 class GlobalCmd(Enum):
@@ -144,19 +147,19 @@ class ManagedStatusData:
     # PROPERTIES RETURNING ALL PATHS FOR A SUBSET
 
     @property
-    def all_paths(self) -> list[Path]:
+    def _all_paths(self) -> list[Path]:
         return [Path(line) for line in self.all_paths_stdout.splitlines()]
 
     @property
-    def all_dirs(self) -> list[Path]:
+    def _all_dirs(self) -> list[Path]:
         return [Path(line) for line in self.managed_dirs_stdout.splitlines()]
 
     @property
-    def all_files(self) -> list[Path]:
+    def _all_files(self) -> list[Path]:
         return [Path(line) for line in self.managed_files_stdout.splitlines()]
 
     @property
-    def all_status_paths_dict(self) -> PathDict:
+    def _all_status_paths_dict(self) -> PathDict:
         return {
             Path(line[3:]): line[:2]
             for line in self.status_paths_stdout.splitlines()
@@ -169,97 +172,128 @@ class ManagedStatusData:
     #   X (no status but managed)
 
     @property
-    def apply_status_paths_dict(self) -> PathDict:
+    def _apply_status_paths(self) -> PathDict:
         return {
             (key): value[1]
-            for key, value in self.all_status_paths_dict.items()
+            for key, value in self._all_status_paths_dict.items()
             if value in "ADM"
         }
 
     @property
-    def re_add_status_paths_dict(self) -> PathDict:
+    def _re_add_status_paths(self) -> PathDict:
         return {
             key: value[0]
-            for key, value in self.all_status_paths_dict.items()
+            for key, value in self._all_status_paths_dict.items()
             if value[0] == "M" or (value[0] == " " and value[1] == "M")
         }
 
-    # FUNCTIONS RETURNING A BOOL
-
-    def has_paths_in(self, dir_path: Path) -> bool:
-        return any(p for p in self.all_paths if p.is_relative_to(dir_path))
+    def has_paths(self, dir_path: Path) -> bool:
+        return any(
+            path for path in self._all_paths if path.is_relative_to(dir_path)
+        )
 
     def has_status_paths_in(
-        self, operation_type: Literal["apply", "re_add"], dir_path: Path
+        self, active_tab: ActiveTab, dir_path: Path
     ) -> bool:
-
-        if operation_type == "apply":
-            status_paths = {
-                key: value
-                for key, value in self.apply_status_paths_dict.items()
-                if value in "ADM"
-            }
-        elif operation_type == "re_add":
-            status_paths = {
-                key: value
-                for key, value in self.re_add_status_paths_dict.items()
-                if value[0] == "M" or (value[0] == " " and value[1] == "M")
-            }
-
+        if active_tab == PaneBtn.apply_tab:
+            status_paths = self._apply_status_paths
+        elif active_tab == PaneBtn.re_add_tab:
+            status_paths = self._re_add_status_paths
         return any(key.is_relative_to(dir_path) for key in status_paths.keys())
+
+    def dir_has_status(self, active_tab: ActiveTab, dir_path: Path) -> bool:
+        if active_tab == PaneBtn.apply_tab:
+            status_paths = self._apply_status_paths
+        elif active_tab == PaneBtn.re_add_tab:
+            status_paths = self._re_add_status_paths
+        return dir_path in status_paths
 
     # FUNCTIONS RETURNING A LIST OF PATHS FOR IMMEDIATE CHILDREN
 
     def dirs_in(self, dir_path: Path) -> list[Path]:
-        return [p for p in self.all_dirs if p.parent == dir_path]
+        return [p for p in self._all_dirs if p.parent == dir_path]
 
     def files_in(self, dir_path: Path) -> list[Path]:
-        return [p for p in self.all_files if p.parent == dir_path]
+        return [p for p in self._all_files if p.parent == dir_path]
 
-    def files_with_status_in(
-        self, operation_type: Literal["apply", "re_add"], dir_path: Path
-    ) -> list[Path]:
-        if operation_type == "apply":
-            return [
-                p
-                for p in self.apply_status_paths_dict
-                if p.parent == dir_path and p in self.all_files
-            ]
+    def status_files_in(
+        self, active_tab: ActiveTab, dir_path: Path
+    ) -> PathDict:
+        if active_tab == PaneBtn.apply_tab:
+            return {
+                path: status
+                for path, status in self._apply_status_paths.items()
+                if path.parent == dir_path and path in self._all_files
+            }
         else:
-            return [
-                p
-                for p in self.re_add_status_paths_dict
-                if p.parent == dir_path and p in self.all_files
-            ]
+            return {
+                path: status
+                for path, status in self._re_add_status_paths.items()
+                if path.parent == dir_path and path in self._all_files
+            }
 
-    def dirs_with_status_in(
-        self, operation_type: Literal["apply", "re_add"], dir_path: Path
-    ) -> list[Path]:
-        if operation_type == "apply":
-            return [
-                p
-                for p in self.apply_status_paths_dict
-                if p.parent == dir_path and p in self.all_dirs
-            ]
+    def status_dirs_in(
+        self, active_tab: ActiveTab, dir_path: Path
+    ) -> PathDict:
+        if active_tab == PaneBtn.apply_tab:
+            return {
+                path: status
+                for path, status in self._apply_status_paths.items()
+                if path.parent == dir_path and path in self._all_dirs
+            }
         else:
-            return [
-                p
-                for p in self.re_add_status_paths_dict
-                if p.parent == dir_path and p in self.all_dirs
-            ]
+            return {
+                path: status
+                for path, status in self._re_add_status_paths.items()
+                if path.parent == dir_path and path in self._all_dirs
+            }
+
+    def files_without_status_in(
+        self, active_tab: ActiveTab, dir_path: Path
+    ) -> PathDict:
+        if active_tab == PaneBtn.apply_tab:
+            return {
+                path: "X"
+                for path in self._all_files
+                if path.parent == dir_path
+                and path not in self._apply_status_paths
+            }
+        else:
+            return {
+                path: "X"
+                for path in self._all_files
+                if path.parent == dir_path
+                and path not in self._re_add_status_paths
+            }
+
+    def dirs_without_status_in(
+        self, active_tab: ActiveTab, dir_path: Path
+    ) -> PathDict:
+        if active_tab == PaneBtn.apply_tab:
+            return {
+                path: "X"
+                for path in self._all_dirs
+                if path.parent == dir_path
+                and path not in self._apply_status_paths
+            }
+        else:
+            return {
+                path: "X"
+                for path in self._all_dirs
+                if path.parent == dir_path
+                and path not in self._re_add_status_paths
+            }
 
     # FUNCTION RETURNING THE STATUS CODE FOR A PATH
 
-    def status_code(
-        self, operation_type: Literal["apply", "re_add"], path: Path
-    ) -> str:
+    def status_code(self, active_tab: ActiveTab, path: Path) -> str:
         # returns the status code for a given path
         # uses one of the properties above to get the status code depending on
-        # the operation_type and path_types
-        if operation_type == "apply":
-            return self.apply_status_paths_dict[path]
+        # the active_tab and path_types
+        if active_tab == PaneBtn.apply_tab:
+            return self._apply_status_paths[path]
         else:
-            return self.re_add_status_paths_dict[path]
+            return self._re_add_status_paths[path]
 
 
 class Chezmoi:
