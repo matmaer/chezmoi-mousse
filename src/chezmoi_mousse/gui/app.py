@@ -214,17 +214,6 @@ class ChezmoiGUI(App[None]):
         self.query_one(
             Id.config.listview_qid, DoctorListView
         ).populate_listview(pw_mgr_cmds)
-        # refresh chezmoi managed and status data
-        self.chezmoi.managed_paths.status_dirs_stdout = return_data.status_dirs
-        self.chezmoi.managed_paths.status_files_stdout = (
-            return_data.status_files
-        )
-        self.chezmoi.managed_paths.managed_dirs_stdout = (
-            return_data.managed_dirs
-        )
-        self.chezmoi.managed_paths.managed_files_stdout = (
-            return_data.managed_files
-        )
 
         # Trees to refresh for each tab
         trees: list[
