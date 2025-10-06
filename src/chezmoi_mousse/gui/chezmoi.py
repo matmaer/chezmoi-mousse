@@ -18,8 +18,8 @@ class Chezmoi:
 
         # set by main App class in its on_mount method
         self._changes_enabled = changes_enabled
-        self._app_log: AppLog
-        self._output_log: OutputLog
+        self.app_log: AppLog
+        self.output_log: OutputLog
 
         # cached command outputs
         self._managed_dirs_stdout: str = ""  # ReadCmd.managed_dirs
@@ -29,7 +29,7 @@ class Chezmoi:
         self._status_paths_stdout: str = ""  # ReadCmd.status
 
         if dev_mode:
-            self._debug_log: DebugLog | None = None
+            self.debug_log: DebugLog | None = None
 
     # PROPERTIES RETURNING ALL PATHS FOR A SUBSET
 
@@ -82,8 +82,8 @@ class Chezmoi:
 
     def _log_in_app_and_output_log(self, result: CompletedProcess[str]):
         result.stdout = self._strip_stdout(result.stdout)
-        self._app_log.completed_process(result)
-        self._output_log.completed_process(result)
+        self.app_log.completed_process(result)
+        self.output_log.completed_process(result)
 
     def read(self, read_cmd: ReadCmd, path: Path | None = None) -> str:
         command: list[str] = read_cmd.value
