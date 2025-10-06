@@ -9,15 +9,17 @@ from textual.widgets import Button, Input, Switch
 from chezmoi_mousse import (
     Area,
     ChangeCmd,
+    Id,
     LogName,
     NavBtn,
     OperateBtn,
+    Switches,
     TabBtn,
     Tcss,
     TreeName,
     ViewName,
 )
-from chezmoi_mousse.gui import AppType, Id, Switches
+from chezmoi_mousse.gui import AppType
 from chezmoi_mousse.gui.button_groups import (
     NavButtonsVertical,
     TabBtnHorizontal,

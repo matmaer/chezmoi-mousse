@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING
 
 __all__ = ["AppType", "NodeData", "SplashReturnData"]
 
@@ -23,8 +23,9 @@ class NodeData:
     # "node status" codes:
     #   X (no status but managed)
     #   F (fake for the root node)
-    status: Literal["A", "D", "M", "F", "X"]
-    is_dir: bool
+    # Should be Literal["A", "D", "M", "F", "X"] type
+    status: str
+    is_leaf: bool
 
 
 @dataclass

@@ -12,10 +12,17 @@ from textual.widgets import (
     Static,
 )
 
-from chezmoi_mousse import Area, OperateBtn, Tcss, TreeName, ViewName
-from chezmoi_mousse.gui import AppType, TabIds
+from chezmoi_mousse import (
+    Area,
+    OperateBtn,
+    ReadCmd,
+    TabIds,
+    Tcss,
+    TreeName,
+    ViewName,
+)
+from chezmoi_mousse.gui import AppType
 from chezmoi_mousse.gui.button_groups import OperateBtnHorizontal
-from chezmoi_mousse.gui.chezmoi import ReadCmd
 from chezmoi_mousse.gui.rich_logs import (
     AppLog,
     ContentsView,
