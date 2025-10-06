@@ -26,7 +26,8 @@ from textual import on
 from textual.events import Key
 from textual.reactive import reactive
 from textual.widgets import DataTable, Link, ListItem, ListView, Static, Tree
-from textual.widgets._tree import TOGGLE_STYLE
+
+# from textual.widgets._tree import TOGGLE_STYLE
 from textual.widgets.tree import TreeNode
 
 from chezmoi_mousse import (
@@ -189,7 +190,9 @@ class TreeBase(Tree[NodeData], AppType):
         else:
             self.active_tab: ActiveTab = PaneBtn.re_add_tab
         super().__init__(
-            label="root", id=self.tab_ids.tree_id(tree=self.tree_name)
+            label="root",
+            id=self.tab_ids.tree_id(tree=self.tree_name),
+            classes=Tcss.tree_widget.name,
         )
 
     def on_mount(self) -> None:
@@ -204,7 +207,9 @@ class TreeBase(Tree[NodeData], AppType):
         }
         self.guide_depth: int = 3
         self.show_root: bool = False
-        self.add_class(Tcss.tree_widget.name)
+        self.root.data = NodeData(
+            path=self.app.destDir, is_leaf=False, found=True, status="F"
+        )
 
     @on(Tree.NodeCollapsed)
     def remove_node_children(
@@ -216,13 +221,6 @@ class TreeBase(Tree[NodeData], AppType):
     def send_node_context_message(
         self, event: Tree.NodeSelected[NodeData]
     ) -> None:
-        if event.node.data is not None and event.node.data.path == Path(
-            "/home/mm/"
-        ):
-            self.notify("Tree.NodeSelected /home/mm/", severity="error")
-            print(
-                "Root node selected, solve issue as it depends on self.app.destDir"
-            )
         if event.node == self.root:
             return
         if (
@@ -272,11 +270,6 @@ class TreeBase(Tree[NodeData], AppType):
 
     # the styling method for the node labels
     def style_label(self, node_data: NodeData) -> Text:
-        if node_data.path == Path("/home/mm/"):
-            self.notify(
-                "TreeBase.style_label tries to style the root node",
-                severity="error",
-            )
         italic: bool = False if node_data.found else True
         if node_data.status != "X":
             styled = Style(
@@ -464,61 +457,61 @@ class TreeBase(Tree[NodeData], AppType):
             node_label: Text = self.style_label(node_data)
             tree_node.add(label=node_label, data=node_data)
 
-    def _apply_cursor_style(self, node_label: Text, is_cursor: bool) -> Text:
-        """Helper to apply cursor-specific styling to a node label."""
-        if not is_cursor:
-            return node_label
+    # def _apply_cursor_style(self, node_label: Text, is_cursor: bool) -> Text:
+    #     """Helper to apply cursor-specific styling to a node label."""
+    #     if not is_cursor:
+    #         return node_label
 
-        current_style = node_label.style
-        # Apply bold styling when tree is first focused
-        if not self._first_focus and self._initial_render:
-            if isinstance(current_style, str):
-                cursor_style = Style.parse(current_style) + Style(bold=True)
-            else:
-                cursor_style = current_style + Style(bold=True)
-            return Text(node_label.plain, style=cursor_style)
-        # Apply underline styling only after actual user interaction
-        elif self._user_interacted:
-            if isinstance(current_style, str):
-                cursor_style = Style.parse(current_style) + Style(
-                    underline=True
-                )
-            else:
-                cursor_style = current_style + Style(underline=True)
-            return Text(node_label.plain, style=cursor_style)
+    #     current_style = node_label.style
+    #     # Apply bold styling when tree is first focused
+    #     if not self._first_focus and self._initial_render:
+    #         if isinstance(current_style, str):
+    #             cursor_style = Style.parse(current_style) + Style(bold=True)
+    #         else:
+    #             cursor_style = current_style + Style(bold=True)
+    #         return Text(node_label.plain, style=cursor_style)
+    #     # Apply underline styling only after actual user interaction
+    #     elif self._user_interacted:
+    #         if isinstance(current_style, str):
+    #             cursor_style = Style.parse(current_style) + Style(
+    #                 underline=True
+    #             )
+    #         else:
+    #             cursor_style = current_style + Style(underline=True)
+    #         return Text(node_label.plain, style=cursor_style)
 
-        return node_label  # No changes if conditions not met
+    #     return node_label  # No changes if conditions not met
 
-    def render_label(
-        self,
-        node: TreeNode[NodeData],
-        base_style: Style,
-        style: Style,  # needed for valid overriding
-    ) -> Text:
-        # Get base styling from style_label
-        if node.data is None:
-            return Text("Node data is None")
-        node_label = self.style_label(node.data)
+    # def render_label(
+    #     self,
+    #     node: TreeNode[NodeData],
+    #     base_style: Style,
+    #     style: Style,  # needed for valid overriding
+    # ) -> Text:
+    #     # Get base styling from style_label
+    #     if node.data is None:
+    #         return Text("Node data is None")
+    #     node_label = self.style_label(node.data)
 
-        # Apply cursor styling via helper
-        node_label = self._apply_cursor_style(
-            node_label, node is self.cursor_node
-        )
+    #     # Apply cursor styling via helper
+    #     node_label = self._apply_cursor_style(
+    #         node_label, node is self.cursor_node
+    #     )
 
-        if node.allow_expand:
-            prefix = (
-                (
-                    self.ICON_NODE_EXPANDED
-                    if node.is_expanded
-                    else self.ICON_NODE
-                ),
-                base_style + TOGGLE_STYLE,
-            )
-        else:
-            prefix = ("", base_style)
+    #     if node.allow_expand:
+    #         prefix = (
+    #             (
+    #                 self.ICON_NODE_EXPANDED
+    #                 if node.is_expanded
+    #                 else self.ICON_NODE
+    #             ),
+    #             base_style + TOGGLE_STYLE,
+    #         )
+    #     else:
+    #         prefix = ("", base_style)
 
-        text = Text.assemble(prefix, node_label)
-        return text
+    #     text = Text.assemble(prefix, node_label)
+    #     return text
 
 
 class ManagedTree(TreeBase):
@@ -565,7 +558,6 @@ class ExpandedTree(TreeBase):
         super().__init__(self.tab_ids, tree_name=TreeName.expanded_tree)
 
     def populate_root_node(self) -> None:
-        """Refresh the tree with latest chezmoi data."""
         self.root.remove_children()
         self.expand_all_nodes(self.root)
 
