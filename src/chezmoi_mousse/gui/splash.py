@@ -82,12 +82,12 @@ class AnimatedFade(Static):
         return line_styles
 
 
-dir_status_lines: str = ""
 doctor: str = ""
 dump_config: str = ""
-file_status_lines: str = ""
 managed_dirs: str = ""
 managed_files: str = ""
+status_dirs: str = ""
+status_files: str = ""
 
 
 class LoadingScreen(Screen[SplashReturnData], AppType):
@@ -152,12 +152,12 @@ class LoadingScreen(Screen[SplashReturnData], AppType):
 
             self.dismiss(
                 SplashReturnData(
-                    dir_status_lines=globals()["dir_status_lines"],
                     doctor=globals()["doctor"],
                     dump_config=globals()["dump_config"],
-                    file_status_lines=globals()["file_status_lines"],
                     managed_dirs=globals()["managed_dirs"],
                     managed_files=globals()["managed_files"],
+                    status_dirs=globals()["status_dirs"],
+                    status_files=globals()["status_files"],
                 )
             )
 

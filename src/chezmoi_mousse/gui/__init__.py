@@ -30,9 +30,9 @@ class NodeData:
 
 @dataclass
 class SplashReturnData:
-    dir_status_lines: str
     doctor: str
     dump_config: str
-    file_status_lines: str
     managed_dirs: str
     managed_files: str
+    status_dirs: str
+    status_files: str
