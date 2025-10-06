@@ -77,7 +77,10 @@ class AnimatedFade(Static):
         fade.extend([color.hex for color in gradient.colors])
 
         line_styles = deque(
-            [Style(color=color, bgcolor="black", bold=True) for color in fade]
+            [
+                Style(color=color, bgcolor="#000000", bold=True)
+                for color in fade
+            ]
         )
         return line_styles
 
