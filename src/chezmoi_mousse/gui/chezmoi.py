@@ -139,9 +139,9 @@ class Chezmoi:
     @property
     def _apply_status_files(self) -> PathDict:
         return {
-            (key): value[1]
-            for key, value in self._all_status_paths_dict.items()
-            if value[1] in "ADM" and key in self.managed_files
+            key: value
+            for key, value in self._apply_status_paths.items()
+            if key in self.managed_files
         }
 
     @property
