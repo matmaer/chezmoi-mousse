@@ -163,10 +163,7 @@ class GitLogView(DataTable[Text], AppType):
                 self.app.chezmoi.read(ReadCmd.source_path, self.path)
             )
             cmd_output = self.app.chezmoi.read(ReadCmd.git_log, source_path)
-        try:
-            self.populate_data_table(cmd_output)
-        except:  # noqa: E722
-            self.render_invalid_data(cmd_output)
+        self.populate_data_table(cmd_output)
 
 
 class TreeBase(Tree[NodeData], AppType):
@@ -503,8 +500,6 @@ class ManagedTree(TreeBase):
         super().__init__(self.tab_ids, tree_name=TreeName.managed_tree)
 
     def populate_root_node(self) -> None:
-        """Refresh the tree with latest chezmoi data."""
-        # self.root.remove_children()
         self.add_status_dirs_in(tree_node=self.root)
         self.add_status_files_in(tree_node=self.root)
         self.refresh()
