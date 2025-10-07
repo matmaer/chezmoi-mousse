@@ -240,6 +240,13 @@ class CommandLogBase(RichLog, AppType):
     def _log_time(self) -> str:
         return f"[[green]{datetime.now().strftime('%H:%M:%S')}[/]]"
 
+    def _log_command(self, command: list[str]) -> None:
+        trimmed_cmd = self.pretty_cmd_str(command)
+        time = self._log_time()
+        color = self.app.custom_theme_vars["primary-lighten-3"]
+        log_line = f"{time} [{color}]{trimmed_cmd}[/]"
+        self.write(log_line)
+
     def pretty_cmd_str(self, command: list[str]) -> str:
         filter_git_log_args = VerbArgs.git_log.value[3:]
         return "chezmoi " + " ".join(
@@ -256,17 +263,17 @@ class CommandLogBase(RichLog, AppType):
             ]
         )
 
-    def _log_command(self, command: list[str]) -> None:
-        trimmed_cmd = self.pretty_cmd_str(command)
-        time = self._log_time()
-        color = self.app.custom_theme_vars["primary-lighten-3"]
-        log_line = f"{time} [{color}]{trimmed_cmd}[/]"
-        self.write(log_line)
+    def ready_to_run(self, message: str) -> None:
+        color = self.app.custom_theme_vars["accent-darken-3"]
+        self.write(f"{self._log_time()} [{color}]{message}[/]")
 
-    def error(self, message: str) -> None:
-        color = self.app.custom_theme_vars["text-error"]
-        time = self._log_time()
-        self.write(f"{time} [{color}]{message}[/]")
+    def info(self, message: str) -> None:
+        color = self.app.custom_theme_vars["text-secondary"]
+        self.write(f"{self._log_time()} [{color}]{message}[/]")
+
+    def success(self, message: str) -> None:
+        color = self.app.custom_theme_vars["text-success"]
+        self.write(f"{self._log_time()} [{color}]{message}[/]")
 
     def warning(self, message: str) -> None:
         lines = message.splitlines()
@@ -275,13 +282,10 @@ class CommandLogBase(RichLog, AppType):
             escaped_line = escape(line)
             self.write(f"{self._log_time()} [{color}]{escaped_line}[/]")
 
-    def success(self, message: str) -> None:
-        color = self.app.custom_theme_vars["text-success"]
-        self.write(f"{self._log_time()} [{color}]{message}[/]")
-
-    def ready_to_run(self, message: str) -> None:
-        color = self.app.custom_theme_vars["accent-darken-3"]
-        self.write(f"{self._log_time()} [{color}]{message}[/]")
+    def error(self, message: str) -> None:
+        color = self.app.custom_theme_vars["text-error"]
+        time = self._log_time()
+        self.write(f"{time} [{color}]{message}[/]")
 
     def dimmed(self, message: str) -> None:
         if message.strip() == "":
