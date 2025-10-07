@@ -1,5 +1,3 @@
-"""Test to ensure CSS classes are properly managed through Tcss enum."""
-
 import ast
 import re
 from pathlib import Path
@@ -11,7 +9,7 @@ from chezmoi_mousse import Tcss
 
 add_class_method = "add_class"
 classes_kw = "classes"
-tcss_path = Path("./src/chezmoi_mousse/data/gui.tcss")
+tcss_path = Path("./src/chezmoi_mousse/gui/data/gui.tcss")
 
 
 def extract_tcss_classes(path: Path) -> list[str]:
@@ -20,6 +18,31 @@ def extract_tcss_classes(path: Path) -> list[str]:
         content = f.read()
         matches = re.findall(pattern, content, re.MULTILINE)
     return matches
+
+
+# Helper: return attribute chain as list (e.g. SomeEnum.member.value -> ["SomeEnum","member","value"])
+def get_attr_chain(node: ast.AST) -> list[str] | None:
+    attrs: list[str] = []
+    cur = node
+    while isinstance(cur, ast.Attribute):
+        attrs.append(cur.attr)
+        cur = cur.value
+    if isinstance(cur, ast.Name):
+        attrs.append(cur.id)
+        attrs.reverse()
+        return attrs
+    return None
+
+
+def is_allowed_enum_attr(node: ast.AST) -> bool:
+    chain = get_attr_chain(node)
+    if not chain:
+        return False
+    # require at least Enum.member and that the member exists on Tcss
+    if len(chain) >= 2:
+        member = chain[1]
+        return hasattr(Tcss, member)
+    return False
 
 
 def test_no_orphaned() -> None:
@@ -49,7 +72,7 @@ def test_no_orphaned() -> None:
 
 @pytest.mark.parametrize(
     "py_file",
-    get_modules_importing_class(class_name="Tcss", exclude_id_typing=True),
+    get_modules_importing_class(class_name="Tcss"),
     ids=lambda py_file: py_file.name,
 )
 def test_no_hardcoded(py_file: Path) -> None:
@@ -63,7 +86,7 @@ def test_no_hardcoded(py_file: Path) -> None:
             if keyword.arg == classes_kw:  # classes= keyword is used
                 if not (
                     isinstance(keyword.value, ast.Attribute)
-                    and hasattr(Tcss, keyword.value.attr)
+                    and is_allowed_enum_attr(keyword.value)
                 ):
                     pytest.fail(
                         f"\n{py_file} line {keyword.lineno}: {keyword.value}: hardcoded tcss class"
@@ -81,4 +104,10 @@ def test_no_hardcoded(py_file: Path) -> None:
             ):
                 pytest.fail(
                     f'\n{py_file}:{first_arg.lineno} - add_class("{first_arg.value}"): hardcoded tcss class'
+                )
+            if isinstance(
+                first_arg, ast.Attribute
+            ) and not is_allowed_enum_attr(first_arg):
+                pytest.fail(
+                    f"\n{py_file}:{first_arg.lineno} - add_class({ast.unparse(first_arg)}): hardcoded tcss class"
                 )

@@ -1,21 +1,10 @@
-"""Test if all Enum members from id_typing.py are in use."""
-
 import ast
 from pathlib import Path
 
 import pytest
 from _test_utils import get_modules_importing_class
 
-import chezmoi_mousse._id_classes as id_classes
-
-# @pytest.mark.parametrize(
-#     "class_name, class_def",
-#     get_module_ast_class_defs(Path("id_typing", "_id_classes.py")),
-#     ids=lambda class_def: class_def.name,
-# )
-# def test_class_members_in_use(class_name: str, class_def: ast.ClassDef):
-#     modules_to_check: set[Path] = set(get_modules_importing_class(class_name))
-#     ...
+from chezmoi_mousse import Id, ScreenIds, TabIds
 
 
 def _get_class_public_members_strings(
@@ -69,11 +58,8 @@ class UsageFinder(ast.NodeVisitor):
 
 @pytest.mark.parametrize(
     "member_name, member_type",
-    _get_class_public_members_strings(id_classes.TabIds),
-    ids=[
-        name
-        for name, _ in _get_class_public_members_strings(id_classes.TabIds)
-    ],
+    _get_class_public_members_strings(TabIds),
+    ids=[name for name, _ in _get_class_public_members_strings(TabIds)],
 )
 def test_tabids_member_in_use(member_name: str, member_type: str):
     is_used = False
@@ -101,11 +87,8 @@ def test_tabids_member_in_use(member_name: str, member_type: str):
 
 @pytest.mark.parametrize(
     "member_name, member_type",
-    _get_class_public_members_strings(id_classes.ScreenIds),
-    ids=[
-        name
-        for name, _ in _get_class_public_members_strings(id_classes.ScreenIds)
-    ],
+    _get_class_public_members_strings(ScreenIds),
+    ids=[name for name, _ in _get_class_public_members_strings(ScreenIds)],
 )
 def test_screen_ids_member_in_use(member_name: str, member_type: str):
     is_used = False
@@ -133,8 +116,8 @@ def test_screen_ids_member_in_use(member_name: str, member_type: str):
 
 @pytest.mark.parametrize(
     "member_name, member_type",
-    _get_class_public_members_strings(id_classes.Id),
-    ids=[name for name, _ in _get_class_public_members_strings(id_classes.Id)],
+    _get_class_public_members_strings(Id),
+    ids=[name for name, _ in _get_class_public_members_strings(Id)],
 )
 def test_id_members_in_use(member_name: str, member_type: str):
     is_used = False

@@ -7,14 +7,14 @@ from pathlib import Path
 import pytest
 from _test_utils import get_module_paths
 
-import chezmoi_mousse._str_enums as _str_enums
-from chezmoi_mousse._id_classes import Id
+import chezmoi_mousse._str_enums as str_enums
+from chezmoi_mousse import Id
 
 
 def _get_str_enum_classes() -> list[type[StrEnum]]:
     return [
         cls
-        for cls in _str_enums.__dict__.values()
+        for cls in str_enums.__dict__.values()
         if isinstance(cls, type) and issubclass(cls, StrEnum)
     ]
 
