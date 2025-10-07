@@ -87,18 +87,19 @@ class ChezmoiGUI(App[None]):
         self.chezmoi_mousse_dark = pre_run_data.chezmoi_mousse_dark
         self.chezmoi_mousse_light = pre_run_data.chezmoi_mousse_light
         self.custom_theme_vars = pre_run_data.custom_theme_vars
-        self.destDir: Path = pre_run_data.home_dir
         self.dev_mode = pre_run_data.dev_mode
+
+        self.destDir: Path = pre_run_data.home_dir
         self.sourceDir: Path = pre_run_data.temp_dir
+        self.git_autoadd: bool = False
+        self.git_autocommit: bool = False
+        self.git_autopush: bool = False
 
         self.app_log: AppLog
         self.output_log: OutputLog
         self.debug_log: DebugLog
 
-        self.git_autoadd: bool = False
-        self.git_autocommit: bool = False
-        self.git_autopush: bool = False
-
+        ScrollBar.renderer = CustomScrollBarRender  # monkey patch
         super().__init__()
 
     CSS_PATH = "data/gui.tcss"
@@ -152,47 +153,28 @@ class ChezmoiGUI(App[None]):
         yield Footer()
 
     def on_mount(self) -> None:
-        app_logger = self.query_one(f"#{LogName.app_log.name}", AppLog)
-        self.app_log = app_logger
-        self.chezmoi.app_log = app_logger
-
-        output_logger = self.query_one(
-            f"#{LogName.output_log.name}", OutputLog
-        )
-        self.output_log = output_logger
-        self.chezmoi.output_log = output_logger
-
-        if self.dev_mode is True:
-            debug_logger = self.query_one(
-                f"#{LogName.debug_log.name}", DebugLog
-            )
-            self.debug_log = debug_logger
-            self.chezmoi.debug_log = debug_logger
-
-        self.register_theme(self.chezmoi_mousse_light)
-        self.register_theme(self.chezmoi_mousse_dark)
-        theme_name = "chezmoi-mousse-dark"
-        self.theme = theme_name
-
         if self.chezmoi_found is False:
             self.push_screen(
                 LoadingScreen(chezmoi_found=self.chezmoi_found),
                 callback=self.run_post_splash_actions,
             )
             return
-        # Only continue if chezmoi is found
-        self.app_log.success("App initialized successfully")
-        # TODO: inform user only file mode is supported if detected in the user config
-        ScrollBar.renderer = CustomScrollBarRender  # monkey patch
-        self.title = "-  c h e z m o i  m o u s s e  -"
 
-        self.app_log.success(f"Theme set to {theme_name}")
-        self.app_log.success(f"chezmoi command found: {self.chezmoi_found}")
+        self.setup_ui_loggers()
+        self.app_log.success("App initialized successfully")
         self.app_log.ready_to_run("--- Start loading screen ---")
+
         self.push_screen(
             LoadingScreen(chezmoi_found=self.chezmoi_found),
             callback=self.run_post_splash_actions,
         )
+        # this will also run while the loading screen is shown
+        self.register_theme(self.chezmoi_mousse_light)
+        self.register_theme(self.chezmoi_mousse_dark)
+        theme_name = "chezmoi-mousse-dark"
+        self.theme = theme_name
+        self.app_log.info(f"Theme set to {theme_name}")
+        self.title = "-  c h e z m o i  m o u s s e  -"
 
     def run_post_splash_actions(
         self, return_data: SplashReturnData | None
@@ -200,6 +182,7 @@ class ChezmoiGUI(App[None]):
         if return_data is None:
             self.push_screen(InstallHelp())
             return
+        self.app_log.success(f"chezmoi command found: {self.chezmoi_found}")
         self.app_log.ready_to_run("--- Loading screen completed ---")
         # Populate Doctor DataTable
         pw_mgr_cmds: list[str] = self.query_one(
@@ -244,6 +227,24 @@ class ChezmoiGUI(App[None]):
             self.notify(
                 OperateHelp.changes_mode_disabled.value, severity="information"
             )
+
+    def setup_ui_loggers(self) -> None:
+        app_logger = self.query_one(f"#{LogName.app_log.name}", AppLog)
+        self.app_log = app_logger
+        self.chezmoi.app_log = app_logger
+
+        output_logger = self.query_one(
+            f"#{LogName.output_log.name}", OutputLog
+        )
+        self.output_log = output_logger
+        self.chezmoi.output_log = output_logger
+
+        if self.dev_mode is True:
+            debug_logger = self.query_one(
+                f"#{LogName.debug_log.name}", DebugLog
+            )
+            self.debug_log = debug_logger
+            self.chezmoi.debug_log = debug_logger
 
     def on_tabbed_content_tab_activated(
         self, event: TabbedContent.TabActivated
