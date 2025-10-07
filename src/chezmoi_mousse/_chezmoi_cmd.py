@@ -56,7 +56,6 @@ class ReadVerbs(Enum):
 class ReadCmd(Enum):
     cat = GlobalCmd.live_run.value + [ReadVerbs.cat.value]
     cat_config = GlobalCmd.live_run.value + [ReadVerbs.cat_config.value]
-    data = GlobalCmd.live_run.value + [ReadVerbs.data.value]
     diff = GlobalCmd.live_run.value + [ReadVerbs.diff.value]
     diff_reverse = GlobalCmd.live_run.value + [
         ReadVerbs.diff.value,
@@ -102,6 +101,7 @@ class ReadCmd(Enum):
         VerbArgs.path_style_absolute.value,
         VerbArgs.include_files.value,
     ]
+    template_data = GlobalCmd.live_run.value + [ReadVerbs.data.value]
 
 
 class ChangeCmd(Enum):
