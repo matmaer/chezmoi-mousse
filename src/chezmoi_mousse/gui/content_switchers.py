@@ -2,6 +2,7 @@ import json
 
 from textual.app import ComposeResult
 from textual.containers import HorizontalGroup, Vertical, VerticalScroll
+from textual.reactive import reactive
 from textual.validation import URL
 from textual.widgets import (
     ContentSwitcher,
@@ -12,15 +13,7 @@ from textual.widgets import (
     Static,
 )
 
-from chezmoi_mousse import (
-    Area,
-    OperateBtn,
-    ReadCmd,
-    TabIds,
-    Tcss,
-    TreeName,
-    ViewName,
-)
+from chezmoi_mousse import Area, OperateBtn, TabIds, Tcss, TreeName, ViewName
 from chezmoi_mousse.gui import AppType
 from chezmoi_mousse.gui.button_groups import OperateBtnHorizontal
 from chezmoi_mousse.gui.rich_logs import (
@@ -173,6 +166,11 @@ class InitTabSwitcher(ContentSwitcher):
 
 class ConfigTabSwitcher(ContentSwitcher, AppType):
 
+    doctor_stdout: reactive[str | None] = reactive(None)
+    cat_config_stdout: reactive[str | None] = reactive(None)
+    ignored_stdout: reactive[str | None] = reactive(None)
+    template_data_stdout: reactive[str | None] = reactive(None)
+
     def __init__(self, tab_ids: TabIds):
         self.tab_ids = tab_ids
         super().__init__(
@@ -211,25 +209,40 @@ class ConfigTabSwitcher(ContentSwitcher, AppType):
             id=self.tab_ids.view_id(view=ViewName.template_data_view),
         )
 
-    def on_mount(self) -> None:
+    def watch_doctor_stdout(self):
+        doctor_table = self.query_exactly_one(DoctorTable)
+        if self.doctor_stdout is None:
+            return
+        pw_mgr_cmds: list[str] = doctor_table.populate_doctor_data(
+            doctor_data=self.doctor_stdout.splitlines()
+        )
+        doctor_list_view = self.query_exactly_one(DoctorListView)
+        doctor_list_view.populate_listview(pw_mgr_cmds)
+
+    def watch_cat_config_stdout(self):
+        if self.cat_config_stdout is None:
+            return
         pretty_cat_config = self.query_one(
             f"#{ViewName.pretty_cat_config_view}", Pretty
         )
-        pretty_cat_config.update(
-            self.app.chezmoi.read(ReadCmd.cat_config).splitlines()
-        )
+        pretty_cat_config.update(self.cat_config_stdout.splitlines())
+
+    def watch_ignored_stdout(self):
+        if self.ignored_stdout is None:
+            return
         pretty_ignored = self.query_one(
             f"#{ViewName.pretty_ignored_view}", Pretty
         )
-        pretty_ignored.update(
-            self.app.chezmoi.read(ReadCmd.ignored).splitlines()
-        )
+        pretty_ignored.update(self.ignored_stdout.splitlines())
+
+    def watch_template_data_stdout(self):
+        if self.template_data_stdout is None:
+            return
         pretty_template_data = self.query_one(
             f"#{ViewName.pretty_template_data_view}", Pretty
         )
-        pretty_template_data.update(
-            json.loads(self.app.chezmoi.read(ReadCmd.data))
-        )
+        template_data_json = json.loads(self.template_data_stdout)
+        pretty_template_data.update(template_data_json)
 
 
 class HelpTabSwitcher(ContentSwitcher):

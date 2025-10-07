@@ -50,13 +50,7 @@ from chezmoi_mousse.gui.rich_logs import (
 )
 from chezmoi_mousse.gui.screens import InstallHelp, Maximized, Operate
 from chezmoi_mousse.gui.splash import LoadingScreen
-from chezmoi_mousse.gui.widgets import (
-    DoctorListView,
-    DoctorTable,
-    ExpandedTree,
-    FlatTree,
-    ManagedTree,
-)
+from chezmoi_mousse.gui.widgets import ExpandedTree, FlatTree, ManagedTree
 
 __all__ = ["ChezmoiGUI", "PreRunData"]
 
@@ -191,13 +185,21 @@ class ChezmoiGUI(App[None]):
         self.chezmoi.status_files_stdout = return_data.status_files
         self.chezmoi.status_paths_stdout = return_data.status_paths
 
-        # Populate Doctor DataTable
-        pw_mgr_cmds: list[str] = self.query_one(
-            Id.config.datatable_qid, DoctorTable
-        ).populate_doctor_data(return_data.doctor.splitlines())
-        self.query_one(
-            Id.config.listview_qid, DoctorListView
-        ).populate_listview(pw_mgr_cmds)
+        # Set reactives for ConfigTab ContentSwitcher
+        config_tab_switcher = self.query_one(
+            Id.config.content_switcher_id("#", area=Area.right),
+            ContentSwitcher,
+        )
+        setattr(config_tab_switcher, "doctor_stdout", return_data.doctor)
+        setattr(
+            config_tab_switcher, "cat_config_stdout", return_data.cat_config
+        )
+        setattr(config_tab_switcher, "ignored_stdout", return_data.ignored)
+        setattr(
+            config_tab_switcher,
+            "template_data_stdout",
+            return_data.template_data,
+        )
 
         # Trees to refresh for each tab
         trees: list[

@@ -87,12 +87,15 @@ class AnimatedFade(Static):
         return line_styles
 
 
+cat_config: str = ""
 doctor: str = ""
 dump_config: str = ""
+ignored: str = ""
 managed_dirs: str = ""
 managed_files: str = ""
 status_dirs: str = ""
 status_files: str = ""
+template_data: str = ""
 
 
 class LoadingScreen(Screen[SplashReturnData], AppType):
@@ -157,13 +160,16 @@ class LoadingScreen(Screen[SplashReturnData], AppType):
 
             self.dismiss(
                 SplashReturnData(
+                    cat_config=globals()["cat_config"],
                     doctor=globals()["doctor"],
                     dump_config=globals()["dump_config"],
+                    ignored=globals()["ignored"],
                     managed_dirs=globals()["managed_dirs"],
                     managed_files=globals()["managed_files"],
                     status_dirs=globals()["status_dirs"],
                     status_files=globals()["status_files"],
                     status_paths=globals()["status_paths"],
+                    template_data=globals()["template_data"],
                 )
             )
 
