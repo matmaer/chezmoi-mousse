@@ -184,6 +184,13 @@ class ChezmoiGUI(App[None]):
             return
         self.app_log.success(f"chezmoi command found: {self.chezmoi_found}")
         self.app_log.ready_to_run("--- Loading screen completed ---")
+        # update chezmoi instance
+        self.chezmoi.managed_files_stdout = return_data.managed_files
+        self.chezmoi.managed_dirs_stdout = return_data.managed_dirs
+        self.chezmoi.status_dirs_stdout = return_data.status_dirs
+        self.chezmoi.status_files_stdout = return_data.status_files
+        self.chezmoi.status_paths_stdout = return_data.status_paths
+
         # Populate Doctor DataTable
         pw_mgr_cmds: list[str] = self.query_one(
             Id.config.datatable_qid, DoctorTable

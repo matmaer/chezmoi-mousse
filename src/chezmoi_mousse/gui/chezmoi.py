@@ -33,11 +33,11 @@ class Chezmoi:
         self.output_log: OutputLog
 
         # cached command outputs
-        self._managed_dirs_stdout: str = ""  # ReadCmd.managed_dirs
-        self._managed_files_stdout: str = ""  # ReadCmd.managed_files
-        self._status_dirs_stdout: str = ""  # ReadCmd.status_dirs
-        self._status_files_stdout: str = ""  # ReadCmd.status_files
-        self._status_paths_stdout: str = ""  # ReadCmd.status
+        self.managed_dirs_stdout: str = ""  # ReadCmd.managed_dirs
+        self.managed_files_stdout: str = ""  # ReadCmd.managed_files
+        self.status_dirs_stdout: str = ""  # ReadCmd.status_dirs
+        self.status_files_stdout: str = ""  # ReadCmd.status_files
+        self.status_paths_stdout: str = ""  # ReadCmd.status
 
         if dev_mode:
             self.debug_log: DebugLog | None = None
@@ -89,13 +89,12 @@ class Chezmoi:
 
     def refresh_managed_paths_data(self):
         # get data from chezmoi managed stdout
-        self.managed_dirs_stdout = self.read(
-            ReadCmd.managed_dirs
-        )  # noqa: E501 #
+        self.managed_dirs_stdout = self.read(ReadCmd.managed_dirs)
         self.managed_files_stdout = self.read(ReadCmd.managed_files)
         # get data from chezmoi status stdout
         self.status_dirs_stdout = self.read(ReadCmd.status_dirs)
         self.status_files_stdout = self.read(ReadCmd.status_files)
+        self.status_paths_stdout = self.read(ReadCmd.status_paths)
 
     ###################################################
     # Cached command outputs and processed properties
@@ -106,33 +105,35 @@ class Chezmoi:
 
     @property
     def managed_dirs(self) -> list[Path]:
-        return [Path(line) for line in self._managed_dirs_stdout.splitlines()]
+        return [Path(line) for line in self.managed_dirs_stdout.splitlines()]
 
     @property
     def managed_files(self) -> list[Path]:
-        return [Path(line) for line in self._managed_files_stdout.splitlines()]
+        return [Path(line) for line in self.managed_files_stdout.splitlines()]
 
     @property
     def _all_status_paths_dict(self) -> PathDict:
         return {
             Path(line[3:]): line[:2]
-            for line in self._status_paths_stdout.splitlines()
+            for line in self.status_paths_stdout.splitlines()
         }
 
     @property
     def _apply_status_paths(self) -> PathDict:
         return {
-            (key): value[1]
+            key: value[1]
             for key, value in self._all_status_paths_dict.items()
-            if value in "ADM"
+            if value[1] in "ADM"  # Check second character only
         }
 
     @property
     def _re_add_status_paths(self) -> PathDict:
+        # Consider files which exist on disk and have a status for apply
+        # operations as "M" to run "chezmoi re-add" in the Re-Add tab.
         return {
-            key: value[0]
+            key: "M"
             for key, value in self._all_status_paths_dict.items()
-            if value[0] == "M" or (value[0] == " " and value[1] == "M")
+            if value[0] == "M" or (value[0] == " " and value[1] in "AM")
         }
 
     @property
@@ -140,15 +141,15 @@ class Chezmoi:
         return {
             (key): value[1]
             for key, value in self._all_status_paths_dict.items()
-            if value in "ADM" and key in self.managed_files
+            if value[1] in "ADM" and key in self.managed_files
         }
 
     @property
     def _re_add_status_files(self) -> PathDict:
         return {
-            key: value[0]
+            key: "M"
             for key, value in self._all_status_paths_dict.items()
-            if (value[0] == "M" or (value[0] == " " and value[1] == "M"))
+            if (value[0] == "M" or (value[0] == " " and value[1] in "AM"))
             and key in self.managed_files
         }
 
@@ -158,24 +159,18 @@ class Chezmoi:
         else:
             return self._re_add_status_files
 
-    def dirs_in(self, dir_path: Path) -> list[Path]:
-        return [p for p in self.managed_dirs if p.parent == dir_path]
-
-    def files_in(self, dir_path: Path) -> list[Path]:
-        return [p for p in self.managed_files if p.parent == dir_path]
-
     def managed_files_without_status(self, active_tab: ActiveTab) -> PathDict:
         if active_tab == PaneBtn.apply_tab:
             return {
-                path: status
-                for path, status in self._apply_status_paths.items()
-                if path in self.managed_files and status == "X"
+                path: "X"
+                for path in self.managed_files
+                if path not in self._apply_status_paths
             }
         else:
             return {
-                path: status
-                for path, status in self._re_add_status_paths.items()
-                if path in self.managed_files and status == "X"
+                path: "X"
+                for path in self.managed_files
+                if path not in self._re_add_status_paths
             }
 
     def status_files_in(
@@ -198,17 +193,35 @@ class Chezmoi:
         self, active_tab: ActiveTab, dir_path: Path
     ) -> PathDict:
         if active_tab == PaneBtn.apply_tab:
-            return {
+            result = {
                 path: status
                 for path, status in self._apply_status_paths.items()
                 if path.parent == dir_path and path in self.managed_dirs
             }
+            # Add dirs that contain status paths but don't have direct status
+            for path in self.managed_dirs:
+                if (
+                    path.parent == dir_path
+                    and path not in result
+                    and self.has_status_paths_in(active_tab, path)
+                ):
+                    result[path] = " "
+            return dict(sorted(result.items()))
         else:
-            return {
+            result = {
                 path: status
                 for path, status in self._re_add_status_paths.items()
                 if path.parent == dir_path and path in self.managed_dirs
             }
+            # Add dirs that contain status paths but don't have direct status
+            for path in self.managed_dirs:
+                if (
+                    path.parent == dir_path
+                    and path not in result
+                    and self.has_status_paths_in(active_tab, path)
+                ):
+                    result[path] = " "
+            return dict(sorted(result.items()))
 
     def files_without_status_in(
         self, active_tab: ActiveTab, dir_path: Path
@@ -237,6 +250,7 @@ class Chezmoi:
                 for path in self.managed_dirs
                 if path.parent == dir_path
                 and path not in self._apply_status_paths
+                and not self.has_status_paths_in(active_tab, path)
             }
         else:
             return {
@@ -244,27 +258,44 @@ class Chezmoi:
                 for path in self.managed_dirs
                 if path.parent == dir_path
                 and path not in self._re_add_status_paths
+                and not self.has_status_paths_in(active_tab, path)
             }
 
-    # FUNCTION RETURNING THE STATUS CODE FOR A PATH
-
-    def status_code(self, active_tab: ActiveTab, path: Path) -> str:
-        # returns the status code for a given path
-        # uses one of the properties above to get the status code depending on
-        # the active_tab and path_types
+    def has_status_paths_in(
+        self, active_tab: ActiveTab, dir_path: Path
+    ) -> bool:
         if active_tab == PaneBtn.apply_tab:
-            return self._apply_status_paths[path]
-        else:
-            return self._re_add_status_paths[path]
+            status_paths = self._apply_status_paths
+        elif active_tab == PaneBtn.re_add_tab:
+            status_paths = self._re_add_status_paths
+        return any(key.is_relative_to(dir_path) for key in status_paths.keys())
 
-    # def has_status_paths_in(
-    #     self, active_tab: ActiveTab, dir_path: Path
-    # ) -> bool:
+    # def status_code(self, active_tab: ActiveTab, path: Path) -> str:
+
     #     if active_tab == PaneBtn.apply_tab:
-    #         status_paths = self._apply_status_paths
-    #     elif active_tab == PaneBtn.re_add_tab:
-    #         status_paths = self._re_add_status_paths
-    #     return any(key.is_relative_to(dir_path) for key in status_paths.keys())
+    #         return self._apply_status_paths[path]
+    #     else:
+    #         return self._re_add_status_paths[path]
+
+    # def dirs_in(self, dir_path: Path) -> list[Path]:
+    #     return [p for p in self.managed_dirs if p.parent == dir_path]
+
+    # def files_in(self, dir_path: Path) -> list[Path]:
+    #     return [p for p in self.managed_files if p.parent == dir_path]
+
+    # def managed_dirs_without_status(self, active_tab: ActiveTab) -> PathDict:
+    #     if active_tab == PaneBtn.apply_tab:
+    #         return {
+    #             path: "X"
+    #             for path in self.managed_dirs
+    #             if path not in self._apply_status_paths
+    #         }
+    #     else:
+    #         return {
+    #             path: "X"
+    #             for path in self.managed_dirs
+    #             if path not in self._re_add_status_paths
+    #         }
 
     # def dir_has_status(self, active_tab: ActiveTab, dir_path: Path) -> bool:
     #     if active_tab == PaneBtn.apply_tab:

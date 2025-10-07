@@ -11,10 +11,6 @@
 # - don't access self.app attributes in their on_mount method which are updated after the loading screen completes in the App class on_mount method
 # don't init any textual classes in the __init__  or on_mount method
 
-# TODO: consider base classes which are reused in multiple places and
-# other classes which are only used in one place, and handle reactive vars accordingly, and update the RULES above. They can be set multiple times in different places, which should be avoided.
-
-
 from collections.abc import Iterable
 from dataclasses import dataclass
 from enum import Enum
@@ -26,8 +22,7 @@ from textual import on
 from textual.events import Key
 from textual.reactive import reactive
 from textual.widgets import DataTable, Link, ListItem, ListView, Static, Tree
-
-# from textual.widgets._tree import TOGGLE_STYLE
+from textual.widgets._tree import TOGGLE_STYLE
 from textual.widgets.tree import TreeNode
 
 from chezmoi_mousse import (
@@ -100,10 +95,7 @@ class OperateInfo(Static, AppType):
 
 class GitLogView(DataTable[Text], AppType):
 
-    # TODO: RULES violation
     path: reactive[Path | None] = reactive(None, init=False)
-
-    # TODO: implement footer binding to toggle text wrap in second column of the datatable
 
     def __init__(self, *, tab_ids: TabIds | ScreenIds) -> None:
         self.tab_ids = tab_ids
@@ -161,7 +153,7 @@ class GitLogView(DataTable[Text], AppType):
                 self.add_row(*(Text(cell) for cell in columns))
 
     def watch_path(self) -> None:
-        # TODO: RULES violation, accesses self.app.destDir
+
         if self.path is None:
             return
         if self.path == self.app.destDir:
@@ -201,6 +193,7 @@ class TreeBase(Tree[NodeData], AppType):
             "D": self.app.custom_theme_vars["text-error"],
             "A": self.app.custom_theme_vars["text-success"],
             "M": self.app.custom_theme_vars["text-warning"],
+            " ": self.app.custom_theme_vars["text-secondary"],
             # Root node, invisible but needed because render_label override
             # Use "F" for fake, as R is in use by chezmoi for Run
             "F": self.app.custom_theme_vars["text-primary"],
@@ -333,6 +326,7 @@ class TreeBase(Tree[NodeData], AppType):
             leaf.remove()
 
     def add_status_files(self, *, tree_node: TreeNode[NodeData]) -> None:
+        self.app.debug_log.info(f"Adding status files to {tree_node}")
         # get current visible leaves
         current_leaves_with_status: list[Path] = [
             leaf.data.path
@@ -346,12 +340,15 @@ class TreeBase(Tree[NodeData], AppType):
         status_files = self.app.chezmoi.status_files_in(
             self.active_tab, tree_node.data.path
         )
+        self.app.debug_log.success(f"status files is {status_files}")
         for file_path, status_code in status_files.items():
+            self.app.debug_log.info(f"Checking {file_path}")
             if file_path in current_leaves_with_status:
                 continue
             node_data: NodeData = self.create_node_data(
                 path=file_path, is_leaf=True, status_code=status_code
             )
+            self.app.debug_log.info(f"Adding {node_data}")
             node_label: Text = self.style_label(node_data)
             tree_node.add_leaf(label=node_label, data=node_data)
 
@@ -421,13 +418,16 @@ class TreeBase(Tree[NodeData], AppType):
         dir_paths = self.app.chezmoi.status_dirs_in(
             self.active_tab, tree_node.data.path
         )
+        self.app.debug_log.success(f"dir paths is {dir_paths}")
         for dir_path, status_code in dir_paths.items():
+            self.app.debug_log.info(f"Checking {dir_path}")
             if dir_path in current_status_dirs:
                 continue
             node_data: NodeData = self.create_node_data(
                 path=dir_path, is_leaf=False, status_code=status_code
             )
             node_label: Text = self.style_label(node_data)
+            self.app.debug_log.info(f"Adding {node_data}")
             tree_node.add(label=node_label, data=node_data)
 
     def add_dirs_without_status(
@@ -455,66 +455,65 @@ class TreeBase(Tree[NodeData], AppType):
             node_label: Text = self.style_label(node_data)
             tree_node.add(label=node_label, data=node_data)
 
-    # def _apply_cursor_style(self, node_label: Text, is_cursor: bool) -> Text:
-    #     """Helper to apply cursor-specific styling to a node label."""
-    #     if not is_cursor:
-    #         return node_label
+    def _apply_cursor_style(self, node_label: Text, is_cursor: bool) -> Text:
+        """Helper to apply cursor-specific styling to a node label."""
+        if not is_cursor:
+            return node_label
 
-    #     current_style = node_label.style
-    #     # Apply bold styling when tree is first focused
-    #     if not self._first_focus and self._initial_render:
-    #         if isinstance(current_style, str):
-    #             cursor_style = Style.parse(current_style) + Style(bold=True)
-    #         else:
-    #             cursor_style = current_style + Style(bold=True)
-    #         return Text(node_label.plain, style=cursor_style)
-    #     # Apply underline styling only after actual user interaction
-    #     elif self._user_interacted:
-    #         if isinstance(current_style, str):
-    #             cursor_style = Style.parse(current_style) + Style(
-    #                 underline=True
-    #             )
-    #         else:
-    #             cursor_style = current_style + Style(underline=True)
-    #         return Text(node_label.plain, style=cursor_style)
+        current_style = node_label.style
+        # Apply bold styling when tree is first focused
+        if not self._first_focus and self._initial_render:
+            if isinstance(current_style, str):
+                cursor_style = Style.parse(current_style) + Style(bold=True)
+            else:
+                cursor_style = current_style + Style(bold=True)
+            return Text(node_label.plain, style=cursor_style)
+        # Apply underline styling only after actual user interaction
+        elif self._user_interacted:
+            if isinstance(current_style, str):
+                cursor_style = Style.parse(current_style) + Style(
+                    underline=True
+                )
+            else:
+                cursor_style = current_style + Style(underline=True)
+            return Text(node_label.plain, style=cursor_style)
 
-    #     return node_label  # No changes if conditions not met
+        return node_label  # No changes if conditions not met
 
-    # def render_label(
-    #     self,
-    #     node: TreeNode[NodeData],
-    #     base_style: Style,
-    #     style: Style,  # needed for valid overriding
-    # ) -> Text:
-    #     # Get base styling from style_label
-    #     if node.data is None:
-    #         return Text("Node data is None")
-    #     node_label = self.style_label(node.data)
+    def render_label(
+        self,
+        node: TreeNode[NodeData],
+        base_style: Style,
+        style: Style,  # needed for valid overriding
+    ) -> Text:
+        # Get base styling from style_label
+        if node.data is None:
+            return Text("Node data is None")
+        node_label = self.style_label(node.data)
 
-    #     # Apply cursor styling via helper
-    #     node_label = self._apply_cursor_style(
-    #         node_label, node is self.cursor_node
-    #     )
+        # Apply cursor styling via helper
+        node_label = self._apply_cursor_style(
+            node_label, node is self.cursor_node
+        )
 
-    #     if node.allow_expand:
-    #         prefix = (
-    #             (
-    #                 self.ICON_NODE_EXPANDED
-    #                 if node.is_expanded
-    #                 else self.ICON_NODE
-    #             ),
-    #             base_style + TOGGLE_STYLE,
-    #         )
-    #     else:
-    #         prefix = ("", base_style)
+        if node.allow_expand:
+            prefix = (
+                (
+                    self.ICON_NODE_EXPANDED
+                    if node.is_expanded
+                    else self.ICON_NODE
+                ),
+                base_style + TOGGLE_STYLE,
+            )
+        else:
+            prefix = ("", base_style)
 
-    #     text = Text.assemble(prefix, node_label)
-    #     return text
+        text = Text.assemble(prefix, node_label)
+        return text
 
 
 class ManagedTree(TreeBase):
 
-    # TODO: RULES violation, reactive var in base class
     unchanged: reactive[bool] = reactive(False, init=False)
 
     def __init__(self, *, tab_ids: TabIds) -> None:
@@ -522,11 +521,11 @@ class ManagedTree(TreeBase):
         super().__init__(self.tab_ids, tree_name=TreeName.managed_tree)
 
     def populate_root_node(self) -> None:
-        # TODO: check if still needed after RULES fixes
         """Refresh the tree with latest chezmoi data."""
         # self.root.remove_children()
         self.add_status_dirs(tree_node=self.root)
         self.add_status_files(tree_node=self.root)
+        self.refresh()
 
     @on(TreeBase.NodeExpanded)
     def update_node_children(
@@ -540,15 +539,14 @@ class ManagedTree(TreeBase):
 
     def watch_unchanged(self) -> None:
         for node in self.get_expanded_nodes():
-            self.add_status_files(tree_node=node)
             if self.unchanged:
-                self.add_status_files(tree_node=node)
                 self.add_files_without_status(tree_node=node)
+            else:
+                self.remove_files_without_status(tree_node=node)
 
 
 class ExpandedTree(TreeBase):
 
-    # TODO: RULES violation, reactive var in base class
     unchanged: reactive[bool] = reactive(False, init=False)
 
     def __init__(self, tab_ids: TabIds) -> None:
@@ -571,27 +569,25 @@ class ExpandedTree(TreeBase):
 
     def expand_all_nodes(self, node: TreeNode[NodeData]) -> None:
         # Recursively expand all directory nodes
-        if node.data is not None and node.data.is_leaf is True:
+        if node.data is not None and node.data.is_leaf is False:
             node.expand()
             self.add_status_dirs(tree_node=node)
             self.add_dirs_without_status(tree_node=node)
             for child in node.children:
-                if child.data is not None and child.data.is_leaf is True:
+                if child.data is not None and child.data.is_leaf is False:
                     self.expand_all_nodes(child)
 
     def watch_unchanged(self) -> None:
         expanded_nodes = self.get_expanded_nodes()
         for tree_node in expanded_nodes:
-            self.add_status_dirs(tree_node=tree_node)
-            self.add_status_files(tree_node=tree_node)
             if self.unchanged:
-                self.add_dirs_without_status(tree_node=tree_node)
                 self.add_files_without_status(tree_node=tree_node)
+            else:
+                self.remove_files_without_status(tree_node=tree_node)
 
 
 class FlatTree(TreeBase, AppType):
 
-    # TODO: RULES violation, reactive var in base class
     unchanged: reactive[bool] = reactive(False, init=False)
 
     def __init__(self, tab_ids: TabIds) -> None:
@@ -607,24 +603,12 @@ class FlatTree(TreeBase, AppType):
             self.root.add_leaf(label=node_label, data=node_data)
 
     def watch_unchanged(self) -> None:
-        files_without_status = self.app.chezmoi.managed_files_without_status(
-            self.active_tab
-        )
-        if self.unchanged:
-            for file_path, status_code in files_without_status.items():
-                node_data: NodeData = self.create_node_data(
-                    path=file_path, is_leaf=True, status_code=status_code
-                )
-                node_label: Text = self.style_label(node_data)
-                self.root.add_leaf(label=node_label, data=node_data)
-        elif not self.unchanged:
-            leafs_without_status = [
-                node
-                for node in self.root.children
-                if node.data is not None and node.data.status != "X"
-            ]
-            for node in leafs_without_status:
-                node.remove()
+        expanded_nodes = self.get_expanded_nodes()
+        for tree_node in expanded_nodes:
+            if self.unchanged:
+                self.add_files_without_status(tree_node=tree_node)
+            else:
+                self.remove_files_without_status(tree_node=tree_node)
 
 
 class DoctorTable(DataTable[Text], AppType):
