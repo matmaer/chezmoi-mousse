@@ -264,14 +264,14 @@ class TreeBase(Tree[NodeData], AppType):
     # the styling method for the node labels
     def style_label(self, node_data: NodeData) -> Text:
         italic: bool = False if node_data.found else True
-        if node_data.status != "X":
+        if node_data.status == "X":
+            styled = "dim"
+        elif node_data.status != "X" and node_data.status in "ADM":
             styled = Style(
                 color=self.node_colors[node_data.status], italic=italic
             )
-        elif node_data.is_leaf:
-            styled = "dim"
         else:
-            styled = self.node_colors["Dir"]
+            styled = "white"
         return Text(node_data.path.name, style=styled)
 
     # create node data methods
@@ -300,17 +300,6 @@ class TreeBase(Tree[NodeData], AppType):
 
         nodes.extend(collect_nodes(self.root))
         return nodes
-
-    def remove_status_files(self, *, tree_node: TreeNode[NodeData]) -> None:
-        current_unchanged_leaves: list[TreeNode[NodeData]] = [
-            leaf
-            for leaf in tree_node.children
-            if leaf.data is not None
-            and leaf.data.is_leaf is True
-            and leaf.data.status != "X"
-        ]
-        for leaf in current_unchanged_leaves:
-            leaf.remove()
 
     def remove_files_without_status(
         self, *, tree_node: TreeNode[NodeData]
@@ -603,12 +592,10 @@ class FlatTree(TreeBase, AppType):
             self.root.add_leaf(label=node_label, data=node_data)
 
     def watch_unchanged(self) -> None:
-        expanded_nodes = self.get_expanded_nodes()
-        for tree_node in expanded_nodes:
-            if self.unchanged:
-                self.add_files_without_status(tree_node=tree_node)
-            else:
-                self.remove_files_without_status(tree_node=tree_node)
+        if self.unchanged:
+            self.add_files_without_status(tree_node=self.root)
+        else:
+            self.remove_files_without_status(tree_node=self.root)
 
 
 class DoctorTable(DataTable[Text], AppType):
