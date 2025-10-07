@@ -326,9 +326,13 @@ class TreeBase(Tree[NodeData], AppType):
         ]
         if tree_node.data is None:
             return
-        status_files = self.app.chezmoi.status_files_in(
-            self.active_tab, tree_node.data.path
-        )
+
+        if self.tree_name == TreeName.flat_tree:
+            status_files = self.app.chezmoi.all_status_files(self.active_tab)
+        else:
+            status_files = self.app.chezmoi.status_files_in(
+                self.active_tab, tree_node.data.path
+            )
 
         if self.active_tab == PaneBtn.re_add_tab:
             # don't create nodes for non-existing files
@@ -358,6 +362,7 @@ class TreeBase(Tree[NodeData], AppType):
         ]
         if tree_node.data is None:
             return
+
         files_without_status = self.app.chezmoi.files_without_status_in(
             self.active_tab, tree_node.data.path
         )
@@ -595,13 +600,7 @@ class FlatTree(TreeBase, AppType):
         super().__init__(tab_ids, tree_name=TreeName.flat_tree)
 
     def populate_root_node(self) -> None:
-        status_files = self.app.chezmoi.all_status_files(self.active_tab)
-        for file_path, status_code in status_files.items():
-            node_data: NodeData = self.create_node_data(
-                path=file_path, is_leaf=True, status_code=status_code
-            )
-            node_label: Text = self.style_label(node_data)
-            self.root.add_leaf(label=node_label, data=node_data)
+        self.add_status_files(tree_node=self.root)
 
     def watch_unchanged(self) -> None:
         if self.unchanged:
