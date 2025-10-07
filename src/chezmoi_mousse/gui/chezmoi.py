@@ -168,13 +168,13 @@ class Chezmoi:
             return {
                 path: "X"
                 for path in self.managed_files
-                if path not in self._apply_status_paths
+                if path not in self._apply_status_files
             }
         else:
             return {
                 path: "X"
                 for path in self.managed_files
-                if path not in self._re_add_status_paths
+                if path not in self._re_add_status_files
             }
 
     def status_files_in(
@@ -196,36 +196,28 @@ class Chezmoi:
     def status_dirs_in(
         self, active_tab: ActiveTab, dir_path: Path
     ) -> PathDict:
-        if active_tab == PaneBtn.apply_tab:
-            result = {
-                path: status
-                for path, status in self._apply_status_paths.items()
-                if path.parent == dir_path and path in self.managed_dirs
-            }
-            # Add dirs that contain status paths but don't have direct status
-            for path in self.managed_dirs:
-                if (
-                    path.parent == dir_path
-                    and path not in result
-                    and self.has_status_paths_in(active_tab, path)
-                ):
-                    result[path] = " "
-            return dict(sorted(result.items()))
-        else:
-            result = {
-                path: status
-                for path, status in self._re_add_status_paths.items()
-                if path.parent == dir_path and path in self.managed_dirs
-            }
-            # Add dirs that contain status paths but don't have direct status
-            for path in self.managed_dirs:
-                if (
-                    path.parent == dir_path
-                    and path not in result
-                    and self.has_status_paths_in(active_tab, path)
-                ):
-                    result[path] = " "
-            return dict(sorted(result.items()))
+        status_paths = (
+            self._apply_status_paths
+            if active_tab == PaneBtn.apply_tab
+            else self._re_add_status_paths
+        )
+
+        result = {
+            path: status
+            for path, status in status_paths.items()
+            if path.parent == dir_path and path in self.managed_dirs
+        }
+
+        # Add dirs that contain status paths but don't have direct status
+        for path in self.managed_dirs:
+            if (
+                path.parent == dir_path
+                and path not in result
+                and self.has_status_paths_in(active_tab, path)
+            ):
+                result[path] = " "
+
+        return dict(sorted(result.items()))
 
     def files_without_status_in(
         self, active_tab: ActiveTab, dir_path: Path
@@ -273,37 +265,3 @@ class Chezmoi:
         elif active_tab == PaneBtn.re_add_tab:
             status_paths = self._re_add_status_paths
         return any(key.is_relative_to(dir_path) for key in status_paths.keys())
-
-    # def status_code(self, active_tab: ActiveTab, path: Path) -> str:
-
-    #     if active_tab == PaneBtn.apply_tab:
-    #         return self._apply_status_paths[path]
-    #     else:
-    #         return self._re_add_status_paths[path]
-
-    # def dirs_in(self, dir_path: Path) -> list[Path]:
-    #     return [p for p in self.managed_dirs if p.parent == dir_path]
-
-    # def files_in(self, dir_path: Path) -> list[Path]:
-    #     return [p for p in self.managed_files if p.parent == dir_path]
-
-    # def managed_dirs_without_status(self, active_tab: ActiveTab) -> PathDict:
-    #     if active_tab == PaneBtn.apply_tab:
-    #         return {
-    #             path: "X"
-    #             for path in self.managed_dirs
-    #             if path not in self._apply_status_paths
-    #         }
-    #     else:
-    #         return {
-    #             path: "X"
-    #             for path in self.managed_dirs
-    #             if path not in self._re_add_status_paths
-    #         }
-
-    # def dir_has_status(self, active_tab: ActiveTab, dir_path: Path) -> bool:
-    #     if active_tab == PaneBtn.apply_tab:
-    #         status_paths = self._apply_status_paths
-    #     elif active_tab == PaneBtn.re_add_tab:
-    #         status_paths = self._re_add_status_paths
-    #     return dir_path in status_paths
