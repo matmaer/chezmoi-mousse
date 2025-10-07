@@ -47,6 +47,8 @@ class SplashLog(RichLog):
         self.styles.color = "#6DB2FF"
         self.styles.margin = 1
         self.styles.padding = 0
+        self.styles.background = "black"
+        self.styles.background_tint = "black"
 
 
 class AnimatedFade(Static):
@@ -166,7 +168,8 @@ class LoadingScreen(Screen[SplashReturnData], AppType):
             )
 
     def on_mount(self) -> None:
-
+        self.styles.background = "black"
+        self.styles.background_tint = "black"
         animated_fade = self.query_exactly_one(AnimatedFade)
         self.all_workers_timer = self.set_interval(
             interval=1, callback=self.all_workers_finished
@@ -177,8 +180,7 @@ class LoadingScreen(Screen[SplashReturnData], AppType):
         splash_log = self.query_exactly_one(SplashLog)
 
         if not self.chezmoi_found:
-            splash_log.styles.height = 3
-            self.update_and_log("", "")
+            splash_log.styles.height = 0
             return
 
         field_names = [field.name for field in fields(SplashReturnData)]
