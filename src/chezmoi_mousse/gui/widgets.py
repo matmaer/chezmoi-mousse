@@ -301,7 +301,7 @@ class TreeBase(Tree[NodeData], AppType):
         nodes.extend(collect_nodes(self.root))
         return nodes
 
-    def remove_files_without_status(
+    def remove_files_without_status_in(
         self, *, tree_node: TreeNode[NodeData]
     ) -> None:
         current_unchanged_leaves: list[TreeNode[NodeData]] = [
@@ -314,7 +314,7 @@ class TreeBase(Tree[NodeData], AppType):
         for leaf in current_unchanged_leaves:
             leaf.remove()
 
-    def add_status_files(self, *, tree_node: TreeNode[NodeData]) -> None:
+    def add_status_files_in(self, *, tree_node: TreeNode[NodeData]) -> None:
         self.app.debug_log.info(f"Adding status files to {tree_node}")
         # get current visible leaves
         current_leaves_with_status: list[Path] = [
@@ -350,7 +350,7 @@ class TreeBase(Tree[NodeData], AppType):
             node_label: Text = self.style_label(node_data)
             tree_node.add_leaf(label=node_label, data=node_data)
 
-    def add_files_without_status(
+    def add_files_without_status_in(
         self, *, tree_node: TreeNode[NodeData]
     ) -> None:
         current_leaves_without_status: list[Path] = [
@@ -381,34 +381,6 @@ class TreeBase(Tree[NodeData], AppType):
             )
             node_label: Text = self.style_label(node_data)
             tree_node.add_leaf(label=node_label, data=node_data)
-
-    def remove_status_dirs(self, *, tree_node: TreeNode[NodeData]) -> None:
-        if tree_node.data is None:
-            return
-        current_dir_nodes: list[TreeNode[NodeData]] = [
-            dir_node
-            for dir_node in tree_node.children
-            if dir_node.data is not None
-            and dir_node.data.is_leaf is False
-            and dir_node.data.status == "X"
-        ]
-        for dir_node in current_dir_nodes:
-            dir_node.remove()
-
-    def remove_dirs_without_status(
-        self, *, tree_node: TreeNode[NodeData]
-    ) -> None:
-        if tree_node.data is None:
-            return
-        current_dirs_without_status: list[TreeNode[NodeData]] = [
-            dir_node
-            for dir_node in tree_node.children
-            if dir_node.data is not None
-            and dir_node.data.is_leaf is False
-            and dir_node.data.status != "X"
-        ]
-        for dir_node in current_dirs_without_status:
-            dir_node.remove()
 
     def add_status_dirs(self, *, tree_node: TreeNode[NodeData]) -> None:
         # get current visible dir nodes
@@ -530,7 +502,7 @@ class ManagedTree(TreeBase):
         """Refresh the tree with latest chezmoi data."""
         # self.root.remove_children()
         self.add_status_dirs(tree_node=self.root)
-        self.add_status_files(tree_node=self.root)
+        self.add_status_files_in(tree_node=self.root)
         self.refresh()
 
     @on(TreeBase.NodeExpanded)
@@ -538,17 +510,17 @@ class ManagedTree(TreeBase):
         self, event: TreeBase.NodeExpanded[NodeData]
     ) -> None:
         self.add_status_dirs(tree_node=event.node)
-        self.add_status_files(tree_node=event.node)
+        self.add_status_files_in(tree_node=event.node)
         if self.unchanged:
             self.add_dirs_without_status(tree_node=event.node)
-            self.add_files_without_status(tree_node=event.node)
+            self.add_files_without_status_in(tree_node=event.node)
 
     def watch_unchanged(self) -> None:
         for node in self.get_expanded_nodes():
             if self.unchanged:
-                self.add_files_without_status(tree_node=node)
+                self.add_files_without_status_in(tree_node=node)
             else:
-                self.remove_files_without_status(tree_node=node)
+                self.remove_files_without_status_in(tree_node=node)
 
 
 class ExpandedTree(TreeBase):
@@ -568,10 +540,10 @@ class ExpandedTree(TreeBase):
         self, event: TreeBase.NodeExpanded[NodeData]
     ) -> None:
         self.add_status_dirs(tree_node=event.node)
-        self.add_status_files(tree_node=event.node)
+        self.add_status_files_in(tree_node=event.node)
         if self.unchanged:
             self.add_dirs_without_status(tree_node=event.node)
-            self.add_files_without_status(tree_node=event.node)
+            self.add_files_without_status_in(tree_node=event.node)
 
     def expand_all_nodes(self, node: TreeNode[NodeData]) -> None:
         # Recursively expand all directory nodes
@@ -587,9 +559,9 @@ class ExpandedTree(TreeBase):
         expanded_nodes = self.get_expanded_nodes()
         for tree_node in expanded_nodes:
             if self.unchanged:
-                self.add_files_without_status(tree_node=tree_node)
+                self.add_files_without_status_in(tree_node=tree_node)
             else:
-                self.remove_files_without_status(tree_node=tree_node)
+                self.remove_files_without_status_in(tree_node=tree_node)
 
 
 class FlatTree(TreeBase, AppType):
@@ -597,16 +569,38 @@ class FlatTree(TreeBase, AppType):
     unchanged: reactive[bool] = reactive(False, init=False)
 
     def __init__(self, tab_ids: TabIds) -> None:
+
         super().__init__(tab_ids, tree_name=TreeName.flat_tree)
 
+    def add_files_with_status(self) -> None:
+        if self.active_tab == PaneBtn.apply_tab:
+            status_files = self.app.chezmoi.all_status_files(
+                active_tab=PaneBtn.apply_tab
+            )
+        else:
+            status_files = self.app.chezmoi.all_status_files(
+                active_tab=PaneBtn.re_add_tab
+            )
+        for file_path, status_code in status_files.items():
+            node_data: NodeData = self.create_node_data(
+                path=file_path, is_leaf=True, status_code=status_code
+            )
+            if (
+                self.active_tab == PaneBtn.re_add_tab
+                and node_data.found is False
+            ):
+                continue
+            node_label: Text = self.style_label(node_data)
+            self.root.add_leaf(label=node_label, data=node_data)
+
     def populate_root_node(self) -> None:
-        self.add_status_files(tree_node=self.root)
+        self.add_files_with_status()
 
     def watch_unchanged(self) -> None:
         if self.unchanged:
-            self.add_files_without_status(tree_node=self.root)
+            self.add_files_without_status_in(tree_node=self.root)
         else:
-            self.remove_files_without_status(tree_node=self.root)
+            self.remove_files_without_status_in(tree_node=self.root)
 
 
 class DoctorTable(DataTable[Text], AppType):
