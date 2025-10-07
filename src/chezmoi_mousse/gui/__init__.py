@@ -30,10 +30,13 @@ class NodeData:
 
 @dataclass
 class SplashReturnData:
+    cat_config: str
     doctor: str
     dump_config: str
+    ignored: str
     managed_dirs: str
     managed_files: str
     status_dirs: str
     status_files: str
     status_paths: str
+    template_data: str
