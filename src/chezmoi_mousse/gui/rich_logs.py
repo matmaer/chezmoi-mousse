@@ -179,8 +179,7 @@ class DiffView(RichLog, AppType):
         self.write(self.click_colored_file)
 
     def watch_path(self) -> None:
-        # skip rendering stuff during app init
-        self.notify(f"new path: {self.path}")
+        # skip rendering stuff during app initialization
         if (
             self.path is None
             or (isinstance(self.init_ids, TabIds) and self.active_tab is None)

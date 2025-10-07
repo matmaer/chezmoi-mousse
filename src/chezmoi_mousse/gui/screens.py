@@ -90,7 +90,6 @@ class Operate(ScreensBase, AppType):
             )
 
     def on_mount(self) -> None:
-        self.app.notify(f"Path is {self.path}")
         self.add_class(Tcss.operate_screen.name)
         self.border_subtitle = Id.operate_screen.border_subtitle()
         # Update the OperateInfo top border title
