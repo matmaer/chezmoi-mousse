@@ -208,6 +208,7 @@ class ConfigTabSwitcher(ContentSwitcher, AppType):
         yield Vertical(
             Label('"chezmoi data" output', classes=Tcss.section_label.name),
             Pretty("<template_data>", id=ViewName.pretty_template_data_view),
+            id=self.tab_ids.view_id(view=ViewName.template_data_view),
         )
 
     def on_mount(self) -> None:
