@@ -329,9 +329,14 @@ class TreeBase(Tree[NodeData], AppType):
         status_files = self.app.chezmoi.status_files_in(
             self.active_tab, tree_node.data.path
         )
-        self.app.debug_log.success(f"status files is {status_files}")
+
+        if self.active_tab == PaneBtn.re_add_tab:
+            # don't create nodes for non-existing files
+            for file_path in status_files.copy():
+                if not file_path.exists():
+                    del status_files[file_path]
+
         for file_path, status_code in status_files.items():
-            self.app.debug_log.info(f"Checking {file_path}")
             if file_path in current_leaves_with_status:
                 continue
             node_data: NodeData = self.create_node_data(
@@ -356,6 +361,13 @@ class TreeBase(Tree[NodeData], AppType):
         files_without_status = self.app.chezmoi.files_without_status_in(
             self.active_tab, tree_node.data.path
         )
+
+        if self.active_tab == PaneBtn.re_add_tab:
+            # don't create nodes for non-existing files
+            for file_path in files_without_status.copy():
+                if not file_path.exists():
+                    del files_without_status[file_path]
+
         for file_path, status_code in files_without_status.items():
             if file_path in current_leaves_without_status:
                 continue
