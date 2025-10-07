@@ -82,7 +82,7 @@ class ViewSwitcher(ContentSwitcher, AppType):
         )
 
     def compose(self) -> ComposeResult:
-        yield DiffView(tab_ids=self.tab_ids, reverse=self.reverse)
+        yield DiffView(init_ids=self.tab_ids, reverse=self.reverse)
         yield ContentsView(tab_ids=self.tab_ids)
         yield GitLogView(tab_ids=self.tab_ids)
 

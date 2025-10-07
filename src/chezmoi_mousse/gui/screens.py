@@ -82,7 +82,7 @@ class Operate(ScreensBase, AppType):
             OperateBtn.apply_file == self.main_operate_btn
             or OperateBtn.re_add_file == self.main_operate_btn
         ):
-            yield DiffView(tab_ids=Id.operate_screen, reverse=self.reverse)
+            yield DiffView(init_ids=Id.operate_screen, reverse=self.reverse)
         else:
             yield ContentsView(tab_ids=Id.operate_screen)
             yield OperateBtnHorizontal(
@@ -208,7 +208,7 @@ class Maximized(ScreensBase):
                 view=ViewName.diff_view
             ):
                 yield DiffView(
-                    tab_ids=Id.maximized_screen, reverse=self.reverse
+                    init_ids=Id.maximized_screen, reverse=self.reverse
                 )
             elif self.id_to_maximize == self.tab_ids.view_id(
                 view=ViewName.git_log_view
