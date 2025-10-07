@@ -121,36 +121,40 @@ class Chezmoi:
     @property
     def _apply_status_paths(self) -> PathDict:
         return {
-            key: value[1]
-            for key, value in self._all_status_paths_dict.items()
-            if value[1] in "ADM"  # Check second character only
+            path: status_pair[1]
+            for path, status_pair in self._all_status_paths_dict.items()
+            if status_pair[1] in "ADM"  # Check second character only
         }
 
     @property
     def _re_add_status_paths(self) -> PathDict:
-        # Consider files which exist on disk and have a status for apply
-        # operations as "M" to run "chezmoi re-add" in the Re-Add tab.
+        # Consider paths which a status for apply operations but no status
+        # themselves to have a status, will be handled in the Tree to only
+        # show them if they exist on disk
         return {
-            key: "M"
-            for key, value in self._all_status_paths_dict.items()
-            if value[0] == "M" or (value[0] == " " and value[1] in "AM")
+            path: status_pair[0]
+            for path, status_pair in self._all_status_paths_dict.items()
+            if status_pair[0] == "M"
+            or (status_pair[0] == " " and status_pair[1] in "ADM")
         }
 
     @property
     def _apply_status_files(self) -> PathDict:
         return {
-            key: value
-            for key, value in self._apply_status_paths.items()
-            if key in self.managed_files
+            path: status_code
+            for path, status_code in self._apply_status_paths.items()
+            if path in self.managed_files
         }
 
     @property
     def _re_add_status_files(self) -> PathDict:
+        # consider these files to always have status M, will be handled by the
+        # Tree view widget to only show them for re-add operations if they
+        # also exist on disk.
         return {
             key: "M"
-            for key, value in self._all_status_paths_dict.items()
-            if (value[0] == "M" or (value[0] == " " and value[1] in "AM"))
-            and key in self.managed_files
+            for key, _ in self._re_add_status_paths.items()
+            if key in self.managed_files
         }
 
     def all_status_files(self, active_tab: ActiveTab) -> PathDict:
