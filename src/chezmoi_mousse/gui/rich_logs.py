@@ -19,10 +19,11 @@ from textual.reactive import reactive
 from textual.widgets import RichLog
 
 from chezmoi_mousse import (
+    ActiveTab,
     Chars,
     GlobalCmd,
     LogName,
-    PathDict,
+    PaneBtn,
     ReadCmd,
     ScreenIds,
     TabIds,
@@ -136,90 +137,74 @@ class ContentsView(RichLog, AppType):
 
 class DiffView(RichLog, AppType):
 
-    # TODO: RULES violation
     path: reactive[Path | None] = reactive(None, init=False)
 
-    def __init__(self, *, tab_ids: TabIds | ScreenIds, reverse: bool) -> None:
-        self.tab_ids = tab_ids
+    def __init__(self, *, init_ids: TabIds | ScreenIds, reverse: bool) -> None:
+        self.init_ids = init_ids
         self.reverse = reverse
-        super().__init__(
-            id=self.tab_ids.view_id(view=ViewName.diff_view),
-            auto_scroll=False,
-            wrap=False,  # TODO: implement footer binding to toggle wrap
+        self.active_tab: ActiveTab | None = None
+        self.diff_read_cmd: ReadCmd = (
+            ReadCmd.diff_reverse if self.reverse else ReadCmd.diff
         )
-        self.status_dirs: PathDict = {}
-        self.status_files: PathDict = {}
+        self.pretty_cmd_str = LogUtils.pretty_cmd_str(self.diff_read_cmd.value)
+        if isinstance(self.init_ids, TabIds):
+            self.active_tab = (
+                PaneBtn.re_add_tab if self.reverse else PaneBtn.apply_tab
+            )
+        else:
+            self.active_tab = None
+        super().__init__(
+            id=self.init_ids.view_id(view=ViewName.diff_view),
+            auto_scroll=False,
+            highlight=True,
+            wrap=True,  # TODO: implement footer binding to toggle wrap
+        )
+        # Strings for logging
+        self.click_colored_file = f"Click a colored file in the tree to see the output from {self.pretty_cmd_str}"
 
     def on_mount(self) -> None:
         self.highlight = True
-        self.write(Text("Click a file to see the diff.\n", style="dim"))
-        self.write("Current directory:")
-        self.write(f"{self.path}")
-        self.write(Text("(destDir)\n", style="dim"))
-        self.write("Source directory:")
-        self.write(f"{self.path}")
-        self.write(Text("(sourceDir)", style="dim"))
+        if self.active_tab is not None:
+            self.write('This is the destination directory "chezmoi destDir"\n')
+            self.write(self.click_colored_file)
+
+    def write_dir_info(self) -> None:
+        self.write(f"Managed directory {self.path}\n")
+        self.write(self.click_colored_file)
+
+    def write_unchanged_file_info(self) -> None:
+        self.write(
+            f'No diff available for "{self.path}", the file is unchanged.'
+        )
+        self.write(self.click_colored_file)
 
     def watch_path(self) -> None:
-        if self.path is None or self.path == self.app.destDir:
+        # skip rendering stuff during app init
+        self.notify(f"new path: {self.path}")
+        if (
+            self.path is None
+            or (isinstance(self.init_ids, TabIds) and self.active_tab is None)
+            or getattr(self.app.chezmoi, "read", "") == ""
+            or getattr(self.app.chezmoi, "managed_dirs", "") == ""
+            or len(self.app.chezmoi.managed_dirs) == 0
+        ):
             return
 
         self.clear()
+        # write lines for an unchanged file or directory except when we are in
+        # either the ApplyTab or ReAddTab
+        if (
+            self.active_tab is not None
+            and self.path in self.app.chezmoi.managed_dirs
+        ):
+            self.write_dir_info()
+            return
 
+        # create the diff view for a changed file
         diff_output: list[str] = []
-        # if not self.reverse:
-        #     self.status_files = self.app.chezmoi.apply_files
-        #     self.status_dirs = self.app.chezmoi.apply_dirs
-        # elif self.reverse:
-        #     self.status_files = self.app.chezmoi.re_add_files
-        #     self.status_dirs = self.app.chezmoi.re_add_dirs
-
-        # create a diff view if the current path is a directory
-        # if self.path in self.status_dirs or self.path == self.app.destDir:
-        #     tab_name = (
-        #         PaneBtn.re_add_tab.name
-        #         if self.reverse
-        #         else PaneBtn.apply_tab.name
-        #     )
-        #     status_files_in_dir = self.app.chezmoi.files_with_status_in(
-        #         tab_name, self.path
-        #     )
-        #     if not status_files_in_dir:
-        #         self.write(
-        #             Text(
-        #                 "Directory does not contain changed files.",
-        #                 style="dim",
-        #             )
-        #         )
-        #     else:
-        #         self.write(Text("Files in directory with changed status:"))
-        #         for file_path in status_files_in_dir:
-        #             self.write(
-        #                 Text(
-        #                     f"{file_path}",
-        #                     self.app.custom_theme_vars["text-accent"],
-        #                 )
-        #             )
-        #         return
-        #     return
-        # create a diff view if the current selected path is an unchanged file
-        # elif self.path not in self.status_files:
-        #     self.write(
-        #         Text(
-        #             f"No diff available for {self.path},\n file is unchanged.",
-        #             style="dim",
-        #         )
-        #     )
-        #     return
-        # create the actual diff view for a changed file
-        if not self.reverse:
-            diff_output = self.app.chezmoi.read(
-                ReadCmd.diff, self.path
-            ).splitlines()
-        elif self.reverse:
-            diff_output = self.app.chezmoi.read(
-                ReadCmd.diff_reverse, self.path
-            ).splitlines()
+        diff_output = self.app.chezmoi.read(
+            self.diff_read_cmd, self.path
+        ).splitlines()
 
         diff_lines: list[str] = [
             line
@@ -233,10 +218,20 @@ class DiffView(RichLog, AppType):
             and not line.startswith(("+++", "---"))
         ]
         if not diff_lines:
-            self.write(Text("No diff available."))
+            # fallback if the logic above produced no diff lines, TODO improve
+            self.write(Text(f"{'\n'.join(diff_output)}"))
             return
+
+        for line in diff_lines.copy():
+            line = line.rstrip("\n")  # each write call contains a newline
+            if line.startswith("old mode") or line.startswith("new mode"):
+                self.write("Permissions/mode will be changed:")
+                self.write(f" {Chars.bullet} {line}")
+                # remove the line from diff_lines
+                diff_lines.remove(line)
+
+        self.write(f'Output from "{self.pretty_cmd_str} {self.path}":\n')
         for line in diff_lines:
-            line = line.rstrip("\n")
             if line.startswith("-"):
                 self.write(
                     Text(line, self.app.custom_theme_vars["text-error"])
@@ -245,13 +240,6 @@ class DiffView(RichLog, AppType):
                 self.write(
                     Text(line, self.app.custom_theme_vars["text-success"])
                 )
-            elif line.startswith("old mode"):
-                self.write("Permissions/mode will be changed:")
-                self.write(f" {Chars.bullet} {line}")
-            elif line.startswith("new mode"):
-                self.write(f" {Chars.bullet} {line}\n")
-            else:
-                self.write(Text(Chars.bullet + line, style="dim"))
 
 
 class CommandLogBase(RichLog, AppType):
