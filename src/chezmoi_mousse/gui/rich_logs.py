@@ -35,6 +35,25 @@ from chezmoi_mousse.gui import AppType
 __all__ = ["AppLog", "DebugLog", "OutputLog", "ContentsView", "DiffView"]
 
 
+class LogUtils:
+    @staticmethod
+    def pretty_cmd_str(command: list[str]) -> str:
+        filter_git_log_args = VerbArgs.git_log.value[3:]
+        return "chezmoi " + " ".join(
+            [
+                _
+                for _ in command[1:]
+                if _
+                not in GlobalCmd.default_args.value
+                + filter_git_log_args
+                + [
+                    VerbArgs.format_json.value,
+                    VerbArgs.path_style_absolute.value,
+                ]
+            ]
+        )
+
+
 class ContentsView(RichLog, AppType):
 
     path: reactive[Path | None] = reactive(None, init=False)
@@ -241,27 +260,11 @@ class CommandLogBase(RichLog, AppType):
         return f"[[green]{datetime.now().strftime('%H:%M:%S')}[/]]"
 
     def _log_command(self, command: list[str]) -> None:
-        trimmed_cmd = self.pretty_cmd_str(command)
+        trimmed_cmd = LogUtils.pretty_cmd_str(command)
         time = self._log_time()
         color = self.app.custom_theme_vars["primary-lighten-3"]
         log_line = f"{time} [{color}]{trimmed_cmd}[/]"
         self.write(log_line)
-
-    def pretty_cmd_str(self, command: list[str]) -> str:
-        filter_git_log_args = VerbArgs.git_log.value[3:]
-        return "chezmoi " + " ".join(
-            [
-                _
-                for _ in command[1:]
-                if _
-                not in GlobalCmd.default_args.value
-                + filter_git_log_args
-                + [
-                    VerbArgs.format_json.value,
-                    VerbArgs.path_style_absolute.value,
-                ]
-            ]
-        )
 
     def ready_to_run(self, message: str) -> None:
         color = self.app.custom_theme_vars["accent-darken-3"]
