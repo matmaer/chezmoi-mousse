@@ -194,9 +194,6 @@ class TreeBase(Tree[NodeData], AppType):
             "A": self.app.custom_theme_vars["text-success"],
             "M": self.app.custom_theme_vars["text-warning"],
             " ": self.app.custom_theme_vars["text-secondary"],
-            # Root node, invisible but needed because render_label override
-            # Use "F" for fake, as R is in use by chezmoi for Run
-            "F": self.app.custom_theme_vars["text-primary"],
         }
         self.guide_depth: int = 3
         self.show_root: bool = False
@@ -264,14 +261,26 @@ class TreeBase(Tree[NodeData], AppType):
     # the styling method for the node labels
     def style_label(self, node_data: NodeData) -> Text:
         italic: bool = False if node_data.found else True
-        if node_data.status == "X":
-            styled = "dim"
-        elif node_data.status != "X" and node_data.status in "ADM":
-            styled = Style(
-                color=self.node_colors[node_data.status], italic=italic
-            )
-        else:
-            styled = "white"
+        styled = "white"  # Default style
+        if node_data.is_leaf:
+            if node_data.status == "X":
+                styled = "dim"
+            elif node_data.status in "ADM":
+                styled = Style(
+                    color=self.node_colors[node_data.status], italic=italic
+                )
+            elif node_data.status == " ":
+                styled = "white"
+        elif not node_data.is_leaf:
+            if node_data.status in "ADM":
+                styled = Style(
+                    color=self.node_colors[node_data.status], italic=italic
+                )
+            elif node_data.status == "X" or node_data.status == " ":
+                styled = Style(color=self.node_colors[" "], italic=italic)
+            else:
+                styled = Style(color=self.node_colors["Dir"], italic=italic)
+
         return Text(node_data.path.name, style=styled)
 
     # create node data methods
@@ -315,7 +324,6 @@ class TreeBase(Tree[NodeData], AppType):
             leaf.remove()
 
     def add_status_files_in(self, *, tree_node: TreeNode[NodeData]) -> None:
-        self.app.debug_log.info(f"Adding status files to {tree_node}")
         # get current visible leaves
         current_leaves_with_status: list[Path] = [
             leaf.data.path
@@ -346,7 +354,6 @@ class TreeBase(Tree[NodeData], AppType):
             node_data: NodeData = self.create_node_data(
                 path=file_path, is_leaf=True, status_code=status_code
             )
-            self.app.debug_log.info(f"Adding {node_data}")
             node_label: Text = self.style_label(node_data)
             tree_node.add_leaf(label=node_label, data=node_data)
 
@@ -382,7 +389,7 @@ class TreeBase(Tree[NodeData], AppType):
             node_label: Text = self.style_label(node_data)
             tree_node.add_leaf(label=node_label, data=node_data)
 
-    def add_status_dirs(self, *, tree_node: TreeNode[NodeData]) -> None:
+    def add_status_dirs_in(self, *, tree_node: TreeNode[NodeData]) -> None:
         # get current visible dir nodes
         current_status_dirs: list[Path] = [
             dir_node.data.path
@@ -396,19 +403,16 @@ class TreeBase(Tree[NodeData], AppType):
         dir_paths = self.app.chezmoi.status_dirs_in(
             self.active_tab, tree_node.data.path
         )
-        self.app.debug_log.success(f"dir paths is {dir_paths}")
         for dir_path, status_code in dir_paths.items():
-            self.app.debug_log.info(f"Checking {dir_path}")
             if dir_path in current_status_dirs:
                 continue
             node_data: NodeData = self.create_node_data(
                 path=dir_path, is_leaf=False, status_code=status_code
             )
             node_label: Text = self.style_label(node_data)
-            self.app.debug_log.info(f"Adding {node_data}")
             tree_node.add(label=node_label, data=node_data)
 
-    def add_dirs_without_status(
+    def add_dirs_without_status_in(
         self, *, tree_node: TreeNode[NodeData]
     ) -> None:
         if tree_node.data is None:
@@ -501,7 +505,7 @@ class ManagedTree(TreeBase):
     def populate_root_node(self) -> None:
         """Refresh the tree with latest chezmoi data."""
         # self.root.remove_children()
-        self.add_status_dirs(tree_node=self.root)
+        self.add_status_dirs_in(tree_node=self.root)
         self.add_status_files_in(tree_node=self.root)
         self.refresh()
 
@@ -509,10 +513,10 @@ class ManagedTree(TreeBase):
     def update_node_children(
         self, event: TreeBase.NodeExpanded[NodeData]
     ) -> None:
-        self.add_status_dirs(tree_node=event.node)
+        self.add_status_dirs_in(tree_node=event.node)
         self.add_status_files_in(tree_node=event.node)
         if self.unchanged:
-            self.add_dirs_without_status(tree_node=event.node)
+            self.add_dirs_without_status_in(tree_node=event.node)
             self.add_files_without_status_in(tree_node=event.node)
 
     def watch_unchanged(self) -> None:
@@ -539,18 +543,18 @@ class ExpandedTree(TreeBase):
     def add_node_children(
         self, event: TreeBase.NodeExpanded[NodeData]
     ) -> None:
-        self.add_status_dirs(tree_node=event.node)
+        self.add_status_dirs_in(tree_node=event.node)
         self.add_status_files_in(tree_node=event.node)
         if self.unchanged:
-            self.add_dirs_without_status(tree_node=event.node)
+            self.add_dirs_without_status_in(tree_node=event.node)
             self.add_files_without_status_in(tree_node=event.node)
 
     def expand_all_nodes(self, node: TreeNode[NodeData]) -> None:
         # Recursively expand all directory nodes
         if node.data is not None and node.data.is_leaf is False:
             node.expand()
-            self.add_status_dirs(tree_node=node)
-            self.add_dirs_without_status(tree_node=node)
+            self.add_status_dirs_in(tree_node=node)
+            self.add_dirs_without_status_in(tree_node=node)
             for child in node.children:
                 if child.data is not None and child.data.is_leaf is False:
                     self.expand_all_nodes(child)
