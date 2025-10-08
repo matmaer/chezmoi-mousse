@@ -75,9 +75,7 @@ class Operate(Container, AppType):
         self.border_title = " Operation Info "
         self.border_subtitle = " escape key to close "
         operate_info = self.query_exactly_one(OperateInfo)
-        operate_info.border_title = (
-            f" {self.path.relative_to(self.app.destDir)} "
-        )
+        operate_info.border_title = f" {self.path} "
 
 
 class OperateTabsBase(Horizontal, AppType):
@@ -119,7 +117,7 @@ class OperateTabsBase(Horizontal, AppType):
         selected_path = event.node_data.path
         self.query_one(
             self.view_switcher_qid, ContentSwitcher
-        ).border_title = f"{selected_path.relative_to(self.app.destDir)}"
+        ).border_title = f"{selected_path}"
         self.current_path = selected_path
         self.update_view_path(selected_path)
 
