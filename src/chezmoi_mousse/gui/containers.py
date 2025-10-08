@@ -9,11 +9,17 @@ from pathlib import Path
 
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import Horizontal, HorizontalGroup, VerticalGroup
+from textual.containers import (
+    Container,
+    Horizontal,
+    HorizontalGroup,
+    VerticalGroup,
+)
 from textual.widgets import Button, ContentSwitcher, Label, Switch
 
 from chezmoi_mousse import (
     Area,
+    OperateBtn,
     Switches,
     TabBtn,
     TabIds,
@@ -22,6 +28,7 @@ from chezmoi_mousse import (
     ViewName,
 )
 from chezmoi_mousse.gui import AppType
+from chezmoi_mousse.gui.button_groups import OperateBtnHorizontal
 from chezmoi_mousse.gui.content_switchers import TreeSwitcher
 from chezmoi_mousse.gui.messages import TreeNodeSelectedMsg
 from chezmoi_mousse.gui.rich_logs import ContentsView, DiffView
@@ -30,9 +37,44 @@ from chezmoi_mousse.gui.widgets import (
     FlatTree,
     GitLogView,
     ManagedTree,
+    OperateInfo,
 )
 
 __all__ = ["OperateTabsBase", "SwitchSlider"]
+
+
+class Operate(Container, AppType):
+
+    def __init__(
+        self,
+        *,
+        tab_ids: TabIds,
+        path: Path,
+        op_btn: OperateBtn,
+        widget_to_show: DiffView | ContentsView,
+    ) -> None:
+        self.tab_ids = tab_ids
+        self.op_btn = op_btn
+        self.path = path
+        self.widget_to_show = widget_to_show
+        self.operation_cancelled: bool = True
+        super().__init__(id=self.tab_ids.operate_container_id)
+
+    def compose(self) -> ComposeResult:
+        yield OperateInfo(operate_btn=self.op_btn)
+        yield self.widget_to_show
+        yield OperateBtnHorizontal(
+            tab_ids=self.tab_ids,
+            buttons=(self.op_btn, OperateBtn.operate_dismiss),
+        )
+
+    def on_mount(self) -> None:
+        self.border_title = " Operation Info "
+        self.border_subtitle = " escape key to close "
+        operate_info = self.query_exactly_one(OperateInfo)
+        operate_info.border_title = (
+            f" {self.path.relative_to(self.app.destDir)} "
+        )
 
 
 class OperateTabsBase(Horizontal, AppType):

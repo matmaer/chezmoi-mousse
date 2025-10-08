@@ -1,13 +1,11 @@
 from dataclasses import dataclass
 from pathlib import Path
 
-from textual import on
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.scrollbar import ScrollBar
 from textual.theme import Theme
 from textual.widgets import (
-    Button,
     ContentSwitcher,
     Footer,
     Header,
@@ -24,7 +22,6 @@ from chezmoi_mousse import (
     OperateHelp,
     PaneBtn,
     TabIds,
-    Tcss,
     TreeName,
     ViewName,
 )
@@ -48,7 +45,7 @@ from chezmoi_mousse.gui.rich_logs import (
     DebugLog,
     OutputLog,
 )
-from chezmoi_mousse.gui.screens import InstallHelp, Maximized, Operate
+from chezmoi_mousse.gui.screens import InstallHelp, Maximized
 from chezmoi_mousse.gui.splash import LoadingScreen
 from chezmoi_mousse.gui.widgets import ExpandedTree, FlatTree, ManagedTree
 
@@ -334,57 +331,6 @@ class ChezmoiGUI(App[None]):
                 tab_ids=tab_ids,
                 id_to_maximize=id_to_maximize,
                 path=current_path,
-            )
-        )
-
-    @on(Button.Pressed, Tcss.operate_button.value)
-    def handle_push_operate_screen(self, event: Button.Pressed) -> None:
-        event.stop()
-        if event.button.label not in (
-            OperateBtn.apply_file,
-            OperateBtn.re_add_file,
-            OperateBtn.add_file,
-            OperateBtn.forget_file,
-            OperateBtn.destroy_file,
-        ):
-            return
-        tab_ids: TabIds | None = None
-        active_tab_id = self.query_one(TabbedContent).active
-        # handle Add tab operation button
-        if active_tab_id == PaneBtn.add_tab.name:
-            add_tab_contents_view = self.query_one(
-                Id.add.view_id("#", view=ViewName.contents_view), ContentsView
-            )
-            current_path = getattr(add_tab_contents_view, "path")
-        # handle Apply tab operation button
-        elif active_tab_id == PaneBtn.apply_tab.name:
-            current_view_id = self.query_one(
-                Id.apply.content_switcher_id("#", area=Area.right),
-                ContentSwitcher,
-            ).current
-            current_view = self.query_one(f"#{current_view_id}")
-            current_path = getattr(current_view, "path")
-        # handle Re-Add tab operation button
-        elif active_tab_id == PaneBtn.re_add_tab.name:
-            current_view_id = self.query_one(
-                Id.re_add.content_switcher_id("#", area=Area.right),
-                ContentSwitcher,
-            ).current
-            current_view = self.query_one(f"#{current_view_id}")
-            current_path = getattr(current_view, "path")
-
-        if tab_ids is None:
-            self.notify("Cannot push the operate screen", severity="error")
-            return
-
-        self.push_screen(
-            Operate(
-                tab_ids=tab_ids,
-                path=current_path,
-                buttons=(
-                    OperateBtn(event.button.label),
-                    OperateBtn.operate_dismiss,
-                ),
             )
         )
 

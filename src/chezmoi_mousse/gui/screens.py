@@ -12,21 +12,10 @@ from textual.events import Click
 from textual.screen import Screen
 from textual.widgets import Button, Collapsible, Label, Link, Pretty, Tree
 
-from chezmoi_mousse import (
-    ChangeCmd,
-    Id,
-    OperateBtn,
-    PaneBtn,
-    ParsedJson,
-    TabIds,
-    Tcss,
-    ViewName,
-)
+from chezmoi_mousse import Id, PaneBtn, ParsedJson, TabIds, Tcss, ViewName
 from chezmoi_mousse.gui import AppType
-from chezmoi_mousse.gui.button_groups import OperateBtnHorizontal
-from chezmoi_mousse.gui.messages import OperateDismissMsg
 from chezmoi_mousse.gui.rich_logs import ContentsView, DiffView
-from chezmoi_mousse.gui.widgets import GitLogView, OperateInfo
+from chezmoi_mousse.gui.widgets import GitLogView
 
 
 class ScreensBase(Screen[None], AppType):
@@ -57,131 +46,6 @@ class ScreensBase(Screen[None], AppType):
             self.dismiss()
         elif self.screen_id == Id.install_help_screen.screen_id:
             self.app.exit()
-
-
-class Operate(ScreensBase, AppType):
-
-    def __init__(
-        self, *, tab_ids: TabIds, path: Path, buttons: tuple[OperateBtn, ...]
-    ) -> None:
-        self.buttons: tuple[OperateBtn, ...] = buttons
-        self.main_operate_btn = self.buttons[0]
-        self.path = path
-        self.tab_ids = tab_ids
-        self.reverse: bool = (
-            False if self.tab_ids.tab_name == PaneBtn.apply_tab.name else True
-        )
-        self.operate_dismiss_msg = OperateDismissMsg(
-            path=self.path, operation_executed=False
-        )
-        super().__init__(screen_id=Id.operate_screen.screen_id)
-
-    def compose(self) -> ComposeResult:
-        yield OperateInfo(operate_btn=self.main_operate_btn)
-        if (
-            OperateBtn.apply_file == self.main_operate_btn
-            or OperateBtn.re_add_file == self.main_operate_btn
-        ):
-            yield DiffView(init_ids=Id.operate_screen, reverse=self.reverse)
-        else:
-            yield ContentsView(tab_ids=Id.operate_screen)
-            yield OperateBtnHorizontal(
-                tab_ids=self.tab_ids, buttons=self.buttons
-            )
-
-    def on_mount(self) -> None:
-        self.add_class(Tcss.operate_screen.name)
-        self.border_subtitle = Id.operate_screen.border_subtitle()
-        # Update the OperateInfo top border title
-        operate_info = self.query_exactly_one(OperateInfo)
-        operate_info.border_title = (
-            f" {self.path.relative_to(self.app.destDir)} "
-        )
-        # Set path for the screen diff view
-        diff_view = self.query_one(
-            Id.operate_screen.view_id("#", view=ViewName.diff_view), DiffView
-        )
-        for button in self.query(Button):
-            button.disabled = False
-        if (
-            self.tab_ids.tab_name == PaneBtn.apply_tab.name
-            or self.tab_ids.tab_name == PaneBtn.re_add_tab.name
-        ) and (
-            OperateBtn.apply_file in self.buttons
-            or OperateBtn.re_add_file in self.buttons
-        ):
-            diff_view.path = self.path
-        else:
-            # Set path for the screen contents view
-            contents_view = self.query_one(
-                Id.operate_screen.view_id("#", view=ViewName.contents_view),
-                ContentsView,
-            )
-            contents_view.path = self.path
-
-    @on(Button.Pressed, Tcss.operate_button.value)
-    def handle_operate_buttons(self, event: Button.Pressed) -> None:
-        event.stop()
-        button_commands = [
-            (
-                OperateBtn.apply_file,
-                lambda: self.app.chezmoi.perform(
-                    ChangeCmd.apply, str(self.path)
-                ),
-            ),
-            (
-                OperateBtn.re_add_file,
-                lambda: self.app.chezmoi.perform(
-                    ChangeCmd.re_add, str(self.path)
-                ),
-            ),
-            (
-                OperateBtn.add_file,
-                lambda: self.app.chezmoi.perform(
-                    ChangeCmd.add, str(self.path)
-                ),
-            ),
-            (
-                OperateBtn.forget_file,
-                lambda: self.app.chezmoi.perform(
-                    ChangeCmd.forget, str(self.path)
-                ),
-            ),
-            (
-                OperateBtn.destroy_file,
-                lambda: self.app.chezmoi.perform(
-                    ChangeCmd.destroy, str(self.path)
-                ),
-            ),
-        ]
-        for btn_enum, btn_cmd in button_commands:
-            if event.button.id == self.tab_ids.button_id(btn=btn_enum):
-                self.query_one(
-                    self.tab_ids.button_id(
-                        "#", btn=OperateBtn.operate_dismiss
-                    ),
-                    Button,
-                ).label = "Close"
-                btn_cmd()
-                self.query_one(
-                    self.tab_ids.button_id("#", btn=btn_enum), Button
-                ).disabled = True
-                self.operate_dismiss_msg.operation_executed = True
-                break
-
-        if event.button.id == self.tab_ids.button_id(
-            btn=OperateBtn.operate_dismiss
-        ):
-            self.handle_dismiss()
-
-    def action_esc_dismiss(self) -> None:
-        self.handle_dismiss()
-
-    def handle_dismiss(self) -> None:
-        if not self.operate_dismiss_msg.operation_executed and self.path:
-            self.notify("No changes were made")
-        self.app.post_message(self.operate_dismiss_msg)
-        self.dismiss()
 
 
 class Maximized(ScreensBase):
