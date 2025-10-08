@@ -8,32 +8,30 @@ Graphical user interface in the terminal for [chezmoi](https://github.com/twpayn
 
 ## Current Use Case
 
-- Can be safely tested as no write operations are enabled by default.
+- Can be safely tested as no write operations are enabled.
 - The current implementation has only been used or tested with autocommit enabled.
 
 ## Available Chezmoi commands
-
-> Enable write operations by setting an env var MOUSSE_ENABLE_CHANGES=1
 
 > The list below is a limited subset of availabble chezmoi commands, run `chezmoi help` in your terminal to see all commands.  Commands below without a checkmark are being implemented, missing commands could be out of scope or take a while.
 
 ### Write Operations
 
-- [x] `chezmoi add` file
+- [ ] `chezmoi add` file
 - [ ] `chezmoi add` directory
 - [ ] `chezmoi add --encrypt` file
 - [ ] `chezmoi add --encrypt` directory
-- [x] `chezmoi apply` file
+- [ ] `chezmoi apply` file
 - [ ] `chezmoi apply` directory
-- [x] `chezmoi destroy` file
+- [ ] `chezmoi destroy` file
 - [ ] `chezmoi destroy` directory
 - [ ] `chezmoi edit`
-- [x] `chezmoi forget` file
+- [ ] `chezmoi forget` file
 - [ ] `chezmoi forget` directory
 - [ ] `chezoi generate`
 - [ ] `chezmoi init`
 - [ ] `chezmoi purge`
-- [x] `chezmoi re-add` file
+- [ ] `chezmoi re-add` file
 - [ ] `chezmoi re-add` directory
 
 ### Read Operations
