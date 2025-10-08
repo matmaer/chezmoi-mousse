@@ -129,6 +129,16 @@
   }
 }
 
+.operate_container {
+  .operate_info {
+    border-subtitle-align: center;
+    border-title-align: center;
+    border: round $foreground;
+    text-align: center;
+    dock: top;
+  }
+}
+
 .section_label {
     background-tint: $surface-lighten-1;
     background: $surface-lighten-1;
@@ -209,16 +219,6 @@
         margin-bottom: 4;
         color: $primary-lighten-3;
       }
-    }
-  }
-  &.operate_screen {
-    border-top: none;
-    &>.operate_info {
-      border-subtitle-align: center;
-      border-title-align: center;
-      border: round $foreground;
-      text-align: center;
-      dock: top;
     }
   }
 }

@@ -58,7 +58,10 @@ class Operate(Container, AppType):
         self.path = path
         self.widget_to_show = widget_to_show
         self.operation_cancelled: bool = True
-        super().__init__(id=self.tab_ids.operate_container_id)
+        super().__init__(
+            id=self.tab_ids.operate_container_id,
+            classes=Tcss.operate_container.name,
+        )
 
     def compose(self) -> ComposeResult:
         yield OperateInfo(operate_btn=self.op_btn)
