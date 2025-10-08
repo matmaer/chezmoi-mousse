@@ -144,6 +144,10 @@ class ChezmoiGUI(App[None]):
         yield Footer()
 
     def on_mount(self) -> None:
+        self.title = "-  c h e z m o i  m o u s s e  -"
+        self.register_theme(self.chezmoi_mousse_light)
+        self.register_theme(self.chezmoi_mousse_dark)
+        self.theme = "chezmoi-mousse-dark"
         if self.chezmoi_found is False:
             self.push_screen(
                 LoadingScreen(chezmoi_found=self.chezmoi_found),
@@ -159,13 +163,6 @@ class ChezmoiGUI(App[None]):
             LoadingScreen(chezmoi_found=self.chezmoi_found),
             callback=self.run_post_splash_actions,
         )
-        # this will also run while the loading screen is shown
-        self.register_theme(self.chezmoi_mousse_light)
-        self.register_theme(self.chezmoi_mousse_dark)
-        theme_name = "chezmoi-mousse-dark"
-        self.theme = theme_name
-        self.app_log.info(f"Theme set to {theme_name}")
-        self.title = "-  c h e z m o i  m o u s s e  -"
 
     def run_post_splash_actions(
         self, return_data: SplashReturnData | None
