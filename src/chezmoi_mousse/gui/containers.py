@@ -43,7 +43,7 @@ from chezmoi_mousse.gui.widgets import (
 __all__ = ["OperateTabsBase", "SwitchSlider"]
 
 
-class Operate(Container, AppType):
+class OperateFullScreen(Container, AppType):
 
     def __init__(
         self,
@@ -95,7 +95,7 @@ class OperateTabsBase(Horizontal, AppType):
             "#", area=Area.left
         )
 
-    def update_view_path(self, path: Path) -> None:
+    def _update_view_path(self, path: Path) -> None:
         current_view_id = self.query_one(
             self.view_switcher_qid, ContentSwitcher
         ).current
@@ -119,7 +119,7 @@ class OperateTabsBase(Horizontal, AppType):
             self.view_switcher_qid, ContentSwitcher
         ).border_title = f"{selected_path}"
         self.current_path = selected_path
-        self.update_view_path(selected_path)
+        self._update_view_path(selected_path)
 
     @on(Button.Pressed, Tcss.tab_button.value)
     def handle_tab_button_pressed(self, event: Button.Pressed) -> None:
@@ -146,7 +146,7 @@ class OperateTabsBase(Horizontal, AppType):
                 )
             if self.current_path is None:
                 self.current_path = self.app.destDir
-            self.update_view_path(path=self.current_path)
+            self._update_view_path(path=self.current_path)
 
         # toggle expand all switch enabled disabled state
         expand_all_switch = self.query_one(

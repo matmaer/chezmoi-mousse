@@ -44,7 +44,6 @@ from chezmoi_mousse.gui.messages import TreeNodeSelectedMsg
 
 __all__ = [
     "GitLogView",
-    "TreeBase",
     "ManagedTree",
     "ExpandedTree",
     "FlatTree",
@@ -99,39 +98,16 @@ class GitLogView(DataTable[Text], AppType):
 
     def __init__(self, *, tab_ids: TabIds | ScreenIds) -> None:
         self.tab_ids = tab_ids
-        # TODO: handle this in a better way
-        self.row_styles = {"ok": "green", "warning": "yellow", "error": "red"}
         super().__init__(
             id=self.tab_ids.view_id(view=ViewName.git_log_view),
             show_cursor=False,
         )
 
-    def add_row_with_style(self, columns: list[str], style: str) -> None:
+    def _add_row_with_style(self, columns: list[str], style: str) -> None:
         row: Iterable[Text] = [
             Text(cell_text, style=style) for cell_text in columns
         ]
         self.add_row(*row)
-
-    def render_invalid_data(self, new_data: str):
-        self.clear(columns=True)
-        self.add_column(
-            Text("INVALID DATA RECEIVED", self.row_styles["error"])
-        )
-        if new_data == "":
-            self.add_row(Text("received an empty string"))
-            return
-        elif type(new_data) is str:
-            self.add_row(
-                Text("Received invalid string:", self.row_styles["warning"])
-            )
-            self.add_row(Text(new_data))
-
-        elif type(new_data) is not str:
-            self.add_row(Text(f"Received invalid data type: {type(new_data)}"))
-            self.add_row(Text(str(new_data)))
-            return
-        else:
-            raise ValueError("Unhandled invalid data in GitLogView")
 
     def populate_data_table(self, cmd_output: str) -> None:
         self.clear(columns=True)
@@ -144,11 +120,11 @@ class GitLogView(DataTable[Text], AppType):
         for line in cmd_output.splitlines():
             columns = line.split(";")
             if columns[1].split(maxsplit=1)[0] == "Add":
-                self.add_row_with_style(columns, styles["ok"])
+                self._add_row_with_style(columns, styles["ok"])
             elif columns[1].split(maxsplit=1)[0] == "Update":
-                self.add_row_with_style(columns, styles["warning"])
+                self._add_row_with_style(columns, styles["warning"])
             elif columns[1].split(maxsplit=1)[0] == "Remove":
-                self.add_row_with_style(columns, styles["error"])
+                self._add_row_with_style(columns, styles["error"])
             else:
                 self.add_row(*(Text(cell) for cell in columns))
 
@@ -197,63 +173,6 @@ class TreeBase(Tree[NodeData], AppType):
         self.root.data = NodeData(
             path=self.app.destDir, is_leaf=False, found=True, status="F"
         )
-
-    @on(Tree.NodeCollapsed)
-    def remove_node_children(
-        self, event: Tree.NodeCollapsed[NodeData]
-    ) -> None:
-        event.node.remove_children()
-
-    @on(Tree.NodeSelected)
-    def send_node_context_message(
-        self, event: Tree.NodeSelected[NodeData]
-    ) -> None:
-        if event.node == self.root:
-            return
-        if (
-            event.node.parent is not None
-            and event.node.parent.data is not None
-            and event.node.data is not None
-        ):
-            self.node_selected_msg = TreeNodeSelectedMsg(
-                tree_name=self.tree_name,
-                node_data=event.node.data,
-                node_parent=event.node.parent.data,
-                node_leaves=[
-                    child.data
-                    for child in event.node.children
-                    if child.data is not None and child.data.is_leaf is True
-                ],
-                node_subdirs=[
-                    child.data
-                    for child in event.node.children
-                    if child.data is not None and child.data.is_leaf is False
-                ],
-            )
-        else:
-            return
-        self.post_message(self.node_selected_msg)
-
-    # 4 methods to provide tab navigation without intaraction with the tree
-    def on_key(self, event: Key) -> None:
-        if event.key in ("tab", "shift+tab"):
-            return
-        self._initial_render = False
-        self._user_interacted = True
-
-    def on_click(self) -> None:
-        self._initial_render = False
-        self._user_interacted = True
-
-    def on_focus(self) -> None:
-        if self._first_focus:
-            self._first_focus = False
-            self.refresh()
-
-    def on_blur(self) -> None:
-        if not self._user_interacted and not self._first_focus:
-            self._first_focus = True
-            self.refresh()
 
     # the styling method for the node labels
     def style_label(self, node_data: NodeData) -> Text:
@@ -489,6 +408,63 @@ class TreeBase(Tree[NodeData], AppType):
 
         text = Text.assemble(prefix, node_label)
         return text
+
+    @on(Tree.NodeCollapsed)
+    def remove_node_children(
+        self, event: Tree.NodeCollapsed[NodeData]
+    ) -> None:
+        event.node.remove_children()
+
+    @on(Tree.NodeSelected)
+    def send_node_context_message(
+        self, event: Tree.NodeSelected[NodeData]
+    ) -> None:
+        if event.node == self.root:
+            return
+        if (
+            event.node.parent is not None
+            and event.node.parent.data is not None
+            and event.node.data is not None
+        ):
+            self.node_selected_msg = TreeNodeSelectedMsg(
+                tree_name=self.tree_name,
+                node_data=event.node.data,
+                node_parent=event.node.parent.data,
+                node_leaves=[
+                    child.data
+                    for child in event.node.children
+                    if child.data is not None and child.data.is_leaf is True
+                ],
+                node_subdirs=[
+                    child.data
+                    for child in event.node.children
+                    if child.data is not None and child.data.is_leaf is False
+                ],
+            )
+        else:
+            return
+        self.post_message(self.node_selected_msg)
+
+    # 4 methods to provide tab navigation without intaraction with the tree
+    def on_key(self, event: Key) -> None:
+        if event.key in ("tab", "shift+tab"):
+            return
+        self._initial_render = False
+        self._user_interacted = True
+
+    def on_click(self) -> None:
+        self._initial_render = False
+        self._user_interacted = True
+
+    def on_focus(self) -> None:
+        if self._first_focus:
+            self._first_focus = False
+            self.refresh()
+
+    def on_blur(self) -> None:
+        if not self._user_interacted and not self._first_focus:
+            self._first_focus = True
+            self.refresh()
 
 
 class ManagedTree(TreeBase):

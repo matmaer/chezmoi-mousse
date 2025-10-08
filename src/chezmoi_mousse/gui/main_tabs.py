@@ -135,8 +135,7 @@ class AddTab(OperateTabsBase, AppType):
         dir_tree.add_class(
             Tcss.dir_tree_widget.name, Tcss.border_title_top.name
         )
-        dir_tree.border_title = str(self.app.destDir)
-        dir_tree.path = self.app.destDir
+        dir_tree.border_title = " destDir "
         dir_tree.show_root = False
         dir_tree.guide_depth = 3
 

@@ -74,7 +74,7 @@ class ContentsView(RichLog, AppType):
         )
 
     def watch_path(self) -> None:
-        if self.path is None or self.path == self.app.destDir:
+        if self.path is None:
             return
         self.clear()
         truncated_message = ""
@@ -83,14 +83,14 @@ class ContentsView(RichLog, AppType):
                 truncated_message = (
                     "\n\n--- File content truncated to 150 KiB ---\n"
                 )
-                # self.app.chezmoi.app_log.warning(
-                #     f"File {self.path} is larger than 150 KiB, truncating output."
-                # )
+                self.app.chezmoi.app_log.warning(
+                    f"File {self.path} is larger than 150 KiB, truncating output."
+                )
         except PermissionError as e:
             self.write(e.strerror)
-            # self.app.chezmoi.app_log.error(
-            #     f"Permission denied to read {self.path}"
-            # )
+            self.app.chezmoi.app_log.error(
+                f"Permission denied to read {self.path}"
+            )
             return
 
         try:
@@ -130,9 +130,9 @@ class ContentsView(RichLog, AppType):
 
         except OSError as error:
             self.write(Text(f"Error reading {self.path}: {error}"))
-            # self.app.chezmoi.app_log.error(
-            #     f"Error reading {self.path}: {error}"
-            # )
+            self.app.chezmoi.app_log.error(
+                f"Error reading {self.path}: {error}"
+            )
 
 
 class DiffView(RichLog, AppType):
@@ -168,11 +168,11 @@ class DiffView(RichLog, AppType):
             self.write('This is the destination directory "chezmoi destDir"\n')
             self.write(self.click_colored_file)
 
-    def write_dir_info(self) -> None:
+    def _write_dir_info(self) -> None:
         self.write(f"Managed directory {self.path}\n")
         self.write(self.click_colored_file)
 
-    def write_unchanged_file_info(self) -> None:
+    def _write_unchanged_file_info(self) -> None:
         self.write(
             f'No diff available for "{self.path}", the file is unchanged.'
         )
@@ -196,7 +196,7 @@ class DiffView(RichLog, AppType):
             self.active_tab is not None
             and self.path in self.app.chezmoi.managed_dirs
         ):
-            self.write_dir_info()
+            self._write_dir_info()
             return
 
         # create the diff view for a changed file
@@ -217,8 +217,7 @@ class DiffView(RichLog, AppType):
             and not line.startswith(("+++", "---"))
         ]
         if not diff_lines:
-            # fallback if the logic above produced no diff lines, TODO improve
-            self.write(Text(f"{'\n'.join(diff_output)}"))
+            self._write_unchanged_file_info()
             return
 
         for line in diff_lines.copy():

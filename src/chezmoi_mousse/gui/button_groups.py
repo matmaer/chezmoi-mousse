@@ -5,15 +5,10 @@ from textual.widgets import Button
 
 from chezmoi_mousse import Area, NavBtn, OperateBtn, TabBtn, TabIds, Tcss
 
-__all__ = [
-    "ButtonsHorizontal",
-    "NavButtonsVertical",
-    "OperateBtnHorizontal",
-    "TabBtnHorizontal",
-]
+__all__ = ["NavButtonsVertical", "OperateBtnHorizontal", "TabBtnHorizontal"]
 
 
-class ButtonsHorizontal(HorizontalGroup):
+class ButtonsHorizontalBase(HorizontalGroup):
 
     def __init__(
         self,
@@ -56,7 +51,7 @@ class NavButtonsVertical(VerticalGroup):
             )
 
 
-class OperateBtnHorizontal(ButtonsHorizontal):
+class OperateBtnHorizontal(ButtonsHorizontalBase):
     def __init__(self, *, tab_ids: TabIds, buttons: tuple[OperateBtn, ...]):
         super().__init__(tab_ids=tab_ids, buttons=buttons, area=Area.bottom)
 
@@ -67,7 +62,7 @@ class OperateBtnHorizontal(ButtonsHorizontal):
             btn.disabled = True
 
 
-class TabBtnHorizontal(ButtonsHorizontal):
+class TabBtnHorizontal(ButtonsHorizontalBase):
     def __init__(
         self, *, tab_ids: TabIds, buttons: tuple[TabBtn, ...], area: Area
     ):

@@ -11,6 +11,8 @@ from chezmoi_mousse import (
 )
 from chezmoi_mousse.gui.rich_logs import AppLog, DebugLog, OutputLog
 
+__all__ = ["Chezmoi"]
+
 
 class Utils:
     @staticmethod
@@ -163,20 +165,6 @@ class Chezmoi:
         else:
             return self._re_add_status_files
 
-    def managed_files_without_status(self, active_tab: ActiveTab) -> PathDict:
-        if active_tab == PaneBtn.apply_tab:
-            return {
-                path: "X"
-                for path in self.managed_files
-                if path not in self._apply_status_files
-            }
-        else:
-            return {
-                path: "X"
-                for path in self.managed_files
-                if path not in self._re_add_status_files
-            }
-
     def status_files_in(
         self, active_tab: ActiveTab, dir_path: Path
     ) -> PathDict:
@@ -213,7 +201,7 @@ class Chezmoi:
             if (
                 path.parent == dir_path
                 and path not in result
-                and self.has_status_paths_in(active_tab, path)
+                and self._has_status_paths_in(active_tab, path)
             ):
                 result[path] = " "
 
@@ -246,7 +234,7 @@ class Chezmoi:
                 for path in self.managed_dirs
                 if path.parent == dir_path
                 and path not in self._apply_status_paths
-                and not self.has_status_paths_in(active_tab, path)
+                and not self._has_status_paths_in(active_tab, path)
             }
         else:
             return {
@@ -254,10 +242,10 @@ class Chezmoi:
                 for path in self.managed_dirs
                 if path.parent == dir_path
                 and path not in self._re_add_status_paths
-                and not self.has_status_paths_in(active_tab, path)
+                and not self._has_status_paths_in(active_tab, path)
             }
 
-    def has_status_paths_in(
+    def _has_status_paths_in(
         self, active_tab: ActiveTab, dir_path: Path
     ) -> bool:
         if active_tab == PaneBtn.apply_tab:

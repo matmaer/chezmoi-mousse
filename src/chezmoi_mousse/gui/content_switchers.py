@@ -80,13 +80,6 @@ class ViewSwitcher(ContentSwitcher, AppType):
         yield GitLogView(tab_ids=self.tab_ids)
 
     def on_mount(self) -> None:
-        git_log_view = self.query_one(GitLogView)
-        git_log_view.row_styles = {
-            "ok": self.app.custom_theme_vars["text-success"],
-            "warning": self.app.custom_theme_vars["text-warning"],
-            "error": self.app.custom_theme_vars["text-error"],
-        }
-
         self.border_title = str(self.app.destDir)
         self.add_class(Tcss.border_title_top.name)
 

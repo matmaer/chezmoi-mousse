@@ -37,7 +37,18 @@ SPLASH = """\
     "===", "=\u200b=\u200b="
 ).splitlines()
 
-LOG_PADDING_WIDTH = 41
+LOG_PADDING_WIDTH = 39
+
+
+cat_config: str = ""
+doctor: str = ""
+dump_config: str = ""
+ignored: str = ""
+managed_dirs: str = ""
+managed_files: str = ""
+status_dirs: str = ""
+status_files: str = ""
+template_data: str = ""
 
 
 class SplashLog(RichLog):
@@ -55,7 +66,7 @@ class AnimatedFade(Static):
 
     def __init__(self) -> None:
         super().__init__()
-        self.line_styles = self.create_deque()
+        self.line_styles = self._create_deque()
         self.line_styles.rotate(-3)
         self.styles.height = len(SPLASH)
         self.styles.width = len(max(SPLASH, key=len))
@@ -68,7 +79,7 @@ class AnimatedFade(Static):
     def render_line(self, y: int) -> Strip:
         return Strip([Segment(SPLASH[y], style=self.line_styles[y])])
 
-    def create_deque(self) -> deque[Style]:
+    def _create_deque(self) -> deque[Style]:
         start_color = "#0178D4"
         end_color = "#F187FB"
 
@@ -85,17 +96,6 @@ class AnimatedFade(Static):
             ]
         )
         return line_styles
-
-
-cat_config: str = ""
-doctor: str = ""
-dump_config: str = ""
-ignored: str = ""
-managed_dirs: str = ""
-managed_files: str = ""
-status_dirs: str = ""
-status_files: str = ""
-template_data: str = ""
 
 
 class LoadingScreen(Screen[SplashReturnData], AppType):

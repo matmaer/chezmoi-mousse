@@ -17,6 +17,8 @@ from chezmoi_mousse.gui import AppType
 from chezmoi_mousse.gui.rich_logs import ContentsView, DiffView
 from chezmoi_mousse.gui.widgets import GitLogView
 
+__all__ = ["Maximized", "InstallHelp"]
+
 
 class ScreensBase(Screen[None], AppType):
 

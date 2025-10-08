@@ -103,12 +103,12 @@ class FilteredDirTree(DirectoryTree, AppType):
                         p.parent in managed_dirs
                         or p.parent == self.app.destDir
                     )
-                    and not self.is_unwanted_path(p)
+                    and not self._is_unwanted_path(p)
                     and p not in managed_files
                 )
                 or (
                     p.is_dir()
-                    and not self.is_unwanted_path(p)
+                    and not self._is_unwanted_path(p)
                     and p in managed_dirs
                 )
             )
@@ -117,7 +117,7 @@ class FilteredDirTree(DirectoryTree, AppType):
             return (
                 p
                 for p in paths
-                if p not in managed_files and not self.is_unwanted_path(p)
+                if p not in managed_files and not self._is_unwanted_path(p)
             )
         # Switches: Red - Green
         elif not self.unmanaged_dirs and self.unwanted:
@@ -144,7 +144,7 @@ class FilteredDirTree(DirectoryTree, AppType):
         else:
             return paths
 
-    def is_unwanted_path(self, path: Path) -> bool:
+    def _is_unwanted_path(self, path: Path) -> bool:
         if path.is_dir():
             try:
                 UnwantedDirs(path.name)
