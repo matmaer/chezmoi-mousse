@@ -19,7 +19,7 @@ class GlobalCmd(Enum):
 
 
 class VerbArgs(Enum):
-    encrypt = "--encrypt"
+    # encrypt = "--encrypt"
     format_json = "--format=json"
     git_log = [
         "--",
@@ -106,9 +106,9 @@ class ReadCmd(Enum):
 
 class ChangeCmd(Enum):
     add = ["add"]
-    add_encrypt = ["add", VerbArgs.encrypt.value]
+    # add_encrypt = ["add", VerbArgs.encrypt.value]
     apply = ["apply"]
-    destroy = ["destroy"]
+    # destroy = ["destroy"]
     forget = ["forget"]
     init = ["init"]
     purge = ["purge"]
