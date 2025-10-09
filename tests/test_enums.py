@@ -108,5 +108,5 @@ def test_members_in_use(enum_class_def: ast.ClassDef):
             not_in_use.append(not_in_use_item)
 
     # Report all unused members at once
-    for item in not_in_use:
-        pytest.fail(f"Not in use: {item}")
+    if not_in_use:
+        pytest.fail(f"Unused enum members:\n{'\n'.join(not_in_use)}")

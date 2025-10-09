@@ -9,10 +9,6 @@ class OperateHelp(StrEnum):
     # apply_dir = "[$text-primary]The directory in the destination directory will be modified.[/]"
     auto_commit = f"[$text-warning]{Chars.warning_sign} Auto commit is enabled: files will also be committed.{Chars.warning_sign}[/]"
     autopush = f"[$text-warning]{Chars.warning_sign} Auto push is enabled: files will be pushed to the remote.{Chars.warning_sign}[/]"
-    changes_mode_disabled = (
-        "Changes mode disabled, operations will dry-run only"
-    )
-    changes_mode_enabled = "Changes mode enabled, operations will run."
     destroy_file = "[$text-error]Permanently remove the file both from your home directory and chezmoi's source directory, make sure you have a backup![/]"
     # destroy_dir = "[$text-error]Permanently remove the directory both from your home directory and chezmoi's source directory, make sure you have a backup![/]"
     diff_color = "[$text-success]+ green lines will be added[/]\n[$text-error]- red lines will be removed[/]\n[dim]{Chars.bullet} dimmed lines for context[/]"
