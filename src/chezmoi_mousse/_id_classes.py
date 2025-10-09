@@ -4,18 +4,10 @@ generated the id dynamically when subclassing or to query a widget."""
 from dataclasses import dataclass
 from enum import Enum
 
-from chezmoi_mousse._str_enums import (
-    Area,
-    NavBtn,
-    OperateBtn,
-    PaneBtn,
-    ScreenName,
-    TabBtn,
-    TreeName,
-    ViewName,
-)
+from chezmoi_mousse._button_labels import NavBtn, OperateBtn, PaneBtn, TabBtn
+from chezmoi_mousse._names import AreaName, ScreenName, TreeName, ViewName
 
-__all__ = ["Id", "ScreenIds", "Switches", "TabIds"]
+__all__ = ["ScreenIds", "Switches", "TabIds"]
 
 
 class Switches(Enum):
@@ -74,10 +66,10 @@ class TabIds:
             suffix = "_nav_btn"
         return f"{qid}{self.tab_name}_{btn.name}{suffix}"
 
-    def buttons_horizontal_id(self, area: Area) -> str:
+    def buttons_horizontal_id(self, area: AreaName) -> str:
         return f"{self.tab_name}_{area}_horizontal"
 
-    def content_switcher_id(self, qid: str = "", *, area: Area) -> str:
+    def content_switcher_id(self, qid: str = "", *, area: AreaName) -> str:
         return f"{qid}{self.tab_name}_{area}_content_switcher"
 
     def switch_horizontal_id(self, qid: str = "", *, switch: Switches) -> str:
@@ -86,7 +78,7 @@ class TabIds:
     def switch_id(self, qid: str = "", *, switch: Switches) -> str:
         return f"{qid}{self.tab_name}_{switch.switch_name}_switch"
 
-    def tab_vertical_id(self, qid: str = "", *, area: Area) -> str:
+    def tab_vertical_id(self, qid: str = "", *, area: AreaName) -> str:
         return f"{qid}{self.tab_name}_{area}_vertical"
 
     def tree_id(self, qid: str = "", *, tree: TreeName) -> str:

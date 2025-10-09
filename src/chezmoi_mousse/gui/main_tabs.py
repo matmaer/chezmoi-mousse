@@ -7,7 +7,7 @@ from textual.lazy import Lazy
 from textual.widgets import Button, Input, Switch
 
 from chezmoi_mousse import (
-    Area,
+    AreaName,
     ChangeCmd,
     Id,
     LogName,
@@ -54,20 +54,20 @@ class ApplyTab(OperateTabsBase):
 
     def compose(self) -> ComposeResult:
         with Vertical(
-            id=Id.apply.tab_vertical_id(area=Area.left),
+            id=Id.apply.tab_vertical_id(area=AreaName.left),
             classes=Tcss.tab_left_vertical.name,
         ):
             yield TabBtnHorizontal(
                 tab_ids=self.tab_ids,
                 buttons=(TabBtn.tree, TabBtn.list),
-                area=Area.left,
+                area=AreaName.left,
             )
             yield TreeSwitcher(tab_ids=Id.apply)
-        with Vertical(id=Id.apply.tab_vertical_id(area=Area.right)):
+        with Vertical(id=Id.apply.tab_vertical_id(area=AreaName.right)):
             yield TabBtnHorizontal(
                 tab_ids=Id.apply,
                 buttons=(TabBtn.diff, TabBtn.contents, TabBtn.git_log),
-                area=Area.right,
+                area=AreaName.right,
             )
             yield ViewSwitcher(tab_ids=Id.apply, diff_reverse=False)
         yield SwitchSlider(
@@ -83,20 +83,20 @@ class ReAddTab(OperateTabsBase):
 
     def compose(self) -> ComposeResult:
         with Vertical(
-            id=Id.re_add.tab_vertical_id(area=Area.left),
+            id=Id.re_add.tab_vertical_id(area=AreaName.left),
             classes=Tcss.tab_left_vertical.name,
         ):
             yield TabBtnHorizontal(
                 tab_ids=self.tab_ids,
                 buttons=(TabBtn.tree, TabBtn.list),
-                area=Area.left,
+                area=AreaName.left,
             )
             yield TreeSwitcher(tab_ids=Id.re_add)
-        with Vertical(id=Id.re_add.tab_vertical_id(area=Area.right)):
+        with Vertical(id=Id.re_add.tab_vertical_id(area=AreaName.right)):
             yield TabBtnHorizontal(
                 tab_ids=Id.re_add,
                 buttons=(TabBtn.diff, TabBtn.contents, TabBtn.git_log),
-                area=Area.right,
+                area=AreaName.right,
             )
             yield ViewSwitcher(tab_ids=Id.re_add, diff_reverse=True)
         yield SwitchSlider(
@@ -112,13 +112,13 @@ class AddTab(OperateTabsBase, AppType):
 
     def compose(self) -> ComposeResult:
         with VerticalGroup(
-            id=Id.add.tab_vertical_id(area=Area.left),
+            id=Id.add.tab_vertical_id(area=AreaName.left),
             classes=Tcss.tab_left_vertical.name,
         ):
             yield FilteredDirTree(
                 Path.home(), id=Id.add.tree_id(tree=TreeName.add_tree)
             )
-        with Vertical(id=Id.add.tab_vertical_id(area=Area.right)):
+        with Vertical(id=Id.add.tab_vertical_id(area=AreaName.right)):
             yield ContentsView(tab_ids=Id.add)
 
         yield SwitchSlider(
@@ -247,7 +247,7 @@ class LogsTab(Vertical, AppType):
             tab_buttons += (TabBtn.debug_log,)
 
         yield TabBtnHorizontal(
-            tab_ids=Id.logs, buttons=tab_buttons, area=Area.top
+            tab_ids=Id.logs, buttons=tab_buttons, area=AreaName.top
         )
         yield LogsTabSwitcher(tab_ids=Id.logs)
 

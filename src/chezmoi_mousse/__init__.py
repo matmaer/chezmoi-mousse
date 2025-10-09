@@ -2,6 +2,8 @@ from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 from typing import Any, Literal
 
+from chezmoi_mousse._button_labels import NavBtn, OperateBtn, PaneBtn, TabBtn
+from chezmoi_mousse._chars import Chars
 from chezmoi_mousse._chezmoi_cmd import (
     ChangeCmd,
     GlobalCmd,
@@ -10,49 +12,40 @@ from chezmoi_mousse._chezmoi_cmd import (
     VerbArgs,
 )
 from chezmoi_mousse._id_classes import Id, ScreenIds, Switches, TabIds
-from chezmoi_mousse._str_enums import (
-    Area,
-    Chars,
+from chezmoi_mousse._names import (
+    AreaName,
     LogName,
-    NavBtn,
-    OperateBtn,
-    OperateHelp,
-    PaneBtn,
     ScreenName,
-    TabBtn,
-    Tcss,
     TreeName,
     ViewName,
 )
+from chezmoi_mousse._operate_help import OperateHelp
+from chezmoi_mousse._tcss_classes import Tcss
 
 __all__ = [
-    # from this file
     "__version__",
     "Any",
-    "ParsedJson",
-    # from _chezmoi_cmd.py
+    "AreaName",
     "ChangeCmd",
-    "GlobalCmd",
-    "ReadCmd",
-    "ReadVerbs",
-    "VerbArgs",
-    # from _id_classes.py
-    "Id",
-    "ScreenIds",
-    "Switches",
-    "TabIds",
-    # from _str_enums.py
-    "Area",
     "Chars",
+    "GlobalCmd",
+    "Id",
     "LogName",
     "NavBtn",
     "OperateBtn",
     "OperateHelp",
-    "ScreenName",
-    "TabBtn",
     "PaneBtn",
+    "ParsedJson",
+    "ReadCmd",
+    "ReadVerbs",
+    "ScreenIds",
+    "ScreenName",
+    "Switches",
+    "TabBtn",
+    "TabIds",
     "Tcss",
     "TreeName",
+    "VerbArgs",
     "ViewName",
 ]
 

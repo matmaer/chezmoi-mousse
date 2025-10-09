@@ -3,7 +3,7 @@ from textual.app import ComposeResult
 from textual.containers import HorizontalGroup, Vertical, VerticalGroup
 from textual.widgets import Button
 
-from chezmoi_mousse import Area, NavBtn, OperateBtn, TabBtn, TabIds, Tcss
+from chezmoi_mousse import AreaName, NavBtn, OperateBtn, TabBtn, TabIds, Tcss
 
 __all__ = ["NavButtonsVertical", "OperateBtnHorizontal", "TabBtnHorizontal"]
 
@@ -15,10 +15,10 @@ class ButtonsHorizontalBase(HorizontalGroup):
         *,
         tab_ids: TabIds,
         buttons: tuple[TabBtn, ...] | tuple[OperateBtn, ...],
-        area: Area,
+        area: AreaName,
     ) -> None:
         self.buttons = buttons
-        self.area: Area = area
+        self.area: AreaName = area
         self.tab_ids: TabIds = tab_ids
         super().__init__(id=self.tab_ids.buttons_horizontal_id(self.area))
 
@@ -53,7 +53,9 @@ class NavButtonsVertical(VerticalGroup):
 
 class OperateBtnHorizontal(ButtonsHorizontalBase):
     def __init__(self, *, tab_ids: TabIds, buttons: tuple[OperateBtn, ...]):
-        super().__init__(tab_ids=tab_ids, buttons=buttons, area=Area.bottom)
+        super().__init__(
+            tab_ids=tab_ids, buttons=buttons, area=AreaName.bottom
+        )
 
     def on_mount(self) -> None:
         for btn in self.query(Button):
@@ -64,7 +66,7 @@ class OperateBtnHorizontal(ButtonsHorizontalBase):
 
 class TabBtnHorizontal(ButtonsHorizontalBase):
     def __init__(
-        self, *, tab_ids: TabIds, buttons: tuple[TabBtn, ...], area: Area
+        self, *, tab_ids: TabIds, buttons: tuple[TabBtn, ...], area: AreaName
     ):
         super().__init__(tab_ids=tab_ids, buttons=buttons, area=area)
 

@@ -18,7 +18,7 @@ from textual.containers import (
 from textual.widgets import Button, ContentSwitcher, Label, Switch
 
 from chezmoi_mousse import (
-    Area,
+    AreaName,
     OperateBtn,
     Switches,
     TabBtn,
@@ -89,10 +89,10 @@ class OperateTabsBase(Horizontal, AppType):
         self.git_log_tab_btn = tab_ids.button_id(btn=TabBtn.git_log)
         self.expand_all_state = False
         self.view_switcher_qid = self.tab_ids.content_switcher_id(
-            "#", area=Area.right
+            "#", area=AreaName.right
         )
         self.tree_switcher_qid = self.tab_ids.content_switcher_id(
-            "#", area=Area.left
+            "#", area=AreaName.left
         )
 
     def _update_view_path(self, path: Path) -> None:

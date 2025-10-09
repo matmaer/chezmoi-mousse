@@ -13,7 +13,14 @@ from textual.widgets import (
     Static,
 )
 
-from chezmoi_mousse import Area, OperateBtn, TabIds, Tcss, TreeName, ViewName
+from chezmoi_mousse import (
+    AreaName,
+    OperateBtn,
+    TabIds,
+    Tcss,
+    TreeName,
+    ViewName,
+)
 from chezmoi_mousse.gui import AppType
 from chezmoi_mousse.gui.button_groups import OperateBtnHorizontal
 from chezmoi_mousse.gui.rich_logs import (
@@ -47,7 +54,7 @@ class TreeSwitcher(ContentSwitcher, AppType):
     def __init__(self, tab_ids: TabIds):
         self.tab_ids = tab_ids
         super().__init__(
-            id=self.tab_ids.content_switcher_id(area=Area.left),
+            id=self.tab_ids.content_switcher_id(area=AreaName.left),
             initial=self.tab_ids.tree_id(tree=TreeName.managed_tree),
             classes=Tcss.content_switcher_left.name,
         )
@@ -69,7 +76,7 @@ class ViewSwitcher(ContentSwitcher, AppType):
         self.tab_ids = tab_ids
         self.reverse = diff_reverse
         super().__init__(
-            id=self.tab_ids.content_switcher_id(area=Area.right),
+            id=self.tab_ids.content_switcher_id(area=AreaName.right),
             initial=self.tab_ids.view_id(view=ViewName.diff_view),
             classes=Tcss.border_title_top.name,
         )
@@ -89,7 +96,7 @@ class InitTabSwitcher(ContentSwitcher):
     def __init__(self, tab_ids: TabIds):
         self.tab_ids = tab_ids
         super().__init__(
-            id=self.tab_ids.content_switcher_id(area=Area.right),
+            id=self.tab_ids.content_switcher_id(area=AreaName.right),
             initial=self.tab_ids.view_id(view=ViewName.init_new_view),
             classes=Tcss.nav_content_switcher.name,
         )
@@ -167,7 +174,7 @@ class ConfigTabSwitcher(ContentSwitcher, AppType):
     def __init__(self, tab_ids: TabIds):
         self.tab_ids = tab_ids
         super().__init__(
-            id=self.tab_ids.content_switcher_id(area=Area.right),
+            id=self.tab_ids.content_switcher_id(area=AreaName.right),
             initial=self.tab_ids.view_id(view=ViewName.doctor_view),
             classes=Tcss.nav_content_switcher.name,
         )
@@ -274,7 +281,7 @@ class HelpTabSwitcher(ContentSwitcher):
     def __init__(self, tab_ids: TabIds):
         self.tab_ids = tab_ids
         super().__init__(
-            id=self.tab_ids.content_switcher_id(area=Area.right),
+            id=self.tab_ids.content_switcher_id(area=AreaName.right),
             initial=self.tab_ids.view_id(view=ViewName.diagram_view),
             classes=Tcss.nav_content_switcher.name,
         )
@@ -293,7 +300,7 @@ class LogsTabSwitcher(ContentSwitcher, AppType):
     def __init__(self, tab_ids: TabIds):
         self.tab_ids = tab_ids
         super().__init__(
-            id=self.tab_ids.content_switcher_id(area=Area.top),
+            id=self.tab_ids.content_switcher_id(area=AreaName.top),
             classes=Tcss.border_title_top.name,
         )
 

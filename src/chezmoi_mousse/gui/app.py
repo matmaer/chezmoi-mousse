@@ -14,7 +14,7 @@ from textual.widgets import (
 )
 
 from chezmoi_mousse import (
-    Area,
+    AreaName,
     Chars,
     Id,
     LogName,
@@ -181,7 +181,7 @@ class ChezmoiGUI(App[None]):
 
         # Set reactives for ConfigTab ContentSwitcher
         config_tab_switcher = self.query_one(
-            Id.config.content_switcher_id("#", area=Area.right),
+            Id.config.content_switcher_id("#", area=AreaName.right),
             ContentSwitcher,
         )
         setattr(config_tab_switcher, "doctor_stdout", return_data.doctor)
@@ -213,7 +213,8 @@ class ChezmoiGUI(App[None]):
         self.query_one(FilteredDirTree).reload()
         # make the app_log appear first time the main Logs tab is opened
         content_switcher = self.query_one(
-            Id.logs.content_switcher_id("#", area=Area.top), ContentSwitcher
+            Id.logs.content_switcher_id("#", area=AreaName.top),
+            ContentSwitcher,
         )
         content_switcher.current = LogName.app_log.name
         if self.dev_mode is True:
@@ -293,7 +294,7 @@ class ChezmoiGUI(App[None]):
 
         if active_tab_id == PaneBtn.apply_tab.name:
             active_widget_id = self.query_one(
-                Id.apply.content_switcher_id("#", area=Area.right),
+                Id.apply.content_switcher_id("#", area=AreaName.right),
                 ContentSwitcher,
             ).current
             active_widget = self.query_one(f"#{active_widget_id}")
@@ -304,7 +305,7 @@ class ChezmoiGUI(App[None]):
         elif active_tab_id == PaneBtn.re_add_tab.name:
             # Determine what view to show in the screen
             active_widget_id = self.query_one(
-                Id.re_add.content_switcher_id("#", area=Area.right),
+                Id.re_add.content_switcher_id("#", area=AreaName.right),
                 ContentSwitcher,
             ).current
             active_widget = self.query_one(f"#{active_widget_id}")
