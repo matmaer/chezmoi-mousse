@@ -2,7 +2,6 @@ from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 from typing import Any, Literal
 
-from chezmoi_mousse._button_labels import NavBtn, OperateBtn, PaneBtn, TabBtn
 from chezmoi_mousse._chars import Chars
 from chezmoi_mousse._chezmoi_cmd import (
     ChangeCmd,
@@ -11,7 +10,8 @@ from chezmoi_mousse._chezmoi_cmd import (
     ReadVerbs,
     VerbArgs,
 )
-from chezmoi_mousse._id_classes import Id, ScreenIds, Switches, TabIds
+from chezmoi_mousse._id_classes import Id, ScreenIds, TabIds
+from chezmoi_mousse._labels import NavBtn, OperateBtn, PaneBtn, TabBtn
 from chezmoi_mousse._names import (
     AreaName,
     LogName,
@@ -20,6 +20,7 @@ from chezmoi_mousse._names import (
     ViewName,
 )
 from chezmoi_mousse._operate_help import OperateHelp
+from chezmoi_mousse._switch_data import Switches
 from chezmoi_mousse._tcss_classes import Tcss
 
 __all__ = [

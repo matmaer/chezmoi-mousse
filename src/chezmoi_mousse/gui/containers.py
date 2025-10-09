@@ -148,7 +148,8 @@ class OperateTabsBase(Horizontal, AppType):
 
         # toggle expand all switch enabled disabled state
         expand_all_switch = self.query_one(
-            self.tab_ids.switch_id("#", switch=Switches.expand_all), Switch
+            self.tab_ids.switch_id("#", switch=Switches.expand_all.value),
+            Switch,
         )
         if event.button.id == self.tab_ids.button_id(btn=TabBtn.tree):
             expand_all_switch.disabled = False
@@ -175,7 +176,7 @@ class OperateTabsBase(Horizontal, AppType):
     def handle_tree_filter_switches(self, event: Switch.Changed) -> None:
         event.stop()
         if event.switch.id == self.tab_ids.switch_id(
-            switch=Switches.unchanged
+            switch=Switches.unchanged.value
         ):
             tree_pairs: list[
                 tuple[TreeName, type[ExpandedTree | ManagedTree | FlatTree]]
@@ -189,7 +190,7 @@ class OperateTabsBase(Horizontal, AppType):
                     self.tab_ids.tree_id("#", tree=tree_str), tree_cls
                 ).unchanged = event.value
         elif event.switch.id == self.tab_ids.switch_id(
-            switch=Switches.expand_all
+            switch=Switches.expand_all.value
         ):
             self.expand_all_state = event.value
             self.query_exactly_one(TreeSwitcher).expand_all_state = event.value
@@ -221,19 +222,23 @@ class SwitchSlider(VerticalGroup):
         super().__init__(id=self.tab_ids.switches_slider_id)
 
     def compose(self) -> ComposeResult:
-        for switch_enum in self.switches:
+        for switch_data in self.switches:
             with HorizontalGroup(
-                id=self.tab_ids.switch_horizontal_id(switch=switch_enum),
+                id=self.tab_ids.switch_horizontal_id(switch=switch_data.value),
                 classes=Tcss.switch_horizontal.name,
             ):
-                yield Switch(id=self.tab_ids.switch_id(switch=switch_enum))
+                yield Switch(
+                    id=self.tab_ids.switch_id(switch=switch_data.value)
+                )
                 yield Label(
-                    switch_enum.label, classes=Tcss.switch_label.name
-                ).with_tooltip(tooltip=switch_enum.tooltip)
+                    switch_data.value.label, classes=Tcss.switch_label.name
+                ).with_tooltip(tooltip=switch_data.value.tooltip)
 
     def on_mount(self) -> None:
         # add padding to the top switch horizontal group
         self.query_one(
-            self.tab_ids.switch_horizontal_id("#", switch=self.switches[0]),
+            self.tab_ids.switch_horizontal_id(
+                "#", switch=self.switches[0].value
+            ),
             HorizontalGroup,
         ).add_class(Tcss.pad_bottom.name)
