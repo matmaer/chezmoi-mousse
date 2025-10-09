@@ -7,7 +7,7 @@ from chezmoi_mousse._labels import NavBtn, OperateBtn, PaneBtn, TabBtn
 from chezmoi_mousse._names import AreaName, ScreenName, TreeName, ViewName
 from chezmoi_mousse._switch_data import SwitchData
 
-__all__ = ["ScreenIds", "TabIds"]
+__all__ = ["ScreenIds", "TabIds", "Id"]
 
 
 class TabIds:
