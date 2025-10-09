@@ -11,7 +11,13 @@ BASE_DIR = "src/chezmoi_mousse"
 def _get_enum_ast_class_defs() -> list[ast.ClassDef]:
     file_paths: Iterator[Path] = Path(BASE_DIR).rglob("*.py")
     enum_class_defs: list[ast.ClassDef] = []
+    excluded_dirs = {"gui"}  # Add more directories to exclude if needed
+
     for file_path in file_paths:
+        # Skip files in excluded subdirectories
+        if any(part in excluded_dirs for part in file_path.parts):
+            continue
+
         tree = ast.parse(file_path.read_text())
         for node in ast.walk(tree):
             # Check if this is a class that inherits from Enum or StrEnum
@@ -51,28 +57,51 @@ def test_members_in_use(enum_class_def: ast.ClassDef):
         not_in_use_item = f"{enum_class_def.name}.{member_name}"
         found_usage: bool = False
 
-        # check if the member is in use looping over all module paths
-        for module_path in get_module_paths():
-            found_usage_in_module: bool = False
-            module_class_defs = get_module_ast_class_defs(module_path)
+        # First check if the member is used in other enum classes
+        for enum_class in _get_enum_ast_class_defs():
+            if enum_class.name == enum_class_def.name:
+                continue  # Skip the same enum class
 
-            # check if the member is in use looping over all module class defs
-            for class_def in module_class_defs:
-                class_tree = ast.walk(class_def)
-                # Look for attribute access to this enum member
-                for node in class_tree:
-                    if (
-                        isinstance(node, ast.Attribute)
-                        and node.attr == member_name
+            for node in ast.walk(enum_class):
+                if isinstance(node, ast.Attribute):
+                    # Check for direct member access or .name/.value access
+                    if node.attr == member_name or (
+                        isinstance(node.value, ast.Attribute)
+                        and node.value.attr == member_name
+                        and node.attr in ("name", "value")
                     ):
-                        found_usage_in_module = True
+                        found_usage = True
                         break
-                if found_usage_in_module:
-                    break
+            if found_usage:
+                break
 
-            if found_usage_in_module:
-                found_usage = True
-                break  # Move to next member as soon as usage is found
+        # If not found in enum classes, check in regular module classes
+        if not found_usage:
+            # check if the member is in use looping over all module paths
+            for module_path in get_module_paths():
+                found_usage_in_module: bool = False
+                module_class_defs = get_module_ast_class_defs(module_path)
+
+                # check if the member is in use looping over all module class defs
+                for class_def in module_class_defs:
+                    class_tree = ast.walk(class_def)
+                    # Look for attribute access to this enum member
+                    for node in class_tree:
+                        if isinstance(node, ast.Attribute):
+                            # Check for direct member access or .name/.value access
+                            if node.attr == member_name or (
+                                isinstance(node.value, ast.Attribute)
+                                and node.value.attr == member_name
+                                and node.attr in ("name", "value")
+                            ):
+                                found_usage_in_module = True
+                                break
+                    if found_usage_in_module:
+                        break
+
+                if found_usage_in_module:
+                    found_usage = True
+                    break  # Move to next member as soon as usage is found
 
         if found_usage is False:
             not_in_use.append(not_in_use_item)
