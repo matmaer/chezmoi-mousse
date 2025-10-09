@@ -112,8 +112,6 @@ class OperateTabsBase(Horizontal, AppType):
 
     @on(TreeNodeSelectedMsg)
     def handle_tree_node_selected(self, event: TreeNodeSelectedMsg) -> None:
-        if event.node_data is None:
-            return
         selected_path = event.node_data.path
         self.query_one(
             self.view_switcher_qid, ContentSwitcher
@@ -160,7 +158,7 @@ class OperateTabsBase(Horizontal, AppType):
         # switch tree content view
         tree_switcher = self.query_one(self.tree_switcher_qid, ContentSwitcher)
         if event.button.id == self.tab_ids.button_id(btn=TabBtn.tree):
-            if self.expand_all_state:
+            if self.expand_all_state is True:
                 tree_switcher.current = self.tab_ids.tree_id(
                     tree=TreeName.expanded_tree
                 )
@@ -198,7 +196,7 @@ class OperateTabsBase(Horizontal, AppType):
             tree_switcher = self.query_one(
                 self.tree_switcher_qid, ContentSwitcher
             )
-            if event.value:
+            if event.value is True:
                 tree_switcher.current = self.tab_ids.tree_id(
                     tree=TreeName.expanded_tree
                 )

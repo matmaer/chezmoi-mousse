@@ -93,7 +93,7 @@ class FilteredDirTree(DirectoryTree, AppType):
         managed_files = self.app.chezmoi.managed_files
 
         # Switches: Red - Red (default)
-        if not self.unmanaged_dirs and not self.unwanted:
+        if self.unmanaged_dirs is False and self.unwanted is False:
             return (
                 p
                 for p in paths
@@ -113,14 +113,14 @@ class FilteredDirTree(DirectoryTree, AppType):
                 )
             )
         # Switches: Green - Red
-        elif self.unmanaged_dirs and not self.unwanted:
+        elif self.unmanaged_dirs is True and self.unwanted is False:
             return (
                 p
                 for p in paths
                 if p not in managed_files and not self._is_unwanted_path(p)
             )
         # Switches: Red - Green
-        elif not self.unmanaged_dirs and self.unwanted:
+        elif self.unmanaged_dirs is False and self.unwanted is True:
             return (
                 p
                 for p in paths

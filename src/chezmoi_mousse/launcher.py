@@ -62,7 +62,7 @@ def run_app():
         temp_dir=temp_dir,
     )
 
-    if dev_mode:
+    if dev_mode is True:
         src_dir = Path(__file__).parent.parent
         # Save stacktrace in case an exception occurs on App class init.
         try:

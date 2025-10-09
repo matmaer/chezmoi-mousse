@@ -26,11 +26,11 @@ class OperateDismissMsg(Message):
 class TreeNodeSelectedMsg(Message):
     def __init__(
         self,
-        node_data: NodeData | None = None,
+        node_data: NodeData,
+        tree_name: TreeName,
         node_leaves: list[NodeData] | None = None,
         node_parent: NodeData | None = None,
         node_subdirs: list[NodeData] | None = None,
-        tree_name: TreeName | None = None,
     ) -> None:
         self.node_data = node_data
         self.node_leaves = node_leaves if node_leaves is not None else []

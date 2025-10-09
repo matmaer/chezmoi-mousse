@@ -208,7 +208,7 @@ class DiffView(RichLog, AppType):
         diff_lines: list[str] = [
             line
             for line in diff_output
-            if line.strip()  # filter lines containing only spaces
+            if line.strip() != ""
             and (
                 line[0] in "+- "
                 or line.startswith("old mode")
@@ -267,7 +267,7 @@ class CommandLogBase(RichLog, AppType):
     def warning(self, message: str) -> None:
         lines = message.splitlines()
         color = self.app.custom_theme_vars["text-warning"]
-        for line in [line for line in lines if line.strip()]:
+        for line in [line for line in lines if line.strip() != ""]:
             escaped_line = escape(line)
             self.write(f"{self._log_time()} [{color}]{escaped_line}[/]")
 
@@ -282,7 +282,7 @@ class CommandLogBase(RichLog, AppType):
         lines: list[str] = message.splitlines()
         color = self.app.custom_theme_vars["text-disabled"]
         for line in lines:
-            if line.strip():
+            if line.strip() != "":
                 escaped_line = escape(line)
                 self.write(f"[{color}]{escaped_line}[/]")
 
@@ -377,7 +377,7 @@ class OutputLog(CommandLogBase, AppType):
         stripped = stdout.lstrip("\n").rstrip()
         # remove intermediate empty lines
         return "\n".join(
-            [line for line in stripped.splitlines() if line.strip()]
+            [line for line in stripped.splitlines() if line.strip() != ""]
         )
 
     def completed_process(

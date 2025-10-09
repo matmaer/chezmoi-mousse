@@ -216,13 +216,13 @@ class ChezmoiGUI(App[None]):
             Id.logs.content_switcher_id("#", area=Area.top), ContentSwitcher
         )
         content_switcher.current = LogName.app_log.name
-        if self.dev_mode:
+        if self.dev_mode is True:
             self.notify('Running in "dev mode"', severity="information")
         self.notify_changes_enabled()
 
     def notify_changes_enabled(self):
         # Notify app startup mode
-        if self.changes_enabled:
+        if self.changes_enabled is True:
             self.notify(
                 OperateHelp.changes_mode_enabled.value, severity="warning"
             )
@@ -282,7 +282,7 @@ class ChezmoiGUI(App[None]):
         tab_widget = self.query_one(
             f"#{self.query_one(TabbedContent).active}", TabPane
         ).children[0]
-        if hasattr(tab_widget, "action_toggle_switch_slider"):
+        if hasattr(tab_widget, "action_toggle_switch_slider") is True:
             getattr(tab_widget, "action_toggle_switch_slider")()  # call it
 
     def action_maximize(self) -> None:

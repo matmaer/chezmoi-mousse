@@ -21,7 +21,7 @@ class Utils:
         stripped = stdout.lstrip("\n").rstrip()
         # remove intermediate empty lines
         return "\n".join(
-            [line for line in stripped.splitlines() if line.strip()]
+            [line for line in stripped.splitlines() if line.strip() != ""]
         )
 
 
@@ -41,7 +41,7 @@ class Chezmoi:
         self.status_files_stdout: str = ""  # ReadCmd.status_files
         self.status_paths_stdout: str = ""  # ReadCmd.status
 
-        if dev_mode:
+        if dev_mode is True:
             self.debug_log: DebugLog | None = None
 
     #################################
@@ -74,7 +74,7 @@ class Chezmoi:
     def perform(
         self, change_sub_cmd: ChangeCmd, change_arg: str | None = None
     ) -> None:
-        if self._changes_enabled:
+        if self._changes_enabled is True:
             base_cmd: list[str] = GlobalCmd.live_run.value
         else:
             base_cmd: list[str] = GlobalCmd.dry_run.value

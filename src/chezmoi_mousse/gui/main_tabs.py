@@ -243,7 +243,7 @@ class LogsTab(Vertical, AppType):
 
     def compose(self) -> ComposeResult:
         tab_buttons = (TabBtn.app_log, TabBtn.output_log)
-        if self.app.dev_mode:
+        if self.app.dev_mode is False:
             tab_buttons += (TabBtn.debug_log,)
 
         yield TabBtnHorizontal(
