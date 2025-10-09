@@ -19,7 +19,6 @@ from chezmoi_mousse import (
     Id,
     LogName,
     OperateBtn,
-    OperateHelp,
     PaneBtn,
     TabIds,
     TreeName,
@@ -219,18 +218,10 @@ class ChezmoiGUI(App[None]):
         content_switcher.current = LogName.app_log.name
         if self.dev_mode is True:
             self.notify('Running in "dev mode"', severity="information")
-        self.notify_changes_enabled()
-
-    def notify_changes_enabled(self):
-        # Notify app startup mode
         if self.changes_enabled is True:
-            self.notify(
-                OperateHelp.changes_mode_enabled.value, severity="warning"
-            )
+            self.notify("Changes are enabled", severity="warning")
         else:
-            self.notify(
-                OperateHelp.changes_mode_disabled.value, severity="information"
-            )
+            self.notify("Changes are disabled", severity="information")
 
     def setup_ui_loggers(self) -> None:
         app_logger = self.query_one(f"#{LogName.app_log.name}", AppLog)
