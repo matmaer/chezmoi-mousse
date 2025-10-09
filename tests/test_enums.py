@@ -6,6 +6,7 @@ import pytest
 from _test_utils import get_module_ast_class_defs, get_module_paths
 
 BASE_DIR = "src/chezmoi_mousse"
+ID_CLASSES_PATH = Path("src/chezmoi_mousse/_id_classes.py")
 
 
 def _get_enum_ast_class_defs() -> list[ast.ClassDef]:
@@ -78,7 +79,7 @@ def test_members_in_use(enum_class_def: ast.ClassDef):
         # If not found in enum classes, check in regular module classes
         if not found_usage:
             # check if the member is in use looping over all module paths
-            for module_path in get_module_paths():
+            for module_path in get_module_paths() + [ID_CLASSES_PATH]:
                 found_usage_in_module: bool = False
                 module_class_defs = get_module_ast_class_defs(module_path)
 
