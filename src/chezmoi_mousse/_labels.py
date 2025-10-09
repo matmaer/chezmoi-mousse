@@ -1,6 +1,6 @@
 from enum import StrEnum
 
-__all__ = ["NavBtn", "OperateBtn", "TabBtn", "PaneBtn", "Switches"]
+__all__ = ["NavBtn", "OperateBtn", "TabBtn", "PaneBtn", "SwitchLabel"]
 
 
 class NavBtn(StrEnum):
@@ -41,7 +41,7 @@ class PaneBtn(StrEnum):
     re_add_tab = "Re-Add"
 
 
-class Switches(StrEnum):
+class SwitchLabel(StrEnum):
     expand_all = "expand all dirs"
     unchanged = "show unchanged files"
     unmanaged_dirs = "show unmanaged dirs"
