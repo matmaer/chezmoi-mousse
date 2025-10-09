@@ -4,7 +4,7 @@ generated the id dynamically when subclassing or to query a widget."""
 from dataclasses import dataclass
 from enum import Enum
 
-from chezmoi_mousse._button_labels import NavBtn, OperateBtn, PaneBtn, TabBtn
+from chezmoi_mousse._labels import NavBtn, OperateBtn, PaneBtn, TabBtn
 from chezmoi_mousse._names import AreaName, ScreenName, TreeName, ViewName
 
 __all__ = ["ScreenIds", "Switches", "TabIds"]
