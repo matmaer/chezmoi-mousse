@@ -1,6 +1,6 @@
 from enum import StrEnum
 
-__all__ = ["NavBtn", "OperateBtn", "TabBtn", "PaneBtn"]
+__all__ = ["NavBtn", "OperateBtn", "TabBtn", "PaneBtn", "Switches"]
 
 
 class NavBtn(StrEnum):
@@ -31,6 +31,23 @@ class OperateBtn(StrEnum):
     re_add_file = "Re-Add File"
 
 
+class PaneBtn(StrEnum):
+    add_tab = "Add"
+    apply_tab = "Apply"
+    config_tab = "Config"
+    help_tab = "Help"
+    init_tab = "Init"
+    logs_tab = "Logs"
+    re_add_tab = "Re-Add"
+
+
+class Switches(StrEnum):
+    expand_all = "expand all dirs"
+    unchanged = "show unchanged files"
+    unmanaged_dirs = "show unmanaged dirs"
+    unwanted = "show unwanted paths"
+
+
 class TabBtn(StrEnum):
     # Tab buttons for content switcher within a main tab
     app_log = "App"
@@ -41,13 +58,3 @@ class TabBtn(StrEnum):
     list = "List"
     output_log = "Output"
     tree = "Tree"
-
-
-class PaneBtn(StrEnum):
-    add_tab = "Add"
-    apply_tab = "Apply"
-    config_tab = "Config"
-    help_tab = "Help"
-    init_tab = "Init"
-    logs_tab = "Logs"
-    re_add_tab = "Re-Add"
