@@ -5,22 +5,24 @@ from pathlib import Path
 import pytest
 from _test_utils import get_modules_importing_class
 
-from chezmoi_mousse import Tcss
+from chezmoi_mousse._tcss_classes import Tcss
 
-add_class_method = "add_class"
-classes_kw = "classes"
-tcss_path = Path("./src/chezmoi_mousse/gui/data/gui.tcss")
+ADD_CLASS_METHOD = "add_class"
+CLASS_NAME = "Tcss"
+CLASSES_KEYWORD = "classes"
+GUI_DOT_TCSS_PATH = Path("./src/chezmoi_mousse/gui/data/gui.tcss")
+HARDCODED = "hardcoded tcss class"
+ORPHANED = "Orphaned gui.tcss classes"
 
 
-def extract_tcss_classes(path: Path) -> list[str]:
+def extract_tcss_classes() -> set[str]:
     pattern = r"[.][^a-z]*([a-z][a-z_]*(?=.*_)[a-z_]*)(?=\s|,|$)"
-    with open(path, "r") as f:
+    with open(GUI_DOT_TCSS_PATH, "r") as f:
         content = f.read()
         matches = re.findall(pattern, content, re.MULTILINE)
-    return matches
+    return set(matches)
 
 
-# Helper: return attribute chain as list (e.g. SomeEnum.member.value -> ["SomeEnum","member","value"])
 def get_attr_chain(node: ast.AST) -> list[str] | None:
     attrs: list[str] = []
     cur = node
@@ -46,7 +48,7 @@ def is_allowed_enum_attr(node: ast.AST) -> bool:
 
 
 def test_no_orphaned() -> None:
-    tcss_classes = set(extract_tcss_classes(tcss_path))
+    tcss_classes = extract_tcss_classes()
     tcss_enum_members = {member.name for member in Tcss}
 
     orphaned_classes = tcss_classes - tcss_enum_members
@@ -57,13 +59,13 @@ def test_no_orphaned() -> None:
         orphaned_list = "\n".join(
             f"- {cls}" for cls in sorted(orphaned_classes)
         )
-        result += f"\nOrphaned gui.tcss classes (not found in Tcss):\n{orphaned_list}\n"
+        result += f"\n{ORPHANED} (not found in Tcss):\n{orphaned_list}\n"
 
     if orphaned_members:
         orphaned_list = "\n".join(
             f"- {mem}" for mem in sorted(orphaned_members)
         )
-        result += f"\nOrphaned Tcss members (not found in gui.tcss):\n{orphaned_list}\n"
+        result += f"\n{ORPHANED} (not found in gui.tcss):\n{orphaned_list}\n"
 
     # make sure we only make one pytest.fail call
     if result:
@@ -72,7 +74,7 @@ def test_no_orphaned() -> None:
 
 @pytest.mark.parametrize(
     "py_file",
-    get_modules_importing_class(class_name="Tcss"),
+    get_modules_importing_class(class_name=CLASS_NAME),
     ids=lambda py_file: py_file.name,
 )
 def test_no_hardcoded(py_file: Path) -> None:
@@ -83,19 +85,19 @@ def test_no_hardcoded(py_file: Path) -> None:
             continue
 
         for keyword in node.keywords:
-            if keyword.arg == classes_kw:  # classes= keyword is used
+            if keyword.arg == CLASSES_KEYWORD:  # classes= keyword is used
                 if not (
                     isinstance(keyword.value, ast.Attribute)
                     and is_allowed_enum_attr(keyword.value)
                 ):
                     pytest.fail(
-                        f"\n{py_file} line {keyword.lineno}: {keyword.value}: hardcoded tcss class"
+                        f"\n{py_file} line {keyword.lineno}: {keyword.value}: {HARDCODED}"
                     )
 
         # Check add_class method calls for string literals
         if (
             isinstance(node.func, ast.Attribute)  # some_object.add_class()
-            and node.func.attr == add_class_method
+            and node.func.attr == ADD_CLASS_METHOD
             and len(node.args) >= 1
         ):
             first_arg = node.args[0]
@@ -103,11 +105,11 @@ def test_no_hardcoded(py_file: Path) -> None:
                 first_arg.value, str
             ):
                 pytest.fail(
-                    f'\n{py_file}:{first_arg.lineno} - add_class("{first_arg.value}"): hardcoded tcss class'
+                    f'\n{py_file}:{first_arg.lineno} - add_class("{first_arg.value}"): {HARDCODED}'
                 )
             if isinstance(
                 first_arg, ast.Attribute
             ) and not is_allowed_enum_attr(first_arg):
                 pytest.fail(
-                    f"\n{py_file}:{first_arg.lineno} - add_class({ast.unparse(first_arg)}): hardcoded tcss class"
+                    f"\n{py_file}:{first_arg.lineno} - add_class({ast.unparse(first_arg)}): {HARDCODED}"
                 )
