@@ -109,7 +109,7 @@ class ChangeCmd(Enum):
     # add_encrypt = ["add", VerbArgs.encrypt.value]
     apply = ["apply"]
     # destroy = ["destroy"]
-    forget = ["forget"]
+    # forget = ["forget"]
     init = ["init"]
     purge = ["purge"]
     re_add = ["re-add"]
