@@ -2,43 +2,12 @@
 generated the id dynamically when subclassing or to query a widget."""
 
 from dataclasses import dataclass
-from enum import Enum
 
 from chezmoi_mousse._labels import NavBtn, OperateBtn, PaneBtn, TabBtn
 from chezmoi_mousse._names import AreaName, ScreenName, TreeName, ViewName
+from chezmoi_mousse._switch_data import SwitchData
 
-__all__ = ["ScreenIds", "Switches", "TabIds"]
-
-
-class Switches(Enum):
-    expand_all = (
-        "expand all dirs",
-        "Expand all managed directories. Depending on the unchanged switch.",
-    )
-    unchanged = (
-        "show unchanged files",
-        "Include files unchanged files which are not found in the 'chezmoi status' output.",
-    )
-    unmanaged_dirs = (
-        "show unmanaged dirs",
-        "The default (disabled), only shows directories which already contain managed files. This allows spotting new unmanaged files in already managed directories. Enable to show all directories which contain unmanaged files.",
-    )
-    unwanted = (
-        "show unwanted paths",
-        "Include files and directories considered as 'unwanted' for a dotfile manager. These include cache, temporary, trash (recycle bin) and other similar files or directories. For example enable this to add files to your repository which are in a directory named '.cache'.",
-    )
-
-    @property
-    def switch_name(self) -> str:
-        return self.name
-
-    @property
-    def label(self) -> str:
-        return self.value[0]
-
-    @property
-    def tooltip(self) -> str:
-        return self.value[1]
+__all__ = ["ScreenIds", "TabIds"]
 
 
 class TabIds:
@@ -72,10 +41,12 @@ class TabIds:
     def content_switcher_id(self, qid: str = "", *, area: AreaName) -> str:
         return f"{qid}{self.tab_name}_{area}_content_switcher"
 
-    def switch_horizontal_id(self, qid: str = "", *, switch: Switches) -> str:
+    def switch_horizontal_id(
+        self, qid: str = "", *, switch: SwitchData
+    ) -> str:
         return f"{qid}{self.tab_name}_{switch.switch_name}_switch_horizontal"
 
-    def switch_id(self, qid: str = "", *, switch: Switches) -> str:
+    def switch_id(self, qid: str = "", *, switch: SwitchData) -> str:
         return f"{qid}{self.tab_name}_{switch.switch_name}_switch"
 
     def tab_vertical_id(self, qid: str = "", *, area: AreaName) -> str:
