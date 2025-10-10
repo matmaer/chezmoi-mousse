@@ -104,6 +104,8 @@ class ChezmoiGUI(App[None]):
     ]
 
     def compose(self) -> ComposeResult:
+        if self.chezmoi_found is False:
+            return
         yield Header(icon=Chars.burger)
         with TabbedContent():
             with TabPane(PaneBtn.apply_tab.value, id=PaneBtn.apply_tab.name):
@@ -167,7 +169,9 @@ class ChezmoiGUI(App[None]):
         self, return_data: SplashReturnData | None
     ) -> None:
         if return_data is None:
-            self.push_screen(InstallHelpScreen())
+            self.push_screen(
+                InstallHelpScreen(chezmoi_found=self.chezmoi_found)
+            )
             return
         self.app_log.success(f"chezmoi command found: {self.chezmoi_found}")
         self.app_log.ready_to_run("--- Loading screen completed ---")

@@ -28,13 +28,17 @@ class InstallHelpScreen(Screen[None], AppType):
 
     BINDINGS = [Binding(key="escape", action="exit_application", show=False)]
 
-    def __init__(self) -> None:
+    def __init__(self, chezmoi_found: bool) -> None:
+        self.chezmoi_found = chezmoi_found
         super().__init__(
             id=InstallHelpIds.screen_id, classes=Tcss.screen_base.name
         )
         self.path_env_list: list[str] = []
+        self.pkg_root: Path | None = None
 
     def compose(self) -> ComposeResult:
+        if self.chezmoi_found is True:
+            return
         with Vertical(classes=Tcss.install_help.name):
             yield Center(Label(("Chezmoi is not installed or not found.")))
             yield Collapsible(
@@ -59,26 +63,38 @@ class InstallHelpScreen(Screen[None], AppType):
                         )
 
     def on_mount(self) -> None:
+        if self.chezmoi_found is False:
+            self.border_subtitle = self.border_subtitle = (
+                Id.operate_screen.border_subtitle()
+            )
+            self.pkg_root = self.get_pkg_root()
+            self.update_path_widget()
+            self.populate_tree()
+
+    def get_pkg_root(self) -> Path:
+        return (
+            Path(str(files(__package__)))
+            if __package__
+            else Path(__file__).resolve().parent
+        )
+
+    def update_path_widget(self) -> None:
         self.path_env = os.environ.get("PATH")
         entry_sep = ";" if os.name == "nt" else ":"
         if self.path_env is not None:
             self.path_env_list = self.path_env.split(entry_sep)
             pretty_widget = self.query_exactly_one(Pretty)
             pretty_widget.update(self.path_env_list)
-        self.border_subtitle = self.border_subtitle = (
-            Id.operate_screen.border_subtitle()
-        )
+
+    def populate_tree(self) -> None:
+        if self.pkg_root is None:
+            return
         help_tree: Tree[ParsedJson] = self.query_exactly_one(Tree[ParsedJson])
-        help_tree.show_root = False
-        pkg_root = (
-            Path(str(files(__package__)))
-            if __package__
-            else Path(__file__).resolve().parent
-        )
         data_file: Path = Path.joinpath(
-            pkg_root, "data", "chezmoi_install_commands.json"
+            self.pkg_root, "data", "chezmoi_install_commands.json"
         )
         install_help: ParsedJson = json.loads(data_file.read_text())
+        help_tree.show_root = False
         for k, v in install_help.items():
             help_tree.root.add(label=k, data=v)
         for child in help_tree.root.children:
