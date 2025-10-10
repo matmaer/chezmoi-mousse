@@ -29,7 +29,6 @@ from chezmoi_mousse import (
 )
 from chezmoi_mousse.gui import AppType
 from chezmoi_mousse.gui.button_groups import OperateBtnHorizontal
-from chezmoi_mousse.gui.content_switchers import TreeSwitcher
 from chezmoi_mousse.gui.messages import TreeNodeSelectedMsg
 from chezmoi_mousse.gui.rich_logs import ContentsView, DiffView
 from chezmoi_mousse.gui.widgets import (
@@ -193,7 +192,6 @@ class OperateTabsBase(Horizontal, AppType):
             switch=Switches.expand_all.value
         ):
             self.expand_all_state = event.value
-            self.query_exactly_one(TreeSwitcher).expand_all_state = event.value
             tree_switcher = self.query_one(
                 self.tree_switcher_qid, ContentSwitcher
             )

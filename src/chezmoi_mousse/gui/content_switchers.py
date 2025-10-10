@@ -58,8 +58,6 @@ class TreeSwitcher(ContentSwitcher, AppType):
             initial=self.tab_ids.tree_id(tree=TreeName.managed_tree),
             classes=Tcss.content_switcher_left.name,
         )
-        # updated by OperateTabsBase in on_switch_changed method
-        self.expand_all_state: bool = False
 
     def compose(self) -> ComposeResult:
         yield ManagedTree(tab_ids=self.tab_ids)
