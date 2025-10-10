@@ -22,7 +22,6 @@ from chezmoi_mousse import (
     ActiveTab,
     Chars,
     GlobalCmd,
-    LogName,
     PaneBtn,
     ReadCmd,
     ScreenIds,
@@ -289,16 +288,18 @@ class CommandLogBase(RichLog, AppType):
 
 class AppLog(CommandLogBase, AppType):
 
-    def __init__(self) -> None:
+    def __init__(self, tab_ids: TabIds) -> None:
+        self.tab_ids = tab_ids
         super().__init__(
-            id=LogName.app_log.name,
+            id=self.tab_ids.view_id(view=ViewName.app_log_view),
             markup=True,
             max_lines=10000,
             classes=Tcss.log_views.name,
         )
-        success = f"{Chars.check_mark} Success"
-        self.succes_no_output = f"{success}, no output"
-        self.success_with_output = f"{success}, output processed in UI"
+        self.succes_no_output = f"{Chars.check_mark} Success, no output"
+        self.success_with_output = (
+            f"{Chars.check_mark} success, output processed in UI"
+        )
 
     def completed_process(
         self, completed_process: CompletedProcess[str]
@@ -319,9 +320,10 @@ class DebugLog(CommandLogBase, AppType):
 
     type Mro = tuple[type, ...]
 
-    def __init__(self) -> None:
+    def __init__(self, tab_ids: TabIds) -> None:
+        self.tab_ids = tab_ids
         super().__init__(
-            id=LogName.debug_log.name,
+            id=self.tab_ids.view_id(view=ViewName.debug_log_view),
             markup=True,
             max_lines=10000,
             wrap=True,
@@ -364,9 +366,10 @@ class DebugLog(CommandLogBase, AppType):
 
 class OutputLog(CommandLogBase, AppType):
 
-    def __init__(self) -> None:
+    def __init__(self, tab_ids: TabIds) -> None:
+        self.tab_ids = tab_ids
         super().__init__(
-            id=LogName.output_log.name,
+            id=self.tab_ids.view_id(view=ViewName.output_log_view),
             markup=True,
             max_lines=10000,
             classes=Tcss.log_views.name,

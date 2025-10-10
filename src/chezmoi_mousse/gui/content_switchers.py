@@ -297,15 +297,20 @@ class HelpTabSwitcher(ContentSwitcher):
 
 class LogsTabSwitcher(ContentSwitcher, AppType):
 
-    def __init__(self, tab_ids: TabIds):
+    def __init__(self, tab_ids: TabIds, dev_mode: bool):
         self.tab_ids = tab_ids
+        self.dev_mode = dev_mode
         super().__init__(
             id=self.tab_ids.content_switcher_id(area=AreaName.top),
+            initial=self.tab_ids.view_id(view=ViewName.app_log_view),
             classes=Tcss.border_title_top.name,
         )
 
     def compose(self) -> ComposeResult:
-        yield AppLog()
-        yield OutputLog()
-        if self.app.dev_mode is True:
-            yield DebugLog()
+        yield AppLog(tab_ids=self.tab_ids)
+        yield OutputLog(tab_ids=self.tab_ids)
+        if self.dev_mode is True:
+            yield DebugLog(tab_ids=self.tab_ids)
+
+    def on_mount(self) -> None:
+        self.border_title = " App Log "

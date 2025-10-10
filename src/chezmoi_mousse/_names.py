@@ -3,7 +3,7 @@ from enum import StrEnum, auto
 # RULES: can only contain auto() members, no assigned values
 
 
-__all__ = ["LogName", "ScreenName", "TreeName", "ViewName"]
+__all__ = ["ScreenName", "TreeName", "ViewName"]
 
 
 class AreaName(StrEnum):
@@ -11,12 +11,6 @@ class AreaName(StrEnum):
     left = auto()
     right = auto()
     top = auto()
-
-
-class LogName(StrEnum):
-    app_log = " App Log "
-    debug_log = " Debug Log "
-    output_log = " Commands With Raw Stdout "
 
 
 class ScreenName(StrEnum):
@@ -33,17 +27,20 @@ class TreeName(StrEnum):
 
 
 class ViewName(StrEnum):
+    app_log_view = auto()
     cat_config_view = auto()
-    git_ignored_view = auto()
     contents_view = auto()
+    debug_log_view = auto()
     diagram_view = auto()
-    doctor_view = auto()
     diff_view = auto()
+    doctor_view = auto()
+    git_ignored_view = auto()
     git_log_view = auto()
     init_clone_view = auto()
     init_new_view = auto()
     init_purge_view = auto()
-    template_data_view = auto()
+    output_log_view = auto()
     pretty_cat_config_view = auto()
     pretty_ignored_view = auto()
     pretty_template_data_view = auto()
+    template_data_view = auto()

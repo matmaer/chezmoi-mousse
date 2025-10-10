@@ -17,7 +17,6 @@ from chezmoi_mousse import (
     AreaName,
     Chars,
     Id,
-    LogName,
     OperateBtn,
     PaneBtn,
     TabIds,
@@ -210,12 +209,6 @@ class ChezmoiGUI(App[None]):
                 ).populate_root_node()
         # Refresh DirectoryTree
         self.query_one(FilteredDirTree).reload()
-        # make the app_log appear first time the main Logs tab is opened
-        content_switcher = self.query_one(
-            Id.logs.content_switcher_id("#", area=AreaName.top),
-            ContentSwitcher,
-        )
-        content_switcher.current = LogName.app_log.name
         if self.dev_mode is True:
             self.notify('Running in "dev mode"', severity="information")
         if self.changes_enabled is True:
@@ -224,19 +217,21 @@ class ChezmoiGUI(App[None]):
             self.notify("Changes are disabled", severity="information")
 
     def setup_ui_loggers(self) -> None:
-        app_logger = self.query_one(f"#{LogName.app_log.name}", AppLog)
+        app_logger = self.query_one(
+            Id.logs.view_id("#", view=ViewName.app_log_view), AppLog
+        )
         self.app_log = app_logger
         self.chezmoi.app_log = app_logger
 
         output_logger = self.query_one(
-            f"#{LogName.output_log.name}", OutputLog
+            Id.logs.view_id("#", view=ViewName.output_log_view), OutputLog
         )
         self.output_log = output_logger
         self.chezmoi.output_log = output_logger
 
         if self.dev_mode is True:
             debug_logger = self.query_one(
-                f"#{LogName.debug_log.name}", DebugLog
+                Id.logs.view_id("#", view=ViewName.debug_log_view), DebugLog
             )
             self.debug_log = debug_logger
             self.chezmoi.debug_log = debug_logger

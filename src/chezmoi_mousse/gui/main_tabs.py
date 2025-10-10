@@ -10,7 +10,6 @@ from chezmoi_mousse import (
     AreaName,
     ChangeCmd,
     Id,
-    LogName,
     NavBtn,
     OperateBtn,
     Switches,
@@ -247,13 +246,13 @@ class LogsTab(Vertical, AppType):
 
     def compose(self) -> ComposeResult:
         tab_buttons = (TabBtn.app_log, TabBtn.output_log)
-        if self.app.dev_mode is False:
+        if self.app.dev_mode is True:
             tab_buttons += (TabBtn.debug_log,)
 
         yield TabBtnHorizontal(
             tab_ids=Id.logs, buttons=tab_buttons, area=AreaName.top
         )
-        yield LogsTabSwitcher(tab_ids=Id.logs)
+        yield LogsTabSwitcher(tab_ids=Id.logs, dev_mode=self.app.dev_mode)
 
     @on(Button.Pressed, Tcss.tab_button.value)
     def switch_content(self, event: Button.Pressed) -> None:
@@ -261,16 +260,17 @@ class LogsTab(Vertical, AppType):
         switcher = self.query_exactly_one(LogsTabSwitcher)
 
         if event.button.id == Id.logs.button_id(btn=TabBtn.app_log):
-            switcher.current = LogName.app_log.name
-            switcher.border_title = LogName.app_log.value
+            switcher.current = Id.logs.view_id(view=ViewName.app_log_view)
+            switcher.border_title = " App Log "
         elif event.button.id == Id.logs.button_id(btn=TabBtn.output_log):
-            switcher.current = LogName.output_log.name
-            switcher.border_title = LogName.output_log.value
-        elif self.app.dev_mode and event.button.id == Id.logs.button_id(
-            btn=TabBtn.debug_log
+            switcher.current = Id.logs.view_id(view=ViewName.output_log_view)
+            switcher.border_title = " Commands StdOut "
+        elif (
+            self.app.dev_mode is True
+            and event.button.id == Id.logs.button_id(btn=TabBtn.debug_log)
         ):
-            switcher.current = LogName.debug_log.name
-            switcher.border_title = LogName.debug_log.value
+            switcher.current = Id.logs.view_id(view=ViewName.debug_log_view)
+            switcher.border_title = " Debug Log "
 
 
 class ConfigTab(Horizontal, AppType):
