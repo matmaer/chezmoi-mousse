@@ -94,38 +94,36 @@ class OperateTabsBase(Horizontal, AppType):
         )
         super().__init__(id=self.tab_ids.tab_container_id)
 
-    def _update_view_path(self, path: Path) -> None:
-        current_view_id = self.query_one(
-            self.view_switcher_qid, ContentSwitcher
-        ).current
-        if current_view_id == self.tab_ids.view_id(
-            view=ViewName.contents_view
-        ):
-            self.query_exactly_one(ContentsView).path = path
-        elif current_view_id == self.tab_ids.view_id(view=ViewName.diff_view):
-            self.query_exactly_one(DiffView).path = path
-        elif current_view_id == self.tab_ids.view_id(
-            view=ViewName.git_log_view
-        ):
-            self.query_exactly_one(GitLogView).path = path
+    def _update_view_path(self) -> None:
+        contents_view = self.query_exactly_one(ContentsView)
+        if contents_view.path != self.current_path:
+            contents_view.path = self.current_path
+            contents_view.border_title = f" {self.current_path} "
+
+        diff_view = self.query_exactly_one(DiffView)
+        if diff_view.path != self.current_path:
+            diff_view.path = self.current_path
+            diff_view.border_title = f" {self.current_path} "
+
+        git_log_view = self.query_exactly_one(GitLogView)
+        if git_log_view.path != self.current_path:
+            git_log_view.path = self.current_path
+            git_log_view.border_title = f" {self.current_path} "
 
     @on(TreeNodeSelectedMsg)
-    def handle_tree_node_selected(self, event: TreeNodeSelectedMsg) -> None:
-        selected_path = event.node_data.path
-        self.query_one(
-            self.view_switcher_qid, ContentSwitcher
-        ).border_title = f"{selected_path}"
-        self.current_path = selected_path
-        self._update_view_path(selected_path)
+    def update_current_path(self, event: TreeNodeSelectedMsg) -> None:
+        self.current_path = event.node_data.path
+        self._update_view_path()
 
     @on(Button.Pressed, Tcss.tab_button.value)
     def handle_tab_button_pressed(self, event: Button.Pressed) -> None:
-        # switch content and update view
+        # switch content and update view path if needed
         if event.button.id in (
             self.contents_tab_btn,
             self.diff_tab_btn,
             self.git_log_tab_btn,
         ):
+            self._update_view_path()
             view_switcher = self.query_one(
                 self.view_switcher_qid, ContentSwitcher
             )
@@ -141,8 +139,6 @@ class OperateTabsBase(Horizontal, AppType):
                 view_switcher.current = self.tab_ids.view_id(
                     view=ViewName.git_log_view
                 )
-            if self.current_path is not None:
-                self._update_view_path(path=self.current_path)
 
         # toggle expand all switch enabled disabled state
         expand_all_switch = self.query_one(
