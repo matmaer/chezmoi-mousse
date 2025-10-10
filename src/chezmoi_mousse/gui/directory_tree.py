@@ -87,6 +87,24 @@ class FilteredDirTree(DirectoryTree, AppType):
     unmanaged_dirs: reactive[bool] = reactive(False, init=False)
     unwanted: reactive[bool] = reactive(False, init=False)
 
+    def has_unmanaged_files(self, dir_path: Path) -> bool:
+        managed_child_files = [
+            p for p in self.app.chezmoi.managed_files if p.parent == dir_path
+        ]
+        if managed_child_files == []:
+            return False
+        else:
+            return True
+
+    def has_unmanaged_dirs(self, dir_path: Path) -> bool:
+        managed_child_dirs = [
+            p for p in self.app.chezmoi.managed_dirs if p.parent == dir_path
+        ]
+        if managed_child_dirs == []:
+            return False
+        else:
+            return True
+
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
 
         managed_dirs = self.app.chezmoi.managed_dirs
@@ -129,7 +147,7 @@ class FilteredDirTree(DirectoryTree, AppType):
                 or (p.is_dir() and p in managed_dirs)
             )
         # Switches: Green - Green, include all unmanaged paths
-        elif self.unmanaged_dirs and self.unwanted:
+        elif self.unmanaged_dirs is True and self.unwanted is True:
             return (
                 p
                 for p in paths
