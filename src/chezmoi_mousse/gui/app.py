@@ -185,15 +185,29 @@ class ChezmoiGUI(App[None]):
         OperateInfo.git_autocommit = return_data.dump_config.git_autocommit
         OperateInfo.git_autopush = return_data.dump_config.git_autopush
 
-        # set GitLogView destDir
+        # set GitLogView destDir for ApplyTab
         apply_git_log_view = self.query_one(
             Id.apply.view_id("#", view=ViewName.git_log_view), GitLogView
         )
         apply_git_log_view.path = return_data.dump_config.dest_dir
+
+        # set GitLogView destDir for ReAddTab
         re_add_git_log_view = self.query_one(
             Id.re_add.view_id("#", view=ViewName.git_log_view), GitLogView
         )
         re_add_git_log_view.path = return_data.dump_config.dest_dir
+
+        # set ContentsView destDir for ApplyTab
+        apply_contents_view = self.query_one(
+            Id.apply.view_id("#", view=ViewName.contents_view), ContentsView
+        )
+        apply_contents_view.path = return_data.dump_config.dest_dir
+
+        # set ContentsView destDir for ReAddTab
+        re_add_contents_view = self.query_one(
+            Id.re_add.view_id("#", view=ViewName.contents_view), ContentsView
+        )
+        re_add_contents_view.path = return_data.dump_config.dest_dir
 
         # set path on FilteredDirTree
         dir_tree = self.query_one(

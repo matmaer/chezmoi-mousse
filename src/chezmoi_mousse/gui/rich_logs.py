@@ -60,11 +60,13 @@ class ContentsView(RichLog, AppType):
 
     def __init__(self, *, tab_ids: TabIds | ScreenIds) -> None:
         self.tab_ids = tab_ids
+        self.destDir: Path | None = None
         super().__init__(
             id=self.tab_ids.view_id(view=ViewName.contents_view),
             auto_scroll=False,
             wrap=True,  # TODO: implement footer binding to toggle wrap
             highlight=True,
+            classes=Tcss.border_title_top.name,
         )
 
     def on_mount(self) -> None:
@@ -75,6 +77,7 @@ class ContentsView(RichLog, AppType):
     def watch_path(self) -> None:
         if self.path is None:
             return
+        self.border_title = f" {self.path} "
         self.clear()
         truncated_message = ""
         try:
