@@ -141,9 +141,8 @@ class OperateTabsBase(Horizontal, AppType):
                 view_switcher.current = self.tab_ids.view_id(
                     view=ViewName.git_log_view
                 )
-            if self.current_path is None:
-                self.current_path = self.app.destDir
-            self._update_view_path(path=self.current_path)
+            if self.current_path is not None:
+                self._update_view_path(path=self.current_path)
 
         # toggle expand all switch enabled disabled state
         expand_all_switch = self.query_one(
