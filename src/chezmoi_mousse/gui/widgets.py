@@ -194,9 +194,6 @@ class TreeBase(Tree[NodeData], AppType):
         }
         self.guide_depth: int = 3
         self.show_root: bool = False
-        self.root.data = NodeData(
-            path=self.app.destDir, is_leaf=False, found=True, status="F"
-        )
 
     # the styling method for the node labels
     def style_label(self, node_data: NodeData) -> Text:
@@ -493,16 +490,22 @@ class TreeBase(Tree[NodeData], AppType):
 
 class ManagedTree(TreeBase):
 
+    destDir: reactive[Path | None] = reactive(None, init=False)
     unchanged: reactive[bool] = reactive(False, init=False)
 
     def __init__(self, *, tab_ids: TabIds) -> None:
         self.tab_ids = tab_ids
         super().__init__(self.tab_ids, tree_name=TreeName.managed_tree)
 
-    def populate_root_node(self) -> None:
+    def watch_destDir(self) -> None:
+        if self.destDir is None:
+            return
+        self.root.data = NodeData(
+            path=self.destDir, is_leaf=False, found=True, status="F"
+        )
+
         self.add_status_dirs_in(tree_node=self.root)
         self.add_status_files_in(tree_node=self.root)
-        self.refresh()
 
     @on(TreeBase.NodeExpanded)
     def update_node_children(
@@ -524,14 +527,19 @@ class ManagedTree(TreeBase):
 
 class ExpandedTree(TreeBase):
 
+    destDir: reactive[Path | None] = reactive(None, init=False)
     unchanged: reactive[bool] = reactive(False, init=False)
 
     def __init__(self, tab_ids: TabIds) -> None:
         self.tab_ids = tab_ids
         super().__init__(self.tab_ids, tree_name=TreeName.expanded_tree)
 
-    def populate_root_node(self) -> None:
-        self.root.remove_children()
+    def watch_destDir(self) -> None:
+        if self.destDir is None:
+            return
+        self.root.data = NodeData(
+            path=self.destDir, is_leaf=False, found=True, status="F"
+        )
         self.expand_all_nodes(self.root)
 
     @on(TreeBase.NodeExpanded)

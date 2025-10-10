@@ -48,7 +48,6 @@ from chezmoi_mousse.gui.screens import Maximized
 from chezmoi_mousse.gui.splash import LoadingScreen
 from chezmoi_mousse.gui.widgets import (
     ExpandedTree,
-    FlatTree,
     GitLogView,
     ManagedTree,
     OperateInfo,
@@ -220,6 +219,32 @@ class ChezmoiGUI(App[None]):
             Id.config.content_switcher_id("#", area=AreaName.right),
             ContentSwitcher,
         )
+
+        # set Tree destDir for ApplyTab ManagedTree
+        apply_tab_managed_tree = self.query_one(
+            Id.apply.tree_id("#", tree=TreeName.managed_tree), ManagedTree
+        )
+        apply_tab_managed_tree.destDir = return_data.dump_config.dest_dir
+
+        # set Tree destDir for ReAddTab ManagedTree
+        re_add_tab_managed_tree = self.query_one(
+            Id.re_add.tree_id("#", tree=TreeName.managed_tree), ManagedTree
+        )
+        re_add_tab_managed_tree.destDir = return_data.dump_config.dest_dir
+
+        # set Tree destDir for ExpandedTree in ApplyTab
+        apply_tab_expanded_tree = self.query_one(
+            Id.apply.tree_id("#", tree=TreeName.expanded_tree), ExpandedTree
+        )
+        apply_tab_expanded_tree.destDir = return_data.dump_config.dest_dir
+
+        # set Tree destDir for ExpandedTree in ReAddTab
+        re_add_tab_expanded_tree = self.query_one(
+            Id.re_add.tree_id("#", tree=TreeName.expanded_tree), ExpandedTree
+        )
+        re_add_tab_expanded_tree.destDir = return_data.dump_config.dest_dir
+
+        # set attributes for ConfigTab
         setattr(config_tab_switcher, "doctor_stdout", return_data.doctor)
         setattr(
             config_tab_switcher, "cat_config_stdout", return_data.cat_config
@@ -231,20 +256,6 @@ class ChezmoiGUI(App[None]):
             return_data.template_data,
         )
 
-        # Trees to refresh for each tab
-        trees: list[
-            tuple[TreeName, type[ManagedTree | FlatTree | ExpandedTree]]
-        ] = [
-            (TreeName.managed_tree, ManagedTree),
-            (TreeName.flat_tree, FlatTree),
-            (TreeName.expanded_tree, ExpandedTree),
-        ]
-        # Refresh apply and re_add trees
-        for tab_ids in (Id.apply, Id.re_add):
-            for tree_name, tree_cls in trees:
-                self.query_one(
-                    tab_ids.tree_id("#", tree=tree_name), tree_cls
-                ).populate_root_node()
         # Notify startup info
         if self.dev_mode is True:
             self.notify('Running in "dev mode"', severity="information")
