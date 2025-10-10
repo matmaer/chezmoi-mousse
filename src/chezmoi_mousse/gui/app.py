@@ -27,6 +27,7 @@ from chezmoi_mousse.gui import SplashReturnData
 from chezmoi_mousse.gui.button_groups import OperateBtnHorizontal
 from chezmoi_mousse.gui.chezmoi import Chezmoi
 from chezmoi_mousse.gui.directory_tree import FilteredDirTree
+from chezmoi_mousse.gui.install_help import InstallHelpScreen
 from chezmoi_mousse.gui.main_tabs import (
     AddTab,
     ApplyTab,
@@ -43,7 +44,7 @@ from chezmoi_mousse.gui.rich_logs import (
     DebugLog,
     OutputLog,
 )
-from chezmoi_mousse.gui.screens import InstallHelp, Maximized
+from chezmoi_mousse.gui.screens import Maximized
 from chezmoi_mousse.gui.splash import LoadingScreen
 from chezmoi_mousse.gui.widgets import ExpandedTree, FlatTree, ManagedTree
 
@@ -166,7 +167,7 @@ class ChezmoiGUI(App[None]):
         self, return_data: SplashReturnData | None
     ) -> None:
         if return_data is None:
-            self.push_screen(InstallHelp())
+            self.push_screen(InstallHelpScreen())
             return
         self.app_log.success(f"chezmoi command found: {self.chezmoi_found}")
         self.app_log.ready_to_run("--- Loading screen completed ---")
