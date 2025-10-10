@@ -39,6 +39,8 @@ SPLASH = """\
 FADE_HEIGHT = len(SPLASH)
 FADE_WIDTH = len(max(SPLASH, key=len))
 LOG_PADDING_WIDTH = 37
+LOADED_SUFFIX = "loaded"
+NOT_FOUND_SUFFIX = "not found"
 
 
 def create_deque() -> deque[Style]:
@@ -71,12 +73,6 @@ template_data: str = ""
 
 class AnimatedFade(Static):
 
-    def __init__(self) -> None:
-        super().__init__()
-        self.styles.height = FADE_HEIGHT
-        self.styles.width = FADE_WIDTH
-        self.styles.margin = 2
-
     def render_lines(self, crop: Region) -> list[Strip]:
         FADE_LINE_STYLES.rotate()
         return super().render_lines(crop)
@@ -94,9 +90,10 @@ class LoadingScreen(Screen[SplashReturnData | None], AppType):
         super().__init__()
 
     def compose(self) -> ComposeResult:
-        with Middle():
-            yield Center(AnimatedFade())
-            yield Center(RichLog())
+        with Center():
+            with Middle():
+                yield Center(AnimatedFade())
+                yield Center(RichLog())
 
     @work(thread=True, group="io_workers")
     def run_read_cmd(self, field_name: str) -> None:
@@ -105,9 +102,8 @@ class LoadingScreen(Screen[SplashReturnData | None], AppType):
 
         if not self.chezmoi_found:
             cmd_text = "chezmoi command"
-            self.log_text_suffix = "not found"
             padding = LOG_PADDING_WIDTH - len(cmd_text)
-            log_text = f"{cmd_text} {'.' * padding} not found"
+            log_text = f"{cmd_text} {'.' * padding} {NOT_FOUND_SUFFIX}"
             splash_log.write(log_text)
             return
 
@@ -120,7 +116,7 @@ class LoadingScreen(Screen[SplashReturnData | None], AppType):
             .replace(VerbArgs.include_files.value, "files")
         )
         padding = LOG_PADDING_WIDTH - len(cmd_text)
-        log_text = f"{cmd_text} {'.' * padding} loaded"
+        log_text = f"{cmd_text} {'.' * padding} {LOADED_SUFFIX}"
         splash_log.write(log_text)
 
     def all_workers_finished(self) -> None:
@@ -149,10 +145,14 @@ class LoadingScreen(Screen[SplashReturnData | None], AppType):
             )
 
     def on_mount(self) -> None:
+        middle_container = self.query_one(Middle)
+        middle_container.styles.width = FADE_WIDTH
         animated_fade = self.query_exactly_one(AnimatedFade)
+        animated_fade.styles.height = FADE_HEIGHT
         rich_log = self.query_exactly_one(RichLog)
-        rich_log.styles.color = "#6DB2FF"
         rich_log.styles.width = "auto"
+        rich_log.styles.color = "#6DB2FF"
+        rich_log.styles.margin = 2
         if self.chezmoi_found:
             rich_log.styles.height = len(fields(SplashReturnData))
         else:
