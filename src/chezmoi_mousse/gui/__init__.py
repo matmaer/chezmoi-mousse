@@ -29,10 +29,19 @@ class NodeData:
 
 
 @dataclass
+class ParsedConfig:
+    dest_dir: Path
+    git_autoadd: bool
+    source_dir: Path
+    git_autocommit: bool
+    git_autopush: bool
+
+
+@dataclass
 class SplashReturnData:
     cat_config: str
     doctor: str
-    dump_config: str
+    dump_config: ParsedConfig
     ignored: str
     managed_dirs: str
     managed_files: str

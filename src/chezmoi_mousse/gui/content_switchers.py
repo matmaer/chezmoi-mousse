@@ -67,7 +67,7 @@ class TreeSwitcher(ContentSwitcher, AppType):
         yield ExpandedTree(tab_ids=self.tab_ids)
 
     def on_mount(self) -> None:
-        self.border_title = str(self.app.destDir)
+        self.border_title = " destDir "
         self.add_class(Tcss.border_title_top.name)
 
 
@@ -87,7 +87,7 @@ class ViewSwitcher(ContentSwitcher, AppType):
         yield GitLogView(tab_ids=self.tab_ids)
 
     def on_mount(self) -> None:
-        self.border_title = str(self.app.destDir)
+        self.border_title = " destDir "
         self.add_class(Tcss.border_title_top.name)
 
 

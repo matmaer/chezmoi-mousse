@@ -128,7 +128,7 @@ class AddTab(OperateTabsBase, AppType):
     def on_mount(self) -> None:
         contents_view = self.query_exactly_one(ContentsView)
         contents_view.add_class(Tcss.border_title_top.name)
-        contents_view.border_title = str(self.app.destDir)
+        contents_view.border_title = " destDir "
 
         dir_tree = self.query_exactly_one(FilteredDirTree)
         dir_tree.add_class(
@@ -148,9 +148,7 @@ class AddTab(OperateTabsBase, AppType):
             Id.add.view_id("#", view=ViewName.contents_view), ContentsView
         )
         contents_view.path = event.node.data.path
-        contents_view.border_title = (
-            f" {event.node.data.path.relative_to(self.app.destDir)} "
-        )
+        contents_view.border_title = f" {event.node.data.path} "
 
     @on(FilteredDirTree.DirectorySelected)
     def update_contents_view_and_title(
@@ -162,9 +160,7 @@ class AddTab(OperateTabsBase, AppType):
             Id.add.view_id("#", view=ViewName.contents_view), ContentsView
         )
         contents_view.path = event.node.data.path
-        contents_view.border_title = (
-            f" {event.node.data.path.relative_to(self.app.destDir)} "
-        )
+        contents_view.border_title = f" {event.node.data.path} "
 
     @on(Switch.Changed)
     def handle_filter_switches(self, event: Switch.Changed) -> None:

@@ -1,5 +1,7 @@
+import json
 from collections import deque
 from dataclasses import fields
+from pathlib import Path
 
 from rich.segment import Segment
 from rich.style import Style
@@ -15,7 +17,7 @@ from textual.widgets import RichLog, Static
 from textual.worker import WorkerState
 
 from chezmoi_mousse import ReadCmd, VerbArgs
-from chezmoi_mousse.gui import AppType, SplashReturnData
+from chezmoi_mousse.gui import AppType, ParsedConfig, SplashReturnData
 from chezmoi_mousse.gui.rich_logs import LogUtils
 
 __all__ = ["LoadingScreen"]
@@ -62,7 +64,7 @@ def create_deque() -> deque[Style]:
 FADE_LINE_STYLES = create_deque()
 cat_config: str = ""
 doctor: str = ""
-dump_config: str = ""
+dump_config: ParsedConfig | None = None
 ignored: str = ""
 managed_dirs: str = ""
 managed_files: str = ""
@@ -118,6 +120,15 @@ class LoadingScreen(Screen[SplashReturnData | None], AppType):
         padding = LOG_PADDING_WIDTH - len(cmd_text)
         log_text = f"{cmd_text} {'.' * padding} {LOADED_SUFFIX}"
         splash_log.write(log_text)
+        if field_name == "dump_config":
+            parsed_config = json.loads(cmd_output)
+            globals()["dump_config"] = ParsedConfig(
+                dest_dir=Path(parsed_config["destDir"]),
+                git_autoadd=parsed_config["git"]["autoadd"],
+                source_dir=Path(parsed_config["sourceDir"]),
+                git_autocommit=parsed_config["git"]["autocommit"],
+                git_autopush=parsed_config["git"]["autopush"],
+            )
 
     def all_workers_finished(self) -> None:
         if all(

@@ -1,6 +1,5 @@
 import os
 import shutil
-import tempfile
 import traceback
 from pathlib import Path
 
@@ -43,8 +42,6 @@ def run_app():
         shutil.which("chezmoi") is not None
         and os.environ.get("PRETEND_CHEZMOI_NOT_FOUND") != "1"
     )
-    home_dir: Path = Path.home()
-    temp_dir = Path(tempfile.gettempdir())
 
     chezmoi_instance = Chezmoi(
         changes_enabled=changes_enabled, dev_mode=dev_mode
@@ -58,8 +55,6 @@ def run_app():
         changes_enabled=changes_enabled,
         chezmoi_found=chezmoi_found,
         dev_mode=dev_mode,
-        home_dir=home_dir,
-        temp_dir=temp_dir,
     )
 
     if dev_mode is True:

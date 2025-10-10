@@ -107,8 +107,3 @@ class Maximized(ScreensBase):
                     ),
                     GitLogView,
                 ).path = self.path
-
-        if self.path == self.app.destDir:
-            self.border_title = f" {self.app.destDir} "
-        elif self.path is not None:
-            self.border_title = f" {self.path.relative_to(self.app.destDir)} "

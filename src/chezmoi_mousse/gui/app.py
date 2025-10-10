@@ -23,7 +23,7 @@ from chezmoi_mousse import (
     TreeName,
     ViewName,
 )
-from chezmoi_mousse.gui import SplashReturnData
+from chezmoi_mousse.gui import ParsedConfig, SplashReturnData
 from chezmoi_mousse.gui.button_groups import OperateBtnHorizontal
 from chezmoi_mousse.gui.chezmoi import Chezmoi
 from chezmoi_mousse.gui.directory_tree import FilteredDirTree
@@ -64,8 +64,6 @@ class PreRunData:
     chezmoi_mousse_light: Theme
     custom_theme_vars: dict[str, str]
     dev_mode: bool
-    home_dir: Path
-    temp_dir: Path
 
 
 class ChezmoiGUI(App[None]):
@@ -78,12 +76,7 @@ class ChezmoiGUI(App[None]):
         self.chezmoi_mousse_light = pre_run_data.chezmoi_mousse_light
         self.custom_theme_vars = pre_run_data.custom_theme_vars
         self.dev_mode = pre_run_data.dev_mode
-
-        self.destDir: Path = pre_run_data.home_dir
-        self.sourceDir: Path = pre_run_data.temp_dir
-        self.git_autoadd: bool = False
-        self.git_autocommit: bool = False
-        self.git_autopush: bool = False
+        self.parsed_config: ParsedConfig | None = None
 
         self.app_log: AppLog
         self.output_log: OutputLog
@@ -278,9 +271,9 @@ class ChezmoiGUI(App[None]):
             getattr(tab_widget, "action_toggle_switch_slider")()  # call it
 
     def action_maximize(self) -> None:
-        current_path = self.destDir
         active_tab_id = self.query_one(TabbedContent).active
         id_to_maximize: str | None = None
+        current_path: Path | None = None
         tab_ids: TabIds | None = None
 
         if active_tab_id == PaneBtn.apply_tab.name:
@@ -313,7 +306,16 @@ class ChezmoiGUI(App[None]):
             tab_ids = getattr(Id, "add")
 
         if tab_ids is None:
-            self.notify("Cannot maximize this widget", severity="error")
+            self.notify(
+                "Cannot maximize this widget, tab_ids is None",
+                severity="error",
+            )
+            return
+        if current_path is None:
+            self.notify(
+                "Cannot maximize this widget, current_path is None",
+                severity="error",
+            )
             return
         self.push_screen(
             Maximized(
