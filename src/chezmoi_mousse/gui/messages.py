@@ -2,10 +2,10 @@ from pathlib import Path
 
 from textual.message import Message
 
-from chezmoi_mousse import OperateBtn, OperateHelp, TreeName
+from chezmoi_mousse import OperateBtn, TreeName
 from chezmoi_mousse.gui import NodeData
 
-__all__ = ["OperateDismissMsg", "TreeNodeSelectedMsg", "OperateBtnPressedMsg"]
+__all__ = ["OperateDismissMsg", "TreeNodeSelectedMsg"]
 
 
 class OperateDismissMsg(Message):
@@ -37,11 +37,4 @@ class TreeNodeSelectedMsg(Message):
         self.node_parent = node_parent
         self.node_subdirs = node_subdirs if node_subdirs is not None else []
         self.tree_name = tree_name
-        super().__init__()
-
-
-class OperateBtnPressedMsg(Message):
-
-    def __init__(self, operate_help: OperateHelp | None = None) -> None:
-        self.operate_help = operate_help
         super().__init__()

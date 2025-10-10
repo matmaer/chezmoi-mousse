@@ -46,7 +46,12 @@ from chezmoi_mousse.gui.rich_logs import (
 )
 from chezmoi_mousse.gui.screens import Maximized
 from chezmoi_mousse.gui.splash import LoadingScreen
-from chezmoi_mousse.gui.widgets import ExpandedTree, FlatTree, ManagedTree
+from chezmoi_mousse.gui.widgets import (
+    ExpandedTree,
+    FlatTree,
+    ManagedTree,
+    OperateInfo,
+)
 
 __all__ = ["ChezmoiGUI", "PreRunData"]
 
@@ -174,6 +179,10 @@ class ChezmoiGUI(App[None]):
         self.chezmoi.status_dirs_stdout = return_data.status_dirs
         self.chezmoi.status_files_stdout = return_data.status_files
         self.chezmoi.status_paths_stdout = return_data.status_paths
+
+        # set git config params on OperateInfo
+        OperateInfo.git_autocommit = return_data.dump_config.git_autocommit
+        OperateInfo.git_autopush = return_data.dump_config.git_autopush
 
         # Set reactives for ConfigTab ContentSwitcher
         config_tab_switcher = self.query_one(
