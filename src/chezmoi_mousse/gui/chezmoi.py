@@ -201,7 +201,7 @@ class Chezmoi:
             if (
                 path.parent == dir_path
                 and path not in result
-                and self._has_status_paths_in(active_tab, path)
+                and self.has_status_paths_in(active_tab, path)
             ):
                 result[path] = " "
 
@@ -234,7 +234,7 @@ class Chezmoi:
                 for path in self.managed_dirs
                 if path.parent == dir_path
                 and path not in self._apply_status_paths
-                and not self._has_status_paths_in(active_tab, path)
+                and not self.has_status_paths_in(active_tab, path)
             }
         else:
             return {
@@ -242,10 +242,10 @@ class Chezmoi:
                 for path in self.managed_dirs
                 if path.parent == dir_path
                 and path not in self._re_add_status_paths
-                and not self._has_status_paths_in(active_tab, path)
+                and not self.has_status_paths_in(active_tab, path)
             }
 
-    def _has_status_paths_in(
+    def has_status_paths_in(
         self, active_tab: ActiveTab, dir_path: Path
     ) -> bool:
         if active_tab == PaneBtn.apply_tab:
