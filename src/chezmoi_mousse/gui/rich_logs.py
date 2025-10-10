@@ -166,7 +166,6 @@ class DiffView(RichLog, AppType):
         self.click_colored_file = f"Click a colored file in the tree to see the output from {self.pretty_cmd_str}"
 
     def on_mount(self) -> None:
-        self.highlight = True
         if self.active_tab is not None:
             self.write('This is the destination directory "chezmoi destDir"\n')
             self.write(self.click_colored_file)
