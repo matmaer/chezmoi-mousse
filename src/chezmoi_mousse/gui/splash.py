@@ -17,7 +17,7 @@ from textual.widgets import RichLog, Static
 from textual.worker import WorkerState
 
 from chezmoi_mousse import ReadCmd, VerbArgs
-from chezmoi_mousse.gui import AppType, ParsedConfig, SplashReturnData
+from chezmoi_mousse.gui import AppType, ParsedConfig, SplashData
 from chezmoi_mousse.gui.rich_logs import LogUtils
 
 __all__ = ["LoadingScreen"]
@@ -83,7 +83,7 @@ class AnimatedFade(Static):
         return Strip([Segment(SPLASH[y], style=FADE_LINE_STYLES[y])])
 
 
-class LoadingScreen(Screen[SplashReturnData | None], AppType):
+class LoadingScreen(Screen[SplashData | None], AppType):
 
     def __init__(self, chezmoi_found: bool) -> None:
         self.chezmoi_found = chezmoi_found
@@ -141,7 +141,7 @@ class LoadingScreen(Screen[SplashReturnData | None], AppType):
                 return
 
             self.dismiss(
-                SplashReturnData(
+                SplashData(
                     cat_config=globals()["cat_config"],
                     doctor=globals()["doctor"],
                     dump_config=globals()["dump_config"],
@@ -165,16 +165,14 @@ class LoadingScreen(Screen[SplashReturnData | None], AppType):
         rich_log.styles.color = "#6DB2FF"
         rich_log.styles.margin = 2
         if self.chezmoi_found:
-            rich_log.styles.height = len(fields(SplashReturnData))
+            rich_log.styles.height = len(fields(SplashData))
         else:
             rich_log.styles.height = 1
 
         if not self.chezmoi_found:
             self.run_read_cmd("")
         else:
-            for field_name in [
-                field.name for field in fields(SplashReturnData)
-            ]:
+            for field_name in [field.name for field in fields(SplashData)]:
                 self.run_read_cmd(field_name)
 
         self.all_workers_timer = self.set_interval(

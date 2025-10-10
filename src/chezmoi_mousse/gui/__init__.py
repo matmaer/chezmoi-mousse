@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-__all__ = ["AppType", "NodeData", "SplashReturnData"]
+__all__ = ["AppType", "NodeData", "SplashData"]
 
 if TYPE_CHECKING:
     from chezmoi_mousse.gui.app import ChezmoiGUI
@@ -38,7 +38,7 @@ class ParsedConfig:
 
 
 @dataclass
-class SplashReturnData:
+class SplashData:
     cat_config: str
     doctor: str
     dump_config: ParsedConfig
