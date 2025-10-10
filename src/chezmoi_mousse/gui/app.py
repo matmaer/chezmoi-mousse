@@ -173,89 +173,6 @@ class ChezmoiGUI(App[None]):
             return
         self.app_log.success(f"chezmoi command found: {self.chezmoi_found}")
         self.app_log.ready_to_run("--- Loading screen completed ---")
-        # update chezmoi instance
-        self.chezmoi.managed_files_stdout = return_data.managed_files
-        self.chezmoi.managed_dirs_stdout = return_data.managed_dirs
-        self.chezmoi.status_dirs_stdout = return_data.status_dirs
-        self.chezmoi.status_files_stdout = return_data.status_files
-        self.chezmoi.status_paths_stdout = return_data.status_paths
-
-        # set git config params on OperateInfo
-        OperateInfo.git_autocommit = return_data.dump_config.git_autocommit
-        OperateInfo.git_autopush = return_data.dump_config.git_autopush
-
-        # set GitLogView destDir for ApplyTab
-        apply_git_log_view = self.query_one(
-            Id.apply.view_id("#", view=ViewName.git_log_view), GitLogView
-        )
-        apply_git_log_view.path = return_data.dump_config.dest_dir
-
-        # set GitLogView destDir for ReAddTab
-        re_add_git_log_view = self.query_one(
-            Id.re_add.view_id("#", view=ViewName.git_log_view), GitLogView
-        )
-        re_add_git_log_view.path = return_data.dump_config.dest_dir
-
-        # set ContentsView destDir for ApplyTab
-        apply_contents_view = self.query_one(
-            Id.apply.view_id("#", view=ViewName.contents_view), ContentsView
-        )
-        apply_contents_view.path = return_data.dump_config.dest_dir
-
-        # set ContentsView destDir for ReAddTab
-        re_add_contents_view = self.query_one(
-            Id.re_add.view_id("#", view=ViewName.contents_view), ContentsView
-        )
-        re_add_contents_view.path = return_data.dump_config.dest_dir
-
-        # set path on FilteredDirTree
-        dir_tree = self.query_one(
-            Id.add.tree_id("#", tree=TreeName.add_tree), FilteredDirTree
-        )
-        dir_tree.path = return_data.dump_config.dest_dir
-
-        # Set reactives for ConfigTab ContentSwitcher
-        config_tab_switcher = self.query_one(
-            Id.config.content_switcher_id("#", area=AreaName.right),
-            ContentSwitcher,
-        )
-
-        # set Tree destDir for ApplyTab ManagedTree
-        apply_tab_managed_tree = self.query_one(
-            Id.apply.tree_id("#", tree=TreeName.managed_tree), ManagedTree
-        )
-        apply_tab_managed_tree.destDir = return_data.dump_config.dest_dir
-
-        # set Tree destDir for ReAddTab ManagedTree
-        re_add_tab_managed_tree = self.query_one(
-            Id.re_add.tree_id("#", tree=TreeName.managed_tree), ManagedTree
-        )
-        re_add_tab_managed_tree.destDir = return_data.dump_config.dest_dir
-
-        # set Tree destDir for ExpandedTree in ApplyTab
-        apply_tab_expanded_tree = self.query_one(
-            Id.apply.tree_id("#", tree=TreeName.expanded_tree), ExpandedTree
-        )
-        apply_tab_expanded_tree.destDir = return_data.dump_config.dest_dir
-
-        # set Tree destDir for ExpandedTree in ReAddTab
-        re_add_tab_expanded_tree = self.query_one(
-            Id.re_add.tree_id("#", tree=TreeName.expanded_tree), ExpandedTree
-        )
-        re_add_tab_expanded_tree.destDir = return_data.dump_config.dest_dir
-
-        # set attributes for ConfigTab
-        setattr(config_tab_switcher, "doctor_stdout", return_data.doctor)
-        setattr(
-            config_tab_switcher, "cat_config_stdout", return_data.cat_config
-        )
-        setattr(config_tab_switcher, "ignored_stdout", return_data.ignored)
-        setattr(
-            config_tab_switcher,
-            "template_data_stdout",
-            return_data.template_data,
-        )
-
         # Notify startup info
         if self.dev_mode is True:
             self.notify('Running in "dev mode"', severity="information")
@@ -263,6 +180,15 @@ class ChezmoiGUI(App[None]):
             self.notify("Changes are enabled", severity="warning")
         else:
             self.notify("Changes are disabled", severity="information")
+
+        self.update_chezmoi_instance(return_data)
+        self.update_managed_tree_destDir(return_data)
+        self.update_expanded_tree_destDir(return_data)
+        self.update_contents_view_destDir(return_data)
+        self.update_git_log_view_destDir(return_data)
+        self.update_config_tab(return_data)
+        self.update_operate_info(return_data)
+        self.update_dir_tree_destDir(return_data)
 
     def setup_ui_loggers(self) -> None:
         app_logger = self.query_one(
@@ -283,6 +209,80 @@ class ChezmoiGUI(App[None]):
             )
             self.debug_log = debug_logger
             self.chezmoi.debug_log = debug_logger
+
+    def update_chezmoi_instance(self, data: SplashReturnData) -> None:
+        self.chezmoi.managed_files_stdout = data.managed_files
+        self.chezmoi.managed_dirs_stdout = data.managed_dirs
+        self.chezmoi.status_dirs_stdout = data.status_dirs
+        self.chezmoi.status_files_stdout = data.status_files
+        self.chezmoi.status_paths_stdout = data.status_paths
+
+    def update_managed_tree_destDir(self, data: SplashReturnData) -> None:
+        apply_tab_managed_tree = self.query_one(
+            Id.apply.tree_id("#", tree=TreeName.managed_tree), ManagedTree
+        )
+        apply_tab_managed_tree.destDir = data.dump_config.dest_dir
+
+        re_add_tab_managed_tree = self.query_one(
+            Id.re_add.tree_id("#", tree=TreeName.managed_tree), ManagedTree
+        )
+        re_add_tab_managed_tree.destDir = data.dump_config.dest_dir
+
+    def update_expanded_tree_destDir(self, data: SplashReturnData) -> None:
+        apply_tab_expanded_tree = self.query_one(
+            Id.apply.tree_id("#", tree=TreeName.expanded_tree), ExpandedTree
+        )
+        apply_tab_expanded_tree.destDir = data.dump_config.dest_dir
+
+        # set Tree destDir for ExpandedTree in ReAddTab
+        re_add_tab_expanded_tree = self.query_one(
+            Id.re_add.tree_id("#", tree=TreeName.expanded_tree), ExpandedTree
+        )
+        re_add_tab_expanded_tree.destDir = data.dump_config.dest_dir
+
+    def update_contents_view_destDir(self, data: SplashReturnData) -> None:
+        apply_contents_view = self.query_one(
+            Id.apply.view_id("#", view=ViewName.contents_view), ContentsView
+        )
+        apply_contents_view.path = data.dump_config.dest_dir
+
+        re_add_contents_view = self.query_one(
+            Id.re_add.view_id("#", view=ViewName.contents_view), ContentsView
+        )
+        re_add_contents_view.path = data.dump_config.dest_dir
+
+    def update_git_log_view_destDir(self, data: SplashReturnData) -> None:
+        apply_git_log_view = self.query_one(
+            Id.apply.view_id("#", view=ViewName.git_log_view), GitLogView
+        )
+        apply_git_log_view.path = data.dump_config.dest_dir
+
+        re_add_git_log_view = self.query_one(
+            Id.re_add.view_id("#", view=ViewName.git_log_view), GitLogView
+        )
+        re_add_git_log_view.path = data.dump_config.dest_dir
+
+    def update_dir_tree_destDir(self, data: SplashReturnData) -> None:
+        dir_tree = self.query_one(
+            Id.add.tree_id("#", tree=TreeName.add_tree), FilteredDirTree
+        )
+        dir_tree.path = data.dump_config.dest_dir
+
+    def update_config_tab(self, data: SplashReturnData) -> None:
+        config_tab_switcher = self.query_one(
+            Id.config.content_switcher_id("#", area=AreaName.right),
+            ContentSwitcher,
+        )
+        setattr(config_tab_switcher, "doctor_stdout", data.doctor)
+        setattr(config_tab_switcher, "cat_config_stdout", data.cat_config)
+        setattr(config_tab_switcher, "ignored_stdout", data.ignored)
+        setattr(
+            config_tab_switcher, "template_data_stdout", data.template_data
+        )
+
+    def update_operate_info(self, data: SplashReturnData) -> None:
+        OperateInfo.git_autocommit = data.dump_config.git_autocommit
+        OperateInfo.git_autopush = data.dump_config.git_autopush
 
     def on_tabbed_content_tab_activated(
         self, event: TabbedContent.TabActivated
