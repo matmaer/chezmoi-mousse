@@ -82,7 +82,6 @@ class OperateTabsBase(Horizontal, AppType):
     def __init__(self, *, tab_ids: TabIds) -> None:
         self.current_path: Path | None = None
         self.tab_ids = tab_ids
-        super().__init__(id=self.tab_ids.tab_container_id)
         self.diff_tab_btn = tab_ids.button_id(btn=TabBtn.diff)
         self.contents_tab_btn = tab_ids.button_id(btn=TabBtn.contents)
         self.git_log_tab_btn = tab_ids.button_id(btn=TabBtn.git_log)
@@ -93,6 +92,7 @@ class OperateTabsBase(Horizontal, AppType):
         self.tree_switcher_qid = self.tab_ids.content_switcher_id(
             "#", area=AreaName.left
         )
+        super().__init__(id=self.tab_ids.tab_container_id)
 
     def _update_view_path(self, path: Path) -> None:
         current_view_id = self.query_one(
