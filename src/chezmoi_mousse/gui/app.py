@@ -184,6 +184,12 @@ class ChezmoiGUI(App[None]):
         OperateInfo.git_autocommit = return_data.dump_config.git_autocommit
         OperateInfo.git_autopush = return_data.dump_config.git_autopush
 
+        # set path on FilteredDirTree
+        dir_tree = self.query_one(
+            Id.add.tree_id("#", tree=TreeName.add_tree), FilteredDirTree
+        )
+        dir_tree.path = return_data.dump_config.dest_dir
+
         # Set reactives for ConfigTab ContentSwitcher
         config_tab_switcher = self.query_one(
             Id.config.content_switcher_id("#", area=AreaName.right),
@@ -214,8 +220,7 @@ class ChezmoiGUI(App[None]):
                 self.query_one(
                     tab_ids.tree_id("#", tree=tree_name), tree_cls
                 ).populate_root_node()
-        # Refresh DirectoryTree
-        self.query_one(FilteredDirTree).reload()
+        # Notify startup info
         if self.dev_mode is True:
             self.notify('Running in "dev mode"', severity="information")
         if self.changes_enabled is True:

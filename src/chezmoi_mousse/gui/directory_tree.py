@@ -99,10 +99,7 @@ class FilteredDirTree(DirectoryTree, AppType):
                 for p in paths
                 if (
                     p.is_file()
-                    and (
-                        p.parent in managed_dirs
-                        or p.parent == self.app.destDir
-                    )
+                    and (p.parent in managed_dirs or p.parent == self.path)
                     and not self._is_unwanted_path(p)
                     and p not in managed_files
                 )
@@ -126,10 +123,7 @@ class FilteredDirTree(DirectoryTree, AppType):
                 for p in paths
                 if (
                     p.is_file()
-                    and (
-                        p.parent in managed_dirs
-                        or p.parent == self.app.destDir
-                    )
+                    and (p.parent in managed_dirs or p.parent == self.path)
                     and p not in managed_files
                 )
                 or (p.is_dir() and p in managed_dirs)
