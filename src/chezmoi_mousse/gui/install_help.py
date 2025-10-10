@@ -75,7 +75,9 @@ class InstallHelpScreen(Screen[None], AppType):
             if __package__
             else Path(__file__).resolve().parent
         )
-        data_file: Path = pkg_root / "data" / "chezmoi_install_commands.json"
+        data_file: Path = Path.joinpath(
+            pkg_root, "data", "chezmoi_install_commands.json"
+        )
         install_help: ParsedJson = json.loads(data_file.read_text())
         for k, v in install_help.items():
             help_tree.root.add(label=k, data=v)
