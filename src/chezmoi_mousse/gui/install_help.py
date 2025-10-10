@@ -32,18 +32,15 @@ class InstallHelpScreen(Screen[None], AppType):
         super().__init__(
             id=InstallHelpIds.screen_id, classes=Tcss.screen_base.name
         )
-        self.path_env = os.environ.get("PATH") or ""
+        self.path_env_list: list[str] = []
 
     def compose(self) -> ComposeResult:
         with Vertical(classes=Tcss.install_help.name):
             yield Center(Label(("Chezmoi is not installed or not found.")))
-            if not self.path_env:
-                yield Center(Label(("The $PATH variable is empty")))
-            else:
-                yield Collapsible(
-                    Pretty(self.path_env),
-                    title="'chezmoi' command not found in any search path",
-                )
+            yield Collapsible(
+                Pretty("PATH variable is empty or not set."),
+                title="'chezmoi' command not found in any search path",
+            )
 
             with Center():
                 with Horizontal():
@@ -62,6 +59,12 @@ class InstallHelpScreen(Screen[None], AppType):
                         )
 
     def on_mount(self) -> None:
+        self.path_env = os.environ.get("PATH")
+        entry_sep = ";" if os.name == "nt" else ":"
+        if self.path_env is not None:
+            self.path_env_list = self.path_env.split(entry_sep)
+            pretty_widget = self.query_exactly_one(Pretty)
+            pretty_widget.update(self.path_env_list)
         self.border_subtitle = self.border_subtitle = (
             Id.operate_screen.border_subtitle()
         )
