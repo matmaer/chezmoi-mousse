@@ -20,11 +20,13 @@ __all__ = ["InstallHelpScreen"]
 
 class InstallHelpIds(StrEnum):
     screen_id = "install_help_screen"
+    exit_button_id = "exit_button"
+    chezmoi_docs_link_id = "chezmoi_docs_link"
 
 
 class InstallHelpScreen(Screen[None], AppType):
 
-    BINDINGS = [Binding(key="escape", action="exit", show=False)]
+    BINDINGS = [Binding(key="escape", action="exit_application", show=False)]
 
     def __init__(self) -> None:
         super().__init__(
@@ -50,8 +52,14 @@ class InstallHelpScreen(Screen[None], AppType):
                         yield Link(
                             "chezmoi.io/install",
                             url="https://chezmoi.io/install",
+                            id=InstallHelpIds.chezmoi_docs_link_id,
                         )
-                        yield Button("exit app", variant="primary", flat=True)
+                        yield Button(
+                            "exit app",
+                            id=InstallHelpIds.exit_button_id,
+                            variant="primary",
+                            flat=True,
+                        )
 
     def on_mount(self) -> None:
         self.border_subtitle = self.border_subtitle = (
@@ -81,5 +89,5 @@ class InstallHelpScreen(Screen[None], AppType):
     def exit_application(self, event: Button.Pressed) -> None:
         self.app.exit()
 
-    def action_esc_dismiss(self) -> None:
+    def action_exit_application(self) -> None:
         self.app.exit()
