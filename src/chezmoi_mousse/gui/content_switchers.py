@@ -76,17 +76,12 @@ class ViewSwitcher(ContentSwitcher, AppType):
         super().__init__(
             id=self.tab_ids.content_switcher_id(area=AreaName.right),
             initial=self.tab_ids.view_id(view=ViewName.diff_view),
-            # classes=Tcss.border_title_top.name,
         )
 
     def compose(self) -> ComposeResult:
         yield DiffView(init_ids=self.tab_ids, reverse=self.reverse)
         yield ContentsView(tab_ids=self.tab_ids)
         yield GitLogView(tab_ids=self.tab_ids)
-
-    # def on_mount(self) -> None:
-    #     self.border_title = " destDir "
-    #     self.add_class(Tcss.border_title_top.name)
 
 
 class InitTabSwitcher(ContentSwitcher):

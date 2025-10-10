@@ -160,6 +160,7 @@ class DiffView(RichLog, AppType):
             auto_scroll=False,
             highlight=True,
             wrap=True,  # TODO: implement footer binding to toggle wrap
+            classes=Tcss.border_title_top.name,
         )
         # Strings for logging
         self.click_colored_file = f"Click a colored file in the tree to see the output from {self.pretty_cmd_str}"
@@ -190,7 +191,7 @@ class DiffView(RichLog, AppType):
             or len(self.app.chezmoi.managed_dirs) == 0
         ):
             return
-
+        self.border_title = f" {self.path} "
         self.clear()
         # write lines for an unchanged file or directory except when we are in
         # either the ApplyTab or ReAddTab
