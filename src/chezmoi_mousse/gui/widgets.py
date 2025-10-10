@@ -120,9 +120,11 @@ class GitLogView(DataTable[Text], AppType):
 
     def __init__(self, *, tab_ids: TabIds | ScreenIds) -> None:
         self.tab_ids = tab_ids
+        self.destDir: Path | None = None
         super().__init__(
             id=self.tab_ids.view_id(view=ViewName.git_log_view),
             show_cursor=False,
+            classes=Tcss.border_title_top.name,
         )
 
     def _add_row_with_style(self, columns: list[str], style: str) -> None:
@@ -151,10 +153,10 @@ class GitLogView(DataTable[Text], AppType):
                 self.add_row(*(Text(cell) for cell in columns))
 
     def watch_path(self) -> None:
-
         if self.path is None:
             return
-        if self.path == self.app.destDir:
+        self.border_title = f" {self.path} "
+        if self.path == self.destDir:
             cmd_output = self.app.chezmoi.read(ReadCmd.git_log)
         else:
             source_path = Path(

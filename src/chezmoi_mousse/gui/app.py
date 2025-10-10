@@ -49,6 +49,7 @@ from chezmoi_mousse.gui.splash import LoadingScreen
 from chezmoi_mousse.gui.widgets import (
     ExpandedTree,
     FlatTree,
+    GitLogView,
     ManagedTree,
     OperateInfo,
 )
@@ -183,6 +184,16 @@ class ChezmoiGUI(App[None]):
         # set git config params on OperateInfo
         OperateInfo.git_autocommit = return_data.dump_config.git_autocommit
         OperateInfo.git_autopush = return_data.dump_config.git_autopush
+
+        # set GitLogView destDir
+        apply_git_log_view = self.query_one(
+            Id.apply.view_id("#", view=ViewName.git_log_view), GitLogView
+        )
+        apply_git_log_view.path = return_data.dump_config.dest_dir
+        re_add_git_log_view = self.query_one(
+            Id.re_add.view_id("#", view=ViewName.git_log_view), GitLogView
+        )
+        re_add_git_log_view.path = return_data.dump_config.dest_dir
 
         # set path on FilteredDirTree
         dir_tree = self.query_one(
