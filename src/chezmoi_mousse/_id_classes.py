@@ -65,6 +65,5 @@ class Id:
     apply: TabIds = TabIds(PaneBtn.apply_tab)
     config: TabIds = TabIds(PaneBtn.config_tab)
     help: TabIds = TabIds(PaneBtn.help_tab)
-    init: TabIds = TabIds(PaneBtn.init_tab)
     logs: TabIds = TabIds(PaneBtn.logs_tab)
     re_add: TabIds = TabIds(PaneBtn.re_add_tab)

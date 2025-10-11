@@ -36,7 +36,6 @@ class PaneBtn(StrEnum):
     apply_tab = "Apply"
     config_tab = "Config"
     help_tab = "Help"
-    init_tab = "Init"
     logs_tab = "Logs"
     re_add_tab = "Re-Add"
 
