@@ -42,7 +42,7 @@ from chezmoi_mousse.gui.widgets import (
 __all__ = ["OperateTabsBase", "SwitchSlider"]
 
 
-class OperateFullScreen(Vertical, AppType):
+class Operate(Vertical, AppType):
 
     def __init__(
         self,
