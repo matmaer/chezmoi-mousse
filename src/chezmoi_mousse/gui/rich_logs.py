@@ -59,7 +59,7 @@ class ContentsView(RichLog, AppType):
 
     def __init__(self, *, tab_ids: TabIds) -> None:
         self.tab_ids = tab_ids
-        self.destDir: Path | None = None
+        self.first_render: bool = True
         super().__init__(
             id=self.tab_ids.view_id(view=ViewName.contents_view),
             auto_scroll=False,
@@ -68,16 +68,24 @@ class ContentsView(RichLog, AppType):
             classes=Tcss.border_title_top.name,
         )
         self.click_colored_file = Text(
-            "Click a colored file in the tree to see the contents", style="dim"
+            "Click a colored file in the tree to see the contents.",
+            style="dim",
         )
 
     def on_mount(self) -> None:
+        self._write_destDir_info()
+
+    def _write_destDir_info(self) -> None:
         self.write('This is the destination directory "chezmoi destDir"\n')
         self.write(self.click_colored_file)
 
     def watch_path(self) -> None:
-        if self.path is None:
+        assert self.path is not None
+        if self.first_render is True:
+            self._write_destDir_info
+            self.first_render = False
             return
+
         self.border_title = f" {self.path} "
         self.clear()
         truncated_message = ""
