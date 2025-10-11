@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from pathlib import Path
 
 from textual.app import App, ComposeResult
 from textual.binding import Binding
@@ -19,7 +18,6 @@ from chezmoi_mousse import (
     Id,
     OperateBtn,
     PaneBtn,
-    TabIds,
     TreeName,
     ViewName,
 )
@@ -27,7 +25,7 @@ from chezmoi_mousse.gui import ParsedConfig, SplashData
 from chezmoi_mousse.gui.button_groups import OperateBtnHorizontal
 from chezmoi_mousse.gui.chezmoi import Chezmoi
 from chezmoi_mousse.gui.directory_tree import FilteredDirTree
-from chezmoi_mousse.gui.install_help import InstallHelpScreen
+from chezmoi_mousse.gui.install_help_screen import InstallHelpScreen
 from chezmoi_mousse.gui.main_tabs import (
     AddTab,
     ApplyTab,
@@ -44,7 +42,6 @@ from chezmoi_mousse.gui.rich_logs import (
     DebugLog,
     OutputLog,
 )
-from chezmoi_mousse.gui.screens import Maximized
 from chezmoi_mousse.gui.splash import LoadingScreen
 from chezmoi_mousse.gui.widgets import (
     ExpandedTree,
@@ -290,24 +287,14 @@ class ChezmoiGUI(App[None]):
     def check_action(
         self, action: str, parameters: tuple[object, ...]
     ) -> bool | None:
-        if action == "maximize":
-            if self.query_one(TabbedContent).active in (
-                Id.config.tab_name,
-                Id.logs.tab_name,
-                Id.init.tab_name,
-            ):
-                return None
-            return True
         if action == "toggle_switch_slider":
             if self.query_one(TabbedContent).active in (
                 Id.apply.tab_name,
                 Id.re_add.tab_name,
                 Id.add.tab_name,
-                Id.init.tab_name,
             ):
                 return True
             return None
-
         return True
 
     def action_toggle_switch_slider(self) -> None:
@@ -317,61 +304,6 @@ class ChezmoiGUI(App[None]):
         ).children[0]
         if hasattr(tab_widget, "action_toggle_switch_slider") is True:
             getattr(tab_widget, "action_toggle_switch_slider")()  # call it
-
-    def action_maximize(self) -> None:
-        active_tab_id = self.query_one(TabbedContent).active
-        id_to_maximize: str | None = None
-        current_path: Path | None = None
-        tab_ids: TabIds | None = None
-
-        if active_tab_id == PaneBtn.apply_tab.name:
-            active_widget_id = self.query_one(
-                Id.apply.content_switcher_id("#", area=AreaName.right),
-                ContentSwitcher,
-            ).current
-            active_widget = self.query_one(f"#{active_widget_id}")
-            current_path = getattr(active_widget, "path")
-            id_to_maximize = active_widget.id
-            tab_ids = getattr(Id, "apply")
-
-        elif active_tab_id == PaneBtn.re_add_tab.name:
-            # Determine what view to show in the screen
-            active_widget_id = self.query_one(
-                Id.re_add.content_switcher_id("#", area=AreaName.right),
-                ContentSwitcher,
-            ).current
-            active_widget = self.query_one(f"#{active_widget_id}")
-            current_path = getattr(active_widget, "path")
-            id_to_maximize = active_widget.id
-            tab_ids = getattr(Id, "re_add")
-
-        elif active_tab_id == PaneBtn.add_tab.name:
-            contents_view = self.query_one(
-                Id.add.view_id("#", view=ViewName.contents_view), ContentsView
-            )
-            current_path = getattr(contents_view, "path")
-            id_to_maximize = contents_view.id
-            tab_ids = getattr(Id, "add")
-
-        if tab_ids is None:
-            self.notify(
-                "Cannot maximize this widget, tab_ids is None",
-                severity="error",
-            )
-            return
-        if current_path is None:
-            self.notify(
-                "Cannot maximize this widget, current_path is None",
-                severity="error",
-            )
-            return
-        self.push_screen(
-            Maximized(
-                tab_ids=tab_ids,
-                id_to_maximize=id_to_maximize,
-                path=current_path,
-            )
-        )
 
     def on_theme_change(self, _: str, new_theme: str) -> None:
         # TODO: this should not be necessary anymore, use textual app attributes

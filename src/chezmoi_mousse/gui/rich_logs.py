@@ -24,7 +24,6 @@ from chezmoi_mousse import (
     GlobalCmd,
     PaneBtn,
     ReadCmd,
-    ScreenIds,
     TabIds,
     Tcss,
     VerbArgs,
@@ -58,7 +57,7 @@ class ContentsView(RichLog, AppType):
 
     path: reactive[Path | None] = reactive(None, init=False)
 
-    def __init__(self, *, tab_ids: TabIds | ScreenIds) -> None:
+    def __init__(self, *, tab_ids: TabIds) -> None:
         self.tab_ids = tab_ids
         self.destDir: Path | None = None
         super().__init__(
@@ -141,8 +140,8 @@ class DiffView(RichLog, AppType):
 
     path: reactive[Path | None] = reactive(None, init=False)
 
-    def __init__(self, *, init_ids: TabIds | ScreenIds, reverse: bool) -> None:
-        self.init_ids = init_ids
+    def __init__(self, *, tab_ids: TabIds, reverse: bool) -> None:
+        self.tab_ids = tab_ids
         self.reverse = reverse
         self.active_tab: ActiveTab | None = None
         self.diff_read_cmd: ReadCmd = (
@@ -151,14 +150,11 @@ class DiffView(RichLog, AppType):
         self.pretty_diff_cmd = LogUtils.pretty_cmd_str(
             self.diff_read_cmd.value
         )
-        if isinstance(self.init_ids, TabIds):
-            self.active_tab = (
-                PaneBtn.re_add_tab if self.reverse else PaneBtn.apply_tab
-            )
-        else:
-            self.active_tab = None
+        self.active_tab = (
+            PaneBtn.re_add_tab if self.reverse else PaneBtn.apply_tab
+        )
         super().__init__(
-            id=self.init_ids.view_id(view=ViewName.diff_view),
+            id=self.tab_ids.view_id(view=ViewName.diff_view),
             auto_scroll=False,
             highlight=True,
             wrap=True,  # TODO: implement footer binding to toggle wrap

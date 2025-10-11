@@ -3,7 +3,7 @@ from enum import StrEnum, auto
 # RULES: can only contain auto() members, no assigned values
 
 
-__all__ = ["ScreenName", "TreeName", "ViewName"]
+__all__ = ["TreeName", "ViewName"]
 
 
 class AreaName(StrEnum):
@@ -11,12 +11,6 @@ class AreaName(StrEnum):
     left = auto()
     right = auto()
     top = auto()
-
-
-class ScreenName(StrEnum):
-    install_help = auto()
-    maximized = auto()
-    operate = auto()
 
 
 class TreeName(StrEnum):

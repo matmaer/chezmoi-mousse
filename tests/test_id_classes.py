@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 from _test_utils import get_modules_importing_class
 
-from chezmoi_mousse import Id, ScreenIds, TabIds
+from chezmoi_mousse import Id, TabIds
 
 
 def _get_class_public_members_strings(
@@ -67,35 +67,6 @@ def test_tabids_member_in_use(member_name: str, member_type: str):
 
     # the test should run on all modules importing TabIds and the Id class as
     # the TabIds members can be accessed via an Id attribute
-    paths_to_check: set[Path] = set(
-        get_modules_importing_class(class_name)
-        + get_modules_importing_class("Id")
-    )
-    for py_file in paths_to_check:
-        content = py_file.read_text()
-        tree = ast.parse(content, filename=str(py_file))
-
-        finder = UsageFinder(member_name, exclude_class_name=class_name)
-        finder.visit(tree)
-        if finder.found:
-            is_used = True
-            break  # No need to check other files
-
-    if not is_used:
-        pytest.fail(f"\nNot in use: {member_name} {member_type}")
-
-
-@pytest.mark.parametrize(
-    "member_name, member_type",
-    _get_class_public_members_strings(ScreenIds),
-    ids=[name for name, _ in _get_class_public_members_strings(ScreenIds)],
-)
-def test_screen_ids_member_in_use(member_name: str, member_type: str):
-    is_used = False
-    class_name = "ScreenIds"
-
-    # the test should run on all modules importing ScreenIds and the Id class
-    # as the ScreenIds members can be accessed via an Id attribute
     paths_to_check: set[Path] = set(
         get_modules_importing_class(class_name)
         + get_modules_importing_class("Id")

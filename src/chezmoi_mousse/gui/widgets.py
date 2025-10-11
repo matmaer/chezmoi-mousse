@@ -32,7 +32,6 @@ from chezmoi_mousse import (
     OperateBtn,
     PaneBtn,
     ReadCmd,
-    ScreenIds,
     TabIds,
     Tcss,
     TreeName,
@@ -118,7 +117,7 @@ class GitLogView(DataTable[Text], AppType):
 
     path: reactive[Path | None] = reactive(None, init=False)
 
-    def __init__(self, *, tab_ids: TabIds | ScreenIds) -> None:
+    def __init__(self, *, tab_ids: TabIds) -> None:
         self.tab_ids = tab_ids
         self.destDir: Path | None = None
         super().__init__(

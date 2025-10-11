@@ -4,10 +4,10 @@ generated the id dynamically when subclassing or to query a widget."""
 from dataclasses import dataclass
 
 from chezmoi_mousse._labels import NavBtn, OperateBtn, PaneBtn, TabBtn
-from chezmoi_mousse._names import AreaName, ScreenName, TreeName, ViewName
+from chezmoi_mousse._names import AreaName, TreeName, ViewName
 from chezmoi_mousse._switch_data import SwitchData
 
-__all__ = ["ScreenIds", "TabIds", "Id"]
+__all__ = ["TabIds", "Id"]
 
 
 class TabIds:
@@ -59,23 +59,6 @@ class TabIds:
         return f"{qid}{self.tab_name}_{view}"
 
 
-class ScreenIds:
-    def __init__(self, screen_name: ScreenName) -> None:
-        self.screen_name = screen_name
-        self.screen_id = f"{screen_name}_id"
-        self.border_subtitle_dict = {
-            ScreenName.maximized: " double click or escape key to close ",
-            ScreenName.operate: " escape key to close ",
-            ScreenName.install_help: " escape key to exit app ",
-        }
-
-    def border_subtitle(self):
-        return self.border_subtitle_dict[self.screen_name]
-
-    def view_id(self, qid: str = "", *, view: ViewName) -> str:
-        return f"{qid}{self.screen_name}_{view}"
-
-
 @dataclass(frozen=True)
 class Id:
     add: TabIds = TabIds(PaneBtn.add_tab)
@@ -85,6 +68,3 @@ class Id:
     init: TabIds = TabIds(PaneBtn.init_tab)
     logs: TabIds = TabIds(PaneBtn.logs_tab)
     re_add: TabIds = TabIds(PaneBtn.re_add_tab)
-    operate_screen: ScreenIds = ScreenIds(ScreenName.operate)
-    maximized_screen: ScreenIds = ScreenIds(ScreenName.maximized)
-    install_help_screen: ScreenIds = ScreenIds(ScreenName.install_help)

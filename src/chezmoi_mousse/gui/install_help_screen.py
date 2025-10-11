@@ -12,7 +12,7 @@ from textual.containers import Center, Horizontal, Vertical, VerticalGroup
 from textual.screen import Screen
 from textual.widgets import Button, Collapsible, Label, Link, Pretty, Tree
 
-from chezmoi_mousse import Id, ParsedJson, Tcss
+from chezmoi_mousse import ParsedJson, SubTitles, Tcss
 from chezmoi_mousse.gui import AppType
 
 __all__ = ["InstallHelpScreen"]
@@ -64,9 +64,7 @@ class InstallHelpScreen(Screen[None], AppType):
 
     def on_mount(self) -> None:
         if self.chezmoi_found is False:
-            self.border_subtitle = self.border_subtitle = (
-                Id.operate_screen.border_subtitle()
-            )
+            self.border_subtitle = SubTitles.escape_exit_app
             self.pkg_root = self.get_pkg_root()
             self.update_path_widget()
             self.populate_tree()
