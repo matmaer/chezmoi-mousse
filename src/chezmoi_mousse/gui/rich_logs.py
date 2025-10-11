@@ -185,14 +185,7 @@ class DiffView(RichLog, AppType):
         self.write(self.click_colored_file)
 
     def watch_path(self) -> None:
-        # skip rendering stuff during app initialization
-        if (
-            self.path is None
-            or (isinstance(self.init_ids, TabIds) and self.active_tab is None)
-            or getattr(self.app.chezmoi, "read", "") == ""
-            or getattr(self.app.chezmoi, "managed_dirs", "") == ""
-            or len(self.app.chezmoi.managed_dirs) == 0
-        ):
+        if self.path is None:
             return
         self.border_title = f" {self.path} "
         self.clear()
