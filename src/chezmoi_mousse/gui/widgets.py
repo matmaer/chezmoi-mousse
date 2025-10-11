@@ -601,6 +601,11 @@ class FlatTree(TreeBase, AppType):
             self.root.add_leaf(label=node_label, data=node_data)
 
     def watch_destDir(self) -> None:
+        if self.destDir is None:
+            return
+        self.root.data = NodeData(
+            path=self.destDir, is_leaf=False, found=True, status="F"
+        )
         self.add_files_with_status()
 
     def watch_unchanged(self) -> None:
