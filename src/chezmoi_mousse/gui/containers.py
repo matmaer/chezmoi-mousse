@@ -95,6 +95,8 @@ class OperateTabsBase(Horizontal, AppType):
         super().__init__(id=self.tab_ids.tab_container_id)
 
     def _update_view_path(self) -> None:
+        if self.current_path is None:
+            return
         contents_view = self.query_exactly_one(ContentsView)
         if contents_view.path != self.current_path:
             contents_view.path = self.current_path
