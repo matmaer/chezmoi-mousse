@@ -10,9 +10,9 @@ from pathlib import Path
 from textual import on
 from textual.app import ComposeResult
 from textual.containers import (
-    Container,
     Horizontal,
     HorizontalGroup,
+    Vertical,
     VerticalGroup,
 )
 from textual.widgets import Button, ContentSwitcher, Label, Switch
@@ -42,7 +42,7 @@ from chezmoi_mousse.gui.widgets import (
 __all__ = ["OperateTabsBase", "SwitchSlider"]
 
 
-class OperateFullScreen(Container, AppType):
+class OperateFullScreen(Vertical, AppType):
 
     def __init__(
         self,
@@ -75,6 +75,13 @@ class OperateFullScreen(Container, AppType):
         self.border_subtitle = " escape key to close "
         operate_info = self.query_exactly_one(OperateInfo)
         operate_info.border_title = f" {self.path} "
+
+
+class Maximized(Vertical, AppType):
+
+    def __init__(self, *, id_to_maximize: str) -> None:
+        self.id_to_maximize = id_to_maximize
+        super().__init__(classes=Tcss.border_title_top.name)
 
 
 class OperateTabsBase(Horizontal, AppType):
