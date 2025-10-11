@@ -31,7 +31,6 @@ from chezmoi_mousse.gui.main_tabs import (
     ApplyTab,
     ConfigTab,
     HelpTab,
-    InitTab,
     LogsTab,
     ReAddTab,
 )
@@ -129,8 +128,6 @@ class ChezmoiGUI(App[None]):
                     tab_ids=Id.add,
                     buttons=(OperateBtn.add_file, OperateBtn.add_dir),
                 )
-            with TabPane(PaneBtn.init_tab.value, id=PaneBtn.init_tab.name):
-                yield InitTab()
             with TabPane(PaneBtn.logs_tab.value, id=PaneBtn.logs_tab.name):
                 yield LogsTab()
             with TabPane(PaneBtn.config_tab.value, id=PaneBtn.config_tab.name):
