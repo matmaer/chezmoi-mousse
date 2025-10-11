@@ -68,15 +68,13 @@ class ContentsView(RichLog, AppType):
             highlight=True,
             classes=Tcss.border_title_top.name,
         )
+        self.click_colored_file = Text(
+            "Click a colored file in the tree to see the contents", style="dim"
+        )
 
     def on_mount(self) -> None:
         self.write('This is the destination directory "chezmoi destDir"\n')
-        self.write(
-            Text(
-                "Click a colored file in the tree to see the contents.",
-                style="dim",
-            )
-        )
+        self.write(self.click_colored_file)
 
     def watch_path(self) -> None:
         if self.path is None:
@@ -150,7 +148,9 @@ class DiffView(RichLog, AppType):
         self.diff_read_cmd: ReadCmd = (
             ReadCmd.diff_reverse if self.reverse else ReadCmd.diff
         )
-        self.pretty_cmd_str = LogUtils.pretty_cmd_str(self.diff_read_cmd.value)
+        self.pretty_diff_cmd = LogUtils.pretty_cmd_str(
+            self.diff_read_cmd.value
+        )
         if isinstance(self.init_ids, TabIds):
             self.active_tab = (
                 PaneBtn.re_add_tab if self.reverse else PaneBtn.apply_tab
@@ -165,7 +165,7 @@ class DiffView(RichLog, AppType):
             classes=Tcss.border_title_top.name,
         )
         self.click_colored_file = Text(
-            f"Click a colored file in the tree to see the output from {self.pretty_cmd_str}",
+            f"Click a colored file in the tree to see the output from {self.pretty_diff_cmd}",
             style="dim",
         )
 
@@ -234,7 +234,7 @@ class DiffView(RichLog, AppType):
                 # remove the line from diff_lines
                 diff_lines.remove(line)
 
-        self.write(f'Output from "{self.pretty_cmd_str} {self.path}":\n')
+        self.write(f'Output from "{self.pretty_diff_cmd} {self.path}":\n')
         for line in diff_lines:
             if line.startswith("-"):
                 self.write(
