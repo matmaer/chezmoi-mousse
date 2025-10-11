@@ -572,6 +572,7 @@ class ExpandedTree(TreeBase):
 
 class FlatTree(TreeBase, AppType):
 
+    destDir: reactive[Path | None] = reactive(None, init=False)
     unchanged: reactive[bool] = reactive(False, init=False)
 
     def __init__(self, tab_ids: TabIds) -> None:
@@ -599,7 +600,7 @@ class FlatTree(TreeBase, AppType):
             node_label: Text = self.style_label(node_data)
             self.root.add_leaf(label=node_label, data=node_data)
 
-    def populate_root_node(self) -> None:
+    def watch_destDir(self) -> None:
         self.add_files_with_status()
 
     def watch_unchanged(self) -> None:

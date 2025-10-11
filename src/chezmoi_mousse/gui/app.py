@@ -44,6 +44,7 @@ from chezmoi_mousse.gui.rich_logs import (
 from chezmoi_mousse.gui.splash import LoadingScreen
 from chezmoi_mousse.gui.widgets import (
     ExpandedTree,
+    FlatTree,
     GitLogView,
     ManagedTree,
     OperateInfo,
@@ -176,6 +177,7 @@ class ChezmoiGUI(App[None]):
         self.update_chezmoi_instance(return_data)
         self.update_managed_tree_destDir(return_data)
         self.update_expanded_tree_destDir(return_data)
+        self.update_flat_tree_destDir(return_data)
         self.update_contents_view_destDir(return_data)
         self.update_git_log_view_destDir(return_data)
         self.update_config_tab(return_data)
@@ -226,11 +228,21 @@ class ChezmoiGUI(App[None]):
         )
         apply_tab_expanded_tree.destDir = data.dump_config.dest_dir
 
-        # set Tree destDir for ExpandedTree in ReAddTab
         re_add_tab_expanded_tree = self.query_one(
             Id.re_add.tree_id("#", tree=TreeName.expanded_tree), ExpandedTree
         )
         re_add_tab_expanded_tree.destDir = data.dump_config.dest_dir
+
+    def update_flat_tree_destDir(self, data: SplashData) -> None:
+        apply_tab_flat_tree = self.query_one(
+            Id.apply.tree_id("#", tree=TreeName.flat_tree), FlatTree
+        )
+        apply_tab_flat_tree.destDir = data.dump_config.dest_dir
+
+        re_add_tab_flat_tree = self.query_one(
+            Id.re_add.tree_id("#", tree=TreeName.flat_tree), FlatTree
+        )
+        re_add_tab_flat_tree.destDir = data.dump_config.dest_dir
 
     def update_contents_view_destDir(self, data: SplashData) -> None:
         apply_contents_view = self.query_one(
