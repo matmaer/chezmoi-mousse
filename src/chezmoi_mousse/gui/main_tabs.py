@@ -4,14 +4,12 @@ from textual import on
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical, VerticalGroup
 from textual.lazy import Lazy
-from textual.widgets import Button, Input, Switch
+from textual.widgets import Button, Switch
 
 from chezmoi_mousse import (
     AreaName,
-    ChangeCmd,
     Id,
     NavBtn,
-    OperateBtn,
     Switches,
     TabBtn,
     Tcss,
@@ -27,7 +25,6 @@ from chezmoi_mousse.gui.containers import OperateTabsBase, SwitchSlider
 from chezmoi_mousse.gui.content_switchers import (
     ConfigTabSwitcher,
     HelpTabSwitcher,
-    InitTabSwitcher,
     LogsTabSwitcher,
     TreeSwitcher,
     ViewSwitcher,
@@ -35,15 +32,7 @@ from chezmoi_mousse.gui.content_switchers import (
 from chezmoi_mousse.gui.directory_tree import FilteredDirTree
 from chezmoi_mousse.gui.rich_logs import ContentsView
 
-__all__ = [
-    "AddTab",
-    "ApplyTab",
-    "ConfigTab",
-    "HelpTab",
-    "InitTab",
-    "LogsTab",
-    "ReAddTab",
-]
+__all__ = ["AddTab", "ApplyTab", "ConfigTab", "HelpTab", "LogsTab", "ReAddTab"]
 
 
 class ApplyTab(OperateTabsBase):
@@ -177,61 +166,6 @@ class AddTab(OperateTabsBase, AppType):
         ):
             tree.unwanted = event.value
         tree.reload()
-
-
-class InitTab(Horizontal, AppType):
-
-    def __init__(self) -> None:
-        super().__init__(id=Id.init.tab_container_id)
-        self.repo_url: str | None = None
-
-    def compose(self) -> ComposeResult:
-        yield NavButtonsVertical(
-            tab_ids=Id.init,
-            buttons=(NavBtn.new_repo, NavBtn.clone_repo, NavBtn.purge_repo),
-        )
-        yield InitTabSwitcher(tab_ids=Id.init)
-
-    @on(Input.Submitted)
-    def log_invalid_reasons(self, event: Input.Submitted) -> None:
-        if (
-            event.validation_result is not None
-            and not event.validation_result.is_valid
-        ):
-            text_lines: str = "\n".join(
-                event.validation_result.failure_descriptions
-            )
-            self.app.notify(text_lines, severity="error")
-
-    @on(Button.Pressed, Tcss.nav_button.value)
-    def switch_content(self, event: Button.Pressed) -> None:
-        event.stop()
-        switcher = self.query_exactly_one(InitTabSwitcher)
-        if event.button.id == Id.init.button_id(btn=NavBtn.new_repo):
-            switcher.current = Id.init.view_id(view=ViewName.init_new_view)
-        elif event.button.id == Id.init.button_id(btn=NavBtn.clone_repo):
-            switcher.current = Id.init.view_id(view=ViewName.init_clone_view)
-        elif event.button.id == Id.init.button_id(btn=NavBtn.purge_repo):
-            switcher.current = Id.init.view_id(view=ViewName.init_purge_view)
-
-    @on(Button.Pressed, Tcss.operate_button.value)
-    def handle_operation_button(self, event: Button.Pressed) -> None:
-        event.stop()
-        if event.button.id == Id.init.button_id(btn=OperateBtn.clone_repo):
-            self.app.chezmoi.perform(ChangeCmd.init, self.repo_url)
-            self.query_one(
-                Id.init.button_id("#", btn=OperateBtn.clone_repo), Button
-            ).disabled = True
-        elif event.button.id == Id.init.button_id(btn=OperateBtn.new_repo):
-            self.app.chezmoi.perform(ChangeCmd.init)
-            self.query_one(
-                Id.init.button_id("#", btn=OperateBtn.new_repo), Button
-            ).disabled = True
-        elif event.button.id == Id.init.button_id(btn=OperateBtn.purge_repo):
-            self.app.chezmoi.perform(ChangeCmd.purge)
-            self.query_one(
-                Id.init.button_id("#", btn=OperateBtn.purge_repo), Button
-            ).disabled = True
 
 
 class LogsTab(Vertical, AppType):
