@@ -70,8 +70,12 @@ class ContentsView(RichLog, AppType):
         )
 
     def on_mount(self) -> None:
+        self.write('This is the destination directory "chezmoi destDir"\n')
         self.write(
-            Text("Click a file or directory to see its contents", style="dim")
+            Text(
+                "Click a colored file in the tree to see the contents.",
+                style="dim",
+            )
         )
 
     def watch_path(self) -> None:
@@ -162,8 +166,10 @@ class DiffView(RichLog, AppType):
             wrap=True,  # TODO: implement footer binding to toggle wrap
             classes=Tcss.border_title_top.name,
         )
-        # Strings for logging
-        self.click_colored_file = f"Click a colored file in the tree to see the output from {self.pretty_cmd_str}"
+        self.click_colored_file = Text(
+            f"Click a colored file in the tree to see the output from {self.pretty_cmd_str}",
+            style="dim",
+        )
 
     def on_mount(self) -> None:
         if self.active_tab is not None:
