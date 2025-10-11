@@ -1,28 +1,12 @@
 import json
 
 from textual.app import ComposeResult
-from textual.containers import HorizontalGroup, Vertical, VerticalScroll
+from textual.containers import Vertical, VerticalScroll
 from textual.reactive import reactive
-from textual.validation import URL
-from textual.widgets import (
-    ContentSwitcher,
-    Input,
-    Label,
-    Pretty,
-    Select,
-    Static,
-)
+from textual.widgets import ContentSwitcher, Label, Pretty, Static
 
-from chezmoi_mousse import (
-    AreaName,
-    OperateBtn,
-    TabIds,
-    Tcss,
-    TreeName,
-    ViewName,
-)
+from chezmoi_mousse import AreaName, TabIds, Tcss, TreeName, ViewName
 from chezmoi_mousse.gui import AppType
-from chezmoi_mousse.gui.button_groups import OperateBtnHorizontal
 from chezmoi_mousse.gui.rich_logs import (
     AppLog,
     ContentsView,
@@ -42,7 +26,6 @@ from chezmoi_mousse.gui.widgets import (
 __all__ = [
     "ConfigTabSwitcher",
     "HelpTabSwitcher",
-    "InitTabSwitcher",
     "LogsTabSwitcher",
     "TreeSwitcher",
     "ViewSwitcher",
@@ -82,79 +65,6 @@ class ViewSwitcher(ContentSwitcher, AppType):
         yield DiffView(tab_ids=self.tab_ids, reverse=self.reverse)
         yield ContentsView(tab_ids=self.tab_ids)
         yield GitLogView(tab_ids=self.tab_ids)
-
-
-class InitTabSwitcher(ContentSwitcher):
-
-    def __init__(self, tab_ids: TabIds):
-        self.tab_ids = tab_ids
-        super().__init__(
-            id=self.tab_ids.content_switcher_id(area=AreaName.right),
-            initial=self.tab_ids.view_id(view=ViewName.init_new_view),
-            classes=Tcss.nav_content_switcher.name,
-        )
-
-    def compose(self) -> ComposeResult:
-        # New Repo Content
-        yield Vertical(
-            Label(
-                "Initialize new chezmoi git repository",
-                classes=Tcss.section_label.name,
-            ),
-            Input(placeholder="Enter config file path"),
-            OperateBtnHorizontal(
-                tab_ids=self.tab_ids, buttons=(OperateBtn.new_repo,)
-            ),
-            id=self.tab_ids.view_id(view=ViewName.init_new_view),
-        )
-        # Clone Repo Content
-        yield Vertical(
-            Label(
-                "Clone existing chezmoi git repository",
-                classes=Tcss.section_label.name,
-            ),
-            # TODO: implement guess feature from chezmoi
-            # TODO: add selection for https(with PAT token) or ssh
-            HorizontalGroup(
-                Vertical(
-                    Select[str].from_values(
-                        ["https", "ssh"],
-                        classes=Tcss.input_select.name,
-                        value="https",
-                        allow_blank=False,
-                        type_to_search=False,
-                    ),
-                    classes=Tcss.input_select_vertical.name,
-                ),
-                Vertical(
-                    Input(
-                        placeholder="Enter repository URL",
-                        validate_on=["submitted"],
-                        validators=URL(),
-                        classes=Tcss.input_field.name,
-                    ),
-                    classes=Tcss.input_field_vertical.name,
-                ),
-            ),
-            OperateBtnHorizontal(
-                tab_ids=self.tab_ids, buttons=(OperateBtn.clone_repo,)
-            ),
-            id=self.tab_ids.view_id(view=ViewName.init_clone_view),
-        )
-        # Purge chezmoi repo
-        yield Vertical(
-            Label(
-                "Purge current chezmoi git repository",
-                classes=Tcss.section_label.name,
-            ),
-            Static(
-                "Remove chezmoi's configuration, state, and source directory, but leave the target state intact."
-            ),
-            OperateBtnHorizontal(
-                tab_ids=self.tab_ids, buttons=(OperateBtn.purge_repo,)
-            ),
-            id=self.tab_ids.view_id(view=ViewName.init_purge_view),
-        )
 
 
 class ConfigTabSwitcher(ContentSwitcher, AppType):
