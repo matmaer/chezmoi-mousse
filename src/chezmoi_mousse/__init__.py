@@ -10,9 +10,9 @@ from chezmoi_mousse._chezmoi_cmd import (
     ReadVerbs,
     VerbArgs,
 )
-from chezmoi_mousse._id_classes import Id, ScreenIds, TabIds
+from chezmoi_mousse._id_classes import Id, TabIds
 from chezmoi_mousse._labels import NavBtn, OperateBtn, PaneBtn, TabBtn
-from chezmoi_mousse._names import AreaName, ScreenName, TreeName, ViewName
+from chezmoi_mousse._names import AreaName, TreeName, ViewName
 from chezmoi_mousse._switch_data import Switches
 from chezmoi_mousse._tcss_classes import Tcss
 
@@ -30,8 +30,6 @@ __all__ = [
     "ParsedJson",
     "ReadCmd",
     "ReadVerbs",
-    "ScreenIds",
-    "ScreenName",
     "Switches",
     "TabBtn",
     "TabIds",
