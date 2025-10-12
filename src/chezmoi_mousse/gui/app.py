@@ -175,7 +175,6 @@ class ChezmoiGUI(App[None]):
             LoadingScreen(chezmoi_found=self.chezmoi_found),
             callback=self.run_post_splash_actions,
         )
-        # self.debug_log.info(f"self.theme_variables: {self.theme_variables}")
 
     def run_post_splash_actions(self, return_data: SplashData | None) -> None:
         if return_data is None:
