@@ -100,8 +100,6 @@ class ChezmoiGUI(App[None]):
     ]
 
     def compose(self) -> ComposeResult:
-        # if self.chezmoi_found is False:
-        #     return
         yield Header(icon=Chars.burger)
         with TabbedContent():
             with TabPane(PaneBtn.apply_tab.value, id=Canvas.apply_tab.name):
