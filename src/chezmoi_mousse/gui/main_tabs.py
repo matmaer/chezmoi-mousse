@@ -3,7 +3,6 @@ from pathlib import Path
 from textual import on
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical, VerticalGroup
-from textual.lazy import Lazy
 from textual.widgets import Button, Switch
 
 from chezmoi_mousse import (
@@ -149,7 +148,7 @@ class AddTab(OperateTabsBase, AppType):
         event.stop()
         assert event.node.data is not None
         contents_view = self.query_one(
-            Id.add_tab.view_id("#", view=ViewName.contents_view), ContentsView
+            self.ids.view_id("#", view=ViewName.contents_view), ContentsView
         )
         contents_view.path = event.node.data.path
         contents_view.border_title = f" {event.node.data.path} "
@@ -224,7 +223,7 @@ class ConfigTab(Horizontal, AppType):
             ),
         )
         # mount lazily as the compose method includes subprocess calls
-        yield Lazy(ConfigTabSwitcher(Id.config_tab))
+        yield ConfigTabSwitcher(self.ids)
 
     @on(Button.Pressed, Tcss.nav_button.value)
     def switch_content(self, event: Button.Pressed) -> None:
