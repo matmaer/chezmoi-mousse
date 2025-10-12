@@ -65,9 +65,19 @@ def test_members_in_use(enum_class_def: ast.ClassDef):
 
             for node in ast.walk(enum_class):
                 if isinstance(node, ast.Attribute):
-                    # Check for direct member access or .name/.value access
-                    if node.attr == member_name or (
+                    # Check for direct member access (ClassName.member_name)
+                    if (
+                        isinstance(node.value, ast.Name)
+                        and node.value.id == enum_class_def.name
+                        and node.attr == member_name
+                    ):
+                        found_usage = True
+                        break
+                    # Check for .name/.value access (ClassName.member_name.name/value)
+                    elif (
                         isinstance(node.value, ast.Attribute)
+                        and isinstance(node.value.value, ast.Name)
+                        and node.value.value.id == enum_class_def.name
                         and node.value.attr == member_name
                         and node.attr in ("name", "value")
                     ):
@@ -89,9 +99,19 @@ def test_members_in_use(enum_class_def: ast.ClassDef):
                     # Look for attribute access to this enum member
                     for node in class_tree:
                         if isinstance(node, ast.Attribute):
-                            # Check for direct member access or .name/.value access
-                            if node.attr == member_name or (
+                            # Check for direct member access (ClassName.member_name)
+                            if (
+                                isinstance(node.value, ast.Name)
+                                and node.value.id == enum_class_def.name
+                                and node.attr == member_name
+                            ):
+                                found_usage_in_module = True
+                                break
+                            # Check for .name/.value access (ClassName.member_name.name/value)
+                            elif (
                                 isinstance(node.value, ast.Attribute)
+                                and isinstance(node.value.value, ast.Name)
+                                and node.value.value.id == enum_class_def.name
                                 and node.value.attr == member_name
                                 and node.attr in ("name", "value")
                             ):
