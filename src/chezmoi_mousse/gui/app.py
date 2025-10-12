@@ -121,37 +121,37 @@ class ChezmoiGUI(App[None]):
     def compose(self) -> ComposeResult:
         yield Header(icon=Chars.burger)
         with TabbedContent():
-            with TabPane(PaneBtn.apply_tab.value, id=Canvas.apply_tab.name):
+            with TabPane(PaneBtn.apply_tab.value, id=Canvas.apply):
                 yield ApplyTab()
                 yield OperateBtnHorizontal(
-                    canvas_ids=Id.apply,
+                    canvas_ids=Id.apply_tab,
                     buttons=(
                         OperateBtn.apply_file,
                         OperateBtn.forget_file,
                         OperateBtn.destroy_file,
                     ),
                 )
-            with TabPane(PaneBtn.re_add_tab.value, id=Canvas.re_add_tab.name):
+            with TabPane(PaneBtn.re_add_tab.value, id=Canvas.re_add):
                 yield ReAddTab()
                 yield OperateBtnHorizontal(
-                    canvas_ids=Id.re_add,
+                    canvas_ids=Id.re_add_tab,
                     buttons=(
                         OperateBtn.re_add_file,
                         OperateBtn.forget_file,
                         OperateBtn.destroy_file,
                     ),
                 )
-            with TabPane(PaneBtn.add_tab.value, id=Canvas.add_tab.name):
+            with TabPane(PaneBtn.add_tab.value, id=Canvas.add):
                 yield AddTab()
                 yield OperateBtnHorizontal(
-                    canvas_ids=Id.add,
+                    canvas_ids=Id.add_tab,
                     buttons=(OperateBtn.add_file, OperateBtn.add_dir),
                 )
-            with TabPane(PaneBtn.logs_tab.value, id=Canvas.logs_tab.name):
+            with TabPane(PaneBtn.logs_tab.value, id=Canvas.logs):
                 yield LogsTab()
-            with TabPane(PaneBtn.config_tab.value, id=Canvas.config_tab.name):
+            with TabPane(PaneBtn.config_tab.value, id=Canvas.config):
                 yield ConfigTab()
-            with TabPane(PaneBtn.help_tab.value, id=Canvas.help_tab.name):
+            with TabPane(PaneBtn.help_tab.value, id=Canvas.help):
                 yield HelpTab()
         yield Footer()
 
@@ -205,20 +205,21 @@ class ChezmoiGUI(App[None]):
 
     def setup_ui_loggers(self) -> None:
         app_logger = self.query_one(
-            Id.logs.view_id("#", view=ViewName.app_log_view), AppLog
+            Id.logs_tab.view_id("#", view=ViewName.app_log_view), AppLog
         )
         self.app_log = app_logger
         self.chezmoi.app_log = app_logger
 
         output_logger = self.query_one(
-            Id.logs.view_id("#", view=ViewName.output_log_view), OutputLog
+            Id.logs_tab.view_id("#", view=ViewName.output_log_view), OutputLog
         )
         self.output_log = output_logger
         self.chezmoi.output_log = output_logger
 
         if self.dev_mode is True:
             debug_logger = self.query_one(
-                Id.logs.view_id("#", view=ViewName.debug_log_view), DebugLog
+                Id.logs_tab.view_id("#", view=ViewName.debug_log_view),
+                DebugLog,
             )
             self.debug_log = debug_logger
             self.chezmoi.debug_log = debug_logger
@@ -232,68 +233,72 @@ class ChezmoiGUI(App[None]):
 
     def update_managed_tree_destDir(self, data: SplashData) -> None:
         apply_tab_managed_tree = self.query_one(
-            Id.apply.tree_id("#", tree=TreeName.managed_tree), ManagedTree
+            Id.apply_tab.tree_id("#", tree=TreeName.managed_tree), ManagedTree
         )
         apply_tab_managed_tree.destDir = data.dump_config.dest_dir
 
         re_add_tab_managed_tree = self.query_one(
-            Id.re_add.tree_id("#", tree=TreeName.managed_tree), ManagedTree
+            Id.re_add_tab.tree_id("#", tree=TreeName.managed_tree), ManagedTree
         )
         re_add_tab_managed_tree.destDir = data.dump_config.dest_dir
 
     def update_expanded_tree_destDir(self, data: SplashData) -> None:
         apply_tab_expanded_tree = self.query_one(
-            Id.apply.tree_id("#", tree=TreeName.expanded_tree), ExpandedTree
+            Id.apply_tab.tree_id("#", tree=TreeName.expanded_tree),
+            ExpandedTree,
         )
         apply_tab_expanded_tree.destDir = data.dump_config.dest_dir
 
         re_add_tab_expanded_tree = self.query_one(
-            Id.re_add.tree_id("#", tree=TreeName.expanded_tree), ExpandedTree
+            Id.re_add_tab.tree_id("#", tree=TreeName.expanded_tree),
+            ExpandedTree,
         )
         re_add_tab_expanded_tree.destDir = data.dump_config.dest_dir
 
     def update_flat_tree_destDir(self, data: SplashData) -> None:
         apply_tab_flat_tree = self.query_one(
-            Id.apply.tree_id("#", tree=TreeName.flat_tree), FlatTree
+            Id.apply_tab.tree_id("#", tree=TreeName.flat_tree), FlatTree
         )
         apply_tab_flat_tree.destDir = data.dump_config.dest_dir
 
         re_add_tab_flat_tree = self.query_one(
-            Id.re_add.tree_id("#", tree=TreeName.flat_tree), FlatTree
+            Id.re_add_tab.tree_id("#", tree=TreeName.flat_tree), FlatTree
         )
         re_add_tab_flat_tree.destDir = data.dump_config.dest_dir
 
     def update_contents_view_destDir(self, data: SplashData) -> None:
         apply_contents_view = self.query_one(
-            Id.apply.view_id("#", view=ViewName.contents_view), ContentsView
+            Id.apply_tab.view_id("#", view=ViewName.contents_view),
+            ContentsView,
         )
         apply_contents_view.path = data.dump_config.dest_dir
 
         re_add_contents_view = self.query_one(
-            Id.re_add.view_id("#", view=ViewName.contents_view), ContentsView
+            Id.re_add_tab.view_id("#", view=ViewName.contents_view),
+            ContentsView,
         )
         re_add_contents_view.path = data.dump_config.dest_dir
 
     def update_git_log_view_destDir(self, data: SplashData) -> None:
         apply_git_log_view = self.query_one(
-            Id.apply.view_id("#", view=ViewName.git_log_view), GitLogView
+            Id.apply_tab.view_id("#", view=ViewName.git_log_view), GitLogView
         )
         apply_git_log_view.path = data.dump_config.dest_dir
 
         re_add_git_log_view = self.query_one(
-            Id.re_add.view_id("#", view=ViewName.git_log_view), GitLogView
+            Id.re_add_tab.view_id("#", view=ViewName.git_log_view), GitLogView
         )
         re_add_git_log_view.path = data.dump_config.dest_dir
 
     def update_dir_tree_destDir(self, data: SplashData) -> None:
         dir_tree = self.query_one(
-            Id.add.tree_id("#", tree=TreeName.add_tree), FilteredDirTree
+            Id.add_tab.tree_id("#", tree=TreeName.add_tree), FilteredDirTree
         )
         dir_tree.path = data.dump_config.dest_dir
 
     def update_config_tab(self, data: SplashData) -> None:
         config_tab_switcher = self.query_one(
-            Id.config.content_switcher_id("#", area=AreaName.right),
+            Id.config_tab.content_switcher_id("#", area=AreaName.right),
             ContentSwitcher,
         )
         setattr(config_tab_switcher, "doctor_stdout", data.doctor)
@@ -317,9 +322,9 @@ class ChezmoiGUI(App[None]):
     ) -> bool | None:
         if action == "toggle_switch_slider":
             if self.query_one(TabbedContent).active in (
-                Id.apply.canvas_name,
-                Id.re_add.canvas_name,
-                Id.add.canvas_name,
+                Id.apply_tab.canvas_name,
+                Id.re_add_tab.canvas_name,
+                Id.add_tab.canvas_name,
             ):
                 return True
             return None

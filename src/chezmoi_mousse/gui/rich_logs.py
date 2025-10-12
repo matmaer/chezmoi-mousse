@@ -158,9 +158,7 @@ class DiffView(RichLog, AppType):
         self.pretty_diff_cmd = LogUtils.pretty_cmd_str(
             self.diff_read_cmd.value
         )
-        self.active_canvas = (
-            Canvas.re_add_tab if self.reverse else Canvas.apply_tab
-        )
+        self.active_canvas = Canvas.re_add if self.reverse else Canvas.apply
         super().__init__(
             id=self.canvas_ids.view_id(view=ViewName.diff_view),
             auto_scroll=False,

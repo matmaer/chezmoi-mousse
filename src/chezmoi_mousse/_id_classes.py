@@ -63,9 +63,9 @@ class CanvasIds:
 
 @dataclass(frozen=True)
 class Id:
-    add: CanvasIds = CanvasIds(Canvas.add_tab)
-    apply: CanvasIds = CanvasIds(Canvas.apply_tab)
-    config: CanvasIds = CanvasIds(Canvas.config_tab)
-    help: CanvasIds = CanvasIds(Canvas.help_tab)
-    logs: CanvasIds = CanvasIds(Canvas.logs_tab)
-    re_add: CanvasIds = CanvasIds(Canvas.re_add_tab)
+    add_tab: CanvasIds = CanvasIds(Canvas.add)
+    apply_tab: CanvasIds = CanvasIds(Canvas.apply)
+    config_tab: CanvasIds = CanvasIds(Canvas.config)
+    help_tab: CanvasIds = CanvasIds(Canvas.help)
+    logs_tab: CanvasIds = CanvasIds(Canvas.logs)
+    re_add_tab: CanvasIds = CanvasIds(Canvas.re_add)

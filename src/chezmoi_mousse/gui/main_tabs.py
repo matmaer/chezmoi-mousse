@@ -38,11 +38,11 @@ __all__ = ["AddTab", "ApplyTab", "ConfigTab", "HelpTab", "LogsTab", "ReAddTab"]
 class ApplyTab(OperateTabsBase):
 
     def __init__(self) -> None:
-        super().__init__(canvas_ids=Id.apply)
+        super().__init__(canvas_ids=Id.apply_tab)
 
     def compose(self) -> ComposeResult:
         with Vertical(
-            id=Id.apply.tab_vertical_id(area=AreaName.left),
+            id=Id.apply_tab.tab_vertical_id(area=AreaName.left),
             classes=Tcss.tab_left_vertical.name,
         ):
             yield TabBtnHorizontal(
@@ -50,16 +50,16 @@ class ApplyTab(OperateTabsBase):
                 buttons=(TabBtn.tree, TabBtn.list),
                 area=AreaName.left,
             )
-            yield TreeSwitcher(canvas_ids=Id.apply)
-        with Vertical(id=Id.apply.tab_vertical_id(area=AreaName.right)):
+            yield TreeSwitcher(Id.apply_tab)
+        with Vertical(id=Id.apply_tab.tab_vertical_id(area=AreaName.right)):
             yield TabBtnHorizontal(
-                canvas_ids=Id.apply,
+                canvas_ids=Id.apply_tab,
                 buttons=(TabBtn.diff, TabBtn.contents, TabBtn.git_log),
                 area=AreaName.right,
             )
-            yield ViewSwitcher(canvas_ids=Id.apply, diff_reverse=False)
+            yield ViewSwitcher(canvas_ids=Id.apply_tab, diff_reverse=False)
         yield SwitchSlider(
-            canvas_ids=Id.apply,
+            canvas_ids=Id.apply_tab,
             switches=(Switches.unchanged, Switches.expand_all),
         )
 
@@ -67,11 +67,11 @@ class ApplyTab(OperateTabsBase):
 class ReAddTab(OperateTabsBase):
 
     def __init__(self) -> None:
-        super().__init__(canvas_ids=Id.re_add)
+        super().__init__(canvas_ids=Id.re_add_tab)
 
     def compose(self) -> ComposeResult:
         with Vertical(
-            id=Id.re_add.tab_vertical_id(area=AreaName.left),
+            id=Id.re_add_tab.tab_vertical_id(area=AreaName.left),
             classes=Tcss.tab_left_vertical.name,
         ):
             yield TabBtnHorizontal(
@@ -79,16 +79,16 @@ class ReAddTab(OperateTabsBase):
                 buttons=(TabBtn.tree, TabBtn.list),
                 area=AreaName.left,
             )
-            yield TreeSwitcher(canvas_ids=Id.re_add)
-        with Vertical(id=Id.re_add.tab_vertical_id(area=AreaName.right)):
+            yield TreeSwitcher(canvas_ids=Id.re_add_tab)
+        with Vertical(id=Id.re_add_tab.tab_vertical_id(area=AreaName.right)):
             yield TabBtnHorizontal(
-                canvas_ids=Id.re_add,
+                canvas_ids=Id.re_add_tab,
                 buttons=(TabBtn.diff, TabBtn.contents, TabBtn.git_log),
                 area=AreaName.right,
             )
-            yield ViewSwitcher(canvas_ids=Id.re_add, diff_reverse=True)
+            yield ViewSwitcher(canvas_ids=Id.re_add_tab, diff_reverse=True)
         yield SwitchSlider(
-            canvas_ids=Id.re_add,
+            canvas_ids=Id.re_add_tab,
             switches=(Switches.unchanged, Switches.expand_all),
         )
 
@@ -96,21 +96,21 @@ class ReAddTab(OperateTabsBase):
 class AddTab(OperateTabsBase, AppType):
 
     def __init__(self) -> None:
-        super().__init__(canvas_ids=Id.add)
+        super().__init__(canvas_ids=Id.add_tab)
 
     def compose(self) -> ComposeResult:
         with VerticalGroup(
-            id=Id.add.tab_vertical_id(area=AreaName.left),
+            id=Id.add_tab.tab_vertical_id(area=AreaName.left),
             classes=Tcss.tab_left_vertical.name,
         ):
             yield FilteredDirTree(
-                Path.home(), id=Id.add.tree_id(tree=TreeName.add_tree)
+                Path.home(), id=Id.add_tab.tree_id(tree=TreeName.add_tree)
             )
-        with Vertical(id=Id.add.tab_vertical_id(area=AreaName.right)):
-            yield ContentsView(canvas_ids=Id.add)
+        with Vertical(id=Id.add_tab.tab_vertical_id(area=AreaName.right)):
+            yield ContentsView(canvas_ids=Id.add_tab)
 
         yield SwitchSlider(
-            canvas_ids=Id.add,
+            canvas_ids=Id.add_tab,
             switches=(Switches.unmanaged_dirs, Switches.unwanted),
         )
 
@@ -134,7 +134,7 @@ class AddTab(OperateTabsBase, AppType):
 
         assert event.node.data is not None
         contents_view = self.query_one(
-            Id.add.view_id("#", view=ViewName.contents_view), ContentsView
+            Id.add_tab.view_id("#", view=ViewName.contents_view), ContentsView
         )
         contents_view.path = event.node.data.path
         contents_view.border_title = f" {event.node.data.path} "
@@ -146,7 +146,7 @@ class AddTab(OperateTabsBase, AppType):
         event.stop()
         assert event.node.data is not None
         contents_view = self.query_one(
-            Id.add.view_id("#", view=ViewName.contents_view), ContentsView
+            Id.add_tab.view_id("#", view=ViewName.contents_view), ContentsView
         )
         contents_view.path = event.node.data.path
         contents_view.border_title = f" {event.node.data.path} "
@@ -155,13 +155,13 @@ class AddTab(OperateTabsBase, AppType):
     def handle_filter_switches(self, event: Switch.Changed) -> None:
         event.stop()
         tree = self.query_one(
-            Id.add.tree_id("#", tree=TreeName.add_tree), FilteredDirTree
+            Id.add_tab.tree_id("#", tree=TreeName.add_tree), FilteredDirTree
         )
-        if event.switch.id == Id.add.switch_id(
+        if event.switch.id == Id.add_tab.switch_id(
             switch=Switches.unmanaged_dirs.value
         ):
             tree.unmanaged_dirs = event.value
-        elif event.switch.id == Id.add.switch_id(
+        elif event.switch.id == Id.add_tab.switch_id(
             switch=Switches.unwanted.value
         ):
             tree.unwanted = event.value
@@ -172,7 +172,7 @@ class LogsTab(Vertical, AppType):
 
     def __init__(self) -> None:
         self.tab_buttons = (TabBtn.app_log, TabBtn.output_log)
-        super().__init__(id=Id.logs.tab_container_id)
+        super().__init__(id=Id.logs_tab.tab_container_id)
 
     def compose(self) -> ComposeResult:
         tab_buttons = (TabBtn.app_log, TabBtn.output_log)
@@ -180,37 +180,43 @@ class LogsTab(Vertical, AppType):
             tab_buttons += (TabBtn.debug_log,)
 
         yield TabBtnHorizontal(
-            canvas_ids=Id.logs, buttons=tab_buttons, area=AreaName.top
+            canvas_ids=Id.logs_tab, buttons=tab_buttons, area=AreaName.top
         )
-        yield LogsTabSwitcher(canvas_ids=Id.logs, dev_mode=self.app.dev_mode)
+        yield LogsTabSwitcher(
+            canvas_ids=Id.logs_tab, dev_mode=self.app.dev_mode
+        )
 
     @on(Button.Pressed, Tcss.tab_button.value)
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
         switcher = self.query_exactly_one(LogsTabSwitcher)
 
-        if event.button.id == Id.logs.button_id(btn=TabBtn.app_log):
-            switcher.current = Id.logs.view_id(view=ViewName.app_log_view)
+        if event.button.id == Id.logs_tab.button_id(btn=TabBtn.app_log):
+            switcher.current = Id.logs_tab.view_id(view=ViewName.app_log_view)
             switcher.border_title = " App Log "
-        elif event.button.id == Id.logs.button_id(btn=TabBtn.output_log):
-            switcher.current = Id.logs.view_id(view=ViewName.output_log_view)
+        elif event.button.id == Id.logs_tab.button_id(btn=TabBtn.output_log):
+            switcher.current = Id.logs_tab.view_id(
+                view=ViewName.output_log_view
+            )
             switcher.border_title = " Commands StdOut "
         elif (
             self.app.dev_mode is True
-            and event.button.id == Id.logs.button_id(btn=TabBtn.debug_log)
+            and event.button.id == Id.logs_tab.button_id(btn=TabBtn.debug_log)
         ):
-            switcher.current = Id.logs.view_id(view=ViewName.debug_log_view)
+            switcher.current = Id.logs_tab.view_id(
+                view=ViewName.debug_log_view
+            )
             switcher.border_title = " Debug Log "
 
 
 class ConfigTab(Horizontal, AppType):
 
     def __init__(self) -> None:
-        super().__init__(id=Id.config.tab_container_id)
+        super().__init__(id=Id.config_tab.tab_container_id)
 
     def compose(self) -> ComposeResult:
         yield NavButtonsVertical(
-            canvas_ids=Id.config,
+            canvas_ids=Id.config_tab,
             buttons=(
                 NavBtn.doctor,
                 NavBtn.cat_config,
@@ -219,22 +225,28 @@ class ConfigTab(Horizontal, AppType):
             ),
         )
         # mount lazily as the compose method includes subprocess calls
-        yield Lazy(ConfigTabSwitcher(Id.config))
+        yield Lazy(ConfigTabSwitcher(Id.config_tab))
 
     @on(Button.Pressed, Tcss.nav_button.value)
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
         switcher = self.query_exactly_one(ConfigTabSwitcher)
-        if event.button.id == Id.config.button_id(btn=(NavBtn.doctor)):
-            switcher.current = Id.config.view_id(view=ViewName.doctor_view)
-        elif event.button.id == Id.config.button_id(btn=(NavBtn.cat_config)):
-            switcher.current = Id.config.view_id(view=ViewName.cat_config_view)
-        elif event.button.id == Id.config.button_id(btn=NavBtn.ignored):
-            switcher.current = Id.config.view_id(
+        if event.button.id == Id.config_tab.button_id(btn=(NavBtn.doctor)):
+            switcher.current = Id.config_tab.view_id(view=ViewName.doctor_view)
+        elif event.button.id == Id.config_tab.button_id(
+            btn=(NavBtn.cat_config)
+        ):
+            switcher.current = Id.config_tab.view_id(
+                view=ViewName.cat_config_view
+            )
+        elif event.button.id == Id.config_tab.button_id(btn=NavBtn.ignored):
+            switcher.current = Id.config_tab.view_id(
                 view=ViewName.git_ignored_view
             )
-        elif event.button.id == Id.config.button_id(btn=NavBtn.template_data):
-            switcher.current = Id.config.view_id(
+        elif event.button.id == Id.config_tab.button_id(
+            btn=NavBtn.template_data
+        ):
+            switcher.current = Id.config_tab.view_id(
                 view=ViewName.template_data_view
             )
 
@@ -242,15 +254,17 @@ class ConfigTab(Horizontal, AppType):
 class HelpTab(Horizontal):
 
     def __init__(self) -> None:
-        super().__init__(id=Id.help.tab_container_id)
+        super().__init__(id=Id.help_tab.tab_container_id)
 
     def compose(self) -> ComposeResult:
-        yield NavButtonsVertical(canvas_ids=Id.help, buttons=(NavBtn.diagram,))
-        yield HelpTabSwitcher(canvas_ids=Id.help)
+        yield NavButtonsVertical(
+            canvas_ids=Id.help_tab, buttons=(NavBtn.diagram,)
+        )
+        yield HelpTabSwitcher(canvas_ids=Id.help_tab)
 
     @on(Button.Pressed, Tcss.nav_button.value)
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
         switcher = self.query_exactly_one(HelpTabSwitcher)
-        if event.button.id == Id.help.button_id(btn=NavBtn.diagram):
-            switcher.current = Id.help.view_id(view=ViewName.diagram_view)
+        if event.button.id == Id.help_tab.button_id(btn=NavBtn.diagram):
+            switcher.current = Id.help_tab.view_id(view=ViewName.diagram_view)

@@ -160,7 +160,7 @@ class Chezmoi:
         }
 
     def all_status_files(self, active_canvas: ActiveCanvas) -> PathDict:
-        if active_canvas == Canvas.apply_tab:
+        if active_canvas == Canvas.apply:
             return self._apply_status_files
         else:
             return self._re_add_status_files
@@ -168,7 +168,7 @@ class Chezmoi:
     def status_files_in(
         self, active_canvas: ActiveCanvas, dir_path: Path
     ) -> PathDict:
-        if active_canvas == Canvas.apply_tab:
+        if active_canvas == Canvas.apply:
             return {
                 path: status
                 for path, status in self._apply_status_paths.items()
@@ -186,7 +186,7 @@ class Chezmoi:
     ) -> PathDict:
         status_paths = (
             self._apply_status_paths
-            if active_canvas == Canvas.apply_tab
+            if active_canvas == Canvas.apply
             else self._re_add_status_paths
         )
 
@@ -210,7 +210,7 @@ class Chezmoi:
     def files_without_status_in(
         self, active_canvas: ActiveCanvas, dir_path: Path
     ) -> PathDict:
-        if active_canvas == Canvas.apply_tab:
+        if active_canvas == Canvas.apply:
             return {
                 path: "X"
                 for path in self.managed_files
@@ -228,7 +228,7 @@ class Chezmoi:
     def dirs_without_status_in(
         self, active_canvas: ActiveCanvas, dir_path: Path
     ) -> PathDict:
-        if active_canvas == Canvas.apply_tab:
+        if active_canvas == Canvas.apply:
             return {
                 path: "X"
                 for path in self.managed_dirs
@@ -248,8 +248,8 @@ class Chezmoi:
     def has_status_paths_in(
         self, active_canvas: ActiveCanvas, dir_path: Path
     ) -> bool:
-        if active_canvas == Canvas.apply_tab:
+        if active_canvas == Canvas.apply:
             status_paths = self._apply_status_paths
-        elif active_canvas == Canvas.re_add_tab:
+        elif active_canvas == Canvas.re_add:
             status_paths = self._re_add_status_paths
         return any(key.is_relative_to(dir_path) for key in status_paths.keys())

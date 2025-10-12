@@ -174,10 +174,10 @@ class TreeBase(Tree[NodeData], AppType):
         self._initial_render = True
         self._first_focus = True
         self._user_interacted = False
-        if self.canvas_ids.canvas_name == Canvas.apply_tab.name:
-            self.active_canvas: ActiveCanvas = Canvas.apply_tab
+        if self.canvas_ids.canvas_name == Canvas.apply:
+            self.active_canvas: ActiveCanvas = Canvas.apply
         else:
-            self.active_canvas: ActiveCanvas = Canvas.re_add_tab
+            self.active_canvas: ActiveCanvas = Canvas.re_add
         super().__init__(
             label="root",
             id=self.canvas_ids.tree_id(tree=self.tree_name),
@@ -583,20 +583,20 @@ class FlatTree(TreeBase, AppType):
         super().__init__(canvas_ids, tree_name=TreeName.flat_tree)
 
     def add_files_with_status(self) -> None:
-        if self.active_canvas == Canvas.apply_tab:
+        if self.active_canvas == Canvas.apply:
             status_files = self.app.chezmoi.all_status_files(
-                active_canvas=Canvas.apply_tab
+                active_canvas=Canvas.apply
             )
         else:
             status_files = self.app.chezmoi.all_status_files(
-                active_canvas=Canvas.re_add_tab
+                active_canvas=Canvas.re_add
             )
         for file_path, status_code in status_files.items():
             node_data: NodeData = self.create_node_data(
                 path=file_path, is_leaf=True, status_code=status_code
             )
             if (
-                self.active_canvas == PaneBtn.re_add_tab
+                self.active_canvas == Canvas.re_add
                 and node_data.found is False
             ):
                 continue
@@ -623,7 +623,7 @@ class DoctorTable(DataTable[Text], AppType):
     def __init__(self) -> None:
         self.pw_mgr_commands: list[str] = []
         super().__init__(
-            id=Id.config.datatable_id,
+            id=Id.config_tab.datatable_id,
             show_cursor=False,
             classes=Tcss.doctor_table.name,
         )
@@ -741,7 +741,7 @@ class DoctorListView(ListView):
 
     def __init__(self) -> None:
         super().__init__(
-            id=Id.config.listview_id, classes=Tcss.doctor_listview.name
+            id=Id.config_tab.listview_id, classes=Tcss.doctor_listview.name
         )
 
     def populate_listview(self, pw_mgr_commands: list[str]) -> None:

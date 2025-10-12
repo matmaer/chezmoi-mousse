@@ -16,17 +16,17 @@ class AreaName(StrEnum):
 class Canvas(StrEnum):
     """A canvas is either a TabPane, Screen or full screen Container layer."""
 
-    add_tab = auto()
-    apply_tab = auto()
-    config_tab = auto()
-    help_tab = auto()
+    add = auto()
+    apply = auto()
+    config = auto()
+    help = auto()
     init_screen = auto()
-    init_tab = auto()
-    install_help_screen = auto()
-    logs_tab = auto()
+    init = auto()
+    install_help = auto()
+    logs = auto()
     maximized = auto()
     operate = auto()
-    re_add_tab = auto()
+    re_add = auto()
 
 
 class TreeName(StrEnum):

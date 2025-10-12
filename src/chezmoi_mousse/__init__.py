@@ -21,6 +21,7 @@ __all__ = [
     "__version__",
     "Any",
     "AreaName",
+    "Canvas",
     "ChangeCmd",
     "Chars",
     "GlobalCmd",
@@ -46,6 +47,6 @@ try:
 except PackageNotFoundError:
     __version__ = "dev"
 
-type ActiveCanvas = Literal[Canvas.apply_tab, Canvas.re_add_tab]
+type ActiveCanvas = Literal[Canvas.apply, Canvas.re_add]
 type ParsedJson = dict[str, Any]
 type PathDict = dict[Path, str]
