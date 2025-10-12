@@ -31,8 +31,10 @@ class Chezmoi:
 
         # set by main App class in its on_mount method
         self._changes_enabled = changes_enabled
-        self.app_log: AppLog
-        self.output_log: OutputLog
+        self.app_log: AppLog | None = None
+        self.output_log: OutputLog | None = None
+        if dev_mode is True:
+            self.debug_log: DebugLog | None = None
 
         # cached command outputs
         self.managed_dirs_stdout: str = ""  # ReadCmd.managed_dirs
@@ -41,17 +43,15 @@ class Chezmoi:
         self.status_files_stdout: str = ""  # ReadCmd.status_files
         self.status_paths_stdout: str = ""  # ReadCmd.status
 
-        if dev_mode is True:
-            self.debug_log: DebugLog | None = None
-
     #################################
     # Command execution and logging #
     #################################
 
     def _log_in_app_and_output_log(self, result: CompletedProcess[str]):
         result.stdout = Utils.strip_stdout(result.stdout)
-        self.app_log.completed_process(result)
-        self.output_log.completed_process(result)
+        if self.app_log is not None and self.output_log is not None:
+            self.app_log.completed_process(result)
+            self.output_log.completed_process(result)
 
     def read(self, read_cmd: ReadCmd, path: Path | None = None) -> str:
         command: list[str] = read_cmd.value

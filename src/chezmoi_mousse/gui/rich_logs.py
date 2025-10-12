@@ -139,9 +139,10 @@ class ContentsView(RichLog, AppType):
 
         except OSError as error:
             self.write(Text(f"Error reading {self.path}: {error}"))
-            self.app.chezmoi.app_log.error(
-                f"Error reading {self.path}: {error}"
-            )
+            if self.app.chezmoi.app_log is not None:
+                self.app.chezmoi.app_log.error(
+                    f"Error reading {self.path}: {error}"
+                )
 
 
 class DiffView(RichLog, AppType):
