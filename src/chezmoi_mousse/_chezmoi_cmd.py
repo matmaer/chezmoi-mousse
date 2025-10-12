@@ -4,7 +4,6 @@ __all__ = ["ChangeCmd", "GlobalCmd", "ReadCmd", "ReadVerbs", "VerbArgs"]
 
 
 class GlobalCmd(Enum):
-    chezmoi = ["chezmoi"]
     default_args = [
         "--color=off",
         "--force",
@@ -14,7 +13,7 @@ class GlobalCmd(Enum):
         "--no-tty",
         "--progress=false",
     ]
-    live_run = chezmoi + default_args
+    live_run = ["chezmoi"] + default_args
     dry_run = live_run + ["--dry-run"]
 
 
