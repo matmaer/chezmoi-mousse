@@ -26,7 +26,7 @@ class OperateBtn(StrEnum):
     forget_file = "Forget File"
     new_repo = "Initialize New Repo"
     operate_dismiss = "Cancel"
-    purge_repo = "Purge Existing Repo"
+    # purge_repo = "Purge Existing Repo"
     # re_add_dir = "Re-Add Dir"
     re_add_file = "Re-Add File"
 

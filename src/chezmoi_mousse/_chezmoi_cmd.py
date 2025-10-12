@@ -35,7 +35,6 @@ class VerbArgs(Enum):
     include_files = "--include=files"
     path_style_absolute = "--path-style=absolute"
     reverse = "--reverse"
-    tree = "--tree"
 
 
 class ReadVerbs(Enum):
