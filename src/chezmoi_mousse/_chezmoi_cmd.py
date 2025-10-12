@@ -109,5 +109,5 @@ class ChangeCmd(Enum):
     # destroy = ["destroy"]
     # forget = ["forget"]
     init = ["init"]
-    purge = ["purge"]
+    # purge = ["purge"]
     re_add = ["re-add"]
