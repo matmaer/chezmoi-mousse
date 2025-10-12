@@ -3,39 +3,12 @@ import shutil
 import traceback
 from pathlib import Path
 
-from textual.theme import Theme
-
 from chezmoi_mousse.gui.app import ChezmoiGUI, PreRunData
 from chezmoi_mousse.gui.chezmoi import Chezmoi
 
 
 def run_app():
 
-    chezmoi_mousse_dark = Theme(
-        name="chezmoi-mousse-dark",
-        dark=True,
-        accent="#F187FB",
-        background="#000000",
-        error="#ba3c5b",  # textual dark
-        foreground="#DCDCDC",
-        primary="#0178D4",  # textual dark
-        secondary="#004578",  # textual dark
-        surface="#101010",  # see also textual/theme.py
-        success="#4EBF71",  # textual dark
-        warning="#ffa62b",  # textual dark
-    )
-
-    chezmoi_mousse_light = Theme(
-        name="chezmoi-mousse-light",
-        dark=False,
-        background="#DEDEDE",
-        foreground="#000000",
-        primary="#0060AA",
-        accent="#790084",
-        surface="#B8B8B8",
-    )
-
-    custom_theme_vars = chezmoi_mousse_dark.to_color_system().generate()
     dev_mode: bool = os.environ.get("CHEZMOI_MOUSSE_DEV") == "1"
     changes_enabled: bool = os.environ.get("MOUSSE_ENABLE_CHANGES") == "1"
     chezmoi_found = (
@@ -49,9 +22,6 @@ def run_app():
 
     pre_run_data = PreRunData(
         chezmoi_instance=chezmoi_instance,
-        chezmoi_mousse_dark=chezmoi_mousse_dark,
-        chezmoi_mousse_light=chezmoi_mousse_light,
-        custom_theme_vars=custom_theme_vars,
         changes_enabled=changes_enabled,
         chezmoi_found=chezmoi_found,
         dev_mode=dev_mode,

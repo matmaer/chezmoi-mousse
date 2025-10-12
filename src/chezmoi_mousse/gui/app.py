@@ -63,10 +63,32 @@ class PreRunData:
     chezmoi_instance: Chezmoi
     changes_enabled: bool
     chezmoi_found: bool
-    chezmoi_mousse_dark: Theme
-    chezmoi_mousse_light: Theme
-    custom_theme_vars: dict[str, str]
     dev_mode: bool
+
+
+chezmoi_mousse_dark = Theme(
+    name="chezmoi-mousse-dark",
+    dark=True,
+    accent="#F187FB",
+    background="#000000",
+    error="#ba3c5b",  # textual dark
+    foreground="#DCDCDC",
+    primary="#0178D4",  # textual dark
+    secondary="#004578",  # textual dark
+    surface="#101010",  # see also textual/theme.py
+    success="#4EBF71",  # textual dark
+    warning="#ffa62b",  # textual dark
+)
+
+chezmoi_mousse_light = Theme(
+    name="chezmoi-mousse-light",
+    dark=False,
+    background="#DEDEDE",
+    foreground="#000000",
+    primary="#0060AA",
+    accent="#790084",
+    surface="#B8B8B8",
+)
 
 
 class ChezmoiGUI(App[None]):
@@ -75,9 +97,6 @@ class ChezmoiGUI(App[None]):
         self.chezmoi = pre_run_data.chezmoi_instance
         self.changes_enabled = pre_run_data.changes_enabled
         self.chezmoi_found = pre_run_data.chezmoi_found
-        self.chezmoi_mousse_dark = pre_run_data.chezmoi_mousse_dark
-        self.chezmoi_mousse_light = pre_run_data.chezmoi_mousse_light
-        self.custom_theme_vars = pre_run_data.custom_theme_vars
         self.dev_mode = pre_run_data.dev_mode
         self.parsed_config: ParsedConfig | None = None
 
@@ -138,8 +157,8 @@ class ChezmoiGUI(App[None]):
 
     def on_mount(self) -> None:
         self.title = "-  c h e z m o i  m o u s s e  -"
-        self.register_theme(self.chezmoi_mousse_light)
-        self.register_theme(self.chezmoi_mousse_dark)
+        self.register_theme(chezmoi_mousse_light)
+        self.register_theme(chezmoi_mousse_dark)
         self.theme = "chezmoi-mousse-dark"
         if self.chezmoi_found is False:
             self.push_screen(
@@ -156,6 +175,7 @@ class ChezmoiGUI(App[None]):
             LoadingScreen(chezmoi_found=self.chezmoi_found),
             callback=self.run_post_splash_actions,
         )
+        # self.debug_log.info(f"self.theme_variables: {self.theme_variables}")
 
     def run_post_splash_actions(self, return_data: SplashData | None) -> None:
         if return_data is None:
@@ -314,8 +334,4 @@ class ChezmoiGUI(App[None]):
             getattr(tab_widget, "action_toggle_switch_slider")()  # call it
 
     def on_theme_change(self, _: str, new_theme: str) -> None:
-        # TODO: this should not be necessary anymore, use textual app attributes
-        new_theme_object: Theme | None = self.get_theme(new_theme)
-        assert isinstance(new_theme_object, Theme)
-        self.custom_theme_vars = new_theme_object.to_color_system().generate()
         self.app_log.success(f"Theme set to {new_theme}")

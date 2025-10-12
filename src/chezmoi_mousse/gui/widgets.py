@@ -137,9 +137,9 @@ class GitLogView(DataTable[Text], AppType):
         self.clear(columns=True)
         self.add_columns("COMMIT", "MESSAGE")
         styles = {
-            "ok": self.app.custom_theme_vars["text-success"],
-            "warning": self.app.custom_theme_vars["text-warning"],
-            "error": self.app.custom_theme_vars["text-error"],
+            "ok": self.app.theme_variables["text-success"],
+            "warning": self.app.theme_variables["text-warning"],
+            "error": self.app.theme_variables["text-error"],
         }
         for line in cmd_output.splitlines():
             columns = line.split(";")
@@ -186,11 +186,11 @@ class TreeBase(Tree[NodeData], AppType):
 
     def on_mount(self) -> None:
         self.node_colors: dict[str, str] = {
-            "Dir": self.app.custom_theme_vars["text-primary"],
-            "D": self.app.custom_theme_vars["text-error"],
-            "A": self.app.custom_theme_vars["text-success"],
-            "M": self.app.custom_theme_vars["text-warning"],
-            " ": self.app.custom_theme_vars["text-secondary"],
+            "Dir": self.app.theme_variables["text-primary"],
+            "D": self.app.theme_variables["text-error"],
+            "A": self.app.theme_variables["text-success"],
+            "M": self.app.theme_variables["text-warning"],
+            " ": self.app.theme_variables["text-secondary"],
         }
         self.guide_depth: int = 3
         self.show_root: bool = False
@@ -631,11 +631,11 @@ class DoctorTable(DataTable[Text], AppType):
     def populate_doctor_data(self, doctor_data: list[str]) -> list[str]:
         # TODO: create reactive var to run this so the app reacts on chezmoi config changes while running
         self.dr_style = {
-            "ok": self.app.custom_theme_vars["text-success"],
-            "info": self.app.custom_theme_vars["foreground-darken-1"],
-            "warning": self.app.custom_theme_vars["text-warning"],
-            "failed": self.app.custom_theme_vars["text-error"],
-            "error": self.app.custom_theme_vars["text-error"],
+            "ok": self.app.theme_variables["text-success"],
+            "info": self.app.theme_variables["foreground-darken-1"],
+            "warning": self.app.theme_variables["text-warning"],
+            "failed": self.app.theme_variables["text-error"],
+            "error": self.app.theme_variables["text-error"],
         }
 
         if not self.columns:

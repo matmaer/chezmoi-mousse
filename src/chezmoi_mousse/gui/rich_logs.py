@@ -234,12 +234,10 @@ class DiffView(RichLog, AppType):
         self.write(f'Output from "{self.pretty_diff_cmd} {self.path}":\n')
         for line in diff_lines:
             if line.startswith("-"):
-                self.write(
-                    Text(line, self.app.custom_theme_vars["text-error"])
-                )
+                self.write(Text(line, self.app.theme_variables["text-error"]))
             elif line.startswith("+"):
                 self.write(
-                    Text(line, self.app.custom_theme_vars["text-success"])
+                    Text(line, self.app.theme_variables["text-success"])
                 )
 
 
@@ -251,31 +249,31 @@ class CommandLogBase(RichLog, AppType):
     def _log_command(self, command: list[str]) -> None:
         trimmed_cmd = LogUtils.pretty_cmd_str(command)
         time = self._log_time()
-        color = self.app.custom_theme_vars["primary-lighten-3"]
+        color = self.app.theme_variables["primary-lighten-3"]
         log_line = f"{time} [{color}]{trimmed_cmd}[/]"
         self.write(log_line)
 
     def ready_to_run(self, message: str) -> None:
-        color = self.app.custom_theme_vars["accent-darken-3"]
+        color = self.app.theme_variables["accent-darken-3"]
         self.write(f"{self._log_time()} [{color}]{message}[/]")
 
     def info(self, message: str) -> None:
-        color = self.app.custom_theme_vars["text-secondary"]
+        color = self.app.theme_variables["text-secondary"]
         self.write(f"{self._log_time()} [{color}]{message}[/]")
 
     def success(self, message: str) -> None:
-        color = self.app.custom_theme_vars["text-success"]
+        color = self.app.theme_variables["text-success"]
         self.write(f"{self._log_time()} [{color}]{message}[/]")
 
     def warning(self, message: str) -> None:
         lines = message.splitlines()
-        color = self.app.custom_theme_vars["text-warning"]
+        color = self.app.theme_variables["text-warning"]
         for line in [line for line in lines if line.strip() != ""]:
             escaped_line = escape(line)
             self.write(f"{self._log_time()} [{color}]{escaped_line}[/]")
 
     def error(self, message: str) -> None:
-        color = self.app.custom_theme_vars["text-error"]
+        color = self.app.theme_variables["text-error"]
         time = self._log_time()
         self.write(f"{time} [{color}]{message}[/]")
 
@@ -283,7 +281,7 @@ class CommandLogBase(RichLog, AppType):
         if message.strip() == "":
             return
         lines: list[str] = message.splitlines()
-        color = self.app.custom_theme_vars["text-disabled"]
+        color = self.app.theme_variables["text-disabled"]
         for line in lines:
             if line.strip() != "":
                 escaped_line = escape(line)
@@ -341,7 +339,7 @@ class DebugLog(CommandLogBase, AppType):
         self.dimmed(f"{dir(completed_process)}")
 
     def mro(self, mro: Mro) -> None:
-        color = self.app.custom_theme_vars["accent-darken-2"]
+        color = self.app.theme_variables["accent-darken-2"]
         self.write(f"{self._log_time()} [{color}]Method Resolution Order:[/]")
 
         exclude = {
