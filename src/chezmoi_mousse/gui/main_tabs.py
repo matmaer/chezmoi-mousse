@@ -222,7 +222,6 @@ class ConfigTab(Horizontal, AppType):
                 NavBtn.template_data,
             ),
         )
-        # mount lazily as the compose method includes subprocess calls
         yield ConfigTabSwitcher(self.ids)
 
     @on(Button.Pressed, Tcss.nav_button.value)
