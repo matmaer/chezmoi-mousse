@@ -113,7 +113,7 @@ class AddTab(OperateTabsBase, AppType):
             yield ContentsView(canvas_ids=self.ids)
 
         yield SwitchSlider(
-            canvas_ids=Id.add_tab,
+            canvas_ids=self.ids,
             switches=(Switches.unmanaged_dirs, Switches.unwanted),
         )
 
@@ -174,8 +174,9 @@ class AddTab(OperateTabsBase, AppType):
 class LogsTab(Vertical, AppType):
 
     def __init__(self) -> None:
+        self.ids = Id.logs_tab
         self.tab_buttons = (TabBtn.app_log, TabBtn.output_log)
-        super().__init__(id=Id.logs_tab.tab_container_id)
+        super().__init__(id=self.ids.tab_container_id)
 
     def compose(self) -> ComposeResult:
         tab_buttons = (TabBtn.app_log, TabBtn.output_log)
@@ -183,43 +184,38 @@ class LogsTab(Vertical, AppType):
             tab_buttons += (TabBtn.debug_log,)
 
         yield TabBtnHorizontal(
-            canvas_ids=Id.logs_tab, buttons=tab_buttons, area=AreaName.top
+            canvas_ids=self.ids, buttons=tab_buttons, area=AreaName.top
         )
-        yield LogsTabSwitcher(
-            canvas_ids=Id.logs_tab, dev_mode=self.app.dev_mode
-        )
+        yield LogsTabSwitcher(canvas_ids=self.ids, dev_mode=self.app.dev_mode)
 
     @on(Button.Pressed, Tcss.tab_button.value)
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
         switcher = self.query_exactly_one(LogsTabSwitcher)
 
-        if event.button.id == Id.logs_tab.button_id(btn=TabBtn.app_log):
-            switcher.current = Id.logs_tab.view_id(view=ViewName.app_log_view)
+        if event.button.id == self.ids.button_id(btn=TabBtn.app_log):
+            switcher.current = self.ids.view_id(view=ViewName.app_log_view)
             switcher.border_title = " App Log "
-        elif event.button.id == Id.logs_tab.button_id(btn=TabBtn.output_log):
-            switcher.current = Id.logs_tab.view_id(
-                view=ViewName.output_log_view
-            )
+        elif event.button.id == self.ids.button_id(btn=TabBtn.output_log):
+            switcher.current = self.ids.view_id(view=ViewName.output_log_view)
             switcher.border_title = " Commands StdOut "
         elif (
             self.app.dev_mode is True
-            and event.button.id == Id.logs_tab.button_id(btn=TabBtn.debug_log)
+            and event.button.id == self.ids.button_id(btn=TabBtn.debug_log)
         ):
-            switcher.current = Id.logs_tab.view_id(
-                view=ViewName.debug_log_view
-            )
+            switcher.current = self.ids.view_id(view=ViewName.debug_log_view)
             switcher.border_title = " Debug Log "
 
 
 class ConfigTab(Horizontal, AppType):
 
     def __init__(self) -> None:
-        super().__init__(id=Id.config_tab.tab_container_id)
+        self.ids = Id.config_tab
+        super().__init__(id=self.ids.tab_container_id)
 
     def compose(self) -> ComposeResult:
         yield NavButtonsVertical(
-            canvas_ids=Id.config_tab,
+            canvas_ids=self.ids,
             buttons=(
                 NavBtn.doctor,
                 NavBtn.cat_config,
@@ -234,22 +230,14 @@ class ConfigTab(Horizontal, AppType):
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
         switcher = self.query_exactly_one(ConfigTabSwitcher)
-        if event.button.id == Id.config_tab.button_id(btn=(NavBtn.doctor)):
-            switcher.current = Id.config_tab.view_id(view=ViewName.doctor_view)
-        elif event.button.id == Id.config_tab.button_id(
-            btn=(NavBtn.cat_config)
-        ):
-            switcher.current = Id.config_tab.view_id(
-                view=ViewName.cat_config_view
-            )
-        elif event.button.id == Id.config_tab.button_id(btn=NavBtn.ignored):
-            switcher.current = Id.config_tab.view_id(
-                view=ViewName.git_ignored_view
-            )
-        elif event.button.id == Id.config_tab.button_id(
-            btn=NavBtn.template_data
-        ):
-            switcher.current = Id.config_tab.view_id(
+        if event.button.id == self.ids.button_id(btn=(NavBtn.doctor)):
+            switcher.current = self.ids.view_id(view=ViewName.doctor_view)
+        elif event.button.id == self.ids.button_id(btn=(NavBtn.cat_config)):
+            switcher.current = self.ids.view_id(view=ViewName.cat_config_view)
+        elif event.button.id == self.ids.button_id(btn=NavBtn.ignored):
+            switcher.current = self.ids.view_id(view=ViewName.git_ignored_view)
+        elif event.button.id == self.ids.button_id(btn=NavBtn.template_data):
+            switcher.current = self.ids.view_id(
                 view=ViewName.template_data_view
             )
 
@@ -257,17 +245,18 @@ class ConfigTab(Horizontal, AppType):
 class HelpTab(Horizontal):
 
     def __init__(self) -> None:
-        super().__init__(id=Id.help_tab.tab_container_id)
+        self.ids = Id.help_tab
+        super().__init__(id=self.ids.tab_container_id)
 
     def compose(self) -> ComposeResult:
         yield NavButtonsVertical(
-            canvas_ids=Id.help_tab, buttons=(NavBtn.diagram,)
+            canvas_ids=self.ids, buttons=(NavBtn.diagram,)
         )
-        yield HelpTabSwitcher(canvas_ids=Id.help_tab)
+        yield HelpTabSwitcher(canvas_ids=self.ids)
 
     @on(Button.Pressed, Tcss.nav_button.value)
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
         switcher = self.query_exactly_one(HelpTabSwitcher)
-        if event.button.id == Id.help_tab.button_id(btn=NavBtn.diagram):
-            switcher.current = Id.help_tab.view_id(view=ViewName.diagram_view)
+        if event.button.id == self.ids.button_id(btn=NavBtn.diagram):
+            switcher.current = self.ids.view_id(view=ViewName.diagram_view)
