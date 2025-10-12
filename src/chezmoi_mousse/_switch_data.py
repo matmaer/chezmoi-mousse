@@ -6,7 +6,7 @@ from chezmoi_mousse._labels import SwitchLabel
 __all__ = ["Switches", "SwitchData"]
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class SwitchData:
     label: str
     switch_name: str

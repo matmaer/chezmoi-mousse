@@ -15,7 +15,7 @@ class AppType:
         app: "ChezmoiGUI"
 
 
-@dataclass
+@dataclass(slots=True)
 class NodeData:
     found: bool
     path: Path
@@ -23,12 +23,11 @@ class NodeData:
     # "node status" codes:
     #   X (no status but managed)
     #   F (fake for the root node)
-    # Should be Literal["A", "D", "M", "F", "X"] type
     status: str
     is_leaf: bool
 
 
-@dataclass
+@dataclass(slots=True)
 class ParsedConfig:
     dest_dir: Path
     git_autoadd: bool
@@ -37,7 +36,7 @@ class ParsedConfig:
     git_autopush: bool
 
 
-@dataclass
+@dataclass(slots=True)
 class SplashData:
     cat_config: str
     doctor: str

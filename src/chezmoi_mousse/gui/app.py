@@ -58,7 +58,7 @@ __all__ = ["ChezmoiGUI", "PreRunData"]
 # TODO: implement spinner for commands taking a bit longer like operations
 
 
-@dataclass
+@dataclass(slots=True)
 class PreRunData:
     chezmoi_instance: Chezmoi
     changes_enabled: bool

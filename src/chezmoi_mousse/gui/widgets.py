@@ -672,7 +672,7 @@ class DoctorTable(DataTable[Text], AppType):
 class DoctorListView(ListView):
 
     class PwMgrInfo(Enum):
-        @dataclass
+        @dataclass(slots=True)
         class PwMgrData:
             doctor_check: str
             description: str

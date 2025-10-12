@@ -11,6 +11,18 @@ __all__ = ["CanvasIds", "Id"]
 
 
 class CanvasIds:
+    __slots__ = (
+        "canvas_name",
+        "tab_container_id",
+        "operate_container_id",
+        "datatable_id",
+        "datatable_qid",
+        "listview_id",
+        "listview_qid",
+        "switches_slider_id",
+        "switches_slider_qid",
+    )
+
     def __init__(self, canvas_name: Canvas) -> None:
         self.canvas_name: str = canvas_name.name
         self.tab_container_id = f"{canvas_name}_container_id"
