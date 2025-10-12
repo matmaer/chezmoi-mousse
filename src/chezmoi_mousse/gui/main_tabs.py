@@ -38,11 +38,12 @@ __all__ = ["AddTab", "ApplyTab", "ConfigTab", "HelpTab", "LogsTab", "ReAddTab"]
 class ApplyTab(OperateTabsBase):
 
     def __init__(self) -> None:
-        super().__init__(canvas_ids=Id.apply_tab)
+        self.ids = Id.apply_tab
+        super().__init__(canvas_ids=self.ids)
 
     def compose(self) -> ComposeResult:
         with Vertical(
-            id=Id.apply_tab.tab_vertical_id(area=AreaName.left),
+            id=self.ids.tab_vertical_id(area=AreaName.left),
             classes=Tcss.tab_left_vertical.name,
         ):
             yield TabBtnHorizontal(
@@ -50,16 +51,16 @@ class ApplyTab(OperateTabsBase):
                 buttons=(TabBtn.tree, TabBtn.list),
                 area=AreaName.left,
             )
-            yield TreeSwitcher(Id.apply_tab)
-        with Vertical(id=Id.apply_tab.tab_vertical_id(area=AreaName.right)):
+            yield TreeSwitcher(self.ids)
+        with Vertical(id=self.ids.tab_vertical_id(area=AreaName.right)):
             yield TabBtnHorizontal(
-                canvas_ids=Id.apply_tab,
+                canvas_ids=self.ids,
                 buttons=(TabBtn.diff, TabBtn.contents, TabBtn.git_log),
                 area=AreaName.right,
             )
-            yield ViewSwitcher(canvas_ids=Id.apply_tab, diff_reverse=False)
+            yield ViewSwitcher(canvas_ids=self.ids, diff_reverse=False)
         yield SwitchSlider(
-            canvas_ids=Id.apply_tab,
+            canvas_ids=self.ids,
             switches=(Switches.unchanged, Switches.expand_all),
         )
 
@@ -67,11 +68,12 @@ class ApplyTab(OperateTabsBase):
 class ReAddTab(OperateTabsBase):
 
     def __init__(self) -> None:
-        super().__init__(canvas_ids=Id.re_add_tab)
+        self.ids = Id.re_add_tab
+        super().__init__(canvas_ids=self.ids)
 
     def compose(self) -> ComposeResult:
         with Vertical(
-            id=Id.re_add_tab.tab_vertical_id(area=AreaName.left),
+            id=self.ids.tab_vertical_id(area=AreaName.left),
             classes=Tcss.tab_left_vertical.name,
         ):
             yield TabBtnHorizontal(
@@ -79,16 +81,16 @@ class ReAddTab(OperateTabsBase):
                 buttons=(TabBtn.tree, TabBtn.list),
                 area=AreaName.left,
             )
-            yield TreeSwitcher(canvas_ids=Id.re_add_tab)
-        with Vertical(id=Id.re_add_tab.tab_vertical_id(area=AreaName.right)):
+            yield TreeSwitcher(canvas_ids=self.ids)
+        with Vertical(id=self.ids.tab_vertical_id(area=AreaName.right)):
             yield TabBtnHorizontal(
-                canvas_ids=Id.re_add_tab,
+                canvas_ids=self.ids,
                 buttons=(TabBtn.diff, TabBtn.contents, TabBtn.git_log),
                 area=AreaName.right,
             )
-            yield ViewSwitcher(canvas_ids=Id.re_add_tab, diff_reverse=True)
+            yield ViewSwitcher(canvas_ids=self.ids, diff_reverse=True)
         yield SwitchSlider(
-            canvas_ids=Id.re_add_tab,
+            canvas_ids=self.ids,
             switches=(Switches.unchanged, Switches.expand_all),
         )
 
@@ -96,18 +98,19 @@ class ReAddTab(OperateTabsBase):
 class AddTab(OperateTabsBase, AppType):
 
     def __init__(self) -> None:
-        super().__init__(canvas_ids=Id.add_tab)
+        self.ids = Id.add_tab
+        super().__init__(canvas_ids=self.ids)
 
     def compose(self) -> ComposeResult:
         with VerticalGroup(
-            id=Id.add_tab.tab_vertical_id(area=AreaName.left),
+            id=self.ids.tab_vertical_id(area=AreaName.left),
             classes=Tcss.tab_left_vertical.name,
         ):
             yield FilteredDirTree(
-                Path.home(), id=Id.add_tab.tree_id(tree=TreeName.add_tree)
+                Path.home(), id=self.ids.tree_id(tree=TreeName.add_tree)
             )
-        with Vertical(id=Id.add_tab.tab_vertical_id(area=AreaName.right)):
-            yield ContentsView(canvas_ids=Id.add_tab)
+        with Vertical(id=self.ids.tab_vertical_id(area=AreaName.right)):
+            yield ContentsView(canvas_ids=self.ids)
 
         yield SwitchSlider(
             canvas_ids=Id.add_tab,
@@ -134,7 +137,7 @@ class AddTab(OperateTabsBase, AppType):
 
         assert event.node.data is not None
         contents_view = self.query_one(
-            Id.add_tab.view_id("#", view=ViewName.contents_view), ContentsView
+            self.ids.view_id("#", view=ViewName.contents_view), ContentsView
         )
         contents_view.path = event.node.data.path
         contents_view.border_title = f" {event.node.data.path} "
@@ -155,13 +158,13 @@ class AddTab(OperateTabsBase, AppType):
     def handle_filter_switches(self, event: Switch.Changed) -> None:
         event.stop()
         tree = self.query_one(
-            Id.add_tab.tree_id("#", tree=TreeName.add_tree), FilteredDirTree
+            self.ids.tree_id("#", tree=TreeName.add_tree), FilteredDirTree
         )
-        if event.switch.id == Id.add_tab.switch_id(
+        if event.switch.id == self.ids.switch_id(
             switch=Switches.unmanaged_dirs.value
         ):
             tree.unmanaged_dirs = event.value
-        elif event.switch.id == Id.add_tab.switch_id(
+        elif event.switch.id == self.ids.switch_id(
             switch=Switches.unwanted.value
         ):
             tree.unwanted = event.value
