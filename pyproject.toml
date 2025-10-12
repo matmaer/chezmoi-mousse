@@ -5,7 +5,7 @@ description = "Visual interface in the terminal for the chezmoi dotfile managar,
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "textual>=6.2.1",
+    "textual>=6.3.0",
 ]
 
 [project.urls]
@@ -30,6 +30,7 @@ dev = [
     "pytest-textual-snapshot>=1.1.0",
     "ruff>=0.11.9",
     "snakeviz>=2.2.2",
+    "textual>=6.3.0",
     "textual-dev>=1.7.0",
     "twine>=6.1.0",
 ]
