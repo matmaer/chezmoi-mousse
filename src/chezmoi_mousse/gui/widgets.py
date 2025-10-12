@@ -42,10 +42,12 @@ from chezmoi_mousse.gui import AppType, NodeData
 from chezmoi_mousse.gui.messages import TreeNodeSelectedMsg
 
 __all__ = [
-    "GitLogView",
-    "ManagedTree",
+    "DoctorListView",
+    "DoctorTable",
     "ExpandedTree",
     "FlatTree",
+    "GitLogView",
+    "ManagedTree",
     "OperateInfo",
 ]
 

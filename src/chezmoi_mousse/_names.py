@@ -3,7 +3,7 @@ from enum import StrEnum, auto
 # RULES: can only contain auto() members, no assigned values
 
 
-__all__ = ["AreaName", "TreeName", "ViewName"]
+__all__ = ["AreaName", "Canvas", "TreeName", "ViewName"]
 
 
 class AreaName(StrEnum):

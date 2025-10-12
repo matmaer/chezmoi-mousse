@@ -1,5 +1,7 @@
 from enum import StrEnum
 
+__all__ = ["Chars"]
+
 
 class Chars(StrEnum):
     add_file_info_border = f"local {'\u2014' * 3}\u2192 chezmoi"  # '\N{EM DASH}', '\N{RIGHTWARDS ARROW}'

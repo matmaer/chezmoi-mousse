@@ -31,7 +31,14 @@ from chezmoi_mousse import (
 )
 from chezmoi_mousse.gui import AppType
 
-__all__ = ["AppLog", "DebugLog", "OutputLog", "ContentsView", "DiffView"]
+__all__ = [
+    "AppLog",
+    "ContentsView",
+    "DebugLog",
+    "DiffView",
+    "LogUtils",
+    "OutputLog",
+]
 
 
 class LogUtils:
