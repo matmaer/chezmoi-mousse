@@ -2,10 +2,10 @@ from pathlib import Path
 from subprocess import CompletedProcess, run
 
 from chezmoi_mousse import (
-    ActiveTab,
+    ActiveCanvas,
+    Canvas,
     ChangeCmd,
     GlobalCmd,
-    PaneBtn,
     PathDict,
     ReadCmd,
 )
@@ -159,16 +159,16 @@ class Chezmoi:
             if key in self.managed_files
         }
 
-    def all_status_files(self, active_tab: ActiveTab) -> PathDict:
-        if active_tab == PaneBtn.apply_tab:
+    def all_status_files(self, active_canvas: ActiveCanvas) -> PathDict:
+        if active_canvas == Canvas.apply_tab:
             return self._apply_status_files
         else:
             return self._re_add_status_files
 
     def status_files_in(
-        self, active_tab: ActiveTab, dir_path: Path
+        self, active_canvas: ActiveCanvas, dir_path: Path
     ) -> PathDict:
-        if active_tab == PaneBtn.apply_tab:
+        if active_canvas == Canvas.apply_tab:
             return {
                 path: status
                 for path, status in self._apply_status_paths.items()
@@ -182,11 +182,11 @@ class Chezmoi:
             }
 
     def status_dirs_in(
-        self, active_tab: ActiveTab, dir_path: Path
+        self, active_canvas: ActiveCanvas, dir_path: Path
     ) -> PathDict:
         status_paths = (
             self._apply_status_paths
-            if active_tab == PaneBtn.apply_tab
+            if active_canvas == Canvas.apply_tab
             else self._re_add_status_paths
         )
 
@@ -201,16 +201,16 @@ class Chezmoi:
             if (
                 path.parent == dir_path
                 and path not in result
-                and self.has_status_paths_in(active_tab, path)
+                and self.has_status_paths_in(active_canvas, path)
             ):
                 result[path] = " "
 
         return dict(sorted(result.items()))
 
     def files_without_status_in(
-        self, active_tab: ActiveTab, dir_path: Path
+        self, active_canvas: ActiveCanvas, dir_path: Path
     ) -> PathDict:
-        if active_tab == PaneBtn.apply_tab:
+        if active_canvas == Canvas.apply_tab:
             return {
                 path: "X"
                 for path in self.managed_files
@@ -226,15 +226,15 @@ class Chezmoi:
             }
 
     def dirs_without_status_in(
-        self, active_tab: ActiveTab, dir_path: Path
+        self, active_canvas: ActiveCanvas, dir_path: Path
     ) -> PathDict:
-        if active_tab == PaneBtn.apply_tab:
+        if active_canvas == Canvas.apply_tab:
             return {
                 path: "X"
                 for path in self.managed_dirs
                 if path.parent == dir_path
                 and path not in self._apply_status_paths
-                and not self.has_status_paths_in(active_tab, path)
+                and not self.has_status_paths_in(active_canvas, path)
             }
         else:
             return {
@@ -242,14 +242,14 @@ class Chezmoi:
                 for path in self.managed_dirs
                 if path.parent == dir_path
                 and path not in self._re_add_status_paths
-                and not self.has_status_paths_in(active_tab, path)
+                and not self.has_status_paths_in(active_canvas, path)
             }
 
     def has_status_paths_in(
-        self, active_tab: ActiveTab, dir_path: Path
+        self, active_canvas: ActiveCanvas, dir_path: Path
     ) -> bool:
-        if active_tab == PaneBtn.apply_tab:
+        if active_canvas == Canvas.apply_tab:
             status_paths = self._apply_status_paths
-        elif active_tab == PaneBtn.re_add_tab:
+        elif active_canvas == Canvas.re_add_tab:
             status_paths = self._re_add_status_paths
         return any(key.is_relative_to(dir_path) for key in status_paths.keys())

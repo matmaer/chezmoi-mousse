@@ -19,12 +19,12 @@ from textual.reactive import reactive
 from textual.widgets import RichLog
 
 from chezmoi_mousse import (
-    ActiveTab,
+    ActiveCanvas,
+    Canvas,
+    CanvasIds,
     Chars,
     GlobalCmd,
-    PaneBtn,
     ReadCmd,
-    TabIds,
     Tcss,
     VerbArgs,
     ViewName,
@@ -57,11 +57,11 @@ class ContentsView(RichLog, AppType):
 
     path: reactive[Path | None] = reactive(None, init=False)
 
-    def __init__(self, *, tab_ids: TabIds) -> None:
-        self.tab_ids = tab_ids
+    def __init__(self, *, canvas_ids: CanvasIds) -> None:
+        self.canvas_ids = canvas_ids
         self.first_render: bool = True
         super().__init__(
-            id=self.tab_ids.view_id(view=ViewName.contents_view),
+            id=self.canvas_ids.view_id(view=ViewName.contents_view),
             auto_scroll=False,
             wrap=True,  # TODO: implement footer binding to toggle wrap
             highlight=True,
@@ -148,21 +148,21 @@ class DiffView(RichLog, AppType):
 
     path: reactive[Path | None] = reactive(None, init=False)
 
-    def __init__(self, *, tab_ids: TabIds, reverse: bool) -> None:
-        self.tab_ids = tab_ids
+    def __init__(self, *, canvas_ids: CanvasIds, reverse: bool) -> None:
+        self.canvas_ids = canvas_ids
         self.reverse = reverse
-        self.active_tab: ActiveTab | None = None
+        self.active_canvas: ActiveCanvas | None = None
         self.diff_read_cmd: ReadCmd = (
             ReadCmd.diff_reverse if self.reverse else ReadCmd.diff
         )
         self.pretty_diff_cmd = LogUtils.pretty_cmd_str(
             self.diff_read_cmd.value
         )
-        self.active_tab = (
-            PaneBtn.re_add_tab if self.reverse else PaneBtn.apply_tab
+        self.active_canvas = (
+            Canvas.re_add_tab if self.reverse else Canvas.apply_tab
         )
         super().__init__(
-            id=self.tab_ids.view_id(view=ViewName.diff_view),
+            id=self.canvas_ids.view_id(view=ViewName.diff_view),
             auto_scroll=False,
             highlight=True,
             wrap=True,  # TODO: implement footer binding to toggle wrap
@@ -174,7 +174,7 @@ class DiffView(RichLog, AppType):
         )
 
     def on_mount(self) -> None:
-        if self.active_tab is not None:
+        if self.active_canvas is not None:
             self.write('This is the destination directory "chezmoi destDir"\n')
             self.write(self.click_colored_file)
 
@@ -196,7 +196,7 @@ class DiffView(RichLog, AppType):
         # write lines for an unchanged file or directory except when we are in
         # either the ApplyTab or ReAddTab
         if (
-            self.active_tab is not None
+            self.active_canvas is not None
             and self.path in self.app.chezmoi.managed_dirs
         ):
             self._write_dir_info()
@@ -292,10 +292,10 @@ class CommandLogBase(RichLog, AppType):
 
 class AppLog(CommandLogBase, AppType):
 
-    def __init__(self, tab_ids: TabIds) -> None:
-        self.tab_ids = tab_ids
+    def __init__(self, canvas_ids: CanvasIds) -> None:
+        self.canvas_ids = canvas_ids
         super().__init__(
-            id=self.tab_ids.view_id(view=ViewName.app_log_view),
+            id=self.canvas_ids.view_id(view=ViewName.app_log_view),
             markup=True,
             max_lines=10000,
             classes=Tcss.log_views.name,
@@ -324,10 +324,10 @@ class DebugLog(CommandLogBase, AppType):
 
     type Mro = tuple[type, ...]
 
-    def __init__(self, tab_ids: TabIds) -> None:
-        self.tab_ids = tab_ids
+    def __init__(self, canvas_ids: CanvasIds) -> None:
+        self.canvas_ids = canvas_ids
         super().__init__(
-            id=self.tab_ids.view_id(view=ViewName.debug_log_view),
+            id=self.canvas_ids.view_id(view=ViewName.debug_log_view),
             markup=True,
             max_lines=10000,
             wrap=True,
@@ -370,10 +370,10 @@ class DebugLog(CommandLogBase, AppType):
 
 class OutputLog(CommandLogBase, AppType):
 
-    def __init__(self, tab_ids: TabIds) -> None:
-        self.tab_ids = tab_ids
+    def __init__(self, canvas_ids: CanvasIds) -> None:
+        self.canvas_ids = canvas_ids
         super().__init__(
-            id=self.tab_ids.view_id(view=ViewName.output_log_view),
+            id=self.canvas_ids.view_id(view=ViewName.output_log_view),
             markup=True,
             max_lines=10000,
             classes=Tcss.log_views.name,

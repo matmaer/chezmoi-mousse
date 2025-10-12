@@ -38,7 +38,7 @@ __all__ = ["AddTab", "ApplyTab", "ConfigTab", "HelpTab", "LogsTab", "ReAddTab"]
 class ApplyTab(OperateTabsBase):
 
     def __init__(self) -> None:
-        super().__init__(tab_ids=Id.apply)
+        super().__init__(canvas_ids=Id.apply)
 
     def compose(self) -> ComposeResult:
         with Vertical(
@@ -46,20 +46,20 @@ class ApplyTab(OperateTabsBase):
             classes=Tcss.tab_left_vertical.name,
         ):
             yield TabBtnHorizontal(
-                tab_ids=self.tab_ids,
+                canvas_ids=self.canvas_ids,
                 buttons=(TabBtn.tree, TabBtn.list),
                 area=AreaName.left,
             )
-            yield TreeSwitcher(tab_ids=Id.apply)
+            yield TreeSwitcher(canvas_ids=Id.apply)
         with Vertical(id=Id.apply.tab_vertical_id(area=AreaName.right)):
             yield TabBtnHorizontal(
-                tab_ids=Id.apply,
+                canvas_ids=Id.apply,
                 buttons=(TabBtn.diff, TabBtn.contents, TabBtn.git_log),
                 area=AreaName.right,
             )
-            yield ViewSwitcher(tab_ids=Id.apply, diff_reverse=False)
+            yield ViewSwitcher(canvas_ids=Id.apply, diff_reverse=False)
         yield SwitchSlider(
-            tab_ids=Id.apply,
+            canvas_ids=Id.apply,
             switches=(Switches.unchanged, Switches.expand_all),
         )
 
@@ -67,7 +67,7 @@ class ApplyTab(OperateTabsBase):
 class ReAddTab(OperateTabsBase):
 
     def __init__(self) -> None:
-        super().__init__(tab_ids=Id.re_add)
+        super().__init__(canvas_ids=Id.re_add)
 
     def compose(self) -> ComposeResult:
         with Vertical(
@@ -75,20 +75,20 @@ class ReAddTab(OperateTabsBase):
             classes=Tcss.tab_left_vertical.name,
         ):
             yield TabBtnHorizontal(
-                tab_ids=self.tab_ids,
+                canvas_ids=self.canvas_ids,
                 buttons=(TabBtn.tree, TabBtn.list),
                 area=AreaName.left,
             )
-            yield TreeSwitcher(tab_ids=Id.re_add)
+            yield TreeSwitcher(canvas_ids=Id.re_add)
         with Vertical(id=Id.re_add.tab_vertical_id(area=AreaName.right)):
             yield TabBtnHorizontal(
-                tab_ids=Id.re_add,
+                canvas_ids=Id.re_add,
                 buttons=(TabBtn.diff, TabBtn.contents, TabBtn.git_log),
                 area=AreaName.right,
             )
-            yield ViewSwitcher(tab_ids=Id.re_add, diff_reverse=True)
+            yield ViewSwitcher(canvas_ids=Id.re_add, diff_reverse=True)
         yield SwitchSlider(
-            tab_ids=Id.re_add,
+            canvas_ids=Id.re_add,
             switches=(Switches.unchanged, Switches.expand_all),
         )
 
@@ -96,7 +96,7 @@ class ReAddTab(OperateTabsBase):
 class AddTab(OperateTabsBase, AppType):
 
     def __init__(self) -> None:
-        super().__init__(tab_ids=Id.add)
+        super().__init__(canvas_ids=Id.add)
 
     def compose(self) -> ComposeResult:
         with VerticalGroup(
@@ -107,10 +107,10 @@ class AddTab(OperateTabsBase, AppType):
                 Path.home(), id=Id.add.tree_id(tree=TreeName.add_tree)
             )
         with Vertical(id=Id.add.tab_vertical_id(area=AreaName.right)):
-            yield ContentsView(tab_ids=Id.add)
+            yield ContentsView(canvas_ids=Id.add)
 
         yield SwitchSlider(
-            tab_ids=Id.add,
+            canvas_ids=Id.add,
             switches=(Switches.unmanaged_dirs, Switches.unwanted),
         )
 
@@ -180,9 +180,9 @@ class LogsTab(Vertical, AppType):
             tab_buttons += (TabBtn.debug_log,)
 
         yield TabBtnHorizontal(
-            tab_ids=Id.logs, buttons=tab_buttons, area=AreaName.top
+            canvas_ids=Id.logs, buttons=tab_buttons, area=AreaName.top
         )
-        yield LogsTabSwitcher(tab_ids=Id.logs, dev_mode=self.app.dev_mode)
+        yield LogsTabSwitcher(canvas_ids=Id.logs, dev_mode=self.app.dev_mode)
 
     @on(Button.Pressed, Tcss.tab_button.value)
     def switch_content(self, event: Button.Pressed) -> None:
@@ -210,7 +210,7 @@ class ConfigTab(Horizontal, AppType):
 
     def compose(self) -> ComposeResult:
         yield NavButtonsVertical(
-            tab_ids=Id.config,
+            canvas_ids=Id.config,
             buttons=(
                 NavBtn.doctor,
                 NavBtn.cat_config,
@@ -245,8 +245,8 @@ class HelpTab(Horizontal):
         super().__init__(id=Id.help.tab_container_id)
 
     def compose(self) -> ComposeResult:
-        yield NavButtonsVertical(tab_ids=Id.help, buttons=(NavBtn.diagram,))
-        yield HelpTabSwitcher(tab_ids=Id.help)
+        yield NavButtonsVertical(canvas_ids=Id.help, buttons=(NavBtn.diagram,))
+        yield HelpTabSwitcher(canvas_ids=Id.help)
 
     @on(Button.Pressed, Tcss.nav_button.value)
     def switch_content(self, event: Button.Pressed) -> None:

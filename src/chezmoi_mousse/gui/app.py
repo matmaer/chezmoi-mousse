@@ -14,6 +14,7 @@ from textual.widgets import (
 
 from chezmoi_mousse import (
     AreaName,
+    Canvas,
     Chars,
     Id,
     OperateBtn,
@@ -99,41 +100,41 @@ class ChezmoiGUI(App[None]):
     ]
 
     def compose(self) -> ComposeResult:
-        if self.chezmoi_found is False:
-            return
+        # if self.chezmoi_found is False:
+        #     return
         yield Header(icon=Chars.burger)
         with TabbedContent():
-            with TabPane(PaneBtn.apply_tab.value, id=PaneBtn.apply_tab.name):
+            with TabPane(PaneBtn.apply_tab.value, id=Canvas.apply_tab.name):
                 yield ApplyTab()
                 yield OperateBtnHorizontal(
-                    tab_ids=Id.apply,
+                    canvas_ids=Id.apply,
                     buttons=(
                         OperateBtn.apply_file,
                         OperateBtn.forget_file,
                         OperateBtn.destroy_file,
                     ),
                 )
-            with TabPane(PaneBtn.re_add_tab.value, id=PaneBtn.re_add_tab.name):
+            with TabPane(PaneBtn.re_add_tab.value, id=Canvas.re_add_tab.name):
                 yield ReAddTab()
                 yield OperateBtnHorizontal(
-                    tab_ids=Id.re_add,
+                    canvas_ids=Id.re_add,
                     buttons=(
                         OperateBtn.re_add_file,
                         OperateBtn.forget_file,
                         OperateBtn.destroy_file,
                     ),
                 )
-            with TabPane(PaneBtn.add_tab.value, id=PaneBtn.add_tab.name):
+            with TabPane(PaneBtn.add_tab.value, id=Canvas.add_tab.name):
                 yield AddTab()
                 yield OperateBtnHorizontal(
-                    tab_ids=Id.add,
+                    canvas_ids=Id.add,
                     buttons=(OperateBtn.add_file, OperateBtn.add_dir),
                 )
-            with TabPane(PaneBtn.logs_tab.value, id=PaneBtn.logs_tab.name):
+            with TabPane(PaneBtn.logs_tab.value, id=Canvas.logs_tab.name):
                 yield LogsTab()
-            with TabPane(PaneBtn.config_tab.value, id=PaneBtn.config_tab.name):
+            with TabPane(PaneBtn.config_tab.value, id=Canvas.config_tab.name):
                 yield ConfigTab()
-            with TabPane(PaneBtn.help_tab.value, id=PaneBtn.help_tab.name):
+            with TabPane(PaneBtn.help_tab.value, id=Canvas.help_tab.name):
                 yield HelpTab()
         yield Footer()
 
@@ -298,9 +299,9 @@ class ChezmoiGUI(App[None]):
     ) -> bool | None:
         if action == "toggle_switch_slider":
             if self.query_one(TabbedContent).active in (
-                Id.apply.tab_name,
-                Id.re_add.tab_name,
-                Id.add.tab_name,
+                Id.apply.canvas_name,
+                Id.re_add.canvas_name,
+                Id.add.canvas_name,
             ):
                 return True
             return None

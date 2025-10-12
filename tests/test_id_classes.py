@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 from _test_utils import get_modules_importing_class
 
-from chezmoi_mousse import Id, TabIds
+from chezmoi_mousse import CanvasIds, Id
 
 
 def _get_class_public_members_strings(
@@ -58,15 +58,15 @@ class UsageFinder(ast.NodeVisitor):
 
 @pytest.mark.parametrize(
     "member_name, member_type",
-    _get_class_public_members_strings(TabIds),
-    ids=[name for name, _ in _get_class_public_members_strings(TabIds)],
+    _get_class_public_members_strings(CanvasIds),
+    ids=[name for name, _ in _get_class_public_members_strings(CanvasIds)],
 )
-def test_tabids_member_in_use(member_name: str, member_type: str):
+def test_canvasids_member_in_use(member_name: str, member_type: str):
     is_used = False
-    class_name = "TabIds"
+    class_name = "CanvasIds"
 
-    # the test should run on all modules importing TabIds and the Id class as
-    # the TabIds members can be accessed via an Id attribute
+    # the test should run on all modules importing CanvasIds and the Id class as
+    # the CanvasIds members can be accessed via an Id attribute
     paths_to_check: set[Path] = set(
         get_modules_importing_class(class_name)
         + get_modules_importing_class("Id")

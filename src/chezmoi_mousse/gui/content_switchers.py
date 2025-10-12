@@ -5,7 +5,7 @@ from textual.containers import Vertical, VerticalScroll
 from textual.reactive import reactive
 from textual.widgets import ContentSwitcher, Label, Pretty, Static
 
-from chezmoi_mousse import AreaName, TabIds, Tcss, TreeName, ViewName
+from chezmoi_mousse import AreaName, CanvasIds, Tcss, TreeName, ViewName
 from chezmoi_mousse.gui import AppType
 from chezmoi_mousse.gui.rich_logs import (
     AppLog,
@@ -34,18 +34,18 @@ __all__ = [
 
 class TreeSwitcher(ContentSwitcher, AppType):
 
-    def __init__(self, tab_ids: TabIds):
-        self.tab_ids = tab_ids
+    def __init__(self, canvas_ids: CanvasIds):
+        self.canvas_ids = canvas_ids
         super().__init__(
-            id=self.tab_ids.content_switcher_id(area=AreaName.left),
-            initial=self.tab_ids.tree_id(tree=TreeName.managed_tree),
+            id=self.canvas_ids.content_switcher_id(area=AreaName.left),
+            initial=self.canvas_ids.tree_id(tree=TreeName.managed_tree),
             classes=Tcss.content_switcher_left.name,
         )
 
     def compose(self) -> ComposeResult:
-        yield ManagedTree(tab_ids=self.tab_ids)
-        yield FlatTree(tab_ids=self.tab_ids)
-        yield ExpandedTree(tab_ids=self.tab_ids)
+        yield ManagedTree(canvas_ids=self.canvas_ids)
+        yield FlatTree(canvas_ids=self.canvas_ids)
+        yield ExpandedTree(canvas_ids=self.canvas_ids)
 
     def on_mount(self) -> None:
         self.border_title = " destDir "
@@ -53,18 +53,18 @@ class TreeSwitcher(ContentSwitcher, AppType):
 
 
 class ViewSwitcher(ContentSwitcher, AppType):
-    def __init__(self, *, tab_ids: TabIds, diff_reverse: bool):
-        self.tab_ids = tab_ids
+    def __init__(self, *, canvas_ids: CanvasIds, diff_reverse: bool):
+        self.canvas_ids = canvas_ids
         self.reverse = diff_reverse
         super().__init__(
-            id=self.tab_ids.content_switcher_id(area=AreaName.right),
-            initial=self.tab_ids.view_id(view=ViewName.diff_view),
+            id=self.canvas_ids.content_switcher_id(area=AreaName.right),
+            initial=self.canvas_ids.view_id(view=ViewName.diff_view),
         )
 
     def compose(self) -> ComposeResult:
-        yield DiffView(tab_ids=self.tab_ids, reverse=self.reverse)
-        yield ContentsView(tab_ids=self.tab_ids)
-        yield GitLogView(tab_ids=self.tab_ids)
+        yield DiffView(canvas_ids=self.canvas_ids, reverse=self.reverse)
+        yield ContentsView(canvas_ids=self.canvas_ids)
+        yield GitLogView(canvas_ids=self.canvas_ids)
 
 
 class ConfigTabSwitcher(ContentSwitcher, AppType):
@@ -74,11 +74,11 @@ class ConfigTabSwitcher(ContentSwitcher, AppType):
     ignored_stdout: reactive[str | None] = reactive(None)
     template_data_stdout: reactive[str | None] = reactive(None)
 
-    def __init__(self, tab_ids: TabIds):
-        self.tab_ids = tab_ids
+    def __init__(self, canvas_ids: CanvasIds):
+        self.canvas_ids = canvas_ids
         super().__init__(
-            id=self.tab_ids.content_switcher_id(area=AreaName.right),
-            initial=self.tab_ids.view_id(view=ViewName.doctor_view),
+            id=self.canvas_ids.content_switcher_id(area=AreaName.right),
+            initial=self.canvas_ids.view_id(view=ViewName.doctor_view),
             classes=Tcss.nav_content_switcher.name,
         )
 
@@ -91,7 +91,7 @@ class ConfigTabSwitcher(ContentSwitcher, AppType):
                 classes=Tcss.section_label.name,
             ),
             DoctorListView(),
-            id=self.tab_ids.view_id(view=ViewName.doctor_view),
+            id=self.canvas_ids.view_id(view=ViewName.doctor_view),
             classes=Tcss.doctor_vertical_scroll.name,
         )
         yield Vertical(
@@ -99,17 +99,17 @@ class ConfigTabSwitcher(ContentSwitcher, AppType):
                 '"chezmoi cat-config" output', classes=Tcss.section_label.name
             ),
             Pretty("<cat-config>", id=ViewName.pretty_cat_config_view),
-            id=self.tab_ids.view_id(view=ViewName.cat_config_view),
+            id=self.canvas_ids.view_id(view=ViewName.cat_config_view),
         )
         yield Vertical(
             Label('"chezmoi ignored" output', classes=Tcss.section_label.name),
             Pretty("<ignored>", id=ViewName.pretty_ignored_view),
-            id=self.tab_ids.view_id(view=ViewName.git_ignored_view),
+            id=self.canvas_ids.view_id(view=ViewName.git_ignored_view),
         )
         yield Vertical(
             Label('"chezmoi data" output', classes=Tcss.section_label.name),
             Pretty("<template_data>", id=ViewName.pretty_template_data_view),
-            id=self.tab_ids.view_id(view=ViewName.template_data_view),
+            id=self.canvas_ids.view_id(view=ViewName.template_data_view),
         )
 
     def watch_doctor_stdout(self):
@@ -181,11 +181,11 @@ class HelpTabSwitcher(ContentSwitcher):
 └──────────────┘    └──────────────┘    └──────────────┘    └──────────────┘
 """
 
-    def __init__(self, tab_ids: TabIds):
-        self.tab_ids = tab_ids
+    def __init__(self, canvas_ids: CanvasIds):
+        self.canvas_ids = canvas_ids
         super().__init__(
-            id=self.tab_ids.content_switcher_id(area=AreaName.right),
-            initial=self.tab_ids.view_id(view=ViewName.diagram_view),
+            id=self.canvas_ids.content_switcher_id(area=AreaName.right),
+            initial=self.canvas_ids.view_id(view=ViewName.diagram_view),
             classes=Tcss.nav_content_switcher.name,
         )
 
@@ -194,26 +194,26 @@ class HelpTabSwitcher(ContentSwitcher):
         yield Vertical(
             Label("chezmoi diagram", classes=Tcss.section_label.name),
             Static(self.FLOW_DIAGRAM, classes=Tcss.flow_diagram.name),
-            id=self.tab_ids.view_id(view=ViewName.diagram_view),
+            id=self.canvas_ids.view_id(view=ViewName.diagram_view),
         )
 
 
 class LogsTabSwitcher(ContentSwitcher, AppType):
 
-    def __init__(self, tab_ids: TabIds, dev_mode: bool):
-        self.tab_ids = tab_ids
+    def __init__(self, canvas_ids: CanvasIds, dev_mode: bool):
+        self.canvas_ids = canvas_ids
         self.dev_mode = dev_mode
         super().__init__(
-            id=self.tab_ids.content_switcher_id(area=AreaName.top),
-            initial=self.tab_ids.view_id(view=ViewName.app_log_view),
+            id=self.canvas_ids.content_switcher_id(area=AreaName.top),
+            initial=self.canvas_ids.view_id(view=ViewName.app_log_view),
             classes=Tcss.border_title_top.name,
         )
 
     def compose(self) -> ComposeResult:
-        yield AppLog(tab_ids=self.tab_ids)
-        yield OutputLog(tab_ids=self.tab_ids)
+        yield AppLog(canvas_ids=self.canvas_ids)
+        yield OutputLog(canvas_ids=self.canvas_ids)
         if self.dev_mode is True:
-            yield DebugLog(tab_ids=self.tab_ids)
+            yield DebugLog(canvas_ids=self.canvas_ids)
 
     def on_mount(self) -> None:
         self.border_title = " App Log "

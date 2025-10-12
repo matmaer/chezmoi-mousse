@@ -26,13 +26,14 @@ from textual.widgets._tree import TOGGLE_STYLE
 from textual.widgets.tree import TreeNode
 
 from chezmoi_mousse import (
-    ActiveTab,
+    ActiveCanvas,
+    Canvas,
+    CanvasIds,
     Chars,
     Id,
     OperateBtn,
     PaneBtn,
     ReadCmd,
-    TabIds,
     Tcss,
     TreeName,
     ViewName,
@@ -117,11 +118,11 @@ class GitLogView(DataTable[Text], AppType):
 
     path: reactive[Path | None] = reactive(None, init=False)
 
-    def __init__(self, *, tab_ids: TabIds) -> None:
-        self.tab_ids = tab_ids
+    def __init__(self, *, canvas_ids: CanvasIds) -> None:
+        self.canvas_ids = canvas_ids
         self.destDir: Path | None = None
         super().__init__(
-            id=self.tab_ids.view_id(view=ViewName.git_log_view),
+            id=self.canvas_ids.view_id(view=ViewName.git_log_view),
             show_cursor=False,
             classes=Tcss.border_title_top.name,
         )
@@ -167,19 +168,19 @@ class GitLogView(DataTable[Text], AppType):
 
 class TreeBase(Tree[NodeData], AppType):
 
-    def __init__(self, tab_ids: TabIds, *, tree_name: TreeName) -> None:
+    def __init__(self, canvas_ids: CanvasIds, *, tree_name: TreeName) -> None:
         self.tree_name = tree_name
-        self.tab_ids = tab_ids
+        self.canvas_ids = canvas_ids
         self._initial_render = True
         self._first_focus = True
         self._user_interacted = False
-        if self.tab_ids.tab_name == PaneBtn.apply_tab.name:
-            self.active_tab: ActiveTab = PaneBtn.apply_tab
+        if self.canvas_ids.canvas_name == Canvas.apply_tab.name:
+            self.active_canvas: ActiveCanvas = Canvas.apply_tab
         else:
-            self.active_tab: ActiveTab = PaneBtn.re_add_tab
+            self.active_canvas: ActiveCanvas = Canvas.re_add_tab
         super().__init__(
             label="root",
-            id=self.tab_ids.tree_id(tree=self.tree_name),
+            id=self.canvas_ids.tree_id(tree=self.tree_name),
             classes=Tcss.tree_widget.name,
         )
 
@@ -272,13 +273,15 @@ class TreeBase(Tree[NodeData], AppType):
             return
 
         if self.tree_name == TreeName.flat_tree:
-            status_files = self.app.chezmoi.all_status_files(self.active_tab)
+            status_files = self.app.chezmoi.all_status_files(
+                self.active_canvas
+            )
         else:
             status_files = self.app.chezmoi.status_files_in(
-                self.active_tab, tree_node.data.path
+                self.active_canvas, tree_node.data.path
             )
 
-        if self.active_tab == PaneBtn.re_add_tab:
+        if self.active_canvas == PaneBtn.re_add_tab:
             # don't create nodes for non-existing files
             for file_path in status_files.copy():
                 if not file_path.exists():
@@ -307,10 +310,10 @@ class TreeBase(Tree[NodeData], AppType):
             return
 
         files_without_status = self.app.chezmoi.files_without_status_in(
-            self.active_tab, tree_node.data.path
+            self.active_canvas, tree_node.data.path
         )
 
-        if self.active_tab == PaneBtn.re_add_tab:
+        if self.active_canvas == PaneBtn.re_add_tab:
             # don't create nodes for non-existing files
             for file_path in files_without_status.copy():
                 if not file_path.exists():
@@ -337,7 +340,7 @@ class TreeBase(Tree[NodeData], AppType):
         if tree_node.data is None:
             return
         dir_paths = self.app.chezmoi.status_dirs_in(
-            self.active_tab, tree_node.data.path
+            self.active_canvas, tree_node.data.path
         )
         for dir_path, status_code in dir_paths.items():
             if dir_path in current_status_dirs:
@@ -362,7 +365,7 @@ class TreeBase(Tree[NodeData], AppType):
             and dir_node.data.status != "X"
         ]
         dir_paths = self.app.chezmoi.dirs_without_status_in(
-            self.active_tab, tree_node.data.path
+            self.active_canvas, tree_node.data.path
         )
         for dir_path, status_code in dir_paths.items():
             if dir_path in current_dirs_without_status:
@@ -492,9 +495,9 @@ class ManagedTree(TreeBase):
     destDir: reactive[Path | None] = reactive(None, init=False)
     unchanged: reactive[bool] = reactive(False, init=False)
 
-    def __init__(self, *, tab_ids: TabIds) -> None:
-        self.tab_ids = tab_ids
-        super().__init__(self.tab_ids, tree_name=TreeName.managed_tree)
+    def __init__(self, *, canvas_ids: CanvasIds) -> None:
+        self.canvas_ids = canvas_ids
+        super().__init__(self.canvas_ids, tree_name=TreeName.managed_tree)
 
     def watch_destDir(self) -> None:
         if self.destDir is None:
@@ -529,9 +532,9 @@ class ExpandedTree(TreeBase):
     destDir: reactive[Path | None] = reactive(None, init=False)
     unchanged: reactive[bool] = reactive(False, init=False)
 
-    def __init__(self, tab_ids: TabIds) -> None:
-        self.tab_ids = tab_ids
-        super().__init__(self.tab_ids, tree_name=TreeName.expanded_tree)
+    def __init__(self, canvas_ids: CanvasIds) -> None:
+        self.canvas_ids = canvas_ids
+        super().__init__(self.canvas_ids, tree_name=TreeName.expanded_tree)
 
     def watch_destDir(self) -> None:
         if self.destDir is None:
@@ -575,25 +578,25 @@ class FlatTree(TreeBase, AppType):
     destDir: reactive[Path | None] = reactive(None, init=False)
     unchanged: reactive[bool] = reactive(False, init=False)
 
-    def __init__(self, tab_ids: TabIds) -> None:
+    def __init__(self, canvas_ids: CanvasIds) -> None:
 
-        super().__init__(tab_ids, tree_name=TreeName.flat_tree)
+        super().__init__(canvas_ids, tree_name=TreeName.flat_tree)
 
     def add_files_with_status(self) -> None:
-        if self.active_tab == PaneBtn.apply_tab:
+        if self.active_canvas == Canvas.apply_tab:
             status_files = self.app.chezmoi.all_status_files(
-                active_tab=PaneBtn.apply_tab
+                active_canvas=Canvas.apply_tab
             )
         else:
             status_files = self.app.chezmoi.all_status_files(
-                active_tab=PaneBtn.re_add_tab
+                active_canvas=Canvas.re_add_tab
             )
         for file_path, status_code in status_files.items():
             node_data: NodeData = self.create_node_data(
                 path=file_path, is_leaf=True, status_code=status_code
             )
             if (
-                self.active_tab == PaneBtn.re_add_tab
+                self.active_canvas == PaneBtn.re_add_tab
                 and node_data.found is False
             ):
                 continue

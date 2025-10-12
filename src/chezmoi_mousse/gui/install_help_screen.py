@@ -12,14 +12,13 @@ from textual.containers import Center, Horizontal, Vertical, VerticalGroup
 from textual.screen import Screen
 from textual.widgets import Button, Collapsible, Label, Link, Pretty, Tree
 
-from chezmoi_mousse import ParsedJson, SubTitles, Tcss
+from chezmoi_mousse import Canvas, ParsedJson, SubTitles, Tcss
 from chezmoi_mousse.gui import AppType
 
 __all__ = ["InstallHelpScreen"]
 
 
 class Strings(StrEnum):
-    screen_id = "install_help_screen"
     exit_button_id = "exit_button"
     chezmoi_docs_link_id = "chezmoi_docs_link"
 
@@ -30,7 +29,9 @@ class InstallHelpScreen(Screen[None], AppType):
 
     def __init__(self, chezmoi_found: bool) -> None:
         self.chezmoi_found = chezmoi_found
-        super().__init__(id=Strings.screen_id, classes=Tcss.screen_base.name)
+        super().__init__(
+            id=Canvas.install_help_screen, classes=Tcss.screen_base.name
+        )
         self.path_env_list: list[str] = []
         self.pkg_root: Path | None = None
 

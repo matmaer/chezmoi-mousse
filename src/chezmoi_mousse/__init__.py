@@ -10,9 +10,9 @@ from chezmoi_mousse._chezmoi_cmd import (
     ReadVerbs,
     VerbArgs,
 )
-from chezmoi_mousse._id_classes import Id, TabIds
+from chezmoi_mousse._id_classes import CanvasIds, Id
 from chezmoi_mousse._labels import NavBtn, OperateBtn, PaneBtn, TabBtn
-from chezmoi_mousse._names import AreaName, TreeName, ViewName
+from chezmoi_mousse._names import AreaName, Canvas, TreeName, ViewName
 from chezmoi_mousse._subtitles import SubTitles
 from chezmoi_mousse._switch_data import Switches
 from chezmoi_mousse._tcss_classes import Tcss
@@ -34,7 +34,7 @@ __all__ = [
     "SubTitles",
     "Switches",
     "TabBtn",
-    "TabIds",
+    "CanvasIds",
     "Tcss",
     "TreeName",
     "VerbArgs",
@@ -46,6 +46,6 @@ try:
 except PackageNotFoundError:
     __version__ = "dev"
 
-type ActiveTab = Literal[PaneBtn.apply_tab, PaneBtn.re_add_tab]
+type ActiveCanvas = Literal[Canvas.apply_tab, Canvas.re_add_tab]
 type ParsedJson = dict[str, Any]
 type PathDict = dict[Path, str]
