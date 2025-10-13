@@ -170,6 +170,9 @@ class GitLogView(DataTable[Text], AppType):
 
 class TreeBase(Tree[NodeData], AppType):
 
+    ICON_NODE = Chars.right_triangle
+    ICON_NODE_EXPANDED = Chars.down_triangle
+
     def __init__(self, canvas_ids: CanvasIds, *, tree_name: TreeName) -> None:
         self.tree_name = tree_name
         self.canvas_ids = canvas_ids
