@@ -66,7 +66,7 @@ class ContentsView(RichLog, AppType):
 
     def __init__(self, *, canvas_ids: CanvasIds) -> None:
         self.canvas_ids = canvas_ids
-        self.first_render: bool = True
+        # self.first_render: bool = True
         super().__init__(
             id=self.canvas_ids.view_id(view=ViewName.contents_view),
             auto_scroll=False,
@@ -88,11 +88,6 @@ class ContentsView(RichLog, AppType):
 
     def watch_path(self) -> None:
         assert self.path is not None
-        if self.first_render is True:
-            self._write_destDir_info
-            self.first_render = False
-            return
-
         self.border_title = f" {self.path} "
         self.clear()
         truncated_message = ""
