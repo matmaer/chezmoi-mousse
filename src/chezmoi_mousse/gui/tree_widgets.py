@@ -59,7 +59,7 @@ class TreeBase(Tree[NodeData], AppType):
     # the styling method for the node labels
     def style_label(self, node_data: NodeData) -> Text:
         italic: bool = False if node_data.found else True
-        styled = "white"  # Default style
+        styled = "white"
         if node_data.is_leaf:
             if node_data.status == "X":
                 styled = "dim"
@@ -108,6 +108,32 @@ class TreeBase(Tree[NodeData], AppType):
         nodes.extend(collect_nodes(self.root))
         return nodes
 
+    def _get_existing_paths(
+        self, tree_node: TreeNode[NodeData], is_leaf: bool
+    ) -> list[Path]:
+        # get existing nodes (files or dirs based on is_leaf)
+        return [
+            child.data.path
+            for child in tree_node.children
+            if child.data is not None and child.data.is_leaf is is_leaf
+        ]
+
+    def _create_and_add_node(
+        self,
+        tree_node: TreeNode[NodeData],
+        path: Path,
+        status_code: str,
+        is_leaf: bool,
+    ) -> None:
+        node_data: NodeData = self.create_node_data(
+            path=path, is_leaf=is_leaf, status_code=status_code
+        )
+        node_label: Text = self.style_label(node_data)
+        if is_leaf:
+            tree_node.add_leaf(label=node_label, data=node_data)
+        else:
+            tree_node.add(label=node_label, data=node_data)
+
     def remove_files_without_status_in(
         self, *, tree_node: TreeNode[NodeData]
     ) -> None:
@@ -122,16 +148,10 @@ class TreeBase(Tree[NodeData], AppType):
             leaf.remove()
 
     def add_status_files_in(self, *, tree_node: TreeNode[NodeData]) -> None:
-        # get current visible leaves
-        current_leaves_with_status: list[Path] = [
-            leaf.data.path
-            for leaf in tree_node.children
-            if leaf.data is not None
-            and leaf.data.is_leaf is True
-            and leaf.data.status == "X"
-        ]
         if tree_node.data is None:
             return
+
+        existing_leaves = self._get_existing_paths(tree_node, is_leaf=True)
 
         if self.tree_name == TreeName.flat_tree:
             status_files = self.app.chezmoi.all_status_files(
@@ -142,100 +162,76 @@ class TreeBase(Tree[NodeData], AppType):
                 self.active_canvas, tree_node.data.path
             )
 
-        if self.active_canvas == PaneBtn.re_add_tab:
-            # don't create nodes for non-existing files
-            for file_path in status_files.copy():
-                if not file_path.exists():
-                    del status_files[file_path]
-
         for file_path, status_code in status_files.items():
-            if file_path in current_leaves_with_status:
+            if file_path in existing_leaves:
                 continue
-            node_data: NodeData = self.create_node_data(
-                path=file_path, is_leaf=True, status_code=status_code
+            # Only call exists() in re_add canvas
+            if (
+                self.active_canvas == PaneBtn.re_add_tab
+                and not file_path.exists()
+            ):
+                continue
+            self._create_and_add_node(
+                tree_node, file_path, status_code, is_leaf=True
             )
-            node_label: Text = self.style_label(node_data)
-            tree_node.add_leaf(label=node_label, data=node_data)
 
     def add_files_without_status_in(
         self, *, tree_node: TreeNode[NodeData]
     ) -> None:
-        current_leaves_without_status: list[Path] = [
-            leaf.data.path
-            for leaf in tree_node.children
-            if leaf.data is not None
-            and leaf.data.is_leaf is True
-            and leaf.data.status != "X"
-        ]
         if tree_node.data is None:
             return
 
+        existing_leaves = self._get_existing_paths(tree_node, is_leaf=True)
         files_without_status = self.app.chezmoi.files_without_status_in(
             self.active_canvas, tree_node.data.path
         )
 
-        if self.active_canvas == PaneBtn.re_add_tab:
-            # don't create nodes for non-existing files
-            for file_path in files_without_status.copy():
-                if not file_path.exists():
-                    del files_without_status[file_path]
-
         for file_path, status_code in files_without_status.items():
-            if file_path in current_leaves_without_status:
+            if file_path in existing_leaves:
                 continue
-            node_data: NodeData = self.create_node_data(
-                path=file_path, is_leaf=True, status_code=status_code
+            # Only call exists() in re_add canvas
+            if (
+                self.active_canvas == PaneBtn.re_add_tab
+                and not file_path.exists()
+            ):
+                continue
+            self._create_and_add_node(
+                tree_node, file_path, status_code, is_leaf=True
             )
-            node_label: Text = self.style_label(node_data)
-            tree_node.add_leaf(label=node_label, data=node_data)
 
     def add_status_dirs_in(self, *, tree_node: TreeNode[NodeData]) -> None:
-        # get current visible dir nodes
-        current_status_dirs: list[Path] = [
-            dir_node.data.path
-            for dir_node in tree_node.children
-            if dir_node.data is not None
-            and dir_node.data.is_leaf is False
-            and dir_node.data.status == "X"
-        ]
         if tree_node.data is None:
             return
+
+        existing_dirs = self._get_existing_paths(tree_node, is_leaf=False)
         dir_paths = self.app.chezmoi.status_dirs_in(
             self.active_canvas, tree_node.data.path
         )
+
         for dir_path, status_code in dir_paths.items():
-            if dir_path in current_status_dirs:
+            if dir_path in existing_dirs:
                 continue
-            node_data: NodeData = self.create_node_data(
-                path=dir_path, is_leaf=False, status_code=status_code
+            self._create_and_add_node(
+                tree_node, dir_path, status_code, is_leaf=False
             )
-            node_label: Text = self.style_label(node_data)
-            tree_node.add(label=node_label, data=node_data)
 
     def add_dirs_without_status_in(
         self, *, tree_node: TreeNode[NodeData]
     ) -> None:
         if tree_node.data is None:
             return
-        # get current visible dir nodes
-        current_dirs_without_status: list[Path] = [
-            dir_node.data.path
-            for dir_node in tree_node.children
-            if dir_node.data is not None
-            and dir_node.data.is_leaf is False
-            and dir_node.data.status != "X"
-        ]
+
+        existing_dirs = self._get_existing_paths(tree_node, is_leaf=False)
         dir_paths = self.app.chezmoi.dirs_without_status_in(
             self.active_canvas, tree_node.data.path
         )
+
         for dir_path, status_code in dir_paths.items():
-            if dir_path in current_dirs_without_status:
+            if dir_path in existing_dirs:
                 continue
-            node_data: NodeData = self.create_node_data(
-                path=dir_path, is_leaf=False, status_code=status_code
+            self._create_and_add_node(
+                tree_node, dir_path, status_code, is_leaf=False
             )
-            node_label: Text = self.style_label(node_data)
-            tree_node.add(label=node_label, data=node_data)
 
     def _apply_cursor_style(self, node_label: Text, is_cursor: bool) -> Text:
         """Helper to apply cursor-specific styling to a node label."""
