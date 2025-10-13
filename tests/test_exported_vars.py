@@ -33,7 +33,7 @@ def get_exported_names(module_path: Path) -> set[str] | None:
 
 def get_modules_to_test() -> list[Path]:
     # Get modules that have classes imported elsewhere.
-    modules_to_test = []
+    modules_to_test: list[Path] = []
 
     for module_path in get_module_paths():
         class_defs = get_module_ast_class_defs(module_path)
@@ -54,7 +54,7 @@ def get_modules_to_test() -> list[Path]:
     get_modules_to_test(),
     ids=lambda module_path: module_path.stem,
 )
-def test_module_exports_imported_classes(module_path):
+def test_module_exports_imported_classes(module_path: Path):
     # Test that a module exports all classes that are imported elsewhere
     # Get classes defined in this module
     class_defs = get_module_ast_class_defs(module_path)
