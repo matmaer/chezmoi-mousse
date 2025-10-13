@@ -420,7 +420,7 @@ class ExpandedTree(TreeBase):
         if node.data is not None and node.data.is_leaf is False:
             node.expand()
             self.add_status_dirs_in(tree_node=node)
-            self.add_dirs_without_status_in(tree_node=node)
+            self.add_status_files_in(tree_node=node)
             for child in node.children:
                 if child.data is not None and child.data.is_leaf is False:
                     self.expand_all_nodes(child)
