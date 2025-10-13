@@ -418,7 +418,8 @@ class ExpandedTree(TreeBase):
     def expand_all_nodes(self, node: TreeNode[NodeData]) -> None:
         # Recursively expand all directory nodes
         if node.data is not None and node.data.is_leaf is False:
-            node.expand()
+            if not node.is_expanded or node.data.path != self.destDir:
+                node.expand()
             self.add_status_dirs_in(tree_node=node)
             self.add_status_files_in(tree_node=node)
             for child in node.children:
