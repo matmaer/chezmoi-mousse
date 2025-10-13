@@ -2,13 +2,13 @@ from pathlib import Path
 
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import Horizontal, Vertical, VerticalGroup
-from textual.widgets import Button, Switch
+from textual.containers import Vertical, VerticalGroup
+from textual.widgets import ContentSwitcher, Switch
 
 from chezmoi_mousse import (
     AreaName,
+    CanvasIds,
     Id,
-    NavBtn,
     Switches,
     TabBtn,
     Tcss,
@@ -16,22 +16,49 @@ from chezmoi_mousse import (
     ViewName,
 )
 from chezmoi_mousse.gui import AppType
-from chezmoi_mousse.gui.button_groups import (
-    NavButtonsVertical,
-    TabBtnHorizontal,
-)
+from chezmoi_mousse.gui.button_groups import TabBtnHorizontal
 from chezmoi_mousse.gui.containers import OperateTabsBase, SwitchSlider
-from chezmoi_mousse.gui.content_switchers import (
-    ConfigTabSwitcher,
-    HelpTabSwitcher,
-    LogsTabSwitcher,
-    TreeSwitcher,
-    ViewSwitcher,
-)
 from chezmoi_mousse.gui.directory_tree import FilteredDirTree
-from chezmoi_mousse.gui.rich_logs import ContentsView
+from chezmoi_mousse.gui.rich_logs import ContentsView, DiffView
+from chezmoi_mousse.gui.tree_widgets import ExpandedTree, FlatTree, ManagedTree
+from chezmoi_mousse.gui.widgets import GitLogView
 
-__all__ = ["AddTab", "ApplyTab", "ConfigTab", "HelpTab", "LogsTab", "ReAddTab"]
+__all__ = ["AddTab", "ApplyTab", "ReAddTab"]
+
+
+class TreeSwitcher(ContentSwitcher, AppType):
+
+    def __init__(self, canvas_ids: CanvasIds):
+        self.canvas_ids = canvas_ids
+        super().__init__(
+            id=self.canvas_ids.content_switcher_id(area=AreaName.left),
+            initial=self.canvas_ids.tree_id(tree=TreeName.managed_tree),
+            classes=Tcss.content_switcher_left.name,
+        )
+
+    def compose(self) -> ComposeResult:
+        yield ManagedTree(canvas_ids=self.canvas_ids)
+        yield FlatTree(canvas_ids=self.canvas_ids)
+        yield ExpandedTree(canvas_ids=self.canvas_ids)
+
+    def on_mount(self) -> None:
+        self.border_title = " destDir "
+        self.add_class(Tcss.border_title_top.name)
+
+
+class ViewSwitcher(ContentSwitcher, AppType):
+    def __init__(self, *, canvas_ids: CanvasIds, diff_reverse: bool):
+        self.canvas_ids = canvas_ids
+        self.reverse = diff_reverse
+        super().__init__(
+            id=self.canvas_ids.content_switcher_id(area=AreaName.right),
+            initial=self.canvas_ids.view_id(view=ViewName.diff_view),
+        )
+
+    def compose(self) -> ComposeResult:
+        yield DiffView(canvas_ids=self.canvas_ids, reverse=self.reverse)
+        yield ContentsView(canvas_ids=self.canvas_ids)
+        yield GitLogView(canvas_ids=self.canvas_ids)
 
 
 class ApplyTab(OperateTabsBase):
@@ -168,93 +195,3 @@ class AddTab(OperateTabsBase, AppType):
         ):
             tree.unwanted = event.value
         tree.reload()
-
-
-class LogsTab(Vertical, AppType):
-
-    def __init__(self) -> None:
-        self.ids = Id.logs_tab
-        self.tab_buttons = (TabBtn.app_log, TabBtn.output_log)
-        super().__init__(id=self.ids.tab_container_id)
-
-    def compose(self) -> ComposeResult:
-        tab_buttons = (TabBtn.app_log, TabBtn.output_log)
-        if self.app.dev_mode is True:
-            tab_buttons += (TabBtn.debug_log,)
-
-        yield TabBtnHorizontal(
-            canvas_ids=self.ids, buttons=tab_buttons, area=AreaName.top
-        )
-        yield LogsTabSwitcher(canvas_ids=self.ids, dev_mode=self.app.dev_mode)
-
-    @on(Button.Pressed, Tcss.tab_button.value)
-    def switch_content(self, event: Button.Pressed) -> None:
-        event.stop()
-        switcher = self.query_exactly_one(LogsTabSwitcher)
-
-        if event.button.id == self.ids.button_id(btn=TabBtn.app_log):
-            switcher.current = self.ids.view_id(view=ViewName.app_log_view)
-            switcher.border_title = " App Log "
-        elif event.button.id == self.ids.button_id(btn=TabBtn.output_log):
-            switcher.current = self.ids.view_id(view=ViewName.output_log_view)
-            switcher.border_title = " Commands StdOut "
-        elif (
-            self.app.dev_mode is True
-            and event.button.id == self.ids.button_id(btn=TabBtn.debug_log)
-        ):
-            switcher.current = self.ids.view_id(view=ViewName.debug_log_view)
-            switcher.border_title = " Debug Log "
-
-
-class ConfigTab(Horizontal, AppType):
-
-    def __init__(self) -> None:
-        self.ids = Id.config_tab
-        super().__init__(id=self.ids.tab_container_id)
-
-    def compose(self) -> ComposeResult:
-        yield NavButtonsVertical(
-            canvas_ids=self.ids,
-            buttons=(
-                NavBtn.doctor,
-                NavBtn.cat_config,
-                NavBtn.ignored,
-                NavBtn.template_data,
-            ),
-        )
-        yield ConfigTabSwitcher(self.ids)
-
-    @on(Button.Pressed, Tcss.nav_button.value)
-    def switch_content(self, event: Button.Pressed) -> None:
-        event.stop()
-        switcher = self.query_exactly_one(ConfigTabSwitcher)
-        if event.button.id == self.ids.button_id(btn=(NavBtn.doctor)):
-            switcher.current = self.ids.view_id(view=ViewName.doctor_view)
-        elif event.button.id == self.ids.button_id(btn=(NavBtn.cat_config)):
-            switcher.current = self.ids.view_id(view=ViewName.cat_config_view)
-        elif event.button.id == self.ids.button_id(btn=NavBtn.ignored):
-            switcher.current = self.ids.view_id(view=ViewName.git_ignored_view)
-        elif event.button.id == self.ids.button_id(btn=NavBtn.template_data):
-            switcher.current = self.ids.view_id(
-                view=ViewName.template_data_view
-            )
-
-
-class HelpTab(Horizontal):
-
-    def __init__(self) -> None:
-        self.ids = Id.help_tab
-        super().__init__(id=self.ids.tab_container_id)
-
-    def compose(self) -> ComposeResult:
-        yield NavButtonsVertical(
-            canvas_ids=self.ids, buttons=(NavBtn.diagram,)
-        )
-        yield HelpTabSwitcher(canvas_ids=self.ids)
-
-    @on(Button.Pressed, Tcss.nav_button.value)
-    def switch_content(self, event: Button.Pressed) -> None:
-        event.stop()
-        switcher = self.query_exactly_one(HelpTabSwitcher)
-        if event.button.id == self.ids.button_id(btn=NavBtn.diagram):
-            switcher.current = self.ids.view_id(view=ViewName.diagram_view)

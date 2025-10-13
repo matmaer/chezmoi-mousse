@@ -25,16 +25,12 @@ from chezmoi_mousse import (
 from chezmoi_mousse.gui import ParsedConfig, SplashData
 from chezmoi_mousse.gui.button_groups import OperateBtnHorizontal
 from chezmoi_mousse.gui.chezmoi import Chezmoi
+from chezmoi_mousse.gui.config_tab import ConfigTab
 from chezmoi_mousse.gui.directory_tree import FilteredDirTree
+from chezmoi_mousse.gui.help_tab import HelpTab
 from chezmoi_mousse.gui.install_help_screen import InstallHelpScreen
-from chezmoi_mousse.gui.main_tabs import (
-    AddTab,
-    ApplyTab,
-    ConfigTab,
-    HelpTab,
-    LogsTab,
-    ReAddTab,
-)
+from chezmoi_mousse.gui.logs_tab import LogsTab
+from chezmoi_mousse.gui.operate_tabs import AddTab, ApplyTab, ReAddTab
 from chezmoi_mousse.gui.overrides import CustomScrollBarRender
 from chezmoi_mousse.gui.rich_logs import (
     AppLog,
