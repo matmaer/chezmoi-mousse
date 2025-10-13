@@ -202,26 +202,20 @@ class Chezmoi:
                     result[path] = " "
             return dict(sorted(result.items()))
         else:
-            # First, collect existing managed dirs in this directory to minimize exists() calls
-            existing_managed_dirs = {
-                path: path.exists()
-                for path in self.managed_dirs
-                if path.parent == dir_path
-            }
-
             result = {
                 path: status
                 for path, status in self._re_add_status_paths.items()
                 if path.parent == dir_path
                 and path in self.managed_dirs
-                and existing_managed_dirs.get(path, False)
+                and path.exists()
             }
-
             # Add dirs that contain status files but don't have direct status
-            for path, exists in existing_managed_dirs.items():
+            # Check exists() only once per directory
+            for path in self.managed_dirs:
                 if (
-                    path not in result
-                    and exists
+                    path.parent == dir_path
+                    and path not in result
+                    and path.exists()
                     and self._has_re_add_status_files_in(path)
                 ):
                     result[path] = " "
