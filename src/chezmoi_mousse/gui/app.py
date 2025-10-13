@@ -43,13 +43,8 @@ from chezmoi_mousse.gui.rich_logs import (
     OutputLog,
 )
 from chezmoi_mousse.gui.splash import LoadingScreen
-from chezmoi_mousse.gui.widgets import (
-    ExpandedTree,
-    FlatTree,
-    GitLogView,
-    ManagedTree,
-    OperateInfo,
-)
+from chezmoi_mousse.gui.tree_widgets import ExpandedTree, FlatTree, ManagedTree
+from chezmoi_mousse.gui.widgets import GitLogView, OperateInfo
 
 __all__ = ["ChezmoiGUI", "PreRunData"]
 

@@ -31,13 +31,8 @@ from chezmoi_mousse.gui import AppType
 from chezmoi_mousse.gui.button_groups import OperateBtnHorizontal
 from chezmoi_mousse.gui.messages import TreeNodeSelectedMsg
 from chezmoi_mousse.gui.rich_logs import ContentsView, DiffView
-from chezmoi_mousse.gui.widgets import (
-    ExpandedTree,
-    FlatTree,
-    GitLogView,
-    ManagedTree,
-    OperateInfo,
-)
+from chezmoi_mousse.gui.tree_widgets import ExpandedTree, FlatTree, ManagedTree
+from chezmoi_mousse.gui.widgets import GitLogView, OperateInfo
 
 __all__ = ["OperateTabsBase", "SwitchSlider"]
 

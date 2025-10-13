@@ -14,14 +14,8 @@ from chezmoi_mousse.gui.rich_logs import (
     DiffView,
     OutputLog,
 )
-from chezmoi_mousse.gui.widgets import (
-    DoctorListView,
-    DoctorTable,
-    ExpandedTree,
-    FlatTree,
-    GitLogView,
-    ManagedTree,
-)
+from chezmoi_mousse.gui.tree_widgets import ExpandedTree, FlatTree, ManagedTree
+from chezmoi_mousse.gui.widgets import DoctorListView, DoctorTable, GitLogView
 
 __all__ = [
     "ConfigTabSwitcher",
