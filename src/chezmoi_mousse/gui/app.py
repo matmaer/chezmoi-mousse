@@ -171,6 +171,27 @@ class ChezmoiGUI(App[None]):
             callback=self.run_post_splash_actions,
         )
 
+    def setup_ui_loggers(self) -> None:
+        app_logger = self.query_one(
+            Id.logs_tab.view_id("#", view=ViewName.app_log_view), AppLog
+        )
+        self.app_log = app_logger
+        self.chezmoi.app_log = app_logger
+
+        output_logger = self.query_one(
+            Id.logs_tab.view_id("#", view=ViewName.output_log_view), OutputLog
+        )
+        self.output_log = output_logger
+        self.chezmoi.output_log = output_logger
+
+        if self.dev_mode is True:
+            debug_logger = self.query_one(
+                Id.logs_tab.view_id("#", view=ViewName.debug_log_view),
+                DebugLog,
+            )
+            self.debug_log = debug_logger
+            self.chezmoi.debug_log = debug_logger
+
     def run_post_splash_actions(self, return_data: SplashData | None) -> None:
         if return_data is None:
             self.push_screen(
@@ -196,27 +217,6 @@ class ChezmoiGUI(App[None]):
         self.update_config_tab(return_data)
         self.update_operate_info(return_data)
         self.update_dir_tree_destDir(return_data)
-
-    def setup_ui_loggers(self) -> None:
-        app_logger = self.query_one(
-            Id.logs_tab.view_id("#", view=ViewName.app_log_view), AppLog
-        )
-        self.app_log = app_logger
-        self.chezmoi.app_log = app_logger
-
-        output_logger = self.query_one(
-            Id.logs_tab.view_id("#", view=ViewName.output_log_view), OutputLog
-        )
-        self.output_log = output_logger
-        self.chezmoi.output_log = output_logger
-
-        if self.dev_mode is True:
-            debug_logger = self.query_one(
-                Id.logs_tab.view_id("#", view=ViewName.debug_log_view),
-                DebugLog,
-            )
-            self.debug_log = debug_logger
-            self.chezmoi.debug_log = debug_logger
 
     def update_chezmoi_instance(self, data: SplashData) -> None:
         self.chezmoi.managed_files_stdout = data.managed_files
