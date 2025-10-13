@@ -24,8 +24,8 @@
     "OpenIndiana": "pkg install application/chezmoi"
   },
   "Cross-Platform": {
-    "asdf": "asdf plugin add chezmoi && asdf install chezmoi v2.65.2",
-    "mise": "mise use --global chezmoi@v2.65.2",
+    "asdf": "asdf plugin add chezmoi && asdf install chezmoi v2.66.0",
+    "mise": "mise use --global chezmoi@v2.66.0",
     "Homebrew": "brew install chezmoi",
     "Nix": "nix-env -i chezmoi",
     "snap": "snap install chezmoi --classic"
