@@ -18,7 +18,7 @@ def get_exported_names(module_path: Path) -> set[str] | None:
         if isinstance(node, ast.Assign) and any(
             isinstance(t, ast.Name) and t.id == "__all__" for t in node.targets
         ):
-            if isinstance(node.value, (ast.List, ast.Tuple)):
+            if isinstance(node.value, ast.List):
                 try:
                     return {
                         e.value
