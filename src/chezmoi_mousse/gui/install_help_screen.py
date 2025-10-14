@@ -3,6 +3,7 @@ import os
 from enum import StrEnum
 from importlib.resources import files
 from pathlib import Path
+from typing import Any
 
 from rich.text import Text
 from textual import on
@@ -12,10 +13,12 @@ from textual.containers import Center, Horizontal, Vertical, VerticalGroup
 from textual.screen import Screen
 from textual.widgets import Button, Collapsible, Label, Link, Pretty, Tree
 
-from chezmoi_mousse import Canvas, ParsedJson, SubTitles, Tcss
+from chezmoi_mousse import Canvas, SubTitles, Tcss
 from chezmoi_mousse.gui import AppType
 
 __all__ = ["InstallHelpScreen"]
+
+type ParsedJson = dict[str, Any]
 
 
 class Strings(StrEnum):

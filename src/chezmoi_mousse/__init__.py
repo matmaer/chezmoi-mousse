@@ -1,6 +1,5 @@
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
-from typing import Any
 
 from chezmoi_mousse._chars import Chars
 from chezmoi_mousse._chezmoi_cmd import (
@@ -25,7 +24,6 @@ from chezmoi_mousse._tcss_classes import Tcss
 
 __all__ = [
     "__version__",
-    "Any",
     "ActiveCanvas",
     "AreaName",
     "Canvas",
@@ -37,7 +35,6 @@ __all__ = [
     "NavBtn",
     "OperateBtn",
     "PaneBtn",
-    "ParsedJson",
     "ReadCmd",
     "ReadVerbs",
     "SubTitles",
@@ -54,5 +51,4 @@ try:
 except PackageNotFoundError:
     __version__ = "dev"
 
-type ParsedJson = dict[str, Any]
 type PathDict = dict[Path, str]
