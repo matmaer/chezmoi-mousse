@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 from textual.app import App, ComposeResult
 from textual.binding import Binding
@@ -22,7 +23,6 @@ from chezmoi_mousse import (
     TreeName,
     ViewName,
 )
-from chezmoi_mousse._chezmoi import Chezmoi
 from chezmoi_mousse.gui import ParsedConfig, SplashData
 from chezmoi_mousse.gui.button_groups import OperateBtnHorizontal
 from chezmoi_mousse.gui.config_tab import ConfigTab
@@ -48,10 +48,13 @@ __all__ = ["ChezmoiGUI", "PreRunData"]
 # widgets inform the user why the Tree widget is empty
 # TODO: implement spinner for commands taking a bit longer like operations
 
+if TYPE_CHECKING:
+    from chezmoi_mousse._chezmoi import Chezmoi
+
 
 @dataclass(slots=True)
 class PreRunData:
-    chezmoi_instance: Chezmoi
+    chezmoi_instance: "Chezmoi"
     changes_enabled: bool
     chezmoi_found: bool
     dev_mode: bool
