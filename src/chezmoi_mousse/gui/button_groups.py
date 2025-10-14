@@ -1,4 +1,3 @@
-from textual import on
 from textual.app import ComposeResult
 from textual.containers import HorizontalGroup, Vertical, VerticalGroup
 from textual.widgets import Button
@@ -88,8 +87,3 @@ class TabBtnHorizontal(ButtonsHorizontalBase):
         self.query_one(
             self.canvas_ids.button_id("#", btn=self.buttons[0])
         ).add_class(Tcss.last_clicked.name)
-
-    @on(Button.Pressed, f".{Tcss.tab_button.name}")
-    def update_tab_btn_last_clicked(self, event: Button.Pressed) -> None:
-        self.query(Button).remove_class(Tcss.last_clicked.name)
-        event.button.add_class(Tcss.last_clicked.name)
