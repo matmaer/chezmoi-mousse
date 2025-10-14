@@ -26,17 +26,16 @@ from chezmoi_mousse.gui.button_groups import OperateBtnHorizontal
 from chezmoi_mousse.gui.config_tab import ConfigTab
 from chezmoi_mousse.gui.directory_tree import FilteredDirTree
 from chezmoi_mousse.gui.help_tab import HelpTab
-from chezmoi_mousse.gui.install_help_screen import InstallHelp
 from chezmoi_mousse.gui.logs_tab import LogsTab
 from chezmoi_mousse.gui.operate_tabs import AddTab, ApplyTab, ReAddTab
 from chezmoi_mousse.gui.overrides import CustomScrollBarRender
+from chezmoi_mousse.gui.pre_run_screens import InstallHelp, LoadingScreen
 from chezmoi_mousse.gui.rich_logs import (
     AppLog,
     ContentsView,
     DebugLog,
     OutputLog,
 )
-from chezmoi_mousse.gui.splash import LoadingScreen
 from chezmoi_mousse.gui.tree_widgets import ExpandedTree, FlatTree, ManagedTree
 from chezmoi_mousse.gui.widgets import GitLogView, OperateInfo
 
@@ -48,7 +47,7 @@ __all__ = ["ChezmoiGUI"]
 
 if TYPE_CHECKING:
     from chezmoi_mousse.gui import PreRunData
-    from chezmoi_mousse.gui.splash import ParsedConfig, SplashData
+    from chezmoi_mousse.gui.pre_run_screens import ParsedConfig, SplashData
 
 
 chezmoi_mousse_dark = Theme(
