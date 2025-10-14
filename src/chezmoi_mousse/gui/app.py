@@ -22,9 +22,9 @@ from chezmoi_mousse import (
     TreeName,
     ViewName,
 )
+from chezmoi_mousse._chezmoi import Chezmoi
 from chezmoi_mousse.gui import ParsedConfig, SplashData
 from chezmoi_mousse.gui.button_groups import OperateBtnHorizontal
-from chezmoi_mousse.gui.chezmoi import Chezmoi
 from chezmoi_mousse.gui.config_tab import ConfigTab
 from chezmoi_mousse.gui.directory_tree import FilteredDirTree
 from chezmoi_mousse.gui.help_tab import HelpTab
