@@ -2,8 +2,7 @@ from pathlib import Path
 from subprocess import CompletedProcess, run
 from typing import TYPE_CHECKING
 
-from chezmoi_mousse import (
-    ActiveCanvas,
+from chezmoi_mousse import (  # ActiveCanvas,
     Canvas,
     ChangeCmd,
     GlobalCmd,
@@ -12,6 +11,7 @@ from chezmoi_mousse import (
 )
 
 if TYPE_CHECKING:
+    from chezmoi_mousse._names import ActiveCanvas
     from chezmoi_mousse.gui.rich_logs import AppLog, DebugLog, OutputLog
 
 __all__ = ["Chezmoi"]
@@ -160,14 +160,14 @@ class Chezmoi:
             if key in self.managed_files
         }
 
-    def all_status_files(self, active_canvas: ActiveCanvas) -> PathDict:
+    def all_status_files(self, active_canvas: "ActiveCanvas") -> PathDict:
         if active_canvas == Canvas.apply:
             return self._apply_status_files
         else:
             return self._re_add_status_files
 
     def status_files_in(
-        self, active_canvas: ActiveCanvas, dir_path: Path
+        self, active_canvas: "ActiveCanvas", dir_path: Path
     ) -> PathDict:
         if active_canvas == Canvas.apply:
             return {
@@ -185,7 +185,7 @@ class Chezmoi:
             }
 
     def status_dirs_in(
-        self, active_canvas: ActiveCanvas, dir_path: Path
+        self, active_canvas: "ActiveCanvas", dir_path: Path
     ) -> PathDict:
         if active_canvas == Canvas.apply:
             result = {
@@ -222,7 +222,7 @@ class Chezmoi:
             return dict(sorted(result.items()))
 
     def files_without_status_in(
-        self, active_canvas: ActiveCanvas, dir_path: Path
+        self, active_canvas: "ActiveCanvas", dir_path: Path
     ) -> PathDict:
         if active_canvas == Canvas.apply:
             return {
@@ -241,7 +241,7 @@ class Chezmoi:
             }
 
     def dirs_without_status_in(
-        self, active_canvas: ActiveCanvas, dir_path: Path
+        self, active_canvas: "ActiveCanvas", dir_path: Path
     ) -> PathDict:
         if active_canvas == Canvas.apply:
             status_paths = self._apply_status_paths
@@ -267,7 +267,7 @@ class Chezmoi:
         return result
 
     def has_status_paths_in(
-        self, active_canvas: ActiveCanvas, dir_path: Path
+        self, active_canvas: "ActiveCanvas", dir_path: Path
     ) -> bool:
         if active_canvas == Canvas.apply:
             return self._has_apply_status_files_in(dir_path)
