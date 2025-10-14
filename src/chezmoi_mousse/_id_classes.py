@@ -82,5 +82,4 @@ class Id:
     logs_tab: CanvasIds = CanvasIds(Canvas.logs)
     re_add_tab: CanvasIds = CanvasIds(Canvas.re_add)
     init_screen: CanvasIds = CanvasIds(Canvas.init)
-    maximized_layer: CanvasIds = CanvasIds(Canvas.maximized)
     operate_layer: CanvasIds = CanvasIds(Canvas.operate)

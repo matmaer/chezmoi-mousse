@@ -66,13 +66,6 @@ class Operate(Vertical, AppType):
         operate_info.border_title = f" {self.path} "
 
 
-class Maximized(Vertical, AppType):
-
-    def __init__(self, *, id_to_maximize: str) -> None:
-        self.id_to_maximize = id_to_maximize
-        super().__init__(classes=Tcss.border_title_top.name)
-
-
 class OperateTabsBase(Horizontal, AppType):
 
     def __init__(self, *, canvas_ids: CanvasIds) -> None:

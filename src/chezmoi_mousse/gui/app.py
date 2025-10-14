@@ -95,12 +95,11 @@ class ChezmoiGUI(App[None]):
     CSS_PATH = "data/gui.tcss"
 
     BINDINGS = [
-        Binding(key="M,m", action="maximize", description="maximize"),
         Binding(
             key="T,t",
             action="toggle_switch_slider",
             description="toggle-switches",
-        ),
+        )
     ]
 
     def compose(self) -> ComposeResult:

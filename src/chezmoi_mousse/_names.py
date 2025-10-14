@@ -23,7 +23,6 @@ class Canvas(StrEnum):
     init = auto()
     install_help = auto()
     logs = auto()
-    maximized = auto()
     operate = auto()
     re_add = auto()
 
