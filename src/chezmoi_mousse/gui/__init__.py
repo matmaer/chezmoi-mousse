@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-__all__ = ["AppType", "PreRunData"]
-
 if TYPE_CHECKING:
     from chezmoi_mousse._chezmoi import Chezmoi
     from chezmoi_mousse.gui.app import ChezmoiGUI
+
+__all__ = ["AppType", "PreRunData"]
 
 
 class AppType:

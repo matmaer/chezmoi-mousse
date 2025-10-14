@@ -31,9 +31,9 @@ class TreeNodeSelectedMsg(Message):
         self,
         node_data: "NodeData",
         tree_name: TreeName,
-        node_leaves: list["NodeData"] | None = None,
+        node_leaves: list["NodeData | None"] | None = None,
         node_parent: "NodeData | None" = None,
-        node_subdirs: list["NodeData"] | None = None,
+        node_subdirs: list["NodeData | None"] | None = None,
     ) -> None:
         self.node_data = node_data
         self.node_leaves = node_leaves if node_leaves is not None else []

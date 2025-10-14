@@ -41,9 +41,9 @@ from chezmoi_mousse import Canvas, Chars, ReadCmd, SubTitles, Tcss, VerbArgs
 from chezmoi_mousse.gui import AppType
 from chezmoi_mousse.gui.rich_logs import LogUtils
 
-__all__ = ["InstallHelp", "LoadingScreen"]
-
 type ParsedJson = dict[str, Any]
+
+__all__ = ["InstallHelp", "LoadingScreen"]
 
 
 @dataclass(slots=True)

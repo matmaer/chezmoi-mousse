@@ -18,7 +18,6 @@ from chezmoi_mousse.gui.messages import TreeNodeSelectedMsg
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds
 
-
 __all__ = ["ManagedTree", "NodeData", "ExpandedTree", "FlatTree"]
 
 

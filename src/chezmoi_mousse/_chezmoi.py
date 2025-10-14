@@ -5,6 +5,12 @@ from typing import TYPE_CHECKING
 
 from chezmoi_mousse._names import Canvas
 
+if TYPE_CHECKING:
+    from chezmoi_mousse._names import ActiveCanvas
+    from chezmoi_mousse.gui.rich_logs import AppLog, DebugLog, OutputLog
+
+type PathDict = dict[Path, str]
+
 __all__ = [
     "ChangeCmd",
     "Chezmoi",
@@ -13,12 +19,6 @@ __all__ = [
     "ReadVerbs",
     "VerbArgs",
 ]
-
-if TYPE_CHECKING:
-    from chezmoi_mousse._names import ActiveCanvas
-    from chezmoi_mousse.gui.rich_logs import AppLog, DebugLog, OutputLog
-
-type PathDict = dict[Path, str]
 
 
 class GlobalCmd(Enum):

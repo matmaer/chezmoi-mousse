@@ -39,15 +39,15 @@ from chezmoi_mousse.gui.rich_logs import (
 from chezmoi_mousse.gui.tree_widgets import ExpandedTree, FlatTree, ManagedTree
 from chezmoi_mousse.gui.widgets import GitLogView, OperateInfo
 
+if TYPE_CHECKING:
+    from chezmoi_mousse.gui import PreRunData
+    from chezmoi_mousse.gui.pre_run_screens import ParsedConfig, SplashData
+
 __all__ = ["ChezmoiGUI"]
 
 # TODO: implement 'chezmoi verify', if exit 0, display message in Tree
 # widgets inform the user why the Tree widget is empty
 # TODO: implement spinner for commands taking a bit longer like operations
-
-if TYPE_CHECKING:
-    from chezmoi_mousse.gui import PreRunData
-    from chezmoi_mousse.gui.pre_run_screens import ParsedConfig, SplashData
 
 
 chezmoi_mousse_dark = Theme(
