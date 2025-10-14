@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from textual.app import App, ComposeResult
@@ -42,22 +41,14 @@ from chezmoi_mousse.gui.splash import LoadingScreen
 from chezmoi_mousse.gui.tree_widgets import ExpandedTree, FlatTree, ManagedTree
 from chezmoi_mousse.gui.widgets import GitLogView, OperateInfo
 
-__all__ = ["ChezmoiGUI", "PreRunData"]
+__all__ = ["ChezmoiGUI"]
 
 # TODO: implement 'chezmoi verify', if exit 0, display message in Tree
 # widgets inform the user why the Tree widget is empty
 # TODO: implement spinner for commands taking a bit longer like operations
 
 if TYPE_CHECKING:
-    from chezmoi_mousse._chezmoi import Chezmoi
-
-
-@dataclass(slots=True)
-class PreRunData:
-    chezmoi_instance: "Chezmoi"
-    changes_enabled: bool
-    chezmoi_found: bool
-    dev_mode: bool
+    from chezmoi_mousse.gui import PreRunData
 
 
 chezmoi_mousse_dark = Theme(
@@ -86,7 +77,7 @@ chezmoi_mousse_light = Theme(
 
 
 class ChezmoiGUI(App[None]):
-    def __init__(self, pre_run_data: PreRunData) -> None:
+    def __init__(self, pre_run_data: "PreRunData") -> None:
 
         self.chezmoi = pre_run_data.chezmoi_instance
         self.changes_enabled = pre_run_data.changes_enabled

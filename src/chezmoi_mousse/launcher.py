@@ -4,7 +4,8 @@ import traceback
 from pathlib import Path
 
 from chezmoi_mousse._chezmoi import Chezmoi
-from chezmoi_mousse.gui.app import ChezmoiGUI, PreRunData
+from chezmoi_mousse.gui import PreRunData
+from chezmoi_mousse.gui.app import ChezmoiGUI
 
 
 def run_app():

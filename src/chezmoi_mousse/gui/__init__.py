@@ -2,9 +2,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-__all__ = ["AppType", "NodeData", "ParsedConfig", "SplashData"]
+__all__ = ["AppType", "NodeData", "ParsedConfig", "PreRunData", "SplashData"]
 
 if TYPE_CHECKING:
+    from chezmoi_mousse._chezmoi import Chezmoi
     from chezmoi_mousse.gui.app import ChezmoiGUI
 
 
@@ -34,6 +35,14 @@ class ParsedConfig:
     source_dir: Path
     git_autocommit: bool
     git_autopush: bool
+
+
+@dataclass(slots=True)
+class PreRunData:
+    chezmoi_instance: "Chezmoi"
+    changes_enabled: bool
+    chezmoi_found: bool
+    dev_mode: bool
 
 
 @dataclass(slots=True)
