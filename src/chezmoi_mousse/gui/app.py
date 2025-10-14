@@ -22,7 +22,6 @@ from chezmoi_mousse import (
     TreeName,
     ViewName,
 )
-from chezmoi_mousse.gui import ParsedConfig, SplashData
 from chezmoi_mousse.gui.button_groups import OperateBtnHorizontal
 from chezmoi_mousse.gui.config_tab import ConfigTab
 from chezmoi_mousse.gui.directory_tree import FilteredDirTree
@@ -49,6 +48,7 @@ __all__ = ["ChezmoiGUI"]
 
 if TYPE_CHECKING:
     from chezmoi_mousse.gui import PreRunData
+    from chezmoi_mousse.gui.splash import ParsedConfig, SplashData
 
 
 chezmoi_mousse_dark = Theme(
@@ -83,7 +83,7 @@ class ChezmoiGUI(App[None]):
         self.changes_enabled = pre_run_data.changes_enabled
         self.chezmoi_found = pre_run_data.chezmoi_found
         self.dev_mode = pre_run_data.dev_mode
-        self.parsed_config: ParsedConfig | None = None
+        self.parsed_config: "ParsedConfig | None" = None
 
         self.app_log: AppLog
         self.output_log: OutputLog
@@ -182,7 +182,9 @@ class ChezmoiGUI(App[None]):
             self.debug_log = debug_logger
             self.chezmoi.debug_log = debug_logger
 
-    def run_post_splash_actions(self, return_data: SplashData | None) -> None:
+    def run_post_splash_actions(
+        self, return_data: "SplashData | None"
+    ) -> None:
         if return_data is None:
             self.push_screen(
                 InstallHelpScreen(chezmoi_found=self.chezmoi_found)
@@ -208,14 +210,14 @@ class ChezmoiGUI(App[None]):
         self.update_operate_info(return_data)
         self.update_dir_tree_destDir(return_data)
 
-    def update_chezmoi_instance(self, data: SplashData) -> None:
+    def update_chezmoi_instance(self, data: "SplashData") -> None:
         self.chezmoi.managed_files_stdout = data.managed_files
         self.chezmoi.managed_dirs_stdout = data.managed_dirs
         self.chezmoi.status_dirs_stdout = data.status_dirs
         self.chezmoi.status_files_stdout = data.status_files
         self.chezmoi.status_paths_stdout = data.status_paths
 
-    def update_managed_tree_destDir(self, data: SplashData) -> None:
+    def update_managed_tree_destDir(self, data: "SplashData") -> None:
         apply_tab_managed_tree = self.query_one(
             Id.apply_tab.tree_id("#", tree=TreeName.managed_tree), ManagedTree
         )
@@ -226,7 +228,7 @@ class ChezmoiGUI(App[None]):
         )
         re_add_tab_managed_tree.destDir = data.dump_config.dest_dir
 
-    def update_expanded_tree_destDir(self, data: SplashData) -> None:
+    def update_expanded_tree_destDir(self, data: "SplashData") -> None:
         apply_tab_expanded_tree = self.query_one(
             Id.apply_tab.tree_id("#", tree=TreeName.expanded_tree),
             ExpandedTree,
@@ -239,7 +241,7 @@ class ChezmoiGUI(App[None]):
         )
         re_add_tab_expanded_tree.destDir = data.dump_config.dest_dir
 
-    def update_flat_tree_destDir(self, data: SplashData) -> None:
+    def update_flat_tree_destDir(self, data: "SplashData") -> None:
         apply_tab_flat_tree = self.query_one(
             Id.apply_tab.tree_id("#", tree=TreeName.flat_tree), FlatTree
         )
@@ -250,7 +252,7 @@ class ChezmoiGUI(App[None]):
         )
         re_add_tab_flat_tree.destDir = data.dump_config.dest_dir
 
-    def update_contents_view_destDir(self, data: SplashData) -> None:
+    def update_contents_view_destDir(self, data: "SplashData") -> None:
         apply_contents_view = self.query_one(
             Id.apply_tab.view_id("#", view=ViewName.contents_view),
             ContentsView,
@@ -263,7 +265,7 @@ class ChezmoiGUI(App[None]):
         )
         re_add_contents_view.path = data.dump_config.dest_dir
 
-    def update_git_log_view_destDir(self, data: SplashData) -> None:
+    def update_git_log_view_destDir(self, data: "SplashData") -> None:
         apply_git_log_view = self.query_one(
             Id.apply_tab.view_id("#", view=ViewName.git_log_view), GitLogView
         )
@@ -274,13 +276,13 @@ class ChezmoiGUI(App[None]):
         )
         re_add_git_log_view.path = data.dump_config.dest_dir
 
-    def update_dir_tree_destDir(self, data: SplashData) -> None:
+    def update_dir_tree_destDir(self, data: "SplashData") -> None:
         dir_tree = self.query_one(
             Id.add_tab.tree_id("#", tree=TreeName.add_tree), FilteredDirTree
         )
         dir_tree.path = data.dump_config.dest_dir
 
-    def update_config_tab(self, data: SplashData) -> None:
+    def update_config_tab(self, data: "SplashData") -> None:
         config_tab_switcher = self.query_one(
             Id.config_tab.content_switcher_id("#", area=AreaName.right),
             ContentSwitcher,
@@ -292,7 +294,7 @@ class ChezmoiGUI(App[None]):
             config_tab_switcher, "template_data_stdout", data.template_data
         )
 
-    def update_operate_info(self, data: SplashData) -> None:
+    def update_operate_info(self, data: "SplashData") -> None:
         OperateInfo.git_autocommit = data.dump_config.git_autocommit
         OperateInfo.git_autopush = data.dump_config.git_autopush
 

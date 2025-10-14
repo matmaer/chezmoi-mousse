@@ -1,6 +1,6 @@
 import json
 from collections import deque
-from dataclasses import fields
+from dataclasses import dataclass, fields
 from pathlib import Path
 
 from rich.segment import Segment
@@ -17,10 +17,33 @@ from textual.widgets import RichLog, Static
 from textual.worker import WorkerState
 
 from chezmoi_mousse import ReadCmd, VerbArgs
-from chezmoi_mousse.gui import AppType, ParsedConfig, SplashData
+from chezmoi_mousse.gui import AppType
 from chezmoi_mousse.gui.rich_logs import LogUtils
 
-__all__ = ["LoadingScreen"]
+__all__ = ["LoadingScreen", "ParsedConfig", "SplashData"]
+
+
+@dataclass(slots=True)
+class ParsedConfig:
+    dest_dir: Path
+    git_autoadd: bool
+    source_dir: Path
+    git_autocommit: bool
+    git_autopush: bool
+
+
+@dataclass(slots=True)
+class SplashData:
+    cat_config: str
+    doctor: str
+    dump_config: ParsedConfig
+    ignored: str
+    managed_dirs: str
+    managed_files: str
+    status_dirs: str
+    status_files: str
+    status_paths: str
+    template_data: str
 
 
 SPLASH = """\
