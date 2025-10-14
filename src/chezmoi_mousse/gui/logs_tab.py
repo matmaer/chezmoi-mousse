@@ -1,3 +1,4 @@
+from enum import StrEnum
 from typing import TYPE_CHECKING
 
 from textual import on
@@ -14,6 +15,12 @@ if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds
 
 __all__ = ["LogsTab"]
+
+
+class BorderTitle(StrEnum):
+    app_log = " App Log "
+    output_log = " Commands StdOut "
+    debug_log = " Debug Log "
 
 
 class LogsTabSwitcher(ContentSwitcher, AppType):
@@ -34,7 +41,7 @@ class LogsTabSwitcher(ContentSwitcher, AppType):
             yield DebugLog(ids=self.ids)
 
     def on_mount(self) -> None:
-        self.border_title = " App Log "
+        self.border_title = BorderTitle.app_log
 
 
 class LogsTab(Vertical, AppType):
@@ -61,13 +68,13 @@ class LogsTab(Vertical, AppType):
 
         if event.button.id == self.ids.button_id(btn=TabBtn.app_log):
             switcher.current = self.ids.view_id(view=ViewName.app_log_view)
-            switcher.border_title = " App Log "
+            switcher.border_title = BorderTitle.app_log
         elif event.button.id == self.ids.button_id(btn=TabBtn.output_log):
             switcher.current = self.ids.view_id(view=ViewName.output_log_view)
-            switcher.border_title = " Commands StdOut "
+            switcher.border_title = BorderTitle.output_log
         elif (
             self.app.dev_mode is True
             and event.button.id == self.ids.button_id(btn=TabBtn.debug_log)
         ):
             switcher.current = self.ids.view_id(view=ViewName.debug_log_view)
-            switcher.border_title = " Debug Log "
+            switcher.border_title = BorderTitle.debug_log
