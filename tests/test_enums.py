@@ -63,7 +63,6 @@ def _class_has_getattr_for_enum(enum_class_name: str) -> bool:
 
 
 def _class_has_field_name(class_def: ast.ClassDef, member_name: str) -> bool:
-    """Check if the class has an annotated field that matches the member name."""
     for node in ast.walk(class_def):
         if (
             isinstance(node, ast.AnnAssign)
