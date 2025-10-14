@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING
 
+from textual import on
 from textual.app import ComposeResult
 from textual.containers import HorizontalGroup, Vertical, VerticalGroup
 from textual.widgets import Button
@@ -74,7 +75,13 @@ class TabBtnHorizontal(ButtonsHorizontalBase):
         super().__init__(ids=ids, buttons=buttons, area=area)
 
     def on_mount(self) -> None:
-        self.query(Button).add_class(Tcss.tab_button.name)
-        self.query_one(self.ids.button_id("#", btn=self.buttons[0])).add_class(
-            Tcss.last_clicked.name
-        )
+        buttons = self.query(Button)
+        for btn in buttons:
+            btn.add_class(Tcss.tab_button.name)
+        buttons[0].add_class(Tcss.last_clicked.name)
+
+    @on(Button.Pressed)
+    def update_tcss_classes(self, event: Button.Pressed) -> None:
+        for btn in self.query(Button):
+            btn.remove_class(Tcss.last_clicked.name)
+        event.button.add_class(Tcss.last_clicked.name)
