@@ -43,6 +43,8 @@ from chezmoi_mousse.gui.rich_logs import LogUtils
 
 __all__ = ["InstallHelp", "LoadingScreen"]
 
+type ParsedJson = dict[str, Any]
+
 
 @dataclass(slots=True)
 class ParsedConfig:
@@ -65,9 +67,6 @@ class SplashData:
     status_files: str
     status_paths: str
     template_data: str
-
-
-type ParsedJson = dict[str, Any]
 
 
 class Strings(StrEnum):
