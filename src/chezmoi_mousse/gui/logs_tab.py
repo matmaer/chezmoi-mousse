@@ -1,33 +1,37 @@
+from typing import TYPE_CHECKING
+
 from textual import on
 from textual.app import ComposeResult
 from textual.containers import Vertical
 from textual.widgets import Button, ContentSwitcher
 
-from chezmoi_mousse import AreaName, Id, TabBtn, Tcss, ViewName
-from chezmoi_mousse._id_classes import CanvasIds
+from chezmoi_mousse import AreaName, TabBtn, Tcss, ViewName
 from chezmoi_mousse.gui import AppType
 from chezmoi_mousse.gui.button_groups import TabBtnHorizontal
 from chezmoi_mousse.gui.rich_logs import AppLog, DebugLog, OutputLog
+
+if TYPE_CHECKING:
+    from chezmoi_mousse import CanvasIds
 
 __all__ = ["LogsTab"]
 
 
 class LogsTabSwitcher(ContentSwitcher, AppType):
 
-    def __init__(self, canvas_ids: CanvasIds, dev_mode: bool):
-        self.canvas_ids = canvas_ids
+    def __init__(self, ids: "CanvasIds", dev_mode: bool):
+        self.ids = ids
         self.dev_mode = dev_mode
         super().__init__(
-            id=self.canvas_ids.content_switcher_id(area=AreaName.top),
-            initial=self.canvas_ids.view_id(view=ViewName.app_log_view),
+            id=self.ids.content_switcher_id(area=AreaName.top),
+            initial=self.ids.view_id(view=ViewName.app_log_view),
             classes=Tcss.border_title_top.name,
         )
 
     def compose(self) -> ComposeResult:
-        yield AppLog(canvas_ids=self.canvas_ids)
-        yield OutputLog(canvas_ids=self.canvas_ids)
+        yield AppLog(ids=self.ids)
+        yield OutputLog(ids=self.ids)
         if self.dev_mode is True:
-            yield DebugLog(canvas_ids=self.canvas_ids)
+            yield DebugLog(ids=self.ids)
 
     def on_mount(self) -> None:
         self.border_title = " App Log "
@@ -35,8 +39,8 @@ class LogsTabSwitcher(ContentSwitcher, AppType):
 
 class LogsTab(Vertical, AppType):
 
-    def __init__(self) -> None:
-        self.ids = Id.logs_tab
+    def __init__(self, ids: "CanvasIds") -> None:
+        self.ids = ids
         self.tab_buttons = (TabBtn.app_log, TabBtn.output_log)
         super().__init__(id=self.ids.tab_container_id)
 
@@ -46,9 +50,9 @@ class LogsTab(Vertical, AppType):
             tab_buttons += (TabBtn.debug_log,)
 
         yield TabBtnHorizontal(
-            canvas_ids=self.ids, buttons=tab_buttons, area=AreaName.top
+            ids=self.ids, buttons=tab_buttons, area=AreaName.top
         )
-        yield LogsTabSwitcher(canvas_ids=self.ids, dev_mode=self.app.dev_mode)
+        yield LogsTabSwitcher(ids=self.ids, dev_mode=self.app.dev_mode)
 
     @on(Button.Pressed, Tcss.tab_button.value)
     def switch_content(self, event: Button.Pressed) -> None:

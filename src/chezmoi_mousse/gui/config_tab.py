@@ -1,4 +1,5 @@
 import json
+from typing import TYPE_CHECKING
 
 from textual import on
 from textual.app import ComposeResult
@@ -6,10 +7,13 @@ from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual.reactive import reactive
 from textual.widgets import Button, ContentSwitcher, Label, Pretty
 
-from chezmoi_mousse import AreaName, CanvasIds, Id, NavBtn, Tcss, ViewName
+from chezmoi_mousse import AreaName, NavBtn, Tcss, ViewName
 from chezmoi_mousse.gui import AppType
 from chezmoi_mousse.gui.button_groups import NavButtonsVertical
 from chezmoi_mousse.gui.widgets import DoctorListView, DoctorTable
+
+if TYPE_CHECKING:
+    from chezmoi_mousse import CanvasIds
 
 __all__ = ["ConfigTab"]
 
@@ -21,11 +25,11 @@ class ConfigTabSwitcher(ContentSwitcher, AppType):
     ignored_stdout: reactive[str | None] = reactive(None)
     template_data_stdout: reactive[str | None] = reactive(None)
 
-    def __init__(self, canvas_ids: CanvasIds):
-        self.canvas_ids = canvas_ids
+    def __init__(self, ids: "CanvasIds"):
+        self.ids = ids
         super().__init__(
-            id=self.canvas_ids.content_switcher_id(area=AreaName.right),
-            initial=self.canvas_ids.view_id(view=ViewName.doctor_view),
+            id=self.ids.content_switcher_id(area=AreaName.right),
+            initial=self.ids.view_id(view=ViewName.doctor_view),
             classes=Tcss.nav_content_switcher.name,
         )
 
@@ -38,7 +42,7 @@ class ConfigTabSwitcher(ContentSwitcher, AppType):
                 classes=Tcss.section_label.name,
             ),
             DoctorListView(),
-            id=self.canvas_ids.view_id(view=ViewName.doctor_view),
+            id=self.ids.view_id(view=ViewName.doctor_view),
             classes=Tcss.doctor_vertical_scroll.name,
         )
         yield Vertical(
@@ -46,17 +50,17 @@ class ConfigTabSwitcher(ContentSwitcher, AppType):
                 '"chezmoi cat-config" output', classes=Tcss.section_label.name
             ),
             Pretty("<cat-config>", id=ViewName.pretty_cat_config_view),
-            id=self.canvas_ids.view_id(view=ViewName.cat_config_view),
+            id=self.ids.view_id(view=ViewName.cat_config_view),
         )
         yield Vertical(
             Label('"chezmoi ignored" output', classes=Tcss.section_label.name),
             Pretty("<ignored>", id=ViewName.pretty_ignored_view),
-            id=self.canvas_ids.view_id(view=ViewName.git_ignored_view),
+            id=self.ids.view_id(view=ViewName.git_ignored_view),
         )
         yield Vertical(
             Label('"chezmoi data" output', classes=Tcss.section_label.name),
             Pretty("<template_data>", id=ViewName.pretty_template_data_view),
-            id=self.canvas_ids.view_id(view=ViewName.template_data_view),
+            id=self.ids.view_id(view=ViewName.template_data_view),
         )
 
     def watch_doctor_stdout(self):
@@ -97,13 +101,13 @@ class ConfigTabSwitcher(ContentSwitcher, AppType):
 
 class ConfigTab(Horizontal, AppType):
 
-    def __init__(self) -> None:
-        self.ids = Id.config_tab
+    def __init__(self, ids: "CanvasIds") -> None:
+        self.ids = ids
         super().__init__(id=self.ids.tab_container_id)
 
     def compose(self) -> ComposeResult:
         yield NavButtonsVertical(
-            canvas_ids=self.ids,
+            ids=self.ids,
             buttons=(
                 NavBtn.doctor,
                 NavBtn.cat_config,

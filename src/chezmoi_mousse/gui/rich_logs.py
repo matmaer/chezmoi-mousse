@@ -12,6 +12,7 @@ These classes
 from datetime import datetime
 from pathlib import Path
 from subprocess import CompletedProcess
+from typing import TYPE_CHECKING
 
 from rich.markup import escape
 from rich.text import Text
@@ -21,7 +22,6 @@ from textual.widgets import RichLog
 from chezmoi_mousse import (
     ActiveCanvas,
     Canvas,
-    CanvasIds,
     Chars,
     GlobalCmd,
     ReadCmd,
@@ -30,6 +30,9 @@ from chezmoi_mousse import (
     ViewName,
 )
 from chezmoi_mousse.gui import AppType
+
+if TYPE_CHECKING:
+    from chezmoi_mousse import CanvasIds
 
 __all__ = [
     "AppLog",
@@ -64,11 +67,11 @@ class ContentsView(RichLog, AppType):
 
     path: reactive[Path | None] = reactive(None, init=False)
 
-    def __init__(self, *, canvas_ids: CanvasIds) -> None:
-        self.canvas_ids = canvas_ids
+    def __init__(self, *, ids: "CanvasIds") -> None:
+        self.ids = ids
         # self.first_render: bool = True
         super().__init__(
-            id=self.canvas_ids.view_id(view=ViewName.contents_view),
+            id=self.ids.view_id(view=ViewName.contents_view),
             auto_scroll=False,
             wrap=True,  # TODO: implement footer binding to toggle wrap
             highlight=True,
@@ -151,8 +154,8 @@ class DiffView(RichLog, AppType):
 
     path: reactive[Path | None] = reactive(None, init=False)
 
-    def __init__(self, *, canvas_ids: CanvasIds, reverse: bool) -> None:
-        self.canvas_ids = canvas_ids
+    def __init__(self, *, ids: "CanvasIds", reverse: bool) -> None:
+        self.ids = ids
         self.reverse = reverse
         self.active_canvas: ActiveCanvas | None = None
         self.diff_read_cmd: ReadCmd = (
@@ -163,7 +166,7 @@ class DiffView(RichLog, AppType):
         )
         self.active_canvas = Canvas.re_add if self.reverse else Canvas.apply
         super().__init__(
-            id=self.canvas_ids.view_id(view=ViewName.diff_view),
+            id=self.ids.view_id(view=ViewName.diff_view),
             auto_scroll=False,
             highlight=True,
             wrap=True,  # TODO: implement footer binding to toggle wrap
@@ -291,10 +294,10 @@ class CommandLogBase(RichLog, AppType):
 
 class AppLog(CommandLogBase, AppType):
 
-    def __init__(self, canvas_ids: CanvasIds) -> None:
-        self.canvas_ids = canvas_ids
+    def __init__(self, ids: "CanvasIds") -> None:
+        self.ids = ids
         super().__init__(
-            id=self.canvas_ids.view_id(view=ViewName.app_log_view),
+            id=self.ids.view_id(view=ViewName.app_log_view),
             markup=True,
             max_lines=10000,
             classes=Tcss.log_views.name,
@@ -323,10 +326,10 @@ class DebugLog(CommandLogBase, AppType):
 
     type Mro = tuple[type, ...]
 
-    def __init__(self, canvas_ids: CanvasIds) -> None:
-        self.canvas_ids = canvas_ids
+    def __init__(self, ids: "CanvasIds") -> None:
+        self.ids = ids
         super().__init__(
-            id=self.canvas_ids.view_id(view=ViewName.debug_log_view),
+            id=self.ids.view_id(view=ViewName.debug_log_view),
             markup=True,
             max_lines=10000,
             wrap=True,
@@ -369,10 +372,10 @@ class DebugLog(CommandLogBase, AppType):
 
 class OutputLog(CommandLogBase, AppType):
 
-    def __init__(self, canvas_ids: CanvasIds) -> None:
-        self.canvas_ids = canvas_ids
+    def __init__(self, ids: "CanvasIds") -> None:
+        self.ids = ids
         super().__init__(
-            id=self.canvas_ids.view_id(view=ViewName.output_log_view),
+            id=self.ids.view_id(view=ViewName.output_log_view),
             markup=True,
             max_lines=10000,
             classes=Tcss.log_views.name,

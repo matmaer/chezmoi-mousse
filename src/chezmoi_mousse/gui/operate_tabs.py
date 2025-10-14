@@ -1,20 +1,12 @@
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from textual import on
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical, VerticalGroup
 from textual.widgets import Button, ContentSwitcher, Switch
 
-from chezmoi_mousse import (
-    AreaName,
-    CanvasIds,
-    Id,
-    Switches,
-    TabBtn,
-    Tcss,
-    TreeName,
-    ViewName,
-)
+from chezmoi_mousse import AreaName, Switches, TabBtn, Tcss, TreeName, ViewName
 from chezmoi_mousse.gui import AppType
 from chezmoi_mousse.gui.button_groups import TabBtnHorizontal
 from chezmoi_mousse.gui.directory_tree import FilteredDirTree
@@ -24,25 +16,28 @@ from chezmoi_mousse.gui.switch_slider import SwitchSlider
 from chezmoi_mousse.gui.tree_widgets import ExpandedTree, FlatTree, ManagedTree
 from chezmoi_mousse.gui.widgets import GitLogView
 
+if TYPE_CHECKING:
+    from chezmoi_mousse import CanvasIds
+
 __all__ = ["AddTab", "ApplyTab", "ReAddTab"]
 
 
 class OperateTabsBase(Horizontal, AppType):
 
-    def __init__(self, *, canvas_ids: CanvasIds) -> None:
+    def __init__(self, *, ids: "CanvasIds") -> None:
         self.current_path: Path | None = None
-        self.canvas_ids = canvas_ids
-        self.diff_tab_btn = canvas_ids.button_id(btn=TabBtn.diff)
-        self.contents_tab_btn = canvas_ids.button_id(btn=TabBtn.contents)
-        self.git_log_tab_btn = canvas_ids.button_id(btn=TabBtn.git_log)
+        self.ids = ids
+        self.diff_tab_btn = ids.button_id(btn=TabBtn.diff)
+        self.contents_tab_btn = ids.button_id(btn=TabBtn.contents)
+        self.git_log_tab_btn = ids.button_id(btn=TabBtn.git_log)
         self.expand_all_state = False
-        self.view_switcher_qid = self.canvas_ids.content_switcher_id(
+        self.view_switcher_qid = self.ids.content_switcher_id(
             "#", area=AreaName.right
         )
-        self.tree_switcher_qid = self.canvas_ids.content_switcher_id(
+        self.tree_switcher_qid = self.ids.content_switcher_id(
             "#", area=AreaName.left
         )
-        super().__init__(id=self.canvas_ids.tab_container_id)
+        super().__init__(id=self.ids.tab_container_id)
 
     def _update_view_path(self) -> None:
         if self.current_path is None:
@@ -80,48 +75,45 @@ class OperateTabsBase(Horizontal, AppType):
                 self.view_switcher_qid, ContentSwitcher
             )
             if event.button.id == self.contents_tab_btn:
-                view_switcher.current = self.canvas_ids.view_id(
+                view_switcher.current = self.ids.view_id(
                     view=ViewName.contents_view
                 )
             elif event.button.id == self.diff_tab_btn:
-                view_switcher.current = self.canvas_ids.view_id(
+                view_switcher.current = self.ids.view_id(
                     view=ViewName.diff_view
                 )
             elif event.button.id == self.git_log_tab_btn:
-                view_switcher.current = self.canvas_ids.view_id(
+                view_switcher.current = self.ids.view_id(
                     view=ViewName.git_log_view
                 )
 
         # toggle expand all switch enabled disabled state
         expand_all_switch = self.query_one(
-            self.canvas_ids.switch_id("#", switch=Switches.expand_all.value),
-            Switch,
+            self.ids.switch_id("#", switch=Switches.expand_all.value), Switch
         )
-        if event.button.id == self.canvas_ids.button_id(btn=TabBtn.tree):
+        if event.button.id == self.ids.button_id(btn=TabBtn.tree):
             expand_all_switch.disabled = False
-        elif event.button.id == self.canvas_ids.button_id(btn=TabBtn.list):
+        elif event.button.id == self.ids.button_id(btn=TabBtn.list):
             expand_all_switch.disabled = True
 
         # switch tree content view
         tree_switcher = self.query_one(self.tree_switcher_qid, ContentSwitcher)
-        if event.button.id == self.canvas_ids.button_id(btn=TabBtn.tree):
+        if event.button.id == self.ids.button_id(btn=TabBtn.tree):
             if self.expand_all_state is True:
-                tree_switcher.current = self.canvas_ids.tree_id(
+                tree_switcher.current = self.ids.tree_id(
                     tree=TreeName.expanded_tree
                 )
             else:
-                tree_switcher.current = self.canvas_ids.tree_id(
+                tree_switcher.current = self.ids.tree_id(
                     tree=TreeName.managed_tree
                 )
-        elif event.button.id == self.canvas_ids.button_id(btn=TabBtn.list):
-            tree_switcher.current = self.canvas_ids.tree_id(
-                tree=TreeName.flat_tree
-            )
+        elif event.button.id == self.ids.button_id(btn=TabBtn.list):
+            tree_switcher.current = self.ids.tree_id(tree=TreeName.flat_tree)
 
     @on(Switch.Changed)
     def handle_tree_filter_switches(self, event: Switch.Changed) -> None:
         event.stop()
-        if event.switch.id == self.canvas_ids.switch_id(
+        if event.switch.id == self.ids.switch_id(
             switch=Switches.unchanged.value
         ):
             tree_pairs: list[
@@ -133,9 +125,9 @@ class OperateTabsBase(Horizontal, AppType):
             ]
             for tree_str, tree_cls in tree_pairs:
                 self.query_one(
-                    self.canvas_ids.tree_id("#", tree=tree_str), tree_cls
+                    self.ids.tree_id("#", tree=tree_str), tree_cls
                 ).unchanged = event.value
-        elif event.switch.id == self.canvas_ids.switch_id(
+        elif event.switch.id == self.ids.switch_id(
             switch=Switches.expand_all.value
         ):
             self.expand_all_state = event.value
@@ -143,34 +135,34 @@ class OperateTabsBase(Horizontal, AppType):
                 self.tree_switcher_qid, ContentSwitcher
             )
             if event.value is True:
-                tree_switcher.current = self.canvas_ids.tree_id(
+                tree_switcher.current = self.ids.tree_id(
                     tree=TreeName.expanded_tree
                 )
             else:
-                tree_switcher.current = self.canvas_ids.tree_id(
+                tree_switcher.current = self.ids.tree_id(
                     tree=TreeName.managed_tree
                 )
 
     def action_toggle_switch_slider(self) -> None:
         self.query_one(
-            self.canvas_ids.switches_slider_qid, VerticalGroup
+            self.ids.switches_slider_qid, VerticalGroup
         ).toggle_class("-visible")
 
 
 class TreeSwitcher(ContentSwitcher, AppType):
 
-    def __init__(self, canvas_ids: CanvasIds):
-        self.canvas_ids = canvas_ids
+    def __init__(self, ids: "CanvasIds"):
+        self.ids = ids
         super().__init__(
-            id=self.canvas_ids.content_switcher_id(area=AreaName.left),
-            initial=self.canvas_ids.tree_id(tree=TreeName.managed_tree),
+            id=self.ids.content_switcher_id(area=AreaName.left),
+            initial=self.ids.tree_id(tree=TreeName.managed_tree),
             classes=Tcss.content_switcher_left.name,
         )
 
     def compose(self) -> ComposeResult:
-        yield ManagedTree(canvas_ids=self.canvas_ids)
-        yield FlatTree(canvas_ids=self.canvas_ids)
-        yield ExpandedTree(canvas_ids=self.canvas_ids)
+        yield ManagedTree(ids=self.ids)
+        yield FlatTree(ids=self.ids)
+        yield ExpandedTree(ids=self.ids)
 
     def on_mount(self) -> None:
         self.border_title = " destDir "
@@ -178,25 +170,25 @@ class TreeSwitcher(ContentSwitcher, AppType):
 
 
 class ViewSwitcher(ContentSwitcher, AppType):
-    def __init__(self, *, canvas_ids: CanvasIds, diff_reverse: bool):
-        self.canvas_ids = canvas_ids
+    def __init__(self, *, ids: "CanvasIds", diff_reverse: bool):
+        self.ids = ids
         self.reverse = diff_reverse
         super().__init__(
-            id=self.canvas_ids.content_switcher_id(area=AreaName.right),
-            initial=self.canvas_ids.view_id(view=ViewName.diff_view),
+            id=self.ids.content_switcher_id(area=AreaName.right),
+            initial=self.ids.view_id(view=ViewName.diff_view),
         )
 
     def compose(self) -> ComposeResult:
-        yield DiffView(canvas_ids=self.canvas_ids, reverse=self.reverse)
-        yield ContentsView(canvas_ids=self.canvas_ids)
-        yield GitLogView(canvas_ids=self.canvas_ids)
+        yield DiffView(ids=self.ids, reverse=self.reverse)
+        yield ContentsView(ids=self.ids)
+        yield GitLogView(ids=self.ids)
 
 
 class ApplyTab(OperateTabsBase):
 
-    def __init__(self) -> None:
-        self.ids = Id.apply_tab
-        super().__init__(canvas_ids=self.ids)
+    def __init__(self, ids: "CanvasIds") -> None:
+        self.ids = ids
+        super().__init__(ids=self.ids)
 
     def compose(self) -> ComposeResult:
         with Vertical(
@@ -204,29 +196,28 @@ class ApplyTab(OperateTabsBase):
             classes=Tcss.tab_left_vertical.name,
         ):
             yield TabBtnHorizontal(
-                canvas_ids=self.canvas_ids,
+                ids=self.ids,
                 buttons=(TabBtn.tree, TabBtn.list),
                 area=AreaName.left,
             )
             yield TreeSwitcher(self.ids)
         with Vertical(id=self.ids.tab_vertical_id(area=AreaName.right)):
             yield TabBtnHorizontal(
-                canvas_ids=self.ids,
+                ids=self.ids,
                 buttons=(TabBtn.diff, TabBtn.contents, TabBtn.git_log),
                 area=AreaName.right,
             )
-            yield ViewSwitcher(canvas_ids=self.ids, diff_reverse=False)
+            yield ViewSwitcher(ids=self.ids, diff_reverse=False)
         yield SwitchSlider(
-            canvas_ids=self.ids,
-            switches=(Switches.unchanged, Switches.expand_all),
+            ids=self.ids, switches=(Switches.unchanged, Switches.expand_all)
         )
 
 
 class ReAddTab(OperateTabsBase):
 
-    def __init__(self) -> None:
-        self.ids = Id.re_add_tab
-        super().__init__(canvas_ids=self.ids)
+    def __init__(self, ids: "CanvasIds") -> None:
+        self.ids = ids
+        super().__init__(ids=self.ids)
 
     def compose(self) -> ComposeResult:
         with Vertical(
@@ -234,29 +225,28 @@ class ReAddTab(OperateTabsBase):
             classes=Tcss.tab_left_vertical.name,
         ):
             yield TabBtnHorizontal(
-                canvas_ids=self.canvas_ids,
+                ids=self.ids,
                 buttons=(TabBtn.tree, TabBtn.list),
                 area=AreaName.left,
             )
-            yield TreeSwitcher(canvas_ids=self.ids)
+            yield TreeSwitcher(ids=self.ids)
         with Vertical(id=self.ids.tab_vertical_id(area=AreaName.right)):
             yield TabBtnHorizontal(
-                canvas_ids=self.ids,
+                ids=self.ids,
                 buttons=(TabBtn.diff, TabBtn.contents, TabBtn.git_log),
                 area=AreaName.right,
             )
-            yield ViewSwitcher(canvas_ids=self.ids, diff_reverse=True)
+            yield ViewSwitcher(ids=self.ids, diff_reverse=True)
         yield SwitchSlider(
-            canvas_ids=self.ids,
-            switches=(Switches.unchanged, Switches.expand_all),
+            ids=self.ids, switches=(Switches.unchanged, Switches.expand_all)
         )
 
 
 class AddTab(OperateTabsBase, AppType):
 
-    def __init__(self) -> None:
-        self.ids = Id.add_tab
-        super().__init__(canvas_ids=self.ids)
+    def __init__(self, ids: "CanvasIds") -> None:
+        self.ids = ids
+        super().__init__(ids=self.ids)
 
     def compose(self) -> ComposeResult:
         with VerticalGroup(
@@ -267,11 +257,10 @@ class AddTab(OperateTabsBase, AppType):
                 Path.home(), id=self.ids.tree_id(tree=TreeName.add_tree)
             )
         with Vertical(id=self.ids.tab_vertical_id(area=AreaName.right)):
-            yield ContentsView(canvas_ids=self.ids)
+            yield ContentsView(ids=self.ids)
 
         yield SwitchSlider(
-            canvas_ids=self.ids,
-            switches=(Switches.unmanaged_dirs, Switches.unwanted),
+            ids=self.ids, switches=(Switches.unmanaged_dirs, Switches.unwanted)
         )
 
     def on_mount(self) -> None:

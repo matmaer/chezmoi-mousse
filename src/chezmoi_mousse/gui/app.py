@@ -105,9 +105,9 @@ class ChezmoiGUI(App[None]):
         yield Header(icon=Chars.burger)
         with TabbedContent():
             with TabPane(PaneBtn.apply_tab.value, id=Canvas.apply):
-                yield ApplyTab()
+                yield ApplyTab(ids=Id.apply_tab)
                 yield OperateBtnHorizontal(
-                    canvas_ids=Id.apply_tab,
+                    ids=Id.apply_tab,
                     buttons=(
                         OperateBtn.apply_file,
                         OperateBtn.forget_file,
@@ -115,9 +115,9 @@ class ChezmoiGUI(App[None]):
                     ),
                 )
             with TabPane(PaneBtn.re_add_tab.value, id=Canvas.re_add):
-                yield ReAddTab()
+                yield ReAddTab(ids=Id.re_add_tab)
                 yield OperateBtnHorizontal(
-                    canvas_ids=Id.re_add_tab,
+                    ids=Id.re_add_tab,
                     buttons=(
                         OperateBtn.re_add_file,
                         OperateBtn.forget_file,
@@ -125,17 +125,17 @@ class ChezmoiGUI(App[None]):
                     ),
                 )
             with TabPane(PaneBtn.add_tab.value, id=Canvas.add):
-                yield AddTab()
+                yield AddTab(ids=Id.add_tab)
                 yield OperateBtnHorizontal(
-                    canvas_ids=Id.add_tab,
+                    ids=Id.add_tab,
                     buttons=(OperateBtn.add_file, OperateBtn.add_dir),
                 )
             with TabPane(PaneBtn.logs_tab.value, id=Canvas.logs):
-                yield LogsTab()
+                yield LogsTab(ids=Id.logs_tab)
             with TabPane(PaneBtn.config_tab.value, id=Canvas.config):
-                yield ConfigTab()
+                yield ConfigTab(ids=Id.config_tab)
             with TabPane(PaneBtn.help_tab.value, id=Canvas.help):
-                yield HelpTab()
+                yield HelpTab(ids=Id.help_tab)
         yield Footer()
 
     def on_mount(self) -> None:

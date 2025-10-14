@@ -15,21 +15,17 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from enum import Enum, StrEnum
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from rich.text import Text
 from textual.reactive import reactive
 from textual.widgets import DataTable, Link, ListItem, ListView, Static
 
-from chezmoi_mousse import (
-    CanvasIds,
-    Chars,
-    Id,
-    OperateBtn,
-    ReadCmd,
-    Tcss,
-    ViewName,
-)
+from chezmoi_mousse import Chars, Id, OperateBtn, ReadCmd, Tcss, ViewName
 from chezmoi_mousse.gui import AppType
+
+if TYPE_CHECKING:
+    from chezmoi_mousse import CanvasIds
 
 __all__ = ["DoctorListView", "DoctorTable", "GitLogView", "OperateInfo"]
 
@@ -102,11 +98,11 @@ class GitLogView(DataTable[Text], AppType):
 
     path: reactive[Path | None] = reactive(None, init=False)
 
-    def __init__(self, *, canvas_ids: CanvasIds) -> None:
-        self.canvas_ids = canvas_ids
+    def __init__(self, *, ids: "CanvasIds") -> None:
+        self.ids = ids
         self.destDir: Path | None = None
         super().__init__(
-            id=self.canvas_ids.view_id(view=ViewName.git_log_view),
+            id=self.ids.view_id(view=ViewName.git_log_view),
             show_cursor=False,
             classes=Tcss.border_title_top.name,
         )

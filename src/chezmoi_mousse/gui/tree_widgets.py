@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from rich.style import Style
 from rich.text import Text
@@ -10,17 +11,13 @@ from textual.widgets import Tree
 from textual.widgets._tree import TOGGLE_STYLE
 from textual.widgets.tree import TreeNode
 
-from chezmoi_mousse import (
-    ActiveCanvas,
-    Canvas,
-    CanvasIds,
-    Chars,
-    PaneBtn,
-    Tcss,
-    TreeName,
-)
+from chezmoi_mousse import ActiveCanvas, Canvas, Chars, PaneBtn, Tcss, TreeName
 from chezmoi_mousse.gui import AppType
 from chezmoi_mousse.gui.messages import TreeNodeSelectedMsg
+
+if TYPE_CHECKING:
+    from chezmoi_mousse import CanvasIds
+
 
 __all__ = ["ManagedTree", "NodeData", "ExpandedTree", "FlatTree"]
 
@@ -42,19 +39,19 @@ class TreeBase(Tree[NodeData], AppType):
     ICON_NODE = Chars.right_triangle
     ICON_NODE_EXPANDED = Chars.down_triangle
 
-    def __init__(self, canvas_ids: CanvasIds, *, tree_name: TreeName) -> None:
+    def __init__(self, ids: "CanvasIds", *, tree_name: TreeName) -> None:
         self.tree_name = tree_name
-        self.canvas_ids = canvas_ids
+        self.ids = ids
         self._initial_render = True
         self._first_focus = True
         self._user_interacted = False
-        if self.canvas_ids.canvas_name == Canvas.apply:
+        if self.ids.canvas_name == Canvas.apply:
             self.active_canvas: ActiveCanvas = Canvas.apply
         else:
             self.active_canvas: ActiveCanvas = Canvas.re_add
         super().__init__(
             label="root",
-            id=self.canvas_ids.tree_id(tree=self.tree_name),
+            id=self.ids.tree_id(tree=self.tree_name),
             classes=Tcss.tree_widget.name,
         )
 
@@ -365,9 +362,9 @@ class ManagedTree(TreeBase):
     destDir: reactive[Path | None] = reactive(None, init=False)
     unchanged: reactive[bool] = reactive(False, init=False)
 
-    def __init__(self, *, canvas_ids: CanvasIds) -> None:
-        self.canvas_ids = canvas_ids
-        super().__init__(self.canvas_ids, tree_name=TreeName.managed_tree)
+    def __init__(self, *, ids: "CanvasIds") -> None:
+        self.ids = ids
+        super().__init__(self.ids, tree_name=TreeName.managed_tree)
 
     def watch_destDir(self) -> None:
         if self.destDir is None:
@@ -402,9 +399,9 @@ class ExpandedTree(TreeBase):
     destDir: reactive[Path | None] = reactive(None, init=False)
     unchanged: reactive[bool] = reactive(False, init=False)
 
-    def __init__(self, canvas_ids: CanvasIds) -> None:
-        self.canvas_ids = canvas_ids
-        super().__init__(self.canvas_ids, tree_name=TreeName.expanded_tree)
+    def __init__(self, ids: "CanvasIds") -> None:
+        self.ids = ids
+        super().__init__(self.ids, tree_name=TreeName.expanded_tree)
 
     def watch_destDir(self) -> None:
         if self.destDir is None:
@@ -449,9 +446,9 @@ class FlatTree(TreeBase, AppType):
     destDir: reactive[Path | None] = reactive(None, init=False)
     unchanged: reactive[bool] = reactive(False, init=False)
 
-    def __init__(self, canvas_ids: CanvasIds) -> None:
+    def __init__(self, ids: "CanvasIds") -> None:
 
-        super().__init__(canvas_ids, tree_name=TreeName.flat_tree)
+        super().__init__(ids, tree_name=TreeName.flat_tree)
 
     def add_files_with_status(self) -> None:
         if self.active_canvas == Canvas.apply:
