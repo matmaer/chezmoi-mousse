@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from pathlib import Path
 
 from rich.style import Style
@@ -18,10 +19,22 @@ from chezmoi_mousse import (
     Tcss,
     TreeName,
 )
-from chezmoi_mousse.gui import AppType, NodeData
+from chezmoi_mousse.gui import AppType
 from chezmoi_mousse.gui.messages import TreeNodeSelectedMsg
 
-__all__ = ["ManagedTree", "ExpandedTree", "FlatTree"]
+__all__ = ["ManagedTree", "NodeData", "ExpandedTree", "FlatTree"]
+
+
+@dataclass(slots=True)
+class NodeData:
+    found: bool
+    path: Path
+    # chezmoi status codes processed: A, D, M, or a space
+    # "node status" codes:
+    #   X (no status but managed)
+    #   F (fake for the root node)
+    status: str
+    is_leaf: bool
 
 
 class TreeBase(Tree[NodeData], AppType):

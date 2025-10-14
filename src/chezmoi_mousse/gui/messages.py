@@ -1,9 +1,12 @@
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from textual.message import Message
 
 from chezmoi_mousse import OperateBtn, TreeName
-from chezmoi_mousse.gui import NodeData
+
+if TYPE_CHECKING:
+    from chezmoi_mousse.gui.tree_widgets import NodeData
 
 __all__ = ["OperateDismissMsg", "TreeNodeSelectedMsg"]
 
@@ -26,11 +29,11 @@ class OperateDismissMsg(Message):
 class TreeNodeSelectedMsg(Message):
     def __init__(
         self,
-        node_data: NodeData,
+        node_data: "NodeData",
         tree_name: TreeName,
-        node_leaves: list[NodeData] | None = None,
-        node_parent: NodeData | None = None,
-        node_subdirs: list[NodeData] | None = None,
+        node_leaves: list["NodeData"] | None = None,
+        node_parent: "NodeData | None" = None,
+        node_subdirs: list["NodeData"] | None = None,
     ) -> None:
         self.node_data = node_data
         self.node_leaves = node_leaves if node_leaves is not None else []
