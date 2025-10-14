@@ -21,9 +21,9 @@ On the command line, clone the repository:
 
 Change directory into the `src` directory of the cloned repository.
 
-`cd chezmoi-mousse` `cd src`
+`cd chezmoi-mousse` and `cd src`
 
-The easiest way is to run with the app with `uv`, [install uv](https://docs.astral.sh/uv/getting-started/installation/) on your platform, an then run:
+The easiest way is to run with the app with `uv`, [install uv](https://docs.astral.sh/uv/getting-started/installation/) on your platform. Then in the chezmoi-mousse src directory, run:
 
 `uv run --no-dev --python 3.13 --with textual -m chezmoi_mousse`
 
