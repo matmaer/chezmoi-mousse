@@ -13,10 +13,10 @@ from textual.containers import Center, Horizontal, Vertical, VerticalGroup
 from textual.screen import Screen
 from textual.widgets import Button, Collapsible, Label, Link, Pretty, Tree
 
-from chezmoi_mousse import Canvas, SubTitles, Tcss
+from chezmoi_mousse import Canvas, Chars, SubTitles, Tcss
 from chezmoi_mousse.gui import AppType
 
-__all__ = ["InstallHelpScreen"]
+__all__ = ["InstallHelp"]
 
 type ParsedJson = dict[str, Any]
 
@@ -26,7 +26,15 @@ class Strings(StrEnum):
     chezmoi_docs_link_id = "chezmoi_docs_link"
 
 
-class InstallHelpScreen(Screen[None], AppType):
+class CommandsTree(Tree[ParsedJson]):
+    ICON_NODE = Chars.right_triangle
+    ICON_NODE_EXPANDED = Chars.down_triangle
+
+    def __init__(self) -> None:
+        super().__init__(label=" Install chezmoi ")
+
+
+class InstallHelp(Screen[None], AppType):
 
     BINDINGS = [Binding(key="escape", action="exit_application", show=False)]
 
@@ -48,7 +56,7 @@ class InstallHelpScreen(Screen[None], AppType):
 
             with Center():
                 with Horizontal():
-                    yield Tree(label=" Install chezmoi ")
+                    yield CommandsTree()
                     with VerticalGroup():
                         yield Link(
                             "chezmoi.io/install",
@@ -87,7 +95,7 @@ class InstallHelpScreen(Screen[None], AppType):
     def populate_tree(self) -> None:
         if self.pkg_root is None:
             return
-        help_tree: Tree[ParsedJson] = self.query_exactly_one(Tree[ParsedJson])
+        help_tree: CommandsTree = self.query_exactly_one(CommandsTree)
         data_file: Path = Path.joinpath(
             self.pkg_root, "data", "chezmoi_install_commands.json"
         )

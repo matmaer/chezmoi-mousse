@@ -26,7 +26,7 @@ from chezmoi_mousse.gui.button_groups import OperateBtnHorizontal
 from chezmoi_mousse.gui.config_tab import ConfigTab
 from chezmoi_mousse.gui.directory_tree import FilteredDirTree
 from chezmoi_mousse.gui.help_tab import HelpTab
-from chezmoi_mousse.gui.install_help_screen import InstallHelpScreen
+from chezmoi_mousse.gui.install_help_screen import InstallHelp
 from chezmoi_mousse.gui.logs_tab import LogsTab
 from chezmoi_mousse.gui.operate_tabs import AddTab, ApplyTab, ReAddTab
 from chezmoi_mousse.gui.overrides import CustomScrollBarRender
@@ -185,9 +185,7 @@ class ChezmoiGUI(App[None]):
         self, return_data: "SplashData | None"
     ) -> None:
         if return_data is None:
-            self.push_screen(
-                InstallHelpScreen(chezmoi_found=self.chezmoi_found)
-            )
+            self.push_screen(InstallHelp(chezmoi_found=self.chezmoi_found))
             return
         self.app_log.success(f"chezmoi command found: {self.chezmoi_found}")
         self.app_log.ready_to_run("--- Loading screen completed ---")
