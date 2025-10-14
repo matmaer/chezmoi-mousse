@@ -1,5 +1,6 @@
 from pathlib import Path
 from subprocess import CompletedProcess, run
+from typing import TYPE_CHECKING
 
 from chezmoi_mousse import (
     ActiveCanvas,
@@ -9,7 +10,9 @@ from chezmoi_mousse import (
     PathDict,
     ReadCmd,
 )
-from chezmoi_mousse.gui.rich_logs import AppLog, DebugLog, OutputLog
+
+if TYPE_CHECKING:
+    from chezmoi_mousse.gui.rich_logs import AppLog, DebugLog, OutputLog
 
 __all__ = ["Chezmoi"]
 
