@@ -6,6 +6,25 @@ from _test_utils import get_module_paths
 MODULE_PATHS = get_module_paths()
 
 
+def _get_module_for_enum_class(enum_class_def: ast.ClassDef) -> str:
+    """Find which module file contains the given enum class definition."""
+    for file_path in MODULE_PATHS:
+        tree = ast.parse(file_path.read_text())
+        for node in tree.body:
+            if (
+                isinstance(node, ast.ClassDef)
+                and node.name == enum_class_def.name
+            ):
+                # Check if this is the same enum class (same name and inheritance)
+                for base in node.bases:
+                    if isinstance(base, ast.Name) and base.id in (
+                        "Enum",
+                        "StrEnum",
+                    ):
+                        return str(file_path)
+    return "unknown"
+
+
 def _enum_ast_class_defs() -> list[ast.ClassDef]:
     enum_class_defs: list[ast.ClassDef] = []
 
@@ -90,7 +109,6 @@ def test_members_in_use(enum_class_def: ast.ClassDef):
             # This should not happen in enums, loop for type hinting
             continue
 
-        not_in_use_item = f"{enum_class_def.name}.{member_name}"
         found_usage: bool = False
 
         # Search for usage across non-enum class definitions
@@ -185,6 +203,7 @@ def test_members_in_use(enum_class_def: ast.ClassDef):
                                 break
 
         if found_usage is False:
+            not_in_use_item = f"{enum_class_def.name}.{member_name} (in {_get_module_for_enum_class(enum_class_def)})"
             not_in_use.append(not_in_use_item)
 
     # Report all unused members at once
