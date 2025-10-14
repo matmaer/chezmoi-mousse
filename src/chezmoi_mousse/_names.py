@@ -20,10 +20,8 @@ class Canvas(StrEnum):
     apply = auto()
     config = auto()
     help = auto()
-    init = auto()
     install_help = auto()
     logs = auto()
-    operate = auto()
     re_add = auto()
 
 

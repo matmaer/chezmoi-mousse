@@ -9,7 +9,6 @@ from chezmoi_mousse import (
     AreaName,
     CanvasIds,
     Id,
-    OperateBtn,
     Switches,
     TabBtn,
     Tcss,
@@ -17,53 +16,15 @@ from chezmoi_mousse import (
     ViewName,
 )
 from chezmoi_mousse.gui import AppType
-from chezmoi_mousse.gui.button_groups import (
-    OperateBtnHorizontal,
-    TabBtnHorizontal,
-)
+from chezmoi_mousse.gui.button_groups import TabBtnHorizontal
 from chezmoi_mousse.gui.directory_tree import FilteredDirTree
 from chezmoi_mousse.gui.messages import TreeNodeSelectedMsg
 from chezmoi_mousse.gui.rich_logs import ContentsView, DiffView
 from chezmoi_mousse.gui.switch_slider import SwitchSlider
 from chezmoi_mousse.gui.tree_widgets import ExpandedTree, FlatTree, ManagedTree
-from chezmoi_mousse.gui.widgets import GitLogView, OperateInfo
+from chezmoi_mousse.gui.widgets import GitLogView
 
 __all__ = ["AddTab", "ApplyTab", "ReAddTab"]
-
-
-class Operate(Vertical, AppType):
-
-    def __init__(
-        self,
-        *,
-        canvas_ids: CanvasIds,
-        path: Path,
-        op_btn: OperateBtn,
-        widget_to_show: DiffView | ContentsView,
-    ) -> None:
-        self.canvas_ids = canvas_ids
-        self.op_btn = op_btn
-        self.path = path
-        self.widget_to_show = widget_to_show
-        self.operation_cancelled: bool = True
-        super().__init__(
-            id=self.canvas_ids.operate_container_id,
-            classes=Tcss.operate_container.name,
-        )
-
-    def compose(self) -> ComposeResult:
-        yield OperateInfo(operate_btn=self.op_btn)
-        yield self.widget_to_show
-        yield OperateBtnHorizontal(
-            canvas_ids=self.canvas_ids,
-            buttons=(self.op_btn, OperateBtn.operate_dismiss),
-        )
-
-    def on_mount(self) -> None:
-        self.border_title = " Operation Info "
-        self.border_subtitle = " escape key to close "
-        operate_info = self.query_exactly_one(OperateInfo)
-        operate_info.border_title = f" {self.path} "
 
 
 class OperateTabsBase(Horizontal, AppType):

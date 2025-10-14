@@ -14,27 +14,21 @@ class CanvasIds:
     __slots__ = (
         "canvas_name",
         "tab_container_id",
-        "operate_container_id",
         "datatable_id",
-        "datatable_qid",
         "listview_id",
-        "listview_qid",
         "switches_slider_id",
         "switches_slider_qid",
     )
 
     def __init__(self, canvas_name: Canvas) -> None:
         self.canvas_name: str = canvas_name.name
-        self.tab_container_id = f"{canvas_name}_container_id"
-        self.operate_container_id = f"{canvas_name}_operate_container_id"
 
         # id's for which there's only one widget for each self.canvas_name
         self.datatable_id = f"{canvas_name}_datatable"
-        self.datatable_qid = f"#{self.datatable_id}"
         self.listview_id = f"{canvas_name}_listview"
-        self.listview_qid = f"#{self.listview_id}"
         self.switches_slider_id = f"{canvas_name}_switches_slider"
         self.switches_slider_qid = f"#{self.switches_slider_id}"
+        self.tab_container_id = f"{canvas_name}_container_id"
 
     def button_id(
         self, qid: str = "", *, btn: OperateBtn | TabBtn | NavBtn
@@ -81,5 +75,3 @@ class Id:
     help_tab: CanvasIds = CanvasIds(Canvas.help)
     logs_tab: CanvasIds = CanvasIds(Canvas.logs)
     re_add_tab: CanvasIds = CanvasIds(Canvas.re_add)
-    init_screen: CanvasIds = CanvasIds(Canvas.init)
-    operate_layer: CanvasIds = CanvasIds(Canvas.operate)
