@@ -1,8 +1,7 @@
 from importlib.metadata import PackageNotFoundError, version
-from pathlib import Path
 
 from chezmoi_mousse._chars import Chars
-from chezmoi_mousse._chezmoi_cmd import (
+from chezmoi_mousse._chezmoi import (
     ChangeCmd,
     GlobalCmd,
     ReadCmd,
@@ -50,5 +49,3 @@ try:
     __version__ = version("chezmoi-mousse")
 except PackageNotFoundError:
     __version__ = "dev"
-
-type PathDict = dict[Path, str]
