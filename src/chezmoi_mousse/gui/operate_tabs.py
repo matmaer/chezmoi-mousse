@@ -29,7 +29,7 @@ from chezmoi_mousse import (
 from .button_groups import TabBtnHorizontal
 from .directory_tree import FilteredDirTree
 from .messages import TreeNodeSelectedMsg
-from .rich_logs import ContentsView, DiffView
+from .rich_views import ContentsView, DiffView
 from .switch_slider import SwitchSlider
 from .widgets import GitLogView
 

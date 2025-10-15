@@ -9,7 +9,7 @@ from textual.widgets import Button, ContentSwitcher
 from chezmoi_mousse import AppType, AreaName, TabBtn, Tcss, ViewName
 
 from .button_groups import TabBtnHorizontal
-from .rich_logs import AppLog, DebugLog, OutputLog
+from .rich_loggers import AppLog, DebugLog, OutputLog
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds

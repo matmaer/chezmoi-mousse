@@ -42,7 +42,8 @@ from .operate_tabs import (
 )
 from .pre_run_screens.install_help import InstallHelp
 from .pre_run_screens.splash import LoadingScreen
-from .rich_logs import AppLog, ContentsView, DebugLog, DiffView, OutputLog
+from .rich_loggers import AppLog, DebugLog, OutputLog
+from .rich_views import ContentsView, DiffView
 from .widgets import GitLogView, OperateInfo
 
 if TYPE_CHECKING:
