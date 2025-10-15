@@ -8,8 +8,9 @@ from textual.reactive import reactive
 from textual.widgets import Button, ContentSwitcher, Label, Pretty
 
 from chezmoi_mousse import AppType, AreaName, NavBtn, Tcss, ViewName
-from chezmoi_mousse.gui.button_groups import NavButtonsVertical
-from chezmoi_mousse.gui.widgets import DoctorListView, DoctorTable
+
+from .button_groups import NavButtonsVertical
+from .widgets import DoctorListView, DoctorTable
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds

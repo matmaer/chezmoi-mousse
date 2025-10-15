@@ -23,12 +23,13 @@ from chezmoi_mousse import (
     TreeName,
     ViewName,
 )
-from chezmoi_mousse.gui.button_groups import OperateBtnHorizontal
-from chezmoi_mousse.gui.config_tab import ConfigTab
-from chezmoi_mousse.gui.directory_tree import FilteredDirTree
-from chezmoi_mousse.gui.help_tab import HelpTab
-from chezmoi_mousse.gui.logs_tab import LogsTab
-from chezmoi_mousse.gui.operate_tabs import (
+
+from .button_groups import OperateBtnHorizontal
+from .config_tab import ConfigTab
+from .directory_tree import FilteredDirTree
+from .help_tab import HelpTab
+from .logs_tab import LogsTab
+from .operate_tabs import (
     AddTab,
     ApplyTab,
     ExpandedTree,
@@ -36,20 +37,15 @@ from chezmoi_mousse.gui.operate_tabs import (
     ManagedTree,
     ReAddTab,
 )
-from chezmoi_mousse.gui.overrides import CustomScrollBarRender
-from chezmoi_mousse.gui.pre_run_screens import InstallHelp, LoadingScreen
-from chezmoi_mousse.gui.rich_logs import (
-    AppLog,
-    ContentsView,
-    DebugLog,
-    DiffView,
-    OutputLog,
-)
-from chezmoi_mousse.gui.widgets import GitLogView, OperateInfo
+from .overrides import CustomScrollBarRender
+from .pre_run_screens import InstallHelp, LoadingScreen
+from .rich_logs import AppLog, ContentsView, DebugLog, DiffView, OutputLog
+from .widgets import GitLogView, OperateInfo
 
 if TYPE_CHECKING:
     from chezmoi_mousse import PreRunData
-    from chezmoi_mousse.gui.pre_run_screens import ParsedConfig, SplashData
+
+    from .pre_run_screens import ParsedConfig, SplashData
 
 __all__ = ["ChezmoiGUI"]
 

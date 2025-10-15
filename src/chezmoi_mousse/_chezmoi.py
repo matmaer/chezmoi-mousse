@@ -7,7 +7,8 @@ from chezmoi_mousse._names import Canvas
 
 if TYPE_CHECKING:
     from chezmoi_mousse._names import ActiveCanvas
-    from chezmoi_mousse.gui.rich_logs import AppLog, DebugLog, OutputLog
+
+    from .gui.rich_logs import AppLog, DebugLog, OutputLog
 
 type PathDict = dict[Path, str]
 

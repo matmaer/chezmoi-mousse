@@ -7,8 +7,9 @@ from textual.containers import Vertical
 from textual.widgets import Button, ContentSwitcher
 
 from chezmoi_mousse import AppType, AreaName, TabBtn, Tcss, ViewName
-from chezmoi_mousse.gui.button_groups import TabBtnHorizontal
-from chezmoi_mousse.gui.rich_logs import AppLog, DebugLog, OutputLog
+
+from .button_groups import TabBtnHorizontal
+from .rich_logs import AppLog, DebugLog, OutputLog
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds

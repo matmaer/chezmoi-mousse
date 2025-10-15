@@ -46,7 +46,8 @@ from chezmoi_mousse import (
     Tcss,
     VerbArgs,
 )
-from chezmoi_mousse.gui.rich_logs import LogUtils
+
+from .rich_logs import LogUtils
 
 type ParsedJson = dict[str, Any]
 
