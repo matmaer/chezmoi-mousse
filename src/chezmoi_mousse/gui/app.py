@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from textual.app import App, ComposeResult
@@ -91,7 +92,7 @@ class ChezmoiGUI(App[None]):
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
         super().__init__()
 
-    CSS_PATH = "data/gui.tcss"
+    CSS_PATH = Path("data", "gui.tcss")
 
     BINDINGS = [
         Binding(
