@@ -3,7 +3,6 @@ import os
 from collections import deque
 from dataclasses import dataclass, fields
 from enum import StrEnum
-from importlib.resources import files
 from pathlib import Path
 from typing import Any
 
@@ -97,8 +96,6 @@ class InstallHelp(Screen[None], AppType):
     def __init__(self, chezmoi_found: bool) -> None:
         self.chezmoi_found = chezmoi_found
         super().__init__(id=Canvas.install_help, classes=Tcss.screen_base.name)
-        self.path_env_list: list[str] = []
-        self.pkg_root: Path | None = None
 
     def compose(self) -> ComposeResult:
         if self.chezmoi_found is True:
@@ -129,16 +126,8 @@ class InstallHelp(Screen[None], AppType):
     def on_mount(self) -> None:
         if self.chezmoi_found is False:
             self.border_subtitle = SubTitles.escape_exit_app
-            self.pkg_root = self.get_pkg_root()
             self.update_path_widget()
             self.populate_tree()
-
-    def get_pkg_root(self) -> Path:
-        return (
-            Path(str(files(__package__)))
-            if __package__
-            else Path(__file__).resolve().parent
-        )
 
     def update_path_widget(self) -> None:
         self.path_env = os.environ.get("PATH")
@@ -149,11 +138,11 @@ class InstallHelp(Screen[None], AppType):
             pretty_widget.update(self.path_env_list)
 
     def populate_tree(self) -> None:
-        if self.pkg_root is None:
-            return
         help_tree: CommandsTree = self.query_exactly_one(CommandsTree)
         data_file: Path = Path.joinpath(
-            self.pkg_root, "data", "chezmoi_install_commands.json"
+            Path(__file__).resolve().parent,
+            "data",
+            "chezmoi_install_commands.json",
         )
         install_help: ParsedJson = json.loads(data_file.read_text())
         help_tree.show_root = False
