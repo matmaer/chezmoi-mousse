@@ -1,5 +1,4 @@
 from math import ceil
-from pathlib import PurePath
 from typing import TYPE_CHECKING
 
 from rich.color import Color
@@ -41,14 +40,15 @@ from .operate_tabs import (
     ManagedTree,
     ReAddTab,
 )
-from .pre_run_screens import InstallHelp, LoadingScreen
+from .pre_run_screens.install_help import InstallHelp
+from .pre_run_screens.splash import LoadingScreen
 from .rich_logs import AppLog, ContentsView, DebugLog, DiffView, OutputLog
 from .widgets import GitLogView, OperateInfo
 
 if TYPE_CHECKING:
     from chezmoi_mousse import PreRunData
 
-    from .pre_run_screens import ParsedConfig, SplashData
+    from .pre_run_screens.splash import ParsedConfig, SplashData
 
 __all__ = ["ChezmoiGUI"]
 
@@ -98,7 +98,7 @@ class ChezmoiGUI(App[None]):
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
         super().__init__()
 
-    CSS_PATH = PurePath("data", "gui.tcss")
+    CSS_PATH = "gui.tcss"
 
     BINDINGS = [
         Binding(
