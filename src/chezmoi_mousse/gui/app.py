@@ -266,11 +266,13 @@ class ChezmoiGUI(App[None]):
         apply_git_log_view = self.query_one(
             Id.apply_tab.view_id("#", view=ViewName.git_log_view), GitLogView
         )
+        apply_git_log_view.destDir = data.dump_config.dest_dir
         apply_git_log_view.path = data.dump_config.dest_dir
 
         re_add_git_log_view = self.query_one(
             Id.re_add_tab.view_id("#", view=ViewName.git_log_view), GitLogView
         )
+        re_add_git_log_view.destDir = data.dump_config.dest_dir
         re_add_git_log_view.path = data.dump_config.dest_dir
 
     def update_dir_tree_destDir(self, data: "SplashData") -> None:
