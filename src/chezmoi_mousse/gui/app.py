@@ -48,7 +48,7 @@ from chezmoi_mousse.gui.rich_logs import (
 from chezmoi_mousse.gui.widgets import GitLogView, OperateInfo
 
 if TYPE_CHECKING:
-    from chezmoi_mousse.gui import PreRunData
+    from chezmoi_mousse import PreRunData
     from chezmoi_mousse.gui.pre_run_screens import ParsedConfig, SplashData
 
 __all__ = ["ChezmoiGUI"]

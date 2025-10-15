@@ -19,6 +19,7 @@ from textual.reactive import reactive
 from textual.widgets import RichLog
 
 from chezmoi_mousse import (
+    AppType,
     Canvas,
     Chars,
     GlobalCmd,
@@ -27,7 +28,6 @@ from chezmoi_mousse import (
     VerbArgs,
     ViewName,
 )
-from chezmoi_mousse.gui import AppType
 
 if TYPE_CHECKING:
     from pathlib import Path

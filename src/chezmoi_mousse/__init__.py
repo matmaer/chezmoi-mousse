@@ -1,4 +1,6 @@
+from dataclasses import dataclass
 from importlib.metadata import PackageNotFoundError, version
+from typing import TYPE_CHECKING
 
 from chezmoi_mousse._chars import Chars
 from chezmoi_mousse._chezmoi import (
@@ -21,9 +23,22 @@ from chezmoi_mousse._subtitles import SubTitles
 from chezmoi_mousse._switch_data import Switches
 from chezmoi_mousse._tcss_classes import Tcss
 
+if TYPE_CHECKING:
+    from chezmoi_mousse._chezmoi import Chezmoi
+    from chezmoi_mousse.gui.app import ChezmoiGUI
+
+
+class AppType:
+    """Type hint for self.app attributes in widgets and screens."""
+
+    if TYPE_CHECKING:
+        app: "ChezmoiGUI"
+
+
 __all__ = [
     "__version__",
     "ActiveCanvas",
+    "AppType",
     "AreaName",
     "Canvas",
     "CanvasIds",
@@ -34,6 +49,7 @@ __all__ = [
     "NavBtn",
     "OperateBtn",
     "PaneBtn",
+    "PreRunData",
     "ReadCmd",
     "ReadVerbs",
     "SubTitles",
@@ -44,6 +60,15 @@ __all__ = [
     "VerbArgs",
     "ViewName",
 ]
+
+
+@dataclass(slots=True)
+class PreRunData:
+    chezmoi_instance: "Chezmoi"
+    changes_enabled: bool
+    chezmoi_found: bool
+    dev_mode: bool
+
 
 try:
     __version__ = version("chezmoi-mousse")

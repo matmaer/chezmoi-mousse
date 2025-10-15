@@ -21,8 +21,15 @@ from rich.text import Text
 from textual.reactive import reactive
 from textual.widgets import DataTable, Link, ListItem, ListView, Static
 
-from chezmoi_mousse import Chars, Id, OperateBtn, ReadCmd, Tcss, ViewName
-from chezmoi_mousse.gui import AppType
+from chezmoi_mousse import (
+    AppType,
+    Chars,
+    Id,
+    OperateBtn,
+    ReadCmd,
+    Tcss,
+    ViewName,
+)
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds

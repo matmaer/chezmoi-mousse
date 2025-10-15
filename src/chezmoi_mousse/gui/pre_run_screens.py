@@ -37,8 +37,15 @@ from textual.widgets import (
 )
 from textual.worker import WorkerState
 
-from chezmoi_mousse import Canvas, Chars, ReadCmd, SubTitles, Tcss, VerbArgs
-from chezmoi_mousse.gui import AppType
+from chezmoi_mousse import (
+    AppType,
+    Canvas,
+    Chars,
+    ReadCmd,
+    SubTitles,
+    Tcss,
+    VerbArgs,
+)
 from chezmoi_mousse.gui.rich_logs import LogUtils
 
 type ParsedJson = dict[str, Any]

@@ -6,8 +6,7 @@ from textual.app import ComposeResult
 from textual.containers import Vertical
 from textual.widgets import Button, ContentSwitcher
 
-from chezmoi_mousse import AreaName, TabBtn, Tcss, ViewName
-from chezmoi_mousse.gui import AppType
+from chezmoi_mousse import AppType, AreaName, TabBtn, Tcss, ViewName
 from chezmoi_mousse.gui.button_groups import TabBtnHorizontal
 from chezmoi_mousse.gui.rich_logs import AppLog, DebugLog, OutputLog
 

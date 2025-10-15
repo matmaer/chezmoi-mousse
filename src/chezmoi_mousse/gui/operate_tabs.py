@@ -14,6 +14,7 @@ from textual.widgets._tree import TOGGLE_STYLE
 from textual.widgets.tree import TreeNode
 
 from chezmoi_mousse import (
+    AppType,
     AreaName,
     Canvas,
     Chars,
@@ -24,7 +25,6 @@ from chezmoi_mousse import (
     TreeName,
     ViewName,
 )
-from chezmoi_mousse.gui import AppType
 from chezmoi_mousse.gui.button_groups import TabBtnHorizontal
 from chezmoi_mousse.gui.directory_tree import FilteredDirTree
 from chezmoi_mousse.gui.messages import TreeNodeSelectedMsg

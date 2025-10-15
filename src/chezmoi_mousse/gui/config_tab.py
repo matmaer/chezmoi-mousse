@@ -7,8 +7,7 @@ from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual.reactive import reactive
 from textual.widgets import Button, ContentSwitcher, Label, Pretty
 
-from chezmoi_mousse import AreaName, NavBtn, Tcss, ViewName
-from chezmoi_mousse.gui import AppType
+from chezmoi_mousse import AppType, AreaName, NavBtn, Tcss, ViewName
 from chezmoi_mousse.gui.button_groups import NavButtonsVertical
 from chezmoi_mousse.gui.widgets import DoctorListView, DoctorTable
 
