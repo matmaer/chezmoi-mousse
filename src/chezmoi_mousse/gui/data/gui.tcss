@@ -52,7 +52,6 @@
   overflow-x: scroll;
 }
 
-
 .tab_left_vertical {
   margin-right: 2;
   width: auto;
@@ -75,7 +74,6 @@
     width: auto;
   }
 }
-
 
 .screen_base {
   border-bottom: $primary;
@@ -141,7 +139,7 @@ NavButtonsVertical {
 OperateBtnHorizontal {
   width: 100%;
   height: 3;
-  .operate_button {
+  & .operate_button {
     background-tint: $surface-lighten-1;
     background: $surface-lighten-1;
     border-top: wide $primary-darken-3;
@@ -169,7 +167,8 @@ SwitchSlider {
   border-left: none;
   dock: bottom;
   layer: switches;
-  margin-bottom: 1;  /* make sure horizontal scrollbar on layer below is visible */
+  /* make sure horizontal scrollbar and a line from the layer below is visible.*/
+  margin-bottom: 2;
   offset-x: 0%;
   padding-right: 1;
   transition: offset 380ms;
