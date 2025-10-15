@@ -9,7 +9,7 @@ from textual.widgets import Button, ContentSwitcher, Label, Pretty
 
 from chezmoi_mousse import AppType, AreaName, NavBtn, Tcss, ViewName
 
-from .button_groups import NavButtonsVertical
+from .shared.button_groups import NavButtonsVertical
 from .widgets import DoctorListView, DoctorTable
 
 if TYPE_CHECKING:

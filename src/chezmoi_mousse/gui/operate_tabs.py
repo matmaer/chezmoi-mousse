@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -18,6 +17,7 @@ from chezmoi_mousse import (
     AreaName,
     Canvas,
     Chars,
+    NodeData,
     PaneBtn,
     Switches,
     TabBtn,
@@ -26,11 +26,11 @@ from chezmoi_mousse import (
     ViewName,
 )
 
-from .button_groups import TabBtnHorizontal
 from .directory_tree import FilteredDirTree
-from .messages import TreeNodeSelectedMsg
-from .rich_views import ContentsView, DiffView
-from .switch_slider import SwitchSlider
+from .shared.button_groups import TabBtnHorizontal
+from .shared.messages import TreeNodeSelectedMsg
+from .shared.rich_views import ContentsView, DiffView
+from .shared.switch_slider import SwitchSlider
 from .widgets import GitLogView
 
 if TYPE_CHECKING:
@@ -46,18 +46,6 @@ __all__ = [
     "ManagedTree",
     "ReAddTab",
 ]
-
-
-@dataclass(slots=True)
-class NodeData:
-    found: bool
-    path: "Path"
-    # chezmoi status codes processed: A, D, M, or a space
-    # "node status" codes:
-    #   X (no status but managed)
-    #   F (fake for the root node)
-    status: str
-    is_leaf: bool
 
 
 class TreeBase(Tree[NodeData], AppType):

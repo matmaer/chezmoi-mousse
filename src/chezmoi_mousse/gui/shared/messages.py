@@ -6,7 +6,7 @@ from textual.message import Message
 if TYPE_CHECKING:
     from chezmoi_mousse import OperateBtn, TreeName
 
-    from .operate_tabs import NodeData
+    from ..operate_tabs import NodeData
 
 __all__ = ["OperateDismissMsg", "TreeNodeSelectedMsg"]
 

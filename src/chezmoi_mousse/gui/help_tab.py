@@ -7,7 +7,7 @@ from textual.widgets import Button, ContentSwitcher, Label, Static
 
 from chezmoi_mousse import AreaName, NavBtn, Tcss, ViewName
 
-from .button_groups import NavButtonsVertical
+from .shared.button_groups import NavButtonsVertical
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds

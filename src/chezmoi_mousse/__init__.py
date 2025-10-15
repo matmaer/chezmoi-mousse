@@ -29,6 +29,8 @@ from chezmoi_mousse._switch_data import Switches
 from chezmoi_mousse._tcss_classes import Tcss
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from chezmoi_mousse._chezmoi import Chezmoi
     from chezmoi_mousse.gui.app import ChezmoiGUI
 
@@ -53,6 +55,7 @@ __all__ = [
     "Id",
     "LogUtils",
     "NavBtn",
+    "NodeData",
     "OperateBtn",
     "PaneBtn",
     "PreRunData",
@@ -66,6 +69,18 @@ __all__ = [
     "VerbArgs",
     "ViewName",
 ]
+
+
+@dataclass(slots=True)
+class NodeData:
+    found: bool
+    path: "Path"
+    # chezmoi status codes processed: A, D, M, or a space
+    # "node status" codes:
+    #   X (no status but managed)
+    #   F (fake for the root node)
+    status: str
+    is_leaf: bool
 
 
 @dataclass(slots=True)

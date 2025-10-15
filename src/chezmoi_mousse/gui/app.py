@@ -27,11 +27,10 @@ from chezmoi_mousse import (
     ViewName,
 )
 
-from .button_groups import OperateBtnHorizontal
 from .config_tab import ConfigTab
 from .directory_tree import FilteredDirTree
 from .help_tab import HelpTab
-from .logs_tab import LogsTab
+from .logs_tab import AppLog, DebugLog, LogsTab, OutputLog
 from .operate_tabs import (
     AddTab,
     ApplyTab,
@@ -42,8 +41,8 @@ from .operate_tabs import (
 )
 from .pre_run_screens.install_help import InstallHelp
 from .pre_run_screens.splash import LoadingScreen
-from .rich_loggers import AppLog, DebugLog, OutputLog
-from .rich_views import ContentsView, DiffView
+from .shared.button_groups import OperateBtnHorizontal
+from .shared.rich_views import ContentsView, DiffView
 from .widgets import GitLogView, OperateInfo
 
 if TYPE_CHECKING:
@@ -351,7 +350,8 @@ class ChezmoiGUI(App[None]):
 
 
 class CustomScrollBarRender(ScrollBarRender):
-    # Used to monkey patch the textual ScrollBar.renderer method in gui.py.
+    # Used to monkey patch the textual ScrollBar.renderer method in ChezmoiGUI
+    # __init__
 
     @classmethod
     def render_bar(
