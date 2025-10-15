@@ -19,7 +19,6 @@ from textual.reactive import reactive
 from textual.widgets import RichLog
 
 from chezmoi_mousse import (
-    ActiveCanvas,
     Canvas,
     Chars,
     GlobalCmd,
@@ -33,7 +32,7 @@ from chezmoi_mousse.gui import AppType
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from chezmoi_mousse import CanvasIds
+    from chezmoi_mousse import ActiveCanvas, CanvasIds
 
 __all__ = [
     "AppLog",
@@ -160,7 +159,7 @@ class DiffView(RichLog, AppType):
         self.ids = ids
         self.reverse = reverse
         self.destDir: "Path | None" = None
-        self.active_canvas: ActiveCanvas | None = None
+        self.active_canvas: "ActiveCanvas | None" = None
         self.diff_read_cmd: ReadCmd = (
             ReadCmd.diff_reverse if self.reverse else ReadCmd.diff
         )
