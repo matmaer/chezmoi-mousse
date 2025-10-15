@@ -95,9 +95,9 @@ class ChezmoiGUI(App[None]):
 
     BINDINGS = [
         Binding(
-            key="T,t",
+            key="F,f",
             action="toggle_switch_slider",
-            description="toggle-switches",
+            description="show/hide filters",
         )
     ]
 
