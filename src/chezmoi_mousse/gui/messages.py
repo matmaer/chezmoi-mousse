@@ -3,10 +3,9 @@ from typing import TYPE_CHECKING
 
 from textual.message import Message
 
-from chezmoi_mousse import OperateBtn, TreeName
-
 if TYPE_CHECKING:
-    from chezmoi_mousse.gui.tree_widgets import NodeData
+    from chezmoi_mousse import OperateBtn, TreeName
+    from chezmoi_mousse.gui.operate_tabs import NodeData
 
 __all__ = ["OperateDismissMsg", "TreeNodeSelectedMsg"]
 
@@ -14,7 +13,7 @@ __all__ = ["OperateDismissMsg", "TreeNodeSelectedMsg"]
 class OperateDismissMsg(Message):
     def __init__(
         self,
-        button_name: OperateBtn | None = None,
+        button_name: "OperateBtn | None" = None,
         found: bool | None = None,
         operation_executed: bool | None = None,
         path: Path | None = None,
@@ -30,7 +29,7 @@ class TreeNodeSelectedMsg(Message):
     def __init__(
         self,
         node_data: "NodeData",
-        tree_name: TreeName,
+        tree_name: "TreeName",
         node_leaves: list["NodeData | None"] | None = None,
         node_parent: "NodeData | None" = None,
         node_subdirs: list["NodeData | None"] | None = None,
