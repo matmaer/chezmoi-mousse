@@ -41,6 +41,7 @@ config = ".pre-commit-config.yaml"
 [tool.pytest.ini_options]
 addopts = "--color=auto --tb=no -s --no-header -v"
 testpaths = ["static_tests"]
+pythonpath = ["src"]
 python_files = ["[!_]*.py"]
 asyncio_mode = "auto"
 
