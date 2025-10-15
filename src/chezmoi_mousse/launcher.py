@@ -34,7 +34,7 @@ def run_app():
         try:
             app = ChezmoiGUI(pre_run_data=pre_run_data)
         except Exception:
-            with open(src_dir / "stack_trace.txt", "w") as f:
+            with open((Path.joinpath(src_dir, "stack_trace.txt")), "w") as f:
                 traceback.print_exc(file=f)
             raise
 
