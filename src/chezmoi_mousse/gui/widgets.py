@@ -135,7 +135,6 @@ class GitLogView(DataTable[Text], AppType):
     def watch_path(self) -> None:
         if self.path is None:
             return
-        self.border_title = f" {self.path} "
         if self.path == self.destDir:
             cmd_output = self.app.chezmoi.read(ReadCmd.git_log)
         else:
@@ -143,6 +142,7 @@ class GitLogView(DataTable[Text], AppType):
                 self.app.chezmoi.read(ReadCmd.source_path, self.path)
             )
             cmd_output = self.app.chezmoi.read(ReadCmd.git_log, source_path)
+        self.border_title = f" {self.path} "
         self.populate_data_table(cmd_output)
 
 
