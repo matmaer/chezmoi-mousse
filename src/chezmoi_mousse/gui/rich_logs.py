@@ -70,7 +70,7 @@ class ContentsView(RichLog, AppType):
 
     def __init__(self, *, ids: "CanvasIds") -> None:
         self.ids = ids
-        # self.first_render: bool = True
+        self.destDir: "Path | None" = None
         super().__init__(
             id=self.ids.view_id(view=ViewName.contents_view),
             auto_scroll=False,
@@ -78,21 +78,19 @@ class ContentsView(RichLog, AppType):
             highlight=True,
             classes=Tcss.border_title_top.name,
         )
-        self.click_colored_file = Text(
-            "Click a colored file in the tree to see the contents.",
-            style="dim",
+        self.click_file_path = Text(
+            "\nClick a file path in the tree to see the contents.", style="dim"
         )
 
     def on_mount(self) -> None:
-        self._write_destDir_info()
-
-    def _write_destDir_info(self) -> None:
-        self.write('This is the destination directory "chezmoi destDir"\n')
-        self.write(self.click_colored_file)
+        self.write('This is the destination directory "chezmoi destDir"')
+        self.write(self.click_file_path)
 
     def watch_path(self) -> None:
         assert self.path is not None
         self.border_title = f" {self.path} "
+        if self.path == self.destDir:
+            return
         self.clear()
         truncated_message = ""
         try:
@@ -126,6 +124,7 @@ class ContentsView(RichLog, AppType):
             # does not exist
             if self.path in self.app.chezmoi.managed_dirs:
                 self.write(f"Managed directory: {self.path}")
+                self.write(self.click_file_path)
                 return
             if self.path in self.app.chezmoi.managed_files:
                 cat_output = self.app.chezmoi.read(ReadCmd.cat, self.path)
@@ -140,8 +139,10 @@ class ContentsView(RichLog, AppType):
         except IsADirectoryError:
             if self.path in self.app.chezmoi.managed_dirs:
                 self.write(f"Managed directory: {self.path}")
+                self.write(self.click_file_path)
             else:
                 self.write(f"Unmanaged directory: {self.path}")
+                self.write(self.click_file_path)
 
         except OSError as error:
             self.write(Text(f"Error reading {self.path}: {error}"))
@@ -175,7 +176,7 @@ class DiffView(RichLog, AppType):
             classes=Tcss.border_title_top.name,
         )
         self.click_colored_file = Text(
-            f"Click a colored file in the tree to see the output from {self.pretty_diff_cmd}",
+            f"Click a colored file in the tree to see the output from {self.pretty_diff_cmd}.",
             style="dim",
         )
 
