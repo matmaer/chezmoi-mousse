@@ -4,9 +4,7 @@ from typing import TYPE_CHECKING
 from textual.message import Message
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import OperateBtn, TreeName
-
-    from ..operate_tabs import NodeData
+    from chezmoi_mousse import NodeData, OperateBtn, TreeName
 
 __all__ = ["OperateDismissMsg", "TreeNodeSelectedMsg"]
 
