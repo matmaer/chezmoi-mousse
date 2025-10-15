@@ -28,10 +28,10 @@ from chezmoi_mousse import (
 
 from .directory_tree import FilteredDirTree
 from .shared.button_groups import TabBtnHorizontal
+from .shared.git_log_view import GitLogView
 from .shared.messages import TreeNodeSelectedMsg
 from .shared.rich_views import ContentsView, DiffView
 from .shared.switch_slider import SwitchSlider
-from .widgets import GitLogView
 
 if TYPE_CHECKING:
     from chezmoi_mousse import ActiveCanvas, CanvasIds
