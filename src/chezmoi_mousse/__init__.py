@@ -51,6 +51,7 @@ __all__ = [
     "Chars",
     "GlobalCmd",
     "Id",
+    "LogUtils",
     "NavBtn",
     "OperateBtn",
     "PaneBtn",
@@ -73,6 +74,25 @@ class PreRunData:
     changes_enabled: bool
     chezmoi_found: bool
     dev_mode: bool
+
+
+class LogUtils:
+    @staticmethod
+    def pretty_cmd_str(command: list[str]) -> str:
+        filter_git_log_args = VerbArgs.git_log.value[3:]
+        return "chezmoi " + " ".join(
+            [
+                _
+                for _ in command[1:]
+                if _
+                not in GlobalCmd.default_args.value
+                + filter_git_log_args
+                + [
+                    VerbArgs.format_json.value,
+                    VerbArgs.path_style_absolute.value,
+                ]
+            ]
+        )
 
 
 try:

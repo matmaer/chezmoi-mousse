@@ -16,9 +16,7 @@ from textual.timer import Timer
 from textual.widgets import RichLog, Static
 from textual.worker import WorkerState
 
-from chezmoi_mousse import AppType, ReadCmd, VerbArgs
-
-from ..rich_logs import LogUtils
+from chezmoi_mousse import AppType, LogUtils, ReadCmd, VerbArgs
 
 __all__ = ["LoadingScreen", "ParsedConfig", "SplashData"]
 

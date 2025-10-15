@@ -22,10 +22,9 @@ from chezmoi_mousse import (
     AppType,
     Canvas,
     Chars,
-    GlobalCmd,
+    LogUtils,
     ReadCmd,
     Tcss,
-    VerbArgs,
     ViewName,
 )
 
@@ -34,33 +33,7 @@ if TYPE_CHECKING:
 
     from chezmoi_mousse import ActiveCanvas, CanvasIds
 
-__all__ = [
-    "AppLog",
-    "ContentsView",
-    "DebugLog",
-    "DiffView",
-    "LogUtils",
-    "OutputLog",
-]
-
-
-class LogUtils:
-    @staticmethod
-    def pretty_cmd_str(command: list[str]) -> str:
-        filter_git_log_args = VerbArgs.git_log.value[3:]
-        return "chezmoi " + " ".join(
-            [
-                _
-                for _ in command[1:]
-                if _
-                not in GlobalCmd.default_args.value
-                + filter_git_log_args
-                + [
-                    VerbArgs.format_json.value,
-                    VerbArgs.path_style_absolute.value,
-                ]
-            ]
-        )
+__all__ = ["AppLog", "ContentsView", "DebugLog", "DiffView", "OutputLog"]
 
 
 class ContentsView(RichLog, AppType):
