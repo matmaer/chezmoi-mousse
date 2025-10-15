@@ -11,7 +11,13 @@ from chezmoi_mousse._chezmoi import (
     VerbArgs,
 )
 from chezmoi_mousse._id_classes import CanvasIds, Id
-from chezmoi_mousse._labels import NavBtn, OperateBtn, PaneBtn, TabBtn
+from chezmoi_mousse._labels import (
+    NavBtn,
+    OperateBtn,
+    PaneBtn,
+    SubTitles,
+    TabBtn,
+)
 from chezmoi_mousse._names import (
     ActiveCanvas,
     AreaName,
@@ -19,7 +25,6 @@ from chezmoi_mousse._names import (
     TreeName,
     ViewName,
 )
-from chezmoi_mousse._subtitles import SubTitles
 from chezmoi_mousse._switch_data import Switches
 from chezmoi_mousse._tcss_classes import Tcss
 

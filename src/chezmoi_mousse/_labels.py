@@ -30,6 +30,12 @@ class PaneBtn(StrEnum):
     re_add_tab = "Re-Add"
 
 
+class SubTitles(StrEnum):
+    double_click_or_esc = " double click or escape key to close "
+    escape = " escape key to close "
+    escape_exit_app = " escape key to exit app "
+
+
 class SwitchLabel(StrEnum):
     expand_all = "expand all dirs"
     unchanged = "show unchanged files"
