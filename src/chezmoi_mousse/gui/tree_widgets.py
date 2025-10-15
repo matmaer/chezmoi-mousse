@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from rich.style import Style
@@ -16,6 +15,8 @@ from chezmoi_mousse.gui import AppType
 from chezmoi_mousse.gui.messages import TreeNodeSelectedMsg
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from chezmoi_mousse import CanvasIds
 
 __all__ = ["ManagedTree", "NodeData", "ExpandedTree", "FlatTree"]
@@ -24,7 +25,7 @@ __all__ = ["ManagedTree", "NodeData", "ExpandedTree", "FlatTree"]
 @dataclass(slots=True)
 class NodeData:
     found: bool
-    path: Path
+    path: "Path"
     # chezmoi status codes processed: A, D, M, or a space
     # "node status" codes:
     #   X (no status but managed)
@@ -92,7 +93,7 @@ class TreeBase(Tree[NodeData], AppType):
 
     # create node data methods
     def create_node_data(
-        self, *, path: Path, is_leaf: bool, status_code: str
+        self, *, path: "Path", is_leaf: bool, status_code: str
     ) -> NodeData:
         found: bool = path.exists()
         return NodeData(
@@ -119,7 +120,7 @@ class TreeBase(Tree[NodeData], AppType):
 
     def _get_existing_paths(
         self, tree_node: TreeNode[NodeData], is_leaf: bool
-    ) -> list[Path]:
+    ) -> list["Path"]:
         # get existing nodes (files or dirs based on is_leaf)
         return [
             child.data.path
@@ -130,7 +131,7 @@ class TreeBase(Tree[NodeData], AppType):
     def _create_and_add_node(
         self,
         tree_node: TreeNode[NodeData],
-        path: Path,
+        path: "Path",
         status_code: str,
         is_leaf: bool,
     ) -> None:
@@ -358,7 +359,7 @@ class TreeBase(Tree[NodeData], AppType):
 
 class ManagedTree(TreeBase):
 
-    destDir: reactive[Path | None] = reactive(None, init=False)
+    destDir: reactive["Path | None"] = reactive(None, init=False)
     unchanged: reactive[bool] = reactive(False, init=False)
 
     def __init__(self, *, ids: "CanvasIds") -> None:
@@ -395,7 +396,7 @@ class ManagedTree(TreeBase):
 
 class ExpandedTree(TreeBase):
 
-    destDir: reactive[Path | None] = reactive(None, init=False)
+    destDir: reactive["Path | None"] = reactive(None, init=False)
     unchanged: reactive[bool] = reactive(False, init=False)
 
     def __init__(self, ids: "CanvasIds") -> None:
@@ -442,7 +443,7 @@ class ExpandedTree(TreeBase):
 
 class FlatTree(TreeBase, AppType):
 
-    destDir: reactive[Path | None] = reactive(None, init=False)
+    destDir: reactive["Path | None"] = reactive(None, init=False)
     unchanged: reactive[bool] = reactive(False, init=False)
 
     def __init__(self, ids: "CanvasIds") -> None:
