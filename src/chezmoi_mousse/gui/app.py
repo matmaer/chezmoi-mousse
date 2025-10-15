@@ -42,8 +42,9 @@ from .operate_tabs import (
 from .pre_run_screens.install_help import InstallHelp
 from .pre_run_screens.splash import LoadingScreen
 from .shared.button_groups import OperateBtnHorizontal
+from .shared.operate_info import OperateInfo
 from .shared.rich_views import ContentsView, DiffView
-from .widgets import GitLogView, OperateInfo
+from .widgets import GitLogView
 
 if TYPE_CHECKING:
     from chezmoi_mousse import PreRunData
