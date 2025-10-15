@@ -35,6 +35,7 @@ from chezmoi_mousse.gui.rich_logs import (
     AppLog,
     ContentsView,
     DebugLog,
+    DiffView,
     OutputLog,
 )
 from chezmoi_mousse.gui.tree_widgets import ExpandedTree, FlatTree, ManagedTree
@@ -198,6 +199,7 @@ class ChezmoiGUI(App[None]):
             self.notify("Changes are disabled", severity="information")
 
         self.update_chezmoi_instance(return_data)
+        self.update_diff_view_destDir(return_data)
         self.update_managed_tree_destDir(return_data)
         self.update_expanded_tree_destDir(return_data)
         self.update_flat_tree_destDir(return_data)
@@ -248,6 +250,19 @@ class ChezmoiGUI(App[None]):
             Id.re_add_tab.tree_id("#", tree=TreeName.flat_tree), FlatTree
         )
         re_add_tab_flat_tree.destDir = data.dump_config.dest_dir
+
+    def update_diff_view_destDir(self, data: "SplashData") -> None:
+        apply_diff_view = self.query_one(
+            Id.apply_tab.view_id("#", view=ViewName.diff_view), DiffView
+        )
+        apply_diff_view.destDir = data.dump_config.dest_dir
+        apply_diff_view.path = data.dump_config.dest_dir
+
+        re_add_diff_view = self.query_one(
+            Id.re_add_tab.view_id("#", view=ViewName.diff_view), DiffView
+        )
+        re_add_diff_view.destDir = data.dump_config.dest_dir
+        re_add_diff_view.path = data.dump_config.dest_dir
 
     def update_contents_view_destDir(self, data: "SplashData") -> None:
         apply_contents_view = self.query_one(

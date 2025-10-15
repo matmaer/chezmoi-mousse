@@ -158,6 +158,7 @@ class DiffView(RichLog, AppType):
     def __init__(self, *, ids: "CanvasIds", reverse: bool) -> None:
         self.ids = ids
         self.reverse = reverse
+        self.destDir: "Path | None" = None
         self.active_canvas: ActiveCanvas | None = None
         self.diff_read_cmd: ReadCmd = (
             ReadCmd.diff_reverse if self.reverse else ReadCmd.diff
@@ -179,9 +180,8 @@ class DiffView(RichLog, AppType):
         )
 
     def on_mount(self) -> None:
-        if self.active_canvas is not None:
-            self.write('This is the destination directory "chezmoi destDir"\n')
-            self.write(self.click_colored_file)
+        self.write('This is the destination directory "chezmoi destDir"\n')
+        self.write(self.click_colored_file)
 
     def _write_dir_info(self) -> None:
         self.write(f"Managed directory {self.path}\n")
@@ -194,7 +194,7 @@ class DiffView(RichLog, AppType):
         self.write(self.click_colored_file)
 
     def watch_path(self) -> None:
-        if self.path is None:
+        if self.path is None or self.path == self.destDir:
             return
         self.border_title = f" {self.path} "
         self.clear()
