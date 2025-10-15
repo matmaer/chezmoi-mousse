@@ -10,7 +10,6 @@ These classes
 """
 
 from datetime import datetime
-from pathlib import Path
 from subprocess import CompletedProcess
 from typing import TYPE_CHECKING
 
@@ -32,6 +31,8 @@ from chezmoi_mousse import (
 from chezmoi_mousse.gui import AppType
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from chezmoi_mousse import CanvasIds
 
 __all__ = [
@@ -65,7 +66,7 @@ class LogUtils:
 
 class ContentsView(RichLog, AppType):
 
-    path: reactive[Path | None] = reactive(None, init=False)
+    path: reactive["Path | None"] = reactive(None, init=False)
 
     def __init__(self, *, ids: "CanvasIds") -> None:
         self.ids = ids
@@ -152,7 +153,7 @@ class ContentsView(RichLog, AppType):
 
 class DiffView(RichLog, AppType):
 
-    path: reactive[Path | None] = reactive(None, init=False)
+    path: reactive["Path | None"] = reactive(None, init=False)
 
     def __init__(self, *, ids: "CanvasIds", reverse: bool) -> None:
         self.ids = ids
