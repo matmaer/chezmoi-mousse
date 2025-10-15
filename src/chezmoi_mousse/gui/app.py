@@ -98,7 +98,7 @@ class ChezmoiGUI(App[None]):
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
         super().__init__()
 
-    CSS_PATH = "gui.tcss"
+    CSS_PATH = "_gui.tcss"
 
     BINDINGS = [
         Binding(
