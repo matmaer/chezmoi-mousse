@@ -225,21 +225,11 @@ class AddTab(EventHub, AppType):
         dir_tree.show_root = False
         dir_tree.guide_depth = 3
 
-    def on_directory_tree_file_selected(
-        self, event: FilteredDirTree.FileSelected
-    ) -> None:
-        event.stop()
-
-        assert event.node.data is not None
-        contents_view = self.query_one(
-            self.ids.view_id("#", view=ViewName.contents_view), ContentsView
-        )
-        contents_view.path = event.node.data.path
-        contents_view.border_title = f" {event.node.data.path} "
-
-    @on(FilteredDirTree.DirectorySelected)
+    @on(DirectoryTree.DirectorySelected)
+    @on(DirectoryTree.FileSelected)
     def update_contents_view_and_title(
-        self, event: FilteredDirTree.DirectorySelected
+        self,
+        event: DirectoryTree.DirectorySelected | DirectoryTree.FileSelected,
     ) -> None:
         event.stop()
         assert event.node.data is not None
