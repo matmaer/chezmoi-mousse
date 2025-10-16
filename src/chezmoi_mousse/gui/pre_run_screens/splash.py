@@ -128,7 +128,7 @@ class LoadingScreen(Screen[SplashData | None], AppType):
                 yield Center(RichLog())
 
     @work(thread=True, group="io_workers")
-    def run_read_cmd(self, field_name: str) -> None:
+    def run_read_cmd(self, splash_cmd: str) -> None:
 
         splash_log = self.query_exactly_one(RichLog)
 
@@ -139,9 +139,9 @@ class LoadingScreen(Screen[SplashData | None], AppType):
             splash_log.write(log_text)
             return
 
-        cmd_output = self.app.chezmoi.read(getattr(ReadCmd, field_name))
-        globals()[field_name] = cmd_output
-        command_value = getattr(ReadCmd, field_name).value
+        cmd_output = self.app.chezmoi.read(getattr(ReadCmd, splash_cmd))
+        globals()[splash_cmd] = cmd_output
+        command_value = getattr(ReadCmd, splash_cmd).value
         cmd_text = (
             LogUtils.pretty_cmd_str(command_value)
             .replace(VerbArgs.include_dirs.value, "dirs")
@@ -150,7 +150,7 @@ class LoadingScreen(Screen[SplashData | None], AppType):
         padding = LOG_PADDING_WIDTH - len(cmd_text)
         log_text = f"{cmd_text} {'.' * padding} {LOADED_SUFFIX}"
         splash_log.write(log_text)
-        if field_name == "dump_config":
+        if splash_cmd == "dump_config":
             parsed_config = json.loads(cmd_output)
             globals()["dump_config"] = ParsedConfig(
                 dest_dir=Path(parsed_config["destDir"]),
