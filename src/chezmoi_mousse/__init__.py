@@ -32,7 +32,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from chezmoi_mousse._chezmoi import Chezmoi
-    from chezmoi_mousse.gui.app import ChezmoiGUI
+    from chezmoi_mousse.gui._chezmoi_gui import ChezmoiGUI
 
 
 class AppType:
