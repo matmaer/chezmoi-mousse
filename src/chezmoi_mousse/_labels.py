@@ -1,6 +1,13 @@
 from enum import StrEnum
 
-__all__ = ["NavBtn", "OperateBtn", "PaneBtn", "SwitchLabel", "TabBtn"]
+__all__ = [
+    "NavBtn",
+    "OperateBtn",
+    "PaneBtn",
+    "SubTitles",
+    "SwitchLabel",
+    "TabBtn",
+]
 
 
 class NavBtn(StrEnum):

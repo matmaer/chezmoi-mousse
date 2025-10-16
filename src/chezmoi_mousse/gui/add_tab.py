@@ -25,7 +25,7 @@ from .shared.switch_slider import SwitchSlider
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds
 
-__all__ = ["AddTab"]
+__all__ = ["AddTab", "FilteredDirTree"]
 
 
 class FilteredDirTree(DirectoryTree, AppType):
