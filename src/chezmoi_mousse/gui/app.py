@@ -28,12 +28,13 @@ from chezmoi_mousse import (
 )
 
 from .add_tab import AddTab, FilteredDirTree
+from .apply_tab import ApplyTab
 from .config_tab import ConfigTab
 from .help_tab import HelpTab
 from .logs_tab import AppLog, DebugLog, LogsTab, OutputLog
-from .operate_tabs import ApplyTab, ReAddTab
 from .pre_run_screens.install_help import InstallHelp
 from .pre_run_screens.splash import LoadingScreen
+from .re_add_tab import ReAddTab
 from .shared.button_groups import OperateBtnHorizontal
 from .shared.expanded_tree import ExpandedTree
 from .shared.flat_tree import FlatTree

@@ -12,36 +12,7 @@ from .shared.switch_slider import SwitchSlider
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds
 
-__all__ = ["ApplyTab", "ReAddTab"]
-
-
-class ApplyTab(OperateBase):
-
-    def __init__(self, ids: "CanvasIds") -> None:
-        self.ids = ids
-        super().__init__(ids=self.ids)
-
-    def compose(self) -> ComposeResult:
-        with Vertical(
-            id=self.ids.tab_vertical_id(area=AreaName.left),
-            classes=Tcss.tab_left_vertical.name,
-        ):
-            yield TabBtnHorizontal(
-                ids=self.ids,
-                buttons=(TabBtn.tree, TabBtn.list),
-                area=AreaName.left,
-            )
-            yield TreeSwitcher(self.ids)
-        with Vertical(id=self.ids.tab_vertical_id(area=AreaName.right)):
-            yield TabBtnHorizontal(
-                ids=self.ids,
-                buttons=(TabBtn.diff, TabBtn.contents, TabBtn.git_log),
-                area=AreaName.right,
-            )
-            yield ViewSwitcher(ids=self.ids, diff_reverse=False)
-        yield SwitchSlider(
-            ids=self.ids, switches=(Switches.unchanged, Switches.expand_all)
-        )
+__all__ = ["ReAddTab"]
 
 
 class ReAddTab(OperateBase):
