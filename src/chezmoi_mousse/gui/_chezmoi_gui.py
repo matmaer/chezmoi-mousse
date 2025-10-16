@@ -336,7 +336,9 @@ class ChezmoiGUI(App[None]):
             ):
                 return True
             return None
-        return True
+        elif action == "hide_header_and_tabs":
+            return True
+        return False
 
     def action_toggle_switch_slider(self) -> None:
         # merely find the corresponding method in the active tab ant call it
