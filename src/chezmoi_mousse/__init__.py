@@ -6,6 +6,7 @@ from chezmoi_mousse._chars import Chars
 from chezmoi_mousse._chezmoi import (
     ChangeCmd,
     GlobalCmd,
+    ManagedPaths,
     ReadCmd,
     ReadVerbs,
     VerbArgs,
@@ -54,6 +55,7 @@ __all__ = [
     "GlobalCmd",
     "Id",
     "LogUtils",
+    "ManagedPaths",
     "NavBtn",
     "NodeData",
     "OperateBtn",

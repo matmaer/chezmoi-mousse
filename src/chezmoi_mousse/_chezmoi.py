@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 from subprocess import CompletedProcess, run
@@ -16,6 +17,7 @@ __all__ = [
     "ChangeCmd",
     "Chezmoi",
     "GlobalCmd",
+    "ManagedPaths",
     "ReadCmd",
     "ReadVerbs",
     "VerbArgs",
@@ -143,6 +145,15 @@ class Utils:
         )
 
 
+@dataclass
+class ManagedPaths:
+    managed_dirs_stdout: str = ""
+    managed_files_stdout: str = ""
+    status_dirs_stdout: str = ""
+    status_files_stdout: str = ""
+    status_paths_stdout: str = ""
+
+
 class Chezmoi:
 
     def __init__(self, *, changes_enabled: bool, dev_mode: bool) -> None:
@@ -153,6 +164,8 @@ class Chezmoi:
         self.output_log: OutputLog | None = None
         if dev_mode is True:
             self.debug_log: DebugLog | None = None
+
+        self.managed_paths = ManagedPaths()
 
         # cached command outputs
         self.managed_dirs_stdout: str = ""  # ReadCmd.managed_dirs
