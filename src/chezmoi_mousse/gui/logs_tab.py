@@ -18,9 +18,9 @@ from chezmoi_mousse import (
     Tcss,
     ViewName,
 )
-from chezmoi_mousse.gui.shared.tabs_base import TabsBase
 
 from .shared.button_groups import TabBtnHorizontal
+from .shared.tabs_base import TabsBase
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds

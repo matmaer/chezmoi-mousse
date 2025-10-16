@@ -21,9 +21,9 @@ from textual.widgets import (
 )
 
 from chezmoi_mousse import AppType, AreaName, Id, NavBtn, Tcss, ViewName
-from chezmoi_mousse.gui.shared.tabs_base import TabsBase
 
 from .shared.button_groups import NavButtonsVertical
+from .shared.tabs_base import TabsBase
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds
