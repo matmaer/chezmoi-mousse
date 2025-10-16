@@ -15,12 +15,12 @@ from chezmoi_mousse import (  # AppType,
 )
 
 from .messages import TreeNodeSelectedMsg
-from .operate.contents_and_diff import DiffView
 from .operate.contents_view import ContentsView
 from .operate.expanded_tree import ExpandedTree
 from .operate.flat_tree import FlatTree
-from .operate.git_log import GitLogView
+from .operate.git_log_view import GitLogView
 from .operate.managed_tree import ManagedTree
+from .operate.switchers import DiffView
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds
