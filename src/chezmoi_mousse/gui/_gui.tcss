@@ -315,11 +315,6 @@ Header {
   min-width: 35;
 }
 
-Label {
-  border: none;
-  width: auto;
-}
-
 Switch {
   background: $surface;
   background-tint: $surface;
