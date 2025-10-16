@@ -1,6 +1,6 @@
 import json
 from collections import deque
-from dataclasses import dataclass, fields
+from dataclasses import dataclass
 from pathlib import Path
 
 from rich.segment import Segment
@@ -16,9 +16,22 @@ from textual.timer import Timer
 from textual.widgets import RichLog, Static
 from textual.worker import WorkerState
 
-from chezmoi_mousse import AppType, LogUtils, ReadCmd, VerbArgs
+from chezmoi_mousse import AppType, LogUtils, ManagedPaths, ReadCmd, VerbArgs
 
 __all__ = ["LoadingScreen", "ParsedConfig", "SplashData"]
+
+SPLASH_COMMANDS = [
+    "cat_config",
+    "doctor",
+    "dump_config",
+    "ignored",
+    "managed_dirs",
+    "managed_files",
+    "status_dirs",
+    "status_files",
+    "status_paths",
+    "template_data",
+]
 
 
 @dataclass(slots=True)
@@ -34,13 +47,9 @@ class ParsedConfig:
 class SplashData:
     cat_config: str
     doctor: str
-    dump_config: ParsedConfig
+    parsed_config: ParsedConfig
     ignored: str
-    managed_dirs: str
-    managed_files: str
-    status_dirs: str
-    status_files: str
-    status_paths: str
+    managed_paths: ManagedPaths
     template_data: str
 
 
@@ -161,17 +170,21 @@ class LoadingScreen(Screen[SplashData | None], AppType):
                 self.dismiss(None)
                 return
 
+            globals()["managed_paths"] = ManagedPaths(
+                managed_dirs_stdout=globals()["managed_dirs"],
+                managed_files_stdout=globals()["managed_files"],
+                status_dirs_stdout=globals()["status_dirs"],
+                status_files_stdout=globals()["status_files"],
+                status_paths_stdout=globals()["status_paths"],
+            )
+
             self.dismiss(
                 SplashData(
                     cat_config=globals()["cat_config"],
                     doctor=globals()["doctor"],
-                    dump_config=globals()["dump_config"],
+                    parsed_config=globals()["dump_config"],
                     ignored=globals()["ignored"],
-                    managed_dirs=globals()["managed_dirs"],
-                    managed_files=globals()["managed_files"],
-                    status_dirs=globals()["status_dirs"],
-                    status_files=globals()["status_files"],
-                    status_paths=globals()["status_paths"],
+                    managed_paths=globals()["managed_paths"],
                     template_data=globals()["template_data"],
                 )
             )
@@ -186,15 +199,15 @@ class LoadingScreen(Screen[SplashData | None], AppType):
         rich_log.styles.color = "#6DB2FF"
         rich_log.styles.margin = 2
         if self.chezmoi_found:
-            rich_log.styles.height = len(fields(SplashData))
+            rich_log.styles.height = len(SPLASH_COMMANDS)
         else:
             rich_log.styles.height = 1
 
         if not self.chezmoi_found:
             self.run_read_cmd("")
         else:
-            for field_name in [field.name for field in fields(SplashData)]:
-                self.run_read_cmd(field_name)
+            for cmd in SPLASH_COMMANDS:
+                self.run_read_cmd(cmd)
 
         self.all_workers_timer = self.set_interval(
             interval=1, callback=self.all_workers_finished

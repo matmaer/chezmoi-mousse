@@ -168,11 +168,31 @@ class Chezmoi:
         self.managed_paths = ManagedPaths()
 
         # cached command outputs
-        self.managed_dirs_stdout: str = ""  # ReadCmd.managed_dirs
-        self.managed_files_stdout: str = ""  # ReadCmd.managed_files
-        self.status_dirs_stdout: str = ""  # ReadCmd.status_dirs
-        self.status_files_stdout: str = ""  # ReadCmd.status_files
-        self.status_paths_stdout: str = ""  # ReadCmd.status
+        # self.managed_dirs_stdout: str = ""  # ReadCmd.managed_dirs
+        # self.managed_files_stdout: str = ""  # ReadCmd.managed_files
+        # self.status_dirs_stdout: str = ""  # ReadCmd.status_dirs
+        # self.status_files_stdout: str = ""  # ReadCmd.status_files
+        # self.status_paths_stdout: str = ""  # ReadCmd.status
+
+    @property
+    def managed_dirs_stdout(self):
+        return self.managed_paths.managed_dirs_stdout  # ReadCmd.managed_dirs
+
+    @property
+    def managed_files_stdout(self):
+        return self.managed_paths.managed_files_stdout  # ReadCmd.managed_files
+
+    @property
+    def status_dirs_stdout(self):
+        return self.managed_paths.status_dirs_stdout  # ReadCmd.status_dirs
+
+    @property
+    def status_files_stdout(self):
+        return self.managed_paths.status_files_stdout  # ReadCmd.status_files
+
+    @property
+    def status_paths_stdout(self):
+        return self.managed_paths.status_paths_stdout  # ReadCmd.status
 
     #################################
     # Command execution and logging #
@@ -222,12 +242,20 @@ class Chezmoi:
 
     def refresh_managed_paths_data(self):
         # get data from chezmoi managed stdout
-        self.managed_dirs_stdout = self.read(ReadCmd.managed_dirs)
-        self.managed_files_stdout = self.read(ReadCmd.managed_files)
+        self.managed_paths.managed_dirs_stdout = self.read(
+            ReadCmd.managed_dirs
+        )
+        self.managed_paths.managed_files_stdout = self.read(
+            ReadCmd.managed_files
+        )
         # get data from chezmoi status stdout
-        self.status_dirs_stdout = self.read(ReadCmd.status_dirs)
-        self.status_files_stdout = self.read(ReadCmd.status_files)
-        self.status_paths_stdout = self.read(ReadCmd.status_paths)
+        self.managed_paths.status_dirs_stdout = self.read(ReadCmd.status_dirs)
+        self.managed_paths.status_files_stdout = self.read(
+            ReadCmd.status_files
+        )
+        self.managed_paths.status_paths_stdout = self.read(
+            ReadCmd.status_paths
+        )
 
     ###################################################
     # Cached command outputs and processed properties
