@@ -11,10 +11,13 @@ __all__ = [
 
 
 class NavBtn(StrEnum):
+    add_help = "Add Help"
+    apply_help = "Apply Help"
     cat_config = "Cat Config"
     diagram = "Diagram"
     doctor = "Doctor"
     ignored = "Ignored"
+    re_add_help = "Re-Add Help"
     template_data = "Template Data"
 
 

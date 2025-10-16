@@ -33,7 +33,9 @@ class TreeName(StrEnum):
 
 
 class ViewName(StrEnum):
+    add_help_view = auto()
     app_log_view = auto()
+    apply_help_view = auto()
     cat_config_view = auto()
     contents_view = auto()
     debug_log_view = auto()
@@ -46,4 +48,5 @@ class ViewName(StrEnum):
     pretty_cat_config_view = auto()
     pretty_ignored_view = auto()
     pretty_template_data_view = auto()
+    re_add_help_view = auto()
     template_data_view = auto()
