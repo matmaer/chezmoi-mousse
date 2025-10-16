@@ -271,6 +271,13 @@ class ChezmoiGUI(App[None]):
         re_add_diff_view.path = data.parsed_config.dest_dir
 
     def update_contents_view_destDir(self, data: "SplashData") -> None:
+
+        add_tab_contents_view = self.query_one(
+            Id.add_tab.view_id("#", view=ViewName.contents_view), ContentsView
+        )
+        add_tab_contents_view.destDir = data.parsed_config.dest_dir
+        add_tab_contents_view.path = data.parsed_config.dest_dir
+
         apply_contents_view = self.query_one(
             Id.apply_tab.view_id("#", view=ViewName.contents_view),
             ContentsView,
