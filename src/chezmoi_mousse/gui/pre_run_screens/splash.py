@@ -21,17 +21,29 @@ from chezmoi_mousse import AppType, LogUtils, ManagedPaths, ReadCmd, VerbArgs
 __all__ = ["LoadingScreen", "ParsedConfig", "SplashData"]
 
 SPLASH_COMMANDS = [
-    "cat_config",
-    "doctor",
-    "dump_config",
-    "ignored",
-    "managed_dirs",
-    "managed_files",
-    "status_dirs",
-    "status_files",
-    "status_paths",
-    "template_data",
+    ReadCmd.cat_config,
+    ReadCmd.doctor,
+    ReadCmd.dump_config,
+    ReadCmd.ignored,
+    ReadCmd.managed_dirs,
+    ReadCmd.managed_files,
+    ReadCmd.status_dirs,
+    ReadCmd.status_files,
+    ReadCmd.status_paths,
+    ReadCmd.template_data,
 ]
+# SPLASH_COMMANDS = [
+#     "cat_config",
+#     "doctor",
+#     "dump_config",
+#     "ignored",
+#     "managed_dirs",
+#     "managed_files",
+#     "status_dirs",
+#     "status_files",
+#     "status_paths",
+#     "template_data",
+# ]
 
 
 @dataclass(slots=True)
@@ -100,6 +112,7 @@ managed_dirs: str = ""
 managed_files: str = ""
 status_dirs: str = ""
 status_files: str = ""
+status_paths: str = ""
 template_data: str = ""
 
 
@@ -128,7 +141,7 @@ class LoadingScreen(Screen[SplashData | None], AppType):
                 yield Center(RichLog())
 
     @work(thread=True, group="io_workers")
-    def run_read_cmd(self, splash_cmd: str) -> None:
+    def run_read_cmd(self, splash_cmd: ReadCmd) -> None:
 
         splash_log = self.query_exactly_one(RichLog)
 
@@ -139,20 +152,19 @@ class LoadingScreen(Screen[SplashData | None], AppType):
             splash_log.write(log_text)
             return
 
-        cmd_output = self.app.chezmoi.read(getattr(ReadCmd, splash_cmd))
-        globals()[splash_cmd] = cmd_output
-        command_value = getattr(ReadCmd, splash_cmd).value
+        cmd_output = self.app.chezmoi.read(splash_cmd)
+        globals()[splash_cmd.name] = cmd_output
         cmd_text = (
-            LogUtils.pretty_cmd_str(command_value)
+            LogUtils.pretty_cmd_str(splash_cmd.value)
             .replace(VerbArgs.include_dirs.value, "dirs")
             .replace(VerbArgs.include_files.value, "files")
         )
         padding = LOG_PADDING_WIDTH - len(cmd_text)
         log_text = f"{cmd_text} {'.' * padding} {LOADED_SUFFIX}"
         splash_log.write(log_text)
-        if splash_cmd == "dump_config":
+        if splash_cmd.name == ReadCmd.dump_config.name:
             parsed_config = json.loads(cmd_output)
-            globals()["dump_config"] = ParsedConfig(
+            globals()["parsed_config"] = ParsedConfig(
                 dest_dir=Path(parsed_config["destDir"]),
                 git_autoadd=parsed_config["git"]["autoadd"],
                 source_dir=Path(parsed_config["sourceDir"]),
@@ -182,7 +194,7 @@ class LoadingScreen(Screen[SplashData | None], AppType):
                 SplashData(
                     cat_config=globals()["cat_config"],
                     doctor=globals()["doctor"],
-                    parsed_config=globals()["dump_config"],
+                    parsed_config=globals()["parsed_config"],
                     ignored=globals()["ignored"],
                     managed_paths=globals()["managed_paths"],
                     template_data=globals()["template_data"],
