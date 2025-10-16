@@ -153,20 +153,41 @@ class ManagedPaths:
     status_files_stdout: str = ""  # ReadCmd.status_files
     status_paths_stdout: str = ""  # ReadCmd.status_paths
 
+    # internal caches (populated lazily)
+    _managed_dirs: list[Path] | None = None
+    _managed_files: list[Path] | None = None
+    _status_paths_dict: dict[Path, str] | None = None
+
+    def clear_cache(self) -> None:
+        # called in the Chezmoi.refresh_managed_paths_data() method
+        self._managed_dirs = None
+        self._managed_files = None
+        self._status_paths_dict = None
+
     @property
     def managed_dirs(self) -> list[Path]:
-        return [Path(line) for line in self.managed_dirs_stdout.splitlines()]
+        if self._managed_dirs is None:
+            self._managed_dirs = [
+                Path(line) for line in self.managed_dirs_stdout.splitlines()
+            ]
+        return self._managed_dirs
 
     @property
     def managed_files(self) -> list[Path]:
-        return [Path(line) for line in self.managed_files_stdout.splitlines()]
+        if self._managed_files is None:
+            self._managed_files = [
+                Path(line) for line in self.managed_files_stdout.splitlines()
+            ]
+        return self._managed_files
 
     @property
-    def all_status_paths_dict(self) -> PathDict:
-        return {
-            Path(line[3:]): line[:2]
-            for line in self.status_paths_stdout.splitlines()
-        }
+    def all_status_paths(self) -> PathDict:
+        if self._status_paths_dict is None:
+            self._status_paths_dict = {
+                Path(line[3:]): line[:2]
+                for line in self.status_paths_stdout.splitlines()
+            }
+        return self._status_paths_dict
 
 
 class Chezmoi:
@@ -242,10 +263,8 @@ class Chezmoi:
         self.managed_paths.status_paths_stdout = self.read(
             ReadCmd.status_paths
         )
-
-    @property
-    def _all_status_paths_dict(self) -> PathDict:
-        return self.managed_paths.all_status_paths_dict
+        # clear internal caches
+        self.managed_paths.clear_cache()
 
     @property
     def managed_dirs(self) -> list[Path]:
@@ -259,7 +278,7 @@ class Chezmoi:
     def _apply_status_paths(self) -> PathDict:
         return {
             path: status_pair[1]
-            for path, status_pair in self._all_status_paths_dict.items()
+            for path, status_pair in self.managed_paths.all_status_paths.items()
             if status_pair[1] in "ADM"  # Check second character only
         }
 
@@ -269,7 +288,7 @@ class Chezmoi:
         # for re-add operations to have a status if they exist, handled later.
         return {
             path: status_pair[0]
-            for path, status_pair in self._all_status_paths_dict.items()
+            for path, status_pair in self.managed_paths.all_status_paths.items()
             if status_pair[0] == "M"
             or (status_pair[0] == " " and status_pair[1] in "ADM")
         }
