@@ -11,6 +11,10 @@
   border-title-style: bold;
 }
 
+.display_none {
+  display: None;
+}
+
 .log_views {
   margin-bottom: 1;
 }

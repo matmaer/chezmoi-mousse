@@ -14,6 +14,7 @@ from textual.widgets import (
     Header,
     TabbedContent,
     TabPane,
+    Tabs,
 )
 
 from chezmoi_mousse import (
@@ -85,10 +86,15 @@ class ChezmoiGUI(App[None]):
 
     BINDINGS = [
         Binding(
+            key="H,h",
+            action="hide_header_and_tabs",
+            description="show/hide header",
+        ),
+        Binding(
             key="F,f",
             action="toggle_switch_slider",
             description="show/hide filters",
-        )
+        ),
     ]
     CSS_PATH = "_gui.tcss"
 
@@ -342,6 +348,16 @@ class ChezmoiGUI(App[None]):
 
     def on_theme_change(self, _: str, new_theme: str) -> None:
         self.app_log.success(f"Theme set to {new_theme}")
+
+    def action_hide_header_and_tabs(self) -> None:
+        header = self.query_exactly_one(Header)
+        tabs = self.query_exactly_one(Tabs)
+        if header.has_class("display_none"):
+            header.remove_class("display_none")
+            tabs.remove_class("display_none")
+        else:
+            header.add_class("display_none")
+            tabs.add_class("display_none")
 
 
 class CustomScrollBarRender(ScrollBarRender):
