@@ -19,7 +19,7 @@ from chezmoi_mousse import (
     ViewName,
 )
 
-from .shared._event_hub import EventHub
+from .shared.event_hub import EventHub
 from .shared.operate.contents_and_diff import ContentsView
 from .shared.switch_slider import SwitchSlider
 
