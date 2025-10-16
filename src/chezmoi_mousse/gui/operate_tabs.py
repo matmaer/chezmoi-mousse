@@ -16,7 +16,6 @@ from chezmoi_mousse import (
     ViewName,
 )
 
-from .directory_tree import FilteredDirTree
 from .shared.button_groups import TabBtnHorizontal
 from .shared.expanded_tree import ExpandedTree
 from .shared.flat_tree import FlatTree
@@ -29,7 +28,7 @@ from .shared.switch_slider import SwitchSlider
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds
 
-__all__ = ["AddTab", "ApplyTab", "ReAddTab"]
+__all__ = ["ApplyTab", "ReAddTab"]
 
 
 class OperateTabsBase(Horizontal, AppType):
@@ -250,78 +249,3 @@ class ReAddTab(OperateTabsBase):
         yield SwitchSlider(
             ids=self.ids, switches=(Switches.unchanged, Switches.expand_all)
         )
-
-
-class AddTab(OperateTabsBase, AppType):
-
-    def __init__(self, ids: "CanvasIds") -> None:
-        self.ids = ids
-        super().__init__(ids=self.ids)
-
-    def compose(self) -> ComposeResult:
-        with VerticalGroup(
-            id=self.ids.tab_vertical_id(area=AreaName.left),
-            classes=Tcss.tab_left_vertical.name,
-        ):
-            yield FilteredDirTree(
-                Path.home(), id=self.ids.tree_id(tree=TreeName.add_tree)
-            )
-        with Vertical(id=self.ids.tab_vertical_id(area=AreaName.right)):
-            yield ContentsView(ids=self.ids)
-
-        yield SwitchSlider(
-            ids=self.ids, switches=(Switches.unmanaged_dirs, Switches.unwanted)
-        )
-
-    def on_mount(self) -> None:
-        contents_view = self.query_exactly_one(ContentsView)
-        contents_view.add_class(Tcss.border_title_top.name)
-        contents_view.border_title = " destDir "
-
-        dir_tree = self.query_exactly_one(FilteredDirTree)
-        dir_tree.add_class(
-            Tcss.dir_tree_widget.name, Tcss.border_title_top.name
-        )
-        dir_tree.border_title = " destDir "
-        dir_tree.show_root = False
-        dir_tree.guide_depth = 3
-
-    def on_directory_tree_file_selected(
-        self, event: FilteredDirTree.FileSelected
-    ) -> None:
-        event.stop()
-
-        assert event.node.data is not None
-        contents_view = self.query_one(
-            self.ids.view_id("#", view=ViewName.contents_view), ContentsView
-        )
-        contents_view.path = event.node.data.path
-        contents_view.border_title = f" {event.node.data.path} "
-
-    @on(FilteredDirTree.DirectorySelected)
-    def update_contents_view_and_title(
-        self, event: FilteredDirTree.DirectorySelected
-    ) -> None:
-        event.stop()
-        assert event.node.data is not None
-        contents_view = self.query_one(
-            self.ids.view_id("#", view=ViewName.contents_view), ContentsView
-        )
-        contents_view.path = event.node.data.path
-        contents_view.border_title = f" {event.node.data.path} "
-
-    @on(Switch.Changed)
-    def handle_filter_switches(self, event: Switch.Changed) -> None:
-        event.stop()
-        tree = self.query_one(
-            self.ids.tree_id("#", tree=TreeName.add_tree), FilteredDirTree
-        )
-        if event.switch.id == self.ids.switch_id(
-            switch=Switches.unmanaged_dirs.value
-        ):
-            tree.unmanaged_dirs = event.value
-        elif event.switch.id == self.ids.switch_id(
-            switch=Switches.unwanted.value
-        ):
-            tree.unwanted = event.value
-        tree.reload()

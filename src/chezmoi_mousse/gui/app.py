@@ -27,12 +27,11 @@ from chezmoi_mousse import (
     ViewName,
 )
 
+from .add_tab import AddTab, FilteredDirTree
 from .config_tab import ConfigTab
-from .directory_tree import FilteredDirTree
 from .help_tab import HelpTab
 from .logs_tab import AppLog, DebugLog, LogsTab, OutputLog
 from .operate_tabs import (
-    AddTab,
     ApplyTab,
     ExpandedTree,
     FlatTree,
