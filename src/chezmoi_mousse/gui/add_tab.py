@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import Horizontal, Vertical, VerticalGroup
+from textual.containers import Vertical, VerticalGroup
 from textual.reactive import reactive
 from textual.widgets import DirectoryTree, Switch
 
@@ -196,21 +196,19 @@ class AddTab(TabsBase, AppType):
         super().__init__(ids=self.ids)
 
     def compose(self) -> ComposeResult:
-        with Horizontal(id=self.ids.tab_container_id):
-            with VerticalGroup(
-                id=self.ids.tab_vertical_id(area=AreaName.left),
-                classes=Tcss.tab_left_vertical.name,
-            ):
-                yield FilteredDirTree(
-                    Path.home(), id=self.ids.tree_id(tree=TreeName.add_tree)
-                )
-            with Vertical(id=self.ids.tab_vertical_id(area=AreaName.right)):
-                yield ContentsView(ids=self.ids)
-
-            yield SwitchSlider(
-                ids=self.ids,
-                switches=(Switches.unmanaged_dirs, Switches.unwanted),
+        with VerticalGroup(
+            id=self.ids.tab_vertical_id(area=AreaName.left),
+            classes=Tcss.tab_left_vertical.name,
+        ):
+            yield FilteredDirTree(
+                Path.home(), id=self.ids.tree_id(tree=TreeName.add_tree)
             )
+        with Vertical(id=self.ids.tab_vertical_id(area=AreaName.right)):
+            yield ContentsView(ids=self.ids)
+
+        yield SwitchSlider(
+            ids=self.ids, switches=(Switches.unmanaged_dirs, Switches.unwanted)
+        )
 
     def on_mount(self) -> None:
         contents_view = self.query_exactly_one(ContentsView)
