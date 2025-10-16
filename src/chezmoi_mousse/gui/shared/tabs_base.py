@@ -5,8 +5,7 @@ from textual import on
 from textual.containers import Horizontal, VerticalGroup
 from textual.widgets import Button, ContentSwitcher, Switch
 
-from chezmoi_mousse import (
-    AppType,
+from chezmoi_mousse import (  # AppType,
     AreaName,
     Switches,
     TabBtn,
@@ -25,10 +24,10 @@ from .operate.managed_tree import ManagedTree
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds
 
-__all__ = ["EventHub"]
+__all__ = ["TabsBase"]
 
 
-class EventHub(Horizontal, AppType):
+class TabsBase(Horizontal):
 
     def __init__(self, *, ids: "CanvasIds") -> None:
         self.current_path: Path | None = None

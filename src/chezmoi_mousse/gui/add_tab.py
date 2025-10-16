@@ -19,9 +19,9 @@ from chezmoi_mousse import (
     ViewName,
 )
 
-from .shared.event_hub import EventHub
 from .shared.operate.contents_and_diff import ContentsView
 from .shared.switch_slider import SwitchSlider
+from .shared.tabs_base import TabsBase
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds
@@ -189,7 +189,7 @@ class FilteredDirTree(DirectoryTree, AppType):
         return False
 
 
-class AddTab(EventHub, AppType):
+class AddTab(TabsBase, AppType):
 
     def __init__(self, ids: "CanvasIds") -> None:
         self.ids = ids
