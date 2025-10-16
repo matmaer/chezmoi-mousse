@@ -19,7 +19,7 @@ from chezmoi_mousse import (
     TreeName,
 )
 
-from .messages import TreeNodeSelectedMsg
+from ..messages import TreeNodeSelectedMsg
 
 if TYPE_CHECKING:
     from chezmoi_mousse import ActiveCanvas, CanvasIds

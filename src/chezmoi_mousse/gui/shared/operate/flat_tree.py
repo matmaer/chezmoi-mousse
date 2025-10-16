@@ -6,7 +6,7 @@ from textual.reactive import reactive
 
 from chezmoi_mousse import AppType, Canvas, NodeData, TreeName
 
-from ..tree_widget import TreeWidget
+from ._tree_widget import TreeWidget
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds

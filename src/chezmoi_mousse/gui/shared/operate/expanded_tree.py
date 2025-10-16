@@ -7,7 +7,7 @@ from textual.widgets.tree import TreeNode
 
 from chezmoi_mousse import NodeData, TreeName
 
-from ..tree_widget import TreeWidget
+from ._tree_widget import TreeWidget
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds
