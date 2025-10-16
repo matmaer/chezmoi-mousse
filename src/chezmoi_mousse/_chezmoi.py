@@ -147,52 +147,38 @@ class Utils:
 
 @dataclass
 class ManagedPaths:
-    managed_dirs_stdout: str = ""
-    managed_files_stdout: str = ""
-    status_dirs_stdout: str = ""
-    status_files_stdout: str = ""
-    status_paths_stdout: str = ""
+    managed_dirs_stdout: str = ""  # ReadCmd.managed_dirs
+    managed_files_stdout: str = ""  # ReadCmd.managed_files
+    status_dirs_stdout: str = ""  # ReadCmd.status_dirs
+    status_files_stdout: str = ""  # ReadCmd.status_files
+    status_paths_stdout: str = ""  # ReadCmd.status_paths
+
+    @property
+    def managed_dirs(self) -> list[Path]:
+        return [Path(line) for line in self.managed_dirs_stdout.splitlines()]
+
+    @property
+    def managed_files(self) -> list[Path]:
+        return [Path(line) for line in self.managed_files_stdout.splitlines()]
+
+    @property
+    def all_status_paths_dict(self) -> PathDict:
+        return {
+            Path(line[3:]): line[:2]
+            for line in self.status_paths_stdout.splitlines()
+        }
 
 
 class Chezmoi:
 
     def __init__(self, *, changes_enabled: bool, dev_mode: bool) -> None:
 
-        # set by main App class in its on_mount method
         self._changes_enabled = changes_enabled
+        self.managed_paths = ManagedPaths()
         self.app_log: AppLog | None = None
         self.output_log: OutputLog | None = None
         if dev_mode is True:
             self.debug_log: DebugLog | None = None
-
-        self.managed_paths = ManagedPaths()
-
-        # cached command outputs
-        # self.managed_dirs_stdout: str = ""  # ReadCmd.managed_dirs
-        # self.managed_files_stdout: str = ""  # ReadCmd.managed_files
-        # self.status_dirs_stdout: str = ""  # ReadCmd.status_dirs
-        # self.status_files_stdout: str = ""  # ReadCmd.status_files
-        # self.status_paths_stdout: str = ""  # ReadCmd.status
-
-    @property
-    def managed_dirs_stdout(self):
-        return self.managed_paths.managed_dirs_stdout  # ReadCmd.managed_dirs
-
-    @property
-    def managed_files_stdout(self):
-        return self.managed_paths.managed_files_stdout  # ReadCmd.managed_files
-
-    @property
-    def status_dirs_stdout(self):
-        return self.managed_paths.status_dirs_stdout  # ReadCmd.status_dirs
-
-    @property
-    def status_files_stdout(self):
-        return self.managed_paths.status_files_stdout  # ReadCmd.status_files
-
-    @property
-    def status_paths_stdout(self):
-        return self.managed_paths.status_paths_stdout  # ReadCmd.status
 
     #################################
     # Command execution and logging #
@@ -257,27 +243,17 @@ class Chezmoi:
             ReadCmd.status_paths
         )
 
-    ###################################################
-    # Cached command outputs and processed properties
-
-    # chezmoi status codes processed: A, D, M, or a space
-    # "node status" codes:
-    #   X (no status but managed)
+    @property
+    def _all_status_paths_dict(self) -> PathDict:
+        return self.managed_paths.all_status_paths_dict
 
     @property
     def managed_dirs(self) -> list[Path]:
-        return [Path(line) for line in self.managed_dirs_stdout.splitlines()]
+        return self.managed_paths.managed_dirs
 
     @property
     def managed_files(self) -> list[Path]:
-        return [Path(line) for line in self.managed_files_stdout.splitlines()]
-
-    @property
-    def _all_status_paths_dict(self) -> PathDict:
-        return {
-            Path(line[3:]): line[:2]
-            for line in self.status_paths_stdout.splitlines()
-        }
+        return self.managed_paths.managed_files
 
     @property
     def _apply_status_paths(self) -> PathDict:
