@@ -19,6 +19,7 @@ from chezmoi_mousse import (
     ViewName,
 )
 
+from .shared._event_hub import EventHub
 from .shared.operate.contents_and_diff import ContentsView
 from .shared.switch_slider import SwitchSlider
 
@@ -188,26 +189,28 @@ class FilteredDirTree(DirectoryTree, AppType):
         return False
 
 
-class AddTab(Horizontal, AppType):
+class AddTab(EventHub, AppType):
 
     def __init__(self, ids: "CanvasIds") -> None:
         self.ids = ids
-        super().__init__(id=self.ids.tab_container_id)
+        super().__init__(ids=self.ids)
 
     def compose(self) -> ComposeResult:
-        with VerticalGroup(
-            id=self.ids.tab_vertical_id(area=AreaName.left),
-            classes=Tcss.tab_left_vertical.name,
-        ):
-            yield FilteredDirTree(
-                Path.home(), id=self.ids.tree_id(tree=TreeName.add_tree)
-            )
-        with Vertical(id=self.ids.tab_vertical_id(area=AreaName.right)):
-            yield ContentsView(ids=self.ids)
+        with Horizontal(id=self.ids.tab_container_id):
+            with VerticalGroup(
+                id=self.ids.tab_vertical_id(area=AreaName.left),
+                classes=Tcss.tab_left_vertical.name,
+            ):
+                yield FilteredDirTree(
+                    Path.home(), id=self.ids.tree_id(tree=TreeName.add_tree)
+                )
+            with Vertical(id=self.ids.tab_vertical_id(area=AreaName.right)):
+                yield ContentsView(ids=self.ids)
 
-        yield SwitchSlider(
-            ids=self.ids, switches=(Switches.unmanaged_dirs, Switches.unwanted)
-        )
+            yield SwitchSlider(
+                ids=self.ids,
+                switches=(Switches.unmanaged_dirs, Switches.unwanted),
+            )
 
     def on_mount(self) -> None:
         contents_view = self.query_exactly_one(ContentsView)
