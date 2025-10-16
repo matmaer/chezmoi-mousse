@@ -2,12 +2,13 @@ from typing import TYPE_CHECKING
 
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import Horizontal, Vertical
+from textual.containers import Vertical
 from textual.widgets import Button, ContentSwitcher, Label, Static
 
-from chezmoi_mousse import AreaName, NavBtn, Tcss, ViewName
+from chezmoi_mousse import AppType, AreaName, NavBtn, Tcss, ViewName
 
 from .shared.button_groups import NavButtonsVertical
+from .shared.tabs_base import TabsBase
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds
@@ -65,11 +66,11 @@ class HelpTabSwitcher(ContentSwitcher):
         )
 
 
-class HelpTab(Horizontal):
+class HelpTab(TabsBase, AppType):
 
     def __init__(self, ids: "CanvasIds") -> None:
         self.ids = ids
-        super().__init__(id=self.ids.tab_container_id)
+        super().__init__(ids=self.ids)
 
     def compose(self) -> ComposeResult:
         yield NavButtonsVertical(ids=self.ids, buttons=(NavBtn.diagram,))

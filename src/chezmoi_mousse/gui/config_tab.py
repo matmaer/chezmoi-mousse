@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 from rich.text import Text
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import Horizontal, Vertical, VerticalScroll
+from textual.containers import Vertical, VerticalScroll
 from textual.reactive import reactive
 from textual.widgets import (
     Button,
@@ -21,6 +21,7 @@ from textual.widgets import (
 )
 
 from chezmoi_mousse import AppType, AreaName, Id, NavBtn, Tcss, ViewName
+from chezmoi_mousse.gui.shared.tabs_base import TabsBase
 
 from .shared.button_groups import NavButtonsVertical
 
@@ -250,11 +251,11 @@ class ConfigTabSwitcher(ContentSwitcher, AppType):
         pretty_template_data.update(template_data_json)
 
 
-class ConfigTab(Horizontal, AppType):
+class ConfigTab(TabsBase, AppType):
 
     def __init__(self, ids: "CanvasIds") -> None:
         self.ids = ids
-        super().__init__(id=self.ids.tab_container_id)
+        super().__init__(ids=self.ids)
 
     def compose(self) -> ComposeResult:
         yield NavButtonsVertical(

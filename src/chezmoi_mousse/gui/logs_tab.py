@@ -18,6 +18,7 @@ from chezmoi_mousse import (
     Tcss,
     ViewName,
 )
+from chezmoi_mousse.gui.shared.tabs_base import TabsBase
 
 from .shared.button_groups import TabBtnHorizontal
 
@@ -220,22 +221,23 @@ class LogsTabSwitcher(ContentSwitcher, AppType):
         self.border_title = BorderTitle.app_log
 
 
-class LogsTab(Vertical, AppType):
+class LogsTab(TabsBase, AppType):
 
     def __init__(self, ids: "CanvasIds") -> None:
         self.ids = ids
         self.tab_buttons = (TabBtn.app_log, TabBtn.output_log)
-        super().__init__(id=self.ids.tab_container_id)
+        super().__init__(ids=self.ids)
 
     def compose(self) -> ComposeResult:
-        tab_buttons = (TabBtn.app_log, TabBtn.output_log)
-        if self.app.dev_mode is True:
-            tab_buttons += (TabBtn.debug_log,)
+        with Vertical():
+            tab_buttons = (TabBtn.app_log, TabBtn.output_log)
+            if self.app.dev_mode is True:
+                tab_buttons += (TabBtn.debug_log,)
 
-        yield TabBtnHorizontal(
-            ids=self.ids, buttons=tab_buttons, area=AreaName.top
-        )
-        yield LogsTabSwitcher(ids=self.ids, dev_mode=self.app.dev_mode)
+            yield TabBtnHorizontal(
+                ids=self.ids, buttons=tab_buttons, area=AreaName.top
+            )
+            yield LogsTabSwitcher(ids=self.ids, dev_mode=self.app.dev_mode)
 
     @on(Button.Pressed, Tcss.tab_button.value)
     def switch_content(self, event: Button.Pressed) -> None:
