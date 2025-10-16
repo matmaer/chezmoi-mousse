@@ -17,6 +17,7 @@ from chezmoi_mousse import (
     ViewName,
 )
 
+from .contents_view import ContentsView
 from .expanded_tree import ExpandedTree
 from .flat_tree import FlatTree
 from .git_log import GitLogView
@@ -27,7 +28,7 @@ if TYPE_CHECKING:
 
     from chezmoi_mousse import ActiveCanvas, AppType, CanvasIds
 
-__all__ = ["ContentsView", "DiffView"]
+__all__ = ["DiffView"]
 
 
 class TreeSwitcher(ContentSwitcher, AppType):
@@ -63,94 +64,6 @@ class ViewSwitcher(ContentSwitcher, AppType):
         yield DiffView(ids=self.ids, reverse=self.reverse)
         yield ContentsView(ids=self.ids)
         yield GitLogView(ids=self.ids)
-
-
-class ContentsView(RichLog, AppType):
-
-    path: reactive["Path | None"] = reactive(None, init=False)
-
-    def __init__(self, *, ids: "CanvasIds") -> None:
-        self.ids = ids
-        self.destDir: "Path | None" = None
-        super().__init__(
-            id=self.ids.view_id(view=ViewName.contents_view),
-            auto_scroll=False,
-            wrap=True,  # TODO: implement footer binding to toggle wrap
-            highlight=True,
-            classes=Tcss.border_title_top.name,
-        )
-        self.click_file_path = Text(
-            "\nClick a file path in the tree to see the contents.", style="dim"
-        )
-
-    def on_mount(self) -> None:
-        self.write('This is the destination directory "chezmoi destDir"')
-        self.write(self.click_file_path)
-
-    def watch_path(self) -> None:
-        assert self.path is not None
-        self.border_title = f" {self.path} "
-        if self.path == self.destDir:
-            return
-        self.clear()
-        truncated_message = ""
-        try:
-            if self.path.is_file() and self.path.stat().st_size > 150 * 1024:
-                truncated_message = (
-                    "\n\n--- File content truncated to 150 KiB ---\n"
-                )
-                self.app.app_log.warning(
-                    f"File {self.path} is larger than 150 KiB, truncating output."
-                )
-        except PermissionError as e:
-            self.write(e.strerror)
-            self.app.app_log.error(f"Permission denied to read {self.path}")
-            return
-
-        try:
-            with open(self.path, "rt", encoding="utf-8") as file:
-                file_content = file.read(150 * 1024)
-                if not file_content.strip():
-                    message = "File is empty or contains only whitespace"
-                    self.write(message)
-                else:
-                    self.write(file_content + truncated_message)
-
-        except UnicodeDecodeError:
-            self.write(f"{self.path} cannot be decoded as UTF-8.")
-            return
-
-        except FileNotFoundError:
-            # FileNotFoundError is raised both when a file or a directory
-            # does not exist
-            if self.path in self.app.chezmoi.managed_dirs:
-                self.write(f"Managed directory: {self.path}")
-                self.write(self.click_file_path)
-                return
-            if self.path in self.app.chezmoi.managed_files:
-                cat_output = self.app.chezmoi.read(ReadCmd.cat, self.path)
-                if cat_output == "":
-                    self.write(
-                        Text("File contains only whitespace", style="dim")
-                    )
-                else:
-                    self.write(cat_output.splitlines())
-                return
-
-        except IsADirectoryError:
-            if self.path in self.app.chezmoi.managed_dirs:
-                self.write(f"Managed directory: {self.path}")
-                self.write(self.click_file_path)
-            else:
-                self.write(f"Unmanaged directory: {self.path}")
-                self.write(self.click_file_path)
-
-        except OSError as error:
-            self.write(Text(f"Error reading {self.path}: {error}"))
-            if self.app.chezmoi.app_log is not None:
-                self.app.chezmoi.app_log.error(
-                    f"Error reading {self.path}: {error}"
-                )
 
 
 class DiffView(RichLog, AppType):
