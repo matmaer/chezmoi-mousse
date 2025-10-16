@@ -200,7 +200,7 @@ class ManagedPaths:
     @property
     def apply_status_paths(self) -> PathDict:
         if self._apply_status_paths is None:
-            return {
+            self._apply_status_paths = {
                 path: status_pair[1]
                 for path, status_pair in self.all_status_paths.items()
                 if status_pair[1] in "ADM"  # Check second character only
@@ -212,7 +212,7 @@ class ManagedPaths:
         # Consider paths with a status for apply operations but no status
         # for re-add operations to have a status if they exist, handled later.
         if self._re_add_status_paths is None:
-            return {
+            self._re_add_status_paths = {
                 path: status_pair[0]
                 for path, status_pair in self.all_status_paths.items()
                 if status_pair[0] == "M"
@@ -223,7 +223,7 @@ class ManagedPaths:
     @property
     def apply_status_files(self) -> PathDict:
         if self._apply_status_files is None:
-            return {
+            self._apply_status_files = {
                 path: status_code
                 for path, status_code in self.apply_status_paths.items()
                 if path in self.managed_files
@@ -235,7 +235,7 @@ class ManagedPaths:
         # consider these files to always have status M
         # Existence for re-add operations will be checked later on.
         if self._re_add_status_files is None:
-            return {
+            self._re_add_status_files = {
                 key: "M"
                 for key, _ in self.re_add_status_paths.items()
                 if key in self.managed_files
