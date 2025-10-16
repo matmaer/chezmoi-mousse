@@ -31,17 +31,14 @@ from .add_tab import AddTab, FilteredDirTree
 from .config_tab import ConfigTab
 from .help_tab import HelpTab
 from .logs_tab import AppLog, DebugLog, LogsTab, OutputLog
-from .operate_tabs import (
-    ApplyTab,
-    ExpandedTree,
-    FlatTree,
-    ManagedTree,
-    ReAddTab,
-)
+from .operate_tabs import ApplyTab, ReAddTab
 from .pre_run_screens.install_help import InstallHelp
 from .pre_run_screens.splash import LoadingScreen
 from .shared.button_groups import OperateBtnHorizontal
+from .shared.expanded_tree import ExpandedTree
+from .shared.flat_tree import FlatTree
 from .shared.git_log_view import GitLogView
+from .shared.managed_tree import ManagedTree
 from .shared.operate_info import OperateInfo
 from .shared.rich_views import ContentsView, DiffView
 
