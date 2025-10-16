@@ -15,20 +15,20 @@ from chezmoi_mousse import (
     ViewName,
 )
 
-from ..messages import TreeNodeSelectedMsg
-from .contents_and_diff import ContentsView, DiffView
-from .expanded_tree import ExpandedTree
-from .flat_tree import FlatTree
-from .git_log import GitLogView
-from .managed_tree import ManagedTree
+from .messages import TreeNodeSelectedMsg
+from .operate.contents_and_diff import ContentsView, DiffView
+from .operate.expanded_tree import ExpandedTree
+from .operate.flat_tree import FlatTree
+from .operate.git_log import GitLogView
+from .operate.managed_tree import ManagedTree
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds
 
-__all__ = ["OperateBase"]
+__all__ = ["EventHub"]
 
 
-class OperateBase(Horizontal, AppType):
+class EventHub(Horizontal, AppType):
 
     def __init__(self, *, ids: "CanvasIds") -> None:
         self.current_path: Path | None = None

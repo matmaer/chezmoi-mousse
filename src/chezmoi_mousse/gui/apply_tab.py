@@ -5,8 +5,8 @@ from textual.containers import Vertical
 
 from chezmoi_mousse import AreaName, Switches, TabBtn, Tcss
 
+from .shared._event_hub import EventHub
 from .shared.button_groups import TabBtnHorizontal
-from .shared.operate._apply_and_re_add_container import OperateBase
 from .shared.operate.contents_and_diff import TreeSwitcher, ViewSwitcher
 from .shared.switch_slider import SwitchSlider
 
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 __all__ = ["ApplyTab"]
 
 
-class ApplyTab(OperateBase):
+class ApplyTab(EventHub):
 
     def __init__(self, ids: "CanvasIds") -> None:
         self.ids = ids
