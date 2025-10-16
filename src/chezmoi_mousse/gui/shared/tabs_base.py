@@ -5,14 +5,7 @@ from textual import on
 from textual.containers import Horizontal, VerticalGroup
 from textual.widgets import Button, ContentSwitcher, Switch
 
-from chezmoi_mousse import (  # AppType,
-    AreaName,
-    Switches,
-    TabBtn,
-    Tcss,
-    TreeName,
-    ViewName,
-)
+from chezmoi_mousse import AreaName, Switches, TabBtn, Tcss, TreeName, ViewName
 
 from .operate.contents_view import ContentsView
 from .operate.diff_view import DiffView
