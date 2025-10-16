@@ -2,7 +2,7 @@ import ast
 import pathlib
 
 import pytest
-from _test_utils import get_module_paths
+from _test_utils import get_module_ast_tree, get_module_paths
 
 
 class ImportChecker(ast.NodeVisitor):
@@ -39,14 +39,11 @@ IDS = [
 def test_no_indirect_imports_in_gui_modules(py_file: pathlib.Path):
     errors: list[str] = []
 
-    with open(py_file, "r", encoding="utf-8") as f:
-        try:
-            tree = ast.parse(f.read(), filename=str(py_file))
-            checker = ImportChecker(str(py_file))
-            checker.visit(tree)
-            errors.extend(checker.errors)
-        except SyntaxError as e:
-            pytest.fail(f"Syntax error in {py_file}: {e}")
+    tree = get_module_ast_tree(py_file)
+
+    checker = ImportChecker(str(py_file))
+    checker.visit(tree)
+    errors.extend(checker.errors)
 
     if errors:
         pytest.fail("\n".join(errors))

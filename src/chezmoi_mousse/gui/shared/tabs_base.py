@@ -14,12 +14,12 @@ from chezmoi_mousse import (  # AppType,
     ViewName,
 )
 
-from .messages import TreeNodeSelectedMsg
 from .operate.contents_view import ContentsView
 from .operate.expanded_tree import ExpandedTree
 from .operate.flat_tree import FlatTree
 from .operate.git_log_view import GitLogView
 from .operate.managed_tree import ManagedTree
+from .operate.operate_msg import TreeNodeSelectedMsg
 from .operate.switchers import DiffView
 
 if TYPE_CHECKING:
