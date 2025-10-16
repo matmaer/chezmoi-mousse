@@ -36,12 +36,12 @@ from .pre_run_screens.install_help import InstallHelp
 from .pre_run_screens.splash import LoadingScreen
 from .re_add_tab import ReAddTab
 from .shared.button_groups import OperateBtnHorizontal
-from .shared.expanded_tree import ExpandedTree
-from .shared.flat_tree import FlatTree
-from .shared.git_log_view import GitLogView
-from .shared.managed_tree import ManagedTree
-from .shared.operate_info import OperateInfo
-from .shared.rich_views import ContentsView, DiffView
+from .shared.operate.contents_and_diff import ContentsView, DiffView
+from .shared.operate.expanded_tree import ExpandedTree
+from .shared.operate.flat_tree import FlatTree
+from .shared.operate.git_log import GitLogView
+from .shared.operate.managed_tree import ManagedTree
+from .shared.operate.operate_info import OperateInfo
 
 if TYPE_CHECKING:
     from chezmoi_mousse import PreRunData

@@ -6,7 +6,7 @@ from textual.reactive import reactive
 
 from chezmoi_mousse import AppType, Canvas, NodeData, TreeName
 
-from .tree_base import TreeBase
+from ..tree_widget import TreeWidget
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds
@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 __all__ = ["FlatTree"]
 
 
-class FlatTree(TreeBase, AppType):
+class FlatTree(TreeWidget, AppType):
 
     destDir: reactive["Path | None"] = reactive(None, init=False)
     unchanged: reactive[bool] = reactive(False, init=False)

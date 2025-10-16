@@ -6,7 +6,7 @@ from textual.reactive import reactive
 
 from chezmoi_mousse import NodeData, TreeName
 
-from .tree_base import TreeBase
+from ..tree_widget import TreeWidget
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds
@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 __all__ = ["ManagedTree"]
 
 
-class ManagedTree(TreeBase):
+class ManagedTree(TreeWidget):
 
     destDir: reactive["Path | None"] = reactive(None, init=False)
     unchanged: reactive[bool] = reactive(False, init=False)
@@ -33,9 +33,9 @@ class ManagedTree(TreeBase):
         self.add_status_dirs_in(tree_node=self.root)
         self.add_status_files_in(tree_node=self.root)
 
-    @on(TreeBase.NodeExpanded)
+    @on(TreeWidget.NodeExpanded)
     def update_node_children(
-        self, event: TreeBase.NodeExpanded[NodeData]
+        self, event: TreeWidget.NodeExpanded[NodeData]
     ) -> None:
         self.add_status_dirs_in(tree_node=event.node)
         self.add_status_files_in(tree_node=event.node)

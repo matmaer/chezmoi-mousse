@@ -19,7 +19,7 @@ from chezmoi_mousse import (
     ViewName,
 )
 
-from .shared.rich_views import ContentsView
+from .shared.operate.contents_and_diff import ContentsView
 from .shared.switch_slider import SwitchSlider
 
 if TYPE_CHECKING:

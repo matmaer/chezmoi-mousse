@@ -7,7 +7,7 @@ from textual.widgets.tree import TreeNode
 
 from chezmoi_mousse import NodeData, TreeName
 
-from .tree_base import TreeBase
+from ..tree_widget import TreeWidget
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 __all__ = ["ExpandedTree"]
 
 
-class ExpandedTree(TreeBase):
+class ExpandedTree(TreeWidget):
 
     destDir: reactive["Path | None"] = reactive(None, init=False)
     unchanged: reactive[bool] = reactive(False, init=False)
@@ -32,9 +32,9 @@ class ExpandedTree(TreeBase):
         )
         self.expand_all_nodes(self.root)
 
-    @on(TreeBase.NodeExpanded)
+    @on(TreeWidget.NodeExpanded)
     def add_node_children(
-        self, event: TreeBase.NodeExpanded[NodeData]
+        self, event: TreeWidget.NodeExpanded[NodeData]
     ) -> None:
         self.add_status_dirs_in(tree_node=event.node)
         self.add_status_files_in(tree_node=event.node)

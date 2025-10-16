@@ -25,10 +25,10 @@ if TYPE_CHECKING:
     from chezmoi_mousse import ActiveCanvas, CanvasIds
 
 
-__all__ = ["TreeBase"]
+__all__ = ["TreeWidget"]
 
 
-class TreeBase(Tree[NodeData], AppType):
+class TreeWidget(Tree[NodeData], AppType):
 
     ICON_NODE = Chars.right_triangle
     ICON_NODE_EXPANDED = Chars.down_triangle
