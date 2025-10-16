@@ -82,6 +82,16 @@ chezmoi_mousse_light = Theme(
 
 
 class ChezmoiGUI(App[None]):
+
+    BINDINGS = [
+        Binding(
+            key="F,f",
+            action="toggle_switch_slider",
+            description="show/hide filters",
+        )
+    ]
+    CSS_PATH = "_gui.tcss"
+
     def __init__(self, pre_run_data: "PreRunData") -> None:
 
         self.chezmoi = pre_run_data.chezmoi_instance
@@ -96,16 +106,6 @@ class ChezmoiGUI(App[None]):
 
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
         super().__init__()
-
-    CSS_PATH = "_gui.tcss"
-
-    BINDINGS = [
-        Binding(
-            key="F,f",
-            action="toggle_switch_slider",
-            description="show/hide filters",
-        )
-    ]
 
     def compose(self) -> ComposeResult:
         yield Header(icon=Chars.burger)
