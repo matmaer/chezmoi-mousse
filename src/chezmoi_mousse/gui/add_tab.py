@@ -189,13 +189,20 @@ class FilteredDirTree(DirectoryTree, AppType):
             )
 
     def _has_unmanaged_paths_in(self, dir_path: Path) -> bool:
-        # check if the directory its children contain unmanaged paths
-        return any(
-            p
-            for p in dir_path.iterdir()
-            if p not in self.app.chezmoi.managed_dirs
-            and p not in self.app.chezmoi.managed_files
-        )
+        # Assume a directory with more than max_entries is not of interest
+        max_entries = 400
+        try:
+            for idx, p in enumerate(dir_path.iterdir(), start=1):
+                if idx > max_entries:
+                    return False
+                if (
+                    p not in self.app.chezmoi.managed_dirs
+                    and p not in self.app.chezmoi.managed_files
+                ):
+                    return True
+            return False
+        except (PermissionError, OSError):
+            return False
 
     def _is_unwanted_dir(self, dir_path: Path) -> bool:
         try:
