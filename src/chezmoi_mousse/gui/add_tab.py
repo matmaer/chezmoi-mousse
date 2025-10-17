@@ -179,12 +179,12 @@ class FilteredDirTree(DirectoryTree, AppType):
                 p
                 for p in paths
                 if (
-                    p.is_file(follow_symlinks=False)
-                    and p not in self.app.chezmoi.managed_files
-                )
-                or (
                     p.is_dir(follow_symlinks=False)
                     and self._has_unmanaged_paths_in(p)
+                )
+                or (
+                    p.is_file(follow_symlinks=False)
+                    and p not in self.app.chezmoi.managed_files
                 )
             )
 
