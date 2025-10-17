@@ -32,7 +32,7 @@ __all__ = ["AddTab", "FilteredDirTree"]
 class FilteredDirTree(DirectoryTree, AppType):
 
     class UnwantedDirs(StrEnum):
-        __pycache__ = "__pycache__"
+        pycache = "__pycache__"
         bin = "bin"
         cache = "cache"
         Cache = "Cache"
@@ -103,10 +103,13 @@ class FilteredDirTree(DirectoryTree, AppType):
     unmanaged_dirs: reactive[bool] = reactive(False, init=False)
     unwanted: reactive[bool] = reactive(False, init=False)
 
-    def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
+    def on_mount(self) -> None:
+        self.add_class(Tcss.dir_tree_widget.name, Tcss.border_title_top.name)
+        self.border_title = " destDir "
+        self.guide_depth = 3
+        self.show_root = False
 
-        managed_dirs = self.app.chezmoi.managed_dirs
-        managed_files = self.app.chezmoi.managed_files
+    def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
 
         # Switches: Red - Red (default)
         if self.unmanaged_dirs is False and self.unwanted is False:
@@ -115,14 +118,15 @@ class FilteredDirTree(DirectoryTree, AppType):
                 for p in paths
                 if (
                     p.is_file()
-                    and (p.parent in managed_dirs or p.parent == self.path)
-                    and not self._is_unwanted_path(p)
-                    and p not in managed_files
+                    and (p.parent in self.app.chezmoi.managed_dirs)
+                    and not self._is_unwanted_file(p)
+                    and p not in self.app.chezmoi.managed_files
                 )
                 or (
                     p.is_dir()
-                    and not self._is_unwanted_path(p)
-                    and p in managed_dirs
+                    and not self._is_unwanted_dir(p)
+                    and p in self.app.chezmoi.managed_dirs
+                    and self._has_unmanaged_paths_in(p)
                 )
             )
         # Switches: Green - Red
@@ -130,7 +134,8 @@ class FilteredDirTree(DirectoryTree, AppType):
             return (
                 p
                 for p in paths
-                if p not in managed_files and not self._is_unwanted_path(p)
+                if p not in self.app.chezmoi.managed_files
+                and not self._is_unwanted_path(p)
             )
         # Switches: Red - Green
         elif self.unmanaged_dirs is False and self.unwanted is True:
@@ -139,54 +144,54 @@ class FilteredDirTree(DirectoryTree, AppType):
                 for p in paths
                 if (
                     p.is_file()
-                    and (p.parent in managed_dirs or p.parent == self.path)
-                    and p not in managed_files
+                    and (
+                        p.parent in self.app.chezmoi.managed_dirs
+                        or p.parent == self.path
+                    )
+                    and p not in self.app.chezmoi.managed_files
                 )
-                or (p.is_dir() and p in managed_dirs)
+                or (p.is_dir() and p in self.app.chezmoi.managed_dirs)
             )
         # Switches: Green - Green, include all unmanaged paths
         elif self.unmanaged_dirs is True and self.unwanted is True:
             return (
                 p
                 for p in paths
-                if p.is_dir() or (p.is_file() and p not in managed_files)
+                if p.is_dir()
+                or (p.is_file() and p not in self.app.chezmoi.managed_files)
             )
         else:
             return paths
 
-    def _has_unmanaged_files(self, dir_path: Path) -> bool:
-        managed_child_files = [
-            p for p in self.app.chezmoi.managed_files if p.parent == dir_path
-        ]
-        if managed_child_files == []:
-            return False
-        else:
-            return True
+    def _has_unmanaged_paths_in(self, dir_path: Path) -> bool:
+        # check if the directory its children contain unmanaged paths
+        return any(
+            p
+            for p in dir_path.iterdir()
+            if p not in self.app.chezmoi.managed_files
+            and p not in self.app.chezmoi.managed_dirs
+        )
 
-    def _has_unmanaged_dirs(self, dir_path: Path) -> bool:
-        managed_child_dirs = [
-            p for p in self.app.chezmoi.managed_dirs if p.parent == dir_path
-        ]
-        if managed_child_dirs == []:
-            return False
-        else:
+    def _is_unwanted_dir(self, dir_path: Path) -> bool:
+        try:
+            FilteredDirTree.UnwantedDirs(dir_path.name)
             return True
+        except ValueError:
+            return False
+
+    def _is_unwanted_file(self, file_path: Path) -> bool:
+        extension = file_path.suffix
+        try:
+            FilteredDirTree.UnwantedFiles(extension)
+            return True
+        except ValueError:
+            return False
 
     def _is_unwanted_path(self, path: Path) -> bool:
         if path.is_dir():
-            try:
-                FilteredDirTree.UnwantedDirs(path.name)
-                return True
-            except ValueError:
-                pass
-        if path.is_file():
-            extension = path.suffix
-            try:
-                FilteredDirTree.UnwantedFiles(extension)
-                return True
-            except ValueError:
-                pass
-        return False
+            return self._is_unwanted_dir(path)
+        else:
+            return self._is_unwanted_file(path)
 
 
 class AddTab(TabsBase, AppType):
@@ -209,19 +214,6 @@ class AddTab(TabsBase, AppType):
         yield SwitchSlider(
             ids=self.ids, switches=(Switches.unmanaged_dirs, Switches.unwanted)
         )
-
-    def on_mount(self) -> None:
-        contents_view = self.query_exactly_one(ContentsView)
-        contents_view.add_class(Tcss.border_title_top.name)
-        contents_view.border_title = " destDir "
-
-        dir_tree = self.query_exactly_one(FilteredDirTree)
-        dir_tree.add_class(
-            Tcss.dir_tree_widget.name, Tcss.border_title_top.name
-        )
-        dir_tree.border_title = " destDir "
-        dir_tree.show_root = False
-        dir_tree.guide_depth = 3
 
     @on(DirectoryTree.DirectorySelected)
     @on(DirectoryTree.FileSelected)
