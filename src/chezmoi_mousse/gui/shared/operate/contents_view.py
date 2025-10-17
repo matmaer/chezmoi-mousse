@@ -48,12 +48,12 @@ class ContentsView(RichLog, AppType):
                 truncated_message = (
                     "\n\n--- File content truncated to 150 KiB ---\n"
                 )
-                self.app.app_log.warning(
+                self.write(
                     f"File {self.path} is larger than 150 KiB, truncating output."
                 )
         except PermissionError as e:
             self.write(e.strerror)
-            self.app.app_log.error(f"Permission denied to read {self.path}")
+            self.write(f"Permission denied to read {self.path}")
             return
 
         try:

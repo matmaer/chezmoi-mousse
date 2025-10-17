@@ -32,18 +32,6 @@ SPLASH_COMMANDS = [
     ReadCmd.status_paths,
     ReadCmd.template_data,
 ]
-# SPLASH_COMMANDS = [
-#     "cat_config",
-#     "doctor",
-#     "dump_config",
-#     "ignored",
-#     "managed_dirs",
-#     "managed_files",
-#     "status_dirs",
-#     "status_files",
-#     "status_paths",
-#     "template_data",
-# ]
 
 
 @dataclass(slots=True)
