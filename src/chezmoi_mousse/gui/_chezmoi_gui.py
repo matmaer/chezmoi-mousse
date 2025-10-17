@@ -53,8 +53,8 @@ if TYPE_CHECKING:
 __all__ = ["ChezmoiGUI"]
 
 # TODO: implement 'chezmoi verify', if exit 0, display message in Tree
-# widgets inform the user why the Tree widget is empty
-# TODO: implement spinner for commands taking a bit longer like operations
+# widgets inform the user why the Tree widget is empty.
+# TODO: implement spinner for commands taking a bit longer like operations.
 
 
 chezmoi_mousse_dark = Theme(
@@ -80,6 +80,155 @@ chezmoi_mousse_light = Theme(
     accent="#790084",
     surface="#B8B8B8",
 )
+
+
+class PostSplashHandler:
+    # Groups the post-splash update methods, holds a reference to the main
+    # App instance so it can call all app methods and set the chezmoi instance,
+    # and access the return_data from the LoadingScreen.
+
+    def __init__(self, app: "ChezmoiGUI") -> None:
+        self.app = app
+
+    def handle_return_data(self, return_data: "SplashData | None") -> None:
+        if return_data is None:
+            self.app.push_screen(
+                InstallHelp(chezmoi_found=self.app.chezmoi_found)
+            )
+            return
+
+        # TODO: add logic to push the Init screen if chezmoi is found but not
+        # initialized, like on a newly installed system or deployment.
+
+        self.app.app_log.success(
+            f"chezmoi command found: {self.app.chezmoi_found}"
+        )
+        self.app.app_log.ready_to_run("--- Loading screen completed ---")
+        # Notify startup info
+        if self.app.dev_mode is True:
+            self.app.notify('Running in "dev mode"', severity="information")
+        if self.app.changes_enabled is True:
+            self.app.notify("Changes are enabled", severity="warning")
+        else:
+            self.app.notify("Changes are disabled", severity="information")
+
+        self.update_chezmoi_instance(return_data)
+        self.update_diff_view_destDir(return_data)
+        self.update_managed_tree_destDir(return_data)
+        self.update_expanded_tree_destDir(return_data)
+        self.update_flat_tree_destDir(return_data)
+        self.update_contents_view_destDir(return_data)
+        self.update_git_log_view_destDir(return_data)
+        self.update_config_tab(return_data)
+        self.update_operate_info(return_data)
+        self.update_dir_tree_destDir(return_data)
+
+    def update_chezmoi_instance(self, data: "SplashData") -> None:
+        self.app.chezmoi.managed_paths = data.managed_paths
+
+    def update_managed_tree_destDir(self, data: "SplashData") -> None:
+        apply_tab_managed_tree = self.app.query_one(
+            Id.apply_tab.tree_id("#", tree=TreeName.managed_tree), ManagedTree
+        )
+        apply_tab_managed_tree.destDir = data.parsed_config.dest_dir
+
+        re_add_tab_managed_tree = self.app.query_one(
+            Id.re_add_tab.tree_id("#", tree=TreeName.managed_tree), ManagedTree
+        )
+        re_add_tab_managed_tree.destDir = data.parsed_config.dest_dir
+
+    def update_expanded_tree_destDir(self, data: "SplashData") -> None:
+        apply_tab_expanded_tree = self.app.query_one(
+            Id.apply_tab.tree_id("#", tree=TreeName.expanded_tree),
+            ExpandedTree,
+        )
+        apply_tab_expanded_tree.destDir = data.parsed_config.dest_dir
+
+        re_add_tab_expanded_tree = self.app.query_one(
+            Id.re_add_tab.tree_id("#", tree=TreeName.expanded_tree),
+            ExpandedTree,
+        )
+        re_add_tab_expanded_tree.destDir = data.parsed_config.dest_dir
+
+    def update_flat_tree_destDir(self, data: "SplashData") -> None:
+        apply_tab_flat_tree = self.app.query_one(
+            Id.apply_tab.tree_id("#", tree=TreeName.flat_tree), FlatTree
+        )
+        apply_tab_flat_tree.destDir = data.parsed_config.dest_dir
+
+        re_add_tab_flat_tree = self.app.query_one(
+            Id.re_add_tab.tree_id("#", tree=TreeName.flat_tree), FlatTree
+        )
+        re_add_tab_flat_tree.destDir = data.parsed_config.dest_dir
+
+    def update_diff_view_destDir(self, data: "SplashData") -> None:
+        apply_diff_view = self.app.query_one(
+            Id.apply_tab.view_id("#", view=ViewName.diff_view), DiffView
+        )
+        apply_diff_view.destDir = data.parsed_config.dest_dir
+        apply_diff_view.path = data.parsed_config.dest_dir
+
+        re_add_diff_view = self.app.query_one(
+            Id.re_add_tab.view_id("#", view=ViewName.diff_view), DiffView
+        )
+        re_add_diff_view.destDir = data.parsed_config.dest_dir
+        re_add_diff_view.path = data.parsed_config.dest_dir
+
+    def update_contents_view_destDir(self, data: "SplashData") -> None:
+        add_tab_contents_view = self.app.query_one(
+            Id.add_tab.view_id("#", view=ViewName.contents_view), ContentsView
+        )
+        add_tab_contents_view.destDir = data.parsed_config.dest_dir
+        add_tab_contents_view.path = data.parsed_config.dest_dir
+
+        apply_contents_view = self.app.query_one(
+            Id.apply_tab.view_id("#", view=ViewName.contents_view),
+            ContentsView,
+        )
+        apply_contents_view.destDir = data.parsed_config.dest_dir
+        apply_contents_view.path = data.parsed_config.dest_dir
+
+        re_add_contents_view = self.app.query_one(
+            Id.re_add_tab.view_id("#", view=ViewName.contents_view),
+            ContentsView,
+        )
+        re_add_contents_view.destDir = data.parsed_config.dest_dir
+        re_add_contents_view.path = data.parsed_config.dest_dir
+
+    def update_git_log_view_destDir(self, data: "SplashData") -> None:
+        apply_git_log_view = self.app.query_one(
+            Id.apply_tab.view_id("#", view=ViewName.git_log_view), GitLogView
+        )
+        apply_git_log_view.destDir = data.parsed_config.dest_dir
+        apply_git_log_view.path = data.parsed_config.dest_dir
+
+        re_add_git_log_view = self.app.query_one(
+            Id.re_add_tab.view_id("#", view=ViewName.git_log_view), GitLogView
+        )
+        re_add_git_log_view.destDir = data.parsed_config.dest_dir
+        re_add_git_log_view.path = data.parsed_config.dest_dir
+
+    def update_dir_tree_destDir(self, data: "SplashData") -> None:
+        dir_tree = self.app.query_one(
+            Id.add_tab.tree_id("#", tree=TreeName.add_tree), FilteredDirTree
+        )
+        dir_tree.path = data.parsed_config.dest_dir
+
+    def update_config_tab(self, data: "SplashData") -> None:
+        config_tab_switcher = self.app.query_one(
+            Id.config_tab.content_switcher_id("#", area=AreaName.right),
+            ContentSwitcher,
+        )
+        setattr(config_tab_switcher, "doctor_stdout", data.doctor)
+        setattr(config_tab_switcher, "cat_config_stdout", data.cat_config)
+        setattr(config_tab_switcher, "ignored_stdout", data.ignored)
+        setattr(
+            config_tab_switcher, "template_data_stdout", data.template_data
+        )
+
+    def update_operate_info(self, data: "SplashData") -> None:
+        OperateInfo.git_autocommit = data.parsed_config.git_autocommit
+        OperateInfo.git_autopush = data.parsed_config.git_autopush
 
 
 class ChezmoiGUI(App[None]):
@@ -112,6 +261,8 @@ class ChezmoiGUI(App[None]):
 
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
         super().__init__()
+
+        self.post_splash_handler = PostSplashHandler(self)
 
     def compose(self) -> ComposeResult:
         yield Header(icon=Chars.burger)
@@ -158,20 +309,22 @@ class ChezmoiGUI(App[None]):
         if self.chezmoi_found is False:
             self.push_screen(
                 LoadingScreen(chezmoi_found=self.chezmoi_found),
-                callback=self.run_post_splash_actions,
+                callback=self.post_splash_handler.handle_return_data,
             )
             return
 
-        self.setup_ui_loggers()
+        self._setup_ui_loggers()
         self.app_log.success("App initialized successfully")
         self.app_log.ready_to_run("--- Start loading screen ---")
 
         self.push_screen(
             LoadingScreen(chezmoi_found=self.chezmoi_found),
-            callback=self.run_post_splash_actions,
+            callback=self.post_splash_handler.handle_return_data,
         )
+        # The post-splash logic is grouped in PostSplashHandler, return_data
+        # is handled there.
 
-    def setup_ui_loggers(self) -> None:
+    def _setup_ui_loggers(self) -> None:
         app_logger: AppLog = self.query_one(
             Id.logs_tab.view_id("#", view=ViewName.app_log_view), AppLog
         )
@@ -191,141 +344,6 @@ class ChezmoiGUI(App[None]):
             )
             self.debug_log = debug_logger
             self.chezmoi.debug_log = debug_logger
-
-    def run_post_splash_actions(
-        self, return_data: "SplashData | None"
-    ) -> None:
-        if return_data is None:
-            self.push_screen(InstallHelp(chezmoi_found=self.chezmoi_found))
-            return
-        self.app_log.success(f"chezmoi command found: {self.chezmoi_found}")
-        self.app_log.ready_to_run("--- Loading screen completed ---")
-        # Notify startup info
-        if self.dev_mode is True:
-            self.notify('Running in "dev mode"', severity="information")
-        if self.changes_enabled is True:
-            self.notify("Changes are enabled", severity="warning")
-        else:
-            self.notify("Changes are disabled", severity="information")
-
-        self.update_chezmoi_instance(return_data)
-        self.update_diff_view_destDir(return_data)
-        self.update_managed_tree_destDir(return_data)
-        self.update_expanded_tree_destDir(return_data)
-        self.update_flat_tree_destDir(return_data)
-        self.update_contents_view_destDir(return_data)
-        self.update_git_log_view_destDir(return_data)
-        self.update_config_tab(return_data)
-        self.update_operate_info(return_data)
-        self.update_dir_tree_destDir(return_data)
-
-    def update_chezmoi_instance(self, data: "SplashData") -> None:
-        self.chezmoi.managed_paths = data.managed_paths
-
-    def update_managed_tree_destDir(self, data: "SplashData") -> None:
-        apply_tab_managed_tree = self.query_one(
-            Id.apply_tab.tree_id("#", tree=TreeName.managed_tree), ManagedTree
-        )
-        apply_tab_managed_tree.destDir = data.parsed_config.dest_dir
-
-        re_add_tab_managed_tree = self.query_one(
-            Id.re_add_tab.tree_id("#", tree=TreeName.managed_tree), ManagedTree
-        )
-        re_add_tab_managed_tree.destDir = data.parsed_config.dest_dir
-
-    def update_expanded_tree_destDir(self, data: "SplashData") -> None:
-        apply_tab_expanded_tree = self.query_one(
-            Id.apply_tab.tree_id("#", tree=TreeName.expanded_tree),
-            ExpandedTree,
-        )
-        apply_tab_expanded_tree.destDir = data.parsed_config.dest_dir
-
-        re_add_tab_expanded_tree = self.query_one(
-            Id.re_add_tab.tree_id("#", tree=TreeName.expanded_tree),
-            ExpandedTree,
-        )
-        re_add_tab_expanded_tree.destDir = data.parsed_config.dest_dir
-
-    def update_flat_tree_destDir(self, data: "SplashData") -> None:
-        apply_tab_flat_tree = self.query_one(
-            Id.apply_tab.tree_id("#", tree=TreeName.flat_tree), FlatTree
-        )
-        apply_tab_flat_tree.destDir = data.parsed_config.dest_dir
-
-        re_add_tab_flat_tree = self.query_one(
-            Id.re_add_tab.tree_id("#", tree=TreeName.flat_tree), FlatTree
-        )
-        re_add_tab_flat_tree.destDir = data.parsed_config.dest_dir
-
-    def update_diff_view_destDir(self, data: "SplashData") -> None:
-        apply_diff_view = self.query_one(
-            Id.apply_tab.view_id("#", view=ViewName.diff_view), DiffView
-        )
-        apply_diff_view.destDir = data.parsed_config.dest_dir
-        apply_diff_view.path = data.parsed_config.dest_dir
-
-        re_add_diff_view = self.query_one(
-            Id.re_add_tab.view_id("#", view=ViewName.diff_view), DiffView
-        )
-        re_add_diff_view.destDir = data.parsed_config.dest_dir
-        re_add_diff_view.path = data.parsed_config.dest_dir
-
-    def update_contents_view_destDir(self, data: "SplashData") -> None:
-
-        add_tab_contents_view = self.query_one(
-            Id.add_tab.view_id("#", view=ViewName.contents_view), ContentsView
-        )
-        add_tab_contents_view.destDir = data.parsed_config.dest_dir
-        add_tab_contents_view.path = data.parsed_config.dest_dir
-
-        apply_contents_view = self.query_one(
-            Id.apply_tab.view_id("#", view=ViewName.contents_view),
-            ContentsView,
-        )
-        apply_contents_view.destDir = data.parsed_config.dest_dir
-        apply_contents_view.path = data.parsed_config.dest_dir
-
-        re_add_contents_view = self.query_one(
-            Id.re_add_tab.view_id("#", view=ViewName.contents_view),
-            ContentsView,
-        )
-        re_add_contents_view.destDir = data.parsed_config.dest_dir
-        re_add_contents_view.path = data.parsed_config.dest_dir
-
-    def update_git_log_view_destDir(self, data: "SplashData") -> None:
-        apply_git_log_view = self.query_one(
-            Id.apply_tab.view_id("#", view=ViewName.git_log_view), GitLogView
-        )
-        apply_git_log_view.destDir = data.parsed_config.dest_dir
-        apply_git_log_view.path = data.parsed_config.dest_dir
-
-        re_add_git_log_view = self.query_one(
-            Id.re_add_tab.view_id("#", view=ViewName.git_log_view), GitLogView
-        )
-        re_add_git_log_view.destDir = data.parsed_config.dest_dir
-        re_add_git_log_view.path = data.parsed_config.dest_dir
-
-    def update_dir_tree_destDir(self, data: "SplashData") -> None:
-        dir_tree = self.query_one(
-            Id.add_tab.tree_id("#", tree=TreeName.add_tree), FilteredDirTree
-        )
-        dir_tree.path = data.parsed_config.dest_dir
-
-    def update_config_tab(self, data: "SplashData") -> None:
-        config_tab_switcher = self.query_one(
-            Id.config_tab.content_switcher_id("#", area=AreaName.right),
-            ContentSwitcher,
-        )
-        setattr(config_tab_switcher, "doctor_stdout", data.doctor)
-        setattr(config_tab_switcher, "cat_config_stdout", data.cat_config)
-        setattr(config_tab_switcher, "ignored_stdout", data.ignored)
-        setattr(
-            config_tab_switcher, "template_data_stdout", data.template_data
-        )
-
-    def update_operate_info(self, data: "SplashData") -> None:
-        OperateInfo.git_autocommit = data.parsed_config.git_autocommit
-        OperateInfo.git_autopush = data.parsed_config.git_autopush
 
     def on_tabbed_content_tab_activated(
         self, event: TabbedContent.TabActivated
