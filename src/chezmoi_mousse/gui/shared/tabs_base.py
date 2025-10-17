@@ -63,28 +63,26 @@ class TabsBase(Horizontal):
 
     @on(Button.Pressed, Tcss.tab_button.value)
     def handle_tab_button_pressed(self, event: Button.Pressed) -> None:
-        # switch content and update view path if needed
-        if event.button.id in (
+        # Switch content and update view path if needed.
+        # We only handle tab buttons shared between ApplyTab and ReAddTab here.
+        if event.button.id not in (
             self.contents_tab_btn,
             self.diff_tab_btn,
             self.git_log_tab_btn,
         ):
-            self._update_view_path()
-            view_switcher = self.query_one(
-                self.view_switcher_qid, ContentSwitcher
+            return
+        self._update_view_path()
+        view_switcher = self.query_one(self.view_switcher_qid, ContentSwitcher)
+        if event.button.id == self.contents_tab_btn:
+            view_switcher.current = self.ids.view_id(
+                view=ViewName.contents_view
             )
-            if event.button.id == self.contents_tab_btn:
-                view_switcher.current = self.ids.view_id(
-                    view=ViewName.contents_view
-                )
-            elif event.button.id == self.diff_tab_btn:
-                view_switcher.current = self.ids.view_id(
-                    view=ViewName.diff_view
-                )
-            elif event.button.id == self.git_log_tab_btn:
-                view_switcher.current = self.ids.view_id(
-                    view=ViewName.git_log_view
-                )
+        elif event.button.id == self.diff_tab_btn:
+            view_switcher.current = self.ids.view_id(view=ViewName.diff_view)
+        elif event.button.id == self.git_log_tab_btn:
+            view_switcher.current = self.ids.view_id(
+                view=ViewName.git_log_view
+            )
 
         # toggle expand all switch enabled disabled state
         expand_all_switch = self.query_one(
