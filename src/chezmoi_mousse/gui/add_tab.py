@@ -117,13 +117,16 @@ class FilteredDirTree(DirectoryTree, AppType):
                 p
                 for p in paths
                 if (
-                    p.is_file()
-                    and (p.parent in self.app.chezmoi.managed_dirs)
+                    p.is_file(follow_symlinks=False)
                     and not self._is_unwanted_file(p)
+                    and (
+                        p.parent in self.app.chezmoi.managed_dirs
+                        or p.parent == self.path
+                    )
                     and p not in self.app.chezmoi.managed_files
                 )
                 or (
-                    p.is_dir()
+                    p.is_dir(follow_symlinks=False)
                     and not self._is_unwanted_dir(p)
                     and p in self.app.chezmoi.managed_dirs
                     and self._has_unmanaged_paths_in(p)
@@ -134,8 +137,20 @@ class FilteredDirTree(DirectoryTree, AppType):
             return (
                 p
                 for p in paths
-                if p not in self.app.chezmoi.managed_files
-                and not self._is_unwanted_path(p)
+                if (
+                    p.is_file(follow_symlinks=False)
+                    and not self._is_unwanted_file(p)
+                    and (
+                        p.parent in self.app.chezmoi.managed_dirs
+                        or p.parent == self.path
+                    )
+                    and p not in self.app.chezmoi.managed_files
+                )
+                or (
+                    p.is_dir(follow_symlinks=False)
+                    and not self._is_unwanted_dir(p)
+                    and self._has_unmanaged_paths_in(p)
+                )
             )
         # Switches: Red - Green
         elif self.unmanaged_dirs is False and self.unwanted is True:
@@ -143,22 +158,32 @@ class FilteredDirTree(DirectoryTree, AppType):
                 p
                 for p in paths
                 if (
-                    p.is_file()
+                    p.is_file(follow_symlinks=False)
+                    and p not in self.app.chezmoi.managed_files
                     and (
                         p.parent in self.app.chezmoi.managed_dirs
                         or p.parent == self.path
                     )
-                    and p not in self.app.chezmoi.managed_files
                 )
-                or (p.is_dir() and p in self.app.chezmoi.managed_dirs)
+                or (
+                    p.is_dir(follow_symlinks=False)
+                    and p in self.app.chezmoi.managed_dirs
+                    and self._has_unmanaged_paths_in(p)
+                )
             )
         # Switches: Green - Green, include all unmanaged paths
         elif self.unmanaged_dirs is True and self.unwanted is True:
             return (
                 p
                 for p in paths
-                if p.is_dir()
-                or (p.is_file() and p not in self.app.chezmoi.managed_files)
+                if (
+                    p.is_file(follow_symlinks=False)
+                    and p not in self.app.chezmoi.managed_files
+                )
+                or (
+                    p.is_dir(follow_symlinks=False)
+                    and self._has_unmanaged_paths_in(p)
+                )
             )
         else:
             return paths
@@ -168,8 +193,8 @@ class FilteredDirTree(DirectoryTree, AppType):
         return any(
             p
             for p in dir_path.iterdir()
-            if p not in self.app.chezmoi.managed_files
-            and p not in self.app.chezmoi.managed_dirs
+            if p not in self.app.chezmoi.managed_dirs
+            and p not in self.app.chezmoi.managed_files
         )
 
     def _is_unwanted_dir(self, dir_path: Path) -> bool:
