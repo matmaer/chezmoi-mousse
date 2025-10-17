@@ -32,10 +32,7 @@ __all__ = ["AddTab", "FilteredDirTree"]
 class FilteredDirTree(DirectoryTree, AppType):
 
     class UnwantedDirs(StrEnum):
-        pycache = "__pycache__"
         bin = "bin"
-        cache = "cache"
-        Cache = "Cache"
         CMakeFiles = "CMakeFiles"
         Crash_Reports = "Crash Reports"
         DerivedData = "DerivedData"
@@ -43,9 +40,9 @@ class FilteredDirTree(DirectoryTree, AppType):
         Documents = "Documents"
         dot_build = ".build"
         dot_bundle = ".bundle"
-        dot_cache = ".cache"
         dot_dart_tool = ".dart_tool"
         dot_DS_Store = ".DS_Store"
+        dot_env = ".env"
         dot_git = ".git"
         dot_ipynb_checkpoints = ".ipynb_checkpoints"
         dot_mozilla = ".mozilla"
@@ -71,15 +68,19 @@ class FilteredDirTree(DirectoryTree, AppType):
         Trash = "Trash"
         Videos = "Videos"
 
-    class UnwantedFiles(StrEnum):
+    class UnwantedFileExtensions(StrEnum):
         AppImage = ".AppImage"
         bak = ".bak"
-        cache = ".cache"
+        bin = ".bin"
         coverage = ".coverage"
         doc = ".doc"
         docx = ".docx"
         egg_info = ".egg-info"
+        exe = ".exe"
         gz = ".gz"
+        img = ".img"
+        iso = ".iso"
+        jar = ".jar"
         kdbx = ".kdbx"
         lock = ".lock"
         pdf = ".pdf"
@@ -92,6 +93,7 @@ class FilteredDirTree(DirectoryTree, AppType):
         temp = ".temp"
         tgz = ".tgz"
         tmp = ".tmp"
+        seven_zip = ".7z"
         xls = ".xls"
         xlsx = ".xlsx"
         zip = ".zip"
@@ -200,21 +202,19 @@ class FilteredDirTree(DirectoryTree, AppType):
             FilteredDirTree.UnwantedDirs(dir_path.name)
             return True
         except ValueError:
+            if "cache" in dir_path.name.lower():
+                return True
             return False
 
     def _is_unwanted_file(self, file_path: Path) -> bool:
         extension = file_path.suffix
         try:
-            FilteredDirTree.UnwantedFiles(extension)
+            FilteredDirTree.UnwantedFileExtensions(extension)
             return True
         except ValueError:
+            if "cache" in file_path.name.lower():
+                return True
             return False
-
-    def _is_unwanted_path(self, path: Path) -> bool:
-        if path.is_dir():
-            return self._is_unwanted_dir(path)
-        else:
-            return self._is_unwanted_file(path)
 
 
 class AddTab(TabsBase, AppType):
