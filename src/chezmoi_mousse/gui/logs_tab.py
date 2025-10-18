@@ -72,7 +72,7 @@ class CommandLogBase(RichLog, AppType):
         for line in lines:
             if line.strip() != "":
                 escaped_line = escape(line)
-                self.write(f"[{color}]{escaped_line}[/]")
+                self.write(f"    [{color}]{escaped_line}[/]")
 
 
 class AppLog(CommandLogBase, AppType):

@@ -70,11 +70,33 @@ class MainScreen(Screen[None], AppType):
         super().__init__()
 
     def on_mount(self) -> None:
-        self._setup_ui_loggers()
-        self.app_log.success(
-            f"chezmoi command found: {self.app.chezmoi_found}"
+        app_logger: AppLog = self.query_one(
+            Id.logs_tab.view_id("#", view=ViewName.app_log_view), AppLog
         )
-        self.app_log.ready_to_run("--- Loading screen completed ---")
+        self.app_log = app_logger
+        self.app.chezmoi.app_log = app_logger
+        self.app_log.ready_to_run("--- Application log initialized ---")
+        self.app_log.info(f"chezmoi command found: {self.app.chezmoi_found}.")
+        self.app_log.info("Loading screen completed.")
+        self.app_log.success("Executed in loading screen:")
+        for cmd in self.splash_data.exectuded_commands:
+            self.app_log.dimmed(f"{cmd}")
+
+        output_logger: OutputLog = self.query_one(
+            Id.logs_tab.view_id("#", view=ViewName.output_log_view), OutputLog
+        )
+        self.output_log = output_logger
+        self.app.chezmoi.output_log = output_logger
+        self.app_log.success("Output log initialized")
+
+        if self.app.dev_mode:
+            debug_logger: DebugLog = self.query_one(
+                Id.logs_tab.view_id("#", view=ViewName.debug_log_view),
+                DebugLog,
+            )
+            self.debug_log = debug_logger
+            self.app.chezmoi.debug_log = debug_logger
+            self.debug_log.success("Debug log initialized")
         # Notify startup info
         if self.app.dev_mode is True:
             self.notify('Running in "dev mode"', severity="information")
@@ -121,27 +143,6 @@ class MainScreen(Screen[None], AppType):
             with TabPane(PaneBtn.help_tab.value, id=Canvas.help):
                 yield HelpTab(ids=Id.help_tab)
         yield Footer()
-
-    def _setup_ui_loggers(self) -> None:
-        app_logger: AppLog = self.query_one(
-            Id.logs_tab.view_id("#", view=ViewName.app_log_view), AppLog
-        )
-        self.app_log = app_logger
-        self.app.chezmoi.app_log = app_logger
-
-        output_logger: OutputLog = self.query_one(
-            Id.logs_tab.view_id("#", view=ViewName.output_log_view), OutputLog
-        )
-        self.output_log = output_logger
-        self.app.chezmoi.output_log = output_logger
-
-        if self.app.dev_mode:
-            debug_logger: DebugLog = self.query_one(
-                Id.logs_tab.view_id("#", view=ViewName.debug_log_view),
-                DebugLog,
-            )
-            self.debug_log = debug_logger
-            self.app.chezmoi.debug_log = debug_logger
 
     def handle_splash_data(self, splash_data: "SplashData") -> None:
 

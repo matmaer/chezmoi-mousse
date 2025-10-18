@@ -33,6 +33,11 @@ SPLASH_COMMANDS = [
     ReadCmd.template_data,
 ]
 
+PRETTY_SPLASH_COMMANDS = [
+    LogUtils.pretty_cmd_str(splash_command.value)
+    for splash_command in SPLASH_COMMANDS
+]
+
 
 @dataclass(slots=True)
 class ParsedConfig:
@@ -47,9 +52,10 @@ class ParsedConfig:
 class SplashData:
     cat_config: str
     doctor: str
-    parsed_config: ParsedConfig
+    exectuded_commands: list[str]
     ignored: str
     managed_paths: ManagedPaths
+    parsed_config: ParsedConfig
     template_data: str
 
 
@@ -182,9 +188,10 @@ class LoadingScreen(Screen[SplashData | None], AppType):
                 SplashData(
                     cat_config=globals()["cat_config"],
                     doctor=globals()["doctor"],
-                    parsed_config=globals()["parsed_config"],
+                    exectuded_commands=PRETTY_SPLASH_COMMANDS,
                     ignored=globals()["ignored"],
                     managed_paths=globals()["managed_paths"],
+                    parsed_config=globals()["parsed_config"],
                     template_data=globals()["template_data"],
                 )
             )
