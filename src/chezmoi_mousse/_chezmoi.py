@@ -248,10 +248,11 @@ class Chezmoi:
     def __init__(self, *, changes_enabled: bool, dev_mode: bool) -> None:
 
         self._changes_enabled = changes_enabled
+        self._dev_mode = dev_mode
         self.managed_paths = ManagedPaths()
         self.app_log: AppLog | None = None
         self.output_log: OutputLog | None = None
-        if dev_mode is True:
+        if self._dev_mode is True:
             self.debug_log: DebugLog | None = None
 
     #################################

@@ -44,13 +44,104 @@ if TYPE_CHECKING:
 __all__ = ["MainScreen"]
 
 
-class PostSplashHandler(AppType):
-    # Groups the post-splash update methods, holds a reference to the main
-    # App instance so it can call all app methods and set the chezmoi instance,
-    # and access the return_data from the LoadingScreen.
+class MainScreen(Screen[None], AppType):
 
-    def __init__(self, screen: "MainScreen") -> None:
-        self.screen = screen
+    BINDINGS = [
+        Binding(
+            key="H,h",
+            action="hide_header_and_tabs",
+            description="show/hide header",
+        ),
+        Binding(
+            key="F,f",
+            action="toggle_switch_slider",
+            description="show/hide filters",
+        ),
+    ]
+    CSS_PATH = "_gui.tcss"
+
+    def __init__(self, splash_data: "SplashData") -> None:
+
+        self.splash_data = splash_data
+        self.app_log: AppLog
+        self.output_log: OutputLog
+        self.debug_log: DebugLog
+
+        super().__init__()
+
+    def on_mount(self) -> None:
+        self._setup_ui_loggers()
+        self.app_log.success(
+            f"chezmoi command found: {self.app.chezmoi_found}"
+        )
+        self.app_log.ready_to_run("--- Loading screen completed ---")
+        # Notify startup info
+        if self.app.dev_mode is True:
+            self.notify('Running in "dev mode"', severity="information")
+        if self.app.changes_enabled is True:
+            self.notify("Changes are enabled", severity="warning")
+        else:
+            self.notify("Changes are disabled", severity="information")
+
+        self.handle_splash_data(self.splash_data)
+
+    def compose(self) -> ComposeResult:
+        yield Header(icon=Chars.burger)
+        with TabbedContent():
+            with TabPane(PaneBtn.apply_tab.value, id=Canvas.apply):
+                yield ApplyTab(ids=Id.apply_tab)
+                yield OperateBtnHorizontal(
+                    ids=Id.apply_tab,
+                    buttons=(
+                        OperateBtn.apply_file,
+                        OperateBtn.forget_file,
+                        OperateBtn.destroy_file,
+                    ),
+                )
+            with TabPane(PaneBtn.re_add_tab.value, id=Canvas.re_add):
+                yield ReAddTab(ids=Id.re_add_tab)
+                yield OperateBtnHorizontal(
+                    ids=Id.re_add_tab,
+                    buttons=(
+                        OperateBtn.re_add_file,
+                        OperateBtn.forget_file,
+                        OperateBtn.destroy_file,
+                    ),
+                )
+            with TabPane(PaneBtn.add_tab.value, id=Canvas.add):
+                yield AddTab(ids=Id.add_tab)
+                yield OperateBtnHorizontal(
+                    ids=Id.add_tab,
+                    buttons=(OperateBtn.add_file, OperateBtn.add_dir),
+                )
+            with TabPane(PaneBtn.logs_tab.value, id=Canvas.logs):
+                yield LogsTab(ids=Id.logs_tab)
+            with TabPane(PaneBtn.config_tab.value, id=Canvas.config):
+                yield ConfigTab(ids=Id.config_tab)
+            with TabPane(PaneBtn.help_tab.value, id=Canvas.help):
+                yield HelpTab(ids=Id.help_tab)
+        yield Footer()
+
+    def _setup_ui_loggers(self) -> None:
+        app_logger: AppLog = self.query_one(
+            Id.logs_tab.view_id("#", view=ViewName.app_log_view), AppLog
+        )
+        self.app_log = app_logger
+        self.app.chezmoi.app_log = app_logger
+
+        output_logger: OutputLog = self.query_one(
+            Id.logs_tab.view_id("#", view=ViewName.output_log_view), OutputLog
+        )
+        self.output_log = output_logger
+        self.app.chezmoi.output_log = output_logger
+
+        if self.app.dev_mode:
+            debug_logger: DebugLog = self.query_one(
+                Id.logs_tab.view_id("#", view=ViewName.debug_log_view),
+                DebugLog,
+            )
+            self.debug_log = debug_logger
+            self.app.chezmoi.debug_log = debug_logger
 
     def handle_splash_data(self, splash_data: "SplashData") -> None:
 
@@ -174,143 +265,3 @@ class PostSplashHandler(AppType):
     def update_operate_info(self, data: "SplashData") -> None:
         OperateInfo.git_autocommit = data.parsed_config.git_autocommit
         OperateInfo.git_autopush = data.parsed_config.git_autopush
-
-
-class MainScreen(Screen[None], AppType):
-
-    BINDINGS = [
-        Binding(
-            key="H,h",
-            action="hide_header_and_tabs",
-            description="show/hide header",
-        ),
-        Binding(
-            key="F,f",
-            action="toggle_switch_slider",
-            description="show/hide filters",
-        ),
-    ]
-    CSS_PATH = "_gui.tcss"
-
-    def __init__(self, splash_data: "SplashData") -> None:
-
-        self.app_log: AppLog
-        self.output_log: OutputLog
-        self.debug_log: DebugLog
-
-        super().__init__()
-
-        self.post_splash_handler = PostSplashHandler(self)
-
-    def on_mount(self) -> None:
-        self._setup_ui_loggers()
-        self.app_log.success(
-            f"chezmoi command found: {self.app.chezmoi_found}"
-        )
-        self.app_log.ready_to_run("--- Loading screen completed ---")
-        # Notify startup info
-        if self.app.dev_mode is True:
-            self.notify('Running in "dev mode"', severity="information")
-        if self.app.changes_enabled is True:
-            self.notify("Changes are enabled", severity="warning")
-        else:
-            self.notify("Changes are disabled", severity="information")
-
-    def compose(self) -> ComposeResult:
-        yield Header(icon=Chars.burger)
-        with TabbedContent():
-            with TabPane(PaneBtn.apply_tab.value, id=Canvas.apply):
-                yield ApplyTab(ids=Id.apply_tab)
-                yield OperateBtnHorizontal(
-                    ids=Id.apply_tab,
-                    buttons=(
-                        OperateBtn.apply_file,
-                        OperateBtn.forget_file,
-                        OperateBtn.destroy_file,
-                    ),
-                )
-            with TabPane(PaneBtn.re_add_tab.value, id=Canvas.re_add):
-                yield ReAddTab(ids=Id.re_add_tab)
-                yield OperateBtnHorizontal(
-                    ids=Id.re_add_tab,
-                    buttons=(
-                        OperateBtn.re_add_file,
-                        OperateBtn.forget_file,
-                        OperateBtn.destroy_file,
-                    ),
-                )
-            with TabPane(PaneBtn.add_tab.value, id=Canvas.add):
-                yield AddTab(ids=Id.add_tab)
-                yield OperateBtnHorizontal(
-                    ids=Id.add_tab,
-                    buttons=(OperateBtn.add_file, OperateBtn.add_dir),
-                )
-            with TabPane(PaneBtn.logs_tab.value, id=Canvas.logs):
-                yield LogsTab(ids=Id.logs_tab)
-            with TabPane(PaneBtn.config_tab.value, id=Canvas.config):
-                yield ConfigTab(ids=Id.config_tab)
-            with TabPane(PaneBtn.help_tab.value, id=Canvas.help):
-                yield HelpTab(ids=Id.help_tab)
-        yield Footer()
-
-    def _setup_ui_loggers(self) -> None:
-        app_logger: AppLog = self.query_one(
-            Id.logs_tab.view_id("#", view=ViewName.app_log_view), AppLog
-        )
-        self.app_log = app_logger
-        self.app.chezmoi.app_log = app_logger
-
-        output_logger: OutputLog = self.query_one(
-            Id.logs_tab.view_id("#", view=ViewName.output_log_view), OutputLog
-        )
-        self.output_log = output_logger
-        self.app.chezmoi.output_log = output_logger
-
-        if self.app.dev_mode:
-            debug_logger: DebugLog = self.query_one(
-                Id.logs_tab.view_id("#", view=ViewName.debug_log_view),
-                DebugLog,
-            )
-            self.debug_log = debug_logger
-            self.app.chezmoi.debug_log = debug_logger
-
-    # def on_tabbed_content_tab_activated(
-    #     self, event: TabbedContent.TabActivated
-    # ) -> None:
-    #     self.refresh_bindings()
-
-    # def check_action(
-    #     self, action: str, parameters: tuple[object, ...]
-    # ) -> bool | None:
-    #     if action == "toggle_switch_slider":
-    #         if self.query_one(TabbedContent).active in (
-    #             Id.apply_tab.canvas_name,
-    #             Id.re_add_tab.canvas_name,
-    #             Id.add_tab.canvas_name,
-    #         ):
-    #             return True
-    #         return None
-    #     elif action == "hide_header_and_tabs":
-    #         return True
-    #     return True
-
-    # def action_toggle_switch_slider(self) -> None:
-    #     # merely find the corresponding method in the active tab ant call it
-    #     tab_widget = self.query_one(
-    #         f"#{self.query_one(TabbedContent).active}", TabPane
-    #     ).children[0]
-    #     if hasattr(tab_widget, "action_toggle_switch_slider") is True:
-    #         getattr(tab_widget, "action_toggle_switch_slider")()  # call it
-
-    # def on_theme_change(self, _: str, new_theme: str) -> None:
-    #     self.app_log.success(f"Theme set to {new_theme}")
-
-    # def action_hide_header_and_tabs(self) -> None:
-    #     header = self.query_exactly_one(Header)
-    #     tabs = self.query_exactly_one(Tabs)
-    #     if header.has_class("display_none"):
-    #         header.remove_class("display_none")
-    #         tabs.remove_class("display_none")
-    #     else:
-    #         header.add_class("display_none")
-    #         tabs.add_class("display_none")
