@@ -9,6 +9,7 @@ from textual.widgets import (
     Header,
     TabbedContent,
     TabPane,
+    Tabs,
 )
 
 from chezmoi_mousse import (
@@ -250,3 +251,42 @@ class MainScreen(Screen[None], AppType):
         # update OperateInfo git settings
         OperateInfo.git_autocommit = data.parsed_config.git_autocommit
         OperateInfo.git_autopush = data.parsed_config.git_autopush
+
+    def on_tabbed_content_tab_activated(
+        self, event: TabbedContent.TabActivated
+    ) -> None:
+        self.refresh_bindings()
+
+    def check_action(
+        self, action: str, parameters: tuple[object, ...]
+    ) -> bool | None:
+        if action == "toggle_switch_slider":
+            if self.query_one(TabbedContent).active in (
+                Id.apply_tab.canvas_name,
+                Id.re_add_tab.canvas_name,
+                Id.add_tab.canvas_name,
+            ):
+                # Find the corresponding method in the active tab
+                tab_widget = self.query_one(
+                    f"#{self.query_one(TabbedContent).active}", TabPane
+                ).children[0]
+                # Call the method in the base class to toggle the switch slider
+                getattr(tab_widget, "action_toggle_switch_slider")()
+                # Make sure the key binding is enabled only in these tabs
+                return True
+            return None
+        elif action == "hide_header_and_tabs":
+            header = self.query_exactly_one(Header)
+            tabs = self.query_exactly_one(Tabs)
+            if header.has_class("display_none"):
+                header.remove_class("display_none")
+                tabs.remove_class("display_none")
+            else:
+                header.add_class("display_none")
+                tabs.add_class("display_none")
+
+            return True
+        return True
+
+    def on_theme_change(self, _: str, new_theme: str) -> None:
+        self.app_log.success(f"Theme set to {new_theme}")
