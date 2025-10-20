@@ -144,80 +144,64 @@ class MainScreen(Screen[None], AppType):
                 yield HelpTab(ids=Id.help_tab)
         yield Footer()
 
-    def handle_splash_data(self, splash_data: "SplashData") -> None:
+    def handle_splash_data(self, data: "SplashData") -> None:
 
         # TODO: add logic to push the Init screen if chezmoi is found but not
         # initialized, like on a newly installed system or deployment.
 
-        self.update_chezmoi_instance(splash_data)
-        self.update_diff_view_destDir(splash_data)
-        self.update_managed_tree_destDir(splash_data)
-        self.update_expanded_tree_destDir(splash_data)
-        self.update_flat_tree_destDir(splash_data)
-        self.update_contents_view_destDir(splash_data)
-        self.update_git_log_view_destDir(splash_data)
-        self.update_config_tab(splash_data)
-        self.update_operate_info(splash_data)
-        self.update_dir_tree_destDir(splash_data)
-
-    def update_chezmoi_instance(self, data: "SplashData") -> None:
+        # update chezmoi managed paths
         self.app.chezmoi.managed_paths = data.managed_paths
 
-    def update_managed_tree_destDir(self, data: "SplashData") -> None:
+        # update ManagedTree destDir
         apply_tab_managed_tree = self.screen.query_one(
             Id.apply_tab.tree_id("#", tree=TreeName.managed_tree), ManagedTree
         )
         apply_tab_managed_tree.destDir = data.parsed_config.dest_dir
-
         re_add_tab_managed_tree = self.screen.query_one(
             Id.re_add_tab.tree_id("#", tree=TreeName.managed_tree), ManagedTree
         )
         re_add_tab_managed_tree.destDir = data.parsed_config.dest_dir
 
-    def update_expanded_tree_destDir(self, data: "SplashData") -> None:
+        # update ExpandedTree destDir
         apply_tab_expanded_tree = self.screen.query_one(
             Id.apply_tab.tree_id("#", tree=TreeName.expanded_tree),
             ExpandedTree,
         )
         apply_tab_expanded_tree.destDir = data.parsed_config.dest_dir
-
         re_add_tab_expanded_tree = self.screen.query_one(
             Id.re_add_tab.tree_id("#", tree=TreeName.expanded_tree),
             ExpandedTree,
         )
         re_add_tab_expanded_tree.destDir = data.parsed_config.dest_dir
 
-    def update_flat_tree_destDir(self, data: "SplashData") -> None:
+        # update FlatTree destDir
         apply_tab_flat_tree = self.screen.query_one(
             Id.apply_tab.tree_id("#", tree=TreeName.flat_tree), FlatTree
         )
         apply_tab_flat_tree.destDir = data.parsed_config.dest_dir
-
         re_add_tab_flat_tree = self.screen.query_one(
             Id.re_add_tab.tree_id("#", tree=TreeName.flat_tree), FlatTree
         )
         re_add_tab_flat_tree.destDir = data.parsed_config.dest_dir
 
-    def update_diff_view_destDir(self, data: "SplashData") -> None:
+        # update DiffView destDir
         apply_diff_view = self.screen.query_one(
             Id.apply_tab.view_id("#", view=ViewName.diff_view), DiffView
         )
         apply_diff_view.destDir = data.parsed_config.dest_dir
         apply_diff_view.path = data.parsed_config.dest_dir
-
         re_add_diff_view = self.screen.query_one(
             Id.re_add_tab.view_id("#", view=ViewName.diff_view), DiffView
         )
         re_add_diff_view.destDir = data.parsed_config.dest_dir
         re_add_diff_view.path = data.parsed_config.dest_dir
 
-    def update_contents_view_destDir(self, data: "SplashData") -> None:
+        # update ContentsView destDir
         add_tab_contents_view = self.screen.query_one(
             Id.add_tab.view_id("#", view=ViewName.contents_view), ContentsView
         )
         add_tab_contents_view.destDir = data.parsed_config.dest_dir
         add_tab_contents_view.path = data.parsed_config.dest_dir
-
         apply_contents_view = self.screen.query_one(
             Id.apply_tab.view_id("#", view=ViewName.contents_view),
             ContentsView,
@@ -232,7 +216,7 @@ class MainScreen(Screen[None], AppType):
         re_add_contents_view.destDir = data.parsed_config.dest_dir
         re_add_contents_view.path = data.parsed_config.dest_dir
 
-    def update_git_log_view_destDir(self, data: "SplashData") -> None:
+        # update GitLogView destDir
         apply_git_log_view = self.screen.query_one(
             Id.apply_tab.view_id("#", view=ViewName.git_log_view), GitLogView
         )
@@ -245,13 +229,13 @@ class MainScreen(Screen[None], AppType):
         re_add_git_log_view.destDir = data.parsed_config.dest_dir
         re_add_git_log_view.path = data.parsed_config.dest_dir
 
-    def update_dir_tree_destDir(self, data: "SplashData") -> None:
+        # update FilteredDirTree destDir
         dir_tree = self.screen.query_one(
             Id.add_tab.tree_id("#", tree=TreeName.add_tree), FilteredDirTree
         )
         dir_tree.path = data.parsed_config.dest_dir
 
-    def update_config_tab(self, data: "SplashData") -> None:
+        # update ConfigTab outputs
         config_tab_switcher = self.screen.query_one(
             Id.config_tab.content_switcher_id("#", area=AreaName.right),
             ContentSwitcher,
@@ -263,6 +247,6 @@ class MainScreen(Screen[None], AppType):
             config_tab_switcher, "template_data_stdout", data.template_data
         )
 
-    def update_operate_info(self, data: "SplashData") -> None:
+        # update OperateInfo git settings
         OperateInfo.git_autocommit = data.parsed_config.git_autocommit
         OperateInfo.git_autopush = data.parsed_config.git_autopush
