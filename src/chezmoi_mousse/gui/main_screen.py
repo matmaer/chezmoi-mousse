@@ -147,12 +147,6 @@ class MainScreen(Screen[None], AppType):
 
     def handle_splash_data(self, data: "SplashData") -> None:
 
-        # TODO: add logic to push the Init screen if chezmoi is found but not
-        # initialized, like on a newly installed system or deployment.
-
-        # update chezmoi managed paths
-        self.app.chezmoi.managed_paths = data.managed_paths
-
         # update ManagedTree destDir
         apply_tab_managed_tree = self.screen.query_one(
             Id.apply_tab.tree_id("#", tree=TreeName.managed_tree), ManagedTree

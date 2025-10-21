@@ -76,6 +76,11 @@ class ChezmoiGUI(App[None]):
         if return_data is None:
             self.push_screen(InstallHelp(chezmoi_found=self.chezmoi_found))
             return
+
+        # TODO: add logic to push the Init screen if chezmoi is found but not
+        # initialized, like on a newly installed system or deployment.
+
+        self.chezmoi.managed_paths = return_data.managed_paths
         self.push_screen(MainScreen(splash_data=return_data))
 
 
