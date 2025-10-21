@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from textual import on
-from textual.containers import Horizontal, VerticalGroup
+from textual.containers import Horizontal
 from textual.widgets import Button, ContentSwitcher, Switch
 
 from chezmoi_mousse import AreaName, Switches, TabBtn, Tcss, TreeName, ViewName
@@ -139,8 +139,3 @@ class TabsBase(Horizontal):
                 tree_switcher.current = self.ids.tree_id(
                     tree=TreeName.managed_tree
                 )
-
-    def action_toggle_switch_slider(self) -> None:
-        self.query_one(
-            self.ids.switches_slider_qid, VerticalGroup
-        ).toggle_class("-visible")

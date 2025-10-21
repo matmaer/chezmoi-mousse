@@ -2,6 +2,7 @@ from typing import TYPE_CHECKING
 
 from textual.app import ComposeResult
 from textual.binding import Binding
+from textual.containers import VerticalGroup
 from textual.screen import Screen
 from textual.widgets import (
     ContentSwitcher,
@@ -255,20 +256,28 @@ class MainScreen(Screen[None], AppType):
         self, action: str, parameters: tuple[object, ...]
     ) -> bool | None:
         if action == "toggle_switch_slider":
-            if self.query_one(TabbedContent).active in (
-                Id.apply_tab.canvas_name,
-                Id.re_add_tab.canvas_name,
-                Id.add_tab.canvas_name,
+            if self.query_one(TabbedContent).active == (
+                Id.apply_tab.canvas_name
             ):
-                # Find the corresponding method in the active tab
-                tab_widget = self.query_one(
-                    f"#{self.query_one(TabbedContent).active}", TabPane
-                ).children[0]
-                # Call the method in the base class to toggle the switch slider
-                getattr(tab_widget, "action_toggle_switch_slider")()
-                # Make sure the key binding is enabled only in these tabs
-                return True
-            return None
+                self.query_one(
+                    Id.apply_tab.switches_slider_qid, VerticalGroup
+                ).toggle_class("-visible")
+                return True  # enable binding in apply tab
+            elif self.query_one(TabbedContent).active == (
+                Id.re_add_tab.canvas_name
+            ):
+                self.query_one(
+                    Id.re_add_tab.switches_slider_qid, VerticalGroup
+                ).toggle_class("-visible")
+                return True  # enable binding in re-add tab
+            elif self.query_one(TabbedContent).active == (
+                Id.add_tab.canvas_name
+            ):
+                self.query_one(
+                    Id.add_tab.switches_slider_qid, VerticalGroup
+                ).toggle_class("-visible")
+                return True  # enable binding in add tab
+            return None  # disable binding in other tabs
         elif action == "hide_header_and_tabs":
             header = self.query_exactly_one(Header)
             tabs = self.query_exactly_one(Tabs)
