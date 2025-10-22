@@ -1,3 +1,4 @@
+import dataclasses
 from typing import TYPE_CHECKING
 
 from textual.app import ComposeResult
@@ -57,7 +58,7 @@ class MainScreen(Screen[None], AppType):
         Binding(
             key="F,f",
             action="toggle_switch_slider",
-            description="show/hide filters",
+            description="hide filters",
         ),
     ]
     CSS_PATH = "_gui.tcss"
@@ -112,7 +113,7 @@ class MainScreen(Screen[None], AppType):
     def compose(self) -> ComposeResult:
         yield Header(icon=Chars.burger)
         with TabbedContent():
-            with TabPane(PaneBtn.apply_tab.value, id=Canvas.apply):
+            with TabPane(PaneBtn.apply_tab.value, id=Canvas.apply.name):
                 yield ApplyTab(ids=Id.apply_tab)
                 yield OperateBtnHorizontal(
                     ids=Id.apply_tab,
@@ -122,7 +123,7 @@ class MainScreen(Screen[None], AppType):
                         OperateBtn.destroy_file,
                     ),
                 )
-            with TabPane(PaneBtn.re_add_tab.value, id=Canvas.re_add):
+            with TabPane(PaneBtn.re_add_tab.value, id=Canvas.re_add.name):
                 yield ReAddTab(ids=Id.re_add_tab)
                 yield OperateBtnHorizontal(
                     ids=Id.re_add_tab,
@@ -132,7 +133,7 @@ class MainScreen(Screen[None], AppType):
                         OperateBtn.destroy_file,
                     ),
                 )
-            with TabPane(PaneBtn.add_tab.value, id=Canvas.add):
+            with TabPane(PaneBtn.add_tab.value, id=Canvas.add.name):
                 yield AddTab(ids=Id.add_tab)
                 yield OperateBtnHorizontal(
                     ids=Id.add_tab,
@@ -250,34 +251,21 @@ class MainScreen(Screen[None], AppType):
     def on_tabbed_content_tab_activated(
         self, event: TabbedContent.TabActivated
     ) -> None:
+        self._create_new_binding()
         self.refresh_bindings()
 
     def check_action(
         self, action: str, parameters: tuple[object, ...]
     ) -> bool | None:
         if action == "toggle_switch_slider":
-            if self.query_one(TabbedContent).active == (
-                Id.apply_tab.canvas_name
+            active_tab = self.query_one(TabbedContent).active
+            if active_tab in (
+                Id.apply_tab.canvas_name,
+                Id.re_add_tab.canvas_name,
+                Id.add_tab.canvas_name,
             ):
-                self.query_one(
-                    Id.apply_tab.switches_slider_qid, VerticalGroup
-                ).toggle_class("-visible")
-                return True  # enable binding in apply tab
-            elif self.query_one(TabbedContent).active == (
-                Id.re_add_tab.canvas_name
-            ):
-                self.query_one(
-                    Id.re_add_tab.switches_slider_qid, VerticalGroup
-                ).toggle_class("-visible")
-                return True  # enable binding in re-add tab
-            elif self.query_one(TabbedContent).active == (
-                Id.add_tab.canvas_name
-            ):
-                self.query_one(
-                    Id.add_tab.switches_slider_qid, VerticalGroup
-                ).toggle_class("-visible")
-                return True  # enable binding in add tab
-            return None  # disable binding in other tabs
+                return True
+            return False
         elif action == "hide_header_and_tabs":
             header = self.query_exactly_one(Header)
             tabs = self.query_exactly_one(Tabs)
@@ -290,6 +278,52 @@ class MainScreen(Screen[None], AppType):
 
             return True
         return True
+
+    def _get_current_filter_slider(self) -> VerticalGroup:
+        active_tab = self.query_one(TabbedContent).active
+
+        if active_tab == Id.apply_tab.canvas_name:
+            return self.query_one(
+                Id.apply_tab.switches_slider_qid, VerticalGroup
+            )
+        elif active_tab == Id.re_add_tab.canvas_name:
+            return self.query_one(
+                Id.re_add_tab.switches_slider_qid, VerticalGroup
+            )
+        else:
+            return self.query_one(
+                Id.add_tab.switches_slider_qid, VerticalGroup
+            )
+
+    def _create_new_binding(self) -> None:
+        # create a new binding with new description
+        slider: VerticalGroup = self._get_current_filter_slider()
+
+        new_description = (
+            "show filters" if slider.has_class("-visible") else "hide filters"
+        )
+        for key, binding in self._bindings:
+            if binding.action == "toggle_switch_slider":
+                # Create a new binding with the updated description
+                updated_binding = dataclasses.replace(
+                    binding, description=new_description
+                )
+                # Update the bindings map
+                if key in self._bindings.key_to_bindings:
+                    bindings_list = self._bindings.key_to_bindings[key]
+                    for i, b in enumerate(bindings_list):
+                        if b.action == "toggle_switch_slider":
+                            bindings_list[i] = updated_binding
+                            break
+                break
+
+    def action_toggle_switch_slider(self) -> None:
+        slider = self._get_current_filter_slider()
+        slider.toggle_class("-visible")
+
+        self._create_new_binding()
+
+        self.refresh_bindings()
 
     def on_theme_change(self, _: str, new_theme: str) -> None:
         self.app_log.success(f"Theme set to {new_theme}")
