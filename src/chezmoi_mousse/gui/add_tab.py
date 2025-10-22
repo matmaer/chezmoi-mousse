@@ -77,14 +77,18 @@ class FilteredDirTree(DirectoryTree, AppType):
         docx = ".docx"
         egg_info = ".egg-info"
         exe = ".exe"
+        gif = ".gif"
         gz = ".gz"
         img = ".img"
         iso = ".iso"
         jar = ".jar"
+        jpeg = ".jpeg"
+        jpg = ".jpg"
         kdbx = ".kdbx"
         lock = ".lock"
         pdf = ".pdf"
         pid = ".pid"
+        png = ".png"
         ppt = ".ppt"
         pptx = ".pptx"
         rar = ".rar"
@@ -190,17 +194,17 @@ class FilteredDirTree(DirectoryTree, AppType):
 
     def _has_unmanaged_paths_in(self, dir_path: Path) -> bool:
         # Assume a directory with more than max_entries is not of interest
-        max_entries = 400
+        max_entries = 300
         try:
             for idx, p in enumerate(dir_path.iterdir(), start=1):
                 if idx > max_entries:
                     return False
-                if (
+                elif (
                     p not in self.app.chezmoi.managed_dirs
                     and p not in self.app.chezmoi.managed_files
                 ):
                     return True
-            return False
+            return True
         except (PermissionError, OSError):
             return False
 
