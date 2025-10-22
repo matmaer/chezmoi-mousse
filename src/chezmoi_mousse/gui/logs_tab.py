@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 from enum import StrEnum
 from subprocess import CompletedProcess
@@ -151,6 +152,10 @@ class DebugLog(CommandLogBase, AppType):
         members = [attr for attr in dir(obj) if not attr.startswith("_")]
         self.ready_to_run(f"{obj.__class__.__name__} attributes:")
         self.dimmed(", ".join(members))
+
+    def print_env_vars(self) -> None:
+        for key, value in os.environ.items():
+            self.write(f"{key}: {value}")
 
 
 class OutputLog(CommandLogBase, AppType):
