@@ -4,21 +4,16 @@ from typing import TYPE_CHECKING
 from textual.message import Message
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import NodeData, OperateBtn, TreeName
+    from chezmoi_mousse import NodeData, TreeName
 
 __all__ = ["OperateDismissMsg", "TreeNodeSelectedMsg"]
 
 
 class OperateDismissMsg(Message):
     def __init__(
-        self,
-        button_name: "OperateBtn | None" = None,
-        found: bool | None = None,
-        operation_executed: bool | None = None,
-        path: Path | None = None,
+        self, button_id: str, operation_executed: bool, path: Path
     ) -> None:
-        self.button_name = button_name
-        self.found = found
+        self.button_id = button_id
         self.operation_executed = operation_executed
         self.path = path
         super().__init__()

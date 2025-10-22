@@ -30,6 +30,7 @@ from chezmoi_mousse import (
     TreeName,
     ViewName,
 )
+from chezmoi_mousse.gui.shared.operate.operate_msg import OperateDismissMsg
 
 from .add_tab import AddTab, FilteredDirTree
 from .apply_tab import ApplyTab
@@ -368,3 +369,9 @@ class MainScreen(Screen[None], AppType):
         assert event.button.id is not None
         operate_data = OperateData(button_id=event.button.id, path=Path.home())
         self.app.push_screen(OperateScreen(operate_data))
+
+    @on(OperateDismissMsg)
+    def handle_operate_dismiss_msg(self, message: OperateDismissMsg) -> None:
+        self.notify(
+            f"Operate screen dismissed. Operation executed: {message.operation_executed}\nPath: {message.path}\nButton ID: {message.button_id}"
+        )

@@ -1,6 +1,7 @@
 from enum import StrEnum
 
 from textual.app import ComposeResult
+from textual.binding import Binding
 from textual.events import Click
 from textual.screen import Screen
 from textual.widgets import RichLog, Static
@@ -13,6 +14,7 @@ from chezmoi_mousse import (
     OperateData,
     Tcss,
 )
+from chezmoi_mousse._id_classes import Id
 
 from .operate_msg import OperateDismissMsg
 
@@ -86,29 +88,63 @@ class OperateInfo(Static, AppType):
         self.update("\n".join(lines_to_write))
 
 
-class OperateScreen(Screen[OperateDismissMsg]):
+class OperateScreen(Screen[None], AppType):
+
+    BINDINGS = [Binding(key="escape", action="cancel_operation", show=True)]
+
     def __init__(self, operate_data: OperateData) -> None:
+        self.ids = Id.operate_screen
+
+        self.add_dir_btn_id = Id.add_tab.button_id(btn=OperateBtn.add_dir)
+        self.add_file_btn_id = Id.add_tab.button_id(btn=OperateBtn.add_file)
+        self.apply_file_btn_id = Id.apply_tab.button_id(
+            btn=OperateBtn.apply_file
+        )
+        self.re_add_file_btn_id = Id.re_add_tab.button_id(
+            btn=OperateBtn.re_add_file
+        )
+        self.destroy_file_btn_id = Id.operate_screen.button_id(
+            btn=OperateBtn.destroy_file
+        )
+        self.forget_file_btn_id = Id.operate_screen.button_id(
+            btn=OperateBtn.forget_file
+        )
+
         super().__init__(
             id=Canvas.operate.name, classes=Tcss.operate_screen.name
         )
         self.operate_data = operate_data
+        self.dismiss_message = OperateDismissMsg(
+            button_id=operate_data.button_id,
+            operation_executed=False,
+            path=operate_data.path,
+        )
 
     def compose(self) -> ComposeResult:
         yield RichLog(id="operate-screen-log")
-        # yield OperateBtnHorizontal(
-        #     ids=Id.operate_screen,
-        #     buttons=(
-        #         OperateBtn.apply_file,
-        #         OperateBtn.forget_file,
-        #         OperateBtn.destroy_file,
-        #     ),
-        # )
 
     def on_mount(self) -> None:
         log_widget = self.query_one(RichLog)
         log_widget.write("placeholder for operate screen")
-        log_widget.write(f"operate data: {self.operate_data!r}")
+        btn_id = self.operate_data.button_id
+        if btn_id == self.add_dir_btn_id:
+            log_widget.write("Add Dir operation selected")
+        elif btn_id == self.add_file_btn_id:
+            log_widget.write("Add File operation selected")
+        elif btn_id == self.apply_file_btn_id:
+            log_widget.write("Apply File operation selected")
+        elif btn_id == self.re_add_file_btn_id:
+            log_widget.write("Re-Add File operation selected")
+        elif btn_id == self.destroy_file_btn_id:
+            log_widget.write("Destroy File operation selected")
+        elif btn_id == self.forget_file_btn_id:
+            log_widget.write("Forget File operation selected")
+
+    def action_cancel_operation(self) -> None:
+        self.app.post_message(self.dismiss_message)
+        self.dismiss()
 
     def on_click(self, event: Click) -> None:
+        self.app.post_message(self.dismiss_message)
         if event.chain == 2:
             self.dismiss()
