@@ -59,6 +59,7 @@ __all__ = [
     "NavBtn",
     "NodeData",
     "OperateBtn",
+    "OperateData",
     "PaneBtn",
     "PreRunData",
     "ReadCmd",
