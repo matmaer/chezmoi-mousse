@@ -31,6 +31,7 @@ from chezmoi_mousse._tcss_classes import Tcss
 
 if TYPE_CHECKING:
     from pathlib import Path
+    from subprocess import CompletedProcess
 
     from chezmoi_mousse._chezmoi import Chezmoi
     from chezmoi_mousse.gui.chezmoi_gui import ChezmoiGUI
@@ -59,7 +60,8 @@ __all__ = [
     "NavBtn",
     "NodeData",
     "OperateBtn",
-    "OperateData",
+    "OperateLaunchData",
+    "OperateResultData",
     "PaneBtn",
     "PreRunData",
     "ReadCmd",
@@ -87,9 +89,17 @@ class NodeData:
 
 
 @dataclass(slots=True)
-class OperateData:
+class OperateLaunchData:
     button_id: str
     path: "Path"
+
+
+@dataclass(slots=True)
+class OperateResultData:
+    path: "Path"
+    operation_executed: bool = False
+    completed_process_data: "CompletedProcess[str] | None" = None
+    executed_command: "ChangeCmd | None" = None
 
 
 @dataclass(slots=True)
