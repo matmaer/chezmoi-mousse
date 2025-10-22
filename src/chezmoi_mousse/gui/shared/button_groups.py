@@ -26,7 +26,7 @@ class ButtonsHorizontalBase(HorizontalGroup):
         self.buttons = buttons
         self.area: AreaName = area
         self.ids: "CanvasIds" = ids
-        super().__init__(id=self.ids.buttons_horizontal_id(self.area))
+        super().__init__(id=self.ids.buttons_horizontal_id(area=self.area))
 
     def compose(self) -> ComposeResult:
         for button_enum in self.buttons:

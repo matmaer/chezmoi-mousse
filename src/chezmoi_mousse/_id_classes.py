@@ -41,8 +41,8 @@ class CanvasIds:
             suffix = "_nav_btn"
         return f"{qid}{self.canvas_name}_{btn.name}{suffix}"
 
-    def buttons_horizontal_id(self, area: AreaName) -> str:
-        return f"{self.canvas_name}_{area}_horizontal"
+    def buttons_horizontal_id(self, qid: str = "", *, area: AreaName) -> str:
+        return f"{qid}{self.canvas_name}_{area}_horizontal"
 
     def content_switcher_id(self, qid: str = "", *, area: AreaName) -> str:
         return f"{qid}{self.canvas_name}_{area}_content_switcher"

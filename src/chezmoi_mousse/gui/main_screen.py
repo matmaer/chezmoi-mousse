@@ -50,11 +50,7 @@ __all__ = ["MainScreen"]
 class MainScreen(Screen[None], AppType):
 
     BINDINGS = [
-        Binding(
-            key="H,h",
-            action="hide_header_and_tabs",
-            description="show/hide header",
-        ),
+        Binding(key="M,m", action="tcss_maximize", description="maximize"),
         Binding(
             key="F,f",
             action="toggle_switch_slider",
@@ -266,7 +262,40 @@ class MainScreen(Screen[None], AppType):
             ):
                 return True
             return False
-        elif action == "hide_header_and_tabs":
+        elif action == "tcss_maximize":
+            active_tab = self.query_one(TabbedContent).active
+            if active_tab == Id.apply_tab.canvas_name:
+                left_side = self.query_one(
+                    Id.apply_tab.tab_vertical_id("#", area=AreaName.left)
+                )
+                operation_buttons = self.query_one(
+                    Id.apply_tab.buttons_horizontal_id(
+                        "#", area=AreaName.bottom
+                    )
+                )
+            elif active_tab == Id.re_add_tab.canvas_name:
+                left_side = self.query_one(
+                    Id.re_add_tab.tab_vertical_id("#", area=AreaName.left)
+                )
+                operation_buttons = self.query_one(
+                    Id.re_add_tab.buttons_horizontal_id(
+                        "#", area=AreaName.bottom
+                    )
+                )
+            else:
+                left_side = self.query_one(
+                    Id.add_tab.tab_vertical_id("#", area=AreaName.left)
+                )
+                operation_buttons = self.query_one(
+                    Id.add_tab.buttons_horizontal_id("#", area=AreaName.bottom)
+                )
+            if left_side.has_class("display_none"):
+                left_side.remove_class("display_none")
+                operation_buttons.remove_class("display_none")
+            else:
+                left_side.add_class("display_none")
+                operation_buttons.add_class("display_none")
+
             header = self.query_exactly_one(Header)
             tabs = self.query_exactly_one(Tabs)
             if header.has_class("display_none"):
