@@ -74,4 +74,5 @@ class Id:
     config_tab: CanvasIds = CanvasIds(Canvas.config)
     help_tab: CanvasIds = CanvasIds(Canvas.help)
     logs_tab: CanvasIds = CanvasIds(Canvas.logs)
+    operate_screen: CanvasIds = CanvasIds(Canvas.operate)
     re_add_tab: CanvasIds = CanvasIds(Canvas.re_add)

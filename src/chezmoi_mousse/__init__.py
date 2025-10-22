@@ -86,6 +86,13 @@ class NodeData:
 
 
 @dataclass(slots=True)
+class OperateData:
+    active_canvas: ActiveCanvas
+    operate_btn: OperateBtn
+    path: "Path"
+
+
+@dataclass(slots=True)
 class PreRunData:
     chezmoi_instance: "Chezmoi"
     changes_enabled: bool

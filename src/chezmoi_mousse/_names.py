@@ -1,7 +1,7 @@
 from enum import StrEnum, auto
 from typing import Literal
 
-type ActiveCanvas = Literal[Canvas.apply, Canvas.re_add]
+type ActiveCanvas = Literal[Canvas.add, Canvas.apply, Canvas.re_add]
 
 __all__ = ["ActiveCanvas", "AreaName", "Canvas", "TreeName", "ViewName"]
 
@@ -21,6 +21,7 @@ class Canvas(StrEnum):
     config = auto()
     help = auto()
     install_help = auto()
+    operate = auto()
     logs = auto()
     re_add = auto()
 

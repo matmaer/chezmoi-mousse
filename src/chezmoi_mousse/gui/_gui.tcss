@@ -79,6 +79,10 @@
   }
 }
 
+.operate_screen {
+  border: round $primary
+}
+
 .screen_base {
   border-bottom: $primary;
   border-title-style: bold;
