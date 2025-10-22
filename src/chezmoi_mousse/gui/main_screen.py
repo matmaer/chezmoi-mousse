@@ -1,11 +1,14 @@
 import dataclasses
+from pathlib import Path
 from typing import TYPE_CHECKING
 
+from textual import on
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import VerticalGroup
 from textual.screen import Screen
 from textual.widgets import (
+    Button,
     ContentSwitcher,
     Footer,
     Header,
@@ -21,7 +24,9 @@ from chezmoi_mousse import (
     Chars,
     Id,
     OperateBtn,
+    OperateData,
     PaneBtn,
+    Tcss,
     TreeName,
     ViewName,
 )
@@ -39,7 +44,7 @@ from .shared.operate.expanded_tree import ExpandedTree
 from .shared.operate.flat_tree import FlatTree
 from .shared.operate.git_log_view import GitLogView
 from .shared.operate.managed_tree import ManagedTree
-from .shared.operate.operate_screen import OperateInfo
+from .shared.operate.operate_screen import OperateInfo, OperateScreen
 
 if TYPE_CHECKING:
     from .pre_run_screens.splash import SplashData
@@ -356,3 +361,10 @@ class MainScreen(Screen[None], AppType):
 
     def on_theme_change(self, _: str, new_theme: str) -> None:
         self.app_log.success(f"Theme set to {new_theme}")
+
+    @on(Button.Pressed, Tcss.operate_button.value)
+    def handle_operation_button_pressed(self, event: Button.Pressed) -> None:
+        self.notify(f"Operation: {event.button}")
+        assert event.button.id is not None
+        operate_data = OperateData(button_id=event.button.id, path=Path.home())
+        self.app.push_screen(OperateScreen(operate_data))

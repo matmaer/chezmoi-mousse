@@ -88,8 +88,7 @@ class NodeData:
 
 @dataclass(slots=True)
 class OperateData:
-    active_canvas: ActiveCanvas
-    operate_btn: OperateBtn
+    button_id: str
     path: "Path"
 
 

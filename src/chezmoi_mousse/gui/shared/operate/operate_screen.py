@@ -1,6 +1,7 @@
 from enum import StrEnum
 
 from textual.app import ComposeResult
+from textual.events import Click
 from textual.screen import Screen
 from textual.widgets import RichLog, Static
 
@@ -14,6 +15,9 @@ from chezmoi_mousse import (
 )
 
 from .operate_msg import OperateDismissMsg
+
+# from .button_groups import OperateBtnHorizontal
+
 
 __all__ = ["OperateInfo", "OperateScreen"]
 
@@ -84,12 +88,27 @@ class OperateInfo(Static, AppType):
 
 class OperateScreen(Screen[OperateDismissMsg]):
     def __init__(self, operate_data: OperateData) -> None:
-        super().__init__(id=Canvas.operate.name, classes=Tcss.operate_screen)
+        super().__init__(
+            id=Canvas.operate.name, classes=Tcss.operate_screen.name
+        )
         self.operate_data = operate_data
 
     def compose(self) -> ComposeResult:
         yield RichLog(id="operate-screen-log")
+        # yield OperateBtnHorizontal(
+        #     ids=Id.operate_screen,
+        #     buttons=(
+        #         OperateBtn.apply_file,
+        #         OperateBtn.forget_file,
+        #         OperateBtn.destroy_file,
+        #     ),
+        # )
 
     def on_mount(self) -> None:
         log_widget = self.query_one(RichLog)
         log_widget.write("placeholder for operate screen")
+        log_widget.write(f"operate data: {self.operate_data!r}")
+
+    def on_click(self, event: Click) -> None:
+        if event.chain == 2:
+            self.dismiss()
