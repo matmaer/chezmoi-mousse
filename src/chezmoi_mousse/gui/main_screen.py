@@ -39,7 +39,7 @@ from .shared.operate.expanded_tree import ExpandedTree
 from .shared.operate.flat_tree import FlatTree
 from .shared.operate.git_log_view import GitLogView
 from .shared.operate.managed_tree import ManagedTree
-from .shared.operate.operate_info import OperateInfo
+from .shared.operate.operate_screen import OperateInfo
 
 if TYPE_CHECKING:
     from .pre_run_screens.splash import SplashData
