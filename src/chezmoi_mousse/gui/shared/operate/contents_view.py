@@ -4,7 +4,7 @@ from rich.text import Text
 from textual.reactive import reactive
 from textual.widgets import RichLog
 
-from chezmoi_mousse import AppType, ReadCmd, Tcss, ViewName
+from chezmoi_mousse import AppType, LogUtils, ReadCmd, Tcss, ViewName
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -59,7 +59,7 @@ class ContentsView(RichLog, AppType):
         try:
             with open(self.path, "rt", encoding="utf-8") as file:
                 file_content = file.read(150 * 1024)
-                if not file_content.strip():
+                if file_content.strip() == "":
                     message = "File is empty or contains only whitespace"
                     self.write(message)
                 else:
@@ -76,14 +76,20 @@ class ContentsView(RichLog, AppType):
                 self.write(f"Managed directory: {self.path}")
                 self.write(self.click_file_path)
                 return
-            if self.path in self.app.chezmoi.managed_files:
+            elif self.path in self.app.chezmoi.managed_files:
+                pretty_cmd = LogUtils.pretty_cmd_str(
+                    ReadCmd.cat.value + [str(self.path)]
+                )
                 cat_output = self.app.chezmoi.read(ReadCmd.cat, self.path)
+                self.write(
+                    f"File does not exist on disk, output from '{pretty_cmd}':\n"
+                )
                 if cat_output == "":
                     self.write(
                         Text("File contains only whitespace", style="dim")
                     )
                 else:
-                    self.write(cat_output.splitlines())
+                    self.write(cat_output)
                 return
 
         except IsADirectoryError:
@@ -96,7 +102,4 @@ class ContentsView(RichLog, AppType):
 
         except OSError as error:
             self.write(Text(f"Error reading {self.path}: {error}"))
-            if self.app.chezmoi.app_log is not None:
-                self.app.chezmoi.app_log.error(
-                    f"Error reading {self.path}: {error}"
-                )
+            self.write(self.click_file_path)
