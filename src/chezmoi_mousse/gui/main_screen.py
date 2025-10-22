@@ -24,15 +24,12 @@ from chezmoi_mousse import (
     Chars,
     Id,
     OperateBtn,
-    OperateData,
+    OperateLaunchData,
+    OperateResultData,
     PaneBtn,
     Tcss,
     TreeName,
     ViewName,
-)
-from chezmoi_mousse.gui.shared.operate.operate_msg import (
-    CurrentOperatePathMsg,
-    OperateDismissMsg,
 )
 
 from .add_tab import AddTab, FilteredDirTree
@@ -48,6 +45,7 @@ from .shared.operate.expanded_tree import ExpandedTree
 from .shared.operate.flat_tree import FlatTree
 from .shared.operate.git_log_view import GitLogView
 from .shared.operate.managed_tree import ManagedTree
+from .shared.operate.operate_msg import CurrentOperatePathMsg
 from .shared.operate.operate_screen import OperateInfo, OperateScreen
 
 if TYPE_CHECKING:
@@ -370,18 +368,23 @@ class MainScreen(Screen[None], AppType):
 
     @on(Button.Pressed, Tcss.operate_button.value)
     def handle_operation_button_pressed(self, event: Button.Pressed) -> None:
-        self.notify(f"Operation: {event.button}")
-        assert event.button.id is not None
-        operate_data = OperateData(button_id=event.button.id, path=Path.home())
-        self.app.push_screen(OperateScreen(operate_data))
-
-    @on(OperateDismissMsg)
-    def handle_operate_dismiss_msg(self, message: OperateDismissMsg) -> None:
-        self.notify(
-            f"Operate screen dismissed. Operation executed: {message.operation_executed}\nPath: {message.path}\nButton ID: {message.button_id}"
+        if event.button.id is None or self.current_operate_path is None:
+            self.notify("Select a file to operate on", severity="warning")
+            return
+        operate_launch_data = OperateLaunchData(
+            button_id=event.button.id, path=self.current_operate_path
         )
+        self.app.push_screen(
+            OperateScreen(operate_launch_data=operate_launch_data),
+            callback=self._handle_operate_result,
+        )
+
+    def _handle_operate_result(
+        self, operate_result: OperateResultData | None
+    ) -> None:
+        if operate_result is not None:
+            self.notify(f"Operate result: {operate_result}")
 
     @on(CurrentOperatePathMsg)
     def update_operate_path(self, message: CurrentOperatePathMsg) -> None:
         self.current_operate_path = message.path
-        self.notify(f"Current operate path updated: {message.path}")
