@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 
 from textual import on
 from textual.containers import Horizontal
+from textual.reactive import reactive
 from textual.widgets import Button, ContentSwitcher, Switch
 
 from chezmoi_mousse import AreaName, Switches, TabBtn, Tcss, TreeName, ViewName
@@ -13,7 +14,7 @@ from .operate.expanded_tree import ExpandedTree
 from .operate.flat_tree import FlatTree
 from .operate.git_log_view import GitLogView
 from .operate.managed_tree import ManagedTree
-from .operate.operate_msg import TreeNodeSelectedMsg
+from .operate.operate_msg import CurrentOperatePathMsg, TreeNodeSelectedMsg
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds
@@ -23,8 +24,9 @@ __all__ = ["TabsBase"]
 
 class TabsBase(Horizontal):
 
+    current_path: reactive[Path | None] = reactive(None, init=False)
+
     def __init__(self, *, ids: "CanvasIds") -> None:
-        self.current_path: Path | None = None
         self.ids = ids
         self.diff_tab_btn = ids.button_id(btn=TabBtn.diff)
         self.contents_tab_btn = ids.button_id(btn=TabBtn.contents)
@@ -139,3 +141,8 @@ class TabsBase(Horizontal):
                 tree_switcher.current = self.ids.tree_id(
                     tree=TreeName.managed_tree
                 )
+
+    def watch_current_path(self) -> None:
+        if self.current_path is None:
+            return
+        self.post_message(CurrentOperatePathMsg(self.current_path))

@@ -6,15 +6,11 @@ from textual.message import Message
 if TYPE_CHECKING:
     from chezmoi_mousse import NodeData, TreeName
 
-__all__ = ["OperateDismissMsg", "TreeNodeSelectedMsg"]
+__all__ = ["CurrentOperatePathMsg", "TreeNodeSelectedMsg"]
 
 
-class OperateDismissMsg(Message):
-    def __init__(
-        self, button_id: str, operation_executed: bool, path: Path
-    ) -> None:
-        self.button_id = button_id
-        self.operation_executed = operation_executed
+class CurrentOperatePathMsg(Message):
+    def __init__(self, path: Path) -> None:
         self.path = path
         super().__init__()
 

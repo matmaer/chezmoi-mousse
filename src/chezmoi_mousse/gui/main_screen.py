@@ -30,7 +30,10 @@ from chezmoi_mousse import (
     TreeName,
     ViewName,
 )
-from chezmoi_mousse.gui.shared.operate.operate_msg import OperateDismissMsg
+from chezmoi_mousse.gui.shared.operate.operate_msg import (
+    CurrentOperatePathMsg,
+    OperateDismissMsg,
+)
 
 from .add_tab import AddTab, FilteredDirTree
 from .apply_tab import ApplyTab
@@ -71,6 +74,8 @@ class MainScreen(Screen[None], AppType):
         self.app_log: AppLog
         self.output_log: OutputLog
         self.debug_log: DebugLog
+
+        self.current_operate_path: Path | None = None
 
         super().__init__()
 
@@ -375,3 +380,8 @@ class MainScreen(Screen[None], AppType):
         self.notify(
             f"Operate screen dismissed. Operation executed: {message.operation_executed}\nPath: {message.path}\nButton ID: {message.button_id}"
         )
+
+    @on(CurrentOperatePathMsg)
+    def update_operate_path(self, message: CurrentOperatePathMsg) -> None:
+        self.current_operate_path = message.path
+        self.notify(f"Current operate path updated: {message.path}")
