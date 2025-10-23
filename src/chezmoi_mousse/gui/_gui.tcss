@@ -38,6 +38,7 @@
   border: round $foreground;
   text-align: center;
   dock: top;
+  margin-bottom: 1;
 }
 
 .section_label {
@@ -80,7 +81,9 @@
 }
 
 .operate_screen {
-  border: round $primary
+  #operate-screen-log {
+    height: 5;
+  }
 }
 
 .screen_base {

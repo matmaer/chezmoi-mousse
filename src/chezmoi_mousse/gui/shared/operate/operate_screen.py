@@ -1,4 +1,5 @@
 from enum import StrEnum
+from subprocess import CompletedProcess
 
 from textual import on
 from textual.app import ComposeResult
@@ -10,6 +11,7 @@ from textual.widgets import Button, RichLog, Static
 from chezmoi_mousse import (
     AppType,
     Canvas,
+    ChangeCmd,
     Chars,
     Id,
     OperateBtn,
@@ -18,6 +20,9 @@ from chezmoi_mousse import (
     Tcss,
 )
 from chezmoi_mousse.gui.shared.button_groups import OperateBtnHorizontal
+
+from .contents_view import ContentsView
+from .diff_view import DiffView
 
 __all__ = ["OperateInfo", "OperateScreen"]
 
@@ -82,7 +87,7 @@ class OperateInfo(Static, AppType):
             OperateBtn.apply_file == self.operate_btn
             or OperateBtn.re_add_file == self.operate_btn
         ):
-            lines_to_write.extend(InfoStrings.diff_color.value)
+            lines_to_write.append(InfoStrings.diff_color.value)
         self.update("\n".join(lines_to_write))
 
 
@@ -103,6 +108,12 @@ class OperateScreen(Screen[OperateResultData], AppType):
 
     def compose(self) -> ComposeResult:
         yield OperateInfo(operate_btn=self.btn_enum_member)
+        if self.btn_enum_member == OperateBtn.apply_file:
+            yield DiffView(ids=self.ids, reverse=False)
+        elif self.btn_enum_member == OperateBtn.re_add_file:
+            yield DiffView(ids=self.ids, reverse=True)
+        elif self.btn_enum_member == OperateBtn.add_file:
+            yield ContentsView(ids=self.ids)
         yield RichLog(id="operate-screen-log")
         yield OperateBtnHorizontal(
             ids=self.ids,
@@ -110,8 +121,41 @@ class OperateScreen(Screen[OperateResultData], AppType):
         )
 
     def on_mount(self) -> None:
-        log_widget = self.query_one(RichLog)
+        log_widget = self.query_one("#operate-screen-log", RichLog)
         log_widget.write("placeholder for operate screen")
+        if self.btn_enum_member in (
+            OperateBtn.apply_file,
+            OperateBtn.re_add_file,
+        ):
+            diff_view = self.query_one(DiffView)
+            diff_view.path = self.path
+        elif self.btn_enum_member == OperateBtn.add_file:
+            contents_view = self.query_one(ContentsView)
+            contents_view.path = self.path
+
+    def run_change_command(self) -> None:
+        if self.btn_enum_member == OperateBtn.apply_file:
+            result: CompletedProcess[str] = self.app.chezmoi.perform(
+                ChangeCmd.apply, change_arg=str(self.path)
+            )
+        elif self.btn_enum_member == OperateBtn.re_add_file:
+            result: CompletedProcess[str] = self.app.chezmoi.perform(
+                ChangeCmd.re_add, change_arg=str(self.path)
+            )
+        elif self.btn_enum_member == OperateBtn.add_file:
+            result: CompletedProcess[str] = self.app.chezmoi.perform(
+                ChangeCmd.add, change_arg=str(self.path)
+            )
+        elif self.btn_enum_member == OperateBtn.forget_file:
+            result: CompletedProcess[str] = self.app.chezmoi.perform(
+                ChangeCmd.forget, change_arg=str(self.path)
+            )
+        else:
+            result: CompletedProcess[str] = self.app.chezmoi.perform(
+                ChangeCmd.destroy, change_arg=str(self.path)
+            )
+        self.operate_result.operation_executed = True
+        self.operate_result.completed_process_data = result
 
     def action_esc_key_dismiss(self) -> None:
         self.dismiss(self.operate_result)
@@ -126,3 +170,26 @@ class OperateScreen(Screen[OperateResultData], AppType):
             btn=OperateBtn.operate_dismiss
         ):
             self.dismiss(self.operate_result)
+        elif event.button.id == self.ids.button_id(btn=OperateBtn.apply_file):
+            self.notify(f"Applied changes to {self.path}")
+            self.dismiss(self.operate_result)
+        elif event.button.id == self.ids.button_id(btn=OperateBtn.re_add_file):
+            self.notify(f"Re-added {self.path} to source state")
+            self.dismiss(self.operate_result)
+        elif event.button.id == self.ids.button_id(btn=OperateBtn.add_file):
+            self.app.chezmoi.perform(ChangeCmd.add, change_arg=str(self.path))
+            self.notify(f"Added {self.path} to source state")
+            self.dismiss(self.operate_result)
+        elif event.button.id == self.ids.button_id(btn=OperateBtn.forget_file):
+            self.notify(f"Forgot {self.path} from source state")
+            self.dismiss(self.operate_result)
+        elif event.button.id == self.ids.button_id(
+            btn=OperateBtn.destroy_file
+        ):
+            self.notify(f"Destroyed {self.path} from source state and disk")
+            self.dismiss(self.operate_result)
+        elif event.button.id == self.ids.button_id(btn=OperateBtn.add_dir):
+            self.notify(f"Added directory {self.path} to source state")
+            self.dismiss(self.operate_result)
+        else:
+            self.notify("Unhandled operate button pressed", severity="error")

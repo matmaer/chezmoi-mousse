@@ -384,8 +384,15 @@ class MainScreen(Screen[None], AppType):
     def _handle_operate_result(
         self, operate_result: OperateResultData | None
     ) -> None:
-        if operate_result is not None:
-            self.notify(f"Operate result: {operate_result}")
+        if operate_result is None:
+            return
+        if not operate_result.operation_executed:
+            self.notify(
+                "Operation cancelled, no changes were made.",
+                severity="information",
+            )
+            return
+        self.notify(f"Operate result: {operate_result}")
 
     @on(CurrentOperatePathMsg)
     def update_operate_path(self, message: CurrentOperatePathMsg) -> None:

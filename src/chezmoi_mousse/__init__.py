@@ -100,7 +100,6 @@ class OperateResultData:
     path: "Path"
     operation_executed: bool = False
     completed_process_data: "CompletedProcess[str] | None" = None
-    executed_command: "ChangeCmd | None" = None
 
 
 @dataclass(slots=True)

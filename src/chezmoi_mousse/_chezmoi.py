@@ -127,8 +127,8 @@ class ChangeCmd(Enum):
     add = ["add"]
     # add_encrypt = ["add", VerbArgs.encrypt.value]
     apply = ["apply"]
-    # destroy = ["destroy"]
-    # forget = ["forget"]
+    destroy = ["destroy"]
+    forget = ["forget"]
     init = ["init"]
     # purge = ["purge"]
     re_add = ["re-add"]
@@ -285,7 +285,7 @@ class Chezmoi:
 
     def perform(
         self, change_sub_cmd: ChangeCmd, change_arg: str | None = None
-    ) -> None:
+    ) -> CompletedProcess[str]:
         if self._changes_enabled is True:
             base_cmd: list[str] = GlobalCmd.live_run.value
         else:
@@ -295,11 +295,10 @@ class Chezmoi:
         if change_arg is not None:
             command: list[str] = command + [change_arg]
 
-        self._log_in_app_and_output_log(
-            run(
-                command, capture_output=True, shell=False, text=True, timeout=5
-            )
+        result: CompletedProcess[str] = run(
+            command, capture_output=True, shell=False, text=True, timeout=5
         )
+        return result
 
     def refresh_managed_paths_data(self):
         # get data from chezmoi managed stdout
