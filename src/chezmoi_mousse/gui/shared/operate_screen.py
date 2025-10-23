@@ -6,7 +6,7 @@ from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.events import Click
 from textual.screen import Screen
-from textual.widgets import Button, RichLog, Static
+from textual.widgets import Button, Static
 
 from chezmoi_mousse import (
     AppType,
@@ -14,7 +14,6 @@ from chezmoi_mousse import (
     ChangeCmd,
     Chars,
     Id,
-    LogUtils,
     OperateBtn,
     OperateLaunchData,
     OperateResultData,
@@ -115,15 +114,12 @@ class OperateScreen(Screen[OperateResultData], AppType):
             yield DiffView(ids=self.ids, reverse=True)
         elif self.btn_enum_member == OperateBtn.add_file:
             yield ContentsView(ids=self.ids)
-        yield RichLog(id="operate-screen-log")
         yield OperateBtnHorizontal(
             ids=self.ids,
             buttons=(self.btn_enum_member, OperateBtn.operate_dismiss),
         )
 
     def on_mount(self) -> None:
-        log_widget = self.query_one("#operate-screen-log", RichLog)
-        log_widget.write("placeholder for operate screen")
         if self.btn_enum_member in (
             OperateBtn.apply_file,
             OperateBtn.re_add_file,
@@ -190,15 +186,4 @@ class OperateScreen(Screen[OperateResultData], AppType):
         else:
             self.notify("Unhandled operate button pressed", severity="error")
 
-        cmd_result: CompletedProcess[str] = self.run_change_command()
-
-        log_widget = self.query_one("#operate-screen-log", RichLog)
-        pretty_cmd_str: str = LogUtils.pretty_cmd_str(cmd_result.args)
-        log_widget.write("Command result:")
-        log_widget.write(pretty_cmd_str)
-        if cmd_result.stdout:
-            log_widget.write("Output:")
-            log_widget.write(f"{cmd_result.stdout}")
-        if cmd_result.stderr:
-            log_widget.write("Error output:")
-            log_widget.write(f"{cmd_result.stderr}")
+        # cmd_result: CompletedProcess[str] = self.run_change_command()

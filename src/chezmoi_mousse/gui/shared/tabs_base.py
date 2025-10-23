@@ -8,13 +8,13 @@ from textual.widgets import Button, ContentSwitcher, Switch
 
 from chezmoi_mousse import AreaName, Switches, TabBtn, Tcss, TreeName, ViewName
 
-from .operate.contents_view import ContentsView
-from .operate.diff_view import DiffView
-from .operate.expanded_tree import ExpandedTree
-from .operate.flat_tree import FlatTree
-from .operate.git_log_view import GitLogView
-from .operate.managed_tree import ManagedTree
-from .operate.operate_msg import CurrentOperatePathMsg, TreeNodeSelectedMsg
+from .contents_view import ContentsView
+from .diff_view import DiffView
+from .expanded_tree import ExpandedTree
+from .flat_tree import FlatTree
+from .git_log_view import GitLogView
+from .managed_tree import ManagedTree
+from .operate_msg import CurrentOperatePathMsg, TreeNodeSelectedMsg
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds

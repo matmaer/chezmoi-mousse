@@ -19,7 +19,7 @@ from chezmoi_mousse import (
     ViewName,
 )
 
-from .shared.operate.contents_view import ContentsView
+from .shared.contents_view import ContentsView
 from .shared.switch_slider import SwitchSlider
 from .shared.tabs_base import TabsBase
 

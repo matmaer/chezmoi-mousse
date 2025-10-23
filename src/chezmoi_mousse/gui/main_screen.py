@@ -39,14 +39,14 @@ from .help_tab import HelpTab
 from .logs_tab import AppLog, DebugLog, LogsTab, OutputLog
 from .re_add_tab import ReAddTab
 from .shared.button_groups import OperateBtnHorizontal
-from .shared.operate.contents_view import ContentsView
-from .shared.operate.diff_view import DiffView
-from .shared.operate.expanded_tree import ExpandedTree
-from .shared.operate.flat_tree import FlatTree
-from .shared.operate.git_log_view import GitLogView
-from .shared.operate.managed_tree import ManagedTree
-from .shared.operate.operate_msg import CurrentOperatePathMsg
-from .shared.operate.operate_screen import OperateInfo, OperateScreen
+from .shared.contents_view import ContentsView
+from .shared.diff_view import DiffView
+from .shared.expanded_tree import ExpandedTree
+from .shared.flat_tree import FlatTree
+from .shared.git_log_view import GitLogView
+from .shared.managed_tree import ManagedTree
+from .shared.operate_msg import CurrentOperatePathMsg
+from .shared.operate_screen import OperateInfo, OperateScreen
 
 if TYPE_CHECKING:
     from .pre_run_screens.splash import SplashData

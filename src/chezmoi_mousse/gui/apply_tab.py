@@ -6,8 +6,8 @@ from textual.containers import Vertical
 from chezmoi_mousse import AreaName, Switches, TabBtn, Tcss
 
 from .shared.button_groups import TabBtnHorizontal
-from .shared.operate.switchers import TreeSwitcher, ViewSwitcher
 from .shared.switch_slider import SwitchSlider
+from .shared.switchers import TreeSwitcher, ViewSwitcher
 from .shared.tabs_base import TabsBase
 
 if TYPE_CHECKING:
