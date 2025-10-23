@@ -17,6 +17,7 @@ __all__ = [
     "ChangeCmd",
     "Chezmoi",
     "GlobalCmd",
+    "LogUtils",
     "ManagedPaths",
     "ReadCmd",
     "ReadVerbs",
@@ -134,7 +135,25 @@ class ChangeCmd(Enum):
     re_add = ["re-add"]
 
 
-class Utils:
+class LogUtils:
+
+    @staticmethod
+    def pretty_cmd_str(command: list[str]) -> str:
+        filter_git_log_args = VerbArgs.git_log.value[3:]
+        return "chezmoi " + " ".join(
+            [
+                _
+                for _ in command[1:]
+                if _
+                not in GlobalCmd.default_args.value
+                + filter_git_log_args
+                + [
+                    VerbArgs.format_json.value,
+                    VerbArgs.path_style_absolute.value,
+                ]
+            ]
+        )
+
     @staticmethod
     def strip_stdout(stdout: str):
         # remove trailing and leading new lines but NOT leading whitespace
@@ -260,7 +279,7 @@ class Chezmoi:
     #################################
 
     def _log_in_app_and_output_log(self, result: CompletedProcess[str]):
-        result.stdout = Utils.strip_stdout(result.stdout)
+        result.stdout = LogUtils.strip_stdout(result.stdout)
         if self.app_log is not None and self.output_log is not None:
             self.app_log.completed_process(result)
             self.output_log.completed_process(result)
@@ -281,7 +300,7 @@ class Chezmoi:
             timeout=time_out,
         )
         self._log_in_app_and_output_log(result)
-        return Utils.strip_stdout(result.stdout)
+        return LogUtils.strip_stdout(result.stdout)
 
     def perform(
         self, change_sub_cmd: ChangeCmd, change_arg: str | None = None
@@ -298,6 +317,9 @@ class Chezmoi:
         result: CompletedProcess[str] = run(
             command, capture_output=True, shell=False, text=True, timeout=5
         )
+        result.stdout = LogUtils.strip_stdout(result.stdout)
+        result.stderr = LogUtils.strip_stdout(result.stderr)
+        self._log_in_app_and_output_log(result)
         return result
 
     def refresh_managed_paths_data(self):
