@@ -90,6 +90,7 @@ class NodeData:
 
 @dataclass(slots=True)
 class OperateLaunchData:
+    btn_enum_member: OperateBtn
     button_id: str
     path: "Path"
 
