@@ -14,29 +14,6 @@ if TYPE_CHECKING:
 __all__ = ["NavButtonsVertical", "OperateBtnHorizontal", "TabBtnHorizontal"]
 
 
-class ButtonsHorizontalBase(HorizontalGroup):
-
-    def __init__(
-        self,
-        *,
-        ids: "CanvasIds",
-        buttons: tuple[TabBtn, ...] | tuple[OperateBtn, ...],
-        area: AreaName,
-    ) -> None:
-        self.buttons = buttons
-        self.area: AreaName = area
-        self.ids: "CanvasIds" = ids
-        super().__init__(id=self.ids.buttons_horizontal_id(area=self.area))
-
-    def compose(self) -> ComposeResult:
-        for button_enum in self.buttons:
-            with Vertical(classes=Tcss.single_button_vertical.name):
-                yield Button(
-                    label=button_enum.value,
-                    id=self.ids.button_id(btn=button_enum),
-                )
-
-
 class NavButtonsVertical(VerticalGroup):
 
     def __init__(
@@ -57,25 +34,44 @@ class NavButtonsVertical(VerticalGroup):
             )
 
 
-class OperateBtnHorizontal(ButtonsHorizontalBase):
+class OperateBtnHorizontal(HorizontalGroup):
     def __init__(self, *, ids: "CanvasIds", buttons: tuple[OperateBtn, ...]):
-        super().__init__(ids=ids, buttons=buttons, area=AreaName.bottom)
+        self.ids = ids
+        self.buttons = buttons
+        super().__init__(
+            id=self.ids.buttons_horizontal_id(area=AreaName.bottom)
+        )
 
-    def on_mount(self) -> None:
-        for btn in self.query(Button):
-            btn.add_class(Tcss.operate_button.name)
+    def compose(self) -> ComposeResult:
+        for button_enum in self.buttons:
+            with Vertical(classes=Tcss.single_button_vertical.name):
+                yield Button(
+                    label=button_enum.value,
+                    id=self.ids.button_id(btn=button_enum),
+                    classes=Tcss.operate_button.name,
+                )
 
 
-class TabBtnHorizontal(ButtonsHorizontalBase):
+class TabBtnHorizontal(HorizontalGroup):
     def __init__(
         self, *, ids: "CanvasIds", buttons: tuple[TabBtn, ...], area: AreaName
     ):
-        super().__init__(ids=ids, buttons=buttons, area=area)
+        self.ids = ids
+        self.buttons = buttons
+        self.area = area
+        super().__init__(id=self.ids.buttons_horizontal_id(area=self.area))
+
+    def compose(self) -> ComposeResult:
+        for button_enum in self.buttons:
+            with Vertical(classes=Tcss.single_button_vertical.name):
+                yield Button(
+                    label=button_enum.value,
+                    id=self.ids.button_id(btn=button_enum),
+                    classes=Tcss.tab_button.name,
+                )
 
     def on_mount(self) -> None:
         buttons = self.query(Button)
-        for btn in buttons:
-            btn.add_class(Tcss.tab_button.name)
         buttons[0].add_class(Tcss.last_clicked.name)
 
     @on(Button.Pressed)
