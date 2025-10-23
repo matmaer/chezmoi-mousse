@@ -256,12 +256,15 @@ class AddTab(TabsBase, AppType):
         event: DirectoryTree.DirectorySelected | DirectoryTree.FileSelected,
     ) -> None:
         event.stop()
-        assert event.node.data is not None
+        if event.node.data is None:
+            return
         contents_view = self.query_one(
             self.ids.view_id("#", view=ViewName.contents_view), ContentsView
         )
         contents_view.path = event.node.data.path
         contents_view.border_title = f" {event.node.data.path} "
+        # Update the reactive from TabsBase, used for operate screen logic
+        self.current_path = event.node.data.path
 
     @on(Switch.Changed)
     def handle_filter_switches(self, event: Switch.Changed) -> None:
