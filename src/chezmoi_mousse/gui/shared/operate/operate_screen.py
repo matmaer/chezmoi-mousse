@@ -14,6 +14,7 @@ from chezmoi_mousse import (
     ChangeCmd,
     Chars,
     Id,
+    LogUtils,
     OperateBtn,
     OperateLaunchData,
     OperateResultData,
@@ -133,7 +134,7 @@ class OperateScreen(Screen[OperateResultData], AppType):
             contents_view = self.query_one(ContentsView)
             contents_view.path = self.path
 
-    def run_change_command(self) -> None:
+    def run_change_command(self) -> CompletedProcess[str]:
         if self.btn_enum_member == OperateBtn.apply_file:
             result: CompletedProcess[str] = self.app.chezmoi.perform(
                 ChangeCmd.apply, change_arg=str(self.path)
@@ -156,6 +157,7 @@ class OperateScreen(Screen[OperateResultData], AppType):
             )
         self.operate_result.operation_executed = True
         self.operate_result.completed_process_data = result
+        return result
 
     def action_esc_key_dismiss(self) -> None:
         self.dismiss(self.operate_result)
@@ -172,24 +174,31 @@ class OperateScreen(Screen[OperateResultData], AppType):
             self.dismiss(self.operate_result)
         elif event.button.id == self.ids.button_id(btn=OperateBtn.apply_file):
             self.notify(f"Applied changes to {self.path}")
-            self.dismiss(self.operate_result)
         elif event.button.id == self.ids.button_id(btn=OperateBtn.re_add_file):
             self.notify(f"Re-added {self.path} to source state")
-            self.dismiss(self.operate_result)
         elif event.button.id == self.ids.button_id(btn=OperateBtn.add_file):
             self.app.chezmoi.perform(ChangeCmd.add, change_arg=str(self.path))
             self.notify(f"Added {self.path} to source state")
-            self.dismiss(self.operate_result)
         elif event.button.id == self.ids.button_id(btn=OperateBtn.forget_file):
             self.notify(f"Forgot {self.path} from source state")
-            self.dismiss(self.operate_result)
         elif event.button.id == self.ids.button_id(
             btn=OperateBtn.destroy_file
         ):
             self.notify(f"Destroyed {self.path} from source state and disk")
-            self.dismiss(self.operate_result)
         elif event.button.id == self.ids.button_id(btn=OperateBtn.add_dir):
             self.notify(f"Added directory {self.path} to source state")
-            self.dismiss(self.operate_result)
         else:
             self.notify("Unhandled operate button pressed", severity="error")
+
+        cmd_result: CompletedProcess[str] = self.run_change_command()
+
+        log_widget = self.query_one("#operate-screen-log", RichLog)
+        pretty_cmd_str: str = LogUtils.pretty_cmd_str(cmd_result.args)
+        log_widget.write("Command result:")
+        log_widget.write(pretty_cmd_str)
+        if cmd_result.stdout:
+            log_widget.write("Output:")
+            log_widget.write(f"{cmd_result.stdout}")
+        if cmd_result.stderr:
+            log_widget.write("Error output:")
+            log_widget.write(f"{cmd_result.stderr}")
