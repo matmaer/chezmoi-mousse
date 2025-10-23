@@ -36,7 +36,7 @@ from .add_tab import AddTab, FilteredDirTree
 from .apply_tab import ApplyTab
 from .config_tab import ConfigTab
 from .help_tab import HelpTab
-from .logs_tab import AppLog, DebugLog, LogsTab, OutputLog
+from .logs_tab import LogsTab
 from .re_add_tab import ReAddTab
 from .shared.button_groups import OperateBtnHorizontal
 from .shared.contents_view import ContentsView
@@ -44,6 +44,7 @@ from .shared.diff_view import DiffView
 from .shared.expanded_tree import ExpandedTree
 from .shared.flat_tree import FlatTree
 from .shared.git_log_view import GitLogView
+from .shared.loggers import AppLog, DebugLog, OutputLog
 from .shared.managed_tree import ManagedTree
 from .shared.operate_msg import CurrentOperatePathMsg
 from .shared.operate_screen import OperateInfo, OperateScreen
