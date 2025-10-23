@@ -298,21 +298,21 @@ class MainScreen(Screen[None], AppType):
                 operation_buttons = self.query_one(
                     Id.add_tab.buttons_horizontal_id("#", area=AreaName.bottom)
                 )
-            if left_side.has_class("display_none"):
-                left_side.remove_class("display_none")
-                operation_buttons.remove_class("display_none")
+            if left_side.has_class(Tcss.display_none.name):
+                left_side.remove_class(Tcss.display_none.name)
+                operation_buttons.remove_class(Tcss.display_none.name)
             else:
-                left_side.add_class("display_none")
-                operation_buttons.add_class("display_none")
+                left_side.add_class(Tcss.display_none.name)
+                operation_buttons.add_class(Tcss.display_none.name)
 
             header = self.query_exactly_one(Header)
             tabs = self.query_exactly_one(Tabs)
-            if header.has_class("display_none"):
-                header.remove_class("display_none")
-                tabs.remove_class("display_none")
+            if header.has_class(Tcss.display_none.name):
+                header.remove_class(Tcss.display_none.name)
+                tabs.remove_class(Tcss.display_none.name)
             else:
-                header.add_class("display_none")
-                tabs.add_class("display_none")
+                header.add_class(Tcss.display_none.name)
+                tabs.add_class(Tcss.display_none.name)
 
             return True
         return True

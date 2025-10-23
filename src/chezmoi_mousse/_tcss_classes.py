@@ -7,6 +7,7 @@ class Tcss(StrEnum):
     border_title_top = ".border_title_top"
     content_switcher_left = ".content_switcher_left"
     dir_tree_widget = ".dir_tree_widget"
+    display_none = ".display_none"
     doctor_listview = ".doctor_listview"
     doctor_table = ".doctor_table"
     doctor_vertical_scroll = ".doctor_vertical_scroll"
