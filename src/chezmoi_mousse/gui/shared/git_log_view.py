@@ -29,6 +29,10 @@ class GitLogView(DataTable[Text], AppType):
 
     def on_mount(self) -> None:
         self.border_title = f" {self.destDir} "
+        git_log_result: "CommandResults" = self.app.chezmoi.read(
+            ReadCmd.git_log
+        )
+        self.populate_data_table(git_log_result.std_out)
 
     def _add_row_with_style(self, columns: list[str], style: str) -> None:
         row: Iterable[Text] = [
@@ -58,16 +62,12 @@ class GitLogView(DataTable[Text], AppType):
     def watch_path(self) -> None:
         if self.path is None:
             return
-        if self.path == self.destDir:
-            git_log_result: "CommandResults" = self.app.chezmoi.read(
-                ReadCmd.git_log
-            )
-        else:
-            source_path_str: str = self.app.chezmoi.read(
-                ReadCmd.source_path, self.path
-            ).std_out
-            git_log_result: "CommandResults" = self.app.chezmoi.read(
-                ReadCmd.git_log, Path(source_path_str)
-            )
+
+        source_path_str: str = self.app.chezmoi.read(
+            ReadCmd.source_path, self.path
+        ).std_out
+        git_log_result: "CommandResults" = self.app.chezmoi.read(
+            ReadCmd.git_log, Path(source_path_str)
+        )
         self.border_title = f" {self.path} "
         self.populate_data_table(git_log_result.std_out)
