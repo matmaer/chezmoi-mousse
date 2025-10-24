@@ -57,10 +57,6 @@ class TreeBase(Tree[NodeData], AppType):
         )
 
     def on_mount(self) -> None:
-        # assert self.destDir is not None
-        # self.root.data = NodeData(
-        #     path=self.destDir, is_leaf=False, found=True, status="F"
-        # )
         self.node_colors: dict[str, str] = {
             "Dir": self.app.theme_variables["text-primary"],
             "D": self.app.theme_variables["text-error"],
