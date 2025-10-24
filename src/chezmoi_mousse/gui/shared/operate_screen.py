@@ -16,6 +16,7 @@ from chezmoi_mousse import (
     Id,
     OperateBtn,
     OperateResultData,
+    ReadCmd,
     Tcss,
 )
 from chezmoi_mousse.gui.shared.button_groups import OperateBtnHorizontal
@@ -195,7 +196,10 @@ class OperateResultScreen(Screen[OperateResultData], AppType):
 
     def on_mount(self) -> None:
         app_log = self.query_one(AppLog)
+        app_log.auto_scroll = False
+        app_log.styles.height = "auto"
         output_log = self.query_one(OutputLog)
+        output_log.auto_scroll = False
         if self.launch_data.btn_enum_member == OperateBtn.apply_file:
             self.cmd_result = self.app.chezmoi.perform(
                 ChangeCmd.apply, path_arg=self.launch_data.path
@@ -222,8 +226,35 @@ class OperateResultScreen(Screen[OperateResultData], AppType):
             app_log.write("No command result to log.")
             output_log.write("No command result to log.")
             return
+
         app_log.log_cmd_results(self.cmd_result)
         output_log.log_cmd_results(self.cmd_result)
+
+        # Refresh chezmoi status and managed data
+        managed_dirs: "CommandResults" = self.app.chezmoi.read(
+            ReadCmd.managed_dirs
+        )
+        app_log.log_cmd_results(managed_dirs)
+
+        managed_files: "CommandResults" = self.app.chezmoi.read(
+            ReadCmd.managed_files
+        )
+        app_log.log_cmd_results(managed_files)
+
+        status_paths: "CommandResults" = self.app.chezmoi.read(
+            ReadCmd.status_paths
+        )
+        app_log.log_cmd_results(status_paths)
+
+        status_files: "CommandResults" = self.app.chezmoi.read(
+            ReadCmd.status_files
+        )
+        app_log.log_cmd_results(status_files)
+
+        status_dirs: "CommandResults" = self.app.chezmoi.read(
+            ReadCmd.status_dirs
+        )
+        app_log.log_cmd_results(status_dirs)
 
     @on(Button.Pressed, Tcss.operate_button.value)
     def close_operate_results_screen(self, event: Button.Pressed) -> None:
