@@ -166,8 +166,9 @@ class MainScreen(Screen[None], AppType):
 
     def handle_splash_data(self, data: "SplashData") -> None:
         self.populate_apply_trees()
-        # self.update_apply_trees_destDir(data.parsed_config.dest_dir)
-        # self.update_re_add_trees_destDir(data.parsed_config.dest_dir)
+        self.populate_re_add_trees()
+        self.populate_forget_trees()
+        self.populate_destroy_trees()
         # self.update_add_dir_tree_destDir(data.parsed_config.dest_dir)
         # self.update_diff_views_destDir(data.parsed_config.dest_dir)
         # self.update_git_log_views_destDir(data.parsed_config.dest_dir)
@@ -189,23 +190,21 @@ class MainScreen(Screen[None], AppType):
         apply_tab_managed_tree.populate_tree()
         apply_tab_expanded_tree.populate_tree()
         apply_tab_flat_tree.add_files_with_status()
-        # apply_tab_expanded_tree.destDir = destDir
-        # apply_tab_flat_tree.destDir = destDir
 
-    # def update_re_add_trees_destDir(self, destDir: Path) -> None:
-    #     re_add_tab_managed_tree = self.screen.query_one(
-    #         Id.re_add_tab.tree_id("#", tree=TreeName.managed_tree), ManagedTree
-    #     )
-    #     re_add_tab_expanded_tree = self.screen.query_one(
-    #         Id.re_add_tab.tree_id("#", tree=TreeName.expanded_tree),
-    #         ExpandedTree,
-    #     )
-    #     re_add_tab_flat_tree = self.screen.query_one(
-    #         Id.re_add_tab.tree_id("#", tree=TreeName.flat_tree), FlatTree
-    #     )
-    #     re_add_tab_managed_tree.destDir = destDir
-    #     re_add_tab_expanded_tree.destDir = destDir
-    #     re_add_tab_flat_tree.destDir = destDir
+    def populate_re_add_trees(self) -> None:
+        re_add_tab_managed_tree = self.screen.query_one(
+            Id.re_add_tab.tree_id("#", tree=TreeName.managed_tree), ManagedTree
+        )
+        re_add_tab_expanded_tree = self.screen.query_one(
+            Id.re_add_tab.tree_id("#", tree=TreeName.expanded_tree),
+            ExpandedTree,
+        )
+        re_add_tab_flat_tree = self.screen.query_one(
+            Id.re_add_tab.tree_id("#", tree=TreeName.flat_tree), FlatTree
+        )
+        re_add_tab_managed_tree.populate_tree()
+        re_add_tab_expanded_tree.populate_tree()
+        re_add_tab_flat_tree.add_files_with_status()
 
     # def update_add_dir_tree_destDir(self, destDir: Path) -> None:
     #     dir_tree = self.screen.query_one(
@@ -213,36 +212,36 @@ class MainScreen(Screen[None], AppType):
     #     )
     #     dir_tree.path = destDir
 
-    # def update_forget_trees_destDir(self, destDir: Path) -> None:
-    #     forget_tab_managed_tree = self.screen.query_one(
-    #         Id.forget_tab.tree_id("#", tree=TreeName.managed_tree), ManagedTree
-    #     )
-    #     forget_tab_expanded_tree = self.screen.query_one(
-    #         Id.forget_tab.tree_id("#", tree=TreeName.expanded_tree),
-    #         ExpandedTree,
-    #     )
-    #     forget_tab_flat_tree = self.screen.query_one(
-    #         Id.forget_tab.tree_id("#", tree=TreeName.flat_tree), FlatTree
-    #     )
-    #     forget_tab_managed_tree.destDir = destDir
-    #     forget_tab_expanded_tree.destDir = destDir
-    #     forget_tab_flat_tree.destDir = destDir
+    def populate_forget_trees(self) -> None:
+        forget_tab_managed_tree = self.screen.query_one(
+            Id.forget_tab.tree_id("#", tree=TreeName.managed_tree), ManagedTree
+        )
+        forget_tab_expanded_tree = self.screen.query_one(
+            Id.forget_tab.tree_id("#", tree=TreeName.expanded_tree),
+            ExpandedTree,
+        )
+        forget_tab_flat_tree = self.screen.query_one(
+            Id.forget_tab.tree_id("#", tree=TreeName.flat_tree), FlatTree
+        )
+        forget_tab_managed_tree.populate_tree()
+        forget_tab_expanded_tree.populate_tree()
+        forget_tab_flat_tree.add_files_with_status()
 
-    # def update_destroy_trees_destDir(self, destDir: Path) -> None:
-    #     destroy_tab_managed_tree = self.screen.query_one(
-    #         Id.destroy_tab.tree_id("#", tree=TreeName.managed_tree),
-    #         ManagedTree,
-    #     )
-    #     destroy_tab_expanded_tree = self.screen.query_one(
-    #         Id.destroy_tab.tree_id("#", tree=TreeName.expanded_tree),
-    #         ExpandedTree,
-    #     )
-    #     destroy_tab_flat_tree = self.screen.query_one(
-    #         Id.destroy_tab.tree_id("#", tree=TreeName.flat_tree), FlatTree
-    #     )
-    #     destroy_tab_managed_tree.destDir = destDir
-    #     destroy_tab_expanded_tree.destDir = destDir
-    #     destroy_tab_flat_tree.destDir = destDir
+    def populate_destroy_trees(self) -> None:
+        destroy_tab_managed_tree = self.screen.query_one(
+            Id.destroy_tab.tree_id("#", tree=TreeName.managed_tree),
+            ManagedTree,
+        )
+        destroy_tab_expanded_tree = self.screen.query_one(
+            Id.destroy_tab.tree_id("#", tree=TreeName.expanded_tree),
+            ExpandedTree,
+        )
+        destroy_tab_flat_tree = self.screen.query_one(
+            Id.destroy_tab.tree_id("#", tree=TreeName.flat_tree), FlatTree
+        )
+        destroy_tab_managed_tree.populate_tree()
+        destroy_tab_expanded_tree.populate_tree()
+        destroy_tab_flat_tree.add_files_with_status()
 
     # def update_git_log_views_destDir(self, destDir: Path) -> None:
 
