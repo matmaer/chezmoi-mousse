@@ -21,7 +21,8 @@ class Canvas(StrEnum):
     config = auto()
     help = auto()
     install_help = auto()
-    operate = auto()
+    operate_launch = auto()
+    operate_result = auto()
     logs = auto()
     re_add = auto()
 
