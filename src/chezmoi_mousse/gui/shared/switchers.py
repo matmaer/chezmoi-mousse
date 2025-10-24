@@ -7,10 +7,8 @@ from chezmoi_mousse import AppType, AreaName, Tcss, TreeName, ViewName
 
 from .contents_view import ContentsView
 from .diff_view import DiffView
-from .expanded_tree import ExpandedTree
 from .git_log_view import GitLogView
-from .list_tree import ListTree
-from .managed_tree import ManagedTree
+from .trees import ExpandedTree, ListTree, ManagedTree
 
 if TYPE_CHECKING:
     from chezmoi_mousse import AppType, CanvasIds

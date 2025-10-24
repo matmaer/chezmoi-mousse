@@ -39,12 +39,10 @@ from .forget_tab import ForgetTab
 from .help_tab import HelpTab
 from .logs_tab import LogsTab
 from .re_add_tab import ReAddTab
-from .shared.expanded_tree import ExpandedTree
-from .shared.list_tree import ListTree
 from .shared.loggers import AppLog, DebugLog, OutputLog
-from .shared.managed_tree import ManagedTree
 from .shared.operate_msg import CurrentOperatePathMsg
 from .shared.operate_screen import OperateScreen
+from .shared.trees import ExpandedTree, ListTree, ManagedTree
 
 if TYPE_CHECKING:
     from chezmoi_mousse import OperateResultData

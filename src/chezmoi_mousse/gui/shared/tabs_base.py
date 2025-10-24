@@ -10,12 +10,10 @@ from chezmoi_mousse import AreaName, Switches, TabBtn, Tcss, TreeName, ViewName
 
 from .contents_view import ContentsView
 from .diff_view import DiffView
-from .expanded_tree import ExpandedTree
 from .git_log_view import GitLogView
-from .list_tree import ListTree
-from .managed_tree import ManagedTree
 from .operate_msg import CurrentOperatePathMsg, TreeNodeSelectedMsg
 from .switchers import TreeSwitcher, ViewSwitcher
+from .trees import ExpandedTree, ListTree, ManagedTree
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds
