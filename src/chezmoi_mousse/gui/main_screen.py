@@ -41,16 +41,11 @@ from .logs_tab import LogsTab
 from .re_add_tab import ReAddTab
 from .shared.button_groups import OperateBtnHorizontal
 from .shared.expanded_tree import ExpandedTree
-from .shared.flat_tree import FlatTree
+from .shared.list_tree import ListTree
 from .shared.loggers import AppLog, DebugLog, OutputLog
 from .shared.managed_tree import ManagedTree
 from .shared.operate_msg import CurrentOperatePathMsg
 from .shared.operate_screen import OperateScreen
-
-# from .shared.git_log_view import GitLogView
-# from .shared.expanded_tree import ExpandedTree
-# from .shared.flat_tree import FlatTree
-
 
 if TYPE_CHECKING:
     from chezmoi_mousse import OperateResultData
@@ -169,11 +164,6 @@ class MainScreen(Screen[None], AppType):
         self.populate_re_add_trees()
         self.populate_forget_trees()
         self.populate_destroy_trees()
-        # self.update_add_dir_tree_destDir(data.parsed_config.dest_dir)
-        # self.update_diff_views_destDir(data.parsed_config.dest_dir)
-        # self.update_git_log_views_destDir(data.parsed_config.dest_dir)
-        # self.update_forget_trees_destDir(data.parsed_config.dest_dir)
-        # self.update_destroy_trees_destDir(data.parsed_config.dest_dir)
         self.update_config_tab_outputs(data)
 
     def populate_apply_trees(self) -> None:
@@ -185,7 +175,7 @@ class MainScreen(Screen[None], AppType):
             ExpandedTree,
         )
         apply_tab_flat_tree = self.screen.query_one(
-            Id.apply_tab.tree_id("#", tree=TreeName.flat_tree), FlatTree
+            Id.apply_tab.tree_id("#", tree=TreeName.flat_tree), ListTree
         )
         apply_tab_managed_tree.populate_tree()
         apply_tab_expanded_tree.populate_tree()
@@ -200,7 +190,7 @@ class MainScreen(Screen[None], AppType):
             ExpandedTree,
         )
         re_add_tab_flat_tree = self.screen.query_one(
-            Id.re_add_tab.tree_id("#", tree=TreeName.flat_tree), FlatTree
+            Id.re_add_tab.tree_id("#", tree=TreeName.flat_tree), ListTree
         )
         re_add_tab_managed_tree.populate_tree()
         re_add_tab_expanded_tree.populate_tree()
@@ -221,7 +211,7 @@ class MainScreen(Screen[None], AppType):
             ExpandedTree,
         )
         forget_tab_flat_tree = self.screen.query_one(
-            Id.forget_tab.tree_id("#", tree=TreeName.flat_tree), FlatTree
+            Id.forget_tab.tree_id("#", tree=TreeName.flat_tree), ListTree
         )
         forget_tab_managed_tree.populate_tree()
         forget_tab_expanded_tree.populate_tree()
@@ -237,33 +227,11 @@ class MainScreen(Screen[None], AppType):
             ExpandedTree,
         )
         destroy_tab_flat_tree = self.screen.query_one(
-            Id.destroy_tab.tree_id("#", tree=TreeName.flat_tree), FlatTree
+            Id.destroy_tab.tree_id("#", tree=TreeName.flat_tree), ListTree
         )
         destroy_tab_managed_tree.populate_tree()
         destroy_tab_expanded_tree.populate_tree()
         destroy_tab_flat_tree.add_files_with_status()
-
-    # def update_git_log_views_destDir(self, destDir: Path) -> None:
-
-    #     apply_git_log_view = self.screen.query_one(
-    #         Id.apply_tab.view_id("#", view=ViewName.git_log_view), GitLogView
-    #     )
-    #     apply_git_log_view.path = destDir
-
-    #     re_add_git_log_view = self.screen.query_one(
-    #         Id.re_add_tab.view_id("#", view=ViewName.git_log_view), GitLogView
-    #     )
-    #     re_add_git_log_view.path = destDir
-
-    #     forget_git_log_view = self.screen.query_one(
-    #         Id.forget_tab.view_id("#", view=ViewName.git_log_view), GitLogView
-    #     )
-    #     forget_git_log_view.path = destDir
-
-    #     destroy_git_log_view = self.screen.query_one(
-    #         Id.destroy_tab.view_id("#", view=ViewName.git_log_view), GitLogView
-    #     )
-    #     destroy_git_log_view.path = destDir
 
     def update_config_tab_outputs(self, data: "SplashData") -> None:
         config_tab_switcher = self.screen.query_one(
