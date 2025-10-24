@@ -9,9 +9,11 @@ from textual.scrollbar import ScrollBar, ScrollBarRender
 from textual.theme import Theme
 
 from chezmoi_mousse import Chars
-from chezmoi_mousse.gui.main_screen import MainScreen
-from chezmoi_mousse.gui.pre_run_screens.install_help import InstallHelp
-from chezmoi_mousse.gui.pre_run_screens.splash import LoadingScreen, SplashData
+
+from .main_screen import MainScreen
+from .pre_run_screens.install_help import InstallHelp
+from .pre_run_screens.splash import LoadingScreen, SplashData
+from .shared.operate_screen import OperateInfo
 
 if TYPE_CHECKING:
     from chezmoi_mousse import PreRunData
@@ -82,6 +84,9 @@ class ChezmoiGUI(App[None]):
 
         self.chezmoi.managed_paths = return_data.managed_paths
         self.push_screen(MainScreen(splash_data=return_data))
+
+        OperateInfo.git_autocommit = return_data.parsed_config.git_autocommit
+        OperateInfo.git_autopush = return_data.parsed_config.git_autopush
 
 
 class CustomScrollBarRender(ScrollBarRender):
