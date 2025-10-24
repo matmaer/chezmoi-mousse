@@ -165,6 +165,78 @@ class LogUtils:
 
 
 @dataclass
+class CommandResults:
+    completed_process_data: CompletedProcess[str]
+    path_arg: Path | None
+
+    @property
+    def cmd_args(self) -> list[str]:
+        return self.completed_process_data.args
+
+    @property
+    def pretty_cmd(self) -> str:
+        return self._pretty_cmd_str(self.completed_process_data.args)
+
+    @property
+    def std_out(self) -> str:
+        stripped_output = self._strip_output(
+            self.completed_process_data.stdout
+        )
+        if (
+            stripped_output == ""
+            and "--dry-run" in self.completed_process_data.args
+        ):
+            return "No output on stdout, command was executed with --dry-run."
+        elif stripped_output == "":
+            return "No output on stdout."
+        else:
+            return stripped_output
+
+    @property
+    def std_err(self) -> str:
+        stripped_output = self._strip_output(
+            self.completed_process_data.stderr
+        )
+        if (
+            stripped_output == ""
+            and "--dry-run" in self.completed_process_data.args
+        ):
+            return "No output on stderr, command was executed with --dry-run."
+        elif stripped_output == "":
+            return "No output on stderr."
+        else:
+            return stripped_output
+
+    @property
+    def returncode(self) -> int:
+        return self.completed_process_data.returncode
+
+    def _strip_output(self, output: str):
+        # remove trailing and leading new lines but NOT leading whitespace
+        stripped = output.lstrip("\n").rstrip()
+        # remove intermediate empty lines
+        return "\n".join(
+            [line for line in stripped.splitlines() if line.strip() != ""]
+        )
+
+    def _pretty_cmd_str(self, command_args: list[str]) -> str:
+        filter_git_log_args = VerbArgs.git_log.value[3:]
+        return "chezmoi " + " ".join(
+            [
+                _
+                for _ in command_args[1:]
+                if _
+                not in GlobalCmd.default_args.value
+                + filter_git_log_args
+                + [
+                    VerbArgs.format_json.value,
+                    VerbArgs.path_style_absolute.value,
+                ]
+            ]
+        )
+
+
+@dataclass
 class ManagedPaths:
     managed_dirs_stdout: str = ""  # ReadCmd.managed_dirs
     managed_files_stdout: str = ""  # ReadCmd.managed_files
@@ -278,16 +350,17 @@ class Chezmoi:
     # Command execution and logging #
     #################################
 
-    def _log_in_app_and_output_log(self, result: CompletedProcess[str]):
-        result.stdout = LogUtils.strip_stdout(result.stdout)
+    def _log_in_app_and_output_log(self, result: CommandResults):
         if self.app_log is not None and self.output_log is not None:
-            self.app_log.completed_process(result)
-            self.output_log.completed_process(result)
+            self.app_log.log_cmd_results(result)
+            self.output_log.log_cmd_results(result)
 
-    def read(self, read_cmd: ReadCmd, path: Path | None = None) -> str:
+    def read(
+        self, read_cmd: ReadCmd, path_arg: Path | None = None
+    ) -> CommandResults:
         command: list[str] = read_cmd.value
-        if path is not None:
-            command: list[str] = command + [str(path)]
+        if path_arg is not None:
+            command: list[str] = command + [str(path_arg)]
         if read_cmd == ReadCmd.doctor:
             time_out = 3
         else:
@@ -299,47 +372,32 @@ class Chezmoi:
             text=True,
             timeout=time_out,
         )
-        self._log_in_app_and_output_log(result)
-        return LogUtils.strip_stdout(result.stdout)
+        command_results = CommandResults(
+            completed_process_data=result, path_arg=path_arg
+        )
+        self._log_in_app_and_output_log(command_results)
+        return command_results
 
     def perform(
-        self, change_sub_cmd: ChangeCmd, change_arg: str | None = None
-    ) -> CompletedProcess[str]:
+        self, change_sub_cmd: ChangeCmd, path_arg: Path | None = None
+    ) -> CommandResults:
         if self._changes_enabled is True:
             base_cmd: list[str] = GlobalCmd.live_run.value
         else:
             base_cmd: list[str] = GlobalCmd.dry_run.value
         command: list[str] = base_cmd + change_sub_cmd.value
 
-        if change_arg is not None:
-            command: list[str] = command + [change_arg]
+        if path_arg is not None:
+            command: list[str] = command + [str(path_arg)]
 
         result: CompletedProcess[str] = run(
             command, capture_output=True, shell=False, text=True, timeout=5
         )
-        result.stdout = LogUtils.strip_stdout(result.stdout)
-        result.stderr = LogUtils.strip_stdout(result.stderr)
-        self._log_in_app_and_output_log(result)
-        return result
-
-    def refresh_managed_paths_data(self):
-        # get data from chezmoi managed stdout
-        self.managed_paths.managed_dirs_stdout = self.read(
-            ReadCmd.managed_dirs
+        command_results = CommandResults(
+            completed_process_data=result, path_arg=path_arg
         )
-        self.managed_paths.managed_files_stdout = self.read(
-            ReadCmd.managed_files
-        )
-        # get data from chezmoi status stdout
-        self.managed_paths.status_dirs_stdout = self.read(ReadCmd.status_dirs)
-        self.managed_paths.status_files_stdout = self.read(
-            ReadCmd.status_files
-        )
-        self.managed_paths.status_paths_stdout = self.read(
-            ReadCmd.status_paths
-        )
-        # clear internal caches
-        self.managed_paths.clear_cache()
+        self._log_in_app_and_output_log(command_results)
+        return command_results
 
     @property
     def managed_dirs(self) -> list[Path]:

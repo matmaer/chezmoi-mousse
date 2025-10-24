@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 from chezmoi_mousse._chars import Chars
 from chezmoi_mousse._chezmoi import (
     ChangeCmd,
+    CommandResults,
     GlobalCmd,
     LogUtils,
     ManagedPaths,
@@ -32,9 +33,8 @@ from chezmoi_mousse._tcss_classes import Tcss
 
 if TYPE_CHECKING:
     from pathlib import Path
-    from subprocess import CompletedProcess
 
-    from chezmoi_mousse._chezmoi import Chezmoi
+    from chezmoi_mousse._chezmoi import Chezmoi, CommandResults
     from chezmoi_mousse.gui.chezmoi_gui import ChezmoiGUI
 
 
@@ -54,6 +54,7 @@ __all__ = [
     "CanvasIds",
     "ChangeCmd",
     "Chars",
+    "CommandResults",
     "GlobalCmd",
     "Id",
     "LogUtils",
@@ -99,8 +100,8 @@ class OperateLaunchData:
 @dataclass(slots=True)
 class OperateResultData:
     path: "Path"
+    command_results: "CommandResults | None" = None
     operation_executed: bool = False
-    completed_process_data: "CompletedProcess[str] | None" = None
 
 
 @dataclass(slots=True)
