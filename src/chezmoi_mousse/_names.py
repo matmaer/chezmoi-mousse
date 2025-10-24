@@ -32,7 +32,7 @@ class Canvas(StrEnum):
 class TreeName(StrEnum):
     add_tree = auto()
     expanded_tree = auto()
-    flat_tree = auto()
+    list_tree = auto()
     managed_tree = auto()
 
 
