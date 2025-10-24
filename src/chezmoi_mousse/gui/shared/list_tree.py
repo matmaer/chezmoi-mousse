@@ -10,24 +10,16 @@ from .tree_base import TreeBase
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds
 
-__all__ = ["FlatTree"]
+__all__ = ["ListTree"]
 
 
-class FlatTree(TreeBase, AppType):
+class ListTree(TreeBase, AppType):
 
     unchanged: reactive[bool] = reactive(False, init=False)
 
     def __init__(self, ids: "CanvasIds") -> None:
         self.ids = ids
         super().__init__(self.ids, tree_name=TreeName.flat_tree)
-
-    # def on_mount(self) -> None:
-    # assert self.destDir is not None
-    # self.root.data = NodeData(
-    #     path=self.destDir, is_leaf=False, found=True, status="F"
-    # )
-    # def populate_tree(self) -> None:
-    #     self.add_files_with_status()
 
     def add_files_with_status(self) -> None:
         self.clear()
