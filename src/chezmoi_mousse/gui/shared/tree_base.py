@@ -168,7 +168,7 @@ class TreeBase(Tree[NodeData], AppType):
 
         existing_leaves = self._get_existing_paths(tree_node, is_leaf=True)
 
-        if self.tree_name == TreeName.flat_tree:
+        if self.tree_name == TreeName.list_tree:
             status_files = self.app.chezmoi.all_status_files(
                 self.active_canvas
             )

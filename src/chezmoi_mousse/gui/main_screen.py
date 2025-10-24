@@ -175,7 +175,7 @@ class MainScreen(Screen[None], AppType):
             ExpandedTree,
         )
         apply_tab_flat_tree = self.screen.query_one(
-            Id.apply_tab.tree_id("#", tree=TreeName.flat_tree), ListTree
+            Id.apply_tab.tree_id("#", tree=TreeName.list_tree), ListTree
         )
         apply_tab_managed_tree.populate_tree()
         apply_tab_expanded_tree.populate_tree()
@@ -190,7 +190,7 @@ class MainScreen(Screen[None], AppType):
             ExpandedTree,
         )
         re_add_tab_flat_tree = self.screen.query_one(
-            Id.re_add_tab.tree_id("#", tree=TreeName.flat_tree), ListTree
+            Id.re_add_tab.tree_id("#", tree=TreeName.list_tree), ListTree
         )
         re_add_tab_managed_tree.populate_tree()
         re_add_tab_expanded_tree.populate_tree()
@@ -211,7 +211,7 @@ class MainScreen(Screen[None], AppType):
             ExpandedTree,
         )
         forget_tab_flat_tree = self.screen.query_one(
-            Id.forget_tab.tree_id("#", tree=TreeName.flat_tree), ListTree
+            Id.forget_tab.tree_id("#", tree=TreeName.list_tree), ListTree
         )
         forget_tab_managed_tree.populate_tree()
         forget_tab_expanded_tree.populate_tree()
@@ -227,7 +227,7 @@ class MainScreen(Screen[None], AppType):
             ExpandedTree,
         )
         destroy_tab_flat_tree = self.screen.query_one(
-            Id.destroy_tab.tree_id("#", tree=TreeName.flat_tree), ListTree
+            Id.destroy_tab.tree_id("#", tree=TreeName.list_tree), ListTree
         )
         destroy_tab_managed_tree.populate_tree()
         destroy_tab_expanded_tree.populate_tree()

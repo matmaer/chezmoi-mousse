@@ -19,7 +19,7 @@ class ListTree(TreeBase, AppType):
 
     def __init__(self, ids: "CanvasIds") -> None:
         self.ids = ids
-        super().__init__(self.ids, tree_name=TreeName.flat_tree)
+        super().__init__(self.ids, tree_name=TreeName.list_tree)
 
     def add_files_with_status(self) -> None:
         self.clear()
