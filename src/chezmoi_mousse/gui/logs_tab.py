@@ -28,9 +28,8 @@ class BorderTitle(StrEnum):
 
 class LogsTabSwitcher(ContentSwitcher, AppType):
 
-    def __init__(self, ids: "CanvasIds", dev_mode: bool):
+    def __init__(self, ids: "CanvasIds"):
         self.ids = ids
-        self.dev_mode = dev_mode
         super().__init__(
             id=self.ids.content_switcher_id(area=AreaName.top),
             initial=self.ids.view_id(view=ViewName.app_log_view),
@@ -41,7 +40,7 @@ class LogsTabSwitcher(ContentSwitcher, AppType):
         yield AppLog(ids=self.ids)
         yield OutputLog(ids=self.ids)
         yield GitLogView(ids=self.ids)
-        if self.dev_mode is True:
+        if self.app.dev_mode is True:
             yield DebugLog(ids=self.ids)
 
     def on_mount(self) -> None:
@@ -67,7 +66,7 @@ class LogsTab(TabsBase, AppType):
             yield TabBtnHorizontal(
                 ids=self.ids, buttons=tab_buttons, area=AreaName.top
             )
-            yield LogsTabSwitcher(ids=self.ids, dev_mode=self.app.dev_mode)
+            yield LogsTabSwitcher(ids=self.ids)
 
     @on(Button.Pressed, Tcss.tab_button.value)
     def switch_content(self, event: Button.Pressed) -> None:
