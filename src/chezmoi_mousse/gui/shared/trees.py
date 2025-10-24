@@ -3,16 +3,17 @@ from typing import TYPE_CHECKING
 from rich.text import Text
 from textual import on
 from textual.reactive import reactive
-from textual.widgets.tree import TreeNode
 
-from chezmoi_mousse import Canvas, NodeData, TreeName
+from chezmoi_mousse import Canvas, TreeName
 
 from .tree_base import TreeBase
 
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from chezmoi_mousse import CanvasIds
+    from textual.widgets.tree import TreeNode
+
+    from chezmoi_mousse import CanvasIds, NodeData
 
 __all__ = ["ExpandedTree", "ListTree", "ManagedTree"]
 
@@ -30,7 +31,7 @@ class ExpandedTree(TreeBase):
 
     @on(TreeBase.NodeExpanded)
     def add_node_children(
-        self, event: TreeBase.NodeExpanded[NodeData]
+        self, event: TreeBase.NodeExpanded["NodeData"]
     ) -> None:
         self.add_status_dirs_in(tree_node=event.node)
         self.add_status_files_in(tree_node=event.node)
@@ -38,7 +39,7 @@ class ExpandedTree(TreeBase):
             self.add_dirs_without_status_in(tree_node=event.node)
             self.add_files_without_status_in(tree_node=event.node)
 
-    def expand_all_nodes(self, node: TreeNode[NodeData]) -> None:
+    def expand_all_nodes(self, node: "TreeNode[NodeData]") -> None:
         # Recursively expand all directory nodes
         assert node.data is not None
         if node.data.is_leaf is False:
@@ -76,7 +77,7 @@ class ListTree(TreeBase):
                 active_canvas=Canvas.re_add
             )
         for file_path, status_code in status_files.items():
-            node_data: NodeData = self.create_node_data(
+            node_data: "NodeData" = self.create_node_data(
                 path=file_path, is_leaf=True, status_code=status_code
             )
             if (
@@ -97,7 +98,7 @@ class ListTree(TreeBase):
                 self.app.chezmoi.re_add_files_without_status
             )
         for file_path in self.files_without_status:
-            node_data: NodeData = self.create_node_data(
+            node_data: "NodeData" = self.create_node_data(
                 path=file_path, is_leaf=True, status_code="X"
             )
             if (
@@ -129,7 +130,7 @@ class ManagedTree(TreeBase):
 
     @on(TreeBase.NodeExpanded)
     def update_node_children(
-        self, event: TreeBase.NodeExpanded[NodeData]
+        self, event: TreeBase.NodeExpanded["NodeData"]
     ) -> None:
         self.add_status_dirs_in(tree_node=event.node)
         self.add_status_files_in(tree_node=event.node)
