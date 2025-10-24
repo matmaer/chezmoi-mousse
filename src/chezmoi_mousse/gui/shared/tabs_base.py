@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 from textual import on
 from textual.containers import Horizontal
 from textual.reactive import reactive
-from textual.widgets import Button, ContentSwitcher, Switch
+from textual.widgets import Button, Switch
 
 from chezmoi_mousse import AreaName, Switches, TabBtn, Tcss, TreeName, ViewName
 
@@ -15,6 +15,7 @@ from .git_log_view import GitLogView
 from .list_tree import ListTree
 from .managed_tree import ManagedTree
 from .operate_msg import CurrentOperatePathMsg, TreeNodeSelectedMsg
+from .switchers import TreeSwitcher, ViewSwitcher
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds
@@ -66,13 +67,14 @@ class TabsBase(Horizontal):
 
     @on(Button.Pressed, Tcss.tab_button.value)
     def handle_tab_button_pressed(self, event: Button.Pressed) -> None:
-        tree_switcher = self.query_one(self.tree_switcher_qid, ContentSwitcher)
-        view_switcher = self.query_one(self.view_switcher_qid, ContentSwitcher)
         if event.button.id in (
             self.contents_tab_btn,
             self.diff_tab_btn,
             self.git_log_tab_btn,
         ):
+            view_switcher = self.query_one(
+                self.view_switcher_qid, ViewSwitcher
+            )
             self._update_view_path()
             if event.button.id == self.contents_tab_btn:
                 view_switcher.current = self.ids.view_id(
@@ -88,6 +90,9 @@ class TabsBase(Horizontal):
                 )
         elif event.button.id in (self.tree_tab_btn, self.list_tab_btn):
             # toggle expand all switch enabled disabled state
+            tree_switcher = self.query_one(
+                self.tree_switcher_qid, TreeSwitcher
+            )
             expand_all_switch = self.query_one(
                 self.ids.switch_id("#", switch=Switches.expand_all.value),
                 Switch,
@@ -130,7 +135,7 @@ class TabsBase(Horizontal):
         ):
             self.expand_all_state = event.value
             tree_switcher = self.query_one(
-                self.tree_switcher_qid, ContentSwitcher
+                self.tree_switcher_qid, TreeSwitcher
             )
             if event.value is True:
                 tree_switcher.current = self.ids.tree_id(
