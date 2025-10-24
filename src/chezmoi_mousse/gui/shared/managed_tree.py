@@ -22,14 +22,8 @@ class ManagedTree(TreeBase):
         super().__init__(self.ids, tree_name=TreeName.managed_tree)
 
     def populate_tree(self) -> None:
-        # assert self.destDir is not None
-        # self.root.data = NodeData(
-        #     path=self.destDir, is_leaf=False, found=True, status="F"
-        # )
-
         self.add_status_dirs_in(tree_node=self.root)
         self.add_status_files_in(tree_node=self.root)
-        self.refresh()
 
     @on(TreeBase.NodeExpanded)
     def update_node_children(
