@@ -11,8 +11,8 @@ from chezmoi_mousse import AreaName, Switches, TabBtn, Tcss, TreeName, ViewName
 from .contents_view import ContentsView
 from .diff_view import DiffView
 from .expanded_tree import ExpandedTree
-from .flat_tree import FlatTree
 from .git_log_view import GitLogView
+from .list_tree import ListTree
 from .managed_tree import ManagedTree
 from .operate_msg import CurrentOperatePathMsg, TreeNodeSelectedMsg
 
@@ -29,21 +29,19 @@ class TabsBase(Horizontal):
 
     def __init__(self, *, ids: "CanvasIds") -> None:
         self.ids = ids
-        self.diff_tab_btn = ids.button_id(btn=TabBtn.diff)
         self.contents_tab_btn = ids.button_id(btn=TabBtn.contents)
-        self.git_log_tab_btn = ids.button_id(btn=TabBtn.git_log)
+        self.diff_tab_btn = ids.button_id(btn=TabBtn.diff)
         self.expand_all_state = False
-        self.view_switcher_qid = self.ids.content_switcher_id(
-            "#", area=AreaName.right
-        )
+        self.git_log_tab_btn = ids.button_id(btn=TabBtn.git_log)
+        self.list_tab_btn = ids.button_id(btn=TabBtn.list)
+        self.tree_tab_btn = ids.button_id(btn=TabBtn.tree)
         self.tree_switcher_qid = self.ids.content_switcher_id(
             "#", area=AreaName.left
         )
-        # self.current_path = self.destDir
+        self.view_switcher_qid = self.ids.content_switcher_id(
+            "#", area=AreaName.right
+        )
         super().__init__(id=self.ids.tab_container_id)
-
-    # def on_mount(self) -> None:
-    #     self.current_path = self.destDir
 
     def _update_view_path(self) -> None:
         contents_view = self.query_exactly_one(ContentsView)
@@ -68,49 +66,47 @@ class TabsBase(Horizontal):
 
     @on(Button.Pressed, Tcss.tab_button.value)
     def handle_tab_button_pressed(self, event: Button.Pressed) -> None:
-        # Switch content and update view path if needed.
-        # We only handle tab buttons shared between ApplyTab and ReAddTab here.
-        if event.button.id not in (
+        tree_switcher = self.query_one(self.tree_switcher_qid, ContentSwitcher)
+        view_switcher = self.query_one(self.view_switcher_qid, ContentSwitcher)
+        if event.button.id in (
             self.contents_tab_btn,
             self.diff_tab_btn,
             self.git_log_tab_btn,
         ):
-            return
-        self._update_view_path()
-        view_switcher = self.query_one(self.view_switcher_qid, ContentSwitcher)
-        if event.button.id == self.contents_tab_btn:
-            view_switcher.current = self.ids.view_id(
-                view=ViewName.contents_view
-            )
-        elif event.button.id == self.diff_tab_btn:
-            view_switcher.current = self.ids.view_id(view=ViewName.diff_view)
-        elif event.button.id == self.git_log_tab_btn:
-            view_switcher.current = self.ids.view_id(
-                view=ViewName.git_log_view
-            )
-
-        # toggle expand all switch enabled disabled state
-        expand_all_switch = self.query_one(
-            self.ids.switch_id("#", switch=Switches.expand_all.value), Switch
-        )
-        if event.button.id == self.ids.button_id(btn=TabBtn.tree):
-            expand_all_switch.disabled = False
-        elif event.button.id == self.ids.button_id(btn=TabBtn.list):
-            expand_all_switch.disabled = True
-
-        # switch tree content view
-        tree_switcher = self.query_one(self.tree_switcher_qid, ContentSwitcher)
-        if event.button.id == self.ids.button_id(btn=TabBtn.tree):
-            if self.expand_all_state is True:
-                tree_switcher.current = self.ids.tree_id(
-                    tree=TreeName.expanded_tree
+            self._update_view_path()
+            if event.button.id == self.contents_tab_btn:
+                view_switcher.current = self.ids.view_id(
+                    view=ViewName.contents_view
                 )
-            else:
-                tree_switcher.current = self.ids.tree_id(
-                    tree=TreeName.managed_tree
+            elif event.button.id == self.diff_tab_btn:
+                view_switcher.current = self.ids.view_id(
+                    view=ViewName.diff_view
                 )
-        elif event.button.id == self.ids.button_id(btn=TabBtn.list):
-            tree_switcher.current = self.ids.tree_id(tree=TreeName.flat_tree)
+            elif event.button.id == self.git_log_tab_btn:
+                view_switcher.current = self.ids.view_id(
+                    view=ViewName.git_log_view
+                )
+        elif event.button.id in (self.tree_tab_btn, self.list_tab_btn):
+            # toggle expand all switch enabled disabled state
+            expand_all_switch = self.query_one(
+                self.ids.switch_id("#", switch=Switches.expand_all.value),
+                Switch,
+            )
+            if event.button.id == self.tree_tab_btn:
+                if self.expand_all_state is True:
+                    tree_switcher.current = self.ids.tree_id(
+                        tree=TreeName.expanded_tree
+                    )
+                else:
+                    tree_switcher.current = self.ids.tree_id(
+                        tree=TreeName.managed_tree
+                    )
+                expand_all_switch.disabled = False
+            elif event.button.id == self.list_tab_btn:
+                expand_all_switch.disabled = True
+                tree_switcher.current = self.ids.tree_id(
+                    tree=TreeName.list_tree
+                )
 
     @on(Switch.Changed)
     def handle_tree_filter_switches(self, event: Switch.Changed) -> None:
@@ -119,11 +115,11 @@ class TabsBase(Horizontal):
             switch=Switches.unchanged.value
         ):
             tree_pairs: list[
-                tuple[TreeName, type[ExpandedTree | ManagedTree | FlatTree]]
+                tuple[TreeName, type[ExpandedTree | ManagedTree | ListTree]]
             ] = [
                 (TreeName.expanded_tree, ExpandedTree),
                 (TreeName.managed_tree, ManagedTree),
-                (TreeName.flat_tree, FlatTree),
+                (TreeName.list_tree, ListTree),
             ]
             for tree_str, tree_cls in tree_pairs:
                 self.query_one(
