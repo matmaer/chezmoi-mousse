@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
     from chezmoi_mousse import CanvasIds
 
-__all__ = ["ManagedTree"]
+__all__ = ["ExpandedTree", "ListTree", "ManagedTree"]
 
 
 class ExpandedTree(TreeBase):
