@@ -19,11 +19,13 @@ class Canvas(StrEnum):
     add = auto()
     apply = auto()
     config = auto()
+    destroy = auto()
+    forget = auto()
     help = auto()
     install_help = auto()
+    logs = auto()
     operate_launch = auto()
     operate_result = auto()
-    logs = auto()
     re_add = auto()
 
 
