@@ -230,6 +230,8 @@ class FilteredDirTree(DirectoryTree, AppType):
 
 class AddTab(TabsBase, AppType):
 
+    destdir: Path
+
     def __init__(self, ids: "CanvasIds") -> None:
         self.ids = ids
         super().__init__(ids=self.ids)
@@ -240,7 +242,7 @@ class AddTab(TabsBase, AppType):
             classes=Tcss.tab_left_vertical.name,
         ):
             yield FilteredDirTree(
-                Path.home(), id=self.ids.tree_id(tree=TreeName.add_tree)
+                self.destdir, id=self.ids.tree_id(tree=TreeName.add_tree)
             )
         with Vertical(id=self.ids.tab_vertical_id(area=AreaName.right)):
             yield ContentsView(ids=self.ids)

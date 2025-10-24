@@ -10,6 +10,7 @@ from textual.theme import Theme
 
 from chezmoi_mousse import Chars
 
+from .add_tab import AddTab
 from .main_screen import MainScreen
 from .pre_run_screens.install_help import InstallHelp
 from .pre_run_screens.splash import LoadingScreen, SplashData
@@ -90,6 +91,7 @@ class ChezmoiGUI(App[None]):
         self.chezmoi.managed_paths = return_data.managed_paths
 
         dest_dir = return_data.parsed_config.dest_dir
+        AddTab.destdir = dest_dir
         ContentsView.destDir = dest_dir
         GitLogView.destDir = dest_dir
         DiffView.destDir = dest_dir
