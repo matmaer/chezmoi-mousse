@@ -6,7 +6,7 @@ from rich.text import Text
 from textual.reactive import reactive
 from textual.widgets import DataTable
 
-from chezmoi_mousse import AppType, ReadCmd, Tcss, ViewName
+from chezmoi_mousse import AppType, Canvas, ReadCmd, Tcss, ViewName
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds, CommandResults
@@ -22,17 +22,32 @@ class GitLogView(DataTable[Text], AppType):
     def __init__(self, *, ids: "CanvasIds") -> None:
         self.ids = ids
         super().__init__(
-            id=self.ids.view_id(view=ViewName.git_log_view),
-            show_cursor=False,
-            classes=Tcss.border_title_top.name,
+            id=self.ids.view_id(view=ViewName.git_log_view), show_cursor=False
+        )
+        self.click_file_path = Text(
+            "Click a file path in the tree to see the contents.", style="dim"
         )
 
     def on_mount(self) -> None:
-        self.border_title = f" {self.destDir} "
-        git_log_result: "CommandResults" = self.app.chezmoi.read(
-            ReadCmd.git_log
-        )
-        self.populate_data_table(git_log_result.std_out)
+        if self.ids.canvas_name in (
+            Canvas.add.name,
+            Canvas.apply.name,
+            Canvas.destroy.name,
+            Canvas.forget.name,
+            Canvas.re_add.name,
+        ):
+            self.add_class(Tcss.border_title_top.name)
+            self.border_title = f" {self.destDir} "
+            self.add_columns(
+                Text('This is the destination directory "chezmoi destDir"')
+            )
+            self.add_row(self.click_file_path)
+            return
+        if self.ids.canvas_name == Canvas.logs.name:
+            git_log_result: "CommandResults" = self.app.chezmoi.read(
+                ReadCmd.git_log
+            )
+            self.populate_data_table(git_log_result.std_out)
 
     def _add_row_with_style(self, columns: list[str], style: str) -> None:
         row: Iterable[Text] = [

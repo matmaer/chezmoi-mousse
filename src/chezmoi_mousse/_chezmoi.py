@@ -48,7 +48,7 @@ class VerbArgs(Enum):
         "log",
         "--date-order",
         "--format=%ar by %cn;%s",
-        "--max-count=50",
+        "--max-count=100",
         "--no-color",
         "--no-decorate",
         "--no-expand-tabs",

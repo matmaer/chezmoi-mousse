@@ -21,8 +21,9 @@ __all__ = ["LogsTab"]
 
 class BorderTitle(StrEnum):
     app_log = " App Log "
-    output_log = " Commands StdOut "
     debug_log = " Debug Log "
+    git_log_global = " Global Git-Log "
+    output_log = " Commands StdOut "
 
 
 class LogsTabSwitcher(ContentSwitcher, AppType):
@@ -80,6 +81,7 @@ class LogsTab(TabsBase, AppType):
             switcher.current = self.ids.view_id(view=ViewName.output_log_view)
             switcher.border_title = BorderTitle.output_log
         elif event.button.id == self.ids.button_id(btn=TabBtn.git_log_global):
+            switcher.border_title = BorderTitle.git_log_global
             switcher.current = self.ids.view_id(view=ViewName.git_log_view)
         elif (
             self.app.dev_mode is True
