@@ -196,12 +196,6 @@ class MainScreen(Screen[None], AppType):
         re_add_tab_expanded_tree.populate_tree()
         re_add_tab_flat_tree.add_files_with_status()
 
-    # def update_add_dir_tree_destDir(self, destDir: Path) -> None:
-    #     dir_tree = self.screen.query_one(
-    #         Id.add_tab.tree_id("#", tree=TreeName.add_tree), FilteredDirTree
-    #     )
-    #     dir_tree.path = destDir
-
     def populate_forget_trees(self) -> None:
         forget_tab_managed_tree = self.screen.query_one(
             Id.forget_tab.tree_id("#", tree=TreeName.managed_tree), ManagedTree
