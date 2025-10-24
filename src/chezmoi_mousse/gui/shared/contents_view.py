@@ -9,7 +9,7 @@ from chezmoi_mousse import AppType, LogUtils, ReadCmd, Tcss, ViewName
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from chezmoi_mousse import AppType, CanvasIds
+    from chezmoi_mousse import AppType, CanvasIds, CommandResults
 
 __all__ = ["ContentsView"]
 
@@ -80,16 +80,18 @@ class ContentsView(RichLog, AppType):
                 pretty_cmd = LogUtils.pretty_cmd_str(
                     ReadCmd.cat.value + [str(self.path)]
                 )
-                cat_output = self.app.chezmoi.read(ReadCmd.cat, self.path)
+                cat_output: "CommandResults" = self.app.chezmoi.read(
+                    ReadCmd.cat, self.path
+                )
                 self.write(
                     f"File does not exist on disk, output from '{pretty_cmd}':\n"
                 )
-                if cat_output == "":
+                if cat_output.std_out == "":
                     self.write(
                         Text("File contains only whitespace", style="dim")
                     )
                 else:
-                    self.write(cat_output)
+                    self.write(cat_output.std_out)
                 return
 
         except IsADirectoryError:

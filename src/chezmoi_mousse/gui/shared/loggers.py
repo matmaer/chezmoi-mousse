@@ -1,7 +1,6 @@
 import os
 from datetime import datetime
 from enum import StrEnum
-from subprocess import CompletedProcess
 from typing import TYPE_CHECKING
 
 from rich.markup import escape
@@ -11,7 +10,7 @@ from textual.widgets import ContentSwitcher, RichLog
 from chezmoi_mousse import AppType, AreaName, Chars, LogUtils, Tcss, ViewName
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import CanvasIds
+    from chezmoi_mousse import CanvasIds, CommandResults
 
 __all__ = ["AppLog", "DebugLog", "OutputLog"]
 
@@ -78,18 +77,16 @@ class AppLog(CommandLogBase, AppType):
             f"{Chars.check_mark} success, output processed in UI"
         )
 
-    def completed_process(
-        self, completed_process: CompletedProcess[str]
-    ) -> None:
-        self._log_command(completed_process.args)
-        if completed_process.returncode == 0:
-            if completed_process.stdout == "":
+    def log_cmd_results(self, command_results: "CommandResults") -> None:
+        self._log_command(command_results.cmd_args)
+        if command_results.returncode == 0:
+            if command_results.std_out == "":
                 self.success(self.succes_no_output)
             else:
                 self.success(self.success_with_output)
         else:
             self.error(
-                f"{Chars.x_mark} Command failed with exit code {completed_process.returncode}, stderr logged to Output log"
+                f"{Chars.x_mark} Command failed with exit code {command_results.returncode}, stderr logged to Output log"
             )
 
 
@@ -107,11 +104,9 @@ class DebugLog(CommandLogBase, AppType):
             classes=Tcss.log_views.name,
         )
 
-    def completed_process(
-        self, completed_process: CompletedProcess[str]
-    ) -> None:
-        self._log_command(completed_process.args)
-        self.dimmed(f"{dir(completed_process)}")
+    def completed_process(self, command_results: "CommandResults") -> None:
+        self._log_command(command_results.cmd_args)
+        self.dimmed(f"{dir(command_results)}")
 
     def mro(self, mro: Mro) -> None:
         color = self.app.theme_variables["accent-darken-2"]
@@ -164,26 +159,17 @@ class OutputLog(CommandLogBase, AppType):
             [line for line in stripped.splitlines() if line.strip() != ""]
         )
 
-    def completed_process(
-        self, completed_process: CompletedProcess[str], trimmed: bool = True
-    ) -> None:
-        if trimmed:
-            completed_process.stdout = self._trim_stdout(
-                completed_process.stdout
-            )
-            completed_process.stderr = self._trim_stdout(
-                completed_process.stderr
-            )
-        self._log_command(completed_process.args)
-        if completed_process.returncode == 0:
+    def log_cmd_results(self, command_results: "CommandResults") -> None:
+        self._log_command(command_results.cmd_args)
+        if command_results.returncode == 0:
             self.success("success, stdout:")
-            if completed_process.stdout == "":
+            if command_results.std_out == "":
                 self.dimmed("No output on stdout")
             else:
-                self.dimmed(completed_process.stdout)
+                self.dimmed(command_results.std_out)
         else:
             self.error("failed, stderr:")
-            self.dimmed(f"{completed_process.stderr}")
+            self.dimmed(f"{command_results.std_err}")
 
 
 class BorderTitle(StrEnum):

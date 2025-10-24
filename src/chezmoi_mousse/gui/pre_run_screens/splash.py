@@ -2,6 +2,7 @@ import json
 from collections import deque
 from dataclasses import dataclass
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from rich.segment import Segment
 from rich.style import Style
@@ -17,6 +18,9 @@ from textual.widgets import RichLog, Static
 from textual.worker import WorkerState
 
 from chezmoi_mousse import AppType, LogUtils, ManagedPaths, ReadCmd, VerbArgs
+
+if TYPE_CHECKING:
+    from chezmoi_mousse import CommandResults
 
 __all__ = ["LoadingScreen", "ParsedConfig", "SplashData"]
 
@@ -146,18 +150,16 @@ class LoadingScreen(Screen[SplashData | None], AppType):
             splash_log.write(log_text)
             return
 
-        cmd_output = self.app.chezmoi.read(splash_cmd)
-        globals()[splash_cmd.name] = cmd_output
-        cmd_text = (
-            LogUtils.pretty_cmd_str(splash_cmd.value)
-            .replace(VerbArgs.include_dirs.value, "dirs")
-            .replace(VerbArgs.include_files.value, "files")
-        )
+        cmd_result: "CommandResults" = self.app.chezmoi.read(splash_cmd)
+        globals()[splash_cmd.name] = cmd_result.std_out
+        cmd_text = cmd_result.pretty_cmd.replace(
+            VerbArgs.include_dirs.value, "dirs"
+        ).replace(VerbArgs.include_files.value, "files")
         padding = LOG_PADDING_WIDTH - len(cmd_text)
         log_text = f"{cmd_text} {'.' * padding} {LOADED_SUFFIX}"
         splash_log.write(log_text)
         if splash_cmd.name == ReadCmd.dump_config.name:
-            parsed_config = json.loads(cmd_output)
+            parsed_config = json.loads(cmd_result.std_out)
             globals()["parsed_config"] = ParsedConfig(
                 dest_dir=Path(parsed_config["destDir"]),
                 git_autoadd=parsed_config["git"]["autoadd"],
