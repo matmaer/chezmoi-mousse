@@ -24,7 +24,8 @@ __all__ = ["TabsBase"]
 
 class TabsBase(Horizontal):
 
-    current_path: reactive[Path | None] = reactive(None, init=False)
+    destDir: "Path | None" = None
+    current_path: reactive[Path | None] = reactive(None)
 
     def __init__(self, *, ids: "CanvasIds") -> None:
         self.ids = ids
@@ -38,11 +39,13 @@ class TabsBase(Horizontal):
         self.tree_switcher_qid = self.ids.content_switcher_id(
             "#", area=AreaName.left
         )
+        # self.current_path = self.destDir
         super().__init__(id=self.ids.tab_container_id)
 
+    # def on_mount(self) -> None:
+    #     self.current_path = self.destDir
+
     def _update_view_path(self) -> None:
-        if self.current_path is None:
-            return
         contents_view = self.query_exactly_one(ContentsView)
         if contents_view.path != self.current_path:
             contents_view.path = self.current_path

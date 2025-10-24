@@ -13,7 +13,12 @@ from chezmoi_mousse import Chars
 from .main_screen import MainScreen
 from .pre_run_screens.install_help import InstallHelp
 from .pre_run_screens.splash import LoadingScreen, SplashData
+from .shared.contents_view import ContentsView
+from .shared.diff_view import DiffView
+from .shared.git_log_view import GitLogView
 from .shared.operate_screen import OperateInfo
+from .shared.tabs_base import TabsBase
+from .shared.tree_base import TreeBase
 
 if TYPE_CHECKING:
     from chezmoi_mousse import PreRunData
@@ -83,10 +88,19 @@ class ChezmoiGUI(App[None]):
         # initialized, like on a newly installed system or deployment.
 
         self.chezmoi.managed_paths = return_data.managed_paths
-        self.push_screen(MainScreen(splash_data=return_data))
+
+        dest_dir = return_data.parsed_config.dest_dir
+        ContentsView.destDir = dest_dir
+        GitLogView.destDir = dest_dir
+        DiffView.destDir = dest_dir
+        TabsBase.destDir = dest_dir
+        TreeBase.destDir = dest_dir
+        MainScreen.destDir = dest_dir
 
         OperateInfo.git_autocommit = return_data.parsed_config.git_autocommit
         OperateInfo.git_autopush = return_data.parsed_config.git_autopush
+
+        self.push_screen(MainScreen(splash_data=return_data))
 
 
 class CustomScrollBarRender(ScrollBarRender):

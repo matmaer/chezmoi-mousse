@@ -16,16 +16,19 @@ __all__ = ["GitLogView"]
 
 class GitLogView(DataTable[Text], AppType):
 
+    destDir: "Path | None" = None
     path: reactive[Path | None] = reactive(None, init=False)
 
     def __init__(self, *, ids: "CanvasIds") -> None:
         self.ids = ids
-        self.destDir: Path | None = None
         super().__init__(
             id=self.ids.view_id(view=ViewName.git_log_view),
             show_cursor=False,
             classes=Tcss.border_title_top.name,
         )
+
+    def on_mount(self) -> None:
+        self.border_title = f" {self.destDir} "
 
     def _add_row_with_style(self, columns: list[str], style: str) -> None:
         row: Iterable[Text] = [

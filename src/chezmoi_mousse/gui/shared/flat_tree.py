@@ -1,4 +1,3 @@
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from rich.text import Text
@@ -6,7 +5,7 @@ from textual.reactive import reactive
 
 from chezmoi_mousse import AppType, Canvas, NodeData, TreeName
 
-from ._tree_widget import TreeWidget
+from .tree_base import TreeBase
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds
@@ -14,16 +13,24 @@ if TYPE_CHECKING:
 __all__ = ["FlatTree"]
 
 
-class FlatTree(TreeWidget, AppType):
+class FlatTree(TreeBase, AppType):
 
-    destDir: reactive["Path | None"] = reactive(None, init=False)
     unchanged: reactive[bool] = reactive(False, init=False)
 
     def __init__(self, ids: "CanvasIds") -> None:
+        self.ids = ids
+        super().__init__(self.ids, tree_name=TreeName.flat_tree)
 
-        super().__init__(ids, tree_name=TreeName.flat_tree)
+    # def on_mount(self) -> None:
+    # assert self.destDir is not None
+    # self.root.data = NodeData(
+    #     path=self.destDir, is_leaf=False, found=True, status="F"
+    # )
+    # def populate_tree(self) -> None:
+    #     self.add_files_with_status()
 
     def add_files_with_status(self) -> None:
+        self.clear()
         if self.active_canvas == Canvas.apply:
             status_files = self.app.chezmoi.all_status_files(
                 active_canvas=Canvas.apply
@@ -43,14 +50,6 @@ class FlatTree(TreeWidget, AppType):
                 continue
             node_label: Text = self.style_label(node_data)
             self.root.add_leaf(label=node_label, data=node_data)
-
-    def watch_destDir(self) -> None:
-        if self.destDir is None:
-            return
-        self.root.data = NodeData(
-            path=self.destDir, is_leaf=False, found=True, status="F"
-        )
-        self.add_files_with_status()
 
     def watch_unchanged(self) -> None:
         if self.unchanged:

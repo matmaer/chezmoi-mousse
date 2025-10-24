@@ -1,4 +1,3 @@
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from textual import on
@@ -7,7 +6,7 @@ from textual.widgets.tree import TreeNode
 
 from chezmoi_mousse import NodeData, TreeName
 
-from ._tree_widget import TreeWidget
+from .tree_base import TreeBase
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds
@@ -15,26 +14,20 @@ if TYPE_CHECKING:
 __all__ = ["ExpandedTree"]
 
 
-class ExpandedTree(TreeWidget):
+class ExpandedTree(TreeBase):
 
-    destDir: reactive["Path | None"] = reactive(None, init=False)
     unchanged: reactive[bool] = reactive(False, init=False)
 
     def __init__(self, ids: "CanvasIds") -> None:
         self.ids = ids
         super().__init__(self.ids, tree_name=TreeName.expanded_tree)
 
-    def watch_destDir(self) -> None:
-        if self.destDir is None:
-            return
-        self.root.data = NodeData(
-            path=self.destDir, is_leaf=False, found=True, status="F"
-        )
+    def populate_tree(self) -> None:
         self.expand_all_nodes(self.root)
 
-    @on(TreeWidget.NodeExpanded)
+    @on(TreeBase.NodeExpanded)
     def add_node_children(
-        self, event: TreeWidget.NodeExpanded[NodeData]
+        self, event: TreeBase.NodeExpanded[NodeData]
     ) -> None:
         self.add_status_dirs_in(tree_node=event.node)
         self.add_status_files_in(tree_node=event.node)

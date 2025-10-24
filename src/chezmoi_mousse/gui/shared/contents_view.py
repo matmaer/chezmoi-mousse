@@ -16,11 +16,11 @@ __all__ = ["ContentsView"]
 
 class ContentsView(RichLog, AppType):
 
+    destDir: "Path | None" = None
     path: reactive["Path | None"] = reactive(None, init=False)
 
     def __init__(self, *, ids: "CanvasIds") -> None:
         self.ids = ids
-        self.destDir: "Path | None" = None
         super().__init__(
             id=self.ids.view_id(view=ViewName.contents_view),
             auto_scroll=False,
@@ -35,11 +35,10 @@ class ContentsView(RichLog, AppType):
     def on_mount(self) -> None:
         self.write('This is the destination directory "chezmoi destDir"')
         self.write(self.click_file_path)
+        self.border_title = f" {self.destDir} "
 
     def watch_path(self) -> None:
-        assert self.path is not None
-        self.border_title = f" {self.path} "
-        if self.path == self.destDir:
+        if self.path is None or self.path == self.destDir:
             return
         self.clear()
         truncated_message = ""
