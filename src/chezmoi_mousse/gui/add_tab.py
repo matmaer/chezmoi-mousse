@@ -31,78 +31,80 @@ if TYPE_CHECKING:
 __all__ = ["AddTab", "FilteredDirTree"]
 
 
+class UnwantedDirs(StrEnum):
+    bin = "bin"
+    CMakeFiles = "CMakeFiles"
+    Crash_Reports = "Crash Reports"
+    DerivedData = "DerivedData"
+    Desktop = "Desktop"
+    Documents = "Documents"
+    dot_build = ".build"
+    dot_bundle = ".bundle"
+    dot_dart_tool = ".dart_tool"
+    dot_DS_Store = ".DS_Store"
+    dot_env = ".env"
+    dot_git = ".git"
+    dot_ipynb_checkpoints = ".ipynb_checkpoints"
+    dot_mozilla = ".mozilla"
+    dot_mypy_cache = ".mypy_cache"
+    dot_parcel_cache = ".parcel_cache"
+    dot_pytest_cache = ".pytest_cache"
+    dot_ssh = ".ssh"
+    dot_Trash = ".Trash"
+    dot_venv = ".venv"
+    Downloads = "Downloads"
+    extensions = "extensions"
+    go_build = "go-build"
+    Music = "Music"
+    node_modules = "node_modules"
+    Pictures = "Pictures"
+    Public = "Public"
+    Recent = "Recent"
+    temp = "temp"
+    Temp = "Temp"
+    Templates = "Templates"
+    tmp = "tmp"
+    trash = "trash"
+    Trash = "Trash"
+    Videos = "Videos"
+
+
+class UnwantedFileExtensions(StrEnum):
+    AppImage = ".AppImage"
+    bak = ".bak"
+    bin = ".bin"
+    coverage = ".coverage"
+    doc = ".doc"
+    docx = ".docx"
+    egg_info = ".egg-info"
+    exe = ".exe"
+    gif = ".gif"
+    gz = ".gz"
+    img = ".img"
+    iso = ".iso"
+    jar = ".jar"
+    jpeg = ".jpeg"
+    jpg = ".jpg"
+    kdbx = ".kdbx"
+    lock = ".lock"
+    pdf = ".pdf"
+    pid = ".pid"
+    png = ".png"
+    ppt = ".ppt"
+    pptx = ".pptx"
+    rar = ".rar"
+    swp = ".swp"
+    tar = ".tar"
+    temp = ".temp"
+    tgz = ".tgz"
+    tmp = ".tmp"
+    seven_zip = ".7z"
+    xls = ".xls"
+    xlsx = ".xlsx"
+    zip = ".zip"
+
+
 class FilteredDirTree(DirectoryTree, AppType):
-
-    class UnwantedDirs(StrEnum):
-        bin = "bin"
-        CMakeFiles = "CMakeFiles"
-        Crash_Reports = "Crash Reports"
-        DerivedData = "DerivedData"
-        Desktop = "Desktop"
-        Documents = "Documents"
-        dot_build = ".build"
-        dot_bundle = ".bundle"
-        dot_dart_tool = ".dart_tool"
-        dot_DS_Store = ".DS_Store"
-        dot_env = ".env"
-        dot_git = ".git"
-        dot_ipynb_checkpoints = ".ipynb_checkpoints"
-        dot_mozilla = ".mozilla"
-        dot_mypy_cache = ".mypy_cache"
-        dot_parcel_cache = ".parcel_cache"
-        dot_pytest_cache = ".pytest_cache"
-        dot_ssh = ".ssh"
-        dot_Trash = ".Trash"
-        dot_venv = ".venv"
-        Downloads = "Downloads"
-        extensions = "extensions"
-        go_build = "go-build"
-        Music = "Music"
-        node_modules = "node_modules"
-        Pictures = "Pictures"
-        Public = "Public"
-        Recent = "Recent"
-        temp = "temp"
-        Temp = "Temp"
-        Templates = "Templates"
-        tmp = "tmp"
-        trash = "trash"
-        Trash = "Trash"
-        Videos = "Videos"
-
-    class UnwantedFileExtensions(StrEnum):
-        AppImage = ".AppImage"
-        bak = ".bak"
-        bin = ".bin"
-        coverage = ".coverage"
-        doc = ".doc"
-        docx = ".docx"
-        egg_info = ".egg-info"
-        exe = ".exe"
-        gif = ".gif"
-        gz = ".gz"
-        img = ".img"
-        iso = ".iso"
-        jar = ".jar"
-        jpeg = ".jpeg"
-        jpg = ".jpg"
-        kdbx = ".kdbx"
-        lock = ".lock"
-        pdf = ".pdf"
-        pid = ".pid"
-        png = ".png"
-        ppt = ".ppt"
-        pptx = ".pptx"
-        rar = ".rar"
-        swp = ".swp"
-        tar = ".tar"
-        temp = ".temp"
-        tgz = ".tgz"
-        tmp = ".tmp"
-        seven_zip = ".7z"
-        xls = ".xls"
-        xlsx = ".xlsx"
-        zip = ".zip"
 
     ICON_NODE_EXPANDED = Chars.down_triangle
     ICON_NODE = Chars.right_triangle
@@ -212,7 +214,7 @@ class FilteredDirTree(DirectoryTree, AppType):
 
     def _is_unwanted_dir(self, dir_path: Path) -> bool:
         try:
-            FilteredDirTree.UnwantedDirs(dir_path.name)
+            UnwantedDirs(dir_path.name)
             return True
         except ValueError:
             if "cache" in dir_path.name.lower():
@@ -222,7 +224,7 @@ class FilteredDirTree(DirectoryTree, AppType):
     def _is_unwanted_file(self, file_path: Path) -> bool:
         extension = file_path.suffix
         try:
-            FilteredDirTree.UnwantedFileExtensions(extension)
+            UnwantedFileExtensions(extension)
             return True
         except ValueError:
             if "cache" in file_path.name.lower():
@@ -230,7 +232,7 @@ class FilteredDirTree(DirectoryTree, AppType):
             return False
 
 
-class AddTab(TabsBase, AppType):
+class AddTab(TabsBase):
 
     destdir: Path
 
