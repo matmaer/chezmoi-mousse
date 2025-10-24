@@ -8,8 +8,8 @@ from chezmoi_mousse import AppType, AreaName, Tcss, TreeName, ViewName
 from .contents_view import ContentsView
 from .diff_view import DiffView
 from .expanded_tree import ExpandedTree
-from .flat_tree import FlatTree
 from .git_log_view import GitLogView
+from .list_tree import ListTree
 from .managed_tree import ManagedTree
 
 if TYPE_CHECKING:
@@ -30,7 +30,7 @@ class TreeSwitcher(ContentSwitcher, AppType):
 
     def compose(self) -> ComposeResult:
         yield ManagedTree(ids=self.ids)
-        yield FlatTree(ids=self.ids)
+        yield ListTree(ids=self.ids)
         yield ExpandedTree(ids=self.ids)
 
     def on_mount(self) -> None:
