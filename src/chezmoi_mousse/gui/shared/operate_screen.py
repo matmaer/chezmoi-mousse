@@ -49,7 +49,7 @@ class InfoStrings(StrEnum):
     # re_add_dir = "[$text-primary]Overwrite the source state with thecurrent local directory[/]"
 
 
-class OperateInfo(Static, AppType):
+class OperateInfo(Static):
 
     git_autocommit: bool | None = None
     git_autopush: bool | None = None
@@ -138,10 +138,10 @@ class OperateScreen(Screen[OperateResultData], AppType):
             OperateBtn.apply_file,
             OperateBtn.re_add_file,
         ):
-            diff_view = self.query_one(DiffView)
+            diff_view = self.query_exactly_one(DiffView)
             diff_view.path = self.launch_data.path
         elif self.launch_data.btn_enum_member == OperateBtn.add_file:
-            contents_view = self.query_one(ContentsView)
+            contents_view = self.query_exactly_one(ContentsView)
             contents_view.path = self.launch_data.path
 
     @on(Button.Pressed, Tcss.operate_button.value)
