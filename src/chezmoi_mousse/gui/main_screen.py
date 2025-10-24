@@ -48,7 +48,7 @@ from .shared.git_log_view import GitLogView
 from .shared.loggers import AppLog, DebugLog, OutputLog
 from .shared.managed_tree import ManagedTree
 from .shared.operate_msg import CurrentOperatePathMsg
-from .shared.operate_screen import OperateInfo, OperateScreen
+from .shared.operate_screen import OperateScreen
 
 if TYPE_CHECKING:
     from chezmoi_mousse import OperateResultData
@@ -162,152 +162,163 @@ class MainScreen(Screen[None], AppType):
 
     def handle_splash_data(self, data: "SplashData") -> None:
         self.update_apply_trees_destDir(data.parsed_config.dest_dir)
+        self.update_re_add_trees_destDir(data.parsed_config.dest_dir)
+        self.update_add_dir_tree_destDir(data.parsed_config.dest_dir)
+        self.update_diff_views_destDir(data.parsed_config.dest_dir)
+        self.update_git_log_views_destDir(data.parsed_config.dest_dir)
+        self.update_forget_trees_destDir(data.parsed_config.dest_dir)
+        self.update_destroy_trees_destDir(data.parsed_config.dest_dir)
+        self.update_contents_view_destDir(data.parsed_config.dest_dir)
+        self.update_config_tab_outputs(data)
 
-        apply_diff_view = self.screen.query_one(
-            Id.apply_tab.view_id("#", view=ViewName.diff_view), DiffView
+    def update_apply_trees_destDir(self, destDir: Path) -> None:
+        apply_tab_managed_tree = self.screen.query_one(
+            Id.apply_tab.tree_id("#", tree=TreeName.managed_tree), ManagedTree
         )
-        apply_diff_view.destDir = data.parsed_config.dest_dir
-        apply_diff_view.path = data.parsed_config.dest_dir
-
-        apply_contents_view = self.screen.query_one(
-            Id.apply_tab.view_id("#", view=ViewName.contents_view),
-            ContentsView,
+        apply_tab_expanded_tree = self.screen.query_one(
+            Id.apply_tab.tree_id("#", tree=TreeName.expanded_tree),
+            ExpandedTree,
         )
-        apply_contents_view.destDir = data.parsed_config.dest_dir
-        apply_contents_view.path = data.parsed_config.dest_dir
-
-        apply_git_log_view = self.screen.query_one(
-            Id.apply_tab.view_id("#", view=ViewName.git_log_view), GitLogView
+        apply_tab_flat_tree = self.screen.query_one(
+            Id.apply_tab.tree_id("#", tree=TreeName.flat_tree), FlatTree
         )
-        apply_git_log_view.destDir = data.parsed_config.dest_dir
-        apply_git_log_view.path = data.parsed_config.dest_dir
+        apply_tab_managed_tree.destDir = destDir
+        apply_tab_expanded_tree.destDir = destDir
+        apply_tab_flat_tree.destDir = destDir
 
-        # update other tabs ManagedTree destDir
+    def update_re_add_trees_destDir(self, destDir: Path) -> None:
         re_add_tab_managed_tree = self.screen.query_one(
             Id.re_add_tab.tree_id("#", tree=TreeName.managed_tree), ManagedTree
         )
-        re_add_tab_managed_tree.destDir = data.parsed_config.dest_dir
-
-        forget_tab_managed_tree = self.screen.query_one(
-            Id.forget_tab.tree_id("#", tree=TreeName.managed_tree), ManagedTree
-        )
-        forget_tab_managed_tree.destDir = data.parsed_config.dest_dir
-
-        destroy_tab_managed_tree = self.screen.query_one(
-            Id.destroy_tab.tree_id("#", tree=TreeName.managed_tree),
-            ManagedTree,
-        )
-        destroy_tab_managed_tree.destDir = data.parsed_config.dest_dir
-
-        # update other tabs ExpandedTree destDir
         re_add_tab_expanded_tree = self.screen.query_one(
             Id.re_add_tab.tree_id("#", tree=TreeName.expanded_tree),
             ExpandedTree,
         )
-        re_add_tab_expanded_tree.destDir = data.parsed_config.dest_dir
+        re_add_tab_flat_tree = self.screen.query_one(
+            Id.re_add_tab.tree_id("#", tree=TreeName.flat_tree), FlatTree
+        )
+        re_add_tab_managed_tree.destDir = destDir
+        re_add_tab_expanded_tree.destDir = destDir
+        re_add_tab_flat_tree.destDir = destDir
 
+    def update_add_dir_tree_destDir(self, destDir: Path) -> None:
+        dir_tree = self.screen.query_one(
+            Id.add_tab.tree_id("#", tree=TreeName.add_tree), FilteredDirTree
+        )
+        dir_tree.path = destDir
+
+    def update_forget_trees_destDir(self, destDir: Path) -> None:
+        forget_tab_managed_tree = self.screen.query_one(
+            Id.forget_tab.tree_id("#", tree=TreeName.managed_tree), ManagedTree
+        )
         forget_tab_expanded_tree = self.screen.query_one(
             Id.forget_tab.tree_id("#", tree=TreeName.expanded_tree),
             ExpandedTree,
         )
-        forget_tab_expanded_tree.destDir = data.parsed_config.dest_dir
+        forget_tab_flat_tree = self.screen.query_one(
+            Id.forget_tab.tree_id("#", tree=TreeName.flat_tree), FlatTree
+        )
+        forget_tab_managed_tree.destDir = destDir
+        forget_tab_expanded_tree.destDir = destDir
+        forget_tab_flat_tree.destDir = destDir
 
+    def update_destroy_trees_destDir(self, destDir: Path) -> None:
+        destroy_tab_managed_tree = self.screen.query_one(
+            Id.destroy_tab.tree_id("#", tree=TreeName.managed_tree),
+            ManagedTree,
+        )
         destroy_tab_expanded_tree = self.screen.query_one(
             Id.destroy_tab.tree_id("#", tree=TreeName.expanded_tree),
             ExpandedTree,
         )
-        destroy_tab_expanded_tree.destDir = data.parsed_config.dest_dir
-
-        # update other tabs FlatTree destDir
-        re_add_tab_flat_tree = self.screen.query_one(
-            Id.re_add_tab.tree_id("#", tree=TreeName.flat_tree), FlatTree
-        )
-        re_add_tab_flat_tree.destDir = data.parsed_config.dest_dir
-
-        forget_tab_flat_tree = self.screen.query_one(
-            Id.forget_tab.tree_id("#", tree=TreeName.flat_tree), FlatTree
-        )
-        forget_tab_flat_tree.destDir = data.parsed_config.dest_dir
-
         destroy_tab_flat_tree = self.screen.query_one(
             Id.destroy_tab.tree_id("#", tree=TreeName.flat_tree), FlatTree
         )
-        destroy_tab_flat_tree.destDir = data.parsed_config.dest_dir
+        destroy_tab_managed_tree.destDir = destDir
+        destroy_tab_expanded_tree.destDir = destDir
+        destroy_tab_flat_tree.destDir = destDir
 
-        # update other tabs DiffView destDir and path
+    def update_diff_views_destDir(self, destDir: Path) -> None:
+        apply_diff_view = self.screen.query_one(
+            Id.apply_tab.view_id("#", view=ViewName.diff_view), DiffView
+        )
         re_add_diff_view = self.screen.query_one(
             Id.re_add_tab.view_id("#", view=ViewName.diff_view), DiffView
         )
-        re_add_diff_view.destDir = data.parsed_config.dest_dir
-        re_add_diff_view.path = data.parsed_config.dest_dir
-
         forget_diff_view = self.screen.query_one(
             Id.forget_tab.view_id("#", view=ViewName.diff_view), DiffView
         )
-        forget_diff_view.destDir = data.parsed_config.dest_dir
-        forget_diff_view.path = data.parsed_config.dest_dir
-
         destroy_diff_view = self.screen.query_one(
             Id.destroy_tab.view_id("#", view=ViewName.diff_view), DiffView
         )
-        destroy_diff_view.destDir = data.parsed_config.dest_dir
-        destroy_diff_view.path = data.parsed_config.dest_dir
+        apply_diff_view.destDir = destDir
+        re_add_diff_view.destDir = destDir
+        forget_diff_view.destDir = destDir
+        destroy_diff_view.destDir = destDir
+
+    def update_contents_view_destDir(self, destDir: Path) -> None:
+        apply_contents_view = self.screen.query_one(
+            Id.apply_tab.view_id("#", view=ViewName.contents_view),
+            ContentsView,
+        )
+        apply_contents_view.destDir = destDir
+        apply_contents_view.path = destDir
 
         # update ContentsView destDir
         add_tab_contents_view = self.screen.query_one(
             Id.add_tab.view_id("#", view=ViewName.contents_view), ContentsView
         )
-        add_tab_contents_view.destDir = data.parsed_config.dest_dir
-        add_tab_contents_view.path = data.parsed_config.dest_dir
+        add_tab_contents_view.destDir = destDir
+        add_tab_contents_view.path = destDir
 
         re_add_contents_view = self.screen.query_one(
             Id.re_add_tab.view_id("#", view=ViewName.contents_view),
             ContentsView,
         )
-        re_add_contents_view.destDir = data.parsed_config.dest_dir
-        re_add_contents_view.path = data.parsed_config.dest_dir
+        re_add_contents_view.destDir = destDir
+        re_add_contents_view.path = destDir
 
         forget_contents_view = self.screen.query_one(
             Id.forget_tab.view_id("#", view=ViewName.contents_view),
             ContentsView,
         )
-        forget_contents_view.destDir = data.parsed_config.dest_dir
-        forget_contents_view.path = data.parsed_config.dest_dir
+        forget_contents_view.destDir = destDir
+        forget_contents_view.path = destDir
 
         destroy_contents_view = self.screen.query_one(
             Id.destroy_tab.view_id("#", view=ViewName.contents_view),
             ContentsView,
         )
-        destroy_contents_view.destDir = data.parsed_config.dest_dir
-        destroy_contents_view.path = data.parsed_config.dest_dir
+        destroy_contents_view.destDir = destDir
+        destroy_contents_view.path = destDir
 
-        # update GitLogView destDir and path
+    def update_git_log_views_destDir(self, destDir: Path) -> None:
+
+        apply_git_log_view = self.screen.query_one(
+            Id.apply_tab.view_id("#", view=ViewName.git_log_view), GitLogView
+        )
+        apply_git_log_view.destDir = destDir
+        apply_git_log_view.path = destDir
 
         re_add_git_log_view = self.screen.query_one(
             Id.re_add_tab.view_id("#", view=ViewName.git_log_view), GitLogView
         )
-        re_add_git_log_view.destDir = data.parsed_config.dest_dir
-        re_add_git_log_view.path = data.parsed_config.dest_dir
+        re_add_git_log_view.destDir = destDir
+        re_add_git_log_view.path = destDir
 
         forget_git_log_view = self.screen.query_one(
             Id.forget_tab.view_id("#", view=ViewName.git_log_view), GitLogView
         )
-        forget_git_log_view.destDir = data.parsed_config.dest_dir
-        forget_git_log_view.path = data.parsed_config.dest_dir
+        forget_git_log_view.destDir = destDir
+        forget_git_log_view.path = destDir
 
         destroy_git_log_view = self.screen.query_one(
             Id.destroy_tab.view_id("#", view=ViewName.git_log_view), GitLogView
         )
-        destroy_git_log_view.destDir = data.parsed_config.dest_dir
-        destroy_git_log_view.path = data.parsed_config.dest_dir
+        destroy_git_log_view.destDir = destDir
+        destroy_git_log_view.path = destDir
 
-        # update FilteredDirTree destDir
-        dir_tree = self.screen.query_one(
-            Id.add_tab.tree_id("#", tree=TreeName.add_tree), FilteredDirTree
-        )
-        dir_tree.path = data.parsed_config.dest_dir
-
-        # update ConfigTab outputs
+    def update_config_tab_outputs(self, data: "SplashData") -> None:
         config_tab_switcher = self.screen.query_one(
             Id.config_tab.content_switcher_id("#", area=AreaName.right),
             ContentSwitcher,
@@ -318,26 +329,6 @@ class MainScreen(Screen[None], AppType):
         setattr(
             config_tab_switcher, "template_data_stdout", data.template_data
         )
-
-        # update OperateInfo git settings
-        OperateInfo.git_autocommit = data.parsed_config.git_autocommit
-        OperateInfo.git_autopush = data.parsed_config.git_autopush
-
-    def update_apply_trees_destDir(self, destDir: Path) -> None:
-        apply_tab_managed_tree = self.screen.query_one(
-            Id.apply_tab.tree_id("#", tree=TreeName.managed_tree), ManagedTree
-        )
-        apply_tab_managed_tree.destDir = destDir
-        apply_tab_expanded_tree = self.screen.query_one(
-            Id.apply_tab.tree_id("#", tree=TreeName.expanded_tree),
-            ExpandedTree,
-        )
-        apply_tab_expanded_tree.destDir = destDir
-
-        apply_tab_flat_tree = self.screen.query_one(
-            Id.apply_tab.tree_id("#", tree=TreeName.flat_tree), FlatTree
-        )
-        apply_tab_flat_tree.destDir = destDir
 
     def on_tabbed_content_tab_activated(
         self, event: TabbedContent.TabActivated
