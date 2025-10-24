@@ -25,7 +25,6 @@ from chezmoi_mousse import (
     Id,
     OperateBtn,
     OperateLaunchData,
-    OperateResultData,
     PaneBtn,
     Tcss,
     TreeName,
@@ -50,6 +49,8 @@ from .shared.operate_msg import CurrentOperatePathMsg
 from .shared.operate_screen import OperateInfo, OperateScreen
 
 if TYPE_CHECKING:
+    from chezmoi_mousse import OperateResultData
+
     from .pre_run_screens.splash import SplashData
 
 __all__ = ["MainScreen"]
@@ -372,28 +373,43 @@ class MainScreen(Screen[None], AppType):
         if event.button.id is None or self.current_operate_path is None:
             self.notify("Select a file to operate on", severity="warning")
             return
-        operate_launch_data = OperateLaunchData(
+        launch_data = OperateLaunchData(
             btn_enum_member=OperateBtn(event.button.label),
             button_id=event.button.id,
             path=self.current_operate_path,
         )
         self.app.push_screen(
-            OperateScreen(operate_launch_data=operate_launch_data),
+            OperateScreen(launch_data=launch_data),
             callback=self._handle_operate_result,
         )
 
     def _handle_operate_result(
-        self, operate_result: OperateResultData | None
+        self, operate_result: "OperateResultData | None"
     ) -> None:
         if operate_result is None:
+            self.notify("No operation result returned.", severity="error")
             return
-        if not operate_result.operation_executed:
+        elif operate_result.operation_executed is False:
             self.notify(
                 "Operation cancelled, no changes were made.",
                 severity="information",
             )
             return
-        self.notify(f"Operate result: {operate_result}")
+        elif (
+            operate_result.command_results is not None
+            and operate_result.operation_executed is True
+        ):
+            if operate_result.command_results.returncode == 0:
+                self.notify(
+                    f"Operation completed successfully:\n{operate_result.command_results.pretty_cmd}"
+                )
+            else:
+                self.notify(
+                    f"Operation failed with return code {operate_result.command_results.returncode}:\n{operate_result.command_results.pretty_cmd}",
+                    severity="error",
+                )
+        else:
+            self.notify("Unknown operation result.", severity="error")
 
     @on(CurrentOperatePathMsg)
     def update_operate_path(self, message: CurrentOperatePathMsg) -> None:
