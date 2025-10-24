@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 from textual.app import ComposeResult
 from textual.widgets import ContentSwitcher
 
-from chezmoi_mousse import AppType, AreaName, Tcss, TreeName, ViewName
+from chezmoi_mousse import AreaName, Tcss, TreeName, ViewName
 
 from .contents_view import ContentsView
 from .diff_view import DiffView
@@ -11,12 +11,12 @@ from .git_log_view import GitLogView
 from .trees import ExpandedTree, ListTree, ManagedTree
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import AppType, CanvasIds
+    from chezmoi_mousse import CanvasIds
 
 __all__ = ["TreeSwitcher", "ViewSwitcher"]
 
 
-class TreeSwitcher(ContentSwitcher, AppType):
+class TreeSwitcher(ContentSwitcher):
 
     def __init__(self, ids: "CanvasIds"):
         self.ids = ids
@@ -36,7 +36,7 @@ class TreeSwitcher(ContentSwitcher, AppType):
         self.add_class(Tcss.border_title_top.name)
 
 
-class ViewSwitcher(ContentSwitcher, AppType):
+class ViewSwitcher(ContentSwitcher):
     def __init__(self, *, ids: "CanvasIds", diff_reverse: bool):
         self.ids = ids
         self.reverse = diff_reverse
