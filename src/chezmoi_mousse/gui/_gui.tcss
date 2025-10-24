@@ -86,6 +86,11 @@
   }
 }
 
+.operate_button_horizontal {
+  dock: bottom;
+}
+
+
 .screen_base {
   border-bottom: $primary;
   border-title-style: bold;
@@ -179,7 +184,7 @@ SwitchSlider {
   dock: bottom;
   layer: switches;
   /* make sure horizontal scrollbar and a line from the layer below is visible.*/
-  margin-bottom: 2;
+  margin-bottom: 3;
   offset-x: 0%;
   padding-right: 1;
   transition: offset 380ms;

@@ -3,9 +3,9 @@ from typing import TYPE_CHECKING
 from textual.app import ComposeResult
 from textual.containers import Vertical
 
-from chezmoi_mousse import AreaName, Switches, TabBtn, Tcss
+from chezmoi_mousse import AreaName, OperateBtn, Switches, TabBtn, Tcss
 
-from .shared.button_groups import TabBtnHorizontal
+from .shared.button_groups import OperateBtnHorizontal, TabBtnHorizontal
 from .shared.switch_slider import SwitchSlider
 from .shared.switchers import TreeSwitcher, ViewSwitcher
 from .shared.tabs_base import TabsBase
@@ -40,6 +40,10 @@ class ReAddTab(TabsBase):
                 area=AreaName.right,
             )
             yield ViewSwitcher(ids=self.ids, diff_reverse=True)
+        yield OperateBtnHorizontal(
+            ids=self.ids,
+            buttons=(OperateBtn.re_add_file, OperateBtn.re_add_dir),
+        )
         yield SwitchSlider(
             ids=self.ids, switches=(Switches.unchanged, Switches.expand_all)
         )

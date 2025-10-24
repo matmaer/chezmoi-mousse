@@ -39,7 +39,8 @@ class OperateBtnHorizontal(HorizontalGroup):
         self.ids = ids
         self.buttons = buttons
         super().__init__(
-            id=self.ids.buttons_horizontal_id(area=AreaName.bottom)
+            id=self.ids.buttons_horizontal_id(area=AreaName.bottom),
+            classes=Tcss.operate_button_horizontal.name,
         )
 
     def compose(self) -> ComposeResult:
@@ -50,6 +51,19 @@ class OperateBtnHorizontal(HorizontalGroup):
                     id=self.ids.button_id(btn=button_enum),
                     classes=Tcss.operate_button.name,
                 )
+
+    def on_mount(self) -> None:
+        buttons = self.query(Button)
+        for button in buttons:
+            if button.id in (
+                self.ids.button_id(btn=OperateBtn.add_dir),
+                self.ids.button_id(btn=OperateBtn.apply_dir),
+                self.ids.button_id(btn=OperateBtn.destroy_dir),
+                self.ids.button_id(btn=OperateBtn.forget_dir),
+                self.ids.button_id(btn=OperateBtn.re_add_dir),
+            ):
+                button.tooltip = "Not yet implemented."
+                button.disabled = True
 
 
 class TabBtnHorizontal(HorizontalGroup):

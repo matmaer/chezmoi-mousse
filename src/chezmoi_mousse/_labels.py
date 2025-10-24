@@ -25,11 +25,15 @@ class OperateBtn(StrEnum):
     add_dir = "Add Dir"
     add_file = "Add File"
     apply_file = "Apply File"
+    apply_dir = "Apply Dir"
     close_operate_results = "Close Operate Results"
     destroy_file = "Destroy File"
+    destroy_dir = "Destroy Dir"
     forget_file = "Forget File"
+    forget_dir = "Forget Dir"
     operate_dismiss = "Cancel"
     re_add_file = "Re-Add File"
+    re_add_dir = "Re-Add Dir"
 
 
 class PaneBtn(StrEnum):

@@ -13,12 +13,14 @@ from chezmoi_mousse import (
     AppType,
     AreaName,
     Chars,
+    OperateBtn,
     Switches,
     Tcss,
     TreeName,
     ViewName,
 )
 
+from .shared.button_groups import OperateBtnHorizontal
 from .shared.contents_view import ContentsView
 from .shared.switch_slider import SwitchSlider
 from .shared.tabs_base import TabsBase
@@ -246,7 +248,9 @@ class AddTab(TabsBase, AppType):
             )
         with Vertical(id=self.ids.tab_vertical_id(area=AreaName.right)):
             yield ContentsView(ids=self.ids)
-
+        yield OperateBtnHorizontal(
+            ids=self.ids, buttons=(OperateBtn.add_file, OperateBtn.add_dir)
+        )
         yield SwitchSlider(
             ids=self.ids, switches=(Switches.unmanaged_dirs, Switches.unwanted)
         )

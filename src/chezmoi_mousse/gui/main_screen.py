@@ -31,7 +31,7 @@ from chezmoi_mousse import (
     ViewName,
 )
 
-from .add_tab import AddTab  # , FilteredDirTree
+from .add_tab import AddTab
 from .apply_tab import ApplyTab
 from .config_tab import ConfigTab
 from .destroy_tab import DestroyTab
@@ -39,7 +39,6 @@ from .forget_tab import ForgetTab
 from .help_tab import HelpTab
 from .logs_tab import LogsTab
 from .re_add_tab import ReAddTab
-from .shared.button_groups import OperateBtnHorizontal
 from .shared.expanded_tree import ExpandedTree
 from .shared.list_tree import ListTree
 from .shared.loggers import AppLog, DebugLog, OutputLog
@@ -123,30 +122,10 @@ class MainScreen(Screen[None], AppType):
         with TabbedContent():
             with TabPane(PaneBtn.apply_tab.value, id=Canvas.apply.name):
                 yield ApplyTab(ids=Id.apply_tab)
-                yield OperateBtnHorizontal(
-                    ids=Id.apply_tab,
-                    buttons=(
-                        OperateBtn.apply_file,
-                        OperateBtn.forget_file,
-                        OperateBtn.destroy_file,
-                    ),
-                )
             with TabPane(PaneBtn.re_add_tab.value, id=Canvas.re_add.name):
                 yield ReAddTab(ids=Id.re_add_tab)
-                yield OperateBtnHorizontal(
-                    ids=Id.re_add_tab,
-                    buttons=(
-                        OperateBtn.re_add_file,
-                        OperateBtn.forget_file,
-                        OperateBtn.destroy_file,
-                    ),
-                )
             with TabPane(PaneBtn.add_tab.value, id=Canvas.add.name):
                 yield AddTab(ids=Id.add_tab)
-                yield OperateBtnHorizontal(
-                    ids=Id.add_tab,
-                    buttons=(OperateBtn.add_file, OperateBtn.add_dir),
-                )
             with TabPane(PaneBtn.forget_tab.value, id=Canvas.forget):
                 yield ForgetTab(ids=Id.forget_tab)
             with TabPane(PaneBtn.destroy_tab.value, id=Canvas.destroy):
