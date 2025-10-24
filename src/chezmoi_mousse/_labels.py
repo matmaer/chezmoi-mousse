@@ -66,7 +66,7 @@ class TabBtn(StrEnum):
     contents = "Contents"
     debug_log = "Debug"
     diff = "Diff"
-    git_log = "Git-Log"
+    git_log_path = "Git-Log"
     list = "List"
     output_log = "Output"
     tree = "Tree"

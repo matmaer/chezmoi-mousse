@@ -33,7 +33,7 @@ class TabsBase(Horizontal):
         self.contents_tab_btn = ids.button_id(btn=TabBtn.contents)
         self.diff_tab_btn = ids.button_id(btn=TabBtn.diff)
         self.expand_all_state = False
-        self.git_log_tab_btn = ids.button_id(btn=TabBtn.git_log)
+        self.git_log_tab_btn = ids.button_id(btn=TabBtn.git_log_path)
         self.list_tab_btn = ids.button_id(btn=TabBtn.list)
         self.tree_tab_btn = ids.button_id(btn=TabBtn.tree)
         self.tree_switcher_qid = self.ids.content_switcher_id(
