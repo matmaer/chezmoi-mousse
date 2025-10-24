@@ -25,6 +25,7 @@ class OperateBtn(StrEnum):
     add_dir = "Add Dir"
     add_file = "Add File"
     apply_file = "Apply File"
+    close_operate_results = "Close Operate Results"
     destroy_file = "Destroy File"
     forget_file = "Forget File"
     operate_dismiss = "Cancel"
