@@ -9,6 +9,7 @@ from textual.widgets import Button, ContentSwitcher
 from chezmoi_mousse import AppType, AreaName, TabBtn, Tcss, ViewName
 
 from .shared.button_groups import TabBtnHorizontal
+from .shared.git_log_view import GitLogView
 from .shared.loggers import AppLog, DebugLog, OutputLog
 from .shared.tabs_base import TabsBase
 
@@ -38,6 +39,7 @@ class LogsTabSwitcher(ContentSwitcher, AppType):
     def compose(self) -> ComposeResult:
         yield AppLog(ids=self.ids)
         yield OutputLog(ids=self.ids)
+        yield GitLogView(ids=self.ids)
         if self.dev_mode is True:
             yield DebugLog(ids=self.ids)
 
@@ -49,12 +51,15 @@ class LogsTab(TabsBase, AppType):
 
     def __init__(self, ids: "CanvasIds") -> None:
         self.ids = ids
-        self.tab_buttons = (TabBtn.app_log, TabBtn.output_log)
         super().__init__(ids=self.ids)
 
     def compose(self) -> ComposeResult:
         with Vertical():
-            tab_buttons = (TabBtn.app_log, TabBtn.output_log)
+            tab_buttons = (
+                TabBtn.app_log,
+                TabBtn.output_log,
+                TabBtn.git_log_global,
+            )
             if self.app.dev_mode is True:
                 tab_buttons += (TabBtn.debug_log,)
 
@@ -74,6 +79,8 @@ class LogsTab(TabsBase, AppType):
         elif event.button.id == self.ids.button_id(btn=TabBtn.output_log):
             switcher.current = self.ids.view_id(view=ViewName.output_log_view)
             switcher.border_title = BorderTitle.output_log
+        elif event.button.id == self.ids.button_id(btn=TabBtn.git_log_global):
+            switcher.current = self.ids.view_id(view=ViewName.git_log_view)
         elif (
             self.app.dev_mode is True
             and event.button.id == self.ids.button_id(btn=TabBtn.debug_log)
