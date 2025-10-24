@@ -170,7 +170,7 @@ class DoctorListView(ListView):
                     break
 
 
-class ConfigTabSwitcher(ContentSwitcher, AppType):
+class ConfigTabSwitcher(ContentSwitcher):
 
     doctor_stdout: reactive[str | None] = reactive(None)
     cat_config_stdout: reactive[str | None] = reactive(None)

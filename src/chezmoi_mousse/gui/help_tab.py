@@ -5,7 +5,7 @@ from textual.app import ComposeResult
 from textual.containers import Vertical
 from textual.widgets import Button, ContentSwitcher, Label, Static
 
-from chezmoi_mousse import AppType, AreaName, NavBtn, Tcss, ViewName
+from chezmoi_mousse import AreaName, NavBtn, Tcss, ViewName
 
 from .shared.button_groups import NavButtonsVertical
 from .shared.tabs_base import TabsBase
@@ -81,7 +81,7 @@ class HelpTabSwitcher(ContentSwitcher):
         )
 
 
-class HelpTab(TabsBase, AppType):
+class HelpTab(TabsBase):
 
     def __init__(self, ids: "CanvasIds") -> None:
         self.ids = ids
