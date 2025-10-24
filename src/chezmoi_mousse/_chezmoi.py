@@ -252,13 +252,16 @@ class ManagedPaths:
     _re_add_status_files: PathDict | None = None
     _re_add_status_paths: PathDict | None = None
     _status_paths_dict: PathDict | None = None
+    _apply_files_without_status: list[Path] | None = None
+    _re_add_files_without_status: list[Path] | None = None
 
     def clear_cache(self) -> None:
-        # called in the Chezmoi.refresh_managed_paths_data() method
+        self._apply_files_without_status = None
         self._apply_status_files = None
         self._apply_status_paths = None
         self._managed_dirs = None
         self._managed_files = None
+        self._re_add_files_without_status = None
         self._re_add_status_files = None
         self._re_add_status_paths = None
         self._status_paths_dict = None
@@ -322,6 +325,16 @@ class ManagedPaths:
         return self._apply_status_files
 
     @property
+    def apply_files_without_status(self) -> list[Path]:
+        if self._apply_files_without_status is None:
+            self._apply_files_without_status = [
+                path
+                for path in self.managed_files
+                if path not in self.apply_status_files
+            ]
+        return self._apply_files_without_status
+
+    @property
     def re_add_status_files(self) -> PathDict:
         # consider these files to always have status M
         # Existence for re-add operations will be checked later on.
@@ -332,6 +345,16 @@ class ManagedPaths:
                 if key in self.managed_files
             }
         return self._re_add_status_files
+
+    @property
+    def re_add_files_without_status(self) -> list[Path]:
+        if self._re_add_files_without_status is None:
+            self._re_add_files_without_status = [
+                path
+                for path in self.managed_files
+                if path not in self.re_add_status_files
+            ]
+        return self._re_add_files_without_status
 
 
 class Chezmoi:
@@ -406,6 +429,14 @@ class Chezmoi:
     @property
     def managed_files(self) -> list[Path]:
         return self.managed_paths.managed_files
+
+    @property
+    def apply_files_without_status(self) -> list[Path]:
+        return self.managed_paths.apply_files_without_status
+
+    @property
+    def re_add_files_without_status(self) -> list[Path]:
+        return self.managed_paths.re_add_files_without_status
 
     @property
     def _apply_status_paths(self) -> PathDict:
