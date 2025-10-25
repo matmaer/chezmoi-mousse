@@ -93,10 +93,6 @@ class ReadCmd(Enum):
         + VerbArgs.git_log.value
     )
     ignored = GlobalCmd.live_run.value + [ReadVerbs.ignored.value]
-    managed = GlobalCmd.live_run.value + [
-        ReadVerbs.managed.value,
-        VerbArgs.path_style_absolute.value,
-    ]
     managed_dirs = GlobalCmd.live_run.value + [
         ReadVerbs.managed.value,
         VerbArgs.path_style_absolute.value,
