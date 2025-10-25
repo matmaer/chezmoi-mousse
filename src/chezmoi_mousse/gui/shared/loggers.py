@@ -4,10 +4,9 @@ from enum import StrEnum
 from typing import TYPE_CHECKING
 
 from rich.markup import escape
-from textual.app import ComposeResult
-from textual.widgets import ContentSwitcher, RichLog
+from textual.widgets import RichLog
 
-from chezmoi_mousse import AppType, AreaName, Chars, LogUtils, Tcss, ViewName
+from chezmoi_mousse import AppType, Chars, LogUtils, Tcss, ViewName
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds, CommandResults
@@ -176,24 +175,3 @@ class BorderTitle(StrEnum):
     app_log = " App Log "
     output_log = " Commands StdOut "
     debug_log = " Debug Log "
-
-
-class LogsTabSwitcher(ContentSwitcher, AppType):
-
-    def __init__(self, ids: "CanvasIds", dev_mode: bool):
-        self.ids = ids
-        self.dev_mode = dev_mode
-        super().__init__(
-            id=self.ids.content_switcher_id(area=AreaName.top),
-            initial=self.ids.view_id(view=ViewName.app_log_view),
-            classes=Tcss.border_title_top.name,
-        )
-
-    def compose(self) -> ComposeResult:
-        yield AppLog(ids=self.ids)
-        yield OutputLog(ids=self.ids)
-        if self.dev_mode is True:
-            yield DebugLog(ids=self.ids)
-
-    def on_mount(self) -> None:
-        self.border_title = BorderTitle.app_log
