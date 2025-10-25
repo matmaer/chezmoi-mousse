@@ -258,7 +258,6 @@ class ManagedPaths:
     # other caches
     _cached_apply_status_paths: PathDict | None = None
     _cached_re_add_status_paths: PathDict | None = None
-    _cached_status_paths_dict: PathDict | None = None
 
     def clear_cache(self) -> None:
         # clear caches corresponding to the stdout fields
@@ -280,7 +279,6 @@ class ManagedPaths:
         # clear other caches
         self._cached_apply_status_paths = None
         self._cached_re_add_status_paths = None
-        self._cached_status_paths_dict = None
 
     # properties corresponding to the stdout fields
 
@@ -485,16 +483,14 @@ class Chezmoi:
         if active_canvas == Canvas.apply:
             return {
                 path: status
-                for path, status in self.managed_paths.apply_status_paths.items()
-                if path.parent == dir_path and path in self.managed_paths.files
+                for path, status in self.managed_paths.apply_status_files.items()
+                if path.parent == dir_path
             }
         else:
             return {
                 path: status
-                for path, status in self.managed_paths.re_add_status_paths.items()
-                if path.parent == dir_path
-                and path in self.managed_paths.files
-                and path.exists()
+                for path, status in self.managed_paths.re_add_status_files.items()
+                if path.parent == dir_path and path.exists()
             }
 
     def status_dirs_in(
@@ -503,8 +499,8 @@ class Chezmoi:
         if active_canvas == Canvas.apply:
             result = {
                 path: status
-                for path, status in self.managed_paths.apply_status_paths.items()
-                if path.parent == dir_path and path in self.managed_paths.dirs
+                for path, status in self.managed_paths.apply_status_dirs.items()
+                if path.parent == dir_path
             }
             # Add dirs that contain status files but don't have direct status
             for path in self.managed_paths.dirs:
@@ -518,10 +514,8 @@ class Chezmoi:
         else:
             result = {
                 path: status
-                for path, status in self.managed_paths.re_add_status_paths.items()
-                if path.parent == dir_path
-                and path in self.managed_paths.dirs
-                and path.exists()
+                for path, status in self.managed_paths.re_add_status_dirs.items()
+                if path.parent == dir_path and path.exists()
             }
             # Add dirs that contain status files but don't have direct status
             for path in self.managed_paths.dirs:
@@ -534,40 +528,21 @@ class Chezmoi:
                     result[path] = " "
             return dict(sorted(result.items()))
 
-    def files_without_status_in(
-        self, active_canvas: "ActiveCanvas", dir_path: Path
-    ) -> PathDict:
-        if active_canvas == Canvas.apply:
-            return {
-                path: "X"
-                for path in self.managed_paths.files
-                if path.parent == dir_path
-                and path not in self.managed_paths.apply_status_paths
-            }
-        else:
-            return {
-                path: "X"
-                for path in self.managed_paths.files
-                if path.parent == dir_path
-                and path not in self.managed_paths.re_add_status_paths
-                and path.exists()
-            }
-
     def dirs_without_status_in(
         self, active_canvas: "ActiveCanvas", dir_path: Path
     ) -> PathDict:
         if active_canvas == Canvas.apply:
-            status_paths = self.managed_paths.apply_status_paths
+            status_dirs = self.managed_paths.apply_status_dirs
             has_status_check = self._has_apply_status_files_in
         else:
-            status_paths = self.managed_paths.re_add_status_paths
+            status_dirs = self.managed_paths.re_add_status_dirs
             has_status_check = self._has_re_add_status_files_in
 
         result = {
             path: "X"
             for path in self.managed_paths.dirs
             if path.parent == dir_path
-            and path not in status_paths
+            and path not in status_dirs
             and not has_status_check(path)
         }
         # For re_add canvas, filter out non-existing directories
@@ -579,27 +554,18 @@ class Chezmoi:
             }
         return result
 
-    def has_status_paths_in(
-        self, active_canvas: "ActiveCanvas", dir_path: Path
-    ) -> bool:
-        if active_canvas == Canvas.apply:
-            return self._has_apply_status_files_in(dir_path)
-        else:
-            return self._has_re_add_status_files_in(dir_path)
-
     def _has_apply_status_files_in(self, dir_path: Path) -> bool:
         return any(
-            path.is_relative_to(dir_path) and path in self.managed_paths.files
-            for path in self.managed_paths.apply_status_paths.keys()
+            path.is_relative_to(dir_path)
+            for path in self.managed_paths.apply_status_files.keys()
         )
 
     def _has_re_add_status_files_in(self, dir_path: Path) -> bool:
         # Create this list without calling exists()
         potential_files = [
             path
-            for path in self.managed_paths.re_add_status_paths.keys()
+            for path in self.managed_paths.re_add_status_files.keys()
             if path.is_relative_to(dir_path)
-            and path in self.managed_paths.files
         ]
         # Check if any of the potential files exist
         return any(path.exists() for path in potential_files)

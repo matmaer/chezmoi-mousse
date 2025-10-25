@@ -192,11 +192,18 @@ class TreeBase(Tree[NodeData], AppType):
         if tree_node.data is None:
             return
 
-        existing_leaves = self._get_existing_paths(tree_node, is_leaf=True)
-        files_without_status = self.app.chezmoi.files_without_status_in(
-            self.active_canvas, tree_node.data.path
-        )
+        # Both paths cached in the Chezmoi instance, don't cache this here as
+        # we update the cache there after a WriteCmd.
+        if self.active_canvas == Canvas.apply:
+            paths = self.app.chezmoi.managed_paths.apply_files_without_status
+        else:
+            paths = self.app.chezmoi.managed_paths.re_add_files_without_status
 
+        files_without_status = {
+            path: "X" for path in paths if path.parent == tree_node.data.path
+        }
+
+        existing_leaves = self._get_existing_paths(tree_node, is_leaf=True)
         for file_path, status_code in files_without_status.items():
             if file_path in existing_leaves:
                 continue
