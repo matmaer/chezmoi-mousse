@@ -59,6 +59,8 @@ class OperateBtnHorizontal(HorizontalGroup):
                 self.ids.button_id(btn=OperateBtn.add_dir),
                 self.ids.button_id(btn=OperateBtn.apply_dir),
                 self.ids.button_id(btn=OperateBtn.destroy_dir),
+                self.ids.button_id(btn=OperateBtn.destroy_file),
+                self.ids.button_id(btn=OperateBtn.forget_file),
                 self.ids.button_id(btn=OperateBtn.forget_dir),
                 self.ids.button_id(btn=OperateBtn.re_add_dir),
             ):
