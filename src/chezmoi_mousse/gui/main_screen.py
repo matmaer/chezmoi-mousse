@@ -155,7 +155,7 @@ class MainScreen(Screen[None], AppType):
         )
         apply_tab_managed_tree.populate_tree()
         apply_tab_expanded_tree.populate_tree()
-        apply_tab_flat_tree.add_files_with_status()
+        apply_tab_flat_tree.populate_tree()
 
     def populate_re_add_trees(self) -> None:
         re_add_tab_managed_tree = self.screen.query_one(
@@ -170,7 +170,7 @@ class MainScreen(Screen[None], AppType):
         )
         re_add_tab_managed_tree.populate_tree()
         re_add_tab_expanded_tree.populate_tree()
-        re_add_tab_flat_tree.add_files_with_status()
+        re_add_tab_flat_tree.populate_tree()
 
     def populate_forget_trees(self) -> None:
         forget_tab_managed_tree = self.screen.query_one(
@@ -185,7 +185,7 @@ class MainScreen(Screen[None], AppType):
         )
         forget_tab_managed_tree.populate_tree()
         forget_tab_expanded_tree.populate_tree()
-        forget_tab_flat_tree.add_files_with_status()
+        forget_tab_flat_tree.populate_tree()
 
     def populate_destroy_trees(self) -> None:
         destroy_tab_managed_tree = self.screen.query_one(
@@ -201,7 +201,7 @@ class MainScreen(Screen[None], AppType):
         )
         destroy_tab_managed_tree.populate_tree()
         destroy_tab_expanded_tree.populate_tree()
-        destroy_tab_flat_tree.add_files_with_status()
+        destroy_tab_flat_tree.populate_tree()
 
     def update_config_tab_outputs(self, data: "SplashData") -> None:
         config_tab_switcher = self.screen.query_one(

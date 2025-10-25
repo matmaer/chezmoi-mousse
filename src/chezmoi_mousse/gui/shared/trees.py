@@ -1,6 +1,5 @@
 from typing import TYPE_CHECKING
 
-from rich.text import Text
 from textual import on
 from textual.reactive import reactive
 
@@ -9,7 +8,6 @@ from chezmoi_mousse import Canvas, TreeName
 from .tree_base import TreeBase
 
 if TYPE_CHECKING:
-    from pathlib import Path
 
     from textual.widgets.tree import TreeNode
 
@@ -67,47 +65,35 @@ class ListTree(TreeBase):
         self.ids = ids
         super().__init__(self.ids, tree_name=TreeName.list_tree)
 
-    def add_files_with_status(self) -> None:
+    def populate_tree(self) -> None:
         if self.active_canvas == Canvas.apply:
             status_files = self.app.chezmoi.managed_paths.apply_status_files
         else:
             status_files = self.app.chezmoi.managed_paths.re_add_status_files
         for file_path, status_code in status_files.items():
-            node_data: "NodeData" = self.create_node_data(
-                path=file_path, is_leaf=True, status_code=status_code
+            self.create_and_add_node(
+                tree_node=self.root,
+                path=file_path,
+                status_code=status_code,
+                is_leaf=True,
             )
-            if (
-                self.active_canvas == Canvas.re_add
-                and node_data.found is False
-            ):
-                continue
-            node_label: Text = self.style_label(node_data)
-            self.root.add_leaf(label=node_label, data=node_data)
 
-    def add_files_without_status(self) -> None:
+    def _add_files_without_status(self) -> None:
         if self.active_canvas == Canvas.apply:
-            files_without_status: list["Path"] = (
-                self.app.chezmoi.managed_paths.apply_files_without_status
-            )
+            files = self.app.chezmoi.managed_paths.apply_files_without_status
         else:
-            files_without_status: list["Path"] = (
-                self.app.chezmoi.managed_paths.re_add_files_without_status
+            files = self.app.chezmoi.managed_paths.re_add_files_without_status
+        for file_path in files:
+            self.create_and_add_node(
+                tree_node=self.root,
+                path=file_path,
+                status_code="X",
+                is_leaf=True,
             )
-        for file_path in files_without_status:
-            node_data: "NodeData" = self.create_node_data(
-                path=file_path, is_leaf=True, status_code="X"
-            )
-            if (
-                self.active_canvas == Canvas.re_add
-                and node_data.found is False
-            ):
-                continue
-            node_label: Text = self.style_label(node_data)
-            self.root.add_leaf(label=node_label, data=node_data)
 
     def watch_unchanged(self) -> None:
         if self.unchanged:
-            self.add_files_without_status()
+            self._add_files_without_status()
         else:
             self.remove_files_without_status_in(tree_node=self.root)
 

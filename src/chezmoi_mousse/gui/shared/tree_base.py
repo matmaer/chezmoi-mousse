@@ -9,15 +9,7 @@ from textual.widgets import Tree
 from textual.widgets._tree import TOGGLE_STYLE
 from textual.widgets.tree import TreeNode
 
-from chezmoi_mousse import (
-    AppType,
-    Canvas,
-    Chars,
-    NodeData,
-    PaneBtn,
-    Tcss,
-    TreeName,
-)
+from chezmoi_mousse import AppType, Canvas, Chars, NodeData, Tcss, TreeName
 from chezmoi_mousse._chezmoi import PathDict
 
 from .operate_msg import TreeNodeSelectedMsg
@@ -93,15 +85,6 @@ class TreeBase(Tree[NodeData], AppType):
 
         return Text(node_data.path.name, style=styled)
 
-    # create node data methods
-    def create_node_data(
-        self, *, path: "Path", is_leaf: bool, status_code: str
-    ) -> NodeData:
-        found: bool = path.exists()
-        return NodeData(
-            path=path, is_leaf=is_leaf, found=found, status=status_code
-        )
-
     # node add/remove methods
     def get_expanded_nodes(self) -> list[TreeNode[NodeData]]:
         # Recursively calling collect_nodes
@@ -120,26 +103,37 @@ class TreeBase(Tree[NodeData], AppType):
         nodes.extend(collect_nodes(self.root))
         return nodes
 
-    def _get_existing_paths(
-        self, tree_node: TreeNode[NodeData], is_leaf: bool
+    def _get_existing_leaves(
+        self, tree_node: TreeNode[NodeData]
     ) -> list["Path"]:
-        # get existing nodes (files or dirs based on is_leaf)
         return [
             child.data.path
             for child in tree_node.children
-            if child.data is not None and child.data.is_leaf is is_leaf
+            if child.data is not None and child.data.is_leaf
         ]
 
-    def _create_and_add_node(
+    def _get_existing_dir_nodes(
+        self, tree_node: TreeNode[NodeData]
+    ) -> list["Path"]:
+        return [
+            child.data.path
+            for child in tree_node.children
+            if child.data is not None and not child.data.is_leaf
+        ]
+
+    def create_and_add_node(
         self,
         tree_node: TreeNode[NodeData],
         path: "Path",
         status_code: str,
         is_leaf: bool,
     ) -> None:
-        node_data: NodeData = self.create_node_data(
-            path=path, is_leaf=is_leaf, status_code=status_code
+        found: bool = path.exists()
+        node_data = NodeData(
+            path=path, is_leaf=is_leaf, found=found, status=status_code
         )
+        if self.active_canvas == Canvas.re_add and node_data.found is False:
+            return
         node_label: Text = self.style_label(node_data)
         if is_leaf:
             tree_node.add_leaf(label=node_label, data=node_data)
@@ -163,7 +157,7 @@ class TreeBase(Tree[NodeData], AppType):
         if tree_node.data is None:
             return
 
-        existing_leaves = self._get_existing_paths(tree_node, is_leaf=True)
+        existing_leaves = self._get_existing_leaves(tree_node)
 
         if self.active_canvas == Canvas.apply:
             status_files = self.app.chezmoi.managed_paths.apply_status_files
@@ -175,13 +169,7 @@ class TreeBase(Tree[NodeData], AppType):
                 continue
             if file_path.parent != tree_node.data.path:
                 continue
-            # Only call exists() in re_add canvas
-            if (
-                self.active_canvas == PaneBtn.re_add_tab
-                and not file_path.exists()
-            ):
-                continue
-            self._create_and_add_node(
+            self.create_and_add_node(
                 tree_node, file_path, status_code, is_leaf=True
             )
 
@@ -202,54 +190,13 @@ class TreeBase(Tree[NodeData], AppType):
             path: "X" for path in paths if path.parent == tree_node.data.path
         }
 
-        existing_leaves = self._get_existing_paths(tree_node, is_leaf=True)
+        existing_leaves = self._get_existing_leaves(tree_node)
         for file_path, status_code in files_without_status.items():
             if file_path in existing_leaves:
                 continue
-            # Only call exists() in re_add canvas
-            if (
-                self.active_canvas == PaneBtn.re_add_tab
-                and not file_path.exists()
-            ):
-                continue
-            self._create_and_add_node(
+            self.create_and_add_node(
                 tree_node, file_path, status_code, is_leaf=True
             )
-
-    def status_dirs_in(
-        self, active_canvas: "ActiveCanvas", dir_path: Path
-    ) -> PathDict:
-        if active_canvas == Canvas.apply:
-            result = {
-                path: status
-                for path, status in self.app.chezmoi.managed_paths.apply_status_dirs.items()
-                if path.parent == dir_path
-            }
-            # Add dirs that contain status files but don't have direct status
-            for path in self.app.chezmoi.managed_paths.dirs:
-                if (
-                    path.parent == dir_path
-                    and path not in result
-                    and self._has_apply_status_files_in(path)
-                ):
-                    result[path] = " "
-            return dict(sorted(result.items()))
-        else:
-            result = {
-                path: status
-                for path, status in self.app.chezmoi.managed_paths.re_add_status_dirs.items()
-                if path.parent == dir_path and path.exists()
-            }
-            # Add dirs that contain status files but don't have direct status
-            for path in self.app.chezmoi.managed_paths.dirs:
-                if (
-                    path.parent == dir_path
-                    and path not in result
-                    and path.exists()
-                    and self._has_re_add_status_files_in(path)
-                ):
-                    result[path] = " "
-            return dict(sorted(result.items()))
 
     def dirs_without_status_in(
         self, active_canvas: "ActiveCanvas", dir_path: Path
@@ -268,13 +215,6 @@ class TreeBase(Tree[NodeData], AppType):
             and path not in status_dirs
             and not has_status_check(path)
         }
-        # For re_add canvas, filter out non-existing directories
-        if active_canvas == Canvas.re_add:
-            result = {
-                path: status
-                for path, status in result.items()
-                if path.exists()
-            }
         return result
 
     def _has_apply_status_files_in(self, dir_path: Path) -> bool:
@@ -284,28 +224,52 @@ class TreeBase(Tree[NodeData], AppType):
         )
 
     def _has_re_add_status_files_in(self, dir_path: Path) -> bool:
-        # Create this list without calling exists()
-        potential_files = [
-            path
+        return any(
+            path.is_relative_to(dir_path)
             for path in self.app.chezmoi.managed_paths.re_add_status_files.keys()
-            if path.is_relative_to(dir_path)
-        ]
-        # Check if any of the potential files exist
-        return any(path.exists() for path in potential_files)
+        )
 
     def add_status_dirs_in(self, *, tree_node: TreeNode[NodeData]) -> None:
         if tree_node.data is None:
             return
 
-        existing_dirs = self._get_existing_paths(tree_node, is_leaf=False)
-        dir_paths = self.status_dirs_in(
-            self.active_canvas, tree_node.data.path
-        )
+        existing_dirs = self._get_existing_dir_nodes(tree_node)
+
+        if self.active_canvas == Canvas.apply:
+            result = {
+                path: status
+                for path, status in self.app.chezmoi.managed_paths.apply_status_dirs.items()
+                if path.parent == tree_node.data.path
+            }
+            # Add dirs that contain status files but don't have direct status
+            for path in self.app.chezmoi.managed_paths.dirs:
+                if (
+                    path.parent == tree_node.data.path
+                    and path not in result
+                    and self._has_apply_status_files_in(path)
+                ):
+                    result[path] = " "
+            dir_paths = dict(sorted(result.items()))
+        else:
+            result = {
+                path: status
+                for path, status in self.app.chezmoi.managed_paths.re_add_status_dirs.items()
+                if path.parent == tree_node.data.path
+            }
+            # Add dirs that contain status files but don't have direct status
+            for path in self.app.chezmoi.managed_paths.dirs:
+                if (
+                    path.parent == tree_node.data.path
+                    and path not in result
+                    and self._has_re_add_status_files_in(path)
+                ):
+                    result[path] = " "
+            dir_paths = dict(sorted(result.items()))
 
         for dir_path, status_code in dir_paths.items():
             if dir_path in existing_dirs:
                 continue
-            self._create_and_add_node(
+            self.create_and_add_node(
                 tree_node, dir_path, status_code, is_leaf=False
             )
 
@@ -315,7 +279,7 @@ class TreeBase(Tree[NodeData], AppType):
         if tree_node.data is None:
             return
 
-        existing_dirs = self._get_existing_paths(tree_node, is_leaf=False)
+        existing_dirs = self._get_existing_dir_nodes(tree_node)
         dir_paths = self.dirs_without_status_in(
             self.active_canvas, tree_node.data.path
         )
@@ -323,7 +287,7 @@ class TreeBase(Tree[NodeData], AppType):
         for dir_path, status_code in dir_paths.items():
             if dir_path in existing_dirs:
                 continue
-            self._create_and_add_node(
+            self.create_and_add_node(
                 tree_node, dir_path, status_code, is_leaf=False
             )
 
