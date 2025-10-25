@@ -71,11 +71,11 @@ class ContentsView(RichLog, AppType):
         except FileNotFoundError:
             # FileNotFoundError is raised both when a file or a directory
             # does not exist
-            if self.path in self.app.chezmoi.managed_dirs:
+            if self.path in self.app.chezmoi.managed_paths.dirs:
                 self.write(f"Managed directory: {self.path}")
                 self.write(self.click_file_path)
                 return
-            elif self.path in self.app.chezmoi.managed_files:
+            elif self.path in self.app.chezmoi.managed_paths.files:
                 pretty_cmd = LogUtils.pretty_cmd_str(
                     ReadCmd.cat.value + [str(self.path)]
                 )
@@ -94,7 +94,7 @@ class ContentsView(RichLog, AppType):
                 return
 
         except IsADirectoryError:
-            if self.path in self.app.chezmoi.managed_dirs:
+            if self.path in self.app.chezmoi.managed_paths.dirs:
                 self.write(f"Managed directory: {self.path}")
                 self.write(self.click_file_path)
             else:

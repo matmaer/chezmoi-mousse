@@ -73,7 +73,7 @@ class DiffView(RichLog, AppType):
         # either the ApplyTab or ReAddTab
         if (
             self.active_canvas is not None
-            and self.path in self.app.chezmoi.managed_dirs
+            and self.path in self.app.chezmoi.managed_paths.dirs
         ):
             self._write_dir_info()
             return

@@ -91,11 +91,11 @@ class ListTree(TreeBase):
     def add_files_without_status(self) -> None:
         if self.active_canvas == Canvas.apply:
             self.files_without_status: list["Path"] = (
-                self.app.chezmoi.apply_files_without_status
+                self.app.chezmoi.managed_paths.apply_files_without_status
             )
         else:
             self.files_without_status: list["Path"] = (
-                self.app.chezmoi.re_add_files_without_status
+                self.app.chezmoi.managed_paths.re_add_files_without_status
             )
         for file_path in self.files_without_status:
             node_data: "NodeData" = self.create_node_data(
