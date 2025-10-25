@@ -128,7 +128,6 @@ class ChangeCmd(Enum):
     destroy = ["destroy"]
     forget = ["forget"]
     init = ["init"]
-    # purge = ["purge"]
     re_add = ["re-add"]
 
 
@@ -152,8 +151,8 @@ class LogUtils:
         )
 
     @staticmethod
-    def strip_stdout(stdout: str):
-        # remove trailing and leading new lines but NOT leading whitespace
+    def strip_output(stdout: str):
+        # remove trailing space and new lines but NOT leading whitespace
         stripped = stdout.lstrip("\n").rstrip()
         # remove intermediate empty lines
         return "\n".join(
@@ -176,33 +175,33 @@ class CommandResults:
 
     @property
     def std_out(self) -> str:
-        stripped_output = self._strip_output(
+        stripped_stdout = LogUtils.strip_output(
             self.completed_process_data.stdout
         )
         if (
-            stripped_output == ""
+            stripped_stdout == ""
             and "--dry-run" in self.completed_process_data.args
         ):
             return "No output on stdout, command was executed with --dry-run."
-        elif stripped_output == "":
+        elif stripped_stdout == "":
             return "No output on stdout."
         else:
-            return stripped_output
+            return stripped_stdout
 
     @property
     def std_err(self) -> str:
-        stripped_output = self._strip_output(
+        stripped_stderr = self._strip_output(
             self.completed_process_data.stderr
         )
         if (
-            stripped_output == ""
+            stripped_stderr == ""
             and "--dry-run" in self.completed_process_data.args
         ):
             return "No output on stderr, command was executed with --dry-run."
-        elif stripped_output == "":
+        elif stripped_stderr == "":
             return "No output on stderr."
         else:
-            return stripped_output
+            return stripped_stderr
 
     @property
     def returncode(self) -> int:
@@ -399,7 +398,11 @@ class Chezmoi:
         return command_results
 
     def perform(
-        self, change_sub_cmd: ChangeCmd, path_arg: Path | None = None
+        self,
+        change_sub_cmd: ChangeCmd,
+        *,
+        path_arg: Path | None = None,
+        repo_url: str | None = None,
     ) -> CommandResults:
         if self._changes_enabled is True:
             base_cmd: list[str] = GlobalCmd.live_run.value
@@ -407,8 +410,10 @@ class Chezmoi:
             base_cmd: list[str] = GlobalCmd.dry_run.value
         command: list[str] = base_cmd + change_sub_cmd.value
 
-        if path_arg is not None:
+        if change_sub_cmd != ChangeCmd.init and path_arg is not None:
             command: list[str] = command + [str(path_arg)]
+        elif change_sub_cmd == ChangeCmd.init and repo_url is not None:
+            command: list[str] = command + [repo_url]
 
         result: CompletedProcess[str] = run(
             command, capture_output=True, shell=False, text=True, timeout=5
