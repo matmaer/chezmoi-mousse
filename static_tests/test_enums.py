@@ -4,10 +4,12 @@ import pytest
 from _test_utils import get_module_paths
 
 MODULE_PATHS = get_module_paths()
+# Exclude these enums as they are used in dynamically by FilteredDirTree
+EXCLUDE_ENUMS = ["UnwantedDirs", "UnwantedFileExtensions"]
 
 
 def _get_module_for_enum_class(enum_class_def: ast.ClassDef) -> str:
-    """Find which module file contains the given enum class definition."""
+    # Find which module file contains the given enum class definition.
     for file_path in MODULE_PATHS:
         tree = ast.parse(file_path.read_text())
         for node in tree.body:
@@ -15,13 +17,7 @@ def _get_module_for_enum_class(enum_class_def: ast.ClassDef) -> str:
                 isinstance(node, ast.ClassDef)
                 and node.name == enum_class_def.name
             ):
-                # Check if this is the same enum class (same name and inheritance)
-                for base in node.bases:
-                    if isinstance(base, ast.Name) and base.id in (
-                        "Enum",
-                        "StrEnum",
-                    ):
-                        return str(file_path)
+                return str(file_path)
     return "unknown"
 
 
@@ -35,9 +31,10 @@ def _enum_ast_class_defs() -> list[ast.ClassDef]:
             # Check if this is a class that inherits from Enum or StrEnum
             if isinstance(node, ast.ClassDef):
                 for base in node.bases:
-                    if isinstance(base, ast.Name) and base.id in (
-                        "Enum",
-                        "StrEnum",
+                    if (
+                        isinstance(base, ast.Name)
+                        and base.id in ("Enum", "StrEnum")
+                        and node.name not in EXCLUDE_ENUMS
                     ):
                         enum_class_defs.append(node)
     return enum_class_defs
