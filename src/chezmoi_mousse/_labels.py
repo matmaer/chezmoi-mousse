@@ -7,10 +7,12 @@ class NavBtn(StrEnum):
     add_help = "Add Help"
     apply_help = "Apply Help"
     cat_config = "Cat Config"
+    clone_existing_repo = "Clone Existing Repo"
     diagram = "Diagram"
     doctor = "Doctor"
     exit_app = "Exit App"
     ignored = "Ignored"
+    init_new_repo = "Initialize New Repo"
     re_add_help = "Re-Add Help"
     template_data = "Template Data"
 
@@ -18,16 +20,18 @@ class NavBtn(StrEnum):
 class OperateBtn(StrEnum):
     add_dir = "Add Dir"
     add_file = "Add File"
-    apply_file = "Apply File"
     apply_dir = "Apply Dir"
+    apply_file = "Apply File"
+    clone_chezmoi_repo = "Clone Repo"
     close_operate_results = "Close Operate Results"
-    destroy_file = "Destroy File"
     destroy_dir = "Destroy Dir"
-    forget_file = "Forget File"
+    destroy_file = "Destroy File"
     forget_dir = "Forget Dir"
+    forget_file = "Forget File"
+    init_new_repo = "Initialize"
     operate_dismiss = "Cancel"
-    re_add_file = "Re-Add File"
     re_add_dir = "Re-Add Dir"
+    re_add_file = "Re-Add File"
 
 
 class PaneBtn(StrEnum):
