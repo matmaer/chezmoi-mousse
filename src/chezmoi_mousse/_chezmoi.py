@@ -477,22 +477,6 @@ class Chezmoi:
         else:
             return self.managed_paths.re_add_status_files
 
-    def status_files_in(
-        self, active_canvas: "ActiveCanvas", dir_path: Path
-    ) -> PathDict:
-        if active_canvas == Canvas.apply:
-            return {
-                path: status
-                for path, status in self.managed_paths.apply_status_files.items()
-                if path.parent == dir_path
-            }
-        else:
-            return {
-                path: status
-                for path, status in self.managed_paths.re_add_status_files.items()
-                if path.parent == dir_path and path.exists()
-            }
-
     def status_dirs_in(
         self, active_canvas: "ActiveCanvas", dir_path: Path
     ) -> PathDict:

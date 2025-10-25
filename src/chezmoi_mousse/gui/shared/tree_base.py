@@ -164,17 +164,15 @@ class TreeBase(Tree[NodeData], AppType):
 
         existing_leaves = self._get_existing_paths(tree_node, is_leaf=True)
 
-        if self.tree_name == TreeName.list_tree:
-            status_files = self.app.chezmoi.all_status_files(
-                self.active_canvas
-            )
+        if self.active_canvas == Canvas.apply:
+            status_files = self.app.chezmoi.managed_paths.apply_status_files
         else:
-            status_files = self.app.chezmoi.status_files_in(
-                self.active_canvas, tree_node.data.path
-            )
+            status_files = self.app.chezmoi.managed_paths.re_add_status_files
 
         for file_path, status_code in status_files.items():
             if file_path in existing_leaves:
+                continue
+            if file_path.parent != tree_node.data.path:
                 continue
             # Only call exists() in re_add canvas
             if (
