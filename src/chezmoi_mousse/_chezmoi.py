@@ -392,24 +392,6 @@ class ManagedPaths:
             ]
         return self._cached_re_add_files_without_status
 
-    # other properties
-
-    @property
-    def all_status_paths(self) -> PathDict:
-        if self._cached_status_paths_dict is None:
-            combined_lines: list[str] = []
-            for line in self.status_files_stdout.splitlines():
-                if line.strip() != "":
-                    combined_lines.append(line)
-            for line in self.status_dirs_stdout.splitlines():
-                if line.strip() != "":
-                    combined_lines.append(line)
-
-            self._status_paths_dict = {
-                Path(line[3:]): line[:2] for line in combined_lines
-            }
-        return self._status_paths_dict
-
     # concat dicts, files override dirs on key collisions, should never happen
     @property
     def apply_status_paths(self) -> PathDict:
