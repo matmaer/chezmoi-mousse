@@ -241,11 +241,6 @@ class OperateResultScreen(Screen[OperateResultData], AppType):
         )
         app_log.log_cmd_results(managed_files)
 
-        status_paths: "CommandResults" = self.app.chezmoi.read(
-            ReadCmd.status_paths
-        )
-        app_log.log_cmd_results(status_paths)
-
         status_files: "CommandResults" = self.app.chezmoi.read(
             ReadCmd.status_files
         )

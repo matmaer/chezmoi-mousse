@@ -238,7 +238,6 @@ class ManagedPaths:
     managed_files_stdout: str = ""  # ReadCmd.managed_files
     status_dirs_stdout: str = ""  # ReadCmd.status_dirs
     status_files_stdout: str = ""  # ReadCmd.status_files
-    status_paths_stdout: str = ""  # ReadCmd.status_paths
 
     # internal caches (populated lazily)
     _apply_status_files: PathDict | None = None
@@ -281,9 +280,16 @@ class ManagedPaths:
     @property
     def all_status_paths(self) -> PathDict:
         if self._status_paths_dict is None:
+            combined_lines: list[str] = []
+            for line in self.status_files_stdout.splitlines():
+                if line.strip() != "":
+                    combined_lines.append(line)
+            for line in self.status_dirs_stdout.splitlines():
+                if line.strip() != "":
+                    combined_lines.append(line)
+
             self._status_paths_dict = {
-                Path(line[3:]): line[:2]
-                for line in self.status_paths_stdout.splitlines()
+                Path(line[3:]): line[:2] for line in combined_lines
             }
         return self._status_paths_dict
 
@@ -299,8 +305,6 @@ class ManagedPaths:
 
     @property
     def re_add_status_paths(self) -> PathDict:
-        # Consider paths with a status for apply operations but no status
-        # for re-add operations to have a status if they exist, handled later.
         if self._re_add_status_paths is None:
             self._re_add_status_paths = {
                 path: status_pair[0]

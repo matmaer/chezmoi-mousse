@@ -33,7 +33,6 @@ SPLASH_COMMANDS = [
     ReadCmd.managed_files,
     ReadCmd.status_dirs,
     ReadCmd.status_files,
-    ReadCmd.status_paths,
     ReadCmd.template_data,
 ]
 
@@ -110,7 +109,6 @@ managed_dirs: str = ""
 managed_files: str = ""
 status_dirs: str = ""
 status_files: str = ""
-status_paths: str = ""
 template_data: "CommandResults | None" = None
 
 
@@ -191,7 +189,6 @@ class LoadingScreen(Screen[SplashData | None], AppType):
                 managed_files_stdout=globals()["managed_files"],
                 status_dirs_stdout=globals()["status_dirs"],
                 status_files_stdout=globals()["status_files"],
-                status_paths_stdout=globals()["status_paths"],
             )
 
             self.dismiss(
