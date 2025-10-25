@@ -71,6 +71,7 @@ class CanvasIds:
 class Id:
     add_tab: CanvasIds = CanvasIds(Canvas.add)
     apply_tab: CanvasIds = CanvasIds(Canvas.apply)
+    chezmoi_init: CanvasIds = CanvasIds(Canvas.chezmoi_init)
     config_tab: CanvasIds = CanvasIds(Canvas.config)
     destroy_tab: CanvasIds = CanvasIds(Canvas.destroy)
     forget_tab: CanvasIds = CanvasIds(Canvas.forget)
