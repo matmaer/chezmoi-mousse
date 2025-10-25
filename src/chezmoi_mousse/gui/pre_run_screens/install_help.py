@@ -13,7 +13,7 @@ from textual.containers import Center, Horizontal, Vertical, VerticalGroup
 from textual.screen import Screen
 from textual.widgets import Button, Collapsible, Label, Link, Pretty, Tree
 
-from chezmoi_mousse import AppType, Canvas, Chars, SubTitles, Tcss
+from chezmoi_mousse import AppType, Canvas, Chars, NavBtn, Tcss
 
 type ParsedJson = dict[str, Any]
 
@@ -21,8 +21,9 @@ __all__ = ["InstallHelp"]
 
 
 class Strings(StrEnum):
-    exit_button_id = "exit_button"
     chezmoi_docs_link_id = "chezmoi_docs_link"
+    escape_exit_app = " escape key to exit app "
+    install_chezmoi = " Install chezmoi "
 
 
 class CommandsTree(Tree[ParsedJson]):
@@ -30,7 +31,7 @@ class CommandsTree(Tree[ParsedJson]):
     ICON_NODE_EXPANDED = Chars.down_triangle
 
     def __init__(self) -> None:
-        super().__init__(label=" Install chezmoi ")
+        super().__init__(label=Strings.install_chezmoi.value)
 
 
 class InstallHelp(Screen[None], AppType):
@@ -61,15 +62,12 @@ class InstallHelp(Screen[None], AppType):
                             id=Strings.chezmoi_docs_link_id,
                         )
                         yield Button(
-                            "exit app",
-                            id=Strings.exit_button_id,
-                            variant="primary",
-                            flat=True,
+                            NavBtn.exit_app.value, variant="primary", flat=True
                         )
 
     def on_mount(self) -> None:
         if self.chezmoi_found is False:
-            self.border_subtitle = SubTitles.escape_exit_app
+            self.border_subtitle = Strings.escape_exit_app.value
             self.update_path_widget()
             self.populate_tree()
 

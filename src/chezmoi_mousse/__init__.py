@@ -14,13 +14,7 @@ from chezmoi_mousse._chezmoi import (
     VerbArgs,
 )
 from chezmoi_mousse._id_classes import CanvasIds, Id
-from chezmoi_mousse._labels import (
-    NavBtn,
-    OperateBtn,
-    PaneBtn,
-    SubTitles,
-    TabBtn,
-)
+from chezmoi_mousse._labels import NavBtn, OperateBtn, PaneBtn, TabBtn
 from chezmoi_mousse._names import (
     ActiveCanvas,
     AreaName,
@@ -68,7 +62,6 @@ __all__ = [
     "PreRunData",
     "ReadCmd",
     "ReadVerbs",
-    "SubTitles",
     "Switches",
     "TabBtn",
     "Tcss",

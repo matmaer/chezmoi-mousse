@@ -1,13 +1,6 @@
 from enum import StrEnum
 
-__all__ = [
-    "NavBtn",
-    "OperateBtn",
-    "PaneBtn",
-    "SubTitles",
-    "SwitchLabel",
-    "TabBtn",
-]
+__all__ = ["NavBtn", "OperateBtn", "PaneBtn", "SwitchLabel", "TabBtn"]
 
 
 class NavBtn(StrEnum):
@@ -16,6 +9,7 @@ class NavBtn(StrEnum):
     cat_config = "Cat Config"
     diagram = "Diagram"
     doctor = "Doctor"
+    exit_app = "Exit App"
     ignored = "Ignored"
     re_add_help = "Re-Add Help"
     template_data = "Template Data"
@@ -45,12 +39,6 @@ class PaneBtn(StrEnum):
     help_tab = "Help"
     logs_tab = "Logs"
     re_add_tab = "Re-Add"
-
-
-class SubTitles(StrEnum):
-    double_click_or_esc = " double click or escape key to close "
-    escape = " escape key to close "
-    escape_exit_app = " escape key to exit app "
 
 
 class SwitchLabel(StrEnum):
