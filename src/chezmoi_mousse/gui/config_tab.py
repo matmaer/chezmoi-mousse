@@ -36,7 +36,7 @@ from .shared.tabs_base import TabsBase
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds
 
-__all__ = ["ConfigTab"]
+__all__ = ["ConfigTab", "ConfigTabSwitcher"]
 
 
 class DoctorTable(DataTable[Text], AppType):
