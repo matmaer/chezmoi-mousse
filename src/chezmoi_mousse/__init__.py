@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING
 
 from chezmoi_mousse._chars import Chars
 from chezmoi_mousse._chezmoi import (
-    ChangeCmd,
     CommandResults,
     GlobalCmd,
     LogUtils,
@@ -12,6 +11,7 @@ from chezmoi_mousse._chezmoi import (
     ReadCmd,
     ReadVerbs,
     VerbArgs,
+    WriteCmd,
 )
 from chezmoi_mousse._id_classes import CanvasIds, Id
 from chezmoi_mousse._labels import NavBtn, OperateBtn, PaneBtn, TabBtn
@@ -46,7 +46,7 @@ __all__ = [
     "AreaName",
     "Canvas",
     "CanvasIds",
-    "ChangeCmd",
+    "WriteCmd",
     "Chars",
     "CommandResults",
     "GlobalCmd",

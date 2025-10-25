@@ -13,12 +13,12 @@ from chezmoi_mousse import (
     AreaName,
     Canvas,
     CanvasIds,
-    ChangeCmd,
     Id,
     NavBtn,
     OperateBtn,
     Tcss,
     ViewName,
+    WriteCmd,
 )
 
 
@@ -130,7 +130,7 @@ class InitScreen(Screen[None], AppType):
             == self.ids.button_id(btn=OperateBtn.clone_chezmoi_repo)
             and self.repo_url is not None
         ):
-            self.app.chezmoi.perform(ChangeCmd.init, repo_url=self.repo_url)
+            self.app.chezmoi.perform(WriteCmd.init, repo_url=self.repo_url)
             self.query_one(
                 self.ids.button_id("#", btn=OperateBtn.clone_chezmoi_repo),
                 Button,
@@ -138,7 +138,7 @@ class InitScreen(Screen[None], AppType):
         elif event.button.id == self.ids.button_id(
             btn=OperateBtn.init_new_repo
         ):
-            self.app.chezmoi.perform(ChangeCmd.init)
+            self.app.chezmoi.perform(WriteCmd.init)
             self.query_one(
                 self.ids.button_id("#", btn=OperateBtn.init_new_repo), Button
             ).disabled = True

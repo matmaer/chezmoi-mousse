@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 type PathDict = dict[Path, str]
 
 __all__ = [
-    "ChangeCmd",
+    "WriteCmd",
     "Chezmoi",
     "CommandResults",
     "GlobalCmd",
@@ -121,7 +121,7 @@ class ReadCmd(Enum):
     template_data = GlobalCmd.live_run.value + [ReadVerbs.data.value]
 
 
-class ChangeCmd(Enum):
+class WriteCmd(Enum):
     add = ["add"]
     # add_encrypt = ["add", VerbArgs.encrypt.value]
     apply = ["apply"]
@@ -448,7 +448,7 @@ class Chezmoi:
 
     def perform(
         self,
-        change_sub_cmd: ChangeCmd,
+        write_sub_cmd: WriteCmd,
         *,
         path_arg: Path | None = None,
         repo_url: str | None = None,
@@ -457,11 +457,11 @@ class Chezmoi:
             base_cmd: list[str] = GlobalCmd.live_run.value
         else:
             base_cmd: list[str] = GlobalCmd.dry_run.value
-        command: list[str] = base_cmd + change_sub_cmd.value
+        command: list[str] = base_cmd + write_sub_cmd.value
 
-        if change_sub_cmd != ChangeCmd.init and path_arg is not None:
+        if write_sub_cmd != WriteCmd.init and path_arg is not None:
             command: list[str] = command + [str(path_arg)]
-        elif change_sub_cmd == ChangeCmd.init and repo_url is not None:
+        elif write_sub_cmd == WriteCmd.init and repo_url is not None:
             command: list[str] = command + [repo_url]
 
         result: CompletedProcess[str] = run(

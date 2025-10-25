@@ -11,13 +11,13 @@ from textual.widgets import Button, Label, Static
 
 from chezmoi_mousse import (
     AppType,
-    ChangeCmd,
     Chars,
     Id,
     OperateBtn,
     OperateResultData,
     ReadCmd,
     Tcss,
+    WriteCmd,
 )
 from chezmoi_mousse.gui.shared.button_groups import OperateBtnHorizontal
 
@@ -202,23 +202,23 @@ class OperateResultScreen(Screen[OperateResultData], AppType):
         output_log.auto_scroll = False
         if self.launch_data.btn_enum_member == OperateBtn.apply_file:
             self.cmd_result = self.app.chezmoi.perform(
-                ChangeCmd.apply, path_arg=self.launch_data.path
+                WriteCmd.apply, path_arg=self.launch_data.path
             )
         elif self.launch_data.btn_enum_member == OperateBtn.re_add_file:
             self.cmd_result = self.app.chezmoi.perform(
-                ChangeCmd.re_add, path_arg=self.launch_data.path
+                WriteCmd.re_add, path_arg=self.launch_data.path
             )
         elif self.launch_data.btn_enum_member == OperateBtn.add_file:
             self.cmd_result = self.app.chezmoi.perform(
-                ChangeCmd.add, path_arg=self.launch_data.path
+                WriteCmd.add, path_arg=self.launch_data.path
             )
         elif self.launch_data.btn_enum_member == OperateBtn.forget_file:
             self.cmd_result = self.app.chezmoi.perform(
-                ChangeCmd.forget, path_arg=self.launch_data.path
+                WriteCmd.forget, path_arg=self.launch_data.path
             )
         elif self.launch_data.btn_enum_member == OperateBtn.destroy_file:
             self.cmd_result = self.app.chezmoi.perform(
-                ChangeCmd.destroy, path_arg=self.launch_data.path
+                WriteCmd.destroy, path_arg=self.launch_data.path
             )
         self.operate_result.operation_executed = True
         self.operate_result.command_results = self.cmd_result
