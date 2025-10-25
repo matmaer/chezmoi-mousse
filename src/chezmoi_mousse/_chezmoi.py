@@ -16,6 +16,7 @@ type PathDict = dict[Path, str]
 __all__ = [
     "ChangeCmd",
     "Chezmoi",
+    "CommandResults",
     "GlobalCmd",
     "LogUtils",
     "ManagedPaths",
