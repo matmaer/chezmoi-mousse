@@ -4,10 +4,7 @@ from pathlib import Path
 from subprocess import CompletedProcess, run
 from typing import TYPE_CHECKING
 
-from chezmoi_mousse._names import Canvas
-
 if TYPE_CHECKING:
-    from chezmoi_mousse._names import ActiveCanvas
 
     from .gui.logs_tab import AppLog, DebugLog, OutputLog
 
@@ -470,80 +467,3 @@ class Chezmoi:
         )
         self._log_in_app_and_output_log(command_results)
         return command_results
-
-    def status_dirs_in(
-        self, active_canvas: "ActiveCanvas", dir_path: Path
-    ) -> PathDict:
-        if active_canvas == Canvas.apply:
-            result = {
-                path: status
-                for path, status in self.managed_paths.apply_status_dirs.items()
-                if path.parent == dir_path
-            }
-            # Add dirs that contain status files but don't have direct status
-            for path in self.managed_paths.dirs:
-                if (
-                    path.parent == dir_path
-                    and path not in result
-                    and self._has_apply_status_files_in(path)
-                ):
-                    result[path] = " "
-            return dict(sorted(result.items()))
-        else:
-            result = {
-                path: status
-                for path, status in self.managed_paths.re_add_status_dirs.items()
-                if path.parent == dir_path and path.exists()
-            }
-            # Add dirs that contain status files but don't have direct status
-            for path in self.managed_paths.dirs:
-                if (
-                    path.parent == dir_path
-                    and path not in result
-                    and path.exists()
-                    and self._has_re_add_status_files_in(path)
-                ):
-                    result[path] = " "
-            return dict(sorted(result.items()))
-
-    def dirs_without_status_in(
-        self, active_canvas: "ActiveCanvas", dir_path: Path
-    ) -> PathDict:
-        if active_canvas == Canvas.apply:
-            status_dirs = self.managed_paths.apply_status_dirs
-            has_status_check = self._has_apply_status_files_in
-        else:
-            status_dirs = self.managed_paths.re_add_status_dirs
-            has_status_check = self._has_re_add_status_files_in
-
-        result = {
-            path: "X"
-            for path in self.managed_paths.dirs
-            if path.parent == dir_path
-            and path not in status_dirs
-            and not has_status_check(path)
-        }
-        # For re_add canvas, filter out non-existing directories
-        if active_canvas == Canvas.re_add:
-            result = {
-                path: status
-                for path, status in result.items()
-                if path.exists()
-            }
-        return result
-
-    def _has_apply_status_files_in(self, dir_path: Path) -> bool:
-        return any(
-            path.is_relative_to(dir_path)
-            for path in self.managed_paths.apply_status_files.keys()
-        )
-
-    def _has_re_add_status_files_in(self, dir_path: Path) -> bool:
-        # Create this list without calling exists()
-        potential_files = [
-            path
-            for path in self.managed_paths.re_add_status_files.keys()
-            if path.is_relative_to(dir_path)
-        ]
-        # Check if any of the potential files exist
-        return any(path.exists() for path in potential_files)

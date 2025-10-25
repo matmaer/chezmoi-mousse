@@ -18,6 +18,7 @@ from chezmoi_mousse import (
     Tcss,
     TreeName,
 )
+from chezmoi_mousse._chezmoi import PathDict
 
 from .operate_msg import TreeNodeSelectedMsg
 
@@ -215,12 +216,89 @@ class TreeBase(Tree[NodeData], AppType):
                 tree_node, file_path, status_code, is_leaf=True
             )
 
+    def status_dirs_in(
+        self, active_canvas: "ActiveCanvas", dir_path: Path
+    ) -> PathDict:
+        if active_canvas == Canvas.apply:
+            result = {
+                path: status
+                for path, status in self.app.chezmoi.managed_paths.apply_status_dirs.items()
+                if path.parent == dir_path
+            }
+            # Add dirs that contain status files but don't have direct status
+            for path in self.app.chezmoi.managed_paths.dirs:
+                if (
+                    path.parent == dir_path
+                    and path not in result
+                    and self._has_apply_status_files_in(path)
+                ):
+                    result[path] = " "
+            return dict(sorted(result.items()))
+        else:
+            result = {
+                path: status
+                for path, status in self.app.chezmoi.managed_paths.re_add_status_dirs.items()
+                if path.parent == dir_path and path.exists()
+            }
+            # Add dirs that contain status files but don't have direct status
+            for path in self.app.chezmoi.managed_paths.dirs:
+                if (
+                    path.parent == dir_path
+                    and path not in result
+                    and path.exists()
+                    and self._has_re_add_status_files_in(path)
+                ):
+                    result[path] = " "
+            return dict(sorted(result.items()))
+
+    def dirs_without_status_in(
+        self, active_canvas: "ActiveCanvas", dir_path: Path
+    ) -> PathDict:
+        if active_canvas == Canvas.apply:
+            status_dirs = self.app.chezmoi.managed_paths.apply_status_dirs
+            has_status_check = self._has_apply_status_files_in
+        else:
+            status_dirs = self.app.chezmoi.managed_paths.re_add_status_dirs
+            has_status_check = self._has_re_add_status_files_in
+
+        result = {
+            path: "X"
+            for path in self.app.chezmoi.managed_paths.dirs
+            if path.parent == dir_path
+            and path not in status_dirs
+            and not has_status_check(path)
+        }
+        # For re_add canvas, filter out non-existing directories
+        if active_canvas == Canvas.re_add:
+            result = {
+                path: status
+                for path, status in result.items()
+                if path.exists()
+            }
+        return result
+
+    def _has_apply_status_files_in(self, dir_path: Path) -> bool:
+        return any(
+            path.is_relative_to(dir_path)
+            for path in self.app.chezmoi.managed_paths.apply_status_files.keys()
+        )
+
+    def _has_re_add_status_files_in(self, dir_path: Path) -> bool:
+        # Create this list without calling exists()
+        potential_files = [
+            path
+            for path in self.app.chezmoi.managed_paths.re_add_status_files.keys()
+            if path.is_relative_to(dir_path)
+        ]
+        # Check if any of the potential files exist
+        return any(path.exists() for path in potential_files)
+
     def add_status_dirs_in(self, *, tree_node: TreeNode[NodeData]) -> None:
         if tree_node.data is None:
             return
 
         existing_dirs = self._get_existing_paths(tree_node, is_leaf=False)
-        dir_paths = self.app.chezmoi.status_dirs_in(
+        dir_paths = self.status_dirs_in(
             self.active_canvas, tree_node.data.path
         )
 
@@ -238,7 +316,7 @@ class TreeBase(Tree[NodeData], AppType):
             return
 
         existing_dirs = self._get_existing_paths(tree_node, is_leaf=False)
-        dir_paths = self.app.chezmoi.dirs_without_status_in(
+        dir_paths = self.dirs_without_status_in(
             self.active_canvas, tree_node.data.path
         )
 
