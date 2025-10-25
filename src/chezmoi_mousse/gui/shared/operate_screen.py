@@ -107,7 +107,7 @@ class OperateScreen(Screen[OperateResultData], AppType):
     BINDINGS = [Binding(key="escape", action="esc_key_dismiss", show=True)]
 
     def __init__(self, launch_data: "OperateLaunchData") -> None:
-        self.ids = Id.operate_launch_screen
+        self.ids = Id.operate_launch
         self.launch_data = launch_data
         super().__init__(
             id=self.ids.canvas_name, classes=Tcss.operate_screen.name
@@ -179,7 +179,7 @@ class OperateScreen(Screen[OperateResultData], AppType):
 class OperateResultScreen(Screen[OperateResultData], AppType):
 
     def __init__(self, launch_data: "OperateLaunchData") -> None:
-        self.ids = Id.operate_result_screen
+        self.ids = Id.operate_result
         self.launch_data = launch_data
         self.cmd_result: "CommandResults | None" = None
         self.operate_result = OperateResultData(path=self.launch_data.path)
