@@ -471,12 +471,6 @@ class Chezmoi:
         self._log_in_app_and_output_log(command_results)
         return command_results
 
-    def all_status_files(self, active_canvas: "ActiveCanvas") -> PathDict:
-        if active_canvas == Canvas.apply:
-            return self.managed_paths.apply_status_files
-        else:
-            return self.managed_paths.re_add_status_files
-
     def status_dirs_in(
         self, active_canvas: "ActiveCanvas", dir_path: Path
     ) -> PathDict:

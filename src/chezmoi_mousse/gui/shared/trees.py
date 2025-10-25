@@ -69,13 +69,9 @@ class ListTree(TreeBase):
 
     def add_files_with_status(self) -> None:
         if self.active_canvas == Canvas.apply:
-            status_files = self.app.chezmoi.all_status_files(
-                active_canvas=Canvas.apply
-            )
+            status_files = self.app.chezmoi.managed_paths.apply_status_files
         else:
-            status_files = self.app.chezmoi.all_status_files(
-                active_canvas=Canvas.re_add
-            )
+            status_files = self.app.chezmoi.managed_paths.re_add_status_files
         for file_path, status_code in status_files.items():
             node_data: "NodeData" = self.create_node_data(
                 path=file_path, is_leaf=True, status_code=status_code
@@ -90,14 +86,14 @@ class ListTree(TreeBase):
 
     def add_files_without_status(self) -> None:
         if self.active_canvas == Canvas.apply:
-            self.files_without_status: list["Path"] = (
+            files_without_status: list["Path"] = (
                 self.app.chezmoi.managed_paths.apply_files_without_status
             )
         else:
-            self.files_without_status: list["Path"] = (
+            files_without_status: list["Path"] = (
                 self.app.chezmoi.managed_paths.re_add_files_without_status
             )
-        for file_path in self.files_without_status:
+        for file_path in files_without_status:
             node_data: "NodeData" = self.create_node_data(
                 path=file_path, is_leaf=True, status_code="X"
             )
