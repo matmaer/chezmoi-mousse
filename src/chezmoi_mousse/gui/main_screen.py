@@ -209,11 +209,11 @@ class MainScreen(Screen[None], AppType):
             Id.config_tab.content_switcher_id("#", area=AreaName.right),
             ContentSwitcher,
         )
-        setattr(config_tab_switcher, "doctor_stdout", data.doctor)
-        setattr(config_tab_switcher, "cat_config_stdout", data.cat_config)
-        setattr(config_tab_switcher, "ignored_stdout", data.ignored)
+        setattr(config_tab_switcher, "doctor_results", data.doctor)
+        setattr(config_tab_switcher, "cat_config_results", data.cat_config)
+        setattr(config_tab_switcher, "ignored_results", data.ignored)
         setattr(
-            config_tab_switcher, "template_data_stdout", data.template_data
+            config_tab_switcher, "template_data_results", data.template_data
         )
 
     def on_tabbed_content_tab_activated(

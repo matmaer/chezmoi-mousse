@@ -54,13 +54,13 @@ class ParsedConfig:
 
 @dataclass(slots=True)
 class SplashData:
-    cat_config: str
-    doctor: str
+    cat_config: "CommandResults"
+    doctor: "CommandResults"
     exectuded_commands: list[str]
-    ignored: str
+    ignored: "CommandResults"
     managed_paths: ManagedPaths
     parsed_config: ParsedConfig
-    template_data: str
+    template_data: "CommandResults"
 
 
 SPLASH = """\
@@ -102,16 +102,16 @@ def create_deque() -> deque[Style]:
 
 
 FADE_LINE_STYLES = create_deque()
-cat_config: str = ""
-doctor: str = ""
+cat_config: "CommandResults | None" = None
+doctor: "CommandResults | None" = None
 dump_config: ParsedConfig | None = None
-ignored: str = ""
+ignored: "CommandResults | None" = None
 managed_dirs: str = ""
 managed_files: str = ""
 status_dirs: str = ""
 status_files: str = ""
 status_paths: str = ""
-template_data: str = ""
+template_data: "CommandResults | None" = None
 
 
 class AnimatedFade(Static):
@@ -151,7 +151,15 @@ class LoadingScreen(Screen[SplashData | None], AppType):
             return
 
         cmd_result: "CommandResults" = self.app.chezmoi.read(splash_cmd)
-        globals()[splash_cmd.name] = cmd_result.std_out
+        if splash_cmd in (
+            ReadCmd.cat_config,
+            ReadCmd.doctor,
+            ReadCmd.ignored,
+            ReadCmd.template_data,
+        ):
+            globals()[splash_cmd.name] = cmd_result
+        else:
+            globals()[splash_cmd.name] = cmd_result.std_out
         cmd_text = cmd_result.pretty_cmd.replace(
             VerbArgs.include_dirs.value, "dirs"
         ).replace(VerbArgs.include_files.value, "files")
