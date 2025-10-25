@@ -9,7 +9,6 @@ from textual.containers import VerticalGroup
 from textual.screen import Screen
 from textual.widgets import (
     Button,
-    ContentSwitcher,
     Footer,
     Header,
     TabbedContent,
@@ -33,7 +32,7 @@ from chezmoi_mousse import (
 
 from .add_tab import AddTab
 from .apply_tab import ApplyTab
-from .config_tab import ConfigTab
+from .config_tab import ConfigTab, ConfigTabSwitcher
 from .destroy_tab import DestroyTab
 from .forget_tab import ForgetTab
 from .help_tab import HelpTab
@@ -207,7 +206,7 @@ class MainScreen(Screen[None], AppType):
     def update_config_tab_outputs(self, data: "SplashData") -> None:
         config_tab_switcher = self.screen.query_one(
             Id.config_tab.content_switcher_id("#", area=AreaName.right),
-            ContentSwitcher,
+            ConfigTabSwitcher,
         )
         setattr(config_tab_switcher, "doctor_results", data.doctor)
         setattr(config_tab_switcher, "cat_config_results", data.cat_config)
