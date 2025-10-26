@@ -188,11 +188,11 @@ class MainScreen(Screen[None], AppType):
         forget_tab_managed_tree.populate_tree()
         forget_tab_expanded_tree.populate_tree()
         forget_tab_flat_tree.populate_tree()
-
-        unchanged_switch_qid = Id.forget_tab.switch_id(
-            "#", switch=Switches.unchanged.value
+        unchanged_switch = self.query_one(
+            Id.forget_tab.switch_id("#", switch=Switches.unchanged.value),
+            Switch,
         )
-        self.query_one(unchanged_switch_qid, Switch).value = True
+        unchanged_switch.value = True
 
     def populate_destroy_trees(self) -> None:
         destroy_tab_managed_tree = self.screen.query_one(
@@ -209,10 +209,11 @@ class MainScreen(Screen[None], AppType):
         destroy_tab_managed_tree.populate_tree()
         destroy_tab_expanded_tree.populate_tree()
         destroy_tab_flat_tree.populate_tree()
-        unchanged_switch_qid = Id.destroy_tab.switch_id(
-            "#", switch=Switches.unchanged.value
+        unchanged_switch = self.query_one(
+            Id.destroy_tab.switch_id("#", switch=Switches.unchanged.value),
+            Switch,
         )
-        self.query_one(unchanged_switch_qid, Switch).value = True
+        unchanged_switch.value = True
 
     def update_config_tab_outputs(self, data: "SplashData") -> None:
         config_tab_switcher = self.screen.query_one(
