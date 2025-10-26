@@ -4,20 +4,12 @@ from rich.text import Text
 from textual.reactive import reactive
 from textual.widgets import RichLog
 
-from chezmoi_mousse import (
-    AppType,
-    Canvas,
-    Chars,
-    LogUtils,
-    ReadCmd,
-    Tcss,
-    ViewName,
-)
+from chezmoi_mousse import AppType, Chars, LogUtils, ReadCmd, Tcss, ViewName
 
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from chezmoi_mousse import ActiveCanvas, AppType, CanvasIds, CommandResults
+    from chezmoi_mousse import AppType, CanvasIds, CommandResults
 
 __all__ = ["DiffView"]
 
@@ -30,14 +22,12 @@ class DiffView(RichLog, AppType):
     def __init__(self, *, ids: "CanvasIds", reverse: bool) -> None:
         self.ids = ids
         self.reverse = reverse
-        self.active_canvas: "ActiveCanvas | None" = None
         self.diff_read_cmd: ReadCmd = (
             ReadCmd.diff_reverse if self.reverse else ReadCmd.diff
         )
         self.pretty_diff_cmd = LogUtils.pretty_cmd_str(
             self.diff_read_cmd.value
         )
-        self.active_canvas = Canvas.re_add if self.reverse else Canvas.apply
         super().__init__(
             id=self.ids.view_id(view=ViewName.diff_view),
             auto_scroll=False,
@@ -71,10 +61,7 @@ class DiffView(RichLog, AppType):
         self.clear()
         # write lines for an unchanged file or directory except when we are in
         # either the ApplyTab or ReAddTab
-        if (
-            self.active_canvas is not None
-            and self.path in self.app.chezmoi.managed_paths.dirs
-        ):
+        if self.path in self.app.chezmoi.managed_paths.dirs:
             self._write_dir_info()
             return
 

@@ -14,7 +14,7 @@ from chezmoi_mousse import AppType, Canvas, Chars, NodeData, Tcss, TreeName
 from .operate_msg import TreeNodeSelectedMsg
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import ActiveCanvas, CanvasIds
+    from chezmoi_mousse import CanvasIds
 
 
 __all__ = ["TreeBase"]
@@ -33,11 +33,6 @@ class TreeBase(Tree[NodeData], AppType):
         self._initial_render = True
         self._first_focus = True
         self._user_interacted = False
-        if self.ids.canvas_name == Canvas.apply:
-            self.active_canvas: "ActiveCanvas" = Canvas.apply
-        else:
-            self.active_canvas: "ActiveCanvas" = Canvas.re_add
-
         self.root_data = NodeData(
             path=self.destDir, is_leaf=False, found=True, status="F"
         )
@@ -131,7 +126,7 @@ class TreeBase(Tree[NodeData], AppType):
         node_data = NodeData(
             path=path, is_leaf=is_leaf, found=found, status=status_code
         )
-        if self.active_canvas == Canvas.re_add and node_data.found is False:
+        if self.ids.canvas_name == Canvas.re_add and node_data.found is False:
             return
         node_label: Text = self.style_label(node_data)
         if is_leaf:
@@ -158,7 +153,7 @@ class TreeBase(Tree[NodeData], AppType):
 
         existing_leaves = self._get_existing_leaves(tree_node)
 
-        if self.active_canvas == Canvas.apply:
+        if self.ids.canvas_name in (Canvas.apply, Canvas.forget):
             status_files = self.app.chezmoi.managed_paths.apply_status_files
         else:
             status_files = self.app.chezmoi.managed_paths.re_add_status_files
@@ -180,7 +175,7 @@ class TreeBase(Tree[NodeData], AppType):
 
         # Both paths cached in the Chezmoi instance, don't cache this here as
         # we update the cache there after a WriteCmd.
-        if self.active_canvas == Canvas.apply:
+        if self.ids.canvas_name in (Canvas.apply, Canvas.forget):
             paths = self.app.chezmoi.managed_paths.apply_files_without_status
         else:
             paths = self.app.chezmoi.managed_paths.re_add_files_without_status
@@ -215,7 +210,7 @@ class TreeBase(Tree[NodeData], AppType):
 
         existing_dirs = self._get_existing_dir_nodes(tree_node)
 
-        if self.active_canvas == Canvas.apply:
+        if self.ids.canvas_name in (Canvas.apply, Canvas.forget):
             result = {
                 path: status
                 for path, status in self.app.chezmoi.managed_paths.apply_status_dirs.items()
@@ -261,7 +256,7 @@ class TreeBase(Tree[NodeData], AppType):
 
         existing_dirs = self._get_existing_dir_nodes(tree_node)
 
-        if self.active_canvas == Canvas.apply:
+        if self.ids.canvas_name in (Canvas.apply, Canvas.forget):
             status_dirs = self.app.chezmoi.managed_paths.apply_status_dirs
             has_status_check = self._has_apply_status_files_in
         else:

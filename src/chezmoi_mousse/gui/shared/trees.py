@@ -66,7 +66,7 @@ class ListTree(TreeBase):
         super().__init__(self.ids, tree_name=TreeName.list_tree)
 
     def populate_tree(self) -> None:
-        if self.active_canvas == Canvas.apply:
+        if self.ids.canvas_name == Canvas.apply:
             status_files = self.app.chezmoi.managed_paths.apply_status_files
         else:
             status_files = self.app.chezmoi.managed_paths.re_add_status_files
@@ -79,7 +79,7 @@ class ListTree(TreeBase):
             )
 
     def _add_files_without_status(self) -> None:
-        if self.active_canvas == Canvas.apply:
+        if self.ids.canvas_name == Canvas.apply:
             files = self.app.chezmoi.managed_paths.apply_files_without_status
         else:
             files = self.app.chezmoi.managed_paths.re_add_files_without_status

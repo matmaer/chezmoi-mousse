@@ -1,9 +1,6 @@
 from enum import StrEnum, auto
-from typing import Literal
 
-type ActiveCanvas = Literal[Canvas.add, Canvas.apply, Canvas.re_add]
-
-__all__ = ["ActiveCanvas", "AreaName", "Canvas", "TreeName", "ViewName"]
+__all__ = ["AreaName", "Canvas", "TreeName", "ViewName"]
 
 
 class AreaName(StrEnum):
