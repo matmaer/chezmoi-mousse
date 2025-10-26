@@ -61,7 +61,7 @@ class TreeBase(Tree[NodeData], AppType):
         self.show_root: bool = False
 
     # the styling method for the node labels
-    def style_label(self, node_data: NodeData) -> Text:
+    def __style_label(self, node_data: NodeData) -> Text:
         italic: bool = False if node_data.found else True
         styled = "white"
         if node_data.is_leaf:
@@ -85,7 +85,6 @@ class TreeBase(Tree[NodeData], AppType):
 
         return Text(node_data.path.name, style=styled)
 
-    # node add/remove methods
     def get_expanded_nodes(self) -> list[TreeNode[NodeData]]:
         # Recursively calling collect_nodes
         nodes: list[TreeNode[NodeData]] = [self.root]
@@ -103,14 +102,14 @@ class TreeBase(Tree[NodeData], AppType):
         nodes.extend(collect_nodes(self.root))
         return nodes
 
-    def _get_leaves_in(self, tree_node: TreeNode[NodeData]) -> list["Path"]:
+    def get_leaves_in(self, tree_node: TreeNode[NodeData]) -> list["Path"]:
         return [
             child.data.path
             for child in tree_node.children
             if child.data is not None and child.data.is_leaf
         ]
 
-    def _get_dir_nodes_in(self, tree_node: TreeNode[NodeData]) -> list["Path"]:
+    def get_dir_nodes_in(self, tree_node: TreeNode[NodeData]) -> list["Path"]:
         return [
             child.data.path
             for child in tree_node.children
@@ -130,7 +129,7 @@ class TreeBase(Tree[NodeData], AppType):
         )
         if node_data.found is False and self.only_existing_paths:
             return
-        node_label: Text = self.style_label(node_data)
+        node_label: Text = self.__style_label(node_data)
         if is_leaf:
             tree_node.add_leaf(label=node_label, data=node_data)
         else:
@@ -149,7 +148,9 @@ class TreeBase(Tree[NodeData], AppType):
         for leaf in current_unchanged_leaves:
             leaf.remove()
 
-    def add_status_files_in(self, *, tree_node: TreeNode[NodeData]) -> None:
+    def add_status_files_in(
+        self, *, tree_node: TreeNode[NodeData], flat_list: bool
+    ) -> None:
         if tree_node.data is None:
             return
 
@@ -159,19 +160,18 @@ class TreeBase(Tree[NodeData], AppType):
             status_files = self.app.chezmoi.managed_paths.re_add_status_files
 
         for file_path, status_code in status_files.items():
-            if file_path in self._get_leaves_in(tree_node):
-                continue
-            if file_path.parent != tree_node.data.path:
-                continue
+            if flat_list is False:
+                if file_path in self.get_leaves_in(tree_node):
+                    continue
+                if file_path.parent != tree_node.data.path:
+                    continue
             self.create_and_add_node(
                 tree_node, file_path, status_code, is_leaf=True
             )
 
     def add_files_without_status_in(
-        self, *, tree_node: TreeNode[NodeData]
+        self, *, tree_node: TreeNode[NodeData], flat_list: bool
     ) -> None:
-        if tree_node.data is None:
-            return
 
         # Both paths cached in the Chezmoi instance, don't cache this here as
         # we update the cache there after a WriteCmd.
@@ -180,12 +180,25 @@ class TreeBase(Tree[NodeData], AppType):
         else:
             paths = self.app.chezmoi.managed_paths.re_add_files_without_status
 
+        if flat_list:
+            for file_path in paths:
+                self.create_and_add_node(
+                    tree_node=tree_node,
+                    path=file_path,
+                    status_code="X",
+                    is_leaf=True,
+                )
+            return
+
         files_without_status = {
-            path: "X" for path in paths if path.parent == tree_node.data.path
+            path: "X"
+            for path in paths
+            if tree_node.data is not None
+            and path.parent == tree_node.data.path
         }
 
         for file_path, status_code in files_without_status.items():
-            if file_path in self._get_leaves_in(tree_node):
+            if file_path in self.get_leaves_in(tree_node):
                 continue
             self.create_and_add_node(
                 tree_node, file_path, status_code, is_leaf=True
@@ -239,7 +252,7 @@ class TreeBase(Tree[NodeData], AppType):
             dir_paths = dict(sorted(result.items()))
 
         for dir_path, status_code in dir_paths.items():
-            if dir_path in self._get_dir_nodes_in(tree_node):
+            if dir_path in self.get_dir_nodes_in(tree_node):
                 continue
             self.create_and_add_node(
                 tree_node, dir_path, status_code, is_leaf=False
@@ -267,13 +280,13 @@ class TreeBase(Tree[NodeData], AppType):
         }
 
         for dir_path, status_code in dir_paths.items():
-            if dir_path in self._get_dir_nodes_in(tree_node):
+            if dir_path in self.get_dir_nodes_in(tree_node):
                 continue
             self.create_and_add_node(
                 tree_node, dir_path, status_code, is_leaf=False
             )
 
-    def _apply_cursor_style(self, node_label: Text, is_cursor: bool) -> Text:
+    def __apply_cursor_style(self, node_label: Text, is_cursor: bool) -> Text:
         """Helper to apply cursor-specific styling to a node label."""
         if not is_cursor:
             return node_label
@@ -307,10 +320,10 @@ class TreeBase(Tree[NodeData], AppType):
         # Get base styling from style_label
         if node.data is None:
             return Text("Node data is None")
-        node_label = self.style_label(node.data)
+        node_label = self.__style_label(node.data)
 
         # Apply cursor styling via helper
-        node_label = self._apply_cursor_style(
+        node_label = self.__apply_cursor_style(
             node_label, node is self.cursor_node
         )
 
@@ -379,17 +392,19 @@ class ExpandedTree(TreeBase):
         self, event: TreeBase.NodeExpanded[NodeData]
     ) -> None:
         self.add_status_dirs_in(tree_node=event.node)
-        self.add_status_files_in(tree_node=event.node)
+        self.add_status_files_in(tree_node=event.node, flat_list=False)
         if self.unchanged:
             self.add_dirs_without_status_in(tree_node=event.node)
-            self.add_files_without_status_in(tree_node=event.node)
+            self.add_files_without_status_in(
+                tree_node=event.node, flat_list=False
+            )
 
     def expand_all_nodes(self, node: TreeNode[NodeData]) -> None:
         # Recursively expand all directory nodes
         assert node.data is not None
         if node.data.is_leaf is False:
             self.add_status_dirs_in(tree_node=node)
-            self.add_status_files_in(tree_node=node)
+            self.add_status_files_in(tree_node=node, flat_list=False)
             for child in node.children:
                 if child.data is not None and child.data.is_leaf is False:
                     child.expand()
@@ -399,7 +414,9 @@ class ExpandedTree(TreeBase):
         expanded_nodes = self.get_expanded_nodes()
         for tree_node in expanded_nodes:
             if self.unchanged:
-                self.add_files_without_status_in(tree_node=tree_node)
+                self.add_files_without_status_in(
+                    tree_node=tree_node, flat_list=False
+                )
             else:
                 self.remove_files_without_status_in(tree_node=tree_node)
 
@@ -413,34 +430,13 @@ class ListTree(TreeBase):
         super().__init__(self.ids, tree_name=TreeName.list_tree)
 
     def populate_tree(self) -> None:
-        if self.ids.canvas_name == Canvas.apply:
-            status_files = self.app.chezmoi.managed_paths.apply_status_files
-        else:
-            status_files = self.app.chezmoi.managed_paths.re_add_status_files
-        for file_path, status_code in status_files.items():
-            self.create_and_add_node(
-                tree_node=self.root,
-                path=file_path,
-                status_code=status_code,
-                is_leaf=True,
-            )
-
-    def _add_files_without_status(self) -> None:
-        if self.ids.canvas_name == Canvas.apply:
-            files = self.app.chezmoi.managed_paths.apply_files_without_status
-        else:
-            files = self.app.chezmoi.managed_paths.re_add_files_without_status
-        for file_path in files:
-            self.create_and_add_node(
-                tree_node=self.root,
-                path=file_path,
-                status_code="X",
-                is_leaf=True,
-            )
+        self.add_status_files_in(tree_node=self.root, flat_list=True)
 
     def watch_unchanged(self) -> None:
         if self.unchanged:
-            self._add_files_without_status()
+            self.add_files_without_status_in(
+                tree_node=self.root, flat_list=True
+            )
         else:
             self.remove_files_without_status_in(tree_node=self.root)
 
@@ -455,21 +451,25 @@ class ManagedTree(TreeBase):
 
     def populate_tree(self) -> None:
         self.add_status_dirs_in(tree_node=self.root)
-        self.add_status_files_in(tree_node=self.root)
+        self.add_status_files_in(tree_node=self.root, flat_list=False)
 
     @on(TreeBase.NodeExpanded)
     def update_node_children(
         self, event: TreeBase.NodeExpanded[NodeData]
     ) -> None:
         self.add_status_dirs_in(tree_node=event.node)
-        self.add_status_files_in(tree_node=event.node)
+        self.add_status_files_in(tree_node=event.node, flat_list=False)
         if self.unchanged:
             self.add_dirs_without_status_in(tree_node=event.node)
-            self.add_files_without_status_in(tree_node=event.node)
+            self.add_files_without_status_in(
+                tree_node=event.node, flat_list=False
+            )
 
     def watch_unchanged(self) -> None:
         for node in self.get_expanded_nodes():
             if self.unchanged:
-                self.add_files_without_status_in(tree_node=node)
+                self.add_files_without_status_in(
+                    tree_node=node, flat_list=False
+                )
             else:
                 self.remove_files_without_status_in(tree_node=node)
