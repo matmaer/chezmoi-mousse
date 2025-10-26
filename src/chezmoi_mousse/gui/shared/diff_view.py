@@ -4,7 +4,15 @@ from rich.text import Text
 from textual.reactive import reactive
 from textual.widgets import RichLog
 
-from chezmoi_mousse import AppType, Chars, LogUtils, ReadCmd, Tcss, ViewName
+from chezmoi_mousse import (
+    AppType,
+    Canvas,
+    Chars,
+    LogUtils,
+    ReadCmd,
+    Tcss,
+    ViewName,
+)
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -36,7 +44,7 @@ class DiffView(RichLog, AppType):
             classes=Tcss.border_title_top.name,
         )
         self.click_colored_file = Text(
-            f"Click a colored file in the tree to see the output from {self.pretty_diff_cmd}.",
+            f"Click a path with status to see the output from {self.pretty_diff_cmd}.",
             style="dim",
         )
 
@@ -45,13 +53,11 @@ class DiffView(RichLog, AppType):
         self.write(self.click_colored_file)
         self.border_title = f" {self.destDir} "
 
-    def _write_dir_info(self) -> None:
-        self.write(f"Managed directory {self.path}\n")
-        self.write(self.click_colored_file)
-
-    def _write_unchanged_file_info(self) -> None:
+    def _write_unchanged_path_info(self) -> None:
+        if self.path in self.app.chezmoi.managed_paths.dirs:
+            self.write(f"Managed directory {self.path}\n")
         self.write(
-            f'No diff available for "{self.path}", the file is unchanged.'
+            f'No diff available for "{self.path}", the path has no status.\n'
         )
         self.write(self.click_colored_file)
 
@@ -60,40 +66,77 @@ class DiffView(RichLog, AppType):
             return
         self.clear()
         # write lines for an unchanged file or directory except when we are in
-        # either the ApplyTab or ReAddTab
-        if self.path in self.app.chezmoi.managed_paths.dirs:
-            self._write_dir_info()
-            return
+        # either the ApplyTab or ReAddTabS
+
+        if (
+            self.ids.canvas_name == Canvas.apply
+            or self.ids.canvas_name == Canvas.forget
+        ):
+            if (
+                self.path
+                not in self.app.chezmoi.managed_paths.apply_status_files
+                and self.path
+                not in self.app.chezmoi.managed_paths.apply_status_dirs
+            ):
+                self._write_unchanged_path_info()
+                return
+        else:
+            if (
+                self.path
+                not in self.app.chezmoi.managed_paths.re_add_status_files
+                and self.path
+                not in self.app.chezmoi.managed_paths.re_add_status_dirs
+            ):
+                self._write_unchanged_path_info()
+                return
 
         # create the diff view for a changed file
         diff_output: "CommandResults" = self.app.chezmoi.read(
             self.diff_read_cmd, self.path
         )
-        diff_lines: list[str] = [
+
+        self.write(f'Output from "{self.pretty_diff_cmd} {self.path}"')
+
+        mode_diff_lines = [
             line
             for line in diff_output.std_out.splitlines()
             if line.strip() != ""
-            and (
-                line[0] in "+- "
-                or line.startswith("old mode")
-                or line.startswith("new mode")
-            )
+            and (line.startswith("old mode") or line.startswith("new mode"))
             and not line.startswith(("+++", "---"))
         ]
-        if not diff_lines:
-            self._write_unchanged_file_info()
-            return
 
-        for line in diff_lines.copy():
-            line = line.rstrip("\n")  # each write call contains a newline
-            if line.startswith("old mode") or line.startswith("new mode"):
-                self.write("Permissions/mode will be changed:")
-                self.write(f" {Chars.bullet} {line}")
-                # remove the line from diff_lines
-                diff_lines.remove(line)
+        path_diff_lines = [
+            line
+            for line in diff_output.std_out.splitlines()
+            if line.strip() != "" and line.startswith(("+++", "---"))
+        ]
 
-        self.write(f'Output from "{self.pretty_diff_cmd} {self.path}":\n')
-        for line in diff_lines:
+        other_diff_lines: list[str] = [
+            line
+            for line in diff_output.std_out.splitlines()
+            if line.strip() != ""
+            and line[0] in "+- "
+            and not line.startswith(("+++", "---"))
+        ]
+
+        if len(mode_diff_lines) > 0:
+            self.write("\nPermissions/mode will be changed:")
+        for line in mode_diff_lines:
+            self.write(f" {Chars.bullet} {line}")
+
+        if len(path_diff_lines) > 0:
+            self.write("\nPaths:")
+        for line in path_diff_lines:
+            if line.startswith("---"):
+                self.write(Text(line, self.app.theme_variables["text-error"]))
+            elif line.startswith("+++"):
+                self.write(
+                    Text(line, self.app.theme_variables["text-success"])
+                )
+
+        if len(other_diff_lines) > 0:
+            self.write("\nDiff lines:")
+        for line in other_diff_lines:
             if line.startswith("-"):
                 self.write(Text(line, self.app.theme_variables["text-error"]))
             elif line.startswith("+"):
