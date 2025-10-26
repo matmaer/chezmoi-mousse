@@ -14,6 +14,7 @@ class CanvasIds:
     __slots__ = (
         "canvas_name",
         "tab_container_id",
+        "tab_container_qid",
         "datatable_id",
         "listview_id",
         "switches_slider_id",
@@ -29,6 +30,7 @@ class CanvasIds:
         self.switches_slider_id = f"{canvas_name}_switches_slider"
         self.switches_slider_qid = f"#{self.switches_slider_id}"
         self.tab_container_id = f"{canvas_name}_container_id"
+        self.tab_container_qid = f"#{self.tab_container_id}"
 
     def button_id(
         self, qid: str = "", *, btn: OperateBtn | TabBtn | NavBtn
