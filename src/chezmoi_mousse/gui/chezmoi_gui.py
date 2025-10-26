@@ -19,7 +19,7 @@ from .shared.diff_view import DiffView
 from .shared.git_log_view import GitLogView
 from .shared.operate_screen import OperateInfo
 from .shared.tabs_base import TabsBase
-from .shared.tree_base import TreeBase
+from .shared.trees import TreeBase
 
 if TYPE_CHECKING:
     from chezmoi_mousse import PreRunData
