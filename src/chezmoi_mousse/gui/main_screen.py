@@ -11,6 +11,7 @@ from textual.widgets import (
     Button,
     Footer,
     Header,
+    Switch,
     TabbedContent,
     TabPane,
     Tabs,
@@ -25,6 +26,7 @@ from chezmoi_mousse import (
     OperateBtn,
     OperateLaunchData,
     PaneBtn,
+    Switches,
     Tcss,
     TreeName,
     ViewName,
@@ -187,6 +189,11 @@ class MainScreen(Screen[None], AppType):
         forget_tab_expanded_tree.populate_tree()
         forget_tab_flat_tree.populate_tree()
 
+        unchanged_switch_qid = Id.forget_tab.switch_id(
+            "#", switch=Switches.unchanged.value
+        )
+        self.query_one(unchanged_switch_qid, Switch).value = True
+
     def populate_destroy_trees(self) -> None:
         destroy_tab_managed_tree = self.screen.query_one(
             Id.destroy_tab.tree_id("#", tree=TreeName.managed_tree),
@@ -202,6 +209,10 @@ class MainScreen(Screen[None], AppType):
         destroy_tab_managed_tree.populate_tree()
         destroy_tab_expanded_tree.populate_tree()
         destroy_tab_flat_tree.populate_tree()
+        unchanged_switch_qid = Id.destroy_tab.switch_id(
+            "#", switch=Switches.unchanged.value
+        )
+        self.query_one(unchanged_switch_qid, Switch).value = True
 
     def update_config_tab_outputs(self, data: "SplashData") -> None:
         config_tab_switcher = self.screen.query_one(
