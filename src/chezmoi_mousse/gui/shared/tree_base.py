@@ -10,7 +10,6 @@ from textual.widgets._tree import TOGGLE_STYLE
 from textual.widgets.tree import TreeNode
 
 from chezmoi_mousse import AppType, Canvas, Chars, NodeData, Tcss, TreeName
-from chezmoi_mousse._chezmoi import PathDict
 
 from .operate_msg import TreeNodeSelectedMsg
 
@@ -198,25 +197,6 @@ class TreeBase(Tree[NodeData], AppType):
                 tree_node, file_path, status_code, is_leaf=True
             )
 
-    def dirs_without_status_in(
-        self, active_canvas: "ActiveCanvas", dir_path: Path
-    ) -> PathDict:
-        if active_canvas == Canvas.apply:
-            status_dirs = self.app.chezmoi.managed_paths.apply_status_dirs
-            has_status_check = self._has_apply_status_files_in
-        else:
-            status_dirs = self.app.chezmoi.managed_paths.re_add_status_dirs
-            has_status_check = self._has_re_add_status_files_in
-
-        result = {
-            path: "X"
-            for path in self.app.chezmoi.managed_paths.dirs
-            if path.parent == dir_path
-            and path not in status_dirs
-            and not has_status_check(path)
-        }
-        return result
-
     def _has_apply_status_files_in(self, dir_path: Path) -> bool:
         return any(
             path.is_relative_to(dir_path)
@@ -280,9 +260,21 @@ class TreeBase(Tree[NodeData], AppType):
             return
 
         existing_dirs = self._get_existing_dir_nodes(tree_node)
-        dir_paths = self.dirs_without_status_in(
-            self.active_canvas, tree_node.data.path
-        )
+
+        if self.active_canvas == Canvas.apply:
+            status_dirs = self.app.chezmoi.managed_paths.apply_status_dirs
+            has_status_check = self._has_apply_status_files_in
+        else:
+            status_dirs = self.app.chezmoi.managed_paths.re_add_status_dirs
+            has_status_check = self._has_re_add_status_files_in
+
+        dir_paths = {
+            path: "X"
+            for path in self.app.chezmoi.managed_paths.dirs
+            if path.parent == tree_node.data.path
+            and path not in status_dirs
+            and not has_status_check(path)
+        }
 
         for dir_path, status_code in dir_paths.items():
             if dir_path in existing_dirs:
