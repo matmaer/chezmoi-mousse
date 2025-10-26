@@ -5,7 +5,14 @@ from textual.app import ComposeResult
 from textual.containers import HorizontalGroup, Vertical, VerticalGroup
 from textual.widgets import Button
 
-from chezmoi_mousse import AreaName, NavBtn, OperateBtn, TabBtn, Tcss
+from chezmoi_mousse import (
+    AreaName,
+    NavBtn,
+    OpBtnTooltip,
+    OperateBtn,
+    TabBtn,
+    Tcss,
+)
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds
@@ -50,22 +57,22 @@ class OperateBtnHorizontal(HorizontalGroup):
                     label=button_enum.value,
                     id=self.ids.button_id(btn=button_enum),
                     classes=Tcss.operate_button.name,
+                    disabled=True,
                 )
 
     def on_mount(self) -> None:
         buttons = self.query(Button)
         for button in buttons:
             if button.id in (
-                self.ids.button_id(btn=OperateBtn.add_dir),
-                self.ids.button_id(btn=OperateBtn.apply_dir),
-                self.ids.button_id(btn=OperateBtn.destroy_dir),
+                self.ids.button_id(btn=OperateBtn.add_file),
+                self.ids.button_id(btn=OperateBtn.apply_file),
                 self.ids.button_id(btn=OperateBtn.destroy_file),
                 self.ids.button_id(btn=OperateBtn.forget_file),
-                self.ids.button_id(btn=OperateBtn.forget_dir),
-                self.ids.button_id(btn=OperateBtn.re_add_dir),
+                self.ids.button_id(btn=OperateBtn.re_add_file),
             ):
-                button.tooltip = "Not yet implemented."
-                button.disabled = True
+                button.tooltip = OpBtnTooltip.select_file
+            else:
+                button.tooltip = OpBtnTooltip.select_dir
 
 
 class TabBtnHorizontal(HorizontalGroup):

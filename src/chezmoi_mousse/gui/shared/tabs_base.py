@@ -6,7 +6,17 @@ from textual.containers import Horizontal
 from textual.reactive import reactive
 from textual.widgets import Button, Switch
 
-from chezmoi_mousse import AreaName, Switches, TabBtn, Tcss, TreeName, ViewName
+from chezmoi_mousse import (
+    AreaName,
+    Canvas,
+    OpBtnTooltip,
+    OperateBtn,
+    Switches,
+    TabBtn,
+    Tcss,
+    TreeName,
+    ViewName,
+)
 
 from .contents_view import ContentsView
 from .diff_view import DiffView
@@ -62,6 +72,60 @@ class TabsBase(Horizontal):
     def update_current_path(self, event: TreeNodeSelectedMsg) -> None:
         self.current_path = event.node_data.path
         self._update_view_path()
+
+        # Update Button enabled/Disabled state
+        if self.ids.canvas_name == Canvas.apply:
+            file_button = self.query_one(
+                self.ids.button_id("#", btn=OperateBtn.apply_file), Button
+            )
+            dir_button = self.query_one(
+                self.ids.button_id("#", btn=OperateBtn.apply_dir), Button
+            )
+        elif self.ids.canvas_name == Canvas.re_add:
+            file_button = self.query_one(
+                self.ids.button_id("#", btn=OperateBtn.re_add_file), Button
+            )
+            dir_button = self.query_one(
+                self.ids.button_id("#", btn=OperateBtn.re_add_dir), Button
+            )
+        elif self.ids.canvas_name == Canvas.forget:
+            file_button = self.query_one(
+                self.ids.button_id("#", btn=OperateBtn.forget_file), Button
+            )
+            dir_button = self.query_one(
+                self.ids.button_id("#", btn=OperateBtn.forget_dir), Button
+            )
+        elif self.ids.canvas_name == Canvas.destroy:
+            file_button = self.query_one(
+                self.ids.button_id("#", btn=OperateBtn.destroy_file), Button
+            )
+            dir_button = self.query_one(
+                self.ids.button_id("#", btn=OperateBtn.destroy_dir), Button
+            )
+        else:
+            return
+        if event.node_data.is_leaf is True:
+            if event.node_data.status != "X":
+                dir_button.disabled = True
+                dir_button.tooltip = OpBtnTooltip.select_dir
+                file_button.disabled = False
+                file_button.tooltip = None
+            else:
+                dir_button.disabled = True
+                dir_button.tooltip = OpBtnTooltip.dir_without_status
+                file_button.disabled = True
+                file_button.tooltip = OpBtnTooltip.file_without_status
+        elif not event.node_data.is_leaf:
+            if event.node_data.status != "X":
+                dir_button.disabled = False
+                dir_button.tooltip = None
+                file_button.disabled = True
+                file_button.tooltip = OpBtnTooltip.select_file
+            else:
+                dir_button.disabled = True
+                dir_button.tooltip = OpBtnTooltip.dir_without_status
+                file_button.disabled = True
+                file_button.tooltip = OpBtnTooltip.file_without_status
 
     @on(Button.Pressed, Tcss.tab_button.value)
     def handle_tab_button_pressed(self, event: Button.Pressed) -> None:

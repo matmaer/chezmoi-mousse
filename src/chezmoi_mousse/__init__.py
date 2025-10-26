@@ -14,7 +14,13 @@ from chezmoi_mousse._chezmoi import (
     WriteCmd,
 )
 from chezmoi_mousse._id_classes import CanvasIds, Id
-from chezmoi_mousse._labels import NavBtn, OperateBtn, PaneBtn, TabBtn
+from chezmoi_mousse._labels import (
+    NavBtn,
+    OpBtnTooltip,
+    OperateBtn,
+    PaneBtn,
+    TabBtn,
+)
 from chezmoi_mousse._names import AreaName, Canvas, TreeName, ViewName
 from chezmoi_mousse._switch_data import Switches
 from chezmoi_mousse._tcss_classes import Tcss
@@ -49,6 +55,7 @@ __all__ = [
     "NavBtn",
     "NodeData",
     "OperateBtn",
+    "OpBtnTooltip",
     "OperateLaunchData",
     "OperateResultData",
     "PaneBtn",
