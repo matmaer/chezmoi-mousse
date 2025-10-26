@@ -203,8 +203,7 @@ class MainScreen(Screen[None], AppType):
         forget_tab_expanded_tree.populate_tree()
         forget_tab_flat_tree.populate_tree()
         unchanged_switch = self.query_one(
-            Id.forget_tab.switch_id("#", switch=Switches.unchanged.value),
-            Switch,
+            Id.forget_tab.switch_id("#", switch=Switches.unchanged), Switch
         )
         unchanged_switch.value = True
 
@@ -224,8 +223,7 @@ class MainScreen(Screen[None], AppType):
         destroy_tab_expanded_tree.populate_tree()
         destroy_tab_flat_tree.populate_tree()
         unchanged_switch = self.query_one(
-            Id.destroy_tab.switch_id("#", switch=Switches.unchanged.value),
-            Switch,
+            Id.destroy_tab.switch_id("#", switch=Switches.unchanged), Switch
         )
         unchanged_switch.value = True
 

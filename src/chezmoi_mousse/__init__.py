@@ -22,7 +22,7 @@ from chezmoi_mousse._labels import (
     TabBtn,
 )
 from chezmoi_mousse._names import AreaName, Canvas, TreeName, ViewName
-from chezmoi_mousse._switch_data import Switches
+from chezmoi_mousse._switches import Switches
 from chezmoi_mousse._tcss_classes import Tcss
 
 if TYPE_CHECKING:

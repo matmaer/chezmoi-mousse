@@ -281,11 +281,9 @@ class AddTab(TabsBase):
             self.ids.tree_id("#", tree=TreeName.add_tree), FilteredDirTree
         )
         if event.switch.id == self.ids.switch_id(
-            switch=Switches.unmanaged_dirs.value
+            switch=Switches.unmanaged_dirs
         ):
             tree.unmanaged_dirs = event.value
-        elif event.switch.id == self.ids.switch_id(
-            switch=Switches.unwanted.value
-        ):
+        elif event.switch.id == self.ids.switch_id(switch=Switches.unwanted):
             tree.unwanted = event.value
         tree.reload()

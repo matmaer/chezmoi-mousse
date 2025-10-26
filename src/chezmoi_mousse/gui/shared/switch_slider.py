@@ -24,17 +24,19 @@ class SwitchSlider(VerticalGroup):
     def compose(self) -> ComposeResult:
         for switch_data in self.switches:
             with HorizontalGroup(
-                id=self.ids.switch_horizontal_id(switch=switch_data.value),
+                id=self.ids.switch_horizontal_id(switch=switch_data),
                 classes=Tcss.switch_horizontal.name,
             ):
-                yield Switch(id=self.ids.switch_id(switch=switch_data.value))
+                yield Switch(
+                    id=self.ids.switch_id(switch=switch_data)
+                ).with_tooltip(tooltip=switch_data.value.enabled_tooltip)
                 yield Label(
                     switch_data.value.label, classes=Tcss.switch_label.name
-                ).with_tooltip(tooltip=switch_data.value.tooltip)
+                )
 
     def on_mount(self) -> None:
         # add padding to the top switch horizontal group
         self.query_one(
-            self.ids.switch_horizontal_id("#", switch=self.switches[0].value),
+            self.ids.switch_horizontal_id("#", switch=self.switches[0]),
             HorizontalGroup,
         ).add_class(Tcss.pad_bottom.name)

@@ -156,8 +156,7 @@ class TabsBase(Horizontal):
                 self.tree_switcher_qid, TreeSwitcher
             )
             expand_all_switch = self.query_one(
-                self.ids.switch_id("#", switch=Switches.expand_all.value),
-                Switch,
+                self.ids.switch_id("#", switch=Switches.expand_all), Switch
             )
             if event.button.id == self.tree_tab_btn:
                 if self.expand_all_state is True:
@@ -169,8 +168,14 @@ class TabsBase(Horizontal):
                         tree=TreeName.managed_tree
                     )
                 expand_all_switch.disabled = False
+                expand_all_switch.tooltip = (
+                    Switches.expand_all.value.enabled_tooltip
+                )
             elif event.button.id == self.list_tab_btn:
                 expand_all_switch.disabled = True
+                expand_all_switch.tooltip = (
+                    Switches.expand_all.value.disabled_tooltip
+                )
                 tree_switcher.current = self.ids.tree_id(
                     tree=TreeName.list_tree
                 )
@@ -178,9 +183,7 @@ class TabsBase(Horizontal):
     @on(Switch.Changed)
     def handle_tree_filter_switches(self, event: Switch.Changed) -> None:
         event.stop()
-        if event.switch.id == self.ids.switch_id(
-            switch=Switches.unchanged.value
-        ):
+        if event.switch.id == self.ids.switch_id(switch=Switches.unchanged):
             tree_pairs: list[
                 tuple[TreeName, type[ExpandedTree | ManagedTree | ListTree]]
             ] = [
@@ -192,9 +195,7 @@ class TabsBase(Horizontal):
                 self.query_one(
                     self.ids.tree_id("#", tree=tree_str), tree_cls
                 ).unchanged = event.value
-        elif event.switch.id == self.ids.switch_id(
-            switch=Switches.expand_all.value
-        ):
+        elif event.switch.id == self.ids.switch_id(switch=Switches.expand_all):
             self.expand_all_state = event.value
             tree_switcher = self.query_one(
                 self.tree_switcher_qid, TreeSwitcher

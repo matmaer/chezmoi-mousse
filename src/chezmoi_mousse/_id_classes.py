@@ -5,7 +5,7 @@ from typing import ClassVar
 
 from chezmoi_mousse._labels import NavBtn, OperateBtn, TabBtn
 from chezmoi_mousse._names import AreaName, Canvas, TreeName, ViewName
-from chezmoi_mousse._switch_data import SwitchData
+from chezmoi_mousse._switches import Switches
 
 __all__ = ["CanvasIds", "Id"]
 
@@ -49,15 +49,11 @@ class CanvasIds:
     def content_switcher_id(self, qid: str = "", *, area: AreaName) -> str:
         return f"{qid}{self.canvas_name}_{area}_content_switcher"
 
-    def switch_horizontal_id(
-        self, qid: str = "", *, switch: SwitchData
-    ) -> str:
-        return (
-            f"{qid}{self.canvas_name}_{switch.switch_name}_switch_horizontal"
-        )
+    def switch_horizontal_id(self, qid: str = "", *, switch: Switches) -> str:
+        return f"{qid}{self.canvas_name}_{switch.value.switch_name}_switch_horizontal"
 
-    def switch_id(self, qid: str = "", *, switch: SwitchData) -> str:
-        return f"{qid}{self.canvas_name}_{switch.switch_name}_switch"
+    def switch_id(self, qid: str = "", *, switch: Switches) -> str:
+        return f"{qid}{self.canvas_name}_{switch.value.switch_name}_switch"
 
     def tab_vertical_id(self, qid: str = "", *, area: AreaName) -> str:
         return f"{qid}{self.canvas_name}_{area}_vertical"
