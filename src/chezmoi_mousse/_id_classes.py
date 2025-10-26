@@ -1,7 +1,7 @@
 """Contains classes to enable setting widget id's without hardcoded strings or
 generated the id dynamically when subclassing or to query a widget."""
 
-from dataclasses import dataclass
+from typing import ClassVar
 
 from chezmoi_mousse._labels import NavBtn, OperateBtn, TabBtn
 from chezmoi_mousse._names import AreaName, Canvas, TreeName, ViewName
@@ -69,16 +69,15 @@ class CanvasIds:
         return f"{qid}{self.canvas_name}_{view}"
 
 
-@dataclass(frozen=True)
 class Id:
-    add_tab: CanvasIds = CanvasIds(Canvas.add)
-    apply_tab: CanvasIds = CanvasIds(Canvas.apply)
-    chezmoi_init: CanvasIds = CanvasIds(Canvas.chezmoi_init)
-    config_tab: CanvasIds = CanvasIds(Canvas.config)
-    destroy_tab: CanvasIds = CanvasIds(Canvas.destroy)
-    forget_tab: CanvasIds = CanvasIds(Canvas.forget)
-    help_tab: CanvasIds = CanvasIds(Canvas.help)
-    logs_tab: CanvasIds = CanvasIds(Canvas.logs)
-    operate_launch: CanvasIds = CanvasIds(Canvas.operate_launch)
-    operate_result: CanvasIds = CanvasIds(Canvas.operate_result)
-    re_add_tab: CanvasIds = CanvasIds(Canvas.re_add)
+    add_tab: ClassVar[CanvasIds] = CanvasIds(Canvas.add)
+    apply_tab: ClassVar[CanvasIds] = CanvasIds(Canvas.apply)
+    chezmoi_init: ClassVar[CanvasIds] = CanvasIds(Canvas.chezmoi_init)
+    config_tab: ClassVar[CanvasIds] = CanvasIds(Canvas.config)
+    destroy_tab: ClassVar[CanvasIds] = CanvasIds(Canvas.destroy)
+    forget_tab: ClassVar[CanvasIds] = CanvasIds(Canvas.forget)
+    help_tab: ClassVar[CanvasIds] = CanvasIds(Canvas.help)
+    logs_tab: ClassVar[CanvasIds] = CanvasIds(Canvas.logs)
+    operate_launch: ClassVar[CanvasIds] = CanvasIds(Canvas.operate_launch)
+    operate_result: ClassVar[CanvasIds] = CanvasIds(Canvas.operate_result)
+    re_add_tab: ClassVar[CanvasIds] = CanvasIds(Canvas.re_add)
