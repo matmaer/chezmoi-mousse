@@ -347,12 +347,6 @@ class TreeBase(Tree[NodeData], AppType):
         text = Text.assemble(prefix, node_label)
         return text
 
-    @on(Tree.NodeCollapsed)
-    def remove_node_children(
-        self, event: Tree.NodeCollapsed[NodeData]
-    ) -> None:
-        event.node.remove_children()
-
     @on(Tree.NodeSelected)
     def send_node_context_message(
         self, event: Tree.NodeSelected[NodeData]
