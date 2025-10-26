@@ -36,6 +36,11 @@ class TreeBase(Tree[NodeData], AppType):
         self.root_data = NodeData(
             path=self.destDir, is_leaf=False, found=True, status="F"
         )
+        self.only_existing_paths = (
+            True
+            if self.ids.canvas_name in (Canvas.destroy, Canvas.re_add)
+            else False
+        )
         super().__init__(
             label="root",
             id=self.ids.tree_id(tree=self.tree_name),
@@ -97,18 +102,14 @@ class TreeBase(Tree[NodeData], AppType):
         nodes.extend(collect_nodes(self.root))
         return nodes
 
-    def _get_existing_leaves(
-        self, tree_node: TreeNode[NodeData]
-    ) -> list["Path"]:
+    def _get_leaves_in(self, tree_node: TreeNode[NodeData]) -> list["Path"]:
         return [
             child.data.path
             for child in tree_node.children
             if child.data is not None and child.data.is_leaf
         ]
 
-    def _get_existing_dir_nodes(
-        self, tree_node: TreeNode[NodeData]
-    ) -> list["Path"]:
+    def _get_dir_nodes_in(self, tree_node: TreeNode[NodeData]) -> list["Path"]:
         return [
             child.data.path
             for child in tree_node.children
@@ -126,7 +127,7 @@ class TreeBase(Tree[NodeData], AppType):
         node_data = NodeData(
             path=path, is_leaf=is_leaf, found=found, status=status_code
         )
-        if self.ids.canvas_name == Canvas.re_add and node_data.found is False:
+        if node_data.found is False and self.only_existing_paths:
             return
         node_label: Text = self.style_label(node_data)
         if is_leaf:
@@ -151,15 +152,13 @@ class TreeBase(Tree[NodeData], AppType):
         if tree_node.data is None:
             return
 
-        existing_leaves = self._get_existing_leaves(tree_node)
-
         if self.ids.canvas_name in (Canvas.apply, Canvas.forget):
             status_files = self.app.chezmoi.managed_paths.apply_status_files
         else:
             status_files = self.app.chezmoi.managed_paths.re_add_status_files
 
         for file_path, status_code in status_files.items():
-            if file_path in existing_leaves:
+            if file_path in self._get_leaves_in(tree_node):
                 continue
             if file_path.parent != tree_node.data.path:
                 continue
@@ -184,9 +183,8 @@ class TreeBase(Tree[NodeData], AppType):
             path: "X" for path in paths if path.parent == tree_node.data.path
         }
 
-        existing_leaves = self._get_existing_leaves(tree_node)
         for file_path, status_code in files_without_status.items():
-            if file_path in existing_leaves:
+            if file_path in self._get_leaves_in(tree_node):
                 continue
             self.create_and_add_node(
                 tree_node, file_path, status_code, is_leaf=True
@@ -207,8 +205,6 @@ class TreeBase(Tree[NodeData], AppType):
     def add_status_dirs_in(self, *, tree_node: TreeNode[NodeData]) -> None:
         if tree_node.data is None:
             return
-
-        existing_dirs = self._get_existing_dir_nodes(tree_node)
 
         if self.ids.canvas_name in (Canvas.apply, Canvas.forget):
             result = {
@@ -242,7 +238,7 @@ class TreeBase(Tree[NodeData], AppType):
             dir_paths = dict(sorted(result.items()))
 
         for dir_path, status_code in dir_paths.items():
-            if dir_path in existing_dirs:
+            if dir_path in self._get_dir_nodes_in(tree_node):
                 continue
             self.create_and_add_node(
                 tree_node, dir_path, status_code, is_leaf=False
@@ -253,8 +249,6 @@ class TreeBase(Tree[NodeData], AppType):
     ) -> None:
         if tree_node.data is None:
             return
-
-        existing_dirs = self._get_existing_dir_nodes(tree_node)
 
         if self.ids.canvas_name in (Canvas.apply, Canvas.forget):
             status_dirs = self.app.chezmoi.managed_paths.apply_status_dirs
@@ -272,7 +266,7 @@ class TreeBase(Tree[NodeData], AppType):
         }
 
         for dir_path, status_code in dir_paths.items():
-            if dir_path in existing_dirs:
+            if dir_path in self._get_dir_nodes_in(tree_node):
                 continue
             self.create_and_add_node(
                 tree_node, dir_path, status_code, is_leaf=False
