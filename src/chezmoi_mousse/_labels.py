@@ -54,12 +54,13 @@ class SwitchLabel(StrEnum):
 
 class TabBtn(StrEnum):
     # Tab buttons for content switcher within a main tab
-    app_log = "App"
+    app_log = "App Log"
     contents = "Contents"
-    debug_log = "Debug"
+    debug_log = "Debug Log"
     diff = "Diff"
-    git_log_path = "Git-Log"
-    git_log_global = "Global Git-Log"
+    git_log_path = "Git Log"
+    git_log_global = "Global Git Log"
     list = "List"
-    output_log = "Output"
+    read_output_log = "Read Outputs"
+    write_output_log = "Write Outputs"
     tree = "Tree"

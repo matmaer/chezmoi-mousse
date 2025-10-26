@@ -71,7 +71,8 @@ class MainScreen(Screen[None], AppType):
 
         self.splash_data = splash_data
         self.app_log: AppLog
-        self.output_log: OutputLog
+        self.read_output_log: OutputLog
+        self.write_output_log: OutputLog
         self.debug_log: DebugLog
 
         self.current_operate_path: Path | None = None
@@ -91,12 +92,25 @@ class MainScreen(Screen[None], AppType):
         for cmd in self.splash_data.exectuded_commands:
             self.app_log.dimmed(f"{cmd}")
 
-        output_logger: OutputLog = self.query_one(
-            Id.logs_tab.view_id("#", view=ViewName.output_log_view), OutputLog
+        read_output_logger: OutputLog = self.query_one(
+            Id.logs_tab.view_id("#", view=ViewName.read_output_log_view),
+            OutputLog,
         )
-        self.output_log = output_logger
-        self.app.chezmoi.output_log = output_logger
-        self.app_log.success("Output log initialized")
+        self.read_output_log = read_output_logger
+        self.app.chezmoi.read_output_log = read_output_logger
+        self.read_output_log.ready_to_run(
+            "--- Read Output log initialized ---"
+        )
+        self.app_log.success("Read Output log initialized")
+        self.write_output_log = self.query_one(
+            Id.logs_tab.view_id("#", view=ViewName.write_output_log_view),
+            OutputLog,
+        )
+        self.write_output_log.ready_to_run(
+            "--- Write Output log initialized ---"
+        )
+        self.app.chezmoi.write_output_log = self.write_output_log
+        self.app_log.success("Write Output log initialized")
 
         if self.app.dev_mode:
             debug_logger: DebugLog = self.query_one(

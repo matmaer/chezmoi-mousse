@@ -22,8 +22,9 @@ __all__ = ["LogsTab"]
 class BorderTitle(StrEnum):
     app_log = " App Log "
     debug_log = " Debug Log "
-    git_log_global = " Global Git-Log "
-    output_log = " Commands StdOut "
+    git_log_global = " Global Git Log "
+    read_output_log = " Read Output Log "
+    write_output_log = " Write Output Log "
 
 
 class LogsTabSwitcher(ContentSwitcher, AppType):
@@ -38,7 +39,8 @@ class LogsTabSwitcher(ContentSwitcher, AppType):
 
     def compose(self) -> ComposeResult:
         yield AppLog(ids=self.ids)
-        yield OutputLog(ids=self.ids)
+        yield OutputLog(ids=self.ids, view_name=ViewName.read_output_log_view)
+        yield OutputLog(ids=self.ids, view_name=ViewName.write_output_log_view)
         yield GitLogView(ids=self.ids)
         if self.app.dev_mode is True:
             yield DebugLog(ids=self.ids)
@@ -57,7 +59,8 @@ class LogsTab(TabsBase, AppType):
         with Vertical():
             tab_buttons = (
                 TabBtn.app_log,
-                TabBtn.output_log,
+                TabBtn.read_output_log,
+                TabBtn.write_output_log,
                 TabBtn.git_log_global,
             )
             if self.app.dev_mode is True:
@@ -76,9 +79,18 @@ class LogsTab(TabsBase, AppType):
         if event.button.id == self.ids.button_id(btn=TabBtn.app_log):
             switcher.current = self.ids.view_id(view=ViewName.app_log_view)
             switcher.border_title = BorderTitle.app_log
-        elif event.button.id == self.ids.button_id(btn=TabBtn.output_log):
-            switcher.current = self.ids.view_id(view=ViewName.output_log_view)
-            switcher.border_title = BorderTitle.output_log
+        elif event.button.id == self.ids.button_id(btn=TabBtn.read_output_log):
+            switcher.current = self.ids.view_id(
+                view=ViewName.read_output_log_view
+            )
+            switcher.border_title = BorderTitle.read_output_log
+        elif event.button.id == self.ids.button_id(
+            btn=TabBtn.write_output_log
+        ):
+            switcher.current = self.ids.view_id(
+                view=ViewName.write_output_log_view
+            )
+            switcher.border_title = BorderTitle.write_output_log
         elif event.button.id == self.ids.button_id(btn=TabBtn.git_log_global):
             switcher.border_title = BorderTitle.git_log_global
             switcher.current = self.ids.view_id(view=ViewName.git_log_view)

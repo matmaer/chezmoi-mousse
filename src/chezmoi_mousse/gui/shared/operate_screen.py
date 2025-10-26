@@ -17,6 +17,7 @@ from chezmoi_mousse import (
     OperateResultData,
     ReadCmd,
     Tcss,
+    ViewName,
     WriteCmd,
 )
 from chezmoi_mousse.gui.shared.button_groups import OperateBtnHorizontal
@@ -189,7 +190,7 @@ class OperateResultScreen(Screen[OperateResultData], AppType):
         yield Label("Executed Commands", classes=Tcss.section_label.name)
         yield AppLog(ids=self.ids)
         yield Label("Operate Command Output", classes=Tcss.section_label.name)
-        yield OutputLog(ids=self.ids)
+        yield OutputLog(ids=self.ids, view_name=ViewName.write_output_log_view)
         yield OperateBtnHorizontal(
             ids=self.ids, buttons=(OperateBtn.close_operate_results,)
         )

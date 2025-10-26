@@ -141,10 +141,11 @@ class DebugLog(CommandLogBase, AppType):
 
 class OutputLog(CommandLogBase, AppType):
 
-    def __init__(self, ids: "CanvasIds") -> None:
+    def __init__(self, ids: "CanvasIds", view_name: ViewName) -> None:
         self.ids = ids
+        self.view_name = view_name
         super().__init__(
-            id=self.ids.view_id(view=ViewName.output_log_view),
+            id=self.ids.view_id(view=self.view_name),
             markup=True,
             max_lines=10000,
             classes=Tcss.log_views.name,
