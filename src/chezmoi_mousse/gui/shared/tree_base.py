@@ -353,28 +353,10 @@ class TreeBase(Tree[NodeData], AppType):
     ) -> None:
         if event.node == self.root:
             return
-        if (
-            event.node.parent is not None
-            and event.node.parent.data is not None
-            and event.node.data is not None
-        ):
+        if event.node.data is not None:
             self.node_selected_msg = TreeNodeSelectedMsg(
-                tree_name=self.tree_name,
-                node_data=event.node.data,
-                node_parent=event.node.parent.data,
-                node_leaves=[
-                    child.data
-                    for child in event.node.children
-                    if child.data is not None and child.data.is_leaf is True
-                ],
-                node_subdirs=[
-                    child.data
-                    for child in event.node.children
-                    if child.data is not None and child.data.is_leaf is False
-                ],
+                node_data=event.node.data
             )
-        else:
-            return
         self.post_message(self.node_selected_msg)
 
     # 4 methods to provide tab navigation without intaraction with the tree
