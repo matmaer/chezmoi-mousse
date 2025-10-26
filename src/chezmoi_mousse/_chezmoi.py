@@ -28,6 +28,7 @@ class GlobalCmd(Enum):
         "--color=off",
         "--force",
         "--interactive=false",
+        "--keep-going=false",
         "--mode=file",
         "--no-pager",
         "--no-tty",
@@ -54,6 +55,7 @@ class VerbArgs(Enum):
     include_dirs = "--include=dirs"
     include_files = "--include=files"
     path_style_absolute = "--path-style=absolute"
+    not_recursive = "--recursive=false"
     reverse = "--reverse"
 
 
@@ -115,13 +117,13 @@ class ReadCmd(Enum):
 
 
 class WriteCmd(Enum):
-    add = ["add"]
+    add = ["add", VerbArgs.not_recursive.value]
     # add_encrypt = ["add", VerbArgs.encrypt.value]
-    apply = ["apply"]
-    destroy = ["destroy"]
+    apply = ["apply", VerbArgs.not_recursive.value]
+    destroy = ["destroy", VerbArgs.not_recursive.value]
     forget = ["forget"]
     init = ["init"]
-    re_add = ["re-add"]
+    re_add = ["re-add", VerbArgs.not_recursive.value]
 
 
 class LogUtils:
