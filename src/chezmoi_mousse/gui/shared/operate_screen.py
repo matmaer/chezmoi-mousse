@@ -145,6 +145,8 @@ class OperateScreen(Screen[OperateResultData], AppType):
         )
 
     def on_mount(self) -> None:
+        for button in self.query(Button):
+            button.disabled = False
         if self.launch_data.btn_enum_member in (
             OperateBtn.apply_file,
             OperateBtn.re_add_file,
