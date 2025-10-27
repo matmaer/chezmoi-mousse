@@ -14,14 +14,9 @@ from chezmoi_mousse._chezmoi import (
     WriteCmd,
 )
 from chezmoi_mousse._id_classes import CanvasIds, Id
-from chezmoi_mousse._labels import (
-    NavBtn,
-    OpBtnTooltip,
-    OperateBtn,
-    PaneBtn,
-    TabBtn,
-)
+from chezmoi_mousse._labels import NavBtn, PaneBtn, TabBtn
 from chezmoi_mousse._names import AreaName, Canvas, TreeName, ViewName
+from chezmoi_mousse._operate_buttons import OperateBtn
 from chezmoi_mousse._switches import Switches
 from chezmoi_mousse._tcss_classes import Tcss
 
@@ -55,7 +50,6 @@ __all__ = [
     "NavBtn",
     "NodeData",
     "OperateBtn",
-    "OpBtnTooltip",
     "OperateLaunchData",
     "OperateResultData",
     "PaneBtn",
@@ -86,7 +80,6 @@ class NodeData:
 @dataclass(slots=True)
 class OperateLaunchData:
     btn_enum_member: OperateBtn
-    button_id: str
     path: "Path"
 
 

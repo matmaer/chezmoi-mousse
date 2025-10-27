@@ -9,7 +9,6 @@ from textual.widgets import Button, Switch
 from chezmoi_mousse import (
     AreaName,
     Canvas,
-    OpBtnTooltip,
     OperateBtn,
     Switches,
     TabBtn,
@@ -105,27 +104,15 @@ class TabsBase(Horizontal):
         else:
             return
         if event.node_data.is_leaf is True:
-            if event.node_data.status != "X":
-                dir_button.disabled = True
-                dir_button.tooltip = OpBtnTooltip.select_dir
-                file_button.disabled = False
-                file_button.tooltip = None
-            else:
-                dir_button.disabled = True
-                dir_button.tooltip = OpBtnTooltip.dir_without_status
-                file_button.disabled = True
-                file_button.tooltip = OpBtnTooltip.file_without_status
-        elif not event.node_data.is_leaf:
-            if event.node_data.status != "X":
-                dir_button.disabled = False
-                dir_button.tooltip = None
-                file_button.disabled = True
-                file_button.tooltip = OpBtnTooltip.select_file
-            else:
-                dir_button.disabled = True
-                dir_button.tooltip = OpBtnTooltip.dir_without_status
-                file_button.disabled = True
-                file_button.tooltip = OpBtnTooltip.file_without_status
+            dir_button.disabled = True
+            dir_button.tooltip = OperateBtn.add_dir.tooltip.select_dir
+            file_button.disabled = False
+            file_button.tooltip = None
+        elif event.node_data.is_leaf is False:
+            dir_button.disabled = False
+            dir_button.tooltip = None
+            file_button.disabled = True
+            file_button.tooltip = OperateBtn.add_file.tooltip.select_file
 
     @on(Button.Pressed, Tcss.tab_button.value)
     def handle_tab_button_pressed(self, event: Button.Pressed) -> None:

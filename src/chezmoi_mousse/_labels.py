@@ -1,6 +1,6 @@
 from enum import StrEnum
 
-__all__ = ["NavBtn", "OperateBtn", "OpBtnTooltip", "PaneBtn", "TabBtn"]
+__all__ = ["NavBtn", "PaneBtn", "TabBtn"]
 
 
 class NavBtn(StrEnum):
@@ -15,30 +15,6 @@ class NavBtn(StrEnum):
     init_new_repo = "Initialize New Repo"
     re_add_help = "Re-Add Help"
     template_data = "Template Data"
-
-
-class OperateBtn(StrEnum):
-    add_dir = "Add Dir"
-    add_file = "Add File"
-    apply_dir = "Apply Dir"
-    apply_file = "Apply File"
-    clone_chezmoi_repo = "Clone Repo"
-    close_operate_results = "Close Operate Results"
-    destroy_dir = "Destroy Dir"
-    destroy_file = "Destroy File"
-    forget_dir = "Forget Dir"
-    forget_file = "Forget File"
-    init_new_repo = "Initialize"
-    operate_dismiss = "Cancel"
-    re_add_dir = "Re-Add Dir"
-    re_add_file = "Re-Add File"
-
-
-class OpBtnTooltip(StrEnum):
-    select_file = "Select a file to operate on."
-    select_dir = "Select a directory to operate on."
-    file_without_status = "The selected file has no status to operate on."
-    dir_without_status = "The selected directory has no status to operate on."
 
 
 class PaneBtn(StrEnum):

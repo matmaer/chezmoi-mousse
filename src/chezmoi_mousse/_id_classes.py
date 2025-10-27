@@ -3,8 +3,9 @@ generated the id dynamically when subclassing or to query a widget."""
 
 from typing import ClassVar
 
-from chezmoi_mousse._labels import NavBtn, OperateBtn, TabBtn
+from chezmoi_mousse._labels import NavBtn, TabBtn
 from chezmoi_mousse._names import AreaName, Canvas, TreeName, ViewName
+from chezmoi_mousse._operate_buttons import OperateBtn
 from chezmoi_mousse._switches import Switches
 
 __all__ = ["CanvasIds", "Id"]
@@ -37,6 +38,7 @@ class CanvasIds:
     ) -> str:
         if isinstance(btn, OperateBtn):
             suffix = "_op_btn"
+            return f"{qid}{self.canvas_name}_{btn.name}{suffix}"
         elif isinstance(btn, TabBtn):
             suffix = "_tab_btn"
         else:

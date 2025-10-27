@@ -358,8 +358,7 @@ class MainScreen(Screen[None], AppType):
             self.notify("Select a file to operate on", severity="warning")
             return
         launch_data = OperateLaunchData(
-            btn_enum_member=OperateBtn(event.button.label),
-            button_id=event.button.id,
+            btn_enum_member=OperateBtn.from_label(str(event.button.label)),
             path=self.current_operate_path,
         )
         self.app.push_screen(
