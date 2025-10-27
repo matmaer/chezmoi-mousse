@@ -5,10 +5,9 @@ from subprocess import CompletedProcess, run
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from chezmoi_mousse import PathDict
 
     from .gui.logs_tab import AppLog, DebugLog, OutputLog
-
-type PathDict = dict[Path, str]
 
 __all__ = [
     "WriteCmd",
@@ -237,22 +236,22 @@ class ManagedPaths:
     # caches corresponding to the stdout fields
     _cached_managed_dirs: list[Path] | None = None
     _cached_managed_files: list[Path] | None = None
-    _cached_status_dirs_dict: PathDict | None = None
-    _cached_status_files_dict: PathDict | None = None
+    _cached_status_dirs_dict: "PathDict | None" = None
+    _cached_status_files_dict: "PathDict | None" = None
 
     # caches splitting status into apply and re-add contexts
-    _cached_apply_status_dirs: PathDict | None = None
-    _cached_apply_status_files: PathDict | None = None
-    _cached_re_add_status_dirs: PathDict | None = None
-    _cached_re_add_status_files: PathDict | None = None
+    _cached_apply_status_dirs: "PathDict | None" = None
+    _cached_apply_status_files: "PathDict | None" = None
+    _cached_re_add_status_dirs: "PathDict | None" = None
+    _cached_re_add_status_files: "PathDict | None" = None
 
     # caches derived from the split status contexts
     _cached_apply_files_without_status: list[Path] | None = None
     _cached_re_add_files_without_status: list[Path] | None = None
 
     # other caches
-    _cached_apply_status_paths: PathDict | None = None
-    _cached_re_add_status_paths: PathDict | None = None
+    _cached_apply_status_paths: "PathDict | None" = None
+    _cached_re_add_status_paths: "PathDict | None" = None
 
     def clear_cache(self) -> None:
         # clear caches corresponding to the stdout fields
@@ -294,7 +293,7 @@ class ManagedPaths:
         return self._cached_managed_files
 
     @property
-    def status_dirs(self) -> PathDict:
+    def status_dirs(self) -> "PathDict":
         if self._cached_status_dirs_dict is None:
             self._cached_status_dirs_dict = {
                 Path(line[3:]): line[:2]
@@ -304,7 +303,7 @@ class ManagedPaths:
         return self._cached_status_dirs_dict
 
     @property
-    def status_files(self) -> PathDict:
+    def status_files(self) -> "PathDict":
         if self._cached_status_files_dict is None:
             self._cached_status_files_dict = {
                 Path(line[3:]): line[:2]
@@ -316,7 +315,7 @@ class ManagedPaths:
     # properties filtering status files into apply and re-add contexts
 
     @property
-    def apply_status_files(self) -> PathDict:
+    def apply_status_files(self) -> "PathDict":
         if self._cached_apply_status_files is None:
             self._cached_apply_status_files = {
                 path: status_pair[1]
@@ -326,7 +325,7 @@ class ManagedPaths:
         return self._cached_apply_status_files
 
     @property
-    def re_add_status_files(self) -> PathDict:
+    def re_add_status_files(self) -> "PathDict":
         # consider these files to have a status as chezmoi apply can be run.
         # Existence for re-add operations will be checked later on.
         if self._cached_re_add_status_files is None:
@@ -341,7 +340,7 @@ class ManagedPaths:
     # properties filtering status dirs into apply and re-add contexts
 
     @property
-    def apply_status_dirs(self) -> PathDict:
+    def apply_status_dirs(self) -> "PathDict":
         if self._cached_apply_status_dirs is None:
             self._cached_apply_status_dirs = {
                 path: status_pair[1]
@@ -351,7 +350,7 @@ class ManagedPaths:
         return self._cached_apply_status_dirs
 
     @property
-    def re_add_status_dirs(self) -> PathDict:
+    def re_add_status_dirs(self) -> "PathDict":
         # Dir status is not relevant to the re-add command, just return any
         # parent dir that contains re-add status files
         # Return those directories with status " "
@@ -385,11 +384,11 @@ class ManagedPaths:
 
     # concat dicts, files override dirs on key collisions, should never happen
     @property
-    def apply_status_paths(self) -> PathDict:
+    def apply_status_paths(self) -> "PathDict":
         return {**self.apply_status_dirs, **self.apply_status_files}
 
     @property
-    def re_add_status_paths(self) -> PathDict:
+    def re_add_status_paths(self) -> "PathDict":
         return {**self.re_add_status_dirs, **self.re_add_status_files}
 
 
@@ -470,28 +469,28 @@ class Chezmoi:
         self._log_in_app_and_write_output_log(command_results)
         return command_results
 
-    def apply_status_dirs_in(self, dir_path: Path) -> PathDict:
+    def apply_status_dirs_in(self, dir_path: Path) -> "PathDict":
         return {
             path: status
             for path, status in self.managed_paths.apply_status_dirs.items()
             if path.parent == dir_path
         }
 
-    def apply_status_files_in(self, dir_path: Path) -> PathDict:
+    def apply_status_files_in(self, dir_path: Path) -> "PathDict":
         return {
             path: status
             for path, status in self.managed_paths.apply_status_files.items()
             if path.parent == dir_path
         }
 
-    def re_add_status_files_in(self, dir_path: Path) -> PathDict:
+    def re_add_status_files_in(self, dir_path: Path) -> "PathDict":
         return {
             path: status
             for path, status in self.managed_paths.apply_status_files.items()
             if path.parent == dir_path
         }
 
-    def re_add_status_dirs_in(self, dir_path: Path) -> PathDict:
+    def re_add_status_dirs_in(self, dir_path: Path) -> "PathDict":
         return {
             path: status
             for path, status in self.managed_paths.apply_status_dirs.items()

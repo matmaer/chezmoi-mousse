@@ -26,6 +26,8 @@ if TYPE_CHECKING:
     from chezmoi_mousse._chezmoi import Chezmoi, CommandResults
     from chezmoi_mousse.gui.chezmoi_gui import ChezmoiGUI
 
+type PathDict = dict["Path", str]
+
 
 class AppType:
     """Type hint for self.app attributes in widgets and screens."""
