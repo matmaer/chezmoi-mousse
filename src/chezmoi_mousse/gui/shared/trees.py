@@ -16,7 +16,7 @@ from .operate_msg import TreeNodeSelectedMsg
 
 if TYPE_CHECKING:
 
-    from chezmoi_mousse import CanvasIds
+    from chezmoi_mousse import CanvasIds, PathDict, PathList
 
 __all__ = ["ExpandedTree", "ListTree", "ManagedTree", "TreeBase"]
 
@@ -152,7 +152,7 @@ class TreeBase(Tree[NodeData], AppType):
         assert tree_node.data is not None
 
         if self.ids.canvas_name == Canvas.apply:
-            status_files = (
+            paths: "PathDict" = (
                 (self.app.chezmoi.managed_paths.apply_status_files)
                 if flat_list
                 else self.app.chezmoi.apply_status_files_in(
@@ -160,7 +160,7 @@ class TreeBase(Tree[NodeData], AppType):
                 )
             )
         else:
-            status_files = (
+            paths: "PathDict" = (
                 (self.app.chezmoi.managed_paths.re_add_status_files)
                 if flat_list
                 else self.app.chezmoi.re_add_status_files_in(
@@ -168,7 +168,7 @@ class TreeBase(Tree[NodeData], AppType):
                 )
             )
 
-        for file_path, status_code in status_files.items():
+        for file_path, status_code in paths.items():
             if file_path in self.get_leaves_in(tree_node):
                 continue
             self.create_and_add_node(
@@ -182,9 +182,13 @@ class TreeBase(Tree[NodeData], AppType):
         # Both paths cached in the Chezmoi instance, don't cache this here as
         # we update the cache there after a WriteCmd.
         if self.ids.canvas_name == Canvas.apply:
-            paths = self.app.chezmoi.managed_paths.apply_files_without_status
+            paths: "PathList" = (
+                self.app.chezmoi.managed_paths.apply_files_without_status
+            )
         else:
-            paths = self.app.chezmoi.managed_paths.re_add_files_without_status
+            paths: "PathList" = (
+                self.app.chezmoi.managed_paths.re_add_files_without_status
+            )
 
         if flat_list:
             for file_path in paths:
@@ -196,7 +200,7 @@ class TreeBase(Tree[NodeData], AppType):
                 )
             return
 
-        files_without_status = {
+        files_without_status: "PathDict" = {
             path: "X"
             for path in paths
             if tree_node.data is not None
@@ -214,7 +218,7 @@ class TreeBase(Tree[NodeData], AppType):
         assert tree_node.data is not None
 
         if self.ids.canvas_name == Canvas.apply:
-            result = {
+            result: "PathDict" = {
                 path: status
                 for path, status in self.app.chezmoi.managed_paths.apply_status_dirs.items()
                 if path.parent == tree_node.data.path
@@ -227,9 +231,9 @@ class TreeBase(Tree[NodeData], AppType):
                     and self.app.chezmoi.has_apply_status_paths_in(path)
                 ):
                     result[path] = " "
-            dir_paths = dict(sorted(result.items()))
+            dir_paths: "PathDict" = dict(sorted(result.items()))
         else:
-            result = {
+            result: "PathDict" = {
                 path: status
                 for path, status in self.app.chezmoi.managed_paths.re_add_status_dirs.items()
                 if path.parent == tree_node.data.path
@@ -242,7 +246,7 @@ class TreeBase(Tree[NodeData], AppType):
                     and self.app.chezmoi.has_re_add_status_paths_in(path)
                 ):
                     result[path] = " "
-            dir_paths = dict(sorted(result.items()))
+            dir_paths: "PathDict" = dict(sorted(result.items()))
 
         for dir_path, status_code in dir_paths.items():
             if dir_path in self.get_dir_nodes_in(tree_node):
@@ -257,7 +261,7 @@ class TreeBase(Tree[NodeData], AppType):
         assert tree_node.data is not None
 
         if self.ids.canvas_name == Canvas.apply:
-            dir_paths = {
+            dir_paths: "PathDict" = {
                 path: "X"
                 for path in self.app.chezmoi.managed_paths.dirs
                 if path.parent == tree_node.data.path
@@ -272,7 +276,7 @@ class TreeBase(Tree[NodeData], AppType):
                     tree_node, dir_path, status_code, is_leaf=False
                 )
         else:
-            dir_paths = {
+            dir_paths: "PathDict" = {
                 path: "X"
                 for path in self.app.chezmoi.managed_paths.dirs
                 if path.parent == tree_node.data.path

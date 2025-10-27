@@ -5,12 +5,11 @@ from subprocess import CompletedProcess, run
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import PathDict
+    from chezmoi_mousse import PathDict, PathList
 
     from .gui.logs_tab import AppLog, DebugLog, OutputLog
 
 __all__ = [
-    "WriteCmd",
     "Chezmoi",
     "CommandResults",
     "GlobalCmd",
@@ -19,6 +18,7 @@ __all__ = [
     "ReadCmd",
     "ReadVerbs",
     "VerbArgs",
+    "WriteCmd",
 ]
 
 
@@ -234,8 +234,8 @@ class ManagedPaths:
     status_files_stdout: str = ""  # ReadCmd.status_files
 
     # caches corresponding to the stdout fields
-    _cached_managed_dirs: list[Path] | None = None
-    _cached_managed_files: list[Path] | None = None
+    _cached_managed_dirs: "PathList | None" = None
+    _cached_managed_files: "PathList | None" = None
     _cached_status_dirs_dict: "PathDict | None" = None
     _cached_status_files_dict: "PathDict | None" = None
 
@@ -246,8 +246,8 @@ class ManagedPaths:
     _cached_re_add_status_files: "PathDict | None" = None
 
     # caches derived from the split status contexts
-    _cached_apply_files_without_status: list[Path] | None = None
-    _cached_re_add_files_without_status: list[Path] | None = None
+    _cached_apply_files_without_status: "PathList | None" = None
+    _cached_re_add_files_without_status: "PathList | None" = None
 
     # other caches
     _cached_apply_status_paths: "PathDict | None" = None
@@ -277,7 +277,7 @@ class ManagedPaths:
     # properties corresponding to the stdout fields
 
     @property
-    def dirs(self) -> list[Path]:
+    def dirs(self) -> "PathList":
         if self._cached_managed_dirs is None:
             self._cached_managed_dirs = [
                 Path(line) for line in self.managed_dirs_stdout.splitlines()
@@ -285,7 +285,7 @@ class ManagedPaths:
         return self._cached_managed_dirs
 
     @property
-    def files(self) -> list[Path]:
+    def files(self) -> "PathList":
         if self._cached_managed_files is None:
             self._cached_managed_files = [
                 Path(line) for line in self.managed_files_stdout.splitlines()
@@ -363,7 +363,7 @@ class ManagedPaths:
     # properties for files without status, in apply and re-add contexts
 
     @property
-    def apply_files_without_status(self) -> list[Path]:
+    def apply_files_without_status(self) -> "PathList":
         if self._cached_apply_files_without_status is None:
             self._cached_apply_files_without_status = [
                 path
@@ -373,7 +373,7 @@ class ManagedPaths:
         return self._cached_apply_files_without_status
 
     @property
-    def re_add_files_without_status(self) -> list[Path]:
+    def re_add_files_without_status(self) -> "PathList":
         if self._cached_re_add_files_without_status is None:
             self._cached_re_add_files_without_status = [
                 path

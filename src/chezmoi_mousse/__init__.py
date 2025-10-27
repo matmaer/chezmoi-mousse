@@ -27,6 +27,7 @@ if TYPE_CHECKING:
     from chezmoi_mousse.gui.chezmoi_gui import ChezmoiGUI
 
 type PathDict = dict["Path", str]
+type PathList = list["Path"]
 
 
 class AppType:
@@ -42,7 +43,6 @@ __all__ = [
     "AreaName",
     "Canvas",
     "CanvasIds",
-    "WriteCmd",
     "Chars",
     "CommandResults",
     "GlobalCmd",
@@ -55,6 +55,8 @@ __all__ = [
     "OperateLaunchData",
     "OperateResultData",
     "PaneBtn",
+    "PathDict",
+    "PathList",
     "PreRunData",
     "ReadCmd",
     "ReadVerbs",
@@ -64,6 +66,7 @@ __all__ = [
     "TreeName",
     "VerbArgs",
     "ViewName",
+    "WriteCmd",
 ]
 
 
