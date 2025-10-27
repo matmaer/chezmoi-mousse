@@ -44,9 +44,9 @@ class HelpTabSwitcher(ContentSwitcher):
        │        chezmoi init --one-shot & chezmoi init --apply     │
        │<──────────────────────────────────────────────────────────│
        │                   │                   │                   │
-┌──────┴───────┐    ┌──────┴───────┐    ┌──────┴───────┐    ┌──────┴───────┐
-│ destination  │    │ target state │    │ source state │    │  git remote  │
-└──────────────┘    └──────────────┘    └──────────────┘    └──────────────┘
+┌──────┴───────┐    ┌──────┴───────────────────┴───────┐    ┌──────┴───────┐
+│ destination  │    │    target state / source state   │    │  git remote  │
+└──────────────┘    └──────────────────────────────────┘    └──────────────┘
 """
 
     def __init__(self, ids: "CanvasIds"):
