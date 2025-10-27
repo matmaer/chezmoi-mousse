@@ -72,8 +72,6 @@ class Id:
     apply_tab: ClassVar[CanvasIds] = CanvasIds(Canvas.apply)
     chezmoi_init: ClassVar[CanvasIds] = CanvasIds(Canvas.chezmoi_init)
     config_tab: ClassVar[CanvasIds] = CanvasIds(Canvas.config)
-    destroy_tab: ClassVar[CanvasIds] = CanvasIds(Canvas.destroy)
-    forget_tab: ClassVar[CanvasIds] = CanvasIds(Canvas.forget)
     help_tab: ClassVar[CanvasIds] = CanvasIds(Canvas.help)
     logs_tab: ClassVar[CanvasIds] = CanvasIds(Canvas.logs)
     operate_launch: ClassVar[CanvasIds] = CanvasIds(Canvas.operate_launch)

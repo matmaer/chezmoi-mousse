@@ -21,8 +21,6 @@ class PaneBtn(StrEnum):
     add_tab = "Add"
     apply_tab = "Apply"
     config_tab = "Config"
-    destroy_tab = "Destroy"
-    forget_tab = "Forget"
     help_tab = "Help"
     logs_tab = "Logs"
     re_add_tab = "Re-Add"

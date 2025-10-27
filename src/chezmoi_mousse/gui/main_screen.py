@@ -11,7 +11,6 @@ from textual.widgets import (
     Button,
     Footer,
     Header,
-    Switch,
     TabbedContent,
     TabPane,
     Tabs,
@@ -26,7 +25,6 @@ from chezmoi_mousse import (
     OperateBtn,
     OperateLaunchData,
     PaneBtn,
-    Switches,
     Tcss,
     TreeName,
     ViewName,
@@ -35,8 +33,6 @@ from chezmoi_mousse import (
 from .add_tab import AddTab
 from .apply_tab import ApplyTab
 from .config_tab import ConfigTab, ConfigTabSwitcher
-from .destroy_tab import DestroyTab
-from .forget_tab import ForgetTab
 from .help_tab import HelpTab
 from .logs_tab import LogsTab
 from .re_add_tab import ReAddTab
@@ -139,10 +135,6 @@ class MainScreen(Screen[None], AppType):
                 yield ReAddTab(ids=Id.re_add_tab)
             with TabPane(PaneBtn.add_tab.value, id=Canvas.add.name):
                 yield AddTab(ids=Id.add_tab)
-            with TabPane(PaneBtn.forget_tab.value, id=Canvas.forget):
-                yield ForgetTab(ids=Id.forget_tab)
-            with TabPane(PaneBtn.destroy_tab.value, id=Canvas.destroy):
-                yield DestroyTab(ids=Id.destroy_tab)
             with TabPane(PaneBtn.logs_tab.value, id=Canvas.logs):
                 yield LogsTab(ids=Id.logs_tab)
             with TabPane(PaneBtn.config_tab.value, id=Canvas.config):
@@ -154,8 +146,6 @@ class MainScreen(Screen[None], AppType):
     def handle_splash_data(self, data: "SplashData") -> None:
         self.populate_apply_trees()
         self.populate_re_add_trees()
-        self.populate_forget_trees()
-        self.populate_destroy_trees()
         self.update_config_tab_outputs(data)
 
     def populate_apply_trees(self) -> None:
@@ -187,45 +177,6 @@ class MainScreen(Screen[None], AppType):
         re_add_tab_managed_tree.populate_tree()
         re_add_tab_expanded_tree.populate_tree()
         re_add_tab_flat_tree.populate_tree()
-
-    def populate_forget_trees(self) -> None:
-        forget_tab_managed_tree = self.screen.query_one(
-            Id.forget_tab.tree_id("#", tree=TreeName.managed_tree), ManagedTree
-        )
-        forget_tab_expanded_tree = self.screen.query_one(
-            Id.forget_tab.tree_id("#", tree=TreeName.expanded_tree),
-            ExpandedTree,
-        )
-        forget_tab_flat_tree = self.screen.query_one(
-            Id.forget_tab.tree_id("#", tree=TreeName.list_tree), ListTree
-        )
-        forget_tab_managed_tree.populate_tree()
-        forget_tab_expanded_tree.populate_tree()
-        forget_tab_flat_tree.populate_tree()
-        unchanged_switch = self.query_one(
-            Id.forget_tab.switch_id("#", switch=Switches.unchanged), Switch
-        )
-        unchanged_switch.value = True
-
-    def populate_destroy_trees(self) -> None:
-        destroy_tab_managed_tree = self.screen.query_one(
-            Id.destroy_tab.tree_id("#", tree=TreeName.managed_tree),
-            ManagedTree,
-        )
-        destroy_tab_expanded_tree = self.screen.query_one(
-            Id.destroy_tab.tree_id("#", tree=TreeName.expanded_tree),
-            ExpandedTree,
-        )
-        destroy_tab_flat_tree = self.screen.query_one(
-            Id.destroy_tab.tree_id("#", tree=TreeName.list_tree), ListTree
-        )
-        destroy_tab_managed_tree.populate_tree()
-        destroy_tab_expanded_tree.populate_tree()
-        destroy_tab_flat_tree.populate_tree()
-        unchanged_switch = self.query_one(
-            Id.destroy_tab.switch_id("#", switch=Switches.unchanged), Switch
-        )
-        unchanged_switch.value = True
 
     def update_config_tab_outputs(self, data: "SplashData") -> None:
         config_tab_switcher = self.screen.query_one(
