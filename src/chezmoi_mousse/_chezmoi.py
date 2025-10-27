@@ -313,31 +313,6 @@ class ManagedPaths:
             }
         return self._cached_status_files_dict
 
-    # properties filtering status dirs into apply and re-add contexts
-
-    @property
-    def apply_status_dirs(self) -> PathDict:
-        if self._cached_apply_status_dirs is None:
-            self._cached_apply_status_dirs = {
-                path: status_pair[1]
-                for path, status_pair in self.status_dirs.items()
-                if status_pair[1] in "ADM"  # Check second character only
-            }
-        return self._cached_apply_status_dirs
-
-    @property
-    def re_add_status_dirs(self) -> PathDict:
-        # consider these dirs to always have status M
-        # Existence for re-add operations will be checked later on.
-        if self._cached_re_add_status_dirs is None:
-            self._cached_re_add_status_dirs = {
-                path: status_pair[0]
-                for path, status_pair in self.status_dirs.items()
-                if status_pair[0] == "M"
-                or (status_pair[0] == " " and status_pair[1] in "ADM")
-            }
-        return self._cached_re_add_status_dirs
-
     # properties filtering status files into apply and re-add contexts
 
     @property
@@ -362,6 +337,29 @@ class ManagedPaths:
                 or (status_pair[0] == " " and status_pair[1] in "ADM")
             }
         return self._cached_re_add_status_files
+
+    # properties filtering status dirs into apply and re-add contexts
+
+    @property
+    def apply_status_dirs(self) -> PathDict:
+        if self._cached_apply_status_dirs is None:
+            self._cached_apply_status_dirs = {
+                path: status_pair[1]
+                for path, status_pair in self.status_dirs.items()
+                if status_pair[1] in "ADM"  # Check second character only
+            }
+        return self._cached_apply_status_dirs
+
+    @property
+    def re_add_status_dirs(self) -> PathDict:
+        # Dir status is not relevant to the re-add command, just return any
+        # parent dir that contains re-add status files
+        # Return those directories with status " "
+        if self._cached_re_add_status_dirs is None:
+            self._cached_re_add_status_dirs = {
+                path.parent: " " for path in self.re_add_status_files
+            }
+        return self._cached_re_add_status_dirs
 
     # properties for files without status, in apply and re-add contexts
 
@@ -471,3 +469,43 @@ class Chezmoi:
         )
         self._log_in_app_and_write_output_log(command_results)
         return command_results
+
+    def apply_status_dirs_in(self, dir_path: Path) -> PathDict:
+        return {
+            path: status
+            for path, status in self.managed_paths.apply_status_dirs.items()
+            if path.parent == dir_path
+        }
+
+    def apply_status_files_in(self, dir_path: Path) -> PathDict:
+        return {
+            path: status
+            for path, status in self.managed_paths.apply_status_files.items()
+            if path.parent == dir_path
+        }
+
+    def re_add_status_files_in(self, dir_path: Path) -> PathDict:
+        return {
+            path: status
+            for path, status in self.managed_paths.apply_status_files.items()
+            if path.parent == dir_path
+        }
+
+    def re_add_status_dirs_in(self, dir_path: Path) -> PathDict:
+        return {
+            path: status
+            for path, status in self.managed_paths.apply_status_dirs.items()
+            if path.parent == dir_path
+        }
+
+    def has_apply_status_paths_in(self, dir_path: Path) -> bool:
+        return any(
+            path.is_relative_to(dir_path)
+            for path in self.managed_paths.apply_status_paths.keys()
+        )
+
+    def has_re_add_status_paths_in(self, dir_path: Path) -> bool:
+        return any(
+            path.is_relative_to(dir_path)
+            for path in self.managed_paths.re_add_status_paths.keys()
+        )

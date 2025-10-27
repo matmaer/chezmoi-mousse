@@ -149,20 +149,28 @@ class TreeBase(Tree[NodeData], AppType):
     def add_status_files_in(
         self, *, tree_node: TreeNode[NodeData], flat_list: bool
     ) -> None:
-        if tree_node.data is None:
-            return
+        assert tree_node.data is not None
 
         if self.ids.canvas_name == Canvas.apply:
-            status_files = self.app.chezmoi.managed_paths.apply_status_files
+            status_files = (
+                (self.app.chezmoi.managed_paths.apply_status_files)
+                if flat_list
+                else self.app.chezmoi.apply_status_files_in(
+                    tree_node.data.path
+                )
+            )
         else:
-            status_files = self.app.chezmoi.managed_paths.re_add_status_files
+            status_files = (
+                (self.app.chezmoi.managed_paths.re_add_status_files)
+                if flat_list
+                else self.app.chezmoi.re_add_status_files_in(
+                    tree_node.data.path
+                )
+            )
 
         for file_path, status_code in status_files.items():
-            if flat_list is False:
-                if file_path in self.get_leaves_in(tree_node):
-                    continue
-                if file_path.parent != tree_node.data.path:
-                    continue
+            if file_path in self.get_leaves_in(tree_node):
+                continue
             self.create_and_add_node(
                 tree_node, file_path, status_code, is_leaf=True
             )
@@ -202,21 +210,8 @@ class TreeBase(Tree[NodeData], AppType):
                 tree_node, file_path, status_code, is_leaf=True
             )
 
-    def _has_apply_status_files_in(self, dir_path: Path) -> bool:
-        return any(
-            path.is_relative_to(dir_path)
-            for path in self.app.chezmoi.managed_paths.apply_status_files.keys()
-        )
-
-    def _has_re_add_status_files_in(self, dir_path: Path) -> bool:
-        return any(
-            path.is_relative_to(dir_path)
-            for path in self.app.chezmoi.managed_paths.re_add_status_files.keys()
-        )
-
     def add_status_dirs_in(self, *, tree_node: TreeNode[NodeData]) -> None:
-        if tree_node.data is None:
-            return
+        assert tree_node.data is not None
 
         if self.ids.canvas_name == Canvas.apply:
             result = {
@@ -229,7 +224,7 @@ class TreeBase(Tree[NodeData], AppType):
                 if (
                     path.parent == tree_node.data.path
                     and path not in result
-                    and self._has_apply_status_files_in(path)
+                    and self.app.chezmoi.has_apply_status_paths_in(path)
                 ):
                     result[path] = " "
             dir_paths = dict(sorted(result.items()))
@@ -244,7 +239,7 @@ class TreeBase(Tree[NodeData], AppType):
                 if (
                     path.parent == tree_node.data.path
                     and path not in result
-                    and self._has_re_add_status_files_in(path)
+                    and self.app.chezmoi.has_re_add_status_paths_in(path)
                 ):
                     result[path] = " "
             dir_paths = dict(sorted(result.items()))
@@ -259,30 +254,39 @@ class TreeBase(Tree[NodeData], AppType):
     def add_dirs_without_status_in(
         self, *, tree_node: TreeNode[NodeData]
     ) -> None:
-        if tree_node.data is None:
-            return
+        assert tree_node.data is not None
 
         if self.ids.canvas_name == Canvas.apply:
-            status_dirs = self.app.chezmoi.managed_paths.apply_status_dirs
-            has_status_check = self._has_apply_status_files_in
+            dir_paths = {
+                path: "X"
+                for path in self.app.chezmoi.managed_paths.dirs
+                if path.parent == tree_node.data.path
+                and path
+                not in self.app.chezmoi.managed_paths.apply_status_dirs
+                and not self.app.chezmoi.has_apply_status_paths_in(path)
+            }
+            for dir_path, status_code in dir_paths.items():
+                if dir_path in self.get_dir_nodes_in(tree_node):
+                    continue
+                self.create_and_add_node(
+                    tree_node, dir_path, status_code, is_leaf=False
+                )
         else:
-            status_dirs = self.app.chezmoi.managed_paths.re_add_status_dirs
-            has_status_check = self._has_re_add_status_files_in
+            dir_paths = {
+                path: "X"
+                for path in self.app.chezmoi.managed_paths.dirs
+                if path.parent == tree_node.data.path
+                and path
+                not in self.app.chezmoi.managed_paths.re_add_status_dirs
+                and not self.app.chezmoi.has_re_add_status_paths_in(path)
+            }
 
-        dir_paths = {
-            path: "X"
-            for path in self.app.chezmoi.managed_paths.dirs
-            if path.parent == tree_node.data.path
-            and path not in status_dirs
-            and not has_status_check(path)
-        }
-
-        for dir_path, status_code in dir_paths.items():
-            if dir_path in self.get_dir_nodes_in(tree_node):
-                continue
-            self.create_and_add_node(
-                tree_node, dir_path, status_code, is_leaf=False
-            )
+            for dir_path, status_code in dir_paths.items():
+                if dir_path in self.get_dir_nodes_in(tree_node):
+                    continue
+                self.create_and_add_node(
+                    tree_node, dir_path, status_code, is_leaf=False
+                )
 
     def __apply_cursor_style(self, node_label: Text, is_cursor: bool) -> Text:
         """Helper to apply cursor-specific styling to a node label."""
@@ -431,7 +435,7 @@ class ListTree(TreeBase):
         self.add_status_files_in(tree_node=self.root, flat_list=True)
 
     def watch_unchanged(self) -> None:
-        if self.unchanged:
+        if self.unchanged is True:
             self.add_files_without_status_in(
                 tree_node=self.root, flat_list=True
             )
