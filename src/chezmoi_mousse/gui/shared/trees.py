@@ -38,9 +38,7 @@ class TreeBase(Tree[NodeData], AppType):
             path=self.destDir, is_leaf=False, found=True, status="F"
         )
         self.only_existing_paths = (
-            True
-            if self.ids.canvas_name in (Canvas.destroy, Canvas.re_add)
-            else False
+            True if self.ids.canvas_name == Canvas.re_add else False
         )
         super().__init__(
             label="root",
@@ -154,7 +152,7 @@ class TreeBase(Tree[NodeData], AppType):
         if tree_node.data is None:
             return
 
-        if self.ids.canvas_name in (Canvas.apply, Canvas.forget):
+        if self.ids.canvas_name == Canvas.apply:
             status_files = self.app.chezmoi.managed_paths.apply_status_files
         else:
             status_files = self.app.chezmoi.managed_paths.re_add_status_files
@@ -175,7 +173,7 @@ class TreeBase(Tree[NodeData], AppType):
 
         # Both paths cached in the Chezmoi instance, don't cache this here as
         # we update the cache there after a WriteCmd.
-        if self.ids.canvas_name in (Canvas.apply, Canvas.forget):
+        if self.ids.canvas_name == Canvas.apply:
             paths = self.app.chezmoi.managed_paths.apply_files_without_status
         else:
             paths = self.app.chezmoi.managed_paths.re_add_files_without_status
@@ -220,7 +218,7 @@ class TreeBase(Tree[NodeData], AppType):
         if tree_node.data is None:
             return
 
-        if self.ids.canvas_name in (Canvas.apply, Canvas.forget):
+        if self.ids.canvas_name == Canvas.apply:
             result = {
                 path: status
                 for path, status in self.app.chezmoi.managed_paths.apply_status_dirs.items()
@@ -264,7 +262,7 @@ class TreeBase(Tree[NodeData], AppType):
         if tree_node.data is None:
             return
 
-        if self.ids.canvas_name in (Canvas.apply, Canvas.forget):
+        if self.ids.canvas_name == Canvas.apply:
             status_dirs = self.app.chezmoi.managed_paths.apply_status_dirs
             has_status_check = self._has_apply_status_files_in
         else:

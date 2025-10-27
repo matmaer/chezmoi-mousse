@@ -87,20 +87,6 @@ class TabsBase(Horizontal):
             dir_button = self.query_one(
                 self.ids.button_id("#", btn=OperateBtn.re_add_dir), Button
             )
-        elif self.ids.canvas_name == Canvas.forget:
-            file_button = self.query_one(
-                self.ids.button_id("#", btn=OperateBtn.forget_file), Button
-            )
-            dir_button = self.query_one(
-                self.ids.button_id("#", btn=OperateBtn.forget_dir), Button
-            )
-        elif self.ids.canvas_name == Canvas.destroy:
-            file_button = self.query_one(
-                self.ids.button_id("#", btn=OperateBtn.destroy_file), Button
-            )
-            dir_button = self.query_one(
-                self.ids.button_id("#", btn=OperateBtn.destroy_dir), Button
-            )
         else:
             return
         if event.node_data.is_leaf is True:

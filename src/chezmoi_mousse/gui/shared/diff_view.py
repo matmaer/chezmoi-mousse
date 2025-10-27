@@ -68,10 +68,7 @@ class DiffView(RichLog, AppType):
         # write lines for an unchanged file or directory except when we are in
         # either the ApplyTab or ReAddTabS
 
-        if (
-            self.ids.canvas_name == Canvas.apply
-            or self.ids.canvas_name == Canvas.forget
-        ):
+        if self.ids.canvas_name == Canvas.apply:
             if (
                 self.path
                 not in self.app.chezmoi.managed_paths.apply_status_files

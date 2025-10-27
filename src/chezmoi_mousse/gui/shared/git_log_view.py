@@ -32,8 +32,6 @@ class GitLogView(DataTable[Text], AppType):
         if self.ids.canvas_name in (
             Canvas.add.name,
             Canvas.apply.name,
-            Canvas.destroy.name,
-            Canvas.forget.name,
             Canvas.re_add.name,
         ):
             self.add_class(Tcss.border_title_top.name)

@@ -17,8 +17,6 @@ class Canvas(StrEnum):
     apply = auto()
     chezmoi_init = auto()
     config = auto()
-    destroy = auto()
-    forget = auto()
     help = auto()
     install_help = auto()
     logs = auto()
