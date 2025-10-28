@@ -12,7 +12,7 @@ from textual.widgets.tree import TreeNode
 
 from chezmoi_mousse import AppType, Canvas, Chars, NodeData, Tcss, TreeName
 
-from .operate_msg import TreeNodeSelectedMsg
+from .operate_msg import CurrentApplyNodeMsg, CurrentReAddNodeMsg
 
 if TYPE_CHECKING:
 
@@ -333,13 +333,11 @@ class TreeBase(Tree[NodeData], AppType):
     def send_node_context_message(
         self, event: Tree.NodeSelected[NodeData]
     ) -> None:
-        if event.node == self.root:
-            return
-        if event.node.data is not None:
-            self.node_selected_msg = TreeNodeSelectedMsg(
-                node_data=event.node.data
-            )
-        self.post_message(self.node_selected_msg)
+        assert event.node.data is not None
+        if self.ids.canvas_name == Canvas.apply:
+            self.post_message(CurrentApplyNodeMsg(event.node.data))
+        elif self.ids.canvas_name == Canvas.re_add:
+            self.post_message(CurrentReAddNodeMsg(event.node.data))
 
     # 4 methods to provide tab navigation without intaraction with the tree
     def on_key(self, event: Key) -> None:
