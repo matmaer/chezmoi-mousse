@@ -266,10 +266,14 @@ class AddTab(TabsBase):
         )
         if is_dir is True:
             add_file_button.disabled = True
+            add_file_button.tooltip = OperateBtn.add_file.disabled_tooltip
             add_dir_button.disabled = False
+            add_dir_button.tooltip = OperateBtn.add_dir.enabled_tooltip
         else:
             add_file_button.disabled = False
+            add_file_button.tooltip = OperateBtn.add_file.enabled_tooltip
             add_dir_button.disabled = True
+            add_dir_button.tooltip = OperateBtn.add_dir.disabled_tooltip
         return
 
     @on(DirectoryTree.DirectorySelected)
