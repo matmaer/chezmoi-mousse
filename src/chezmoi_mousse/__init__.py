@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from importlib.metadata import PackageNotFoundError, version
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 from chezmoi_mousse._chars import Chars
 from chezmoi_mousse._chezmoi import (
@@ -45,6 +45,7 @@ __all__ = [
     "CanvasIds",
     "Chars",
     "CommandResults",
+    "DirTreeNodeData",
     "GlobalCmd",
     "Id",
     "LogUtils",
@@ -83,9 +84,15 @@ class NodeData:
 
 
 @dataclass(slots=True)
+class DirTreeNodeData:
+    path: "Path"
+    path_type: Literal["file", "dir"]
+
+
+@dataclass(slots=True)
 class OperateLaunchData:
     btn_enum_member: OperateBtn
-    path: "Path"
+    node_data: NodeData | DirTreeNodeData
 
 
 @dataclass(slots=True)
