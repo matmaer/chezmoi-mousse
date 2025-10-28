@@ -7,7 +7,7 @@ from textual import on
 from textual.app import ComposeResult
 from textual.containers import Vertical, VerticalGroup
 from textual.reactive import reactive
-from textual.widgets import DirectoryTree, Switch
+from textual.widgets import Button, DirectoryTree, Switch
 
 from chezmoi_mousse import (
     AppType,
@@ -257,6 +257,21 @@ class AddTab(TabsBase):
             ids=self.ids, switches=(Switches.unmanaged_dirs, Switches.unwanted)
         )
 
+    def update_buttons(self, is_dir: bool) -> None:
+        add_file_button = self.query_one(
+            self.ids.button_id("#", btn=OperateBtn.add_file), Button
+        )
+        add_dir_button = self.query_one(
+            self.ids.button_id("#", btn=OperateBtn.add_dir), Button
+        )
+        if is_dir is True:
+            add_file_button.disabled = True
+            add_dir_button.disabled = False
+        else:
+            add_file_button.disabled = False
+            add_dir_button.disabled = True
+        return
+
     @on(DirectoryTree.DirectorySelected)
     @on(DirectoryTree.FileSelected)
     def update_contents_view_and_title(
@@ -273,6 +288,10 @@ class AddTab(TabsBase):
         contents_view.border_title = f" {event.node.data.path} "
         # Update the reactive from TabsBase, used for operate screen logic
         self.current_path = event.node.data.path
+        if isinstance(event, DirectoryTree.FileSelected):
+            self.update_buttons(is_dir=False)
+        else:
+            self.update_buttons(is_dir=True)
 
     @on(Switch.Changed)
     def handle_filter_switches(self, event: Switch.Changed) -> None:

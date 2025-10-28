@@ -47,10 +47,11 @@ class OperateBtnHorizontal(HorizontalGroup):
         for button_enum in self.buttons:
             with Vertical(classes=Tcss.single_button_vertical.name):
                 yield Button(
-                    label=button_enum.value.label,
+                    label=button_enum.initial_label,
                     id=self.ids.button_id(btn=button_enum),
                     classes=Tcss.operate_button.name,
                     disabled=True,
+                    tooltip=button_enum.initial_tooltip,
                 )
 
 

@@ -25,7 +25,7 @@ from .switchers import TreeSwitcher, ViewSwitcher
 from .trees import ExpandedTree, ListTree, ManagedTree
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import CanvasIds
+    from chezmoi_mousse import CanvasIds, NodeData
 
 __all__ = ["TabsBase"]
 
@@ -71,34 +71,78 @@ class TabsBase(Horizontal):
     def update_current_path(self, event: TreeNodeSelectedMsg) -> None:
         self.current_path = event.node_data.path
         self._update_view_path()
+        assert event.node_data is not None
+        self.update_operate_buttons(event.node_data)
 
-        # Update Button enabled/Disabled state
-        if self.ids.canvas_name == Canvas.apply:
-            file_button = self.query_one(
-                self.ids.button_id("#", btn=OperateBtn.apply_file), Button
-            )
-            dir_button = self.query_one(
-                self.ids.button_id("#", btn=OperateBtn.apply_dir), Button
-            )
-        elif self.ids.canvas_name == Canvas.re_add:
-            file_button = self.query_one(
-                self.ids.button_id("#", btn=OperateBtn.re_add_file), Button
-            )
-            dir_button = self.query_one(
-                self.ids.button_id("#", btn=OperateBtn.re_add_dir), Button
-            )
-        else:
+    def update_operate_buttons(self, node_data: "NodeData") -> None:
+        # Update button labels and tooltips
+        if self.ids.canvas_name == Canvas.add:
+            # done in the AddTab
             return
-        if event.node_data.is_leaf is True:
-            dir_button.disabled = True
-            dir_button.tooltip = OperateBtn.add_dir.tooltip.select_dir
-            file_button.disabled = False
-            file_button.tooltip = None
-        elif event.node_data.is_leaf is False:
-            dir_button.disabled = False
-            dir_button.tooltip = None
-            file_button.disabled = True
-            file_button.tooltip = OperateBtn.add_file.tooltip.select_file
+
+        elif self.ids.canvas_name == Canvas.apply:
+            operate_path_button = self.query_one(
+                self.ids.button_id("#", btn=OperateBtn.apply_path), Button
+            )
+            operate_path_label = (
+                OperateBtn.apply_path.dir_label
+                if node_data.is_leaf is False
+                else OperateBtn.apply_path.file_label
+            )
+            operate_path_tooltip = (
+                OperateBtn.apply_path.dir_tooltip
+                if node_data.is_leaf is False
+                else OperateBtn.apply_path.file_tooltip
+            )
+            operate_path_button.label = operate_path_label
+            operate_path_button.tooltip = operate_path_tooltip
+        else:
+            operate_path_button = self.query_one(
+                self.ids.button_id("#", btn=OperateBtn.re_add_path), Button
+            )
+            operate_path_label = (
+                OperateBtn.re_add_path.dir_label
+                if node_data.is_leaf is False
+                else OperateBtn.re_add_path.file_label
+            )
+            operate_path_tooltip = (
+                OperateBtn.re_add_path.dir_tooltip
+                if node_data.is_leaf is False
+                else OperateBtn.re_add_path.file_tooltip
+            )
+            operate_path_button.label = operate_path_label
+            operate_path_button.tooltip = operate_path_tooltip
+
+        destroy_button = self.query_one(
+            self.ids.button_id("#", btn=OperateBtn.destroy_path), Button
+        )
+        forget_button = self.query_one(
+            self.ids.button_id("#", btn=OperateBtn.forget_path), Button
+        )
+        destroy_button.label = (
+            OperateBtn.destroy_path.file_label
+            if node_data.is_leaf is True
+            else OperateBtn.destroy_path.dir_label
+        )
+        destroy_button.tooltip = (
+            OperateBtn.destroy_path.file_tooltip
+            if node_data.is_leaf is True
+            else OperateBtn.destroy_path.dir_tooltip
+        )
+        forget_button.label = (
+            OperateBtn.forget_path.file_label
+            if node_data.is_leaf is True
+            else OperateBtn.forget_path.dir_label
+        )
+        forget_button.tooltip = (
+            OperateBtn.forget_path.file_tooltip
+            if node_data.is_leaf is True
+            else OperateBtn.forget_path.dir_tooltip
+        )
+
+        destroy_button.disabled = False
+        forget_button.disabled = False
+        operate_path_button.disabled = False
 
     @on(Button.Pressed, Tcss.tab_button.value)
     def handle_tab_button_pressed(self, event: Button.Pressed) -> None:

@@ -42,7 +42,11 @@ class ReAddTab(TabsBase):
             yield ViewSwitcher(ids=self.ids, diff_reverse=True)
         yield OperateBtnHorizontal(
             ids=self.ids,
-            buttons=(OperateBtn.re_add_file, OperateBtn.re_add_dir),
+            buttons=(
+                OperateBtn.re_add_path,
+                OperateBtn.destroy_path,
+                OperateBtn.forget_path,
+            ),
         )
         yield SwitchSlider(
             ids=self.ids, switches=(Switches.unchanged, Switches.expand_all)
