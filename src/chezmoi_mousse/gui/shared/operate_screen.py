@@ -180,11 +180,6 @@ class OperateScreen(Screen[OperateResultData], AppType):
     def handle_result_screen_dismissed(
         self, result: OperateResultData | None
     ) -> None:
-        if result is None:
-            self.notify(
-                "Operate result screen dismissed without result.",
-                severity="error",
-            )
         self.operate_result = result
         self.dismiss(self.operate_result)
 
