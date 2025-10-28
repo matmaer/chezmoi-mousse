@@ -246,8 +246,7 @@ class ManagedPaths:
     _cached_re_add_status_files: "PathDict | None" = None
 
     # caches derived from the split status contexts
-    _cached_apply_files_without_status: "PathList | None" = None
-    _cached_re_add_files_without_status: "PathList | None" = None
+    _cached_files_without_status: "PathDict | None" = None
 
     # other caches
     _cached_apply_status_paths: "PathDict | None" = None
@@ -267,8 +266,7 @@ class ManagedPaths:
         self._cached_re_add_status_files = None
 
         # clear caches derived from the split status contexts
-        self._cached_apply_files_without_status = None
-        self._cached_re_add_files_without_status = None
+        self._cached_files_without_status = None
 
         # clear other caches
         self._cached_apply_status_paths = None
@@ -363,24 +361,14 @@ class ManagedPaths:
     # properties for files without status, in apply and re-add contexts
 
     @property
-    def apply_files_without_status(self) -> "PathList":
-        if self._cached_apply_files_without_status is None:
-            self._cached_apply_files_without_status = [
-                path
+    def files_without_status(self) -> "PathDict":
+        if self._cached_files_without_status is None:
+            self._cached_files_without_status = {
+                path: "X"
                 for path in self.files
                 if path not in self.apply_status_files
-            ]
-        return self._cached_apply_files_without_status
-
-    @property
-    def re_add_files_without_status(self) -> "PathList":
-        if self._cached_re_add_files_without_status is None:
-            self._cached_re_add_files_without_status = [
-                path
-                for path in self.files
-                if path not in self.re_add_status_files
-            ]
-        return self._cached_re_add_files_without_status
+            }
+        return self._cached_files_without_status
 
     # concat dicts, files override dirs on key collisions, should never happen
     @property
@@ -494,6 +482,13 @@ class Chezmoi:
         return {
             path: status
             for path, status in self.managed_paths.apply_status_dirs.items()
+            if path.parent == dir_path
+        }
+
+    def files_without_status_in(self, dir_path: Path) -> "PathDict":
+        return {
+            path: status
+            for path, status in self.managed_paths.files_without_status.items()
             if path.parent == dir_path
         }
 

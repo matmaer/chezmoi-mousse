@@ -16,7 +16,7 @@ from .operate_msg import TreeNodeSelectedMsg
 
 if TYPE_CHECKING:
 
-    from chezmoi_mousse import CanvasIds, PathDict, PathList
+    from chezmoi_mousse import CanvasIds, PathDict
 
 __all__ = ["ExpandedTree", "ListTree", "ManagedTree", "TreeBase"]
 
@@ -122,11 +122,11 @@ class TreeBase(Tree[NodeData], AppType):
         is_leaf: bool,
     ) -> None:
         found: bool = path.exists()
+        if found is False and self.only_existing_paths:
+            return
         node_data = NodeData(
             path=path, is_leaf=is_leaf, found=found, status=status_code
         )
-        if node_data.found is False and self.only_existing_paths:
-            return
         node_label: Text = self.__style_label(node_data)
         if is_leaf:
             tree_node.add_leaf(label=node_label, data=node_data)
@@ -178,36 +178,17 @@ class TreeBase(Tree[NodeData], AppType):
     def add_files_without_status_in(
         self, *, tree_node: TreeNode[NodeData], flat_list: bool
     ) -> None:
-
+        assert tree_node.data is not None
         # Both paths cached in the Chezmoi instance, don't cache this here as
         # we update the cache there after a WriteCmd.
-        if self.ids.canvas_name == Canvas.apply:
-            paths: "PathList" = (
-                self.app.chezmoi.managed_paths.apply_files_without_status
-            )
-        else:
-            paths: "PathList" = (
-                self.app.chezmoi.managed_paths.re_add_files_without_status
-            )
 
-        if flat_list:
-            for file_path in paths:
-                self.create_and_add_node(
-                    tree_node=tree_node,
-                    path=file_path,
-                    status_code="X",
-                    is_leaf=True,
-                )
-            return
+        paths: "PathDict" = (
+            (self.app.chezmoi.managed_paths.files_without_status)
+            if flat_list
+            else self.app.chezmoi.files_without_status_in(tree_node.data.path)
+        )
 
-        files_without_status: "PathDict" = {
-            path: "X"
-            for path in paths
-            if tree_node.data is not None
-            and path.parent == tree_node.data.path
-        }
-
-        for file_path, status_code in files_without_status.items():
+        for file_path, status_code in paths.items():
             if file_path in self.get_leaves_in(tree_node):
                 continue
             self.create_and_add_node(
