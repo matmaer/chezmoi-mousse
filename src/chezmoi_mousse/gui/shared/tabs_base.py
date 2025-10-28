@@ -3,7 +3,6 @@ from typing import TYPE_CHECKING
 
 from textual import on
 from textual.containers import Horizontal
-from textual.reactive import reactive
 from textual.widgets import Button, Switch
 
 from chezmoi_mousse import (
@@ -20,7 +19,7 @@ from chezmoi_mousse import (
 from .contents_view import ContentsView
 from .diff_view import DiffView
 from .git_log_view import GitLogView
-from .operate_msg import CurrentOperatePathMsg, TreeNodeSelectedMsg
+from .operate_msg import CurrentApplyNodeMsg, CurrentReAddNodeMsg
 from .switchers import TreeSwitcher, ViewSwitcher
 from .trees import ExpandedTree, ListTree, ManagedTree
 
@@ -33,7 +32,6 @@ __all__ = ["TabsBase"]
 class TabsBase(Horizontal):
 
     destDir: "Path | None" = None
-    current_path: reactive[Path | None] = reactive(None)
 
     def __init__(self, *, ids: "CanvasIds") -> None:
         self.ids = ids
@@ -51,26 +49,31 @@ class TabsBase(Horizontal):
         )
         super().__init__(id=self.ids.tab_container_id)
 
-    def _update_view_path(self) -> None:
+    def _update_view_path(self, path: Path) -> None:
         contents_view = self.query_exactly_one(ContentsView)
-        if contents_view.path != self.current_path:
-            contents_view.path = self.current_path
-            contents_view.border_title = f" {self.current_path} "
+        if contents_view.path != path:
+            contents_view.path = path
+            contents_view.border_title = f" {path} "
 
         diff_view = self.query_exactly_one(DiffView)
-        if diff_view.path != self.current_path:
-            diff_view.path = self.current_path
-            diff_view.border_title = f" {self.current_path} "
+        if diff_view.path != path:
+            diff_view.path = path
+            diff_view.border_title = f" {path} "
 
         git_log_view = self.query_exactly_one(GitLogView)
-        if git_log_view.path != self.current_path:
-            git_log_view.path = self.current_path
-            git_log_view.border_title = f" {self.current_path} "
+        if git_log_view.path != path:
+            git_log_view.path = path
+            git_log_view.border_title = f" {path} "
 
-    @on(TreeNodeSelectedMsg)
-    def update_current_path(self, event: TreeNodeSelectedMsg) -> None:
-        self.current_path = event.node_data.path
-        self._update_view_path()
+    @on(CurrentApplyNodeMsg)
+    def update_current_apply_path(self, event: CurrentApplyNodeMsg) -> None:
+        self._update_view_path(event.node_data.path)
+        assert event.node_data is not None
+        self.update_operate_buttons(event.node_data)
+
+    @on(CurrentReAddNodeMsg)
+    def update_current_re_add_path(self, event: CurrentReAddNodeMsg) -> None:
+        self._update_view_path(event.node_data.path)
         assert event.node_data is not None
         self.update_operate_buttons(event.node_data)
 
@@ -154,7 +157,6 @@ class TabsBase(Horizontal):
             view_switcher = self.query_one(
                 self.view_switcher_qid, ViewSwitcher
             )
-            self._update_view_path()
             if event.button.id == self.contents_tab_btn:
                 view_switcher.current = self.ids.view_id(
                     view=ViewName.contents_view
@@ -225,8 +227,3 @@ class TabsBase(Horizontal):
                 tree_switcher.current = self.ids.tree_id(
                     tree=TreeName.managed_tree
                 )
-
-    def watch_current_path(self) -> None:
-        if self.current_path is None:
-            return
-        self.post_message(CurrentOperatePathMsg(self.current_path))
