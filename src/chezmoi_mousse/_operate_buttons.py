@@ -70,7 +70,7 @@ class AddButtonData:
     # We don't need status tooltips here
     disabled_tooltip: str
     enabled_tooltip: str
-    label: str
+    initial_label: str
     initial_tooltip: str = INITIAL_TOOLTIP
 
 
@@ -78,12 +78,12 @@ class OperateBtn(Enum):
     add_file = AddButtonData(
         disabled_tooltip=ToolTips.add_file_disabled.value,
         enabled_tooltip=ToolTips.add_file.value,
-        label=NameLabels.add_file.value,
+        initial_label=NameLabels.add_file.value,
     )
     add_dir = AddButtonData(
         disabled_tooltip=ToolTips.add_dir_disabled.value,
         enabled_tooltip=ToolTips.add_dir.value,
-        label=NameLabels.add_dir.value,
+        initial_label=NameLabels.add_dir.value,
     )
     apply_path = ApplyReAddButtonData(
         dir_label=NameLabels.apply_dir.value,
@@ -132,12 +132,6 @@ class OperateBtn(Enum):
         if isinstance(self.value, AddButtonData):
             return self.value.disabled_tooltip
         raise AttributeError(f"{self.name} has no disabled_tooltip")
-
-    @property
-    def label(self) -> str:
-        if isinstance(self.value, AddButtonData):
-            return self.value.label
-        raise AttributeError(f"{self.name} has no label")
 
     @property
     def dir_label(self) -> str:
@@ -198,6 +192,6 @@ class OperateBtn(Enum):
                 return member
             elif getattr(member.value, "dir_label", None) == label:
                 return member
-            elif getattr(member.value, "label", None) == label:
+            elif getattr(member.value, "initial_label", None) == label:
                 return member
         raise ValueError(f"{cls.__name__} has no member with label={label!r}")
