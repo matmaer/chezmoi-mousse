@@ -3,106 +3,201 @@ from enum import Enum, StrEnum
 
 __all__ = ["OperateBtn"]
 
+INITIAL_TOOLTIP = "This is the destDir, select a path to operate on."
 
-class OperateButtonNameLabel(StrEnum):
+
+class ToolTips(StrEnum):
+    add_dir = "Manage this directory with chezmoi."
+    add_dir_disabled = "Select a directory to operate on."
+    add_file = "Manage this file with chezmoi."
+    add_file_disabled = "Select a file to operate on."
+    apply_dir = 'Run "chezmoi apply" on this directory.'
+    apply_file = 'Run "chezmoi apply" on this file.'
+    destroy_dir = "MAKE SURE YOU HAVE A BACKUP!\nPermanently remove this directory and its files from disk and chezmoi."
+    destroy_file = "MAKE SURE YOU HAVE A BACKUP!\nPermanently remove this file from disk and chezmoi."
+    dir_no_status = "The selected directory has no status to operate on."
+    file_no_status = "The selected file has no status to operate on."
+    forget_dir = "Stop managing this directory."
+    forget_file = "Stop managing this file."
+    re_add_dir = "Re-add this directory its files to chezmoi."
+    re_add_file = "Re-add this file to chezmoi."
+
+
+class NameLabels(StrEnum):
     add_dir = "Add Dir"
     add_file = "Add File"
     apply_dir = "Apply Dir"
     apply_file = "Apply File"
-    clone_chezmoi_repo = "Clone Repo"
-    close_operate_results = "Close Operate Results"
+    apply_path = "Apply Path"
     destroy_dir = "Destroy Dir"
     destroy_file = "Destroy File"
+    destroy_path = "Destroy Path"
     forget_dir = "Forget Dir"
     forget_file = "Forget File"
-    init_new_repo = "Initialize"
-    operate_dismiss = "Cancel"
+    forget_path = "Forget Path"
+    operate_cancel = "Cancel"
+    operate_close = "Close"
     re_add_dir = "Re-Add Dir"
     re_add_file = "Re-Add File"
+    re_add_path = "Re-Add Path"
 
 
-@dataclass(frozen=True)
-class OperateButtonTooltip:
-    select_file: str = "Select a file to operate on."
-    select_dir: str = "Select a directory to operate on."
-    file_without_status: str = "The selected file has no status to operate on."
-    dir_without_status: str = (
-        "The selected directory has no status to operate on."
-    )
+@dataclass
+class ApplyReAddButtonData:
+    dir_label: str
+    dir_no_status_tooltip: str
+    dir_tooltip: str
+    file_label: str
+    file_no_status_tooltip: str
+    file_tooltip: str
+    initial_label: str  # this is the label containing "Path"
+    initial_tooltip: str = INITIAL_TOOLTIP
 
 
-@dataclass(frozen=True)
-class OperateButtonData:
-    btn_name: str
+@dataclass
+class DestroyForgetButtonData:
+    # We don't need status tooltips here
+    dir_label: str
+    dir_tooltip: str
+    file_label: str
+    file_tooltip: str
+    initial_label: str  # this is the label containing "Path"
+    initial_tooltip: str = INITIAL_TOOLTIP
+
+
+@dataclass
+class AddButtonData:
+    # We don't need status tooltips here
+    disabled_tooltip: str
+    enabled_tooltip: str
     label: str
-    tooltip: OperateButtonTooltip = OperateButtonTooltip()
+    initial_tooltip: str = INITIAL_TOOLTIP
 
 
 class OperateBtn(Enum):
-    add_dir = OperateButtonData(
-        btn_name=OperateButtonNameLabel.add_dir.name,
-        label=OperateButtonNameLabel.add_dir.value,
+    add_file = AddButtonData(
+        disabled_tooltip=ToolTips.add_file_disabled.value,
+        enabled_tooltip=ToolTips.add_file.value,
+        label=NameLabels.add_file.value,
     )
-    add_file = OperateButtonData(
-        btn_name=OperateButtonNameLabel.add_file.name,
-        label=OperateButtonNameLabel.add_file.value,
+    add_dir = AddButtonData(
+        disabled_tooltip=ToolTips.add_dir_disabled.value,
+        enabled_tooltip=ToolTips.add_dir.value,
+        label=NameLabels.add_dir.value,
     )
-    apply_dir = OperateButtonData(
-        btn_name=OperateButtonNameLabel.apply_dir.name,
-        label=OperateButtonNameLabel.apply_dir.value,
+    apply_path = ApplyReAddButtonData(
+        dir_label=NameLabels.apply_dir.value,
+        dir_no_status_tooltip=ToolTips.dir_no_status.value,
+        dir_tooltip=ToolTips.apply_dir.value,
+        file_label=NameLabels.apply_file.value,
+        file_no_status_tooltip=ToolTips.file_no_status.value,
+        file_tooltip=ToolTips.apply_file.value,
+        initial_label=NameLabels.apply_path.value,
     )
-    apply_file = OperateButtonData(
-        btn_name=OperateButtonNameLabel.apply_file.name,
-        label=OperateButtonNameLabel.apply_file.value,
+    re_add_path = ApplyReAddButtonData(
+        dir_label=NameLabels.re_add_dir.value,
+        dir_no_status_tooltip=ToolTips.dir_no_status.value,
+        dir_tooltip=ToolTips.re_add_dir.value,
+        file_label=NameLabels.re_add_file.value,
+        file_no_status_tooltip=ToolTips.file_no_status.value,
+        file_tooltip=ToolTips.re_add_file.value,
+        initial_label=NameLabels.re_add_path.value,
     )
-    clone_chezmoi_repo = OperateButtonData(
-        btn_name=OperateButtonNameLabel.clone_chezmoi_repo.name,
-        label=OperateButtonNameLabel.clone_chezmoi_repo.value,
+    forget_path = DestroyForgetButtonData(
+        dir_label=NameLabels.forget_dir.value,
+        dir_tooltip=ToolTips.forget_dir.value,
+        file_label=NameLabels.forget_file.value,
+        file_tooltip=ToolTips.forget_file.value,
+        initial_label=NameLabels.forget_path.value,
     )
-    close_operate_results = OperateButtonData(
-        btn_name=OperateButtonNameLabel.close_operate_results.name,
-        label=OperateButtonNameLabel.close_operate_results.value,
-    )
-    destroy_dir = OperateButtonData(
-        btn_name=OperateButtonNameLabel.destroy_dir.name,
-        label=OperateButtonNameLabel.destroy_dir.value,
-    )
-    destroy_file = OperateButtonData(
-        btn_name=OperateButtonNameLabel.destroy_file.name,
-        label=OperateButtonNameLabel.destroy_file.value,
-    )
-    forget_dir = OperateButtonData(
-        btn_name=OperateButtonNameLabel.forget_dir.name,
-        label=OperateButtonNameLabel.forget_dir.value,
-    )
-    forget_file = OperateButtonData(
-        btn_name=OperateButtonNameLabel.forget_file.name,
-        label=OperateButtonNameLabel.forget_file.value,
-    )
-    init_new_repo = OperateButtonData(
-        btn_name=OperateButtonNameLabel.init_new_repo.name,
-        label=OperateButtonNameLabel.init_new_repo.value,
-    )
-    operate_dismiss = OperateButtonData(
-        btn_name=OperateButtonNameLabel.operate_dismiss.name,
-        label=OperateButtonNameLabel.operate_dismiss.value,
-    )
-    re_add_dir = OperateButtonData(
-        btn_name=OperateButtonNameLabel.re_add_dir.name,
-        label=OperateButtonNameLabel.re_add_dir.value,
-    )
-    re_add_file = OperateButtonData(
-        btn_name=OperateButtonNameLabel.re_add_file.name,
-        label=OperateButtonNameLabel.re_add_file.value,
+    destroy_path = DestroyForgetButtonData(
+        dir_label=NameLabels.destroy_dir.value,
+        dir_tooltip=ToolTips.destroy_dir.value,
+        file_label=NameLabels.destroy_file.value,
+        file_tooltip=ToolTips.destroy_file.value,
+        initial_label=NameLabels.destroy_path.value,
     )
 
+    # allow access to dataclass attributes directly from the Enum member,
+    # without needing to go through the value attribute
+
     @property
-    def tooltip(self) -> OperateButtonTooltip:
-        return self.value.tooltip
+    def enabled_tooltip(self) -> str:
+        if isinstance(self.value, AddButtonData):
+            return self.value.enabled_tooltip
+        raise AttributeError(f"{self.name} has no enabled_tooltip")
+
+    @property
+    def disabled_tooltip(self) -> str:
+        if isinstance(self.value, AddButtonData):
+            return self.value.disabled_tooltip
+        raise AttributeError(f"{self.name} has no disabled_tooltip")
+
+    @property
+    def label(self) -> str:
+        if isinstance(self.value, AddButtonData):
+            return self.value.label
+        raise AttributeError(f"{self.name} has no label")
+
+    @property
+    def dir_label(self) -> str:
+        if isinstance(
+            self.value, (ApplyReAddButtonData, DestroyForgetButtonData)
+        ):
+            return self.value.dir_label
+        raise AttributeError(f"{self.name} has no dir_label")
+
+    @property
+    def dir_no_status_tooltip(self) -> str:
+        if isinstance(self.value, ApplyReAddButtonData):
+            return self.value.dir_no_status_tooltip
+        raise AttributeError(f"{self.name} has no dir_no_status_tooltip")
+
+    @property
+    def dir_tooltip(self) -> str:
+        if isinstance(
+            self.value, (ApplyReAddButtonData, DestroyForgetButtonData)
+        ):
+            return self.value.dir_tooltip
+        raise AttributeError(f"{self.name} has no dir_tooltip")
+
+    @property
+    def file_label(self) -> str:
+        if isinstance(
+            self.value, (ApplyReAddButtonData, DestroyForgetButtonData)
+        ):
+            return self.value.file_label
+        raise AttributeError(f"{self.name} has no file_label")
+
+    @property
+    def file_no_status_tooltip(self) -> str:
+        if isinstance(self.value, ApplyReAddButtonData):
+            return self.value.file_no_status_tooltip
+        raise AttributeError(f"{self.name} has no file_no_status_tooltip")
+
+    @property
+    def file_tooltip(self) -> str:
+        if isinstance(
+            self.value, (ApplyReAddButtonData, DestroyForgetButtonData)
+        ):
+            return self.value.file_tooltip
+        raise AttributeError(f"{self.name} has no file_tooltip")
+
+    @property
+    def initial_label(self) -> str:
+        if isinstance(
+            self.value, (ApplyReAddButtonData, DestroyForgetButtonData)
+        ):
+            return self.value.initial_label
+        raise AttributeError(f"{self.name} has no initial_label")
 
     @classmethod
     def from_label(cls, label: str) -> "OperateBtn":
         for member in cls:
-            if getattr(member.value, "label", None) == label:
+            if getattr(member.value, "file_label", None) == label:
+                return member
+            elif getattr(member.value, "dir_label", None) == label:
+                return member
+            elif getattr(member.value, "label", None) == label:
                 return member
         raise ValueError(f"{cls.__name__} has no member with label={label!r}")
