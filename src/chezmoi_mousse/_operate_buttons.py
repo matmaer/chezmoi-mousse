@@ -51,7 +51,6 @@ class ApplyReAddButtonData:
     file_no_status_tooltip: str
     file_tooltip: str
     initial_label: str  # this is the label containing "Path"
-    initial_tooltip: str = INITIAL_TOOLTIP
 
 
 @dataclass
@@ -62,7 +61,6 @@ class DestroyForgetButtonData:
     file_label: str
     file_tooltip: str
     initial_label: str  # this is the label containing "Path"
-    initial_tooltip: str = INITIAL_TOOLTIP
 
 
 @dataclass
@@ -71,7 +69,6 @@ class AddButtonData:
     disabled_tooltip: str
     enabled_tooltip: str
     initial_label: str
-    initial_tooltip: str = INITIAL_TOOLTIP
 
 
 class OperateBtn(Enum):
@@ -179,11 +176,11 @@ class OperateBtn(Enum):
 
     @property
     def initial_label(self) -> str:
-        if isinstance(
-            self.value, (ApplyReAddButtonData, DestroyForgetButtonData)
-        ):
-            return self.value.initial_label
-        raise AttributeError(f"{self.name} has no initial_label")
+        return self.value.initial_label
+
+    @property
+    def initial_tooltip(self) -> str:
+        return INITIAL_TOOLTIP
 
     @classmethod
     def from_label(cls, label: str) -> "OperateBtn":
