@@ -16,14 +16,12 @@ from textual.widgets import (
     Tabs,
 )
 
-from chezmoi_mousse import (
+from chezmoi_mousse import (  # OperateBtn,; OperateLaunchData,
     AppType,
     AreaName,
     Canvas,
     Chars,
     Id,
-    OperateBtn,
-    OperateLaunchData,
     PaneBtn,
     Tcss,
     TreeName,
@@ -37,12 +35,17 @@ from .help_tab import HelpTab
 from .logs_tab import LogsTab
 from .re_add_tab import ReAddTab
 from .shared.loggers import AppLog, DebugLog, OutputLog
-from .shared.operate_msg import CurrentOperatePathMsg
-from .shared.operate_screen import OperateScreen
+from .shared.operate_msg import (
+    CurrentAddNodeMsg,
+    CurrentApplyNodeMsg,
+    CurrentReAddNodeMsg,
+)
+
+# from .shared.operate_screen import OperateScreen
 from .shared.trees import ExpandedTree, ListTree, ManagedTree
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import OperateResultData
+    from chezmoi_mousse import DirTreeNodeData, NodeData, OperateResultData
 
     from .pre_run_screens.splash import SplashData
 
@@ -71,7 +74,9 @@ class MainScreen(Screen[None], AppType):
         self.write_output_log: OutputLog
         self.debug_log: DebugLog
 
-        self.current_operate_path: Path | None = None
+        self.current_add_node: "DirTreeNodeData | None" = None
+        self.current_apply_node: "NodeData | None" = None
+        self.current_re_add_node: "NodeData | None" = None
 
         super().__init__()
 
@@ -304,18 +309,9 @@ class MainScreen(Screen[None], AppType):
         self.app_log.success(f"Theme set to {new_theme}")
 
     @on(Button.Pressed, Tcss.operate_button.value)
-    def handle_operation_button_pressed(self, event: Button.Pressed) -> None:
-        if event.button.id is None or self.current_operate_path is None:
-            self.notify("Select a file to operate on", severity="warning")
-            return
-        launch_data = OperateLaunchData(
-            btn_enum_member=OperateBtn.from_label(str(event.button.label)),
-            path=self.current_operate_path,
-        )
-        self.app.push_screen(
-            OperateScreen(launch_data=launch_data),
-            callback=self._handle_operate_result,
-        )
+    def handle_operation_button_pressed(
+        self, event: Button.Pressed
+    ) -> None: ...
 
     def _handle_operate_result(
         self, operate_result: "OperateResultData | None"
@@ -345,6 +341,14 @@ class MainScreen(Screen[None], AppType):
         else:
             self.notify("Unknown operation result.", severity="error")
 
-    @on(CurrentOperatePathMsg)
-    def update_operate_path(self, message: CurrentOperatePathMsg) -> None:
-        self.current_operate_path = message.path
+    @on(CurrentAddNodeMsg)
+    def update_current_dir_tree_node(self, message: CurrentAddNodeMsg) -> None:
+        self.current_add_node = message.dir_tree_node_data
+
+    @on(CurrentApplyNodeMsg)
+    def update_current_apply_node(self, message: CurrentApplyNodeMsg) -> None:
+        self.current_apply_node = message.node_data
+
+    @on(CurrentReAddNodeMsg)
+    def update_current_re_add_node(self, message: CurrentReAddNodeMsg) -> None:
+        self.current_re_add_node = message.node_data
