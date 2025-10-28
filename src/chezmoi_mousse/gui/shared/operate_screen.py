@@ -5,9 +5,8 @@ from typing import TYPE_CHECKING
 from textual import on
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.events import Click
 from textual.screen import Screen
-from textual.widgets import Button, Label, Static
+from textual.widgets import Button, Footer, Label, Static
 
 from chezmoi_mousse import (
     AppType,
@@ -115,7 +114,14 @@ class OperateInfo(Static):
 
 class OperateScreen(Screen[OperateResultData], AppType):
 
-    BINDINGS = [Binding(key="escape", action="esc_key_dismiss", show=True)]
+    BINDINGS = [
+        Binding(
+            key="escape",
+            action="esc_key_dismiss",
+            description="Press the escape key to cancel",
+            show=True,
+        )
+    ]
 
     def __init__(self, launch_data: "OperateLaunchData") -> None:
         self.ids = Id.operate_launch
@@ -143,9 +149,10 @@ class OperateScreen(Screen[OperateResultData], AppType):
                 OperateBtn.operate_dismiss,
             ),
         )
+        yield Footer()
 
     def on_mount(self) -> None:
-        for button in self.query(Button):
+        for button in self.screen.query(Button):
             button.disabled = False
         if self.launch_data.btn_enum_member in (
             OperateBtn.apply_file,
@@ -184,12 +191,16 @@ class OperateScreen(Screen[OperateResultData], AppType):
     def action_esc_key_dismiss(self) -> None:
         self.dismiss(self.operate_result)
 
-    def on_click(self, event: Click) -> None:
-        if event.chain == 2:
-            self.dismiss(self.operate_result)
-
 
 class OperateResultScreen(Screen[OperateResultData], AppType):
+    BINDINGS = [
+        Binding(
+            key="escape",
+            action="esc_key_dismiss",
+            description="Press the escape key to close",
+            show=True,
+        )
+    ]
 
     def __init__(self, launch_data: "OperateLaunchData") -> None:
         self.ids = Id.operate_result
@@ -206,8 +217,13 @@ class OperateResultScreen(Screen[OperateResultData], AppType):
         yield OperateBtnHorizontal(
             ids=self.ids, buttons=(OperateBtn.close_operate_results,)
         )
+        yield Footer()
 
     def on_mount(self) -> None:
+        button = self.query_one(
+            self.ids.button_id("#", btn=OperateBtn.close_operate_results)
+        )
+        button.disabled = False
         app_log = self.query_one(AppLog)
         app_log.auto_scroll = False
         app_log.styles.height = "auto"
@@ -267,4 +283,7 @@ class OperateResultScreen(Screen[OperateResultData], AppType):
     @on(Button.Pressed, Tcss.operate_button.value)
     def close_operate_results_screen(self, event: Button.Pressed) -> None:
         event.stop()
+        self.dismiss(self.operate_result)
+
+    def action_esc_key_dismiss(self) -> None:
         self.dismiss(self.operate_result)
