@@ -34,12 +34,12 @@ __all__ = ["OperateInfo", "OperateScreen"]
 
 class InfoStrings(StrEnum):
     add_path = "[$text-primary]The path will be added to your chezmoi dotfile manager source state.[/]"
-    # apply_path = "[$text-primary]The path in the destination directory will be modified.[/]"
+    apply_path = "[$text-primary]The path in the destination directory will be modified.[/]"
     auto_commit = f"[$text-warning]{Chars.warning_sign} Auto commit is enabled: files will also be committed.{Chars.warning_sign}[/]"
     autopush = f"[$text-warning]{Chars.warning_sign} Auto push is enabled: files will be pushed to the remote.{Chars.warning_sign}[/]"
-    # destroy_path = "[$text-error]Permanently remove the path both from your home directory and chezmoi's source directory, make sure you have a backup![/]"
+    destroy_path = "[$text-error]Permanently remove the path both from your home directory and chezmoi's source directory, make sure you have a backup![/]"
     diff_color = f"[$text-success]+ green lines will be added[/]\n[$text-error]- red lines will be removed[/]\n[dim]{Chars.bullet} dimmed lines for context[/]"
-    # forget_path = "[$text-primary]Remove the path from the source state, i.e. stop managing them.[/]"
+    forget_path = "[$text-primary]Remove the path from the source state, i.e. stop managing them.[/]"
     re_add_path = (
         "[$text-primary]Overwrite the source state with current local path[/]"
     )
@@ -67,44 +67,18 @@ class OperateInfo(Static):
             lines_to_write.append(InfoStrings.add_path.value)
             self.border_subtitle = Chars.add_info_border
         elif self.operate_btn == OperateBtn.apply_path:
-            ...
+            lines_to_write.append(InfoStrings.apply_path.value)
+            self.border_subtitle = Chars.apply_info_border
         elif self.operate_btn == OperateBtn.re_add_path:
-            ...
+            lines_to_write.append(InfoStrings.re_add_path.value)
+            self.border_subtitle = Chars.re_add_info_border
         elif self.operate_btn == OperateBtn.forget_path:
-            ...
+            lines_to_write.append(InfoStrings.forget_path.value)
+            self.border_subtitle = Chars.forget_info_border
         elif self.operate_btn == OperateBtn.destroy_path:
-            ...
+            lines_to_write.append(InfoStrings.destroy_path.value)
+            self.border_subtitle = Chars.destroy_info_border
 
-        # if self.operate_btn in (OperateBtn.apply_file, OperateBtn.apply_dir):
-        #     lines_to_write.append(InfoStrings.apply_path.value)
-        #     self.border_subtitle = Chars.apply_info_border
-        # elif self.operate_btn in (
-        #     OperateBtn.re_add_file,
-        #     OperateBtn.re_add_dir,
-        # ):
-        #     lines_to_write.append(InfoStrings.re_add_path.value)
-        #     self.border_subtitle = Chars.re_add_info_border
-        # elif self.operate_btn in (
-        #     OperateBtn.forget_file,
-        #     OperateBtn.forget_dir,
-        # ):
-        #     lines_to_write.append(InfoStrings.forget_path.value)
-        #     self.border_subtitle = Chars.forget_info_border
-        # elif self.operate_btn in (
-        #     OperateBtn.destroy_file,
-        #     OperateBtn.destroy_dir,
-        # ):
-        #     lines_to_write.append(InfoStrings.destroy_path.value)
-        #     self.border_subtitle = Chars.destroy_info_border
-        # # show git auto warnings
-        # # show git diff color info
-        # if self.operate_btn in (
-        #     OperateBtn.apply_file,
-        #     OperateBtn.apply_dir,
-        #     OperateBtn.re_add_file,
-        #     OperateBtn.re_add_dir,
-        # ):
-        #     lines_to_write.append(InfoStrings.diff_color.value)
         if self.operate_btn != OperateBtn.apply_path:
             assert (
                 self.git_autocommit is not None
@@ -152,6 +126,8 @@ class OperateScreen(Screen[OperateResultData], AppType):
         elif self.launch_data.btn_enum_member in (
             OperateBtn.add_file,
             OperateBtn.add_dir,
+            OperateBtn.forget_path,
+            OperateBtn.destroy_path,
         ):
             yield ContentsView(ids=self.ids)
         yield OperateBtnHorizontal(
@@ -170,7 +146,12 @@ class OperateScreen(Screen[OperateResultData], AppType):
             diff_view = self.query_exactly_one(DiffView)
             diff_view.path = self.launch_data.node_data.path
             diff_view.border_title = str(self.launch_data.node_data.path)
-        elif self.launch_data.btn_enum_member == OperateBtn.add_file:
+        elif self.launch_data.btn_enum_member in (
+            OperateBtn.add_file,
+            OperateBtn.add_dir,
+            OperateBtn.forget_path,
+            OperateBtn.destroy_path,
+        ):
             contents_view = self.query_exactly_one(ContentsView)
             contents_view.path = self.launch_data.node_data.path
             contents_view.border_title = str(self.launch_data.node_data.path)
