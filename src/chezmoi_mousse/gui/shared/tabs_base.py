@@ -99,6 +99,9 @@ class TabsBase(Horizontal):
             )
             operate_path_button.label = operate_path_label
             operate_path_button.tooltip = operate_path_tooltip
+            operate_path_button.disabled = (
+                False if node_data.status != "X" else True
+            )
         else:
             operate_path_button = self.query_one(
                 self.ids.button_id("#", btn=OperateBtn.re_add_path), Button
@@ -115,6 +118,9 @@ class TabsBase(Horizontal):
             )
             operate_path_button.label = operate_path_label
             operate_path_button.tooltip = operate_path_tooltip
+            operate_path_button.disabled = (
+                False if node_data.status not in "X " else True
+            )
 
         destroy_button = self.query_one(
             self.ids.button_id("#", btn=OperateBtn.destroy_path), Button
@@ -145,7 +151,6 @@ class TabsBase(Horizontal):
 
         destroy_button.disabled = False
         forget_button.disabled = False
-        operate_path_button.disabled = False
 
     @on(Button.Pressed, Tcss.tab_button.value)
     def handle_tab_button_pressed(self, event: Button.Pressed) -> None:
