@@ -291,7 +291,8 @@ class OperateResultScreen(Screen[OperateResultData], AppType):
         )
         app_log.log_cmd_results(status_dirs)
 
-        self.app.chezmoi.managed_paths.clear_cache()
+        self.app.chezmoi.clear_cache()
+        app_log.info("Cleared managed paths cache.")
 
     @on(Button.Pressed, Tcss.operate_button.value)
     def close_operate_results_screen(self, event: Button.Pressed) -> None:

@@ -252,7 +252,7 @@ class ManagedPaths:
     _cached_apply_status_paths: "PathDict | None" = None
     _cached_re_add_status_paths: "PathDict | None" = None
 
-    def clear_cache(self) -> None:
+    def clear_managed_paths_cache(self) -> None:
         # clear caches corresponding to the stdout fields
         self._cached_managed_dirs = None
         self._cached_managed_files = None
@@ -406,6 +406,11 @@ class Chezmoi:
         if self.app_log is not None and self.write_output_log is not None:
             self.app_log.log_cmd_results(result)
             self.write_output_log.log_cmd_results(result)
+
+    def clear_cache(self) -> None:
+        self.managed_paths.clear_managed_paths_cache()
+        if self.app_log is not None:
+            self.app_log.info("Cleared managed paths cache.")
 
     def read(
         self, read_cmd: ReadCmd, path_arg: Path | None = None
