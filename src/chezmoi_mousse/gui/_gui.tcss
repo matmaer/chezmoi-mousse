@@ -32,15 +32,6 @@
   }
 }
 
-.operate_info {
-  border-subtitle-align: center;
-  border-title-align: center;
-  border: round $foreground;
-  text-align: center;
-  dock: top;
-  margin-bottom: 1;
-}
-
 .section_label {
     background-tint: $surface-lighten-1;
     background: $surface-lighten-1;
@@ -81,8 +72,22 @@
 }
 
 .operate_screen {
+  .operate_info {
+    border-subtitle-align: center;
+    border-title-align: center;
+    border: round $foreground;
+    text-align: center;
+    dock: top;
+    margin-bottom: 1;
+  }
   #operate-screen-log {
     height: 5;
+  }
+  ContentsView {
+    border: none;
+  }
+  DiffView {
+    border: none;
   }
 }
 
