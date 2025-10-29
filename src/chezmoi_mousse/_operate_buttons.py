@@ -71,6 +71,16 @@ class AddButtonData:
     initial_label: str
 
 
+@dataclass
+class OperateCancelData:
+    initial_label: str
+
+
+@dataclass
+class OperateCloseData:
+    initial_label: str
+
+
 class OperateBtn(Enum):
     add_file = AddButtonData(
         disabled_tooltip=ToolTips.add_file_disabled.value,
@@ -114,6 +124,8 @@ class OperateBtn(Enum):
         file_tooltip=ToolTips.destroy_file.value,
         initial_label=NameLabels.destroy_path.value,
     )
+    operate_cancel = OperateCancelData(NameLabels.operate_cancel)
+    operate_close = OperateCloseData(NameLabels.operate_close)
 
     # allow access to dataclass attributes directly from the Enum member,
     # without needing to go through the value attribute
