@@ -14,8 +14,10 @@ from chezmoi_mousse import (
     OperateBtn,
     OperateLaunchData,
     OperateResultData,
+    ReadCmd,
     Tcss,
     ViewName,
+    WriteCmd,
 )
 
 from .button_groups import OperateBtnHorizontal
@@ -56,8 +58,12 @@ class OperateInfo(Static):
     def on_mount(self) -> None:
         # show command help and set its subtitle
         lines_to_write: list[str] = []
-        if self.operate_btn in (OperateBtn.add_file, OperateBtn.add_dir):
+        if self.operate_btn == OperateBtn.add_file:
             self.border_title = OperateBtn.add_file.enabled_tooltip.rstrip(".")
+            lines_to_write.append(InfoStrings.add_path.value)
+            self.border_subtitle = Chars.add_info_border
+        elif self.operate_btn == OperateBtn.add_dir:
+            self.border_title = OperateBtn.add_dir.enabled_tooltip.rstrip(".")
             lines_to_write.append(InfoStrings.add_path.value)
             self.border_subtitle = Chars.add_info_border
         elif self.operate_btn == OperateBtn.apply_path:
@@ -132,7 +138,9 @@ class OperateScreen(Screen[OperateResultData], AppType):
         super().__init__(
             id=self.ids.canvas_name, classes=Tcss.operate_screen.name
         )
-        # self.operate_result = OperateResultData(path=self.launch_data.path)
+        self.operate_result = OperateResultData(
+            path=self.launch_data.node_data.path
+        )
 
     def compose(self) -> ComposeResult:
         assert self.operate_btn is not None
@@ -141,7 +149,10 @@ class OperateScreen(Screen[OperateResultData], AppType):
             yield DiffView(ids=self.ids, reverse=False)
         elif self.launch_data.btn_enum_member == OperateBtn.re_add_path:
             yield DiffView(ids=self.ids, reverse=True)
-        elif self.launch_data.btn_enum_member == OperateBtn.add_file:
+        elif self.launch_data.btn_enum_member in (
+            OperateBtn.add_file,
+            OperateBtn.add_dir,
+        ):
             yield ContentsView(ids=self.ids)
         yield OperateBtnHorizontal(
             ids=self.ids, buttons=(self.operate_btn, OperateBtn.operate_cancel)
@@ -151,6 +162,7 @@ class OperateScreen(Screen[OperateResultData], AppType):
     def on_mount(self) -> None:
         for button in self.screen.query(Button):
             button.disabled = False
+            button.tooltip = None
         if self.launch_data.btn_enum_member in (
             OperateBtn.apply_path,
             OperateBtn.re_add_path,
@@ -166,15 +178,15 @@ class OperateScreen(Screen[OperateResultData], AppType):
     @on(Button.Pressed, Tcss.operate_button.value)
     def handle_operate_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
-        # if event.button.id == self.ids.button_id(
-        #     btn=OperateBtn.operate_dismiss
-        # ):
-        #     self.dismiss(self.operate_result)
-        # else:
-        #     self.app.push_screen(
-        #         OperateResultScreen(launch_data=self.launch_data),
-        #         callback=self.handle_result_screen_dismissed,
-        #     )
+        if event.button.id == self.ids.button_id(
+            btn=OperateBtn.operate_cancel
+        ):
+            self.dismiss(self.operate_result)
+        else:
+            self.app.push_screen(
+                OperateResultScreen(launch_data=self.launch_data),
+                callback=self.handle_result_screen_dismissed,
+            )
 
     def handle_result_screen_dismissed(
         self, result: OperateResultData | None
@@ -200,7 +212,9 @@ class OperateResultScreen(Screen[OperateResultData], AppType):
         self.ids = Id.operate_result
         self.launch_data = launch_data
         self.cmd_result: "CommandResults | None" = None
-        # self.operate_result = OperateResultData(path=self.launch_data.path)
+        self.operate_result = OperateResultData(
+            path=self.launch_data.node_data.path
+        )
         super().__init__(id=self.ids.canvas_name)
 
     def compose(self) -> ComposeResult:
@@ -208,76 +222,81 @@ class OperateResultScreen(Screen[OperateResultData], AppType):
         yield AppLog(ids=self.ids)
         yield Label("Operate Command Output", classes=Tcss.section_label.name)
         yield OutputLog(ids=self.ids, view_name=ViewName.write_output_log_view)
-        # yield OperateBtnHorizontal(
-        #     ids=self.ids, buttons=(OperateBtn.close_operate_results,)
-        # )
+        yield OperateBtnHorizontal(
+            ids=self.ids, buttons=(OperateBtn.operate_close,)
+        )
         yield Footer()
 
-    # def on_mount(self) -> None:
-    #     button = self.query_one(
-    #         self.ids.button_id("#", btn=OperateBtn.close_operate_results)
-    #     )
-    #     button.disabled = False
-    #     app_log = self.query_one(AppLog)
-    #     app_log.auto_scroll = False
-    #     app_log.styles.height = "auto"
-    #     output_log = self.query_one(OutputLog)
-    #     output_log.auto_scroll = False
-    #     if self.launch_data.btn_enum_member == OperateBtn.apply_file:
-    #         self.cmd_result = self.app.chezmoi.perform(
-    #             WriteCmd.apply, path_arg=self.launch_data.path
-    #         )
-    #     elif self.launch_data.btn_enum_member == OperateBtn.re_add_file:
-    #         self.cmd_result = self.app.chezmoi.perform(
-    #             WriteCmd.re_add, path_arg=self.launch_data.path
-    #         )
-    #     elif self.launch_data.btn_enum_member == OperateBtn.add_file:
-    #         self.cmd_result = self.app.chezmoi.perform(
-    #             WriteCmd.add, path_arg=self.launch_data.path
-    #         )
-    #     elif self.launch_data.btn_enum_member == OperateBtn.forget_file:
-    #         self.cmd_result = self.app.chezmoi.perform(
-    #             WriteCmd.forget, path_arg=self.launch_data.path
-    #         )
-    #     elif self.launch_data.btn_enum_member == OperateBtn.destroy_file:
-    #         self.cmd_result = self.app.chezmoi.perform(
-    #             WriteCmd.destroy, path_arg=self.launch_data.path
-    #         )
-    #     self.operate_result.operation_executed = True
-    #     self.operate_result.command_results = self.cmd_result
-    #     if self.cmd_result is None:
-    #         app_log.write("No command result to log.")
-    #         output_log.write("No command result to log.")
-    #         return
+    def on_mount(self) -> None:
+        button = self.query_one(
+            self.ids.button_id("#", btn=OperateBtn.operate_close)
+        )
+        button.disabled = False
+        button.tooltip = None
 
-    #     app_log.log_cmd_results(self.cmd_result)
-    #     output_log.log_cmd_results(self.cmd_result)
+        app_log = self.query_one(AppLog)
+        app_log.auto_scroll = False
+        app_log.styles.height = "auto"
+        output_log = self.query_one(OutputLog)
+        output_log.auto_scroll = False
 
-    #     # Refresh chezmoi status and managed data
-    #     managed_dirs: "CommandResults" = self.app.chezmoi.read(
-    #         ReadCmd.managed_dirs
-    #     )
-    #     app_log.log_cmd_results(managed_dirs)
+        if self.launch_data.btn_enum_member == OperateBtn.add_file:
+            self.cmd_result = self.app.chezmoi.perform(
+                WriteCmd.add, path_arg=self.launch_data.node_data.path
+            )
+        elif self.launch_data.btn_enum_member == OperateBtn.apply_path:
+            self.cmd_result = self.app.chezmoi.perform(
+                WriteCmd.apply, path_arg=self.launch_data.node_data.path
+            )
+        elif self.launch_data.btn_enum_member == OperateBtn.re_add_path:
+            self.cmd_result = self.app.chezmoi.perform(
+                WriteCmd.re_add, path_arg=self.launch_data.node_data.path
+            )
+        elif self.launch_data.btn_enum_member == OperateBtn.forget_path:
+            self.cmd_result = self.app.chezmoi.perform(
+                WriteCmd.forget, path_arg=self.launch_data.node_data.path
+            )
+        elif self.launch_data.btn_enum_member == OperateBtn.destroy_path:
+            self.cmd_result = self.app.chezmoi.perform(
+                WriteCmd.destroy, path_arg=self.launch_data.node_data.path
+            )
+        self.operate_result.operation_executed = True
+        self.operate_result.command_results = self.cmd_result
+        if self.cmd_result is None:
+            app_log.write("No command result to log.")
+            output_log.write("No command result to log.")
+            return
 
-    #     managed_files: "CommandResults" = self.app.chezmoi.read(
-    #         ReadCmd.managed_files
-    #     )
-    #     app_log.log_cmd_results(managed_files)
+        app_log.log_cmd_results(self.cmd_result)
+        output_log.log_cmd_results(self.cmd_result)
 
-    #     status_files: "CommandResults" = self.app.chezmoi.read(
-    #         ReadCmd.status_files
-    #     )
-    #     app_log.log_cmd_results(status_files)
+        # Refresh chezmoi status and managed data
+        managed_dirs: "CommandResults" = self.app.chezmoi.read(
+            ReadCmd.managed_dirs
+        )
+        app_log.log_cmd_results(managed_dirs)
 
-    #     status_dirs: "CommandResults" = self.app.chezmoi.read(
-    #         ReadCmd.status_dirs
-    #     )
-    #     app_log.log_cmd_results(status_dirs)
+        managed_files: "CommandResults" = self.app.chezmoi.read(
+            ReadCmd.managed_files
+        )
+        app_log.log_cmd_results(managed_files)
 
-    # @on(Button.Pressed, Tcss.operate_button.value)
-    # def close_operate_results_screen(self, event: Button.Pressed) -> None:
-    #     event.stop()
-    #     self.dismiss(self.operate_result)
+        status_files: "CommandResults" = self.app.chezmoi.read(
+            ReadCmd.status_files
+        )
+        app_log.log_cmd_results(status_files)
 
-    # def action_esc_key_dismiss(self) -> None:
-    #     self.dismiss(self.operate_result)
+        status_dirs: "CommandResults" = self.app.chezmoi.read(
+            ReadCmd.status_dirs
+        )
+        app_log.log_cmd_results(status_dirs)
+
+        self.app.chezmoi.managed_paths.clear_cache()
+
+    @on(Button.Pressed, Tcss.operate_button.value)
+    def close_operate_results_screen(self, event: Button.Pressed) -> None:
+        event.stop()
+        self.dismiss(self.operate_result)
+
+    def action_esc_key_dismiss(self) -> None:
+        self.dismiss(self.operate_result)

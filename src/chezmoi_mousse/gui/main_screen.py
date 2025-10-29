@@ -312,9 +312,42 @@ class MainScreen(Screen[None], AppType):
     @on(Button.Pressed, Tcss.operate_button.value)
     def push_operate_screen(self, event: Button.Pressed) -> None:
         button_enum = OperateBtn.from_label(str(event.button.label))
-        if self.current_add_node is not None:
+        current_tab = self.query_one(TabbedContent).active
+        if (
+            self.current_add_node is not None
+            and button_enum in (OperateBtn.add_file, OperateBtn.add_dir)
+            and current_tab == Canvas.add.name
+        ):
             launch_data = OperateLaunchData(
                 btn_enum_member=button_enum, node_data=self.current_add_node
+            )
+            self.app.push_screen(OperateScreen(launch_data))
+        elif (
+            self.current_apply_node is not None
+            and button_enum
+            in (
+                OperateBtn.apply_path,
+                OperateBtn.destroy_path,
+                OperateBtn.forget_path,
+            )
+            and current_tab == Canvas.apply.name
+        ):
+            launch_data = OperateLaunchData(
+                btn_enum_member=button_enum, node_data=self.current_apply_node
+            )
+            self.app.push_screen(OperateScreen(launch_data))
+        elif (
+            self.current_re_add_node is not None
+            and button_enum
+            in (
+                OperateBtn.re_add_path,
+                OperateBtn.destroy_path,
+                OperateBtn.forget_path,
+            )
+            and current_tab == Canvas.re_add.name
+        ):
+            launch_data = OperateLaunchData(
+                btn_enum_member=button_enum, node_data=self.current_re_add_node
             )
             self.app.push_screen(OperateScreen(launch_data))
         else:
