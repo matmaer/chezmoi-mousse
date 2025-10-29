@@ -1,6 +1,5 @@
 import os
 from datetime import datetime
-from enum import StrEnum
 from typing import TYPE_CHECKING
 
 from rich.markup import escape
@@ -170,9 +169,3 @@ class OutputLog(CommandLogBase, AppType):
         else:
             self.error("failed, stderr:")
             self.dimmed(f"{command_results.std_err}")
-
-
-class BorderTitle(StrEnum):
-    app_log = " App Log "
-    output_log = " Commands StdOut "
-    debug_log = " Debug Log "
