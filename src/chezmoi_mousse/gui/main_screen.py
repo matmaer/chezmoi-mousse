@@ -22,6 +22,7 @@ from chezmoi_mousse import (  # OperateBtn,; OperateLaunchData,
     Canvas,
     Chars,
     Id,
+    OperateBtn,
     PaneBtn,
     Tcss,
     TreeName,
@@ -309,9 +310,37 @@ class MainScreen(Screen[None], AppType):
         self.app_log.success(f"Theme set to {new_theme}")
 
     @on(Button.Pressed, Tcss.operate_button.value)
-    def handle_operation_button_pressed(
-        self, event: Button.Pressed
-    ) -> None: ...
+    def handle_operation_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.id == Id.add_tab.button_id(btn=OperateBtn.add_file):
+            self.notify("Add file button id pressed")
+        elif event.button.id == Id.add_tab.button_id(btn=OperateBtn.add_dir):
+            self.notify("Add dir button id pressed")
+        elif event.button.id == Id.apply_tab.button_id(
+            btn=OperateBtn.apply_path
+        ):
+            self.notify("Apply path button id pressed")
+        elif event.button.id == Id.apply_tab.button_id(
+            btn=OperateBtn.destroy_path
+        ):
+            self.notify("Apply Destroy path button id pressed")
+        elif event.button.id == Id.apply_tab.button_id(
+            btn=OperateBtn.forget_path
+        ):
+            self.notify("Apply Forget path button id pressed")
+        elif event.button.id == Id.re_add_tab.button_id(
+            btn=OperateBtn.re_add_path
+        ):
+            self.notify("Re-Add path button id pressed")
+        elif event.button.id == Id.re_add_tab.button_id(
+            btn=OperateBtn.destroy_path
+        ):
+            self.notify("Re-Add Destroy path button id pressed")
+        elif event.button.id == Id.re_add_tab.button_id(
+            btn=OperateBtn.forget_path
+        ):
+            self.notify("Re-Add Forget path button id pressed")
+        else:
+            self.notify("Unknown operate button id pressed", severity="error")
 
     def _handle_operate_result(
         self, operate_result: "OperateResultData | None"
