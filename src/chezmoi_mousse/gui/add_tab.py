@@ -1,7 +1,7 @@
 from collections.abc import Iterable
 from enum import StrEnum
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 from textual import on
 from textual.app import ComposeResult
@@ -13,6 +13,7 @@ from chezmoi_mousse import (
     AppType,
     AreaName,
     Chars,
+    DirTreeNodeData,
     OperateBtn,
     Switches,
     Tcss,
@@ -22,6 +23,7 @@ from chezmoi_mousse import (
 
 from .shared.button_groups import OperateBtnHorizontal
 from .shared.contents_view import ContentsView
+from .shared.operate_msg import CurrentAddNodeMsg
 from .shared.switch_slider import SwitchSlider
 from .shared.tabs_base import TabsBase
 
@@ -276,26 +278,36 @@ class AddTab(TabsBase):
             add_dir_button.tooltip = OperateBtn.add_dir.disabled_tooltip
         return
 
+    def send_message_current_add_node(
+        self, path: Path, path_type: Literal["file", "dir"]
+    ) -> None:
+        message_data = DirTreeNodeData(path=path, path_type=path_type)
+        self.post_message(CurrentAddNodeMsg(message_data))
+
     @on(DirectoryTree.DirectorySelected)
     @on(DirectoryTree.FileSelected)
-    def update_contents_view_and_title(
+    def update_contents_view_and_send_message(
         self,
         event: DirectoryTree.DirectorySelected | DirectoryTree.FileSelected,
     ) -> None:
         event.stop()
-        if event.node.data is None:
-            return
+        assert event.node.data is not None
         contents_view = self.query_one(
             self.ids.view_id("#", view=ViewName.contents_view), ContentsView
         )
         contents_view.path = event.node.data.path
         contents_view.border_title = f" {event.node.data.path} "
-        # Update the reactive from TabsBase, used for operate screen logic
-        self.current_path = event.node.data.path
+
         if isinstance(event, DirectoryTree.FileSelected):
             self.update_buttons(is_dir=False)
+            self.send_message_current_add_node(
+                path=event.node.data.path, path_type="file"
+            )
         else:
             self.update_buttons(is_dir=True)
+            self.send_message_current_add_node(
+                path=event.node.data.path, path_type="dir"
+            )
 
     @on(Switch.Changed)
     def handle_filter_switches(self, event: Switch.Changed) -> None:
