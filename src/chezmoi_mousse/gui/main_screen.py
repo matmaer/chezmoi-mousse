@@ -16,13 +16,14 @@ from textual.widgets import (
     Tabs,
 )
 
-from chezmoi_mousse import (  # OperateBtn,; OperateLaunchData,
+from chezmoi_mousse import (
     AppType,
     AreaName,
     Canvas,
     Chars,
     Id,
     OperateBtn,
+    OperateLaunchData,
     PaneBtn,
     Tcss,
     TreeName,
@@ -41,8 +42,7 @@ from .shared.operate_msg import (
     CurrentApplyNodeMsg,
     CurrentReAddNodeMsg,
 )
-
-# from .shared.operate_screen import OperateScreen
+from .shared.operate_screen import OperateScreen
 from .shared.trees import ExpandedTree, ListTree, ManagedTree
 
 if TYPE_CHECKING:
@@ -310,37 +310,15 @@ class MainScreen(Screen[None], AppType):
         self.app_log.success(f"Theme set to {new_theme}")
 
     @on(Button.Pressed, Tcss.operate_button.value)
-    def handle_operation_button_pressed(self, event: Button.Pressed) -> None:
-        if event.button.id == Id.add_tab.button_id(btn=OperateBtn.add_file):
-            self.notify("Add file button id pressed")
-        elif event.button.id == Id.add_tab.button_id(btn=OperateBtn.add_dir):
-            self.notify("Add dir button id pressed")
-        elif event.button.id == Id.apply_tab.button_id(
-            btn=OperateBtn.apply_path
-        ):
-            self.notify("Apply path button id pressed")
-        elif event.button.id == Id.apply_tab.button_id(
-            btn=OperateBtn.destroy_path
-        ):
-            self.notify("Apply Destroy path button id pressed")
-        elif event.button.id == Id.apply_tab.button_id(
-            btn=OperateBtn.forget_path
-        ):
-            self.notify("Apply Forget path button id pressed")
-        elif event.button.id == Id.re_add_tab.button_id(
-            btn=OperateBtn.re_add_path
-        ):
-            self.notify("Re-Add path button id pressed")
-        elif event.button.id == Id.re_add_tab.button_id(
-            btn=OperateBtn.destroy_path
-        ):
-            self.notify("Re-Add Destroy path button id pressed")
-        elif event.button.id == Id.re_add_tab.button_id(
-            btn=OperateBtn.forget_path
-        ):
-            self.notify("Re-Add Forget path button id pressed")
+    def push_operate_screen(self, event: Button.Pressed) -> None:
+        button_enum = OperateBtn.from_label(str(event.button.label))
+        if self.current_add_node is not None:
+            launch_data = OperateLaunchData(
+                btn_enum_member=button_enum, node_data=self.current_add_node
+            )
+            self.app.push_screen(OperateScreen(launch_data))
         else:
-            self.notify("Unknown operate button id pressed", severity="error")
+            self.notify("No current node available.", severity="error")
 
     def _handle_operate_result(
         self, operate_result: "OperateResultData | None"
