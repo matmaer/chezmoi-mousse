@@ -44,8 +44,8 @@ class ReAddTab(TabsBase):
             ids=self.ids,
             buttons=(
                 OperateBtn.re_add_path,
-                OperateBtn.destroy_path,
                 OperateBtn.forget_path,
+                OperateBtn.destroy_path,
             ),
         )
         yield SwitchSlider(

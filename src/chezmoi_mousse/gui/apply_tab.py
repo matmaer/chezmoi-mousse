@@ -44,8 +44,8 @@ class ApplyTab(TabsBase):
             ids=self.ids,
             buttons=(
                 OperateBtn.apply_path,
-                OperateBtn.destroy_path,
                 OperateBtn.forget_path,
+                OperateBtn.destroy_path,
             ),
         )
         yield SwitchSlider(
