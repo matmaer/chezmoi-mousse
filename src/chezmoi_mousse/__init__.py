@@ -99,10 +99,10 @@ class OperateLaunchData:
 
 @dataclass(slots=True)
 class OperateResultData:
-    btn_enum_member: "OperateBtn"
-    path: "Path"
+    btn_enum_member: "OperateBtn | None" = None
     command_results: "CommandResults | None" = None
     operation_executed: bool = False
+    path: "Path | None" = None
 
 
 @dataclass(slots=True)
