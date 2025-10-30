@@ -83,10 +83,10 @@
   #operate-screen-log {
     height: 5;
   }
-  &> ContentsView {
+  & ContentsView {
     border: none;
   }
-  &> DiffView {
+  & DiffView {
     border: none;
   }
 }
