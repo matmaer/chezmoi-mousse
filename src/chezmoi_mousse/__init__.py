@@ -54,8 +54,7 @@ __all__ = [
     "NavBtn",
     "NodeData",
     "OperateBtn",
-    "OperateLaunchData",
-    "OperateResultData",
+    "OperateScreenData",
     "PaneBtn",
     "PathDict",
     "PathList",
@@ -92,14 +91,9 @@ class DirTreeNodeData:
 
 
 @dataclass(slots=True)
-class OperateLaunchData:
+class OperateScreenData:
+    node_data: "NodeData | DirTreeNodeData"
     operate_btn: "OperateBtn"
-    node_data: NodeData | DirTreeNodeData
-
-
-@dataclass(slots=True)
-class OperateResultData:
-    operate_btn: "OperateBtn | None" = None
     command_results: "CommandResults | None" = None
     operation_executed: bool = False
     path: "Path | None" = None
