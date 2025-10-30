@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 from textual import on
 from textual.app import ComposeResult
 from textual.binding import Binding
+from textual.containers import Vertical
 from textual.screen import Screen
 from textual.widgets import Button, Footer, Label, Static
 
@@ -143,22 +144,23 @@ class OperateScreen(Screen[OperateResultData], AppType):
         )
 
     def compose(self) -> ComposeResult:
-        assert self.operate_btn is not None
-        yield OperateInfo(self.launch_data)
-        if self.launch_data.btn_enum_member == OperateBtn.apply_path:
-            yield DiffView(ids=self.ids, reverse=False)
-        elif self.launch_data.btn_enum_member == OperateBtn.re_add_path:
-            yield DiffView(ids=self.ids, reverse=True)
-        elif self.launch_data.btn_enum_member in (
-            OperateBtn.add_file,
-            OperateBtn.add_dir,
-            OperateBtn.forget_path,
-            OperateBtn.destroy_path,
-        ):
-            yield ContentsView(ids=self.ids)
-        yield OperateBtnHorizontal(
-            ids=self.ids, buttons=(self.operate_btn, OperateBtn.operate_cancel)
-        )
+        with Vertical():
+            yield OperateInfo(self.launch_data)
+            if self.launch_data.btn_enum_member == OperateBtn.apply_path:
+                yield DiffView(ids=self.ids, reverse=False)
+            elif self.launch_data.btn_enum_member == OperateBtn.re_add_path:
+                yield DiffView(ids=self.ids, reverse=True)
+            elif self.launch_data.btn_enum_member in (
+                OperateBtn.add_file,
+                OperateBtn.add_dir,
+                OperateBtn.forget_path,
+                OperateBtn.destroy_path,
+            ):
+                yield ContentsView(ids=self.ids)
+            yield OperateBtnHorizontal(
+                ids=self.ids,
+                buttons=(self.operate_btn, OperateBtn.operate_cancel),
+            )
         yield Footer()
 
     def on_mount(self) -> None:
@@ -225,13 +227,18 @@ class OperateResultScreen(Screen[OperateResultData], AppType):
         super().__init__(id=self.ids.canvas_name)
 
     def compose(self) -> ComposeResult:
-        yield Label("Executed Commands", classes=Tcss.section_label.name)
-        yield AppLog(ids=self.ids)
-        yield Label("Operate Command Output", classes=Tcss.section_label.name)
-        yield OutputLog(ids=self.ids, view_name=ViewName.write_output_log_view)
-        yield OperateBtnHorizontal(
-            ids=self.ids, buttons=(OperateBtn.operate_close,)
-        )
+        with Vertical():
+            yield Label("Executed Commands", classes=Tcss.section_label.name)
+            yield AppLog(ids=self.ids)
+            yield Label(
+                "Operate Command Output", classes=Tcss.section_label.name
+            )
+            yield OutputLog(
+                ids=self.ids, view_name=ViewName.write_output_log_view
+            )
+            yield OperateBtnHorizontal(
+                ids=self.ids, buttons=(OperateBtn.operate_close,)
+            )
         yield Footer()
 
     def on_mount(self) -> None:
