@@ -28,6 +28,7 @@ if TYPE_CHECKING:
 
 type PathDict = dict["Path", str]
 type PathList = list["Path"]
+type PathType = Literal["file", "dir"]
 
 
 class AppType:
@@ -58,6 +59,7 @@ __all__ = [
     "PaneBtn",
     "PathDict",
     "PathList",
+    "PathType",
     "PreRunData",
     "ReadCmd",
     "ReadVerbs",
@@ -80,18 +82,18 @@ class NodeData:
     #   X (no status but managed)
     #   F (fake for the root node)
     status: str
-    is_leaf: bool
+    path_type: "PathType"
 
 
 @dataclass(slots=True)
 class DirTreeNodeData:
     path: "Path"
-    path_type: Literal["file", "dir"]
+    path_type: "PathType"
 
 
 @dataclass(slots=True)
 class OperateLaunchData:
-    btn_enum_member: OperateBtn
+    btn_enum_member: "OperateBtn"
     node_data: NodeData | DirTreeNodeData
 
 

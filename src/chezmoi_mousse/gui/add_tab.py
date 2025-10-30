@@ -1,7 +1,7 @@
 from collections.abc import Iterable
 from enum import StrEnum
 from pathlib import Path
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING
 
 from textual import on
 from textual.app import ComposeResult
@@ -28,7 +28,7 @@ from .shared.switch_slider import SwitchSlider
 from .shared.tabs_base import TabsBase
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import CanvasIds
+    from chezmoi_mousse import CanvasIds, PathType
 
 __all__ = ["AddTab", "FilteredDirTree"]
 
@@ -279,7 +279,7 @@ class AddTab(TabsBase):
         return
 
     def send_message_current_add_node(
-        self, path: Path, path_type: Literal["file", "dir"]
+        self, path: Path, path_type: "PathType"
     ) -> None:
         message_data = DirTreeNodeData(path=path, path_type=path_type)
         self.post_message(CurrentAddNodeMsg(message_data))

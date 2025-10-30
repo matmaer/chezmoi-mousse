@@ -89,12 +89,12 @@ class TabsBase(Horizontal):
             )
             operate_path_label = (
                 OperateBtn.apply_path.dir_label
-                if node_data.is_leaf is False
+                if node_data.path_type == "dir"
                 else OperateBtn.apply_path.file_label
             )
             operate_path_tooltip = (
                 OperateBtn.apply_path.dir_tooltip
-                if node_data.is_leaf is False
+                if node_data.path_type == "dir"
                 else OperateBtn.apply_path.file_tooltip
             )
             operate_path_button.label = operate_path_label
@@ -108,12 +108,12 @@ class TabsBase(Horizontal):
             )
             operate_path_label = (
                 OperateBtn.re_add_path.dir_label
-                if node_data.is_leaf is False
+                if node_data.path_type == "dir"
                 else OperateBtn.re_add_path.file_label
             )
             operate_path_tooltip = (
                 OperateBtn.re_add_path.dir_tooltip
-                if node_data.is_leaf is False
+                if node_data.path_type == "dir"
                 else OperateBtn.re_add_path.file_tooltip
             )
             operate_path_button.label = operate_path_label
@@ -130,22 +130,22 @@ class TabsBase(Horizontal):
         )
         destroy_button.label = (
             OperateBtn.destroy_path.file_label
-            if node_data.is_leaf is True
+            if node_data.path_type == "file"
             else OperateBtn.destroy_path.dir_label
         )
         destroy_button.tooltip = (
             OperateBtn.destroy_path.file_tooltip
-            if node_data.is_leaf is True
+            if node_data.path_type == "file"
             else OperateBtn.destroy_path.dir_tooltip
         )
         forget_button.label = (
             OperateBtn.forget_path.file_label
-            if node_data.is_leaf is True
+            if node_data.path_type == "file"
             else OperateBtn.forget_path.dir_label
         )
         forget_button.tooltip = (
             OperateBtn.forget_path.file_tooltip
-            if node_data.is_leaf is True
+            if node_data.path_type == "file"
             else OperateBtn.forget_path.dir_tooltip
         )
 

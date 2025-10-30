@@ -69,7 +69,7 @@ class OperateInfo(Static):
         elif self.operate_btn == OperateBtn.apply_path:
             self.border_title = (
                 OperateBtn.apply_path.file_tooltip.rstrip(".")
-                if self.node_data.is_leaf is True
+                if self.node_data.path_type == "file"
                 else OperateBtn.apply_path.dir_tooltip.rstrip(".")
             )
             lines_to_write.append(InfoStrings.apply_path)
@@ -77,7 +77,7 @@ class OperateInfo(Static):
         elif self.operate_btn == OperateBtn.re_add_path:
             self.border_title = (
                 OperateBtn.re_add_path.file_tooltip.rstrip(".")
-                if self.node_data.is_leaf is True
+                if self.node_data.path_type == "file"
                 else OperateBtn.re_add_path.dir_tooltip.rstrip(".")
             )
             lines_to_write.append(InfoStrings.re_add_path)
@@ -85,7 +85,7 @@ class OperateInfo(Static):
         elif self.operate_btn == OperateBtn.forget_path:
             self.border_title = (
                 OperateBtn.forget_path.file_tooltip.rstrip(".")
-                if self.node_data.is_leaf is True
+                if self.node_data.path_type == "file"
                 else OperateBtn.forget_path.dir_tooltip.rstrip(".")
             )
             lines_to_write.append(InfoStrings.forget_path)
@@ -93,7 +93,7 @@ class OperateInfo(Static):
         elif self.operate_btn == OperateBtn.destroy_path:
             self.border_title = (
                 OperateBtn.destroy_path.file_tooltip.rstrip(".")
-                if self.node_data.is_leaf is True
+                if self.node_data.path_type == "file"
                 else OperateBtn.destroy_path.dir_tooltip.rstrip(".")
             )
             lines_to_write.append(InfoStrings.destroy_path)
