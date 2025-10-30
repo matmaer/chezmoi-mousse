@@ -319,7 +319,10 @@ class MainScreen(Screen[None], AppType):
             launch_data = OperateLaunchData(
                 operate_btn=button_enum, node_data=self.current_add_node
             )
-            self.app.push_screen(OperateScreen(launch_data))
+            self.app.push_screen(
+                OperateScreen(launch_data),
+                callback=self._handle_operate_result,
+            )
         elif (
             self.current_apply_node is not None
             and button_enum
@@ -333,7 +336,10 @@ class MainScreen(Screen[None], AppType):
             launch_data = OperateLaunchData(
                 operate_btn=button_enum, node_data=self.current_apply_node
             )
-            self.app.push_screen(OperateScreen(launch_data))
+            self.app.push_screen(
+                OperateScreen(launch_data),
+                callback=self._handle_operate_result,
+            )
         elif (
             self.current_re_add_node is not None
             and button_enum
