@@ -370,6 +370,7 @@ class ExpandedTree(TreeBase):
         super().__init__(self.ids, tree_name=TreeName.expanded_tree)
 
     def populate_tree(self) -> None:
+        self.clear()
         self.expand_all_nodes(self.root)
 
     @on(TreeBase.NodeExpanded)
@@ -415,6 +416,7 @@ class ListTree(TreeBase):
         super().__init__(self.ids, tree_name=TreeName.list_tree)
 
     def populate_tree(self) -> None:
+        self.clear()
         self.add_status_files_in(tree_node=self.root, flat_list=True)
 
     def watch_unchanged(self) -> None:
@@ -435,6 +437,7 @@ class ManagedTree(TreeBase):
         super().__init__(self.ids, tree_name=TreeName.managed_tree)
 
     def populate_tree(self) -> None:
+        self.clear()
         self.add_status_dirs_in(tree_node=self.root)
         self.add_status_files_in(tree_node=self.root, flat_list=False)
 
