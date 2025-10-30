@@ -37,6 +37,10 @@ class ContentsView(RichLog, AppType):
         self.write(self.click_file_path)
         self.border_title = f" {self.destDir} "
 
+    def write_managed_directory(self) -> None:
+        self.write(f"Managed directory: {self.path}")
+        self.write(self.click_file_path)
+
     def watch_path(self) -> None:
         if self.path is None or self.path == self.destDir:
             return
@@ -72,8 +76,7 @@ class ContentsView(RichLog, AppType):
             # FileNotFoundError is raised both when a file or a directory
             # does not exist
             if self.path in self.app.chezmoi.managed_paths.dirs:
-                self.write(f"Managed directory: {self.path}")
-                self.write(self.click_file_path)
+                self.write_managed_directory()
                 return
             elif self.path in self.app.chezmoi.managed_paths.files:
                 pretty_cmd = LogUtils.pretty_cmd_str(
@@ -95,8 +98,7 @@ class ContentsView(RichLog, AppType):
 
         except IsADirectoryError:
             if self.path in self.app.chezmoi.managed_paths.dirs:
-                self.write(f"Managed directory: {self.path}")
-                self.write(self.click_file_path)
+                self.write_managed_directory()
             else:
                 self.write(f"Unmanaged directory: {self.path}")
                 self.write(self.click_file_path)
