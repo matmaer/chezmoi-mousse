@@ -229,7 +229,6 @@ class OperateResultScreen(Screen[OperateResultData], AppType):
     def __init__(self, launch_data: "OperateLaunchData") -> None:
         self.ids = Id.operate_result
         self.launch_data = launch_data
-        self.cmd_result: "CommandResults | None" = None
         self.operate_result = OperateResultData(
             btn_enum_member=self.launch_data.btn_enum_member,
             path=self.launch_data.node_data.path,
@@ -258,41 +257,47 @@ class OperateResultScreen(Screen[OperateResultData], AppType):
         button.disabled = False
         button.tooltip = None
 
-        app_log = self.query_one(AppLog)
+        app_log = self.query_one(
+            self.ids.view_id(view=ViewName.app_log_view), AppLog
+        )
         app_log.auto_scroll = False
         app_log.styles.height = "auto"
-        output_log = self.query_one(OutputLog)
+        output_log = self.query_one(
+            self.ids.view_id(view=ViewName.write_output_log_view), OutputLog
+        )
         output_log.auto_scroll = False
 
         if self.launch_data.btn_enum_member == OperateBtn.add_file:
-            self.cmd_result = self.app.chezmoi.perform(
+            cmd_result: "CommandResults" = self.app.chezmoi.perform(
                 WriteCmd.add, path_arg=self.launch_data.node_data.path
             )
         elif self.launch_data.btn_enum_member == OperateBtn.apply_path:
-            self.cmd_result = self.app.chezmoi.perform(
+            cmd_result: "CommandResults" = self.app.chezmoi.perform(
                 WriteCmd.apply, path_arg=self.launch_data.node_data.path
             )
         elif self.launch_data.btn_enum_member == OperateBtn.re_add_path:
-            self.cmd_result = self.app.chezmoi.perform(
+            cmd_result: "CommandResults" = self.app.chezmoi.perform(
                 WriteCmd.re_add, path_arg=self.launch_data.node_data.path
             )
         elif self.launch_data.btn_enum_member == OperateBtn.forget_path:
-            self.cmd_result = self.app.chezmoi.perform(
+            cmd_result: "CommandResults" = self.app.chezmoi.perform(
                 WriteCmd.forget, path_arg=self.launch_data.node_data.path
             )
         elif self.launch_data.btn_enum_member == OperateBtn.destroy_path:
-            self.cmd_result = self.app.chezmoi.perform(
+            cmd_result: "CommandResults" = self.app.chezmoi.perform(
                 WriteCmd.destroy, path_arg=self.launch_data.node_data.path
             )
-        self.operate_result.operation_executed = True
-        self.operate_result.command_results = self.cmd_result
-        if self.cmd_result is None:
-            app_log.write("No command result to log.")
-            output_log.write("No command result to log.")
+        else:
+            self.screen.notify(
+                f"Operate button not implemented: {self.launch_data.btn_enum_member.name}",
+                severity="error",
+            )
             return
+        self.operate_result.operation_executed = True
+        self.operate_result.command_results = cmd_result
 
-        app_log.log_cmd_results(self.cmd_result)
-        output_log.log_cmd_results(self.cmd_result)
+        app_log.log_cmd_results(cmd_result)
+        output_log.log_cmd_results(cmd_result)
 
         # Refresh chezmoi status and managed data
         managed_dirs: "CommandResults" = self.app.chezmoi.read(
