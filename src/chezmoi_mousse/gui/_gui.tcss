@@ -83,16 +83,12 @@
   #operate-screen-log {
     height: 5;
   }
-  ContentsView {
+  &> ContentsView {
     border: none;
   }
-  DiffView {
+  &> DiffView {
     border: none;
   }
-}
-
-.operate_button_horizontal {
-  dock: bottom;
 }
 
 
@@ -160,6 +156,8 @@ NavButtonsVertical {
 OperateBtnHorizontal {
   width: 100%;
   height: 3;
+  dock: bottom;
+
   & .operate_button {
     background-tint: $surface-lighten-1;
     background: $surface-lighten-1;

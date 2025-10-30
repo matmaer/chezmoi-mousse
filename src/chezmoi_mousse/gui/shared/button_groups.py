@@ -39,8 +39,7 @@ class OperateBtnHorizontal(HorizontalGroup):
         self.ids = ids
         self.buttons = buttons
         super().__init__(
-            id=self.ids.buttons_horizontal_id(area=AreaName.bottom),
-            classes=Tcss.operate_button_horizontal.name,
+            id=self.ids.buttons_horizontal_id(area=AreaName.bottom)
         )
 
     def compose(self) -> ComposeResult:
