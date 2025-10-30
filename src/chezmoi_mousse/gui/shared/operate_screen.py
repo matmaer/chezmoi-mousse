@@ -29,6 +29,7 @@ from .loggers import AppLog, OutputLog
 if TYPE_CHECKING:
     from chezmoi_mousse import CommandResults
 
+type cmd_results_list = list["CommandResults"]
 
 __all__ = ["OperateInfo", "OperateScreen"]
 
@@ -244,18 +245,26 @@ class OperateResultScreen(Screen[OperateResultData], AppType):
         )
         button.disabled = False
         button.tooltip = None
+        self.setup_loggers()
+        self.run_write_command()
 
-        screen_app_log = self.query_one(
+    def setup_loggers(self) -> None:
+
+        self.screen_app_log = self.query_one(
             self.ids.view_id("#", view=ViewName.app_log_view), AppLog
         )
-        screen_app_log.auto_scroll = False
-        screen_app_log.styles.height = "auto"
-        screen_output_log = self.query_one(
+        self.screen_app_log.auto_scroll = False
+        self.screen_app_log.styles.height = "auto"
+        self.screen_output_log = self.query_one(
             self.ids.view_id("#", view=ViewName.write_output_log_view),
             OutputLog,
         )
-        screen_output_log.auto_scroll = False
+        self.screen_output_log.auto_scroll = False
+        operate_cmd_results = self.run_write_command()
+        if operate_cmd_results is not None:
+            self.log_operate_command_results(operate_cmd_results)
 
+    def run_write_command(self) -> "CommandResults | None":
         if self.launch_data.operate_btn == OperateBtn.add_file:
             cmd_result: "CommandResults" = self.app.chezmoi.perform(
                 WriteCmd.add, path_arg=self.launch_data.node_data.path
@@ -281,36 +290,47 @@ class OperateResultScreen(Screen[OperateResultData], AppType):
                 f"Operate button not implemented: {self.launch_data.operate_btn.name}",
                 severity="error",
             )
-            return
-        self.operate_result.operation_executed = True
-        self.operate_result.command_results = cmd_result
+            return None
 
-        screen_app_log.log_cmd_results(cmd_result)
-        screen_output_log.log_cmd_results(cmd_result)
+        return cmd_result
+
+        # self.operate_result.operation_executed = True
+        # self.operate_result.command_results = cmd_result
+
+    def log_operate_command_results(
+        self, operate_cmd_result: "CommandResults"
+    ) -> None:
+
+        self.screen_app_log.log_cmd_results(operate_cmd_result)
+        self.screen_output_log.log_cmd_results(operate_cmd_result)
+
+        self.refresh_managed_paths()
+
+    def refresh_managed_paths(self) -> None:
 
         # Refresh chezmoi status and managed data
         managed_dirs: "CommandResults" = self.app.chezmoi.read(
             ReadCmd.managed_dirs
         )
-        screen_app_log.log_cmd_results(managed_dirs)
+        self.screen_app_log.log_cmd_results(managed_dirs)
 
         managed_files: "CommandResults" = self.app.chezmoi.read(
             ReadCmd.managed_files
         )
-        screen_app_log.log_cmd_results(managed_files)
+        self.screen_app_log.log_cmd_results(managed_files)
 
         status_files: "CommandResults" = self.app.chezmoi.read(
             ReadCmd.status_files
         )
-        screen_app_log.log_cmd_results(status_files)
+        self.screen_app_log.log_cmd_results(status_files)
 
         status_dirs: "CommandResults" = self.app.chezmoi.read(
             ReadCmd.status_dirs
         )
-        screen_app_log.log_cmd_results(status_dirs)
+        self.screen_app_log.log_cmd_results(status_dirs)
 
         self.app.chezmoi.clear_cache()
-        screen_app_log.info("Cleared managed paths cache.")
+        self.screen_app_log.info("Cleared managed paths cache.")
 
     @on(Button.Pressed, Tcss.operate_button.value)
     def close_operate_results_screen(self, event: Button.Pressed) -> None:
