@@ -30,7 +30,7 @@ from chezmoi_mousse import (
     ViewName,
 )
 
-from .add_tab import AddTab
+from .add_tab import AddTab, FilteredDirTree
 from .apply_tab import ApplyTab
 from .config_tab import ConfigTab, ConfigTabSwitcher
 from .help_tab import HelpTab
@@ -347,7 +347,10 @@ class MainScreen(Screen[None], AppType):
             launch_data = OperateLaunchData(
                 btn_enum_member=button_enum, node_data=self.current_re_add_node
             )
-            self.app.push_screen(OperateScreen(launch_data))
+            self.app.push_screen(
+                OperateScreen(launch_data),
+                callback=self._handle_operate_result,
+            )
         else:
             self.notify("No current node available.", severity="error")
 
@@ -363,7 +366,7 @@ class MainScreen(Screen[None], AppType):
                 severity="information",
             )
             return
-        elif (
+        if (
             operate_result.command_results is not None
             and operate_result.operation_executed is True
         ):
@@ -376,6 +379,27 @@ class MainScreen(Screen[None], AppType):
                     f"Operation failed with return code {operate_result.command_results.returncode}:\n{operate_result.command_results.pretty_cmd}",
                     severity="error",
                 )
+            if operate_result.btn_enum_member in (
+                OperateBtn.add_file,
+                OperateBtn.add_dir,
+            ):
+                add_dir_tree = self.query_one(
+                    Id.add_tab.tree_id("#", tree=TreeName.add_tree),
+                    FilteredDirTree,
+                )
+                add_dir_tree.reload()
+                add_tab = self.query_one(Id.add_tab.tab_container_id, AddTab)
+                add_tab.refresh(recompose=True)
+            else:
+                self.populate_trees()
+                apply_tab = self.query_one(
+                    Id.apply_tab.tab_container_id, ApplyTab
+                )
+                apply_tab.refresh(recompose=True)
+                re_add_tab = self.query_one(
+                    Id.re_add_tab.tab_container_id, ReAddTab
+                )
+                re_add_tab.refresh(recompose=True)
         else:
             self.notify("Unknown operation result.", severity="error")
 
