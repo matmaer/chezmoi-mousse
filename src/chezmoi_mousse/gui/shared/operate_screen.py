@@ -190,7 +190,10 @@ class OperateScreen(Screen[OperateResultData], AppType):
         ):
             self.dismiss(self.operate_result)
         else:
-            if self.launch_data.operate_btn == OperateBtn.add_file:
+            if self.launch_data.operate_btn in (
+                OperateBtn.add_file,
+                OperateBtn.add_dir,
+            ):
                 cmd_result: "CommandResults" = self.app.chezmoi.perform(
                     WriteCmd.add, path_arg=self.launch_data.node_data.path
                 )
@@ -219,7 +222,7 @@ class OperateScreen(Screen[OperateResultData], AppType):
 
             self.app.push_screen(
                 OperateResultScreen(
-                    launch_data=self.launch_data, write_cmd_result=cmd_result
+                    launch_data=self.launch_data, operate_cmd_result=cmd_result
                 ),
                 callback=self.handle_result_screen_dismissed,
             )
@@ -247,11 +250,11 @@ class OperateResultScreen(Screen[OperateResultData], AppType):
     def __init__(
         self,
         launch_data: "OperateLaunchData",
-        write_cmd_result: "CommandResults",
+        operate_cmd_result: "CommandResults",
     ) -> None:
         self.ids = Id.operate_result
         self.launch_data = launch_data
-        self.write_cmd_result = write_cmd_result
+        self.operate_cmd_result = operate_cmd_result
         self.operate_result = OperateResultData(
             operate_btn=self.launch_data.operate_btn,
             path=self.launch_data.node_data.path,
@@ -293,7 +296,7 @@ class OperateResultScreen(Screen[OperateResultData], AppType):
             OutputLog,
         )
         self.screen_output_log.auto_scroll = False
-        self.log_operate_command_results(self.write_cmd_result)
+        self.log_operate_command_results(self.operate_cmd_result)
 
     def log_operate_command_results(
         self, operate_cmd_result: "CommandResults"
