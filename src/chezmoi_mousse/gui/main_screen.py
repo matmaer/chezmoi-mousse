@@ -150,11 +150,10 @@ class MainScreen(Screen[None], AppType):
         yield Footer()
 
     def handle_splash_data(self, data: "SplashData") -> None:
-        self.populate_apply_trees()
-        self.populate_re_add_trees()
+        self.populate_trees()
         self.update_config_tab_outputs(data)
 
-    def populate_apply_trees(self) -> None:
+    def populate_trees(self) -> None:
         apply_tab_managed_tree = self.screen.query_one(
             Id.apply_tab.tree_id("#", tree=TreeName.managed_tree), ManagedTree
         )
@@ -169,7 +168,6 @@ class MainScreen(Screen[None], AppType):
         apply_tab_expanded_tree.populate_tree()
         apply_tab_flat_tree.populate_tree()
 
-    def populate_re_add_trees(self) -> None:
         re_add_tab_managed_tree = self.screen.query_one(
             Id.re_add_tab.tree_id("#", tree=TreeName.managed_tree), ManagedTree
         )
