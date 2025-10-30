@@ -23,7 +23,7 @@ from chezmoi_mousse import (
     Chars,
     Id,
     OperateBtn,
-    OperateLaunchData,
+    OperateScreenData,
     PaneBtn,
     Tcss,
     TreeName,
@@ -46,7 +46,7 @@ from .shared.operate_screen import OperateScreen
 from .shared.trees import ExpandedTree, ListTree, ManagedTree
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import DirTreeNodeData, NodeData, OperateResultData
+    from chezmoi_mousse import DirTreeNodeData, NodeData
 
     from .pre_run_screens.splash import SplashData
 
@@ -316,11 +316,11 @@ class MainScreen(Screen[None], AppType):
             and button_enum in (OperateBtn.add_file, OperateBtn.add_dir)
             and current_tab == Canvas.add.name
         ):
-            launch_data = OperateLaunchData(
+            operate_screen_data = OperateScreenData(
                 operate_btn=button_enum, node_data=self.current_add_node
             )
             self.app.push_screen(
-                OperateScreen(launch_data),
+                OperateScreen(operate_screen_data),
                 callback=self._handle_operate_result,
             )
         elif (
@@ -333,11 +333,11 @@ class MainScreen(Screen[None], AppType):
             )
             and current_tab == Canvas.apply.name
         ):
-            launch_data = OperateLaunchData(
+            operate_screen_data = OperateScreenData(
                 operate_btn=button_enum, node_data=self.current_apply_node
             )
             self.app.push_screen(
-                OperateScreen(launch_data),
+                OperateScreen(operate_screen_data),
                 callback=self._handle_operate_result,
             )
         elif (
@@ -350,18 +350,18 @@ class MainScreen(Screen[None], AppType):
             )
             and current_tab == Canvas.re_add.name
         ):
-            launch_data = OperateLaunchData(
+            operate_screen_data = OperateScreenData(
                 operate_btn=button_enum, node_data=self.current_re_add_node
             )
             self.app.push_screen(
-                OperateScreen(launch_data),
+                OperateScreen(operate_screen_data),
                 callback=self._handle_operate_result,
             )
         else:
             self.notify("No current node available.", severity="error")
 
     def _handle_operate_result(
-        self, operate_result: "OperateResultData | None"
+        self, operate_result: "OperateScreenData | None"
     ) -> None:
         if operate_result is None:
             self.notify("No operation result returned.", severity="error")
