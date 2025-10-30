@@ -60,23 +60,43 @@ class OperateInfo(Static):
         lines_to_write: list[str] = []
         if self.operate_btn == OperateBtn.add_file:
             self.border_title = OperateBtn.add_file.enabled_tooltip.rstrip(".")
-            lines_to_write.append(InfoStrings.add_path.value)
+            lines_to_write.append(InfoStrings.add_path)
             self.border_subtitle = Chars.add_info_border
         elif self.operate_btn == OperateBtn.add_dir:
             self.border_title = OperateBtn.add_dir.enabled_tooltip.rstrip(".")
-            lines_to_write.append(InfoStrings.add_path.value)
+            lines_to_write.append(InfoStrings.add_path)
             self.border_subtitle = Chars.add_info_border
         elif self.operate_btn == OperateBtn.apply_path:
-            lines_to_write.append(InfoStrings.apply_path.value)
+            self.border_title = (
+                OperateBtn.apply_path.file_tooltip.rstrip(".")
+                if self.node_data.is_leaf is True
+                else OperateBtn.apply_path.dir_tooltip.rstrip(".")
+            )
+            lines_to_write.append(InfoStrings.apply_path)
             self.border_subtitle = Chars.apply_info_border
         elif self.operate_btn == OperateBtn.re_add_path:
-            lines_to_write.append(InfoStrings.re_add_path.value)
+            self.border_title = (
+                OperateBtn.re_add_path.file_tooltip.rstrip(".")
+                if self.node_data.is_leaf is True
+                else OperateBtn.re_add_path.dir_tooltip.rstrip(".")
+            )
+            lines_to_write.append(InfoStrings.re_add_path)
             self.border_subtitle = Chars.re_add_info_border
         elif self.operate_btn == OperateBtn.forget_path:
-            lines_to_write.append(InfoStrings.forget_path.value)
+            self.border_title = (
+                OperateBtn.forget_path.file_tooltip.rstrip(".")
+                if self.node_data.is_leaf is True
+                else OperateBtn.forget_path.dir_tooltip.rstrip(".")
+            )
+            lines_to_write.append(InfoStrings.forget_path)
             self.border_subtitle = Chars.forget_info_border
         elif self.operate_btn == OperateBtn.destroy_path:
-            lines_to_write.append(InfoStrings.destroy_path.value)
+            self.border_title = (
+                OperateBtn.destroy_path.file_tooltip.rstrip(".")
+                if self.node_data.is_leaf is True
+                else OperateBtn.destroy_path.dir_tooltip.rstrip(".")
+            )
+            lines_to_write.append(InfoStrings.destroy_path)
             self.border_subtitle = Chars.destroy_info_border
 
         if self.operate_btn != OperateBtn.apply_path:
@@ -85,15 +105,15 @@ class OperateInfo(Static):
                 and self.git_autopush is not None
             )
             if self.git_autocommit is True:
-                lines_to_write.append(InfoStrings.auto_commit.value)
+                lines_to_write.append(InfoStrings.auto_commit)
             if self.git_autopush is True:
-                lines_to_write.append(InfoStrings.autopush.value)
+                lines_to_write.append(InfoStrings.autopush)
         # show git diff color info
         if (
             OperateBtn.apply_path == self.operate_btn
             or OperateBtn.re_add_path == self.operate_btn
         ):
-            lines_to_write.append(InfoStrings.diff_color.value)
+            lines_to_write.append(InfoStrings.diff_color)
         lines_to_write.append(
             f"[$text-primary]Operating on path: {self.node_data.path}[/]"
         )
