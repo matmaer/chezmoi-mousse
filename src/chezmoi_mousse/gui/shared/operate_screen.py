@@ -153,10 +153,13 @@ class OperateScreen(Screen[OperateResultData], AppType):
             elif self.launch_data.btn_enum_member in (
                 OperateBtn.add_file,
                 OperateBtn.add_dir,
+            ):
+                yield ContentsView(ids=self.ids)
+            elif self.launch_data.btn_enum_member in (
                 OperateBtn.forget_path,
                 OperateBtn.destroy_path,
             ):
-                yield ContentsView(ids=self.ids)
+                yield DiffView(ids=self.ids, reverse=False)
             yield OperateBtnHorizontal(
                 ids=self.ids,
                 buttons=(self.operate_btn, OperateBtn.operate_cancel),
@@ -177,12 +180,17 @@ class OperateScreen(Screen[OperateResultData], AppType):
         elif self.launch_data.btn_enum_member in (
             OperateBtn.add_file,
             OperateBtn.add_dir,
-            OperateBtn.forget_path,
-            OperateBtn.destroy_path,
         ):
             contents_view = self.query_exactly_one(ContentsView)
             contents_view.path = self.launch_data.node_data.path
             contents_view.border_title = str(self.launch_data.node_data.path)
+        elif self.launch_data.btn_enum_member in (
+            OperateBtn.forget_path,
+            OperateBtn.destroy_path,
+        ):
+            diff_view = self.query_exactly_one(DiffView)
+            diff_view.path = self.launch_data.node_data.path
+            diff_view.border_title = str(self.launch_data.node_data.path)
 
     @on(Button.Pressed, Tcss.operate_button.value)
     def handle_operate_button_pressed(self, event: Button.Pressed) -> None:

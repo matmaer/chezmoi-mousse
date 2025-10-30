@@ -59,7 +59,8 @@ class DiffView(RichLog, AppType):
         self.write(
             f'No diff available for "{self.path}", the path has no status.\n'
         )
-        self.write(self.click_colored_file)
+        if self.ids.canvas_name != Canvas.operate_launch:
+            self.write(self.click_colored_file)
 
     def watch_path(self) -> None:
         if self.path is None or self.path == self.destDir:
