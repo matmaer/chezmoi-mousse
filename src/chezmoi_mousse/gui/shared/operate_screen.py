@@ -52,7 +52,7 @@ class OperateInfo(Static):
     git_autopush: bool | None = None
 
     def __init__(self, operate_launch_data: OperateLaunchData) -> None:
-        self.operate_btn = operate_launch_data.btn_enum_member
+        self.operate_btn = operate_launch_data.operate_btn
         self.node_data = operate_launch_data.node_data
         super().__init__(classes=Tcss.operate_info.name)
 
@@ -135,12 +135,12 @@ class OperateScreen(Screen[OperateResultData], AppType):
     def __init__(self, launch_data: "OperateLaunchData") -> None:
         self.ids = Id.operate_launch
         self.launch_data = launch_data
-        self.operate_btn = launch_data.btn_enum_member
+        self.operate_btn = launch_data.operate_btn
         super().__init__(
             id=self.ids.canvas_name, classes=Tcss.operate_screen.name
         )
         self.operate_result = OperateResultData(
-            btn_enum_member=self.launch_data.btn_enum_member,
+            operate_btn=self.launch_data.operate_btn,
             path=self.launch_data.node_data.path,
         )
 
@@ -218,7 +218,7 @@ class OperateResultScreen(Screen[OperateResultData], AppType):
         self.ids = Id.operate_result
         self.launch_data = launch_data
         self.operate_result = OperateResultData(
-            btn_enum_member=self.launch_data.btn_enum_member,
+            operate_btn=self.launch_data.operate_btn,
             path=self.launch_data.node_data.path,
         )
         super().__init__(id=self.ids.canvas_name)
@@ -256,29 +256,29 @@ class OperateResultScreen(Screen[OperateResultData], AppType):
         )
         screen_output_log.auto_scroll = False
 
-        if self.launch_data.btn_enum_member == OperateBtn.add_file:
+        if self.launch_data.operate_btn == OperateBtn.add_file:
             cmd_result: "CommandResults" = self.app.chezmoi.perform(
                 WriteCmd.add, path_arg=self.launch_data.node_data.path
             )
-        elif self.launch_data.btn_enum_member == OperateBtn.apply_path:
+        elif self.launch_data.operate_btn == OperateBtn.apply_path:
             cmd_result: "CommandResults" = self.app.chezmoi.perform(
                 WriteCmd.apply, path_arg=self.launch_data.node_data.path
             )
-        elif self.launch_data.btn_enum_member == OperateBtn.re_add_path:
+        elif self.launch_data.operate_btn == OperateBtn.re_add_path:
             cmd_result: "CommandResults" = self.app.chezmoi.perform(
                 WriteCmd.re_add, path_arg=self.launch_data.node_data.path
             )
-        elif self.launch_data.btn_enum_member == OperateBtn.forget_path:
+        elif self.launch_data.operate_btn == OperateBtn.forget_path:
             cmd_result: "CommandResults" = self.app.chezmoi.perform(
                 WriteCmd.forget, path_arg=self.launch_data.node_data.path
             )
-        elif self.launch_data.btn_enum_member == OperateBtn.destroy_path:
+        elif self.launch_data.operate_btn == OperateBtn.destroy_path:
             cmd_result: "CommandResults" = self.app.chezmoi.perform(
                 WriteCmd.destroy, path_arg=self.launch_data.node_data.path
             )
         else:
             self.screen.notify(
-                f"Operate button not implemented: {self.launch_data.btn_enum_member.name}",
+                f"Operate button not implemented: {self.launch_data.operate_btn.name}",
                 severity="error",
             )
             return

@@ -317,7 +317,7 @@ class MainScreen(Screen[None], AppType):
             and current_tab == Canvas.add.name
         ):
             launch_data = OperateLaunchData(
-                btn_enum_member=button_enum, node_data=self.current_add_node
+                operate_btn=button_enum, node_data=self.current_add_node
             )
             self.app.push_screen(OperateScreen(launch_data))
         elif (
@@ -331,7 +331,7 @@ class MainScreen(Screen[None], AppType):
             and current_tab == Canvas.apply.name
         ):
             launch_data = OperateLaunchData(
-                btn_enum_member=button_enum, node_data=self.current_apply_node
+                operate_btn=button_enum, node_data=self.current_apply_node
             )
             self.app.push_screen(OperateScreen(launch_data))
         elif (
@@ -345,7 +345,7 @@ class MainScreen(Screen[None], AppType):
             and current_tab == Canvas.re_add.name
         ):
             launch_data = OperateLaunchData(
-                btn_enum_member=button_enum, node_data=self.current_re_add_node
+                operate_btn=button_enum, node_data=self.current_re_add_node
             )
             self.app.push_screen(
                 OperateScreen(launch_data),
@@ -379,7 +379,7 @@ class MainScreen(Screen[None], AppType):
                     f"Operation failed with return code {operate_result.command_results.returncode}:\n{operate_result.command_results.pretty_cmd}",
                     severity="error",
                 )
-            if operate_result.btn_enum_member in (
+            if operate_result.operate_btn in (
                 OperateBtn.add_file,
                 OperateBtn.add_dir,
             ):

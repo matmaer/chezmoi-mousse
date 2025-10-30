@@ -93,13 +93,13 @@ class DirTreeNodeData:
 
 @dataclass(slots=True)
 class OperateLaunchData:
-    btn_enum_member: "OperateBtn"
+    operate_btn: "OperateBtn"
     node_data: NodeData | DirTreeNodeData
 
 
 @dataclass(slots=True)
 class OperateResultData:
-    btn_enum_member: "OperateBtn | None" = None
+    operate_btn: "OperateBtn | None" = None
     command_results: "CommandResults | None" = None
     operation_executed: bool = False
     path: "Path | None" = None
