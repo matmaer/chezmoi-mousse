@@ -369,20 +369,27 @@ class MainScreen(Screen[None], AppType):
         elif operate_result.operation_executed is False:
             self.notify(
                 "Operation cancelled, no changes were made.",
-                severity="information",
+                severity="warning",
             )
             return
-        if (
+        elif (
             operate_result.command_results is not None
             and operate_result.operation_executed is True
         ):
-            if operate_result.command_results.returncode == 0:
+            self.app_log.log_cmd_results(operate_result.command_results)
+            self.read_output_log.log_cmd_results(
+                operate_result.command_results
+            )
+            if (
+                operate_result.command_results.completed_process_data.returncode
+                == 0
+            ):
                 self.notify(
-                    f"Operation completed successfully:\n{operate_result.command_results.pretty_cmd}"
+                    "Operation completed successfully, Logs tab updated."
                 )
             else:
                 self.notify(
-                    f"Operation failed with return code {operate_result.command_results.returncode}:\n{operate_result.command_results.pretty_cmd}",
+                    "Operation failed, check the Logs tab for more info.",
                     severity="error",
                 )
             if operate_result.operate_btn in (
@@ -407,7 +414,9 @@ class MainScreen(Screen[None], AppType):
                 )
                 re_add_tab.refresh(recompose=True)
         else:
-            self.notify("Unknown operation result.", severity="error")
+            self.notify(
+                "Unknown operation result condition.", severity="error"
+            )
 
     @on(CurrentAddNodeMsg)
     def update_current_dir_tree_node(self, message: CurrentAddNodeMsg) -> None:
