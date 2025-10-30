@@ -258,12 +258,13 @@ class OperateResultScreen(Screen[OperateResultData], AppType):
         button.tooltip = None
 
         screen_app_log = self.query_one(
-            self.ids.view_id(view=ViewName.app_log_view), AppLog
+            self.ids.view_id("#", view=ViewName.app_log_view), AppLog
         )
         screen_app_log.auto_scroll = False
         screen_app_log.styles.height = "auto"
         screen_output_log = self.query_one(
-            self.ids.view_id(view=ViewName.write_output_log_view), OutputLog
+            self.ids.view_id("#", view=ViewName.write_output_log_view),
+            OutputLog,
         )
         screen_output_log.auto_scroll = False
 
