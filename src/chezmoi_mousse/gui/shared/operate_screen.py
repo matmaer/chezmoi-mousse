@@ -27,7 +27,7 @@ from .diff_view import DiffView
 from .loggers import AppLog, OutputLog
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import CommandResults, OperateLaunchData
+    from chezmoi_mousse import CommandResults
 
 
 __all__ = ["OperateInfo", "OperateScreen"]
@@ -126,7 +126,7 @@ class OperateScreen(Screen[OperateResultData], AppType):
     BINDINGS = [
         Binding(
             key="escape",
-            action="esc_key_dismiss",
+            action="cancel_operation",
             description="Press the escape key to cancel",
             show=True,
         )
@@ -147,16 +147,13 @@ class OperateScreen(Screen[OperateResultData], AppType):
     def compose(self) -> ComposeResult:
         with Vertical():
             yield OperateInfo(self.launch_data)
-            if self.launch_data.btn_enum_member == OperateBtn.apply_path:
+            if self.operate_btn == OperateBtn.apply_path:
                 yield DiffView(ids=self.ids, reverse=False)
-            elif self.launch_data.btn_enum_member == OperateBtn.re_add_path:
+            elif self.operate_btn == OperateBtn.re_add_path:
                 yield DiffView(ids=self.ids, reverse=True)
-            elif self.launch_data.btn_enum_member in (
-                OperateBtn.add_file,
-                OperateBtn.add_dir,
-            ):
+            elif self.operate_btn in (OperateBtn.add_file, OperateBtn.add_dir):
                 yield ContentsView(ids=self.ids)
-            elif self.launch_data.btn_enum_member in (
+            elif self.operate_btn in (
                 OperateBtn.forget_path,
                 OperateBtn.destroy_path,
             ):
@@ -171,21 +168,15 @@ class OperateScreen(Screen[OperateResultData], AppType):
         for button in self.screen.query(Button):
             button.disabled = False
             button.tooltip = None
-        if self.launch_data.btn_enum_member in (
-            OperateBtn.apply_path,
-            OperateBtn.re_add_path,
-        ):
+        if self.operate_btn in (OperateBtn.apply_path, OperateBtn.re_add_path):
             diff_view = self.query_exactly_one(DiffView)
             diff_view.path = self.launch_data.node_data.path
             diff_view.border_title = str(self.launch_data.node_data.path)
-        elif self.launch_data.btn_enum_member in (
-            OperateBtn.add_file,
-            OperateBtn.add_dir,
-        ):
+        elif self.operate_btn in (OperateBtn.add_file, OperateBtn.add_dir):
             contents_view = self.query_exactly_one(ContentsView)
             contents_view.path = self.launch_data.node_data.path
             contents_view.border_title = str(self.launch_data.node_data.path)
-        elif self.launch_data.btn_enum_member in (
+        elif self.operate_btn in (
             OperateBtn.forget_path,
             OperateBtn.destroy_path,
         ):
@@ -212,7 +203,7 @@ class OperateScreen(Screen[OperateResultData], AppType):
         self.operate_result = result
         self.dismiss(self.operate_result)
 
-    def action_esc_key_dismiss(self) -> None:
+    def action_cancel_operation(self) -> None:
         self.dismiss(self.operate_result)
 
 
