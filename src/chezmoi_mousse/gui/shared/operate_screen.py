@@ -88,6 +88,12 @@ class OperateInfo(Static):
                 lines_to_write.append(InfoStrings.auto_commit.value)
             if self.git_autopush is True:
                 lines_to_write.append(InfoStrings.autopush.value)
+        # show git diff color info
+        if (
+            OperateBtn.apply_path == self.operate_btn
+            or OperateBtn.re_add_path == self.operate_btn
+        ):
+            lines_to_write.append(InfoStrings.diff_color.value)
         lines_to_write.append(
             f"[$text-primary]Operating on path: {self.node_data.path}[/]"
         )
