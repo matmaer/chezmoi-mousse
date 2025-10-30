@@ -171,18 +171,15 @@ class OperateScreen(Screen[OperateResultData], AppType):
         if self.operate_btn in (OperateBtn.apply_path, OperateBtn.re_add_path):
             diff_view = self.query_exactly_one(DiffView)
             diff_view.path = self.launch_data.node_data.path
-            diff_view.border_title = str(self.launch_data.node_data.path)
         elif self.operate_btn in (OperateBtn.add_file, OperateBtn.add_dir):
             contents_view = self.query_exactly_one(ContentsView)
             contents_view.path = self.launch_data.node_data.path
-            contents_view.border_title = str(self.launch_data.node_data.path)
         elif self.operate_btn in (
             OperateBtn.forget_path,
             OperateBtn.destroy_path,
         ):
             diff_view = self.query_exactly_one(DiffView)
             diff_view.path = self.launch_data.node_data.path
-            diff_view.border_title = str(self.launch_data.node_data.path)
 
     @on(Button.Pressed, Tcss.operate_button.value)
     def handle_operate_button_pressed(self, event: Button.Pressed) -> None:
