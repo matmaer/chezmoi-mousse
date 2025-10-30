@@ -282,9 +282,6 @@ class OperateResultScreen(Screen[OperateResultData], AppType):
         )
         button.disabled = False
         button.tooltip = None
-        self.setup_loggers()
-
-    def setup_loggers(self) -> None:
 
         self.screen_app_log = self.query_one(
             self.ids.view_id("#", view=ViewName.app_log_view), AppLog
