@@ -257,15 +257,15 @@ class OperateResultScreen(Screen[OperateResultData], AppType):
         button.disabled = False
         button.tooltip = None
 
-        app_log = self.query_one(
+        screen_app_log = self.query_one(
             self.ids.view_id(view=ViewName.app_log_view), AppLog
         )
-        app_log.auto_scroll = False
-        app_log.styles.height = "auto"
-        output_log = self.query_one(
+        screen_app_log.auto_scroll = False
+        screen_app_log.styles.height = "auto"
+        screen_output_log = self.query_one(
             self.ids.view_id(view=ViewName.write_output_log_view), OutputLog
         )
-        output_log.auto_scroll = False
+        screen_output_log.auto_scroll = False
 
         if self.launch_data.btn_enum_member == OperateBtn.add_file:
             cmd_result: "CommandResults" = self.app.chezmoi.perform(
@@ -296,32 +296,32 @@ class OperateResultScreen(Screen[OperateResultData], AppType):
         self.operate_result.operation_executed = True
         self.operate_result.command_results = cmd_result
 
-        app_log.log_cmd_results(cmd_result)
-        output_log.log_cmd_results(cmd_result)
+        screen_app_log.log_cmd_results(cmd_result)
+        screen_output_log.log_cmd_results(cmd_result)
 
         # Refresh chezmoi status and managed data
         managed_dirs: "CommandResults" = self.app.chezmoi.read(
             ReadCmd.managed_dirs
         )
-        app_log.log_cmd_results(managed_dirs)
+        screen_app_log.log_cmd_results(managed_dirs)
 
         managed_files: "CommandResults" = self.app.chezmoi.read(
             ReadCmd.managed_files
         )
-        app_log.log_cmd_results(managed_files)
+        screen_app_log.log_cmd_results(managed_files)
 
         status_files: "CommandResults" = self.app.chezmoi.read(
             ReadCmd.status_files
         )
-        app_log.log_cmd_results(status_files)
+        screen_app_log.log_cmd_results(status_files)
 
         status_dirs: "CommandResults" = self.app.chezmoi.read(
             ReadCmd.status_dirs
         )
-        app_log.log_cmd_results(status_dirs)
+        screen_app_log.log_cmd_results(status_dirs)
 
         self.app.chezmoi.clear_cache()
-        app_log.info("Cleared managed paths cache.")
+        screen_app_log.info("Cleared managed paths cache.")
 
     @on(Button.Pressed, Tcss.operate_button.value)
     def close_operate_results_screen(self, event: Button.Pressed) -> None:
