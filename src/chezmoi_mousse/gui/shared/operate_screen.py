@@ -140,7 +140,8 @@ class OperateScreen(Screen[OperateResultData], AppType):
             id=self.ids.canvas_name, classes=Tcss.operate_screen.name
         )
         self.operate_result = OperateResultData(
-            path=self.launch_data.node_data.path
+            btn_enum_member=self.launch_data.btn_enum_member,
+            path=self.launch_data.node_data.path,
         )
 
     def compose(self) -> ComposeResult:
@@ -230,7 +231,8 @@ class OperateResultScreen(Screen[OperateResultData], AppType):
         self.launch_data = launch_data
         self.cmd_result: "CommandResults | None" = None
         self.operate_result = OperateResultData(
-            path=self.launch_data.node_data.path
+            btn_enum_member=self.launch_data.btn_enum_member,
+            path=self.launch_data.node_data.path,
         )
         super().__init__(id=self.ids.canvas_name)
 
