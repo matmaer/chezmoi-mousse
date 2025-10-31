@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 __all__ = [
     "Chezmoi",
-    "CommandResults",
+    "CommandResult",
     "GlobalCmd",
     "LogUtils",
     "ManagedPaths",
@@ -155,7 +155,7 @@ class LogUtils:
 
 
 @dataclass
-class CommandResults:
+class CommandResult:
     completed_process_data: CompletedProcess[str]
     path_arg: Path | None
 
@@ -397,12 +397,12 @@ class Chezmoi:
     # Command execution and logging #
     #################################
 
-    def _log_in_app_and_read_output_log(self, result: CommandResults):
+    def _log_in_app_and_read_output_log(self, result: CommandResult):
         if self.app_log is not None and self.read_output_log is not None:
             self.app_log.log_cmd_results(result)
             self.read_output_log.log_cmd_results(result)
 
-    def _log_in_app_and_write_output_log(self, result: CommandResults):
+    def _log_in_app_and_write_output_log(self, result: CommandResult):
         if self.app_log is not None and self.write_output_log is not None:
             self.app_log.log_cmd_results(result)
             self.write_output_log.log_cmd_results(result)
@@ -414,7 +414,7 @@ class Chezmoi:
 
     def read(
         self, read_cmd: ReadCmd, path_arg: Path | None = None
-    ) -> CommandResults:
+    ) -> CommandResult:
         command: list[str] = read_cmd.value
         if path_arg is not None:
             command: list[str] = command + [str(path_arg)]
@@ -429,11 +429,11 @@ class Chezmoi:
             text=True,
             timeout=time_out,
         )
-        command_results = CommandResults(
+        command_result = CommandResult(
             completed_process_data=result, path_arg=path_arg
         )
-        self._log_in_app_and_read_output_log(command_results)
-        return command_results
+        self._log_in_app_and_read_output_log(command_result)
+        return command_result
 
     def perform(
         self,
@@ -441,7 +441,7 @@ class Chezmoi:
         *,
         path_arg: Path | None = None,
         repo_url: str | None = None,
-    ) -> CommandResults:
+    ) -> CommandResult:
         if self._changes_enabled is True:
             base_cmd: list[str] = GlobalCmd.live_run.value
         else:
@@ -456,7 +456,7 @@ class Chezmoi:
         result: CompletedProcess[str] = run(
             command, capture_output=True, shell=False, text=True, timeout=5
         )
-        command_results = CommandResults(
+        command_results = CommandResult(
             completed_process_data=result, path_arg=path_arg
         )
         self._log_in_app_and_write_output_log(command_results)
