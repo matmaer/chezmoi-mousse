@@ -407,7 +407,11 @@ class Chezmoi:
             self.app_log.log_cmd_results(result)
             self.write_output_log.log_cmd_results(result)
 
-    def clear_cache(self) -> None:
+    def update_managed_paths(self) -> None:
+        self.read(ReadCmd.managed_dirs)
+        self.read(ReadCmd.managed_files)
+        self.read(ReadCmd.status_files)
+        self.read(ReadCmd.status_dirs)
         self.managed_paths.clear_managed_paths_cache()
         if self.app_log is not None:
             self.app_log.info("Cleared managed paths cache.")
