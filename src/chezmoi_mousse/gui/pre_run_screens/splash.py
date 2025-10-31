@@ -20,7 +20,7 @@ from textual.worker import WorkerState
 from chezmoi_mousse import AppType, LogUtils, ManagedPaths, ReadCmd, VerbArgs
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import CommandResults
+    from chezmoi_mousse import CommandResult
 
 __all__ = ["LoadingScreen", "ParsedConfig", "SplashData"]
 
@@ -53,13 +53,13 @@ class ParsedConfig:
 
 @dataclass(slots=True)
 class SplashData:
-    cat_config: "CommandResults"
-    doctor: "CommandResults"
+    cat_config: "CommandResult"
+    doctor: "CommandResult"
     exectuded_commands: list[str]
-    ignored: "CommandResults"
+    ignored: "CommandResult"
     managed_paths: ManagedPaths
     parsed_config: ParsedConfig
-    template_data: "CommandResults"
+    template_data: "CommandResult"
 
 
 SPLASH = """\
@@ -101,15 +101,15 @@ def create_deque() -> deque[Style]:
 
 
 FADE_LINE_STYLES = create_deque()
-cat_config: "CommandResults | None" = None
-doctor: "CommandResults | None" = None
+cat_config: "CommandResult | None" = None
+doctor: "CommandResult | None" = None
 dump_config: ParsedConfig | None = None
-ignored: "CommandResults | None" = None
+ignored: "CommandResult | None" = None
 managed_dirs: str = ""
 managed_files: str = ""
 status_dirs: str = ""
 status_files: str = ""
-template_data: "CommandResults | None" = None
+template_data: "CommandResult | None" = None
 
 
 class AnimatedFade(Static):
@@ -148,7 +148,7 @@ class LoadingScreen(Screen[SplashData | None], AppType):
             splash_log.write(log_text)
             return
 
-        cmd_result: "CommandResults" = self.app.chezmoi.read(splash_cmd)
+        cmd_result: "CommandResult" = self.app.chezmoi.read(splash_cmd)
         if splash_cmd in (
             ReadCmd.cat_config,
             ReadCmd.doctor,
