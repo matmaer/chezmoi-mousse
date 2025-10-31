@@ -37,9 +37,6 @@ class TreeBase(Tree[NodeData], AppType):
         self.root_data = NodeData(
             path=self.destDir, path_type="dir", found=True, status="F"
         )
-        self.only_existing_paths = (
-            True if self.ids.canvas_name == Canvas.re_add else False
-        )
         super().__init__(
             label="root",
             id=self.ids.tree_id(tree=self.tree_name),
@@ -122,7 +119,7 @@ class TreeBase(Tree[NodeData], AppType):
         path_type: "PathType",
     ) -> None:
         found: bool = path.exists()
-        if found is False and self.only_existing_paths:
+        if found is False and self.ids.canvas_name == Canvas.re_add:
             return
         node_data = NodeData(
             path=path, path_type=path_type, found=found, status=status_code
