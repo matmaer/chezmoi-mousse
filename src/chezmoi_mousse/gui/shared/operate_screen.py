@@ -14,7 +14,6 @@ from chezmoi_mousse import (
     Id,
     OperateBtn,
     OperateScreenData,
-    ReadCmd,
     Tcss,
     ViewName,
     WriteCmd,
@@ -26,9 +25,7 @@ from .diff_view import DiffView
 from .loggers import AppLog, OutputLog
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import CommandResults
-
-type cmd_results_list = list["CommandResults"]
+    from chezmoi_mousse import CommandResult
 
 __all__ = ["OperateInfo", "OperateScreen"]
 
@@ -202,33 +199,33 @@ class OperateScreen(Screen[OperateScreenData], AppType):
                 OperateBtn.add_file,
                 OperateBtn.add_dir,
             ):
-                cmd_result: "CommandResults" = self.app.chezmoi.perform(
+                cmd_result: "CommandResult" = self.app.chezmoi.perform(
                     WriteCmd.add,
                     path_arg=self.operate_screen_data.node_data.path,
                 )
             elif self.operate_screen_data.operate_btn == OperateBtn.apply_path:
-                cmd_result: "CommandResults" = self.app.chezmoi.perform(
+                cmd_result: "CommandResult" = self.app.chezmoi.perform(
                     WriteCmd.apply,
                     path_arg=self.operate_screen_data.node_data.path,
                 )
             elif (
                 self.operate_screen_data.operate_btn == OperateBtn.re_add_path
             ):
-                cmd_result: "CommandResults" = self.app.chezmoi.perform(
+                cmd_result: "CommandResult" = self.app.chezmoi.perform(
                     WriteCmd.re_add,
                     path_arg=self.operate_screen_data.node_data.path,
                 )
             elif (
                 self.operate_screen_data.operate_btn == OperateBtn.forget_path
             ):
-                cmd_result: "CommandResults" = self.app.chezmoi.perform(
+                cmd_result: "CommandResult" = self.app.chezmoi.perform(
                     WriteCmd.forget,
                     path_arg=self.operate_screen_data.node_data.path,
                 )
             elif (
                 self.operate_screen_data.operate_btn == OperateBtn.destroy_path
             ):
-                cmd_result: "CommandResults" = self.app.chezmoi.perform(
+                cmd_result: "CommandResult" = self.app.chezmoi.perform(
                     WriteCmd.destroy,
                     path_arg=self.operate_screen_data.node_data.path,
                 )
@@ -265,7 +262,7 @@ class OperateResultScreen(ModalScreen[None], AppType):
         )
     ]
 
-    def __init__(self, operate_cmd_result: "CommandResults") -> None:
+    def __init__(self, operate_cmd_result: "CommandResult") -> None:
         self.ids = Id.operate_result
         self.operate_cmd_result = operate_cmd_result
         super().__init__(id=self.ids.canvas_name)
@@ -304,34 +301,6 @@ class OperateResultScreen(ModalScreen[None], AppType):
         self.screen_output_log.auto_scroll = False
         self.screen_app_log.log_cmd_results(self.operate_cmd_result)
         self.screen_output_log.log_cmd_results(self.operate_cmd_result)
-
-        self.refresh_managed_paths()
-
-    def refresh_managed_paths(self) -> None:
-
-        # Refresh chezmoi status and managed data
-        managed_dirs: "CommandResults" = self.app.chezmoi.read(
-            ReadCmd.managed_dirs
-        )
-        self.screen_app_log.log_cmd_results(managed_dirs)
-
-        managed_files: "CommandResults" = self.app.chezmoi.read(
-            ReadCmd.managed_files
-        )
-        self.screen_app_log.log_cmd_results(managed_files)
-
-        status_files: "CommandResults" = self.app.chezmoi.read(
-            ReadCmd.status_files
-        )
-        self.screen_app_log.log_cmd_results(status_files)
-
-        status_dirs: "CommandResults" = self.app.chezmoi.read(
-            ReadCmd.status_dirs
-        )
-        self.screen_app_log.log_cmd_results(status_dirs)
-
-        self.app.chezmoi.clear_cache()
-        self.screen_app_log.info("Cleared managed paths cache.")
 
     @on(Button.Pressed, Tcss.operate_button.value)
     def close_operate_results_screen(self, event: Button.Pressed) -> None:
