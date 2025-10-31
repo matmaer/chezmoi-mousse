@@ -159,7 +159,7 @@ class OperateScreen(Screen[OperateScreenData], AppType):
                 ids=self.ids,
                 buttons=(
                     self.operate_screen_data.operate_btn,
-                    OperateBtn.operate_cancel,
+                    OperateBtn.operate_exit,
                 ),
             )
         yield Footer()
@@ -190,9 +190,7 @@ class OperateScreen(Screen[OperateScreenData], AppType):
     @on(Button.Pressed, Tcss.operate_button.value)
     def handle_operate_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
-        if event.button.id == self.ids.button_id(
-            btn=OperateBtn.operate_cancel
-        ):
+        if event.button.id == self.ids.button_id(btn=OperateBtn.operate_exit):
             self.dismiss(self.operate_screen_data)
         else:
             if self.operate_screen_data.operate_btn in (
@@ -278,13 +276,13 @@ class OperateResultScreen(ModalScreen[None], AppType):
                 ids=self.ids, view_name=ViewName.write_output_log_view
             )
             yield OperateBtnHorizontal(
-                ids=self.ids, buttons=(OperateBtn.operate_close,)
+                ids=self.ids, buttons=(OperateBtn.operate_exit,)
             )
         yield Footer()
 
     def on_mount(self) -> None:
         button = self.query_one(
-            self.ids.button_id("#", btn=OperateBtn.operate_close)
+            self.ids.button_id("#", btn=OperateBtn.operate_exit)
         )
         button.disabled = False
         button.tooltip = None
