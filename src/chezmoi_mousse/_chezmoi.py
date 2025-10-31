@@ -228,6 +228,8 @@ class CommandResult:
 
 @dataclass
 class ManagedPaths:
+
+    dest_dir: Path = Path.home()  # correctly set by LoadingScreen
     managed_dirs_stdout: str = ""  # ReadCmd.managed_dirs
     managed_files_stdout: str = ""  # ReadCmd.managed_files
     status_dirs_stdout: str = ""  # ReadCmd.status_dirs
