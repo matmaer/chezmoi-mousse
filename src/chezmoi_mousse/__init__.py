@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from importlib.metadata import PackageNotFoundError, version
 from typing import TYPE_CHECKING, Literal
 
@@ -28,7 +28,6 @@ if TYPE_CHECKING:
 type PathDict = dict["Path", str]
 type PathList = list["Path"]
 type PathType = Literal["file", "dir"]
-type CommandResultList = list["CommandResult"]
 
 
 class AppType:
@@ -46,7 +45,6 @@ __all__ = [
     "CanvasIds",
     "Chars",
     "CommandResult",
-    "CommandResultList",
     "DirTreeNodeData",
     "GlobalCmd",
     "Id",
@@ -95,10 +93,7 @@ class DirTreeNodeData:
 class OperateScreenData:
     node_data: "NodeData | DirTreeNodeData"
     operate_btn: "OperateBtn"
-    # use a default factory to avoid mutable default argument
-    command_results: "CommandResultList" = field(
-        default_factory=list["CommandResult"]
-    )
+    command_result: "CommandResult | None" = None
     operation_executed: bool = False
     path: "Path | None" = None
 
