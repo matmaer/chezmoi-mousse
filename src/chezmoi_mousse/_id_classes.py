@@ -46,7 +46,7 @@ class CanvasIds:
         return f"{qid}{self.canvas_name}_{btn.name}{suffix}"
 
     def buttons_horizontal_id(self, qid: str = "", *, area: AreaName) -> str:
-        return f"{qid}{self.canvas_name}_{area}_horizontal"
+        return f"{qid}{self.canvas_name}_{area}_button_group"
 
     def content_switcher_id(self, qid: str = "", *, area: AreaName) -> str:
         return f"{qid}{self.canvas_name}_{area}_content_switcher"
