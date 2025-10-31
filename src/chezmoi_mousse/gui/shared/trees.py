@@ -245,12 +245,6 @@ class TreeBase(Tree[NodeData], AppType):
                 not in self.app.chezmoi.managed_paths.apply_status_dirs
                 and not self.app.chezmoi.has_apply_status_paths_in(path)
             }
-            for dir_path, status_code in dir_paths.items():
-                if dir_path in self.get_dir_nodes_in(tree_node):
-                    continue
-                self.create_and_add_node(
-                    tree_node, dir_path, status_code, path_type="dir"
-                )
         else:
             dir_paths: "PathDict" = {
                 path: "X"
@@ -261,12 +255,12 @@ class TreeBase(Tree[NodeData], AppType):
                 and not self.app.chezmoi.has_re_add_status_paths_in(path)
             }
 
-            for dir_path, status_code in dir_paths.items():
-                if dir_path in self.get_dir_nodes_in(tree_node):
-                    continue
-                self.create_and_add_node(
-                    tree_node, dir_path, status_code, path_type="dir"
-                )
+        for dir_path, status_code in dir_paths.items():
+            if dir_path in self.get_dir_nodes_in(tree_node):
+                continue
+            self.create_and_add_node(
+                tree_node, dir_path, status_code, path_type="dir"
+            )
 
     def __apply_cursor_style(self, node_label: Text, is_cursor: bool) -> Text:
         """Helper to apply cursor-specific styling to a node label."""
