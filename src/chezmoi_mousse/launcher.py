@@ -4,7 +4,6 @@ import traceback
 from pathlib import Path
 
 from chezmoi_mousse import PreRunData
-from chezmoi_mousse._chezmoi import Chezmoi
 
 from .gui.chezmoi_gui import ChezmoiGUI
 
@@ -17,13 +16,7 @@ def run_app():
         shutil.which("chezmoi") is not None
         and os.environ.get("PRETEND_CHEZMOI_NOT_FOUND") != "1"
     )
-
-    chezmoi_instance = Chezmoi(
-        changes_enabled=changes_enabled, dev_mode=dev_mode
-    )
-
     pre_run_data = PreRunData(
-        chezmoi_instance=chezmoi_instance,
         changes_enabled=changes_enabled,
         chezmoi_found=chezmoi_found,
         dev_mode=dev_mode,

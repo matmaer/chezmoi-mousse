@@ -8,7 +8,7 @@ from textual.app import App
 from textual.scrollbar import ScrollBar, ScrollBarRender
 from textual.theme import Theme
 
-from chezmoi_mousse import Chars
+from chezmoi_mousse import Chars, Chezmoi
 
 from .add_tab import AddTab
 from .main_screen import MainScreen
@@ -61,15 +61,19 @@ class ChezmoiGUI(App[None]):
     CSS_PATH = "_gui.tcss"
 
     def __init__(self, pre_run_data: "PreRunData") -> None:
-        self.chezmoi = pre_run_data.chezmoi_instance
-        self.changes_enabled = pre_run_data.changes_enabled
-        self.chezmoi_found = pre_run_data.chezmoi_found
-        self.dev_mode = pre_run_data.dev_mode
+        self.chezmoi: "Chezmoi"
+        self.pre_run_data = pre_run_data
+        self.changes_enabled = self.pre_run_data.changes_enabled
+        self.chezmoi_found = self.pre_run_data.chezmoi_found
+        self.dev_mode = self.pre_run_data.dev_mode
 
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
         super().__init__()
 
     def on_mount(self) -> None:
+        self.chezmoi = Chezmoi(
+            changes_enabled=self.changes_enabled, dev_mode=self.dev_mode
+        )
         self.title = "-  c h e z m o i  m o u s s e  -"
         self.register_theme(chezmoi_mousse_light)
         self.register_theme(chezmoi_mousse_dark)
@@ -82,7 +86,9 @@ class ChezmoiGUI(App[None]):
 
     def handle_return_data(self, return_data: "SplashData | None") -> None:
         if return_data is None:
-            self.push_screen(InstallHelp(chezmoi_found=self.chezmoi_found))
+            self.push_screen(
+                InstallHelp(chezmoi_found=self.pre_run_data.chezmoi_found)
+            )
             return
 
         # TODO: add logic to push the Init screen if chezmoi is found but not

@@ -4,6 +4,8 @@ from typing import TYPE_CHECKING, Literal
 
 from chezmoi_mousse._chars import Chars
 from chezmoi_mousse._chezmoi import (
+    Chezmoi,
+    CommandResult,
     GlobalCmd,
     LogUtils,
     ManagedPaths,
@@ -22,7 +24,6 @@ from chezmoi_mousse._tcss_classes import Tcss
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from chezmoi_mousse._chezmoi import Chezmoi, CommandResult
     from chezmoi_mousse.gui.chezmoi_gui import ChezmoiGUI
 
 type PathDict = dict["Path", str]
@@ -44,6 +45,7 @@ __all__ = [
     "Canvas",
     "CanvasIds",
     "Chars",
+    "Chezmoi",
     "CommandResult",
     "DirTreeNodeData",
     "GlobalCmd",
@@ -98,9 +100,8 @@ class OperateScreenData:
     path: "Path | None" = None
 
 
-@dataclass(slots=True)
+@dataclass(slots=True, frozen=True)
 class PreRunData:
-    chezmoi_instance: "Chezmoi"
     changes_enabled: bool
     chezmoi_found: bool
     dev_mode: bool
