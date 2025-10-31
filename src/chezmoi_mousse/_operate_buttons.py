@@ -72,7 +72,7 @@ class AddButtonData:
 
 
 @dataclass
-class OperateCancelData:
+class ExitButtonData:
     initial_label: str
     close_label: str
 
@@ -120,13 +120,19 @@ class OperateBtn(Enum):
         file_tooltip=ToolTips.destroy_file.value,
         initial_label=NameLabels.destroy_path.value,
     )
-    operate_exit = OperateCancelData(
+    exit_button = ExitButtonData(
         initial_label=NameLabels.operate_cancel.value,
         close_label=NameLabels.operate_close.value,
     )
 
     # allow access to dataclass attributes directly from the Enum member,
     # without needing to go through the value attribute
+
+    @property
+    def close_button_label(self) -> str:
+        if isinstance(self.value, ExitButtonData):
+            return self.value.close_label
+        raise AttributeError(f"{self.name} has no close_button_label")
 
     @property
     def enabled_tooltip(self) -> str:
