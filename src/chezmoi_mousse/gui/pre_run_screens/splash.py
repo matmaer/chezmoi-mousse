@@ -107,6 +107,7 @@ dump_config: ParsedConfig | None = None
 ignored: "CommandResult | None" = None
 managed_dirs: str = ""
 managed_files: str = ""
+parsed_config: ParsedConfig | None = None
 status_dirs: str = ""
 status_files: str = ""
 template_data: "CommandResult | None" = None
