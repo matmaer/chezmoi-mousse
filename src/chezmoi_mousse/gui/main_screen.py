@@ -376,8 +376,6 @@ class MainScreen(Screen[None], AppType):
             screen_result.operation_executed is True
             and screen_result.command_result is not None
         ):
-            self.app_log.log_cmd_results(screen_result.command_result)
-            self.read_output_log.log_cmd_results(screen_result.command_result)
             if screen_result.command_result.returncode == 0:
                 self.notify(
                     "Operation completed successfully, Logs tab updated."
