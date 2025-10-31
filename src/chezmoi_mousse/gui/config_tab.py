@@ -20,21 +20,13 @@ from textual.widgets import (
     Static,
 )
 
-from chezmoi_mousse import (
-    AppType,
-    AreaName,
-    CommandResults,
-    Id,
-    NavBtn,
-    Tcss,
-    ViewName,
-)
+from chezmoi_mousse import AppType, AreaName, Id, NavBtn, Tcss, ViewName
 
 from .shared.button_groups import NavButtonsVertical
 from .shared.tabs_base import TabsBase
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import CanvasIds
+    from chezmoi_mousse import CanvasIds, CommandResult
 
 __all__ = ["ConfigTab", "ConfigTabSwitcher"]
 
@@ -180,10 +172,10 @@ class DoctorListView(ListView):
 
 class ConfigTabSwitcher(ContentSwitcher):
 
-    doctor_results: reactive[CommandResults | None] = reactive(None)
-    cat_config_results: reactive[CommandResults | None] = reactive(None)
-    ignored_results: reactive[CommandResults | None] = reactive(None)
-    template_data_results: reactive[CommandResults | None] = reactive(None)
+    doctor_results: reactive["CommandResult | None"] = reactive(None)
+    cat_config_results: reactive["CommandResult | None"] = reactive(None)
+    ignored_results: reactive["CommandResult | None"] = reactive(None)
+    template_data_results: reactive["CommandResult | None"] = reactive(None)
 
     def __init__(self, ids: "CanvasIds"):
         self.ids = ids

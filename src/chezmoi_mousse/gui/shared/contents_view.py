@@ -9,7 +9,7 @@ from chezmoi_mousse import AppType, LogUtils, ReadCmd, Tcss, ViewName
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from chezmoi_mousse import CanvasIds, CommandResults
+    from chezmoi_mousse import CanvasIds, CommandResult
 
 __all__ = ["ContentsView"]
 
@@ -82,7 +82,7 @@ class ContentsView(RichLog, AppType):
                 pretty_cmd = LogUtils.pretty_cmd_str(
                     ReadCmd.cat.value + [str(self.path)]
                 )
-                cat_output: "CommandResults" = self.app.chezmoi.read(
+                cat_output: "CommandResult" = self.app.chezmoi.read(
                     ReadCmd.cat, self.path
                 )
                 self.write(
