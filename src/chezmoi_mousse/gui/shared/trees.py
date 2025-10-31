@@ -198,6 +198,8 @@ class TreeBase(Tree[NodeData], AppType):
     def add_status_dirs_in(self, *, tree_node: TreeNode[NodeData]) -> None:
         assert tree_node.data is not None
 
+        # TODO: correct logic when it comes to the parent condition
+
         if self.ids.canvas_name == Canvas.apply:
             result: "PathDict" = {
                 path: status
