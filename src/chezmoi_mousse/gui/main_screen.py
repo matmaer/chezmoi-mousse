@@ -320,7 +320,7 @@ class MainScreen(Screen[None], AppType):
                 operate_btn=button_enum, node_data=self.current_add_node
             )
             self.app.push_screen(
-                OperateScreen(operate_screen_data),
+                OperateScreen(operate_data=operate_screen_data),
                 callback=self._handle_operate_result,
             )
         elif (
@@ -337,7 +337,7 @@ class MainScreen(Screen[None], AppType):
                 operate_btn=button_enum, node_data=self.current_apply_node
             )
             self.app.push_screen(
-                OperateScreen(operate_screen_data),
+                OperateScreen(operate_data=operate_screen_data),
                 callback=self._handle_operate_result,
             )
         elif (
@@ -354,7 +354,7 @@ class MainScreen(Screen[None], AppType):
                 operate_btn=button_enum, node_data=self.current_re_add_node
             )
             self.app.push_screen(
-                OperateScreen(operate_screen_data),
+                OperateScreen(operate_data=operate_screen_data),
                 callback=self._handle_operate_result,
             )
         else:
@@ -396,18 +396,8 @@ class MainScreen(Screen[None], AppType):
                     FilteredDirTree,
                 )
                 add_dir_tree.reload()
-                add_tab = self.query_one(Id.add_tab.tab_container_id, AddTab)
-                add_tab.refresh(recompose=True)
             else:
                 self.populate_trees()
-                apply_tab = self.query_one(
-                    Id.apply_tab.tab_container_id, ApplyTab
-                )
-                apply_tab.refresh(recompose=True)
-                re_add_tab = self.query_one(
-                    Id.re_add_tab.tab_container_id, ReAddTab
-                )
-                re_add_tab.refresh(recompose=True)
         else:
             self.notify(
                 "Unknown operation result condition.", severity="error"
