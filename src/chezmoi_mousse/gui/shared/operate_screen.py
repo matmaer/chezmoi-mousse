@@ -137,8 +137,8 @@ class OperateScreen(Screen[OperateScreenData], AppType):
         )
 
     def compose(self) -> ComposeResult:
+        yield OperateInfo(self.operate_screen_data)
         with Vertical():
-            yield OperateInfo(self.operate_screen_data)
             if self.operate_screen_data.operate_btn == OperateBtn.apply_path:
                 yield DiffView(ids=self.ids, reverse=False)
             elif (
