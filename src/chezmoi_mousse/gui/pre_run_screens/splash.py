@@ -216,16 +216,15 @@ class LoadingScreen(Screen[SplashData | None], AppType):
             rich_log.styles.height = len(SPLASH_COMMANDS)
         else:
             rich_log.styles.height = 1
-
-        if not self.chezmoi_found:
-            self.run_read_cmd("")
-        else:
-            for cmd in SPLASH_COMMANDS:
-                self.run_read_cmd(cmd)
-
         self.all_workers_timer = self.set_interval(
             interval=1, callback=self.all_workers_finished
         )
         self.fade_timer = self.set_interval(
             interval=0.05, callback=animated_fade.refresh
         )
+        if not self.chezmoi_found:
+            self.run_read_cmd("")
+            return
+        else:
+            for cmd in SPLASH_COMMANDS:
+                self.run_read_cmd(cmd)
