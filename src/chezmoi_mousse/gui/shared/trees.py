@@ -118,7 +118,11 @@ class TreeBase(Tree[NodeData], AppType):
         status_code: str,
         path_type: "PathType",
     ) -> None:
-        found: bool = path.exists()
+        if self.ids.canvas_name == Canvas.re_add:
+            # we now check this early on in the _chezmoi.py module
+            found = True
+        else:
+            found: bool = path.exists()
         if found is False and self.ids.canvas_name == Canvas.re_add:
             return
         node_data = NodeData(
@@ -179,11 +183,23 @@ class TreeBase(Tree[NodeData], AppType):
         # Both paths cached in the Chezmoi instance, don't cache this here as
         # we update the cache there after a WriteCmd.
 
-        paths: "PathDict" = (
-            (self.app.chezmoi.managed_paths.files_without_status)
-            if flat_list
-            else self.app.chezmoi.files_without_status_in(tree_node.data.path)
-        )
+        if self.ids.canvas_name == Canvas.apply:
+            paths: "PathDict" = (
+                (self.app.chezmoi.managed_paths.apply_files_without_status)
+                if flat_list
+                else self.app.chezmoi.apply_files_without_status_in(
+                    tree_node.data.path
+                )
+            )
+
+        else:
+            paths: "PathDict" = (
+                (self.app.chezmoi.managed_paths.re_add_files_without_status)
+                if flat_list
+                else self.app.chezmoi.re_add_files_without_status_in(
+                    tree_node.data.path
+                )
+            )
 
         for file_path, status_code in paths.items():
             if file_path in self.get_leaves_in(tree_node):
