@@ -361,29 +361,24 @@ class MainScreen(Screen[None], AppType):
             self.notify("No current node available.", severity="error")
 
     def _handle_operate_result(
-        self, operate_result: "OperateScreenData | None"
+        self, screen_result: "OperateScreenData | None"
     ) -> None:
-        if operate_result is None:
+        if screen_result is None:
             self.notify("No operation result returned.", severity="error")
             return
-        elif operate_result.operation_executed is False:
+        elif screen_result.operation_executed is False:
             self.notify(
                 "Operation cancelled, no changes were made.",
                 severity="warning",
             )
             return
         elif (
-            operate_result.command_results is not None
-            and operate_result.operation_executed is True
+            screen_result.operation_executed is True
+            and screen_result.command_result is not None
         ):
-            self.app_log.log_cmd_results(operate_result.command_results)
-            self.read_output_log.log_cmd_results(
-                operate_result.command_results
-            )
-            if (
-                operate_result.command_results.completed_process_data.returncode
-                == 0
-            ):
+            self.app_log.log_cmd_results(screen_result.command_result)
+            self.read_output_log.log_cmd_results(screen_result.command_result)
+            if screen_result.command_result.returncode == 0:
                 self.notify(
                     "Operation completed successfully, Logs tab updated."
                 )
@@ -392,7 +387,7 @@ class MainScreen(Screen[None], AppType):
                     "Operation failed, check the Logs tab for more info.",
                     severity="error",
                 )
-            if operate_result.operate_btn in (
+            if screen_result.operate_btn in (
                 OperateBtn.add_file,
                 OperateBtn.add_dir,
             ):
