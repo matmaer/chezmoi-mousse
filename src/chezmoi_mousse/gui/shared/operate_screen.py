@@ -5,7 +5,7 @@ from textual import on
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Vertical
-from textual.screen import Screen
+from textual.screen import ModalScreen, Screen
 from textual.widgets import Button, Footer, Label, Static
 
 from chezmoi_mousse import (
@@ -13,8 +13,7 @@ from chezmoi_mousse import (
     Chars,
     Id,
     OperateBtn,
-    OperateLaunchData,
-    OperateResultData,
+    OperateScreenData,
     ReadCmd,
     Tcss,
     ViewName,
@@ -52,9 +51,9 @@ class OperateInfo(Static):
     git_autocommit: bool | None = None
     git_autopush: bool | None = None
 
-    def __init__(self, operate_launch_data: OperateLaunchData) -> None:
-        self.operate_btn = operate_launch_data.operate_btn
-        self.node_data = operate_launch_data.node_data
+    def __init__(self, operate_screen_data: OperateScreenData) -> None:
+        self.operate_btn = operate_screen_data.operate_btn
+        self.node_data = operate_screen_data.node_data
         super().__init__(classes=Tcss.operate_info.name)
 
     def on_mount(self) -> None:
@@ -122,7 +121,7 @@ class OperateInfo(Static):
         self.update("\n".join(lines_to_write))
 
 
-class OperateScreen(Screen[OperateResultData], AppType):
+class OperateScreen(Screen[OperateScreenData], AppType):
 
     BINDINGS = [
         Binding(
@@ -133,35 +132,38 @@ class OperateScreen(Screen[OperateResultData], AppType):
         )
     ]
 
-    def __init__(self, launch_data: "OperateLaunchData") -> None:
+    def __init__(self, operate_screen_data: "OperateScreenData") -> None:
         self.ids = Id.operate_launch
-        self.launch_data = launch_data
-        self.operate_btn = launch_data.operate_btn
+        self.operate_screen_data = operate_screen_data
         super().__init__(
             id=self.ids.canvas_name, classes=Tcss.operate_screen.name
-        )
-        self.operate_result = OperateResultData(
-            operate_btn=self.launch_data.operate_btn,
-            path=self.launch_data.node_data.path,
         )
 
     def compose(self) -> ComposeResult:
         with Vertical():
-            yield OperateInfo(self.launch_data)
-            if self.operate_btn == OperateBtn.apply_path:
+            yield OperateInfo(self.operate_screen_data)
+            if self.operate_screen_data.operate_btn == OperateBtn.apply_path:
                 yield DiffView(ids=self.ids, reverse=False)
-            elif self.operate_btn == OperateBtn.re_add_path:
+            elif (
+                self.operate_screen_data.operate_btn == OperateBtn.re_add_path
+            ):
                 yield DiffView(ids=self.ids, reverse=True)
-            elif self.operate_btn in (OperateBtn.add_file, OperateBtn.add_dir):
+            elif self.operate_screen_data.operate_btn in (
+                OperateBtn.add_file,
+                OperateBtn.add_dir,
+            ):
                 yield ContentsView(ids=self.ids)
-            elif self.operate_btn in (
+            elif self.operate_screen_data.operate_btn in (
                 OperateBtn.forget_path,
                 OperateBtn.destroy_path,
             ):
                 yield DiffView(ids=self.ids, reverse=False)
             yield OperateBtnHorizontal(
                 ids=self.ids,
-                buttons=(self.operate_btn, OperateBtn.operate_cancel),
+                buttons=(
+                    self.operate_screen_data.operate_btn,
+                    OperateBtn.operate_cancel,
+                ),
             )
         yield Footer()
 
@@ -169,18 +171,24 @@ class OperateScreen(Screen[OperateResultData], AppType):
         for button in self.screen.query(Button):
             button.disabled = False
             button.tooltip = None
-        if self.operate_btn in (OperateBtn.apply_path, OperateBtn.re_add_path):
+        if self.operate_screen_data.operate_btn in (
+            OperateBtn.apply_path,
+            OperateBtn.re_add_path,
+        ):
             diff_view = self.query_exactly_one(DiffView)
-            diff_view.path = self.launch_data.node_data.path
-        elif self.operate_btn in (OperateBtn.add_file, OperateBtn.add_dir):
+            diff_view.path = self.operate_screen_data.node_data.path
+        elif self.operate_screen_data.operate_btn in (
+            OperateBtn.add_file,
+            OperateBtn.add_dir,
+        ):
             contents_view = self.query_exactly_one(ContentsView)
-            contents_view.path = self.launch_data.node_data.path
-        elif self.operate_btn in (
+            contents_view.path = self.operate_screen_data.node_data.path
+        elif self.operate_screen_data.operate_btn in (
             OperateBtn.forget_path,
             OperateBtn.destroy_path,
         ):
             diff_view = self.query_exactly_one(DiffView)
-            diff_view.path = self.launch_data.node_data.path
+            diff_view.path = self.operate_screen_data.node_data.path
 
     @on(Button.Pressed, Tcss.operate_button.value)
     def handle_operate_button_pressed(self, event: Button.Pressed) -> None:
@@ -188,47 +196,57 @@ class OperateScreen(Screen[OperateResultData], AppType):
         if event.button.id == self.ids.button_id(
             btn=OperateBtn.operate_cancel
         ):
-            self.dismiss(self.operate_result)
+            self.dismiss(self.operate_screen_data)
         else:
-            if self.launch_data.operate_btn in (
+            if self.operate_screen_data.operate_btn in (
                 OperateBtn.add_file,
                 OperateBtn.add_dir,
             ):
                 cmd_result: "CommandResults" = self.app.chezmoi.perform(
-                    WriteCmd.add, path_arg=self.launch_data.node_data.path
+                    WriteCmd.add,
+                    path_arg=self.operate_screen_data.node_data.path,
                 )
-            elif self.launch_data.operate_btn == OperateBtn.apply_path:
+            elif self.operate_screen_data.operate_btn == OperateBtn.apply_path:
                 cmd_result: "CommandResults" = self.app.chezmoi.perform(
-                    WriteCmd.apply, path_arg=self.launch_data.node_data.path
+                    WriteCmd.apply,
+                    path_arg=self.operate_screen_data.node_data.path,
                 )
-            elif self.launch_data.operate_btn == OperateBtn.re_add_path:
+            elif (
+                self.operate_screen_data.operate_btn == OperateBtn.re_add_path
+            ):
                 cmd_result: "CommandResults" = self.app.chezmoi.perform(
-                    WriteCmd.re_add, path_arg=self.launch_data.node_data.path
+                    WriteCmd.re_add,
+                    path_arg=self.operate_screen_data.node_data.path,
                 )
-            elif self.launch_data.operate_btn == OperateBtn.forget_path:
+            elif (
+                self.operate_screen_data.operate_btn == OperateBtn.forget_path
+            ):
                 cmd_result: "CommandResults" = self.app.chezmoi.perform(
-                    WriteCmd.forget, path_arg=self.launch_data.node_data.path
+                    WriteCmd.forget,
+                    path_arg=self.operate_screen_data.node_data.path,
                 )
-            elif self.launch_data.operate_btn == OperateBtn.destroy_path:
+            elif (
+                self.operate_screen_data.operate_btn == OperateBtn.destroy_path
+            ):
                 cmd_result: "CommandResults" = self.app.chezmoi.perform(
-                    WriteCmd.destroy, path_arg=self.launch_data.node_data.path
+                    WriteCmd.destroy,
+                    path_arg=self.operate_screen_data.node_data.path,
                 )
             else:
                 self.screen.notify(
-                    f"Operate button not implemented: {self.launch_data.operate_btn.name}",
+                    f"Operate button not implemented: {self.operate_screen_data.operate_btn.name}",
                     severity="error",
                 )
                 return None
+            self.operate_screen_data.operation_executed = True
 
             self.app.push_screen(
-                OperateResultScreen(
-                    launch_data=self.launch_data, operate_cmd_result=cmd_result
-                ),
+                OperateResultScreen(operate_cmd_result=cmd_result),
                 callback=self.handle_result_screen_dismissed,
             )
 
     def handle_result_screen_dismissed(
-        self, result: OperateResultData | None
+        self, result: OperateScreenData | None
     ) -> None:
         self.operate_result = result
         self.dismiss(self.operate_result)
@@ -237,7 +255,7 @@ class OperateScreen(Screen[OperateResultData], AppType):
         self.dismiss(self.operate_result)
 
 
-class OperateResultScreen(Screen[OperateResultData], AppType):
+class OperateResultScreen(ModalScreen[None], AppType):
     BINDINGS = [
         Binding(
             key="escape",
@@ -247,18 +265,9 @@ class OperateResultScreen(Screen[OperateResultData], AppType):
         )
     ]
 
-    def __init__(
-        self,
-        launch_data: "OperateLaunchData",
-        operate_cmd_result: "CommandResults",
-    ) -> None:
+    def __init__(self, operate_cmd_result: "CommandResults") -> None:
         self.ids = Id.operate_result
-        self.launch_data = launch_data
         self.operate_cmd_result = operate_cmd_result
-        self.operate_result = OperateResultData(
-            operate_btn=self.launch_data.operate_btn,
-            path=self.launch_data.node_data.path,
-        )
         super().__init__(id=self.ids.canvas_name)
 
     def compose(self) -> ComposeResult:
@@ -293,14 +302,8 @@ class OperateResultScreen(Screen[OperateResultData], AppType):
             OutputLog,
         )
         self.screen_output_log.auto_scroll = False
-        self.log_operate_command_results(self.operate_cmd_result)
-
-    def log_operate_command_results(
-        self, operate_cmd_result: "CommandResults"
-    ) -> None:
-
-        self.screen_app_log.log_cmd_results(operate_cmd_result)
-        self.screen_output_log.log_cmd_results(operate_cmd_result)
+        self.screen_app_log.log_cmd_results(self.operate_cmd_result)
+        self.screen_output_log.log_cmd_results(self.operate_cmd_result)
 
         self.refresh_managed_paths()
 
@@ -333,7 +336,7 @@ class OperateResultScreen(Screen[OperateResultData], AppType):
     @on(Button.Pressed, Tcss.operate_button.value)
     def close_operate_results_screen(self, event: Button.Pressed) -> None:
         event.stop()
-        self.dismiss(self.operate_result)
+        self.app.pop_screen()
 
     def action_esc_key_dismiss(self) -> None:
-        self.dismiss(self.operate_result)
+        self.app.pop_screen()
