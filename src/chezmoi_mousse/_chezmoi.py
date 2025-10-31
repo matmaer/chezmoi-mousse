@@ -375,10 +375,6 @@ class ManagedPaths:
     def apply_status_paths(self) -> "PathDict":
         return {**self.apply_status_dirs, **self.apply_status_files}
 
-    @property
-    def re_add_status_paths(self) -> "PathDict":
-        return {**self.re_add_status_dirs, **self.re_add_status_files}
-
 
 class Chezmoi:
 
@@ -483,14 +479,14 @@ class Chezmoi:
     def re_add_status_files_in(self, dir_path: Path) -> "PathDict":
         return {
             path: status
-            for path, status in self.managed_paths.apply_status_files.items()
+            for path, status in self.managed_paths.re_add_status_files.items()
             if path.parent == dir_path
         }
 
     def re_add_status_dirs_in(self, dir_path: Path) -> "PathDict":
         return {
             path: status
-            for path, status in self.managed_paths.apply_status_dirs.items()
+            for path, status in self.managed_paths.re_add_status_dirs.items()
             if path.parent == dir_path
         }
 
@@ -510,5 +506,5 @@ class Chezmoi:
     def has_re_add_status_paths_in(self, dir_path: Path) -> bool:
         return any(
             path.is_relative_to(dir_path)
-            for path in self.managed_paths.re_add_status_paths.keys()
+            for path in self.managed_paths.re_add_status_files.keys()
         )
