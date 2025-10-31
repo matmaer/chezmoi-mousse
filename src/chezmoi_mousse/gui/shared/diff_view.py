@@ -17,7 +17,7 @@ from chezmoi_mousse import (
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from chezmoi_mousse import AppType, CanvasIds, CommandResults
+    from chezmoi_mousse import AppType, CanvasIds, CommandResult
 
 __all__ = ["DiffView"]
 
@@ -89,7 +89,7 @@ class DiffView(RichLog, AppType):
                 return
 
         # create the diff view for a changed file
-        diff_output: "CommandResults" = self.app.chezmoi.read(
+        diff_output: "CommandResult" = self.app.chezmoi.read(
             self.diff_read_cmd, self.path
         )
 
