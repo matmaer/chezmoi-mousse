@@ -1,10 +1,9 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from importlib.metadata import PackageNotFoundError, version
 from typing import TYPE_CHECKING, Literal
 
 from chezmoi_mousse._chars import Chars
 from chezmoi_mousse._chezmoi import (
-    CommandResults,
     GlobalCmd,
     LogUtils,
     ManagedPaths,
@@ -23,12 +22,13 @@ from chezmoi_mousse._tcss_classes import Tcss
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from chezmoi_mousse._chezmoi import Chezmoi, CommandResults
+    from chezmoi_mousse._chezmoi import Chezmoi, CommandResult
     from chezmoi_mousse.gui.chezmoi_gui import ChezmoiGUI
 
 type PathDict = dict["Path", str]
 type PathList = list["Path"]
 type PathType = Literal["file", "dir"]
+type CommandResultList = list["CommandResult"]
 
 
 class AppType:
@@ -45,7 +45,8 @@ __all__ = [
     "Canvas",
     "CanvasIds",
     "Chars",
-    "CommandResults",
+    "CommandResult",
+    "CommandResultList",
     "DirTreeNodeData",
     "GlobalCmd",
     "Id",
@@ -94,7 +95,10 @@ class DirTreeNodeData:
 class OperateScreenData:
     node_data: "NodeData | DirTreeNodeData"
     operate_btn: "OperateBtn"
-    command_results: "CommandResults | None" = None
+    # use a default factory to avoid mutable default argument
+    command_results: "CommandResultList" = field(
+        default_factory=list["CommandResult"]
+    )
     operation_executed: bool = False
     path: "Path | None" = None
 
