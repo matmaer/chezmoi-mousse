@@ -154,7 +154,7 @@ class LogUtils:
         )
 
 
-@dataclass
+@dataclass(slots=True)
 class CommandResult:
     completed_process_data: CompletedProcess[str]
     path_arg: Path | None
@@ -226,7 +226,7 @@ class CommandResult:
         )
 
 
-@dataclass
+@dataclass(slots=True)
 class ManagedPaths:
 
     dest_dir: Path = Path.home()  # correctly set by LoadingScreen
