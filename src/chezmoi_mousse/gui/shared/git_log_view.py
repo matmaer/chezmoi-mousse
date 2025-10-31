@@ -9,7 +9,7 @@ from textual.widgets import DataTable
 from chezmoi_mousse import AppType, Canvas, ReadCmd, Tcss, ViewName
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import CanvasIds, CommandResults
+    from chezmoi_mousse import CanvasIds, CommandResult
 
 __all__ = ["GitLogView"]
 
@@ -42,7 +42,7 @@ class GitLogView(DataTable[Text], AppType):
             self.add_row(self.click_file_path)
             return
         if self.ids.canvas_name == Canvas.logs.name:
-            git_log_result: "CommandResults" = self.app.chezmoi.read(
+            git_log_result: "CommandResult" = self.app.chezmoi.read(
                 ReadCmd.git_log
             )
             self.populate_data_table(git_log_result.std_out)
@@ -79,7 +79,7 @@ class GitLogView(DataTable[Text], AppType):
         source_path_str: str = self.app.chezmoi.read(
             ReadCmd.source_path, self.path
         ).std_out
-        git_log_result: "CommandResults" = self.app.chezmoi.read(
+        git_log_result: "CommandResult" = self.app.chezmoi.read(
             ReadCmd.git_log, Path(source_path_str)
         )
         self.border_title = f" {self.path} "
