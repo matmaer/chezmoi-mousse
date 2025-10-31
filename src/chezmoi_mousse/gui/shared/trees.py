@@ -198,11 +198,9 @@ class TreeBase(Tree[NodeData], AppType):
         # TODO: correct logic when it comes to the parent condition
 
         if self.ids.canvas_name == Canvas.apply:
-            result: "PathDict" = {
-                path: status
-                for path, status in self.app.chezmoi.managed_paths.apply_status_dirs.items()
-                if path.parent == tree_node.data.path
-            }
+            result: "PathDict" = self.app.chezmoi.apply_status_dirs_in(
+                tree_node.data.path
+            )
             # Add dirs that contain status files but don't have direct status
             for path in self.app.chezmoi.managed_paths.dirs:
                 if (
@@ -213,11 +211,9 @@ class TreeBase(Tree[NodeData], AppType):
                     result[path] = " "
             dir_paths: "PathDict" = dict(sorted(result.items()))
         else:
-            result: "PathDict" = {
-                path: status
-                for path, status in self.app.chezmoi.managed_paths.re_add_status_dirs.items()
-                if path.parent == tree_node.data.path
-            }
+            result: "PathDict" = self.app.chezmoi.re_add_status_dirs_in(
+                tree_node.data.path
+            )
             # Add dirs that contain status files but don't have direct status
             for path in self.app.chezmoi.managed_paths.dirs:
                 if (
