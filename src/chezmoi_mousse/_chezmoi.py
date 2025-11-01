@@ -339,7 +339,10 @@ class Chezmoi:
         # parent dir that contains re-add status files
         # Return those directories with status " "
         # No need to check for existence, as files within must exist
-        return {path: " " for path in self.status_dirs.keys()}
+        return {
+            file_path.parent: " "
+            for file_path in self.re_add_status_files.keys()
+        }
 
     # properties for files without status
     @property
