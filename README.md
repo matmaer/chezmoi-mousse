@@ -37,6 +37,11 @@ If Python 3.13 with the latest `textual` version is available, you can run:
 
 ![App screenshot](src/screenshots/app_sample_screenshot.png)
 
+#### Operate result example
+
+![App screenshot](src/screenshots/operate_resut_example.png)
+
+
 If the `chezmoi` command is not available, a screen will be shown with the value for $PATH and a link to [chezmoi.io/install](chezmoi.io/install), along with parsed install commands from the [chezmoi repository]((https://github.com/twpayne/chezmoi/blob/master/assets/chezmoi.io/docs/install.md.tmpl)) which uses the excellent [Material for MkDocs](https://squidfunk.github.io/mkdocs-material/) framework.
 
 ![App screenshot](src/screenshots/command_not_found.png)
