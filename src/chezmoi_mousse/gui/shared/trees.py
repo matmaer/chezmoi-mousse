@@ -34,14 +34,10 @@ class TreeBase(Tree[NodeData], AppType):
         self._initial_render = True
         self._first_focus = True
         self._user_interacted = False
-        self.root_data = NodeData(
-            path=self.destDir, path_type="dir", found=True, status="M"
-        )
         super().__init__(
             label="root",
             id=self.ids.tree_id(tree=self.tree_name),
             classes=Tcss.tree_widget.name,
-            data=self.root_data,
         )
 
     def on_mount(self) -> None:
@@ -52,6 +48,9 @@ class TreeBase(Tree[NodeData], AppType):
             "M": self.app.theme_variables["text-warning"],
             " ": self.app.theme_variables["text-secondary"],
         }
+        self.root.data = NodeData(
+            path=self.destDir, path_type="dir", found=True, status="M"
+        )
         self.guide_depth: int = 3
         self.show_root: bool = False
 

@@ -75,10 +75,8 @@ __all__ = [
 class NodeData:
     found: bool
     path: "Path"
-    # chezmoi status codes processed: A, D, M, or a space
-    # "node status" codes:
-    #   X (no status but managed)
-    #   F (fake for the root node)
+    # Chezmoi status codes processed: A, D, M, or a space
+    # Additional "node status" codes: X (no status but managed)
     status: str
     path_type: "PathType"
 
