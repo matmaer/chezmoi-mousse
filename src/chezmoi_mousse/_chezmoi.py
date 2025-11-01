@@ -421,17 +421,19 @@ class Chezmoi:
         }
 
     def has_apply_status_paths_in(self, dir_path: Path) -> bool:
+        # Return True if any apply-status path is a descendant of the
+        # provided directory.
         return any(
-            path.is_relative_to(dir_path)
-            for path in self.apply_status_paths.keys()
-            if path.parent == dir_path
+            status_path.is_relative_to(dir_path)
+            for status_path in self.apply_status_paths.keys()
         )
 
     def has_re_add_status_paths_in(self, dir_path: Path) -> bool:
+        # Same logic as for apply: return True if any re-add status path
+        # is a descendant of dir_path.
         return any(
-            path.is_relative_to(dir_path)
-            for path in self.re_add_status_paths.keys()
-            if path.parent == dir_path
+            status_path.is_relative_to(dir_path)
+            for status_path in self.re_add_status_paths.keys()
         )
 
     def update_managed_paths(self) -> None:
