@@ -49,7 +49,7 @@ class TreeBase(Tree[NodeData], AppType):
             " ": self.app.theme_variables["text-secondary"],
         }
         self.root.data = NodeData(
-            path=self.destDir, path_type="dir", found=True, status="M"
+            path=self.destDir, path_type="dir", found=True, status="F"
         )
         self.guide_depth: int = 3
         self.show_root: bool = False
