@@ -94,6 +94,17 @@ LOG_PADDING_WIDTH = 37
 LOADED_SUFFIX = "loaded"
 
 
+def _subprocess_run_cmd(cmd: ReadCmd) -> CommandResult:
+    result: CompletedProcess[str] = run(
+        cmd.value,
+        capture_output=True,
+        shell=False,  # TODO: handle non-zero exit codes
+        text=True,
+        timeout=1,
+    )
+    return CommandResult(completed_process_data=result, path_arg=None)
+
+
 def create_deque() -> deque[Style]:
     start_color = "#0178D4"
     end_color = "#F187FB"
@@ -148,29 +159,17 @@ class LoadingScreen(Screen[SplashData | None], AppType):
                 yield Center(RichLog())
 
     @work(thread=True, group="io_workers")
-    def run_read_cmd(self, splash_cmd: ReadCmd) -> None:
+    def run_thread_cmd(self, splash_cmd: ReadCmd) -> None:
         splash_log = self.query_exactly_one(RichLog)
-        cmd_result: "CommandResult" = self.app.chezmoi.read(splash_cmd)
+        cmd_result: "CommandResult" = _subprocess_run_cmd(splash_cmd)
         globals()[splash_cmd.name] = cmd_result
-        cmd_text = cmd_result.pretty_cmd.replace(
-            VerbArgs.include_dirs.value, "dirs"
-        ).replace(VerbArgs.include_files.value, "files")
-        padding = LOG_PADDING_WIDTH - len(cmd_text)
-        log_text = f"{cmd_text} {'.' * padding} {LOADED_SUFFIX}"
+        padding = LOG_PADDING_WIDTH - len(cmd_result.pretty_cmd)
+        log_text = f"{cmd_result.pretty_cmd} {'.' * padding} {LOADED_SUFFIX}"
         splash_log.write(log_text)
 
     @work
     async def run_dump_config_cmd(self, splash_cmd: ReadCmd) -> None:
-        result: CompletedProcess[str] = run(
-            splash_cmd.value,
-            capture_output=True,
-            shell=False,  # TODO: handle non-zero exit codes
-            text=True,
-            timeout=1,
-        )
-        cmd_result = CommandResult(
-            completed_process_data=result, path_arg=None
-        )
+        cmd_result = _subprocess_run_cmd(splash_cmd)
         splash_log = self.query_exactly_one(RichLog)
         globals()[splash_cmd.name] = cmd_result
         padding = LOG_PADDING_WIDTH - len(cmd_result.pretty_cmd)
@@ -187,16 +186,7 @@ class LoadingScreen(Screen[SplashData | None], AppType):
 
     @work
     async def run_managed_paths_cmd(self, splash_cmd: ReadCmd) -> None:
-        result: CompletedProcess[str] = run(
-            splash_cmd.value,
-            capture_output=True,
-            shell=False,  # TODO: handle non-zero exit codes
-            text=True,
-            timeout=1,
-        )
-        cmd_result = CommandResult(
-            completed_process_data=result, path_arg=None
-        )
+        cmd_result = _subprocess_run_cmd(splash_cmd)
         splash_log = self.query_exactly_one(RichLog)
         globals()[splash_cmd.name] = cmd_result
         cmd_text = cmd_result.pretty_cmd.replace(
@@ -254,6 +244,11 @@ class LoadingScreen(Screen[SplashData | None], AppType):
             splash_log.write(log_text)
             return
 
+        # First run chezmoi doctor as it's the most expensive command
+        self.run_thread_cmd(
+            SPLASH_COMMANDS.pop(SPLASH_COMMANDS.index(ReadCmd.doctor))
+        )
+
         dump_worker = self.run_dump_config_cmd(
             SPLASH_COMMANDS.pop(SPLASH_COMMANDS.index(ReadCmd.dump_config))
         )
@@ -280,4 +275,4 @@ class LoadingScreen(Screen[SplashData | None], AppType):
         )
 
         for cmd in SPLASH_COMMANDS:
-            self.run_read_cmd(cmd)
+            self.run_thread_cmd(cmd)
