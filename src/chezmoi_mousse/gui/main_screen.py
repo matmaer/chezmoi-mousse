@@ -200,7 +200,6 @@ class MainScreen(Screen[None], AppType):
     def on_tabbed_content_tab_activated(
         self, event: TabbedContent.TabActivated
     ) -> None:
-        self._create_new_binding()
         self.refresh_bindings()
 
     def check_action(
