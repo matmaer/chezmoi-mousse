@@ -318,8 +318,10 @@ class Chezmoi:
         return {
             path: status_pair[0]
             for path, status_pair in self.status_files.items()
-            if status_pair[0] == "M"
-            or (status_pair[0] == " " and status_pair[1] in "ADM")
+            if (
+                status_pair[0] == "M"
+                or (status_pair[0] == " " and status_pair[1] in "ADM")
+            )
             and path.exists()
         }
 
@@ -327,11 +329,17 @@ class Chezmoi:
 
     @property
     def apply_status_dirs(self) -> "PathDict":
-        return {
+        real_status_dirs = {
             path: status_pair[1]
             for path, status_pair in self.status_dirs.items()
             if status_pair[1] in "ADM"  # Check second character only
         }
+        dirs_with_status_files = {
+            file_path.parent: " "
+            for file_path, _ in self.apply_status_files.items()
+            if file_path.parent not in real_status_dirs
+        }
+        return {**real_status_dirs, **dirs_with_status_files}
 
     @property
     def re_add_status_dirs(self) -> "PathDict":
