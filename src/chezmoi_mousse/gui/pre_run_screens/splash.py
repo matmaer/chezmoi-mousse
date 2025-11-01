@@ -103,13 +103,13 @@ def create_deque() -> deque[Style]:
 FADE_LINE_STYLES = create_deque()
 cat_config: "CommandResult | None" = None
 doctor: "CommandResult | None" = None
-dump_config: ParsedConfig | None = None
+dump_config: "ParsedConfig | None" = None
 ignored: "CommandResult | None" = None
-managed_dirs: str = ""
-managed_files: str = ""
-parsed_config: ParsedConfig | None = None
-status_dirs: str = ""
-status_files: str = ""
+managed_dirs: "CommandResult | None" = None
+managed_files: "CommandResult | None" = None
+parsed_config: "ParsedConfig | None" = None
+status_dirs: "CommandResult | None" = None
+status_files: "CommandResult | None" = None
 template_data: "CommandResult | None" = None
 
 
@@ -150,15 +150,7 @@ class LoadingScreen(Screen[SplashData | None], AppType):
             return
 
         cmd_result: "CommandResult" = self.app.chezmoi.read(splash_cmd)
-        if splash_cmd in (
-            ReadCmd.cat_config,
-            ReadCmd.doctor,
-            ReadCmd.ignored,
-            ReadCmd.template_data,
-        ):
-            globals()[splash_cmd.name] = cmd_result
-        else:
-            globals()[splash_cmd.name] = cmd_result.std_out
+        globals()[splash_cmd.name] = cmd_result
         cmd_text = cmd_result.pretty_cmd.replace(
             VerbArgs.include_dirs.value, "dirs"
         ).replace(VerbArgs.include_files.value, "files")
@@ -186,10 +178,10 @@ class LoadingScreen(Screen[SplashData | None], AppType):
                 return
 
             globals()["managed_paths"] = ManagedPaths(
-                managed_dirs_stdout=globals()["managed_dirs"],
-                managed_files_stdout=globals()["managed_files"],
-                status_dirs_stdout=globals()["status_dirs"],
-                status_files_stdout=globals()["status_files"],
+                managed_dirs_result=globals()["managed_dirs"],
+                managed_files_result=globals()["managed_files"],
+                status_dirs_result=globals()["status_dirs"],
+                status_files_result=globals()["status_files"],
             )
 
             self.dismiss(

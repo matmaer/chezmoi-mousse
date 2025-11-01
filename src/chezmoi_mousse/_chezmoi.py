@@ -230,10 +230,10 @@ class CommandResult:
 class ManagedPaths:
 
     dest_dir: Path = Path.home()  # correctly set by LoadingScreen
-    managed_dirs_stdout: str = ""  # ReadCmd.managed_dirs
-    managed_files_stdout: str = ""  # ReadCmd.managed_files
-    status_dirs_stdout: str = ""  # ReadCmd.status_dirs
-    status_files_stdout: str = ""  # ReadCmd.status_files
+    managed_dirs_result: "CommandResult | None" = None
+    managed_files_result: "CommandResult | None" = None
+    status_dirs_result: "CommandResult | None" = None
+    status_files_result: "CommandResult | None" = None
 
     # caches corresponding to the stdout fields
     _cached_managed_dirs: "PathList | None" = None
@@ -272,39 +272,53 @@ class ManagedPaths:
 
     @property
     def dirs(self) -> "PathList":
-        if self._cached_managed_dirs is None:
+        if (
+            self._cached_managed_dirs is None
+            and self.managed_dirs_result is not None
+        ):
             self._cached_managed_dirs = [
-                Path(line) for line in self.managed_dirs_stdout.splitlines()
+                Path(line)
+                for line in self.managed_dirs_result.std_out.splitlines()
             ]
-        return self._cached_managed_dirs
+        return self._cached_managed_dirs or []
 
     @property
     def files(self) -> "PathList":
-        if self._cached_managed_files is None:
+        if (
+            self._cached_managed_files is None
+            and self.managed_files_result is not None
+        ):
             self._cached_managed_files = [
-                Path(line) for line in self.managed_files_stdout.splitlines()
+                Path(line)
+                for line in self.managed_files_result.std_out.splitlines()
             ]
-        return self._cached_managed_files
+        return self._cached_managed_files or []
 
     @property
     def status_dirs(self) -> "PathDict":
-        if self._cached_status_dirs_dict is None:
+        if (
+            self._cached_status_dirs_dict is None
+            and self.status_dirs_result is not None
+        ):
             self._cached_status_dirs_dict = {
                 Path(line[3:]): line[:2]
-                for line in self.status_dirs_stdout.splitlines()
+                for line in self.status_dirs_result.std_out.splitlines()
                 if line.strip() != ""
             }
-        return self._cached_status_dirs_dict
+        return self._cached_status_dirs_dict or {}
 
     @property
     def status_files(self) -> "PathDict":
-        if self._cached_status_files_dict is None:
+        if (
+            self._cached_status_files_dict is None
+            and self.status_files_result is not None
+        ):
             self._cached_status_files_dict = {
                 Path(line[3:]): line[:2]
-                for line in self.status_files_stdout.splitlines()
+                for line in self.status_files_result.std_out.splitlines()
                 if line.strip() != ""
             }
-        return self._cached_status_files_dict
+        return self._cached_status_files_dict or {}
 
     # properties filtering status files into apply and re-add contexts
 
