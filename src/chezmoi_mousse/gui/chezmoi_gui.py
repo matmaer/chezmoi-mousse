@@ -71,7 +71,6 @@ class ChezmoiGUI(App[None]):
         super().__init__()
 
     def on_mount(self) -> None:
-        self.title = "-  c h e z m o i  m o u s s e  -"
         self.register_theme(chezmoi_mousse_light)
         self.register_theme(chezmoi_mousse_dark)
         self.theme = "chezmoi-mousse-dark"

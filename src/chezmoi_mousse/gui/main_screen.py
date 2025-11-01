@@ -1,4 +1,5 @@
 import dataclasses
+from enum import StrEnum
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -53,6 +54,13 @@ if TYPE_CHECKING:
 __all__ = ["MainScreen"]
 
 
+class HeaderTitle(StrEnum):
+    dry_run_mode = (
+        " -  c h e z m o i  m o u s s e  --  d r y  r u n  m o d e  - "
+    )
+    live_mode = " -  c h e z m o i  m o u s s e  --  l i v e  m o d e  - "
+
+
 class MainScreen(Screen[None], AppType):
 
     BINDINGS = [
@@ -82,6 +90,11 @@ class MainScreen(Screen[None], AppType):
         super().__init__()
 
     def on_mount(self) -> None:
+        self.title = (
+            HeaderTitle.dry_run_mode.value
+            if not self.app.changes_enabled
+            else HeaderTitle.live_mode.value
+        )
         app_logger: AppLog = self.query_one(
             Id.logs_tab.view_id("#", view=ViewName.app_log_view), AppLog
         )
