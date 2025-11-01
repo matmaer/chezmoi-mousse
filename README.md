@@ -10,6 +10,8 @@ Graphical user interface in the terminal for [chezmoi](https://github.com/twpayn
 
 - Can be safely tested as no write operations are enabled.
 - The current implementation has only been used or tested with autocommit enabled.
+- To enable operations, run the app with env var   `MOUSSE_ENABLE_CHANGES=1`
+This will enable commands changing the file system or the chezmoi state. See the available commands section.
 
 ## Start
 
@@ -63,22 +65,22 @@ If the `chezmoi` command is not available, a screen will be shown with the value
 
 ### Write Operations
 
-- [ ] `chezmoi add` file
-- [ ] `chezmoi add` directory
+- [x] `chezmoi add` file
+- [x] `chezmoi add` directory
 - [ ] `chezmoi add --encrypt` file
 - [ ] `chezmoi add --encrypt` directory
-- [ ] `chezmoi apply` file
-- [ ] `chezmoi apply` directory
-- [ ] `chezmoi destroy` file
-- [ ] `chezmoi destroy` directory
+- [x] `chezmoi apply` file
+- [x] `chezmoi apply` directory
+- [x] `chezmoi destroy` file
+- [x] `chezmoi destroy` directory
 - [ ] `chezmoi edit`
-- [ ] `chezmoi forget` file
-- [ ] `chezmoi forget` directory
+- [x] `chezmoi forget` file
+- [x] `chezmoi forget` directory
 - [ ] `chezoi generate`
 - [ ] `chezmoi init`
 - [ ] `chezmoi purge`
-- [ ] `chezmoi re-add` file
-- [ ] `chezmoi re-add` directory
+- [x] `chezmoi re-add` file
+- [x] `chezmoi re-add` directory
 
 ### Read Operations
 
@@ -99,6 +101,7 @@ If the `chezmoi` command is not available, a screen will be shown with the value
 ### Other Operations
 
 - [ ] `chezmoi archive`
+- [ ] `chezmoi import`
 
 
 ### Implemented configuration options
