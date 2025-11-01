@@ -1,6 +1,6 @@
 import json
 from collections import deque
-from dataclasses import dataclass  # , make_dataclass
+from dataclasses import dataclass
 from pathlib import Path
 from subprocess import CompletedProcess, run
 
@@ -17,14 +17,7 @@ from textual.timer import Timer
 from textual.widgets import RichLog, Static
 from textual.worker import WorkerState
 
-from chezmoi_mousse import (
-    AppType,
-    Chezmoi,
-    CommandResult,
-    LogUtils,
-    ReadCmd,
-    VerbArgs,
-)
+from chezmoi_mousse import AppType, Chezmoi, CommandResult, ReadCmd, VerbArgs
 
 __all__ = ["LoadingScreen", "ParsedConfig", "SplashData"]
 
@@ -40,19 +33,6 @@ SPLASH_COMMANDS = [
     ReadCmd.template_data,
 ]
 
-PRETTY_SPLASH_COMMANDS = [
-    LogUtils.pretty_cmd_str(splash_command.value)
-    for splash_command in SPLASH_COMMANDS
-]
-
-# dynamically create an ExecutedCommands class with a CommandResult field for
-# each command in SPLASH_COMMANDS with make_dataclass
-
-# ExecutedCommands = make_dataclass(
-#     "ExecutedCommands",
-#     [(cmd.name, "CommandResult") for cmd in SPLASH_COMMANDS],
-# )
-
 
 @dataclass(slots=True)
 class ParsedConfig:
@@ -67,7 +47,7 @@ class ParsedConfig:
 class SplashData:
     cat_config: "CommandResult"
     doctor: "CommandResult"
-    exectuded_commands: list[str]
+    executed_commands: list[CommandResult]
     ignored: "CommandResult"
     parsed_config: ParsedConfig
     template_data: "CommandResult"
@@ -159,7 +139,7 @@ class LoadingScreen(Screen[SplashData | None], AppType):
                 yield Center(RichLog())
 
     @work(thread=True, group="io_workers")
-    def run_thread_cmd(self, splash_cmd: ReadCmd) -> None:
+    def run_threaded_cmd(self, splash_cmd: ReadCmd) -> None:
         splash_log = self.query_exactly_one(RichLog)
         cmd_result: "CommandResult" = _subprocess_run_cmd(splash_cmd)
         globals()[splash_cmd.name] = cmd_result
@@ -167,35 +147,34 @@ class LoadingScreen(Screen[SplashData | None], AppType):
         log_text = f"{cmd_result.pretty_cmd} {'.' * padding} {LOADED_SUFFIX}"
         splash_log.write(log_text)
 
-    @work
-    async def run_dump_config_cmd(self, splash_cmd: ReadCmd) -> None:
+    @work(group="io_workers")
+    async def run_non_threaded_cmd(self, splash_cmd: ReadCmd) -> None:
         cmd_result = _subprocess_run_cmd(splash_cmd)
         splash_log = self.query_exactly_one(RichLog)
         globals()[splash_cmd.name] = cmd_result
-        padding = LOG_PADDING_WIDTH - len(cmd_result.pretty_cmd)
-        log_text = f"{cmd_result.pretty_cmd} {'.' * padding} {LOADED_SUFFIX}"
-        splash_log.write(log_text)
-        parsed_config = json.loads(cmd_result.std_out)
-        globals()["parsed_config"] = ParsedConfig(
-            dest_dir=Path(parsed_config["destDir"]),
-            git_autoadd=parsed_config["git"]["autoadd"],
-            source_dir=Path(parsed_config["sourceDir"]),
-            git_autocommit=parsed_config["git"]["autocommit"],
-            git_autopush=parsed_config["git"]["autopush"],
-        )
-
-    @work
-    async def run_managed_paths_cmd(self, splash_cmd: ReadCmd) -> None:
-        cmd_result = _subprocess_run_cmd(splash_cmd)
-        splash_log = self.query_exactly_one(RichLog)
-        globals()[splash_cmd.name] = cmd_result
-        cmd_text = cmd_result.pretty_cmd.replace(
-            VerbArgs.include_dirs.value, "dirs"
-        ).replace(VerbArgs.include_files.value, "files")
+        if splash_cmd == ReadCmd.dump_config:
+            parsed_config = json.loads(cmd_result.std_out)
+            globals()["parsed_config"] = ParsedConfig(
+                dest_dir=Path(parsed_config["destDir"]),
+                git_autoadd=parsed_config["git"]["autoadd"],
+                source_dir=Path(parsed_config["sourceDir"]),
+                git_autocommit=parsed_config["git"]["autocommit"],
+                git_autopush=parsed_config["git"]["autopush"],
+            )
+        if splash_cmd in (
+            ReadCmd.managed_dirs,
+            ReadCmd.managed_files,
+            ReadCmd.status_dirs,
+            ReadCmd.status_files,
+        ):
+            cmd_text = cmd_result.pretty_cmd.replace(
+                VerbArgs.include_dirs.value, "dirs"
+            ).replace(VerbArgs.include_files.value, "files")
+        else:
+            cmd_text = cmd_result.pretty_cmd
         padding = LOG_PADDING_WIDTH - len(cmd_text)
         log_text = f"{cmd_text} {'.' * padding} {LOADED_SUFFIX}"
         splash_log.write(log_text)
-        globals()[f"{splash_cmd.name}"] = cmd_result
 
     def all_workers_finished(self) -> None:
         if all(
@@ -211,7 +190,9 @@ class LoadingScreen(Screen[SplashData | None], AppType):
                 SplashData(
                     cat_config=globals()["cat_config"],
                     doctor=globals()["doctor"],
-                    exectuded_commands=PRETTY_SPLASH_COMMANDS,
+                    executed_commands=[
+                        globals()[cmd.name] for cmd in SPLASH_COMMANDS
+                    ],  # used for logging in subsequent screens
                     ignored=globals()["ignored"],
                     parsed_config=globals()["parsed_config"],
                     template_data=globals()["template_data"],
@@ -244,24 +225,30 @@ class LoadingScreen(Screen[SplashData | None], AppType):
             splash_log.write(log_text)
             return
 
-        # First run chezmoi doctor as it's the most expensive command
-        self.run_thread_cmd(
-            SPLASH_COMMANDS.pop(SPLASH_COMMANDS.index(ReadCmd.doctor))
-        )
+        # Now run commands which output could be used on all screens
+        for command in (
+            ReadCmd.doctor,
+            ReadCmd.ignored,
+            ReadCmd.template_data,
+        ):
+            self.run_threaded_cmd(command)
 
-        dump_worker = self.run_dump_config_cmd(
-            SPLASH_COMMANDS.pop(SPLASH_COMMANDS.index(ReadCmd.dump_config))
-        )
-        await dump_worker.wait()
+        cat_config_worker = self.run_non_threaded_cmd(ReadCmd.cat_config)
+        await cat_config_worker.wait()
+        if globals()["cat_config"].completed_process_data.returncode != 0:
+            self.notify("We will push the init screen here.")
+            self.notify("We will check if a repo exists in the default path.")
+            self.notify("Dismiss screen and push init screen.")
 
-        for cmd in (
+        # These all need to be awaited so the Chezmoi instance can be created.
+        for command in (
+            ReadCmd.dump_config,
             ReadCmd.managed_dirs,
             ReadCmd.managed_files,
             ReadCmd.status_dirs,
             ReadCmd.status_files,
         ):
-            command = SPLASH_COMMANDS.pop(SPLASH_COMMANDS.index(cmd))
-            worker = self.run_managed_paths_cmd(command)
+            worker = self.run_non_threaded_cmd(command)
             await worker.wait()
 
         self.app.chezmoi = Chezmoi(
@@ -273,6 +260,3 @@ class LoadingScreen(Screen[SplashData | None], AppType):
             status_dirs=globals()["status_dirs"],
             status_files=globals()["status_files"],
         )
-
-        for cmd in SPLASH_COMMANDS:
-            self.run_thread_cmd(cmd)

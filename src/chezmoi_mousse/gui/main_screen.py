@@ -90,9 +90,6 @@ class MainScreen(Screen[None], AppType):
         self.app_log.ready_to_run("--- Application log initialized ---")
         self.app_log.info(f"chezmoi command found: {self.app.chezmoi_found}.")
         self.app_log.info("Loading screen completed.")
-        self.app_log.success("Executed in loading screen:")
-        for cmd in self.splash_data.exectuded_commands:
-            self.app_log.dimmed(f"{cmd}")
 
         read_output_logger: OutputLog = self.query_one(
             Id.logs_tab.view_id("#", view=ViewName.read_output_log_view),
@@ -104,6 +101,12 @@ class MainScreen(Screen[None], AppType):
             "--- Read Output log initialized ---"
         )
         self.app_log.success("Read Output log initialized")
+
+        self.app_log.ready_to_run("--- Executed in loading screen ---")
+        for cmd in self.splash_data.executed_commands:
+            self.app_log.log_cmd_results(cmd)
+            self.read_output_log.log_cmd_results(cmd)
+        self.app_log.ready_to_run("----------------------------------")
         self.write_output_log = self.query_one(
             Id.logs_tab.view_id("#", view=ViewName.write_output_log_view),
             OutputLog,
