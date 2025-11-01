@@ -238,14 +238,15 @@ class Chezmoi:
         status_dirs: CommandResult,
         status_files: CommandResult,
     ) -> None:
-        self.dest_dir = dest_dir
         self._changes_enabled = changes_enabled
         self._dev_mode = dev_mode
+
         self.dest_dir = dest_dir
-        self.managed_dirs_result = managed_dirs
-        self.managed_files_result = managed_files
-        self.status_dirs_result = status_dirs
-        self.status_files_result = status_files
+        self._dest_dir_status: PathDict = {self.dest_dir: "F"}
+        self._managed_dirs_result = managed_dirs
+        self._managed_files_result = managed_files
+        self._status_dirs_result = status_dirs
+        self._status_files_result = status_files
 
         self.app_log: AppLog | None = None
         self.read_output_log: OutputLog | None = None
@@ -267,56 +268,6 @@ class Chezmoi:
             self.app_log.log_cmd_results(result)
             self.write_output_log.log_cmd_results(result)
 
-    def read(
-        self, read_cmd: ReadCmd, path_arg: Path | None = None
-    ) -> CommandResult:
-        command: list[str] = read_cmd.value
-        if path_arg is not None:
-            command: list[str] = command + [str(path_arg)]
-        if read_cmd == ReadCmd.doctor:
-            time_out = 3
-        else:
-            time_out = 1
-        result: CompletedProcess[str] = run(
-            command,
-            capture_output=True,
-            shell=False,
-            text=True,
-            timeout=time_out,
-        )
-        command_result = CommandResult(
-            completed_process_data=result, path_arg=path_arg
-        )
-        self._log_in_app_and_read_output_log(command_result)
-        return command_result
-
-    def perform(
-        self,
-        write_sub_cmd: WriteCmd,
-        *,
-        path_arg: Path | None = None,
-        repo_url: str | None = None,
-    ) -> CommandResult:
-        if self._changes_enabled is True:
-            base_cmd: list[str] = GlobalCmd.live_run.value
-        else:
-            base_cmd: list[str] = GlobalCmd.dry_run.value
-        command: list[str] = base_cmd + write_sub_cmd.value
-
-        if write_sub_cmd != WriteCmd.init and path_arg is not None:
-            command: list[str] = command + [str(path_arg)]
-        elif write_sub_cmd == WriteCmd.init and repo_url is not None:
-            command: list[str] = command + [repo_url]
-
-        result: CompletedProcess[str] = run(
-            command, capture_output=True, shell=False, text=True, timeout=5
-        )
-        command_results = CommandResult(
-            completed_process_data=result, path_arg=path_arg
-        )
-        self._log_in_app_and_write_output_log(command_results)
-        return command_results
-
     ############################
     # MANAGED AND STATUS PATHS #
     ############################
@@ -325,21 +276,21 @@ class Chezmoi:
     def dirs(self) -> "PathList":
         return [
             Path(line)
-            for line in self.managed_dirs_result.std_out.splitlines()
+            for line in self._managed_dirs_result.std_out.splitlines()
         ]
 
     @property
     def files(self) -> "PathList":
         return [
             Path(line)
-            for line in self.managed_files_result.std_out.splitlines()
+            for line in self._managed_files_result.std_out.splitlines()
         ]
 
     @property
     def status_dirs(self) -> "PathDict":
         return {
             Path(line[3:]): line[:2]
-            for line in self.status_dirs_result.std_out.splitlines()
+            for line in self._status_dirs_result.std_out.splitlines()
             if line.strip() != ""
         }
 
@@ -347,7 +298,7 @@ class Chezmoi:
     def status_files(self) -> "PathDict":
         return {
             Path(line[3:]): line[:2]
-            for line in self.status_files_result.std_out.splitlines()
+            for line in self._status_files_result.std_out.splitlines()
             if line.strip() != ""
         }
 
@@ -473,15 +424,67 @@ class Chezmoi:
         )
 
     def update_managed_paths(self) -> None:
-        self.managed_dirs_result: CommandResult = self.read(
+        self._managed_dirs_result: CommandResult = self.read(
             ReadCmd.managed_dirs
         )
-        self.managed_files_result: CommandResult = self.read(
+        self._managed_files_result: CommandResult = self.read(
             ReadCmd.managed_files
         )
-        self.status_files_result: CommandResult = self.read(
+        self._status_files_result: CommandResult = self.read(
             ReadCmd.status_files
         )
-        self.status_dirs_result: CommandResult = self.read(ReadCmd.status_dirs)
+        self._status_dirs_result: CommandResult = self.read(
+            ReadCmd.status_dirs
+        )
         if self.app_log is not None:
             self.app_log.info("Cleared managed paths cache.")
+
+    def read(
+        self, read_cmd: ReadCmd, path_arg: Path | None = None
+    ) -> CommandResult:
+        command: list[str] = read_cmd.value
+        if path_arg is not None:
+            command: list[str] = command + [str(path_arg)]
+        if read_cmd == ReadCmd.doctor:
+            time_out = 3
+        else:
+            time_out = 1
+        result: CompletedProcess[str] = run(
+            command,
+            capture_output=True,
+            shell=False,
+            text=True,
+            timeout=time_out,
+        )
+        command_result = CommandResult(
+            completed_process_data=result, path_arg=path_arg
+        )
+        self._log_in_app_and_read_output_log(command_result)
+        return command_result
+
+    def perform(
+        self,
+        write_sub_cmd: WriteCmd,
+        *,
+        path_arg: Path | None = None,
+        repo_url: str | None = None,
+    ) -> CommandResult:
+        if self._changes_enabled is True:
+            base_cmd: list[str] = GlobalCmd.live_run.value
+        else:
+            base_cmd: list[str] = GlobalCmd.dry_run.value
+        command: list[str] = base_cmd + write_sub_cmd.value
+
+        if write_sub_cmd != WriteCmd.init and path_arg is not None:
+            command: list[str] = command + [str(path_arg)]
+        elif write_sub_cmd == WriteCmd.init and repo_url is not None:
+            command: list[str] = command + [repo_url]
+
+        result: CompletedProcess[str] = run(
+            command, capture_output=True, shell=False, text=True, timeout=5
+        )
+        command_results = CommandResult(
+            completed_process_data=result, path_arg=path_arg
+        )
+        self._log_in_app_and_write_output_log(command_results)
+        return command_results
