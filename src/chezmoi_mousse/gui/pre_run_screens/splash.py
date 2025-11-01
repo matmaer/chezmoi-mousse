@@ -17,7 +17,14 @@ from textual.timer import Timer
 from textual.widgets import RichLog, Static
 from textual.worker import WorkerState
 
-from chezmoi_mousse import AppType, LogUtils, ManagedPaths, ReadCmd, VerbArgs
+from chezmoi_mousse import (
+    AppType,
+    Chezmoi,
+    LogUtils,
+    ManagedPaths,
+    ReadCmd,
+    VerbArgs,
+)
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CommandResult
@@ -210,6 +217,10 @@ class LoadingScreen(Screen[SplashData | None], AppType):
             interval=0.05, callback=animated_fade.refresh
         )
         if self.chezmoi_found is True:
+            self.app.chezmoi = Chezmoi(
+                changes_enabled=self.app.changes_enabled,
+                dev_mode=self.app.dev_mode,
+            )
             rich_log.styles.height = len(SPLASH_COMMANDS)
         else:
             rich_log.styles.height = 1

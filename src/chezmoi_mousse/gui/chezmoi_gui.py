@@ -8,7 +8,7 @@ from textual.app import App
 from textual.scrollbar import ScrollBar, ScrollBarRender
 from textual.theme import Theme
 
-from chezmoi_mousse import Chars, Chezmoi
+from chezmoi_mousse import Chars
 
 from .add_tab import AddTab
 from .main_screen import MainScreen
@@ -22,7 +22,7 @@ from .shared.tabs_base import TabsBase
 from .shared.trees import TreeBase
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import PreRunData
+    from chezmoi_mousse import Chezmoi, PreRunData
 
 __all__ = ["ChezmoiGUI"]
 
@@ -71,9 +71,6 @@ class ChezmoiGUI(App[None]):
         super().__init__()
 
     def on_mount(self) -> None:
-        self.chezmoi = Chezmoi(
-            changes_enabled=self.changes_enabled, dev_mode=self.dev_mode
-        )
         self.title = "-  c h e z m o i  m o u s s e  -"
         self.register_theme(chezmoi_mousse_light)
         self.register_theme(chezmoi_mousse_dark)
