@@ -229,11 +229,11 @@ class CommandResult:
 @dataclass(slots=True)
 class ManagedPaths:
 
-    dest_dir: Path = Path.home()  # correctly set by LoadingScreen
-    managed_dirs_result: "CommandResult | None" = None
-    managed_files_result: "CommandResult | None" = None
-    status_dirs_result: "CommandResult | None" = None
-    status_files_result: "CommandResult | None" = None
+    dest_dir: Path
+    managed_dirs_result: CommandResult
+    managed_files_result: CommandResult
+    status_dirs_result: CommandResult
+    status_files_result: CommandResult
 
     # caches corresponding to the stdout fields
     _cached_managed_dirs: "PathList | None" = None
@@ -272,10 +272,7 @@ class ManagedPaths:
 
     @property
     def dirs(self) -> "PathList":
-        if (
-            self._cached_managed_dirs is None
-            and self.managed_dirs_result is not None
-        ):
+        if self._cached_managed_dirs is None:
             self._cached_managed_dirs = [
                 Path(line)
                 for line in self.managed_dirs_result.std_out.splitlines()
@@ -284,10 +281,7 @@ class ManagedPaths:
 
     @property
     def files(self) -> "PathList":
-        if (
-            self._cached_managed_files is None
-            and self.managed_files_result is not None
-        ):
+        if self._cached_managed_files is None:
             self._cached_managed_files = [
                 Path(line)
                 for line in self.managed_files_result.std_out.splitlines()
@@ -296,10 +290,7 @@ class ManagedPaths:
 
     @property
     def status_dirs(self) -> "PathDict":
-        if (
-            self._cached_status_dirs_dict is None
-            and self.status_dirs_result is not None
-        ):
+        if self._cached_status_dirs_dict is None:
             self._cached_status_dirs_dict = {
                 Path(line[3:]): line[:2]
                 for line in self.status_dirs_result.std_out.splitlines()
@@ -309,10 +300,7 @@ class ManagedPaths:
 
     @property
     def status_files(self) -> "PathDict":
-        if (
-            self._cached_status_files_dict is None
-            and self.status_files_result is not None
-        ):
+        if self._cached_status_files_dict is None:
             self._cached_status_files_dict = {
                 Path(line[3:]): line[:2]
                 for line in self.status_files_result.std_out.splitlines()
@@ -458,11 +446,27 @@ class ManagedPaths:
 
 class Chezmoi:
 
-    def __init__(self, *, changes_enabled: bool, dev_mode: bool) -> None:
-
+    def __init__(
+        self,
+        *,
+        changes_enabled: bool,
+        dev_mode: bool,
+        dest_dir: Path,
+        managed_dirs: CommandResult,
+        managed_files: CommandResult,
+        status_dirs: CommandResult,
+        status_files: CommandResult,
+    ) -> None:
+        self.dest_dir = dest_dir
         self._changes_enabled = changes_enabled
         self._dev_mode = dev_mode
-        self.managed_paths = ManagedPaths()
+        self.managed_paths = ManagedPaths(
+            dest_dir=self.dest_dir,
+            managed_dirs_result=managed_dirs,
+            managed_files_result=managed_files,
+            status_dirs_result=status_dirs,
+            status_files_result=status_files,
+        )
         self.app_log: AppLog | None = None
         self.read_output_log: OutputLog | None = None
         self.write_output_log: OutputLog | None = None

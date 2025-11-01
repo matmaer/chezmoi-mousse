@@ -91,8 +91,6 @@ class ChezmoiGUI(App[None]):
         # TODO: add logic to push the Init screen if chezmoi is found but not
         # initialized, like on a newly installed system or deployment.
 
-        self.chezmoi.managed_paths = return_data.managed_paths
-
         dest_dir = return_data.parsed_config.dest_dir
         AddTab.destdir = dest_dir
         ContentsView.destDir = dest_dir

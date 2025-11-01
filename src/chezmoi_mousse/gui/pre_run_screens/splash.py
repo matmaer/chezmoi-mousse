@@ -1,8 +1,8 @@
 import json
 from collections import deque
-from dataclasses import dataclass
+from dataclasses import dataclass  # , make_dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING
+from subprocess import CompletedProcess, run
 
 from rich.segment import Segment
 from rich.style import Style
@@ -20,14 +20,11 @@ from textual.worker import WorkerState
 from chezmoi_mousse import (
     AppType,
     Chezmoi,
+    CommandResult,
     LogUtils,
-    ManagedPaths,
     ReadCmd,
     VerbArgs,
 )
-
-if TYPE_CHECKING:
-    from chezmoi_mousse import CommandResult
 
 __all__ = ["LoadingScreen", "ParsedConfig", "SplashData"]
 
@@ -48,6 +45,14 @@ PRETTY_SPLASH_COMMANDS = [
     for splash_command in SPLASH_COMMANDS
 ]
 
+# dynamically create an ExecutedCommands class with a CommandResult field for
+# each command in SPLASH_COMMANDS with make_dataclass
+
+# ExecutedCommands = make_dataclass(
+#     "ExecutedCommands",
+#     [(cmd.name, "CommandResult") for cmd in SPLASH_COMMANDS],
+# )
+
 
 @dataclass(slots=True)
 class ParsedConfig:
@@ -64,7 +69,6 @@ class SplashData:
     doctor: "CommandResult"
     exectuded_commands: list[str]
     ignored: "CommandResult"
-    managed_paths: ManagedPaths
     parsed_config: ParsedConfig
     template_data: "CommandResult"
 
@@ -109,7 +113,7 @@ def create_deque() -> deque[Style]:
 FADE_LINE_STYLES = create_deque()
 cat_config: "CommandResult | None" = None
 doctor: "CommandResult | None" = None
-dump_config: "ParsedConfig | None" = None
+dump_config: "CommandResult | None" = None
 ignored: "CommandResult | None" = None
 managed_dirs: "CommandResult | None" = None
 managed_files: "CommandResult | None" = None
@@ -157,8 +161,17 @@ class LoadingScreen(Screen[SplashData | None], AppType):
 
     @work
     async def run_dump_config_cmd(self, splash_cmd: ReadCmd) -> None:
+        result: CompletedProcess[str] = run(
+            splash_cmd.value,
+            capture_output=True,
+            shell=False,  # TODO: handle non-zero exit codes
+            text=True,
+            timeout=1,
+        )
+        cmd_result = CommandResult(
+            completed_process_data=result, path_arg=None
+        )
         splash_log = self.query_exactly_one(RichLog)
-        cmd_result: "CommandResult" = self.app.chezmoi.read(splash_cmd)
         globals()[splash_cmd.name] = cmd_result
         padding = LOG_PADDING_WIDTH - len(cmd_result.pretty_cmd)
         log_text = f"{cmd_result.pretty_cmd} {'.' * padding} {LOADED_SUFFIX}"
@@ -172,6 +185,28 @@ class LoadingScreen(Screen[SplashData | None], AppType):
             git_autopush=parsed_config["git"]["autopush"],
         )
 
+    @work
+    async def run_managed_paths_cmd(self, splash_cmd: ReadCmd) -> None:
+        result: CompletedProcess[str] = run(
+            splash_cmd.value,
+            capture_output=True,
+            shell=False,  # TODO: handle non-zero exit codes
+            text=True,
+            timeout=1,
+        )
+        cmd_result = CommandResult(
+            completed_process_data=result, path_arg=None
+        )
+        splash_log = self.query_exactly_one(RichLog)
+        globals()[splash_cmd.name] = cmd_result
+        cmd_text = cmd_result.pretty_cmd.replace(
+            VerbArgs.include_dirs.value, "dirs"
+        ).replace(VerbArgs.include_files.value, "files")
+        padding = LOG_PADDING_WIDTH - len(cmd_text)
+        log_text = f"{cmd_text} {'.' * padding} {LOADED_SUFFIX}"
+        splash_log.write(log_text)
+        globals()[f"{splash_cmd.name}"] = cmd_result
+
     def all_workers_finished(self) -> None:
         if all(
             worker.state == WorkerState.SUCCESS
@@ -182,20 +217,12 @@ class LoadingScreen(Screen[SplashData | None], AppType):
                 self.dismiss(None)
                 return
 
-            globals()["managed_paths"] = ManagedPaths(
-                managed_dirs_result=globals()["managed_dirs"],
-                managed_files_result=globals()["managed_files"],
-                status_dirs_result=globals()["status_dirs"],
-                status_files_result=globals()["status_files"],
-            )
-
             self.dismiss(
                 SplashData(
                     cat_config=globals()["cat_config"],
                     doctor=globals()["doctor"],
                     exectuded_commands=PRETTY_SPLASH_COMMANDS,
                     ignored=globals()["ignored"],
-                    managed_paths=globals()["managed_paths"],
                     parsed_config=globals()["parsed_config"],
                     template_data=globals()["template_data"],
                 )
@@ -217,10 +244,6 @@ class LoadingScreen(Screen[SplashData | None], AppType):
             interval=0.05, callback=animated_fade.refresh
         )
         if self.chezmoi_found is True:
-            self.app.chezmoi = Chezmoi(
-                changes_enabled=self.app.changes_enabled,
-                dev_mode=self.app.dev_mode,
-            )
             rich_log.styles.height = len(SPLASH_COMMANDS)
         else:
             rich_log.styles.height = 1
@@ -235,6 +258,26 @@ class LoadingScreen(Screen[SplashData | None], AppType):
             SPLASH_COMMANDS.pop(SPLASH_COMMANDS.index(ReadCmd.dump_config))
         )
         await dump_worker.wait()
+
+        for cmd in (
+            ReadCmd.managed_dirs,
+            ReadCmd.managed_files,
+            ReadCmd.status_dirs,
+            ReadCmd.status_files,
+        ):
+            command = SPLASH_COMMANDS.pop(SPLASH_COMMANDS.index(cmd))
+            worker = self.run_managed_paths_cmd(command)
+            await worker.wait()
+
+        self.app.chezmoi = Chezmoi(
+            changes_enabled=self.app.changes_enabled,
+            dev_mode=self.app.dev_mode,
+            dest_dir=globals()["parsed_config"].dest_dir,
+            managed_dirs=globals()["managed_dirs"],
+            managed_files=globals()["managed_files"],
+            status_dirs=globals()["status_dirs"],
+            status_files=globals()["status_files"],
+        )
 
         for cmd in SPLASH_COMMANDS:
             self.run_read_cmd(cmd)
