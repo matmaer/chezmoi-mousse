@@ -122,8 +122,6 @@ class TreeBase(Tree[NodeData], AppType):
             found = True
         else:
             found: bool = path.exists()
-        if found is False and self.ids.canvas_name == Canvas.re_add:
-            return
         node_data = NodeData(
             path=path, path_type=path_type, found=found, status=status_code
         )
