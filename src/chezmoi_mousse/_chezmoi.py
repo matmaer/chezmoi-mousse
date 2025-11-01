@@ -14,7 +14,6 @@ __all__ = [
     "CommandResult",
     "GlobalCmd",
     "LogUtils",
-    "ManagedPaths",
     "ReadCmd",
     "ReadVerbs",
     "VerbArgs",
@@ -226,124 +225,162 @@ class CommandResult:
         )
 
 
-@dataclass(slots=True)
-class ManagedPaths:
+class Chezmoi:
 
-    dest_dir: Path
-    managed_dirs_result: CommandResult
-    managed_files_result: CommandResult
-    status_dirs_result: CommandResult
-    status_files_result: CommandResult
+    def __init__(
+        self,
+        *,
+        changes_enabled: bool,
+        dev_mode: bool,
+        dest_dir: Path,
+        managed_dirs: CommandResult,
+        managed_files: CommandResult,
+        status_dirs: CommandResult,
+        status_files: CommandResult,
+    ) -> None:
+        self.dest_dir = dest_dir
+        self._changes_enabled = changes_enabled
+        self._dev_mode = dev_mode
+        self.dest_dir = dest_dir
+        self.managed_dirs_result = managed_dirs
+        self.managed_files_result = managed_files
+        self.status_dirs_result = status_dirs
+        self.status_files_result = status_files
 
-    # caches corresponding to the stdout fields
-    _cached_managed_dirs: "PathList | None" = None
-    _cached_managed_files: "PathList | None" = None
-    _cached_status_dirs_dict: "PathDict | None" = None
-    _cached_status_files_dict: "PathDict | None" = None
+        self.app_log: AppLog | None = None
+        self.read_output_log: OutputLog | None = None
+        self.write_output_log: OutputLog | None = None
+        if self._dev_mode is True:
+            self.debug_log: DebugLog | None = None
 
-    # caches splitting status into apply and re-add contexts
-    _cached_apply_status_dirs: "PathDict | None" = None
-    _cached_apply_status_files: "PathDict | None" = None
-    _cached_re_add_status_dirs: "PathDict | None" = None
-    _cached_re_add_status_files: "PathDict | None" = None
+    #################################
+    # Command execution and logging #
+    #################################
 
-    # caches derived from the split status contexts
-    _cached_apply_files_without_status: "PathDict | None" = None
-    _cached_re_add_files_without_status: "PathDict | None" = None
+    def _log_in_app_and_read_output_log(self, result: CommandResult):
+        if self.app_log is not None and self.read_output_log is not None:
+            self.app_log.log_cmd_results(result)
+            self.read_output_log.log_cmd_results(result)
 
-    def clear_managed_paths_cache(self) -> None:
-        # clear caches corresponding to the stdout fields
-        self._cached_managed_dirs = None
-        self._cached_managed_files = None
-        self._cached_status_dirs_dict = None
-        self._cached_status_files_dict = None
+    def _log_in_app_and_write_output_log(self, result: CommandResult):
+        if self.app_log is not None and self.write_output_log is not None:
+            self.app_log.log_cmd_results(result)
+            self.write_output_log.log_cmd_results(result)
 
-        # clear caches splitting status into apply and re-add contexts
-        self._cached_apply_status_dirs = None
-        self._cached_apply_status_files = None
-        self._cached_re_add_status_dirs = None
-        self._cached_re_add_status_files = None
+    def read(
+        self, read_cmd: ReadCmd, path_arg: Path | None = None
+    ) -> CommandResult:
+        command: list[str] = read_cmd.value
+        if path_arg is not None:
+            command: list[str] = command + [str(path_arg)]
+        if read_cmd == ReadCmd.doctor:
+            time_out = 3
+        else:
+            time_out = 1
+        result: CompletedProcess[str] = run(
+            command,
+            capture_output=True,
+            shell=False,
+            text=True,
+            timeout=time_out,
+        )
+        command_result = CommandResult(
+            completed_process_data=result, path_arg=path_arg
+        )
+        self._log_in_app_and_read_output_log(command_result)
+        return command_result
 
-        # clear caches derived from the split status contexts
-        self._cached_apply_files_without_status = None
-        self._cached_re_add_files_without_status = None
+    def perform(
+        self,
+        write_sub_cmd: WriteCmd,
+        *,
+        path_arg: Path | None = None,
+        repo_url: str | None = None,
+    ) -> CommandResult:
+        if self._changes_enabled is True:
+            base_cmd: list[str] = GlobalCmd.live_run.value
+        else:
+            base_cmd: list[str] = GlobalCmd.dry_run.value
+        command: list[str] = base_cmd + write_sub_cmd.value
 
-    # properties corresponding to the stdout fields
+        if write_sub_cmd != WriteCmd.init and path_arg is not None:
+            command: list[str] = command + [str(path_arg)]
+        elif write_sub_cmd == WriteCmd.init and repo_url is not None:
+            command: list[str] = command + [repo_url]
+
+        result: CompletedProcess[str] = run(
+            command, capture_output=True, shell=False, text=True, timeout=5
+        )
+        command_results = CommandResult(
+            completed_process_data=result, path_arg=path_arg
+        )
+        self._log_in_app_and_write_output_log(command_results)
+        return command_results
+
+    ############################
+    # MANAGED AND STATUS PATHS #
+    ############################
 
     @property
     def dirs(self) -> "PathList":
-        if self._cached_managed_dirs is None:
-            self._cached_managed_dirs = [
-                Path(line)
-                for line in self.managed_dirs_result.std_out.splitlines()
-            ]
-        return self._cached_managed_dirs or []
+        return [
+            Path(line)
+            for line in self.managed_dirs_result.std_out.splitlines()
+        ]
 
     @property
     def files(self) -> "PathList":
-        if self._cached_managed_files is None:
-            self._cached_managed_files = [
-                Path(line)
-                for line in self.managed_files_result.std_out.splitlines()
-            ]
-        return self._cached_managed_files or []
+        return [
+            Path(line)
+            for line in self.managed_files_result.std_out.splitlines()
+        ]
 
     @property
     def status_dirs(self) -> "PathDict":
-        if self._cached_status_dirs_dict is None:
-            self._cached_status_dirs_dict = {
-                Path(line[3:]): line[:2]
-                for line in self.status_dirs_result.std_out.splitlines()
-                if line.strip() != ""
-            }
-        return self._cached_status_dirs_dict or {}
+        return {
+            Path(line[3:]): line[:2]
+            for line in self.status_dirs_result.std_out.splitlines()
+            if line.strip() != ""
+        }
 
     @property
     def status_files(self) -> "PathDict":
-        if self._cached_status_files_dict is None:
-            self._cached_status_files_dict = {
-                Path(line[3:]): line[:2]
-                for line in self.status_files_result.std_out.splitlines()
-                if line.strip() != ""
-            }
-        return self._cached_status_files_dict or {}
+        return {
+            Path(line[3:]): line[:2]
+            for line in self.status_files_result.std_out.splitlines()
+            if line.strip() != ""
+        }
 
     # properties filtering status files into apply and re-add contexts
 
     @property
     def apply_status_files(self) -> "PathDict":
-        if self._cached_apply_status_files is None:
-            self._cached_apply_status_files = {
-                path: status_pair[1]
-                for path, status_pair in self.status_files.items()
-                if status_pair[1] in "ADM"  # Check second character only
-            }
-        return self._cached_apply_status_files
+        return {
+            path: status_pair[1]
+            for path, status_pair in self.status_files.items()
+            if status_pair[1] in "ADM"  # Check second character only
+        }
 
     @property
     def re_add_status_files(self) -> "PathDict":
         # consider these files to have a status as chezmoi re-add can be run
-        if self._cached_re_add_status_files is None:
-            self._cached_re_add_status_files = {
-                path: status_pair[0]
-                for path, status_pair in self.status_files.items()
-                if status_pair[0] == "M"
-                or (status_pair[0] == " " and status_pair[1] in "ADM")
-                and path.exists()
-            }
-        return self._cached_re_add_status_files
+        return {
+            path: status_pair[0]
+            for path, status_pair in self.status_files.items()
+            if status_pair[0] == "M"
+            or (status_pair[0] == " " and status_pair[1] in "ADM")
+            and path.exists()
+        }
 
     # properties filtering status dirs into apply and re-add contexts
 
     @property
     def apply_status_dirs(self) -> "PathDict":
-        if self._cached_apply_status_dirs is None:
-            self._cached_apply_status_dirs = {
-                path: status_pair[1]
-                for path, status_pair in self.status_dirs.items()
-                if status_pair[1] in "ADM"  # Check second character only
-            }
-        return self._cached_apply_status_dirs
+        return {
+            path: status_pair[1]
+            for path, status_pair in self.status_dirs.items()
+            if status_pair[1] in "ADM"  # Check second character only
+        }
 
     @property
     def re_add_status_dirs(self) -> "PathDict":
@@ -351,32 +388,24 @@ class ManagedPaths:
         # parent dir that contains re-add status files
         # Return those directories with status " "
         # No need to check for existence, as files within must exist
-        if self._cached_re_add_status_dirs is None:
-            self._cached_re_add_status_dirs = {
-                path: " " for path in self.status_dirs.keys()
-            }
-        return self._cached_re_add_status_dirs
+        return {path: " " for path in self.status_dirs.keys()}
 
     # properties for files without status
     @property
     def apply_files_without_status(self) -> "PathDict":
-        if self._cached_apply_files_without_status is None:
-            self._cached_apply_files_without_status = {
-                path: "X"
-                for path in self.files
-                if path not in self.apply_status_files.keys()
-            }
-        return self._cached_apply_files_without_status
+        return {
+            path: "X"
+            for path in self.files
+            if path not in self.apply_status_files.keys()
+        }
 
     @property
     def re_add_files_without_status(self) -> "PathDict":
-        if self._cached_re_add_files_without_status is None:
-            self._cached_re_add_files_without_status = {
-                path: "X"
-                for path in self.files
-                if path not in self.re_add_status_files.keys()
-            }
-        return self._cached_re_add_files_without_status
+        return {
+            path: "X"
+            for path in self.files
+            if path not in self.re_add_status_files.keys()
+        }
 
     # concat dicts, files override dirs on key collisions, should never happen
     @property
@@ -443,105 +472,16 @@ class ManagedPaths:
             if path.parent == dir_path
         )
 
-
-class Chezmoi:
-
-    def __init__(
-        self,
-        *,
-        changes_enabled: bool,
-        dev_mode: bool,
-        dest_dir: Path,
-        managed_dirs: CommandResult,
-        managed_files: CommandResult,
-        status_dirs: CommandResult,
-        status_files: CommandResult,
-    ) -> None:
-        self.dest_dir = dest_dir
-        self._changes_enabled = changes_enabled
-        self._dev_mode = dev_mode
-        self.managed_paths = ManagedPaths(
-            dest_dir=self.dest_dir,
-            managed_dirs_result=managed_dirs,
-            managed_files_result=managed_files,
-            status_dirs_result=status_dirs,
-            status_files_result=status_files,
-        )
-        self.app_log: AppLog | None = None
-        self.read_output_log: OutputLog | None = None
-        self.write_output_log: OutputLog | None = None
-        if self._dev_mode is True:
-            self.debug_log: DebugLog | None = None
-
-    #################################
-    # Command execution and logging #
-    #################################
-
-    def _log_in_app_and_read_output_log(self, result: CommandResult):
-        if self.app_log is not None and self.read_output_log is not None:
-            self.app_log.log_cmd_results(result)
-            self.read_output_log.log_cmd_results(result)
-
-    def _log_in_app_and_write_output_log(self, result: CommandResult):
-        if self.app_log is not None and self.write_output_log is not None:
-            self.app_log.log_cmd_results(result)
-            self.write_output_log.log_cmd_results(result)
-
     def update_managed_paths(self) -> None:
-        self.read(ReadCmd.managed_dirs)
-        self.read(ReadCmd.managed_files)
-        self.read(ReadCmd.status_files)
-        self.read(ReadCmd.status_dirs)
-        self.managed_paths.clear_managed_paths_cache()
+        self.managed_dirs_result: CommandResult = self.read(
+            ReadCmd.managed_dirs
+        )
+        self.managed_files_result: CommandResult = self.read(
+            ReadCmd.managed_files
+        )
+        self.status_files_result: CommandResult = self.read(
+            ReadCmd.status_files
+        )
+        self.status_dirs_result: CommandResult = self.read(ReadCmd.status_dirs)
         if self.app_log is not None:
             self.app_log.info("Cleared managed paths cache.")
-
-    def read(
-        self, read_cmd: ReadCmd, path_arg: Path | None = None
-    ) -> CommandResult:
-        command: list[str] = read_cmd.value
-        if path_arg is not None:
-            command: list[str] = command + [str(path_arg)]
-        if read_cmd == ReadCmd.doctor:
-            time_out = 3
-        else:
-            time_out = 1
-        result: CompletedProcess[str] = run(
-            command,
-            capture_output=True,
-            shell=False,
-            text=True,
-            timeout=time_out,
-        )
-        command_result = CommandResult(
-            completed_process_data=result, path_arg=path_arg
-        )
-        self._log_in_app_and_read_output_log(command_result)
-        return command_result
-
-    def perform(
-        self,
-        write_sub_cmd: WriteCmd,
-        *,
-        path_arg: Path | None = None,
-        repo_url: str | None = None,
-    ) -> CommandResult:
-        if self._changes_enabled is True:
-            base_cmd: list[str] = GlobalCmd.live_run.value
-        else:
-            base_cmd: list[str] = GlobalCmd.dry_run.value
-        command: list[str] = base_cmd + write_sub_cmd.value
-
-        if write_sub_cmd != WriteCmd.init and path_arg is not None:
-            command: list[str] = command + [str(path_arg)]
-        elif write_sub_cmd == WriteCmd.init and repo_url is not None:
-            command: list[str] = command + [repo_url]
-
-        result: CompletedProcess[str] = run(
-            command, capture_output=True, shell=False, text=True, timeout=5
-        )
-        command_results = CommandResult(
-            completed_process_data=result, path_arg=path_arg
-        )
-        self._log_in_app_and_write_output_log(command_results)
-        return command_results

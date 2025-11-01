@@ -131,17 +131,17 @@ class FilteredDirTree(DirectoryTree, AppType):
                 if (
                     p.is_dir(follow_symlinks=False)
                     and not self._is_unwanted_dir(p)
-                    and p in self.app.chezmoi.managed_paths.dirs
+                    and p in self.app.chezmoi.dirs
                     and self._has_unmanaged_paths_in(p)
                 )
                 or (
                     p.is_file(follow_symlinks=False)
                     and not self._is_unwanted_file(p)
                     and (
-                        p.parent in self.app.chezmoi.managed_paths.dirs
+                        p.parent in self.app.chezmoi.dirs
                         or p.parent == self.path
                     )
-                    and p not in self.app.chezmoi.managed_paths.files
+                    and p not in self.app.chezmoi.files
                 )
             )
         # Switches: Green - Red
@@ -158,10 +158,10 @@ class FilteredDirTree(DirectoryTree, AppType):
                     p.is_file(follow_symlinks=False)
                     and not self._is_unwanted_file(p)
                     and (
-                        p.parent in self.app.chezmoi.managed_paths.dirs
+                        p.parent in self.app.chezmoi.dirs
                         or p.parent == self.path
                     )
-                    and p not in self.app.chezmoi.managed_paths.files
+                    and p not in self.app.chezmoi.files
                 )
             )
         # Switches: Red - Green
@@ -171,14 +171,14 @@ class FilteredDirTree(DirectoryTree, AppType):
                 for p in paths
                 if (
                     p.is_dir(follow_symlinks=False)
-                    and p in self.app.chezmoi.managed_paths.dirs
+                    and p in self.app.chezmoi.dirs
                     and self._has_unmanaged_paths_in(p)
                 )
                 or (
                     p.is_file(follow_symlinks=False)
-                    and p not in self.app.chezmoi.managed_paths.files
+                    and p not in self.app.chezmoi.files
                     and (
-                        p.parent in self.app.chezmoi.managed_paths.dirs
+                        p.parent in self.app.chezmoi.dirs
                         or p.parent == self.path
                     )
                 )
@@ -194,7 +194,7 @@ class FilteredDirTree(DirectoryTree, AppType):
                 )
                 or (
                     p.is_file(follow_symlinks=False)
-                    and p not in self.app.chezmoi.managed_paths.files
+                    and p not in self.app.chezmoi.files
                 )
             )
 
@@ -206,8 +206,8 @@ class FilteredDirTree(DirectoryTree, AppType):
                 if idx > max_entries:
                     return False
                 elif (
-                    p not in self.app.chezmoi.managed_paths.dirs
-                    and p not in self.app.chezmoi.managed_paths.files
+                    p not in self.app.chezmoi.dirs
+                    and p not in self.app.chezmoi.files
                 ):
                     return True
             return True

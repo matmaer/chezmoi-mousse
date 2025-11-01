@@ -54,7 +54,7 @@ class DiffView(RichLog, AppType):
         self.border_title = f" {self.destDir} "
 
     def _write_unchanged_path_info(self) -> None:
-        if self.path in self.app.chezmoi.managed_paths.dirs:
+        if self.path in self.app.chezmoi.dirs:
             self.write(f"Managed directory {self.path}\n")
         self.write(
             f'No diff available for "{self.path}", the path has no status.\n'
@@ -71,19 +71,15 @@ class DiffView(RichLog, AppType):
 
         if self.ids.canvas_name == Canvas.apply:
             if (
-                self.path
-                not in self.app.chezmoi.managed_paths.apply_status_files
-                and self.path
-                not in self.app.chezmoi.managed_paths.apply_status_dirs
+                self.path not in self.app.chezmoi.apply_status_files
+                and self.path not in self.app.chezmoi.apply_status_dirs
             ):
                 self._write_unchanged_path_info()
                 return
         else:
             if (
-                self.path
-                not in self.app.chezmoi.managed_paths.re_add_status_files
-                and self.path
-                not in self.app.chezmoi.managed_paths.re_add_status_dirs
+                self.path not in self.app.chezmoi.re_add_status_files
+                and self.path not in self.app.chezmoi.re_add_status_dirs
             ):
                 self._write_unchanged_path_info()
                 return

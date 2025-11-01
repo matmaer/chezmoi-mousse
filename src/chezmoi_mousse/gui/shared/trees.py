@@ -35,7 +35,7 @@ class TreeBase(Tree[NodeData], AppType):
         self._first_focus = True
         self._user_interacted = False
         self.root_data = NodeData(
-            path=self.destDir, path_type="dir", found=True, status="F"
+            path=self.destDir, path_type="dir", found=True, status="M"
         )
         super().__init__(
             label="root",
@@ -154,17 +154,17 @@ class TreeBase(Tree[NodeData], AppType):
 
         if self.ids.canvas_name == Canvas.apply:
             paths: "PathDict" = (
-                (self.app.chezmoi.managed_paths.apply_status_files)
+                (self.app.chezmoi.apply_status_files)
                 if flat_list
-                else self.app.chezmoi.managed_paths.apply_status_files_in(
+                else self.app.chezmoi.apply_status_files_in(
                     tree_node.data.path
                 )
             )
         else:
             paths: "PathDict" = (
-                (self.app.chezmoi.managed_paths.re_add_status_files)
+                (self.app.chezmoi.re_add_status_files)
                 if flat_list
-                else self.app.chezmoi.managed_paths.re_add_status_files_in(
+                else self.app.chezmoi.re_add_status_files_in(
                     tree_node.data.path
                 )
             )
@@ -185,18 +185,18 @@ class TreeBase(Tree[NodeData], AppType):
 
         if self.ids.canvas_name == Canvas.apply:
             paths: "PathDict" = (
-                (self.app.chezmoi.managed_paths.apply_files_without_status)
+                (self.app.chezmoi.apply_files_without_status)
                 if flat_list
-                else self.app.chezmoi.managed_paths.apply_files_without_status_in(
+                else self.app.chezmoi.apply_files_without_status_in(
                     tree_node.data.path
                 )
             )
 
         else:
             paths: "PathDict" = (
-                (self.app.chezmoi.managed_paths.re_add_files_without_status)
+                (self.app.chezmoi.re_add_files_without_status)
                 if flat_list
-                else self.app.chezmoi.managed_paths.re_add_files_without_status_in(
+                else self.app.chezmoi.re_add_files_without_status_in(
                     tree_node.data.path
                 )
             )
@@ -214,36 +214,28 @@ class TreeBase(Tree[NodeData], AppType):
         # TODO: correct logic when it comes to the parent condition
 
         if self.ids.canvas_name == Canvas.apply:
-            result: "PathDict" = (
-                self.app.chezmoi.managed_paths.apply_status_dirs_in(
-                    tree_node.data.path
-                )
+            result: "PathDict" = self.app.chezmoi.apply_status_dirs_in(
+                tree_node.data.path
             )
             # Add dirs that contain status files but don't have direct status
-            for path in self.app.chezmoi.managed_paths.dirs:
+            for path in self.app.chezmoi.dirs:
                 if (
                     path.parent == tree_node.data.path
                     and path not in result
-                    and self.app.chezmoi.managed_paths.has_apply_status_paths_in(
-                        path
-                    )
+                    and self.app.chezmoi.has_apply_status_paths_in(path)
                 ):
                     result[path] = " "
             dir_paths: "PathDict" = dict(sorted(result.items()))
         else:
-            result: "PathDict" = (
-                self.app.chezmoi.managed_paths.re_add_status_dirs_in(
-                    tree_node.data.path
-                )
+            result: "PathDict" = self.app.chezmoi.re_add_status_dirs_in(
+                tree_node.data.path
             )
             # Add dirs that contain status files but don't have direct status
-            for path in self.app.chezmoi.managed_paths.dirs:
+            for path in self.app.chezmoi.dirs:
                 if (
                     path.parent == tree_node.data.path
                     and path not in result
-                    and self.app.chezmoi.managed_paths.has_re_add_status_paths_in(
-                        path
-                    )
+                    and self.app.chezmoi.has_re_add_status_paths_in(path)
                 ):
                     result[path] = " "
             dir_paths: "PathDict" = dict(sorted(result.items()))
@@ -263,24 +255,18 @@ class TreeBase(Tree[NodeData], AppType):
         if self.ids.canvas_name == Canvas.apply:
             dir_paths: "PathDict" = {
                 path: "X"
-                for path in self.app.chezmoi.managed_paths.dirs
+                for path in self.app.chezmoi.dirs
                 if path.parent == tree_node.data.path
-                and path
-                not in self.app.chezmoi.managed_paths.apply_status_dirs
-                and not self.app.chezmoi.managed_paths.has_apply_status_paths_in(
-                    path
-                )
+                and path not in self.app.chezmoi.apply_status_dirs
+                and not self.app.chezmoi.has_apply_status_paths_in(path)
             }
         else:
             dir_paths: "PathDict" = {
                 path: "X"
-                for path in self.app.chezmoi.managed_paths.dirs
+                for path in self.app.chezmoi.dirs
                 if path.parent == tree_node.data.path
-                and path
-                not in self.app.chezmoi.managed_paths.re_add_status_dirs
-                and not self.app.chezmoi.managed_paths.has_re_add_status_paths_in(
-                    path
-                )
+                and path not in self.app.chezmoi.re_add_status_dirs
+                and not self.app.chezmoi.has_re_add_status_paths_in(path)
             }
 
         for dir_path, status_code in dir_paths.items():
