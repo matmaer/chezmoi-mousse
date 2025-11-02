@@ -29,10 +29,8 @@ class SwitchSlider(VerticalGroup):
             ):
                 yield Switch(
                     id=self.ids.switch_id(switch=switch_data)
-                ).with_tooltip(tooltip=switch_data.value.enabled_tooltip)
-                yield Label(
-                    switch_data.value.label, classes=Tcss.switch_label.name
-                )
+                ).with_tooltip(tooltip=switch_data.enabled_tooltip)
+                yield Label(switch_data.label, classes=Tcss.switch_label.name)
 
     def on_mount(self) -> None:
         # add padding to the top switch horizontal group

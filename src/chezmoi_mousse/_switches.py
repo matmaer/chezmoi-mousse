@@ -45,3 +45,19 @@ class Switches(Enum):
         enabled_tooltip="Include files and directories considered as 'unwanted' for a dotfile manager. These include cache, temporary, trash (recycle bin) and other similar files or directories. For example enable this to add files to your repository which are in a directory named '.cache'.",
         disabled_tooltip=None,
     )
+
+    @property
+    def label(self) -> str:
+        return self.value.label
+
+    @property
+    def switch_name(self) -> str:
+        return self.value.switch_name
+
+    @property
+    def enabled_tooltip(self) -> str:
+        return self.value.enabled_tooltip
+
+    @property
+    def disabled_tooltip(self) -> str | None:
+        return self.value.disabled_tooltip

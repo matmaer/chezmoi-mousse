@@ -54,10 +54,12 @@ class CanvasIds:
         return f"{qid}{self.canvas_name}_{area}_content_switcher"
 
     def switch_horizontal_id(self, qid: str = "", *, switch: Switches) -> str:
-        return f"{qid}{self.canvas_name}_{switch.value.switch_name}_switch_horizontal"
+        return (
+            f"{qid}{self.canvas_name}_{switch.switch_name}_switch_horizontal"
+        )
 
     def switch_id(self, qid: str = "", *, switch: Switches) -> str:
-        return f"{qid}{self.canvas_name}_{switch.value.switch_name}_switch"
+        return f"{qid}{self.canvas_name}_{switch.switch_name}_switch"
 
     def tab_vertical_id(self, qid: str = "", *, area: AreaName) -> str:
         return f"{qid}{self.canvas_name}_{area}_vertical"

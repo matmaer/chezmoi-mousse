@@ -194,13 +194,11 @@ class TabsBase(Horizontal):
                         tree=TreeName.managed_tree
                     )
                 expand_all_switch.disabled = False
-                expand_all_switch.tooltip = (
-                    Switches.expand_all.value.enabled_tooltip
-                )
+                expand_all_switch.tooltip = Switches.expand_all.enabled_tooltip
             elif event.button.id == self.list_tab_btn:
                 expand_all_switch.disabled = True
                 expand_all_switch.tooltip = (
-                    Switches.expand_all.value.disabled_tooltip
+                    Switches.expand_all.disabled_tooltip
                 )
                 tree_switcher.current = self.ids.tree_id(
                     tree=TreeName.list_tree
