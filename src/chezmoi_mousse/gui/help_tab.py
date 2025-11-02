@@ -11,7 +11,7 @@ from .shared.button_groups import NavButtonsVertical
 from .shared.tabs_base import TabsBase
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import CanvasIds
+    from .shared.canvas_ids import CanvasIds
 
 __all__ = ["HelpTab"]
 

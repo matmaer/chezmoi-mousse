@@ -11,7 +11,7 @@ from .git_log_view import GitLogView
 from .trees import ExpandedTree, ListTree, ManagedTree
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import CanvasIds
+    from .canvas_ids import CanvasIds
 
 __all__ = ["TreeSwitcher", "ViewSwitcher"]
 

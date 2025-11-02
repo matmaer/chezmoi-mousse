@@ -24,7 +24,9 @@ from .switchers import TreeSwitcher, ViewSwitcher
 from .trees import ExpandedTree, ListTree, ManagedTree
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import CanvasIds, NodeData
+    from chezmoi_mousse import NodeData
+
+    from .canvas_ids import CanvasIds
 
 __all__ = ["TabsBase"]
 

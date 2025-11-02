@@ -8,7 +8,9 @@ from textual.widgets import RichLog
 from chezmoi_mousse import AppType, Chars, LogUtils, Tcss, ViewName
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import CanvasIds, CommandResult
+    from chezmoi_mousse import CommandResult
+
+    from .canvas_ids import CanvasIds
 
 __all__ = ["AppLog", "DebugLog", "OutputLog"]
 

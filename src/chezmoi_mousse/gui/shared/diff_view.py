@@ -17,7 +17,9 @@ from chezmoi_mousse import (
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from chezmoi_mousse import AppType, CanvasIds, CommandResult
+    from chezmoi_mousse import AppType, CommandResult
+
+    from .canvas_ids import CanvasIds
 
 __all__ = ["DiffView"]
 

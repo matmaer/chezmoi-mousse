@@ -18,7 +18,6 @@ from chezmoi_mousse._names import AreaName, CanvasName, TreeName, ViewName
 from chezmoi_mousse._operate_buttons import OperateBtn
 from chezmoi_mousse._switches import Switches
 from chezmoi_mousse._tcss_classes import Tcss
-from chezmoi_mousse.gui.shared.canvas_ids import CanvasIds
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -42,7 +41,6 @@ __all__ = [
     "AppType",
     "AreaName",
     "CanvasName",
-    "CanvasIds",
     "Chars",
     "Chezmoi",
     "CommandResult",

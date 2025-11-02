@@ -8,7 +8,7 @@ from textual.widgets import Button
 from chezmoi_mousse import AreaName, NavBtn, OperateBtn, TabBtn, Tcss
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import CanvasIds
+    from .canvas_ids import CanvasIds
 
 
 __all__ = ["NavButtonsVertical", "OperateBtnHorizontal", "TabBtnHorizontal"]

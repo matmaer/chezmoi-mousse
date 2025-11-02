@@ -1,10 +1,16 @@
 """Contains classes to enable setting widget id's without hardcoded strings or
 generated the id dynamically when subclassing or to query a widget."""
 
-from chezmoi_mousse._labels import NavBtn, TabBtn
-from chezmoi_mousse._names import AreaName, CanvasName, TreeName, ViewName
-from chezmoi_mousse._operate_buttons import OperateBtn
-from chezmoi_mousse._switches import Switches
+from chezmoi_mousse import (
+    AreaName,
+    CanvasName,
+    NavBtn,
+    OperateBtn,
+    Switches,
+    TabBtn,
+    TreeName,
+    ViewName,
+)
 
 __all__ = ["CanvasIds"]
 

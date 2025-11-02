@@ -9,7 +9,9 @@ from textual.widgets import DataTable
 from chezmoi_mousse import AppType, CanvasName, ReadCmd, Tcss, ViewName
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import CanvasIds, CommandResult
+    from chezmoi_mousse import CommandResult
+
+    from .canvas_ids import CanvasIds
 
 __all__ = ["GitLogView"]
 

@@ -28,7 +28,9 @@ from .shared.switch_slider import SwitchSlider
 from .shared.tabs_base import TabsBase
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import CanvasIds, PathType
+    from chezmoi_mousse import PathType
+
+    from .shared.canvas_ids import CanvasIds
 
 __all__ = ["AddTab", "FilteredDirTree"]
 

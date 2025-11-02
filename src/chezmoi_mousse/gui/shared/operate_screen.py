@@ -10,7 +10,6 @@ from textual.widgets import Button, Footer, Label, Static
 
 from chezmoi_mousse import (
     AppType,
-    CanvasIds,
     CanvasName,
     Chars,
     OperateBtn,
@@ -21,6 +20,7 @@ from chezmoi_mousse import (
 )
 
 from .button_groups import OperateBtnHorizontal
+from .canvas_ids import CanvasIds
 from .contents_view import ContentsView
 from .diff_view import DiffView
 from .loggers import OutputLog
