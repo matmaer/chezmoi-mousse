@@ -1,11 +1,10 @@
 from typing import TYPE_CHECKING
 
 from textual.app import ComposeResult
-from textual.containers import Vertical
 
-from chezmoi_mousse import AreaName, OperateBtn, Switches, TabBtn, Tcss
+from chezmoi_mousse import OperateBtn, Switches
 
-from .shared.button_groups import OperateBtnHorizontal, TabBtnHorizontal
+from .shared.button_groups import OperateBtnHorizontal
 from .shared.switch_slider import SwitchSlider
 from .shared.switchers import TreeSwitcher, ViewSwitcher
 from .shared.tabs_base import TabsBase
@@ -23,16 +22,7 @@ class ApplyTab(TabsBase):
         super().__init__(ids=self.ids)
 
     def compose(self) -> ComposeResult:
-        with Vertical(
-            id=self.ids.tab_vertical_id(area=AreaName.left),
-            classes=Tcss.tab_left_vertical.name,
-        ):
-            yield TabBtnHorizontal(
-                ids=self.ids,
-                buttons=(TabBtn.tree, TabBtn.list),
-                area=AreaName.left,
-            )
-            yield TreeSwitcher(self.ids)
+        yield TreeSwitcher(self.ids)
         yield ViewSwitcher(ids=self.ids, diff_reverse=False)
         yield OperateBtnHorizontal(
             ids=self.ids,

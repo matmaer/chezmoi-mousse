@@ -20,7 +20,6 @@ from .contents_view import ContentsView
 from .diff_view import DiffView
 from .git_log_view import GitLogView
 from .operate_msg import CurrentApplyNodeMsg, CurrentReAddNodeMsg
-from .switchers import TreeSwitcher
 from .trees import ExpandedTree, ListTree, ManagedTree
 
 if TYPE_CHECKING:
@@ -179,7 +178,7 @@ class TabsBase(Horizontal):
         elif event.button.id in (self.tree_tab_btn, self.list_tab_btn):
             # toggle expand all switch enabled disabled state
             tree_switcher = self.query_one(
-                self.tree_switcher_qid, TreeSwitcher
+                self.tree_switcher_qid, ContentSwitcher
             )
             expand_all_switch = self.query_one(
                 self.ids.switch_id("#", switch=Switches.expand_all), Switch
@@ -222,7 +221,7 @@ class TabsBase(Horizontal):
         elif event.switch.id == self.ids.switch_id(switch=Switches.expand_all):
             self.expand_all_state = event.value
             tree_switcher = self.query_one(
-                self.tree_switcher_qid, TreeSwitcher
+                self.tree_switcher_qid, ContentSwitcher
             )
             if event.value is True:
                 tree_switcher.current = self.ids.tree_id(

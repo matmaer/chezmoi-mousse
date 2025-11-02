@@ -18,24 +18,29 @@ if TYPE_CHECKING:
 __all__ = ["TreeSwitcher", "ViewSwitcher"]
 
 
-class TreeSwitcher(ContentSwitcher):
+class TreeSwitcher(Vertical):
 
     def __init__(self, ids: "CanvasIds"):
         self.ids = ids
         super().__init__(
-            id=self.ids.content_switcher_id(area=AreaName.left),
-            initial=self.ids.tree_id(tree=TreeName.managed_tree),
-            classes=Tcss.content_switcher_left.name,
+            id=self.ids.tab_vertical_id(area=AreaName.left),
+            classes=Tcss.tab_left_vertical.name,
         )
 
     def compose(self) -> ComposeResult:
-        yield ManagedTree(ids=self.ids)
-        yield ListTree(ids=self.ids)
-        yield ExpandedTree(ids=self.ids)
-
-    def on_mount(self) -> None:
-        self.border_title = " destDir "
-        self.add_class(Tcss.border_title_top.name)
+        yield TabBtnHorizontal(
+            ids=self.ids,
+            buttons=(TabBtn.tree, TabBtn.list),
+            area=AreaName.left,
+        )
+        with ContentSwitcher(
+            id=self.ids.content_switcher_id(area=AreaName.left),
+            initial=self.ids.tree_id(tree=TreeName.managed_tree),
+            classes=Tcss.content_switcher_left.name,
+        ):
+            yield ManagedTree(ids=self.ids)
+            yield ListTree(ids=self.ids)
+            yield ExpandedTree(ids=self.ids)
 
 
 class ViewSwitcher(Vertical):
@@ -43,7 +48,6 @@ class ViewSwitcher(Vertical):
         self.ids = ids
         self.reverse = diff_reverse
         super().__init__(id=self.ids.tab_vertical_id(area=AreaName.right))
-        super().__init__()
 
     def compose(self) -> ComposeResult:
         yield TabBtnHorizontal(
