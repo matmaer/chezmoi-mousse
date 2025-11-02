@@ -25,7 +25,7 @@ if TYPE_CHECKING:
 
     from .canvas_ids import CanvasIds
 
-__all__ = ["TabsBase"]
+__all__ = ["ApplyReAddTabsBase", "TabsBase"]
 
 
 class TabsBase(Horizontal):

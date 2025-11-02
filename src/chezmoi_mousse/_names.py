@@ -10,10 +10,8 @@ __all__ = ["AreaName", "ButtonGroupName", "CanvasName", "TreeName", "ViewName"]
 
 
 class AreaName(StrEnum):
-    bottom = auto()
     left = auto()
     right = auto()
-    top = auto()
 
 
 class ButtonGroupName(StrEnum):
