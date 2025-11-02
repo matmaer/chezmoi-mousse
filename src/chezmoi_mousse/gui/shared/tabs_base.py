@@ -57,21 +57,18 @@ class TabsBase(Horizontal):
         contents_view = self.query_exactly_one(
             self.contents_view_qid, ContentsView
         )
-        if contents_view.path != path:
-            contents_view.path = path
-            contents_view.border_title = f" {path} "
+        contents_view.path = path
+        contents_view.border_title = f" {path} "
 
         diff_view = self.query_exactly_one(self.diff_view_qid, DiffView)
-        if diff_view.path != path:
-            diff_view.path = path
-            diff_view.border_title = f" {path} "
+        diff_view.path = path
+        diff_view.border_title = f" {path} "
 
         git_log_view = self.query_exactly_one(
             self.git_log_view_qid, GitLogView
         )
-        if git_log_view.path != path:
-            git_log_view.path = path
-            git_log_view.border_title = f" {path} "
+        git_log_view.path = path
+        git_log_view.border_title = f" {path} "
 
     @on(CurrentApplyNodeMsg)
     def _update_apply_operate_buttons(
