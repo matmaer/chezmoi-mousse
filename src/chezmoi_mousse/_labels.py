@@ -1,6 +1,6 @@
 from enum import StrEnum
 
-__all__ = ["NavBtn", "PaneBtn", "TabBtn"]
+__all__ = ["NavBtn", "TabBtn"]
 
 
 class NavBtn(StrEnum):
@@ -15,15 +15,6 @@ class NavBtn(StrEnum):
     # init_new_repo = "Initialize New Repo" TODO
     re_add_help = "Re-Add Help"
     template_data = "Template Data"
-
-
-class PaneBtn(StrEnum):
-    add_tab = "Add"
-    apply_tab = "Apply"
-    config_tab = "Config"
-    help_tab = "Help"
-    logs_tab = "Logs"
-    re_add_tab = "Re-Add"
 
 
 class TabBtn(StrEnum):

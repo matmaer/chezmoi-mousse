@@ -24,7 +24,6 @@ from chezmoi_mousse import (
     Chars,
     OperateBtn,
     OperateScreenData,
-    PaneBtn,
     Tcss,
     TreeName,
     ViewName,
@@ -54,11 +53,19 @@ if TYPE_CHECKING:
 __all__ = ["MainScreen"]
 
 
-class HeaderTitle(StrEnum):
-    dry_run_mode = (
+class Strings(StrEnum):
+    add_tab_button = "Add"
+    apply_tab_button = "Apply"
+    config_tab_button = "Config"
+    header_dry_run_mode = (
         " -  c h e z m o i  m o u s s e  --  d r y  r u n  m o d e  - "
     )
-    live_mode = " -  c h e z m o i  m o u s s e  --  l i v e  m o d e  - "
+    header_live_mode = (
+        " -  c h e z m o i  m o u s s e  --  l i v e  m o d e  - "
+    )
+    help_tab_button = "Help"
+    logs_tab_button = "Logs"
+    re_add_tab_button = "Re-Add"
 
 
 class MainScreen(Screen[None], AppType):
@@ -98,9 +105,9 @@ class MainScreen(Screen[None], AppType):
 
     def on_mount(self) -> None:
         self.title = (
-            HeaderTitle.dry_run_mode.value
+            Strings.header_dry_run_mode.value
             if not self.app.changes_enabled
-            else HeaderTitle.live_mode.value
+            else Strings.header_live_mode.value
         )
         app_logger: AppLog = self.query_one(
             self.logs_tab_ids.view_id("#", view=ViewName.app_log_view), AppLog
@@ -161,22 +168,28 @@ class MainScreen(Screen[None], AppType):
         yield Header(icon=Chars.burger)
         with TabbedContent():
             with TabPane(
-                PaneBtn.apply_tab.value, id=CanvasName.apply_tab.name
+                Strings.apply_tab_button.value, id=CanvasName.apply_tab.name
             ):
                 yield ApplyTab(ids=self.apply_tab_ids)
             with TabPane(
-                PaneBtn.re_add_tab.value, id=CanvasName.re_add_tab.name
+                Strings.re_add_tab_button.value, id=CanvasName.re_add_tab.name
             ):
                 yield ReAddTab(ids=self.re_add_tab_ids)
-            with TabPane(PaneBtn.add_tab.value, id=CanvasName.add_tab.name):
+            with TabPane(
+                Strings.add_tab_button.value, id=CanvasName.add_tab.name
+            ):
                 yield AddTab(ids=self.add_tab_ids)
-            with TabPane(PaneBtn.logs_tab.value, id=CanvasName.logs_tab.name):
+            with TabPane(
+                Strings.logs_tab_button.value, id=CanvasName.logs_tab.name
+            ):
                 yield LogsTab(ids=self.logs_tab_ids)
             with TabPane(
-                PaneBtn.config_tab.value, id=CanvasName.config_tab.name
+                Strings.config_tab_button.value, id=CanvasName.config_tab.name
             ):
                 yield ConfigTab(ids=self.config_tab_ids)
-            with TabPane(PaneBtn.help_tab.value, id=CanvasName.help_tab.name):
+            with TabPane(
+                Strings.help_tab_button.value, id=CanvasName.help_tab.name
+            ):
                 yield HelpTab(ids=self.help_tab_ids)
         yield Footer()
 
