@@ -37,9 +37,7 @@ class TreeSwitcher(Vertical):
 
     def compose(self) -> ComposeResult:
         yield TabBtnHorizontal(
-            ids=self.ids,
-            buttons=(TabBtn.tree, TabBtn.list),
-            area=AreaName.left,
+            ids=self.ids, buttons=(TabBtn.tree, TabBtn.list)
         )
         with ContentSwitcher(
             id=self.ids.content_switcher_id(
@@ -72,7 +70,6 @@ class ViewSwitcher(Vertical):
         yield TabBtnHorizontal(
             ids=self.ids,
             buttons=(TabBtn.diff, TabBtn.contents, TabBtn.git_log_path),
-            area=AreaName.right,
         )
         with ContentSwitcher(
             id=self.view_switcher_id,

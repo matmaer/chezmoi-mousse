@@ -20,6 +20,7 @@ from textual.widgets import (
 from chezmoi_mousse import (
     AppType,
     AreaName,
+    ButtonGroupName,
     CanvasName,
     Chars,
     OperateBtn,
@@ -268,8 +269,8 @@ class MainScreen(Screen[None], AppType):
                     self.apply_tab_ids.tab_vertical_id("#", area=AreaName.left)
                 )
                 operation_buttons = self.query_one(
-                    self.apply_tab_ids.buttons_horizontal_id(
-                        "#", area=AreaName.bottom
+                    self.apply_tab_ids.buttons_group_id(
+                        "#", group_name=ButtonGroupName.operate_btn_group
                     )
                 )
             elif active_tab == CanvasName.re_add_tab:
@@ -279,8 +280,8 @@ class MainScreen(Screen[None], AppType):
                     )
                 )
                 operation_buttons = self.query_one(
-                    self.re_add_tab_ids.buttons_horizontal_id(
-                        "#", area=AreaName.bottom
+                    self.re_add_tab_ids.buttons_group_id(
+                        "#", group_name=ButtonGroupName.operate_btn_group
                     )
                 )
             else:
@@ -288,8 +289,8 @@ class MainScreen(Screen[None], AppType):
                     self.add_tab_ids.tab_vertical_id("#", area=AreaName.left)
                 )
                 operation_buttons = self.query_one(
-                    self.add_tab_ids.buttons_horizontal_id(
-                        "#", area=AreaName.bottom
+                    self.add_tab_ids.buttons_group_id(
+                        "#", group_name=ButtonGroupName.operate_btn_group
                     )
                 )
             if left_side.has_class(Tcss.display_none.name):

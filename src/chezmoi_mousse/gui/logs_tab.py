@@ -6,14 +6,7 @@ from textual.app import ComposeResult
 from textual.containers import Vertical
 from textual.widgets import Button, ContentSwitcher
 
-from chezmoi_mousse import (
-    AppType,
-    AreaName,
-    SwitcherName,
-    TabBtn,
-    Tcss,
-    ViewName,
-)
+from chezmoi_mousse import AppType, SwitcherName, TabBtn, Tcss, ViewName
 
 from .shared.button_groups import TabBtnHorizontal
 from .shared.git_log_view import GitLogView
@@ -75,9 +68,7 @@ class LogsTab(TabsBase, AppType):
             if self.app.dev_mode is True:
                 tab_buttons += (TabBtn.debug_log,)
 
-            yield TabBtnHorizontal(
-                ids=self.ids, buttons=tab_buttons, area=AreaName.top
-            )
+            yield TabBtnHorizontal(ids=self.ids, buttons=tab_buttons)
             yield LogsTabSwitcher(ids=self.ids)
 
     @on(Button.Pressed, Tcss.tab_button.value)

@@ -14,7 +14,13 @@ from chezmoi_mousse._chezmoi import (
     WriteCmd,
 )
 from chezmoi_mousse._content_switchers import FlatBtn, SwitcherName, TabBtn
-from chezmoi_mousse._names import AreaName, CanvasName, TreeName, ViewName
+from chezmoi_mousse._names import (
+    AreaName,
+    ButtonGroupName,
+    CanvasName,
+    TreeName,
+    ViewName,
+)
 from chezmoi_mousse._operate_buttons import OperateBtn
 from chezmoi_mousse._switches import Switches
 from chezmoi_mousse._tcss_classes import Tcss
@@ -40,6 +46,7 @@ __all__ = [
     "__version__",
     "AppType",
     "AreaName",
+    "ButtonGroupName",
     "CanvasName",
     "Chars",
     "Chezmoi",

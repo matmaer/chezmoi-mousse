@@ -3,6 +3,7 @@ generated the id dynamically when subclassing or to query a widget."""
 
 from chezmoi_mousse import (
     AreaName,
+    ButtonGroupName,
     CanvasName,
     FlatBtn,
     OperateBtn,
@@ -48,13 +49,15 @@ class CanvasIds:
             suffix = "_nav_btn"
         return f"{qid}{self.canvas_name}_{btn.name}{suffix}"
 
-    def buttons_horizontal_id(self, qid: str = "", *, area: AreaName) -> str:
-        return f"{qid}{self.canvas_name}_{area}_button_group"
+    def buttons_group_id(
+        self, qid: str = "", *, group_name: ButtonGroupName
+    ) -> str:
+        return f"{qid}{self.canvas_name}_{group_name}"
 
     def content_switcher_id(
         self, qid: str = "", *, switcher_name: SwitcherName
     ) -> str:
-        return f"{qid}{self.canvas_name}_{switcher_name}"
+        return f"{qid}{self.canvas_name}_{switcher_name.name}"
 
     def switch_horizontal_id(self, qid: str = "", *, switch: Switches) -> str:
         return (
