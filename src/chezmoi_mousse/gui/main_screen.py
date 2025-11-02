@@ -24,6 +24,7 @@ from chezmoi_mousse import (
     Chars,
     OperateBtn,
     OperateScreenData,
+    SwitcherName,
     Tcss,
     TreeName,
     ViewName,
@@ -231,7 +232,9 @@ class MainScreen(Screen[None], AppType):
 
     def update_config_tab_outputs(self, data: "SplashData") -> None:
         config_tab_switcher = self.screen.query_one(
-            self.config_tab_ids.content_switcher_id("#", area=AreaName.right),
+            self.config_tab_ids.content_switcher_id(
+                "#", switcher_name=SwitcherName.config_switcher
+            ),
             ConfigTabSwitcher,
         )
         setattr(config_tab_switcher, "doctor_results", data.doctor)

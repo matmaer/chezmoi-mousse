@@ -20,7 +20,7 @@ from textual.widgets import (
     Static,
 )
 
-from chezmoi_mousse import AppType, AreaName, FlatBtn, Tcss, ViewName
+from chezmoi_mousse import AppType, FlatBtn, SwitcherName, Tcss, ViewName
 
 from .shared.button_groups import NavButtonsVertical
 from .shared.tabs_base import TabsBase
@@ -184,7 +184,9 @@ class ConfigTabSwitcher(ContentSwitcher):
     def __init__(self, ids: "CanvasIds"):
         self.ids = ids
         super().__init__(
-            id=self.ids.content_switcher_id(area=AreaName.right),
+            id=self.ids.content_switcher_id(
+                switcher_name=SwitcherName.config_switcher
+            ),
             initial=self.ids.view_id(view=ViewName.doctor_view),
             classes=Tcss.nav_content_switcher.name,
         )

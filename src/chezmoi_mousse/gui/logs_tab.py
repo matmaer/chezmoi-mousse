@@ -6,7 +6,14 @@ from textual.app import ComposeResult
 from textual.containers import Vertical
 from textual.widgets import Button, ContentSwitcher
 
-from chezmoi_mousse import AppType, AreaName, TabBtn, Tcss, ViewName
+from chezmoi_mousse import (
+    AppType,
+    AreaName,
+    SwitcherName,
+    TabBtn,
+    Tcss,
+    ViewName,
+)
 
 from .shared.button_groups import TabBtnHorizontal
 from .shared.git_log_view import GitLogView
@@ -32,7 +39,9 @@ class LogsTabSwitcher(ContentSwitcher, AppType):
     def __init__(self, ids: "CanvasIds"):
         self.ids = ids
         super().__init__(
-            id=self.ids.content_switcher_id(area=AreaName.top),
+            id=self.ids.content_switcher_id(
+                switcher_name=SwitcherName.logs_switcher
+            ),
             initial=self.ids.view_id(view=ViewName.app_log_view),
             classes=Tcss.border_title_top.name,
         )

@@ -6,6 +6,7 @@ from chezmoi_mousse import (
     CanvasName,
     FlatBtn,
     OperateBtn,
+    SwitcherName,
     Switches,
     TabBtn,
     TreeName,
@@ -50,8 +51,10 @@ class CanvasIds:
     def buttons_horizontal_id(self, qid: str = "", *, area: AreaName) -> str:
         return f"{qid}{self.canvas_name}_{area}_button_group"
 
-    def content_switcher_id(self, qid: str = "", *, area: AreaName) -> str:
-        return f"{qid}{self.canvas_name}_{area}_content_switcher"
+    def content_switcher_id(
+        self, qid: str = "", *, switcher_name: SwitcherName
+    ) -> str:
+        return f"{qid}{self.canvas_name}_{switcher_name}"
 
     def switch_horizontal_id(self, qid: str = "", *, switch: Switches) -> str:
         return (
