@@ -46,6 +46,7 @@ class ContentsView(RichLog, AppType):
     def watch_path(self) -> None:
         if self.path is None or self.path == self.destDir:
             return
+        self.border_title = f" {self.path} "
         self.clear()
         truncated_message = ""
         try:

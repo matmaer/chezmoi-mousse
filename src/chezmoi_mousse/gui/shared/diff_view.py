@@ -67,6 +67,7 @@ class DiffView(RichLog, AppType):
     def watch_path(self) -> None:
         if self.path is None or self.path == self.destDir:
             return
+        self.border_title = f" {self.path} "
         self.clear()
         # write lines for an unchanged file or directory except when we are in
         # either the ApplyTab or ReAddTabS
