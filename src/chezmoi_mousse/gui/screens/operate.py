@@ -105,10 +105,6 @@ class OperateInfo(Static):
             self.border_subtitle = Chars.destroy_info_border
 
         if self.operate_btn != OperateBtn.apply_path:
-            assert (
-                self.git_autocommit is not None
-                and self.git_autopush is not None
-            )
             if self.git_autocommit is True:
                 lines_to_write.append(InfoStrings.auto_commit)
             if self.git_autopush is True:
