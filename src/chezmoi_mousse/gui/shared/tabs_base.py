@@ -5,7 +5,7 @@ from textual import on
 from textual.containers import Horizontal
 from textual.widgets import Button, ContentSwitcher, Switch
 
-from chezmoi_mousse import (  # ViewName,
+from chezmoi_mousse import (
     AreaName,
     CanvasName,
     OperateBtn,
@@ -13,6 +13,7 @@ from chezmoi_mousse import (  # ViewName,
     TabBtn,
     Tcss,
     TreeName,
+    ViewName,
 )
 
 from .contents_view import ContentsView
@@ -36,92 +37,89 @@ class TabsBase(Horizontal):
     def __init__(self, *, ids: "CanvasIds") -> None:
         self.ids = ids
         self.contents_tab_btn = ids.button_id(btn=TabBtn.contents)
-        self.diff_tab_btn = ids.button_id(btn=TabBtn.diff)
+        self.contents_view_qid = ids.view_id("#", view=ViewName.contents_view)
+        self.diff_view_qid = ids.view_id("#", view=ViewName.diff_view)
         self.expand_all_state = False
-        self.git_log_tab_btn = ids.button_id(btn=TabBtn.git_log_path)
+        self.git_log_view_qid = ids.view_id("#", view=ViewName.git_log_view)
         self.list_tab_btn = ids.button_id(btn=TabBtn.list)
+        self.operate_path_button_qid = (
+            self.ids.button_id("#", btn=OperateBtn.apply_path)
+            if ids.canvas_name == CanvasName.apply_tab
+            else self.ids.button_id("#", btn=OperateBtn.re_add_path)
+        )
         self.tree_tab_btn = ids.button_id(btn=TabBtn.tree)
         self.tree_switcher_qid = self.ids.content_switcher_id(
             "#", area=AreaName.left
         )
-        self.view_switcher_qid = self.ids.content_switcher_id(
-            "#", area=AreaName.right
-        )
         super().__init__(id=self.ids.tab_container_id)
 
     def _update_view_path(self, path: Path) -> None:
-        contents_view = self.query_exactly_one(ContentsView)
+        contents_view = self.query_exactly_one(
+            self.contents_view_qid, ContentsView
+        )
         if contents_view.path != path:
             contents_view.path = path
             contents_view.border_title = f" {path} "
 
-        diff_view = self.query_exactly_one(DiffView)
+        diff_view = self.query_exactly_one(self.diff_view_qid, DiffView)
         if diff_view.path != path:
             diff_view.path = path
             diff_view.border_title = f" {path} "
 
-        git_log_view = self.query_exactly_one(GitLogView)
+        git_log_view = self.query_exactly_one(
+            self.git_log_view_qid, GitLogView
+        )
         if git_log_view.path != path:
             git_log_view.path = path
             git_log_view.border_title = f" {path} "
 
     @on(CurrentApplyNodeMsg)
-    def update_current_apply_path(self, event: CurrentApplyNodeMsg) -> None:
+    def _update_apply_operate_buttons(
+        self, event: CurrentApplyNodeMsg
+    ) -> None:
         self._update_view_path(event.node_data.path)
-        assert event.node_data is not None
-        self.update_operate_buttons(event.node_data)
+        operate_path_button = self.query_one(
+            self.operate_path_button_qid, Button
+        )
+        operate_path_button.label = (
+            OperateBtn.apply_path.dir_label
+            if event.node_data.path_type == "dir"
+            else OperateBtn.apply_path.file_label
+        )
+        operate_path_button.tooltip = (
+            OperateBtn.apply_path.dir_tooltip
+            if event.node_data.path_type == "dir"
+            else OperateBtn.apply_path.file_tooltip
+        )
+        operate_path_button.disabled = (
+            True if event.node_data.status == "X" else False
+        )
+        self._update_other_buttons(event.node_data)
 
     @on(CurrentReAddNodeMsg)
-    def update_current_re_add_path(self, event: CurrentReAddNodeMsg) -> None:
+    def _update_re_add_operate_buttons(
+        self, event: CurrentReAddNodeMsg
+    ) -> None:
         self._update_view_path(event.node_data.path)
-        assert event.node_data is not None
-        self.update_operate_buttons(event.node_data)
+        operate_path_button = self.query_one(
+            self.operate_path_button_qid, Button
+        )
+        operate_path_button.label = (
+            OperateBtn.re_add_path.dir_label
+            if event.node_data.path_type == "dir"
+            else OperateBtn.re_add_path.file_label
+        )
+        operate_path_button.tooltip = (
+            OperateBtn.re_add_path.dir_tooltip
+            if event.node_data.path_type == "dir"
+            else OperateBtn.re_add_path.file_tooltip
+        )
+        operate_path_button.disabled = (
+            True if event.node_data.status in "X " else False
+        )
+        self._update_other_buttons(event.node_data)
 
-    def update_operate_buttons(self, node_data: "NodeData") -> None:
-        # Update button labels and tooltips
-        if self.ids.canvas_name == CanvasName.add_tab:
-            # done in the AddTab
-            return
-
-        elif self.ids.canvas_name == CanvasName.apply_tab:
-            operate_path_button = self.query_one(
-                self.ids.button_id("#", btn=OperateBtn.apply_path), Button
-            )
-            operate_path_label = (
-                OperateBtn.apply_path.dir_label
-                if node_data.path_type == "dir"
-                else OperateBtn.apply_path.file_label
-            )
-            operate_path_tooltip = (
-                OperateBtn.apply_path.dir_tooltip
-                if node_data.path_type == "dir"
-                else OperateBtn.apply_path.file_tooltip
-            )
-            operate_path_button.label = operate_path_label
-            operate_path_button.tooltip = operate_path_tooltip
-            operate_path_button.disabled = (
-                False if node_data.status != "X" else True
-            )
-        else:
-            operate_path_button = self.query_one(
-                self.ids.button_id("#", btn=OperateBtn.re_add_path), Button
-            )
-            operate_path_label = (
-                OperateBtn.re_add_path.dir_label
-                if node_data.path_type == "dir"
-                else OperateBtn.re_add_path.file_label
-            )
-            operate_path_tooltip = (
-                OperateBtn.re_add_path.dir_tooltip
-                if node_data.path_type == "dir"
-                else OperateBtn.re_add_path.file_tooltip
-            )
-            operate_path_button.label = operate_path_label
-            operate_path_button.tooltip = operate_path_tooltip
-            operate_path_button.disabled = (
-                False if node_data.status not in "X " else True
-            )
-
+    def _update_other_buttons(self, node_data: "NodeData") -> None:
         destroy_button = self.query_one(
             self.ids.button_id("#", btn=OperateBtn.destroy_path), Button
         )
