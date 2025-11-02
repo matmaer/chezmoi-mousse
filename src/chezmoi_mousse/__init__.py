@@ -15,7 +15,7 @@ from chezmoi_mousse._chezmoi import (
 )
 from chezmoi_mousse._id_classes import CanvasIds
 from chezmoi_mousse._labels import NavBtn, PaneBtn, TabBtn
-from chezmoi_mousse._names import AreaName, Canvas, TreeName, ViewName
+from chezmoi_mousse._names import AreaName, CanvasName, TreeName, ViewName
 from chezmoi_mousse._operate_buttons import OperateBtn
 from chezmoi_mousse._switches import Switches
 from chezmoi_mousse._tcss_classes import Tcss
@@ -41,7 +41,7 @@ __all__ = [
     "__version__",
     "AppType",
     "AreaName",
-    "Canvas",
+    "CanvasName",
     "CanvasIds",
     "Chars",
     "Chezmoi",

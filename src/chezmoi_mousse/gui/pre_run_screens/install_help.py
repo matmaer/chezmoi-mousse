@@ -13,7 +13,7 @@ from textual.containers import Center, Horizontal, Vertical, VerticalGroup
 from textual.screen import Screen
 from textual.widgets import Button, Collapsible, Label, Link, Pretty, Tree
 
-from chezmoi_mousse import AppType, Canvas, Chars, NavBtn, Tcss
+from chezmoi_mousse import AppType, CanvasName, Chars, NavBtn, Tcss
 
 type ParsedJson = dict[str, Any]
 
@@ -41,7 +41,7 @@ class InstallHelp(Screen[None], AppType):
     def __init__(self, chezmoi_found: bool) -> None:
         self.chezmoi_found = chezmoi_found
         super().__init__(
-            id=Canvas.install_help_screen, classes=Tcss.screen_base.name
+            id=CanvasName.install_help_screen, classes=Tcss.screen_base.name
         )
 
     def compose(self) -> ComposeResult:

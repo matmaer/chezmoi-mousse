@@ -2,7 +2,7 @@
 generated the id dynamically when subclassing or to query a widget."""
 
 from chezmoi_mousse._labels import NavBtn, TabBtn
-from chezmoi_mousse._names import AreaName, Canvas, TreeName, ViewName
+from chezmoi_mousse._names import AreaName, CanvasName, TreeName, ViewName
 from chezmoi_mousse._operate_buttons import OperateBtn
 from chezmoi_mousse._switches import Switches
 
@@ -19,7 +19,7 @@ class CanvasIds:
         "switches_slider_qid",
     )
 
-    def __init__(self, canvas_name: Canvas) -> None:
+    def __init__(self, canvas_name: CanvasName) -> None:
         self.canvas_name: str = canvas_name.name
 
         # id's for which there's only one widget for each self.canvas_name

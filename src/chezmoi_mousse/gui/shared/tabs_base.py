@@ -7,7 +7,7 @@ from textual.widgets import Button, Switch
 
 from chezmoi_mousse import (
     AreaName,
-    Canvas,
+    CanvasName,
     OperateBtn,
     Switches,
     TabBtn,
@@ -79,11 +79,11 @@ class TabsBase(Horizontal):
 
     def update_operate_buttons(self, node_data: "NodeData") -> None:
         # Update button labels and tooltips
-        if self.ids.canvas_name == Canvas.add_tab:
+        if self.ids.canvas_name == CanvasName.add_tab:
             # done in the AddTab
             return
 
-        elif self.ids.canvas_name == Canvas.apply_tab:
+        elif self.ids.canvas_name == CanvasName.apply_tab:
             operate_path_button = self.query_one(
                 self.ids.button_id("#", btn=OperateBtn.apply_path), Button
             )

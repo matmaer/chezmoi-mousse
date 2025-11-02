@@ -20,8 +20,8 @@ from textual.widgets import (
 from chezmoi_mousse import (
     AppType,
     AreaName,
-    Canvas,
     CanvasIds,
+    CanvasName,
     Chars,
     OperateBtn,
     OperateScreenData,
@@ -87,12 +87,12 @@ class MainScreen(Screen[None], AppType):
         self.current_apply_node: "NodeData | None" = None
         self.current_re_add_node: "NodeData | None" = None
 
-        self.add_tab_ids = CanvasIds(Canvas.add_tab)
-        self.apply_tab_ids = CanvasIds(Canvas.apply_tab)
-        self.config_tab_ids = CanvasIds(Canvas.config_tab)
-        self.help_tab_ids = CanvasIds(Canvas.help_tab)
-        self.logs_tab_ids = CanvasIds(Canvas.logs_tab)
-        self.re_add_tab_ids = CanvasIds(Canvas.re_add_tab)
+        self.add_tab_ids = CanvasIds(CanvasName.add_tab)
+        self.apply_tab_ids = CanvasIds(CanvasName.apply_tab)
+        self.config_tab_ids = CanvasIds(CanvasName.config_tab)
+        self.help_tab_ids = CanvasIds(CanvasName.help_tab)
+        self.logs_tab_ids = CanvasIds(CanvasName.logs_tab)
+        self.re_add_tab_ids = CanvasIds(CanvasName.re_add_tab)
 
         super().__init__()
 
@@ -160,17 +160,23 @@ class MainScreen(Screen[None], AppType):
     def compose(self) -> ComposeResult:
         yield Header(icon=Chars.burger)
         with TabbedContent():
-            with TabPane(PaneBtn.apply_tab.value, id=Canvas.apply_tab.name):
+            with TabPane(
+                PaneBtn.apply_tab.value, id=CanvasName.apply_tab.name
+            ):
                 yield ApplyTab(ids=self.apply_tab_ids)
-            with TabPane(PaneBtn.re_add_tab.value, id=Canvas.re_add_tab.name):
+            with TabPane(
+                PaneBtn.re_add_tab.value, id=CanvasName.re_add_tab.name
+            ):
                 yield ReAddTab(ids=self.re_add_tab_ids)
-            with TabPane(PaneBtn.add_tab.value, id=Canvas.add_tab.name):
+            with TabPane(PaneBtn.add_tab.value, id=CanvasName.add_tab.name):
                 yield AddTab(ids=self.add_tab_ids)
-            with TabPane(PaneBtn.logs_tab.value, id=Canvas.logs_tab.name):
+            with TabPane(PaneBtn.logs_tab.value, id=CanvasName.logs_tab.name):
                 yield LogsTab(ids=self.logs_tab_ids)
-            with TabPane(PaneBtn.config_tab.value, id=Canvas.config_tab.name):
+            with TabPane(
+                PaneBtn.config_tab.value, id=CanvasName.config_tab.name
+            ):
                 yield ConfigTab(ids=self.config_tab_ids)
-            with TabPane(PaneBtn.help_tab.value, id=Canvas.help_tab.name):
+            with TabPane(PaneBtn.help_tab.value, id=CanvasName.help_tab.name):
                 yield HelpTab(ids=self.help_tab_ids)
         yield Footer()
 
@@ -232,15 +238,15 @@ class MainScreen(Screen[None], AppType):
         if action == "toggle_switch_slider":
             active_tab = self.query_one(TabbedContent).active
             if active_tab in (
-                Canvas.apply_tab,
-                Canvas.re_add_tab,
-                Canvas.add_tab,
+                CanvasName.apply_tab,
+                CanvasName.re_add_tab,
+                CanvasName.add_tab,
             ):
                 return True
             return False
         elif action == "tcss_maximize":
             active_tab = self.query_one(TabbedContent).active
-            if active_tab == Canvas.apply_tab:
+            if active_tab == CanvasName.apply_tab:
                 left_side = self.query_one(
                     self.apply_tab_ids.tab_vertical_id("#", area=AreaName.left)
                 )
@@ -249,7 +255,7 @@ class MainScreen(Screen[None], AppType):
                         "#", area=AreaName.bottom
                     )
                 )
-            elif active_tab == Canvas.re_add_tab:
+            elif active_tab == CanvasName.re_add_tab:
                 left_side = self.query_one(
                     self.re_add_tab_ids.tab_vertical_id(
                         "#", area=AreaName.left
@@ -291,11 +297,11 @@ class MainScreen(Screen[None], AppType):
     def _get_current_filter_slider(self) -> VerticalGroup:
         active_tab = self.query_one(TabbedContent).active
 
-        if active_tab == Canvas.apply_tab:
+        if active_tab == CanvasName.apply_tab:
             return self.query_one(
                 self.apply_tab_ids.switches_slider_qid, VerticalGroup
             )
-        elif active_tab == Canvas.re_add_tab:
+        elif active_tab == CanvasName.re_add_tab:
             return self.query_one(
                 self.re_add_tab_ids.switches_slider_qid, VerticalGroup
             )
@@ -344,7 +350,7 @@ class MainScreen(Screen[None], AppType):
         if (
             self.current_add_node is not None
             and button_enum in (OperateBtn.add_file, OperateBtn.add_dir)
-            and current_tab == Canvas.add_tab
+            and current_tab == CanvasName.add_tab
         ):
             operate_screen_data = OperateScreenData(
                 operate_btn=button_enum, node_data=self.current_add_node
@@ -357,7 +363,7 @@ class MainScreen(Screen[None], AppType):
                 OperateBtn.destroy_path,
                 OperateBtn.forget_path,
             )
-            and current_tab == Canvas.apply_tab
+            and current_tab == CanvasName.apply_tab
         ):
             operate_screen_data = OperateScreenData(
                 operate_btn=button_enum, node_data=self.current_apply_node
@@ -370,7 +376,7 @@ class MainScreen(Screen[None], AppType):
                 OperateBtn.destroy_path,
                 OperateBtn.forget_path,
             )
-            and current_tab == Canvas.re_add_tab
+            and current_tab == CanvasName.re_add_tab
         ):
             operate_screen_data = OperateScreenData(
                 operate_btn=button_enum, node_data=self.current_re_add_node

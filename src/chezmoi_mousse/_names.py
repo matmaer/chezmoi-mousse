@@ -1,6 +1,12 @@
+"""Contains only StrEnum classes with auto() values for naming containers and
+widgets.
+
+Used for creating id's, and checking context conditions.
+"""
+
 from enum import StrEnum, auto
 
-__all__ = ["AreaName", "Canvas", "TreeName", "ViewName"]
+__all__ = ["AreaName", "CanvasName", "TreeName", "ViewName"]
 
 
 class AreaName(StrEnum):
@@ -10,7 +16,7 @@ class AreaName(StrEnum):
     top = auto()
 
 
-class Canvas(StrEnum):
+class CanvasName(StrEnum):
     """A canvas is either a TabPane, the OperateScreen or the InitScreen."""
 
     add_tab = auto()

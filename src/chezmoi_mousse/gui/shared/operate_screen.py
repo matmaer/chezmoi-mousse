@@ -10,8 +10,8 @@ from textual.widgets import Button, Footer, Label, Static
 
 from chezmoi_mousse import (
     AppType,
-    Canvas,
     CanvasIds,
+    CanvasName,
     Chars,
     OperateBtn,
     OperateScreenData,
@@ -137,7 +137,7 @@ class OperateScreen(Screen[OperateScreenData], AppType):
     ]
 
     def __init__(self, operate_data: "OperateScreenData") -> None:
-        self.ids = CanvasIds(Canvas.operate_screen)
+        self.ids = CanvasIds(CanvasName.operate_screen)
         self.operate_data = operate_data
         super().__init__(
             id=self.ids.canvas_name, classes=Tcss.operate_screen.name

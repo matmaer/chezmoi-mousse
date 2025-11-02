@@ -6,7 +6,7 @@ from rich.text import Text
 from textual.reactive import reactive
 from textual.widgets import DataTable
 
-from chezmoi_mousse import AppType, Canvas, ReadCmd, Tcss, ViewName
+from chezmoi_mousse import AppType, CanvasName, ReadCmd, Tcss, ViewName
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds, CommandResult
@@ -30,9 +30,9 @@ class GitLogView(DataTable[Text], AppType):
 
     def on_mount(self) -> None:
         if self.ids.canvas_name in (
-            Canvas.add_tab,
-            Canvas.apply_tab,
-            Canvas.re_add_tab,
+            CanvasName.add_tab,
+            CanvasName.apply_tab,
+            CanvasName.re_add_tab,
         ):
             self.add_class(Tcss.border_title_top.name)
             self.border_title = f" {self.destDir} "
@@ -41,7 +41,7 @@ class GitLogView(DataTable[Text], AppType):
             )
             self.add_row(self.click_file_path)
             return
-        if self.ids.canvas_name == Canvas.logs_tab:
+        if self.ids.canvas_name == CanvasName.logs_tab:
             git_log_result: "CommandResult" = self.app.chezmoi.read(
                 ReadCmd.git_log
             )
