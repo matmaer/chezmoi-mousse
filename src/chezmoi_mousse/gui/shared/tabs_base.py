@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 
 from textual import on
 from textual.containers import Horizontal
-from textual.widgets import Button, Switch
+from textual.widgets import Button, ContentSwitcher, Switch
 
 from chezmoi_mousse import (
     AreaName,
@@ -20,7 +20,7 @@ from .contents_view import ContentsView
 from .diff_view import DiffView
 from .git_log_view import GitLogView
 from .operate_msg import CurrentApplyNodeMsg, CurrentReAddNodeMsg
-from .switchers import TreeSwitcher, ViewSwitcher
+from .switchers import TreeSwitcher
 from .trees import ExpandedTree, ListTree, ManagedTree
 
 if TYPE_CHECKING:
@@ -162,7 +162,7 @@ class TabsBase(Horizontal):
             self.git_log_tab_btn,
         ):
             view_switcher = self.query_one(
-                self.view_switcher_qid, ViewSwitcher
+                self.view_switcher_qid, ContentSwitcher
             )
             if event.button.id == self.contents_tab_btn:
                 view_switcher.current = self.ids.view_id(

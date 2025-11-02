@@ -33,13 +33,7 @@ class ApplyTab(TabsBase):
                 area=AreaName.left,
             )
             yield TreeSwitcher(self.ids)
-        with Vertical(id=self.ids.tab_vertical_id(area=AreaName.right)):
-            yield TabBtnHorizontal(
-                ids=self.ids,
-                buttons=(TabBtn.diff, TabBtn.contents, TabBtn.git_log_path),
-                area=AreaName.right,
-            )
-            yield ViewSwitcher(ids=self.ids, diff_reverse=False)
+        yield ViewSwitcher(ids=self.ids, diff_reverse=False)
         yield OperateBtnHorizontal(
             ids=self.ids,
             buttons=(

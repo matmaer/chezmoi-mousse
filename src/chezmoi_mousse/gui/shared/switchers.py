@@ -1,9 +1,11 @@
 from typing import TYPE_CHECKING
 
 from textual.app import ComposeResult
+from textual.containers import Vertical
 from textual.widgets import ContentSwitcher
 
-from chezmoi_mousse import AreaName, Tcss, TreeName, ViewName
+from chezmoi_mousse import AreaName, TabBtn, Tcss, TreeName, ViewName
+from chezmoi_mousse.gui.shared.button_groups import TabBtnHorizontal
 
 from .contents_view import ContentsView
 from .diff_view import DiffView
@@ -36,16 +38,23 @@ class TreeSwitcher(ContentSwitcher):
         self.add_class(Tcss.border_title_top.name)
 
 
-class ViewSwitcher(ContentSwitcher):
+class ViewSwitcher(Vertical):
     def __init__(self, *, ids: "CanvasIds", diff_reverse: bool):
         self.ids = ids
         self.reverse = diff_reverse
-        super().__init__(
-            id=self.ids.content_switcher_id(area=AreaName.right),
-            initial=self.ids.view_id(view=ViewName.diff_view),
-        )
+        super().__init__(id=self.ids.tab_vertical_id(area=AreaName.right))
+        super().__init__()
 
     def compose(self) -> ComposeResult:
-        yield DiffView(ids=self.ids, reverse=self.reverse)
-        yield ContentsView(ids=self.ids)
-        yield GitLogView(ids=self.ids)
+        yield TabBtnHorizontal(
+            ids=self.ids,
+            buttons=(TabBtn.diff, TabBtn.contents, TabBtn.git_log_path),
+            area=AreaName.right,
+        )
+        with ContentSwitcher(
+            id=self.ids.content_switcher_id(area=AreaName.right),
+            initial=self.ids.view_id(view=ViewName.diff_view),
+        ):
+            yield DiffView(ids=self.ids, reverse=self.reverse)
+            yield ContentsView(ids=self.ids)
+            yield GitLogView(ids=self.ids)
