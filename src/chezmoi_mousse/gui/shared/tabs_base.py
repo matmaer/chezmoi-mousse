@@ -5,7 +5,7 @@ from textual import on
 from textual.containers import Horizontal
 from textual.widgets import Button, ContentSwitcher, Switch
 
-from chezmoi_mousse import (
+from chezmoi_mousse import (  # ViewName,
     AreaName,
     CanvasName,
     OperateBtn,
@@ -13,7 +13,6 @@ from chezmoi_mousse import (
     TabBtn,
     Tcss,
     TreeName,
-    ViewName,
 )
 
 from .contents_view import ContentsView
@@ -155,27 +154,7 @@ class TabsBase(Horizontal):
 
     @on(Button.Pressed, Tcss.tab_button.value)
     def handle_tab_button_pressed(self, event: Button.Pressed) -> None:
-        if event.button.id in (
-            self.contents_tab_btn,
-            self.diff_tab_btn,
-            self.git_log_tab_btn,
-        ):
-            view_switcher = self.query_one(
-                self.view_switcher_qid, ContentSwitcher
-            )
-            if event.button.id == self.contents_tab_btn:
-                view_switcher.current = self.ids.view_id(
-                    view=ViewName.contents_view
-                )
-            elif event.button.id == self.diff_tab_btn:
-                view_switcher.current = self.ids.view_id(
-                    view=ViewName.diff_view
-                )
-            elif event.button.id == self.git_log_tab_btn:
-                view_switcher.current = self.ids.view_id(
-                    view=ViewName.git_log_view
-                )
-        elif event.button.id in (self.tree_tab_btn, self.list_tab_btn):
+        if event.button.id in (self.tree_tab_btn, self.list_tab_btn):
             # toggle expand all switch enabled disabled state
             tree_switcher = self.query_one(
                 self.tree_switcher_qid, ContentSwitcher

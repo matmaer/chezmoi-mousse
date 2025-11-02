@@ -1,8 +1,9 @@
 from typing import TYPE_CHECKING
 
+from textual import on
 from textual.app import ComposeResult
 from textual.containers import Vertical
-from textual.widgets import ContentSwitcher
+from textual.widgets import Button, ContentSwitcher
 
 from chezmoi_mousse import AreaName, TabBtn, Tcss, TreeName, ViewName
 from chezmoi_mousse.gui.shared.button_groups import TabBtnHorizontal
@@ -46,6 +47,15 @@ class TreeSwitcher(Vertical):
 class ViewSwitcher(Vertical):
     def __init__(self, *, ids: "CanvasIds", diff_reverse: bool):
         self.ids = ids
+        self.contents_tab_btn = ids.button_id(btn=TabBtn.contents)
+        self.diff_tab_btn = ids.button_id(btn=TabBtn.diff)
+        self.git_log_tab_btn = ids.button_id(btn=TabBtn.git_log_path)
+        self.view_switcher_id = self.ids.content_switcher_id(
+            area=AreaName.right
+        )
+        self.view_switcher_qid = self.ids.content_switcher_id(
+            "#", area=AreaName.right
+        )
         self.reverse = diff_reverse
         super().__init__(id=self.ids.tab_vertical_id(area=AreaName.right))
 
@@ -56,9 +66,23 @@ class ViewSwitcher(Vertical):
             area=AreaName.right,
         )
         with ContentSwitcher(
-            id=self.ids.content_switcher_id(area=AreaName.right),
+            id=self.view_switcher_id,
             initial=self.ids.view_id(view=ViewName.diff_view),
         ):
             yield DiffView(ids=self.ids, reverse=self.reverse)
             yield ContentsView(ids=self.ids)
             yield GitLogView(ids=self.ids)
+
+    @on(Button.Pressed)
+    def switch_tree(self, event: Button.Pressed) -> None:
+        view_switcher = self.query_one(self.view_switcher_qid, ContentSwitcher)
+        if event.button.id == self.contents_tab_btn:
+            view_switcher.current = self.ids.view_id(
+                view=ViewName.contents_view
+            )
+        elif event.button.id == self.diff_tab_btn:
+            view_switcher.current = self.ids.view_id(view=ViewName.diff_view)
+        elif event.button.id == self.git_log_tab_btn:
+            view_switcher.current = self.ids.view_id(
+                view=ViewName.git_log_view
+            )
