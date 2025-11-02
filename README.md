@@ -11,7 +11,7 @@ Graphical user interface in the terminal for [chezmoi](https://github.com/twpayn
 - Can be safely tested as no write operations are enabled.
 - The current implementation has only been used or tested with autocommit enabled.
 - To enable operations, run the app with env var   `MOUSSE_ENABLE_CHANGES=1`
-This will enable commands changing the file system or the chezmoi state. See the available commands section.
+This will enable commands changing the file system or the chezmoi state. See the available commands section. After returning from the operate screen, we still need to implement the views on the trees being updated.
 
 ## Start
 
