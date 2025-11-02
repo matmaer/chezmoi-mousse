@@ -129,11 +129,11 @@ class MainScreen(Screen[None], AppType):
         )
         self.app_log.success("Read Output log initialized")
 
-        self.app_log.ready_to_run("--- Executed in loading screen ---")
+        self.app_log.info("Commands executed during startup:")
         for cmd in self.splash_data.executed_commands:
             self.app_log.log_cmd_results(cmd)
             self.read_output_log.log_cmd_results(cmd)
-        self.app_log.ready_to_run("----------------------------------")
+        self.app_log.info("End of startup commands.")
         self.write_output_log = self.query_one(
             self.logs_tab_ids.view_id(
                 "#", view=ViewName.write_output_log_view
@@ -144,7 +144,7 @@ class MainScreen(Screen[None], AppType):
             "--- Write Output log initialized ---"
         )
         self.app.chezmoi.write_output_log = self.write_output_log
-        self.app_log.success("Write Output log initialized")
+        self.app_log.info("Write Output log initialized")
 
         if self.app.dev_mode:
             debug_logger: DebugLog = self.query_one(
@@ -154,7 +154,7 @@ class MainScreen(Screen[None], AppType):
             self.debug_log = debug_logger
             self.app.chezmoi.debug_log = debug_logger
             self.debug_log.ready_to_run("--- Debug log initialized ---")
-            self.app_log.success("Debug log initialized")
+            self.app_log.info("Debug log initialized")
         # Notify startup info
         if self.app.dev_mode is True:
             self.notify('Running in "dev mode"', severity="information")
