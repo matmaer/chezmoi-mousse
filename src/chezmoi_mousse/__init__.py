@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from importlib.metadata import PackageNotFoundError, version
 from typing import TYPE_CHECKING, Literal
 
-from chezmoi_mousse._canvas_ids import CanvasIds
 from chezmoi_mousse._chars import Chars
 from chezmoi_mousse._chezmoi import (
     Chezmoi,
@@ -19,6 +18,7 @@ from chezmoi_mousse._names import AreaName, CanvasName, TreeName, ViewName
 from chezmoi_mousse._operate_buttons import OperateBtn
 from chezmoi_mousse._switches import Switches
 from chezmoi_mousse._tcss_classes import Tcss
+from chezmoi_mousse.canvas_ids import CanvasIds
 
 if TYPE_CHECKING:
     from pathlib import Path
