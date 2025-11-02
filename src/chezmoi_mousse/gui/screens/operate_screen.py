@@ -19,11 +19,11 @@ from chezmoi_mousse import (
     WriteCmd,
 )
 
-from .button_groups import OperateBtnHorizontal
-from .canvas_ids import CanvasIds
-from .contents_view import ContentsView
-from .diff_view import DiffView
-from .loggers import OutputLog
+from ..shared.button_groups import OperateBtnHorizontal
+from ..shared.canvas_ids import CanvasIds
+from ..shared.contents_view import ContentsView
+from ..shared.diff_view import DiffView
+from ..shared.loggers import OutputLog
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CommandResult

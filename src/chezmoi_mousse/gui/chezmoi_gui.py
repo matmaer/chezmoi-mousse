@@ -12,12 +12,12 @@ from chezmoi_mousse import Chars
 
 from .add_tab import AddTab
 from .main_screen import MainScreen
-from .pre_run_screens.install_help import InstallHelp
-from .pre_run_screens.splash import LoadingScreen, SplashData
+from .screens.install_help import InstallHelp
+from .screens.operate_screen import OperateInfo
+from .screens.splash import LoadingScreen, SplashData
 from .shared.contents_view import ContentsView
 from .shared.diff_view import DiffView
 from .shared.git_log_view import GitLogView
-from .shared.operate_screen import OperateInfo
 from .shared.trees import TreeBase
 
 if TYPE_CHECKING:

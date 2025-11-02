@@ -37,6 +37,7 @@ from .config_tab import ConfigTab, ConfigTabSwitcher
 from .help_tab import HelpTab
 from .logs_tab import LogsTab
 from .re_add_tab import ReAddTab
+from .screens.operate_screen import OperateScreen
 from .shared.canvas_ids import CanvasIds
 from .shared.loggers import AppLog, DebugLog, OutputLog
 from .shared.operate_msg import (
@@ -44,13 +45,12 @@ from .shared.operate_msg import (
     CurrentApplyNodeMsg,
     CurrentReAddNodeMsg,
 )
-from .shared.operate_screen import OperateScreen
 from .shared.trees import ExpandedTree, ListTree, ManagedTree
 
 if TYPE_CHECKING:
     from chezmoi_mousse import DirTreeNodeData, NodeData
 
-    from .pre_run_screens.splash import SplashData
+    from .screens.splash import SplashData
 
 __all__ = ["MainScreen"]
 
