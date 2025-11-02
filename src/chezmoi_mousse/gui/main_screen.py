@@ -37,7 +37,7 @@ from .config_tab import ConfigTab, ConfigTabSwitcher
 from .help_tab import HelpTab
 from .logs_tab import LogsTab
 from .re_add_tab import ReAddTab
-from .screens.operate_screen import OperateScreen
+from .screens.operate import OperateScreen
 from .shared.canvas_ids import CanvasIds
 from .shared.loggers import AppLog, DebugLog, OutputLog
 from .shared.operate_msg import (

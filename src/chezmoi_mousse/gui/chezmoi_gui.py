@@ -13,7 +13,7 @@ from chezmoi_mousse import Chars
 from .add_tab import AddTab
 from .main_screen import MainScreen
 from .screens.install_help import InstallHelp
-from .screens.operate_screen import OperateInfo
+from .screens.operate import OperateInfo
 from .screens.splash import LoadingScreen, SplashData
 from .shared.contents_view import ContentsView
 from .shared.diff_view import DiffView
