@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from enum import Enum, StrEnum
 
+from chezmoi_mousse._content_switchers import OperateButtons
+
 __all__ = ["OperateBtn"]
 
 INITIAL_TOOLTIP = "This is the destDir, select a path to operate on."
@@ -21,25 +23,6 @@ class ToolTips(StrEnum):
     forget_file = "Stop managing this file."
     re_add_dir = "Re-add this directory its files to chezmoi."
     re_add_file = "Re-add this file to chezmoi."
-
-
-class NameLabels(StrEnum):
-    add_dir = "Add Dir"
-    add_file = "Add File"
-    apply_dir = "Apply Dir"
-    apply_file = "Apply File"
-    apply_path = "Apply Path"
-    destroy_dir = "Destroy Dir"
-    destroy_file = "Destroy File"
-    destroy_path = "Destroy Path"
-    forget_dir = "Forget Dir"
-    forget_file = "Forget File"
-    forget_path = "Forget Path"
-    operate_cancel = "Cancel"
-    operate_close = "Close"
-    re_add_dir = "Re-Add Dir"
-    re_add_file = "Re-Add File"
-    re_add_path = "Re-Add Path"
 
 
 @dataclass
@@ -81,48 +64,48 @@ class OperateBtn(Enum):
     add_file = AddButtonData(
         disabled_tooltip=ToolTips.add_file_disabled.value,
         enabled_tooltip=ToolTips.add_file.value,
-        initial_label=NameLabels.add_file.value,
+        initial_label=OperateButtons.add_file.value,
     )
     add_dir = AddButtonData(
         disabled_tooltip=ToolTips.add_dir_disabled.value,
         enabled_tooltip=ToolTips.add_dir.value,
-        initial_label=NameLabels.add_dir.value,
+        initial_label=OperateButtons.add_dir.value,
     )
     apply_path = ApplyReAddButtonData(
-        dir_label=NameLabels.apply_dir.value,
+        dir_label=OperateButtons.apply_dir.value,
         dir_no_status_tooltip=ToolTips.dir_no_status.value,
         dir_tooltip=ToolTips.apply_dir.value,
-        file_label=NameLabels.apply_file.value,
+        file_label=OperateButtons.apply_file.value,
         file_no_status_tooltip=ToolTips.file_no_status.value,
         file_tooltip=ToolTips.apply_file.value,
-        initial_label=NameLabels.apply_path.value,
+        initial_label=OperateButtons.apply_path.value,
     )
     re_add_path = ApplyReAddButtonData(
-        dir_label=NameLabels.re_add_dir.value,
+        dir_label=OperateButtons.re_add_dir.value,
         dir_no_status_tooltip=ToolTips.dir_no_status.value,
         dir_tooltip=ToolTips.re_add_dir.value,
-        file_label=NameLabels.re_add_file.value,
+        file_label=OperateButtons.re_add_file.value,
         file_no_status_tooltip=ToolTips.file_no_status.value,
         file_tooltip=ToolTips.re_add_file.value,
-        initial_label=NameLabels.re_add_path.value,
+        initial_label=OperateButtons.re_add_path.value,
     )
     forget_path = DestroyForgetButtonData(
-        dir_label=NameLabels.forget_dir.value,
+        dir_label=OperateButtons.forget_dir.value,
         dir_tooltip=ToolTips.forget_dir.value,
-        file_label=NameLabels.forget_file.value,
+        file_label=OperateButtons.forget_file.value,
         file_tooltip=ToolTips.forget_file.value,
-        initial_label=NameLabels.forget_path.value,
+        initial_label=OperateButtons.forget_path.value,
     )
     destroy_path = DestroyForgetButtonData(
-        dir_label=NameLabels.destroy_dir.value,
+        dir_label=OperateButtons.destroy_dir.value,
         dir_tooltip=ToolTips.destroy_dir.value,
-        file_label=NameLabels.destroy_file.value,
+        file_label=OperateButtons.destroy_file.value,
         file_tooltip=ToolTips.destroy_file.value,
-        initial_label=NameLabels.destroy_path.value,
+        initial_label=OperateButtons.destroy_path.value,
     )
     exit_button = ExitButtonData(
-        initial_label=NameLabels.operate_cancel.value,
-        close_label=NameLabels.operate_close.value,
+        initial_label=OperateButtons.operate_cancel.value,
+        close_label=OperateButtons.operate_close.value,
     )
 
     # allow access to dataclass attributes directly from the Enum member,

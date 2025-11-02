@@ -13,7 +13,7 @@ from chezmoi_mousse._chezmoi import (
     VerbArgs,
     WriteCmd,
 )
-from chezmoi_mousse._labels import NavBtn, TabBtn
+from chezmoi_mousse._content_switchers import NavBtn, TabBtn
 from chezmoi_mousse._names import AreaName, CanvasName, TreeName, ViewName
 from chezmoi_mousse._operate_buttons import OperateBtn
 from chezmoi_mousse._switches import Switches
