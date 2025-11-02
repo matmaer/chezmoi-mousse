@@ -13,15 +13,15 @@ class AreaName(StrEnum):
 class Canvas(StrEnum):
     """A canvas is either a TabPane, the OperateScreen or the InitScreen."""
 
-    add = auto()
-    apply = auto()
+    add_tab = auto()
+    apply_tab = auto()
     # chezmoi_init = auto() TODO
-    config = auto()
-    help = auto()
-    install_help = auto()
-    logs = auto()
-    operate = auto()
-    re_add = auto()
+    config_tab = auto()
+    help_tab = auto()
+    install_help_screen = auto()
+    logs_tab = auto()
+    operate_screen = auto()
+    re_add_tab = auto()
 
 
 class TreeName(StrEnum):

@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 from _test_utils import get_modules_importing_class
 
-from chezmoi_mousse import CanvasIds, Id
+from chezmoi_mousse import CanvasIds
 
 
 def _get_class_public_members_strings(
@@ -72,29 +72,6 @@ def test_canvasids_member_in_use(member_name: str, member_type: str):
         + get_modules_importing_class("Id")
     )
     for py_file in paths_to_check:
-        content = py_file.read_text()
-        tree = ast.parse(content, filename=str(py_file))
-
-        finder = UsageFinder(member_name, exclude_class_name=class_name)
-        finder.visit(tree)
-        if finder.found:
-            is_used = True
-            break  # No need to check other files
-
-    if not is_used:
-        pytest.fail(f"\nNot in use: {member_name} {member_type}")
-
-
-@pytest.mark.parametrize(
-    "member_name, member_type",
-    _get_class_public_members_strings(Id),
-    ids=[name for name, _ in _get_class_public_members_strings(Id)],
-)
-def test_id_members_in_use(member_name: str, member_type: str):
-    is_used = False
-    class_name = "Id"
-
-    for py_file in get_modules_importing_class(class_name):
         content = py_file.read_text()
         tree = ast.parse(content, filename=str(py_file))
 

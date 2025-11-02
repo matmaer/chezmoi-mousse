@@ -40,7 +40,9 @@ class InstallHelp(Screen[None], AppType):
 
     def __init__(self, chezmoi_found: bool) -> None:
         self.chezmoi_found = chezmoi_found
-        super().__init__(id=Canvas.install_help, classes=Tcss.screen_base.name)
+        super().__init__(
+            id=Canvas.install_help_screen, classes=Tcss.screen_base.name
+        )
 
     def compose(self) -> ComposeResult:
         if self.chezmoi_found is True:

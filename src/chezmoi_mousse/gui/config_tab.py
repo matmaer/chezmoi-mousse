@@ -20,7 +20,7 @@ from textual.widgets import (
     Static,
 )
 
-from chezmoi_mousse import AppType, AreaName, Id, NavBtn, Tcss, ViewName
+from chezmoi_mousse import AppType, AreaName, NavBtn, Tcss, ViewName
 
 from .shared.button_groups import NavButtonsVertical
 from .shared.tabs_base import TabsBase
@@ -33,10 +33,11 @@ __all__ = ["ConfigTab", "ConfigTabSwitcher"]
 
 class DoctorTable(DataTable[Text], AppType):
 
-    def __init__(self) -> None:
+    def __init__(self, ids: "CanvasIds") -> None:
+        self.ids = ids
         self.pw_mgr_commands: list[str] = []
         super().__init__(
-            id=Id.config_tab.datatable_id,
+            id=self.ids.datatable_id,
             show_cursor=False,
             classes=Tcss.doctor_table.name,
         )
@@ -152,9 +153,10 @@ class DoctorListView(ListView):
             link="https://vaultproject.io/",
         )
 
-    def __init__(self) -> None:
+    def __init__(self, ids: "CanvasIds") -> None:
+        self.ids = ids
         super().__init__(
-            id=Id.config_tab.listview_id, classes=Tcss.doctor_listview.name
+            id=self.ids.listview_id, classes=Tcss.doctor_listview.name
         )
 
     def populate_listview(self, pw_mgr_commands: list[str]) -> None:
@@ -188,12 +190,12 @@ class ConfigTabSwitcher(ContentSwitcher):
     def compose(self) -> ComposeResult:
         yield VerticalScroll(
             Label('"chezmoi doctor" output', classes=Tcss.section_label.name),
-            DoctorTable(),
+            DoctorTable(ids=self.ids),
             Label(
                 "Password managers not found in $PATH",
                 classes=Tcss.section_label.name,
             ),
-            DoctorListView(),
+            DoctorListView(ids=self.ids),
             id=self.ids.view_id(view=ViewName.doctor_view),
             classes=Tcss.doctor_vertical_scroll.name,
         )

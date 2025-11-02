@@ -7,12 +7,12 @@ class NavBtn(StrEnum):
     add_help = "Add Help"
     apply_help = "Apply Help"
     cat_config = "Cat Config"
-    clone_existing_repo = "Clone Existing Repo"
+    # clone_existing_repo = "Clone Existing Repo" TODO
     diagram = "Diagram"
     doctor = "Doctor"
     exit_app = "Exit App"
     ignored = "Ignored"
-    init_new_repo = "Initialize New Repo"
+    # init_new_repo = "Initialize New Repo" TODO
     re_add_help = "Re-Add Help"
     template_data = "Template Data"
 

@@ -79,11 +79,11 @@ class TabsBase(Horizontal):
 
     def update_operate_buttons(self, node_data: "NodeData") -> None:
         # Update button labels and tooltips
-        if self.ids.canvas_name == Canvas.add:
+        if self.ids.canvas_name == Canvas.add_tab:
             # done in the AddTab
             return
 
-        elif self.ids.canvas_name == Canvas.apply:
+        elif self.ids.canvas_name == Canvas.apply_tab:
             operate_path_button = self.query_one(
                 self.ids.button_id("#", btn=OperateBtn.apply_path), Button
             )

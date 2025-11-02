@@ -30,9 +30,9 @@ class GitLogView(DataTable[Text], AppType):
 
     def on_mount(self) -> None:
         if self.ids.canvas_name in (
-            Canvas.add.name,
-            Canvas.apply.name,
-            Canvas.re_add.name,
+            Canvas.add_tab,
+            Canvas.apply_tab,
+            Canvas.re_add_tab,
         ):
             self.add_class(Tcss.border_title_top.name)
             self.border_title = f" {self.destDir} "
@@ -41,7 +41,7 @@ class GitLogView(DataTable[Text], AppType):
             )
             self.add_row(self.click_file_path)
             return
-        if self.ids.canvas_name == Canvas.logs.name:
+        if self.ids.canvas_name == Canvas.logs_tab:
             git_log_result: "CommandResult" = self.app.chezmoi.read(
                 ReadCmd.git_log
             )

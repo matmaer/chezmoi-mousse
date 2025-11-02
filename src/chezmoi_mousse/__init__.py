@@ -13,7 +13,7 @@ from chezmoi_mousse._chezmoi import (
     VerbArgs,
     WriteCmd,
 )
-from chezmoi_mousse._id_classes import CanvasIds, Id
+from chezmoi_mousse._id_classes import CanvasIds
 from chezmoi_mousse._labels import NavBtn, PaneBtn, TabBtn
 from chezmoi_mousse._names import AreaName, Canvas, TreeName, ViewName
 from chezmoi_mousse._operate_buttons import OperateBtn
@@ -48,7 +48,6 @@ __all__ = [
     "CommandResult",
     "DirTreeNodeData",
     "GlobalCmd",
-    "Id",
     "LogUtils",
     "NavBtn",
     "NodeData",

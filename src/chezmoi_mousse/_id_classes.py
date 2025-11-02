@@ -1,21 +1,18 @@
 """Contains classes to enable setting widget id's without hardcoded strings or
 generated the id dynamically when subclassing or to query a widget."""
 
-from typing import ClassVar
-
 from chezmoi_mousse._labels import NavBtn, TabBtn
 from chezmoi_mousse._names import AreaName, Canvas, TreeName, ViewName
 from chezmoi_mousse._operate_buttons import OperateBtn
 from chezmoi_mousse._switches import Switches
 
-__all__ = ["CanvasIds", "Id"]
+__all__ = ["CanvasIds"]
 
 
 class CanvasIds:
     __slots__ = (
         "canvas_name",
         "tab_container_id",
-        "tab_container_qid",
         "datatable_id",
         "listview_id",
         "switches_slider_id",
@@ -31,7 +28,6 @@ class CanvasIds:
         self.switches_slider_id = f"{canvas_name}_switches_slider"
         self.switches_slider_qid = f"#{self.switches_slider_id}"
         self.tab_container_id = f"{canvas_name}_container_id"
-        self.tab_container_qid = f"#{self.tab_container_id}"
 
     def button_id(
         self, qid: str = "", *, btn: OperateBtn | TabBtn | NavBtn
@@ -65,14 +61,3 @@ class CanvasIds:
 
     def view_id(self, qid: str = "", *, view: ViewName) -> str:
         return f"{qid}{self.canvas_name}_{view}"
-
-
-class Id:
-    add_tab: ClassVar[CanvasIds] = CanvasIds(Canvas.add)
-    apply_tab: ClassVar[CanvasIds] = CanvasIds(Canvas.apply)
-    # chezmoi_init: ClassVar[CanvasIds] = CanvasIds(Canvas.chezmoi_init) TODO
-    config_tab: ClassVar[CanvasIds] = CanvasIds(Canvas.config)
-    help_tab: ClassVar[CanvasIds] = CanvasIds(Canvas.help)
-    logs_tab: ClassVar[CanvasIds] = CanvasIds(Canvas.logs)
-    operate_screen: ClassVar[CanvasIds] = CanvasIds(Canvas.operate)
-    re_add_tab: ClassVar[CanvasIds] = CanvasIds(Canvas.re_add)

@@ -59,7 +59,7 @@ class DiffView(RichLog, AppType):
         self.write(
             f'No diff available for "{self.path}", the path has no status.\n'
         )
-        if self.ids.canvas_name != Canvas.operate:
+        if self.ids.canvas_name != Canvas.operate_screen:
             self.write(self.click_colored_file)
 
     def watch_path(self) -> None:
@@ -69,7 +69,7 @@ class DiffView(RichLog, AppType):
         # write lines for an unchanged file or directory except when we are in
         # either the ApplyTab or ReAddTabS
 
-        if self.ids.canvas_name == Canvas.apply:
+        if self.ids.canvas_name == Canvas.apply_tab:
             if (
                 self.path not in self.app.chezmoi.apply_status_files
                 and self.path not in self.app.chezmoi.apply_status_dirs
