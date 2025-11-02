@@ -70,10 +70,9 @@ class CanvasIds:
 class Id:
     add_tab: ClassVar[CanvasIds] = CanvasIds(Canvas.add)
     apply_tab: ClassVar[CanvasIds] = CanvasIds(Canvas.apply)
-    chezmoi_init: ClassVar[CanvasIds] = CanvasIds(Canvas.chezmoi_init)
+    # chezmoi_init: ClassVar[CanvasIds] = CanvasIds(Canvas.chezmoi_init) TODO
     config_tab: ClassVar[CanvasIds] = CanvasIds(Canvas.config)
     help_tab: ClassVar[CanvasIds] = CanvasIds(Canvas.help)
     logs_tab: ClassVar[CanvasIds] = CanvasIds(Canvas.logs)
-    operate_launch: ClassVar[CanvasIds] = CanvasIds(Canvas.operate_launch)
-    operate_result: ClassVar[CanvasIds] = CanvasIds(Canvas.operate_result)
+    operate_screen: ClassVar[CanvasIds] = CanvasIds(Canvas.operate)
     re_add_tab: ClassVar[CanvasIds] = CanvasIds(Canvas.re_add)

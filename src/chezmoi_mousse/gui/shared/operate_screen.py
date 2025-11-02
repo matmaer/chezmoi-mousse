@@ -11,7 +11,6 @@ from textual.widgets import Button, Footer, Label, Static
 from chezmoi_mousse import (
     AppType,
     Chars,
-    Id,
     OperateBtn,
     OperateScreenData,
     Tcss,
@@ -25,7 +24,7 @@ from .diff_view import DiffView
 from .loggers import OutputLog
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import CommandResult
+    from chezmoi_mousse import CanvasIds, CommandResult
 
 __all__ = ["OperateInfo", "OperateScreen"]
 
@@ -135,8 +134,10 @@ class OperateScreen(Screen[OperateScreenData], AppType):
         )
     ]
 
-    def __init__(self, *, operate_data: "OperateScreenData") -> None:
-        self.ids = Id.operate_launch
+    def __init__(
+        self, *, ids: "CanvasIds", operate_data: "OperateScreenData"
+    ) -> None:
+        self.ids = ids
         self.operate_data = operate_data
         super().__init__(
             id=self.ids.canvas_name, classes=Tcss.operate_screen.name

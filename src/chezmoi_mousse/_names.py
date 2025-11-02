@@ -11,17 +11,16 @@ class AreaName(StrEnum):
 
 
 class Canvas(StrEnum):
-    """A canvas is either a TabPane, Screen or full screen Container layer."""
+    """A canvas is either a TabPane, the OperateScreen or the InitScreen."""
 
     add = auto()
     apply = auto()
-    chezmoi_init = auto()
+    # chezmoi_init = auto() TODO
     config = auto()
     help = auto()
     install_help = auto()
     logs = auto()
-    operate_launch = auto()
-    operate_result = auto()
+    operate = auto()
     re_add = auto()
 
 
@@ -37,7 +36,7 @@ class ViewName(StrEnum):
     app_log_view = auto()
     apply_help_view = auto()
     cat_config_view = auto()
-    clone_existing_repo_view = auto()
+    # clone_existing_repo_view = auto() TODO
     contents_view = auto()
     debug_log_view = auto()
     diagram_view = auto()
@@ -45,7 +44,7 @@ class ViewName(StrEnum):
     doctor_view = auto()
     git_ignored_view = auto()
     git_log_view = auto()
-    init_new_repo_view = auto()
+    # init_new_repo_view = auto() TODO
     pretty_cat_config_view = auto()
     pretty_ignored_view = auto()
     pretty_template_data_view = auto()
