@@ -1,11 +1,28 @@
 from dataclasses import dataclass
 from enum import Enum, StrEnum
 
-from chezmoi_mousse._content_switchers import OperateButtons
-
 __all__ = ["OperateBtn"]
 
 INITIAL_TOOLTIP = "This is the destDir, select a path to operate on."
+
+
+class OperateButtons(StrEnum):
+    add_dir = "Add Dir"
+    add_file = "Add File"
+    apply_dir = "Apply Dir"
+    apply_file = "Apply File"
+    apply_path = "Apply Path"
+    destroy_dir = "Destroy Dir"
+    destroy_file = "Destroy File"
+    destroy_path = "Destroy Path"
+    forget_dir = "Forget Dir"
+    forget_file = "Forget File"
+    forget_path = "Forget Path"
+    operate_cancel = "Cancel"
+    operate_close = "Close"
+    re_add_dir = "Re-Add Dir"
+    re_add_file = "Re-Add File"
+    re_add_path = "Re-Add Path"
 
 
 class ToolTips(StrEnum):
