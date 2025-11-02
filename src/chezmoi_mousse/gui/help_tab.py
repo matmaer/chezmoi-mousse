@@ -5,7 +5,7 @@ from textual.app import ComposeResult
 from textual.containers import Vertical
 from textual.widgets import Button, ContentSwitcher, Label, Static
 
-from chezmoi_mousse import AreaName, NavBtn, Tcss, ViewName
+from chezmoi_mousse import AreaName, FlatBtn, Tcss, ViewName
 
 from .shared.button_groups import NavButtonsVertical
 from .shared.tabs_base import TabsBase
@@ -91,10 +91,10 @@ class HelpTab(TabsBase):
         yield NavButtonsVertical(
             ids=self.ids,
             buttons=(
-                NavBtn.apply_help,
-                NavBtn.re_add_help,
-                NavBtn.add_help,
-                NavBtn.diagram,
+                FlatBtn.apply_help,
+                FlatBtn.re_add_help,
+                FlatBtn.add_help,
+                FlatBtn.diagram,
             ),
         )
         yield HelpTabSwitcher(ids=self.ids)
@@ -103,11 +103,11 @@ class HelpTab(TabsBase):
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
         switcher = self.query_exactly_one(HelpTabSwitcher)
-        if event.button.id == self.ids.button_id(btn=NavBtn.apply_help):
+        if event.button.id == self.ids.button_id(btn=FlatBtn.apply_help):
             switcher.current = self.ids.view_id(view=ViewName.apply_help_view)
-        elif event.button.id == self.ids.button_id(btn=NavBtn.re_add_help):
+        elif event.button.id == self.ids.button_id(btn=FlatBtn.re_add_help):
             switcher.current = self.ids.view_id(view=ViewName.re_add_help_view)
-        elif event.button.id == self.ids.button_id(btn=NavBtn.add_help):
+        elif event.button.id == self.ids.button_id(btn=FlatBtn.add_help):
             switcher.current = self.ids.view_id(view=ViewName.add_help_view)
-        elif event.button.id == self.ids.button_id(btn=NavBtn.diagram):
+        elif event.button.id == self.ids.button_id(btn=FlatBtn.diagram):
             switcher.current = self.ids.view_id(view=ViewName.diagram_view)

@@ -13,7 +13,7 @@ from textual.containers import Center, Horizontal, Vertical, VerticalGroup
 from textual.screen import Screen
 from textual.widgets import Button, Collapsible, Label, Link, Pretty, Tree
 
-from chezmoi_mousse import AppType, CanvasName, Chars, NavBtn, Tcss
+from chezmoi_mousse import AppType, CanvasName, Chars, FlatBtn, Tcss
 
 type ParsedJson = dict[str, Any]
 
@@ -64,7 +64,9 @@ class InstallHelp(Screen[None], AppType):
                             id=Strings.chezmoi_docs_link_id,
                         )
                         yield Button(
-                            NavBtn.exit_app.value, variant="primary", flat=True
+                            FlatBtn.exit_app.value,
+                            variant="primary",
+                            flat=True,
                         )
 
     def on_mount(self) -> None:

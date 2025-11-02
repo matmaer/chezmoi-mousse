@@ -5,7 +5,7 @@ from textual.app import ComposeResult
 from textual.containers import HorizontalGroup, Vertical, VerticalGroup
 from textual.widgets import Button
 
-from chezmoi_mousse import AreaName, NavBtn, OperateBtn, TabBtn, Tcss
+from chezmoi_mousse import AreaName, FlatBtn, OperateBtn, TabBtn, Tcss
 
 if TYPE_CHECKING:
     from .canvas_ids import CanvasIds
@@ -17,9 +17,9 @@ __all__ = ["NavButtonsVertical", "OperateBtnHorizontal", "TabBtnHorizontal"]
 class NavButtonsVertical(VerticalGroup):
 
     def __init__(
-        self, *, ids: "CanvasIds", buttons: tuple[NavBtn, ...]
+        self, *, ids: "CanvasIds", buttons: tuple[FlatBtn, ...]
     ) -> None:
-        self.buttons: tuple[NavBtn, ...] = buttons
+        self.buttons: tuple[FlatBtn, ...] = buttons
         self.ids: "CanvasIds" = ids
         super().__init__()
 

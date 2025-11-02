@@ -20,7 +20,7 @@ from textual.widgets import (
     Static,
 )
 
-from chezmoi_mousse import AppType, AreaName, NavBtn, Tcss, ViewName
+from chezmoi_mousse import AppType, AreaName, FlatBtn, Tcss, ViewName
 
 from .shared.button_groups import NavButtonsVertical
 from .shared.tabs_base import TabsBase
@@ -265,10 +265,10 @@ class ConfigTab(TabsBase, AppType):
         yield NavButtonsVertical(
             ids=self.ids,
             buttons=(
-                NavBtn.doctor,
-                NavBtn.cat_config,
-                NavBtn.ignored,
-                NavBtn.template_data,
+                FlatBtn.doctor,
+                FlatBtn.cat_config,
+                FlatBtn.ignored,
+                FlatBtn.template_data,
             ),
         )
         yield ConfigTabSwitcher(self.ids)
@@ -277,13 +277,13 @@ class ConfigTab(TabsBase, AppType):
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
         switcher = self.query_exactly_one(ConfigTabSwitcher)
-        if event.button.id == self.ids.button_id(btn=(NavBtn.doctor)):
+        if event.button.id == self.ids.button_id(btn=(FlatBtn.doctor)):
             switcher.current = self.ids.view_id(view=ViewName.doctor_view)
-        elif event.button.id == self.ids.button_id(btn=(NavBtn.cat_config)):
+        elif event.button.id == self.ids.button_id(btn=(FlatBtn.cat_config)):
             switcher.current = self.ids.view_id(view=ViewName.cat_config_view)
-        elif event.button.id == self.ids.button_id(btn=NavBtn.ignored):
+        elif event.button.id == self.ids.button_id(btn=FlatBtn.ignored):
             switcher.current = self.ids.view_id(view=ViewName.git_ignored_view)
-        elif event.button.id == self.ids.button_id(btn=NavBtn.template_data):
+        elif event.button.id == self.ids.button_id(btn=FlatBtn.template_data):
             switcher.current = self.ids.view_id(
                 view=ViewName.template_data_view
             )

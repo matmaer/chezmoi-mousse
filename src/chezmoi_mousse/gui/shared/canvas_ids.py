@@ -4,7 +4,7 @@ generated the id dynamically when subclassing or to query a widget."""
 from chezmoi_mousse import (
     AreaName,
     CanvasName,
-    NavBtn,
+    FlatBtn,
     OperateBtn,
     Switches,
     TabBtn,
@@ -36,7 +36,7 @@ class CanvasIds:
         self.tab_container_id = f"{canvas_name}_container_id"
 
     def button_id(
-        self, qid: str = "", *, btn: OperateBtn | TabBtn | NavBtn
+        self, qid: str = "", *, btn: OperateBtn | TabBtn | FlatBtn
     ) -> str:
         if isinstance(btn, OperateBtn):
             suffix = "_op_btn"

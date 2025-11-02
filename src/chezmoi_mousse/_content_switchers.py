@@ -1,9 +1,9 @@
 from enum import StrEnum
 
-__all__ = ["NavBtn", "TabBtn"]
+__all__ = ["FlatBtn", "TabBtn"]
 
 
-class NavBtn(StrEnum):
+class FlatBtn(StrEnum):
     add_help = "Add Help"
     apply_help = "Apply Help"
     cat_config = "Cat Config"
