@@ -18,7 +18,6 @@ from .shared.contents_view import ContentsView
 from .shared.diff_view import DiffView
 from .shared.git_log_view import GitLogView
 from .shared.operate_screen import OperateInfo
-from .shared.tabs_base import TabsBase
 from .shared.trees import TreeBase
 
 if TYPE_CHECKING:
@@ -95,7 +94,6 @@ class ChezmoiGUI(App[None]):
         ContentsView.destDir = dest_dir
         GitLogView.destDir = dest_dir
         DiffView.destDir = dest_dir
-        TabsBase.destDir = dest_dir
         TreeBase.destDir = dest_dir
         MainScreen.destDir = dest_dir
 

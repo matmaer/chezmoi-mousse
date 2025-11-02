@@ -7,7 +7,6 @@ from textual.widgets import Button, ContentSwitcher, Switch
 
 from chezmoi_mousse import (
     AreaName,
-    CanvasName,
     OperateBtn,
     Switches,
     TabBtn,
@@ -19,7 +18,6 @@ from chezmoi_mousse import (
 from .contents_view import ContentsView
 from .diff_view import DiffView
 from .git_log_view import GitLogView
-from .operate_msg import CurrentApplyNodeMsg, CurrentReAddNodeMsg
 from .trees import ExpandedTree, ListTree, ManagedTree
 
 if TYPE_CHECKING:
@@ -32,7 +30,12 @@ __all__ = ["TabsBase"]
 
 class TabsBase(Horizontal):
 
-    destDir: "Path | None" = None
+    def __init__(self, *, ids: "CanvasIds") -> None:
+        self.ids = ids
+        super().__init__(id=self.ids.tab_container_id)
+
+
+class ApplyReAddTabsBase(TabsBase):
 
     def __init__(self, *, ids: "CanvasIds") -> None:
         self.ids = ids
@@ -42,18 +45,13 @@ class TabsBase(Horizontal):
         self.expand_all_state = False
         self.git_log_view_qid = ids.view_id("#", view=ViewName.git_log_view)
         self.list_tab_btn = ids.button_id(btn=TabBtn.list)
-        self.operate_path_button_qid = (
-            self.ids.button_id("#", btn=OperateBtn.apply_path)
-            if ids.canvas_name == CanvasName.apply_tab
-            else self.ids.button_id("#", btn=OperateBtn.re_add_path)
-        )
         self.tree_tab_btn = ids.button_id(btn=TabBtn.tree)
-        self.tree_switcher_qid = self.ids.content_switcher_id(
+        self.tree_switcher_qid = ids.content_switcher_id(
             "#", area=AreaName.left
         )
-        super().__init__(id=self.ids.tab_container_id)
+        super().__init__(ids=self.ids)
 
-    def _update_view_path(self, path: Path) -> None:
+    def update_view_path(self, path: Path) -> None:
         contents_view = self.query_exactly_one(
             self.contents_view_qid, ContentsView
         )
@@ -67,53 +65,7 @@ class TabsBase(Horizontal):
         )
         git_log_view.path = path
 
-    @on(CurrentApplyNodeMsg)
-    def _update_apply_operate_buttons(
-        self, event: CurrentApplyNodeMsg
-    ) -> None:
-        self._update_view_path(event.node_data.path)
-        operate_path_button = self.query_one(
-            self.operate_path_button_qid, Button
-        )
-        operate_path_button.label = (
-            OperateBtn.apply_path.dir_label
-            if event.node_data.path_type == "dir"
-            else OperateBtn.apply_path.file_label
-        )
-        operate_path_button.tooltip = (
-            OperateBtn.apply_path.dir_tooltip
-            if event.node_data.path_type == "dir"
-            else OperateBtn.apply_path.file_tooltip
-        )
-        operate_path_button.disabled = (
-            True if event.node_data.status == "X" else False
-        )
-        self._update_other_buttons(event.node_data)
-
-    @on(CurrentReAddNodeMsg)
-    def _update_re_add_operate_buttons(
-        self, event: CurrentReAddNodeMsg
-    ) -> None:
-        self._update_view_path(event.node_data.path)
-        operate_path_button = self.query_one(
-            self.operate_path_button_qid, Button
-        )
-        operate_path_button.label = (
-            OperateBtn.re_add_path.dir_label
-            if event.node_data.path_type == "dir"
-            else OperateBtn.re_add_path.file_label
-        )
-        operate_path_button.tooltip = (
-            OperateBtn.re_add_path.dir_tooltip
-            if event.node_data.path_type == "dir"
-            else OperateBtn.re_add_path.file_tooltip
-        )
-        operate_path_button.disabled = (
-            True if event.node_data.status in "X " else False
-        )
-        self._update_other_buttons(event.node_data)
-
-    def _update_other_buttons(self, node_data: "NodeData") -> None:
+    def update_other_buttons(self, node_data: "NodeData") -> None:
         destroy_button = self.query_one(
             self.ids.button_id("#", btn=OperateBtn.destroy_path), Button
         )
@@ -176,7 +128,6 @@ class TabsBase(Horizontal):
 
     @on(Switch.Changed)
     def handle_tree_filter_switches(self, event: Switch.Changed) -> None:
-        event.stop()
         if event.switch.id == self.ids.switch_id(switch=Switches.unchanged):
             tree_pairs: list[
                 tuple[TreeName, type[ExpandedTree | ManagedTree | ListTree]]
