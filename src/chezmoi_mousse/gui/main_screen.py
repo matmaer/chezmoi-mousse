@@ -262,54 +262,6 @@ class MainScreen(Screen[None], AppType):
             ):
                 return True
             return False
-        elif action == "tcss_maximize":
-            active_tab = self.query_one(TabbedContent).active
-            if active_tab == CanvasName.apply_tab:
-                left_side = self.query_one(
-                    self.apply_tab_ids.tab_vertical_id("#", area=AreaName.left)
-                )
-                operation_buttons = self.query_one(
-                    self.apply_tab_ids.buttons_group_id(
-                        "#", group_name=ButtonGroupName.operate_btn_group
-                    )
-                )
-            elif active_tab == CanvasName.re_add_tab:
-                left_side = self.query_one(
-                    self.re_add_tab_ids.tab_vertical_id(
-                        "#", area=AreaName.left
-                    )
-                )
-                operation_buttons = self.query_one(
-                    self.re_add_tab_ids.buttons_group_id(
-                        "#", group_name=ButtonGroupName.operate_btn_group
-                    )
-                )
-            else:
-                left_side = self.query_one(
-                    self.add_tab_ids.tab_vertical_id("#", area=AreaName.left)
-                )
-                operation_buttons = self.query_one(
-                    self.add_tab_ids.buttons_group_id(
-                        "#", group_name=ButtonGroupName.operate_btn_group
-                    )
-                )
-            if left_side.has_class(Tcss.display_none.name):
-                left_side.remove_class(Tcss.display_none.name)
-                operation_buttons.remove_class(Tcss.display_none.name)
-            else:
-                left_side.add_class(Tcss.display_none.name)
-                operation_buttons.add_class(Tcss.display_none.name)
-
-            header = self.query_exactly_one(Header)
-            tabs = self.query_exactly_one(Tabs)
-            if header.has_class(Tcss.display_none.name):
-                header.remove_class(Tcss.display_none.name)
-                tabs.remove_class(Tcss.display_none.name)
-            else:
-                header.add_class(Tcss.display_none.name)
-                tabs.add_class(Tcss.display_none.name)
-
-            return True
         return True
 
     def _get_current_filter_slider(self) -> VerticalGroup:
@@ -357,6 +309,51 @@ class MainScreen(Screen[None], AppType):
         self._create_new_binding()
 
         self.refresh_bindings()
+
+    def action_tcss_maximize(self) -> None:
+        active_tab = self.query_one(TabbedContent).active
+        if active_tab == CanvasName.apply_tab:
+            left_side = self.query_one(
+                self.apply_tab_ids.tab_vertical_id("#", area=AreaName.left)
+            )
+            operation_buttons = self.query_one(
+                self.apply_tab_ids.buttons_group_id(
+                    "#", group_name=ButtonGroupName.operate_btn_group
+                )
+            )
+        elif active_tab == CanvasName.re_add_tab:
+            left_side = self.query_one(
+                self.re_add_tab_ids.tab_vertical_id("#", area=AreaName.left)
+            )
+            operation_buttons = self.query_one(
+                self.re_add_tab_ids.buttons_group_id(
+                    "#", group_name=ButtonGroupName.operate_btn_group
+                )
+            )
+        else:
+            left_side = self.query_one(
+                self.add_tab_ids.tab_vertical_id("#", area=AreaName.left)
+            )
+            operation_buttons = self.query_one(
+                self.add_tab_ids.buttons_group_id(
+                    "#", group_name=ButtonGroupName.operate_btn_group
+                )
+            )
+        if left_side.has_class(Tcss.display_none.name):
+            left_side.remove_class(Tcss.display_none.name)
+            operation_buttons.remove_class(Tcss.display_none.name)
+        else:
+            left_side.add_class(Tcss.display_none.name)
+            operation_buttons.add_class(Tcss.display_none.name)
+
+        header = self.query_exactly_one(Header)
+        tabs = self.query_exactly_one(Tabs)
+        if header.has_class(Tcss.display_none.name):
+            header.remove_class(Tcss.display_none.name)
+            tabs.remove_class(Tcss.display_none.name)
+        else:
+            header.add_class(Tcss.display_none.name)
+            tabs.add_class(Tcss.display_none.name)
 
     def on_theme_change(self, _: str, new_theme: str) -> None:
         self.app_log.success(f"Theme set to {new_theme}")
