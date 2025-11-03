@@ -189,14 +189,13 @@ SwitchSlider {
   transition: offset 380ms;
   width: auto;
 
-  & .switch_label {
+  & Label {
     color: $foreground-darken-1;
+  }
+  & HorizontalGroup {
     width: auto;
   }
-  &>.switch_horizontal {
-    width: auto;
-  }
-  &>.pad_bottom {
+  &> .pad_bottom {
     padding-bottom: 1;
   }
   &.-visible {
