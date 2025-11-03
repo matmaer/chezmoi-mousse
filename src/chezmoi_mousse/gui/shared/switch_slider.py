@@ -36,7 +36,7 @@ class SwitchSliderBase(VerticalGroup):
                 )
 
     def on_mount(self) -> None:
-        switch_groups = self.query(HorizontalGroup)
+        switch_groups = self.query_children(HorizontalGroup)
         switch_groups[-1].styles.padding = 0
 
 
