@@ -263,6 +263,23 @@ class ConfigTab(TabsBase, AppType):
         self.ids = ids
         super().__init__(ids=self.ids)
 
+        # Button IDs
+        self.cat_config_btn_id = self.ids.button_id(btn=(FlatBtn.cat_config))
+        self.doctor_btn_id = self.ids.button_id(btn=(FlatBtn.doctor))
+        self.ignored_btn_id = self.ids.button_id(btn=FlatBtn.ignored)
+        self.template_data_btn_id = self.ids.button_id(
+            btn=FlatBtn.template_data
+        )
+        # View IDs
+        self.cat_config_view_id = self.ids.view_id(
+            view=ViewName.cat_config_view
+        )
+        self.doctor_view_id = self.ids.view_id(view=ViewName.doctor_view)
+        self.ignored_view_id = self.ids.view_id(view=ViewName.git_ignored_view)
+        self.template_data_view_id = self.ids.view_id(
+            view=ViewName.template_data_view
+        )
+
     def compose(self) -> ComposeResult:
         with Vertical(
             id=self.ids.tab_vertical_id(name=ContainerName.left_container),
@@ -283,13 +300,11 @@ class ConfigTab(TabsBase, AppType):
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
         switcher = self.query_exactly_one(ConfigTabSwitcher)
-        if event.button.id == self.ids.button_id(btn=(FlatBtn.doctor)):
-            switcher.current = self.ids.view_id(view=ViewName.doctor_view)
-        elif event.button.id == self.ids.button_id(btn=(FlatBtn.cat_config)):
-            switcher.current = self.ids.view_id(view=ViewName.cat_config_view)
-        elif event.button.id == self.ids.button_id(btn=FlatBtn.ignored):
-            switcher.current = self.ids.view_id(view=ViewName.git_ignored_view)
-        elif event.button.id == self.ids.button_id(btn=FlatBtn.template_data):
-            switcher.current = self.ids.view_id(
-                view=ViewName.template_data_view
-            )
+        if event.button.id == self.doctor_btn_id:
+            switcher.current = self.doctor_view_id
+        elif event.button.id == self.cat_config_btn_id:
+            switcher.current = self.cat_config_view_id
+        elif event.button.id == self.ignored_btn_id:
+            switcher.current = self.ignored_view_id
+        elif event.button.id == self.template_data_btn_id:
+            switcher.current = self.template_data_view_id
