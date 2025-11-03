@@ -231,7 +231,9 @@ class ConfigTabSwitcher(ContentSwitcher):
         pw_mgr_cmds: list[str] = doctor_table.populate_doctor_data(
             doctor_data=self.doctor_results.std_out.splitlines()
         )
-        doctor_list_view = self.query_exactly_one(DoctorListView)
+        doctor_list_view = self.query_one(
+            self.ids.listview_qid, DoctorListView
+        )
         doctor_list_view.populate_listview(pw_mgr_cmds)
 
     def watch_cat_config_results(self):

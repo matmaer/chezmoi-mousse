@@ -21,6 +21,7 @@ class CanvasIds:
         "datatable_id",
         "datatable_qid",
         "listview_id",
+        "listview_qid",
         "tab_container_id",
     )
 
@@ -29,6 +30,7 @@ class CanvasIds:
         self.datatable_id = f"{canvas_name}_datatable"
         self.datatable_qid = f"#{canvas_name}_datatable"
         self.listview_id = f"{canvas_name}_listview"
+        self.listview_qid = f"#{canvas_name}_listview"
         self.tab_container_id = f"{canvas_name}_container_id"
 
     def button_id(
