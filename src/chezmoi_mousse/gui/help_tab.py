@@ -87,6 +87,28 @@ class HelpTab(TabsBase):
         self.ids = ids
         super().__init__(ids=self.ids)
 
+        # Content Switcher IDs
+        self.content_switcher_id = self.ids.content_switcher_id(
+            name=ContainerName.help_switcher
+        )
+        self.content_switcher_qid = self.ids.content_switcher_id(
+            "#", name=ContainerName.help_switcher
+        )
+        # View IDs
+        self.apply_help_view_id = self.ids.view_id(
+            view=ViewName.apply_help_view
+        )
+        self.re_add_help_view_id = self.ids.view_id(
+            view=ViewName.re_add_help_view
+        )
+        self.add_help_view_id = self.ids.view_id(view=ViewName.add_help_view)
+        self.diagram_view_id = self.ids.view_id(view=ViewName.diagram_view)
+        # Button IDs
+        self.apply_help_btn_id = self.ids.button_id(btn=FlatBtn.apply_help)
+        self.re_add_help_btn_id = self.ids.button_id(btn=FlatBtn.re_add_help)
+        self.add_help_btn_id = self.ids.button_id(btn=FlatBtn.add_help)
+        self.diagram_btn_id = self.ids.button_id(btn=FlatBtn.diagram)
+
     def compose(self) -> ComposeResult:
         with Vertical(
             id=self.ids.tab_vertical_id(name=ContainerName.left_container),
@@ -106,12 +128,12 @@ class HelpTab(TabsBase):
     @on(Button.Pressed, Tcss.nav_button.value)
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
-        switcher = self.query_exactly_one(HelpTabSwitcher)
-        if event.button.id == self.ids.button_id(btn=FlatBtn.apply_help):
-            switcher.current = self.ids.view_id(view=ViewName.apply_help_view)
-        elif event.button.id == self.ids.button_id(btn=FlatBtn.re_add_help):
-            switcher.current = self.ids.view_id(view=ViewName.re_add_help_view)
-        elif event.button.id == self.ids.button_id(btn=FlatBtn.add_help):
-            switcher.current = self.ids.view_id(view=ViewName.add_help_view)
-        elif event.button.id == self.ids.button_id(btn=FlatBtn.diagram):
-            switcher.current = self.ids.view_id(view=ViewName.diagram_view)
+        switcher = self.query_one(self.content_switcher_qid, HelpTabSwitcher)
+        if event.button.id == self.apply_help_btn_id:
+            switcher.current = self.apply_help_view_id
+        elif event.button.id == self.re_add_help_btn_id:
+            switcher.current = self.re_add_help_view_id
+        elif event.button.id == self.add_help_btn_id:
+            switcher.current = self.add_help_view_id
+        elif event.button.id == self.diagram_btn_id:
+            switcher.current = self.diagram_view_id

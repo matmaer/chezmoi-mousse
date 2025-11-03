@@ -268,6 +268,13 @@ class ConfigTab(TabsBase, AppType):
         self.ids = ids
         super().__init__(ids=self.ids)
 
+        self.content_switcher_id = self.ids.content_switcher_id(
+            name=ContainerName.config_switcher
+        )
+        self.content_switcher_qid = self.ids.content_switcher_id(
+            "#", name=ContainerName.config_switcher
+        )
+
         # Button IDs
         self.cat_config_btn_id = self.ids.button_id(btn=(FlatBtn.cat_config))
         self.doctor_btn_id = self.ids.button_id(btn=(FlatBtn.doctor))
@@ -304,7 +311,7 @@ class ConfigTab(TabsBase, AppType):
     @on(Button.Pressed, Tcss.nav_button.value)
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
-        switcher = self.query_exactly_one(ConfigTabSwitcher)
+        switcher = self.query_one(self.content_switcher_qid, ContentSwitcher)
         if event.button.id == self.doctor_btn_id:
             switcher.current = self.doctor_view_id
         elif event.button.id == self.cat_config_btn_id:
