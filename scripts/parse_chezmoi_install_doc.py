@@ -6,7 +6,7 @@ from enum import StrEnum
 from pathlib import Path
 from typing import TypedDict
 
-OUTPUT_DIR = Path("src", "chezmoi_mousse", "gui", "data")
+OUTPUT_DIR = Path("src", "chezmoi_mousse", "gui", "screens")
 OUTPUT_FILE = Path.joinpath(OUTPUT_DIR, "chezmoi_install_commands.json")
 
 
