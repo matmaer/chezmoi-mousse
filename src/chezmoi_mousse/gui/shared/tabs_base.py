@@ -38,9 +38,9 @@ class TabsBase(Horizontal):
 class ApplyReAddTabsBase(TabsBase):
 
     def __init__(self, *, ids: "CanvasIds") -> None:
-        super().__init__(ids=ids)
-
         self.ids = ids
+        super().__init__(ids=self.ids)
+
         self.expand_all_state = False
         self.tree_switcher_qid = ids.content_switcher_id(
             "#", name=ContainerName.tree_switcher
