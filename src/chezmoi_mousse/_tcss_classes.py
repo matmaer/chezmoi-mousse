@@ -23,6 +23,7 @@ class Tcss(StrEnum):
     screen_base = ".screen_base"
     section_label = ".section_label"
     single_button_vertical = ".single_button_vertical"
+    switch_slider = ".switch_slider"
     tab_button = ".tab_button"
     tab_left_vertical = ".tab_left_vertical"
     tree_widget = ".tree_widget"

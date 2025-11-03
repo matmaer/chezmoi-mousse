@@ -131,6 +131,34 @@
   }
 }
 
+.switch_slider {
+  background-tint: $surface;
+  background: $surface;
+  border: round $primary;
+  border-left: none;
+  dock: bottom;
+  layer: switches;
+  /* make sure horizontal scrollbar and a line from the layer below is visible.*/
+  margin-bottom: 3;
+  offset-x: 0%;
+  padding-right: 1;
+  transition: offset 380ms;
+  width: auto;
+
+  & Label {
+    color: $foreground-darken-1;
+  }
+  & HorizontalGroup {
+    width: auto;
+  }
+  &> .pad_bottom {
+    padding-bottom: 1;
+  }
+  &.-visible {
+    offset-x: -100%;
+  }
+}
+
 /**********************/
 /* Type Selector tcss */
 /**********************/
@@ -172,34 +200,6 @@ OperateBtnHorizontal {
     &:focus {
       text-style: none;
     }
-  }
-}
-
-SwitchSlider {
-  background-tint: $surface;
-  background: $surface;
-  border: round $primary;
-  border-left: none;
-  dock: bottom;
-  layer: switches;
-  /* make sure horizontal scrollbar and a line from the layer below is visible.*/
-  margin-bottom: 3;
-  offset-x: 0%;
-  padding-right: 1;
-  transition: offset 380ms;
-  width: auto;
-
-  & Label {
-    color: $foreground-darken-1;
-  }
-  & HorizontalGroup {
-    width: auto;
-  }
-  &> .pad_bottom {
-    padding-bottom: 1;
-  }
-  &.-visible {
-    offset-x: -100%;
   }
 }
 

@@ -4,11 +4,11 @@ from textual import on
 from textual.app import ComposeResult
 from textual.widgets import Button
 
-from chezmoi_mousse import OperateBtn, Switches
+from chezmoi_mousse import OperateBtn
 
 from .shared.button_groups import OperateBtnHorizontal
 from .shared.operate_msg import CurrentReAddNodeMsg
-from .shared.switch_slider import SwitchSlider
+from .shared.switch_slider import ReAddSwitchSlider
 from .shared.switchers import TreeSwitcher, ViewSwitcher
 from .shared.tabs_base import ApplyReAddTabsBase
 
@@ -38,9 +38,7 @@ class ReAddTab(ApplyReAddTabsBase):
                 OperateBtn.destroy_path,
             ),
         )
-        yield SwitchSlider(
-            ids=self.ids, switches=(Switches.unchanged, Switches.expand_all)
-        )
+        yield ReAddSwitchSlider(ids=self.ids)
 
     @on(CurrentReAddNodeMsg)
     def update_re_add_operate_buttons(

@@ -9,10 +9,10 @@ from chezmoi_mousse import ContainerName, Switches, Tcss
 if TYPE_CHECKING:
     from .canvas_ids import CanvasIds
 
-__all__ = ["SwitchSlider"]
+__all__ = ["AddSwitchSlider", "ApplySwitchSlider", "ReAddSwitchSlider"]
 
 
-class SwitchSlider(VerticalGroup):
+class SwitchSliderBase(VerticalGroup):
 
     def __init__(
         self, *, ids: "CanvasIds", switches: tuple[Switches, Switches]
@@ -21,7 +21,8 @@ class SwitchSlider(VerticalGroup):
         self.switch_slider_id = ids.switch_slider_id
         self.switches = switches
         super().__init__(
-            id=ids.switch_slider_id(name=ContainerName.switch_slider)
+            id=ids.switch_slider_id(name=ContainerName.switch_slider),
+            classes=Tcss.switch_slider.name,
         )
 
     def compose(self) -> ComposeResult:
@@ -40,3 +41,27 @@ class SwitchSlider(VerticalGroup):
             self.ids.switch_horizontal_id("#", switch=self.switches[0]),
             HorizontalGroup,
         ).add_class(Tcss.pad_bottom.name)
+
+
+class AddSwitchSlider(SwitchSliderBase):
+    def __init__(self, *, ids: "CanvasIds") -> None:
+        self.ids = ids
+        super().__init__(
+            ids=self.ids, switches=(Switches.unmanaged_dirs, Switches.unwanted)
+        )
+
+
+class ApplySwitchSlider(SwitchSliderBase):
+    def __init__(self, *, ids: "CanvasIds") -> None:
+        self.ids = ids
+        super().__init__(
+            ids=self.ids, switches=(Switches.unchanged, Switches.expand_all)
+        )
+
+
+class ReAddSwitchSlider(SwitchSliderBase):
+    def __init__(self, *, ids: "CanvasIds") -> None:
+        self.ids = ids
+        super().__init__(
+            ids=self.ids, switches=(Switches.unchanged, Switches.expand_all)
+        )

@@ -24,7 +24,7 @@ from chezmoi_mousse import (
 from .shared.button_groups import OperateBtnHorizontal
 from .shared.contents_view import ContentsView
 from .shared.operate_msg import CurrentAddNodeMsg
-from .shared.switch_slider import SwitchSlider
+from .shared.switch_slider import AddSwitchSlider
 from .shared.tabs_base import TabsBase
 
 if TYPE_CHECKING:
@@ -259,9 +259,7 @@ class AddTab(TabsBase):
         yield OperateBtnHorizontal(
             ids=self.ids, buttons=(OperateBtn.add_file, OperateBtn.add_dir)
         )
-        yield SwitchSlider(
-            ids=self.ids, switches=(Switches.unmanaged_dirs, Switches.unwanted)
-        )
+        yield AddSwitchSlider(ids=self.ids)
 
     def update_buttons(self, is_dir: bool) -> None:
         add_file_button = self.query_one(
