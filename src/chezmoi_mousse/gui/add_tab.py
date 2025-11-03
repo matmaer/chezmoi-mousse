@@ -244,6 +244,15 @@ class AddTab(TabsBase):
         self.ids = ids
         super().__init__(ids=self.ids)
 
+        self.add_file_btn_qid = self.ids.button_id(
+            "#", btn=OperateBtn.add_file
+        )
+        self.add_dir_btn_qid = self.ids.button_id("#", btn=OperateBtn.add_dir)
+        self.add_tree_qid = self.ids.tree_id("#", tree=TreeName.add_tree)
+        self.contents_view_qid = self.ids.view_id(
+            "#", view=ViewName.contents_view
+        )
+
     def compose(self) -> ComposeResult:
         with Vertical(
             id=self.ids.tab_vertical_id(name=ContainerName.left_container),
@@ -262,12 +271,8 @@ class AddTab(TabsBase):
         yield AddSwitchSlider(ids=self.ids)
 
     def update_buttons(self, is_dir: bool) -> None:
-        add_file_button = self.query_one(
-            self.ids.button_id("#", btn=OperateBtn.add_file), Button
-        )
-        add_dir_button = self.query_one(
-            self.ids.button_id("#", btn=OperateBtn.add_dir), Button
-        )
+        add_file_button = self.query_one(self.add_file_btn_qid, Button)
+        add_dir_button = self.query_one(self.add_dir_btn_qid, Button)
         if is_dir is True:
             add_file_button.disabled = True
             add_file_button.tooltip = OperateBtn.add_file.disabled_tooltip
@@ -294,9 +299,7 @@ class AddTab(TabsBase):
     ) -> None:
         event.stop()
         assert event.node.data is not None
-        contents_view = self.query_one(
-            self.ids.view_id("#", view=ViewName.contents_view), ContentsView
-        )
+        contents_view = self.query_one(self.contents_view_qid, ContentsView)
         contents_view.path = event.node.data.path
         contents_view.border_title = f" {event.node.data.path} "
 
@@ -314,9 +317,7 @@ class AddTab(TabsBase):
     @on(Switch.Changed)
     def handle_filter_switches(self, event: Switch.Changed) -> None:
         event.stop()
-        tree = self.query_one(
-            self.ids.tree_id("#", tree=TreeName.add_tree), FilteredDirTree
-        )
+        tree = self.query_one(self.add_tree_qid, FilteredDirTree)
         if event.switch.id == self.ids.switch_id(
             switch=Switches.unmanaged_dirs
         ):
