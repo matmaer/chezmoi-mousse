@@ -20,14 +20,7 @@ from textual.widgets import (
     Static,
 )
 
-from chezmoi_mousse import (
-    AppType,
-    AreaName,
-    FlatBtn,
-    SwitcherName,
-    Tcss,
-    ViewName,
-)
+from chezmoi_mousse import AppType, ContainerName, FlatBtn, Tcss, ViewName
 
 from .shared.button_groups import NavButtonsVertical
 from .shared.tabs_base import TabsBase
@@ -192,7 +185,7 @@ class ConfigTabSwitcher(ContentSwitcher):
         self.ids = ids
         super().__init__(
             id=self.ids.content_switcher_id(
-                switcher_name=SwitcherName.config_switcher
+                name=ContainerName.config_switcher
             ),
             initial=self.ids.view_id(view=ViewName.doctor_view),
             classes=Tcss.nav_content_switcher.name,
@@ -272,7 +265,7 @@ class ConfigTab(TabsBase, AppType):
 
     def compose(self) -> ComposeResult:
         with Vertical(
-            id=self.ids.tab_vertical_id(area=AreaName.left),
+            id=self.ids.tab_vertical_id(name=ContainerName.left_container),
             classes=Tcss.tab_left_vertical.name,
         ):
             yield NavButtonsVertical(

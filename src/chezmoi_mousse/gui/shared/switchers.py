@@ -5,14 +5,7 @@ from textual.app import ComposeResult
 from textual.containers import Vertical
 from textual.widgets import Button, ContentSwitcher
 
-from chezmoi_mousse import (
-    AreaName,
-    SwitcherName,
-    TabBtn,
-    Tcss,
-    TreeName,
-    ViewName,
-)
+from chezmoi_mousse import ContainerName, TabBtn, Tcss, TreeName, ViewName
 from chezmoi_mousse.gui.shared.button_groups import TabBtnHorizontal
 
 from .contents_view import ContentsView
@@ -31,7 +24,7 @@ class TreeSwitcher(Vertical):
     def __init__(self, ids: "CanvasIds"):
         self.ids = ids
         super().__init__(
-            id=self.ids.tab_vertical_id(area=AreaName.left),
+            id=self.ids.tab_vertical_id(name=ContainerName.left_container),
             classes=Tcss.tab_left_vertical.name,
         )
 
@@ -40,9 +33,7 @@ class TreeSwitcher(Vertical):
             ids=self.ids, buttons=(TabBtn.tree, TabBtn.list)
         )
         with ContentSwitcher(
-            id=self.ids.content_switcher_id(
-                switcher_name=SwitcherName.tree_switcher
-            ),
+            id=self.ids.content_switcher_id(name=ContainerName.tree_switcher),
             initial=self.ids.tree_id(tree=TreeName.managed_tree),
             classes=Tcss.content_switcher_left.name,
         ):
@@ -58,13 +49,15 @@ class ViewSwitcher(Vertical):
         self.diff_tab_btn = ids.button_id(btn=TabBtn.diff)
         self.git_log_tab_btn = ids.button_id(btn=TabBtn.git_log_path)
         self.view_switcher_id = self.ids.content_switcher_id(
-            switcher_name=SwitcherName.view_switcher
+            name=ContainerName.view_switcher
         )
         self.view_switcher_qid = self.ids.content_switcher_id(
-            "#", switcher_name=SwitcherName.view_switcher
+            "#", name=ContainerName.view_switcher
         )
         self.reverse = diff_reverse
-        super().__init__(id=self.ids.tab_vertical_id(area=AreaName.right))
+        super().__init__(
+            id=self.ids.tab_vertical_id(name=ContainerName.right_container)
+        )
 
     def compose(self) -> ComposeResult:
         yield TabBtnHorizontal(

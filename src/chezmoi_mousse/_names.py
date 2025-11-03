@@ -6,17 +6,7 @@ Used for creating id's, and checking context conditions.
 
 from enum import StrEnum, auto
 
-__all__ = ["AreaName", "ButtonGroupName", "CanvasName", "TreeName", "ViewName"]
-
-
-class AreaName(StrEnum):
-    left = auto()
-    right = auto()
-
-
-class ButtonGroupName(StrEnum):
-    operate_btn_group = auto()
-    switcher_btn_group = auto()
+__all__ = ["CanvasName", "ContainerName", "TreeName", "ViewName"]
 
 
 class CanvasName(StrEnum):
@@ -31,6 +21,19 @@ class CanvasName(StrEnum):
     logs_tab = auto()
     operate_screen = auto()
     re_add_tab = auto()
+
+
+class ContainerName(StrEnum):
+    config_switcher = auto()
+    help_switcher = auto()
+    left_container = auto()
+    logs_switcher = auto()
+    operate_btn_group = auto()
+    right_container = auto()
+    switcher_btn_group = auto()
+    switch_slider = auto()
+    tree_switcher = auto()
+    view_switcher = auto()
 
 
 class TreeName(StrEnum):

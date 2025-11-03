@@ -2,12 +2,10 @@
 generated the id dynamically when subclassing or to query a widget."""
 
 from chezmoi_mousse import (
-    AreaName,
-    ButtonGroupName,
     CanvasName,
+    ContainerName,
     FlatBtn,
     OperateBtn,
-    SwitcherName,
     Switches,
     TabBtn,
     TreeName,
@@ -23,18 +21,12 @@ class CanvasIds:
         "tab_container_id",
         "datatable_id",
         "listview_id",
-        "switches_slider_id",
-        "switches_slider_qid",
     )
 
     def __init__(self, canvas_name: CanvasName) -> None:
         self.canvas_name: str = canvas_name.name
-
-        # id's for which there's only one widget for each self.canvas_name
         self.datatable_id = f"{canvas_name}_datatable"
         self.listview_id = f"{canvas_name}_listview"
-        self.switches_slider_id = f"{canvas_name}_switches_slider"
-        self.switches_slider_qid = f"#{self.switches_slider_id}"
         self.tab_container_id = f"{canvas_name}_container_id"
 
     def button_id(
@@ -49,15 +41,16 @@ class CanvasIds:
             suffix = "_nav_btn"
         return f"{qid}{self.canvas_name}_{btn.name}{suffix}"
 
-    def buttons_group_id(
-        self, qid: str = "", *, group_name: ButtonGroupName
-    ) -> str:
-        return f"{qid}{self.canvas_name}_{group_name}"
+    def buttons_group_id(self, qid: str = "", *, name: ContainerName) -> str:
+        return f"{qid}{self.canvas_name}_{name.name}"
 
     def content_switcher_id(
-        self, qid: str = "", *, switcher_name: SwitcherName
+        self, qid: str = "", *, name: ContainerName
     ) -> str:
-        return f"{qid}{self.canvas_name}_{switcher_name.name}"
+        return f"{qid}{self.canvas_name}_{name.name}"
+
+    def switch_slider_id(self, qid: str = "", *, name: ContainerName) -> str:
+        return f"{qid}{self.canvas_name}_{name.name}"
 
     def switch_horizontal_id(self, qid: str = "", *, switch: Switches) -> str:
         return (
@@ -67,8 +60,8 @@ class CanvasIds:
     def switch_id(self, qid: str = "", *, switch: Switches) -> str:
         return f"{qid}{self.canvas_name}_{switch.switch_name}_switch"
 
-    def tab_vertical_id(self, qid: str = "", *, area: AreaName) -> str:
-        return f"{qid}{self.canvas_name}_{area}_vertical"
+    def tab_vertical_id(self, qid: str = "", *, name: ContainerName) -> str:
+        return f"{qid}{self.canvas_name}_{name.name}_vertical"
 
     def tree_id(self, qid: str = "", *, tree: TreeName) -> str:
         return f"{qid}{self.canvas_name}_{tree}"

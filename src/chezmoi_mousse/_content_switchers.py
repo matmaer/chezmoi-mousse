@@ -1,14 +1,6 @@
-from enum import StrEnum, auto
+from enum import StrEnum
 
-__all__ = ["SwitcherName", "FlatBtn", "TabBtn"]
-
-
-class SwitcherName(StrEnum):
-    config_switcher = auto()
-    help_switcher = auto()
-    logs_switcher = auto()
-    tree_switcher = auto()
-    view_switcher = auto()
+__all__ = ["FlatBtn", "TabBtn"]
 
 
 class FlatBtn(StrEnum):

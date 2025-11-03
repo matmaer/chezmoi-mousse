@@ -5,7 +5,7 @@ from textual.app import ComposeResult
 from textual.containers import HorizontalGroup, Vertical, VerticalGroup
 from textual.widgets import Button
 
-from chezmoi_mousse import ButtonGroupName, FlatBtn, OperateBtn, TabBtn, Tcss
+from chezmoi_mousse import ContainerName, FlatBtn, OperateBtn, TabBtn, Tcss
 
 if TYPE_CHECKING:
     from .canvas_ids import CanvasIds
@@ -39,9 +39,7 @@ class OperateBtnHorizontal(HorizontalGroup):
         self.ids = ids
         self.buttons = buttons
         super().__init__(
-            id=self.ids.buttons_group_id(
-                group_name=ButtonGroupName.operate_btn_group
-            )
+            id=self.ids.buttons_group_id(name=ContainerName.operate_btn_group)
         )
 
     def compose(self) -> ComposeResult:
@@ -61,9 +59,7 @@ class TabBtnHorizontal(HorizontalGroup):
         self.ids = ids
         self.buttons = buttons
         super().__init__(
-            id=self.ids.buttons_group_id(
-                group_name=ButtonGroupName.switcher_btn_group
-            )
+            id=self.ids.buttons_group_id(name=ContainerName.switcher_btn_group)
         )
 
     def compose(self) -> ComposeResult:

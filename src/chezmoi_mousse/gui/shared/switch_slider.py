@@ -4,7 +4,7 @@ from textual.app import ComposeResult
 from textual.containers import HorizontalGroup, VerticalGroup
 from textual.widgets import Label, Switch
 
-from chezmoi_mousse import Switches, Tcss
+from chezmoi_mousse import ContainerName, Switches, Tcss
 
 if TYPE_CHECKING:
     from .canvas_ids import CanvasIds
@@ -17,9 +17,12 @@ class SwitchSlider(VerticalGroup):
     def __init__(
         self, *, ids: "CanvasIds", switches: tuple[Switches, Switches]
     ) -> None:
-        self.switches = switches
         self.ids = ids
-        super().__init__(id=self.ids.switches_slider_id)
+        self.switch_slider_id = ids.switch_slider_id
+        self.switches = switches
+        super().__init__(
+            id=ids.switch_slider_id(name=ContainerName.switch_slider)
+        )
 
     def compose(self) -> ComposeResult:
         for switch_data in self.switches:

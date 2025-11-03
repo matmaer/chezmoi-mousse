@@ -6,8 +6,8 @@ from textual.containers import Horizontal
 from textual.widgets import Button, ContentSwitcher, Switch
 
 from chezmoi_mousse import (
+    ContainerName,
     OperateBtn,
-    SwitcherName,
     Switches,
     TabBtn,
     Tcss,
@@ -47,7 +47,7 @@ class ApplyReAddTabsBase(TabsBase):
         self.list_tab_btn = ids.button_id(btn=TabBtn.list)
         self.tree_tab_btn = ids.button_id(btn=TabBtn.tree)
         self.tree_switcher_qid = ids.content_switcher_id(
-            "#", switcher_name=SwitcherName.tree_switcher
+            "#", name=ContainerName.tree_switcher
         )
         super().__init__(ids=self.ids)
 

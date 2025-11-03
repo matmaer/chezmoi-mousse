@@ -19,13 +19,11 @@ from textual.widgets import (
 
 from chezmoi_mousse import (
     AppType,
-    AreaName,
-    ButtonGroupName,
     CanvasName,
     Chars,
+    ContainerName,
     OperateBtn,
     OperateScreenData,
-    SwitcherName,
     Tcss,
     TreeName,
     ViewName,
@@ -234,7 +232,7 @@ class MainScreen(Screen[None], AppType):
     def update_config_tab_outputs(self, data: "SplashData") -> None:
         config_tab_switcher = self.screen.query_one(
             self.config_tab_ids.content_switcher_id(
-                "#", switcher_name=SwitcherName.config_switcher
+                "#", name=ContainerName.config_switcher
             ),
             ConfigTabSwitcher,
         )
@@ -269,15 +267,24 @@ class MainScreen(Screen[None], AppType):
 
         if active_tab == CanvasName.apply_tab:
             return self.query_one(
-                self.apply_tab_ids.switches_slider_qid, VerticalGroup
+                self.apply_tab_ids.switch_slider_id(
+                    "#", name=ContainerName.switch_slider
+                ),
+                VerticalGroup,
             )
         elif active_tab == CanvasName.re_add_tab:
             return self.query_one(
-                self.re_add_tab_ids.switches_slider_qid, VerticalGroup
+                self.re_add_tab_ids.switch_slider_id(
+                    "#", name=ContainerName.switch_slider
+                ),
+                VerticalGroup,
             )
         else:
             return self.query_one(
-                self.add_tab_ids.switches_slider_qid, VerticalGroup
+                self.add_tab_ids.switch_slider_id(
+                    "#", name=ContainerName.switch_slider
+                ),
+                VerticalGroup,
             )
 
     def _create_new_binding(self) -> None:
@@ -324,50 +331,60 @@ class MainScreen(Screen[None], AppType):
 
         if active_tab == CanvasName.apply_tab:
             left_side = self.query_one(
-                self.apply_tab_ids.tab_vertical_id("#", area=AreaName.left),
+                self.apply_tab_ids.tab_vertical_id(
+                    "#", name=ContainerName.left_container
+                ),
                 Vertical,
             )
             view_switcher_buttons = self.query_one(
                 self.apply_tab_ids.buttons_group_id(
-                    "#", group_name=ButtonGroupName.switcher_btn_group
+                    "#", name=ContainerName.switcher_btn_group
                 ),
                 HorizontalGroup,
             )
         elif active_tab == CanvasName.re_add_tab:
             left_side = self.query_one(
-                self.re_add_tab_ids.tab_vertical_id("#", area=AreaName.left),
+                self.re_add_tab_ids.tab_vertical_id(
+                    "#", name=ContainerName.left_container
+                ),
                 Vertical,
             )
             operation_buttons = self.query_one(
                 self.re_add_tab_ids.buttons_group_id(
-                    "#", group_name=ButtonGroupName.operate_btn_group
+                    "#", name=ContainerName.operate_btn_group
                 )
             )
         elif active_tab == CanvasName.add_tab:
             left_side = self.query_one(
-                self.add_tab_ids.tab_vertical_id("#", area=AreaName.left),
+                self.add_tab_ids.tab_vertical_id(
+                    "#", name=ContainerName.left_container
+                ),
                 Vertical,
             )
             operation_buttons = self.query_one(
                 self.add_tab_ids.buttons_group_id(
-                    "#", group_name=ButtonGroupName.operate_btn_group
+                    "#", name=ContainerName.operate_btn_group
                 )
             )
         elif active_tab == CanvasName.logs_tab:
             view_switcher_buttons = self.query_one(
                 self.logs_tab_ids.buttons_group_id(
-                    "#", group_name=ButtonGroupName.switcher_btn_group
+                    "#", name=ContainerName.switcher_btn_group
                 ),
                 HorizontalGroup,
             )
         elif active_tab == CanvasName.config_tab:
             left_side = self.query_one(
-                self.config_tab_ids.tab_vertical_id("#", area=AreaName.left),
+                self.config_tab_ids.tab_vertical_id(
+                    "#", name=ContainerName.left_container
+                ),
                 Vertical,
             )
         elif active_tab == CanvasName.help_tab:
             left_side = self.query_one(
-                self.help_tab_ids.tab_vertical_id("#", area=AreaName.left),
+                self.help_tab_ids.tab_vertical_id(
+                    "#", name=ContainerName.left_container
+                ),
                 Vertical,
             )
 
