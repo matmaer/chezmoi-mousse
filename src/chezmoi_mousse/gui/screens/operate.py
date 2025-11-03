@@ -134,9 +134,17 @@ class OperateScreen(Screen[OperateScreenData], AppType):
 
     def __init__(self, operate_data: "OperateScreenData") -> None:
         self.ids = CanvasIds(CanvasName.operate_screen)
-        self.operate_data = operate_data
         super().__init__(
             id=self.ids.canvas_name, classes=Tcss.operate_screen.name
+        )
+        self.operate_data = operate_data
+        self.exit_btn_id = self.ids.button_id(btn=OperateBtn.exit_button)
+        self.exit_btn_qid = self.ids.button_id("#", btn=OperateBtn.exit_button)
+        self.operate_btn_qid = self.ids.button_id(
+            "#", btn=self.operate_data.operate_btn
+        )
+        self.wriet_output_log_view_qid = self.ids.view_id(
+            "#", view=ViewName.write_output_log_view
         )
 
     def compose(self) -> ComposeResult:
@@ -200,20 +208,15 @@ class OperateScreen(Screen[OperateScreenData], AppType):
             diff_view.path = self.operate_data.node_data.path
 
         screen_output_log = self.query_one(
-            self.ids.view_id("#", view=ViewName.write_output_log_view),
-            OutputLog,
+            self.wriet_output_log_view_qid, OutputLog
         )
         screen_output_log.auto_scroll = False
 
     def configure_buttons(self) -> None:
-        operate_button = self.query_one(
-            self.ids.button_id("#", btn=self.operate_data.operate_btn), Button
-        )
+        operate_button = self.query_one(self.operate_btn_qid, Button)
         operate_button.disabled = False
         operate_button.tooltip = None
-        exit_button = self.query_one(
-            self.ids.button_id("#", btn=OperateBtn.exit_button), Button
-        )
+        exit_button = self.query_one(self.exit_btn_qid, Button)
         exit_button.disabled = False
         exit_button.tooltip = None
 
@@ -287,28 +290,23 @@ class OperateScreen(Screen[OperateScreenData], AppType):
         )
         post_operate_container.display = True
 
-        operate_button = self.query_one(
-            self.ids.button_id("#", btn=self.operate_data.operate_btn), Button
-        )
+        operate_button = self.query_one(self.operate_btn_qid, Button)
         operate_button.disabled = True
         operate_button.tooltip = None
 
-        operate_exit_button = self.query_one(
-            self.ids.button_id("#", btn=OperateBtn.exit_button), Button
-        )
+        operate_exit_button = self.query_one(self.exit_btn_qid, Button)
         operate_exit_button.label = OperateBtn.exit_button.close_button_label
 
         if self.operate_data.command_result is not None:
             screen_output_log = self.query_one(
-                self.ids.view_id("#", view=ViewName.write_output_log_view),
-                OutputLog,
+                self.wriet_output_log_view_qid, OutputLog
             )
             screen_output_log.log_cmd_results(self.operate_data.command_result)
 
     @on(Button.Pressed, Tcss.operate_button.value)
     def handle_operate_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
-        if event.button.id == self.ids.button_id(btn=OperateBtn.exit_button):
+        if event.button.id == self.exit_btn_id:
             self.dismiss(self.operate_data)
         else:
             self.run_operate_command()
