@@ -22,10 +22,11 @@ class ReAddTab(ApplyReAddTabsBase):
 
     def __init__(self, ids: "CanvasIds") -> None:
         self.ids = ids
+        super().__init__(ids=self.ids)
+
         self.operate_path_button_qid = self.ids.button_id(
             "#", btn=OperateBtn.re_add_path
         )
-        super().__init__(ids=self.ids)
 
     def compose(self) -> ComposeResult:
         yield TreeSwitcher(ids=self.ids)
