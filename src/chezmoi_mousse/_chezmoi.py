@@ -34,6 +34,7 @@ class GlobalCmd(Enum):
     ]
     live_run = ["chezmoi"] + default_args
     dry_run = live_run + ["--dry-run"]
+    version = live_run + ["--version"]
 
 
 class VerbArgs(Enum):
@@ -112,6 +113,7 @@ class ReadCmd(Enum):
         VerbArgs.include_files.value,
     ]
     template_data = GlobalCmd.live_run.value + [ReadVerbs.data.value]
+    version = GlobalCmd.version.value
 
 
 class WriteCmd(Enum):
