@@ -150,8 +150,6 @@
   }
   & HorizontalGroup {
     width: auto;
-  }
-  &> .pad_bottom {
     padding-bottom: 1;
   }
   &.-visible {

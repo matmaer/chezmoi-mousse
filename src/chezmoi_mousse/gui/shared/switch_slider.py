@@ -15,7 +15,7 @@ __all__ = ["AddSwitchSlider", "ApplySwitchSlider", "ReAddSwitchSlider"]
 class SwitchSliderBase(VerticalGroup):
 
     def __init__(
-        self, *, ids: "CanvasIds", switches: tuple[Switches, Switches]
+        self, *, ids: "CanvasIds", switches: tuple[Switches, ...]
     ) -> None:
         self.ids = ids
         self.switch_slider_id = ids.switch_slider_id
@@ -36,11 +36,8 @@ class SwitchSliderBase(VerticalGroup):
                 )
 
     def on_mount(self) -> None:
-        # add padding to the top switch horizontal group
-        self.query_one(
-            self.ids.switch_horizontal_id("#", switch=self.switches[0]),
-            HorizontalGroup,
-        ).add_class(Tcss.pad_bottom.name)
+        switch_groups = self.query(HorizontalGroup)
+        switch_groups[-1].styles.padding = 0
 
 
 class AddSwitchSlider(SwitchSliderBase):

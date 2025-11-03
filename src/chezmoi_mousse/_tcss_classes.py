@@ -19,7 +19,6 @@ class Tcss(StrEnum):
     operate_button = ".operate_button"
     operate_info = ".operate_info"
     operate_screen = ".operate_screen"
-    pad_bottom = ".pad_bottom"
     screen_base = ".screen_base"
     section_label = ".section_label"
     single_button_vertical = ".single_button_vertical"
