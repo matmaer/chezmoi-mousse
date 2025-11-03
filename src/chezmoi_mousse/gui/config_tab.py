@@ -20,7 +20,14 @@ from textual.widgets import (
     Static,
 )
 
-from chezmoi_mousse import AppType, FlatBtn, SwitcherName, Tcss, ViewName
+from chezmoi_mousse import (
+    AppType,
+    AreaName,
+    FlatBtn,
+    SwitcherName,
+    Tcss,
+    ViewName,
+)
 
 from .shared.button_groups import NavButtonsVertical
 from .shared.tabs_base import TabsBase
@@ -264,15 +271,19 @@ class ConfigTab(TabsBase, AppType):
         super().__init__(ids=self.ids)
 
     def compose(self) -> ComposeResult:
-        yield NavButtonsVertical(
-            ids=self.ids,
-            buttons=(
-                FlatBtn.doctor,
-                FlatBtn.cat_config,
-                FlatBtn.ignored,
-                FlatBtn.template_data,
-            ),
-        )
+        with Vertical(
+            id=self.ids.tab_vertical_id(area=AreaName.left),
+            classes=Tcss.tab_left_vertical.name,
+        ):
+            yield NavButtonsVertical(
+                ids=self.ids,
+                buttons=(
+                    FlatBtn.doctor,
+                    FlatBtn.cat_config,
+                    FlatBtn.ignored,
+                    FlatBtn.template_data,
+                ),
+            )
         yield ConfigTabSwitcher(self.ids)
 
     @on(Button.Pressed, Tcss.nav_button.value)

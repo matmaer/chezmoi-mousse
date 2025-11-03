@@ -6,6 +6,7 @@ from textual.containers import Vertical
 from textual.widgets import Button, ContentSwitcher, Label, Static
 
 from chezmoi_mousse import FlatBtn, SwitcherName, Tcss, ViewName
+from chezmoi_mousse._names import AreaName
 
 from .shared.button_groups import NavButtonsVertical
 from .shared.tabs_base import TabsBase
@@ -90,15 +91,19 @@ class HelpTab(TabsBase):
         super().__init__(ids=self.ids)
 
     def compose(self) -> ComposeResult:
-        yield NavButtonsVertical(
-            ids=self.ids,
-            buttons=(
-                FlatBtn.apply_help,
-                FlatBtn.re_add_help,
-                FlatBtn.add_help,
-                FlatBtn.diagram,
-            ),
-        )
+        with Vertical(
+            id=self.ids.tab_vertical_id(area=AreaName.left),
+            classes=Tcss.tab_left_vertical.name,
+        ):
+            yield NavButtonsVertical(
+                ids=self.ids,
+                buttons=(
+                    FlatBtn.apply_help,
+                    FlatBtn.re_add_help,
+                    FlatBtn.add_help,
+                    FlatBtn.diagram,
+                ),
+            )
         yield HelpTabSwitcher(ids=self.ids)
 
     @on(Button.Pressed, Tcss.nav_button.value)

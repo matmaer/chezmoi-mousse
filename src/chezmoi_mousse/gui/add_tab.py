@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import Vertical, VerticalGroup
+from textual.containers import Vertical
 from textual.reactive import reactive
 from textual.widgets import Button, DirectoryTree, Switch
 
@@ -245,7 +245,7 @@ class AddTab(TabsBase):
         super().__init__(ids=self.ids)
 
     def compose(self) -> ComposeResult:
-        with VerticalGroup(
+        with Vertical(
             id=self.ids.tab_vertical_id(area=AreaName.left),
             classes=Tcss.tab_left_vertical.name,
         ):

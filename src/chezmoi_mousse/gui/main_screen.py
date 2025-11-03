@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 from textual import on
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import VerticalGroup
+from textual.containers import HorizontalGroup, Vertical, VerticalGroup
 from textual.screen import Screen
 from textual.widgets import (
     Button,
@@ -311,49 +311,78 @@ class MainScreen(Screen[None], AppType):
         self.refresh_bindings()
 
     def action_tcss_maximize(self) -> None:
+
         active_tab = self.query_one(TabbedContent).active
+        left_side = None
+        operation_buttons = None
+        view_switcher_buttons = None
+
+        header = self.query_exactly_one(Header)
+        header.display = False if header.display is True else True
+        main_tabs = self.query_exactly_one(Tabs)
+        main_tabs.display = False if main_tabs.display is True else True
+
         if active_tab == CanvasName.apply_tab:
             left_side = self.query_one(
-                self.apply_tab_ids.tab_vertical_id("#", area=AreaName.left)
+                self.apply_tab_ids.tab_vertical_id("#", area=AreaName.left),
+                Vertical,
             )
-            operation_buttons = self.query_one(
+            view_switcher_buttons = self.query_one(
                 self.apply_tab_ids.buttons_group_id(
-                    "#", group_name=ButtonGroupName.operate_btn_group
-                )
+                    "#", group_name=ButtonGroupName.switcher_btn_group
+                ),
+                HorizontalGroup,
             )
         elif active_tab == CanvasName.re_add_tab:
             left_side = self.query_one(
-                self.re_add_tab_ids.tab_vertical_id("#", area=AreaName.left)
+                self.re_add_tab_ids.tab_vertical_id("#", area=AreaName.left),
+                Vertical,
             )
             operation_buttons = self.query_one(
                 self.re_add_tab_ids.buttons_group_id(
                     "#", group_name=ButtonGroupName.operate_btn_group
                 )
             )
-        else:
+        elif active_tab == CanvasName.add_tab:
             left_side = self.query_one(
-                self.add_tab_ids.tab_vertical_id("#", area=AreaName.left)
+                self.add_tab_ids.tab_vertical_id("#", area=AreaName.left),
+                Vertical,
             )
             operation_buttons = self.query_one(
                 self.add_tab_ids.buttons_group_id(
                     "#", group_name=ButtonGroupName.operate_btn_group
                 )
             )
-        if left_side.has_class(Tcss.display_none.name):
-            left_side.remove_class(Tcss.display_none.name)
-            operation_buttons.remove_class(Tcss.display_none.name)
-        else:
-            left_side.add_class(Tcss.display_none.name)
-            operation_buttons.add_class(Tcss.display_none.name)
+        elif active_tab == CanvasName.logs_tab:
+            view_switcher_buttons = self.query_one(
+                self.logs_tab_ids.buttons_group_id(
+                    "#", group_name=ButtonGroupName.switcher_btn_group
+                ),
+                HorizontalGroup,
+            )
+        elif active_tab == CanvasName.config_tab:
+            left_side = self.query_one(
+                self.config_tab_ids.tab_vertical_id("#", area=AreaName.left),
+                Vertical,
+            )
+        elif active_tab == CanvasName.help_tab:
+            left_side = self.query_one(
+                self.help_tab_ids.tab_vertical_id("#", area=AreaName.left),
+                Vertical,
+            )
 
-        header = self.query_exactly_one(Header)
-        tabs = self.query_exactly_one(Tabs)
-        if header.has_class(Tcss.display_none.name):
-            header.remove_class(Tcss.display_none.name)
-            tabs.remove_class(Tcss.display_none.name)
-        else:
-            header.add_class(Tcss.display_none.name)
-            tabs.add_class(Tcss.display_none.name)
+        if left_side is not None:
+            left_side.display = False if left_side.display is True else True
+
+        if operation_buttons is not None:
+            operation_buttons.display = (
+                False if operation_buttons.display is True else True
+            )
+
+        if view_switcher_buttons is not None:
+            view_switcher_buttons.display = (
+                False if view_switcher_buttons.display is True else True
+            )
 
     def on_theme_change(self, _: str, new_theme: str) -> None:
         self.app_log.success(f"Theme set to {new_theme}")
