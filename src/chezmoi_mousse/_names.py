@@ -26,10 +26,10 @@ class CanvasName(StrEnum):
 class ContainerName(StrEnum):
     config_switcher = auto()
     help_switcher = auto()
-    left_container = auto()
+    left_side = auto()
     logs_switcher = auto()
     operate_btn_group = auto()
-    right_container = auto()
+    right_side = auto()
     switcher_btn_group = auto()
     switch_slider = auto()
     tree_switcher = auto()

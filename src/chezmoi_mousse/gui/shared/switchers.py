@@ -24,7 +24,7 @@ class TreeSwitcher(Vertical):
     def __init__(self, ids: "CanvasIds"):
         self.ids = ids
         super().__init__(
-            id=self.ids.tab_vertical_id(name=ContainerName.left_container),
+            id=self.ids.tab_vertical_id(name=ContainerName.left_side),
             classes=Tcss.tab_left_vertical.name,
         )
 
@@ -56,7 +56,7 @@ class ViewSwitcher(Vertical):
         )
         self.reverse = diff_reverse
         super().__init__(
-            id=self.ids.tab_vertical_id(name=ContainerName.right_container)
+            id=self.ids.tab_vertical_id(name=ContainerName.right_side)
         )
 
     def compose(self) -> ComposeResult:

@@ -255,14 +255,14 @@ class AddTab(TabsBase):
 
     def compose(self) -> ComposeResult:
         with Vertical(
-            id=self.ids.tab_vertical_id(name=ContainerName.left_container),
+            id=self.ids.tab_vertical_id(name=ContainerName.left_side),
             classes=Tcss.tab_left_vertical.name,
         ):
             yield FilteredDirTree(
                 self.destdir, id=self.ids.tree_id(tree=TreeName.add_tree)
             )
         with Vertical(
-            id=self.ids.tab_vertical_id(name=ContainerName.right_container)
+            id=self.ids.tab_vertical_id(name=ContainerName.right_side)
         ):
             yield ContentsView(ids=self.ids)
         yield OperateBtnHorizontal(
