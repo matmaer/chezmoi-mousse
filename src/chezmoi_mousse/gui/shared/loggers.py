@@ -1,3 +1,4 @@
+import inspect
 import os
 from datetime import datetime
 from typing import TYPE_CHECKING
@@ -8,6 +9,10 @@ from textual.widgets import RichLog
 from chezmoi_mousse import AppType, Chars, LogUtils, Tcss, ViewName
 
 if TYPE_CHECKING:
+
+    from collections.abc import Callable
+    from typing import Any
+
     from chezmoi_mousse import CommandResult
 
     from .canvas_ids import CanvasIds
@@ -130,10 +135,22 @@ class DebugLog(CommandLogBase, AppType):
         )
         self.dimmed(pretty_mro)
 
-    def list_attr(self, obj: object) -> None:
+    def list_attr(
+        self, obj: object, *, filter_text: str | None = None
+    ) -> None:
         members = [attr for attr in dir(obj) if not attr.startswith("_")]
-        self.ready_to_run(f"{obj.__class__.__name__} attributes:")
+        if filter_text is not None:
+            members = [m for m in members if filter_text in m]
+        self.info(f"{obj.__class__.__name__} attributes:")
         self.dimmed(", ".join(members))
+
+    def callable_source(self, callable: "Callable[..., Any]") -> None:
+        self.info(f"Function source for {callable.__name__}:")
+        try:
+            source = inspect.getsource(callable)
+            self.dimmed(source)
+        except OSError as e:
+            self.error(f"Could not retrieve source: {e}")
 
     def print_env_vars(self) -> None:
         for key, value in os.environ.items():
