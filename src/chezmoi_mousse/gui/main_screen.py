@@ -105,9 +105,9 @@ class MainScreen(Screen[None], AppType):
 
     def on_mount(self) -> None:
         self.title = (
-            Strings.header_dry_run_mode.value
-            if not self.app.changes_enabled
-            else Strings.header_live_mode.value
+            Strings.header_live_mode.value
+            if self.app.changes_enabled
+            else Strings.header_dry_run_mode.value
         )
         app_logger: AppLog = self.query_one(
             self.logs_tab_ids.view_id("#", view=ViewName.app_log_view), AppLog
@@ -243,59 +243,72 @@ class MainScreen(Screen[None], AppType):
             config_tab_switcher, "template_data_results", data.template_data
         )
 
-    def on_tabbed_content_tab_activated(
-        self, event: TabbedContent.TabActivated
-    ) -> None:
-        self.refresh_bindings()
-
     def check_action(
         self, action: str, parameters: tuple[object, ...]
     ) -> bool | None:
         if action == "toggle_switch_slider":
             active_tab = self.query_one(TabbedContent).active
-            if active_tab in (
-                CanvasName.apply_tab,
-                CanvasName.re_add_tab,
-                CanvasName.add_tab,
-            ):
+            if active_tab == CanvasName.apply_tab:
                 return True
-            return False
+            elif active_tab == (CanvasName.re_add_tab):
+                return True
+            elif active_tab == CanvasName.add_tab:
+                return True
+            elif active_tab == CanvasName.logs_tab:
+                return False
+            elif active_tab == CanvasName.config_tab:
+                return False
+            elif active_tab == CanvasName.help_tab:
+                return False
+        elif action == "tcss_maximize":
+            return True
         return True
 
-    def _get_current_filter_slider(self) -> VerticalGroup:
-        active_tab = self.query_one(TabbedContent).active
-
-        if active_tab == CanvasName.apply_tab:
+    def _get_slider_from_tab(self, tab_name: str) -> VerticalGroup | None:
+        if tab_name == CanvasName.apply_tab:
             return self.query_one(
                 self.apply_tab_ids.switch_slider_id(
                     "#", name=ContainerName.switch_slider
                 ),
                 VerticalGroup,
             )
-        elif active_tab == CanvasName.re_add_tab:
+        elif tab_name == CanvasName.re_add_tab:
             return self.query_one(
                 self.re_add_tab_ids.switch_slider_id(
                     "#", name=ContainerName.switch_slider
                 ),
                 VerticalGroup,
             )
-        else:
+        elif tab_name == CanvasName.add_tab:
             return self.query_one(
                 self.add_tab_ids.switch_slider_id(
                     "#", name=ContainerName.switch_slider
                 ),
                 VerticalGroup,
             )
+        else:
+            return None
 
-    def _create_new_binding(self) -> None:
-        # create a new binding with new description
-        slider: VerticalGroup = self._get_current_filter_slider()
-
+    def _update_toggle_switch_slider_binding(self, tab_name: str) -> None:
+        slider = self._get_slider_from_tab(tab_name)
+        if slider is None:
+            return
+        slider_visible = slider.has_class("-visible")
         new_description = (
-            "show filters" if slider.has_class("-visible") else "hide filters"
+            "hide filters" if slider_visible is False else "show filters"
         )
         for key, binding in self._bindings:
             if binding.action == "toggle_switch_slider":
+                if (
+                    binding.description == "show filters"
+                    and slider_visible is True
+                ):
+                    return
+                if (
+                    binding.description == "hide filters"
+                    and slider_visible is False
+                ):
+                    return
                 # Create a new binding with the updated description
                 updated_binding = dataclasses.replace(
                     binding, description=new_description
@@ -308,14 +321,29 @@ class MainScreen(Screen[None], AppType):
                             bindings_list[i] = updated_binding
                             break
                 break
+        self.refresh_bindings()
+
+    def on_tabbed_content_tab_activated(
+        self, event: TabbedContent.TabActivated
+    ) -> None:
+        if event.tabbed_content.active in (
+            CanvasName.apply_tab,
+            CanvasName.re_add_tab,
+            CanvasName.add_tab,
+        ):
+            self._update_toggle_switch_slider_binding(
+                event.tabbed_content.active
+            )
+        self.refresh_bindings()
 
     def action_toggle_switch_slider(self) -> None:
-        slider = self._get_current_filter_slider()
+        active_tab = self.query_one(TabbedContent).active
+        slider = self._get_slider_from_tab(active_tab)
+        if slider is None:
+            return
+
         slider.toggle_class("-visible")
-
-        self._create_new_binding()
-
-        self.refresh_bindings()
+        self._update_toggle_switch_slider_binding(active_tab)
 
     def action_tcss_maximize(self) -> None:
 
