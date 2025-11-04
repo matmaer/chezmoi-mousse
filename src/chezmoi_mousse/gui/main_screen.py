@@ -347,8 +347,7 @@ class MainScreen(Screen[None], AppType):
             if self.app.changes_enabled
             else Strings.header_dry_run_mode.value
         )
-        header = self.query_exactly_one(Header)
-        header.format_title()
+
         mode = "live mode" if self.app.changes_enabled else "dry run mode"
         severity = "warning" if self.app.changes_enabled else "information"
         self.notify(f"Switched to {mode}", severity=severity)
