@@ -81,6 +81,11 @@ class MainScreen(Screen[None], AppType):
             action="toggle_switch_slider",
             description="hide filters",
         ),
+        Binding(
+            key="D,d",
+            action="toggle_dry_run_mode",
+            description="toggle dry-run",
+        ),
     ]
     CSS_PATH = "_gui.tcss"
 
@@ -334,6 +339,19 @@ class MainScreen(Screen[None], AppType):
                 event.tabbed_content.active
             )
         self.refresh_bindings()
+
+    def action_toggle_dry_run_mode(self) -> None:
+        self.app.changes_enabled = not self.app.changes_enabled
+        self.screen.title = (
+            Strings.header_live_mode.value
+            if self.app.changes_enabled
+            else Strings.header_dry_run_mode.value
+        )
+        header = self.query_exactly_one(Header)
+        header.format_title()
+        mode = "live mode" if self.app.changes_enabled else "dry run mode"
+        severity = "warning" if self.app.changes_enabled else "information"
+        self.notify(f"Switched to {mode}", severity=severity)
 
     def action_toggle_switch_slider(self) -> None:
         active_tab = self.query_one(TabbedContent).active
