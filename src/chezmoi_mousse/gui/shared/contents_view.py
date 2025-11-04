@@ -1,3 +1,4 @@
+from enum import StrEnum
 from typing import TYPE_CHECKING
 
 from rich.text import Text
@@ -16,6 +17,21 @@ if TYPE_CHECKING:
 __all__ = ["ContentsView"]
 
 
+class Strings(StrEnum):
+    cannot_decode = "Path cannot be decoded as UTF-8:"
+    click_file_path = "Click a file path in the tree to see the contents."
+    empty_or_only_whitespace = "File is empty or contains only whitespace"
+    initial_msg = 'This is the destination directory "chezmoi destDir"'
+    managed_dir = "Managed directory:"
+    output_from_cat = "File does not exist on disk, output from"
+    output_from_read = "Output from Path.read"
+    permission_denied = "Permission denied to read file"
+    read_error = "Error reading path:"
+    too_large = "File is larger than 150 KiB, truncating output for"
+    truncated = "\n--- File content truncated to 150 KiB ---\n"
+    unmanaged_dir = "Unmanaged directory:"
+
+
 class ContentsView(RichLog, AppType):
 
     destDir: "Path | None" = None
@@ -30,18 +46,15 @@ class ContentsView(RichLog, AppType):
             highlight=True,
             classes=Tcss.border_title_top.name,
         )
-        self.click_file_path = Text(
-            "\nClick a file path in the tree to see the contents.", style="dim"
-        )
 
     def on_mount(self) -> None:
-        self.write('This is the destination directory "chezmoi destDir"')
-        self.write(self.click_file_path)
+        self.write(Strings.initial_msg)
+        self.write(Strings.click_file_path)
         self.border_title = f" {self.destDir} "
 
     def write_managed_directory(self) -> None:
-        self.write(f"Managed directory: {self.path}")
-        self.write(self.click_file_path)
+        self.write(f"{Strings.managed_dir} {self.path}")
+        self.write(Strings.click_file_path)
 
     def watch_path(self) -> None:
         if self.path is None or self.path == self.destDir:
@@ -51,28 +64,24 @@ class ContentsView(RichLog, AppType):
         truncated_message = ""
         try:
             if self.path.is_file() and self.path.stat().st_size > 150 * 1024:
-                truncated_message = (
-                    "\n\n--- File content truncated to 150 KiB ---\n"
-                )
-                self.write(
-                    f"File {self.path} is larger than 150 KiB, truncating output."
-                )
+                truncated_message = Strings.truncated
+                self.write(f"{Strings.too_large} {self.path}")
         except PermissionError as e:
             self.write(e.strerror)
-            self.write(f"Permission denied to read {self.path}")
+            self.write(f"{Strings.permission_denied} {self.path}")
             return
 
         try:
             with open(self.path, "rt", encoding="utf-8") as file:
                 file_content = file.read(150 * 1024)
                 if file_content.strip() == "":
-                    message = "File is empty or contains only whitespace"
-                    self.write(message)
+                    self.write(Strings.empty_or_only_whitespace)
                 else:
-                    self.write(file_content + truncated_message)
+                    self.write(f"{Strings.output_from_read} {self.path}\n")
+                    self.write(truncated_message + file_content)
 
         except UnicodeDecodeError:
-            self.write(f"{self.path} cannot be decoded as UTF-8.")
+            self.write(f"{Strings.cannot_decode} {self.path}")
             return
 
         except FileNotFoundError:
@@ -88,12 +97,10 @@ class ContentsView(RichLog, AppType):
                 cat_output: "CommandResult" = self.app.chezmoi.read(
                     ReadCmd.cat, self.path
                 )
-                self.write(
-                    f"File does not exist on disk, output from '{pretty_cmd}':\n"
-                )
+                self.write(f"{Strings.output_from_cat} '{pretty_cmd}'\n")
                 if cat_output.std_out == "":
                     self.write(
-                        Text("File contains only whitespace", style="dim")
+                        Text(Strings.empty_or_only_whitespace, style="dim")
                     )
                 else:
                     self.write(cat_output.std_out)
@@ -103,9 +110,9 @@ class ContentsView(RichLog, AppType):
             if self.path in self.app.chezmoi.dirs:
                 self.write_managed_directory()
             else:
-                self.write(f"Unmanaged directory: {self.path}")
-                self.write(self.click_file_path)
+                self.write(f"{Strings.unmanaged_dir} {self.path}")
+                self.write(Strings.click_file_path)
 
         except OSError as error:
-            self.write(Text(f"Error reading {self.path}: {error}"))
-            self.write(self.click_file_path)
+            self.write(Text(f"{Strings.read_error} {self.path}: {error}"))
+            self.write(Strings.click_file_path)
