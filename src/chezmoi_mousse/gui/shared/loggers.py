@@ -142,7 +142,25 @@ class DebugLog(CommandLogBase, AppType):
         if filter_text is not None:
             members = [m for m in members if filter_text in m]
         self.info(f"{obj.__class__.__name__} attributes:")
-        self.dimmed(", ".join(members))
+
+        def _type_for(name: str) -> str:
+            try:
+                val = getattr(obj, name)
+                if inspect.isclass(val):
+                    return "class"
+                if inspect.ismodule(val):
+                    return "module"
+                if inspect.isroutine(val):
+                    return str(type(val).__name__)
+                return str(type(val).__name__)
+            except Exception:
+                return "unknown"
+
+        members_with_types = [f"{m}: {_type_for(m)}" for m in members]
+        if filter_text is not None:
+            self.dimmed("\n".join(members_with_types))
+
+        self.dimmed(", ".join(members_with_types))
 
     def callable_source(self, callable: "Callable[..., Any]") -> None:
         self.info(f"Function source for {callable.__name__}:")
