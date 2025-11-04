@@ -136,12 +136,26 @@ class DebugLog(CommandLogBase, AppType):
         self.dimmed(pretty_mro)
 
     def list_attr(
-        self, obj: object, *, filter_text: str | None = None
+        self,
+        obj: object,
+        *,
+        filter_text: str | None = None,
+        show_method_sources: bool = False,
     ) -> None:
         members = [attr for attr in dir(obj) if not attr.startswith("_")]
         if filter_text is not None:
             members = [m for m in members if filter_text in m]
-        self.info(f"{obj.__class__.__name__} attributes:")
+
+        if show_method_sources is True:
+            for member_name in members:
+                member = getattr(obj, member_name)
+                if inspect.isroutine(member):
+                    self.info(f"Source for method {member_name}:")
+                    try:
+                        source = inspect.getsource(member)
+                        self.dimmed(source)
+                    except OSError as e:
+                        self.error(f"Could not retrieve source: {e}")
 
         def _type_for(name: str) -> str:
             try:
@@ -151,15 +165,17 @@ class DebugLog(CommandLogBase, AppType):
                 if inspect.ismodule(val):
                     return "module"
                 if inspect.isroutine(val):
+                    if show_method_sources is True:
+                        self.callable_source(val)
                     return str(type(val).__name__)
                 return str(type(val).__name__)
             except Exception:
                 return "unknown"
 
         members_with_types = [f"{m}: {_type_for(m)}" for m in members]
+        self.info(f"{obj.__class__.__name__} attributes:")
         if filter_text is not None:
             self.dimmed("\n".join(members_with_types))
-
         self.dimmed(", ".join(members_with_types))
 
     def callable_source(self, callable: "Callable[..., Any]") -> None:
