@@ -174,9 +174,10 @@ class DebugLog(CommandLogBase, AppType):
 
         members_with_types = [f"{m}: {_type_for(m)}" for m in members]
         self.info(f"{obj.__class__.__name__} attributes:")
-        if filter_text is not None:
+        if filter_text is None:
+            self.dimmed(", ".join(members_with_types))
+        else:
             self.dimmed("\n".join(members_with_types))
-        self.dimmed(", ".join(members_with_types))
 
     def callable_source(self, callable: "Callable[..., Any]") -> None:
         self.info(f"Function source for {callable.__name__}:")
