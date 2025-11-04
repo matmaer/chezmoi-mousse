@@ -84,7 +84,7 @@ class MainScreen(Screen[None], AppType):
         Binding(
             key="D,d",
             action="toggle_dry_run_mode",
-            description="toggle dry-run",
+            description="Remove --dry-run flag",
         ),
     ]
     CSS_PATH = "_gui.tcss"
@@ -180,11 +180,6 @@ class MainScreen(Screen[None], AppType):
         # Notify startup info
         if self.app.dev_mode is True:
             self.notify('Running in "dev mode"', severity="information")
-        if self.app.changes_enabled is True:
-            self.notify("Changes are enabled", severity="warning")
-        else:
-            self.notify("Changes are disabled", severity="information")
-
         self.handle_splash_data(self.splash_data)
 
     def compose(self) -> ComposeResult:
@@ -343,15 +338,38 @@ class MainScreen(Screen[None], AppType):
 
     def action_toggle_dry_run_mode(self) -> None:
         self.app.changes_enabled = not self.app.changes_enabled
-        self.screen.title = (
-            Strings.header_live_mode.value
-            if self.app.changes_enabled
-            else Strings.header_dry_run_mode.value
-        )
-
+        header_title = self.screen.query_exactly_one("HeaderTitle")
+        if self.app.changes_enabled is True:
+            self.screen.title = Strings.header_live_mode.value
+            header_title.add_class(Tcss.changes_enabled_color.name)
+        else:
+            self.screen.title = Strings.header_dry_run_mode.value
+            header_title.remove_class(Tcss.changes_enabled_color.name)
         mode = "live mode" if self.app.changes_enabled else "dry run mode"
         severity = "warning" if self.app.changes_enabled else "information"
         self.notify(f"Switched to {mode}", severity=severity)
+
+        new_description = (
+            "Add --dry-run flag"
+            if self.app.changes_enabled is True
+            else "Remove --dry-run flag"
+        )
+
+        for key, binding in self._bindings:
+            if binding.action == "toggle_dry_run_mode":
+                # Create a new binding with the updated description
+                updated_binding = dataclasses.replace(
+                    binding, description=new_description
+                )
+                # Update the bindings map
+                if key in self._bindings.key_to_bindings:
+                    bindings_list = self._bindings.key_to_bindings[key]
+                    for i, b in enumerate(bindings_list):
+                        if b.action == "toggle_dry_run_mode":
+                            bindings_list[i] = updated_binding
+                            break
+                break
+        self.refresh_bindings()
 
     def action_toggle_switch_slider(self) -> None:
         active_tab = self.query_one(TabbedContent).active

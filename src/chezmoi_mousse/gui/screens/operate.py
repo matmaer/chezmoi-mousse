@@ -42,6 +42,10 @@ class InfoStrings(StrEnum):
     apply_path = "[$text-primary]The path in the destination directory will be modified.[/]"
     auto_commit = f"[$text-warning]{Chars.warning_sign} Auto commit is enabled: files will also be committed.{Chars.warning_sign}[/]"
     autopush = f"[$text-warning]{Chars.warning_sign} Auto push is enabled: files will be pushed to the remote.{Chars.warning_sign}[/]"
+    changes_disabled = (
+        "[$text-success]Changes are currently disabled (dry-run mode)"
+    )
+    changes_enabled = f"[$text-warning]{Chars.warning_sign} Changes currently enabled, running without '--dry-run' flag.{Chars.warning_sign}[/]"
     destroy_path = "[$text-error]Permanently remove the path both from your home directory and chezmoi's source directory, make sure you have a backup![/]"
     diff_color = f"[$text-success]+ green lines will be added[/]\n[$text-error]- red lines will be removed[/]\n[dim]{Chars.bullet} dimmed lines for context[/]"
     forget_path = "[$text-primary]Remove the path from the source state, i.e. stop managing them.[/]"
@@ -50,7 +54,7 @@ class InfoStrings(StrEnum):
     )
 
 
-class OperateInfo(Static):
+class OperateInfo(Static, AppType):
 
     git_autocommit: bool | None = None
     git_autopush: bool | None = None
@@ -61,8 +65,11 @@ class OperateInfo(Static):
         super().__init__(classes=Tcss.operate_info.name)
 
     def on_mount(self) -> None:
-        # show command help and set its subtitle
         lines_to_write: list[str] = []
+        if self.app.changes_enabled is True:
+            lines_to_write.append(InfoStrings.changes_enabled)
+        else:
+            lines_to_write.append(InfoStrings.changes_disabled)
         if self.operate_btn == OperateBtn.add_file:
             self.border_title = OperateBtn.add_file.enabled_tooltip.rstrip(".")
             lines_to_write.append(InfoStrings.add_path)

@@ -5,6 +5,7 @@ __all__ = ["Tcss"]
 
 class Tcss(StrEnum):
     border_title_top = ".border_title_top"
+    changes_enabled_color = ".changes_enabled_color"
     content_switcher_left = ".content_switcher_left"
     dir_tree_widget = ".dir_tree_widget"
     doctor_listview = ".doctor_listview"

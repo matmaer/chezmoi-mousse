@@ -62,7 +62,7 @@ class ChezmoiGUI(App[None]):
     def __init__(self, pre_run_data: "PreRunData") -> None:
         self.chezmoi: "Chezmoi"
         self.pre_run_data = pre_run_data
-        self.changes_enabled = self.pre_run_data.changes_enabled
+        self.changes_enabled = False
         self.chezmoi_found = self.pre_run_data.chezmoi_found
         self.dev_mode = self.pre_run_data.dev_mode
 

@@ -11,16 +11,11 @@ from .gui.chezmoi_gui import ChezmoiGUI
 def run_app():
 
     dev_mode: bool = os.environ.get("CHEZMOI_MOUSSE_DEV") == "1"
-    changes_enabled: bool = os.environ.get("MOUSSE_ENABLE_CHANGES") == "1"
     chezmoi_found = (
         shutil.which("chezmoi") is not None
         and os.environ.get("PRETEND_CHEZMOI_NOT_FOUND") != "1"
     )
-    pre_run_data = PreRunData(
-        changes_enabled=changes_enabled,
-        chezmoi_found=chezmoi_found,
-        dev_mode=dev_mode,
-    )
+    pre_run_data = PreRunData(chezmoi_found=chezmoi_found, dev_mode=dev_mode)
 
     if dev_mode is True:
         src_dir = Path(__file__).parent.parent

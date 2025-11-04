@@ -94,7 +94,6 @@ class OperateScreenData:
 
 @dataclass(slots=True, frozen=True)
 class PreRunData:
-    changes_enabled: bool
     chezmoi_found: bool
     dev_mode: bool
 

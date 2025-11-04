@@ -321,6 +321,9 @@ Header {
   height: 2;
   text-style: bold;
   min-width: 35;
+  .changes_enabled_color {
+    color: $warning;
+  }
 }
 
 Switch {
