@@ -87,25 +87,46 @@ class MainScreen(Screen[None], AppType):
     destDir: Path | None = None
 
     def __init__(self, splash_data: "SplashData") -> None:
+        super().__init__()
 
         self.splash_data = splash_data
-        self.app_log: AppLog
-        self.read_output_log: OutputLog
-        self.write_output_log: OutputLog
-        self.debug_log: DebugLog
+
+        self.add_tab_ids = CanvasIds(CanvasName.add_tab)
+        self.add_switch_slider_qid = self.add_tab_ids.switch_slider_id(
+            "#", name=ContainerName.switch_slider
+        )
+        self.apply_tab_ids = CanvasIds(CanvasName.apply_tab)
+        self.apply_switch_slider_qid = self.apply_tab_ids.switch_slider_id(
+            "#", name=ContainerName.switch_slider
+        )
+        self.config_tab_ids = CanvasIds(CanvasName.config_tab)
+        self.help_tab_ids = CanvasIds(CanvasName.help_tab)
+        self.logs_tab_ids = CanvasIds(CanvasName.logs_tab)
+        self.app_log_qid = self.logs_tab_ids.view_id(
+            "#", view=ViewName.app_log_view
+        )
+        self.read_output_log_qid = self.logs_tab_ids.view_id(
+            "#", view=ViewName.read_output_log_view
+        )
+        self.write_output_log_qid = self.logs_tab_ids.view_id(
+            "#", view=ViewName.write_output_log_view
+        )
+        self.debug_log_qid = self.logs_tab_ids.view_id(
+            "#", view=ViewName.debug_log_view
+        )
+        self.re_add_tab_ids = CanvasIds(CanvasName.re_add_tab)
+        self.re_add_switch_slider_qid = self.re_add_tab_ids.switch_slider_id(
+            "#", name=ContainerName.switch_slider
+        )
+
+        self.app_log: "AppLog"
+        self.read_output_log: "OutputLog"
+        self.write_output_log: "OutputLog"
+        self.debug_log: "DebugLog"
 
         self.current_add_node: "DirTreeNodeData | None" = None
         self.current_apply_node: "NodeData | None" = None
         self.current_re_add_node: "NodeData | None" = None
-
-        self.add_tab_ids = CanvasIds(CanvasName.add_tab)
-        self.apply_tab_ids = CanvasIds(CanvasName.apply_tab)
-        self.config_tab_ids = CanvasIds(CanvasName.config_tab)
-        self.help_tab_ids = CanvasIds(CanvasName.help_tab)
-        self.logs_tab_ids = CanvasIds(CanvasName.logs_tab)
-        self.re_add_tab_ids = CanvasIds(CanvasName.re_add_tab)
-
-        super().__init__()
 
     def on_mount(self) -> None:
         self.title = (
@@ -113,18 +134,15 @@ class MainScreen(Screen[None], AppType):
             if self.app.changes_enabled
             else Strings.header_dry_run_mode.value
         )
-        app_logger: AppLog = self.query_one(
-            self.logs_tab_ids.view_id("#", view=ViewName.app_log_view), AppLog
-        )
+        app_logger = self.query_one(self.app_log_qid, AppLog)
         self.app_log = app_logger
         self.app.chezmoi.app_log = app_logger
         self.app_log.ready_to_run("--- Application log initialized ---")
         self.app_log.info(f"chezmoi command found: {self.app.chezmoi_found}.")
         self.app_log.info("Loading screen completed.")
 
-        read_output_logger: OutputLog = self.query_one(
-            self.logs_tab_ids.view_id("#", view=ViewName.read_output_log_view),
-            OutputLog,
+        read_output_logger = self.query_one(
+            self.read_output_log_qid, OutputLog
         )
         self.read_output_log = read_output_logger
         self.app.chezmoi.read_output_log = read_output_logger
@@ -139,10 +157,7 @@ class MainScreen(Screen[None], AppType):
             self.read_output_log.log_cmd_results(cmd)
         self.app_log.info("End of startup commands.")
         self.write_output_log = self.query_one(
-            self.logs_tab_ids.view_id(
-                "#", view=ViewName.write_output_log_view
-            ),
-            OutputLog,
+            self.write_output_log_qid, OutputLog
         )
         self.write_output_log.ready_to_run(
             "--- Write Output log initialized ---"
@@ -151,10 +166,7 @@ class MainScreen(Screen[None], AppType):
         self.app_log.info("Write Output log initialized")
 
         if self.app.dev_mode:
-            debug_logger: DebugLog = self.query_one(
-                self.logs_tab_ids.view_id("#", view=ViewName.debug_log_view),
-                DebugLog,
-            )
+            debug_logger = self.query_one(self.debug_log_qid, DebugLog)
             self.debug_log = debug_logger
             self.app.chezmoi.debug_log = debug_logger
             self.debug_log.ready_to_run("--- Debug log initialized ---")
@@ -254,7 +266,7 @@ class MainScreen(Screen[None], AppType):
             active_tab = self.query_one(TabbedContent).active
             if active_tab == CanvasName.apply_tab:
                 return True
-            elif active_tab == (CanvasName.re_add_tab):
+            elif active_tab == CanvasName.re_add_tab:
                 return True
             elif active_tab == CanvasName.add_tab:
                 return True
@@ -264,32 +276,15 @@ class MainScreen(Screen[None], AppType):
                 return False
             elif active_tab == CanvasName.help_tab:
                 return False
-        elif action == "tcss_maximize":
-            return True
         return True
 
     def _get_slider_from_tab(self, tab_name: str) -> VerticalGroup | None:
         if tab_name == CanvasName.apply_tab:
-            return self.query_one(
-                self.apply_tab_ids.switch_slider_id(
-                    "#", name=ContainerName.switch_slider
-                ),
-                VerticalGroup,
-            )
+            return self.query_one(self.apply_switch_slider_qid, VerticalGroup)
         elif tab_name == CanvasName.re_add_tab:
-            return self.query_one(
-                self.re_add_tab_ids.switch_slider_id(
-                    "#", name=ContainerName.switch_slider
-                ),
-                VerticalGroup,
-            )
+            return self.query_one(self.re_add_switch_slider_qid, VerticalGroup)
         elif tab_name == CanvasName.add_tab:
-            return self.query_one(
-                self.add_tab_ids.switch_slider_id(
-                    "#", name=ContainerName.switch_slider
-                ),
-                VerticalGroup,
-            )
+            return self.query_one(self.add_switch_slider_qid, VerticalGroup)
         else:
             return None
 
