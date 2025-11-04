@@ -71,7 +71,11 @@ class Strings(StrEnum):
 class MainScreen(Screen[None], AppType):
 
     BINDINGS = [
-        Binding(key="M,m", action="tcss_maximize", description="maximize"),
+        Binding(
+            key="M,m",
+            action="toggle_maximized_display",
+            description="maximize",
+        ),
         Binding(
             key="F,f",
             action="toggle_switch_slider",
@@ -345,7 +349,7 @@ class MainScreen(Screen[None], AppType):
         slider.toggle_class("-visible")
         self._update_toggle_switch_slider_binding(active_tab)
 
-    def action_tcss_maximize(self) -> None:
+    def action_toggle_maximized_display(self) -> None:
 
         active_tab = self.query_one(TabbedContent).active
         left_side = None
@@ -428,6 +432,25 @@ class MainScreen(Screen[None], AppType):
             view_switcher_buttons.display = (
                 False if view_switcher_buttons.display is True else True
             )
+
+        new_description = "maximize" if header.display is True else "minimize"
+
+        for key, binding in self._bindings:
+            if binding.action == "toggle_maximized_display":
+                # Create a new binding with the updated description
+                updated_binding = dataclasses.replace(
+                    binding, description=new_description
+                )
+                # Update the bindings map
+                if key in self._bindings.key_to_bindings:
+                    bindings_list = self._bindings.key_to_bindings[key]
+                    for i, b in enumerate(bindings_list):
+                        if b.action == "toggle_maximized_display":
+                            bindings_list[i] = updated_binding
+                            break
+                break
+
+        self.refresh_bindings()
 
     def on_theme_change(self, _: str, new_theme: str) -> None:
         self.app_log.success(f"Theme set to {new_theme}")
