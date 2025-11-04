@@ -176,6 +176,7 @@ class MainScreen(Screen[None], AppType):
             self.app.chezmoi.debug_log = debug_logger
             self.debug_log.ready_to_run("--- Debug log initialized ---")
             self.app_log.info("Debug log initialized")
+            debug_logger.focus()
         # Notify startup info
         if self.app.dev_mode is True:
             self.notify('Running in "dev mode"', severity="information")
