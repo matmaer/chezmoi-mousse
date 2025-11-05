@@ -74,29 +74,26 @@
   }
 }
 
-.operate_screen {
-  .operate_info {
-    border-subtitle-align: center;
-    border-title-align: center;
-    border: round $foreground;
-    text-align: center;
-    dock: top;
-  }
-  #operate-screen-log {
-    height: 5;
-  }
-  & ContentsView {
-    border: none;
-  }
-  & DiffView {
-    border: none;
-  }
-}
-
 .screen_base {
   border-bottom: $primary;
   border-title-style: bold;
   overflow-y: hidden;
+
+  &.operate_screen {
+    & OperateInfo {
+      border-subtitle-align: center;
+      border-title-align: center;
+      border: round $foreground;
+      text-align: center;
+      dock: top;
+    }
+    & ContentsView {
+      border: none;
+    }
+    & DiffView {
+      border: none;
+    }
+  }
 
   .install_help {
     padding-top: 1;

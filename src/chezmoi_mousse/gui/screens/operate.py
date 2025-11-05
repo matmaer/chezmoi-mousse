@@ -55,15 +55,20 @@ class InfoStrings(StrEnum):
     )
 
 
+class SectionLabels(StrEnum):
+    context = "Operate Context"
+    output = "Operate Command Output"
+
+
 class OperateInfo(Static, AppType):
 
     git_autocommit: bool | None = None
     git_autopush: bool | None = None
 
     def __init__(self, operate_screen_data: OperateScreenData) -> None:
+        super().__init__()
         self.operate_btn = operate_screen_data.operate_btn
         self.node_data = operate_screen_data.node_data
-        super().__init__(classes=Tcss.operate_info.name)
 
     def on_mount(self) -> None:
         lines_to_write: list[str] = []
@@ -143,7 +148,7 @@ class OperateScreen(Screen[OperateScreenData], AppType):
     def __init__(self, operate_data: "OperateScreenData") -> None:
         self.ids = CanvasIds(CanvasName.operate_screen)
         super().__init__(
-            id=self.ids.canvas_name, classes=Tcss.operate_screen.name
+            id=self.ids.canvas_name, classes=Tcss.screen_base.name
         )
         self.operate_data = operate_data
         self.exit_btn_id = self.ids.button_id(btn=OperateBtn.exit_button)
@@ -151,14 +156,14 @@ class OperateScreen(Screen[OperateScreenData], AppType):
         self.operate_btn_qid = self.ids.button_id(
             "#", btn=self.operate_data.operate_btn
         )
-        self.wriet_output_log_view_qid = self.ids.view_id(
+        self.write_output_log_view_qid = self.ids.view_id(
             "#", view=ViewName.write_output_log_view
         )
 
     def compose(self) -> ComposeResult:
-        yield SectionLabel("Operate Context")
         yield OperateInfo(self.operate_data)
-        with Vertical(id=ContainerIds.pre_operate.value):
+        yield SectionLabel(SectionLabels.context)
+        with Vertical(id=ContainerIds.pre_operate):
             if self.operate_data.operate_btn == OperateBtn.apply_path:
                 yield DiffView(ids=self.ids, reverse=False)
             elif self.operate_data.operate_btn == OperateBtn.re_add_path:
@@ -173,12 +178,11 @@ class OperateScreen(Screen[OperateScreenData], AppType):
                 OperateBtn.destroy_path,
             ):
                 yield DiffView(ids=self.ids, reverse=False)
-        with Vertical(id=ContainerIds.post_operate.value):
-            yield SectionLabel("Operate Command Output")
+        with Vertical(id=ContainerIds.post_operate):
             yield OutputLog(
                 ids=self.ids, view_name=ViewName.write_output_log_view
             )
-        with Vertical(id=ContainerIds.operate_btn.value):
+        with Vertical(id=ContainerIds.operate_btn):
             yield OperateBtnHorizontal(
                 ids=self.ids,
                 buttons=(
@@ -189,6 +193,7 @@ class OperateScreen(Screen[OperateScreenData], AppType):
         yield Footer()
 
     def on_mount(self) -> None:
+        self.add_class(Tcss.operate_screen.name)
         self.configure_buttons()
         self.configure_widgets()
         self.configure_containers()
@@ -215,7 +220,7 @@ class OperateScreen(Screen[OperateScreenData], AppType):
             diff_view.path = self.operate_data.node_data.path
 
         screen_output_log = self.query_one(
-            self.wriet_output_log_view_qid, OutputLog
+            self.write_output_log_view_qid, OutputLog
         )
         screen_output_log.auto_scroll = False
 
@@ -288,6 +293,8 @@ class OperateScreen(Screen[OperateScreenData], AppType):
         self.post_operate_ui_update()
 
     def post_operate_ui_update(self) -> None:
+        section_label = self.query_exactly_one(SectionLabel)
+        section_label.update(SectionLabels.output)
         pre_operate_container = self.query_one(
             f"#{ContainerIds.pre_operate.value}", Vertical
         )
@@ -306,7 +313,7 @@ class OperateScreen(Screen[OperateScreenData], AppType):
 
         if self.operate_data.command_result is not None:
             screen_output_log = self.query_one(
-                self.wriet_output_log_view_qid, OutputLog
+                self.write_output_log_view_qid, OutputLog
             )
             screen_output_log.log_cmd_results(self.operate_data.command_result)
 
