@@ -29,22 +29,22 @@
 }
 
 .section_header {
-    background-tint: $surface-lighten-1;
-    background: $surface-lighten-1;
-    border-bottom: inner $surface-lighten-1;
-    border-top: inner $surface-lighten-1;
-    padding: 0 1;
-    text-align: center;
-    width: 100%;
-    &.section_label
-    {
-      color: $text-accent;
-    }
-    &.rich_header {
-      height: auto;
-      overflow: hidden;
-    }
+  background-tint: $surface-lighten-1;
+  background: $surface-lighten-1;
+  border-bottom: inner $surface-lighten-1;
+  border-top: inner $surface-lighten-1;
+  padding: 0 1;
+  text-align: center;
+  width: 100%;
+  &.section_label
+  {
+    color: $text-accent;
   }
+  &.rich_header {
+    height: auto;
+    overflow: hidden;
+  }
+}
 
 .nav_content_switcher {
   margin-bottom: 1;
@@ -92,7 +92,6 @@
     border: none;
   }
 }
-
 
 .screen_base {
   border-bottom: $primary;
