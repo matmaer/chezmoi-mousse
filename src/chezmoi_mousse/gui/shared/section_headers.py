@@ -1,15 +1,31 @@
+from enum import StrEnum
+from typing import TYPE_CHECKING
+
 from textual.content import Content
 from textual.widgets import Label, RichLog
 
-from chezmoi_mousse import Tcss
+from chezmoi_mousse import CanvasName, Tcss, ViewName
 
-__all__ = ["SectionHeader", "SectionLabel"]
+__all__ = ["InitialHeader", "SectionHeader", "SectionLabel"]
+
+if TYPE_CHECKING:
+    from .canvas_ids import CanvasIds
+
+
+class Strings(StrEnum):
+    in_dest_dir = 'This is the destination directory "chezmoi destDir"'
+    initial_git_log_msg = (
+        'Click a path in the tree to see the output from "chezmoi git log".'
+    )
 
 
 class SectionLabel(Label):
 
     def __init__(self, label_text: str) -> None:
         super().__init__(label_text, classes=Tcss.section_header.name)
+
+    def on_mount(self) -> None:
+        self.add_class(Tcss.section_label.name)
 
 
 class SectionHeader(RichLog):
@@ -20,6 +36,23 @@ class SectionHeader(RichLog):
             auto_scroll=False,
             highlight=True,
             wrap=True,  # TODO: implement footer binding to toggle wrap
-            classes=Tcss.border_title_top.name,
             markup=True,
+            classes=Tcss.section_header.name,
         )
+
+
+class InitialHeader(SectionHeader):
+    def __init__(self, ids: "CanvasIds", view_name: ViewName) -> None:
+        self.ids = ids
+        self.view_name = view_name
+        super().__init__(messages=[])
+
+    def on_mount(self) -> None:
+        self.add_class(Tcss.rich_header.name)
+        self.write(Content(Strings.in_dest_dir))
+        if (
+            self.ids.canvas_name
+            in (CanvasName.apply_tab, CanvasName.re_add_tab)
+            and self.view_name == ViewName.git_log_view
+        ):
+            self.write(Content(Strings.initial_git_log_msg))

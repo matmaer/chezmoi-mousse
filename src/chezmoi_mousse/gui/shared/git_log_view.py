@@ -1,5 +1,4 @@
 from collections.abc import Iterable
-from enum import StrEnum
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -11,6 +10,8 @@ from textual.widgets import DataTable
 
 from chezmoi_mousse import AppType, CanvasName, ReadCmd, Tcss, ViewName
 
+from .section_headers import InitialHeader
+
 if TYPE_CHECKING:
     from chezmoi_mousse import CommandResult
 
@@ -21,10 +22,6 @@ else:
     DataTableText = DataTable
 
 __all__ = ["GitLogView"]
-
-
-class Strings(StrEnum):
-    click_file_path = "Click a file path in the tree to see the contents."
 
 
 class GitLogView(Vertical, AppType):
@@ -46,25 +43,23 @@ class GitLogView(Vertical, AppType):
         )
 
     def compose(self) -> ComposeResult:
-        yield DataTable(id=self.git_log_table_id, show_cursor=False)
-
-    def on_mount(self) -> None:
         if self.ids.canvas_name in (
-            CanvasName.add_tab,
             CanvasName.apply_tab,
             CanvasName.re_add_tab,
         ):
-            datatable = self.query_one(self.git_log_table_qid, DataTableText)
-            datatable.add_columns(
-                Text('This is the destination directory "chezmoi destDir"')
-            )
-            datatable.add_row(Text(Strings.click_file_path))
-            return
+            yield InitialHeader(self.ids, ViewName.git_log_view)
+        yield DataTable(id=self.git_log_table_id, show_cursor=False)
+
+    def on_mount(self) -> None:
         if self.ids.canvas_name == CanvasName.logs_tab:
             git_log_result: "CommandResult" = self.app.chezmoi.read(
                 ReadCmd.git_log
             )
             self.populate_data_table(git_log_result.std_out)
+        if self.ids.canvas_name != CanvasName.logs_tab:
+            self.border_title = f" {self.destDir} "
+        else:
+            self.remove_class(Tcss.border_title_top.name)
 
     def _add_row_with_style(self, columns: list[str], style: str) -> None:
         datatable = self.query_one(self.git_log_table_qid, DataTableText)
@@ -96,7 +91,8 @@ class GitLogView(Vertical, AppType):
     def watch_path(self) -> None:
         if self.path is None:
             return
-        self.border_title = f" {self.path} "
+        if self.ids.canvas_name != CanvasName.logs_tab:
+            self.border_title = f" {self.path} "
 
         source_path_str: str = self.app.chezmoi.read(
             ReadCmd.source_path, self.path
