@@ -6,7 +6,7 @@ from textual.containers import Vertical
 from textual.widgets import Button, ContentSwitcher
 
 from chezmoi_mousse import ContainerName, TabBtn, Tcss, TreeName, ViewName
-from chezmoi_mousse.gui.shared.button_groups import TabBtnHorizontal
+from chezmoi_mousse.gui.shared.buttons import TabBtnHorizontal
 
 from .contents_view import ContentsView
 from .diff_view import DiffView

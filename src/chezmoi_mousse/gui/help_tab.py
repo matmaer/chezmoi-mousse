@@ -8,7 +8,7 @@ from textual.widgets import Button, ContentSwitcher, Static
 
 from chezmoi_mousse import ContainerName, FlatBtn, Tcss, ViewName
 
-from .shared.button_groups import NavButtonsVertical
+from .shared.buttons import NavButtonsVertical
 from .shared.section_headers import SectionLabel
 from .shared.tabs_base import TabsBase
 

@@ -21,7 +21,7 @@ from chezmoi_mousse import (
     ViewName,
 )
 
-from .shared.button_groups import OperateBtnHorizontal
+from .shared.buttons import OperateBtnHorizontal
 from .shared.contents_view import ContentsView
 from .shared.operate_msg import CurrentAddNodeMsg
 from .shared.switch_slider import AddSwitchSlider

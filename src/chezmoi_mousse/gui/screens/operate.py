@@ -19,7 +19,7 @@ from chezmoi_mousse import (
     WriteCmd,
 )
 
-from ..shared.button_groups import OperateBtnHorizontal
+from ..shared.buttons import OperateBtnHorizontal
 from ..shared.canvas_ids import CanvasIds
 from ..shared.contents_view import ContentsView
 from ..shared.diff_view import DiffView

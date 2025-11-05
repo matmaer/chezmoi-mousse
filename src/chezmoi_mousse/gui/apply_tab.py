@@ -6,7 +6,7 @@ from textual.widgets import Button
 
 from chezmoi_mousse import OperateBtn
 
-from .shared.button_groups import OperateBtnHorizontal
+from .shared.buttons import OperateBtnHorizontal
 from .shared.operate_msg import CurrentApplyNodeMsg
 from .shared.switch_slider import ApplySwitchSlider
 from .shared.switchers import TreeSwitcher, ViewSwitcher

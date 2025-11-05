@@ -8,7 +8,7 @@ from textual.widgets import Button, ContentSwitcher
 
 from chezmoi_mousse import AppType, ContainerName, TabBtn, Tcss, ViewName
 
-from .shared.button_groups import TabBtnHorizontal
+from .shared.buttons import TabBtnHorizontal
 from .shared.git_log_view import GitLogView
 from .shared.loggers import AppLog, DebugLog, OutputLog
 

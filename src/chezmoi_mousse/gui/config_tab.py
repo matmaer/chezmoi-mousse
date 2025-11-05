@@ -21,7 +21,7 @@ from textual.widgets import (
 
 from chezmoi_mousse import AppType, ContainerName, FlatBtn, Tcss, ViewName
 
-from .shared.button_groups import NavButtonsVertical
+from .shared.buttons import NavButtonsVertical
 from .shared.section_headers import SectionLabel
 from .shared.tabs_base import TabsBase
 
