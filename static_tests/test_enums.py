@@ -5,7 +5,7 @@ from _test_utils import get_module_paths
 
 MODULE_PATHS = get_module_paths()
 # Exclude these enums as they are used in dynamically by FilteredDirTree
-EXCLUDE_ENUMS = ["UnwantedDirs", "UnwantedFileExtensions"]
+EXCLUDE_ENUMS = ["PwMgrInfo", "UnwantedDirs", "UnwantedFileExtensions"]
 
 
 def _get_module_for_enum_class(enum_class_def: ast.ClassDef) -> str:
