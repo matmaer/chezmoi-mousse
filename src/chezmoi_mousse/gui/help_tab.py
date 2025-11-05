@@ -3,11 +3,12 @@ from typing import TYPE_CHECKING
 from textual import on
 from textual.app import ComposeResult
 from textual.containers import Vertical
-from textual.widgets import Button, ContentSwitcher, Label, Static
+from textual.widgets import Button, ContentSwitcher, Static
 
 from chezmoi_mousse import ContainerName, FlatBtn, Tcss, ViewName
 
 from .shared.button_groups import NavButtonsVertical
+from .shared.section_headers import SectionLabel
 from .shared.tabs_base import TabsBase
 
 if TYPE_CHECKING:
@@ -60,22 +61,22 @@ class HelpTabSwitcher(ContentSwitcher):
     def compose(self) -> ComposeResult:
 
         yield Vertical(
-            Label("Apply Tab Help", classes=Tcss.section_label.name),
+            SectionLabel("Apply Tab Help"),
             Static("Instructions for using the Apply Tab will go here."),
             id=self.ids.view_id(view=ViewName.apply_help_view),
         )
         yield Vertical(
-            Label("Re-Add Tab Help", classes=Tcss.section_label.name),
+            SectionLabel("Re-Add Tab Help"),
             Static("Instructions for using the Re-Add Tab will go here."),
             id=self.ids.view_id(view=ViewName.re_add_help_view),
         )
         yield Vertical(
-            Label("Add Tab Help", classes=Tcss.section_label.name),
+            SectionLabel("Add Tab Help"),
             Static("Instructions for using the Add Tab will go here."),
             id=self.ids.view_id(view=ViewName.add_help_view),
         )
         yield Vertical(
-            Label("chezmoi diagram", classes=Tcss.section_label.name),
+            SectionLabel("chezmoi diagram"),
             Static(self.FLOW_DIAGRAM, classes=Tcss.flow_diagram.name),
             id=self.ids.view_id(view=ViewName.diagram_view),
         )

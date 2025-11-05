@@ -6,7 +6,7 @@ from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Vertical
 from textual.screen import Screen
-from textual.widgets import Button, Footer, Label, Static
+from textual.widgets import Button, Footer, Static
 
 from chezmoi_mousse import (
     AppType,
@@ -24,6 +24,7 @@ from ..shared.canvas_ids import CanvasIds
 from ..shared.contents_view import ContentsView
 from ..shared.diff_view import DiffView
 from ..shared.loggers import OutputLog
+from ..shared.section_headers import SectionLabel
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CommandResult
@@ -155,6 +156,7 @@ class OperateScreen(Screen[OperateScreenData], AppType):
         )
 
     def compose(self) -> ComposeResult:
+        yield SectionLabel("Operate Context")
         yield OperateInfo(self.operate_data)
         with Vertical(id=ContainerIds.pre_operate.value):
             if self.operate_data.operate_btn == OperateBtn.apply_path:
@@ -172,9 +174,7 @@ class OperateScreen(Screen[OperateScreenData], AppType):
             ):
                 yield DiffView(ids=self.ids, reverse=False)
         with Vertical(id=ContainerIds.post_operate.value):
-            yield Label(
-                "Operate Command Output", classes=Tcss.section_label.name
-            )
+            yield SectionLabel("Operate Command Output")
             yield OutputLog(
                 ids=self.ids, view_name=ViewName.write_output_log_view
             )

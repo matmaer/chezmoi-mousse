@@ -12,7 +12,6 @@ from textual.widgets import (
     Button,
     ContentSwitcher,
     DataTable,
-    Label,
     Link,
     ListItem,
     ListView,
@@ -23,6 +22,7 @@ from textual.widgets import (
 from chezmoi_mousse import AppType, ContainerName, FlatBtn, Tcss, ViewName
 
 from .shared.button_groups import NavButtonsVertical
+from .shared.section_headers import SectionLabel
 from .shared.tabs_base import TabsBase
 
 if TYPE_CHECKING:
@@ -199,30 +199,25 @@ class ConfigTabSwitcher(ContentSwitcher):
 
     def compose(self) -> ComposeResult:
         yield VerticalScroll(
-            Label('"chezmoi doctor" output', classes=Tcss.section_label.name),
+            SectionLabel('"chezmoi doctor" output'),
             DoctorTable(ids=self.ids),
-            Label(
-                "Password managers not found in $PATH",
-                classes=Tcss.section_label.name,
-            ),
+            SectionLabel("Password managers not found in $PATH"),
             DoctorListView(ids=self.ids),
             id=self.ids.view_id(view=ViewName.doctor_view),
             classes=Tcss.doctor_vertical_scroll.name,
         )
         yield Vertical(
-            Label(
-                '"chezmoi cat-config" output', classes=Tcss.section_label.name
-            ),
+            SectionLabel('"chezmoi cat-config" output'),
             Pretty("<cat-config>", id=ViewName.pretty_cat_config_view),
             id=self.ids.view_id(view=ViewName.cat_config_view),
         )
         yield Vertical(
-            Label('"chezmoi ignored" output', classes=Tcss.section_label.name),
+            SectionLabel('"chezmoi ignored" output'),
             Pretty("<ignored>", id=ViewName.pretty_ignored_view),
             id=self.ids.view_id(view=ViewName.git_ignored_view),
         )
         yield Vertical(
-            Label('"chezmoi data" output', classes=Tcss.section_label.name),
+            SectionLabel('"chezmoi data" output'),
             Pretty("<template_data>", id=ViewName.pretty_template_data_view),
             id=self.ids.view_id(view=ViewName.template_data_view),
         )

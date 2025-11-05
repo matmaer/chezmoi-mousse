@@ -21,7 +21,7 @@ class Tcss(StrEnum):
     operate_info = ".operate_info"
     operate_screen = ".operate_screen"
     screen_base = ".screen_base"
-    section_label = ".section_label"
+    section_header = ".section_header"
     single_button_vertical = ".single_button_vertical"
     switch_slider = ".switch_slider"
     tab_button = ".tab_button"
