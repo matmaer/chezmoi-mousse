@@ -18,8 +18,6 @@ __all__ = ["CanvasIds"]
 class CanvasIds:
     __slots__ = (
         "canvas_name",
-        "datatable_id",
-        "datatable_qid",
         "listview_id",
         "listview_qid",
         "tab_container_id",
@@ -27,8 +25,6 @@ class CanvasIds:
 
     def __init__(self, canvas_name: CanvasName) -> None:
         self.canvas_name: str = canvas_name.name
-        self.datatable_id = f"{canvas_name}_datatable"
-        self.datatable_qid = f"#{canvas_name}_datatable"
         self.listview_id = f"{canvas_name}_listview"
         self.listview_qid = f"#{canvas_name}_listview"
         self.tab_container_id = f"{canvas_name}_container_id"
@@ -52,6 +48,9 @@ class CanvasIds:
         self, qid: str = "", *, name: ContainerName
     ) -> str:
         return f"{qid}{self.canvas_name}_{name.name}"
+
+    def datatable_id(self, qid: str = "", *, view_name: ViewName) -> str:
+        return f"{qid}{self.canvas_name}_{view_name.name}_datatable"
 
     def switch_slider_id(self, qid: str = "", *, name: ContainerName) -> str:
         return f"{qid}{self.canvas_name}_{name.name}"

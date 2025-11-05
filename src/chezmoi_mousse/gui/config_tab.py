@@ -105,9 +105,9 @@ class PwMgrInfo(Enum):
 class DoctorTable(DataTable[Text], AppType):
 
     def __init__(self, ids: "CanvasIds") -> None:
-        self.ids = ids
+
         super().__init__(
-            id=self.ids.datatable_id,
+            id=ids.datatable_id(view_name=ViewName.doctor_view),
             show_cursor=False,
             classes=Tcss.doctor_table.name,
         )
@@ -193,6 +193,9 @@ class ConfigTabSwitcher(ContentSwitcher):
             initial=self.ids.view_id(view=ViewName.doctor_view),
             classes=Tcss.nav_content_switcher.name,
         )
+        self.doctor_table_qid = ids.datatable_id(
+            "#", view_name=ViewName.doctor_view
+        )
 
     def compose(self) -> ComposeResult:
         yield VerticalScroll(
@@ -225,7 +228,7 @@ class ConfigTabSwitcher(ContentSwitcher):
         )
 
     def watch_doctor_results(self):
-        doctor_table = self.query_one(self.ids.datatable_qid, DoctorTable)
+        doctor_table = self.query_one(self.doctor_table_qid, DoctorTable)
         if self.doctor_results is None:
             return
         pw_mgr_cmds: list[str] = doctor_table.populate_doctor_data(
