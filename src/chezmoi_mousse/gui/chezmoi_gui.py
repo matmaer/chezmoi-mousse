@@ -81,9 +81,7 @@ class ChezmoiGUI(App[None]):
 
     def handle_return_data(self, return_data: "SplashData | None") -> None:
         if return_data is None:
-            self.push_screen(
-                InstallHelp(chezmoi_found=self.pre_run_data.chezmoi_found)
-            )
+            self.push_screen(InstallHelp())
             return
 
         # TODO: add logic to push the Init screen if chezmoi is found but not

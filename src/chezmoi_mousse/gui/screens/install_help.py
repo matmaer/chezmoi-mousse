@@ -9,11 +9,13 @@ from rich.text import Text
 from textual import on
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import Center, Horizontal, Vertical, VerticalGroup
+from textual.containers import Horizontal, VerticalGroup
 from textual.screen import Screen
-from textual.widgets import Button, Collapsible, Label, Link, Pretty, Tree
+from textual.widgets import Button, Collapsible, Link, Pretty, Tree
 
 from chezmoi_mousse import AppType, CanvasName, Chars, FlatBtn, Tcss
+
+from ..shared.section_headers import SectionLabel
 
 type ParsedJson = dict[str, Any]
 
@@ -22,8 +24,14 @@ __all__ = ["InstallHelp"]
 
 class Strings(StrEnum):
     chezmoi_docs_link_id = "chezmoi_docs_link"
+    collapsible_title = "'chezmoi' command not found in any search path"
     escape_exit_app = " escape key to exit app "
+    exit_app_action = "exit_application"
     install_chezmoi = " Install chezmoi "
+    link_label = "chezmoi.io/install"
+    link_url = "https://chezmoi.io/install"
+    no_path_var = "PATH variable is empty or not set."
+    top_label = "Chezmoi is not installed or not found."
 
 
 class CommandsTree(Tree[ParsedJson]):
@@ -31,49 +39,43 @@ class CommandsTree(Tree[ParsedJson]):
     ICON_NODE_EXPANDED = Chars.down_triangle
 
     def __init__(self) -> None:
-        super().__init__(label=Strings.install_chezmoi.value)
+        super().__init__(label=Strings.install_chezmoi)
 
 
 class InstallHelp(Screen[None], AppType):
 
-    BINDINGS = [Binding(key="escape", action="exit_application", show=False)]
+    BINDINGS = [
+        Binding(key="escape", action=Strings.exit_app_action, show=False)
+    ]
 
-    def __init__(self, chezmoi_found: bool) -> None:
-        self.chezmoi_found = chezmoi_found
+    def __init__(self) -> None:
         super().__init__(
             id=CanvasName.install_help_screen, classes=Tcss.screen_base.name
         )
 
     def compose(self) -> ComposeResult:
-        if self.chezmoi_found is True:
-            return
-        with Vertical(classes=Tcss.install_help.name):
-            yield Center(Label(("Chezmoi is not installed or not found.")))
-            yield Collapsible(
-                Pretty("PATH variable is empty or not set."),
-                title="'chezmoi' command not found in any search path",
-            )
-
-            with Center():
-                with Horizontal():
-                    yield CommandsTree()
-                    with VerticalGroup():
-                        yield Link(
-                            "chezmoi.io/install",
-                            url="https://chezmoi.io/install",
-                            id=Strings.chezmoi_docs_link_id,
-                        )
-                        yield Button(
-                            FlatBtn.exit_app.value,
-                            variant="primary",
-                            flat=True,
-                        )
+        yield SectionLabel(Strings.top_label)
+        yield Collapsible(
+            Pretty(Strings.no_path_var),
+            title=Strings.collapsible_title,
+            collapsed_symbol=Chars.right_triangle,
+            expanded_symbol=Chars.down_triangle,
+        )
+        with Horizontal():
+            yield CommandsTree()
+            with VerticalGroup():
+                yield Link(
+                    Strings.link_label,
+                    url=Strings.link_url,
+                    id=Strings.chezmoi_docs_link_id,
+                )
+                yield Button(FlatBtn.exit_app, variant="primary", flat=True)
 
     def on_mount(self) -> None:
-        if self.chezmoi_found is False:
-            self.border_subtitle = Strings.escape_exit_app.value
-            self.update_path_widget()
-            self.populate_tree()
+        self.add_class(Tcss.install_help.name)
+        self.border_subtitle = Strings.escape_exit_app
+        self.update_path_widget()
+        self.populate_tree()
 
     def update_path_widget(self) -> None:
         self.path_env = os.environ.get("PATH")
