@@ -52,6 +52,12 @@ class CanvasIds:
     def datatable_id(self, qid: str = "", *, view_name: ViewName) -> str:
         return f"{qid}{self.canvas_name}_{view_name.name}_datatable"
 
+    def initial_header_id(self, qid: str = "", *, view_name: ViewName) -> str:
+        return f"{qid}{self.canvas_name}_{view_name.name}_initial_header"
+
+    def section_header_id(self, qid: str = "", *, view_name: ViewName) -> str:
+        return f"{qid}{self.canvas_name}_{view_name.name}_section_header"
+
     def switch_slider_id(self, qid: str = "", *, name: ContainerName) -> str:
         return f"{qid}{self.canvas_name}_{name.name}"
 

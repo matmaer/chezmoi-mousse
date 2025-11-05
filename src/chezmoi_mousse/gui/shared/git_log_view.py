@@ -41,6 +41,9 @@ class GitLogView(Vertical, AppType):
         self.git_log_table_qid = ids.datatable_id(
             "#", view_name=ViewName.git_log_view
         )
+        self.initial_header_qid = ids.initial_header_id(
+            "#", view_name=ViewName.git_log_view
+        )
 
     def compose(self) -> ComposeResult:
         if self.ids.canvas_name in (
@@ -91,6 +94,12 @@ class GitLogView(Vertical, AppType):
     def watch_path(self) -> None:
         if self.path is None:
             return
+        else:
+            initial_header = self.query_one(
+                self.initial_header_qid, InitialHeader
+            )
+            initial_header.display = False
+
         if self.ids.canvas_name != CanvasName.logs_tab:
             self.border_title = f" {self.path} "
 

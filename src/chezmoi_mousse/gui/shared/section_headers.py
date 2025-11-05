@@ -29,10 +29,21 @@ class SectionLabel(Label):
 
 
 class SectionHeader(RichLog):
-    def __init__(self, *, messages: list[Content]) -> None:
+    def __init__(
+        self,
+        ids: "CanvasIds",
+        view_name: ViewName,
+        messages: list[Content],
+        initial: bool = False,
+    ) -> None:
         self.messages = messages
+        if initial:
+            self.super_id = ids.initial_header_id(view_name=view_name)
+        else:
+            self.super_id = ids.section_header_id(view_name=view_name)
 
         super().__init__(
+            id=self.super_id,
             auto_scroll=False,
             highlight=True,
             wrap=True,  # TODO: implement footer binding to toggle wrap
@@ -45,7 +56,9 @@ class InitialHeader(SectionHeader):
     def __init__(self, ids: "CanvasIds", view_name: ViewName) -> None:
         self.ids = ids
         self.view_name = view_name
-        super().__init__(messages=[])
+        super().__init__(
+            ids=ids, view_name=view_name, messages=[], initial=True
+        )
 
     def on_mount(self) -> None:
         self.add_class(Tcss.rich_header.name)
