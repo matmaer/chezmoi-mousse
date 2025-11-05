@@ -307,8 +307,6 @@ DirectoryTree {
 Footer {
   background-tint: $surface;
   background: $surface;
-  height: 1;
-  min-width: 35;
 }
 
 Header {
@@ -316,7 +314,6 @@ Header {
   color: $primary;
   height: 2;
   text-style: bold;
-  min-width: 35;
   .changes_enabled_color {
     color: $warning;
   }
@@ -354,7 +351,6 @@ Switch {
 TabbedContent {
   /* don't support anything smaller */
   min-height: 20;
-  min-width: 35;
   /* center the tab buttons on top */
   & #tabs-list {
     width: auto;
