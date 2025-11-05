@@ -26,6 +26,24 @@ class FlatButton(Button):
         )
 
 
+class OperateButton(Vertical):
+
+    def __init__(self, *, ids: "CanvasIds", button_enum: OperateBtn) -> None:
+        self.ids = ids
+        self.button_enum = button_enum
+        super().__init__()
+
+    def compose(self) -> ComposeResult:
+        with Vertical(classes=Tcss.single_button_vertical.name):
+            yield Button(
+                label=self.button_enum.initial_label,
+                id=self.ids.button_id(btn=self.button_enum),
+                classes=Tcss.operate_button.name,
+                disabled=True,
+                tooltip=self.button_enum.initial_tooltip,
+            )
+
+
 class NavButtonsVertical(VerticalGroup):
 
     def __init__(
@@ -50,14 +68,7 @@ class OperateBtnHorizontal(HorizontalGroup):
 
     def compose(self) -> ComposeResult:
         for button_enum in self.buttons:
-            with Vertical(classes=Tcss.single_button_vertical.name):
-                yield Button(
-                    label=button_enum.initial_label,
-                    id=self.ids.button_id(btn=button_enum),
-                    classes=Tcss.operate_button.name,
-                    disabled=True,
-                    tooltip=button_enum.initial_tooltip,
-                )
+            yield OperateButton(ids=self.ids, button_enum=button_enum)
 
 
 class TabBtnHorizontal(HorizontalGroup):
