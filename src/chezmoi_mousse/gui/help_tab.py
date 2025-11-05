@@ -138,7 +138,7 @@ class HelpTab(TabsBase):
             )
         yield HelpTabSwitcher(ids=self.ids)
 
-    @on(Button.Pressed, Tcss.nav_button.value)
+    @on(Button.Pressed, Tcss.flat_button.value)
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
         switcher = self.query_one(self.content_switcher_qid, HelpTabSwitcher)

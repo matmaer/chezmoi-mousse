@@ -15,6 +15,21 @@
   margin-bottom: 1;
 }
 
+.flat_button{
+  background-tint: initial;
+  width: 100%;
+  &:hover {
+    color: $text-accent;
+    background: $primary-muted;
+    background-tint: $primary-muted;
+    border: block $primary-muted;
+  }
+  &:focus {
+    color: $accent;
+    text-style: none;
+  }
+}
+
 .flow_diagram {
   min-width: 78;
 }
@@ -92,16 +107,6 @@
   }
   &.install_help {
     border-bottom: $primary;
-    & Button {
-      background-tint: initial;
-      width: 100%;
-      &:hover {
-        color: $text-accent;
-        background: $primary-muted;
-        background-tint: $primary-muted;
-        border: block $primary-muted;
-      }
-    }
     & Collapsible {
       border-top: none;
     }
@@ -164,16 +169,6 @@
 
 NavButtonsVertical {
   width: auto;
-  margin-right: 2;
-  & .nav_button {
-    background-tint: initial;
-    width: 100%;
-    min-width: 17;
-    &:focus {
-      color: $accent;
-      text-style: none;
-    }
-  }
 }
 
 OperateBtnHorizontal {

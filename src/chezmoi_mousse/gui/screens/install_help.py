@@ -1,4 +1,3 @@
-# from importlib.resources import files
 import json
 import os
 from enum import StrEnum
@@ -15,6 +14,8 @@ from textual.widgets import Button, Collapsible, Link, Pretty, Tree
 
 from chezmoi_mousse import AppType, CanvasName, Chars, FlatBtn, Tcss
 
+from ..shared.buttons import FlatButton
+from ..shared.canvas_ids import CanvasIds
 from ..shared.section_headers import SectionLabel
 
 type ParsedJson = dict[str, Any]
@@ -49,6 +50,7 @@ class InstallHelp(Screen[None], AppType):
     ]
 
     def __init__(self) -> None:
+        self.ids = CanvasIds(CanvasName.install_help_screen)
         super().__init__(
             id=CanvasName.install_help_screen, classes=Tcss.screen_base.name
         )
@@ -69,7 +71,7 @@ class InstallHelp(Screen[None], AppType):
                     url=Strings.link_url,
                     id=Strings.chezmoi_docs_link_id,
                 )
-                yield Button(FlatBtn.exit_app, variant="primary", flat=True)
+                yield FlatButton(ids=self.ids, button_enum=FlatBtn.exit_app)
 
     def on_mount(self) -> None:
         self.add_class(Tcss.install_help.name)

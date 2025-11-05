@@ -15,7 +15,7 @@ class Tcss(StrEnum):
     install_help = ".install_help"
     last_clicked = ".last_clicked"
     log_views = ".log_views"
-    nav_button = ".nav_button"
+    flat_button = ".flat_button"
     nav_content_switcher = ".nav_content_switcher"
     operate_button = ".operate_button"
     operate_screen = ".operate_screen"

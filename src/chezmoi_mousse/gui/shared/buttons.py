@@ -14,6 +14,18 @@ if TYPE_CHECKING:
 __all__ = ["NavButtonsVertical", "OperateBtnHorizontal", "TabBtnHorizontal"]
 
 
+class FlatButton(Button):
+    def __init__(self, *, ids: "CanvasIds", button_enum: FlatBtn) -> None:
+        self.ids = ids
+        super().__init__(
+            label=button_enum.value,
+            variant="primary",
+            flat=True,
+            classes=Tcss.flat_button.name,
+            id=self.ids.button_id(btn=button_enum),
+        )
+
+
 class NavButtonsVertical(VerticalGroup):
 
     def __init__(
@@ -25,13 +37,7 @@ class NavButtonsVertical(VerticalGroup):
 
     def compose(self) -> ComposeResult:
         for button_enum in self.buttons:
-            yield Button(
-                label=button_enum.value,
-                variant="primary",
-                flat=True,
-                classes=Tcss.nav_button.name,
-                id=self.ids.button_id(btn=button_enum),
-            )
+            yield FlatButton(ids=self.ids, button_enum=button_enum)
 
 
 class OperateBtnHorizontal(HorizontalGroup):
