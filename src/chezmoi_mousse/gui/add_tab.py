@@ -21,7 +21,7 @@ from chezmoi_mousse import (
     ViewName,
 )
 
-from .shared.buttons import OperateBtnHorizontal
+from .shared.buttons import AddOpButtons
 from .shared.contents_view import ContentsView
 from .shared.operate_msg import CurrentAddNodeMsg
 from .shared.switch_slider import AddSwitchSlider
@@ -265,9 +265,7 @@ class AddTab(TabsBase):
             id=self.ids.tab_vertical_id(name=ContainerName.right_side)
         ):
             yield ContentsView(ids=self.ids)
-        yield OperateBtnHorizontal(
-            ids=self.ids, buttons=(OperateBtn.add_file, OperateBtn.add_dir)
-        )
+        yield AddOpButtons(ids=self.ids)
         yield AddSwitchSlider(ids=self.ids)
 
     def update_buttons(self, is_dir: bool) -> None:

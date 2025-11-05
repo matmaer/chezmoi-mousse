@@ -171,7 +171,7 @@ NavButtonsVertical {
   width: auto;
 }
 
-OperateBtnHorizontal {
+.operate_btn_horizontal {
   width: 100%;
   height: 3;
   dock: bottom;

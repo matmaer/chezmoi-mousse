@@ -63,12 +63,54 @@ class OperateBtnHorizontal(HorizontalGroup):
         self.ids = ids
         self.buttons = buttons
         super().__init__(
-            id=self.ids.buttons_group_id(name=ContainerName.operate_btn_group)
+            id=self.ids.buttons_group_id(name=ContainerName.operate_btn_group),
+            classes=Tcss.operate_btn_horizontal.name,
         )
 
     def compose(self) -> ComposeResult:
         for button_enum in self.buttons:
             yield OperateButton(ids=self.ids, button_enum=button_enum)
+
+
+class ApplyOpButtons(HorizontalGroup):
+    def __init__(self, *, ids: "CanvasIds"):
+        self.ids = ids
+        super().__init__(
+            id=self.ids.buttons_group_id(name=ContainerName.operate_btn_group),
+            classes="operate_btn_horizontal",
+        )
+
+    def compose(self) -> ComposeResult:
+        yield OperateButton(ids=self.ids, button_enum=OperateBtn.apply_path)
+        yield OperateButton(ids=self.ids, button_enum=OperateBtn.forget_path)
+        yield OperateButton(ids=self.ids, button_enum=OperateBtn.destroy_path)
+
+
+class ReAddOpButtons(HorizontalGroup):
+    def __init__(self, *, ids: "CanvasIds"):
+        self.ids = ids
+        super().__init__(
+            id=self.ids.buttons_group_id(name=ContainerName.operate_btn_group),
+            classes=Tcss.operate_btn_horizontal.name,
+        )
+
+    def compose(self) -> ComposeResult:
+        yield OperateButton(ids=self.ids, button_enum=OperateBtn.re_add_path)
+        yield OperateButton(ids=self.ids, button_enum=OperateBtn.forget_path)
+        yield OperateButton(ids=self.ids, button_enum=OperateBtn.destroy_path)
+
+
+class AddOpButtons(HorizontalGroup):
+    def __init__(self, *, ids: "CanvasIds"):
+        self.ids = ids
+        super().__init__(
+            id=self.ids.buttons_group_id(name=ContainerName.operate_btn_group),
+            classes=Tcss.operate_btn_horizontal.name,
+        )
+
+    def compose(self) -> ComposeResult:
+        yield OperateButton(ids=self.ids, button_enum=OperateBtn.add_dir)
+        yield OperateButton(ids=self.ids, button_enum=OperateBtn.add_file)
 
 
 class TabBtnHorizontal(HorizontalGroup):
