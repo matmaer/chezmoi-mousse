@@ -96,6 +96,8 @@ class GitLogView(Vertical, AppType):
     def watch_path(self) -> None:
         if self.path is None:
             return
+        self.border_title = f" {self.path} "
+
         source_path_str: str = self.app.chezmoi.read(
             ReadCmd.source_path, self.path
         ).std_out
