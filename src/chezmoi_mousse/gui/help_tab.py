@@ -1,3 +1,4 @@
+from enum import StrEnum
 from typing import TYPE_CHECKING
 
 from textual import on
@@ -15,6 +16,17 @@ if TYPE_CHECKING:
     from .shared.canvas_ids import CanvasIds
 
 __all__ = ["HelpTab"]
+
+
+class Strings(StrEnum):
+    add_help = "Add Tab Help"
+    apply_help = "Apply Tab Help"
+    chezmoi_diagram = "chezmoi diagram"
+    re_add_help = "Re-Add Tab Help"
+
+    @property
+    def placeholder(self) -> str:
+        return f"{self.value} will go here."
 
 
 class HelpTabSwitcher(ContentSwitcher):
@@ -61,22 +73,22 @@ class HelpTabSwitcher(ContentSwitcher):
     def compose(self) -> ComposeResult:
 
         yield Vertical(
-            SectionLabel("Apply Tab Help"),
-            Static("Instructions for using the Apply Tab will go here."),
+            SectionLabel(Strings.apply_help),
+            Static(Strings.apply_help.placeholder),
             id=self.ids.view_id(view=ViewName.apply_help_view),
         )
         yield Vertical(
-            SectionLabel("Re-Add Tab Help"),
-            Static("Instructions for using the Re-Add Tab will go here."),
+            SectionLabel(Strings.re_add_help),
+            Static(Strings.re_add_help.placeholder),
             id=self.ids.view_id(view=ViewName.re_add_help_view),
         )
         yield Vertical(
-            SectionLabel("Add Tab Help"),
-            Static("Instructions for using the Add Tab will go here."),
+            SectionLabel(Strings.add_help),
+            Static(Strings.add_help.placeholder),
             id=self.ids.view_id(view=ViewName.add_help_view),
         )
         yield Vertical(
-            SectionLabel("chezmoi diagram"),
+            SectionLabel(Strings.chezmoi_diagram),
             Static(self.FLOW_DIAGRAM, classes=Tcss.flow_diagram.name),
             id=self.ids.view_id(view=ViewName.diagram_view),
         )

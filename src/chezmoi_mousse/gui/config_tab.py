@@ -1,6 +1,6 @@
 import json
 from dataclasses import dataclass
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import TYPE_CHECKING
 
 from rich.text import Text
@@ -31,6 +31,14 @@ if TYPE_CHECKING:
     from .shared.canvas_ids import CanvasIds
 
 __all__ = ["ConfigTab", "ConfigTabSwitcher"]
+
+
+class Strings(StrEnum):
+    cat_config_output = '"chezmoi cat-config" output'
+    doctor_output = '"chezmoi doctor" output'
+    ignored_output = '"chezmoi ignored" output'
+    password_managers = "Password managers not found in $PATH"
+    template_data_output = '"chezmoi data" output'
 
 
 class PwMgrInfo(Enum):
@@ -199,25 +207,25 @@ class ConfigTabSwitcher(ContentSwitcher):
 
     def compose(self) -> ComposeResult:
         yield VerticalScroll(
-            SectionLabel('"chezmoi doctor" output'),
+            SectionLabel(Strings.doctor_output),
             DoctorTable(ids=self.ids),
-            SectionLabel("Password managers not found in $PATH"),
+            SectionLabel(Strings.password_managers),
             DoctorListView(ids=self.ids),
             id=self.ids.view_id(view=ViewName.doctor_view),
             classes=Tcss.doctor_vertical_scroll.name,
         )
         yield Vertical(
-            SectionLabel('"chezmoi cat-config" output'),
+            SectionLabel(Strings.cat_config_output),
             Pretty("<cat-config>", id=ViewName.pretty_cat_config_view),
             id=self.ids.view_id(view=ViewName.cat_config_view),
         )
         yield Vertical(
-            SectionLabel('"chezmoi ignored" output'),
+            SectionLabel(Strings.ignored_output),
             Pretty("<ignored>", id=ViewName.pretty_ignored_view),
             id=self.ids.view_id(view=ViewName.git_ignored_view),
         )
         yield Vertical(
-            SectionLabel('"chezmoi data" output'),
+            SectionLabel(Strings.template_data_output),
             Pretty("<template_data>", id=ViewName.pretty_template_data_view),
             id=self.ids.view_id(view=ViewName.template_data_view),
         )
