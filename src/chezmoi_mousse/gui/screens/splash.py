@@ -252,7 +252,6 @@ class LoadingScreen(Screen[SplashData | None], AppType):
             await worker.wait()
 
         self.app.chezmoi = Chezmoi(
-            changes_enabled=self.app.changes_enabled,
             dev_mode=self.app.dev_mode,
             dest_dir=globals()["parsed_config"].dest_dir,
             managed_dirs=globals()["managed_dirs"],

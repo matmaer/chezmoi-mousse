@@ -232,7 +232,6 @@ class Chezmoi:
     def __init__(
         self,
         *,
-        changes_enabled: bool,
         dev_mode: bool,
         dest_dir: Path,
         managed_dirs: CommandResult,
@@ -240,7 +239,6 @@ class Chezmoi:
         status_dirs: CommandResult,
         status_files: CommandResult,
     ) -> None:
-        self._changes_enabled = changes_enabled
         self._dev_mode = dev_mode
 
         self.dest_dir = dest_dir
@@ -483,8 +481,9 @@ class Chezmoi:
         *,
         path_arg: Path | None = None,
         repo_url: str | None = None,
+        dry_run: bool,
     ) -> CommandResult:
-        if self._changes_enabled is True:
+        if dry_run is True:
             base_cmd: list[str] = GlobalCmd.live_run.value
         else:
             base_cmd: list[str] = GlobalCmd.dry_run.value

@@ -265,23 +265,33 @@ class OperateScreen(Screen[OperateScreenData], AppType):
             OperateBtn.add_dir,
         ):
             cmd_result = self.app.chezmoi.perform(
-                WriteCmd.add, path_arg=self.operate_data.node_data.path
+                WriteCmd.add,
+                path_arg=self.operate_data.node_data.path,
+                dry_run=self.app.changes_enabled,
             )
         elif self.operate_data.operate_btn == OperateBtn.apply_path:
             cmd_result = self.app.chezmoi.perform(
-                WriteCmd.apply, path_arg=self.operate_data.node_data.path
+                WriteCmd.apply,
+                path_arg=self.operate_data.node_data.path,
+                dry_run=self.app.changes_enabled,
             )
         elif self.operate_data.operate_btn == OperateBtn.re_add_path:
             cmd_result = self.app.chezmoi.perform(
-                WriteCmd.re_add, path_arg=self.operate_data.node_data.path
+                WriteCmd.re_add,
+                path_arg=self.operate_data.node_data.path,
+                dry_run=self.app.changes_enabled,
             )
         elif self.operate_data.operate_btn == OperateBtn.forget_path:
             cmd_result = self.app.chezmoi.perform(
-                WriteCmd.forget, path_arg=self.operate_data.node_data.path
+                WriteCmd.forget,
+                path_arg=self.operate_data.node_data.path,
+                dry_run=self.app.changes_enabled,
             )
         elif self.operate_data.operate_btn == OperateBtn.destroy_path:
             cmd_result = self.app.chezmoi.perform(
-                WriteCmd.destroy, path_arg=self.operate_data.node_data.path
+                WriteCmd.destroy,
+                path_arg=self.operate_data.node_data.path,
+                dry_run=self.app.changes_enabled,
             )
         else:
             self.screen.notify(
