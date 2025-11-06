@@ -15,12 +15,25 @@ HARDCODED = "hardcoded tcss class"
 ORPHANED = "Orphaned gui.tcss classes"
 
 
-def extract_tcss_classes() -> set[str]:
-    pattern = r"[.][^a-z]*([a-z][a-z_]*(?=.*_)[a-z_]*)(?=\s|,|$)"
+def extract_tcss_classes() -> list[str]:
+    pattern = r"\.[^a-z]*[a-z][a-z_]*(?=.*_)[a-z_]*(?=\s|,|$)"
     with open(GUI_DOT_TCSS_PATH, "r") as f:
         content = f.read()
-        matches = re.findall(pattern, content, re.MULTILINE)
-    return set(matches)
+        matches = re.findall(pattern, content)
+    return matches
+
+
+def test_tcss_class_not_in_tcss_enum() -> None:
+    result: list[str] = []
+    tcss_classes = extract_tcss_classes()
+    tcss_enum_members = [member.value for member in Tcss]
+
+    for tcss_class in tcss_classes:
+        if tcss_class not in tcss_enum_members:
+            result.append(tcss_class)
+
+    if len(result) > 0:
+        pytest.fail(f"\nTcss classes not in Tcss enum:\n{'\n'.join(result)}")
 
 
 def get_attr_chain(node: ast.AST) -> list[str] | None:
@@ -45,31 +58,6 @@ def is_allowed_enum_attr(node: ast.AST) -> bool:
         member = chain[1]
         return hasattr(Tcss, member)
     return False
-
-
-def test_no_orphaned() -> None:
-    tcss_classes = extract_tcss_classes()
-    tcss_enum_members = {member.name for member in Tcss}
-
-    orphaned_classes = tcss_classes - tcss_enum_members
-    orphaned_members = tcss_enum_members - tcss_classes
-
-    result = ""
-    if orphaned_classes:
-        orphaned_list = "\n".join(
-            f"- {cls}" for cls in sorted(orphaned_classes)
-        )
-        result += f"\n{ORPHANED} (not found in Tcss):\n{orphaned_list}\n"
-
-    if orphaned_members:
-        orphaned_list = "\n".join(
-            f"- {mem}" for mem in sorted(orphaned_members)
-        )
-        result += f"\n{ORPHANED} (not found in gui.tcss):\n{orphaned_list}\n"
-
-    # make sure we only make one pytest.fail call
-    if result:
-        pytest.fail(f"\n{result}")
 
 
 @pytest.mark.parametrize(
