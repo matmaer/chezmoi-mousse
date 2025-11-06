@@ -16,8 +16,10 @@ __all__ = [
     "AddOpScreenButtons",
     "ApplyOpButtons",
     "ApplyOpScreenButtons",
+    "FlatButton",
     "NavButtonsVertical",
     "OperateBtnHorizontal",
+    "OperateButton",
     "ReAddOpButtons",
     "ReAddOpScreenButtons",
     "TabBtnHorizontal",
@@ -87,7 +89,7 @@ class ApplyOpButtons(HorizontalGroup):
         self.ids = ids
         super().__init__(
             id=self.ids.buttons_group_id(name=ContainerName.operate_btn_group),
-            classes="operate_btn_horizontal",
+            classes=Tcss.operate_btn_horizontal.name,
         )
 
     def compose(self) -> ComposeResult:
@@ -102,7 +104,7 @@ class ApplyOpScreenButtons(HorizontalGroup):
         self.operate_button = operate_button
         super().__init__(
             id=self.ids.buttons_group_id(name=ContainerName.operate_btn_group),
-            classes="operate_btn_horizontal",
+            classes=Tcss.operate_btn_horizontal.name,
         )
 
     def compose(self) -> ComposeResult:
