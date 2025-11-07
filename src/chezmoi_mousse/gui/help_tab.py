@@ -29,6 +29,45 @@ class Strings(StrEnum):
         return f"{self.value} will go here."
 
 
+class ApplyTabHelp(Vertical):
+
+    def __init__(self, ids: "CanvasIds") -> None:
+        self.ids = ids
+        return super().__init__(
+            id=self.ids.view_id(view=ViewName.apply_help_view)
+        )
+
+    def compose(self) -> ComposeResult:
+        yield SectionLabel(Strings.apply_help)
+        yield Static(Strings.apply_help.placeholder)
+
+
+class ReAddTabHelp(Vertical):
+
+    def __init__(self, ids: "CanvasIds") -> None:
+        self.ids = ids
+        return super().__init__(
+            id=self.ids.view_id(view=ViewName.re_add_help_view)
+        )
+
+    def compose(self) -> ComposeResult:
+        yield SectionLabel(Strings.re_add_help)
+        yield Static(Strings.re_add_help.placeholder)
+
+
+class AddTabHelp(Vertical):
+
+    def __init__(self, ids: "CanvasIds") -> None:
+        self.ids = ids
+        return super().__init__(
+            id=self.ids.view_id(view=ViewName.add_help_view)
+        )
+
+    def compose(self) -> ComposeResult:
+        yield SectionLabel(Strings.add_help)
+        yield Static(Strings.add_help.placeholder)
+
+
 class HelpTabSwitcher(ContentSwitcher):
 
     # provisional diagrams until dynamically created
@@ -72,21 +111,9 @@ class HelpTabSwitcher(ContentSwitcher):
 
     def compose(self) -> ComposeResult:
 
-        yield Vertical(
-            SectionLabel(Strings.apply_help),
-            Static(Strings.apply_help.placeholder),
-            id=self.ids.view_id(view=ViewName.apply_help_view),
-        )
-        yield Vertical(
-            SectionLabel(Strings.re_add_help),
-            Static(Strings.re_add_help.placeholder),
-            id=self.ids.view_id(view=ViewName.re_add_help_view),
-        )
-        yield Vertical(
-            SectionLabel(Strings.add_help),
-            Static(Strings.add_help.placeholder),
-            id=self.ids.view_id(view=ViewName.add_help_view),
-        )
+        yield ApplyTabHelp(ids=self.ids)
+        yield ReAddTabHelp(ids=self.ids)
+        yield AddTabHelp(ids=self.ids)
         yield Vertical(
             SectionLabel(Strings.chezmoi_diagram),
             Static(self.FLOW_DIAGRAM, classes=Tcss.flow_diagram.name),
