@@ -29,7 +29,7 @@ class Strings(StrEnum):
     escape_exit_app = " escape key to exit app "
     exit_app_action = "exit_application"
     install_chezmoi = " Install chezmoi "
-    link_label = "chezmoi.io/install"
+    link_text = "chezmoi.io/install"
     link_url = "https://chezmoi.io/install"
     no_path_var = "PATH variable is empty or not set."
     top_label = "Chezmoi is not installed or not found."
@@ -67,7 +67,7 @@ class InstallHelp(Screen[None], AppType):
             yield CommandsTree()
             with VerticalGroup():
                 yield Link(
-                    Strings.link_label,
+                    Strings.link_text,
                     url=Strings.link_url,
                     id=Strings.chezmoi_docs_link_id,
                 )

@@ -6,6 +6,14 @@ __all__ = ["OperateBtn"]
 INITIAL_TOOLTIP = "This is the destDir, select a path to operate on."
 
 
+class ChezmoiIoLinks(StrEnum):
+    add = "https://www.chezmoi.io/reference/commands/add/"
+    apply = "https://www.chezmoi.io/reference/commands/apply/"
+    destroy = "https://www.chezmoi.io/reference/commands/destroy/"
+    forget = "https://www.chezmoi.io/reference/commands/forget/"
+    re_add = "https://www.chezmoi.io/reference/commands/re-add/"
+
+
 class OperateButtons(StrEnum):
     add_dir = "Add Dir"
     add_file = "Add File"
@@ -51,6 +59,7 @@ class ApplyReAddButtonData:
     file_no_status_tooltip: str
     file_tooltip: str
     initial_label: str  # this is the label containing "Path"
+    link: str
 
 
 @dataclass
@@ -61,6 +70,7 @@ class DestroyForgetButtonData:
     file_label: str
     file_tooltip: str
     initial_label: str  # this is the label containing "Path"
+    link: str
 
 
 @dataclass
@@ -69,6 +79,7 @@ class AddButtonData:
     disabled_tooltip: str
     enabled_tooltip: str
     initial_label: str
+    link: str
 
 
 @dataclass
@@ -82,11 +93,13 @@ class OperateBtn(Enum):
         disabled_tooltip=ToolTips.add_file_disabled.value,
         enabled_tooltip=ToolTips.add_file.value,
         initial_label=OperateButtons.add_file.value,
+        link=ChezmoiIoLinks.add.value,
     )
     add_dir = AddButtonData(
         disabled_tooltip=ToolTips.add_dir_disabled.value,
         enabled_tooltip=ToolTips.add_dir.value,
         initial_label=OperateButtons.add_dir.value,
+        link=ChezmoiIoLinks.add.value,
     )
     apply_path = ApplyReAddButtonData(
         dir_label=OperateButtons.apply_dir.value,
@@ -96,6 +109,7 @@ class OperateBtn(Enum):
         file_no_status_tooltip=ToolTips.file_no_status.value,
         file_tooltip=ToolTips.apply_file.value,
         initial_label=OperateButtons.apply_path.value,
+        link=ChezmoiIoLinks.apply.value,
     )
     re_add_path = ApplyReAddButtonData(
         dir_label=OperateButtons.re_add_dir.value,
@@ -105,6 +119,7 @@ class OperateBtn(Enum):
         file_no_status_tooltip=ToolTips.file_no_status.value,
         file_tooltip=ToolTips.re_add_file.value,
         initial_label=OperateButtons.re_add_path.value,
+        link=ChezmoiIoLinks.re_add.value,
     )
     forget_path = DestroyForgetButtonData(
         dir_label=OperateButtons.forget_dir.value,
@@ -112,6 +127,7 @@ class OperateBtn(Enum):
         file_label=OperateButtons.forget_file.value,
         file_tooltip=ToolTips.forget_file.value,
         initial_label=OperateButtons.forget_path.value,
+        link=ChezmoiIoLinks.forget.value,
     )
     destroy_path = DestroyForgetButtonData(
         dir_label=OperateButtons.destroy_dir.value,
@@ -119,6 +135,7 @@ class OperateBtn(Enum):
         file_label=OperateButtons.destroy_file.value,
         file_tooltip=ToolTips.destroy_file.value,
         initial_label=OperateButtons.destroy_path.value,
+        link=ChezmoiIoLinks.destroy.value,
     )
     exit_button = ExitButtonData(
         initial_label=OperateButtons.operate_cancel.value,
@@ -197,6 +214,24 @@ class OperateBtn(Enum):
     @property
     def initial_tooltip(self) -> str:
         return INITIAL_TOOLTIP
+
+    @property
+    def link_url(self) -> str:
+        if isinstance(
+            self.value,
+            (AddButtonData, ApplyReAddButtonData, DestroyForgetButtonData),
+        ):
+            return self.value.link
+        raise AttributeError(f"{self.name} has no link")
+
+    @property
+    def link_text(self) -> str:
+        if isinstance(
+            self.value,
+            (AddButtonData, ApplyReAddButtonData, DestroyForgetButtonData),
+        ):
+            return self.value.link.replace("https://www.", "").rstrip("/")
+        raise AttributeError(f"{self.name} has no link")
 
     @classmethod
     def from_label(cls, label: str) -> "OperateBtn":
