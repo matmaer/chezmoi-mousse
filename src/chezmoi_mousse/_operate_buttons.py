@@ -26,20 +26,20 @@ class OperateButtons(StrEnum):
 
 
 class ToolTips(StrEnum):
-    add_dir = "Manage this directory with chezmoi."
+    add_dir = "Manage the directory with chezmoi."
     add_dir_disabled = "Select a directory to operate on."
-    add_file = "Manage this file with chezmoi."
+    add_file = "Manage the file with chezmoi."
     add_file_disabled = "Select a file to operate on."
-    apply_dir = 'Run "chezmoi apply" on this directory.'
-    apply_file = 'Run "chezmoi apply" on this file.'
-    destroy_dir = "MAKE SURE YOU HAVE A BACKUP!\nPermanently remove this directory and its files from disk and chezmoi."
-    destroy_file = "MAKE SURE YOU HAVE A BACKUP!\nPermanently remove this file from disk and chezmoi."
+    apply_dir = 'Run "chezmoi apply" on the directory.'
+    apply_file = 'Run "chezmoi apply" on the file.'
+    destroy_dir = 'Run "chezmoi destroy" on the directory. Permanently remove the directory and its files from disk and chezmoi. MAKE SURE YOU HAVE A BACKUP!'
+    destroy_file = 'Run "chezmoi destroy" on the file. Permanently remove the file from disk and chezmoi. MAKE SURE YOU HAVE A BACKUP!'
     dir_no_status = "The selected directory has no status to operate on."
     file_no_status = "The selected file has no status to operate on."
-    forget_dir = "Stop managing this directory."
-    forget_file = "Stop managing this file."
-    re_add_dir = "Re-add this directory its files to chezmoi."
-    re_add_file = "Re-add this file to chezmoi."
+    forget_dir = 'Run "chezmoi forget", stop managing the directory.'
+    forget_file = 'Run "chezmoi forget", stop managing the file.'
+    re_add_dir = 'Run "chezmoi re-add" on the directory.'
+    re_add_file = 'Run "chezmoi re-add" on the file.'
 
 
 @dataclass

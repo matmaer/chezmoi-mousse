@@ -6,7 +6,14 @@ from textual.app import ComposeResult
 from textual.containers import Vertical
 from textual.widgets import Button, ContentSwitcher, Static
 
-from chezmoi_mousse import ContainerName, FlatBtn, Tcss, ViewName
+from chezmoi_mousse import (
+    ContainerName,
+    FlatBtn,
+    OperateBtn,
+    Switches,
+    Tcss,
+    ViewName,
+)
 
 from .shared.buttons import NavButtonsVertical
 from .shared.section_headers import SectionLabel
@@ -19,53 +26,105 @@ __all__ = ["HelpTab"]
 
 
 class Strings(StrEnum):
-    add_help = "Add Tab Help"
-    apply_help = "Apply Tab Help"
+    available_buttons = "Available Buttons"
+    available_switches = "Available Switches"
     chezmoi_diagram = "chezmoi diagram"
-    re_add_help = "Re-Add Tab Help"
 
-    @property
-    def placeholder(self) -> str:
-        return f"{self.value} will go here."
+
+class ButtonsHelp(Vertical):
+    def __init__(self, button_info: list[tuple[str, str]]) -> None:
+        super().__init__()
+
+        self.button_info = button_info
+
+    def compose(self) -> ComposeResult:
+        yield SectionLabel(Strings.available_buttons)
+        for label, tooltip in self.button_info:
+            yield Static(f"- {label}: {tooltip}")
+
+
+class SwitchesHelp(Vertical):
+    def __init__(self, switches: list[Switches]) -> None:
+        super().__init__()
+
+        self.switches = switches
+
+    def compose(self) -> ComposeResult:
+        yield SectionLabel(Strings.available_switches)
+        for switch in self.switches:
+            yield Static(f"- {switch.label}: {switch.enabled_tooltip}")
 
 
 class ApplyTabHelp(Vertical):
 
     def __init__(self, ids: "CanvasIds") -> None:
-        self.ids = ids
-        return super().__init__(
-            id=self.ids.view_id(view=ViewName.apply_help_view)
+        super().__init__(id=ids.view_id(view=ViewName.apply_help_view))
+
+        self.op_buttons = [
+            OperateBtn.apply_path,
+            OperateBtn.forget_path,
+            OperateBtn.destroy_path,
+        ]
+        self.op_dir_buttons_info: list[tuple[str, str]] = [
+            (op_btn.dir_label, op_btn.dir_tooltip)
+            for op_btn in self.op_buttons
+        ]
+        self.op_file_buttons_info: list[tuple[str, str]] = [
+            (op_btn.file_label, op_btn.file_tooltip)
+            for op_btn in self.op_buttons
+        ]
+        self.all_op_buttons_info = (
+            self.op_dir_buttons_info + self.op_file_buttons_info
         )
+        self.switches = [Switches.expand_all, Switches.unchanged]
 
     def compose(self) -> ComposeResult:
-        yield SectionLabel(Strings.apply_help)
-        yield Static(Strings.apply_help.placeholder)
+        yield ButtonsHelp(button_info=self.all_op_buttons_info)
+        yield SwitchesHelp(switches=self.switches)
 
 
 class ReAddTabHelp(Vertical):
 
     def __init__(self, ids: "CanvasIds") -> None:
-        self.ids = ids
-        return super().__init__(
-            id=self.ids.view_id(view=ViewName.re_add_help_view)
+        super().__init__(id=ids.view_id(view=ViewName.re_add_help_view))
+
+        self.op_buttons = [
+            OperateBtn.re_add_path,
+            OperateBtn.forget_path,
+            OperateBtn.destroy_path,
+        ]
+        self.op_dir_buttons_info: list[tuple[str, str]] = [
+            (op_btn.dir_label, op_btn.dir_tooltip)
+            for op_btn in self.op_buttons
+        ]
+        self.op_file_buttons_info: list[tuple[str, str]] = [
+            (op_btn.file_label, op_btn.file_tooltip)
+            for op_btn in self.op_buttons
+        ]
+        self.all_op_buttons_info = (
+            self.op_dir_buttons_info + self.op_file_buttons_info
         )
+        self.switches = [Switches.expand_all, Switches.unchanged]
 
     def compose(self) -> ComposeResult:
-        yield SectionLabel(Strings.re_add_help)
-        yield Static(Strings.re_add_help.placeholder)
+        yield ButtonsHelp(button_info=self.all_op_buttons_info)
+        yield SwitchesHelp(switches=self.switches)
 
 
 class AddTabHelp(Vertical):
 
     def __init__(self, ids: "CanvasIds") -> None:
-        self.ids = ids
-        return super().__init__(
-            id=self.ids.view_id(view=ViewName.add_help_view)
-        )
+        super().__init__(id=ids.view_id(view=ViewName.add_help_view))
+
+        self.all_op_buttons_info: list[tuple[str, str]] = [
+            (op_btn.initial_label, op_btn.enabled_tooltip)
+            for op_btn in (OperateBtn.add_dir, OperateBtn.add_file)
+        ]
+        self.switches = [Switches.unmanaged_dirs, Switches.unwanted]
 
     def compose(self) -> ComposeResult:
-        yield SectionLabel(Strings.add_help)
-        yield Static(Strings.add_help.placeholder)
+        yield ButtonsHelp(button_info=self.all_op_buttons_info)
+        yield SwitchesHelp(switches=self.switches)
 
 
 class HelpTabSwitcher(ContentSwitcher):
