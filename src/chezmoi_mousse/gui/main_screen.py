@@ -212,10 +212,12 @@ class MainScreen(Screen[None], AppType):
         yield Footer()
 
     def handle_splash_data(self, data: "SplashData") -> None:
-        self.populate_trees()
+        self.populate_trees(splash_data=data)
         self.update_config_tab_outputs(data)
 
-    def populate_trees(self) -> None:
+    def populate_trees(self, splash_data: "SplashData | None" = None) -> None:
+        if splash_data is None:
+            self.app.chezmoi.update_managed_paths()
         apply_tab_managed_tree = self.screen.query_one(
             self.apply_tab_ids.tree_id("#", tree=TreeName.managed_tree),
             ManagedTree,
