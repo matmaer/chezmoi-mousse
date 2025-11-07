@@ -55,6 +55,11 @@
   {
     color: $text-accent;
   }
+  &.section_sub_label
+  {
+    border: none;
+    color: $text-success;
+  }
   &.rich_header {
     height: auto;
     overflow: hidden;

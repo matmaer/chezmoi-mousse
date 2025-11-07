@@ -16,7 +16,7 @@ from chezmoi_mousse import (
 )
 
 from .shared.buttons import NavButtonsVertical
-from .shared.section_headers import SectionLabel
+from .shared.section_headers import SectionLabel, SectionSubLabel
 from .shared.tabs_base import TabsBase
 
 if TYPE_CHECKING:
@@ -40,7 +40,8 @@ class ButtonsHelp(Vertical):
     def compose(self) -> ComposeResult:
         yield SectionLabel(Strings.available_buttons)
         for label, tooltip in self.button_info:
-            yield Static(f"- {label}: {tooltip}")
+            yield SectionSubLabel(label)
+            yield Static(tooltip)
 
 
 class SwitchesHelp(Vertical):
@@ -52,7 +53,8 @@ class SwitchesHelp(Vertical):
     def compose(self) -> ComposeResult:
         yield SectionLabel(Strings.available_switches)
         for switch in self.switches:
-            yield Static(f"- {switch.label}: {switch.enabled_tooltip}")
+            yield SectionSubLabel(switch.label)
+            yield Static(switch.enabled_tooltip)
 
 
 class ApplyTabHelp(Vertical):
