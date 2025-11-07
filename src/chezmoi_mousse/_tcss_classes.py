@@ -12,6 +12,7 @@ class Tcss(StrEnum):
     doctor_table = ".doctor_table"
     doctor_vertical_scroll = ".doctor_vertical_scroll"
     flat_button = ".flat_button"
+    flat_link = ".flat_link"
     flow_diagram = ".flow_diagram"
     install_help = ".install_help"
     last_clicked = ".last_clicked"

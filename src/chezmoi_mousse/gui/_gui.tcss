@@ -30,6 +30,22 @@
   }
 }
 
+.flat_link {
+  background-tint: $primary-muted;
+  background: $primary-muted;
+  border: block $primary-muted;
+  color: $text-primary;
+  content-align: center middle;
+  text-style: bold;
+  width: 100%;
+  &:hover {
+    color: $text-accent;
+    background: $primary-muted;
+    background-tint: $primary-muted;
+    border: block $primary-muted;
+  }
+}
+
 .flow_diagram {
   min-width: 78;
 }
@@ -114,21 +130,6 @@
     border-bottom: $primary;
     & Collapsible {
       border-top: none;
-    }
-    & Link {
-      background-tint: $primary-muted;
-      background: $primary-muted;
-      border: block $primary-muted;
-      color: $text-primary;
-      content-align: center middle;
-      text-style: bold;
-      width: 100%;
-      &:hover {
-        color: $text-accent;
-        background: $primary-muted;
-        background-tint: $primary-muted;
-        border: block $primary-muted;
-      }
     }
     & VerticalGroup {
       margin-left: 1;

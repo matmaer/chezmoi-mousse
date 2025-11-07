@@ -70,6 +70,7 @@ class InstallHelp(Screen[None], AppType):
                     Strings.link_text,
                     url=Strings.link_url,
                     id=Strings.chezmoi_docs_link_id,
+                    classes=Tcss.flat_link.name,
                 )
                 yield FlatButton(ids=self.ids, button_enum=FlatBtn.exit_app)
 
