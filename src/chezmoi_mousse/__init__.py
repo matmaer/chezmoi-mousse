@@ -23,9 +23,9 @@ if TYPE_CHECKING:
 
     from chezmoi_mousse.gui.chezmoi_gui import ChezmoiGUI
 
-type PathDict = dict["Path", str]
-type PathList = list["Path"]
-type PathType = Literal["file", "dir"]
+type PathDict = "dict[Path, str]"
+type PathList = "list[Path]"
+type PathType = 'Literal["file", "dir"]'
 
 
 class AppType:
