@@ -7,15 +7,15 @@ INITIAL_TOOLTIP = "This is the destDir, select a path to operate on."
 
 
 class FlatBtn(StrEnum):
+    # clone_existing_repo = "Clone Existing Repo" TODO
+    # init_new_repo = "Initialize New Repo" TODO
     add_help = "Add Help"
     apply_help = "Apply Help"
     cat_config = "Cat Config"
-    # clone_existing_repo = "Clone Existing Repo" TODO
     diagram = "Diagram"
     doctor = "Doctor"
     exit_app = "Exit App"
     ignored = "Ignored"
-    # init_new_repo = "Initialize New Repo" TODO
     re_add_help = "Re-Add Help"
     template_data = "Template Data"
 
@@ -25,8 +25,8 @@ class LinkBtn(StrEnum):
     chezmoi_apply = "https://www.chezmoi.io/reference/commands/apply/"
     chezmoi_destroy = "https://www.chezmoi.io/reference/commands/destroy/"
     chezmoi_forget = "https://www.chezmoi.io/reference/commands/forget/"
-    chezmoi_re_add = "https://www.chezmoi.io/reference/commands/re-add/"
     chezmoi_install = "https://www.chezmoi.io/install/"
+    chezmoi_re_add = "https://www.chezmoi.io/reference/commands/re-add/"
     github_issues = "https://github.com/matmaer/chezmoi-mousse/issues"
 
     @property
@@ -46,12 +46,12 @@ class TabBtn(StrEnum):
     contents = "Contents"
     debug_log = "Debug Log"
     diff = "Diff"
-    git_log_path = "Git Log"
     git_log_global = "Global Git Log"
+    git_log_path = "Git Log"
     list = "List"
     read_output_log = "Read Outputs"
-    write_output_log = "Write Outputs"
     tree = "Tree"
+    write_output_log = "Write Outputs"
 
 
 class OperateButtons(StrEnum):
