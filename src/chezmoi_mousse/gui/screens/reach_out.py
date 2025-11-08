@@ -10,6 +10,8 @@ from chezmoi_mousse.gui.shared.canvas_ids import CanvasIds
 from ..shared.buttons import FlatButton, FlatLink
 from ..shared.section_headers import SectionLabel, SectionSubLabel
 
+__all__ = ["ReachOutScreen"]
+
 
 class Strings(StrEnum):
     top_label = "Unfortunately something went wrong..."
