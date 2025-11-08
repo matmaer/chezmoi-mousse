@@ -16,14 +16,14 @@ from .screens.chezmoi_init import ChezmoiInit
 from .screens.install_help import InstallHelp
 from .screens.operate import OperateInfo
 from .screens.reach_out import ReachOutScreen
-from .screens.splash import LoadingScreen, SplashData
+from .screens.splash import LoadingScreen
 from .shared.contents_view import ContentsView
 from .shared.diff_view import DiffView
 from .shared.git_log_view import GitLogView
 from .shared.trees import TreeBase
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import Chezmoi, PreRunData
+    from chezmoi_mousse import Chezmoi, CommandsData, PreRunData
 
 __all__ = ["ChezmoiGUI"]
 
@@ -84,7 +84,7 @@ class ChezmoiGUI(App[None]):
         )
 
     def handle_splash_return_data(
-        self, return_data: "SplashData | None"
+        self, return_data: "CommandsData | None"
     ) -> None:
         if return_data is None:
             self.push_screen(InstallHelp())
@@ -94,7 +94,7 @@ class ChezmoiGUI(App[None]):
             self.pretend_init_needed is True
             or return_data.cat_config.returncode != 0
         ):
-            self.push_screen(ChezmoiInit())
+            self.push_screen(ChezmoiInit(commands_data=return_data))
             return
         # self.pretend_issue_found = True
         if self.pretend_issue_found is True:
@@ -112,7 +112,7 @@ class ChezmoiGUI(App[None]):
         OperateInfo.git_autocommit = return_data.parsed_config.git_autocommit
         OperateInfo.git_autopush = return_data.parsed_config.git_autopush
 
-        self.push_screen(MainScreen(splash_data=return_data))
+        self.push_screen(MainScreen(commands_data=return_data))
 
 
 class CustomScrollBarRender(ScrollBarRender):

@@ -42,6 +42,7 @@ __all__ = [
     "Chars",
     "Chezmoi",
     "CommandResult",
+    "CommandsData",
     "ContainerName",
     "DirTreeNodeData",
     "FlatBtn",
@@ -51,6 +52,7 @@ __all__ = [
     "NodeData",
     "OperateBtn",
     "OperateScreenData",
+    "ParsedConfig",
     "PathDict",
     "PathList",
     "PathType",
@@ -65,6 +67,25 @@ __all__ = [
     "ViewName",
     "WriteCmd",
 ]
+
+
+@dataclass(slots=True)
+class ParsedConfig:
+    dest_dir: "Path"
+    git_autoadd: bool
+    source_dir: "Path"
+    git_autocommit: bool
+    git_autopush: bool
+
+
+@dataclass(slots=True)
+class CommandsData:
+    cat_config: "CommandResult"
+    doctor: "CommandResult"
+    executed_commands: "list[CommandResult]"
+    ignored: "CommandResult"
+    parsed_config: ParsedConfig
+    template_data: "CommandResult"
 
 
 @dataclass(slots=True)

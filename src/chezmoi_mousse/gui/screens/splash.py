@@ -1,6 +1,5 @@
 import json
 from collections import deque
-from dataclasses import dataclass
 from pathlib import Path
 from subprocess import CompletedProcess, run
 
@@ -17,9 +16,17 @@ from textual.timer import Timer
 from textual.widgets import RichLog, Static
 from textual.worker import WorkerState
 
-from chezmoi_mousse import AppType, Chezmoi, CommandResult, ReadCmd, VerbArgs
+from chezmoi_mousse import (
+    AppType,
+    Chezmoi,
+    CommandResult,
+    CommandsData,
+    ParsedConfig,
+    ReadCmd,
+    VerbArgs,
+)
 
-__all__ = ["LoadingScreen", "ParsedConfig", "SplashData"]
+__all__ = ["LoadingScreen"]
 
 SPLASH_COMMANDS = [
     ReadCmd.cat_config,
@@ -32,26 +39,6 @@ SPLASH_COMMANDS = [
     ReadCmd.status_files,
     ReadCmd.template_data,
 ]
-
-
-@dataclass(slots=True)
-class ParsedConfig:
-    dest_dir: Path
-    git_autoadd: bool
-    source_dir: Path
-    git_autocommit: bool
-    git_autopush: bool
-
-
-@dataclass(slots=True)
-class SplashData:
-    cat_config: "CommandResult"
-    doctor: "CommandResult"
-    executed_commands: list[CommandResult]
-    ignored: "CommandResult"
-    parsed_config: ParsedConfig
-    template_data: "CommandResult"
-
 
 SPLASH = """\
  _______________________________ ___________________._
@@ -124,7 +111,7 @@ class AnimatedFade(Static):
         return Strip([Segment(SPLASH[y], style=FADE_LINE_STYLES[y])])
 
 
-class LoadingScreen(Screen[SplashData | None], AppType):
+class LoadingScreen(Screen[CommandsData | None], AppType):
 
     def __init__(self, chezmoi_found: bool) -> None:
         self.chezmoi_found = chezmoi_found
@@ -187,7 +174,7 @@ class LoadingScreen(Screen[SplashData | None], AppType):
                 return
 
             self.dismiss(
-                SplashData(
+                CommandsData(
                     cat_config=globals()["cat_config"],
                     doctor=globals()["doctor"],
                     executed_commands=[

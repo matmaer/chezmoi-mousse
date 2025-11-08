@@ -48,7 +48,7 @@ from .shared.trees import ExpandedTree, ListTree, ManagedTree
 if TYPE_CHECKING:
     from chezmoi_mousse import DirTreeNodeData, NodeData
 
-    from .screens.splash import SplashData
+    from .screens.splash import CommandsData
 
 __all__ = ["MainScreen"]
 
@@ -91,10 +91,10 @@ class MainScreen(Screen[None], AppType):
 
     destDir: Path | None = None
 
-    def __init__(self, splash_data: "SplashData") -> None:
+    def __init__(self, commands_data: "CommandsData") -> None:
         super().__init__()
 
-        self.splash_data = splash_data
+        self.commands_data = commands_data
 
         self.add_tab_ids = CanvasIds(CanvasName.add_tab)
         self.add_switch_slider_qid = self.add_tab_ids.container_id(
@@ -158,7 +158,7 @@ class MainScreen(Screen[None], AppType):
         self.app_log.success("Read Output log initialized")
 
         self.app_log.info("Commands executed during startup:")
-        for cmd in self.splash_data.executed_commands:
+        for cmd in self.commands_data.executed_commands:
             self.app_log.log_cmd_results(cmd)
             self.read_output_log.log_cmd_results(cmd)
         self.app_log.info("End of startup commands.")
@@ -181,7 +181,7 @@ class MainScreen(Screen[None], AppType):
         # Notify startup info
         if self.app.dev_mode is True:
             self.notify('Running in "dev mode"', severity="information")
-        self.handle_splash_data(self.splash_data)
+        self.handle_commands_data(self.commands_data)
 
     def compose(self) -> ComposeResult:
         yield Header(icon=Chars.burger)
@@ -212,12 +212,14 @@ class MainScreen(Screen[None], AppType):
                 yield HelpTab(ids=self.help_tab_ids)
         yield Footer()
 
-    def handle_splash_data(self, data: "SplashData") -> None:
-        self.populate_trees(splash_data=data)
+    def handle_commands_data(self, data: "CommandsData") -> None:
+        self.populate_trees(commands_data=data)
         self.update_config_tab_outputs(data)
 
-    def populate_trees(self, splash_data: "SplashData | None" = None) -> None:
-        if splash_data is None:
+    def populate_trees(
+        self, commands_data: "CommandsData | None" = None
+    ) -> None:
+        if commands_data is None:
             self.app.chezmoi.update_managed_paths()
         apply_tab_managed_tree = self.screen.query_one(
             self.apply_tab_ids.tree_id("#", tree=TreeName.managed_tree),
@@ -249,7 +251,7 @@ class MainScreen(Screen[None], AppType):
         re_add_tab_expanded_tree.populate_tree()
         re_add_tab_flat_tree.populate_tree()
 
-    def update_config_tab_outputs(self, data: "SplashData") -> None:
+    def update_config_tab_outputs(self, data: "CommandsData") -> None:
         config_tab_switcher = self.screen.query_one(
             self.config_tab_ids.content_switcher_id(
                 "#", name=ContainerName.config_switcher
