@@ -14,9 +14,9 @@ from textual.widgets import Button, Collapsible, Pretty, Tree
 
 from chezmoi_mousse import AppType, CanvasName, Chars, FlatBtn, LinkBtn, Tcss
 
-from ..shared.buttons import FlatButton, FlatLink
-from ..shared.canvas_ids import CanvasIds
-from ..shared.section_headers import SectionLabel
+from .panes.shared.buttons import FlatButton, FlatLink
+from .panes.shared.canvas_ids import CanvasIds
+from .panes.shared.section_headers import SectionLabel
 
 type ParsedJson = dict[str, Any]
 

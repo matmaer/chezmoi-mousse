@@ -19,16 +19,16 @@ from chezmoi_mousse import (
     WriteCmd,
 )
 
-from ..shared.buttons import OperateButton
-from ..shared.contents_view import ContentsView
-from ..shared.diff_view import DiffView
-from ..shared.loggers import OutputLog
-from ..shared.section_headers import SectionLabel
+from .panes.shared.buttons import OperateButton
+from .panes.shared.contents_view import ContentsView
+from .panes.shared.diff_view import DiffView
+from .panes.shared.loggers import OutputLog
+from .panes.shared.section_headers import SectionLabel
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CommandResult
 
-    from ..shared.canvas_ids import CanvasIds
+    from .panes.shared.canvas_ids import CanvasIds
 
 __all__ = ["OperateInfo", "OperateScreen"]
 

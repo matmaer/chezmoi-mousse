@@ -29,21 +29,21 @@ from chezmoi_mousse import (
     ViewName,
 )
 
-from .add_tab import AddTab, FilteredDirTree
-from .apply_tab import ApplyTab
-from .config_tab import ConfigTab, ConfigTabSwitcher
-from .help_tab import HelpTab
-from .logs_tab import LogsTab
-from .re_add_tab import ReAddTab
-from .screens.operate import OperateScreen
-from .shared.canvas_ids import CanvasIds
-from .shared.loggers import AppLog, DebugLog, OutputLog
-from .shared.operate_msg import (
+from .operate import OperateScreen
+from .panes.add_tab import AddTab, FilteredDirTree
+from .panes.apply_tab import ApplyTab
+from .panes.config_tab import ConfigTab, ConfigTabSwitcher
+from .panes.help_tab import HelpTab
+from .panes.logs_tab import LogsTab
+from .panes.re_add_tab import ReAddTab
+from .panes.shared.canvas_ids import CanvasIds
+from .panes.shared.loggers import AppLog, DebugLog, OutputLog
+from .panes.shared.operate_msg import (
     CurrentAddNodeMsg,
     CurrentApplyNodeMsg,
     CurrentReAddNodeMsg,
 )
-from .shared.trees import ExpandedTree, ListTree, ManagedTree
+from .panes.shared.trees import ExpandedTree, ListTree, ManagedTree
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CommandsData, DirTreeNodeData, NodeData
@@ -85,7 +85,6 @@ class MainScreen(Screen[None], AppType):
             description="Remove --dry-run flag",
         ),
     ]
-    CSS_PATH = "_gui.tcss"
 
     destDir: Path | None = None
 

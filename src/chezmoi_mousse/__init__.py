@@ -21,7 +21,7 @@ from chezmoi_mousse._tcss_classes import Tcss
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from chezmoi_mousse.gui.chezmoi_gui import ChezmoiGUI
+    from .chezmoi_gui import ChezmoiGUI
 
 type PathDict = "dict[Path, str]"
 type PathList = "list[Path]"

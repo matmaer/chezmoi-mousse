@@ -5,7 +5,7 @@ from pathlib import Path
 
 from chezmoi_mousse import PreRunData
 
-from .gui.chezmoi_gui import ChezmoiGUI
+from .chezmoi_gui import ChezmoiGUI
 
 
 def run_app():
