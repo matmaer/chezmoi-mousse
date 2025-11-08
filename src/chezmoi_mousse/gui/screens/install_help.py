@@ -10,11 +10,11 @@ from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Horizontal, VerticalGroup
 from textual.screen import Screen
-from textual.widgets import Button, Collapsible, Link, Pretty, Tree
+from textual.widgets import Button, Collapsible, Pretty, Tree
 
-from chezmoi_mousse import AppType, CanvasName, Chars, FlatBtn, Tcss
+from chezmoi_mousse import AppType, CanvasName, Chars, FlatBtn, LinkBtn, Tcss
 
-from ..shared.buttons import FlatButton
+from ..shared.buttons import FlatButton, FlatLink
 from ..shared.canvas_ids import CanvasIds
 from ..shared.section_headers import SectionLabel
 
@@ -24,13 +24,10 @@ __all__ = ["InstallHelp"]
 
 
 class Strings(StrEnum):
-    chezmoi_docs_link_id = "chezmoi_docs_link"
     collapsible_title = "'chezmoi' command not found in any search path"
     escape_exit_app = " escape key to exit app "
     exit_app_action = "exit_application"
     install_chezmoi = " Install chezmoi "
-    link_text = "chezmoi.io/install"
-    link_url = "https://chezmoi.io/install"
     no_path_var = "PATH variable is empty or not set."
     top_label = "Chezmoi is not installed or not found."
 
@@ -67,12 +64,7 @@ class InstallHelp(Screen[None], AppType):
         with Horizontal():
             yield CommandsTree()
             with VerticalGroup():
-                yield Link(
-                    Strings.link_text,
-                    url=Strings.link_url,
-                    id=Strings.chezmoi_docs_link_id,
-                    classes=Tcss.flat_link.name,
-                )
+                yield FlatLink(ids=self.ids, link_enum=LinkBtn.chezmoi_install)
                 yield FlatButton(ids=self.ids, button_enum=FlatBtn.exit_app)
 
     def on_mount(self) -> None:

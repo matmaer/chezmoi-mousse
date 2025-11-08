@@ -12,7 +12,7 @@ class LinkBtn(StrEnum):
     chezmoi_destroy = "https://www.chezmoi.io/reference/commands/destroy/"
     chezmoi_forget = "https://www.chezmoi.io/reference/commands/forget/"
     chezmoi_re_add = "https://www.chezmoi.io/reference/commands/re-add/"
-    chezmoi_install = "https://chezmoi.io/install/"
+    chezmoi_install = "https://www.chezmoi.io/install/"
     github_issues = "https://github.com/matmaer/chezmoi-mousse/issues"
 
     @property
@@ -21,7 +21,9 @@ class LinkBtn(StrEnum):
 
     @property
     def link_text(self) -> str:
-        return self.value.replace("https://www.", "").rstrip("/")
+        return (
+            self.value.replace("https://", "").replace("www.", "").rstrip("/")
+        )
 
 
 class OperateButtons(StrEnum):
