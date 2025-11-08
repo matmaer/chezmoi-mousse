@@ -14,6 +14,7 @@ from .add_tab import AddTab
 from .main_screen import MainScreen
 from .screens.install_help import InstallHelp
 from .screens.operate import OperateInfo
+from .screens.reach_out import ReachOutScreen
 from .screens.splash import LoadingScreen, SplashData
 from .shared.contents_view import ContentsView
 from .shared.diff_view import DiffView
@@ -65,6 +66,7 @@ class ChezmoiGUI(App[None]):
         self.changes_enabled = False
         self.chezmoi_found = self.pre_run_data.chezmoi_found
         self.dev_mode = self.pre_run_data.dev_mode
+        self.pretend_issue_found = False
 
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
         super().__init__()
@@ -83,9 +85,10 @@ class ChezmoiGUI(App[None]):
         if return_data is None:
             self.push_screen(InstallHelp())
             return
-
-        # TODO: add logic to push the Init screen if chezmoi is found but not
-        # initialized, like on a newly installed system or deployment.
+        # self.pretend_issue_found = True
+        if self.pretend_issue_found is True:
+            self.push_screen(ReachOutScreen())
+            return
 
         dest_dir = return_data.parsed_config.dest_dir
         AddTab.destdir = dest_dir

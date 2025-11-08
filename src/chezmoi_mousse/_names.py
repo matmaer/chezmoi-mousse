@@ -20,6 +20,7 @@ class CanvasName(StrEnum):
     install_help_screen = auto()
     logs_tab = auto()
     operate_screen = auto()
+    reach_out_screen = auto()
     re_add_tab = auto()
 
 
