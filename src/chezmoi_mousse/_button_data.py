@@ -91,7 +91,7 @@ class ToolTips(StrEnum):
     re_add_file = 'Run "chezmoi re-add" on the file.'
 
 
-@dataclass
+@dataclass(slots=True)
 class ApplyReAddButtonData:
     dir_label: str
     dir_no_status_tooltip: str
@@ -99,10 +99,10 @@ class ApplyReAddButtonData:
     file_label: str
     file_no_status_tooltip: str
     file_tooltip: str
-    initial_label: str  # this is the label containing "Path"
+    initial_label: str
 
 
-@dataclass
+@dataclass(slots=True)
 class DestroyForgetButtonData:
     # We don't need status tooltips here
     dir_label: str
@@ -112,7 +112,7 @@ class DestroyForgetButtonData:
     initial_label: str  # this is the label containing "Path"
 
 
-@dataclass
+@dataclass(slots=True)
 class AddButtonData:
     # We don't need status tooltips here
     disabled_tooltip: str
@@ -120,7 +120,7 @@ class AddButtonData:
     initial_label: str
 
 
-@dataclass
+@dataclass(slots=True)
 class ExitButtonData:
     initial_label: str
     close_label: str
