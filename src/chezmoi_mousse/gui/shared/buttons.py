@@ -90,7 +90,7 @@ class ApplyOpButtons(HorizontalGroup):
         self.ids = ids
         super().__init__(
             id=self.ids.container_id(name=ContainerName.operate_btn_group),
-            classes=Tcss.operate_btn_horizontal.name,
+            classes=Tcss.horizontal_btn_group.name,
         )
 
     def compose(self) -> ComposeResult:
@@ -104,7 +104,7 @@ class ReAddOpButtons(HorizontalGroup):
         self.ids = ids
         super().__init__(
             id=self.ids.container_id(name=ContainerName.operate_btn_group),
-            classes=Tcss.operate_btn_horizontal.name,
+            classes=Tcss.horizontal_btn_group.name,
         )
 
     def compose(self) -> ComposeResult:
@@ -118,7 +118,7 @@ class AddOpButtons(HorizontalGroup):
         self.ids = ids
         super().__init__(
             id=self.ids.container_id(name=ContainerName.operate_btn_group),
-            classes=Tcss.operate_btn_horizontal.name,
+            classes=Tcss.horizontal_btn_group.name,
         )
 
     def compose(self) -> ComposeResult:
