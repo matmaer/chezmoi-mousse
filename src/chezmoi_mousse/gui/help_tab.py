@@ -31,86 +31,87 @@ class Strings(StrEnum):
     chezmoi_diagram = "chezmoi diagram"
 
 
-class ButtonsHelp(Vertical):
-    def __init__(self, button_info: list[tuple[str, str]]) -> None:
-        super().__init__()
-
-        self.button_info = button_info
+class SharedBtnHelp(Vertical):
 
     def compose(self) -> ComposeResult:
-        yield SectionLabel(Strings.available_buttons)
-        for label, tooltip in self.button_info:
-            yield SectionSubLabel(label)
-            yield Static(tooltip)
+        yield SectionSubLabel(OperateBtn.forget_path.file_label)
+        yield Static(OperateBtn.forget_path.file_tooltip)
+
+        yield SectionSubLabel(OperateBtn.forget_path.dir_label)
+        yield Static(OperateBtn.forget_path.dir_tooltip)
+
+        yield SectionSubLabel(OperateBtn.destroy_path.file_label)
+        yield Static(OperateBtn.destroy_path.file_tooltip)
+
+        yield SectionSubLabel(OperateBtn.destroy_path.dir_label)
+        yield Static(OperateBtn.destroy_path.dir_tooltip)
+
+    def on_mount(self) -> None:
+        self.styles.height = "auto"
 
 
-class SwitchesHelp(Vertical):
-    def __init__(self, switches: list[Switches]) -> None:
-        super().__init__()
-
-        self.switches = switches
+class SharedFiltersHelp(Vertical):
 
     def compose(self) -> ComposeResult:
         yield SectionLabel(Strings.available_switches)
-        for switch in self.switches:
-            yield SectionSubLabel(switch.label)
-            yield Static(switch.enabled_tooltip)
+
+        yield SectionSubLabel(Switches.unchanged.label)
+        yield Static(Switches.unchanged.enabled_tooltip)
+
+        yield SectionSubLabel(Switches.expand_all.label)
+        yield Static(Switches.expand_all.enabled_tooltip)
+
+    def on_mount(self) -> None:
+        self.styles.height = "auto"
 
 
 class ApplyTabHelp(Vertical):
 
     def __init__(self, ids: "CanvasIds") -> None:
-        super().__init__(id=ids.view_id(view=ViewName.apply_help_view))
-
-        self.op_buttons = [
-            OperateBtn.apply_path,
-            OperateBtn.forget_path,
-            OperateBtn.destroy_path,
-        ]
-        self.op_dir_buttons_info: list[tuple[str, str]] = [
-            (op_btn.dir_label, op_btn.dir_tooltip)
-            for op_btn in self.op_buttons
-        ]
-        self.op_file_buttons_info: list[tuple[str, str]] = [
-            (op_btn.file_label, op_btn.file_tooltip)
-            for op_btn in self.op_buttons
-        ]
-        self.all_op_buttons_info = (
-            self.op_dir_buttons_info + self.op_file_buttons_info
-        )
-        self.switches = [Switches.expand_all, Switches.unchanged]
+        self.view_id = ids.view_id(view=ViewName.apply_help_view)
+        super().__init__(id=self.view_id)
+        self.shared_btn_help_id = f"{self.view_id}_btn_help"
+        self.shared_filters_help_id = f"{self.view_id}_filters_help"
 
     def compose(self) -> ComposeResult:
-        yield ButtonsHelp(button_info=self.all_op_buttons_info)
-        yield SwitchesHelp(switches=self.switches)
+        # Buttons
+        yield SectionLabel(Strings.available_buttons)
+
+        yield SectionSubLabel(OperateBtn.apply_path.file_label)
+        yield Static(OperateBtn.apply_path.file_tooltip)
+
+        yield SectionSubLabel(OperateBtn.apply_path.dir_label)
+        yield Static(OperateBtn.apply_path.dir_tooltip)
+
+        yield SharedBtnHelp(id=self.shared_btn_help_id)
+        # Switches
+        yield SharedFiltersHelp(id=self.shared_filters_help_id)
 
 
 class ReAddTabHelp(Vertical):
 
     def __init__(self, ids: "CanvasIds") -> None:
-        super().__init__(id=ids.view_id(view=ViewName.re_add_help_view))
-
-        self.op_buttons = [
-            OperateBtn.re_add_path,
-            OperateBtn.forget_path,
-            OperateBtn.destroy_path,
-        ]
-        self.op_dir_buttons_info: list[tuple[str, str]] = [
-            (op_btn.dir_label, op_btn.dir_tooltip)
-            for op_btn in self.op_buttons
-        ]
-        self.op_file_buttons_info: list[tuple[str, str]] = [
-            (op_btn.file_label, op_btn.file_tooltip)
-            for op_btn in self.op_buttons
-        ]
-        self.all_op_buttons_info = (
-            self.op_dir_buttons_info + self.op_file_buttons_info
-        )
-        self.switches = [Switches.expand_all, Switches.unchanged]
+        self.view_id = ids.view_id(view=ViewName.re_add_help_view)
+        super().__init__(id=self.view_id)
+        self.shared_btn_help_id = f"{self.view_id}_btn_help"
+        self.shared_filters_help_id = f"{self.view_id}_filters_help"
 
     def compose(self) -> ComposeResult:
-        yield ButtonsHelp(button_info=self.all_op_buttons_info)
-        yield SwitchesHelp(switches=self.switches)
+        # Buttons
+        yield SectionLabel(Strings.available_buttons)
+
+        yield SectionSubLabel(OperateBtn.re_add_path.file_label)
+        yield Static(OperateBtn.re_add_path.file_tooltip)
+
+        yield SectionSubLabel(OperateBtn.re_add_path.dir_label)
+        yield Static(OperateBtn.re_add_path.dir_tooltip)
+
+        yield SectionSubLabel(OperateBtn.forget_path.file_label)
+        yield Static(OperateBtn.forget_path.file_tooltip)
+
+        yield SharedBtnHelp(id=self.shared_btn_help_id)
+        # Switches
+        yield SharedFiltersHelp(id=self.shared_filters_help_id)
 
 
 class AddTabHelp(Vertical):
@@ -118,15 +119,24 @@ class AddTabHelp(Vertical):
     def __init__(self, ids: "CanvasIds") -> None:
         super().__init__(id=ids.view_id(view=ViewName.add_help_view))
 
-        self.all_op_buttons_info: list[tuple[str, str]] = [
-            (op_btn.initial_label, op_btn.enabled_tooltip)
-            for op_btn in (OperateBtn.add_dir, OperateBtn.add_file)
-        ]
-        self.switches = [Switches.unmanaged_dirs, Switches.unwanted]
-
     def compose(self) -> ComposeResult:
-        yield ButtonsHelp(button_info=self.all_op_buttons_info)
-        yield SwitchesHelp(switches=self.switches)
+        # Buttons
+        yield SectionLabel(Strings.available_buttons)
+
+        yield SectionSubLabel(OperateBtn.add_file.initial_label)
+        yield Static(OperateBtn.add_file.enabled_tooltip)
+
+        yield SectionSubLabel(OperateBtn.add_dir.initial_label)
+        yield Static(OperateBtn.add_dir.enabled_tooltip)
+
+        # Switches
+        yield SectionLabel(Strings.available_switches)
+
+        yield SectionSubLabel(Switches.unmanaged_dirs.label)
+        yield Static(Switches.unmanaged_dirs.enabled_tooltip)
+
+        yield SectionSubLabel(Switches.unwanted.label)
+        yield Static(Switches.unwanted.enabled_tooltip)
 
 
 class HelpTabSwitcher(ContentSwitcher):
