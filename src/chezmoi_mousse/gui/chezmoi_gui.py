@@ -12,6 +12,7 @@ from chezmoi_mousse import Chars
 
 from .add_tab import AddTab
 from .main_screen import MainScreen
+from .screens.chezmoi_init import ChezmoiInit
 from .screens.install_help import InstallHelp
 from .screens.operate import OperateInfo
 from .screens.reach_out import ReachOutScreen
@@ -67,6 +68,7 @@ class ChezmoiGUI(App[None]):
         self.chezmoi_found = self.pre_run_data.chezmoi_found
         self.dev_mode = self.pre_run_data.dev_mode
         self.pretend_issue_found = False
+        self.pretend_init_needed = False
 
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
         super().__init__()
@@ -84,6 +86,13 @@ class ChezmoiGUI(App[None]):
     def handle_return_data(self, return_data: "SplashData | None") -> None:
         if return_data is None:
             self.push_screen(InstallHelp())
+            return
+        # self.pretend_init_needed = True
+        if (
+            self.pretend_init_needed is True
+            or return_data.cat_config.returncode != 0
+        ):
+            self.push_screen(ChezmoiInit())
             return
         # self.pretend_issue_found = True
         if self.pretend_issue_found is True:
