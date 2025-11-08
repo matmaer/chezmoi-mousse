@@ -4,14 +4,14 @@ from typing import TYPE_CHECKING
 from textual import on
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import Vertical
+from textual.containers import HorizontalGroup, Vertical
 from textual.screen import Screen
 from textual.widgets import Button, Footer, Static
 
 from chezmoi_mousse import (
     AppType,
-    CanvasName,
     Chars,
+    ContainerName,
     OperateBtn,
     OperateScreenData,
     Tcss,
@@ -19,8 +19,7 @@ from chezmoi_mousse import (
     WriteCmd,
 )
 
-from ..shared.buttons import OperateBtnHorizontal
-from ..shared.canvas_ids import CanvasIds
+from ..shared.buttons import OperateButton
 from ..shared.contents_view import ContentsView
 from ..shared.diff_view import DiffView
 from ..shared.loggers import OutputLog
@@ -28,6 +27,8 @@ from ..shared.section_headers import SectionLabel
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CommandResult
+
+    from ..shared.canvas_ids import CanvasIds
 
 __all__ = ["OperateInfo", "OperateScreen"]
 
@@ -134,6 +135,20 @@ class OperateInfo(Static, AppType):
         self.update("\n".join(lines_to_write))
 
 
+class OperateBtnHorizontal(HorizontalGroup):
+    def __init__(self, *, ids: "CanvasIds", buttons: tuple[OperateBtn, ...]):
+        self.ids = ids
+        self.buttons = buttons
+        super().__init__(
+            id=self.ids.buttons_group_id(name=ContainerName.operate_btn_group),
+            classes=Tcss.operate_btn_horizontal.name,
+        )
+
+    def compose(self) -> ComposeResult:
+        for button_enum in self.buttons:
+            yield OperateButton(ids=self.ids, button_enum=button_enum)
+
+
 class OperateScreen(Screen[OperateScreenData], AppType):
 
     BINDINGS = [
@@ -145,11 +160,12 @@ class OperateScreen(Screen[OperateScreenData], AppType):
         )
     ]
 
-    def __init__(self, operate_data: "OperateScreenData") -> None:
-        self.ids = CanvasIds(CanvasName.operate_screen)
-        super().__init__(
-            id=self.ids.canvas_name, classes=Tcss.screen_base.name
-        )
+    def __init__(
+        self, *, ids: "CanvasIds", operate_data: "OperateScreenData"
+    ) -> None:
+        super().__init__(id=ids.canvas_name, classes=Tcss.screen_base.name)
+
+        self.ids = ids
         self.operate_data = operate_data
         self.exit_btn_id = self.ids.button_id(btn=OperateBtn.exit_button)
         self.exit_btn_qid = self.ids.button_id("#", btn=OperateBtn.exit_button)

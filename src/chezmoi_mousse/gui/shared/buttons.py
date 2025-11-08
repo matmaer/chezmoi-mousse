@@ -13,15 +13,11 @@ if TYPE_CHECKING:
 
 __all__ = [
     "AddOpButtons",
-    "AddOpScreenButtons",
     "ApplyOpButtons",
-    "ApplyOpScreenButtons",
     "FlatButton",
     "NavButtonsVertical",
-    "OperateBtnHorizontal",
     "OperateButton",
     "ReAddOpButtons",
-    "ReAddOpScreenButtons",
     "TabBtnHorizontal",
 ]
 
@@ -70,18 +66,18 @@ class NavButtonsVertical(VerticalGroup):
             yield FlatButton(ids=self.ids, button_enum=button_enum)
 
 
-class OperateBtnHorizontal(HorizontalGroup):
-    def __init__(self, *, ids: "CanvasIds", buttons: tuple[OperateBtn, ...]):
-        self.ids = ids
-        self.buttons = buttons
-        super().__init__(
-            id=self.ids.buttons_group_id(name=ContainerName.operate_btn_group),
-            classes=Tcss.operate_btn_horizontal.name,
-        )
+# class OperateBtnHorizontal(HorizontalGroup):
+#     def __init__(self, *, ids: "CanvasIds", buttons: tuple[OperateBtn, ...]):
+#         self.ids = ids
+#         self.buttons = buttons
+#         super().__init__(
+#             id=self.ids.buttons_group_id(name=ContainerName.operate_btn_group),
+#             classes=Tcss.operate_btn_horizontal.name,
+#         )
 
-    def compose(self) -> ComposeResult:
-        for button_enum in self.buttons:
-            yield OperateButton(ids=self.ids, button_enum=button_enum)
+#     def compose(self) -> ComposeResult:
+#         for button_enum in self.buttons:
+#             yield OperateButton(ids=self.ids, button_enum=button_enum)
 
 
 class ApplyOpButtons(HorizontalGroup):
@@ -98,18 +94,18 @@ class ApplyOpButtons(HorizontalGroup):
         yield OperateButton(ids=self.ids, button_enum=OperateBtn.destroy_path)
 
 
-class ApplyOpScreenButtons(HorizontalGroup):
-    def __init__(self, *, ids: "CanvasIds", operate_button: OperateBtn):
-        self.ids = ids
-        self.operate_button = operate_button
-        super().__init__(
-            id=self.ids.buttons_group_id(name=ContainerName.operate_btn_group),
-            classes=Tcss.operate_btn_horizontal.name,
-        )
+# class ApplyOpScreenButtons(HorizontalGroup):
+#     def __init__(self, *, ids: "CanvasIds", operate_button: OperateBtn):
+#         self.ids = ids
+#         self.operate_button = operate_button
+#         super().__init__(
+#             id=self.ids.buttons_group_id(name=ContainerName.operate_btn_group),
+#             classes=Tcss.operate_btn_horizontal.name,
+#         )
 
-    def compose(self) -> ComposeResult:
-        yield OperateButton(ids=self.ids, button_enum=self.operate_button)
-        yield OperateButton(ids=self.ids, button_enum=OperateBtn.exit_button)
+#     def compose(self) -> ComposeResult:
+#         yield OperateButton(ids=self.ids, button_enum=self.operate_button)
+#         yield OperateButton(ids=self.ids, button_enum=OperateBtn.exit_button)
 
 
 class ReAddOpButtons(HorizontalGroup):
@@ -126,18 +122,18 @@ class ReAddOpButtons(HorizontalGroup):
         yield OperateButton(ids=self.ids, button_enum=OperateBtn.destroy_path)
 
 
-class ReAddOpScreenButtons(HorizontalGroup):
-    def __init__(self, *, ids: "CanvasIds", operate_button: OperateBtn):
-        self.ids = ids
-        self.operate_button = operate_button
-        super().__init__(
-            id=self.ids.buttons_group_id(name=ContainerName.operate_btn_group),
-            classes=Tcss.operate_btn_horizontal.name,
-        )
+# class ReAddOpScreenButtons(HorizontalGroup):
+#     def __init__(self, *, ids: "CanvasIds", operate_button: OperateBtn):
+#         self.ids = ids
+#         self.operate_button = operate_button
+#         super().__init__(
+#             id=self.ids.buttons_group_id(name=ContainerName.operate_btn_group),
+#             classes=Tcss.operate_btn_horizontal.name,
+#         )
 
-    def compose(self) -> ComposeResult:
-        yield OperateButton(ids=self.ids, button_enum=self.operate_button)
-        yield OperateButton(ids=self.ids, button_enum=OperateBtn.exit_button)
+#     def compose(self) -> ComposeResult:
+#         yield OperateButton(ids=self.ids, button_enum=self.operate_button)
+#         yield OperateButton(ids=self.ids, button_enum=OperateBtn.exit_button)
 
 
 class AddOpButtons(HorizontalGroup):
@@ -153,18 +149,18 @@ class AddOpButtons(HorizontalGroup):
         yield OperateButton(ids=self.ids, button_enum=OperateBtn.add_file)
 
 
-class AddOpScreenButtons(HorizontalGroup):
-    def __init__(self, *, ids: "CanvasIds", operate_button: OperateBtn):
-        self.ids = ids
-        self.operate_button = operate_button
-        super().__init__(
-            id=self.ids.buttons_group_id(name=ContainerName.operate_btn_group),
-            classes=Tcss.operate_btn_horizontal.name,
-        )
+# class AddOpScreenButtons(HorizontalGroup):
+#     def __init__(self, *, ids: "CanvasIds", operate_button: OperateBtn):
+#         self.ids = ids
+#         self.operate_button = operate_button
+#         super().__init__(
+#             id=self.ids.buttons_group_id(name=ContainerName.operate_btn_group),
+#             classes=Tcss.operate_btn_horizontal.name,
+#         )
 
-    def compose(self) -> ComposeResult:
-        yield OperateButton(ids=self.ids, button_enum=self.operate_button)
-        yield OperateButton(ids=self.ids, button_enum=OperateBtn.exit_button)
+#     def compose(self) -> ComposeResult:
+#         yield OperateButton(ids=self.ids, button_enum=self.operate_button)
+#         yield OperateButton(ids=self.ids, button_enum=OperateBtn.exit_button)
 
 
 class TabBtnHorizontal(HorizontalGroup):

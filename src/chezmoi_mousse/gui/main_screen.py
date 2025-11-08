@@ -107,6 +107,7 @@ class MainScreen(Screen[None], AppType):
         self.config_tab_ids = CanvasIds(CanvasName.config_tab)
         self.help_tab_ids = CanvasIds(CanvasName.help_tab)
         self.logs_tab_ids = CanvasIds(CanvasName.logs_tab)
+        self.op_screen_ids = CanvasIds(CanvasName.operate_screen)
         self.app_log_qid = self.logs_tab_ids.view_id(
             "#", view=ViewName.app_log_view
         )
@@ -530,7 +531,9 @@ class MainScreen(Screen[None], AppType):
             self.notify("No current node available.", severity="error")
             return
         self.app.push_screen(
-            OperateScreen(operate_screen_data),
+            OperateScreen(
+                ids=self.op_screen_ids, operate_data=operate_screen_data
+            ),
             callback=self._handle_operate_result,
         )
 
