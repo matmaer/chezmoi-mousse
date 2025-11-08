@@ -9,6 +9,7 @@ from textual.widgets import Button, ContentSwitcher, Link, Static
 from chezmoi_mousse import (
     ContainerName,
     FlatBtn,
+    LinkBtn,
     OperateBtn,
     Switches,
     Tcss,
@@ -41,8 +42,8 @@ class SharedBtnHelp(Vertical):
         yield Static(OperateBtn.forget_path.dir_tooltip)
 
         yield Link(
-            OperateBtn.forget_path.link_text,
-            url=OperateBtn.forget_path.link_url,
+            LinkBtn.chezmoi_forget.link_text,
+            url=LinkBtn.chezmoi_forget.link_url,
             classes=Tcss.flat_link.name,
         )
 
@@ -53,8 +54,8 @@ class SharedBtnHelp(Vertical):
         yield Static(OperateBtn.destroy_path.dir_tooltip)
 
         yield Link(
-            OperateBtn.destroy_path.link_text,
-            url=OperateBtn.destroy_path.link_url,
+            LinkBtn.chezmoi_destroy.link_text,
+            url=LinkBtn.chezmoi_destroy.link_url,
             classes=Tcss.flat_link.name,
         )
 
@@ -97,8 +98,8 @@ class ApplyTabHelp(Vertical):
         yield Static(OperateBtn.apply_path.dir_tooltip)
 
         yield Link(
-            OperateBtn.apply_path.link_text,
-            url=OperateBtn.apply_path.link_url,
+            LinkBtn.chezmoi_apply.link_text,
+            url=LinkBtn.chezmoi_apply.link_url,
             classes=Tcss.flat_link.name,
         )
         yield SharedBtnHelp(id=self.shared_btn_help_id)
@@ -124,8 +125,8 @@ class ReAddTabHelp(Vertical):
         yield Static(OperateBtn.re_add_path.dir_tooltip)
 
         yield Link(
-            OperateBtn.re_add_path.link_text,
-            url=OperateBtn.re_add_path.link_url,
+            LinkBtn.chezmoi_re_add.link_text,
+            url=LinkBtn.chezmoi_re_add.link_url,
             classes=Tcss.flat_link.name,
         )
 
@@ -155,8 +156,8 @@ class AddTabHelp(Vertical):
         yield Static(OperateBtn.add_dir.enabled_tooltip)
 
         yield Link(
-            OperateBtn.add_file.link_text,
-            url=OperateBtn.add_file.link_url,
+            LinkBtn.chezmoi_add.link_text,
+            url=LinkBtn.chezmoi_add.link_url,
             classes=Tcss.flat_link.name,
         )
 

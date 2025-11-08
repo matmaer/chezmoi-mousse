@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from importlib.metadata import PackageNotFoundError, version
 from typing import TYPE_CHECKING, Literal
 
+from chezmoi_mousse._button_data import LinkBtn, OperateBtn
 from chezmoi_mousse._chars import Chars
 from chezmoi_mousse._chezmoi import (
     Chezmoi,
@@ -15,7 +16,6 @@ from chezmoi_mousse._chezmoi import (
 )
 from chezmoi_mousse._content_switchers import FlatBtn, TabBtn
 from chezmoi_mousse._names import CanvasName, ContainerName, TreeName, ViewName
-from chezmoi_mousse._operate_buttons import OperateBtn
 from chezmoi_mousse._switches import Switches
 from chezmoi_mousse._tcss_classes import Tcss
 
@@ -45,9 +45,10 @@ __all__ = [
     "CommandResult",
     "ContainerName",
     "DirTreeNodeData",
-    "GlobalCmd",
-    "LogUtils",
     "FlatBtn",
+    "GlobalCmd",
+    "LinkBtn",
+    "LogUtils",
     "NodeData",
     "OperateBtn",
     "OperateScreenData",
