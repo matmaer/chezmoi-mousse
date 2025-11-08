@@ -12,6 +12,7 @@ class FlatBtn(StrEnum):
     add_help = "Add Help"
     apply_help = "Apply Help"
     cat_config = "Cat Config"
+    close_screen = "Close"
     diagram = "Diagram"
     doctor = "Doctor"
     exit_app = "Exit App"
