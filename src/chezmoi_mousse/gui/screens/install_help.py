@@ -62,6 +62,7 @@ class InstallHelp(Screen[None], AppType):
             title=Strings.collapsible_title,
             collapsed_symbol=Chars.right_triangle,
             expanded_symbol=Chars.down_triangle,
+            collapsed=False,
         )
         with Horizontal():
             yield CommandsTree()
