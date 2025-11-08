@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from importlib.metadata import PackageNotFoundError, version
 from typing import TYPE_CHECKING, Literal
 
-from chezmoi_mousse._button_data import LinkBtn, OperateBtn
+from chezmoi_mousse._button_data import FlatBtn, LinkBtn, OperateBtn, TabBtn
 from chezmoi_mousse._chars import Chars
 from chezmoi_mousse._chezmoi import (
     Chezmoi,
@@ -14,7 +14,6 @@ from chezmoi_mousse._chezmoi import (
     VerbArgs,
     WriteCmd,
 )
-from chezmoi_mousse._content_switchers import FlatBtn, TabBtn
 from chezmoi_mousse._names import CanvasName, ContainerName, TreeName, ViewName
 from chezmoi_mousse._switches import Switches
 from chezmoi_mousse._tcss_classes import Tcss
