@@ -532,9 +532,6 @@ class MainScreen(Screen[None], AppType):
 
         self.refresh_bindings()
 
-    def on_theme_change(self, _: str, new_theme: str) -> None:
-        self.app_log.success(f"Theme set to {new_theme}")
-
     @on(Button.Pressed, Tcss.operate_button.value)
     def push_operate_screen(self, event: Button.Pressed) -> None:
         button_enum = OperateBtn.from_label(str(event.button.label))
