@@ -10,17 +10,17 @@ from textual.theme import Theme
 
 from chezmoi_mousse import Chars
 
-from .gui.chezmoi_init import ChezmoiInit
-from .gui.install_help import InstallHelp
-from .gui.main_screen import MainScreen
-from .gui.operate import OperateInfo
-from .gui.reach_out import ReachOutScreen
-from .gui.splash import LoadingScreen
-from .gui.tabs.add_tab import AddTab
-from .gui.tabs.shared.contents_view import ContentsView
-from .gui.tabs.shared.diff_view import DiffView
-from .gui.tabs.shared.git_log_view import GitLogView
-from .gui.tabs.shared.trees import TreeBase
+from .screens.chezmoi_init import ChezmoiInit
+from .screens.install_help import InstallHelp
+from .screens.main_screen import MainScreen
+from .screens.operate import OperateInfo
+from .screens.reach_out import ReachOutScreen
+from .screens.splash import LoadingScreen
+from .screens.tabs.add_tab import AddTab
+from .screens.tabs.shared.contents_view import ContentsView
+from .screens.tabs.shared.diff_view import DiffView
+from .screens.tabs.shared.git_log_view import GitLogView
+from .screens.tabs.shared.trees import TreeBase
 
 if TYPE_CHECKING:
     from chezmoi_mousse import Chezmoi, CommandsData, PreRunData
