@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 from textual import on
 from textual.app import ComposeResult
 from textual.containers import Vertical
-from textual.widgets import Button, ContentSwitcher, Static
+from textual.widgets import Button, ContentSwitcher, Link, Static
 
 from chezmoi_mousse import (
     ContainerName,
@@ -27,7 +27,7 @@ __all__ = ["HelpTab"]
 
 class Strings(StrEnum):
     available_buttons = "Available Buttons"
-    available_switches = "Available Switches"
+    available_switches = "Available Filters"
     chezmoi_diagram = "chezmoi diagram"
 
 
@@ -40,11 +40,23 @@ class SharedBtnHelp(Vertical):
         yield SectionSubLabel(OperateBtn.forget_path.dir_label)
         yield Static(OperateBtn.forget_path.dir_tooltip)
 
+        yield Link(
+            OperateBtn.forget_path.link_text,
+            url=OperateBtn.forget_path.link_url,
+            classes=Tcss.flat_link.name,
+        )
+
         yield SectionSubLabel(OperateBtn.destroy_path.file_label)
         yield Static(OperateBtn.destroy_path.file_tooltip)
 
         yield SectionSubLabel(OperateBtn.destroy_path.dir_label)
         yield Static(OperateBtn.destroy_path.dir_tooltip)
+
+        yield Link(
+            OperateBtn.destroy_path.link_text,
+            url=OperateBtn.destroy_path.link_url,
+            classes=Tcss.flat_link.name,
+        )
 
     def on_mount(self) -> None:
         self.styles.height = "auto"
@@ -74,7 +86,8 @@ class ApplyTabHelp(Vertical):
         self.shared_filters_help_id = f"{self.view_id}_filters_help"
 
     def compose(self) -> ComposeResult:
-        # Buttons
+        yield SharedFiltersHelp(id=self.shared_filters_help_id)
+
         yield SectionLabel(Strings.available_buttons)
 
         yield SectionSubLabel(OperateBtn.apply_path.file_label)
@@ -83,9 +96,12 @@ class ApplyTabHelp(Vertical):
         yield SectionSubLabel(OperateBtn.apply_path.dir_label)
         yield Static(OperateBtn.apply_path.dir_tooltip)
 
+        yield Link(
+            OperateBtn.apply_path.link_text,
+            url=OperateBtn.apply_path.link_url,
+            classes=Tcss.flat_link.name,
+        )
         yield SharedBtnHelp(id=self.shared_btn_help_id)
-        # Switches
-        yield SharedFiltersHelp(id=self.shared_filters_help_id)
 
 
 class ReAddTabHelp(Vertical):
@@ -97,7 +113,8 @@ class ReAddTabHelp(Vertical):
         self.shared_filters_help_id = f"{self.view_id}_filters_help"
 
     def compose(self) -> ComposeResult:
-        # Buttons
+        yield SharedFiltersHelp(id=self.shared_filters_help_id)
+
         yield SectionLabel(Strings.available_buttons)
 
         yield SectionSubLabel(OperateBtn.re_add_path.file_label)
@@ -106,12 +123,13 @@ class ReAddTabHelp(Vertical):
         yield SectionSubLabel(OperateBtn.re_add_path.dir_label)
         yield Static(OperateBtn.re_add_path.dir_tooltip)
 
-        yield SectionSubLabel(OperateBtn.forget_path.file_label)
-        yield Static(OperateBtn.forget_path.file_tooltip)
+        yield Link(
+            OperateBtn.re_add_path.link_text,
+            url=OperateBtn.re_add_path.link_url,
+            classes=Tcss.flat_link.name,
+        )
 
         yield SharedBtnHelp(id=self.shared_btn_help_id)
-        # Switches
-        yield SharedFiltersHelp(id=self.shared_filters_help_id)
 
 
 class AddTabHelp(Vertical):
@@ -120,7 +138,14 @@ class AddTabHelp(Vertical):
         super().__init__(id=ids.view_id(view=ViewName.add_help_view))
 
     def compose(self) -> ComposeResult:
-        # Buttons
+        yield SectionLabel(Strings.available_switches)
+
+        yield SectionSubLabel(Switches.unmanaged_dirs.label)
+        yield Static(Switches.unmanaged_dirs.enabled_tooltip)
+
+        yield SectionSubLabel(Switches.unwanted.label)
+        yield Static(Switches.unwanted.enabled_tooltip)
+
         yield SectionLabel(Strings.available_buttons)
 
         yield SectionSubLabel(OperateBtn.add_file.initial_label)
@@ -129,14 +154,11 @@ class AddTabHelp(Vertical):
         yield SectionSubLabel(OperateBtn.add_dir.initial_label)
         yield Static(OperateBtn.add_dir.enabled_tooltip)
 
-        # Switches
-        yield SectionLabel(Strings.available_switches)
-
-        yield SectionSubLabel(Switches.unmanaged_dirs.label)
-        yield Static(Switches.unmanaged_dirs.enabled_tooltip)
-
-        yield SectionSubLabel(Switches.unwanted.label)
-        yield Static(Switches.unwanted.enabled_tooltip)
+        yield Link(
+            OperateBtn.add_file.link_text,
+            url=OperateBtn.add_file.link_url,
+            classes=Tcss.flat_link.name,
+        )
 
 
 class HelpTabSwitcher(ContentSwitcher):
