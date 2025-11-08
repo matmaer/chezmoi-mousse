@@ -36,6 +36,7 @@
   border: block $primary-muted;
   color: $text-primary;
   content-align: center middle;
+  padding: 0 1;
   text-style: bold;
   width: 100%;
   &:hover {
