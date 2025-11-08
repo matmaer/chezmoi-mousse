@@ -59,7 +59,7 @@ chezmoi_mousse_light = Theme(
 
 class ChezmoiGUI(App[None]):
 
-    CSS_PATH = "_gui.tcss"
+    CSS_PATH = "gui.tcss"
 
     def __init__(self, pre_run_data: "PreRunData") -> None:
         self.chezmoi: "Chezmoi"
