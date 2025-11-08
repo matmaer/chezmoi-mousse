@@ -46,9 +46,7 @@ from .shared.operate_msg import (
 from .shared.trees import ExpandedTree, ListTree, ManagedTree
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import DirTreeNodeData, NodeData
-
-    from .screens.splash import CommandsData
+    from chezmoi_mousse import CommandsData, DirTreeNodeData, NodeData
 
 __all__ = ["MainScreen"]
 
