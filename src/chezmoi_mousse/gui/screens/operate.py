@@ -135,20 +135,6 @@ class OperateInfo(Static, AppType):
         self.update("\n".join(lines_to_write))
 
 
-class OperateBtnHorizontal(HorizontalGroup):
-    def __init__(self, *, ids: "CanvasIds", buttons: tuple[OperateBtn, ...]):
-        self.ids = ids
-        self.buttons = buttons
-        super().__init__(
-            id=self.ids.buttons_group_id(name=ContainerName.operate_btn_group),
-            classes=Tcss.operate_btn_horizontal.name,
-        )
-
-    def compose(self) -> ComposeResult:
-        for button_enum in self.buttons:
-            yield OperateButton(ids=self.ids, button_enum=button_enum)
-
-
 class OperateScreen(Screen[OperateScreenData], AppType):
 
     BINDINGS = [
@@ -199,13 +185,18 @@ class OperateScreen(Screen[OperateScreenData], AppType):
                 ids=self.ids, view_name=ViewName.write_output_log_view
             )
         with Vertical(id=ContainerIds.operate_btn):
-            yield OperateBtnHorizontal(
-                ids=self.ids,
-                buttons=(
-                    self.operate_data.operate_btn,
-                    OperateBtn.exit_button,
+            with HorizontalGroup(
+                id=self.ids.buttons_group_id(
+                    name=ContainerName.operate_btn_group
                 ),
-            )
+                classes=Tcss.operate_btn_horizontal.name,
+            ):
+                yield OperateButton(
+                    ids=self.ids, button_enum=self.operate_data.operate_btn
+                )
+                yield OperateButton(
+                    ids=self.ids, button_enum=OperateBtn.exit_button
+                )
         yield Footer()
 
     def on_mount(self) -> None:
