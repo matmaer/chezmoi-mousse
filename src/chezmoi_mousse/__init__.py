@@ -72,10 +72,10 @@ __all__ = [
 @dataclass(slots=True)
 class ParsedConfig:
     dest_dir: "Path"
-    git_autoadd: bool
+    git_autoadd: "bool"
     source_dir: "Path"
-    git_autocommit: bool
-    git_autopush: bool
+    git_autocommit: "bool"
+    git_autopush: "bool"
 
 
 @dataclass(slots=True)
@@ -84,17 +84,17 @@ class CommandsData:
     doctor: "CommandResult"
     executed_commands: "list[CommandResult]"
     ignored: "CommandResult"
-    parsed_config: ParsedConfig
+    parsed_config: "ParsedConfig"
     template_data: "CommandResult"
 
 
 @dataclass(slots=True)
 class NodeData:
-    found: bool
+    found: "bool"
     path: "Path"
     # Chezmoi status codes processed: A, D, M, or a space
     # Additional "node status" codes: X (no status but managed)
-    status: str
+    status: "str"
     path_type: "PathType"
 
 
@@ -109,14 +109,14 @@ class OperateScreenData:
     node_data: "NodeData | DirTreeNodeData"
     operate_btn: "OperateBtn"
     command_result: "CommandResult | None" = None
-    operation_executed: bool = False
+    operation_executed: "bool" = False
     path: "Path | None" = None
 
 
 @dataclass(slots=True, frozen=True)
 class PreRunData:
-    chezmoi_found: bool
-    dev_mode: bool
+    chezmoi_found: "bool"
+    dev_mode: "bool"
 
 
 try:
