@@ -3,9 +3,16 @@ from typing import TYPE_CHECKING
 from textual import on
 from textual.app import ComposeResult
 from textual.containers import HorizontalGroup, Vertical, VerticalGroup
-from textual.widgets import Button
+from textual.widgets import Button, Link
 
-from chezmoi_mousse import ContainerName, FlatBtn, OperateBtn, TabBtn, Tcss
+from chezmoi_mousse import (
+    ContainerName,
+    FlatBtn,
+    LinkBtn,
+    OperateBtn,
+    TabBtn,
+    Tcss,
+)
 
 if TYPE_CHECKING:
     from .canvas_ids import CanvasIds
@@ -15,6 +22,7 @@ __all__ = [
     "AddOpButtons",
     "ApplyOpButtons",
     "FlatButton",
+    "FlatLink",
     "NavButtonsVertical",
     "OperateButton",
     "ReAddOpButtons",
@@ -31,6 +39,17 @@ class FlatButton(Button):
             flat=True,
             classes=Tcss.flat_button.name,
             id=self.ids.button_id(btn=button_enum),
+        )
+
+
+class FlatLink(Link):
+    def __init__(self, *, ids: "CanvasIds", link_enum: LinkBtn) -> None:
+        self.ids = ids
+        super().__init__(
+            id=self.ids.button_id(btn=link_enum),
+            text=link_enum.link_text,
+            url=link_enum.link_url,
+            classes=Tcss.flat_link.name,
         )
 
 

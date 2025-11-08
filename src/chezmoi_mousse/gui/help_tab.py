@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 from textual import on
 from textual.app import ComposeResult
 from textual.containers import Vertical
-from textual.widgets import Button, ContentSwitcher, Link, Static
+from textual.widgets import Button, ContentSwitcher, Static
 
 from chezmoi_mousse import (
     ContainerName,
@@ -16,7 +16,7 @@ from chezmoi_mousse import (
     ViewName,
 )
 
-from .shared.buttons import NavButtonsVertical
+from .shared.buttons import FlatLink, NavButtonsVertical
 from .shared.section_headers import SectionLabel, SectionSubLabel
 from .shared.tabs_base import TabsBase
 
@@ -34,6 +34,10 @@ class Strings(StrEnum):
 
 class SharedBtnHelp(Vertical):
 
+    def __init__(self, ids: "CanvasIds") -> None:
+        super().__init__()
+        self.ids = ids
+
     def compose(self) -> ComposeResult:
         yield SectionSubLabel(OperateBtn.forget_path.file_label)
         yield Static(OperateBtn.forget_path.file_tooltip)
@@ -41,11 +45,7 @@ class SharedBtnHelp(Vertical):
         yield SectionSubLabel(OperateBtn.forget_path.dir_label)
         yield Static(OperateBtn.forget_path.dir_tooltip)
 
-        yield Link(
-            LinkBtn.chezmoi_forget.link_text,
-            url=LinkBtn.chezmoi_forget.link_url,
-            classes=Tcss.flat_link.name,
-        )
+        yield FlatLink(ids=self.ids, link_enum=LinkBtn.chezmoi_forget)
 
         yield SectionSubLabel(OperateBtn.destroy_path.file_label)
         yield Static(OperateBtn.destroy_path.file_tooltip)
@@ -53,11 +53,7 @@ class SharedBtnHelp(Vertical):
         yield SectionSubLabel(OperateBtn.destroy_path.dir_label)
         yield Static(OperateBtn.destroy_path.dir_tooltip)
 
-        yield Link(
-            LinkBtn.chezmoi_destroy.link_text,
-            url=LinkBtn.chezmoi_destroy.link_url,
-            classes=Tcss.flat_link.name,
-        )
+        yield FlatLink(ids=self.ids, link_enum=LinkBtn.chezmoi_destroy)
 
     def on_mount(self) -> None:
         self.styles.height = "auto"
@@ -81,7 +77,8 @@ class SharedFiltersHelp(Vertical):
 class ApplyTabHelp(Vertical):
 
     def __init__(self, ids: "CanvasIds") -> None:
-        self.view_id = ids.view_id(view=ViewName.apply_help_view)
+        self.ids = ids
+        self.view_id = self.ids.view_id(view=ViewName.apply_help_view)
         super().__init__(id=self.view_id)
         self.shared_btn_help_id = f"{self.view_id}_btn_help"
         self.shared_filters_help_id = f"{self.view_id}_filters_help"
@@ -97,18 +94,15 @@ class ApplyTabHelp(Vertical):
         yield SectionSubLabel(OperateBtn.apply_path.dir_label)
         yield Static(OperateBtn.apply_path.dir_tooltip)
 
-        yield Link(
-            LinkBtn.chezmoi_apply.link_text,
-            url=LinkBtn.chezmoi_apply.link_url,
-            classes=Tcss.flat_link.name,
-        )
-        yield SharedBtnHelp(id=self.shared_btn_help_id)
+        yield FlatLink(ids=self.ids, link_enum=LinkBtn.chezmoi_apply)
+        yield SharedBtnHelp(ids=self.ids)
 
 
 class ReAddTabHelp(Vertical):
 
     def __init__(self, ids: "CanvasIds") -> None:
-        self.view_id = ids.view_id(view=ViewName.re_add_help_view)
+        self.ids = ids
+        self.view_id = self.ids.view_id(view=ViewName.re_add_help_view)
         super().__init__(id=self.view_id)
         self.shared_btn_help_id = f"{self.view_id}_btn_help"
         self.shared_filters_help_id = f"{self.view_id}_filters_help"
@@ -120,23 +114,19 @@ class ReAddTabHelp(Vertical):
 
         yield SectionSubLabel(OperateBtn.re_add_path.file_label)
         yield Static(OperateBtn.re_add_path.file_tooltip)
+        yield SharedBtnHelp(ids=self.ids)
 
         yield SectionSubLabel(OperateBtn.re_add_path.dir_label)
         yield Static(OperateBtn.re_add_path.dir_tooltip)
 
-        yield Link(
-            LinkBtn.chezmoi_re_add.link_text,
-            url=LinkBtn.chezmoi_re_add.link_url,
-            classes=Tcss.flat_link.name,
-        )
-
-        yield SharedBtnHelp(id=self.shared_btn_help_id)
+        yield FlatLink(ids=self.ids, link_enum=LinkBtn.chezmoi_re_add)
 
 
 class AddTabHelp(Vertical):
 
     def __init__(self, ids: "CanvasIds") -> None:
-        super().__init__(id=ids.view_id(view=ViewName.add_help_view))
+        self.ids = ids
+        super().__init__(id=self.ids.view_id(view=ViewName.add_help_view))
 
     def compose(self) -> ComposeResult:
         yield SectionLabel(Strings.available_switches)
@@ -155,11 +145,7 @@ class AddTabHelp(Vertical):
         yield SectionSubLabel(OperateBtn.add_dir.initial_label)
         yield Static(OperateBtn.add_dir.enabled_tooltip)
 
-        yield Link(
-            LinkBtn.chezmoi_add.link_text,
-            url=LinkBtn.chezmoi_add.link_url,
-            classes=Tcss.flat_link.name,
-        )
+        yield FlatLink(ids=self.ids, link_enum=LinkBtn.chezmoi_add)
 
 
 class HelpTabSwitcher(ContentSwitcher):
