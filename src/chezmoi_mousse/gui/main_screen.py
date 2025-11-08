@@ -30,20 +30,20 @@ from chezmoi_mousse import (
 )
 
 from .operate import OperateScreen
-from .panes.add_tab import AddTab, FilteredDirTree
-from .panes.apply_tab import ApplyTab
-from .panes.config_tab import ConfigTab, ConfigTabSwitcher
-from .panes.help_tab import HelpTab
-from .panes.logs_tab import LogsTab
-from .panes.re_add_tab import ReAddTab
-from .panes.shared.canvas_ids import CanvasIds
-from .panes.shared.loggers import AppLog, DebugLog, OutputLog
-from .panes.shared.operate_msg import (
+from .tabs.add_tab import AddTab, FilteredDirTree
+from .tabs.apply_tab import ApplyTab
+from .tabs.config_tab import ConfigTab, ConfigTabSwitcher
+from .tabs.help_tab import HelpTab
+from .tabs.logs_tab import LogsTab
+from .tabs.re_add_tab import ReAddTab
+from .tabs.shared.canvas_ids import CanvasIds
+from .tabs.shared.loggers import AppLog, DebugLog, OutputLog
+from .tabs.shared.operate_msg import (
     CurrentAddNodeMsg,
     CurrentApplyNodeMsg,
     CurrentReAddNodeMsg,
 )
-from .panes.shared.trees import ExpandedTree, ListTree, ManagedTree
+from .tabs.shared.trees import ExpandedTree, ListTree, ManagedTree
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CommandsData, DirTreeNodeData, NodeData

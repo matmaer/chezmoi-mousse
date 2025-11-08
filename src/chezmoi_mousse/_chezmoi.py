@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from chezmoi_mousse import PathDict, PathList
 
-    from .gui.panes.logs_tab import AppLog, DebugLog, OutputLog
+    from .gui.tabs.logs_tab import AppLog, DebugLog, OutputLog
 
 __all__ = [
     "Chezmoi",

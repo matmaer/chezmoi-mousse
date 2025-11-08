@@ -7,9 +7,9 @@ from textual.screen import ModalScreen
 
 from chezmoi_mousse import AppType, CanvasName, FlatBtn, LinkBtn
 
-from .panes.shared.buttons import FlatButton, FlatLink
-from .panes.shared.canvas_ids import CanvasIds
-from .panes.shared.section_headers import SectionLabel, SectionSubLabel
+from .tabs.shared.buttons import FlatButton, FlatLink
+from .tabs.shared.canvas_ids import CanvasIds
+from .tabs.shared.section_headers import SectionLabel, SectionSubLabel
 
 __all__ = ["ReachOutScreen"]
 
