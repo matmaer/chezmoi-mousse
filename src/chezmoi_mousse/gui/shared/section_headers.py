@@ -6,7 +6,7 @@ from textual.widgets import Label, RichLog
 
 from chezmoi_mousse import CanvasName, Tcss, ViewName
 
-__all__ = ["InitialHeader", "SectionHeader", "SectionLabel"]
+__all__ = ["InitialHeader", "SectionHeader", "SectionLabel", "SectionSubLabel"]
 
 if TYPE_CHECKING:
     from .canvas_ids import CanvasIds
