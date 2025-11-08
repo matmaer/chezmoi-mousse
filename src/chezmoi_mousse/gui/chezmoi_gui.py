@@ -80,10 +80,12 @@ class ChezmoiGUI(App[None]):
 
         self.push_screen(
             LoadingScreen(chezmoi_found=self.chezmoi_found),
-            callback=self.handle_return_data,
+            callback=self.handle_splash_return_data,
         )
 
-    def handle_return_data(self, return_data: "SplashData | None") -> None:
+    def handle_splash_return_data(
+        self, return_data: "SplashData | None"
+    ) -> None:
         if return_data is None:
             self.push_screen(InstallHelp())
             return
