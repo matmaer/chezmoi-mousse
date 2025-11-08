@@ -5,6 +5,7 @@ from chezmoi_mousse import (
     CanvasName,
     ContainerName,
     FlatBtn,
+    LinkBtn,
     OperateBtn,
     Switches,
     TabBtn,
@@ -30,15 +31,17 @@ class CanvasIds:
         self.tab_container_id = f"{canvas_name}_container_id"
 
     def button_id(
-        self, qid: str = "", *, btn: OperateBtn | TabBtn | FlatBtn
+        self, qid: str = "", *, btn: FlatBtn | LinkBtn | OperateBtn | TabBtn
     ) -> str:
         if isinstance(btn, OperateBtn):
             suffix = "_op_btn"
             return f"{qid}{self.canvas_name}_{btn.name}{suffix}"
         elif isinstance(btn, TabBtn):
             suffix = "_tab_btn"
+        elif isinstance(btn, FlatBtn):
+            suffix = "_flat_btn"
         else:
-            suffix = "_nav_btn"
+            suffix = "_link_btn"
         return f"{qid}{self.canvas_name}_{btn.name}{suffix}"
 
     def container_id(self, qid: str = "", *, name: ContainerName) -> str:
