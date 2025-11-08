@@ -4,6 +4,8 @@ from textual.widgets import Static
 
 from chezmoi_mousse import CommandsData
 
+__all__ = ["ChezmoiInit"]
+
 
 class ChezmoiInit(Screen[None]):
 
