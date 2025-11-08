@@ -29,9 +29,11 @@ class ContainerName(StrEnum):
     left_side = auto()
     logs_switcher = auto()
     operate_btn_group = auto()
+    post_operate = auto()
+    pre_operate = auto()
     right_side = auto()
-    switcher_btn_group = auto()
     switch_slider = auto()
+    switcher_btn_group = auto()
     tree_switcher = auto()
     view_switcher = auto()
 

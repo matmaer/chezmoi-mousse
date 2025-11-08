@@ -41,7 +41,7 @@ class CanvasIds:
             suffix = "_nav_btn"
         return f"{qid}{self.canvas_name}_{btn.name}{suffix}"
 
-    def buttons_group_id(self, qid: str = "", *, name: ContainerName) -> str:
+    def container_id(self, qid: str = "", *, name: ContainerName) -> str:
         return f"{qid}{self.canvas_name}_{name.name}"
 
     def content_switcher_id(
@@ -57,9 +57,6 @@ class CanvasIds:
 
     def section_header_id(self, qid: str = "", *, view_name: ViewName) -> str:
         return f"{qid}{self.canvas_name}_{view_name.name}_section_header"
-
-    def switch_slider_id(self, qid: str = "", *, name: ContainerName) -> str:
-        return f"{qid}{self.canvas_name}_{name.name}"
 
     def switch_horizontal_id(self, qid: str = "", *, switch: Switches) -> str:
         return (

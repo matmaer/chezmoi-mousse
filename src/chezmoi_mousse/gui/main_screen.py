@@ -97,11 +97,11 @@ class MainScreen(Screen[None], AppType):
         self.splash_data = splash_data
 
         self.add_tab_ids = CanvasIds(CanvasName.add_tab)
-        self.add_switch_slider_qid = self.add_tab_ids.switch_slider_id(
+        self.add_switch_slider_qid = self.add_tab_ids.container_id(
             "#", name=ContainerName.switch_slider
         )
         self.apply_tab_ids = CanvasIds(CanvasName.apply_tab)
-        self.apply_switch_slider_qid = self.apply_tab_ids.switch_slider_id(
+        self.apply_switch_slider_qid = self.apply_tab_ids.container_id(
             "#", name=ContainerName.switch_slider
         )
         self.config_tab_ids = CanvasIds(CanvasName.config_tab)
@@ -121,7 +121,7 @@ class MainScreen(Screen[None], AppType):
             "#", view=ViewName.debug_log_view
         )
         self.re_add_tab_ids = CanvasIds(CanvasName.re_add_tab)
-        self.re_add_switch_slider_qid = self.re_add_tab_ids.switch_slider_id(
+        self.re_add_switch_slider_qid = self.re_add_tab_ids.container_id(
             "#", name=ContainerName.switch_slider
         )
 
@@ -389,6 +389,7 @@ class MainScreen(Screen[None], AppType):
         left_side = None
         operation_buttons = None
         view_switcher_buttons = None
+        switch_slider = None
 
         header = self.query_exactly_one(Header)
         header.display = False if header.display is True else True
@@ -402,8 +403,16 @@ class MainScreen(Screen[None], AppType):
                 ),
                 Vertical,
             )
+            operation_buttons = self.query_one(
+                self.apply_tab_ids.container_id(
+                    "#", name=ContainerName.operate_btn_group
+                )
+            )
+            switch_slider = self.query_one(
+                self.apply_switch_slider_qid, VerticalGroup
+            )
             view_switcher_buttons = self.query_one(
-                self.apply_tab_ids.buttons_group_id(
+                self.apply_tab_ids.container_id(
                     "#", name=ContainerName.switcher_btn_group
                 ),
                 HorizontalGroup,
@@ -416,9 +425,18 @@ class MainScreen(Screen[None], AppType):
                 Vertical,
             )
             operation_buttons = self.query_one(
-                self.re_add_tab_ids.buttons_group_id(
+                self.re_add_tab_ids.container_id(
                     "#", name=ContainerName.operate_btn_group
                 )
+            )
+            switch_slider = self.query_one(
+                self.re_add_switch_slider_qid, VerticalGroup
+            )
+            view_switcher_buttons = self.query_one(
+                self.re_add_tab_ids.container_id(
+                    "#", name=ContainerName.switcher_btn_group
+                ),
+                HorizontalGroup,
             )
         elif active_tab == CanvasName.add_tab:
             left_side = self.query_one(
@@ -428,13 +446,20 @@ class MainScreen(Screen[None], AppType):
                 Vertical,
             )
             operation_buttons = self.query_one(
-                self.add_tab_ids.buttons_group_id(
+                self.add_tab_ids.container_id(
                     "#", name=ContainerName.operate_btn_group
                 )
             )
+            switch_slider = self.query_one(
+                self.add_switch_slider_qid, VerticalGroup
+            )
+            view_switcher_buttons = None
         elif active_tab == CanvasName.logs_tab:
+            left_side = None
+            operation_buttons = None
+            switch_slider = None
             view_switcher_buttons = self.query_one(
-                self.logs_tab_ids.buttons_group_id(
+                self.logs_tab_ids.container_id(
                     "#", name=ContainerName.switcher_btn_group
                 ),
                 HorizontalGroup,
@@ -446,12 +471,28 @@ class MainScreen(Screen[None], AppType):
                 ),
                 Vertical,
             )
+            operation_buttons = None
+            switch_slider = None
+            view_switcher_buttons = self.query_one(
+                self.logs_tab_ids.container_id(
+                    "#", name=ContainerName.switcher_btn_group
+                ),
+                HorizontalGroup,
+            )
         elif active_tab == CanvasName.help_tab:
             left_side = self.query_one(
                 self.help_tab_ids.tab_vertical_id(
                     "#", name=ContainerName.left_side
                 ),
                 Vertical,
+            )
+            operation_buttons = None
+            switch_slider = None
+            view_switcher_buttons = self.query_one(
+                self.logs_tab_ids.container_id(
+                    "#", name=ContainerName.switcher_btn_group
+                ),
+                HorizontalGroup,
             )
 
         if left_side is not None:
@@ -465,6 +506,11 @@ class MainScreen(Screen[None], AppType):
         if view_switcher_buttons is not None:
             view_switcher_buttons.display = (
                 False if view_switcher_buttons.display is True else True
+            )
+
+        if switch_slider is not None:
+            switch_slider.display = (
+                False if switch_slider.display is True else True
             )
 
         new_description = "maximize" if header.display is True else "minimize"

@@ -70,7 +70,7 @@ class ApplyOpButtons(HorizontalGroup):
     def __init__(self, *, ids: "CanvasIds"):
         self.ids = ids
         super().__init__(
-            id=self.ids.buttons_group_id(name=ContainerName.operate_btn_group),
+            id=self.ids.container_id(name=ContainerName.operate_btn_group),
             classes=Tcss.operate_btn_horizontal.name,
         )
 
@@ -84,7 +84,7 @@ class ReAddOpButtons(HorizontalGroup):
     def __init__(self, *, ids: "CanvasIds"):
         self.ids = ids
         super().__init__(
-            id=self.ids.buttons_group_id(name=ContainerName.operate_btn_group),
+            id=self.ids.container_id(name=ContainerName.operate_btn_group),
             classes=Tcss.operate_btn_horizontal.name,
         )
 
@@ -98,7 +98,7 @@ class AddOpButtons(HorizontalGroup):
     def __init__(self, *, ids: "CanvasIds"):
         self.ids = ids
         super().__init__(
-            id=self.ids.buttons_group_id(name=ContainerName.operate_btn_group),
+            id=self.ids.container_id(name=ContainerName.operate_btn_group),
             classes=Tcss.operate_btn_horizontal.name,
         )
 
@@ -112,7 +112,7 @@ class TabBtnHorizontal(HorizontalGroup):
         self.ids = ids
         self.buttons = buttons
         super().__init__(
-            id=self.ids.buttons_group_id(name=ContainerName.switcher_btn_group)
+            id=self.ids.container_id(name=ContainerName.switcher_btn_group)
         )
 
     def compose(self) -> ComposeResult:

@@ -18,10 +18,9 @@ class SwitchSliderBase(VerticalGroup):
         self, *, ids: "CanvasIds", switches: tuple[Switches, ...]
     ) -> None:
         self.ids = ids
-        self.switch_slider_id = ids.switch_slider_id
         self.switches = switches
         super().__init__(
-            id=ids.switch_slider_id(name=ContainerName.switch_slider),
+            id=ids.container_id(name=ContainerName.switch_slider),
             classes=Tcss.switch_slider.name,
         )
 

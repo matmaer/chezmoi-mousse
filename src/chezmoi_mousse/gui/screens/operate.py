@@ -33,12 +33,6 @@ if TYPE_CHECKING:
 __all__ = ["OperateInfo", "OperateScreen"]
 
 
-class ContainerIds(StrEnum):
-    operate_btn = "operate_btn_container_id"
-    pre_operate = "pre_operate_container_id"
-    post_operate = "post_operate_container_id"
-
-
 class InfoStrings(StrEnum):
     add_path = "[$text-primary]The path will be added to your chezmoi dotfile manager source state.[/]"
     apply_path = "[$text-primary]The path in the destination directory will be modified.[/]"
@@ -151,21 +145,34 @@ class OperateScreen(Screen[OperateScreenData], AppType):
     ) -> None:
         super().__init__(id=ids.canvas_name, classes=Tcss.screen_base.name)
 
-        self.ids = ids
         self.operate_data = operate_data
-        self.exit_btn_id = self.ids.button_id(btn=OperateBtn.exit_button)
-        self.exit_btn_qid = self.ids.button_id("#", btn=OperateBtn.exit_button)
-        self.operate_btn_qid = self.ids.button_id(
+        self.exit_btn_id = ids.button_id(btn=OperateBtn.exit_button)
+        self.exit_btn_qid = ids.button_id("#", btn=OperateBtn.exit_button)
+        self.operate_btn_qid = ids.button_id(
             "#", btn=self.operate_data.operate_btn
         )
-        self.write_output_log_view_qid = self.ids.view_id(
+        self.post_operate_id = ids.container_id(
+            name=ContainerName.post_operate
+        )
+        self.post_operate_qid = ids.container_id(
+            "#", name=ContainerName.post_operate
+        )
+        self.pre_operate_id = ids.container_id(name=ContainerName.pre_operate)
+        self.pre_operate_qid = ids.container_id(
+            "#", name=ContainerName.pre_operate
+        )
+        self.write_output_log_view_id = ids.view_id(
+            view=ViewName.write_output_log_view
+        )
+        self.write_output_log_view_qid = ids.view_id(
             "#", view=ViewName.write_output_log_view
         )
+        self.ids = ids
 
     def compose(self) -> ComposeResult:
         yield OperateInfo(self.operate_data)
         yield SectionLabel(SectionLabels.context)
-        with Vertical(id=ContainerIds.pre_operate):
+        with Vertical(id=self.pre_operate_id):
             if self.operate_data.operate_btn == OperateBtn.apply_path:
                 yield DiffView(ids=self.ids, reverse=False)
             elif self.operate_data.operate_btn == OperateBtn.re_add_path:
@@ -180,17 +187,12 @@ class OperateScreen(Screen[OperateScreenData], AppType):
                 OperateBtn.destroy_path,
             ):
                 yield DiffView(ids=self.ids, reverse=False)
-        with Vertical(id=ContainerIds.post_operate):
+        with Vertical(id=self.post_operate_id):
             yield OutputLog(
                 ids=self.ids, view_name=ViewName.write_output_log_view
             )
-        with Vertical(id=ContainerIds.operate_btn):
-            with HorizontalGroup(
-                id=self.ids.buttons_group_id(
-                    name=ContainerName.operate_btn_group
-                ),
-                classes=Tcss.operate_btn_horizontal.name,
-            ):
+        with Vertical():
+            with HorizontalGroup(classes=Tcss.operate_btn_horizontal.name):
                 yield OperateButton(
                     ids=self.ids, button_enum=self.operate_data.operate_btn
                 )
@@ -261,7 +263,7 @@ class OperateScreen(Screen[OperateScreenData], AppType):
 
     def configure_containers(self) -> None:
         post_operate_container = self.query_one(
-            f"#{ContainerIds.post_operate.value}", Vertical
+            self.post_operate_qid, Vertical
         )
         post_operate_container.display = False
 
@@ -312,12 +314,10 @@ class OperateScreen(Screen[OperateScreenData], AppType):
     def post_operate_ui_update(self) -> None:
         section_label = self.query_exactly_one(SectionLabel)
         section_label.update(SectionLabels.output)
-        pre_operate_container = self.query_one(
-            f"#{ContainerIds.pre_operate.value}", Vertical
-        )
+        pre_operate_container = self.query_one(self.pre_operate_qid, Vertical)
         pre_operate_container.display = False
         post_operate_container = self.query_one(
-            f"#{ContainerIds.post_operate.value}", Vertical
+            self.post_operate_qid, Vertical
         )
         post_operate_container.display = True
 
