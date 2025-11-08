@@ -61,14 +61,15 @@ class OperateButton(Vertical):
         super().__init__()
 
     def compose(self) -> ComposeResult:
-        with Vertical(classes=Tcss.single_button_vertical.name):
-            yield Button(
+        yield Vertical(
+            Button(
                 label=self.button_enum.initial_label,
                 id=self.ids.button_id(btn=self.button_enum),
                 classes=Tcss.operate_button.name,
                 disabled=True,
                 tooltip=self.button_enum.initial_tooltip,
             )
+        )
 
 
 class NavButtonsVertical(VerticalGroup):
@@ -136,12 +137,13 @@ class TabBtnHorizontal(HorizontalGroup):
 
     def compose(self) -> ComposeResult:
         for button_enum in self.buttons:
-            with Vertical(classes=Tcss.single_button_vertical.name):
-                yield Button(
+            yield Vertical(
+                Button(
                     label=button_enum.value,
                     id=self.ids.button_id(btn=button_enum),
                     classes=Tcss.tab_button.name,
                 )
+            )
 
     def on_mount(self) -> None:
         buttons = self.query(Button)
