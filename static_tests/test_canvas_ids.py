@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 from _test_utils import get_modules_importing_class
 
-from chezmoi_mousse.screens.tabs.shared.canvas_ids import CanvasIds
+from chezmoi_mousse.gui.tabs.shared.canvas_ids import CanvasIds
 
 
 def _get_class_public_members_strings(
