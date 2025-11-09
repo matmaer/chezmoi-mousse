@@ -63,7 +63,8 @@ class OperateInfo(Static, AppType):
     def __init__(self, operate_screen_data: OperateScreenData) -> None:
         super().__init__()
         self.operate_btn = operate_screen_data.operate_btn
-        self.node_data = operate_screen_data.node_data
+        self.path_type = operate_screen_data.node_data.path_type
+        self.operate_path = operate_screen_data.node_data.path
 
     def on_mount(self) -> None:
         lines_to_write: list[str] = []
@@ -82,7 +83,7 @@ class OperateInfo(Static, AppType):
         elif self.operate_btn == OperateBtn.apply_path:
             self.border_title = (
                 OperateBtn.apply_path.file_tooltip.rstrip(".")
-                if self.node_data.path_type == "file"
+                if self.path_type == "file"
                 else OperateBtn.apply_path.dir_tooltip.rstrip(".")
             )
             lines_to_write.append(InfoStrings.apply_path)
@@ -90,7 +91,7 @@ class OperateInfo(Static, AppType):
         elif self.operate_btn == OperateBtn.re_add_path:
             self.border_title = (
                 OperateBtn.re_add_path.file_tooltip.rstrip(".")
-                if self.node_data.path_type == "file"
+                if self.path_type == "file"
                 else OperateBtn.re_add_path.dir_tooltip.rstrip(".")
             )
             lines_to_write.append(InfoStrings.re_add_path)
@@ -98,7 +99,7 @@ class OperateInfo(Static, AppType):
         elif self.operate_btn == OperateBtn.forget_path:
             self.border_title = (
                 OperateBtn.forget_path.file_tooltip.rstrip(".")
-                if self.node_data.path_type == "file"
+                if self.path_type == "file"
                 else OperateBtn.forget_path.dir_tooltip.rstrip(".")
             )
             lines_to_write.append(InfoStrings.forget_path)
@@ -106,7 +107,7 @@ class OperateInfo(Static, AppType):
         elif self.operate_btn == OperateBtn.destroy_path:
             self.border_title = (
                 OperateBtn.destroy_path.file_tooltip.rstrip(".")
-                if self.node_data.path_type == "file"
+                if self.path_type == "file"
                 else OperateBtn.destroy_path.dir_tooltip.rstrip(".")
             )
             lines_to_write.append(InfoStrings.destroy_path)
@@ -124,7 +125,7 @@ class OperateInfo(Static, AppType):
         ):
             lines_to_write.append(InfoStrings.diff_color)
         lines_to_write.append(
-            f"[$text-primary]Operating on path: {self.node_data.path}[/]"
+            f"[$text-primary]Operating on path: {self.operate_path}[/]"
         )
         self.update("\n".join(lines_to_write))
 
@@ -145,12 +146,13 @@ class OperateScreen(Screen[OperateScreenData], AppType):
     ) -> None:
         super().__init__(id=ids.canvas_name, classes=Tcss.screen_base.name)
 
-        self.operate_data = operate_data
+        self.path_arg = operate_data.node_data.path
+        self.path_type = operate_data.node_data.path_type
+        self.operate_btn = operate_data.operate_btn
+
         self.exit_btn_id = ids.button_id(btn=OperateBtn.exit_button)
         self.exit_btn_qid = ids.button_id("#", btn=OperateBtn.exit_button)
-        self.operate_btn_qid = ids.button_id(
-            "#", btn=self.operate_data.operate_btn
-        )
+        self.operate_btn_qid = ids.button_id("#", btn=self.operate_btn)
         self.post_operate_id = ids.container_id(
             name=ContainerName.post_operate
         )
@@ -164,25 +166,24 @@ class OperateScreen(Screen[OperateScreenData], AppType):
         self.write_output_log_view_id = ids.view_id(
             view=ViewName.write_output_log_view
         )
-        self.write_output_log_view_qid = ids.view_id(
+        self.output_log_qid = ids.view_id(
             "#", view=ViewName.write_output_log_view
         )
+
         self.ids = ids
+        self.operate_data = operate_data
 
     def compose(self) -> ComposeResult:
         yield OperateInfo(self.operate_data)
         yield SectionLabel(SectionLabels.context)
         with Vertical(id=self.pre_operate_id):
-            if self.operate_data.operate_btn == OperateBtn.apply_path:
+            if self.operate_btn == OperateBtn.apply_path:
                 yield DiffView(ids=self.ids, reverse=False)
-            elif self.operate_data.operate_btn == OperateBtn.re_add_path:
+            elif self.operate_btn == OperateBtn.re_add_path:
                 yield DiffView(ids=self.ids, reverse=True)
-            elif self.operate_data.operate_btn in (
-                OperateBtn.add_file,
-                OperateBtn.add_dir,
-            ):
+            elif self.operate_btn in (OperateBtn.add_file, OperateBtn.add_dir):
                 yield ContentsView(ids=self.ids)
-            elif self.operate_data.operate_btn in (
+            elif self.operate_btn in (
                 OperateBtn.forget_path,
                 OperateBtn.destroy_path,
             ):
@@ -193,9 +194,7 @@ class OperateScreen(Screen[OperateScreenData], AppType):
             )
         with Vertical():
             with HorizontalGroup(classes=Tcss.horizontal_btn_group.name):
-                yield OperateButton(
-                    ids=self.ids, button_enum=self.operate_data.operate_btn
-                )
+                yield OperateButton(ids=self.ids, button_enum=self.operate_btn)
                 yield OperateButton(
                     ids=self.ids, button_enum=OperateBtn.exit_button
                 )
@@ -208,103 +207,122 @@ class OperateScreen(Screen[OperateScreenData], AppType):
         self.configure_containers()
 
     def configure_widgets(self) -> None:
-        if self.operate_data.operate_btn in (
-            OperateBtn.apply_path,
-            OperateBtn.re_add_path,
-        ):
+        if self.operate_btn in (OperateBtn.apply_path, OperateBtn.re_add_path):
             diff_view = self.query_exactly_one(DiffView)
-            diff_view.path = self.operate_data.node_data.path
+            diff_view.path = self.path_arg
 
-        elif self.operate_data.operate_btn in (
-            OperateBtn.add_file,
-            OperateBtn.add_dir,
-        ):
+        elif self.operate_btn in (OperateBtn.add_file, OperateBtn.add_dir):
             contents_view = self.query_exactly_one(ContentsView)
-            contents_view.path = self.operate_data.node_data.path
-        elif self.operate_data.operate_btn in (
+            contents_view.path = self.path_arg
+        elif self.operate_btn in (
             OperateBtn.forget_path,
             OperateBtn.destroy_path,
         ):
             diff_view = self.query_exactly_one(DiffView)
-            diff_view.path = self.operate_data.node_data.path
-
-        screen_output_log = self.query_one(
-            self.write_output_log_view_qid, OutputLog
-        )
-        screen_output_log.auto_scroll = False
+            diff_view.path = self.path_arg
 
     def configure_buttons(self) -> None:
-        operate_button = self.query_one(self.operate_btn_qid, Button)
-        operate_button.disabled = False
-        operate_button.tooltip = None
-        exit_button = self.query_one(self.exit_btn_qid, Button)
-        exit_button.disabled = False
-        exit_button.tooltip = None
+        op_btn = self.query_one(self.operate_btn_qid, Button)
+        op_btn.disabled = False
+        exit_btn = self.query_one(self.exit_btn_qid, Button)
+        exit_btn.disabled = False
+        exit_btn.tooltip = None
 
-        if self.operate_data.operate_btn == OperateBtn.apply_path:
-            operate_button.label = (
+        if self.operate_btn == OperateBtn.apply_path:
+            op_btn.label = (
                 OperateBtn.apply_path.dir_label
-                if self.operate_data.node_data.path_type == "dir"
+                if self.path_type == "dir"
                 else OperateBtn.apply_path.file_label
             )
+            op_btn.tooltip = (
+                OperateBtn.apply_path.dir_tooltip
+                if self.path_type == "dir"
+                else OperateBtn.apply_path.file_tooltip
+            )
 
-        elif self.operate_data.operate_btn == OperateBtn.re_add_path:
-            operate_button.label = (
+        elif self.operate_btn == OperateBtn.re_add_path:
+            op_btn.label = (
                 OperateBtn.re_add_path.dir_label
-                if self.operate_data.node_data.path_type == "dir"
+                if self.path_type == "dir"
                 else OperateBtn.re_add_path.file_label
             )
-        elif self.operate_data.operate_btn == OperateBtn.add_dir:
-            operate_button.label = (
+            op_btn.tooltip = (
+                OperateBtn.re_add_path.dir_tooltip
+                if self.path_type == "dir"
+                else OperateBtn.re_add_path.file_tooltip
+            )
+        elif self.operate_btn == OperateBtn.add_dir:
+            op_btn.label = (
                 OperateBtn.add_dir.initial_label
-                if self.operate_data.node_data.path_type == "dir"
+                if self.path_type == "dir"
                 else OperateBtn.add_file.initial_label
+            )
+            op_btn.tooltip = (
+                OperateBtn.add_dir.initial_tooltip
+                if self.path_type == "dir"
+                else OperateBtn.add_file.initial_tooltip
+            )
+        elif self.operate_btn == OperateBtn.forget_path:
+            op_btn.label = (
+                OperateBtn.forget_path.dir_label
+                if self.path_type == "dir"
+                else OperateBtn.forget_path.file_label
+            )
+            op_btn.tooltip = (
+                OperateBtn.forget_path.dir_tooltip
+                if self.path_type == "dir"
+                else OperateBtn.forget_path.file_tooltip
+            )
+        elif self.operate_btn == OperateBtn.destroy_path:
+            op_btn.label = (
+                OperateBtn.destroy_path.dir_label
+                if self.path_type == "dir"
+                else OperateBtn.destroy_path.file_label
+            )
+            op_btn.tooltip = (
+                OperateBtn.destroy_path.dir_tooltip
+                if self.path_type == "dir"
+                else OperateBtn.destroy_path.file_tooltip
             )
 
     def configure_containers(self) -> None:
-        post_operate_container = self.query_one(
-            self.post_operate_qid, Vertical
-        )
-        post_operate_container.display = False
+        self.query_one(self.post_operate_qid, Vertical).display = False
 
     def run_operate_command(self) -> "CommandResult | None":
         cmd_result: "CommandResult | None" = None
-        if self.operate_data.operate_btn in (
-            OperateBtn.add_file,
-            OperateBtn.add_dir,
-        ):
+        if self.operate_btn in (OperateBtn.add_file, OperateBtn.add_dir):
             cmd_result = self.app.chezmoi.perform(
                 WriteCmd.add,
-                path_arg=self.operate_data.node_data.path,
+                path_arg=self.path_arg,
                 dry_run=self.app.changes_enabled,
             )
-        elif self.operate_data.operate_btn == OperateBtn.apply_path:
+        elif self.operate_btn == OperateBtn.apply_path:
             cmd_result = self.app.chezmoi.perform(
                 WriteCmd.apply,
-                path_arg=self.operate_data.node_data.path,
+                path_arg=self.path_arg,
                 dry_run=self.app.changes_enabled,
             )
-        elif self.operate_data.operate_btn == OperateBtn.re_add_path:
+        elif self.operate_btn == OperateBtn.re_add_path:
             cmd_result = self.app.chezmoi.perform(
                 WriteCmd.re_add,
-                path_arg=self.operate_data.node_data.path,
+                path_arg=self.path_arg,
                 dry_run=self.app.changes_enabled,
             )
-        elif self.operate_data.operate_btn == OperateBtn.forget_path:
+        elif self.operate_btn == OperateBtn.forget_path:
             cmd_result = self.app.chezmoi.perform(
                 WriteCmd.forget,
-                path_arg=self.operate_data.node_data.path,
+                path_arg=self.path_arg,
                 dry_run=self.app.changes_enabled,
             )
-        elif self.operate_data.operate_btn == OperateBtn.destroy_path:
+        elif self.operate_btn == OperateBtn.destroy_path:
             cmd_result = self.app.chezmoi.perform(
                 WriteCmd.destroy,
-                path_arg=self.operate_data.node_data.path,
+                path_arg=self.path_arg,
                 dry_run=self.app.changes_enabled,
             )
         else:
             self.screen.notify(
-                f"Operate button not implemented: {self.operate_data.operate_btn.name}",
+                f"Operate button not implemented: {self.operate_btn.name}",
                 severity="error",
             )
         self.operate_data.operation_executed = True
@@ -314,12 +332,10 @@ class OperateScreen(Screen[OperateScreenData], AppType):
     def post_operate_ui_update(self) -> None:
         section_label = self.query_exactly_one(SectionLabel)
         section_label.update(SectionLabels.output)
-        pre_operate_container = self.query_one(self.pre_operate_qid, Vertical)
-        pre_operate_container.display = False
-        post_operate_container = self.query_one(
-            self.post_operate_qid, Vertical
-        )
-        post_operate_container.display = True
+        pre_op_container = self.query_one(self.pre_operate_qid, Vertical)
+        pre_op_container.display = False
+        post_op_container = self.query_one(self.post_operate_qid, Vertical)
+        post_op_container.display = True
 
         operate_button = self.query_one(self.operate_btn_qid, Button)
         operate_button.disabled = True
@@ -328,11 +344,11 @@ class OperateScreen(Screen[OperateScreenData], AppType):
         operate_exit_button = self.query_one(self.exit_btn_qid, Button)
         operate_exit_button.label = OperateBtn.exit_button.close_button_label
 
+        output_log = self.query_one(self.output_log_qid, OutputLog)
         if self.operate_data.command_result is not None:
-            screen_output_log = self.query_one(
-                self.write_output_log_view_qid, OutputLog
-            )
-            screen_output_log.log_cmd_results(self.operate_data.command_result)
+            output_log.log_cmd_results(self.operate_data.command_result)
+        else:
+            output_log.error("Command result is None, cannot log output.")
 
     @on(Button.Pressed, Tcss.operate_button.value)
     def handle_operate_button_pressed(self, event: Button.Pressed) -> None:
