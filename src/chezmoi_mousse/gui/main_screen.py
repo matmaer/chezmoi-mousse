@@ -22,6 +22,7 @@ from chezmoi_mousse import (
     CanvasName,
     Chars,
     ContainerName,
+    HeaderTitles,
     OperateBtn,
     OperateScreenData,
     Tcss,
@@ -55,12 +56,6 @@ class Strings(StrEnum):
     add_tab_button = "Add"
     apply_tab_button = "Apply"
     config_tab_button = "Config"
-    header_dry_run_mode = (
-        " -  c h e z m o i  m o u s s e  --  d r y  r u n  m o d e  - "
-    )
-    header_live_mode = (
-        " -  c h e z m o i  m o u s s e  --  l i v e  m o d e  - "
-    )
     help_tab_button = "Help"
     logs_tab_button = "Logs"
     re_add_tab_button = "Re-Add"
@@ -131,12 +126,37 @@ class MainScreen(Screen[None], AppType):
         self.current_apply_node: "NodeData | None" = None
         self.current_re_add_node: "NodeData | None" = None
 
+    def compose(self) -> ComposeResult:
+        yield Header(icon=Chars.burger)
+        with TabbedContent():
+            with TabPane(
+                Strings.apply_tab_button.value, id=CanvasName.apply_tab.name
+            ):
+                yield ApplyTab(ids=self.apply_tab_ids)
+            with TabPane(
+                Strings.re_add_tab_button.value, id=CanvasName.re_add_tab.name
+            ):
+                yield ReAddTab(ids=self.re_add_tab_ids)
+            with TabPane(
+                Strings.add_tab_button.value, id=CanvasName.add_tab.name
+            ):
+                yield AddTab(ids=self.add_tab_ids)
+            with TabPane(
+                Strings.logs_tab_button.value, id=CanvasName.logs_tab.name
+            ):
+                yield LogsTab(ids=self.logs_tab_ids)
+            with TabPane(
+                Strings.config_tab_button.value, id=CanvasName.config_tab.name
+            ):
+                yield ConfigTab(ids=self.config_tab_ids)
+            with TabPane(
+                Strings.help_tab_button.value, id=CanvasName.help_tab.name
+            ):
+                yield HelpTab(ids=self.help_tab_ids)
+        yield Footer()
+
     def on_mount(self) -> None:
-        self.title = (
-            Strings.header_live_mode.value
-            if self.app.changes_enabled
-            else Strings.header_dry_run_mode.value
-        )
+        self.title = HeaderTitles.header_dry_run_mode.value
         app_logger = self.query_one(self.app_log_qid, AppLog)
         self.app_log = app_logger
         self.app.chezmoi.app_log = app_logger
@@ -179,35 +199,6 @@ class MainScreen(Screen[None], AppType):
         if self.app.dev_mode is True:
             self.notify('Running in "dev mode"', severity="information")
         self.handle_commands_data(self.commands_data)
-
-    def compose(self) -> ComposeResult:
-        yield Header(icon=Chars.burger)
-        with TabbedContent():
-            with TabPane(
-                Strings.apply_tab_button.value, id=CanvasName.apply_tab.name
-            ):
-                yield ApplyTab(ids=self.apply_tab_ids)
-            with TabPane(
-                Strings.re_add_tab_button.value, id=CanvasName.re_add_tab.name
-            ):
-                yield ReAddTab(ids=self.re_add_tab_ids)
-            with TabPane(
-                Strings.add_tab_button.value, id=CanvasName.add_tab.name
-            ):
-                yield AddTab(ids=self.add_tab_ids)
-            with TabPane(
-                Strings.logs_tab_button.value, id=CanvasName.logs_tab.name
-            ):
-                yield LogsTab(ids=self.logs_tab_ids)
-            with TabPane(
-                Strings.config_tab_button.value, id=CanvasName.config_tab.name
-            ):
-                yield ConfigTab(ids=self.config_tab_ids)
-            with TabPane(
-                Strings.help_tab_button.value, id=CanvasName.help_tab.name
-            ):
-                yield HelpTab(ids=self.help_tab_ids)
-        yield Footer()
 
     def handle_commands_data(self, data: "CommandsData") -> None:
         self.populate_trees(commands_data=data)
@@ -274,11 +265,11 @@ class MainScreen(Screen[None], AppType):
             elif active_tab == CanvasName.add_tab:
                 return True
             elif active_tab == CanvasName.logs_tab:
-                return False
+                return None
             elif active_tab == CanvasName.config_tab:
-                return False
+                return None
             elif active_tab == CanvasName.help_tab:
-                return False
+                return None
         return True
 
     def _get_slider_from_tab(self, tab_name: str) -> VerticalGroup | None:
@@ -342,10 +333,10 @@ class MainScreen(Screen[None], AppType):
         self.app.changes_enabled = not self.app.changes_enabled
         header_title = self.screen.query_exactly_one("HeaderTitle")
         if self.app.changes_enabled is True:
-            self.screen.title = Strings.header_live_mode.value
+            self.screen.title = HeaderTitles.header_live_mode.value
             header_title.add_class(Tcss.changes_enabled_color.name)
         else:
-            self.screen.title = Strings.header_dry_run_mode.value
+            self.screen.title = HeaderTitles.header_dry_run_mode.value
             header_title.remove_class(Tcss.changes_enabled_color.name)
         mode = "live mode" if self.app.changes_enabled else "dry run mode"
         severity = "warning" if self.app.changes_enabled else "information"
@@ -582,6 +573,15 @@ class MainScreen(Screen[None], AppType):
     def _handle_operate_result(
         self, screen_result: "OperateScreenData | None"
     ) -> None:
+        # the mode could have changed during the operation
+        header_title = self.screen.query_exactly_one("HeaderTitle")
+        if self.app.changes_enabled is True:
+            self.screen.title = HeaderTitles.header_live_mode.value
+            header_title.add_class(Tcss.changes_enabled_color.name)
+        else:
+            self.screen.title = HeaderTitles.header_dry_run_mode.value
+            header_title.remove_class(Tcss.changes_enabled_color.name)
+        # Actual handling of the result
         if screen_result is None:
             self.notify("No operation result returned.", severity="error")
             return
