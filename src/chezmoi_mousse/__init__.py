@@ -51,6 +51,7 @@ __all__ = [
     "DirTreeNodeData",
     "FlatBtn",
     "GlobalCmd",
+    "HeaderTitles",
     "LinkBtn",
     "NodeData",
     "OperateBtn",
@@ -70,6 +71,15 @@ __all__ = [
     "ViewName",
     "WriteCmd",
 ]
+
+
+class HeaderTitles(StrEnum):
+    header_dry_run_mode = (
+        " -  c h e z m o i  m o u s s e  --  d r y  r u n  m o d e  - "
+    )
+    header_live_mode = (
+        " -  c h e z m o i  m o u s s e  --  l i v e  m o d e  - "
+    )
 
 
 @dataclass(slots=True)
