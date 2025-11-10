@@ -115,12 +115,12 @@ class ReAddTabHelp(Vertical):
 
         yield SectionSubLabel(OperateBtn.re_add_path.label(PathType.FILE))
         yield Static(OperateBtn.re_add_path.file_tooltip)
-        yield SharedBtnHelp(ids=self.ids)
 
         yield SectionSubLabel(OperateBtn.re_add_path.label(PathType.DIR))
         yield Static(OperateBtn.re_add_path.dir_tooltip)
 
         yield FlatLink(ids=self.ids, link_enum=LinkBtn.chezmoi_re_add)
+        yield SharedBtnHelp(ids=self.ids)
 
 
 class AddTabHelp(Vertical):
