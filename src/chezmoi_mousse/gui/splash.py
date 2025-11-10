@@ -240,7 +240,6 @@ class LoadingScreen(Screen[CommandsData | None], AppType):
 
         self.app.chezmoi = Chezmoi(
             dev_mode=self.app.dev_mode,
-            dest_dir=globals()["parsed_config"].dest_dir,
             managed_dirs=globals()["managed_dirs"],
             managed_files=globals()["managed_files"],
             status_dirs=globals()["status_dirs"],

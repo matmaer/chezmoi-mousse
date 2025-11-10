@@ -98,6 +98,7 @@ class ReadVerbs(Enum):
     managed = "managed"
     source_path = "source-path"
     status = "status"
+    verify = "verify"
 
 
 class ReadCmd(Enum):
@@ -141,6 +142,7 @@ class ReadCmd(Enum):
         VerbArgs.include_files.value,
     ]
     template_data = GlobalCmd.live_run.value + [ReadVerbs.data.value]
+    verify = GlobalCmd.live_run.value + [ReadVerbs.verify.value]
     # version = GlobalCmd.version.value TODO
 
     @property
@@ -212,16 +214,12 @@ class Chezmoi:
         self,
         *,
         dev_mode: bool,
-        dest_dir: Path,
         managed_dirs: CommandResult,
         managed_files: CommandResult,
         status_dirs: CommandResult,
         status_files: CommandResult,
     ) -> None:
         self._dev_mode = dev_mode
-
-        self.dest_dir = dest_dir
-        self._dest_dir_status: PathDict = {self.dest_dir: "F"}
         self._managed_dirs_result = managed_dirs
         self._managed_files_result = managed_files
         self._status_dirs_result = status_dirs
