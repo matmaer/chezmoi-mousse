@@ -1,4 +1,3 @@
-import dataclasses
 from enum import StrEnum
 from typing import TYPE_CHECKING
 
@@ -7,13 +6,12 @@ from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import HorizontalGroup, Vertical
 from textual.screen import Screen
-from textual.widgets import Button, Footer, Header, Static
+from textual.widgets import Button, Footer, Static
 
 from chezmoi_mousse import (
     AppType,
     Chars,
     ContainerName,
-    HeaderTitles,
     OperateBtn,
     OperateScreenData,
     Tcss,
@@ -21,6 +19,7 @@ from chezmoi_mousse import (
     WriteCmd,
 )
 
+from .reactive_header import ReactiveHeader
 from .tabs.shared.buttons import OperateButton
 from .tabs.shared.contents_view import ContentsView
 from .tabs.shared.diff_view import DiffView
@@ -41,7 +40,7 @@ class Strings(StrEnum):
     auto_commit = f"[$text-warning]{Chars.warning_sign} Auto commit is enabled: files will also be committed.{Chars.warning_sign}[/]"
     autopush = f"[$text-warning]{Chars.warning_sign} Auto push is enabled: files will be pushed to the remote.{Chars.warning_sign}[/]"
     changes_disabled = "[dim]Changes are currently disabled, running commands with '--dry-run' flag[/]"
-    changes_enabled = f"[$text-error]{Chars.warning_sign} Changes currently enabled, running commands without '--dry-run' flag.{Chars.warning_sign}[/]"
+    changes_enabled = f"[$text-warning]{Chars.warning_sign} Changes currently enabled, running commands without '--dry-run' flag.{Chars.warning_sign}[/]"
     destroy_path = "[$text-error]Permanently remove the path both from your home directory and chezmoi's source directory, make sure you have a backup![/]"
     diff_color = f"[$text-success]+ green lines will be added[/]\n[$text-error]- red lines will be removed[/]\n[dim]{Chars.bullet} dimmed lines for context[/]"
     forget_path = "[$text-primary]Remove the path from the source state, i.e. stop managing them.[/]"
@@ -67,16 +66,11 @@ class OperateInfo(Static, AppType):
         self.operate_path = operate_screen_data.node_data.path
 
     def on_mount(self) -> None:
-        self.title = (
-            HeaderTitles.header_live_mode.value
-            if self.app.changes_enabled
-            else HeaderTitles.header_dry_run_mode.value
-        )
+        self.write_info_lines()
+
+    def write_info_lines(self) -> None:
+        self.update("")
         lines_to_write: list[str] = []
-        if self.app.changes_enabled is True:
-            lines_to_write.append(Strings.changes_enabled)
-        else:
-            lines_to_write.append(Strings.changes_disabled)
         if self.operate_btn == OperateBtn.add_file:
             self.border_title = OperateBtn.add_file.enabled_tooltip.rstrip(".")
             lines_to_write.append(Strings.add_path)
@@ -117,7 +111,10 @@ class OperateInfo(Static, AppType):
             )
             lines_to_write.append(Strings.destroy_path)
             self.border_subtitle = Chars.destroy_info_border
-
+        if self.app.changes_enabled is True:
+            lines_to_write.append(Strings.changes_enabled)
+        else:
+            lines_to_write.append(Strings.changes_disabled)
         if self.operate_btn != OperateBtn.apply_path:
             if self.git_autocommit is True:
                 lines_to_write.append(Strings.auto_commit)
@@ -139,16 +136,11 @@ class OperateScreen(Screen[OperateScreenData], AppType):
 
     BINDINGS = [
         Binding(
-            key="D,d",
-            action="toggle_dry_run_mode",
-            description="Remove --dry-run flag",
-        ),
-        Binding(
             key="escape",
             action="exit_operation",
             description="Press the escape key to exit",
             show=True,
-        ),
+        )
     ]
 
     def __init__(
@@ -184,7 +176,7 @@ class OperateScreen(Screen[OperateScreenData], AppType):
         self.operate_data = operate_data
 
     def compose(self) -> ComposeResult:
-        yield Header()
+        yield ReactiveHeader()
         with Vertical(id=self.pre_operate_id):
             yield OperateInfo(self.operate_data)
             yield SectionLabel(SectionLabels.context)
@@ -213,7 +205,6 @@ class OperateScreen(Screen[OperateScreenData], AppType):
 
     def on_mount(self) -> None:
         self.add_class(Tcss.operate_screen.name)
-        self.update_header_title()
         self.configure_buttons()
         self.configure_widgets()
         self.configure_containers()
@@ -349,47 +340,6 @@ class OperateScreen(Screen[OperateScreenData], AppType):
             self.dismiss(self.operate_data)
         else:
             self.run_operate_command()
-
-    def update_header_title(self) -> None:
-        header_title = self.screen.query_exactly_one("HeaderTitle", Static)
-        if self.app.changes_enabled is True:
-            self.screen.title = HeaderTitles.header_live_mode.value
-            header_title.add_class(Tcss.changes_enabled_color.name)
-        else:
-            self.screen.title = HeaderTitles.header_dry_run_mode.value
-            header_title.remove_class(Tcss.changes_enabled_color.name)
-
-    def action_toggle_dry_run_mode(self) -> None:
-        self.app.changes_enabled = not self.app.changes_enabled
-        self.update_header_title()
-        operate_info = self.query_one(OperateInfo)
-        operate_info.on_mount()
-
-        mode = "live mode" if self.app.changes_enabled else "dry run mode"
-        severity = "warning" if self.app.changes_enabled else "information"
-        self.notify(f"Switched to {mode}", severity=severity)
-
-        new_description = (
-            "Add --dry-run flag"
-            if self.app.changes_enabled is True
-            else "Remove --dry-run flag"
-        )
-
-        for key, binding in self._bindings:
-            if binding.action == "toggle_dry_run_mode":
-                # Create a new binding with the updated description
-                updated_binding = dataclasses.replace(
-                    binding, description=new_description
-                )
-                # Update the bindings map
-                if key in self._bindings.key_to_bindings:
-                    bindings_list = self._bindings.key_to_bindings[key]
-                    for i, b in enumerate(bindings_list):
-                        if b.action == "toggle_dry_run_mode":
-                            bindings_list[i] = updated_binding
-                            break
-                break
-        self.refresh_bindings()
 
     def action_exit_operation(self) -> None:
         self.dismiss(self.operate_data)

@@ -179,6 +179,16 @@ NavButtonsVertical {
   }
 }
 
+ReactiveHeader {
+  border-bottom: dashed $surface-lighten-3;
+  color: $primary;
+  height: 2;
+  text-style: bold;
+  .changes_enabled_color {
+    color: $warning;
+  }
+}
+
 SwitchSliderBase {
   background-tint: $surface;
   background: $surface;
@@ -313,16 +323,6 @@ DirectoryTree {
 Footer {
   background-tint: $surface;
   background: $surface;
-}
-
-Header {
-  border-bottom: dashed $surface-lighten-3;
-  color: $primary;
-  height: 2;
-  text-style: bold;
-  .changes_enabled_color {
-    color: $warning;
-  }
 }
 
 Switch {

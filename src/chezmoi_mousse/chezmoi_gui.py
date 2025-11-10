@@ -1,3 +1,4 @@
+import dataclasses
 from math import ceil
 from typing import TYPE_CHECKING
 
@@ -5,6 +6,7 @@ from rich.color import Color
 from rich.segment import Segment, Segments
 from rich.style import Style
 from textual.app import App
+from textual.binding import Binding
 from textual.scrollbar import ScrollBar, ScrollBarRender
 from textual.theme import Theme
 
@@ -15,6 +17,7 @@ from .gui.install_help import InstallHelp
 from .gui.main_screen import MainScreen
 from .gui.operate import OperateInfo
 from .gui.reach_out import ReachOutScreen
+from .gui.reactive_header import ReactiveHeader
 from .gui.splash import LoadingScreen
 from .gui.tabs.add_tab import AddTab
 from .gui.tabs.shared.contents_view import ContentsView
@@ -58,6 +61,14 @@ chezmoi_mousse_light = Theme(
 
 
 class ChezmoiGUI(App[None]):
+
+    BINDINGS = [
+        Binding(
+            key="D,d",
+            action="toggle_dry_run_mode",
+            description="Remove --dry-run flag",
+        )
+    ]
 
     CSS_PATH = "gui.tcss"
 
@@ -113,6 +124,40 @@ class ChezmoiGUI(App[None]):
         OperateInfo.git_autopush = return_data.parsed_config.git_autopush
 
         self.push_screen(MainScreen(commands_data=return_data))
+
+    def action_toggle_dry_run_mode(self) -> None:
+        self.changes_enabled = not self.changes_enabled
+        reactive_header = self.screen.query_exactly_one(ReactiveHeader)
+        reactive_header.changes_enabled = self.changes_enabled
+
+        # TODO: improve this quickly drafted implementation
+        try:
+            operate_info = self.screen.query_exactly_one(OperateInfo)
+            operate_info.write_info_lines()
+        except Exception:
+            pass
+
+        new_description = (
+            "Add --dry-run flag"
+            if self.changes_enabled is True
+            else "Remove --dry-run flag"
+        )
+
+        for key, binding in self._bindings:
+            if binding.action == "toggle_dry_run_mode":
+                # Create a new binding with the updated description
+                updated_binding = dataclasses.replace(
+                    binding, description=new_description
+                )
+                # Update the bindings map
+                if key in self._bindings.key_to_bindings:
+                    bindings_list = self._bindings.key_to_bindings[key]
+                    for i, b in enumerate(bindings_list):
+                        if b.action == "toggle_dry_run_mode":
+                            bindings_list[i] = updated_binding
+                            break
+                break
+        self.refresh_bindings()
 
 
 class CustomScrollBarRender(ScrollBarRender):

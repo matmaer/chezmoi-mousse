@@ -8,21 +8,12 @@ from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import HorizontalGroup, Vertical, VerticalGroup
 from textual.screen import Screen
-from textual.widgets import (
-    Button,
-    Footer,
-    Header,
-    TabbedContent,
-    TabPane,
-    Tabs,
-)
+from textual.widgets import Button, Footer, TabbedContent, TabPane, Tabs
 
 from chezmoi_mousse import (
     AppType,
     CanvasName,
-    Chars,
     ContainerName,
-    HeaderTitles,
     OperateBtn,
     OperateScreenData,
     Tcss,
@@ -31,6 +22,7 @@ from chezmoi_mousse import (
 )
 
 from .operate import OperateScreen
+from .reactive_header import ReactiveHeader
 from .tabs.add_tab import AddTab, FilteredDirTree
 from .tabs.apply_tab import ApplyTab
 from .tabs.config_tab import ConfigTab, ConfigTabSwitcher
@@ -73,11 +65,6 @@ class MainScreen(Screen[None], AppType):
             key="F,f",
             action="toggle_switch_slider",
             description="hide filters",
-        ),
-        Binding(
-            key="D,d",
-            action="toggle_dry_run_mode",
-            description="Remove --dry-run flag",
         ),
     ]
 
@@ -127,7 +114,7 @@ class MainScreen(Screen[None], AppType):
         self.current_re_add_node: "NodeData | None" = None
 
     def compose(self) -> ComposeResult:
-        yield Header(icon=Chars.burger)
+        yield ReactiveHeader()
         with TabbedContent():
             with TabPane(
                 Strings.apply_tab_button.value, id=CanvasName.apply_tab.name
@@ -156,7 +143,6 @@ class MainScreen(Screen[None], AppType):
         yield Footer()
 
     def on_mount(self) -> None:
-        self.title = HeaderTitles.header_dry_run_mode.value
         app_logger = self.query_one(self.app_log_qid, AppLog)
         self.app_log = app_logger
         self.app.chezmoi.app_log = app_logger
@@ -329,41 +315,6 @@ class MainScreen(Screen[None], AppType):
             )
         self.refresh_bindings()
 
-    def action_toggle_dry_run_mode(self) -> None:
-        self.app.changes_enabled = not self.app.changes_enabled
-        header_title = self.screen.query_exactly_one("HeaderTitle")
-        if self.app.changes_enabled is True:
-            self.screen.title = HeaderTitles.header_live_mode.value
-            header_title.add_class(Tcss.changes_enabled_color.name)
-        else:
-            self.screen.title = HeaderTitles.header_dry_run_mode.value
-            header_title.remove_class(Tcss.changes_enabled_color.name)
-        mode = "live mode" if self.app.changes_enabled else "dry run mode"
-        severity = "warning" if self.app.changes_enabled else "information"
-        self.notify(f"Switched to {mode}", severity=severity)
-
-        new_description = (
-            "Add --dry-run flag"
-            if self.app.changes_enabled is True
-            else "Remove --dry-run flag"
-        )
-
-        for key, binding in self._bindings:
-            if binding.action == "toggle_dry_run_mode":
-                # Create a new binding with the updated description
-                updated_binding = dataclasses.replace(
-                    binding, description=new_description
-                )
-                # Update the bindings map
-                if key in self._bindings.key_to_bindings:
-                    bindings_list = self._bindings.key_to_bindings[key]
-                    for i, b in enumerate(bindings_list):
-                        if b.action == "toggle_dry_run_mode":
-                            bindings_list[i] = updated_binding
-                            break
-                break
-        self.refresh_bindings()
-
     def action_toggle_switch_slider(self) -> None:
         active_tab = self.query_one(TabbedContent).active
         slider = self._get_slider_from_tab(active_tab)
@@ -381,7 +332,7 @@ class MainScreen(Screen[None], AppType):
         view_switcher_buttons = None
         switch_slider = None
 
-        header = self.query_exactly_one(Header)
+        header = self.query_exactly_one(ReactiveHeader)
         header.display = False if header.display is True else True
         main_tabs = self.query_exactly_one(Tabs)
         main_tabs.display = False if main_tabs.display is True else True
@@ -573,14 +524,10 @@ class MainScreen(Screen[None], AppType):
     def _handle_operate_result(
         self, screen_result: "OperateScreenData | None"
     ) -> None:
-        # the mode could have changed during the operation
-        header_title = self.screen.query_exactly_one("HeaderTitle")
-        if self.app.changes_enabled is True:
-            self.screen.title = HeaderTitles.header_live_mode.value
-            header_title.add_class(Tcss.changes_enabled_color.name)
-        else:
-            self.screen.title = HeaderTitles.header_dry_run_mode.value
-            header_title.remove_class(Tcss.changes_enabled_color.name)
+        # the mode could have changed while in the operate screen
+        reactive_header = self.query_exactly_one(ReactiveHeader)
+        reactive_header.changes_enabled = self.app.changes_enabled
+        self.refresh_bindings()
         # Actual handling of the result
         if screen_result is None:
             self.notify("No operation result returned.", severity="error")
