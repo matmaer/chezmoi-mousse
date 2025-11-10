@@ -1,6 +1,7 @@
 from dataclasses import dataclass
+from enum import StrEnum, auto
 from importlib.metadata import PackageNotFoundError, version
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING
 
 from chezmoi_mousse._button_data import FlatBtn, LinkBtn, OperateBtn, TabBtn
 from chezmoi_mousse._chars import Chars
@@ -25,7 +26,11 @@ if TYPE_CHECKING:
 
 type PathDict = "dict[Path, str]"
 type PathList = "list[Path]"
-type PathType = 'Literal["file", "dir"]'
+
+
+class PathType(StrEnum):
+    DIR = auto()
+    FILE = auto()
 
 
 class AppType:

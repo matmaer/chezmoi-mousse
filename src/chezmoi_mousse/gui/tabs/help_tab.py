@@ -11,6 +11,7 @@ from chezmoi_mousse import (
     FlatBtn,
     LinkBtn,
     OperateBtn,
+    PathType,
     Switches,
     Tcss,
     ViewName,
@@ -39,18 +40,18 @@ class SharedBtnHelp(Vertical):
         self.ids = ids
 
     def compose(self) -> ComposeResult:
-        yield SectionSubLabel(OperateBtn.forget_path.label("file"))
+        yield SectionSubLabel(OperateBtn.forget_path.label(PathType.FILE))
         yield Static(OperateBtn.forget_path.file_tooltip)
 
-        yield SectionSubLabel(OperateBtn.forget_path.label("dir"))
+        yield SectionSubLabel(OperateBtn.forget_path.label(PathType.DIR))
         yield Static(OperateBtn.forget_path.dir_tooltip)
 
         yield FlatLink(ids=self.ids, link_enum=LinkBtn.chezmoi_forget)
 
-        yield SectionSubLabel(OperateBtn.destroy_path.label("file"))
+        yield SectionSubLabel(OperateBtn.destroy_path.label(PathType.FILE))
         yield Static(OperateBtn.destroy_path.file_tooltip)
 
-        yield SectionSubLabel(OperateBtn.destroy_path.label("dir"))
+        yield SectionSubLabel(OperateBtn.destroy_path.label(PathType.DIR))
         yield Static(OperateBtn.destroy_path.dir_tooltip)
 
         yield FlatLink(ids=self.ids, link_enum=LinkBtn.chezmoi_destroy)
@@ -88,10 +89,10 @@ class ApplyTabHelp(Vertical):
 
         yield SectionLabel(Strings.available_buttons)
 
-        yield SectionSubLabel(OperateBtn.apply_path.label("file"))
+        yield SectionSubLabel(OperateBtn.apply_path.label(PathType.FILE))
         yield Static(OperateBtn.apply_path.file_tooltip)
 
-        yield SectionSubLabel(OperateBtn.apply_path.label("dir"))
+        yield SectionSubLabel(OperateBtn.apply_path.label(PathType.DIR))
         yield Static(OperateBtn.apply_path.dir_tooltip)
 
         yield FlatLink(ids=self.ids, link_enum=LinkBtn.chezmoi_apply)
@@ -112,11 +113,11 @@ class ReAddTabHelp(Vertical):
 
         yield SectionLabel(Strings.available_buttons)
 
-        yield SectionSubLabel(OperateBtn.re_add_path.label("file"))
+        yield SectionSubLabel(OperateBtn.re_add_path.label(PathType.FILE))
         yield Static(OperateBtn.re_add_path.file_tooltip)
         yield SharedBtnHelp(ids=self.ids)
 
-        yield SectionSubLabel(OperateBtn.re_add_path.label("dir"))
+        yield SectionSubLabel(OperateBtn.re_add_path.label(PathType.DIR))
         yield Static(OperateBtn.re_add_path.dir_tooltip)
 
         yield FlatLink(ids=self.ids, link_enum=LinkBtn.chezmoi_re_add)

@@ -15,6 +15,7 @@ from chezmoi_mousse import (
     ContainerName,
     DirTreeNodeData,
     OperateBtn,
+    PathType,
     Switches,
     Tcss,
     TreeName,
@@ -304,12 +305,12 @@ class AddTab(TabsBase):
         if isinstance(event, DirectoryTree.FileSelected):
             self.update_buttons(is_dir=False)
             self.send_message_current_add_node(
-                path=event.node.data.path, path_type="file"
+                path=event.node.data.path, path_type=PathType.FILE
             )
         else:
             self.update_buttons(is_dir=True)
             self.send_message_current_add_node(
-                path=event.node.data.path, path_type="dir"
+                path=event.node.data.path, path_type=PathType.DIR
             )
 
     @on(Switch.Changed)

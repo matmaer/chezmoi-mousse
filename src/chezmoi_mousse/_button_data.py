@@ -1,5 +1,10 @@
 from dataclasses import dataclass
 from enum import Enum, StrEnum
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+
+    from chezmoi_mousse import PathType
 
 __all__ = ["FlatBtn", "LinkBtn", "OperateBtn", "TabBtn"]
 
@@ -243,7 +248,7 @@ class OperateBtn(Enum):
             return self.value.dir_label
         raise AttributeError(f"{self.name} has no dir_label")
 
-    def label(self, path_type: str | None = None) -> str:
+    def label(self, path_type: "PathType | None" = None) -> str:
         if path_type == "dir":
             return self._dir_label
         elif path_type == "file":
