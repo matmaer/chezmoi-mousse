@@ -31,8 +31,7 @@ __all__ = ["ApplyReAddTabsBase", "TabsBase"]
 class TabsBase(Horizontal):
 
     def __init__(self, *, ids: "CanvasIds") -> None:
-        self.ids = ids
-        super().__init__(id=self.ids.tab_container_id)
+        super().__init__(id=ids.tab_container_id)
 
 
 class ApplyReAddTabsBase(TabsBase):
