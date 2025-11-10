@@ -40,9 +40,9 @@ class LogsTab(Vertical, AppType):
         )
         if self.app.dev_mode is True:
             self.tab_buttons = (TabBtn.debug_log,) + self.tab_buttons
-            self.initial_view = ViewName.debug_log_view
+            self.initial_view_id = ids.view_id(view=ViewName.debug_log_view)
         else:
-            self.initial_view = ViewName.app_log_view
+            self.initial_view_id = ids.view_id(view=ViewName.app_log_view)
         self.content_switcher_id = ids.content_switcher_id(
             name=ContainerName.logs_switcher
         )
@@ -50,9 +50,7 @@ class LogsTab(Vertical, AppType):
             "#", name=ContainerName.logs_switcher
         )
         self.app_log_btn_id = ids.button_id(btn=TabBtn.app_log)
-        self.read_output_log_btn_id = self.ids.button_id(
-            btn=TabBtn.read_output_log
-        )
+        self.read_output_log_btn_id = ids.button_id(btn=TabBtn.read_output_log)
         self.write_output_log_btn_id = ids.button_id(
             btn=TabBtn.write_output_log
         )
@@ -67,13 +65,13 @@ class LogsTab(Vertical, AppType):
             view=ViewName.write_output_log_view
         )
         self.git_log_global_view_id = ids.view_id(view=ViewName.git_log_view)
-        self.debug_log_view_id = self.ids.view_id(view=ViewName.debug_log_view)
+        self.debug_log_view_id = ids.view_id(view=ViewName.debug_log_view)
 
     def compose(self) -> ComposeResult:
         yield TabBtnHorizontal(ids=self.ids, buttons=self.tab_buttons)
         with ContentSwitcher(
-            id=self.ids.content_switcher_id(name=ContainerName.logs_switcher),
-            initial=self.ids.view_id(view=self.initial_view),
+            id=self.content_switcher_id,
+            initial=self.initial_view_id,
             classes=Tcss.border_title_top.name,
         ):
             yield AppLog(ids=self.ids)
@@ -89,7 +87,7 @@ class LogsTab(Vertical, AppType):
 
     def on_mount(self) -> None:
         switcher = self.query_one(self.content_switcher_qid, ContentSwitcher)
-        if self.initial_view == ViewName.debug_log_view:
+        if self.initial_view_id == self.debug_log_view_id:
             switcher.border_title = BorderTitle.debug_log
         else:
             switcher.border_title = BorderTitle.app_log
