@@ -38,6 +38,7 @@ SPLASH_COMMANDS = [
     ReadCmd.status_dirs,
     ReadCmd.status_files,
     ReadCmd.template_data,
+    ReadCmd.verify,
 ]
 
 SPLASH = """\
@@ -99,6 +100,7 @@ parsed_config: "ParsedConfig | None" = None
 status_dirs: "CommandResult | None" = None
 status_files: "CommandResult | None" = None
 template_data: "CommandResult | None" = None
+verify: "CommandResult | None" = None
 
 
 class AnimatedFade(Static):
@@ -183,6 +185,7 @@ class LoadingScreen(Screen[CommandsData | None], AppType):
                     ignored=globals()["ignored"],
                     parsed_config=globals()["parsed_config"],
                     template_data=globals()["template_data"],
+                    verify=globals()["verify"],
                 )
             )
 
@@ -226,6 +229,9 @@ class LoadingScreen(Screen[CommandsData | None], AppType):
             self.notify("We will push the init screen here.")
             self.notify("We will check if a repo exists in the default path.")
             self.notify("Dismiss screen and push init screen.")
+
+        verify_worker = self.run_non_threaded_cmd(ReadCmd.verify)
+        await verify_worker.wait()  # TODO: skip some commands if exit zero
 
         # These all need to be awaited so the Chezmoi instance can be created.
         for command in (

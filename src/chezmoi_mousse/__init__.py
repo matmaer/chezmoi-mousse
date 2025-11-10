@@ -89,6 +89,7 @@ class CommandsData:
     ignored: "CommandResult"
     parsed_config: "ParsedConfig"
     template_data: "CommandResult"
+    verify: "CommandResult"
 
 
 @dataclass(slots=True)
