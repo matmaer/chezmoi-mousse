@@ -4,15 +4,7 @@ from rich.text import Text
 from textual.reactive import reactive
 from textual.widgets import RichLog
 
-from chezmoi_mousse import (
-    AppType,
-    CanvasName,
-    Chars,
-    LogUtils,
-    ReadCmd,
-    Tcss,
-    ViewName,
-)
+from chezmoi_mousse import AppType, CanvasName, Chars, ReadCmd, Tcss, ViewName
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -32,11 +24,8 @@ class DiffView(RichLog, AppType):
     def __init__(self, *, ids: "CanvasIds", reverse: bool) -> None:
         self.ids = ids
         self.reverse = reverse
-        self.diff_read_cmd: ReadCmd = (
+        self.diff_cmd: ReadCmd = (
             ReadCmd.diff_reverse if self.reverse else ReadCmd.diff
-        )
-        self.pretty_diff_cmd = LogUtils.pretty_cmd_str(
-            self.diff_read_cmd.value
         )
         super().__init__(
             id=self.ids.view_id(view=ViewName.diff_view),
@@ -46,7 +35,7 @@ class DiffView(RichLog, AppType):
             classes=Tcss.border_title_top.name,
         )
         self.click_colored_file = Text(
-            f"Click a path with status to see the output from {self.pretty_diff_cmd}.",
+            f"Click a path with status to see the output from {self.diff_cmd.pretty_cmd}.",
             style="dim",
         )
 
@@ -89,10 +78,10 @@ class DiffView(RichLog, AppType):
 
         # create the diff view for a changed file
         diff_output: "CommandResult" = self.app.chezmoi.read(
-            self.diff_read_cmd, self.path
+            self.diff_cmd, self.path
         )
 
-        self.write(f'Output from "{self.pretty_diff_cmd} {self.path}"')
+        self.write(f'Output from "{diff_output.pretty_cmd}"')
 
         mode_diff_lines = [
             line

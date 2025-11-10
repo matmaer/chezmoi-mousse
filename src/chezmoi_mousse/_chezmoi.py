@@ -144,6 +144,10 @@ class ReadCmd(Enum):
     template_data = GlobalCmd.live_run.value + [ReadVerbs.data.value]
     # version = GlobalCmd.version.value TODO
 
+    @property
+    def pretty_cmd(self) -> str:
+        return LogUtils.pretty_cmd_str(self.value)
+
 
 class WriteCmd(Enum):
     add = ["add", VerbArgs.not_recursive.value]
