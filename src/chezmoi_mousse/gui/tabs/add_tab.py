@@ -237,7 +237,7 @@ class FilteredDirTree(DirectoryTree, AppType):
             return False
 
 
-class AddTab(TabsBase):
+class AddTab(TabsBase, AppType):
 
     destdir: Path
 
@@ -297,7 +297,12 @@ class AddTab(TabsBase):
         event: DirectoryTree.DirectorySelected | DirectoryTree.FileSelected,
     ) -> None:
         event.stop()
-        assert event.node.data is not None
+        if event.node.data is None:
+            self.app.notify(
+                f"AddTab: TreeNode data is None for {event.node.label}",
+                severity="error",
+            )
+            return
         contents_view = self.query_one(self.contents_view_qid, ContentsView)
         contents_view.path = event.node.data.path
         contents_view.border_title = f" {event.node.data.path} "

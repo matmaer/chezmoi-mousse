@@ -89,7 +89,12 @@ class InstallHelp(Screen[None], AppType):
         for k, v in install_help.items():
             help_tree.root.add(label=k, data=v)
         for child in help_tree.root.children:
-            assert child.data is not None
+            if child.data is None:
+                self.app.notify(
+                    f"InstallHelp: TreeNode data is None for {child.label}",
+                    severity="error",
+                )
+                continue
             install_commands: dict[str, str] = child.data
             for k, v in install_commands.items():
                 child_label = Text(k, style="warning")

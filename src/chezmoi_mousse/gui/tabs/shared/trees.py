@@ -89,6 +89,11 @@ class TreeBase(Tree[NodeData], AppType):
 
         return Text(node_data.path.name, style=styled)
 
+    def notify_node_data_is_none(self, tree_node: TreeNode[NodeData]) -> None:
+        self.app.notify(
+            f"TreeNode data is None for {tree_node.label}", severity="error"
+        )
+
     def get_expanded_nodes(self) -> list[TreeNode[NodeData]]:
         # Recursively calling collect_nodes
         nodes: list[TreeNode[NodeData]] = [self.root]
@@ -157,7 +162,9 @@ class TreeBase(Tree[NodeData], AppType):
     def add_status_files_in(
         self, *, tree_node: TreeNode[NodeData], flat_list: bool
     ) -> None:
-        assert tree_node.data is not None
+        if tree_node.data is None:
+            self.notify_node_data_is_none(tree_node)
+            return
 
         if self.ids.canvas_name == CanvasName.apply_tab:
             paths: "PathDict" = (
@@ -186,7 +193,9 @@ class TreeBase(Tree[NodeData], AppType):
     def add_files_without_status_in(
         self, *, tree_node: TreeNode[NodeData], flat_list: bool
     ) -> None:
-        assert tree_node.data is not None
+        if tree_node.data is None:
+            self.notify_node_data_is_none(tree_node)
+            return
         # Both paths cached in the Chezmoi instance, don't cache this here as
         # we update the cache there after a WriteCmd.
 
@@ -216,7 +225,9 @@ class TreeBase(Tree[NodeData], AppType):
             )
 
     def add_status_dirs_in(self, *, tree_node: TreeNode[NodeData]) -> None:
-        assert tree_node.data is not None
+        if tree_node.data is None:
+            self.notify_node_data_is_none(tree_node)
+            return
 
         if self.ids.canvas_name == CanvasName.apply_tab:
             result: "PathDict" = self.app.chezmoi.apply_status_dirs_in(
@@ -255,7 +266,9 @@ class TreeBase(Tree[NodeData], AppType):
     def add_dirs_without_status_in(
         self, *, tree_node: TreeNode[NodeData]
     ) -> None:
-        assert tree_node.data is not None
+        if tree_node.data is None:
+            self.notify_node_data_is_none(tree_node)
+            return
 
         if self.ids.canvas_name == CanvasName.apply_tab:
             dir_paths: "PathDict" = {
@@ -341,7 +354,9 @@ class TreeBase(Tree[NodeData], AppType):
     def send_node_context_message(
         self, event: Tree.NodeSelected[NodeData]
     ) -> None:
-        assert event.node.data is not None
+        if event.node.data is None:
+            self.notify_node_data_is_none(event.node)
+            return
         if self.ids.canvas_name == CanvasName.apply_tab:
             self.post_message(CurrentApplyNodeMsg(event.node.data))
         elif self.ids.canvas_name == CanvasName.re_add_tab:
@@ -397,13 +412,15 @@ class ExpandedTree(TreeBase):
                 tree_node=event.node, flat_list=False
             )
 
-    def expand_all_nodes(self, node: TreeNode[NodeData]) -> None:
+    def expand_all_nodes(self, tree_node: TreeNode[NodeData]) -> None:
         # Recursively expand all directory nodes
-        assert node.data is not None
-        if node.data.path_type == "dir":
-            self.add_status_dirs_in(tree_node=node)
-            self.add_status_files_in(tree_node=node, flat_list=False)
-            for child in node.children:
+        if tree_node.data is None:
+            self.notify_node_data_is_none(tree_node)
+            return
+        if tree_node.data.path_type == "dir":
+            self.add_status_dirs_in(tree_node=tree_node)
+            self.add_status_files_in(tree_node=tree_node, flat_list=False)
+            for child in tree_node.children:
                 if child.data is not None and child.data.path_type == "dir":
                     child.expand()
                     self.expand_all_nodes(child)
