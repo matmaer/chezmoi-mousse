@@ -13,7 +13,6 @@ __all__ = [
     "Chezmoi",
     "CommandResult",
     "GlobalCmd",
-    "LogUtils",
     "ReadCmd",
     "ReadVerbs",
     "VerbArgs",
