@@ -199,7 +199,7 @@ class CommandResult:
         ):
             return "No output on stderr, command was executed with --dry-run."
         elif stripped_stderr == "":
-            return "No output on stderr."
+            return ""
         else:
             return stripped_stderr
 
