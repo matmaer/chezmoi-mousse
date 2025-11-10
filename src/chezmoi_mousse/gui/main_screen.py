@@ -158,7 +158,7 @@ class MainScreen(Screen[None], AppType):
         self.read_output_log.ready_to_run(
             "--- Read Output log initialized ---"
         )
-        self.app_log.success("Read Output log initialized")
+        self.app_log.info("Read Output log initialized")
 
         self.app_log.info("Commands executed during startup:")
         for cmd in self.commands_data.executed_commands:
