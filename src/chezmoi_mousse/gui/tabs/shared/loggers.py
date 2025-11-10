@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 from rich.markup import escape
 from textual.widgets import RichLog
 
-from chezmoi_mousse import AppType, Chars, LogUtils, Tcss, ViewName
+from chezmoi_mousse import AppType, Chars, Tcss, ViewName
 
 if TYPE_CHECKING:
 
@@ -25,11 +25,10 @@ class CommandLogBase(RichLog, AppType):
     def _log_time(self) -> str:
         return f"[[green]{datetime.now().strftime('%H:%M:%S')}[/]]"
 
-    def _log_command(self, command: list[str]) -> None:
-        trimmed_cmd = LogUtils.pretty_cmd_str(command)
+    def _log_command(self, command_result: "CommandResult") -> None:
         time = self._log_time()
         color = self.app.theme_variables["primary-lighten-3"]
-        log_line = f"{time} [{color}]{trimmed_cmd}[/]"
+        log_line = f"{time} [{color}]{command_result.pretty_cmd}[/]"
         self.write(log_line)
 
     def ready_to_run(self, message: str) -> None:
@@ -83,7 +82,7 @@ class AppLog(CommandLogBase, AppType):
         )
 
     def log_cmd_results(self, command_result: "CommandResult") -> None:
-        self._log_command(command_result.cmd_args)
+        self._log_command(command_result)
         if command_result.returncode == 0:
             if command_result.std_out == "":
                 self.success(self.succes_no_output)
@@ -110,7 +109,7 @@ class DebugLog(CommandLogBase, AppType):
         )
 
     def completed_process(self, command_result: "CommandResult") -> None:
-        self._log_command(command_result.cmd_args)
+        self._log_command(command_result)
         self.dimmed(f"{dir(command_result)}")
 
     def mro(self, mro: Mro) -> None:
@@ -213,7 +212,7 @@ class OutputLog(CommandLogBase, AppType):
         )
 
     def log_cmd_results(self, command_result: "CommandResult") -> None:
-        self._log_command(command_result.cmd_args)
+        self._log_command(command_result)
         if command_result.returncode == 0:
             self.success("success, stdout:")
             if command_result.std_out == "":
