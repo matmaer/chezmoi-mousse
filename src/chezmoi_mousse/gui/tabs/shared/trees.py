@@ -39,16 +39,15 @@ class TreeBase(Tree[NodeData], AppType):
     ICON_NODE_EXPANDED = Chars.down_triangle
 
     def __init__(self, ids: "CanvasIds", *, tree_name: TreeName) -> None:
-        self.tree_name = tree_name
+        super().__init__(
+            label="root",
+            id=ids.tree_id(tree=tree_name),
+            classes=Tcss.tree_widget.name,
+        )
         self.ids = ids
         self._initial_render = True
         self._first_focus = True
         self._user_interacted = False
-        super().__init__(
-            label="root",
-            id=self.ids.tree_id(tree=self.tree_name),
-            classes=Tcss.tree_widget.name,
-        )
 
     def on_mount(self) -> None:
         self.node_colors: dict[str, str] = {
