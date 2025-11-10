@@ -96,10 +96,8 @@ class ApplyReAddTabsBase(TabsBase):
 
     def update_other_buttons(self, node_data: "NodeData") -> None:
         destroy_button = self.query_one(self.destroy_btn_qid, Button)
-        destroy_button.label = (
-            OperateBtn.destroy_path.file_label
-            if node_data.path_type == "file"
-            else OperateBtn.destroy_path.dir_label
+        destroy_button.label = OperateBtn.destroy_path.label(
+            node_data.path_type
         )
         destroy_button.tooltip = (
             OperateBtn.destroy_path.file_tooltip
@@ -108,11 +106,7 @@ class ApplyReAddTabsBase(TabsBase):
         )
 
         forget_button = self.query_one(self.forget_btn_qid, Button)
-        forget_button.label = (
-            OperateBtn.forget_path.file_label
-            if node_data.path_type == "file"
-            else OperateBtn.forget_path.dir_label
-        )
+        forget_button.label = OperateBtn.forget_path.label(node_data.path_type)
         forget_button.tooltip = (
             OperateBtn.forget_path.file_tooltip
             if node_data.path_type == "file"

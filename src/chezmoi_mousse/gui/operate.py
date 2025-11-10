@@ -229,11 +229,7 @@ class OperateScreen(Screen[OperateScreenData], AppType):
         exit_btn.tooltip = None
 
         if self.operate_btn == OperateBtn.apply_path:
-            op_btn.label = (
-                OperateBtn.apply_path.dir_label
-                if self.path_type == "dir"
-                else OperateBtn.apply_path.file_label
-            )
+            op_btn.label = OperateBtn.apply_path.label(self.path_type)
             op_btn.tooltip = (
                 OperateBtn.apply_path.dir_tooltip
                 if self.path_type == "dir"
@@ -241,44 +237,28 @@ class OperateScreen(Screen[OperateScreenData], AppType):
             )
 
         elif self.operate_btn == OperateBtn.re_add_path:
-            op_btn.label = (
-                OperateBtn.re_add_path.dir_label
-                if self.path_type == "dir"
-                else OperateBtn.re_add_path.file_label
-            )
+            op_btn.label = OperateBtn.re_add_path.label(self.path_type)
             op_btn.tooltip = (
                 OperateBtn.re_add_path.dir_tooltip
                 if self.path_type == "dir"
                 else OperateBtn.re_add_path.file_tooltip
             )
         elif self.operate_btn == OperateBtn.add_dir:
-            op_btn.label = (
-                OperateBtn.add_dir.initial_label
-                if self.path_type == "dir"
-                else OperateBtn.add_file.initial_label
-            )
+            op_btn.label = OperateBtn.add_dir.label(self.path_type)
             op_btn.tooltip = (
                 OperateBtn.add_dir.initial_tooltip
                 if self.path_type == "dir"
                 else OperateBtn.add_file.initial_tooltip
             )
         elif self.operate_btn == OperateBtn.forget_path:
-            op_btn.label = (
-                OperateBtn.forget_path.dir_label
-                if self.path_type == "dir"
-                else OperateBtn.forget_path.file_label
-            )
+            op_btn.label = OperateBtn.forget_path.label(self.path_type)
             op_btn.tooltip = (
                 OperateBtn.forget_path.dir_tooltip
                 if self.path_type == "dir"
                 else OperateBtn.forget_path.file_tooltip
             )
         elif self.operate_btn == OperateBtn.destroy_path:
-            op_btn.label = (
-                OperateBtn.destroy_path.dir_label
-                if self.path_type == "dir"
-                else OperateBtn.destroy_path.file_label
-            )
+            op_btn.label = OperateBtn.destroy_path.label(self.path_type)
             op_btn.tooltip = (
                 OperateBtn.destroy_path.dir_tooltip
                 if self.path_type == "dir"

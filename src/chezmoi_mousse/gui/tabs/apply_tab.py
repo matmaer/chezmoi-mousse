@@ -40,10 +40,8 @@ class ApplyTab(ApplyReAddTabsBase):
         operate_path_button = self.query_one(
             self.operate_path_button_qid, Button
         )
-        operate_path_button.label = (
-            OperateBtn.apply_path.dir_label
-            if event.node_data.path_type == "dir"
-            else OperateBtn.apply_path.file_label
+        operate_path_button.label = OperateBtn.apply_path.label(
+            event.node_data.path_type
         )
         operate_path_button.tooltip = (
             OperateBtn.apply_path.dir_tooltip

@@ -63,7 +63,7 @@ class OperateButton(Vertical):
     def compose(self) -> ComposeResult:
         with Vertical(classes=Tcss.single_button_vertical.name):
             yield Button(
-                label=self.button_enum.initial_label,
+                label=self.button_enum.label(),
                 id=self.ids.button_id(btn=self.button_enum),
                 classes=Tcss.operate_button.name,
                 disabled=True,

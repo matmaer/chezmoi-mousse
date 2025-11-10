@@ -196,14 +196,6 @@ class OperateBtn(Enum):
         raise AttributeError(f"{self.name} has no disabled_tooltip")
 
     @property
-    def dir_label(self) -> str:
-        if isinstance(
-            self.value, (ApplyReAddButtonData, DestroyForgetButtonData)
-        ):
-            return self.value.dir_label
-        raise AttributeError(f"{self.name} has no dir_label")
-
-    @property
     def dir_no_status_tooltip(self) -> str:
         if isinstance(self.value, ApplyReAddButtonData):
             return self.value.dir_no_status_tooltip
@@ -216,14 +208,6 @@ class OperateBtn(Enum):
         ):
             return self.value.dir_tooltip
         raise AttributeError(f"{self.name} has no dir_tooltip")
-
-    @property
-    def file_label(self) -> str:
-        if isinstance(
-            self.value, (ApplyReAddButtonData, DestroyForgetButtonData)
-        ):
-            return self.value.file_label
-        raise AttributeError(f"{self.name} has no file_label")
 
     @property
     def file_no_status_tooltip(self) -> str:
@@ -240,12 +224,32 @@ class OperateBtn(Enum):
         raise AttributeError(f"{self.name} has no file_tooltip")
 
     @property
-    def initial_label(self) -> str:
-        return self.value.initial_label
-
-    @property
     def initial_tooltip(self) -> str:
         return INITIAL_TOOLTIP
+
+    @property
+    def _file_label(self) -> str:
+        if isinstance(
+            self.value, (ApplyReAddButtonData, DestroyForgetButtonData)
+        ):
+            return self.value.file_label
+        raise AttributeError(f"{self.name} has no file_label")
+
+    @property
+    def _dir_label(self) -> str:
+        if isinstance(
+            self.value, (ApplyReAddButtonData, DestroyForgetButtonData)
+        ):
+            return self.value.dir_label
+        raise AttributeError(f"{self.name} has no dir_label")
+
+    def label(self, path_type: str | None = None) -> str:
+        if path_type == "dir":
+            return self._dir_label
+        elif path_type == "file":
+            return self._file_label
+        else:
+            return self.value.initial_label
 
     @classmethod
     def from_label(cls, label: str) -> "OperateBtn":

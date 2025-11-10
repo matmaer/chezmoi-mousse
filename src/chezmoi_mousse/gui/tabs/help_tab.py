@@ -39,18 +39,18 @@ class SharedBtnHelp(Vertical):
         self.ids = ids
 
     def compose(self) -> ComposeResult:
-        yield SectionSubLabel(OperateBtn.forget_path.file_label)
+        yield SectionSubLabel(OperateBtn.forget_path.label("file"))
         yield Static(OperateBtn.forget_path.file_tooltip)
 
-        yield SectionSubLabel(OperateBtn.forget_path.dir_label)
+        yield SectionSubLabel(OperateBtn.forget_path.label("dir"))
         yield Static(OperateBtn.forget_path.dir_tooltip)
 
         yield FlatLink(ids=self.ids, link_enum=LinkBtn.chezmoi_forget)
 
-        yield SectionSubLabel(OperateBtn.destroy_path.file_label)
+        yield SectionSubLabel(OperateBtn.destroy_path.label("file"))
         yield Static(OperateBtn.destroy_path.file_tooltip)
 
-        yield SectionSubLabel(OperateBtn.destroy_path.dir_label)
+        yield SectionSubLabel(OperateBtn.destroy_path.label("dir"))
         yield Static(OperateBtn.destroy_path.dir_tooltip)
 
         yield FlatLink(ids=self.ids, link_enum=LinkBtn.chezmoi_destroy)
@@ -88,10 +88,10 @@ class ApplyTabHelp(Vertical):
 
         yield SectionLabel(Strings.available_buttons)
 
-        yield SectionSubLabel(OperateBtn.apply_path.file_label)
+        yield SectionSubLabel(OperateBtn.apply_path.label("file"))
         yield Static(OperateBtn.apply_path.file_tooltip)
 
-        yield SectionSubLabel(OperateBtn.apply_path.dir_label)
+        yield SectionSubLabel(OperateBtn.apply_path.label("dir"))
         yield Static(OperateBtn.apply_path.dir_tooltip)
 
         yield FlatLink(ids=self.ids, link_enum=LinkBtn.chezmoi_apply)
@@ -112,11 +112,11 @@ class ReAddTabHelp(Vertical):
 
         yield SectionLabel(Strings.available_buttons)
 
-        yield SectionSubLabel(OperateBtn.re_add_path.file_label)
+        yield SectionSubLabel(OperateBtn.re_add_path.label("file"))
         yield Static(OperateBtn.re_add_path.file_tooltip)
         yield SharedBtnHelp(ids=self.ids)
 
-        yield SectionSubLabel(OperateBtn.re_add_path.dir_label)
+        yield SectionSubLabel(OperateBtn.re_add_path.label("dir"))
         yield Static(OperateBtn.re_add_path.dir_tooltip)
 
         yield FlatLink(ids=self.ids, link_enum=LinkBtn.chezmoi_re_add)
@@ -139,10 +139,10 @@ class AddTabHelp(Vertical):
 
         yield SectionLabel(Strings.available_buttons)
 
-        yield SectionSubLabel(OperateBtn.add_file.initial_label)
+        yield SectionSubLabel(OperateBtn.add_file.label())
         yield Static(OperateBtn.add_file.enabled_tooltip)
 
-        yield SectionSubLabel(OperateBtn.add_dir.initial_label)
+        yield SectionSubLabel(OperateBtn.add_dir.label())
         yield Static(OperateBtn.add_dir.enabled_tooltip)
 
         yield FlatLink(ids=self.ids, link_enum=LinkBtn.chezmoi_add)
