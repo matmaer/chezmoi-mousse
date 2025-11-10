@@ -78,10 +78,10 @@ class SharedFiltersHelp(Vertical):
 class ApplyTabHelp(Vertical):
 
     def __init__(self, ids: "CanvasIds") -> None:
-        self.ids = ids
-        self.view_id = self.ids.view_id(view=ViewName.apply_help_view)
+        self.view_id = ids.view_id(view=ViewName.apply_help_view)
         super().__init__(id=self.view_id)
-        self.shared_btn_help_id = f"{self.view_id}_btn_help"
+
+        self.ids = ids
         self.shared_filters_help_id = f"{self.view_id}_filters_help"
 
     def compose(self) -> ComposeResult:
@@ -102,10 +102,10 @@ class ApplyTabHelp(Vertical):
 class ReAddTabHelp(Vertical):
 
     def __init__(self, ids: "CanvasIds") -> None:
-        self.ids = ids
-        self.view_id = self.ids.view_id(view=ViewName.re_add_help_view)
+        self.view_id = ids.view_id(view=ViewName.re_add_help_view)
         super().__init__(id=self.view_id)
-        self.shared_btn_help_id = f"{self.view_id}_btn_help"
+
+        self.ids = ids
         self.shared_filters_help_id = f"{self.view_id}_filters_help"
 
     def compose(self) -> ComposeResult:
@@ -126,8 +126,8 @@ class ReAddTabHelp(Vertical):
 class AddTabHelp(Vertical):
 
     def __init__(self, ids: "CanvasIds") -> None:
+        super().__init__(id=ids.view_id(view=ViewName.add_help_view))
         self.ids = ids
-        super().__init__(id=self.ids.view_id(view=ViewName.add_help_view))
 
     def compose(self) -> ComposeResult:
         yield SectionLabel(Strings.available_switches)
