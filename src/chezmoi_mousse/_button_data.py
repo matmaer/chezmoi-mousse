@@ -238,6 +238,8 @@ class OperateBtn(Enum):
             self.value, (ApplyReAddButtonData, DestroyForgetButtonData)
         ):
             return self.value.file_label
+        elif isinstance(self.value, AddButtonData):
+            return self.value.initial_label
         raise AttributeError(f"{self.name} has no file_label")
 
     @property
@@ -246,6 +248,8 @@ class OperateBtn(Enum):
             self.value, (ApplyReAddButtonData, DestroyForgetButtonData)
         ):
             return self.value.dir_label
+        elif isinstance(self.value, AddButtonData):
+            return self.value.initial_label
         raise AttributeError(f"{self.name} has no dir_label")
 
     def label(self, path_type: "PathType | None" = None) -> str:
