@@ -241,8 +241,6 @@ TabBtnHorizontal {
 /* textual default tcss overrides  */
 /***********************************/
 
-/* todo: avoid "*" selector */
-
 * {
   background-tint: $background;
   scrollbar-size-vertical: 1;
