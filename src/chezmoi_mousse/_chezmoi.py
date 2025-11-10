@@ -166,7 +166,7 @@ class CommandResult:
 
     @property
     def pretty_cmd(self) -> str:
-        return self._pretty_cmd_str(self.completed_process_data.args)
+        return LogUtils.pretty_cmd_str(self.completed_process_data.args)
 
     @property
     def std_out(self) -> str:
@@ -185,7 +185,7 @@ class CommandResult:
 
     @property
     def std_err(self) -> str:
-        stripped_stderr = self._strip_output(
+        stripped_stderr = LogUtils.strip_output(
             self.completed_process_data.stderr
         )
         if (
@@ -201,30 +201,6 @@ class CommandResult:
     @property
     def returncode(self) -> int:
         return self.completed_process_data.returncode
-
-    def _strip_output(self, output: str):
-        # remove trailing and leading new lines but NOT leading whitespace
-        stripped = output.lstrip("\n").rstrip()
-        # remove intermediate empty lines
-        return "\n".join(
-            [line for line in stripped.splitlines() if line.strip() != ""]
-        )
-
-    def _pretty_cmd_str(self, command_args: list[str]) -> str:
-        filter_git_log_args = VerbArgs.git_log.value[3:]
-        return "chezmoi " + " ".join(
-            [
-                _
-                for _ in command_args[1:]
-                if _
-                not in GlobalCmd.default_args.value
-                + filter_git_log_args
-                + [
-                    VerbArgs.format_json.value,
-                    VerbArgs.path_style_absolute.value,
-                ]
-            ]
-        )
 
 
 class Chezmoi:
