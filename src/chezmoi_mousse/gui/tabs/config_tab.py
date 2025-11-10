@@ -194,11 +194,12 @@ class ConfigTabSwitcher(ContentSwitcher):
 
     def __init__(self, ids: "CanvasIds"):
         self.ids = ids
+        self.doctor_list_view_id = self.ids.view_id(view=ViewName.doctor_view)
         super().__init__(
             id=self.ids.content_switcher_id(
                 name=ContainerName.config_switcher
             ),
-            initial=self.ids.view_id(view=ViewName.doctor_view),
+            initial=self.doctor_list_view_id,
             classes=Tcss.nav_content_switcher.name,
         )
         self.doctor_table_qid = ids.datatable_id(
@@ -211,7 +212,7 @@ class ConfigTabSwitcher(ContentSwitcher):
             DoctorTable(ids=self.ids),
             SectionLabel(Strings.password_managers),
             DoctorListView(ids=self.ids),
-            id=self.ids.view_id(view=ViewName.doctor_view),
+            id=self.doctor_list_view_id,
             classes=Tcss.doctor_vertical_scroll.name,
         )
         yield Vertical(
@@ -274,6 +275,9 @@ class ConfigTab(TabsBase, AppType):
         self.ids = ids
         super().__init__(ids=self.ids)
 
+        self.tab_vertical_id = ids.tab_vertical_id(
+            name=ContainerName.left_side
+        )
         self.content_switcher_id = self.ids.content_switcher_id(
             name=ContainerName.config_switcher
         )
@@ -300,8 +304,7 @@ class ConfigTab(TabsBase, AppType):
 
     def compose(self) -> ComposeResult:
         with Vertical(
-            id=self.ids.tab_vertical_id(name=ContainerName.left_side),
-            classes=Tcss.tab_left_vertical.name,
+            id=self.tab_vertical_id, classes=Tcss.tab_left_vertical.name
         ):
             yield NavButtonsVertical(
                 ids=self.ids,

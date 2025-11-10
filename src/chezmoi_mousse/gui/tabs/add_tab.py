@@ -242,29 +242,30 @@ class AddTab(TabsBase, AppType):
     destdir: Path
 
     def __init__(self, ids: "CanvasIds") -> None:
-        self.ids = ids
-        super().__init__(ids=self.ids)
+        super().__init__(ids=ids)
 
-        self.add_file_btn_qid = self.ids.button_id(
-            "#", btn=OperateBtn.add_file
+        self.ids = ids
+        self.add_file_btn_qid = ids.button_id("#", btn=OperateBtn.add_file)
+        self.add_dir_btn_qid = ids.button_id("#", btn=OperateBtn.add_dir)
+        self.add_tree_id = ids.tree_id(tree=TreeName.add_tree)
+        self.add_tree_qid = ids.tree_id("#", tree=TreeName.add_tree)
+        self.contents_view_qid = ids.view_id("#", view=ViewName.contents_view)
+        self.left_vertical_id = ids.tab_vertical_id(
+            name=ContainerName.left_side
         )
-        self.add_dir_btn_qid = self.ids.button_id("#", btn=OperateBtn.add_dir)
-        self.add_tree_qid = self.ids.tree_id("#", tree=TreeName.add_tree)
-        self.contents_view_qid = self.ids.view_id(
-            "#", view=ViewName.contents_view
+        self.right_vertical_id = ids.tab_vertical_id(
+            name=ContainerName.right_side
+        )
+        self.unmanaged_switch_id = ids.switch_id(
+            switch=Switches.unmanaged_dirs
         )
 
     def compose(self) -> ComposeResult:
         with Vertical(
-            id=self.ids.tab_vertical_id(name=ContainerName.left_side),
-            classes=Tcss.tab_left_vertical.name,
+            id=self.left_vertical_id, classes=Tcss.tab_left_vertical.name
         ):
-            yield FilteredDirTree(
-                self.destdir, id=self.ids.tree_id(tree=TreeName.add_tree)
-            )
-        with Vertical(
-            id=self.ids.tab_vertical_id(name=ContainerName.right_side)
-        ):
+            yield FilteredDirTree(self.destdir, id=self.add_tree_id)
+        with Vertical(id=self.right_vertical_id):
             yield ContentsView(ids=self.ids)
         yield AddOpButtons(ids=self.ids)
         yield AddSwitchSlider(ids=self.ids)
@@ -322,9 +323,7 @@ class AddTab(TabsBase, AppType):
     def handle_filter_switches(self, event: Switch.Changed) -> None:
         event.stop()
         tree = self.query_one(self.add_tree_qid, FilteredDirTree)
-        if event.switch.id == self.ids.switch_id(
-            switch=Switches.unmanaged_dirs
-        ):
+        if event.switch.id == self.unmanaged_switch_id:
             tree.unmanaged_dirs = event.value
         elif event.switch.id == self.ids.switch_id(switch=Switches.unwanted):
             tree.unwanted = event.value
