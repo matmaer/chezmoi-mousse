@@ -47,10 +47,10 @@ class InstallHelp(Screen[None], AppType):
     ]
 
     def __init__(self) -> None:
-        self.ids = CanvasIds(CanvasName.install_help_screen)
         super().__init__(
             id=CanvasName.install_help_screen, classes=Tcss.screen_base.name
         )
+        self.ids = CanvasIds(CanvasName.install_help_screen)
 
     def compose(self) -> ComposeResult:
         yield SectionLabel(Strings.top_label)
