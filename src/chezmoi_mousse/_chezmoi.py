@@ -21,6 +21,35 @@ __all__ = [
 ]
 
 
+class LogUtils:
+
+    @staticmethod
+    def pretty_cmd_str(command: list[str]) -> str:
+        filter_git_log_args = VerbArgs.git_log.value[3:]
+        return "chezmoi " + " ".join(
+            [
+                _
+                for _ in command[1:]
+                if _
+                not in GlobalCmd.default_args.value
+                + filter_git_log_args
+                + [
+                    VerbArgs.format_json.value,
+                    VerbArgs.path_style_absolute.value,
+                ]
+            ]
+        )
+
+    @staticmethod
+    def strip_output(stdout: str):
+        # remove trailing space and new lines but NOT leading whitespace
+        stripped = stdout.lstrip("\n").rstrip()
+        # remove intermediate empty lines
+        return "\n".join(
+            [line for line in stripped.splitlines() if line.strip() != ""]
+        )
+
+
 class GlobalCmd(Enum):
     default_args = [
         "--color=off",
@@ -124,35 +153,6 @@ class WriteCmd(Enum):
     forget = ["forget"]
     init = ["init"]
     re_add = ["re-add", VerbArgs.not_recursive.value]
-
-
-class LogUtils:
-
-    @staticmethod
-    def pretty_cmd_str(command: list[str]) -> str:
-        filter_git_log_args = VerbArgs.git_log.value[3:]
-        return "chezmoi " + " ".join(
-            [
-                _
-                for _ in command[1:]
-                if _
-                not in GlobalCmd.default_args.value
-                + filter_git_log_args
-                + [
-                    VerbArgs.format_json.value,
-                    VerbArgs.path_style_absolute.value,
-                ]
-            ]
-        )
-
-    @staticmethod
-    def strip_output(stdout: str):
-        # remove trailing space and new lines but NOT leading whitespace
-        stripped = stdout.lstrip("\n").rstrip()
-        # remove intermediate empty lines
-        return "\n".join(
-            [line for line in stripped.splitlines() if line.strip() != ""]
-        )
 
 
 @dataclass(slots=True)
