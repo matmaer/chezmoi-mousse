@@ -149,7 +149,7 @@
 /* Type Selector tcss */
 /**********************/
 
-NavButtonsVertical {
+FlatButtonsVertical {
   width: auto;
 }
 

@@ -21,7 +21,7 @@ from textual.widgets import (
 
 from chezmoi_mousse import AppType, ContainerName, FlatBtn, Tcss, ViewName
 
-from .shared.buttons import NavButtonsVertical
+from .shared.buttons import FlatButtonsVertical
 from .shared.section_headers import SectionLabel
 from .shared.tabs_base import TabsBase
 
@@ -306,7 +306,7 @@ class ConfigTab(TabsBase, AppType):
         with Vertical(
             id=self.tab_vertical_id, classes=Tcss.tab_left_vertical.name
         ):
-            yield NavButtonsVertical(
+            yield FlatButtonsVertical(
                 ids=self.ids,
                 buttons=(
                     FlatBtn.doctor,

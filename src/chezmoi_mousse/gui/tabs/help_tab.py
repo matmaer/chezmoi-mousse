@@ -17,7 +17,7 @@ from chezmoi_mousse import (
     ViewName,
 )
 
-from .shared.buttons import FlatLink, NavButtonsVertical
+from .shared.buttons import FlatButtonsVertical, FlatLink
 from .shared.section_headers import SectionLabel, SectionSubLabel
 from .shared.tabs_base import TabsBase
 
@@ -235,7 +235,7 @@ class HelpTab(TabsBase):
             id=self.ids.tab_vertical_id(name=ContainerName.left_side),
             classes=Tcss.tab_left_vertical.name,
         ):
-            yield NavButtonsVertical(
+            yield FlatButtonsVertical(
                 ids=self.ids,
                 buttons=(
                     FlatBtn.apply_help,

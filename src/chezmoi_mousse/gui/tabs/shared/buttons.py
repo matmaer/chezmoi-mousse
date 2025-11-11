@@ -23,7 +23,7 @@ __all__ = [
     "ApplyOpButtons",
     "FlatButton",
     "FlatLink",
-    "NavButtonsVertical",
+    "FlatButtonsVertical",
     "OperateButton",
     "ReAddOpButtons",
     "TabBtnHorizontal",
@@ -71,7 +71,7 @@ class OperateButton(Vertical):
             )
 
 
-class NavButtonsVertical(VerticalGroup):
+class FlatButtonsVertical(VerticalGroup):
 
     def __init__(
         self, *, ids: "CanvasIds", buttons: tuple[FlatBtn, ...]
