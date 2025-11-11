@@ -7,7 +7,7 @@ from textual.widgets import Button, ContentSwitcher
 
 from chezmoi_mousse import ContainerName, TabBtn, Tcss, TreeName, ViewName
 
-from .buttons import TabBtnHorizontal
+from .buttons import TabButtons
 from .contents_view import ContentsView
 from .diff_view import DiffView
 from .git_log_view import GitLogView
@@ -29,9 +29,7 @@ class TreeSwitcher(Vertical):
         )
 
     def compose(self) -> ComposeResult:
-        yield TabBtnHorizontal(
-            ids=self.ids, buttons=(TabBtn.tree, TabBtn.list)
-        )
+        yield TabButtons(ids=self.ids, buttons=(TabBtn.tree, TabBtn.list))
         with ContentSwitcher(
             id=self.ids.content_switcher_id(name=ContainerName.tree_switcher),
             initial=self.ids.tree_id(tree=TreeName.managed_tree),
@@ -60,7 +58,7 @@ class ViewSwitcher(Vertical):
         )
 
     def compose(self) -> ComposeResult:
-        yield TabBtnHorizontal(
+        yield TabButtons(
             ids=self.ids,
             buttons=(TabBtn.diff, TabBtn.contents, TabBtn.git_log_path),
         )

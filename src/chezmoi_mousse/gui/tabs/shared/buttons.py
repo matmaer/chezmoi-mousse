@@ -23,7 +23,7 @@ __all__ = [
     "FlatLink",
     "FlatButtonsVertical",
     "OperateButtons",
-    "TabBtnHorizontal",
+    "TabButtons",
 ]
 
 
@@ -101,7 +101,7 @@ class OperateButtons(HorizontalGroup):
             yield OperateButtonVertical(ids=self.ids, button_enum=button_enum)
 
 
-class TabBtnHorizontal(HorizontalGroup):
+class TabButtons(HorizontalGroup):
     def __init__(self, *, ids: "CanvasIds", buttons: tuple[TabBtn, ...]):
         self.ids = ids
         self.buttons = buttons

@@ -8,7 +8,7 @@ from textual.widgets import Button, ContentSwitcher
 
 from chezmoi_mousse import AppType, ContainerName, TabBtn, Tcss, ViewName
 
-from .shared.buttons import TabBtnHorizontal
+from .shared.buttons import TabButtons
 from .shared.git_log_view import GitLogView
 from .shared.loggers import AppLog, DebugLog, OutputLog
 
@@ -68,7 +68,7 @@ class LogsTab(Vertical, AppType):
         self.debug_log_view_id = ids.view_id(view=ViewName.debug_log_view)
 
     def compose(self) -> ComposeResult:
-        yield TabBtnHorizontal(ids=self.ids, buttons=self.tab_buttons)
+        yield TabButtons(ids=self.ids, buttons=self.tab_buttons)
         with ContentSwitcher(
             id=self.content_switcher_id,
             initial=self.initial_view_id,
