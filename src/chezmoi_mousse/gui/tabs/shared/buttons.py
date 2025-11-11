@@ -58,17 +58,16 @@ class OperateButton(Vertical):
     def __init__(self, *, ids: "CanvasIds", button_enum: OperateBtn) -> None:
         self.ids = ids
         self.button_enum = button_enum
-        super().__init__()
+        super().__init__(classes=Tcss.single_button_vertical.name)
 
     def compose(self) -> ComposeResult:
-        with Vertical(classes=Tcss.single_button_vertical.name):
-            yield Button(
-                label=self.button_enum.label(),
-                id=self.ids.button_id(btn=self.button_enum),
-                classes=Tcss.operate_button.name,
-                disabled=True,
-                tooltip=self.button_enum.initial_tooltip,
-            )
+        yield Button(
+            label=self.button_enum.label(),
+            id=self.ids.button_id(btn=self.button_enum),
+            classes=Tcss.operate_button.name,
+            disabled=True,
+            tooltip=self.button_enum.initial_tooltip,
+        )
 
 
 class FlatButtonsVertical(VerticalGroup):
