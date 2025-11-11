@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 from textual import on
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import HorizontalGroup, Vertical
+from textual.containers import Vertical
 from textual.screen import Screen
 from textual.widgets import Button, Footer, Static
 
@@ -20,7 +20,7 @@ from chezmoi_mousse import (
 )
 
 from .reactive_header import ReactiveHeader
-from .tabs.shared.buttons import OperateButton
+from .tabs.shared.buttons import OperateButtons
 from .tabs.shared.contents_view import ContentsView
 from .tabs.shared.diff_view import DiffView
 from .tabs.shared.loggers import OutputLog
@@ -196,11 +196,10 @@ class OperateScreen(Screen[OperateScreenData], AppType):
                 ids=self.ids, view_name=ViewName.write_output_log_view
             )
         with Vertical():
-            with HorizontalGroup(classes=Tcss.operate_buttons.name):
-                yield OperateButton(ids=self.ids, button_enum=self.operate_btn)
-                yield OperateButton(
-                    ids=self.ids, button_enum=OperateBtn.exit_button
-                )
+            yield OperateButtons(
+                ids=self.ids,
+                buttons=(self.operate_btn, OperateBtn.exit_button),
+            )
         yield Footer()
 
     def on_mount(self) -> None:

@@ -19,13 +19,10 @@ if TYPE_CHECKING:
 
 
 __all__ = [
-    "AddOpButtons",
-    "ApplyOpButtons",
     "FlatButton",
     "FlatLink",
     "FlatButtonsVertical",
-    "OperateButton",
-    "ReAddOpButtons",
+    "OperateButtons",
     "TabBtnHorizontal",
 ]
 
@@ -34,11 +31,11 @@ class FlatButton(Button):
     def __init__(self, *, ids: "CanvasIds", button_enum: FlatBtn) -> None:
         self.ids = ids
         super().__init__(
+            classes=Tcss.flat_button.name,
+            flat=True,
+            id=self.ids.button_id(btn=button_enum),
             label=button_enum.value,
             variant="primary",
-            flat=True,
-            classes=Tcss.flat_button.name,
-            id=self.ids.button_id(btn=button_enum),
         )
 
 
@@ -53,7 +50,20 @@ class FlatLink(Link):
         )
 
 
-class OperateButton(Vertical):
+class OperateButton(Button):
+    def __init__(self, *, ids: "CanvasIds", button_enum: OperateBtn) -> None:
+        self.ids = ids
+        self.button_enum = button_enum
+        super().__init__(
+            classes=Tcss.operate_button.name,
+            disabled=True,
+            id=self.ids.button_id(btn=self.button_enum),
+            label=self.button_enum.label(),
+            tooltip=self.button_enum.initial_tooltip,
+        )
+
+
+class OperateButtonVertical(Vertical):
 
     def __init__(self, *, ids: "CanvasIds", button_enum: OperateBtn) -> None:
         self.ids = ids
@@ -61,13 +71,7 @@ class OperateButton(Vertical):
         super().__init__(classes=Tcss.single_button_vertical.name)
 
     def compose(self) -> ComposeResult:
-        yield Button(
-            label=self.button_enum.label(),
-            id=self.ids.button_id(btn=self.button_enum),
-            classes=Tcss.operate_button.name,
-            disabled=True,
-            tooltip=self.button_enum.initial_tooltip,
-        )
+        yield OperateButton(ids=self.ids, button_enum=self.button_enum)
 
 
 class FlatButtonsVertical(VerticalGroup):
@@ -84,45 +88,17 @@ class FlatButtonsVertical(VerticalGroup):
             yield FlatButton(ids=self.ids, button_enum=button_enum)
 
 
-class ApplyOpButtons(HorizontalGroup):
-    def __init__(self, *, ids: "CanvasIds"):
+class OperateButtons(HorizontalGroup):
+    def __init__(self, *, ids: "CanvasIds", buttons: tuple[OperateBtn, ...]):
         self.ids = ids
+        self.buttons = buttons
         super().__init__(
-            id=self.ids.container_id(name=ContainerName.operate_btn_group),
-            classes=Tcss.operate_buttons.name,
+            id=self.ids.container_id(name=ContainerName.operate_btn_group)
         )
 
     def compose(self) -> ComposeResult:
-        yield OperateButton(ids=self.ids, button_enum=OperateBtn.apply_path)
-        yield OperateButton(ids=self.ids, button_enum=OperateBtn.forget_path)
-        yield OperateButton(ids=self.ids, button_enum=OperateBtn.destroy_path)
-
-
-class ReAddOpButtons(HorizontalGroup):
-    def __init__(self, *, ids: "CanvasIds"):
-        self.ids = ids
-        super().__init__(
-            id=self.ids.container_id(name=ContainerName.operate_btn_group),
-            classes=Tcss.operate_buttons.name,
-        )
-
-    def compose(self) -> ComposeResult:
-        yield OperateButton(ids=self.ids, button_enum=OperateBtn.re_add_path)
-        yield OperateButton(ids=self.ids, button_enum=OperateBtn.forget_path)
-        yield OperateButton(ids=self.ids, button_enum=OperateBtn.destroy_path)
-
-
-class AddOpButtons(HorizontalGroup):
-    def __init__(self, *, ids: "CanvasIds"):
-        self.ids = ids
-        super().__init__(
-            id=self.ids.container_id(name=ContainerName.operate_btn_group),
-            classes=Tcss.operate_buttons.name,
-        )
-
-    def compose(self) -> ComposeResult:
-        yield OperateButton(ids=self.ids, button_enum=OperateBtn.add_dir)
-        yield OperateButton(ids=self.ids, button_enum=OperateBtn.add_file)
+        for button_enum in self.buttons:
+            yield OperateButtonVertical(ids=self.ids, button_enum=button_enum)
 
 
 class TabBtnHorizontal(HorizontalGroup):

@@ -22,7 +22,7 @@ from chezmoi_mousse import (
     ViewName,
 )
 
-from .shared.buttons import AddOpButtons
+from .shared.buttons import OperateButtons
 from .shared.contents_view import ContentsView
 from .shared.operate_msg import CurrentAddNodeMsg
 from .shared.switch_slider import AddSwitchSlider
@@ -267,7 +267,9 @@ class AddTab(TabsBase, AppType):
             yield FilteredDirTree(self.destdir, id=self.add_tree_id)
         with Vertical(id=self.right_vertical_id):
             yield ContentsView(ids=self.ids)
-        yield AddOpButtons(ids=self.ids)
+        yield OperateButtons(
+            ids=self.ids, buttons=(OperateBtn.add_file, OperateBtn.add_dir)
+        )
         yield AddSwitchSlider(ids=self.ids)
 
     def update_buttons(self, is_dir: bool) -> None:

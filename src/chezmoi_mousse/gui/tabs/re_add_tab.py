@@ -6,7 +6,7 @@ from textual.widgets import Button
 
 from chezmoi_mousse import OperateBtn
 
-from .shared.buttons import ReAddOpButtons
+from .shared.buttons import OperateButtons
 from .shared.operate_msg import CurrentReAddNodeMsg
 from .shared.switch_slider import ReAddSwitchSlider
 from .shared.switchers import TreeSwitcher, ViewSwitcher
@@ -31,7 +31,14 @@ class ReAddTab(ApplyReAddTabsBase):
     def compose(self) -> ComposeResult:
         yield TreeSwitcher(ids=self.ids)
         yield ViewSwitcher(ids=self.ids, diff_reverse=True)
-        yield ReAddOpButtons(ids=self.ids)
+        yield OperateButtons(
+            ids=self.ids,
+            buttons=(
+                OperateBtn.re_add_path,
+                OperateBtn.forget_path,
+                OperateBtn.destroy_path,
+            ),
+        )
         yield ReAddSwitchSlider(ids=self.ids)
 
     @on(CurrentReAddNodeMsg)

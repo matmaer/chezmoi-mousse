@@ -19,7 +19,6 @@ class Tcss(StrEnum):
     log_views = ".log_views"
     nav_content_switcher = ".nav_content_switcher"
     operate_button = ".operate_button"
-    operate_buttons = ".operate_buttons"
     operate_screen = ".operate_screen"
     rich_header = ".rich_header"
     screen_base = ".screen_base"
