@@ -196,7 +196,7 @@ class OperateScreen(Screen[OperateScreenData], AppType):
                 ids=self.ids, view_name=ViewName.write_output_log_view
             )
         with Vertical():
-            with HorizontalGroup(classes=Tcss.horizontal_btn_group.name):
+            with HorizontalGroup(classes=Tcss.operate_buttons.name):
                 yield OperateButton(ids=self.ids, button_enum=self.operate_btn)
                 yield OperateButton(
                     ids=self.ids, button_enum=OperateBtn.exit_button
