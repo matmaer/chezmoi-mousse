@@ -60,7 +60,7 @@ class TabBtn(StrEnum):
     write_output_log = "Write Outputs"
 
 
-class OperateButtons(StrEnum):
+class OpBtn(StrEnum):
     add_dir = "Add Dir"
     add_file = "Add File"
     apply_dir = "Apply Dir"
@@ -135,48 +135,48 @@ class OperateBtn(Enum):
     add_file = AddButtonData(
         disabled_tooltip=ToolTips.add_file_disabled.value,
         enabled_tooltip=ToolTips.add_file.value,
-        initial_label=OperateButtons.add_file.value,
+        initial_label=OpBtn.add_file.value,
     )
     add_dir = AddButtonData(
         disabled_tooltip=ToolTips.add_dir_disabled.value,
         enabled_tooltip=ToolTips.add_dir.value,
-        initial_label=OperateButtons.add_dir.value,
+        initial_label=OpBtn.add_dir.value,
     )
     apply_path = ApplyReAddButtonData(
-        dir_label=OperateButtons.apply_dir.value,
+        dir_label=OpBtn.apply_dir.value,
         dir_no_status_tooltip=ToolTips.dir_no_status.value,
         dir_tooltip=ToolTips.apply_dir.value,
-        file_label=OperateButtons.apply_file.value,
+        file_label=OpBtn.apply_file.value,
         file_no_status_tooltip=ToolTips.file_no_status.value,
         file_tooltip=ToolTips.apply_file.value,
-        initial_label=OperateButtons.apply_path.value,
+        initial_label=OpBtn.apply_path.value,
     )
     re_add_path = ApplyReAddButtonData(
-        dir_label=OperateButtons.re_add_dir.value,
+        dir_label=OpBtn.re_add_dir.value,
         dir_no_status_tooltip=ToolTips.dir_no_status.value,
         dir_tooltip=ToolTips.re_add_dir.value,
-        file_label=OperateButtons.re_add_file.value,
+        file_label=OpBtn.re_add_file.value,
         file_no_status_tooltip=ToolTips.file_no_status.value,
         file_tooltip=ToolTips.re_add_file.value,
-        initial_label=OperateButtons.re_add_path.value,
+        initial_label=OpBtn.re_add_path.value,
     )
     forget_path = DestroyForgetButtonData(
-        dir_label=OperateButtons.forget_dir.value,
+        dir_label=OpBtn.forget_dir.value,
         dir_tooltip=ToolTips.forget_dir.value,
-        file_label=OperateButtons.forget_file.value,
+        file_label=OpBtn.forget_file.value,
         file_tooltip=ToolTips.forget_file.value,
-        initial_label=OperateButtons.forget_path.value,
+        initial_label=OpBtn.forget_path.value,
     )
     destroy_path = DestroyForgetButtonData(
-        dir_label=OperateButtons.destroy_dir.value,
+        dir_label=OpBtn.destroy_dir.value,
         dir_tooltip=ToolTips.destroy_dir.value,
-        file_label=OperateButtons.destroy_file.value,
+        file_label=OpBtn.destroy_file.value,
         file_tooltip=ToolTips.destroy_file.value,
-        initial_label=OperateButtons.destroy_path.value,
+        initial_label=OpBtn.destroy_path.value,
     )
     exit_button = ExitButtonData(
-        initial_label=OperateButtons.operate_cancel.value,
-        close_label=OperateButtons.operate_close.value,
+        initial_label=OpBtn.operate_cancel.value,
+        close_label=OpBtn.operate_close.value,
     )
 
     # allow access to dataclass attributes directly from the Enum member,
