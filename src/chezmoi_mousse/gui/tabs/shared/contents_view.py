@@ -56,6 +56,11 @@ class ContentsView(RichLog, AppType):
         self.write(f"{Strings.managed_dir} {self.path}")
         self.write(Strings.click_file_path)
 
+    def app_log_info(self, message: str) -> None:
+        if hasattr(self.screen, "app_log"):
+            app_log = getattr(self.screen, "app_log")
+            app_log.info(message=message)
+
     def watch_path(self) -> None:
         if self.path is None or self.path == self.destDir:
             return
