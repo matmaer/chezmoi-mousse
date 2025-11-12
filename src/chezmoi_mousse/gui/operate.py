@@ -34,7 +34,7 @@ if TYPE_CHECKING:
 __all__ = ["OperateInfo", "OperateScreen"]
 
 
-class Strings(StrEnum):
+class InfoLine(StrEnum):
     add_path = "[$text-primary]The path will be added to your chezmoi dotfile manager source state.[/]"
     apply_path = "[$text-primary]The path in the destination directory will be modified.[/]"
     auto_commit = f"[$text-warning]{Chars.warning_sign} Auto commit is enabled: files will also be committed.{Chars.warning_sign}[/]"
@@ -73,11 +73,11 @@ class OperateInfo(Static, AppType):
         lines_to_write: list[str] = []
         if self.operate_btn == OperateBtn.add_file:
             self.border_title = OperateBtn.add_file.enabled_tooltip.rstrip(".")
-            lines_to_write.append(Strings.add_path)
+            lines_to_write.append(InfoLine.add_path)
             self.border_subtitle = Chars.add_info_border
         elif self.operate_btn == OperateBtn.add_dir:
             self.border_title = OperateBtn.add_dir.enabled_tooltip.rstrip(".")
-            lines_to_write.append(Strings.add_path)
+            lines_to_write.append(InfoLine.add_path)
             self.border_subtitle = Chars.add_info_border
         elif self.operate_btn == OperateBtn.apply_path:
             self.border_title = (
@@ -85,7 +85,7 @@ class OperateInfo(Static, AppType):
                 if self.path_type == "file"
                 else OperateBtn.apply_path.dir_tooltip.rstrip(".")
             )
-            lines_to_write.append(Strings.apply_path)
+            lines_to_write.append(InfoLine.apply_path)
             self.border_subtitle = Chars.apply_info_border
         elif self.operate_btn == OperateBtn.re_add_path:
             self.border_title = (
@@ -93,7 +93,7 @@ class OperateInfo(Static, AppType):
                 if self.path_type == "file"
                 else OperateBtn.re_add_path.dir_tooltip.rstrip(".")
             )
-            lines_to_write.append(Strings.re_add_path)
+            lines_to_write.append(InfoLine.re_add_path)
             self.border_subtitle = Chars.re_add_info_border
         elif self.operate_btn == OperateBtn.forget_path:
             self.border_title = (
@@ -101,7 +101,7 @@ class OperateInfo(Static, AppType):
                 if self.path_type == "file"
                 else OperateBtn.forget_path.dir_tooltip.rstrip(".")
             )
-            lines_to_write.append(Strings.forget_path)
+            lines_to_write.append(InfoLine.forget_path)
             self.border_subtitle = Chars.forget_info_border
         elif self.operate_btn == OperateBtn.destroy_path:
             self.border_title = (
@@ -109,23 +109,23 @@ class OperateInfo(Static, AppType):
                 if self.path_type == "file"
                 else OperateBtn.destroy_path.dir_tooltip.rstrip(".")
             )
-            lines_to_write.append(Strings.destroy_path)
+            lines_to_write.append(InfoLine.destroy_path)
             self.border_subtitle = Chars.destroy_info_border
         if self.app.changes_enabled is True:
-            lines_to_write.append(Strings.changes_enabled)
+            lines_to_write.append(InfoLine.changes_enabled)
         else:
-            lines_to_write.append(Strings.changes_disabled)
+            lines_to_write.append(InfoLine.changes_disabled)
         if self.operate_btn != OperateBtn.apply_path:
             if self.git_autocommit is True:
-                lines_to_write.append(Strings.auto_commit)
+                lines_to_write.append(InfoLine.auto_commit)
             if self.git_autopush is True:
-                lines_to_write.append(Strings.autopush)
+                lines_to_write.append(InfoLine.autopush)
         # show git diff color info
         if (
             OperateBtn.apply_path == self.operate_btn
             or OperateBtn.re_add_path == self.operate_btn
         ):
-            lines_to_write.append(Strings.diff_color)
+            lines_to_write.append(InfoLine.diff_color)
         lines_to_write.append(
             f"[$text-primary]Operating on path: {self.operate_path}[/]"
         )
