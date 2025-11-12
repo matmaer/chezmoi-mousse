@@ -44,7 +44,7 @@ if TYPE_CHECKING:
 __all__ = ["MainScreen"]
 
 
-class Strings(StrEnum):
+class TabPanes(StrEnum):
     add_tab_button = "Add"
     apply_tab_button = "Apply"
     config_tab_button = "Config"
@@ -117,27 +117,27 @@ class MainScreen(Screen[None], AppType):
         yield ReactiveHeader()
         with TabbedContent():
             with TabPane(
-                Strings.apply_tab_button.value, id=CanvasName.apply_tab.name
+                TabPanes.apply_tab_button.value, id=CanvasName.apply_tab.name
             ):
                 yield ApplyTab(ids=self.apply_tab_ids)
             with TabPane(
-                Strings.re_add_tab_button.value, id=CanvasName.re_add_tab.name
+                TabPanes.re_add_tab_button.value, id=CanvasName.re_add_tab.name
             ):
                 yield ReAddTab(ids=self.re_add_tab_ids)
             with TabPane(
-                Strings.add_tab_button.value, id=CanvasName.add_tab.name
+                TabPanes.add_tab_button.value, id=CanvasName.add_tab.name
             ):
                 yield AddTab(ids=self.add_tab_ids)
             with TabPane(
-                Strings.logs_tab_button.value, id=CanvasName.logs_tab.name
+                TabPanes.logs_tab_button.value, id=CanvasName.logs_tab.name
             ):
                 yield LogsTab(ids=self.logs_tab_ids)
             with TabPane(
-                Strings.config_tab_button.value, id=CanvasName.config_tab.name
+                TabPanes.config_tab_button.value, id=CanvasName.config_tab.name
             ):
                 yield ConfigTab(ids=self.config_tab_ids)
             with TabPane(
-                Strings.help_tab_button.value, id=CanvasName.help_tab.name
+                TabPanes.help_tab_button.value, id=CanvasName.help_tab.name
             ):
                 yield HelpTab(ids=self.help_tab_ids)
         yield Footer()
