@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 __all__ = ["ContentsView"]
 
 
-class Strings(StrEnum):
+class ContentsTabStrings(StrEnum):
     cannot_decode = "Path cannot be decoded as UTF-8:"
     click_file_path = "Click a file path in the tree to see the contents."
     empty_or_only_whitespace = "File is empty or contains only whitespace"
@@ -48,13 +48,13 @@ class ContentsView(RichLog, AppType):
         )
 
     def on_mount(self) -> None:
-        self.write(Strings.initial_msg)
-        self.write(Strings.click_file_path)
+        self.write(ContentsTabStrings.initial_msg)
+        self.write(ContentsTabStrings.click_file_path)
         self.border_title = f" {self.destDir} "
 
     def write_managed_directory(self) -> None:
-        self.write(f"{Strings.managed_dir} {self.path}")
-        self.write(Strings.click_file_path)
+        self.write(f"{ContentsTabStrings.managed_dir} {self.path}")
+        self.write(ContentsTabStrings.click_file_path)
 
     def app_log_info(self, message: str) -> None:
         if hasattr(self.screen, "app_log"):
@@ -69,24 +69,26 @@ class ContentsView(RichLog, AppType):
         truncated_message = ""
         try:
             if self.path.is_file() and self.path.stat().st_size > 150 * 1024:
-                truncated_message = Strings.truncated
-                self.write(f"{Strings.too_large} {self.path}")
+                truncated_message = ContentsTabStrings.truncated
+                self.write(f"{ContentsTabStrings.too_large} {self.path}")
         except PermissionError as e:
             self.write(e.strerror)
-            self.write(f"{Strings.permission_denied} {self.path}")
+            self.write(f"{ContentsTabStrings.permission_denied} {self.path}")
             return
 
         try:
             with open(self.path, "rt", encoding="utf-8") as file:
                 file_content = file.read(150 * 1024)
                 if file_content.strip() == "":
-                    self.write(Strings.empty_or_only_whitespace)
+                    self.write(ContentsTabStrings.empty_or_only_whitespace)
                 else:
-                    self.write(f"{Strings.output_from_read} {self.path}\n")
+                    self.write(
+                        f"{ContentsTabStrings.output_from_read} {self.path}\n"
+                    )
                     self.write(truncated_message + file_content)
 
         except UnicodeDecodeError:
-            self.write(f"{Strings.cannot_decode} {self.path}")
+            self.write(f"{ContentsTabStrings.cannot_decode} {self.path}")
             return
 
         except FileNotFoundError:
@@ -100,11 +102,14 @@ class ContentsView(RichLog, AppType):
                     ReadCmd.cat, self.path
                 )
                 self.write(
-                    f'{Strings.output_from_cat} "{cat_output.pretty_cmd}"\n'
+                    f'{ContentsTabStrings.output_from_cat} "{cat_output.pretty_cmd}"\n'
                 )
                 if cat_output.std_out == "":
                     self.write(
-                        Text(Strings.empty_or_only_whitespace, style="dim")
+                        Text(
+                            ContentsTabStrings.empty_or_only_whitespace,
+                            style="dim",
+                        )
                     )
                 else:
                     self.write(cat_output.std_out)
@@ -114,9 +119,11 @@ class ContentsView(RichLog, AppType):
             if self.path in self.app.chezmoi.dirs:
                 self.write_managed_directory()
             else:
-                self.write(f"{Strings.unmanaged_dir} {self.path}")
-                self.write(Strings.click_file_path)
+                self.write(f"{ContentsTabStrings.unmanaged_dir} {self.path}")
+                self.write(ContentsTabStrings.click_file_path)
 
         except OSError as error:
-            self.write(Text(f"{Strings.read_error} {self.path}: {error}"))
-            self.write(Strings.click_file_path)
+            self.write(
+                Text(f"{ContentsTabStrings.read_error} {self.path}: {error}")
+            )
+            self.write(ContentsTabStrings.click_file_path)

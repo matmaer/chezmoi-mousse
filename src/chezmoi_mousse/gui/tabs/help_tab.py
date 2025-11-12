@@ -27,7 +27,7 @@ if TYPE_CHECKING:
 __all__ = ["HelpTab"]
 
 
-class Strings(StrEnum):
+class HelpTabSections(StrEnum):
     available_buttons = "Available Buttons"
     available_switches = "Available Filters"
     chezmoi_diagram = "chezmoi diagram"
@@ -63,7 +63,7 @@ class SharedBtnHelp(Vertical):
 class SharedFiltersHelp(Vertical):
 
     def compose(self) -> ComposeResult:
-        yield SectionLabel(Strings.available_switches)
+        yield SectionLabel(HelpTabSections.available_switches)
 
         yield SectionSubLabel(Switches.unchanged.label)
         yield Static(Switches.unchanged.enabled_tooltip)
@@ -87,7 +87,7 @@ class ApplyTabHelp(Vertical):
     def compose(self) -> ComposeResult:
         yield SharedFiltersHelp(id=self.shared_filters_help_id)
 
-        yield SectionLabel(Strings.available_buttons)
+        yield SectionLabel(HelpTabSections.available_buttons)
 
         yield SectionSubLabel(OperateBtn.apply_path.label(PathType.FILE))
         yield Static(OperateBtn.apply_path.file_tooltip)
@@ -111,7 +111,7 @@ class ReAddTabHelp(Vertical):
     def compose(self) -> ComposeResult:
         yield SharedFiltersHelp(id=self.shared_filters_help_id)
 
-        yield SectionLabel(Strings.available_buttons)
+        yield SectionLabel(HelpTabSections.available_buttons)
 
         yield SectionSubLabel(OperateBtn.re_add_path.label(PathType.FILE))
         yield Static(OperateBtn.re_add_path.file_tooltip)
@@ -130,7 +130,7 @@ class AddTabHelp(Vertical):
         self.ids = ids
 
     def compose(self) -> ComposeResult:
-        yield SectionLabel(Strings.available_switches)
+        yield SectionLabel(HelpTabSections.available_switches)
 
         yield SectionSubLabel(Switches.unmanaged_dirs.label)
         yield Static(Switches.unmanaged_dirs.enabled_tooltip)
@@ -138,7 +138,7 @@ class AddTabHelp(Vertical):
         yield SectionSubLabel(Switches.unwanted.label)
         yield Static(Switches.unwanted.enabled_tooltip)
 
-        yield SectionLabel(Strings.available_buttons)
+        yield SectionLabel(HelpTabSections.available_buttons)
 
         yield SectionSubLabel(OperateBtn.add_file.label())
         yield Static(OperateBtn.add_file.enabled_tooltip)
@@ -196,7 +196,7 @@ class HelpTabSwitcher(ContentSwitcher):
         yield ReAddTabHelp(ids=self.ids)
         yield AddTabHelp(ids=self.ids)
         yield Vertical(
-            SectionLabel(Strings.chezmoi_diagram),
+            SectionLabel(HelpTabSections.chezmoi_diagram),
             Static(self.FLOW_DIAGRAM, classes=Tcss.flow_diagram.name),
             id=self.ids.view_id(view=ViewName.diagram_view),
         )

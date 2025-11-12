@@ -33,7 +33,7 @@ if TYPE_CHECKING:
 __all__ = ["ConfigTab", "ConfigTabSwitcher"]
 
 
-class Strings(StrEnum):
+class ConfigSectionLabels(StrEnum):
     cat_config_output = '"chezmoi cat-config" output'
     doctor_output = '"chezmoi doctor" output'
     ignored_output = '"chezmoi ignored" output'
@@ -208,25 +208,25 @@ class ConfigTabSwitcher(ContentSwitcher):
 
     def compose(self) -> ComposeResult:
         yield VerticalScroll(
-            SectionLabel(Strings.doctor_output),
+            SectionLabel(ConfigSectionLabels.doctor_output),
             DoctorTable(ids=self.ids),
-            SectionLabel(Strings.password_managers),
+            SectionLabel(ConfigSectionLabels.password_managers),
             DoctorListView(ids=self.ids),
             id=self.doctor_list_view_id,
             classes=Tcss.doctor_vertical_scroll.name,
         )
         yield Vertical(
-            SectionLabel(Strings.cat_config_output),
+            SectionLabel(ConfigSectionLabels.cat_config_output),
             Pretty("<cat-config>", id=ViewName.pretty_cat_config_view),
             id=self.ids.view_id(view=ViewName.cat_config_view),
         )
         yield Vertical(
-            SectionLabel(Strings.ignored_output),
+            SectionLabel(ConfigSectionLabels.ignored_output),
             Pretty("<ignored>", id=ViewName.pretty_ignored_view),
             id=self.ids.view_id(view=ViewName.git_ignored_view),
         )
         yield Vertical(
-            SectionLabel(Strings.template_data_output),
+            SectionLabel(ConfigSectionLabels.template_data_output),
             Pretty("<template_data>", id=ViewName.pretty_template_data_view),
             id=self.ids.view_id(view=ViewName.template_data_view),
         )
