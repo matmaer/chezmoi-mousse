@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from .canvas_ids import CanvasIds
 
 
-class Strings(StrEnum):
+class Sections(StrEnum):
     in_dest_dir = 'This is the destination directory "chezmoi destDir"'
     initial_git_log_msg = (
         'Click a path in the tree to see the output from "chezmoi git log".'
@@ -71,10 +71,10 @@ class InitialHeader(SectionHeader):
 
     def on_mount(self) -> None:
         self.add_class(Tcss.rich_header.name)
-        self.write(Content(Strings.in_dest_dir))
+        self.write(Content(Sections.in_dest_dir))
         if (
             self.ids.canvas_name
             in (CanvasName.apply_tab, CanvasName.re_add_tab)
             and self.view_name == ViewName.git_log_view
         ):
-            self.write(Content(Strings.initial_git_log_msg))
+            self.write(Content(Sections.initial_git_log_msg))
