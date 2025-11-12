@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 from rich.text import Text
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import Vertical, VerticalScroll
+from textual.containers import ScrollableContainer, Vertical, VerticalScroll
 from textual.reactive import reactive
 from textual.widgets import (
     Button,
@@ -214,17 +214,17 @@ class ConfigTabSwitcher(ContentSwitcher):
             id=self.doctor_list_view_id,
             classes=Tcss.doctor_vertical_scroll.name,
         )
-        yield Vertical(
+        yield ScrollableContainer(
             SectionLabel(ConfigSectionLabels.cat_config_output),
             Pretty("<cat-config>", id=ViewName.pretty_cat_config_view),
             id=self.ids.view_id(view=ViewName.cat_config_view),
         )
-        yield Vertical(
+        yield ScrollableContainer(
             SectionLabel(ConfigSectionLabels.ignored_output),
             Pretty("<ignored>", id=ViewName.pretty_ignored_view),
             id=self.ids.view_id(view=ViewName.git_ignored_view),
         )
-        yield Vertical(
+        yield ScrollableContainer(
             SectionLabel(ConfigSectionLabels.template_data_output),
             Pretty("<template_data>", id=ViewName.pretty_template_data_view),
             id=self.ids.view_id(view=ViewName.template_data_view),

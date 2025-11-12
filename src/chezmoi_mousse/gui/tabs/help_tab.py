@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import Vertical
+from textual.containers import ScrollableContainer, Vertical
 from textual.widgets import Button, ContentSwitcher, Static
 
 from chezmoi_mousse import (
@@ -75,7 +75,7 @@ class SharedFiltersHelp(Vertical):
         self.styles.height = "auto"
 
 
-class ApplyTabHelp(Vertical):
+class ApplyTabHelp(ScrollableContainer):
 
     def __init__(self, ids: "CanvasIds") -> None:
         self.view_id = ids.view_id(view=ViewName.apply_help_view)
@@ -99,7 +99,7 @@ class ApplyTabHelp(Vertical):
         yield SharedBtnHelp(ids=self.ids)
 
 
-class ReAddTabHelp(Vertical):
+class ReAddTabHelp(ScrollableContainer):
 
     def __init__(self, ids: "CanvasIds") -> None:
         self.view_id = ids.view_id(view=ViewName.re_add_help_view)
@@ -123,7 +123,7 @@ class ReAddTabHelp(Vertical):
         yield SharedBtnHelp(ids=self.ids)
 
 
-class AddTabHelp(Vertical):
+class AddTabHelp(ScrollableContainer):
 
     def __init__(self, ids: "CanvasIds") -> None:
         super().__init__(id=ids.view_id(view=ViewName.add_help_view))
@@ -194,7 +194,7 @@ class HelpTabSwitcher(ContentSwitcher):
         yield ApplyTabHelp(ids=self.ids)
         yield ReAddTabHelp(ids=self.ids)
         yield AddTabHelp(ids=self.ids)
-        yield Vertical(
+        yield ScrollableContainer(
             SectionLabel(HelpTabSections.chezmoi_diagram),
             Static(self.FLOW_DIAGRAM, classes=Tcss.flow_diagram.name),
             id=self.ids.view_id(view=ViewName.diagram_view),
