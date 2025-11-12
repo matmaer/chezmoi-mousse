@@ -23,7 +23,7 @@ type ParsedJson = dict[str, Any]
 __all__ = ["InstallHelp"]
 
 
-class Strings(StrEnum):
+class InstallHelpStrings(StrEnum):
     collapsible_title = "'chezmoi' command not found in any search path"
     escape_exit_app = " escape key to exit app "
     exit_app_action = "exit_application"
@@ -37,13 +37,15 @@ class CommandsTree(Tree[ParsedJson]):
     ICON_NODE_EXPANDED = Chars.down_triangle
 
     def __init__(self) -> None:
-        super().__init__(label=Strings.install_chezmoi)
+        super().__init__(label=InstallHelpStrings.install_chezmoi)
 
 
 class InstallHelp(Screen[None], AppType):
 
     BINDINGS = [
-        Binding(key="escape", action=Strings.exit_app_action, show=False)
+        Binding(
+            key="escape", action=InstallHelpStrings.exit_app_action, show=False
+        )
     ]
 
     def __init__(self) -> None:
@@ -53,10 +55,10 @@ class InstallHelp(Screen[None], AppType):
         self.ids = CanvasIds(CanvasName.install_help_screen)
 
     def compose(self) -> ComposeResult:
-        yield SectionLabel(Strings.top_label)
+        yield SectionLabel(InstallHelpStrings.top_label)
         yield Collapsible(
-            Pretty(Strings.no_path_var),
-            title=Strings.collapsible_title,
+            Pretty(InstallHelpStrings.no_path_var),
+            title=InstallHelpStrings.collapsible_title,
             collapsed_symbol=Chars.right_triangle,
             expanded_symbol=Chars.down_triangle,
             collapsed=False,
@@ -69,7 +71,7 @@ class InstallHelp(Screen[None], AppType):
 
     def on_mount(self) -> None:
         self.add_class(Tcss.install_help.name)
-        self.border_subtitle = Strings.escape_exit_app
+        self.border_subtitle = InstallHelpStrings.escape_exit_app
         self.update_path_widget()
         self.populate_tree()
 
