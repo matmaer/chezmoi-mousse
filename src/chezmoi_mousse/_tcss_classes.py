@@ -16,7 +16,6 @@ class Tcss(StrEnum):
     flow_diagram = ".flow_diagram"
     install_help = ".install_help"
     last_clicked = ".last_clicked"
-    log_views = ".log_views"
     nav_content_switcher = ".nav_content_switcher"
     operate_button = ".operate_button"
     operate_screen = ".operate_screen"
