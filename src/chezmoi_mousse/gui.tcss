@@ -113,9 +113,11 @@
     }
     & ContentsView {
       border: none;
+      height: auto;
     }
     & DiffView {
       border: none;
+      height: auto;
     }
   }
   &.install_help {
