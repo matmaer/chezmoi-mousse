@@ -14,7 +14,7 @@ from .tabs.shared.section_headers import SectionLabel, SectionSubLabel
 __all__ = ["ReachOutScreen"]
 
 
-class Strings(StrEnum):
+class IssueStrings(StrEnum):
     top_label = "Unfortunately something went wrong..."
     sub_label = "You found an issue, please reach out and post it on the Github issues page, thank you! This could be fixed quickly, your help is appreciated."
 
@@ -26,8 +26,8 @@ class ReachOutScreen(ModalScreen[None], AppType):
         super().__init__()
 
     def compose(self) -> ComposeResult:
-        yield SectionLabel(Strings.top_label)
-        yield SectionSubLabel(Strings.sub_label)
+        yield SectionLabel(IssueStrings.top_label)
+        yield SectionSubLabel(IssueStrings.sub_label)
         with Horizontal():
             yield Vertical(
                 FlatLink(ids=self.ids, link_enum=LinkBtn.github_issues)
