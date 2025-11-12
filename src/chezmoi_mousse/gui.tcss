@@ -11,10 +11,6 @@
   border-title-style: bold;
 }
 
-.log_views {
-  margin-bottom: 1;
-}
-
 .flat_button{
   background-tint: initial;
   width: 100%;
@@ -151,6 +147,10 @@
 
 FlatButtonsVertical {
   width: auto;
+}
+
+LoggersBase {
+  margin-bottom: 1;
 }
 
 OperateButtons {

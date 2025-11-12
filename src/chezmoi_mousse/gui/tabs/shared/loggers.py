@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 from rich.markup import escape
 from textual.widgets import RichLog
 
-from chezmoi_mousse import AppType, Chars, ReadVerbs, Tcss, ViewName
+from chezmoi_mousse import AppType, Chars, ReadVerbs, ViewName
 
 if TYPE_CHECKING:
 
@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 __all__ = ["AppLog", "DebugLog", "OutputLog"]
 
 
-class CommandLogBase(RichLog, AppType):
+class LoggersBase(RichLog, AppType):
 
     def _log_time(self) -> str:
         return f"[[green]{datetime.now().strftime('%H:%M:%S')}[/]]"
@@ -66,7 +66,7 @@ class CommandLogBase(RichLog, AppType):
                 self.write(f"    [{color}]{escaped_line}[/]")
 
 
-class AppLog(CommandLogBase, AppType):
+class AppLog(LoggersBase, AppType):
 
     def __init__(self, ids: "CanvasIds") -> None:
         self.ids = ids
@@ -74,7 +74,6 @@ class AppLog(CommandLogBase, AppType):
             id=self.ids.view_id(view=ViewName.app_log_view),
             markup=True,
             max_lines=10000,
-            classes=Tcss.log_views.name,
         )
         self.succes_no_output = f"{Chars.check_mark} Success, no output"
         self.success_with_output = (
@@ -141,7 +140,7 @@ class AppLog(CommandLogBase, AppType):
                 )
 
 
-class DebugLog(CommandLogBase, AppType):
+class DebugLog(LoggersBase, AppType):
 
     type Mro = tuple[type, ...]
 
@@ -152,7 +151,6 @@ class DebugLog(CommandLogBase, AppType):
             markup=True,
             max_lines=10000,
             wrap=True,
-            classes=Tcss.log_views.name,
         )
 
     def completed_process(self, command_result: "CommandResult") -> None:
@@ -238,7 +236,7 @@ class DebugLog(CommandLogBase, AppType):
             self.write(f"{key}: {value}")
 
 
-class OutputLog(CommandLogBase, AppType):
+class OutputLog(LoggersBase, AppType):
 
     def __init__(self, ids: "CanvasIds", view_name: ViewName) -> None:
         self.ids = ids
@@ -247,7 +245,6 @@ class OutputLog(CommandLogBase, AppType):
             id=self.ids.view_id(view=self.view_name),
             markup=True,
             max_lines=10000,
-            classes=Tcss.log_views.name,
         )
 
     def _trim_stdout(self, stdout: str):
