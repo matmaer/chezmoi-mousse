@@ -79,11 +79,6 @@
   }
 }
 
-.nav_content_switcher {
-  margin-bottom: 1;
-  overflow-x: scroll;
-}
-
 .tab_left_vertical {
   margin-right: 2;
   width: auto;

@@ -187,7 +187,6 @@ class HelpTabSwitcher(ContentSwitcher):
         super().__init__(
             id=self.ids.content_switcher_id(name=ContainerName.help_switcher),
             initial=self.ids.view_id(view=ViewName.apply_help_view),
-            classes=Tcss.nav_content_switcher.name,
         )
 
     def compose(self) -> ComposeResult:

@@ -200,7 +200,6 @@ class ConfigTabSwitcher(ContentSwitcher):
                 name=ContainerName.config_switcher
             ),
             initial=self.doctor_list_view_id,
-            classes=Tcss.nav_content_switcher.name,
         )
         self.doctor_table_qid = ids.datatable_id(
             "#", view_name=ViewName.doctor_view
