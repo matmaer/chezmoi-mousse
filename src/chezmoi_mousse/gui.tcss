@@ -64,11 +64,11 @@
   padding: 0 1;
   text-align: center;
   width: 100%;
-  &.section_label
+  &SectionLabel
   {
     color: $text-accent;
   }
-  &.section_sub_label
+  &SectionSubLabel
   {
     border: none;
     color: $text-success;

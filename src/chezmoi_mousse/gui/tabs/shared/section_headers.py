@@ -24,17 +24,11 @@ class SectionLabel(Label):
     def __init__(self, label_text: str) -> None:
         super().__init__(label_text, classes=Tcss.section_header.name)
 
-    def on_mount(self) -> None:
-        self.add_class(Tcss.section_label.name)
-
 
 class SectionSubLabel(Label):
 
     def __init__(self, label_text: str) -> None:
         super().__init__(label_text, classes=Tcss.section_header.name)
-
-    def on_mount(self) -> None:
-        self.add_class(Tcss.section_sub_label.name)
 
 
 class SectionHeader(RichLog):

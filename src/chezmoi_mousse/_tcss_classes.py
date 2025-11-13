@@ -21,8 +21,6 @@ class Tcss(StrEnum):
     rich_header = ".rich_header"
     screen_base = ".screen_base"
     section_header = ".section_header"
-    section_label = ".section_label"
-    section_sub_label = ".section_sub_label"
     single_button_vertical = ".single_button_vertical"
     tab_button = ".tab_button"
     tab_left_vertical = ".tab_left_vertical"
