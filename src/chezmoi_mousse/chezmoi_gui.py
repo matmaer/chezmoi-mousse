@@ -25,7 +25,7 @@ from .gui.shared.git_log_view import GitLogView
 from .gui.shared.trees import TreeBase
 from .gui.splash import LoadingScreen
 from .gui.tabs.add_tab import AddTab
-from .gui.tabs.apply_readd_tabs.switchers import ViewSwitcher
+from .gui.tabs.shared.switchers import ViewSwitcher
 
 if TYPE_CHECKING:
     from chezmoi_mousse import Chezmoi, CommandsData, PreRunData

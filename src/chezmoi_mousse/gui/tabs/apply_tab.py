@@ -8,9 +8,9 @@ from chezmoi_mousse import OperateBtn
 
 from ..shared.buttons import OperateButtons
 from ..shared.operate_msg import CurrentApplyNodeMsg
-from ..shared.switch_slider import ApplySwitchSlider
-from .apply_readd_tabs.switchers import TreeSwitcher, ViewSwitcher
-from .apply_readd_tabs.tabs_base import ApplyReAddTabsBase
+from .shared.switch_slider import SwitchSlider
+from .shared.switchers import TreeSwitcher, ViewSwitcher
+from .shared.tabs_base import ApplyReAddTabsBase
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds
@@ -39,7 +39,7 @@ class ApplyTab(ApplyReAddTabsBase):
                 OperateBtn.destroy_path,
             ),
         )
-        yield ApplySwitchSlider(ids=self.ids)
+        yield SwitchSlider(ids=self.ids)
 
     @on(CurrentApplyNodeMsg)
     def update_apply_operate_buttons(self, event: CurrentApplyNodeMsg) -> None:
