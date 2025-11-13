@@ -21,7 +21,7 @@ from chezmoi_mousse import (
     TreeName,
     ViewName,
 )
-from chezmoi_mousse.base.switch_slider import SwitchSliderBase
+from chezmoi_mousse.shared.switch_slider import SwitchSliderBase
 
 from ..shared.buttons import OperateButtons
 from ..shared.contents_view import ContentsView
