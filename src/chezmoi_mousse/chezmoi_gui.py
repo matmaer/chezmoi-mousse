@@ -20,10 +20,10 @@ from .gui.reach_out import ReachOutScreen
 from .gui.reactive_header import ReactiveHeader
 from .gui.splash import LoadingScreen
 from .gui.tabs.add_tab import AddTab
+from .gui.tabs.shared.apply_readd_tabs.switchers import ViewSwitcher
 from .gui.tabs.shared.contents_view import ContentsView
 from .gui.tabs.shared.diff_view import DiffView
 from .gui.tabs.shared.git_log_view import GitLogView
-from .gui.tabs.shared.switchers import ViewSwitcher
 from .gui.tabs.shared.trees import TreeBase
 
 if TYPE_CHECKING:

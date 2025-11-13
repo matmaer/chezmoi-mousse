@@ -7,16 +7,16 @@ from textual.widgets import Button, ContentSwitcher
 
 from chezmoi_mousse import ContainerName, TabBtn, Tcss, TreeName, ViewName
 
-from .buttons import TabButtons
-from .contents_view import ContentsView
-from .diff_view import DiffView
-from .git_log_view import GitLogView
-from .trees import ExpandedTree, ListTree, ManagedTree
+from ..buttons import TabButtons
+from ..contents_view import ContentsView
+from ..diff_view import DiffView
+from ..git_log_view import GitLogView
+from ..trees import ExpandedTree, ListTree, ManagedTree
 
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from .canvas_ids import CanvasIds
+    from ..canvas_ids import CanvasIds
 
 __all__ = ["TreeSwitcher", "ViewSwitcher"]
 
