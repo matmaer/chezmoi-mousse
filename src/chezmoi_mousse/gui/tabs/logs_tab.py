@@ -19,9 +19,7 @@ from chezmoi_mousse import (
     Tcss,
     ViewName,
 )
-from chezmoi_mousse.shared import TabButtons
-
-from ..shared.git_log_view import GitLogView
+from chezmoi_mousse.shared import GitLogView, TabButtons
 
 if TYPE_CHECKING:
     from collections.abc import Callable
