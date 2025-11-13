@@ -20,14 +20,14 @@ from chezmoi_mousse import (
     TreeName,
     ViewName,
 )
-
-from .operate import OperateScreen
-from .reactive_header import ReactiveHeader
-from .shared.operate_msg import (
+from chezmoi_mousse.shared import (
     CurrentAddNodeMsg,
     CurrentApplyNodeMsg,
     CurrentReAddNodeMsg,
 )
+
+from .operate import OperateScreen
+from .reactive_header import ReactiveHeader
 from .tabs.add_tab import AddTab, FilteredDirTree
 from .tabs.apply_tab import ApplyTab
 from .tabs.config_tab import ConfigTab, ConfigTabSwitcher

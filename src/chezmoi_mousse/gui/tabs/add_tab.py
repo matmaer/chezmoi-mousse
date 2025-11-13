@@ -23,11 +23,10 @@ from chezmoi_mousse import (
 )
 from chezmoi_mousse.shared import (
     ContentsView,
+    CurrentAddNodeMsg,
     OperateButtons,
     SwitchSliderBase,
 )
-
-from ..shared.operate_msg import CurrentAddNodeMsg
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds, PathType
