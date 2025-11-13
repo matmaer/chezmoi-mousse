@@ -52,13 +52,17 @@ class SectionHeader(Static):
 
 class InitialHeader(Vertical):
     def __init__(self, ids: "CanvasIds", view_name: ViewName) -> None:
-        super().__init__(classes=Tcss.section_header.name)
         self.ids = ids
         self.view_name = view_name
-        self.static_id = self.ids.initial_header_id(view_name=self.view_name)
-        self.static_qid = self.ids.initial_header_id(
-            "#", view_name=self.view_name
+        self.initial_header_id = self.ids.initial_header_id(
+            view_name=self.view_name
         )
+
+        super().__init__(
+            id=self.initial_header_id, classes=Tcss.section_header.name
+        )
+        self.static_id = f"{self.initial_header_id}_static"
+        self.static_qid = f"#{self.static_id}"
 
     def compose(self) -> ComposeResult:
         yield SectionSubLabel(SectionStrings.path_info)
