@@ -6,7 +6,12 @@ from typing import TYPE_CHECKING
 from rich.text import Text
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import ScrollableContainer, Vertical, VerticalScroll
+from textual.containers import (
+    Horizontal,
+    ScrollableContainer,
+    Vertical,
+    VerticalScroll,
+)
 from textual.reactive import reactive
 from textual.widgets import (
     Button,
@@ -23,7 +28,6 @@ from chezmoi_mousse import AppType, ContainerName, FlatBtn, Tcss, ViewName
 
 from .shared.buttons import FlatButtonsVertical
 from .shared.section_headers import SectionLabel
-from .shared.tabs_base import TabsBase
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CommandResult
@@ -268,11 +272,11 @@ class ConfigTabSwitcher(ContentSwitcher):
         pretty_template_data.update(template_data_json)
 
 
-class ConfigTab(TabsBase, AppType):
+class ConfigTab(Horizontal, AppType):
 
     def __init__(self, ids: "CanvasIds") -> None:
         self.ids = ids
-        super().__init__(ids=self.ids)
+        super().__init__(id=self.ids.tab_container_id)
 
         self.tab_vertical_id = ids.tab_vertical_id(
             name=ContainerName.left_side

@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import ScrollableContainer, Vertical
+from textual.containers import Horizontal, ScrollableContainer, Vertical
 from textual.widgets import Button, ContentSwitcher, Static
 
 from chezmoi_mousse import (
@@ -19,7 +19,6 @@ from chezmoi_mousse import (
 
 from .shared.buttons import FlatButtonsVertical, FlatLink
 from .shared.section_headers import SectionLabel, SectionSubLabel
-from .shared.tabs_base import TabsBase
 
 if TYPE_CHECKING:
     from .shared.canvas_ids import CanvasIds
@@ -207,11 +206,11 @@ class HelpTabSwitcher(ContentSwitcher):
         )
 
 
-class HelpTab(TabsBase):
+class HelpTab(Horizontal):
 
     def __init__(self, ids: "CanvasIds") -> None:
         self.ids = ids
-        super().__init__(ids=self.ids)
+        super().__init__(id=ids.tab_container_id)
 
         # Content Switcher IDs
         self.content_switcher_id = self.ids.content_switcher_id(

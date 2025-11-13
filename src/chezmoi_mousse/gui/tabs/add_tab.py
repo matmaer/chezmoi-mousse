@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import Vertical
+from textual.containers import Horizontal, Vertical
 from textual.reactive import reactive
 from textual.widgets import Button, DirectoryTree, Switch
 
@@ -26,7 +26,6 @@ from .shared.buttons import OperateButtons
 from .shared.contents_view import ContentsView
 from .shared.operate_msg import CurrentAddNodeMsg
 from .shared.switch_slider import AddSwitchSlider
-from .shared.tabs_base import TabsBase
 
 if TYPE_CHECKING:
     from chezmoi_mousse import PathType
@@ -237,12 +236,12 @@ class FilteredDirTree(DirectoryTree, AppType):
             return False
 
 
-class AddTab(TabsBase, AppType):
+class AddTab(Horizontal, AppType):
 
     destdir: Path
 
     def __init__(self, ids: "CanvasIds") -> None:
-        super().__init__(ids=ids)
+        super().__init__(id=ids.tab_container_id)
 
         self.ids = ids
         self.add_file_btn_qid = ids.button_id("#", btn=OperateBtn.add_file)

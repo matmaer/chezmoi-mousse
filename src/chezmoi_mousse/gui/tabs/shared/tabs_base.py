@@ -25,21 +25,15 @@ if TYPE_CHECKING:
 
     from .canvas_ids import CanvasIds
 
-__all__ = ["ApplyReAddTabsBase", "TabsBase"]
+__all__ = ["ApplyReAddTabsBase"]
 
 
-class TabsBase(Horizontal):
+class ApplyReAddTabsBase(Horizontal):
 
     def __init__(self, *, ids: "CanvasIds") -> None:
         super().__init__(id=ids.tab_container_id)
 
-
-class ApplyReAddTabsBase(TabsBase):
-
-    def __init__(self, *, ids: "CanvasIds") -> None:
         self.ids = ids
-        super().__init__(ids=self.ids)
-
         self.expand_all_state = False
         self.tree_switcher_qid = ids.content_switcher_id(
             "#", name=ContainerName.tree_switcher
