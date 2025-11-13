@@ -23,6 +23,7 @@ from .gui.tabs.add_tab import AddTab
 from .gui.tabs.shared.contents_view import ContentsView
 from .gui.tabs.shared.diff_view import DiffView
 from .gui.tabs.shared.git_log_view import GitLogView
+from .gui.tabs.shared.switchers import ViewSwitcher
 from .gui.tabs.shared.trees import TreeBase
 
 if TYPE_CHECKING:
@@ -115,10 +116,11 @@ class ChezmoiGUI(App[None]):
         dest_dir = return_data.parsed_config.dest_dir
         AddTab.destdir = dest_dir
         ContentsView.destDir = dest_dir
-        GitLogView.destDir = dest_dir
         DiffView.destDir = dest_dir
-        TreeBase.destDir = dest_dir
+        GitLogView.destDir = dest_dir
         MainScreen.destDir = dest_dir
+        TreeBase.destDir = dest_dir
+        ViewSwitcher.destDir = dest_dir
 
         OperateInfo.git_autocommit = return_data.parsed_config.git_autocommit
         OperateInfo.git_autopush = return_data.parsed_config.git_autopush

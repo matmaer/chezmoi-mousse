@@ -14,6 +14,8 @@ from .git_log_view import GitLogView
 from .trees import ExpandedTree, ListTree, ManagedTree
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from .canvas_ids import CanvasIds
 
 __all__ = ["TreeSwitcher", "ViewSwitcher"]
@@ -41,6 +43,9 @@ class TreeSwitcher(Vertical):
 
 
 class ViewSwitcher(Vertical):
+
+    destDir: "Path | None" = None
+
     def __init__(self, *, ids: "CanvasIds", diff_reverse: bool):
         self.ids = ids
         self.contents_tab_btn = ids.button_id(btn=TabBtn.contents)
