@@ -188,21 +188,18 @@ SwitchSliderBase {
   background: $surface;
   border: round $primary;
   border-left: none;
+  color: $foreground-darken-1;
   dock: bottom;
   layer: switches;
-  /* make sure horizontal scrollbar and a line from the layer below is visible.*/
   margin-bottom: 3;
   offset-x: 0%;
   padding-right: 1;
   transition: offset 380ms;
   width: auto;
 
-  & Label {
-    color: $foreground-darken-1;
-  }
   & HorizontalGroup {
-    width: auto;
     padding-bottom: 1;
+    width: auto;
   }
   &.-visible {
     offset-x: -100%;
@@ -212,7 +209,6 @@ SwitchSliderBase {
 TabButtons {
   width: 100%;
   height: 1;
-  min-width: 16;
   &>.single_button_vertical {
     align: center middle;
   }
