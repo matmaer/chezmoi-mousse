@@ -10,21 +10,22 @@ from textual.binding import Binding
 from textual.scrollbar import ScrollBar, ScrollBarRender
 from textual.theme import Theme
 
-from chezmoi_mousse import Chars
+from chezmoi_mousse import CanvasName, Chars
+from chezmoi_mousse._canvas_ids import CanvasIds
 
-from .gui.chezmoi_init import ChezmoiInit
+from .gui.chezmoi_init import InitScreen
 from .gui.install_help import InstallHelp
 from .gui.main_screen import MainScreen
 from .gui.operate import OperateInfo
 from .gui.reach_out import ReachOutScreen
 from .gui.reactive_header import ReactiveHeader
+from .gui.shared.contents_view import ContentsView
+from .gui.shared.diff_view import DiffView
+from .gui.shared.git_log_view import GitLogView
+from .gui.shared.trees import TreeBase
 from .gui.splash import LoadingScreen
 from .gui.tabs.add_tab import AddTab
-from .gui.tabs.shared.apply_readd_tabs.switchers import ViewSwitcher
-from .gui.tabs.shared.contents_view import ContentsView
-from .gui.tabs.shared.diff_view import DiffView
-from .gui.tabs.shared.git_log_view import GitLogView
-from .gui.tabs.shared.trees import TreeBase
+from .gui.tabs.apply_readd_tabs.switchers import ViewSwitcher
 
 if TYPE_CHECKING:
     from chezmoi_mousse import Chezmoi, CommandsData, PreRunData
@@ -82,6 +83,25 @@ class ChezmoiGUI(App[None]):
         self.pretend_issue_found = False
         self.pretend_init_needed = False
 
+        # Construct the ids for each screen
+        self.init_screen_ids = CanvasIds(canvas_name=CanvasName.init_screen)
+        self.install_help_screen_ids = CanvasIds(
+            canvas_name=CanvasName.install_help_screen
+        )
+        self.main_screen_ids = CanvasIds(CanvasName.main_screen)
+        self.op_screen_ids = CanvasIds(CanvasName.operate_screen)
+        self.reach_out_screen_ids = CanvasIds(
+            canvas_name=CanvasName.reach_out_screen
+        )
+
+        # Construct the ids for the tabs
+        self.add_tab_ids = CanvasIds(CanvasName.add_tab)
+        self.apply_tab_ids = CanvasIds(CanvasName.apply_tab)
+        self.config_tab_ids = CanvasIds(CanvasName.config_tab)
+        self.help_tab_ids = CanvasIds(CanvasName.help_tab)
+        self.logs_tab_ids = CanvasIds(CanvasName.logs_tab)
+        self.re_add_tab_ids = CanvasIds(CanvasName.re_add_tab)
+
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
         super().__init__()
 
@@ -99,18 +119,20 @@ class ChezmoiGUI(App[None]):
         self, return_data: "CommandsData | None"
     ) -> None:
         if return_data is None:
-            self.push_screen(InstallHelp())
+            self.push_screen(InstallHelp(ids=self.install_help_screen_ids))
             return
         # self.pretend_init_needed = True
         if (
             self.pretend_init_needed is True
             or return_data.cat_config.returncode != 0
         ):
-            self.push_screen(ChezmoiInit(commands_data=return_data))
+            self.push_screen(
+                InitScreen(ids=self.init_screen_ids, commands_data=return_data)
+            )
             return
         # self.pretend_issue_found = True
         if self.pretend_issue_found is True:
-            self.push_screen(ReachOutScreen())
+            self.push_screen(ReachOutScreen(ids=self.reach_out_screen_ids))
             return
 
         dest_dir = return_data.parsed_config.dest_dir
@@ -125,7 +147,9 @@ class ChezmoiGUI(App[None]):
         OperateInfo.git_autocommit = return_data.parsed_config.git_autocommit
         OperateInfo.git_autopush = return_data.parsed_config.git_autopush
 
-        self.push_screen(MainScreen(commands_data=return_data))
+        self.push_screen(
+            MainScreen(ids=self.main_screen_ids, commands_data=return_data)
+        )
 
     def action_toggle_dry_run_mode(self) -> None:
         self.changes_enabled = not self.changes_enabled

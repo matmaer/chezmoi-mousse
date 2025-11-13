@@ -20,16 +20,14 @@ from chezmoi_mousse import (
 )
 
 from .reactive_header import ReactiveHeader
-from .tabs.shared.buttons import OperateButtons
-from .tabs.shared.contents_view import ContentsView
-from .tabs.shared.diff_view import DiffView
-from .tabs.shared.loggers import OutputLog
-from .tabs.shared.section_headers import SectionLabel
+from .shared.buttons import OperateButtons
+from .shared.contents_view import ContentsView
+from .shared.diff_view import DiffView
+from .shared.loggers import OutputLog
+from .shared.section_headers import SectionLabel
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import CommandResult
-
-    from .tabs.shared.canvas_ids import CanvasIds
+    from chezmoi_mousse import CanvasIds, CommandResult
 
 __all__ = ["OperateInfo", "OperateScreen"]
 

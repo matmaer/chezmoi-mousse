@@ -24,9 +24,7 @@ from .operate_msg import CurrentApplyNodeMsg, CurrentReAddNodeMsg
 
 if TYPE_CHECKING:
 
-    from chezmoi_mousse import PathDict
-
-    from .canvas_ids import CanvasIds
+    from chezmoi_mousse import CanvasIds, PathDict
 
 __all__ = ["ExpandedTree", "ListTree", "ManagedTree", "TreeBase"]
 

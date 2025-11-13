@@ -4,6 +4,7 @@ from importlib.metadata import PackageNotFoundError, version
 from typing import TYPE_CHECKING
 
 from chezmoi_mousse._button_data import FlatBtn, LinkBtn, OperateBtn, TabBtn
+from chezmoi_mousse._canvas_ids import CanvasIds
 from chezmoi_mousse._chars import Chars
 from chezmoi_mousse._chezmoi import (
     Chezmoi,
@@ -42,6 +43,7 @@ class AppType:
 __all__ = [
     "__version__",
     "AppType",
+    "CanvasIds",
     "CanvasName",
     "Chars",
     "Chezmoi",

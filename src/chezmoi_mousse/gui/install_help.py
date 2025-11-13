@@ -2,7 +2,7 @@ import json
 import os
 from enum import StrEnum
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from rich.text import Text
 from textual import on
@@ -14,9 +14,11 @@ from textual.widgets import Button, Collapsible, Pretty, Tree
 
 from chezmoi_mousse import AppType, CanvasName, Chars, FlatBtn, LinkBtn, Tcss
 
-from .tabs.shared.buttons import FlatButton, FlatLink
-from .tabs.shared.canvas_ids import CanvasIds
-from .tabs.shared.section_headers import SectionLabel
+from .shared.buttons import FlatButton, FlatLink
+from .shared.section_headers import SectionLabel
+
+if TYPE_CHECKING:
+    from chezmoi_mousse import CanvasIds
 
 type ParsedJson = dict[str, Any]
 
@@ -48,11 +50,11 @@ class InstallHelp(Screen[None], AppType):
         )
     ]
 
-    def __init__(self) -> None:
+    def __init__(self, *, ids: "CanvasIds") -> None:
         super().__init__(
             id=CanvasName.install_help_screen, classes=Tcss.screen_base.name
         )
-        self.ids = CanvasIds(CanvasName.install_help_screen)
+        self.ids = ids
 
     def compose(self) -> ComposeResult:
         yield SectionLabel(InstallHelpStrings.top_label)

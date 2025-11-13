@@ -6,14 +6,14 @@ from textual.widgets import Button
 
 from chezmoi_mousse import OperateBtn
 
-from .shared.apply_readd_tabs.switchers import TreeSwitcher, ViewSwitcher
-from .shared.apply_readd_tabs.tabs_base import ApplyReAddTabsBase
-from .shared.buttons import OperateButtons
-from .shared.operate_msg import CurrentReAddNodeMsg
-from .shared.switch_slider import ReAddSwitchSlider
+from ..shared.buttons import OperateButtons
+from ..shared.operate_msg import CurrentReAddNodeMsg
+from ..shared.switch_slider import ReAddSwitchSlider
+from .apply_readd_tabs.switchers import TreeSwitcher, ViewSwitcher
+from .apply_readd_tabs.tabs_base import ApplyReAddTabsBase
 
 if TYPE_CHECKING:
-    from .shared.canvas_ids import CanvasIds
+    from chezmoi_mousse import CanvasIds
 
 __all__ = ["ReAddTab"]
 

@@ -22,15 +22,13 @@ from chezmoi_mousse import (
     ViewName,
 )
 
-from .shared.buttons import OperateButtons
-from .shared.contents_view import ContentsView
-from .shared.operate_msg import CurrentAddNodeMsg
-from .shared.switch_slider import AddSwitchSlider
+from ..shared.buttons import OperateButtons
+from ..shared.contents_view import ContentsView
+from ..shared.operate_msg import CurrentAddNodeMsg
+from ..shared.switch_slider import AddSwitchSlider
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import PathType
-
-    from .shared.canvas_ids import CanvasIds
+    from chezmoi_mousse import CanvasIds, PathType
 
 __all__ = ["AddTab", "FilteredDirTree"]
 

@@ -10,9 +10,7 @@ from chezmoi_mousse import AppType, ReadCmd, Tcss, ViewName
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from chezmoi_mousse import CommandResult
-
-    from .canvas_ids import CanvasIds
+    from chezmoi_mousse import CanvasIds, CommandResult
 
 __all__ = ["ContentsView"]
 

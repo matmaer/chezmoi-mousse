@@ -11,7 +11,7 @@ from chezmoi_mousse import Tcss, ViewName
 __all__ = ["InitialHeader", "SectionHeader", "SectionLabel", "SectionSubLabel"]
 
 if TYPE_CHECKING:
-    from .canvas_ids import CanvasIds
+    from chezmoi_mousse import CanvasIds
 
 
 class SectionStrings(StrEnum):

@@ -17,11 +17,11 @@ from chezmoi_mousse import (
     ViewName,
 )
 
-from .shared.buttons import FlatButtonsVertical, FlatLink
-from .shared.section_headers import SectionLabel, SectionSubLabel
+from ..shared.buttons import FlatButtonsVertical, FlatLink
+from ..shared.section_headers import SectionLabel, SectionSubLabel
 
 if TYPE_CHECKING:
-    from .shared.canvas_ids import CanvasIds
+    from chezmoi_mousse import CanvasIds
 
 __all__ = ["HelpTab"]
 

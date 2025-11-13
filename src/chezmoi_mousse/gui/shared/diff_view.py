@@ -9,9 +9,7 @@ from chezmoi_mousse import AppType, CanvasName, Chars, ReadCmd, Tcss, ViewName
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from chezmoi_mousse import AppType, CommandResult
-
-    from .canvas_ids import CanvasIds
+    from chezmoi_mousse import AppType, CanvasIds, CommandResult
 
 __all__ = ["DiffView"]
 

@@ -13,9 +13,7 @@ from chezmoi_mousse import AppType, CanvasName, ReadCmd, Tcss, ViewName
 from .section_headers import InitialHeader
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import CommandResult
-
-    from .canvas_ids import CanvasIds
+    from chezmoi_mousse import CanvasIds, CommandResult
 
     DataTableText = DataTable[Text]
 else:

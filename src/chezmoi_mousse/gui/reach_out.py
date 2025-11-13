@@ -5,11 +5,10 @@ from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.screen import ModalScreen
 
-from chezmoi_mousse import AppType, CanvasName, FlatBtn, LinkBtn
+from chezmoi_mousse import AppType, CanvasIds, CanvasName, FlatBtn, LinkBtn
 
-from .tabs.shared.buttons import FlatButton, FlatLink
-from .tabs.shared.canvas_ids import CanvasIds
-from .tabs.shared.section_headers import SectionLabel, SectionSubLabel
+from .shared.buttons import FlatButton, FlatLink
+from .shared.section_headers import SectionLabel, SectionSubLabel
 
 __all__ = ["ReachOutScreen"]
 
@@ -21,9 +20,9 @@ class IssueStrings(StrEnum):
 
 class ReachOutScreen(ModalScreen[None], AppType):
 
-    def __init__(self) -> None:
-        self.ids = CanvasIds(canvas_name=CanvasName.reach_out_screen)
-        super().__init__()
+    def __init__(self, *, ids: "CanvasIds") -> None:
+        super().__init__(id=CanvasName.reach_out_screen.name)
+        self.ids = ids
 
     def compose(self) -> ComposeResult:
         yield SectionLabel(IssueStrings.top_label)

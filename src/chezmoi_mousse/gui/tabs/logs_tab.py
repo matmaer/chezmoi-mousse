@@ -8,12 +8,12 @@ from textual.widgets import Button, ContentSwitcher
 
 from chezmoi_mousse import AppType, ContainerName, TabBtn, Tcss, ViewName
 
-from .shared.buttons import TabButtons
-from .shared.git_log_view import GitLogView
-from .shared.loggers import AppLog, DebugLog, OutputLog
+from ..shared.buttons import TabButtons
+from ..shared.git_log_view import GitLogView
+from ..shared.loggers import AppLog, DebugLog, OutputLog
 
 if TYPE_CHECKING:
-    from .shared.canvas_ids import CanvasIds
+    from chezmoi_mousse import CanvasIds
 
 __all__ = ["LogsTab"]
 

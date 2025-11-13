@@ -13,9 +13,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable
     from typing import Any
 
-    from chezmoi_mousse import CommandResult
-
-    from .canvas_ids import CanvasIds
+    from chezmoi_mousse import CanvasIds, CommandResult
 
 __all__ = ["AppLog", "DebugLog", "OutputLog"]
 

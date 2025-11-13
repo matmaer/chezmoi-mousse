@@ -1,15 +1,22 @@
+from typing import TYPE_CHECKING
+
 from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.widgets import Static
 
 from chezmoi_mousse import CommandsData
 
-__all__ = ["ChezmoiInit"]
+__all__ = ["InitScreen"]
+
+if TYPE_CHECKING:
+    from chezmoi_mousse import CanvasIds
 
 
-class ChezmoiInit(Screen[None]):
+class InitScreen(Screen[None]):
 
-    def __init__(self, *, commands_data: "CommandsData") -> None:
+    def __init__(
+        self, *, ids: "CanvasIds", commands_data: "CommandsData"
+    ) -> None:
         super().__init__()
         self.commands_data = commands_data
 

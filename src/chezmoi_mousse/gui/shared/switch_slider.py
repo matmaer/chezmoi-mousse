@@ -7,7 +7,7 @@ from textual.widgets import Label, Switch
 from chezmoi_mousse import ContainerName, Switches
 
 if TYPE_CHECKING:
-    from .canvas_ids import CanvasIds
+    from chezmoi_mousse import CanvasIds
 
 __all__ = ["AddSwitchSlider", "ApplySwitchSlider", "ReAddSwitchSlider"]
 

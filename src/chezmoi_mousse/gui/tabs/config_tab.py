@@ -26,13 +26,11 @@ from textual.widgets import (
 
 from chezmoi_mousse import AppType, ContainerName, FlatBtn, Tcss, ViewName
 
-from .shared.buttons import FlatButtonsVertical
-from .shared.section_headers import SectionLabel
+from ..shared.buttons import FlatButtonsVertical
+from ..shared.section_headers import SectionLabel
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import CommandResult
-
-    from .shared.canvas_ids import CanvasIds
+    from chezmoi_mousse import CanvasIds, CommandResult
 
 __all__ = ["ConfigTab", "ConfigTabSwitcher"]
 

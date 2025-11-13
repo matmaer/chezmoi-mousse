@@ -17,8 +17,10 @@ class CanvasName(StrEnum):
     # chezmoi_init = auto() TODO
     config_tab = auto()
     help_tab = auto()
+    init_screen = auto()
     install_help_screen = auto()
     logs_tab = auto()
+    main_screen = auto()
     operate_screen = auto()
     reach_out_screen = auto()
     re_add_tab = auto()

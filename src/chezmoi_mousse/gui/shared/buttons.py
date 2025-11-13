@@ -15,7 +15,7 @@ from chezmoi_mousse import (
 )
 
 if TYPE_CHECKING:
-    from .canvas_ids import CanvasIds
+    from chezmoi_mousse import CanvasIds
 
 
 __all__ = [

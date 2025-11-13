@@ -15,15 +15,13 @@ from chezmoi_mousse import (
     ViewName,
 )
 
-from ..contents_view import ContentsView
-from ..diff_view import DiffView
-from ..git_log_view import GitLogView
-from ..trees import ExpandedTree, ListTree, ManagedTree
+from ...shared.contents_view import ContentsView
+from ...shared.diff_view import DiffView
+from ...shared.git_log_view import GitLogView
+from ...shared.trees import ExpandedTree, ListTree, ManagedTree
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import NodeData
-
-    from ..canvas_ids import CanvasIds
+    from chezmoi_mousse import CanvasIds, NodeData
 
 __all__ = ["ApplyReAddTabsBase"]
 
