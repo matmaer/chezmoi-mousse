@@ -5,10 +5,10 @@ __all__ = ["Switches"]
 
 
 class SwitchNameLabel(StrEnum):
-    expand_all = "expand all dirs"
-    unchanged = "show unchanged files"
-    unmanaged_dirs = "show unmanaged dirs"
-    unwanted = "show unwanted paths"
+    expand_all = "Expand all dirs"
+    unchanged = "Show unchanged files"
+    unmanaged_dirs = "Show unmanaged dirs"
+    unwanted = "Show unwanted paths"
 
 
 @dataclass(frozen=True, slots=True)
