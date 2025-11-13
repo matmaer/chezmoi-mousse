@@ -122,9 +122,6 @@
   }
   &.install_help {
     border-bottom: $primary;
-    & Collapsible {
-      border-top: none;
-    }
     & VerticalGroup {
       margin-left: 1;
       width: 22;
@@ -352,17 +349,11 @@ Switch {
 }
 
 TabbedContent {
-  /* don't support anything smaller */
-  min-height: 20;
   /* center the tab buttons on top */
   & #tabs-list {
-    width: auto;
     align: center top;
   }
   & Tab {
-    margin: 0 2;
-  }
-  & Tabs {
     margin: 0 2;
   }
 }
