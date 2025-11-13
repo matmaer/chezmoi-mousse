@@ -33,6 +33,12 @@ class HelpTabSections(StrEnum):
     chezmoi_diagram = "chezmoi diagram"
 
 
+class ToolTipText(Static):
+
+    def on_mount(self) -> None:
+        self.styles.margin = (1, 2, 1, 2)
+
+
 class SharedBtnHelp(Vertical):
 
     def __init__(self, ids: "CanvasIds") -> None:
@@ -41,18 +47,18 @@ class SharedBtnHelp(Vertical):
 
     def compose(self) -> ComposeResult:
         yield SectionSubLabel(OperateBtn.forget_path.label(PathType.FILE))
-        yield Static(OperateBtn.forget_path.file_tooltip)
+        yield ToolTipText(OperateBtn.forget_path.file_tooltip)
 
         yield SectionSubLabel(OperateBtn.forget_path.label(PathType.DIR))
-        yield Static(OperateBtn.forget_path.dir_tooltip)
+        yield ToolTipText(OperateBtn.forget_path.dir_tooltip)
 
         yield FlatLink(ids=self.ids, link_enum=LinkBtn.chezmoi_forget)
 
         yield SectionSubLabel(OperateBtn.destroy_path.label(PathType.FILE))
-        yield Static(OperateBtn.destroy_path.file_tooltip)
+        yield ToolTipText(OperateBtn.destroy_path.file_tooltip)
 
         yield SectionSubLabel(OperateBtn.destroy_path.label(PathType.DIR))
-        yield Static(OperateBtn.destroy_path.dir_tooltip)
+        yield ToolTipText(OperateBtn.destroy_path.dir_tooltip)
 
         yield FlatLink(ids=self.ids, link_enum=LinkBtn.chezmoi_destroy)
 
@@ -66,10 +72,10 @@ class SharedFiltersHelp(Vertical):
         yield SectionLabel(HelpTabSections.available_switches)
 
         yield SectionSubLabel(Switches.unchanged.label)
-        yield Static(Switches.unchanged.enabled_tooltip)
+        yield ToolTipText(Switches.unchanged.enabled_tooltip)
 
         yield SectionSubLabel(Switches.expand_all.label)
-        yield Static(Switches.expand_all.enabled_tooltip)
+        yield ToolTipText(Switches.expand_all.enabled_tooltip)
 
     def on_mount(self) -> None:
         self.styles.height = "auto"
@@ -90,10 +96,10 @@ class ApplyTabHelp(ScrollableContainer):
         yield SectionLabel(HelpTabSections.available_buttons)
 
         yield SectionSubLabel(OperateBtn.apply_path.label(PathType.FILE))
-        yield Static(OperateBtn.apply_path.file_tooltip)
+        yield ToolTipText(OperateBtn.apply_path.file_tooltip)
 
         yield SectionSubLabel(OperateBtn.apply_path.label(PathType.DIR))
-        yield Static(OperateBtn.apply_path.dir_tooltip)
+        yield ToolTipText(OperateBtn.apply_path.dir_tooltip)
 
         yield FlatLink(ids=self.ids, link_enum=LinkBtn.chezmoi_apply)
         yield SharedBtnHelp(ids=self.ids)
@@ -114,10 +120,10 @@ class ReAddTabHelp(ScrollableContainer):
         yield SectionLabel(HelpTabSections.available_buttons)
 
         yield SectionSubLabel(OperateBtn.re_add_path.label(PathType.FILE))
-        yield Static(OperateBtn.re_add_path.file_tooltip)
+        yield ToolTipText(OperateBtn.re_add_path.file_tooltip)
 
         yield SectionSubLabel(OperateBtn.re_add_path.label(PathType.DIR))
-        yield Static(OperateBtn.re_add_path.dir_tooltip)
+        yield ToolTipText(OperateBtn.re_add_path.dir_tooltip)
 
         yield FlatLink(ids=self.ids, link_enum=LinkBtn.chezmoi_re_add)
         yield SharedBtnHelp(ids=self.ids)
@@ -133,18 +139,18 @@ class AddTabHelp(ScrollableContainer):
         yield SectionLabel(HelpTabSections.available_switches)
 
         yield SectionSubLabel(Switches.unmanaged_dirs.label)
-        yield Static(Switches.unmanaged_dirs.enabled_tooltip)
+        yield ToolTipText(Switches.unmanaged_dirs.enabled_tooltip)
 
         yield SectionSubLabel(Switches.unwanted.label)
-        yield Static(Switches.unwanted.enabled_tooltip)
+        yield ToolTipText(Switches.unwanted.enabled_tooltip)
 
         yield SectionLabel(HelpTabSections.available_buttons)
 
         yield SectionSubLabel(OperateBtn.add_file.label())
-        yield Static(OperateBtn.add_file.enabled_tooltip)
+        yield ToolTipText(OperateBtn.add_file.enabled_tooltip)
 
         yield SectionSubLabel(OperateBtn.add_dir.label())
-        yield Static(OperateBtn.add_dir.enabled_tooltip)
+        yield ToolTipText(OperateBtn.add_dir.enabled_tooltip)
 
         yield FlatLink(ids=self.ids, link_enum=LinkBtn.chezmoi_add)
 
