@@ -58,24 +58,19 @@
 
 .section_header {
   background-tint: $surface-lighten-1;
-  background: $surface-lighten-1;
-  border-bottom: inner $surface-lighten-1;
-  border-top: inner $surface-lighten-1;
+  background: $background;
+  height: auto;
   padding: 0 1;
   text-align: center;
   width: 100%;
-  &SectionLabel
-  {
+  &SectionLabel {
+    border-bottom: inner $surface-lighten-1;
+    border-top: inner $surface-lighten-1;
     color: $text-accent;
+    height: 3;
   }
-  &SectionSubLabel
-  {
-    border: none;
+  &SectionSubLabel {
     color: $text-success;
-  }
-  &.rich_header {
-    height: auto;
-    overflow: hidden;
   }
 }
 
