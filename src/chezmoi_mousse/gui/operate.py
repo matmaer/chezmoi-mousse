@@ -23,8 +23,8 @@ from .reactive_header import ReactiveHeader
 from .shared.buttons import OperateButtons
 from .shared.contents_view import ContentsView
 from .shared.diff_view import DiffView
-from .shared.loggers import OutputLog
 from .shared.section_headers import SectionLabel
+from .tabs.logs_tab import OutputLog
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds, CommandResult
