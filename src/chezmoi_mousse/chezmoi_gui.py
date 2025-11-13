@@ -10,8 +10,8 @@ from textual.binding import Binding
 from textual.scrollbar import ScrollBar, ScrollBarRender
 from textual.theme import Theme
 
-from chezmoi_mousse import CanvasName, Chars
-from chezmoi_mousse._canvas_ids import CanvasIds
+from chezmoi_mousse import CanvasIds, CanvasName, Chars
+from chezmoi_mousse.shared import ContentsView
 
 from .gui.chezmoi_init import InitScreen
 from .gui.install_help import InstallHelp
@@ -19,7 +19,6 @@ from .gui.main_screen import MainScreen
 from .gui.operate import OperateInfo
 from .gui.reach_out import ReachOutScreen
 from .gui.reactive_header import ReactiveHeader
-from .gui.shared.contents_view import ContentsView
 from .gui.shared.diff_view import DiffView
 from .gui.shared.git_log_view import GitLogView
 from .gui.splash import LoadingScreen

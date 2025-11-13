@@ -21,10 +21,12 @@ from chezmoi_mousse import (
     TreeName,
     ViewName,
 )
-from chezmoi_mousse.shared.switch_slider import SwitchSliderBase
+from chezmoi_mousse.shared import (
+    ContentsView,
+    OperateButtons,
+    SwitchSliderBase,
+)
 
-from ...shared.buttons import OperateButtons
-from ..shared.contents_view import ContentsView
 from ..shared.operate_msg import CurrentAddNodeMsg
 
 if TYPE_CHECKING:
