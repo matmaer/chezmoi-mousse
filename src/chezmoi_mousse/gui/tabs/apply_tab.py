@@ -5,8 +5,8 @@ from textual.app import ComposeResult
 from textual.widgets import Button
 
 from chezmoi_mousse import OperateBtn
+from chezmoi_mousse.shared import OperateButtons
 
-from ..shared.buttons import OperateButtons
 from ..shared.operate_msg import CurrentApplyNodeMsg
 from .shared.switch_slider import SwitchSlider
 from .shared.switchers import TreeSwitcher, ViewSwitcher

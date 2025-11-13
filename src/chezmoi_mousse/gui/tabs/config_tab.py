@@ -25,8 +25,8 @@ from textual.widgets import (
 )
 
 from chezmoi_mousse import AppType, ContainerName, FlatBtn, Tcss, ViewName
+from chezmoi_mousse.shared import FlatButtonsVertical
 
-from ..shared.buttons import FlatButtonsVertical
 from ..shared.section_headers import SectionLabel
 
 if TYPE_CHECKING:

@@ -6,7 +6,7 @@ from textual.widgets import Button
 
 from chezmoi_mousse import OperateBtn
 
-from ..shared.buttons import OperateButtons
+from ...shared.buttons import OperateButtons
 from ..shared.operate_msg import CurrentReAddNodeMsg
 from .shared.switch_slider import SwitchSlider
 from .shared.switchers import TreeSwitcher, ViewSwitcher

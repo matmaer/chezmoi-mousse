@@ -16,8 +16,8 @@ from chezmoi_mousse import (
     Tcss,
     ViewName,
 )
+from chezmoi_mousse.shared import FlatButtonsVertical, FlatLink
 
-from ..shared.buttons import FlatButtonsVertical, FlatLink
 from ..shared.section_headers import SectionLabel, SectionSubLabel
 
 if TYPE_CHECKING:

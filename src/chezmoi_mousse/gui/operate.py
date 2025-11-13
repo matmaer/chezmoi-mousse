@@ -18,9 +18,9 @@ from chezmoi_mousse import (
     ViewName,
     WriteCmd,
 )
+from chezmoi_mousse.shared import OperateButtons
 
 from .reactive_header import ReactiveHeader
-from .shared.buttons import OperateButtons
 from .shared.contents_view import ContentsView
 from .shared.diff_view import DiffView
 from .shared.section_headers import SectionLabel

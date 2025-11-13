@@ -14,7 +14,7 @@ from textual.widgets import Button, Collapsible, Pretty, Tree
 
 from chezmoi_mousse import AppType, CanvasName, Chars, FlatBtn, LinkBtn, Tcss
 
-from .shared.buttons import FlatButton, FlatLink
+from ..shared.buttons import FlatButton, FlatLink
 from .shared.section_headers import SectionLabel
 
 if TYPE_CHECKING:

@@ -23,7 +23,7 @@ from chezmoi_mousse import (
 )
 from chezmoi_mousse.shared.switch_slider import SwitchSliderBase
 
-from ..shared.buttons import OperateButtons
+from ...shared.buttons import OperateButtons
 from ..shared.contents_view import ContentsView
 from ..shared.operate_msg import CurrentAddNodeMsg
 
