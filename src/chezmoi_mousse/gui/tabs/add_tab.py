@@ -21,11 +21,11 @@ from chezmoi_mousse import (
     TreeName,
     ViewName,
 )
+from chezmoi_mousse.base.switch_slider import SwitchSliderBase
 
 from ..shared.buttons import OperateButtons
 from ..shared.contents_view import ContentsView
 from ..shared.operate_msg import CurrentAddNodeMsg
-from ..shared.switch_slider import SwitchSliderBase
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds, PathType
@@ -106,7 +106,7 @@ class UnwantedFileExtensions(StrEnum):
     zip = ".zip"
 
 
-class AddSwitchSlider(SwitchSliderBase):
+class SwitchSlider(SwitchSliderBase):
     def __init__(self, *, ids: "CanvasIds") -> None:
         self.ids = ids
         super().__init__(
@@ -275,7 +275,7 @@ class AddTab(Horizontal, AppType):
         yield OperateButtons(
             ids=self.ids, buttons=(OperateBtn.add_file, OperateBtn.add_dir)
         )
-        yield AddSwitchSlider(ids=self.ids)
+        yield SwitchSlider(ids=self.ids)
 
     def update_buttons(self, is_dir: bool) -> None:
         add_file_button = self.query_one(self.add_file_btn_qid, Button)
