@@ -22,10 +22,10 @@ from .gui.reactive_header import ReactiveHeader
 from .gui.shared.contents_view import ContentsView
 from .gui.shared.diff_view import DiffView
 from .gui.shared.git_log_view import GitLogView
-from .gui.shared.trees import TreeBase
 from .gui.splash import LoadingScreen
 from .gui.tabs.add_tab import AddTab
 from .gui.tabs.shared.switchers import ViewSwitcher
+from .gui.tabs.shared.trees import TreeBase
 
 if TYPE_CHECKING:
     from chezmoi_mousse import Chezmoi, CommandsData, PreRunData

@@ -18,15 +18,15 @@ from chezmoi_mousse import (
 from ...shared.contents_view import ContentsView
 from ...shared.diff_view import DiffView
 from ...shared.git_log_view import GitLogView
-from ...shared.trees import ExpandedTree, ListTree, ManagedTree
+from .trees import ExpandedTree, ListTree, ManagedTree
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds, NodeData
 
-__all__ = ["ApplyReAddTabsBase"]
+__all__ = ["TabHorizontal"]
 
 
-class ApplyReAddTabsBase(Horizontal):
+class TabHorizontal(Horizontal):
 
     def __init__(self, *, ids: "CanvasIds") -> None:
         super().__init__(id=ids.tab_container_id)

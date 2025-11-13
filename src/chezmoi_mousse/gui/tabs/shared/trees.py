@@ -20,7 +20,7 @@ from chezmoi_mousse import (
     TreeName,
 )
 
-from .operate_msg import CurrentApplyNodeMsg, CurrentReAddNodeMsg
+from ...shared.operate_msg import CurrentApplyNodeMsg, CurrentReAddNodeMsg
 
 if TYPE_CHECKING:
 

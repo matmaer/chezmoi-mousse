@@ -11,7 +11,7 @@ from ...shared.buttons import TabButtons
 from ...shared.contents_view import ContentsView
 from ...shared.diff_view import DiffView
 from ...shared.git_log_view import GitLogView
-from ...shared.trees import ExpandedTree, ListTree, ManagedTree
+from .trees import ExpandedTree, ListTree, ManagedTree
 
 if TYPE_CHECKING:
     from pathlib import Path

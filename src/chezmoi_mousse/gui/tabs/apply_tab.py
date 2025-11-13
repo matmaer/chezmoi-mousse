@@ -10,7 +10,7 @@ from ..shared.buttons import OperateButtons
 from ..shared.operate_msg import CurrentApplyNodeMsg
 from .shared.switch_slider import SwitchSlider
 from .shared.switchers import TreeSwitcher, ViewSwitcher
-from .shared.tabs_base import ApplyReAddTabsBase
+from .shared.tab_horizontal import TabHorizontal
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds
@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 __all__ = ["ApplyTab"]
 
 
-class ApplyTab(ApplyReAddTabsBase):
+class ApplyTab(TabHorizontal):
 
     def __init__(self, ids: "CanvasIds") -> None:
         self.ids = ids

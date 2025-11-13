@@ -28,13 +28,13 @@ from .shared.operate_msg import (
     CurrentApplyNodeMsg,
     CurrentReAddNodeMsg,
 )
-from .shared.trees import ExpandedTree, ListTree, ManagedTree
 from .tabs.add_tab import AddTab, FilteredDirTree
 from .tabs.apply_tab import ApplyTab
 from .tabs.config_tab import ConfigTab, ConfigTabSwitcher
 from .tabs.help_tab import HelpTab
 from .tabs.logs_tab import AppLog, DebugLog, LogsTab, OutputLog
 from .tabs.re_add_tab import ReAddTab
+from .tabs.shared.trees import ExpandedTree, ListTree, ManagedTree
 
 if TYPE_CHECKING:
     from chezmoi_mousse import (
