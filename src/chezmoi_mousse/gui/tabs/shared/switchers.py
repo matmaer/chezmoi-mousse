@@ -6,9 +6,8 @@ from textual.containers import Vertical
 from textual.widgets import Button, ContentSwitcher
 
 from chezmoi_mousse import ContainerName, TabBtn, Tcss, TreeName, ViewName
-from chezmoi_mousse.shared import ContentsView, TabButtons
+from chezmoi_mousse.shared import ContentsView, DiffView, TabButtons
 
-from ...shared.diff_view import DiffView
 from ...shared.git_log_view import GitLogView
 from .trees import ExpandedTree, ListTree, ManagedTree
 

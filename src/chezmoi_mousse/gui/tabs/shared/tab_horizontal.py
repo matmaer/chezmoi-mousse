@@ -14,9 +14,8 @@ from chezmoi_mousse import (
     TreeName,
     ViewName,
 )
-from chezmoi_mousse.shared import ContentsView
+from chezmoi_mousse.shared import ContentsView, DiffView
 
-from ...shared.diff_view import DiffView
 from ...shared.git_log_view import GitLogView
 from .trees import ExpandedTree, ListTree, ManagedTree
 
