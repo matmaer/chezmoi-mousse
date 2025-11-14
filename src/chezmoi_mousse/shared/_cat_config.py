@@ -5,7 +5,8 @@ from textual.containers import ScrollableContainer, Vertical
 from textual.widgets import Pretty
 
 from chezmoi_mousse import ViewName
-from chezmoi_mousse.shared import MainSectionLabelText, SectionLabel
+
+from ._section_headers import MainSectionLabelText, SectionLabel
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds

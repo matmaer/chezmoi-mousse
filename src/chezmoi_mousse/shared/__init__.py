@@ -21,7 +21,6 @@ from ._section_headers import (
     InitialHeader,
     MainSectionLabelText,
     SectionLabel,
-    SectionStrings,
     SectionSubLabel,
 )
 
@@ -41,7 +40,6 @@ __all__ = [
     "MainSectionLabelText",
     "OperateButtons",
     "SectionLabel",
-    "SectionStrings",
     "SectionSubLabel",
     "TabButtons",
 ]
