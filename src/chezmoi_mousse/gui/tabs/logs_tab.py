@@ -265,14 +265,6 @@ class OperateLog(LoggersBase, AppType):
             max_lines=10000,
         )
 
-    def _trim_stdout(self, stdout: str):
-        # remove trailing and leading new lines but NOT leading whitespace
-        stripped = stdout.lstrip("\n").rstrip()
-        # remove intermediate empty lines
-        return "\n".join(
-            [line for line in stripped.splitlines() if line.strip() != ""]
-        )
-
     def log_cmd_results(self, command_result: "CommandResult") -> None:
         if ReadVerbs.verify.value in command_result.cmd_args:
             return
@@ -300,14 +292,6 @@ class ReadCmdLog(LoggersBase, AppType):
             id=self.ids.view_id(view=self.view_name),
             markup=True,
             max_lines=10000,
-        )
-
-    def _trim_stdout(self, stdout: str):
-        # remove trailing and leading new lines but NOT leading whitespace
-        stripped = stdout.lstrip("\n").rstrip()
-        # remove intermediate empty lines
-        return "\n".join(
-            [line for line in stripped.splitlines() if line.strip() != ""]
         )
 
     def log_cmd_results(self, command_result: "CommandResult") -> None:
