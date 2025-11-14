@@ -9,6 +9,7 @@ from ._buttons import (
 )
 from ._contents_view import ContentsView
 from ._diff_view import DiffView
+from ._doctor_table import DoctorTable
 from ._git_log_view import GitLogView
 from ._operate_msg import (
     CurrentAddNodeMsg,
@@ -28,6 +29,7 @@ __all__ = [
     "CurrentApplyNodeMsg",
     "CurrentReAddNodeMsg",
     "DiffView",
+    "DoctorTable",
     "FlatButton",
     "FlatButtonsVertical",
     "FlatLink",
