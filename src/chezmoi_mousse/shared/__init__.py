@@ -24,6 +24,7 @@ from ._section_headers import (
     SectionLabel,
     SectionSubLabel,
 )
+from ._template_data import TemplateDataOutput
 
 __all__ = [
     "CatConfigOutput",
@@ -44,4 +45,5 @@ __all__ = [
     "SectionLabel",
     "SectionSubLabel",
     "TabButtons",
+    "TemplateDataOutput",
 ]

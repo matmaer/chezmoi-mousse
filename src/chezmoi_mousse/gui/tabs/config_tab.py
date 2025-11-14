@@ -29,6 +29,7 @@ from chezmoi_mousse.shared import (
     FlatButtonsVertical,
     MainSectionLabelText,
     SectionLabel,
+    TemplateDataOutput,
 )
 
 if TYPE_CHECKING:
@@ -162,11 +163,7 @@ class ConfigTabSwitcher(ContentSwitcher):
             Pretty("<ignored>", id=ViewName.pretty_ignored_view),
             id=self.ids.view_id(view=ViewName.git_ignored_view),
         )
-        yield ScrollableContainer(
-            SectionLabel(MainSectionLabelText.template_data_output),
-            Pretty("<template_data>", id=ViewName.pretty_template_data_view),
-            id=self.ids.view_id(view=ViewName.template_data_view),
-        )
+        yield TemplateDataOutput(ids=self.ids)
 
     def watch_doctor_results(self):
         doctor_table = self.query_one(self.doctor_table_qid, DoctorTable)
