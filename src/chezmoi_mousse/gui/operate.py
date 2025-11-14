@@ -20,12 +20,12 @@ from chezmoi_mousse.shared import (
     ContentsView,
     DiffView,
     OperateButtons,
-    OperateInfo,
     SectionLabel,
     SectionStrings,
 )
 
 from .reactive_header import ReactiveHeader
+from .tabs.common.operate_info import OperateInfo
 from .tabs.logs_tab import OutputLog
 
 if TYPE_CHECKING:

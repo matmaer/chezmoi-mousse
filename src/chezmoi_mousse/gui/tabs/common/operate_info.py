@@ -1,3 +1,6 @@
+"""Contains subclassed textual classes shared between the AddTab, ApplyTab and
+ReAddTab."""
+
 from enum import StrEnum
 from typing import TYPE_CHECKING
 

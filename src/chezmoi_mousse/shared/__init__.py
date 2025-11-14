@@ -10,7 +10,6 @@ from ._buttons import (
 from ._contents_view import ContentsView
 from ._diff_view import DiffView
 from ._git_log_view import GitLogView
-from ._operate_info import OperateInfo
 from ._operate_msg import (
     CurrentAddNodeMsg,
     CurrentApplyNodeMsg,
@@ -35,7 +34,6 @@ __all__ = [
     "GitLogView",
     "InitialHeader",
     "OperateButtons",
-    "OperateInfo",
     "SectionLabel",
     "SectionStrings",
     "SectionSubLabel",
