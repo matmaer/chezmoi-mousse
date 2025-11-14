@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 from chezmoi_mousse import Switches
-from chezmoi_mousse.shared.switch_slider import SwitchSliderBase
+from chezmoi_mousse.shared import SwitchSliderBase
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds

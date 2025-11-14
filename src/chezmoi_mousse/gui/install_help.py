@@ -13,9 +13,7 @@ from textual.screen import Screen
 from textual.widgets import Button, Collapsible, Pretty, Tree
 
 from chezmoi_mousse import AppType, CanvasName, Chars, FlatBtn, LinkBtn, Tcss
-from chezmoi_mousse.shared import FlatButton, FlatLink
-
-from ..shared.section_headers import SectionLabel
+from chezmoi_mousse.shared import FlatButton, FlatLink, SectionLabel
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds

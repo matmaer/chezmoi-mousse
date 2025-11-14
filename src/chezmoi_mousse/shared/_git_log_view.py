@@ -10,7 +10,7 @@ from textual.widgets import DataTable
 
 from chezmoi_mousse import AppType, CanvasName, ReadCmd, Tcss, ViewName
 
-from .section_headers import InitialHeader
+from ._section_headers import InitialHeader
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds, CommandResult
