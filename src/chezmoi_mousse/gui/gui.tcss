@@ -181,6 +181,7 @@ ReactiveHeader {
 ReadOutputCollapsible {
   border: none;
   padding: 0;
+  margin-right: 2;
   & .green_title {
     color: $text-success;
   }
