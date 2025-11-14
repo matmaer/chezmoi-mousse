@@ -13,7 +13,7 @@ from textual.theme import Theme
 from chezmoi_mousse import CanvasIds, CanvasName, Chars
 from chezmoi_mousse.shared import ContentsView, DiffView, GitLogView
 
-from .gui.chezmoi_init import InitScreen
+from .gui.init_screen import InitScreen
 from .gui.install_help import InstallHelp
 from .gui.main_screen import MainScreen
 from .gui.operate import OperateInfo
