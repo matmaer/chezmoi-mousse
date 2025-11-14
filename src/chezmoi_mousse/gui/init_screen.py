@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING
 
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import ScrollableContainer, Vertical
+from textual.containers import Horizontal, ScrollableContainer, Vertical
 from textual.screen import Screen
 from textual.widgets import Button, ContentSwitcher, Footer, Pretty
 
@@ -21,6 +21,7 @@ from chezmoi_mousse.shared import (
     MainSectionLabelText,
     ReactiveHeader,
     SectionLabel,
+    TemplateDataOutput,
 )
 
 __all__ = ["InitScreen"]
@@ -51,11 +52,19 @@ class InitSwitcher(ContentSwitcher):
             DoctorTable(ids=self.ids),
         )
         yield CatConfigOutput(ids=self.ids)
-        yield ScrollableContainer(
-            SectionLabel(MainSectionLabelText.template_data_output),
-            Pretty("<template_data>", id=ViewName.pretty_template_data_view),
-            id=self.ids.view_id(view=ViewName.template_data_view),
+        yield TemplateDataOutput(ids=self.ids)
+
+    def on_mount(self) -> None:
+        pretty_cat_config = self.query_one(
+            f"#{ViewName.pretty_cat_config_view}", Pretty
         )
+        pretty_cat_config.update(
+            self.splash_data.cat_config.std_out.splitlines()
+        )
+        pretty_template_data = self.query_one(
+            f"#{ViewName.pretty_template_data_view}", Pretty
+        )
+        pretty_template_data.update(self.splash_data.template_data.std_out)
 
 
 class InitScreen(Screen[None], AppType):
@@ -74,28 +83,25 @@ class InitScreen(Screen[None], AppType):
         self.cat_config_view_id = self.ids.view_id(
             view=ViewName.cat_config_view
         )
+        self.template_data_stdout = self.splash_data.template_data.std_out
 
     def compose(self) -> ComposeResult:
         yield ReactiveHeader(self.app.init_screen_ids)
-        with Vertical(
-            id=self.tab_vertical_id, classes=Tcss.tab_left_vertical.name
-        ):
-            yield FlatButtonsVertical(
-                ids=self.ids,
-                buttons=(
-                    FlatBtn.doctor,
-                    FlatBtn.cat_config,
-                    FlatBtn.template_data,
-                ),
-            )
-        yield InitSwitcher(ids=self.ids, splash_data=self.splash_data)
+        with Horizontal(id=self.ids.tab_container_id):
+            with Vertical(
+                id=self.tab_vertical_id, classes=Tcss.tab_left_vertical.name
+            ):
+                yield FlatButtonsVertical(
+                    ids=self.ids,
+                    buttons=(
+                        FlatBtn.doctor,
+                        FlatBtn.cat_config,
+                        FlatBtn.template_data,
+                    ),
+                )
+            with Vertical():
+                yield InitSwitcher(ids=self.ids, splash_data=self.splash_data)
         yield Footer()
-
-    def on_mount(self) -> None:
-        pretty_cat_config = self.query_one(
-            f"#{ViewName.pretty_cat_config_view}", Pretty
-        )
-        pretty_cat_config.update(self.cat_config_defaults.splitlines())
 
     @on(Button.Pressed, Tcss.flat_button.value)
     def switch_content(self, event: Button.Pressed) -> None:
@@ -108,3 +114,7 @@ class InitScreen(Screen[None], AppType):
         )
         if event.button.id == self.cat_config_btn_id:
             switcher.current = self.cat_config_view_id
+        elif event.button.id == self.ids.button_id(btn=FlatBtn.template_data):
+            switcher.current = self.ids.view_id(
+                view=ViewName.template_data_view
+            )
