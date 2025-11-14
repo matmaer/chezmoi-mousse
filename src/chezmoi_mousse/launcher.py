@@ -15,7 +15,12 @@ def run_app():
         shutil.which("chezmoi") is not None
         and os.environ.get("PRETEND_CHEZMOI_NOT_FOUND") != "1"
     )
-    pre_run_data = PreRunData(chezmoi_found=chezmoi_found, dev_mode=dev_mode)
+    pretend_init_needed = os.environ.get("PRETEND_CHEZMOI_INIT_NEEDED") == "1"
+    pre_run_data = PreRunData(
+        chezmoi_found=chezmoi_found,
+        dev_mode=dev_mode,
+        launch_init_screen=pretend_init_needed,
+    )
 
     if dev_mode is True:
         src_dir = Path(__file__).parent.parent

@@ -123,6 +123,7 @@ class OperateScreenData:
 class PreRunData:
     chezmoi_found: "bool"
     dev_mode: "bool"
+    launch_init_screen: "bool"
 
 
 try:

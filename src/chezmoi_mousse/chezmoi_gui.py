@@ -17,7 +17,6 @@ from .gui.chezmoi_init import InitScreen
 from .gui.install_help import InstallHelp
 from .gui.main_screen import MainScreen
 from .gui.operate import OperateInfo
-from .gui.reach_out import ReachOutScreen
 from .gui.reactive_header import ReactiveHeader
 from .gui.splash import LoadingScreen
 from .gui.tabs.add_tab import AddTab
@@ -77,8 +76,7 @@ class ChezmoiGUI(App[None]):
         self.changes_enabled = False
         self.chezmoi_found = self.pre_run_data.chezmoi_found
         self.dev_mode = self.pre_run_data.dev_mode
-        self.pretend_issue_found = False
-        self.pretend_init_needed = False
+        self.launch_init_screen = self.pre_run_data.launch_init_screen
 
         # Construct the ids for each screen
         self.init_screen_ids = CanvasIds(canvas_name=CanvasName.init_screen)
@@ -87,7 +85,7 @@ class ChezmoiGUI(App[None]):
         )
         self.main_screen_ids = CanvasIds(CanvasName.main_screen)
         self.op_screen_ids = CanvasIds(CanvasName.operate_screen)
-        self.reach_out_screen_ids = CanvasIds(
+        self.issue_screen_ids = CanvasIds(
             canvas_name=CanvasName.reach_out_screen
         )
 
@@ -118,18 +116,13 @@ class ChezmoiGUI(App[None]):
         if return_data is None:
             self.push_screen(InstallHelp(ids=self.install_help_screen_ids))
             return
-        # self.pretend_init_needed = True
         if (
-            self.pretend_init_needed is True
+            self.launch_init_screen is True
             or return_data.cat_config.returncode != 0
         ):
             self.push_screen(
                 InitScreen(ids=self.init_screen_ids, commands_data=return_data)
             )
-            return
-        # self.pretend_issue_found = True
-        if self.pretend_issue_found is True:
-            self.push_screen(ReachOutScreen(ids=self.reach_out_screen_ids))
             return
 
         dest_dir = return_data.parsed_config.dest_dir
