@@ -16,10 +16,10 @@ from chezmoi_mousse.shared import ContentsView, DiffView, GitLogView
 from .init_screen import InitScreen
 from .install_help import InstallHelp
 from .main_screen import MainScreen
-from .operate import OperateInfo
 from .reactive_header import ReactiveHeader
 from .splash import LoadingScreen
 from .tabs.add_tab import AddTab
+from .tabs.common.operate_info import OperateInfo
 from .tabs.common.switchers import ViewSwitcher
 from .tabs.common.trees import TreeBase
 
