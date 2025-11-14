@@ -30,7 +30,7 @@ __all__ = ["TabHorizontal"]
 class TabHorizontal(Horizontal):
 
     def __init__(self, *, ids: "CanvasIds") -> None:
-        super().__init__(id=ids.tab_container_id)
+        super().__init__(id=ids.canvas_container_id)
 
         self.ids = ids
         self.expand_all_state = False

@@ -207,7 +207,7 @@ class ConfigTab(Horizontal, AppType):
 
     def __init__(self, ids: "CanvasIds") -> None:
         self.ids = ids
-        super().__init__(id=self.ids.tab_container_id)
+        super().__init__(id=self.ids.canvas_container_id)
 
         self.tab_vertical_id = ids.tab_vertical_id(
             name=ContainerName.left_side

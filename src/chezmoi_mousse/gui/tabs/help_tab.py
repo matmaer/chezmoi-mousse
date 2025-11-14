@@ -213,7 +213,7 @@ class HelpTab(Horizontal):
 
     def __init__(self, ids: "CanvasIds") -> None:
         self.ids = ids
-        super().__init__(id=ids.tab_container_id)
+        super().__init__(id=ids.canvas_container_id)
 
         # Content Switcher IDs
         self.content_switcher_id = self.ids.content_switcher_id(

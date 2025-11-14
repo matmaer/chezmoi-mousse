@@ -87,7 +87,7 @@ class InitScreen(Screen[None], AppType):
 
     def compose(self) -> ComposeResult:
         yield ReactiveHeader(self.app.init_screen_ids)
-        with Horizontal(id=self.ids.tab_container_id):
+        with Horizontal(id=self.ids.canvas_container_id):
             with Vertical(
                 id=self.tab_vertical_id, classes=Tcss.tab_left_vertical.name
             ):

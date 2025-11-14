@@ -10,11 +10,11 @@ __all__ = ["CanvasIds"]
 
 class CanvasIds:
     __slots__ = (
+        "canvas_container_id",
         "canvas_name",
         "header_id",
         "listview_id",
         "listview_qid",
-        "tab_container_id",
     )
 
     def __init__(self, canvas_name: CanvasName) -> None:
@@ -22,7 +22,7 @@ class CanvasIds:
         self.header_id = f"{self.canvas_name}_header"
         self.listview_id = f"{canvas_name}_listview"
         self.listview_qid = f"#{canvas_name}_listview"
-        self.tab_container_id = f"{canvas_name}_container_id"
+        self.canvas_container_id = f"{canvas_name}_container_id"
 
     def button_id(
         self, qid: str = "", *, btn: FlatBtn | LinkBtn | OperateBtn | TabBtn
