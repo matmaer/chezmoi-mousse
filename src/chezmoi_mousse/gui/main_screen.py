@@ -37,12 +37,7 @@ from .tabs.logs_tab import AppLog, DebugLog, LogsTab, OutputLog
 from .tabs.re_add_tab import ReAddTab
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import (
-        CanvasIds,
-        CommandsData,
-        DirTreeNodeData,
-        NodeData,
-    )
+    from chezmoi_mousse import CanvasIds, DirTreeNodeData, NodeData, SplashData
 
 __all__ = ["MainScreen"]
 
@@ -74,7 +69,7 @@ class MainScreen(Screen[None], AppType):
     destDir: Path | None = None
 
     def __init__(
-        self, *, ids: "CanvasIds", commands_data: "CommandsData"
+        self, *, ids: "CanvasIds", commands_data: "SplashData"
     ) -> None:
         super().__init__()
 
@@ -190,12 +185,12 @@ class MainScreen(Screen[None], AppType):
             self.notify('Running in "dev mode"', severity="information")
         self.handle_commands_data(self.commands_data)
 
-    def handle_commands_data(self, data: "CommandsData") -> None:
+    def handle_commands_data(self, data: "SplashData") -> None:
         self.populate_trees(commands_data=data)
         self.update_config_tab_outputs(data)
 
     def populate_trees(
-        self, commands_data: "CommandsData | None" = None
+        self, commands_data: "SplashData | None" = None
     ) -> None:
         if commands_data is None:
             self.app.chezmoi.update_managed_paths()
@@ -231,7 +226,7 @@ class MainScreen(Screen[None], AppType):
         re_add_tab_expanded_tree.populate_tree()
         re_add_tab_flat_tree.populate_tree()
 
-    def update_config_tab_outputs(self, data: "CommandsData") -> None:
+    def update_config_tab_outputs(self, data: "SplashData") -> None:
         config_tab_switcher = self.screen.query_one(
             self.app.config_tab_ids.content_switcher_id(
                 "#", name=ContainerName.config_switcher

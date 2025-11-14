@@ -20,9 +20,9 @@ from chezmoi_mousse import (
     AppType,
     Chezmoi,
     CommandResult,
-    CommandsData,
     ParsedConfig,
     ReadCmd,
+    SplashData,
     VerbArgs,
 )
 
@@ -113,7 +113,7 @@ class AnimatedFade(Static):
         return Strip([Segment(SPLASH[y], style=FADE_LINE_STYLES[y])])
 
 
-class LoadingScreen(Screen[CommandsData | None], AppType):
+class LoadingScreen(Screen[SplashData | None], AppType):
 
     def __init__(self, chezmoi_found: bool) -> None:
         self.chezmoi_found = chezmoi_found
@@ -176,7 +176,7 @@ class LoadingScreen(Screen[CommandsData | None], AppType):
                 return
 
             self.dismiss(
-                CommandsData(
+                SplashData(
                     cat_config=globals()["cat_config"],
                     doctor=globals()["doctor"],
                     executed_commands=[

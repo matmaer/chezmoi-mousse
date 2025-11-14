@@ -24,7 +24,7 @@ from .tabs.common.switchers import ViewSwitcher
 from .tabs.common.trees import TreeBase
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import Chezmoi, CommandsData, PreRunData
+    from chezmoi_mousse import Chezmoi, PreRunData, SplashData
 
 __all__ = ["ChezmoiGUI"]
 
@@ -108,7 +108,7 @@ class ChezmoiGUI(App[None]):
         )
 
     def handle_splash_return_data(
-        self, return_data: "CommandsData | None"
+        self, return_data: "SplashData | None"
     ) -> None:
         if return_data is None:
             self.push_screen(InstallHelp(ids=self.install_help_screen_ids))

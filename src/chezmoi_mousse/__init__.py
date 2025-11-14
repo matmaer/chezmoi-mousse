@@ -48,7 +48,7 @@ __all__ = [
     "Chars",
     "Chezmoi",
     "CommandResult",
-    "CommandsData",
+    "SplashData",
     "ContainerName",
     "DirTreeNodeData",
     "FlatBtn",
@@ -75,23 +75,9 @@ __all__ = [
 
 
 @dataclass(slots=True)
-class ParsedConfig:
-    dest_dir: "Path"
-    git_autoadd: "bool"
-    source_dir: "Path"
-    git_autocommit: "bool"
-    git_autopush: "bool"
-
-
-@dataclass(slots=True)
-class CommandsData:
-    cat_config: "CommandResult"
-    doctor: "CommandResult"
-    executed_commands: "list[CommandResult]"
-    ignored: "CommandResult"
-    parsed_config: "ParsedConfig"
-    template_data: "CommandResult"
-    verify: "CommandResult"
+class DirTreeNodeData:
+    path: "Path"
+    path_type: "PathType"
 
 
 @dataclass(slots=True)
@@ -105,12 +91,6 @@ class NodeData:
 
 
 @dataclass(slots=True)
-class DirTreeNodeData:
-    path: "Path"
-    path_type: "PathType"
-
-
-@dataclass(slots=True)
 class OperateScreenData:
     node_data: "NodeData | DirTreeNodeData"
     operate_btn: "OperateBtn"
@@ -119,11 +99,31 @@ class OperateScreenData:
     path: "Path | None" = None
 
 
+@dataclass(slots=True)
+class ParsedConfig:
+    dest_dir: "Path"
+    git_autoadd: "bool"
+    source_dir: "Path"
+    git_autocommit: "bool"
+    git_autopush: "bool"
+
+
 @dataclass(slots=True, frozen=True)
 class PreRunData:
     chezmoi_found: "bool"
     dev_mode: "bool"
     launch_init_screen: "bool"
+
+
+@dataclass(slots=True)
+class SplashData:
+    cat_config: "CommandResult"
+    doctor: "CommandResult"
+    executed_commands: "list[CommandResult]"
+    ignored: "CommandResult"
+    parsed_config: "ParsedConfig"
+    template_data: "CommandResult"
+    verify: "CommandResult"
 
 
 try:
