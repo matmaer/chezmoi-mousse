@@ -5,7 +5,14 @@ from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.screen import ModalScreen
 
-from chezmoi_mousse import AppType, CanvasIds, CanvasName, FlatBtn, LinkBtn
+from chezmoi_mousse import (
+    AppType,
+    CanvasIds,
+    CanvasName,
+    FlatBtn,
+    LinkBtn,
+    Tcss,
+)
 
 from ..shared.buttons import FlatButton, FlatLink
 from ..shared.section_headers import SectionLabel, SectionSubLabel
@@ -21,7 +28,9 @@ class IssueStrings(StrEnum):
 class ReachOutScreen(ModalScreen[None], AppType):
 
     def __init__(self, *, ids: "CanvasIds") -> None:
-        super().__init__(id=CanvasName.reach_out_screen.name)
+        super().__init__(
+            id=CanvasName.reach_out_screen.name, classes=Tcss.screen_base.name
+        )
         self.ids = ids
 
     def compose(self) -> ComposeResult:
@@ -34,6 +43,9 @@ class ReachOutScreen(ModalScreen[None], AppType):
             yield Vertical(
                 FlatButton(ids=self.ids, button_enum=FlatBtn.close_screen)
             )
+
+    def on_mount(self) -> None:
+        self.add_class(Tcss.reach_out_screen.name)
 
     @on(FlatButton.Pressed)
     def close_screen(self, event: FlatButton.Pressed) -> None:

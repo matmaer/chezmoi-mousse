@@ -18,6 +18,7 @@ class Tcss(StrEnum):
     last_clicked = ".last_clicked"
     operate_button = ".operate_button"
     operate_screen = ".operate_screen"
+    reach_out_screen = ".reach_out_screen"
     screen_base = ".screen_base"
     section_header = ".section_header"
     single_button_vertical = ".single_button_vertical"

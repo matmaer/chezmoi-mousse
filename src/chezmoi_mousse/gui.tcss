@@ -127,6 +127,14 @@
       color: $primary-lighten-3;
     }
   }
+  &.reach_out_screen {
+    & FlatLink {
+      margin: 0 1;
+    }
+    & FlatButton {
+      margin: 0 1;
+    }
+  }
 }
 
 
