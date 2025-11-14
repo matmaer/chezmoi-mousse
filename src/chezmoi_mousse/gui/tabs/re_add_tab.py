@@ -7,9 +7,9 @@ from textual.widgets import Button
 from chezmoi_mousse import OperateBtn
 from chezmoi_mousse.shared import CurrentReAddNodeMsg, OperateButtons
 
-from .shared.switch_slider import SwitchSlider
-from .shared.switchers import TreeSwitcher, ViewSwitcher
-from .shared.tab_horizontal import TabHorizontal
+from .common.switch_slider import SwitchSlider
+from .common.switchers import TreeSwitcher, ViewSwitcher
+from .common.tab_horizontal import TabHorizontal
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds

@@ -20,8 +20,8 @@ from .operate import OperateInfo
 from .reactive_header import ReactiveHeader
 from .splash import LoadingScreen
 from .tabs.add_tab import AddTab
-from .tabs.shared.switchers import ViewSwitcher
-from .tabs.shared.trees import TreeBase
+from .tabs.common.switchers import ViewSwitcher
+from .tabs.common.trees import TreeBase
 
 if TYPE_CHECKING:
     from chezmoi_mousse import Chezmoi, CommandsData, PreRunData
