@@ -8,7 +8,13 @@ from textual.widgets import Label, Static
 
 from chezmoi_mousse import Tcss, ViewName
 
-__all__ = ["InitialHeader", "SectionHeader", "SectionLabel", "SectionSubLabel"]
+__all__ = [
+    "InitialHeader",
+    "SectionHeader",
+    "SectionLabel",
+    "SectionSubLabel",
+    "SectionStrings",
+]
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds
@@ -24,6 +30,8 @@ class SectionStrings(StrEnum):
         'Click a path in the tree to see the output from "chezmoi diff".'
     )
     initial_contents_msg = "Click a path in the tree to see the file contents."
+    operate_context = "Operate Context"
+    operate_output = "Operate Command Output"
 
 
 class SectionLabel(Label):
