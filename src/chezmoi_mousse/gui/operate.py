@@ -26,7 +26,7 @@ from chezmoi_mousse.shared import (
 
 from .reactive_header import ReactiveHeader
 from .tabs.common.operate_info import OperateInfo
-from .tabs.logs_tab import OutputLog
+from .tabs.logs_tab import OperateLog
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds, CommandResult
@@ -67,12 +67,8 @@ class OperateScreen(Screen[OperateScreenData], AppType):
         self.pre_operate_qid = ids.container_id(
             "#", name=ContainerName.pre_operate
         )
-        self.write_output_log_view_id = ids.view_id(
-            view=ViewName.write_output_log_view
-        )
-        self.output_log_qid = ids.view_id(
-            "#", view=ViewName.write_output_log_view
-        )
+        self.operate_log_view_id = ids.view_id(view=ViewName.operate_log_view)
+        self.output_log_qid = ids.view_id("#", view=ViewName.operate_log_view)
 
         self.ids = ids
         self.operate_data = operate_data
@@ -97,9 +93,7 @@ class OperateScreen(Screen[OperateScreenData], AppType):
                 yield DiffView(ids=self.ids, reverse=False)
         with Vertical(id=self.post_operate_id):
             yield SectionLabel(SectionStrings.operate_output)
-            yield OutputLog(
-                ids=self.ids, view_name=ViewName.write_output_log_view
-            )
+            yield OperateLog(ids=self.ids, view_name=ViewName.operate_log_view)
         with Vertical():
             yield OperateButtons(
                 ids=self.ids,
@@ -229,7 +223,7 @@ class OperateScreen(Screen[OperateScreenData], AppType):
         operate_exit_button = self.query_one(self.exit_btn_qid, Button)
         operate_exit_button.label = OperateBtn.exit_button.close_button_label
 
-        output_log = self.query_one(self.output_log_qid, OutputLog)
+        output_log = self.query_one(self.output_log_qid, OperateLog)
         if self.operate_data.command_result is not None:
             output_log.log_cmd_results(self.operate_data.command_result)
         else:

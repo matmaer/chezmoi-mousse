@@ -33,7 +33,7 @@ from .tabs.apply_tab import ApplyTab
 from .tabs.common.trees import ExpandedTree, ListTree, ManagedTree
 from .tabs.config_tab import ConfigTab, ConfigTabSwitcher
 from .tabs.help_tab import HelpTab
-from .tabs.logs_tab import AppLog, DebugLog, LogsTab, OutputLog
+from .tabs.logs_tab import AppLog, DebugLog, LogsTab, OperateLog, ReadCmdLog
 from .tabs.re_add_tab import ReAddTab
 
 if TYPE_CHECKING:
@@ -84,11 +84,11 @@ class MainScreen(Screen[None], AppType):
         self.app_log_qid = self.app.logs_tab_ids.view_id(
             "#", view=ViewName.app_log_view
         )
-        self.read_output_log_qid = self.app.logs_tab_ids.view_id(
-            "#", view=ViewName.read_output_log_view
+        self.read_cmd_log_qid = self.app.logs_tab_ids.view_id(
+            "#", view=ViewName.read_cmd_log_view
         )
-        self.write_output_log_qid = self.app.logs_tab_ids.view_id(
-            "#", view=ViewName.write_output_log_view
+        self.operate_log_qid = self.app.logs_tab_ids.view_id(
+            "#", view=ViewName.operate_log_view
         )
         self.debug_log_qid = self.app.logs_tab_ids.view_id(
             "#", view=ViewName.debug_log_view
@@ -98,8 +98,8 @@ class MainScreen(Screen[None], AppType):
         )
 
         self.app_log: "AppLog"
-        self.read_output_log: "OutputLog"
-        self.write_output_log: "OutputLog"
+        self.read_log: "ReadCmdLog"
+        self.operate_log: "OperateLog"
         self.debug_log: "DebugLog"
 
         self.current_add_node: "DirTreeNodeData | None" = None
@@ -149,28 +149,20 @@ class MainScreen(Screen[None], AppType):
         self.app_log.info(f"chezmoi command found: {self.app.chezmoi_found}.")
         self.app_log.info("Loading screen completed.")
 
-        read_output_logger = self.query_one(
-            self.read_output_log_qid, OutputLog
-        )
-        self.read_output_log = read_output_logger
-        self.app.chezmoi.read_output_log = read_output_logger
-        self.read_output_log.ready_to_run(
-            "--- Read Output log initialized ---"
-        )
+        read_cmd_logger = self.query_one(self.read_cmd_log_qid, ReadCmdLog)
+        self.read_cmd_log = read_cmd_logger
+        self.app.chezmoi.read_cmd_log = read_cmd_logger
+        self.read_cmd_log.ready_to_run("--- Read Output log initialized ---")
         self.app_log.info("Read Output log initialized")
 
         self.app_log.info("Commands executed during startup:")
         for cmd in self.commands_data.executed_commands:
             self.app_log.log_cmd_results(cmd)
-            self.read_output_log.log_cmd_results(cmd)
+            self.read_cmd_log.log_cmd_results(cmd)
         self.app_log.info("End of startup commands.")
-        self.write_output_log = self.query_one(
-            self.write_output_log_qid, OutputLog
-        )
-        self.write_output_log.ready_to_run(
-            "--- Write Output log initialized ---"
-        )
-        self.app.chezmoi.write_output_log = self.write_output_log
+        self.operate_log = self.query_one(self.operate_log_qid, OperateLog)
+        self.operate_log.ready_to_run("--- Write Output log initialized ---")
+        self.app.chezmoi.operate_log = self.operate_log
         self.app_log.info("Write Output log initialized")
 
         if self.app.dev_mode:

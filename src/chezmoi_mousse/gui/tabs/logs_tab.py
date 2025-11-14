@@ -27,15 +27,15 @@ if TYPE_CHECKING:
 
     from chezmoi_mousse import CanvasIds, CommandResult
 
-__all__ = ["LogsTab", "AppLog", "DebugLog", "OutputLog"]
+__all__ = ["LogsTab", "AppLog", "DebugLog", "OperateLog", "ReadCmdLog"]
 
 
 class BorderTitle(StrEnum):
     app_log = " App Log "
     debug_log = " Debug Log "
     git_log_global = " Global Git Log "
-    read_output_log = " Read Output Log "
-    write_output_log = " Write Output Log "
+    read_cmd_log = " Read Commands Output Log "
+    operate_log = " Operate Commands Output Log "
 
 
 class LoggersBase(RichLog, AppType):
@@ -254,7 +254,44 @@ class DebugLog(LoggersBase, AppType):
             self.write(f"{key}: {value}")
 
 
-class OutputLog(LoggersBase, AppType):
+class OperateLog(LoggersBase, AppType):
+
+    def __init__(self, ids: "CanvasIds", view_name: ViewName) -> None:
+        self.ids = ids
+        self.view_name = view_name
+        super().__init__(
+            id=self.ids.view_id(view=self.view_name),
+            markup=True,
+            max_lines=10000,
+        )
+
+    def _trim_stdout(self, stdout: str):
+        # remove trailing and leading new lines but NOT leading whitespace
+        stripped = stdout.lstrip("\n").rstrip()
+        # remove intermediate empty lines
+        return "\n".join(
+            [line for line in stripped.splitlines() if line.strip() != ""]
+        )
+
+    def log_cmd_results(self, command_result: "CommandResult") -> None:
+        if ReadVerbs.verify.value in command_result.cmd_args:
+            return
+        self._log_command(command_result)
+        if command_result.returncode == 0:
+            self.success("success, stdout:")
+            if command_result.std_out == "":
+                self.dimmed("No output on stdout")
+            else:
+                self.dimmed(command_result.std_out)
+        elif command_result.returncode != 0:
+            if command_result.std_err != "":
+                self.error("failed, stderr:")
+                self.dimmed(f"{command_result.std_err}")
+            else:
+                self.warning("Non zero exit but no stderr output.")
+
+
+class ReadCmdLog(LoggersBase, AppType):
 
     def __init__(self, ids: "CanvasIds", view_name: ViewName) -> None:
         self.ids = ids
@@ -299,9 +336,9 @@ class LogsTab(Vertical, AppType):
         self.ids = ids
         self.tab_buttons = (
             TabBtn.app_log,
-            TabBtn.read_output_log,
-            TabBtn.write_output_log,
-            TabBtn.git_log_global,
+            TabBtn.read_cmd_log,
+            TabBtn.operate_log,
+            TabBtn.git_log_logs_tab,
         )
         if self.app.dev_mode is True:
             self.tab_buttons = (TabBtn.debug_log,) + self.tab_buttons
@@ -314,21 +351,17 @@ class LogsTab(Vertical, AppType):
         self.content_switcher_qid = ids.content_switcher_id(
             "#", name=ContainerName.logs_switcher
         )
-        self.app_log_btn_id = ids.button_id(btn=TabBtn.app_log)
-        self.read_output_log_btn_id = ids.button_id(btn=TabBtn.read_output_log)
-        self.write_output_log_btn_id = ids.button_id(
-            btn=TabBtn.write_output_log
-        )
-        self.git_log_global_btn_id = ids.button_id(btn=TabBtn.git_log_global)
-        self.debug_log_btn_id = ids.button_id(btn=TabBtn.debug_log)
+        self.app_btn_id = ids.button_id(btn=TabBtn.app_log)
+        self.read_btn_id = ids.button_id(btn=TabBtn.read_cmd_log)
+        self.write_btn_id = ids.button_id(btn=TabBtn.operate_log)
+        self.git_log_btn_id = ids.button_id(btn=TabBtn.git_log_logs_tab)
+        self.debug_btn_id = ids.button_id(btn=TabBtn.debug_log)
 
         self.app_log_view_id = ids.view_id(view=ViewName.app_log_view)
-        self.read_output_log_view_id = ids.view_id(
-            view=ViewName.read_output_log_view
+        self.read_cmd_log_view_id = ids.view_id(
+            view=ViewName.read_cmd_log_view
         )
-        self.write_output_log_view_id = ids.view_id(
-            view=ViewName.write_output_log_view
-        )
+        self.operate_log_view_id = ids.view_id(view=ViewName.operate_log_view)
         self.git_log_global_view_id = ids.view_id(view=ViewName.git_log_view)
         self.debug_log_view_id = ids.view_id(view=ViewName.debug_log_view)
 
@@ -340,12 +373,10 @@ class LogsTab(Vertical, AppType):
             classes=Tcss.border_title_top.name,
         ):
             yield AppLog(ids=self.ids)
-            yield OutputLog(
-                ids=self.ids, view_name=ViewName.read_output_log_view
+            yield ReadCmdLog(
+                ids=self.ids, view_name=ViewName.read_cmd_log_view
             )
-            yield OutputLog(
-                ids=self.ids, view_name=ViewName.write_output_log_view
-            )
+            yield OperateLog(ids=self.ids, view_name=ViewName.operate_log_view)
             yield GitLogView(ids=self.ids)
             if self.app.dev_mode is True:
                 yield DebugLog(ids=self.ids)
@@ -361,21 +392,20 @@ class LogsTab(Vertical, AppType):
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
         switcher = self.query_one(self.content_switcher_qid, ContentSwitcher)
-        if event.button.id == self.app_log_btn_id:
+        if event.button.id == self.app_btn_id:
             switcher.current = self.app_log_view_id
             switcher.border_title = BorderTitle.app_log
-        elif event.button.id == self.read_output_log_btn_id:
-            switcher.current = self.read_output_log_view_id
-            switcher.border_title = BorderTitle.read_output_log
-        elif event.button.id == self.write_output_log_btn_id:
-            switcher.current = self.write_output_log_view_id
-            switcher.border_title = BorderTitle.write_output_log
-        elif event.button.id == self.git_log_global_btn_id:
+        elif event.button.id == self.read_btn_id:
+            switcher.current = self.read_cmd_log_view_id
+            switcher.border_title = BorderTitle.read_cmd_log
+        elif event.button.id == self.write_btn_id:
+            switcher.current = self.operate_log_view_id
+            switcher.border_title = BorderTitle.operate_log
+        elif event.button.id == self.git_log_btn_id:
             switcher.border_title = BorderTitle.git_log_global
             switcher.current = self.git_log_global_view_id
         elif (
-            self.app.dev_mode is True
-            and event.button.id == self.debug_log_btn_id
+            self.app.dev_mode is True and event.button.id == self.debug_btn_id
         ):
             switcher.current = self.debug_log_view_id
             switcher.border_title = BorderTitle.debug_log

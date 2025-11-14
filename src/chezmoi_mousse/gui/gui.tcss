@@ -202,14 +202,14 @@ SwitchSliderBase {
 }
 
 TabButtons {
-  width: 100%;
   height: 1;
+  width: 100%;
   &>.single_button_vertical {
     align: center middle;
   }
-  & .tab_button {
+  .tab_button {
     border: none;
-    min-width: 4;
+    min-width: 3;
     text-style: bold;
     color: $foreground 50%;
     &:hover {

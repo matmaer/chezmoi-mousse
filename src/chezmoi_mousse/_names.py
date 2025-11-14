@@ -65,6 +65,6 @@ class ViewName(StrEnum):
     pretty_ignored_view = auto()
     pretty_template_data_view = auto()
     re_add_help_view = auto()
-    read_output_log_view = auto()
+    read_cmd_log_view = auto()
     template_data_view = auto()
-    write_output_log_view = auto()
+    operate_log_view = auto()

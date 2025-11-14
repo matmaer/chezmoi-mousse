@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from chezmoi_mousse import PathDict, PathList
 
-    from .gui.tabs.logs_tab import AppLog, DebugLog, OutputLog
+    from .gui.tabs.logs_tab import AppLog, DebugLog, OperateLog, ReadCmdLog
 
 __all__ = [
     "Chezmoi",
@@ -226,8 +226,8 @@ class Chezmoi:
         self._status_files_result = status_files
 
         self.app_log: AppLog | None = None
-        self.read_output_log: OutputLog | None = None
-        self.write_output_log: OutputLog | None = None
+        self.read_cmd_log: ReadCmdLog | None = None
+        self.operate_log: OperateLog | None = None
         if self._dev_mode is True:
             self.debug_log: DebugLog | None = None
 
@@ -235,15 +235,15 @@ class Chezmoi:
     # Command execution and logging #
     #################################
 
-    def _log_in_app_and_read_output_log(self, result: CommandResult):
-        if self.app_log is not None and self.read_output_log is not None:
+    def _log_in_app_and_read_cmd_log(self, result: CommandResult):
+        if self.app_log is not None and self.read_cmd_log is not None:
             self.app_log.log_cmd_results(result)
-            self.read_output_log.log_cmd_results(result)
+            self.read_cmd_log.log_cmd_results(result)
 
-    def _log_in_app_and_write_output_log(self, result: CommandResult):
-        if self.app_log is not None and self.write_output_log is not None:
+    def _log_in_app_and_operate_log(self, result: CommandResult):
+        if self.app_log is not None and self.operate_log is not None:
             self.app_log.log_cmd_results(result)
-            self.write_output_log.log_cmd_results(result)
+            self.operate_log.log_cmd_results(result)
 
     ############################
     # MANAGED AND STATUS PATHS #
@@ -449,7 +449,7 @@ class Chezmoi:
         command_result = CommandResult(
             completed_process_data=result, path_arg=path_arg
         )
-        self._log_in_app_and_read_output_log(command_result)
+        self._log_in_app_and_read_cmd_log(command_result)
         return command_result
 
     def perform(
@@ -477,5 +477,5 @@ class Chezmoi:
         command_results = CommandResult(
             completed_process_data=result, path_arg=path_arg
         )
-        self._log_in_app_and_write_output_log(command_results)
+        self._log_in_app_and_operate_log(command_results)
         return command_results

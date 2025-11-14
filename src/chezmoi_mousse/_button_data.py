@@ -48,16 +48,16 @@ class LinkBtn(StrEnum):
 
 class TabBtn(StrEnum):
     # Tab buttons for content switcher within a main tab
-    app_log = "App Log"
+    app_log = "App"
     contents = "Contents"
-    debug_log = "Debug Log"
+    debug_log = "Debug"
     diff = "Diff"
-    git_log_global = "Global Git Log"
-    git_log_path = "Git Log"
+    git_log_logs_tab = "Git"
+    git_log_path = "Git-Log"
     list = "List"
-    read_output_log = "Read Outputs"
+    read_cmd_log = "Read"
     tree = "Tree"
-    write_output_log = "Write Outputs"
+    operate_log = "Operate"
 
 
 class OpBtn(StrEnum):
