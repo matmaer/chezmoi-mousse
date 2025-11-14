@@ -107,7 +107,7 @@ class UnwantedFileExtensions(StrEnum):
     zip = ".zip"
 
 
-class SwitchSlider(SwitchSliderBase):
+class AddSwitchSlider(SwitchSliderBase):
     def __init__(self, *, ids: "CanvasIds") -> None:
         self.ids = ids
         super().__init__(
@@ -276,7 +276,7 @@ class AddTab(Horizontal, AppType):
         yield OperateButtons(
             ids=self.ids, buttons=(OperateBtn.add_file, OperateBtn.add_dir)
         )
-        yield SwitchSlider(ids=self.ids)
+        yield AddSwitchSlider(ids=self.ids)
 
     def update_buttons(self, is_dir: bool) -> None:
         add_file_button = self.query_one(self.add_file_btn_qid, Button)
