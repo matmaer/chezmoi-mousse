@@ -7,6 +7,7 @@ from ._buttons import (
     OperateButtons,
     TabButtons,
 )
+from ._cat_config import CatConfigOutput
 from ._contents_view import ContentsView
 from ._diff_view import DiffView
 from ._doctor_table import DoctorTable
@@ -25,6 +26,7 @@ from ._section_headers import (
 )
 
 __all__ = [
+    "CatConfigOutput",
     "ContentsView",
     "CurrentAddNodeMsg",
     "CurrentApplyNodeMsg",
