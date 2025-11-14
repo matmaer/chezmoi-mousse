@@ -8,6 +8,8 @@ from chezmoi_mousse import AppType, Tcss, ViewName
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds
 
+__all__ = ["DoctorTable"]
+
 
 class DoctorTable(DataTable[Text], AppType):
 
