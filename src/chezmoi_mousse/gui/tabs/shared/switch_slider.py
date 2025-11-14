@@ -6,6 +6,8 @@ from chezmoi_mousse.shared.switch_slider import SwitchSliderBase
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds
 
+__all__ = ["SwitchSlider"]
+
 
 class SwitchSlider(SwitchSliderBase):
     def __init__(self, *, ids: "CanvasIds") -> None:
