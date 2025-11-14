@@ -43,11 +43,11 @@ class LoggersBase(RichLog, AppType):
     def _log_time(self) -> str:
         return f"[[green]{datetime.now().strftime('%H:%M:%S')}[/]]"
 
-    def _log_command(self, command_result: "CommandResult") -> None:
+    def log_command(self, command_result: "CommandResult") -> str:
         time = self._log_time()
         color = self.app.theme_variables["primary-lighten-3"]
-        log_line = f"{time} [{color}]{command_result.pretty_cmd}[/]"
-        self.write(log_line)
+        return f"{time} [{color}]{command_result.pretty_cmd}[/]"
+        # self.write(log_line)
 
     def ready_to_run(self, message: str) -> None:
         color = self.app.theme_variables["accent-darken-3"]
@@ -130,7 +130,7 @@ class AppLog(LoggersBase, AppType):
             )
 
     def log_cmd_results(self, command_result: "CommandResult") -> None:
-        self._log_command(command_result)
+        self.write(self.log_command(command_result))
         if ReadVerbs.verify.value in command_result.cmd_args:
             if command_result.returncode == 0:
                 self.success(self.verify_exit_zero)
@@ -172,7 +172,7 @@ class DebugLog(LoggersBase, AppType):
         )
 
     def completed_process(self, command_result: "CommandResult") -> None:
-        self._log_command(command_result)
+        self.write(self.log_command(command_result))
         self.dimmed(f"{dir(command_result)}")
 
     def mro(self, mro: Mro) -> None:
@@ -268,16 +268,16 @@ class OperateLog(LoggersBase, AppType):
     def log_cmd_results(self, command_result: "CommandResult") -> None:
         if ReadVerbs.verify.value in command_result.cmd_args:
             return
-        self._log_command(command_result)
+        self.write(self.log_command(command_result))
         if command_result.returncode == 0:
-            self.success("success, stdout:")
+            self.success("Success, stdout:")
             if command_result.std_out == "":
                 self.dimmed("No output on stdout")
             else:
                 self.dimmed(command_result.std_out)
         elif command_result.returncode != 0:
             if command_result.std_err != "":
-                self.error("failed, stderr:")
+                self.error("Failed, stderr:")
                 self.dimmed(f"{command_result.std_err}")
             else:
                 self.warning("Non zero exit but no stderr output.")
@@ -297,16 +297,16 @@ class ReadCmdLog(LoggersBase, AppType):
     def log_cmd_results(self, command_result: "CommandResult") -> None:
         if ReadVerbs.verify.value in command_result.cmd_args:
             return
-        self._log_command(command_result)
+        self.write(self.log_command(command_result))
         if command_result.returncode == 0:
-            self.success("success, stdout:")
+            self.success("Success, stdout:")
             if command_result.std_out == "":
                 self.dimmed("No output on stdout")
             else:
                 self.dimmed(command_result.std_out)
         elif command_result.returncode != 0:
             if command_result.std_err != "":
-                self.error("failed, stderr:")
+                self.error("Failed, stderr:")
                 self.dimmed(f"{command_result.std_err}")
             else:
                 self.warning("Non zero exit but no stderr output.")
