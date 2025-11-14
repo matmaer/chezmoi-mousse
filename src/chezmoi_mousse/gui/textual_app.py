@@ -135,7 +135,7 @@ class ChezmoiGUI(App[None]):
         OperateInfo.git_autopush = return_data.parsed_config.git_autopush
 
         self.push_screen(
-            MainScreen(ids=self.main_screen_ids, commands_data=return_data)
+            MainScreen(ids=self.main_screen_ids, splash_data=return_data)
         )
 
     def action_toggle_dry_run_mode(self) -> None:

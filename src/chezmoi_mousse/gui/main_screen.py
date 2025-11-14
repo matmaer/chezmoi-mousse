@@ -68,13 +68,10 @@ class MainScreen(Screen[None], AppType):
 
     destDir: Path | None = None
 
-    def __init__(
-        self, *, ids: "CanvasIds", commands_data: "SplashData"
-    ) -> None:
+    def __init__(self, *, ids: "CanvasIds", splash_data: "SplashData") -> None:
         super().__init__()
 
-        self.commands_data = commands_data
-
+        self.splash_data = splash_data
         self.add_switch_slider_qid = self.app.add_tab_ids.container_id(
             "#", name=ContainerName.switch_slider
         )
@@ -155,7 +152,7 @@ class MainScreen(Screen[None], AppType):
         self.app_log.info("Read Output log initialized")
 
         self.app_log.info("Commands executed during startup:")
-        for cmd in self.commands_data.executed_commands:
+        for cmd in self.splash_data.executed_commands:
             self.app_log.log_cmd_results(cmd)
             self.read_cmd_log.log_cmd_results(cmd)
         self.app_log.info("End of startup commands.")
@@ -174,7 +171,7 @@ class MainScreen(Screen[None], AppType):
         # Notify startup info
         if self.app.dev_mode is True:
             self.notify('Running in "dev mode"', severity="information")
-        self.handle_commands_data(self.commands_data)
+        self.handle_commands_data(self.splash_data)
 
     def handle_commands_data(self, data: "SplashData") -> None:
         self.populate_trees(commands_data=data)
