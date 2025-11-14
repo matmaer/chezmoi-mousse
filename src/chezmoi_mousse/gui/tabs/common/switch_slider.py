@@ -1,10 +1,13 @@
-"""Contains subclassed textual classes shared between the ApplyTab and
+"""Contains subclassed textual classes shared between the AddTab, ApplyTab and
 ReAddTab."""
 
 from typing import TYPE_CHECKING
 
-from chezmoi_mousse import Switches
-from chezmoi_mousse.shared import SwitchSliderBase
+from textual.app import ComposeResult
+from textual.containers import HorizontalGroup, VerticalGroup
+from textual.widgets import Label, Switch
+
+from chezmoi_mousse import CanvasName, ContainerName, Switches
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds
@@ -12,9 +15,38 @@ if TYPE_CHECKING:
 __all__ = ["SwitchSlider"]
 
 
+class SwitchSliderBase(VerticalGroup):
+
+    def __init__(
+        self, *, ids: "CanvasIds", switches: tuple[Switches, ...]
+    ) -> None:
+        self.ids = ids
+        self.switches = switches
+        super().__init__(id=ids.container_id(name=ContainerName.switch_slider))
+
+    def compose(self) -> ComposeResult:
+        for switch_data in self.switches:
+            with HorizontalGroup(
+                id=self.ids.switch_horizontal_id(switch=switch_data)
+            ):
+                yield Switch(id=self.ids.switch_id(switch=switch_data))
+                yield Label(switch_data.label).with_tooltip(
+                    tooltip=switch_data.enabled_tooltip
+                )
+
+    def on_mount(self) -> None:
+        switch_groups = self.query_children(HorizontalGroup)
+        switch_groups[-1].styles.padding = 0
+
+
 class SwitchSlider(SwitchSliderBase):
     def __init__(self, *, ids: "CanvasIds") -> None:
         self.ids = ids
-        super().__init__(
-            ids=self.ids, switches=(Switches.unchanged, Switches.expand_all)
-        )
+        if self.ids.canvas_name in (
+            CanvasName.apply_tab,
+            CanvasName.re_add_tab,
+        ):
+            self.switches = (Switches.unchanged, Switches.expand_all)
+        else:  # for the AddTab
+            self.switches = (Switches.unmanaged_dirs, Switches.unwanted)
+        super().__init__(ids=self.ids, switches=self.switches)

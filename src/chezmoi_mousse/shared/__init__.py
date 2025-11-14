@@ -22,7 +22,6 @@ from ._section_headers import (
     SectionStrings,
     SectionSubLabel,
 )
-from ._switch_slider import SwitchSliderBase
 
 __all__ = [
     "ContentsView",
@@ -40,6 +39,5 @@ __all__ = [
     "SectionLabel",
     "SectionStrings",
     "SectionSubLabel",
-    "SwitchSliderBase",
     "TabButtons",
 ]

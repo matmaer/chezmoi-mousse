@@ -25,8 +25,9 @@ from chezmoi_mousse.shared import (
     ContentsView,
     CurrentAddNodeMsg,
     OperateButtons,
-    SwitchSliderBase,
 )
+
+from .common.switch_slider import SwitchSlider
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds, PathType
@@ -105,14 +106,6 @@ class UnwantedFileExtensions(StrEnum):
     xls = ".xls"
     xlsx = ".xlsx"
     zip = ".zip"
-
-
-class AddSwitchSlider(SwitchSliderBase):
-    def __init__(self, *, ids: "CanvasIds") -> None:
-        self.ids = ids
-        super().__init__(
-            ids=self.ids, switches=(Switches.unmanaged_dirs, Switches.unwanted)
-        )
 
 
 class FilteredDirTree(DirectoryTree, AppType):
@@ -276,7 +269,7 @@ class AddTab(Horizontal, AppType):
         yield OperateButtons(
             ids=self.ids, buttons=(OperateBtn.add_file, OperateBtn.add_dir)
         )
-        yield AddSwitchSlider(ids=self.ids)
+        yield SwitchSlider(ids=self.ids)
 
     def update_buttons(self, is_dir: bool) -> None:
         add_file_button = self.query_one(self.add_file_btn_qid, Button)
