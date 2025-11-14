@@ -151,6 +151,7 @@ class MainScreen(Screen[None], AppType):
 
         read_cmd_logger = self.query_one(self.read_cmd_log_qid, ReadCmdLog)
         self.read_cmd_log = read_cmd_logger
+        self.app.chezmoi.read_cmd_log = self.read_cmd_log
         self.app_log.info("Read Output log initialized")
 
         self.app_log.info("Commands executed during startup:")
