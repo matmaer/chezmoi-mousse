@@ -178,6 +178,11 @@ ReactiveHeader {
   }
 }
 
+ReadOutputCollapsible {
+  border: none;
+  padding: 0;
+}
+
 SwitchSliderBase {
   background-tint: $surface;
   background: $surface;

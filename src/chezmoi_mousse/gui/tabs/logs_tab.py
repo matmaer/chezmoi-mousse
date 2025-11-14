@@ -7,8 +7,14 @@ from typing import TYPE_CHECKING
 from rich.markup import escape
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import Vertical
-from textual.widgets import Button, ContentSwitcher, RichLog
+from textual.containers import ScrollableContainer, Vertical
+from textual.widgets import (
+    Button,
+    Collapsible,
+    ContentSwitcher,
+    RichLog,
+    Static,
+)
 
 from chezmoi_mousse import (
     AppType,
@@ -266,8 +272,6 @@ class OperateLog(LoggersBase, AppType):
         )
 
     def log_cmd_results(self, command_result: "CommandResult") -> None:
-        if ReadVerbs.verify.value in command_result.cmd_args:
-            return
         self.write(self.log_command(command_result))
         if command_result.returncode == 0:
             self.success("Success, stdout:")
@@ -283,33 +287,52 @@ class OperateLog(LoggersBase, AppType):
                 self.warning("Non zero exit but no stderr output.")
 
 
-class ReadCmdLog(LoggersBase, AppType):
+class ReadOutputCollapsible(Collapsible, AppType):
+
+    def __init__(
+        self, ids: "CanvasIds", command: str, output: str, counter: int
+    ) -> None:
+        super().__init__(
+            Static(
+                output, id=f"read_cmd_static_number_{counter}", markup=False
+            ),
+            title=command,
+            collapsed_symbol=Chars.right_triangle,
+            expanded_symbol=Chars.down_triangle,
+            collapsed=True,
+            id=f"read_cmd_collapsible_number_{counter}",
+        )
+
+
+class ReadCmdLog(ScrollableContainer, AppType):
+
+    collapsible_counter: int = 0
 
     def __init__(self, ids: "CanvasIds", view_name: ViewName) -> None:
         self.ids = ids
         self.view_name = view_name
-        super().__init__(
-            id=self.ids.view_id(view=self.view_name),
-            markup=True,
-            max_lines=10000,
-        )
+        super().__init__(id=self.ids.view_id(view=self.view_name))
+
+        self.ids = ids
+        self.view_name = view_name
 
     def log_cmd_results(self, command_result: "CommandResult") -> None:
+        # Don't log verify read-verb outputs as in produces no output.
         if ReadVerbs.verify.value in command_result.cmd_args:
             return
-        self.write(self.log_command(command_result))
-        if command_result.returncode == 0:
-            self.success("Success, stdout:")
-            if command_result.std_out == "":
-                self.dimmed("No output on stdout")
-            else:
-                self.dimmed(command_result.std_out)
-        elif command_result.returncode != 0:
-            if command_result.std_err != "":
-                self.error("Failed, stderr:")
-                self.dimmed(f"{command_result.std_err}")
-            else:
-                self.warning("Non zero exit but no stderr output.")
+
+        self.collapsible_counter += 1
+
+        time_str = datetime.now().strftime("%H:%M:%S")
+        command_title = f"{time_str} {command_result.pretty_cmd}"
+
+        collapsible = ReadOutputCollapsible(
+            ids=self.ids,
+            command=command_title,
+            output=command_result.std_out,
+            counter=self.collapsible_counter,
+        )
+        self.mount(collapsible)
 
 
 class LogsTab(Vertical, AppType):
