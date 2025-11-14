@@ -85,9 +85,6 @@ class ChezmoiGUI(App[None]):
         )
         self.main_screen_ids = CanvasIds(CanvasName.main_screen)
         self.op_screen_ids = CanvasIds(CanvasName.operate_screen)
-        self.issue_screen_ids = CanvasIds(
-            canvas_name=CanvasName.reach_out_screen
-        )
 
         # Construct the ids for the tabs
         self.add_tab_ids = CanvasIds(CanvasName.add_tab)

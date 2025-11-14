@@ -22,7 +22,6 @@ class CanvasName(StrEnum):
     logs_tab = auto()
     main_screen = auto()
     operate_screen = auto()
-    reach_out_screen = auto()
     re_add_tab = auto()
 
 
