@@ -181,6 +181,12 @@ ReactiveHeader {
 ReadOutputCollapsible {
   border: none;
   padding: 0;
+  & .green_title {
+    color: $text-success;
+  }
+  & .warning_title {
+    color: $text-warning;
+  }
   & .static_output {
     background: $surface;
     background-tint: $surface;

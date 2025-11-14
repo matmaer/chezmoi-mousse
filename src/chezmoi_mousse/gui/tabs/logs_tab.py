@@ -290,14 +290,18 @@ class OperateLog(LoggersBase, AppType):
 class ReadOutputCollapsible(Collapsible, AppType):
 
     def __init__(
-        self, ids: "CanvasIds", command: str, output: str, counter: int
+        self, command_result: "CommandResult", output: str, counter: int
     ) -> None:
+        self.command_result = command_result
         self.static_id = f"read_cmd_static_number_{counter}"
         self.static_qid = f"#read_cmd_static_number_{counter}"
         self.collapsible_id = f"read_cmd_collapsible_number_{counter}"
+
+        time_str = datetime.now().strftime("%H:%M:%S")
+
         super().__init__(
             Static(output, id=self.static_id, markup=False),
-            title=command,
+            title=f"{time_str} {self.command_result.pretty_cmd}",
             collapsed_symbol=Chars.right_triangle,
             expanded_symbol=Chars.down_triangle,
             collapsed=True,
@@ -307,6 +311,11 @@ class ReadOutputCollapsible(Collapsible, AppType):
     def on_mount(self) -> None:
         static_widget = self.query_one(self.static_qid, Static)
         static_widget.add_class("static_output")
+        collapsible_title = self.query_exactly_one("CollapsibleTitle")
+        if self.command_result.returncode == 0:
+            collapsible_title.add_class("green_title")
+        else:
+            collapsible_title.add_class("warning_title")
 
 
 class ReadCmdLog(ScrollableContainer, AppType):
@@ -328,13 +337,15 @@ class ReadCmdLog(ScrollableContainer, AppType):
 
         self.collapsible_counter += 1
 
-        time_str = datetime.now().strftime("%H:%M:%S")
-        command_title = f"{time_str} {command_result.pretty_cmd}"
+        output = (
+            command_result.std_out
+            if command_result.returncode == 0
+            else command_result.std_err
+        )
 
         collapsible = ReadOutputCollapsible(
-            ids=self.ids,
-            command=command_title,
-            output=command_result.std_out,
+            command_result=command_result,
+            output=output,
             counter=self.collapsible_counter,
         )
         self.mount(collapsible)
