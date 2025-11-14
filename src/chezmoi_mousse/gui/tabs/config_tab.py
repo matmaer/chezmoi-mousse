@@ -3,12 +3,7 @@ from typing import TYPE_CHECKING
 
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import (
-    Horizontal,
-    ScrollableContainer,
-    Vertical,
-    VerticalScroll,
-)
+from textual.containers import Horizontal, ScrollableContainer, Vertical
 from textual.reactive import reactive
 from textual.widgets import Button, ContentSwitcher, Pretty
 
@@ -50,12 +45,15 @@ class ConfigTabSwitcher(ContentSwitcher):
         )
 
     def compose(self) -> ComposeResult:
-        yield VerticalScroll(
+        yield ScrollableContainer(
             SectionLabel(MainSectionLabelText.doctor_output),
             DoctorTable(ids=self.ids),
+            id=self.doctor_view_id,
+        )
+        yield ScrollableContainer(
             SectionLabel(MainSectionLabelText.password_managers),
             PwMgrInfoList(ids=self.ids),
-            id=self.doctor_view_id,
+            id=self.ids.view_id(view=ViewName.pw_mgr_info_view),
             classes=Tcss.doctor_vertical_scroll.name,
         )
         yield CatConfigOutput(ids=self.ids)
@@ -121,6 +119,7 @@ class ConfigTab(Horizontal, AppType):
         # Button IDs
         self.cat_config_btn_id = self.ids.button_id(btn=(FlatBtn.cat_config))
         self.doctor_btn_id = self.ids.button_id(btn=(FlatBtn.doctor))
+        self.pw_mgr_info_btn_id = self.ids.button_id(btn=FlatBtn.pw_mgr_info)
         self.ignored_btn_id = self.ids.button_id(btn=FlatBtn.ignored)
         self.template_data_btn_id = self.ids.button_id(
             btn=FlatBtn.template_data
@@ -131,6 +130,9 @@ class ConfigTab(Horizontal, AppType):
         )
         self.doctor_view_id = self.ids.view_id(view=ViewName.doctor_view)
         self.ignored_view_id = self.ids.view_id(view=ViewName.git_ignored_view)
+        self.pw_mgr_info_view_id = self.ids.view_id(
+            view=ViewName.pw_mgr_info_view
+        )
         self.template_data_view_id = self.ids.view_id(
             view=ViewName.template_data_view
         )
@@ -143,6 +145,7 @@ class ConfigTab(Horizontal, AppType):
                 ids=self.ids,
                 buttons=(
                     FlatBtn.doctor,
+                    FlatBtn.pw_mgr_info,
                     FlatBtn.cat_config,
                     FlatBtn.ignored,
                     FlatBtn.template_data,
@@ -156,6 +159,8 @@ class ConfigTab(Horizontal, AppType):
         switcher = self.query_one(self.content_switcher_qid, ContentSwitcher)
         if event.button.id == self.doctor_btn_id:
             switcher.current = self.doctor_view_id
+        if event.button.id == self.pw_mgr_info_btn_id:
+            switcher.current = self.pw_mgr_info_view_id
         elif event.button.id == self.cat_config_btn_id:
             switcher.current = self.cat_config_view_id
         elif event.button.id == self.ignored_btn_id:

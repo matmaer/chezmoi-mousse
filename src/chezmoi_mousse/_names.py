@@ -65,6 +65,7 @@ class ViewName(StrEnum):
     pretty_cat_config_view = auto()
     pretty_ignored_view = auto()
     pretty_template_data_view = auto()
+    pw_mgr_info_view = auto()
     re_add_help_view = auto()
     read_cmd_log_view = auto()
     template_data_view = auto()
