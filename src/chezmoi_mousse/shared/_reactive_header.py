@@ -1,9 +1,14 @@
 from enum import StrEnum
+from typing import TYPE_CHECKING
 
 from textual.reactive import reactive
 from textual.widgets import Header, Static
 
 from chezmoi_mousse import AppType, Chars, Tcss
+
+if TYPE_CHECKING:
+    from chezmoi_mousse import CanvasIds
+
 
 __all__ = ["ReactiveHeader"]
 
@@ -11,6 +16,9 @@ __all__ = ["ReactiveHeader"]
 class Titles(StrEnum):
     header_dry_run_mode = (
         " -  c h e z m o i  m o u s s e  --  d r y  r u n  m o d e  - "
+    )
+    header_init_screen = (
+        " -  c h e z m o i  m o u s s e  --  i n i t  m o d e  - "
     )
     header_live_mode = (
         " -  c h e z m o i  m o u s s e  --  l i v e  m o d e  - "
@@ -21,8 +29,8 @@ class ReactiveHeader(Header, AppType):
 
     changes_enabled: reactive[bool | None] = reactive(None)
 
-    def __init__(self) -> None:
-        super().__init__(icon=Chars.burger)
+    def __init__(self, ids: "CanvasIds") -> None:
+        super().__init__(icon=Chars.burger, id=ids.header_id)
 
     def on_mount(self) -> None:
         self.changes_enabled = self.app.changes_enabled

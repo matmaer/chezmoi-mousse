@@ -6,12 +6,20 @@ from textual.containers import ScrollableContainer, Vertical
 from textual.screen import Screen
 from textual.widgets import Button, ContentSwitcher, Pretty
 
-from chezmoi_mousse import ContainerName, FlatBtn, SplashData, Tcss, ViewName
+from chezmoi_mousse import (
+    AppType,
+    ContainerName,
+    FlatBtn,
+    SplashData,
+    Tcss,
+    ViewName,
+)
 from chezmoi_mousse.shared import (
     CatConfigOutput,
     DoctorTable,
     FlatButtonsVertical,
     MainSectionLabelText,
+    ReactiveHeader,
     SectionLabel,
 )
 
@@ -50,7 +58,7 @@ class InitSwitcher(ContentSwitcher):
         )
 
 
-class InitScreen(Screen[None]):
+class InitScreen(Screen[None], AppType):
 
     def __init__(self, *, ids: "CanvasIds", splash_data: "SplashData") -> None:
         super().__init__(id=ids.canvas_name, classes=Tcss.screen_base.name)
@@ -68,6 +76,7 @@ class InitScreen(Screen[None]):
         )
 
     def compose(self) -> ComposeResult:
+        yield ReactiveHeader(self.app.init_screen_ids)
         with Vertical(
             id=self.tab_vertical_id, classes=Tcss.tab_left_vertical.name
         ):

@@ -11,11 +11,15 @@ from textual.scrollbar import ScrollBar, ScrollBarRender
 from textual.theme import Theme
 
 from chezmoi_mousse import CanvasIds, CanvasName, Chars
-from chezmoi_mousse.shared import ContentsView, DiffView, GitLogView
+from chezmoi_mousse.shared import (
+    ContentsView,
+    DiffView,
+    GitLogView,
+    ReactiveHeader,
+)
 
 from .install_help import InstallHelp
 from .main_screen import MainScreen
-from .reactive_header import ReactiveHeader
 from .splash import LoadingScreen
 from .tabs.add_tab import AddTab
 from .tabs.common.operate_info import OperateInfo
@@ -78,9 +82,9 @@ class ChezmoiGUI(App[None]):
         self.launch_init_screen = self.pre_run_data.launch_init_screen
 
         # Construct the ids for each screen
-        self.init_screen_ids = CanvasIds(canvas_name=CanvasName.init_screen)
+        self.init_screen_ids = CanvasIds(CanvasName.init_screen)
         self.install_help_screen_ids = CanvasIds(
-            canvas_name=CanvasName.install_help_screen
+            CanvasName.install_help_screen
         )
         self.main_screen_ids = CanvasIds(CanvasName.main_screen)
         self.op_screen_ids = CanvasIds(CanvasName.operate_screen)

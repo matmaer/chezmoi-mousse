@@ -24,11 +24,11 @@ from chezmoi_mousse.shared import (
     CurrentAddNodeMsg,
     CurrentApplyNodeMsg,
     CurrentReAddNodeMsg,
+    ReactiveHeader,
 )
 
 from .init_screen import InitScreen
 from .operate import OperateScreen
-from .reactive_header import ReactiveHeader
 from .tabs.add_tab import AddTab, FilteredDirTree
 from .tabs.apply_tab import ApplyTab
 from .tabs.common.trees import ExpandedTree, ListTree, ManagedTree
@@ -105,7 +105,7 @@ class MainScreen(Screen[None], AppType):
         self.current_re_add_node: "NodeData | None" = None
 
     def compose(self) -> ComposeResult:
-        yield ReactiveHeader()
+        yield ReactiveHeader(ids=self.app.main_screen_ids)
         with TabbedContent():
             yield TabPane(
                 TabPanes.apply_tab_button.value,

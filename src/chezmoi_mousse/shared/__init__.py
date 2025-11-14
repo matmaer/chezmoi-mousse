@@ -17,6 +17,7 @@ from ._operate_msg import (
     CurrentApplyNodeMsg,
     CurrentReAddNodeMsg,
 )
+from ._reactive_header import ReactiveHeader
 from ._section_headers import (
     InitialHeader,
     MainSectionLabelText,
@@ -39,6 +40,7 @@ __all__ = [
     "InitialHeader",
     "MainSectionLabelText",
     "OperateButtons",
+    "ReactiveHeader",
     "SectionLabel",
     "SectionSubLabel",
     "TabButtons",
