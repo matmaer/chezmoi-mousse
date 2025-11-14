@@ -310,7 +310,7 @@ class ReadOutputCollapsible(Collapsible, AppType):
 
     def on_mount(self) -> None:
         static_widget = self.query_one(self.static_qid, Static)
-        static_widget.add_class("static_output")
+        static_widget.add_class(Tcss.static_output.name)
         collapsible_title = self.query_exactly_one("CollapsibleTitle")
         if self.command_result.returncode == 0:
             collapsible_title.add_class(Tcss.green_title.name)
