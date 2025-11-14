@@ -192,6 +192,7 @@ class OperateScreen(Screen[OperateScreenData], AppType):
             ):
                 yield DiffView(ids=self.ids, reverse=False)
         with Vertical(id=self.post_operate_id):
+            yield SectionLabel(SectionLabels.output)
             yield OutputLog(
                 ids=self.ids, view_name=ViewName.write_output_log_view
             )
@@ -312,8 +313,6 @@ class OperateScreen(Screen[OperateScreenData], AppType):
         self.post_operate_ui_update()
 
     def post_operate_ui_update(self) -> None:
-        section_label = self.query_exactly_one(SectionLabel)
-        section_label.update(SectionLabels.output)
         pre_op_container = self.query_one(self.pre_operate_qid, Vertical)
         pre_op_container.display = False
         post_op_container = self.query_one(self.post_operate_qid, Vertical)
