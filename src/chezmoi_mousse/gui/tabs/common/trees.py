@@ -1,3 +1,6 @@
+"""Contains subclassed textual classes shared between the ApplyTab and
+ReAddTab."""
+
 from pathlib import Path
 from typing import TYPE_CHECKING
 

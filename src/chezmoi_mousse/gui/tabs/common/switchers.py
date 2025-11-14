@@ -1,3 +1,6 @@
+"""Contains subclassed textual classes shared between the ApplyTab and
+ReAddTab."""
+
 from typing import TYPE_CHECKING
 
 from textual import on
