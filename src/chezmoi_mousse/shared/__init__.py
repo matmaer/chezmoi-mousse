@@ -13,6 +13,7 @@ from .operate_msg import (
     CurrentApplyNodeMsg,
     CurrentReAddNodeMsg,
 )
+from .section_headers import InitialHeader, SectionLabel, SectionSubLabel
 from .switch_slider import SwitchSliderBase
 
 __all__ = [
@@ -25,7 +26,10 @@ __all__ = [
     "FlatButtonsVertical",
     "FlatLink",
     "GitLogView",
+    "InitialHeader",
     "OperateButtons",
+    "SectionLabel",
+    "SectionSubLabel",
     "SwitchSliderBase",
     "TabButtons",
 ]

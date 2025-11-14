@@ -18,7 +18,7 @@ from chezmoi_mousse import (
 )
 from chezmoi_mousse.shared import FlatButtonsVertical, FlatLink
 
-from ..shared.section_headers import SectionLabel, SectionSubLabel
+from ...shared.section_headers import SectionLabel, SectionSubLabel
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds
