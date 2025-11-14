@@ -313,9 +313,9 @@ class ReadOutputCollapsible(Collapsible, AppType):
         static_widget.add_class("static_output")
         collapsible_title = self.query_exactly_one("CollapsibleTitle")
         if self.command_result.returncode == 0:
-            collapsible_title.add_class("green_title")
+            collapsible_title.add_class(Tcss.green_title.name)
         else:
-            collapsible_title.add_class("warning_title")
+            collapsible_title.add_class(Tcss.warning_title.name)
 
 
 class ReadCmdLog(ScrollableContainer, AppType):
