@@ -4,7 +4,7 @@ from textual import on
 from textual.app import ComposeResult
 from textual.containers import ScrollableContainer, Vertical
 from textual.screen import Screen
-from textual.widgets import Button, ContentSwitcher, Pretty
+from textual.widgets import Button, ContentSwitcher, Footer, Pretty
 
 from chezmoi_mousse import (
     AppType,
@@ -89,6 +89,7 @@ class InitScreen(Screen[None], AppType):
                 ),
             )
         yield InitSwitcher(ids=self.ids, splash_data=self.splash_data)
+        yield Footer()
 
     def on_mount(self) -> None:
         pretty_cat_config = self.query_one(
