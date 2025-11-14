@@ -13,7 +13,6 @@ from textual.theme import Theme
 from chezmoi_mousse import CanvasIds, CanvasName, Chars
 from chezmoi_mousse.shared import ContentsView, DiffView, GitLogView
 
-from .init_screen import InitScreen
 from .install_help import InstallHelp
 from .main_screen import MainScreen
 from .reactive_header import ReactiveHeader
@@ -112,14 +111,6 @@ class ChezmoiGUI(App[None]):
     ) -> None:
         if return_data is None:
             self.push_screen(InstallHelp(ids=self.install_help_screen_ids))
-            return
-        if (
-            self.launch_init_screen is True
-            or return_data.cat_config.returncode != 0
-        ):
-            self.push_screen(
-                InitScreen(ids=self.init_screen_ids, commands_data=return_data)
-            )
             return
 
         dest_dir = return_data.parsed_config.dest_dir

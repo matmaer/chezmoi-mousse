@@ -1,12 +1,14 @@
 from typing import TYPE_CHECKING
 
+from textual import on
 from textual.app import ComposeResult
 from textual.containers import ScrollableContainer, Vertical
 from textual.screen import Screen
-from textual.widgets import ContentSwitcher, Pretty
+from textual.widgets import Button, ContentSwitcher, Pretty
 
 from chezmoi_mousse import ContainerName, FlatBtn, SplashData, Tcss, ViewName
 from chezmoi_mousse.shared import (
+    CatConfigOutput,
     DoctorTable,
     FlatButtonsVertical,
     MainSectionLabelText,
@@ -21,15 +23,16 @@ if TYPE_CHECKING:
 
 class InitSwitcher(ContentSwitcher):
 
-    def __init__(self, ids: "CanvasIds"):
+    def __init__(self, *, ids: "CanvasIds", splash_data: "SplashData") -> None:
         self.ids = ids
-        self.doctor_list_view_id = self.ids.view_id(view=ViewName.doctor_view)
+        self.doctor_view_id = self.ids.view_id(view=ViewName.doctor_view)
         super().__init__(
             id=self.ids.content_switcher_id(
                 name=ContainerName.init_screen_switcher
             ),
-            initial=self.doctor_list_view_id,
+            initial=self.doctor_view_id,
         )
+        self.splash_data = splash_data
         self.doctor_table_qid = ids.datatable_id(
             "#", view_name=ViewName.doctor_view
         )
@@ -39,11 +42,7 @@ class InitSwitcher(ContentSwitcher):
             SectionLabel(MainSectionLabelText.doctor_output),
             DoctorTable(ids=self.ids),
         )
-        yield ScrollableContainer(
-            SectionLabel(MainSectionLabelText.cat_config_output),
-            Pretty("<cat-config>", id=ViewName.pretty_cat_config_view),
-            id=self.ids.view_id(view=ViewName.cat_config_view),
-        )
+        yield CatConfigOutput(ids=self.ids)
         yield ScrollableContainer(
             SectionLabel(MainSectionLabelText.template_data_output),
             Pretty("<template_data>", id=ViewName.pretty_template_data_view),
@@ -53,14 +52,19 @@ class InitSwitcher(ContentSwitcher):
 
 class InitScreen(Screen[None]):
 
-    def __init__(
-        self, *, ids: "CanvasIds", commands_data: "SplashData"
-    ) -> None:
-        self.ids = ids
+    def __init__(self, *, ids: "CanvasIds", splash_data: "SplashData") -> None:
         super().__init__(id=ids.canvas_name, classes=Tcss.screen_base.name)
-        self.commands_data = commands_data
+        self.ids = ids
         self.tab_vertical_id = ids.tab_vertical_id(
             name=ContainerName.left_side
+        )
+        self.splash_data = splash_data
+        self.cat_config_defaults = self.splash_data.cat_config.std_out
+        # Button IDs
+        self.cat_config_btn_id = self.ids.button_id(btn=(FlatBtn.cat_config))
+        # View IDs
+        self.cat_config_view_id = self.ids.view_id(
+            view=ViewName.cat_config_view
         )
 
     def compose(self) -> ComposeResult:
@@ -75,4 +79,22 @@ class InitScreen(Screen[None]):
                     FlatBtn.template_data,
                 ),
             )
-        yield InitSwitcher(self.ids)
+        yield InitSwitcher(ids=self.ids, splash_data=self.splash_data)
+
+    def on_mount(self) -> None:
+        pretty_cat_config = self.query_one(
+            f"#{ViewName.pretty_cat_config_view}", Pretty
+        )
+        pretty_cat_config.update(self.cat_config_defaults.splitlines())
+
+    @on(Button.Pressed, Tcss.flat_button.value)
+    def switch_content(self, event: Button.Pressed) -> None:
+        event.stop()
+        switcher = self.query_one(
+            self.ids.content_switcher_id(
+                "#", name=ContainerName.init_screen_switcher
+            ),
+            ContentSwitcher,
+        )
+        if event.button.id == self.cat_config_btn_id:
+            switcher.current = self.cat_config_view_id

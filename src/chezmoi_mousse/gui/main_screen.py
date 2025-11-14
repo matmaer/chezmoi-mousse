@@ -26,6 +26,7 @@ from chezmoi_mousse.shared import (
     CurrentReAddNodeMsg,
 )
 
+from .init_screen import InitScreen
 from .operate import OperateScreen
 from .reactive_header import ReactiveHeader
 from .tabs.add_tab import AddTab, FilteredDirTree
@@ -174,6 +175,14 @@ class MainScreen(Screen[None], AppType):
         self.handle_commands_data(self.splash_data)
 
     def handle_commands_data(self, data: "SplashData") -> None:
+        if (
+            self.app.launch_init_screen is True
+            or data.cat_config.returncode != 0
+        ):
+            self.app.push_screen(
+                InitScreen(ids=self.app.init_screen_ids, splash_data=data)
+            )
+            return
         self.populate_trees(commands_data=data)
         self.update_config_tab_outputs(data)
 

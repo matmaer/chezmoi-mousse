@@ -24,6 +24,7 @@ from textual.widgets import (
 
 from chezmoi_mousse import AppType, ContainerName, FlatBtn, Tcss, ViewName
 from chezmoi_mousse.shared import (
+    CatConfigOutput,
     DoctorTable,
     FlatButtonsVertical,
     MainSectionLabelText,
@@ -155,11 +156,7 @@ class ConfigTabSwitcher(ContentSwitcher):
             id=self.doctor_list_view_id,
             classes=Tcss.doctor_vertical_scroll.name,
         )
-        yield ScrollableContainer(
-            SectionLabel(MainSectionLabelText.cat_config_output),
-            Pretty("<cat-config>", id=ViewName.pretty_cat_config_view),
-            id=self.ids.view_id(view=ViewName.cat_config_view),
-        )
+        yield CatConfigOutput(ids=self.ids)
         yield ScrollableContainer(
             SectionLabel(MainSectionLabelText.ignored_output),
             Pretty("<ignored>", id=ViewName.pretty_ignored_view),
