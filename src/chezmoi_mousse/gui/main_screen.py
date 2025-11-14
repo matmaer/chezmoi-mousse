@@ -114,30 +114,36 @@ class MainScreen(Screen[None], AppType):
     def compose(self) -> ComposeResult:
         yield ReactiveHeader()
         with TabbedContent():
-            with TabPane(
-                TabPanes.apply_tab_button.value, id=CanvasName.apply_tab.name
-            ):
-                yield ApplyTab(ids=self.app.apply_tab_ids)
-            with TabPane(
-                TabPanes.re_add_tab_button.value, id=CanvasName.re_add_tab.name
-            ):
-                yield ReAddTab(ids=self.app.re_add_tab_ids)
-            with TabPane(
-                TabPanes.add_tab_button.value, id=CanvasName.add_tab.name
-            ):
-                yield AddTab(ids=self.app.add_tab_ids)
-            with TabPane(
-                TabPanes.logs_tab_button.value, id=CanvasName.logs_tab.name
-            ):
-                yield LogsTab(ids=self.app.logs_tab_ids)
-            with TabPane(
-                TabPanes.config_tab_button.value, id=CanvasName.config_tab.name
-            ):
-                yield ConfigTab(ids=self.app.config_tab_ids)
-            with TabPane(
-                TabPanes.help_tab_button.value, id=CanvasName.help_tab.name
-            ):
-                yield HelpTab(ids=self.app.help_tab_ids)
+            yield TabPane(
+                TabPanes.apply_tab_button.value,
+                ApplyTab(ids=self.app.apply_tab_ids),
+                id=CanvasName.apply_tab.name,
+            )
+            yield TabPane(
+                TabPanes.re_add_tab_button.value,
+                ReAddTab(ids=self.app.re_add_tab_ids),
+                id=CanvasName.re_add_tab.name,
+            )
+            yield TabPane(
+                TabPanes.add_tab_button.value,
+                AddTab(ids=self.app.add_tab_ids),
+                id=CanvasName.add_tab.name,
+            )
+            yield TabPane(
+                TabPanes.logs_tab_button.value,
+                LogsTab(ids=self.app.logs_tab_ids),
+                id=CanvasName.logs_tab.name,
+            )
+            yield TabPane(
+                TabPanes.config_tab_button.value,
+                ConfigTab(ids=self.app.config_tab_ids),
+                id=CanvasName.config_tab.name,
+            )
+            yield TabPane(
+                TabPanes.help_tab_button.value,
+                HelpTab(ids=self.app.help_tab_ids),
+                id=CanvasName.help_tab.name,
+            )
         yield Footer()
 
     def on_mount(self) -> None:
