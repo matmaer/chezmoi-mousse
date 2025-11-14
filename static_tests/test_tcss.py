@@ -9,7 +9,7 @@ from chezmoi_mousse._tcss_classes import Tcss
 
 CLASS_NAME = "Tcss"
 CLASSES_KEYWORD = "classes"
-GUI_DOT_TCSS_PATH = Path("src", "chezmoi_mousse", "gui.tcss")
+GUI_DOT_TCSS_PATH = Path("src", "chezmoi_mousse", "gui", "gui.tcss")
 HARDCODED = "hardcoded tcss class"
 ORPHANED = "Orphaned gui.tcss classes"
 
