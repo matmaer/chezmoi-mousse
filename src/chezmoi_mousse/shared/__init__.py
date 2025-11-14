@@ -1,3 +1,5 @@
+"""Contains subclassed textual classes shared across the application."""
+
 from ._buttons import (
     FlatButton,
     FlatButtonsVertical,
