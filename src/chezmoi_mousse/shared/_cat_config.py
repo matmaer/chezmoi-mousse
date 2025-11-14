@@ -10,6 +10,8 @@ from chezmoi_mousse.shared import MainSectionLabelText, SectionLabel
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds
 
+__all__ = ["CatConfigOutput"]
+
 
 class CatConfigOutput(Vertical):
     def __init__(self, ids: "CanvasIds"):
