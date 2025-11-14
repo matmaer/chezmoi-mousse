@@ -9,6 +9,7 @@ from textual.widgets import Button, ContentSwitcher, Footer, Pretty
 from chezmoi_mousse import (
     AppType,
     ContainerName,
+    DataTableName,
     FlatBtn,
     SplashData,
     Tcss,
@@ -43,7 +44,7 @@ class InitSwitcher(ContentSwitcher):
         )
         self.splash_data = splash_data
         self.doctor_table_qid = ids.datatable_id(
-            "#", view_name=ViewName.doctor_view
+            "#", data_table_name=DataTableName.doctor_table
         )
 
     def compose(self) -> ComposeResult:

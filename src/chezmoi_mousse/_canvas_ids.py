@@ -2,7 +2,13 @@
 generated the id dynamically when subclassing or to query a widget."""
 
 from chezmoi_mousse._button_data import FlatBtn, LinkBtn, OperateBtn, TabBtn
-from chezmoi_mousse._names import CanvasName, ContainerName, TreeName, ViewName
+from chezmoi_mousse._names import (
+    CanvasName,
+    ContainerName,
+    DataTableName,
+    TreeName,
+    ViewName,
+)
 from chezmoi_mousse._switches import Switches
 
 __all__ = ["CanvasIds"]
@@ -46,8 +52,10 @@ class CanvasIds:
     ) -> str:
         return f"{qid}{self.canvas_name}_{name.name}"
 
-    def datatable_id(self, qid: str = "", *, view_name: ViewName) -> str:
-        return f"{qid}{self.canvas_name}_{view_name.name}_datatable"
+    def datatable_id(
+        self, qid: str = "", *, data_table_name: DataTableName
+    ) -> str:
+        return f"{qid}{self.canvas_name}_{data_table_name.name}_datatable"
 
     def initial_header_id(self, qid: str = "", *, view_name: ViewName) -> str:
         return f"{qid}{self.canvas_name}_{view_name.name}_initial_header"

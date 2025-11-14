@@ -41,6 +41,11 @@ class ContainerName(StrEnum):
     view_switcher = auto()
 
 
+class DataTableName(StrEnum):
+    git_log_table = auto()
+    doctor_table = auto()
+
+
 class TreeName(StrEnum):
     add_tree = auto()
     expanded_tree = auto()

@@ -15,7 +15,13 @@ from chezmoi_mousse._chezmoi import (
     VerbArgs,
     WriteCmd,
 )
-from chezmoi_mousse._names import CanvasName, ContainerName, TreeName, ViewName
+from chezmoi_mousse._names import (
+    CanvasName,
+    ContainerName,
+    DataTableName,
+    TreeName,
+    ViewName,
+)
 from chezmoi_mousse._switches import Switches
 from chezmoi_mousse._tcss_classes import Tcss
 
@@ -48,6 +54,7 @@ __all__ = [
     "Chars",
     "Chezmoi",
     "CommandResult",
+    "DataTableName",
     "SplashData",
     "ContainerName",
     "DirTreeNodeData",

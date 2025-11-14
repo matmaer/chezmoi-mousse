@@ -1,14 +1,18 @@
 from typing import TYPE_CHECKING
 
 from rich.text import Text
+from textual.app import ComposeResult
+from textual.containers import ScrollableContainer, Vertical
 from textual.widgets import DataTable
 
-from chezmoi_mousse import AppType, Tcss, ViewName
+from chezmoi_mousse import AppType, DataTableName, Tcss, ViewName
+
+from ._section_headers import MainSectionLabelText, SectionLabel
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds
 
-__all__ = ["DoctorTable"]
+__all__ = ["DoctorTableView"]
 
 
 class DoctorTable(DataTable[Text], AppType):
@@ -16,7 +20,7 @@ class DoctorTable(DataTable[Text], AppType):
     def __init__(self, ids: "CanvasIds") -> None:
 
         super().__init__(
-            id=ids.datatable_id(view_name=ViewName.doctor_view),
+            id=ids.datatable_id(data_table_name=DataTableName.doctor_table),
             show_cursor=False,
             classes=Tcss.doctor_table.name,
         )
@@ -63,3 +67,15 @@ class DoctorTable(DataTable[Text], AppType):
                 row = [Text(cell_text) for cell_text in row]
                 self.add_row(*row)
         return self.pw_mgr_commands
+
+
+class DoctorTableView(Vertical):
+
+    def __init__(self, ids: "CanvasIds"):
+        self.ids = ids
+        self.doctor_view_id = self.ids.view_id(view=ViewName.doctor_view)
+        super().__init__(id=self.doctor_view_id)
+
+    def compose(self) -> ComposeResult:
+        yield SectionLabel(MainSectionLabelText.doctor_output)
+        yield ScrollableContainer(DoctorTable(ids=self.ids))

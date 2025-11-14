@@ -7,7 +7,14 @@ from textual.containers import Horizontal, ScrollableContainer, Vertical
 from textual.reactive import reactive
 from textual.widgets import Button, ContentSwitcher, Pretty
 
-from chezmoi_mousse import AppType, ContainerName, FlatBtn, Tcss, ViewName
+from chezmoi_mousse import (
+    AppType,
+    ContainerName,
+    DataTableName,
+    FlatBtn,
+    Tcss,
+    ViewName,
+)
 from chezmoi_mousse.shared import (
     CatConfigOutput,
     DoctorTable,
@@ -41,7 +48,7 @@ class ConfigTabSwitcher(ContentSwitcher):
             initial=self.doctor_view_id,
         )
         self.doctor_table_qid = ids.datatable_id(
-            "#", view_name=ViewName.doctor_view
+            "#", data_table_name=DataTableName.doctor_table
         )
 
     def compose(self) -> ComposeResult:

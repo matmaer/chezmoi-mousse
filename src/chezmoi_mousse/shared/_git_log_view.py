@@ -8,7 +8,14 @@ from textual.containers import Vertical
 from textual.reactive import reactive
 from textual.widgets import DataTable
 
-from chezmoi_mousse import AppType, CanvasName, ReadCmd, Tcss, ViewName
+from chezmoi_mousse import (
+    AppType,
+    CanvasName,
+    DataTableName,
+    ReadCmd,
+    Tcss,
+    ViewName,
+)
 
 from ._section_headers import InitialHeader
 
@@ -34,10 +41,10 @@ class GitLogView(Vertical, AppType):
         )
         self.ids = ids
         self.git_log_table_id = ids.datatable_id(
-            view_name=ViewName.git_log_view
+            data_table_name=DataTableName.git_log_table
         )
         self.git_log_table_qid = ids.datatable_id(
-            "#", view_name=ViewName.git_log_view
+            "#", data_table_name=DataTableName.git_log_table
         )
         self.initial_header_qid = ids.initial_header_id(
             "#", view_name=ViewName.git_log_view
