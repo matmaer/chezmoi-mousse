@@ -13,15 +13,15 @@ from textual.theme import Theme
 from chezmoi_mousse import CanvasIds, CanvasName, Chars
 from chezmoi_mousse.shared import ContentsView, DiffView, GitLogView
 
-from .gui.init_screen import InitScreen
-from .gui.install_help import InstallHelp
-from .gui.main_screen import MainScreen
-from .gui.operate import OperateInfo
-from .gui.reactive_header import ReactiveHeader
-from .gui.splash import LoadingScreen
-from .gui.tabs.add_tab import AddTab
-from .gui.tabs.shared.switchers import ViewSwitcher
-from .gui.tabs.shared.trees import TreeBase
+from .init_screen import InitScreen
+from .install_help import InstallHelp
+from .main_screen import MainScreen
+from .operate import OperateInfo
+from .reactive_header import ReactiveHeader
+from .splash import LoadingScreen
+from .tabs.add_tab import AddTab
+from .tabs.shared.switchers import ViewSwitcher
+from .tabs.shared.trees import TreeBase
 
 if TYPE_CHECKING:
     from chezmoi_mousse import Chezmoi, CommandsData, PreRunData
