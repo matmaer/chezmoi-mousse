@@ -33,7 +33,6 @@ class LinkBtn(StrEnum):
     chezmoi_forget = "https://www.chezmoi.io/reference/commands/forget/"
     chezmoi_install = "https://www.chezmoi.io/install/"
     chezmoi_re_add = "https://www.chezmoi.io/reference/commands/re-add/"
-    github_issues = "https://github.com/matmaer/chezmoi-mousse/issues"
 
     @property
     def link_url(self) -> str:
