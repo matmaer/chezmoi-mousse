@@ -61,7 +61,6 @@ class ConfigTabSwitcher(ContentSwitcher):
             SectionLabel(MainSectionLabelText.password_managers),
             PwMgrInfoList(ids=self.ids),
             id=self.ids.view_id(view=ViewName.pw_mgr_info_view),
-            classes=Tcss.doctor_vertical_scroll.name,
         )
         yield CatConfigOutput(ids=self.ids)
         yield ScrollableContainer(

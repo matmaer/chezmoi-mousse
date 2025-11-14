@@ -4,8 +4,6 @@ from typing import TYPE_CHECKING
 
 from textual.widgets import Link, ListItem, ListView, Static
 
-from chezmoi_mousse import Tcss
-
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds
 
@@ -86,9 +84,7 @@ class PwMgrInfoList(ListView):
 
     def __init__(self, ids: "CanvasIds") -> None:
         self.ids = ids
-        super().__init__(
-            id=self.ids.listview_id, classes=Tcss.doctor_listview.name
-        )
+        super().__init__(id=self.ids.listview_id)
 
     def populate_listview(self, pw_mgr_commands: list[str]) -> None:
         for cmd in pw_mgr_commands:

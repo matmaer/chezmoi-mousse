@@ -47,15 +47,6 @@
   min-width: 78;
 }
 
-.doctor_vertical_scroll {
-  .doctor_table {
-    overflow-y: hidden;
-  }
-  .doctor_listview {
-    height: auto;
-  }
-}
-
 .section_header {
   background-tint: $surface-lighten-1;
   background: $background;
