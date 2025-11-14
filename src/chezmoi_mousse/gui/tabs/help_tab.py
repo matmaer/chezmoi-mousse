@@ -16,9 +16,12 @@ from chezmoi_mousse import (
     Tcss,
     ViewName,
 )
-from chezmoi_mousse.shared import FlatButtonsVertical, FlatLink
-
-from ...shared.section_headers import SectionLabel, SectionSubLabel
+from chezmoi_mousse.shared import (
+    FlatButtonsVertical,
+    FlatLink,
+    SectionLabel,
+    SectionSubLabel,
+)
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds
