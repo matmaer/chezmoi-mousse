@@ -1,6 +1,4 @@
 import json
-from dataclasses import dataclass
-from enum import Enum
 from typing import TYPE_CHECKING
 
 from textual import on
@@ -12,15 +10,7 @@ from textual.containers import (
     VerticalScroll,
 )
 from textual.reactive import reactive
-from textual.widgets import (
-    Button,
-    ContentSwitcher,
-    Link,
-    ListItem,
-    ListView,
-    Pretty,
-    Static,
-)
+from textual.widgets import Button, ContentSwitcher, Pretty
 
 from chezmoi_mousse import AppType, ContainerName, FlatBtn, Tcss, ViewName
 from chezmoi_mousse.shared import (
@@ -28,6 +18,7 @@ from chezmoi_mousse.shared import (
     DoctorTable,
     FlatButtonsVertical,
     MainSectionLabelText,
+    PwMgrInfoList,
     SectionLabel,
     TemplateDataOutput,
 )
@@ -36,96 +27,6 @@ if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds, CommandResult
 
 __all__ = ["ConfigTab", "ConfigTabSwitcher"]
-
-
-class PwMgrInfo(Enum):
-    @dataclass(slots=True)
-    class PwMgrData:
-        doctor_check: str
-        description: str
-        link: str
-
-    age_command = PwMgrData(
-        doctor_check="age-command",
-        description="A simple, modern and secure file encryption tool",
-        link="https://github.com/FiloSottile/age",
-    )
-    bitwarden_command = PwMgrData(
-        doctor_check="bitwarden-command",
-        description="Bitwarden Password Manager",
-        link="https://github.com/bitwarden/cli",
-    )
-    bitwarden_secrets_command = PwMgrData(
-        doctor_check="bitwarden-secrets-command",
-        description="Bitwarden Secrets Manager CLI for managing secrets securely.",
-        link="https://github.com/bitwarden/bitwarden-secrets",
-    )
-    doppler_command = PwMgrData(
-        doctor_check="doppler-command",
-        description="The Doppler CLI for managing secrets, configs, and environment variables.",
-        link="https://github.com/DopplerHQ/cli",
-    )
-    gopass_command = PwMgrData(
-        doctor_check="gopass-command",
-        description="The slightly more awesome standard unix password manager for teams.",
-        link="https://github.com/gopasspw/gopass",
-    )
-    keeper_command = PwMgrData(
-        doctor_check="keeper-command",
-        description="An interface to Keeper® Password Manager",
-        link="https://github.com/Keeper-Security/Commander",
-    )
-    keepassxc_command = PwMgrData(
-        doctor_check="keepassxc-command",
-        description="Cross-platform community-driven port of Keepass password manager",
-        link="https://keepassxc.org/",
-    )
-    lpass_command = PwMgrData(
-        doctor_check="lpass-command",
-        description="Old LastPass CLI for accessing your LastPass vault.",
-        link="https://github.com/lastpass/lastpass-cli",
-    )
-    pass_command = PwMgrData(
-        doctor_check="pass-command",
-        description="Stores, retrieves, generates, and synchronizes passwords securely",
-        link="https://www.passwordstore.org/",
-    )
-    pinentry_command = PwMgrData(
-        doctor_check="pinentry-command",
-        description="Collection of simple PIN or passphrase entry dialogs which utilize the Assuan protocol",
-        link="https://gnupg.org/related_software/pinentry/",
-    )
-    rbw_command = PwMgrData(
-        doctor_check="rbw-command",
-        description="Unofficial Bitwarden CLI",
-        link="https://git.tozt.net/rbw",
-    )
-    vault_command = PwMgrData(
-        doctor_check="vault-command",
-        description="A tool for managing secrets",
-        link="https://vaultproject.io/",
-    )
-
-
-class DoctorListView(ListView):
-
-    def __init__(self, ids: "CanvasIds") -> None:
-        self.ids = ids
-        super().__init__(
-            id=self.ids.listview_id, classes=Tcss.doctor_listview.name
-        )
-
-    def populate_listview(self, pw_mgr_commands: list[str]) -> None:
-        for cmd in pw_mgr_commands:
-            for pw_mgr in PwMgrInfo:
-                if pw_mgr.value.doctor_check == cmd:
-                    self.append(
-                        ListItem(
-                            Link(cmd, url=pw_mgr.value.link),
-                            Static(pw_mgr.value.description),
-                        )
-                    )
-                    break
 
 
 class ConfigTabSwitcher(ContentSwitcher):
@@ -137,12 +38,12 @@ class ConfigTabSwitcher(ContentSwitcher):
 
     def __init__(self, ids: "CanvasIds"):
         self.ids = ids
-        self.doctor_list_view_id = self.ids.view_id(view=ViewName.doctor_view)
+        self.doctor_view_id = self.ids.view_id(view=ViewName.doctor_view)
         super().__init__(
             id=self.ids.content_switcher_id(
                 name=ContainerName.config_switcher
             ),
-            initial=self.doctor_list_view_id,
+            initial=self.doctor_view_id,
         )
         self.doctor_table_qid = ids.datatable_id(
             "#", view_name=ViewName.doctor_view
@@ -153,8 +54,8 @@ class ConfigTabSwitcher(ContentSwitcher):
             SectionLabel(MainSectionLabelText.doctor_output),
             DoctorTable(ids=self.ids),
             SectionLabel(MainSectionLabelText.password_managers),
-            DoctorListView(ids=self.ids),
-            id=self.doctor_list_view_id,
+            PwMgrInfoList(ids=self.ids),
+            id=self.doctor_view_id,
             classes=Tcss.doctor_vertical_scroll.name,
         )
         yield CatConfigOutput(ids=self.ids)
@@ -172,9 +73,7 @@ class ConfigTabSwitcher(ContentSwitcher):
         pw_mgr_cmds: list[str] = doctor_table.populate_doctor_data(
             doctor_data=self.doctor_results.std_out.splitlines()
         )
-        doctor_list_view = self.query_one(
-            self.ids.listview_qid, DoctorListView
-        )
+        doctor_list_view = self.query_one(self.ids.listview_qid, PwMgrInfoList)
         doctor_list_view.populate_listview(pw_mgr_cmds)
 
     def watch_cat_config_results(self):

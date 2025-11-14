@@ -17,6 +17,7 @@ from ._operate_msg import (
     CurrentApplyNodeMsg,
     CurrentReAddNodeMsg,
 )
+from ._pw_mgr_info import PwMgrInfoList
 from ._reactive_header import ReactiveHeader
 from ._section_headers import (
     InitialHeader,
@@ -41,6 +42,7 @@ __all__ = [
     "InitialHeader",
     "MainSectionLabelText",
     "OperateButtons",
+    "PwMgrInfoList",
     "ReactiveHeader",
     "SectionLabel",
     "SectionSubLabel",
