@@ -18,6 +18,7 @@ from ._operate_msg import (
 )
 from ._section_headers import (
     InitialHeader,
+    MainSectionLabelText,
     SectionLabel,
     SectionStrings,
     SectionSubLabel,
@@ -35,6 +36,7 @@ __all__ = [
     "FlatLink",
     "GitLogView",
     "InitialHeader",
+    "MainSectionLabelText",
     "OperateButtons",
     "SectionLabel",
     "SectionStrings",

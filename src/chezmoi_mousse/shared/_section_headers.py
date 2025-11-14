@@ -20,18 +20,26 @@ if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds
 
 
-class SectionStrings(StrEnum):
+class MainSectionLabelText(StrEnum):
+    cat_config_output = '"chezmoi cat-config" output'
+    doctor_output = '"chezmoi doctor" output'
+    ignored_output = '"chezmoi ignored" output'
+    operate_context = "Operate Context"
+    operate_output = "Operate Command Output"
+    password_managers = "Password managers not found in $PATH"
     path_info = "Path Information"
+    template_data_output = '"chezmoi data" output'
+
+
+class SectionStrings(StrEnum):
     in_dest_dir = 'This is the destination directory "chezmoi destDir"'
-    initial_git_log_msg = (
-        'Click a path in the tree to see the output from "chezmoi git log".'
-    )
+    initial_contents_msg = "Click a path in the tree to see the file contents."
     initial_diff_msg = (
         'Click a path in the tree to see the output from "chezmoi diff".'
     )
-    initial_contents_msg = "Click a path in the tree to see the file contents."
-    operate_context = "Operate Context"
-    operate_output = "Operate Command Output"
+    initial_git_log_msg = (
+        'Click a path in the tree to see the output from "chezmoi git log".'
+    )
 
 
 class SectionLabel(Label):
@@ -73,7 +81,7 @@ class InitialHeader(Vertical):
         self.static_qid = f"#{self.static_id}"
 
     def compose(self) -> ComposeResult:
-        yield SectionSubLabel(SectionStrings.path_info)
+        yield SectionSubLabel(MainSectionLabelText.path_info)
         yield Static("", id=self.static_id)
 
     def on_mount(self) -> None:

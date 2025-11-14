@@ -1,6 +1,6 @@
 import json
 from dataclasses import dataclass
-from enum import Enum, StrEnum
+from enum import Enum
 from typing import TYPE_CHECKING
 
 from textual import on
@@ -26,6 +26,7 @@ from chezmoi_mousse import AppType, ContainerName, FlatBtn, Tcss, ViewName
 from chezmoi_mousse.shared import (
     DoctorTable,
     FlatButtonsVertical,
+    MainSectionLabelText,
     SectionLabel,
 )
 
@@ -33,14 +34,6 @@ if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds, CommandResult
 
 __all__ = ["ConfigTab", "ConfigTabSwitcher"]
-
-
-class ConfigSectionLabels(StrEnum):
-    cat_config_output = '"chezmoi cat-config" output'
-    doctor_output = '"chezmoi doctor" output'
-    ignored_output = '"chezmoi ignored" output'
-    password_managers = "Password managers not found in $PATH"
-    template_data_output = '"chezmoi data" output'
 
 
 class PwMgrInfo(Enum):
@@ -155,25 +148,25 @@ class ConfigTabSwitcher(ContentSwitcher):
 
     def compose(self) -> ComposeResult:
         yield VerticalScroll(
-            SectionLabel(ConfigSectionLabels.doctor_output),
+            SectionLabel(MainSectionLabelText.doctor_output),
             DoctorTable(ids=self.ids),
-            SectionLabel(ConfigSectionLabels.password_managers),
+            SectionLabel(MainSectionLabelText.password_managers),
             DoctorListView(ids=self.ids),
             id=self.doctor_list_view_id,
             classes=Tcss.doctor_vertical_scroll.name,
         )
         yield ScrollableContainer(
-            SectionLabel(ConfigSectionLabels.cat_config_output),
+            SectionLabel(MainSectionLabelText.cat_config_output),
             Pretty("<cat-config>", id=ViewName.pretty_cat_config_view),
             id=self.ids.view_id(view=ViewName.cat_config_view),
         )
         yield ScrollableContainer(
-            SectionLabel(ConfigSectionLabels.ignored_output),
+            SectionLabel(MainSectionLabelText.ignored_output),
             Pretty("<ignored>", id=ViewName.pretty_ignored_view),
             id=self.ids.view_id(view=ViewName.git_ignored_view),
         )
         yield ScrollableContainer(
-            SectionLabel(ConfigSectionLabels.template_data_output),
+            SectionLabel(MainSectionLabelText.template_data_output),
             Pretty("<template_data>", id=ViewName.pretty_template_data_view),
             id=self.ids.view_id(view=ViewName.template_data_view),
         )
