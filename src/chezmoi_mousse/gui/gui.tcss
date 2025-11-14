@@ -181,6 +181,11 @@ ReactiveHeader {
 ReadOutputCollapsible {
   border: none;
   padding: 0;
+  & .static_output {
+    background: $surface;
+    background-tint: $surface;
+    margin-bottom: 1;
+  }
 }
 
 SwitchSliderBase {

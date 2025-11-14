@@ -292,16 +292,21 @@ class ReadOutputCollapsible(Collapsible, AppType):
     def __init__(
         self, ids: "CanvasIds", command: str, output: str, counter: int
     ) -> None:
+        self.static_id = f"read_cmd_static_number_{counter}"
+        self.static_qid = f"#read_cmd_static_number_{counter}"
+        self.collapsible_id = f"read_cmd_collapsible_number_{counter}"
         super().__init__(
-            Static(
-                output, id=f"read_cmd_static_number_{counter}", markup=False
-            ),
+            Static(output, id=self.static_id, markup=False),
             title=command,
             collapsed_symbol=Chars.right_triangle,
             expanded_symbol=Chars.down_triangle,
             collapsed=True,
-            id=f"read_cmd_collapsible_number_{counter}",
+            id=self.collapsible_id,
         )
+
+    def on_mount(self) -> None:
+        static_widget = self.query_one(self.static_qid, Static)
+        static_widget.add_class("static_output")
 
 
 class ReadCmdLog(ScrollableContainer, AppType):
