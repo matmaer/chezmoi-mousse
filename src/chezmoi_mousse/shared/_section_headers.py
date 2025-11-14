@@ -8,7 +8,13 @@ from textual.widgets import Label, Static
 
 from chezmoi_mousse import Tcss, ViewName
 
-__all__ = ["InitialHeader", "SectionHeader", "SectionLabel", "SectionSubLabel"]
+__all__ = [
+    "InitialHeader",
+    "SectionHeader",
+    "SectionLabel",
+    "SectionSubLabel",
+    "MainSectionLabelText",
+]
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds
