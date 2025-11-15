@@ -1,11 +1,16 @@
+"""Shared between MainScreen (config tab) and the InitScreen."""
+
 from dataclasses import dataclass
 from enum import Enum, StrEnum
 from typing import TYPE_CHECKING
 
+from textual.app import ComposeResult
 from textual.containers import Vertical
 from textual.widgets import Collapsible, Link, Static
 
 from chezmoi_mousse import Chars, CommandResult, ViewName
+
+from ._section_headers import SectionLabel, SectionLabelText
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds
@@ -195,6 +200,9 @@ class PwMgrInfoView(Vertical):
     def __init__(self, ids: "CanvasIds") -> None:
         self.ids = ids
         super().__init__(id=self.ids.view_id(view=ViewName.pw_mgr_info_view))
+
+    def compose(self) -> ComposeResult:
+        yield SectionLabel(SectionLabelText.password_managers)
 
     def populate_pw_mgr_info(self, doctor_results: "CommandResult") -> None:
         doctor_lines = doctor_results.std_out.splitlines()

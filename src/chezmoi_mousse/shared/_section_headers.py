@@ -8,25 +8,19 @@ from textual.widgets import Label, Static
 
 from chezmoi_mousse import Tcss, ViewName
 
-__all__ = [
-    "InitialHeader",
-    "SectionHeader",
-    "SectionLabel",
-    "SectionSubLabel",
-    "MainSectionLabelText",
-]
+__all__ = ["InitialHeader", "SectionHeader", "SectionLabel", "SectionSubLabel"]
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds
 
 
-class MainSectionLabelText(StrEnum):
+class SectionLabelText(StrEnum):
     cat_config_output = '"chezmoi cat-config" output'
     doctor_output = '"chezmoi doctor" output'
     ignored_output = '"chezmoi ignored" output'
     operate_context = "Operate Context"
     operate_output = "Operate Command Output"
-    password_managers = "Password managers not found in $PATH"
+    password_managers = "Password Manager Information"
     path_info = "Path Information"
     template_data_output = '"chezmoi data" output'
 
@@ -81,7 +75,7 @@ class InitialHeader(Vertical):
         self.static_qid = f"#{self.static_id}"
 
     def compose(self) -> ComposeResult:
-        yield SectionSubLabel(MainSectionLabelText.path_info)
+        yield SectionSubLabel(SectionLabelText.path_info)
         yield Static("", id=self.static_id)
 
     def on_mount(self) -> None:

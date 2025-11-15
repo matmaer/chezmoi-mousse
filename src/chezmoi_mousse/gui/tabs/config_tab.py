@@ -19,9 +19,9 @@ from chezmoi_mousse.shared import (
     CatConfigOutput,
     DoctorTable,
     FlatButtonsVertical,
-    MainSectionLabelText,
     PwMgrInfoView,
     SectionLabel,
+    SectionLabelText,
     TemplateDataOutput,
 )
 
@@ -56,14 +56,14 @@ class ConfigTabSwitcher(ContentSwitcher):
 
     def compose(self) -> ComposeResult:
         yield ScrollableContainer(
-            SectionLabel(MainSectionLabelText.doctor_output),
+            SectionLabel(SectionLabelText.doctor_output),
             DoctorTable(ids=self.ids),
             id=self.doctor_view_id,
         )
         yield PwMgrInfoView(ids=self.ids)
         yield CatConfigOutput(ids=self.ids)
         yield ScrollableContainer(
-            SectionLabel(MainSectionLabelText.ignored_output),
+            SectionLabel(SectionLabelText.ignored_output),
             Pretty("<ignored>", id=ViewName.pretty_ignored_view),
             id=self.ids.view_id(view=ViewName.git_ignored_view),
         )

@@ -19,9 +19,9 @@ from chezmoi_mousse.shared import (
     CatConfigOutput,
     DoctorTable,
     FlatButtonsVertical,
-    MainSectionLabelText,
     ReactiveHeader,
     SectionLabel,
+    SectionLabelText,
     TemplateDataOutput,
 )
 
@@ -49,7 +49,7 @@ class InitSwitcher(ContentSwitcher):
 
     def compose(self) -> ComposeResult:
         yield ScrollableContainer(
-            SectionLabel(MainSectionLabelText.doctor_output),
+            SectionLabel(SectionLabelText.doctor_output),
             DoctorTable(ids=self.ids),
         )
         yield CatConfigOutput(ids=self.ids)

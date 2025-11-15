@@ -19,10 +19,10 @@ from chezmoi_mousse import (
 from chezmoi_mousse.shared import (
     ContentsView,
     DiffView,
-    MainSectionLabelText,
     OperateButtons,
     ReactiveHeader,
     SectionLabel,
+    SectionLabelText,
 )
 
 from .tabs.common.operate_info import OperateInfo
@@ -79,7 +79,7 @@ class OperateScreen(Screen[OperateScreenData], AppType):
             yield OperateInfo(
                 ids=self.ids, operate_screen_data=self.operate_data
             )
-            yield SectionLabel(MainSectionLabelText.operate_context)
+            yield SectionLabel(SectionLabelText.operate_context)
             if self.operate_btn == OperateBtn.apply_path:
                 yield DiffView(ids=self.ids, reverse=False)
             elif self.operate_btn == OperateBtn.re_add_path:
@@ -92,7 +92,7 @@ class OperateScreen(Screen[OperateScreenData], AppType):
             ):
                 yield DiffView(ids=self.ids, reverse=False)
         with Vertical(id=self.post_operate_id):
-            yield SectionLabel(MainSectionLabelText.operate_output)
+            yield SectionLabel(SectionLabelText.operate_output)
             yield OperateLog(ids=self.ids, view_name=ViewName.operate_log_view)
         with Vertical():
             yield OperateButtons(

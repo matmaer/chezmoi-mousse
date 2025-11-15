@@ -21,8 +21,8 @@ from ._pw_mgr_info import PwMgrInfoView
 from ._reactive_header import ReactiveHeader
 from ._section_headers import (
     InitialHeader,
-    MainSectionLabelText,
     SectionLabel,
+    SectionLabelText,
     SectionSubLabel,
 )
 from ._template_data import TemplateDataOutput
@@ -40,7 +40,7 @@ __all__ = [
     "FlatLink",
     "GitLogView",
     "InitialHeader",
-    "MainSectionLabelText",
+    "SectionLabelText",
     "OperateButtons",
     "PwMgrInfoView",
     "ReactiveHeader",

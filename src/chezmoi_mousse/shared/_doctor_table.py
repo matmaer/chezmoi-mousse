@@ -1,3 +1,5 @@
+"""Shared between MainScreen (config tab) and the InitScreen."""
+
 from typing import TYPE_CHECKING
 
 from rich.text import Text
@@ -14,7 +16,7 @@ from chezmoi_mousse import (
     ViewName,
 )
 
-from ._section_headers import MainSectionLabelText, SectionLabel
+from ._section_headers import SectionLabel, SectionLabelText
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds
@@ -81,5 +83,5 @@ class DoctorTableView(Vertical):
         super().__init__(id=self.doctor_view_id)
 
     def compose(self) -> ComposeResult:
-        yield SectionLabel(MainSectionLabelText.doctor_output)
+        yield SectionLabel(SectionLabelText.doctor_output)
         yield ScrollableContainer(DoctorTable(ids=self.ids))
