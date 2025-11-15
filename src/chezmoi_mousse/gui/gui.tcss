@@ -159,6 +159,12 @@ OperateButtons {
   }
 }
 
+PwCollapsible {
+  &>CollapsibleTitle {
+    color: $primary-lighten-3;
+  }
+}
+
 ReactiveHeader {
   border-bottom: dashed $surface-lighten-3;
   color: $primary;
@@ -170,8 +176,7 @@ ReactiveHeader {
 }
 
 ReadOutputCollapsible {
-  border: none;
-  padding: 0;
+  /* leave a space next to the vertical scrollbarr */
   margin-right: 2;
   & .green_title {
     color: $text-success;
@@ -279,8 +284,12 @@ CheckBox {
   }
 }
 
+Collapsible {
+  border: none;
+  padding: 0;
+}
+
 CollapsibleTitle {
-  color: $primary-lighten-3;
   &:hover {
     text-style: bold;
   }
