@@ -125,6 +125,10 @@
 /* Type Selector tcss */
 /**********************/
 
+DoctorTable {
+  margin-bottom: 3;
+}
+
 FlatButtonsVertical {
   width: auto;
 }

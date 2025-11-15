@@ -55,7 +55,7 @@ class ConfigTabSwitcher(ContentSwitcher):
         )
 
     def compose(self) -> ComposeResult:
-        yield ScrollableContainer(
+        yield Vertical(
             SectionLabel(SectionLabelText.doctor_output),
             DoctorTable(ids=self.ids),
             id=self.doctor_view_id,
