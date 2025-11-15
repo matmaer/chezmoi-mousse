@@ -20,7 +20,7 @@ from chezmoi_mousse.shared import (
     DoctorTable,
     FlatButtonsVertical,
     MainSectionLabelText,
-    PwMgrInfoList,
+    PwMgrInfoView,
     SectionLabel,
     TemplateDataOutput,
 )
@@ -47,6 +47,9 @@ class ConfigTabSwitcher(ContentSwitcher):
             ),
             initial=self.doctor_view_id,
         )
+        self.pw_mgr_info_qid = f"#{self.ids.view_id(
+            view=ViewName.pw_mgr_info_view
+        )}"
         self.doctor_table_qid = ids.datatable_id(
             "#", data_table_name=DataTableName.doctor_table
         )
@@ -57,11 +60,7 @@ class ConfigTabSwitcher(ContentSwitcher):
             DoctorTable(ids=self.ids),
             id=self.doctor_view_id,
         )
-        yield ScrollableContainer(
-            SectionLabel(MainSectionLabelText.password_managers),
-            PwMgrInfoList(ids=self.ids),
-            id=self.ids.view_id(view=ViewName.pw_mgr_info_view),
-        )
+        yield PwMgrInfoView(ids=self.ids)
         yield CatConfigOutput(ids=self.ids)
         yield ScrollableContainer(
             SectionLabel(MainSectionLabelText.ignored_output),
@@ -77,11 +76,8 @@ class ConfigTabSwitcher(ContentSwitcher):
         doctor_table.populate_doctor_data(
             doctor_data=self.doctor_results.std_out.splitlines()
         )
-        # pw_mgr_cmds: list[str] = doctor_table.populate_doctor_data(
-        #     doctor_data=self.doctor_results.std_out.splitlines()
-        # )
-        # doctor_list_view = self.query_one(self.ids.listview_qid, PwMgrInfoList)
-        # doctor_list_view.populate_listview(pw_mgr_cmds)
+        pw_mgr_info_view = self.query_one(self.pw_mgr_info_qid, PwMgrInfoView)
+        pw_mgr_info_view.populate_pw_mgr_info(self.doctor_results)
 
     def watch_cat_config_results(self):
         if self.cat_config_results is None:
