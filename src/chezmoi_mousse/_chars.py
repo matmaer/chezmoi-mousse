@@ -10,7 +10,7 @@ class Chars(StrEnum):
     burger = "\u2261"  # '\N{IDENTICAL TO}'
     check_mark = "\u2714"  # '\N{HEAVY CHECK MARK}'
     destroy_info_border = "\u274c destroy \u274c"  # '\N{CROSS MARK}'
-    down_triangle = "\u25bc "  # '\N{BLACK DOWN-POINTING TRIANGLE}'
+    down_triangle = "\u25be "  # '\N{BLACK DOWN-POINTING SMALL TRIANGLE}'DOWN-POINTING TRIANGLE}'
     forget_info_border = "\u2716 forget \u2716"  # '\N{HEAVY MULTIPLICATION X}'
     # gear = "\u2699"  # '\N{GEAR}'
     lower_3_8ths_block = "\u2583"  # "\N{LOWER THREE EIGHTHS BLOCK}"
