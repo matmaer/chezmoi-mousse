@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from rich.text import Text
 from textual.app import ComposeResult
-from textual.containers import ScrollableContainer, Vertical
+from textual.containers import Vertical
 from textual.reactive import reactive
 from textual.widgets import DataTable
 
@@ -84,4 +84,4 @@ class DoctorTableView(Vertical):
 
     def compose(self) -> ComposeResult:
         yield SectionLabel(SectionLabelText.doctor_output)
-        yield ScrollableContainer(DoctorTable(ids=self.ids))
+        yield DoctorTable(ids=self.ids)
