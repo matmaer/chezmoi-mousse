@@ -3,25 +3,14 @@
 from typing import TYPE_CHECKING
 
 from rich.text import Text
-from textual.app import ComposeResult
-from textual.containers import Vertical
-from textual.reactive import reactive
 from textual.widgets import DataTable
 
-from chezmoi_mousse import (
-    AppType,
-    CommandResult,
-    DataTableName,
-    Tcss,
-    ViewName,
-)
-
-from ._section_headers import SectionLabel, SectionLabelText
+from chezmoi_mousse import AppType, DataTableName, Tcss
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds
 
-__all__ = ["DoctorTableView"]
+__all__ = ["DoctorTable"]
 
 
 class DoctorTable(DataTable[Text], AppType):
@@ -71,17 +60,3 @@ class DoctorTable(DataTable[Text], AppType):
             else:
                 row = [Text(cell_text) for cell_text in row]
                 self.add_row(*row)
-
-
-class DoctorTableView(Vertical):
-
-    doctor_results: reactive["CommandResult | None"] = reactive(None)
-
-    def __init__(self, ids: "CanvasIds"):
-        self.ids = ids
-        self.doctor_view_id = self.ids.view_id(view=ViewName.doctor_view)
-        super().__init__(id=self.doctor_view_id)
-
-    def compose(self) -> ComposeResult:
-        yield SectionLabel(SectionLabelText.doctor_output)
-        yield DoctorTable(ids=self.ids)
