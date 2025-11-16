@@ -6,7 +6,13 @@ Used for creating id's, and checking context conditions.
 
 from enum import StrEnum, auto
 
-__all__ = ["CanvasName", "ContainerName", "TreeName", "ViewName"]
+__all__ = [
+    "CanvasName",
+    "ContainerName",
+    "DataTableName",
+    "TreeName",
+    "ViewName",
+]
 
 
 class CanvasName(StrEnum):
