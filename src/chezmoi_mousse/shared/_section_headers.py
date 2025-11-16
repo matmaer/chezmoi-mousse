@@ -18,14 +18,6 @@ class SectionLabelText(StrEnum):
     cat_config_output = '"chezmoi cat-config" output'
     doctor_output = '"chezmoi doctor" output'
     ignored_output = '"chezmoi ignored" output'
-    operate_context = "Operate Context"
-    operate_output = "Operate Command Output"
-    password_managers = "Password Manager Information"
-    path_info = "Path Information"
-    template_data_output = '"chezmoi data" output'
-
-
-class SectionStrings(StrEnum):
     in_dest_dir = 'This is the destination directory "chezmoi destDir"'
     initial_contents_msg = "Click a path in the tree to see the file contents."
     initial_diff_msg = (
@@ -34,6 +26,11 @@ class SectionStrings(StrEnum):
     initial_git_log_msg = (
         'Click a path in the tree to see the output from "chezmoi git log".'
     )
+    operate_context = "Operate Context"
+    operate_output = "Operate Command Output"
+    password_managers = "Password Manager Information"
+    path_info = "Path Information"
+    template_data_output = '"chezmoi data" output'
 
 
 class SectionLabel(Label):
@@ -81,11 +78,11 @@ class InitialHeader(Vertical):
     def on_mount(self) -> None:
         static_widget = self.query_one(self.static_qid, Static)
         lines_to_add: list[str] = []
-        lines_to_add.append(SectionStrings.in_dest_dir)
+        lines_to_add.append(SectionLabelText.in_dest_dir)
         if self.view_name == ViewName.diff_view:
-            lines_to_add.append(SectionStrings.initial_diff_msg)
+            lines_to_add.append(SectionLabelText.initial_diff_msg)
         elif self.view_name == ViewName.contents_view:
-            lines_to_add.append(SectionStrings.initial_contents_msg)
+            lines_to_add.append(SectionLabelText.initial_contents_msg)
         elif self.view_name == ViewName.git_log_view:
-            lines_to_add.append(SectionStrings.initial_git_log_msg)
+            lines_to_add.append(SectionLabelText.initial_git_log_msg)
         static_widget.update("\n".join(lines_to_add))
