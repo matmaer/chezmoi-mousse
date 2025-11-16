@@ -24,7 +24,7 @@ from ._section_headers import (
     InitialHeader,
     SectionLabel,
     SectionLabelText,
-    SectionSubLabel,
+    SubSectionLabel,
 )
 from ._template_data import TemplateDataOutput
 
@@ -47,7 +47,7 @@ __all__ = [
     "ReactiveHeader",
     "SectionLabel",
     "SectionLabelText",
-    "SectionSubLabel",
+    "SubSectionLabel",
     "TabButtons",
     "TemplateDataOutput",
 ]

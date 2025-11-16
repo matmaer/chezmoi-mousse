@@ -78,7 +78,7 @@
     color: $text-accent;
     height: 3;
   }
-  &SectionSubLabel {
+  &SubSectionLabel {
     color: $text-success;
   }
 }

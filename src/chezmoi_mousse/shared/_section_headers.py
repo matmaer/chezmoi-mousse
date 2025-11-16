@@ -8,7 +8,7 @@ from textual.widgets import Label, Static
 
 from chezmoi_mousse import Tcss, ViewName
 
-__all__ = ["InitialHeader", "SectionHeader", "SectionLabel", "SectionSubLabel"]
+__all__ = ["InitialHeader", "SectionHeader", "SectionLabel", "SubSectionLabel"]
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds
@@ -42,7 +42,7 @@ class SectionLabel(Label):
         super().__init__(label_text, classes=Tcss.section_header.name)
 
 
-class SectionSubLabel(Label):
+class SubSectionLabel(Label):
 
     def __init__(self, label_text: str) -> None:
         super().__init__(label_text, classes=Tcss.section_header.name)
@@ -75,7 +75,7 @@ class InitialHeader(Vertical):
         self.static_qid = f"#{self.static_id}"
 
     def compose(self) -> ComposeResult:
-        yield SectionSubLabel(SectionLabelText.path_info)
+        yield SubSectionLabel(SectionLabelText.path_info)
         yield Static("", id=self.static_id)
 
     def on_mount(self) -> None:
