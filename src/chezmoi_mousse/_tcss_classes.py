@@ -16,7 +16,6 @@ class Tcss(StrEnum):
     install_help = ".install_help"
     last_clicked = ".last_clicked"
     operate_button = ".operate_button"
-    operate_screen = ".operate_screen"
     pw_mgr_group = ".pw_mgr_group"
     read_cmd_static = ".read_cmd_static"
     single_button_vertical = ".single_button_vertical"

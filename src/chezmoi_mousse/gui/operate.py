@@ -100,7 +100,6 @@ class OperateScreen(Screen[OperateScreenData], AppType):
         yield Footer()
 
     def on_mount(self) -> None:
-        self.add_class(Tcss.operate_screen.name)
         self.configure_buttons()
         self.configure_widgets()
         self.configure_containers()
