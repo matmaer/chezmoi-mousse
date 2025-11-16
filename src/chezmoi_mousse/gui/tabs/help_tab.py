@@ -3,7 +3,12 @@ from typing import TYPE_CHECKING
 
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import Horizontal, ScrollableContainer, Vertical
+from textual.containers import (
+    Horizontal,
+    ScrollableContainer,
+    Vertical,
+    VerticalGroup,
+)
 from textual.widgets import Button, ContentSwitcher, Static
 
 from chezmoi_mousse import (
@@ -41,7 +46,7 @@ class ToolTipText(Static):
         self.styles.margin = (1, 2, 1, 2)
 
 
-class SharedBtnHelp(Vertical):
+class SharedBtnHelp(VerticalGroup):
 
     def __init__(self, ids: "CanvasIds") -> None:
         super().__init__()
@@ -64,11 +69,8 @@ class SharedBtnHelp(Vertical):
 
         yield FlatLink(ids=self.ids, link_enum=LinkBtn.chezmoi_destroy)
 
-    def on_mount(self) -> None:
-        self.styles.height = "auto"
 
-
-class SharedFiltersHelp(Vertical):
+class SharedFiltersHelp(VerticalGroup):
 
     def compose(self) -> ComposeResult:
         yield SectionLabel(HelpTabSections.available_switches)
@@ -78,9 +80,6 @@ class SharedFiltersHelp(Vertical):
 
         yield SubSectionLabel(Switches.expand_all.label)
         yield ToolTipText(Switches.expand_all.enabled_tooltip)
-
-    def on_mount(self) -> None:
-        self.styles.height = "auto"
 
 
 class ApplyTabHelp(ScrollableContainer):
