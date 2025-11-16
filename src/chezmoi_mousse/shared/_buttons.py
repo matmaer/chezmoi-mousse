@@ -2,7 +2,12 @@ from typing import TYPE_CHECKING
 
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import HorizontalGroup, Vertical, VerticalGroup
+from textual.containers import (
+    Horizontal,
+    HorizontalGroup,
+    Vertical,
+    VerticalGroup,
+)
 from textual.widgets import Button, Link
 
 from chezmoi_mousse import (
@@ -63,17 +68,6 @@ class OperateButton(Button):
         )
 
 
-class OperateButtonVertical(Vertical):
-
-    def __init__(self, *, ids: "CanvasIds", button_enum: OperateBtn) -> None:
-        self.ids = ids
-        self.button_enum = button_enum
-        super().__init__(classes=Tcss.single_button_vertical.name)
-
-    def compose(self) -> ComposeResult:
-        yield OperateButton(ids=self.ids, button_enum=self.button_enum)
-
-
 class FlatButtonsVertical(VerticalGroup):
 
     def __init__(
@@ -88,7 +82,7 @@ class FlatButtonsVertical(VerticalGroup):
             yield FlatButton(ids=self.ids, button_enum=button_enum)
 
 
-class OperateButtons(HorizontalGroup):
+class OperateButtons(Horizontal):
     def __init__(self, *, ids: "CanvasIds", buttons: tuple[OperateBtn, ...]):
         self.ids = ids
         self.buttons = buttons
@@ -96,9 +90,11 @@ class OperateButtons(HorizontalGroup):
             id=self.ids.container_id(name=ContainerName.operate_btn_group)
         )
 
-    def compose(self) -> ComposeResult:
+    def on_mount(self) -> None:
         for button_enum in self.buttons:
-            yield OperateButtonVertical(ids=self.ids, button_enum=button_enum)
+            self.mount(
+                Vertical(OperateButton(ids=self.ids, button_enum=button_enum))
+            )
 
 
 class TabButtons(HorizontalGroup):

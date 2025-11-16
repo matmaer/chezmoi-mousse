@@ -116,7 +116,6 @@ LoggersBase {
 }
 
 OperateButtons {
-  width: 100%;
   height: 3;
   dock: bottom;
 
