@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING
 
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import Horizontal, HorizontalGroup, Vertical
+from textual.containers import Horizontal, Vertical
 from textual.widgets import Button, Link
 
 from chezmoi_mousse import (
@@ -92,7 +92,7 @@ class OperateButtons(Horizontal):
             )
 
 
-class TabButtons(HorizontalGroup):
+class TabButtons(Horizontal):
     def __init__(self, *, ids: "CanvasIds", buttons: tuple[TabBtn, ...]):
         self.ids = ids
         self.buttons = buttons
