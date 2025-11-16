@@ -85,39 +85,6 @@
   }
 }
 
-.screen_base {
-  &.operate_screen {
-    & OperateInfo {
-      border-subtitle-align: center;
-      border-title-align: center;
-      border: round $foreground;
-      text-align: center;
-      dock: top;
-    }
-    & ContentsView {
-      border: none;
-      height: auto;
-    }
-    & DiffView {
-      border: none;
-      height: auto;
-    }
-  }
-  &.install_help {
-    border-bottom: $primary;
-    & VerticalGroup {
-      margin-left: 1;
-      width: 22;
-    }
-    & Tree {
-      border: $success;
-      max-width: 100vw;
-      color: $primary-lighten-3;
-    }
-  }
-}
-
-
 /**********************/
 /* Type Selector tcss */
 /**********************/
@@ -129,6 +96,20 @@ DoctorTable {
 FlatButtonsVertical {
   width: auto;
 }
+
+InstallHelp {
+  border-bottom: $primary;
+  & VerticalGroup {
+    margin-left: 1;
+    width: 22;
+  }
+  & Tree {
+    border: $success;
+    max-width: 100vw;
+    color: $primary-lighten-3;
+  }
+}
+
 
 LoggersBase {
   margin-bottom: 1;
@@ -158,6 +139,14 @@ OperateButtons {
       text-style: none;
     }
   }
+}
+
+OperateInfo {
+  border-subtitle-align: center;
+  border-title-align: center;
+  border: round $foreground;
+  text-align: center;
+  dock: top;
 }
 
 ReactiveHeader {

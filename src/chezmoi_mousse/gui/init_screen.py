@@ -71,7 +71,7 @@ class InitSwitcher(ContentSwitcher):
 class InitScreen(Screen[None], AppType):
 
     def __init__(self, *, ids: "CanvasIds", splash_data: "SplashData") -> None:
-        super().__init__(id=ids.canvas_name, classes=Tcss.screen_base.name)
+        super().__init__()
         self.ids = ids
         self.tab_vertical_id = ids.tab_vertical_id(
             name=ContainerName.left_side

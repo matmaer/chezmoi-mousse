@@ -19,7 +19,6 @@ class Tcss(StrEnum):
     operate_screen = ".operate_screen"
     pw_mgr_group = ".pw_mgr_group"
     read_cmd_static = ".read_cmd_static"
-    screen_base = ".screen_base"
     single_button_vertical = ".single_button_vertical"
     tab_button = ".tab_button"
     tab_left_vertical = ".tab_left_vertical"

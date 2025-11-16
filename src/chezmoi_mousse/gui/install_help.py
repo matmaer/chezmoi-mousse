@@ -49,9 +49,7 @@ class InstallHelp(Screen[None], AppType):
     ]
 
     def __init__(self, *, ids: "CanvasIds") -> None:
-        super().__init__(
-            id=CanvasName.install_help_screen, classes=Tcss.screen_base.name
-        )
+        super().__init__(id=CanvasName.install_help_screen)
         self.ids = ids
 
     def compose(self) -> ComposeResult:

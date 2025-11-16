@@ -48,7 +48,7 @@ class OperateScreen(Screen[OperateScreenData], AppType):
     def __init__(
         self, *, ids: "CanvasIds", operate_data: "OperateScreenData"
     ) -> None:
-        super().__init__(id=ids.canvas_name, classes=Tcss.screen_base.name)
+        super().__init__()
 
         self.path_arg = operate_data.node_data.path
         self.path_type = operate_data.node_data.path_type
