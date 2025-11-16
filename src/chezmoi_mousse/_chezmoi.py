@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import datetime
 from enum import Enum
 from pathlib import Path
 from subprocess import CompletedProcess, run
@@ -164,6 +165,7 @@ class WriteCmd(Enum):
 class CommandResult:
     completed_process_data: CompletedProcess[str]
     path_arg: Path | None
+    pretty_time: str = f"[{datetime.now().strftime('%H:%M:%S')}]"
 
     @property
     def cmd_args(self) -> list[str]:
