@@ -49,6 +49,9 @@ class CanvasIds:
     ) -> str:
         return f"{qid}{self.canvas_name}_{data_table_name.name}_datatable"
 
+    def generated_collapsible_id(self, qid: str = "", *, counter: int) -> str:
+        return f"{qid}{self.canvas_name}_generated_collapsible_{counter}"
+
     def initial_header_id(self, qid: str = "", *, view_name: ViewName) -> str:
         return f"{qid}{self.canvas_name}_{view_name.name}_initial_header"
 
