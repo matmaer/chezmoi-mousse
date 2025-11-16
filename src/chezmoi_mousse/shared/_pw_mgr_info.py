@@ -5,11 +5,12 @@ from enum import Enum, StrEnum
 from typing import TYPE_CHECKING
 
 from textual.app import ComposeResult
-from textual.containers import Vertical
-from textual.widgets import Collapsible, Link, Static
+from textual.containers import Vertical, VerticalGroup
+from textual.widgets import Link, Static
 
-from chezmoi_mousse import Chars, CommandResult, ViewName
+from chezmoi_mousse import AppType, Chars, CommandResult, Tcss, ViewName
 
+from ._custom_collapsible import CustomCollapsible
 from ._section_headers import SectionLabel, SectionLabelText
 
 if TYPE_CHECKING:
@@ -161,41 +162,35 @@ class PwMgrInfo(Enum):
         )
 
 
-class PwCollapsible(Collapsible):
+class PwCollapsible(CustomCollapsible, AppType):
 
-    def __init__(self, pw_mgr_data: PwMgrData, counter: int) -> None:
+    def __init__(self, pw_mgr_data: PwMgrData) -> None:
         self.pw_mgr_data = pw_mgr_data
-        self.static_description_id = (
-            f"pw_mgr_static_description_number_{counter}"
-        )
-        self.static_info_id = f"pw_mgr_static_info_number_{counter}"
         self.stripped_link = self.pw_mgr_data.link.replace(
             "https://", ""
         ).replace("www.", "")
-        self.collapsible_id = f"pw_mgr_collapsible_number_{counter}"
-        self.collapsible_title = f"Password Manager: {self.pw_mgr_data.doctor_check.replace('-command', '')}, Doctor check: {self.pw_mgr_data.doctor_check}"
+        self.collapsible_title = (
+            f"Doctor check: {self.pw_mgr_data.doctor_check}"
+        )
 
         super().__init__(
-            Link(self.stripped_link, url=self.pw_mgr_data.link),
-            Static(
-                self.pw_mgr_data.description,
-                id=self.static_description_id,
-                markup=False,
-            ),
-            Static(
-                self.pw_mgr_data.info, id=self.static_info_id, markup=False
+            VerticalGroup(
+                Link(self.stripped_link, url=self.pw_mgr_data.link),
+                Static(self.pw_mgr_data.description, markup=False),
+                Static(self.pw_mgr_data.info, markup=False),
+                classes=Tcss.pw_mgr_group.name,
             ),
             title=self.collapsible_title,
-            collapsed_symbol=Chars.right_triangle,
-            expanded_symbol=Chars.down_triangle,
-            collapsed=True,
-            id=self.collapsible_id,
         )
+
+    def on_mount(self) -> None:
+        collapsible_title = self.query_exactly_one("CollapsibleTitle")
+        collapsible_title.styles.color = self.app.theme_variables[
+            "primary-lighten-3"
+        ]
 
 
 class PwMgrInfoView(Vertical):
-
-    collapsible_counter: int = 0
 
     def __init__(self, ids: "CanvasIds") -> None:
         self.ids = ids
@@ -216,8 +211,5 @@ class PwMgrInfoView(Vertical):
             pw_mgr_data_list.append(pw_mgr_data)
 
         for item in pw_mgr_data_list:
-            self.collapsible_counter += 1
-            pw_collapsible = PwCollapsible(
-                pw_mgr_data=item, counter=self.collapsible_counter
-            )
+            pw_collapsible = PwCollapsible(pw_mgr_data=item)
             self.mount(pw_collapsible)

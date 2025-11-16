@@ -17,7 +17,7 @@ class Tcss(StrEnum):
     last_clicked = ".last_clicked"
     operate_button = ".operate_button"
     operate_screen = ".operate_screen"
-    pw_mgr_collapsible = ".pw_mgr_collapsible"
+    pw_mgr_group = ".pw_mgr_group"
     read_cmd_static = ".read_cmd_static"
     screen_base = ".screen_base"
     section_header = ".section_header"
