@@ -2,12 +2,7 @@ from typing import TYPE_CHECKING
 
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import (
-    Horizontal,
-    HorizontalGroup,
-    Vertical,
-    VerticalGroup,
-)
+from textual.containers import Horizontal, HorizontalGroup, Vertical
 from textual.widgets import Button, Link
 
 from chezmoi_mousse import (
@@ -68,7 +63,7 @@ class OperateButton(Button):
         )
 
 
-class FlatButtonsVertical(VerticalGroup):
+class FlatButtonsVertical(Vertical):
 
     def __init__(
         self, *, ids: "CanvasIds", buttons: tuple[FlatBtn, ...]
