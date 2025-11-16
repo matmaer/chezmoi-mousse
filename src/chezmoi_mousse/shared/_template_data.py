@@ -21,7 +21,12 @@ class TemplateDataOutput(Vertical):
 
     def compose(self) -> ComposeResult:
         yield SectionLabel(SectionLabelText.template_data_output)
-        yield ScrollableContainer(
-            Pretty("<template_data>", id=ViewName.pretty_template_data_view),
-            id=self.ids.view_id(view=ViewName.template_data_view),
+
+    def on_mount(self) -> None:
+        self.mount(
+            ScrollableContainer(
+                Pretty(
+                    "<template_data>", id=ViewName.pretty_template_data_view
+                )
+            )
         )
