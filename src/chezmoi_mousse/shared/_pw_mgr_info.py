@@ -11,7 +11,7 @@ from textual.widgets import Link, Static
 from chezmoi_mousse import AppType, Chars, CommandResult, Tcss, ViewName
 
 from ._custom_collapsible import CustomCollapsible
-from ._section_headers import SectionLabel, SectionLabelText
+from ._section_headers import SectionLabel, SectionLabelText, SubSectionLabel
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds
@@ -38,13 +38,14 @@ class DoctorChecks(Enum):
     vault_command = "vault-command"
 
 
-class AdditionalInfo(StrEnum):
+class InfoStrings(StrEnum):
+    additional_info_label = "Additional Info"
     confusing = "Check your package manager which implementation is used as there are confusingly similar named packages."
     fully_open_source = "Fully open source and auditable worldwide. No third party trust required. But beware of your supply chain: package manager, certificate authority, maintainers reputation, etc."
-    source_available = "The code is publicly available. No third party trust required. But beware of your supply chain: package manager, certificate authority, maintainers reputation and so on."
-    not_open_source = "Not open source, cannot be audited but it's ok if you trust this third party to handle your secrets securely and cannot access them."
+    info_warning = f"[$text-warning]{Chars.warning_sign} The additional info is provided but may not be up-to-date or correct. Please contribute to improve it.{Chars.warning_sign}[/]"
     not_documented = "Not yet documented in chezmoi mousse."
-    additional_info_warning = f"{Chars.warning_sign} The additional info is provided but may not be up-to-date or correct. Please contribute to improve it."
+    not_open_source = "Not open source, cannot be audited but it's ok if you trust this third party to handle your secrets securely and cannot access them."
+    source_available = "The code is publicly available. No third party trust required. But beware of your supply chain: package manager, certificate authority, maintainers reputation and so on."
 
 
 @dataclass(slots=True)
@@ -61,91 +62,91 @@ class PwMgrInfo(Enum):
         doctor_check=DoctorChecks.age_command.value,
         description="A simple, modern and secure file encryption tool.",
         link="https://github.com/FiloSottile/age",
-        info=AdditionalInfo.fully_open_source,
+        info=InfoStrings.fully_open_source,
     )
     bitwarden_command = PwMgrData(
         doctor_check=DoctorChecks.bitwarden_command.value,
         description="Bitwarden Password Manager",
         link="https://github.com/bitwarden",
-        info=AdditionalInfo.source_available,
+        info=InfoStrings.source_available,
     )
     bitwarden_secrets_command = PwMgrData(
         doctor_check=DoctorChecks.bitwarden_secrets_command.value,
         description="Bitwarden Secrets Manager CLI for managing secrets securely.",
         link="https://github.com/bitwarden",
-        info=AdditionalInfo.fully_open_source,
+        info=InfoStrings.fully_open_source,
     )
     dashlane_command = PwMgrData(
         doctor_check=DoctorChecks.dashlane_command.value,
         description="Simple and secure access to all your online accounts. At work, home, and everywhere in between.",
         link="https://github.com/dashlane",
-        info=AdditionalInfo.not_open_source,
+        info=InfoStrings.not_open_source,
     )
     doppler_command = PwMgrData(
         doctor_check=DoctorChecks.doppler_command.value,
         description="Doppler is the multi-cloud SecretOps Platform developers and security teams trust to provide secrets management at enterprise scale.",
         link="https://github.com/dopplerhq",
-        info=AdditionalInfo.not_open_source,
+        info=InfoStrings.not_open_source,
     )
     gopass_command = PwMgrData(
         doctor_check=DoctorChecks.gopass_command.value,
         description="The slightly more awesome standard unix password manager for teams.",
         link="https://github.com/gopasspw/gopass",
-        info=AdditionalInfo.fully_open_source,
+        info=InfoStrings.fully_open_source,
     )
     keeper_command = PwMgrData(
         doctor_check=DoctorChecks.keeper_command.value,
         description="An interface to Keeper Password Manager",
         link="https://github.com/Keeper-Security/Commander",
-        info=AdditionalInfo.not_open_source,
+        info=InfoStrings.not_open_source,
     )
     keepassxc_command = PwMgrData(
         doctor_check=DoctorChecks.keepassxc_command.value,
         description="Cross-platform community-driven port of Keepass password manager.",
         link="https://keepassxc.org/",
-        info=AdditionalInfo.fully_open_source,
+        info=InfoStrings.fully_open_source,
     )
     lastpass_command = PwMgrData(
         doctor_check=DoctorChecks.lastpass_command.value,
         description="Old LastPass CLI for accessing your LastPass vault.",
         link="https://https://github.com/lastpass",
-        info=AdditionalInfo.not_open_source,
+        info=InfoStrings.not_open_source,
     )
     one_password_command = PwMgrData(
         doctor_check=DoctorChecks.one_password_command.value,
         description="Secure all sign-ins to every application from any device.",
         link="https://github.com/1Password/for-open-source",
-        info=AdditionalInfo.not_open_source,
+        info=InfoStrings.not_open_source,
     )
     pass_command = PwMgrData(
         doctor_check=DoctorChecks.pass_command.value,
         description="Stores, retrieves, generates, and synchronizes passwords securely.",
         link="https://www.passwordstore.org/",
-        info=AdditionalInfo.confusing,
+        info=InfoStrings.confusing,
     )
     passhole_command = PwMgrData(
         doctor_check=DoctorChecks.passhole_command.value,
         description="A secure hole for your passwords (KeePass CLI).",
         link="https://github.com/Evidlo/passhole",
-        info=AdditionalInfo.not_open_source,
+        info=InfoStrings.not_open_source,
     )
     pinentry_command = PwMgrData(
         doctor_check=DoctorChecks.pinentry_command.value,
         description="Collection of simple PIN or passphrase entry dialogs which utilize the Assuan protocol.",
         link="https://gnupg.org/related_software/pinentry/",
-        info=AdditionalInfo.fully_open_source,
+        info=InfoStrings.fully_open_source,
     )
     rbw_command = PwMgrData(
         doctor_check=DoctorChecks.rbw_command.value,
         description="Unofficial Bitwarden.",
         link="https://git.tozt.net/rbw",
-        info=AdditionalInfo.not_documented,
+        info=InfoStrings.not_documented,
     )
     vault_command = PwMgrData(
         doctor_check=DoctorChecks.vault_command.value,
         description="A tool for managing secrets.",
         link="https://vaultproject.io/",
-        info=AdditionalInfo.not_documented,
+        info=InfoStrings.not_documented,
     )
 
     @classmethod
@@ -175,8 +176,11 @@ class PwCollapsible(CustomCollapsible, AppType):
 
         super().__init__(
             VerticalGroup(
+                SubSectionLabel("Project Link"),
                 Link(self.stripped_link, url=self.pw_mgr_data.link),
+                SubSectionLabel("Project Description"),
                 Static(self.pw_mgr_data.description, markup=False),
+                SubSectionLabel(InfoStrings.additional_info_label),
                 Static(self.pw_mgr_data.info, markup=False),
                 classes=Tcss.pw_mgr_group.name,
             ),
@@ -213,3 +217,5 @@ class PwMgrInfoView(Vertical):
         for item in pw_mgr_data_list:
             pw_collapsible = PwCollapsible(pw_mgr_data=item)
             self.mount(pw_collapsible)
+
+        self.mount(Static(InfoStrings.info_warning))

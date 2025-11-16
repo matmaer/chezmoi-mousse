@@ -16,10 +16,6 @@
     background-tint: $surface;
     background: $surface;
     margin-bottom: 1;
-    padding: 1;
-    &>Link {
-      margin-bottom: 1;
-    }
   }
   & .read_cmd_static {
     background-tint: $surface;
