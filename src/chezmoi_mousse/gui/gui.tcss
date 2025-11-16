@@ -68,15 +68,6 @@
   padding: 0 1;
   text-align: center;
   width: 100%;
-  &SectionLabel {
-    border-bottom: inner $surface-lighten-1;
-    border-top: inner $surface-lighten-1;
-    color: $text-accent;
-    height: 3;
-  }
-  &SubSectionLabel {
-    color: $text-success;
-  }
 }
 
 .tab_left_vertical {
@@ -185,6 +176,17 @@ ReactiveHeader {
   .changes_enabled_color {
     color: $warning;
   }
+}
+
+SectionLabel {
+  border-bottom: inner $surface-lighten-1;
+  border-top: inner $surface-lighten-1;
+  color: $text-accent;
+  height: 3;
+}
+
+SubSectionLabel {
+  color: $text-success;
 }
 
 SwitchSliderBase {
