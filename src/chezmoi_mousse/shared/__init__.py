@@ -9,6 +9,7 @@ from ._buttons import (
 )
 from ._cat_config import CatConfigOutput
 from ._contents_view import ContentsView
+from ._custom_collapsible import CustomCollapsible
 from ._diff_view import DiffView
 from ._doctor_table import DoctorTable
 from ._git_log_view import GitLogView
@@ -33,6 +34,7 @@ __all__ = [
     "CurrentAddNodeMsg",
     "CurrentApplyNodeMsg",
     "CurrentReAddNodeMsg",
+    "CustomCollapsible",
     "DiffView",
     "DoctorTable",
     "FlatButton",
@@ -40,11 +42,11 @@ __all__ = [
     "FlatLink",
     "GitLogView",
     "InitialHeader",
-    "SectionLabelText",
     "OperateButtons",
     "PwMgrInfoView",
     "ReactiveHeader",
     "SectionLabel",
+    "SectionLabelText",
     "SectionSubLabel",
     "TabButtons",
     "TemplateDataOutput",

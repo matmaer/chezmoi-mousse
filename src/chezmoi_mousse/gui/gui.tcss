@@ -11,6 +11,51 @@
   border-title-style: bold;
 }
 
+.custom_collapsible {
+  .pw_mgr_collapsible {
+    &>CollapsibleTitle {
+      /* the default title color */
+      color: $primary-lighten-3;
+    }
+  }
+  # .read_log_collapsible {
+    /* leave a space next to the vertical scrollbarr */
+    # & .green_title {
+      #   color: $text-success;
+      # }
+      # & .warning_title {
+        #   color: $text-warning;
+        # }
+  & .read_cmd_static {
+    margin-right: 1;
+    background: $surface;
+    background-tint: $surface;
+    margin-bottom: 1;
+  }
+  # }
+}
+# PwCollapsible {
+#   &>CollapsibleTitle {
+#     color: $primary-lighten-3;
+#   }
+# }
+# ReadOutputCollapsible {
+#   /* leave a space next to the vertical scrollbarr */
+#   margin-right: 2;
+#   & .green_title {
+#     color: $text-success;
+#   }
+#   & .warning_title {
+#     color: $text-warning;
+#   }
+#   & .static_output {
+#     background: $surface;
+#     background-tint: $surface;
+#     margin-bottom: 1;
+#   }
+# }
+
+
 .flat_button{
   background-tint: initial;
   width: 100%;
@@ -163,12 +208,6 @@ OperateButtons {
   }
 }
 
-PwCollapsible {
-  &>CollapsibleTitle {
-    color: $primary-lighten-3;
-  }
-}
-
 ReactiveHeader {
   border-bottom: dashed $surface-lighten-3;
   color: $primary;
@@ -176,22 +215,6 @@ ReactiveHeader {
   text-style: bold;
   .changes_enabled_color {
     color: $warning;
-  }
-}
-
-ReadOutputCollapsible {
-  /* leave a space next to the vertical scrollbarr */
-  margin-right: 2;
-  & .green_title {
-    color: $text-success;
-  }
-  & .warning_title {
-    color: $text-warning;
-  }
-  & .static_output {
-    background: $surface;
-    background-tint: $surface;
-    margin-bottom: 1;
   }
 }
 

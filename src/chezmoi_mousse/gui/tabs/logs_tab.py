@@ -8,13 +8,7 @@ from rich.markup import escape
 from textual import on
 from textual.app import ComposeResult
 from textual.containers import ScrollableContainer, Vertical
-from textual.widgets import (
-    Button,
-    Collapsible,
-    ContentSwitcher,
-    RichLog,
-    Static,
-)
+from textual.widgets import Button, ContentSwitcher, RichLog, Static
 
 from chezmoi_mousse import (
     AppType,
@@ -25,7 +19,7 @@ from chezmoi_mousse import (
     Tcss,
     ViewName,
 )
-from chezmoi_mousse.shared import GitLogView, TabButtons
+from chezmoi_mousse.shared import CustomCollapsible, GitLogView, TabButtons
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -287,35 +281,39 @@ class OperateLog(LoggersBase, AppType):
                 self.warning("Non zero exit but no stderr output.")
 
 
-class ReadOutputCollapsible(Collapsible, AppType):
+class ReadOutputCollapsible(CustomCollapsible, AppType):
 
     def __init__(
         self, command_result: "CommandResult", output: str, counter: int
     ) -> None:
         self.command_result = command_result
+        self.pretty_cmd = command_result.pretty_cmd
+        self.pretty_time = command_result.pretty_time
         self.static_id = f"read_cmd_static_number_{counter}"
         self.static_qid = f"#read_cmd_static_number_{counter}"
-        self.collapsible_id = f"read_cmd_collapsible_number_{counter}"
-
-        time_str = datetime.now().strftime("%H:%M:%S")
 
         super().__init__(
-            Static(output, id=self.static_id, markup=False),
-            title=f"{time_str} {self.command_result.pretty_cmd}",
-            collapsed_symbol=Chars.right_triangle,
-            expanded_symbol=Chars.down_triangle,
-            collapsed=True,
-            id=self.collapsible_id,
+            Static(
+                output,
+                id=self.static_id,
+                markup=False,
+                classes=Tcss.read_cmd_static.name,
+            ),
+            title=f"{self.pretty_time} {self.pretty_cmd}",
         )
 
     def on_mount(self) -> None:
-        static_widget = self.query_one(self.static_qid, Static)
-        static_widget.add_class(Tcss.static_output.name)
         collapsible_title = self.query_exactly_one("CollapsibleTitle")
         if self.command_result.returncode == 0:
-            collapsible_title.add_class(Tcss.green_title.name)
+            collapsible_title.styles.color = self.app.theme_variables[
+                "text-success"
+            ]
+            # collapsible_title.add_class(Tcss.green_title.name)
         else:
-            collapsible_title.add_class(Tcss.warning_title.name)
+            collapsible_title.styles.color = self.app.theme_variables[
+                "text-warning"
+            ]
+            # collapsible_title.add_class(Tcss.warning_title.name)
 
 
 class ReadCmdLog(ScrollableContainer, AppType):
@@ -326,9 +324,6 @@ class ReadCmdLog(ScrollableContainer, AppType):
         self.ids = ids
         self.view_name = view_name
         super().__init__(id=self.ids.view_id(view=self.view_name))
-
-        self.ids = ids
-        self.view_name = view_name
 
     def log_cmd_results(self, command_result: "CommandResult") -> None:
         # Don't log verify read-verb outputs as in produces no output.
