@@ -308,12 +308,10 @@ class ReadOutputCollapsible(CustomCollapsible, AppType):
             collapsible_title.styles.color = self.app.theme_variables[
                 "text-success"
             ]
-            # collapsible_title.add_class(Tcss.green_title.name)
         else:
             collapsible_title.styles.color = self.app.theme_variables[
                 "text-warning"
             ]
-            # collapsible_title.add_class(Tcss.warning_title.name)
 
 
 class ReadCmdLog(ScrollableContainer, AppType):
