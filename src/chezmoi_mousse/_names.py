@@ -73,7 +73,6 @@ class ViewName(StrEnum):
     git_ignored_view = auto()
     git_log_view = auto()
     # init_new_repo_view = auto() TODO
-    pretty_cat_config_view = auto()
     pretty_ignored_view = auto()
     pretty_template_data_view = auto()
     pw_mgr_info_view = auto()

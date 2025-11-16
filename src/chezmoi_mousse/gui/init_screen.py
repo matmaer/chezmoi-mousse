@@ -4,7 +4,7 @@ from textual import on
 from textual.app import ComposeResult
 from textual.containers import Horizontal, ScrollableContainer, Vertical
 from textual.screen import Screen
-from textual.widgets import Button, ContentSwitcher, Footer, Pretty
+from textual.widgets import Button, ContentSwitcher, Footer, Pretty, Static
 
 from chezmoi_mousse import (
     AppType,
@@ -56,12 +56,8 @@ class InitSwitcher(ContentSwitcher):
         yield TemplateDataOutput(ids=self.ids)
 
     def on_mount(self) -> None:
-        pretty_cat_config = self.query_one(
-            f"#{ViewName.pretty_cat_config_view}", Pretty
-        )
-        pretty_cat_config.update(
-            self.splash_data.cat_config.std_out.splitlines()
-        )
+        cat_config = self.query_one(f"#{ViewName.cat_config_view}", Static)
+        cat_config.update(self.splash_data.cat_config.std_out)
         pretty_template_data = self.query_one(
             f"#{ViewName.pretty_template_data_view}", Pretty
         )

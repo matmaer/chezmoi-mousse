@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING
 
 from textual.app import ComposeResult
 from textual.containers import ScrollableContainer, Vertical
-from textual.widgets import Pretty
+from textual.widgets import Static
 
 from chezmoi_mousse import ViewName
 
@@ -21,7 +21,10 @@ class CatConfigOutput(Vertical):
 
     def compose(self) -> ComposeResult:
         yield SectionLabel(SectionLabelText.cat_config_output)
-        yield ScrollableContainer(
-            Pretty("<cat-config>", id=ViewName.pretty_cat_config_view),
-            id=self.ids.view_id(view=ViewName.cat_config_view),
+
+    def on_mount(self) -> None:
+        self.mount(
+            ScrollableContainer(
+                Static("<cat-config>", id=ViewName.cat_config_view)
+            )
         )

@@ -5,7 +5,7 @@ from textual import on
 from textual.app import ComposeResult
 from textual.containers import Horizontal, ScrollableContainer, Vertical
 from textual.reactive import reactive
-from textual.widgets import Button, ContentSwitcher, Pretty
+from textual.widgets import Button, ContentSwitcher, Pretty, Static
 
 from chezmoi_mousse import (
     AppType,
@@ -82,10 +82,10 @@ class ConfigTabSwitcher(ContentSwitcher):
     def watch_cat_config_results(self):
         if self.cat_config_results is None:
             return
-        pretty_cat_config = self.query_one(
-            f"#{ViewName.pretty_cat_config_view}", Pretty
+        cat_config_view = self.query_one(
+            f"#{ViewName.cat_config_view}", Static
         )
-        pretty_cat_config.update(self.cat_config_results.std_out.splitlines())
+        cat_config_view.update(self.cat_config_results.std_out)
 
     def watch_ignored_results(self):
         if self.ignored_results is None:
