@@ -2,15 +2,13 @@ from enum import StrEnum
 from typing import TYPE_CHECKING
 
 from textual.app import ComposeResult
-from textual.containers import Vertical
-from textual.content import Content
+from textual.containers import VerticalGroup
 from textual.widgets import Label, Static
 
-from chezmoi_mousse import Tcss, ViewName
+from chezmoi_mousse import ViewName
 
 __all__ = [
     "InitialHeader",
-    "SectionHeader",
     "SectionLabel",
     "SectionLabelText",
     "SubSectionLabel",
@@ -42,28 +40,15 @@ class SectionLabelText(StrEnum):
 class SectionLabel(Label):
 
     def __init__(self, label_text: str) -> None:
-        super().__init__(label_text, classes=Tcss.section_header.name)
+        super().__init__(label_text)
 
 
 class SubSectionLabel(Label):
-
     def __init__(self, label_text: str) -> None:
-        super().__init__(label_text, classes=Tcss.section_header.name)
+        super().__init__(label_text)
 
 
-class SectionHeader(Static):
-    def __init__(
-        self, ids: "CanvasIds", view_name: ViewName, messages: list[Content]
-    ) -> None:
-        self.messages = messages
-        super().__init__(
-            id=ids.section_header_id(view_name=view_name),
-            markup=True,
-            classes=Tcss.section_header.name,
-        )
-
-
-class InitialHeader(Vertical):
+class InitialHeader(VerticalGroup):
     def __init__(self, ids: "CanvasIds", view_name: ViewName) -> None:
         self.ids = ids
         self.view_name = view_name
@@ -71,9 +56,7 @@ class InitialHeader(Vertical):
             view_name=self.view_name
         )
 
-        super().__init__(
-            id=self.initial_header_id, classes=Tcss.section_header.name
-        )
+        super().__init__(id=self.initial_header_id)
         self.static_id = f"{self.initial_header_id}_static"
         self.static_qid = f"#{self.static_id}"
 

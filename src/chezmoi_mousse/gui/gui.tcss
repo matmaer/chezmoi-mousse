@@ -62,15 +62,6 @@
   min-width: 78;
 }
 
-.section_header {
-  background-tint: $surface-lighten-1;
-  background: $background;
-  height: auto;
-  padding: 0 1;
-  text-align: center;
-  width: 100%;
-}
-
 .tab_left_vertical {
   margin-right: 2;
   width: auto;
@@ -180,13 +171,23 @@ ReactiveHeader {
 }
 
 SectionLabel {
+  background-tint: $surface-lighten-1;
+  background: $surface-lighten-1;
   border-bottom: inner $surface-lighten-1;
   border-top: inner $surface-lighten-1;
   color: $text-accent;
   height: 3;
+  padding: 0 1;
+  text-align: center;
+  width: 100%;
 }
 
 SubSectionLabel {
+  background-tint: $surface-lighten-1;
+  background: $surface-lighten-1;
+  padding: 0 1;
+  text-align: center;
+  width: 100%;
   color: $text-success;
 }
 
