@@ -84,13 +84,13 @@ class OperateScreen(Screen[OperateScreenData], AppType):
                 yield DiffView(ids=self.ids, reverse=False)
             elif self.operate_btn == OperateBtn.re_add_path:
                 yield DiffView(ids=self.ids, reverse=True)
-            elif self.operate_btn in (OperateBtn.add_file, OperateBtn.add_dir):
-                yield ContentsView(ids=self.ids)
             elif self.operate_btn in (
+                OperateBtn.add_file,
+                OperateBtn.add_dir,
                 OperateBtn.forget_path,
                 OperateBtn.destroy_path,
             ):
-                yield DiffView(ids=self.ids, reverse=False)
+                yield ContentsView(ids=self.ids)
         with Vertical(id=self.post_operate_id):
             yield SectionLabel(SectionLabelText.operate_output)
             yield OperateLog(ids=self.ids, view_name=ViewName.operate_log_view)
@@ -112,15 +112,14 @@ class OperateScreen(Screen[OperateScreenData], AppType):
             diff_view = self.query_exactly_one(DiffView)
             diff_view.path = self.path_arg
 
-        elif self.operate_btn in (OperateBtn.add_file, OperateBtn.add_dir):
-            contents_view = self.query_exactly_one(ContentsView)
-            contents_view.path = self.path_arg
         elif self.operate_btn in (
+            OperateBtn.add_file,
+            OperateBtn.add_dir,
             OperateBtn.forget_path,
             OperateBtn.destroy_path,
         ):
-            diff_view = self.query_exactly_one(DiffView)
-            diff_view.path = self.path_arg
+            contents_view = self.query_exactly_one(ContentsView)
+            contents_view.path = self.path_arg
 
     def configure_buttons(self) -> None:
         op_btn = self.query_one(self.operate_btn_qid, Button)
