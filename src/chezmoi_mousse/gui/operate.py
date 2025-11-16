@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 from textual import on
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import Vertical
+from textual.containers import VerticalGroup
 from textual.screen import Screen
 from textual.widgets import Button, Footer
 
@@ -75,7 +75,7 @@ class OperateScreen(Screen[OperateScreenData], AppType):
 
     def compose(self) -> ComposeResult:
         yield ReactiveHeader(self.app.op_screen_ids)
-        with Vertical(id=self.pre_operate_id):
+        with VerticalGroup(id=self.pre_operate_id):
             yield OperateInfo(
                 ids=self.ids, operate_screen_data=self.operate_data
             )
@@ -91,14 +91,12 @@ class OperateScreen(Screen[OperateScreenData], AppType):
                 OperateBtn.destroy_path,
             ):
                 yield ContentsView(ids=self.ids)
-        with Vertical(id=self.post_operate_id):
+        with VerticalGroup(id=self.post_operate_id):
             yield SectionLabel(SectionLabelText.operate_output)
             yield OperateLog(ids=self.ids, view_name=ViewName.operate_log_view)
-        with Vertical():
-            yield OperateButtons(
-                ids=self.ids,
-                buttons=(self.operate_btn, OperateBtn.exit_button),
-            )
+        yield OperateButtons(
+            ids=self.ids, buttons=(self.operate_btn, OperateBtn.exit_button)
+        )
         yield Footer()
 
     def on_mount(self) -> None:
@@ -166,7 +164,7 @@ class OperateScreen(Screen[OperateScreenData], AppType):
             )
 
     def configure_containers(self) -> None:
-        self.query_one(self.post_operate_qid, Vertical).display = False
+        self.query_one(self.post_operate_qid, VerticalGroup).display = False
 
     def run_operate_command(self) -> "CommandResult | None":
         cmd_result: "CommandResult | None" = None
@@ -210,9 +208,11 @@ class OperateScreen(Screen[OperateScreenData], AppType):
         self.post_operate_ui_update()
 
     def post_operate_ui_update(self) -> None:
-        pre_op_container = self.query_one(self.pre_operate_qid, Vertical)
+        pre_op_container = self.query_one(self.pre_operate_qid, VerticalGroup)
         pre_op_container.display = False
-        post_op_container = self.query_one(self.post_operate_qid, Vertical)
+        post_op_container = self.query_one(
+            self.post_operate_qid, VerticalGroup
+        )
         post_op_container.display = True
 
         operate_button = self.query_one(self.operate_btn_qid, Button)
