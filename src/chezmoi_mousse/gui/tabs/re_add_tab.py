@@ -51,10 +51,8 @@ class ReAddTab(TabHorizontal):
         operate_path_button.label = OperateBtn.re_add_path.label(
             event.node_data.path_type
         )
-        operate_path_button.tooltip = (
-            OperateBtn.re_add_path.dir_tooltip
-            if event.node_data.path_type == "dir"
-            else OperateBtn.re_add_path.file_tooltip
+        operate_path_button.tooltip = OperateBtn.re_add_path.tooltip(
+            event.node_data.path_type
         )
         operate_path_button.disabled = (
             True if event.node_data.status in "X " else False

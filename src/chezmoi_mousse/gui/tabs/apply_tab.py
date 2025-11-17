@@ -49,10 +49,8 @@ class ApplyTab(TabHorizontal):
         operate_path_button.label = OperateBtn.apply_path.label(
             event.node_data.path_type
         )
-        operate_path_button.tooltip = (
-            OperateBtn.apply_path.dir_tooltip
-            if event.node_data.path_type == "dir"
-            else OperateBtn.apply_path.file_tooltip
+        operate_path_button.tooltip = OperateBtn.apply_path.tooltip(
+            event.node_data.path_type
         )
         operate_path_button.disabled = (
             True if event.node_data.status == "X" else False
