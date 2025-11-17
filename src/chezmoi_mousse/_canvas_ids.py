@@ -19,8 +19,12 @@ __all__ = ["CanvasIds"]
 class ViewsIds(NamedTuple):
     add_help_btn: str
     add_help: str
+    apply_help_btn: str
+    apply_help: str
     cat_config_btn: str
     cat_config: str
+    diagram_btn: str
+    diagram: str
     doctor_btn: str
     doctor: str
     ignored_btn: str
@@ -29,6 +33,8 @@ class ViewsIds(NamedTuple):
     new_repo: str
     pw_mgr_info_btn: str
     pw_mgr_info: str
+    re_add_help_btn: str
+    re_add_help: str
     template_data_btn: str
     template_data: str
 
@@ -54,6 +60,12 @@ class CanvasIds:
         self.views = ViewsIds(
             add_help_btn=self.button_id(btn=FlatBtn.add_help),
             add_help=self.view_id(view=ViewName.add_help_view),
+            apply_help_btn=self.button_id(btn=FlatBtn.apply_help),
+            apply_help=self.view_id(view=ViewName.apply_help_view),
+            re_add_help_btn=self.button_id(btn=FlatBtn.re_add_help),
+            re_add_help=self.view_id(view=ViewName.re_add_help_view),
+            diagram_btn=self.button_id(btn=FlatBtn.diagram),
+            diagram=self.view_id(view=ViewName.diagram_view),
             cat_config_btn=self.button_id(btn=FlatBtn.cat_config),
             cat_config=self.view_id(view=ViewName.cat_config_view),
             doctor_btn=self.button_id(btn=FlatBtn.doctor),
