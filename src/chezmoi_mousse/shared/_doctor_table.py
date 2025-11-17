@@ -3,22 +3,44 @@
 from typing import TYPE_CHECKING
 
 from rich.text import Text
+from textual.app import ComposeResult
+from textual.containers import Vertical
 from textual.widgets import DataTable
 
 from chezmoi_mousse import AppType, DataTableName, Tcss
+from chezmoi_mousse._chezmoi import CommandResult
+from chezmoi_mousse._names import ViewName
+
+from ._section_headers import SectionLabel, SectionLabelText
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds
 
-__all__ = ["DoctorTable"]
+    DataTableText = DataTable[Text]
+else:
+    DataTableText = DataTable
 
 
-class DoctorTable(DataTable[Text], AppType):
+__all__ = ["DoctorTableView"]
+
+
+class DoctorTableView(Vertical, AppType):
 
     def __init__(self, ids: "CanvasIds") -> None:
+        self.ids = ids
+        self.view_id = self.ids.view_id(view=ViewName.doctor_view)
+        super().__init__(id=self.view_id)
+        self.doctor_table_id = self.ids.datatable_id(
+            data_table_name=DataTableName.doctor_table
+        )
+        self.doctor_table_qid = self.ids.datatable_id(
+            "#", data_table_name=DataTableName.doctor_table
+        )
 
-        super().__init__(
-            id=ids.datatable_id(data_table_name=DataTableName.doctor_table),
+    def compose(self) -> ComposeResult:
+        yield SectionLabel(SectionLabelText.doctor_output)
+        yield DataTable(
+            id=self.doctor_table_id,
             show_cursor=False,
             classes=Tcss.doctor_table.name,
         )
@@ -32,10 +54,14 @@ class DoctorTable(DataTable[Text], AppType):
             "error": self.app.theme_variables["text-error"],
         }
 
-    def populate_doctor_data(self, doctor_data: list[str]) -> None:
+    def populate_doctor_data(self, command_result: CommandResult) -> None:
 
-        if not self.columns:
-            self.add_columns(*doctor_data[0].split())
+        doctor_data = command_result.std_out.splitlines()
+
+        doctor_table = self.query_one(self.doctor_table_qid, DataTableText)
+
+        if not doctor_table.columns:
+            doctor_table.add_columns(*doctor_data[0].split())
 
         for line in doctor_data[1:]:
             row = tuple(line.split(maxsplit=2))
@@ -44,19 +70,19 @@ class DoctorTable(DataTable[Text], AppType):
                     Text(cell_text, style=self.dr_style["info"])
                     for cell_text in row
                 ]
-                self.add_row(*new_row)
+                doctor_table.add_row(*new_row)
             elif row[0] in ["ok", "warning", "error", "failed"]:
                 new_row = [
                     Text(cell_text, style=f"{self.dr_style[row[0]]}")
                     for cell_text in row
                 ]
-                self.add_row(*new_row)
+                doctor_table.add_row(*new_row)
             elif row[0] == "info" and row[2] == "not set":
                 new_row = [
                     Text(cell_text, style=self.dr_style["warning"])
                     for cell_text in row
                 ]
-                self.add_row(*new_row)
+                doctor_table.add_row(*new_row)
             else:
                 row = [Text(cell_text) for cell_text in row]
-                self.add_row(*row)
+                doctor_table.add_row(*row)

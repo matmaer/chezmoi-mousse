@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import Horizontal, ScrollableContainer, Vertical
+from textual.containers import Horizontal, ScrollableContainer
 from textual.reactive import reactive
 from textual.widgets import Button, ContentSwitcher, Pretty, Static
 
@@ -18,7 +18,7 @@ from chezmoi_mousse import (
 )
 from chezmoi_mousse.shared import (
     CatConfigOutput,
-    DoctorTable,
+    DoctorTableView,
     FlatButtonsVertical,
     PwMgrInfoView,
     SectionLabel,
@@ -38,7 +38,9 @@ class ConfigTabSwitcher(ContentSwitcher):
 
     def __init__(self, ids: "CanvasIds"):
         self.ids = ids
+        self.ids.view_id(view=ViewName.doctor_view)
         self.doctor_view_id = self.ids.view_id(view=ViewName.doctor_view)
+        self.doctor_view_qid = self.ids.view_id("#", view=ViewName.doctor_view)
         self.content_switcher_id = self.ids.content_switcher_id(
             name=ContainerName.config_switcher
         )
@@ -53,11 +55,7 @@ class ConfigTabSwitcher(ContentSwitcher):
         )
 
     def compose(self) -> ComposeResult:
-        yield Vertical(
-            SectionLabel(SectionLabelText.doctor_output),
-            DoctorTable(ids=self.ids),
-            id=self.doctor_view_id,
-        )
+        yield DoctorTableView(ids=self.ids)
         yield PwMgrInfoView(ids=self.ids)
         yield CatConfigOutput(ids=self.ids)
         yield ScrollableContainer(
@@ -71,9 +69,9 @@ class ConfigTabSwitcher(ContentSwitcher):
         if self.splash_data is None:
             return
 
-        doctor_table = self.query_one(self.doctor_table_qid, DoctorTable)
-        doctor_table.populate_doctor_data(
-            doctor_data=self.splash_data.doctor.std_out.splitlines()
+        doctor_view = self.query_one(self.doctor_view_qid, DoctorTableView)
+        doctor_view.populate_doctor_data(
+            command_result=self.splash_data.doctor
         )
         pw_mgr_info_view = self.query_one(self.pw_mgr_info_qid, PwMgrInfoView)
         pw_mgr_info_view.populate_pw_mgr_info(self.splash_data.doctor)
