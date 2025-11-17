@@ -71,6 +71,7 @@ class OpBtn(StrEnum):
     forget_dir = "Forget Dir"
     forget_file = "Forget File"
     forget_path = "Forget Path"
+    init_new_repo = "Initialize New Chezmoi Repository"
     operate_cancel = "Cancel"
     operate_close = "Close"
     re_add_dir = "Re-Add Dir"
@@ -79,6 +80,7 @@ class OpBtn(StrEnum):
 
 
 class ToolTips(StrEnum):
+    init_new_repo = 'Run "chezmoi init" to create a new chezmoi repository.'
     add_dir = "Manage the directory with chezmoi."
     add_dir_disabled = "Select a directory to operate on."
     add_file = "Manage the file with chezmoi."
@@ -121,6 +123,11 @@ class AddButtonData:
     # We don't need status tooltips here
     disabled_tooltip: str
     enabled_tooltip: str
+    initial_label: str
+
+
+@dataclass(slots=True)
+class InitButtonData:
     initial_label: str
 
 
@@ -173,6 +180,7 @@ class OperateBtn(Enum):
         file_tooltip=ToolTips.destroy_file.value,
         initial_label=OpBtn.destroy_path.value,
     )
+    init_new_repo = InitButtonData(initial_label=OpBtn.init_new_repo.value)
     exit_button = ExitButtonData(
         initial_label=OpBtn.operate_cancel.value,
         close_label=OpBtn.operate_close.value,
