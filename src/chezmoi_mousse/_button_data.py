@@ -80,7 +80,6 @@ class OpBtn(StrEnum):
 
 
 class ToolTips(StrEnum):
-    init_new_repo = 'Run "chezmoi init" to create a new chezmoi repository.'
     add_dir = "Manage the directory with chezmoi."
     add_dir_disabled = "Select a directory to operate on."
     add_file = "Manage the file with chezmoi."
