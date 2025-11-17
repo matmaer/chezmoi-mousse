@@ -69,8 +69,13 @@ class FlatButtonsVertical(Vertical):
         self, *, ids: "CanvasIds", buttons: tuple[FlatBtn, ...]
     ) -> None:
         self.buttons: tuple[FlatBtn, ...] = buttons
-        self.ids: "CanvasIds" = ids
-        super().__init__()
+        self.ids = ids
+        self.left_vertical_id = ids.tab_vertical_id(
+            name=ContainerName.left_side
+        )
+        super().__init__(
+            id=self.left_vertical_id, classes=Tcss.tab_left_vertical.name
+        )
 
     def compose(self) -> ComposeResult:
         for button_enum in self.buttons:

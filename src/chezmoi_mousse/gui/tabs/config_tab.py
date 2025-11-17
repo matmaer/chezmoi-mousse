@@ -39,11 +39,11 @@ class ConfigTabSwitcher(ContentSwitcher):
     def __init__(self, ids: "CanvasIds"):
         self.ids = ids
         self.doctor_view_id = self.ids.view_id(view=ViewName.doctor_view)
+        self.content_switcher_id = self.ids.content_switcher_id(
+            name=ContainerName.config_switcher
+        )
         super().__init__(
-            id=self.ids.content_switcher_id(
-                name=ContainerName.config_switcher
-            ),
-            initial=self.doctor_view_id,
+            id=self.content_switcher_id, initial=self.doctor_view_id
         )
         self.pw_mgr_info_qid = f"#{self.ids.view_id(
             view=ViewName.pw_mgr_info_view
@@ -101,12 +101,6 @@ class ConfigTab(Horizontal, AppType):
         self.ids = ids
         super().__init__(id=self.ids.canvas_container_id)
 
-        self.tab_vertical_id = ids.tab_vertical_id(
-            name=ContainerName.left_side
-        )
-        self.content_switcher_id = self.ids.content_switcher_id(
-            name=ContainerName.config_switcher
-        )
         self.content_switcher_qid = self.ids.content_switcher_id(
             "#", name=ContainerName.config_switcher
         )
@@ -133,19 +127,16 @@ class ConfigTab(Horizontal, AppType):
         )
 
     def compose(self) -> ComposeResult:
-        with Vertical(
-            id=self.tab_vertical_id, classes=Tcss.tab_left_vertical.name
-        ):
-            yield FlatButtonsVertical(
-                ids=self.ids,
-                buttons=(
-                    FlatBtn.doctor,
-                    FlatBtn.pw_mgr_info,
-                    FlatBtn.cat_config,
-                    FlatBtn.ignored,
-                    FlatBtn.template_data,
-                ),
-            )
+        yield FlatButtonsVertical(
+            ids=self.ids,
+            buttons=(
+                FlatBtn.doctor,
+                FlatBtn.pw_mgr_info,
+                FlatBtn.cat_config,
+                FlatBtn.ignored,
+                FlatBtn.template_data,
+            ),
+        )
         yield ConfigTabSwitcher(self.ids)
 
     @on(Button.Pressed, Tcss.flat_button.value)

@@ -3,12 +3,7 @@ from typing import TYPE_CHECKING
 
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import (
-    Horizontal,
-    ScrollableContainer,
-    Vertical,
-    VerticalGroup,
-)
+from textual.containers import Horizontal, ScrollableContainer, VerticalGroup
 from textual.widgets import Button, ContentSwitcher, Static
 
 from chezmoi_mousse import (
@@ -191,8 +186,11 @@ class HelpTabSwitcher(ContentSwitcher):
 
     def __init__(self, ids: "CanvasIds"):
         self.ids = ids
+        self.content_switcher_id = self.ids.content_switcher_id(
+            name=ContainerName.help_switcher
+        )
         super().__init__(
-            id=self.ids.content_switcher_id(name=ContainerName.help_switcher),
+            id=self.content_switcher_id,
             initial=self.ids.view_id(view=ViewName.apply_help_view),
         )
 
@@ -215,9 +213,6 @@ class HelpTab(Horizontal):
         super().__init__(id=ids.canvas_container_id)
 
         # Content Switcher IDs
-        self.content_switcher_id = self.ids.content_switcher_id(
-            name=ContainerName.help_switcher
-        )
         self.content_switcher_qid = self.ids.content_switcher_id(
             "#", name=ContainerName.help_switcher
         )
@@ -237,19 +232,15 @@ class HelpTab(Horizontal):
         self.diagram_btn_id = self.ids.button_id(btn=FlatBtn.diagram)
 
     def compose(self) -> ComposeResult:
-        with Vertical(
-            id=self.ids.tab_vertical_id(name=ContainerName.left_side),
-            classes=Tcss.tab_left_vertical.name,
-        ):
-            yield FlatButtonsVertical(
-                ids=self.ids,
-                buttons=(
-                    FlatBtn.apply_help,
-                    FlatBtn.re_add_help,
-                    FlatBtn.add_help,
-                    FlatBtn.diagram,
-                ),
-            )
+        yield FlatButtonsVertical(
+            ids=self.ids,
+            buttons=(
+                FlatBtn.apply_help,
+                FlatBtn.re_add_help,
+                FlatBtn.add_help,
+                FlatBtn.diagram,
+            ),
+        )
         yield HelpTabSwitcher(ids=self.ids)
 
     @on(Button.Pressed, Tcss.flat_button.value)
