@@ -13,7 +13,7 @@ INITIAL_TOOLTIP = "This is the destDir, select a path to operate on."
 
 class FlatBtn(StrEnum):
     # clone_existing_repo = "Clone Existing Repo" TODO
-    # init_new_repo = "Initialize New Repo" TODO
+    init_new_repo = "Initialize New Chezmoi Repository"
     add_help = "Add Help"
     apply_help = "Apply Help"
     cat_config = "Cat Config"
