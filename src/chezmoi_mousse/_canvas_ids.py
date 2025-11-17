@@ -1,6 +1,8 @@
 """Contains classes to enable setting widget id's without hardcoded strings or
 generated the id dynamically when subclassing or to query a widget."""
 
+from typing import NamedTuple
+
 from chezmoi_mousse._button_data import FlatBtn, LinkBtn, OperateBtn, TabBtn
 from chezmoi_mousse._names import (
     CanvasName,
@@ -14,13 +16,57 @@ from chezmoi_mousse._switches import Switches
 __all__ = ["CanvasIds"]
 
 
+class ViewsIds(NamedTuple):
+    cat_config_btn: str
+    cat_config_q: str
+    cat_config: str
+    doctor_btn: str
+    doctor_q: str
+    doctor: str
+    ignored_btn: str
+    ignored_q: str
+    ignored: str
+    new_repo_btn: str
+    new_repo_q: str
+    new_repo: str
+    pw_mgr_info_btn: str
+    pw_mgr_info_q: str
+    pw_mgr_info: str
+    template_data_btn: str
+    template_data_q: str
+    template_data: str
+
+
 class CanvasIds:
-    __slots__ = ("canvas_container_id", "canvas_name", "header_id")
+    __slots__ = ("canvas_container_id", "canvas_name", "header_id", "views")
 
     def __init__(self, canvas_name: CanvasName) -> None:
         self.canvas_name: str = canvas_name.name
         self.header_id = f"{self.canvas_name}_header"
         self.canvas_container_id = f"{canvas_name}_container_id"
+
+        self.views = ViewsIds(
+            cat_config_btn=self.button_id(btn=FlatBtn.cat_config),
+            cat_config_q=self.view_id("#", view=ViewName.cat_config_view),
+            cat_config=self.view_id(view=ViewName.cat_config_view),
+            doctor_btn=self.button_id(btn=FlatBtn.doctor),
+            doctor_q=self.view_id("#", view=ViewName.doctor_view),
+            doctor=self.view_id(view=ViewName.doctor_view),
+            ignored_btn=self.button_id(btn=FlatBtn.ignored),
+            ignored_q=self.view_id("#", view=ViewName.git_ignored_view),
+            ignored=self.view_id(view=ViewName.git_ignored_view),
+            new_repo_btn=self.button_id(btn=FlatBtn.init_new_repo),
+            new_repo_q=self.view_id("#", view=ViewName.init_new_repo_view),
+            new_repo=self.view_id(view=ViewName.init_new_repo_view),
+            pw_mgr_info_btn=self.button_id(btn=FlatBtn.pw_mgr_info),
+            pw_mgr_info_q=self.view_id("#", view=ViewName.pw_mgr_info_view),
+            pw_mgr_info=self.view_id(view=ViewName.pw_mgr_info_view),
+            template_data_btn=self.button_id(btn=FlatBtn.template_data),
+            template_data_q=self.view_id(
+                "#", view=ViewName.template_data_view
+            ),
+            template_data=self.view_id(view=ViewName.template_data_view),
+        )
 
     def button_id(
         self, qid: str = "", *, btn: FlatBtn | LinkBtn | OperateBtn | TabBtn
