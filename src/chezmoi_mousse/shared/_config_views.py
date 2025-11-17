@@ -134,8 +134,4 @@ class TemplateDataView(Vertical):
         self, command_result: CommandResult
     ) -> None:
         parsed = json.loads(command_result.std_out)
-        self.mount(
-            ScrollableContainer(
-                Pretty(parsed, id=ViewName.pretty_template_data_view)
-            )
-        )
+        self.mount(ScrollableContainer(Pretty(parsed)))
