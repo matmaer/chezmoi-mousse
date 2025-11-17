@@ -1,7 +1,7 @@
-"""Contains classes to enable setting widget id's without hardcoded strings or
-generated the id dynamically when subclassing or to query a widget."""
+"""Contains classes to enable setting widget id's without hardcoded strings.
 
-from typing import NamedTuple
+Easy access, autocomplety, type checking or to generated the id dynamically.
+"""
 
 from chezmoi_mousse._button_data import FlatBtn, LinkBtn, OperateBtn, TabBtn
 from chezmoi_mousse._names import (
@@ -16,37 +16,43 @@ from chezmoi_mousse._switches import Switches
 __all__ = ["CanvasIds"]
 
 
-class ViewsIds(NamedTuple):
-    add_help_btn: str
-    add_help: str
-    apply_help_btn: str
-    apply_help: str
-    cat_config_btn: str
-    cat_config: str
-    diagram_btn: str
-    diagram: str
-    doctor_btn: str
-    doctor: str
-    ignored_btn: str
-    ignored: str
-    new_repo_btn: str
-    new_repo: str
-    pw_mgr_info_btn: str
-    pw_mgr_info: str
-    re_add_help_btn: str
-    re_add_help: str
-    template_data_btn: str
-    template_data: str
-
-    def __getattr__(self, name: str) -> str:
-        if name.endswith("_q"):
-            # Get the base field name by removing '_q'
-            base_name = name[:-2]
-            if hasattr(self, base_name):
-                return f"#{getattr(self, base_name)}"
-        raise AttributeError(
-            f"'{type(self).__name__}' object has no attribute '{name}'"
+class ViewIds:
+    def __init__(self, canvas_ids: "CanvasIds"):
+        # Pre-compute for easy access, auto-completion and see type errors.
+        self.add_help_btn = canvas_ids.button_id(btn=FlatBtn.add_help)
+        self.add_help = canvas_ids.view_id(view=ViewName.add_help_view)
+        self.add_help_q = f"#{self.add_help}"
+        self.apply_help_btn = canvas_ids.button_id(btn=FlatBtn.apply_help)
+        self.apply_help = canvas_ids.view_id(view=ViewName.apply_help_view)
+        self.apply_help_q = f"#{self.apply_help}"
+        self.cat_config_btn = canvas_ids.button_id(btn=FlatBtn.cat_config)
+        self.cat_config = canvas_ids.view_id(view=ViewName.cat_config_view)
+        self.cat_config_q = f"#{self.cat_config}"
+        self.diagram_btn = canvas_ids.button_id(btn=FlatBtn.diagram)
+        self.diagram = canvas_ids.view_id(view=ViewName.diagram_view)
+        self.diagram_q = f"#{self.diagram}"
+        self.doctor_btn = canvas_ids.button_id(btn=FlatBtn.doctor)
+        self.doctor = canvas_ids.view_id(view=ViewName.doctor_view)
+        self.doctor_q = f"#{self.doctor}"
+        self.ignored_btn = canvas_ids.button_id(btn=FlatBtn.ignored)
+        self.ignored = canvas_ids.view_id(view=ViewName.git_ignored_view)
+        self.ignored_q = f"#{self.ignored}"
+        self.new_repo_btn = canvas_ids.button_id(btn=FlatBtn.init_new_repo)
+        self.new_repo = canvas_ids.view_id(view=ViewName.init_new_repo_view)
+        self.new_repo_q = f"#{self.new_repo}"
+        self.pw_mgr_info_btn = canvas_ids.button_id(btn=FlatBtn.pw_mgr_info)
+        self.pw_mgr_info = canvas_ids.view_id(view=ViewName.pw_mgr_info_view)
+        self.pw_mgr_info_q = f"#{self.pw_mgr_info}"
+        self.re_add_help_btn = canvas_ids.button_id(btn=FlatBtn.re_add_help)
+        self.re_add_help = canvas_ids.view_id(view=ViewName.re_add_help_view)
+        self.re_add_help_q = f"#{self.re_add_help}"
+        self.template_data_btn = canvas_ids.button_id(
+            btn=FlatBtn.template_data
         )
+        self.template_data = canvas_ids.view_id(
+            view=ViewName.template_data_view
+        )
+        self.template_data_q = f"#{self.template_data}"
 
 
 class CanvasIds:
@@ -55,30 +61,8 @@ class CanvasIds:
     def __init__(self, canvas_name: CanvasName) -> None:
         self.canvas_name: str = canvas_name.name
         self.header_id = f"{self.canvas_name}_header"
-        self.canvas_container_id = f"{canvas_name}_container_id"
-
-        self.views = ViewsIds(
-            add_help_btn=self.button_id(btn=FlatBtn.add_help),
-            add_help=self.view_id(view=ViewName.add_help_view),
-            apply_help_btn=self.button_id(btn=FlatBtn.apply_help),
-            apply_help=self.view_id(view=ViewName.apply_help_view),
-            re_add_help_btn=self.button_id(btn=FlatBtn.re_add_help),
-            re_add_help=self.view_id(view=ViewName.re_add_help_view),
-            diagram_btn=self.button_id(btn=FlatBtn.diagram),
-            diagram=self.view_id(view=ViewName.diagram_view),
-            cat_config_btn=self.button_id(btn=FlatBtn.cat_config),
-            cat_config=self.view_id(view=ViewName.cat_config_view),
-            doctor_btn=self.button_id(btn=FlatBtn.doctor),
-            doctor=self.view_id(view=ViewName.doctor_view),
-            ignored_btn=self.button_id(btn=FlatBtn.ignored),
-            ignored=self.view_id(view=ViewName.git_ignored_view),
-            new_repo_btn=self.button_id(btn=FlatBtn.init_new_repo),
-            new_repo=self.view_id(view=ViewName.init_new_repo_view),
-            pw_mgr_info_btn=self.button_id(btn=FlatBtn.pw_mgr_info),
-            pw_mgr_info=self.view_id(view=ViewName.pw_mgr_info_view),
-            template_data_btn=self.button_id(btn=FlatBtn.template_data),
-            template_data=self.view_id(view=ViewName.template_data_view),
-        )
+        self.canvas_container_id = f"{self.canvas_name}_container_id"
+        self.views = ViewIds(self)
 
     def button_id(
         self, qid: str = "", *, btn: FlatBtn | LinkBtn | OperateBtn | TabBtn
