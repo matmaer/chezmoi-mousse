@@ -12,6 +12,7 @@ from chezmoi_mousse import (
     ContainerName,
     DataTableName,
     FlatBtn,
+    SplashData,
     Tcss,
     ViewName,
 )
@@ -26,17 +27,14 @@ from chezmoi_mousse.shared import (
 )
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import CanvasIds, CommandResult
+    from chezmoi_mousse import CanvasIds
 
 __all__ = ["ConfigTab", "ConfigTabSwitcher"]
 
 
 class ConfigTabSwitcher(ContentSwitcher):
 
-    doctor_results: reactive["CommandResult | None"] = reactive(None)
-    cat_config_results: reactive["CommandResult | None"] = reactive(None)
-    ignored_results: reactive["CommandResult | None"] = reactive(None)
-    template_data_results: reactive["CommandResult | None"] = reactive(None)
+    splash_data: reactive["SplashData | None"] = reactive(None)
 
     def __init__(self, ids: "CanvasIds"):
         self.ids = ids
@@ -69,39 +67,31 @@ class ConfigTabSwitcher(ContentSwitcher):
         )
         yield TemplateDataOutput(ids=self.ids)
 
-    def watch_doctor_results(self):
-        doctor_table = self.query_one(self.doctor_table_qid, DoctorTable)
-        if self.doctor_results is None:
+    def watch_splash_data(self):
+        if self.splash_data is None:
             return
+
+        doctor_table = self.query_one(self.doctor_table_qid, DoctorTable)
         doctor_table.populate_doctor_data(
-            doctor_data=self.doctor_results.std_out.splitlines()
+            doctor_data=self.splash_data.doctor.std_out.splitlines()
         )
         pw_mgr_info_view = self.query_one(self.pw_mgr_info_qid, PwMgrInfoView)
-        pw_mgr_info_view.populate_pw_mgr_info(self.doctor_results)
+        pw_mgr_info_view.populate_pw_mgr_info(self.splash_data.doctor)
 
-    def watch_cat_config_results(self):
-        if self.cat_config_results is None:
-            return
         cat_config_view = self.query_one(
             f"#{ViewName.cat_config_view}", Static
         )
-        cat_config_view.update(self.cat_config_results.std_out)
+        cat_config_view.update(self.splash_data.cat_config.std_out)
 
-    def watch_ignored_results(self):
-        if self.ignored_results is None:
-            return
         pretty_ignored = self.query_one(
             f"#{ViewName.pretty_ignored_view}", Pretty
         )
-        pretty_ignored.update(self.ignored_results.std_out.splitlines())
+        pretty_ignored.update(self.splash_data.ignored.std_out.splitlines())
 
-    def watch_template_data_results(self):
-        if self.template_data_results is None:
-            return
         pretty_template_data = self.query_one(
             f"#{ViewName.pretty_template_data_view}", Pretty
         )
-        template_data_json = json.loads(self.template_data_results.std_out)
+        template_data_json = json.loads(self.splash_data.template_data.std_out)
         pretty_template_data.update(template_data_json)
 
 

@@ -184,7 +184,7 @@ class MainScreen(Screen[None], AppType):
             )
             return
         self.populate_trees(commands_data=data)
-        self.update_config_tab_outputs(data)
+        self.update_config_tab(data)
 
     def populate_trees(
         self, commands_data: "SplashData | None" = None
@@ -223,19 +223,14 @@ class MainScreen(Screen[None], AppType):
         re_add_tab_expanded_tree.populate_tree()
         re_add_tab_flat_tree.populate_tree()
 
-    def update_config_tab_outputs(self, data: "SplashData") -> None:
+    def update_config_tab(self, data: "SplashData") -> None:
         config_tab_switcher = self.screen.query_one(
             self.app.config_tab_ids.content_switcher_id(
                 "#", name=ContainerName.config_switcher
             ),
             ConfigTabSwitcher,
         )
-        setattr(config_tab_switcher, "doctor_results", data.doctor)
-        setattr(config_tab_switcher, "cat_config_results", data.cat_config)
-        setattr(config_tab_switcher, "ignored_results", data.ignored)
-        setattr(
-            config_tab_switcher, "template_data_results", data.template_data
-        )
+        setattr(config_tab_switcher, "splash_data", data)
 
     def check_action(
         self, action: str, parameters: tuple[object, ...]
