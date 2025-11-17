@@ -332,7 +332,7 @@ class MainScreen(Screen[None], AppType):
 
         if active_tab == CanvasName.apply_tab:
             left_side = self.query_one(
-                self.app.apply_tab_ids.tab_vertical_id(
+                self.app.apply_tab_ids.container_id(
                     "#", name=ContainerName.left_side
                 ),
                 Vertical,
@@ -353,7 +353,7 @@ class MainScreen(Screen[None], AppType):
             )
         elif active_tab == CanvasName.re_add_tab:
             left_side = self.query_one(
-                self.app.re_add_tab_ids.tab_vertical_id(
+                self.app.re_add_tab_ids.container_id(
                     "#", name=ContainerName.left_side
                 ),
                 Vertical,
@@ -374,7 +374,7 @@ class MainScreen(Screen[None], AppType):
             )
         elif active_tab == CanvasName.add_tab:
             left_side = self.query_one(
-                self.app.add_tab_ids.tab_vertical_id(
+                self.app.add_tab_ids.container_id(
                     "#", name=ContainerName.left_side
                 ),
                 Vertical,
@@ -400,7 +400,7 @@ class MainScreen(Screen[None], AppType):
             )
         elif active_tab == CanvasName.config_tab:
             left_side = self.query_one(
-                self.app.config_tab_ids.tab_vertical_id(
+                self.app.config_tab_ids.container_id(
                     "#", name=ContainerName.left_side
                 ),
                 Vertical,
@@ -415,7 +415,7 @@ class MainScreen(Screen[None], AppType):
             )
         elif active_tab == CanvasName.help_tab:
             left_side = self.query_one(
-                self.app.help_tab_ids.tab_vertical_id(
+                self.app.help_tab_ids.container_id(
                     "#", name=ContainerName.left_side
                 ),
                 Vertical,

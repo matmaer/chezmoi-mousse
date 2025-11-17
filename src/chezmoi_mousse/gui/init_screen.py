@@ -98,9 +98,7 @@ class InitScreen(Screen[None], AppType):
     def __init__(self, *, ids: "CanvasIds", splash_data: "SplashData") -> None:
         super().__init__()
         self.ids = ids
-        self.tab_vertical_id = ids.tab_vertical_id(
-            name=ContainerName.left_side
-        )
+        self.container_id = ids.container_id(name=ContainerName.left_side)
         self.splash_data = splash_data
 
     def compose(self) -> ComposeResult:

@@ -113,9 +113,6 @@ class CanvasIds:
     def switch_id(self, qid: str = "", *, switch: Switches) -> str:
         return f"{qid}{self.canvas_name}_{switch.switch_name}_switch"
 
-    def tab_vertical_id(self, qid: str = "", *, name: ContainerName) -> str:
-        return f"{qid}{self.canvas_name}_{name.name}_vertical"
-
     def tree_id(self, qid: str = "", *, tree: TreeName) -> str:
         return f"{qid}{self.canvas_name}_{tree}"
 

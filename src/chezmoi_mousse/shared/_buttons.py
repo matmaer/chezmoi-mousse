@@ -70,9 +70,7 @@ class FlatButtonsVertical(Vertical):
     ) -> None:
         self.buttons: tuple[FlatBtn, ...] = buttons
         self.ids = ids
-        self.left_vertical_id = ids.tab_vertical_id(
-            name=ContainerName.left_side
-        )
+        self.left_vertical_id = ids.container_id(name=ContainerName.left_side)
         super().__init__(
             id=self.left_vertical_id, classes=Tcss.tab_left_vertical.name
         )
