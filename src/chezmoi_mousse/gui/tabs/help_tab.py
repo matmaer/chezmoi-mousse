@@ -3,7 +3,13 @@ from typing import TYPE_CHECKING
 
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import Horizontal, ScrollableContainer, VerticalGroup
+from textual.containers import (
+    Horizontal,
+    ScrollableContainer,
+    Vertical,
+    VerticalGroup,
+    VerticalScroll,
+)
 from textual.widgets import Button, ContentSwitcher, Static
 
 from chezmoi_mousse import (
@@ -27,6 +33,37 @@ if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds
 
 __all__ = ["HelpTab"]
+
+# provisional diagrams until dynamically created
+FLOW_DIAGRAM = """\
+┌──────────────┐    ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
+│home directory│    │ working copy │    │  local repo  │    │ remote repo  │
+└──────┬───────┘    └──────┬───────┘    └──────┬───────┘    └──────┬───────┘
+       │                   │                   │                   │
+       │                   │                   │                   │
+       │     Add Tab       │    autoCommit     │     git push      │
+       │   Re-Add Tab      │──────────────────>│──────────────────>│
+       │──────────────────>│                   │                   │
+       │                   │                autopush               │
+       │                   │──────────────────────────────────────>│
+       │                   │                   │                   │
+       │                   │                   │                   │
+       │     Apply Tab     │     chezmoi init & chezmoi git pull   │
+       │<──────────────────│<──────────────────────────────────────│
+       │                   │                   │                   │
+       │     Diff View     │                   │                   │
+       │<─ ─ ─ ─ ─ ─ ─ ─ ─>│                   │                   │
+       │                   │                   │                   │
+       │                   │    chezmoi init & chezmoi git pull    │
+       │                   │<──────────────────────────────────────│
+       │                   │                   │                   │
+       │        chezmoi init --one-shot & chezmoi init --apply     │
+       │<──────────────────────────────────────────────────────────│
+       │                   │                   │                   │
+┌──────┴───────┐    ┌──────┴───────────────────┴───────┐    ┌──────┴───────┐
+│ destination  │    │    target state / source state   │    │  git remote  │
+└──────────────┘    └──────────────────────────────────┘    └──────────────┘
+"""
 
 
 class HelpTabSections(StrEnum):
@@ -77,7 +114,7 @@ class SharedFiltersHelp(VerticalGroup):
         yield ToolTipText(Switches.expand_all.enabled_tooltip)
 
 
-class ApplyTabHelp(ScrollableContainer):
+class ApplyTabHelp(VerticalScroll):
 
     def __init__(self, ids: "CanvasIds") -> None:
         self.view_id = ids.view_id(view=ViewName.apply_help_view)
@@ -101,7 +138,7 @@ class ApplyTabHelp(ScrollableContainer):
         yield SharedBtnHelp(ids=self.ids)
 
 
-class ReAddTabHelp(ScrollableContainer):
+class ReAddTabHelp(VerticalScroll):
 
     def __init__(self, ids: "CanvasIds") -> None:
         self.view_id = ids.view_id(view=ViewName.re_add_help_view)
@@ -125,7 +162,7 @@ class ReAddTabHelp(ScrollableContainer):
         yield SharedBtnHelp(ids=self.ids)
 
 
-class AddTabHelp(ScrollableContainer):
+class AddTabHelp(VerticalScroll):
 
     def __init__(self, ids: "CanvasIds") -> None:
         super().__init__(id=ids.view_id(view=ViewName.add_help_view))
@@ -151,38 +188,20 @@ class AddTabHelp(ScrollableContainer):
         yield FlatLink(ids=self.ids, link_enum=LinkBtn.chezmoi_add)
 
 
-class HelpTabSwitcher(ContentSwitcher):
+class ChezmoiDiagram(Vertical):
 
-    # provisional diagrams until dynamically created
-    FLOW_DIAGRAM = """\
-┌──────────────┐    ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
-│home directory│    │ working copy │    │  local repo  │    │ remote repo  │
-└──────┬───────┘    └──────┬───────┘    └──────┬───────┘    └──────┬───────┘
-       │                   │                   │                   │
-       │                   │                   │                   │
-       │     Add Tab       │    autoCommit     │     git push      │
-       │   Re-Add Tab      │──────────────────>│──────────────────>│
-       │──────────────────>│                   │                   │
-       │                   │                autopush               │
-       │                   │──────────────────────────────────────>│
-       │                   │                   │                   │
-       │                   │                   │                   │
-       │     Apply Tab     │     chezmoi init & chezmoi git pull   │
-       │<──────────────────│<──────────────────────────────────────│
-       │                   │                   │                   │
-       │     Diff View     │                   │                   │
-       │<─ ─ ─ ─ ─ ─ ─ ─ ─>│                   │                   │
-       │                   │                   │                   │
-       │                   │    chezmoi init & chezmoi git pull    │
-       │                   │<──────────────────────────────────────│
-       │                   │                   │                   │
-       │        chezmoi init --one-shot & chezmoi init --apply     │
-       │<──────────────────────────────────────────────────────────│
-       │                   │                   │                   │
-┌──────┴───────┐    ┌──────┴───────────────────┴───────┐    ┌──────┴───────┐
-│ destination  │    │    target state / source state   │    │  git remote  │
-└──────────────┘    └──────────────────────────────────┘    └──────────────┘
-"""
+    def __init__(self, ids: "CanvasIds") -> None:
+        self.ids = ids
+        super().__init__(id=self.ids.view_id(view=ViewName.diagram_view))
+
+    def compose(self) -> ComposeResult:
+        yield SectionLabel(HelpTabSections.chezmoi_diagram)
+        yield ScrollableContainer(
+            Static(FLOW_DIAGRAM, classes=Tcss.flow_diagram.name)
+        )
+
+
+class HelpTabSwitcher(ContentSwitcher):
 
     def __init__(self, ids: "CanvasIds"):
         self.ids = ids
@@ -199,11 +218,7 @@ class HelpTabSwitcher(ContentSwitcher):
         yield ApplyTabHelp(ids=self.ids)
         yield ReAddTabHelp(ids=self.ids)
         yield AddTabHelp(ids=self.ids)
-        yield ScrollableContainer(
-            SectionLabel(HelpTabSections.chezmoi_diagram),
-            Static(self.FLOW_DIAGRAM, classes=Tcss.flow_diagram.name),
-            id=self.ids.view_id(view=ViewName.diagram_view),
-        )
+        yield ChezmoiDiagram(ids=self.ids)
 
 
 class HelpTab(Horizontal):
@@ -212,7 +227,6 @@ class HelpTab(Horizontal):
         self.ids = ids
         super().__init__(id=ids.canvas_container_id)
 
-        # Content Switcher IDs
         self.content_switcher_qid = self.ids.content_switcher_id(
             "#", name=ContainerName.help_switcher
         )
