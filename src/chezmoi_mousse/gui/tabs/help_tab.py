@@ -183,10 +183,10 @@ class AddTabHelp(Vertical):
             yield Static(Switches.unmanaged_dirs.enabled_tooltip)
             yield SubSectionLabel(HelpSections.unwanted_filter)
             yield Static(Switches.unwanted.enabled_tooltip)
-            yield FlatLink(ids=self.ids, link_enum=LinkBtn.chezmoi_apply)
-            yield SubSectionLabel(HelpSections.apply_file_button)
+            yield FlatLink(ids=self.ids, link_enum=LinkBtn.chezmoi_add)
+            yield SubSectionLabel(HelpSections.add_file_button)
             yield Static(OperateBtn.apply_path.file_tooltip)
-            yield SubSectionLabel(HelpSections.apply_dir_button)
+            yield SubSectionLabel(HelpSections.add_dir_button)
             yield Static(OperateBtn.apply_path.dir_tooltip)
 
 
