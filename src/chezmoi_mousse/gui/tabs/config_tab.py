@@ -1,11 +1,10 @@
-import json
 from typing import TYPE_CHECKING
 
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import Horizontal, ScrollableContainer
+from textual.containers import Horizontal
 from textual.reactive import reactive
-from textual.widgets import Button, ContentSwitcher, Pretty, Static
+from textual.widgets import Button, ContentSwitcher
 
 from chezmoi_mousse import (
     AppType,
@@ -14,16 +13,14 @@ from chezmoi_mousse import (
     FlatBtn,
     SplashData,
     Tcss,
-    ViewName,
 )
 from chezmoi_mousse.shared import (
-    CatConfigOutput,
+    CatConfigView,
     DoctorTableView,
     FlatButtonsVertical,
+    IgnoredView,
     PwMgrInfoView,
-    SectionLabel,
-    SectionLabelText,
-    TemplateDataOutput,
+    TemplateDataView,
 )
 
 if TYPE_CHECKING:
@@ -38,18 +35,12 @@ class ConfigTabSwitcher(ContentSwitcher):
 
     def __init__(self, ids: "CanvasIds"):
         self.ids = ids
-        self.ids.view_id(view=ViewName.doctor_view)
-        self.doctor_view_id = self.ids.view_id(view=ViewName.doctor_view)
-        self.doctor_view_qid = self.ids.view_id("#", view=ViewName.doctor_view)
         self.content_switcher_id = self.ids.content_switcher_id(
             name=ContainerName.config_switcher
         )
         super().__init__(
-            id=self.content_switcher_id, initial=self.doctor_view_id
+            id=self.content_switcher_id, initial=self.ids.views.doctor
         )
-        self.pw_mgr_info_qid = f"#{self.ids.view_id(
-            view=ViewName.pw_mgr_info_view
-        )}"
         self.doctor_table_qid = ids.datatable_id(
             "#", data_table_name=DataTableName.doctor_table
         )
@@ -57,40 +48,37 @@ class ConfigTabSwitcher(ContentSwitcher):
     def compose(self) -> ComposeResult:
         yield DoctorTableView(ids=self.ids)
         yield PwMgrInfoView(ids=self.ids)
-        yield CatConfigOutput(ids=self.ids)
-        yield ScrollableContainer(
-            SectionLabel(SectionLabelText.ignored_output),
-            Pretty("<ignored>", id=ViewName.pretty_ignored_view),
-            id=self.ids.view_id(view=ViewName.git_ignored_view),
-        )
-        yield TemplateDataOutput(ids=self.ids)
+        yield CatConfigView(ids=self.ids)
+        yield IgnoredView(ids=self.ids)
+        yield TemplateDataView(ids=self.ids)
 
     def watch_splash_data(self):
         if self.splash_data is None:
             return
 
-        doctor_view = self.query_one(self.doctor_view_qid, DoctorTableView)
+        doctor_view = self.query_one(self.ids.views.doctor_q, DoctorTableView)
         doctor_view.populate_doctor_data(
             command_result=self.splash_data.doctor
         )
-        pw_mgr_info_view = self.query_one(self.pw_mgr_info_qid, PwMgrInfoView)
+        pw_mgr_info_view = self.query_one(
+            self.ids.views.pw_mgr_info_q, PwMgrInfoView
+        )
         pw_mgr_info_view.populate_pw_mgr_info(self.splash_data.doctor)
 
         cat_config_view = self.query_one(
-            f"#{ViewName.cat_config_view}", Static
+            self.ids.views.cat_config_q, CatConfigView
         )
-        cat_config_view.update(self.splash_data.cat_config.std_out)
+        cat_config_view.mount_cat_config_output(self.splash_data.cat_config)
 
-        pretty_ignored = self.query_one(
-            f"#{ViewName.pretty_ignored_view}", Pretty
-        )
-        pretty_ignored.update(self.splash_data.ignored.std_out.splitlines())
+        ignored_view = self.query_one(self.ids.views.ignored_q, IgnoredView)
+        ignored_view.mount_ignored_output(self.splash_data.ignored)
 
-        pretty_template_data = self.query_one(
-            f"#{ViewName.pretty_template_data_view}", Pretty
+        template_data_view = self.query_one(
+            self.ids.views.template_data_q, TemplateDataView
         )
-        template_data_json = json.loads(self.splash_data.template_data.std_out)
-        pretty_template_data.update(template_data_json)
+        template_data_view.mount_template_data_output(
+            self.splash_data.template_data
+        )
 
 
 class ConfigTab(Horizontal, AppType):
@@ -101,27 +89,6 @@ class ConfigTab(Horizontal, AppType):
 
         self.content_switcher_qid = self.ids.content_switcher_id(
             "#", name=ContainerName.config_switcher
-        )
-
-        # Button IDs
-        self.cat_config_btn_id = self.ids.button_id(btn=(FlatBtn.cat_config))
-        self.doctor_btn_id = self.ids.button_id(btn=(FlatBtn.doctor))
-        self.pw_mgr_info_btn_id = self.ids.button_id(btn=FlatBtn.pw_mgr_info)
-        self.ignored_btn_id = self.ids.button_id(btn=FlatBtn.ignored)
-        self.template_data_btn_id = self.ids.button_id(
-            btn=FlatBtn.template_data
-        )
-        # View IDs
-        self.cat_config_view_id = self.ids.view_id(
-            view=ViewName.cat_config_view
-        )
-        self.doctor_view_id = self.ids.view_id(view=ViewName.doctor_view)
-        self.ignored_view_id = self.ids.view_id(view=ViewName.git_ignored_view)
-        self.pw_mgr_info_view_id = self.ids.view_id(
-            view=ViewName.pw_mgr_info_view
-        )
-        self.template_data_view_id = self.ids.view_id(
-            view=ViewName.template_data_view
         )
 
     def compose(self) -> ComposeResult:
@@ -141,13 +108,13 @@ class ConfigTab(Horizontal, AppType):
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
         switcher = self.query_one(self.content_switcher_qid, ContentSwitcher)
-        if event.button.id == self.doctor_btn_id:
-            switcher.current = self.doctor_view_id
-        if event.button.id == self.pw_mgr_info_btn_id:
-            switcher.current = self.pw_mgr_info_view_id
-        elif event.button.id == self.cat_config_btn_id:
-            switcher.current = self.cat_config_view_id
-        elif event.button.id == self.ignored_btn_id:
-            switcher.current = self.ignored_view_id
-        elif event.button.id == self.template_data_btn_id:
-            switcher.current = self.template_data_view_id
+        if event.button.id == self.ids.views.doctor_btn:
+            switcher.current = self.ids.views.doctor
+        if event.button.id == self.ids.views.pw_mgr_info_btn:
+            switcher.current = self.ids.views.pw_mgr_info
+        elif event.button.id == self.ids.views.cat_config_btn:
+            switcher.current = self.ids.views.cat_config
+        elif event.button.id == self.ids.views.ignored_btn:
+            switcher.current = self.ids.views.ignored
+        elif event.button.id == self.ids.views.template_data_btn:
+            switcher.current = self.ids.views.template_data

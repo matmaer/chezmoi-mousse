@@ -7,11 +7,15 @@ from ._buttons import (
     OperateButtons,
     TabButtons,
 )
-from ._config_views import CatConfigView, IgnoredView, TemplateDataView
+from ._config_views import (
+    CatConfigView,
+    DoctorTableView,
+    IgnoredView,
+    TemplateDataView,
+)
 from ._contents_view import ContentsView
 from ._custom_collapsible import CustomCollapsible
 from ._diff_view import DiffView
-from ._doctor_table import DoctorTableView
 from ._git_log_view import GitLogView
 from ._operate_msg import (
     CurrentAddNodeMsg,
