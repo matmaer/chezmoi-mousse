@@ -7,7 +7,7 @@ from ._buttons import (
     OperateButtons,
     TabButtons,
 )
-from ._config_views import CatConfigOutput, TemplateDataOutput
+from ._config_views import CatConfigView, IgnoredView, TemplateDataView
 from ._contents_view import ContentsView
 from ._custom_collapsible import CustomCollapsible
 from ._diff_view import DiffView
@@ -29,7 +29,7 @@ from ._section_headers import (
 )
 
 __all__ = [
-    "CatConfigOutput",
+    "CatConfigView",
     "ContentsView",
     "CurrentAddNodeMsg",
     "CurrentApplyNodeMsg",
@@ -42,6 +42,7 @@ __all__ = [
     "FlatLink",
     "FlatSectionLabel",
     "GitLogView",
+    "IgnoredView",
     "InitialHeader",
     "OperateButtons",
     "PwMgrInfoView",
@@ -50,5 +51,5 @@ __all__ = [
     "SectionLabelText",
     "SubSectionLabel",
     "TabButtons",
-    "TemplateDataOutput",
+    "TemplateDataView",
 ]
