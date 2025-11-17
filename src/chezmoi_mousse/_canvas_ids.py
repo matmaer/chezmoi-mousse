@@ -17,24 +17,30 @@ __all__ = ["CanvasIds"]
 
 
 class ViewsIds(NamedTuple):
+    add_help_btn: str
+    add_help: str
     cat_config_btn: str
-    cat_config_q: str
     cat_config: str
     doctor_btn: str
-    doctor_q: str
     doctor: str
     ignored_btn: str
-    ignored_q: str
     ignored: str
     new_repo_btn: str
-    new_repo_q: str
     new_repo: str
     pw_mgr_info_btn: str
-    pw_mgr_info_q: str
     pw_mgr_info: str
     template_data_btn: str
-    template_data_q: str
     template_data: str
+
+    def __getattr__(self, name: str) -> str:
+        if name.endswith("_q"):
+            # Get the base field name by removing '_q'
+            base_name = name[:-2]
+            if hasattr(self, base_name):
+                return f"#{getattr(self, base_name)}"
+        raise AttributeError(
+            f"'{type(self).__name__}' object has no attribute '{name}'"
+        )
 
 
 class CanvasIds:
@@ -46,25 +52,19 @@ class CanvasIds:
         self.canvas_container_id = f"{canvas_name}_container_id"
 
         self.views = ViewsIds(
+            add_help_btn=self.button_id(btn=FlatBtn.add_help),
+            add_help=self.view_id(view=ViewName.add_help_view),
             cat_config_btn=self.button_id(btn=FlatBtn.cat_config),
-            cat_config_q=self.view_id("#", view=ViewName.cat_config_view),
             cat_config=self.view_id(view=ViewName.cat_config_view),
             doctor_btn=self.button_id(btn=FlatBtn.doctor),
-            doctor_q=self.view_id("#", view=ViewName.doctor_view),
             doctor=self.view_id(view=ViewName.doctor_view),
             ignored_btn=self.button_id(btn=FlatBtn.ignored),
-            ignored_q=self.view_id("#", view=ViewName.git_ignored_view),
             ignored=self.view_id(view=ViewName.git_ignored_view),
             new_repo_btn=self.button_id(btn=FlatBtn.init_new_repo),
-            new_repo_q=self.view_id("#", view=ViewName.init_new_repo_view),
             new_repo=self.view_id(view=ViewName.init_new_repo_view),
             pw_mgr_info_btn=self.button_id(btn=FlatBtn.pw_mgr_info),
-            pw_mgr_info_q=self.view_id("#", view=ViewName.pw_mgr_info_view),
             pw_mgr_info=self.view_id(view=ViewName.pw_mgr_info_view),
             template_data_btn=self.button_id(btn=FlatBtn.template_data),
-            template_data_q=self.view_id(
-                "#", view=ViewName.template_data_view
-            ),
             template_data=self.view_id(view=ViewName.template_data_view),
         )
 
