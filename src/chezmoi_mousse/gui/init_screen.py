@@ -1,3 +1,4 @@
+import json
 from typing import TYPE_CHECKING
 
 from textual import on
@@ -58,10 +59,12 @@ class InitSwitcher(ContentSwitcher):
     def on_mount(self) -> None:
         cat_config = self.query_one(f"#{ViewName.cat_config_view}", Static)
         cat_config.update(self.splash_data.cat_config.std_out)
+        template_cmd_output = self.splash_data.template_data.std_out
         pretty_template_data = self.query_one(
             f"#{ViewName.pretty_template_data_view}", Pretty
         )
-        pretty_template_data.update(self.splash_data.template_data.std_out)
+        template_data_json = json.loads(template_cmd_output)
+        pretty_template_data.update(template_data_json)
 
 
 class InitScreen(Screen[None], AppType):
