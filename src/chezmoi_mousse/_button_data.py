@@ -267,6 +267,14 @@ class OperateBtn(Enum):
         else:
             return self.value.initial_label
 
+    def tooltip(self, path_type: "PathType | None" = None) -> str:
+        if path_type == "dir":
+            return self.dir_tooltip
+        elif path_type == "file":
+            return self.file_tooltip
+        else:
+            return "Tooltip not yet implomented."
+
     @classmethod
     def from_label(cls, label: str) -> "OperateBtn":
         for member in cls:
