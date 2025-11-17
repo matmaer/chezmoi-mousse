@@ -7,7 +7,7 @@ from ._buttons import (
     OperateButtons,
     TabButtons,
 )
-from ._cat_config import CatConfigOutput
+from ._config_views import CatConfigOutput, TemplateDataOutput
 from ._contents_view import ContentsView
 from ._custom_collapsible import CustomCollapsible
 from ._diff_view import DiffView
@@ -26,7 +26,6 @@ from ._section_headers import (
     SectionLabelText,
     SubSectionLabel,
 )
-from ._template_data import TemplateDataOutput
 
 __all__ = [
     "CatConfigOutput",
