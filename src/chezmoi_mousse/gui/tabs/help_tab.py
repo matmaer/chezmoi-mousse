@@ -25,6 +25,7 @@ from chezmoi_mousse import (
 from chezmoi_mousse.shared import (
     FlatButtonsVertical,
     FlatLink,
+    FlatSectionLabel,
     SectionLabel,
     SubSectionLabel,
 )
@@ -66,16 +67,39 @@ FLOW_DIAGRAM = """\
 """
 
 
-class HelpTabSections(StrEnum):
-    available_buttons = "Available Buttons"
-    available_switches = "Available Filters"
-    chezmoi_diagram = "chezmoi diagram"
-
-
-class ToolTipText(Static):
-
-    def on_mount(self) -> None:
-        self.styles.margin = (1, 2, 1, 2)
+class HelpSections(StrEnum):
+    chezmoi_diagram = "Chezmoi Diagram"
+    filters_section_label = "Available Filters"
+    # Add tab
+    add_tab_help = "Add Tab Help"
+    add_dir_button = f"{OperateBtn.add_dir.label()} Button"
+    add_file_button = f"{OperateBtn.add_file.label()} Button"
+    unmanaged_dirs_filter = f"{Switches.unmanaged_dirs.label} Filter"
+    unwanted_filter = f"{Switches.unwanted.label} Filter"
+    # Apply tab
+    apply_tab_help = "Apply Tab Help"
+    apply_dir_button = f"{OperateBtn.apply_path.label(PathType.DIR)} Button"
+    apply_file_button = f"{OperateBtn.apply_path.label(PathType.FILE)} Button"
+    # Re-Add tab
+    re_add_tab_help = "Re-Add Tab Help"
+    re_add_dir_button = f"{OperateBtn.re_add_path.label(PathType.DIR)} Button"
+    re_add_file_button = (
+        f"{OperateBtn.re_add_path.label(PathType.FILE)} Button"
+    )
+    # Common buttons for Apply and Re-Add tabs
+    destroy_dir_button = (
+        f"{OperateBtn.destroy_path.label(PathType.DIR)} Button"
+    )
+    destroy_file_button = (
+        f"{OperateBtn.destroy_path.label(PathType.FILE)} Button"
+    )
+    forget_dir_button = f"{OperateBtn.forget_path.label(PathType.DIR)} Button"
+    forget_file_button = (
+        f"{OperateBtn.forget_path.label(PathType.FILE)} Button"
+    )
+    # Common filters for Apply and Re-Add tabs
+    expand_all_filter = f"{Switches.expand_all.label} Filter"
+    unchanged_filter = f"{Switches.unchanged.label} Filter"
 
 
 class SharedBtnHelp(VerticalGroup):
@@ -85,107 +109,85 @@ class SharedBtnHelp(VerticalGroup):
         self.ids = ids
 
     def compose(self) -> ComposeResult:
-        yield SubSectionLabel(OperateBtn.forget_path.label(PathType.FILE))
-        yield ToolTipText(OperateBtn.forget_path.file_tooltip)
-
-        yield SubSectionLabel(OperateBtn.forget_path.label(PathType.DIR))
-        yield ToolTipText(OperateBtn.forget_path.dir_tooltip)
-
         yield FlatLink(ids=self.ids, link_enum=LinkBtn.chezmoi_forget)
-
-        yield SubSectionLabel(OperateBtn.destroy_path.label(PathType.FILE))
-        yield ToolTipText(OperateBtn.destroy_path.file_tooltip)
-
-        yield SubSectionLabel(OperateBtn.destroy_path.label(PathType.DIR))
-        yield ToolTipText(OperateBtn.destroy_path.dir_tooltip)
+        yield SubSectionLabel(HelpSections.forget_file_button)
+        yield Static(OperateBtn.forget_path.file_tooltip)
+        yield SubSectionLabel(HelpSections.forget_dir_button)
+        yield Static(OperateBtn.forget_path.dir_tooltip)
 
         yield FlatLink(ids=self.ids, link_enum=LinkBtn.chezmoi_destroy)
+        yield SubSectionLabel(HelpSections.destroy_file_button)
+        yield Static(OperateBtn.destroy_path.file_tooltip)
+        yield SubSectionLabel(HelpSections.destroy_dir_button)
+        yield Static(OperateBtn.destroy_path.dir_tooltip)
 
 
 class SharedFiltersHelp(VerticalGroup):
-
     def compose(self) -> ComposeResult:
-        yield SectionLabel(HelpTabSections.available_switches)
-
-        yield SubSectionLabel(Switches.unchanged.label)
-        yield ToolTipText(Switches.unchanged.enabled_tooltip)
-
-        yield SubSectionLabel(Switches.expand_all.label)
-        yield ToolTipText(Switches.expand_all.enabled_tooltip)
+        yield FlatSectionLabel(HelpSections.filters_section_label)
+        yield SubSectionLabel(HelpSections.unchanged_filter)
+        yield Static(Switches.unchanged.enabled_tooltip)
+        yield SubSectionLabel(HelpSections.expand_all_filter)
+        yield Static(Switches.expand_all.enabled_tooltip)
 
 
-class ApplyTabHelp(VerticalScroll):
-
+class ApplyTabHelp(Vertical):
     def __init__(self, ids: "CanvasIds") -> None:
-        self.view_id = ids.view_id(view=ViewName.apply_help_view)
+        self.ids = ids
+        self.view_id = self.ids.view_id(view=ViewName.apply_help_view)
         super().__init__(id=self.view_id)
 
-        self.ids = ids
-        self.shared_filters_help_id = f"{self.view_id}_filters_help"
-
     def compose(self) -> ComposeResult:
-        yield SharedFiltersHelp(id=self.shared_filters_help_id)
-
-        yield SectionLabel(HelpTabSections.available_buttons)
-
-        yield SubSectionLabel(OperateBtn.apply_path.label(PathType.FILE))
-        yield ToolTipText(OperateBtn.apply_path.file_tooltip)
-
-        yield SubSectionLabel(OperateBtn.apply_path.label(PathType.DIR))
-        yield ToolTipText(OperateBtn.apply_path.dir_tooltip)
-
-        yield FlatLink(ids=self.ids, link_enum=LinkBtn.chezmoi_apply)
-        yield SharedBtnHelp(ids=self.ids)
+        yield SectionLabel(HelpSections.apply_tab_help)
+        with VerticalScroll():
+            yield SharedFiltersHelp()
+            yield FlatLink(ids=self.ids, link_enum=LinkBtn.chezmoi_apply)
+            yield SubSectionLabel(HelpSections.apply_file_button)
+            yield Static(OperateBtn.apply_path.file_tooltip)
+            yield SubSectionLabel(HelpSections.apply_dir_button)
+            yield Static(OperateBtn.apply_path.dir_tooltip)
+            yield SharedBtnHelp(ids=self.ids)
 
 
 class ReAddTabHelp(VerticalScroll):
 
     def __init__(self, ids: "CanvasIds") -> None:
-        self.view_id = ids.view_id(view=ViewName.re_add_help_view)
+        self.ids = ids
+        self.view_id = self.ids.view_id(view=ViewName.re_add_help_view)
         super().__init__(id=self.view_id)
 
-        self.ids = ids
-        self.shared_filters_help_id = f"{self.view_id}_filters_help"
-
     def compose(self) -> ComposeResult:
-        yield SharedFiltersHelp(id=self.shared_filters_help_id)
-
-        yield SectionLabel(HelpTabSections.available_buttons)
-
-        yield SubSectionLabel(OperateBtn.re_add_path.label(PathType.FILE))
-        yield ToolTipText(OperateBtn.re_add_path.file_tooltip)
-
-        yield SubSectionLabel(OperateBtn.re_add_path.label(PathType.DIR))
-        yield ToolTipText(OperateBtn.re_add_path.dir_tooltip)
-
-        yield FlatLink(ids=self.ids, link_enum=LinkBtn.chezmoi_re_add)
-        yield SharedBtnHelp(ids=self.ids)
+        yield SectionLabel(HelpSections.re_add_tab_help)
+        with VerticalScroll():
+            yield SharedFiltersHelp()
+            yield FlatLink(ids=self.ids, link_enum=LinkBtn.chezmoi_re_add)
+            yield SubSectionLabel(HelpSections.re_add_file_button)
+            yield Static(OperateBtn.re_add_path.file_tooltip)
+            yield SubSectionLabel(HelpSections.re_add_dir_button)
+            yield Static(OperateBtn.re_add_path.dir_tooltip)
+            yield SharedBtnHelp(ids=self.ids)
 
 
-class AddTabHelp(VerticalScroll):
+class AddTabHelp(Vertical):
 
     def __init__(self, ids: "CanvasIds") -> None:
-        super().__init__(id=ids.view_id(view=ViewName.add_help_view))
         self.ids = ids
+        super().__init__(id=self.ids.view_id(view=ViewName.add_help_view))
 
     def compose(self) -> ComposeResult:
-        yield SectionLabel(HelpTabSections.available_switches)
+        yield SectionLabel(HelpSections.add_tab_help)
 
-        yield SubSectionLabel(Switches.unmanaged_dirs.label)
-        yield ToolTipText(Switches.unmanaged_dirs.enabled_tooltip)
-
-        yield SubSectionLabel(Switches.unwanted.label)
-        yield ToolTipText(Switches.unwanted.enabled_tooltip)
-
-        yield SectionLabel(HelpTabSections.available_buttons)
-
-        yield SubSectionLabel(OperateBtn.add_file.label())
-        yield ToolTipText(OperateBtn.add_file.enabled_tooltip)
-
-        yield SubSectionLabel(OperateBtn.add_dir.label())
-        yield ToolTipText(OperateBtn.add_dir.enabled_tooltip)
-
-        yield FlatLink(ids=self.ids, link_enum=LinkBtn.chezmoi_add)
+        with VerticalScroll():
+            yield FlatSectionLabel(HelpSections.filters_section_label)
+            yield SubSectionLabel(HelpSections.unmanaged_dirs_filter)
+            yield Static(Switches.unmanaged_dirs.enabled_tooltip)
+            yield SubSectionLabel(HelpSections.unwanted_filter)
+            yield Static(Switches.unwanted.enabled_tooltip)
+            yield FlatLink(ids=self.ids, link_enum=LinkBtn.chezmoi_apply)
+            yield SubSectionLabel(HelpSections.apply_file_button)
+            yield Static(OperateBtn.apply_path.file_tooltip)
+            yield SubSectionLabel(HelpSections.apply_dir_button)
+            yield Static(OperateBtn.apply_path.dir_tooltip)
 
 
 class ChezmoiDiagram(Vertical):
@@ -195,7 +197,7 @@ class ChezmoiDiagram(Vertical):
         super().__init__(id=self.ids.view_id(view=ViewName.diagram_view))
 
     def compose(self) -> ComposeResult:
-        yield SectionLabel(HelpTabSections.chezmoi_diagram)
+        yield SectionLabel(HelpSections.chezmoi_diagram)
         yield ScrollableContainer(
             Static(FLOW_DIAGRAM, classes=Tcss.flow_diagram.name)
         )

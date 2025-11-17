@@ -97,6 +97,17 @@ FlatButtonsVertical {
   width: auto;
 }
 
+FlatSectionLabel {
+  background-tint: $primary-muted;
+  background: $primary-muted;
+  border: block $primary-muted;
+  color: $primary-lighten-3;
+  height: 3;
+  padding: 0 1;
+  text-align: center;
+  width: 100%;
+}
+
 InstallHelp {
   border-bottom: $primary;
   & VerticalGroup {

@@ -8,6 +8,7 @@ from textual.widgets import Label, Static
 from chezmoi_mousse import ViewName
 
 __all__ = [
+    "FlatSectionLabel",
     "InitialHeader",
     "SectionLabel",
     "SectionLabelText",
@@ -37,8 +38,12 @@ class SectionLabelText(StrEnum):
     template_data_output = '"chezmoi data" output'
 
 
-class SectionLabel(Label):
+class FlatSectionLabel(Label):
+    def __init__(self, label_text: str) -> None:
+        super().__init__(label_text)
 
+
+class SectionLabel(Label):
     def __init__(self, label_text: str) -> None:
         super().__init__(label_text)
 

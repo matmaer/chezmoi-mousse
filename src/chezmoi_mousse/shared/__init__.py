@@ -21,6 +21,7 @@ from ._operate_msg import (
 from ._pw_mgr_info import PwMgrInfoView
 from ._reactive_header import ReactiveHeader
 from ._section_headers import (
+    FlatSectionLabel,
     InitialHeader,
     SectionLabel,
     SectionLabelText,
@@ -39,6 +40,7 @@ __all__ = [
     "FlatButton",
     "FlatButtonsVertical",
     "FlatLink",
+    "FlatSectionLabel",
     "GitLogView",
     "InitialHeader",
     "OperateButtons",
