@@ -31,21 +31,37 @@ class ViewIds:
         self.debug_log_btn = canvas_ids.button_id(btn=TabBtn.debug_log)
         self.debug_log = canvas_ids.view_id(view=ViewName.debug_log_view)
         self.debug_log_q = f"#{self.debug_log}"
-        # Other Views
+
+        # Help tab
         self.add_help_btn = canvas_ids.button_id(btn=FlatBtn.add_help)
         self.add_help = canvas_ids.view_id(view=ViewName.add_help_view)
         self.add_help_q = f"#{self.add_help}"
         self.apply_help_btn = canvas_ids.button_id(btn=FlatBtn.apply_help)
         self.apply_help = canvas_ids.view_id(view=ViewName.apply_help_view)
         self.apply_help_q = f"#{self.apply_help}"
-        self.cat_config_btn = canvas_ids.button_id(btn=FlatBtn.cat_config)
-        self.cat_config = canvas_ids.view_id(view=ViewName.cat_config_view)
-        self.cat_config_q = f"#{self.cat_config}"
-        self.contents = canvas_ids.view_id(view=ViewName.contents_view)
-        self.contents_q = f"#{self.contents}"
+        self.re_add_help_btn = canvas_ids.button_id(btn=FlatBtn.re_add_help)
+        self.re_add_help = canvas_ids.view_id(view=ViewName.re_add_help_view)
+        self.re_add_help_q = f"#{self.re_add_help}"
         self.diagram_btn = canvas_ids.button_id(btn=FlatBtn.diagram)
         self.diagram = canvas_ids.view_id(view=ViewName.diagram_view)
         self.diagram_q = f"#{self.diagram}"
+
+        # Init screen
+        self.new_repo_btn = canvas_ids.button_id(btn=FlatBtn.init_new_repo)
+        self.new_repo = canvas_ids.view_id(view=ViewName.init_new_repo_view)
+        self.new_repo_q = f"#{self.new_repo}"
+
+        # Config tab
+        self.cat_config_btn = canvas_ids.button_id(btn=FlatBtn.cat_config)
+        self.cat_config = canvas_ids.view_id(view=ViewName.cat_config_view)
+        self.cat_config_q = f"#{self.cat_config}"
+        self.ignored_btn = canvas_ids.button_id(btn=FlatBtn.ignored)
+        self.ignored = canvas_ids.view_id(view=ViewName.git_ignored_view)
+        self.ignored_q = f"#{self.ignored}"
+
+        # Other views or shared across canvases
+        self.contents = canvas_ids.view_id(view=ViewName.contents_view)
+        self.contents_q = f"#{self.contents}"
         self.diff_btn = canvas_ids.button_id(btn=TabBtn.diff)
         self.diff = canvas_ids.view_id(view=ViewName.diff_view)
         self.diff_q = f"#{self.diff}"
@@ -54,18 +70,9 @@ class ViewIds:
         self.doctor_q = f"#{self.doctor}"
         self.git_log = canvas_ids.view_id(view=ViewName.git_log_view)
         self.git_log_q = f"#{self.git_log}"
-        self.ignored_btn = canvas_ids.button_id(btn=FlatBtn.ignored)
-        self.ignored = canvas_ids.view_id(view=ViewName.git_ignored_view)
-        self.ignored_q = f"#{self.ignored}"
-        self.new_repo_btn = canvas_ids.button_id(btn=FlatBtn.init_new_repo)
-        self.new_repo = canvas_ids.view_id(view=ViewName.init_new_repo_view)
-        self.new_repo_q = f"#{self.new_repo}"
         self.pw_mgr_info_btn = canvas_ids.button_id(btn=FlatBtn.pw_mgr_info)
         self.pw_mgr_info = canvas_ids.view_id(view=ViewName.pw_mgr_info_view)
         self.pw_mgr_info_q = f"#{self.pw_mgr_info}"
-        self.re_add_help_btn = canvas_ids.button_id(btn=FlatBtn.re_add_help)
-        self.re_add_help = canvas_ids.view_id(view=ViewName.re_add_help_view)
-        self.re_add_help_q = f"#{self.re_add_help}"
         self.template_data_btn = canvas_ids.button_id(
             btn=FlatBtn.template_data
         )
