@@ -207,11 +207,11 @@ class HelpTabSwitcher(ContentSwitcher):
 
     def __init__(self, ids: "CanvasIds"):
         self.ids = ids
-        self.content_switcher_id = self.ids.content_switcher_id(
+        self.container_id = self.ids.container_id(
             name=ContainerName.help_switcher
         )
         super().__init__(
-            id=self.content_switcher_id,
+            id=self.container_id,
             initial=self.ids.view_id(view=ViewName.apply_help_view),
         )
 
@@ -229,7 +229,7 @@ class HelpTab(Horizontal):
         self.ids = ids
         super().__init__(id=ids.canvas_container_id)
 
-        self.content_switcher_qid = self.ids.content_switcher_id(
+        self.content_switcher_qid = self.ids.container_id(
             "#", name=ContainerName.help_switcher
         )
 

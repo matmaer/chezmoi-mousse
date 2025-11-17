@@ -35,12 +35,10 @@ class ConfigTabSwitcher(ContentSwitcher):
 
     def __init__(self, ids: "CanvasIds"):
         self.ids = ids
-        self.content_switcher_id = self.ids.content_switcher_id(
+        self.container_id = self.ids.container_id(
             name=ContainerName.config_switcher
         )
-        super().__init__(
-            id=self.content_switcher_id, initial=self.ids.views.doctor
-        )
+        super().__init__(id=self.container_id, initial=self.ids.views.doctor)
         self.doctor_table_qid = ids.datatable_id(
             "#", data_table_name=DataTableName.doctor_table
         )
@@ -87,7 +85,7 @@ class ConfigTab(Horizontal, AppType):
         self.ids = ids
         super().__init__(id=self.ids.canvas_container_id)
 
-        self.content_switcher_qid = self.ids.content_switcher_id(
+        self.content_switcher_qid = self.ids.container_id(
             "#", name=ContainerName.config_switcher
         )
 

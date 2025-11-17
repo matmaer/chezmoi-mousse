@@ -97,11 +97,6 @@ class CanvasIds:
     def container_id(self, qid: str = "", *, name: ContainerName) -> str:
         return f"{qid}{self.canvas_name}_{name.name}"
 
-    def content_switcher_id(
-        self, qid: str = "", *, name: ContainerName
-    ) -> str:
-        return f"{qid}{self.canvas_name}_{name.name}"
-
     def datatable_id(
         self, qid: str = "", *, data_table_name: DataTableName
     ) -> str:

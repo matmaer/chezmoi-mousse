@@ -38,7 +38,7 @@ class TreeSwitcher(Vertical):
     def compose(self) -> ComposeResult:
         yield TabButtons(ids=self.ids, buttons=(TabBtn.tree, TabBtn.list))
         with ContentSwitcher(
-            id=self.ids.content_switcher_id(name=ContainerName.tree_switcher),
+            id=self.ids.container_id(name=ContainerName.tree_switcher),
             initial=self.ids.tree_id(tree=TreeName.managed_tree),
             classes=Tcss.content_switcher_left.name,
         ):
@@ -56,10 +56,10 @@ class ViewSwitcher(Vertical):
         self.contents_tab_btn = ids.button_id(btn=TabBtn.contents)
         self.diff_tab_btn = ids.button_id(btn=TabBtn.diff)
         self.git_log_tab_btn = ids.button_id(btn=TabBtn.git_log_path)
-        self.view_switcher_id = self.ids.content_switcher_id(
+        self.view_switcher_id = self.ids.container_id(
             name=ContainerName.view_switcher
         )
-        self.view_switcher_qid = self.ids.content_switcher_id(
+        self.view_switcher_qid = self.ids.container_id(
             "#", name=ContainerName.view_switcher
         )
         self.reverse = diff_reverse

@@ -361,10 +361,8 @@ class LogsTab(Vertical, AppType):
             self.initial_view_id = ids.view_id(view=ViewName.debug_log_view)
         else:
             self.initial_view_id = ids.view_id(view=ViewName.app_log_view)
-        self.content_switcher_id = ids.content_switcher_id(
-            name=ContainerName.logs_switcher
-        )
-        self.content_switcher_qid = ids.content_switcher_id(
+        self.container_id = ids.container_id(name=ContainerName.logs_switcher)
+        self.content_switcher_qid = ids.container_id(
             "#", name=ContainerName.logs_switcher
         )
         self.app_btn_id = ids.button_id(btn=TabBtn.app_log)
@@ -384,7 +382,7 @@ class LogsTab(Vertical, AppType):
     def compose(self) -> ComposeResult:
         yield TabButtons(ids=self.ids, buttons=self.tab_buttons)
         with ContentSwitcher(
-            id=self.content_switcher_id,
+            id=self.container_id,
             initial=self.initial_view_id,
             classes=Tcss.border_title_top.name,
         ):

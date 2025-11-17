@@ -64,9 +64,7 @@ class InitSwitcher(ContentSwitcher):
     def __init__(self, *, ids: "CanvasIds", splash_data: "SplashData") -> None:
         self.ids = ids
         super().__init__(
-            id=self.ids.content_switcher_id(
-                name=ContainerName.init_screen_switcher
-            ),
+            id=self.ids.container_id(name=ContainerName.init_screen_switcher),
             initial=self.ids.views.new_repo,
         )
         self.splash_data = splash_data
@@ -124,7 +122,7 @@ class InitScreen(Screen[None], AppType):
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
         switcher = self.query_one(
-            self.ids.content_switcher_id(
+            self.ids.container_id(
                 "#", name=ContainerName.init_screen_switcher
             ),
             ContentSwitcher,

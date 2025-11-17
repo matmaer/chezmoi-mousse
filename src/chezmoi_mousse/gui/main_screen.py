@@ -225,7 +225,7 @@ class MainScreen(Screen[None], AppType):
 
     def update_config_tab(self, data: "SplashData") -> None:
         config_tab_switcher = self.screen.query_one(
-            self.app.config_tab_ids.content_switcher_id(
+            self.app.config_tab_ids.container_id(
                 "#", name=ContainerName.config_switcher
             ),
             ConfigTabSwitcher,

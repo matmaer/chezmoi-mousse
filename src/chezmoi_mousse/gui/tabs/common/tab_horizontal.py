@@ -34,7 +34,7 @@ class TabHorizontal(Horizontal):
 
         self.ids = ids
         self.expand_all_state = False
-        self.tree_switcher_qid = ids.content_switcher_id(
+        self.tree_switcher_qid = ids.container_id(
             "#", name=ContainerName.tree_switcher
         )
 
