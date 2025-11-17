@@ -1,6 +1,6 @@
 """Contains classes to enable setting widget id's without hardcoded strings.
 
-Easy access, autocomplety, type checking or to generated the id dynamically.
+Easy access, autocomplete, type checking or to generated the id dynamically.
 """
 
 from chezmoi_mousse._button_data import FlatBtn, LinkBtn, OperateBtn, TabBtn
