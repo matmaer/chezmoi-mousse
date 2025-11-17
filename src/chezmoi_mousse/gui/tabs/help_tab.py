@@ -20,7 +20,6 @@ from chezmoi_mousse import (
     PathType,
     Switches,
     Tcss,
-    ViewName,
 )
 from chezmoi_mousse.shared import (
     FlatButtonsVertical,
@@ -134,8 +133,7 @@ class SharedFiltersHelp(VerticalGroup):
 class ApplyTabHelp(Vertical):
     def __init__(self, ids: "CanvasIds") -> None:
         self.ids = ids
-        self.view_id = self.ids.view_id(view=ViewName.apply_help_view)
-        super().__init__(id=self.view_id)
+        super().__init__(id=self.ids.views.apply_help)
 
     def compose(self) -> ComposeResult:
         yield SectionLabel(HelpSections.apply_tab_help)
@@ -153,8 +151,7 @@ class ReAddTabHelp(VerticalScroll):
 
     def __init__(self, ids: "CanvasIds") -> None:
         self.ids = ids
-        self.view_id = self.ids.view_id(view=ViewName.re_add_help_view)
-        super().__init__(id=self.view_id)
+        super().__init__(id=self.ids.views.re_add_help)
 
     def compose(self) -> ComposeResult:
         yield SectionLabel(HelpSections.re_add_tab_help)
@@ -194,7 +191,7 @@ class ChezmoiDiagram(Vertical):
 
     def __init__(self, ids: "CanvasIds") -> None:
         self.ids = ids
-        super().__init__(id=self.ids.view_id(view=ViewName.diagram_view))
+        super().__init__(id=self.ids.views.diagram)
 
     def compose(self) -> ComposeResult:
         yield SectionLabel(HelpSections.chezmoi_diagram)
@@ -211,8 +208,7 @@ class HelpTabSwitcher(ContentSwitcher):
             name=ContainerName.help_switcher
         )
         super().__init__(
-            id=self.container_id,
-            initial=self.ids.view_id(view=ViewName.apply_help_view),
+            id=self.container_id, initial=self.ids.views.apply_help
         )
 
     def compose(self) -> ComposeResult:

@@ -54,7 +54,7 @@ class TabBtn(StrEnum):
     git_log_logs_tab = "Git"
     git_log_path = "Git-Log"
     list = "List"
-    read_cmd_log = "Read"
+    read_log = "Read"
     tree = "Tree"
     operate_log = "Operate"
 

@@ -17,7 +17,6 @@ from chezmoi_mousse import (
     ReadVerbs,
     TabBtn,
     Tcss,
-    ViewName,
 )
 from chezmoi_mousse.shared import CustomCollapsible, GitLogView, TabButtons
 
@@ -89,9 +88,7 @@ class AppLog(LoggersBase, AppType):
     def __init__(self, ids: "CanvasIds") -> None:
         self.ids = ids
         super().__init__(
-            id=self.ids.view_id(view=ViewName.app_log_view),
-            markup=True,
-            max_lines=10000,
+            id=self.ids.views.app_log, markup=True, max_lines=10000
         )
         self.succes_no_output = f"{Chars.check_mark} Success, no output"
         self.success_with_output = (
@@ -165,7 +162,7 @@ class DebugLog(LoggersBase, AppType):
     def __init__(self, ids: "CanvasIds") -> None:
         self.ids = ids
         super().__init__(
-            id=self.ids.view_id(view=ViewName.debug_log_view),
+            id=self.ids.views.debug_log,
             markup=True,
             max_lines=10000,
             wrap=True,
@@ -256,13 +253,10 @@ class DebugLog(LoggersBase, AppType):
 
 class OperateLog(LoggersBase, AppType):
 
-    def __init__(self, ids: "CanvasIds", view_name: ViewName) -> None:
+    def __init__(self, ids: "CanvasIds") -> None:
         self.ids = ids
-        self.view_name = view_name
         super().__init__(
-            id=self.ids.view_id(view=self.view_name),
-            markup=True,
-            max_lines=10000,
+            id=self.ids.views.operate_log, markup=True, max_lines=10000
         )
 
     def log_cmd_results(self, command_result: "CommandResult") -> None:
@@ -318,10 +312,9 @@ class ReadCmdLog(ScrollableContainer, AppType):
 
     collapsible_counter: int = 0
 
-    def __init__(self, ids: "CanvasIds", view_name: ViewName) -> None:
+    def __init__(self, ids: "CanvasIds") -> None:
         self.ids = ids
-        self.view_name = view_name
-        super().__init__(id=self.ids.view_id(view=self.view_name))
+        super().__init__(id=self.ids.views.read_log)
 
     def log_cmd_results(self, command_result: "CommandResult") -> None:
         # Don't log verify read-verb outputs as in produces no output.
@@ -352,32 +345,20 @@ class LogsTab(Vertical, AppType):
         self.ids = ids
         self.tab_buttons = (
             TabBtn.app_log,
-            TabBtn.read_cmd_log,
+            TabBtn.read_log,
             TabBtn.operate_log,
             TabBtn.git_log_logs_tab,
         )
         if self.app.dev_mode is True:
             self.tab_buttons = (TabBtn.debug_log,) + self.tab_buttons
-            self.initial_view_id = ids.view_id(view=ViewName.debug_log_view)
+            self.initial_view_id = self.ids.views.debug_log
         else:
-            self.initial_view_id = ids.view_id(view=ViewName.app_log_view)
+            self.initial_view_id = self.ids.views.app_log
         self.container_id = ids.container_id(name=ContainerName.logs_switcher)
         self.content_switcher_qid = ids.container_id(
             "#", name=ContainerName.logs_switcher
         )
-        self.app_btn_id = ids.button_id(btn=TabBtn.app_log)
-        self.read_btn_id = ids.button_id(btn=TabBtn.read_cmd_log)
-        self.write_btn_id = ids.button_id(btn=TabBtn.operate_log)
         self.git_log_btn_id = ids.button_id(btn=TabBtn.git_log_logs_tab)
-        self.debug_btn_id = ids.button_id(btn=TabBtn.debug_log)
-
-        self.app_log_view_id = ids.view_id(view=ViewName.app_log_view)
-        self.read_cmd_log_view_id = ids.view_id(
-            view=ViewName.read_cmd_log_view
-        )
-        self.operate_log_view_id = ids.view_id(view=ViewName.operate_log_view)
-        self.git_log_global_view_id = ids.view_id(view=ViewName.git_log_view)
-        self.debug_log_view_id = ids.view_id(view=ViewName.debug_log_view)
 
     def compose(self) -> ComposeResult:
         yield TabButtons(ids=self.ids, buttons=self.tab_buttons)
@@ -387,17 +368,15 @@ class LogsTab(Vertical, AppType):
             classes=Tcss.border_title_top.name,
         ):
             yield AppLog(ids=self.ids)
-            yield ReadCmdLog(
-                ids=self.ids, view_name=ViewName.read_cmd_log_view
-            )
-            yield OperateLog(ids=self.ids, view_name=ViewName.operate_log_view)
+            yield ReadCmdLog(ids=self.ids)
+            yield OperateLog(ids=self.ids)
             yield GitLogView(ids=self.ids)
             if self.app.dev_mode is True:
                 yield DebugLog(ids=self.ids)
 
     def on_mount(self) -> None:
         switcher = self.query_one(self.content_switcher_qid, ContentSwitcher)
-        if self.initial_view_id == self.debug_log_view_id:
+        if self.initial_view_id == self.ids.views.debug_log:
             switcher.border_title = BorderTitle.debug_log
         else:
             switcher.border_title = BorderTitle.app_log
@@ -406,20 +385,21 @@ class LogsTab(Vertical, AppType):
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
         switcher = self.query_one(self.content_switcher_qid, ContentSwitcher)
-        if event.button.id == self.app_btn_id:
-            switcher.current = self.app_log_view_id
+        if event.button.id == self.ids.views.app_log_btn:
+            switcher.current = self.ids.views.app_log
             switcher.border_title = BorderTitle.app_log
-        elif event.button.id == self.read_btn_id:
-            switcher.current = self.read_cmd_log_view_id
+        elif event.button.id == self.ids.views.read_log_btn:
+            switcher.current = self.ids.views.read_log
             switcher.border_title = BorderTitle.read_cmd_log
-        elif event.button.id == self.write_btn_id:
-            switcher.current = self.operate_log_view_id
+        elif event.button.id == self.ids.views.operate_log_btn:
+            switcher.current = self.ids.views.operate_log
             switcher.border_title = BorderTitle.operate_log
         elif event.button.id == self.git_log_btn_id:
             switcher.border_title = BorderTitle.git_log_global
-            switcher.current = self.git_log_global_view_id
+            switcher.current = self.ids.views.git_log
         elif (
-            self.app.dev_mode is True and event.button.id == self.debug_btn_id
+            self.app.dev_mode is True
+            and event.button.id == self.ids.views.debug_log_btn
         ):
-            switcher.current = self.debug_log_view_id
+            switcher.current = self.ids.views.debug_log
             switcher.border_title = BorderTitle.debug_log

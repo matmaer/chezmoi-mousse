@@ -19,7 +19,6 @@ from chezmoi_mousse import (
     Switches,
     Tcss,
     TreeName,
-    ViewName,
 )
 from chezmoi_mousse.shared import (
     ContentsView,
@@ -248,7 +247,6 @@ class AddTab(Horizontal, AppType):
         self.add_dir_btn_qid = ids.button_id("#", btn=OperateBtn.add_dir)
         self.add_tree_id = ids.tree_id(tree=TreeName.add_tree)
         self.add_tree_qid = ids.tree_id("#", tree=TreeName.add_tree)
-        self.contents_view_qid = ids.view_id("#", view=ViewName.contents_view)
         self.left_vertical_id = ids.container_id(name=ContainerName.left_side)
         self.right_vertical_id = ids.container_id(
             name=ContainerName.right_side
@@ -303,7 +301,7 @@ class AddTab(Horizontal, AppType):
                 severity="error",
             )
             return
-        contents_view = self.query_one(self.contents_view_qid, ContentsView)
+        contents_view = self.query_one(self.ids.views.contents_q, ContentsView)
         contents_view.path = event.node.data.path
         contents_view.border_title = f" {event.node.data.path} "
 

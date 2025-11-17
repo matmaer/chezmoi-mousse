@@ -15,7 +15,6 @@ from chezmoi_mousse import (
     TabBtn,
     Tcss,
     TreeName,
-    ViewName,
 )
 from chezmoi_mousse.shared import ContentsView, DiffView, GitLogView
 
@@ -50,11 +49,6 @@ class TabHorizontal(Horizontal):
             "#", tree=TreeName.managed_tree
         )
 
-        # View id's
-        self.contents_view_qid = ids.view_id("#", view=ViewName.contents_view)
-        self.diff_view_qid = ids.view_id("#", view=ViewName.diff_view)
-        self.git_log_view_qid = ids.view_id("#", view=ViewName.git_log_view)
-
         # Button id's
         self.destroy_btn_qid = self.ids.button_id(
             "#", btn=OperateBtn.destroy_path
@@ -77,13 +71,13 @@ class TabHorizontal(Horizontal):
         )
 
     def update_view_path(self, path: Path) -> None:
-        contents_view = self.query_one(self.contents_view_qid, ContentsView)
+        contents_view = self.query_one(self.ids.views.contents_q, ContentsView)
         contents_view.path = path
 
-        diff_view = self.query_one(self.diff_view_qid, DiffView)
+        diff_view = self.query_one(self.ids.views.diff_q, DiffView)
         diff_view.path = path
 
-        git_log_view = self.query_one(self.git_log_view_qid, GitLogView)
+        git_log_view = self.query_one(self.ids.views.git_log_q, GitLogView)
         git_log_view.path = path
 
     def update_other_buttons(self, node_data: "NodeData") -> None:

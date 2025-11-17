@@ -8,7 +8,7 @@ from textual.app import ComposeResult
 from textual.containers import Vertical, VerticalGroup
 from textual.widgets import Link, Static
 
-from chezmoi_mousse import AppType, Chars, CommandResult, Tcss, ViewName
+from chezmoi_mousse import AppType, Chars, CommandResult, Tcss
 
 from ._custom_collapsible import CustomCollapsible
 from ._section_headers import SectionLabel, SectionLabelText, SubSectionLabel
@@ -198,7 +198,7 @@ class PwMgrInfoView(Vertical):
 
     def __init__(self, ids: "CanvasIds") -> None:
         self.ids = ids
-        super().__init__(id=self.ids.view_id(view=ViewName.pw_mgr_info_view))
+        super().__init__(id=self.ids.views.pw_mgr_info)
 
     def compose(self) -> ComposeResult:
         yield SectionLabel(SectionLabelText.password_managers)

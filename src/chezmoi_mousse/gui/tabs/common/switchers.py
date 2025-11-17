@@ -8,7 +8,7 @@ from textual.app import ComposeResult
 from textual.containers import Vertical
 from textual.widgets import Button, ContentSwitcher
 
-from chezmoi_mousse import ContainerName, TabBtn, Tcss, TreeName, ViewName
+from chezmoi_mousse import ContainerName, TabBtn, Tcss, TreeName
 from chezmoi_mousse.shared import (
     ContentsView,
     DiffView,
@@ -73,8 +73,7 @@ class ViewSwitcher(Vertical):
             buttons=(TabBtn.diff, TabBtn.contents, TabBtn.git_log_path),
         )
         with ContentSwitcher(
-            id=self.view_switcher_id,
-            initial=self.ids.view_id(view=ViewName.diff_view),
+            id=self.view_switcher_id, initial=self.ids.views.diff
         ):
             yield DiffView(ids=self.ids, reverse=self.reverse)
             yield ContentsView(ids=self.ids)
@@ -84,12 +83,8 @@ class ViewSwitcher(Vertical):
     def switch_tree(self, event: Button.Pressed) -> None:
         view_switcher = self.query_one(self.view_switcher_qid, ContentSwitcher)
         if event.button.id == self.contents_tab_btn:
-            view_switcher.current = self.ids.view_id(
-                view=ViewName.contents_view
-            )
+            view_switcher.current = self.ids.views.contents
         elif event.button.id == self.diff_tab_btn:
-            view_switcher.current = self.ids.view_id(view=ViewName.diff_view)
+            view_switcher.current = self.ids.views.diff
         elif event.button.id == self.git_log_tab_btn:
-            view_switcher.current = self.ids.view_id(
-                view=ViewName.git_log_view
-            )
+            view_switcher.current = self.ids.views.git_log

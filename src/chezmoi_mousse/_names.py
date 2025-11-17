@@ -75,6 +75,6 @@ class ViewName(StrEnum):
     init_new_repo_view = auto()
     pw_mgr_info_view = auto()
     re_add_help_view = auto()
-    read_cmd_log_view = auto()
+    read_log_view = auto()
     template_data_view = auto()
     operate_log_view = auto()

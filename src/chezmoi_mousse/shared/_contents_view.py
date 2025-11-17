@@ -5,7 +5,7 @@ from rich.text import Text
 from textual.reactive import reactive
 from textual.widgets import RichLog
 
-from chezmoi_mousse import AppType, ReadCmd, Tcss, ViewName
+from chezmoi_mousse import AppType, ReadCmd, Tcss
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -38,7 +38,7 @@ class ContentsView(RichLog, AppType):
     def __init__(self, *, ids: "CanvasIds") -> None:
         self.ids = ids
         super().__init__(
-            id=self.ids.view_id(view=ViewName.contents_view),
+            id=self.ids.views.contents,
             auto_scroll=False,
             wrap=True,  # TODO: implement footer binding to toggle wrap
             highlight=True,

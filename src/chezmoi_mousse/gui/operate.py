@@ -13,7 +13,6 @@ from chezmoi_mousse import (
     OperateBtn,
     OperateScreenData,
     Tcss,
-    ViewName,
     WriteCmd,
 )
 from chezmoi_mousse.shared import (
@@ -50,6 +49,8 @@ class OperateScreen(Screen[OperateScreenData], AppType):
     ) -> None:
         super().__init__()
 
+        self.ids = ids
+
         self.path_arg = operate_data.node_data.path
         self.path_type = operate_data.node_data.path_type
         self.operate_btn = operate_data.operate_btn
@@ -67,10 +68,7 @@ class OperateScreen(Screen[OperateScreenData], AppType):
         self.pre_operate_qid = ids.container_id(
             "#", name=ContainerName.pre_operate
         )
-        self.operate_log_view_id = ids.view_id(view=ViewName.operate_log_view)
-        self.output_log_qid = ids.view_id("#", view=ViewName.operate_log_view)
 
-        self.ids = ids
         self.operate_data = operate_data
 
     def compose(self) -> ComposeResult:
@@ -93,7 +91,7 @@ class OperateScreen(Screen[OperateScreenData], AppType):
                 yield ContentsView(ids=self.ids)
         with VerticalGroup(id=self.post_operate_id):
             yield SectionLabel(SectionLabelText.operate_output)
-            yield OperateLog(ids=self.ids, view_name=ViewName.operate_log_view)
+            yield OperateLog(ids=self.ids)
         yield OperateButtons(
             ids=self.ids, buttons=(self.operate_btn, OperateBtn.exit_button)
         )
@@ -213,7 +211,7 @@ class OperateScreen(Screen[OperateScreenData], AppType):
         operate_exit_button = self.query_one(self.exit_btn_qid, Button)
         operate_exit_button.label = OperateBtn.exit_button.close_button_label
 
-        output_log = self.query_one(self.output_log_qid, OperateLog)
+        output_log = self.query_one(self.ids.views.operate_log_q, OperateLog)
         if self.operate_data.command_result is not None:
             output_log.log_cmd_results(self.operate_data.command_result)
         else:

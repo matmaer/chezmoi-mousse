@@ -6,13 +6,7 @@ from textual.app import ComposeResult
 from textual.containers import ScrollableContainer, Vertical
 from textual.widgets import DataTable, Pretty, Static
 
-from chezmoi_mousse import (
-    AppType,
-    CommandResult,
-    DataTableName,
-    Tcss,
-    ViewName,
-)
+from chezmoi_mousse import AppType, CommandResult, DataTableName, Tcss
 
 from ._section_headers import SectionLabel, SectionLabelText
 
@@ -48,8 +42,7 @@ class DoctorTableView(Vertical, AppType):
 
     def __init__(self, ids: "CanvasIds") -> None:
         self.ids = ids
-        self.view_id = self.ids.view_id(view=ViewName.doctor_view)
-        super().__init__(id=self.view_id)
+        super().__init__(id=self.ids.views.doctor)
         self.doctor_table_id = self.ids.datatable_id(
             data_table_name=DataTableName.doctor_table
         )
@@ -125,7 +118,7 @@ class IgnoredView(Vertical):
 class TemplateDataView(Vertical):
     def __init__(self, ids: "CanvasIds"):
         self.ids = ids
-        super().__init__(id=self.ids.view_id(view=ViewName.template_data_view))
+        super().__init__(id=self.ids.views.template_data)
 
     def compose(self) -> ComposeResult:
         yield SectionLabel(SectionLabelText.template_data_output)

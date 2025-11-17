@@ -4,7 +4,7 @@ from rich.text import Text
 from textual.reactive import reactive
 from textual.widgets import RichLog
 
-from chezmoi_mousse import AppType, CanvasName, Chars, ReadCmd, Tcss, ViewName
+from chezmoi_mousse import AppType, CanvasName, Chars, ReadCmd, Tcss
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -26,7 +26,7 @@ class DiffView(RichLog, AppType):
             ReadCmd.diff_reverse if self.reverse else ReadCmd.diff
         )
         super().__init__(
-            id=self.ids.view_id(view=ViewName.diff_view),
+            id=self.ids.views.diff,
             auto_scroll=False,
             highlight=True,
             wrap=True,  # TODO: implement footer binding to toggle wrap

@@ -36,8 +36,7 @@ class GitLogView(Vertical, AppType):
 
     def __init__(self, *, ids: "CanvasIds") -> None:
         super().__init__(
-            id=ids.view_id(view=ViewName.git_log_view),
-            classes=Tcss.border_title_top.name,
+            id=ids.views.git_log, classes=Tcss.border_title_top.name
         )
         self.ids = ids
         self.git_log_table_id = ids.datatable_id(

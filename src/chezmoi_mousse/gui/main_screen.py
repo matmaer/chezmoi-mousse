@@ -18,7 +18,6 @@ from chezmoi_mousse import (
     OperateScreenData,
     Tcss,
     TreeName,
-    ViewName,
 )
 from chezmoi_mousse.shared import (
     CurrentAddNodeMsg,
@@ -79,18 +78,6 @@ class MainScreen(Screen[None], AppType):
         self.apply_switch_slider_qid = self.app.apply_tab_ids.container_id(
             "#", name=ContainerName.switch_slider
         )
-        self.app_log_qid = self.app.logs_tab_ids.view_id(
-            "#", view=ViewName.app_log_view
-        )
-        self.read_cmd_log_qid = self.app.logs_tab_ids.view_id(
-            "#", view=ViewName.read_cmd_log_view
-        )
-        self.operate_log_qid = self.app.logs_tab_ids.view_id(
-            "#", view=ViewName.operate_log_view
-        )
-        self.debug_log_qid = self.app.logs_tab_ids.view_id(
-            "#", view=ViewName.debug_log_view
-        )
         self.re_add_switch_slider_qid = self.app.re_add_tab_ids.container_id(
             "#", name=ContainerName.switch_slider
         )
@@ -140,14 +127,18 @@ class MainScreen(Screen[None], AppType):
         yield Footer()
 
     def on_mount(self) -> None:
-        app_logger = self.query_one(self.app_log_qid, AppLog)
+        app_logger = self.query_one(
+            self.app.logs_tab_ids.views.app_log_q, AppLog
+        )
         self.app_log = app_logger
         self.app.chezmoi.app_log = app_logger
         self.app_log.ready_to_run("--- Application log initialized ---")
         self.app_log.info(f"chezmoi command found: {self.app.chezmoi_found}.")
         self.app_log.info("Loading screen completed.")
 
-        read_cmd_logger = self.query_one(self.read_cmd_log_qid, ReadCmdLog)
+        read_cmd_logger = self.query_one(
+            self.app.logs_tab_ids.views.read_log_q, ReadCmdLog
+        )
         self.read_cmd_log = read_cmd_logger
         self.app.chezmoi.read_cmd_log = self.read_cmd_log
         self.app_log.info("Read Output log initialized")
@@ -157,13 +148,17 @@ class MainScreen(Screen[None], AppType):
             self.app_log.log_cmd_results(cmd)
             self.read_cmd_log.log_cmd_results(cmd)
         self.app_log.info("End of startup commands.")
-        self.operate_log = self.query_one(self.operate_log_qid, OperateLog)
+        self.operate_log = self.query_one(
+            self.app.logs_tab_ids.views.operate_log_q, OperateLog
+        )
         self.operate_log.ready_to_run("--- Write Output log initialized ---")
         self.app.chezmoi.operate_log = self.operate_log
         self.app_log.info("Write Output log initialized")
 
         if self.app.dev_mode:
-            debug_logger = self.query_one(self.debug_log_qid, DebugLog)
+            debug_logger = self.query_one(
+                self.app.logs_tab_ids.views.debug_log_q, DebugLog
+            )
             self.debug_log = debug_logger
             self.app.chezmoi.debug_log = debug_logger
             self.debug_log.ready_to_run("--- Debug log initialized ---")
