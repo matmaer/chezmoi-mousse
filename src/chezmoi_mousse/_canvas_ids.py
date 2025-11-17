@@ -59,7 +59,7 @@ class ViewIds:
         self.ignored = canvas_ids.view_id(view=ViewName.git_ignored_view)
         self.ignored_q = f"#{self.ignored}"
 
-        # Other views or shared across canvases
+        # Views or shared across canvases
         self.contents = canvas_ids.view_id(view=ViewName.contents_view)
         self.contents_q = f"#{self.contents}"
         self.diff_btn = canvas_ids.button_id(btn=TabBtn.diff)
