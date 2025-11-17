@@ -53,11 +53,12 @@ class OperateScreen(Screen[OperateScreenData], AppType):
 
         self.path_arg = operate_data.node_data.path
         self.path_type = operate_data.node_data.path_type
-        self.operate_btn = operate_data.operate_btn
 
+        self.operate_btn = operate_data.operate_btn
+        self.operate_btn_qid = ids.button_id("#", btn=self.operate_btn)
         self.exit_btn_id = ids.button_id(btn=OperateBtn.exit_button)
         self.exit_btn_qid = ids.button_id("#", btn=OperateBtn.exit_button)
-        self.operate_btn_qid = ids.button_id("#", btn=self.operate_btn)
+
         self.post_operate_id = ids.container_id(
             name=ContainerName.post_operate
         )
