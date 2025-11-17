@@ -127,19 +127,11 @@ class OperateScreen(Screen[OperateScreenData], AppType):
 
         if self.operate_btn == OperateBtn.apply_path:
             op_btn.label = OperateBtn.apply_path.label(self.path_type)
-            op_btn.tooltip = (
-                OperateBtn.apply_path.dir_tooltip
-                if self.path_type == "dir"
-                else OperateBtn.apply_path.file_tooltip
-            )
+            op_btn.tooltip = OperateBtn.apply_path.tooltip(self.path_type)
 
         elif self.operate_btn == OperateBtn.re_add_path:
             op_btn.label = OperateBtn.re_add_path.label(self.path_type)
-            op_btn.tooltip = (
-                OperateBtn.re_add_path.dir_tooltip
-                if self.path_type == "dir"
-                else OperateBtn.re_add_path.file_tooltip
-            )
+            op_btn.tooltip = OperateBtn.re_add_path.tooltip(self.path_type)
         elif self.operate_btn == OperateBtn.add_dir:
             op_btn.label = OperateBtn.add_dir.label(self.path_type)
             op_btn.tooltip = (
