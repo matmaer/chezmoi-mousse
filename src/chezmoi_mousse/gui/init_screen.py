@@ -1,4 +1,3 @@
-import json
 from typing import TYPE_CHECKING
 
 from textual import on
@@ -6,14 +5,7 @@ from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.screen import Screen
 from textual.validation import URL
-from textual.widgets import (
-    Button,
-    ContentSwitcher,
-    Footer,
-    Input,
-    Pretty,
-    Static,
-)
+from textual.widgets import Button, ContentSwitcher, Footer, Input
 
 from chezmoi_mousse import (
     AppType,
@@ -22,14 +14,14 @@ from chezmoi_mousse import (
     FlatBtn,
     SplashData,
     Tcss,
-    ViewName,
 )
 from chezmoi_mousse.shared import (
-    CatConfigOutput,
+    CatConfigView,
     DoctorTableView,
     FlatButtonsVertical,
     ReactiveHeader,
-    TemplateDataOutput,
+    SectionLabel,
+    TemplateDataView,
 )
 
 __all__ = ["InitScreen"]
@@ -38,67 +30,14 @@ if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds
 
 
-class InitScreenIds(AppType):
-    def __init__(self, *, ids: "CanvasIds") -> None:
-        self.ids = ids
-
-    @property
-    def new_repo_view_id(self) -> str:
-        return self.ids.view_id(view=ViewName.init_new_repo_view)
-
-    @property
-    def new_repo_view_qid(self) -> str:
-        return self.ids.view_id("#", view=ViewName.init_new_repo_view)
-
-    @property
-    def new_repo_btn_id(self) -> str:
-        return self.ids.button_id(btn=FlatBtn.init_new_repo)
-
-    @property
-    def doctor_view_id(self) -> str:
-        return self.ids.view_id(view=ViewName.doctor_view)
-
-    @property
-    def doctor_view_qid(self) -> str:
-        return self.ids.view_id("#", view=ViewName.doctor_view)
-
-    @property
-    def doctor_btn_id(self) -> str:
-        return self.ids.button_id(btn=FlatBtn.doctor)
-
-    @property
-    def cat_config_view_id(self) -> str:
-        return self.ids.view_id(view=ViewName.cat_config_view)
-
-    @property
-    def cat_config_view_qid(self) -> str:
-        return self.ids.view_id("#", view=ViewName.cat_config_view)
-
-    @property
-    def cat_config_btn_id(self) -> str:
-        return self.ids.button_id(btn=FlatBtn.cat_config)
-
-    @property
-    def template_data_view_id(self) -> str:
-        return self.ids.view_id(view=ViewName.template_data_view)
-
-    @property
-    def template_data_view_qid(self) -> str:
-        return self.ids.view_id("#", view=ViewName.template_data_view)
-
-    @property
-    def template_data_btn_id(self) -> str:
-        return self.ids.button_id(btn=FlatBtn.template_data)
-
-
 class InitCloneRepo(Vertical, AppType):
 
     def __init__(self, *, ids: "CanvasIds") -> None:
-        self.screen_ids = InitScreenIds(ids=ids)
-        super().__init__(id=self.screen_ids.new_repo_view_id)
+        super().__init__(id=ids.views.new_repo)
         self.repo_url: str = ""
 
     def compose(self) -> ComposeResult:
+        yield SectionLabel("Initialize New Chezmoi Repository")
         yield Input(
             placeholder="Enter repository URL",
             validate_on=["submitted"],
@@ -124,12 +63,11 @@ class InitSwitcher(ContentSwitcher):
 
     def __init__(self, *, ids: "CanvasIds", splash_data: "SplashData") -> None:
         self.ids = ids
-        self.screen_ids = InitScreenIds(ids=self.ids)
         super().__init__(
             id=self.ids.content_switcher_id(
                 name=ContainerName.init_screen_switcher
             ),
-            initial=self.screen_ids.new_repo_view_id,
+            initial=self.ids.views.new_repo,
         )
         self.splash_data = splash_data
         self.doctor_table_qid = ids.datatable_id(
@@ -139,24 +77,22 @@ class InitSwitcher(ContentSwitcher):
     def compose(self) -> ComposeResult:
         yield InitCloneRepo(ids=self.ids)
         yield DoctorTableView(ids=self.ids)
-        yield CatConfigOutput(ids=self.ids)
-        yield TemplateDataOutput(ids=self.ids)
+        yield CatConfigView(ids=self.ids)
+        yield TemplateDataView(ids=self.ids)
 
     def on_mount(self) -> None:
-        doctor_view = self.query_one(
-            self.screen_ids.doctor_view_qid, DoctorTableView
-        )
+        doctor_view = self.query_one(self.ids.views.doctor_q, DoctorTableView)
         doctor_view.populate_doctor_data(
             command_result=self.splash_data.doctor
         )
-        cat_config = self.query_one(f"#{ViewName.cat_config_view}", Static)
-        cat_config.update(self.splash_data.cat_config.std_out)
-        template_cmd_output = self.splash_data.template_data.std_out
-        pretty_template_data = self.query_one(
-            f"#{ViewName.pretty_template_data_view}", Pretty
+        cat_config = self.query_one(self.ids.views.cat_config_q, CatConfigView)
+        cat_config.mount_cat_config_output(self.splash_data.cat_config)
+        template_data_view = self.query_one(
+            self.ids.views.template_data_q, TemplateDataView
         )
-        template_data_json = json.loads(template_cmd_output)
-        pretty_template_data.update(template_data_json)
+        template_data_view.mount_template_data_output(
+            self.splash_data.template_data
+        )
 
 
 class InitScreen(Screen[None], AppType):
@@ -167,7 +103,6 @@ class InitScreen(Screen[None], AppType):
         self.tab_vertical_id = ids.tab_vertical_id(
             name=ContainerName.left_side
         )
-        self.screen_ids = InitScreenIds(ids=self.ids)
         self.splash_data = splash_data
 
     def compose(self) -> ComposeResult:
@@ -194,11 +129,11 @@ class InitScreen(Screen[None], AppType):
             ),
             ContentSwitcher,
         )
-        if event.button.id == self.screen_ids.new_repo_btn_id:
-            switcher.current = self.screen_ids.new_repo_view_id
-        elif event.button.id == self.screen_ids.doctor_btn_id:
-            switcher.current = self.screen_ids.doctor_view_id
-        elif event.button.id == self.screen_ids.cat_config_btn_id:
-            switcher.current = self.screen_ids.cat_config_view_id
-        elif event.button.id == self.screen_ids.template_data_btn_id:
-            switcher.current = self.screen_ids.template_data_view_id
+        if event.button.id == self.ids.views.new_repo_btn:
+            switcher.current = self.ids.views.new_repo
+        elif event.button.id == self.ids.views.doctor_btn:
+            switcher.current = self.ids.views.doctor
+        elif event.button.id == self.ids.views.cat_config_btn:
+            switcher.current = self.ids.views.cat_config
+        elif event.button.id == self.ids.views.template_data_btn:
+            switcher.current = self.ids.views.template_data
