@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import Horizontal, ScrollableContainer, Vertical
+from textual.containers import Horizontal
 from textual.screen import Screen
 from textual.widgets import Button, ContentSwitcher, Footer, Pretty, Static
 
@@ -18,11 +18,9 @@ from chezmoi_mousse import (
 )
 from chezmoi_mousse.shared import (
     CatConfigOutput,
-    DoctorTable,
+    DoctorTableView,
     FlatButtonsVertical,
     ReactiveHeader,
-    SectionLabel,
-    SectionLabelText,
     TemplateDataOutput,
 )
 
@@ -37,6 +35,7 @@ class InitSwitcher(ContentSwitcher):
     def __init__(self, *, ids: "CanvasIds", splash_data: "SplashData") -> None:
         self.ids = ids
         self.doctor_view_id = self.ids.view_id(view=ViewName.doctor_view)
+        self.doctor_view_qid = self.ids.view_id("#", view=ViewName.doctor_view)
         super().__init__(
             id=self.ids.content_switcher_id(
                 name=ContainerName.init_screen_switcher
@@ -49,14 +48,15 @@ class InitSwitcher(ContentSwitcher):
         )
 
     def compose(self) -> ComposeResult:
-        yield ScrollableContainer(
-            SectionLabel(SectionLabelText.doctor_output),
-            DoctorTable(ids=self.ids),
-        )
+        yield DoctorTableView(ids=self.ids)
         yield CatConfigOutput(ids=self.ids)
         yield TemplateDataOutput(ids=self.ids)
 
     def on_mount(self) -> None:
+        doctor_view = self.query_one(self.doctor_view_qid, DoctorTableView)
+        doctor_view.populate_doctor_data(
+            command_result=self.splash_data.doctor
+        )
         cat_config = self.query_one(f"#{ViewName.cat_config_view}", Static)
         cat_config.update(self.splash_data.cat_config.std_out)
         template_cmd_output = self.splash_data.template_data.std_out
@@ -88,19 +88,15 @@ class InitScreen(Screen[None], AppType):
     def compose(self) -> ComposeResult:
         yield ReactiveHeader(self.app.init_screen_ids)
         with Horizontal(id=self.ids.canvas_container_id):
-            with Vertical(
-                id=self.tab_vertical_id, classes=Tcss.tab_left_vertical.name
-            ):
-                yield FlatButtonsVertical(
-                    ids=self.ids,
-                    buttons=(
-                        FlatBtn.doctor,
-                        FlatBtn.cat_config,
-                        FlatBtn.template_data,
-                    ),
-                )
-            with Vertical():
-                yield InitSwitcher(ids=self.ids, splash_data=self.splash_data)
+            yield FlatButtonsVertical(
+                ids=self.ids,
+                buttons=(
+                    FlatBtn.doctor,
+                    FlatBtn.cat_config,
+                    FlatBtn.template_data,
+                ),
+            )
+            yield InitSwitcher(ids=self.ids, splash_data=self.splash_data)
         yield Footer()
 
     @on(Button.Pressed, Tcss.flat_button.value)
