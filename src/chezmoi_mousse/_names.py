@@ -10,6 +10,7 @@ __all__ = [
     "CanvasName",
     "ContainerName",
     "DataTableName",
+    "LogName",
     "TreeName",
     "ViewName",
 ]
@@ -50,6 +51,18 @@ class ContainerName(StrEnum):
 class DataTableName(StrEnum):
     git_log_table = auto()
     doctor_table = auto()
+
+
+class LogName(StrEnum):
+    init_clone_repo = auto()
+    init_new_repo = auto()
+    logs_tab_app = auto()
+    logs_tab_debug = auto()
+    logs_tab_git = auto()
+    logs_tab_operate = auto()
+    logs_tab_read = auto()
+    operate_screen = auto()
+    view_tabs_git = auto()
 
 
 class TreeName(StrEnum):

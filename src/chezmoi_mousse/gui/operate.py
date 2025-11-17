@@ -212,7 +212,7 @@ class OperateScreen(Screen[OperateScreenData], AppType):
         operate_exit_button = self.query_one(self.exit_btn_qid, Button)
         operate_exit_button.label = OperateBtn.exit_button.close_button_label
 
-        output_log = self.query_one(self.ids.views.operate_log_q, OperateLog)
+        output_log = self.query_one(self.ids.loggers.operate_log_q, OperateLog)
         if self.operate_data.command_result is not None:
             output_log.log_cmd_results(self.operate_data.command_result)
         else:

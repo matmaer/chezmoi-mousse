@@ -12,8 +12,6 @@ INITIAL_TOOLTIP = "This is the destDir, select a path to operate on."
 
 
 class FlatBtn(StrEnum):
-    # clone_existing_repo = "Clone Existing Repo" TODO
-    init_new_repo = "Chezmoi Init"
     add_help = "Add Help"
     apply_help = "Apply Help"
     cat_config = "Cat Config"
@@ -21,6 +19,8 @@ class FlatBtn(StrEnum):
     doctor = "Doctor"
     exit_app = "Exit App"
     ignored = "Ignored"
+    init_clone_repo = "Init Clone"
+    init_new_repo = "Chezmoi Init"
     pw_mgr_info = "Password Managers"
     re_add_help = "Re-Add Help"
     template_data = "Template Data"

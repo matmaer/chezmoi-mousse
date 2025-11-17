@@ -88,7 +88,7 @@ class AppLog(LoggersBase, AppType):
     def __init__(self, ids: "CanvasIds") -> None:
         self.ids = ids
         super().__init__(
-            id=self.ids.views.app_log, markup=True, max_lines=10000
+            id=self.ids.loggers.app_log, markup=True, max_lines=10000
         )
         self.succes_no_output = f"{Chars.check_mark} Success, no output"
         self.success_with_output = (
@@ -162,7 +162,7 @@ class DebugLog(LoggersBase, AppType):
     def __init__(self, ids: "CanvasIds") -> None:
         self.ids = ids
         super().__init__(
-            id=self.ids.views.debug_log,
+            id=self.ids.loggers.debug_log,
             markup=True,
             max_lines=10000,
             wrap=True,
@@ -256,7 +256,7 @@ class OperateLog(LoggersBase, AppType):
     def __init__(self, ids: "CanvasIds") -> None:
         self.ids = ids
         super().__init__(
-            id=self.ids.views.operate_log, markup=True, max_lines=10000
+            id=self.ids.loggers.operate_log, markup=True, max_lines=10000
         )
 
     def log_cmd_results(self, command_result: "CommandResult") -> None:
@@ -314,7 +314,7 @@ class ReadCmdLog(ScrollableContainer, AppType):
 
     def __init__(self, ids: "CanvasIds") -> None:
         self.ids = ids
-        super().__init__(id=self.ids.views.read_log)
+        super().__init__(id=self.ids.loggers.read_log)
 
     def log_cmd_results(self, command_result: "CommandResult") -> None:
         # Don't log verify read-verb outputs as in produces no output.
@@ -351,9 +351,9 @@ class LogsTab(Vertical, AppType):
         )
         if self.app.dev_mode is True:
             self.tab_buttons = (TabBtn.debug_log,) + self.tab_buttons
-            self.initial_view_id = self.ids.views.debug_log
+            self.initial_view_id = self.ids.loggers.debug_log
         else:
-            self.initial_view_id = self.ids.views.app_log
+            self.initial_view_id = self.ids.loggers.app_log
         self.container_id = ids.container_id(name=ContainerName.logs_switcher)
         self.content_switcher_qid = ids.container_id(
             "#", name=ContainerName.logs_switcher
@@ -376,7 +376,7 @@ class LogsTab(Vertical, AppType):
 
     def on_mount(self) -> None:
         switcher = self.query_one(self.content_switcher_qid, ContentSwitcher)
-        if self.initial_view_id == self.ids.views.debug_log:
+        if self.initial_view_id == self.ids.loggers.debug_log:
             switcher.border_title = BorderTitle.debug_log
         else:
             switcher.border_title = BorderTitle.app_log
@@ -385,21 +385,21 @@ class LogsTab(Vertical, AppType):
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
         switcher = self.query_one(self.content_switcher_qid, ContentSwitcher)
-        if event.button.id == self.ids.views.app_log_btn:
-            switcher.current = self.ids.views.app_log
+        if event.button.id == self.ids.loggers.app_log_btn:
+            switcher.current = self.ids.loggers.app_log
             switcher.border_title = BorderTitle.app_log
-        elif event.button.id == self.ids.views.read_log_btn:
-            switcher.current = self.ids.views.read_log
+        elif event.button.id == self.ids.loggers.read_log_btn:
+            switcher.current = self.ids.loggers.read_log
             switcher.border_title = BorderTitle.read_cmd_log
-        elif event.button.id == self.ids.views.operate_log_btn:
-            switcher.current = self.ids.views.operate_log
+        elif event.button.id == self.ids.loggers.operate_log_btn:
+            switcher.current = self.ids.loggers.operate_log
             switcher.border_title = BorderTitle.operate_log
         elif event.button.id == self.git_log_btn_id:
             switcher.border_title = BorderTitle.git_log_global
             switcher.current = self.ids.views.git_log
         elif (
             self.app.dev_mode is True
-            and event.button.id == self.ids.views.debug_log_btn
+            and event.button.id == self.ids.loggers.debug_log_btn
         ):
-            switcher.current = self.ids.views.debug_log
+            switcher.current = self.ids.loggers.debug_log
             switcher.border_title = BorderTitle.debug_log

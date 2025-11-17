@@ -8,6 +8,7 @@ from chezmoi_mousse._names import (
     CanvasName,
     ContainerName,
     DataTableName,
+    LogName,
     TreeName,
     ViewName,
 )
@@ -16,21 +17,25 @@ from chezmoi_mousse._switches import Switches
 __all__ = ["CanvasIds"]
 
 
-class ViewIds:
+class LoggerIds:
     def __init__(self, canvas_ids: "CanvasIds"):
-        # Loggers
+        # Logs tab
         self.app_log_btn = canvas_ids.button_id(btn=TabBtn.app_log)
-        self.app_log = canvas_ids.view_id(view=ViewName.app_log_view)
+        self.app_log = canvas_ids.view_id(view=LogName.logs_tab_app)
         self.app_log_q = f"#{self.app_log}"
         self.read_log_btn = canvas_ids.button_id(btn=TabBtn.read_log)
-        self.read_log = canvas_ids.view_id(view=ViewName.read_log_view)
+        self.read_log = canvas_ids.view_id(view=LogName.logs_tab_read)
         self.read_log_q = f"#{self.read_log}"
-        self.operate_log_btn = canvas_ids.button_id(btn=TabBtn.operate_log)
-        self.operate_log = canvas_ids.view_id(view=ViewName.operate_log_view)
-        self.operate_log_q = f"#{self.operate_log}"
         self.debug_log_btn = canvas_ids.button_id(btn=TabBtn.debug_log)
-        self.debug_log = canvas_ids.view_id(view=ViewName.debug_log_view)
+        self.debug_log = canvas_ids.view_id(view=LogName.logs_tab_debug)
         self.debug_log_q = f"#{self.debug_log}"
+        self.operate_log_btn = canvas_ids.button_id(btn=TabBtn.operate_log)
+        self.operate_log = canvas_ids.view_id(view=LogName.logs_tab_operate)
+        self.operate_log_q = f"#{self.operate_log}"
+
+
+class ViewIds:
+    def __init__(self, canvas_ids: "CanvasIds"):
 
         # Help tab
         self.add_help_btn = canvas_ids.button_id(btn=FlatBtn.add_help)
@@ -83,12 +88,19 @@ class ViewIds:
 
 
 class CanvasIds:
-    __slots__ = ("canvas_container_id", "canvas_name", "header_id", "views")
+    __slots__ = (
+        "canvas_container_id",
+        "canvas_name",
+        "header_id",
+        "views",
+        "loggers",
+    )
 
     def __init__(self, canvas_name: CanvasName) -> None:
         self.canvas_name: str = canvas_name.name
         self.header_id = f"{self.canvas_name}_header"
         self.canvas_container_id = f"{self.canvas_name}_container_id"
+        self.loggers = LoggerIds(self)
         self.views = ViewIds(self)
 
     def button_id(
@@ -127,5 +139,5 @@ class CanvasIds:
     def tree_id(self, qid: str = "", *, tree: TreeName) -> str:
         return f"{qid}{self.canvas_name}_{tree}"
 
-    def view_id(self, qid: str = "", *, view: ViewName) -> str:
+    def view_id(self, qid: str = "", *, view: ViewName | LogName) -> str:
         return f"{qid}{self.canvas_name}_{view}"

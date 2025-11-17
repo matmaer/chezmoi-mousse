@@ -128,7 +128,7 @@ class MainScreen(Screen[None], AppType):
 
     def on_mount(self) -> None:
         app_logger = self.query_one(
-            self.app.logs_tab_ids.views.app_log_q, AppLog
+            self.app.logs_tab_ids.loggers.app_log_q, AppLog
         )
         self.app_log = app_logger
         self.app.chezmoi.app_log = app_logger
@@ -137,7 +137,7 @@ class MainScreen(Screen[None], AppType):
         self.app_log.info("Loading screen completed.")
 
         read_cmd_logger = self.query_one(
-            self.app.logs_tab_ids.views.read_log_q, ReadCmdLog
+            self.app.logs_tab_ids.loggers.read_log_q, ReadCmdLog
         )
         self.read_cmd_log = read_cmd_logger
         self.app.chezmoi.read_cmd_log = self.read_cmd_log
@@ -149,7 +149,7 @@ class MainScreen(Screen[None], AppType):
             self.read_cmd_log.log_cmd_results(cmd)
         self.app_log.info("End of startup commands.")
         self.operate_log = self.query_one(
-            self.app.logs_tab_ids.views.operate_log_q, OperateLog
+            self.app.logs_tab_ids.loggers.operate_log_q, OperateLog
         )
         self.operate_log.ready_to_run("--- Write Output log initialized ---")
         self.app.chezmoi.operate_log = self.operate_log
@@ -157,7 +157,7 @@ class MainScreen(Screen[None], AppType):
 
         if self.app.dev_mode:
             debug_logger = self.query_one(
-                self.app.logs_tab_ids.views.debug_log_q, DebugLog
+                self.app.logs_tab_ids.loggers.debug_log_q, DebugLog
             )
             self.debug_log = debug_logger
             self.app.chezmoi.debug_log = debug_logger
