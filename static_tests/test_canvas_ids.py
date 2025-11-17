@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 from _test_utils import get_modules_importing_class
 
+import chezmoi_mousse._canvas_ids
 from chezmoi_mousse import CanvasIds
 
 
@@ -67,10 +68,9 @@ def test_canvasids_member_in_use(member_name: str, member_type: str):
 
     # the test should run on all modules importing CanvasIds and the Id class as
     # the CanvasIds members can be accessed via an Id attribute
-    paths_to_check: set[Path] = set(
-        get_modules_importing_class(class_name)
-        + get_modules_importing_class("Id")
-    )
+    paths_to_check: set[Path] = set(get_modules_importing_class(class_name))
+    # also check the classes is the module where CanvasIds is defined
+    paths_to_check.add(Path(chezmoi_mousse._canvas_ids.__file__))
     for py_file in paths_to_check:
         content = py_file.read_text()
         tree = ast.parse(content, filename=str(py_file))
