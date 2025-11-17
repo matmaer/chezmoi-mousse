@@ -385,13 +385,13 @@ class LogsTab(Vertical, AppType):
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
         switcher = self.query_one(self.content_switcher_qid, ContentSwitcher)
-        if event.button.id == self.ids.loggers.app_log_btn:
+        if event.button.id == self.ids.view_btn.app_log:
             switcher.current = self.ids.loggers.app_log
             switcher.border_title = BorderTitle.app_log
-        elif event.button.id == self.ids.loggers.read_log_btn:
+        elif event.button.id == self.ids.view_btn.read_log:
             switcher.current = self.ids.loggers.read_log
             switcher.border_title = BorderTitle.read_cmd_log
-        elif event.button.id == self.ids.loggers.operate_log_btn:
+        elif event.button.id == self.ids.view_btn.operate_log:
             switcher.current = self.ids.loggers.operate_log
             switcher.border_title = BorderTitle.operate_log
         elif event.button.id == self.git_log_btn_id:
@@ -399,7 +399,7 @@ class LogsTab(Vertical, AppType):
             switcher.current = self.ids.views.git_log
         elif (
             self.app.dev_mode is True
-            and event.button.id == self.ids.loggers.debug_log_btn
+            and event.button.id == self.ids.view_btn.debug_log
         ):
             switcher.current = self.ids.loggers.debug_log
             switcher.border_title = BorderTitle.debug_log

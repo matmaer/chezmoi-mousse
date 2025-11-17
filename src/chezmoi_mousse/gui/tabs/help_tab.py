@@ -245,11 +245,11 @@ class HelpTab(Horizontal):
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
         switcher = self.query_one(self.content_switcher_qid, HelpTabSwitcher)
-        if event.button.id == self.ids.views.apply_help_btn:
+        if event.button.id == self.ids.view_btn.apply_help:
             switcher.current = self.ids.views.apply_help
-        elif event.button.id == self.ids.views.re_add_help_btn:
+        elif event.button.id == self.ids.view_btn.re_add_help:
             switcher.current = self.ids.views.re_add_help
-        elif event.button.id == self.ids.views.add_help_btn:
+        elif event.button.id == self.ids.view_btn.add_help:
             switcher.current = self.ids.views.add_help
-        elif event.button.id == self.ids.views.diagram_btn:
+        elif event.button.id == self.ids.view_btn.diagram:
             switcher.current = self.ids.views.diagram
