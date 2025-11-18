@@ -3,10 +3,15 @@ from typing import TYPE_CHECKING
 from textual import on
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import Horizontal, Vertical
+from textual.containers import (
+    Horizontal,
+    HorizontalGroup,
+    Vertical,
+    VerticalGroup,
+)
 from textual.screen import Screen
 from textual.validation import URL
-from textual.widgets import Button, ContentSwitcher, Footer, Input
+from textual.widgets import Button, ContentSwitcher, Footer, Input, Select
 
 from chezmoi_mousse import (
     AppType,
@@ -58,6 +63,26 @@ class InitNewRepo(Vertical, AppType):
         )
 
 
+class RepositoryURLInput(VerticalGroup):
+
+    def compose(self) -> ComposeResult:
+        yield HorizontalGroup(
+            Select[str].from_values(
+                ["https", "ssh"],
+                classes=Tcss.input_select.name,
+                value="https",
+                allow_blank=False,
+                type_to_search=False,
+            ),
+            Input(
+                placeholder="Enter repository URL",
+                validate_on=["submitted"],
+                validators=URL(),
+                classes=Tcss.input_field.name,
+            ),
+        )
+
+
 class InitCloneRepo(Vertical, AppType):
 
     def __init__(self, *, ids: "CanvasIds") -> None:
@@ -68,11 +93,7 @@ class InitCloneRepo(Vertical, AppType):
     def compose(self) -> ComposeResult:
         yield SectionLabel("Initialize New Chezmoi Repository")
         yield SubSectionLabel("Repository URL to clone from.")
-        yield Input(
-            placeholder="Enter repository URL",
-            validate_on=["submitted"],
-            validators=URL(),
-        )
+        yield RepositoryURLInput()
         yield SubSectionLabel(SectionLabelText.operate_output)
         yield OperateLog(ids=self.ids)
 

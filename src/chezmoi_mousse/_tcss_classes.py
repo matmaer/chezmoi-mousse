@@ -22,3 +22,5 @@ class Tcss(StrEnum):
     tab_button = ".tab_button"
     tab_left_vertical = ".tab_left_vertical"
     tree_widget = ".tree_widget"
+    input_select = ".input_select"
+    input_field = ".input_field"
