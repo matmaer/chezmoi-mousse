@@ -5,7 +5,7 @@ from textual.app import ComposeResult
 from textual.containers import VerticalGroup
 from textual.widgets import Label, Static
 
-from chezmoi_mousse import ViewName
+from chezmoi_mousse import LogName, ViewName
 
 __all__ = [
     "FlatSectionLabel",
@@ -73,7 +73,7 @@ class InitialHeader(VerticalGroup):
         static_widget = self.query_one(self.static_qid, Static)
         lines_to_add: list[str] = []
         lines_to_add.append(SectionLabelText.in_dest_dir)
-        if self.view_name == ViewName.diff_view:
+        if self.view_name == LogName.diff_log:
             lines_to_add.append(SectionLabelText.initial_diff_msg)
         elif self.view_name == ViewName.contents_view:
             lines_to_add.append(SectionLabelText.initial_contents_msg)

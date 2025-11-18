@@ -19,6 +19,7 @@ from chezmoi_mousse._names import (
     CanvasName,
     ContainerName,
     DataTableName,
+    LogName,
     TreeName,
     ViewName,
 )
@@ -61,6 +62,7 @@ __all__ = [
     "FlatBtn",
     "GlobalCmd",
     "LinkBtn",
+    "LogName",
     "NodeData",
     "OperateBtn",
     "OperateScreenData",

@@ -38,7 +38,7 @@ class ContentsView(RichLog, AppType):
     def __init__(self, *, ids: "CanvasIds") -> None:
         self.ids = ids
         super().__init__(
-            id=self.ids.views.contents,
+            id=self.ids.loggers.contents,
             auto_scroll=False,
             wrap=True,  # TODO: implement footer binding to toggle wrap
             highlight=True,

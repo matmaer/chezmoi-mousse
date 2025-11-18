@@ -301,7 +301,9 @@ class AddTab(Horizontal, AppType):
                 severity="error",
             )
             return
-        contents_view = self.query_one(self.ids.views.contents_q, ContentsView)
+        contents_view = self.query_one(
+            self.ids.loggers.contents_q, ContentsView
+        )
         contents_view.path = event.node.data.path
         contents_view.border_title = f" {event.node.data.path} "
 

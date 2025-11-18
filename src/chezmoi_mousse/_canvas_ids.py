@@ -18,7 +18,8 @@ __all__ = ["CanvasIds"]
 
 
 class LoggerIds:
-    """RichLog widgets their id's."""
+    """RichLog widgets their id's, using view parameter as we never have more
+    than one RichLog instance per view."""
 
     def __init__(self, canvas_ids: "CanvasIds"):
         # Logs tab
@@ -30,6 +31,11 @@ class LoggerIds:
         self.debug_log_q = f"#{self.debug_log}"
         self.operate_log = canvas_ids.view_id(view=LogName.logs_tab_operate)
         self.operate_log_q = f"#{self.operate_log}"
+        # Shared by Apply tab and Re-add tab
+        self.contents = canvas_ids.view_id(view=LogName.contents_log)
+        self.contents_q = f"#{self.contents}"
+        self.diff = canvas_ids.view_id(view=LogName.diff_log)
+        self.diff_q = f"#{self.diff}"
 
 
 class ViewButtons:
@@ -86,10 +92,6 @@ class ViewIds:
         self.ignored_q = f"#{self.ignored}"
 
         # Views or shared across canvases
-        self.contents = canvas_ids.view_id(view=ViewName.contents_view)
-        self.contents_q = f"#{self.contents}"
-        self.diff = canvas_ids.view_id(view=ViewName.diff_view)
-        self.diff_q = f"#{self.diff}"
         self.doctor = canvas_ids.view_id(view=ViewName.doctor_view)
         self.doctor_q = f"#{self.doctor}"
         self.git_log = canvas_ids.view_id(view=ViewName.git_log_view)

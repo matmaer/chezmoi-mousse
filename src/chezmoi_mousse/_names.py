@@ -54,6 +54,8 @@ class DataTableName(StrEnum):
 
 
 class LogName(StrEnum):
+    """Names for RichLog widgets."""
+
     init_clone_repo = auto()
     init_new_repo = auto()
     logs_tab_app = auto()
@@ -62,7 +64,8 @@ class LogName(StrEnum):
     logs_tab_operate = auto()
     logs_tab_read = auto()
     operate_screen = auto()
-    view_tabs_git = auto()
+    diff_log = auto()
+    contents_log = auto()
 
 
 class TreeName(StrEnum):
@@ -74,20 +77,15 @@ class TreeName(StrEnum):
 
 class ViewName(StrEnum):
     add_help_view = auto()
-    app_log_view = auto()
     apply_help_view = auto()
     cat_config_view = auto()
     # clone_existing_repo_view = auto() TODO
     contents_view = auto()
-    debug_log_view = auto()
     diagram_view = auto()
-    diff_view = auto()
     doctor_view = auto()
     git_ignored_view = auto()
     git_log_view = auto()
     init_new_repo_view = auto()
     pw_mgr_info_view = auto()
     re_add_help_view = auto()
-    read_log_view = auto()
     template_data_view = auto()
-    operate_log_view = auto()
