@@ -18,24 +18,21 @@ __all__ = ["CanvasIds"]
 
 
 class LoggerIds:
-    """RichLog widgets their id's, using view parameter as we never have more
-    than one RichLog instance per view."""
+    """RichLog widgets their id's."""
 
     def __init__(self, canvas_ids: "CanvasIds"):
-        # Logs tab
-        self.app_log = canvas_ids.view_id(view=LogName.logs_tab_app)
-        self.app_log_q = f"#{self.app_log}"
-        self.read_log = canvas_ids.view_id(view=LogName.logs_tab_read)
-        self.read_log_q = f"#{self.read_log}"
-        self.debug_log = canvas_ids.view_id(view=LogName.logs_tab_debug)
-        self.debug_log_q = f"#{self.debug_log}"
-        self.operate_log = canvas_ids.view_id(view=LogName.logs_tab_operate)
-        self.operate_log_q = f"#{self.operate_log}"
-        # Shared by Apply tab and Re-add tab
-        self.contents = canvas_ids.view_id(view=LogName.contents_log)
-        self.contents_q = f"#{self.contents}"
-        self.diff = canvas_ids.view_id(view=LogName.diff_log)
+        self.app = canvas_ids.view_id(view=LogName.app_logger)
+        self.app_q = f"#{self.app}"
+        self.read = canvas_ids.view_id(view=LogName.read_logger)
+        self.read_q = f"#{self.read}"
+        self.debug = canvas_ids.view_id(view=LogName.debug_logger)
+        self.debug_q = f"#{self.debug}"
+        self.operate = canvas_ids.view_id(view=LogName.operate_logger)
+        self.operate_q = f"#{self.operate}"
+        self.diff = canvas_ids.view_id(view=LogName.diff_logger)
         self.diff_q = f"#{self.diff}"
+        self.contents = canvas_ids.view_id(view=LogName.contents_logger)
+        self.contents_q = f"#{self.contents}"
 
 
 class ViewButtons:
@@ -56,6 +53,7 @@ class ViewButtons:
 
         # Init screen
         self.new_repo = canvas_ids.button_id(btn=FlatBtn.init_new_repo)
+        self.clone_repo = canvas_ids.button_id(btn=FlatBtn.init_clone_repo)
 
         # Shared across canvases
         self.cat_config = canvas_ids.button_id(btn=FlatBtn.cat_config)
@@ -82,7 +80,9 @@ class ViewIds:
         self.diagram_q = f"#{self.diagram}"
 
         # Init screen
-        self.new_repo = canvas_ids.view_id(view=ViewName.init_new_repo_view)
+        self.clone_repo = canvas_ids.view_id(view=ViewName.init_clone_view)
+        self.clone_repo_q = f"#{self.clone_repo}"
+        self.new_repo = canvas_ids.view_id(view=ViewName.init_new_view)
         self.new_repo_q = f"#{self.new_repo}"
 
         # Config tab

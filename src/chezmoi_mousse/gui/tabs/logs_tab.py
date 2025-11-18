@@ -87,9 +87,7 @@ class AppLog(LoggersBase, AppType):
 
     def __init__(self, ids: "CanvasIds") -> None:
         self.ids = ids
-        super().__init__(
-            id=self.ids.loggers.app_log, markup=True, max_lines=10000
-        )
+        super().__init__(id=self.ids.loggers.app, markup=True, max_lines=10000)
         self.succes_no_output = f"{Chars.check_mark} Success, no output"
         self.success_with_output = (
             f"{Chars.check_mark} Success, output will be processed"
@@ -162,10 +160,7 @@ class DebugLog(LoggersBase, AppType):
     def __init__(self, ids: "CanvasIds") -> None:
         self.ids = ids
         super().__init__(
-            id=self.ids.loggers.debug_log,
-            markup=True,
-            max_lines=10000,
-            wrap=True,
+            id=self.ids.loggers.debug, markup=True, max_lines=10000, wrap=True
         )
 
     def completed_process(self, command_result: "CommandResult") -> None:
@@ -256,7 +251,7 @@ class OperateLog(LoggersBase, AppType):
     def __init__(self, ids: "CanvasIds") -> None:
         self.ids = ids
         super().__init__(
-            id=self.ids.loggers.operate_log, markup=True, max_lines=10000
+            id=self.ids.loggers.operate, markup=True, max_lines=10000
         )
 
     def log_cmd_results(self, command_result: "CommandResult") -> None:
@@ -314,7 +309,7 @@ class ReadCmdLog(ScrollableContainer, AppType):
 
     def __init__(self, ids: "CanvasIds") -> None:
         self.ids = ids
-        super().__init__(id=self.ids.loggers.read_log)
+        super().__init__(id=self.ids.loggers.read)
 
     def log_cmd_results(self, command_result: "CommandResult") -> None:
         # Don't log verify read-verb outputs as in produces no output.
@@ -351,9 +346,9 @@ class LogsTab(Vertical, AppType):
         )
         if self.app.dev_mode is True:
             self.tab_buttons = (TabBtn.debug_log,) + self.tab_buttons
-            self.initial_view_id = self.ids.loggers.debug_log
+            self.initial_view_id = self.ids.loggers.debug
         else:
-            self.initial_view_id = self.ids.loggers.app_log
+            self.initial_view_id = self.ids.loggers.app
         self.container_id = ids.container_id(name=ContainerName.logs_switcher)
         self.content_switcher_qid = ids.container_id(
             "#", name=ContainerName.logs_switcher
@@ -376,7 +371,7 @@ class LogsTab(Vertical, AppType):
 
     def on_mount(self) -> None:
         switcher = self.query_one(self.content_switcher_qid, ContentSwitcher)
-        if self.initial_view_id == self.ids.loggers.debug_log:
+        if self.initial_view_id == self.ids.loggers.debug:
             switcher.border_title = BorderTitle.debug_log
         else:
             switcher.border_title = BorderTitle.app_log
@@ -386,13 +381,13 @@ class LogsTab(Vertical, AppType):
         event.stop()
         switcher = self.query_one(self.content_switcher_qid, ContentSwitcher)
         if event.button.id == self.ids.view_btn.app_log:
-            switcher.current = self.ids.loggers.app_log
+            switcher.current = self.ids.loggers.app
             switcher.border_title = BorderTitle.app_log
         elif event.button.id == self.ids.view_btn.read_log:
-            switcher.current = self.ids.loggers.read_log
+            switcher.current = self.ids.loggers.read
             switcher.border_title = BorderTitle.read_cmd_log
         elif event.button.id == self.ids.view_btn.operate_log:
-            switcher.current = self.ids.loggers.operate_log
+            switcher.current = self.ids.loggers.operate
             switcher.border_title = BorderTitle.operate_log
         elif event.button.id == self.git_log_btn_id:
             switcher.border_title = BorderTitle.git_log_global
@@ -401,5 +396,5 @@ class LogsTab(Vertical, AppType):
             self.app.dev_mode is True
             and event.button.id == self.ids.view_btn.debug_log
         ):
-            switcher.current = self.ids.loggers.debug_log
+            switcher.current = self.ids.loggers.debug
             switcher.border_title = BorderTitle.debug_log
