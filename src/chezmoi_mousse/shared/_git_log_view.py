@@ -85,7 +85,7 @@ class GitLogView(Vertical, AppType):
             "error": self.app.theme_variables["text-error"],
         }
         for line in cmd_output.splitlines():
-            columns = line.split(";")
+            columns = line.split(";", maxsplit=1)
             if columns[1].split(maxsplit=1)[0] == "Add":
                 self._add_row_with_style(columns, styles["ok"])
             elif columns[1].split(maxsplit=1)[0] == "Update":
