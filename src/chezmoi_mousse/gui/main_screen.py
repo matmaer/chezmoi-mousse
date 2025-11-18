@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 from textual import on
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import HorizontalGroup, Vertical, VerticalGroup
+from textual.containers import Horizontal, Vertical, VerticalGroup
 from textual.screen import Screen
 from textual.widgets import Button, Footer, TabbedContent, TabPane, Tabs
 
@@ -344,7 +344,7 @@ class MainScreen(Screen[None], AppType):
                 self.app.apply_tab_ids.container_id(
                     "#", name=ContainerName.switcher_btn_group
                 ),
-                HorizontalGroup,
+                Horizontal,
             )
         elif active_tab == CanvasName.re_add_tab:
             left_side = self.query_one(
@@ -365,7 +365,7 @@ class MainScreen(Screen[None], AppType):
                 self.app.re_add_tab_ids.container_id(
                     "#", name=ContainerName.switcher_btn_group
                 ),
-                HorizontalGroup,
+                Horizontal,
             )
         elif active_tab == CanvasName.add_tab:
             left_side = self.query_one(
@@ -384,14 +384,11 @@ class MainScreen(Screen[None], AppType):
             )
             view_switcher_buttons = None
         elif active_tab == CanvasName.logs_tab:
-            left_side = None
-            operation_buttons = None
-            switch_slider = None
             view_switcher_buttons = self.query_one(
                 self.app.logs_tab_ids.container_id(
                     "#", name=ContainerName.switcher_btn_group
                 ),
-                HorizontalGroup,
+                Horizontal,
             )
         elif active_tab == CanvasName.config_tab:
             left_side = self.query_one(
@@ -400,13 +397,11 @@ class MainScreen(Screen[None], AppType):
                 ),
                 Vertical,
             )
-            operation_buttons = None
-            switch_slider = None
             view_switcher_buttons = self.query_one(
                 self.app.logs_tab_ids.container_id(
                     "#", name=ContainerName.switcher_btn_group
                 ),
-                HorizontalGroup,
+                Horizontal,
             )
         elif active_tab == CanvasName.help_tab:
             left_side = self.query_one(
@@ -415,13 +410,11 @@ class MainScreen(Screen[None], AppType):
                 ),
                 Vertical,
             )
-            operation_buttons = None
-            switch_slider = None
             view_switcher_buttons = self.query_one(
                 self.app.logs_tab_ids.container_id(
                     "#", name=ContainerName.switcher_btn_group
                 ),
-                HorizontalGroup,
+                Horizontal,
             )
 
         if left_side is not None:
