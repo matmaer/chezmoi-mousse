@@ -36,6 +36,7 @@ SPLASH_COMMANDS = [
     ReadCmd.cat_config,
     ReadCmd.doctor,
     ReadCmd.dump_config,
+    ReadCmd.git_log,
     ReadCmd.ignored,
     ReadCmd.managed_dirs,
     ReadCmd.managed_files,
@@ -97,6 +98,7 @@ FADE_LINE_STYLES = create_deque()
 cat_config: "CommandResult | None" = None
 doctor: "CommandResult | None" = None
 dump_config: "CommandResult | None" = None
+git_log: "CommandResult | None" = None
 ignored: "CommandResult | None" = None
 managed_dirs: "CommandResult | None" = None
 managed_files: "CommandResult | None" = None
@@ -186,6 +188,7 @@ class LoadingScreen(Screen[SplashData | None], AppType):
                     executed_commands=[
                         globals()[cmd.name] for cmd in SPLASH_COMMANDS
                     ],  # used for logging in subsequent screens
+                    git_log=globals()["git_log"],
                     ignored=globals()["ignored"],
                     parsed_config=globals()["parsed_config"],
                     template_data=globals()["template_data"],
@@ -240,6 +243,7 @@ class LoadingScreen(Screen[SplashData | None], AppType):
         # These all need to be awaited so the Chezmoi instance can be created.
         for command in (
             ReadCmd.dump_config,
+            ReadCmd.git_log,
             ReadCmd.managed_dirs,
             ReadCmd.managed_files,
             ReadCmd.status_dirs,
