@@ -23,18 +23,18 @@ class LoggerIds:
     def __init__(self, canvas_ids: "CanvasIds"):
         self.app = canvas_ids.view_id(view=LogName.app_logger)
         self.app_q = f"#{self.app}"
-        self.read = canvas_ids.view_id(view=LogName.read_logger)
-        self.read_q = f"#{self.read}"
+        self.contents = canvas_ids.view_id(view=LogName.contents_logger)
+        self.contents_q = f"#{self.contents}"
         self.debug = canvas_ids.view_id(view=LogName.debug_logger)
         self.debug_q = f"#{self.debug}"
+        self.diff = canvas_ids.view_id(view=LogName.diff_logger)
+        self.diff_q = f"#{self.diff}"
         self.loading = canvas_ids.view_id(view=LogName.loading_logger)
         self.loading_q = f"#{self.loading}"
         self.operate = canvas_ids.view_id(view=LogName.operate_logger)
         self.operate_q = f"#{self.operate}"
-        self.diff = canvas_ids.view_id(view=LogName.diff_logger)
-        self.diff_q = f"#{self.diff}"
-        self.contents = canvas_ids.view_id(view=LogName.contents_logger)
-        self.contents_q = f"#{self.contents}"
+        self.read = canvas_ids.view_id(view=LogName.read_logger)
+        self.read_q = f"#{self.read}"
 
 
 class ViewButtons:
@@ -44,8 +44,8 @@ class ViewButtons:
         # Logs tab
         self.app_log = canvas_ids.button_id(btn=TabBtn.app_log)
         self.debug_log = canvas_ids.button_id(btn=TabBtn.debug_log)
-        self.read_log = canvas_ids.button_id(btn=TabBtn.read_log)
         self.operate_log = canvas_ids.button_id(btn=TabBtn.operate_log)
+        self.read_log = canvas_ids.button_id(btn=TabBtn.read_log)
 
         # Help tab
         self.add_help = canvas_ids.button_id(btn=FlatBtn.add_help)
@@ -54,8 +54,8 @@ class ViewButtons:
         self.re_add_help = canvas_ids.button_id(btn=FlatBtn.re_add_help)
 
         # Init screen
-        self.new_repo = canvas_ids.button_id(btn=FlatBtn.init_new_repo)
         self.clone_repo = canvas_ids.button_id(btn=FlatBtn.init_clone_repo)
+        self.new_repo = canvas_ids.button_id(btn=FlatBtn.init_new_repo)
 
         # Shared across canvases
         self.cat_config = canvas_ids.button_id(btn=FlatBtn.cat_config)
