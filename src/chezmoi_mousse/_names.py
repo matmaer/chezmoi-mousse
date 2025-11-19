@@ -17,15 +17,15 @@ __all__ = [
 
 
 class CanvasName(StrEnum):
-    """A canvas is either a TabPane, the OperateScreen or the InitScreen."""
+    """A canvas is either a TabPane or a Screen."""
 
     add_tab = auto()
     apply_tab = auto()
-    # chezmoi_init = auto() TODO
     config_tab = auto()
     help_tab = auto()
     init_screen = auto()
     install_help_screen = auto()
+    loading_screen = auto()
     logs_tab = auto()
     main_screen = auto()
     operate_screen = auto()
