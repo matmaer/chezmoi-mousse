@@ -433,7 +433,9 @@ class Chezmoi:
         self, read_cmd: ReadCmd, path_arg: Path | None = None
     ) -> CommandResult:
         command: list[str] = read_cmd.value
-        if path_arg is not None:
+        if path_arg is None:
+            command: list[str] = command
+        else:
             command: list[str] = command + [str(path_arg)]
         if read_cmd == ReadCmd.doctor:
             time_out = 3
