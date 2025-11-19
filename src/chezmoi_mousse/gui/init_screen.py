@@ -116,7 +116,7 @@ class InitCloneRepo(Vertical, AppType):
             operate_log.info(text_lines)
         else:
             self.repo_url = event.value
-            self.app.notify(f"Will submit repository URL: {self.repo_url}")
+            operate_log.success(f"Valid URL entered: {self.repo_url}")
 
 
 class InitSwitcher(ContentSwitcher):
