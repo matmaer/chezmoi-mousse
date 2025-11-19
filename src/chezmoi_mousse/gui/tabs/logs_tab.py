@@ -18,7 +18,7 @@ from chezmoi_mousse import (
     TabBtn,
     Tcss,
 )
-from chezmoi_mousse.shared import CustomCollapsible, GitLogView, TabButtons
+from chezmoi_mousse.shared import CustomCollapsible, GitLogGlobal, TabButtons
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -365,7 +365,7 @@ class LogsTab(Vertical, AppType):
             yield AppLog(ids=self.ids)
             yield ReadCmdLog(ids=self.ids)
             yield OperateLog(ids=self.ids)
-            yield GitLogView(ids=self.ids)
+            yield GitLogGlobal(ids=self.ids)
             if self.app.dev_mode is True:
                 yield DebugLog(ids=self.ids)
 

@@ -16,7 +16,7 @@ from chezmoi_mousse import (
     Tcss,
     TreeName,
 )
-from chezmoi_mousse.shared import ContentsView, DiffView, GitLogView
+from chezmoi_mousse.shared import ContentsView, DiffView, GitLogPath
 
 from .trees import ExpandedTree, ListTree, ManagedTree
 
@@ -79,7 +79,7 @@ class TabHorizontal(Horizontal):
         diff_view = self.query_one(self.ids.logger.diff_q, DiffView)
         diff_view.path = path
 
-        git_log_view = self.query_one(self.ids.container.git_log_q, GitLogView)
+        git_log_view = self.query_one(self.ids.container.git_log_q, GitLogPath)
         git_log_view.path = path
 
     def update_other_buttons(self, node_data: "NodeData") -> None:

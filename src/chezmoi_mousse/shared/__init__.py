@@ -16,7 +16,7 @@ from ._config_views import (
 from ._contents_view import ContentsView
 from ._custom_collapsible import CustomCollapsible
 from ._diff_view import DiffView
-from ._git_log_view import GitLogView
+from ._git_log_view import GitLogGlobal, GitLogPath
 from ._operate_msg import (
     CurrentAddNodeMsg,
     CurrentApplyNodeMsg,
@@ -44,7 +44,8 @@ __all__ = [
     "FlatButtonsVertical",
     "FlatLink",
     "FlatSectionLabel",
-    "GitLogView",
+    "GitLogPath",
+    "GitLogGlobal",
     "IgnoredView",
     "OperateButtons",
     "PwMgrInfoView",

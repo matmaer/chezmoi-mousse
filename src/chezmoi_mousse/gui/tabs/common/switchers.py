@@ -12,7 +12,7 @@ from chezmoi_mousse import ContainerName, TabBtn, Tcss, TreeName
 from chezmoi_mousse.shared import (
     ContentsView,
     DiffView,
-    GitLogView,
+    GitLogPath,
     TabButtons,
 )
 
@@ -77,7 +77,7 @@ class ViewSwitcher(Vertical):
         ):
             yield DiffView(ids=self.ids, reverse=self.reverse)
             yield ContentsView(ids=self.ids)
-            yield GitLogView(ids=self.ids)
+            yield GitLogPath(ids=self.ids)
 
     @on(Button.Pressed)
     def switch_tree(self, event: Button.Pressed) -> None:
