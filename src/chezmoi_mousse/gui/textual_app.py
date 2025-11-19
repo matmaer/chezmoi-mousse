@@ -138,6 +138,16 @@ class ChezmoiGUI(App[None]):
             self.push_main_screen(return_data=return_data)
 
     def push_main_screen(self, return_data: "SplashData"):
+        if return_data.init is None:
+            self.notify(
+                "Init screen was pushed but it returned None", severity="error"
+            )
+        elif return_data.init.returncode != 0:
+            self.notify(
+                "Init screen was pushed but return code was not zero.",
+                severity="error",
+            )
+
         dest_dir = return_data.parsed_config.dest_dir
         AddTab.destdir = dest_dir
         ContentsView.destDir = dest_dir
