@@ -58,11 +58,6 @@ class GitLogView(Vertical, AppType):
         yield DataTable(id=self.git_log_table_id, show_cursor=False)
 
     def on_mount(self) -> None:
-        if self.ids.canvas_name == CanvasName.logs_tab:
-            git_log_result: "CommandResult" = self.app.chezmoi.read(
-                ReadCmd.git_log
-            )
-            self.populate_data_table(git_log_result.std_out)
         if self.ids.canvas_name != CanvasName.logs_tab:
             self.border_title = f" {self.destDir} "
         else:
@@ -75,7 +70,8 @@ class GitLogView(Vertical, AppType):
         ]
         datatable.add_row(*row)
 
-    def populate_data_table(self, cmd_output: str) -> None:
+    def populate_data_table(self, command_result: "CommandResult") -> None:
+        cmd_output = command_result.std_out
         datatable = self.query_one(self.git_log_table_qid, DataTableText)
         datatable.clear(columns=True)
         datatable.add_columns("COMMIT", "MESSAGE")
@@ -113,4 +109,4 @@ class GitLogView(Vertical, AppType):
         git_log_result: "CommandResult" = self.app.chezmoi.read(
             ReadCmd.git_log, Path(source_path_str)
         )
-        self.populate_data_table(git_log_result.std_out)
+        self.populate_data_table(git_log_result)
