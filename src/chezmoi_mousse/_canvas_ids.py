@@ -29,12 +29,12 @@ class LoggerIds:
         self.debug_q = f"#{self.debug}"
         self.diff = canvas_ids.view_id(view=LogName.diff_logger)
         self.diff_q = f"#{self.diff}"
-        self.loading = canvas_ids.view_id(view=LogName.loading_logger)
-        self.loading_q = f"#{self.loading}"
         self.operate = canvas_ids.view_id(view=LogName.operate_logger)
         self.operate_q = f"#{self.operate}"
         self.read = canvas_ids.view_id(view=LogName.read_logger)
         self.read_q = f"#{self.read}"
+        self.splash = canvas_ids.view_id(view=LogName.splash_logger)
+        self.splash_q = f"#{self.splash}"
 
 
 class ViewButtons:
