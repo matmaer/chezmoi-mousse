@@ -3,10 +3,10 @@ from enum import StrEnum, auto
 from importlib.metadata import PackageNotFoundError, version
 from typing import TYPE_CHECKING
 
-from chezmoi_mousse._button_data import FlatBtn, LinkBtn, OperateBtn, TabBtn
-from chezmoi_mousse._canvas_ids import CanvasIds
-from chezmoi_mousse._chars import Chars
-from chezmoi_mousse._chezmoi import (
+from ._button_data import FlatBtn, LinkBtn, OperateBtn, TabBtn
+from ._canvas_ids import CanvasIds
+from ._chars import Chars
+from ._chezmoi import (
     Chezmoi,
     CommandResult,
     GlobalCmd,
@@ -15,7 +15,7 @@ from chezmoi_mousse._chezmoi import (
     VerbArgs,
     WriteCmd,
 )
-from chezmoi_mousse._names import (
+from ._names import (
     CanvasName,
     ContainerName,
     DataTableName,
@@ -23,8 +23,8 @@ from chezmoi_mousse._names import (
     TreeName,
     ViewName,
 )
-from chezmoi_mousse._switches import Switches
-from chezmoi_mousse._tcss_classes import Tcss
+from ._switches import Switches
+from ._tcss_classes import Tcss
 
 if TYPE_CHECKING:
     from pathlib import Path
