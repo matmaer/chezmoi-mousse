@@ -133,6 +133,8 @@ class SplashData:
     parsed_config: "ParsedConfig"
     template_data: "CommandResult"
     verify: "CommandResult"
+    # init field not needed if chezmoi is already initialized
+    init: "CommandResult | None" = None
 
 
 try:

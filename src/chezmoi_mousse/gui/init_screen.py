@@ -154,7 +154,7 @@ class InitSwitcher(ContentSwitcher):
         )
 
 
-class InitScreen(Screen[CommandResult | None], AppType):
+class InitScreen(Screen[SplashData | None], AppType):
 
     BINDINGS = [
         Binding(
@@ -171,7 +171,7 @@ class InitScreen(Screen[CommandResult | None], AppType):
         self.ids = ids
         self.container_id = ids.container_id(name=ContainerName.left_side)
         self.splash_data = splash_data
-        self.command_result: CommandResult | None = None
+        self.init_result: CommandResult | None = None
 
         self.operate_btn_id = ids.button_id(btn=OperateBtn.init_new_repo)
         self.operate_btn_qid = ids.button_id("#", btn=OperateBtn.init_new_repo)
@@ -204,21 +204,13 @@ class InitScreen(Screen[CommandResult | None], AppType):
         op_btn.disabled = False
         exit_btn = self.query_one(self.exit_btn_qid, Button)
         exit_btn.disabled = False
-        exit_btn.tooltip = None
 
-    def post_operate_ui_update(self) -> None:
-        operate_button = self.query_one(self.operate_btn_qid, Button)
-        operate_button.disabled = True
-        operate_button.tooltip = None
-
-        operate_exit_button = self.query_one(self.exit_btn_qid, Button)
-        operate_exit_button.label = OperateBtn.exit_button.close_button_label
-
-        # output_log = self.query_one(self.ids.views.operate_log_q, OperateLog)
-        # if self.operate_data.command_result is not None:
-        #     output_log.log_cmd_results(self.operate_data.command_result)
-        # else:
-        #     output_log.error("Command result is None, cannot log output.")
+    # def post_operate_ui_update(self) -> None:
+    # output_log = self.query_one(self.ids.views.operate_log_q, OperateLog)
+    # if self.operate_data.command_result is not None:
+    #     output_log.log_cmd_results(self.operate_data.command_result)
+    # else:
+    #     output_log.error("Command result is None, cannot log output.")
 
     @on(Button.Pressed, Tcss.flat_button.value)
     def switch_content(self, event: Button.Pressed) -> None:
@@ -244,12 +236,18 @@ class InitScreen(Screen[CommandResult | None], AppType):
     def handle_operate_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
         if event.button.id == self.exit_btn_id:
-            self.dismiss(self.command_result)
+            self.dismiss(self.splash_data)
         else:
-            self.command_result = self.app.chezmoi.perform(
-                WriteCmd.add, dry_run=self.app.changes_enabled
+            self.init_result = self.app.chezmoi.perform(
+                WriteCmd.init, dry_run=self.app.changes_enabled
             )
-            self.post_operate_ui_update()
+            self.splash_data.init = self.init_result
+            operate_button = self.query_one(self.operate_btn_qid, Button)
+            operate_button.disabled = True
+            operate_button.tooltip = None
+
+            exit_button = self.query_one(self.exit_btn_qid, Button)
+            exit_button.label = OperateBtn.exit_button.close_button_label
 
     def action_exit_operation(self) -> None:
-        self.dismiss(self.command_result)
+        self.dismiss(self.splash_data)
