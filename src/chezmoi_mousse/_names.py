@@ -49,20 +49,20 @@ class ContainerName(StrEnum):
 
 
 class DataTableName(StrEnum):
-    git_log_table = auto()
     doctor_table = auto()
+    git_log_table = auto()
 
 
 class LogName(StrEnum):
     """Names for RichLog widgets."""
 
     app_logger = auto()
+    contents_logger = auto()
     debug_logger = auto()
+    diff_logger = auto()
     loading_logger = auto()
     operate_logger = auto()
     read_logger = auto()
-    diff_logger = auto()
-    contents_logger = auto()
 
 
 class TreeName(StrEnum):
