@@ -26,7 +26,6 @@ from ._pw_mgr_info import PwMgrInfoView
 from ._reactive_header import ReactiveHeader
 from ._section_headers import (
     FlatSectionLabel,
-    InitialHeader,
     SectionLabel,
     SectionLabelText,
     SubSectionLabel,
@@ -47,7 +46,6 @@ __all__ = [
     "FlatSectionLabel",
     "GitLogView",
     "IgnoredView",
-    "InitialHeader",
     "OperateButtons",
     "PwMgrInfoView",
     "ReactiveHeader",

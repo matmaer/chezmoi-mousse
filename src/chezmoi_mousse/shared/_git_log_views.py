@@ -8,16 +8,7 @@ from textual.containers import Vertical
 from textual.reactive import reactive
 from textual.widgets import DataTable
 
-from chezmoi_mousse import (
-    AppType,
-    CanvasName,
-    DataTableName,
-    ReadCmd,
-    Tcss,
-    ViewName,
-)
-
-from ._section_headers import InitialHeader
+from chezmoi_mousse import AppType, CanvasName, DataTableName, ReadCmd, Tcss
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds, CommandResult
@@ -45,16 +36,8 @@ class GitLogView(Vertical, AppType):
         self.git_log_table_qid = ids.datatable_id(
             "#", data_table_name=DataTableName.git_path_log_table
         )
-        self.initial_header_qid = ids.initial_header_id(
-            "#", view_name=ViewName.git_log_view
-        )
 
     def compose(self) -> ComposeResult:
-        if self.ids.canvas_name in (
-            CanvasName.apply_tab,
-            CanvasName.re_add_tab,
-        ):
-            yield InitialHeader(self.ids, ViewName.git_log_view)
         yield DataTable(id=self.git_log_table_id, show_cursor=False)
 
     def on_mount(self) -> None:
@@ -94,11 +77,6 @@ class GitLogView(Vertical, AppType):
     def watch_path(self) -> None:
         if self.path is None:
             return
-        else:
-            initial_header = self.query_one(
-                self.initial_header_qid, InitialHeader
-            )
-            initial_header.display = False
 
         if self.ids.canvas_name != CanvasName.logs_tab:
             self.border_title = f" {self.path} "
