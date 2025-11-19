@@ -129,6 +129,7 @@ class SplashData:
     cat_config: "CommandResult"
     doctor: "CommandResult"
     executed_commands: "list[CommandResult]"
+    git_log: "CommandResult"
     ignored: "CommandResult"
     parsed_config: "ParsedConfig"
     template_data: "CommandResult"
