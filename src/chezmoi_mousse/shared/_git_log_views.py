@@ -26,8 +26,9 @@ class GitLogView(Vertical, AppType):
     path: reactive[Path | None] = reactive(None, init=False)
 
     def __init__(self, *, ids: "CanvasIds") -> None:
+        self.ids = ids
         super().__init__(
-            id=ids.view.git_log, classes=Tcss.border_title_top.name
+            id=self.ids.container.git_log, classes=Tcss.border_title_top.name
         )
         self.ids = ids
         self.git_log_table_id = ids.datatable_id(
