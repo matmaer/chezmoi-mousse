@@ -205,12 +205,20 @@ class InitScreen(Screen[SplashData | None], AppType):
         exit_btn = self.query_one(self.exit_btn_qid, Button)
         exit_btn.disabled = False
 
-    # def post_operate_ui_update(self) -> None:
-    # output_log = self.query_one(self.ids.views.operate_log_q, OperateLog)
-    # if self.operate_data.command_result is not None:
-    #     output_log.log_cmd_results(self.operate_data.command_result)
-    # else:
-    #     output_log.error("Command result is None, cannot log output.")
+    def perform_init_command(self) -> None:
+        # Run command
+        self.splash_data.init = self.app.chezmoi.perform(
+            WriteCmd.init, dry_run=self.app.changes_enabled
+        )
+        # Log results
+        output_log = self.query_one(self.ids.loggers.operate_q, OperateLog)
+        output_log.log_cmd_results(self.splash_data.init)
+        # Update buttons
+        operate_button = self.query_one(self.operate_btn_qid, Button)
+        operate_button.disabled = True
+        operate_button.tooltip = None
+        exit_button = self.query_one(self.exit_btn_qid, Button)
+        exit_button.label = OperateBtn.exit_button.close_button_label
 
     @on(Button.Pressed, Tcss.flat_button.value)
     def switch_content(self, event: Button.Pressed) -> None:
@@ -238,16 +246,7 @@ class InitScreen(Screen[SplashData | None], AppType):
         if event.button.id == self.exit_btn_id:
             self.dismiss(self.splash_data)
         else:
-            self.init_result = self.app.chezmoi.perform(
-                WriteCmd.init, dry_run=self.app.changes_enabled
-            )
-            self.splash_data.init = self.init_result
-            operate_button = self.query_one(self.operate_btn_qid, Button)
-            operate_button.disabled = True
-            operate_button.tooltip = None
-
-            exit_button = self.query_one(self.exit_btn_qid, Button)
-            exit_button.label = OperateBtn.exit_button.close_button_label
+            self.perform_init_command()
 
     def action_exit_operation(self) -> None:
         self.dismiss(self.splash_data)
