@@ -71,7 +71,7 @@ class OpBtn(StrEnum):
     forget_dir = "Forget Dir"
     forget_file = "Forget File"
     forget_path = "Forget Path"
-    init_new_repo = "Initialize New Chezmoi Repository"
+    init_new_repo = "Chezmoi Init"
     operate_cancel = "Cancel"
     operate_close = "Close"
     re_add_dir = "Re-Add Dir"

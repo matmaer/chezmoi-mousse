@@ -191,11 +191,12 @@ class InitScreen(Screen[CommandResult | None], AppType):
                     FlatBtn.template_data,
                 ),
             )
-            yield InitSwitcher(ids=self.ids, splash_data=self.splash_data)
-        yield OperateButtons(
-            ids=self.ids,
-            buttons=(OperateBtn.init_new_repo, OperateBtn.exit_button),
-        )
+            with Vertical():
+                yield InitSwitcher(ids=self.ids, splash_data=self.splash_data)
+                yield OperateButtons(
+                    ids=self.ids,
+                    buttons=(OperateBtn.init_new_repo, OperateBtn.exit_button),
+                )
         yield Footer()
 
     def on_mount(self) -> None:
