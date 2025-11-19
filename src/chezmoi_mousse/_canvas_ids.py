@@ -118,8 +118,6 @@ class ViewIds:
         self.ignored_q = f"#{self.ignored}"
 
         # Views or shared across canvases
-        # self.doctor = canvas_ids.view_id(view=ViewName.doctor_view)
-        # self.doctor_q = f"#{self.doctor}"
         self.git_log = canvas_ids.view_id(view=ViewName.git_log_view)
         self.git_log_q = f"#{self.git_log}"
         self.pw_mgr_info = canvas_ids.view_id(view=ViewName.pw_mgr_info_view)
@@ -137,7 +135,7 @@ class CanvasIds:
         "container",
         "data_table",
         "header_id",
-        "views",
+        "view",
         "view_btn",
         "logger",
     )
@@ -149,7 +147,7 @@ class CanvasIds:
         self.container = ContainerIds(self)
         self.data_table = DataTableIds(self)
         self.logger = LoggerIds(self)
-        self.views = ViewIds(self)
+        self.view = ViewIds(self)
         self.view_btn = ViewButtons(self)
 
     def button_id(

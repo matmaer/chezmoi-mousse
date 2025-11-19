@@ -79,7 +79,7 @@ class TabHorizontal(Horizontal):
         diff_view = self.query_one(self.ids.logger.diff_q, DiffView)
         diff_view.path = path
 
-        git_log_view = self.query_one(self.ids.views.git_log_q, GitLogView)
+        git_log_view = self.query_one(self.ids.view.git_log_q, GitLogView)
         git_log_view.path = path
 
     def update_other_buttons(self, node_data: "NodeData") -> None:

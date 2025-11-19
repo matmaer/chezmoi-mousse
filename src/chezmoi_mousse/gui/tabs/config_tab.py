@@ -63,20 +63,20 @@ class ConfigTabSwitcher(ContentSwitcher):
             command_result=self.splash_data.doctor
         )
         pw_mgr_info_view = self.query_one(
-            self.ids.views.pw_mgr_info_q, PwMgrInfoView
+            self.ids.view.pw_mgr_info_q, PwMgrInfoView
         )
         pw_mgr_info_view.populate_pw_mgr_info(self.splash_data.doctor)
 
         cat_config_view = self.query_one(
-            self.ids.views.cat_config_q, CatConfigView
+            self.ids.view.cat_config_q, CatConfigView
         )
         cat_config_view.mount_cat_config_output(self.splash_data.cat_config)
 
-        ignored_view = self.query_one(self.ids.views.ignored_q, IgnoredView)
+        ignored_view = self.query_one(self.ids.view.ignored_q, IgnoredView)
         ignored_view.mount_ignored_output(self.splash_data.ignored)
 
         template_data_view = self.query_one(
-            self.ids.views.template_data_q, TemplateDataView
+            self.ids.view.template_data_q, TemplateDataView
         )
         template_data_view.mount_template_data_output(
             self.splash_data.template_data
@@ -113,10 +113,10 @@ class ConfigTab(Horizontal, AppType):
         if event.button.id == self.ids.view_btn.doctor:
             switcher.current = self.ids.container.doctor
         if event.button.id == self.ids.view_btn.pw_mgr_info:
-            switcher.current = self.ids.views.pw_mgr_info
+            switcher.current = self.ids.view.pw_mgr_info
         elif event.button.id == self.ids.view_btn.cat_config:
-            switcher.current = self.ids.views.cat_config
+            switcher.current = self.ids.view.cat_config
         elif event.button.id == self.ids.view_btn.ignored:
-            switcher.current = self.ids.views.ignored
+            switcher.current = self.ids.view.ignored
         elif event.button.id == self.ids.view_btn.template_data:
-            switcher.current = self.ids.views.template_data
+            switcher.current = self.ids.view.template_data

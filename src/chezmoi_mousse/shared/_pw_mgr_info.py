@@ -198,7 +198,7 @@ class PwMgrInfoView(Vertical):
 
     def __init__(self, ids: "CanvasIds") -> None:
         self.ids = ids
-        super().__init__(id=self.ids.views.pw_mgr_info)
+        super().__init__(id=self.ids.view.pw_mgr_info)
 
     def compose(self) -> ComposeResult:
         yield SectionLabel(SectionLabelText.password_managers)

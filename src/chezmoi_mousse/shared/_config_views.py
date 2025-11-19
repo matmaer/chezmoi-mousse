@@ -29,7 +29,7 @@ __all__ = [
 class CatConfigView(Vertical):
     def __init__(self, ids: "CanvasIds"):
         self.ids = ids
-        super().__init__(id=self.ids.views.cat_config)
+        super().__init__(id=self.ids.view.cat_config)
 
     def compose(self) -> ComposeResult:
         yield SectionLabel(SectionLabelText.cat_config_output)
@@ -104,7 +104,7 @@ class DoctorTableView(Vertical, AppType):
 class IgnoredView(Vertical):
     def __init__(self, ids: "CanvasIds"):
         self.ids = ids
-        super().__init__(id=self.ids.views.ignored)
+        super().__init__(id=self.ids.view.ignored)
 
     def compose(self) -> ComposeResult:
         yield SectionLabel(SectionLabelText.ignored_output)
@@ -118,7 +118,7 @@ class IgnoredView(Vertical):
 class TemplateDataView(Vertical):
     def __init__(self, ids: "CanvasIds"):
         self.ids = ids
-        super().__init__(id=self.ids.views.template_data)
+        super().__init__(id=self.ids.view.template_data)
 
     def compose(self) -> ComposeResult:
         yield SectionLabel(SectionLabelText.template_data_output)

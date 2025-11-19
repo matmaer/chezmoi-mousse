@@ -133,7 +133,7 @@ class SharedFiltersHelp(VerticalGroup):
 class ApplyTabHelp(Vertical):
     def __init__(self, ids: "CanvasIds") -> None:
         self.ids = ids
-        super().__init__(id=self.ids.views.apply_help)
+        super().__init__(id=self.ids.view.apply_help)
 
     def compose(self) -> ComposeResult:
         yield SectionLabel(HelpSections.apply_tab_help)
@@ -151,7 +151,7 @@ class ReAddTabHelp(VerticalScroll):
 
     def __init__(self, ids: "CanvasIds") -> None:
         self.ids = ids
-        super().__init__(id=self.ids.views.re_add_help)
+        super().__init__(id=self.ids.view.re_add_help)
 
     def compose(self) -> ComposeResult:
         yield SectionLabel(HelpSections.re_add_tab_help)
@@ -169,7 +169,7 @@ class AddTabHelp(Vertical):
 
     def __init__(self, ids: "CanvasIds") -> None:
         self.ids = ids
-        super().__init__(id=self.ids.views.add_help)
+        super().__init__(id=self.ids.view.add_help)
 
     def compose(self) -> ComposeResult:
         yield SectionLabel(HelpSections.add_tab_help)
@@ -191,7 +191,7 @@ class ChezmoiDiagram(Vertical):
 
     def __init__(self, ids: "CanvasIds") -> None:
         self.ids = ids
-        super().__init__(id=self.ids.views.diagram)
+        super().__init__(id=self.ids.view.diagram)
 
     def compose(self) -> ComposeResult:
         yield SectionLabel(HelpSections.chezmoi_diagram)
@@ -208,7 +208,7 @@ class HelpTabSwitcher(ContentSwitcher):
             name=ContainerName.help_switcher
         )
         super().__init__(
-            id=self.container_id, initial=self.ids.views.apply_help
+            id=self.container_id, initial=self.ids.view.apply_help
         )
 
     def compose(self) -> ComposeResult:
@@ -246,10 +246,10 @@ class HelpTab(Horizontal):
         event.stop()
         switcher = self.query_one(self.content_switcher_qid, HelpTabSwitcher)
         if event.button.id == self.ids.view_btn.apply_help:
-            switcher.current = self.ids.views.apply_help
+            switcher.current = self.ids.view.apply_help
         elif event.button.id == self.ids.view_btn.re_add_help:
-            switcher.current = self.ids.views.re_add_help
+            switcher.current = self.ids.view.re_add_help
         elif event.button.id == self.ids.view_btn.add_help:
-            switcher.current = self.ids.views.add_help
+            switcher.current = self.ids.view.add_help
         elif event.button.id == self.ids.view_btn.diagram:
-            switcher.current = self.ids.views.diagram
+            switcher.current = self.ids.view.diagram

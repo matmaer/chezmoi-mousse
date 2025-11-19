@@ -48,7 +48,7 @@ class InitNewRepo(Vertical, AppType):
 
     def __init__(self, *, ids: "CanvasIds") -> None:
         self.ids = ids
-        super().__init__(id=self.ids.views.new_repo)
+        super().__init__(id=self.ids.view.new_repo)
         self.repo_url: str = ""
 
     def compose(self) -> ComposeResult:
@@ -87,7 +87,7 @@ class InitCloneRepo(Vertical, AppType):
 
     def __init__(self, *, ids: "CanvasIds") -> None:
         self.ids = ids
-        super().__init__(id=self.ids.views.clone_repo)
+        super().__init__(id=self.ids.view.clone_repo)
         self.repo_url: str = ""
 
     def compose(self) -> ComposeResult:
@@ -125,7 +125,7 @@ class InitSwitcher(ContentSwitcher):
         self.ids = ids
         super().__init__(
             id=self.ids.container_id(name=ContainerName.init_screen_switcher),
-            initial=self.ids.views.clone_repo,
+            initial=self.ids.view.clone_repo,
         )
         self.splash_data = splash_data
         self.doctor_table_qid = ids.datatable_id(
@@ -146,10 +146,10 @@ class InitSwitcher(ContentSwitcher):
         doctor_view.populate_doctor_data(
             command_result=self.splash_data.doctor
         )
-        cat_config = self.query_one(self.ids.views.cat_config_q, CatConfigView)
+        cat_config = self.query_one(self.ids.view.cat_config_q, CatConfigView)
         cat_config.mount_cat_config_output(self.splash_data.cat_config)
         template_data_view = self.query_one(
-            self.ids.views.template_data_q, TemplateDataView
+            self.ids.view.template_data_q, TemplateDataView
         )
         template_data_view.mount_template_data_output(
             self.splash_data.template_data
@@ -232,15 +232,15 @@ class InitScreen(Screen[SplashData | None], AppType):
             ContentSwitcher,
         )
         if event.button.id == self.ids.view_btn.new_repo:
-            switcher.current = self.ids.views.new_repo
+            switcher.current = self.ids.view.new_repo
         elif event.button.id == self.ids.view_btn.clone_repo:
-            switcher.current = self.ids.views.clone_repo
+            switcher.current = self.ids.view.clone_repo
         elif event.button.id == self.ids.view_btn.doctor:
             switcher.current = self.ids.container.doctor
         elif event.button.id == self.ids.view_btn.cat_config:
-            switcher.current = self.ids.views.cat_config
+            switcher.current = self.ids.view.cat_config
         elif event.button.id == self.ids.view_btn.template_data:
-            switcher.current = self.ids.views.template_data
+            switcher.current = self.ids.view.template_data
 
     @on(Button.Pressed, Tcss.operate_button.value)
     def handle_operate_button_pressed(self, event: Button.Pressed) -> None:
