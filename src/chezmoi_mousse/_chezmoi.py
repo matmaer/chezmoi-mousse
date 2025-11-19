@@ -428,8 +428,6 @@ class Chezmoi:
         self._status_dirs_result: CommandResult = self.read(
             ReadCmd.status_dirs
         )
-        if self.app_log is not None:
-            self.app_log.info("Cleared managed paths cache.")
 
     def read(
         self, read_cmd: ReadCmd, path_arg: Path | None = None

@@ -3,7 +3,7 @@ from enum import StrEnum
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from textual import on
+from textual import on, work
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Horizontal, Vertical, VerticalGroup
@@ -13,6 +13,7 @@ from textual.widgets import Button, Footer, TabbedContent, TabPane, Tabs
 from chezmoi_mousse import (
     AppType,
     CanvasName,
+    Chars,
     ContainerName,
     OperateBtn,
     OperateScreenData,
@@ -125,35 +126,41 @@ class MainScreen(Screen[None], AppType):
             )
         yield Footer()
 
-    def on_mount(self) -> None:
+    async def on_mount(self) -> None:
+        init_loggers_worker = self.initialize_loggers()
+        await init_loggers_worker.wait()
+        self.handle_splash_data()
+
+    @work
+    async def initialize_loggers(self) -> None:
+        # Initialize App logger
         app_logger = self.query_one(
             self.app.logs_tab_ids.loggers.app_q, AppLog
         )
         self.app_log = app_logger
         self.app.chezmoi.app_log = app_logger
         self.app_log.ready_to_run("--- Application log initialized ---")
-        self.app_log.info(f"chezmoi command found: {self.app.chezmoi_found}.")
-        self.app_log.info("Loading screen completed.")
-
+        if self.app.chezmoi_found:
+            self.app_log.success(
+                f"{Chars.check_mark} Found chezmoi executable."
+            )
+        else:
+            self.notify("chezmoi executable not found.", severity="error")
+            self.app_log.error("chezmoi executable not found.")
+        # Initialize Operate logger
+        self.operate_log = self.query_one(
+            self.app.logs_tab_ids.loggers.operate_q, OperateLog
+        )
+        self.app_log.success(f"{Chars.check_mark} Operate log initialized")
+        self.operate_log.ready_to_run("--- Operate log initialized ---")
+        # Initialize ReadCmd logger
         read_cmd_logger = self.query_one(
             self.app.logs_tab_ids.loggers.read_q, ReadCmdLog
         )
         self.read_cmd_log = read_cmd_logger
         self.app.chezmoi.read_cmd_log = self.read_cmd_log
-        self.app_log.info("Read Output log initialized")
-
-        self.app_log.info("Commands executed during startup:")
-        for cmd in self.splash_data.executed_commands:
-            self.app_log.log_cmd_results(cmd)
-            self.read_cmd_log.log_cmd_results(cmd)
-        self.app_log.info("End of startup commands.")
-        self.operate_log = self.query_one(
-            self.app.logs_tab_ids.loggers.operate_q, OperateLog
-        )
-        self.operate_log.ready_to_run("--- Write Output log initialized ---")
-        self.app.chezmoi.operate_log = self.operate_log
-        self.app_log.info("Write Output log initialized")
-
+        self.app_log.success(f"{Chars.check_mark} Read Output log initialized")
+        # Initialize and focus Debug logger if in dev mode
         if self.app.dev_mode:
             debug_logger = self.query_one(
                 self.app.logs_tab_ids.loggers.debug_q, DebugLog
@@ -161,22 +168,32 @@ class MainScreen(Screen[None], AppType):
             self.debug_log = debug_logger
             self.app.chezmoi.debug_log = debug_logger
             self.debug_log.ready_to_run("--- Debug log initialized ---")
-            self.app_log.info("Debug log initialized")
+            self.app_log.success(f"{Chars.check_mark} Debug log initialized")
             debug_logger.focus()
+
+    def handle_splash_data(self) -> None:
+        # Log loading screen commands
+        self.app_log.info("--- Commands executed in loading screen ---")
+        if self.splash_data.init is not None:
+            self.app_log.log_cmd_results(self.splash_data.init)
+            self.operate_log.log_cmd_results(self.splash_data.init)
+        else:
+            self.notify("Chezmoi init returned None", severity="error")
+        self.app.chezmoi.operate_log = self.operate_log
+
+        for cmd in self.splash_data.executed_commands:
+            self.app_log.log_cmd_results(cmd)
+            self.read_cmd_log.log_cmd_results(cmd)
+        self.app_log.info("--- End of loading screen commands ---")
         # Notify startup info
         if self.app.dev_mode is True:
             self.notify('Running in "dev mode"', severity="information")
-        self.handle_splash_data(self.splash_data)
+        self.populate_trees()
+        self.update_config_tab()
 
-    def handle_splash_data(self, data: "SplashData") -> None:
-        self.populate_trees(commands_data=data)
-        self.update_config_tab(data)
-
-    def populate_trees(
-        self, commands_data: "SplashData | None" = None
-    ) -> None:
-        if commands_data is None:
-            self.app.chezmoi.update_managed_paths()
+    def populate_trees(self) -> None:
+        self.app_log.info("Updating managed paths")
+        self.app.chezmoi.update_managed_paths()
         apply_tab_managed_tree = self.screen.query_one(
             self.app.apply_tab_ids.tree_id("#", tree=TreeName.managed_tree),
             ManagedTree,
@@ -189,10 +206,19 @@ class MainScreen(Screen[None], AppType):
             self.app.apply_tab_ids.tree_id("#", tree=TreeName.list_tree),
             ListTree,
         )
+        self.app_log.info("Populating Apply tab trees")
         apply_tab_managed_tree.populate_tree()
+        self.app_log.success(f"{Chars.check_mark} Apply tab tree populated.")
         apply_tab_expanded_tree.populate_tree()
+        self.app_log.success(
+            f"{Chars.check_mark} Apply tab expanded tree populated."
+        )
         apply_tab_flat_tree.populate_tree()
+        self.app_log.success(
+            f"{Chars.check_mark} Apply tab flat tree populated."
+        )
 
+        self.app_log.info("Populating Re-Add tab trees")
         re_add_tab_managed_tree = self.screen.query_one(
             self.app.re_add_tab_ids.tree_id("#", tree=TreeName.managed_tree),
             ManagedTree,
@@ -206,17 +232,24 @@ class MainScreen(Screen[None], AppType):
             ListTree,
         )
         re_add_tab_managed_tree.populate_tree()
+        self.app_log.success(f"{Chars.check_mark} Re-Add tab tree populated.")
         re_add_tab_expanded_tree.populate_tree()
+        self.app_log.success(
+            f"{Chars.check_mark} Re-Add tab expanded tree populated."
+        )
         re_add_tab_flat_tree.populate_tree()
+        self.app_log.success(
+            f"{Chars.check_mark} Re-Add tab flat tree populated."
+        )
 
-    def update_config_tab(self, data: "SplashData") -> None:
+    def update_config_tab(self) -> None:
         config_tab_switcher = self.screen.query_one(
             self.app.config_tab_ids.container_id(
                 "#", name=ContainerName.config_switcher
             ),
             ConfigTabSwitcher,
         )
-        setattr(config_tab_switcher, "splash_data", data)
+        setattr(config_tab_switcher, "splash_data", self.splash_data)
 
     def check_action(
         self, action: str, parameters: tuple[object, ...]
