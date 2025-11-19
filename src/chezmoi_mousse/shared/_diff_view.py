@@ -26,7 +26,7 @@ class DiffView(RichLog, AppType):
             ReadCmd.diff_reverse if self.reverse else ReadCmd.diff
         )
         super().__init__(
-            id=self.ids.loggers.diff,
+            id=self.ids.logger.diff,
             auto_scroll=False,
             highlight=True,
             wrap=True,  # TODO: implement footer binding to toggle wrap

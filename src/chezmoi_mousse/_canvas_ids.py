@@ -139,7 +139,7 @@ class CanvasIds:
         "header_id",
         "views",
         "view_btn",
-        "loggers",
+        "logger",
     )
 
     def __init__(self, canvas_name: CanvasName) -> None:
@@ -148,7 +148,7 @@ class CanvasIds:
         self.canvas_container_id = f"{self.canvas_name}_container_id"
         self.container = ContainerIds(self)
         self.data_tables = DataTableIds(self)
-        self.loggers = LoggerIds(self)
+        self.logger = LoggerIds(self)
         self.views = ViewIds(self)
         self.view_btn = ViewButtons(self)
 

@@ -72,11 +72,11 @@ class TabHorizontal(Horizontal):
 
     def update_view_path(self, path: Path) -> None:
         contents_view = self.query_one(
-            self.ids.loggers.contents_q, ContentsView
+            self.ids.logger.contents_q, ContentsView
         )
         contents_view.path = path
 
-        diff_view = self.query_one(self.ids.loggers.diff_q, DiffView)
+        diff_view = self.query_one(self.ids.logger.diff_q, DiffView)
         diff_view.path = path
 
         git_log_view = self.query_one(self.ids.views.git_log_q, GitLogView)

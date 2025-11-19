@@ -134,9 +134,7 @@ class MainScreen(Screen[None], AppType):
     @work
     async def initialize_loggers(self) -> None:
         # Initialize App logger
-        app_logger = self.query_one(
-            self.app.logs_tab_ids.loggers.app_q, AppLog
-        )
+        app_logger = self.query_one(self.app.logs_tab_ids.logger.app_q, AppLog)
         self.app_log = app_logger
         self.app.chezmoi.app_log = app_logger
         self.app_log.ready_to_run("--- Application log initialized ---")
@@ -149,13 +147,13 @@ class MainScreen(Screen[None], AppType):
             self.app_log.error("chezmoi executable not found.")
         # Initialize Operate logger
         self.operate_log = self.query_one(
-            self.app.logs_tab_ids.loggers.operate_q, OperateLog
+            self.app.logs_tab_ids.logger.operate_q, OperateLog
         )
         self.app_log.success(f"{Chars.check_mark} Operate log initialized")
         self.operate_log.ready_to_run("--- Operate log initialized ---")
         # Initialize ReadCmd logger
         read_cmd_logger = self.query_one(
-            self.app.logs_tab_ids.loggers.read_q, ReadCmdLog
+            self.app.logs_tab_ids.logger.read_q, ReadCmdLog
         )
         self.read_cmd_log = read_cmd_logger
         self.app.chezmoi.read_cmd_log = self.read_cmd_log
@@ -163,7 +161,7 @@ class MainScreen(Screen[None], AppType):
         # Initialize and focus Debug logger if in dev mode
         if self.app.dev_mode:
             debug_logger = self.query_one(
-                self.app.logs_tab_ids.loggers.debug_q, DebugLog
+                self.app.logs_tab_ids.logger.debug_q, DebugLog
             )
             self.debug_log = debug_logger
             self.app.chezmoi.debug_log = debug_logger

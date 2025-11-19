@@ -131,7 +131,7 @@ class LoadingScreen(Screen[SplashData | None], AppType):
         with Center():
             with Middle():
                 yield Center(AnimatedFade())
-                yield Center(RichLog(id=self.ids.loggers.splash))
+                yield Center(RichLog(id=self.ids.logger.splash))
 
     @work(thread=True, group="io_workers")
     def run_threaded_cmd(self, splash_cmd: ReadCmd) -> None:

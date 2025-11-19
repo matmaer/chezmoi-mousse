@@ -73,7 +73,7 @@ class ViewSwitcher(Vertical):
             buttons=(TabBtn.diff, TabBtn.contents, TabBtn.git_log_path),
         )
         with ContentSwitcher(
-            id=self.view_switcher_id, initial=self.ids.loggers.diff
+            id=self.view_switcher_id, initial=self.ids.logger.diff
         ):
             yield DiffView(ids=self.ids, reverse=self.reverse)
             yield ContentsView(ids=self.ids)
@@ -83,8 +83,8 @@ class ViewSwitcher(Vertical):
     def switch_tree(self, event: Button.Pressed) -> None:
         view_switcher = self.query_one(self.view_switcher_qid, ContentSwitcher)
         if event.button.id == self.contents_tab_btn:
-            view_switcher.current = self.ids.loggers.contents
+            view_switcher.current = self.ids.logger.contents
         elif event.button.id == self.diff_tab_btn:
-            view_switcher.current = self.ids.loggers.diff
+            view_switcher.current = self.ids.logger.diff
         elif event.button.id == self.git_log_tab_btn:
             view_switcher.current = self.ids.views.git_log

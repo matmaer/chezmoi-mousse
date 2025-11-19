@@ -57,7 +57,7 @@ class InitNewRepo(Vertical, AppType):
         yield OperateLog(ids=self.ids)
 
     def on_mount(self) -> None:
-        operate_log = self.query_one(self.ids.loggers.operate_q, OperateLog)
+        operate_log = self.query_one(self.ids.logger.operate_q, OperateLog)
         operate_log.ready_to_run(
             'Ready to run chezmoi init with default settings, see the "Cat config" tab.'
         )
@@ -98,7 +98,7 @@ class InitCloneRepo(Vertical, AppType):
         yield OperateLog(ids=self.ids)
 
     def on_mount(self) -> None:
-        operate_log = self.query_one(self.ids.loggers.operate_q, OperateLog)
+        operate_log = self.query_one(self.ids.logger.operate_q, OperateLog)
         operate_log.ready_to_run(
             "Ready to run chezmoi init cloning from the remote repository."
         )
@@ -213,7 +213,7 @@ class InitScreen(Screen[SplashData | None], AppType):
             WriteCmd.init, dry_run=self.app.changes_enabled
         )
         # Log results
-        output_log = self.query_one(self.ids.loggers.operate_q, OperateLog)
+        output_log = self.query_one(self.ids.logger.operate_q, OperateLog)
         output_log.log_cmd_results(self.splash_data.init)
         # Update buttons
         operate_button = self.query_one(self.operate_btn_qid, Button)
