@@ -391,7 +391,7 @@ class LogsTab(Vertical, AppType):
             switcher.border_title = BorderTitle.operate_log
         elif event.button.id == self.git_log_btn_id:
             switcher.border_title = BorderTitle.git_log_global
-            switcher.current = self.ids.view.git_log
+            switcher.current = self.ids.data_table.git_global_log
         elif (
             self.app.dev_mode is True
             and event.button.id == self.ids.view_btn.debug_log

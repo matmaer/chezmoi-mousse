@@ -31,14 +31,14 @@ class DataTableIds:
             data_table_name=DataTableName.doctor_table
         )
         self.doctor_q = f"#{self.doctor}"
-        # self.git_path_log = canvas_ids.datatable_id(
-        #     data_table_name=DataTableName.git_path_log_table
-        # )
-        # self.git_path_log_q = f"#{self.git_path_log}"
-        # self.git_global_log = canvas_ids.datatable_id(
-        #     data_table_name=DataTableName.git_global_log_table
-        # )
-        # self.git_global_log_q = f"#{self.git_global_log}"
+        self.git_path_log = canvas_ids.datatable_id(
+            data_table_name=DataTableName.git_path_log_table
+        )
+        self.git_path_log_q = f"#{self.git_path_log}"
+        self.git_global_log = canvas_ids.datatable_id(
+            data_table_name=DataTableName.git_global_log_table
+        )
+        self.git_global_log_q = f"#{self.git_global_log}"
 
 
 class LoggerIds:
@@ -118,8 +118,6 @@ class ViewIds:
         self.ignored_q = f"#{self.ignored}"
 
         # Views or shared across canvases
-        self.git_log = canvas_ids.view_id(view=ViewName.git_log_view)
-        self.git_log_q = f"#{self.git_log}"
         self.pw_mgr_info = canvas_ids.view_id(view=ViewName.pw_mgr_info_view)
         self.pw_mgr_info_q = f"#{self.pw_mgr_info}"
         self.template_data = canvas_ids.view_id(

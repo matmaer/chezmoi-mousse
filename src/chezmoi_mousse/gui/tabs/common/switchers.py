@@ -87,4 +87,4 @@ class ViewSwitcher(Vertical):
         elif event.button.id == self.diff_tab_btn:
             view_switcher.current = self.ids.logger.diff
         elif event.button.id == self.git_log_tab_btn:
-            view_switcher.current = self.ids.view.git_log
+            view_switcher.current = self.ids.data_table.git_path_log
