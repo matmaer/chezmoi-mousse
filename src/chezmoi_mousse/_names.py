@@ -80,7 +80,6 @@ class ViewName(StrEnum):
     add_help_view = auto()
     apply_help_view = auto()
     cat_config_view = auto()
-    contents_view = auto()
     diagram_view = auto()
     git_ignored_view = auto()
     init_clone_view = auto()
