@@ -21,6 +21,8 @@ class ContainerIds:
     def __init__(self, canvas_ids: "CanvasIds"):
         self.doctor = canvas_ids.container_id(name=ContainerName.doctor)
         self.doctor_q = f"#{self.doctor}"
+        self.git_log = canvas_ids.container_id(name=ContainerName.git_log)
+        self.git_log_q = f"#{self.git_log}"
 
 
 class DataTableIds:
