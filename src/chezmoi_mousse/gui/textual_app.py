@@ -18,6 +18,7 @@ from chezmoi_mousse.shared import (
     ReactiveHeader,
 )
 
+from .init_screen import InitScreen
 from .install_help import InstallHelp
 from .main_screen import MainScreen
 from .splash import LoadingScreen
@@ -98,6 +99,9 @@ class ChezmoiGUI(App[None]):
         self.logs_tab_ids = CanvasIds(CanvasName.logs_tab)
         self.re_add_tab_ids = CanvasIds(CanvasName.re_add_tab)
 
+        # Track the init screen
+        self.init_screen_pushed: bool = False
+
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
         super().__init__()
 
@@ -111,13 +115,29 @@ class ChezmoiGUI(App[None]):
             callback=self.handle_splash_return_data,
         )
 
+    def push_init_screen(self, return_data: "SplashData"):
+        self.init_screen_pushed = True
+        self.push_screen(
+            InitScreen(ids=self.init_screen_ids, splash_data=return_data),
+            callback=self.handle_splash_return_data,
+        )
+
     def handle_splash_return_data(
         self, return_data: "SplashData | None"
     ) -> None:
         if return_data is None:
             self.push_screen(InstallHelp(ids=self.install_help_screen_ids))
             return
+        elif (
+            self.force_init_screen is True
+            or return_data.cat_config.returncode != 0
+        ) and self.init_screen_pushed is False:
+            self.push_init_screen(return_data=return_data)
+            return
+        else:
+            self.push_main_screen(return_data=return_data)
 
+    def push_main_screen(self, return_data: "SplashData"):
         dest_dir = return_data.parsed_config.dest_dir
         AddTab.destdir = dest_dir
         ContentsView.destDir = dest_dir
