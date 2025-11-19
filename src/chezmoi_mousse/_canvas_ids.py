@@ -135,7 +135,7 @@ class CanvasIds:
         "canvas_container_id",
         "canvas_name",
         "container",
-        "data_tables",
+        "data_table",
         "header_id",
         "views",
         "view_btn",
@@ -147,7 +147,7 @@ class CanvasIds:
         self.header_id = f"{self.canvas_name}_header"
         self.canvas_container_id = f"{self.canvas_name}_container_id"
         self.container = ContainerIds(self)
-        self.data_tables = DataTableIds(self)
+        self.data_table = DataTableIds(self)
         self.logger = LoggerIds(self)
         self.views = ViewIds(self)
         self.view_btn = ViewButtons(self)
