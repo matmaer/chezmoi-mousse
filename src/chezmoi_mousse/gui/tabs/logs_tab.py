@@ -8,6 +8,7 @@ from rich.markup import escape
 from textual import on
 from textual.app import ComposeResult
 from textual.containers import ScrollableContainer, Vertical
+from textual.reactive import reactive
 from textual.widgets import Button, ContentSwitcher, RichLog, Static
 
 from chezmoi_mousse import (
@@ -334,10 +335,14 @@ class ReadCmdLog(ScrollableContainer, AppType):
 
 class LogsTab(Vertical, AppType):
 
-    def __init__(self, ids: "CanvasIds") -> None:
-        super().__init__()
+    git_log_result: reactive["CommandResult | None"] = reactive(
+        None, init=False
+    )
 
+    def __init__(self, ids: "CanvasIds") -> None:
         self.ids = ids
+        super().__init__(id=self.ids.canvas_container_id)
+
         self.tab_buttons = (
             TabBtn.app_log,
             TabBtn.read_log,
@@ -349,16 +354,12 @@ class LogsTab(Vertical, AppType):
             self.initial_view_id = self.ids.logger.debug
         else:
             self.initial_view_id = self.ids.logger.app
-        self.container_id = ids.container_id(name=ContainerName.logs_switcher)
-        self.content_switcher_qid = ids.container_id(
-            "#", name=ContainerName.logs_switcher
-        )
         self.git_log_btn_id = ids.button_id(btn=TabBtn.git_log_logs_tab)
 
     def compose(self) -> ComposeResult:
         yield TabButtons(ids=self.ids, buttons=self.tab_buttons)
         with ContentSwitcher(
-            id=self.container_id,
+            id=self.ids.container_id(name=ContainerName.logs_switcher),
             initial=self.initial_view_id,
             classes=Tcss.border_title_top.name,
         ):
@@ -370,7 +371,9 @@ class LogsTab(Vertical, AppType):
                 yield DebugLog(ids=self.ids)
 
     def on_mount(self) -> None:
-        switcher = self.query_one(self.content_switcher_qid, ContentSwitcher)
+        switcher = self.query_one(
+            self.ids.container.logs_switcher_q, ContentSwitcher
+        )
         if self.initial_view_id == self.ids.logger.debug:
             switcher.border_title = BorderTitle.debug_log
         else:
@@ -379,7 +382,9 @@ class LogsTab(Vertical, AppType):
     @on(Button.Pressed, Tcss.tab_button.value)
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
-        switcher = self.query_one(self.content_switcher_qid, ContentSwitcher)
+        switcher = self.query_one(
+            self.ids.container.logs_switcher_q, ContentSwitcher
+        )
         if event.button.id == self.ids.view_btn.app_log:
             switcher.current = self.ids.logger.app
             switcher.border_title = BorderTitle.app_log
@@ -391,10 +396,16 @@ class LogsTab(Vertical, AppType):
             switcher.border_title = BorderTitle.operate_log
         elif event.button.id == self.git_log_btn_id:
             switcher.border_title = BorderTitle.git_log_global
-            switcher.current = self.ids.data_table.git_global_log
+            switcher.current = self.ids.container.git_log_global
         elif (
             self.app.dev_mode is True
             and event.button.id == self.ids.view_btn.debug_log
         ):
             switcher.current = self.ids.logger.debug
             switcher.border_title = BorderTitle.debug_log
+
+    def watch_git_log_result(self) -> None:
+        if self.git_log_result is None:
+            return
+        git_log_global = self.query_one(GitLogGlobal)
+        git_log_global.update_global_git_log(self.git_log_result)

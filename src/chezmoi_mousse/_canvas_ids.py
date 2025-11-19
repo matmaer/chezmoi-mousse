@@ -29,6 +29,10 @@ class ContainerIds:
             name=ContainerName.git_log_global
         )
         self.git_log_global_q = f"#{self.git_log_global}"
+        self.logs_switcher = canvas_ids.container_id(
+            name=ContainerName.logs_switcher
+        )
+        self.logs_switcher_q = f"#{self.logs_switcher}"
 
 
 class DataTableIds:

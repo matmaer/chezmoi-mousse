@@ -9,7 +9,6 @@ from textual.reactive import reactive
 from textual.widgets import DataTable
 
 from chezmoi_mousse import AppType, ReadCmd, Tcss
-from chezmoi_mousse._names import CanvasName
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds, CommandResult
@@ -21,32 +20,21 @@ else:
 __all__ = ["GitLogPath", "GitLogGlobal"]
 
 
-class GitLogbase(Vertical, AppType):
+class GitLogDataTable(DataTable[Text], AppType):
 
-    def __init__(self, *, ids: "CanvasIds") -> None:
-        self.ids = ids
-        if self.ids.canvas_name == CanvasName.logs_tab:
-            self.data_table_id = self.ids.data_table.git_global_log
-            self.data_table_qid = self.ids.data_table.git_global_log_q
-        else:
-            self.data_table_id = self.ids.data_table.git_path_log
-            self.data_table_qid = self.ids.data_table.git_path_log_q
-        super().__init__(
-            id=self.ids.container.git_log, classes=Tcss.border_title_top.name
-        )
+    def __init__(self, *, data_table_id: str) -> None:
+        super().__init__(id=data_table_id)
 
     def _add_row_with_style(self, columns: list[str], style: str) -> None:
-        datatable = self.query_one(self.data_table_qid, DataTableText)
         row: Iterable[Text] = [
             Text(cell_text, style=style) for cell_text in columns
         ]
-        datatable.add_row(*row)
+        self.add_row(*row)
 
     def populate_data_table(self, command_result: "CommandResult") -> None:
         cmd_output = command_result.std_out
-        datatable = self.query_one(self.data_table_qid, DataTableText)
-        datatable.clear(columns=True)
-        datatable.add_columns("COMMIT", "MESSAGE")
+        self.clear(columns=True)
+        self.add_columns("COMMIT", "MESSAGE")
         styles = {
             "ok": self.app.theme_variables["text-success"],
             "warning": self.app.theme_variables["text-warning"],
@@ -61,57 +49,57 @@ class GitLogbase(Vertical, AppType):
             elif columns[1].split(maxsplit=1)[0] == "Remove":
                 self._add_row_with_style(columns, styles["error"])
             else:
-                datatable.add_row(*(Text(cell) for cell in columns))
+                self.add_row(*(Text(cell) for cell in columns))
 
 
-class GitLogPath(GitLogbase, AppType):
+class GitLogPath(Vertical, AppType):
 
     destDir: "Path | None" = None
     path: reactive[Path | None] = reactive(None, init=False)
 
     def __init__(self, *, ids: "CanvasIds") -> None:
         self.ids = ids
-        super().__init__(ids=self.ids)
+        super().__init__(
+            id=self.ids.container.git_log_path,
+            classes=Tcss.border_title_top.name,
+        )
 
     def compose(self) -> ComposeResult:
-        yield DataTable(id=self.ids.data_table.git_path_log, show_cursor=False)
+        yield GitLogDataTable(data_table_id=self.ids.data_table.git_log_path)
 
     def on_mount(self) -> None:
         self.border_title = f" {self.destDir} "
-        self.add_class(Tcss.border_title_top.name)
 
     def watch_path(self) -> None:
         if self.path is None:
             return
-
-        source_path_str: str = self.app.chezmoi.read(
-            ReadCmd.source_path, self.path
-        ).std_out
-        git_log_result: "CommandResult" = self.app.chezmoi.read(
-            ReadCmd.git_log, Path(source_path_str)
+        data_table = self.query_one(
+            self.ids.data_table.git_log_path_q, GitLogDataTable
         )
-        self.populate_data_table(git_log_result)
+        command_result: "CommandResult" = self.app.chezmoi.read(
+            ReadCmd.source_path, self.path
+        )
+        git_log_result: "CommandResult" = self.app.chezmoi.read(
+            ReadCmd.git_log, Path(command_result.std_out)
+        )
+        data_table.populate_data_table(git_log_result)
 
 
-class GitLogGlobal(GitLogbase, AppType):
-
-    git_log_result: reactive["CommandResult | None"] = reactive(
-        None, init=False
-    )
+class GitLogGlobal(Vertical, AppType):
 
     def __init__(self, *, ids: "CanvasIds") -> None:
         self.ids = ids
-        super().__init__(ids=self.ids)
-        self.ids = ids
+        self.data_table_qid = self.ids.data_table.git_global_log_q
+        super().__init__(id=self.ids.container.git_log_global)
 
     def compose(self) -> ComposeResult:
-        yield DataTable(id=self.data_table_id, show_cursor=False)
+        yield GitLogDataTable(data_table_id=self.ids.data_table.git_global_log)
 
     def on_mount(self) -> None:
         self.remove_class(Tcss.border_title_top.name)
 
-    def watch_git_log_result(self) -> None:
-        if self.git_log_result is None:
-            return
-
-        self.populate_data_table(self.git_log_result)
+    def update_global_git_log(self, command_result: "CommandResult") -> None:
+        data_table = self.query_one(
+            self.ids.data_table.git_global_log_q, GitLogDataTable
+        )
+        data_table.populate_data_table(command_result)

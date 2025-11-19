@@ -14,7 +14,6 @@ from chezmoi_mousse import CanvasIds, CanvasName, Chars
 from chezmoi_mousse.shared import (
     ContentsView,
     DiffView,
-    GitLogGlobal,
     GitLogPath,
     ReactiveHeader,
 )
@@ -154,7 +153,6 @@ class ChezmoiGUI(App[None]):
         ContentsView.destDir = dest_dir
         DiffView.destDir = dest_dir
         GitLogPath.destDir = dest_dir
-        GitLogGlobal.destDir = dest_dir
         MainScreen.destDir = dest_dir
         TreeBase.destDir = dest_dir
         ViewSwitcher.destDir = dest_dir

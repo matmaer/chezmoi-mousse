@@ -129,7 +129,15 @@ class MainScreen(Screen[None], AppType):
     async def on_mount(self) -> None:
         init_loggers_worker = self.initialize_loggers()
         await init_loggers_worker.wait()
-        self.handle_splash_data()
+        log_splash_commands_worker = self.log_splash_log_commands()
+        await log_splash_commands_worker.wait()
+        self.populate_apply_trees()
+        self.populate_re_add_trees()
+        self.update_config_tab()
+        self.update_global_git_log()
+        # Notify startup info
+        if self.app.dev_mode is True:
+            self.notify('Running in "dev mode"', severity="information")
 
     @work
     async def initialize_loggers(self) -> None:
@@ -169,7 +177,8 @@ class MainScreen(Screen[None], AppType):
             self.app_log.success(f"{Chars.check_mark} Debug log initialized")
             debug_logger.focus()
 
-    def handle_splash_data(self) -> None:
+    @work
+    async def log_splash_log_commands(self) -> None:
         # Log loading screen commands
         self.app_log.info("--- Commands executed in loading screen ---")
         if self.splash_data.init is not None:
@@ -183,13 +192,8 @@ class MainScreen(Screen[None], AppType):
             self.app_log.log_cmd_results(cmd)
             self.read_cmd_log.log_cmd_results(cmd)
         self.app_log.info("--- End of loading screen commands ---")
-        # Notify startup info
-        if self.app.dev_mode is True:
-            self.notify('Running in "dev mode"', severity="information")
-        self.populate_trees()
-        self.update_config_tab()
 
-    def populate_trees(self) -> None:
+    def populate_apply_trees(self) -> None:
         self.app_log.info("Updating managed paths")
         self.app.chezmoi.update_managed_paths()
         apply_tab_managed_tree = self.screen.query_one(
@@ -216,6 +220,7 @@ class MainScreen(Screen[None], AppType):
             f"{Chars.check_mark} Apply tab flat tree populated."
         )
 
+    def populate_re_add_trees(self) -> None:
         self.app_log.info("Populating Re-Add tab trees")
         re_add_tab_managed_tree = self.screen.query_one(
             self.app.re_add_tab_ids.tree_id("#", tree=TreeName.managed_tree),
@@ -239,6 +244,10 @@ class MainScreen(Screen[None], AppType):
         self.app_log.success(
             f"{Chars.check_mark} Re-Add tab flat tree populated."
         )
+
+    def update_global_git_log(self) -> None:
+        logs_tab = self.screen.query_exactly_one(LogsTab)
+        logs_tab.git_log_result = self.splash_data.git_log
 
     def update_config_tab(self) -> None:
         config_tab_switcher = self.screen.query_one(
@@ -564,7 +573,8 @@ class MainScreen(Screen[None], AppType):
                 )
                 add_dir_tree.reload()
             else:
-                self.populate_trees()
+                self.populate_apply_trees()
+                self.populate_re_add_trees()
         else:
             self.notify(
                 "Unknown operation result condition.", severity="error"
