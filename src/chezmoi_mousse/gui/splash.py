@@ -115,8 +115,7 @@ class AnimatedFade(Static):
 
 class LoadingScreen(Screen[SplashData | None], AppType):
 
-    def __init__(self, chezmoi_found: bool) -> None:
-        self.chezmoi_found = chezmoi_found
+    def __init__(self) -> None:
         self.fade_timer: Timer
         self.all_workers_timer: Timer
         super().__init__()
@@ -171,7 +170,7 @@ class LoadingScreen(Screen[SplashData | None], AppType):
             for worker in self.screen.workers
             if worker.group == "io_workers"
         ):
-            if self.chezmoi_found is False:
+            if self.app.chezmoi_found is False:
                 self.dismiss(None)
                 return
 
@@ -204,7 +203,7 @@ class LoadingScreen(Screen[SplashData | None], AppType):
         self.fade_timer = self.set_interval(
             interval=0.05, callback=animated_fade.refresh
         )
-        if self.chezmoi_found is True:
+        if self.app.chezmoi_found is True:
             rich_log.styles.height = len(SPLASH_COMMANDS)
         else:
             rich_log.styles.height = 1

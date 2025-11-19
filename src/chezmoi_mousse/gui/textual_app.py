@@ -106,8 +106,7 @@ class ChezmoiGUI(App[None]):
         self.theme = "chezmoi-mousse-dark"
 
         self.push_screen(
-            LoadingScreen(chezmoi_found=self.chezmoi_found),
-            callback=self.handle_splash_return_data,
+            LoadingScreen(), callback=self.handle_splash_return_data
         )
 
     def handle_splash_return_data(
