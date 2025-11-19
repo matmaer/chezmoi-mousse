@@ -12,11 +12,8 @@
 }
 
 .custom_collapsible {
-  .pw_mgr_group {
-    background-tint: $surface-lighten-1;
-    background: $surface-lighten-1;
+  & .pw_mgr_group {
     margin-bottom: 1;
-    padding: 1;
   }
   & .read_cmd_static {
     background-tint: $surface;
