@@ -5,58 +5,6 @@
 /* TODO implement vw and vh for screens and containers with docked components */
 /* TODO “$text-success on $success-muted” */
 
-
-.input_select {
-  background-tint: $panel;
-  background: $panel;
-  border: wide $panel;
-  color: $foreground;
-  height: 3;
-  width: 9;
-  &:focus > SelectCurrent {
-    border: none;
-    color: $foreground;
-  }
-
-  & > SelectOverlay {
-    color: $foreground;
-    height: 4;
-    width: auto;
-    &:focus {
-      background: $panel-lighten-1;
-      background-tint: $panel-lighten-1;
-    }
-  }
-  &.-expanded {
-    & > SelectOverlay {
-      display: block;
-      border: round $accent;
-      padding: 0;
-    }
-  }
-  SelectCurrent {
-    border: none;
-    background-tint: $panel;
-    background: $panel;
-    color: $foreground;
-    height: auto;
-    padding: 0;
-    width: 1fr;
-
-    Static#label {
-      background-tint: $panel;
-      background: $panel;
-      color: $foreground;
-      height: 1;
-      width: 1fr;
-      content-align: center middle;
-    }
-    .arrow {
-      color: $accent;
-    }
-  }
-}
-
 .border_title_top {
   border-top: solid $primary;
   border-title-align: center;
@@ -137,6 +85,56 @@
   }
 }
 
+.input_select {
+  background-tint: $panel;
+  background: $panel;
+  border: wide $panel;
+  color: $foreground;
+  height: 3;
+  width: 9;
+  &:focus > SelectCurrent {
+    border: none;
+    color: $foreground;
+  }
+  & > SelectOverlay {
+    color: $foreground;
+    height: 4;
+    width: auto;
+    &:focus {
+      background: $panel-lighten-1;
+      background-tint: $panel-lighten-1;
+    }
+  }
+  &.-expanded {
+    & > SelectOverlay {
+      display: block;
+      border: round $accent;
+      padding: 0;
+    }
+  }
+  SelectCurrent {
+    border: none;
+    background-tint: $panel;
+    background: $panel;
+    color: $foreground;
+    height: auto;
+    padding: 0;
+    width: 1fr;
+
+    Static#label {
+      background-tint: $panel;
+      background: $panel;
+      color: $foreground;
+      height: 1;
+      width: 1fr;
+      content-align: center middle;
+    }
+    .arrow {
+      color: $accent;
+    }
+  }
+}
+
 /**********************/
 /* Type Selector tcss */
 /**********************/
@@ -173,7 +171,6 @@ InstallHelp {
   }
 }
 
-
 LoggersBase {
   margin-bottom: 1;
 }
@@ -181,7 +178,6 @@ LoggersBase {
 OperateButtons {
   height: 3;
   dock: bottom;
-
   & .operate_button {
     background-tint: $surface-lighten-1;
     background: $surface-lighten-1;
@@ -289,7 +285,6 @@ SwitchSliderBase {
   padding-right: 1;
   transition: offset 380ms;
   width: auto;
-
   & HorizontalGroup {
     padding-bottom: 1;
     width: auto;
@@ -349,21 +344,17 @@ CheckBox {
   padding: 0;
   background: $surface;
   background-tint: $surface;
-
   &>.toggle--button {
     color: $error;
     background: $surface;
     background-tint: $surface;
   }
-
   &.-on>.toggle--button {
     color: $success;
   }
-
   &:focus>.toggle--button {
     text-style: none;
   }
-
   &:hover>.toggle--button {
     text-style: bold;
   }
@@ -387,20 +378,16 @@ DataTable {
 }
 
 DirectoryTree {
-
   &>.directory-tree--folder {
     color: $primary-lighten-3;
     text-style: none;
   }
-
   &>.directory-tree--extension {
     text-style: none;
   }
-
   &>.directory-tree--hidden {
     text-style: none;
   }
-
   &>.directory-tree--file {
     color: $success-lighten-3;
     text-style: none;
@@ -416,14 +403,12 @@ Switch {
   background: $surface;
   background-tint: $surface;
   border: none;
-
   &>.switch--slider {
     color: $error-darken-3;
   }
   &.-on .switch--slider {
     color: $success-darken-2;
   }
-
   &:hover {
     &>.switch--slider {
       color: $error-darken-1;
@@ -433,7 +418,6 @@ Switch {
       color: $success-lighten-1;
     }
   }
-
   &:disabled {
     &>.switch--slider {
       color: $panel;
@@ -462,23 +446,18 @@ Tree {
   &>.tree--highlight-line {
     text-style: bold;
   }
-
   &>.tree--highlight {
     text-style: none;
   }
-
   &>.tree--guides {
     color: $primary-lighten-3;
   }
-
   &>.tree--guides-hover {
     color: $primary-lighten-3;
   }
-
   &>.tree--guides-selected {
     color: $primary-lighten-3;
   }
-
   &:focus {
     &>.tree--guides {
       color: $primary-lighten-3;
