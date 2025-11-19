@@ -167,9 +167,9 @@ class MainScreen(Screen[None], AppType):
         # Notify startup info
         if self.app.dev_mode is True:
             self.notify('Running in "dev mode"', severity="information")
-        self.handle_commands_data(self.splash_data)
+        self.handle_splash_data(self.splash_data)
 
-    def handle_commands_data(self, data: "SplashData") -> None:
+    def handle_splash_data(self, data: "SplashData") -> None:
         if (
             self.app.launch_init_screen is True
             or data.cat_config.returncode != 0
