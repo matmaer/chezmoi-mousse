@@ -50,7 +50,7 @@ class ContainerName(StrEnum):
 
 class DataTableName(StrEnum):
     doctor_table = auto()
-    git_log_table = auto()
+    git_path_log_table = auto()
     git_global_log_table = auto()
 
 

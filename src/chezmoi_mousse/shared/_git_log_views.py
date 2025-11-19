@@ -40,10 +40,10 @@ class GitLogView(Vertical, AppType):
         )
         self.ids = ids
         self.git_log_table_id = ids.datatable_id(
-            data_table_name=DataTableName.git_log_table
+            data_table_name=DataTableName.git_path_log_table
         )
         self.git_log_table_qid = ids.datatable_id(
-            "#", data_table_name=DataTableName.git_log_table
+            "#", data_table_name=DataTableName.git_path_log_table
         )
         self.initial_header_qid = ids.initial_header_id(
             "#", view_name=ViewName.git_log_view
