@@ -81,7 +81,6 @@ class ViewName(StrEnum):
     contents_view = auto()
     diagram_view = auto()
     git_ignored_view = auto()
-    git_log_view = auto()
     init_clone_view = auto()
     init_new_view = auto()
     pw_mgr_info_view = auto()
