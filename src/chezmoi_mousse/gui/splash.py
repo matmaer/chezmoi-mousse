@@ -232,10 +232,6 @@ class LoadingScreen(Screen[SplashData | None], AppType):
 
         cat_config_worker = self.run_non_threaded_cmd(ReadCmd.cat_config)
         await cat_config_worker.wait()
-        if globals()["cat_config"].completed_process_data.returncode != 0:
-            self.notify("We will push the init screen here.")
-            self.notify("We will check if a repo exists in the default path.")
-            self.notify("Dismiss screen and push init screen.")
 
         verify_worker = self.run_non_threaded_cmd(ReadCmd.verify)
         await verify_worker.wait()  # TODO: skip some commands if exit zero

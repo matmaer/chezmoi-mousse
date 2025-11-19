@@ -184,8 +184,6 @@ class MainScreen(Screen[None], AppType):
         if self.splash_data.init is not None:
             self.app_log.log_cmd_results(self.splash_data.init)
             self.operate_log.log_cmd_results(self.splash_data.init)
-        else:
-            self.notify("Chezmoi init returned None", severity="error")
         self.app.chezmoi.operate_log = self.operate_log
 
         for cmd in self.splash_data.executed_commands:
