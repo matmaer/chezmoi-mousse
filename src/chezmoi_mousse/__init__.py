@@ -121,7 +121,7 @@ class ParsedConfig:
 class PreRunData:
     chezmoi_found: "bool"
     dev_mode: "bool"
-    force_init_screen: "bool" = False  # only for development
+    force_init_screen: "bool"
 
 
 @dataclass(slots=True)

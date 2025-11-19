@@ -51,7 +51,9 @@ def run_app():
 
     else:
         pre_run_data = PreRunData(
-            chezmoi_found=chezmoi_found, dev_mode=dev_mode
+            chezmoi_found=chezmoi_found,
+            dev_mode=dev_mode,
+            force_init_screen=False,
         )
         app = ChezmoiGUI(pre_run_data=pre_run_data)
         app.run()
