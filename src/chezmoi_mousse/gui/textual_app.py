@@ -76,10 +76,10 @@ class ChezmoiGUI(App[None]):
     def __init__(self, pre_run_data: "PreRunData") -> None:
         self.chezmoi: "Chezmoi"
         self.pre_run_data = pre_run_data
-        self.changes_enabled = False
-        self.chezmoi_found = self.pre_run_data.chezmoi_found
-        self.dev_mode = self.pre_run_data.dev_mode
-        self.launch_init_screen = self.pre_run_data.launch_init_screen
+        self.changes_enabled: bool = False
+        self.chezmoi_found: bool = self.pre_run_data.chezmoi_found
+        self.dev_mode: bool = self.pre_run_data.dev_mode
+        self.force_init_screen: bool = self.pre_run_data.force_init_screen
 
         # Construct the ids for each screen
         self.init_screen_ids = CanvasIds(CanvasName.init_screen)
