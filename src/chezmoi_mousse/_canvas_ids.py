@@ -21,8 +21,14 @@ class ContainerIds:
     def __init__(self, canvas_ids: "CanvasIds"):
         self.doctor = canvas_ids.container_id(name=ContainerName.doctor)
         self.doctor_q = f"#{self.doctor}"
-        self.git_log = canvas_ids.container_id(name=ContainerName.git_log)
-        self.git_log_q = f"#{self.git_log}"
+        self.git_log_path = canvas_ids.container_id(
+            name=ContainerName.git_log_path
+        )
+        self.git_log_path_q = f"#{self.git_log_path}"
+        self.git_log_global = canvas_ids.container_id(
+            name=ContainerName.git_log_global
+        )
+        self.git_log_global_q = f"#{self.git_log_global}"
 
 
 class DataTableIds:
@@ -33,10 +39,10 @@ class DataTableIds:
             data_table_name=DataTableName.doctor_table
         )
         self.doctor_q = f"#{self.doctor}"
-        self.git_path_log = canvas_ids.datatable_id(
+        self.git_log_path = canvas_ids.datatable_id(
             data_table_name=DataTableName.git_path_log_table
         )
-        self.git_path_log_q = f"#{self.git_path_log}"
+        self.git_log_path_q = f"#{self.git_log_path}"
         self.git_global_log = canvas_ids.datatable_id(
             data_table_name=DataTableName.git_global_log_table
         )

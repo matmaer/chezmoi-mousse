@@ -35,7 +35,8 @@ class CanvasName(StrEnum):
 class ContainerName(StrEnum):
     config_switcher = auto()
     doctor = auto()
-    git_log = auto()
+    git_log_path = auto()
+    git_log_global = auto()
     help_switcher = auto()
     init_screen_switcher = auto()
     left_side = auto()
