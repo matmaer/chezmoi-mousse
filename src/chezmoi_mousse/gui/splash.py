@@ -2,6 +2,7 @@ import json
 from collections import deque
 from pathlib import Path
 from subprocess import CompletedProcess, run
+from typing import TYPE_CHECKING
 
 from rich.segment import Segment
 from rich.style import Style
@@ -25,6 +26,9 @@ from chezmoi_mousse import (
     SplashData,
     VerbArgs,
 )
+
+if TYPE_CHECKING:
+    from chezmoi_mousse import CanvasIds
 
 __all__ = ["LoadingScreen"]
 
@@ -115,16 +119,17 @@ class AnimatedFade(Static):
 
 class LoadingScreen(Screen[SplashData | None], AppType):
 
-    def __init__(self) -> None:
+    def __init__(self, ids: "CanvasIds") -> None:
+        self.ids = ids
         self.fade_timer: Timer
         self.all_workers_timer: Timer
-        super().__init__()
+        super().__init__(id=self.ids.canvas_name)
 
     def compose(self) -> ComposeResult:
         with Center():
             with Middle():
                 yield Center(AnimatedFade())
-                yield Center(RichLog())
+                yield Center(RichLog(id=self.ids.loggers.loading))
 
     @work(thread=True, group="io_workers")
     def run_threaded_cmd(self, splash_cmd: ReadCmd) -> None:

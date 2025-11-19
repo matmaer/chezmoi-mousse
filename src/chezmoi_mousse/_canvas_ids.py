@@ -27,6 +27,8 @@ class LoggerIds:
         self.read_q = f"#{self.read}"
         self.debug = canvas_ids.view_id(view=LogName.debug_logger)
         self.debug_q = f"#{self.debug}"
+        self.loading = canvas_ids.view_id(view=LogName.loading_logger)
+        self.loading_q = f"#{self.loading}"
         self.operate = canvas_ids.view_id(view=LogName.operate_logger)
         self.operate_q = f"#{self.operate}"
         self.diff = canvas_ids.view_id(view=LogName.diff_logger)

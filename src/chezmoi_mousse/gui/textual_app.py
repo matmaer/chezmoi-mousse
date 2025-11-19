@@ -86,6 +86,7 @@ class ChezmoiGUI(App[None]):
         self.install_help_screen_ids = CanvasIds(
             CanvasName.install_help_screen
         )
+        self.loading_screen_ids = CanvasIds(CanvasName.loading_screen)
         self.main_screen_ids = CanvasIds(CanvasName.main_screen)
         self.op_screen_ids = CanvasIds(CanvasName.operate_screen)
 
@@ -106,7 +107,8 @@ class ChezmoiGUI(App[None]):
         self.theme = "chezmoi-mousse-dark"
 
         self.push_screen(
-            LoadingScreen(), callback=self.handle_splash_return_data
+            LoadingScreen(ids=self.loading_screen_ids),
+            callback=self.handle_splash_return_data,
         )
 
     def handle_splash_return_data(

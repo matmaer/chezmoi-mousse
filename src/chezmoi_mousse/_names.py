@@ -58,6 +58,7 @@ class LogName(StrEnum):
 
     app_logger = auto()
     debug_logger = auto()
+    loading_logger = auto()
     operate_logger = auto()
     read_logger = auto()
     diff_logger = auto()
