@@ -34,6 +34,7 @@ class CanvasName(StrEnum):
 
 class ContainerName(StrEnum):
     config_switcher = auto()
+    doctor = auto()
     help_switcher = auto()
     init_screen_switcher = auto()
     left_side = auto()
@@ -79,7 +80,6 @@ class ViewName(StrEnum):
     cat_config_view = auto()
     contents_view = auto()
     diagram_view = auto()
-    doctor_view = auto()
     git_ignored_view = auto()
     git_log_view = auto()
     init_clone_view = auto()

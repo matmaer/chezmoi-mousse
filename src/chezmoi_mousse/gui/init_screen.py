@@ -140,7 +140,9 @@ class InitSwitcher(ContentSwitcher):
         yield TemplateDataView(ids=self.ids)
 
     def on_mount(self) -> None:
-        doctor_view = self.query_one(self.ids.views.doctor_q, DoctorTableView)
+        doctor_view = self.query_one(
+            self.ids.container.doctor_q, DoctorTableView
+        )
         doctor_view.populate_doctor_data(
             command_result=self.splash_data.doctor
         )
@@ -234,7 +236,7 @@ class InitScreen(Screen[SplashData | None], AppType):
         elif event.button.id == self.ids.view_btn.clone_repo:
             switcher.current = self.ids.views.clone_repo
         elif event.button.id == self.ids.view_btn.doctor:
-            switcher.current = self.ids.views.doctor
+            switcher.current = self.ids.container.doctor
         elif event.button.id == self.ids.view_btn.cat_config:
             switcher.current = self.ids.views.cat_config
         elif event.button.id == self.ids.view_btn.template_data:

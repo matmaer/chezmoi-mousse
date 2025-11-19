@@ -17,6 +17,30 @@ from chezmoi_mousse._switches import Switches
 __all__ = ["CanvasIds"]
 
 
+class ContainerIds:
+    def __init__(self, canvas_ids: "CanvasIds"):
+        self.doctor = canvas_ids.container_id(name=ContainerName.doctor)
+        self.doctor_q = f"#{self.doctor}"
+
+
+class DataTableIds:
+    """DataTable widget their id's."""
+
+    def __init__(self, canvas_ids: "CanvasIds"):
+        self.doctor = canvas_ids.datatable_id(
+            data_table_name=DataTableName.doctor_table
+        )
+        self.doctor_q = f"#{self.doctor}"
+        # self.git_path_log = canvas_ids.datatable_id(
+        #     data_table_name=DataTableName.git_path_log_table
+        # )
+        # self.git_path_log_q = f"#{self.git_path_log}"
+        # self.git_global_log = canvas_ids.datatable_id(
+        #     data_table_name=DataTableName.git_global_log_table
+        # )
+        # self.git_global_log_q = f"#{self.git_global_log}"
+
+
 class LoggerIds:
     """RichLog widgets their id's."""
 
@@ -94,8 +118,8 @@ class ViewIds:
         self.ignored_q = f"#{self.ignored}"
 
         # Views or shared across canvases
-        self.doctor = canvas_ids.view_id(view=ViewName.doctor_view)
-        self.doctor_q = f"#{self.doctor}"
+        # self.doctor = canvas_ids.view_id(view=ViewName.doctor_view)
+        # self.doctor_q = f"#{self.doctor}"
         self.git_log = canvas_ids.view_id(view=ViewName.git_log_view)
         self.git_log_q = f"#{self.git_log}"
         self.pw_mgr_info = canvas_ids.view_id(view=ViewName.pw_mgr_info_view)
@@ -110,6 +134,8 @@ class CanvasIds:
     __slots__ = (
         "canvas_container_id",
         "canvas_name",
+        "container",
+        "data_tables",
         "header_id",
         "views",
         "view_btn",
@@ -120,6 +146,8 @@ class CanvasIds:
         self.canvas_name: str = canvas_name.name
         self.header_id = f"{self.canvas_name}_header"
         self.canvas_container_id = f"{self.canvas_name}_container_id"
+        self.container = ContainerIds(self)
+        self.data_tables = DataTableIds(self)
         self.loggers = LoggerIds(self)
         self.views = ViewIds(self)
         self.view_btn = ViewButtons(self)

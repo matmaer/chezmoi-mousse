@@ -42,7 +42,7 @@ class DoctorTableView(Vertical, AppType):
 
     def __init__(self, ids: "CanvasIds") -> None:
         self.ids = ids
-        super().__init__(id=self.ids.views.doctor)
+        super().__init__(id=self.ids.container.doctor)
         self.doctor_table_id = self.ids.datatable_id(
             data_table_name=DataTableName.doctor_table
         )

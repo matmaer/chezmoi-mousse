@@ -38,7 +38,9 @@ class ConfigTabSwitcher(ContentSwitcher):
         self.container_id = self.ids.container_id(
             name=ContainerName.config_switcher
         )
-        super().__init__(id=self.container_id, initial=self.ids.views.doctor)
+        super().__init__(
+            id=self.container_id, initial=self.ids.container.doctor
+        )
         self.doctor_table_qid = ids.datatable_id(
             "#", data_table_name=DataTableName.doctor_table
         )
@@ -54,7 +56,9 @@ class ConfigTabSwitcher(ContentSwitcher):
         if self.splash_data is None:
             return
 
-        doctor_view = self.query_one(self.ids.views.doctor_q, DoctorTableView)
+        doctor_view = self.query_one(
+            self.ids.container.doctor_q, DoctorTableView
+        )
         doctor_view.populate_doctor_data(
             command_result=self.splash_data.doctor
         )
@@ -107,7 +111,7 @@ class ConfigTab(Horizontal, AppType):
         event.stop()
         switcher = self.query_one(self.content_switcher_qid, ContentSwitcher)
         if event.button.id == self.ids.view_btn.doctor:
-            switcher.current = self.ids.views.doctor
+            switcher.current = self.ids.container.doctor
         if event.button.id == self.ids.view_btn.pw_mgr_info:
             switcher.current = self.ids.views.pw_mgr_info
         elif event.button.id == self.ids.view_btn.cat_config:
