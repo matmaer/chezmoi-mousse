@@ -188,7 +188,7 @@ OperateButtons {
     border-top: wide $primary-darken-3;
     border-bottom: wide $surface;
     color: $primary-lighten-3;
-    margin: 0 2;
+    margin: 0 1;
     min-width: 10;
     text-style: none;
     width: 100%;
@@ -210,6 +210,10 @@ OperateInfo {
   text-align: center;
   dock: top;
 }
+
+OperateScreen > OperateButtons {
+    margin-bottom: 1;
+  }
 
 ReactiveHeader {
   border-bottom: dashed $surface-lighten-3;
