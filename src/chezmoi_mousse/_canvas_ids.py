@@ -19,6 +19,10 @@ __all__ = ["CanvasIds"]
 
 class ContainerIds:
     def __init__(self, canvas_ids: "CanvasIds"):
+        self.dest_dir_info = canvas_ids.container_id(
+            name=ContainerName.dest_dir_info
+        )
+        self.dest_dir_info_q = f"#{self.dest_dir_info}"
         self.doctor = canvas_ids.container_id(name=ContainerName.doctor)
         self.doctor_q = f"#{self.doctor}"
         self.git_log_path = canvas_ids.container_id(
@@ -29,9 +33,6 @@ class ContainerIds:
             name=ContainerName.git_log_global
         )
         self.git_log_global_q = f"#{self.git_log_global}"
-        self.dest_dir_info = canvas_ids.container_id(
-            name=ContainerName.dest_dir_info
-        )
         self.logs_switcher = canvas_ids.container_id(
             name=ContainerName.logs_switcher
         )
@@ -68,6 +69,8 @@ class LoggerIds:
         self.debug_q = f"#{self.debug}"
         self.diff = canvas_ids.view_id(view=LogName.diff_logger)
         self.diff_q = f"#{self.diff}"
+        self.in_dest_dir = canvas_ids.view_id(view=LogName.in_dest_dir_logger)
+        self.in_dest_dir_q = f"#{self.in_dest_dir}"
         self.operate = canvas_ids.view_id(view=LogName.operate_logger)
         self.operate_q = f"#{self.operate}"
         self.read = canvas_ids.view_id(view=LogName.read_logger)
