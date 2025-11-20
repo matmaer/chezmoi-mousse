@@ -39,6 +39,10 @@ class ContainerIds:
             name=ContainerName.logs_switcher
         )
         self.logs_switcher_q = f"#{self.logs_switcher}"
+        self.right_side = canvas_ids.container_id(
+            name=ContainerName.right_side
+        )
+        self.right_side_q = f"#{self.right_side}"
         self.view_switcher = canvas_ids.container_id(
             name=ContainerName.view_switcher
         )

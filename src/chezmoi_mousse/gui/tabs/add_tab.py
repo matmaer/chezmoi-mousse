@@ -12,7 +12,6 @@ from textual.widgets import Button, DirectoryTree, Switch
 from chezmoi_mousse import (
     AppType,
     Chars,
-    ContainerName,
     DirTreeNodeData,
     OperateBtn,
     PathType,
@@ -247,9 +246,6 @@ class AddTab(Horizontal, AppType):
         self.add_dir_btn_qid = ids.button_id("#", btn=OperateBtn.add_dir)
         self.add_tree_id = ids.tree_id(tree=TreeName.add_tree)
         self.add_tree_qid = ids.tree_id("#", tree=TreeName.add_tree)
-        self.right_vertical_id = ids.container_id(
-            name=ContainerName.right_side
-        )
         self.unmanaged_switch_id = ids.switch_id(
             switch=Switches.unmanaged_dirs
         )
@@ -260,7 +256,7 @@ class AddTab(Horizontal, AppType):
             classes=Tcss.tab_left_vertical.name,
         ):
             yield FilteredDirTree(self.destdir, id=self.add_tree_id)
-        with Vertical(id=self.right_vertical_id):
+        with Vertical(id=self.ids.container.right_side):
             yield ContentsView(ids=self.ids)
         yield OperateButtons(
             ids=self.ids, buttons=(OperateBtn.add_file, OperateBtn.add_dir)

@@ -57,9 +57,7 @@ class ViewSwitcher(Vertical):
         self.diff_tab_btn = ids.button_id(btn=TabBtn.diff)
         self.git_log_tab_btn = ids.button_id(btn=TabBtn.git_log_path)
         self.reverse = diff_reverse
-        super().__init__(
-            id=self.ids.container_id(name=ContainerName.right_side)
-        )
+        super().__init__(id=self.ids.container.right_side)
 
     def compose(self) -> ComposeResult:
         yield TabButtons(
