@@ -3,8 +3,8 @@ from enum import StrEnum, auto
 from importlib.metadata import PackageNotFoundError, version
 from typing import TYPE_CHECKING
 
+from ._app_ids import CanvasIds
 from ._button_data import FlatBtn, LinkBtn, OperateBtn, TabBtn
-from ._canvas_ids import CanvasIds
 from ._chars import Chars
 from ._chezmoi import (
     Chezmoi,
