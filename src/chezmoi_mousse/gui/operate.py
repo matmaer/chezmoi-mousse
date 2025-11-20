@@ -47,9 +47,8 @@ class OperateScreen(Screen[OperateScreenData], AppType):
     def __init__(
         self, *, ids: "AppIds", operate_data: "OperateScreenData"
     ) -> None:
-        super().__init__()
-
         self.ids = ids
+        super().__init__()
 
         self.path_arg = operate_data.node_data.path
         self.path_type = operate_data.node_data.path_type
@@ -96,7 +95,7 @@ class OperateScreen(Screen[OperateScreenData], AppType):
         yield OperateButtons(
             ids=self.ids, buttons=(self.operate_btn, OperateBtn.exit_button)
         )
-        yield Footer()
+        yield Footer(id=self.ids.footer_id)
 
     def on_mount(self) -> None:
         self.configure_buttons()

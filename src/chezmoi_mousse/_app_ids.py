@@ -161,6 +161,7 @@ class AppIds:
         "container",
         "data_table",
         "header_id",
+        "footer_id",
         "view",
         "view_btn",
         "logger",
@@ -168,7 +169,9 @@ class AppIds:
 
     def __init__(self, canvas_name: CanvasName) -> None:
         self.canvas_name: str = canvas_name.name
+        self.footer_id = f"{self.canvas_name}_footer"
         self.header_id = f"{self.canvas_name}_header"
+
         self.container = ContainerIds(self)
         self.data_table = DataTableIds(self)
         self.logger = LoggerIds(self)

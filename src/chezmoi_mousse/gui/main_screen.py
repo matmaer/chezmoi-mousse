@@ -69,6 +69,7 @@ class MainScreen(Screen[None], AppType):
     destDir: Path | None = None
 
     def __init__(self, *, ids: "AppIds", splash_data: "SplashData") -> None:
+        self.ids = ids
         super().__init__()
 
         self.splash_data = splash_data
@@ -124,7 +125,7 @@ class MainScreen(Screen[None], AppType):
                 HelpTab(ids=self.app.help_tab_ids),
                 id=CanvasName.help_tab.name,
             )
-        yield Footer()
+        yield Footer(id=self.ids.footer_id)
 
     async def on_mount(self) -> None:
         init_loggers_worker = self.initialize_loggers()

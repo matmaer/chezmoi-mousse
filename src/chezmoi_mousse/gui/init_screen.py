@@ -168,9 +168,9 @@ class InitScreen(Screen[SplashData | None], AppType):
     ]
 
     def __init__(self, *, ids: "AppIds", splash_data: "SplashData") -> None:
+        self.ids = ids
         super().__init__()
 
-        self.ids = ids
         self.splash_data = splash_data
         self.init_result: CommandResult | None = None
 
@@ -198,7 +198,7 @@ class InitScreen(Screen[SplashData | None], AppType):
                     ids=self.ids,
                     buttons=(OperateBtn.init_new_repo, OperateBtn.exit_button),
                 )
-        yield Footer()
+        yield Footer(id=self.ids.footer_id)
 
     def on_mount(self) -> None:
         op_btn = self.query_one(self.operate_btn_qid, Button)
