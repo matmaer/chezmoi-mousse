@@ -58,6 +58,7 @@ class DestDirInfo(VerticalGroup):
     def on_mount(self) -> None:
         if self.ids.canvas_name == CanvasName.add_tab:
             self.mount(Static(LogText.read_file.value))
+            self.mount(Static(LogText.add_dir_info.value))
             return
         elif (
             self.ids.canvas_name
