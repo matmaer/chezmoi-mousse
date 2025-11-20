@@ -65,6 +65,7 @@ class LogName(StrEnum):
     contents_logger = auto()
     debug_logger = auto()
     diff_logger = auto()
+    in_dest_dir_logger = auto()
     splash_logger = auto()
     operate_logger = auto()
     read_logger = auto()
