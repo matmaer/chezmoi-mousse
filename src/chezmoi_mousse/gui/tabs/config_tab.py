@@ -87,7 +87,7 @@ class ConfigTab(Horizontal, AppType):
 
     def __init__(self, ids: "CanvasIds") -> None:
         self.ids = ids
-        super().__init__(id=self.ids.canvas_container)
+        super().__init__(id=self.ids.container.canvas)
 
         self.content_switcher_qid = self.ids.container_id(
             "#", name=ContainerName.config_switcher

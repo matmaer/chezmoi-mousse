@@ -33,6 +33,7 @@ class CanvasName(StrEnum):
 
 
 class ContainerName(StrEnum):
+    canvas = auto()
     config_switcher = auto()
     dest_dir_info = auto()
     doctor = auto()
