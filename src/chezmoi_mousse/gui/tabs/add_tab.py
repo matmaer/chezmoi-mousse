@@ -247,7 +247,6 @@ class AddTab(Horizontal, AppType):
         self.add_dir_btn_qid = ids.button_id("#", btn=OperateBtn.add_dir)
         self.add_tree_id = ids.tree_id(tree=TreeName.add_tree)
         self.add_tree_qid = ids.tree_id("#", tree=TreeName.add_tree)
-        self.left_vertical_id = ids.container_id(name=ContainerName.left_side)
         self.right_vertical_id = ids.container_id(
             name=ContainerName.right_side
         )
@@ -257,7 +256,8 @@ class AddTab(Horizontal, AppType):
 
     def compose(self) -> ComposeResult:
         with Vertical(
-            id=self.left_vertical_id, classes=Tcss.tab_left_vertical.name
+            id=self.ids.container.left_side,
+            classes=Tcss.tab_left_vertical.name,
         ):
             yield FilteredDirTree(self.destdir, id=self.add_tree_id)
         with Vertical(id=self.right_vertical_id):

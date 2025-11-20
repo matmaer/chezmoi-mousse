@@ -33,6 +33,8 @@ class ContainerIds:
             name=ContainerName.git_log_global
         )
         self.git_log_global_q = f"#{self.git_log_global}"
+        self.left_side = canvas_ids.container_id(name=ContainerName.left_side)
+        self.left_side_q = f"#{self.left_side}"
         self.logs_switcher = canvas_ids.container_id(
             name=ContainerName.logs_switcher
         )

@@ -171,7 +171,6 @@ class InitScreen(Screen[SplashData | None], AppType):
         super().__init__()
 
         self.ids = ids
-        self.container_id = ids.container_id(name=ContainerName.left_side)
         self.splash_data = splash_data
         self.init_result: CommandResult | None = None
 

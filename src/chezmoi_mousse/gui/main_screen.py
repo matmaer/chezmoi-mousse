@@ -356,10 +356,7 @@ class MainScreen(Screen[None], AppType):
 
         if active_tab == CanvasName.apply_tab:
             left_side = self.query_one(
-                self.app.apply_tab_ids.container_id(
-                    "#", name=ContainerName.left_side
-                ),
-                Vertical,
+                self.app.apply_tab_ids.container.left_side_q, Vertical
             )
             operation_buttons = self.query_one(
                 self.app.apply_tab_ids.container_id(
@@ -377,10 +374,7 @@ class MainScreen(Screen[None], AppType):
             )
         elif active_tab == CanvasName.re_add_tab:
             left_side = self.query_one(
-                self.app.re_add_tab_ids.container_id(
-                    "#", name=ContainerName.left_side
-                ),
-                Vertical,
+                self.app.re_add_tab_ids.container.left_side_q, Vertical
             )
             operation_buttons = self.query_one(
                 self.app.re_add_tab_ids.container_id(
@@ -398,10 +392,7 @@ class MainScreen(Screen[None], AppType):
             )
         elif active_tab == CanvasName.add_tab:
             left_side = self.query_one(
-                self.app.add_tab_ids.container_id(
-                    "#", name=ContainerName.left_side
-                ),
-                Vertical,
+                self.app.add_tab_ids.container.left_side_q, Vertical
             )
             operation_buttons = self.query_one(
                 self.app.add_tab_ids.container_id(
@@ -421,10 +412,7 @@ class MainScreen(Screen[None], AppType):
             )
         elif active_tab == CanvasName.config_tab:
             left_side = self.query_one(
-                self.app.config_tab_ids.container_id(
-                    "#", name=ContainerName.left_side
-                ),
-                Vertical,
+                self.app.config_tab_ids.container.left_side_q, Vertical
             )
             view_switcher_buttons = self.query_one(
                 self.app.logs_tab_ids.container_id(
@@ -434,10 +422,7 @@ class MainScreen(Screen[None], AppType):
             )
         elif active_tab == CanvasName.help_tab:
             left_side = self.query_one(
-                self.app.help_tab_ids.container_id(
-                    "#", name=ContainerName.left_side
-                ),
-                Vertical,
+                self.app.help_tab_ids.container.left_side_q, Vertical
             )
             view_switcher_buttons = self.query_one(
                 self.app.logs_tab_ids.container_id(

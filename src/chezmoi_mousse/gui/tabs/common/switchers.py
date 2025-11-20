@@ -31,7 +31,7 @@ class TreeSwitcher(Vertical):
     def __init__(self, ids: "CanvasIds"):
         self.ids = ids
         super().__init__(
-            id=self.ids.container_id(name=ContainerName.left_side),
+            id=self.ids.container.left_side,
             classes=Tcss.tab_left_vertical.name,
         )
 
