@@ -21,14 +21,14 @@ from chezmoi_mousse.shared import ContentsView, DiffView, GitLogPath
 from .trees import ExpandedTree, ListTree, ManagedTree
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import CanvasIds, NodeData
+    from chezmoi_mousse import AppIds, NodeData
 
 __all__ = ["TabHorizontal"]
 
 
 class TabHorizontal(Horizontal):
 
-    def __init__(self, *, ids: "CanvasIds") -> None:
+    def __init__(self, *, ids: "AppIds") -> None:
         self.ids = ids
         super().__init__(id=self.ids.container.canvas)
 

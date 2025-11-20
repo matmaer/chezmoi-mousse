@@ -30,7 +30,7 @@ from chezmoi_mousse.shared import (
 )
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import CanvasIds
+    from chezmoi_mousse import AppIds
 
 __all__ = ["HelpTab"]
 
@@ -103,7 +103,7 @@ class HelpSections(StrEnum):
 
 class SharedBtnHelp(VerticalGroup):
 
-    def __init__(self, ids: "CanvasIds") -> None:
+    def __init__(self, ids: "AppIds") -> None:
         super().__init__()
         self.ids = ids
 
@@ -131,7 +131,7 @@ class SharedFiltersHelp(VerticalGroup):
 
 
 class ApplyTabHelp(Vertical):
-    def __init__(self, ids: "CanvasIds") -> None:
+    def __init__(self, ids: "AppIds") -> None:
         self.ids = ids
         super().__init__(id=self.ids.view.apply_help)
 
@@ -149,7 +149,7 @@ class ApplyTabHelp(Vertical):
 
 class ReAddTabHelp(VerticalScroll):
 
-    def __init__(self, ids: "CanvasIds") -> None:
+    def __init__(self, ids: "AppIds") -> None:
         self.ids = ids
         super().__init__(id=self.ids.view.re_add_help)
 
@@ -167,7 +167,7 @@ class ReAddTabHelp(VerticalScroll):
 
 class AddTabHelp(Vertical):
 
-    def __init__(self, ids: "CanvasIds") -> None:
+    def __init__(self, ids: "AppIds") -> None:
         self.ids = ids
         super().__init__(id=self.ids.view.add_help)
 
@@ -189,7 +189,7 @@ class AddTabHelp(Vertical):
 
 class ChezmoiDiagram(Vertical):
 
-    def __init__(self, ids: "CanvasIds") -> None:
+    def __init__(self, ids: "AppIds") -> None:
         self.ids = ids
         super().__init__(id=self.ids.view.diagram)
 
@@ -202,7 +202,7 @@ class ChezmoiDiagram(Vertical):
 
 class HelpTabSwitcher(ContentSwitcher):
 
-    def __init__(self, ids: "CanvasIds"):
+    def __init__(self, ids: "AppIds"):
         self.ids = ids
         self.container_id = self.ids.container_id(
             name=ContainerName.help_switcher
@@ -221,7 +221,7 @@ class HelpTabSwitcher(ContentSwitcher):
 
 class HelpTab(Horizontal):
 
-    def __init__(self, ids: "CanvasIds") -> None:
+    def __init__(self, ids: "AppIds") -> None:
         self.ids = ids
         super().__init__(id=self.ids.container.canvas)
 

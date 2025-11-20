@@ -10,7 +10,7 @@ from chezmoi_mousse import AppType, ReadCmd, Tcss
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from chezmoi_mousse import CanvasIds, CommandResult
+    from chezmoi_mousse import AppIds, CommandResult
 
 __all__ = ["ContentsView"]
 
@@ -35,7 +35,7 @@ class ContentsView(RichLog, AppType):
     destDir: "Path | None" = None
     path: reactive["Path | None"] = reactive(None, init=False)
 
-    def __init__(self, *, ids: "CanvasIds") -> None:
+    def __init__(self, *, ids: "AppIds") -> None:
         self.ids = ids
         super().__init__(
             id=self.ids.logger.contents,

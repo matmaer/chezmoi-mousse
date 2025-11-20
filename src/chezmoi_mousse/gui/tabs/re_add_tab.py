@@ -12,14 +12,14 @@ from .common.switchers import TreeSwitcher, ViewSwitcher
 from .common.tab_horizontal import TabHorizontal
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import CanvasIds
+    from chezmoi_mousse import AppIds
 
 __all__ = ["ReAddTab"]
 
 
 class ReAddTab(TabHorizontal):
 
-    def __init__(self, ids: "CanvasIds") -> None:
+    def __init__(self, ids: "AppIds") -> None:
         self.ids = ids
         super().__init__(ids=self.ids)
 

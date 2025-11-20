@@ -28,7 +28,7 @@ from chezmoi_mousse.shared import (
 from .common.switch_slider import SwitchSlider
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import CanvasIds, PathType
+    from chezmoi_mousse import AppIds, PathType
 
 __all__ = ["AddTab", "FilteredDirTree"]
 
@@ -238,7 +238,7 @@ class AddTab(Horizontal, AppType):
 
     destdir: Path
 
-    def __init__(self, ids: "CanvasIds") -> None:
+    def __init__(self, ids: "AppIds") -> None:
         self.ids = ids
         super().__init__(id=self.ids.container.canvas)
 

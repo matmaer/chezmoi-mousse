@@ -28,7 +28,7 @@ from chezmoi_mousse import (
 )
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import CanvasIds
+    from chezmoi_mousse import AppIds
 
 __all__ = ["LoadingScreen"]
 
@@ -121,7 +121,7 @@ class AnimatedFade(Static):
 
 class LoadingScreen(Screen[SplashData | None], AppType):
 
-    def __init__(self, ids: "CanvasIds") -> None:
+    def __init__(self, ids: "AppIds") -> None:
         self.ids = ids
         self.fade_timer: Timer
         self.all_workers_timer: Timer

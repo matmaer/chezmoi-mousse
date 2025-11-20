@@ -41,12 +41,12 @@ from .tabs.logs_tab import OperateLog
 __all__ = ["InitScreen"]
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import CanvasIds
+    from chezmoi_mousse import AppIds
 
 
 class InitNewRepo(Vertical, AppType):
 
-    def __init__(self, *, ids: "CanvasIds") -> None:
+    def __init__(self, *, ids: "AppIds") -> None:
         self.ids = ids
         super().__init__(id=self.ids.view.new_repo)
         self.repo_url: str = ""
@@ -85,7 +85,7 @@ class RepositoryURLInput(VerticalGroup):
 
 class InitCloneRepo(Vertical, AppType):
 
-    def __init__(self, *, ids: "CanvasIds") -> None:
+    def __init__(self, *, ids: "AppIds") -> None:
         self.ids = ids
         super().__init__(id=self.ids.view.clone_repo)
         self.repo_url: str = ""
@@ -121,7 +121,7 @@ class InitCloneRepo(Vertical, AppType):
 
 class InitSwitcher(ContentSwitcher):
 
-    def __init__(self, *, ids: "CanvasIds", splash_data: "SplashData") -> None:
+    def __init__(self, *, ids: "AppIds", splash_data: "SplashData") -> None:
         self.ids = ids
         super().__init__(
             id=self.ids.container_id(name=ContainerName.init_screen_switcher),
@@ -167,7 +167,7 @@ class InitScreen(Screen[SplashData | None], AppType):
         )
     ]
 
-    def __init__(self, *, ids: "CanvasIds", splash_data: "SplashData") -> None:
+    def __init__(self, *, ids: "AppIds", splash_data: "SplashData") -> None:
         super().__init__()
 
         self.ids = ids

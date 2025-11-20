@@ -14,7 +14,7 @@ from ._custom_collapsible import CustomCollapsible
 from ._section_headers import SectionLabel, SectionLabelText, SubSectionLabel
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import CanvasIds
+    from chezmoi_mousse import AppIds
 
 
 __all__ = ["PwMgrInfoView"]
@@ -196,7 +196,7 @@ class PwCollapsible(CustomCollapsible, AppType):
 
 class PwMgrInfoView(Vertical):
 
-    def __init__(self, ids: "CanvasIds") -> None:
+    def __init__(self, ids: "AppIds") -> None:
         self.ids = ids
         super().__init__(id=self.ids.view.pw_mgr_info)
 

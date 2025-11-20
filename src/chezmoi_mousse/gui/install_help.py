@@ -16,7 +16,7 @@ from chezmoi_mousse import AppType, CanvasName, Chars, FlatBtn, LinkBtn, Tcss
 from chezmoi_mousse.shared import FlatButton, FlatLink, SectionLabel
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import CanvasIds
+    from chezmoi_mousse import AppIds
 
 type ParsedJson = dict[str, Any]
 
@@ -48,7 +48,7 @@ class InstallHelp(Screen[None], AppType):
         )
     ]
 
-    def __init__(self, *, ids: "CanvasIds") -> None:
+    def __init__(self, *, ids: "AppIds") -> None:
         super().__init__(id=CanvasName.install_help_screen)
         self.ids = ids
 

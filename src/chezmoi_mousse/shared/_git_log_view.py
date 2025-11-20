@@ -13,7 +13,7 @@ from chezmoi_mousse import AppType, ReadCmd, Tcss
 from ._dest_dir_info import DestDirInfo
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import CanvasIds, CommandResult
+    from chezmoi_mousse import AppIds, CommandResult
 
     DataTableText = DataTable[Text]
 else:
@@ -59,7 +59,7 @@ class GitLogPath(Vertical, AppType):
     destDir: "Path | None" = None
     path: reactive[Path | None] = reactive(None, init=False)
 
-    def __init__(self, *, ids: "CanvasIds") -> None:
+    def __init__(self, *, ids: "AppIds") -> None:
         self.ids = ids
         super().__init__(
             id=self.ids.container.git_log_path,
@@ -95,7 +95,7 @@ class GitLogPath(Vertical, AppType):
 
 class GitLogGlobal(Vertical, AppType):
 
-    def __init__(self, *, ids: "CanvasIds") -> None:
+    def __init__(self, *, ids: "AppIds") -> None:
         self.ids = ids
         self.data_table_qid = self.ids.data_table.git_global_log_q
         super().__init__(id=self.ids.container.git_log_global)

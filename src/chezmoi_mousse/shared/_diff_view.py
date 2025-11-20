@@ -9,7 +9,7 @@ from chezmoi_mousse import AppType, CanvasName, Chars, ReadCmd, Tcss
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from chezmoi_mousse import AppType, CanvasIds, CommandResult
+    from chezmoi_mousse import AppIds, AppType, CommandResult
 
 __all__ = ["DiffView"]
 
@@ -19,7 +19,7 @@ class DiffView(RichLog, AppType):
     destDir: "Path | None" = None
     path: reactive["Path | None"] = reactive(None, init=False)
 
-    def __init__(self, *, ids: "CanvasIds", reverse: bool) -> None:
+    def __init__(self, *, ids: "AppIds", reverse: bool) -> None:
         self.ids = ids
         self.reverse = reverse
         self.diff_cmd: ReadCmd = (

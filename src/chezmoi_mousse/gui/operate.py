@@ -28,7 +28,7 @@ from .tabs.common.operate_info import OperateInfo
 from .tabs.logs_tab import OperateLog
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import CanvasIds, CommandResult
+    from chezmoi_mousse import AppIds, CommandResult
 
 __all__ = ["OperateScreen"]
 
@@ -45,7 +45,7 @@ class OperateScreen(Screen[OperateScreenData], AppType):
     ]
 
     def __init__(
-        self, *, ids: "CanvasIds", operate_data: "OperateScreenData"
+        self, *, ids: "AppIds", operate_data: "OperateScreenData"
     ) -> None:
         super().__init__()
 

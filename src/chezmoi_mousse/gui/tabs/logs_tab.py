@@ -25,7 +25,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable
     from typing import Any
 
-    from chezmoi_mousse import CanvasIds, CommandResult
+    from chezmoi_mousse import AppIds, CommandResult
 
 __all__ = ["LogsTab", "AppLog", "DebugLog", "OperateLog", "ReadCmdLog"]
 
@@ -86,7 +86,7 @@ class LoggersBase(RichLog, AppType):
 
 class AppLog(LoggersBase, AppType):
 
-    def __init__(self, ids: "CanvasIds") -> None:
+    def __init__(self, ids: "AppIds") -> None:
         self.ids = ids
         super().__init__(id=self.ids.logger.app, markup=True, max_lines=10000)
         self.succes_no_output = f"{Chars.check_mark} Success, no output"
@@ -158,7 +158,7 @@ class DebugLog(LoggersBase, AppType):
 
     type Mro = tuple[type, ...]
 
-    def __init__(self, ids: "CanvasIds") -> None:
+    def __init__(self, ids: "AppIds") -> None:
         self.ids = ids
         super().__init__(
             id=self.ids.logger.debug, markup=True, max_lines=10000, wrap=True
@@ -249,7 +249,7 @@ class DebugLog(LoggersBase, AppType):
 
 class OperateLog(LoggersBase, AppType):
 
-    def __init__(self, ids: "CanvasIds") -> None:
+    def __init__(self, ids: "AppIds") -> None:
         self.ids = ids
         super().__init__(
             id=self.ids.logger.operate, markup=True, max_lines=10000
@@ -308,7 +308,7 @@ class ReadCmdLog(ScrollableContainer, AppType):
 
     collapsible_counter: int = 0
 
-    def __init__(self, ids: "CanvasIds") -> None:
+    def __init__(self, ids: "AppIds") -> None:
         self.ids = ids
         super().__init__(id=self.ids.logger.read)
 
@@ -339,7 +339,7 @@ class LogsTab(Vertical, AppType):
         None, init=False
     )
 
-    def __init__(self, ids: "CanvasIds") -> None:
+    def __init__(self, ids: "AppIds") -> None:
         self.ids = ids
         super().__init__(id=self.ids.container.canvas)
 

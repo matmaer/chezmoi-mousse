@@ -10,7 +10,7 @@ from textual.widgets import Label, Switch
 from chezmoi_mousse import CanvasName, ContainerName, Switches
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import CanvasIds
+    from chezmoi_mousse import AppIds
 
 __all__ = ["SwitchSlider"]
 
@@ -18,7 +18,7 @@ __all__ = ["SwitchSlider"]
 class SwitchSliderBase(VerticalGroup):
 
     def __init__(
-        self, *, ids: "CanvasIds", switches: tuple[Switches, ...]
+        self, *, ids: "AppIds", switches: tuple[Switches, ...]
     ) -> None:
         self.ids = ids
         self.switches = switches
@@ -40,7 +40,7 @@ class SwitchSliderBase(VerticalGroup):
 
 
 class SwitchSlider(SwitchSliderBase):
-    def __init__(self, *, ids: "CanvasIds") -> None:
+    def __init__(self, *, ids: "AppIds") -> None:
         self.ids = ids
         if self.ids.canvas_name in (
             CanvasName.apply_tab,

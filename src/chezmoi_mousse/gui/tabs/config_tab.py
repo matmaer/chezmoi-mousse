@@ -24,7 +24,7 @@ from chezmoi_mousse.shared import (
 )
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import CanvasIds
+    from chezmoi_mousse import AppIds
 
 __all__ = ["ConfigTab", "ConfigTabSwitcher"]
 
@@ -33,7 +33,7 @@ class ConfigTabSwitcher(ContentSwitcher):
 
     splash_data: reactive["SplashData | None"] = reactive(None)
 
-    def __init__(self, ids: "CanvasIds"):
+    def __init__(self, ids: "AppIds"):
         self.ids = ids
         self.container_id = self.ids.container_id(
             name=ContainerName.config_switcher
@@ -85,7 +85,7 @@ class ConfigTabSwitcher(ContentSwitcher):
 
 class ConfigTab(Horizontal, AppType):
 
-    def __init__(self, ids: "CanvasIds") -> None:
+    def __init__(self, ids: "AppIds") -> None:
         self.ids = ids
         super().__init__(id=self.ids.container.canvas)
 

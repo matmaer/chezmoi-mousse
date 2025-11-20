@@ -9,7 +9,7 @@ from textual.widgets import Static
 from chezmoi_mousse import AppType, Chars, OperateBtn, OperateScreenData
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import CanvasIds
+    from chezmoi_mousse import AppIds
 
 __all__ = ["OperateInfo"]
 
@@ -35,7 +35,7 @@ class OperateInfo(Static, AppType):
     git_autopush: bool | None = None
 
     def __init__(
-        self, *, ids: "CanvasIds", operate_screen_data: OperateScreenData
+        self, *, ids: "AppIds", operate_screen_data: OperateScreenData
     ) -> None:
         super().__init__()
         self.operate_btn = operate_screen_data.operate_btn

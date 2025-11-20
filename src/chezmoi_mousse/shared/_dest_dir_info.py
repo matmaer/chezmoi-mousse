@@ -15,7 +15,7 @@ __all__ = ["DestDirInfo"]
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from chezmoi_mousse import CanvasIds
+    from chezmoi_mousse import AppIds
 
 
 class LogText(StrEnum):
@@ -36,9 +36,7 @@ class DestDirInfo(VerticalGroup):
 
     dest_dir: "Path | None" = None
 
-    def __init__(
-        self, ids: "CanvasIds", contents_logger: bool = False
-    ) -> None:
+    def __init__(self, ids: "AppIds", contents_logger: bool = False) -> None:
         self.ids = ids
         self.contents_logger = contents_logger
         super().__init__(id=self.ids.container.dest_dir_info)

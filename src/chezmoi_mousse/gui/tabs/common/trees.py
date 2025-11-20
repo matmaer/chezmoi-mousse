@@ -26,7 +26,7 @@ from chezmoi_mousse.shared import CurrentApplyNodeMsg, CurrentReAddNodeMsg
 
 if TYPE_CHECKING:
 
-    from chezmoi_mousse import CanvasIds, PathDict
+    from chezmoi_mousse import AppIds, PathDict
 
 __all__ = ["ExpandedTree", "ListTree", "ManagedTree", "TreeBase"]
 
@@ -38,7 +38,7 @@ class TreeBase(Tree[NodeData], AppType):
     ICON_NODE = Chars.right_triangle
     ICON_NODE_EXPANDED = Chars.down_triangle
 
-    def __init__(self, ids: "CanvasIds", *, tree_name: TreeName) -> None:
+    def __init__(self, ids: "AppIds", *, tree_name: TreeName) -> None:
         super().__init__(
             label="root",
             id=ids.tree_id(tree=tree_name),
@@ -387,7 +387,7 @@ class ExpandedTree(TreeBase):
 
     unchanged: reactive[bool] = reactive(False, init=False)
 
-    def __init__(self, ids: "CanvasIds") -> None:
+    def __init__(self, ids: "AppIds") -> None:
         self.ids = ids
         super().__init__(self.ids, tree_name=TreeName.expanded_tree)
 
@@ -439,7 +439,7 @@ class ListTree(TreeBase):
 
     unchanged: reactive[bool] = reactive(False, init=False)
 
-    def __init__(self, ids: "CanvasIds") -> None:
+    def __init__(self, ids: "AppIds") -> None:
         self.ids = ids
         super().__init__(self.ids, tree_name=TreeName.list_tree)
 
@@ -464,7 +464,7 @@ class ManagedTree(TreeBase):
 
     unchanged: reactive[bool] = reactive(False, init=False)
 
-    def __init__(self, *, ids: "CanvasIds") -> None:
+    def __init__(self, *, ids: "AppIds") -> None:
         self.ids = ids
         super().__init__(self.ids, tree_name=TreeName.managed_tree)
 

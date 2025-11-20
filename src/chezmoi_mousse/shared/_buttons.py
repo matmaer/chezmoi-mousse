@@ -15,7 +15,7 @@ from chezmoi_mousse import (
 )
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import CanvasIds
+    from chezmoi_mousse import AppIds
 
 
 __all__ = [
@@ -28,7 +28,7 @@ __all__ = [
 
 
 class FlatButton(Button):
-    def __init__(self, *, ids: "CanvasIds", button_enum: FlatBtn) -> None:
+    def __init__(self, *, ids: "AppIds", button_enum: FlatBtn) -> None:
         self.ids = ids
         super().__init__(
             classes=Tcss.flat_button.name,
@@ -40,7 +40,7 @@ class FlatButton(Button):
 
 
 class FlatLink(Link):
-    def __init__(self, *, ids: "CanvasIds", link_enum: LinkBtn) -> None:
+    def __init__(self, *, ids: "AppIds", link_enum: LinkBtn) -> None:
         self.ids = ids
         super().__init__(
             id=self.ids.button_id(btn=link_enum),
@@ -51,7 +51,7 @@ class FlatLink(Link):
 
 
 class OperateButton(Button):
-    def __init__(self, *, ids: "CanvasIds", button_enum: OperateBtn) -> None:
+    def __init__(self, *, ids: "AppIds", button_enum: OperateBtn) -> None:
         self.ids = ids
         self.button_enum = button_enum
         super().__init__(
@@ -65,9 +65,7 @@ class OperateButton(Button):
 
 class FlatButtonsVertical(Vertical):
 
-    def __init__(
-        self, *, ids: "CanvasIds", buttons: tuple[FlatBtn, ...]
-    ) -> None:
+    def __init__(self, *, ids: "AppIds", buttons: tuple[FlatBtn, ...]) -> None:
         self.buttons: tuple[FlatBtn, ...] = buttons
         self.ids = ids
         super().__init__(
@@ -81,7 +79,7 @@ class FlatButtonsVertical(Vertical):
 
 
 class OperateButtons(Horizontal):
-    def __init__(self, *, ids: "CanvasIds", buttons: tuple[OperateBtn, ...]):
+    def __init__(self, *, ids: "AppIds", buttons: tuple[OperateBtn, ...]):
         self.ids = ids
         self.buttons = buttons
         super().__init__(
@@ -96,7 +94,7 @@ class OperateButtons(Horizontal):
 
 
 class TabButtons(Horizontal):
-    def __init__(self, *, ids: "CanvasIds", buttons: tuple[TabBtn, ...]):
+    def __init__(self, *, ids: "AppIds", buttons: tuple[TabBtn, ...]):
         self.ids = ids
         self.buttons = buttons
         super().__init__(

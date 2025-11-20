@@ -3,7 +3,7 @@ from enum import StrEnum, auto
 from importlib.metadata import PackageNotFoundError, version
 from typing import TYPE_CHECKING
 
-from ._app_ids import CanvasIds
+from ._app_ids import AppIds
 from ._button_data import FlatBtn, LinkBtn, OperateBtn, TabBtn
 from ._chars import Chars
 from ._chezmoi import (
@@ -50,7 +50,7 @@ class AppType:
 __all__ = [
     "__version__",
     "AppType",
-    "CanvasIds",
+    "AppIds",
     "CanvasName",
     "Chars",
     "Chezmoi",

@@ -10,7 +10,7 @@ from textual.binding import Binding
 from textual.scrollbar import ScrollBar, ScrollBarRender
 from textual.theme import Theme
 
-from chezmoi_mousse import CanvasIds, CanvasName, Chars
+from chezmoi_mousse import AppIds, CanvasName, Chars
 from chezmoi_mousse.shared import (
     ContentsView,
     DiffView,
@@ -83,21 +83,19 @@ class ChezmoiGUI(App[None]):
         self.force_init_screen: bool = self.pre_run_data.force_init_screen
 
         # Construct the ids for each screen
-        self.init_screen_ids = CanvasIds(CanvasName.init_screen)
-        self.install_help_screen_ids = CanvasIds(
-            CanvasName.install_help_screen
-        )
-        self.loading_screen_ids = CanvasIds(CanvasName.loading_screen)
-        self.main_screen_ids = CanvasIds(CanvasName.main_screen)
-        self.op_screen_ids = CanvasIds(CanvasName.operate_screen)
+        self.init_screen_ids = AppIds(CanvasName.init_screen)
+        self.install_help_screen_ids = AppIds(CanvasName.install_help_screen)
+        self.loading_screen_ids = AppIds(CanvasName.loading_screen)
+        self.main_screen_ids = AppIds(CanvasName.main_screen)
+        self.op_screen_ids = AppIds(CanvasName.operate_screen)
 
         # Construct the ids for the tabs
-        self.add_tab_ids = CanvasIds(CanvasName.add_tab)
-        self.apply_tab_ids = CanvasIds(CanvasName.apply_tab)
-        self.config_tab_ids = CanvasIds(CanvasName.config_tab)
-        self.help_tab_ids = CanvasIds(CanvasName.help_tab)
-        self.logs_tab_ids = CanvasIds(CanvasName.logs_tab)
-        self.re_add_tab_ids = CanvasIds(CanvasName.re_add_tab)
+        self.add_tab_ids = AppIds(CanvasName.add_tab)
+        self.apply_tab_ids = AppIds(CanvasName.apply_tab)
+        self.config_tab_ids = AppIds(CanvasName.config_tab)
+        self.help_tab_ids = AppIds(CanvasName.help_tab)
+        self.logs_tab_ids = AppIds(CanvasName.logs_tab)
+        self.re_add_tab_ids = AppIds(CanvasName.re_add_tab)
 
         # Track the init screen
         self.init_screen_pushed: bool = False

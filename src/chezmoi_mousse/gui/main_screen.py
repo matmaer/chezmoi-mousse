@@ -37,7 +37,7 @@ from .tabs.logs_tab import AppLog, DebugLog, LogsTab, OperateLog, ReadCmdLog
 from .tabs.re_add_tab import ReAddTab
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import CanvasIds, DirTreeNodeData, NodeData, SplashData
+    from chezmoi_mousse import AppIds, DirTreeNodeData, NodeData, SplashData
 
 __all__ = ["MainScreen"]
 
@@ -68,7 +68,7 @@ class MainScreen(Screen[None], AppType):
 
     destDir: Path | None = None
 
-    def __init__(self, *, ids: "CanvasIds", splash_data: "SplashData") -> None:
+    def __init__(self, *, ids: "AppIds", splash_data: "SplashData") -> None:
         super().__init__()
 
         self.splash_data = splash_data

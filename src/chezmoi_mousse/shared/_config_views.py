@@ -11,7 +11,7 @@ from chezmoi_mousse import AppType, CommandResult, DataTableName, Tcss
 from ._section_headers import SectionLabel, SectionLabelText
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import CanvasIds
+    from chezmoi_mousse import AppIds
 
     DataTableText = DataTable[Text]
 else:
@@ -27,7 +27,7 @@ __all__ = [
 
 
 class CatConfigView(Vertical):
-    def __init__(self, ids: "CanvasIds"):
+    def __init__(self, ids: "AppIds"):
         self.ids = ids
         super().__init__(id=self.ids.view.cat_config)
 
@@ -40,7 +40,7 @@ class CatConfigView(Vertical):
 
 class DoctorTableView(Vertical, AppType):
 
-    def __init__(self, ids: "CanvasIds") -> None:
+    def __init__(self, ids: "AppIds") -> None:
         self.ids = ids
         super().__init__(id=self.ids.container.doctor)
         self.doctor_table_id = self.ids.datatable_id(
@@ -102,7 +102,7 @@ class DoctorTableView(Vertical, AppType):
 
 
 class IgnoredView(Vertical):
-    def __init__(self, ids: "CanvasIds"):
+    def __init__(self, ids: "AppIds"):
         self.ids = ids
         super().__init__(id=self.ids.view.ignored)
 
@@ -116,7 +116,7 @@ class IgnoredView(Vertical):
 
 
 class TemplateDataView(Vertical):
-    def __init__(self, ids: "CanvasIds"):
+    def __init__(self, ids: "AppIds"):
         self.ids = ids
         super().__init__(id=self.ids.view.template_data)
 

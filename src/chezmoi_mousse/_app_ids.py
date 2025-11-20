@@ -14,11 +14,11 @@ from chezmoi_mousse._names import (
 )
 from chezmoi_mousse._switches import Switches
 
-__all__ = ["CanvasIds"]
+__all__ = ["AppIds"]
 
 
 class ContainerIds:
-    def __init__(self, canvas_ids: "CanvasIds"):
+    def __init__(self, canvas_ids: "AppIds"):
         self.canvas = canvas_ids.container_id(name=ContainerName.canvas)
         self.dest_dir_info = canvas_ids.container_id(
             name=ContainerName.dest_dir_info
@@ -53,7 +53,7 @@ class ContainerIds:
 class DataTableIds:
     """DataTable widget their id's."""
 
-    def __init__(self, canvas_ids: "CanvasIds"):
+    def __init__(self, canvas_ids: "AppIds"):
         self.doctor = canvas_ids.datatable_id(
             data_table_name=DataTableName.doctor_table
         )
@@ -71,7 +71,7 @@ class DataTableIds:
 class LoggerIds:
     """RichLog widgets their id's."""
 
-    def __init__(self, canvas_ids: "CanvasIds"):
+    def __init__(self, canvas_ids: "AppIds"):
         self.app = canvas_ids.view_id(view=LogName.app_logger)
         self.app_q = f"#{self.app}"
         self.contents = canvas_ids.view_id(view=LogName.contents_logger)
@@ -93,7 +93,7 @@ class LoggerIds:
 class ViewButtons:
     """Buttons used by ContentSwitcher classes to switch views."""
 
-    def __init__(self, canvas_ids: "CanvasIds"):
+    def __init__(self, canvas_ids: "AppIds"):
         # Logs tab
         self.app_log = canvas_ids.button_id(btn=TabBtn.app_log)
         self.debug_log = canvas_ids.button_id(btn=TabBtn.debug_log)
@@ -122,7 +122,7 @@ class ViewButtons:
 class ViewIds:
     """View Container id's used by ContentSwitcher classes."""
 
-    def __init__(self, canvas_ids: "CanvasIds"):
+    def __init__(self, canvas_ids: "AppIds"):
 
         # Help tab
         self.add_help = canvas_ids.view_id(view=ViewName.add_help_view)
@@ -155,7 +155,7 @@ class ViewIds:
         self.template_data_q = f"#{self.template_data}"
 
 
-class CanvasIds:
+class AppIds:
     __slots__ = (
         "canvas_name",
         "container",

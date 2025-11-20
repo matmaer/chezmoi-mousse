@@ -7,7 +7,7 @@ from textual.widgets import Header, Static
 from chezmoi_mousse import AppType, Chars, Tcss
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import CanvasIds
+    from chezmoi_mousse import AppIds
 
 
 __all__ = ["ReactiveHeader"]
@@ -29,7 +29,7 @@ class ReactiveHeader(Header, AppType):
 
     changes_enabled: reactive[bool | None] = reactive(None)
 
-    def __init__(self, ids: "CanvasIds") -> None:
+    def __init__(self, ids: "AppIds") -> None:
         super().__init__(icon=Chars.burger, id=ids.header_id)
 
     def on_mount(self) -> None:

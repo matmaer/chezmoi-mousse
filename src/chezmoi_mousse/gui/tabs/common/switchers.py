@@ -21,14 +21,14 @@ from .trees import ExpandedTree, ListTree, ManagedTree
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from chezmoi_mousse import CanvasIds
+    from chezmoi_mousse import AppIds
 
 __all__ = ["TreeSwitcher", "ViewSwitcher"]
 
 
 class TreeSwitcher(Vertical):
 
-    def __init__(self, ids: "CanvasIds"):
+    def __init__(self, ids: "AppIds"):
         self.ids = ids
         super().__init__(
             id=self.ids.container.left_side,
@@ -51,7 +51,7 @@ class ViewSwitcher(Vertical):
 
     destDir: "Path | None" = None
 
-    def __init__(self, *, ids: "CanvasIds", diff_reverse: bool):
+    def __init__(self, *, ids: "AppIds", diff_reverse: bool):
         self.ids = ids
         self.contents_tab_btn = ids.button_id(btn=TabBtn.contents)
         self.diff_tab_btn = ids.button_id(btn=TabBtn.diff)
