@@ -37,6 +37,10 @@ class ContainerIds:
             name=ContainerName.logs_switcher
         )
         self.logs_switcher_q = f"#{self.logs_switcher}"
+        self.view_switcher = canvas_ids.container_id(
+            name=ContainerName.view_switcher
+        )
+        self.view_switcher_q = f"#{self.view_switcher}"
 
 
 class DataTableIds:
