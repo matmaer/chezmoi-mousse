@@ -180,7 +180,7 @@ class InitScreen(Screen[SplashData | None], AppType):
         self.exit_btn_qid = ids.button_id("#", btn=OperateBtn.exit_button)
 
     def compose(self) -> ComposeResult:
-        yield ReactiveHeader(self.app.init_screen_ids)
+        yield ReactiveHeader(self.ids)
         with Horizontal(id=self.ids.container.canvas):
             yield FlatButtonsVertical(
                 ids=self.ids,

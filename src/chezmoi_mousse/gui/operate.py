@@ -72,7 +72,7 @@ class OperateScreen(Screen[OperateScreenData], AppType):
         self.operate_data = operate_data
 
     def compose(self) -> ComposeResult:
-        yield ReactiveHeader(self.app.op_screen_ids)
+        yield ReactiveHeader(self.ids)
         with VerticalGroup(id=self.pre_operate_id):
             yield OperateInfo(
                 ids=self.ids, operate_screen_data=self.operate_data

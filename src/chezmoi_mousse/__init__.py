@@ -83,6 +83,24 @@ __all__ = [
 ]
 
 
+class CanvasIds:
+    def __init__(self) -> None:
+        # Construct the ids for each screen
+        self.init_screen = AppIds(CanvasName.init_screen)
+        self.install_help_screen = AppIds(CanvasName.install_help_screen)
+        self.splash_screen = AppIds(CanvasName.splash_screen)
+        self.main_screen = AppIds(CanvasName.main_screen)
+        self.operate_screen = AppIds(CanvasName.operate_screen)
+
+        # Construct the ids for the tabs
+        self.add_tab = AppIds(CanvasName.add_tab)
+        self.apply_tab = AppIds(CanvasName.apply_tab)
+        self.config_tab = AppIds(CanvasName.config_tab)
+        self.help_tab = AppIds(CanvasName.help_tab)
+        self.logs_tab = AppIds(CanvasName.logs_tab)
+        self.re_add_tab = AppIds(CanvasName.re_add_tab)
+
+
 @dataclass(slots=True)
 class DirTreeNodeData:
     path: "Path"
@@ -122,6 +140,7 @@ class PreRunData:
     chezmoi_found: "bool"
     dev_mode: "bool"
     force_init_screen: "bool"
+    canvas_ids: CanvasIds = CanvasIds()
 
 
 @dataclass(slots=True)
