@@ -44,6 +44,10 @@ class ContainerIds:
             name=ContainerName.right_side
         )
         self.right_side_q = f"#{self.right_side}"
+        self.switch_slider = canvas_ids.container_id(
+            name=ContainerName.switch_slider
+        )
+        self.switch_slider_q = f"#{self.switch_slider}"
         self.view_switcher = canvas_ids.container_id(
             name=ContainerName.view_switcher
         )
