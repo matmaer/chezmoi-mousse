@@ -74,7 +74,7 @@ class GitLogPath(Vertical, AppType):
 
     def compose(self) -> ComposeResult:
         yield GitLogDataTable(data_table_id=self.data_table_id)
-        yield DestDirInfo(ids=self.ids)
+        yield DestDirInfo(ids=self.ids, git_log=True)
 
     def on_mount(self) -> None:
         self.border_title = f" {self.destDir} "

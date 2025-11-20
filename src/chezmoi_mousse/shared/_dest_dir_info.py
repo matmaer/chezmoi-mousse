@@ -36,9 +36,15 @@ class DestDirInfo(VerticalGroup):
 
     dest_dir: "Path | None" = None
 
-    def __init__(self, ids: "AppIds", contents_logger: bool = False) -> None:
+    def __init__(
+        self,
+        ids: "AppIds",
+        contents_logger: bool = False,
+        git_log: bool = False,
+    ) -> None:
         self.ids = ids
         self.contents_logger = contents_logger
+        self.git_log = git_log
         super().__init__(id=self.ids.container.dest_dir_info)
 
     def compose(self) -> ComposeResult:
@@ -61,9 +67,15 @@ class DestDirInfo(VerticalGroup):
         ):
             rich_log.write(Text(LogText.cat.value))
             return
-        elif self.ids.canvas_name == CanvasName.apply_tab:
+        elif (
+            self.ids.canvas_name == CanvasName.apply_tab
+            and self.git_log is False
+        ):
             rich_log.write(Text(LogText.diff.value))
-        else:
+        elif (
+            self.ids.canvas_name == CanvasName.re_add_tab
+            and self.git_log is False
+        ):
             rich_log.write(Text(LogText.diff_reverse.value))
             return
         rich_log.write(Text(LogText.git_log_msg.value))
