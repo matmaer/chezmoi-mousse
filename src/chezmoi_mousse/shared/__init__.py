@@ -15,6 +15,7 @@ from ._config_views import (
 )
 from ._contents_view import ContentsView
 from ._custom_collapsible import CustomCollapsible
+from ._dest_dir_info import DestDirInfo
 from ._diff_view import DiffView
 from ._git_log_view import GitLogGlobal, GitLogPath
 from ._operate_msg import (
@@ -38,6 +39,7 @@ __all__ = [
     "CurrentApplyNodeMsg",
     "CurrentReAddNodeMsg",
     "CustomCollapsible",
+    "DestDirInfo",
     "DiffView",
     "DoctorTableView",
     "FlatButton",

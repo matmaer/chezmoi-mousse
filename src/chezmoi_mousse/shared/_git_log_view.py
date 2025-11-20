@@ -10,6 +10,8 @@ from textual.widgets import DataTable
 
 from chezmoi_mousse import AppType, ReadCmd, Tcss
 
+from ._dest_dir_info import DestDirInfo
+
 if TYPE_CHECKING:
     from chezmoi_mousse import CanvasIds, CommandResult
 
@@ -66,6 +68,7 @@ class GitLogPath(Vertical, AppType):
 
     def compose(self) -> ComposeResult:
         yield GitLogDataTable(data_table_id=self.ids.data_table.git_log_path)
+        yield DestDirInfo(ids=self.ids)
 
     def on_mount(self) -> None:
         self.border_title = f" {self.destDir} "
@@ -73,6 +76,11 @@ class GitLogPath(Vertical, AppType):
     def watch_path(self) -> None:
         if self.path is None:
             return
+        else:
+            dest_dir_info = self.query_one(
+                self.ids.container.dest_dir_info_q, DestDirInfo
+            )
+            dest_dir_info.visible = False
         data_table = self.query_one(
             self.ids.data_table.git_log_path_q, GitLogDataTable
         )
