@@ -407,5 +407,7 @@ class LogsTab(Vertical, AppType):
     def watch_git_log_result(self) -> None:
         if self.git_log_result is None:
             return
-        git_log_global = self.query_one(GitLogGlobal)
+        git_log_global = self.query_one(
+            self.ids.container.git_log_global_q, GitLogGlobal
+        )
         git_log_global.update_global_git_log(self.git_log_result)
