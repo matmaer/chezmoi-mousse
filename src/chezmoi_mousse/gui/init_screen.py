@@ -181,7 +181,7 @@ class InitScreen(Screen[SplashData | None], AppType):
 
     def compose(self) -> ComposeResult:
         yield ReactiveHeader(self.app.init_screen_ids)
-        with Horizontal(id=self.ids.canvas_container_id):
+        with Horizontal(id=self.ids.canvas_container):
             yield FlatButtonsVertical(
                 ids=self.ids,
                 buttons=(

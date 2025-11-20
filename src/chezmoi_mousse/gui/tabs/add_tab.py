@@ -239,7 +239,7 @@ class AddTab(Horizontal, AppType):
     destdir: Path
 
     def __init__(self, ids: "CanvasIds") -> None:
-        super().__init__(id=ids.canvas_container_id)
+        super().__init__(id=ids.canvas_container)
 
         self.ids = ids
         self.add_file_btn_qid = ids.button_id("#", btn=OperateBtn.add_file)

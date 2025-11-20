@@ -156,7 +156,7 @@ class ViewIds:
 
 class CanvasIds:
     __slots__ = (
-        "canvas_container_id",
+        "canvas_container",
         "canvas_name",
         "container",
         "data_table",
@@ -169,7 +169,7 @@ class CanvasIds:
     def __init__(self, canvas_name: CanvasName) -> None:
         self.canvas_name: str = canvas_name.name
         self.header_id = f"{self.canvas_name}_header"
-        self.canvas_container_id = f"{self.canvas_name}_container_id"
+        self.canvas_container = f"{self.canvas_name}_container"
         self.container = ContainerIds(self)
         self.data_table = DataTableIds(self)
         self.logger = LoggerIds(self)

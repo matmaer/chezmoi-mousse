@@ -341,7 +341,7 @@ class LogsTab(Vertical, AppType):
 
     def __init__(self, ids: "CanvasIds") -> None:
         self.ids = ids
-        super().__init__(id=self.ids.canvas_container_id)
+        super().__init__(id=self.ids.canvas_container)
 
         self.tab_buttons = (
             TabBtn.app_log,
