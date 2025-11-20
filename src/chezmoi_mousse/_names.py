@@ -25,7 +25,7 @@ class CanvasName(StrEnum):
     help_tab = auto()
     init_screen = auto()
     install_help_screen = auto()
-    loading_screen = auto()
+    splash_screen = auto()
     logs_tab = auto()
     main_screen = auto()
     operate_screen = auto()
