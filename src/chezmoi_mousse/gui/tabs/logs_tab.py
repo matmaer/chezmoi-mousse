@@ -347,14 +347,14 @@ class LogsTab(Vertical, AppType):
             TabBtn.app_log,
             TabBtn.read_log,
             TabBtn.operate_log,
-            TabBtn.git_log_logs_tab,
+            TabBtn.git_log_global,
         )
         if self.app.dev_mode is True:
             self.tab_buttons = (TabBtn.debug_log,) + self.tab_buttons
             self.initial_view_id = self.ids.logger.debug
         else:
             self.initial_view_id = self.ids.logger.app
-        self.git_log_btn_id = ids.button_id(btn=TabBtn.git_log_logs_tab)
+        self.git_log_btn_id = ids.button_id(btn=TabBtn.git_log_global)
 
     def compose(self) -> ComposeResult:
         yield TabButtons(ids=self.ids, buttons=self.tab_buttons)
