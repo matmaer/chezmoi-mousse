@@ -88,8 +88,6 @@ class LoggerIds:
         self.debug_q = f"#{self.debug}"
         self.diff = canvas_ids.view_id(view=LogName.diff_logger)
         self.diff_q = f"#{self.diff}"
-        self.in_dest_dir = canvas_ids.view_id(view=LogName.in_dest_dir_logger)
-        self.in_dest_dir_q = f"#{self.in_dest_dir}"
         self.operate = canvas_ids.view_id(view=LogName.operate_logger)
         self.operate_q = f"#{self.operate}"
         self.read = canvas_ids.view_id(view=LogName.read_logger)

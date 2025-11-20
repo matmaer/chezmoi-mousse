@@ -7,6 +7,8 @@ from textual.widgets import RichLog
 
 from chezmoi_mousse import AppType, ReadCmd, Tcss
 
+from ._dest_dir_info import DestDirInfo
+
 if TYPE_CHECKING:
     from pathlib import Path
 
@@ -19,7 +21,6 @@ class ContentsTabStrings(StrEnum):
     cannot_decode = "Path cannot be decoded as UTF-8:"
     click_file_path = "Click a file path in the tree to see the contents."
     empty_or_only_whitespace = "File is empty or contains only whitespace"
-    initial_msg = 'This is the destination directory "chezmoi destDir"'
     managed_dir = "Managed directory:"
     output_from_cat = "File does not exist on disk, output from"
     output_from_read = "Output from Path.read"
@@ -46,22 +47,20 @@ class ContentsView(RichLog, AppType):
         )
 
     def on_mount(self) -> None:
-        self.write(ContentsTabStrings.initial_msg)
-        self.write(ContentsTabStrings.click_file_path)
-        self.border_title = f" {self.destDir} "
+        self.mount(DestDirInfo(ids=self.ids, contents_logger=True))
 
     def write_managed_directory(self) -> None:
         self.write(f"{ContentsTabStrings.managed_dir} {self.path}")
         self.write(ContentsTabStrings.click_file_path)
 
-    def app_log_info(self, message: str) -> None:
-        if hasattr(self.screen, "app_log"):
-            app_log = getattr(self.screen, "app_log")
-            app_log.info(message=message)
-
     def watch_path(self) -> None:
-        if self.path is None or self.path == self.destDir:
+        if self.path is None:
             return
+        else:
+            dest_dir_info = self.query_one(
+                self.ids.container.dest_dir_info_q, DestDirInfo
+            )
+            dest_dir_info.visible = False
         self.border_title = f" {self.path} "
         self.clear()
         truncated_message = ""

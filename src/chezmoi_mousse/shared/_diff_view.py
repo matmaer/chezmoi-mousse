@@ -6,6 +6,8 @@ from textual.widgets import RichLog
 
 from chezmoi_mousse import AppType, CanvasName, Chars, ReadCmd, Tcss
 
+from ._dest_dir_info import DestDirInfo
+
 if TYPE_CHECKING:
     from pathlib import Path
 
@@ -38,9 +40,8 @@ class DiffView(RichLog, AppType):
         )
 
     def on_mount(self) -> None:
-        self.write('This is the destination directory "chezmoi destDir"\n')
-        self.write(self.click_colored_file)
         self.border_title = f" {self.destDir} "
+        self.mount(DestDirInfo(ids=self.ids))
 
     def _write_unchanged_path_info(self) -> None:
         if self.path in self.app.chezmoi.dirs:
@@ -52,8 +53,13 @@ class DiffView(RichLog, AppType):
             self.write(self.click_colored_file)
 
     def watch_path(self) -> None:
-        if self.path is None or self.path == self.destDir:
+        if self.path is None:
             return
+        else:
+            dest_dir_info = self.query_one(
+                self.ids.container.dest_dir_info_q, DestDirInfo
+            )
+            dest_dir_info.visible = False
         self.border_title = f" {self.path} "
         self.clear()
         # write lines for an unchanged file or directory except when we are in

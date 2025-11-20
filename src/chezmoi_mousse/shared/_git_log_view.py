@@ -107,9 +107,6 @@ class GitLogGlobal(Vertical, AppType):
     def compose(self) -> ComposeResult:
         yield GitLogDataTable(data_table_id=self.ids.data_table.git_global_log)
 
-    def on_mount(self) -> None:
-        self.remove_class(Tcss.border_title_top.name)
-
     def update_global_git_log(self, command_result: "CommandResult") -> None:
         data_table = self.query_one(
             self.ids.data_table.git_global_log_q, GitLogDataTable
