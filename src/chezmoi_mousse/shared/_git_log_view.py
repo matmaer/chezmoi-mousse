@@ -61,13 +61,19 @@ class GitLogPath(Vertical, AppType):
 
     def __init__(self, *, ids: "AppIds") -> None:
         self.ids = ids
+        if self.ids.canvas_name == "apply_tab":
+            self.data_table_id = self.ids.data_table.apply_git_log
+            self.data_table_id_q = self.ids.data_table.apply_git_log_q
+        else:  # re_add_tab
+            self.data_table_id = self.ids.data_table.re_add_git_log
+            self.data_table_id_q = self.ids.data_table.re_add_git_log_q
         super().__init__(
             id=self.ids.container.git_log_path,
             classes=Tcss.border_title_top.name,
         )
 
     def compose(self) -> ComposeResult:
-        yield GitLogDataTable(data_table_id=self.ids.data_table.git_log_path)
+        yield GitLogDataTable(data_table_id=self.data_table_id)
         yield DestDirInfo(ids=self.ids)
 
     def on_mount(self) -> None:
@@ -81,9 +87,7 @@ class GitLogPath(Vertical, AppType):
                 self.ids.container.dest_dir_info_q, DestDirInfo
             )
             dest_dir_info.visible = False
-        data_table = self.query_one(
-            self.ids.data_table.git_log_path_q, GitLogDataTable
-        )
+        data_table = self.query_one(self.data_table_id_q, GitLogDataTable)
         command_result: "CommandResult" = self.app.chezmoi.read(
             ReadCmd.source_path, self.path
         )
