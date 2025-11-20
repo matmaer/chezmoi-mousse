@@ -27,7 +27,7 @@ from ._pw_mgr_info import PwMgrInfoView
 from ._reactive_header import ReactiveHeader
 from ._section_headers import (
     FlatSectionLabel,
-    SectionLabel,
+    MainSectionLabel,
     SectionLabelText,
     SubSectionLabel,
 )
@@ -46,13 +46,13 @@ __all__ = [
     "FlatButtonsVertical",
     "FlatLink",
     "FlatSectionLabel",
-    "GitLogPath",
     "GitLogGlobal",
+    "GitLogPath",
     "IgnoredView",
+    "MainSectionLabel",
     "OperateButtons",
     "PwMgrInfoView",
     "ReactiveHeader",
-    "SectionLabel",
     "SectionLabelText",
     "SubSectionLabel",
     "TabButtons",

@@ -172,6 +172,18 @@ LoggersBase {
   margin-bottom: 1;
 }
 
+MainSectionLabel {
+  background-tint: $surface-lighten-1;
+  background: $surface-lighten-1;
+  border-bottom: inner $surface-lighten-1;
+  border-top: inner $surface-lighten-1;
+  color: $text-accent;
+  height: 3;
+  padding: 0 1;
+  text-align: center;
+  width: 100%;
+}
+
 OperateButtons {
   height: 3;
   dock: bottom;
@@ -246,18 +258,6 @@ RepositoryURLInput {
       border-left: none;
     }
   }
-}
-
-SectionLabel {
-  background-tint: $surface-lighten-1;
-  background: $surface-lighten-1;
-  border-bottom: inner $surface-lighten-1;
-  border-top: inner $surface-lighten-1;
-  color: $text-accent;
-  height: 3;
-  padding: 0 1;
-  text-align: center;
-  width: 100%;
 }
 
 SubSectionLabel {

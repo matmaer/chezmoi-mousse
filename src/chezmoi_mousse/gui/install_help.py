@@ -13,7 +13,7 @@ from textual.screen import Screen
 from textual.widgets import Button, Collapsible, Pretty, Tree
 
 from chezmoi_mousse import AppType, CanvasName, Chars, FlatBtn, LinkBtn, Tcss
-from chezmoi_mousse.shared import FlatButton, FlatLink, SectionLabel
+from chezmoi_mousse.shared import FlatButton, FlatLink, MainSectionLabel
 
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds
@@ -53,7 +53,7 @@ class InstallHelp(Screen[None], AppType):
         self.ids = ids
 
     def compose(self) -> ComposeResult:
-        yield SectionLabel(InstallHelpStrings.top_label)
+        yield MainSectionLabel(InstallHelpStrings.top_label)
         yield Collapsible(
             Pretty(InstallHelpStrings.no_path_var),
             title=InstallHelpStrings.collapsible_title,

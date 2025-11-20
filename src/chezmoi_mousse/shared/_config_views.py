@@ -8,7 +8,7 @@ from textual.widgets import DataTable, Pretty, Static
 
 from chezmoi_mousse import AppType, CommandResult, DataTableName, Tcss
 
-from ._section_headers import SectionLabel, SectionLabelText
+from ._section_headers import MainSectionLabel, SectionLabelText
 
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds
@@ -32,7 +32,7 @@ class CatConfigView(Vertical):
         super().__init__(id=self.ids.view.cat_config)
 
     def compose(self) -> ComposeResult:
-        yield SectionLabel(SectionLabelText.cat_config_output)
+        yield MainSectionLabel(SectionLabelText.cat_config_output)
 
     def mount_cat_config_output(self, command_result: CommandResult) -> None:
         self.mount(ScrollableContainer(Static(command_result.std_out)))
@@ -51,7 +51,7 @@ class DoctorTableView(Vertical, AppType):
         )
 
     def compose(self) -> ComposeResult:
-        yield SectionLabel(SectionLabelText.doctor_output)
+        yield MainSectionLabel(SectionLabelText.doctor_output)
         yield DataTable(
             id=self.doctor_table_id,
             show_cursor=False,
@@ -107,7 +107,7 @@ class IgnoredView(Vertical):
         super().__init__(id=self.ids.view.ignored)
 
     def compose(self) -> ComposeResult:
-        yield SectionLabel(SectionLabelText.ignored_output)
+        yield MainSectionLabel(SectionLabelText.ignored_output)
 
     def mount_ignored_output(self, command_result: CommandResult) -> None:
         self.mount(
@@ -121,7 +121,7 @@ class TemplateDataView(Vertical):
         super().__init__(id=self.ids.view.template_data)
 
     def compose(self) -> ComposeResult:
-        yield SectionLabel(SectionLabelText.template_data_output)
+        yield MainSectionLabel(SectionLabelText.template_data_output)
 
     def mount_template_data_output(
         self, command_result: CommandResult

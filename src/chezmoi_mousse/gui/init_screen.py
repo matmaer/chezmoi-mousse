@@ -28,9 +28,9 @@ from chezmoi_mousse.shared import (
     CatConfigView,
     DoctorTableView,
     FlatButtonsVertical,
+    MainSectionLabel,
     OperateButtons,
     ReactiveHeader,
-    SectionLabel,
     SectionLabelText,
     SubSectionLabel,
     TemplateDataView,
@@ -52,7 +52,7 @@ class InitNewRepo(Vertical, AppType):
         self.repo_url: str = ""
 
     def compose(self) -> ComposeResult:
-        yield SectionLabel("Initialize New Chezmoi Repository")
+        yield MainSectionLabel("Initialize New Chezmoi Repository")
         yield SubSectionLabel(SectionLabelText.operate_output)
         yield OperateLog(ids=self.ids)
 
@@ -91,7 +91,7 @@ class InitCloneRepo(Vertical, AppType):
         self.repo_url: str = ""
 
     def compose(self) -> ComposeResult:
-        yield SectionLabel("Initialize New Chezmoi Repository")
+        yield MainSectionLabel("Initialize New Chezmoi Repository")
         yield SubSectionLabel("Repository URL to clone from.")
         yield RepositoryURLInput()
         yield SubSectionLabel(SectionLabelText.operate_output)

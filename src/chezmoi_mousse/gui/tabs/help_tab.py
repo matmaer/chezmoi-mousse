@@ -25,7 +25,7 @@ from chezmoi_mousse.shared import (
     FlatButtonsVertical,
     FlatLink,
     FlatSectionLabel,
-    SectionLabel,
+    MainSectionLabel,
     SubSectionLabel,
 )
 
@@ -136,7 +136,7 @@ class ApplyTabHelp(Vertical):
         super().__init__(id=self.ids.view.apply_help)
 
     def compose(self) -> ComposeResult:
-        yield SectionLabel(HelpSections.apply_tab_help)
+        yield MainSectionLabel(HelpSections.apply_tab_help)
         with VerticalScroll():
             yield SharedFiltersHelp()
             yield FlatLink(ids=self.ids, link_enum=LinkBtn.chezmoi_apply)
@@ -154,7 +154,7 @@ class ReAddTabHelp(VerticalScroll):
         super().__init__(id=self.ids.view.re_add_help)
 
     def compose(self) -> ComposeResult:
-        yield SectionLabel(HelpSections.re_add_tab_help)
+        yield MainSectionLabel(HelpSections.re_add_tab_help)
         with VerticalScroll():
             yield SharedFiltersHelp()
             yield FlatLink(ids=self.ids, link_enum=LinkBtn.chezmoi_re_add)
@@ -172,7 +172,7 @@ class AddTabHelp(Vertical):
         super().__init__(id=self.ids.view.add_help)
 
     def compose(self) -> ComposeResult:
-        yield SectionLabel(HelpSections.add_tab_help)
+        yield MainSectionLabel(HelpSections.add_tab_help)
 
         with VerticalScroll():
             yield FlatSectionLabel(HelpSections.filters_section_label)
@@ -194,7 +194,7 @@ class ChezmoiDiagram(Vertical):
         super().__init__(id=self.ids.view.diagram)
 
     def compose(self) -> ComposeResult:
-        yield SectionLabel(HelpSections.chezmoi_diagram)
+        yield MainSectionLabel(HelpSections.chezmoi_diagram)
         yield ScrollableContainer(
             Static(FLOW_DIAGRAM, classes=Tcss.flow_diagram.name)
         )

@@ -11,7 +11,11 @@ from textual.widgets import Link, Static
 from chezmoi_mousse import AppType, Chars, CommandResult, Tcss
 
 from ._custom_collapsible import CustomCollapsible
-from ._section_headers import SectionLabel, SectionLabelText, SubSectionLabel
+from ._section_headers import (
+    MainSectionLabel,
+    SectionLabelText,
+    SubSectionLabel,
+)
 
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds
@@ -201,7 +205,7 @@ class PwMgrInfoView(Vertical):
         super().__init__(id=self.ids.view.pw_mgr_info)
 
     def compose(self) -> ComposeResult:
-        yield SectionLabel(SectionLabelText.password_managers)
+        yield MainSectionLabel(SectionLabelText.password_managers)
 
     def populate_pw_mgr_info(self, doctor_results: "CommandResult") -> None:
         doctor_lines = doctor_results.std_out.splitlines()
