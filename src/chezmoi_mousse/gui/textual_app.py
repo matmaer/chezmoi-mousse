@@ -22,7 +22,7 @@ from chezmoi_mousse.shared import (
 from .init_screen import InitScreen
 from .install_help import InstallHelp
 from .main_screen import MainScreen
-from .splash import LoadingScreen
+from .splash import SplashScreen
 from .tabs.add_tab import AddTab
 from .tabs.common.operate_info import OperateInfo
 from .tabs.common.switchers import ViewSwitcher
@@ -104,10 +104,10 @@ class ChezmoiGUI(App[None]):
         self.register_theme(chezmoi_mousse_light)
         self.register_theme(chezmoi_mousse_dark)
         self.theme = "chezmoi-mousse-dark"
-        self.start_app_with_loading_screen()
+        self.start_app_with_splash_screen()
 
     @work
-    async def start_app_with_loading_screen(self) -> None:
+    async def start_app_with_splash_screen(self) -> None:
         worker = self.push_splash_screen(run_init=False)
         await worker.wait()
         if worker.result is None:
@@ -131,7 +131,7 @@ class ChezmoiGUI(App[None]):
     @work
     async def push_splash_screen(self, run_init: bool) -> "SplashData | None":
         return await self.push_screen(
-            LoadingScreen(ids=self.screen_ids.splash, run_init=run_init),
+            SplashScreen(ids=self.screen_ids.splash, run_init=run_init),
             wait_for_dismiss=True,
         )
 

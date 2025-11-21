@@ -179,7 +179,7 @@ class MainScreen(Screen[None], AppType):
             self.debug_log.focus()
 
     def log_splash_log_commands(self) -> None:
-        # Log loading screen commands
+        # Log SplashScreen commands
         self.app_log.info("--- Commands executed in loading screen ---")
         for cmd in self.splash_data.executed_commands:
             self.app_log.log_cmd_results(cmd)

@@ -31,7 +31,7 @@ from chezmoi_mousse import (
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds
 
-__all__ = ["LoadingScreen"]
+__all__ = ["SplashScreen"]
 
 SPLASH_COMMANDS: list[ReadCmd | WriteCmd] = [
     ReadCmd.cat_config,
@@ -130,7 +130,7 @@ class AnimatedFade(Static):
         return Strip([Segment(SPLASH[y], style=FADE_LINE_STYLES[y])])
 
 
-class LoadingScreen(Screen[SplashData | None], AppType):
+class SplashScreen(Screen[SplashData | None], AppType):
 
     def __init__(
         self, ids: "AppIds", run_init: bool, init_arg: str | None = None
