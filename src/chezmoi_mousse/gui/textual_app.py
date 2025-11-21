@@ -199,28 +199,112 @@ class ChezmoiGUI(App[None]):
             MainScreen(ids=self.screen_ids.main, splash_data=splash_data)
         )
 
-    def check_action(
-        self, action: str, parameters: tuple[object, ...]
-    ) -> bool | None:
-        if action == "toggle_switch_slider":
-            current_screen = self.screen
-            if isinstance(current_screen, MainScreen):
-                active_tab = current_screen.query_one(TabbedContent).active
-                if active_tab == TabName.apply.name:
-                    return True
-                elif active_tab == TabName.re_add:
-                    return True
-                elif active_tab == TabName.add:
-                    return True
-                elif active_tab == TabName.logs:
-                    return None
-                elif active_tab == TabName.config:
-                    return None
-                elif active_tab == TabName.help:
-                    return None
-            else:
-                return False
-        return True
+    def on_tabbed_content_tab_activated(
+        self, event: TabbedContent.TabActivated
+    ) -> None:
+        if event.tabbed_content.active in (
+            TabName.apply.name,
+            TabName.re_add,
+            TabName.add,
+        ):
+            self.update_toggle_switch_slider_binding(
+                event.tabbed_content.active
+            )
+        self.refresh_bindings()
+
+    def get_slider_from_tab(self, tab_name: str) -> VerticalGroup | None:
+        if tab_name == TabName.apply.name:
+            return self.screen.query_one(
+                self.tab_ids.apply.container.switch_slider_q, VerticalGroup
+            )
+        elif tab_name == TabName.re_add:
+            return self.screen.query_one(
+                self.tab_ids.re_add.container.switch_slider_q, VerticalGroup
+            )
+        elif tab_name == TabName.add:
+            return self.screen.query_one(
+                self.tab_ids.add.container.switch_slider_q, VerticalGroup
+            )
+        else:
+            return None
+
+    def update_toggle_switch_slider_binding(self, tab_name: str) -> None:
+        if not isinstance(self.screen, MainScreen):
+            return
+        slider = self.get_slider_from_tab(tab_name)
+        if slider is None:
+            return
+        slider_visible = slider.has_class("-visible")
+        new_description = (
+            BindingDescription.hide_filters
+            if slider_visible is False
+            else BindingDescription.show_filters
+        )
+        for key, binding in self._bindings:
+            if binding.action == "toggle_switch_slider":
+                if (
+                    binding.description == BindingDescription.show_filters
+                    and slider_visible is True
+                ):
+                    return
+                if (
+                    binding.description == BindingDescription.hide_filters
+                    and slider_visible is False
+                ):
+                    return
+                # Create a new binding with the updated description
+                updated_binding = dataclasses.replace(
+                    binding, description=new_description
+                )
+                # Update the bindings map
+                if key in self._bindings.key_to_bindings:
+                    bindings_list = self._bindings.key_to_bindings[key]
+                    for i, b in enumerate(bindings_list):
+                        if b.action == "toggle_switch_slider":
+                            bindings_list[i] = updated_binding
+                            break
+                break
+        self.refresh_bindings()
+
+    def action_toggle_dry_run_mode(self) -> None:
+        self.changes_enabled = not self.changes_enabled
+        reactive_header = self.screen.query_exactly_one(CustomHeader)
+        reactive_header.changes_enabled = self.changes_enabled
+
+        operate_info = self.screen.query_exactly_one(OperateInfo)
+        operate_info.write_info_lines()
+
+        new_description = (
+            BindingDescription.add_dry_run_flag
+            if self.changes_enabled is True
+            else BindingDescription.remove_dry_run_flag
+        )
+
+        for key, binding in self._bindings:
+            if binding.action == "toggle_dry_run_mode":
+                # Create a new binding with the updated description
+                updated_binding = dataclasses.replace(
+                    binding, description=new_description
+                )
+                # Update the bindings map
+                if key in self._bindings.key_to_bindings:
+                    bindings_list = self._bindings.key_to_bindings[key]
+                    for i, b in enumerate(bindings_list):
+                        if b.action == "toggle_dry_run_mode":
+                            bindings_list[i] = updated_binding
+                            break
+                break
+        self.refresh_bindings()
+
+    def action_toggle_switch_slider(self) -> None:
+        if not isinstance(self.screen, MainScreen):
+            return
+        active_tab = self.screen.query_one(TabbedContent).active
+        slider = self.get_slider_from_tab(active_tab)
+        if slider is None:
+            return
+        slider.toggle_class("-visible")
+        self.update_toggle_switch_slider_binding(active_tab)
 
     def action_toggle_maximized_display(self) -> None:
         if not isinstance(self.screen, MainScreen):
@@ -345,112 +429,28 @@ class ChezmoiGUI(App[None]):
 
         self.refresh_bindings()
 
-    def action_toggle_dry_run_mode(self) -> None:
-        self.changes_enabled = not self.changes_enabled
-        reactive_header = self.screen.query_exactly_one(CustomHeader)
-        reactive_header.changes_enabled = self.changes_enabled
-
-        operate_info = self.screen.query_exactly_one(OperateInfo)
-        operate_info.write_info_lines()
-
-        new_description = (
-            BindingDescription.add_dry_run_flag
-            if self.changes_enabled is True
-            else BindingDescription.remove_dry_run_flag
-        )
-
-        for key, binding in self._bindings:
-            if binding.action == "toggle_dry_run_mode":
-                # Create a new binding with the updated description
-                updated_binding = dataclasses.replace(
-                    binding, description=new_description
-                )
-                # Update the bindings map
-                if key in self._bindings.key_to_bindings:
-                    bindings_list = self._bindings.key_to_bindings[key]
-                    for i, b in enumerate(bindings_list):
-                        if b.action == "toggle_dry_run_mode":
-                            bindings_list[i] = updated_binding
-                            break
-                break
-        self.refresh_bindings()
-
-    def on_tabbed_content_tab_activated(
-        self, event: TabbedContent.TabActivated
-    ) -> None:
-        if event.tabbed_content.active in (
-            TabName.apply.name,
-            TabName.re_add,
-            TabName.add,
-        ):
-            self.update_toggle_switch_slider_binding(
-                event.tabbed_content.active
-            )
-        self.refresh_bindings()
-
-    def get_slider_from_tab(self, tab_name: str) -> VerticalGroup | None:
-        if tab_name == TabName.apply.name:
-            return self.screen.query_one(
-                self.tab_ids.apply.container.switch_slider_q, VerticalGroup
-            )
-        elif tab_name == TabName.re_add:
-            return self.screen.query_one(
-                self.tab_ids.re_add.container.switch_slider_q, VerticalGroup
-            )
-        elif tab_name == TabName.add:
-            return self.screen.query_one(
-                self.tab_ids.add.container.switch_slider_q, VerticalGroup
-            )
-        else:
-            return None
-
-    def update_toggle_switch_slider_binding(self, tab_name: str) -> None:
-        if not isinstance(self.screen, MainScreen):
-            return
-        slider = self.get_slider_from_tab(tab_name)
-        if slider is None:
-            return
-        slider_visible = slider.has_class("-visible")
-        new_description = (
-            BindingDescription.hide_filters
-            if slider_visible is False
-            else BindingDescription.show_filters
-        )
-        for key, binding in self._bindings:
-            if binding.action == "toggle_switch_slider":
-                if (
-                    binding.description == BindingDescription.show_filters
-                    and slider_visible is True
-                ):
-                    return
-                if (
-                    binding.description == BindingDescription.hide_filters
-                    and slider_visible is False
-                ):
-                    return
-                # Create a new binding with the updated description
-                updated_binding = dataclasses.replace(
-                    binding, description=new_description
-                )
-                # Update the bindings map
-                if key in self._bindings.key_to_bindings:
-                    bindings_list = self._bindings.key_to_bindings[key]
-                    for i, b in enumerate(bindings_list):
-                        if b.action == "toggle_switch_slider":
-                            bindings_list[i] = updated_binding
-                            break
-                break
-        self.refresh_bindings()
-
-    def action_toggle_switch_slider(self) -> None:
-        if not isinstance(self.screen, MainScreen):
-            return
-        active_tab = self.screen.query_one(TabbedContent).active
-        slider = self.get_slider_from_tab(active_tab)
-        if slider is None:
-            return
-        slider.toggle_class("-visible")
-        self.update_toggle_switch_slider_binding(active_tab)
+    def check_action(
+        self, action: str, parameters: tuple[object, ...]
+    ) -> bool | None:
+        if action == "toggle_switch_slider":
+            current_screen = self.screen
+            if isinstance(current_screen, MainScreen):
+                active_tab = current_screen.query_one(TabbedContent).active
+                if active_tab == TabName.apply.name:
+                    return True
+                elif active_tab == TabName.re_add:
+                    return True
+                elif active_tab == TabName.add:
+                    return True
+                elif active_tab == TabName.logs:
+                    return None
+                elif active_tab == TabName.config:
+                    return None
+                elif active_tab == TabName.help:
+                    return None
+            else:
+                return False
+        return True
 
 
 class CustomScrollBarRender(ScrollBarRender):
