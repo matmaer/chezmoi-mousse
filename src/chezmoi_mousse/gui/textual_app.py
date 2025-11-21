@@ -8,12 +8,12 @@ from rich.style import Style
 from textual import work
 from textual.app import App
 from textual.binding import Binding
-from textual.containers import VerticalGroup
+from textual.containers import Horizontal, Vertical, VerticalGroup
 from textual.scrollbar import ScrollBar, ScrollBarRender
 from textual.theme import Theme
-from textual.widgets import TabbedContent
+from textual.widgets import TabbedContent, Tabs
 
-from chezmoi_mousse import AppIds, Chars, ScreenName, TabName
+from chezmoi_mousse import AppIds, Chars, ContainerName, ScreenName, TabName
 from chezmoi_mousse.shared import (
     ContentsView,
     CustomHeader,
@@ -38,7 +38,6 @@ __all__ = ["ChezmoiGUI"]
 # TODO: implement 'chezmoi verify', if exit 0, display message in Tree
 # widgets inform the user why the Tree widget is empty.
 # TODO: implement spinner for commands taking a bit longer like operations.
-
 
 chezmoi_mousse_dark = Theme(
     name="chezmoi-mousse-dark",
@@ -95,6 +94,11 @@ class ChezmoiGUI(App[None]):
             description="maximize",
         ),
         Binding(
+            key="M,m",
+            action="toggle_maximized_display",
+            description="maximize",
+        ),
+        Binding(
             key="F,f",
             action="toggle_switch_slider",
             description="hide filters",
@@ -110,15 +114,17 @@ class ChezmoiGUI(App[None]):
 
     def __init__(self, pre_run_data: "PreRunData") -> None:
         self.chezmoi: "Chezmoi"
+
         self.pre_run_data: "PreRunData" = pre_run_data
+        self.screen_ids = ScreenIds()
+        self.tab_ids = TabIds()
+
         self.changes_enabled: bool = False
         self.chezmoi_found: bool = self.pre_run_data.chezmoi_found
         self.dev_mode: bool = self.pre_run_data.dev_mode
         self.force_init_screen: bool = self.pre_run_data.force_init_screen
-        self.screen_ids = ScreenIds()
-        self.tab_ids = TabIds()
-        self.init_needed: bool | None = None
         self.init_arg: str | None = None
+        self.init_needed: bool | None = None
         self.splash_data: "SplashData | None" = None
 
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
@@ -214,17 +220,132 @@ class ChezmoiGUI(App[None]):
                 return False
         return True
 
+    def action_toggle_maximized_display(self) -> None:
+        if not isinstance(self.screen, MainScreen):
+            return
+        active_tab = self.screen.query_one(TabbedContent).active
+        left_side = None
+        operation_buttons = None
+        view_switcher_buttons = None
+        switch_slider = None
+
+        header = self.screen.query_exactly_one(CustomHeader)
+        header.display = False if header.display is True else True
+        main_tabs = self.screen.query_exactly_one(Tabs)
+        main_tabs.display = False if main_tabs.display is True else True
+
+        if active_tab == TabName.apply.name:
+            left_side = self.screen.query_one(
+                self.tab_ids.apply.container.left_side_q, Vertical
+            )
+            operation_buttons = self.screen.query_one(
+                self.tab_ids.apply.container_id(
+                    "#", name=ContainerName.operate_btn_group
+                )
+            )
+            switch_slider = self.screen.query_one(
+                self.tab_ids.apply.container.switch_slider_q, VerticalGroup
+            )
+            view_switcher_buttons = self.screen.query_one(
+                self.tab_ids.apply.container_id(
+                    "#", name=ContainerName.switcher_btn_group
+                ),
+                Horizontal,
+            )
+        elif active_tab == TabName.re_add:
+            left_side = self.screen.query_one(
+                self.tab_ids.re_add.container.left_side_q, Vertical
+            )
+            operation_buttons = self.screen.query_one(
+                self.tab_ids.re_add.container_id(
+                    "#", name=ContainerName.operate_btn_group
+                )
+            )
+            switch_slider = self.screen.query_one(
+                self.tab_ids.re_add.container.switch_slider_q, VerticalGroup
+            )
+            view_switcher_buttons = self.screen.query_one(
+                self.tab_ids.re_add.container_id(
+                    "#", name=ContainerName.switcher_btn_group
+                ),
+                Horizontal,
+            )
+        elif active_tab == TabName.add:
+            left_side = self.screen.query_one(
+                self.tab_ids.add.container.left_side_q, Vertical
+            )
+            operation_buttons = self.screen.query_one(
+                self.tab_ids.add.container_id(
+                    "#", name=ContainerName.operate_btn_group
+                )
+            )
+            switch_slider = self.screen.query_one(
+                self.tab_ids.add.container.switch_slider_q, VerticalGroup
+            )
+            view_switcher_buttons = None
+        elif active_tab == TabName.logs:
+            view_switcher_buttons = self.screen.query_one(
+                self.tab_ids.logs.container_id(
+                    "#", name=ContainerName.switcher_btn_group
+                ),
+                Horizontal,
+            )
+        elif active_tab == TabName.config:
+            left_side = self.screen.query_one(
+                self.tab_ids.config.container.left_side_q, Vertical
+            )
+            view_switcher_buttons = self.screen.query_one(
+                self.tab_ids.logs.container_id(
+                    "#", name=ContainerName.switcher_btn_group
+                ),
+                Horizontal,
+            )
+        elif active_tab == TabName.help:
+            left_side = self.screen.query_one(
+                self.tab_ids.help.container.left_side_q, Vertical
+            )
+
+        if left_side is not None:
+            left_side.display = False if left_side.display is True else True
+        if operation_buttons is not None:
+            operation_buttons.display = (
+                False if operation_buttons.display is True else True
+            )
+        if view_switcher_buttons is not None:
+            view_switcher_buttons.display = (
+                False if view_switcher_buttons.display is True else True
+            )
+        if switch_slider is not None:
+            switch_slider.display = (
+                False if switch_slider.display is True else True
+            )
+
+        new_description = "maximize" if header.display is True else "minimize"
+
+        for key, binding in self._bindings:
+            if binding.action == "toggle_maximized_display":
+                # Create a new binding with the updated description
+                updated_binding = dataclasses.replace(
+                    binding, description=new_description
+                )
+                # Update the bindings map
+                if key in self._bindings.key_to_bindings:
+                    bindings_list = self._bindings.key_to_bindings[key]
+                    for i, b in enumerate(bindings_list):
+                        if b.action == "toggle_maximized_display":
+                            bindings_list[i] = updated_binding
+                            break
+                break
+
+        self.refresh_bindings()
+
     def action_toggle_dry_run_mode(self) -> None:
         self.changes_enabled = not self.changes_enabled
         reactive_header = self.screen.query_exactly_one(CustomHeader)
         reactive_header.changes_enabled = self.changes_enabled
 
-        # TODO: improve this quickly drafted implementation
-        try:
-            operate_info = self.screen.query_exactly_one(OperateInfo)
-            operate_info.write_info_lines()
-        except Exception:
-            pass
+        operate_info = self.screen.query_exactly_one(OperateInfo)
+        operate_info.write_info_lines()
 
         new_description = (
             "Add --dry-run flag"
@@ -320,7 +441,6 @@ class ChezmoiGUI(App[None]):
         slider = self.get_slider_from_tab(active_tab)
         if slider is None:
             return
-
         slider.toggle_class("-visible")
         self.update_toggle_switch_slider_binding(active_tab)
 

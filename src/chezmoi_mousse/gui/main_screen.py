@@ -1,14 +1,11 @@
-import dataclasses
 from enum import StrEnum
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 from textual import on, work
 from textual.app import ComposeResult
-from textual.binding import Binding
-from textual.containers import Horizontal, Vertical, VerticalGroup
 from textual.screen import Screen
-from textual.widgets import Button, Footer, TabbedContent, TabPane, Tabs
+from textual.widgets import Button, Footer, TabbedContent, TabPane
 
 from chezmoi_mousse import (
     AppIds,
@@ -64,14 +61,6 @@ class TabPanes(StrEnum):
 
 
 class MainScreen(Screen[None], AppType):
-
-    BINDINGS = [
-        Binding(
-            key="M,m",
-            action="toggle_maximized_display",
-            description="maximize",
-        )
-    ]
 
     destDir: Path | None = None
 
@@ -243,133 +232,6 @@ class MainScreen(Screen[None], AppType):
             ConfigTabSwitcher,
         )
         setattr(config_tab_switcher, "splash_data", self.splash_data)
-
-    def action_toggle_maximized_display(self) -> None:
-
-        active_tab = self.query_one(TabbedContent).active
-        left_side = None
-        operation_buttons = None
-        view_switcher_buttons = None
-        switch_slider = None
-
-        header = self.query_exactly_one(CustomHeader)
-        header.display = False if header.display is True else True
-        main_tabs = self.query_exactly_one(Tabs)
-        main_tabs.display = False if main_tabs.display is True else True
-
-        if active_tab == TabName.apply.name:
-            left_side = self.query_one(
-                self.tab_ids.apply.container.left_side_q, Vertical
-            )
-            operation_buttons = self.query_one(
-                self.tab_ids.apply.container_id(
-                    "#", name=ContainerName.operate_btn_group
-                )
-            )
-            switch_slider = self.query_one(
-                self.tab_ids.apply.container.switch_slider_q, VerticalGroup
-            )
-            view_switcher_buttons = self.query_one(
-                self.tab_ids.apply.container_id(
-                    "#", name=ContainerName.switcher_btn_group
-                ),
-                Horizontal,
-            )
-        elif active_tab == TabName.re_add:
-            left_side = self.query_one(
-                self.tab_ids.re_add.container.left_side_q, Vertical
-            )
-            operation_buttons = self.query_one(
-                self.tab_ids.re_add.container_id(
-                    "#", name=ContainerName.operate_btn_group
-                )
-            )
-            switch_slider = self.query_one(
-                self.tab_ids.re_add.container.switch_slider_q, VerticalGroup
-            )
-            view_switcher_buttons = self.query_one(
-                self.tab_ids.re_add.container_id(
-                    "#", name=ContainerName.switcher_btn_group
-                ),
-                Horizontal,
-            )
-        elif active_tab == TabName.add:
-            left_side = self.query_one(
-                self.tab_ids.add.container.left_side_q, Vertical
-            )
-            operation_buttons = self.query_one(
-                self.tab_ids.add.container_id(
-                    "#", name=ContainerName.operate_btn_group
-                )
-            )
-            switch_slider = self.query_one(
-                self.tab_ids.add.container.switch_slider_q, VerticalGroup
-            )
-            view_switcher_buttons = None
-        elif active_tab == TabName.logs:
-            view_switcher_buttons = self.query_one(
-                self.tab_ids.logs.container_id(
-                    "#", name=ContainerName.switcher_btn_group
-                ),
-                Horizontal,
-            )
-        elif active_tab == TabName.config:
-            left_side = self.query_one(
-                self.tab_ids.config.container.left_side_q, Vertical
-            )
-            view_switcher_buttons = self.query_one(
-                self.tab_ids.logs.container_id(
-                    "#", name=ContainerName.switcher_btn_group
-                ),
-                Horizontal,
-            )
-        elif active_tab == TabName.help:
-            left_side = self.query_one(
-                self.tab_ids.help.container.left_side_q, Vertical
-            )
-            view_switcher_buttons = self.query_one(
-                self.tab_ids.help.container_id(
-                    "#", name=ContainerName.switcher_btn_group
-                ),
-                Horizontal,
-            )
-
-        if left_side is not None:
-            left_side.display = False if left_side.display is True else True
-
-        if operation_buttons is not None:
-            operation_buttons.display = (
-                False if operation_buttons.display is True else True
-            )
-
-        if view_switcher_buttons is not None:
-            view_switcher_buttons.display = (
-                False if view_switcher_buttons.display is True else True
-            )
-
-        if switch_slider is not None:
-            switch_slider.display = (
-                False if switch_slider.display is True else True
-            )
-
-        new_description = "maximize" if header.display is True else "minimize"
-
-        for key, binding in self._bindings:
-            if binding.action == "toggle_maximized_display":
-                # Create a new binding with the updated description
-                updated_binding = dataclasses.replace(
-                    binding, description=new_description
-                )
-                # Update the bindings map
-                if key in self._bindings.key_to_bindings:
-                    bindings_list = self._bindings.key_to_bindings[key]
-                    for i, b in enumerate(bindings_list):
-                        if b.action == "toggle_maximized_display":
-                            bindings_list[i] = updated_binding
-                            break
-                break
-
-        self.refresh_bindings()
 
     @on(Button.Pressed, Tcss.operate_button.value)
     def push_operate_screen(self, event: Button.Pressed) -> None:
