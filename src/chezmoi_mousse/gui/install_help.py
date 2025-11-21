@@ -11,7 +11,14 @@ from textual.containers import Horizontal, VerticalGroup
 from textual.screen import Screen
 from textual.widgets import Button, Collapsible, Footer, Pretty, Tree
 
-from chezmoi_mousse import AppType, Chars, FlatBtn, HeaderTitle, LinkBtn
+from chezmoi_mousse import (
+    AppType,
+    BindingDescription,
+    Chars,
+    FlatBtn,
+    HeaderTitle,
+    LinkBtn,
+)
 from chezmoi_mousse.shared import (
     CustomHeader,
     FlatButton,
@@ -29,7 +36,6 @@ __all__ = ["InstallHelp"]
 
 class InstallHelpStrings(StrEnum):
     collapsible_title = "'chezmoi' command not found in any search path"
-    escape_exit_app = " escape key to exit app "
     exit_app_action = "exit_application"
     install_chezmoi = " Install chezmoi "
     no_path_var = "PATH variable is empty or not set."
@@ -47,7 +53,11 @@ class CommandsTree(Tree[ParsedJson]):
 class InstallHelp(Screen[None], AppType):
 
     BINDINGS = [
-        Binding(key="escape", action=InstallHelpStrings.exit_app_action)
+        Binding(
+            key="escape",
+            action=InstallHelpStrings.exit_app_action,
+            description=BindingDescription.exit_app,
+        )
     ]
 
     def __init__(self, *, ids: "AppIds") -> None:
