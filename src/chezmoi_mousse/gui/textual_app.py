@@ -433,9 +433,8 @@ class ChezmoiGUI(App[None]):
         self, action: str, parameters: tuple[object, ...]
     ) -> bool | None:
         if action == "toggle_switch_slider":
-            current_screen = self.screen
-            if isinstance(current_screen, MainScreen):
-                active_tab = current_screen.query_one(TabbedContent).active
+            if isinstance(self.screen, MainScreen):
+                active_tab = self.screen.query_one(TabbedContent).active
                 if active_tab == TabName.apply.name:
                     return True
                 elif active_tab == TabName.re_add:
@@ -443,12 +442,34 @@ class ChezmoiGUI(App[None]):
                 elif active_tab == TabName.add:
                     return True
                 elif active_tab == TabName.logs:
-                    return None
+                    return False
                 elif active_tab == TabName.config:
-                    return None
+                    return False
                 elif active_tab == TabName.help:
-                    return None
+                    return False
             else:
+                return False
+        elif action == "toggle_dry_run_mode":
+            if isinstance(self.screen, MainScreen):
+                active_tab = self.screen.query_one(TabbedContent).active
+                if active_tab == TabName.apply.name:
+                    return True
+                elif active_tab == TabName.re_add:
+                    return True
+                elif active_tab == TabName.add:
+                    return True
+                elif active_tab == TabName.logs:
+                    return False
+                elif active_tab == TabName.config:
+                    return False
+                elif active_tab == TabName.help:
+                    return False
+            elif isinstance(self.screen, OperateScreen):
+                return True
+            else:
+                return False
+        elif action == "toggle_maximized_display":
+            if isinstance(self.screen, OperateScreen):
                 return False
         return True
 
