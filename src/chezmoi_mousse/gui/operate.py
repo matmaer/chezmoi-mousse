@@ -209,7 +209,7 @@ class OperateScreen(Screen[OperateScreenData], AppType):
         operate_button.tooltip = None
 
         operate_exit_button = self.query_one(self.exit_btn_qid, Button)
-        operate_exit_button.label = OperateBtn.exit_button.close_button_label
+        operate_exit_button.label = OperateBtn.exit_button.close_label
 
         output_log = self.query_one(self.ids.logger.operate_q, OperateLog)
         if self.operate_data.command_result is not None:

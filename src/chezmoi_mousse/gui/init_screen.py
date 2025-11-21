@@ -216,7 +216,7 @@ class InitScreen(Screen[SplashData | None], AppType):
         operate_button.disabled = True
         operate_button.tooltip = None
         exit_button = self.query_one(self.exit_btn_qid, Button)
-        exit_button.label = OperateBtn.exit_button.close_button_label
+        exit_button.label = OperateBtn.exit_button.close_label
 
     @on(Button.Pressed, Tcss.flat_button.value)
     def switch_content(self, event: Button.Pressed) -> None:
@@ -242,7 +242,10 @@ class InitScreen(Screen[SplashData | None], AppType):
     def handle_operate_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
         if event.button.id == self.exit_btn_id:
-            self.dismiss(self.splash_data)
+            if event.button.label == OperateBtn.exit_button.close_label:
+                self.dismiss(self.splash_data)
+            elif event.button.label == OperateBtn.exit_button.cancel_label:
+                return None
         else:
             self.perform_init_command()
 

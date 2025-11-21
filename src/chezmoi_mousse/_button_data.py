@@ -131,8 +131,9 @@ class InitButtonData:
 
 @dataclass(slots=True)
 class ExitButtonData:
-    initial_label: str
+    cancel_label: str
     close_label: str
+    initial_label: str
 
 
 class OperateBtn(Enum):
@@ -180,18 +181,25 @@ class OperateBtn(Enum):
     )
     init_new_repo = InitButtonData(initial_label=OpBtn.init_new_repo.value)
     exit_button = ExitButtonData(
-        initial_label=OpBtn.operate_cancel.value,
+        cancel_label=OpBtn.operate_cancel.value,
         close_label=OpBtn.operate_close.value,
+        initial_label=OpBtn.operate_cancel.value,
     )
 
     # allow access to dataclass attributes directly from the Enum member,
     # without needing to go through the value attribute
 
     @property
-    def close_button_label(self) -> str:
+    def close_label(self) -> str:
         if isinstance(self.value, ExitButtonData):
             return self.value.close_label
-        raise AttributeError(f"{self.name} has no close_button_label")
+        raise AttributeError(f"{self.name} has no close_label")
+
+    @property
+    def cancel_label(self) -> str:
+        if isinstance(self.value, ExitButtonData):
+            return self.value.cancel_label
+        raise AttributeError(f"{self.name} has no cancel_label")
 
     @property
     def enabled_tooltip(self) -> str:
@@ -279,6 +287,10 @@ class OperateBtn(Enum):
             if getattr(member.value, "file_label", None) == label:
                 return member
             elif getattr(member.value, "dir_label", None) == label:
+                return member
+            elif getattr(member.value, "cancel_label", None) == label:
+                return member
+            elif getattr(member.value, "close_label", None) == label:
                 return member
             elif getattr(member.value, "initial_label", None) == label:
                 return member
