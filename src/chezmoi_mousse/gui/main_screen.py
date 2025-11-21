@@ -182,8 +182,6 @@ class MainScreen(Screen[None], AppType):
         # Log loading screen commands
         self.app_log.info("--- Commands executed in loading screen ---")
         for cmd in self.splash_data.executed_commands:
-            if self.splash_data.init is None:
-                continue
             self.app_log.log_cmd_results(cmd)
             self.read_cmd_log.log_cmd_results(cmd)
         self.app_log.info("--- End of loading screen commands ---")
