@@ -102,7 +102,7 @@ class ChezmoiGUI(App[None]):
         self.theme = "chezmoi-mousse-dark"
 
         self.push_screen(
-            LoadingScreen(ids=self.screen_ids.splash),
+            LoadingScreen(ids=self.screen_ids.splash, run_init=False),
             callback=self.handle_splash_return_data,
         )
 
@@ -121,27 +121,13 @@ class ChezmoiGUI(App[None]):
         elif (
             self.force_init_screen is True
             or return_data.cat_config.returncode != 0
-        ) and self.init_screen_pushed is False:
+        ):
             self.push_init_screen(return_data=return_data)
             return
         else:
             self.push_main_screen(return_data=return_data)
 
     def push_main_screen(self, return_data: "SplashData"):
-        if return_data.init is None and self.dev_mode is True:
-            self.notify(
-                "Init screen was pushed but it returned None", severity="error"
-            )
-        elif (
-            return_data.init is not None
-            and self.init_screen_pushed is True
-            and return_data.init.returncode != 0
-        ):
-            self.notify(
-                "Init screen was pushed but return code was not zero.",
-                severity="error",
-            )
-
         dest_dir = return_data.parsed_config.dest_dir
         AddTab.destdir = dest_dir
         ContentsView.destDir = dest_dir
