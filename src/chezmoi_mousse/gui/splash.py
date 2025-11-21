@@ -203,7 +203,9 @@ class LoadingScreen(Screen[SplashData], AppType):
                     cat_config=globals()["cat_config"],
                     doctor=globals()["doctor"],
                     executed_commands=[
-                        globals()[cmd.name] for cmd in SPLASH_COMMANDS
+                        globals()[cmd.name]
+                        for cmd in SPLASH_COMMANDS
+                        if globals()[cmd.name] is not None
                     ],  # used for logging in subsequent screens
                     git_log=globals()["git_log"],
                     ignored=globals()["ignored"],
