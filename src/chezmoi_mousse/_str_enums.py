@@ -72,6 +72,11 @@ class LogName(StrEnum):
     splash_logger = auto()
 
 
+class PathType(StrEnum):
+    DIR = auto()
+    FILE = auto()
+
+
 class ScreenName(StrEnum):
     init = auto()
     install_help = auto()

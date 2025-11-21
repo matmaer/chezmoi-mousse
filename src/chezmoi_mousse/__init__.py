@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from enum import StrEnum, auto
 from importlib.metadata import PackageNotFoundError, version
 from typing import TYPE_CHECKING
 
@@ -19,6 +18,7 @@ from ._str_enums import (
     ContainerName,
     DataTableName,
     LogName,
+    PathType,
     ScreenName,
     TabName,
     Tcss,
@@ -34,11 +34,6 @@ if TYPE_CHECKING:
 
 type PathDict = "dict[Path, str]"
 type PathList = "list[Path]"
-
-
-class PathType(StrEnum):
-    DIR = auto()
-    FILE = auto()
 
 
 class AppType:
