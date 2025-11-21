@@ -52,9 +52,9 @@ class TabBtn(StrEnum):
     git_log_global = "Git"
     git_log_path = "Git-Log"
     list = "List"
+    operate_log = "Operate"
     read_log = "Read"
     tree = "Tree"
-    operate_log = "Operate"
 
 
 class OpBtn(StrEnum):
