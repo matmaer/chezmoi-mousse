@@ -93,9 +93,6 @@ class ChezmoiGUI(App[None]):
         self.force_init_screen: bool = self.pre_run_data.force_init_screen
         self.screen_ids = ScreenIds()
 
-        # Track the init screen
-        self.init_screen_pushed: bool = False
-
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
         super().__init__()
 
@@ -110,7 +107,6 @@ class ChezmoiGUI(App[None]):
         )
 
     def push_init_screen(self, return_data: "SplashData"):
-        self.init_screen_pushed = True
         self.push_screen(
             InitScreen(ids=self.screen_ids.init, splash_data=return_data),
             callback=self.handle_splash_return_data,
