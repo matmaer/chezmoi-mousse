@@ -7,6 +7,7 @@ __all__ = [
     "ContainerName",
     "DataTableName",
     "LogName",
+    "PathKind",
     "ScreenName",
     "TabName",
     "Tcss",

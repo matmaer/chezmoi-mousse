@@ -15,6 +15,7 @@ __all__ = [
     "Chezmoi",
     "CommandResult",
     "GlobalCmd",
+    "PathDict",
     "ReadCmd",
     "ReadVerbs",
     "VerbArgs",
