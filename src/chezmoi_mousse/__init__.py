@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING
 
 from ._app_ids import AppIds
 from ._button_data import FlatBtn, LinkBtn, OperateBtn, TabBtn
-from ._chars import Chars
 from ._chezmoi import (
     Chezmoi,
     CommandResult,
@@ -15,17 +14,18 @@ from ._chezmoi import (
     VerbArgs,
     WriteCmd,
 )
-from ._names import (
+from ._str_enums import (
+    Chars,
     ContainerName,
     DataTableName,
     LogName,
     ScreenName,
     TabName,
+    Tcss,
     TreeName,
     ViewName,
 )
 from ._switches import Switches
-from ._tcss_classes import Tcss
 
 if TYPE_CHECKING:
     from pathlib import Path

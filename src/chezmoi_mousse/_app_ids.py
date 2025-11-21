@@ -4,7 +4,7 @@ Easy access, autocomplete, type checking or to generated the id dynamically.
 """
 
 from ._button_data import FlatBtn, LinkBtn, OperateBtn, TabBtn
-from ._names import (
+from ._str_enums import (
     ContainerName,
     DataTableName,
     LogName,

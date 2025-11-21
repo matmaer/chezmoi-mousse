@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 from _test_utils import get_modules_importing_class
 
-from chezmoi_mousse._tcss_classes import Tcss
+from chezmoi_mousse._str_enums import Tcss
 
 CLASS_NAME = "Tcss"
 CLASSES_KEYWORD = "classes"
