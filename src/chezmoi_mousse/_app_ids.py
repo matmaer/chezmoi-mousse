@@ -3,8 +3,8 @@
 Easy access, autocomplete, type checking or to generated the id dynamically.
 """
 
-from chezmoi_mousse._button_data import FlatBtn, LinkBtn, OperateBtn, TabBtn
-from chezmoi_mousse._names import (
+from ._button_data import FlatBtn, LinkBtn, OperateBtn, TabBtn
+from ._names import (
     ContainerName,
     DataTableName,
     LogName,
@@ -13,7 +13,7 @@ from chezmoi_mousse._names import (
     TreeName,
     ViewName,
 )
-from chezmoi_mousse._switches import Switches
+from ._switches import Switches
 
 __all__ = ["AppIds"]
 

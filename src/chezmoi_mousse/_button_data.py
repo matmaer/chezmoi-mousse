@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
 
-    from chezmoi_mousse import PathType
+    from . import PathType
 
 __all__ = ["FlatBtn", "LinkBtn", "OperateBtn", "TabBtn"]
 

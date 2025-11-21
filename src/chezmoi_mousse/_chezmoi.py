@@ -6,8 +6,7 @@ from subprocess import CompletedProcess, run
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import PathDict, PathList
-
+    from . import PathDict, PathList
     from .gui.tabs.logs_tab import AppLog, DebugLog, OperateLog, ReadCmdLog
 
 __all__ = [

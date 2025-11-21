@@ -3,8 +3,7 @@ import shutil
 import traceback
 from pathlib import Path
 
-from chezmoi_mousse import PreRunData
-
+from . import PreRunData
 from .gui.textual_app import ChezmoiGUI
 
 
