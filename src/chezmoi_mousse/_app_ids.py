@@ -13,7 +13,7 @@ from ._str_enums import (
     TreeName,
     ViewName,
 )
-from ._switches import Switches
+from ._switch_data import Switches
 
 __all__ = ["AppIds"]
 

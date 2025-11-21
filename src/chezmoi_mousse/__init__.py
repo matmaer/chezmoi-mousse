@@ -26,7 +26,7 @@ from ._str_enums import (
     TreeName,
     ViewName,
 )
-from ._switches import Switches
+from ._switch_data import Switches
 
 if TYPE_CHECKING:
     from pathlib import Path
