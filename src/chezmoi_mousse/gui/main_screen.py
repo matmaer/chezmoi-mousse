@@ -520,7 +520,7 @@ class MainScreen(Screen[None], AppType):
             return
         self.app.push_screen(
             OperateScreen(
-                ids=self.app.screen_id.operate,
+                ids=self.app.screen_ids.operate,
                 operate_data=operate_screen_data,
             ),
             callback=self._handle_operate_result,

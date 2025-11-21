@@ -91,7 +91,7 @@ class ChezmoiGUI(App[None]):
         self.chezmoi_found: bool = self.pre_run_data.chezmoi_found
         self.dev_mode: bool = self.pre_run_data.dev_mode
         self.force_init_screen: bool = self.pre_run_data.force_init_screen
-        self.screen_id = ScreenIds()
+        self.screen_ids = ScreenIds()
 
         # Track the init screen
         self.init_screen_pushed: bool = False
@@ -105,14 +105,14 @@ class ChezmoiGUI(App[None]):
         self.theme = "chezmoi-mousse-dark"
 
         self.push_screen(
-            LoadingScreen(ids=self.screen_id.splash),
+            LoadingScreen(ids=self.screen_ids.splash),
             callback=self.handle_splash_return_data,
         )
 
     def push_init_screen(self, return_data: "SplashData"):
         self.init_screen_pushed = True
         self.push_screen(
-            InitScreen(ids=self.screen_id.init, splash_data=return_data),
+            InitScreen(ids=self.screen_ids.init, splash_data=return_data),
             callback=self.handle_splash_return_data,
         )
 
@@ -120,7 +120,7 @@ class ChezmoiGUI(App[None]):
         self, return_data: "SplashData | None"
     ) -> None:
         if return_data is None:
-            self.push_screen(InstallHelp(ids=self.screen_id.install_help))
+            self.push_screen(InstallHelp(ids=self.screen_ids.install_help))
             return
         elif (
             self.force_init_screen is True
@@ -159,7 +159,7 @@ class ChezmoiGUI(App[None]):
         OperateInfo.git_autopush = return_data.parsed_config.git_autopush
 
         self.push_screen(
-            MainScreen(ids=self.screen_id.main, splash_data=return_data)
+            MainScreen(ids=self.screen_ids.main, splash_data=return_data)
         )
 
     def action_toggle_dry_run_mode(self) -> None:
