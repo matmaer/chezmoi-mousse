@@ -268,7 +268,7 @@ class MainScreen(Screen[None], AppType):
                 return None
         return True
 
-    def _get_slider_from_tab(self, tab_name: str) -> VerticalGroup | None:
+    def get_slider_from_tab(self, tab_name: str) -> VerticalGroup | None:
         if tab_name == TabName.apply.name:
             return self.query_one(
                 self.tab_ids.apply.container.switch_slider_q, VerticalGroup
@@ -284,8 +284,8 @@ class MainScreen(Screen[None], AppType):
         else:
             return None
 
-    def _update_toggle_switch_slider_binding(self, tab_name: str) -> None:
-        slider = self._get_slider_from_tab(tab_name)
+    def update_toggle_switch_slider_binding(self, tab_name: str) -> None:
+        slider = self.get_slider_from_tab(tab_name)
         if slider is None:
             return
         slider_visible = slider.has_class("-visible")
@@ -326,19 +326,19 @@ class MainScreen(Screen[None], AppType):
             TabName.re_add,
             TabName.add,
         ):
-            self._update_toggle_switch_slider_binding(
+            self.update_toggle_switch_slider_binding(
                 event.tabbed_content.active
             )
         self.refresh_bindings()
 
     def action_toggle_switch_slider(self) -> None:
         active_tab = self.query_one(TabbedContent).active
-        slider = self._get_slider_from_tab(active_tab)
+        slider = self.get_slider_from_tab(active_tab)
         if slider is None:
             return
 
         slider.toggle_class("-visible")
-        self._update_toggle_switch_slider_binding(active_tab)
+        self.update_toggle_switch_slider_binding(active_tab)
 
     def action_toggle_maximized_display(self) -> None:
 
@@ -513,10 +513,10 @@ class MainScreen(Screen[None], AppType):
                 ids=self.app.screen_ids.operate,
                 operate_data=operate_screen_data,
             ),
-            callback=self._handle_operate_result,
+            callback=self.handle_operate_result,
         )
 
-    def _handle_operate_result(
+    def handle_operate_result(
         self, screen_result: "OperateScreenData | None"
     ) -> None:
         # the mode could have changed while in the operate screen
