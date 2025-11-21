@@ -25,7 +25,7 @@ from chezmoi_mousse.shared import (
     CurrentAddNodeMsg,
     CurrentApplyNodeMsg,
     CurrentReAddNodeMsg,
-    ReactiveHeader,
+    CustomHeader,
 )
 
 from .operate import OperateScreen
@@ -97,7 +97,7 @@ class MainScreen(Screen[None], AppType):
         self.current_re_add_node: "NodeData | None" = None
 
     def compose(self) -> ComposeResult:
-        yield ReactiveHeader(ids=self.ids)
+        yield CustomHeader(ids=self.ids)
         with TabbedContent():
             yield TabPane(
                 TabPanes.apply_tab_button.value,
@@ -348,7 +348,7 @@ class MainScreen(Screen[None], AppType):
         view_switcher_buttons = None
         switch_slider = None
 
-        header = self.query_exactly_one(ReactiveHeader)
+        header = self.query_exactly_one(CustomHeader)
         header.display = False if header.display is True else True
         main_tabs = self.query_exactly_one(Tabs)
         main_tabs.display = False if main_tabs.display is True else True
@@ -520,7 +520,7 @@ class MainScreen(Screen[None], AppType):
         self, screen_result: "OperateScreenData | None"
     ) -> None:
         # the mode could have changed while in the operate screen
-        reactive_header = self.query_exactly_one(ReactiveHeader)
+        reactive_header = self.query_exactly_one(CustomHeader)
         reactive_header.changes_enabled = self.app.changes_enabled
         self.refresh_bindings()
         # Actual handling of the result

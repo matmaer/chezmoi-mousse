@@ -24,7 +24,7 @@ from ._operate_msg import (
     CurrentReAddNodeMsg,
 )
 from ._pw_mgr_info import PwMgrInfoView
-from ._reactive_header import ReactiveHeader
+from ._screen_header import CustomHeader
 from ._section_headers import (
     FlatSectionLabel,
     MainSectionLabel,
@@ -52,7 +52,7 @@ __all__ = [
     "MainSectionLabel",
     "OperateButtons",
     "PwMgrInfoView",
-    "ReactiveHeader",
+    "CustomHeader",
     "SectionLabelText",
     "SubSectionLabel",
     "TabButtons",

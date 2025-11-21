@@ -25,11 +25,11 @@ from chezmoi_mousse import (
 )
 from chezmoi_mousse.shared import (
     CatConfigView,
+    CustomHeader,
     DoctorTableView,
     FlatButtonsVertical,
     MainSectionLabel,
     OperateButtons,
-    ReactiveHeader,
     SectionLabelText,
     SubSectionLabel,
     TemplateDataView,
@@ -177,7 +177,7 @@ class InitScreen(Screen[SplashData | None], AppType):
         self.exit_btn_qid = ids.button_id("#", btn=OperateBtn.exit_button)
 
     def compose(self) -> ComposeResult:
-        yield ReactiveHeader(self.ids)
+        yield CustomHeader(self.ids)
         with Horizontal(id=self.ids.container.canvas):
             yield FlatButtonsVertical(
                 ids=self.ids,

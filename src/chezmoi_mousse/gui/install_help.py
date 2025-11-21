@@ -4,16 +4,20 @@ from enum import StrEnum
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from rich.text import Text
 from textual import on
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Horizontal, VerticalGroup
 from textual.screen import Screen
-from textual.widgets import Button, Collapsible, Pretty, Tree
+from textual.widgets import Button, Collapsible, Footer, Pretty, Tree
 
-from chezmoi_mousse import AppType, Chars, FlatBtn, LinkBtn, ScreenName, Tcss
-from chezmoi_mousse.shared import FlatButton, FlatLink, MainSectionLabel
+from chezmoi_mousse import AppType, Chars, FlatBtn, HeaderTitle, LinkBtn
+from chezmoi_mousse.shared import (
+    CustomHeader,
+    FlatButton,
+    FlatLink,
+    MainSectionLabel,
+)
 
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds
@@ -43,16 +47,15 @@ class CommandsTree(Tree[ParsedJson]):
 class InstallHelp(Screen[None], AppType):
 
     BINDINGS = [
-        Binding(
-            key="escape", action=InstallHelpStrings.exit_app_action, show=False
-        )
+        Binding(key="escape", action=InstallHelpStrings.exit_app_action)
     ]
 
     def __init__(self, *, ids: "AppIds") -> None:
-        super().__init__(id=ScreenName.install_help)
+        super().__init__()
         self.ids = ids
 
     def compose(self) -> ComposeResult:
+        yield CustomHeader(ids=self.ids)
         yield MainSectionLabel(InstallHelpStrings.top_label)
         yield Collapsible(
             Pretty(InstallHelpStrings.no_path_var),
@@ -63,13 +66,14 @@ class InstallHelp(Screen[None], AppType):
         )
         with Horizontal():
             yield CommandsTree()
-            with VerticalGroup():
-                yield FlatLink(ids=self.ids, link_enum=LinkBtn.chezmoi_install)
-                yield FlatButton(ids=self.ids, button_enum=FlatBtn.exit_app)
+            yield VerticalGroup(
+                FlatLink(ids=self.ids, link_enum=LinkBtn.chezmoi_install),
+                FlatButton(ids=self.ids, button_enum=FlatBtn.exit_app),
+            )
+        yield Footer(id=self.ids.footer_id)
 
     def on_mount(self) -> None:
-        self.add_class(Tcss.install_help.name)
-        self.border_subtitle = InstallHelpStrings.escape_exit_app
+        self.screen.title = HeaderTitle.header_install_help
         self.update_path_widget()
         self.populate_tree()
 
@@ -96,11 +100,9 @@ class InstallHelp(Screen[None], AppType):
                 )
                 continue
             install_commands: dict[str, str] = child.data
-            for k, v in install_commands.items():
-                child_label = Text(k, style="warning")
-                new_child = child.add(label=child_label)
-                cmd_label = Text(v)
-                new_child.add_leaf(label=cmd_label)
+            for key, value in install_commands.items():
+                new_child = child.add(label=key)
+                new_child.add_leaf(label=value)
 
     @on(Button.Pressed)
     def exit_application(self, event: Button.Pressed) -> None:

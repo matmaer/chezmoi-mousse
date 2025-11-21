@@ -136,6 +136,16 @@
 /* Type Selector tcss */
 /**********************/
 
+CustomHeader {
+  border-bottom: dashed $surface-lighten-3;
+  color: $primary;
+  height: 2;
+  text-style: bold;
+  &>.changes_enabled_color {
+    color: $warning;
+  }
+}
+
 DoctorTable {
   margin-bottom: 3;
 }
@@ -156,7 +166,6 @@ FlatSectionLabel {
 }
 
 InstallHelp {
-  border-bottom: $primary;
   & VerticalGroup {
     margin-left: 1;
     width: 22;
@@ -218,16 +227,6 @@ OperateInfo {
 
 OperateScreen > OperateButtons {
     margin-bottom: 1;
-  }
-
-ReactiveHeader {
-  border-bottom: dashed $surface-lighten-3;
-  color: $primary;
-  height: 2;
-  text-style: bold;
-  .changes_enabled_color {
-    color: $warning;
-  }
 }
 
 RepositoryURLInput {

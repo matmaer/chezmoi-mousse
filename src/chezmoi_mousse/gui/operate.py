@@ -17,10 +17,10 @@ from chezmoi_mousse import (
 )
 from chezmoi_mousse.shared import (
     ContentsView,
+    CustomHeader,
     DiffView,
     MainSectionLabel,
     OperateButtons,
-    ReactiveHeader,
     SectionLabelText,
 )
 
@@ -72,7 +72,7 @@ class OperateScreen(Screen[OperateScreenData], AppType):
         self.operate_data = operate_data
 
     def compose(self) -> ComposeResult:
-        yield ReactiveHeader(self.ids)
+        yield CustomHeader(self.ids)
         with VerticalGroup(id=self.pre_operate_id):
             yield OperateInfo(
                 ids=self.ids, operate_screen_data=self.operate_data

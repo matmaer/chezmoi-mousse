@@ -6,6 +6,7 @@ __all__ = [
     "Chars",
     "ContainerName",
     "DataTableName",
+    "HeaderTitle",
     "LogName",
     "PathKind",
     "ScreenName",
@@ -61,6 +62,18 @@ class DataTableName(StrEnum):
     re_add_git_log_table = auto()
 
 
+class HeaderTitle(StrEnum):
+    header_dry_run_mode = (
+        " -  c h e z m o i  m o u s s e  --  d r y  r u n  m o d e  - "
+    )
+    header_live_mode = (
+        " -  c h e z m o i  m o u s s e  --  l i v e  m o d e  - "
+    )
+    header_install_help = (
+        " - c h e z m o i  m o u s s e  --  i n s t a l l  h e l p  - "
+    )
+
+
 class LogName(StrEnum):
     """Names for RichLog widgets."""
 
@@ -105,6 +118,8 @@ class Tcss(StrEnum):
     flat_button = ".flat_button"
     flat_link = ".flat_link"
     flow_diagram = ".flow_diagram"
+    input_field = ".input_field"
+    input_select = ".input_select"
     install_help = ".install_help"
     last_clicked = ".last_clicked"
     operate_button = ".operate_button"
@@ -114,8 +129,6 @@ class Tcss(StrEnum):
     tab_button = ".tab_button"
     tab_left_vertical = ".tab_left_vertical"
     tree_widget = ".tree_widget"
-    input_select = ".input_select"
-    input_field = ".input_field"
 
 
 class TreeName(StrEnum):

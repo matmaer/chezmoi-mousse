@@ -14,9 +14,9 @@ from textual.theme import Theme
 from chezmoi_mousse import AppIds, Chars, ScreenName
 from chezmoi_mousse.shared import (
     ContentsView,
+    CustomHeader,
     DiffView,
     GitLogPath,
-    ReactiveHeader,
 )
 
 from .init_screen import InitScreen
@@ -169,7 +169,7 @@ class ChezmoiGUI(App[None]):
 
     def action_toggle_dry_run_mode(self) -> None:
         self.changes_enabled = not self.changes_enabled
-        reactive_header = self.screen.query_exactly_one(ReactiveHeader)
+        reactive_header = self.screen.query_exactly_one(CustomHeader)
         reactive_header.changes_enabled = self.changes_enabled
 
         # TODO: improve this quickly drafted implementation
