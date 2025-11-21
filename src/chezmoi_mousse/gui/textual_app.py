@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 from rich.color import Color
 from rich.segment import Segment, Segments
 from rich.style import Style
+from textual import work
 from textual.app import App
 from textual.binding import Binding
 from textual.scrollbar import ScrollBar, ScrollBarRender
@@ -86,12 +87,15 @@ class ChezmoiGUI(App[None]):
 
     def __init__(self, pre_run_data: "PreRunData") -> None:
         self.chezmoi: "Chezmoi"
-        self.pre_run_data = pre_run_data
+        self.pre_run_data: "PreRunData" = pre_run_data
         self.changes_enabled: bool = False
         self.chezmoi_found: bool = self.pre_run_data.chezmoi_found
         self.dev_mode: bool = self.pre_run_data.dev_mode
         self.force_init_screen: bool = self.pre_run_data.force_init_screen
         self.screen_ids = ScreenIds()
+        self.init_needed: bool | None = None
+        self.init_arg: str | None = None
+        self.splash_data: "SplashData | None" = None
 
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
         super().__init__()
@@ -100,35 +104,54 @@ class ChezmoiGUI(App[None]):
         self.register_theme(chezmoi_mousse_light)
         self.register_theme(chezmoi_mousse_dark)
         self.theme = "chezmoi-mousse-dark"
+        self.start_app_with_loading_screen()
 
-        self.push_screen(
-            LoadingScreen(ids=self.screen_ids.splash, run_init=False),
-            callback=self.handle_splash_return_data,
-        )
-
-    def push_init_screen(self, return_data: "SplashData"):
-        self.push_screen(
-            InitScreen(ids=self.screen_ids.init, splash_data=return_data),
-            callback=self.handle_splash_return_data,
-        )
-
-    def handle_splash_return_data(
-        self, return_data: "SplashData | None"
-    ) -> None:
-        if return_data is None:
+    @work
+    async def start_app_with_loading_screen(self) -> None:
+        worker = self.push_splash_screen(run_init=False)
+        await worker.wait()
+        if worker.result is None:
             self.push_screen(InstallHelp(ids=self.screen_ids.install_help))
             return
         elif (
-            self.force_init_screen is True
-            or return_data.cat_config.returncode != 0
+            worker.result.init is None
+            and worker.result.cat_config.returncode != 0
         ):
-            self.push_init_screen(return_data=return_data)
+            init_worker = self.push_init_screen(
+                splash_data=worker.result, run_init=True
+            )
+            await init_worker.wait()
             return
-        else:
-            self.push_main_screen(return_data=return_data)
+        elif worker.result.cat_config.returncode == 0:
+            worker = self.push_splash_screen(run_init=True)
+            await worker.wait()
+            self.push_main_screen(worker.result)
+            return
 
-    def push_main_screen(self, return_data: "SplashData"):
-        dest_dir = return_data.parsed_config.dest_dir
+    @work
+    async def push_splash_screen(self, run_init: bool) -> "SplashData | None":
+        return await self.push_screen(
+            LoadingScreen(ids=self.screen_ids.splash, run_init=run_init),
+            wait_for_dismiss=True,
+        )
+
+    @work
+    async def push_init_screen(
+        self, *, splash_data: "SplashData", run_init: bool
+    ) -> "SplashData | None":
+        return await self.push_screen(
+            InitScreen(ids=self.screen_ids.init, splash_data=splash_data),
+            wait_for_dismiss=True,
+        )
+
+    @work
+    async def push_main_screen(self, splash_data: "SplashData | None") -> None:
+        if splash_data is None:
+            self.notify(
+                "Splash data is None, this is unexpected.", severity="error"
+            )
+            return
+        dest_dir = splash_data.parsed_config.dest_dir
         AddTab.destdir = dest_dir
         ContentsView.destDir = dest_dir
         DiffView.destDir = dest_dir
@@ -137,11 +160,11 @@ class ChezmoiGUI(App[None]):
         TreeBase.destDir = dest_dir
         ViewSwitcher.destDir = dest_dir
 
-        OperateInfo.git_autocommit = return_data.parsed_config.git_autocommit
-        OperateInfo.git_autopush = return_data.parsed_config.git_autopush
+        OperateInfo.git_autocommit = splash_data.parsed_config.git_autocommit
+        OperateInfo.git_autopush = splash_data.parsed_config.git_autopush
 
         self.push_screen(
-            MainScreen(ids=self.screen_ids.main, splash_data=return_data)
+            MainScreen(ids=self.screen_ids.main, splash_data=splash_data)
         )
 
     def action_toggle_dry_run_mode(self) -> None:
