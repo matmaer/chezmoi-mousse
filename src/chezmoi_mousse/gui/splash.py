@@ -25,6 +25,7 @@ from chezmoi_mousse import (
     ReadCmd,
     SplashData,
     VerbArgs,
+    WriteCmd,
 )
 
 if TYPE_CHECKING:
@@ -32,7 +33,7 @@ if TYPE_CHECKING:
 
 __all__ = ["LoadingScreen"]
 
-SPLASH_COMMANDS = [
+SPLASH_COMMANDS: list[ReadCmd | WriteCmd] = [
     ReadCmd.cat_config,
     ReadCmd.doctor,
     ReadCmd.dump_config,
@@ -44,6 +45,7 @@ SPLASH_COMMANDS = [
     ReadCmd.status_files,
     ReadCmd.template_data,
     ReadCmd.verify,
+    WriteCmd.init,
 ]
 
 SPLASH = """\
@@ -67,13 +69,21 @@ LOG_PADDING_WIDTH = 37
 LOADED_SUFFIX = "loaded"
 
 
-def _subprocess_run_cmd(cmd: ReadCmd) -> CommandResult:
+def _subprocess_run_cmd(
+    cmd: ReadCmd | WriteCmd, init_arg: str | None = None
+) -> CommandResult:
+    if cmd == WriteCmd.init and init_arg is not None:
+        cmd.value.append(init_arg)
+    if init_arg is not None:
+        time_out = 5
+    else:
+        time_out = 1
     result: CompletedProcess[str] = run(
         cmd.value,
         capture_output=True,
-        shell=False,  # TODO: handle non-zero exit codes
+        shell=False,
         text=True,
-        timeout=1,
+        timeout=time_out,
     )
     return CommandResult(completed_process_data=result, path_arg=None)
 
@@ -100,6 +110,7 @@ doctor: "CommandResult | None" = None
 dump_config: "CommandResult | None" = None
 git_log: "CommandResult | None" = None
 ignored: "CommandResult | None" = None
+init: "CommandResult | None" = None
 managed_dirs: "CommandResult | None" = None
 managed_files: "CommandResult | None" = None
 parsed_config: "ParsedConfig | None" = None
@@ -119,12 +130,17 @@ class AnimatedFade(Static):
         return Strip([Segment(SPLASH[y], style=FADE_LINE_STYLES[y])])
 
 
-class LoadingScreen(Screen[SplashData | None], AppType):
+class LoadingScreen(Screen[SplashData], AppType):
 
-    def __init__(self, ids: "AppIds") -> None:
+    def __init__(
+        self, ids: "AppIds", run_init: bool, init_arg: str | None = None
+    ) -> None:
         self.ids = ids
+        self.run_init = run_init
         self.fade_timer: Timer
         self.all_workers_timer: Timer
+        if init_arg is not None:
+            self.init_arg = init_arg
         super().__init__(id=self.ids.canvas_name)
 
     def compose(self) -> ComposeResult:
@@ -143,9 +159,12 @@ class LoadingScreen(Screen[SplashData | None], AppType):
         splash_log.write(log_text)
 
     @work(group="io_workers")
-    async def run_non_threaded_cmd(self, splash_cmd: ReadCmd) -> None:
+    async def run_non_threaded_cmd(
+        self, splash_cmd: ReadCmd | WriteCmd
+    ) -> None:
         cmd_result = _subprocess_run_cmd(splash_cmd)
         splash_log = self.query_exactly_one(RichLog)
+        cmd_text = cmd_result.pretty_cmd
         globals()[splash_cmd.name] = cmd_result
         if splash_cmd == ReadCmd.dump_config:
             parsed_config = json.loads(cmd_result.std_out)
@@ -156,7 +175,7 @@ class LoadingScreen(Screen[SplashData | None], AppType):
                 git_autocommit=parsed_config["git"]["autocommit"],
                 git_autopush=parsed_config["git"]["autopush"],
             )
-        if splash_cmd in (
+        elif splash_cmd in (
             ReadCmd.managed_dirs,
             ReadCmd.managed_files,
             ReadCmd.status_dirs,
@@ -165,8 +184,6 @@ class LoadingScreen(Screen[SplashData | None], AppType):
             cmd_text = cmd_result.pretty_cmd.replace(
                 VerbArgs.include_dirs.value, "dirs"
             ).replace(VerbArgs.include_files.value, "files")
-        else:
-            cmd_text = cmd_result.pretty_cmd
         padding = LOG_PADDING_WIDTH - len(cmd_text)
         log_text = f"{cmd_text} {'.' * padding} {LOADED_SUFFIX}"
         splash_log.write(log_text)
@@ -190,6 +207,7 @@ class LoadingScreen(Screen[SplashData | None], AppType):
                     ],  # used for logging in subsequent screens
                     git_log=globals()["git_log"],
                     ignored=globals()["ignored"],
+                    init=globals()["init"],
                     parsed_config=globals()["parsed_config"],
                     template_data=globals()["template_data"],
                     verify=globals()["verify"],
@@ -221,6 +239,10 @@ class LoadingScreen(Screen[SplashData | None], AppType):
             log_text = f"{cmd_text} {'.' * padding} not found"
             splash_log.write(log_text)
             return
+
+        if self.run_init is True:
+            run_init_worker = self.run_non_threaded_cmd(WriteCmd.init)
+            await run_init_worker.wait()
 
         # Now run commands which output could be used on all screens
         for command in (
