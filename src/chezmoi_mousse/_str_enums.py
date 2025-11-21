@@ -20,8 +20,6 @@ __all__ = [
 
 class BindingDescription(StrEnum):
     # Screen bindings
-    close = "Close"
-    cancel = "Cancel"
     exit_app = "Exit"
     back = "Back"
     # Tab bindings
@@ -137,7 +135,6 @@ class Tcss(StrEnum):
     flow_diagram = ".flow_diagram"
     input_field = ".input_field"
     input_select = ".input_select"
-    install_help = ".install_help"
     last_clicked = ".last_clicked"
     operate_button = ".operate_button"
     pw_mgr_group = ".pw_mgr_group"

@@ -8,6 +8,8 @@ from chezmoi_mousse import AppType, Chars, HeaderTitle, Tcss
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds
 
+__all__ = ["CustomHeader"]
+
 
 class CustomHeader(Header, AppType):
 
