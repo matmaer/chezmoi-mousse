@@ -134,8 +134,7 @@ class MainScreen(Screen[None], AppType):
     async def on_mount(self) -> None:
         init_loggers_worker = self.initialize_loggers()
         await init_loggers_worker.wait()
-        log_splash_commands_worker = self.log_splash_log_commands()
-        await log_splash_commands_worker.wait()
+        self.log_splash_log_commands()
         self.populate_apply_trees()
         self.populate_re_add_trees()
         self.update_config_tab()
@@ -147,9 +146,8 @@ class MainScreen(Screen[None], AppType):
     @work
     async def initialize_loggers(self) -> None:
         # Initialize App logger
-        app_logger = self.query_one(self.tab_ids.logs.logger.app_q, AppLog)
-        self.app_log = app_logger
-        self.app.chezmoi.app_log = app_logger
+        self.app_log = self.query_one(self.tab_ids.logs.logger.app_q, AppLog)
+        self.app.chezmoi.app_log = self.app_log
         self.app_log.ready_to_run("--- Application log initialized ---")
         if self.app.chezmoi_found:
             self.app_log.success(
@@ -157,40 +155,35 @@ class MainScreen(Screen[None], AppType):
             )
         else:
             self.notify("chezmoi executable not found.", severity="error")
-            self.app_log.error("chezmoi executable not found.")
         # Initialize Operate logger
         self.operate_log = self.query_one(
             self.tab_ids.logs.logger.operate_q, OperateLog
         )
+        self.app.chezmoi.operate_log = self.operate_log
         self.app_log.success(f"{Chars.check_mark} Operate log initialized")
         self.operate_log.ready_to_run("--- Operate log initialized ---")
         # Initialize ReadCmd logger
-        read_cmd_logger = self.query_one(
+        self.read_cmd_log = self.query_one(
             self.tab_ids.logs.logger.read_q, ReadCmdLog
         )
-        self.read_cmd_log = read_cmd_logger
         self.app.chezmoi.read_cmd_log = self.read_cmd_log
         self.app_log.success(f"{Chars.check_mark} Read Output log initialized")
         # Initialize and focus Debug logger if in dev mode
         if self.app.dev_mode:
-            debug_logger = self.query_one(
+            self.debug_log = self.query_one(
                 self.tab_ids.logs.logger.debug_q, DebugLog
             )
-            self.debug_log = debug_logger
-            self.app.chezmoi.debug_log = debug_logger
+            self.app.chezmoi.debug_log = self.debug_log
             self.debug_log.ready_to_run("--- Debug log initialized ---")
             self.app_log.success(f"{Chars.check_mark} Debug log initialized")
-            debug_logger.focus()
+            self.debug_log.focus()
 
-    @work
-    async def log_splash_log_commands(self) -> None:
+    def log_splash_log_commands(self) -> None:
         # Log loading screen commands
         self.app_log.info("--- Commands executed in loading screen ---")
         if self.splash_data.init is not None:
             self.app_log.log_cmd_results(self.splash_data.init)
             self.operate_log.log_cmd_results(self.splash_data.init)
-        self.app.chezmoi.operate_log = self.operate_log
-
         for cmd in self.splash_data.executed_commands:
             self.app_log.log_cmd_results(cmd)
             self.read_cmd_log.log_cmd_results(cmd)
