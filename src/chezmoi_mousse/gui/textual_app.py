@@ -31,6 +31,7 @@ from chezmoi_mousse.shared import (
 from .init_screen import InitScreen
 from .install_help import InstallHelp
 from .main_screen import MainScreen
+from .operate import OperateScreen
 from .splash import SplashScreen
 from .tabs.add_tab import AddTab
 from .tabs.common.operate_info import OperateInfo
@@ -271,15 +272,15 @@ class ChezmoiGUI(App[None]):
         reactive_header = self.screen.query_exactly_one(CustomHeader)
         reactive_header.changes_enabled = self.changes_enabled
 
-        operate_info = self.screen.query_exactly_one(OperateInfo)
-        operate_info.write_info_lines()
+        if isinstance(self.screen, OperateScreen):
+            operate_info = self.screen.query_exactly_one(OperateInfo)
+            operate_info.write_info_lines()
 
         new_description = (
             BindingDescription.add_dry_run_flag
             if self.changes_enabled is True
             else BindingDescription.remove_dry_run_flag
         )
-
         for key, binding in self._bindings:
             if binding.action == "toggle_dry_run_mode":
                 # Create a new binding with the updated description
@@ -411,7 +412,6 @@ class ChezmoiGUI(App[None]):
             if header.display is True
             else BindingDescription.minimize
         )
-
         for key, binding in self._bindings:
             if binding.action == "toggle_maximized_display":
                 # Create a new binding with the updated description
