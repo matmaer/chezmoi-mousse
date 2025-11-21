@@ -8,8 +8,6 @@ if TYPE_CHECKING:
 
 __all__ = ["FlatBtn", "LinkBtn", "OperateBtn", "TabBtn"]
 
-INITIAL_TOOLTIP = "This is the destDir, select a path to operate on."
-
 
 class FlatBtn(StrEnum):
     add_help = "Add Help"
@@ -92,6 +90,7 @@ class ToolTips(StrEnum):
     file_no_status = "The selected file has no status to operate on."
     forget_dir = 'Run "chezmoi forget", stop managing the directory.'
     forget_file = 'Run "chezmoi forget", stop managing the file.'
+    initial = "This is the destDir, select a path to operate on."
     re_add_dir = 'Run "chezmoi re-add" on the directory.'
     re_add_file = 'Run "chezmoi re-add" on the file.'
 
@@ -236,7 +235,7 @@ class OperateBtn(Enum):
 
     @property
     def initial_tooltip(self) -> str:
-        return INITIAL_TOOLTIP
+        return ToolTips.initial
 
     @property
     def _file_label(self) -> str:
