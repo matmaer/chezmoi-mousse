@@ -12,11 +12,11 @@ from textual.widgets import Button, Footer, TabbedContent, TabPane, Tabs
 
 from chezmoi_mousse import (
     AppType,
-    CanvasName,
     Chars,
     ContainerName,
     OperateBtn,
     OperateScreenData,
+    TabName,
     Tcss,
     TreeName,
 )
@@ -88,33 +88,33 @@ class MainScreen(Screen[None], AppType):
         with TabbedContent():
             yield TabPane(
                 TabPanes.apply_tab_button.value,
-                ApplyTab(ids=self.app.ids.apply_tab),
-                id=CanvasName.apply_tab.name,
+                ApplyTab(ids=self.app.pane_id.apply),
+                id=TabName.apply.name,
             )
             yield TabPane(
                 TabPanes.re_add_tab_button.value,
-                ReAddTab(ids=self.app.ids.re_add_tab),
-                id=CanvasName.re_add_tab.name,
+                ReAddTab(ids=self.app.pane_id.re_add),
+                id=TabName.re_add,
             )
             yield TabPane(
                 TabPanes.add_tab_button.value,
-                AddTab(ids=self.app.ids.add_tab),
-                id=CanvasName.add_tab.name,
+                AddTab(ids=self.app.pane_id.add),
+                id=TabName.add,
             )
             yield TabPane(
                 TabPanes.logs_tab_button.value,
-                LogsTab(ids=self.app.ids.logs_tab),
-                id=CanvasName.logs_tab.name,
+                LogsTab(ids=self.app.pane_id.logs),
+                id=TabName.logs,
             )
             yield TabPane(
                 TabPanes.config_tab_button.value,
-                ConfigTab(ids=self.app.ids.config_tab),
-                id=CanvasName.config_tab.name,
+                ConfigTab(ids=self.app.pane_id.config),
+                id=TabName.config,
             )
             yield TabPane(
                 TabPanes.help_tab_button.value,
-                HelpTab(ids=self.app.ids.help_tab),
-                id=CanvasName.help_tab.name,
+                HelpTab(ids=self.app.pane_id.help),
+                id=TabName.help,
             )
         yield Footer(id=self.ids.footer_id)
 
@@ -134,7 +134,7 @@ class MainScreen(Screen[None], AppType):
     @work
     async def initialize_loggers(self) -> None:
         # Initialize App logger
-        app_logger = self.query_one(self.app.ids.logs_tab.logger.app_q, AppLog)
+        app_logger = self.query_one(self.app.pane_id.logs.logger.app_q, AppLog)
         self.app_log = app_logger
         self.app.chezmoi.app_log = app_logger
         self.app_log.ready_to_run("--- Application log initialized ---")
@@ -147,13 +147,13 @@ class MainScreen(Screen[None], AppType):
             self.app_log.error("chezmoi executable not found.")
         # Initialize Operate logger
         self.operate_log = self.query_one(
-            self.app.ids.logs_tab.logger.operate_q, OperateLog
+            self.app.pane_id.logs.logger.operate_q, OperateLog
         )
         self.app_log.success(f"{Chars.check_mark} Operate log initialized")
         self.operate_log.ready_to_run("--- Operate log initialized ---")
         # Initialize ReadCmd logger
         read_cmd_logger = self.query_one(
-            self.app.ids.logs_tab.logger.read_q, ReadCmdLog
+            self.app.pane_id.logs.logger.read_q, ReadCmdLog
         )
         self.read_cmd_log = read_cmd_logger
         self.app.chezmoi.read_cmd_log = self.read_cmd_log
@@ -161,7 +161,7 @@ class MainScreen(Screen[None], AppType):
         # Initialize and focus Debug logger if in dev mode
         if self.app.dev_mode:
             debug_logger = self.query_one(
-                self.app.ids.logs_tab.logger.debug_q, DebugLog
+                self.app.pane_id.logs.logger.debug_q, DebugLog
             )
             self.debug_log = debug_logger
             self.app.chezmoi.debug_log = debug_logger
@@ -187,15 +187,15 @@ class MainScreen(Screen[None], AppType):
         self.app_log.info("Updating managed paths")
         self.app.chezmoi.update_managed_paths()
         apply_tab_managed_tree = self.screen.query_one(
-            self.app.ids.apply_tab.tree_id("#", tree=TreeName.managed_tree),
+            self.app.pane_id.apply.tree_id("#", tree=TreeName.managed_tree),
             ManagedTree,
         )
         apply_tab_expanded_tree = self.screen.query_one(
-            self.app.ids.apply_tab.tree_id("#", tree=TreeName.expanded_tree),
+            self.app.pane_id.apply.tree_id("#", tree=TreeName.expanded_tree),
             ExpandedTree,
         )
         apply_tab_flat_tree = self.screen.query_one(
-            self.app.ids.apply_tab.tree_id("#", tree=TreeName.list_tree),
+            self.app.pane_id.apply.tree_id("#", tree=TreeName.list_tree),
             ListTree,
         )
         self.app_log.info("Populating Apply tab trees")
@@ -213,15 +213,15 @@ class MainScreen(Screen[None], AppType):
     def populate_re_add_trees(self) -> None:
         self.app_log.info("Populating Re-Add tab trees")
         re_add_tab_managed_tree = self.screen.query_one(
-            self.app.ids.re_add_tab.tree_id("#", tree=TreeName.managed_tree),
+            self.app.pane_id.re_add.tree_id("#", tree=TreeName.managed_tree),
             ManagedTree,
         )
         re_add_tab_expanded_tree = self.screen.query_one(
-            self.app.ids.re_add_tab.tree_id("#", tree=TreeName.expanded_tree),
+            self.app.pane_id.re_add.tree_id("#", tree=TreeName.expanded_tree),
             ExpandedTree,
         )
         re_add_tab_flat_tree = self.screen.query_one(
-            self.app.ids.re_add_tab.tree_id("#", tree=TreeName.list_tree),
+            self.app.pane_id.re_add.tree_id("#", tree=TreeName.list_tree),
             ListTree,
         )
         re_add_tab_managed_tree.populate_tree()
@@ -241,7 +241,7 @@ class MainScreen(Screen[None], AppType):
 
     def update_config_tab(self) -> None:
         config_tab_switcher = self.screen.query_one(
-            self.app.ids.config_tab.container_id(
+            self.app.pane_id.config.container_id(
                 "#", name=ContainerName.config_switcher
             ),
             ConfigTabSwitcher,
@@ -253,33 +253,33 @@ class MainScreen(Screen[None], AppType):
     ) -> bool | None:
         if action == "toggle_switch_slider":
             active_tab = self.query_one(TabbedContent).active
-            if active_tab == CanvasName.apply_tab:
+            if active_tab == TabName.apply.name:
                 return True
-            elif active_tab == CanvasName.re_add_tab:
+            elif active_tab == TabName.re_add:
                 return True
-            elif active_tab == CanvasName.add_tab:
+            elif active_tab == TabName.add:
                 return True
-            elif active_tab == CanvasName.logs_tab:
+            elif active_tab == TabName.logs:
                 return None
-            elif active_tab == CanvasName.config_tab:
+            elif active_tab == TabName.config:
                 return None
-            elif active_tab == CanvasName.help_tab:
+            elif active_tab == TabName.help:
                 return None
         return True
 
     def _get_slider_from_tab(self, tab_name: str) -> VerticalGroup | None:
-        if tab_name == CanvasName.apply_tab:
+        if tab_name == TabName.apply.name:
             return self.query_one(
-                self.app.ids.apply_tab.container.switch_slider_q, VerticalGroup
+                self.app.pane_id.apply.container.switch_slider_q, VerticalGroup
             )
-        elif tab_name == CanvasName.re_add_tab:
+        elif tab_name == TabName.re_add:
             return self.query_one(
-                self.app.ids.re_add_tab.container.switch_slider_q,
+                self.app.pane_id.re_add.container.switch_slider_q,
                 VerticalGroup,
             )
-        elif tab_name == CanvasName.add_tab:
+        elif tab_name == TabName.add:
             return self.query_one(
-                self.app.ids.add_tab.container.switch_slider_q, VerticalGroup
+                self.app.pane_id.add.container.switch_slider_q, VerticalGroup
             )
         else:
             return None
@@ -322,9 +322,9 @@ class MainScreen(Screen[None], AppType):
         self, event: TabbedContent.TabActivated
     ) -> None:
         if event.tabbed_content.active in (
-            CanvasName.apply_tab,
-            CanvasName.re_add_tab,
-            CanvasName.add_tab,
+            TabName.apply.name,
+            TabName.re_add,
+            TabName.add,
         ):
             self._update_toggle_switch_slider_binding(
                 event.tabbed_content.active
@@ -353,79 +353,79 @@ class MainScreen(Screen[None], AppType):
         main_tabs = self.query_exactly_one(Tabs)
         main_tabs.display = False if main_tabs.display is True else True
 
-        if active_tab == CanvasName.apply_tab:
+        if active_tab == TabName.apply.name:
             left_side = self.query_one(
-                self.app.ids.apply_tab.container.left_side_q, Vertical
+                self.app.pane_id.apply.container.left_side_q, Vertical
             )
             operation_buttons = self.query_one(
-                self.app.ids.apply_tab.container_id(
+                self.app.pane_id.apply.container_id(
                     "#", name=ContainerName.operate_btn_group
                 )
             )
             switch_slider = self.query_one(
-                self.app.ids.apply_tab.container.switch_slider_q, VerticalGroup
+                self.app.pane_id.apply.container.switch_slider_q, VerticalGroup
             )
             view_switcher_buttons = self.query_one(
-                self.app.ids.apply_tab.container_id(
+                self.app.pane_id.apply.container_id(
                     "#", name=ContainerName.switcher_btn_group
                 ),
                 Horizontal,
             )
-        elif active_tab == CanvasName.re_add_tab:
+        elif active_tab == TabName.re_add:
             left_side = self.query_one(
-                self.app.ids.re_add_tab.container.left_side_q, Vertical
+                self.app.pane_id.re_add.container.left_side_q, Vertical
             )
             operation_buttons = self.query_one(
-                self.app.ids.re_add_tab.container_id(
+                self.app.pane_id.re_add.container_id(
                     "#", name=ContainerName.operate_btn_group
                 )
             )
             switch_slider = self.query_one(
-                self.app.ids.re_add_tab.container.switch_slider_q,
+                self.app.pane_id.re_add.container.switch_slider_q,
                 VerticalGroup,
             )
             view_switcher_buttons = self.query_one(
-                self.app.ids.re_add_tab.container_id(
+                self.app.pane_id.re_add.container_id(
                     "#", name=ContainerName.switcher_btn_group
                 ),
                 Horizontal,
             )
-        elif active_tab == CanvasName.add_tab:
+        elif active_tab == TabName.add:
             left_side = self.query_one(
-                self.app.ids.add_tab.container.left_side_q, Vertical
+                self.app.pane_id.add.container.left_side_q, Vertical
             )
             operation_buttons = self.query_one(
-                self.app.ids.add_tab.container_id(
+                self.app.pane_id.add.container_id(
                     "#", name=ContainerName.operate_btn_group
                 )
             )
             switch_slider = self.query_one(
-                self.app.ids.add_tab.container.switch_slider_q, VerticalGroup
+                self.app.pane_id.add.container.switch_slider_q, VerticalGroup
             )
             view_switcher_buttons = None
-        elif active_tab == CanvasName.logs_tab:
+        elif active_tab == TabName.logs:
             view_switcher_buttons = self.query_one(
-                self.app.ids.logs_tab.container_id(
+                self.app.pane_id.logs.container_id(
                     "#", name=ContainerName.switcher_btn_group
                 ),
                 Horizontal,
             )
-        elif active_tab == CanvasName.config_tab:
+        elif active_tab == TabName.config:
             left_side = self.query_one(
-                self.app.ids.config_tab.container.left_side_q, Vertical
+                self.app.pane_id.config.container.left_side_q, Vertical
             )
             view_switcher_buttons = self.query_one(
-                self.app.ids.logs_tab.container_id(
+                self.app.pane_id.logs.container_id(
                     "#", name=ContainerName.switcher_btn_group
                 ),
                 Horizontal,
             )
-        elif active_tab == CanvasName.help_tab:
+        elif active_tab == TabName.help:
             left_side = self.query_one(
-                self.app.ids.help_tab.container.left_side_q, Vertical
+                self.app.pane_id.help.container.left_side_q, Vertical
             )
             view_switcher_buttons = self.query_one(
-                self.app.ids.help_tab.container_id(
+                self.app.pane_id.help.container_id(
                     "#", name=ContainerName.switcher_btn_group
                 ),
                 Horizontal,
@@ -475,7 +475,7 @@ class MainScreen(Screen[None], AppType):
         if (
             self.current_add_node is not None
             and button_enum in (OperateBtn.add_file, OperateBtn.add_dir)
-            and current_tab == CanvasName.add_tab
+            and current_tab == TabName.add
         ):
             operate_screen_data = OperateScreenData(
                 operate_btn=button_enum, node_data=self.current_add_node
@@ -488,7 +488,7 @@ class MainScreen(Screen[None], AppType):
                 OperateBtn.destroy_path,
                 OperateBtn.forget_path,
             )
-            and current_tab == CanvasName.apply_tab
+            and current_tab == TabName.apply.name
         ):
             operate_screen_data = OperateScreenData(
                 operate_btn=button_enum, node_data=self.current_apply_node
@@ -501,7 +501,7 @@ class MainScreen(Screen[None], AppType):
                 OperateBtn.destroy_path,
                 OperateBtn.forget_path,
             )
-            and current_tab == CanvasName.re_add_tab
+            and current_tab == TabName.re_add
         ):
             operate_screen_data = OperateScreenData(
                 operate_btn=button_enum, node_data=self.current_re_add_node
@@ -511,7 +511,7 @@ class MainScreen(Screen[None], AppType):
             return
         self.app.push_screen(
             OperateScreen(
-                ids=self.app.ids.operate_screen,
+                ids=self.app.screen_id.operate,
                 operate_data=operate_screen_data,
             ),
             callback=self._handle_operate_result,
@@ -552,7 +552,7 @@ class MainScreen(Screen[None], AppType):
                 OperateBtn.add_dir,
             ):
                 add_dir_tree = self.query_one(
-                    self.app.ids.add_tab.tree_id("#", tree=TreeName.add_tree),
+                    self.app.pane_id.add.tree_id("#", tree=TreeName.add_tree),
                     FilteredDirTree,
                 )
                 add_dir_tree.reload()

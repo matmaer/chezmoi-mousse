@@ -12,7 +12,7 @@ from textual.containers import Horizontal, VerticalGroup
 from textual.screen import Screen
 from textual.widgets import Button, Collapsible, Pretty, Tree
 
-from chezmoi_mousse import AppType, CanvasName, Chars, FlatBtn, LinkBtn, Tcss
+from chezmoi_mousse import AppType, Chars, FlatBtn, LinkBtn, ScreenName, Tcss
 from chezmoi_mousse.shared import FlatButton, FlatLink, MainSectionLabel
 
 if TYPE_CHECKING:
@@ -49,7 +49,7 @@ class InstallHelp(Screen[None], AppType):
     ]
 
     def __init__(self, *, ids: "AppIds") -> None:
-        super().__init__(id=CanvasName.install_help_screen)
+        super().__init__(id=ScreenName.install_help)
         self.ids = ids
 
     def compose(self) -> ComposeResult:

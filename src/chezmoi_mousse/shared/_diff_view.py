@@ -4,7 +4,7 @@ from rich.text import Text
 from textual.reactive import reactive
 from textual.widgets import RichLog
 
-from chezmoi_mousse import AppType, CanvasName, Chars, ReadCmd, Tcss
+from chezmoi_mousse import AppType, Chars, ReadCmd, ScreenName, TabName, Tcss
 
 from ._dest_dir_info import DestDirInfo
 
@@ -49,7 +49,7 @@ class DiffView(RichLog, AppType):
         self.write(
             f'No diff available for "{self.path}", the path has no status.\n'
         )
-        if self.ids.canvas_name != CanvasName.operate_screen:
+        if self.ids.canvas_name != ScreenName.operate:
             self.write(self.click_colored_file)
 
     def watch_path(self) -> None:
@@ -65,7 +65,7 @@ class DiffView(RichLog, AppType):
         # write lines for an unchanged file or directory except when we are in
         # either the ApplyTab or ReAddTabS
 
-        if self.ids.canvas_name == CanvasName.apply_tab:
+        if self.ids.canvas_name == TabName.apply:
             if (
                 self.path not in self.app.chezmoi.apply_status_files
                 and self.path not in self.app.chezmoi.apply_status_dirs

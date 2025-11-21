@@ -16,10 +16,11 @@ from ._chezmoi import (
     WriteCmd,
 )
 from ._names import (
-    CanvasName,
     ContainerName,
     DataTableName,
     LogName,
+    ScreenName,
+    TabName,
     TreeName,
     ViewName,
 )
@@ -49,15 +50,13 @@ class AppType:
 
 __all__ = [
     "__version__",
-    "AppType",
     "AppIds",
-    "CanvasName",
+    "AppType",
     "Chars",
     "Chezmoi",
     "CommandResult",
-    "DataTableName",
-    "SplashData",
     "ContainerName",
+    "DataTableName",
     "DirTreeNodeData",
     "FlatBtn",
     "GlobalCmd",
@@ -73,8 +72,11 @@ __all__ = [
     "PreRunData",
     "ReadCmd",
     "ReadVerbs",
+    "ScreenName",
+    "SplashData",
     "Switches",
     "TabBtn",
+    "TabName",
     "Tcss",
     "TreeName",
     "VerbArgs",
@@ -83,22 +85,25 @@ __all__ = [
 ]
 
 
-class CanvasIds:
+class ScreenIds:
     def __init__(self) -> None:
         # Construct the ids for each screen
-        self.init_screen = AppIds(CanvasName.init_screen)
-        self.install_help_screen = AppIds(CanvasName.install_help_screen)
-        self.splash_screen = AppIds(CanvasName.splash_screen)
-        self.main_screen = AppIds(CanvasName.main_screen)
-        self.operate_screen = AppIds(CanvasName.operate_screen)
+        self.init = AppIds(ScreenName.init)
+        self.install_help = AppIds(ScreenName.install_help)
+        self.splash = AppIds(ScreenName.splash)
+        self.main = AppIds(ScreenName.main)
+        self.operate = AppIds(ScreenName.operate)
 
+
+class TabIds:
+    def __init__(self) -> None:
         # Construct the ids for the tabs
-        self.add_tab = AppIds(CanvasName.add_tab)
-        self.apply_tab = AppIds(CanvasName.apply_tab)
-        self.config_tab = AppIds(CanvasName.config_tab)
-        self.help_tab = AppIds(CanvasName.help_tab)
-        self.logs_tab = AppIds(CanvasName.logs_tab)
-        self.re_add_tab = AppIds(CanvasName.re_add_tab)
+        self.add = AppIds(TabName.add)
+        self.apply = AppIds(TabName.apply)
+        self.config = AppIds(TabName.config)
+        self.help = AppIds(TabName.help)
+        self.logs = AppIds(TabName.logs)
+        self.re_add = AppIds(TabName.re_add)
 
 
 @dataclass(slots=True)
@@ -140,7 +145,8 @@ class PreRunData:
     chezmoi_found: "bool"
     dev_mode: "bool"
     force_init_screen: "bool"
-    canvas_ids: CanvasIds = CanvasIds()
+    screen_id: ScreenIds = ScreenIds()
+    pane_id: TabIds = TabIds()
 
 
 @dataclass(slots=True)

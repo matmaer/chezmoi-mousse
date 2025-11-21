@@ -7,29 +7,31 @@ Used for creating id's, and checking context conditions.
 from enum import StrEnum, auto
 
 __all__ = [
-    "CanvasName",
     "ContainerName",
     "DataTableName",
     "LogName",
+    "ScreenName",
+    "TabName",
     "TreeName",
     "ViewName",
 ]
 
 
-class CanvasName(StrEnum):
-    """A canvas is either a TabPane or a Screen."""
+class ScreenName(StrEnum):
+    init = auto()
+    install_help = auto()
+    splash = auto()
+    main = auto()
+    operate = auto()
 
-    add_tab = auto()
-    apply_tab = auto()
-    config_tab = auto()
-    help_tab = auto()
-    init_screen = auto()
-    install_help_screen = auto()
-    splash_screen = auto()
-    logs_tab = auto()
-    main_screen = auto()
-    operate_screen = auto()
-    re_add_tab = auto()
+
+class TabName(StrEnum):
+    add = auto()
+    apply = auto()
+    config = auto()
+    help = auto()
+    logs = auto()
+    re_add = auto()
 
 
 class ContainerName(StrEnum):

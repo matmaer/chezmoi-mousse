@@ -5,10 +5,11 @@ Easy access, autocomplete, type checking or to generated the id dynamically.
 
 from chezmoi_mousse._button_data import FlatBtn, LinkBtn, OperateBtn, TabBtn
 from chezmoi_mousse._names import (
-    CanvasName,
     ContainerName,
     DataTableName,
     LogName,
+    ScreenName,
+    TabName,
     TreeName,
     ViewName,
 )
@@ -173,7 +174,7 @@ class AppIds:
         "logger",
     )
 
-    def __init__(self, canvas_name: CanvasName) -> None:
+    def __init__(self, canvas_name: TabName | ScreenName) -> None:
         self.canvas_name: str = canvas_name.name
         self.footer_id = f"{self.canvas_name}_footer"
         self.header_id = f"{self.canvas_name}_header"
