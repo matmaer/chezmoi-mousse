@@ -4,8 +4,8 @@ from pathlib import Path
 import pytest
 from _test_utils import get_modules_importing_class
 
-import chezmoi_mousse._canvas_ids
-from chezmoi_mousse import CanvasIds
+import chezmoi_mousse._app_ids
+from chezmoi_mousse import AppIds
 
 
 def _get_class_public_members_strings(
@@ -59,18 +59,17 @@ class UsageFinder(ast.NodeVisitor):
 
 @pytest.mark.parametrize(
     "member_name, member_type",
-    _get_class_public_members_strings(CanvasIds),
-    ids=[name for name, _ in _get_class_public_members_strings(CanvasIds)],
+    _get_class_public_members_strings(AppIds),
+    ids=[name for name, _ in _get_class_public_members_strings(AppIds)],
 )
 def test_canvasids_member_in_use(member_name: str, member_type: str):
     is_used = False
-    class_name = "CanvasIds"
-
-    # the test should run on all modules importing CanvasIds and the Id class as
-    # the CanvasIds members can be accessed via an Id attribute
+    class_name = "AppIds"
+    # the test should run on all modules importing AppIds and the Id class as
+    # the AppIds members can be accessed via an Id attribute
     paths_to_check: set[Path] = set(get_modules_importing_class(class_name))
-    # also check the classes is the module where CanvasIds is defined
-    paths_to_check.add(Path(chezmoi_mousse._canvas_ids.__file__))
+    # also check the classes is the module where AppIds is defined
+    paths_to_check.add(Path(chezmoi_mousse._app_ids.__file__))
     for py_file in paths_to_check:
         content = py_file.read_text()
         tree = ast.parse(content, filename=str(py_file))
