@@ -141,7 +141,7 @@ class LoadingScreen(Screen[SplashData | None], AppType):
         self.all_workers_timer: Timer
         if init_arg is not None:
             self.init_arg = init_arg
-        super().__init__(id=self.ids.canvas_name)
+        super().__init__()
 
     def compose(self) -> ComposeResult:
         with Center():
