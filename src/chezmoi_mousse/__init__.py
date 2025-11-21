@@ -85,27 +85,6 @@ __all__ = [
 ]
 
 
-class ScreenIds:
-    def __init__(self) -> None:
-        # Construct the ids for each screen
-        self.init = AppIds(ScreenName.init)
-        self.install_help = AppIds(ScreenName.install_help)
-        self.splash = AppIds(ScreenName.splash)
-        self.main = AppIds(ScreenName.main)
-        self.operate = AppIds(ScreenName.operate)
-
-
-class TabIds:
-    def __init__(self) -> None:
-        # Construct the ids for the tabs
-        self.add = AppIds(TabName.add)
-        self.apply = AppIds(TabName.apply)
-        self.config = AppIds(TabName.config)
-        self.help = AppIds(TabName.help)
-        self.logs = AppIds(TabName.logs)
-        self.re_add = AppIds(TabName.re_add)
-
-
 @dataclass(slots=True)
 class DirTreeNodeData:
     path: "Path"
@@ -145,8 +124,6 @@ class PreRunData:
     chezmoi_found: "bool"
     dev_mode: "bool"
     force_init_screen: "bool"
-    screen_id: ScreenIds = ScreenIds()
-    pane_id: TabIds = TabIds()
 
 
 @dataclass(slots=True)

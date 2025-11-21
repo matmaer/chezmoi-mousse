@@ -10,7 +10,7 @@ from textual.binding import Binding
 from textual.scrollbar import ScrollBar, ScrollBarRender
 from textual.theme import Theme
 
-from chezmoi_mousse import Chars
+from chezmoi_mousse import AppIds, Chars, ScreenName, TabName
 from chezmoi_mousse.shared import (
     ContentsView,
     DiffView,
@@ -62,6 +62,27 @@ chezmoi_mousse_light = Theme(
 )
 
 
+class ScreenIds:
+    def __init__(self) -> None:
+        # Construct the ids for each screen
+        self.init = AppIds(ScreenName.init)
+        self.install_help = AppIds(ScreenName.install_help)
+        self.splash = AppIds(ScreenName.splash)
+        self.main = AppIds(ScreenName.main)
+        self.operate = AppIds(ScreenName.operate)
+
+
+class TabIds:
+    def __init__(self) -> None:
+        # Construct the ids for the tabs
+        self.add = AppIds(TabName.add)
+        self.apply = AppIds(TabName.apply)
+        self.config = AppIds(TabName.config)
+        self.help = AppIds(TabName.help)
+        self.logs = AppIds(TabName.logs)
+        self.re_add = AppIds(TabName.re_add)
+
+
 class ChezmoiGUI(App[None]):
 
     BINDINGS = [
@@ -81,8 +102,8 @@ class ChezmoiGUI(App[None]):
         self.chezmoi_found: bool = self.pre_run_data.chezmoi_found
         self.dev_mode: bool = self.pre_run_data.dev_mode
         self.force_init_screen: bool = self.pre_run_data.force_init_screen
-        self.screen_id = self.pre_run_data.screen_id
-        self.pane_id = self.pre_run_data.pane_id
+        self.screen_id = ScreenIds()
+        self.pane_id = TabIds()
 
         # Track the init screen
         self.init_screen_pushed: bool = False
