@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
 
-    from ._str_enums import PathType
+    from ._str_enums import PathKind
 
 __all__ = ["FlatBtn", "LinkBtn", "OperateBtn", "TabBtn"]
 
@@ -258,7 +258,7 @@ class OperateBtn(Enum):
             return self.value.initial_label
         raise AttributeError(f"{self.name} has no dir_label")
 
-    def label(self, path_type: "PathType | None" = None) -> str:
+    def label(self, path_type: "PathKind | None" = None) -> str:
         if path_type == "dir":
             return self._dir_label
         elif path_type == "file":
@@ -266,7 +266,7 @@ class OperateBtn(Enum):
         else:
             return self.value.initial_label
 
-    def tooltip(self, path_type: "PathType | None" = None) -> str:
+    def tooltip(self, path_type: "PathKind | None" = None) -> str:
         if path_type == "dir":
             return self.dir_tooltip
         elif path_type == "file":

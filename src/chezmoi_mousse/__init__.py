@@ -18,7 +18,7 @@ from ._str_enums import (
     ContainerName,
     DataTableName,
     LogName,
-    PathType,
+    PathKind,
     ScreenName,
     TabName,
     Tcss,
@@ -63,7 +63,7 @@ __all__ = [
     "ParsedConfig",
     "PathDict",
     "PathList",
-    "PathType",
+    "PathKind",
     "PreRunData",
     "ReadCmd",
     "ReadVerbs",
@@ -83,7 +83,7 @@ __all__ = [
 @dataclass(slots=True)
 class DirTreeNodeData:
     path: "Path"
-    path_type: "PathType"
+    path_type: "PathKind"
 
 
 @dataclass(slots=True)
@@ -93,7 +93,7 @@ class NodeData:
     # Chezmoi status codes processed: A, D, M, or a space
     # Additional "node status" codes: X (no status but managed)
     status: "str"
-    path_type: "PathType"
+    path_type: "PathKind"
 
 
 @dataclass(slots=True)

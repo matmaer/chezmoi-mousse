@@ -14,7 +14,7 @@ from chezmoi_mousse import (
     Chars,
     DirTreeNodeData,
     OperateBtn,
-    PathType,
+    PathKind,
     Switches,
     Tcss,
     TreeName,
@@ -28,7 +28,7 @@ from chezmoi_mousse.shared import (
 from .common.switch_slider import SwitchSlider
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import AppIds, PathType
+    from chezmoi_mousse import AppIds, PathKind
 
 __all__ = ["AddTab", "FilteredDirTree"]
 
@@ -279,7 +279,7 @@ class AddTab(Horizontal, AppType):
         return
 
     def send_message_current_add_node(
-        self, path: Path, path_type: "PathType"
+        self, path: Path, path_type: "PathKind"
     ) -> None:
         message_data = DirTreeNodeData(path=path, path_type=path_type)
         self.post_message(CurrentAddNodeMsg(message_data))
@@ -306,12 +306,12 @@ class AddTab(Horizontal, AppType):
         if isinstance(event, DirectoryTree.FileSelected):
             self.update_buttons(is_dir=False)
             self.send_message_current_add_node(
-                path=event.node.data.path, path_type=PathType.FILE
+                path=event.node.data.path, path_type=PathKind.FILE
             )
         else:
             self.update_buttons(is_dir=True)
             self.send_message_current_add_node(
-                path=event.node.data.path, path_type=PathType.DIR
+                path=event.node.data.path, path_type=PathKind.DIR
             )
 
     @on(Switch.Changed)

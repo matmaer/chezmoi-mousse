@@ -17,7 +17,7 @@ from chezmoi_mousse import (
     AppType,
     Chars,
     NodeData,
-    PathType,
+    PathKind,
     TabName,
     Tcss,
     TreeName,
@@ -58,7 +58,7 @@ class TreeBase(Tree[NodeData], AppType):
             " ": self.app.theme_variables["text-secondary"],
         }
         self.root.data = NodeData(
-            path=self.destDir, path_type=PathType.DIR, found=True, status="F"
+            path=self.destDir, path_type=PathKind.DIR, found=True, status="F"
         )
         self.guide_depth: int = 3
         self.show_root: bool = False
@@ -129,7 +129,7 @@ class TreeBase(Tree[NodeData], AppType):
         tree_node: TreeNode[NodeData],
         path: "Path",
         status_code: str,
-        path_type: "PathType",
+        path_type: "PathKind",
     ) -> None:
         if self.ids.canvas_name == TabName.re_add:
             # we now check this early on in the _chezmoi.py module
@@ -186,7 +186,7 @@ class TreeBase(Tree[NodeData], AppType):
             if file_path in self.get_leaves_in(tree_node):
                 continue
             self.create_and_add_node(
-                tree_node, file_path, status_code, path_type=PathType.FILE
+                tree_node, file_path, status_code, path_type=PathKind.FILE
             )
 
     def add_files_without_status_in(
@@ -220,7 +220,7 @@ class TreeBase(Tree[NodeData], AppType):
             if file_path in self.get_leaves_in(tree_node):
                 continue
             self.create_and_add_node(
-                tree_node, file_path, status_code, path_type=PathType.FILE
+                tree_node, file_path, status_code, path_type=PathKind.FILE
             )
 
     def add_status_dirs_in(self, *, tree_node: TreeNode[NodeData]) -> None:
@@ -259,7 +259,7 @@ class TreeBase(Tree[NodeData], AppType):
             if dir_path in self.get_dir_nodes_in(tree_node):
                 continue
             self.create_and_add_node(
-                tree_node, dir_path, status_code, path_type=PathType.DIR
+                tree_node, dir_path, status_code, path_type=PathKind.DIR
             )
 
     def add_dirs_without_status_in(
@@ -290,7 +290,7 @@ class TreeBase(Tree[NodeData], AppType):
             if dir_path in self.get_dir_nodes_in(tree_node):
                 continue
             self.create_and_add_node(
-                tree_node, dir_path, status_code, path_type=PathType.DIR
+                tree_node, dir_path, status_code, path_type=PathKind.DIR
             )
 
     def __apply_cursor_style(self, node_label: Text, is_cursor: bool) -> Text:

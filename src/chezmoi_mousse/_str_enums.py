@@ -72,7 +72,7 @@ class LogName(StrEnum):
     splash_logger = auto()
 
 
-class PathType(StrEnum):
+class PathKind(StrEnum):
     DIR = auto()
     FILE = auto()
 

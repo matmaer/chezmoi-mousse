@@ -17,7 +17,7 @@ from chezmoi_mousse import (
     FlatBtn,
     LinkBtn,
     OperateBtn,
-    PathType,
+    PathKind,
     Switches,
     Tcss,
 )
@@ -77,24 +77,24 @@ class HelpSections(StrEnum):
     unwanted_filter = f"{Switches.unwanted.label} Filter"
     # Apply tab
     apply_tab_help = "Apply Tab Help"
-    apply_dir_button = f"{OperateBtn.apply_path.label(PathType.DIR)} Button"
-    apply_file_button = f"{OperateBtn.apply_path.label(PathType.FILE)} Button"
+    apply_dir_button = f"{OperateBtn.apply_path.label(PathKind.DIR)} Button"
+    apply_file_button = f"{OperateBtn.apply_path.label(PathKind.FILE)} Button"
     # Re-Add tab
     re_add_tab_help = "Re-Add Tab Help"
-    re_add_dir_button = f"{OperateBtn.re_add_path.label(PathType.DIR)} Button"
+    re_add_dir_button = f"{OperateBtn.re_add_path.label(PathKind.DIR)} Button"
     re_add_file_button = (
-        f"{OperateBtn.re_add_path.label(PathType.FILE)} Button"
+        f"{OperateBtn.re_add_path.label(PathKind.FILE)} Button"
     )
     # Common buttons for Apply and Re-Add tabs
     destroy_dir_button = (
-        f"{OperateBtn.destroy_path.label(PathType.DIR)} Button"
+        f"{OperateBtn.destroy_path.label(PathKind.DIR)} Button"
     )
     destroy_file_button = (
-        f"{OperateBtn.destroy_path.label(PathType.FILE)} Button"
+        f"{OperateBtn.destroy_path.label(PathKind.FILE)} Button"
     )
-    forget_dir_button = f"{OperateBtn.forget_path.label(PathType.DIR)} Button"
+    forget_dir_button = f"{OperateBtn.forget_path.label(PathKind.DIR)} Button"
     forget_file_button = (
-        f"{OperateBtn.forget_path.label(PathType.FILE)} Button"
+        f"{OperateBtn.forget_path.label(PathKind.FILE)} Button"
     )
     # Common filters for Apply and Re-Add tabs
     expand_all_filter = f"{Switches.expand_all.label} Filter"
