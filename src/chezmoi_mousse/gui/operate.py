@@ -9,6 +9,7 @@ from textual.widgets import Button, Footer
 
 from chezmoi_mousse import (
     AppType,
+    BindingDescription,
     ContainerName,
     OperateBtn,
     OperateScreenData,
@@ -39,7 +40,7 @@ class OperateScreen(Screen[OperateScreenData], AppType):
         Binding(
             key="escape",
             action="exit_operation",
-            description="Press the escape key to exit",
+            description=BindingDescription.back,
             show=True,
         )
     ]

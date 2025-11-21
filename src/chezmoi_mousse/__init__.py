@@ -15,6 +15,7 @@ from ._chezmoi import (
     WriteCmd,
 )
 from ._str_enums import (
+    BindingDescription,
     Chars,
     ContainerName,
     DataTableName,
@@ -46,6 +47,7 @@ __all__ = [
     "__version__",
     "AppIds",
     "AppType",
+    "BindingDescription",
     "Chars",
     "Chezmoi",
     "CommandResult",

@@ -15,6 +15,7 @@ from textual.widgets import Button, ContentSwitcher, Footer, Input, Select
 
 from chezmoi_mousse import (
     AppType,
+    BindingDescription,
     ContainerName,
     DataTableName,
     FlatBtn,
@@ -161,7 +162,7 @@ class InitScreen(Screen[SplashData | None], AppType):
         Binding(
             key="escape",
             action="exit_operation",
-            description="Press the escape key to exit",
+            description=BindingDescription.back,
             show=True,
         )
     ]

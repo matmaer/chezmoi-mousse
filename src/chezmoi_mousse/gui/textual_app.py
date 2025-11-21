@@ -13,7 +13,14 @@ from textual.scrollbar import ScrollBar, ScrollBarRender
 from textual.theme import Theme
 from textual.widgets import TabbedContent, Tabs
 
-from chezmoi_mousse import AppIds, Chars, ContainerName, ScreenName, TabName
+from chezmoi_mousse import (
+    AppIds,
+    BindingDescription,
+    Chars,
+    ContainerName,
+    ScreenName,
+    TabName,
+)
 from chezmoi_mousse.shared import (
     ContentsView,
     CustomHeader,
@@ -91,22 +98,17 @@ class ChezmoiGUI(App[None]):
         Binding(
             key="M,m",
             action="toggle_maximized_display",
-            description="maximize",
-        ),
-        Binding(
-            key="M,m",
-            action="toggle_maximized_display",
-            description="maximize",
+            description=BindingDescription.maximize,
         ),
         Binding(
             key="F,f",
             action="toggle_switch_slider",
-            description="hide filters",
+            description=BindingDescription.hide_filters,
         ),
         Binding(
             key="D,d",
             action="toggle_dry_run_mode",
-            description="Remove --dry-run flag",
+            description=BindingDescription.remove_dry_run_flag,
         ),
     ]
 
@@ -320,7 +322,11 @@ class ChezmoiGUI(App[None]):
                 False if switch_slider.display is True else True
             )
 
-        new_description = "maximize" if header.display is True else "minimize"
+        new_description = (
+            BindingDescription.maximize
+            if header.display is True
+            else BindingDescription.minimize
+        )
 
         for key, binding in self._bindings:
             if binding.action == "toggle_maximized_display":
@@ -348,9 +354,9 @@ class ChezmoiGUI(App[None]):
         operate_info.write_info_lines()
 
         new_description = (
-            "Add --dry-run flag"
+            BindingDescription.add_dry_run_flag
             if self.changes_enabled is True
-            else "Remove --dry-run flag"
+            else BindingDescription.remove_dry_run_flag
         )
 
         for key, binding in self._bindings:
@@ -406,17 +412,19 @@ class ChezmoiGUI(App[None]):
             return
         slider_visible = slider.has_class("-visible")
         new_description = (
-            "hide filters" if slider_visible is False else "show filters"
+            BindingDescription.hide_filters
+            if slider_visible is False
+            else BindingDescription.show_filters
         )
         for key, binding in self._bindings:
             if binding.action == "toggle_switch_slider":
                 if (
-                    binding.description == "show filters"
+                    binding.description == BindingDescription.show_filters
                     and slider_visible is True
                 ):
                     return
                 if (
-                    binding.description == "hide filters"
+                    binding.description == BindingDescription.hide_filters
                     and slider_visible is False
                 ):
                     return
