@@ -8,6 +8,7 @@ from ._chezmoi import (
     Chezmoi,
     CommandResult,
     GlobalCmd,
+    PathDict,
     ReadCmd,
     ReadVerbs,
     VerbArgs,
@@ -31,9 +32,6 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from .gui.textual_app import ChezmoiGUI
-
-type PathDict = "dict[Path, str]"
-type PathList = "list[Path]"
 
 
 class AppType:
@@ -62,7 +60,6 @@ __all__ = [
     "OperateScreenData",
     "ParsedConfig",
     "PathDict",
-    "PathList",
     "PathKind",
     "PreRunData",
     "ReadCmd",

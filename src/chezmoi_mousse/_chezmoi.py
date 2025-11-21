@@ -6,8 +6,10 @@ from subprocess import CompletedProcess, run
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from . import PathDict, PathList
     from .gui.tabs.logs_tab import AppLog, DebugLog, OperateLog, ReadCmdLog
+
+type PathDict = "dict[Path, str]"
+type PathList = "list[Path]"
 
 __all__ = [
     "Chezmoi",
