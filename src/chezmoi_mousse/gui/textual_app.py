@@ -10,7 +10,7 @@ from textual.binding import Binding
 from textual.scrollbar import ScrollBar, ScrollBarRender
 from textual.theme import Theme
 
-from chezmoi_mousse import AppIds, Chars, ScreenName, TabName
+from chezmoi_mousse import AppIds, Chars, ScreenName
 from chezmoi_mousse.shared import (
     ContentsView,
     DiffView,
@@ -72,17 +72,6 @@ class ScreenIds:
         self.operate = AppIds(ScreenName.operate)
 
 
-class TabIds:
-    def __init__(self) -> None:
-        # Construct the ids for the tabs
-        self.add = AppIds(TabName.add)
-        self.apply = AppIds(TabName.apply)
-        self.config = AppIds(TabName.config)
-        self.help = AppIds(TabName.help)
-        self.logs = AppIds(TabName.logs)
-        self.re_add = AppIds(TabName.re_add)
-
-
 class ChezmoiGUI(App[None]):
 
     BINDINGS = [
@@ -103,7 +92,6 @@ class ChezmoiGUI(App[None]):
         self.dev_mode: bool = self.pre_run_data.dev_mode
         self.force_init_screen: bool = self.pre_run_data.force_init_screen
         self.screen_id = ScreenIds()
-        self.pane_id = TabIds()
 
         # Track the init screen
         self.init_screen_pushed: bool = False
