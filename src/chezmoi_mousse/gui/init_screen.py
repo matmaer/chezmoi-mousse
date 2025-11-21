@@ -15,7 +15,6 @@ from textual.widgets import Button, ContentSwitcher, Footer, Input, Select
 
 from chezmoi_mousse import (
     AppType,
-    CommandResult,
     ContainerName,
     DataTableName,
     FlatBtn,
@@ -172,8 +171,6 @@ class InitScreen(Screen[SplashData | None], AppType):
         super().__init__()
 
         self.splash_data = splash_data
-        self.init_result: CommandResult | None = None
-
         self.operate_btn_id = ids.button_id(btn=OperateBtn.init_new_repo)
         self.operate_btn_qid = ids.button_id("#", btn=OperateBtn.init_new_repo)
         self.exit_btn_id = ids.button_id(btn=OperateBtn.exit_button)
