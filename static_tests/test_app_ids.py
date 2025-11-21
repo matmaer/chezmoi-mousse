@@ -61,7 +61,7 @@ class UsageFinder(ast.NodeVisitor):
     _get_class_public_members_strings(AppIds),
     ids=[name for name, _ in _get_class_public_members_strings(AppIds)],
 )
-def test_canvasids_member_in_use(member_name: str, member_type: str):
+def test_app_ids_member_in_use(member_name: str, member_type: str):
     is_used = False
     class_name = "AppIds"
     # the test should run on all modules importing AppIds and the Id class as
