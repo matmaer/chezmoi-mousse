@@ -20,9 +20,9 @@ __all__ = [
 class ScreenName(StrEnum):
     init = auto()
     install_help = auto()
-    splash = auto()
     main = auto()
     operate = auto()
+    splash = auto()
 
 
 class TabName(StrEnum):
@@ -39,8 +39,8 @@ class ContainerName(StrEnum):
     config_switcher = auto()
     dest_dir_info = auto()
     doctor = auto()
-    git_log_path = auto()
     git_log_global = auto()
+    git_log_path = auto()
     help_switcher = auto()
     init_screen_switcher = auto()
     left_side = auto()
@@ -56,10 +56,10 @@ class ContainerName(StrEnum):
 
 
 class DataTableName(StrEnum):
-    doctor_table = auto()
     apply_git_log_table = auto()
-    re_add_git_log_table = auto()
+    doctor_table = auto()
     git_global_log_table = auto()
+    re_add_git_log_table = auto()
 
 
 class LogName(StrEnum):
