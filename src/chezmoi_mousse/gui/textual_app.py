@@ -318,7 +318,7 @@ class ChezmoiGUI(App[None]):
         active_tab = self.screen.query_one(TabbedContent).active
         left_side = None
         operation_buttons = None
-        view_switcher_buttons = None
+        switcher_buttons = None
         switch_slider = None
 
         header = self.screen.query_exactly_one(CustomHeader)
@@ -338,9 +338,9 @@ class ChezmoiGUI(App[None]):
             switch_slider = self.screen.query_one(
                 self.tab_ids.apply.container.switch_slider_q, SwitchSlider
             )
-            view_switcher_buttons = self.screen.query_one(
+            switcher_buttons = self.screen.query_one(
                 self.tab_ids.apply.container_id(
-                    "#", name=ContainerName.switcher_btn_group
+                    "#", name=ContainerName.switcher_buttons
                 ),
                 TabButtons,
             )
@@ -356,9 +356,9 @@ class ChezmoiGUI(App[None]):
             switch_slider = self.screen.query_one(
                 self.tab_ids.re_add.container.switch_slider_q, SwitchSlider
             )
-            view_switcher_buttons = self.screen.query_one(
+            switcher_buttons = self.screen.query_one(
                 self.tab_ids.re_add.container_id(
-                    "#", name=ContainerName.switcher_btn_group
+                    "#", name=ContainerName.switcher_buttons
                 ),
                 TabButtons,
             )
@@ -374,11 +374,11 @@ class ChezmoiGUI(App[None]):
             switch_slider = self.screen.query_one(
                 self.tab_ids.add.container.switch_slider_q, SwitchSlider
             )
-            view_switcher_buttons = None
+            switcher_buttons = None
         elif active_tab == TabName.logs:
-            view_switcher_buttons = self.screen.query_one(
+            switcher_buttons = self.screen.query_one(
                 self.tab_ids.logs.container_id(
-                    "#", name=ContainerName.switcher_btn_group
+                    "#", name=ContainerName.switcher_buttons
                 ),
                 TabButtons,
             )
@@ -386,9 +386,9 @@ class ChezmoiGUI(App[None]):
             left_side = self.screen.query_one(
                 self.tab_ids.config.container.left_side_q, FlatButtonsVertical
             )
-            view_switcher_buttons = self.screen.query_one(
+            switcher_buttons = self.screen.query_one(
                 self.tab_ids.logs.container_id(
-                    "#", name=ContainerName.switcher_btn_group
+                    "#", name=ContainerName.switcher_buttons
                 ),
                 TabButtons,
             )
@@ -403,9 +403,9 @@ class ChezmoiGUI(App[None]):
             operation_buttons.display = (
                 False if operation_buttons.display is True else True
             )
-        if view_switcher_buttons is not None:
-            view_switcher_buttons.display = (
-                False if view_switcher_buttons.display is True else True
+        if switcher_buttons is not None:
+            switcher_buttons.display = (
+                False if switcher_buttons.display is True else True
             )
         if switch_slider is not None:
             switch_slider.display = (

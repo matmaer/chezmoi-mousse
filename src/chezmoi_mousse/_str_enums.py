@@ -65,7 +65,7 @@ class ContainerName(StrEnum):
     pre_operate = auto()
     right_side = auto()
     switch_slider = auto()
-    switcher_btn_group = auto()
+    switcher_buttons = auto()
     tree_switcher = auto()
     view_switcher = auto()
 

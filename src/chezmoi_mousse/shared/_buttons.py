@@ -98,7 +98,7 @@ class TabButtons(Horizontal):
         self.ids = ids
         self.buttons = buttons
         super().__init__(
-            id=self.ids.container_id(name=ContainerName.switcher_btn_group)
+            id=self.ids.container_id(name=ContainerName.switcher_buttons)
         )
 
     def compose(self) -> ComposeResult:
