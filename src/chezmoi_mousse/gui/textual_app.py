@@ -332,7 +332,7 @@ class ChezmoiGUI(App[None]):
             )
             operation_buttons = self.screen.query_one(
                 self.tab_ids.apply.container_id(
-                    "#", name=ContainerName.operate_btn_group
+                    "#", name=ContainerName.operate_buttons
                 )
             )
             switch_slider = self.screen.query_one(
@@ -350,7 +350,7 @@ class ChezmoiGUI(App[None]):
             )
             operation_buttons = self.screen.query_one(
                 self.tab_ids.re_add.container_id(
-                    "#", name=ContainerName.operate_btn_group
+                    "#", name=ContainerName.operate_buttons
                 )
             )
             switch_slider = self.screen.query_one(
@@ -368,7 +368,7 @@ class ChezmoiGUI(App[None]):
             )
             operation_buttons = self.screen.query_one(
                 self.tab_ids.add.container_id(
-                    "#", name=ContainerName.operate_btn_group
+                    "#", name=ContainerName.operate_buttons
                 )
             )
             switch_slider = self.screen.query_one(

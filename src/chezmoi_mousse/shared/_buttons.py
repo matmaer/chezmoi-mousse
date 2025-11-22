@@ -83,7 +83,7 @@ class OperateButtons(Horizontal):
         self.ids = ids
         self.buttons = buttons
         super().__init__(
-            id=self.ids.container_id(name=ContainerName.operate_btn_group)
+            id=self.ids.container_id(name=ContainerName.operate_buttons)
         )
 
     def on_mount(self) -> None:

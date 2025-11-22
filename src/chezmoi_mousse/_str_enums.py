@@ -60,7 +60,7 @@ class ContainerName(StrEnum):
     init_screen_switcher = auto()
     left_side = auto()
     logs_switcher = auto()
-    operate_btn_group = auto()
+    operate_buttons = auto()
     post_operate = auto()
     pre_operate = auto()
     right_side = auto()
