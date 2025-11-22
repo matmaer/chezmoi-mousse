@@ -25,6 +25,7 @@ from chezmoi_mousse.shared import (
     ContentsView,
     CustomHeader,
     DiffView,
+    FlatButtonsVertical,
     GitLogPath,
     TabButtons,
 )
@@ -37,7 +38,7 @@ from .splash import SplashScreen
 from .tabs.add_tab import AddTab
 from .tabs.common.operate_info import OperateInfo
 from .tabs.common.switch_slider import SwitchSlider
-from .tabs.common.switchers import ViewSwitcher
+from .tabs.common.switchers import TreeSwitcher, ViewSwitcher
 from .tabs.common.trees import TreeBase
 
 if TYPE_CHECKING:
@@ -328,7 +329,7 @@ class ChezmoiGUI(App[None]):
 
         if active_tab == TabName.apply.name:
             left_side = self.screen.query_one(
-                self.tab_ids.apply.container.left_side_q, Vertical
+                self.tab_ids.apply.container.left_side_q, TreeSwitcher
             )
             operation_buttons = self.screen.query_one(
                 self.tab_ids.apply.container_id(
@@ -346,7 +347,7 @@ class ChezmoiGUI(App[None]):
             )
         elif active_tab == TabName.re_add:
             left_side = self.screen.query_one(
-                self.tab_ids.re_add.container.left_side_q, Vertical
+                self.tab_ids.re_add.container.left_side_q, TreeSwitcher
             )
             operation_buttons = self.screen.query_one(
                 self.tab_ids.re_add.container_id(
@@ -384,7 +385,7 @@ class ChezmoiGUI(App[None]):
             )
         elif active_tab == TabName.config:
             left_side = self.screen.query_one(
-                self.tab_ids.config.container.left_side_q, Vertical
+                self.tab_ids.config.container.left_side_q, FlatButtonsVertical
             )
             view_switcher_buttons = self.screen.query_one(
                 self.tab_ids.logs.container_id(
@@ -394,7 +395,7 @@ class ChezmoiGUI(App[None]):
             )
         elif active_tab == TabName.help:
             left_side = self.screen.query_one(
-                self.tab_ids.help.container.left_side_q, Vertical
+                self.tab_ids.help.container.left_side_q, FlatButtonsVertical
             )
 
         if left_side is not None:
