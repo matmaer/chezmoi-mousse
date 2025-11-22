@@ -23,11 +23,12 @@ class AppIds:
         "canvas_name",
         "container",
         "data_table",
-        "header_id",
         "footer_id",
-        "view",
-        "view_btn",
+        "header_id",
         "logger",
+        "tree",
+        "view_btn",
+        "view",
     )
 
     def __init__(self, canvas_name: TabName | ScreenName) -> None:
@@ -38,6 +39,7 @@ class AppIds:
         self.container = ContainerIds(self)
         self.data_table = DataTableIds(self)
         self.logger = LoggerIds(self)
+        self.tree = TreeIds(self)
         self.view = ViewIds(self)
         self.view_btn = ViewButtons(self)
 
@@ -184,6 +186,20 @@ class ViewButtons:
         self.ignored = canvas_ids.button_id(btn=FlatBtn.ignored)
         self.pw_mgr_info = canvas_ids.button_id(btn=FlatBtn.pw_mgr_info)
         self.template_data = canvas_ids.button_id(btn=FlatBtn.template_data)
+
+
+class TreeIds:
+    """Tree widget their id's."""
+
+    def __init__(self, canvas_ids: AppIds):
+        self.dir_tree = canvas_ids.tree_id(tree=TreeName.dir_tree)
+        self.dir_tree_q = f"#{self.dir_tree}"
+        self.expanded_tree = canvas_ids.tree_id(tree=TreeName.expanded_tree)
+        self.expanded_tree_q = f"#{self.expanded_tree}"
+        self.list_tree = canvas_ids.tree_id(tree=TreeName.list_tree)
+        self.list_tree_q = f"#{self.list_tree}"
+        self.managed_tree = canvas_ids.tree_id(tree=TreeName.managed_tree)
+        self.managed_tree_q = f"#{self.managed_tree}"
 
 
 class ViewIds:
