@@ -128,7 +128,6 @@ class Tcss(StrEnum):
     changes_enabled_color = ".changes_enabled_color"
     content_switcher_left = ".content_switcher_left"
     custom_collapsible = ".custom_collapsible"
-    dir_tree_widget = ".dir_tree_widget"
     doctor_table = ".doctor_table"
     flat_button = ".flat_button"
     flat_link = ".flat_link"

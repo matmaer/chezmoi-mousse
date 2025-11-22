@@ -191,7 +191,7 @@ class ChezmoiGUI(App[None]):
             )
             return
         dest_dir = splash_data.parsed_config.dest_dir
-        AddTab.destdir = dest_dir
+        AddTab.destDir = dest_dir
         ContentsView.destDir = dest_dir
         DiffView.destDir = dest_dir
         GitLogPath.destDir = dest_dir

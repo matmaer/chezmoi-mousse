@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import Horizontal, Vertical
+from textual.containers import Horizontal
 from textual.reactive import reactive
 from textual.widgets import Button, DirectoryTree, Switch
 
@@ -17,7 +17,6 @@ from chezmoi_mousse import (
     PathKind,
     Switches,
     Tcss,
-    TreeName,
 )
 from chezmoi_mousse.shared import (
     ContentsView,
@@ -114,12 +113,6 @@ class FilteredDirTree(DirectoryTree, AppType):
 
     unmanaged_dirs: reactive[bool] = reactive(False, init=False)
     unwanted: reactive[bool] = reactive(False, init=False)
-
-    def on_mount(self) -> None:
-        self.add_class(Tcss.dir_tree_widget.name, Tcss.border_title_top.name)
-        self.border_title = " destDir "
-        self.guide_depth = 3
-        self.show_root = False
 
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
 
@@ -236,7 +229,7 @@ class FilteredDirTree(DirectoryTree, AppType):
 
 class AddTab(Horizontal, AppType):
 
-    destdir: Path
+    destDir: Path
 
     def __init__(self, ids: "AppIds") -> None:
         self.ids = ids
@@ -244,24 +237,35 @@ class AddTab(Horizontal, AppType):
 
         self.add_file_btn_qid = ids.button_id("#", btn=OperateBtn.add_file)
         self.add_dir_btn_qid = ids.button_id("#", btn=OperateBtn.add_dir)
-        self.add_tree_id = ids.tree_id(tree=TreeName.add_tree)
-        self.add_tree_qid = ids.tree_id("#", tree=TreeName.add_tree)
         self.unmanaged_switch_id = ids.switch_id(
             switch=Switches.unmanaged_dirs
         )
 
     def compose(self) -> ComposeResult:
-        with Vertical(
-            id=self.ids.container.left_side,
-            classes=Tcss.tab_left_vertical.name,
-        ):
-            yield FilteredDirTree(self.destdir, id=self.add_tree_id)
-        with Vertical(id=self.ids.container.right_side):
-            yield ContentsView(ids=self.ids)
+        yield FilteredDirTree(
+            self.destDir, id=self.app.tab_ids.add.tree.dir_tree
+        )
+        yield ContentsView(ids=self.ids)
         yield OperateButtons(
             ids=self.ids, buttons=(OperateBtn.add_file, OperateBtn.add_dir)
         )
         yield SwitchSlider(ids=self.ids)
+
+    def on_mount(self) -> None:
+        contents_view = self.query_one(
+            self.ids.logger.contents_q, ContentsView
+        )
+        contents_view.add_class(Tcss.border_title_top.name)
+        contents_view.border_title = f" {self.destDir} "
+        dir_tree = self.query_one(
+            self.app.tab_ids.add.tree.dir_tree_q, FilteredDirTree
+        )
+        dir_tree.guide_depth = 3
+        dir_tree.show_root = False
+        dir_tree.add_class(
+            Tcss.tab_left_vertical.name, Tcss.border_title_top.name
+        )
+        dir_tree.border_title = f" {self.destDir} "
 
     def update_buttons(self, is_dir: bool) -> None:
         add_file_button = self.query_one(self.add_file_btn_qid, Button)
@@ -317,7 +321,9 @@ class AddTab(Horizontal, AppType):
     @on(Switch.Changed)
     def handle_filter_switches(self, event: Switch.Changed) -> None:
         event.stop()
-        tree = self.query_one(self.add_tree_qid, FilteredDirTree)
+        tree = self.query_one(
+            self.app.tab_ids.add.tree.dir_tree_q, FilteredDirTree
+        )
         if event.switch.id == self.unmanaged_switch_id:
             tree.unmanaged_dirs = event.value
         elif event.switch.id == self.ids.switch_id(switch=Switches.unwanted):
