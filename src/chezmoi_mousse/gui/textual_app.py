@@ -161,7 +161,7 @@ class ChezmoiGUI(App[None]):
                 await worker.wait()
                 self.push_main_screen(worker.result)
             return
-        # Case 3: chezmoi found and an existing repository and config is found
+        # Chezmoi found, init not needed
         self.push_main_screen(worker.result)
 
     @work
