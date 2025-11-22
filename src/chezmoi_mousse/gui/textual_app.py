@@ -8,7 +8,7 @@ from rich.style import Style
 from textual import work
 from textual.app import App
 from textual.binding import Binding
-from textual.containers import Horizontal, Vertical, VerticalGroup
+from textual.containers import Vertical
 from textual.scrollbar import ScrollBar, ScrollBarRender
 from textual.theme import Theme
 from textual.widgets import TabbedContent, Tabs
@@ -26,6 +26,7 @@ from chezmoi_mousse.shared import (
     CustomHeader,
     DiffView,
     GitLogPath,
+    TabButtons,
 )
 
 from .init_screen import InitScreen
@@ -35,6 +36,7 @@ from .operate import OperateScreen
 from .splash import SplashScreen
 from .tabs.add_tab import AddTab
 from .tabs.common.operate_info import OperateInfo
+from .tabs.common.switch_slider import SwitchSlider
 from .tabs.common.switchers import ViewSwitcher
 from .tabs.common.trees import TreeBase
 
@@ -216,18 +218,18 @@ class ChezmoiGUI(App[None]):
             )
         self.refresh_bindings()
 
-    def get_slider_from_tab(self, tab_name: str) -> VerticalGroup | None:
+    def get_slider_from_tab(self, tab_name: str) -> SwitchSlider | None:
         if tab_name == TabName.apply.name:
             return self.screen.query_one(
-                self.tab_ids.apply.container.switch_slider_q, VerticalGroup
+                self.tab_ids.apply.container.switch_slider_q, SwitchSlider
             )
         elif tab_name == TabName.re_add:
             return self.screen.query_one(
-                self.tab_ids.re_add.container.switch_slider_q, VerticalGroup
+                self.tab_ids.re_add.container.switch_slider_q, SwitchSlider
             )
         elif tab_name == TabName.add:
             return self.screen.query_one(
-                self.tab_ids.add.container.switch_slider_q, VerticalGroup
+                self.tab_ids.add.container.switch_slider_q, SwitchSlider
             )
         else:
             return None
@@ -334,13 +336,13 @@ class ChezmoiGUI(App[None]):
                 )
             )
             switch_slider = self.screen.query_one(
-                self.tab_ids.apply.container.switch_slider_q, VerticalGroup
+                self.tab_ids.apply.container.switch_slider_q, SwitchSlider
             )
             view_switcher_buttons = self.screen.query_one(
                 self.tab_ids.apply.container_id(
                     "#", name=ContainerName.switcher_btn_group
                 ),
-                Horizontal,
+                TabButtons,
             )
         elif active_tab == TabName.re_add:
             left_side = self.screen.query_one(
@@ -352,13 +354,13 @@ class ChezmoiGUI(App[None]):
                 )
             )
             switch_slider = self.screen.query_one(
-                self.tab_ids.re_add.container.switch_slider_q, VerticalGroup
+                self.tab_ids.re_add.container.switch_slider_q, SwitchSlider
             )
             view_switcher_buttons = self.screen.query_one(
                 self.tab_ids.re_add.container_id(
                     "#", name=ContainerName.switcher_btn_group
                 ),
-                Horizontal,
+                TabButtons,
             )
         elif active_tab == TabName.add:
             left_side = self.screen.query_one(
@@ -370,7 +372,7 @@ class ChezmoiGUI(App[None]):
                 )
             )
             switch_slider = self.screen.query_one(
-                self.tab_ids.add.container.switch_slider_q, VerticalGroup
+                self.tab_ids.add.container.switch_slider_q, SwitchSlider
             )
             view_switcher_buttons = None
         elif active_tab == TabName.logs:
@@ -378,7 +380,7 @@ class ChezmoiGUI(App[None]):
                 self.tab_ids.logs.container_id(
                     "#", name=ContainerName.switcher_btn_group
                 ),
-                Horizontal,
+                TabButtons,
             )
         elif active_tab == TabName.config:
             left_side = self.screen.query_one(
@@ -388,7 +390,7 @@ class ChezmoiGUI(App[None]):
                 self.tab_ids.logs.container_id(
                     "#", name=ContainerName.switcher_btn_group
                 ),
-                Horizontal,
+                TabButtons,
             )
         elif active_tab == TabName.help:
             left_side = self.screen.query_one(
