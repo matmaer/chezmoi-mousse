@@ -103,6 +103,10 @@ class ContainerIds:
             name=ContainerName.logs_switcher
         )
         self.logs_switcher_q = f"#{self.logs_switcher}"
+        self.operate_buttons = canvas_ids.container_id(
+            name=ContainerName.operate_btn_group
+        )
+        self.operate_buttons_q = f"#{self.operate_buttons}"
         self.right_side = canvas_ids.container_id(
             name=ContainerName.right_side
         )
