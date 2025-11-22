@@ -8,7 +8,6 @@ from rich.style import Style
 from textual import work
 from textual.app import App
 from textual.binding import Binding
-from textual.containers import Vertical
 from textual.scrollbar import ScrollBar, ScrollBarRender
 from textual.theme import Theme
 from textual.widgets import TabbedContent, Tabs
@@ -35,7 +34,7 @@ from .install_help import InstallHelp
 from .main_screen import MainScreen
 from .operate import OperateScreen
 from .splash import SplashScreen
-from .tabs.add_tab import AddTab
+from .tabs.add_tab import AddTab, FilteredDirTree
 from .tabs.common.operate_info import OperateInfo
 from .tabs.common.switch_slider import SwitchSlider
 from .tabs.common.switchers import TreeSwitcher, ViewSwitcher
@@ -365,7 +364,7 @@ class ChezmoiGUI(App[None]):
             )
         elif active_tab == TabName.add:
             left_side = self.screen.query_one(
-                self.tab_ids.add.container.left_side_q, Vertical
+                self.tab_ids.add.tree.dir_tree, FilteredDirTree
             )
             operation_buttons = self.screen.query_one(
                 self.tab_ids.add.container_id(
