@@ -12,7 +12,6 @@ from chezmoi_mousse import (
     AppType,
     BindingDescription,
     Chars,
-    ContainerName,
     OperateBtn,
     Tcss,
     WriteCmd,
@@ -153,22 +152,11 @@ class OperateScreen(Screen["OperateScreenData"], AppType):
         self.exit_btn_id = ids.button_id(btn=OperateBtn.exit_button)
         self.exit_btn_qid = ids.button_id("#", btn=OperateBtn.exit_button)
 
-        self.post_operate_id = ids.container_id(
-            name=ContainerName.post_operate
-        )
-        self.post_operate_qid = ids.container_id(
-            "#", name=ContainerName.post_operate
-        )
-        self.pre_operate_id = ids.container_id(name=ContainerName.pre_operate)
-        self.pre_operate_qid = ids.container_id(
-            "#", name=ContainerName.pre_operate
-        )
-
         self.operate_data = operate_data
 
     def compose(self) -> ComposeResult:
         yield CustomHeader(self.ids)
-        with VerticalGroup(id=self.pre_operate_id):
+        with VerticalGroup(id=self.ids.container.pre_operate):
             yield OperateInfo(operate_screen_data=self.operate_data)
             yield MainSectionLabel(SectionLabelText.operate_context)
             if self.operate_btn == OperateBtn.apply_path:
@@ -182,7 +170,7 @@ class OperateScreen(Screen["OperateScreenData"], AppType):
                 OperateBtn.destroy_path,
             ):
                 yield ContentsView(ids=self.ids)
-        with VerticalGroup(id=self.post_operate_id):
+        with VerticalGroup(id=self.ids.container.post_operate):
             yield MainSectionLabel(SectionLabelText.operate_output)
             yield OperateLog(ids=self.ids)
         yield OperateButtons(
@@ -246,7 +234,9 @@ class OperateScreen(Screen["OperateScreenData"], AppType):
             )
 
     def configure_containers(self) -> None:
-        self.query_one(self.post_operate_qid, VerticalGroup).display = False
+        self.query_one(
+            self.ids.container.post_operate, VerticalGroup
+        ).display = False
 
     def run_operate_command(self) -> "CommandResult | None":
         cmd_result: "CommandResult | None" = None
@@ -289,10 +279,12 @@ class OperateScreen(Screen["OperateScreenData"], AppType):
         self.post_operate_ui_update()
 
     def post_operate_ui_update(self) -> None:
-        pre_op_container = self.query_one(self.pre_operate_qid, VerticalGroup)
+        pre_op_container = self.query_one(
+            self.ids.container.pre_operate, VerticalGroup
+        )
         pre_op_container.display = False
         post_op_container = self.query_one(
-            self.post_operate_qid, VerticalGroup
+            self.ids.container.post_operate, VerticalGroup
         )
         post_op_container.display = True
 

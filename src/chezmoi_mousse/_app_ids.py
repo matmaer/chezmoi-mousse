@@ -121,6 +121,14 @@ class ContainerIds:
             name=ContainerName.operate_buttons
         )
         self.operate_buttons_q = f"#{self.operate_buttons}"
+        self.post_operate = canvas_ids.container_id(
+            name=ContainerName.post_operate
+        )
+        self.post_operate_q = f"#{self.post_operate}"
+        self.pre_operate = canvas_ids.container_id(
+            name=ContainerName.pre_operate
+        )
+        self.pre_operate_q = f"#{self.pre_operate}"
         self.right_side = canvas_ids.container_id(
             name=ContainerName.right_side
         )
@@ -171,14 +179,6 @@ class DataTableIds:
             datatable_name=DataTableName.git_log_table
         )
         self.git_log_q = f"#{self.git_log}"
-        # self.git_global_log = canvas_ids.datatable_id(
-        #     datatable_name=DataTableName.git_global_log_table
-        # )
-        # self.git_global_log_q = f"#{self.git_global_log}"
-        # self.git_path_log = canvas_ids.datatable_id(
-        #     datatable_name=DataTableName.git_path_log_table
-        # )
-        # self.git_path_log_q = f"#{self.git_path_log}"
 
 
 class FilterIds:
@@ -254,24 +254,7 @@ class ViewButtons:
         self.debug_log = canvas_ids.button_id(btn=TabBtn.debug_log)
         self.operate_log = canvas_ids.button_id(btn=TabBtn.operate_log)
         self.read_log = canvas_ids.button_id(btn=TabBtn.read_log)
-
-        # Help tab
-        # self.add_help = canvas_ids.button_id(btn=FlatBtn.add_help)
-        # self.apply_help = canvas_ids.button_id(btn=FlatBtn.apply_help)
-        # self.diagram = canvas_ids.button_id(btn=FlatBtn.diagram)
-        # self.re_add_help = canvas_ids.button_id(btn=FlatBtn.re_add_help)
-
-        # Init screen
-        # self.clone_repo = canvas_ids.button_id(btn=FlatBtn.init_clone_repo)
-        # self.new_repo = canvas_ids.button_id(btn=FlatBtn.init_new_repo)
-
-        # Shared across canvases
-        # self.cat_config = canvas_ids.button_id(btn=FlatBtn.cat_config)
         self.diff = canvas_ids.button_id(btn=TabBtn.diff)
-        # self.doctor = canvas_ids.button_id(btn=FlatBtn.doctor)
-        # self.ignored = canvas_ids.button_id(btn=FlatBtn.ignored)
-        # self.pw_mgr_info = canvas_ids.button_id(btn=FlatBtn.pw_mgr_info)
-        # self.template_data = canvas_ids.button_id(btn=FlatBtn.template_data)
 
 
 class TreeIds:
