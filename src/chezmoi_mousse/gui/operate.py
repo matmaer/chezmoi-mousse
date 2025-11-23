@@ -193,7 +193,6 @@ class OperateScreen(Screen[OperateScreenData], AppType):
                 f"Operate button not implemented: {self.operate_btn.name}",
                 severity="error",
             )
-        self.operate_data.operation_executed = True
         self.operate_data.command_result = cmd_result
         self.post_operate_ui_update()
 

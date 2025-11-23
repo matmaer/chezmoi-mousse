@@ -102,7 +102,6 @@ class OperateScreenData:
     node_data: "NodeData | DirTreeNodeData"
     operate_btn: "OperateBtn"
     command_result: "CommandResult | None" = None
-    operation_executed: "bool" = False
     path: "Path | None" = None
 
 

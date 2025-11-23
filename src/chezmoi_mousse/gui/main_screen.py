@@ -281,18 +281,8 @@ class MainScreen(Screen[None], AppType):
         reactive_header = self.query_exactly_one(CustomHeader)
         reactive_header.changes_enabled = self.app.changes_enabled
         self.refresh_bindings()
-        # Actual handling of the result
-        if screen_result is None:
-            self.notify("No operation result returned.", severity="error")
-            return
-        elif screen_result.operation_executed is False:
-            self.notify(
-                "Operation cancelled, no changes were made.",
-                severity="warning",
-            )
-            return
-        elif (
-            screen_result.operation_executed is True
+        if (
+            screen_result is not None
             and screen_result.command_result is not None
         ):
             if screen_result.command_result.returncode == 0:
@@ -311,6 +301,10 @@ class MainScreen(Screen[None], AppType):
             add_dir_tree.reload()
             self.populate_apply_trees()
             self.populate_re_add_trees()
+        elif (
+            screen_result is not None and screen_result.command_result is None
+        ):
+            self.notify("Operation cancelled, no changes were made.")
         else:
             self.notify(
                 "Unknown operation result condition.", severity="error"
