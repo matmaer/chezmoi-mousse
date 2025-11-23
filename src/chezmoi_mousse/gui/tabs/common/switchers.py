@@ -8,7 +8,7 @@ from textual.app import ComposeResult
 from textual.containers import Vertical
 from textual.widgets import Button, ContentSwitcher
 
-from chezmoi_mousse import ContainerName, TabBtn, Tcss
+from chezmoi_mousse import TabBtn, Tcss
 from chezmoi_mousse.shared import (
     ContentsView,
     DiffView,
@@ -38,7 +38,7 @@ class TreeSwitcher(Vertical):
     def compose(self) -> ComposeResult:
         yield TabButtons(ids=self.ids, buttons=(TabBtn.tree, TabBtn.list))
         with ContentSwitcher(
-            id=self.ids.container_id(name=ContainerName.tree_switcher),
+            id=self.ids.switcher.trees,
             initial=self.ids.tree.managed,
             classes=Tcss.content_switcher_left.name,
         ):
@@ -65,7 +65,7 @@ class ViewSwitcher(Vertical):
             buttons=(TabBtn.diff, TabBtn.contents, TabBtn.git_log_path),
         )
         with ContentSwitcher(
-            id=self.ids.container.view_switcher, initial=self.ids.logger.diff
+            id=self.ids.switcher.views, initial=self.ids.logger.diff
         ):
             yield DiffView(ids=self.ids, reverse=self.reverse)
             yield ContentsView(ids=self.ids)
@@ -74,7 +74,7 @@ class ViewSwitcher(Vertical):
     @on(Button.Pressed)
     def switch_tree(self, event: Button.Pressed) -> None:
         view_switcher = self.query_one(
-            self.ids.container.view_switcher_q, ContentSwitcher
+            self.ids.switcher.views_q, ContentSwitcher
         )
         if event.button.id == self.contents_tab_btn:
             view_switcher.current = self.ids.logger.contents

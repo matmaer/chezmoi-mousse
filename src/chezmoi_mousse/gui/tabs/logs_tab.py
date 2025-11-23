@@ -372,7 +372,7 @@ class LogsTab(Vertical, AppType):
 
     def on_mount(self) -> None:
         switcher = self.query_one(
-            self.ids.container.logs_switcher_q, ContentSwitcher
+            self.ids.switcher.logs_tab_q, ContentSwitcher
         )
         if self.initial_view_id == self.ids.logger.debug:
             switcher.border_title = BorderTitle.debug_log
@@ -383,7 +383,7 @@ class LogsTab(Vertical, AppType):
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
         switcher = self.query_one(
-            self.ids.container.logs_switcher_q, ContentSwitcher
+            self.ids.switcher.logs_tab_q, ContentSwitcher
         )
         if event.button.id == self.ids.view_btn.app_log:
             switcher.current = self.ids.logger.app

@@ -6,6 +6,7 @@ __all__ = [
     "BindingDescription",
     "Chars",
     "ContainerName",
+    "ContentSwitcherName",
     "DataTableName",
     "HeaderTitle",
     "LogName",
@@ -65,6 +66,15 @@ class ContainerName(StrEnum):
     right_side = auto()
     switch_slider = auto()
     switcher_buttons = auto()
+    tree_switcher = auto()
+    view_switcher = auto()
+
+
+class ContentSwitcherName(StrEnum):
+    config_switcher = auto()
+    help_switcher = auto()
+    init_screen_switcher = auto()
+    logs_switcher = auto()
     tree_switcher = auto()
     view_switcher = auto()
 

@@ -29,8 +29,7 @@ class ConfigTabSwitcher(ContentSwitcher):
     def __init__(self, ids: "AppIds"):
         self.ids = ids
         super().__init__(
-            id=self.ids.container.config_switcher,
-            initial=self.ids.container.doctor,
+            id=self.ids.switcher.config_tab, initial=self.ids.container.doctor
         )
 
     def compose(self) -> ComposeResult:
@@ -95,7 +94,7 @@ class ConfigTab(Horizontal, AppType):
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
         switcher = self.query_one(
-            self.ids.container.config_switcher_q, ConfigTabSwitcher
+            self.ids.switcher.config_tab_q, ConfigTabSwitcher
         )
         if event.button.id == self.ids.view_btn.doctor:
             switcher.current = self.ids.container.doctor

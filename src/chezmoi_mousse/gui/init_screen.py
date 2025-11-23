@@ -16,7 +16,6 @@ from textual.widgets import Button, ContentSwitcher, Footer, Input, Select
 from chezmoi_mousse import (
     AppType,
     BindingDescription,
-    ContainerName,
     DataTableName,
     FlatBtn,
     OperateBtn,
@@ -124,8 +123,7 @@ class InitSwitcher(ContentSwitcher):
     def __init__(self, *, ids: "AppIds", splash_data: "SplashData") -> None:
         self.ids = ids
         super().__init__(
-            id=self.ids.container_id(name=ContainerName.init_screen_switcher),
-            initial=self.ids.view.clone_repo,
+            id=self.ids.switcher.init_screen, initial=self.ids.view.clone_repo
         )
         self.splash_data = splash_data
         self.doctor_table_qid = ids.datatable_id(
@@ -223,10 +221,7 @@ class InitScreen(Screen[SplashData | None], AppType):
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
         switcher = self.query_one(
-            self.ids.container_id(
-                "#", name=ContainerName.init_screen_switcher
-            ),
-            ContentSwitcher,
+            self.ids.switcher.init_screen_q, ContentSwitcher
         )
         if event.button.id == self.ids.view_btn.new_repo:
             switcher.current = self.ids.view.new_repo

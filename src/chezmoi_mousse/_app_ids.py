@@ -6,6 +6,7 @@ Easy access, autocomplete, type checking or to generated the id dynamically.
 from ._button_data import FlatBtn, LinkBtn, OperateBtn, TabBtn
 from ._str_enums import (
     ContainerName,
+    ContentSwitcherName,
     DataTableName,
     LogName,
     ScreenName,
@@ -28,6 +29,7 @@ class AppIds:
         "header",
         "logger",
         "screen_name",
+        "switcher",
         "tab_name",
         "tree",
         "view_btn",
@@ -45,6 +47,7 @@ class AppIds:
         self.datatable = DataTableIds(self)
         self.filter = FilterIds(self)
         self.logger = LoggerIds(self)
+        self.switcher = ContentSwitcherIds(self)
         self.tree = TreeIds(self)
         self.view = ViewIds(self)
         self.view_btn = ViewButtons(self)
@@ -65,6 +68,11 @@ class AppIds:
 
     def container_id(self, qid: str = "", *, name: ContainerName) -> str:
         return f"{qid}{self._canvas_name}_{name.name}"
+
+    def content_switcher_id(
+        self, qid: str = "", *, switcher: ContentSwitcherName
+    ) -> str:
+        return f"{qid}{self._canvas_name}_{switcher.name}"
 
     def datatable_id(
         self, qid: str = "", *, datatable_name: DataTableName
@@ -88,10 +96,6 @@ class AppIds:
 
 class ContainerIds:
     def __init__(self, canvas_ids: AppIds):
-        self.config_switcher = canvas_ids.container_id(
-            name=ContainerName.config_switcher
-        )
-        self.config_switcher_q = f"#{self.config_switcher}"
         self.dest_dir_info = canvas_ids.container_id(
             name=ContainerName.dest_dir_info
         )
@@ -108,10 +112,6 @@ class ContainerIds:
         self.git_log_global_q = f"#{self.git_log_global}"
         self.left_side = canvas_ids.container_id(name=ContainerName.left_side)
         self.left_side_q = f"#{self.left_side}"
-        self.logs_switcher = canvas_ids.container_id(
-            name=ContainerName.logs_switcher
-        )
-        self.logs_switcher_q = f"#{self.logs_switcher}"
         self.operate_buttons = canvas_ids.container_id(
             name=ContainerName.operate_buttons
         )
@@ -124,10 +124,30 @@ class ContainerIds:
             name=ContainerName.switch_slider
         )
         self.switch_slider_q = f"#{self.switch_slider}"
-        self.view_switcher = canvas_ids.container_id(
-            name=ContainerName.view_switcher
+
+
+class ContentSwitcherIds:
+    def __init__(self, canvas_ids: AppIds):
+        self.config_tab = canvas_ids.content_switcher_id(
+            switcher=ContentSwitcherName.config_switcher
         )
-        self.view_switcher_q = f"#{self.view_switcher}"
+        self.config_tab_q = f"#{self.config_tab}"
+        self.init_screen = canvas_ids.content_switcher_id(
+            switcher=ContentSwitcherName.init_screen_switcher
+        )
+        self.init_screen_q = f"#{self.init_screen}"
+        self.logs_tab = canvas_ids.content_switcher_id(
+            switcher=ContentSwitcherName.logs_switcher
+        )
+        self.logs_tab_q = f"#{self.logs_tab}"
+        self.trees = canvas_ids.content_switcher_id(
+            switcher=ContentSwitcherName.tree_switcher
+        )
+        self.trees_q = f"#{self.trees}"
+        self.views = canvas_ids.content_switcher_id(
+            switcher=ContentSwitcherName.view_switcher
+        )
+        self.views_q = f"#{self.views}"
 
 
 class DataTableIds:
