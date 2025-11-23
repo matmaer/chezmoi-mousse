@@ -8,7 +8,6 @@ from textual.screen import Screen
 from textual.widgets import Button, Footer, TabbedContent, TabPane
 
 from chezmoi_mousse import (
-    AppIds,
     AppType,
     Chars,
     OperateBtn,
@@ -33,7 +32,7 @@ from .tabs.logs_tab import AppLog, DebugLog, LogsTab, OperateLog, ReadCmdLog
 from .tabs.re_add_tab import ReAddTab
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import DirTreeNodeData, NodeData, SplashData
+    from chezmoi_mousse import AppIds, DirTreeNodeData, NodeData, SplashData
 
 __all__ = ["TabScreen"]
 
@@ -264,7 +263,7 @@ class TabScreen(Screen[None], AppType):
         )
 
     def handle_operate_result(
-        self, screen_result: "OperateScreenData | None"
+        self, screen_result: OperateScreenData | None
     ) -> None:
         # the mode could have changed while in the operate screen
         reactive_header = self.query_exactly_one(CustomHeader)
