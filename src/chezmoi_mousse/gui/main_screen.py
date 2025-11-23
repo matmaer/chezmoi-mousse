@@ -100,7 +100,7 @@ class MainScreen(Screen[None], AppType):
                 HelpTab(ids=self.app.tab_ids.help),
                 id=TabName.help,
             )
-        yield Footer(id=self.ids.footer_id)
+        yield Footer(id=self.ids.footer)
 
     async def on_mount(self) -> None:
         init_loggers_worker = self.initialize_loggers()

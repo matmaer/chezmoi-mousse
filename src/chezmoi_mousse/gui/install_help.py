@@ -80,7 +80,7 @@ class InstallHelp(Screen[None], AppType):
                 FlatLink(ids=self.ids, link_enum=LinkBtn.chezmoi_install),
                 FlatButton(ids=self.ids, button_enum=FlatBtn.exit_app),
             )
-        yield Footer(id=self.ids.footer_id)
+        yield Footer(id=self.ids.footer)
 
     def on_mount(self) -> None:
         self.screen.title = HeaderTitle.header_install_help

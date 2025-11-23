@@ -16,7 +16,7 @@ class CustomHeader(Header, AppType):
     changes_enabled: reactive[bool | None] = reactive(None)
 
     def __init__(self, ids: "AppIds") -> None:
-        super().__init__(icon=Chars.burger, id=ids.header_id)
+        super().__init__(icon=Chars.burger, id=ids.header)
 
     def on_mount(self) -> None:
         self.changes_enabled = self.app.changes_enabled

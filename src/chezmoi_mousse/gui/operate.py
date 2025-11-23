@@ -96,7 +96,7 @@ class OperateScreen(Screen[OperateScreenData], AppType):
         yield OperateButtons(
             ids=self.ids, buttons=(self.operate_btn, OperateBtn.exit_button)
         )
-        yield Footer(id=self.ids.footer_id)
+        yield Footer(id=self.ids.footer)
 
     def on_mount(self) -> None:
         self.configure_buttons()

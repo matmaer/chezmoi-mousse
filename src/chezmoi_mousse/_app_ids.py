@@ -24,8 +24,8 @@ class AppIds:
         "container",
         "data_table",
         "filter",
-        "footer_id",
-        "header_id",
+        "footer",
+        "header",
         "logger",
         "tree",
         "view_btn",
@@ -34,8 +34,8 @@ class AppIds:
 
     def __init__(self, canvas_name: TabName | ScreenName) -> None:
         self.canvas_name: str = canvas_name.name
-        self.footer_id = f"{self.canvas_name}_footer"
-        self.header_id = f"{self.canvas_name}_header"
+        self.footer = f"{self.canvas_name}_footer"
+        self.header = f"{self.canvas_name}_header"
 
         self.container = ContainerIds(self)
         self.data_table = DataTableIds(self)
