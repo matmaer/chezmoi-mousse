@@ -304,7 +304,7 @@ class ChezmoiGUI(App[None]):
     def action_toggle_switch_slider(self) -> None:
         if not isinstance(self.screen, TabScreen):
             return
-        active_tab = self.screen.query_one(TabbedContent).active
+        active_tab = self.screen.query_exactly_one(TabbedContent).active
         slider = self.get_slider_from_tab(active_tab)
         if slider is None:
             return
@@ -314,7 +314,7 @@ class ChezmoiGUI(App[None]):
     def action_toggle_maximized_display(self) -> None:
         if not isinstance(self.screen, TabScreen):
             return
-        active_tab = self.screen.query_one(TabbedContent).active
+        active_tab = self.screen.query_exactly_one(TabbedContent).active
         left_side = None
         operation_buttons = None
         switcher_buttons = None
@@ -438,7 +438,9 @@ class ChezmoiGUI(App[None]):
     ) -> bool | None:
         if action == "toggle_switch_slider":
             if isinstance(self.screen, TabScreen):
-                active_tab = self.screen.query_one(TabbedContent).active
+                active_tab = self.screen.query_exactly_one(
+                    TabbedContent
+                ).active
                 if active_tab == TabName.apply.name:
                     return True
                 elif active_tab == TabName.re_add:
@@ -455,7 +457,9 @@ class ChezmoiGUI(App[None]):
                 return False
         elif action == "toggle_dry_run_mode":
             if isinstance(self.screen, TabScreen):
-                active_tab = self.screen.query_one(TabbedContent).active
+                active_tab = self.screen.query_exactly_one(
+                    TabbedContent
+                ).active
                 if active_tab == TabName.apply.name:
                     return True
                 elif active_tab == TabName.re_add:
