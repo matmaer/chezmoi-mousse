@@ -16,7 +16,6 @@ from textual.widgets import Button, ContentSwitcher, Footer, Input, Select
 from chezmoi_mousse import (
     AppType,
     BindingDescription,
-    DataTableName,
     FlatBtn,
     OperateBtn,
     SplashData,
@@ -126,9 +125,6 @@ class InitSwitcher(ContentSwitcher):
             id=self.ids.switcher.init_screen, initial=self.ids.view.clone_repo
         )
         self.splash_data = splash_data
-        self.doctor_table_qid = ids.datatable_id(
-            "#", datatable_name=DataTableName.doctor_table
-        )
 
     def compose(self) -> ComposeResult:
         yield InitCloneRepo(ids=self.ids)

@@ -7,7 +7,7 @@ from textual.app import ComposeResult
 from textual.containers import HorizontalGroup, VerticalGroup
 from textual.widgets import Label, Switch
 
-from chezmoi_mousse import ContainerName, Switches, TabName
+from chezmoi_mousse import Switches, TabName
 
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds
@@ -18,9 +18,7 @@ __all__ = ["SwitchSlider"]
 class SwitchSlider(VerticalGroup):
     def __init__(self, *, ids: "AppIds") -> None:
         self.ids = ids
-        super().__init__(
-            id=self.ids.container_id(name=ContainerName.switch_slider)
-        )
+        super().__init__(id=self.ids.container.switch_slider)
         if self.ids.tab_name in (TabName.apply, TabName.re_add):
             self.switches = (Switches.unchanged, Switches.expand_all)
         else:  # for the AddTab

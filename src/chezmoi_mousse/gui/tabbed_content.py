@@ -11,7 +11,6 @@ from chezmoi_mousse import (
     AppIds,
     AppType,
     Chars,
-    ContainerName,
     OperateBtn,
     OperateScreenData,
     TabName,
@@ -211,10 +210,7 @@ class TabScreen(Screen[None], AppType):
 
     def update_config_tab(self) -> None:
         config_tab_switcher = self.screen.query_one(
-            self.app.tab_ids.config.container_id(
-                "#", name=ContainerName.config_switcher
-            ),
-            ConfigTabSwitcher,
+            self.app.tab_ids.config.switcher.config_tab_q, ConfigTabSwitcher
         )
         setattr(config_tab_switcher, "splash_data", self.splash_data)
 

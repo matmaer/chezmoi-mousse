@@ -51,15 +51,11 @@ class Chars(StrEnum):
 
 
 class ContainerName(StrEnum):
-    config_switcher = auto()
     dest_dir_info = auto()
     doctor = auto()
     git_log_global = auto()
     git_log_path = auto()
-    help_switcher = auto()
-    init_screen_switcher = auto()
     left_side = auto()
-    logs_switcher = auto()
     operate_buttons = auto()
     post_operate = auto()
     pre_operate = auto()
@@ -76,6 +72,8 @@ class ContentSwitcherName(StrEnum):
     init_screen_switcher = auto()
     logs_switcher = auto()
     tree_switcher = auto()
+    apply_tree_switcher = auto()
+    re_add_tree_switcher = auto()
     view_switcher = auto()
 
 

@@ -11,14 +11,7 @@ from textual.containers import ScrollableContainer, Vertical
 from textual.reactive import reactive
 from textual.widgets import Button, ContentSwitcher, RichLog, Static
 
-from chezmoi_mousse import (
-    AppType,
-    Chars,
-    ContainerName,
-    ReadVerbs,
-    TabBtn,
-    Tcss,
-)
+from chezmoi_mousse import AppType, Chars, ReadVerbs, TabBtn, Tcss
 from chezmoi_mousse.shared import CustomCollapsible, GitLogGlobal, TabButtons
 
 if TYPE_CHECKING:
@@ -359,7 +352,7 @@ class LogsTab(Vertical, AppType):
     def compose(self) -> ComposeResult:
         yield TabButtons(ids=self.ids, buttons=self.tab_buttons)
         with ContentSwitcher(
-            id=self.ids.container_id(name=ContainerName.logs_switcher),
+            id=self.ids.switcher.logs_tab,
             initial=self.initial_view_id,
             classes=Tcss.border_title_top.name,
         ):
