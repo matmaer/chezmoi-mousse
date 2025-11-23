@@ -62,8 +62,6 @@ class ContainerName(StrEnum):
     right_side = auto()
     switch_slider = auto()
     switcher_buttons = auto()
-    tree_switcher = auto()
-    view_switcher = auto()
 
 
 class ContentSwitcherName(StrEnum):
@@ -72,8 +70,6 @@ class ContentSwitcherName(StrEnum):
     init_screen_switcher = auto()
     logs_switcher = auto()
     tree_switcher = auto()
-    apply_tree_switcher = auto()
-    re_add_tree_switcher = auto()
     view_switcher = auto()
 
 

@@ -8,7 +8,7 @@ from textual import on
 from textual.containers import Horizontal
 from textual.widgets import Button, ContentSwitcher, Switch
 
-from chezmoi_mousse import ContainerName, OperateBtn, Switches, TabBtn, Tcss
+from chezmoi_mousse import OperateBtn, Switches, TabBtn, Tcss
 from chezmoi_mousse.shared import ContentsView, DiffView, GitLogPath
 
 from .trees import ExpandedTree, ListTree, ManagedTree
@@ -26,10 +26,6 @@ class TabHorizontal(Horizontal):
 
         self.ids = ids
         self.expand_all_state = False
-        self.tree_switcher_qid = ids.container_id(
-            "#", name=ContainerName.tree_switcher
-        )
-
         # Button id's
         self.destroy_btn_qid = self.ids.button_id(
             "#", btn=OperateBtn.destroy_path
@@ -81,7 +77,7 @@ class TabHorizontal(Horizontal):
         if event.button.id in (self.tree_tab_btn_id, self.list_tab_btn_id):
             # toggle expand all switch enabled disabled state
             tree_switcher = self.query_one(
-                self.tree_switcher_qid, ContentSwitcher
+                self.ids.switcher.trees_q, ContentSwitcher
             )
             expand_all_switch = self.query_one(
                 self.ids.filter.expand_all_q, Switch
@@ -117,7 +113,7 @@ class TabHorizontal(Horizontal):
         elif event.switch.id == self.ids.filter.expand_all:
             self.expand_all_state = event.value
             tree_switcher = self.query_one(
-                self.tree_switcher_qid, ContentSwitcher
+                self.ids.switcher.trees_q, ContentSwitcher
             )
             if event.value is True:
                 tree_switcher.current = self.ids.tree.expanded
