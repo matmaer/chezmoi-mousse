@@ -39,9 +39,6 @@ for file_path in MODULE_PATHS:
                     query_one_nodes=query_one_nodes,
                 )
             )
-            print(
-                f"Processed {file_path.name}, found query_one call in {class_def.name}."
-            )
 
 
 @pytest.mark.parametrize(
@@ -52,29 +49,31 @@ for file_path in MODULE_PATHS:
 def test_query_one_calls(class_data: ClassData) -> None:
     results: list[str] = []
     for call_node in class_data.query_one_nodes:
-        call_results: list[str] = []
         # Check if first argument of the call ends with '_q'
         first_arg = call_node.args[0]
+        first_arg_str: str = ""
         if isinstance(first_arg, ast.Constant):
             # String literal like "MyClass"
-            # first_arg = first_arg.value
-            continue  # skip string literals
-        elif isinstance(first_arg, ast.Name):
+            if isinstance(first_arg.value, str):
+                first_arg_str = first_arg.value
+            else:
+                first_arg_str = str(first_arg.value)
+        if isinstance(first_arg, ast.Name):
             # Variable/class name like my_var
-            first_arg = first_arg.id
+            first_arg_str = first_arg.id
         elif isinstance(first_arg, ast.Attribute):
             # Attribute like ids.container.pre_operate
-            first_arg = first_arg.attr
+            first_arg_str = first_arg.attr
         else:
             pytest.skip(
                 f"Cannot determine first argument type in "
                 f"{class_data.module_path}, class '{class_data.class_name}'."
             )
-        if not first_arg.endswith("_q"):
-            call_results.append(
-                f"{class_data.module_path},"
-                f"class '{class_data.class_name}',"
-                f"'{first_arg}' not ending with '_q'."
+        if not first_arg_str.endswith("_q"):
+            results.append(
+                f"{class_data.module_path}, "
+                f"class '{class_data.class_name}', "
+                f"'{first_arg_str}' not ending with '_q'."
             )
-        if results:
-            pytest.fail("\n".join(results))
+    if results:
+        pytest.fail("\n".join(results))
