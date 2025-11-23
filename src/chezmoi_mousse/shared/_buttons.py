@@ -104,7 +104,7 @@ class TabButtons(Horizontal):
             with Vertical(classes=Tcss.single_button_vertical.name):
                 yield Button(
                     label=button_enum.value,
-                    id=self.ids.button_id(btn=button_enum),
+                    id=self.ids.tab_button_id(btn=button_enum),
                     classes=Tcss.tab_button.name,
                 )
 

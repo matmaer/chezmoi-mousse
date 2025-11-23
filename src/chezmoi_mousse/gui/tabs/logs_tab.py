@@ -333,9 +333,9 @@ class LogsTab(Vertical, AppType):
     )
 
     def __init__(self, ids: "AppIds") -> None:
-        self.ids = ids
         super().__init__()
 
+        self.ids = ids
         self.tab_buttons = (
             TabBtn.app_log,
             TabBtn.read_log,
@@ -347,7 +347,6 @@ class LogsTab(Vertical, AppType):
             self.initial_view_id = self.ids.logger.debug
         else:
             self.initial_view_id = self.ids.logger.app
-        self.git_log_btn_id = ids.button_id(btn=TabBtn.git_log_global)
 
     def compose(self) -> ComposeResult:
         yield TabButtons(ids=self.ids, buttons=self.tab_buttons)
@@ -387,7 +386,7 @@ class LogsTab(Vertical, AppType):
         elif event.button.id == self.ids.tab_btn.operate_log:
             switcher.current = self.ids.logger.operate
             switcher.border_title = BorderTitle.operate_log
-        elif event.button.id == self.git_log_btn_id:
+        elif event.button.id == self.ids.tab_btn.git_log_global:
             switcher.border_title = BorderTitle.git_log_global
             switcher.current = self.ids.container.git_log_global
         elif (

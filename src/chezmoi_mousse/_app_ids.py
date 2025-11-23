@@ -54,16 +54,10 @@ class AppIds:
         self.view = ViewIds(self)
         self.tab_btn = TabButtonIds(self)
 
-    def button_id(
-        self, qid: str = "", *, btn: LinkBtn | OperateBtn | TabBtn
-    ) -> str:
+    def button_id(self, qid: str = "", *, btn: LinkBtn | OperateBtn) -> str:
         if isinstance(btn, OperateBtn):
             suffix = "_op_btn"
             return f"{qid}{self._canvas_name}_{btn.name}{suffix}"
-        elif isinstance(btn, TabBtn):
-            suffix = "_tab_btn"
-        elif isinstance(btn, FlatBtn):
-            suffix = "_flat_btn"
         else:
             suffix = "_link_btn"
         return f"{qid}{self._canvas_name}_{btn.name}{suffix}"
@@ -91,6 +85,9 @@ class AppIds:
 
     def switch_id(self, qid: str = "", *, switch: Switches) -> str:
         return f"{qid}{self._canvas_name}_{switch.switch_name}_switch"
+
+    def tab_button_id(self, qid: str = "", *, btn: TabBtn) -> str:
+        return f"{qid}{self._canvas_name}_{btn.name}_tab_btn"
 
     def tree_id(self, qid: str = "", *, tree: TreeName) -> str:
         return f"{qid}{self._canvas_name}_{tree}"
@@ -249,12 +246,18 @@ class TabButtonIds:
     """Buttons used by ContentSwitcher classes to switch views."""
 
     def __init__(self, canvas_ids: AppIds):
-        # Logs tab
-        self.app_log = canvas_ids.button_id(btn=TabBtn.app_log)
-        self.debug_log = canvas_ids.button_id(btn=TabBtn.debug_log)
-        self.operate_log = canvas_ids.button_id(btn=TabBtn.operate_log)
-        self.read_log = canvas_ids.button_id(btn=TabBtn.read_log)
-        self.diff = canvas_ids.button_id(btn=TabBtn.diff)
+        self.app_log = canvas_ids.tab_button_id(btn=TabBtn.app_log)
+        self.contents = canvas_ids.tab_button_id(btn=TabBtn.contents)
+        self.debug_log = canvas_ids.tab_button_id(btn=TabBtn.debug_log)
+        self.diff = canvas_ids.tab_button_id(btn=TabBtn.diff)
+        self.git_log = canvas_ids.tab_button_id(btn=TabBtn.git_log_path)
+        self.git_log_global = canvas_ids.tab_button_id(
+            btn=TabBtn.git_log_global
+        )
+        self.list = canvas_ids.tab_button_id(btn=TabBtn.list)
+        self.operate_log = canvas_ids.tab_button_id(btn=TabBtn.operate_log)
+        self.read_log = canvas_ids.tab_button_id(btn=TabBtn.read_log)
+        self.tree = canvas_ids.tab_button_id(btn=TabBtn.tree)
 
 
 class TreeIds:

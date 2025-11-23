@@ -8,7 +8,7 @@ from textual import on
 from textual.containers import Horizontal
 from textual.widgets import Button, ContentSwitcher, Switch
 
-from chezmoi_mousse import OperateBtn, Switches, TabBtn, Tcss
+from chezmoi_mousse import OperateBtn, Switches, Tcss
 from chezmoi_mousse.shared import ContentsView, DiffView, GitLogPath
 
 from .trees import ExpandedTree, ListTree, ManagedTree
@@ -33,8 +33,6 @@ class TabHorizontal(Horizontal):
         self.forget_btn_qid = self.ids.button_id(
             "#", btn=OperateBtn.forget_path
         )
-        self.list_tab_btn_id = ids.button_id(btn=TabBtn.list)
-        self.tree_tab_btn_id = ids.button_id(btn=TabBtn.tree)
 
     def update_view_path(self, path: Path) -> None:
         contents_view = self.query_one(
@@ -74,7 +72,7 @@ class TabHorizontal(Horizontal):
 
     @on(Button.Pressed, Tcss.tab_button.value)
     def handle_tab_button_pressed(self, event: Button.Pressed) -> None:
-        if event.button.id in (self.tree_tab_btn_id, self.list_tab_btn_id):
+        if event.button.id in (self.ids.tab_btn.tree, self.ids.tab_btn.list):
             # toggle expand all switch enabled disabled state
             tree_switcher = self.query_one(
                 self.ids.switcher.trees_q, ContentSwitcher
@@ -82,14 +80,14 @@ class TabHorizontal(Horizontal):
             expand_all_switch = self.query_one(
                 self.ids.filter.expand_all_q, Switch
             )
-            if event.button.id == self.tree_tab_btn_id:
+            if event.button.id == self.ids.tab_btn.tree:
                 if self.expand_all_state is True:
                     tree_switcher.current = self.ids.tree.expanded
                 else:
                     tree_switcher.current = self.ids.tree.managed
                 expand_all_switch.disabled = False
                 expand_all_switch.tooltip = Switches.expand_all.enabled_tooltip
-            elif event.button.id == self.list_tab_btn_id:
+            elif event.button.id == self.ids.tab_btn.list:
                 expand_all_switch.disabled = True
                 expand_all_switch.tooltip = (
                     Switches.expand_all.disabled_tooltip

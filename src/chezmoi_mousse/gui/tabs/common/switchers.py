@@ -53,9 +53,6 @@ class ViewSwitcher(Vertical):
 
     def __init__(self, *, ids: "AppIds", diff_reverse: bool):
         self.ids = ids
-        self.contents_tab_btn = ids.button_id(btn=TabBtn.contents)
-        self.diff_tab_btn = ids.button_id(btn=TabBtn.diff)
-        self.git_log_tab_btn = ids.button_id(btn=TabBtn.git_log_path)
         self.reverse = diff_reverse
         super().__init__(id=self.ids.container.right_side)
 
@@ -76,9 +73,9 @@ class ViewSwitcher(Vertical):
         view_switcher = self.query_one(
             self.ids.switcher.views_q, ContentSwitcher
         )
-        if event.button.id == self.contents_tab_btn:
+        if event.button.id == self.ids.tab_btn.contents:
             view_switcher.current = self.ids.logger.contents
-        elif event.button.id == self.diff_tab_btn:
+        elif event.button.id == self.ids.tab_btn.diff:
             view_switcher.current = self.ids.logger.diff
-        elif event.button.id == self.git_log_tab_btn:
+        elif event.button.id == self.ids.tab_btn.git_log:
             view_switcher.current = self.ids.container.git_log_path
