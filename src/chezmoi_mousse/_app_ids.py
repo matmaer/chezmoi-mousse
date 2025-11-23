@@ -31,9 +31,9 @@ class AppIds:
         "logger",
         "screen_name",
         "switcher",
+        "tab_btn",
         "tab_name",
         "tree",
-        "view_btn",
         "view",
     )
 
@@ -52,7 +52,7 @@ class AppIds:
         self.switcher = ContentSwitcherIds(self)
         self.tree = TreeIds(self)
         self.view = ViewIds(self)
-        self.view_btn = ViewButtons(self)
+        self.tab_btn = TabButtonIds(self)
 
     def button_id(
         self, qid: str = "", *, btn: LinkBtn | OperateBtn | TabBtn
@@ -245,7 +245,7 @@ class LoggerIds:
         self.splash_q = f"#{self.splash}"
 
 
-class ViewButtons:
+class TabButtonIds:
     """Buttons used by ContentSwitcher classes to switch views."""
 
     def __init__(self, canvas_ids: AppIds):
