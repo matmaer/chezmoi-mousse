@@ -23,10 +23,6 @@ class ApplyTab(TabHorizontal):
         self.ids = ids
         super().__init__(ids=self.ids)
 
-        self.operate_path_button_qid = self.ids.button_id(
-            "#", btn=OperateBtn.apply_path
-        )
-
     def compose(self) -> ComposeResult:
         yield TreeSwitcher(self.ids)
         yield ViewSwitcher(ids=self.ids, diff_reverse=False)
@@ -44,7 +40,7 @@ class ApplyTab(TabHorizontal):
     def update_apply_operate_buttons(self, event: CurrentApplyNodeMsg) -> None:
         self.update_view_path(event.node_data.path)
         operate_path_button = self.query_one(
-            self.operate_path_button_qid, Button
+            self.ids.operate_btn.apply_path_q, Button
         )
         operate_path_button.label = OperateBtn.apply_path.label(
             event.node_data.path_type

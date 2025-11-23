@@ -148,10 +148,7 @@ class OperateScreen(Screen["OperateScreenData"], AppType):
         self.path_type = operate_data.node_data.path_type
 
         self.operate_btn = operate_data.operate_btn
-        self.operate_btn_qid = ids.button_id("#", btn=self.operate_btn)
-        self.exit_btn_id = ids.button_id(btn=OperateBtn.exit_button)
-        self.exit_btn_qid = ids.button_id("#", btn=OperateBtn.exit_button)
-
+        self.operate_btn_qid = ids.operate_button_id("#", btn=self.operate_btn)
         self.operate_data = operate_data
 
     def compose(self) -> ComposeResult:
@@ -200,7 +197,7 @@ class OperateScreen(Screen["OperateScreenData"], AppType):
     def configure_buttons(self) -> None:
         op_btn = self.query_one(self.operate_btn_qid, Button)
         op_btn.disabled = False
-        exit_btn = self.query_one(self.exit_btn_qid, Button)
+        exit_btn = self.query_one(self.ids.operate_btn.exit_q, Button)
         exit_btn.disabled = False
         exit_btn.tooltip = None
 
@@ -292,7 +289,9 @@ class OperateScreen(Screen["OperateScreenData"], AppType):
         operate_button.disabled = True
         operate_button.tooltip = None
 
-        operate_exit_button = self.query_one(self.exit_btn_qid, Button)
+        operate_exit_button = self.query_one(
+            self.ids.operate_btn.exit_q, Button
+        )
         operate_exit_button.label = OperateBtn.exit_button.close_label
 
         output_log = self.query_one(self.ids.logger.operate_q, OperateLog)
@@ -304,7 +303,7 @@ class OperateScreen(Screen["OperateScreenData"], AppType):
     @on(Button.Pressed, Tcss.operate_button.value)
     def handle_operate_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
-        if event.button.id == self.exit_btn_id:
+        if event.button.id == self.ids.operate_btn.exit:
             self.dismiss(self.operate_data)
         else:
             self.run_operate_command()

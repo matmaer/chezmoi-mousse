@@ -23,10 +23,6 @@ class ReAddTab(TabHorizontal):
         self.ids = ids
         super().__init__(ids=self.ids)
 
-        self.operate_path_button_qid = self.ids.button_id(
-            "#", btn=OperateBtn.re_add_path
-        )
-
     def compose(self) -> ComposeResult:
         yield TreeSwitcher(ids=self.ids)
         yield ViewSwitcher(ids=self.ids, diff_reverse=True)
@@ -46,7 +42,7 @@ class ReAddTab(TabHorizontal):
     ) -> None:
         self.update_view_path(event.node_data.path)
         operate_path_button = self.query_one(
-            self.operate_path_button_qid, Button
+            self.ids.operate_btn.re_add_path_q, Button
         )
         operate_path_button.label = OperateBtn.re_add_path.label(
             event.node_data.path_type

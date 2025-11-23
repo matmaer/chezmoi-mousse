@@ -232,12 +232,7 @@ class AddTab(Horizontal, AppType):
 
     def __init__(self, ids: "AppIds") -> None:
         super().__init__()
-
         self.ids = ids
-        self.add_file_btn_qid = self.ids.button_id(
-            "#", btn=OperateBtn.add_file
-        )
-        self.add_dir_btn_qid = self.ids.button_id("#", btn=OperateBtn.add_dir)
 
     def compose(self) -> ComposeResult:
         yield FilteredDirTree(
@@ -266,8 +261,10 @@ class AddTab(Horizontal, AppType):
         dir_tree.border_title = f" {self.destDir} "
 
     def update_buttons(self, is_dir: bool) -> None:
-        add_file_button = self.query_one(self.add_file_btn_qid, Button)
-        add_dir_button = self.query_one(self.add_dir_btn_qid, Button)
+        add_file_button = self.query_one(
+            self.ids.operate_btn.add_file_q, Button
+        )
+        add_dir_button = self.query_one(self.ids.operate_btn.add_dir_q, Button)
         if is_dir is True:
             add_file_button.disabled = True
             add_file_button.tooltip = OperateBtn.add_file.disabled_tooltip

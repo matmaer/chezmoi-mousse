@@ -72,7 +72,7 @@ class OperateButton(Button):
         super().__init__(
             classes=Tcss.operate_button.name,
             disabled=True,
-            id=self.ids.button_id(btn=self.button_enum),
+            id=self.ids.operate_button_id(btn=self.button_enum),
             label=self.button_enum.label(),
             tooltip=self.button_enum.initial_tooltip,
         )

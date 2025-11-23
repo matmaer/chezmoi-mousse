@@ -29,6 +29,7 @@ class AppIds:
         "footer",
         "header",
         "logger",
+        "operate_btn",
         "screen_name",
         "switcher",
         "tab_btn",
@@ -49,12 +50,13 @@ class AppIds:
         self.filter = FilterIds(self)
         self.flat_btn = FlatButtonIds(self)
         self.logger = LoggerIds(self)
+        self.operate_btn = OperateButtonIds(self)
         self.switcher = ContentSwitcherIds(self)
         self.tree = TreeIds(self)
         self.view = ViewIds(self)
         self.tab_btn = TabButtonIds(self)
 
-    def button_id(self, qid: str = "", *, btn: OperateBtn) -> str:
+    def operate_button_id(self, qid: str = "", *, btn: OperateBtn) -> str:
         return f"{qid}{self._canvas_name}_{btn.name}_op_btn"
 
     def container_id(self, qid: str = "", *, name: ContainerName) -> str:
@@ -222,6 +224,30 @@ class LoggerIds:
         self.read_q = f"#{self.read}"
         self.splash = ids.view_id(view=LogName.splash_logger)
         self.splash_q = f"#{self.splash}"
+
+
+class OperateButtonIds:
+    def __init__(self, ids: AppIds):
+        self.add_dir = ids.operate_button_id(btn=OperateBtn.add_dir)
+        self.add_dir_q = f"#{self.add_dir}"
+        self.add_file = ids.operate_button_id(btn=OperateBtn.add_file)
+        self.add_file_q = f"#{self.add_file}"
+        self.apply_path = ids.operate_button_id(btn=OperateBtn.apply_path)
+        self.apply_path_q = f"#{self.apply_path}"
+        self.destroy_path = ids.operate_button_id(btn=OperateBtn.destroy_path)
+        self.destroy_path_q = f"#{self.destroy_path}"
+        self.exit = ids.operate_button_id(btn=OperateBtn.exit_button)
+        self.exit_q = f"#{self.exit}"
+        self.forget_path = ids.operate_button_id(btn=OperateBtn.forget_path)
+        self.forget_path_q = f"#{self.forget_path}"
+        self.init_new_repo = ids.operate_button_id(
+            btn=OperateBtn.init_new_repo
+        )
+        self.init_new_repo_q = f"#{self.init_new_repo}"
+        self.operate_exit = ids.operate_button_id(btn=OperateBtn.exit_button)
+        self.operate_exit_q = f"#{self.operate_exit}"
+        self.re_add_path = ids.operate_button_id(btn=OperateBtn.re_add_path)
+        self.re_add_path_q = f"#{self.re_add_path}"
 
 
 class TabButtonIds:

@@ -26,13 +26,6 @@ class TabHorizontal(Horizontal):
 
         self.ids = ids
         self.expand_all_state = False
-        # Button id's
-        self.destroy_btn_qid = self.ids.button_id(
-            "#", btn=OperateBtn.destroy_path
-        )
-        self.forget_btn_qid = self.ids.button_id(
-            "#", btn=OperateBtn.forget_path
-        )
 
     def update_view_path(self, path: Path) -> None:
         contents_view = self.query_one(
@@ -49,7 +42,9 @@ class TabHorizontal(Horizontal):
         git_log_path.path = path
 
     def update_other_buttons(self, node_data: "NodeData") -> None:
-        destroy_button = self.query_one(self.destroy_btn_qid, Button)
+        destroy_button = self.query_one(
+            self.ids.operate_btn.destroy_path_q, Button
+        )
         destroy_button.label = OperateBtn.destroy_path.label(
             node_data.path_type
         )
@@ -59,7 +54,9 @@ class TabHorizontal(Horizontal):
             else OperateBtn.destroy_path.dir_tooltip
         )
 
-        forget_button = self.query_one(self.forget_btn_qid, Button)
+        forget_button = self.query_one(
+            self.ids.operate_btn.forget_path_q, Button
+        )
         forget_button.label = OperateBtn.forget_path.label(node_data.path_type)
         forget_button.tooltip = (
             OperateBtn.forget_path.file_tooltip

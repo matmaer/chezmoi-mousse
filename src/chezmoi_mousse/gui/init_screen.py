@@ -161,14 +161,9 @@ class InitScreen(Screen["SplashData | None"], AppType):
     ]
 
     def __init__(self, *, ids: "AppIds", splash_data: "SplashData") -> None:
-        self.ids = ids
         super().__init__()
-
+        self.ids = ids
         self.splash_data = splash_data
-        self.operate_btn_id = ids.button_id(btn=OperateBtn.init_new_repo)
-        self.operate_btn_qid = ids.button_id("#", btn=OperateBtn.init_new_repo)
-        self.exit_btn_id = ids.button_id(btn=OperateBtn.exit_button)
-        self.exit_btn_qid = ids.button_id("#", btn=OperateBtn.exit_button)
 
     def compose(self) -> ComposeResult:
         yield CustomHeader(self.ids)
@@ -192,9 +187,9 @@ class InitScreen(Screen["SplashData | None"], AppType):
         yield Footer(id=self.ids.footer)
 
     def on_mount(self) -> None:
-        op_btn = self.query_one(self.operate_btn_qid, Button)
+        op_btn = self.query_one(self.ids.operate_btn.init_new_repo_q, Button)
         op_btn.disabled = False
-        exit_btn = self.query_one(self.exit_btn_qid, Button)
+        exit_btn = self.query_one(self.ids.operate_btn.exit_q, Button)
         exit_btn.disabled = False
 
     def perform_init_command(self) -> None:
@@ -206,10 +201,12 @@ class InitScreen(Screen["SplashData | None"], AppType):
         output_log = self.query_one(self.ids.logger.operate_q, OperateLog)
         output_log.log_cmd_results(self.splash_data.init)
         # Update buttons
-        operate_button = self.query_one(self.operate_btn_qid, Button)
+        operate_button = self.query_one(
+            self.ids.operate_btn.init_new_repo_q, Button
+        )
         operate_button.disabled = True
         operate_button.tooltip = None
-        exit_button = self.query_one(self.exit_btn_qid, Button)
+        exit_button = self.query_one(self.ids.operate_btn.exit_q, Button)
         exit_button.label = OperateBtn.exit_button.close_label
 
     @on(Button.Pressed, Tcss.flat_button.value)
@@ -232,11 +229,8 @@ class InitScreen(Screen["SplashData | None"], AppType):
     @on(Button.Pressed, Tcss.operate_button.value)
     def handle_operate_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
-        if event.button.id == self.exit_btn_id:
-            if event.button.label == OperateBtn.exit_button.close_label:
-                self.dismiss(self.splash_data)
-            elif event.button.label == OperateBtn.exit_button.cancel_label:
-                return None
+        if event.button.id == self.ids.operate_btn.exit:
+            self.dismiss(self.splash_data)
         else:
             self.perform_init_command()
 
