@@ -15,7 +15,6 @@ from chezmoi_mousse import (
     DirTreeNodeData,
     OperateBtn,
     PathKind,
-    Switches,
     Tcss,
 )
 from chezmoi_mousse.shared import (
@@ -237,9 +236,6 @@ class AddTab(Horizontal, AppType):
 
         self.add_file_btn_qid = ids.button_id("#", btn=OperateBtn.add_file)
         self.add_dir_btn_qid = ids.button_id("#", btn=OperateBtn.add_dir)
-        self.unmanaged_switch_id = ids.switch_id(
-            switch=Switches.unmanaged_dirs
-        )
 
     def compose(self) -> ComposeResult:
         yield FilteredDirTree(
@@ -324,8 +320,8 @@ class AddTab(Horizontal, AppType):
         tree = self.query_one(
             self.app.tab_ids.add.tree.dir_tree_q, FilteredDirTree
         )
-        if event.switch.id == self.unmanaged_switch_id:
+        if event.switch.id == self.ids.filter.unmanaged_dirs:
             tree.unmanaged_dirs = event.value
-        elif event.switch.id == self.ids.switch_id(switch=Switches.unwanted):
+        elif event.switch.id == self.ids.filter.unwanted:
             tree.unwanted = event.value
         tree.reload()

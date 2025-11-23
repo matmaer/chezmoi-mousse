@@ -23,6 +23,7 @@ class AppIds:
         "canvas_name",
         "container",
         "data_table",
+        "filter",
         "footer_id",
         "header_id",
         "logger",
@@ -38,6 +39,7 @@ class AppIds:
 
         self.container = ContainerIds(self)
         self.data_table = DataTableIds(self)
+        self.filter = FilterIds(self)
         self.logger = LoggerIds(self)
         self.tree = TreeIds(self)
         self.view = ViewIds(self)
@@ -141,6 +143,20 @@ class DataTableIds:
             data_table_name=DataTableName.git_global_log_table
         )
         self.git_global_log_q = f"#{self.git_global_log}"
+
+
+class FilterIds:
+    def __init__(self, canvas_ids: AppIds):
+        self.expand_all = canvas_ids.switch_id(switch=Switches.expand_all)
+        self.expand_all_q = f"#{self.expand_all}"
+        self.unchanged = canvas_ids.switch_id(switch=Switches.unchanged)
+        self.unchanged_q = f"#{self.unchanged}"
+        self.unmanaged_dirs = canvas_ids.switch_id(
+            switch=Switches.unmanaged_dirs
+        )
+        self.unmanaged_dirs_q = f"#{self.unmanaged_dirs}"
+        self.unwanted = canvas_ids.switch_id(switch=Switches.unwanted)
+        self.unwanted_q = f"#{self.unwanted}"
 
 
 class LoggerIds:

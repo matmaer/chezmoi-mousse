@@ -39,17 +39,6 @@ class TabHorizontal(Horizontal):
         )
         self.list_tab_btn_id = ids.button_id(btn=TabBtn.list)
         self.tree_tab_btn_id = ids.button_id(btn=TabBtn.tree)
-        # Switch id's
-        self.expand_all_switch_id = ids.switch_id(switch=Switches.expand_all)
-        self.expand_all_switch_qid = ids.switch_id(
-            "#", switch=Switches.expand_all
-        )
-        self.unchanged_switch_id = self.ids.switch_id(
-            switch=Switches.unchanged
-        )
-        self.unchanged_switch_qid = self.ids.switch_id(
-            switch=Switches.unchanged
-        )
 
     def update_view_path(self, path: Path) -> None:
         contents_view = self.query_one(
@@ -95,7 +84,7 @@ class TabHorizontal(Horizontal):
                 self.tree_switcher_qid, ContentSwitcher
             )
             expand_all_switch = self.query_one(
-                self.expand_all_switch_qid, Switch
+                self.ids.filter.expand_all_q, Switch
             )
             if event.button.id == self.tree_tab_btn_id:
                 if self.expand_all_state is True:
@@ -113,7 +102,7 @@ class TabHorizontal(Horizontal):
 
     @on(Switch.Changed)
     def handle_tree_filter_switches(self, event: Switch.Changed) -> None:
-        if event.switch.id == self.unchanged_switch_id:
+        if event.switch.id == self.ids.filter.unchanged:
             expanded_tree = self.query_one(
                 self.ids.tree.expanded_q, ExpandedTree
             )
@@ -125,7 +114,7 @@ class TabHorizontal(Horizontal):
             managed_tree = self.query_one(self.ids.tree.managed_q, ManagedTree)
             managed_tree.unchanged = event.value
 
-        elif event.switch.id == self.expand_all_switch_id:
+        elif event.switch.id == self.ids.filter.expand_all:
             self.expand_all_state = event.value
             tree_switcher = self.query_one(
                 self.tree_switcher_qid, ContentSwitcher
