@@ -309,7 +309,7 @@ class MainScreen(Screen[None], AppType):
                 OperateBtn.add_dir,
             ):
                 add_dir_tree = self.query_one(
-                    self.app.tab_ids.add.tree_id("#", tree=TreeName.add_tree),
+                    self.app.tab_ids.add.tree_id("#", tree=TreeName.dir_tree),
                     FilteredDirTree,
                 )
                 add_dir_tree.reload()
