@@ -235,7 +235,7 @@ class OperateScreen(Screen["OperateScreenData"], AppType):
 
     def configure_containers(self) -> None:
         self.query_one(
-            self.ids.container.post_operate, VerticalGroup
+            self.ids.container.post_operate_q, VerticalGroup
         ).display = False
 
     def run_operate_command(self) -> "CommandResult | None":
@@ -280,11 +280,11 @@ class OperateScreen(Screen["OperateScreenData"], AppType):
 
     def post_operate_ui_update(self) -> None:
         pre_op_container = self.query_one(
-            self.ids.container.pre_operate, VerticalGroup
+            self.ids.container.pre_operate_q, VerticalGroup
         )
         pre_op_container.display = False
         post_op_container = self.query_one(
-            self.ids.container.post_operate, VerticalGroup
+            self.ids.container.post_operate_q, VerticalGroup
         )
         post_op_container.display = True
 
