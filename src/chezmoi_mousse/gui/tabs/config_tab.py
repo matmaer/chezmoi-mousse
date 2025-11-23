@@ -6,14 +6,7 @@ from textual.containers import Horizontal
 from textual.reactive import reactive
 from textual.widgets import Button, ContentSwitcher
 
-from chezmoi_mousse import (
-    AppType,
-    ContainerName,
-    DataTableName,
-    FlatBtn,
-    SplashData,
-    Tcss,
-)
+from chezmoi_mousse import AppType, FlatBtn, SplashData, Tcss
 from chezmoi_mousse.shared import (
     CatConfigView,
     DoctorTableView,
@@ -35,14 +28,9 @@ class ConfigTabSwitcher(ContentSwitcher):
 
     def __init__(self, ids: "AppIds"):
         self.ids = ids
-        self.container_id = self.ids.container_id(
-            name=ContainerName.config_switcher
-        )
         super().__init__(
-            id=self.container_id, initial=self.ids.container.doctor
-        )
-        self.doctor_table_qid = ids.datatable_id(
-            "#", data_table_name=DataTableName.doctor_table
+            id=self.ids.container.config_switcher,
+            initial=self.ids.container.doctor,
         )
 
     def compose(self) -> ComposeResult:
@@ -89,9 +77,6 @@ class ConfigTab(Horizontal, AppType):
         super().__init__()
 
         self.ids = ids
-        self.content_switcher_qid = self.ids.container_id(
-            "#", name=ContainerName.config_switcher
-        )
 
     def compose(self) -> ComposeResult:
         yield FlatButtonsVertical(
@@ -109,7 +94,9 @@ class ConfigTab(Horizontal, AppType):
     @on(Button.Pressed, Tcss.flat_button.value)
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
-        switcher = self.query_one(self.content_switcher_qid, ContentSwitcher)
+        switcher = self.query_one(
+            self.ids.container.config_switcher_q, ConfigTabSwitcher
+        )
         if event.button.id == self.ids.view_btn.doctor:
             switcher.current = self.ids.container.doctor
         if event.button.id == self.ids.view_btn.pw_mgr_info:

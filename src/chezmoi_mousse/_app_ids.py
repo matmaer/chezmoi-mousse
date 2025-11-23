@@ -88,6 +88,10 @@ class AppIds:
 
 class ContainerIds:
     def __init__(self, canvas_ids: AppIds):
+        self.config_switcher = canvas_ids.container_id(
+            name=ContainerName.config_switcher
+        )
+        self.config_switcher_q = f"#{self.config_switcher}"
         self.dest_dir_info = canvas_ids.container_id(
             name=ContainerName.dest_dir_info
         )
