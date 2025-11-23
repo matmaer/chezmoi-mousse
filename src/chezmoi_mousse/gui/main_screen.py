@@ -304,18 +304,13 @@ class MainScreen(Screen[None], AppType):
                     "Operation failed, check the Logs tab for more info.",
                     severity="error",
                 )
-            if screen_result.operate_btn in (
-                OperateBtn.add_file,
-                OperateBtn.add_dir,
-            ):
-                add_dir_tree = self.query_one(
-                    self.app.tab_ids.add.tree_id("#", tree=TreeName.dir_tree),
-                    FilteredDirTree,
-                )
-                add_dir_tree.reload()
-            else:
-                self.populate_apply_trees()
-                self.populate_re_add_trees()
+            add_dir_tree = self.query_one(
+                self.app.tab_ids.add.tree_id("#", tree=TreeName.dir_tree),
+                FilteredDirTree,
+            )
+            add_dir_tree.reload()
+            self.populate_apply_trees()
+            self.populate_re_add_trees()
         else:
             self.notify(
                 "Unknown operation result condition.", severity="error"
