@@ -18,7 +18,6 @@ from chezmoi_mousse import (
     BindingDescription,
     FlatBtn,
     OperateBtn,
-    SplashData,
     Tcss,
     WriteCmd,
 )
@@ -39,7 +38,7 @@ from .tabs.logs_tab import OperateLog
 __all__ = ["InitScreen"]
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import AppIds
+    from chezmoi_mousse import AppIds, SplashData
 
 
 class InitNewRepo(Vertical, AppType):
@@ -150,7 +149,7 @@ class InitSwitcher(ContentSwitcher):
         )
 
 
-class InitScreen(Screen[SplashData | None], AppType):
+class InitScreen(Screen["SplashData | None"], AppType):
 
     BINDINGS = [
         Binding(
