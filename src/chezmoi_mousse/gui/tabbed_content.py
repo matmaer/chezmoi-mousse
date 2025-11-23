@@ -36,7 +36,7 @@ from .tabs.re_add_tab import ReAddTab
 if TYPE_CHECKING:
     from chezmoi_mousse import DirTreeNodeData, NodeData, SplashData
 
-__all__ = ["MainScreen"]
+__all__ = ["TabScreen"]
 
 
 class TabPanes(StrEnum):
@@ -48,7 +48,7 @@ class TabPanes(StrEnum):
     re_add_tab_button = "Re-Add"
 
 
-class MainScreen(Screen[None], AppType):
+class TabScreen(Screen[None], AppType):
 
     destDir: Path | None = None
 

@@ -1,4 +1,4 @@
-"""Shared between MainScreen (config tab) and the InitScreen."""
+"""Shared between TabScreen (config tab) and the InitScreen."""
 
 from dataclasses import dataclass
 from enum import Enum, StrEnum

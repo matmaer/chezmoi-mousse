@@ -31,9 +31,9 @@ from chezmoi_mousse.shared import (
 
 from .init_screen import InitScreen
 from .install_help import InstallHelp
-from .main_screen import MainScreen
 from .operate import OperateScreen
 from .splash import SplashScreen
+from .tabbed_content import TabScreen
 from .tabs.add_tab import AddTab, FilteredDirTree
 from .tabs.common.operate_info import OperateInfo
 from .tabs.common.switch_slider import SwitchSlider
@@ -194,7 +194,7 @@ class ChezmoiGUI(App[None]):
         ContentsView.destDir = dest_dir
         DiffView.destDir = dest_dir
         GitLogPath.destDir = dest_dir
-        MainScreen.destDir = dest_dir
+        TabScreen.destDir = dest_dir
         TreeBase.destDir = dest_dir
         ViewSwitcher.destDir = dest_dir
 
@@ -202,7 +202,7 @@ class ChezmoiGUI(App[None]):
         OperateInfo.git_autopush = splash_data.parsed_config.git_autopush
 
         self.push_screen(
-            MainScreen(ids=self.screen_ids.main, splash_data=splash_data)
+            TabScreen(ids=self.screen_ids.main, splash_data=splash_data)
         )
 
     def on_tabbed_content_tab_activated(
@@ -235,7 +235,7 @@ class ChezmoiGUI(App[None]):
             return None
 
     def update_toggle_switch_slider_binding(self, tab_name: str) -> None:
-        if not isinstance(self.screen, MainScreen):
+        if not isinstance(self.screen, TabScreen):
             return
         slider = self.get_slider_from_tab(tab_name)
         if slider is None:
@@ -303,7 +303,7 @@ class ChezmoiGUI(App[None]):
         self.refresh_bindings()
 
     def action_toggle_switch_slider(self) -> None:
-        if not isinstance(self.screen, MainScreen):
+        if not isinstance(self.screen, TabScreen):
             return
         active_tab = self.screen.query_one(TabbedContent).active
         slider = self.get_slider_from_tab(active_tab)
@@ -313,7 +313,7 @@ class ChezmoiGUI(App[None]):
         self.update_toggle_switch_slider_binding(active_tab)
 
     def action_toggle_maximized_display(self) -> None:
-        if not isinstance(self.screen, MainScreen):
+        if not isinstance(self.screen, TabScreen):
             return
         active_tab = self.screen.query_one(TabbedContent).active
         left_side = None
@@ -438,7 +438,7 @@ class ChezmoiGUI(App[None]):
         self, action: str, parameters: tuple[object, ...]
     ) -> bool | None:
         if action == "toggle_switch_slider":
-            if isinstance(self.screen, MainScreen):
+            if isinstance(self.screen, TabScreen):
                 active_tab = self.screen.query_one(TabbedContent).active
                 if active_tab == TabName.apply.name:
                     return True
@@ -455,7 +455,7 @@ class ChezmoiGUI(App[None]):
             else:
                 return False
         elif action == "toggle_dry_run_mode":
-            if isinstance(self.screen, MainScreen):
+            if isinstance(self.screen, TabScreen):
                 active_tab = self.screen.query_one(TabbedContent).active
                 if active_tab == TabName.apply.name:
                     return True
