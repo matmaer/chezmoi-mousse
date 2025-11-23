@@ -20,22 +20,26 @@ __all__ = ["AppIds"]
 
 class AppIds:
     __slots__ = (
-        "canvas_name",
+        "_canvas_name",
         "container",
         "data_table",
         "filter",
         "footer",
         "header",
         "logger",
+        "screen_name",
+        "tab_name",
         "tree",
         "view_btn",
         "view",
     )
 
     def __init__(self, canvas_name: TabName | ScreenName) -> None:
-        self.canvas_name: str = canvas_name.name
-        self.footer = f"{self.canvas_name}_footer"
-        self.header = f"{self.canvas_name}_header"
+        self._canvas_name: str = canvas_name.name
+        self.tab_name: str = canvas_name.name
+        self.screen_name: str = canvas_name.name
+        self.footer = f"{self._canvas_name}_footer"
+        self.header = f"{self._canvas_name}_header"
 
         self.container = ContainerIds(self)
         self.data_table = DataTableIds(self)
@@ -50,36 +54,36 @@ class AppIds:
     ) -> str:
         if isinstance(btn, OperateBtn):
             suffix = "_op_btn"
-            return f"{qid}{self.canvas_name}_{btn.name}{suffix}"
+            return f"{qid}{self._canvas_name}_{btn.name}{suffix}"
         elif isinstance(btn, TabBtn):
             suffix = "_tab_btn"
         elif isinstance(btn, FlatBtn):
             suffix = "_flat_btn"
         else:
             suffix = "_link_btn"
-        return f"{qid}{self.canvas_name}_{btn.name}{suffix}"
+        return f"{qid}{self._canvas_name}_{btn.name}{suffix}"
 
     def container_id(self, qid: str = "", *, name: ContainerName) -> str:
-        return f"{qid}{self.canvas_name}_{name.name}"
+        return f"{qid}{self._canvas_name}_{name.name}"
 
     def datatable_id(
         self, qid: str = "", *, data_table_name: DataTableName
     ) -> str:
-        return f"{qid}{self.canvas_name}_{data_table_name.name}_datatable"
+        return f"{qid}{self._canvas_name}_{data_table_name.name}_datatable"
 
     def switch_horizontal_id(self, qid: str = "", *, switch: Switches) -> str:
         return (
-            f"{qid}{self.canvas_name}_{switch.switch_name}_switch_horizontal"
+            f"{qid}{self._canvas_name}_{switch.switch_name}_switch_horizontal"
         )
 
     def switch_id(self, qid: str = "", *, switch: Switches) -> str:
-        return f"{qid}{self.canvas_name}_{switch.switch_name}_switch"
+        return f"{qid}{self._canvas_name}_{switch.switch_name}_switch"
 
     def tree_id(self, qid: str = "", *, tree: TreeName) -> str:
-        return f"{qid}{self.canvas_name}_{tree}"
+        return f"{qid}{self._canvas_name}_{tree}"
 
     def view_id(self, qid: str = "", *, view: ViewName | LogName) -> str:
-        return f"{qid}{self.canvas_name}_{view}"
+        return f"{qid}{self._canvas_name}_{view}"
 
 
 class ContainerIds:

@@ -131,7 +131,7 @@ class TreeBase(Tree[NodeData], AppType):
         status_code: str,
         path_type: "PathKind",
     ) -> None:
-        if self.ids.canvas_name == TabName.re_add:
+        if self.ids.tab_name == TabName.re_add:
             # we now check this early on in the _chezmoi.py module
             found = True
         else:
@@ -165,7 +165,7 @@ class TreeBase(Tree[NodeData], AppType):
             self.notify_node_data_is_none(tree_node)
             return
 
-        if self.ids.canvas_name == TabName.apply:
+        if self.ids.tab_name == TabName.apply:
             paths: "PathDict" = (
                 (self.app.chezmoi.apply_status_files)
                 if flat_list
@@ -198,7 +198,7 @@ class TreeBase(Tree[NodeData], AppType):
         # Both paths cached in the Chezmoi instance, don't cache this here as
         # we update the cache there after a WriteCmd.
 
-        if self.ids.canvas_name == TabName.apply:
+        if self.ids.tab_name == TabName.apply:
             paths: "PathDict" = (
                 (self.app.chezmoi.apply_files_without_status)
                 if flat_list
@@ -228,7 +228,7 @@ class TreeBase(Tree[NodeData], AppType):
             self.notify_node_data_is_none(tree_node)
             return
 
-        if self.ids.canvas_name == TabName.apply:
+        if self.ids.tab_name == TabName.apply:
             result: "PathDict" = self.app.chezmoi.apply_status_dirs_in(
                 tree_node.data.path
             )
@@ -269,7 +269,7 @@ class TreeBase(Tree[NodeData], AppType):
             self.notify_node_data_is_none(tree_node)
             return
 
-        if self.ids.canvas_name == TabName.apply:
+        if self.ids.tab_name == TabName.apply:
             dir_paths: "PathDict" = {
                 path: "X"
                 for path in self.app.chezmoi.dirs
@@ -356,9 +356,9 @@ class TreeBase(Tree[NodeData], AppType):
         if event.node.data is None:
             self.notify_node_data_is_none(event.node)
             return
-        if self.ids.canvas_name == TabName.apply:
+        if self.ids.tab_name == TabName.apply:
             self.post_message(CurrentApplyNodeMsg(event.node.data))
-        elif self.ids.canvas_name == TabName.re_add:
+        elif self.ids.tab_name == TabName.re_add:
             self.post_message(CurrentReAddNodeMsg(event.node.data))
 
     # 4 methods to provide tab navigation without intaraction with the tree

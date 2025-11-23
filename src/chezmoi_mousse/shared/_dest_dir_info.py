@@ -57,19 +57,19 @@ class DestDirInfo(VerticalGroup):
         yield SubSectionLabel(SectionLabelText.path_info)
 
     def on_mount(self) -> None:
-        if self.ids.canvas_name == TabName.add:
+        if self.ids.tab_name == TabName.add:
             self.mount(Static(LogText.read_file.value))
             self.mount(Static(ADD_DIR_INFO))
             return
         elif (
-            self.ids.canvas_name in (TabName.apply, TabName.re_add)
+            self.ids.tab_name in (TabName.apply, TabName.re_add)
             and self.contents_logger is True
         ):
             self.mount(Static(LogText.cat.value))
             return
-        elif self.ids.canvas_name == TabName.apply:
+        elif self.ids.tab_name == TabName.apply:
             self.mount(Static(LogText.diff.value))
-        elif self.ids.canvas_name == TabName.re_add:
+        elif self.ids.tab_name == TabName.re_add:
             self.mount(Static(LogText.diff_reverse.value))
             return
         elif self.git_log is True:

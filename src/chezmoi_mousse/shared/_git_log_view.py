@@ -8,7 +8,7 @@ from textual.containers import Vertical
 from textual.reactive import reactive
 from textual.widgets import DataTable
 
-from chezmoi_mousse import AppType, ReadCmd, Tcss
+from chezmoi_mousse import AppType, ReadCmd, TabName, Tcss
 
 from ._dest_dir_info import DestDirInfo
 
@@ -61,7 +61,7 @@ class GitLogPath(Vertical, AppType):
 
     def __init__(self, *, ids: "AppIds") -> None:
         self.ids = ids
-        if self.ids.canvas_name == "apply_tab":
+        if self.ids.tab_name == TabName.apply:
             self.data_table_id = self.ids.data_table.apply_git_log
             self.data_table_id_q = self.ids.data_table.apply_git_log_q
         else:  # re_add_tab
