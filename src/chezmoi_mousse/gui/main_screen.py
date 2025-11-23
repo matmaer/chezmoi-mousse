@@ -285,10 +285,21 @@ class MainScreen(Screen[None], AppType):
             screen_result is not None
             and screen_result.command_result is not None
         ):
-            if screen_result.command_result.returncode == 0:
+            if (
+                screen_result.command_result.returncode == 0
+                and self.app.changes_enabled
+            ):
                 self.notify(
                     "Operation completed successfully, Logs tab updated."
                 )
+            elif (
+                screen_result.command_result.returncode == 0
+                and not self.app.changes_enabled
+            ):
+                self.notify(
+                    "Operation completed in dry-run mode, Logs tab updated."
+                )
+
             else:
                 self.notify(
                     "Operation failed, check the Logs tab for more info.",
@@ -302,7 +313,9 @@ class MainScreen(Screen[None], AppType):
             self.populate_apply_trees()
             self.populate_re_add_trees()
         elif (
-            screen_result is not None and screen_result.command_result is None
+            screen_result is not None
+            and screen_result.command_result is None
+            and not self.app.changes_enabled
         ):
             self.notify("Operation cancelled, no changes were made.")
         else:
