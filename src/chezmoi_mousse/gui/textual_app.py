@@ -330,9 +330,7 @@ class ChezmoiGUI(App[None]):
                 self.tab_ids.apply.container.left_side_q, TreeSwitcher
             )
             operation_buttons = self.screen.query_one(
-                self.tab_ids.apply.container_id(
-                    "#", name=ContainerName.operate_buttons
-                )
+                self.tab_ids.apply.container.operate_buttons_q
             )
             switch_slider = self.screen.query_one(
                 self.tab_ids.apply.container.switch_slider_q, SwitchSlider
@@ -348,9 +346,7 @@ class ChezmoiGUI(App[None]):
                 self.tab_ids.re_add.container.left_side_q, TreeSwitcher
             )
             operation_buttons = self.screen.query_one(
-                self.tab_ids.re_add.container_id(
-                    "#", name=ContainerName.operate_buttons
-                )
+                self.tab_ids.re_add.container.operate_buttons_q
             )
             switch_slider = self.screen.query_one(
                 self.tab_ids.re_add.container.switch_slider_q, SwitchSlider
