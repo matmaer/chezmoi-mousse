@@ -82,9 +82,7 @@ class OperateButtons(Horizontal):
     def __init__(self, *, ids: "AppIds", buttons: tuple[OperateBtn, ...]):
         self.ids = ids
         self.buttons = buttons
-        super().__init__(
-            id=self.ids.container_id(name=ContainerName.operate_buttons)
-        )
+        super().__init__(id=self.ids.container.operate_buttons)
 
     def on_mount(self) -> None:
         for button_enum in self.buttons:
