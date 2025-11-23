@@ -32,7 +32,7 @@ from .tabs.logs_tab import OperateLog
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds, CommandResult
 
-__all__ = ["OperateScreen"]
+__all__ = ["OperateInfo", "OperateScreen"]
 
 
 class InfoLine(StrEnum):
