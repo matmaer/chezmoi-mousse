@@ -6,7 +6,7 @@ from textual.app import ComposeResult
 from textual.containers import ScrollableContainer, Vertical
 from textual.widgets import DataTable, Pretty, Static
 
-from chezmoi_mousse import AppType, CommandResult, DataTableName, Tcss
+from chezmoi_mousse import AppType, CommandResult, Tcss
 
 from ._section_headers import MainSectionLabel, SectionLabelText
 
@@ -43,17 +43,11 @@ class DoctorTableView(Vertical, AppType):
     def __init__(self, ids: "AppIds") -> None:
         self.ids = ids
         super().__init__(id=self.ids.container.doctor)
-        self.doctor_table_id = self.ids.datatable_id(
-            data_table_name=DataTableName.doctor_table
-        )
-        self.doctor_table_qid = self.ids.datatable_id(
-            "#", data_table_name=DataTableName.doctor_table
-        )
 
     def compose(self) -> ComposeResult:
         yield MainSectionLabel(SectionLabelText.doctor_output)
         yield DataTable(
-            id=self.doctor_table_id,
+            id=self.ids.data_table.doctor,
             show_cursor=False,
             classes=Tcss.doctor_table.name,
         )
@@ -71,7 +65,9 @@ class DoctorTableView(Vertical, AppType):
 
         doctor_data = command_result.std_out.splitlines()
 
-        doctor_table = self.query_one(self.doctor_table_qid, DataTableText)
+        doctor_table = self.query_one(
+            self.ids.data_table.doctor_q, DataTableText
+        )
 
         if not doctor_table.columns:
             doctor_table.add_columns(*doctor_data[0].split())
