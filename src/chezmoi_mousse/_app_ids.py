@@ -167,18 +167,18 @@ class DataTableIds:
             datatable_name=DataTableName.doctor_table
         )
         self.doctor_q = f"#{self.doctor}"
-        self.apply_git_log = canvas_ids.datatable_id(
-            datatable_name=DataTableName.apply_git_log_table
+        self.git_log = canvas_ids.datatable_id(
+            datatable_name=DataTableName.git_log_table
         )
-        self.apply_git_log_q = f"#{self.apply_git_log}"
-        self.re_add_git_log = canvas_ids.datatable_id(
-            datatable_name=DataTableName.re_add_git_log_table
-        )
-        self.re_add_git_log_q = f"#{self.re_add_git_log}"
-        self.git_global_log = canvas_ids.datatable_id(
-            datatable_name=DataTableName.git_global_log_table
-        )
-        self.git_global_log_q = f"#{self.git_global_log}"
+        self.git_log_q = f"#{self.git_log}"
+        # self.git_global_log = canvas_ids.datatable_id(
+        #     datatable_name=DataTableName.git_global_log_table
+        # )
+        # self.git_global_log_q = f"#{self.git_global_log}"
+        # self.git_path_log = canvas_ids.datatable_id(
+        #     datatable_name=DataTableName.git_path_log_table
+        # )
+        # self.git_path_log_q = f"#{self.git_path_log}"
 
 
 class FilterIds:

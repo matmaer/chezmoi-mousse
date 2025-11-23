@@ -8,7 +8,7 @@ from textual.containers import Vertical
 from textual.reactive import reactive
 from textual.widgets import DataTable
 
-from chezmoi_mousse import AppType, ReadCmd, TabName, Tcss
+from chezmoi_mousse import AppType, ReadCmd, Tcss
 
 from ._dest_dir_info import DestDirInfo
 
@@ -24,8 +24,9 @@ __all__ = ["GitLogPath", "GitLogGlobal"]
 
 class GitLogDataTable(DataTable[Text], AppType):
 
-    def __init__(self, *, datatable_id: str) -> None:
-        super().__init__(id=datatable_id)
+    def __init__(self, *, ids: "AppIds") -> None:
+        self.ids = ids
+        super().__init__(id=self.ids.datatable.git_log)
 
     def _add_row_with_style(self, columns: list[str], style: str) -> None:
         row: Iterable[Text] = [
@@ -61,19 +62,13 @@ class GitLogPath(Vertical, AppType):
 
     def __init__(self, *, ids: "AppIds") -> None:
         self.ids = ids
-        if self.ids.tab_name == TabName.apply:
-            self.datatable_id = self.ids.datatable.apply_git_log
-            self.datatable_id_q = self.ids.datatable.apply_git_log_q
-        else:  # re_add_tab
-            self.datatable_id = self.ids.datatable.re_add_git_log
-            self.datatable_id_q = self.ids.datatable.re_add_git_log_q
         super().__init__(
             id=self.ids.container.git_log_path,
             classes=Tcss.border_title_top.name,
         )
 
     def compose(self) -> ComposeResult:
-        yield GitLogDataTable(datatable_id=self.datatable_id)
+        yield GitLogDataTable(ids=self.ids)
         yield DestDirInfo(ids=self.ids, git_log=True)
 
     def on_mount(self) -> None:
@@ -87,7 +82,9 @@ class GitLogPath(Vertical, AppType):
                 self.ids.container.dest_dir_info_q, DestDirInfo
             )
             dest_dir_info.visible = False
-        datatable = self.query_one(self.datatable_id_q, GitLogDataTable)
+        datatable = self.query_one(
+            self.ids.datatable.git_log_q, GitLogDataTable
+        )
         command_result: "CommandResult" = self.app.chezmoi.read(
             ReadCmd.source_path, self.path
         )
@@ -104,10 +101,10 @@ class GitLogGlobal(Vertical, AppType):
         super().__init__(id=self.ids.container.git_log_global)
 
     def compose(self) -> ComposeResult:
-        yield GitLogDataTable(datatable_id=self.ids.datatable.git_global_log)
+        yield GitLogDataTable(ids=self.ids)
 
     def update_global_git_log(self, command_result: "CommandResult") -> None:
         datatable = self.query_one(
-            self.ids.datatable.git_global_log_q, GitLogDataTable
+            self.ids.datatable.git_log_q, GitLogDataTable
         )
         datatable.populate_datatable(command_result)

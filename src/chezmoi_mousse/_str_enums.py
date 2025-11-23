@@ -74,10 +74,8 @@ class ContentSwitcherName(StrEnum):
 
 
 class DataTableName(StrEnum):
-    apply_git_log_table = auto()
     doctor_table = auto()
-    git_global_log_table = auto()
-    re_add_git_log_table = auto()
+    git_log_table = auto()
 
 
 class HeaderTitle(StrEnum):
