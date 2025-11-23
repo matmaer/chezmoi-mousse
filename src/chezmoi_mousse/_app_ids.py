@@ -54,13 +54,8 @@ class AppIds:
         self.view = ViewIds(self)
         self.tab_btn = TabButtonIds(self)
 
-    def button_id(self, qid: str = "", *, btn: LinkBtn | OperateBtn) -> str:
-        if isinstance(btn, OperateBtn):
-            suffix = "_op_btn"
-            return f"{qid}{self._canvas_name}_{btn.name}{suffix}"
-        else:
-            suffix = "_link_btn"
-        return f"{qid}{self._canvas_name}_{btn.name}{suffix}"
+    def button_id(self, qid: str = "", *, btn: OperateBtn) -> str:
+        return f"{qid}{self._canvas_name}_{btn.name}_op_btn"
 
     def container_id(self, qid: str = "", *, name: ContainerName) -> str:
         return f"{qid}{self._canvas_name}_{name.name}"
@@ -77,6 +72,9 @@ class AppIds:
 
     def flat_button_id(self, qid: str = "", *, btn: FlatBtn) -> str:
         return f"{qid}{self._canvas_name}_{btn.name}_flat_btn"
+
+    def link_button_id(self, qid: str = "", *, btn: LinkBtn) -> str:
+        return f"{qid}{self._canvas_name}_{btn.name}_link_btn"
 
     def switch_horizontal_id(self, qid: str = "", *, switch: Switches) -> str:
         return (

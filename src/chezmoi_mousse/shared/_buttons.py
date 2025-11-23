@@ -43,23 +43,10 @@ class FlatLink(Link):
     def __init__(self, *, ids: "AppIds", link_enum: LinkBtn) -> None:
         self.ids = ids
         super().__init__(
-            id=self.ids.button_id(btn=link_enum),
+            id=self.ids.link_button_id(btn=link_enum),
             text=link_enum.link_text,
             url=link_enum.link_url,
             classes=Tcss.flat_link.name,
-        )
-
-
-class OperateButton(Button):
-    def __init__(self, *, ids: "AppIds", button_enum: OperateBtn) -> None:
-        self.ids = ids
-        self.button_enum = button_enum
-        super().__init__(
-            classes=Tcss.operate_button.name,
-            disabled=True,
-            id=self.ids.button_id(btn=self.button_enum),
-            label=self.button_enum.label(),
-            tooltip=self.button_enum.initial_tooltip,
         )
 
 
@@ -76,6 +63,19 @@ class FlatButtonsVertical(Vertical):
     def compose(self) -> ComposeResult:
         for button_enum in self.buttons:
             yield FlatButton(ids=self.ids, button_enum=button_enum)
+
+
+class OperateButton(Button):
+    def __init__(self, *, ids: "AppIds", button_enum: OperateBtn) -> None:
+        self.ids = ids
+        self.button_enum = button_enum
+        super().__init__(
+            classes=Tcss.operate_button.name,
+            disabled=True,
+            id=self.ids.button_id(btn=self.button_enum),
+            label=self.button_enum.label(),
+            tooltip=self.button_enum.initial_tooltip,
+        )
 
 
 class OperateButtons(Horizontal):
