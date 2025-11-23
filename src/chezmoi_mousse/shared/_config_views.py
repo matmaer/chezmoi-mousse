@@ -47,7 +47,7 @@ class DoctorTableView(Vertical, AppType):
     def compose(self) -> ComposeResult:
         yield MainSectionLabel(SectionLabelText.doctor_output)
         yield DataTable(
-            id=self.ids.data_table.doctor,
+            id=self.ids.datatable.doctor,
             show_cursor=False,
             classes=Tcss.doctor_table.name,
         )
@@ -66,7 +66,7 @@ class DoctorTableView(Vertical, AppType):
         doctor_data = command_result.std_out.splitlines()
 
         doctor_table = self.query_one(
-            self.ids.data_table.doctor_q, DataTableText
+            self.ids.datatable.doctor_q, DataTableText
         )
 
         if not doctor_table.columns:

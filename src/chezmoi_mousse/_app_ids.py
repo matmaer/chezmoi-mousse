@@ -22,7 +22,7 @@ class AppIds:
     __slots__ = (
         "_canvas_name",
         "container",
-        "data_table",
+        "datatable",
         "filter",
         "footer",
         "header",
@@ -42,7 +42,7 @@ class AppIds:
         self.header = f"{self._canvas_name}_header"
 
         self.container = ContainerIds(self)
-        self.data_table = DataTableIds(self)
+        self.datatable = DataTableIds(self)
         self.filter = FilterIds(self)
         self.logger = LoggerIds(self)
         self.tree = TreeIds(self)
@@ -67,9 +67,9 @@ class AppIds:
         return f"{qid}{self._canvas_name}_{name.name}"
 
     def datatable_id(
-        self, qid: str = "", *, data_table_name: DataTableName
+        self, qid: str = "", *, datatable_name: DataTableName
     ) -> str:
-        return f"{qid}{self._canvas_name}_{data_table_name.name}_datatable"
+        return f"{qid}{self._canvas_name}_{datatable_name.name}_datatable"
 
     def switch_horizontal_id(self, qid: str = "", *, switch: Switches) -> str:
         return (
@@ -135,19 +135,19 @@ class DataTableIds:
 
     def __init__(self, canvas_ids: AppIds):
         self.doctor = canvas_ids.datatable_id(
-            data_table_name=DataTableName.doctor_table
+            datatable_name=DataTableName.doctor_table
         )
         self.doctor_q = f"#{self.doctor}"
         self.apply_git_log = canvas_ids.datatable_id(
-            data_table_name=DataTableName.apply_git_log_table
+            datatable_name=DataTableName.apply_git_log_table
         )
         self.apply_git_log_q = f"#{self.apply_git_log}"
         self.re_add_git_log = canvas_ids.datatable_id(
-            data_table_name=DataTableName.re_add_git_log_table
+            datatable_name=DataTableName.re_add_git_log_table
         )
         self.re_add_git_log_q = f"#{self.re_add_git_log}"
         self.git_global_log = canvas_ids.datatable_id(
-            data_table_name=DataTableName.git_global_log_table
+            datatable_name=DataTableName.git_global_log_table
         )
         self.git_global_log_q = f"#{self.git_global_log}"
 

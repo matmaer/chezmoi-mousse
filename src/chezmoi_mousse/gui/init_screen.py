@@ -129,7 +129,7 @@ class InitSwitcher(ContentSwitcher):
         )
         self.splash_data = splash_data
         self.doctor_table_qid = ids.datatable_id(
-            "#", data_table_name=DataTableName.doctor_table
+            "#", datatable_name=DataTableName.doctor_table
         )
 
     def compose(self) -> ComposeResult:

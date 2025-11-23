@@ -24,8 +24,8 @@ __all__ = ["GitLogPath", "GitLogGlobal"]
 
 class GitLogDataTable(DataTable[Text], AppType):
 
-    def __init__(self, *, data_table_id: str) -> None:
-        super().__init__(id=data_table_id)
+    def __init__(self, *, datatable_id: str) -> None:
+        super().__init__(id=datatable_id)
 
     def _add_row_with_style(self, columns: list[str], style: str) -> None:
         row: Iterable[Text] = [
@@ -33,7 +33,7 @@ class GitLogDataTable(DataTable[Text], AppType):
         ]
         self.add_row(*row)
 
-    def populate_data_table(self, command_result: "CommandResult") -> None:
+    def populate_datatable(self, command_result: "CommandResult") -> None:
         cmd_output = command_result.std_out
         self.clear(columns=True)
         self.add_columns("COMMIT", "MESSAGE")
@@ -62,18 +62,18 @@ class GitLogPath(Vertical, AppType):
     def __init__(self, *, ids: "AppIds") -> None:
         self.ids = ids
         if self.ids.tab_name == TabName.apply:
-            self.data_table_id = self.ids.data_table.apply_git_log
-            self.data_table_id_q = self.ids.data_table.apply_git_log_q
+            self.datatable_id = self.ids.datatable.apply_git_log
+            self.datatable_id_q = self.ids.datatable.apply_git_log_q
         else:  # re_add_tab
-            self.data_table_id = self.ids.data_table.re_add_git_log
-            self.data_table_id_q = self.ids.data_table.re_add_git_log_q
+            self.datatable_id = self.ids.datatable.re_add_git_log
+            self.datatable_id_q = self.ids.datatable.re_add_git_log_q
         super().__init__(
             id=self.ids.container.git_log_path,
             classes=Tcss.border_title_top.name,
         )
 
     def compose(self) -> ComposeResult:
-        yield GitLogDataTable(data_table_id=self.data_table_id)
+        yield GitLogDataTable(datatable_id=self.datatable_id)
         yield DestDirInfo(ids=self.ids, git_log=True)
 
     def on_mount(self) -> None:
@@ -87,28 +87,27 @@ class GitLogPath(Vertical, AppType):
                 self.ids.container.dest_dir_info_q, DestDirInfo
             )
             dest_dir_info.visible = False
-        data_table = self.query_one(self.data_table_id_q, GitLogDataTable)
+        datatable = self.query_one(self.datatable_id_q, GitLogDataTable)
         command_result: "CommandResult" = self.app.chezmoi.read(
             ReadCmd.source_path, self.path
         )
         git_log_result: "CommandResult" = self.app.chezmoi.read(
             ReadCmd.git_log, Path(command_result.std_out)
         )
-        data_table.populate_data_table(git_log_result)
+        datatable.populate_datatable(git_log_result)
 
 
 class GitLogGlobal(Vertical, AppType):
 
     def __init__(self, *, ids: "AppIds") -> None:
         self.ids = ids
-        self.data_table_qid = self.ids.data_table.git_global_log_q
         super().__init__(id=self.ids.container.git_log_global)
 
     def compose(self) -> ComposeResult:
-        yield GitLogDataTable(data_table_id=self.ids.data_table.git_global_log)
+        yield GitLogDataTable(datatable_id=self.ids.datatable.git_global_log)
 
     def update_global_git_log(self, command_result: "CommandResult") -> None:
-        data_table = self.query_one(
-            self.ids.data_table.git_global_log_q, GitLogDataTable
+        datatable = self.query_one(
+            self.ids.datatable.git_global_log_q, GitLogDataTable
         )
-        data_table.populate_data_table(command_result)
+        datatable.populate_datatable(command_result)
