@@ -25,6 +25,7 @@ class AppIds:
         "container",
         "datatable",
         "filter",
+        "flat_btn",
         "footer",
         "header",
         "logger",
@@ -46,6 +47,7 @@ class AppIds:
         self.container = ContainerIds(self)
         self.datatable = DataTableIds(self)
         self.filter = FilterIds(self)
+        self.flat_btn = FlatButtonIds(self)
         self.logger = LoggerIds(self)
         self.switcher = ContentSwitcherIds(self)
         self.tree = TreeIds(self)
@@ -53,7 +55,7 @@ class AppIds:
         self.view_btn = ViewButtons(self)
 
     def button_id(
-        self, qid: str = "", *, btn: FlatBtn | LinkBtn | OperateBtn | TabBtn
+        self, qid: str = "", *, btn: LinkBtn | OperateBtn | TabBtn
     ) -> str:
         if isinstance(btn, OperateBtn):
             suffix = "_op_btn"
@@ -78,6 +80,9 @@ class AppIds:
         self, qid: str = "", *, datatable_name: DataTableName
     ) -> str:
         return f"{qid}{self._canvas_name}_{datatable_name.name}_datatable"
+
+    def flat_button_id(self, qid: str = "", *, btn: FlatBtn) -> str:
+        return f"{qid}{self._canvas_name}_{btn.name}_flat_btn"
 
     def switch_horizontal_id(self, qid: str = "", *, switch: Switches) -> str:
         return (
@@ -132,6 +137,10 @@ class ContentSwitcherIds:
             switcher=ContentSwitcherName.config_switcher
         )
         self.config_tab_q = f"#{self.config_tab}"
+        self.help_tab = canvas_ids.content_switcher_id(
+            switcher=ContentSwitcherName.help_switcher
+        )
+        self.help_tab_q = f"#{self.help_tab}"
         self.init_screen = canvas_ids.content_switcher_id(
             switcher=ContentSwitcherName.init_screen_switcher
         )
@@ -186,6 +195,36 @@ class FilterIds:
         self.unwanted_q = f"#{self.unwanted}"
 
 
+class FlatButtonIds:
+    def __init__(self, canvas_ids: AppIds):
+        self.add_help = canvas_ids.flat_button_id(btn=FlatBtn.add_help)
+        self.add_help_q = f"#{self.add_help}"
+        self.apply_help = canvas_ids.flat_button_id(btn=FlatBtn.apply_help)
+        self.apply_help_q = f"#{self.apply_help}"
+        self.cat_config = canvas_ids.flat_button_id(btn=FlatBtn.cat_config)
+        self.cat_config_q = f"#{self.cat_config}"
+        self.clone_repo = canvas_ids.flat_button_id(btn=FlatBtn.clone_repo)
+        self.clone_repo_q = f"#{self.clone_repo}"
+        self.diagram = canvas_ids.flat_button_id(btn=FlatBtn.diagram)
+        self.diagram_q = f"#{self.diagram}"
+        self.doctor = canvas_ids.flat_button_id(btn=FlatBtn.doctor)
+        self.doctor_q = f"#{self.doctor}"
+        self.exit_app = canvas_ids.flat_button_id(btn=FlatBtn.exit_app)
+        self.exit_app_q = f"#{self.exit_app}"
+        self.ignored = canvas_ids.flat_button_id(btn=FlatBtn.ignored)
+        self.ignored_q = f"#{self.ignored}"
+        self.new_repo = canvas_ids.flat_button_id(btn=FlatBtn.new_repo)
+        self.new_repo_q = f"#{self.new_repo}"
+        self.pw_mgr_info = canvas_ids.flat_button_id(btn=FlatBtn.pw_mgr_info)
+        self.pw_mgr_info_q = f"#{self.pw_mgr_info}"
+        self.re_add_help = canvas_ids.flat_button_id(btn=FlatBtn.re_add_help)
+        self.re_add_help_q = f"#{self.re_add_help}"
+        self.template_data = canvas_ids.flat_button_id(
+            btn=FlatBtn.template_data
+        )
+        self.template_data_q = f"#{self.template_data}"
+
+
 class LoggerIds:
     """RichLog widgets their id's."""
 
@@ -217,22 +256,22 @@ class ViewButtons:
         self.read_log = canvas_ids.button_id(btn=TabBtn.read_log)
 
         # Help tab
-        self.add_help = canvas_ids.button_id(btn=FlatBtn.add_help)
-        self.apply_help = canvas_ids.button_id(btn=FlatBtn.apply_help)
-        self.diagram = canvas_ids.button_id(btn=FlatBtn.diagram)
-        self.re_add_help = canvas_ids.button_id(btn=FlatBtn.re_add_help)
+        # self.add_help = canvas_ids.button_id(btn=FlatBtn.add_help)
+        # self.apply_help = canvas_ids.button_id(btn=FlatBtn.apply_help)
+        # self.diagram = canvas_ids.button_id(btn=FlatBtn.diagram)
+        # self.re_add_help = canvas_ids.button_id(btn=FlatBtn.re_add_help)
 
         # Init screen
-        self.clone_repo = canvas_ids.button_id(btn=FlatBtn.init_clone_repo)
-        self.new_repo = canvas_ids.button_id(btn=FlatBtn.init_new_repo)
+        # self.clone_repo = canvas_ids.button_id(btn=FlatBtn.init_clone_repo)
+        # self.new_repo = canvas_ids.button_id(btn=FlatBtn.init_new_repo)
 
         # Shared across canvases
-        self.cat_config = canvas_ids.button_id(btn=FlatBtn.cat_config)
+        # self.cat_config = canvas_ids.button_id(btn=FlatBtn.cat_config)
         self.diff = canvas_ids.button_id(btn=TabBtn.diff)
-        self.doctor = canvas_ids.button_id(btn=FlatBtn.doctor)
-        self.ignored = canvas_ids.button_id(btn=FlatBtn.ignored)
-        self.pw_mgr_info = canvas_ids.button_id(btn=FlatBtn.pw_mgr_info)
-        self.template_data = canvas_ids.button_id(btn=FlatBtn.template_data)
+        # self.doctor = canvas_ids.button_id(btn=FlatBtn.doctor)
+        # self.ignored = canvas_ids.button_id(btn=FlatBtn.ignored)
+        # self.pw_mgr_info = canvas_ids.button_id(btn=FlatBtn.pw_mgr_info)
+        # self.template_data = canvas_ids.button_id(btn=FlatBtn.template_data)
 
 
 class TreeIds:

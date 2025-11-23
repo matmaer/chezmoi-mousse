@@ -181,8 +181,8 @@ class InitScreen(Screen[SplashData | None], AppType):
             yield FlatButtonsVertical(
                 ids=self.ids,
                 buttons=(
-                    FlatBtn.init_clone_repo,
-                    FlatBtn.init_new_repo,
+                    FlatBtn.clone_repo,
+                    FlatBtn.new_repo,
                     FlatBtn.doctor,
                     FlatBtn.cat_config,
                     FlatBtn.template_data,
@@ -223,15 +223,15 @@ class InitScreen(Screen[SplashData | None], AppType):
         switcher = self.query_one(
             self.ids.switcher.init_screen_q, ContentSwitcher
         )
-        if event.button.id == self.ids.view_btn.new_repo:
+        if event.button.id == self.ids.flat_btn.new_repo:
             switcher.current = self.ids.view.new_repo
-        elif event.button.id == self.ids.view_btn.clone_repo:
+        elif event.button.id == self.ids.flat_btn.clone_repo:
             switcher.current = self.ids.view.clone_repo
-        elif event.button.id == self.ids.view_btn.doctor:
+        elif event.button.id == self.ids.flat_btn.doctor:
             switcher.current = self.ids.container.doctor
-        elif event.button.id == self.ids.view_btn.cat_config:
+        elif event.button.id == self.ids.flat_btn.cat_config:
             switcher.current = self.ids.view.cat_config
-        elif event.button.id == self.ids.view_btn.template_data:
+        elif event.button.id == self.ids.flat_btn.template_data:
             switcher.current = self.ids.view.template_data
 
     @on(Button.Pressed, Tcss.operate_button.value)

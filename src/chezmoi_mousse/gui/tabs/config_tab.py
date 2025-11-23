@@ -96,13 +96,13 @@ class ConfigTab(Horizontal, AppType):
         switcher = self.query_one(
             self.ids.switcher.config_tab_q, ConfigTabSwitcher
         )
-        if event.button.id == self.ids.view_btn.doctor:
+        if event.button.id == self.ids.flat_btn.doctor:
             switcher.current = self.ids.container.doctor
-        if event.button.id == self.ids.view_btn.pw_mgr_info:
+        if event.button.id == self.ids.flat_btn.pw_mgr_info:
             switcher.current = self.ids.view.pw_mgr_info
-        elif event.button.id == self.ids.view_btn.cat_config:
+        elif event.button.id == self.ids.flat_btn.cat_config:
             switcher.current = self.ids.view.cat_config
-        elif event.button.id == self.ids.view_btn.ignored:
+        elif event.button.id == self.ids.flat_btn.ignored:
             switcher.current = self.ids.view.ignored
-        elif event.button.id == self.ids.view_btn.template_data:
+        elif event.button.id == self.ids.flat_btn.template_data:
             switcher.current = self.ids.view.template_data

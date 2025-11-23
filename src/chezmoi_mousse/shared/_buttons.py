@@ -33,7 +33,7 @@ class FlatButton(Button):
         super().__init__(
             classes=Tcss.flat_button.name,
             flat=True,
-            id=self.ids.button_id(btn=button_enum),
+            id=self.ids.flat_button_id(btn=button_enum),
             label=button_enum.value,
             variant="primary",
         )

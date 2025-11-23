@@ -13,7 +13,6 @@ from textual.containers import (
 from textual.widgets import Button, ContentSwitcher, Static
 
 from chezmoi_mousse import (
-    ContainerName,
     FlatBtn,
     LinkBtn,
     OperateBtn,
@@ -200,34 +199,11 @@ class ChezmoiDiagram(Vertical):
         )
 
 
-class HelpTabSwitcher(ContentSwitcher):
-
-    def __init__(self, ids: "AppIds"):
-        self.ids = ids
-        self.container_id = self.ids.container_id(
-            name=ContainerName.help_switcher
-        )
-        super().__init__(
-            id=self.container_id, initial=self.ids.view.apply_help
-        )
-
-    def compose(self) -> ComposeResult:
-
-        yield ApplyTabHelp(ids=self.ids)
-        yield ReAddTabHelp(ids=self.ids)
-        yield AddTabHelp(ids=self.ids)
-        yield ChezmoiDiagram(ids=self.ids)
-
-
 class HelpTab(Horizontal):
 
     def __init__(self, ids: "AppIds") -> None:
         super().__init__()
-
         self.ids = ids
-        self.content_switcher_qid = self.ids.container_id(
-            "#", name=ContainerName.help_switcher
-        )
 
     def compose(self) -> ComposeResult:
         yield FlatButtonsVertical(
@@ -239,17 +215,25 @@ class HelpTab(Horizontal):
                 FlatBtn.diagram,
             ),
         )
-        yield HelpTabSwitcher(ids=self.ids)
+        with ContentSwitcher(
+            id=self.ids.switcher.help_tab, initial=self.ids.view.apply_help
+        ):
+            yield ApplyTabHelp(ids=self.ids)
+            yield ReAddTabHelp(ids=self.ids)
+            yield AddTabHelp(ids=self.ids)
+            yield ChezmoiDiagram(ids=self.ids)
 
     @on(Button.Pressed, Tcss.flat_button.value)
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
-        switcher = self.query_one(self.content_switcher_qid, HelpTabSwitcher)
-        if event.button.id == self.ids.view_btn.apply_help:
+        switcher = self.query_one(
+            self.ids.switcher.help_tab_q, ContentSwitcher
+        )
+        if event.button.id == self.ids.flat_btn.apply_help:
             switcher.current = self.ids.view.apply_help
-        elif event.button.id == self.ids.view_btn.re_add_help:
+        elif event.button.id == self.ids.flat_btn.re_add_help:
             switcher.current = self.ids.view.re_add_help
-        elif event.button.id == self.ids.view_btn.add_help:
+        elif event.button.id == self.ids.flat_btn.add_help:
             switcher.current = self.ids.view.add_help
-        elif event.button.id == self.ids.view_btn.diagram:
+        elif event.button.id == self.ids.flat_btn.diagram:
             switcher.current = self.ids.view.diagram
