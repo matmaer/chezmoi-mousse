@@ -8,7 +8,7 @@ from textual.app import ComposeResult
 from textual.containers import Vertical
 from textual.widgets import Button, ContentSwitcher
 
-from chezmoi_mousse import ContainerName, TabBtn, Tcss, TreeName
+from chezmoi_mousse import ContainerName, TabBtn, Tcss
 from chezmoi_mousse.shared import (
     ContentsView,
     DiffView,
@@ -39,7 +39,7 @@ class TreeSwitcher(Vertical):
         yield TabButtons(ids=self.ids, buttons=(TabBtn.tree, TabBtn.list))
         with ContentSwitcher(
             id=self.ids.container_id(name=ContainerName.tree_switcher),
-            initial=self.ids.tree_id(tree=TreeName.managed_tree),
+            initial=self.ids.tree.managed,
             classes=Tcss.content_switcher_left.name,
         ):
             yield ManagedTree(ids=self.ids)

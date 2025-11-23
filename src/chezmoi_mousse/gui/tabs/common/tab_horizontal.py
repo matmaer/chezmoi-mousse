@@ -8,14 +8,7 @@ from textual import on
 from textual.containers import Horizontal
 from textual.widgets import Button, ContentSwitcher, Switch
 
-from chezmoi_mousse import (
-    ContainerName,
-    OperateBtn,
-    Switches,
-    TabBtn,
-    Tcss,
-    TreeName,
-)
+from chezmoi_mousse import ContainerName, OperateBtn, Switches, TabBtn, Tcss
 from chezmoi_mousse.shared import ContentsView, DiffView, GitLogPath
 
 from .trees import ExpandedTree, ListTree, ManagedTree
@@ -35,18 +28,6 @@ class TabHorizontal(Horizontal):
         self.expand_all_state = False
         self.tree_switcher_qid = ids.container_id(
             "#", name=ContainerName.tree_switcher
-        )
-
-        # Tree id's
-        self.expanded_tree_id = self.ids.tree_id(tree=TreeName.expanded_tree)
-        self.expanded_tree_qid = self.ids.tree_id(
-            "#", tree=TreeName.expanded_tree
-        )
-        self.list_tree_id = self.ids.tree_id(tree=TreeName.list_tree)
-        self.list_tree_qid = self.ids.tree_id("#", tree=TreeName.list_tree)
-        self.managed_tree_id = self.ids.tree_id(tree=TreeName.managed_tree)
-        self.managed_tree_qid = self.ids.tree_id(
-            "#", tree=TreeName.managed_tree
         )
 
         # Button id's
@@ -118,9 +99,9 @@ class TabHorizontal(Horizontal):
             )
             if event.button.id == self.tree_tab_btn_id:
                 if self.expand_all_state is True:
-                    tree_switcher.current = self.expanded_tree_id
+                    tree_switcher.current = self.ids.tree.expanded
                 else:
-                    tree_switcher.current = self.managed_tree_id
+                    tree_switcher.current = self.ids.tree.managed
                 expand_all_switch.disabled = False
                 expand_all_switch.tooltip = Switches.expand_all.enabled_tooltip
             elif event.button.id == self.list_tab_btn_id:
@@ -128,20 +109,20 @@ class TabHorizontal(Horizontal):
                 expand_all_switch.tooltip = (
                     Switches.expand_all.disabled_tooltip
                 )
-                tree_switcher.current = self.list_tree_id
+                tree_switcher.current = self.ids.tree.list
 
     @on(Switch.Changed)
     def handle_tree_filter_switches(self, event: Switch.Changed) -> None:
         if event.switch.id == self.unchanged_switch_id:
             expanded_tree = self.query_one(
-                self.expanded_tree_qid, ExpandedTree
+                self.ids.tree.expanded_q, ExpandedTree
             )
             expanded_tree.unchanged = event.value
 
-            list_tree = self.query_one(self.list_tree_qid, ListTree)
+            list_tree = self.query_one(self.ids.tree.list_q, ListTree)
             list_tree.unchanged = event.value
 
-            managed_tree = self.query_one(self.managed_tree_qid, ManagedTree)
+            managed_tree = self.query_one(self.ids.tree.managed_q, ManagedTree)
             managed_tree.unchanged = event.value
 
         elif event.switch.id == self.expand_all_switch_id:
@@ -150,6 +131,6 @@ class TabHorizontal(Horizontal):
                 self.tree_switcher_qid, ContentSwitcher
             )
             if event.value is True:
-                tree_switcher.current = self.expanded_tree_id
+                tree_switcher.current = self.ids.tree.expanded
             else:
-                tree_switcher.current = self.managed_tree_id
+                tree_switcher.current = self.ids.tree.managed

@@ -16,7 +16,6 @@ from chezmoi_mousse import (
     OperateScreenData,
     TabName,
     Tcss,
-    TreeName,
 )
 from chezmoi_mousse.shared import (
     CurrentAddNodeMsg,
@@ -163,54 +162,48 @@ class MainScreen(Screen[None], AppType):
     def populate_apply_trees(self) -> None:
         self.app_log.info("Updating managed paths")
         self.app.chezmoi.update_managed_paths()
-        apply_tab_managed_tree = self.screen.query_one(
-            self.app.tab_ids.apply.tree_id("#", tree=TreeName.managed_tree),
-            ManagedTree,
+        managed_tree = self.screen.query_one(
+            self.app.tab_ids.apply.tree.managed_q, ManagedTree
         )
-        apply_tab_expanded_tree = self.screen.query_one(
-            self.app.tab_ids.apply.tree_id("#", tree=TreeName.expanded_tree),
-            ExpandedTree,
+        expanded_tree = self.screen.query_one(
+            self.app.tab_ids.apply.tree.expanded_q, ExpandedTree
         )
-        apply_tab_flat_tree = self.screen.query_one(
-            self.app.tab_ids.apply.tree_id("#", tree=TreeName.list_tree),
-            ListTree,
+        list_tree = self.screen.query_one(
+            self.app.tab_ids.apply.tree.list_q, ListTree
         )
         self.app_log.info("Populating Apply tab trees")
-        apply_tab_managed_tree.populate_tree()
-        self.app_log.success(f"{Chars.check_mark} Apply tab tree populated.")
-        apply_tab_expanded_tree.populate_tree()
+        managed_tree.populate_tree()
+        self.app_log.success(
+            f"{Chars.check_mark} Apply tab managed tree populated."
+        )
+        expanded_tree.populate_tree()
         self.app_log.success(
             f"{Chars.check_mark} Apply tab expanded tree populated."
         )
-        apply_tab_flat_tree.populate_tree()
-        self.app_log.success(
-            f"{Chars.check_mark} Apply tab flat tree populated."
-        )
+        list_tree.populate_tree()
+        self.app_log.success(f"{Chars.check_mark} Apply list populated.")
 
     def populate_re_add_trees(self) -> None:
         self.app_log.info("Populating Re-Add tab trees")
-        re_add_tab_managed_tree = self.screen.query_one(
-            self.app.tab_ids.re_add.tree_id("#", tree=TreeName.managed_tree),
-            ManagedTree,
+        managed_tree = self.screen.query_one(
+            self.app.tab_ids.re_add.tree.managed_q, ManagedTree
         )
-        re_add_tab_expanded_tree = self.screen.query_one(
-            self.app.tab_ids.re_add.tree_id("#", tree=TreeName.expanded_tree),
-            ExpandedTree,
+        expanded_tree = self.screen.query_one(
+            self.app.tab_ids.re_add.tree.expanded_q, ExpandedTree
         )
-        re_add_tab_flat_tree = self.screen.query_one(
-            self.app.tab_ids.re_add.tree_id("#", tree=TreeName.list_tree),
-            ListTree,
+        list_tree = self.screen.query_one(
+            self.app.tab_ids.re_add.tree.list_q, ListTree
         )
-        re_add_tab_managed_tree.populate_tree()
-        self.app_log.success(f"{Chars.check_mark} Re-Add tab tree populated.")
-        re_add_tab_expanded_tree.populate_tree()
+        managed_tree.populate_tree()
+        self.app_log.success(
+            f"{Chars.check_mark} Re-Add tab managed tree populated."
+        )
+        expanded_tree.populate_tree()
         self.app_log.success(
             f"{Chars.check_mark} Re-Add tab expanded tree populated."
         )
-        re_add_tab_flat_tree.populate_tree()
-        self.app_log.success(
-            f"{Chars.check_mark} Re-Add tab flat tree populated."
-        )
+        list_tree.populate_tree()
+        self.app_log.success(f"{Chars.check_mark} Re-Add list populated.")
 
     def update_global_git_log(self) -> None:
         logs_tab = self.screen.query_exactly_one(LogsTab)
@@ -306,8 +299,7 @@ class MainScreen(Screen[None], AppType):
                     severity="error",
                 )
             add_dir_tree = self.query_one(
-                self.app.tab_ids.add.tree_id("#", tree=TreeName.dir_tree),
-                FilteredDirTree,
+                self.app.tab_ids.add.tree.dir_tree_q, FilteredDirTree
             )
             add_dir_tree.reload()
             self.populate_apply_trees()
