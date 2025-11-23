@@ -263,7 +263,7 @@ SubSectionLabel {
   color: $text-success;
 }
 
-SwitchSliderBase {
+SwitchSlider {
   background-tint: $surface;
   background: $surface;
   border: round $primary;

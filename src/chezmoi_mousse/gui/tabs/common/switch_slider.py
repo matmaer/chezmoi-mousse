@@ -15,14 +15,16 @@ if TYPE_CHECKING:
 __all__ = ["SwitchSlider"]
 
 
-class SwitchSliderBase(VerticalGroup):
-
-    def __init__(
-        self, *, ids: "AppIds", switches: tuple[Switches, ...]
-    ) -> None:
+class SwitchSlider(VerticalGroup):
+    def __init__(self, *, ids: "AppIds") -> None:
         self.ids = ids
-        self.switches = switches
-        super().__init__(id=ids.container_id(name=ContainerName.switch_slider))
+        super().__init__(
+            id=self.ids.container_id(name=ContainerName.switch_slider)
+        )
+        if self.ids.tab_name in (TabName.apply, TabName.re_add):
+            self.switches = (Switches.unchanged, Switches.expand_all)
+        else:  # for the AddTab
+            self.switches = (Switches.unmanaged_dirs, Switches.unwanted)
 
     def compose(self) -> ComposeResult:
         for switch_data in self.switches:
@@ -37,13 +39,3 @@ class SwitchSliderBase(VerticalGroup):
     def on_mount(self) -> None:
         switch_groups = self.query_children(HorizontalGroup)
         switch_groups[-1].styles.padding = 0
-
-
-class SwitchSlider(SwitchSliderBase):
-    def __init__(self, *, ids: "AppIds") -> None:
-        self.ids = ids
-        if self.ids.tab_name in (TabName.apply.name, TabName.re_add):
-            self.switches = (Switches.unchanged, Switches.expand_all)
-        else:  # for the AddTab
-            self.switches = (Switches.unmanaged_dirs, Switches.unwanted)
-        super().__init__(ids=self.ids, switches=self.switches)
