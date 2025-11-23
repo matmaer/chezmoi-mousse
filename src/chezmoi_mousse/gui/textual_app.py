@@ -31,11 +31,10 @@ from chezmoi_mousse.shared import (
 
 from .init_screen import InitScreen
 from .install_help import InstallHelp
-from .operate import OperateScreen
+from .operate import OperateInfo, OperateScreen
 from .splash import SplashScreen
 from .tabbed_content import TabScreen
 from .tabs.add_tab import AddTab, FilteredDirTree
-from .tabs.common.operate_info import OperateInfo
 from .tabs.common.switch_slider import SwitchSlider
 from .tabs.common.switchers import TreeSwitcher, ViewSwitcher
 from .tabs.common.trees import TreeBase
