@@ -217,7 +217,7 @@ class SplashScreen(Screen[SplashData | None], AppType):
             )
 
     async def on_mount(self) -> None:
-        middle_container = self.query_one(Middle)
+        middle_container = self.query_exactly_one(Middle)
         middle_container.styles.width = FADE_WIDTH
         animated_fade = self.query_exactly_one(AnimatedFade)
         animated_fade.styles.height = FADE_HEIGHT

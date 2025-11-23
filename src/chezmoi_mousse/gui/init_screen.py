@@ -102,7 +102,7 @@ class InitCloneRepo(Vertical, AppType):
 
     @on(Input.Submitted)
     def log_invalid_reasons(self, event: Input.Submitted) -> None:
-        operate_log = self.query_one(OperateLog)
+        operate_log = self.query_exactly_one(OperateLog)
         if (
             event.validation_result is not None
             and not event.validation_result.is_valid

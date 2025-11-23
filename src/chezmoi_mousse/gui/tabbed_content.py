@@ -216,7 +216,7 @@ class TabScreen(Screen[None], AppType):
     @on(Button.Pressed, Tcss.operate_button.value)
     def push_operate_screen(self, event: Button.Pressed) -> None:
         button_enum = OperateBtn.from_label(str(event.button.label))
-        current_tab = self.query_one(TabbedContent).active
+        current_tab = self.query_exactly_one(TabbedContent).active
         if (
             self.current_add_node is not None
             and button_enum in (OperateBtn.add_file, OperateBtn.add_dir)
