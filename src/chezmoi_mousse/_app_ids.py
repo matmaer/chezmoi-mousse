@@ -88,7 +88,6 @@ class AppIds:
 
 class ContainerIds:
     def __init__(self, canvas_ids: AppIds):
-        self.canvas = canvas_ids.container_id(name=ContainerName.canvas)
         self.dest_dir_info = canvas_ids.container_id(
             name=ContainerName.dest_dir_info
         )

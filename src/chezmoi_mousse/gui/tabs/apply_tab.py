@@ -23,7 +23,7 @@ class ApplyTab(TabHorizontal):
         self.ids = ids
         super().__init__(ids=self.ids)
 
-        self.operate_path_button_qid = ids.button_id(
+        self.operate_path_button_qid = self.ids.button_id(
             "#", btn=OperateBtn.apply_path
         )
 

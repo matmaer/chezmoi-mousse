@@ -22,9 +22,9 @@ __all__ = ["TabHorizontal"]
 class TabHorizontal(Horizontal):
 
     def __init__(self, *, ids: "AppIds") -> None:
-        self.ids = ids
-        super().__init__(id=self.ids.container.canvas)
+        super().__init__()
 
+        self.ids = ids
         self.expand_all_state = False
         self.tree_switcher_qid = ids.container_id(
             "#", name=ContainerName.tree_switcher

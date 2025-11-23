@@ -1,15 +1,11 @@
 """Contains subclassed textual classes shared between the AddTab, ApplyTab and
-ReAddTab."""
+ReAddTab and OperateScreen."""
 
 from enum import StrEnum
-from typing import TYPE_CHECKING
 
 from textual.widgets import Static
 
 from chezmoi_mousse import AppType, Chars, OperateBtn, OperateScreenData
-
-if TYPE_CHECKING:
-    from chezmoi_mousse import AppIds
 
 __all__ = ["OperateInfo"]
 
@@ -34,9 +30,7 @@ class OperateInfo(Static, AppType):
     git_autocommit: bool | None = None
     git_autopush: bool | None = None
 
-    def __init__(
-        self, *, ids: "AppIds", operate_screen_data: OperateScreenData
-    ) -> None:
+    def __init__(self, *, operate_screen_data: OperateScreenData) -> None:
         super().__init__()
         self.operate_btn = operate_screen_data.operate_btn
         self.path_type = operate_screen_data.node_data.path_type

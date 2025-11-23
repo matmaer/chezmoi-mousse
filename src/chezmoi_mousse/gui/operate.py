@@ -75,9 +75,7 @@ class OperateScreen(Screen[OperateScreenData], AppType):
     def compose(self) -> ComposeResult:
         yield CustomHeader(self.ids)
         with VerticalGroup(id=self.pre_operate_id):
-            yield OperateInfo(
-                ids=self.ids, operate_screen_data=self.operate_data
-            )
+            yield OperateInfo(operate_screen_data=self.operate_data)
             yield MainSectionLabel(SectionLabelText.operate_context)
             if self.operate_btn == OperateBtn.apply_path:
                 yield DiffView(ids=self.ids, reverse=False)

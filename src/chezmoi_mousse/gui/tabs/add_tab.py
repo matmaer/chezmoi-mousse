@@ -231,11 +231,13 @@ class AddTab(Horizontal, AppType):
     destDir: Path
 
     def __init__(self, ids: "AppIds") -> None:
-        self.ids = ids
-        super().__init__(id=self.ids.container.canvas)
+        super().__init__()
 
-        self.add_file_btn_qid = ids.button_id("#", btn=OperateBtn.add_file)
-        self.add_dir_btn_qid = ids.button_id("#", btn=OperateBtn.add_dir)
+        self.ids = ids
+        self.add_file_btn_qid = self.ids.button_id(
+            "#", btn=OperateBtn.add_file
+        )
+        self.add_dir_btn_qid = self.ids.button_id("#", btn=OperateBtn.add_dir)
 
     def compose(self) -> ComposeResult:
         yield FilteredDirTree(

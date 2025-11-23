@@ -179,7 +179,7 @@ class InitScreen(Screen[SplashData | None], AppType):
 
     def compose(self) -> ComposeResult:
         yield CustomHeader(self.ids)
-        with Horizontal(id=self.ids.container.canvas):
+        with Horizontal():
             yield FlatButtonsVertical(
                 ids=self.ids,
                 buttons=(
