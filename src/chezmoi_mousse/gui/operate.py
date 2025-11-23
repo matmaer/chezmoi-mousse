@@ -14,7 +14,6 @@ from chezmoi_mousse import (
     Chars,
     ContainerName,
     OperateBtn,
-    OperateScreenData,
     Tcss,
     WriteCmd,
 )
@@ -30,7 +29,8 @@ from chezmoi_mousse.shared import (
 from .tabs.logs_tab import OperateLog
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import AppIds, CommandResult
+    from chezmoi_mousse import AppIds, CommandResult, OperateScreenData
+
 
 __all__ = ["OperateInfo", "OperateScreen"]
 
@@ -55,7 +55,7 @@ class OperateInfo(Static, AppType):
     git_autocommit: bool | None = None
     git_autopush: bool | None = None
 
-    def __init__(self, *, operate_screen_data: OperateScreenData) -> None:
+    def __init__(self, *, operate_screen_data: "OperateScreenData") -> None:
         super().__init__()
         self.operate_btn = operate_screen_data.operate_btn
         self.path_type = operate_screen_data.node_data.path_type
@@ -128,7 +128,7 @@ class OperateInfo(Static, AppType):
         self.update("\n".join(lines_to_write))
 
 
-class OperateScreen(Screen[OperateScreenData], AppType):
+class OperateScreen(Screen["OperateScreenData"], AppType):
 
     BINDINGS = [
         Binding(
