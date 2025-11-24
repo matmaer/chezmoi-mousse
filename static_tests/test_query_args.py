@@ -71,8 +71,7 @@ def test_query_one_calls(class_data: ClassData) -> None:
             )
         if not first_arg_str.endswith("_q"):
             results.append(
-                f"{class_data.module_path}, "
-                f"class '{class_data.class_name}', "
+                f"class '{class_data.class_name}' in {class_data.module_path}: "
                 f"'{first_arg_str}' not ending with '_q'."
             )
     if results:
