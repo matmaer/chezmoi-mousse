@@ -141,14 +141,16 @@ class OperateScreen(Screen["OperateScreenData"], AppType):
     def __init__(
         self, *, ids: "AppIds", operate_data: "OperateScreenData"
     ) -> None:
-        self.ids = ids
         super().__init__()
 
+        self.ids = ids
         self.path_arg = operate_data.node_data.path
         self.path_type = operate_data.node_data.path_type
 
         self.operate_btn = operate_data.operate_btn
-        self.operate_btn_qid = ids.operate_button_id("#", btn=self.operate_btn)
+        self.operate_btn_q = self.ids.operate_button_id(
+            "#", btn=self.operate_btn
+        )
         self.operate_data = operate_data
 
     def compose(self) -> ComposeResult:
@@ -195,7 +197,7 @@ class OperateScreen(Screen["OperateScreenData"], AppType):
             contents_view.path = self.path_arg
 
     def configure_buttons(self) -> None:
-        op_btn = self.query_one(self.operate_btn_qid, Button)
+        op_btn = self.query_one(self.operate_btn_q, Button)
         op_btn.disabled = False
         exit_btn = self.query_one(self.ids.operate_btn.exit_q, Button)
         exit_btn.disabled = False
@@ -285,7 +287,7 @@ class OperateScreen(Screen["OperateScreenData"], AppType):
         )
         post_op_container.display = True
 
-        operate_button = self.query_one(self.operate_btn_qid, Button)
+        operate_button = self.query_one(self.operate_btn_q, Button)
         operate_button.disabled = True
         operate_button.tooltip = None
 
