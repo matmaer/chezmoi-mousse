@@ -359,7 +359,7 @@ class ChezmoiGUI(App[None]):
             )
         elif active_tab == TabName.add:
             left_side = self.screen.query_one(
-                self.tab_ids.add.tree.dir_tree, FilteredDirTree
+                self.tab_ids.add.tree.dir_tree_q, FilteredDirTree
             )
             operation_buttons = self.screen.query_one(
                 self.tab_ids.add.container_id(
