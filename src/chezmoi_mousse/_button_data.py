@@ -157,9 +157,9 @@ class InitScreenExitButtonData:
 
 @dataclass(slots=True)
 class OperateScreenExitButtonData:
-    cancel_label: str
-    close_label: str
-    initial_label: str
+    cancel_label: str = OpBtn.cancel.value
+    close_label: str = OpBtn.close.value
+    initial_label: str = OpBtn.cancel.value
 
 
 class OperateBtn(Enum):
@@ -208,11 +208,7 @@ class OperateBtn(Enum):
     init_new_repo = InitScreenNewRepositoryButtonData()
     init_clone_repo = InitScreenCloneRepositoryButtonData()
     init_exit = InitScreenExitButtonData()
-    operate_exit = OperateScreenExitButtonData(
-        cancel_label=OpBtn.operate_cancel.value,
-        close_label=OpBtn.operate_close.value,
-        initial_label=OpBtn.operate_cancel.value,
-    )
+    operate_exit = OperateScreenExitButtonData()
 
     # allow access to dataclass attributes directly from the Enum member,
     # without needing to go through the value attribute
