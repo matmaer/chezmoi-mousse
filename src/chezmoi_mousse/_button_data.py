@@ -132,11 +132,17 @@ class ForgetButtonData:
 
 
 @dataclass(slots=True)
-class AddButtonData:
-    # We don't need status tooltips here
-    disabled_tooltip: str
-    enabled_tooltip: str
-    initial_label: str
+class AddFileButtonData:
+    disabled_tooltip = ToolTips.add_file_disabled.value
+    enabled_tooltip = ToolTips.add_file.value
+    initial_label = OpBtn.add_file.value
+
+
+@dataclass(slots=True)
+class AddDirButtonData:
+    disabled_tooltip = ToolTips.add_dir_disabled.value
+    enabled_tooltip = ToolTips.add_dir.value
+    initial_label = OpBtn.add_dir.value
 
 
 @dataclass(slots=True)
@@ -178,16 +184,8 @@ class OperateScreenExitButtonData:
 
 
 class OperateBtn(Enum):
-    add_file = AddButtonData(
-        disabled_tooltip=ToolTips.add_file_disabled.value,
-        enabled_tooltip=ToolTips.add_file.value,
-        initial_label=OpBtn.add_file.value,
-    )
-    add_dir = AddButtonData(
-        disabled_tooltip=ToolTips.add_dir_disabled.value,
-        enabled_tooltip=ToolTips.add_dir.value,
-        initial_label=OpBtn.add_dir.value,
-    )
+    add_file = AddFileButtonData()
+    add_dir = AddDirButtonData()
     apply_path = ApplyButtonData()
     re_add_path = ReAddButtonData()
     forget_path = ForgetButtonData()
@@ -216,13 +214,13 @@ class OperateBtn(Enum):
 
     @property
     def enabled_tooltip(self) -> str:
-        if isinstance(self.value, AddButtonData):
+        if isinstance(self.value, (AddFileButtonData, AddDirButtonData)):
             return self.value.enabled_tooltip
         raise AttributeError(f"{self.name} has no enabled_tooltip")
 
     @property
     def disabled_tooltip(self) -> str:
-        if isinstance(self.value, AddButtonData):
+        if isinstance(self.value, (AddFileButtonData, AddDirButtonData)):
             return self.value.disabled_tooltip
         raise AttributeError(f"{self.name} has no disabled_tooltip")
 
@@ -282,7 +280,7 @@ class OperateBtn(Enum):
             ),
         ):
             return self.value.file_label
-        elif isinstance(self.value, AddButtonData):
+        elif isinstance(self.value, AddFileButtonData):
             return self.value.initial_label
         raise AttributeError(f"{self.name} has no file_label")
 
@@ -298,7 +296,7 @@ class OperateBtn(Enum):
             ),
         ):
             return self.value.dir_label
-        elif isinstance(self.value, AddButtonData):
+        elif isinstance(self.value, AddDirButtonData):
             return self.value.initial_label
         raise AttributeError(f"{self.name} has no dir_label")
 
