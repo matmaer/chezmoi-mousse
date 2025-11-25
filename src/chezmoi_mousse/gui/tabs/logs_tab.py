@@ -359,9 +359,6 @@ class LogsTab(Vertical, AppType):
         switcher = self.query_one(
             self.ids.switcher.logs_tab_q, ContentSwitcher
         )
-        # if self.initial_view_id == self.ids.logger.debug:
-        #     switcher.border_title = BorderTitle.debug_log
-        # else:
         switcher.border_title = BorderTitle.app_log
 
     @on(Button.Pressed, Tcss.tab_button.value)
