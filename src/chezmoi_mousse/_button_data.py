@@ -84,12 +84,8 @@ class ToolTips(StrEnum):
     add_file_disabled = "Select a file to operate on."
     apply_dir = 'Run "chezmoi apply" on the directory.'
     apply_file = 'Run "chezmoi apply" on the file.'
-    destroy_dir = 'Run "chezmoi destroy" on the directory. Permanently remove the directory and its files from disk and chezmoi. MAKE SURE YOU HAVE A BACKUP!'
-    destroy_file = 'Run "chezmoi destroy" on the file. Permanently remove the file from disk and chezmoi. MAKE SURE YOU HAVE A BACKUP!'
     dir_no_status = "The selected directory has no status to operate on."
     file_no_status = "The selected file has no status to operate on."
-    forget_dir = 'Run "chezmoi forget", stop managing the directory.'
-    forget_file = 'Run "chezmoi forget", stop managing the file.'
     initial = "This is the destDir, select a path to operate on."
     re_add_dir = 'Run "chezmoi re-add" on the directory.'
     re_add_file = 'Run "chezmoi re-add" on the file.'
@@ -107,13 +103,21 @@ class ApplyReAddButtonData:
 
 
 @dataclass(slots=True)
-class DestroyForgetButtonData:
-    # We don't need status tooltips here
-    dir_label: str
-    dir_tooltip: str
-    file_label: str
-    file_tooltip: str
-    initial_label: str  # this is the label containing "Path"
+class DestroyButtonData:
+    dir_label = OpBtn.destroy_dir.value
+    dir_tooltip = 'Run "chezmoi destroy" on the directory. Permanently remove the directory and its files from disk and chezmoi. MAKE SURE YOU HAVE A BACKUP!'
+    file_label = OpBtn.destroy_file.value
+    file_tooltip = 'Run "chezmoi destroy" on the file. Permanently remove the file from disk and chezmoi. MAKE SURE YOU HAVE A BACKUP!'
+    initial_label = OpBtn.destroy_path.value
+
+
+@dataclass(slots=True)
+class ForgetButtonData:
+    dir_label = OpBtn.forget_dir.value
+    dir_tooltip = 'Run "chezmoi forget", stop managing the directory.'
+    file_label = OpBtn.forget_file.value
+    file_tooltip = 'Run "chezmoi forget", stop managing the file.'
+    initial_label = OpBtn.forget_path.value
 
 
 @dataclass(slots=True)
@@ -148,7 +152,7 @@ class InitScreenExitButtonData:
     exit_app_tooltip: str = (
         "Ext application. Cannot run the main application without an initialized chezmoi state, init a new repository, or init from a remote repository."
     )
-    close_label: str = OpBtn.operate_close.value
+    close_label: str = OpBtn.close.value
     close_tooltip: str = (
         "Restart the application to load the initialized chezmoi state."
     )
@@ -191,20 +195,8 @@ class OperateBtn(Enum):
         file_tooltip=ToolTips.re_add_file.value,
         initial_label=OpBtn.re_add_path.value,
     )
-    forget_path = DestroyForgetButtonData(
-        dir_label=OpBtn.forget_dir.value,
-        dir_tooltip=ToolTips.forget_dir.value,
-        file_label=OpBtn.forget_file.value,
-        file_tooltip=ToolTips.forget_file.value,
-        initial_label=OpBtn.forget_path.value,
-    )
-    destroy_path = DestroyForgetButtonData(
-        dir_label=OpBtn.destroy_dir.value,
-        dir_tooltip=ToolTips.destroy_dir.value,
-        file_label=OpBtn.destroy_file.value,
-        file_tooltip=ToolTips.destroy_file.value,
-        initial_label=OpBtn.destroy_path.value,
-    )
+    forget_path = ForgetButtonData()
+    destroy_path = DestroyButtonData()
     init_new_repo = InitScreenNewRepositoryButtonData()
     init_clone_repo = InitScreenCloneRepositoryButtonData()
     init_exit = InitScreenExitButtonData()
@@ -248,7 +240,8 @@ class OperateBtn(Enum):
     @property
     def dir_tooltip(self) -> str:
         if isinstance(
-            self.value, (ApplyReAddButtonData, DestroyForgetButtonData)
+            self.value,
+            (ApplyReAddButtonData, DestroyButtonData, ForgetButtonData),
         ):
             return self.value.dir_tooltip
         raise AttributeError(f"{self.name} has no dir_tooltip")
@@ -262,7 +255,8 @@ class OperateBtn(Enum):
     @property
     def file_tooltip(self) -> str:
         if isinstance(
-            self.value, (ApplyReAddButtonData, DestroyForgetButtonData)
+            self.value,
+            (ApplyReAddButtonData, DestroyButtonData, ForgetButtonData),
         ):
             return self.value.file_tooltip
         raise AttributeError(f"{self.name} has no file_tooltip")
@@ -274,7 +268,8 @@ class OperateBtn(Enum):
     @property
     def _file_label(self) -> str:
         if isinstance(
-            self.value, (ApplyReAddButtonData, DestroyForgetButtonData)
+            self.value,
+            (ApplyReAddButtonData, DestroyButtonData, ForgetButtonData),
         ):
             return self.value.file_label
         elif isinstance(self.value, AddButtonData):
@@ -284,7 +279,8 @@ class OperateBtn(Enum):
     @property
     def _dir_label(self) -> str:
         if isinstance(
-            self.value, (ApplyReAddButtonData, DestroyForgetButtonData)
+            self.value,
+            (ApplyReAddButtonData, DestroyButtonData, ForgetButtonData),
         ):
             return self.value.dir_label
         elif isinstance(self.value, AddButtonData):
