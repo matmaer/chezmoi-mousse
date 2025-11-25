@@ -77,39 +77,31 @@ class OpBtn(StrEnum):
     re_add_path = "Re-Add Path"
 
 
-class ToolTips(StrEnum):
-    add_dir = "Manage the directory with chezmoi."
-    add_dir_disabled = "Select a directory to operate on."
-    add_file = "Manage the file with chezmoi."
-    add_file_disabled = "Select a file to operate on."
-    apply_dir = 'Run "chezmoi apply" on the directory.'
-    apply_file = 'Run "chezmoi apply" on the file.'
+class SharedToolTips(StrEnum):
     dir_no_status = "The selected directory has no status to operate on."
     file_no_status = "The selected file has no status to operate on."
     initial = "This is the destDir, select a path to operate on."
-    re_add_dir = 'Run "chezmoi re-add" on the directory.'
-    re_add_file = 'Run "chezmoi re-add" on the file.'
 
 
 @dataclass(slots=True)
 class ApplyButtonData:
     dir_label = OpBtn.apply_dir.value
-    dir_no_status_tooltip = ToolTips.dir_no_status.value
-    dir_tooltip = ToolTips.apply_dir.value
+    dir_no_status_tooltip = SharedToolTips.dir_no_status.value
+    dir_tooltip = 'Run "chezmoi apply" on the directory.'
     file_label = OpBtn.apply_file.value
-    file_no_status_tooltip = ToolTips.file_no_status.value
-    file_tooltip = ToolTips.apply_file.value
+    file_no_status_tooltip = SharedToolTips.file_no_status.value
+    file_tooltip = 'Run "chezmoi apply" on the file.'
     initial_label = OpBtn.apply_path.value
 
 
 @dataclass(slots=True)
 class ReAddButtonData:
     dir_label = OpBtn.re_add_dir.value
-    dir_no_status_tooltip = ToolTips.dir_no_status.value
-    dir_tooltip = ToolTips.re_add_dir.value
+    dir_no_status_tooltip = SharedToolTips.dir_no_status.value
+    dir_tooltip = 'Run "chezmoi re-add" on the directory.'
     file_label = OpBtn.re_add_file.value
-    file_no_status_tooltip = ToolTips.file_no_status.value
-    file_tooltip = ToolTips.re_add_file.value
+    file_no_status_tooltip = SharedToolTips.file_no_status.value
+    file_tooltip = 'Run "chezmoi re-add" on the file.'
     initial_label = OpBtn.re_add_path.value
 
 
@@ -133,15 +125,15 @@ class ForgetButtonData:
 
 @dataclass(slots=True)
 class AddFileButtonData:
-    disabled_tooltip = ToolTips.add_file_disabled.value
-    enabled_tooltip = ToolTips.add_file.value
+    disabled_tooltip = "Select a file to operate on."
+    enabled_tooltip = "Manage the file with chezmoi."
     initial_label = OpBtn.add_file.value
 
 
 @dataclass(slots=True)
 class AddDirButtonData:
-    disabled_tooltip = ToolTips.add_dir_disabled.value
-    enabled_tooltip = ToolTips.add_dir.value
+    disabled_tooltip = "Select a directory to operate on."
+    enabled_tooltip = "Manage the directory with chezmoi."
     initial_label = OpBtn.add_dir.value
 
 
@@ -266,7 +258,7 @@ class OperateBtn(Enum):
 
     @property
     def initial_tooltip(self) -> str:
-        return ToolTips.initial
+        return SharedToolTips.initial
 
     @property
     def _file_label(self) -> str:
