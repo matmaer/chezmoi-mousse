@@ -18,6 +18,7 @@ __all__ = [
     "LogsTabButtons",
     "OperateButtons",
     "TreeTabButtons",
+    "ViewTabButtons",
 ]
 
 
