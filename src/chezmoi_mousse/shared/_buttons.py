@@ -106,8 +106,10 @@ class TabButtonsBase(Horizontal):
                 )
 
     def on_mount(self) -> None:
-        buttons = self.query(Button)
-        buttons[0].add_class(Tcss.last_clicked.name)
+        first_button = self.query_one(
+            self.ids.tab_button_id("#", btn=self.buttons[0])
+        )
+        first_button.add_class(Tcss.last_clicked.name)
 
     @on(Button.Pressed)
     def update_tcss_classes(self, event: Button.Pressed) -> None:
