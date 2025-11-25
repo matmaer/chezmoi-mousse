@@ -226,9 +226,9 @@ class OperateBtn(Enum):
         raise AttributeError(f"{self.name} has no close_label")
 
     @property
-    def init_exit_label(self) -> str:
-        if isinstance(self.value, InitScreenExitButtonData):
-            return self.value.exit_app_label
+    def cancel_label(self) -> str:
+        if isinstance(self.value, OperateScreenExitButtonData):
+            return self.value.cancel_label
         raise AttributeError(f"{self.name} has no cancel_label")
 
     @property

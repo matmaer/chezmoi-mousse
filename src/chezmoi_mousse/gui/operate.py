@@ -305,7 +305,10 @@ class OperateScreen(Screen["OperateScreenData"], AppType):
     @on(Button.Pressed, Tcss.operate_button.value)
     def handle_operate_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
-        if event.button.id == self.ids.operate_btn.operate_exit:
+        if event.button.label in (
+            OperateBtn.operate_exit.cancel_label,
+            OperateBtn.operate_exit.close_label,
+        ):
             self.dismiss(self.operate_data)
         else:
             self.run_operate_command()
