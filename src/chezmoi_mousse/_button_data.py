@@ -1,3 +1,11 @@
+"""This module does not import anything from textual, it only contains classes
+imported at module init before launching the textual app, and attributes
+accessed after the app is launched.
+
+The initial_label attribute is used to construct the OperateButton class in
+shared/_buttons.py.
+"""
+
 from dataclasses import dataclass
 from enum import Enum, StrEnum
 from typing import TYPE_CHECKING
@@ -129,7 +137,7 @@ class InitScreenNewRepositoryButtonData:
     init_new_tooltip: str = (
         "Initialize a new chezmoi repository in your home directory with default settings shown in the cat config section."
     )
-    initial_label: str = init_new_label  # used by the OperateButton class
+    initial_label: str = init_new_label
 
 
 @dataclass(slots=True)
@@ -138,7 +146,7 @@ class InitScreenCloneRepositoryButtonData:
     init_clone_tooltip: str = (
         "Initialize a the chezmoi repository by cloning from a provided remote repository."
     )
-    initial_label: str = init_clone_label  # used by the OperateButton class
+    initial_label: str = init_clone_label
 
 
 @dataclass(slots=True)
@@ -151,7 +159,7 @@ class InitScreenExitButtonData:
     close_tooltip: str = (
         "Restart the application to load the initialized chezmoi state."
     )
-    initial_label: str = exit_app_label  # used by the OperateButton class
+    initial_label: str = exit_app_label
 
 
 @dataclass(slots=True)
