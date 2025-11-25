@@ -26,7 +26,7 @@ from chezmoi_mousse.shared import (
     FlatButtonsVertical,
     GitLogPath,
     LogsTabButtons,
-    TabButtons,
+    TreeTabButtons,
 )
 
 from .init_screen import InitScreen
@@ -336,7 +336,7 @@ class ChezmoiGUI(App[None]):
                 self.tab_ids.apply.container.switch_slider_q, SwitchSlider
             )
             switcher_buttons = self.screen.query_one(
-                self.tab_ids.apply.switcher.switcher_buttons_q, TabButtons
+                self.tab_ids.apply.switcher.tree_buttons_q, TreeTabButtons
             )
         elif active_tab == TabName.re_add:
             left_side = self.screen.query_one(
@@ -349,7 +349,7 @@ class ChezmoiGUI(App[None]):
                 self.tab_ids.re_add.container.switch_slider_q, SwitchSlider
             )
             switcher_buttons = self.screen.query_one(
-                self.tab_ids.re_add.switcher.switcher_buttons_q, TabButtons
+                self.tab_ids.re_add.switcher.tree_buttons_q, TreeTabButtons
             )
         elif active_tab == TabName.add:
             left_side = self.screen.query_one(
@@ -364,7 +364,7 @@ class ChezmoiGUI(App[None]):
             switcher_buttons = None
         elif active_tab == TabName.logs:
             logs_tab_buttons = self.screen.query_one(
-                self.tab_ids.logs.switcher.switcher_buttons_q, LogsTabButtons
+                self.tab_ids.logs.switcher.logs_tab_buttons_q, LogsTabButtons
             )
             logs_tab_buttons.display = (
                 False if logs_tab_buttons.display is True else True

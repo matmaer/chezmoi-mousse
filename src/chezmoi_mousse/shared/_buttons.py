@@ -5,15 +5,7 @@ from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.widgets import Button, Link
 
-from chezmoi_mousse import (
-    AppType,
-    FlatBtn,
-    LinkBtn,
-    OperateBtn,
-    TabBtn,
-    TabName,
-    Tcss,
-)
+from chezmoi_mousse import AppType, FlatBtn, LinkBtn, OperateBtn, TabBtn, Tcss
 
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds
@@ -21,11 +13,11 @@ if TYPE_CHECKING:
 
 __all__ = [
     "FlatButton",
-    "FlatLink",
     "FlatButtonsVertical",
+    "FlatLink",
     "LogsTabButtons",
     "OperateButtons",
-    "TabButtons",
+    "TreeTabButtons",
 ]
 
 
@@ -94,38 +86,14 @@ class OperateButtons(Horizontal):
 
 
 class TabButtonsBase(Horizontal):
-    def __init__(self, *, ids: "AppIds", buttons: tuple[TabBtn, ...]):
+    def __init__(
+        self, *, ids: "AppIds", buttons: tuple[TabBtn, ...], container_id: str
+    ):
         self.ids = ids
         self.buttons = buttons
-        if self.ids.tab_name == TabName.logs:
-            self.container_ids = self.ids.switcher.logs_tab_buttons
-        super().__init__(id=self.ids.switcher.switcher_buttons)
+        self.container_id = container_id
 
-    def compose(self) -> ComposeResult:
-        for button_enum in self.buttons:
-            with Vertical(classes=Tcss.single_button_vertical.name):
-                yield Button(
-                    label=button_enum.value,
-                    id=self.ids.tab_button_id(btn=button_enum),
-                    classes=Tcss.tab_button.name,
-                )
-
-    def on_mount(self) -> None:
-        buttons = self.query(Button)
-        buttons[0].add_class(Tcss.last_clicked.name)
-
-    @on(Button.Pressed)
-    def update_tcss_classes(self, event: Button.Pressed) -> None:
-        for btn in self.query(Button):
-            btn.remove_class(Tcss.last_clicked.name)
-        event.button.add_class(Tcss.last_clicked.name)
-
-
-class TabButtons(Horizontal):
-    def __init__(self, *, ids: "AppIds", buttons: tuple[TabBtn, ...]):
-        self.ids = ids
-        self.buttons = buttons
-        super().__init__(id=self.ids.switcher.switcher_buttons)
+        super().__init__(id=self.container_id)
 
     def compose(self) -> ComposeResult:
         for button_enum in self.buttons:
@@ -158,4 +126,34 @@ class LogsTabButtons(TabButtonsBase, AppType):
         )
         if self.app.dev_mode is True:
             self.tab_buttons += (TabBtn.debug_log,)
-        super().__init__(ids=ids, buttons=self.tab_buttons)
+        super().__init__(
+            ids=self.ids,
+            buttons=self.tab_buttons,
+            container_id=self.ids.switcher.logs_tab_buttons,
+        )
+
+
+class TreeTabButtons(TabButtonsBase):
+    def __init__(self, *, ids: "AppIds"):
+        self.ids = ids
+        self.tree_tab_buttons = (TabBtn.tree, TabBtn.list)
+        super().__init__(
+            ids=self.ids,
+            buttons=self.tree_tab_buttons,
+            container_id=self.ids.switcher.tree_buttons,
+        )
+
+
+class ViewTabButtons(TabButtonsBase):
+    def __init__(self, *, ids: "AppIds"):
+        self.ids = ids
+        self.view_tab_buttons = (
+            TabBtn.diff,
+            TabBtn.contents,
+            TabBtn.git_log_path,
+        )
+        super().__init__(
+            ids=self.ids,
+            buttons=self.view_tab_buttons,
+            container_id=self.ids.switcher.view_buttons,
+        )

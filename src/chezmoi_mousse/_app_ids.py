@@ -192,21 +192,34 @@ class ContentSwitcherIds:
         self.re_add_views_vertical_q = f"#{self.re_add_views_vertical}"
 
     @property
-    def switcher_buttons(self) -> str:
+    def tree_buttons(self) -> str:
         if self.ids.tab_name == TabName.apply:
             return self.apply_tree_buttons
         elif self.ids.tab_name == TabName.re_add:
             return self.re_add_tree_buttons
-        elif self.ids.tab_name == TabName.logs:
-            return self.logs_tab_buttons
         else:
             raise ValueError(
                 "ContentSwitcherIds.switcher_buttons accessed when not in Apply, ReAdd, or Logs tab"
             )
 
     @property
-    def switcher_buttons_q(self) -> str:
-        return f"#{self.switcher_buttons}"
+    def tree_buttons_q(self) -> str:
+        return f"#{self.tree_buttons}"
+
+    @property
+    def view_buttons(self) -> str:
+        if self.ids.tab_name == TabName.apply:
+            return self.apply_view_buttons
+        elif self.ids.tab_name == TabName.re_add:
+            return self.re_add_view_buttons
+        else:
+            raise ValueError(
+                "ContentSwitcherIds.switcher_buttons accessed when not in Apply, ReAdd, or Logs tab"
+            )
+
+    @property
+    def view_buttons_q(self) -> str:
+        return f"#{self.view_buttons}"
 
     @property
     def trees(self) -> str:

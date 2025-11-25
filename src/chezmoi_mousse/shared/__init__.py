@@ -6,7 +6,8 @@ from ._buttons import (
     FlatLink,
     LogsTabButtons,
     OperateButtons,
-    TabButtons,
+    TreeTabButtons,
+    ViewTabButtons,
 )
 from ._config_views import (
     CatConfigView,
@@ -40,6 +41,7 @@ __all__ = [
     "CurrentApplyNodeMsg",
     "CurrentReAddNodeMsg",
     "CustomCollapsible",
+    "CustomHeader",
     "DestDirInfo",
     "DiffView",
     "DoctorTableView",
@@ -54,9 +56,9 @@ __all__ = [
     "MainSectionLabel",
     "OperateButtons",
     "PwMgrInfoView",
-    "CustomHeader",
     "SectionLabelText",
     "SubSectionLabel",
-    "TabButtons",
     "TemplateDataView",
+    "TreeTabButtons",
+    "ViewTabButtons",
 ]
