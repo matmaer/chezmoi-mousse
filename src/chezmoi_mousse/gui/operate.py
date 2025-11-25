@@ -173,7 +173,7 @@ class OperateScreen(Screen["OperateScreenData"], AppType):
             yield MainSectionLabel(SectionLabelText.operate_output)
             yield OperateLog(ids=self.ids)
         yield OperateButtons(
-            ids=self.ids, buttons=(self.operate_btn, OperateBtn.exit_button)
+            ids=self.ids, buttons=(self.operate_btn, OperateBtn.operate_exit)
         )
         yield Footer(id=self.ids.footer)
 
@@ -199,7 +199,7 @@ class OperateScreen(Screen["OperateScreenData"], AppType):
     def configure_buttons(self) -> None:
         op_btn = self.query_one(self.operate_btn_q, Button)
         op_btn.disabled = False
-        exit_btn = self.query_one(self.ids.operate_btn.exit_q, Button)
+        exit_btn = self.query_one(self.ids.operate_btn.operate_exit_q, Button)
         exit_btn.disabled = False
         exit_btn.tooltip = None
 
@@ -292,9 +292,9 @@ class OperateScreen(Screen["OperateScreenData"], AppType):
         operate_button.tooltip = None
 
         operate_exit_button = self.query_one(
-            self.ids.operate_btn.exit_q, Button
+            self.ids.operate_btn.operate_exit_q, Button
         )
-        operate_exit_button.label = OperateBtn.exit_button.close_label
+        operate_exit_button.label = OperateBtn.operate_exit.close_label
 
         output_log = self.query_one(self.ids.logger.operate_q, OperateLog)
         if self.operate_data.command_result is not None:
@@ -305,7 +305,7 @@ class OperateScreen(Screen["OperateScreenData"], AppType):
     @on(Button.Pressed, Tcss.operate_button.value)
     def handle_operate_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
-        if event.button.id == self.ids.operate_btn.exit:
+        if event.button.id == self.ids.operate_btn.operate_exit:
             self.dismiss(self.operate_data)
         else:
             self.run_operate_command()

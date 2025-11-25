@@ -336,15 +336,15 @@ class OperateButtonIds:
         self.apply_path_q = f"#{self.apply_path}"
         self.destroy_path = ids.operate_button_id(btn=OperateBtn.destroy_path)
         self.destroy_path_q = f"#{self.destroy_path}"
-        self.exit = ids.operate_button_id(btn=OperateBtn.exit_button)
-        self.exit_q = f"#{self.exit}"
         self.forget_path = ids.operate_button_id(btn=OperateBtn.forget_path)
         self.forget_path_q = f"#{self.forget_path}"
+        self.init_exit = ids.operate_button_id(btn=OperateBtn.init_exit)
+        self.init_exit_q = f"#{self.init_exit}"
         self.init_new_repo = ids.operate_button_id(
             btn=OperateBtn.init_new_repo
         )
         self.init_new_repo_q = f"#{self.init_new_repo}"
-        self.operate_exit = ids.operate_button_id(btn=OperateBtn.exit_button)
+        self.operate_exit = ids.operate_button_id(btn=OperateBtn.operate_exit)
         self.operate_exit_q = f"#{self.operate_exit}"
         self.re_add_path = ids.operate_button_id(btn=OperateBtn.re_add_path)
         self.re_add_path_q = f"#{self.re_add_path}"

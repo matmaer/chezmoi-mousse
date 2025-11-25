@@ -66,10 +66,10 @@ class OpBtn(StrEnum):
     destroy_dir = "Destroy Dir"
     destroy_file = "Destroy File"
     destroy_path = "Destroy Path"
+    exit_app = "Exit App"
     forget_dir = "Forget Dir"
     forget_file = "Forget File"
     forget_path = "Forget Path"
-    init_new_repo = "Chezmoi Init"
     operate_cancel = "Cancel"
     operate_close = "Close"
     re_add_dir = "Re-Add Dir"
@@ -125,12 +125,38 @@ class AddButtonData:
 
 
 @dataclass(slots=True)
-class InitButtonData:
-    initial_label: str
+class InitScreenNewRepositoryButtonData:
+    init_new_label: str = "Chezmoi Init New Repo"
+    init_new_tooltip: str = (
+        "Initialize a new chezmoi repository in your home directory with default settings shown in the cat config section."
+    )
+    initial_label: str = init_new_label  # used by the OperateButton class
 
 
 @dataclass(slots=True)
-class ExitButtonData:
+class InitScreenCloneRepositoryButtonData:
+    init_clone_label: str = "Chezmoi Init Clone Repo"
+    init_clone_tooltip: str = (
+        "Initialize a the chezmoi repository by cloning from a provided remote repository."
+    )
+    initial_label: str = init_clone_label  # used by the OperateButton class
+
+
+@dataclass(slots=True)
+class InitScreenExitButtonData:
+    exit_app_label: str = OpBtn.exit_app.value
+    exit_app_tooltip: str = (
+        "Ext application. Cannot run the main application without an initialized chezmoi state, init a new repository, or init from a remote repository."
+    )
+    close_label: str = OpBtn.operate_close.value
+    close_tooltip: str = (
+        "Restart the application to load the initialized chezmoi state."
+    )
+    initial_label: str = exit_app_label  # used by the OperateButton class
+
+
+@dataclass(slots=True)
+class OperateScreenExitButtonData:
     cancel_label: str
     close_label: str
     initial_label: str
@@ -179,8 +205,10 @@ class OperateBtn(Enum):
         file_tooltip=ToolTips.destroy_file.value,
         initial_label=OpBtn.destroy_path.value,
     )
-    init_new_repo = InitButtonData(initial_label=OpBtn.init_new_repo.value)
-    exit_button = ExitButtonData(
+    init_new_repo = InitScreenNewRepositoryButtonData()
+    init_clone_repo = InitScreenCloneRepositoryButtonData()
+    init_exit = InitScreenExitButtonData()
+    operate_exit = OperateScreenExitButtonData(
         cancel_label=OpBtn.operate_cancel.value,
         close_label=OpBtn.operate_close.value,
         initial_label=OpBtn.operate_cancel.value,
@@ -191,14 +219,16 @@ class OperateBtn(Enum):
 
     @property
     def close_label(self) -> str:
-        if isinstance(self.value, ExitButtonData):
+        if isinstance(
+            self.value, (OperateScreenExitButtonData, InitScreenExitButtonData)
+        ):
             return self.value.close_label
         raise AttributeError(f"{self.name} has no close_label")
 
     @property
-    def cancel_label(self) -> str:
-        if isinstance(self.value, ExitButtonData):
-            return self.value.cancel_label
+    def init_exit_label(self) -> str:
+        if isinstance(self.value, InitScreenExitButtonData):
+            return self.value.exit_app_label
         raise AttributeError(f"{self.name} has no cancel_label")
 
     @property
@@ -287,10 +317,6 @@ class OperateBtn(Enum):
             if getattr(member.value, "file_label", None) == label:
                 return member
             elif getattr(member.value, "dir_label", None) == label:
-                return member
-            elif getattr(member.value, "cancel_label", None) == label:
-                return member
-            elif getattr(member.value, "close_label", None) == label:
                 return member
             elif getattr(member.value, "initial_label", None) == label:
                 return member

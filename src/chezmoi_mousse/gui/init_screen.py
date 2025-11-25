@@ -182,14 +182,14 @@ class InitScreen(Screen["SplashData | None"], AppType):
                 yield InitSwitcher(ids=self.ids, splash_data=self.splash_data)
                 yield OperateButtons(
                     ids=self.ids,
-                    buttons=(OperateBtn.init_new_repo, OperateBtn.exit_button),
+                    buttons=(OperateBtn.init_new_repo, OperateBtn.init_exit),
                 )
         yield Footer(id=self.ids.footer)
 
     def on_mount(self) -> None:
         op_btn = self.query_one(self.ids.operate_btn.init_new_repo_q, Button)
         op_btn.disabled = False
-        exit_btn = self.query_one(self.ids.operate_btn.exit_q, Button)
+        exit_btn = self.query_one(self.ids.operate_btn.init_exit_q, Button)
         exit_btn.disabled = False
 
     def perform_init_command(self) -> None:
@@ -206,8 +206,8 @@ class InitScreen(Screen["SplashData | None"], AppType):
         )
         operate_button.disabled = True
         operate_button.tooltip = None
-        exit_button = self.query_one(self.ids.operate_btn.exit_q, Button)
-        exit_button.label = OperateBtn.exit_button.close_label
+        exit_button = self.query_one(self.ids.operate_btn.init_exit_q, Button)
+        exit_button.label = OperateBtn.init_exit.close_label
 
     @on(Button.Pressed, Tcss.flat_button.value)
     def switch_content(self, event: Button.Pressed) -> None:
@@ -229,7 +229,7 @@ class InitScreen(Screen["SplashData | None"], AppType):
     @on(Button.Pressed, Tcss.operate_button.value)
     def handle_operate_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
-        if event.button.id == self.ids.operate_btn.exit:
+        if event.button.id == self.ids.operate_btn.init_exit:
             self.dismiss(self.splash_data)
         else:
             self.perform_init_command()
