@@ -80,7 +80,7 @@ class OperateButton(Button):
             classes=Tcss.operate_button.name,
             disabled=True,
             id=self.ids.operate_button_id(btn=self.button_enum),
-            label=self.button_enum.label(),
+            label=self.button_enum.initial_label,
             tooltip=self.button_enum.initial_tooltip,
         )
 

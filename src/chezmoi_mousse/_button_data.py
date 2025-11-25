@@ -123,12 +123,20 @@ class AddFileButtonData:
     enabled_tooltip = "Manage the file with chezmoi."
     initial_label = "Add File"
 
+    @property
+    def file_label(self) -> str:
+        return self.initial_label
+
 
 @dataclass(slots=True)
 class AddDirButtonData:
     disabled_tooltip = "Select a directory to operate on."
     enabled_tooltip = "Manage the directory with chezmoi."
     initial_label = "Add Dir"
+
+    @property
+    def dir_label(self) -> str:
+        return self.initial_label
 
 
 @dataclass(slots=True)
@@ -183,6 +191,10 @@ class OperateBtn(Enum):
 
     # allow access to dataclass attributes directly from the Enum member,
     # without needing to go through the value attribute
+
+    @property
+    def initial_label(self) -> str:
+        return self.value.initial_label
 
     @property
     def close_label(self) -> str:
@@ -255,10 +267,11 @@ class OperateBtn(Enum):
         return SharedToolTips.initial
 
     @property
-    def _file_label(self) -> str:
+    def file_label(self) -> str:
         if isinstance(
             self.value,
             (
+                AddFileButtonData,
                 ApplyButtonData,
                 ReAddButtonData,
                 DestroyButtonData,
@@ -266,15 +279,14 @@ class OperateBtn(Enum):
             ),
         ):
             return self.value.file_label
-        elif isinstance(self.value, AddFileButtonData):
-            return self.value.initial_label
         raise AttributeError(f"{self.name} has no file_label")
 
     @property
-    def _dir_label(self) -> str:
+    def dir_label(self) -> str:
         if isinstance(
             self.value,
             (
+                AddDirButtonData,
                 ApplyButtonData,
                 ReAddButtonData,
                 DestroyButtonData,
@@ -282,15 +294,13 @@ class OperateBtn(Enum):
             ),
         ):
             return self.value.dir_label
-        elif isinstance(self.value, AddDirButtonData):
-            return self.value.initial_label
         raise AttributeError(f"{self.name} has no dir_label")
 
-    def label(self, path_type: "PathKind | None" = None) -> str:
+    def label(self, path_type: "PathKind") -> str:
         if path_type == "dir":
-            return self._dir_label
+            return self.dir_label
         elif path_type == "file":
-            return self._file_label
+            return self.file_label
         else:
             return self.value.initial_label
 

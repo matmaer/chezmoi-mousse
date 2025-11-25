@@ -12,14 +12,7 @@ from textual.containers import (
 )
 from textual.widgets import Button, ContentSwitcher, Static
 
-from chezmoi_mousse import (
-    FlatBtn,
-    LinkBtn,
-    OperateBtn,
-    PathKind,
-    Switches,
-    Tcss,
-)
+from chezmoi_mousse import FlatBtn, LinkBtn, OperateBtn, Switches, Tcss
 from chezmoi_mousse.shared import (
     FlatButtonsVertical,
     FlatLink,
@@ -70,31 +63,23 @@ class HelpSections(StrEnum):
     filters_section_label = "Available Filters"
     # Add tab
     add_tab_help = "Add Tab Help"
-    add_dir_button = f"{OperateBtn.add_dir.label()} Button"
-    add_file_button = f"{OperateBtn.add_file.label()} Button"
+    add_dir_button = f"{OperateBtn.add_dir.dir_label} Button"
+    add_file_button = f"{OperateBtn.add_file.file_label} Button"
     unmanaged_dirs_filter = f"{Switches.unmanaged_dirs.label} Filter"
     unwanted_filter = f"{Switches.unwanted.label} Filter"
     # Apply tab
     apply_tab_help = "Apply Tab Help"
-    apply_dir_button = f"{OperateBtn.apply_path.label(PathKind.DIR)} Button"
-    apply_file_button = f"{OperateBtn.apply_path.label(PathKind.FILE)} Button"
+    apply_dir_button = f"{OperateBtn.apply_path.dir_label} Button"
+    apply_file_button = f"{OperateBtn.apply_path.file_label} Button"
     # Re-Add tab
     re_add_tab_help = "Re-Add Tab Help"
-    re_add_dir_button = f"{OperateBtn.re_add_path.label(PathKind.DIR)} Button"
-    re_add_file_button = (
-        f"{OperateBtn.re_add_path.label(PathKind.FILE)} Button"
-    )
+    re_add_dir_button = f"{OperateBtn.re_add_path.dir_label} Button"
+    re_add_file_button = f"{OperateBtn.re_add_path.file_label} Button"
     # Common buttons for Apply and Re-Add tabs
-    destroy_dir_button = (
-        f"{OperateBtn.destroy_path.label(PathKind.DIR)} Button"
-    )
-    destroy_file_button = (
-        f"{OperateBtn.destroy_path.label(PathKind.FILE)} Button"
-    )
-    forget_dir_button = f"{OperateBtn.forget_path.label(PathKind.DIR)} Button"
-    forget_file_button = (
-        f"{OperateBtn.forget_path.label(PathKind.FILE)} Button"
-    )
+    destroy_dir_button = f"{OperateBtn.destroy_path.dir_label} Button"
+    destroy_file_button = f"{OperateBtn.destroy_path.file_label} Button"
+    forget_dir_button = f"{OperateBtn.forget_path.dir_label} Button"
+    forget_file_button = f"{OperateBtn.forget_path.file_label} Button"
     # Common filters for Apply and Re-Add tabs
     expand_all_filter = f"{Switches.expand_all.label} Filter"
     unchanged_filter = f"{Switches.unchanged.label} Filter"
