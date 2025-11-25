@@ -59,6 +59,18 @@ class FlatButtonsVertical(Vertical):
         for button_enum in self.buttons:
             yield FlatButton(ids=self.ids, button_enum=button_enum)
 
+    def on_mount(self) -> None:
+        first_button = self.query_one(
+            self.ids.flat_button_id("#", btn=self.buttons[0])
+        )
+        first_button.add_class(Tcss.last_clicked_flat_btn.name)
+
+    @on(Button.Pressed)
+    def update_tcss_classes(self, event: Button.Pressed) -> None:
+        for btn in self.query(Button):
+            btn.remove_class(Tcss.last_clicked_flat_btn.name)
+        event.button.add_class(Tcss.last_clicked_flat_btn.name)
+
 
 class OperateButton(Button):
     def __init__(self, *, ids: "AppIds", button_enum: OperateBtn) -> None:
@@ -109,13 +121,13 @@ class TabButtonsBase(Horizontal):
         first_button = self.query_one(
             self.ids.tab_button_id("#", btn=self.buttons[0])
         )
-        first_button.add_class(Tcss.last_clicked.name)
+        first_button.add_class(Tcss.last_clicked_tab_btn.name)
 
     @on(Button.Pressed)
     def update_tcss_classes(self, event: Button.Pressed) -> None:
         for btn in self.query(Button):
-            btn.remove_class(Tcss.last_clicked.name)
-        event.button.add_class(Tcss.last_clicked.name)
+            btn.remove_class(Tcss.last_clicked_tab_btn.name)
+        event.button.add_class(Tcss.last_clicked_tab_btn.name)
 
 
 class LogsTabButtons(TabButtonsBase, AppType):

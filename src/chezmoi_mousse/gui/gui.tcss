@@ -24,17 +24,28 @@
 }
 
 .flat_button{
-  background-tint: initial;
+  background-tint: $primary-muted;
+  background: $primary-muted;
+  border: block $primary-muted;
+  color: $foreground 70%;
   width: 100%;
   &:hover {
-    color: $text-accent;
-    background: $primary-muted;
-    background-tint: $primary-muted;
-    border: block $primary-muted;
+    color: $foreground;
   }
   &:focus {
-    color: $accent;
-    text-style: none;
+    text-style: bold;
+    color: $text-accent;
+  }
+  &.last_clicked_flat_btn {
+    color: $text-accent;
+    text-style: bold;
+    &:hover {
+      color: $text-accent;
+    }
+    &:focus {
+      text-style: bold;
+      color: $text-accent;
+    }
   }
 }
 
@@ -295,7 +306,7 @@ LogsTabButtons, TreeTabButtons, ViewTabButtons {
     border: none;
     min-width: 3;
     text-style: bold;
-    color: $foreground 50%;
+    color: $foreground 60%;
     &:hover {
       color: $foreground;
     }
@@ -303,7 +314,7 @@ LogsTabButtons, TreeTabButtons, ViewTabButtons {
       text-style: bold;
       color: $text-accent 80%;
     }
-    &.last_clicked {
+    &.last_clicked_tab_btn {
       color: $text-accent 80%;
       text-style: bold;
       &:hover {
