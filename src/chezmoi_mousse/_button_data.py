@@ -57,24 +57,10 @@ class TabBtn(StrEnum):
     tree = "Tree"
 
 
-class OpBtn(StrEnum):
-    add_dir = "Add Dir"
-    add_file = "Add File"
-    apply_dir = "Apply Dir"
-    apply_file = "Apply File"
-    apply_path = "Apply Path"
+class SharedLabels(StrEnum):
     cancel = "Cancel"
     close = "Close"
-    destroy_dir = "Destroy Dir"
-    destroy_file = "Destroy File"
-    destroy_path = "Destroy Path"
     exit_app = "Exit App"
-    forget_dir = "Forget Dir"
-    forget_file = "Forget File"
-    forget_path = "Forget Path"
-    re_add_dir = "Re-Add Dir"
-    re_add_file = "Re-Add File"
-    re_add_path = "Re-Add Path"
 
 
 class SharedToolTips(StrEnum):
@@ -85,56 +71,56 @@ class SharedToolTips(StrEnum):
 
 @dataclass(slots=True)
 class ApplyButtonData:
-    dir_label = OpBtn.apply_dir.value
+    dir_label = "Apply Dir"
     dir_no_status_tooltip = SharedToolTips.dir_no_status.value
     dir_tooltip = 'Run "chezmoi apply" on the directory.'
-    file_label = OpBtn.apply_file.value
+    file_label = "Apply File"
     file_no_status_tooltip = SharedToolTips.file_no_status.value
     file_tooltip = 'Run "chezmoi apply" on the file.'
-    initial_label = OpBtn.apply_path.value
+    initial_label = "Apply Path"
 
 
 @dataclass(slots=True)
 class ReAddButtonData:
-    dir_label = OpBtn.re_add_dir.value
+    dir_label = "Re-Add Dir"
     dir_no_status_tooltip = SharedToolTips.dir_no_status.value
     dir_tooltip = 'Run "chezmoi re-add" on the directory.'
-    file_label = OpBtn.re_add_file.value
+    file_label = "Re-Add File"
     file_no_status_tooltip = SharedToolTips.file_no_status.value
     file_tooltip = 'Run "chezmoi re-add" on the file.'
-    initial_label = OpBtn.re_add_path.value
+    initial_label = "Re-Add Path"
 
 
 @dataclass(slots=True)
 class DestroyButtonData:
-    dir_label = OpBtn.destroy_dir.value
+    dir_label = "Destroy Dir"
     dir_tooltip = 'Run "chezmoi destroy" on the directory. Permanently remove the directory and its files from disk and chezmoi. MAKE SURE YOU HAVE A BACKUP!'
-    file_label = OpBtn.destroy_file.value
+    file_label = "Destroy File"
     file_tooltip = 'Run "chezmoi destroy" on the file. Permanently remove the file from disk and chezmoi. MAKE SURE YOU HAVE A BACKUP!'
-    initial_label = OpBtn.destroy_path.value
+    initial_label = "Destroy Path"
 
 
 @dataclass(slots=True)
 class ForgetButtonData:
-    dir_label = OpBtn.forget_dir.value
+    dir_label = "Forget Dir"
     dir_tooltip = 'Run "chezmoi forget", stop managing the directory.'
-    file_label = OpBtn.forget_file.value
+    file_label = "Forget File"
     file_tooltip = 'Run "chezmoi forget", stop managing the file.'
-    initial_label = OpBtn.forget_path.value
+    initial_label = "Forget Path"
 
 
 @dataclass(slots=True)
 class AddFileButtonData:
     disabled_tooltip = "Select a file to operate on."
     enabled_tooltip = "Manage the file with chezmoi."
-    initial_label = OpBtn.add_file.value
+    initial_label = "Add File"
 
 
 @dataclass(slots=True)
 class AddDirButtonData:
     disabled_tooltip = "Select a directory to operate on."
     enabled_tooltip = "Manage the directory with chezmoi."
-    initial_label = OpBtn.add_dir.value
+    initial_label = "Add Dir"
 
 
 @dataclass(slots=True)
@@ -157,11 +143,11 @@ class InitScreenCloneRepositoryButtonData:
 
 @dataclass(slots=True)
 class InitScreenExitButtonData:
-    exit_app_label: str = OpBtn.exit_app.value
+    exit_app_label: str = SharedLabels.exit_app.value
     exit_app_tooltip: str = (
         "Ext application. Cannot run the main application without an initialized chezmoi state, init a new repository, or init from a remote repository."
     )
-    close_label: str = OpBtn.close.value
+    close_label: str = SharedLabels.close.value
     close_tooltip: str = (
         "Restart the application to load the initialized chezmoi state."
     )
@@ -170,9 +156,9 @@ class InitScreenExitButtonData:
 
 @dataclass(slots=True)
 class OperateScreenExitButtonData:
-    cancel_label: str = OpBtn.cancel.value
-    close_label: str = OpBtn.close.value
-    initial_label: str = OpBtn.cancel.value
+    cancel_label: str = SharedLabels.cancel.value
+    close_label: str = SharedLabels.close.value
+    initial_label: str = SharedLabels.cancel.value
 
 
 class OperateBtn(Enum):
