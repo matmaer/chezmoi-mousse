@@ -108,9 +108,6 @@ class TabScreen(Screen[None], AppType):
         self.populate_re_add_trees()
         self.update_config_tab()
         self.update_global_git_log()
-        # Notify startup info
-        if self.app.dev_mode is True:
-            self.notify('Running in "dev mode"', severity="information")
 
     @work
     async def initialize_loggers(self) -> None:
@@ -145,9 +142,9 @@ class TabScreen(Screen[None], AppType):
                 self.app.tab_ids.logs.logger.debug_q, DebugLog
             )
             self.app.chezmoi.debug_log = self.debug_log
-            self.debug_log.ready_to_run("--- Debug log initialized ---")
             self.app_log.success(f"{Chars.check_mark} Debug log initialized")
-            self.debug_log.focus()
+            self.debug_log.ready_to_run("--- Debug log initialized ---")
+            self.notify('Running in "dev mode"', severity="information")
 
     def log_splash_log_commands(self) -> None:
         # Log SplashScreen commands

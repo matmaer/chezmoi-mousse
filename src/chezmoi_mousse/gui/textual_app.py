@@ -26,6 +26,7 @@ from chezmoi_mousse.shared import (
     DiffView,
     FlatButtonsVertical,
     GitLogPath,
+    LogsTabButtons,
     TabButtons,
 )
 
@@ -365,9 +366,13 @@ class ChezmoiGUI(App[None]):
             )
             switcher_buttons = None
         elif active_tab == TabName.logs:
-            switcher_buttons = self.screen.query_one(
-                self.tab_ids.logs.switcher.switcher_buttons_q, TabButtons
+            logs_tab_buttons = self.screen.query_one(
+                self.tab_ids.logs.switcher.switcher_buttons_q, LogsTabButtons
             )
+            logs_tab_buttons.display = (
+                False if logs_tab_buttons.display is True else True
+            )
+            return
         elif active_tab == TabName.config:
             left_side = self.screen.query_one(
                 self.tab_ids.config.container.left_side_q, FlatButtonsVertical

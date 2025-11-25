@@ -11,8 +11,12 @@ from textual.containers import ScrollableContainer, Vertical
 from textual.reactive import reactive
 from textual.widgets import Button, ContentSwitcher, RichLog, Static
 
-from chezmoi_mousse import AppType, Chars, ReadVerbs, TabBtn, Tcss
-from chezmoi_mousse.shared import CustomCollapsible, GitLogGlobal, TabButtons
+from chezmoi_mousse import AppType, Chars, ReadVerbs, Tcss
+from chezmoi_mousse.shared import (
+    CustomCollapsible,
+    GitLogGlobal,
+    LogsTabButtons,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -336,23 +340,12 @@ class LogsTab(Vertical, AppType):
         super().__init__()
 
         self.ids = ids
-        self.tab_buttons = (
-            TabBtn.app_log,
-            TabBtn.read_log,
-            TabBtn.operate_log,
-            TabBtn.git_log_global,
-        )
-        if self.app.dev_mode is True:
-            self.tab_buttons = (TabBtn.debug_log,) + self.tab_buttons
-            self.initial_view_id = self.ids.logger.debug
-        else:
-            self.initial_view_id = self.ids.logger.app
 
     def compose(self) -> ComposeResult:
-        yield TabButtons(ids=self.ids, buttons=self.tab_buttons)
+        yield LogsTabButtons(ids=self.ids)
         with ContentSwitcher(
             id=self.ids.switcher.logs_tab,
-            initial=self.initial_view_id,
+            initial=self.ids.logger.app,
             classes=Tcss.border_title_top.name,
         ):
             yield AppLog(ids=self.ids)
@@ -366,10 +359,10 @@ class LogsTab(Vertical, AppType):
         switcher = self.query_one(
             self.ids.switcher.logs_tab_q, ContentSwitcher
         )
-        if self.initial_view_id == self.ids.logger.debug:
-            switcher.border_title = BorderTitle.debug_log
-        else:
-            switcher.border_title = BorderTitle.app_log
+        # if self.initial_view_id == self.ids.logger.debug:
+        #     switcher.border_title = BorderTitle.debug_log
+        # else:
+        switcher.border_title = BorderTitle.app_log
 
     @on(Button.Pressed, Tcss.tab_button.value)
     def switch_content(self, event: Button.Pressed) -> None:

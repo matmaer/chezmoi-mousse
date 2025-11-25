@@ -4,6 +4,7 @@ from ._buttons import (
     FlatButton,
     FlatButtonsVertical,
     FlatLink,
+    LogsTabButtons,
     OperateButtons,
     TabButtons,
 )
@@ -49,6 +50,7 @@ __all__ = [
     "GitLogGlobal",
     "GitLogPath",
     "IgnoredView",
+    "LogsTabButtons",
     "MainSectionLabel",
     "OperateButtons",
     "PwMgrInfoView",
