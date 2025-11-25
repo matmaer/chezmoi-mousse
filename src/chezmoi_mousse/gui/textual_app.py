@@ -336,10 +336,7 @@ class ChezmoiGUI(App[None]):
                 self.tab_ids.apply.container.switch_slider_q, SwitchSlider
             )
             switcher_buttons = self.screen.query_one(
-                self.tab_ids.apply.container_id(
-                    "#", name=ContainerName.switcher_buttons
-                ),
-                TabButtons,
+                self.tab_ids.apply.switcher.switcher_buttons_q, TabButtons
             )
         elif active_tab == TabName.re_add:
             left_side = self.screen.query_one(
@@ -352,10 +349,7 @@ class ChezmoiGUI(App[None]):
                 self.tab_ids.re_add.container.switch_slider_q, SwitchSlider
             )
             switcher_buttons = self.screen.query_one(
-                self.tab_ids.re_add.container_id(
-                    "#", name=ContainerName.switcher_buttons
-                ),
-                TabButtons,
+                self.tab_ids.re_add.switcher.switcher_buttons_q, TabButtons
             )
         elif active_tab == TabName.add:
             left_side = self.screen.query_one(
@@ -372,20 +366,11 @@ class ChezmoiGUI(App[None]):
             switcher_buttons = None
         elif active_tab == TabName.logs:
             switcher_buttons = self.screen.query_one(
-                self.tab_ids.logs.container_id(
-                    "#", name=ContainerName.switcher_buttons
-                ),
-                TabButtons,
+                self.tab_ids.logs.switcher.switcher_buttons_q, TabButtons
             )
         elif active_tab == TabName.config:
             left_side = self.screen.query_one(
                 self.tab_ids.config.container.left_side_q, FlatButtonsVertical
-            )
-            switcher_buttons = self.screen.query_one(
-                self.tab_ids.logs.container_id(
-                    "#", name=ContainerName.switcher_buttons
-                ),
-                TabButtons,
             )
         elif active_tab == TabName.help:
             left_side = self.screen.query_one(

@@ -5,14 +5,7 @@ from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.widgets import Button, Link
 
-from chezmoi_mousse import (
-    ContainerName,
-    FlatBtn,
-    LinkBtn,
-    OperateBtn,
-    TabBtn,
-    Tcss,
-)
+from chezmoi_mousse import FlatBtn, LinkBtn, OperateBtn, TabBtn, Tcss
 
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds
@@ -95,9 +88,7 @@ class TabButtons(Horizontal):
     def __init__(self, *, ids: "AppIds", buttons: tuple[TabBtn, ...]):
         self.ids = ids
         self.buttons = buttons
-        super().__init__(
-            id=self.ids.container_id(name=ContainerName.switcher_buttons)
-        )
+        super().__init__(id=self.ids.switcher.switcher_buttons)
 
     def compose(self) -> ComposeResult:
         for button_enum in self.buttons:
