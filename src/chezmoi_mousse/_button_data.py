@@ -92,14 +92,25 @@ class ToolTips(StrEnum):
 
 
 @dataclass(slots=True)
-class ApplyReAddButtonData:
-    dir_label: str
-    dir_no_status_tooltip: str
-    dir_tooltip: str
-    file_label: str
-    file_no_status_tooltip: str
-    file_tooltip: str
-    initial_label: str
+class ApplyButtonData:
+    dir_label = OpBtn.apply_dir.value
+    dir_no_status_tooltip = ToolTips.dir_no_status.value
+    dir_tooltip = ToolTips.apply_dir.value
+    file_label = OpBtn.apply_file.value
+    file_no_status_tooltip = ToolTips.file_no_status.value
+    file_tooltip = ToolTips.apply_file.value
+    initial_label = OpBtn.apply_path.value
+
+
+@dataclass(slots=True)
+class ReAddButtonData:
+    dir_label = OpBtn.re_add_dir.value
+    dir_no_status_tooltip = ToolTips.dir_no_status.value
+    dir_tooltip = ToolTips.re_add_dir.value
+    file_label = OpBtn.re_add_file.value
+    file_no_status_tooltip = ToolTips.file_no_status.value
+    file_tooltip = ToolTips.re_add_file.value
+    initial_label = OpBtn.re_add_path.value
 
 
 @dataclass(slots=True)
@@ -177,24 +188,8 @@ class OperateBtn(Enum):
         enabled_tooltip=ToolTips.add_dir.value,
         initial_label=OpBtn.add_dir.value,
     )
-    apply_path = ApplyReAddButtonData(
-        dir_label=OpBtn.apply_dir.value,
-        dir_no_status_tooltip=ToolTips.dir_no_status.value,
-        dir_tooltip=ToolTips.apply_dir.value,
-        file_label=OpBtn.apply_file.value,
-        file_no_status_tooltip=ToolTips.file_no_status.value,
-        file_tooltip=ToolTips.apply_file.value,
-        initial_label=OpBtn.apply_path.value,
-    )
-    re_add_path = ApplyReAddButtonData(
-        dir_label=OpBtn.re_add_dir.value,
-        dir_no_status_tooltip=ToolTips.dir_no_status.value,
-        dir_tooltip=ToolTips.re_add_dir.value,
-        file_label=OpBtn.re_add_file.value,
-        file_no_status_tooltip=ToolTips.file_no_status.value,
-        file_tooltip=ToolTips.re_add_file.value,
-        initial_label=OpBtn.re_add_path.value,
-    )
+    apply_path = ApplyButtonData()
+    re_add_path = ReAddButtonData()
     forget_path = ForgetButtonData()
     destroy_path = DestroyButtonData()
     init_new_repo = InitScreenNewRepositoryButtonData()
@@ -233,7 +228,7 @@ class OperateBtn(Enum):
 
     @property
     def dir_no_status_tooltip(self) -> str:
-        if isinstance(self.value, ApplyReAddButtonData):
+        if isinstance(self.value, (ApplyButtonData, ReAddButtonData)):
             return self.value.dir_no_status_tooltip
         raise AttributeError(f"{self.name} has no dir_no_status_tooltip")
 
@@ -241,14 +236,19 @@ class OperateBtn(Enum):
     def dir_tooltip(self) -> str:
         if isinstance(
             self.value,
-            (ApplyReAddButtonData, DestroyButtonData, ForgetButtonData),
+            (
+                ApplyButtonData,
+                ReAddButtonData,
+                DestroyButtonData,
+                ForgetButtonData,
+            ),
         ):
             return self.value.dir_tooltip
         raise AttributeError(f"{self.name} has no dir_tooltip")
 
     @property
     def file_no_status_tooltip(self) -> str:
-        if isinstance(self.value, ApplyReAddButtonData):
+        if isinstance(self.value, (ApplyButtonData, ReAddButtonData)):
             return self.value.file_no_status_tooltip
         raise AttributeError(f"{self.name} has no file_no_status_tooltip")
 
@@ -256,7 +256,12 @@ class OperateBtn(Enum):
     def file_tooltip(self) -> str:
         if isinstance(
             self.value,
-            (ApplyReAddButtonData, DestroyButtonData, ForgetButtonData),
+            (
+                ApplyButtonData,
+                ReAddButtonData,
+                DestroyButtonData,
+                ForgetButtonData,
+            ),
         ):
             return self.value.file_tooltip
         raise AttributeError(f"{self.name} has no file_tooltip")
@@ -269,7 +274,12 @@ class OperateBtn(Enum):
     def _file_label(self) -> str:
         if isinstance(
             self.value,
-            (ApplyReAddButtonData, DestroyButtonData, ForgetButtonData),
+            (
+                ApplyButtonData,
+                ReAddButtonData,
+                DestroyButtonData,
+                ForgetButtonData,
+            ),
         ):
             return self.value.file_label
         elif isinstance(self.value, AddButtonData):
@@ -280,7 +290,12 @@ class OperateBtn(Enum):
     def _dir_label(self) -> str:
         if isinstance(
             self.value,
-            (ApplyReAddButtonData, DestroyButtonData, ForgetButtonData),
+            (
+                ApplyButtonData,
+                ReAddButtonData,
+                DestroyButtonData,
+                ForgetButtonData,
+            ),
         ):
             return self.value.dir_label
         elif isinstance(self.value, AddButtonData):
