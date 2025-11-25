@@ -16,7 +16,6 @@ from chezmoi_mousse import (
     AppIds,
     BindingDescription,
     Chars,
-    ContainerName,
     ScreenName,
     TabName,
 )
@@ -357,9 +356,7 @@ class ChezmoiGUI(App[None]):
                 self.tab_ids.add.tree.dir_tree_q, FilteredDirTree
             )
             operation_buttons = self.screen.query_one(
-                self.tab_ids.add.container_id(
-                    "#", name=ContainerName.operate_buttons
-                )
+                self.tab_ids.add.container.operate_buttons_q
             )
             switch_slider = self.screen.query_one(
                 self.tab_ids.add.container.switch_slider_q, SwitchSlider
