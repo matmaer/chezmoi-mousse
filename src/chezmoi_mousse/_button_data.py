@@ -108,12 +108,6 @@ class OperateButtonData:
     exit_app_label: str = SharedLabels.exit_app.value
     exit_app_tooltip: str | None = None
 
-    # Init screen specific
-    init_new_label: str = _UNSET
-    init_new_tooltip: str = _UNSET
-    init_clone_label: str = _UNSET
-    init_clone_tooltip: str = _UNSET
-
 
 class OperateBtn(Enum):
     add_file = OperateButtonData(
@@ -169,14 +163,10 @@ class OperateBtn(Enum):
     init_new_repo = OperateButtonData(
         initial_label="Chezmoi Init New Repo",
         initial_tooltip="Initialize a new chezmoi repository in your home directory with default settings shown in the cat config section.",
-        init_new_label="Chezmoi Init New Repo",
-        init_new_tooltip="Initialize a new chezmoi repository in your home directory with default settings shown in the cat config section.",
     )
     init_clone_repo = OperateButtonData(
         initial_label="Chezmoi Init Clone Repo",
         initial_tooltip="Initialize a the chezmoi repository by cloning from a provided remote repository.",
-        init_clone_label="Chezmoi Init Clone Repo",
-        init_clone_tooltip="Initialize a the chezmoi repository by cloning from a provided remote repository.",
     )
     init_exit = OperateButtonData(
         initial_label=SharedLabels.exit_app.value,
@@ -219,24 +209,6 @@ class OperateBtn(Enum):
     def exit_app_tooltip(self) -> str | None:
         return self.value.exit_app_tooltip
 
-    # Init screen specific attribute access
-
-    @property
-    def init_new_label(self) -> str:
-        return self.value.init_new_label
-
-    @property
-    def init_new_tooltip(self) -> str:
-        return self.value.init_new_tooltip
-
-    @property
-    def init_clone_label(self) -> str:
-        return self.value.init_clone_label
-
-    @property
-    def init_clone_tooltip(self) -> str:
-        return self.value.init_clone_tooltip
-
     # AddTab button specific attribute access
 
     @property
@@ -256,8 +228,6 @@ class OperateBtn(Enum):
     @property
     def dir_no_status_tooltip(self) -> str:
         return self.value.dir_no_status_tooltip
-
-    # Dir/File button specific attribute access
 
     @property
     def dir_tooltip(self) -> str:
