@@ -147,8 +147,11 @@ class TabScreen(Screen[None], AppType):
             self.notify('Running in "dev mode"', severity="information")
 
     def log_splash_log_commands(self) -> None:
-        # Log SplashScreen commands
+        # Log SplashScreen and InitScreen commands
         self.app_log.info("--- Commands executed in loading screen ---")
+        if self.splash_data.init is not None:
+            self.app_log.log_cmd_results(self.splash_data.init)
+            self.operate_log.log_cmd_results(self.splash_data.init)
         for cmd in self.splash_data.executed_commands:
             self.app_log.log_cmd_results(cmd)
             self.read_cmd_log.log_cmd_results(cmd)

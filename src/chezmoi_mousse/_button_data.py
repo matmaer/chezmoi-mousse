@@ -175,17 +175,20 @@ class OperateBtn(Enum):
     )
     init_new_repo = OperateButtonData(
         initial_label="Chezmoi Init New Repo",
+        initial_tooltip="Initialize a new chezmoi repository in your home directory with default settings shown in the cat config section.",
         init_new_label="Chezmoi Init New Repo",
         init_new_tooltip="Initialize a new chezmoi repository in your home directory with default settings shown in the cat config section.",
     )
     init_clone_repo = OperateButtonData(
         initial_label="Chezmoi Init Clone Repo",
+        initial_tooltip="Initialize a the chezmoi repository by cloning from a provided remote repository.",
         init_clone_label="Chezmoi Init Clone Repo",
         init_clone_tooltip="Initialize a the chezmoi repository by cloning from a provided remote repository.",
     )
     init_exit = OperateButtonData(
         initial_label=SharedLabels.exit_app.value,
-        exit_app_tooltip="Ext application. Cannot run the main application without an initialized chezmoi state, init a new repository, or init from a remote repository.",
+        initial_tooltip="Exit application. Cannot run the main application without an initialized chezmoi state, init a new repository, or init from a remote repository.",
+        exit_app_tooltip="Exit application. Cannot run the main application without an initialized chezmoi state, init a new repository, or init from a remote repository.",
         close_tooltip="Reload the application to load the initialized chezmoi state.",
     )
     operate_exit = OperateButtonData(initial_label=SharedLabels.cancel.value)

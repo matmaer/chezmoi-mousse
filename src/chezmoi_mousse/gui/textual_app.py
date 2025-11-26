@@ -16,6 +16,7 @@ from chezmoi_mousse import (
     AppIds,
     BindingDescription,
     Chars,
+    CommandResult,
     ScreenName,
     TabName,
 )
@@ -127,8 +128,6 @@ class ChezmoiGUI(App[None]):
         self.chezmoi_found: bool = self.pre_run_data.chezmoi_found
         self.dev_mode: bool = self.pre_run_data.dev_mode
         self.force_init_screen: bool = self.pre_run_data.force_init_screen
-        self.init_arg: str | None = None
-        self.init_needed: bool | None = None
         self.splash_data: "SplashData | None" = None
 
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
@@ -143,27 +142,32 @@ class ChezmoiGUI(App[None]):
     @work
     async def start_app_with_splash_screen(self) -> None:
         # Run splash screen once to gather command outputs
-        worker = self.push_splash_screen()
-        await worker.wait()
+        splash_screen_worker = self.push_splash_screen()
+        await splash_screen_worker.wait()
         # Chezmoi command not found, SplashScreen will return None
-        if worker.result is None:
+        if splash_screen_worker.result is None:
             self.push_screen(InstallHelp(ids=self.screen_ids.install_help))
             return
         # Chezmoi found but cat_config fails OR force_init_screen flag is set
-        if worker.result.cat_config.returncode != 0 or self.force_init_screen:
+        if (
+            splash_screen_worker.result.cat_config.returncode != 0
+            or self.force_init_screen
+        ):
             self.force_init_screen = False  # Reset force_init_screen for dev.
             init_worker = self.push_init_screen(
-                splash_data=worker.result, run_init=False
+                splash_data=splash_screen_worker.result
             )
             await init_worker.wait()
             # After init screen, re-run splash screen to load all data
-            if init_worker.result is not None:
-                worker = self.push_splash_screen()
-                await worker.wait()
-                self.push_main_screen(worker.result)
+            if init_worker.result is None:
+                self.exit()
+                return
+            worker = self.push_splash_screen()
+            await worker.wait()
+            self.push_main_screen(worker.result)
             return
         # Chezmoi found, init not needed
-        self.push_main_screen(worker.result)
+        self.push_main_screen(splash_screen_worker.result)
 
     @work
     async def push_splash_screen(self) -> "SplashData | None":
@@ -173,8 +177,8 @@ class ChezmoiGUI(App[None]):
 
     @work
     async def push_init_screen(
-        self, *, splash_data: "SplashData", run_init: bool
-    ) -> "SplashData | None":
+        self, *, splash_data: "SplashData"
+    ) -> "CommandResult | None":
         return await self.push_screen(
             InitScreen(ids=self.screen_ids.init, splash_data=splash_data),
             wait_for_dismiss=True,

@@ -16,6 +16,7 @@ from textual.widgets import Button, ContentSwitcher, Footer, Input, Select
 from chezmoi_mousse import (
     AppType,
     BindingDescription,
+    CommandResult,
     FlatBtn,
     OperateBtn,
     Tcss,
@@ -149,7 +150,7 @@ class InitSwitcher(ContentSwitcher):
         )
 
 
-class InitScreen(Screen["SplashData | None"], AppType):
+class InitScreen(Screen["CommandResult | None"], AppType):
 
     BINDINGS = [
         Binding(
@@ -164,6 +165,7 @@ class InitScreen(Screen["SplashData | None"], AppType):
         super().__init__()
         self.ids = ids
         self.splash_data = splash_data
+        self.command_result: CommandResult | None = None
 
     def compose(self) -> ComposeResult:
         yield CustomHeader(self.ids)
@@ -194,12 +196,12 @@ class InitScreen(Screen["SplashData | None"], AppType):
 
     def perform_init_command(self) -> None:
         # Run command
-        self.splash_data.init = self.app.chezmoi.perform(
+        self.command_result = self.app.chezmoi.perform(
             WriteCmd.init, dry_run=self.app.changes_enabled
         )
         # Log results
         output_log = self.query_one(self.ids.logger.operate_q, OperateLog)
-        output_log.log_cmd_results(self.splash_data.init)
+        output_log.log_cmd_results(self.command_result)
         # Update buttons
         operate_button = self.query_one(
             self.ids.operate_btn.init_new_repo_q, Button
@@ -208,6 +210,7 @@ class InitScreen(Screen["SplashData | None"], AppType):
         operate_button.tooltip = None
         exit_button = self.query_one(self.ids.operate_btn.init_exit_q, Button)
         exit_button.label = OperateBtn.init_exit.close_label
+        exit_button.tooltip = OperateBtn.init_exit.close_tooltip
 
     @on(Button.Pressed, Tcss.flat_button.value)
     def switch_content(self, event: Button.Pressed) -> None:
@@ -230,9 +233,9 @@ class InitScreen(Screen["SplashData | None"], AppType):
     def handle_operate_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
         if event.button.id == self.ids.operate_btn.init_exit:
-            self.dismiss(self.splash_data)
+            self.dismiss(self.command_result)
         else:
             self.perform_init_command()
 
     def action_exit_operation(self) -> None:
-        self.dismiss(self.splash_data)
+        self.dismiss(self.command_result)
