@@ -8,7 +8,7 @@ shared/_buttons.py.
 
 from dataclasses import dataclass
 from enum import Enum, StrEnum
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
 
@@ -113,14 +113,6 @@ class OperateButtonData:
     init_new_tooltip: str = _UNSET
     init_clone_label: str = _UNSET
     init_clone_tooltip: str = _UNSET
-
-    def __getattribute__(self, name: str) -> Any:
-        # Raise AttributeError when accessing UNSET fields. Only checks
-        # user-defined fields (not dunder methods or private attributes).
-        val = object.__getattribute__(self, name)
-        if not name.startswith("_") and val == _UNSET:
-            raise AttributeError(f"Field '{name}' is not set")
-        return val
 
 
 class OperateBtn(Enum):
