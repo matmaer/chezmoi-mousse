@@ -44,7 +44,6 @@ class LoggersBase(RichLog, AppType):
         time = self._log_time()
         color = self.app.theme_variables["primary-lighten-3"]
         return f"{time} [{color}]{command_result.pretty_cmd}[/]"
-        # self.write(log_line)
 
     def ready_to_run(self, message: str) -> None:
         color = self.app.theme_variables["accent-darken-3"]
@@ -56,7 +55,9 @@ class LoggersBase(RichLog, AppType):
 
     def success(self, message: str) -> None:
         color = self.app.theme_variables["text-success"]
-        self.write(f"{self._log_time()} [{color}]{message}[/]")
+        self.write(
+            f"{self._log_time()} [{color}]{Chars.check_mark} {message}[/]"
+        )
 
     def warning(self, message: str) -> None:
         lines = message.splitlines()
@@ -86,18 +87,14 @@ class AppLog(LoggersBase, AppType):
     def __init__(self, ids: "AppIds") -> None:
         self.ids = ids
         super().__init__(id=self.ids.logger.app, markup=True, max_lines=10000)
-        self.succes_no_output = f"{Chars.check_mark} Success, no output"
-        self.success_with_output = (
-            f"{Chars.check_mark} Success, output will be processed"
+        self.succes_no_output = "Success, no output"
+        self.success_with_output = "Success, output will be processed"
+        self.std_err_logged = "Command stderr available in an Output log view"
+        self.doctor_exit_zero = 'No errors found by "chezmoi doctor", check the Config tab for possible warnings or failed tests'
+        self.verify_exit_zero = "All targets match their target state"
+        self.verify_non_zero = (
+            "Targets not matching their target state will be processed"
         )
-        self.std_err_logged = (
-            f"{Chars.x_mark} Command stderr available in an Output log view"
-        )
-        self.doctor_exit_zero = f'{Chars.check_mark} No errors found by "chezmoi doctor", check the Config tab for possible warnings or failed tests'
-        self.verify_exit_zero = (
-            f"{Chars.check_mark} All targets match their target state"
-        )
-        self.verify_non_zero = f"{Chars.check_mark} Targets not matching their target state will be processed"
 
     def log_doctor_exit_zero_msg(
         self, command_result: "CommandResult"
@@ -113,14 +110,10 @@ class AppLog(LoggersBase, AppType):
             )
             return
         elif "warning" in command_result.std_out.lower():
-            self.success(
-                f"{Chars.check_mark} Only warnings found, see the Config tab"
-            )
+            self.success("Only warnings found, see the Config tab")
             return
         else:
-            self.success(
-                f"{Chars.check_mark} No warnings, failed or error entries found"
-            )
+            self.success("No warnings, failed or error entries found")
 
     def log_cmd_results(self, command_result: "CommandResult") -> None:
         self.write(self.log_command(command_result))
