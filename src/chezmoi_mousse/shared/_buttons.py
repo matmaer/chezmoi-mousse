@@ -68,9 +68,7 @@ class FlatButtonsVertical(Vertical):
             yield FlatButton(ids=self.ids, button_enum=button_enum)
 
     def on_mount(self) -> None:
-        first_button = self.query_one(
-            self.ids.flat_button_id("#", btn=self.buttons[0])
-        )
+        first_button = self.query(Button).first()
         first_button.add_class(Tcss.last_clicked_flat_btn.name)
 
     @on(Button.Pressed)
@@ -130,9 +128,7 @@ class TabButtonsBase(Horizontal):
                 )
 
     def on_mount(self) -> None:
-        first_button = self.query_one(
-            self.ids.tab_button_id("#", btn=self.buttons[0])
-        )
+        first_button = self.query(Button).first()
         first_button.add_class(Tcss.last_clicked_tab_btn.name)
 
     @on(Button.Pressed)
