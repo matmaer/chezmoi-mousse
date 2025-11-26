@@ -129,6 +129,7 @@ class ChezmoiGUI(App[None]):
         self.dev_mode: bool = self.pre_run_data.dev_mode
         self.force_init_screen: bool = self.pre_run_data.force_init_screen
         self.splash_data: "SplashData | None" = None
+        self.init_cmd_result: "CommandResult | None" = None
 
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
         super().__init__()
@@ -162,6 +163,8 @@ class ChezmoiGUI(App[None]):
             if init_worker.result is None:
                 self.exit()
                 return
+            else:
+                self.init_cmd_result = init_worker.result
             worker = self.push_splash_screen()
             await worker.wait()
             self.push_main_screen(worker.result)
@@ -197,6 +200,7 @@ class ChezmoiGUI(App[None]):
         DiffView.destDir = dest_dir
         GitLogPath.destDir = dest_dir
         TabbedContentScreen.destDir = dest_dir
+        TabbedContentScreen.init_cmd_result = self.init_cmd_result
         TreeBase.destDir = dest_dir
         ViewSwitcher.destDir = dest_dir
 

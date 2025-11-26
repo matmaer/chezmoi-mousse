@@ -10,6 +10,7 @@ from textual.widgets import Button, Footer, TabbedContent, TabPane
 from chezmoi_mousse import (
     AppType,
     Chars,
+    CommandResult,
     OperateBtn,
     OperateScreenData,
     TabName,
@@ -49,13 +50,13 @@ class TabPanes(StrEnum):
 class TabbedContentScreen(Screen[None], AppType):
 
     destDir: Path | None = None
+    init_cmd_result: "CommandResult | None" = None
 
     def __init__(self, *, ids: "AppIds", splash_data: "SplashData") -> None:
         self.ids = ids
         super().__init__()
 
         self.splash_data = splash_data
-
         self.app_log: "AppLog"
         self.read_log: "ReadCmdLog"
         self.operate_log: "OperateLog"
@@ -103,6 +104,8 @@ class TabbedContentScreen(Screen[None], AppType):
     async def on_mount(self) -> None:
         init_loggers_worker = self.initialize_loggers()
         await init_loggers_worker.wait()
+        log_init_cmd_worker = self.log_init_screen_command()
+        await log_init_cmd_worker.wait()
         self.log_splash_log_commands()
         self.populate_apply_trees()
         self.populate_re_add_trees()
@@ -145,6 +148,13 @@ class TabbedContentScreen(Screen[None], AppType):
             self.app_log.success(f"{Chars.check_mark} Debug log initialized")
             self.debug_log.ready_to_run("--- Debug log initialized ---")
             self.notify('Running in "dev mode"', severity="information")
+
+    @work
+    async def log_init_screen_command(self) -> None:
+        if self.init_cmd_result is None:
+            return
+        self.app_log.log_cmd_results(self.init_cmd_result)
+        self.operate_log.log_cmd_results(self.init_cmd_result)
 
     def log_splash_log_commands(self) -> None:
         # Log SplashScreen and InitScreen commands
