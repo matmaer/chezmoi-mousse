@@ -53,6 +53,10 @@ class InitNewRepo(Vertical, AppType):
         yield MainSectionLabel("Initialize New Chezmoi Repository")
         yield SubSectionLabel(SectionLabelText.operate_output)
         yield OperateLog(ids=self.ids)
+        yield OperateButtons(
+            ids=self.ids,
+            buttons=(OperateBtn.init_new_repo, OperateBtn.init_exit),
+        )
 
     def on_mount(self) -> None:
         operate_log = self.query_one(self.ids.logger.operate_q, OperateLog)
@@ -94,6 +98,10 @@ class InitCloneRepo(Vertical, AppType):
         yield RepositoryURLInput()
         yield SubSectionLabel(SectionLabelText.operate_output)
         yield OperateLog(ids=self.ids)
+        yield OperateButtons(
+            ids=self.ids,
+            buttons=(OperateBtn.init_clone_repo, OperateBtn.init_exit),
+        )
 
     def on_mount(self) -> None:
         operate_log = self.query_one(self.ids.logger.operate_q, OperateLog)
@@ -180,19 +188,8 @@ class InitScreen(Screen["CommandResult | None"], AppType):
                     FlatBtn.template_data,
                 ),
             )
-            with Vertical():
-                yield InitSwitcher(ids=self.ids, splash_data=self.splash_data)
-                yield OperateButtons(
-                    ids=self.ids,
-                    buttons=(OperateBtn.init_new_repo, OperateBtn.init_exit),
-                )
+            yield InitSwitcher(ids=self.ids, splash_data=self.splash_data)
         yield Footer(id=self.ids.footer)
-
-    def on_mount(self) -> None:
-        op_btn = self.query_one(self.ids.operate_btn.init_new_repo_q, Button)
-        op_btn.disabled = False
-        exit_btn = self.query_one(self.ids.operate_btn.init_exit_q, Button)
-        exit_btn.disabled = False
 
     def perform_init_command(self) -> None:
         # Run command

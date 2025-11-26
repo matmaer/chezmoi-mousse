@@ -5,7 +5,15 @@ from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.widgets import Button, Link
 
-from chezmoi_mousse import AppType, FlatBtn, LinkBtn, OperateBtn, TabBtn, Tcss
+from chezmoi_mousse import (
+    AppType,
+    FlatBtn,
+    LinkBtn,
+    OperateBtn,
+    ScreenName,
+    TabBtn,
+    Tcss,
+)
 
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds
@@ -76,9 +84,13 @@ class OperateButton(Button):
     def __init__(self, *, ids: "AppIds", button_enum: OperateBtn) -> None:
         self.ids = ids
         self.button_enum = button_enum
+        if self.ids.screen_name in (ScreenName.init, ScreenName.operate):
+            should_disable = False
+        else:
+            should_disable = True
         super().__init__(
             classes=Tcss.operate_button.name,
-            disabled=True,
+            disabled=should_disable,
             id=self.ids.operate_button_id(btn=self.button_enum),
             label=self.button_enum.initial_label,
             tooltip=self.button_enum.initial_tooltip,

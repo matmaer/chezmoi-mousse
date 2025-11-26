@@ -344,6 +344,10 @@ class OperateButtonIds:
             btn=OperateBtn.init_new_repo
         )
         self.init_new_repo_q = f"#{self.init_new_repo}"
+        self.init_clone_repo = ids.operate_button_id(
+            btn=OperateBtn.init_clone_repo
+        )
+        self.init_clone_repo_q = f"#{self.init_clone_repo}"
         self.operate_exit = ids.operate_button_id(btn=OperateBtn.operate_exit)
         self.operate_exit_q = f"#{self.operate_exit}"
         self.re_add_path = ids.operate_button_id(btn=OperateBtn.re_add_path)
