@@ -11,6 +11,7 @@ from textual.binding import Binding
 from textual.scrollbar import ScrollBar, ScrollBarRender
 from textual.theme import Theme
 from textual.widgets import TabbedContent, Tabs
+from textual.worker import WorkerCancelled
 
 from chezmoi_mousse import (
     AppIds,
@@ -143,8 +144,12 @@ class ChezmoiGUI(App[None]):
     @work
     async def start_app_with_splash_screen(self) -> None:
         # Run splash screen once to gather command outputs
-        splash_screen_worker = self.push_splash_screen()
-        await splash_screen_worker.wait()
+        try:
+            splash_screen_worker = self.push_splash_screen()
+            await splash_screen_worker.wait()
+        except WorkerCancelled:
+            # User exited during splash screen, exit cleanly
+            return
         # Chezmoi command not found, SplashScreen will return None
         if splash_screen_worker.result is None:
             self.push_screen(InstallHelp(ids=self.screen_ids.install_help))
@@ -155,18 +160,27 @@ class ChezmoiGUI(App[None]):
             or self.force_init_screen
         ):
             self.force_init_screen = False  # Reset force_init_screen for dev.
-            init_worker = self.push_init_screen(
-                splash_data=splash_screen_worker.result
-            )
-            await init_worker.wait()
+            try:
+                init_worker = self.push_init_screen(
+                    splash_data=splash_screen_worker.result
+                )
+                await init_worker.wait()
+            except WorkerCancelled:
+                # User exited during init screen, exit cleanly
+                return
             # After init screen, re-run splash screen to load all data
             if init_worker.result is None:
+                # User pressed the exit button on init screen
                 self.exit()
                 return
             else:
                 self.init_cmd_result = init_worker.result
-            worker = self.push_splash_screen()
-            await worker.wait()
+            try:
+                worker = self.push_splash_screen()
+                await worker.wait()
+            except WorkerCancelled:
+                # User exited during second splash screen, exit cleanly
+                return
             self.push_main_screen(worker.result)
             return
         # Chezmoi found, init not needed
