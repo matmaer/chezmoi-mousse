@@ -365,8 +365,16 @@ class TreeBase(Tree[NodeData], AppType):
 
     # 4 methods to provide tab navigation without intaraction with the tree
     def on_key(self, event: Key) -> None:
-        if event.key in ("tab", "shift+tab"):
-            return
+        if event.key == "tab":
+            # Check if we can move down (not at last node)
+            if self.cursor_line < self.last_line:
+                event.stop()
+                self.action_cursor_down()
+        elif event.key == "shift+tab":
+            # Check if we can move up (not at first node)
+            if self.cursor_line > 0:
+                event.stop()
+                self.action_cursor_up()
         self._initial_render = False
         self._user_interacted = True
 
