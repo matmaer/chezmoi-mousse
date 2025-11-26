@@ -17,7 +17,6 @@ from ._chezmoi import (
 from ._str_enums import (
     BindingDescription,
     Chars,
-    ContainerName,
     HeaderTitle,
     LogName,
     PathKind,
@@ -25,7 +24,6 @@ from ._str_enums import (
     TabName,
     Tcss,
     TreeName,
-    ViewName,
 )
 from ._switch_data import Switches
 
@@ -50,7 +48,6 @@ __all__ = [
     "Chars",
     "Chezmoi",
     "CommandResult",
-    "ContainerName",
     "DirTreeNodeData",
     "FlatBtn",
     "GlobalCmd",
@@ -74,7 +71,6 @@ __all__ = [
     "Tcss",
     "TreeName",
     "VerbArgs",
-    "ViewName",
     "WriteCmd",
 ]
 
