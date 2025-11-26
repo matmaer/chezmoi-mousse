@@ -69,32 +69,32 @@ class TabbedContentScreen(Screen[None], AppType):
         yield CustomHeader(ids=self.ids)
         with TabbedContent():
             yield TabPane(
-                TabPanes.apply_tab_button.value,
+                TabPanes.apply_tab_button,
                 ApplyTab(ids=self.app.tab_ids.apply),
                 id=TabName.apply.name,
             )
             yield TabPane(
-                TabPanes.re_add_tab_button.value,
+                TabPanes.re_add_tab_button,
                 ReAddTab(ids=self.app.tab_ids.re_add),
                 id=TabName.re_add,
             )
             yield TabPane(
-                TabPanes.add_tab_button.value,
+                TabPanes.add_tab_button,
                 AddTab(ids=self.app.tab_ids.add),
                 id=TabName.add,
             )
             yield TabPane(
-                TabPanes.logs_tab_button.value,
+                TabPanes.logs_tab_button,
                 LogsTab(ids=self.app.tab_ids.logs),
                 id=TabName.logs,
             )
             yield TabPane(
-                TabPanes.config_tab_button.value,
+                TabPanes.config_tab_button,
                 ConfigTab(ids=self.app.tab_ids.config),
                 id=TabName.config,
             )
             yield TabPane(
-                TabPanes.help_tab_button.value,
+                TabPanes.help_tab_button,
                 HelpTab(ids=self.app.tab_ids.help),
                 id=TabName.help,
             )

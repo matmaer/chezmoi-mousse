@@ -208,7 +208,7 @@ class HelpTab(Horizontal):
             yield AddTabHelp(ids=self.ids)
             yield ChezmoiDiagram(ids=self.ids)
 
-    @on(Button.Pressed, Tcss.flat_button.value)
+    @on(Button.Pressed, Tcss.flat_button)
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
         switcher = self.query_one(

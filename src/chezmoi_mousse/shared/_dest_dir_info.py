@@ -58,19 +58,19 @@ class DestDirInfo(VerticalGroup):
 
     def on_mount(self) -> None:
         if self.ids.tab_name == TabName.add:
-            self.mount(Static(LogText.read_file.value))
+            self.mount(Static(LogText.read_file))
             self.mount(Static(ADD_DIR_INFO))
             return
         elif (
             self.ids.tab_name in (TabName.apply, TabName.re_add)
             and self.contents_logger is True
         ):
-            self.mount(Static(LogText.cat.value))
+            self.mount(Static(LogText.cat))
             return
         elif self.ids.tab_name == TabName.apply:
-            self.mount(Static(LogText.diff.value))
+            self.mount(Static(LogText.diff))
         elif self.ids.tab_name == TabName.re_add:
-            self.mount(Static(LogText.diff_reverse.value))
+            self.mount(Static(LogText.diff_reverse))
             return
         elif self.git_log is True:
-            self.mount(Static(LogText.git_log_msg.value))
+            self.mount(Static(LogText.git_log_msg))

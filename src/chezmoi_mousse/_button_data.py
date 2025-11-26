@@ -8,12 +8,8 @@ shared/_buttons.py.
 
 from dataclasses import dataclass
 from enum import Enum, StrEnum
-from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-
-    from ._str_enums import PathKind
-
+from ._str_enums import PathKind
 
 __all__ = ["FlatBtn", "LinkBtn", "OperateBtn", "TabBtn"]
 
@@ -101,51 +97,51 @@ class OperateButtonData:
     disabled_tooltip: str = _UNSET
 
     # Exit button specific
-    cancel_label: str = SharedLabels.cancel.value
-    close_label: str = SharedLabels.close.value
+    cancel_label: str = SharedLabels.cancel
+    close_label: str = SharedLabels.close
     close_tooltip: str | None = None
-    exit_app_label: str = SharedLabels.exit_app.value
+    exit_app_label: str = SharedLabels.exit_app
     exit_app_tooltip: str | None = None
 
 
 class OperateBtn(Enum):
     add_file = OperateButtonData(
         initial_label="Add File",
-        initial_tooltip=SharedToolTips.in_dest_dir.value,
+        initial_tooltip=SharedToolTips.in_dest_dir,
         file_label="Add File",
         disabled_tooltip="Select a file to operate on.",
         enabled_tooltip="Manage the file with chezmoi.",
     )
     add_dir = OperateButtonData(
         initial_label="Add Dir",
-        initial_tooltip=SharedToolTips.in_dest_dir.value,
+        initial_tooltip=SharedToolTips.in_dest_dir,
         dir_label="Add Dir",
         disabled_tooltip="Select a directory to operate on.",
         enabled_tooltip="Manage the directory with chezmoi.",
     )
     apply_path = OperateButtonData(
         initial_label="Apply Path",
-        initial_tooltip=SharedToolTips.in_dest_dir.value,
+        initial_tooltip=SharedToolTips.in_dest_dir,
         dir_label="Apply Dir",
-        dir_no_status_tooltip=SharedToolTips.dir_no_status.value,
+        dir_no_status_tooltip=SharedToolTips.dir_no_status,
         dir_tooltip='Run "chezmoi apply" on the directory.',
         file_label="Apply File",
-        file_no_status_tooltip=SharedToolTips.file_no_status.value,
+        file_no_status_tooltip=SharedToolTips.file_no_status,
         file_tooltip='Run "chezmoi apply" on the file.',
     )
     re_add_path = OperateButtonData(
         initial_label="Re-Add Path",
-        initial_tooltip=SharedToolTips.in_dest_dir.value,
+        initial_tooltip=SharedToolTips.in_dest_dir,
         dir_label="Re-Add Dir",
-        dir_no_status_tooltip=SharedToolTips.dir_no_status.value,
+        dir_no_status_tooltip=SharedToolTips.dir_no_status,
         dir_tooltip='Run "chezmoi re-add" on the directory.',
         file_label="Re-Add File",
-        file_no_status_tooltip=SharedToolTips.file_no_status.value,
+        file_no_status_tooltip=SharedToolTips.file_no_status,
         file_tooltip='Run "chezmoi re-add" on the file.',
     )
     forget_path = OperateButtonData(
         initial_label="Forget Path",
-        initial_tooltip=SharedToolTips.in_dest_dir.value,
+        initial_tooltip=SharedToolTips.in_dest_dir,
         dir_label="Forget Dir",
         dir_tooltip='Run "chezmoi forget", stop managing the directory.',
         file_label="Forget File",
@@ -153,7 +149,7 @@ class OperateBtn(Enum):
     )
     destroy_path = OperateButtonData(
         initial_label="Destroy Path",
-        initial_tooltip=SharedToolTips.in_dest_dir.value,
+        initial_tooltip=SharedToolTips.in_dest_dir,
         dir_label="Destroy Dir",
         dir_tooltip='Run "chezmoi destroy" on the directory. Permanently remove the directory and its files from disk and chezmoi. MAKE SURE YOU HAVE A BACKUP!',
         file_label="Destroy File",
@@ -168,12 +164,12 @@ class OperateBtn(Enum):
         initial_tooltip="Initialize a the chezmoi repository by cloning from a provided remote repository.",
     )
     init_exit = OperateButtonData(
-        initial_label=SharedLabels.exit_app.value,
+        initial_label=SharedLabels.exit_app,
         initial_tooltip="Exit application. Cannot run the main application without an initialized chezmoi state, init a new repository, or init from a remote repository.",
         exit_app_tooltip="Exit application. Cannot run the main application without an initialized chezmoi state, init a new repository, or init from a remote repository.",
         close_tooltip="Reload the application to load the initialized chezmoi state.",
     )
-    operate_exit = OperateButtonData(initial_label=SharedLabels.cancel.value)
+    operate_exit = OperateButtonData(initial_label=SharedLabels.cancel)
 
     # Allow access to dataclass attributes directly from the Enum member,
     # without needing to go through the value attribute

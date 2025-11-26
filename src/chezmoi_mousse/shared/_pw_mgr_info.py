@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 __all__ = ["PwMgrInfoView"]
 
 
-class DoctorChecks(Enum):
+class DoctorChecks(StrEnum):
     age_command = "age-command"
     bitwarden_command = "bitwarden-command"
     bitwarden_secrets_command = "bitwarden-secrets-command"
@@ -63,91 +63,91 @@ class PwMgrData:
 
 class PwMgrInfo(Enum):
     age_command = PwMgrData(
-        doctor_check=DoctorChecks.age_command.value,
+        doctor_check=DoctorChecks.age_command,
         description="A simple, modern and secure file encryption tool.",
         link="https://github.com/FiloSottile/age",
         info=InfoStrings.fully_open_source,
     )
     bitwarden_command = PwMgrData(
-        doctor_check=DoctorChecks.bitwarden_command.value,
+        doctor_check=DoctorChecks.bitwarden_command,
         description="Bitwarden Password Manager",
         link="https://github.com/bitwarden",
         info=InfoStrings.source_available,
     )
     bitwarden_secrets_command = PwMgrData(
-        doctor_check=DoctorChecks.bitwarden_secrets_command.value,
+        doctor_check=DoctorChecks.bitwarden_secrets_command,
         description="Bitwarden Secrets Manager CLI for managing secrets securely.",
         link="https://github.com/bitwarden",
         info=InfoStrings.fully_open_source,
     )
     dashlane_command = PwMgrData(
-        doctor_check=DoctorChecks.dashlane_command.value,
+        doctor_check=DoctorChecks.dashlane_command,
         description="Simple and secure access to all your online accounts. At work, home, and everywhere in between.",
         link="https://github.com/dashlane",
         info=InfoStrings.not_open_source,
     )
     doppler_command = PwMgrData(
-        doctor_check=DoctorChecks.doppler_command.value,
+        doctor_check=DoctorChecks.doppler_command,
         description="Doppler is the multi-cloud SecretOps Platform developers and security teams trust to provide secrets management at enterprise scale.",
         link="https://github.com/dopplerhq",
         info=InfoStrings.not_open_source,
     )
     gopass_command = PwMgrData(
-        doctor_check=DoctorChecks.gopass_command.value,
+        doctor_check=DoctorChecks.gopass_command,
         description="The slightly more awesome standard unix password manager for teams.",
         link="https://github.com/gopasspw/gopass",
         info=InfoStrings.fully_open_source,
     )
     keeper_command = PwMgrData(
-        doctor_check=DoctorChecks.keeper_command.value,
+        doctor_check=DoctorChecks.keeper_command,
         description="An interface to Keeper Password Manager",
         link="https://github.com/Keeper-Security/Commander",
         info=InfoStrings.not_open_source,
     )
     keepassxc_command = PwMgrData(
-        doctor_check=DoctorChecks.keepassxc_command.value,
+        doctor_check=DoctorChecks.keepassxc_command,
         description="Cross-platform community-driven port of Keepass password manager.",
         link="https://keepassxc.org/",
         info=InfoStrings.fully_open_source,
     )
     lastpass_command = PwMgrData(
-        doctor_check=DoctorChecks.lastpass_command.value,
+        doctor_check=DoctorChecks.lastpass_command,
         description="Old LastPass CLI for accessing your LastPass vault.",
         link="https://https://github.com/lastpass",
         info=InfoStrings.not_open_source,
     )
     one_password_command = PwMgrData(
-        doctor_check=DoctorChecks.one_password_command.value,
+        doctor_check=DoctorChecks.one_password_command,
         description="Secure all sign-ins to every application from any device.",
         link="https://github.com/1Password/for-open-source",
         info=InfoStrings.not_open_source,
     )
     pass_command = PwMgrData(
-        doctor_check=DoctorChecks.pass_command.value,
+        doctor_check=DoctorChecks.pass_command,
         description="Stores, retrieves, generates, and synchronizes passwords securely.",
         link="https://www.passwordstore.org/",
         info=InfoStrings.confusing,
     )
     passhole_command = PwMgrData(
-        doctor_check=DoctorChecks.passhole_command.value,
+        doctor_check=DoctorChecks.passhole_command,
         description="A secure hole for your passwords (KeePass CLI).",
         link="https://github.com/Evidlo/passhole",
         info=InfoStrings.not_open_source,
     )
     pinentry_command = PwMgrData(
-        doctor_check=DoctorChecks.pinentry_command.value,
+        doctor_check=DoctorChecks.pinentry_command,
         description="Collection of simple PIN or passphrase entry dialogs which utilize the Assuan protocol.",
         link="https://gnupg.org/related_software/pinentry/",
         info=InfoStrings.fully_open_source,
     )
     rbw_command = PwMgrData(
-        doctor_check=DoctorChecks.rbw_command.value,
+        doctor_check=DoctorChecks.rbw_command,
         description="Unofficial Bitwarden.",
         link="https://git.tozt.net/rbw",
         info=InfoStrings.not_documented,
     )
     vault_command = PwMgrData(
-        doctor_check=DoctorChecks.vault_command.value,
+        doctor_check=DoctorChecks.vault_command,
         description="A tool for managing secrets.",
         link="https://vaultproject.io/",
         info=InfoStrings.not_documented,

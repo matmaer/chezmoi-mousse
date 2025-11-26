@@ -299,7 +299,7 @@ class OperateScreen(Screen["OperateScreenData"], AppType):
         else:
             output_log.error("Command result is None, cannot log output.")
 
-    @on(Button.Pressed, Tcss.operate_button.value)
+    @on(Button.Pressed, Tcss.operate_button)
     def handle_operate_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
         if event.button.label in (

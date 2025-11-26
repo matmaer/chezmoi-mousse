@@ -209,7 +209,7 @@ class InitScreen(Screen["CommandResult | None"], AppType):
         exit_button.label = OperateBtn.init_exit.close_label
         exit_button.tooltip = OperateBtn.init_exit.close_tooltip
 
-    @on(Button.Pressed, Tcss.flat_button.value)
+    @on(Button.Pressed, Tcss.flat_button)
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
         switcher = self.query_one(

@@ -351,7 +351,7 @@ class LogsTab(Vertical, AppType):
         )
         switcher.border_title = BorderTitle.app_log
 
-    @on(Button.Pressed, Tcss.tab_button.value)
+    @on(Button.Pressed, Tcss.tab_button)
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
         switcher = self.query_one(

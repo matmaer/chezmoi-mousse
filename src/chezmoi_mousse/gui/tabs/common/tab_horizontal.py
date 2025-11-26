@@ -67,7 +67,7 @@ class TabHorizontal(Horizontal):
         destroy_button.disabled = False
         forget_button.disabled = False
 
-    @on(Button.Pressed, Tcss.tab_button.value)
+    @on(Button.Pressed, Tcss.tab_button)
     def handle_tab_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id in (self.ids.tab_btn.tree, self.ids.tab_btn.list):
             # toggle expand all switch enabled disabled state
