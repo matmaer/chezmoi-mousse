@@ -287,15 +287,15 @@ class OperateBtn(Enum):
         elif path_type == "file":
             return self.file_label
         else:
-            return self.value.initial_label
+            raise ValueError("path_type must be 'dir' or 'file'")
 
-    def tooltip(self, path_type: "PathKind | None" = None) -> str:
+    def tooltip(self, path_type: "PathKind") -> str:
         if path_type == "dir":
             return self.dir_tooltip
         elif path_type == "file":
             return self.file_tooltip
         else:
-            return "Tooltip not yet implomented."
+            raise ValueError("path_type must be 'dir', 'file', or None")
 
     @classmethod
     def from_label(cls, label: str) -> "OperateBtn":
@@ -306,4 +306,4 @@ class OperateBtn(Enum):
                 return member
             if member.value.initial_label == label:
                 return member
-        raise ValueError(f"{cls.__name__} has no member with label={label!r}")
+        raise ValueError(f"{cls.__name__} has no member with label={label}")
