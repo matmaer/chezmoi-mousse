@@ -258,7 +258,7 @@ class AddTab(Horizontal, AppType):
         dir_tree.add_class(
             Tcss.tab_left_vertical.name, Tcss.border_title_top.name
         )
-        dir_tree.border_title = f" {self.destDir} "
+        dir_tree.border_title = " destDir "
 
     def update_buttons(self, is_dir: bool) -> None:
         add_file_button = self.query_one(
