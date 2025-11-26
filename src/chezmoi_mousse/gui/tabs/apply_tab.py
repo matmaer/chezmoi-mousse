@@ -43,10 +43,10 @@ class ApplyTab(TabHorizontal):
             self.ids.operate_btn.apply_path_q, Button
         )
         operate_path_button.label = OperateBtn.apply_path.label(
-            event.node_data.path_type
+            event.node_data.path_kind
         )
         operate_path_button.tooltip = OperateBtn.apply_path.tooltip(
-            event.node_data.path_type
+            event.node_data.path_kind
         )
         operate_path_button.disabled = (
             True if event.node_data.status == "X" else False

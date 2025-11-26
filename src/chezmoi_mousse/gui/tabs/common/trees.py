@@ -58,7 +58,7 @@ class TreeBase(Tree[NodeData], AppType):
             " ": self.app.theme_variables["text-secondary"],
         }
         self.root.data = NodeData(
-            path=self.destDir, path_type=PathKind.DIR, found=True, status="F"
+            path=self.destDir, path_kind=PathKind.DIR, found=True, status="F"
         )
         self.guide_depth: int = 3
         self.show_root: bool = False
@@ -67,7 +67,7 @@ class TreeBase(Tree[NodeData], AppType):
     def __style_label(self, node_data: NodeData) -> Text:
         italic: bool = False if node_data.found else True
         styled = "white"
-        if node_data.path_type == "file":
+        if node_data.path_kind == PathKind.FILE:
             if node_data.status == "X":
                 styled = "dim"
             elif node_data.status in "ADM":
@@ -76,7 +76,7 @@ class TreeBase(Tree[NodeData], AppType):
                 )
             elif node_data.status == " ":
                 styled = "white"
-        elif node_data.path_type == "dir":
+        elif node_data.path_kind == PathKind.DIR:
             if node_data.status in "ADM":
                 styled = Style(
                     color=self.node_colors[node_data.status], italic=italic
@@ -114,14 +114,14 @@ class TreeBase(Tree[NodeData], AppType):
         return [
             child.data.path
             for child in tree_node.children
-            if child.data is not None and child.data.path_type == "file"
+            if child.data is not None and child.data.path_kind == PathKind.FILE
         ]
 
     def get_dir_nodes_in(self, tree_node: TreeNode[NodeData]) -> list["Path"]:
         return [
             child.data.path
             for child in tree_node.children
-            if child.data is not None and child.data.path_type == "dir"
+            if child.data is not None and child.data.path_kind == PathKind.DIR
         ]
 
     def create_and_add_node(
@@ -129,7 +129,7 @@ class TreeBase(Tree[NodeData], AppType):
         tree_node: TreeNode[NodeData],
         path: "Path",
         status_code: str,
-        path_type: "PathKind",
+        path_kind: "PathKind",
     ) -> None:
         if self.ids.tab_name == TabName.re_add:
             # we now check this early on in the _chezmoi.py module
@@ -137,10 +137,10 @@ class TreeBase(Tree[NodeData], AppType):
         else:
             found: bool = path.exists()
         node_data = NodeData(
-            path=path, path_type=path_type, found=found, status=status_code
+            path=path, path_kind=path_kind, found=found, status=status_code
         )
         node_label: Text = self.__style_label(node_data)
-        if path_type == "file":
+        if path_kind == PathKind.FILE:
             tree_node.add_leaf(label=node_label, data=node_data)
         else:
             tree_node.add(label=node_label, data=node_data)
@@ -152,7 +152,7 @@ class TreeBase(Tree[NodeData], AppType):
             leaf
             for leaf in tree_node.children
             if leaf.data is not None
-            and leaf.data.path_type == "file"
+            and leaf.data.path_kind == PathKind.FILE
             and leaf.data.status == "X"
         ]
         for leaf in current_unchanged_leaves:
@@ -186,7 +186,7 @@ class TreeBase(Tree[NodeData], AppType):
             if file_path in self.get_leaves_in(tree_node):
                 continue
             self.create_and_add_node(
-                tree_node, file_path, status_code, path_type=PathKind.FILE
+                tree_node, file_path, status_code, path_kind=PathKind.FILE
             )
 
     def add_files_without_status_in(
@@ -220,7 +220,7 @@ class TreeBase(Tree[NodeData], AppType):
             if file_path in self.get_leaves_in(tree_node):
                 continue
             self.create_and_add_node(
-                tree_node, file_path, status_code, path_type=PathKind.FILE
+                tree_node, file_path, status_code, path_kind=PathKind.FILE
             )
 
     def add_status_dirs_in(self, *, tree_node: TreeNode[NodeData]) -> None:
@@ -259,7 +259,7 @@ class TreeBase(Tree[NodeData], AppType):
             if dir_path in self.get_dir_nodes_in(tree_node):
                 continue
             self.create_and_add_node(
-                tree_node, dir_path, status_code, path_type=PathKind.DIR
+                tree_node, dir_path, status_code, path_kind=PathKind.DIR
             )
 
     def add_dirs_without_status_in(
@@ -290,7 +290,7 @@ class TreeBase(Tree[NodeData], AppType):
             if dir_path in self.get_dir_nodes_in(tree_node):
                 continue
             self.create_and_add_node(
-                tree_node, dir_path, status_code, path_type=PathKind.DIR
+                tree_node, dir_path, status_code, path_kind=PathKind.DIR
             )
 
     def __apply_cursor_style(self, node_label: Text, is_cursor: bool) -> Text:
@@ -416,11 +416,14 @@ class ExpandedTree(TreeBase):
         if tree_node.data is None:
             self.notify_node_data_is_none(tree_node)
             return
-        if tree_node.data.path_type == "dir":
+        if tree_node.data.path_kind == PathKind.DIR:
             self.add_status_dirs_in(tree_node=tree_node)
             self.add_status_files_in(tree_node=tree_node, flat_list=False)
             for child in tree_node.children:
-                if child.data is not None and child.data.path_type == "dir":
+                if (
+                    child.data is not None
+                    and child.data.path_kind == PathKind.DIR
+                ):
                     child.expand()
                     self.expand_all_nodes(child)
 

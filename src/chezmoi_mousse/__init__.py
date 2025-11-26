@@ -82,7 +82,7 @@ __all__ = [
 @dataclass(slots=True)
 class DirTreeNodeData:
     path: "Path"
-    path_type: "PathKind"
+    path_kind: "PathKind"
 
 
 @dataclass(slots=True)
@@ -92,7 +92,7 @@ class NodeData:
     # Chezmoi status codes processed: A, D, M, or a space
     # Additional "node status" codes: X (no status but managed)
     status: "str"
-    path_type: "PathKind"
+    path_kind: "PathKind"
 
 
 @dataclass(slots=True)

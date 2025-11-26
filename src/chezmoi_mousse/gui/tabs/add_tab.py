@@ -278,9 +278,9 @@ class AddTab(Horizontal, AppType):
         return
 
     def send_message_current_add_node(
-        self, path: Path, path_type: "PathKind"
+        self, path: Path, path_kind: "PathKind"
     ) -> None:
-        message_data = DirTreeNodeData(path=path, path_type=path_type)
+        message_data = DirTreeNodeData(path=path, path_kind=path_kind)
         self.post_message(CurrentAddNodeMsg(message_data))
 
     @on(DirectoryTree.DirectorySelected)
@@ -305,12 +305,12 @@ class AddTab(Horizontal, AppType):
         if isinstance(event, DirectoryTree.FileSelected):
             self.update_buttons(is_dir=False)
             self.send_message_current_add_node(
-                path=event.node.data.path, path_type=PathKind.FILE
+                path=event.node.data.path, path_kind=PathKind.FILE
             )
         else:
             self.update_buttons(is_dir=True)
             self.send_message_current_add_node(
-                path=event.node.data.path, path_type=PathKind.DIR
+                path=event.node.data.path, path_kind=PathKind.DIR
             )
 
     @on(Switch.Changed)

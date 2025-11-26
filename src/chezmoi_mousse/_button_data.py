@@ -246,21 +246,19 @@ class OperateBtn(Enum):
 
     # General methods
 
-    def label(self, path_type: "PathKind") -> str:
-        if path_type == "dir":
-            return self.dir_label
-        elif path_type == "file":
-            return self.file_label
-        else:
-            raise ValueError("path_type must be 'dir' or 'file'")
+    def label(self, path_kind: PathKind) -> str:
+        return (
+            self.value.dir_label
+            if path_kind == PathKind.DIR
+            else self.value.file_label
+        )
 
-    def tooltip(self, path_type: "PathKind") -> str:
-        if path_type == "dir":
-            return self.dir_tooltip
-        elif path_type == "file":
-            return self.file_tooltip
-        else:
-            raise ValueError("path_type must be 'dir', 'file', or None")
+    def tooltip(self, path_kind: PathKind) -> str | None:
+        return (
+            self.value.initial_tooltip
+            if path_kind == PathKind.DIR
+            else self.value.initial_tooltip
+        )
 
     @classmethod
     def from_label(cls, label: str) -> "OperateBtn":

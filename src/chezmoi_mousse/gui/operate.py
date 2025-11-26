@@ -13,6 +13,7 @@ from chezmoi_mousse import (
     BindingDescription,
     Chars,
     OperateBtn,
+    PathKind,
     Tcss,
     WriteCmd,
 )
@@ -57,7 +58,7 @@ class OperateInfo(Static, AppType):
     def __init__(self, *, operate_screen_data: "OperateScreenData") -> None:
         super().__init__()
         self.operate_btn = operate_screen_data.operate_btn
-        self.path_type = operate_screen_data.node_data.path_type
+        self.path_kind = operate_screen_data.node_data.path_kind
         self.operate_path = operate_screen_data.node_data.path
 
     def on_mount(self) -> None:
@@ -76,8 +77,8 @@ class OperateInfo(Static, AppType):
             self.border_subtitle = Chars.add_info_border
         elif self.operate_btn == OperateBtn.apply_path:
             self.border_title = (
-                OperateBtn.apply_path.file_tooltip.rstrip(".")
-                if self.path_type == "file"
+                OperateBtn.apply_path.dir_tooltip.rstrip(".")
+                if self.path_kind == PathKind.FILE
                 else OperateBtn.apply_path.dir_tooltip.rstrip(".")
             )
             lines_to_write.append(InfoLine.apply_path)
@@ -85,7 +86,7 @@ class OperateInfo(Static, AppType):
         elif self.operate_btn == OperateBtn.re_add_path:
             self.border_title = (
                 OperateBtn.re_add_path.file_tooltip.rstrip(".")
-                if self.path_type == "file"
+                if self.path_kind == PathKind.FILE
                 else OperateBtn.re_add_path.dir_tooltip.rstrip(".")
             )
             lines_to_write.append(InfoLine.re_add_path)
@@ -93,7 +94,7 @@ class OperateInfo(Static, AppType):
         elif self.operate_btn == OperateBtn.forget_path:
             self.border_title = (
                 OperateBtn.forget_path.file_tooltip.rstrip(".")
-                if self.path_type == "file"
+                if self.path_kind == PathKind.FILE
                 else OperateBtn.forget_path.dir_tooltip.rstrip(".")
             )
             lines_to_write.append(InfoLine.forget_path)
@@ -101,7 +102,7 @@ class OperateInfo(Static, AppType):
         elif self.operate_btn == OperateBtn.destroy_path:
             self.border_title = (
                 OperateBtn.destroy_path.file_tooltip.rstrip(".")
-                if self.path_type == "file"
+                if self.path_kind == PathKind.FILE
                 else OperateBtn.destroy_path.dir_tooltip.rstrip(".")
             )
             lines_to_write.append(InfoLine.destroy_path)
@@ -145,7 +146,7 @@ class OperateScreen(Screen["OperateScreenData"], AppType):
 
         self.ids = ids
         self.path_arg = operate_data.node_data.path
-        self.path_type = operate_data.node_data.path_type
+        self.path_kind = operate_data.node_data.path_kind
 
         self.operate_btn = operate_data.operate_btn
         self.operate_btn_q = self.ids.operate_button_id(
@@ -200,31 +201,31 @@ class OperateScreen(Screen["OperateScreenData"], AppType):
         op_btn = self.query_one(self.operate_btn_q, Button)
 
         if self.operate_btn == OperateBtn.apply_path:
-            op_btn.label = OperateBtn.apply_path.label(self.path_type)
-            op_btn.tooltip = OperateBtn.apply_path.tooltip(self.path_type)
+            op_btn.label = OperateBtn.apply_path.label(self.path_kind)
+            op_btn.tooltip = OperateBtn.apply_path.tooltip(self.path_kind)
 
         elif self.operate_btn == OperateBtn.re_add_path:
-            op_btn.label = OperateBtn.re_add_path.label(self.path_type)
-            op_btn.tooltip = OperateBtn.re_add_path.tooltip(self.path_type)
+            op_btn.label = OperateBtn.re_add_path.label(self.path_kind)
+            op_btn.tooltip = OperateBtn.re_add_path.tooltip(self.path_kind)
         elif self.operate_btn == OperateBtn.add_dir:
-            op_btn.label = OperateBtn.add_dir.label(self.path_type)
+            op_btn.label = OperateBtn.add_dir.label(self.path_kind)
             op_btn.tooltip = (
                 OperateBtn.add_dir.initial_tooltip
-                if self.path_type == "dir"
+                if self.path_kind == PathKind.DIR
                 else OperateBtn.add_file.initial_tooltip
             )
         elif self.operate_btn == OperateBtn.forget_path:
-            op_btn.label = OperateBtn.forget_path.label(self.path_type)
+            op_btn.label = OperateBtn.forget_path.label(self.path_kind)
             op_btn.tooltip = (
                 OperateBtn.forget_path.dir_tooltip
-                if self.path_type == "dir"
+                if self.path_kind == PathKind.DIR
                 else OperateBtn.forget_path.file_tooltip
             )
         elif self.operate_btn == OperateBtn.destroy_path:
-            op_btn.label = OperateBtn.destroy_path.label(self.path_type)
+            op_btn.label = OperateBtn.destroy_path.label(self.path_kind)
             op_btn.tooltip = (
                 OperateBtn.destroy_path.dir_tooltip
-                if self.path_type == "dir"
+                if self.path_kind == PathKind.DIR
                 else OperateBtn.destroy_path.file_tooltip
             )
 

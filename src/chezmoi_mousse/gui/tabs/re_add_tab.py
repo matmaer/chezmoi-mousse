@@ -45,10 +45,10 @@ class ReAddTab(TabHorizontal):
             self.ids.operate_btn.re_add_path_q, Button
         )
         operate_path_button.label = OperateBtn.re_add_path.label(
-            event.node_data.path_type
+            event.node_data.path_kind
         )
         operate_path_button.tooltip = OperateBtn.re_add_path.tooltip(
-            event.node_data.path_type
+            event.node_data.path_kind
         )
         operate_path_button.disabled = (
             True if event.node_data.status in "X " else False
