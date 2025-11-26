@@ -84,7 +84,6 @@ class SharedToolTips(StrEnum):
 
 @dataclass(slots=True)
 class OperateButtonData:
-    # Fields set to UNSET will raise AttributeError when accessed, ensures IDE shows available fields.
 
     initial_label: str
     initial_tooltip: str | None = None
