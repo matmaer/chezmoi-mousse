@@ -115,9 +115,10 @@ class OperateButtonData:
     init_clone_tooltip: str = _UNSET
 
     def __getattribute__(self, name: str) -> Any:
-        """Raise AttributeError when accessing UNSET fields."""
+        # Raise AttributeError when accessing UNSET fields. Only checks
+        # user-defined fields (not dunder methods or private attributes).
         val = object.__getattribute__(self, name)
-        if val == _UNSET:
+        if not name.startswith("_") and val == _UNSET:
             raise AttributeError(f"Field '{name}' is not set")
         return val
 
