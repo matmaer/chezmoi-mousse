@@ -8,13 +8,18 @@ shared/_buttons.py.
 
 from dataclasses import dataclass
 from enum import Enum, StrEnum
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
 
     from ._str_enums import PathKind
 
+
 __all__ = ["FlatBtn", "LinkBtn", "OperateBtn", "TabBtn"]
+
+
+# Sentinel value to distinguish "not provided" from None
+_UNSET = "UNSET"
 
 
 class FlatBtn(StrEnum):
@@ -74,122 +79,118 @@ class SharedLabels(StrEnum):
 class SharedToolTips(StrEnum):
     dir_no_status = "The selected directory has no status to operate on."
     file_no_status = "The selected file has no status to operate on."
-    initial = "This is the destDir, select a path to operate on."
+    in_dest_dir = "This is the destDir, select a path to operate on."
 
 
 @dataclass(slots=True)
-class ApplyButtonData:
-    dir_label = "Apply Dir"
-    dir_no_status_tooltip = SharedToolTips.dir_no_status.value
-    dir_tooltip = 'Run "chezmoi apply" on the directory.'
-    file_label = "Apply File"
-    file_no_status_tooltip = SharedToolTips.file_no_status.value
-    file_tooltip = 'Run "chezmoi apply" on the file.'
-    initial_label = "Apply Path"
+class OperateButtonData:
+    # Fields set to UNSET will raise AttributeError when accessed, ensures IDE shows available fields.
 
+    initial_label: str
+    initial_tooltip: str = _UNSET
 
-@dataclass(slots=True)
-class ReAddButtonData:
-    dir_label = "Re-Add Dir"
-    dir_no_status_tooltip = SharedToolTips.dir_no_status.value
-    dir_tooltip = 'Run "chezmoi re-add" on the directory.'
-    file_label = "Re-Add File"
-    file_no_status_tooltip = SharedToolTips.file_no_status.value
-    file_tooltip = 'Run "chezmoi re-add" on the file.'
-    initial_label = "Re-Add Path"
+    # Path-specific labels and tooltips
+    file_label: str = _UNSET
+    dir_label: str = _UNSET
+    file_tooltip: str = _UNSET
+    dir_tooltip: str = _UNSET
+    file_no_status_tooltip: str = _UNSET
+    dir_no_status_tooltip: str = _UNSET
 
+    # Add button specific
+    enabled_tooltip: str = _UNSET
+    disabled_tooltip: str = _UNSET
 
-@dataclass(slots=True)
-class DestroyButtonData:
-    dir_label = "Destroy Dir"
-    dir_tooltip = 'Run "chezmoi destroy" on the directory. Permanently remove the directory and its files from disk and chezmoi. MAKE SURE YOU HAVE A BACKUP!'
-    file_label = "Destroy File"
-    file_tooltip = 'Run "chezmoi destroy" on the file. Permanently remove the file from disk and chezmoi. MAKE SURE YOU HAVE A BACKUP!'
-    initial_label = "Destroy Path"
-
-
-@dataclass(slots=True)
-class ForgetButtonData:
-    dir_label = "Forget Dir"
-    dir_tooltip = 'Run "chezmoi forget", stop managing the directory.'
-    file_label = "Forget File"
-    file_tooltip = 'Run "chezmoi forget", stop managing the file.'
-    initial_label = "Forget Path"
-
-
-@dataclass(slots=True)
-class AddFileButtonData:
-    disabled_tooltip = "Select a file to operate on."
-    enabled_tooltip = "Manage the file with chezmoi."
-    initial_label = "Add File"
-
-    @property
-    def file_label(self) -> str:
-        return self.initial_label
-
-
-@dataclass(slots=True)
-class AddDirButtonData:
-    disabled_tooltip = "Select a directory to operate on."
-    enabled_tooltip = "Manage the directory with chezmoi."
-    initial_label = "Add Dir"
-
-    @property
-    def dir_label(self) -> str:
-        return self.initial_label
-
-
-@dataclass(slots=True)
-class InitScreenNewRepositoryButtonData:
-    init_new_label: str = "Chezmoi Init New Repo"
-    init_new_tooltip: str = (
-        "Initialize a new chezmoi repository in your home directory with default settings shown in the cat config section."
-    )
-    initial_label: str = init_new_label
-
-
-@dataclass(slots=True)
-class InitScreenCloneRepositoryButtonData:
-    init_clone_label: str = "Chezmoi Init Clone Repo"
-    init_clone_tooltip: str = (
-        "Initialize a the chezmoi repository by cloning from a provided remote repository."
-    )
-    initial_label: str = init_clone_label
-
-
-@dataclass(slots=True)
-class InitScreenExitButtonData:
-    exit_app_label: str = SharedLabels.exit_app.value
-    exit_app_tooltip: str = (
-        "Ext application. Cannot run the main application without an initialized chezmoi state, init a new repository, or init from a remote repository."
-    )
-    close_label: str = SharedLabels.close.value
-    close_tooltip: str = (
-        "Restart the application to load the initialized chezmoi state."
-    )
-    initial_label: str = exit_app_label
-
-
-@dataclass(slots=True)
-class OperateScreenExitButtonData:
+    # Exit button specific
     cancel_label: str = SharedLabels.cancel.value
     close_label: str = SharedLabels.close.value
-    initial_label: str = SharedLabels.cancel.value
+    close_tooltip: str = _UNSET
+    exit_app_label: str = SharedLabels.exit_app.value
+    exit_app_tooltip: str = _UNSET
+
+    # Init screen specific
+    init_new_label: str = _UNSET
+    init_new_tooltip: str = _UNSET
+    init_clone_label: str = _UNSET
+    init_clone_tooltip: str = _UNSET
+
+    def __getattribute__(self, name: str) -> Any:
+        """Raise AttributeError when accessing UNSET fields."""
+        val = object.__getattribute__(self, name)
+        if val == _UNSET:
+            raise AttributeError(f"Field '{name}' is not set")
+        return val
 
 
 class OperateBtn(Enum):
-    add_file = AddFileButtonData()
-    add_dir = AddDirButtonData()
-    apply_path = ApplyButtonData()
-    re_add_path = ReAddButtonData()
-    forget_path = ForgetButtonData()
-    destroy_path = DestroyButtonData()
-    init_new_repo = InitScreenNewRepositoryButtonData()
-    init_clone_repo = InitScreenCloneRepositoryButtonData()
-    init_exit = InitScreenExitButtonData()
-    operate_exit = OperateScreenExitButtonData()
+    add_file = OperateButtonData(
+        initial_label="Add File",
+        initial_tooltip=SharedToolTips.in_dest_dir.value,
+        file_label="Add File",
+        disabled_tooltip="Select a file to operate on.",
+        enabled_tooltip="Manage the file with chezmoi.",
+    )
+    add_dir = OperateButtonData(
+        initial_label="Add Dir",
+        initial_tooltip=SharedToolTips.in_dest_dir.value,
+        dir_label="Add Dir",
+        disabled_tooltip="Select a directory to operate on.",
+        enabled_tooltip="Manage the directory with chezmoi.",
+    )
+    apply_path = OperateButtonData(
+        initial_label="Apply Path",
+        initial_tooltip=SharedToolTips.in_dest_dir.value,
+        dir_label="Apply Dir",
+        dir_no_status_tooltip=SharedToolTips.dir_no_status.value,
+        dir_tooltip='Run "chezmoi apply" on the directory.',
+        file_label="Apply File",
+        file_no_status_tooltip=SharedToolTips.file_no_status.value,
+        file_tooltip='Run "chezmoi apply" on the file.',
+    )
+    re_add_path = OperateButtonData(
+        initial_label="Re-Add Path",
+        initial_tooltip=SharedToolTips.in_dest_dir.value,
+        dir_label="Re-Add Dir",
+        dir_no_status_tooltip=SharedToolTips.dir_no_status.value,
+        dir_tooltip='Run "chezmoi re-add" on the directory.',
+        file_label="Re-Add File",
+        file_no_status_tooltip=SharedToolTips.file_no_status.value,
+        file_tooltip='Run "chezmoi re-add" on the file.',
+    )
+    forget_path = OperateButtonData(
+        initial_label="Forget Path",
+        initial_tooltip=SharedToolTips.in_dest_dir.value,
+        dir_label="Forget Dir",
+        dir_tooltip='Run "chezmoi forget", stop managing the directory.',
+        file_label="Forget File",
+        file_tooltip='Run "chezmoi forget", stop managing the file.',
+    )
+    destroy_path = OperateButtonData(
+        initial_label="Destroy Path",
+        initial_tooltip=SharedToolTips.in_dest_dir.value,
+        dir_label="Destroy Dir",
+        dir_tooltip='Run "chezmoi destroy" on the directory. Permanently remove the directory and its files from disk and chezmoi. MAKE SURE YOU HAVE A BACKUP!',
+        file_label="Destroy File",
+        file_tooltip='Run "chezmoi destroy" on the file. Permanently remove the file from disk and chezmoi. MAKE SURE YOU HAVE A BACKUP!',
+    )
+    init_new_repo = OperateButtonData(
+        initial_label="Chezmoi Init New Repo",
+        init_new_label="Chezmoi Init New Repo",
+        init_new_tooltip="Initialize a new chezmoi repository in your home directory with default settings shown in the cat config section.",
+    )
+    init_clone_repo = OperateButtonData(
+        initial_label="Chezmoi Init Clone Repo",
+        init_clone_label="Chezmoi Init Clone Repo",
+        init_clone_tooltip="Initialize a the chezmoi repository by cloning from a provided remote repository.",
+    )
+    init_exit = OperateButtonData(
+        initial_label=SharedLabels.exit_app.value,
+        exit_app_tooltip="Ext application. Cannot run the main application without an initialized chezmoi state, init a new repository, or init from a remote repository.",
+        close_tooltip="Reload the application to load the initialized chezmoi state.",
+    )
+    operate_exit = OperateButtonData(initial_label=SharedLabels.cancel.value)
 
-    # allow access to dataclass attributes directly from the Enum member,
+    # Allow access to dataclass attributes directly from the Enum member,
     # without needing to go through the value attribute
 
     @property
@@ -197,104 +198,88 @@ class OperateBtn(Enum):
         return self.value.initial_label
 
     @property
-    def close_label(self) -> str:
-        if isinstance(
-            self.value, (OperateScreenExitButtonData, InitScreenExitButtonData)
-        ):
-            return self.value.close_label
-        raise AttributeError(f"{self.name} has no close_label")
+    def initial_tooltip(self) -> str:
+        return self.value.initial_tooltip
+
+    # Exit button specific attribute access
 
     @property
     def cancel_label(self) -> str:
-        if isinstance(self.value, OperateScreenExitButtonData):
-            return self.value.cancel_label
-        raise AttributeError(f"{self.name} has no cancel_label")
+        return self.value.cancel_label
+
+    @property
+    def close_label(self) -> str:
+        return self.value.close_label
+
+    @property
+    def exit_app_label(self) -> str:
+        return self.value.exit_app_label
+
+    @property
+    def close_tooltip(self) -> str:
+        return self.value.close_tooltip
+
+    @property
+    def exit_app_tooltip(self) -> str:
+        return self.value.exit_app_tooltip
+
+    # Init screen specific attribute access
+
+    @property
+    def init_new_label(self) -> str:
+        return self.value.init_new_label
+
+    @property
+    def init_new_tooltip(self) -> str:
+        return self.value.init_new_tooltip
+
+    @property
+    def init_clone_label(self) -> str:
+        return self.value.init_clone_label
+
+    @property
+    def init_clone_tooltip(self) -> str:
+        return self.value.init_clone_tooltip
+
+    # AddTab button specific attribute access
 
     @property
     def enabled_tooltip(self) -> str:
-        if isinstance(self.value, (AddFileButtonData, AddDirButtonData)):
-            return self.value.enabled_tooltip
-        raise AttributeError(f"{self.name} has no enabled_tooltip")
+        return self.value.enabled_tooltip
 
     @property
     def disabled_tooltip(self) -> str:
-        if isinstance(self.value, (AddFileButtonData, AddDirButtonData)):
-            return self.value.disabled_tooltip
-        raise AttributeError(f"{self.name} has no disabled_tooltip")
+        return self.value.disabled_tooltip
 
-    @property
-    def dir_no_status_tooltip(self) -> str:
-        if isinstance(self.value, (ApplyButtonData, ReAddButtonData)):
-            return self.value.dir_no_status_tooltip
-        raise AttributeError(f"{self.name} has no dir_no_status_tooltip")
-
-    @property
-    def dir_tooltip(self) -> str:
-        if isinstance(
-            self.value,
-            (
-                ApplyButtonData,
-                ReAddButtonData,
-                DestroyButtonData,
-                ForgetButtonData,
-            ),
-        ):
-            return self.value.dir_tooltip
-        raise AttributeError(f"{self.name} has no dir_tooltip")
+    # Apply and ReAdd tab specific attribute access
 
     @property
     def file_no_status_tooltip(self) -> str:
-        if isinstance(self.value, (ApplyButtonData, ReAddButtonData)):
-            return self.value.file_no_status_tooltip
-        raise AttributeError(f"{self.name} has no file_no_status_tooltip")
+        return self.value.file_no_status_tooltip
+
+    @property
+    def dir_no_status_tooltip(self) -> str:
+        return self.value.dir_no_status_tooltip
+
+    # Dir/File button specific attribute access
+
+    @property
+    def dir_tooltip(self) -> str:
+        return self.value.dir_tooltip
 
     @property
     def file_tooltip(self) -> str:
-        if isinstance(
-            self.value,
-            (
-                ApplyButtonData,
-                ReAddButtonData,
-                DestroyButtonData,
-                ForgetButtonData,
-            ),
-        ):
-            return self.value.file_tooltip
-        raise AttributeError(f"{self.name} has no file_tooltip")
-
-    @property
-    def initial_tooltip(self) -> str:
-        return SharedToolTips.initial
+        return self.value.file_tooltip
 
     @property
     def file_label(self) -> str:
-        if isinstance(
-            self.value,
-            (
-                AddFileButtonData,
-                ApplyButtonData,
-                ReAddButtonData,
-                DestroyButtonData,
-                ForgetButtonData,
-            ),
-        ):
-            return self.value.file_label
-        raise AttributeError(f"{self.name} has no file_label")
+        return self.value.file_label
 
     @property
     def dir_label(self) -> str:
-        if isinstance(
-            self.value,
-            (
-                AddDirButtonData,
-                ApplyButtonData,
-                ReAddButtonData,
-                DestroyButtonData,
-                ForgetButtonData,
-            ),
-        ):
-            return self.value.dir_label
-        raise AttributeError(f"{self.name} has no dir_label")
+        return self.value.dir_label
+
+    # General methods
 
     def label(self, path_type: "PathKind") -> str:
         if path_type == "dir":
@@ -315,10 +300,10 @@ class OperateBtn(Enum):
     @classmethod
     def from_label(cls, label: str) -> "OperateBtn":
         for member in cls:
-            if getattr(member.value, "file_label", None) == label:
+            if member.value.file_label == label:
                 return member
-            elif getattr(member.value, "dir_label", None) == label:
+            if member.value.dir_label == label:
                 return member
-            elif getattr(member.value, "initial_label", None) == label:
+            if member.value.initial_label == label:
                 return member
         raise ValueError(f"{cls.__name__} has no member with label={label!r}")
