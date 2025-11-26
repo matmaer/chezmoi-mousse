@@ -8,13 +8,13 @@ from textual import on
 from textual.containers import Horizontal
 from textual.widgets import Button, ContentSwitcher, Switch
 
-from chezmoi_mousse import OperateBtn, Switches, Tcss
+from chezmoi_mousse import OperateBtn, PathKind, Switches, Tcss
 from chezmoi_mousse.shared import ContentsView, DiffView, GitLogPath
 
 from .trees import ExpandedTree, ListTree, ManagedTree
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import AppIds, NodeData, PathKind
+    from chezmoi_mousse import AppIds, NodeData
 
 __all__ = ["TabHorizontal"]
 
