@@ -198,10 +198,6 @@ class OperateScreen(Screen["OperateScreenData"], AppType):
 
     def configure_buttons(self) -> None:
         op_btn = self.query_one(self.operate_btn_q, Button)
-        op_btn.disabled = False
-        exit_btn = self.query_one(self.ids.operate_btn.operate_exit_q, Button)
-        exit_btn.disabled = False
-        exit_btn.tooltip = None
 
         if self.operate_btn == OperateBtn.apply_path:
             op_btn.label = OperateBtn.apply_path.label(self.path_type)
