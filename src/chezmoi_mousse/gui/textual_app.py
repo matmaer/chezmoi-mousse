@@ -143,7 +143,7 @@ class ChezmoiGUI(App[None]):
     @work
     async def start_app_with_splash_screen(self) -> None:
         # Run splash screen once to gather command outputs
-        worker = self.push_splash_screen(run_init=False)
+        worker = self.push_splash_screen()
         await worker.wait()
         # Chezmoi command not found, SplashScreen will return None
         if worker.result is None:
@@ -158,7 +158,7 @@ class ChezmoiGUI(App[None]):
             await init_worker.wait()
             # After init screen, re-run splash screen to load all data
             if init_worker.result is not None:
-                worker = self.push_splash_screen(run_init=False)
+                worker = self.push_splash_screen()
                 await worker.wait()
                 self.push_main_screen(worker.result)
             return
@@ -166,10 +166,9 @@ class ChezmoiGUI(App[None]):
         self.push_main_screen(worker.result)
 
     @work
-    async def push_splash_screen(self, run_init: bool) -> "SplashData | None":
+    async def push_splash_screen(self) -> "SplashData | None":
         return await self.push_screen(
-            SplashScreen(ids=self.screen_ids.splash, run_init=run_init),
-            wait_for_dismiss=True,
+            SplashScreen(ids=self.screen_ids.splash), wait_for_dismiss=True
         )
 
     @work
