@@ -391,10 +391,6 @@ class ExpandedTree(TreeBase):
         self.ids = ids
         super().__init__(self.ids, tree_name=TreeName.expanded_tree)
 
-    def on_mount(self) -> None:
-        self.border_title = " destDir "
-        self.add_class(Tcss.border_title_top.name)
-
     def populate_tree(self) -> None:
         self.clear()
         self.expand_all_nodes(self.root)
@@ -446,10 +442,6 @@ class ListTree(TreeBase):
         self.ids = ids
         super().__init__(self.ids, tree_name=TreeName.list_tree)
 
-    def on_mount(self) -> None:
-        self.border_title = " destDir "
-        self.add_class(Tcss.border_title_top.name)
-
     def populate_tree(self) -> None:
         self.clear()
         self.add_status_files_in(tree_node=self.root, flat_list=True)
@@ -470,10 +462,6 @@ class ManagedTree(TreeBase):
     def __init__(self, *, ids: "AppIds") -> None:
         self.ids = ids
         super().__init__(self.ids, tree_name=TreeName.managed_tree)
-
-    def on_mount(self) -> None:
-        self.border_title = " destDir "
-        self.add_class(Tcss.border_title_top.name)
 
     def populate_tree(self) -> None:
         self.clear()
