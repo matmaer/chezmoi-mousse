@@ -62,6 +62,8 @@ class TreeBase(Tree[NodeData], AppType):
         )
         self.guide_depth: int = 3
         self.show_root: bool = False
+        self.border_title = " destDir "
+        self.add_class(Tcss.border_title_top.name)
 
     # the styling method for the node labels
     def __style_label(self, node_data: NodeData) -> Text:
