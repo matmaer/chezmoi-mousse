@@ -226,7 +226,7 @@ class InitScreen(Screen["CommandResult | None"], AppType):
         elif event.button.id == self.ids.flat_btn.template_data:
             switcher.current = self.ids.view.template_data
 
-    @on(Button.Pressed, Tcss.operate_button.value)
+    @on(Button.Pressed, Tcss.operate_button)
     def handle_operate_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
         if event.button.id == self.ids.operate_btn.init_exit:

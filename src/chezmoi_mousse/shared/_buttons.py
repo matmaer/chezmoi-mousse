@@ -37,7 +37,7 @@ class FlatButton(Button):
             classes=Tcss.flat_button.name,
             flat=True,
             id=self.ids.flat_button_id(btn=button_enum),
-            label=button_enum.value,
+            label=button_enum,
             variant="primary",
         )
 
@@ -124,7 +124,7 @@ class TabButtonsBase(Horizontal):
         for button_enum in self.buttons:
             with Vertical(classes=Tcss.single_button_vertical.name):
                 yield Button(
-                    label=button_enum.value,
+                    label=button_enum,
                     id=self.ids.tab_button_id(btn=button_enum),
                     classes=Tcss.tab_button.name,
                 )
