@@ -11,18 +11,6 @@
   border-title-style: bold;
 }
 
-.custom_collapsible {
-  & .pw_mgr_group {
-    margin-bottom: 1;
-  }
-  & .read_cmd_static {
-    background-tint: $surface;
-    background: $surface;
-    margin-bottom: 1;
-    margin-right: 1;
-  }
-}
-
 .flat_button{
   background-tint: $primary-muted;
   background: $primary-muted;
@@ -362,14 +350,23 @@ CheckBox {
   }
 }
 
-Collapsible {
-  border: none;
-  padding: 0;
-}
-
 CollapsibleTitle {
   &:hover {
     text-style: bold;
+  }
+}
+
+CustomCollapsible {
+  border: none;
+  padding: 0;
+  & .pw_mgr_group {
+    margin-bottom: 1;
+  }
+  & .read_cmd_static {
+    background-tint: $surface;
+    background: $surface;
+    margin-bottom: 1;
+    margin-right: 1;
   }
 }
 

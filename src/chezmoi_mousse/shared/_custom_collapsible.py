@@ -4,7 +4,7 @@ Config tab."""
 from textual.widget import Widget
 from textual.widgets import Collapsible
 
-from chezmoi_mousse import Chars, Tcss
+from chezmoi_mousse import Chars
 
 __all__ = ["CustomCollapsible"]
 
@@ -18,5 +18,4 @@ class CustomCollapsible(Collapsible):
             collapsed_symbol=Chars.right_triangle,
             expanded_symbol=Chars.down_triangle,
             collapsed=True,
-            classes=Tcss.custom_collapsible.name,
         )
