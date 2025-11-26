@@ -235,9 +235,7 @@ class AddTab(Horizontal, AppType):
         self.ids = ids
 
     def compose(self) -> ComposeResult:
-        yield FilteredDirTree(
-            self.destDir, id=self.app.tab_ids.add.tree.dir_tree
-        )
+        yield FilteredDirTree(self.destDir, id=self.ids.tree.dir_tree)
         yield ContentsView(ids=self.ids)
         yield OperateButtons(
             ids=self.ids, buttons=(OperateBtn.add_file, OperateBtn.add_dir)
@@ -245,20 +243,18 @@ class AddTab(Horizontal, AppType):
         yield SwitchSlider(ids=self.ids)
 
     def on_mount(self) -> None:
-        contents_view = self.query_one(
-            self.ids.logger.contents_q, ContentsView
-        )
-        contents_view.add_class(Tcss.border_title_top.name)
-        contents_view.border_title = f" {self.destDir} "
-        dir_tree = self.query_one(
-            self.app.tab_ids.add.tree.dir_tree_q, FilteredDirTree
-        )
+        dir_tree = self.query_one(self.ids.tree.dir_tree_q, FilteredDirTree)
         dir_tree.guide_depth = 3
         dir_tree.show_root = False
         dir_tree.add_class(
             Tcss.tab_left_vertical.name, Tcss.border_title_top.name
         )
         dir_tree.border_title = " destDir "
+        contents_view = self.query_one(
+            self.ids.logger.contents_q, ContentsView
+        )
+        contents_view.add_class(Tcss.border_title_top.name)
+        contents_view.border_title = f" {self.destDir} "
 
     def update_buttons(self, is_dir: bool) -> None:
         add_file_button = self.query_one(
