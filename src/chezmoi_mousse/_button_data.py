@@ -87,7 +87,7 @@ class OperateButtonData:
     # Fields set to UNSET will raise AttributeError when accessed, ensures IDE shows available fields.
 
     initial_label: str
-    initial_tooltip: str = _UNSET
+    initial_tooltip: str | None = None
 
     # Path-specific labels and tooltips
     file_label: str = _UNSET
@@ -104,9 +104,9 @@ class OperateButtonData:
     # Exit button specific
     cancel_label: str = SharedLabels.cancel.value
     close_label: str = SharedLabels.close.value
-    close_tooltip: str = _UNSET
+    close_tooltip: str | None = None
     exit_app_label: str = SharedLabels.exit_app.value
-    exit_app_tooltip: str = _UNSET
+    exit_app_tooltip: str | None = None
 
     # Init screen specific
     init_new_label: str = _UNSET
@@ -194,7 +194,7 @@ class OperateBtn(Enum):
         return self.value.initial_label
 
     @property
-    def initial_tooltip(self) -> str:
+    def initial_tooltip(self) -> str | None:
         return self.value.initial_tooltip
 
     # Exit button specific attribute access
@@ -212,11 +212,11 @@ class OperateBtn(Enum):
         return self.value.exit_app_label
 
     @property
-    def close_tooltip(self) -> str:
+    def close_tooltip(self) -> str | None:
         return self.value.close_tooltip
 
     @property
-    def exit_app_tooltip(self) -> str:
+    def exit_app_tooltip(self) -> str | None:
         return self.value.exit_app_tooltip
 
     # Init screen specific attribute access
