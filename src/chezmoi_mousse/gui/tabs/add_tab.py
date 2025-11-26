@@ -26,7 +26,7 @@ from chezmoi_mousse.shared import (
 from .common.switch_slider import SwitchSlider
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import AppIds, PathKind
+    from chezmoi_mousse import AppIds
 
 __all__ = ["AddTab", "FilteredDirTree"]
 
