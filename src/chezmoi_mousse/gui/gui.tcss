@@ -153,8 +153,6 @@ FlatSectionLabel {
   background: $primary-muted;
   border: block $primary-muted;
   color: $primary-lighten-3;
-  height: 3;
-  padding: 0 1;
   text-align: center;
   width: 100%;
 }
@@ -181,8 +179,6 @@ MainSectionLabel {
   border-bottom: inner $surface-lighten-1;
   border-top: inner $surface-lighten-1;
   color: $text-accent;
-  height: 3;
-  padding: 0 1;
   text-align: center;
   width: 100%;
 }
@@ -256,10 +252,9 @@ RepositoryURLInput {
 SubSectionLabel {
   background-tint: $surface-lighten-1;
   background: $surface-lighten-1;
-  padding: 0 1;
+  color: $text-success;
   text-align: center;
   width: 100%;
-  color: $text-success;
 }
 
 SwitchSlider {
