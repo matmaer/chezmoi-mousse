@@ -10,7 +10,6 @@ from textual import on
 from textual.events import Key
 from textual.reactive import reactive
 from textual.widgets import Tree
-from textual.widgets._tree import TOGGLE_STYLE
 from textual.widgets.tree import TreeNode
 
 from chezmoi_mousse import (
@@ -294,62 +293,6 @@ class TreeBase(Tree[NodeData], AppType):
             self.create_and_add_node(
                 tree_node, dir_path, status_code, path_kind=PathKind.DIR
             )
-
-    def __apply_cursor_style(self, node_label: Text, is_cursor: bool) -> Text:
-        """Helper to apply cursor-specific styling to a node label."""
-        if not is_cursor:
-            return node_label
-
-        current_style = node_label.style
-        # Apply bold styling when tree is first focused
-        if not self._first_focus and self._initial_render:
-            if isinstance(current_style, str):
-                cursor_style = Style.parse(current_style) + Style(bold=True)
-            else:
-                cursor_style = current_style + Style(bold=True)
-            return Text(node_label.plain, style=cursor_style)
-        # Apply underline styling only after actual user interaction
-        elif self._user_interacted:
-            if isinstance(current_style, str):
-                cursor_style = Style.parse(current_style) + Style(
-                    underline=True
-                )
-            else:
-                cursor_style = current_style + Style(underline=True)
-            return Text(node_label.plain, style=cursor_style)
-
-        return node_label  # No changes if conditions not met
-
-    def render_label(
-        self,
-        node: TreeNode[NodeData],
-        base_style: Style,
-        style: Style,  # needed for valid overriding
-    ) -> Text:
-        # Get base styling from style_label
-        if node.data is None:
-            return Text("Node data is None")
-        node_label = self.__style_label(node.data)
-
-        # Apply cursor styling via helper
-        node_label = self.__apply_cursor_style(
-            node_label, node is self.cursor_node
-        )
-
-        if node.allow_expand:
-            prefix = (
-                (
-                    self.ICON_NODE_EXPANDED
-                    if node.is_expanded
-                    else self.ICON_NODE
-                ),
-                base_style + TOGGLE_STYLE,
-            )
-        else:
-            prefix = ("", base_style)
-
-        text = Text.assemble(prefix, node_label)
-        return text
 
     @on(Tree.NodeSelected)
     def send_node_context_message(
