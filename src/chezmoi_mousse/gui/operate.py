@@ -203,9 +203,19 @@ class OperateScreen(Screen["OperateScreenData"], AppType):
         with VerticalGroup(id=self.ids.container.post_operate):
             yield MainSectionLabel(SectionLabels.operate_output)
             yield OperateLog(ids=self.ids)
-        yield OperateButtons(
-            ids=self.ids, buttons=(self.operate_btn, OperateBtn.operate_exit)
-        )
+        if self.operate_btn in (
+            OperateBtn.init_clone_repo,
+            OperateBtn.init_new_repo,
+        ):
+            yield OperateButtons(
+                ids=self.ids, buttons=(self.operate_btn, OperateBtn.init_exit)
+            )
+
+        else:
+            yield OperateButtons(
+                ids=self.ids,
+                buttons=(self.operate_btn, OperateBtn.operate_exit),
+            )
         yield Footer(id=self.ids.footer)
 
     def on_mount(self) -> None:
@@ -331,7 +341,20 @@ class OperateScreen(Screen["OperateScreenData"], AppType):
         operate_exit_button = self.query_one(
             self.ids.operate_btn.operate_exit_q, Button
         )
-        operate_exit_button.label = OperateBtn.operate_exit.close_label
+        if self.operate_btn in (
+            OperateBtn.add_file,
+            OperateBtn.add_dir,
+            OperateBtn.apply_path,
+            OperateBtn.re_add_path,
+            OperateBtn.forget_path,
+            OperateBtn.destroy_path,
+        ):
+            operate_exit_button.label = OperateBtn.operate_exit.close_label
+        elif self.operate_btn in (
+            OperateBtn.init_new_repo,
+            OperateBtn.init_clone_repo,
+        ):
+            operate_exit_button.label = OperateBtn.operate_exit.reload_label
 
         output_log = self.query_one(self.ids.logger.operate_q, OperateLog)
         if self.operate_data.command_result is not None:
