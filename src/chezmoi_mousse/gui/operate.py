@@ -160,7 +160,7 @@ class OperateScreen(Screen["OperateScreenData"], AppType):
         Binding(
             key="escape",
             action="exit_operation",
-            description=BindingDescription.back,
+            description=BindingDescription.cancel,
             show=True,
         )
     ]
@@ -363,6 +363,7 @@ class OperateScreen(Screen["OperateScreenData"], AppType):
             output_log.log_cmd_results(self.operate_data.command_result)
         else:
             output_log.error("Command result is None, cannot log output.")
+        self.update_bindings()
 
     @on(Button.Pressed, Tcss.operate_button.dot_prefix)
     def handle_operate_button_pressed(self, event: Button.Pressed) -> None:
@@ -375,18 +376,36 @@ class OperateScreen(Screen["OperateScreenData"], AppType):
         else:
             self.run_operate_command()
 
-    def update_bindings(self, operate_button: OperateBtn) -> None:
-        if (
-            self.operate_btn
-            not in (OperateBtn.init_new_repo, OperateBtn.init_clone_repo)
-            or self.operate_data.command_result is None
-        ):
+    def update_bindings(self) -> None:
+        if self.operate_data.command_result is None:
             return
-        new_description = (
-            BindingDescription.reload
-            if self.command_result.returncode == 0
-            else BindingDescription.exit_app
-        )
+        if self.operate_btn in (
+            OperateBtn.init_new_repo,
+            OperateBtn.init_clone_repo,
+        ):
+            new_description = (
+                BindingDescription.reload
+                if self.operate_data.command_result.returncode == 0
+                else BindingDescription.exit_app
+            )
+            self.update_binding_description(new_description)
+        elif self.operate_btn in (
+            OperateBtn.add_file,
+            OperateBtn.add_dir,
+            OperateBtn.apply_path,
+            OperateBtn.re_add_path,
+            OperateBtn.forget_path,
+            OperateBtn.destroy_path,
+        ):
+            new_description = (
+                BindingDescription.reload
+                if self.operate_data.command_result.returncode == 0
+                else BindingDescription.back
+            )
+            new_description = BindingDescription.reload
+            self.update_binding_description(new_description)
+
+    def update_binding_description(self, new_description: str) -> None:
         for key, binding in self._bindings:
             if binding.action == "exit_operation":
                 updated_binding = dataclasses.replace(
