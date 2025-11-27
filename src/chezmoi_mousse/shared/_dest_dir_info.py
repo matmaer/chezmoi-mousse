@@ -5,9 +5,9 @@ from textual.app import ComposeResult
 from textual.containers import VerticalGroup
 from textual.widgets import Static
 
-from chezmoi_mousse import ReadCmd, TabName
+from chezmoi_mousse import ReadCmd, SectionLabelText, TabName
 
-from ._section_headers import SectionLabelText, SubSectionLabel
+from ._section_headers import SubSectionLabel
 
 __all__ = ["DestDirInfo"]
 

@@ -19,6 +19,7 @@ from chezmoi_mousse import (
     CommandResult,
     FlatBtn,
     OperateBtn,
+    SectionLabelText,
     Tcss,
     WriteCmd,
 )
@@ -30,7 +31,6 @@ from chezmoi_mousse.shared import (
     MainSectionLabel,
     OperateButtons,
     OperateLog,
-    SectionLabelText,
     SubSectionLabel,
     TemplateDataView,
 )

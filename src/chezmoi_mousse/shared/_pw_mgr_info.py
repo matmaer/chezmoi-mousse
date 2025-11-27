@@ -8,14 +8,16 @@ from textual.app import ComposeResult
 from textual.containers import Vertical, VerticalGroup
 from textual.widgets import Link, Static
 
-from chezmoi_mousse import AppType, Chars, CommandResult, Tcss
+from chezmoi_mousse import (
+    AppType,
+    Chars,
+    CommandResult,
+    SectionLabelText,
+    Tcss,
+)
 
 from ._custom_collapsible import CustomCollapsible
-from ._section_headers import (
-    MainSectionLabel,
-    SectionLabelText,
-    SubSectionLabel,
-)
+from ._section_headers import MainSectionLabel, SubSectionLabel
 
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds

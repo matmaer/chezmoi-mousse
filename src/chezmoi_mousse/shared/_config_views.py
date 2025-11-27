@@ -6,9 +6,9 @@ from textual.app import ComposeResult
 from textual.containers import ScrollableContainer, Vertical
 from textual.widgets import DataTable, Pretty, Static
 
-from chezmoi_mousse import AppType, CommandResult, Tcss
+from chezmoi_mousse import AppType, CommandResult, SectionLabelText, Tcss
 
-from ._section_headers import MainSectionLabel, SectionLabelText
+from ._section_headers import MainSectionLabel
 
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds

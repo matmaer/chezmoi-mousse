@@ -31,7 +31,6 @@ from ._screen_header import CustomHeader
 from ._section_headers import (
     FlatSectionLabel,
     MainSectionLabel,
-    SectionLabelText,
     SubSectionLabel,
 )
 
@@ -41,12 +40,13 @@ __all__ = [
     "DebugLog",
     "OperateLog",
     "ReadCmdLog",
-    # Other shared components
-    "CatConfigView",
-    "ContentsView",
+    # Messages
     "CurrentAddNodeMsg",
     "CurrentApplyNodeMsg",
     "CurrentReAddNodeMsg",
+    # Other shared components
+    "CatConfigView",
+    "ContentsView",
     "CustomCollapsible",
     "CustomHeader",
     "DestDirInfo",
@@ -63,7 +63,6 @@ __all__ = [
     "MainSectionLabel",
     "OperateButtons",
     "PwMgrInfoView",
-    "SectionLabelText",
     "SubSectionLabel",
     "TemplateDataView",
     "TreeTabButtons",

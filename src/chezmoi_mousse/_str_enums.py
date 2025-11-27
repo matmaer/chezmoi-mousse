@@ -12,6 +12,7 @@ __all__ = [
     "LogName",
     "PathKind",
     "ScreenName",
+    "SectionLabelText",
     "TabName",
     "Tcss",
     "TreeName",
@@ -150,6 +151,17 @@ class Tcss(StrEnum):
     tab_button = ".tab_button"
     tab_left_vertical = ".tab_left_vertical"
     tree_widget = ".tree_widget"
+
+
+class SectionLabelText(StrEnum):
+    cat_config_output = '"chezmoi cat-config" output'
+    doctor_output = '"chezmoi doctor" output'
+    ignored_output = '"chezmoi ignored" output'
+    operate_context = "Operate Context"
+    operate_output = "Operate Command Output"
+    password_managers = "Password Manager Information"
+    path_info = "Path Information"
+    template_data_output = '"chezmoi data" output'
 
 
 class TreeName(StrEnum):

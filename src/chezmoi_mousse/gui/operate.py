@@ -14,6 +14,7 @@ from chezmoi_mousse import (
     Chars,
     OperateBtn,
     PathKind,
+    SectionLabelText,
     Tcss,
     WriteCmd,
 )
@@ -24,7 +25,6 @@ from chezmoi_mousse.shared import (
     MainSectionLabel,
     OperateButtons,
     OperateLog,
-    SectionLabelText,
 )
 
 if TYPE_CHECKING:
