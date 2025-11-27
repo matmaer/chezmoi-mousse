@@ -295,6 +295,7 @@ class ChezmoiGUI(App[None]):
         self.refresh_bindings()
 
     def action_toggle_dry_run_mode(self) -> None:
+        # All this will also run for the InitScreen except the OperateInfo part
         self.changes_enabled = not self.changes_enabled
         reactive_header = self.screen.query_exactly_one(CustomHeader)
         reactive_header.changes_enabled = self.changes_enabled
@@ -465,7 +466,7 @@ class ChezmoiGUI(App[None]):
                 active_tab = self.screen.query_exactly_one(
                     TabbedContent
                 ).active
-                if active_tab == TabName.apply.name:
+                if active_tab == TabName.apply:
                     return True
                 elif active_tab == TabName.re_add:
                     return True
@@ -477,12 +478,12 @@ class ChezmoiGUI(App[None]):
                     return False
                 elif active_tab == TabName.help:
                     return False
-            elif isinstance(self.screen, OperateScreen):
+            elif isinstance(self.screen, (OperateScreen, InitScreen)):
                 return True
             else:
                 return False
         elif action == "toggle_maximized_display":
-            if isinstance(self.screen, OperateScreen):
+            if isinstance(self.screen, (OperateScreen, InitScreen)):
                 return False
         return True
 
