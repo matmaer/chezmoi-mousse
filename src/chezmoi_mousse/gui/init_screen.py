@@ -50,17 +50,9 @@ class InitNewRepo(Vertical, AppType):
 
     def compose(self) -> ComposeResult:
         yield MainSectionLabel(SectionLabels.init_new_repo)
-        yield SubSectionLabel(SectionLabels.operate_output)
-        yield OperateLog(ids=self.ids)
         yield OperateButtons(
             ids=self.ids,
             buttons=(OperateBtn.init_new_repo, OperateBtn.init_exit),
-        )
-
-    def on_mount(self) -> None:
-        operate_log = self.query_one(self.ids.logger.operate_q, OperateLog)
-        operate_log.ready_to_run(
-            'Ready to run chezmoi init with default settings, see the "Cat config" tab.'
         )
 
 
@@ -95,17 +87,9 @@ class InitCloneRepo(Vertical, AppType):
         yield MainSectionLabel(SectionLabels.init_clone_repo)
         yield SubSectionLabel(SectionLabels.init_clone_repo_url)
         yield RepositoryURLInput()
-        yield SubSectionLabel(SectionLabels.operate_output)
-        yield OperateLog(ids=self.ids)
         yield OperateButtons(
             ids=self.ids,
             buttons=(OperateBtn.init_clone_repo, OperateBtn.init_exit),
-        )
-
-    def on_mount(self) -> None:
-        operate_log = self.query_one(self.ids.logger.operate_q, OperateLog)
-        operate_log.ready_to_run(
-            "Ready to run chezmoi init cloning from the remote repository."
         )
 
     @on(Input.Submitted)
@@ -188,9 +172,15 @@ class InitScreen(Screen["CommandResult | None"], AppType):
                 ),
             )
             yield InitSwitcher(ids=self.ids, splash_data=self.splash_data)
+        yield SubSectionLabel(SectionLabels.operate_output)
+        yield OperateLog(ids=self.ids)
         yield Footer(id=self.ids.footer)
 
-    def perform_init_command(self) -> None:
+    def on_mount(self) -> None:
+        operate_log = self.query_one(self.ids.logger.operate_q, OperateLog)
+        operate_log.ready_to_run("--- Ready to run chezmoi init ---")
+
+    def perform_init_command(self, repo_url: str | None = None) -> None:
         # Run command
         self.command_result = self.app.chezmoi.perform(
             WriteCmd.init, dry_run=self.app.changes_enabled
