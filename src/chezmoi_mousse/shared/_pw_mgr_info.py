@@ -176,9 +176,9 @@ class PwCollapsible(CustomCollapsible, AppType):
 
         super().__init__(
             VerticalGroup(
-                SubSectionLabel("Project Link"),
+                SubSectionLabel(SectionLabels.project_link),
                 Link(self.stripped_link, url=self.pw_mgr_data.link),
-                SubSectionLabel("Project Description"),
+                SubSectionLabel(SectionLabels.project_description),
                 Static(self.pw_mgr_data.description, markup=False),
                 SubSectionLabel(InfoStrings.additional_info_label),
                 Static(self.pw_mgr_data.info, markup=False),

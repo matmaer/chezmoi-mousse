@@ -49,7 +49,7 @@ class InitNewRepo(Vertical, AppType):
         self.repo_url: str = ""
 
     def compose(self) -> ComposeResult:
-        yield MainSectionLabel("Initialize New Chezmoi Repository")
+        yield MainSectionLabel(SectionLabels.init_new_repo)
         yield SubSectionLabel(SectionLabels.operate_output)
         yield OperateLog(ids=self.ids)
         yield OperateButtons(
@@ -92,8 +92,8 @@ class InitCloneRepo(Vertical, AppType):
         self.repo_url: str = ""
 
     def compose(self) -> ComposeResult:
-        yield MainSectionLabel("Initialize New Chezmoi Repository")
-        yield SubSectionLabel("Repository URL to clone from.")
+        yield MainSectionLabel(SectionLabels.init_clone_repo)
+        yield SubSectionLabel(SectionLabels.init_clone_repo_url)
         yield RepositoryURLInput()
         yield SubSectionLabel(SectionLabels.operate_output)
         yield OperateLog(ids=self.ids)

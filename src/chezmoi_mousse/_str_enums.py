@@ -132,6 +132,22 @@ class TabName(StrEnum):
     re_add = auto()
 
 
+class SectionLabels(StrEnum):
+    cat_config_output = '"chezmoi cat-config" output'
+    doctor_output = '"chezmoi doctor" output'
+    ignored_output = '"chezmoi ignored" output'
+    init_clone_repo = "Clone an existing chezmoi repository"
+    init_clone_repo_url = "Repository URL to clone from."
+    init_new_repo = "Initialize a new chezmoi repository"
+    operate_context = "Operate Context"
+    operate_output = "Operate Command Output"
+    password_managers = "Password Manager Information"
+    path_info = "Path Information"
+    project_description = "Project Description"
+    project_link = "Project Link"
+    template_data_output = '"chezmoi data" output'
+
+
 class Tcss(StrEnum):
     border_title_top = ".border_title_top"
     changes_enabled_color = ".changes_enabled_color"
@@ -151,17 +167,6 @@ class Tcss(StrEnum):
     tab_button = ".tab_button"
     tab_left_vertical = ".tab_left_vertical"
     tree_widget = ".tree_widget"
-
-
-class SectionLabels(StrEnum):
-    cat_config_output = '"chezmoi cat-config" output'
-    doctor_output = '"chezmoi doctor" output'
-    ignored_output = '"chezmoi ignored" output'
-    operate_context = "Operate Context"
-    operate_output = "Operate Command Output"
-    password_managers = "Password Manager Information"
-    path_info = "Path Information"
-    template_data_output = '"chezmoi data" output'
 
 
 class TreeName(StrEnum):
