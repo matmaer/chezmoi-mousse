@@ -43,12 +43,12 @@ __all__ = ["TabbedContentScreen"]
 
 
 class TabPanes(StrEnum):
-    add_tab_button = "Add"
-    apply_tab_button = "Apply"
-    config_tab_button = "Config"
-    help_tab_button = "Help"
-    logs_tab_button = "Logs"
-    re_add_tab_button = "Re-Add"
+    add_tab_label = "Add"
+    apply_tab_label = "Apply"
+    config_tab_label = "Config"
+    help_tab_label = "Help"
+    logs_tab_label = "Logs"
+    re_add_tab_label = "Re-Add"
 
 
 class TabbedContentScreen(Screen[None], AppType):
@@ -74,32 +74,32 @@ class TabbedContentScreen(Screen[None], AppType):
         yield CustomHeader(ids=self.ids)
         with TabbedContent():
             yield TabPane(
-                TabPanes.apply_tab_button,
+                TabPanes.apply_tab_label,
                 ApplyTab(ids=self.app.tab_ids.apply),
                 id=TabName.apply.name,
             )
             yield TabPane(
-                TabPanes.re_add_tab_button,
+                TabPanes.re_add_tab_label,
                 ReAddTab(ids=self.app.tab_ids.re_add),
                 id=TabName.re_add,
             )
             yield TabPane(
-                TabPanes.add_tab_button,
+                TabPanes.add_tab_label,
                 AddTab(ids=self.app.tab_ids.add),
                 id=TabName.add,
             )
             yield TabPane(
-                TabPanes.logs_tab_button,
+                TabPanes.logs_tab_label,
                 LogsTab(ids=self.app.tab_ids.logs),
                 id=TabName.logs,
             )
             yield TabPane(
-                TabPanes.config_tab_button,
+                TabPanes.config_tab_label,
                 ConfigTab(ids=self.app.tab_ids.config),
                 id=TabName.config,
             )
             yield TabPane(
-                TabPanes.help_tab_button,
+                TabPanes.help_tab_label,
                 HelpTab(ids=self.app.tab_ids.help),
                 id=TabName.help,
             )
