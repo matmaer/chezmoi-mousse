@@ -23,7 +23,6 @@ from chezmoi_mousse import (
     OperateBtn,
     SectionLabels,
     Tcss,
-    WriteCmd,
 )
 from chezmoi_mousse.shared import (
     CatConfigView,
@@ -33,7 +32,6 @@ from chezmoi_mousse.shared import (
     FlatButtonsVertical,
     MainSectionLabel,
     OperateButtons,
-    OperateLog,
     SubSectionLabel,
     TemplateDataView,
 )
@@ -146,7 +144,6 @@ class InitScreen(Screen["CommandResult | None"], AppType):
         self.repo_url: str | None = None
         self.valid_url: bool = False
         self.debug_log: DebugLog
-        self.operate_log: OperateLog
 
     def compose(self) -> ComposeResult:
         yield CustomHeader(self.ids)
@@ -165,30 +162,20 @@ class InitScreen(Screen["CommandResult | None"], AppType):
         yield SubSectionLabel(SectionLabels.operate_output)
         if self.app.dev_mode is True:
             with Horizontal():
-                yield OperateLog(ids=self.ids)
                 yield DebugLog(ids=self.ids)
-        else:
-            yield OperateLog(ids=self.ids)
         yield Footer(id=self.ids.footer)
 
     def on_mount(self) -> None:
-        self.operate_log = self.query_one(
-            self.ids.logger.operate_q, OperateLog
-        )
-        self.operate_log.ready_to_run(LogText.operate_log_initialized)
         if self.app.dev_mode:
-            self.operate_log.info(LogText.dev_mode_enabled)
             self.debug_log = self.query_one(self.ids.logger.debug_q, DebugLog)
             self.debug_log.ready_to_run(LogText.debug_log_initialized)
 
-    def log_command_and_update_buttons(self) -> None:
+    def notify_and_update_buttons(self) -> None:
         if self.command_result is None:
             # this should not happen
             self.notify("Operation returned None.", severity="error")
             return
-        # Log results
-        self.operate_log.log_cmd_results(self.command_result)
-        if self.command_result.returncode != 0:
+        elif self.command_result.returncode != 0:
             self.notify("Operation failed.", severity="error")
             return
         # Update buttons
@@ -205,20 +192,6 @@ class InitScreen(Screen["CommandResult | None"], AppType):
         exit_button = self.query_one(self.ids.operate_btn.init_exit_q, Button)
         exit_button.label = OperateBtn.init_exit.close_label
         exit_button.tooltip = OperateBtn.init_exit.close_tooltip
-
-    def perform_init_new(self) -> None:
-        # Run command
-        self.command_result = self.app.chezmoi.perform(
-            WriteCmd.init, dry_run=self.app.changes_enabled
-        )
-        self.log_command_and_update_buttons()
-
-    def perform_init_clone(self, repo_url: str | None = None) -> None:
-        # Run command
-        self.command_result = self.app.chezmoi.perform(
-            WriteCmd.init, dry_run=self.app.changes_enabled, repo_url=repo_url
-        )
-        self.log_command_and_update_buttons()
 
     @on(Button.Pressed, Tcss.flat_button.dot_prefix)
     def switch_content(self, event: Button.Pressed) -> None:
@@ -272,17 +245,14 @@ class InitScreen(Screen["CommandResult | None"], AppType):
             # TODO: check network connectivity before proceeding
             self.dismiss(self.command_result)
         elif event.button.id == self.ids.operate_btn.init_new_repo:
-            self.perform_init_new()
+            self.notify_and_update_buttons()
             self.update_bindings(operate_button=OperateBtn.init_new_repo)
         elif event.button.id == self.ids.operate_btn.init_clone_repo:
             # Submit the input, which triggers validation and logs it.
             input_widget = self.query_exactly_one(Input)
             await input_widget.action_submit()
-            if self.valid_url is not True:
-                self.notify("Repository URL is invalid.", severity="error")
-            if self.repo_url is not None:
-                self.perform_init_clone(repo_url=self.repo_url)
-                self.update_bindings(operate_button=OperateBtn.init_clone_repo)
+            self.notify_and_update_buttons()
+            self.update_bindings(operate_button=OperateBtn.init_clone_repo)
 
     @on(Input.Submitted)
     def log_validation_result(self, event: Input.Submitted) -> None:
@@ -293,17 +263,18 @@ class InitScreen(Screen["CommandResult | None"], AppType):
         self.debug_log.list_attr(event.value)
         self.valid_url = event.validation_result.is_valid
         if not event.validation_result.is_valid:
-            self.operate_log.info(
+            self.notify("Invalid URL entered.", severity="error")
+            self.debug_log.info(
                 "\n".join(event.validation_result.failure_descriptions)
             )
             return
         else:
             if event.value == "":
-                self.operate_log.warning("No URL entered.")
+                self.debug_log.warning("No URL entered.")
                 self.repo_url = None
             else:
                 self.repo_url = event.value
-                self.operate_log.success(f"Valid URL entered: {self.repo_url}")
+                self.debug_log.success(f"Valid URL entered: {self.repo_url}")
 
     def action_exit_operation(self) -> None:
         if (
