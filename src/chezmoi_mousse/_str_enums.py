@@ -12,7 +12,7 @@ __all__ = [
     "LogName",
     "PathKind",
     "ScreenName",
-    "SectionLabelText",
+    "SectionLabels",
     "TabName",
     "Tcss",
     "TreeName",
@@ -153,7 +153,7 @@ class Tcss(StrEnum):
     tree_widget = ".tree_widget"
 
 
-class SectionLabelText(StrEnum):
+class SectionLabels(StrEnum):
     cat_config_output = '"chezmoi cat-config" output'
     doctor_output = '"chezmoi doctor" output'
     ignored_output = '"chezmoi ignored" output'

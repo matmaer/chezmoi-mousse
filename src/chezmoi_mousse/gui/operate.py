@@ -14,7 +14,7 @@ from chezmoi_mousse import (
     Chars,
     OperateBtn,
     PathKind,
-    SectionLabelText,
+    SectionLabels,
     Tcss,
     WriteCmd,
 )
@@ -157,7 +157,7 @@ class OperateScreen(Screen["OperateScreenData"], AppType):
         yield CustomHeader(self.ids)
         with VerticalGroup(id=self.ids.container.pre_operate):
             yield OperateInfo(operate_screen_data=self.operate_data)
-            yield MainSectionLabel(SectionLabelText.operate_context)
+            yield MainSectionLabel(SectionLabels.operate_context)
             if self.operate_btn == OperateBtn.apply_path:
                 yield DiffView(ids=self.ids, reverse=False)
             elif self.operate_btn == OperateBtn.re_add_path:
@@ -170,7 +170,7 @@ class OperateScreen(Screen["OperateScreenData"], AppType):
             ):
                 yield ContentsView(ids=self.ids)
         with VerticalGroup(id=self.ids.container.post_operate):
-            yield MainSectionLabel(SectionLabelText.operate_output)
+            yield MainSectionLabel(SectionLabels.operate_output)
             yield OperateLog(ids=self.ids)
         yield OperateButtons(
             ids=self.ids, buttons=(self.operate_btn, OperateBtn.operate_exit)

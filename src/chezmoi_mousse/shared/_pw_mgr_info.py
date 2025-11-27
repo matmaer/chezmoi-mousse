@@ -8,13 +8,7 @@ from textual.app import ComposeResult
 from textual.containers import Vertical, VerticalGroup
 from textual.widgets import Link, Static
 
-from chezmoi_mousse import (
-    AppType,
-    Chars,
-    CommandResult,
-    SectionLabelText,
-    Tcss,
-)
+from chezmoi_mousse import AppType, Chars, CommandResult, SectionLabels, Tcss
 
 from ._custom_collapsible import CustomCollapsible
 from ._section_headers import MainSectionLabel, SubSectionLabel
@@ -207,7 +201,7 @@ class PwMgrInfoView(Vertical):
         super().__init__(id=self.ids.view.pw_mgr_info)
 
     def compose(self) -> ComposeResult:
-        yield MainSectionLabel(SectionLabelText.password_managers)
+        yield MainSectionLabel(SectionLabels.password_managers)
 
     def populate_pw_mgr_info(self, doctor_results: "CommandResult") -> None:
         doctor_lines = doctor_results.std_out.splitlines()

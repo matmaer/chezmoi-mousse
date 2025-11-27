@@ -19,7 +19,7 @@ from chezmoi_mousse import (
     CommandResult,
     FlatBtn,
     OperateBtn,
-    SectionLabelText,
+    SectionLabels,
     Tcss,
     WriteCmd,
 )
@@ -50,7 +50,7 @@ class InitNewRepo(Vertical, AppType):
 
     def compose(self) -> ComposeResult:
         yield MainSectionLabel("Initialize New Chezmoi Repository")
-        yield SubSectionLabel(SectionLabelText.operate_output)
+        yield SubSectionLabel(SectionLabels.operate_output)
         yield OperateLog(ids=self.ids)
         yield OperateButtons(
             ids=self.ids,
@@ -95,7 +95,7 @@ class InitCloneRepo(Vertical, AppType):
         yield MainSectionLabel("Initialize New Chezmoi Repository")
         yield SubSectionLabel("Repository URL to clone from.")
         yield RepositoryURLInput()
-        yield SubSectionLabel(SectionLabelText.operate_output)
+        yield SubSectionLabel(SectionLabels.operate_output)
         yield OperateLog(ids=self.ids)
         yield OperateButtons(
             ids=self.ids,

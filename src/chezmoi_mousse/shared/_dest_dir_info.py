@@ -5,7 +5,7 @@ from textual.app import ComposeResult
 from textual.containers import VerticalGroup
 from textual.widgets import Static
 
-from chezmoi_mousse import ReadCmd, SectionLabelText, TabName
+from chezmoi_mousse import ReadCmd, SectionLabels, TabName
 
 from ._section_headers import SubSectionLabel
 
@@ -54,7 +54,7 @@ class DestDirInfo(VerticalGroup):
         super().__init__(id=self.ids.container.dest_dir_info)
 
     def compose(self) -> ComposeResult:
-        yield SubSectionLabel(SectionLabelText.path_info)
+        yield SubSectionLabel(SectionLabels.path_info)
 
     def on_mount(self) -> None:
         lines: list[str] = []
