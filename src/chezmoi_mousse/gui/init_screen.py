@@ -188,11 +188,12 @@ class InitScreen(Screen["CommandResult | None"], AppType):
         operate_button = self.query_one(
             self.ids.operate_btn.init_new_repo_q, Button
         )
-        operate_button.disabled = True
-        operate_button.tooltip = None
         exit_button = self.query_one(self.ids.operate_btn.init_exit_q, Button)
-        exit_button.label = OperateBtn.init_exit.close_label
-        exit_button.tooltip = OperateBtn.init_exit.close_tooltip
+        if self.command_result.returncode == 0:
+            operate_button.disabled = True
+            operate_button.tooltip = None
+            exit_button.label = OperateBtn.init_exit.close_label
+            exit_button.tooltip = OperateBtn.init_exit.close_tooltip
 
     @on(Button.Pressed, Tcss.flat_button.dot_prefix)
     def switch_content(self, event: Button.Pressed) -> None:
