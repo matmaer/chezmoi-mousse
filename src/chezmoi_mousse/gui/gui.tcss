@@ -215,6 +215,10 @@ OperateInfo {
   dock: top;
 }
 
+InitScreen > OperateButtons {
+    margin-bottom: 1;
+}
+
 OperateScreen > OperateButtons {
     margin-bottom: 1;
 }
