@@ -31,7 +31,7 @@ class LoggersBase(RichLog, AppType):
 
     def ready_to_run(self, message: str) -> None:
         color = self.app.theme_variables["accent-darken-3"]
-        self.write(f"{self._log_time()} [{color}]{message}[/]")
+        self.write(f"{self._log_time()} [{color}]--- {message} ---[/]")
 
     def info(self, message: str) -> None:
         color = self.app.theme_variables["text-secondary"]

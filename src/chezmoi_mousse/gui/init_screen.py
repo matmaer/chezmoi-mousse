@@ -18,6 +18,7 @@ from chezmoi_mousse import (
     BindingDescription,
     CommandResult,
     FlatBtn,
+    LogText,
     OperateBtn,
     SectionLabels,
     Tcss,
@@ -26,6 +27,7 @@ from chezmoi_mousse import (
 from chezmoi_mousse.shared import (
     CatConfigView,
     CustomHeader,
+    DebugLog,
     DoctorTableView,
     FlatButtonsVertical,
     MainSectionLabel,
@@ -46,7 +48,6 @@ class InitNewRepo(Vertical, AppType):
     def __init__(self, *, ids: "AppIds") -> None:
         self.ids = ids
         super().__init__(id=self.ids.view.new_repo)
-        self.repo_url: str = ""
 
     def compose(self) -> ComposeResult:
         yield MainSectionLabel(SectionLabels.init_new_repo)
@@ -81,7 +82,6 @@ class InitCloneRepo(Vertical, AppType):
     def __init__(self, *, ids: "AppIds") -> None:
         self.ids = ids
         super().__init__(id=self.ids.view.clone_repo)
-        self.repo_url: str = ""
 
     def compose(self) -> ComposeResult:
         yield MainSectionLabel(SectionLabels.init_clone_repo)
@@ -142,6 +142,8 @@ class InitScreen(Screen["CommandResult | None"], AppType):
         self.ids = ids
         self.splash_data = splash_data
         self.command_result: CommandResult | None = None
+        self.repo_url: str | None = None
+        self.valid_url: bool | None = None
 
     def compose(self) -> ComposeResult:
         yield CustomHeader(self.ids)
@@ -158,12 +160,21 @@ class InitScreen(Screen["CommandResult | None"], AppType):
             )
             yield InitSwitcher(ids=self.ids, splash_data=self.splash_data)
         yield SubSectionLabel(SectionLabels.operate_output)
-        yield OperateLog(ids=self.ids)
+        if self.app.dev_mode is True:
+            with Horizontal():
+                yield OperateLog(ids=self.ids)
+                yield DebugLog(ids=self.ids)
+        else:
+            yield OperateLog(ids=self.ids)
         yield Footer(id=self.ids.footer)
 
     def on_mount(self) -> None:
         operate_log = self.query_one(self.ids.logger.operate_q, OperateLog)
-        operate_log.ready_to_run("--- Ready to run chezmoi init ---")
+        operate_log.ready_to_run(LogText.operate_log_initialized)
+        if self.app.dev_mode:
+            operate_log.info(LogText.dev_mode_enabled)
+            debug_log = self.query_one(self.ids.logger.debug_q, DebugLog)
+            debug_log.ready_to_run(LogText.debug_log_initialized)
 
     def perform_init_command(self, repo_url: str | None = None) -> None:
         # Run command
@@ -201,10 +212,19 @@ class InitScreen(Screen["CommandResult | None"], AppType):
             switcher.current = self.ids.view.template_data
 
     @on(Button.Pressed, Tcss.operate_button.dot_prefix)
-    def handle_operate_button_pressed(self, event: Button.Pressed) -> None:
+    async def handle_operate_button_pressed(
+        self, event: Button.Pressed
+    ) -> None:
         event.stop()
         if event.button.id == self.ids.operate_btn.init_exit:
             self.dismiss(self.command_result)
+        elif event.button.id == self.ids.operate_btn.init_new_repo:
+            self.perform_init_command()
+        elif event.button.id == self.ids.operate_btn.init_clone_repo:
+            # Submit the input, which triggers validation, so we can continue
+            # in the Input.Submitted handler
+            input_widget = self.query_one(Input)
+            await input_widget.action_submit()
         else:
             self.perform_init_command()
 
@@ -212,16 +232,19 @@ class InitScreen(Screen["CommandResult | None"], AppType):
         self.dismiss(self.command_result)
 
     @on(Input.Submitted)
-    def log_invalid_reasons(self, event: Input.Submitted) -> None:
+    def handle_input_submitted(self, event: Input.Submitted) -> None:
+        if event.validation_result is None:
+            self.valid_url = None
+            return
+        self.valid_url = event.validation_result.is_valid
         operate_log = self.query_exactly_one(OperateLog)
-        if (
-            event.validation_result is not None
-            and not event.validation_result.is_valid
-        ):
-            text_lines: str = "\n".join(
-                event.validation_result.failure_descriptions
+        if not event.validation_result.is_valid:
+            self.valid_url = False
+            operate_log.info(
+                "\n".join(event.validation_result.failure_descriptions)
             )
-            operate_log.info(text_lines)
+            return
         else:
             self.repo_url = event.value
+            self.valid_url = True
             operate_log.success(f"Valid URL entered: {self.repo_url}")

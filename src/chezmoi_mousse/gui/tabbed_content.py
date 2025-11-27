@@ -10,6 +10,7 @@ from textual.widgets import Button, Footer, TabbedContent, TabPane
 from chezmoi_mousse import (
     AppType,
     CommandResult,
+    LogText,
     OperateBtn,
     OperateScreenData,
     TabName,
@@ -122,33 +123,33 @@ class TabbedContentScreen(Screen[None], AppType):
             self.app.tab_ids.logs.logger.app_q, AppLog
         )
         self.app.chezmoi.app_log = self.app_log
-        self.app_log.ready_to_run("--- Application log initialized ---")
+        self.app_log.ready_to_run(LogText.app_log_initialized)
         if self.app.chezmoi_found:
-            self.app_log.success("Found chezmoi executable.")
+            self.app_log.success(LogText.chezmoi_found)
         else:
-            self.notify("chezmoi executable not found.", severity="error")
+            self.notify(LogText.chezmoi_not_found, severity="error")
         # Initialize Operate logger
         self.operate_log = self.query_one(
             self.app.tab_ids.logs.logger.operate_q, OperateLog
         )
         self.app.chezmoi.operate_log = self.operate_log
-        self.app_log.success("Operate log initialized")
-        self.operate_log.ready_to_run("--- Operate log initialized ---")
+        self.app_log.success(LogText.operate_log_initialized)
+        self.operate_log.ready_to_run(LogText.operate_log_initialized)
         # Initialize ReadCmd logger
         self.read_cmd_log = self.query_one(
             self.app.tab_ids.logs.logger.read_q, ReadCmdLog
         )
         self.app.chezmoi.read_cmd_log = self.read_cmd_log
-        self.app_log.success("Read Output log initialized")
-        # Initialize and focus Debug logger if in dev mode
+        self.app_log.success(LogText.read_log_initialized)
+        # Initialize Debug logger if in dev mode
         if self.app.dev_mode:
             self.debug_log = self.query_one(
                 self.app.tab_ids.logs.logger.debug_q, DebugLog
             )
             self.app.chezmoi.debug_log = self.debug_log
-            self.app_log.success("Debug log initialized")
-            self.debug_log.ready_to_run("--- Debug log initialized ---")
-            self.notify('Running in "dev mode"', severity="information")
+            self.app_log.success(LogText.debug_log_initialized)
+            self.debug_log.ready_to_run(LogText.debug_log_initialized)
+            self.notify(LogText.dev_mode_enabled, severity="information")
 
     @work
     async def log_init_screen_command(self) -> None:
@@ -180,7 +181,6 @@ class TabbedContentScreen(Screen[None], AppType):
         list_tree = self.screen.query_one(
             self.app.tab_ids.apply.tree.list_q, ListTree
         )
-        self.app_log.info("Populating Apply tab trees")
         managed_tree.populate_tree()
         self.app_log.success("Apply tab managed tree populated.")
         expanded_tree.populate_tree()
@@ -189,7 +189,6 @@ class TabbedContentScreen(Screen[None], AppType):
         self.app_log.success("Apply list populated.")
 
     def populate_re_add_trees(self) -> None:
-        self.app_log.info("Populating Re-Add tab trees")
         managed_tree = self.screen.query_one(
             self.app.tab_ids.re_add.tree.managed_q, ManagedTree
         )
