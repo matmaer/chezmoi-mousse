@@ -97,10 +97,12 @@ class NodeData:
 
 @dataclass(slots=True)
 class OperateScreenData:
-    node_data: "NodeData | DirTreeNodeData"
     operate_btn: "OperateBtn"
     command_result: "CommandResult | None" = None
+    node_data: "NodeData | DirTreeNodeData | None" = None
     path: "Path | None" = None
+    repo_url: "str | None" = None  # only for chezmoi init from repo operation
+    splash_data: "SplashData | None" = None  # only for chezmoi init operation
 
 
 @dataclass(slots=True)

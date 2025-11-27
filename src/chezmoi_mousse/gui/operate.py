@@ -44,6 +44,9 @@ class InfoLine(StrEnum):
     destroy_path = "[$text-error]Permanently remove the path both from your home directory and chezmoi's source directory, make sure you have a backup![/]"
     diff_color = f"[$text-success]+ green lines will be added[/]\n[$text-error]- red lines will be removed[/]\n[dim]{Chars.bullet} dimmed lines for context[/]"
     forget_path = "[$text-primary]Remove the path from the source state, i.e. stop managing them.[/]"
+    init_clone = "[$text-primary]Initialize a new chezmoi repository from an existing one.[/]"
+    init_clone_url = "[$text-primary]The URL of the remote repository to initialize from.[/]"
+    init_new = "[$text-primary]Initialize a new chezmoi repository.[/]"
     re_add_path = (
         "[$text-primary]Overwrite the source state with current local path[/]"
     )
@@ -54,11 +57,18 @@ class OperateInfo(Static, AppType):
     git_autocommit: bool | None = None
     git_autopush: bool | None = None
 
-    def __init__(self, *, operate_screen_data: "OperateScreenData") -> None:
+    def __init__(self, *, operate_data: "OperateScreenData") -> None:
         super().__init__()
-        self.operate_btn = operate_screen_data.operate_btn
-        self.path_kind = operate_screen_data.node_data.path_kind
-        self.operate_path = operate_screen_data.node_data.path
+        self.operate_btn = operate_data.operate_btn
+        self.operate_data = operate_data
+        if self.operate_data.node_data is not None:
+            self.path_arg = self.operate_data.node_data.path
+            self.path_kind = self.operate_data.node_data.path_kind
+        elif (
+            self.operate_data.splash_data is not None
+            and self.operate_data.repo_url is not None
+        ):
+            self.repo_url = self.operate_data.repo_url
 
     def on_mount(self) -> None:
         self.write_info_lines()
@@ -106,11 +116,27 @@ class OperateInfo(Static, AppType):
             )
             lines_to_write.append(InfoLine.destroy_path)
             self.border_subtitle = Chars.destroy_info_border
+        elif self.operate_btn == OperateBtn.init_new_repo:
+            if OperateBtn.init_new_repo.initial_tooltip is not None:
+                self.border_title = (
+                    OperateBtn.init_new_repo.initial_tooltip.rstrip(".")
+                )
+            lines_to_write.append(InfoLine.init_new)
+        elif self.operate_btn == OperateBtn.init_clone_repo:
+            if OperateBtn.init_clone_repo.initial_tooltip is not None:
+                self.border_title = (
+                    OperateBtn.init_clone_repo.initial_tooltip.rstrip(".")
+                )
+            lines_to_write.append(InfoLine.init_clone)
         if self.app.changes_enabled is True:
             lines_to_write.append(InfoLine.changes_enabled)
         else:
             lines_to_write.append(InfoLine.changes_disabled)
-        if self.operate_btn != OperateBtn.apply_path:
+        if self.operate_btn not in (
+            OperateBtn.apply_path,
+            OperateBtn.init_new_repo,
+            OperateBtn.init_clone_repo,
+        ):
             if self.git_autocommit is True:
                 lines_to_write.append(InfoLine.auto_commit)
             if self.git_autopush is True:
@@ -121,9 +147,9 @@ class OperateInfo(Static, AppType):
             or OperateBtn.re_add_path == self.operate_btn
         ):
             lines_to_write.append(InfoLine.diff_color)
-        lines_to_write.append(
-            f"[$text-primary]Operating on path: {self.operate_path}[/]"
-        )
+            lines_to_write.append(
+                f"[$text-primary]Operating on path: {self.path_arg}[/]"
+            )
         self.update("\n".join(lines_to_write))
 
 
@@ -144,19 +170,24 @@ class OperateScreen(Screen["OperateScreenData"], AppType):
         super().__init__()
 
         self.ids = ids
-        self.path_arg = operate_data.node_data.path
-        self.path_kind = operate_data.node_data.path_kind
-
         self.operate_btn = operate_data.operate_btn
         self.operate_btn_q = self.ids.operate_button_id(
             "#", btn=self.operate_btn
         )
         self.operate_data = operate_data
+        if self.operate_data.node_data is not None:
+            self.path_arg = self.operate_data.node_data.path
+            self.path_kind = self.operate_data.node_data.path_kind
+        elif (
+            self.operate_data.splash_data is not None
+            and self.operate_data.repo_url is not None
+        ):
+            self.repo_url = self.operate_data.repo_url
 
     def compose(self) -> ComposeResult:
         yield CustomHeader(self.ids)
         with VerticalGroup(id=self.ids.container.pre_operate):
-            yield OperateInfo(operate_screen_data=self.operate_data)
+            yield OperateInfo(operate_data=self.operate_data)
             yield MainSectionLabel(SectionLabels.operate_context)
             if self.operate_btn == OperateBtn.apply_path:
                 yield DiffView(ids=self.ids, reverse=False)
@@ -263,6 +294,16 @@ class OperateScreen(Screen["OperateScreenData"], AppType):
             cmd_result = self.app.chezmoi.perform(
                 WriteCmd.destroy,
                 path_arg=self.path_arg,
+                dry_run=self.app.changes_enabled,
+            )
+        elif self.operate_btn == OperateBtn.init_new_repo:
+            self.command_result = self.app.chezmoi.perform(
+                WriteCmd.init, dry_run=self.app.changes_enabled
+            )
+        elif self.operate_btn == OperateBtn.init_clone_repo:
+            self.command_result = self.app.chezmoi.perform(
+                WriteCmd.init,
+                repo_url=self.repo_url,
                 dry_run=self.app.changes_enabled,
             )
         else:

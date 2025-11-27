@@ -9,7 +9,7 @@ shared/_buttons.py.
 from dataclasses import dataclass
 from enum import Enum, StrEnum
 
-from ._str_enums import PathKind
+from ._str_enums import BindingDescription, PathKind
 
 __all__ = ["FlatBtn", "LinkBtn", "OperateBtn", "TabBtn"]
 
@@ -102,6 +102,10 @@ class OperateButtonData:
     close_tooltip: str | None = None
     exit_app_label: str = SharedLabels.exit_app
     exit_app_tooltip: str | None = None
+    reload_label: str = BindingDescription.reload.value
+    reload_tooltip: str = (
+        "Reload the application to load the initialized chezmoi state."
+    )
 
 
 class OperateBtn(Enum):
@@ -165,9 +169,7 @@ class OperateBtn(Enum):
     )
     init_exit = OperateButtonData(
         initial_label=SharedLabels.exit_app,
-        initial_tooltip="Exit application. Cannot run the main application without an initialized chezmoi state, init a new repository, or init from a remote repository.",
-        exit_app_tooltip="Exit application. Cannot run the main application without an initialized chezmoi state, init a new repository, or init from a remote repository.",
-        close_tooltip="Reload the application to load the initialized chezmoi state.",
+        initial_tooltip="Exit application or run chezmoi init first.",
     )
     operate_exit = OperateButtonData(initial_label=SharedLabels.cancel)
 
@@ -239,6 +241,14 @@ class OperateBtn(Enum):
     @property
     def dir_label(self) -> str:
         return self.value.dir_label
+
+    @property
+    def reload_label(self) -> str:
+        return self.value.reload_label
+
+    @property
+    def reload_tooltip(self) -> str:
+        return self.value.reload_tooltip
 
     # General methods
 
