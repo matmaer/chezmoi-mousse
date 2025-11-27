@@ -23,10 +23,9 @@ from chezmoi_mousse.shared import (
     DiffView,
     MainSectionLabel,
     OperateButtons,
+    OperateLog,
     SectionLabelText,
 )
-
-from .tabs.logs_tab import OperateLog
 
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds, CommandResult, OperateScreenData

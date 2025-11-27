@@ -20,6 +20,7 @@ from ._custom_collapsible import CustomCollapsible
 from ._dest_dir_info import DestDirInfo
 from ._diff_view import DiffView
 from ._git_log_view import GitLogGlobal, GitLogPath
+from ._loggers import AppLog, DebugLog, OperateLog, ReadCmdLog
 from ._operate_msg import (
     CurrentAddNodeMsg,
     CurrentApplyNodeMsg,
@@ -35,6 +36,12 @@ from ._section_headers import (
 )
 
 __all__ = [
+    # Loggers
+    "AppLog",
+    "DebugLog",
+    "OperateLog",
+    "ReadCmdLog",
+    # Other shared components
     "CatConfigView",
     "ContentsView",
     "CurrentAddNodeMsg",

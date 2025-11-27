@@ -29,12 +29,11 @@ from chezmoi_mousse.shared import (
     FlatButtonsVertical,
     MainSectionLabel,
     OperateButtons,
+    OperateLog,
     SectionLabelText,
     SubSectionLabel,
     TemplateDataView,
 )
-
-from .tabs.logs_tab import OperateLog
 
 __all__ = ["InitScreen"]
 
