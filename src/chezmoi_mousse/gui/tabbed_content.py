@@ -16,10 +16,14 @@ from chezmoi_mousse import (
     Tcss,
 )
 from chezmoi_mousse.shared import (
+    AppLog,
     CurrentAddNodeMsg,
     CurrentApplyNodeMsg,
     CurrentReAddNodeMsg,
     CustomHeader,
+    DebugLog,
+    OperateLog,
+    ReadCmdLog,
 )
 
 from .operate import OperateScreen
@@ -28,7 +32,7 @@ from .tabs.apply_tab import ApplyTab
 from .tabs.common.trees import ExpandedTree, ListTree, ManagedTree
 from .tabs.config_tab import ConfigTab, ConfigTabSwitcher
 from .tabs.help_tab import HelpTab
-from .tabs.logs_tab import AppLog, DebugLog, LogsTab, OperateLog, ReadCmdLog
+from .tabs.logs_tab import LogsTab
 from .tabs.re_add_tab import ReAddTab
 
 if TYPE_CHECKING:
