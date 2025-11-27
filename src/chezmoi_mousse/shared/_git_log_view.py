@@ -63,8 +63,7 @@ class GitLogPath(Vertical, AppType):
     def __init__(self, *, ids: "AppIds") -> None:
         self.ids = ids
         super().__init__(
-            id=self.ids.container.git_log_path,
-            classes=Tcss.border_title_top.name,
+            id=self.ids.container.git_log_path, classes=Tcss.border_title_top
         )
 
     def compose(self) -> ComposeResult:

@@ -258,7 +258,7 @@ class ReadOutputCollapsible(CustomCollapsible, AppType):
                 output,
                 id=self.static_id,
                 markup=False,
-                classes=Tcss.read_cmd_static.name,
+                classes=Tcss.read_cmd_static,
             ),
             title=f"{self.pretty_time} {self.pretty_cmd}",
         )

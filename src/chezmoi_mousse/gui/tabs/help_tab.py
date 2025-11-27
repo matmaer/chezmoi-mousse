@@ -180,7 +180,7 @@ class ChezmoiDiagram(Vertical):
     def compose(self) -> ComposeResult:
         yield MainSectionLabel(HelpSections.chezmoi_diagram)
         yield ScrollableContainer(
-            Static(FLOW_DIAGRAM, classes=Tcss.flow_diagram.name)
+            Static(FLOW_DIAGRAM, classes=Tcss.flow_diagram)
         )
 
 
@@ -208,7 +208,7 @@ class HelpTab(Horizontal):
             yield AddTabHelp(ids=self.ids)
             yield ChezmoiDiagram(ids=self.ids)
 
-    @on(Button.Pressed, Tcss.flat_button)
+    @on(Button.Pressed, Tcss.flat_button.dot_prefix)
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
         switcher = self.query_one(

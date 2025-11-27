@@ -216,7 +216,7 @@ class TabbedContentScreen(Screen[None], AppType):
         )
         setattr(config_tab_switcher, "splash_data", self.splash_data)
 
-    @on(Button.Pressed, Tcss.operate_button)
+    @on(Button.Pressed, Tcss.operate_button.dot_prefix)
     def push_operate_screen(self, event: Button.Pressed) -> None:
         button_enum = OperateBtn.from_label(str(event.button.label))
         current_tab = self.query_exactly_one(TabbedContent).active

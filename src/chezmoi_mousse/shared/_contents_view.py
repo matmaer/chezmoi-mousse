@@ -43,7 +43,7 @@ class ContentsView(RichLog, AppType):
             auto_scroll=False,
             wrap=True,  # TODO: implement footer binding to toggle wrap
             highlight=True,
-            classes=Tcss.border_title_top.name,
+            classes=Tcss.border_title_top,
         )
 
     def on_mount(self) -> None:

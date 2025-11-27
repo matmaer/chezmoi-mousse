@@ -29,7 +29,7 @@ class CustomHeader(Header, AppType):
         header_title = self.query_exactly_one("HeaderTitle", Static)
         if self.changes_enabled is True:
             self.screen.title = HeaderTitle.header_live_mode
-            header_title.add_class(Tcss.changes_enabled_color.name)
+            header_title.add_class(Tcss.changes_enabled_color)
         elif self.changes_enabled is False:
             self.screen.title = HeaderTitle.header_dry_run_mode
-            header_title.remove_class(Tcss.changes_enabled_color.name)
+            header_title.remove_class(Tcss.changes_enabled_color)

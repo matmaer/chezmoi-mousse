@@ -32,7 +32,7 @@ class DiffView(RichLog, AppType):
             auto_scroll=False,
             highlight=True,
             wrap=True,  # TODO: implement footer binding to toggle wrap
-            classes=Tcss.border_title_top.name,
+            classes=Tcss.border_title_top,
         )
         self.click_colored_file = Text(
             f"Click a path with status to see the output from {self.diff_cmd.pretty_cmd}.",

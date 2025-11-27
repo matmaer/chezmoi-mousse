@@ -149,24 +149,29 @@ class SectionLabels(StrEnum):
 
 
 class Tcss(StrEnum):
-    border_title_top = ".border_title_top"
-    changes_enabled_color = ".changes_enabled_color"
-    content_switcher_left = ".content_switcher_left"
-    doctor_table = ".doctor_table"
-    flat_button = ".flat_button"
-    flat_link = ".flat_link"
-    flow_diagram = ".flow_diagram"
-    input_field = ".input_field"
-    input_select = ".input_select"
-    last_clicked_flat_btn = ".last_clicked_flat_btn"
-    last_clicked_tab_btn = ".last_clicked_tab_btn"
-    operate_button = ".operate_button"
-    pw_mgr_group = ".pw_mgr_group"
-    read_cmd_static = ".read_cmd_static"
-    single_button_vertical = ".single_button_vertical"
-    tab_button = ".tab_button"
-    tab_left_vertical = ".tab_left_vertical"
-    tree_widget = ".tree_widget"
+    border_title_top = auto()
+    changes_enabled_color = auto()
+    content_switcher_left = auto()
+    doctor_table = auto()
+    flat_button = auto()
+    flat_link = auto()
+    flow_diagram = auto()
+    input_field = auto()
+    input_select = auto()
+    last_clicked_flat_btn = auto()
+    last_clicked_tab_btn = auto()
+    operate_button = auto()
+    pw_mgr_group = auto()
+    read_cmd_static = auto()
+    single_button_vertical = auto()
+    tab_button = auto()
+    tab_left_vertical = auto()
+    tree_widget = auto()
+
+    # add a property to return the name with a dot prefix
+    @property
+    def dot_prefix(self) -> str:
+        return f".{self.value}"
 
 
 class TreeName(StrEnum):

@@ -32,8 +32,7 @@ class TreeSwitcher(Vertical):
     def __init__(self, ids: "AppIds"):
         self.ids = ids
         super().__init__(
-            id=self.ids.container.left_side,
-            classes=Tcss.tab_left_vertical.name,
+            id=self.ids.container.left_side, classes=Tcss.tab_left_vertical
         )
 
     def compose(self) -> ComposeResult:
@@ -41,7 +40,7 @@ class TreeSwitcher(Vertical):
         with ContentSwitcher(
             id=self.ids.switcher.trees,
             initial=self.ids.tree.managed,
-            classes=Tcss.content_switcher_left.name,
+            classes=Tcss.content_switcher_left,
         ):
             yield ManagedTree(ids=self.ids)
             yield ListTree(ids=self.ids)

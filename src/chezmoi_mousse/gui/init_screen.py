@@ -70,7 +70,7 @@ class RepositoryURLInput(VerticalGroup):
         yield HorizontalGroup(
             Select[str].from_values(
                 ["https", "ssh"],
-                classes=Tcss.input_select.name,
+                classes=Tcss.input_select,
                 value="https",
                 allow_blank=False,
                 type_to_search=False,
@@ -79,7 +79,7 @@ class RepositoryURLInput(VerticalGroup):
                 placeholder="Enter repository URL",
                 validate_on=["submitted"],
                 validators=URL(),
-                classes=Tcss.input_field.name,
+                classes=Tcss.input_field,
             ),
         )
 
@@ -208,7 +208,7 @@ class InitScreen(Screen["CommandResult | None"], AppType):
         exit_button.label = OperateBtn.init_exit.close_label
         exit_button.tooltip = OperateBtn.init_exit.close_tooltip
 
-    @on(Button.Pressed, Tcss.flat_button)
+    @on(Button.Pressed, Tcss.flat_button.dot_prefix)
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
         switcher = self.query_one(
@@ -225,7 +225,7 @@ class InitScreen(Screen["CommandResult | None"], AppType):
         elif event.button.id == self.ids.flat_btn.template_data:
             switcher.current = self.ids.view.template_data
 
-    @on(Button.Pressed, Tcss.operate_button)
+    @on(Button.Pressed, Tcss.operate_button.dot_prefix)
     def handle_operate_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
         if event.button.id == self.ids.operate_btn.init_exit:

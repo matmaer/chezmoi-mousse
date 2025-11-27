@@ -42,7 +42,7 @@ class TreeBase(Tree[NodeData], AppType):
         super().__init__(
             label="root",
             id=self.ids.tree_id(tree=tree_name),
-            classes=Tcss.tree_widget.name,
+            classes=Tcss.tree_widget,
         )
         self._initial_render = True
         self._first_focus = True
@@ -62,7 +62,7 @@ class TreeBase(Tree[NodeData], AppType):
         self.guide_depth: int = 3
         self.show_root: bool = False
         self.border_title = " destDir "
-        self.add_class(Tcss.border_title_top.name)
+        self.add_class(Tcss.border_title_top)
 
     # the styling method for the node labels
     def style_label(self, node_data: NodeData) -> Text:

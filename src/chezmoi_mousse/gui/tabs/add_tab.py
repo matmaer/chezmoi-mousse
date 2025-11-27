@@ -246,14 +246,12 @@ class AddTab(Horizontal, AppType):
         dir_tree = self.query_one(self.ids.tree.dir_tree_q, FilteredDirTree)
         dir_tree.guide_depth = 3
         dir_tree.show_root = False
-        dir_tree.add_class(
-            Tcss.tab_left_vertical.name, Tcss.border_title_top.name
-        )
+        dir_tree.add_class(Tcss.tab_left_vertical, Tcss.border_title_top)
         dir_tree.border_title = " destDir "
         contents_view = self.query_one(
             self.ids.logger.contents_q, ContentsView
         )
-        contents_view.add_class(Tcss.border_title_top.name)
+        contents_view.add_class(Tcss.border_title_top)
         contents_view.border_title = f" {self.destDir} "
 
     def update_buttons(self, is_dir: bool) -> None:

@@ -49,7 +49,7 @@ class DoctorTableView(Vertical, AppType):
         yield DataTable(
             id=self.ids.datatable.doctor,
             show_cursor=False,
-            classes=Tcss.doctor_table.name,
+            classes=Tcss.doctor_table,
         )
 
     def on_mount(self) -> None:

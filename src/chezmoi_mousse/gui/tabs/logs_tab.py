@@ -47,7 +47,7 @@ class LogsTab(Vertical, AppType):
         with ContentSwitcher(
             id=self.ids.switcher.logs_tab,
             initial=self.ids.logger.app,
-            classes=Tcss.border_title_top.name,
+            classes=Tcss.border_title_top,
         ):
             yield AppLog(ids=self.ids)
             yield ReadCmdLog(ids=self.ids)
@@ -62,7 +62,7 @@ class LogsTab(Vertical, AppType):
         )
         switcher.border_title = BorderTitle.app_log
 
-    @on(Button.Pressed, Tcss.tab_button)
+    @on(Button.Pressed, Tcss.tab_button.dot_prefix)
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
         switcher = self.query_one(

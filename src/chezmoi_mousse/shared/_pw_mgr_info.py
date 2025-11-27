@@ -182,7 +182,7 @@ class PwCollapsible(CustomCollapsible, AppType):
                 Static(self.pw_mgr_data.description, markup=False),
                 SubSectionLabel(InfoStrings.additional_info_label),
                 Static(self.pw_mgr_data.info, markup=False),
-                classes=Tcss.pw_mgr_group.name,
+                classes=Tcss.pw_mgr_group,
             ),
             title=self.collapsible_title,
         )

@@ -34,7 +34,7 @@ class FlatButton(Button):
     def __init__(self, *, ids: "AppIds", button_enum: FlatBtn) -> None:
         self.ids = ids
         super().__init__(
-            classes=Tcss.flat_button.name,
+            classes=Tcss.flat_button,
             flat=True,
             id=self.ids.flat_button_id(btn=button_enum),
             label=button_enum,
@@ -49,7 +49,7 @@ class FlatLink(Link):
             id=self.ids.link_button_id(btn=link_enum),
             text=link_enum.link_text,
             url=link_enum.link_url,
-            classes=Tcss.flat_link.name,
+            classes=Tcss.flat_link,
         )
 
 
@@ -59,8 +59,7 @@ class FlatButtonsVertical(Vertical):
         self.buttons: tuple[FlatBtn, ...] = buttons
         self.ids = ids
         super().__init__(
-            id=self.ids.container.left_side,
-            classes=Tcss.tab_left_vertical.name,
+            id=self.ids.container.left_side, classes=Tcss.tab_left_vertical
         )
 
     def compose(self) -> ComposeResult:
@@ -68,13 +67,13 @@ class FlatButtonsVertical(Vertical):
             yield FlatButton(ids=self.ids, button_enum=button_enum)
 
     def on_mount(self) -> None:
-        self.query(Button).first().add_class(Tcss.last_clicked_flat_btn.name)
+        self.query(Button).first().add_class(Tcss.last_clicked_flat_btn)
 
     @on(Button.Pressed)
     def update_tcss_classes(self, event: Button.Pressed) -> None:
         for btn in self.query(Button):
-            btn.remove_class(Tcss.last_clicked_flat_btn.name)
-        event.button.add_class(Tcss.last_clicked_flat_btn.name)
+            btn.remove_class(Tcss.last_clicked_flat_btn)
+        event.button.add_class(Tcss.last_clicked_flat_btn)
 
 
 class OperateButton(Button):
@@ -86,7 +85,7 @@ class OperateButton(Button):
         else:
             should_disable = True
         super().__init__(
-            classes=Tcss.operate_button.name,
+            classes=Tcss.operate_button,
             disabled=should_disable,
             id=self.ids.operate_button_id(btn=self.button_enum),
             label=self.button_enum.initial_label,
@@ -119,21 +118,21 @@ class TabButtonsBase(Horizontal):
 
     def compose(self) -> ComposeResult:
         for button_enum in self.buttons:
-            with Vertical(classes=Tcss.single_button_vertical.name):
+            with Vertical(classes=Tcss.single_button_vertical):
                 yield Button(
                     label=button_enum,
                     id=self.ids.tab_button_id(btn=button_enum),
-                    classes=Tcss.tab_button.name,
+                    classes=Tcss.tab_button,
                 )
 
     def on_mount(self) -> None:
-        self.query(Button).first().add_class(Tcss.last_clicked_tab_btn.name)
+        self.query(Button).first().add_class(Tcss.last_clicked_tab_btn)
 
     @on(Button.Pressed)
     def update_tcss_classes(self, event: Button.Pressed) -> None:
         for btn in self.query(Button):
-            btn.remove_class(Tcss.last_clicked_tab_btn.name)
-        event.button.add_class(Tcss.last_clicked_tab_btn.name)
+            btn.remove_class(Tcss.last_clicked_tab_btn)
+        event.button.add_class(Tcss.last_clicked_tab_btn)
 
 
 class LogsTabButtons(TabButtonsBase, AppType):

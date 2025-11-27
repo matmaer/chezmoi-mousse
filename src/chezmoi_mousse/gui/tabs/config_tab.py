@@ -90,7 +90,7 @@ class ConfigTab(Horizontal, AppType):
         )
         yield ConfigTabSwitcher(self.ids)
 
-    @on(Button.Pressed, Tcss.flat_button)
+    @on(Button.Pressed, Tcss.flat_button.dot_prefix)
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
         switcher = self.query_one(
