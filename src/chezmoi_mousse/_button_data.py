@@ -156,11 +156,11 @@ class OperateBtn(Enum):
         file_tooltip='Run "chezmoi destroy" on the file. Permanently remove the file from disk and chezmoi. MAKE SURE YOU HAVE A BACKUP!',
     )
     init_new_repo = OperateButtonData(
-        initial_label="Chezmoi Init New Repo",
+        initial_label="Init New Repo",
         initial_tooltip="Initialize a new chezmoi repository in your home directory with default settings shown in the cat config section.",
     )
     init_clone_repo = OperateButtonData(
-        initial_label="Chezmoi Init Clone Repo",
+        initial_label="Init Clone Repo",
         initial_tooltip="Initialize a the chezmoi repository by cloning from a provided remote repository.",
     )
     init_exit = OperateButtonData(
