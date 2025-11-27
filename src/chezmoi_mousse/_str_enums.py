@@ -23,9 +23,10 @@ __all__ = [
 
 class BindingDescription(StrEnum):
     # Screen bindings
-    exit_app = "Exit App"
-    reload = "Exit & Reload"
     back = "Back"
+    close = "Close"
+    exit_app = "Exit App"
+    reload = "Close & Reload"
     # Tab bindings
     hide_filters = "Hide filters"
     show_filters = "Show filters"
