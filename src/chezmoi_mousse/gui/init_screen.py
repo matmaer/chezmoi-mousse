@@ -1,4 +1,3 @@
-import dataclasses
 from typing import TYPE_CHECKING
 
 from textual import on
@@ -210,32 +209,6 @@ class InitScreen(Screen["CommandResult | None"], AppType):
         elif event.button.id == self.ids.flat_btn.template_data:
             switcher.current = self.ids.view.template_data
 
-    def update_bindings(self, operate_button: OperateBtn) -> None:
-        if self.command_result is None:
-            return
-        if operate_button == OperateBtn.init_clone_repo and (
-            self.repo_url is None or self.valid_url is not True
-        ):
-            return
-        new_description = (
-            BindingDescription.reload
-            if self.command_result.returncode == 0
-            else BindingDescription.exit_app
-        )
-        for key, binding in self._bindings:
-            if binding.action == "exit_operation":
-                updated_binding = dataclasses.replace(
-                    binding, description=new_description
-                )
-                if key in self._bindings.key_to_bindings:
-                    bindings_list = self._bindings.key_to_bindings[key]
-                    for i, b in enumerate(bindings_list):
-                        if b.action == "exit_operation":
-                            bindings_list[i] = updated_binding
-                            break
-                break
-            self.refresh_bindings()
-
     @on(Button.Pressed, Tcss.operate_button.dot_prefix)
     async def handle_operate_button_pressed(
         self, event: Button.Pressed
@@ -246,13 +219,11 @@ class InitScreen(Screen["CommandResult | None"], AppType):
             self.dismiss(self.command_result)
         elif event.button.id == self.ids.operate_btn.init_new_repo:
             self.notify_and_update_buttons()
-            self.update_bindings(operate_button=OperateBtn.init_new_repo)
         elif event.button.id == self.ids.operate_btn.init_clone_repo:
             # Submit the input, which triggers validation and logs it.
             input_widget = self.query_exactly_one(Input)
             await input_widget.action_submit()
             self.notify_and_update_buttons()
-            self.update_bindings(operate_button=OperateBtn.init_clone_repo)
 
     @on(Input.Submitted)
     def log_validation_result(self, event: Input.Submitted) -> None:
@@ -277,10 +248,4 @@ class InitScreen(Screen["CommandResult | None"], AppType):
                 self.debug_log.success(f"Valid URL entered: {self.repo_url}")
 
     def action_exit_operation(self) -> None:
-        if (
-            self.command_result is not None
-            and self.command_result.returncode == 0
-        ):
-            self.dismiss(self.command_result)
-        else:
-            self.app.exit()
+        self.app.exit()

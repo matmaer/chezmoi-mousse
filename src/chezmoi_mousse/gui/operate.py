@@ -1,3 +1,4 @@
+import dataclasses
 from enum import StrEnum
 from typing import TYPE_CHECKING
 
@@ -175,6 +176,7 @@ class OperateScreen(Screen["OperateScreenData"], AppType):
             "#", btn=self.operate_btn
         )
         self.operate_data = operate_data
+        self.repo_url: str | None = None
         if self.operate_data.node_data is not None:
             self.path_arg = self.operate_data.node_data.path
             self.path_kind = self.operate_data.node_data.path_kind
@@ -372,6 +374,32 @@ class OperateScreen(Screen["OperateScreenData"], AppType):
             self.dismiss(self.operate_data)
         else:
             self.run_operate_command()
+
+    def update_bindings(self, operate_button: OperateBtn) -> None:
+        if (
+            self.operate_btn
+            not in (OperateBtn.init_new_repo, OperateBtn.init_clone_repo)
+            or self.operate_data.command_result is None
+        ):
+            return
+        new_description = (
+            BindingDescription.reload
+            if self.command_result.returncode == 0
+            else BindingDescription.exit_app
+        )
+        for key, binding in self._bindings:
+            if binding.action == "exit_operation":
+                updated_binding = dataclasses.replace(
+                    binding, description=new_description
+                )
+                if key in self._bindings.key_to_bindings:
+                    bindings_list = self._bindings.key_to_bindings[key]
+                    for i, b in enumerate(bindings_list):
+                        if b.action == "exit_operation":
+                            bindings_list[i] = updated_binding
+                            break
+                break
+            self.refresh_bindings()
 
     def action_exit_operation(self) -> None:
         self.dismiss(self.operate_data)
