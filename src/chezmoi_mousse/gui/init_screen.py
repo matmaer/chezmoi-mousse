@@ -92,21 +92,6 @@ class InitCloneRepo(Vertical, AppType):
             buttons=(OperateBtn.init_clone_repo, OperateBtn.init_exit),
         )
 
-    @on(Input.Submitted)
-    def log_invalid_reasons(self, event: Input.Submitted) -> None:
-        operate_log = self.query_exactly_one(OperateLog)
-        if (
-            event.validation_result is not None
-            and not event.validation_result.is_valid
-        ):
-            text_lines: str = "\n".join(
-                event.validation_result.failure_descriptions
-            )
-            operate_log.info(text_lines)
-        else:
-            self.repo_url = event.value
-            operate_log.success(f"Valid URL entered: {self.repo_url}")
-
 
 class InitSwitcher(ContentSwitcher):
 
@@ -225,3 +210,18 @@ class InitScreen(Screen["CommandResult | None"], AppType):
 
     def action_exit_operation(self) -> None:
         self.dismiss(self.command_result)
+
+    @on(Input.Submitted)
+    def log_invalid_reasons(self, event: Input.Submitted) -> None:
+        operate_log = self.query_exactly_one(OperateLog)
+        if (
+            event.validation_result is not None
+            and not event.validation_result.is_valid
+        ):
+            text_lines: str = "\n".join(
+                event.validation_result.failure_descriptions
+            )
+            operate_log.info(text_lines)
+        else:
+            self.repo_url = event.value
+            operate_log.success(f"Valid URL entered: {self.repo_url}")
