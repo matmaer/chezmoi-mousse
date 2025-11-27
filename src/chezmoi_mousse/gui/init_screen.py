@@ -183,7 +183,7 @@ class InitScreen(Screen["CommandResult | None"], AppType):
     def perform_init_command(self, repo_url: str | None = None) -> None:
         # Run command
         self.command_result = self.app.chezmoi.perform(
-            WriteCmd.init, dry_run=self.app.changes_enabled
+            WriteCmd.init, dry_run=self.app.changes_enabled, repo_url=repo_url
         )
         # Log results
         output_log = self.query_one(self.ids.logger.operate_q, OperateLog)
