@@ -1,3 +1,4 @@
+from enum import StrEnum
 from typing import TYPE_CHECKING
 
 from textual import on
@@ -11,7 +12,14 @@ from textual.containers import (
 )
 from textual.screen import Screen
 from textual.validation import URL
-from textual.widgets import Button, ContentSwitcher, Footer, Input, Select
+from textual.widgets import (
+    Button,
+    ContentSwitcher,
+    Footer,
+    Input,
+    Select,
+    Static,
+)
 
 from chezmoi_mousse import (
     AppType,
@@ -41,14 +49,8 @@ if TYPE_CHECKING:
     from chezmoi_mousse import AppIds, SplashData
 
 
-class InitNewRepo(Vertical, AppType):
-
-    def __init__(self, *, ids: "AppIds") -> None:
-        self.ids = ids
-        super().__init__(id=self.ids.view.new_repo)
-
-    def compose(self) -> ComposeResult:
-        yield MainSectionLabel(SectionLabels.init_new_repo)
+class StaticText(StrEnum):
+    init_new = f"Initialize a new chezmoi repository in your home directory, check the [$text-primary]{FlatBtn.cat_config}[/] section for the default settings in use.\nClick the [$text-primary]{OperateBtn.init_new_repo.initial_label}[/] button below to run [$text-success]'chezmoi init'[/].\n"
 
 
 class RepositoryURLInput(VerticalGroup):
@@ -71,15 +73,20 @@ class RepositoryURLInput(VerticalGroup):
         )
 
 
-class InitCloneRepo(Vertical, AppType):
+class InitContext(Vertical, AppType):
 
     def __init__(self, *, ids: "AppIds") -> None:
         self.ids = ids
-        super().__init__(id=self.ids.view.clone_repo)
+        super().__init__(id=self.ids.view.init_context)
 
     def compose(self) -> ComposeResult:
-        yield MainSectionLabel(SectionLabels.init_clone_repo)
+        yield MainSectionLabel(SectionLabels.init_chezmoi)
+        yield SubSectionLabel(SectionLabels.init_new_repo)
+        yield Static(StaticText.init_new)
         yield SubSectionLabel(SectionLabels.init_clone_repo_url)
+        yield Static(
+            f'To enable the "{OperateBtn.init_clone_repo}" button, enter a repository address below.'
+        )
         yield RepositoryURLInput()
 
 
@@ -88,13 +95,13 @@ class InitSwitcher(ContentSwitcher):
     def __init__(self, *, ids: "AppIds", splash_data: "SplashData") -> None:
         self.ids = ids
         super().__init__(
-            id=self.ids.switcher.init_screen, initial=self.ids.view.clone_repo
+            id=self.ids.switcher.init_screen,
+            initial=self.ids.view.init_context,
         )
         self.splash_data = splash_data
 
     def compose(self) -> ComposeResult:
-        yield InitCloneRepo(ids=self.ids)
-        yield InitNewRepo(ids=self.ids)
+        yield InitContext(ids=self.ids)
         yield DoctorTableView(ids=self.ids)
         yield CatConfigView(ids=self.ids)
         yield TemplateDataView(ids=self.ids)
@@ -142,8 +149,7 @@ class InitScreen(Screen["CommandResult | None"], AppType):
             yield FlatButtonsVertical(
                 ids=self.ids,
                 buttons=(
-                    FlatBtn.clone_repo,
-                    FlatBtn.new_repo,
+                    FlatBtn.init_context,
                     FlatBtn.doctor,
                     FlatBtn.cat_config,
                     FlatBtn.template_data,
@@ -168,6 +174,10 @@ class InitScreen(Screen["CommandResult | None"], AppType):
         if self.app.dev_mode:
             self.debug_log = self.query_one(self.ids.logger.debug_q, DebugLog)
             self.debug_log.ready_to_run(LogText.debug_log_initialized)
+        self.init_clone_btn = self.query_one(
+            self.ids.operate_btn.init_clone_repo_q, Button
+        )
+        self.init_clone_btn.disabled = True
 
     def notify_and_update_buttons(self) -> None:
         if self.command_result is None:
@@ -178,11 +188,6 @@ class InitScreen(Screen["CommandResult | None"], AppType):
             self.notify("Operation failed.", severity="error")
             return
         # Update buttons
-        init_new_btn = self.query_one(
-            self.ids.operate_btn.init_new_repo_q, Button
-        )
-        init_new_btn.disabled = True
-        init_new_btn.tooltip = None
         init_clone_btn = self.query_one(
             self.ids.operate_btn.init_clone_repo_q, Button
         )
@@ -198,10 +203,8 @@ class InitScreen(Screen["CommandResult | None"], AppType):
         switcher = self.query_one(
             self.ids.switcher.init_screen_q, ContentSwitcher
         )
-        if event.button.id == self.ids.flat_btn.new_repo:
-            switcher.current = self.ids.view.new_repo
-        elif event.button.id == self.ids.flat_btn.clone_repo:
-            switcher.current = self.ids.view.clone_repo
+        if event.button.id == self.ids.flat_btn.init_context:
+            switcher.current = self.ids.view.init_context
         elif event.button.id == self.ids.flat_btn.doctor:
             switcher.current = self.ids.container.doctor
         elif event.button.id == self.ids.flat_btn.cat_config:

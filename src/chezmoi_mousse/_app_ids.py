@@ -286,8 +286,6 @@ class FlatButtonIds:
         self.apply_help_q = f"#{self.apply_help}"
         self.cat_config = ids.flat_button_id(btn=FlatBtn.cat_config)
         self.cat_config_q = f"#{self.cat_config}"
-        self.clone_repo = ids.flat_button_id(btn=FlatBtn.clone_repo)
-        self.clone_repo_q = f"#{self.clone_repo}"
         self.diagram = ids.flat_button_id(btn=FlatBtn.diagram)
         self.diagram_q = f"#{self.diagram}"
         self.doctor = ids.flat_button_id(btn=FlatBtn.doctor)
@@ -296,8 +294,8 @@ class FlatButtonIds:
         self.exit_app_q = f"#{self.exit_app}"
         self.ignored = ids.flat_button_id(btn=FlatBtn.ignored)
         self.ignored_q = f"#{self.ignored}"
-        self.new_repo = ids.flat_button_id(btn=FlatBtn.new_repo)
-        self.new_repo_q = f"#{self.new_repo}"
+        self.init_context = ids.flat_button_id(btn=FlatBtn.init_context)
+        self.init_context_q = f"#{self.init_context}"
         self.pw_mgr_info = ids.flat_button_id(btn=FlatBtn.pw_mgr_info)
         self.pw_mgr_info_q = f"#{self.pw_mgr_info}"
         self.re_add_help = ids.flat_button_id(btn=FlatBtn.re_add_help)
@@ -400,10 +398,8 @@ class ViewIds:
         self.diagram_q = f"#{self.diagram}"
 
         # Init screen
-        self.clone_repo = ids.view_id(view=ViewName.init_clone_view)
-        self.clone_repo_q = f"#{self.clone_repo}"
-        self.new_repo = ids.view_id(view=ViewName.init_new_view)
-        self.new_repo_q = f"#{self.new_repo}"
+        self.init_context = ids.view_id(view=ViewName.init_context_view)
+        self.init_context_q = f"#{self.init_context}"
 
         # Config tab
         self.cat_config = ids.view_id(view=ViewName.cat_config_view)

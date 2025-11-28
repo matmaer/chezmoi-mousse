@@ -150,7 +150,7 @@ class SectionLabels(StrEnum):
     debug_log_output = "Debug Log Output"
     doctor_output = '"chezmoi doctor" output'
     ignored_output = '"chezmoi ignored" output'
-    init_clone_repo = "Clone an existing chezmoi repository"
+    init_chezmoi = "Initialize chezmoi"
     init_clone_repo_url = "Repository URL to clone from."
     init_new_repo = "Initialize a new chezmoi repository"
     operate_context = "Operate Context"
@@ -201,8 +201,7 @@ class ViewName(StrEnum):
     cat_config_view = auto()
     diagram_view = auto()
     git_ignored_view = auto()
-    init_clone_view = auto()
-    init_new_view = auto()
+    init_context_view = auto()
     pw_mgr_info_view = auto()
     re_add_help_view = auto()
     template_data_view = auto()
