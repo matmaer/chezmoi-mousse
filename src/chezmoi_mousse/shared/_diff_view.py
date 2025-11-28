@@ -63,20 +63,20 @@ class DiffView(RichLog, AppType):
         # write lines for an unchanged file or directory except when we are in
         # either the ApplyTab or ReAddTabS
 
-        if self.ids.tab_name == TabName.apply:
-            if (
-                self.path not in self.app.chezmoi.apply_status_files
-                and self.path not in self.app.chezmoi.apply_status_dirs
-            ):
-                self._write_unchanged_path_info()
-                return
-        else:
-            if (
-                self.path not in self.app.chezmoi.re_add_status_files
-                and self.path not in self.app.chezmoi.re_add_status_dirs
-            ):
-                self._write_unchanged_path_info()
-                return
+        if (
+            self.ids.tab_name == TabName.apply
+            and self.path not in self.app.chezmoi.apply_status_files
+            and self.path not in self.app.chezmoi.apply_status_dirs
+        ):
+            self._write_unchanged_path_info()
+            return
+        elif (
+            self.ids.tab_name == TabName.re_add
+            and self.path not in self.app.chezmoi.re_add_status_files
+            and self.path not in self.app.chezmoi.re_add_status_dirs
+        ):
+            self._write_unchanged_path_info()
+            return
 
         # create the diff view for a changed file
         diff_output: "CommandResult" = self.app.chezmoi.read(
