@@ -24,7 +24,7 @@ GIT_LOG_PREFIX = "Click a path in the tree to see the output from"
 IN_DEST_DIR = "This is the destination directory (chezmoi destDir)"
 
 
-class LogText(StrEnum):
+class DestDirStrings(StrEnum):
     read_file = (
         'Click a file to see the output from [$success]"Path.read()"[/].'
     )
@@ -59,14 +59,14 @@ class DestDirInfo(VerticalGroup):
     def on_mount(self) -> None:
         lines: list[str] = []
         if self.ids.tab_name == TabName.add:
-            lines.append(LogText.read_file)
+            lines.append(DestDirStrings.read_file)
             lines.append(ADD_DIR_INFO)
         elif self.git_log is True:
-            lines.append(LogText.git_log_msg)
+            lines.append(DestDirStrings.git_log_msg)
         elif self.contents_logger is True:
-            lines.append(LogText.cat)
+            lines.append(DestDirStrings.cat)
         elif self.ids.tab_name == TabName.apply:
-            lines.append(LogText.diff)
+            lines.append(DestDirStrings.diff)
         elif self.ids.tab_name == TabName.re_add:
-            lines.append(LogText.diff_reverse)
+            lines.append(DestDirStrings.diff_reverse)
         self.mount(Static("\n".join(lines)))
