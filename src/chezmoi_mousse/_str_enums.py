@@ -116,19 +116,11 @@ class LogName(StrEnum):
 class LogText(StrEnum):
     app_log_initialized = "Application log initialized"
     debug_log_initialized = "Debug log initialized"
-    doctor_exit_zero = 'No errors found by "chezmoi doctor", check the Config tab for possible warnings or failed tests'
     chezmoi_found = "Found chezmoi command"
     chezmoi_not_found = "chezmoi command not found"
     dev_mode_enabled = "Dev mode enabled"
     operate_log_initialized = "Operate log initialized"
     read_log_initialized = "Read command log initialized"
-    std_err_logged = "Command stderr available in an Output log view"
-    succes_no_output = "Success, no output"
-    success_with_output = "Success, output will be processed"
-    verify_exit_zero = "All targets match their target state"
-    verify_non_zero = (
-        "Targets not matching their target state will be processed"
-    )
 
 
 class PathKind(StrEnum):

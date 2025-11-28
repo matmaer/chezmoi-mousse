@@ -74,7 +74,6 @@ class AppLog(LoggersBase, AppType):
         self.succes_no_output = "Success, no output"
         self.success_with_output = "Success, output will be processed"
         self.std_err_logged = "Command stderr available in an Output log view"
-        self.doctor_exit_zero = 'No errors found by "chezmoi doctor", check the Config tab for possible warnings or failed tests'
         self.verify_exit_zero = "All targets match their target state"
         self.verify_non_zero = (
             "Targets not matching their target state will be processed"
