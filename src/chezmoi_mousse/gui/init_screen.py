@@ -49,10 +49,6 @@ class InitNewRepo(Vertical, AppType):
 
     def compose(self) -> ComposeResult:
         yield MainSectionLabel(SectionLabels.init_new_repo)
-        yield OperateButtons(
-            ids=self.ids,
-            buttons=(OperateBtn.init_new_repo, OperateBtn.init_exit),
-        )
 
 
 class RepositoryURLInput(VerticalGroup):
@@ -85,10 +81,6 @@ class InitCloneRepo(Vertical, AppType):
         yield MainSectionLabel(SectionLabels.init_clone_repo)
         yield SubSectionLabel(SectionLabels.init_clone_repo_url)
         yield RepositoryURLInput()
-        yield OperateButtons(
-            ids=self.ids,
-            buttons=(OperateBtn.init_clone_repo, OperateBtn.init_exit),
-        )
 
 
 class InitSwitcher(ContentSwitcher):
@@ -158,10 +150,18 @@ class InitScreen(Screen["CommandResult | None"], AppType):
                 ),
             )
             yield InitSwitcher(ids=self.ids, splash_data=self.splash_data)
-        yield SubSectionLabel(SectionLabels.operate_output)
         if self.app.dev_mode is True:
+            yield SubSectionLabel(SectionLabels.debug_log_output)
             with Horizontal():
                 yield DebugLog(ids=self.ids)
+        yield OperateButtons(
+            ids=self.ids,
+            buttons=(
+                OperateBtn.init_new_repo,
+                OperateBtn.init_clone_repo,
+                OperateBtn.init_exit,
+            ),
+        )
         yield Footer(id=self.ids.footer)
 
     def on_mount(self) -> None:

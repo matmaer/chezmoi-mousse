@@ -147,6 +147,7 @@ class TabName(StrEnum):
 
 class SectionLabels(StrEnum):
     cat_config_output = '"chezmoi cat-config" output'
+    debug_log_output = "Debug Log Output"
     doctor_output = '"chezmoi doctor" output'
     ignored_output = '"chezmoi ignored" output'
     init_clone_repo = "Clone an existing chezmoi repository"
