@@ -51,6 +51,7 @@ if TYPE_CHECKING:
 
 class StaticText(StrEnum):
     init_new = f"Initialize a new chezmoi repository in your home directory, check the [$text-primary]{FlatBtn.cat_config}[/] section for the default settings in use.\nClick the [$text-primary]{OperateBtn.init_new_repo.initial_label}[/] button below to run [$text-success]'chezmoi init'[/].\n"
+    init_clone = f'To enable the [$text-primary]"{OperateBtn.init_clone_repo.initial_label}"[/] button, enter a repository address below.'
 
 
 class RepositoryURLInput(VerticalGroup):
@@ -84,9 +85,7 @@ class InitContext(Vertical, AppType):
         yield SubSectionLabel(SectionLabels.init_new_repo)
         yield Static(StaticText.init_new)
         yield SubSectionLabel(SectionLabels.init_clone_repo_url)
-        yield Static(
-            f'To enable the "{OperateBtn.init_clone_repo}" button, enter a repository address below.'
-        )
+        yield Static(StaticText.init_clone)
         yield RepositoryURLInput()
 
 
