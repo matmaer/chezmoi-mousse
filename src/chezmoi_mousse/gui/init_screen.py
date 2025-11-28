@@ -229,23 +229,14 @@ class InitScreen(Screen["CommandResult | None"], AppType):
     def log_validation_result(self, event: Input.Submitted) -> None:
         if event.validation_result is None:
             return
-        self.debug_log.info(f"event.value: {event.value!r}")
-        self.debug_log.info(f"is space: {event.value.isspace()}")
-        self.debug_log.list_attr(event.value)
         self.valid_url = event.validation_result.is_valid
         if not event.validation_result.is_valid:
             self.notify("Invalid URL entered.", severity="error")
-            self.debug_log.info(
-                "\n".join(event.validation_result.failure_descriptions)
-            )
-            return
         else:
             if event.value == "":
-                self.debug_log.warning("No URL entered.")
                 self.repo_url = None
             else:
                 self.repo_url = event.value
-                self.debug_log.success(f"Valid URL entered: {self.repo_url}")
 
     def action_exit_operation(self) -> None:
         self.app.exit()
