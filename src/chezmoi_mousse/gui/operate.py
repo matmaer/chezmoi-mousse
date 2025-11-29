@@ -424,6 +424,10 @@ class OperateScreen(Screen["OperateScreenData"], AppType):
         self.dismiss(self.operate_data)
 
 
+class AddOperateScreen(OperateScreen):
+    pass
+
+
 class ApplyOperateScreen(OperateScreen):
     pass
 
