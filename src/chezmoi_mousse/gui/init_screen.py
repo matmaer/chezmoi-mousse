@@ -38,7 +38,6 @@ from chezmoi_mousse.shared import (
     DoctorTableView,
     FlatButtonsVertical,
     MainSectionLabel,
-    OperateButtons,
     SubSectionLabel,
     TemplateDataView,
 )
@@ -159,24 +158,24 @@ class InitScreen(Screen["CommandResult | None"], AppType):
             yield SubSectionLabel(SectionLabels.debug_log_output)
             with Horizontal():
                 yield DebugLog(ids=self.ids)
-        yield OperateButtons(
-            ids=self.ids,
-            buttons=(
-                OperateBtn.init_new_repo,
-                OperateBtn.init_clone_repo,
-                OperateBtn.init_exit,
-            ),
-        )
+        # yield OperateButtons(
+        #     ids=self.ids,
+        #     buttons=(
+        #         OperateBtn.init_new_repo,
+        #         OperateBtn.init_clone_repo,
+        #         OperateBtn.init_exit,
+        #     ),
+        # )
         yield Footer(id=self.ids.footer)
 
     def on_mount(self) -> None:
         if self.app.dev_mode:
             self.debug_log = self.query_one(self.ids.logger.debug_q, DebugLog)
             self.debug_log.ready_to_run(LogText.debug_log_initialized)
-        self.init_clone_btn = self.query_one(
-            self.ids.operate_btn.init_clone_repo_q, Button
-        )
-        self.init_clone_btn.disabled = True
+        # self.init_clone_btn = self.query_one(
+        #     self.ids.operate_btn.init_clone_repo_q, Button
+        # )
+        # self.init_clone_btn.disabled = True
 
     def notify_and_update_buttons(self) -> None:
         if self.command_result is None:
@@ -211,21 +210,21 @@ class InitScreen(Screen["CommandResult | None"], AppType):
         elif event.button.id == self.ids.flat_btn.template_data:
             switcher.current = self.ids.view.template_data
 
-    @on(Button.Pressed, Tcss.operate_button.dot_prefix)
-    async def handle_operate_button_pressed(
-        self, event: Button.Pressed
-    ) -> None:
-        event.stop()
-        if event.button.id == self.ids.operate_btn.init_exit:
-            # TODO: check network connectivity before proceeding
-            self.dismiss(self.command_result)
-        elif event.button.id == self.ids.operate_btn.init_new_repo:
-            self.notify_and_update_buttons()
-        elif event.button.id == self.ids.operate_btn.init_clone_repo:
-            # Submit the input, which triggers validation and logs it.
-            input_widget = self.query_exactly_one(Input)
-            await input_widget.action_submit()
-            self.notify_and_update_buttons()
+    # @on(Button.Pressed, Tcss.operate_button.dot_prefix)
+    # async def handle_operate_button_pressed(
+    #     self, event: Button.Pressed
+    # ) -> None:
+    #     event.stop()
+    #     if event.button.id == self.ids.operate_btn.init_exit:
+    #         # TODO: check network connectivity before proceeding
+    #         self.dismiss(self.command_result)
+    #     elif event.button.id == self.ids.operate_btn.init_new_repo:
+    #         self.notify_and_update_buttons()
+    #     elif event.button.id == self.ids.operate_btn.init_clone_repo:
+    #         # Submit the input, which triggers validation and logs it.
+    #         input_widget = self.query_exactly_one(Input)
+    #         await input_widget.action_submit()
+    #         self.notify_and_update_buttons()
 
     @on(Input.Submitted)
     def log_validation_result(self, event: Input.Submitted) -> None:
