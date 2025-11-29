@@ -14,11 +14,11 @@ from textual.widgets import TabbedContent, Tabs
 from textual.worker import WorkerCancelled
 
 from chezmoi_mousse import (
-    AppIds,
     BindingDescription,
     Chars,
     CommandResult,
-    ScreenName,
+    ScreenIds,
+    TabIds,
     TabName,
 )
 from chezmoi_mousse.shared import (
@@ -73,27 +73,6 @@ chezmoi_mousse_light = Theme(
     accent="#790084",
     surface="#B8B8B8",
 )
-
-
-class ScreenIds:
-    def __init__(self) -> None:
-        # Construct the ids for each screen
-        self.init = AppIds(ScreenName.init)
-        self.install_help = AppIds(ScreenName.install_help)
-        self.splash = AppIds(ScreenName.splash)
-        self.main = AppIds(ScreenName.main)
-        self.operate = AppIds(ScreenName.operate)
-
-
-class TabIds:
-    def __init__(self) -> None:
-        # Construct the ids for the tabs
-        self.add = AppIds(TabName.add)
-        self.apply = AppIds(TabName.apply)
-        self.config = AppIds(TabName.config)
-        self.help = AppIds(TabName.help)
-        self.logs = AppIds(TabName.logs)
-        self.re_add = AppIds(TabName.re_add)
 
 
 class ChezmoiGUI(App[None]):

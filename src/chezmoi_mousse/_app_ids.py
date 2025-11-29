@@ -16,7 +16,7 @@ from ._str_enums import (
 )
 from ._switch_data import Switches
 
-__all__ = ["AppIds"]
+__all__ = ["AppIds", "ScreenIds", "TabIds"]
 
 
 class AppIds:
@@ -94,6 +94,27 @@ class AppIds:
 
     def view_id(self, qid: str = "", *, view: ViewName | LogName) -> str:
         return f"{qid}{self._canvas_name}_{view}"
+
+
+class ScreenIds:
+    def __init__(self) -> None:
+        # Construct the ids for each screen
+        self.init = AppIds(ScreenName.init)
+        self.install_help = AppIds(ScreenName.install_help)
+        self.splash = AppIds(ScreenName.splash)
+        self.main = AppIds(ScreenName.main)
+        self.operate = AppIds(ScreenName.operate)
+
+
+class TabIds:
+    def __init__(self) -> None:
+        # Construct the ids for the tabs
+        self.add = AppIds(TabName.add)
+        self.apply = AppIds(TabName.apply)
+        self.config = AppIds(TabName.config)
+        self.help = AppIds(TabName.help)
+        self.logs = AppIds(TabName.logs)
+        self.re_add = AppIds(TabName.re_add)
 
 
 class ContainerIds:

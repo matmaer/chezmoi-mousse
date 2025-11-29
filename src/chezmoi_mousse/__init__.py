@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from importlib.metadata import PackageNotFoundError, version
 from typing import TYPE_CHECKING
 
-from ._app_ids import AppIds
+from ._app_ids import AppIds, ScreenIds, TabIds
 from ._button_data import FlatBtn, LinkBtn, OperateBtn, TabBtn
 from ._chezmoi import (
     Chezmoi,
@@ -66,11 +66,13 @@ __all__ = [
     "PreRunData",
     "ReadCmd",
     "ReadVerbs",
+    "ScreenIds",
     "ScreenName",
     "SectionLabels",
     "SplashData",
     "Switches",
     "TabBtn",
+    "TabIds",
     "TabName",
     "Tcss",
     "TreeName",
