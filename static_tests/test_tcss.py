@@ -22,13 +22,14 @@ def extract_tcss_classes() -> list[str]:
     return matches
 
 
-def test_tcss_class_not_in_tcss_enum() -> None:
+def test_not_in_use() -> None:
     result: list[str] = []
     tcss_classes = extract_tcss_classes()
     tcss_enum_members = [member.value for member in Tcss]
 
     for tcss_class in tcss_classes:
-        if tcss_class not in tcss_enum_members:
+        # allow matching either the bare member value or the dot-prefixed form
+        if tcss_class.lstrip(".") not in tcss_enum_members:
             result.append(tcss_class)
 
     if len(result) > 0:
