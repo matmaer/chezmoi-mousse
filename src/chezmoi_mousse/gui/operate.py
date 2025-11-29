@@ -434,3 +434,7 @@ class ApplyOperateScreen(OperateScreen):
 
 class ReAddOperateScreen(OperateScreen):
     pass
+
+
+class InitOperateScreen(OperateScreen):
+    pass
