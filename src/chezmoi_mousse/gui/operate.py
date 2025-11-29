@@ -432,16 +432,28 @@ class OperateScreenBase(Screen["OperateScreenData"], AppType):
 
 
 class AddOperateScreen(OperateScreenBase):
-    pass
+    def __init__(
+        self, *, ids: "AppIds", operate_data: "OperateScreenData"
+    ) -> None:
+        super().__init__(ids=ids, operate_data=operate_data)
 
 
 class ApplyOperateScreen(OperateScreenBase):
-    pass
+    def __init__(
+        self, *, ids: "AppIds", operate_data: "OperateScreenData"
+    ) -> None:
+        super().__init__(ids=ids, operate_data=operate_data)
 
 
 class ReAddOperateScreen(OperateScreenBase):
-    pass
+    def __init__(
+        self, *, ids: "AppIds", operate_data: "OperateScreenData"
+    ) -> None:
+        super().__init__(ids=ids, operate_data=operate_data)
 
 
 class InitOperateScreen(OperateScreenBase):
-    pass
+    def __init__(
+        self, *, ids: "AppIds", operate_data: "OperateScreenData"
+    ) -> None:
+        super().__init__(ids=ids, operate_data=operate_data)
