@@ -27,7 +27,7 @@ from chezmoi_mousse.shared import (
     ReadCmdLog,
 )
 
-from .operate import OperateScreen
+from .operate import ApplyOperateScreen, OperateScreen, ReAddOperateScreen
 from .tabs.add_tab import AddTab, FilteredDirTree
 from .tabs.apply_tab import ApplyTab
 from .tabs.common.trees import ExpandedTree, ListTree, ManagedTree
@@ -227,6 +227,13 @@ class TabbedContentScreen(Screen[None], AppType):
             operate_screen_data = OperateScreenData(
                 operate_btn=button_enum, node_data=self.current_add_node
             )
+            self.app.push_screen(
+                OperateScreen(
+                    ids=self.app.screen_ids.operate,
+                    operate_data=operate_screen_data,
+                ),
+                callback=self.handle_operate_result,
+            )
         elif (
             self.current_apply_node is not None
             and button_enum
@@ -240,6 +247,14 @@ class TabbedContentScreen(Screen[None], AppType):
             operate_screen_data = OperateScreenData(
                 operate_btn=button_enum, node_data=self.current_apply_node
             )
+            self.app.push_screen(
+                ApplyOperateScreen(
+                    ids=self.app.screen_ids.operate,
+                    operate_data=operate_screen_data,
+                ),
+                callback=self.handle_operate_result,
+            )
+
         elif (
             self.current_re_add_node is not None
             and button_enum
@@ -253,16 +268,16 @@ class TabbedContentScreen(Screen[None], AppType):
             operate_screen_data = OperateScreenData(
                 operate_btn=button_enum, node_data=self.current_re_add_node
             )
+            self.app.push_screen(
+                ReAddOperateScreen(
+                    ids=self.app.screen_ids.operate,
+                    operate_data=operate_screen_data,
+                ),
+                callback=self.handle_operate_result,
+            )
         else:
             self.notify("No current node available.", severity="error")
             return
-        self.app.push_screen(
-            OperateScreen(
-                ids=self.app.screen_ids.operate,
-                operate_data=operate_screen_data,
-            ),
-            callback=self.handle_operate_result,
-        )
 
     def handle_operate_result(
         self, screen_result: OperateScreenData | None
