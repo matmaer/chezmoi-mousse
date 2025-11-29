@@ -33,7 +33,7 @@ from chezmoi_mousse.shared import (
 
 from .init_screen import InitScreen
 from .install_help import InstallHelp
-from .operate import OperateInfo, OperateScreen
+from .operate import OperateInfo, OperateScreenBase
 from .splash import SplashScreen
 from .tabbed_content import TabbedContentScreen
 from .tabs.add_tab import AddTab, FilteredDirTree
@@ -300,7 +300,7 @@ class ChezmoiGUI(App[None]):
         reactive_header = self.screen.query_exactly_one(CustomHeader)
         reactive_header.changes_enabled = self.changes_enabled
 
-        if isinstance(self.screen, OperateScreen):
+        if isinstance(self.screen, OperateScreenBase):
             operate_info = self.screen.query_exactly_one(OperateInfo)
             operate_info.write_info_lines()
 
@@ -478,12 +478,12 @@ class ChezmoiGUI(App[None]):
                     return False
                 elif active_tab == TabName.help:
                     return False
-            elif isinstance(self.screen, (OperateScreen, InitScreen)):
+            elif isinstance(self.screen, (OperateScreenBase, InitScreen)):
                 return True
             else:
                 return False
         elif action == "toggle_maximized_display":
-            if isinstance(self.screen, (OperateScreen, InitScreen)):
+            if isinstance(self.screen, (OperateScreenBase, InitScreen)):
                 return False
         return True
 

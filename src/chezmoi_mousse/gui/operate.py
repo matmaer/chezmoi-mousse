@@ -32,7 +32,14 @@ if TYPE_CHECKING:
     from chezmoi_mousse import AppIds, CommandResult, OperateScreenData
 
 
-__all__ = ["OperateInfo", "OperateScreen"]
+__all__ = [
+    "AddOperateScreen",
+    "ApplyOperateScreen",
+    "InitOperateScreen",
+    "OperateInfo",
+    "OperateScreenBase",
+    "ReAddOperateScreen",
+]
 
 
 class InfoLine(StrEnum):
@@ -154,7 +161,7 @@ class OperateInfo(Static, AppType):
         self.update("\n".join(lines_to_write))
 
 
-class OperateScreen(Screen["OperateScreenData"], AppType):
+class OperateScreenBase(Screen["OperateScreenData"], AppType):
 
     BINDINGS = [
         Binding(
@@ -424,17 +431,17 @@ class OperateScreen(Screen["OperateScreenData"], AppType):
         self.dismiss(self.operate_data)
 
 
-class AddOperateScreen(OperateScreen):
+class AddOperateScreen(OperateScreenBase):
     pass
 
 
-class ApplyOperateScreen(OperateScreen):
+class ApplyOperateScreen(OperateScreenBase):
     pass
 
 
-class ReAddOperateScreen(OperateScreen):
+class ReAddOperateScreen(OperateScreenBase):
     pass
 
 
-class InitOperateScreen(OperateScreen):
+class InitOperateScreen(OperateScreenBase):
     pass
