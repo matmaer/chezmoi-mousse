@@ -243,27 +243,23 @@ class ChezmoiGUI(App[None]):
                 break
             self.refresh_bindings()
 
-    def get_slider_from_tab(self, tab_name: str) -> SwitchSlider | None:
-        if tab_name == TabName.apply.name:
-            return self.screen.query_one(
-                self.tab_ids.apply.container.switch_slider_q, SwitchSlider
-            )
-        elif tab_name == TabName.re_add:
-            return self.screen.query_one(
-                self.tab_ids.re_add.container.switch_slider_q, SwitchSlider
-            )
-        elif tab_name == TabName.add:
-            return self.screen.query_one(
-                self.tab_ids.add.container.switch_slider_q, SwitchSlider
-            )
-        else:
-            return None
-
     def update_toggle_switch_slider_binding(self, tab_name: str) -> None:
         if not isinstance(self.screen, TabbedContentScreen):
             return
-        slider = self.get_slider_from_tab(tab_name)
-        if slider is None:
+        active_tab = self.screen.query_exactly_one(TabbedContent).active
+        if active_tab == TabName.apply.name:
+            slider = self.screen.query_one(
+                self.tab_ids.apply.container.switch_slider_q, SwitchSlider
+            )
+        elif active_tab == TabName.re_add:
+            slider = self.screen.query_one(
+                self.tab_ids.re_add.container.switch_slider_q, SwitchSlider
+            )
+        elif active_tab == TabName.add:
+            slider = self.screen.query_one(
+                self.tab_ids.add.container.switch_slider_q, SwitchSlider
+            )
+        else:
             return
         slider_visible = slider.has_class("-visible")
         new_description = (
@@ -271,31 +267,10 @@ class ChezmoiGUI(App[None]):
             if slider_visible is False
             else BindingDescription.show_filters
         )
-        for key, binding in self._bindings:
-            if binding.action == BindingAction.toggle_switch_slider:
-                if (
-                    binding.description == BindingDescription.show_filters
-                    and slider_visible is True
-                ):
-                    return
-                if (
-                    binding.description == BindingDescription.hide_filters
-                    and slider_visible is False
-                ):
-                    return
-                # Create a new binding with the updated description
-                updated_binding = dataclasses.replace(
-                    binding, description=new_description
-                )
-                # Update the bindings map
-                if key in self._bindings.key_to_bindings:
-                    bindings_list = self._bindings.key_to_bindings[key]
-                    for i, b in enumerate(bindings_list):
-                        if b.action == BindingAction.toggle_switch_slider:
-                            bindings_list[i] = updated_binding
-                            break
-                break
-        self.refresh_bindings()
+        self.update_binding_description(
+            binding_action=BindingAction.toggle_switch_slider,
+            new_description=new_description,
+        )
 
     def action_toggle_dry_run_mode(self) -> None:
         # All this will also run for the InitScreen except the OperateInfo part
@@ -332,8 +307,19 @@ class ChezmoiGUI(App[None]):
         if not isinstance(self.screen, TabbedContentScreen):
             return
         active_tab = self.screen.query_exactly_one(TabbedContent).active
-        slider = self.get_slider_from_tab(active_tab)
-        if slider is None:
+        if active_tab == TabName.apply.name:
+            slider = self.screen.query_one(
+                self.tab_ids.apply.container.switch_slider_q, SwitchSlider
+            )
+        elif active_tab == TabName.re_add:
+            slider = self.screen.query_one(
+                self.tab_ids.re_add.container.switch_slider_q, SwitchSlider
+            )
+        elif active_tab == TabName.add:
+            slider = self.screen.query_one(
+                self.tab_ids.add.container.switch_slider_q, SwitchSlider
+            )
+        else:
             return
         slider.toggle_class("-visible")
         self.update_toggle_switch_slider_binding(active_tab)
