@@ -127,7 +127,7 @@ class InitScreen(Screen["CommandResult | None"], AppType):
     BINDINGS = [
         Binding(
             key="escape",
-            action=BindingAction.exit_operation,
+            action=BindingAction.exit_screen,
             description=BindingDescription.exit_app,
             show=True,
         )
@@ -240,5 +240,5 @@ class InitScreen(Screen["CommandResult | None"], AppType):
             else:
                 self.repo_url = event.value
 
-    def action_exit_operation(self) -> None:
+    def action_exit_screen(self) -> None:
         self.app.exit()

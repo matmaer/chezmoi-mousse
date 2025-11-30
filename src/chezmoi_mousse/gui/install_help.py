@@ -55,7 +55,7 @@ class InstallHelp(Screen[None], AppType):
     BINDINGS = [
         Binding(
             key="escape",
-            action=BindingAction.exit_app,
+            action=BindingAction.exit_screen,
             description=BindingDescription.exit_app,
         )
     ]
@@ -118,5 +118,5 @@ class InstallHelp(Screen[None], AppType):
     def exit_application(self, event: Button.Pressed) -> None:
         self.app.exit()
 
-    def action_exit_app(self) -> None:
+    def action_exit_screen(self) -> None:
         self.app.exit()

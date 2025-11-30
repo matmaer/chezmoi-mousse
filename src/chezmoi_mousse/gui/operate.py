@@ -167,7 +167,7 @@ class OperateScreenBase(Screen["OperateScreenData"], AppType):
     BINDINGS = [
         Binding(
             key="escape",
-            action=BindingAction.exit_operation,
+            action=BindingAction.exit_screen,
             description=BindingDescription.cancel,
             show=True,
         )
@@ -396,7 +396,9 @@ class OperateScreenBase(Screen["OperateScreenData"], AppType):
                 if self.operate_data.command_result.returncode == 0
                 else BindingDescription.exit_app
             )
-            self.update_binding_description(new_description)
+            self.update_binding_description(
+                BindingAction.exit_screen, new_description
+            )
         elif self.operate_btn in (
             OperateBtn.add_file,
             OperateBtn.add_dir,
@@ -411,24 +413,28 @@ class OperateScreenBase(Screen["OperateScreenData"], AppType):
                 else BindingDescription.back
             )
             new_description = BindingDescription.reload
-            self.update_binding_description(new_description)
+            self.update_binding_description(
+                BindingAction.exit_screen, new_description
+            )
 
-    def update_binding_description(self, new_description: str) -> None:
+    def update_binding_description(
+        self, binding_action: BindingAction, new_description: str
+    ) -> None:
         for key, binding in self._bindings:
-            if binding.action == BindingAction.exit_operation:
+            if binding.action == binding_action:
                 updated_binding = dataclasses.replace(
                     binding, description=new_description
                 )
                 if key in self._bindings.key_to_bindings:
                     bindings_list = self._bindings.key_to_bindings[key]
                     for i, b in enumerate(bindings_list):
-                        if b.action == BindingAction.exit_operation:
+                        if b.action == binding_action:
                             bindings_list[i] = updated_binding
                             break
                 break
             self.refresh_bindings()
 
-    def action_exit_operation(self) -> None:
+    def action_exit_screen(self) -> None:
         self.dismiss(self.operate_data)
 
 
