@@ -13,6 +13,7 @@ from textual.widgets import Button, Collapsible, Footer, Pretty, Tree
 
 from chezmoi_mousse import (
     AppType,
+    BindingAction,
     BindingDescription,
     Chars,
     FlatBtn,
@@ -36,7 +37,6 @@ __all__ = ["InstallHelp"]
 
 class InstallHelpStrings(StrEnum):
     collapsible_title = "'chezmoi' command not found in any search path"
-    exit_app_action = "exit_application"
     install_chezmoi = " Install chezmoi "
     no_path_var = "PATH variable is empty or not set."
     top_label = "Chezmoi is not installed or not found."
@@ -55,7 +55,7 @@ class InstallHelp(Screen[None], AppType):
     BINDINGS = [
         Binding(
             key="escape",
-            action=InstallHelpStrings.exit_app_action,
+            action=BindingAction.exit_app,
             description=BindingDescription.exit_app,
         )
     ]
@@ -118,5 +118,5 @@ class InstallHelp(Screen[None], AppType):
     def exit_application(self, event: Button.Pressed) -> None:
         self.app.exit()
 
-    def action_exit_application(self) -> None:
+    def action_exit_app(self) -> None:
         self.app.exit()

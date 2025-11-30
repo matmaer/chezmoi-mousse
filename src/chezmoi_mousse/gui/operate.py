@@ -11,6 +11,7 @@ from textual.widgets import Button, Footer, Static
 
 from chezmoi_mousse import (
     AppType,
+    BindingAction,
     BindingDescription,
     Chars,
     OperateBtn,
@@ -166,7 +167,7 @@ class OperateScreenBase(Screen["OperateScreenData"], AppType):
     BINDINGS = [
         Binding(
             key="escape",
-            action="exit_operation",
+            action=BindingAction.exit_operation,
             description=BindingDescription.cancel,
             show=True,
         )
@@ -414,14 +415,14 @@ class OperateScreenBase(Screen["OperateScreenData"], AppType):
 
     def update_binding_description(self, new_description: str) -> None:
         for key, binding in self._bindings:
-            if binding.action == "exit_operation":
+            if binding.action == BindingAction.exit_operation:
                 updated_binding = dataclasses.replace(
                     binding, description=new_description
                 )
                 if key in self._bindings.key_to_bindings:
                     bindings_list = self._bindings.key_to_bindings[key]
                     for i, b in enumerate(bindings_list):
-                        if b.action == "exit_operation":
+                        if b.action == BindingAction.exit_operation:
                             bindings_list[i] = updated_binding
                             break
                 break

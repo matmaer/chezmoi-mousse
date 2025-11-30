@@ -23,6 +23,7 @@ from textual.widgets import (
 
 from chezmoi_mousse import (
     AppType,
+    BindingAction,
     BindingDescription,
     CommandResult,
     FlatBtn,
@@ -126,7 +127,7 @@ class InitScreen(Screen["CommandResult | None"], AppType):
     BINDINGS = [
         Binding(
             key="escape",
-            action="exit_operation",
+            action=BindingAction.exit_operation,
             description=BindingDescription.exit_app,
             show=True,
         )

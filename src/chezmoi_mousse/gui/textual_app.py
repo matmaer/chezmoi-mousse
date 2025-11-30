@@ -14,6 +14,7 @@ from textual.widgets import TabbedContent, Tabs
 from textual.worker import WorkerCancelled
 
 from chezmoi_mousse import (
+    BindingAction,
     BindingDescription,
     Chars,
     CommandResult,
@@ -80,17 +81,17 @@ class ChezmoiGUI(App[None]):
     BINDINGS = [
         Binding(
             key="M,m",
-            action="toggle_maximized_display",
+            action=BindingAction.toggle_maximized,
             description=BindingDescription.maximize,
         ),
         Binding(
             key="F,f",
-            action="toggle_switch_slider",
+            action=BindingAction.toggle_switch_slider,
             description=BindingDescription.hide_filters,
         ),
         Binding(
             key="D,d",
-            action="toggle_dry_run_mode",
+            action=BindingAction.toggle_dry_run,
             description=BindingDescription.remove_dry_run_flag,
         ),
     ]
@@ -248,7 +249,7 @@ class ChezmoiGUI(App[None]):
             else BindingDescription.show_filters
         )
         for key, binding in self._bindings:
-            if binding.action == "toggle_switch_slider":
+            if binding.action == BindingAction.toggle_switch_slider:
                 if (
                     binding.description == BindingDescription.show_filters
                     and slider_visible is True
@@ -267,7 +268,7 @@ class ChezmoiGUI(App[None]):
                 if key in self._bindings.key_to_bindings:
                     bindings_list = self._bindings.key_to_bindings[key]
                     for i, b in enumerate(bindings_list):
-                        if b.action == "toggle_switch_slider":
+                        if b.action == BindingAction.toggle_switch_slider:
                             bindings_list[i] = updated_binding
                             break
                 break
@@ -289,7 +290,7 @@ class ChezmoiGUI(App[None]):
             else BindingDescription.remove_dry_run_flag
         )
         for key, binding in self._bindings:
-            if binding.action == "toggle_dry_run_mode":
+            if binding.action == BindingAction.toggle_dry_run:
                 # Create a new binding with the updated description
                 updated_binding = dataclasses.replace(
                     binding, description=new_description
@@ -298,7 +299,7 @@ class ChezmoiGUI(App[None]):
                 if key in self._bindings.key_to_bindings:
                     bindings_list = self._bindings.key_to_bindings[key]
                     for i, b in enumerate(bindings_list):
-                        if b.action == "toggle_dry_run_mode":
+                        if b.action == BindingAction.toggle_dry_run:
                             bindings_list[i] = updated_binding
                             break
                 break
@@ -314,7 +315,7 @@ class ChezmoiGUI(App[None]):
         slider.toggle_class("-visible")
         self.update_toggle_switch_slider_binding(active_tab)
 
-    def action_toggle_maximized_display(self) -> None:
+    def action_toggle_maximized(self) -> None:
         if not isinstance(self.screen, TabbedContentScreen):
             return
         active_tab = self.screen.query_exactly_one(TabbedContent).active
@@ -402,7 +403,7 @@ class ChezmoiGUI(App[None]):
             else BindingDescription.minimize
         )
         for key, binding in self._bindings:
-            if binding.action == "toggle_maximized_display":
+            if binding.action == BindingAction.toggle_maximized:
                 # Create a new binding with the updated description
                 updated_binding = dataclasses.replace(
                     binding, description=new_description
@@ -411,7 +412,7 @@ class ChezmoiGUI(App[None]):
                 if key in self._bindings.key_to_bindings:
                     bindings_list = self._bindings.key_to_bindings[key]
                     for i, b in enumerate(bindings_list):
-                        if b.action == "toggle_maximized_display":
+                        if b.action == BindingAction.toggle_maximized:
                             bindings_list[i] = updated_binding
                             break
                 break
@@ -421,7 +422,7 @@ class ChezmoiGUI(App[None]):
     def check_action(
         self, action: str, parameters: tuple[object, ...]
     ) -> bool | None:
-        if action == "toggle_switch_slider":
+        if action == BindingAction.toggle_switch_slider:
             if isinstance(self.screen, TabbedContentScreen):
                 active_tab = self.screen.query_exactly_one(
                     TabbedContent
@@ -440,7 +441,7 @@ class ChezmoiGUI(App[None]):
                     return False
             else:
                 return False
-        elif action == "toggle_dry_run_mode":
+        elif action == BindingAction.toggle_dry_run:
             if isinstance(self.screen, TabbedContentScreen):
                 active_tab = self.screen.query_exactly_one(
                     TabbedContent
@@ -461,7 +462,7 @@ class ChezmoiGUI(App[None]):
                 return True
             else:
                 return False
-        elif action == "toggle_maximized_display":
+        elif action == BindingAction.toggle_maximized:
             if isinstance(self.screen, (OperateScreenBase, InitScreen)):
                 return False
         return True
