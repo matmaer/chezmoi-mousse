@@ -6,10 +6,9 @@ from typing import TYPE_CHECKING, Any
 
 from textual import on
 from textual.app import ComposeResult
-from textual.binding import Binding
 from textual.containers import Horizontal, VerticalGroup
 from textual.screen import Screen
-from textual.widgets import Button, Collapsible, Footer, Pretty, Tree
+from textual.widgets import Collapsible, Footer, Pretty, Tree
 
 from chezmoi_mousse import (
     AppType,
@@ -51,15 +50,6 @@ class CommandsTree(Tree[ParsedJson]):
 
 
 class InstallHelp(Screen[None], AppType):
-
-    BINDINGS = [
-        Binding(
-            key="escape",
-            action=BindingAction.exit_screen,
-            description=BindingDescription.exit_app,
-        )
-    ]
-
     def __init__(self, *, ids: "AppIds") -> None:
         super().__init__()
         self.ids = ids
@@ -84,6 +74,10 @@ class InstallHelp(Screen[None], AppType):
 
     def on_mount(self) -> None:
         self.screen.title = HeaderTitle.header_install_help
+        self.app.update_binding_description(
+            binding_action=BindingAction.exit_screen,
+            new_description=BindingDescription.exit_app,
+        )
         self.update_path_widget()
         self.populate_tree()
 
@@ -114,9 +108,6 @@ class InstallHelp(Screen[None], AppType):
                 new_child = child.add(label=key)
                 new_child.add_leaf(label=value)
 
-    @on(Button.Pressed)
-    def exit_application(self, event: Button.Pressed) -> None:
-        self.app.exit()
-
-    def action_exit_screen(self) -> None:
+    @on(FlatButton.Pressed)
+    def exit_application(self) -> None:
         self.app.exit()

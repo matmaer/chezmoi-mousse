@@ -80,6 +80,12 @@ class ChezmoiGUI(App[None]):
 
     BINDINGS = [
         Binding(
+            key="escape",
+            action=BindingAction.exit_screen,
+            description=BindingDescription.cancel,
+            show=True,
+        ),
+        Binding(
             key="M,m",
             action=BindingAction.toggle_maximized,
             description=BindingDescription.maximize,
@@ -219,6 +225,23 @@ class ChezmoiGUI(App[None]):
                 event.tabbed_content.active
             )
         self.refresh_bindings()
+
+    def update_binding_description(
+        self, binding_action: BindingAction, new_description: str
+    ) -> None:
+        for key, binding in self._bindings:
+            if binding.action == binding_action:
+                updated_binding = dataclasses.replace(
+                    binding, description=new_description
+                )
+                if key in self._bindings.key_to_bindings:
+                    bindings_list = self._bindings.key_to_bindings[key]
+                    for i, b in enumerate(bindings_list):
+                        if b.action == binding_action:
+                            bindings_list[i] = updated_binding
+                            break
+                break
+            self.refresh_bindings()
 
     def get_slider_from_tab(self, tab_name: str) -> SwitchSlider | None:
         if tab_name == TabName.apply.name:
@@ -422,7 +445,12 @@ class ChezmoiGUI(App[None]):
     def check_action(
         self, action: str, parameters: tuple[object, ...]
     ) -> bool | None:
-        if action == BindingAction.toggle_switch_slider:
+        if action == BindingAction.exit_screen:
+            if isinstance(self.screen, InstallHelp):
+                return True
+            else:
+                return False
+        elif action == BindingAction.toggle_switch_slider:
             if isinstance(self.screen, TabbedContentScreen):
                 active_tab = self.screen.query_exactly_one(
                     TabbedContent
@@ -466,6 +494,9 @@ class ChezmoiGUI(App[None]):
             if isinstance(self.screen, (OperateScreenBase, InitScreen)):
                 return False
         return True
+
+    def action_exit_screen(self) -> None:
+        self.exit()
 
 
 class CustomScrollBarRender(ScrollBarRender):
