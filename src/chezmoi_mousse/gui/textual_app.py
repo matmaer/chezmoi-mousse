@@ -324,14 +324,7 @@ class ChezmoiGUI(App[None]):
         main_tabs = self.screen.query_exactly_one(Tabs)
         main_tabs.display = False if main_tabs.display is True else True
 
-        if active_tab == TabName.logs:
-            logs_tab_buttons = self.screen.query_one(
-                self.tab_ids.logs.switcher.logs_tab_buttons_q, LogsTabButtons
-            )
-            logs_tab_buttons.display = (
-                False if logs_tab_buttons.display is True else True
-            )
-        elif active_tab == TabName.apply.name:
+        if active_tab == TabName.apply.name:
             left_side = self.screen.query_one(
                 self.tab_ids.apply.container.left_side_q, TreeSwitcher
             )
@@ -366,6 +359,13 @@ class ChezmoiGUI(App[None]):
             )
             switch_slider = self.screen.query_one(
                 self.tab_ids.add.container.switch_slider_q, SwitchSlider
+            )
+        elif active_tab == TabName.logs:
+            logs_tab_buttons = self.screen.query_one(
+                self.tab_ids.logs.switcher.logs_tab_buttons_q, LogsTabButtons
+            )
+            logs_tab_buttons.display = (
+                False if logs_tab_buttons.display is True else True
             )
         elif active_tab == TabName.config:
             left_side = self.screen.query_one(
