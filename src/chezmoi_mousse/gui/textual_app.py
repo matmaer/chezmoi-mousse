@@ -331,7 +331,6 @@ class ChezmoiGUI(App[None]):
             logs_tab_buttons.display = (
                 False if logs_tab_buttons.display is True else True
             )
-            return
         elif active_tab == TabName.apply.name:
             left_side = self.screen.query_one(
                 self.tab_ids.apply.container.left_side_q, TreeSwitcher
