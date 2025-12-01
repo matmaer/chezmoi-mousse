@@ -415,7 +415,7 @@ class ChezmoiGUI(App[None]):
                 active_tab = self.screen.query_exactly_one(
                     TabbedContent
                 ).active
-                if active_tab == TabName.apply.name:
+                if active_tab == TabName.apply:
                     return True
                 elif active_tab == TabName.re_add:
                     return True
