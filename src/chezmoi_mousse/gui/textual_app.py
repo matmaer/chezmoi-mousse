@@ -457,7 +457,9 @@ class ChezmoiGUI(App[None]):
             else:
                 return False
         elif action == BindingAction.toggle_maximized:
-            if isinstance(self.screen, (OperateScreen, InitScreen)):
+            if isinstance(
+                self.screen, (InitScreen, InstallHelp, OperateScreen)
+            ):
                 return False
         return True
 
