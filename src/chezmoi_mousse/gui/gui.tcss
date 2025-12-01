@@ -350,6 +350,8 @@ CheckBox {
 }
 
 CollapsibleTitle {
+  color: $text-primary;
+  text-style: none;
   &:hover {
     text-style: bold;
   }

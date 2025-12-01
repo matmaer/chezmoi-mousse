@@ -187,12 +187,6 @@ class PwCollapsible(CustomCollapsible, AppType):
             title=self.collapsible_title,
         )
 
-    def on_mount(self) -> None:
-        collapsible_title = self.query_exactly_one("CollapsibleTitle")
-        collapsible_title.styles.color = self.app.theme_variables[
-            "primary-lighten-3"
-        ]
-
 
 class PwMgrInfoView(Vertical):
 

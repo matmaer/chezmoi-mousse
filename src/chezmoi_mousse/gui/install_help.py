@@ -8,7 +8,7 @@ from textual import on
 from textual.app import ComposeResult
 from textual.containers import Horizontal, VerticalGroup
 from textual.screen import Screen
-from textual.widgets import Collapsible, Footer, Pretty, Tree
+from textual.widgets import Footer, Pretty, Tree
 
 from chezmoi_mousse import (
     AppType,
@@ -20,6 +20,7 @@ from chezmoi_mousse import (
     LinkBtn,
 )
 from chezmoi_mousse.shared import (
+    CustomCollapsible,
     CustomHeader,
     FlatButton,
     FlatLink,
@@ -57,12 +58,9 @@ class InstallHelp(Screen[None], AppType):
     def compose(self) -> ComposeResult:
         yield CustomHeader(ids=self.ids)
         yield MainSectionLabel(InstallHelpStrings.top_label)
-        yield Collapsible(
+        yield CustomCollapsible(
             Pretty(InstallHelpStrings.no_path_var),
             title=InstallHelpStrings.collapsible_title,
-            collapsed_symbol=Chars.right_triangle,
-            expanded_symbol=Chars.down_triangle,
-            collapsed=False,
         )
         with Horizontal():
             yield CommandsTree()
