@@ -412,6 +412,9 @@ class ChezmoiGUI(App[None]):
                 return False
         elif action == BindingAction.toggle_switch_slider:
             if isinstance(self.screen, TabbedContentScreen):
+                header = self.screen.query_exactly_one(CustomHeader)
+                if header.display is False:
+                    return False
                 active_tab = self.screen.query_exactly_one(
                     TabbedContent
                 ).active
@@ -431,6 +434,9 @@ class ChezmoiGUI(App[None]):
                 return False
         elif action == BindingAction.toggle_dry_run:
             if isinstance(self.screen, TabbedContentScreen):
+                header = self.screen.query_exactly_one(CustomHeader)
+                if header.display is False:
+                    return False
                 active_tab = self.screen.query_exactly_one(
                     TabbedContent
                 ).active
