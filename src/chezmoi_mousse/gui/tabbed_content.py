@@ -27,7 +27,7 @@ from chezmoi_mousse.shared import (
     ReadCmdLog,
 )
 
-from .operate import AddOperateScreen, ApplyOperateScreen, ReAddOperateScreen
+from .operate import OperateScreen
 from .tabs.add_tab import AddTab, FilteredDirTree
 from .tabs.apply_tab import ApplyTab
 from .tabs.common.trees import ExpandedTree, ListTree, ManagedTree
@@ -228,7 +228,7 @@ class TabbedContentScreen(Screen[None], AppType):
                 operate_btn=button_enum, node_data=self.current_add_node
             )
             self.app.push_screen(
-                AddOperateScreen(
+                OperateScreen(
                     ids=self.app.screen_ids.operate,
                     operate_data=operate_screen_data,
                 ),
@@ -248,7 +248,7 @@ class TabbedContentScreen(Screen[None], AppType):
                 operate_btn=button_enum, node_data=self.current_apply_node
             )
             self.app.push_screen(
-                ApplyOperateScreen(
+                OperateScreen(
                     ids=self.app.screen_ids.operate,
                     operate_data=operate_screen_data,
                 ),
@@ -269,7 +269,7 @@ class TabbedContentScreen(Screen[None], AppType):
                 operate_btn=button_enum, node_data=self.current_re_add_node
             )
             self.app.push_screen(
-                ReAddOperateScreen(
+                OperateScreen(
                     ids=self.app.screen_ids.operate,
                     operate_data=operate_screen_data,
                 ),

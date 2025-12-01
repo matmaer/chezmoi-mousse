@@ -33,14 +33,7 @@ if TYPE_CHECKING:
     from chezmoi_mousse import AppIds, CommandResult, OperateScreenData
 
 
-__all__ = [
-    "AddOperateScreen",
-    "ApplyOperateScreen",
-    "InitOperateScreen",
-    "OperateInfo",
-    "OperateScreenBase",
-    "ReAddOperateScreen",
-]
+__all__ = ["OperateInfo", "OperateScreen"]
 
 
 class InfoLine(StrEnum):
@@ -162,7 +155,7 @@ class OperateInfo(Static, AppType):
         self.update("\n".join(lines_to_write))
 
 
-class OperateScreenBase(Screen["OperateScreenData"], AppType):
+class OperateScreen(Screen["OperateScreenData"], AppType):
 
     BINDINGS = [
         Binding(
@@ -436,31 +429,3 @@ class OperateScreenBase(Screen["OperateScreenData"], AppType):
 
     def action_exit_screen(self) -> None:
         self.dismiss(self.operate_data)
-
-
-class AddOperateScreen(OperateScreenBase):
-    def __init__(
-        self, *, ids: "AppIds", operate_data: "OperateScreenData"
-    ) -> None:
-        super().__init__(ids=ids, operate_data=operate_data)
-
-
-class ApplyOperateScreen(OperateScreenBase):
-    def __init__(
-        self, *, ids: "AppIds", operate_data: "OperateScreenData"
-    ) -> None:
-        super().__init__(ids=ids, operate_data=operate_data)
-
-
-class ReAddOperateScreen(OperateScreenBase):
-    def __init__(
-        self, *, ids: "AppIds", operate_data: "OperateScreenData"
-    ) -> None:
-        super().__init__(ids=ids, operate_data=operate_data)
-
-
-class InitOperateScreen(OperateScreenBase):
-    def __init__(
-        self, *, ids: "AppIds", operate_data: "OperateScreenData"
-    ) -> None:
-        super().__init__(ids=ids, operate_data=operate_data)
