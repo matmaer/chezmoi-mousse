@@ -284,21 +284,10 @@ class ChezmoiGUI(App[None]):
             if self.changes_enabled is True
             else BindingDescription.remove_dry_run_flag
         )
-        for key, binding in self._bindings:
-            if binding.action == BindingAction.toggle_dry_run:
-                # Create a new binding with the updated description
-                updated_binding = dataclasses.replace(
-                    binding, description=new_description
-                )
-                # Update the bindings map
-                if key in self._bindings.key_to_bindings:
-                    bindings_list = self._bindings.key_to_bindings[key]
-                    for i, b in enumerate(bindings_list):
-                        if b.action == BindingAction.toggle_dry_run:
-                            bindings_list[i] = updated_binding
-                            break
-                break
-        self.refresh_bindings()
+        self.update_binding_description(
+            binding_action=BindingAction.toggle_dry_run,
+            new_description=new_description,
+        )
 
     def action_toggle_switch_slider(self) -> None:
         if not isinstance(self.screen, TabbedContentScreen):
@@ -408,22 +397,10 @@ class ChezmoiGUI(App[None]):
             if header.display is True
             else BindingDescription.minimize
         )
-        for key, binding in self._bindings:
-            if binding.action == BindingAction.toggle_maximized:
-                # Create a new binding with the updated description
-                updated_binding = dataclasses.replace(
-                    binding, description=new_description
-                )
-                # Update the bindings map
-                if key in self._bindings.key_to_bindings:
-                    bindings_list = self._bindings.key_to_bindings[key]
-                    for i, b in enumerate(bindings_list):
-                        if b.action == BindingAction.toggle_maximized:
-                            bindings_list[i] = updated_binding
-                            break
-                break
-
-        self.refresh_bindings()
+        self.update_binding_description(
+            binding_action=BindingAction.toggle_maximized,
+            new_description=new_description,
+        )
 
     def check_action(
         self, action: str, parameters: tuple[object, ...]
