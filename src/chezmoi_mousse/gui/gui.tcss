@@ -186,7 +186,7 @@ MainSectionLabel {
 OperateButtons {
   height: 3;
   dock: bottom;
-  & .operate_button {
+  .operate_button {
     background-tint: $surface-lighten-1;
     background: $surface-lighten-1;
     border-top: wide $primary-darken-3;
@@ -360,10 +360,10 @@ CollapsibleTitle {
 CustomCollapsible {
   border: none;
   padding: 0;
-  & .pw_mgr_group {
+  .pw_mgr_group {
     margin-bottom: 1;
   }
-  & .read_cmd_static {
+  .read_cmd_static {
     background-tint: $surface;
     background: $surface;
     margin-bottom: 1;
