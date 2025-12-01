@@ -269,7 +269,7 @@ class ChezmoiGUI(App[None]):
             new_description=new_description,
         )
 
-    def action_toggle_dry_run_mode(self) -> None:
+    def action_toggle_dry_run(self) -> None:
         # All this will also run for the InitScreen except the OperateInfo part
         self.changes_enabled = not self.changes_enabled
         reactive_header = self.screen.query_exactly_one(CustomHeader)
