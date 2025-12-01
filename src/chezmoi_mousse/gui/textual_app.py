@@ -190,10 +190,7 @@ class ChezmoiGUI(App[None]):
     @work
     async def push_main_screen(self, splash_data: "SplashData | None") -> None:
         if splash_data is None:
-            self.notify(
-                "Splash data is None, this is unexpected.", severity="error"
-            )
-            return
+            raise ValueError("splash_data is None after running SplashScreen")
         dest_dir = splash_data.parsed_config.dest_dir
         AddTab.destDir = dest_dir
         ContentsView.destDir = dest_dir
