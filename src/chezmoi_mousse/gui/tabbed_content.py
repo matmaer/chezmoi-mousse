@@ -9,7 +9,6 @@ from textual.widgets import Button, Footer, TabbedContent, TabPane
 
 from chezmoi_mousse import (
     AppType,
-    CommandResult,
     LogText,
     OperateBtn,
     OperateScreenData,
@@ -54,17 +53,16 @@ class TabPanes(StrEnum):
 class TabbedContentScreen(Screen[None], AppType):
 
     destDir: Path | None = None
-    init_cmd_result: "CommandResult | None" = None
 
     def __init__(self, *, ids: "AppIds", splash_data: "SplashData") -> None:
-        self.ids = ids
-        super().__init__()
-
-        self.splash_data = splash_data
         self.app_log: "AppLog"
         self.read_log: "ReadCmdLog"
         self.operate_log: "OperateLog"
         self.debug_log: "DebugLog"
+        super().__init__()
+
+        self.ids = ids
+        self.splash_data = splash_data
 
         self.current_add_node: "DirTreeNodeData | None" = None
         self.current_apply_node: "NodeData | None" = None
@@ -153,10 +151,10 @@ class TabbedContentScreen(Screen[None], AppType):
 
     @work
     async def log_init_screen_command(self) -> None:
-        if self.init_cmd_result is None:
+        if self.splash_data.init is None:
             return
-        self.app_log.log_cmd_results(self.init_cmd_result)
-        self.operate_log.log_cmd_results(self.init_cmd_result)
+        self.app_log.log_cmd_results(self.splash_data.init)
+        self.operate_log.log_cmd_results(self.splash_data.init)
 
     def log_splash_log_commands(self) -> None:
         # Log SplashScreen and InitScreen commands
@@ -282,50 +280,45 @@ class TabbedContentScreen(Screen[None], AppType):
     def handle_operate_result(
         self, screen_result: OperateScreenData | None
     ) -> None:
-        # the mode could have changed while in the operate screen
+        if screen_result is None:
+            self.notify(
+                "No result was returned from the operate screen.",
+                severity="error",
+            )
+            return
+        if screen_result.command_result is None:
+            self.notify(
+                "No command result was returned from the operate screen.",
+                severity="error",
+            )
+            return
+        # The dry/live mode could have changed while in the operate screen
         reactive_header = self.query_exactly_one(CustomHeader)
         reactive_header.changes_enabled = self.app.changes_enabled
         self.refresh_bindings()
         if (
-            screen_result is not None
-            and screen_result.command_result is not None
+            screen_result.command_result.returncode == 0
+            and self.app.changes_enabled
         ):
-            if (
-                screen_result.command_result.returncode == 0
-                and self.app.changes_enabled
-            ):
-                self.notify(
-                    "Operation completed successfully, Logs tab updated."
-                )
-            elif (
-                screen_result.command_result.returncode == 0
-                and not self.app.changes_enabled
-            ):
-                self.notify(
-                    "Operation completed in dry-run mode, Logs tab updated."
-                )
-
-            else:
-                self.notify(
-                    "Operation failed, check the Logs tab for more info.",
-                    severity="error",
-                )
-            add_dir_tree = self.query_one(
-                self.app.tab_ids.add.tree.dir_tree_q, FilteredDirTree
-            )
-            add_dir_tree.reload()
-            self.populate_apply_trees()
-            self.populate_re_add_trees()
+            self.notify("Operation completed successfully.")
         elif (
-            screen_result is not None
-            and screen_result.command_result is None
+            screen_result.command_result.returncode == 0
             and not self.app.changes_enabled
         ):
-            self.notify("Operation cancelled, no changes were made.")
+            self.notify(
+                "Operation completed in dry-run mode, no changes were made."
+            )
         else:
             self.notify(
-                "Unknown operation result condition.", severity="error"
+                "Unexpected error, check the Logs tab for more info.",
+                severity="error",
             )
+        add_dir_tree = self.query_one(
+            self.app.tab_ids.add.tree.dir_tree_q, FilteredDirTree
+        )
+        add_dir_tree.reload()
+        self.populate_apply_trees()
+        self.populate_re_add_trees()
 
     @on(CurrentAddNodeMsg)
     def update_current_dir_tree_node(self, message: CurrentAddNodeMsg) -> None:

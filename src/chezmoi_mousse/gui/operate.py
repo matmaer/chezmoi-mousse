@@ -1,10 +1,8 @@
-import dataclasses
 from enum import StrEnum
 from typing import TYPE_CHECKING
 
 from textual import on
 from textual.app import ComposeResult
-from textual.binding import Binding
 from textual.containers import VerticalGroup
 from textual.screen import Screen
 from textual.widgets import Button, Footer, Static
@@ -200,15 +198,6 @@ class OperateInfo(Static, AppType):
 
 class OperateScreen(Screen["OperateScreenData"], AppType):
 
-    BINDINGS = [
-        Binding(
-            key="escape",
-            action=BindingAction.exit_screen,
-            description=BindingDescription.cancel,
-            show=True,
-        )
-    ]
-
     def __init__(
         self, *, ids: "AppIds", operate_data: "OperateScreenData"
     ) -> None:
@@ -316,43 +305,42 @@ class OperateScreen(Screen["OperateScreenData"], AppType):
             op_btn.tooltip = OperateBtn.init_clone_repo.initial_tooltip
 
     def run_operate_command(self) -> "CommandResult | None":
-        cmd_result: "CommandResult | None" = None
         if self.operate_btn in (OperateBtn.add_file, OperateBtn.add_dir):
-            cmd_result = self.app.chezmoi.perform(
+            self.operate_data.command_result = self.app.chezmoi.perform(
                 WriteCmd.add,
                 path_arg=self.path_arg,
                 changes_enabled=self.app.changes_enabled,
             )
         elif self.operate_btn == OperateBtn.apply_path:
-            cmd_result = self.app.chezmoi.perform(
+            self.operate_data.command_result = self.app.chezmoi.perform(
                 WriteCmd.apply,
                 path_arg=self.path_arg,
                 changes_enabled=self.app.changes_enabled,
             )
         elif self.operate_btn == OperateBtn.re_add_path:
-            cmd_result = self.app.chezmoi.perform(
+            self.operate_data.command_result = self.app.chezmoi.perform(
                 WriteCmd.re_add,
                 path_arg=self.path_arg,
                 changes_enabled=self.app.changes_enabled,
             )
         elif self.operate_btn == OperateBtn.forget_path:
-            cmd_result = self.app.chezmoi.perform(
+            self.operate_data.command_result = self.app.chezmoi.perform(
                 WriteCmd.forget,
                 path_arg=self.path_arg,
                 changes_enabled=self.app.changes_enabled,
             )
         elif self.operate_btn == OperateBtn.destroy_path:
-            cmd_result = self.app.chezmoi.perform(
+            self.operate_data.command_result = self.app.chezmoi.perform(
                 WriteCmd.destroy,
                 path_arg=self.path_arg,
                 changes_enabled=self.app.changes_enabled,
             )
         elif self.operate_btn == OperateBtn.init_new_repo:
-            cmd_result = self.app.chezmoi.perform(
+            self.operate_data.command_result = self.app.chezmoi.perform(
                 WriteCmd.init, changes_enabled=self.app.changes_enabled
             )
         elif self.operate_btn == OperateBtn.init_clone_repo:
-            cmd_result = self.app.chezmoi.perform(
+            self.operate_data.command_result = self.app.chezmoi.perform(
                 WriteCmd.init,
                 repo_url=self.repo_url,
                 changes_enabled=self.app.changes_enabled,
@@ -362,10 +350,32 @@ class OperateScreen(Screen["OperateScreenData"], AppType):
                 f"Operate button not implemented: {self.operate_btn.name}",
                 severity="error",
             )
-        self.operate_data.command_result = cmd_result
-        self.post_operate_ui_update()
 
-    def post_operate_ui_update(self) -> None:
+        self.update_visibility()
+        self.write_to_output_log()
+        self.update_operate_button()
+        self.update_exit_button()
+        self.update_key_binding()
+
+    def write_to_output_log(self) -> None:
+        output_log = self.query_one(self.ids.logger.operate_q, OperateLog)
+        if self.operate_data.command_result is not None:
+            output_log.log_cmd_results(self.operate_data.command_result)
+        else:
+            output_log.error("Command result is None, cannot log output.")
+
+    def update_key_binding(self) -> None:
+        new_description = (
+            BindingDescription.reload
+            if self.operate_btn
+            in (OperateBtn.init_new_repo, OperateBtn.init_clone_repo)
+            else BindingDescription.close
+        )
+        self.app.update_binding_description(
+            BindingAction.exit_screen, new_description
+        )
+
+    def update_visibility(self) -> None:
         pre_op_container = self.query_one(
             self.ids.container.pre_operate_q, VerticalGroup
         )
@@ -375,10 +385,12 @@ class OperateScreen(Screen["OperateScreenData"], AppType):
         )
         post_op_container.display = True
 
+    def update_operate_button(self) -> None:
         operate_button = self.query_one(self.operate_btn_q, Button)
         operate_button.disabled = True
         operate_button.tooltip = None
 
+    def update_exit_button(self) -> None:
         operate_exit_button = self.query_one(
             self.ids.operate_btn.operate_exit_q, Button
         )
@@ -397,73 +409,14 @@ class OperateScreen(Screen["OperateScreenData"], AppType):
         ):
             operate_exit_button.label = OperateBtn.operate_exit.reload_label
 
-        output_log = self.query_one(self.ids.logger.operate_q, OperateLog)
-        if self.operate_data.command_result is not None:
-            output_log.log_cmd_results(self.operate_data.command_result)
-        else:
-            output_log.error("Command result is None, cannot log output.")
-        self.update_bindings()
-
     @on(Button.Pressed, Tcss.operate_button.dot_prefix)
     def handle_operate_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
         if event.button.label in (
             OperateBtn.operate_exit.cancel_label,
             OperateBtn.operate_exit.close_label,
+            OperateBtn.operate_exit.reload_label,
         ):
             self.dismiss(self.operate_data)
         else:
             self.run_operate_command()
-
-    def update_bindings(self) -> None:
-        if self.operate_data.command_result is None:
-            return
-        if self.operate_btn in (
-            OperateBtn.init_new_repo,
-            OperateBtn.init_clone_repo,
-        ):
-            new_description = (
-                BindingDescription.reload
-                if self.operate_data.command_result.returncode == 0
-                else BindingDescription.exit_app
-            )
-            self.update_binding_description(
-                BindingAction.exit_screen, new_description
-            )
-        elif self.operate_btn in (
-            OperateBtn.add_file,
-            OperateBtn.add_dir,
-            OperateBtn.apply_path,
-            OperateBtn.re_add_path,
-            OperateBtn.forget_path,
-            OperateBtn.destroy_path,
-        ):
-            new_description = (
-                BindingDescription.reload
-                if self.operate_data.command_result.returncode == 0
-                else BindingDescription.back
-            )
-            new_description = BindingDescription.reload
-            self.update_binding_description(
-                BindingAction.exit_screen, new_description
-            )
-
-    def update_binding_description(
-        self, binding_action: BindingAction, new_description: str
-    ) -> None:
-        for key, binding in self._bindings:
-            if binding.action == binding_action:
-                updated_binding = dataclasses.replace(
-                    binding, description=new_description
-                )
-                if key in self._bindings.key_to_bindings:
-                    bindings_list = self._bindings.key_to_bindings[key]
-                    for i, b in enumerate(bindings_list):
-                        if b.action == binding_action:
-                            bindings_list[i] = updated_binding
-                            break
-                break
-            self.refresh_bindings()
-
-    def action_exit_screen(self) -> None:
-        self.dismiss(self.operate_data)
