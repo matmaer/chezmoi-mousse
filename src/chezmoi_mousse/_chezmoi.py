@@ -70,6 +70,7 @@ class GlobalCmd(Enum):
 
 class VerbArgs(Enum):
     # encrypt = "--encrypt"
+    # debug = "--debug"
     format_json = "--format=json"
     git_log = [
         "--",
