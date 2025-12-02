@@ -279,47 +279,56 @@ class TabbedContentScreen(Screen[None], AppType):
             return
 
     def handle_operate_result(
-        self, screen_result: OperateScreenData | None
+        self, operate_result: OperateScreenData | None
     ) -> None:
-        if screen_result is None:
-            self.notify(
-                "No result was returned from the operate screen.",
-                severity="error",
-            )
-            return
-        if screen_result.command_result is None:
-            self.notify(
-                "No command result was returned from the operate screen.",
-                severity="error",
-            )
+        if operate_result is None and self.operate_data is None:
+            self.notify("Operation cancelled.")
+            self.operate_data = None
             return
         # The dry/live mode could have changed while in the operate screen
         reactive_header = self.query_exactly_one(CustomHeader)
         reactive_header.changes_enabled = self.app.changes_enabled
         self.refresh_bindings()
         if (
-            screen_result.command_result.returncode == 0
-            and self.app.changes_enabled
+            operate_result is not None
+            and operate_result.command_result is not None
         ):
-            self.notify("Operation completed successfully.")
-        elif (
-            screen_result.command_result.returncode == 0
-            and not self.app.changes_enabled
+            if (
+                operate_result.command_result.returncode == 0
+                and self.app.changes_enabled
+            ):
+                self.notify("Operation completed successfully.")
+            elif (
+                operate_result.command_result.returncode == 0
+                and not self.app.changes_enabled
+            ):
+                self.notify(
+                    "Operation completed in dry-run mode, no changes were made."
+                )
+            else:
+                self.notify(
+                    "The command ran with errors, see the Logs tab for more info.",
+                    severity="error",
+                )
+        if operate_result is not None and operate_result.operate_btn in (
+            OperateBtn.add_file,
+            OperateBtn.add_dir,
         ):
-            self.notify(
-                "Operation completed in dry-run mode, no changes were made."
+            add_dir_tree = self.query_one(
+                self.app.tab_ids.add.tree.dir_tree_q, FilteredDirTree
             )
-        else:
-            self.notify(
-                "Unexpected error, check the Logs tab for more info.",
-                severity="error",
-            )
-        add_dir_tree = self.query_one(
-            self.app.tab_ids.add.tree.dir_tree_q, FilteredDirTree
-        )
-        add_dir_tree.reload()
-        self.populate_apply_trees()
-        self.populate_re_add_trees()
+            add_dir_tree.reload()
+            return
+        if operate_result is not None and operate_result.operate_btn in (
+            OperateBtn.apply_path,
+            OperateBtn.re_add_path,
+            OperateBtn.destroy_path,
+            OperateBtn.forget_path,
+        ):
+            self.populate_apply_trees()
+            self.populate_re_add_trees()
+            return
+        self.notify("Operation result not handled.", severity="error")
 
     @on(CurrentAddNodeMsg)
     def update_current_dir_tree_node(self, message: CurrentAddNodeMsg) -> None:

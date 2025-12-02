@@ -24,7 +24,6 @@ from chezmoi_mousse import (
     AppType,
     BindingAction,
     BindingDescription,
-    CommandResult,
     FlatBtn,
     OperateBtn,
     OperateScreenData,
@@ -137,13 +136,12 @@ class InitSwitcher(ContentSwitcher):
         )
 
 
-class InitScreen(Screen["CommandResult | None"], AppType):
+class InitScreen(Screen["OperateScreenData"], AppType):
 
     def __init__(self, *, ids: "AppIds", splash_data: "SplashData") -> None:
         super().__init__()
         self.ids = ids
         self.splash_data = splash_data
-        self.command_result: CommandResult | None = None
         self.repo_url: str | None = None
         self.valid_url: bool = False
         self.debug_log: DebugLog
@@ -233,5 +231,7 @@ class InitScreen(Screen["CommandResult | None"], AppType):
             self.notify("Operation returned none.", severity="error")
             return
         self.notify(
-            f"Operation completed: {operate_screen_data.command_result.returncode}"
+            f"Operation completed: {operate_screen_data.command_result.pretty_cmd}"
         )
+        self.app.operate_data = operate_screen_data
+        self.dismiss(operate_screen_data)

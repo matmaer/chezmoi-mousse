@@ -414,8 +414,8 @@ class OperateScreen(Screen["OperateScreenData"], AppType):
         if event.button.label in (
             OperateBtn.operate_exit.cancel_label,
             OperateBtn.operate_exit.close_label,
-            OperateBtn.operate_exit.reload_label,
         ):
+            self.app.operate_data = self.operate_data
             self.dismiss(self.operate_data)
         else:
             self.run_operate_command()

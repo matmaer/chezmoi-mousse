@@ -17,7 +17,6 @@ from chezmoi_mousse import (
     BindingAction,
     BindingDescription,
     Chars,
-    CommandResult,
     OperateScreenData,
     ScreenIds,
     TabIds,
@@ -117,7 +116,6 @@ class ChezmoiGUI(App[None]):
 
         # Manage state between screens
         self.changes_enabled: bool = False
-        self.operate_result: "CommandResult | None" = None
         self.operate_screen_data: "OperateScreenData | None" = None
         self.splash_data: "SplashData | None" = None
 
@@ -154,26 +152,24 @@ class ChezmoiGUI(App[None]):
                     splash_data=splash_screen_worker.result
                 )
                 await init_worker.wait()
+                # After init screen, re-run splash screen to load all data
+                self.operate_data = init_worker.result
+                try:
+                    splash_screen_worker = self.push_splash_screen()
+                    await splash_screen_worker.wait()
+                except WorkerCancelled:
+                    # User exited during second splash screen, exit cleanly
+                    return
+                self.push_main_screen(
+                    splash_data=splash_screen_worker.result,
+                    operate_data=init_worker.result,
+                )
+                return
             except WorkerCancelled:
                 # User exited during init screen, exit cleanly
                 return
-            # After init screen, re-run splash screen to load all data
-            if init_worker.result is None:
-                # User pressed the exit button on init screen
-                self.exit()
-                return
-            else:
-                self.operate_result = init_worker.result
-            try:
-                worker = self.push_splash_screen()
-                await worker.wait()
-            except WorkerCancelled:
-                # User exited during second splash screen, exit cleanly
-                return
-            self.push_main_screen(worker.result)
-            return
         # Chezmoi found, init not needed
-        self.push_main_screen(splash_screen_worker.result)
+        self.push_main_screen(splash_data=splash_screen_worker.result)
 
     @work
     async def push_splash_screen(self) -> "SplashData | None":
@@ -184,14 +180,19 @@ class ChezmoiGUI(App[None]):
     @work
     async def push_init_screen(
         self, *, splash_data: "SplashData"
-    ) -> "CommandResult | None":
+    ) -> "OperateScreenData | None":
         return await self.push_screen(
             InitScreen(ids=self.screen_ids.init, splash_data=splash_data),
             wait_for_dismiss=True,
         )
 
     @work
-    async def push_main_screen(self, splash_data: "SplashData | None") -> None:
+    async def push_main_screen(
+        self,
+        *,
+        splash_data: "SplashData | None",
+        operate_data: "OperateScreenData | None" = None,
+    ) -> None:
         if splash_data is None:
             raise ValueError("splash_data is None after running SplashScreen")
         dest_dir = splash_data.parsed_config.dest_dir
@@ -208,7 +209,9 @@ class ChezmoiGUI(App[None]):
 
         self.push_screen(
             TabbedContentScreen(
-                ids=self.screen_ids.main, splash_data=splash_data
+                ids=self.screen_ids.main,
+                splash_data=splash_data,
+                operate_data=operate_data,
             )
         )
 
@@ -403,6 +406,14 @@ class ChezmoiGUI(App[None]):
             new_description=new_description,
         )
 
+    def action_exit_screen(self) -> None:
+        if isinstance(self.screen, InstallHelp):
+            self.exit()
+        elif isinstance(self.screen, InitScreen):
+            self.screen.dismiss(None)
+        elif isinstance(self.screen, OperateScreen):
+            self.screen.dismiss(None)
+
     def check_action(
         self, action: str, parameters: tuple[object, ...]
     ) -> bool | None:
@@ -465,9 +476,6 @@ class ChezmoiGUI(App[None]):
             ):
                 return False
         return True
-
-    def action_exit_screen(self) -> None:
-        self.exit()
 
 
 class CustomScrollBarRender(ScrollBarRender):
