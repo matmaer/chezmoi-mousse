@@ -117,8 +117,9 @@ class ChezmoiGUI(App[None]):
 
         # Manage state between screens
         self.changes_enabled: bool = False
-        self.splash_data: "SplashData | None" = None
+        self.operate_result: "CommandResult | None" = None
         self.operate_screen_data: "OperateScreenData | None" = None
+        self.splash_data: "SplashData | None" = None
 
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
         super().__init__()
@@ -199,7 +200,6 @@ class ChezmoiGUI(App[None]):
         DiffView.destDir = dest_dir
         GitLogPath.destDir = dest_dir
         TabbedContentScreen.destDir = dest_dir
-        TabbedContentScreen.init_cmd_result = self.init_cmd_result
         TreeBase.destDir = dest_dir
         ViewSwitcher.destDir = dest_dir
 
