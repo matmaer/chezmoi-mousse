@@ -116,7 +116,7 @@ class ChezmoiGUI(App[None]):
 
         # Manage state between screens
         self.changes_enabled: bool = False
-        self.operate_screen_data: "OperateScreenData | None" = None
+        self.operate_data: "OperateScreenData | None" = None
         self.splash_data: "SplashData | None" = None
 
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
@@ -409,10 +409,8 @@ class ChezmoiGUI(App[None]):
     def action_exit_screen(self) -> None:
         if isinstance(self.screen, InstallHelp):
             self.exit()
-        elif isinstance(self.screen, InitScreen):
-            self.screen.dismiss(None)
-        elif isinstance(self.screen, OperateScreen):
-            self.screen.dismiss(None)
+        elif isinstance(self.screen, (InitScreen, OperateScreen)):
+            self.screen.dismiss(self.operate_data)
 
     def check_action(
         self, action: str, parameters: tuple[object, ...]
