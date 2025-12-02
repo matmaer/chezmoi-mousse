@@ -18,6 +18,7 @@ from chezmoi_mousse import (
     BindingDescription,
     Chars,
     CommandResult,
+    OperateScreenData,
     ScreenIds,
     TabIds,
     TabName,
@@ -106,17 +107,18 @@ class ChezmoiGUI(App[None]):
 
     def __init__(self, pre_run_data: "PreRunData") -> None:
         self.chezmoi: "Chezmoi"
-
-        self.pre_run_data: "PreRunData" = pre_run_data
         self.screen_ids = ScreenIds()
         self.tab_ids = TabIds()
 
-        self.changes_enabled: bool = False
+        self.pre_run_data: "PreRunData" = pre_run_data
         self.chezmoi_found: bool = self.pre_run_data.chezmoi_found
         self.dev_mode: bool = self.pre_run_data.dev_mode
         self.force_init_screen: bool = self.pre_run_data.force_init_screen
+
+        # Manage state between screens
+        self.changes_enabled: bool = False
         self.splash_data: "SplashData | None" = None
-        self.init_cmd_result: "CommandResult | None" = None
+        self.operate_screen_data: "OperateScreenData | None" = None
 
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
         super().__init__()
