@@ -222,9 +222,7 @@ class ChezmoiGUI(App[None]):
             TabName.re_add,
             TabName.add,
         ):
-            self.update_toggle_switch_slider_binding(
-                event.tabbed_content.active
-            )
+            self.update_toggle_switch_slider_binding()
         self.refresh_bindings()
 
     def update_binding_description(
@@ -244,7 +242,7 @@ class ChezmoiGUI(App[None]):
                 break
             self.refresh_bindings()
 
-    def update_toggle_switch_slider_binding(self, tab_name: str) -> None:
+    def update_toggle_switch_slider_binding(self) -> None:
         if not isinstance(self.screen, TabbedContentScreen):
             return
         active_tab = self.screen.query_exactly_one(TabbedContent).active
@@ -312,7 +310,7 @@ class ChezmoiGUI(App[None]):
         else:
             return
         slider.toggle_class("-visible")
-        self.update_toggle_switch_slider_binding(active_tab)
+        self.update_toggle_switch_slider_binding()
 
     def action_toggle_maximized(self) -> None:
         if not isinstance(self.screen, TabbedContentScreen):
