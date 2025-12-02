@@ -11,8 +11,10 @@ from ._buttons import (
 )
 from ._config_views import (
     CatConfigView,
+    DoctorTable,
     DoctorTableView,
     IgnoredView,
+    PrettyTemplateData,
     TemplateDataView,
 )
 from ._contents_view import ContentsView
@@ -58,6 +60,7 @@ __all__ = [
     "CustomHeader",
     "DestDirInfo",
     "DiffView",
+    "DoctorTable",
     "DoctorTableView",
     "FlatLink",
     "FlatSectionLabel",
@@ -65,6 +68,7 @@ __all__ = [
     "GitLogPath",
     "IgnoredView",
     "MainSectionLabel",
+    "PrettyTemplateData",
     "PwMgrInfoView",
     "SubSectionLabel",
     "TemplateDataView",

@@ -20,8 +20,10 @@ else:
 
 __all__ = [
     "CatConfigView",
+    "DoctorTable",
     "DoctorTableView",
     "IgnoredView",
+    "PrettyTemplateData",
     "TemplateDataView",
 ]
 
@@ -38,19 +40,15 @@ class CatConfigView(Vertical):
         self.mount(ScrollableContainer(Static(command_result.std_out)))
 
 
-class DoctorTableView(Vertical, AppType):
+class DoctorTable(DataTable[Text], AppType):
 
-    def __init__(self, ids: "AppIds") -> None:
-        self.ids = ids
-        super().__init__(id=self.ids.container.doctor)
-
-    def compose(self) -> ComposeResult:
-        yield MainSectionLabel(SectionLabels.doctor_output)
-        yield DataTable(
-            id=self.ids.datatable.doctor,
+    def __init__(self, ids: "AppIds", doctor_data: CommandResult) -> None:
+        super().__init__(
+            id=ids.datatable.doctor,
             show_cursor=False,
             classes=Tcss.doctor_table,
         )
+        self.doctor_data = doctor_data.std_out.splitlines()
 
     def on_mount(self) -> None:
         self.dr_style = {
@@ -60,41 +58,45 @@ class DoctorTableView(Vertical, AppType):
             "failed": self.app.theme_variables["text-error"],
             "error": self.app.theme_variables["text-error"],
         }
+        if not self.columns:
+            self.add_columns(*self.doctor_data[0].split())
 
-    def populate_doctor_data(self, command_result: CommandResult) -> None:
-
-        doctor_data = command_result.std_out.splitlines()
-
-        doctor_table = self.query_one(
-            self.ids.datatable.doctor_q, DataTableText
-        )
-
-        if not doctor_table.columns:
-            doctor_table.add_columns(*doctor_data[0].split())
-
-        for line in doctor_data[1:]:
+        for line in self.doctor_data[1:]:
             row = tuple(line.split(maxsplit=2))
             if row[0] == "info" and "not found in $PATH" in row[2]:
                 new_row = [
                     Text(cell_text, style=self.dr_style["info"])
                     for cell_text in row
                 ]
-                doctor_table.add_row(*new_row)
+                self.add_row(*new_row)
             elif row[0] in ["ok", "warning", "error", "failed"]:
                 new_row = [
                     Text(cell_text, style=f"{self.dr_style[row[0]]}")
                     for cell_text in row
                 ]
-                doctor_table.add_row(*new_row)
+                self.add_row(*new_row)
             elif row[0] == "info" and row[2] == "not set":
                 new_row = [
                     Text(cell_text, style=self.dr_style["warning"])
                     for cell_text in row
                 ]
-                doctor_table.add_row(*new_row)
+                self.add_row(*new_row)
             else:
                 row = [Text(cell_text) for cell_text in row]
-                doctor_table.add_row(*row)
+                self.add_row(*row)
+
+
+class DoctorTableView(Vertical, AppType):
+
+    def __init__(self, ids: "AppIds") -> None:
+        self.ids = ids
+        super().__init__(id=self.ids.container.doctor)
+
+    def compose(self) -> ComposeResult:
+        yield MainSectionLabel(SectionLabels.doctor_output)
+
+    def populate_doctor_data(self, command_result: CommandResult) -> None:
+        self.mount(DoctorTable(ids=self.ids, doctor_data=command_result))
 
 
 class IgnoredView(Vertical):
@@ -111,6 +113,12 @@ class IgnoredView(Vertical):
         )
 
 
+class PrettyTemplateData(Pretty):
+    def __init__(self, template_data: CommandResult) -> None:
+        parsed = json.loads(template_data.std_out)
+        super().__init__(parsed)
+
+
 class TemplateDataView(Vertical):
     def __init__(self, ids: "AppIds"):
         self.ids = ids
@@ -122,5 +130,4 @@ class TemplateDataView(Vertical):
     def mount_template_data_output(
         self, command_result: CommandResult
     ) -> None:
-        parsed = json.loads(command_result.std_out)
-        self.mount(ScrollableContainer(Pretty(parsed)))
+        self.mount(PrettyTemplateData(template_data=command_result))
