@@ -22,11 +22,14 @@ from chezmoi_mousse import (
 )
 from chezmoi_mousse.shared import (
     ContentsView,
+    CustomCollapsible,
     CustomHeader,
     DiffView,
+    DoctorTable,
     MainSectionLabel,
     OperateButtons,
     OperateLog,
+    PrettyTemplateData,
 )
 
 if TYPE_CHECKING:
@@ -66,6 +69,38 @@ class InfoLine(StrEnum):
     re_add_path = (
         "[$text-primary]Overwrite the source state with current local path[/]"
     )
+
+
+class InitCollapsibles(VerticalGroup):
+    def __init__(
+        self, ids: "AppIds", operate_data: "OperateScreenData"
+    ) -> None:
+        super().__init__()
+        if operate_data.splash_data is not None:
+            self.ids = ids
+            self.doctor_data = operate_data.splash_data.doctor
+            self.cat_config_data = operate_data.splash_data.cat_config
+            self.template_data = operate_data.splash_data.template_data
+
+    def on_mount(self) -> None:
+        self.mount(
+            CustomCollapsible(
+                DoctorTable(ids=self.ids, doctor_data=self.doctor_data),
+                title="Doctor Output",
+            )
+        )
+        self.mount(
+            CustomCollapsible(
+                Static(self.cat_config_data.std_out, markup=False),
+                title="Cat Config Output",
+            )
+        )
+        self.mount(
+            CustomCollapsible(
+                PrettyTemplateData(self.template_data),
+                title="Template Data Output",
+            )
+        )
 
 
 class OperateInfo(Static, AppType):
@@ -208,6 +243,13 @@ class OperateScreen(Screen["OperateScreenData"], AppType):
                 OperateBtn.destroy_path,
             ):
                 yield ContentsView(ids=self.ids)
+            elif self.operate_btn in (
+                OperateBtn.init_new_repo,
+                OperateBtn.init_clone_repo,
+            ):
+                yield InitCollapsibles(
+                    ids=self.ids, operate_data=self.operate_data
+                )
         with VerticalGroup(id=self.ids.container.post_operate):
             yield MainSectionLabel(SectionLabels.operate_output)
             yield OperateLog(ids=self.ids)
