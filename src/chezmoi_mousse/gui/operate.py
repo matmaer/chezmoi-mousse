@@ -201,18 +201,17 @@ class OperateScreen(Screen["OperateScreenData | None"], AppType):
         super().__init__()
 
         self.ids = ids
-        self.operate_btn = operate_data.operate_btn
+        self.operate_data = operate_data
+        self.operate_btn = self.operate_data.operate_btn
         self.operate_btn_q = self.ids.operate_button_id(
             "#", btn=self.operate_btn
         )
-        self.operate_data = operate_data
-        self.splash_data = splash_data
-        self.repo_url: str | None = None
         if self.operate_data.node_data is not None:
             self.path_arg = self.operate_data.node_data.path
             self.path_kind = self.operate_data.node_data.path_kind
         elif self.operate_data.repo_url is not None:
             self.repo_url = self.operate_data.repo_url
+        self.splash_data = splash_data
 
     def compose(self) -> ComposeResult:
         yield CustomHeader(self.ids)
