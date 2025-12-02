@@ -407,7 +407,9 @@ class ChezmoiGUI(App[None]):
         self, action: str, parameters: tuple[object, ...]
     ) -> bool | None:
         if action == BindingAction.exit_screen:
-            if isinstance(self.screen, InstallHelp):
+            if isinstance(
+                self.screen, (InstallHelp, InitScreen, OperateScreen)
+            ):
                 return True
             else:
                 return False
