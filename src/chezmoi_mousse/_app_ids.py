@@ -315,8 +315,10 @@ class FlatButtonIds:
         self.exit_app_q = f"#{self.exit_app}"
         self.ignored = ids.flat_button_id(btn=FlatBtn.ignored)
         self.ignored_q = f"#{self.ignored}"
-        self.init_context = ids.flat_button_id(btn=FlatBtn.init_context)
-        self.init_context_q = f"#{self.init_context}"
+        self.init_new = ids.flat_button_id(btn=FlatBtn.init_new)
+        self.init_new_q = f"#{self.init_new}"
+        self.init_clone = ids.flat_button_id(btn=FlatBtn.init_clone)
+        self.init_clone_q = f"#{self.init_clone}"
         self.pw_mgr_info = ids.flat_button_id(btn=FlatBtn.pw_mgr_info)
         self.pw_mgr_info_q = f"#{self.pw_mgr_info}"
         self.re_add_help = ids.flat_button_id(btn=FlatBtn.re_add_help)
@@ -419,8 +421,10 @@ class ViewIds:
         self.diagram_q = f"#{self.diagram}"
 
         # Init screen
-        self.init_context = ids.view_id(view=ViewName.init_context_view)
-        self.init_context_q = f"#{self.init_context}"
+        self.init_new = ids.view_id(view=ViewName.init_new_view)
+        self.init_new_q = f"#{self.init_new}"
+        self.init_clone = ids.view_id(view=ViewName.init_clone_view)
+        self.init_clone_q = f"#{self.init_clone}"
 
         # Config tab
         self.cat_config = ids.view_id(view=ViewName.cat_config_view)

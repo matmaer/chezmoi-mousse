@@ -27,8 +27,8 @@ from chezmoi_mousse import (
     BindingDescription,
     CommandResult,
     FlatBtn,
-    LogText,
     OperateBtn,
+    OperateScreenData,
     SectionLabels,
     Tcss,
 )
@@ -39,9 +39,12 @@ from chezmoi_mousse.shared import (
     DoctorTableView,
     FlatButtonsVertical,
     MainSectionLabel,
+    OperateButtons,
     SubSectionLabel,
     TemplateDataView,
 )
+
+from .operate import OperateScreen
 
 __all__ = ["InitScreen"]
 
@@ -74,19 +77,32 @@ class RepositoryURLInput(VerticalGroup):
         )
 
 
-class InitContext(Vertical, AppType):
+class InitNew(Vertical, AppType):
 
     def __init__(self, *, ids: "AppIds") -> None:
         self.ids = ids
-        super().__init__(id=self.ids.view.init_context)
+        super().__init__(id=self.ids.view.init_new)
 
     def compose(self) -> ComposeResult:
-        yield MainSectionLabel(SectionLabels.init_chezmoi)
-        yield SubSectionLabel(SectionLabels.init_new_repo)
+        yield MainSectionLabel(SectionLabels.init_new_repo)
         yield Static(StaticText.init_new)
+        yield OperateButtons(ids=self.ids, buttons=(OperateBtn.init_new_repo,))
+
+
+class InitClone(Vertical, AppType):
+
+    def __init__(self, *, ids: "AppIds") -> None:
+        self.ids = ids
+        super().__init__(id=self.ids.view.init_clone)
+
+    def compose(self) -> ComposeResult:
+        yield MainSectionLabel(SectionLabels.init_clone_repo)
         yield SubSectionLabel(SectionLabels.init_clone_repo_url)
         yield Static(StaticText.init_clone)
         yield RepositoryURLInput()
+        yield OperateButtons(
+            ids=self.ids, buttons=(OperateBtn.init_clone_repo,)
+        )
 
 
 class InitSwitcher(ContentSwitcher):
@@ -94,13 +110,13 @@ class InitSwitcher(ContentSwitcher):
     def __init__(self, *, ids: "AppIds", splash_data: "SplashData") -> None:
         self.ids = ids
         super().__init__(
-            id=self.ids.switcher.init_screen,
-            initial=self.ids.view.init_context,
+            id=self.ids.switcher.init_screen, initial=self.ids.view.init_new
         )
         self.splash_data = splash_data
 
     def compose(self) -> ComposeResult:
-        yield InitContext(ids=self.ids)
+        yield InitNew(ids=self.ids)
+        yield InitClone(ids=self.ids)
         yield DoctorTableView(ids=self.ids)
         yield CatConfigView(ids=self.ids)
         yield TemplateDataView(ids=self.ids)
@@ -148,7 +164,8 @@ class InitScreen(Screen["CommandResult | None"], AppType):
             yield FlatButtonsVertical(
                 ids=self.ids,
                 buttons=(
-                    FlatBtn.init_context,
+                    FlatBtn.init_new,
+                    FlatBtn.init_clone,
                     FlatBtn.doctor,
                     FlatBtn.cat_config,
                     FlatBtn.template_data,
@@ -159,42 +176,13 @@ class InitScreen(Screen["CommandResult | None"], AppType):
             yield SubSectionLabel(SectionLabels.debug_log_output)
             with Horizontal():
                 yield DebugLog(ids=self.ids)
-        # yield OperateButtons(
-        #     ids=self.ids,
-        #     buttons=(
-        #         OperateBtn.init_new_repo,
-        #         OperateBtn.init_clone_repo,
-        #         OperateBtn.init_exit,
-        #     ),
-        # )
         yield Footer(id=self.ids.footer)
 
     def on_mount(self) -> None:
-        if self.app.dev_mode:
-            self.debug_log = self.query_one(self.ids.logger.debug_q, DebugLog)
-            self.debug_log.ready_to_run(LogText.debug_log_initialized)
-        # self.init_clone_btn = self.query_one(
-        #     self.ids.operate_btn.init_clone_repo_q, Button
-        # )
-        # self.init_clone_btn.disabled = True
-
-    def notify_and_update_buttons(self) -> None:
-        if self.command_result is None:
-            # this should not happen
-            self.notify("Operation returned None.", severity="error")
-            return
-        elif self.command_result.returncode != 0:
-            self.notify("Operation failed.", severity="error")
-            return
-        # Update buttons
-        init_clone_btn = self.query_one(
+        self.init_clone_btn = self.query_one(
             self.ids.operate_btn.init_clone_repo_q, Button
         )
-        init_clone_btn.disabled = True
-        init_clone_btn.tooltip = None
-        exit_button = self.query_one(self.ids.operate_btn.init_exit_q, Button)
-        exit_button.label = OperateBtn.init_exit.close_label
-        exit_button.tooltip = OperateBtn.init_exit.close_tooltip
+        self.init_clone_btn.disabled = True
 
     @on(Button.Pressed, Tcss.flat_button.dot_prefix)
     def switch_content(self, event: Button.Pressed) -> None:
@@ -202,8 +190,10 @@ class InitScreen(Screen["CommandResult | None"], AppType):
         switcher = self.query_one(
             self.ids.switcher.init_screen_q, ContentSwitcher
         )
-        if event.button.id == self.ids.flat_btn.init_context:
-            switcher.current = self.ids.view.init_context
+        if event.button.id == self.ids.flat_btn.init_new:
+            switcher.current = self.ids.view.init_new
+        elif event.button.id == self.ids.flat_btn.init_clone:
+            switcher.current = self.ids.view.init_clone
         elif event.button.id == self.ids.flat_btn.doctor:
             switcher.current = self.ids.container.doctor
         elif event.button.id == self.ids.flat_btn.cat_config:
@@ -211,34 +201,52 @@ class InitScreen(Screen["CommandResult | None"], AppType):
         elif event.button.id == self.ids.flat_btn.template_data:
             switcher.current = self.ids.view.template_data
 
-    # @on(Button.Pressed, Tcss.operate_button.dot_prefix)
-    # async def handle_operate_button_pressed(
-    #     self, event: Button.Pressed
-    # ) -> None:
-    #     event.stop()
-    #     if event.button.id == self.ids.operate_btn.init_exit:
-    #         # TODO: check network connectivity before proceeding
-    #         self.dismiss(self.command_result)
-    #     elif event.button.id == self.ids.operate_btn.init_new_repo:
-    #         self.notify_and_update_buttons()
-    #     elif event.button.id == self.ids.operate_btn.init_clone_repo:
-    #         # Submit the input, which triggers validation and logs it.
-    #         input_widget = self.query_exactly_one(Input)
-    #         await input_widget.action_submit()
-    #         self.notify_and_update_buttons()
+    @on(Button.Pressed, Tcss.operate_button.dot_prefix)
+    def handle_operate_button_pressed(self, event: Button.Pressed) -> None:
+        event.stop()
+        if event.button.id == self.ids.operate_btn.init_new_repo:
+            operate_data = OperateScreenData(
+                operate_btn=OperateBtn.init_new_repo,
+                splash_data=self.splash_data,
+            )
+            self.app.push_screen(
+                OperateScreen(ids=self.ids, operate_data=operate_data),
+                callback=self.handle_returned_data,
+            )
+        elif event.button.id == self.ids.operate_btn.init_clone_repo:
+            operate_data = OperateScreenData(
+                operate_btn=OperateBtn.init_clone_repo,
+                repo_url=self.repo_url,
+                splash_data=self.splash_data,
+            )
+            self.app.push_screen(
+                OperateScreen(ids=self.ids, operate_data=operate_data)
+            )
 
     @on(Input.Submitted)
     def log_validation_result(self, event: Input.Submitted) -> None:
         if event.validation_result is None:
             return
         self.valid_url = event.validation_result.is_valid
-        if not event.validation_result.is_valid:
+        if not self.valid_url:
             self.notify("Invalid URL entered.", severity="error")
-        else:
-            if event.value == "":
-                self.repo_url = None
-            else:
-                self.repo_url = event.value
+            return
+        self.notify("Valid URL entered, button enabled.")
+        self.init_clone_btn.disabled = False
+        self.repo_url = event.value
+
+    def handle_returned_data(
+        self, operate_screen_data: OperateScreenData | None
+    ) -> None:
+        if operate_screen_data is None:
+            self.notify("Operation returned none.", severity="error")
+            return
+        if operate_screen_data.command_result is None:
+            self.notify("Operation returned none.", severity="error")
+            return
+        self.notify(
+            f"Operation completed: {operate_screen_data.command_result.returncode}"
+        )
 
     def action_exit_screen(self) -> None:
         self.app.exit()
