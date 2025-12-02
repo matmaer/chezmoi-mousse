@@ -106,7 +106,6 @@ class OperateScreenData:
     node_data: "NodeData | DirTreeNodeData | None" = None
     path: "Path | None" = None
     repo_url: "str | None" = None  # only for chezmoi init from repo operation
-    splash_data: "SplashData | None" = None  # only for chezmoi init operation
 
 
 @dataclass(slots=True)
