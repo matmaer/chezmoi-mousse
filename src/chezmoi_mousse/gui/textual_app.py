@@ -17,7 +17,7 @@ from chezmoi_mousse import (
     BindingAction,
     BindingDescription,
     Chars,
-    OperateScreenData,
+    OperateData,
     ScreenIds,
     TabIds,
     TabName,
@@ -116,7 +116,7 @@ class ChezmoiGUI(App[None]):
 
         # Manage state between screens
         self.changes_enabled: bool = False
-        self.operate_data: "OperateScreenData | None" = None
+        self.operate_data: "OperateData | None" = None
         self.splash_data: "SplashData | None" = None
 
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
@@ -153,7 +153,6 @@ class ChezmoiGUI(App[None]):
                 )
                 await init_worker.wait()
                 # After init screen, re-run splash screen to load all data
-                self.operate_data = init_worker.result
                 try:
                     splash_screen_worker = self.push_splash_screen()
                     await splash_screen_worker.wait()
@@ -180,7 +179,7 @@ class ChezmoiGUI(App[None]):
     @work
     async def push_init_screen(
         self, *, splash_data: "SplashData"
-    ) -> "OperateScreenData | None":
+    ) -> "OperateData | None":
         return await self.push_screen(
             InitScreen(ids=self.screen_ids.init, splash_data=splash_data),
             wait_for_dismiss=True,
@@ -191,7 +190,7 @@ class ChezmoiGUI(App[None]):
         self,
         *,
         splash_data: "SplashData | None",
-        operate_data: "OperateScreenData | None" = None,
+        operate_data: "OperateData | None" = None,
     ) -> None:
         if splash_data is None:
             raise ValueError("splash_data is None after running SplashScreen")

@@ -11,7 +11,7 @@ from chezmoi_mousse import (
     AppType,
     LogText,
     OperateBtn,
-    OperateScreenData,
+    OperateData,
     TabName,
     Tcss,
 )
@@ -59,7 +59,7 @@ class TabbedContentScreen(Screen[None], AppType):
         *,
         ids: "AppIds",
         splash_data: "SplashData",
-        operate_data: "OperateScreenData | None" = None,
+        operate_data: "OperateData | None" = None,
     ) -> None:
         self.app_log: "AppLog"
         self.read_log: "ReadCmdLog"
@@ -223,7 +223,7 @@ class TabbedContentScreen(Screen[None], AppType):
             and button_enum in (OperateBtn.add_file, OperateBtn.add_dir)
             and current_tab == TabName.add
         ):
-            operate_screen_data = OperateScreenData(
+            operate_screen_data = OperateData(
                 operate_btn=button_enum, node_data=self.current_add_node
             )
             self.app.push_screen(
@@ -243,7 +243,7 @@ class TabbedContentScreen(Screen[None], AppType):
             )
             and current_tab == TabName.apply.name
         ):
-            operate_screen_data = OperateScreenData(
+            operate_screen_data = OperateData(
                 operate_btn=button_enum, node_data=self.current_apply_node
             )
             self.app.push_screen(
@@ -264,7 +264,7 @@ class TabbedContentScreen(Screen[None], AppType):
             )
             and current_tab == TabName.re_add
         ):
-            operate_screen_data = OperateScreenData(
+            operate_screen_data = OperateData(
                 operate_btn=button_enum, node_data=self.current_re_add_node
             )
             self.app.push_screen(
@@ -279,7 +279,7 @@ class TabbedContentScreen(Screen[None], AppType):
             return
 
     def handle_operate_result(
-        self, operate_result: OperateScreenData | None
+        self, operate_result: OperateData | None
     ) -> None:
         if operate_result is None:
             self.notify("Operation cancelled.")

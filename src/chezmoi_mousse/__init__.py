@@ -61,7 +61,7 @@ __all__ = [
     "LogText",
     "NodeData",
     "OperateBtn",
-    "OperateScreenData",
+    "OperateData",
     "ParsedConfig",
     "PathDict",
     "PathKind",
@@ -100,7 +100,7 @@ class NodeData:
 
 
 @dataclass(slots=True)
-class OperateScreenData:
+class OperateData:
     operate_btn: "OperateBtn"
     command_result: "CommandResult | None" = None
     node_data: "NodeData | DirTreeNodeData | None" = None

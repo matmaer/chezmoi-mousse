@@ -26,7 +26,7 @@ from chezmoi_mousse import (
     BindingDescription,
     FlatBtn,
     OperateBtn,
-    OperateScreenData,
+    OperateData,
     SectionLabels,
     Tcss,
 )
@@ -136,7 +136,7 @@ class InitSwitcher(ContentSwitcher):
         )
 
 
-class InitScreen(Screen["OperateScreenData"], AppType):
+class InitScreen(Screen["OperateData"], AppType):
 
     def __init__(self, *, ids: "AppIds", splash_data: "SplashData") -> None:
         super().__init__()
@@ -195,9 +195,9 @@ class InitScreen(Screen["OperateScreenData"], AppType):
     @on(Button.Pressed, Tcss.operate_button.dot_prefix)
     def handle_operate_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
-        operate_data = OperateScreenData(operate_btn=OperateBtn.init_new_repo)
+        operate_data = OperateData(operate_btn=OperateBtn.init_new_repo)
         if event.button.id == self.ids.operate_btn.init_clone_repo:
-            operate_data = OperateScreenData(
+            operate_data = OperateData(
                 operate_btn=OperateBtn.init_clone_repo, repo_url=self.repo_url
             )
         self.app.push_screen(
@@ -222,6 +222,6 @@ class InitScreen(Screen["OperateScreenData"], AppType):
         self.repo_url = event.value
 
     def handle_returned_data(
-        self, operate_screen_data: OperateScreenData | None
+        self, operate_screen_data: OperateData | None
     ) -> None:
         self.dismiss(operate_screen_data)

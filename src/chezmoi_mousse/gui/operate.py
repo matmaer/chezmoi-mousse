@@ -32,7 +32,7 @@ from chezmoi_mousse.shared import (
 )
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import AppIds, CommandResult, OperateScreenData
+    from chezmoi_mousse import AppIds, CommandResult, OperateData
 
 
 __all__ = ["OperateInfo", "OperateScreen"]
@@ -102,7 +102,7 @@ class OperateInfo(Static, AppType):
     git_autocommit: bool | None = None
     git_autopush: bool | None = None
 
-    def __init__(self, *, operate_data: "OperateScreenData") -> None:
+    def __init__(self, *, operate_data: "OperateData") -> None:
         super().__init__()
         self.operate_btn = operate_data.operate_btn
         self.operate_data = operate_data
@@ -189,13 +189,13 @@ class OperateInfo(Static, AppType):
         self.update("\n".join(lines_to_write))
 
 
-class OperateScreen(Screen["OperateScreenData | None"], AppType):
+class OperateScreen(Screen["OperateData | None"], AppType):
 
     def __init__(
         self,
         *,
         ids: "AppIds",
-        operate_data: "OperateScreenData",
+        operate_data: "OperateData",
         splash_data: "SplashData | None" = None,
     ) -> None:
         super().__init__()
