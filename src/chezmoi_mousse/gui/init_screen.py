@@ -233,5 +233,4 @@ class InitScreen(Screen["OperateScreenData"], AppType):
         self.notify(
             f"Operation completed: {operate_screen_data.command_result.pretty_cmd}"
         )
-        self.app.operate_data = operate_screen_data
         self.dismiss(operate_screen_data)
