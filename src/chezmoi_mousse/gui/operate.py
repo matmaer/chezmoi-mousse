@@ -189,7 +189,7 @@ class OperateInfo(Static, AppType):
         self.update("\n".join(lines_to_write))
 
 
-class OperateScreen(Screen["OperateScreenData"], AppType):
+class OperateScreen(Screen["OperateScreenData | None"], AppType):
 
     def __init__(
         self,
