@@ -218,7 +218,7 @@ class ChezmoiGUI(App[None]):
         self, event: TabbedContent.TabActivated
     ) -> None:
         if event.tabbed_content.active in (
-            TabName.apply.name,
+            TabName.apply,
             TabName.re_add,
             TabName.add,
         ):
@@ -248,7 +248,7 @@ class ChezmoiGUI(App[None]):
         if not isinstance(self.screen, TabbedContentScreen):
             return
         active_tab = self.screen.query_exactly_one(TabbedContent).active
-        if active_tab == TabName.apply.name:
+        if active_tab == TabName.apply:
             slider = self.screen.query_one(
                 self.tab_ids.apply.container.switch_slider_q, SwitchSlider
             )
@@ -297,7 +297,7 @@ class ChezmoiGUI(App[None]):
         if not isinstance(self.screen, TabbedContentScreen):
             return
         active_tab = self.screen.query_exactly_one(TabbedContent).active
-        if active_tab == TabName.apply.name:
+        if active_tab == TabName.apply:
             slider = self.screen.query_one(
                 self.tab_ids.apply.container.switch_slider_q, SwitchSlider
             )
@@ -328,7 +328,7 @@ class ChezmoiGUI(App[None]):
         main_tabs = self.screen.query_exactly_one(Tabs)
         main_tabs.display = False if main_tabs.display is True else True
 
-        if active_tab == TabName.apply.name:
+        if active_tab == TabName.apply:
             left_side = self.screen.query_one(
                 self.tab_ids.apply.container.left_side_q, TreeSwitcher
             )
