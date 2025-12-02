@@ -83,7 +83,6 @@ class ChezmoiGUI(App[None]):
             key="escape",
             action=BindingAction.exit_screen,
             description=BindingDescription.cancel,
-            show=True,
         ),
         Binding(
             key="M,m",
