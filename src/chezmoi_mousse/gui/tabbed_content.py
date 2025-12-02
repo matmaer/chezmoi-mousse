@@ -281,36 +281,34 @@ class TabbedContentScreen(Screen[None], AppType):
     def handle_operate_result(
         self, operate_result: OperateScreenData | None
     ) -> None:
-        if operate_result is None and self.operate_data is None:
+        if operate_result is None:
             self.notify("Operation cancelled.")
-            self.operate_data = None
             return
         # The dry/live mode could have changed while in the operate screen
         reactive_header = self.query_exactly_one(CustomHeader)
         reactive_header.changes_enabled = self.app.changes_enabled
         self.refresh_bindings()
+        if operate_result.command_result is None:
+            self.notify("Operation was cancelled.")
+            return
         if (
-            operate_result is not None
-            and operate_result.command_result is not None
+            operate_result.command_result.returncode == 0
+            and self.app.changes_enabled
         ):
-            if (
-                operate_result.command_result.returncode == 0
-                and self.app.changes_enabled
-            ):
-                self.notify("Operation completed successfully.")
-            elif (
-                operate_result.command_result.returncode == 0
-                and not self.app.changes_enabled
-            ):
-                self.notify(
-                    "Operation completed in dry-run mode, no changes were made."
-                )
-            else:
-                self.notify(
-                    "The command ran with errors, see the Logs tab for more info.",
-                    severity="error",
-                )
-        if operate_result is not None and operate_result.operate_btn in (
+            self.notify("Operation completed successfully.")
+        elif (
+            operate_result.command_result.returncode == 0
+            and not self.app.changes_enabled
+        ):
+            self.notify(
+                "Operation completed in dry-run mode, no changes were made."
+            )
+        else:
+            self.notify(
+                "The command ran with errors, see the Logs tab for more info.",
+                severity="error",
+            )
+        if operate_result.operate_btn in (
             OperateBtn.add_file,
             OperateBtn.add_dir,
         ):
@@ -319,7 +317,7 @@ class TabbedContentScreen(Screen[None], AppType):
             )
             add_dir_tree.reload()
             return
-        if operate_result is not None and operate_result.operate_btn in (
+        if operate_result.operate_btn in (
             OperateBtn.apply_path,
             OperateBtn.re_add_path,
             OperateBtn.destroy_path,
