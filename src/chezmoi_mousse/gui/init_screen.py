@@ -167,6 +167,7 @@ class InitScreen(Screen["OperateData"], AppType):
         yield Footer(id=self.ids.footer)
 
     def on_mount(self) -> None:
+        self.app.operate_data = None
         self.init_clone_btn = self.query_one(
             self.ids.operate_btn.init_clone_repo_q, Button
         )

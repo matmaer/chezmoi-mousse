@@ -246,6 +246,7 @@ class OperateScreen(Screen["OperateData | None"], AppType):
         yield Footer(id=self.ids.footer)
 
     def on_mount(self) -> None:
+        self.app.operate_data = None
         self.query_one(
             self.ids.container.post_operate_q, VerticalGroup
         ).display = False
@@ -303,42 +304,43 @@ class OperateScreen(Screen["OperateData | None"], AppType):
             op_btn.tooltip = OperateBtn.init_clone_repo.initial_tooltip
 
     def run_operate_command(self) -> "CommandResult | None":
+        cmd_result: "CommandResult | None" = None
         if self.operate_btn in (OperateBtn.add_file, OperateBtn.add_dir):
-            self.operate_data.command_result = self.app.chezmoi.perform(
+            cmd_result = self.app.chezmoi.perform(
                 WriteCmd.add,
                 path_arg=self.path_arg,
                 changes_enabled=self.app.changes_enabled,
             )
         elif self.operate_btn == OperateBtn.apply_path:
-            self.operate_data.command_result = self.app.chezmoi.perform(
+            cmd_result = self.app.chezmoi.perform(
                 WriteCmd.apply,
                 path_arg=self.path_arg,
                 changes_enabled=self.app.changes_enabled,
             )
         elif self.operate_btn == OperateBtn.re_add_path:
-            self.operate_data.command_result = self.app.chezmoi.perform(
+            cmd_result = self.app.chezmoi.perform(
                 WriteCmd.re_add,
                 path_arg=self.path_arg,
                 changes_enabled=self.app.changes_enabled,
             )
         elif self.operate_btn == OperateBtn.forget_path:
-            self.operate_data.command_result = self.app.chezmoi.perform(
+            cmd_result = self.app.chezmoi.perform(
                 WriteCmd.forget,
                 path_arg=self.path_arg,
                 changes_enabled=self.app.changes_enabled,
             )
         elif self.operate_btn == OperateBtn.destroy_path:
-            self.operate_data.command_result = self.app.chezmoi.perform(
+            cmd_result = self.app.chezmoi.perform(
                 WriteCmd.destroy,
                 path_arg=self.path_arg,
                 changes_enabled=self.app.changes_enabled,
             )
         elif self.operate_btn == OperateBtn.init_new_repo:
-            self.operate_data.command_result = self.app.chezmoi.perform(
+            cmd_result = self.app.chezmoi.perform(
                 WriteCmd.init, changes_enabled=self.app.changes_enabled
             )
         elif self.operate_btn == OperateBtn.init_clone_repo:
-            self.operate_data.command_result = self.app.chezmoi.perform(
+            cmd_result = self.app.chezmoi.perform(
                 WriteCmd.init,
                 repo_url=self.repo_url,
                 changes_enabled=self.app.changes_enabled,
@@ -350,17 +352,17 @@ class OperateScreen(Screen["OperateData | None"], AppType):
             )
 
         self.update_visibility()
-        self.write_to_output_log()
+        self.write_to_output_log(cmd_result)
         self.update_operate_button()
         self.update_exit_button()
         self.update_key_binding()
 
-    def write_to_output_log(self) -> None:
+    def write_to_output_log(self, cmd_result: "CommandResult | None") -> None:
         output_log = self.query_one(self.ids.logger.operate_q, OperateLog)
-        if self.operate_data.command_result is not None:
-            output_log.log_cmd_results(self.operate_data.command_result)
+        if cmd_result is not None:
+            output_log.log_cmd_results(cmd_result)
         else:
-            output_log.error("Command result is None, cannot log output.")
+            self.notify("No command result to log.", severity="error")
 
     def update_key_binding(self) -> None:
         new_description = (
