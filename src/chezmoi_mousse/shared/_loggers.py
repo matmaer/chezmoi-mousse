@@ -69,8 +69,7 @@ class LoggersBase(RichLog, AppType):
 class AppLog(LoggersBase, AppType):
 
     def __init__(self, ids: "AppIds") -> None:
-        self.ids = ids
-        super().__init__(id=self.ids.logger.app, markup=True, max_lines=10000)
+        super().__init__(id=ids.logger.app, markup=True, max_lines=10000)
         self.succes_no_output = "Success, no output"
         self.success_with_output = "Success, output will be processed"
         self.std_err_logged = "Command stderr available in an Output log view"
@@ -132,9 +131,8 @@ class DebugLog(LoggersBase, AppType):
     type Mro = tuple[type, ...]
 
     def __init__(self, ids: "AppIds") -> None:
-        self.ids = ids
         super().__init__(
-            id=self.ids.logger.debug, markup=True, max_lines=10000, wrap=True
+            id=ids.logger.debug, markup=True, max_lines=10000, wrap=True
         )
 
     def completed_process(self, command_result: "CommandResult") -> None:
@@ -220,10 +218,7 @@ class DebugLog(LoggersBase, AppType):
 class OperateLog(LoggersBase, AppType):
 
     def __init__(self, ids: "AppIds") -> None:
-        self.ids = ids
-        super().__init__(
-            id=self.ids.logger.operate, markup=True, max_lines=10000
-        )
+        super().__init__(id=ids.logger.operate, markup=True, max_lines=10000)
 
     def log_cmd_results(self, command_result: "CommandResult") -> None:
         self.write(self.log_command(command_result))
@@ -278,8 +273,7 @@ class ReadCmdLog(ScrollableContainer, AppType):
     collapsible_counter: int = 0
 
     def __init__(self, ids: "AppIds") -> None:
-        self.ids = ids
-        super().__init__(id=self.ids.logger.read)
+        super().__init__(id=ids.logger.read)
 
     def log_cmd_results(self, command_result: "CommandResult") -> None:
         # Don't log verify read-verb outputs as in produces no output.
