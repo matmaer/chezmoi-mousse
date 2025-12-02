@@ -51,7 +51,7 @@ class DoctorTable(DataTable[Text], AppType):
         self.doctor_data = doctor_data.std_out.splitlines()
 
     def on_mount(self) -> None:
-        if len(self.doctor_data) == 0:
+        if len(self.doctor_data) < 2:
             self.app.notify("No doctor data to display", severity="error")
             return
         self.dr_style = {
