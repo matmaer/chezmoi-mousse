@@ -471,10 +471,23 @@ class Chezmoi:
         else:
             base_cmd: list[str] = GlobalCmd.dry_run.value
         command: list[str] = base_cmd + write_sub_cmd.value
-        if write_sub_cmd != WriteCmd.init and path_arg is not None:
+        if (
+            write_sub_cmd
+            in (
+                WriteCmd.add,
+                WriteCmd.apply,
+                WriteCmd.re_add,
+                WriteCmd.forget,
+                WriteCmd.destroy,
+            )
+            and path_arg is not None
+        ):
             command: list[str] = command + [str(path_arg)]
-        elif write_sub_cmd == WriteCmd.init and repo_url is not None:
-            command += [repo_url]
+        elif write_sub_cmd == WriteCmd.init:
+            if repo_url is not None:
+                command += [repo_url]
+        else:
+            raise ValueError("Invalid arguments for perform()")
 
         result: CompletedProcess[str] = run(
             command, capture_output=True, shell=False, text=True, timeout=5
