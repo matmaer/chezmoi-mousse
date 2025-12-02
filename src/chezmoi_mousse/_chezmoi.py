@@ -464,9 +464,9 @@ class Chezmoi:
         *,
         path_arg: Path | None = None,
         repo_url: str | None = None,
-        dry_run: bool,
+        changes_enabled: bool,
     ) -> CommandResult:
-        if dry_run is True:
+        if changes_enabled is True:
             base_cmd: list[str] = GlobalCmd.live_run.value
         else:
             base_cmd: list[str] = GlobalCmd.dry_run.value

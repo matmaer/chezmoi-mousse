@@ -321,41 +321,41 @@ class OperateScreen(Screen["OperateScreenData"], AppType):
             cmd_result = self.app.chezmoi.perform(
                 WriteCmd.add,
                 path_arg=self.path_arg,
-                dry_run=self.app.changes_enabled,
+                changes_enabled=self.app.changes_enabled,
             )
         elif self.operate_btn == OperateBtn.apply_path:
             cmd_result = self.app.chezmoi.perform(
                 WriteCmd.apply,
                 path_arg=self.path_arg,
-                dry_run=self.app.changes_enabled,
+                changes_enabled=self.app.changes_enabled,
             )
         elif self.operate_btn == OperateBtn.re_add_path:
             cmd_result = self.app.chezmoi.perform(
                 WriteCmd.re_add,
                 path_arg=self.path_arg,
-                dry_run=self.app.changes_enabled,
+                changes_enabled=self.app.changes_enabled,
             )
         elif self.operate_btn == OperateBtn.forget_path:
             cmd_result = self.app.chezmoi.perform(
                 WriteCmd.forget,
                 path_arg=self.path_arg,
-                dry_run=self.app.changes_enabled,
+                changes_enabled=self.app.changes_enabled,
             )
         elif self.operate_btn == OperateBtn.destroy_path:
             cmd_result = self.app.chezmoi.perform(
                 WriteCmd.destroy,
                 path_arg=self.path_arg,
-                dry_run=self.app.changes_enabled,
+                changes_enabled=self.app.changes_enabled,
             )
         elif self.operate_btn == OperateBtn.init_new_repo:
             self.command_result = self.app.chezmoi.perform(
-                WriteCmd.init, dry_run=self.app.changes_enabled
+                WriteCmd.init, changes_enabled=self.app.changes_enabled
             )
         elif self.operate_btn == OperateBtn.init_clone_repo:
             self.command_result = self.app.chezmoi.perform(
                 WriteCmd.init,
                 repo_url=self.repo_url,
-                dry_run=self.app.changes_enabled,
+                changes_enabled=self.app.changes_enabled,
             )
         else:
             self.screen.notify(
