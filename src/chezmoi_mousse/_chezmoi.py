@@ -84,6 +84,8 @@ class VerbArgs(Enum):
     ]
     include_dirs = "--include=dirs"
     include_files = "--include=files"
+    init_guess = "--guess-repo-url"
+    init_ssh = "--ssh"
     path_style_absolute = "--path-style=absolute"
     not_recursive = "--recursive=false"
     reverse = "--reverse"
@@ -98,6 +100,7 @@ class ReadVerbs(Enum):
     dump_config = "dump-config"
     git = "git"
     ignored = "ignored"
+    init = "init"
     managed = "managed"
     source_path = "source-path"
     status = "status"
