@@ -3,6 +3,7 @@
 from enum import StrEnum, auto
 
 __all__ = [
+    "BindingAction",
     "BindingDescription",
     "Chars",
     "ContainerName",
