@@ -250,7 +250,6 @@ class ReadOutputCollapsible(CustomCollapsible, AppType):
         self.pretty_cmd = command_result.pretty_cmd
         self.pretty_time = command_result.pretty_time
         self.static_id = f"read_cmd_static_number_{counter}"
-        self.static_qid = f"#read_cmd_static_number_{counter}"
 
         super().__init__(
             Static(
