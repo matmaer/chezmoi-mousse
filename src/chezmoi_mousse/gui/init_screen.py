@@ -224,13 +224,4 @@ class InitScreen(Screen["OperateScreenData"], AppType):
     def handle_returned_data(
         self, operate_screen_data: OperateScreenData | None
     ) -> None:
-        if operate_screen_data is None:
-            self.notify("Operation returned none.", severity="error")
-            return
-        if operate_screen_data.command_result is None:
-            self.notify("Operation returned none.", severity="error")
-            return
-        self.notify(
-            f"Operation completed: {operate_screen_data.command_result.pretty_cmd}"
-        )
         self.dismiss(operate_screen_data)
