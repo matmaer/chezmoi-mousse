@@ -223,7 +223,7 @@ class ChezmoiGUI(App[None]):
             TabName.add,
         ):
             self.update_toggle_switch_slider_binding()
-        self.refresh_bindings()
+            self.refresh_bindings()
 
     def get_switch_slider_widget(self) -> SwitchSlider:
         active_tab = self.screen.query_exactly_one(TabbedContent).active
