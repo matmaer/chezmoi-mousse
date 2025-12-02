@@ -169,6 +169,7 @@ class WriteCmd(Enum):
 class CommandResult:
     completed_process_data: CompletedProcess[str]
     path_arg: Path | None
+    repo_url_arg: str | None = None
     pretty_time: str = f"[{datetime.now().strftime('%H:%M:%S')}]"
 
     @property
@@ -493,7 +494,9 @@ class Chezmoi:
             command, capture_output=True, shell=False, text=True, timeout=5
         )
         command_results = CommandResult(
-            completed_process_data=result, path_arg=path_arg
+            completed_process_data=result,
+            path_arg=path_arg,
+            repo_url_arg=repo_url,
         )
         self._log_in_app_and_operate_log(command_results)
         return command_results
