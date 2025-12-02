@@ -3,7 +3,6 @@ from typing import TYPE_CHECKING
 
 from textual import on
 from textual.app import ComposeResult
-from textual.binding import Binding
 from textual.containers import (
     Horizontal,
     HorizontalGroup,
@@ -140,15 +139,6 @@ class InitSwitcher(ContentSwitcher):
 
 class InitScreen(Screen["CommandResult | None"], AppType):
 
-    BINDINGS = [
-        Binding(
-            key="escape",
-            action=BindingAction.exit_screen,
-            description=BindingDescription.exit_app,
-            show=True,
-        )
-    ]
-
     def __init__(self, *, ids: "AppIds", splash_data: "SplashData") -> None:
         super().__init__()
         self.ids = ids
@@ -183,6 +173,9 @@ class InitScreen(Screen["CommandResult | None"], AppType):
             self.ids.operate_btn.init_clone_repo_q, Button
         )
         self.init_clone_btn.disabled = True
+        self.app.update_binding_description(
+            BindingAction.exit_screen, BindingDescription.exit_app
+        )
 
     @on(Button.Pressed, Tcss.flat_button.dot_prefix)
     def switch_content(self, event: Button.Pressed) -> None:
@@ -242,6 +235,3 @@ class InitScreen(Screen["CommandResult | None"], AppType):
         self.notify(
             f"Operation completed: {operate_screen_data.command_result.returncode}"
         )
-
-    def action_exit_screen(self) -> None:
-        self.app.exit()
