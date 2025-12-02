@@ -31,8 +31,8 @@ class BindingAction(StrEnum):
 
 class BindingDescription(StrEnum):
     # Screen bindings
-    back = "Back"
     cancel = "Cancel"
+    close = "Close"
     exit_app = "Exit App"
     reload = "Close & Reload"
     # Tab bindings
