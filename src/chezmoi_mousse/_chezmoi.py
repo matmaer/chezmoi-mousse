@@ -100,7 +100,6 @@ class ReadVerbs(Enum):
     dump_config = "dump-config"
     git = "git"
     ignored = "ignored"
-    init = "init"
     managed = "managed"
     source_path = "source-path"
     status = "status"
