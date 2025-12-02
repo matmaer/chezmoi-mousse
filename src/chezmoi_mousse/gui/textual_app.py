@@ -163,7 +163,7 @@ class ChezmoiGUI(App[None]):
                 self.exit()
                 return
             else:
-                self.init_cmd_result = init_worker.result
+                self.operate_result = init_worker.result
             try:
                 worker = self.push_splash_screen()
                 await worker.wait()

@@ -54,7 +54,13 @@ class TabbedContentScreen(Screen[None], AppType):
 
     destDir: Path | None = None
 
-    def __init__(self, *, ids: "AppIds", splash_data: "SplashData") -> None:
+    def __init__(
+        self,
+        *,
+        ids: "AppIds",
+        splash_data: "SplashData",
+        operate_data: "OperateScreenData | None" = None,
+    ) -> None:
         self.app_log: "AppLog"
         self.read_log: "ReadCmdLog"
         self.operate_log: "OperateLog"
@@ -63,6 +69,7 @@ class TabbedContentScreen(Screen[None], AppType):
 
         self.ids = ids
         self.splash_data = splash_data
+        self.operate_data = operate_data
 
         self.current_add_node: "DirTreeNodeData | None" = None
         self.current_apply_node: "NodeData | None" = None
@@ -104,10 +111,8 @@ class TabbedContentScreen(Screen[None], AppType):
         yield Footer(id=self.ids.footer)
 
     async def on_mount(self) -> None:
-        init_loggers_worker = self.initialize_loggers()
-        await init_loggers_worker.wait()
-        log_init_cmd_worker = self.log_init_screen_command()
-        await log_init_cmd_worker.wait()
+        initialize_loggers_worker = self.initialize_loggers()
+        await initialize_loggers_worker.wait()
         self.log_splash_log_commands()
         self.populate_apply_trees()
         self.populate_re_add_trees()
@@ -149,20 +154,16 @@ class TabbedContentScreen(Screen[None], AppType):
             self.debug_log.ready_to_run(LogText.debug_log_initialized)
             self.notify(LogText.dev_mode_enabled, severity="information")
 
-    @work
-    async def log_init_screen_command(self) -> None:
-        if self.splash_data.init is None:
-            return
-        self.app_log.log_cmd_results(self.splash_data.init)
-        self.operate_log.log_cmd_results(self.splash_data.init)
-
     def log_splash_log_commands(self) -> None:
-        # Log SplashScreen and InitScreen commands
+        # Log SplashScreen and OperateScreen commands, if any.
         self.app_log.info("--- Commands executed in loading screen ---")
-        if self.splash_data.init is not None:
-            self.app_log.log_cmd_results(self.splash_data.init)
-            self.operate_log.log_cmd_results(self.splash_data.init)
-        for cmd in self.splash_data.executed_commands:
+        commands_to_log = self.splash_data.executed_commands
+        if (
+            self.operate_data is not None
+            and self.operate_data.command_result is not None
+        ):
+            commands_to_log += [self.operate_data.command_result]
+        for cmd in commands_to_log:
             self.app_log.log_cmd_results(cmd)
             self.read_cmd_log.log_cmd_results(cmd)
         self.app_log.info("--- End of loading screen commands ---")

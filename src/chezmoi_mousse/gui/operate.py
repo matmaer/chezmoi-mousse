@@ -15,6 +15,7 @@ from chezmoi_mousse import (
     OperateBtn,
     PathKind,
     SectionLabels,
+    SplashData,
     Tcss,
     WriteCmd,
 )
@@ -70,32 +71,27 @@ class InfoLine(StrEnum):
 
 
 class InitCollapsibles(VerticalGroup):
-    def __init__(
-        self, ids: "AppIds", operate_data: "OperateScreenData"
-    ) -> None:
+    def __init__(self, ids: "AppIds", splash_data: "SplashData") -> None:
         super().__init__()
-        if operate_data.splash_data is not None:
-            self.ids = ids
-            self.doctor_data = operate_data.splash_data.doctor
-            self.cat_config_data = operate_data.splash_data.cat_config
-            self.template_data = operate_data.splash_data.template_data
+        self.ids = ids
+        self.splash_data = splash_data
 
     def on_mount(self) -> None:
         self.mount(
             CustomCollapsible(
-                DoctorTable(ids=self.ids, doctor_data=self.doctor_data),
+                DoctorTable(ids=self.ids, doctor_data=self.splash_data.doctor),
                 title="Doctor Output",
             )
         )
         self.mount(
             CustomCollapsible(
-                Static(self.cat_config_data.std_out, markup=False),
+                Static(self.splash_data.cat_config.std_out, markup=False),
                 title="Cat Config Output",
             )
         )
         self.mount(
             CustomCollapsible(
-                PrettyTemplateData(self.template_data),
+                PrettyTemplateData(self.splash_data.template_data),
                 title="Template Data Output",
             )
         )
@@ -113,10 +109,7 @@ class OperateInfo(Static, AppType):
         if self.operate_data.node_data is not None:
             self.path_arg = self.operate_data.node_data.path
             self.path_kind = self.operate_data.node_data.path_kind
-        elif (
-            self.operate_data.splash_data is not None
-            and self.operate_data.repo_url is not None
-        ):
+        elif self.operate_data.repo_url is not None:
             self.repo_url = self.operate_data.repo_url
 
     def on_mount(self) -> None:
@@ -199,7 +192,11 @@ class OperateInfo(Static, AppType):
 class OperateScreen(Screen["OperateScreenData"], AppType):
 
     def __init__(
-        self, *, ids: "AppIds", operate_data: "OperateScreenData"
+        self,
+        *,
+        ids: "AppIds",
+        operate_data: "OperateScreenData",
+        splash_data: "SplashData | None" = None,
     ) -> None:
         super().__init__()
 
@@ -209,6 +206,7 @@ class OperateScreen(Screen["OperateScreenData"], AppType):
             "#", btn=self.operate_btn
         )
         self.operate_data = operate_data
+        self.splash_data = splash_data
         self.repo_url: str | None = None
         if self.operate_data.node_data is not None:
             self.path_arg = self.operate_data.node_data.path
@@ -232,12 +230,13 @@ class OperateScreen(Screen["OperateScreenData"], AppType):
                 OperateBtn.destroy_path,
             ):
                 yield ContentsView(ids=self.ids)
-            elif self.operate_btn in (
-                OperateBtn.init_new_repo,
-                OperateBtn.init_clone_repo,
+            elif (
+                self.operate_btn
+                in (OperateBtn.init_new_repo, OperateBtn.init_clone_repo)
+                and self.splash_data is not None
             ):
                 yield InitCollapsibles(
-                    ids=self.ids, operate_data=self.operate_data
+                    ids=self.ids, splash_data=self.splash_data
                 )
         with VerticalGroup(id=self.ids.container.post_operate):
             yield MainSectionLabel(SectionLabels.operate_output)

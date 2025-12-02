@@ -206,21 +206,26 @@ class InitScreen(Screen["CommandResult | None"], AppType):
         event.stop()
         if event.button.id == self.ids.operate_btn.init_new_repo:
             operate_data = OperateScreenData(
-                operate_btn=OperateBtn.init_new_repo,
-                splash_data=self.splash_data,
+                operate_btn=OperateBtn.init_new_repo
             )
             self.app.push_screen(
-                OperateScreen(ids=self.ids, operate_data=operate_data),
+                OperateScreen(
+                    ids=self.ids,
+                    operate_data=operate_data,
+                    splash_data=self.splash_data,
+                ),
                 callback=self.handle_returned_data,
             )
         elif event.button.id == self.ids.operate_btn.init_clone_repo:
             operate_data = OperateScreenData(
-                operate_btn=OperateBtn.init_clone_repo,
-                repo_url=self.repo_url,
-                splash_data=self.splash_data,
+                operate_btn=OperateBtn.init_clone_repo, repo_url=self.repo_url
             )
             self.app.push_screen(
-                OperateScreen(ids=self.ids, operate_data=operate_data)
+                OperateScreen(
+                    ids=self.ids,
+                    operate_data=operate_data,
+                    splash_data=self.splash_data,
+                )
             )
 
     @on(Input.Submitted)
