@@ -2,7 +2,7 @@ import json
 import os
 from enum import StrEnum
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from textual import on
 from textual.app import ComposeResult
@@ -18,6 +18,7 @@ from chezmoi_mousse import (
     FlatBtn,
     HeaderTitle,
     LinkBtn,
+    ScreenIds,
 )
 from chezmoi_mousse.shared import (
     CustomCollapsible,
@@ -27,12 +28,12 @@ from chezmoi_mousse.shared import (
     MainSectionLabel,
 )
 
-if TYPE_CHECKING:
-    from chezmoi_mousse import AppIds
-
 type ParsedJson = dict[str, Any]
 
 __all__ = ["InstallHelp"]
+
+
+IDS = ScreenIds().install_help
 
 
 class InstallHelpStrings(StrEnum):
@@ -51,12 +52,9 @@ class CommandsTree(Tree[ParsedJson]):
 
 
 class InstallHelp(Screen[None], AppType):
-    def __init__(self, *, ids: "AppIds") -> None:
-        super().__init__()
-        self.ids = ids
 
     def compose(self) -> ComposeResult:
-        yield CustomHeader(ids=self.ids)
+        yield CustomHeader(ids=IDS)
         yield MainSectionLabel(InstallHelpStrings.top_label)
         yield CustomCollapsible(
             Pretty(InstallHelpStrings.no_path_var),
@@ -65,10 +63,10 @@ class InstallHelp(Screen[None], AppType):
         with Horizontal():
             yield CommandsTree()
             yield VerticalGroup(
-                FlatLink(ids=self.ids, link_enum=LinkBtn.chezmoi_install),
-                FlatButton(ids=self.ids, button_enum=FlatBtn.exit_app),
+                FlatLink(ids=IDS, link_enum=LinkBtn.chezmoi_install),
+                FlatButton(ids=IDS, button_enum=FlatBtn.exit_app),
             )
-        yield Footer(id=self.ids.footer)
+        yield Footer(id=IDS.footer)
 
     def on_mount(self) -> None:
         self.screen.title = HeaderTitle.header_install_help

@@ -13,7 +13,6 @@ from textual.containers import Center, Middle
 from textual.geometry import Region
 from textual.screen import Screen
 from textual.strip import Strip
-from textual.timer import Timer
 from textual.widgets import RichLog, Static
 from textual.worker import WorkerState
 
@@ -23,14 +22,18 @@ from chezmoi_mousse import (
     CommandResult,
     ParsedConfig,
     ReadCmd,
+    ScreenIds,
     SplashData,
     VerbArgs,
 )
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import AppIds
+    from textual.timer import Timer
 
 __all__ = ["SplashScreen"]
+
+
+IDS = ScreenIds().splash
 
 SPLASH_COMMANDS: list[ReadCmd] = [
     ReadCmd.cat_config,
@@ -122,17 +125,11 @@ class AnimatedFade(Static):
 
 class SplashScreen(Screen[SplashData | None], AppType):
 
-    def __init__(self, ids: "AppIds") -> None:
-        self.ids = ids
-        self.fade_timer: Timer
-        self.all_workers_timer: Timer
-        super().__init__()
-
     def compose(self) -> ComposeResult:
         with Center():
             with Middle():
                 yield Center(AnimatedFade())
-                yield Center(RichLog(id=self.ids.logger.splash))
+                yield Center(RichLog(id=IDS.logger.splash))
 
     @work(thread=True, group="io_workers")
     def run_threaded_cmd(self, splash_cmd: ReadCmd) -> None:
@@ -207,10 +204,10 @@ class SplashScreen(Screen[SplashData | None], AppType):
         rich_log.styles.width = "auto"
         rich_log.styles.color = "#6DB2FF"
         rich_log.styles.margin = 2
-        self.all_workers_timer = self.set_interval(
+        self.all_workers_timer: "Timer" = self.set_interval(
             interval=1, callback=self.all_workers_finished
         )
-        self.fade_timer = self.set_interval(
+        self.fade_timer: "Timer" = self.set_interval(
             interval=0.05, callback=animated_fade.refresh
         )
         if self.app.chezmoi_found is True:

@@ -103,6 +103,8 @@ class ChezmoiGUI(App[None]):
 
     CSS_PATH = "gui.tcss"
 
+    SCREENS = {"splash": SplashScreen, "install_help": InstallHelp}
+
     def __init__(self, pre_run_data: "PreRunData") -> None:
         self.chezmoi: "Chezmoi"
         self.screen_ids = ScreenIds()
@@ -138,7 +140,7 @@ class ChezmoiGUI(App[None]):
             return
         # Chezmoi command not found, SplashScreen will return None
         if splash_screen_worker.result is None:
-            self.push_screen(InstallHelp(ids=self.screen_ids.install_help))
+            self.push_screen("install_help")
             return
         # Chezmoi found but cat_config fails OR force_init_screen flag is set
         if (
@@ -171,9 +173,7 @@ class ChezmoiGUI(App[None]):
 
     @work
     async def push_splash_screen(self) -> "SplashData | None":
-        return await self.push_screen(
-            SplashScreen(ids=self.screen_ids.splash), wait_for_dismiss=True
-        )
+        return await self.push_screen("splash", wait_for_dismiss=True)
 
     @work
     async def push_init_screen(
