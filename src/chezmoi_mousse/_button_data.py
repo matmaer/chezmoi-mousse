@@ -167,10 +167,6 @@ class OperateBtn(Enum):
         initial_label="Init Clone Repo",
         initial_tooltip="Initialize a the chezmoi repository by cloning from a provided remote repository.",
     )
-    init_exit = OperateButtonData(
-        initial_label=SharedLabels.exit_app,
-        initial_tooltip="Exit application or run chezmoi init first.",
-    )
     operate_exit = OperateButtonData(initial_label=SharedLabels.cancel)
 
     # Allow access to dataclass attributes directly from the Enum member,
