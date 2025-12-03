@@ -103,7 +103,11 @@ class ChezmoiGUI(App[None]):
 
     CSS_PATH = "gui.tcss"
 
-    SCREENS = {"splash": SplashScreen, "install_help": InstallHelp}
+    SCREENS = {
+        "init": InitScreen,
+        "install_help": InstallHelp,
+        "splash": SplashScreen,
+    }
 
     def __init__(self, pre_run_data: "PreRunData") -> None:
         self.chezmoi: "Chezmoi"
@@ -149,9 +153,8 @@ class ChezmoiGUI(App[None]):
         ):
             self.force_init_screen = False  # Reset force_init_screen for dev.
             try:
-                init_worker = self.push_init_screen(
-                    splash_data=splash_screen_worker.result
-                )
+                self.splash_data = splash_screen_worker.result
+                init_worker = self.push_init_screen()
                 await init_worker.wait()
                 # After init screen, re-run splash screen to load all data
                 try:
@@ -176,12 +179,8 @@ class ChezmoiGUI(App[None]):
         return await self.push_screen("splash", wait_for_dismiss=True)
 
     @work
-    async def push_init_screen(
-        self, *, splash_data: "SplashData"
-    ) -> "OperateData | None":
-        return await self.push_screen(
-            InitScreen(splash_data=splash_data), wait_for_dismiss=True
-        )
+    async def push_init_screen(self) -> "OperateData | None":
+        return await self.push_screen(InitScreen(), wait_for_dismiss=True)
 
     @work
     async def push_main_screen(

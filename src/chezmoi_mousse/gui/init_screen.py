@@ -1,5 +1,4 @@
 from enum import StrEnum
-from typing import TYPE_CHECKING
 
 from textual import on
 from textual.app import ComposeResult
@@ -46,9 +45,6 @@ from chezmoi_mousse.shared import (
 from .operate import OperateScreen
 
 __all__ = ["InitScreen"]
-
-if TYPE_CHECKING:
-    from chezmoi_mousse import SplashData
 
 
 IDS = ScreenIds().init
@@ -103,13 +99,12 @@ class InitClone(Vertical, AppType):
         yield OperateButtons(ids=IDS, buttons=(OperateBtn.init_clone_repo,))
 
 
-class InitSwitcher(ContentSwitcher):
+class InitSwitcher(ContentSwitcher, AppType):
 
-    def __init__(self, *, splash_data: "SplashData") -> None:
+    def __init__(self) -> None:
         super().__init__(
             id=IDS.switcher.init_screen, initial=IDS.view.init_new
         )
-        self.splash_data = splash_data
 
     def compose(self) -> ComposeResult:
         yield InitNew()
@@ -119,25 +114,27 @@ class InitSwitcher(ContentSwitcher):
         yield TemplateDataView(ids=IDS)
 
     def on_mount(self) -> None:
+        if self.app.splash_data is None:
+            self.notify("self.app.splash_data is None.", severity="error")
+            return
         doctor_view = self.query_one(IDS.container.doctor_q, DoctorTableView)
         doctor_view.populate_doctor_data(
-            command_result=self.splash_data.doctor
+            command_result=self.app.splash_data.doctor
         )
         cat_config = self.query_one(IDS.view.cat_config_q, CatConfigView)
-        cat_config.mount_cat_config_output(self.splash_data.cat_config)
+        cat_config.mount_cat_config_output(self.app.splash_data.cat_config)
         template_data_view = self.query_one(
             IDS.view.template_data_q, TemplateDataView
         )
         template_data_view.mount_template_data_output(
-            self.splash_data.template_data
+            self.app.splash_data.template_data
         )
 
 
 class InitScreen(Screen["OperateData"], AppType):
 
-    def __init__(self, *, splash_data: "SplashData") -> None:
+    def __init__(self) -> None:
         super().__init__()
-        self.splash_data = splash_data
         self.repo_url: str | None = None
         self.valid_url: bool = False
         self.debug_log: DebugLog
@@ -155,7 +152,7 @@ class InitScreen(Screen["OperateData"], AppType):
                     FlatBtn.template_data,
                 ),
             )
-            yield InitSwitcher(splash_data=self.splash_data)
+            yield InitSwitcher()
         if self.app.dev_mode is True:
             yield SubSectionLabel(SectionLabels.debug_log_output)
             with Horizontal():
@@ -198,7 +195,7 @@ class InitScreen(Screen["OperateData"], AppType):
         self.app.pop_screen()
         self.app.push_screen(
             OperateScreen(
-                operate_data=operate_data, splash_data=self.splash_data
+                operate_data=operate_data, splash_data=self.app.splash_data
             )
         )
 
