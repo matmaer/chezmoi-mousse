@@ -11,7 +11,6 @@ from textual.binding import Binding
 from textual.scrollbar import ScrollBar, ScrollBarRender
 from textual.theme import Theme
 from textual.widgets import TabbedContent, Tabs
-from textual.worker import WorkerCancelled
 
 from chezmoi_mousse import (
     TAB_IDS,
@@ -137,20 +136,16 @@ class ChezmoiGUI(App[None]):
     @work
     async def start_app_with_splash_screen(self) -> None:
         # Run splash screen once to gather command outputs
-        try:
-            splash_screen_worker = self.push_splash_screen()
-            await splash_screen_worker.wait()
-        except WorkerCancelled:
-            # User exited during splash screen, exit cleanly
-            return
+        self.splash_data = await self.push_screen(
+            "splash", wait_for_dismiss=True
+        )
         # Chezmoi command not found, SplashScreen will return None
-        if splash_screen_worker.result is None:
+        if self.splash_data is None:
             self.push_screen("install_help")
             return
-        self.splash_data = splash_screen_worker.result
         # Chezmoi found but cat_config fails OR force_init_screen flag is set
         if (
-            splash_screen_worker.result.cat_config.returncode != 0
+            self.splash_data.cat_config.returncode != 0
             or self.force_init_screen
         ):
             self.force_init_screen = False  # Reset force_init_screen for dev.
@@ -158,10 +153,6 @@ class ChezmoiGUI(App[None]):
             return
         # Chezmoi found, init not needed
         self.push_main_screen()
-
-    @work
-    async def push_splash_screen(self) -> "SplashData | None":
-        return await self.push_screen("splash", wait_for_dismiss=True)
 
     @work
     async def push_main_screen(self) -> None:
@@ -184,13 +175,9 @@ class ChezmoiGUI(App[None]):
 
     @on(InitCompletedMsg)
     async def handle_init_completed(self) -> None:
-        try:
-            splash_screen_worker = self.push_splash_screen()
-            await splash_screen_worker.wait()
-        except WorkerCancelled:
-            # User exited during splash screen, exit cleanly
-            return
-        self.splash_data = splash_screen_worker.result
+        self.splash_data = await self.push_screen(
+            "splash", wait_for_dismiss=True
+        )
         if (
             self.splash_data is None
             or self.splash_data.cat_config.returncode != 0
