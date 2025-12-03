@@ -179,12 +179,15 @@ class ChezmoiGUI(App[None]):
         self.splash_data = await self.push_screen(
             "splash", wait_for_dismiss=True
         )
-        if (
-            self.splash_data is None
-            or self.splash_data.cat_config.returncode != 0
-        ):
+        if self.splash_data is None:
             raise ValueError(
-                "splash_data is None or cat_config failed after InitScreen"
+                "splash_data is None after InitScreen - chezmoi not found"
+            )
+        if self.splash_data.cat_config.returncode != 0:
+            raise ValueError(
+                f"cat_config failed after InitScreen with returncode "
+                f"{self.splash_data.cat_config.returncode}. "
+                f"stderr: {self.splash_data.cat_config.std_err}"
             )
         self.push_main_screen()
 
