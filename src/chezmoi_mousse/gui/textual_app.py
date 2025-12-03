@@ -389,9 +389,9 @@ class ChezmoiGUI(App[None]):
         )
 
     def action_exit_screen(self) -> None:
-        if isinstance(self.screen, InstallHelp):
+        if isinstance(self.screen, (InstallHelp, InitScreen)):
             self.exit()
-        elif isinstance(self.screen, (InitScreen, OperateScreen)):
+        elif isinstance(self.screen, OperateScreen):
             self.screen.dismiss(self.operate_data)
 
     def check_action(
