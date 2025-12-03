@@ -11,6 +11,7 @@ from chezmoi_mousse import (
     SCREEN_IDS,
     TAB_IDS,
     AppType,
+    CommandResult,
     LogText,
     OperateBtn,
     OperateData,
@@ -197,12 +198,11 @@ class MainScreen(Screen[None], AppType):
             and button_enum in (OperateBtn.add_file, OperateBtn.add_dir)
             and current_tab == TabName.add
         ):
-            operate_screen_data = OperateData(
+            self.app.operate_data = OperateData(
                 operate_btn=button_enum, node_data=self.current_add_node
             )
             self.app.push_screen(
-                OperateScreen(operate_data=operate_screen_data),
-                callback=self.handle_operate_result,
+                OperateScreen(), callback=self.handle_operate_result
             )
         elif (
             self.current_apply_node is not None
@@ -214,12 +214,11 @@ class MainScreen(Screen[None], AppType):
             )
             and current_tab == TabName.apply.name
         ):
-            operate_screen_data = OperateData(
+            self.app.operate_data = OperateData(
                 operate_btn=button_enum, node_data=self.current_apply_node
             )
             self.app.push_screen(
-                OperateScreen(operate_data=operate_screen_data),
-                callback=self.handle_operate_result,
+                OperateScreen(), callback=self.handle_operate_result
             )
 
         elif (
@@ -232,39 +231,27 @@ class MainScreen(Screen[None], AppType):
             )
             and current_tab == TabName.re_add
         ):
-            operate_screen_data = OperateData(
+            self.app.operate_data = OperateData(
                 operate_btn=button_enum, node_data=self.current_re_add_node
             )
             self.app.push_screen(
-                OperateScreen(operate_data=operate_screen_data),
-                callback=self.handle_operate_result,
+                OperateScreen(), callback=self.handle_operate_result
             )
         else:
             self.notify("No current node available.", severity="error")
             return
 
-    def handle_operate_result(
-        self, operate_result: OperateData | None
-    ) -> None:
-        if operate_result is None:
+    def handle_operate_result(self, cmd_result: CommandResult | None) -> None:
+        if cmd_result is None:
             self.notify("Operation cancelled.")
             return
         # The dry/live mode could have changed while in the operate screen
         reactive_header = self.query_exactly_one(CustomHeader)
         reactive_header.changes_enabled = self.app.changes_enabled
         self.refresh_bindings()
-        if operate_result.command_result is None:
-            self.notify("Operation was cancelled.")
-            return
-        if (
-            operate_result.command_result.returncode == 0
-            and self.app.changes_enabled
-        ):
+        if cmd_result.returncode == 0 and self.app.changes_enabled:
             self.notify("Operation completed successfully.")
-        elif (
-            operate_result.command_result.returncode == 0
-            and not self.app.changes_enabled
-        ):
+        elif cmd_result.returncode == 0 and not self.app.changes_enabled:
             self.notify(
                 "Operation completed in dry-run mode, no changes were made."
             )
@@ -273,25 +260,12 @@ class MainScreen(Screen[None], AppType):
                 "The command ran with errors, see the Logs tab for more info.",
                 severity="error",
             )
-        if operate_result.operate_btn in (
-            OperateBtn.add_file,
-            OperateBtn.add_dir,
-        ):
-            add_dir_tree = self.query_one(
-                TAB_IDS.add.tree.dir_tree_q, FilteredDirTree
-            )
-            add_dir_tree.reload()
-            return
-        if operate_result.operate_btn in (
-            OperateBtn.apply_path,
-            OperateBtn.re_add_path,
-            OperateBtn.destroy_path,
-            OperateBtn.forget_path,
-        ):
-            self.populate_apply_trees()
-            self.populate_re_add_trees()
-            return
-        self.notify("Operation result not handled.", severity="error")
+        add_dir_tree = self.query_one(
+            TAB_IDS.add.tree.dir_tree_q, FilteredDirTree
+        )
+        add_dir_tree.reload()
+        self.populate_apply_trees()
+        self.populate_re_add_trees()
 
     @on(CurrentAddNodeMsg)
     def update_current_dir_tree_node(self, message: CurrentAddNodeMsg) -> None:

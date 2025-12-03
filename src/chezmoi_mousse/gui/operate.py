@@ -1,7 +1,7 @@
 from enum import StrEnum
 from typing import TYPE_CHECKING
 
-from textual import on
+from textual import on, work
 from textual.app import ComposeResult
 from textual.containers import VerticalGroup
 from textual.screen import Screen
@@ -14,6 +14,7 @@ from chezmoi_mousse import (
     BindingDescription,
     Chars,
     OperateBtn,
+    OperateData,
     PathKind,
     SectionLabels,
     SplashData,
@@ -33,7 +34,7 @@ from chezmoi_mousse.shared import (
 )
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import CommandResult, OperateData
+    from chezmoi_mousse import CommandResult
 
 
 __all__ = ["OperateInfo", "OperateScreen"]
@@ -104,21 +105,25 @@ class OperateInfo(Static, AppType):
     git_autocommit: bool | None = None
     git_autopush: bool | None = None
 
-    def __init__(self, *, operate_data: "OperateData") -> None:
-        super().__init__()
-        self.operate_btn = operate_data.operate_btn
-        self.operate_data = operate_data
-        if self.operate_data.node_data is not None:
-            self.path_arg = self.operate_data.node_data.path
-            self.path_kind = self.operate_data.node_data.path_kind
-        elif self.operate_data.repo_url is not None:
-            self.repo_url = self.operate_data.repo_url
-
     def on_mount(self) -> None:
         self.write_info_lines()
 
     def write_info_lines(self) -> None:
         self.update("")
+
+        if self.app.operate_data is None:
+            self.notify(
+                "OperateInfo mounted but app.operate_data is None",
+                severity="error",
+            )
+            return
+        self.operate_btn = self.app.operate_data.operate_btn
+        if self.app.operate_data.node_data is not None:
+            self.path_arg = self.app.operate_data.node_data.path
+            self.path_kind = self.app.operate_data.node_data.path_kind
+        elif self.app.operate_data.repo_url is not None:
+            self.repo_url = self.app.operate_data.repo_url
+
         lines_to_write: list[str] = []
         if self.operate_btn == OperateBtn.add_file:
             self.border_title = InfoBorderTitle.add_file
@@ -166,7 +171,7 @@ class OperateInfo(Static, AppType):
         elif self.operate_btn == OperateBtn.init_clone_repo:
             self.border_title = InfoBorderTitle.init_clone
             lines_to_write.append(
-                f"{InfoLine.init_clone} [$text-warning]{self.repo_url}[/]"
+                f"{InfoLine.init_clone} [$text-warning]{self.app.operate_data.repo_url}[/]"
             )
 
         if self.app.changes_enabled is True:
@@ -191,12 +196,29 @@ class OperateInfo(Static, AppType):
         self.update("\n".join(lines_to_write))
 
 
-class OperateScreen(Screen["OperateData | None"], AppType):
+class OperateScreen(Screen["CommandResult | None"], AppType):
 
-    def __init__(self, *, operate_data: "OperateData") -> None:
+    def __init__(self) -> None:
         super().__init__()
+        self.cmd_result: "CommandResult | None" = None
 
-        self.operate_data = operate_data
+    def compose(self) -> ComposeResult:
+        yield CustomHeader(SCREEN_IDS.operate)
+        with VerticalGroup(id=SCREEN_IDS.operate.container.pre_operate):
+            yield OperateInfo()
+        with VerticalGroup(id=SCREEN_IDS.operate.container.post_operate):
+            yield MainSectionLabel(SectionLabels.operate_output)
+            yield OperateLog(ids=SCREEN_IDS.operate)
+        yield Footer(id=SCREEN_IDS.operate.footer)
+
+    async def on_mount(self) -> None:
+        if self.app.operate_data is None:
+            self.notify(
+                "OperateScreen mounted but app.operate_data is None",
+                severity="error",
+            )
+            return
+        self.operate_data = self.app.operate_data
         self.operate_btn = self.operate_data.operate_btn
         self.operate_btn_q = SCREEN_IDS.operate.operate_button_id(
             "#", btn=self.operate_btn
@@ -206,57 +228,56 @@ class OperateScreen(Screen["OperateData | None"], AppType):
             self.path_kind = self.operate_data.node_data.path_kind
         elif self.operate_data.repo_url is not None:
             self.repo_url = self.operate_data.repo_url
-
-    def compose(self) -> ComposeResult:
-        yield CustomHeader(SCREEN_IDS.operate)
-        with VerticalGroup(id=SCREEN_IDS.operate.container.pre_operate):
-            yield OperateInfo(operate_data=self.operate_data)
-            yield MainSectionLabel(SectionLabels.operate_context)
-            if self.operate_btn == OperateBtn.apply_path:
-                yield DiffView(ids=SCREEN_IDS.operate, reverse=False)
-            elif self.operate_btn == OperateBtn.re_add_path:
-                yield DiffView(ids=SCREEN_IDS.operate, reverse=True)
-            elif self.operate_btn in (
-                OperateBtn.add_file,
-                OperateBtn.add_dir,
-                OperateBtn.forget_path,
-                OperateBtn.destroy_path,
-            ):
-                yield ContentsView(ids=SCREEN_IDS.operate)
-            elif (
-                self.operate_btn
-                in (OperateBtn.init_new_repo, OperateBtn.init_clone_repo)
-                and self.app.splash_data is not None
-            ):
-                yield InitCollapsibles(splash_data=self.app.splash_data)
-        with VerticalGroup(id=SCREEN_IDS.operate.container.post_operate):
-            yield MainSectionLabel(SectionLabels.operate_output)
-            yield OperateLog(ids=SCREEN_IDS.operate)
-        yield OperateButtons(
-            ids=SCREEN_IDS.operate,
-            buttons=(self.operate_btn, OperateBtn.operate_exit),
-        )
-        yield Footer(id=SCREEN_IDS.operate.footer)
-
-    def on_mount(self) -> None:
-        self.app.operate_data = None
+        pre_op_worker = self.mount_pre_operate_widgets(self.operate_data)
+        await pre_op_worker.wait()
         self.query_one(
             SCREEN_IDS.operate.container.post_operate_q, VerticalGroup
         ).display = False
+        self.mount(
+            OperateButtons(
+                ids=SCREEN_IDS.operate,
+                buttons=(self.operate_btn, OperateBtn.operate_exit),
+            )
+        )
         self.configure_buttons()
         self.configure_widgets()
 
-    def configure_widgets(self) -> None:
-        if self.operate_btn in (OperateBtn.apply_path, OperateBtn.re_add_path):
-            diff_view = self.query_exactly_one(DiffView)
-            diff_view.path = self.path_arg
-
-        elif self.operate_btn in (
+    @work
+    async def mount_pre_operate_widgets(
+        self, operate_data: OperateData
+    ) -> None:
+        pre_op_container = self.query_one(
+            SCREEN_IDS.operate.container.pre_operate_q, VerticalGroup
+        )
+        if operate_data.operate_btn == OperateBtn.apply_path:
+            pre_op_container.mount(
+                DiffView(ids=SCREEN_IDS.operate, reverse=False)
+            )
+        elif operate_data.operate_btn == OperateBtn.re_add_path:
+            pre_op_container.mount(
+                DiffView(ids=SCREEN_IDS.operate, reverse=True)
+            )
+        elif operate_data.operate_btn in (
             OperateBtn.add_file,
             OperateBtn.add_dir,
             OperateBtn.forget_path,
             OperateBtn.destroy_path,
         ):
+            pre_op_container.mount(ContentsView(ids=SCREEN_IDS.operate))
+        elif (
+            operate_data.operate_btn
+            in (OperateBtn.init_new_repo, OperateBtn.init_clone_repo)
+            and self.app.splash_data is not None
+        ):
+            pre_op_container.mount(
+                InitCollapsibles(splash_data=self.app.splash_data)
+            )
+
+    def configure_widgets(self) -> None:
+        if self.operate_btn in (OperateBtn.apply_path, OperateBtn.re_add_path):
+            diff_view = self.query_exactly_one(DiffView)
+            diff_view.path = self.path_arg
+        else:
             contents_view = self.query_exactly_one(ContentsView)
             contents_view.path = self.path_arg
 
@@ -304,70 +325,76 @@ class OperateScreen(Screen["OperateData | None"], AppType):
             op_btn.tooltip = OperateBtn.init_clone_repo.initial_tooltip
             exit_btn.label = OperateBtn.operate_exit.exit_app_label
 
-    def run_operate_command(self) -> "CommandResult | None":
-        cmd_result: "CommandResult | None" = None
+    def run_operate_command(self) -> None:
         if self.operate_btn in (OperateBtn.add_file, OperateBtn.add_dir):
-            cmd_result = self.app.chezmoi.perform(
+            self.cmd_result = self.app.chezmoi.perform(
                 WriteCmd.add,
                 path_arg=self.path_arg,
                 changes_enabled=self.app.changes_enabled,
             )
         elif self.operate_btn == OperateBtn.apply_path:
-            cmd_result = self.app.chezmoi.perform(
+            self.cmd_result = self.app.chezmoi.perform(
                 WriteCmd.apply,
                 path_arg=self.path_arg,
                 changes_enabled=self.app.changes_enabled,
             )
         elif self.operate_btn == OperateBtn.re_add_path:
-            cmd_result = self.app.chezmoi.perform(
+            self.cmd_result = self.app.chezmoi.perform(
                 WriteCmd.re_add,
                 path_arg=self.path_arg,
                 changes_enabled=self.app.changes_enabled,
             )
         elif self.operate_btn == OperateBtn.forget_path:
-            cmd_result = self.app.chezmoi.perform(
+            self.cmd_result = self.app.chezmoi.perform(
                 WriteCmd.forget,
                 path_arg=self.path_arg,
                 changes_enabled=self.app.changes_enabled,
             )
         elif self.operate_btn == OperateBtn.destroy_path:
-            cmd_result = self.app.chezmoi.perform(
+            self.cmd_result = self.app.chezmoi.perform(
                 WriteCmd.destroy,
                 path_arg=self.path_arg,
                 changes_enabled=self.app.changes_enabled,
             )
         elif self.operate_btn == OperateBtn.init_new_repo:
-            cmd_result = self.app.chezmoi.perform(
+            self.cmd_result = self.app.chezmoi.perform(
                 WriteCmd.init, changes_enabled=self.app.changes_enabled
             )
         elif self.operate_btn == OperateBtn.init_clone_repo:
-            cmd_result = self.app.chezmoi.perform(
+            self.cmd_result = self.app.chezmoi.perform(
                 WriteCmd.init,
                 repo_url=self.repo_url,
                 changes_enabled=self.app.changes_enabled,
             )
         else:
-            self.screen.notify(
-                f"Operate button not implemented: {self.operate_btn.name}",
+            self.notify(
+                f"run_operate_command called with unknown operate_btn: {self.operate_btn}",
                 severity="error",
             )
+            raise ValueError(f"Unknown operate_btn: {self.operate_btn}")
 
         self.update_visibility()
-        self.write_to_output_log(cmd_result)
+        self.write_to_output_log()
         self.update_operate_button()
         self.update_exit_button()
         self.update_key_binding()
 
-    def write_to_output_log(self, cmd_result: "CommandResult | None") -> None:
+    def write_to_output_log(self) -> None:
         output_log = self.query_one(
             SCREEN_IDS.operate.logger.operate_q, OperateLog
         )
-        if cmd_result is not None:
-            output_log.log_cmd_results(cmd_result)
+        if self.cmd_result is not None:
+            output_log.log_cmd_results(self.cmd_result)
         else:
             self.notify("No command result to log.", severity="error")
 
     def update_key_binding(self) -> None:
+        if self.app.operate_data is None:
+            self.notify(
+                "update_key_binding called but app.operate_data is None",
+                severity="error",
+            )
+            return
         new_description = (
             BindingDescription.reload
             if self.operate_btn
@@ -400,6 +427,12 @@ class OperateScreen(Screen["OperateData | None"], AppType):
             ),
             Button,
         )
+        if self.app.operate_data is None:
+            self.notify(
+                "update_exit_button called but app.operate_data is None",
+                severity="error",
+            )
+            return
         if self.operate_btn in (
             OperateBtn.add_file,
             OperateBtn.add_dir,
@@ -425,7 +458,6 @@ class OperateScreen(Screen["OperateData | None"], AppType):
             OperateBtn.operate_exit.close_label,
             OperateBtn.operate_exit.reload_label,
         ):
-            self.app.operate_data = self.operate_data
-            self.dismiss(self.operate_data)
+            self.dismiss(self.cmd_result)
         else:
             self.run_operate_command()

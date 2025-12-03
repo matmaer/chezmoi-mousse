@@ -195,13 +195,15 @@ class InitScreen(Screen["OperateData"], AppType):
     @on(Button.Pressed, Tcss.operate_button.dot_prefix)
     def handle_operate_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
-        operate_data = OperateData(operate_btn=OperateBtn.init_new_repo)
+        self.app.operate_data = OperateData(
+            operate_btn=OperateBtn.init_new_repo
+        )
         if event.button.id == SCREEN_IDS.init.operate_btn.init_clone_repo:
-            operate_data = OperateData(
+            self.app.operate_data = OperateData(
                 operate_btn=OperateBtn.init_clone_repo, repo_url=self.repo_url
             )
         self.app.pop_screen()
-        self.app.push_screen(OperateScreen(operate_data=operate_data))
+        self.app.push_screen(OperateScreen())
 
     @on(Input.Submitted)
     def log_validation_result(self, event: Input.Submitted) -> None:
