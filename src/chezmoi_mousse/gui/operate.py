@@ -269,6 +269,7 @@ class OperateScreen(Screen["OperateData | None"], AppType):
 
     def configure_buttons(self) -> None:
         op_btn = self.query_one(self.operate_btn_q, Button)
+        exit_btn = self.query_one(self.ids.operate_btn.operate_exit_q, Button)
 
         if self.operate_btn == OperateBtn.apply_path:
             op_btn.label = OperateBtn.apply_path.label(self.path_kind)
@@ -299,9 +300,11 @@ class OperateScreen(Screen["OperateData | None"], AppType):
         elif self.operate_btn == OperateBtn.init_new_repo:
             op_btn.label = OperateBtn.init_new_repo.initial_label
             op_btn.tooltip = OperateBtn.init_new_repo.initial_tooltip
+            exit_btn.label = OperateBtn.operate_exit.exit_app_label
         elif self.operate_btn == OperateBtn.init_clone_repo:
             op_btn.label = OperateBtn.init_clone_repo.initial_label
             op_btn.tooltip = OperateBtn.init_clone_repo.initial_tooltip
+            exit_btn.label = OperateBtn.operate_exit.exit_app_label
 
     def run_operate_command(self) -> "CommandResult | None":
         cmd_result: "CommandResult | None" = None
@@ -412,9 +415,12 @@ class OperateScreen(Screen["OperateData | None"], AppType):
     @on(Button.Pressed, Tcss.operate_button.dot_prefix)
     def handle_operate_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
-        if event.button.label in (
+        if event.button.label == OperateBtn.operate_exit.exit_app_label:
+            self.app.exit()
+        elif event.button.label in (
             OperateBtn.operate_exit.cancel_label,
             OperateBtn.operate_exit.close_label,
+            OperateBtn.operate_exit.reload_label,
         ):
             self.app.operate_data = self.operate_data
             self.dismiss(self.operate_data)
