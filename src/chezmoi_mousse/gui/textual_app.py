@@ -42,7 +42,7 @@ from .tabs.common.switchers import TreeSwitcher, ViewSwitcher
 from .tabs.common.trees import TreeBase
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import Chezmoi, PreRunData, SplashData
+    from chezmoi_mousse import Chezmoi, CommandResult, PreRunData, SplashData
 
 __all__ = ["ChezmoiGUI"]
 
@@ -121,6 +121,7 @@ class ChezmoiGUI(App[None]):
         # Manage state between screens
         self.changes_enabled: bool = False
         self.operate_data: "OperateData | None" = None
+        self.operate_cmd_result: "CommandResult | None" = None
         self.splash_data: "SplashData | None" = None
 
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
@@ -379,7 +380,7 @@ class ChezmoiGUI(App[None]):
         if isinstance(self.screen, (InstallHelp, InitScreen)):
             self.exit()
         elif isinstance(self.screen, OperateScreen):
-            self.screen.dismiss(self.operate_data)
+            self.screen.dismiss(self.operate_cmd_result)
 
     def check_action(
         self, action: str, parameters: tuple[object, ...]

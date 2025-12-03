@@ -11,7 +11,6 @@ from chezmoi_mousse import (
     SCREEN_IDS,
     TAB_IDS,
     AppType,
-    CommandResult,
     LogText,
     OperateBtn,
     OperateData,
@@ -231,17 +230,23 @@ class MainScreen(Screen[None], AppType):
             OperateScreen(), callback=self.handle_operate_result
         )
 
-    def handle_operate_result(self, cmd_result: CommandResult | None) -> None:
-        if cmd_result is None:
+    def handle_operate_result(self, _: None) -> None:
+        if self.app.operate_cmd_result is None:
             self.notify("Operation cancelled.")
             return
         # The dry/live mode could have changed while in the operate screen
         reactive_header = self.query_exactly_one(CustomHeader)
         reactive_header.changes_enabled = self.app.changes_enabled
         self.refresh_bindings()
-        if cmd_result.returncode == 0 and self.app.changes_enabled:
+        if (
+            self.app.operate_cmd_result.returncode == 0
+            and self.app.changes_enabled
+        ):
             self.notify("Operation completed successfully.")
-        elif cmd_result.returncode == 0 and not self.app.changes_enabled:
+        elif (
+            self.app.operate_cmd_result.returncode == 0
+            and not self.app.changes_enabled
+        ):
             self.notify(
                 "Operation completed in dry-run mode, no changes were made."
             )

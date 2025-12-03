@@ -1,5 +1,4 @@
 from enum import StrEnum
-from typing import TYPE_CHECKING
 
 from textual import on, work
 from textual.app import ComposeResult
@@ -32,10 +31,6 @@ from chezmoi_mousse.shared import (
     OperateLog,
     PrettyTemplateData,
 )
-
-if TYPE_CHECKING:
-    from chezmoi_mousse import CommandResult
-
 
 __all__ = ["OperateInfo", "OperateScreen"]
 
@@ -196,11 +191,7 @@ class OperateInfo(Static, AppType):
         self.update("\n".join(lines_to_write))
 
 
-class OperateScreen(Screen["CommandResult | None"], AppType):
-
-    def __init__(self) -> None:
-        super().__init__()
-        self.cmd_result: "CommandResult | None" = None
+class OperateScreen(Screen[None], AppType):
 
     def compose(self) -> ComposeResult:
         yield CustomHeader(SCREEN_IDS.operate)
@@ -240,7 +231,6 @@ class OperateScreen(Screen["CommandResult | None"], AppType):
             )
         )
         self.configure_buttons()
-        self.configure_widgets()
 
     @work
     async def mount_pre_operate_widgets(
@@ -272,9 +262,10 @@ class OperateScreen(Screen["CommandResult | None"], AppType):
             pre_op_container.mount(
                 InitCollapsibles(splash_data=self.app.splash_data)
             )
-
-    def configure_widgets(self) -> None:
-        if self.operate_btn in (OperateBtn.apply_path, OperateBtn.re_add_path):
+        if operate_data.operate_btn in (
+            OperateBtn.apply_path,
+            OperateBtn.re_add_path,
+        ):
             diff_view = self.query_exactly_one(DiffView)
             diff_view.path = self.path_arg
         else:
@@ -327,64 +318,57 @@ class OperateScreen(Screen["CommandResult | None"], AppType):
 
     def run_operate_command(self) -> None:
         if self.operate_btn in (OperateBtn.add_file, OperateBtn.add_dir):
-            self.cmd_result = self.app.chezmoi.perform(
+            self.app.operate_cmd_result = self.app.chezmoi.perform(
                 WriteCmd.add,
                 path_arg=self.path_arg,
                 changes_enabled=self.app.changes_enabled,
             )
         elif self.operate_btn == OperateBtn.apply_path:
-            self.cmd_result = self.app.chezmoi.perform(
+            self.app.operate_cmd_result = self.app.chezmoi.perform(
                 WriteCmd.apply,
                 path_arg=self.path_arg,
                 changes_enabled=self.app.changes_enabled,
             )
         elif self.operate_btn == OperateBtn.re_add_path:
-            self.cmd_result = self.app.chezmoi.perform(
+            self.app.operate_cmd_result = self.app.chezmoi.perform(
                 WriteCmd.re_add,
                 path_arg=self.path_arg,
                 changes_enabled=self.app.changes_enabled,
             )
         elif self.operate_btn == OperateBtn.forget_path:
-            self.cmd_result = self.app.chezmoi.perform(
+            self.app.operate_cmd_result = self.app.chezmoi.perform(
                 WriteCmd.forget,
                 path_arg=self.path_arg,
                 changes_enabled=self.app.changes_enabled,
             )
         elif self.operate_btn == OperateBtn.destroy_path:
-            self.cmd_result = self.app.chezmoi.perform(
+            self.app.operate_cmd_result = self.app.chezmoi.perform(
                 WriteCmd.destroy,
                 path_arg=self.path_arg,
                 changes_enabled=self.app.changes_enabled,
             )
         elif self.operate_btn == OperateBtn.init_new_repo:
-            self.cmd_result = self.app.chezmoi.perform(
+            self.app.operate_cmd_result = self.app.chezmoi.perform(
                 WriteCmd.init, changes_enabled=self.app.changes_enabled
             )
         elif self.operate_btn == OperateBtn.init_clone_repo:
-            self.cmd_result = self.app.chezmoi.perform(
+            self.app.operate_cmd_result = self.app.chezmoi.perform(
                 WriteCmd.init,
                 repo_url=self.repo_url,
                 changes_enabled=self.app.changes_enabled,
             )
-        else:
-            self.notify(
-                f"run_operate_command called with unknown operate_btn: {self.operate_btn}",
-                severity="error",
-            )
-            raise ValueError(f"Unknown operate_btn: {self.operate_btn}")
 
         self.update_visibility()
         self.write_to_output_log()
-        self.update_operate_button()
-        self.update_exit_button()
+        self.update_buttons()
         self.update_key_binding()
 
     def write_to_output_log(self) -> None:
         output_log = self.query_one(
             SCREEN_IDS.operate.logger.operate_q, OperateLog
         )
-        if self.cmd_result is not None:
-            output_log.log_cmd_results(self.cmd_result)
+        if self.app.operate_cmd_result is not None:
+            output_log.log_cmd_results(self.app.operate_cmd_result)
         else:
             self.notify("No command result to log.", severity="error")
 
@@ -415,24 +399,16 @@ class OperateScreen(Screen["CommandResult | None"], AppType):
         )
         post_op_container.display = True
 
-    def update_operate_button(self) -> None:
+    def update_buttons(self) -> None:
         operate_button = self.query_one(self.operate_btn_q, Button)
         operate_button.disabled = True
         operate_button.tooltip = None
-
-    def update_exit_button(self) -> None:
         operate_exit_button = self.query_one(
             SCREEN_IDS.operate.operate_button_id(
                 "#", btn=OperateBtn.operate_exit
             ),
             Button,
         )
-        if self.app.operate_data is None:
-            self.notify(
-                "update_exit_button called but app.operate_data is None",
-                severity="error",
-            )
-            return
         if self.operate_btn in (
             OperateBtn.add_file,
             OperateBtn.add_dir,
@@ -453,11 +429,13 @@ class OperateScreen(Screen["CommandResult | None"], AppType):
         event.stop()
         if event.button.label == OperateBtn.operate_exit.exit_app_label:
             self.app.exit()
+        elif event.button.label == OperateBtn.operate_exit.cancel_label:
+            self.app.operate_cmd_result = None
+            self.dismiss()
         elif event.button.label in (
-            OperateBtn.operate_exit.cancel_label,
             OperateBtn.operate_exit.close_label,
             OperateBtn.operate_exit.reload_label,
         ):
-            self.dismiss(self.cmd_result)
+            self.dismiss()
         else:
             self.run_operate_command()
