@@ -35,6 +35,8 @@ class GitLogDataTable(DataTable[Text], AppType):
         self.add_row(*row)
 
     def populate_datatable(self, command_result: "CommandResult") -> None:
+        if command_result.returncode != 0:
+            return
         cmd_output = command_result.std_out
         self.clear(columns=True)
         self.add_columns("COMMIT", "MESSAGE")
