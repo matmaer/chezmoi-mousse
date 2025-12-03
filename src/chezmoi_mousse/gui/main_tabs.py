@@ -37,7 +37,7 @@ from .tabs.logs_tab import LogsTab
 from .tabs.re_add_tab import ReAddTab
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import DirTreeNodeData, NodeData, SplashData
+    from chezmoi_mousse import DirTreeNodeData, NodeData
 
 __all__ = ["MainScreen"]
 
@@ -58,19 +58,12 @@ class MainScreen(Screen[None], AppType):
 
     destDir: Path | None = None
 
-    def __init__(
-        self,
-        *,
-        splash_data: "SplashData",
-        operate_data: "OperateData | None" = None,
-    ) -> None:
+    def __init__(self) -> None:
         self.app_log: "AppLog"
         self.read_log: "ReadCmdLog"
         self.operate_log: "OperateLog"
         self.debug_log: "DebugLog"
         super().__init__()
-        self.splash_data = splash_data
-        self.operate_data = operate_data
 
         self.current_add_node: "DirTreeNodeData | None" = None
         self.current_apply_node: "NodeData | None" = None
@@ -158,12 +151,15 @@ class MainScreen(Screen[None], AppType):
     def log_splash_log_commands(self) -> None:
         # Log SplashScreen and OperateScreen commands, if any.
         self.app_log.info("--- Commands executed in loading screen ---")
-        commands_to_log = self.splash_data.executed_commands
+        if self.app.splash_data is None:
+            self.notify("No loading screen data available.")
+            return
+        commands_to_log = self.app.splash_data.executed_commands
         if (
-            self.operate_data is not None
-            and self.operate_data.command_result is not None
+            self.app.operate_data is not None
+            and self.app.operate_data.command_result is not None
         ):
-            commands_to_log += [self.operate_data.command_result]
+            commands_to_log += [self.app.operate_data.command_result]
         for cmd in commands_to_log:
             self.app_log.log_cmd_results(cmd)
             self.read_cmd_log.log_cmd_results(cmd)
@@ -206,14 +202,17 @@ class MainScreen(Screen[None], AppType):
         self.app_log.success("Re-Add list populated.")
 
     def update_global_git_log(self) -> None:
+        if self.app.splash_data is None:
+            self.notify("No loading screen data available.", severity="error")
+            return
         logs_tab = self.screen.query_exactly_one(LogsTab)
-        logs_tab.git_log_result = self.splash_data.git_log
+        setattr(logs_tab, "git_log_result", self.app.splash_data.git_log)
 
     def update_config_tab(self) -> None:
         config_tab_switcher = self.screen.query_one(
             self.app.tab_ids.config.switcher.config_tab_q, ConfigTabSwitcher
         )
-        setattr(config_tab_switcher, "splash_data", self.splash_data)
+        setattr(config_tab_switcher, "splash_data", self.app.splash_data)
 
     @on(Button.Pressed, Tcss.operate_button.dot_prefix)
     def push_operate_screen(self, event: Button.Pressed) -> None:

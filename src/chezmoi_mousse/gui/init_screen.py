@@ -193,11 +193,7 @@ class InitScreen(Screen["OperateData"], AppType):
                 operate_btn=OperateBtn.init_clone_repo, repo_url=self.repo_url
             )
         self.app.pop_screen()
-        self.app.push_screen(
-            OperateScreen(
-                operate_data=operate_data, splash_data=self.app.splash_data
-            )
-        )
+        self.app.push_screen(OperateScreen(operate_data=operate_data))
 
     @on(Input.Submitted)
     def log_validation_result(self, event: Input.Submitted) -> None:

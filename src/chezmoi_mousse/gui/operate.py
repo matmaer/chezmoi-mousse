@@ -194,12 +194,7 @@ class OperateInfo(Static, AppType):
 
 class OperateScreen(Screen["OperateData | None"], AppType):
 
-    def __init__(
-        self,
-        *,
-        operate_data: "OperateData",
-        splash_data: "SplashData | None" = None,
-    ) -> None:
+    def __init__(self, *, operate_data: "OperateData") -> None:
         super().__init__()
 
         self.operate_data = operate_data
@@ -210,7 +205,6 @@ class OperateScreen(Screen["OperateData | None"], AppType):
             self.path_kind = self.operate_data.node_data.path_kind
         elif self.operate_data.repo_url is not None:
             self.repo_url = self.operate_data.repo_url
-        self.splash_data = splash_data
 
     def compose(self) -> ComposeResult:
         yield CustomHeader(IDS)
@@ -231,9 +225,9 @@ class OperateScreen(Screen["OperateData | None"], AppType):
             elif (
                 self.operate_btn
                 in (OperateBtn.init_new_repo, OperateBtn.init_clone_repo)
-                and self.splash_data is not None
+                and self.app.splash_data is not None
             ):
-                yield InitCollapsibles(splash_data=self.splash_data)
+                yield InitCollapsibles(splash_data=self.app.splash_data)
         with VerticalGroup(id=IDS.container.post_operate):
             yield MainSectionLabel(SectionLabels.operate_output)
             yield OperateLog(ids=IDS)

@@ -144,6 +144,7 @@ class ChezmoiGUI(App[None]):
         if splash_screen_worker.result is None:
             self.push_screen("install_help")
             return
+        self.splash_data = splash_screen_worker.result
         # Chezmoi found but cat_config fails OR force_init_screen flag is set
         if (
             splash_screen_worker.result.cat_config.returncode != 0
@@ -154,6 +155,7 @@ class ChezmoiGUI(App[None]):
                 self.splash_data = splash_screen_worker.result
                 init_worker = self.push_init_screen()
                 await init_worker.wait()
+                self.operate_data = init_worker.result
                 # After init screen, re-run splash screen to load all data
                 try:
                     splash_screen_worker = self.push_splash_screen()
@@ -161,16 +163,14 @@ class ChezmoiGUI(App[None]):
                 except WorkerCancelled:
                     # User exited during second splash screen, exit cleanly
                     return
-                self.push_main_screen(
-                    splash_data=splash_screen_worker.result,
-                    operate_data=init_worker.result,
-                )
+                self.splash_data = splash_screen_worker.result
+                self.push_main_screen()
                 return
             except WorkerCancelled:
                 # User exited during init screen, exit cleanly
                 return
         # Chezmoi found, init not needed
-        self.push_main_screen(splash_data=splash_screen_worker.result)
+        self.push_main_screen()
 
     @work
     async def push_splash_screen(self) -> "SplashData | None":
@@ -181,29 +181,23 @@ class ChezmoiGUI(App[None]):
         return await self.push_screen(InitScreen(), wait_for_dismiss=True)
 
     @work
-    async def push_main_screen(
-        self,
-        *,
-        splash_data: "SplashData | None",
-        operate_data: "OperateData | None" = None,
-    ) -> None:
-        if splash_data is None:
+    async def push_main_screen(self) -> None:
+        if self.splash_data is None:
             raise ValueError("splash_data is None after running SplashScreen")
-        dest_dir = splash_data.parsed_config.dest_dir
-        AddTab.destDir = dest_dir
-        ContentsView.destDir = dest_dir
-        DiffView.destDir = dest_dir
-        GitLogPath.destDir = dest_dir
-        MainScreen.destDir = dest_dir
-        TreeBase.destDir = dest_dir
-        ViewSwitcher.destDir = dest_dir
+        AddTab.destDir = self.splash_data.parsed_config.dest_dir
+        ContentsView.destDir = self.splash_data.parsed_config.dest_dir
+        DiffView.destDir = self.splash_data.parsed_config.dest_dir
+        GitLogPath.destDir = self.splash_data.parsed_config.dest_dir
+        MainScreen.destDir = self.splash_data.parsed_config.dest_dir
+        TreeBase.destDir = self.splash_data.parsed_config.dest_dir
+        ViewSwitcher.destDir = self.splash_data.parsed_config.dest_dir
 
-        OperateInfo.git_autocommit = splash_data.parsed_config.git_autocommit
-        OperateInfo.git_autopush = splash_data.parsed_config.git_autopush
-
-        self.push_screen(
-            MainScreen(splash_data=splash_data, operate_data=operate_data)
+        OperateInfo.git_autocommit = (
+            self.splash_data.parsed_config.git_autocommit
         )
+        OperateInfo.git_autopush = self.splash_data.parsed_config.git_autopush
+
+        self.push_screen(MainScreen())
 
     def on_tabbed_content_tab_activated(
         self, event: TabbedContent.TabActivated
