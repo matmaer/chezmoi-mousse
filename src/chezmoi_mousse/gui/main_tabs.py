@@ -8,11 +8,12 @@ from textual.screen import Screen
 from textual.widgets import Button, Footer, TabbedContent, TabPane
 
 from chezmoi_mousse import (
+    SCREEN_IDS,
+    TAB_IDS,
     AppType,
     LogText,
     OperateBtn,
     OperateData,
-    ScreenIds,
     TabName,
     Tcss,
 )
@@ -42,9 +43,6 @@ if TYPE_CHECKING:
 __all__ = ["MainScreen"]
 
 
-IDS = ScreenIds().main
-
-
 class TabPanes(StrEnum):
     add_tab_label = "Add"
     apply_tab_label = "Apply"
@@ -70,39 +68,21 @@ class MainScreen(Screen[None], AppType):
         self.current_re_add_node: "NodeData | None" = None
 
     def compose(self) -> ComposeResult:
-        yield CustomHeader(ids=IDS)
+        yield CustomHeader(ids=SCREEN_IDS.main)
         with TabbedContent():
             yield TabPane(
-                TabPanes.apply_tab_label,
-                ApplyTab(ids=self.app.tab_ids.apply),
-                id=TabName.apply.name,
+                TabPanes.apply_tab_label, ApplyTab(), id=TabName.apply
             )
             yield TabPane(
-                TabPanes.re_add_tab_label,
-                ReAddTab(ids=self.app.tab_ids.re_add),
-                id=TabName.re_add,
+                TabPanes.re_add_tab_label, ReAddTab(), id=TabName.re_add
             )
+            yield TabPane(TabPanes.add_tab_label, AddTab(), id=TabName.add)
+            yield TabPane(TabPanes.logs_tab_label, LogsTab(), id=TabName.logs)
             yield TabPane(
-                TabPanes.add_tab_label,
-                AddTab(ids=self.app.tab_ids.add),
-                id=TabName.add,
+                TabPanes.config_tab_label, ConfigTab(), id=TabName.config
             )
-            yield TabPane(
-                TabPanes.logs_tab_label,
-                LogsTab(ids=self.app.tab_ids.logs),
-                id=TabName.logs,
-            )
-            yield TabPane(
-                TabPanes.config_tab_label,
-                ConfigTab(ids=self.app.tab_ids.config),
-                id=TabName.config,
-            )
-            yield TabPane(
-                TabPanes.help_tab_label,
-                HelpTab(ids=self.app.tab_ids.help),
-                id=TabName.help,
-            )
-        yield Footer(id=IDS.footer)
+            yield TabPane(TabPanes.help_tab_label, HelpTab(), id=TabName.help)
+        yield Footer(id=SCREEN_IDS.main.footer)
 
     async def on_mount(self) -> None:
         initialize_loggers_worker = self.initialize_loggers()
@@ -116,9 +96,7 @@ class MainScreen(Screen[None], AppType):
     @work
     async def initialize_loggers(self) -> None:
         # Initialize App logger
-        self.app_log = self.query_one(
-            self.app.tab_ids.logs.logger.app_q, AppLog
-        )
+        self.app_log = self.query_one(TAB_IDS.logs.logger.app_q, AppLog)
         self.app.chezmoi.app_log = self.app_log
         self.app_log.ready_to_run(LogText.app_log_initialized)
         if self.app.chezmoi_found:
@@ -127,21 +105,21 @@ class MainScreen(Screen[None], AppType):
             self.notify(LogText.chezmoi_not_found, severity="error")
         # Initialize Operate logger
         self.operate_log = self.query_one(
-            self.app.tab_ids.logs.logger.operate_q, OperateLog
+            TAB_IDS.logs.logger.operate_q, OperateLog
         )
         self.app.chezmoi.operate_log = self.operate_log
         self.app_log.success(LogText.operate_log_initialized)
         self.operate_log.ready_to_run(LogText.operate_log_initialized)
         # Initialize ReadCmd logger
         self.read_cmd_log = self.query_one(
-            self.app.tab_ids.logs.logger.read_q, ReadCmdLog
+            TAB_IDS.logs.logger.read_q, ReadCmdLog
         )
         self.app.chezmoi.read_cmd_log = self.read_cmd_log
         self.app_log.success(LogText.read_log_initialized)
         # Initialize Debug logger if in dev mode
         if self.app.dev_mode:
             self.debug_log = self.query_one(
-                self.app.tab_ids.logs.logger.debug_q, DebugLog
+                TAB_IDS.logs.logger.debug_q, DebugLog
             )
             self.app.chezmoi.debug_log = self.debug_log
             self.app_log.success(LogText.debug_log_initialized)
@@ -169,14 +147,12 @@ class MainScreen(Screen[None], AppType):
         self.app_log.info("Updating managed paths")
         self.app.chezmoi.update_managed_paths()
         managed_tree = self.screen.query_one(
-            self.app.tab_ids.apply.tree.managed_q, ManagedTree
+            TAB_IDS.apply.tree.managed_q, ManagedTree
         )
         expanded_tree = self.screen.query_one(
-            self.app.tab_ids.apply.tree.expanded_q, ExpandedTree
+            TAB_IDS.apply.tree.expanded_q, ExpandedTree
         )
-        list_tree = self.screen.query_one(
-            self.app.tab_ids.apply.tree.list_q, ListTree
-        )
+        list_tree = self.screen.query_one(TAB_IDS.apply.tree.list_q, ListTree)
         managed_tree.populate_tree()
         self.app_log.success("Apply tab managed tree populated.")
         expanded_tree.populate_tree()
@@ -186,14 +162,12 @@ class MainScreen(Screen[None], AppType):
 
     def populate_re_add_trees(self) -> None:
         managed_tree = self.screen.query_one(
-            self.app.tab_ids.re_add.tree.managed_q, ManagedTree
+            TAB_IDS.re_add.tree.managed_q, ManagedTree
         )
         expanded_tree = self.screen.query_one(
-            self.app.tab_ids.re_add.tree.expanded_q, ExpandedTree
+            TAB_IDS.re_add.tree.expanded_q, ExpandedTree
         )
-        list_tree = self.screen.query_one(
-            self.app.tab_ids.re_add.tree.list_q, ListTree
-        )
+        list_tree = self.screen.query_one(TAB_IDS.re_add.tree.list_q, ListTree)
         managed_tree.populate_tree()
         self.app_log.success("Re-Add tab managed tree populated.")
         expanded_tree.populate_tree()
@@ -210,7 +184,7 @@ class MainScreen(Screen[None], AppType):
 
     def update_config_tab(self) -> None:
         config_tab_switcher = self.screen.query_one(
-            self.app.tab_ids.config.switcher.config_tab_q, ConfigTabSwitcher
+            TAB_IDS.config.switcher.config_tab_q, ConfigTabSwitcher
         )
         setattr(config_tab_switcher, "splash_data", self.app.splash_data)
 
@@ -304,7 +278,7 @@ class MainScreen(Screen[None], AppType):
             OperateBtn.add_dir,
         ):
             add_dir_tree = self.query_one(
-                self.app.tab_ids.add.tree.dir_tree_q, FilteredDirTree
+                TAB_IDS.add.tree.dir_tree_q, FilteredDirTree
             )
             add_dir_tree.reload()
             return

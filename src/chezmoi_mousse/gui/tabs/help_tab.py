@@ -1,5 +1,4 @@
 from enum import StrEnum
-from typing import TYPE_CHECKING
 
 from textual import on
 from textual.app import ComposeResult
@@ -12,7 +11,14 @@ from textual.containers import (
 )
 from textual.widgets import Button, ContentSwitcher, Static
 
-from chezmoi_mousse import FlatBtn, LinkBtn, OperateBtn, Switches, Tcss
+from chezmoi_mousse import (
+    TAB_IDS,
+    FlatBtn,
+    LinkBtn,
+    OperateBtn,
+    Switches,
+    Tcss,
+)
 from chezmoi_mousse.shared import (
     FlatButtonsVertical,
     FlatLink,
@@ -20,9 +26,6 @@ from chezmoi_mousse.shared import (
     MainSectionLabel,
     SubSectionLabel,
 )
-
-if TYPE_CHECKING:
-    from chezmoi_mousse import AppIds
 
 __all__ = ["HelpTab"]
 
@@ -87,18 +90,14 @@ class HelpSections(StrEnum):
 
 class SharedBtnHelp(VerticalGroup):
 
-    def __init__(self, ids: "AppIds") -> None:
-        super().__init__()
-        self.ids = ids
-
     def compose(self) -> ComposeResult:
-        yield FlatLink(ids=self.ids, link_enum=LinkBtn.chezmoi_forget)
+        yield FlatLink(ids=TAB_IDS.help, link_enum=LinkBtn.chezmoi_forget)
         yield SubSectionLabel(HelpSections.forget_file_button)
         yield Static(OperateBtn.forget_path.file_tooltip)
         yield SubSectionLabel(HelpSections.forget_dir_button)
         yield Static(OperateBtn.forget_path.dir_tooltip)
 
-        yield FlatLink(ids=self.ids, link_enum=LinkBtn.chezmoi_destroy)
+        yield FlatLink(ids=TAB_IDS.help, link_enum=LinkBtn.chezmoi_destroy)
         yield SubSectionLabel(HelpSections.destroy_file_button)
         yield Static(OperateBtn.destroy_path.file_tooltip)
         yield SubSectionLabel(HelpSections.destroy_dir_button)
@@ -115,45 +114,42 @@ class SharedFiltersHelp(VerticalGroup):
 
 
 class ApplyTabHelp(Vertical):
-    def __init__(self, ids: "AppIds") -> None:
-        self.ids = ids
-        super().__init__(id=self.ids.view.apply_help)
+    def __init__(self) -> None:
+        super().__init__(id=TAB_IDS.help.view.apply_help)
 
     def compose(self) -> ComposeResult:
         yield MainSectionLabel(HelpSections.apply_tab_help)
         with VerticalScroll():
             yield SharedFiltersHelp()
-            yield FlatLink(ids=self.ids, link_enum=LinkBtn.chezmoi_apply)
+            yield FlatLink(ids=TAB_IDS.help, link_enum=LinkBtn.chezmoi_apply)
             yield SubSectionLabel(HelpSections.apply_file_button)
             yield Static(OperateBtn.apply_path.file_tooltip)
             yield SubSectionLabel(HelpSections.apply_dir_button)
             yield Static(OperateBtn.apply_path.dir_tooltip)
-            yield SharedBtnHelp(ids=self.ids)
+            yield SharedBtnHelp()
 
 
 class ReAddTabHelp(VerticalScroll):
 
-    def __init__(self, ids: "AppIds") -> None:
-        self.ids = ids
-        super().__init__(id=self.ids.view.re_add_help)
+    def __init__(self) -> None:
+        super().__init__(id=TAB_IDS.help.view.re_add_help)
 
     def compose(self) -> ComposeResult:
         yield MainSectionLabel(HelpSections.re_add_tab_help)
         with VerticalScroll():
             yield SharedFiltersHelp()
-            yield FlatLink(ids=self.ids, link_enum=LinkBtn.chezmoi_re_add)
+            yield FlatLink(ids=TAB_IDS.help, link_enum=LinkBtn.chezmoi_re_add)
             yield SubSectionLabel(HelpSections.re_add_file_button)
             yield Static(OperateBtn.re_add_path.file_tooltip)
             yield SubSectionLabel(HelpSections.re_add_dir_button)
             yield Static(OperateBtn.re_add_path.dir_tooltip)
-            yield SharedBtnHelp(ids=self.ids)
+            yield SharedBtnHelp()
 
 
 class AddTabHelp(Vertical):
 
-    def __init__(self, ids: "AppIds") -> None:
-        self.ids = ids
-        super().__init__(id=self.ids.view.add_help)
+    def __init__(self) -> None:
+        super().__init__(id=TAB_IDS.help.view.add_help)
 
     def compose(self) -> ComposeResult:
         yield MainSectionLabel(HelpSections.add_tab_help)
@@ -164,7 +160,7 @@ class AddTabHelp(Vertical):
             yield Static(Switches.unmanaged_dirs.enabled_tooltip)
             yield SubSectionLabel(HelpSections.unwanted_filter)
             yield Static(Switches.unwanted.enabled_tooltip)
-            yield FlatLink(ids=self.ids, link_enum=LinkBtn.chezmoi_add)
+            yield FlatLink(ids=TAB_IDS.help, link_enum=LinkBtn.chezmoi_add)
             yield SubSectionLabel(HelpSections.add_file_button)
             yield Static(OperateBtn.apply_path.file_tooltip)
             yield SubSectionLabel(HelpSections.add_dir_button)
@@ -173,9 +169,8 @@ class AddTabHelp(Vertical):
 
 class ChezmoiDiagram(Vertical):
 
-    def __init__(self, ids: "AppIds") -> None:
-        self.ids = ids
-        super().__init__(id=self.ids.view.diagram)
+    def __init__(self) -> None:
+        super().__init__(id=TAB_IDS.help.view.diagram)
 
     def compose(self) -> ComposeResult:
         yield MainSectionLabel(HelpSections.chezmoi_diagram)
@@ -186,13 +181,9 @@ class ChezmoiDiagram(Vertical):
 
 class HelpTab(Horizontal):
 
-    def __init__(self, ids: "AppIds") -> None:
-        super().__init__()
-        self.ids = ids
-
     def compose(self) -> ComposeResult:
         yield FlatButtonsVertical(
-            ids=self.ids,
+            ids=TAB_IDS.help,
             buttons=(
                 FlatBtn.apply_help,
                 FlatBtn.re_add_help,
@@ -201,24 +192,25 @@ class HelpTab(Horizontal):
             ),
         )
         with ContentSwitcher(
-            id=self.ids.switcher.help_tab, initial=self.ids.view.apply_help
+            id=TAB_IDS.help.switcher.help_tab,
+            initial=TAB_IDS.help.view.apply_help,
         ):
-            yield ApplyTabHelp(ids=self.ids)
-            yield ReAddTabHelp(ids=self.ids)
-            yield AddTabHelp(ids=self.ids)
-            yield ChezmoiDiagram(ids=self.ids)
+            yield ApplyTabHelp()
+            yield ReAddTabHelp()
+            yield AddTabHelp()
+            yield ChezmoiDiagram()
 
     @on(Button.Pressed, Tcss.flat_button.dot_prefix)
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
         switcher = self.query_one(
-            self.ids.switcher.help_tab_q, ContentSwitcher
+            TAB_IDS.help.switcher.help_tab_q, ContentSwitcher
         )
-        if event.button.id == self.ids.flat_btn.apply_help:
-            switcher.current = self.ids.view.apply_help
-        elif event.button.id == self.ids.flat_btn.re_add_help:
-            switcher.current = self.ids.view.re_add_help
-        elif event.button.id == self.ids.flat_btn.add_help:
-            switcher.current = self.ids.view.add_help
-        elif event.button.id == self.ids.flat_btn.diagram:
-            switcher.current = self.ids.view.diagram
+        if event.button.id == TAB_IDS.help.flat_btn.apply_help:
+            switcher.current = TAB_IDS.help.view.apply_help
+        elif event.button.id == TAB_IDS.help.flat_btn.re_add_help:
+            switcher.current = TAB_IDS.help.view.re_add_help
+        elif event.button.id == TAB_IDS.help.flat_btn.add_help:
+            switcher.current = TAB_IDS.help.view.add_help
+        elif event.button.id == TAB_IDS.help.flat_btn.diagram:
+            switcher.current = TAB_IDS.help.view.diagram

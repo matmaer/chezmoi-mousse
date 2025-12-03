@@ -1,46 +1,40 @@
-from typing import TYPE_CHECKING
-
 from textual import on
 from textual.app import ComposeResult
 from textual.widgets import Button
 
-from chezmoi_mousse import OperateBtn
+from chezmoi_mousse import TAB_IDS, OperateBtn
 from chezmoi_mousse.shared import CurrentApplyNodeMsg, OperateButtons
 
 from .common.switch_slider import SwitchSlider
 from .common.switchers import TreeSwitcher, ViewSwitcher
 from .common.tab_horizontal import TabHorizontal
 
-if TYPE_CHECKING:
-    from chezmoi_mousse import AppIds
-
 __all__ = ["ApplyTab"]
 
 
 class ApplyTab(TabHorizontal):
 
-    def __init__(self, ids: "AppIds") -> None:
-        self.ids = ids
-        super().__init__(ids=self.ids)
+    def __init__(self) -> None:
+        super().__init__(ids=TAB_IDS.apply)
 
     def compose(self) -> ComposeResult:
-        yield TreeSwitcher(self.ids)
-        yield ViewSwitcher(ids=self.ids, diff_reverse=False)
+        yield TreeSwitcher(TAB_IDS.apply)
+        yield ViewSwitcher(ids=TAB_IDS.apply, diff_reverse=False)
         yield OperateButtons(
-            ids=self.ids,
+            ids=TAB_IDS.apply,
             buttons=(
                 OperateBtn.apply_path,
                 OperateBtn.forget_path,
                 OperateBtn.destroy_path,
             ),
         )
-        yield SwitchSlider(ids=self.ids)
+        yield SwitchSlider(ids=TAB_IDS.apply)
 
     @on(CurrentApplyNodeMsg)
     def update_apply_operate_buttons(self, event: CurrentApplyNodeMsg) -> None:
         self.update_view_path(event.node_data.path)
         operate_path_button = self.query_one(
-            self.ids.operate_btn.apply_path_q, Button
+            TAB_IDS.apply.operate_btn.apply_path_q, Button
         )
         operate_path_button.label = OperateBtn.apply_path.label(
             event.node_data.path_kind

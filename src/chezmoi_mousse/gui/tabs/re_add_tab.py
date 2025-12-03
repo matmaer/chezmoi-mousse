@@ -1,40 +1,34 @@
-from typing import TYPE_CHECKING
-
 from textual import on
 from textual.app import ComposeResult
 from textual.widgets import Button
 
-from chezmoi_mousse import OperateBtn
+from chezmoi_mousse import TAB_IDS, OperateBtn
 from chezmoi_mousse.shared import CurrentReAddNodeMsg, OperateButtons
 
 from .common.switch_slider import SwitchSlider
 from .common.switchers import TreeSwitcher, ViewSwitcher
 from .common.tab_horizontal import TabHorizontal
 
-if TYPE_CHECKING:
-    from chezmoi_mousse import AppIds
-
 __all__ = ["ReAddTab"]
 
 
 class ReAddTab(TabHorizontal):
 
-    def __init__(self, ids: "AppIds") -> None:
-        self.ids = ids
-        super().__init__(ids=self.ids)
+    def __init__(self) -> None:
+        super().__init__(ids=TAB_IDS.re_add)
 
     def compose(self) -> ComposeResult:
-        yield TreeSwitcher(ids=self.ids)
-        yield ViewSwitcher(ids=self.ids, diff_reverse=True)
+        yield TreeSwitcher(ids=TAB_IDS.re_add)
+        yield ViewSwitcher(ids=TAB_IDS.re_add, diff_reverse=True)
         yield OperateButtons(
-            ids=self.ids,
+            ids=TAB_IDS.re_add,
             buttons=(
                 OperateBtn.re_add_path,
                 OperateBtn.forget_path,
                 OperateBtn.destroy_path,
             ),
         )
-        yield SwitchSlider(ids=self.ids)
+        yield SwitchSlider(ids=TAB_IDS.re_add)
 
     @on(CurrentReAddNodeMsg)
     def update_re_add_operate_buttons(
@@ -42,7 +36,7 @@ class ReAddTab(TabHorizontal):
     ) -> None:
         self.update_view_path(event.node_data.path)
         operate_path_button = self.query_one(
-            self.ids.operate_btn.re_add_path_q, Button
+            TAB_IDS.re_add.operate_btn.re_add_path_q, Button
         )
         operate_path_button.label = OperateBtn.re_add_path.label(
             event.node_data.path_kind

@@ -17,12 +17,12 @@ from textual.widgets import RichLog, Static
 from textual.worker import WorkerState
 
 from chezmoi_mousse import (
+    SCREEN_IDS,
     AppType,
     Chezmoi,
     CommandResult,
     ParsedConfig,
     ReadCmd,
-    ScreenIds,
     SplashData,
     VerbArgs,
 )
@@ -31,9 +31,6 @@ if TYPE_CHECKING:
     from textual.timer import Timer
 
 __all__ = ["SplashScreen"]
-
-
-IDS = ScreenIds().splash
 
 SPLASH_COMMANDS: list[ReadCmd] = [
     ReadCmd.cat_config,
@@ -129,7 +126,7 @@ class SplashScreen(Screen[SplashData | None], AppType):
         with Center():
             with Middle():
                 yield Center(AnimatedFade())
-                yield Center(RichLog(id=IDS.logger.splash))
+                yield Center(RichLog(id=SCREEN_IDS.splash.logger.splash))
 
     @work(thread=True, group="io_workers")
     def run_threaded_cmd(self, splash_cmd: ReadCmd) -> None:

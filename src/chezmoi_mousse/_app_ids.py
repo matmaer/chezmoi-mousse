@@ -16,7 +16,7 @@ from ._str_enums import (
 )
 from ._switch_data import Switches
 
-__all__ = ["AppIds", "ScreenIds", "TabIds"]
+__all__ = ["AppIds", "SCREEN_IDS", "TAB_IDS"]
 
 
 class AppIds:
@@ -435,3 +435,7 @@ class ViewIds:
         self.pw_mgr_info_q = f"#{self.pw_mgr_info}"
         self.template_data = ids.view_id(view=ViewName.template_data_view)
         self.template_data_q = f"#{self.template_data}"
+
+
+SCREEN_IDS = ScreenIds()
+TAB_IDS = TabIds()

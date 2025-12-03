@@ -14,11 +14,11 @@ from textual.widgets import TabbedContent, Tabs
 from textual.worker import WorkerCancelled
 
 from chezmoi_mousse import (
+    TAB_IDS,
     BindingAction,
     BindingDescription,
     Chars,
     OperateData,
-    TabIds,
     TabName,
 )
 from chezmoi_mousse.shared import (
@@ -49,6 +49,7 @@ __all__ = ["ChezmoiGUI"]
 # TODO: implement 'chezmoi verify', if exit 0, display message in Tree
 # widgets inform the user why the Tree widget is empty.
 # TODO: implement spinner for commands taking a bit longer like operations.
+
 
 chezmoi_mousse_dark = Theme(
     name="chezmoi-mousse-dark",
@@ -105,12 +106,12 @@ class ChezmoiGUI(App[None]):
     SCREENS = {
         "init": InitScreen,
         "install_help": InstallHelp,
+        "main": MainScreen,
         "splash": SplashScreen,
     }
 
     def __init__(self, pre_run_data: "PreRunData") -> None:
         self.chezmoi: "Chezmoi"
-        self.tab_ids = TabIds()
 
         self.pre_run_data: "PreRunData" = pre_run_data
         self.chezmoi_found: bool = self.pre_run_data.chezmoi_found
@@ -214,15 +215,15 @@ class ChezmoiGUI(App[None]):
         active_tab = self.screen.query_exactly_one(TabbedContent).active
         if active_tab == TabName.apply:
             slider = self.screen.query_one(
-                self.tab_ids.apply.container.switch_slider_q, SwitchSlider
+                TAB_IDS.apply.container.switch_slider_q, SwitchSlider
             )
         elif active_tab == TabName.re_add:
             slider = self.screen.query_one(
-                self.tab_ids.re_add.container.switch_slider_q, SwitchSlider
+                TAB_IDS.re_add.container.switch_slider_q, SwitchSlider
             )
         else:  # active_tab == TabName.add
             slider = self.screen.query_one(
-                self.tab_ids.add.container.switch_slider_q, SwitchSlider
+                TAB_IDS.add.container.switch_slider_q, SwitchSlider
             )
         return slider
 
@@ -299,54 +300,54 @@ class ChezmoiGUI(App[None]):
 
         if active_tab == TabName.apply:
             left_side = self.screen.query_one(
-                self.tab_ids.apply.container.left_side_q, TreeSwitcher
+                TAB_IDS.apply.container.left_side_q, TreeSwitcher
             )
             operation_buttons = self.screen.query_one(
-                self.tab_ids.apply.container.operate_buttons_q
+                TAB_IDS.apply.container.operate_buttons_q
             )
             switch_slider = self.screen.query_one(
-                self.tab_ids.apply.container.switch_slider_q, SwitchSlider
+                TAB_IDS.apply.container.switch_slider_q, SwitchSlider
             )
             view_switcher_buttons = self.screen.query_one(
-                self.tab_ids.apply.switcher.view_buttons_q, ViewTabButtons
+                TAB_IDS.apply.switcher.view_buttons_q, ViewTabButtons
             )
         elif active_tab == TabName.re_add:
             left_side = self.screen.query_one(
-                self.tab_ids.re_add.container.left_side_q, TreeSwitcher
+                TAB_IDS.re_add.container.left_side_q, TreeSwitcher
             )
             operation_buttons = self.screen.query_one(
-                self.tab_ids.re_add.container.operate_buttons_q
+                TAB_IDS.re_add.container.operate_buttons_q
             )
             switch_slider = self.screen.query_one(
-                self.tab_ids.re_add.container.switch_slider_q, SwitchSlider
+                TAB_IDS.re_add.container.switch_slider_q, SwitchSlider
             )
             view_switcher_buttons = self.screen.query_one(
-                self.tab_ids.re_add.switcher.view_buttons_q, ViewTabButtons
+                TAB_IDS.re_add.switcher.view_buttons_q, ViewTabButtons
             )
         elif active_tab == TabName.add:
             left_side = self.screen.query_one(
-                self.tab_ids.add.tree.dir_tree_q, FilteredDirTree
+                TAB_IDS.add.tree.dir_tree_q, FilteredDirTree
             )
             operation_buttons = self.screen.query_one(
-                self.tab_ids.add.container.operate_buttons_q
+                TAB_IDS.add.container.operate_buttons_q
             )
             switch_slider = self.screen.query_one(
-                self.tab_ids.add.container.switch_slider_q, SwitchSlider
+                TAB_IDS.add.container.switch_slider_q, SwitchSlider
             )
         elif active_tab == TabName.logs:
             logs_tab_buttons = self.screen.query_one(
-                self.tab_ids.logs.switcher.logs_tab_buttons_q, LogsTabButtons
+                TAB_IDS.logs.switcher.logs_tab_buttons_q, LogsTabButtons
             )
             logs_tab_buttons.display = (
                 False if logs_tab_buttons.display is True else True
             )
         elif active_tab == TabName.config:
             left_side = self.screen.query_one(
-                self.tab_ids.config.container.left_side_q, FlatButtonsVertical
+                TAB_IDS.config.container.left_side_q, FlatButtonsVertical
             )
         elif active_tab == TabName.help:
             left_side = self.screen.query_one(
-                self.tab_ids.help.container.left_side_q, FlatButtonsVertical
+                TAB_IDS.help.container.left_side_q, FlatButtonsVertical
             )
 
         if left_side is not None:

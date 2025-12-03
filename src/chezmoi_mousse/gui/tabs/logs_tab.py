@@ -7,7 +7,7 @@ from textual.containers import Vertical
 from textual.reactive import reactive
 from textual.widgets import Button, ContentSwitcher
 
-from chezmoi_mousse import AppType, Tcss
+from chezmoi_mousse import TAB_IDS, AppType, Tcss
 from chezmoi_mousse.shared import (
     AppLog,
     DebugLog,
@@ -18,7 +18,7 @@ from chezmoi_mousse.shared import (
 )
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import AppIds, CommandResult
+    from chezmoi_mousse import CommandResult
 
 __all__ = ["LogsTab"]
 
@@ -37,28 +37,23 @@ class LogsTab(Vertical, AppType):
         None, init=False
     )
 
-    def __init__(self, ids: "AppIds") -> None:
-        super().__init__()
-
-        self.ids = ids
-
     def compose(self) -> ComposeResult:
-        yield LogsTabButtons(ids=self.ids)
+        yield LogsTabButtons(ids=TAB_IDS.logs)
         with ContentSwitcher(
-            id=self.ids.switcher.logs_tab,
-            initial=self.ids.logger.app,
+            id=TAB_IDS.logs.switcher.logs_tab,
+            initial=TAB_IDS.logs.logger.app,
             classes=Tcss.border_title_top,
         ):
-            yield AppLog(ids=self.ids)
-            yield ReadCmdLog(ids=self.ids)
-            yield OperateLog(ids=self.ids)
-            yield GitLogGlobal(ids=self.ids)
+            yield AppLog(ids=TAB_IDS.logs)
+            yield ReadCmdLog(ids=TAB_IDS.logs)
+            yield OperateLog(ids=TAB_IDS.logs)
+            yield GitLogGlobal(ids=TAB_IDS.logs)
             if self.app.dev_mode is True:
-                yield DebugLog(ids=self.ids)
+                yield DebugLog(ids=TAB_IDS.logs)
 
     def on_mount(self) -> None:
         switcher = self.query_one(
-            self.ids.switcher.logs_tab_q, ContentSwitcher
+            TAB_IDS.logs.switcher.logs_tab_q, ContentSwitcher
         )
         switcher.border_title = BorderTitle.app_log
 
@@ -66,31 +61,31 @@ class LogsTab(Vertical, AppType):
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
         switcher = self.query_one(
-            self.ids.switcher.logs_tab_q, ContentSwitcher
+            TAB_IDS.logs.switcher.logs_tab_q, ContentSwitcher
         )
-        if event.button.id == self.ids.tab_btn.app_log:
-            switcher.current = self.ids.logger.app
+        if event.button.id == TAB_IDS.logs.tab_btn.app_log:
+            switcher.current = TAB_IDS.logs.logger.app
             switcher.border_title = BorderTitle.app_log
-        elif event.button.id == self.ids.tab_btn.read_log:
-            switcher.current = self.ids.logger.read
+        elif event.button.id == TAB_IDS.logs.tab_btn.read_log:
+            switcher.current = TAB_IDS.logs.logger.read
             switcher.border_title = BorderTitle.read_cmd_log
-        elif event.button.id == self.ids.tab_btn.operate_log:
-            switcher.current = self.ids.logger.operate
+        elif event.button.id == TAB_IDS.logs.tab_btn.operate_log:
+            switcher.current = TAB_IDS.logs.logger.operate
             switcher.border_title = BorderTitle.operate_log
-        elif event.button.id == self.ids.tab_btn.git_log_global:
+        elif event.button.id == TAB_IDS.logs.tab_btn.git_log_global:
             switcher.border_title = BorderTitle.git_log_global
-            switcher.current = self.ids.container.git_log_global
+            switcher.current = TAB_IDS.logs.container.git_log_global
         elif (
             self.app.dev_mode is True
-            and event.button.id == self.ids.tab_btn.debug_log
+            and event.button.id == TAB_IDS.logs.tab_btn.debug_log
         ):
-            switcher.current = self.ids.logger.debug
+            switcher.current = TAB_IDS.logs.logger.debug
             switcher.border_title = BorderTitle.debug_log
 
     def watch_git_log_result(self) -> None:
         if self.git_log_result is None:
             return
         git_log_global = self.query_one(
-            self.ids.container.git_log_global_q, GitLogGlobal
+            TAB_IDS.logs.container.git_log_global_q, GitLogGlobal
         )
         git_log_global.update_global_git_log(self.git_log_result)
