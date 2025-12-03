@@ -34,9 +34,9 @@ from chezmoi_mousse.shared import (
 
 from .init_screen import InitScreen
 from .install_help import InstallHelp
+from .main_tabs import MainScreen
 from .operate import OperateInfo, OperateScreen
 from .splash import SplashScreen
-from .tabbed_content import MainScreen
 from .tabs.add_tab import AddTab, FilteredDirTree
 from .tabs.common.switch_slider import SwitchSlider
 from .tabs.common.switchers import TreeSwitcher, ViewSwitcher
