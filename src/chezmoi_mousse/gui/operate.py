@@ -14,6 +14,7 @@ from chezmoi_mousse import (
     Chars,
     OperateBtn,
     PathKind,
+    ScreenIds,
     SectionLabels,
     SplashData,
     Tcss,
@@ -32,10 +33,13 @@ from chezmoi_mousse.shared import (
 )
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import AppIds, CommandResult, OperateData
+    from chezmoi_mousse import CommandResult, OperateData
 
 
 __all__ = ["OperateInfo", "OperateScreen"]
+
+
+IDS = ScreenIds().operate
 
 
 class InfoBorderTitle(StrEnum):
@@ -71,15 +75,14 @@ class InfoLine(StrEnum):
 
 
 class InitCollapsibles(VerticalGroup):
-    def __init__(self, ids: "AppIds", splash_data: "SplashData") -> None:
+    def __init__(self, splash_data: "SplashData") -> None:
         super().__init__()
-        self.ids = ids
         self.splash_data = splash_data
 
     def on_mount(self) -> None:
         self.mount(
             CustomCollapsible(
-                DoctorTable(ids=self.ids, doctor_data=self.splash_data.doctor),
+                DoctorTable(ids=IDS, doctor_data=self.splash_data.doctor),
                 title="Doctor Output",
             )
         )
@@ -194,18 +197,14 @@ class OperateScreen(Screen["OperateData | None"], AppType):
     def __init__(
         self,
         *,
-        ids: "AppIds",
         operate_data: "OperateData",
         splash_data: "SplashData | None" = None,
     ) -> None:
         super().__init__()
 
-        self.ids = ids
         self.operate_data = operate_data
         self.operate_btn = self.operate_data.operate_btn
-        self.operate_btn_q = self.ids.operate_button_id(
-            "#", btn=self.operate_btn
-        )
+        self.operate_btn_q = IDS.operate_button_id("#", btn=self.operate_btn)
         if self.operate_data.node_data is not None:
             self.path_arg = self.operate_data.node_data.path
             self.path_kind = self.operate_data.node_data.path_kind
@@ -214,42 +213,40 @@ class OperateScreen(Screen["OperateData | None"], AppType):
         self.splash_data = splash_data
 
     def compose(self) -> ComposeResult:
-        yield CustomHeader(self.ids)
-        with VerticalGroup(id=self.ids.container.pre_operate):
+        yield CustomHeader(IDS)
+        with VerticalGroup(id=IDS.container.pre_operate):
             yield OperateInfo(operate_data=self.operate_data)
             yield MainSectionLabel(SectionLabels.operate_context)
             if self.operate_btn == OperateBtn.apply_path:
-                yield DiffView(ids=self.ids, reverse=False)
+                yield DiffView(ids=IDS, reverse=False)
             elif self.operate_btn == OperateBtn.re_add_path:
-                yield DiffView(ids=self.ids, reverse=True)
+                yield DiffView(ids=IDS, reverse=True)
             elif self.operate_btn in (
                 OperateBtn.add_file,
                 OperateBtn.add_dir,
                 OperateBtn.forget_path,
                 OperateBtn.destroy_path,
             ):
-                yield ContentsView(ids=self.ids)
+                yield ContentsView(ids=IDS)
             elif (
                 self.operate_btn
                 in (OperateBtn.init_new_repo, OperateBtn.init_clone_repo)
                 and self.splash_data is not None
             ):
-                yield InitCollapsibles(
-                    ids=self.ids, splash_data=self.splash_data
-                )
-        with VerticalGroup(id=self.ids.container.post_operate):
+                yield InitCollapsibles(splash_data=self.splash_data)
+        with VerticalGroup(id=IDS.container.post_operate):
             yield MainSectionLabel(SectionLabels.operate_output)
-            yield OperateLog(ids=self.ids)
+            yield OperateLog(ids=IDS)
         yield OperateButtons(
-            ids=self.ids, buttons=(self.operate_btn, OperateBtn.operate_exit)
+            ids=IDS, buttons=(self.operate_btn, OperateBtn.operate_exit)
         )
-        yield Footer(id=self.ids.footer)
+        yield Footer(id=IDS.footer)
 
     def on_mount(self) -> None:
         self.app.operate_data = None
-        self.query_one(
-            self.ids.container.post_operate_q, VerticalGroup
-        ).display = False
+        self.query_one(IDS.container.post_operate_q, VerticalGroup).display = (
+            False
+        )
         self.configure_buttons()
         self.configure_widgets()
 
@@ -269,7 +266,7 @@ class OperateScreen(Screen["OperateData | None"], AppType):
 
     def configure_buttons(self) -> None:
         op_btn = self.query_one(self.operate_btn_q, Button)
-        exit_btn = self.query_one(self.ids.operate_btn.operate_exit_q, Button)
+        exit_btn = self.query_one(IDS.operate_btn.operate_exit_q, Button)
 
         if self.operate_btn == OperateBtn.apply_path:
             op_btn.label = OperateBtn.apply_path.label(self.path_kind)
@@ -361,7 +358,7 @@ class OperateScreen(Screen["OperateData | None"], AppType):
         self.update_key_binding()
 
     def write_to_output_log(self, cmd_result: "CommandResult | None") -> None:
-        output_log = self.query_one(self.ids.logger.operate_q, OperateLog)
+        output_log = self.query_one(IDS.logger.operate_q, OperateLog)
         if cmd_result is not None:
             output_log.log_cmd_results(cmd_result)
         else:
@@ -380,11 +377,11 @@ class OperateScreen(Screen["OperateData | None"], AppType):
 
     def update_visibility(self) -> None:
         pre_op_container = self.query_one(
-            self.ids.container.pre_operate_q, VerticalGroup
+            IDS.container.pre_operate_q, VerticalGroup
         )
         pre_op_container.display = False
         post_op_container = self.query_one(
-            self.ids.container.post_operate_q, VerticalGroup
+            IDS.container.post_operate_q, VerticalGroup
         )
         post_op_container.display = True
 
@@ -395,7 +392,7 @@ class OperateScreen(Screen["OperateData | None"], AppType):
 
     def update_exit_button(self) -> None:
         operate_exit_button = self.query_one(
-            self.ids.operate_btn.operate_exit_q, Button
+            IDS.operate_btn.operate_exit_q, Button
         )
         if self.operate_btn in (
             OperateBtn.add_file,

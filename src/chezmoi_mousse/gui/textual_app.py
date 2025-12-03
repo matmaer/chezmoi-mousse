@@ -180,8 +180,7 @@ class ChezmoiGUI(App[None]):
         self, *, splash_data: "SplashData"
     ) -> "OperateData | None":
         return await self.push_screen(
-            InitScreen(ids=self.screen_ids.init, splash_data=splash_data),
-            wait_for_dismiss=True,
+            InitScreen(splash_data=splash_data), wait_for_dismiss=True
         )
 
     @work
@@ -206,11 +205,7 @@ class ChezmoiGUI(App[None]):
         OperateInfo.git_autopush = splash_data.parsed_config.git_autopush
 
         self.push_screen(
-            MainScreen(
-                ids=self.screen_ids.main,
-                splash_data=splash_data,
-                operate_data=operate_data,
-            )
+            MainScreen(splash_data=splash_data, operate_data=operate_data)
         )
 
     def on_tabbed_content_tab_activated(

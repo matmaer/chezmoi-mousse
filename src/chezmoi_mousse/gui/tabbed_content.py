@@ -12,6 +12,7 @@ from chezmoi_mousse import (
     LogText,
     OperateBtn,
     OperateData,
+    ScreenIds,
     TabName,
     Tcss,
 )
@@ -36,9 +37,12 @@ from .tabs.logs_tab import LogsTab
 from .tabs.re_add_tab import ReAddTab
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import AppIds, DirTreeNodeData, NodeData, SplashData
+    from chezmoi_mousse import DirTreeNodeData, NodeData, SplashData
 
 __all__ = ["MainScreen"]
+
+
+IDS = ScreenIds().main
 
 
 class TabPanes(StrEnum):
@@ -57,7 +61,6 @@ class MainScreen(Screen[None], AppType):
     def __init__(
         self,
         *,
-        ids: "AppIds",
         splash_data: "SplashData",
         operate_data: "OperateData | None" = None,
     ) -> None:
@@ -66,8 +69,6 @@ class MainScreen(Screen[None], AppType):
         self.operate_log: "OperateLog"
         self.debug_log: "DebugLog"
         super().__init__()
-
-        self.ids = ids
         self.splash_data = splash_data
         self.operate_data = operate_data
 
@@ -76,7 +77,7 @@ class MainScreen(Screen[None], AppType):
         self.current_re_add_node: "NodeData | None" = None
 
     def compose(self) -> ComposeResult:
-        yield CustomHeader(ids=self.ids)
+        yield CustomHeader(ids=IDS)
         with TabbedContent():
             yield TabPane(
                 TabPanes.apply_tab_label,
@@ -108,7 +109,7 @@ class MainScreen(Screen[None], AppType):
                 HelpTab(ids=self.app.tab_ids.help),
                 id=TabName.help,
             )
-        yield Footer(id=self.ids.footer)
+        yield Footer(id=IDS.footer)
 
     async def on_mount(self) -> None:
         initialize_loggers_worker = self.initialize_loggers()
@@ -227,10 +228,7 @@ class MainScreen(Screen[None], AppType):
                 operate_btn=button_enum, node_data=self.current_add_node
             )
             self.app.push_screen(
-                OperateScreen(
-                    ids=self.app.screen_ids.operate,
-                    operate_data=operate_screen_data,
-                ),
+                OperateScreen(operate_data=operate_screen_data),
                 callback=self.handle_operate_result,
             )
         elif (
@@ -247,10 +245,7 @@ class MainScreen(Screen[None], AppType):
                 operate_btn=button_enum, node_data=self.current_apply_node
             )
             self.app.push_screen(
-                OperateScreen(
-                    ids=self.app.screen_ids.operate,
-                    operate_data=operate_screen_data,
-                ),
+                OperateScreen(operate_data=operate_screen_data),
                 callback=self.handle_operate_result,
             )
 
@@ -268,10 +263,7 @@ class MainScreen(Screen[None], AppType):
                 operate_btn=button_enum, node_data=self.current_re_add_node
             )
             self.app.push_screen(
-                OperateScreen(
-                    ids=self.app.screen_ids.operate,
-                    operate_data=operate_screen_data,
-                ),
+                OperateScreen(operate_data=operate_screen_data),
                 callback=self.handle_operate_result,
             )
         else:

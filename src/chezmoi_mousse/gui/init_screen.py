@@ -27,6 +27,7 @@ from chezmoi_mousse import (
     FlatBtn,
     OperateBtn,
     OperateData,
+    ScreenIds,
     SectionLabels,
     Tcss,
 )
@@ -47,7 +48,10 @@ from .operate import OperateScreen
 __all__ = ["InitScreen"]
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import AppIds, SplashData
+    from chezmoi_mousse import SplashData
+
+
+IDS = ScreenIds().init
 
 
 class StaticText(StrEnum):
@@ -77,59 +81,52 @@ class RepositoryURLInput(VerticalGroup):
 
 class InitNew(Vertical, AppType):
 
-    def __init__(self, *, ids: "AppIds") -> None:
-        self.ids = ids
-        super().__init__(id=self.ids.view.init_new)
+    def __init__(self) -> None:
+        super().__init__(id=IDS.view.init_new)
 
     def compose(self) -> ComposeResult:
         yield MainSectionLabel(SectionLabels.init_new_repo)
         yield Static(StaticText.init_new)
-        yield OperateButtons(ids=self.ids, buttons=(OperateBtn.init_new_repo,))
+        yield OperateButtons(ids=IDS, buttons=(OperateBtn.init_new_repo,))
 
 
 class InitClone(Vertical, AppType):
 
-    def __init__(self, *, ids: "AppIds") -> None:
-        self.ids = ids
-        super().__init__(id=self.ids.view.init_clone)
+    def __init__(self) -> None:
+        super().__init__(id=IDS.view.init_clone)
 
     def compose(self) -> ComposeResult:
         yield MainSectionLabel(SectionLabels.init_clone_repo)
         yield SubSectionLabel(SectionLabels.init_clone_repo_url)
         yield Static(StaticText.init_clone)
         yield RepositoryURLInput()
-        yield OperateButtons(
-            ids=self.ids, buttons=(OperateBtn.init_clone_repo,)
-        )
+        yield OperateButtons(ids=IDS, buttons=(OperateBtn.init_clone_repo,))
 
 
 class InitSwitcher(ContentSwitcher):
 
-    def __init__(self, *, ids: "AppIds", splash_data: "SplashData") -> None:
-        self.ids = ids
+    def __init__(self, *, splash_data: "SplashData") -> None:
         super().__init__(
-            id=self.ids.switcher.init_screen, initial=self.ids.view.init_new
+            id=IDS.switcher.init_screen, initial=IDS.view.init_new
         )
         self.splash_data = splash_data
 
     def compose(self) -> ComposeResult:
-        yield InitNew(ids=self.ids)
-        yield InitClone(ids=self.ids)
-        yield DoctorTableView(ids=self.ids)
-        yield CatConfigView(ids=self.ids)
-        yield TemplateDataView(ids=self.ids)
+        yield InitNew()
+        yield InitClone()
+        yield DoctorTableView(ids=IDS)
+        yield CatConfigView(ids=IDS)
+        yield TemplateDataView(ids=IDS)
 
     def on_mount(self) -> None:
-        doctor_view = self.query_one(
-            self.ids.container.doctor_q, DoctorTableView
-        )
+        doctor_view = self.query_one(IDS.container.doctor_q, DoctorTableView)
         doctor_view.populate_doctor_data(
             command_result=self.splash_data.doctor
         )
-        cat_config = self.query_one(self.ids.view.cat_config_q, CatConfigView)
+        cat_config = self.query_one(IDS.view.cat_config_q, CatConfigView)
         cat_config.mount_cat_config_output(self.splash_data.cat_config)
         template_data_view = self.query_one(
-            self.ids.view.template_data_q, TemplateDataView
+            IDS.view.template_data_q, TemplateDataView
         )
         template_data_view.mount_template_data_output(
             self.splash_data.template_data
@@ -138,19 +135,18 @@ class InitSwitcher(ContentSwitcher):
 
 class InitScreen(Screen["OperateData"], AppType):
 
-    def __init__(self, *, ids: "AppIds", splash_data: "SplashData") -> None:
+    def __init__(self, *, splash_data: "SplashData") -> None:
         super().__init__()
-        self.ids = ids
         self.splash_data = splash_data
         self.repo_url: str | None = None
         self.valid_url: bool = False
         self.debug_log: DebugLog
 
     def compose(self) -> ComposeResult:
-        yield CustomHeader(self.ids)
+        yield CustomHeader(IDS)
         with Horizontal():
             yield FlatButtonsVertical(
-                ids=self.ids,
+                ids=IDS,
                 buttons=(
                     FlatBtn.init_new,
                     FlatBtn.init_clone,
@@ -159,17 +155,17 @@ class InitScreen(Screen["OperateData"], AppType):
                     FlatBtn.template_data,
                 ),
             )
-            yield InitSwitcher(ids=self.ids, splash_data=self.splash_data)
+            yield InitSwitcher(splash_data=self.splash_data)
         if self.app.dev_mode is True:
             yield SubSectionLabel(SectionLabels.debug_log_output)
             with Horizontal():
-                yield DebugLog(ids=self.ids)
-        yield Footer(id=self.ids.footer)
+                yield DebugLog(ids=IDS)
+        yield Footer(id=IDS.footer)
 
     def on_mount(self) -> None:
         self.app.operate_data = None
         self.init_clone_btn = self.query_one(
-            self.ids.operate_btn.init_clone_repo_q, Button
+            IDS.operate_btn.init_clone_repo_q, Button
         )
         self.init_clone_btn.disabled = True
         self.app.update_binding_description(
@@ -179,34 +175,30 @@ class InitScreen(Screen["OperateData"], AppType):
     @on(Button.Pressed, Tcss.flat_button.dot_prefix)
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
-        switcher = self.query_one(
-            self.ids.switcher.init_screen_q, ContentSwitcher
-        )
-        if event.button.id == self.ids.flat_btn.init_new:
-            switcher.current = self.ids.view.init_new
-        elif event.button.id == self.ids.flat_btn.init_clone:
-            switcher.current = self.ids.view.init_clone
-        elif event.button.id == self.ids.flat_btn.doctor:
-            switcher.current = self.ids.container.doctor
-        elif event.button.id == self.ids.flat_btn.cat_config:
-            switcher.current = self.ids.view.cat_config
-        elif event.button.id == self.ids.flat_btn.template_data:
-            switcher.current = self.ids.view.template_data
+        switcher = self.query_one(IDS.switcher.init_screen_q, ContentSwitcher)
+        if event.button.id == IDS.flat_btn.init_new:
+            switcher.current = IDS.view.init_new
+        elif event.button.id == IDS.flat_btn.init_clone:
+            switcher.current = IDS.view.init_clone
+        elif event.button.id == IDS.flat_btn.doctor:
+            switcher.current = IDS.container.doctor
+        elif event.button.id == IDS.flat_btn.cat_config:
+            switcher.current = IDS.view.cat_config
+        elif event.button.id == IDS.flat_btn.template_data:
+            switcher.current = IDS.view.template_data
 
     @on(Button.Pressed, Tcss.operate_button.dot_prefix)
     def handle_operate_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
         operate_data = OperateData(operate_btn=OperateBtn.init_new_repo)
-        if event.button.id == self.ids.operate_btn.init_clone_repo:
+        if event.button.id == IDS.operate_btn.init_clone_repo:
             operate_data = OperateData(
                 operate_btn=OperateBtn.init_clone_repo, repo_url=self.repo_url
             )
         self.app.pop_screen()
         self.app.push_screen(
             OperateScreen(
-                ids=self.ids,
-                operate_data=operate_data,
-                splash_data=self.splash_data,
+                operate_data=operate_data, splash_data=self.splash_data
             )
         )
 
