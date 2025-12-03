@@ -117,6 +117,7 @@ class ChezmoiGUI(App[None]):
         self.chezmoi_found: bool = self.pre_run_data.chezmoi_found
         self.dev_mode: bool = self.pre_run_data.dev_mode
         self.force_init_screen: bool = self.pre_run_data.force_init_screen
+        self.init_needed: bool = False
 
         # Manage state between screens
         self.changes_enabled: bool = False
@@ -144,10 +145,7 @@ class ChezmoiGUI(App[None]):
             self.push_screen("install_help")
             return
         # Chezmoi found but cat_config fails OR force_init_screen flag is set
-        if (
-            self.splash_data.cat_config.returncode != 0
-            or self.force_init_screen
-        ):
+        if self.init_needed or self.force_init_screen:
             self.force_init_screen = False  # Reset force_init_screen for dev.
             self.push_screen(InitScreen())
             return
