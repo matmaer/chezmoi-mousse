@@ -201,13 +201,13 @@ class InitScreen(Screen["OperateData"], AppType):
             operate_data = OperateData(
                 operate_btn=OperateBtn.init_clone_repo, repo_url=self.repo_url
             )
+        self.app.pop_screen()
         self.app.push_screen(
             OperateScreen(
                 ids=self.ids,
                 operate_data=operate_data,
                 splash_data=self.splash_data,
-            ),
-            callback=self.handle_returned_data,
+            )
         )
 
     @on(Input.Submitted)
@@ -221,11 +221,3 @@ class InitScreen(Screen["OperateData"], AppType):
         self.notify("Valid URL entered, button enabled.")
         self.init_clone_btn.disabled = False
         self.repo_url = event.value
-
-    def handle_returned_data(
-        self, operate_screen_data: OperateData | None
-    ) -> None:
-        if operate_screen_data is None:
-            self.app.exit()
-        else:
-            self.dismiss(operate_screen_data)
