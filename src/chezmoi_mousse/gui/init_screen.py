@@ -137,7 +137,7 @@ class InitSwitcher(ContentSwitcher, AppType):
         )
 
 
-class InitScreen(Screen["OperateData"], AppType):
+class InitScreen(Screen[None], AppType):
 
     def __init__(self) -> None:
         super().__init__()
@@ -195,10 +195,11 @@ class InitScreen(Screen["OperateData"], AppType):
     @on(Button.Pressed, Tcss.operate_button.dot_prefix)
     def handle_operate_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
-        self.app.operate_data = OperateData(
-            operate_btn=OperateBtn.init_new_repo
-        )
-        if event.button.id == SCREEN_IDS.init.operate_btn.init_clone_repo:
+        if event.button.id == SCREEN_IDS.init.operate_btn.init_new_repo:
+            self.app.operate_data = OperateData(
+                operate_btn=OperateBtn.init_new_repo
+            )
+        elif event.button.id == SCREEN_IDS.init.operate_btn.init_clone_repo:
             self.app.operate_data = OperateData(
                 operate_btn=OperateBtn.init_clone_repo, repo_url=self.repo_url
             )

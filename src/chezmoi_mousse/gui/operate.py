@@ -26,6 +26,7 @@ from chezmoi_mousse.shared import (
     CustomHeader,
     DiffView,
     DoctorTable,
+    InitCompletedMsg,
     MainSectionLabel,
     OperateButtons,
     OperateLog,
@@ -262,6 +263,7 @@ class OperateScreen(Screen[None], AppType):
             pre_op_container.mount(
                 InitCollapsibles(splash_data=self.app.splash_data)
             )
+            return
         if operate_data.operate_btn in (
             OperateBtn.apply_path,
             OperateBtn.re_add_path,
@@ -429,6 +431,8 @@ class OperateScreen(Screen[None], AppType):
         event.stop()
         if event.button.label == OperateBtn.operate_exit.exit_app_label:
             self.app.exit()
+        elif event.button.label in (OperateBtn.operate_exit.reload_label,):
+            self.app.post_message(InitCompletedMsg())
         elif event.button.label == OperateBtn.operate_exit.cancel_label:
             self.app.operate_cmd_result = None
             self.dismiss()

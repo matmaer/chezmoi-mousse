@@ -16,6 +16,7 @@ from chezmoi_mousse import (
     OperateData,
     TabName,
     Tcss,
+    WriteCmd,
 )
 from chezmoi_mousse.shared import (
     AppLog,
@@ -134,10 +135,11 @@ class MainScreen(Screen[None], AppType):
             return
         commands_to_log = self.app.splash_data.executed_commands
         if (
-            self.app.operate_data is not None
-            and self.app.operate_data.command_result is not None
+            self.app.operate_cmd_result is not None
+            and WriteCmd.init.value[0] in self.app.operate_cmd_result.cmd_args
         ):
-            commands_to_log += [self.app.operate_data.command_result]
+            self.operate_log.log_cmd_results(self.app.operate_cmd_result)
+            commands_to_log += [self.app.operate_cmd_result]
         for cmd in commands_to_log:
             self.app_log.log_cmd_results(cmd)
             self.read_cmd_log.log_cmd_results(cmd)

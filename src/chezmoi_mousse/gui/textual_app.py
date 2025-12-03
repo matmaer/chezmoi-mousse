@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from rich.color import Color
 from rich.segment import Segment, Segments
 from rich.style import Style
-from textual import work
+from textual import on, work
 from textual.app import App
 from textual.binding import Binding
 from textual.scrollbar import ScrollBar, ScrollBarRender
@@ -27,6 +27,7 @@ from chezmoi_mousse.shared import (
     DiffView,
     FlatButtonsVertical,
     GitLogPath,
+    InitCompletedMsg,
     LogsTabButtons,
     ViewTabButtons,
 )
@@ -153,34 +154,14 @@ class ChezmoiGUI(App[None]):
             or self.force_init_screen
         ):
             self.force_init_screen = False  # Reset force_init_screen for dev.
-            try:
-                self.splash_data = splash_screen_worker.result
-                init_worker = self.push_init_screen()
-                await init_worker.wait()
-                self.operate_data = init_worker.result
-                # After init screen, re-run splash screen to load all data
-                try:
-                    splash_screen_worker = self.push_splash_screen()
-                    await splash_screen_worker.wait()
-                except WorkerCancelled:
-                    # User exited during second splash screen, exit cleanly
-                    return
-                self.splash_data = splash_screen_worker.result
-                self.push_main_screen()
-                return
-            except WorkerCancelled:
-                # User exited during init screen, exit cleanly
-                return
+            self.push_screen(InitScreen())
+            return
         # Chezmoi found, init not needed
         self.push_main_screen()
 
     @work
     async def push_splash_screen(self) -> "SplashData | None":
         return await self.push_screen("splash", wait_for_dismiss=True)
-
-    @work
-    async def push_init_screen(self) -> "OperateData | None":
-        return await self.push_screen(InitScreen(), wait_for_dismiss=True)
 
     @work
     async def push_main_screen(self) -> None:
@@ -200,6 +181,24 @@ class ChezmoiGUI(App[None]):
         OperateInfo.git_autopush = self.splash_data.parsed_config.git_autopush
 
         self.push_screen(MainScreen())
+
+    @on(InitCompletedMsg)
+    async def handle_init_completed(self) -> None:
+        try:
+            splash_screen_worker = self.push_splash_screen()
+            await splash_screen_worker.wait()
+        except WorkerCancelled:
+            # User exited during splash screen, exit cleanly
+            return
+        self.splash_data = splash_screen_worker.result
+        if (
+            self.splash_data is None
+            or self.splash_data.cat_config.returncode != 0
+        ):
+            raise ValueError(
+                "splash_data is None or cat_config failed after InitScreen"
+            )
+        self.push_main_screen()
 
     def on_tabbed_content_tab_activated(
         self, event: TabbedContent.TabActivated
