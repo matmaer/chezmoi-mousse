@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 from importlib.metadata import PackageNotFoundError, version
 from typing import TYPE_CHECKING
 
@@ -128,12 +128,20 @@ class PreRunData:
 class SplashData:
     cat_config: "CommandResult"
     doctor: "CommandResult"
-    executed_commands: "list[CommandResult]"
     git_log: "CommandResult"
     ignored: "CommandResult"
     parsed_config: "ParsedConfig"
     template_data: "CommandResult"
     verify: "CommandResult"
+
+    @property
+    def executed_commands(self) -> list[CommandResult]:
+        # Return the field value which are CommandResult and not None
+        return [
+            getattr(self, field.name)
+            for field in fields(self)
+            if isinstance(getattr(self, field.name), CommandResult)
+        ]
 
 
 try:
