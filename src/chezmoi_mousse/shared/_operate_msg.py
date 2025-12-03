@@ -4,7 +4,7 @@ from textual.message import Message
 
 if TYPE_CHECKING:
 
-    from chezmoi_mousse import DirTreeNodeData, NodeData, OperateData
+    from chezmoi_mousse import DirTreeNodeData, NodeData
 
 __all__ = ["CurrentAddNodeMsg", "CurrentApplyNodeMsg", "CurrentReAddNodeMsg"]
 
@@ -32,7 +32,5 @@ class CurrentAddNodeMsg(Message):
         super().__init__()
 
 
-class OperateResultMsg(Message):
-    def __init__(self, operate_result: "OperateData") -> None:
-        self.operate_result = operate_result
-        super().__init__()
+class InitCompletedMsg(Message):
+    pass

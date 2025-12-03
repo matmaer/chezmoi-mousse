@@ -27,6 +27,7 @@ from ._operate_msg import (
     CurrentAddNodeMsg,
     CurrentApplyNodeMsg,
     CurrentReAddNodeMsg,
+    InitCompletedMsg,
 )
 from ._pw_mgr_info import PwMgrInfoView
 from ._screen_header import CustomHeader
@@ -46,6 +47,7 @@ __all__ = [
     "CurrentAddNodeMsg",
     "CurrentApplyNodeMsg",
     "CurrentReAddNodeMsg",
+    "InitCompletedMsg",
     # Buttons
     "FlatButton",
     "FlatButtonsVertical",
