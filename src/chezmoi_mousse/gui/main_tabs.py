@@ -201,9 +201,6 @@ class MainScreen(Screen[None], AppType):
             self.app.operate_data = OperateData(
                 operate_btn=button_enum, node_data=self.current_add_node
             )
-            self.app.push_screen(
-                OperateScreen(), callback=self.handle_operate_result
-            )
         elif (
             self.current_apply_node is not None
             and button_enum
@@ -217,10 +214,6 @@ class MainScreen(Screen[None], AppType):
             self.app.operate_data = OperateData(
                 operate_btn=button_enum, node_data=self.current_apply_node
             )
-            self.app.push_screen(
-                OperateScreen(), callback=self.handle_operate_result
-            )
-
         elif (
             self.current_re_add_node is not None
             and button_enum
@@ -234,12 +227,9 @@ class MainScreen(Screen[None], AppType):
             self.app.operate_data = OperateData(
                 operate_btn=button_enum, node_data=self.current_re_add_node
             )
-            self.app.push_screen(
-                OperateScreen(), callback=self.handle_operate_result
-            )
-        else:
-            self.notify("No current node available.", severity="error")
-            return
+        self.app.push_screen(
+            OperateScreen(), callback=self.handle_operate_result
+        )
 
     def handle_operate_result(self, cmd_result: CommandResult | None) -> None:
         if cmd_result is None:
