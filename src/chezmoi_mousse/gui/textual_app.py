@@ -174,6 +174,7 @@ class ChezmoiGUI(App[None]):
         self.push_screen(MainScreen())
 
     @on(InitCompletedMsg)
+    @work
     async def handle_init_completed(self) -> None:
         self.splash_data = await self.push_screen(
             "splash", wait_for_dismiss=True
