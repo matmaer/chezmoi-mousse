@@ -18,7 +18,6 @@ from chezmoi_mousse import (
     BindingDescription,
     Chars,
     OperateData,
-    ScreenIds,
     TabIds,
     TabName,
 )
@@ -111,7 +110,6 @@ class ChezmoiGUI(App[None]):
 
     def __init__(self, pre_run_data: "PreRunData") -> None:
         self.chezmoi: "Chezmoi"
-        self.screen_ids = ScreenIds()
         self.tab_ids = TabIds()
 
         self.pre_run_data: "PreRunData" = pre_run_data
