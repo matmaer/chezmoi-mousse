@@ -38,7 +38,7 @@ from .tabs.re_add_tab import ReAddTab
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds, DirTreeNodeData, NodeData, SplashData
 
-__all__ = ["TabbedContentScreen"]
+__all__ = ["MainScreen"]
 
 
 class TabPanes(StrEnum):
@@ -50,7 +50,7 @@ class TabPanes(StrEnum):
     re_add_tab_label = "Re-Add"
 
 
-class TabbedContentScreen(Screen[None], AppType):
+class MainScreen(Screen[None], AppType):
 
     destDir: Path | None = None
 

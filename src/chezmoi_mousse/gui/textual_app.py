@@ -36,7 +36,7 @@ from .init_screen import InitScreen
 from .install_help import InstallHelp
 from .operate import OperateInfo, OperateScreen
 from .splash import SplashScreen
-from .tabbed_content import TabbedContentScreen
+from .tabbed_content import MainScreen
 from .tabs.add_tab import AddTab, FilteredDirTree
 from .tabs.common.switch_slider import SwitchSlider
 from .tabs.common.switchers import TreeSwitcher, ViewSwitcher
@@ -198,7 +198,7 @@ class ChezmoiGUI(App[None]):
         ContentsView.destDir = dest_dir
         DiffView.destDir = dest_dir
         GitLogPath.destDir = dest_dir
-        TabbedContentScreen.destDir = dest_dir
+        MainScreen.destDir = dest_dir
         TreeBase.destDir = dest_dir
         ViewSwitcher.destDir = dest_dir
 
@@ -206,7 +206,7 @@ class ChezmoiGUI(App[None]):
         OperateInfo.git_autopush = splash_data.parsed_config.git_autopush
 
         self.push_screen(
-            TabbedContentScreen(
+            MainScreen(
                 ids=self.screen_ids.main,
                 splash_data=splash_data,
                 operate_data=operate_data,
@@ -291,14 +291,14 @@ class ChezmoiGUI(App[None]):
         )
 
     def action_toggle_switch_slider(self) -> None:
-        if not isinstance(self.screen, TabbedContentScreen):
+        if not isinstance(self.screen, MainScreen):
             return
         slider: SwitchSlider = self.get_switch_slider_widget()
         slider.toggle_class("-visible")
         self.update_toggle_switch_slider_binding()
 
     def action_toggle_maximized(self) -> None:
-        if not isinstance(self.screen, TabbedContentScreen):
+        if not isinstance(self.screen, MainScreen):
             return
         active_tab = self.screen.query_exactly_one(TabbedContent).active
         left_side = None
@@ -405,7 +405,7 @@ class ChezmoiGUI(App[None]):
             else:
                 return False
         elif action == BindingAction.toggle_switch_slider:
-            if isinstance(self.screen, TabbedContentScreen):
+            if isinstance(self.screen, MainScreen):
                 header = self.screen.query_exactly_one(CustomHeader)
                 if header.display is False:
                     return False
@@ -427,7 +427,7 @@ class ChezmoiGUI(App[None]):
             else:
                 return False
         elif action == BindingAction.toggle_dry_run:
-            if isinstance(self.screen, TabbedContentScreen):
+            if isinstance(self.screen, MainScreen):
                 header = self.screen.query_exactly_one(CustomHeader)
                 if header.display is False:
                     return False
