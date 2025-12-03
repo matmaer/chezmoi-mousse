@@ -225,4 +225,7 @@ class InitScreen(Screen["OperateData"], AppType):
     def handle_returned_data(
         self, operate_screen_data: OperateData | None
     ) -> None:
-        self.dismiss(operate_screen_data)
+        if operate_screen_data is None:
+            self.app.exit()
+        else:
+            self.dismiss(operate_screen_data)
