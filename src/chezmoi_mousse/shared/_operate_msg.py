@@ -6,7 +6,12 @@ if TYPE_CHECKING:
 
     from chezmoi_mousse import DirTreeNodeData, NodeData
 
-__all__ = ["CurrentAddNodeMsg", "CurrentApplyNodeMsg", "CurrentReAddNodeMsg"]
+__all__ = [
+    "CurrentAddNodeMsg",
+    "CurrentApplyNodeMsg",
+    "CurrentReAddNodeMsg",
+    "InitCompletedMsg",
+]
 
 # messages used to keep track in main screen to push the operate screen with
 # the correct data
