@@ -2,7 +2,11 @@ import ast
 from typing import NamedTuple
 
 import pytest
-from _test_utils import get_module_ast_class_defs, get_module_paths
+from _test_utils import (
+    get_module_ast_class_defs,
+    get_module_ast_tree,
+    get_module_paths,
+)
 
 type AstClassDefs = list[ast.ClassDef]
 
@@ -14,30 +18,34 @@ EXCLUDE_ENUMS = {"PwMgrInfo", "UnwantedDirs", "UnwantedFileExtensions"}
 
 def is_enum_class(class_def: ast.ClassDef) -> bool:
     for base in class_def.bases:
-        if isinstance(base, ast.Name) and base.id in ("Enum"):
+        if isinstance(base, ast.Name) and base.id in ("Enum", "StrEnum"):
             return True
     return False
 
 
-def is_strenum_class(class_def: ast.ClassDef) -> bool:
-    for base in class_def.bases:
-        if isinstance(base, ast.Name) and base.id in ("StrEnum"):
-            return True
-    return False
+class ModuleData(NamedTuple):
+    module_path: str  # the module path for error reporting
+    module_nodes: list[ast.AST]  # all ast nodes in the module (materialized)
 
 
 class ClassData(NamedTuple):
-    # tuple to avoid a flat with possible duplicate nodes
     module_path: str  # the module path for error reporting
     class_name: str  # the ast.ClassDef.name
     class_nodes: list[ast.AST]  # the ast nodes within the class (materialized)
 
 
 all_enum_classes: list[ClassData] = []
-enum_classes: list[ClassData] = []
-non_enum_classes: list[ClassData] = []
+module_data_list: list[ModuleData] = []
 
 for file_path in MODULE_PATHS:
+    # Store module-level nodes
+    module_tree = get_module_ast_tree(file_path)
+    module_data_list.append(
+        ModuleData(
+            module_path=str(file_path),
+            module_nodes=list(ast.walk(module_tree)),
+        )
+    )
     class_defs: AstClassDefs = get_module_ast_class_defs(file_path)
     for class_def in class_defs:
         to_append = ClassData(
@@ -46,13 +54,7 @@ for file_path in MODULE_PATHS:
             class_nodes=list(ast.walk(class_def)),
         )
         if is_enum_class(class_def):
-            enum_classes.append(to_append)
             all_enum_classes.append(to_append)
-        elif is_strenum_class(class_def):
-            all_enum_classes.append(to_append)
-        else:
-            non_enum_classes.append(to_append)
-
 
 ###########################################
 # Test if all enum class names are unique #
@@ -94,7 +96,8 @@ def test_unique_enum_class_names() -> None:
     all_enum_classes,
     ids=lambda x: f"{x.class_name} ({x.module_path})",
 )
-def test_check_enum_members_in_use(class_data: ClassData) -> None:
+def test_enum_members_in_use(class_data: ClassData) -> None:
+    results: list[str] = []
     # Skip enums that are used dynamically, not in scope for static tests
     if class_data.class_name in EXCLUDE_ENUMS:
         pytest.skip(f"Skipping dynamic enum {class_data.class_name}")
@@ -113,12 +116,14 @@ def test_check_enum_members_in_use(class_data: ClassData) -> None:
     # getattr(EnumClass, 'member_name').
     for member_name in enum_member_names:
         found = False
-
-        # Search non-enum classes
-        for non_enum in non_enum_classes:
+        for module_data in module_data_list:
             if found:
                 break
-            for node in non_enum.class_nodes:
+            for node in module_data.module_nodes:
+                if isinstance(node, ast.ClassDef):
+                    if node.name == class_data.class_name:
+                        # Skip the enum class itself
+                        continue
                 if isinstance(node, ast.Attribute):
                     # direct access: EnumClass.member_name
                     if isinstance(node.value, ast.Name):
@@ -154,32 +159,9 @@ def test_check_enum_members_in_use(class_data: ClassData) -> None:
                                 found = True
                                 break
 
-        # If not found in non-enum classes, search other Enum classes
-        if not found:
-            for other_enum in enum_classes:
-                if other_enum.class_name == class_data.class_name:
-                    continue
-                if found:
-                    break
-                for node in other_enum.class_nodes:
-                    if isinstance(node, ast.Attribute):
-                        if isinstance(node.value, ast.Name):
-                            if (
-                                node.value.id == class_data.class_name
-                                and node.attr == member_name
-                            ):
-                                found = True
-                                break
-                        elif isinstance(node.value, ast.Attribute):
-                            if (
-                                isinstance(node.value.value, ast.Name)
-                                and node.value.attr == class_data.class_name
-                                and node.attr == member_name
-                            ):
-                                found = True
-                                break
-
-        if not found:
-            pytest.fail(
+        if found is False:
+            results.append(
                 f"{class_data.class_name}.{member_name} (in {class_data.module_path})"
             )
+    if results:
+        pytest.fail("\n".join(results))
