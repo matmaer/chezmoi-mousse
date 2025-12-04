@@ -142,7 +142,7 @@ class SplashScreen(Screen[SplashData | None], AppType):
     def __init__(self) -> None:
         super().__init__(id=IDS.splash.canvas_name)
         self.splash_data: SplashData | None = None
-        self.splash_log_qid = IDS.splash.logger.splash_q
+        self.splash_log_q = IDS.splash.logger.splash_q
         self.post_io_started: bool = False
 
     def compose(self) -> ComposeResult:
@@ -156,7 +156,7 @@ class SplashScreen(Screen[SplashData | None], AppType):
             interval=1, callback=self.all_workers_finished
         )
         if self.app.chezmoi_found is False:
-            splash_log = self.query_one(self.splash_log_qid, SplashLog)
+            splash_log = self.query_one(self.splash_log_q, SplashLog)
             splash_log.styles.height = 1
             cmd_text = "chezmoi command"
             padding = LOG_PADDING_WIDTH - len(cmd_text)
@@ -204,7 +204,7 @@ class SplashScreen(Screen[SplashData | None], AppType):
         else:
             color = self.app.theme_variables["text-error"]
 
-        splash_log = self.query_one(self.splash_log_qid, SplashLog)
+        splash_log = self.query_one(self.splash_log_q, SplashLog)
         self.app.call_from_thread(
             splash_log.write, f"[{color}]{log_text}[/{color}]"
         )
