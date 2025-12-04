@@ -19,7 +19,7 @@ class SwitchSlider(VerticalGroup):
     def __init__(self, *, ids: "AppIds") -> None:
         self.ids = ids
         super().__init__(id=self.ids.container.switch_slider)
-        if self.ids.tab_name in (TabName.apply, TabName.re_add):
+        if self.ids.canvas_name in (TabName.apply, TabName.re_add):
             self.switches = (Switches.unchanged, Switches.expand_all)
         else:  # for the AddTab
             self.switches = (Switches.unmanaged_dirs, Switches.unwanted)

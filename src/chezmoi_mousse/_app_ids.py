@@ -16,12 +16,12 @@ from ._str_enums import (
 )
 from ._switch_data import Switches
 
-__all__ = ["AppIds", "SCREEN_IDS", "TAB_IDS"]
+__all__ = ["AppIds", "IDS"]
 
 
 class AppIds:
     __slots__ = (
-        "_canvas_name",
+        "canvas_name",
         "container",
         "datatable",
         "filter",
@@ -30,20 +30,16 @@ class AppIds:
         "header",
         "logger",
         "operate_btn",
-        "screen_name",
         "switcher",
         "tab_btn",
-        "tab_name",
         "tree",
         "view",
     )
 
     def __init__(self, canvas_name: TabName | ScreenName) -> None:
-        self._canvas_name: str = canvas_name.name
-        self.tab_name: str = canvas_name.name
-        self.screen_name: str = canvas_name.name
-        self.footer = f"{self._canvas_name}_footer"
-        self.header = f"{self._canvas_name}_header"
+        self.canvas_name: str = canvas_name.name
+        self.footer = f"{self.canvas_name}_footer"
+        self.header = f"{self.canvas_name}_header"
 
         self.container = ContainerIds(self)
         self.datatable = DataTableIds(self)
@@ -57,58 +53,54 @@ class AppIds:
         self.tab_btn = TabButtonIds(self)
 
     def operate_button_id(self, qid: str = "", *, btn: OperateBtn) -> str:
-        return f"{qid}{self._canvas_name}_{btn.name}_op_btn"
+        return f"{qid}{self.canvas_name}_{btn.name}_op_btn"
 
     def container_id(self, qid: str = "", *, name: ContainerName) -> str:
-        return f"{qid}{self._canvas_name}_{name.name}"
+        return f"{qid}{self.canvas_name}_{name.name}"
 
     def content_switcher_id(
         self, qid: str = "", *, switcher: ContentSwitcherName
     ) -> str:
-        return f"{qid}{self._canvas_name}_{switcher.name}"
+        return f"{qid}{self.canvas_name}_{switcher.name}"
 
     def datatable_id(
         self, qid: str = "", *, datatable_name: DataTableName
     ) -> str:
-        return f"{qid}{self._canvas_name}_{datatable_name.name}_datatable"
+        return f"{qid}{self.canvas_name}_{datatable_name.name}_datatable"
 
     def flat_button_id(self, qid: str = "", *, btn: FlatBtn) -> str:
-        return f"{qid}{self._canvas_name}_{btn.name}_flat_btn"
+        return f"{qid}{self.canvas_name}_{btn.name}_flat_btn"
 
     def link_button_id(self, qid: str = "", *, btn: LinkBtn) -> str:
-        return f"{qid}{self._canvas_name}_{btn.name}_link_btn"
+        return f"{qid}{self.canvas_name}_{btn.name}_link_btn"
 
     def switch_horizontal_id(self, qid: str = "", *, switch: Switches) -> str:
         return (
-            f"{qid}{self._canvas_name}_{switch.switch_name}_switch_horizontal"
+            f"{qid}{self.canvas_name}_{switch.switch_name}_switch_horizontal"
         )
 
     def switch_id(self, qid: str = "", *, switch: Switches) -> str:
-        return f"{qid}{self._canvas_name}_{switch.switch_name}_switch"
+        return f"{qid}{self.canvas_name}_{switch.switch_name}_switch"
 
     def tab_button_id(self, qid: str = "", *, btn: TabBtn) -> str:
-        return f"{qid}{self._canvas_name}_{btn.name}_tab_btn"
+        return f"{qid}{self.canvas_name}_{btn.name}_tab_btn"
 
     def tree_id(self, qid: str = "", *, tree: TreeName) -> str:
-        return f"{qid}{self._canvas_name}_{tree}"
+        return f"{qid}{self.canvas_name}_{tree}"
 
     def view_id(self, qid: str = "", *, view: ViewName | LogName) -> str:
-        return f"{qid}{self._canvas_name}_{view}"
+        return f"{qid}{self.canvas_name}_{view}"
 
 
-class ScreenIds:
+class CanvasIds:
     def __init__(self) -> None:
-        # Construct the ids for each screen
+        # Screens
         self.init = AppIds(ScreenName.init)
         self.install_help = AppIds(ScreenName.install_help)
         self.splash = AppIds(ScreenName.splash)
         self.main = AppIds(ScreenName.main)
         self.operate = AppIds(ScreenName.operate)
-
-
-class TabIds:
-    def __init__(self) -> None:
-        # Construct the ids for the tabs
+        # TabPanes
         self.add = AppIds(TabName.add)
         self.apply = AppIds(TabName.apply)
         self.config = AppIds(TabName.config)
@@ -214,9 +206,9 @@ class ContentSwitcherIds:
 
     @property
     def tree_buttons(self) -> str:
-        if self.ids.tab_name == TabName.apply:
+        if self.ids.canvas_name == TabName.apply:
             return self.apply_tree_buttons
-        elif self.ids.tab_name == TabName.re_add:
+        elif self.ids.canvas_name == TabName.re_add:
             return self.re_add_tree_buttons
         else:
             raise ValueError(
@@ -229,9 +221,9 @@ class ContentSwitcherIds:
 
     @property
     def view_buttons(self) -> str:
-        if self.ids.tab_name == TabName.apply:
+        if self.ids.canvas_name == TabName.apply:
             return self.apply_view_buttons
-        elif self.ids.tab_name == TabName.re_add:
+        elif self.ids.canvas_name == TabName.re_add:
             return self.re_add_view_buttons
         else:
             raise ValueError(
@@ -244,9 +236,9 @@ class ContentSwitcherIds:
 
     @property
     def trees(self) -> str:
-        if self.ids.tab_name == TabName.apply:
+        if self.ids.canvas_name == TabName.apply:
             return self.apply_trees
-        elif self.ids.tab_name == TabName.re_add:
+        elif self.ids.canvas_name == TabName.re_add:
             return self.re_add_trees
         else:
             raise ValueError(
@@ -259,9 +251,9 @@ class ContentSwitcherIds:
 
     @property
     def views(self) -> str:
-        if self.ids.tab_name == TabName.apply:
+        if self.ids.canvas_name == TabName.apply:
             return self.apply_views
-        elif self.ids.tab_name == TabName.re_add:
+        elif self.ids.canvas_name == TabName.re_add:
             return self.re_add_views
         else:
             raise ValueError(
@@ -437,5 +429,4 @@ class ViewIds:
         self.template_data_q = f"#{self.template_data}"
 
 
-SCREEN_IDS = ScreenIds()
-TAB_IDS = TabIds()
+IDS = CanvasIds()

@@ -80,7 +80,7 @@ class OperateButton(Button):
     def __init__(self, *, ids: "AppIds", button_enum: OperateBtn) -> None:
         self.ids = ids
         self.button_enum = button_enum
-        if self.ids.screen_name in (ScreenName.init, ScreenName.operate):
+        if self.ids.canvas_name in (ScreenName.init, ScreenName.operate):
             should_disable = False
         else:
             should_disable = True

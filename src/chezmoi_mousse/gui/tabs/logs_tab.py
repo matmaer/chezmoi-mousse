@@ -7,7 +7,7 @@ from textual.containers import Vertical
 from textual.reactive import reactive
 from textual.widgets import Button, ContentSwitcher
 
-from chezmoi_mousse import TAB_IDS, AppType, Tcss
+from chezmoi_mousse import IDS, AppType, Tcss
 from chezmoi_mousse.shared import (
     AppLog,
     DebugLog,
@@ -38,22 +38,22 @@ class LogsTab(Vertical, AppType):
     )
 
     def compose(self) -> ComposeResult:
-        yield LogsTabButtons(ids=TAB_IDS.logs)
+        yield LogsTabButtons(ids=IDS.logs)
         with ContentSwitcher(
-            id=TAB_IDS.logs.switcher.logs_tab,
-            initial=TAB_IDS.logs.logger.app,
+            id=IDS.logs.switcher.logs_tab,
+            initial=IDS.logs.logger.app,
             classes=Tcss.border_title_top,
         ):
-            yield AppLog(ids=TAB_IDS.logs)
-            yield ReadCmdLog(ids=TAB_IDS.logs)
-            yield OperateLog(ids=TAB_IDS.logs)
-            yield GitLogGlobal(ids=TAB_IDS.logs)
+            yield AppLog(ids=IDS.logs)
+            yield ReadCmdLog(ids=IDS.logs)
+            yield OperateLog(ids=IDS.logs)
+            yield GitLogGlobal(ids=IDS.logs)
             if self.app.dev_mode is True:
-                yield DebugLog(ids=TAB_IDS.logs)
+                yield DebugLog(ids=IDS.logs)
 
     def on_mount(self) -> None:
         switcher = self.query_one(
-            TAB_IDS.logs.switcher.logs_tab_q, ContentSwitcher
+            IDS.logs.switcher.logs_tab_q, ContentSwitcher
         )
         switcher.border_title = BorderTitle.app_log
 
@@ -61,31 +61,31 @@ class LogsTab(Vertical, AppType):
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
         switcher = self.query_one(
-            TAB_IDS.logs.switcher.logs_tab_q, ContentSwitcher
+            IDS.logs.switcher.logs_tab_q, ContentSwitcher
         )
-        if event.button.id == TAB_IDS.logs.tab_btn.app_log:
-            switcher.current = TAB_IDS.logs.logger.app
+        if event.button.id == IDS.logs.tab_btn.app_log:
+            switcher.current = IDS.logs.logger.app
             switcher.border_title = BorderTitle.app_log
-        elif event.button.id == TAB_IDS.logs.tab_btn.read_log:
-            switcher.current = TAB_IDS.logs.logger.read
+        elif event.button.id == IDS.logs.tab_btn.read_log:
+            switcher.current = IDS.logs.logger.read
             switcher.border_title = BorderTitle.read_cmd_log
-        elif event.button.id == TAB_IDS.logs.tab_btn.operate_log:
-            switcher.current = TAB_IDS.logs.logger.operate
+        elif event.button.id == IDS.logs.tab_btn.operate_log:
+            switcher.current = IDS.logs.logger.operate
             switcher.border_title = BorderTitle.operate_log
-        elif event.button.id == TAB_IDS.logs.tab_btn.git_log_global:
+        elif event.button.id == IDS.logs.tab_btn.git_log_global:
             switcher.border_title = BorderTitle.git_log_global
-            switcher.current = TAB_IDS.logs.container.git_log_global
+            switcher.current = IDS.logs.container.git_log_global
         elif (
             self.app.dev_mode is True
-            and event.button.id == TAB_IDS.logs.tab_btn.debug_log
+            and event.button.id == IDS.logs.tab_btn.debug_log
         ):
-            switcher.current = TAB_IDS.logs.logger.debug
+            switcher.current = IDS.logs.logger.debug
             switcher.border_title = BorderTitle.debug_log
 
     def watch_git_log_result(self) -> None:
         if self.git_log_result is None:
             return
         git_log_global = self.query_one(
-            TAB_IDS.logs.container.git_log_global_q, GitLogGlobal
+            IDS.logs.container.git_log_global_q, GitLogGlobal
         )
         git_log_global.update_global_git_log(self.git_log_result)

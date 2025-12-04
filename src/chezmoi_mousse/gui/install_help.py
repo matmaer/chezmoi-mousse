@@ -11,7 +11,7 @@ from textual.screen import Screen
 from textual.widgets import Footer, Pretty, Tree
 
 from chezmoi_mousse import (
-    SCREEN_IDS,
+    IDS,
     AppType,
     BindingAction,
     BindingDescription,
@@ -51,7 +51,7 @@ class CommandsTree(Tree[ParsedJson]):
 class InstallHelp(Screen[None], AppType):
 
     def compose(self) -> ComposeResult:
-        yield CustomHeader(ids=SCREEN_IDS.install_help)
+        yield CustomHeader(ids=IDS.install_help)
         yield MainSectionLabel(InstallHelpStrings.top_label)
         yield CustomCollapsible(
             Pretty(InstallHelpStrings.no_path_var),
@@ -61,14 +61,11 @@ class InstallHelp(Screen[None], AppType):
             yield CommandsTree()
             yield VerticalGroup(
                 FlatLink(
-                    ids=SCREEN_IDS.install_help,
-                    link_enum=LinkBtn.chezmoi_install,
+                    ids=IDS.install_help, link_enum=LinkBtn.chezmoi_install
                 ),
-                FlatButton(
-                    ids=SCREEN_IDS.install_help, button_enum=FlatBtn.exit_app
-                ),
+                FlatButton(ids=IDS.install_help, button_enum=FlatBtn.exit_app),
             )
-        yield Footer(id=SCREEN_IDS.install_help.footer)
+        yield Footer(id=IDS.install_help.footer)
 
     def on_mount(self) -> None:
         self.screen.title = HeaderTitle.header_install_help

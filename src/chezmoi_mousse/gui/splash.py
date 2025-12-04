@@ -17,7 +17,7 @@ from textual.widgets import RichLog, Static
 from textual.worker import WorkerState
 
 from chezmoi_mousse import (
-    SCREEN_IDS,
+    IDS,
     AppType,
     Chezmoi,
     CommandResult,
@@ -129,7 +129,7 @@ class AnimatedFade(Static):
 
 class SplashLog(RichLog):
     def __init__(self) -> None:
-        super().__init__(id=SCREEN_IDS.splash.logger.splash, markup=True)
+        super().__init__(id=IDS.splash.logger.splash, markup=True)
 
     def on_mount(self) -> None:
         self.styles.height = len(SPLASH_COMMANDS)
@@ -140,9 +140,9 @@ class SplashLog(RichLog):
 class SplashScreen(Screen[SplashData | None], AppType):
 
     def __init__(self) -> None:
-        super().__init__(id=SCREEN_IDS.splash.screen_name)
+        super().__init__(id=IDS.splash.canvas_name)
         self.splash_data: SplashData | None = None
-        self.splash_log_qid = SCREEN_IDS.splash.logger.splash_q
+        self.splash_log_qid = IDS.splash.logger.splash_q
         self.post_io_started: bool = False
 
     def compose(self) -> ComposeResult:

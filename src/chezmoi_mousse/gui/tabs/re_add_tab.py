@@ -2,7 +2,7 @@ from textual import on
 from textual.app import ComposeResult
 from textual.widgets import Button
 
-from chezmoi_mousse import TAB_IDS, OperateBtn
+from chezmoi_mousse import IDS, OperateBtn
 from chezmoi_mousse.shared import CurrentReAddNodeMsg, OperateButtons
 
 from .common.switch_slider import SwitchSlider
@@ -15,20 +15,20 @@ __all__ = ["ReAddTab"]
 class ReAddTab(TabHorizontal):
 
     def __init__(self) -> None:
-        super().__init__(ids=TAB_IDS.re_add)
+        super().__init__(ids=IDS.re_add)
 
     def compose(self) -> ComposeResult:
-        yield TreeSwitcher(ids=TAB_IDS.re_add)
-        yield ViewSwitcher(ids=TAB_IDS.re_add, diff_reverse=True)
+        yield TreeSwitcher(ids=IDS.re_add)
+        yield ViewSwitcher(ids=IDS.re_add, diff_reverse=True)
         yield OperateButtons(
-            ids=TAB_IDS.re_add,
+            ids=IDS.re_add,
             buttons=(
                 OperateBtn.re_add_path,
                 OperateBtn.forget_path,
                 OperateBtn.destroy_path,
             ),
         )
-        yield SwitchSlider(ids=TAB_IDS.re_add)
+        yield SwitchSlider(ids=IDS.re_add)
 
     @on(CurrentReAddNodeMsg)
     def update_re_add_operate_buttons(
@@ -36,7 +36,7 @@ class ReAddTab(TabHorizontal):
     ) -> None:
         self.update_view_path(event.node_data.path)
         operate_path_button = self.query_one(
-            TAB_IDS.re_add.operate_btn.re_add_path_q, Button
+            IDS.re_add.operate_btn.re_add_path_q, Button
         )
         operate_path_button.label = OperateBtn.re_add_path.label(
             event.node_data.path_kind

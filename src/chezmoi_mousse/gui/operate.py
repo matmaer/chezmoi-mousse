@@ -7,7 +7,7 @@ from textual.screen import Screen
 from textual.widgets import Button, Footer, Static
 
 from chezmoi_mousse import (
-    SCREEN_IDS,
+    IDS,
     AppType,
     BindingAction,
     BindingDescription,
@@ -77,7 +77,7 @@ class InitCollapsibles(VerticalGroup):
         self.mount(
             CustomCollapsible(
                 DoctorTable(
-                    ids=SCREEN_IDS.operate, doctor_data=self.splash_data.doctor
+                    ids=IDS.operate, doctor_data=self.splash_data.doctor
                 ),
                 title="Doctor Output",
             )
@@ -195,13 +195,13 @@ class OperateInfo(Static, AppType):
 class OperateScreen(Screen[None], AppType):
 
     def compose(self) -> ComposeResult:
-        yield CustomHeader(SCREEN_IDS.operate)
-        with VerticalGroup(id=SCREEN_IDS.operate.container.pre_operate):
+        yield CustomHeader(IDS.operate)
+        with VerticalGroup(id=IDS.operate.container.pre_operate):
             yield OperateInfo()
-        with VerticalGroup(id=SCREEN_IDS.operate.container.post_operate):
+        with VerticalGroup(id=IDS.operate.container.post_operate):
             yield MainSectionLabel(SectionLabels.operate_output)
-            yield OperateLog(ids=SCREEN_IDS.operate)
-        yield Footer(id=SCREEN_IDS.operate.footer)
+            yield OperateLog(ids=IDS.operate)
+        yield Footer(id=IDS.operate.footer)
 
     async def on_mount(self) -> None:
         if self.app.operate_data is None:
@@ -212,7 +212,7 @@ class OperateScreen(Screen[None], AppType):
             return
         self.operate_data = self.app.operate_data
         self.operate_btn = self.operate_data.operate_btn
-        self.operate_btn_q = SCREEN_IDS.operate.operate_button_id(
+        self.operate_btn_q = IDS.operate.operate_button_id(
             "#", btn=self.operate_btn
         )
         if self.operate_data.node_data is not None:
@@ -223,11 +223,11 @@ class OperateScreen(Screen[None], AppType):
         pre_op_worker = self.mount_pre_operate_widgets(self.operate_data)
         await pre_op_worker.wait()
         self.query_one(
-            SCREEN_IDS.operate.container.post_operate_q, VerticalGroup
+            IDS.operate.container.post_operate_q, VerticalGroup
         ).display = False
         self.mount(
             OperateButtons(
-                ids=SCREEN_IDS.operate,
+                ids=IDS.operate,
                 buttons=(self.operate_btn, OperateBtn.operate_exit),
             )
         )
@@ -238,23 +238,19 @@ class OperateScreen(Screen[None], AppType):
         self, operate_data: OperateData
     ) -> None:
         pre_op_container = self.query_one(
-            SCREEN_IDS.operate.container.pre_operate_q, VerticalGroup
+            IDS.operate.container.pre_operate_q, VerticalGroup
         )
         if operate_data.operate_btn == OperateBtn.apply_path:
-            pre_op_container.mount(
-                DiffView(ids=SCREEN_IDS.operate, reverse=False)
-            )
+            pre_op_container.mount(DiffView(ids=IDS.operate, reverse=False))
         elif operate_data.operate_btn == OperateBtn.re_add_path:
-            pre_op_container.mount(
-                DiffView(ids=SCREEN_IDS.operate, reverse=True)
-            )
+            pre_op_container.mount(DiffView(ids=IDS.operate, reverse=True))
         elif operate_data.operate_btn in (
             OperateBtn.add_file,
             OperateBtn.add_dir,
             OperateBtn.forget_path,
             OperateBtn.destroy_path,
         ):
-            pre_op_container.mount(ContentsView(ids=SCREEN_IDS.operate))
+            pre_op_container.mount(ContentsView(ids=IDS.operate))
         elif (
             operate_data.operate_btn
             in (OperateBtn.init_new_repo, OperateBtn.init_clone_repo)
@@ -277,9 +273,7 @@ class OperateScreen(Screen[None], AppType):
     def configure_buttons(self) -> None:
         op_btn = self.query_one(self.operate_btn_q, Button)
         exit_btn = self.query_one(
-            SCREEN_IDS.operate.operate_button_id(
-                "#", btn=OperateBtn.operate_exit
-            ),
+            IDS.operate.operate_button_id("#", btn=OperateBtn.operate_exit),
             Button,
         )
 
@@ -372,9 +366,7 @@ class OperateScreen(Screen[None], AppType):
         self.update_key_binding()
 
     def write_to_output_log(self) -> None:
-        output_log = self.query_one(
-            SCREEN_IDS.operate.logger.operate_q, OperateLog
-        )
+        output_log = self.query_one(IDS.operate.logger.operate_q, OperateLog)
         if self.app.operate_cmd_result is not None:
             output_log.log_cmd_results(self.app.operate_cmd_result)
         else:
@@ -399,11 +391,11 @@ class OperateScreen(Screen[None], AppType):
 
     def update_visibility(self) -> None:
         pre_op_container = self.query_one(
-            SCREEN_IDS.operate.container.pre_operate_q, VerticalGroup
+            IDS.operate.container.pre_operate_q, VerticalGroup
         )
         pre_op_container.display = False
         post_op_container = self.query_one(
-            SCREEN_IDS.operate.container.post_operate_q, VerticalGroup
+            IDS.operate.container.post_operate_q, VerticalGroup
         )
         post_op_container.display = True
 
@@ -412,9 +404,7 @@ class OperateScreen(Screen[None], AppType):
         operate_button.disabled = True
         operate_button.tooltip = None
         operate_exit_button = self.query_one(
-            SCREEN_IDS.operate.operate_button_id(
-                "#", btn=OperateBtn.operate_exit
-            ),
+            IDS.operate.operate_button_id("#", btn=OperateBtn.operate_exit),
             Button,
         )
         if self.operate_btn in (

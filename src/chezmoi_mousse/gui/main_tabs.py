@@ -8,8 +8,7 @@ from textual.screen import Screen
 from textual.widgets import Button, Footer, TabbedContent, TabPane
 
 from chezmoi_mousse import (
-    SCREEN_IDS,
-    TAB_IDS,
+    IDS,
     AppType,
     LogText,
     OperateBtn,
@@ -69,7 +68,7 @@ class MainScreen(Screen[None], AppType):
         self.current_re_add_node: "NodeData | None" = None
 
     def compose(self) -> ComposeResult:
-        yield CustomHeader(ids=SCREEN_IDS.main)
+        yield CustomHeader(ids=IDS.main)
         with TabbedContent():
             yield TabPane(
                 TabPanes.apply_tab_label, ApplyTab(), id=TabName.apply
@@ -83,7 +82,7 @@ class MainScreen(Screen[None], AppType):
                 TabPanes.config_tab_label, ConfigTab(), id=TabName.config
             )
             yield TabPane(TabPanes.help_tab_label, HelpTab(), id=TabName.help)
-        yield Footer(id=SCREEN_IDS.main.footer)
+        yield Footer(id=IDS.main.footer)
 
     async def on_mount(self) -> None:
         initialize_loggers_worker = self.initialize_loggers()
@@ -97,7 +96,7 @@ class MainScreen(Screen[None], AppType):
     @work
     async def initialize_loggers(self) -> None:
         # Initialize App logger
-        self.app_log = self.query_one(TAB_IDS.logs.logger.app_q, AppLog)
+        self.app_log = self.query_one(IDS.logs.logger.app_q, AppLog)
         self.app.chezmoi.app_log = self.app_log
         self.app_log.ready_to_run(LogText.app_log_initialized)
         if self.app.chezmoi_found:
@@ -106,22 +105,18 @@ class MainScreen(Screen[None], AppType):
             self.notify(LogText.chezmoi_not_found, severity="error")
         # Initialize Operate logger
         self.operate_log = self.query_one(
-            TAB_IDS.logs.logger.operate_q, OperateLog
+            IDS.logs.logger.operate_q, OperateLog
         )
         self.app.chezmoi.operate_log = self.operate_log
         self.app_log.success(LogText.operate_log_initialized)
         self.operate_log.ready_to_run(LogText.operate_log_initialized)
         # Initialize ReadCmd logger
-        self.read_cmd_log = self.query_one(
-            TAB_IDS.logs.logger.read_q, ReadCmdLog
-        )
+        self.read_cmd_log = self.query_one(IDS.logs.logger.read_q, ReadCmdLog)
         self.app.chezmoi.read_cmd_log = self.read_cmd_log
         self.app_log.success(LogText.read_log_initialized)
         # Initialize Debug logger if in dev mode
         if self.app.dev_mode:
-            self.debug_log = self.query_one(
-                TAB_IDS.logs.logger.debug_q, DebugLog
-            )
+            self.debug_log = self.query_one(IDS.logs.logger.debug_q, DebugLog)
             self.app.chezmoi.debug_log = self.debug_log
             self.app_log.success(LogText.debug_log_initialized)
             self.debug_log.ready_to_run(LogText.debug_log_initialized)
@@ -149,12 +144,12 @@ class MainScreen(Screen[None], AppType):
         self.app_log.info("Updating managed paths")
         self.app.chezmoi.update_managed_paths()
         managed_tree = self.screen.query_one(
-            TAB_IDS.apply.tree.managed_q, ManagedTree
+            IDS.apply.tree.managed_q, ManagedTree
         )
         expanded_tree = self.screen.query_one(
-            TAB_IDS.apply.tree.expanded_q, ExpandedTree
+            IDS.apply.tree.expanded_q, ExpandedTree
         )
-        list_tree = self.screen.query_one(TAB_IDS.apply.tree.list_q, ListTree)
+        list_tree = self.screen.query_one(IDS.apply.tree.list_q, ListTree)
         managed_tree.populate_tree()
         self.app_log.success("Apply tab managed tree populated.")
         expanded_tree.populate_tree()
@@ -164,12 +159,12 @@ class MainScreen(Screen[None], AppType):
 
     def populate_re_add_trees(self) -> None:
         managed_tree = self.screen.query_one(
-            TAB_IDS.re_add.tree.managed_q, ManagedTree
+            IDS.re_add.tree.managed_q, ManagedTree
         )
         expanded_tree = self.screen.query_one(
-            TAB_IDS.re_add.tree.expanded_q, ExpandedTree
+            IDS.re_add.tree.expanded_q, ExpandedTree
         )
-        list_tree = self.screen.query_one(TAB_IDS.re_add.tree.list_q, ListTree)
+        list_tree = self.screen.query_one(IDS.re_add.tree.list_q, ListTree)
         managed_tree.populate_tree()
         self.app_log.success("Re-Add tab managed tree populated.")
         expanded_tree.populate_tree()
@@ -186,7 +181,7 @@ class MainScreen(Screen[None], AppType):
 
     def update_config_tab(self) -> None:
         config_tab_switcher = self.screen.query_one(
-            TAB_IDS.config.switcher.config_tab_q, ConfigTabSwitcher
+            IDS.config.switcher.config_tab_q, ConfigTabSwitcher
         )
         setattr(config_tab_switcher, "splash_data", self.app.splash_data)
 
@@ -257,9 +252,7 @@ class MainScreen(Screen[None], AppType):
                 "The command ran with errors, see the Logs tab for more info.",
                 severity="error",
             )
-        add_dir_tree = self.query_one(
-            TAB_IDS.add.tree.dir_tree_q, FilteredDirTree
-        )
+        add_dir_tree = self.query_one(IDS.add.tree.dir_tree_q, FilteredDirTree)
         add_dir_tree.reload()
         self.populate_apply_trees()
         self.populate_re_add_trees()

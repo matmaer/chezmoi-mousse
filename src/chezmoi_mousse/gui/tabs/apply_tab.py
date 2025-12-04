@@ -2,7 +2,7 @@ from textual import on
 from textual.app import ComposeResult
 from textual.widgets import Button
 
-from chezmoi_mousse import TAB_IDS, OperateBtn
+from chezmoi_mousse import IDS, OperateBtn
 from chezmoi_mousse.shared import CurrentApplyNodeMsg, OperateButtons
 
 from .common.switch_slider import SwitchSlider
@@ -15,26 +15,26 @@ __all__ = ["ApplyTab"]
 class ApplyTab(TabHorizontal):
 
     def __init__(self) -> None:
-        super().__init__(ids=TAB_IDS.apply)
+        super().__init__(ids=IDS.apply)
 
     def compose(self) -> ComposeResult:
-        yield TreeSwitcher(TAB_IDS.apply)
-        yield ViewSwitcher(ids=TAB_IDS.apply, diff_reverse=False)
+        yield TreeSwitcher(IDS.apply)
+        yield ViewSwitcher(ids=IDS.apply, diff_reverse=False)
         yield OperateButtons(
-            ids=TAB_IDS.apply,
+            ids=IDS.apply,
             buttons=(
                 OperateBtn.apply_path,
                 OperateBtn.forget_path,
                 OperateBtn.destroy_path,
             ),
         )
-        yield SwitchSlider(ids=TAB_IDS.apply)
+        yield SwitchSlider(ids=IDS.apply)
 
     @on(CurrentApplyNodeMsg)
     def update_apply_operate_buttons(self, event: CurrentApplyNodeMsg) -> None:
         self.update_view_path(event.node_data.path)
         operate_path_button = self.query_one(
-            TAB_IDS.apply.operate_btn.apply_path_q, Button
+            IDS.apply.operate_btn.apply_path_q, Button
         )
         operate_path_button.label = OperateBtn.apply_path.label(
             event.node_data.path_kind

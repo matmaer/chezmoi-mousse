@@ -58,15 +58,15 @@ class DestDirInfo(VerticalGroup):
 
     def on_mount(self) -> None:
         lines: list[str] = []
-        if self.ids.tab_name == TabName.add:
+        if self.ids.canvas_name == TabName.add:
             lines.append(DestDirStrings.read_file)
             lines.append(ADD_DIR_INFO)
         elif self.git_log is True:
             lines.append(DestDirStrings.git_log_msg)
         elif self.contents_logger is True:
             lines.append(DestDirStrings.cat)
-        elif self.ids.tab_name == TabName.apply:
+        elif self.ids.canvas_name == TabName.apply:
             lines.append(DestDirStrings.diff)
-        elif self.ids.tab_name == TabName.re_add:
+        elif self.ids.canvas_name == TabName.re_add:
             lines.append(DestDirStrings.diff_reverse)
         self.mount(Static("\n".join(lines)))

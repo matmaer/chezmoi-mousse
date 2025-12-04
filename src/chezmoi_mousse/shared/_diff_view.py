@@ -64,14 +64,14 @@ class DiffView(RichLog, AppType):
         # either the ApplyTab or ReAddTabS
 
         if (
-            self.ids.tab_name == TabName.apply
+            self.ids.canvas_name == TabName.apply
             and self.path not in self.app.chezmoi.apply_status_files
             and self.path not in self.app.chezmoi.apply_status_dirs
         ):
             self._write_unchanged_path_info()
             return
         elif (
-            self.ids.tab_name == TabName.re_add
+            self.ids.canvas_name == TabName.re_add
             and self.path not in self.app.chezmoi.re_add_status_files
             and self.path not in self.app.chezmoi.re_add_status_dirs
         ):
