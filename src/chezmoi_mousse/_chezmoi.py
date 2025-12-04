@@ -85,8 +85,8 @@ class VerbArgs(Enum):
     ]
     include_dirs = "--include=dirs"
     include_files = "--include=files"
-    init_guess = "--guess-repo-url"
-    init_ssh = "--ssh"
+    # init_guess = "--guess-repo-url" TODO
+    # init_ssh = "--ssh" TODO
     path_style_absolute = "--path-style=absolute"
     not_recursive = "--recursive=false"
     reverse = "--reverse"
@@ -158,7 +158,7 @@ class ReadCmd(Enum):
 
 class WriteCmd(Enum):
     add = ["add", VerbArgs.not_recursive.value]
-    # add_encrypt = ["add", VerbArgs.encrypt.value]
+    # add_encrypt = ["add", VerbArgs.encrypt.value] TODO
     apply = ["apply", VerbArgs.not_recursive.value]
     destroy = ["destroy", VerbArgs.not_recursive.value]
     forget = ["forget"]
