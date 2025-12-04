@@ -257,6 +257,9 @@ class OperateScreen(Screen[None], AppType):
             and self.app.splash_data is not None
         ):
             pre_op_container.mount(
+                MainSectionLabel(SectionLabels.operate_context)
+            )
+            pre_op_container.mount(
                 InitCollapsibles(splash_data=self.app.splash_data)
             )
             return
