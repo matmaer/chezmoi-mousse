@@ -75,12 +75,10 @@ class AppIds:
         return f"{qid}{self.canvas_name}_{btn.name}_link_btn"
 
     def switch_horizontal_id(self, qid: str = "", *, switch: Switches) -> str:
-        return (
-            f"{qid}{self.canvas_name}_{switch.switch_name}_switch_horizontal"
-        )
+        return f"{qid}{self.canvas_name}_{switch.name}_switch_horizontal"
 
     def switch_id(self, qid: str = "", *, switch: Switches) -> str:
-        return f"{qid}{self.canvas_name}_{switch.switch_name}_switch"
+        return f"{qid}{self.canvas_name}_{switch.name}_switch"
 
     def tab_button_id(self, qid: str = "", *, btn: TabBtn) -> str:
         return f"{qid}{self.canvas_name}_{btn.name}_tab_btn"
