@@ -132,30 +132,44 @@ class ChezmoiGUI(App[None]):
         self.register_theme(chezmoi_mousse_light)
         self.register_theme(chezmoi_mousse_dark)
         self.theme = "chezmoi-mousse-dark"
-        self.start_app_with_splash_screen()
+        self.run_splash_screen()
 
     @work
-    async def start_app_with_splash_screen(self) -> None:
+    async def run_splash_screen(self) -> None:
         # Run splash screen once to gather command outputs
         self.splash_data = await self.push_screen(
             "splash", wait_for_dismiss=True
         )
-        # Chezmoi command not found, SplashScreen will return None
         if self.splash_data is None:
+            # Chezmoi command not found, SplashScreen will return None
             self.push_screen("install_help")
-            return
-        # Chezmoi found but cat_config fails OR force_init_screen flag is set
-        if self.init_needed or self.force_init_screen:
+        elif self.init_needed or self.force_init_screen:
             self.force_init_screen = False  # Reset force_init_screen for dev.
             self.push_screen(InitScreen())
-            return
-        # Chezmoi found, init not needed
+        else:
+            self.push_main_screen()
+
+    @on(InitCompletedMsg)
+    @work
+    async def handle_init_completed(self) -> None:
+        self.splash_data = await self.push_screen(
+            "splash", wait_for_dismiss=True
+        )
+        if self.splash_data is None:
+            raise ValueError("splash_data is None on InitCompletedMsg")
+        elif self.init_needed is True:
+            raise ValueError("self.init_needed should be False here")
+        elif self.force_init_screen is True:
+            raise ValueError("self.force_init_screen should be False here")
         self.push_main_screen()
 
-    @work
-    async def push_main_screen(self) -> None:
+    def push_main_screen(self) -> None:
         if self.splash_data is None:
             raise ValueError("splash_data is None after running SplashScreen")
+        elif self.init_needed is True:
+            raise ValueError("init_needed should be False here")
+        elif self.force_init_screen is True:
+            raise ValueError("force_init_screen should be False here")
         AddTab.destDir = self.splash_data.parsed_config.dest_dir
         ContentsView.destDir = self.splash_data.parsed_config.dest_dir
         DiffView.destDir = self.splash_data.parsed_config.dest_dir
@@ -170,22 +184,6 @@ class ChezmoiGUI(App[None]):
         OperateInfo.git_autopush = self.splash_data.parsed_config.git_autopush
 
         self.push_screen(MainScreen())
-
-    @on(InitCompletedMsg)
-    @work
-    async def handle_init_completed(self) -> None:
-        self.splash_data = await self.push_screen(
-            "splash", wait_for_dismiss=True
-        )
-        if self.splash_data is None:
-            raise ValueError("splash_data is None")
-        if self.splash_data.cat_config.returncode != 0:
-            raise ValueError(
-                f"cat_config failed with returncode "
-                f"{self.splash_data.cat_config.returncode}. "
-                f"stderr: {self.splash_data.cat_config.std_err}"
-            )
-        self.push_main_screen()
 
     def on_tabbed_content_tab_activated(
         self, event: TabbedContent.TabActivated
