@@ -350,18 +350,14 @@ class OperateScreen(Screen[None], AppType):
             self.app.operate_cmd_result = self.app.chezmoi.perform(
                 WriteCmd.init, changes_enabled=self.app.changes_enabled
             )
-            if self.app.operate_cmd_result.exit_code != 0:
-                raise RuntimeError(
-                    "Failed to initialize new chezmoi repository"
-                )
-            else:
-                self.app.init_needed = False
+            self.app.init_cmd_issued = True
         elif self.operate_btn == OperateBtn.init_clone_repo:
             self.app.operate_cmd_result = self.app.chezmoi.perform(
                 WriteCmd.init,
                 repo_url=self.repo_url,
                 changes_enabled=self.app.changes_enabled,
             )
+            self.app.init_cmd_issued = True
 
         self.update_visibility()
         self.write_to_output_log()

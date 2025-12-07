@@ -117,7 +117,7 @@ class ChezmoiGUI(App[None]):
         self.chezmoi_found: bool = self.pre_run_data.chezmoi_found
         self.dev_mode: bool = self.pre_run_data.dev_mode
         self.force_init_screen: bool = self.pre_run_data.force_init_screen
-        self.init_needed: bool = False
+        self.init_cmd_issued: bool = False
 
         # Manage state between screens
         self.changes_enabled: bool = False
@@ -143,7 +143,7 @@ class ChezmoiGUI(App[None]):
         if self.splash_data is None:
             # Chezmoi command not found, SplashScreen will return None
             self.push_screen("install_help")
-        elif self.init_needed or self.force_init_screen:
+        elif self.init_cmd_issued is False or self.force_init_screen is True:
             self.force_init_screen = False  # Reset force_init_screen for dev.
             self.push_screen(InitScreen())
         else:
@@ -157,8 +157,8 @@ class ChezmoiGUI(App[None]):
         )
         if self.splash_data is None:
             raise ValueError("splash_data is None on InitCompletedMsg")
-        elif self.init_needed is True:
-            raise ValueError("self.init_needed should be False here")
+        elif self.init_cmd_issued is False:
+            raise ValueError("self.init_cmd_issued should be True here")
         elif self.force_init_screen is True:
             raise ValueError("self.force_init_screen should be False here")
         self.push_main_screen()
@@ -166,8 +166,6 @@ class ChezmoiGUI(App[None]):
     def push_main_screen(self) -> None:
         if self.splash_data is None:
             raise ValueError("splash_data is None after running SplashScreen")
-        elif self.init_needed is True:
-            raise ValueError("init_needed should be False here")
         elif self.force_init_screen is True:
             raise ValueError("force_init_screen should be False here")
         AddTab.destDir = self.splash_data.parsed_config.dest_dir
