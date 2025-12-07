@@ -166,8 +166,6 @@ class ChezmoiGUI(App[None]):
     def push_main_screen(self) -> None:
         if self.splash_data is None:
             raise ValueError("splash_data is None after running SplashScreen")
-        elif self.force_init_screen is True:
-            raise ValueError("force_init_screen should be False here")
         AddTab.destDir = self.splash_data.parsed_config.dest_dir
         ContentsView.destDir = self.splash_data.parsed_config.dest_dir
         DiffView.destDir = self.splash_data.parsed_config.dest_dir
