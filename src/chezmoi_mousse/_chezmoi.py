@@ -168,27 +168,25 @@ class WriteCmd(Enum):
 
 @dataclass(slots=True)
 class CommandResult:
-    completed_process_data: CompletedProcess[str]
+    completed_process: CompletedProcess[str]
     path_arg: Path | None
     repo_url_arg: str | None = None
     pretty_time: str = f"[{datetime.now().strftime('%H:%M:%S')}]"
 
     @property
     def cmd_args(self) -> list[str]:
-        return self.completed_process_data.args
+        return self.completed_process.args
 
     @property
     def pretty_cmd(self) -> str:
-        return LogUtils.pretty_cmd_str(self.completed_process_data.args)
+        return LogUtils.pretty_cmd_str(self.completed_process.args)
 
     @property
     def std_out(self) -> str:
-        stripped_stdout = LogUtils.strip_output(
-            self.completed_process_data.stdout
-        )
+        stripped_stdout = LogUtils.strip_output(self.completed_process.stdout)
         if (
             stripped_stdout == ""
-            and "--dry-run" in self.completed_process_data.args
+            and "--dry-run" in self.completed_process.args
         ):
             return "No output on stdout, command was executed with --dry-run."
         elif stripped_stdout == "":
@@ -198,12 +196,10 @@ class CommandResult:
 
     @property
     def std_err(self) -> str:
-        stripped_stderr = LogUtils.strip_output(
-            self.completed_process_data.stderr
-        )
+        stripped_stderr = LogUtils.strip_output(self.completed_process.stderr)
         if (
             stripped_stderr == ""
-            and "--dry-run" in self.completed_process_data.args
+            and "--dry-run" in self.completed_process.args
         ):
             return "No output on stderr, command was executed with --dry-run."
         elif stripped_stderr == "":
@@ -212,8 +208,8 @@ class CommandResult:
             return stripped_stderr
 
     @property
-    def returncode(self) -> int:
-        return self.completed_process_data.returncode
+    def exit_code(self) -> int:
+        return self.completed_process.returncode
 
 
 class Chezmoi:
@@ -455,7 +451,7 @@ class Chezmoi:
             timeout=time_out,
         )
         command_result = CommandResult(
-            completed_process_data=result, path_arg=path_arg
+            completed_process=result, path_arg=path_arg
         )
         self._log_in_app_and_read_cmd_log(command_result)
         return command_result
@@ -495,9 +491,7 @@ class Chezmoi:
             command, capture_output=True, shell=False, text=True, timeout=5
         )
         command_results = CommandResult(
-            completed_process_data=result,
-            path_arg=path_arg,
-            repo_url_arg=repo_url,
+            completed_process=result, path_arg=path_arg, repo_url_arg=repo_url
         )
         self._log_in_app_and_operate_log(command_results)
         return command_results

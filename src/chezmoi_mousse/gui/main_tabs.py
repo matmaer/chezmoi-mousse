@@ -236,12 +236,12 @@ class MainScreen(Screen[None], AppType):
         reactive_header.changes_enabled = self.app.changes_enabled
         self.refresh_bindings()
         if (
-            self.app.operate_cmd_result.returncode == 0
+            self.app.operate_cmd_result.exit_code == 0
             and self.app.changes_enabled
         ):
             self.notify("Operation completed successfully.")
         elif (
-            self.app.operate_cmd_result.returncode == 0
+            self.app.operate_cmd_result.exit_code == 0
             and not self.app.changes_enabled
         ):
             self.notify(

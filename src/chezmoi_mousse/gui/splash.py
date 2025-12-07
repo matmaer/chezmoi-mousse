@@ -76,7 +76,7 @@ def _subprocess_run_cmd(cmd: ReadCmd) -> CommandResult:
         text=True,
         timeout=time_out,
     )
-    return CommandResult(completed_process_data=result, path_arg=None)
+    return CommandResult(completed_process=result, path_arg=None)
 
 
 def create_deque() -> deque[Style]:
@@ -194,9 +194,9 @@ class SplashScreen(Screen[SplashData | None], AppType):
             ).replace(VerbArgs.include_files.value, "files")
         padding = LOG_PADDING_WIDTH - len(cmd_text)
         log_text = f"{cmd_text} {'.' * padding} {LOADED_SUFFIX}"
-        if cmd_result.completed_process_data.returncode == 0:
+        if cmd_result.exit_code == 0:
             color = self.app.theme_variables["text-primary"]
-        elif cmd_result.completed_process_data.returncode == 1:
+        elif cmd_result.exit_code == 1:
             if splash_cmd == ReadCmd.verify:
                 color = self.app.theme_variables["text-primary"]
             else:

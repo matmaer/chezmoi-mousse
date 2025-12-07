@@ -350,7 +350,7 @@ class OperateScreen(Screen[None], AppType):
             self.app.operate_cmd_result = self.app.chezmoi.perform(
                 WriteCmd.init, changes_enabled=self.app.changes_enabled
             )
-            if self.app.operate_cmd_result.returncode != 0:
+            if self.app.operate_cmd_result.exit_code != 0:
                 raise RuntimeError(
                     "Failed to initialize new chezmoi repository"
                 )

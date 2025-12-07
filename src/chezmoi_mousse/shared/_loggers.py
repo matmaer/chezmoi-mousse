@@ -100,29 +100,29 @@ class AppLog(LoggersBase, AppType):
     def log_cmd_results(self, command_result: "CommandResult") -> None:
         self.write(self.log_command(command_result))
         if ReadVerbs.verify.value in command_result.cmd_args:
-            if command_result.returncode == 0:
+            if command_result.exit_code == 0:
                 self.success(self.verify_exit_zero)
             else:
                 self.success(self.verify_non_zero)
             return
         elif ReadVerbs.doctor.value in command_result.cmd_args:
-            if command_result.returncode == 0:
+            if command_result.exit_code == 0:
                 self.log_doctor_exit_zero_msg(command_result)
             return
-        elif command_result.returncode == 0:
+        elif command_result.exit_code == 0:
             if command_result.std_out == "":
                 self.success(self.succes_no_output)
             elif command_result.std_out != "":
                 self.success(self.success_with_output)
-        elif command_result.returncode != 0:
+        elif command_result.exit_code != 0:
             if command_result.std_err != "":
                 self.error(
-                    f"{self.std_err_logged}, exit code: {command_result.returncode}"
+                    f"{self.std_err_logged}, exit code: {command_result.exit_code}"
                 )
                 return
             else:
                 self.error(
-                    f"Exit code: {command_result.returncode}, no stderr output"
+                    f"Exit code: {command_result.exit_code}, no stderr output"
                 )
 
 
@@ -222,13 +222,13 @@ class OperateLog(LoggersBase, AppType):
 
     def log_cmd_results(self, command_result: "CommandResult") -> None:
         self.write(self.log_command(command_result))
-        if command_result.returncode == 0:
+        if command_result.exit_code == 0:
             self.success("Success, stdout:")
             if command_result.std_out == "":
                 self.dimmed("No output on stdout")
             else:
                 self.dimmed(command_result.std_out)
-        elif command_result.returncode != 0:
+        elif command_result.exit_code != 0:
             if command_result.std_err != "":
                 self.error("Failed, stderr:")
                 self.dimmed(f"{command_result.std_err}")
@@ -258,7 +258,7 @@ class ReadOutputCollapsible(CustomCollapsible, AppType):
 
     def on_mount(self) -> None:
         collapsible_title = self.query_exactly_one("CollapsibleTitle")
-        if self.command_result.returncode == 0:
+        if self.command_result.exit_code == 0:
             collapsible_title.styles.color = self.app.theme_variables[
                 "text-success"
             ]
@@ -284,7 +284,7 @@ class ReadCmdLog(ScrollableContainer, AppType):
 
         output = (
             command_result.std_out
-            if command_result.returncode == 0
+            if command_result.exit_code == 0
             else command_result.std_err
         )
 
