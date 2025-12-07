@@ -31,7 +31,6 @@ from chezmoi_mousse import (
     Tcss,
 )
 from chezmoi_mousse.shared import (
-    CatConfigView,
     CustomHeader,
     DebugLog,
     DoctorTableView,
@@ -48,7 +47,7 @@ __all__ = ["InitScreen"]
 
 
 class StaticText(StrEnum):
-    init_new = f"Initialize a new chezmoi repository in your home directory, check the [$text-primary]{FlatBtn.cat_config}[/] section for the default settings in use.\nClick the [$text-primary]{OperateBtn.init_new_repo.initial_label}[/] button below to run [$text-success]'chezmoi init'[/].\n"
+    init_new = f"Initialize a new chezmoi repository in your home directory.\nClick the [$text-primary]{OperateBtn.init_new_repo.initial_label}[/] button below to run [$text-success]'chezmoi init'[/].\n"
     init_clone = f'To enable the [$text-primary]"{OperateBtn.init_clone_repo.initial_label}"[/] button, enter a repository address below.'
 
 
@@ -109,7 +108,6 @@ class InitSwitcher(ContentSwitcher, AppType):
         yield InitNew()
         yield InitClone()
         yield DoctorTableView(ids=IDS.init)
-        yield CatConfigView(ids=IDS.init)
         yield TemplateDataView(ids=IDS.init)
 
     def on_mount(self) -> None:
@@ -122,8 +120,6 @@ class InitSwitcher(ContentSwitcher, AppType):
         doctor_view.populate_doctor_data(
             command_result=self.app.splash_data.doctor
         )
-        cat_config = self.query_one(IDS.init.view.cat_config_q, CatConfigView)
-        cat_config.mount_cat_config_output(self.app.splash_data.cat_config)
         template_data_view = self.query_one(
             IDS.init.view.template_data_q, TemplateDataView
         )
@@ -149,7 +145,6 @@ class InitScreen(Screen[None], AppType):
                     FlatBtn.init_new,
                     FlatBtn.init_clone,
                     FlatBtn.doctor,
-                    FlatBtn.cat_config,
                     FlatBtn.template_data,
                 ),
             )
@@ -174,7 +169,7 @@ class InitScreen(Screen[None], AppType):
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
         switcher = self.query_one(
-            IDS.init.switcher.init_screen_q, ContentSwitcher
+            IDS.init.switcher.init_screen_q, InitSwitcher
         )
         if event.button.id == IDS.init.flat_btn.init_new:
             switcher.current = IDS.init.view.init_new
@@ -182,8 +177,6 @@ class InitScreen(Screen[None], AppType):
             switcher.current = IDS.init.view.init_clone
         elif event.button.id == IDS.init.flat_btn.doctor:
             switcher.current = IDS.init.container.doctor
-        elif event.button.id == IDS.init.flat_btn.cat_config:
-            switcher.current = IDS.init.view.cat_config
         elif event.button.id == IDS.init.flat_btn.template_data:
             switcher.current = IDS.init.view.template_data
 
