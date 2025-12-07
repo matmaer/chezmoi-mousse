@@ -199,7 +199,7 @@ class InitScreen(Screen[None], AppType):
         if event.validation_result is None:
             return
         self.valid_url = event.validation_result.is_valid
-        if not self.valid_url:
+        if self.valid_url is False:
             self.notify("Invalid URL entered.", severity="error")
             return
         self.notify("Valid URL entered, button enabled.")
