@@ -210,7 +210,7 @@ class SplashScreen(Screen[SplashData | None], AppType):
         )
 
     @work(thread=True, group="post_io_workers")
-    def populate_chezmoi_class_and_init_requirement(self) -> None:
+    def populate_chezmoi_class(self) -> None:
         self.app.chezmoi = Chezmoi(
             dev_mode=self.app.dev_mode,
             managed_dirs=globals()["managed_dirs"],
@@ -218,11 +218,6 @@ class SplashScreen(Screen[SplashData | None], AppType):
             status_dirs=globals()["status_dirs"],
             status_files=globals()["status_files"],
         )
-        # Check if status commands failed, which will be used to decide if we
-        # need to push the InitScreen later after the SplashScreen in the
-        # ChezmoiGUI class.
-        if globals()["status_files"].returncode != 0:
-            self.app.init_needed = True
 
     @work(thread=True, group="post_io_workers")
     def construct_return_data(self):
@@ -247,7 +242,7 @@ class SplashScreen(Screen[SplashData | None], AppType):
         ):
             return
         if self.post_io_started is False:
-            self.populate_chezmoi_class_and_init_requirement()
+            self.populate_chezmoi_class()
             self.construct_return_data()
             self.post_io_started = True
             return
