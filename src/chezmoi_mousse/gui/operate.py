@@ -362,12 +362,6 @@ class OperateScreen(Screen[None], AppType):
             self.notify("No command result to log.", severity="error")
 
     def update_key_binding(self) -> None:
-        if self.app.operate_data is None:
-            self.notify(
-                "update_key_binding called but app.operate_data is None",
-                severity="error",
-            )
-            return
         new_description = (
             BindingDescription.reload
             if self.operate_btn
