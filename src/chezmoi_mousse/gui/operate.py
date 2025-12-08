@@ -1,6 +1,6 @@
 from enum import StrEnum
 
-from textual import on, work
+from textual import on
 from textual.app import ComposeResult
 from textual.containers import VerticalGroup
 from textual.screen import Screen
@@ -197,7 +197,7 @@ class OperateScreen(Screen[None], AppType):
             yield OperateLog(ids=IDS.operate)
         yield Footer(id=IDS.operate.footer)
 
-    async def on_mount(self) -> None:
+    def on_mount(self) -> None:
         if self.app.operate_data is None:
             self.notify(
                 "OperateScreen mounted but app.operate_data is None",
@@ -214,8 +214,7 @@ class OperateScreen(Screen[None], AppType):
             self.path_kind = self.operate_data.node_data.path_kind
         elif self.operate_data.repo_url is not None:
             self.repo_url = self.operate_data.repo_url
-        pre_op_worker = self.mount_pre_operate_widgets(self.operate_data)
-        await pre_op_worker.wait()
+        self.mount_pre_operate_widgets(self.operate_data)
         self.query_one(
             IDS.operate.container.post_operate_q, VerticalGroup
         ).display = False
@@ -227,10 +226,7 @@ class OperateScreen(Screen[None], AppType):
         )
         self.configure_buttons()
 
-    @work
-    async def mount_pre_operate_widgets(
-        self, operate_data: OperateData
-    ) -> None:
+    def mount_pre_operate_widgets(self, operate_data: OperateData) -> None:
         pre_op_container = self.query_one(
             IDS.operate.container.pre_operate_q, VerticalGroup
         )
@@ -341,17 +337,17 @@ class OperateScreen(Screen[None], AppType):
                 changes_enabled=self.app.changes_enabled,
             )
         elif self.operate_btn == OperateBtn.init_new_repo:
+            self.app.init_cmd_issued = True
             self.app.operate_cmd_result = self.app.chezmoi.perform(
                 WriteCmd.init, changes_enabled=self.app.changes_enabled
             )
-            self.app.init_cmd_issued = True
         elif self.operate_btn == OperateBtn.init_clone_repo:
+            self.app.init_cmd_issued = True
             self.app.operate_cmd_result = self.app.chezmoi.perform(
                 WriteCmd.init,
                 repo_url=self.repo_url,
                 changes_enabled=self.app.changes_enabled,
             )
-            self.app.init_cmd_issued = True
 
         self.update_visibility()
         self.write_to_output_log()
