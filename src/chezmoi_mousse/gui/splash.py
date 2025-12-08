@@ -163,11 +163,33 @@ class SplashScreen(Screen[SplashData | None], AppType):
             log_text = f"{cmd_text} {'.' * padding} not found"
             splash_log.write(log_text)
             return
-        self.run_io_worker(ReadCmd.doctor)
-        for command in SPLASH_COMMANDS:
-            if command == ReadCmd.doctor:
-                continue
-            self.run_io_worker(command)
+        else:
+            self.run_command_workers()
+
+    @work(group="io_workers")
+    async def run_command_workers(self) -> None:
+        status_worker = self.run_io_worker(ReadCmd.status_files)
+        await status_worker.wait()
+        assert type(globals()["status_files"].exit_code) is int
+
+        if (
+            globals()["status_files"].exit_code != 0
+            and self.app.init_cmd_issued is False
+        ):
+            # Run io workers for data used in the InitScreen
+            self.run_io_worker(ReadCmd.doctor)
+            self.run_io_worker(ReadCmd.template_data)
+            return
+        elif (
+            globals()["status_files"].exit_code != 0
+            and self.app.init_cmd_issued is True
+        ):
+            raise RuntimeError("Chezmoi cannot be initialized.")
+        else:
+            for splash_cmd in SPLASH_COMMANDS:
+                if splash_cmd == ReadCmd.status_files:
+                    continue
+                self.run_io_worker(splash_cmd)
 
     @work(thread=True, group="io_workers")
     def run_io_worker(self, splash_cmd: ReadCmd) -> None:
