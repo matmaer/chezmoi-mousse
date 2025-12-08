@@ -141,6 +141,7 @@ class SplashScreen(Screen[SplashData | None], AppType):
 
     def __init__(self) -> None:
         super().__init__(id=IDS.splash.canvas_name)
+        self.splash_log: SplashLog  # set in on_mount
         self.splash_data: SplashData | None = None
         self.splash_log_q = IDS.splash.logger.splash_q
         self.post_io_started: bool = False
@@ -152,19 +153,18 @@ class SplashScreen(Screen[SplashData | None], AppType):
                 yield Center(SplashLog())
 
     def on_mount(self) -> None:
+        self.splash_log = self.query_one(self.splash_log_q, SplashLog)
         self.io_workers_timer: "Timer" = self.set_interval(
             interval=1, callback=self.all_workers_finished
         )
         if self.app.chezmoi_found is False:
-            splash_log = self.query_one(self.splash_log_q, SplashLog)
-            splash_log.styles.height = 1
+            self.splash_log.styles.height = 1
             cmd_text = "chezmoi command"
             padding = LOG_PADDING_WIDTH - len(cmd_text)
             log_text = f"{cmd_text} {'.' * padding} not found"
-            splash_log.write(log_text)
+            self.splash_log.write(log_text)
             return
-        else:
-            self.run_command_workers()
+        self.run_command_workers()
 
     @work(group="io_workers")
     async def run_command_workers(self) -> None:
@@ -225,10 +225,8 @@ class SplashScreen(Screen[SplashData | None], AppType):
                 color = self.app.theme_variables["text-warning"]
         else:
             color = self.app.theme_variables["text-error"]
-
-        splash_log = self.query_one(self.splash_log_q, SplashLog)
         self.app.call_from_thread(
-            splash_log.write, f"[{color}]{log_text}[/{color}]"
+            self.splash_log.write, f"[{color}]{log_text}[/{color}]"
         )
 
     @work(thread=True, group="post_io_workers")
