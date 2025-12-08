@@ -84,12 +84,6 @@ class InitCollapsibles(VerticalGroup):
         )
         self.mount(
             CustomCollapsible(
-                Static(self.splash_data.cat_config.std_out, markup=False),
-                title="Cat Config Output",
-            )
-        )
-        self.mount(
-            CustomCollapsible(
                 PrettyTemplateData(self.splash_data.template_data),
                 title="Template Data Output",
             )
