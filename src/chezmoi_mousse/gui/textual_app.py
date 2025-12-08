@@ -107,7 +107,6 @@ class ChezmoiGUI(App[None]):
         "init": InitScreen,
         "install_help": InstallHelp,
         "main": MainScreen,
-        "splash": SplashScreen,
     }
 
     def __init__(self, pre_run_data: "PreRunData") -> None:
@@ -139,7 +138,7 @@ class ChezmoiGUI(App[None]):
     async def run_splash_screen(self) -> None:
         # Run splash screen once to gather command outputs
         self.splash_data = await self.push_screen(
-            "splash", wait_for_dismiss=True
+            SplashScreen(), wait_for_dismiss=True
         )
         if self.splash_data is None:
             # Chezmoi command not found, SplashScreen will return None
@@ -158,7 +157,7 @@ class ChezmoiGUI(App[None]):
     @work
     async def handle_init_completed(self) -> None:
         self.splash_data = await self.push_screen(
-            "splash", wait_for_dismiss=True
+            SplashScreen(), wait_for_dismiss=True
         )
         if self.splash_data is None:
             raise ValueError("splash_data is None on InitCompletedMsg")
