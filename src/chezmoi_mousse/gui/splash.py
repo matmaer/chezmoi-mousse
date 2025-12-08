@@ -271,4 +271,5 @@ class SplashScreen(Screen[SplashData | None], AppType):
             for worker in self.screen.workers
             if worker.group == "post_io_workers"
         ):
+            self.post_io_started = False
             self.dismiss(self.splash_data)
