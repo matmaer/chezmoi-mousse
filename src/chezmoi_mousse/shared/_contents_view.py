@@ -96,7 +96,7 @@ class ContentsView(RichLog, AppType):
                 return
             elif self.path in self.app.chezmoi.files:
                 cat_output: "CommandResult" = self.app.chezmoi.read(
-                    ReadCmd.cat, self.path
+                    ReadCmd.cat, path_arg=self.path
                 )
                 self.write(
                     f'{ContentsTabStrings.output_from_cat} "{cat_output.pretty_cmd}"\n'

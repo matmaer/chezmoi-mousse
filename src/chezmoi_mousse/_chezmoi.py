@@ -169,9 +169,11 @@ class WriteCmd(Enum):
 @dataclass(slots=True)
 class CommandResult:
     completed_process: CompletedProcess[str]
-    path_arg: Path | None
-    repo_url_arg: str | None = None
+    path_arg: Path | None = None
     pretty_time: str = f"[{datetime.now().strftime('%H:%M:%S')}]"
+    read_cmd: ReadCmd | None = None
+    repo_url_arg: str | None = None
+    write_cmd: WriteCmd | None = None
 
     @property
     def cmd_args(self) -> list[str]:
@@ -432,7 +434,7 @@ class Chezmoi:
         )
 
     def read(
-        self, read_cmd: ReadCmd, path_arg: Path | None = None
+        self, read_cmd: ReadCmd, *, path_arg: Path | None = None
     ) -> CommandResult:
         command: list[str] = read_cmd.value
         if path_arg is None:
@@ -451,14 +453,14 @@ class Chezmoi:
             timeout=time_out,
         )
         command_result = CommandResult(
-            completed_process=result, path_arg=path_arg
+            completed_process=result, path_arg=path_arg, read_cmd=read_cmd
         )
         self._log_in_app_and_read_cmd_log(command_result)
         return command_result
 
     def perform(
         self,
-        write_sub_cmd: WriteCmd,
+        write_cmd: WriteCmd,
         *,
         path_arg: Path | None = None,
         repo_url: str | None = None,
@@ -468,9 +470,9 @@ class Chezmoi:
             base_cmd: list[str] = GlobalCmd.live_run.value
         else:
             base_cmd: list[str] = GlobalCmd.dry_run.value
-        command: list[str] = base_cmd + write_sub_cmd.value
+        command: list[str] = base_cmd + write_cmd.value
         if (
-            write_sub_cmd
+            write_cmd
             in (
                 WriteCmd.add,
                 WriteCmd.apply,
@@ -481,7 +483,7 @@ class Chezmoi:
             and path_arg is not None
         ):
             command: list[str] = command + [str(path_arg)]
-        elif write_sub_cmd == WriteCmd.init:
+        elif write_cmd == WriteCmd.init:
             if repo_url is not None:
                 command += [repo_url]
         else:
@@ -491,7 +493,10 @@ class Chezmoi:
             command, capture_output=True, shell=False, text=True, timeout=5
         )
         command_results = CommandResult(
-            completed_process=result, path_arg=path_arg, repo_url_arg=repo_url
+            completed_process=result,
+            path_arg=path_arg,
+            repo_url_arg=repo_url,
+            write_cmd=write_cmd,
         )
         self._log_in_app_and_operate_log(command_results)
         return command_results

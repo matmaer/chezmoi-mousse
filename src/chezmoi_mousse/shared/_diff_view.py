@@ -80,7 +80,7 @@ class DiffView(RichLog, AppType):
 
         # create the diff view for a changed file
         diff_output: "CommandResult" = self.app.chezmoi.read(
-            self.diff_cmd, self.path
+            self.diff_cmd, path_arg=self.path
         )
 
         self.write(f'Output from "{diff_output.pretty_cmd}"')

@@ -76,7 +76,7 @@ def _subprocess_run_cmd(cmd: ReadCmd) -> CommandResult:
         text=True,
         timeout=time_out,
     )
-    return CommandResult(completed_process=result, path_arg=None)
+    return CommandResult(completed_process=result, read_cmd=cmd)
 
 
 def create_deque() -> deque[Style]:
