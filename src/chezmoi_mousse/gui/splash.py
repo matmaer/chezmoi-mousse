@@ -166,7 +166,7 @@ class SplashScreen(Screen[SplashData | None], AppType):
             return
         self.run_command_workers()
 
-    @work(group="io_workers")
+    @work
     async def run_command_workers(self) -> None:
         status_worker = self.run_io_worker(ReadCmd.status_files)
         await status_worker.wait()
@@ -176,16 +176,13 @@ class SplashScreen(Screen[SplashData | None], AppType):
             globals()["status_files"].exit_code != 0
             and self.app.init_cmd_issued is False
         ):
+            self.app.init_cmd_needed = True
             # Run io workers for data used in the InitScreen
             self.run_io_worker(ReadCmd.doctor)
             self.run_io_worker(ReadCmd.template_data)
             return
-        elif (
-            globals()["status_files"].exit_code != 0
-            and self.app.init_cmd_issued is True
-        ):
-            raise RuntimeError("Chezmoi cannot be initialized.")
         else:
+            self.app.init_cmd_needed = False
             for splash_cmd in SPLASH_COMMANDS:
                 if splash_cmd == ReadCmd.status_files:
                     continue

@@ -118,6 +118,7 @@ class ChezmoiGUI(App[None]):
         self.dev_mode: bool = self.pre_run_data.dev_mode
         self.force_init_screen: bool = self.pre_run_data.force_init_screen
         self.init_cmd_issued: bool = False
+        self.init_cmd_needed: bool = False
 
         # Manage state between screens
         self.changes_enabled: bool = False
@@ -143,11 +144,15 @@ class ChezmoiGUI(App[None]):
         if self.splash_data is None:
             # Chezmoi command not found, SplashScreen will return None
             self.push_screen("install_help")
-        elif self.init_cmd_issued is False or self.force_init_screen is True:
+            return
+        if self.force_init_screen is True:
             self.force_init_screen = False  # Reset force_init_screen for dev.
             self.push_screen(InitScreen())
-        else:
-            self.push_main_screen()
+            return
+        if self.init_cmd_needed is True:
+            self.push_screen(InitScreen())
+            return
+        self.push_main_screen()
 
     @on(InitCompletedMsg)
     @work
@@ -173,7 +178,6 @@ class ChezmoiGUI(App[None]):
         MainScreen.destDir = self.splash_data.parsed_config.dest_dir
         TreeBase.destDir = self.splash_data.parsed_config.dest_dir
         ViewSwitcher.destDir = self.splash_data.parsed_config.dest_dir
-
         OperateInfo.git_autocommit = (
             self.splash_data.parsed_config.git_autocommit
         )
