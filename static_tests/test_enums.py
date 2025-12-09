@@ -115,6 +115,9 @@ def test_enum_members_in_use(class_data: ClassData) -> None:
     # EnumClass.member_name (or nested attribute chains) and for
     # getattr(EnumClass, 'member_name').
     for member_name in enum_member_names:
+        if member_name.startswith("_"):
+            # Skip private members
+            continue
         found = False
         for module_data in module_data_list:
             if found:
