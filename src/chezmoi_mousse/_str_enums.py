@@ -66,9 +66,9 @@ class Chars(StrEnum):
 
 
 class ContainerName(StrEnum):
+    contents = auto()
     dest_dir_info = auto()
-    diff_view = auto()
-
+    diff = auto()
     doctor = auto()
     git_log_global = auto()
     git_log_path = auto()
@@ -107,20 +107,22 @@ class DestDirStrings(StrEnum):
         "Click a file or directory in the tree to see the output from"
     )
     _diff_prefix = "Click a path to see the output from"
-    add_dir_info = "Click a directary to see if it's managed or unmanaged."
     add_file_info = (
         'Click a file to see the output from [$success]"Path.read()"[/].'
     )
-    dir_info = "Click a directary to see if it's managed or unmanaged."
-    git_log_prefix = "Click a path in the tree to see the output from"
-    in_dest_dir = "This is the destination directory (chezmoi destDir)"
     cat = f'{_cat_prefix} [$success]"{ReadCmd.cat.pretty_cmd}"[/].'
     diff = f'{_diff_prefix} [$success]"{ReadCmd.diff.pretty_cmd}"[/].'
     diff_reverse = (
         f'{_diff_prefix} [$success]"{ReadCmd.diff_reverse.pretty_cmd}"[/].'
     )
+    dir_info = "Click a directary to see if it's managed or unmanaged."
+    git_log_prefix = "Click a path in the tree to see the output from"
     git_log_msg = (
         f'{git_log_prefix} [$success]"{ReadCmd.git_log.pretty_cmd}"[/].'
+    )
+    in_dest_dir = "This is the destination directory (chezmoi destDir)"
+    read_file = (
+        'Click a file to see the output from [$success]"Path.read()"[/].'
     )
 
 

@@ -244,7 +244,9 @@ class AddTab(Horizontal, AppType):
         dir_tree.show_root = False
         dir_tree.add_class(Tcss.tab_left_vertical, Tcss.border_title_top)
         dir_tree.border_title = " destDir "
-        contents_view = self.query_one(IDS.add.logger.contents_q, ContentsView)
+        contents_view = self.query_one(
+            IDS.add.container.contents_q, ContentsView
+        )
         contents_view.add_class(Tcss.border_title_top)
         contents_view.border_title = f" {self.destDir} "
 
@@ -284,7 +286,9 @@ class AddTab(Horizontal, AppType):
                 severity="error",
             )
             return
-        contents_view = self.query_one(IDS.add.logger.contents_q, ContentsView)
+        contents_view = self.query_one(
+            IDS.add.container.contents_q, ContentsView
+        )
         contents_view.path = event.node.data.path
         contents_view.border_title = f" {event.node.data.path} "
 

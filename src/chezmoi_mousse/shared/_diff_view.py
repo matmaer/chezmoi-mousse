@@ -38,7 +38,7 @@ class DiffView(Vertical, AppType):
             ReadCmd.diff_reverse if self.reverse else ReadCmd.diff
         )
         super().__init__(
-            id=self.ids.container.diff_view, classes=Tcss.border_title_top
+            id=self.ids.container.diff, classes=Tcss.border_title_top
         )
 
     def compose(self) -> ComposeResult:
