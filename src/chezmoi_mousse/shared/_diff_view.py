@@ -49,6 +49,7 @@ class DiffView(Vertical, AppType):
     def compose(self) -> ComposeResult:
         with Vertical(id=self.ids.container.dest_dir_info):
             yield SubSectionLabel(SectionLabels.path_info)
+            yield Static(DestDirStrings.in_dest_dir)
             yield Static(self.in_dest_dir_diff_msg)
         yield RichLog(
             id=self.ids.logger.diff,

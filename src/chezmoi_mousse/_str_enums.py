@@ -117,7 +117,9 @@ class DestDirStrings(StrEnum):
     git_log_msg = (
         f'{_git_log_prefix} [$success]"{ReadCmd.git_log.pretty_cmd}"[/].'
     )
-    in_dest_dir = "This is the destination directory (chezmoi destDir)"
+    in_dest_dir = (
+        "This is the destination directory (chezmoi [$success]destDir[/])"
+    )
     read_file = (
         'Click a file to see the output from [$success]"Path.read()"[/].'
     )
