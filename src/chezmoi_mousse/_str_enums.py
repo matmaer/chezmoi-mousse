@@ -108,9 +108,6 @@ class DestDirStrings(StrEnum):
     )
     _diff_prefix = "Click a path to see the output from"
     _git_log_prefix = "Click a path in the tree to see the output from"
-    add_file_info = (
-        'Click a file to see the output from [$success]"Path.read()"[/].'
-    )
     cat = f'Click a file or directory in the tree to see the output from [$success]"{ReadCmd.cat.pretty_cmd}"[/].'
     diff = f'{_diff_prefix} [$success]"{ReadCmd.diff.pretty_cmd}"[/].'
     diff_reverse = (
