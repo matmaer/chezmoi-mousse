@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING
 
 from rich.text import Text
 from textual.app import ComposeResult
-from textual.containers import Vertical, VerticalGroup
+from textual.containers import Vertical
 from textual.reactive import reactive
 from textual.widgets import RichLog, Static
 
@@ -42,7 +42,7 @@ class DiffView(Vertical, AppType):
         )
 
     def compose(self) -> ComposeResult:
-        with VerticalGroup(id=self.ids.container.dest_dir_info):
+        with Vertical(id=self.ids.container.dest_dir_info):
             yield SubSectionLabel(SectionLabels.path_info)
             yield Static(DestDirStrings.diff)
         yield RichLog(
@@ -67,7 +67,7 @@ class DiffView(Vertical, AppType):
             return
         else:
             dest_dir_info = self.query_one(
-                self.ids.container.dest_dir_info_q, VerticalGroup
+                self.ids.container.dest_dir_info_q, Vertical
             )
             dest_dir_info.display = False
         self.border_title = f" {self.path} "
