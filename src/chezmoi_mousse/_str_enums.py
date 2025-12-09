@@ -2,6 +2,8 @@
 
 from enum import StrEnum, auto
 
+from ._chezmoi import ReadCmd
+
 __all__ = [
     "BindingAction",
     "BindingDescription",
@@ -9,6 +11,7 @@ __all__ = [
     "ContainerName",
     "ContentSwitcherName",
     "DataTableName",
+    "DestDirStrings",
     "HeaderTitle",
     "LogName",
     "LogText",
@@ -95,6 +98,28 @@ class ContentSwitcherName(StrEnum):
 class DataTableName(StrEnum):
     doctor_table = auto()
     git_log_table = auto()
+
+
+class DestDirStrings(StrEnum):
+    _cat_prefix = (
+        "Click a file or directory in the tree to see the output from"
+    )
+    _diff_prefix = "Click a path to see the output from"
+    add_dir_info = "Click a directary to see if it's managed or unmanaged."
+    add_file_info = (
+        'Click a file to see the output from [$success]"Path.read()"[/].'
+    )
+    dir_info = "Click a directary to see if it's managed or unmanaged."
+    git_log_prefix = "Click a path in the tree to see the output from"
+    in_dest_dir = "This is the destination directory (chezmoi destDir)"
+    cat = f'{_cat_prefix} [$success]"{ReadCmd.cat.pretty_cmd}"[/].'
+    diff = f'{_diff_prefix} [$success]"{ReadCmd.diff.pretty_cmd}"[/].'
+    diff_reverse = (
+        f'{_diff_prefix} [$success]"{ReadCmd.diff_reverse.pretty_cmd}"[/].'
+    )
+    git_log_msg = (
+        f'{git_log_prefix} [$success]"{ReadCmd.git_log.pretty_cmd}"[/].'
+    )
 
 
 class HeaderTitle(StrEnum):
