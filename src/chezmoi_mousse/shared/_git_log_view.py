@@ -6,11 +6,11 @@ from rich.text import Text
 from textual.app import ComposeResult
 from textual.containers import Vertical
 from textual.reactive import reactive
-from textual.widgets import DataTable
+from textual.widgets import DataTable, Static
 
-from chezmoi_mousse import AppType, ReadCmd, Tcss
+from chezmoi_mousse import AppType, DestDirStrings, ReadCmd, Tcss
 
-from ._dest_dir_info import DestDirInfo
+from ._section_headers import SubSectionLabel
 
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds, CommandResult
@@ -69,8 +69,11 @@ class GitLogPath(Vertical, AppType):
         )
 
     def compose(self) -> ComposeResult:
+        with Vertical(id=self.ids.container.dest_dir_info):
+            yield SubSectionLabel("Path Git Log")
+            yield Static(DestDirStrings.in_dest_dir)
+            yield Static(DestDirStrings.git_log_msg)
         yield GitLogDataTable(ids=self.ids)
-        yield DestDirInfo(ids=self.ids, git_log=True)
 
     def on_mount(self) -> None:
         self.border_title = f" {self.destDir} "
@@ -80,9 +83,9 @@ class GitLogPath(Vertical, AppType):
             return
         else:
             dest_dir_info = self.query_one(
-                self.ids.container.dest_dir_info_q, DestDirInfo
+                self.ids.container.dest_dir_info_q, Vertical
             )
-            dest_dir_info.visible = False
+            dest_dir_info.display = False
         datatable = self.query_one(
             self.ids.datatable.git_log_q, GitLogDataTable
         )
