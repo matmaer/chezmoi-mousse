@@ -37,6 +37,11 @@ class DiffView(Vertical, AppType):
         self.diff_cmd: ReadCmd = (
             ReadCmd.diff_reverse if self.reverse else ReadCmd.diff
         )
+        self.in_dest_dir_diff_msg = (
+            DestDirStrings.diff_reverse
+            if self.reverse
+            else DestDirStrings.diff
+        )
         super().__init__(
             id=self.ids.container.diff, classes=Tcss.border_title_top
         )
@@ -44,8 +49,7 @@ class DiffView(Vertical, AppType):
     def compose(self) -> ComposeResult:
         with Vertical(id=self.ids.container.dest_dir_info):
             yield SubSectionLabel(SectionLabels.path_info)
-            yield Static(DestDirStrings.in_dest_dir)
-            yield Static(DestDirStrings.diff)
+            yield Static(self.in_dest_dir_diff_msg)
         yield RichLog(
             id=self.ids.logger.diff,
             auto_scroll=False,
