@@ -59,7 +59,7 @@ class ViewSwitcher(Vertical):
     def compose(self) -> ComposeResult:
         yield ViewTabButtons(ids=self.ids)
         with ContentSwitcher(
-            id=self.ids.switcher.views, initial=self.ids.logger.diff
+            id=self.ids.switcher.views, initial=self.ids.container.diff_view
         ):
             yield DiffView(ids=self.ids, reverse=self.reverse)
             yield ContentsView(ids=self.ids)
@@ -73,6 +73,6 @@ class ViewSwitcher(Vertical):
         if event.button.id == self.ids.tab_btn.contents:
             view_switcher.current = self.ids.logger.contents
         elif event.button.id == self.ids.tab_btn.diff:
-            view_switcher.current = self.ids.logger.diff
+            view_switcher.current = self.ids.container.diff_view
         elif event.button.id == self.ids.tab_btn.git_log:
             view_switcher.current = self.ids.container.git_log_path

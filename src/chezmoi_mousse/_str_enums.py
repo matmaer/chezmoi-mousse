@@ -67,6 +67,8 @@ class Chars(StrEnum):
 
 class ContainerName(StrEnum):
     dest_dir_info = auto()
+    diff_view = auto()
+
     doctor = auto()
     git_log_global = auto()
     git_log_path = auto()

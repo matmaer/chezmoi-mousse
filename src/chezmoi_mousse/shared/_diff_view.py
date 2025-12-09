@@ -1,12 +1,22 @@
 from typing import TYPE_CHECKING
 
 from rich.text import Text
+from textual.app import ComposeResult
+from textual.containers import Vertical, VerticalGroup
 from textual.reactive import reactive
-from textual.widgets import RichLog
+from textual.widgets import RichLog, Static
 
-from chezmoi_mousse import AppType, Chars, ReadCmd, TabName, Tcss
+from chezmoi_mousse import (
+    AppType,
+    Chars,
+    DestDirStrings,
+    ReadCmd,
+    SectionLabels,
+    TabName,
+    Tcss,
+)
 
-from ._dest_dir_info import DestDirInfo
+from ._section_headers import SubSectionLabel
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -16,7 +26,7 @@ if TYPE_CHECKING:
 __all__ = ["DiffView"]
 
 
-class DiffView(RichLog, AppType):
+class DiffView(Vertical, AppType):
 
     destDir: "Path | None" = None
     path: reactive["Path | None"] = reactive(None, init=False)
@@ -28,25 +38,27 @@ class DiffView(RichLog, AppType):
             ReadCmd.diff_reverse if self.reverse else ReadCmd.diff
         )
         super().__init__(
+            id=self.ids.container.diff_view, classes=Tcss.border_title_top
+        )
+
+    def compose(self) -> ComposeResult:
+        with VerticalGroup(id=self.ids.container.dest_dir_info):
+            yield SubSectionLabel(SectionLabels.path_info)
+            yield Static(DestDirStrings.diff)
+        yield RichLog(
             id=self.ids.logger.diff,
             auto_scroll=False,
             highlight=True,
             wrap=True,  # TODO: implement footer binding to toggle wrap
-            classes=Tcss.border_title_top,
-        )
-        self.click_colored_file = Text(
-            f"Click a path with status to see the output from {self.diff_cmd.pretty_cmd}.",
-            style="dim",
         )
 
     def on_mount(self) -> None:
         self.border_title = f" {self.destDir} "
-        self.mount(DestDirInfo(ids=self.ids))
 
     def _write_unchanged_path_info(self) -> None:
         if self.path in self.app.chezmoi.dirs:
-            self.write(f"Managed directory {self.path}\n")
-        self.write(
+            self.rich_log.write(f"Managed directory {self.path}\n")
+        self.rich_log.write(
             f'No diff available for "{self.path}", the path has no status.\n'
         )
 
@@ -55,14 +67,14 @@ class DiffView(RichLog, AppType):
             return
         else:
             dest_dir_info = self.query_one(
-                self.ids.container.dest_dir_info_q, DestDirInfo
+                self.ids.container.dest_dir_info_q, VerticalGroup
             )
-            dest_dir_info.visible = False
+            dest_dir_info.display = False
         self.border_title = f" {self.path} "
-        self.clear()
-        # write lines for an unchanged file or directory except when we are in
-        # either the ApplyTab or ReAddTabS
+        self.rich_log = self.query_one(self.ids.logger.diff_q, RichLog)
+        self.rich_log.clear()
 
+        # write lines for an unchanged file or directory
         if (
             self.ids.canvas_name == TabName.apply
             and self.path not in self.app.chezmoi.apply_status_files
@@ -70,7 +82,7 @@ class DiffView(RichLog, AppType):
         ):
             self._write_unchanged_path_info()
             return
-        elif (
+        if (
             self.ids.canvas_name == TabName.re_add
             and self.path not in self.app.chezmoi.re_add_status_files
             and self.path not in self.app.chezmoi.re_add_status_dirs
@@ -83,7 +95,7 @@ class DiffView(RichLog, AppType):
             self.diff_cmd, path_arg=self.path
         )
 
-        self.write(f'Output from "{diff_output.pretty_cmd}"')
+        self.rich_log.write(f'Output from "{diff_output.pretty_cmd}"')
 
         mode_diff_lines = [
             line
@@ -108,26 +120,30 @@ class DiffView(RichLog, AppType):
         ]
 
         if len(mode_diff_lines) > 0:
-            self.write("\nPermissions/mode will be changed:")
+            self.rich_log.write("\nPermissions/mode will be changed:")
         for line in mode_diff_lines:
-            self.write(f" {Chars.bullet} {line}")
+            self.rich_log.write(f" {Chars.bullet} {line}")
 
         if len(path_diff_lines) > 0:
-            self.write("\nPaths:")
+            self.rich_log.write("\nPaths:")
         for line in path_diff_lines:
             if line.startswith("---"):
-                self.write(Text(line, self.app.theme_variables["text-error"]))
+                self.rich_log.write(
+                    Text(line, self.app.theme_variables["text-error"])
+                )
             elif line.startswith("+++"):
-                self.write(
+                self.rich_log.write(
                     Text(line, self.app.theme_variables["text-success"])
                 )
 
         if len(other_diff_lines) > 0:
-            self.write("\nDiff lines:")
+            self.rich_log.write("\nDiff lines:")
         for line in other_diff_lines:
             if line.startswith("-"):
-                self.write(Text(line, self.app.theme_variables["text-error"]))
+                self.rich_log.write(
+                    Text(line, self.app.theme_variables["text-error"])
+                )
             elif line.startswith("+"):
-                self.write(
+                self.rich_log.write(
                     Text(line, self.app.theme_variables["text-success"])
                 )

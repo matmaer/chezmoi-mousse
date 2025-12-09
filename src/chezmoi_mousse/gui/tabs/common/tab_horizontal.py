@@ -33,7 +33,7 @@ class TabHorizontal(Horizontal):
         )
         contents_view.path = path
 
-        diff_view = self.query_one(self.ids.logger.diff_q, DiffView)
+        diff_view = self.query_one(self.ids.container.diff_view_q, DiffView)
         diff_view.path = path
 
         git_log_path = self.query_one(

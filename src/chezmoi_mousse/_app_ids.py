@@ -113,6 +113,8 @@ class ContainerIds:
         self.dest_dir_info_q = f"#{self.dest_dir_info}"
         self.doctor = ids.container_id(name=ContainerName.doctor)
         self.doctor_q = f"#{self.doctor}"
+        self.diff_view = ids.container_id(name=ContainerName.diff_view)
+        self.diff_view_q = f"#{self.diff_view}"
         self.git_log_path = ids.container_id(name=ContainerName.git_log_path)
         self.git_log_path_q = f"#{self.git_log_path}"
         self.git_log_global = ids.container_id(
