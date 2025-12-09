@@ -107,6 +107,10 @@ class OperateInfo(Static, AppType):
         ):
             self.border_title = self.app.operate_data.current_label.rstrip(".")
 
+        self.write_info_lines()
+
+    def write_info_lines(self) -> None:
+        self.update("")
         lines_to_write: list[str] = []
         if self.operate_btn == OperateBtn.add_file:
             lines_to_write.append(InfoLine.add_path)
@@ -132,7 +136,7 @@ class OperateInfo(Static, AppType):
         elif self.operate_btn == OperateBtn.init_clone_repo:
             self.border_title = InfoBorderTitle.init_clone
             lines_to_write.append(
-                f"{InfoLine.init_clone} [$text-warning]{self.app.operate_data.repo_url}[/]"
+                f"{InfoLine.init_clone} [$text-warning]{self.repo_url}[/]"
             )
         if self.app.changes_enabled is True:
             lines_to_write.append(InfoLine.changes_enabled)
