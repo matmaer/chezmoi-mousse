@@ -11,7 +11,7 @@ from enum import Enum, StrEnum
 
 from ._str_enums import BindingDescription, PathKind
 
-__all__ = ["FlatBtn", "LinkBtn", "OperateBtn", "TabBtn"]
+__all__ = ["FlatBtn", "LinkBtn", "OpBtnData", "OperateBtn", "TabBtn"]
 
 
 # Sentinel value to distinguish "not provided" from None
@@ -79,7 +79,7 @@ class SharedToolTips(StrEnum):
 
 
 @dataclass(slots=True)
-class OperateButtonData:
+class OpBtnData:
 
     initial_label: str
     initial_tooltip: str | None = None
@@ -109,21 +109,21 @@ class OperateButtonData:
 
 
 class OperateBtn(Enum):
-    add_file = OperateButtonData(
+    add_file = OpBtnData(
         initial_label="Add File",
         initial_tooltip=SharedToolTips.in_dest_dir,
         file_label="Add File",
         disabled_tooltip="Select a file to operate on.",
         enabled_tooltip="Manage the file with chezmoi.",
     )
-    add_dir = OperateButtonData(
+    add_dir = OpBtnData(
         initial_label="Add Dir",
         initial_tooltip=SharedToolTips.in_dest_dir,
         dir_label="Add Dir",
         disabled_tooltip="Select a directory to operate on.",
         enabled_tooltip="Manage the directory with chezmoi.",
     )
-    apply_path = OperateButtonData(
+    apply_path = OpBtnData(
         initial_label="Apply Path",
         initial_tooltip=SharedToolTips.in_dest_dir,
         dir_label="Apply Dir",
@@ -133,7 +133,7 @@ class OperateBtn(Enum):
         file_no_status_tooltip=SharedToolTips.file_no_status,
         file_tooltip='Run "chezmoi apply" on the file.',
     )
-    re_add_path = OperateButtonData(
+    re_add_path = OpBtnData(
         initial_label="Re-Add Path",
         initial_tooltip=SharedToolTips.in_dest_dir,
         dir_label="Re-Add Dir",
@@ -143,7 +143,7 @@ class OperateBtn(Enum):
         file_no_status_tooltip=SharedToolTips.file_no_status,
         file_tooltip='Run "chezmoi re-add" on the file.',
     )
-    forget_path = OperateButtonData(
+    forget_path = OpBtnData(
         initial_label="Forget Path",
         initial_tooltip=SharedToolTips.in_dest_dir,
         dir_label="Forget Dir",
@@ -151,7 +151,7 @@ class OperateBtn(Enum):
         file_label="Forget File",
         file_tooltip='Run "chezmoi forget", stop managing the file.',
     )
-    destroy_path = OperateButtonData(
+    destroy_path = OpBtnData(
         initial_label="Destroy Path",
         initial_tooltip=SharedToolTips.in_dest_dir,
         dir_label="Destroy Dir",
@@ -159,15 +159,15 @@ class OperateBtn(Enum):
         file_label="Destroy File",
         file_tooltip='Run "chezmoi destroy" on the file. Permanently remove the file from disk and chezmoi. MAKE SURE YOU HAVE A BACKUP!',
     )
-    init_new_repo = OperateButtonData(
+    init_new_repo = OpBtnData(
         initial_label="Init New Repo",
         initial_tooltip="Initialize a new chezmoi repository in your home directory with default settings shown in the cat config section.",
     )
-    init_clone_repo = OperateButtonData(
+    init_clone_repo = OpBtnData(
         initial_label="Init Clone Repo",
         initial_tooltip="Initialize a the chezmoi repository by cloning from a provided remote repository.",
     )
-    operate_exit = OperateButtonData(initial_label=SharedLabels.cancel)
+    operate_exit = OpBtnData(initial_label=SharedLabels.cancel)
 
     # Allow access to dataclass attributes directly from the Enum member,
     # without needing to go through the value attribute
