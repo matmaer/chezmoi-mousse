@@ -66,7 +66,7 @@ class ViewSwitcher(Vertical):
             yield GitLogPath(ids=self.ids)
 
     @on(Button.Pressed)
-    def switch_tree(self, event: Button.Pressed) -> None:
+    def switch_view(self, event: Button.Pressed) -> None:
         view_switcher = self.query_one(
             self.ids.switcher.views_q, ContentSwitcher
         )
