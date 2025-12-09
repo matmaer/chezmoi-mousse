@@ -104,11 +104,52 @@ class NodeData:
 @dataclass(slots=True)
 class OperateData:
     operate_btn: "OperateBtn"
-    op_btn_data: "OpBtnData | None" = None
+    op_btn_data: "OpBtnData | None"
     command_result: "CommandResult | None" = None
     node_data: "NodeData | DirTreeNodeData | None" = None
     path: "Path | None" = None
     repo_url: "str | None" = None  # only for chezmoi init from repo operation
+
+    @property
+    def current_label(self) -> str:
+        if self.node_data is not None and self.operate_btn in (
+            OperateBtn.apply_path,
+            OperateBtn.re_add_path,
+            OperateBtn.forget_path,
+            OperateBtn.destroy_path,
+        ):
+            return (
+                self.operate_btn.dir_label
+                if self.node_data.path_kind == PathKind.DIR
+                else self.operate_btn.file_label
+            )
+        elif self.operate_btn in (
+            OperateBtn.add_file,
+            OperateBtn.add_dir,
+            OperateBtn.init_new_repo,
+            OperateBtn.init_clone_repo,
+        ):
+            return self.operate_btn.initial_label
+        else:
+            raise ValueError("Cannot determine operate button label.")
+
+    @property
+    def current_tooltip(self) -> str | None:
+        if self.node_data is not None and self.operate_btn in (
+            OperateBtn.apply_path,
+            OperateBtn.re_add_path,
+            OperateBtn.forget_path,
+            OperateBtn.destroy_path,
+        ):
+            return (
+                self.operate_btn.dir_tooltip
+                if self.node_data.path_kind == PathKind.DIR
+                else self.operate_btn.file_tooltip
+            )
+        elif self.operate_btn in (OperateBtn.add_file, OperateBtn.add_dir):
+            return self.operate_btn.enabled_tooltip
+        else:
+            return None
 
 
 @dataclass(slots=True)

@@ -9,7 +9,7 @@ shared/_buttons.py.
 from dataclasses import dataclass
 from enum import Enum, StrEnum
 
-from ._str_enums import BindingDescription, PathKind
+from ._str_enums import BindingDescription
 
 __all__ = ["FlatBtn", "LinkBtn", "OpBtnData", "OperateBtn", "TabBtn"]
 
@@ -82,7 +82,7 @@ class SharedToolTips(StrEnum):
 class OpBtnData:
 
     initial_label: str
-    initial_tooltip: str | None = None
+    initial_tooltip: str | None
 
     # Path-specific labels and tooltips
     file_label: str = _UNSET
@@ -167,7 +167,9 @@ class OperateBtn(Enum):
         initial_label="Init Clone Repo",
         initial_tooltip="Initialize a the chezmoi repository by cloning from a provided remote repository.",
     )
-    operate_exit = OpBtnData(initial_label=SharedLabels.cancel)
+    operate_exit = OpBtnData(
+        initial_label=SharedLabels.cancel, initial_tooltip=None
+    )
 
     # Allow access to dataclass attributes directly from the Enum member,
     # without needing to go through the value attribute
@@ -246,21 +248,11 @@ class OperateBtn(Enum):
     def reload_tooltip(self) -> str:
         return self.value.reload_tooltip
 
+    @property
+    def op_btn_data(self) -> OpBtnData:
+        return self.value
+
     # General methods
-
-    def label(self, path_kind: PathKind) -> str:
-        return (
-            self.value.dir_label
-            if path_kind == PathKind.DIR
-            else self.value.file_label
-        )
-
-    def tooltip(self, path_kind: PathKind) -> str | None:
-        return (
-            self.value.initial_tooltip
-            if path_kind == PathKind.DIR
-            else self.value.initial_tooltip
-        )
 
     @classmethod
     def from_label(cls, label: str) -> "OperateBtn":

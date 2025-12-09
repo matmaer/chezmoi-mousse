@@ -14,7 +14,6 @@ from chezmoi_mousse import (
     Chars,
     OperateBtn,
     OperateData,
-    PathKind,
     SectionLabels,
     SplashData,
     Tcss,
@@ -37,18 +36,8 @@ __all__ = ["OperateInfo", "OperateScreen"]
 
 
 class InfoBorderTitle(StrEnum):
-    add_dir = OperateBtn.add_dir.enabled_tooltip.rstrip(".")
-    add_file = OperateBtn.add_file.enabled_tooltip.rstrip(".")
-    apply_dir = OperateBtn.apply_path.dir_tooltip.rstrip(".")
-    apply_file = OperateBtn.apply_path.file_tooltip.rstrip(".")
-    destroy_dir = "Run 'chezmoi destroy' on the directory"
-    destroy_file = "Run 'chezmoi destroy' on the file"
-    forget_dir = OperateBtn.forget_path.dir_tooltip.rstrip(".")
-    forget_file = OperateBtn.forget_path.file_tooltip.rstrip(".")
     init_clone = "Run 'chezmoi init' from an existing repository"
     init_new = "Run 'chezmoi init' with default settings"
-    re_add_dir = OperateBtn.re_add_path.dir_tooltip.rstrip(".")
-    re_add_file = OperateBtn.re_add_path.file_tooltip.rstrip(".")
 
 
 class InfoLine(StrEnum):
@@ -56,7 +45,7 @@ class InfoLine(StrEnum):
     apply_path = "[$text-primary]The path in the destination directory will be modified.[/]"
     auto_commit = f"[$text-warning]{Chars.warning_sign} Auto commit is enabled: files will also be committed.{Chars.warning_sign}[/]"
     autopush = f"[$text-warning]{Chars.warning_sign} Auto push is enabled: files will be pushed to the remote.{Chars.warning_sign}[/]"
-    changes_disabled = "[dim]Changes are currently disabled, running commands with '--dry-run' flag[/]"
+    changes_disabled = "[dim]Changes are currently disabled, running commands with '--dry-run' flag.[/]"
     changes_enabled = f"[$text-warning]{Chars.warning_sign} Changes currently enabled, running commands without '--dry-run' flag.{Chars.warning_sign}[/]"
     destroy_path = "[$text-error]Permanently remove the path both from your home directory and chezmoi's source directory, make sure you have a backup![/]"
     diff_color = f"[$text-success]+ green lines will be added[/]\n[$text-error]- red lines will be removed[/]\n[dim]{Chars.bullet} dimmed lines for context[/]"
@@ -64,7 +53,7 @@ class InfoLine(StrEnum):
     init_clone = "[$text-primary]Initialize a chezmoi from:[/]"
     init_new = "[$text-primary]Initialize a new chezmoi repository.[/]"
     re_add_path = (
-        "[$text-primary]Overwrite the source state with current local path[/]"
+        "[$text-primary]Overwrite the source state with current local path.[/]"
     )
 
 
@@ -96,11 +85,6 @@ class OperateInfo(Static, AppType):
     git_autopush: bool | None = None
 
     def on_mount(self) -> None:
-        self.write_info_lines()
-
-    def write_info_lines(self) -> None:
-        self.update("")
-
         if self.app.operate_data is None:
             self.notify(
                 "OperateInfo mounted but app.operate_data is None",
@@ -110,49 +94,36 @@ class OperateInfo(Static, AppType):
         self.operate_btn = self.app.operate_data.operate_btn
         if self.app.operate_data.node_data is not None:
             self.path_arg = self.app.operate_data.node_data.path
-            self.path_kind = self.app.operate_data.node_data.path_kind
         elif self.app.operate_data.repo_url is not None:
             self.repo_url = self.app.operate_data.repo_url
 
+        if self.operate_btn in (
+            OperateBtn.add_dir,
+            OperateBtn.add_file,
+            OperateBtn.apply_path,
+            OperateBtn.destroy_path,
+            OperateBtn.forget_path,
+            OperateBtn.re_add_path,
+        ):
+            self.border_title = self.app.operate_data.current_label.rstrip(".")
+
         lines_to_write: list[str] = []
         if self.operate_btn == OperateBtn.add_file:
-            self.border_title = InfoBorderTitle.add_file
             lines_to_write.append(InfoLine.add_path)
             self.border_subtitle = Chars.add_info_border
         elif self.operate_btn == OperateBtn.add_dir:
-            self.border_title = InfoBorderTitle.add_dir
             lines_to_write.append(InfoLine.add_path)
             self.border_subtitle = Chars.add_info_border
         elif self.operate_btn == OperateBtn.apply_path:
-            self.border_title = (
-                InfoBorderTitle.apply_file
-                if self.path_kind == PathKind.FILE
-                else InfoBorderTitle.apply_dir
-            )
             lines_to_write.append(InfoLine.apply_path)
             self.border_subtitle = Chars.apply_info_border
         elif self.operate_btn == OperateBtn.re_add_path:
-            self.border_title = (
-                InfoBorderTitle.re_add_file
-                if self.path_kind == PathKind.FILE
-                else InfoBorderTitle.re_add_dir
-            )
             lines_to_write.append(InfoLine.re_add_path)
             self.border_subtitle = Chars.re_add_info_border
         elif self.operate_btn == OperateBtn.forget_path:
-            self.border_title = (
-                InfoBorderTitle.forget_file
-                if self.path_kind == PathKind.FILE
-                else InfoBorderTitle.forget_dir
-            )
             lines_to_write.append(InfoLine.forget_path)
             self.border_subtitle = Chars.forget_info_border
         elif self.operate_btn == OperateBtn.destroy_path:
-            self.border_title = (
-                InfoBorderTitle.destroy_file
-                if self.path_kind == PathKind.FILE
-                else InfoBorderTitle.destroy_dir
-            )
             lines_to_write.append(InfoLine.destroy_path)
             self.border_subtitle = Chars.destroy_info_border
         elif self.operate_btn == OperateBtn.init_new_repo:
@@ -163,7 +134,6 @@ class OperateInfo(Static, AppType):
             lines_to_write.append(
                 f"{InfoLine.init_clone} [$text-warning]{self.app.operate_data.repo_url}[/]"
             )
-
         if self.app.changes_enabled is True:
             lines_to_write.append(InfoLine.changes_enabled)
         else:
@@ -198,6 +168,9 @@ class OperateScreen(Screen[None], AppType):
         yield Footer(id=IDS.operate.footer)
 
     def on_mount(self) -> None:
+        self.query_one(
+            IDS.operate.container.post_operate_q, VerticalGroup
+        ).display = False
         if self.app.operate_data is None:
             self.notify(
                 "OperateScreen mounted but app.operate_data is None",
@@ -211,13 +184,9 @@ class OperateScreen(Screen[None], AppType):
         )
         if self.operate_data.node_data is not None:
             self.path_arg = self.operate_data.node_data.path
-            self.path_kind = self.operate_data.node_data.path_kind
         elif self.operate_data.repo_url is not None:
             self.repo_url = self.operate_data.repo_url
         self.mount_pre_operate_widgets(self.operate_data)
-        self.query_one(
-            IDS.operate.container.post_operate_q, VerticalGroup
-        ).display = False
         self.mount(
             OperateButtons(
                 ids=IDS.operate,
@@ -252,7 +221,6 @@ class OperateScreen(Screen[None], AppType):
             pre_op_container.mount(
                 InitCollapsibles(splash_data=self.app.splash_data)
             )
-            return
         if operate_data.operate_btn in (
             OperateBtn.apply_path,
             OperateBtn.re_add_path,
@@ -265,45 +233,19 @@ class OperateScreen(Screen[None], AppType):
 
     def configure_buttons(self) -> None:
         op_btn = self.query_one(self.operate_btn_q, Button)
+        op_btn.label = self.operate_data.current_label
+        op_btn.tooltip = self.operate_data.current_tooltip
         exit_btn = self.query_one(
             IDS.operate.operate_button_id("#", btn=OperateBtn.operate_exit),
             Button,
         )
-
-        if self.operate_btn == OperateBtn.apply_path:
-            op_btn.label = OperateBtn.apply_path.label(self.path_kind)
-            op_btn.tooltip = OperateBtn.apply_path.tooltip(self.path_kind)
-        elif self.operate_btn == OperateBtn.re_add_path:
-            op_btn.label = OperateBtn.re_add_path.label(self.path_kind)
-            op_btn.tooltip = OperateBtn.re_add_path.tooltip(self.path_kind)
-        elif self.operate_btn == OperateBtn.add_dir:
-            op_btn.label = OperateBtn.add_dir.label(self.path_kind)
-            op_btn.tooltip = OperateBtn.add_dir.initial_tooltip
-        elif self.operate_btn == OperateBtn.add_file:
-            op_btn.label = OperateBtn.add_file.label(self.path_kind)
-            op_btn.tooltip = OperateBtn.add_file.initial_tooltip
-        elif self.operate_btn == OperateBtn.forget_path:
-            op_btn.label = OperateBtn.forget_path.label(self.path_kind)
-            op_btn.tooltip = (
-                OperateBtn.forget_path.dir_tooltip
-                if self.path_kind == PathKind.DIR
-                else OperateBtn.forget_path.file_tooltip
-            )
-        elif self.operate_btn == OperateBtn.destroy_path:
-            op_btn.label = OperateBtn.destroy_path.label(self.path_kind)
-            op_btn.tooltip = (
-                OperateBtn.destroy_path.dir_tooltip
-                if self.path_kind == PathKind.DIR
-                else OperateBtn.destroy_path.file_tooltip
-            )
-        elif self.operate_btn == OperateBtn.init_new_repo:
-            op_btn.label = OperateBtn.init_new_repo.initial_label
-            op_btn.tooltip = OperateBtn.init_new_repo.initial_tooltip
+        if self.operate_btn in (
+            OperateBtn.init_new_repo,
+            OperateBtn.init_clone_repo,
+        ):
             exit_btn.label = OperateBtn.operate_exit.exit_app_label
-        elif self.operate_btn == OperateBtn.init_clone_repo:
-            op_btn.label = OperateBtn.init_clone_repo.initial_label
-            op_btn.tooltip = OperateBtn.init_clone_repo.initial_tooltip
-            exit_btn.label = OperateBtn.operate_exit.exit_app_label
+        else:
+            exit_btn.label = OperateBtn.operate_exit.cancel_label
 
     def run_operate_command(self) -> None:
         if self.operate_btn in (OperateBtn.add_file, OperateBtn.add_dir):

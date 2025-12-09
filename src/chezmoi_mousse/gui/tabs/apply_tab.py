@@ -2,7 +2,7 @@ from textual import on
 from textual.app import ComposeResult
 from textual.widgets import Button
 
-from chezmoi_mousse import IDS, OperateBtn
+from chezmoi_mousse import IDS, OperateBtn, PathKind
 from chezmoi_mousse.shared import CurrentApplyNodeMsg, OperateButtons
 
 from .common.switch_slider import SwitchSlider
@@ -36,11 +36,15 @@ class ApplyTab(TabHorizontal):
         operate_path_button = self.query_one(
             IDS.apply.operate_btn.apply_path_q, Button
         )
-        operate_path_button.label = OperateBtn.apply_path.label(
-            event.node_data.path_kind
+        operate_path_button.label = (
+            OperateBtn.apply_path.dir_label
+            if event.node_data.path_kind == PathKind.DIR
+            else OperateBtn.apply_path.file_label
         )
-        operate_path_button.tooltip = OperateBtn.apply_path.tooltip(
-            event.node_data.path_kind
+        operate_path_button.tooltip = (
+            OperateBtn.apply_path.dir_tooltip
+            if event.node_data.path_kind == PathKind.DIR
+            else OperateBtn.apply_path.file_tooltip
         )
         operate_path_button.disabled = (
             True if event.node_data.status == "X" else False

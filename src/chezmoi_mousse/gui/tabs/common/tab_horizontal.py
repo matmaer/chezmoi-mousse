@@ -45,8 +45,10 @@ class TabHorizontal(Horizontal):
         destroy_button = self.query_one(
             self.ids.operate_btn.destroy_path_q, Button
         )
-        destroy_button.label = OperateBtn.destroy_path.label(
-            node_data.path_kind
+        destroy_button.label = (
+            OperateBtn.destroy_path.dir_label
+            if node_data.path_kind == PathKind.DIR
+            else OperateBtn.destroy_path.file_label
         )
         destroy_button.tooltip = (
             OperateBtn.destroy_path.file_tooltip
@@ -57,7 +59,11 @@ class TabHorizontal(Horizontal):
         forget_button = self.query_one(
             self.ids.operate_btn.forget_path_q, Button
         )
-        forget_button.label = OperateBtn.forget_path.label(node_data.path_kind)
+        forget_button.label = (
+            OperateBtn.forget_path.dir_label
+            if node_data.path_kind == PathKind.DIR
+            else OperateBtn.forget_path.file_label
+        )
         forget_button.tooltip = (
             OperateBtn.forget_path.file_tooltip
             if node_data.path_kind == PathKind.FILE

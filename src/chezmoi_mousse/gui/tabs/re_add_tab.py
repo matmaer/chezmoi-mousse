@@ -2,7 +2,7 @@ from textual import on
 from textual.app import ComposeResult
 from textual.widgets import Button
 
-from chezmoi_mousse import IDS, OperateBtn
+from chezmoi_mousse import IDS, OperateBtn, PathKind
 from chezmoi_mousse.shared import CurrentReAddNodeMsg, OperateButtons
 
 from .common.switch_slider import SwitchSlider
@@ -38,11 +38,15 @@ class ReAddTab(TabHorizontal):
         operate_path_button = self.query_one(
             IDS.re_add.operate_btn.re_add_path_q, Button
         )
-        operate_path_button.label = OperateBtn.re_add_path.label(
-            event.node_data.path_kind
+        operate_path_button.label = (
+            OperateBtn.re_add_path.dir_label
+            if event.node_data.path_kind == PathKind.DIR
+            else OperateBtn.re_add_path.file_label
         )
-        operate_path_button.tooltip = OperateBtn.re_add_path.tooltip(
-            event.node_data.path_kind
+        operate_path_button.tooltip = (
+            OperateBtn.re_add_path.dir_tooltip
+            if event.node_data.path_kind == PathKind.DIR
+            else OperateBtn.re_add_path.file_tooltip
         )
         operate_path_button.disabled = (
             True if event.node_data.status in "X " else False
