@@ -229,10 +229,17 @@ class OperateScreen(Screen[None], AppType):
             OperateBtn.apply_path,
             OperateBtn.re_add_path,
         ):
-            diff_view = self.query_exactly_one(DiffView)
+            diff_view = self.query_one(IDS.operate.container.diff_q, DiffView)
             diff_view.path = self.path_arg
-        else:
-            contents_view = self.query_exactly_one(ContentsView)
+        elif operate_data.operate_btn in (
+            OperateBtn.add_file,
+            OperateBtn.add_dir,
+            OperateBtn.forget_path,
+            OperateBtn.destroy_path,
+        ):
+            contents_view = self.query_one(
+                IDS.operate.container.contents_q, ContentsView
+            )
             contents_view.path = self.path_arg
 
     def configure_buttons(self) -> None:
