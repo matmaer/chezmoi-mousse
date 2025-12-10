@@ -112,7 +112,6 @@ class ChezmoiGUI(App[None]):
         self.chezmoi_found: bool = self.pre_run_data.chezmoi_found
         self.dev_mode: bool = self.pre_run_data.dev_mode
         self.force_init_screen: bool = self.pre_run_data.force_init_screen
-        self.init_cmd_issued: bool = False
         self.init_cmd_needed: bool = False
 
         # Manage state between screens
@@ -157,8 +156,6 @@ class ChezmoiGUI(App[None]):
         )
         if self.splash_data is None:
             raise ValueError("splash_data is None on InitCompletedMsg")
-        elif self.init_cmd_issued is False:
-            raise ValueError("self.init_cmd_issued should be True here")
         elif self.force_init_screen is True:
             raise ValueError("self.force_init_screen should be False here")
         self.push_main_screen()

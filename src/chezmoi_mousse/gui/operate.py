@@ -283,12 +283,10 @@ class OperateScreen(Screen[None], AppType):
                 changes_enabled=self.app.changes_enabled,
             )
         elif self.op_data.btn_enum == OperateBtn.init_new_repo:
-            self.app.init_cmd_issued = True
             self.app.operate_cmd_result = self.app.chezmoi.perform(
                 WriteCmd.init, changes_enabled=self.app.changes_enabled
             )
         elif self.op_data.btn_enum == OperateBtn.init_clone_repo:
-            self.app.init_cmd_issued = True
             self.app.operate_cmd_result = self.app.chezmoi.perform(
                 WriteCmd.init,
                 repo_url=self.repo_url,

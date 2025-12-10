@@ -172,10 +172,7 @@ class SplashScreen(Screen[SplashData | None], AppType):
         await status_worker.wait()
         assert type(globals()["status_files"].exit_code) is int
 
-        if (
-            globals()["status_files"].exit_code != 0
-            and self.app.init_cmd_issued is False
-        ):
+        if globals()["status_files"].exit_code != 0:
             self.app.init_cmd_needed = True
             # Run io workers for data used in the InitScreen
             self.run_io_worker(ReadCmd.doctor)
