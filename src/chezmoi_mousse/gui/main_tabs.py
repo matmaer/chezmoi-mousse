@@ -184,19 +184,6 @@ class MainScreen(Screen[None], AppType):
         )
         setattr(config_tab_switcher, "splash_data", self.app.splash_data)
 
-    # @on(OperateButtonMsg)
-    # def log_to_debug(self, message: OperateButtonMsg) -> None:
-    #     self.debug_log.list_attr(message)
-    #     self.debug_log.list_attr(message.btn_enum)
-    #     self.debug_log.list_attr(message.canvas_name)
-    #     self.debug_log.list_attr(message.label)
-    #     self.debug_log.list_attr(message.tooltip)
-    #     self.debug_log.info(message.canvas_name)
-    #     self.debug_log.info(message.canvas_name.name)
-    #     self.debug_log.info(message.label)
-    #     self.debug_log.info(message.tooltip)
-    #     self.debug_log.list_attr(OperateButtonMsg.control)
-
     @on(OperateButtonMsg)
     def push_operate_screen(self, msg: OperateButtonMsg) -> None:
         operate_data = OperateData(
