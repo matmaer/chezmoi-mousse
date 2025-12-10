@@ -175,9 +175,9 @@ class OperateScreen(Screen[None], AppType):
         yield Footer(id=IDS.operate.footer)
 
     def on_mount(self) -> None:
-        self.query_one(
+        self.post_op_container = self.query_one(
             IDS.operate.container.post_operate_q, VerticalGroup
-        ).display = False
+        )
         self.op_btn = self.query_one(
             IDS.operate.operate_button_id("#", btn=self.op_data.btn_enum),
             Button,
@@ -186,6 +186,10 @@ class OperateScreen(Screen[None], AppType):
             IDS.operate.operate_button_id("#", btn=OperateBtn.operate_exit),
             Button,
         )
+        self.pre_op_container = self.query_one(
+            IDS.operate.container.pre_operate_q, VerticalGroup
+        )
+        self.pre_op_container.display = False
         if self.op_data.node_data is not None:
             self.path_arg = self.op_data.node_data.path
         elif self.op_data.repo_url is not None:
@@ -194,29 +198,30 @@ class OperateScreen(Screen[None], AppType):
         self.configure_buttons()
 
     def mount_pre_operate_widgets(self) -> None:
-        pre_op_container = self.query_one(
-            IDS.operate.container.pre_operate_q, VerticalGroup
-        )
         if self.op_data.btn_enum == OperateBtn.apply_path:
-            pre_op_container.mount(DiffView(ids=IDS.operate, reverse=False))
+            self.pre_op_container.mount(
+                DiffView(ids=IDS.operate, reverse=False)
+            )
         elif self.op_data.btn_enum == OperateBtn.re_add_path:
-            pre_op_container.mount(DiffView(ids=IDS.operate, reverse=True))
+            self.pre_op_container.mount(
+                DiffView(ids=IDS.operate, reverse=True)
+            )
         elif self.op_data.btn_enum in (
             OperateBtn.add_file,
             OperateBtn.add_dir,
             OperateBtn.forget_path,
             OperateBtn.destroy_path,
         ):
-            pre_op_container.mount(ContentsView(ids=IDS.operate))
+            self.pre_op_container.mount(ContentsView(ids=IDS.operate))
         elif (
             self.op_data.btn_enum
             in (OperateBtn.init_new_repo, OperateBtn.init_clone_repo)
             and self.app.splash_data is not None
         ):
-            pre_op_container.mount(
+            self.pre_op_container.mount(
                 MainSectionLabel(SectionLabels.operate_context)
             )
-            pre_op_container.mount(
+            self.pre_op_container.mount(
                 InitCollapsibles(splash_data=self.app.splash_data)
             )
         if self.op_data.btn_enum in (
@@ -289,7 +294,9 @@ class OperateScreen(Screen[None], AppType):
                 changes_enabled=self.app.changes_enabled,
             )
 
-        self.update_visibility()
+        self.pre_op_container.display = False
+        self.post_op_container.display = True
+
         self.write_to_output_log()
         self.update_buttons()
         self.update_key_binding()
@@ -298,10 +305,13 @@ class OperateScreen(Screen[None], AppType):
         output_log = self.query_one(IDS.operate.logger.operate_q, OperateLog)
         if self.app.operate_cmd_result is not None:
             output_log.log_cmd_results(self.app.operate_cmd_result)
-        else:
-            self.notify("No command result to log.", severity="error")
 
     def update_key_binding(self) -> None:
+        if (
+            self.app.operate_cmd_result is not None
+            and self.app.operate_cmd_result.dry_run is True
+        ):
+            return
         new_description = (
             BindingDescription.reload
             if self.op_data.btn_enum
@@ -311,16 +321,6 @@ class OperateScreen(Screen[None], AppType):
         self.app.update_binding_description(
             BindingAction.exit_screen, new_description
         )
-
-    def update_visibility(self) -> None:
-        pre_op_container = self.query_one(
-            IDS.operate.container.pre_operate_q, VerticalGroup
-        )
-        pre_op_container.display = False
-        post_op_container = self.query_one(
-            IDS.operate.container.post_operate_q, VerticalGroup
-        )
-        post_op_container.display = True
 
     def update_buttons(self) -> None:
         self.op_btn.disabled = True
