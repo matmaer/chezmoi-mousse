@@ -161,7 +161,7 @@ class OperateBtn(Enum):
     )
     init_new_repo = OpBtnData(
         initial_label="Init New Repo",
-        initial_tooltip="Initialize a new chezmoi repository in your home directory with default settings shown in the cat config section.",
+        initial_tooltip="Initialize a new chezmoi repository in your home directory with default settings.",
     )
     init_clone_repo = OpBtnData(
         initial_label="Init Clone Repo",
