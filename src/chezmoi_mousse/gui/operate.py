@@ -41,10 +41,10 @@ class InfoBorderTitle(StrEnum):
 
 
 class InfoBorderSubtitle(StrEnum):
-    add_info_border = f"local {Chars.right_arrow} chezmoi"
-    destroy_info_border = f"{Chars.x_mark} destroy {Chars.x_mark}"
-    apply_info_border = f"{Chars.left_arrow} chezmoi"
-    forget_info_border = f"{Chars.x_mark} forget {Chars.x_mark}"
+    add = f"local {Chars.right_arrow} chezmoi"
+    apply = f"local {Chars.left_arrow} chezmoi"
+    destroy = f"{Chars.x_mark} destroy {Chars.x_mark}"
+    forget = f"{Chars.x_mark} forget {Chars.x_mark}"
 
 
 class InfoLine(StrEnum):
@@ -91,57 +91,58 @@ class OperateInfo(Static, AppType):
     git_autocommit: bool | None = None
     git_autopush: bool | None = None
 
-    def on_mount(self) -> None:
+    def __init__(self) -> None:
+        super().__init__()
         if self.app.operate_data is None:
-            self.notify(
-                "OperateInfo mounted but app.operate_data is None",
-                severity="error",
-            )
-            return
-        self.operate_btn = self.app.operate_data.btn_enum
-        if self.app.operate_data.node_data is not None:
-            self.path_arg = self.app.operate_data.node_data.path
-        elif self.app.operate_data.repo_url is not None:
-            self.repo_url = self.app.operate_data.repo_url
+            raise ValueError("self.app.operate_data is None")
+        self.op_data = self.app.operate_data
 
-        if self.operate_btn in (
-            OperateBtn.add_dir,
+    def on_mount(self) -> None:
+        self.op_btn = self.op_data.btn_enum
+        if self.op_data.node_data is not None:
+            self.path_arg = self.op_data.node_data.path
+        elif self.op_data.repo_url is not None:
+            self.repo_url = self.op_data.repo_url
+        else:
+            self.path_arg = None
+            self.repo_url = None
+        self.set_border_titles()
+        self.write_info_lines()
+
+    def set_border_titles(self) -> None:
+        self.border_title = self.op_data.btn_label
+        if self.op_btn in (
             OperateBtn.add_file,
-            OperateBtn.apply_path,
-            OperateBtn.destroy_path,
-            OperateBtn.forget_path,
+            OperateBtn.add_dir,
             OperateBtn.re_add_path,
         ):
-            self.border_title = self.app.operate_data.btn_label.rstrip(".")
-
-        self.write_info_lines()
+            self.border_subtitle = InfoBorderSubtitle.add
+        elif self.op_btn == OperateBtn.apply_path:
+            self.border_subtitle = InfoBorderSubtitle.apply
+        elif self.op_btn == OperateBtn.forget_path:
+            self.border_subtitle = InfoBorderSubtitle.forget
+        elif self.op_btn == OperateBtn.destroy_path:
+            self.border_subtitle = InfoBorderSubtitle.destroy
 
     def write_info_lines(self) -> None:
         self.update("")
         lines_to_write: list[str] = []
-        if self.operate_btn == OperateBtn.add_file:
+        if self.op_btn == OperateBtn.add_file:
             lines_to_write.append(InfoLine.add_path)
-            self.border_subtitle = Chars.add_info_border
-        elif self.operate_btn == OperateBtn.add_dir:
+        elif self.op_btn == OperateBtn.add_dir:
             lines_to_write.append(InfoLine.add_path)
-            self.border_subtitle = Chars.add_info_border
-        elif self.operate_btn == OperateBtn.apply_path:
+        elif self.op_btn == OperateBtn.apply_path:
             lines_to_write.append(InfoLine.apply_path)
-            self.border_subtitle = Chars.apply_info_border
-        elif self.operate_btn == OperateBtn.re_add_path:
+        elif self.op_btn == OperateBtn.re_add_path:
             lines_to_write.append(InfoLine.re_add_path)
             self.border_subtitle = Chars.re_add_info_border
-        elif self.operate_btn == OperateBtn.forget_path:
+        elif self.op_btn == OperateBtn.forget_path:
             lines_to_write.append(InfoLine.forget_path)
-            self.border_subtitle = Chars.forget_info_border
-        elif self.operate_btn == OperateBtn.destroy_path:
+        elif self.op_btn == OperateBtn.destroy_path:
             lines_to_write.append(InfoLine.destroy_path)
-            self.border_subtitle = Chars.destroy_info_border
-        elif self.operate_btn == OperateBtn.init_new_repo:
-            self.border_title = InfoBorderTitle.init_new
+        elif self.op_btn == OperateBtn.init_new_repo:
             lines_to_write.append(InfoLine.init_new)
-        elif self.operate_btn == OperateBtn.init_clone_repo:
-            self.border_title = InfoBorderTitle.init_clone
+        elif self.op_btn == OperateBtn.init_clone_repo:
             lines_to_write.append(
                 f"{InfoLine.init_clone} [$text-warning]{self.repo_url}[/]"
             )
@@ -149,7 +150,7 @@ class OperateInfo(Static, AppType):
             lines_to_write.append(InfoLine.changes_enabled)
         else:
             lines_to_write.append(InfoLine.changes_disabled)
-        if self.operate_btn not in (
+        if self.op_btn not in (
             OperateBtn.apply_path,
             OperateBtn.init_new_repo,
             OperateBtn.init_clone_repo,
@@ -159,8 +160,9 @@ class OperateInfo(Static, AppType):
             if self.git_autopush is True:
                 lines_to_write.append(InfoLine.autopush)
         # show git diff color info
-        if self.operate_btn in (OperateBtn.apply_path, OperateBtn.re_add_path):
+        if self.op_btn in (OperateBtn.apply_path, OperateBtn.re_add_path):
             lines_to_write.append(InfoLine.diff_color)
+        if self.path_arg is not None:
             lines_to_write.append(
                 f"[$text-primary]Operating on path: {self.path_arg}[/]"
             )
@@ -169,6 +171,12 @@ class OperateInfo(Static, AppType):
 
 class OperateScreen(Screen[None], AppType):
 
+    def __init__(self) -> None:
+        super().__init__()
+        if self.app.operate_data is None:
+            raise ValueError("self.app.operate_data is None")
+        self.op_data = self.app.operate_data
+
     def compose(self) -> ComposeResult:
         yield CustomHeader(IDS.operate)
         with VerticalGroup(id=IDS.operate.container.pre_operate):
@@ -176,34 +184,29 @@ class OperateScreen(Screen[None], AppType):
         with VerticalGroup(id=IDS.operate.container.post_operate):
             yield MainSectionLabel(SectionLabels.operate_output)
             yield OperateLog(ids=IDS.operate)
+        yield OperateButtons(
+            ids=IDS.operate,
+            buttons=(self.op_data.btn_enum, OperateBtn.operate_exit),
+        )
         yield Footer(id=IDS.operate.footer)
 
     def on_mount(self) -> None:
         self.query_one(
             IDS.operate.container.post_operate_q, VerticalGroup
         ).display = False
-        if self.app.operate_data is None:
-            self.notify(
-                "OperateScreen mounted but app.operate_data is None",
-                severity="error",
-            )
-            return
-        self.operate_data = self.app.operate_data
-        self.operate_btn = self.operate_data.btn_enum
-        self.operate_btn_q = IDS.operate.operate_button_id(
-            "#", btn=self.operate_btn
+        self.op_btn = self.query_one(
+            IDS.operate.operate_button_id("#", btn=self.op_data.btn_enum),
+            Button,
         )
-        if self.operate_data.node_data is not None:
-            self.path_arg = self.operate_data.node_data.path
-        elif self.operate_data.repo_url is not None:
-            self.repo_url = self.operate_data.repo_url
-        self.mount_pre_operate_widgets(self.operate_data)
-        self.mount(
-            OperateButtons(
-                ids=IDS.operate,
-                buttons=(self.operate_btn, OperateBtn.operate_exit),
-            )
+        self.exit_btn = self.query_one(
+            IDS.operate.operate_button_id("#", btn=OperateBtn.operate_exit),
+            Button,
         )
+        if self.op_data.node_data is not None:
+            self.path_arg = self.op_data.node_data.path
+        elif self.op_data.repo_url is not None:
+            self.repo_url = self.op_data.repo_url
+        self.mount_pre_operate_widgets(self.op_data)
         self.configure_buttons()
 
     def mount_pre_operate_widgets(self, operate_data: OperateData) -> None:
@@ -250,58 +253,51 @@ class OperateScreen(Screen[None], AppType):
             contents_view.path = self.path_arg
 
     def configure_buttons(self) -> None:
-        op_btn = self.query_one(self.operate_btn_q, Button)
-        op_btn.label = self.operate_data.btn_label
-        op_btn.tooltip = self.operate_data.btn_tooltip
-        exit_btn = self.query_one(
-            IDS.operate.operate_button_id("#", btn=OperateBtn.operate_exit),
-            Button,
-        )
-        if self.operate_btn in (
+        self.op_btn.label = self.op_data.btn_label
+        self.op_btn.tooltip = self.op_data.btn_tooltip
+        if self.op_data.btn_enum in (
             OperateBtn.init_new_repo,
             OperateBtn.init_clone_repo,
         ):
-            exit_btn.label = OperateBtn.operate_exit.exit_app_label
-        else:
-            exit_btn.label = OperateBtn.operate_exit.cancel_label
+            self.exit_btn.label = OperateBtn.operate_exit.exit_app_label
 
     def run_operate_command(self) -> None:
-        if self.operate_btn in (OperateBtn.add_file, OperateBtn.add_dir):
+        if self.op_data.btn_enum in (OperateBtn.add_file, OperateBtn.add_dir):
             self.app.operate_cmd_result = self.app.chezmoi.perform(
                 WriteCmd.add,
                 path_arg=self.path_arg,
                 changes_enabled=self.app.changes_enabled,
             )
-        elif self.operate_btn == OperateBtn.apply_path:
+        elif self.op_data.btn_enum == OperateBtn.apply_path:
             self.app.operate_cmd_result = self.app.chezmoi.perform(
                 WriteCmd.apply,
                 path_arg=self.path_arg,
                 changes_enabled=self.app.changes_enabled,
             )
-        elif self.operate_btn == OperateBtn.re_add_path:
+        elif self.op_data.btn_enum == OperateBtn.re_add_path:
             self.app.operate_cmd_result = self.app.chezmoi.perform(
                 WriteCmd.re_add,
                 path_arg=self.path_arg,
                 changes_enabled=self.app.changes_enabled,
             )
-        elif self.operate_btn == OperateBtn.forget_path:
+        elif self.op_data.btn_enum == OperateBtn.forget_path:
             self.app.operate_cmd_result = self.app.chezmoi.perform(
                 WriteCmd.forget,
                 path_arg=self.path_arg,
                 changes_enabled=self.app.changes_enabled,
             )
-        elif self.operate_btn == OperateBtn.destroy_path:
+        elif self.op_data.btn_enum == OperateBtn.destroy_path:
             self.app.operate_cmd_result = self.app.chezmoi.perform(
                 WriteCmd.destroy,
                 path_arg=self.path_arg,
                 changes_enabled=self.app.changes_enabled,
             )
-        elif self.operate_btn == OperateBtn.init_new_repo:
+        elif self.op_data.btn_enum == OperateBtn.init_new_repo:
             self.app.init_cmd_issued = True
             self.app.operate_cmd_result = self.app.chezmoi.perform(
                 WriteCmd.init, changes_enabled=self.app.changes_enabled
             )
-        elif self.operate_btn == OperateBtn.init_clone_repo:
+        elif self.op_data.btn_enum == OperateBtn.init_clone_repo:
             self.app.init_cmd_issued = True
             self.app.operate_cmd_result = self.app.chezmoi.perform(
                 WriteCmd.init,
@@ -324,7 +320,7 @@ class OperateScreen(Screen[None], AppType):
     def update_key_binding(self) -> None:
         new_description = (
             BindingDescription.reload
-            if self.operate_btn
+            if self.op_data.btn_enum
             in (OperateBtn.init_new_repo, OperateBtn.init_clone_repo)
             else BindingDescription.close
         )
@@ -343,14 +339,13 @@ class OperateScreen(Screen[None], AppType):
         post_op_container.display = True
 
     def update_buttons(self) -> None:
-        operate_button = self.query_one(self.operate_btn_q, Button)
-        operate_button.disabled = True
-        operate_button.tooltip = None
+        self.op_btn.disabled = True
+        self.op_btn.tooltip = None
         operate_exit_button = self.query_one(
             IDS.operate.operate_button_id("#", btn=OperateBtn.operate_exit),
             Button,
         )
-        if self.operate_btn in (
+        if self.op_data.btn_enum in (
             OperateBtn.add_file,
             OperateBtn.add_dir,
             OperateBtn.apply_path,
@@ -359,7 +354,7 @@ class OperateScreen(Screen[None], AppType):
             OperateBtn.destroy_path,
         ):
             operate_exit_button.label = OperateBtn.operate_exit.close_label
-        elif self.operate_btn in (
+        elif self.op_data.btn_enum in (
             OperateBtn.init_new_repo,
             OperateBtn.init_clone_repo,
         ):
