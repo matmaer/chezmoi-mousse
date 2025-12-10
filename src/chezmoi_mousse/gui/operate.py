@@ -34,11 +34,6 @@ from chezmoi_mousse.shared import (
 __all__ = ["OperateInfo", "OperateScreen"]
 
 
-class InfoBorderTitle(StrEnum):
-    init_clone = "Run 'chezmoi init' from an existing repository"
-    init_new = "Run 'chezmoi init' with default settings"
-
-
 class InfoBorderSubtitle(StrEnum):
     add = f"local {Chars.right_arrow} chezmoi"
     apply = f"local {Chars.left_arrow} chezmoi"
