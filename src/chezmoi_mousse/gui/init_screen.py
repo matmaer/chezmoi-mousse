@@ -50,14 +50,19 @@ __all__ = ["InitScreen"]
 class StaticText(StrEnum):
     init_new = f"Initialize a new chezmoi repository in your home directory.\nClick the [$text-primary]{OperateBtn.init_new_repo.initial_label}[/] button below to run [$text-success]'chezmoi init'[/].\n"
     init_clone = f'To enable the [$text-primary]"{OperateBtn.init_clone_repo.initial_label}"[/] button, enter a repository address below.'
+    guess_url = "Let chezmoi guess the best URL for you."
+    https_url = "Enter a full https:// URL, e.g., https://github.com/user/repo.git, if you use a PAT, make sure to include it in the URL like so: https://username:ghp_123456789abcdef@github.com/matmaer/my-dotfiles.git and delete the PAT after use. "
+    ssh_url = "You could also use an ssh URL if you have an SSH key pair set up,for example: ssh://git@github.com/user/dotfiles-repo.git"
+    ssh_scp = 'If you prefer the SCP-style URL, select "ssh" from the dropdown and enter the URL like so: git@github.com:user/repo.git This also requires an SSH key pair to be set up beforehand.'
+    ssh_select = "Enter an SSH SCP-style URL, e.g., git@github.com:user/repo.git. Make sure you have your SSH key pair set up before using this option."
 
 
-class RepositoryURLInput(VerticalGroup):
+class InputInitCloneRepo(VerticalGroup):
 
     def compose(self) -> ComposeResult:
         yield HorizontalGroup(
             Select[str].from_values(
-                ["https", "ssh"],
+                ["https", "ssh", "guess url", "guess ssh"],
                 classes=Tcss.input_select,
                 value="https",
                 allow_blank=False,
@@ -92,7 +97,7 @@ class InitClone(Vertical, AppType):
         yield MainSectionLabel(SectionLabels.init_clone_repo)
         yield SubSectionLabel(SectionLabels.init_clone_repo_url)
         yield Static(StaticText.init_clone)
-        yield RepositoryURLInput()
+        yield InputInitCloneRepo()
         yield OperateButtons(
             ids=IDS.init, buttons=(OperateBtn.init_clone_repo,)
         )

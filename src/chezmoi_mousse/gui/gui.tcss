@@ -76,56 +76,6 @@
   }
 }
 
-.input_select {
-  background-tint: $panel;
-  background: $panel;
-  border: wide $panel;
-  color: $foreground;
-  height: 3;
-  width: 9;
-  &:focus > SelectCurrent {
-    border: none;
-    color: $foreground;
-  }
-  & > SelectOverlay {
-    color: $foreground;
-    height: 4;
-    width: auto;
-    &:focus {
-      background: $panel-lighten-1;
-      background-tint: $panel-lighten-1;
-    }
-  }
-  &.-expanded {
-    & > SelectOverlay {
-      display: block;
-      border: round $accent;
-      padding: 0;
-    }
-  }
-  SelectCurrent {
-    border: none;
-    background-tint: $panel;
-    background: $panel;
-    color: $foreground;
-    height: auto;
-    padding: 0;
-    width: 1fr;
-
-    Static#label {
-      background-tint: $panel;
-      background: $panel;
-      color: $foreground;
-      height: 1;
-      width: 1fr;
-      content-align: center middle;
-    }
-    .arrow {
-      color: $accent;
-    }
-  }
-}
-
 /**********************/
 /* Type Selector tcss */
 /**********************/
@@ -169,6 +119,85 @@ FlatSectionLabel {
   color: $primary-lighten-3;
   text-align: center;
   width: 100%;
+}
+
+InputInitCloneRepo {
+  .input_select {
+    background-tint: $panel;
+    background: $panel;
+    border: wide $panel;
+    color: $foreground;
+    height: 3;
+    width: 9;
+    &:focus > SelectCurrent {
+      border: none;
+      color: $foreground;
+    }
+    & > SelectOverlay {
+      color: $foreground;
+      height: 6;
+      width: auto;
+      &:focus {
+        background: $panel-lighten-1;
+        background-tint: $panel-lighten-1;
+      }
+    }
+    &.-expanded {
+      & > SelectOverlay {
+        display: block;
+        border: round $accent;
+        padding: 0;
+      }
+    }
+    SelectCurrent {
+      border: none;
+      background-tint: $panel;
+      background: $panel;
+      color: $foreground;
+      height: auto;
+      padding: 0;
+      width: 1fr;
+
+      Static#label {
+        background-tint: $panel;
+        background: $panel;
+        color: $foreground;
+        height: 1;
+        width: 1fr;
+        content-align: center middle;
+      }
+      .arrow {
+        color: $accent;
+      }
+    }
+  }
+  .input_field {
+    border: wide $panel;
+    border-left: none;
+    width: 1fr;
+    &:focus {
+      border-left: none;
+      border: wide $panel-lighten-1;
+    }
+    &>.input--cursor {
+      color: green;
+      text-style: none;
+    }
+    &>.input--selection {
+      color: $text-success;
+    }
+    &>.input--placeholder, &>.input--suggestion {
+      color: $text-disabled;
+    }
+    &.-invalid {
+      border: wide $error 30%;
+      border-left: none;
+    }
+    &.-invalid:focus {
+      border: wide $error 50%;
+      border-left: none;
+    }
+  }
 }
 
 InstallHelp {
@@ -235,36 +264,6 @@ InitScreen > OperateButtons {
 
 OperateScreen > OperateButtons {
     margin-bottom: 1;
-}
-
-RepositoryURLInput {
-  .input_field {
-    border: wide $panel;
-    border-left: none;
-    width: 1fr;
-    &:focus {
-      border-left: none;
-      border: wide $panel-lighten-1;
-    }
-    &>.input--cursor {
-      color: green;
-      text-style: none;
-    }
-    &>.input--selection {
-      color: $text-success;
-    }
-    &>.input--placeholder, &>.input--suggestion {
-      color: $text-disabled;
-    }
-    &.-invalid {
-      border: wide $error 30%;
-      border-left: none;
-    }
-    &.-invalid:focus {
-      border: wide $error 50%;
-      border-left: none;
-    }
-  }
 }
 
 SubSectionLabel {
