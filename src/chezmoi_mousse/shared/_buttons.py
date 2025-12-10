@@ -82,10 +82,12 @@ class OperateButton(Button):
     def __init__(self, *, ids: "AppIds", button_enum: OperateBtn) -> None:
         self.ids = ids
         self.button_enum = button_enum
-        if self.ids.canvas_name in (ScreenName.init, ScreenName.operate):
+        should_disable = True
+        if (
+            self.ids.canvas_name == ScreenName.operate
+            or button_enum == OperateBtn.init_new_repo
+        ):
             should_disable = False
-        else:
-            should_disable = True
         super().__init__(
             classes=Tcss.operate_button,
             disabled=should_disable,
