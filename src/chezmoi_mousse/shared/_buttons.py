@@ -15,6 +15,8 @@ from chezmoi_mousse import (
     Tcss,
 )
 
+from ._operate_msg import OperateButtonMsg
+
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds
 
@@ -90,6 +92,16 @@ class OperateButton(Button):
             id=self.ids.operate_button_id(btn=self.button_enum),
             label=self.button_enum.initial_label,
             tooltip=self.button_enum.initial_tooltip,
+        )
+
+    def on_button_pressed(self):
+        self.post_message(
+            OperateButtonMsg(
+                btn_enum=self.button_enum,
+                canvas_name=self.ids.canvas_name,
+                label=str(self.label),
+                tooltip=str(self.tooltip),
+            )
         )
 
 
