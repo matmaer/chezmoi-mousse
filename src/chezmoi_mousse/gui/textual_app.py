@@ -17,7 +17,6 @@ from chezmoi_mousse import (
     BindingAction,
     BindingDescription,
     Chars,
-    OperateData,
     TabName,
 )
 from chezmoi_mousse.shared import (
@@ -42,7 +41,7 @@ from .tabs.common.switchers import TreeSwitcher, ViewSwitcher
 from .tabs.common.trees import TreeBase
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import Chezmoi, CommandResult, SplashData
+    from chezmoi_mousse import Chezmoi, CommandResult, OperateData, SplashData
 
 __all__ = ["ChezmoiGUI"]
 
