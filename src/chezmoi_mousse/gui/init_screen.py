@@ -155,10 +155,10 @@ class InitScreen(Screen[None], AppType):
                 ),
             )
             yield InitSwitcher()
-        if self.app.dev_mode is True:
-            yield SubSectionLabel(SectionLabels.debug_log_output)
-            with Horizontal():
-                yield DebugLog(ids=IDS.init)
+            if self.app.dev_mode is True:
+                with Vertical():
+                    yield SubSectionLabel(SectionLabels.debug_log_output)
+                    yield DebugLog(ids=IDS.init)
         yield Footer(id=IDS.init.footer)
 
     def on_mount(self) -> None:
