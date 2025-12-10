@@ -39,3 +39,7 @@ class CurrentAddNodeMsg(Message):
 
 class InitCompletedMsg(Message):
     pass
+
+
+class OperateBtnStateMsg(Message):
+    pass

@@ -195,9 +195,7 @@ class MainScreen(Screen[None], AppType):
             and current_tab == TabName.add
         ):
             self.app.operate_data = OperateData(
-                op_btn_data=button_enum.op_btn_data,
-                operate_btn=button_enum,
-                node_data=self.current_add_node,
+                operate_btn=button_enum, node_data=self.current_add_node
             )
         elif (
             self.current_apply_node is not None
@@ -210,9 +208,7 @@ class MainScreen(Screen[None], AppType):
             and current_tab == TabName.apply.name
         ):
             self.app.operate_data = OperateData(
-                op_btn_data=button_enum.op_btn_data,
-                operate_btn=button_enum,
-                node_data=self.current_apply_node,
+                operate_btn=button_enum, node_data=self.current_apply_node
             )
         elif (
             self.current_re_add_node is not None
@@ -225,9 +221,7 @@ class MainScreen(Screen[None], AppType):
             and current_tab == TabName.re_add
         ):
             self.app.operate_data = OperateData(
-                op_btn_data=button_enum.op_btn_data,
-                operate_btn=button_enum,
-                node_data=self.current_re_add_node,
+                operate_btn=button_enum, node_data=self.current_re_add_node
             )
         self.app.push_screen(
             OperateScreen(), callback=self.handle_operate_result

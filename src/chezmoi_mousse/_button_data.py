@@ -11,7 +11,7 @@ from enum import Enum, StrEnum
 
 from ._str_enums import BindingDescription
 
-__all__ = ["FlatBtn", "LinkBtn", "OpBtnData", "OperateBtn", "TabBtn"]
+__all__ = ["FlatBtn", "LinkBtn", "OperateBtn", "TabBtn"]
 
 
 # Sentinel value to distinguish "not provided" from None
@@ -247,10 +247,6 @@ class OperateBtn(Enum):
     @property
     def reload_tooltip(self) -> str:
         return self.value.reload_tooltip
-
-    @property
-    def op_btn_data(self) -> OpBtnData:
-        return self.value
 
     # General methods
 

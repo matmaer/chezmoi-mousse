@@ -185,14 +185,11 @@ class InitScreen(Screen[None], AppType):
         event.stop()
         if event.button.id == IDS.init.operate_btn.init_new_repo:
             self.app.operate_data = OperateData(
-                op_btn_data=OperateBtn.init_new_repo.op_btn_data,
-                operate_btn=OperateBtn.init_new_repo,
+                operate_btn=OperateBtn.init_new_repo
             )
         elif event.button.id == IDS.init.operate_btn.init_clone_repo:
             self.app.operate_data = OperateData(
-                op_btn_data=OperateBtn.init_clone_repo.op_btn_data,
-                operate_btn=OperateBtn.init_clone_repo,
-                repo_url=self.repo_url,
+                operate_btn=OperateBtn.init_clone_repo, repo_url=self.repo_url
             )
         self.app.pop_screen()
         self.app.push_screen(OperateScreen())

@@ -3,7 +3,7 @@ from importlib.metadata import PackageNotFoundError, version
 from typing import TYPE_CHECKING
 
 from ._app_ids import IDS, AppIds
-from ._button_data import FlatBtn, LinkBtn, OpBtnData, OperateBtn, TabBtn
+from ._button_data import FlatBtn, LinkBtn, OperateBtn, TabBtn
 from ._chezmoi import (
     Chezmoi,
     CommandResult,
@@ -63,7 +63,6 @@ __all__ = [
     "LogName",
     "LogText",
     "NodeData",
-    "OpBtnData",
     "OperateBtn",
     "OperateData",
     "ParsedConfig",
@@ -104,7 +103,6 @@ class NodeData:
 @dataclass(slots=True)
 class OperateData:
     operate_btn: "OperateBtn"
-    op_btn_data: "OpBtnData | None"
     command_result: "CommandResult | None" = None
     node_data: "NodeData | DirTreeNodeData | None" = None
     path: "Path | None" = None
