@@ -325,10 +325,6 @@ class OperateScreen(Screen[None], AppType):
     def update_buttons(self) -> None:
         self.op_btn.disabled = True
         self.op_btn.tooltip = None
-        operate_exit_button = self.query_one(
-            IDS.operate.operate_button_id("#", btn=OperateBtn.operate_exit),
-            Button,
-        )
         if self.op_data.btn_enum in (
             OperateBtn.add_file,
             OperateBtn.add_dir,
@@ -337,12 +333,12 @@ class OperateScreen(Screen[None], AppType):
             OperateBtn.forget_path,
             OperateBtn.destroy_path,
         ):
-            operate_exit_button.label = OperateBtn.operate_exit.close_label
+            self.exit_btn.label = OperateBtn.operate_exit.close_label
         elif self.op_data.btn_enum in (
             OperateBtn.init_new_repo,
             OperateBtn.init_clone_repo,
         ):
-            operate_exit_button.label = OperateBtn.operate_exit.reload_label
+            self.exit_btn.label = OperateBtn.operate_exit.reload_label
 
     @on(Button.Pressed, Tcss.operate_button.dot_prefix)
     def handle_operate_button_pressed(self, event: Button.Pressed) -> None:
