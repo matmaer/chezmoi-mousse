@@ -29,7 +29,7 @@ The easiest way is to run with the app with `uv`, [install uv](https://docs.astr
 
 `uv run --no-dev --python 3.13 --with textual -m chezmoi_mousse`
 
-If Python 3.13 with the latest `textual` version is available, you can run:
+If Python 3.13 with the latest `textual` version is available, and the module is in your PYTHONPATH, you can run:
 
 `python -m chezmoi_mousse`
 
@@ -66,26 +66,29 @@ If the `chezmoi` command is not available, a screen will be shown with the value
 
 ## Available Chezmoi commands
 
-> The list below is a limited subset of availabble chezmoi commands, run `chezmoi help` in your terminal to see all commands.  Commands below without a checkmark are being implemented, missing commands could be out of scope or take a while.
+> Note: the lists for `Write Operations` and `Read Operations` below are a limited subset of availabble chezmoi commands, run `chezmoi help` in your terminal to see all commands.  Commands below without a checkmark are being implemented, missing commands could be out of scope or take a while.
 
 ### Write Operations
 
+> Note: see `Implemented configuration options` below, not all flags are implemented, however usage with default flag values should run without errors. If you find an issue, please share it on the Issues tab.
+
+- [x] `chezmoi add` directory (non-recursive)
 - [x] `chezmoi add` file
-- [x] `chezmoi add` directory
-- [ ] `chezmoi add --encrypt` file
-- [ ] `chezmoi add --encrypt` directory
+- [ ] `chezmoi archive`
+- [x] `chezmoi apply` directory (non-recursive)
 - [x] `chezmoi apply` file
-- [x] `chezmoi apply` directory
+- [x] `chezmoi destroy` directory (non-recursive)
 - [x] `chezmoi destroy` file
-- [x] `chezmoi destroy` directory
 - [ ] `chezmoi edit`
+- [x] `chezmoi forget` directory (non-recursive)
 - [x] `chezmoi forget` file
-- [x] `chezmoi forget` directory
-- [ ] `chezoi generate`
-- [ ] `chezmoi init`
+- [ ] `chezmoi generate`
+- [ ] `chezmoi import`
+- [x] `chezmoi init` new repository
+- [ ] `chezmoi init` clone repository
 - [ ] `chezmoi purge`
+- [x] `chezmoi re-add` directory (non-recursive)
 - [x] `chezmoi re-add` file
-- [x] `chezmoi re-add` directory
 
 ### Read Operations
 
@@ -102,12 +105,6 @@ If the `chezmoi` command is not available, a screen will be shown with the value
 - [x] `chezmoi status`
 - [x] `chezmoi unmanaged`
 - [ ] `chezmoi verify`
-
-### Other Operations
-
-- [ ] `chezmoi archive`
-- [ ] `chezmoi import`
-
 
 ### Implemented configuration options
 
