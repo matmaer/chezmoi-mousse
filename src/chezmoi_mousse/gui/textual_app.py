@@ -103,11 +103,7 @@ class ChezmoiGUI(App[None]):
 
     CSS_PATH = "gui.tcss"
 
-    SCREENS = {
-        "init": InitScreen,
-        "install_help": InstallHelp,
-        "main": MainScreen,
-    }
+    SCREENS = {"main": MainScreen}
 
     def __init__(self, pre_run_data: "PreRunData") -> None:
         self.chezmoi: "Chezmoi"
