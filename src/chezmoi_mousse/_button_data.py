@@ -247,16 +247,3 @@ class OperateBtn(Enum):
     @property
     def reload_tooltip(self) -> str:
         return self.value.reload_tooltip
-
-    # General methods
-
-    @classmethod
-    def from_label(cls, label: str) -> "OperateBtn":
-        for member in cls:
-            if member.value.file_label == label:
-                return member
-            if member.value.dir_label == label:
-                return member
-            if member.value.initial_label == label:
-                return member
-        raise ValueError(f"{cls.__name__} has no member with label={label}")

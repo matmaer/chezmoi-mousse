@@ -206,7 +206,10 @@ class MainScreen(Screen[None], AppType):
             and msg.canvas_name == TabName.add
         ):
             self.app.operate_data = OperateData(
-                operate_btn=msg.btn_enum, node_data=self.current_add_node
+                btn_enum=msg.btn_enum,
+                btn_label=msg.label,
+                btn_tooltip=msg.tooltip,
+                node_data=self.current_add_node,
             )
         elif (
             self.current_apply_node is not None
@@ -219,7 +222,10 @@ class MainScreen(Screen[None], AppType):
             and msg.canvas_name == TabName.apply
         ):
             self.app.operate_data = OperateData(
-                operate_btn=msg.btn_enum, node_data=self.current_apply_node
+                btn_enum=msg.btn_enum,
+                btn_label=msg.label,
+                btn_tooltip=msg.tooltip,
+                node_data=self.current_apply_node,
             )
         elif (
             self.current_re_add_node is not None
@@ -232,7 +238,10 @@ class MainScreen(Screen[None], AppType):
             and msg.canvas_name == TabName.re_add
         ):
             self.app.operate_data = OperateData(
-                operate_btn=msg.btn_enum, node_data=self.current_re_add_node
+                btn_enum=msg.btn_enum,
+                btn_label=msg.label,
+                btn_tooltip=msg.tooltip,
+                node_data=self.current_re_add_node,
             )
         self.app.push_screen(
             OperateScreen(), callback=self.handle_operate_result

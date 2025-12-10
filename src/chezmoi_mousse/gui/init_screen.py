@@ -36,6 +36,7 @@ from chezmoi_mousse.shared import (
     DoctorTableView,
     FlatButtonsVertical,
     MainSectionLabel,
+    OperateButtonMsg,
     OperateButtons,
     SubSectionLabel,
     TemplateDataView,
@@ -180,16 +181,20 @@ class InitScreen(Screen[None], AppType):
         elif event.button.id == IDS.init.flat_btn.template_data:
             switcher.current = IDS.init.view.template_data
 
-    @on(Button.Pressed, Tcss.operate_button.dot_prefix)
-    def handle_operate_button_pressed(self, event: Button.Pressed) -> None:
-        event.stop()
-        if event.button.id == IDS.init.operate_btn.init_new_repo:
+    @on(OperateButtonMsg)
+    def handle_operate_button_pressed(self, msg: OperateButtonMsg) -> None:
+        msg.stop()
+        if msg.btn_enum == OperateBtn.init_new_repo:
             self.app.operate_data = OperateData(
-                operate_btn=OperateBtn.init_new_repo
+                btn_enum=OperateBtn.init_new_repo,
+                btn_label=msg.label,
+                btn_tooltip=msg.tooltip,
             )
-        elif event.button.id == IDS.init.operate_btn.init_clone_repo:
+        elif msg.btn_enum == OperateBtn.init_clone_repo:
             self.app.operate_data = OperateData(
-                operate_btn=OperateBtn.init_clone_repo, repo_url=self.repo_url
+                btn_enum=OperateBtn.init_clone_repo,
+                btn_label=msg.label,
+                btn_tooltip=msg.tooltip,
             )
         self.app.pop_screen()
         self.app.push_screen(OperateScreen())

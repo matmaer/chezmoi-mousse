@@ -91,7 +91,7 @@ class OperateInfo(Static, AppType):
                 severity="error",
             )
             return
-        self.operate_btn = self.app.operate_data.operate_btn
+        self.operate_btn = self.app.operate_data.btn_enum
         if self.app.operate_data.node_data is not None:
             self.path_arg = self.app.operate_data.node_data.path
         elif self.app.operate_data.repo_url is not None:
@@ -105,7 +105,7 @@ class OperateInfo(Static, AppType):
             OperateBtn.forget_path,
             OperateBtn.re_add_path,
         ):
-            self.border_title = self.app.operate_data.current_label.rstrip(".")
+            self.border_title = self.app.operate_data.btn_label.rstrip(".")
 
         self.write_info_lines()
 
@@ -182,7 +182,7 @@ class OperateScreen(Screen[None], AppType):
             )
             return
         self.operate_data = self.app.operate_data
-        self.operate_btn = self.operate_data.operate_btn
+        self.operate_btn = self.operate_data.btn_enum
         self.operate_btn_q = IDS.operate.operate_button_id(
             "#", btn=self.operate_btn
         )
@@ -203,11 +203,11 @@ class OperateScreen(Screen[None], AppType):
         pre_op_container = self.query_one(
             IDS.operate.container.pre_operate_q, VerticalGroup
         )
-        if operate_data.operate_btn == OperateBtn.apply_path:
+        if operate_data.btn_enum == OperateBtn.apply_path:
             pre_op_container.mount(DiffView(ids=IDS.operate, reverse=False))
-        elif operate_data.operate_btn == OperateBtn.re_add_path:
+        elif operate_data.btn_enum == OperateBtn.re_add_path:
             pre_op_container.mount(DiffView(ids=IDS.operate, reverse=True))
-        elif operate_data.operate_btn in (
+        elif operate_data.btn_enum in (
             OperateBtn.add_file,
             OperateBtn.add_dir,
             OperateBtn.forget_path,
@@ -215,7 +215,7 @@ class OperateScreen(Screen[None], AppType):
         ):
             pre_op_container.mount(ContentsView(ids=IDS.operate))
         elif (
-            operate_data.operate_btn
+            operate_data.btn_enum
             in (OperateBtn.init_new_repo, OperateBtn.init_clone_repo)
             and self.app.splash_data is not None
         ):
@@ -225,13 +225,13 @@ class OperateScreen(Screen[None], AppType):
             pre_op_container.mount(
                 InitCollapsibles(splash_data=self.app.splash_data)
             )
-        if operate_data.operate_btn in (
+        if operate_data.btn_enum in (
             OperateBtn.apply_path,
             OperateBtn.re_add_path,
         ):
             diff_view = self.query_one(IDS.operate.container.diff_q, DiffView)
             diff_view.path = self.path_arg
-        elif operate_data.operate_btn in (
+        elif operate_data.btn_enum in (
             OperateBtn.add_file,
             OperateBtn.add_dir,
             OperateBtn.forget_path,
@@ -244,8 +244,8 @@ class OperateScreen(Screen[None], AppType):
 
     def configure_buttons(self) -> None:
         op_btn = self.query_one(self.operate_btn_q, Button)
-        op_btn.label = self.operate_data.current_label
-        op_btn.tooltip = self.operate_data.current_tooltip
+        op_btn.label = self.operate_data.btn_label
+        op_btn.tooltip = self.operate_data.btn_tooltip
         exit_btn = self.query_one(
             IDS.operate.operate_button_id("#", btn=OperateBtn.operate_exit),
             Button,
