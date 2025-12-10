@@ -178,6 +178,11 @@ class OperateScreen(Screen[None], AppType):
         self.post_op_container = self.query_one(
             IDS.operate.container.post_operate_q, VerticalGroup
         )
+        self.post_op_container.display = False
+        self.pre_op_container = self.query_one(
+            IDS.operate.container.pre_operate_q, VerticalGroup
+        )
+        self.pre_op_container.display = True
         self.op_btn = self.query_one(
             IDS.operate.operate_button_id("#", btn=self.op_data.btn_enum),
             Button,
@@ -186,10 +191,6 @@ class OperateScreen(Screen[None], AppType):
             IDS.operate.operate_button_id("#", btn=OperateBtn.operate_exit),
             Button,
         )
-        self.pre_op_container = self.query_one(
-            IDS.operate.container.pre_operate_q, VerticalGroup
-        )
-        self.pre_op_container.display = False
         if self.op_data.node_data is not None:
             self.path_arg = self.op_data.node_data.path
         elif self.op_data.repo_url is not None:
