@@ -180,16 +180,21 @@ class CommandResult:
         return self.completed_process.args
 
     @property
+    def dry_run(self) -> bool:
+        return "--dry-run" in self.cmd_args
+
+    @property
+    def exit_code(self) -> int:
+        return self.completed_process.returncode
+
+    @property
     def pretty_cmd(self) -> str:
-        return LogUtils.pretty_cmd_str(self.completed_process.args)
+        return LogUtils.pretty_cmd_str(self.cmd_args)
 
     @property
     def std_out(self) -> str:
         stripped_stdout = LogUtils.strip_output(self.completed_process.stdout)
-        if (
-            stripped_stdout == ""
-            and "--dry-run" in self.completed_process.args
-        ):
+        if stripped_stdout == "" and "--dry-run" in self.cmd_args:
             return "No output on stdout, command was executed with --dry-run."
         elif stripped_stdout == "":
             return "No output on stdout."
@@ -199,19 +204,12 @@ class CommandResult:
     @property
     def std_err(self) -> str:
         stripped_stderr = LogUtils.strip_output(self.completed_process.stderr)
-        if (
-            stripped_stderr == ""
-            and "--dry-run" in self.completed_process.args
-        ):
+        if stripped_stderr == "" and "--dry-run" in self.cmd_args:
             return "No output on stderr, command was executed with --dry-run."
         elif stripped_stderr == "":
             return ""
         else:
             return stripped_stderr
-
-    @property
-    def exit_code(self) -> int:
-        return self.completed_process.returncode
 
 
 class Chezmoi:
