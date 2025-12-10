@@ -8,7 +8,8 @@ from textual.containers import ScrollableContainer
 from textual.widgets import RichLog, Static
 
 from chezmoi_mousse import AppType, Chars, ReadVerbs, Tcss
-from chezmoi_mousse.shared import CustomCollapsible
+
+from ._custom_collapsible import CustomCollapsible
 
 if TYPE_CHECKING:
     from collections.abc import Callable
