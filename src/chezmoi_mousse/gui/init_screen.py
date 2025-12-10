@@ -157,45 +157,34 @@ class InitScreen(Screen[None], AppType):
         yield Footer(id=IDS.init.footer)
 
     def on_mount(self) -> None:
-        self.app.operate_data = None
-        self.init_clone_btn = self.query_one(
-            IDS.init.operate_btn.init_clone_repo_q, Button
-        )
-        self.init_clone_btn.disabled = True
         self.app.update_binding_description(
             BindingAction.exit_screen, BindingDescription.exit_app
+        )
+        self.switcher = self.query_one(
+            IDS.init.switcher.init_screen_q, InitSwitcher
         )
 
     @on(Button.Pressed, Tcss.flat_button.dot_prefix)
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
-        switcher = self.query_one(
-            IDS.init.switcher.init_screen_q, InitSwitcher
-        )
         if event.button.id == IDS.init.flat_btn.init_new:
-            switcher.current = IDS.init.view.init_new
+            self.switcher.current = IDS.init.view.init_new
         elif event.button.id == IDS.init.flat_btn.init_clone:
-            switcher.current = IDS.init.view.init_clone
+            self.switcher.current = IDS.init.view.init_clone
         elif event.button.id == IDS.init.flat_btn.doctor:
-            switcher.current = IDS.init.container.doctor
+            self.switcher.current = IDS.init.container.doctor
         elif event.button.id == IDS.init.flat_btn.template_data:
-            switcher.current = IDS.init.view.template_data
+            self.switcher.current = IDS.init.view.template_data
 
     @on(OperateButtonMsg)
     def handle_operate_button_pressed(self, msg: OperateButtonMsg) -> None:
         msg.stop()
-        if msg.btn_enum == OperateBtn.init_new_repo:
-            self.app.operate_data = OperateData(
-                btn_enum=OperateBtn.init_new_repo,
-                btn_label=msg.label,
-                btn_tooltip=msg.tooltip,
-            )
-        elif msg.btn_enum == OperateBtn.init_clone_repo:
-            self.app.operate_data = OperateData(
-                btn_enum=OperateBtn.init_clone_repo,
-                btn_label=msg.label,
-                btn_tooltip=msg.tooltip,
-            )
+        self.app.operate_data = OperateData(
+            btn_enum=msg.btn_enum,
+            btn_label=msg.label,
+            btn_tooltip=msg.tooltip,
+            repo_url=self.repo_url,
+        )
         self.app.pop_screen()
         self.app.push_screen(OperateScreen())
 
@@ -208,5 +197,8 @@ class InitScreen(Screen[None], AppType):
             self.notify("Invalid URL entered.", severity="error")
             return
         self.notify("Valid URL entered, button enabled.")
+        self.init_clone_btn = self.query_one(
+            IDS.init.operate_btn.init_clone_repo_q, Button
+        )
         self.init_clone_btn.disabled = False
         self.repo_url = event.value
