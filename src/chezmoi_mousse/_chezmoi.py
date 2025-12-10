@@ -188,6 +188,12 @@ class CommandResult:
         return self.completed_process.returncode
 
     @property
+    def is_init_result(self) -> bool:
+        if self.write_cmd is not None and self.write_cmd == WriteCmd.init:
+            return True
+        return False
+
+    @property
     def pretty_cmd(self) -> str:
         return LogUtils.pretty_cmd_str(self.cmd_args)
 
