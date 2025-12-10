@@ -40,6 +40,13 @@ class InfoBorderTitle(StrEnum):
     init_new = "Run 'chezmoi init' with default settings"
 
 
+class InfoBorderSubtitle(StrEnum):
+    add_info_border = f"local {Chars.right_arrow} chezmoi"
+    destroy_info_border = f"{Chars.x_mark} destroy {Chars.x_mark}"
+    apply_info_border = f"{Chars.left_arrow} chezmoi"
+    forget_info_border = f"{Chars.x_mark} forget {Chars.x_mark}"
+
+
 class InfoLine(StrEnum):
     add_path = "[$text-primary]The path will be added to your chezmoi dotfile manager source state.[/]"
     apply_path = "[$text-primary]The path in the destination directory will be modified.[/]"
