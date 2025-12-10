@@ -106,7 +106,6 @@ class OperateData:
     btn_label: "str"
     btn_tooltip: "str"
     node_data: "NodeData | DirTreeNodeData | None" = None
-    path: "Path | None" = None
     repo_url: "str | None" = None  # only for chezmoi init from repo operation
 
 
