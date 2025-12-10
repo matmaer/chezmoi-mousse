@@ -323,6 +323,11 @@ class OperateScreen(Screen[None], AppType):
         )
 
     def update_buttons(self) -> None:
+        if (
+            self.app.operate_cmd_result is None
+            or self.app.operate_cmd_result.dry_run is True
+        ):
+            return
         self.op_btn.disabled = True
         self.op_btn.tooltip = None
         if self.op_data.btn_enum in (
