@@ -93,18 +93,11 @@ class OperateInfo(Static, AppType):
     def __init__(self) -> None:
         super().__init__()
         if self.app.operate_data is None:
-            raise ValueError("self.app.operate_data is None")
+            raise ValueError("self.app.operate_data is None in OperateInfo")
         self.op_data = self.app.operate_data
 
     def on_mount(self) -> None:
         self.op_btn = self.op_data.btn_enum
-        if self.op_data.node_data is not None:
-            self.path_arg = self.op_data.node_data.path
-        elif self.op_data.repo_url is not None:
-            self.repo_url = self.op_data.repo_url
-        else:
-            self.path_arg = None
-            self.repo_url = None
         self.set_border_titles()
         self.write_info_lines()
 
@@ -126,15 +119,12 @@ class OperateInfo(Static, AppType):
     def write_info_lines(self) -> None:
         self.update("")
         lines_to_write: list[str] = []
-        if self.op_btn == OperateBtn.add_file:
-            lines_to_write.append(InfoLine.add_path)
-        elif self.op_btn == OperateBtn.add_dir:
+        if self.op_btn in (OperateBtn.add_file, OperateBtn.add_dir):
             lines_to_write.append(InfoLine.add_path)
         elif self.op_btn == OperateBtn.apply_path:
             lines_to_write.append(InfoLine.apply_path)
         elif self.op_btn == OperateBtn.re_add_path:
             lines_to_write.append(InfoLine.re_add_path)
-            self.border_subtitle = Chars.re_add_info_border
         elif self.op_btn == OperateBtn.forget_path:
             lines_to_write.append(InfoLine.forget_path)
         elif self.op_btn == OperateBtn.destroy_path:
@@ -143,7 +133,7 @@ class OperateInfo(Static, AppType):
             lines_to_write.append(InfoLine.init_new)
         elif self.op_btn == OperateBtn.init_clone_repo:
             lines_to_write.append(
-                f"{InfoLine.init_clone} [$text-warning]{self.repo_url}[/]"
+                f"{InfoLine.init_clone} [$text-warning]{self.op_data.repo_url}[/]"
             )
         if self.app.changes_enabled is True:
             lines_to_write.append(InfoLine.changes_enabled)
@@ -161,9 +151,9 @@ class OperateInfo(Static, AppType):
         # show git diff color info
         if self.op_btn in (OperateBtn.apply_path, OperateBtn.re_add_path):
             lines_to_write.append(InfoLine.diff_color)
-        if self.path_arg is not None:
+        if self.op_data.node_data is not None:
             lines_to_write.append(
-                f"[$text-primary]Operating on path: {self.path_arg}[/]"
+                f"[$text-primary]Operating on path: {self.op_data.node_data.path}[/]"
             )
         self.update("\n".join(lines_to_write))
 
@@ -173,7 +163,7 @@ class OperateScreen(Screen[None], AppType):
     def __init__(self) -> None:
         super().__init__()
         if self.app.operate_data is None:
-            raise ValueError("self.app.operate_data is None")
+            raise ValueError("self.app.operate_data is None in OperateScreen")
         self.op_data = self.app.operate_data
 
     def compose(self) -> ComposeResult:
