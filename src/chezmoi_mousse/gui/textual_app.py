@@ -107,6 +107,9 @@ class ChezmoiGUI(App[None]):
     def __init__(
         self, *, chezmoi_found: bool, dev_mode: bool, force_init_screen: bool
     ) -> None:
+        ScrollBar.renderer = CustomScrollBarRender  # monkey patch
+        super().__init__()
+
         self.chezmoi: "Chezmoi"
 
         self.chezmoi_found: bool = chezmoi_found
@@ -119,9 +122,6 @@ class ChezmoiGUI(App[None]):
         self.operate_data: "OperateData | None" = None
         self.operate_cmd_result: "CommandResult | None" = None
         self.splash_data: "SplashData | None" = None
-
-        ScrollBar.renderer = CustomScrollBarRender  # monkey patch
-        super().__init__()
 
     def on_mount(self) -> None:
         self.register_theme(chezmoi_mousse_light)
