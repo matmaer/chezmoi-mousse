@@ -3,7 +3,6 @@ import shutil
 import traceback
 from pathlib import Path
 
-from . import PreRunData
 from .gui.textual_app import ChezmoiGUI
 
 
@@ -15,17 +14,16 @@ def run_app():
         and os.environ.get("PRETEND_CHEZMOI_NOT_FOUND") != "1"
     )
     pretend_init_needed = os.environ.get("PRETEND_CHEZMOI_INIT_NEEDED") == "1"
-    pre_run_data = PreRunData(
-        chezmoi_found=chezmoi_found,
-        dev_mode=dev_mode,
-        force_init_screen=pretend_init_needed,
-    )
 
     if dev_mode is True:
         src_dir = Path(__file__).parent.parent
         # Save stacktrace in case an exception occurs on App class init.
         try:
-            app = ChezmoiGUI(pre_run_data=pre_run_data)
+            app = ChezmoiGUI(
+                chezmoi_found=chezmoi_found,
+                dev_mode=dev_mode,
+                force_init_screen=pretend_init_needed,
+            )
         except Exception:
             with open((Path.joinpath(src_dir, "stack_trace.txt")), "w") as f:
                 traceback.print_exc(file=f)
@@ -47,5 +45,9 @@ def run_app():
         app.run()
 
     else:
-        app = ChezmoiGUI(pre_run_data=pre_run_data)
+        app = ChezmoiGUI(
+            chezmoi_found=chezmoi_found,
+            dev_mode=dev_mode,
+            force_init_screen=pretend_init_needed,
+        )
         app.run()

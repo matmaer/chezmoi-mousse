@@ -68,7 +68,6 @@ __all__ = [
     "ParsedConfig",
     "PathDict",
     "PathKind",
-    "PreRunData",
     "ReadCmd",
     "ReadVerbs",
     "ScreenName",
@@ -116,13 +115,6 @@ class ParsedConfig:
     source_dir: "Path"
     git_autocommit: "bool"
     git_autopush: "bool"
-
-
-@dataclass(slots=True, frozen=True)
-class PreRunData:
-    chezmoi_found: "bool"
-    dev_mode: "bool"
-    force_init_screen: "bool"
 
 
 @dataclass(slots=True)

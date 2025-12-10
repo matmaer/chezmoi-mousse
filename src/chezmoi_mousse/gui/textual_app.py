@@ -42,7 +42,7 @@ from .tabs.common.switchers import TreeSwitcher, ViewSwitcher
 from .tabs.common.trees import TreeBase
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import Chezmoi, CommandResult, PreRunData, SplashData
+    from chezmoi_mousse import Chezmoi, CommandResult, SplashData
 
 __all__ = ["ChezmoiGUI"]
 
@@ -105,13 +105,14 @@ class ChezmoiGUI(App[None]):
 
     SCREENS = {"main": MainScreen}
 
-    def __init__(self, pre_run_data: "PreRunData") -> None:
+    def __init__(
+        self, *, chezmoi_found: bool, dev_mode: bool, force_init_screen: bool
+    ) -> None:
         self.chezmoi: "Chezmoi"
 
-        self.pre_run_data: "PreRunData" = pre_run_data
-        self.chezmoi_found: bool = self.pre_run_data.chezmoi_found
-        self.dev_mode: bool = self.pre_run_data.dev_mode
-        self.force_init_screen: bool = self.pre_run_data.force_init_screen
+        self.chezmoi_found: bool = chezmoi_found
+        self.dev_mode: bool = dev_mode
+        self.force_init_screen: bool = force_init_screen
         self.init_cmd_needed: bool = False
 
         # Manage state between screens
