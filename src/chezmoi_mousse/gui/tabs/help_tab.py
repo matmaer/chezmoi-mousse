@@ -192,17 +192,19 @@ class HelpTab(Horizontal):
             yield AddTabHelp()
             yield ChezmoiDiagram()
 
+    def on_mount(self) -> None:
+        self.switcher = self.query_one(
+            IDS.help.switcher.help_tab_q, ContentSwitcher
+        )
+
     @on(Button.Pressed, Tcss.flat_button.dot_prefix)
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
-        switcher = self.query_one(
-            IDS.help.switcher.help_tab_q, ContentSwitcher
-        )
         if event.button.id == IDS.help.flat_btn.apply_help:
-            switcher.current = IDS.help.view.apply_help
+            self.switcher.current = IDS.help.view.apply_help
         elif event.button.id == IDS.help.flat_btn.re_add_help:
-            switcher.current = IDS.help.view.re_add_help
+            self.switcher.current = IDS.help.view.re_add_help
         elif event.button.id == IDS.help.flat_btn.add_help:
-            switcher.current = IDS.help.view.add_help
+            self.switcher.current = IDS.help.view.add_help
         elif event.button.id == IDS.help.flat_btn.diagram:
-            switcher.current = IDS.help.view.diagram
+            self.switcher.current = IDS.help.view.diagram
