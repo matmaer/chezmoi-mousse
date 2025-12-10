@@ -97,18 +97,12 @@ class MainScreen(Screen[None], AppType):
         # Initialize App logger
         self.app_log = self.query_one(IDS.logs.logger.app_q, AppLog)
         self.app.chezmoi.app_log = self.app_log
-        self.app_log.ready_to_run(LogText.app_log_initialized)
-        if self.app.chezmoi_found:
-            self.app_log.success(LogText.chezmoi_found)
-        else:
-            self.notify(LogText.chezmoi_not_found, severity="error")
         # Initialize Operate logger
         self.operate_log = self.query_one(
             IDS.logs.logger.operate_q, OperateLog
         )
         self.app.chezmoi.operate_log = self.operate_log
         self.app_log.success(LogText.operate_log_initialized)
-        self.operate_log.ready_to_run(LogText.operate_log_initialized)
         # Initialize ReadCmd logger
         self.read_cmd_log = self.query_one(IDS.logs.logger.read_q, ReadCmdLog)
         self.app.chezmoi.read_cmd_log = self.read_cmd_log
@@ -118,8 +112,7 @@ class MainScreen(Screen[None], AppType):
             self.debug_log = self.query_one(IDS.logs.logger.debug_q, DebugLog)
             self.app.chezmoi.debug_log = self.debug_log
             self.app_log.success(LogText.debug_log_initialized)
-            self.debug_log.ready_to_run(LogText.debug_log_initialized)
-            self.notify(LogText.dev_mode_enabled, severity="information")
+            self.notify(LogText.dev_mode_enabled)
 
     def log_splash_log_commands(self) -> None:
         # Log SplashScreen and OperateScreen commands, if any.
