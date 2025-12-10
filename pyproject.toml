@@ -5,7 +5,7 @@ description = "Visual interface in the terminal for the chezmoi dotfile managar,
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "textual>=6.6.0",
+    "textual>=6.8.0",
 ]
 
 [project.urls]
@@ -13,27 +13,27 @@ Repository = "https://github.com/matmaer/chezmoi-mousse"
 
 [dependency-groups]
 dev = [
-    "black>=25.1.0",
-    "docformatter>=1.7.7",
-    "graphviz>=0.21",
-    "ipython>=9.1.0",
-    "isort>=6.0.1",
-    "memray>=1.17.1",
-    "mypy>=1.18.2",
-    "pre-commit>=4.2.0",
-    "profiler>=0.1.0",
-    "pydeps>=3.0.1",
-    "pylint>=3.3.6",
-    "pytest>=8.3.5",
-    "pytest-asyncio>=0.25.1",
-    "pytest-env>=1.2.0",
-    "pytest-memray>=1.7.0",
-    "pytest-textual-snapshot>=1.1.0",
-    "ruff>=0.11.9",
-    "snakeviz>=2.2.2",
-    "textual>=6.3.0",
-    "textual-dev>=1.7.0",
-    "twine>=6.1.0",
+    "black",
+    "docformatter",
+    "graphviz",
+    "ipython",
+    "isort",
+    "memray",
+    "mypy",
+    "pre-commit",
+    "profiler",
+    "pydeps",
+    "pylint",
+    "pytest",
+    "pytest-asyncio",
+    "pytest-env",
+    "pytest-memray",
+    "pytest-textual-snapshot",
+    "ruff",
+    "snakeviz",
+    "textual",
+    "textual-dev",
+    "twine",
 ]
 
 [tool.pre-commit]
