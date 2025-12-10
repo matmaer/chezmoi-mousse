@@ -281,31 +281,31 @@ dev = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "textual", specifier = ">=6.6.0" }]
+requires-dist = [{ name = "textual", specifier = ">=6.8.0" }]
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "black", specifier = ">=25.1.0" },
-    { name = "docformatter", specifier = ">=1.7.7" },
-    { name = "graphviz", specifier = ">=0.21" },
-    { name = "ipython", specifier = ">=9.1.0" },
-    { name = "isort", specifier = ">=6.0.1" },
-    { name = "memray", specifier = ">=1.17.1" },
-    { name = "mypy", specifier = ">=1.18.2" },
-    { name = "pre-commit", specifier = ">=4.2.0" },
-    { name = "profiler", specifier = ">=0.1.0" },
-    { name = "pydeps", specifier = ">=3.0.1" },
-    { name = "pylint", specifier = ">=3.3.6" },
-    { name = "pytest", specifier = ">=8.3.5" },
-    { name = "pytest-asyncio", specifier = ">=0.25.1" },
-    { name = "pytest-env", specifier = ">=1.2.0" },
-    { name = "pytest-memray", specifier = ">=1.7.0" },
-    { name = "pytest-textual-snapshot", specifier = ">=1.1.0" },
-    { name = "ruff", specifier = ">=0.11.9" },
-    { name = "snakeviz", specifier = ">=2.2.2" },
-    { name = "textual", specifier = ">=6.3.0" },
-    { name = "textual-dev", specifier = ">=1.7.0" },
-    { name = "twine", specifier = ">=6.1.0" },
+    { name = "black" },
+    { name = "docformatter" },
+    { name = "graphviz" },
+    { name = "ipython" },
+    { name = "isort" },
+    { name = "memray" },
+    { name = "mypy" },
+    { name = "pre-commit" },
+    { name = "profiler" },
+    { name = "pydeps" },
+    { name = "pylint" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "pytest-env" },
+    { name = "pytest-memray" },
+    { name = "pytest-textual-snapshot" },
+    { name = "ruff" },
+    { name = "snakeviz" },
+    { name = "textual" },
+    { name = "textual-dev" },
+    { name = "twine" },
 ]
 
 [[package]]
