@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from textual import on, work
 from textual.app import ComposeResult
 from textual.screen import Screen
-from textual.widgets import Button, Footer, TabbedContent, TabPane
+from textual.widgets import Footer, TabbedContent, TabPane
 
 from chezmoi_mousse import (
     IDS,
@@ -14,7 +14,6 @@ from chezmoi_mousse import (
     OperateBtn,
     OperateData,
     TabName,
-    Tcss,
     WriteCmd,
 )
 from chezmoi_mousse.shared import (
@@ -24,6 +23,7 @@ from chezmoi_mousse.shared import (
     CurrentReAddNodeMsg,
     CustomHeader,
     DebugLog,
+    OperateButtonMsg,
     OperateLog,
     ReadCmdLog,
 )
@@ -185,43 +185,54 @@ class MainScreen(Screen[None], AppType):
         )
         setattr(config_tab_switcher, "splash_data", self.app.splash_data)
 
-    @on(Button.Pressed, Tcss.operate_button.dot_prefix)
-    def push_operate_screen(self, event: Button.Pressed) -> None:
-        button_enum = OperateBtn.from_label(str(event.button.label))
-        current_tab = self.query_exactly_one(TabbedContent).active
+    # @on(OperateButtonMsg)
+    # def log_to_debug(self, message: OperateButtonMsg) -> None:
+    #     self.debug_log.list_attr(message)
+    #     self.debug_log.list_attr(message.btn_enum)
+    #     self.debug_log.list_attr(message.canvas_name)
+    #     self.debug_log.list_attr(message.label)
+    #     self.debug_log.list_attr(message.tooltip)
+    #     self.debug_log.info(message.canvas_name)
+    #     self.debug_log.info(message.canvas_name.name)
+    #     self.debug_log.info(message.label)
+    #     self.debug_log.info(message.tooltip)
+    #     self.debug_log.list_attr(OperateButtonMsg.control)
+
+    @on(OperateButtonMsg)
+    def push_operate_screen(self, msg: OperateButtonMsg) -> None:
         if (
             self.current_add_node is not None
-            and button_enum in (OperateBtn.add_file, OperateBtn.add_dir)
-            and current_tab == TabName.add
+            and msg.btn_enum in (OperateBtn.add_file, OperateBtn.add_dir)
+            and msg.canvas_name == TabName.add
         ):
             self.app.operate_data = OperateData(
-                operate_btn=button_enum, node_data=self.current_add_node
+                operate_btn=msg.btn_enum, node_data=self.current_add_node
             )
         elif (
             self.current_apply_node is not None
-            and button_enum
+            and msg.btn_enum
             in (
                 OperateBtn.apply_path,
                 OperateBtn.destroy_path,
                 OperateBtn.forget_path,
             )
-            and current_tab == TabName.apply.name
+            and msg.canvas_name == TabName.apply
         ):
             self.app.operate_data = OperateData(
-                operate_btn=button_enum, node_data=self.current_apply_node
+                operate_btn=msg.btn_enum, node_data=self.current_apply_node
             )
         elif (
             self.current_re_add_node is not None
-            and button_enum
+            and msg.btn_enum
             in (
                 OperateBtn.re_add_path,
                 OperateBtn.destroy_path,
                 OperateBtn.forget_path,
             )
-            and current_tab == TabName.re_add
+            and msg.canvas_name == TabName.re_add
         ):
             self.app.operate_data = OperateData(
-                operate_btn=button_enum, node_data=self.current_re_add_node
+                operate_btn=msg.btn_enum, node_data=self.current_re_add_node
             )
         self.app.push_screen(
             OperateScreen(), callback=self.handle_operate_result
