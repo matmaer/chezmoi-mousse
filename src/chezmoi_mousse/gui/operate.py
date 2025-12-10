@@ -13,7 +13,6 @@ from chezmoi_mousse import (
     BindingDescription,
     Chars,
     OperateBtn,
-    OperateData,
     SectionLabels,
     SplashData,
     Tcss,
@@ -206,18 +205,18 @@ class OperateScreen(Screen[None], AppType):
             self.path_arg = self.op_data.node_data.path
         elif self.op_data.repo_url is not None:
             self.repo_url = self.op_data.repo_url
-        self.mount_pre_operate_widgets(self.op_data)
+        self.mount_pre_operate_widgets()
         self.configure_buttons()
 
-    def mount_pre_operate_widgets(self, operate_data: OperateData) -> None:
+    def mount_pre_operate_widgets(self) -> None:
         pre_op_container = self.query_one(
             IDS.operate.container.pre_operate_q, VerticalGroup
         )
-        if operate_data.btn_enum == OperateBtn.apply_path:
+        if self.op_data.btn_enum == OperateBtn.apply_path:
             pre_op_container.mount(DiffView(ids=IDS.operate, reverse=False))
-        elif operate_data.btn_enum == OperateBtn.re_add_path:
+        elif self.op_data.btn_enum == OperateBtn.re_add_path:
             pre_op_container.mount(DiffView(ids=IDS.operate, reverse=True))
-        elif operate_data.btn_enum in (
+        elif self.op_data.btn_enum in (
             OperateBtn.add_file,
             OperateBtn.add_dir,
             OperateBtn.forget_path,
@@ -225,7 +224,7 @@ class OperateScreen(Screen[None], AppType):
         ):
             pre_op_container.mount(ContentsView(ids=IDS.operate))
         elif (
-            operate_data.btn_enum
+            self.op_data.btn_enum
             in (OperateBtn.init_new_repo, OperateBtn.init_clone_repo)
             and self.app.splash_data is not None
         ):
@@ -235,13 +234,13 @@ class OperateScreen(Screen[None], AppType):
             pre_op_container.mount(
                 InitCollapsibles(splash_data=self.app.splash_data)
             )
-        if operate_data.btn_enum in (
+        if self.op_data.btn_enum in (
             OperateBtn.apply_path,
             OperateBtn.re_add_path,
         ):
             diff_view = self.query_one(IDS.operate.container.diff_q, DiffView)
             diff_view.path = self.path_arg
-        elif operate_data.btn_enum in (
+        elif self.op_data.btn_enum in (
             OperateBtn.add_file,
             OperateBtn.add_dir,
             OperateBtn.forget_path,
