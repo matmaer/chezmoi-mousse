@@ -140,7 +140,7 @@ class SplashLog(RichLog):
 class SplashScreen(Screen[SplashData | None], AppType):
 
     def __init__(self) -> None:
-        super().__init__(id=IDS.splash.canvas_name)
+        super().__init__()
         self.splash_log: SplashLog  # set in on_mount
         self.splash_data: SplashData | None = None
         self.splash_log_q = IDS.splash.logger.splash_q
