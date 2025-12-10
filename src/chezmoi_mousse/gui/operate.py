@@ -90,43 +90,43 @@ class OperateInfo(Static, AppType):
         if self.app.operate_data is None:
             raise ValueError("self.app.operate_data is None in OperateInfo")
         self.op_data = self.app.operate_data
+        self.btn_enum = self.op_data.btn_enum
 
     def on_mount(self) -> None:
-        self.op_btn = self.op_data.btn_enum
         self.set_border_titles()
         self.write_info_lines()
 
     def set_border_titles(self) -> None:
         self.border_title = self.op_data.btn_label
-        if self.op_btn in (
+        if self.btn_enum in (
             OperateBtn.add_file,
             OperateBtn.add_dir,
             OperateBtn.re_add_path,
         ):
             self.border_subtitle = InfoBorderSubtitle.add
-        elif self.op_btn == OperateBtn.apply_path:
+        elif self.btn_enum == OperateBtn.apply_path:
             self.border_subtitle = InfoBorderSubtitle.apply
-        elif self.op_btn == OperateBtn.forget_path:
+        elif self.btn_enum == OperateBtn.forget_path:
             self.border_subtitle = InfoBorderSubtitle.forget
-        elif self.op_btn == OperateBtn.destroy_path:
+        elif self.btn_enum == OperateBtn.destroy_path:
             self.border_subtitle = InfoBorderSubtitle.destroy
 
     def write_info_lines(self) -> None:
         self.update("")
         lines_to_write: list[str] = []
-        if self.op_btn in (OperateBtn.add_file, OperateBtn.add_dir):
+        if self.btn_enum in (OperateBtn.add_file, OperateBtn.add_dir):
             lines_to_write.append(InfoLine.add_path)
-        elif self.op_btn == OperateBtn.apply_path:
+        elif self.btn_enum == OperateBtn.apply_path:
             lines_to_write.append(InfoLine.apply_path)
-        elif self.op_btn == OperateBtn.re_add_path:
+        elif self.btn_enum == OperateBtn.re_add_path:
             lines_to_write.append(InfoLine.re_add_path)
-        elif self.op_btn == OperateBtn.forget_path:
+        elif self.btn_enum == OperateBtn.forget_path:
             lines_to_write.append(InfoLine.forget_path)
-        elif self.op_btn == OperateBtn.destroy_path:
+        elif self.btn_enum == OperateBtn.destroy_path:
             lines_to_write.append(InfoLine.destroy_path)
-        elif self.op_btn == OperateBtn.init_new_repo:
+        elif self.btn_enum == OperateBtn.init_new_repo:
             lines_to_write.append(InfoLine.init_new)
-        elif self.op_btn == OperateBtn.init_clone_repo:
+        elif self.btn_enum == OperateBtn.init_clone_repo:
             lines_to_write.append(
                 f"{InfoLine.init_clone} [$text-warning]{self.op_data.repo_url}[/]"
             )
@@ -134,7 +134,7 @@ class OperateInfo(Static, AppType):
             lines_to_write.append(InfoLine.changes_enabled)
         else:
             lines_to_write.append(InfoLine.changes_disabled)
-        if self.op_btn not in (
+        if self.btn_enum not in (
             OperateBtn.apply_path,
             OperateBtn.init_new_repo,
             OperateBtn.init_clone_repo,
@@ -144,7 +144,7 @@ class OperateInfo(Static, AppType):
             if self.git_autopush is True:
                 lines_to_write.append(InfoLine.autopush)
         # show git diff color info
-        if self.op_btn in (OperateBtn.apply_path, OperateBtn.re_add_path):
+        if self.btn_enum in (OperateBtn.apply_path, OperateBtn.re_add_path):
             lines_to_write.append(InfoLine.diff_color)
         if self.op_data.node_data is not None:
             lines_to_write.append(
