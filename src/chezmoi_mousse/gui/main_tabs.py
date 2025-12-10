@@ -11,7 +11,6 @@ from chezmoi_mousse import (
     IDS,
     AppType,
     LogText,
-    OperateBtn,
     OperateData,
     TabName,
     WriteCmd,
@@ -200,49 +199,25 @@ class MainScreen(Screen[None], AppType):
 
     @on(OperateButtonMsg)
     def push_operate_screen(self, msg: OperateButtonMsg) -> None:
+        operate_data = OperateData(
+            btn_enum=msg.btn_enum, btn_label=msg.label, btn_tooltip=msg.tooltip
+        )
         if (
             self.current_add_node is not None
-            and msg.btn_enum in (OperateBtn.add_file, OperateBtn.add_dir)
             and msg.canvas_name == TabName.add
         ):
-            self.app.operate_data = OperateData(
-                btn_enum=msg.btn_enum,
-                btn_label=msg.label,
-                btn_tooltip=msg.tooltip,
-                node_data=self.current_add_node,
-            )
+            operate_data.node_data = self.current_add_node
         elif (
             self.current_apply_node is not None
-            and msg.btn_enum
-            in (
-                OperateBtn.apply_path,
-                OperateBtn.destroy_path,
-                OperateBtn.forget_path,
-            )
             and msg.canvas_name == TabName.apply
         ):
-            self.app.operate_data = OperateData(
-                btn_enum=msg.btn_enum,
-                btn_label=msg.label,
-                btn_tooltip=msg.tooltip,
-                node_data=self.current_apply_node,
-            )
+            operate_data.node_data = self.current_apply_node
         elif (
             self.current_re_add_node is not None
-            and msg.btn_enum
-            in (
-                OperateBtn.re_add_path,
-                OperateBtn.destroy_path,
-                OperateBtn.forget_path,
-            )
             and msg.canvas_name == TabName.re_add
         ):
-            self.app.operate_data = OperateData(
-                btn_enum=msg.btn_enum,
-                btn_label=msg.label,
-                btn_tooltip=msg.tooltip,
-                node_data=self.current_re_add_node,
-            )
+            operate_data.node_data = self.current_re_add_node
+        self.app.operate_data = operate_data
         self.app.push_screen(
             OperateScreen(), callback=self.handle_operate_result
         )
