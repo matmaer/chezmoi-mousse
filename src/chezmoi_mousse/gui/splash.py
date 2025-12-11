@@ -162,12 +162,11 @@ class SplashScreen(Screen[SplashData | None], AppType):
                 self.run_io_worker(ReadCmd.doctor)
                 self.run_io_worker(ReadCmd.template_data)
                 return
-            else:
-                self.app.init_cmd_needed = False
-                for splash_cmd in SPLASH_COMMANDS:
-                    if splash_cmd == ReadCmd.status_files:
-                        continue
-                    self.run_io_worker(splash_cmd)
+            self.app.init_cmd_needed = False
+            for splash_cmd in SPLASH_COMMANDS:
+                if splash_cmd == ReadCmd.status_files:
+                    continue
+                self.run_io_worker(splash_cmd)
         else:
             raise RuntimeError(
                 "status_files worker did not complete successfully"
