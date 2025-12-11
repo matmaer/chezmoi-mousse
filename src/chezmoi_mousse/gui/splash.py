@@ -262,3 +262,7 @@ class SplashScreen(Screen[SplashData | None], AppType):
             update_app_worker = self.update_app()
             if update_app_worker.state == WorkerState.SUCCESS:
                 self.dismiss()
+            else:
+                raise RuntimeError(
+                    "update_app worker did not complete successfully"
+                )
