@@ -54,7 +54,6 @@ __all__ = [
     "Chars",
     "Chezmoi",
     "CommandResult",
-    "DirTreeNodeData",
     "DestDirStrings",
     "FlatBtn",
     "GlobalCmd",
@@ -84,12 +83,6 @@ __all__ = [
 
 
 @dataclass(slots=True)
-class DirTreeNodeData:
-    path: "Path"
-    path_kind: "PathKind"
-
-
-@dataclass(slots=True)
 class NodeData:
     found: "bool"
     path: "Path"
@@ -104,7 +97,7 @@ class OperateData:
     btn_enum: "OperateBtn"
     btn_label: "str"
     btn_tooltip: "str"
-    node_data: "NodeData | DirTreeNodeData | None" = None
+    node_data: "NodeData | None" = None
     repo_url: "str | None" = None  # only for chezmoi init from repo operation
 
 

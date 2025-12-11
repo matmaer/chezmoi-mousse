@@ -12,7 +12,7 @@ from chezmoi_mousse import (
     IDS,
     AppType,
     Chars,
-    DirTreeNodeData,
+    NodeData,
     OperateBtn,
     PathKind,
     Tcss,
@@ -270,7 +270,9 @@ class AddTab(Horizontal, AppType):
     def send_message_current_add_node(
         self, path: Path, path_kind: "PathKind"
     ) -> None:
-        message_data = DirTreeNodeData(path=path, path_kind=path_kind)
+        message_data = NodeData(
+            path=path, path_kind=path_kind, found=True, status=""
+        )
         self.post_message(CurrentAddNodeMsg(message_data))
 
     @on(DirectoryTree.DirectorySelected)

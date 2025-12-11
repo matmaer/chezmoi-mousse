@@ -37,7 +37,7 @@ from .tabs.logs_tab import LogsTab
 from .tabs.re_add_tab import ReAddTab
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import DirTreeNodeData, NodeData
+    from chezmoi_mousse import NodeData
 
 __all__ = ["MainScreen"]
 
@@ -62,7 +62,7 @@ class MainScreen(Screen[None], AppType):
         self.debug_log: "DebugLog"
         super().__init__()
 
-        self.current_add_node: "DirTreeNodeData | None" = None
+        self.current_add_node: "NodeData | None" = None
         self.current_apply_node: "NodeData | None" = None
         self.current_re_add_node: "NodeData | None" = None
 
@@ -234,7 +234,7 @@ class MainScreen(Screen[None], AppType):
 
     @on(CurrentAddNodeMsg)
     def update_current_dir_tree_node(self, message: CurrentAddNodeMsg) -> None:
-        self.current_add_node = message.dir_tree_node_data
+        self.current_add_node = message.node_data
 
     @on(CurrentApplyNodeMsg)
     def update_current_apply_node(self, message: CurrentApplyNodeMsg) -> None:

@@ -4,13 +4,7 @@ from textual.message import Message
 
 if TYPE_CHECKING:
 
-    from chezmoi_mousse import (
-        DirTreeNodeData,
-        NodeData,
-        OperateBtn,
-        ScreenName,
-        TabName,
-    )
+    from chezmoi_mousse import NodeData, OperateBtn, ScreenName, TabName
 
 __all__ = [
     "CurrentAddNodeMsg",
@@ -39,8 +33,8 @@ class CurrentReAddNodeMsg(Message):
 
 class CurrentAddNodeMsg(Message):
     # used to keep track in main screen to push the operate screen
-    def __init__(self, dir_tree_node_data: "DirTreeNodeData") -> None:
-        self.dir_tree_node_data = dir_tree_node_data
+    def __init__(self, node_data: "NodeData") -> None:
+        self.node_data = node_data
         super().__init__()
 
 
