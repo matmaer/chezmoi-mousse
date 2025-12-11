@@ -85,8 +85,8 @@ class VerbArgs(Enum):
     ]
     include_dirs = "--include=dirs"
     include_files = "--include=files"
-    # init_guess = "--guess-repo-url" TODO
-    # init_ssh = "--ssh" TODO
+    init_do_not_guess = "--guess-repo-url=false"
+    init_guess_ssh = "--ssh"
     path_style_absolute = "--path-style=absolute"
     not_recursive = "--recursive=false"
     reverse = "--reverse"
@@ -169,10 +169,8 @@ class WriteCmd(Enum):
 @dataclass(slots=True)
 class CommandResult:
     completed_process: CompletedProcess[str]
-    path_arg: Path | None = None
     pretty_time: str = f"[{datetime.now().strftime('%H:%M:%S')}]"
     read_cmd: ReadCmd | None = None
-    repo_url_arg: str | None = None
     write_cmd: WriteCmd | None = None
 
     @property
@@ -457,7 +455,7 @@ class Chezmoi:
             timeout=time_out,
         )
         command_result = CommandResult(
-            completed_process=result, path_arg=path_arg, read_cmd=read_cmd
+            completed_process=result, read_cmd=read_cmd
         )
         self._log_in_app_and_read_cmd_log(command_result)
         return command_result
@@ -467,7 +465,9 @@ class Chezmoi:
         write_cmd: WriteCmd,
         *,
         path_arg: Path | None = None,
-        repo_url: str | None = None,
+        init_repo_arg: str | None = None,
+        init_guess_ssh: bool | None = None,
+        init_guess_https: bool | None = None,
         changes_enabled: bool,
     ) -> CommandResult:
         if changes_enabled is True:
@@ -488,8 +488,17 @@ class Chezmoi:
         ):
             command: list[str] = command + [str(path_arg)]
         elif write_cmd == WriteCmd.init:
-            if repo_url is not None:
-                command += [repo_url]
+            if init_guess_https is False and init_guess_ssh is True:
+                raise ValueError(
+                    "Conflicting arguments: init_guess_https is False and"
+                    " init_guess_ssh is True"
+                )
+            if init_guess_https is False:
+                command += [VerbArgs.init_do_not_guess.value]
+            elif init_guess_ssh is True:
+                command += [VerbArgs.init_guess_ssh.value]
+            if init_repo_arg is not None:
+                command += [init_repo_arg]
         else:
             raise ValueError("Invalid arguments for perform()")
 
@@ -497,10 +506,7 @@ class Chezmoi:
             command, capture_output=True, shell=False, text=True, timeout=5
         )
         command_results = CommandResult(
-            completed_process=result,
-            path_arg=path_arg,
-            repo_url_arg=repo_url,
-            write_cmd=write_cmd,
+            completed_process=result, write_cmd=write_cmd
         )
         self._log_in_app_and_operate_log(command_results)
         return command_results

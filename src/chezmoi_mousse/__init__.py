@@ -97,8 +97,10 @@ class OperateData:
     btn_enum: "OperateBtn"
     btn_label: "str"
     btn_tooltip: "str"
+    init_guess_https: "bool | None" = None
+    init_guess_ssh: "bool | None" = None
+    init_repo_arg: "str | None" = None
     node_data: "NodeData | None" = None
-    repo_url: "str | None" = None  # only for chezmoi init from repo operation
 
 
 @dataclass(slots=True)
