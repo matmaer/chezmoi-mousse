@@ -20,11 +20,8 @@ from chezmoi_mousse import (
     TabName,
 )
 from chezmoi_mousse.shared import (
-    ContentsView,
     CustomHeader,
-    DiffView,
     FlatButtonsVertical,
-    GitLogPath,
     InitCompletedMsg,
     LogsTabButtons,
     ViewTabButtons,
@@ -35,10 +32,9 @@ from .install_help import InstallHelp
 from .main_tabs import MainScreen
 from .operate import OperateInfo, OperateScreen
 from .splash import SplashScreen
-from .tabs.add_tab import AddTab, FilteredDirTree
+from .tabs.add_tab import FilteredDirTree
 from .tabs.common.switch_slider import SwitchSlider
-from .tabs.common.switchers import TreeSwitcher, ViewSwitcher
-from .tabs.common.trees import TreeBase
+from .tabs.common.switchers import TreeSwitcher
 
 if TYPE_CHECKING:
     from chezmoi_mousse import Chezmoi, CommandResult, OperateData, SplashData
@@ -102,8 +98,6 @@ class ChezmoiGUI(App[None]):
 
     CSS_PATH = "gui.tcss"
 
-    SCREENS = {"main": MainScreen}
-
     def __init__(
         self, *, chezmoi_found: bool, dev_mode: bool, force_init_screen: bool
     ) -> None:
@@ -132,9 +126,7 @@ class ChezmoiGUI(App[None]):
     @work
     async def run_splash_screen(self) -> None:
         # Run splash screen once to gather command outputs
-        self.splash_data = await self.push_screen(
-            SplashScreen(), wait_for_dismiss=True
-        )
+        await self.push_screen(SplashScreen(), wait_for_dismiss=True)
         if self.splash_data is None:
             # Chezmoi command not found, SplashScreen will return None
             self.push_screen(InstallHelp())
@@ -146,7 +138,7 @@ class ChezmoiGUI(App[None]):
         if self.init_cmd_needed is True:
             self.push_screen(InitScreen())
             return
-        self.push_main_screen()
+        self.push_screen("main_screen")
 
     @on(InitCompletedMsg)
     @work
@@ -158,24 +150,7 @@ class ChezmoiGUI(App[None]):
             raise ValueError("splash_data is None on InitCompletedMsg")
         elif self.force_init_screen is True:
             raise ValueError("self.force_init_screen should be False here")
-        self.push_main_screen()
-
-    def push_main_screen(self) -> None:
-        if self.splash_data is None:
-            raise ValueError("splash_data is None after running SplashScreen")
-        AddTab.destDir = self.splash_data.parsed_config.dest_dir
-        ContentsView.destDir = self.splash_data.parsed_config.dest_dir
-        DiffView.destDir = self.splash_data.parsed_config.dest_dir
-        GitLogPath.destDir = self.splash_data.parsed_config.dest_dir
-        MainScreen.destDir = self.splash_data.parsed_config.dest_dir
-        TreeBase.destDir = self.splash_data.parsed_config.dest_dir
-        ViewSwitcher.destDir = self.splash_data.parsed_config.dest_dir
-        OperateInfo.git_autocommit = (
-            self.splash_data.parsed_config.git_autocommit
-        )
-        OperateInfo.git_autopush = self.splash_data.parsed_config.git_autopush
-
-        self.push_screen(MainScreen())
+        self.push_screen("main_screen")
 
     def on_tabbed_content_tab_activated(
         self, event: TabbedContent.TabActivated

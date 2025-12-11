@@ -25,6 +25,13 @@ from chezmoi_mousse import (
     SplashData,
     VerbArgs,
 )
+from chezmoi_mousse.shared import ContentsView, DiffView, GitLogPath
+
+from .main_tabs import MainScreen
+from .operate import OperateInfo
+from .tabs.add_tab import AddTab
+from .tabs.common.switchers import ViewSwitcher
+from .tabs.common.trees import TreeBase
 
 __all__ = ["SplashScreen"]
 
@@ -63,18 +70,6 @@ LOG_PADDING_WIDTH = 37
 LOADED_SUFFIX = "loaded"
 
 
-def _subprocess_run_cmd(cmd: ReadCmd) -> CommandResult:
-    time_out = 1
-    result: CompletedProcess[str] = run(
-        cmd.value,
-        capture_output=True,
-        shell=False,
-        text=True,
-        timeout=time_out,
-    )
-    return CommandResult(completed_process=result, read_cmd=cmd)
-
-
 cat_config: "CommandResult | None" = None
 doctor: "CommandResult | None" = None
 dump_config: "CommandResult | None" = None
@@ -93,14 +88,13 @@ class AnimatedFade(Static):
 
     def __init__(self) -> None:
         super().__init__()
-        self.set_interval(interval=0.05, callback=self.refresh)
 
     def on_mount(self) -> None:
         self.styles.height = FADE_HEIGHT
         self.styles.width = FADE_WIDTH
         start_color = "#0178D4"
         end_color = "#F187FB"
-        fade = [start_color] * 12
+        fade = [start_color] * 8
         gradient = Gradient.from_colors(start_color, end_color, quality=6)
         fade.extend([color.hex for color in gradient.colors])
         gradient.colors.reverse()
@@ -110,6 +104,10 @@ class AnimatedFade(Static):
                 Style(color=color, bgcolor="#000000", bold=True)
                 for color in fade
             ]
+        )
+        self.fade_line_styles.rotate(-2)
+        self.set_interval(
+            name="refresh_self", interval=0.1, callback=self.refresh
         )
 
     def render_lines(self, crop: Region) -> list[Strip]:
@@ -135,16 +133,16 @@ class SplashScreen(Screen[SplashData | None], AppType):
     def __init__(self) -> None:
         super().__init__()
         self.splash_log: SplashLog  # set in on_mount
-        self.splash_data: SplashData | None = None
-        self.post_io_started: bool = False
-        self.set_interval(interval=1, callback=self.all_workers_finished)
 
     def compose(self) -> ComposeResult:
         with Middle():
             yield Center(AnimatedFade())
             yield Center(SplashLog())
 
-    def on_mount(self) -> None:
+    async def on_mount(self) -> None:
+        self.check_workers_timer = self.set_interval(
+            interval=2, callback=self.all_workers_finished
+        )
         self.splash_log = self.query_one(IDS.splash.logger.splash_q, SplashLog)
         if self.app.chezmoi_found is False:
             self.splash_log.styles.height = 1
@@ -152,30 +150,34 @@ class SplashScreen(Screen[SplashData | None], AppType):
             padding = LOG_PADDING_WIDTH - len(cmd_text)
             self.splash_log.write(f"{cmd_text} {'.' * padding} not found")
             return
-        self.run_command_workers()
 
-    @work
-    async def run_command_workers(self) -> None:
         status_worker = self.run_io_worker(ReadCmd.status_files)
         await status_worker.wait()
-        assert type(globals()["status_files"].exit_code) is int
+        if status_worker.state == WorkerState.SUCCESS:
+            if type(globals()["status_files"].exit_code) is not int:
+                raise RuntimeError("status_files exit_code is not an int")
+            if globals()["status_files"].exit_code != 0:
+                self.app.init_cmd_needed = True
+                # Run io workers for data used in the InitScreen
+                self.run_io_worker(ReadCmd.doctor)
+                self.run_io_worker(ReadCmd.template_data)
+                return
+            else:
+                self.app.init_cmd_needed = False
+                for splash_cmd in SPLASH_COMMANDS:
+                    if splash_cmd == ReadCmd.status_files:
+                        continue
+                    self.run_io_worker(splash_cmd)
 
-        if globals()["status_files"].exit_code != 0:
-            self.app.init_cmd_needed = True
-            # Run io workers for data used in the InitScreen
-            self.run_io_worker(ReadCmd.doctor)
-            self.run_io_worker(ReadCmd.template_data)
-            return
-        else:
-            self.app.init_cmd_needed = False
-            for splash_cmd in SPLASH_COMMANDS:
-                if splash_cmd == ReadCmd.status_files:
-                    continue
-                self.run_io_worker(splash_cmd)
+    def subprocess_run_cmd(self, cmd: ReadCmd) -> CommandResult:
+        result: CompletedProcess[str] = run(
+            cmd.value, capture_output=True, shell=False, text=True, timeout=2
+        )
+        return CommandResult(completed_process=result, read_cmd=cmd)
 
     @work(thread=True, group="io_workers")
     def run_io_worker(self, splash_cmd: ReadCmd) -> None:
-        cmd_result: "CommandResult" = _subprocess_run_cmd(splash_cmd)
+        cmd_result = self.subprocess_run_cmd(splash_cmd)
         cmd_text = cmd_result.pretty_cmd
         globals()[splash_cmd.name] = cmd_result
         if splash_cmd == ReadCmd.dump_config:
@@ -211,19 +213,9 @@ class SplashScreen(Screen[SplashData | None], AppType):
             self.splash_log.write, f"[{color}]{log_text}[/{color}]"
         )
 
-    @work(thread=True, group="post_io_workers")
-    def populate_chezmoi_class(self) -> None:
-        self.app.chezmoi = Chezmoi(
-            dev_mode=self.app.dev_mode,
-            managed_dirs=globals()["managed_dirs"],
-            managed_files=globals()["managed_files"],
-            status_dirs=globals()["status_dirs"],
-            status_files=globals()["status_files"],
-        )
-
-    @work(thread=True, group="post_io_workers")
-    def construct_return_data(self):
-        self.splash_data = SplashData(
+    @work(name="update_app")
+    async def update_app(self):
+        self.app.splash_data = SplashData(
             cat_config=globals()["cat_config"],
             doctor=globals()["doctor"],
             git_log=globals()["git_log"],
@@ -232,25 +224,37 @@ class SplashScreen(Screen[SplashData | None], AppType):
             template_data=globals()["template_data"],
             verify=globals()["verify"],
         )
+        if self.app.init_cmd_needed is True:
+            return
+        self.app.chezmoi = Chezmoi(
+            dev_mode=self.app.dev_mode,
+            managed_dirs=globals()["managed_dirs"],
+            managed_files=globals()["managed_files"],
+            status_dirs=globals()["status_dirs"],
+            status_files=globals()["status_files"],
+        )
+        dest_dir = globals()["parsed_config"].dest_dir
+        AddTab.destDir = dest_dir
+        ContentsView.destDir = dest_dir
+        DiffView.destDir = dest_dir
+        GitLogPath.destDir = dest_dir
+        MainScreen.destDir = dest_dir
+        TreeBase.destDir = dest_dir
+        ViewSwitcher.destDir = dest_dir
+        OperateInfo.git_autocommit = globals()["parsed_config"].git_autocommit
+        OperateInfo.git_autopush = globals()["parsed_config"].git_autopush
+        self.app.install_screen(MainScreen(), name="main_screen")  # type: ignore[arg-type]
 
     def all_workers_finished(self) -> None:
         if self.app.chezmoi_found is False:
             self.dismiss(None)
             return
-        if not all(
+        if all(
             worker.state == WorkerState.SUCCESS
             for worker in self.screen.workers
             if worker.group == "io_workers"
         ):
-            return
-        if self.post_io_started is False:
-            self.populate_chezmoi_class()
-            self.construct_return_data()
-            self.post_io_started = True
-            return
-        if all(
-            worker.state == WorkerState.SUCCESS
-            for worker in self.screen.workers
-            if worker.group == "post_io_workers"
-        ):
-            self.dismiss(self.splash_data)
+            self.check_workers_timer.stop()
+            update_app_worker = self.update_app()
+            if update_app_worker.state == WorkerState.SUCCESS:
+                self.dismiss()
