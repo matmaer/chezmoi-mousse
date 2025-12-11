@@ -44,7 +44,6 @@ class ContentsTabStrings(StrEnum):
 class ContentsView(Vertical, AppType):
 
     destDir: "Path | None" = None
-    # path: reactive["Path | None"] = reactive(None, init=False)
     node_data: reactive["NodeData | None"] = reactive(None, init=False)
 
     def __init__(self, *, ids: "AppIds") -> None:
