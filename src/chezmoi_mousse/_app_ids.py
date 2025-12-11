@@ -354,14 +354,8 @@ class OperateButtonIds:
         self.destroy_path_q = f"#{self.destroy_path}"
         self.forget_path = ids.operate_button_id(btn=OperateBtn.forget_path)
         self.forget_path_q = f"#{self.forget_path}"
-        self.init_new_repo = ids.operate_button_id(
-            btn=OperateBtn.init_new_repo
-        )
-        self.init_new_repo_q = f"#{self.init_new_repo}"
-        self.init_clone_repo = ids.operate_button_id(
-            btn=OperateBtn.init_clone_repo
-        )
-        self.init_clone_repo_q = f"#{self.init_clone_repo}"
+        self.init_repo = ids.operate_button_id(btn=OperateBtn.init_repo)
+        self.init_repo_q = f"#{self.init_repo}"
         self.operate_exit = ids.operate_button_id(btn=OperateBtn.operate_exit)
         self.operate_exit_q = f"#{self.operate_exit}"
         self.re_add_path = ids.operate_button_id(btn=OperateBtn.re_add_path)

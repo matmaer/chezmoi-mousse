@@ -89,9 +89,13 @@ class OpBtnData:
     file_tooltip: str = _UNSET
     dir_tooltip: str = _UNSET
 
-    # Add button specific
+    # Add and Init button specific
     enabled_tooltip: str = _UNSET
     disabled_tooltip: str = _UNSET
+
+    # Init button specific
+    init_new_label: str = _UNSET
+    init_clone_label: str = _UNSET
 
     # Exit button specific
     cancel_label: str = SharedLabels.cancel
@@ -154,13 +158,13 @@ class OperateBtn(Enum):
         file_label="Destroy File",
         file_tooltip='Run "chezmoi destroy" on the file. Permanently remove the file from disk and chezmoi. MAKE SURE YOU HAVE A BACKUP!',
     )
-    init_new_repo = OpBtnData(
+    init_repo = OpBtnData(
         initial_label="Init New Repo",
         initial_tooltip="Initialize a new chezmoi repository in your home directory with default settings.",
-    )
-    init_clone_repo = OpBtnData(
-        initial_label="Init Clone Repo",
-        initial_tooltip="Initialize a the chezmoi repository by cloning from a provided remote repository.",
+        init_new_label="Init New Repo",
+        init_clone_label="Init Clone Repo",
+        enabled_tooltip="Valid URL entered, ready to clone.",
+        disabled_tooltip="Provide an input to determine the repository to clone from.",
     )
     operate_exit = OpBtnData(
         initial_label=SharedLabels.cancel, initial_tooltip=None
@@ -234,3 +238,11 @@ class OperateBtn(Enum):
     @property
     def reload_tooltip(self) -> str:
         return self.value.reload_tooltip
+
+    @property
+    def init_new_label(self) -> str:
+        return self.value.init_new_label
+
+    @property
+    def init_clone_label(self) -> str:
+        return self.value.init_clone_label

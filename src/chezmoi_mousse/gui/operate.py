@@ -119,21 +119,18 @@ class OperateInfo(Static, AppType):
             lines_to_write.append(InfoLine.forget_path)
         elif self.btn_enum == OperateBtn.destroy_path:
             lines_to_write.append(InfoLine.destroy_path)
-        elif self.btn_enum == OperateBtn.init_new_repo:
-            lines_to_write.append(InfoLine.init_new)
-        elif self.btn_enum == OperateBtn.init_clone_repo:
-            lines_to_write.append(
-                f"{InfoLine.init_clone} [$text-warning]{self.op_data.repo_url}[/]"
-            )
+        elif self.btn_enum == OperateBtn.init_repo:
+            if self.op_data.btn_label == OperateBtn.init_repo.init_clone_label:
+                lines_to_write.append(
+                    f"{InfoLine.init_clone} [$text-warning]{self.op_data.repo_url}[/]"
+                )
+            else:
+                lines_to_write.append(InfoLine.init_new)
         if self.app.changes_enabled is True:
             lines_to_write.append(InfoLine.changes_enabled)
         else:
             lines_to_write.append(InfoLine.changes_disabled)
-        if self.btn_enum not in (
-            OperateBtn.apply_path,
-            OperateBtn.init_new_repo,
-            OperateBtn.init_clone_repo,
-        ):
+        if self.btn_enum not in (OperateBtn.apply_path, OperateBtn.init_repo):
             if self.git_autocommit is True:
                 lines_to_write.append(InfoLine.auto_commit)
             if self.git_autopush is True:
@@ -158,6 +155,7 @@ class OperateScreen(Screen[None], AppType):
         self.reverse = (
             False if self.op_data.btn_enum == OperateBtn.apply_path else True
         )
+        self.repo_url: str | None = None
 
     def compose(self) -> ComposeResult:
         yield CustomHeader(IDS.operate)
@@ -168,13 +166,9 @@ class OperateScreen(Screen[None], AppType):
                 OperateBtn.re_add_path,
             ):
                 yield DiffView(ids=IDS.operate, reverse=self.reverse)
-            elif self.op_data.btn_enum in (
-                OperateBtn.init_new_repo,
-                OperateBtn.init_clone_repo,
-            ):
+            elif self.op_data.btn_label == OperateBtn.init_repo:
                 yield MainSectionLabel(SectionLabels.operate_context)
                 yield InitCollapsibles()
-
             else:
                 yield ContentsView(ids=IDS.operate)
         with VerticalGroup(id=IDS.operate.container.post_operate):
@@ -234,10 +228,7 @@ class OperateScreen(Screen[None], AppType):
     def configure_buttons(self) -> None:
         self.op_btn.label = self.op_data.btn_label
         self.op_btn.tooltip = self.op_data.btn_tooltip
-        if self.op_data.btn_enum in (
-            OperateBtn.init_new_repo,
-            OperateBtn.init_clone_repo,
-        ):
+        if self.op_data.btn_enum == OperateBtn.init_repo:
             self.exit_btn.label = OperateBtn.operate_exit.exit_app_label
 
     def run_operate_command(self) -> None:
@@ -271,13 +262,7 @@ class OperateScreen(Screen[None], AppType):
                 path_arg=self.path_arg,
                 changes_enabled=self.app.changes_enabled,
             )
-        elif self.op_data.btn_enum == OperateBtn.init_new_repo:
-            self.app.operate_cmd_result = self.app.chezmoi.perform(
-                WriteCmd.init, changes_enabled=self.app.changes_enabled
-            )
-            if self.app.operate_cmd_result.dry_run is False:
-                self.app.init_cmd_needed = False
-        elif self.op_data.btn_enum == OperateBtn.init_clone_repo:
+        elif self.op_data.btn_enum == OperateBtn.init_repo:
             self.app.operate_cmd_result = self.app.chezmoi.perform(
                 WriteCmd.init,
                 repo_url=self.repo_url,
@@ -306,8 +291,7 @@ class OperateScreen(Screen[None], AppType):
             return
         new_description = (
             BindingDescription.reload
-            if self.op_data.btn_enum
-            in (OperateBtn.init_new_repo, OperateBtn.init_clone_repo)
+            if self.op_data.btn_enum == OperateBtn.init_repo
             else BindingDescription.close
         )
         self.app.update_binding_description(
@@ -331,10 +315,7 @@ class OperateScreen(Screen[None], AppType):
             OperateBtn.destroy_path,
         ):
             self.exit_btn.label = OperateBtn.operate_exit.close_label
-        elif self.op_data.btn_enum in (
-            OperateBtn.init_new_repo,
-            OperateBtn.init_clone_repo,
-        ):
+        elif self.op_data.btn_enum == OperateBtn.init_repo:
             self.exit_btn.label = OperateBtn.operate_exit.reload_label
 
     @on(Button.Pressed, Tcss.operate_button.dot_prefix)

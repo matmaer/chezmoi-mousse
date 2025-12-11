@@ -48,8 +48,8 @@ __all__ = ["InitScreen"]
 
 
 class StaticText(StrEnum):
-    init_new = f"Initialize a new chezmoi repository in your home directory.\nClick the [$text-primary]{OperateBtn.init_new_repo.initial_label}[/] button below to run [$text-success]'chezmoi init'[/].\n"
-    init_clone = f'To enable the [$text-primary]"{OperateBtn.init_clone_repo.initial_label}"[/] button, enter a repository address below.'
+    init_new = f"Initialize a new chezmoi repository in your home directory.\nClick the [$text-primary]{OperateBtn.init_repo.initial_label}[/] button below to run [$text-success]'chezmoi init'[/].\n"
+    init_clone = f'To enable the [$text-primary]"{OperateBtn.init_repo.init_clone_label}"[/] button, enter a repository address below.'
     guess_url = "Let chezmoi guess the best URL for you."
     https_url = "Enter a full https:// URL, e.g., https://github.com/user/repo.git, if you use a PAT, make sure to include it in the URL like so: https://username:ghp_123456789abcdef@github.com/matmaer/my-dotfiles.git and delete the PAT after use. "
     ssh_url = "You could also use an ssh URL if you have an SSH key pair set up,for example: ssh://git@github.com/user/dotfiles-repo.git"
@@ -85,7 +85,6 @@ class InitNew(Vertical, AppType):
     def compose(self) -> ComposeResult:
         yield MainSectionLabel(SectionLabels.init_new_repo)
         yield Static(StaticText.init_new)
-        yield OperateButtons(ids=IDS.init, buttons=(OperateBtn.init_new_repo,))
 
 
 class InitClone(Vertical, AppType):
@@ -98,9 +97,6 @@ class InitClone(Vertical, AppType):
         yield SubSectionLabel(SectionLabels.init_clone_repo_url)
         yield Static(StaticText.init_clone)
         yield InputInitCloneRepo()
-        yield OperateButtons(
-            ids=IDS.init, buttons=(OperateBtn.init_clone_repo,)
-        )
 
 
 class InitSwitcher(ContentSwitcher, AppType):
@@ -159,6 +155,10 @@ class InitScreen(Screen[None], AppType):
                 with Vertical():
                     yield SubSectionLabel(SectionLabels.debug_log_output)
                     yield DebugLog(ids=IDS.init)
+        yield OperateButtons(
+            ids=IDS.init,
+            buttons=(OperateBtn.init_repo, OperateBtn.operate_exit),
+        )
         yield Footer(id=IDS.init.footer)
 
     def on_mount(self) -> None:
@@ -168,14 +168,31 @@ class InitScreen(Screen[None], AppType):
         self.switcher = self.query_one(
             IDS.init.switcher.init_screen_q, InitSwitcher
         )
+        self.init_btn = self.query_one(
+            IDS.init.operate_btn.init_repo_q, Button
+        )
+        self.exit_btn = self.query_one(
+            IDS.init.operate_btn.operate_exit_q, Button
+        )
+        self.exit_btn.label = OperateBtn.operate_exit.exit_app_label
 
     @on(Button.Pressed, Tcss.flat_button.dot_prefix)
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
         if event.button.id == IDS.init.flat_btn.init_new:
             self.switcher.current = IDS.init.view.init_new
+            self.init_btn.label = OperateBtn.init_repo.init_new_label
+            self.init_btn.disabled = False
+            self.init_btn.tooltip = OperateBtn.init_repo.initial_tooltip
         elif event.button.id == IDS.init.flat_btn.init_clone:
             self.switcher.current = IDS.init.view.init_clone
+            self.init_btn.label = OperateBtn.init_repo.init_clone_label
+            if self.valid_url is False:
+                self.init_btn.disabled = True
+                self.init_btn.tooltip = OperateBtn.init_repo.disabled_tooltip
+            else:
+                self.init_btn.disabled = False
+                self.init_btn.tooltip = OperateBtn.init_repo.enabled_tooltip
         elif event.button.id == IDS.init.flat_btn.doctor:
             self.switcher.current = IDS.init.container.doctor
         elif event.button.id == IDS.init.flat_btn.template_data:
@@ -184,6 +201,9 @@ class InitScreen(Screen[None], AppType):
     @on(OperateButtonMsg)
     def handle_operate_button_pressed(self, msg: OperateButtonMsg) -> None:
         msg.stop()
+        if msg.label == OperateBtn.operate_exit.exit_app_label:
+            self.app.exit()
+            return
         self.app.operate_data = OperateData(
             btn_enum=msg.btn_enum,
             btn_label=msg.label,
@@ -195,6 +215,8 @@ class InitScreen(Screen[None], AppType):
 
     @on(Input.Submitted)
     def log_validation_result(self, event: Input.Submitted) -> None:
+        if self.switcher.current != IDS.init.view.init_clone:
+            return
         if event.validation_result is None:
             return
         self.valid_url = event.validation_result.is_valid
@@ -202,8 +224,6 @@ class InitScreen(Screen[None], AppType):
             self.notify("Invalid URL entered.", severity="error")
             return
         self.notify("Valid URL entered, button enabled.")
-        self.init_clone_btn = self.query_one(
-            IDS.init.operate_btn.init_clone_repo_q, Button
-        )
-        self.init_clone_btn.disabled = False
+        self.init_btn.disabled = False
+        self.init_btn.tooltip = OperateBtn.init_repo.enabled_tooltip
         self.repo_url = event.value
