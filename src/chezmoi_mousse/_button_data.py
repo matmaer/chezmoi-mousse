@@ -73,8 +73,7 @@ class SharedLabels(StrEnum):
 
 
 class SharedToolTips(StrEnum):
-    dir_no_status = "The selected directory has no status to operate on."
-    file_no_status = "The selected file has no status to operate on."
+    path_no_status = "The selected path has no status to operate on."
     in_dest_dir = "This is the destDir, select a path to operate on."
 
 
@@ -89,8 +88,6 @@ class OpBtnData:
     dir_label: str = _UNSET
     file_tooltip: str = _UNSET
     dir_tooltip: str = _UNSET
-    file_no_status_tooltip: str = _UNSET
-    dir_no_status_tooltip: str = _UNSET
 
     # Add button specific
     enabled_tooltip: str = _UNSET
@@ -127,20 +124,18 @@ class OperateBtn(Enum):
         initial_label="Apply Path",
         initial_tooltip=SharedToolTips.in_dest_dir,
         dir_label="Apply Dir",
-        dir_no_status_tooltip=SharedToolTips.dir_no_status,
+        disabled_tooltip=SharedToolTips.path_no_status,
         dir_tooltip='Run "chezmoi apply" on the directory.',
         file_label="Apply File",
-        file_no_status_tooltip=SharedToolTips.file_no_status,
         file_tooltip='Run "chezmoi apply" on the file.',
     )
     re_add_path = OpBtnData(
         initial_label="Re-Add Path",
         initial_tooltip=SharedToolTips.in_dest_dir,
         dir_label="Re-Add Dir",
-        dir_no_status_tooltip=SharedToolTips.dir_no_status,
         dir_tooltip='Run "chezmoi re-add" on the directory.',
         file_label="Re-Add File",
-        file_no_status_tooltip=SharedToolTips.file_no_status,
+        disabled_tooltip=SharedToolTips.path_no_status,
         file_tooltip='Run "chezmoi re-add" on the file.',
     )
     forget_path = OpBtnData(
@@ -215,14 +210,6 @@ class OperateBtn(Enum):
         return self.value.disabled_tooltip
 
     # Apply and ReAdd tab specific attribute access
-
-    @property
-    def file_no_status_tooltip(self) -> str:
-        return self.value.file_no_status_tooltip
-
-    @property
-    def dir_no_status_tooltip(self) -> str:
-        return self.value.dir_no_status_tooltip
 
     @property
     def dir_tooltip(self) -> str:

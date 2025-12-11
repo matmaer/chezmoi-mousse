@@ -30,23 +30,27 @@ class ApplyTab(TabHorizontal):
         )
         yield SwitchSlider(ids=IDS.apply)
 
+    def on_mount(self) -> None:
+        self.op_path_btn = self.query_one(
+            IDS.apply.operate_btn.apply_path_q, Button
+        )
+
     @on(CurrentApplyNodeMsg)
     def update_apply_operate_buttons(self, event: CurrentApplyNodeMsg) -> None:
         self.update_view_path(event.node_data.path)
-        operate_path_button = self.query_one(
-            IDS.apply.operate_btn.apply_path_q, Button
-        )
-        operate_path_button.label = (
+        self.op_path_btn.label = (
             OperateBtn.apply_path.dir_label
             if event.node_data.path_kind == PathKind.DIR
             else OperateBtn.apply_path.file_label
         )
-        operate_path_button.tooltip = (
-            OperateBtn.apply_path.dir_tooltip
-            if event.node_data.path_kind == PathKind.DIR
-            else OperateBtn.apply_path.file_tooltip
-        )
-        operate_path_button.disabled = (
-            True if event.node_data.status == "X" else False
-        )
+        if event.node_data.status == "X":
+            self.op_path_btn.disabled = True
+            self.op_path_btn.tooltip = OperateBtn.apply_path.disabled_tooltip
+        else:
+            self.op_path_btn.disabled = False
+            self.op_path_btn.tooltip = (
+                OperateBtn.apply_path.dir_tooltip
+                if event.node_data.path_kind == PathKind.DIR
+                else OperateBtn.apply_path.file_tooltip
+            )
         self.update_other_buttons(event.node_data)
