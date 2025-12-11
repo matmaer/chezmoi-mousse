@@ -150,8 +150,7 @@ class SplashScreen(Screen[SplashData | None], AppType):
             self.splash_log.styles.height = 1
             cmd_text = "chezmoi command"
             padding = LOG_PADDING_WIDTH - len(cmd_text)
-            log_text = f"{cmd_text} {'.' * padding} not found"
-            self.splash_log.write(log_text)
+            self.splash_log.write(f"{cmd_text} {'.' * padding} not found")
             return
         self.run_command_workers()
 
