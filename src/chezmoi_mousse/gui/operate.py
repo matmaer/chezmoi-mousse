@@ -275,12 +275,16 @@ class OperateScreen(Screen[None], AppType):
             self.app.operate_cmd_result = self.app.chezmoi.perform(
                 WriteCmd.init, changes_enabled=self.app.changes_enabled
             )
+            if self.app.operate_cmd_result.dry_run is False:
+                self.app.init_cmd_needed = False
         elif self.op_data.btn_enum == OperateBtn.init_clone_repo:
             self.app.operate_cmd_result = self.app.chezmoi.perform(
                 WriteCmd.init,
                 repo_url=self.repo_url,
                 changes_enabled=self.app.changes_enabled,
             )
+            if self.app.operate_cmd_result.dry_run is False:
+                self.app.init_cmd_needed = False
 
         self.pre_op_container.display = False
         self.post_op_container.display = True
