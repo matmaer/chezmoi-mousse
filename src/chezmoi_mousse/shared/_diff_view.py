@@ -10,7 +10,6 @@ from chezmoi_mousse import (
     AppType,
     Chars,
     DestDirStrings,
-    NodeData,
     ReadCmd,
     SectionLabels,
     TabName,
@@ -22,7 +21,7 @@ from ._section_headers import SubSectionLabel
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from chezmoi_mousse import AppIds, AppType, CommandResult
+    from chezmoi_mousse import AppIds, AppType, CommandResult, NodeData
 
 __all__ = ["DiffView"]
 
