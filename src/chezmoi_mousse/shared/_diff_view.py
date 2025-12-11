@@ -10,6 +10,7 @@ from chezmoi_mousse import (
     AppType,
     Chars,
     DestDirStrings,
+    NodeData,
     ReadCmd,
     SectionLabels,
     TabName,
@@ -29,7 +30,7 @@ __all__ = ["DiffView"]
 class DiffView(Vertical, AppType):
 
     destDir: "Path | None" = None
-    path: reactive["Path | None"] = reactive(None, init=False)
+    node_data: reactive["NodeData | None"] = reactive(None, init=False)
 
     def __init__(self, *, ids: "AppIds", reverse: bool) -> None:
         self.ids = ids
@@ -61,44 +62,44 @@ class DiffView(Vertical, AppType):
     def on_mount(self) -> None:
         self.border_title = f" {self.destDir} "
 
-    def _write_unchanged_path_info(self) -> None:
-        if self.path in self.app.chezmoi.dirs:
-            self.rich_log.write(f"Managed directory {self.path}\n")
+    def _write_unchanged_path_info(self, path_arg: "Path") -> None:
+        if path_arg in self.app.chezmoi.dirs:
+            self.rich_log.write(f"Managed directory {path_arg}\n")
         self.rich_log.write(
-            f'No diff available for "{self.path}", the path has no status.\n'
+            f'No diff available for "{path_arg}", the path has no status.\n'
         )
 
-    def watch_path(self) -> None:
-        if self.path is None:
+    def watch_node_data(self) -> None:
+        if self.node_data is None:
             return
         else:
             dest_dir_info = self.query_one(
                 self.ids.container.dest_dir_info_q, Vertical
             )
             dest_dir_info.display = False
-        self.border_title = f" {self.path} "
+        self.border_title = f" {self.node_data.path} "
         self.rich_log = self.query_one(self.ids.logger.diff_q, RichLog)
         self.rich_log.clear()
 
         # write lines for an unchanged file or directory
         if (
             self.ids.canvas_name == TabName.apply
-            and self.path not in self.app.chezmoi.apply_status_files
-            and self.path not in self.app.chezmoi.apply_status_dirs
+            and self.node_data.path not in self.app.chezmoi.apply_status_files
+            and self.node_data.path not in self.app.chezmoi.apply_status_dirs
         ):
-            self._write_unchanged_path_info()
+            self._write_unchanged_path_info(self.node_data.path)
             return
         if (
             self.ids.canvas_name == TabName.re_add
-            and self.path not in self.app.chezmoi.re_add_status_files
-            and self.path not in self.app.chezmoi.re_add_status_dirs
+            and self.node_data.path not in self.app.chezmoi.re_add_status_files
+            and self.node_data.path not in self.app.chezmoi.re_add_status_dirs
         ):
-            self._write_unchanged_path_info()
+            self._write_unchanged_path_info(self.node_data.path)
             return
 
         # create the diff view for a changed file
         diff_output: "CommandResult" = self.app.chezmoi.read(
-            self.diff_cmd, path_arg=self.path
+            self.diff_cmd, path_arg=self.node_data.path
         )
 
         self.rich_log.write(f'Output from "{diff_output.pretty_cmd}"')

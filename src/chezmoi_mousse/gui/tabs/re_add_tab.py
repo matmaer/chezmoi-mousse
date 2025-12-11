@@ -39,7 +39,7 @@ class ReAddTab(TabHorizontal, AppType):
     def update_re_add_operate_buttons(
         self, event: CurrentReAddNodeMsg
     ) -> None:
-        self.update_view_path(event.node_data.path)
+        self.update_view_node_data(event.node_data)
         self.op_path_btn.label = (
             OperateBtn.re_add_path.dir_label
             if event.node_data.path_kind == PathKind.DIR

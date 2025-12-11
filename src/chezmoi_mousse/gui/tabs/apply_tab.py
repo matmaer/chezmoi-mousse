@@ -37,7 +37,7 @@ class ApplyTab(TabHorizontal):
 
     @on(CurrentApplyNodeMsg)
     def update_apply_operate_buttons(self, event: CurrentApplyNodeMsg) -> None:
-        self.update_view_path(event.node_data.path)
+        self.update_view_node_data(event.node_data)
         self.op_path_btn.label = (
             OperateBtn.apply_path.dir_label
             if event.node_data.path_kind == PathKind.DIR

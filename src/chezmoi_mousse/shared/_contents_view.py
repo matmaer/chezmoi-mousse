@@ -10,6 +10,7 @@ from textual.widgets import RichLog, Static
 from chezmoi_mousse import (
     AppType,
     DestDirStrings,
+    NodeData,
     ReadCmd,
     SectionLabels,
     TabName,
@@ -43,17 +44,18 @@ class ContentsTabStrings(StrEnum):
 class ContentsView(Vertical, AppType):
 
     destDir: "Path | None" = None
-    path: reactive["Path | None"] = reactive(None, init=False)
+    # path: reactive["Path | None"] = reactive(None, init=False)
+    node_data: reactive["NodeData | None"] = reactive(None, init=False)
 
     def __init__(self, *, ids: "AppIds") -> None:
         self.ids = ids
+        super().__init__(
+            id=self.ids.container.contents, classes=Tcss.border_title_top
+        )
         self.click_file_info = (
             DestDirStrings.read_file
             if self.ids.canvas_name == TabName.add
             else DestDirStrings.cat
-        )
-        super().__init__(
-            id=self.ids.container.contents, classes=Tcss.border_title_top
         )
 
     def compose(self) -> ComposeResult:
@@ -71,39 +73,43 @@ class ContentsView(Vertical, AppType):
 
     def on_mount(self) -> None:
         self.border_title = f" {self.destDir} "
-
-    def write_managed_directory(self) -> None:
         self.rich_log = self.query_one(self.ids.logger.contents_q, RichLog)
-        self.rich_log.write(f"{ContentsTabStrings.managed_dir} {self.path}")
+
+    def write_managed_directory(self, path_arg: "Path") -> None:
+        if self.node_data is None:
+            raise ValueError("node_data is None in ContentsView")
+        self.rich_log.write(f"{ContentsTabStrings.managed_dir} {path_arg}")
         self.rich_log.write(ContentsTabStrings.click_file_path)
 
-    def watch_path(self) -> None:
-        if self.path is None:
+    def watch_node_data(self) -> None:
+        if self.node_data is None:
             return
         else:
             dest_dir_info = self.query_one(
                 self.ids.container.dest_dir_info_q, Vertical
             )
             dest_dir_info.display = False
-        self.rich_log = self.query_one(self.ids.logger.contents_q, RichLog)
-        self.border_title = f" {self.path} "
+        self.border_title = f" {self.node_data.path} "
         self.rich_log.clear()
         truncated_message = ""
         try:
-            if self.path.is_file() and self.path.stat().st_size > 150 * 1024:
+            if (
+                self.node_data.path.is_file()
+                and self.node_data.path.stat().st_size > 150 * 1024
+            ):
                 truncated_message = ContentsTabStrings.truncated
                 self.rich_log.write(
-                    f"{ContentsTabStrings.too_large} {self.path}"
+                    f"{ContentsTabStrings.too_large} {self.node_data.path}"
                 )
         except PermissionError as e:
             self.rich_log.write(e.strerror)
             self.rich_log.write(
-                f"{ContentsTabStrings.permission_denied} {self.path}"
+                f"{ContentsTabStrings.permission_denied} {self.node_data.path}"
             )
             return
 
         try:
-            with open(self.path, "rt", encoding="utf-8") as file:
+            with open(self.node_data.path, "rt", encoding="utf-8") as file:
                 file_content = file.read(150 * 1024)
                 if file_content.strip() == "":
                     self.rich_log.write(
@@ -111,25 +117,25 @@ class ContentsView(Vertical, AppType):
                     )
                 else:
                     self.rich_log.write(
-                        f"{ContentsTabStrings.output_from_read} {self.path}\n"
+                        f"{ContentsTabStrings.output_from_read} {self.node_data.path}\n"
                     )
                     self.rich_log.write(truncated_message + file_content)
 
         except UnicodeDecodeError:
             self.rich_log.write(
-                f"{ContentsTabStrings.cannot_decode} {self.path}"
+                f"{ContentsTabStrings.cannot_decode} {self.node_data.path}"
             )
             return
 
         except FileNotFoundError:
             # FileNotFoundError is raised both when a file or a directory
             # does not exist
-            if self.path in self.app.chezmoi.dirs:
-                self.write_managed_directory()
+            if self.node_data.path in self.app.chezmoi.dirs:
+                self.write_managed_directory(self.node_data.path)
                 return
-            elif self.path in self.app.chezmoi.files:
+            elif self.node_data.path in self.app.chezmoi.files:
                 cat_output: "CommandResult" = self.app.chezmoi.read(
-                    ReadCmd.cat, path_arg=self.path
+                    ReadCmd.cat, path_arg=self.node_data.path
                 )
                 self.rich_log.write(
                     f'{ContentsTabStrings.output_from_cat} "{cat_output.pretty_cmd}"\n'
@@ -146,16 +152,18 @@ class ContentsView(Vertical, AppType):
                 return
 
         except IsADirectoryError:
-            if self.path in self.app.chezmoi.dirs:
-                self.write_managed_directory()
+            if self.node_data.path in self.app.chezmoi.dirs:
+                self.write_managed_directory(self.node_data.path)
             else:
                 self.rich_log.write(
-                    f"{ContentsTabStrings.unmanaged_dir} {self.path}"
+                    f"{ContentsTabStrings.unmanaged_dir} {self.node_data.path}"
                 )
                 self.rich_log.write(ContentsTabStrings.click_file_path)
 
         except OSError as error:
             self.rich_log.write(
-                Text(f"{ContentsTabStrings.read_error} {self.path}: {error}")
+                Text(
+                    f"{ContentsTabStrings.read_error} {self.node_data.path}: {error}"
+                )
             )
             self.rich_log.write(ContentsTabStrings.click_file_path)

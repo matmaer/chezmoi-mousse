@@ -227,9 +227,6 @@ class AddTab(Horizontal, AppType):
 
     destDir: Path
 
-    def __init__(self) -> None:
-        super().__init__()
-
     def compose(self) -> ComposeResult:
         yield FilteredDirTree(self.destDir, id=IDS.add.tree.dir_tree)
         yield ContentsView(ids=IDS.add)
@@ -239,41 +236,37 @@ class AddTab(Horizontal, AppType):
         yield SwitchSlider(ids=IDS.add)
 
     def on_mount(self) -> None:
-        dir_tree = self.query_one(IDS.add.tree.dir_tree_q, FilteredDirTree)
-        dir_tree.guide_depth = 3
-        dir_tree.show_root = False
-        dir_tree.add_class(Tcss.tab_left_vertical, Tcss.border_title_top)
-        dir_tree.border_title = " destDir "
-        contents_view = self.query_one(
+        self.dir_tree = self.query_one(
+            IDS.add.tree.dir_tree_q, FilteredDirTree
+        )
+        self.dir_tree.guide_depth = 3
+        self.dir_tree.show_root = False
+        self.dir_tree.add_class(Tcss.tab_left_vertical, Tcss.border_title_top)
+        self.dir_tree.border_title = " destDir "
+        self.contents_view = self.query_one(
             IDS.add.container.contents_q, ContentsView
         )
-        contents_view.add_class(Tcss.border_title_top)
-        contents_view.border_title = f" {self.destDir} "
-
-    def update_buttons(self, is_dir: bool) -> None:
-        add_file_button = self.query_one(
+        self.contents_view.add_class(Tcss.border_title_top)
+        self.contents_view.border_title = f" {self.destDir} "
+        self.add_file_button = self.query_one(
             IDS.add.operate_btn.add_file_q, Button
         )
-        add_dir_button = self.query_one(IDS.add.operate_btn.add_dir_q, Button)
-        if is_dir is True:
-            add_file_button.disabled = True
-            add_file_button.tooltip = OperateBtn.add_file.disabled_tooltip
-            add_dir_button.disabled = False
-            add_dir_button.tooltip = OperateBtn.add_dir.enabled_tooltip
-        else:
-            add_file_button.disabled = False
-            add_file_button.tooltip = OperateBtn.add_file.enabled_tooltip
-            add_dir_button.disabled = True
-            add_dir_button.tooltip = OperateBtn.add_dir.disabled_tooltip
-        return
-
-    def send_message_current_add_node(
-        self, path: Path, path_kind: "PathKind"
-    ) -> None:
-        message_data = NodeData(
-            path=path, path_kind=path_kind, found=True, status=""
+        self.add_dir_button = self.query_one(
+            IDS.add.operate_btn.add_dir_q, Button
         )
-        self.post_message(CurrentAddNodeMsg(message_data))
+
+    def update_buttons(self, path_kind: PathKind) -> None:
+        if path_kind == PathKind.DIR:
+            self.add_file_button.disabled = True
+            self.add_file_button.tooltip = OperateBtn.add_file.disabled_tooltip
+            self.add_dir_button.disabled = False
+            self.add_dir_button.tooltip = OperateBtn.add_dir.enabled_tooltip
+        else:
+            self.add_file_button.disabled = False
+            self.add_file_button.tooltip = OperateBtn.add_file.enabled_tooltip
+            self.add_dir_button.disabled = True
+            self.add_dir_button.tooltip = OperateBtn.add_dir.disabled_tooltip
+        return
 
     @on(DirectoryTree.DirectorySelected)
     @on(DirectoryTree.FileSelected)
@@ -288,29 +281,28 @@ class AddTab(Horizontal, AppType):
                 severity="error",
             )
             return
-        contents_view = self.query_one(
-            IDS.add.container.contents_q, ContentsView
-        )
-        contents_view.path = event.node.data.path
-        contents_view.border_title = f" {event.node.data.path} "
+        self.contents_view.border_title = f" {event.node.data.path} "
 
-        if isinstance(event, DirectoryTree.FileSelected):
-            self.update_buttons(is_dir=False)
-            self.send_message_current_add_node(
-                path=event.node.data.path, path_kind=PathKind.FILE
-            )
-        else:
-            self.update_buttons(is_dir=True)
-            self.send_message_current_add_node(
-                path=event.node.data.path, path_kind=PathKind.DIR
-            )
+        path_kind = (
+            PathKind.DIR
+            if isinstance(event, DirectoryTree.DirectorySelected)
+            else PathKind.FILE
+        )
+        self.update_buttons(path_kind=path_kind)
+        node_data = NodeData(
+            found=True,
+            path=event.node.data.path,
+            status="",
+            path_kind=path_kind,
+        )
+        self.contents_view.node_data = node_data
+        self.post_message(CurrentAddNodeMsg(node_data=node_data))
 
     @on(Switch.Changed)
     def handle_filter_switches(self, event: Switch.Changed) -> None:
         event.stop()
-        tree = self.query_one(IDS.add.tree.dir_tree_q, FilteredDirTree)
         if event.switch.id == IDS.add.filter.unmanaged_dirs:
-            tree.unmanaged_dirs = event.value
+            self.dir_tree.unmanaged_dirs = event.value
         elif event.switch.id == IDS.add.filter.unwanted:
-            tree.unwanted = event.value
-        tree.reload()
+            self.dir_tree.unwanted = event.value
+        self.dir_tree.reload()

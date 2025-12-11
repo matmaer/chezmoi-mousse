@@ -1,7 +1,6 @@
 """Contains subclassed textual classes shared between the ApplyTab and
 ReAddTab."""
 
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from textual import on
@@ -27,19 +26,19 @@ class TabHorizontal(Horizontal):
         self.ids = ids
         self.expand_all_state = False
 
-    def update_view_path(self, path: Path) -> None:
-        contents_view = self.query_one(
+    def update_view_node_data(self, node_data: "NodeData") -> None:
+        self.contents_view = self.query_one(
             self.ids.container.contents_q, ContentsView
         )
-        contents_view.path = path
+        self.contents_view.node_data = node_data
 
         diff_view = self.query_one(self.ids.container.diff_q, DiffView)
-        diff_view.path = path
+        diff_view.node_data = node_data
 
         git_log_path = self.query_one(
             self.ids.container.git_log_path_q, GitLogPath
         )
-        git_log_path.path = path
+        git_log_path.path = node_data.path
 
     def update_other_buttons(self, node_data: "NodeData") -> None:
         destroy_button = self.query_one(

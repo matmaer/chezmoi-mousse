@@ -230,7 +230,7 @@ class OperateScreen(Screen[None], AppType):
             OperateBtn.re_add_path,
         ):
             diff_view = self.query_one(IDS.operate.container.diff_q, DiffView)
-            diff_view.path = self.path_arg
+            diff_view.node_data = self.op_data.node_data
         elif self.op_data.btn_enum in (
             OperateBtn.add_file,
             OperateBtn.add_dir,
@@ -240,7 +240,7 @@ class OperateScreen(Screen[None], AppType):
             contents_view = self.query_one(
                 IDS.operate.container.contents_q, ContentsView
             )
-            contents_view.path = self.path_arg
+            contents_view.node_data = self.op_data.node_data
 
     def configure_buttons(self) -> None:
         self.op_btn.label = self.op_data.btn_label
