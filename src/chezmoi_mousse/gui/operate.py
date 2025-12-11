@@ -160,11 +160,31 @@ class OperateScreen(Screen[None], AppType):
         if self.app.operate_data is None:
             raise ValueError("self.app.operate_data is None in OperateScreen")
         self.op_data = self.app.operate_data
+        self.reverse = (
+            False if self.op_data.btn_enum == OperateBtn.apply_path else True
+        )
+        if self.app.splash_data is None:
+            raise ValueError("self.app.splash_data is None in OperateScreen")
+        self.splash_data = self.app.splash_data
 
     def compose(self) -> ComposeResult:
         yield CustomHeader(IDS.operate)
         with VerticalGroup(id=IDS.operate.container.pre_operate):
             yield OperateInfo()
+            if self.op_data.btn_enum in (
+                OperateBtn.apply_path,
+                OperateBtn.re_add_path,
+            ):
+                yield DiffView(ids=IDS.operate, reverse=self.reverse)
+            elif self.op_data.btn_enum in (
+                OperateBtn.init_new_repo,
+                OperateBtn.init_clone_repo,
+            ):
+                yield MainSectionLabel(SectionLabels.operate_context)
+                yield InitCollapsibles(splash_data=self.splash_data)
+
+            else:
+                yield ContentsView(ids=IDS.operate)
         with VerticalGroup(id=IDS.operate.container.post_operate):
             yield MainSectionLabel(SectionLabels.operate_output)
             yield OperateLog(ids=IDS.operate)
@@ -182,7 +202,6 @@ class OperateScreen(Screen[None], AppType):
         self.pre_op_container = self.query_one(
             IDS.operate.container.pre_operate_q, VerticalGroup
         )
-        self.pre_op_container.display = True
         self.op_btn = self.query_one(
             IDS.operate.operate_button_id("#", btn=self.op_data.btn_enum),
             Button,
@@ -195,52 +214,30 @@ class OperateScreen(Screen[None], AppType):
             self.path_arg = self.op_data.node_data.path
         elif self.op_data.repo_url is not None:
             self.repo_url = self.op_data.repo_url
-        self.mount_pre_operate_widgets()
+        self.set_reactives_and_remove_border_title_top()
         self.configure_buttons()
 
-    def mount_pre_operate_widgets(self) -> None:
-        if self.op_data.btn_enum == OperateBtn.apply_path:
-            self.pre_op_container.mount(
-                DiffView(ids=IDS.operate, reverse=False)
-            )
-        elif self.op_data.btn_enum == OperateBtn.re_add_path:
-            self.pre_op_container.mount(
-                DiffView(ids=IDS.operate, reverse=True)
-            )
-        elif self.op_data.btn_enum in (
-            OperateBtn.add_file,
-            OperateBtn.add_dir,
-            OperateBtn.forget_path,
-            OperateBtn.destroy_path,
-        ):
-            self.pre_op_container.mount(ContentsView(ids=IDS.operate))
-        elif (
-            self.op_data.btn_enum
-            in (OperateBtn.init_new_repo, OperateBtn.init_clone_repo)
-            and self.app.splash_data is not None
-        ):
-            self.pre_op_container.mount(
-                MainSectionLabel(SectionLabels.operate_context)
-            )
-            self.pre_op_container.mount(
-                InitCollapsibles(splash_data=self.app.splash_data)
-            )
+    def set_reactives_and_remove_border_title_top(self) -> None:
         if self.op_data.btn_enum in (
             OperateBtn.apply_path,
             OperateBtn.re_add_path,
         ):
-            diff_view = self.query_one(IDS.operate.container.diff_q, DiffView)
+            diff_view = self.pre_op_container.query_one(
+                IDS.operate.container.diff_q, DiffView
+            )
             diff_view.node_data = self.op_data.node_data
+            diff_view.remove_class(Tcss.border_title_top)
         elif self.op_data.btn_enum in (
             OperateBtn.add_file,
             OperateBtn.add_dir,
             OperateBtn.forget_path,
             OperateBtn.destroy_path,
         ):
-            contents_view = self.query_one(
+            contents_view = self.pre_op_container.query_one(
                 IDS.operate.container.contents_q, ContentsView
             )
             contents_view.node_data = self.op_data.node_data
+            contents_view.remove_class(Tcss.border_title_top)
 
     def configure_buttons(self) -> None:
         self.op_btn.label = self.op_data.btn_label
