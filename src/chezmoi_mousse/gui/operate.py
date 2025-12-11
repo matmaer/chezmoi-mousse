@@ -14,7 +14,6 @@ from chezmoi_mousse import (
     Chars,
     OperateBtn,
     SectionLabels,
-    SplashData,
     Tcss,
     WriteCmd,
 )
@@ -58,25 +57,21 @@ class InfoLine(StrEnum):
     )
 
 
-class InitCollapsibles(VerticalGroup):
-    def __init__(self, splash_data: "SplashData") -> None:
+class InitCollapsibles(VerticalGroup, AppType):
+    def __init__(self) -> None:
         super().__init__()
-        self.splash_data = splash_data
+        if self.app.splash_data is None:
+            raise ValueError("self.app.splash_data is None in OperateScreen")
+        self.splash_data = self.app.splash_data
 
-    def on_mount(self) -> None:
-        self.mount(
-            CustomCollapsible(
-                DoctorTable(
-                    ids=IDS.operate, doctor_data=self.splash_data.doctor
-                ),
-                title="Doctor Output",
-            )
+    def compose(self) -> ComposeResult:
+        yield CustomCollapsible(
+            DoctorTable(ids=IDS.operate, doctor_data=self.splash_data.doctor),
+            title="Doctor Output",
         )
-        self.mount(
-            CustomCollapsible(
-                PrettyTemplateData(self.splash_data.template_data),
-                title="Template Data Output",
-            )
+        yield CustomCollapsible(
+            PrettyTemplateData(self.splash_data.template_data),
+            title="Template Data Output",
         )
 
 
@@ -163,9 +158,6 @@ class OperateScreen(Screen[None], AppType):
         self.reverse = (
             False if self.op_data.btn_enum == OperateBtn.apply_path else True
         )
-        if self.app.splash_data is None:
-            raise ValueError("self.app.splash_data is None in OperateScreen")
-        self.splash_data = self.app.splash_data
 
     def compose(self) -> ComposeResult:
         yield CustomHeader(IDS.operate)
@@ -181,7 +173,7 @@ class OperateScreen(Screen[None], AppType):
                 OperateBtn.init_clone_repo,
             ):
                 yield MainSectionLabel(SectionLabels.operate_context)
-                yield InitCollapsibles(splash_data=self.splash_data)
+                yield InitCollapsibles()
 
             else:
                 yield ContentsView(ids=IDS.operate)
