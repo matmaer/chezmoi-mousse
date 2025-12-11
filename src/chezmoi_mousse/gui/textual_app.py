@@ -137,7 +137,7 @@ class ChezmoiGUI(App[None]):
         )
         if self.splash_data is None:
             # Chezmoi command not found, SplashScreen will return None
-            self.push_screen("install_help")
+            self.push_screen(InstallHelp())
             return
         if self.force_init_screen is True:
             self.force_init_screen = False  # Reset force_init_screen for dev.
