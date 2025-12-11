@@ -168,6 +168,10 @@ class SplashScreen(Screen[SplashData | None], AppType):
                     if splash_cmd == ReadCmd.status_files:
                         continue
                     self.run_io_worker(splash_cmd)
+        else:
+            raise RuntimeError(
+                "status_files worker did not complete successfully"
+            )
 
     def subprocess_run_cmd(self, cmd: ReadCmd) -> CommandResult:
         result: CompletedProcess[str] = run(
