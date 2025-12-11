@@ -140,10 +140,9 @@ class SplashScreen(Screen[SplashData | None], AppType):
         self.set_interval(interval=1, callback=self.all_workers_finished)
 
     def compose(self) -> ComposeResult:
-        with Center():
-            with Middle():
-                yield Center(AnimatedFade())
-                yield Center(SplashLog())
+        with Middle():
+            yield Center(AnimatedFade())
+            yield Center(SplashLog())
 
     def on_mount(self) -> None:
         self.splash_log = self.query_one(IDS.splash.logger.splash_q, SplashLog)
