@@ -2,7 +2,6 @@ import json
 from collections import deque
 from pathlib import Path
 from subprocess import CompletedProcess, run
-from typing import TYPE_CHECKING
 
 from rich.segment import Segment
 from rich.style import Style
@@ -26,9 +25,6 @@ from chezmoi_mousse import (
     SplashData,
     VerbArgs,
 )
-
-if TYPE_CHECKING:
-    from textual.timer import Timer
 
 __all__ = ["SplashScreen"]
 
@@ -79,23 +75,6 @@ def _subprocess_run_cmd(cmd: ReadCmd) -> CommandResult:
     return CommandResult(completed_process=result, read_cmd=cmd)
 
 
-def create_deque() -> deque[Style]:
-    start_color = "#0178D4"
-    end_color = "#F187FB"
-
-    fade = [start_color] * 12
-    gradient = Gradient.from_colors(start_color, end_color, quality=6)
-    fade.extend([color.hex for color in gradient.colors])
-    gradient.colors.reverse()
-    fade.extend([color.hex for color in gradient.colors])
-
-    line_styles = deque(
-        [Style(color=color, bgcolor="#000000", bold=True) for color in fade]
-    )
-    return line_styles
-
-
-FADE_LINE_STYLES = create_deque()
 cat_config: "CommandResult | None" = None
 doctor: "CommandResult | None" = None
 dump_config: "CommandResult | None" = None
@@ -112,19 +91,33 @@ verify: "CommandResult | None" = None
 
 class AnimatedFade(Static):
 
-    def render_lines(self, crop: Region) -> list[Strip]:
-        FADE_LINE_STYLES.rotate()
-        return super().render_lines(crop)
-
-    def render_line(self, y: int) -> Strip:
-        return Strip([Segment(SPLASH[y], style=FADE_LINE_STYLES[y])])
+    def __init__(self) -> None:
+        super().__init__()
+        self.set_interval(interval=0.05, callback=self.refresh)
 
     def on_mount(self) -> None:
         self.styles.height = FADE_HEIGHT
         self.styles.width = FADE_WIDTH
-        self.fade_timer: "Timer" = self.set_interval(
-            interval=0.05, callback=self.refresh
+        start_color = "#0178D4"
+        end_color = "#F187FB"
+        fade = [start_color] * 12
+        gradient = Gradient.from_colors(start_color, end_color, quality=6)
+        fade.extend([color.hex for color in gradient.colors])
+        gradient.colors.reverse()
+        fade.extend([color.hex for color in gradient.colors])
+        self.fade_line_styles = deque(
+            [
+                Style(color=color, bgcolor="#000000", bold=True)
+                for color in fade
+            ]
         )
+
+    def render_lines(self, crop: Region) -> list[Strip]:
+        self.fade_line_styles.rotate()
+        return super().render_lines(crop)
+
+    def render_line(self, y: int) -> Strip:
+        return Strip([Segment(SPLASH[y], style=self.fade_line_styles[y])])
 
 
 class SplashLog(RichLog):
@@ -143,8 +136,8 @@ class SplashScreen(Screen[SplashData | None], AppType):
         super().__init__()
         self.splash_log: SplashLog  # set in on_mount
         self.splash_data: SplashData | None = None
-        self.splash_log_q = IDS.splash.logger.splash_q
         self.post_io_started: bool = False
+        self.set_interval(interval=1, callback=self.all_workers_finished)
 
     def compose(self) -> ComposeResult:
         with Center():
@@ -153,10 +146,7 @@ class SplashScreen(Screen[SplashData | None], AppType):
                 yield Center(SplashLog())
 
     def on_mount(self) -> None:
-        self.splash_log = self.query_one(self.splash_log_q, SplashLog)
-        self.io_workers_timer: "Timer" = self.set_interval(
-            interval=1, callback=self.all_workers_finished
-        )
+        self.splash_log = self.query_one(IDS.splash.logger.splash_q, SplashLog)
         if self.app.chezmoi_found is False:
             self.splash_log.styles.height = 1
             cmd_text = "chezmoi command"

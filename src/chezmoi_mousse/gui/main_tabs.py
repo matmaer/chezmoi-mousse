@@ -56,11 +56,12 @@ class MainScreen(Screen[None], AppType):
     destDir: Path | None = None
 
     def __init__(self) -> None:
+        super().__init__()
+
         self.app_log: "AppLog"
         self.read_log: "ReadCmdLog"
         self.operate_log: "OperateLog"
         self.debug_log: "DebugLog"
-        super().__init__()
 
         self.current_add_node: "NodeData | None" = None
         self.current_apply_node: "NodeData | None" = None
