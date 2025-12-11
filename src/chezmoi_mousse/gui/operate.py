@@ -122,7 +122,7 @@ class OperateInfo(Static, AppType):
         elif self.btn_enum == OperateBtn.init_repo:
             if self.op_data.btn_label == OperateBtn.init_repo.init_clone_label:
                 lines_to_write.append(
-                    f"{InfoLine.init_clone} [$text-warning]{self.op_data.repo_url}[/]"
+                    f"{InfoLine.init_clone} [$text-warning]{self.op_data.init_repo_arg}[/]"
                 )
             else:
                 lines_to_write.append(InfoLine.init_new)
@@ -155,7 +155,6 @@ class OperateScreen(Screen[None], AppType):
         self.reverse = (
             False if self.op_data.btn_enum == OperateBtn.apply_path else True
         )
-        self.repo_url: str | None = None
 
     def compose(self) -> ComposeResult:
         yield CustomHeader(IDS.operate)
@@ -196,10 +195,6 @@ class OperateScreen(Screen[None], AppType):
             IDS.operate.operate_button_id("#", btn=OperateBtn.operate_exit),
             Button,
         )
-        if self.op_data.node_data is not None:
-            self.path_arg = self.op_data.node_data.path
-        elif self.op_data.repo_url is not None:
-            self.repo_url = self.op_data.repo_url
         self.set_reactives_and_remove_border_title_top()
         self.configure_buttons()
 
@@ -232,40 +227,46 @@ class OperateScreen(Screen[None], AppType):
             self.exit_btn.label = OperateBtn.operate_exit.exit_app_label
 
     def run_operate_command(self) -> None:
+        if self.op_data.node_data is not None:
+            path_arg = self.op_data.node_data.path
+        else:
+            path_arg = None
         if self.op_data.btn_enum in (OperateBtn.add_file, OperateBtn.add_dir):
             self.app.operate_cmd_result = self.app.chezmoi.perform(
                 WriteCmd.add,
-                path_arg=self.path_arg,
+                path_arg=path_arg,
                 changes_enabled=self.app.changes_enabled,
             )
         elif self.op_data.btn_enum == OperateBtn.apply_path:
             self.app.operate_cmd_result = self.app.chezmoi.perform(
                 WriteCmd.apply,
-                path_arg=self.path_arg,
+                path_arg=path_arg,
                 changes_enabled=self.app.changes_enabled,
             )
         elif self.op_data.btn_enum == OperateBtn.re_add_path:
             self.app.operate_cmd_result = self.app.chezmoi.perform(
                 WriteCmd.re_add,
-                path_arg=self.path_arg,
+                path_arg=path_arg,
                 changes_enabled=self.app.changes_enabled,
             )
         elif self.op_data.btn_enum == OperateBtn.forget_path:
             self.app.operate_cmd_result = self.app.chezmoi.perform(
                 WriteCmd.forget,
-                path_arg=self.path_arg,
+                path_arg=path_arg,
                 changes_enabled=self.app.changes_enabled,
             )
         elif self.op_data.btn_enum == OperateBtn.destroy_path:
             self.app.operate_cmd_result = self.app.chezmoi.perform(
                 WriteCmd.destroy,
-                path_arg=self.path_arg,
+                path_arg=path_arg,
                 changes_enabled=self.app.changes_enabled,
             )
         elif self.op_data.btn_enum == OperateBtn.init_repo:
             self.app.operate_cmd_result = self.app.chezmoi.perform(
                 WriteCmd.init,
-                repo_url=self.repo_url,
+                init_repo_arg=self.op_data.init_repo_arg,
+                init_guess_ssh=self.op_data.init_guess_ssh,
+                init_guess_https=self.op_data.init_guess_https,
                 changes_enabled=self.app.changes_enabled,
             )
             if self.app.operate_cmd_result.dry_run is False:

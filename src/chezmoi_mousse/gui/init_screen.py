@@ -134,9 +134,11 @@ class InitScreen(Screen[None], AppType):
 
     def __init__(self) -> None:
         super().__init__()
-        self.repo_url: str | None = None
         self.valid_url: bool = False
         self.debug_log: DebugLog
+        self.init_repo_arg: str | None = None
+        self.init_guess_ssh: bool | None = None
+        self.init_guess_https: bool | None = None
 
     def compose(self) -> ComposeResult:
         yield CustomHeader(IDS.init)
@@ -208,7 +210,9 @@ class InitScreen(Screen[None], AppType):
             btn_enum=msg.btn_enum,
             btn_label=msg.label,
             btn_tooltip=msg.tooltip,
-            repo_url=self.repo_url,
+            init_repo_arg=self.repo_url,
+            init_guess_ssh=self.init_guess_ssh,
+            init_guess_https=self.init_guess_ssh,
         )
         self.app.pop_screen()
         self.app.push_screen(OperateScreen())
