@@ -510,14 +510,12 @@ class Chezmoi:
         *,
         path_arg: Path | None = None,
         init_repo_arg: str | None = None,
-        init_guess_ssh: bool | None = None,
-        init_guess_https: bool | None = None,
         changes_enabled: bool,
     ) -> CommandResult:
         if changes_enabled is True:
-            base_cmd: list[str] = GlobalCmd.live_run.value
+            base_cmd = GlobalCmd.live_run.value
         else:
-            base_cmd: list[str] = GlobalCmd.dry_run.value
+            base_cmd = GlobalCmd.dry_run.value
         command: list[str] = base_cmd + write_cmd.value
         if (
             write_cmd
@@ -541,6 +539,8 @@ class Chezmoi:
             and init_repo_arg is not None
         ):
             command += [init_repo_arg]
+        elif write_cmd == WriteCmd.init_new:
+            command: list[str] = command  # no extra args
         else:
             raise ValueError("Invalid arguments for perform()")
 
