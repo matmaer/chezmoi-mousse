@@ -7,14 +7,7 @@ from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.widgets import Footer, TabbedContent, TabPane
 
-from chezmoi_mousse import (
-    IDS,
-    AppType,
-    LogText,
-    OperateData,
-    TabName,
-    WriteCmd,
-)
+from chezmoi_mousse import IDS, AppType, LogText, OperateData, TabName
 from chezmoi_mousse.shared import (
     AppLog,
     CurrentAddNodeMsg,
@@ -124,7 +117,7 @@ class MainScreen(Screen[None], AppType):
         commands_to_log = self.app.splash_data.executed_commands
         if (
             self.app.operate_cmd_result is not None
-            and WriteCmd.init.value[0] in self.app.operate_cmd_result.cmd_args
+            and self.app.operate_cmd_result.is_init_result is True
         ):
             self.operate_log.log_cmd_results(self.app.operate_cmd_result)
             commands_to_log += [self.app.operate_cmd_result]
