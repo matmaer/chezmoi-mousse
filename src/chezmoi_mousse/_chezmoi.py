@@ -86,9 +86,10 @@ class VerbArgs(Enum):
     include_dirs = "--include=dirs"
     include_files = "--include=files"
     init_do_not_guess = "--guess-repo-url=false"
-    init_guess_ssh = "--ssh"
-    path_style_absolute = "--path-style=absolute"
+    init_guess = "--guess-repo-url=true"
+    init_guess_ssh = ["--guess-repo-url=true", "--ssh"]
     not_recursive = "--recursive=false"
+    path_style_absolute = "--path-style=absolute"
     reverse = "--reverse"
 
 
@@ -156,14 +157,52 @@ class ReadCmd(Enum):
         return LogUtils.pretty_cmd_str(self.value)
 
 
+class WriteVerbs(Enum):
+    add = "add"
+    apply = "apply"
+    destroy = "destroy"
+    forget = "forget"
+    init = "init"
+    re_add = "re-add"
+
+
 class WriteCmd(Enum):
-    add = ["add", VerbArgs.not_recursive.value]
+    add = GlobalCmd.live_run.value + [
+        WriteVerbs.add.value,
+        VerbArgs.not_recursive.value,
+    ]
     # add_encrypt = ["add", VerbArgs.encrypt.value] TODO
-    apply = ["apply", VerbArgs.not_recursive.value]
-    destroy = ["destroy", VerbArgs.not_recursive.value]
-    forget = ["forget"]
-    init = ["init"]
-    re_add = ["re-add", VerbArgs.not_recursive.value]
+    apply = GlobalCmd.live_run.value + [
+        WriteVerbs.apply.value,
+        VerbArgs.not_recursive.value,
+    ]
+    destroy = GlobalCmd.live_run.value + [
+        WriteVerbs.destroy.value,
+        VerbArgs.not_recursive.value,
+    ]
+    forget = GlobalCmd.live_run.value + [WriteVerbs.forget.value]
+    init_guess_https = GlobalCmd.live_run.value + [
+        WriteVerbs.init.value,
+        VerbArgs.init_guess.value,
+    ]
+    init_guess_ssh = (
+        GlobalCmd.live_run.value
+        + [WriteVerbs.init.value]
+        + VerbArgs.init_guess_ssh.value
+    )
+    init_new = GlobalCmd.live_run.value + [WriteVerbs.init.value]
+    init_no_guess = GlobalCmd.live_run.value + [
+        WriteVerbs.init.value,
+        VerbArgs.init_do_not_guess.value,
+    ]
+    re_add = GlobalCmd.live_run.value + [
+        WriteVerbs.re_add.value,
+        VerbArgs.not_recursive.value,
+    ]
+
+    @property
+    def pretty_cmd(self) -> str:
+        return LogUtils.pretty_cmd_str(self.value)
 
 
 @dataclass(slots=True)
@@ -187,7 +226,12 @@ class CommandResult:
 
     @property
     def is_init_result(self) -> bool:
-        if self.write_cmd is not None and self.write_cmd == WriteCmd.init:
+        if self.write_cmd is not None and self.write_cmd in (
+            WriteCmd.init_guess_https,
+            WriteCmd.init_guess_ssh,
+            WriteCmd.init_new,
+            WriteCmd.init_no_guess,
+        ):
             return True
         return False
 
@@ -487,18 +531,16 @@ class Chezmoi:
             and path_arg is not None
         ):
             command: list[str] = command + [str(path_arg)]
-        elif write_cmd == WriteCmd.init:
-            if init_guess_https is False and init_guess_ssh is True:
-                raise ValueError(
-                    "Conflicting arguments: init_guess_https is False and"
-                    " init_guess_ssh is True"
-                )
-            if init_guess_https is False:
-                command += [VerbArgs.init_do_not_guess.value]
-            elif init_guess_ssh is True:
-                command += [VerbArgs.init_guess_ssh.value]
-            if init_repo_arg is not None:
-                command += [init_repo_arg]
+        elif (
+            write_cmd
+            in (
+                WriteCmd.init_guess_https,
+                WriteCmd.init_guess_ssh,
+                WriteCmd.init_no_guess,
+            )
+            and init_repo_arg is not None
+        ):
+            command += [init_repo_arg]
         else:
             raise ValueError("Invalid arguments for perform()")
 
