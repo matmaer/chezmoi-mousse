@@ -97,20 +97,29 @@ class InputSSH(Input):
         )
 
 
-class InputGuessURL(Input):
-    def __init__(self) -> None:
-        super().__init__(
+class InputGuessURL(HorizontalGroup):
+
+    def compose(self) -> ComposeResult:
+        yield Input(
             placeholder="Let chezmoi guess the repo URL",
             classes=Tcss.input_field,
         )
+        yield FlatLink(ids=IDS.operate, link_enum=LinkBtn.chezmoi_guess)
+
+    def on_mount(self) -> None:
+        self.query_exactly_one(FlatLink).add_class(Tcss.guess_link)
 
 
-class InputGuessSSH(Input):
-    def __init__(self) -> None:
-        super().__init__(
+class InputGuessSSH(HorizontalGroup):
+    def compose(self) -> ComposeResult:
+        yield Input(
             placeholder="Let chezmoi guess the SSH repo address",
             classes=Tcss.input_field,
         )
+        yield FlatLink(ids=IDS.operate, link_enum=LinkBtn.chezmoi_guess)
+
+    def on_mount(self) -> None:
+        self.query_exactly_one(FlatLink).add_class(Tcss.guess_link)
 
 
 class InitCollapsibles(VerticalGroup, AppType):
@@ -153,7 +162,6 @@ class InitOperateContainer(VerticalGroup):
         yield Label(InitSubLabels.init_clone, classes=Tcss.sub_section_label)
         yield Static(id=IDS.operate.container.init_info)
         yield InputInitCloneRepo()
-        yield FlatLink(ids=IDS.operate, link_enum=LinkBtn.chezmoi_guess)
         yield Label(
             InitSubLabels.operate_context, classes=Tcss.sub_section_label
         )

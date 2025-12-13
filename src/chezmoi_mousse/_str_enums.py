@@ -37,7 +37,7 @@ class LinkBtn(StrEnum):
     chezmoi_apply = "https://www.chezmoi.io/reference/commands/apply/"
     chezmoi_destroy = "https://www.chezmoi.io/reference/commands/destroy/"
     chezmoi_forget = "https://www.chezmoi.io/reference/commands/forget/"
-    chezmoi_guess = "chezmoi guess documentation: https://www.chezmoi.io/reference/commands/init/"
+    chezmoi_guess = "https://www.chezmoi.io/reference/commands/init/"
     chezmoi_install = "https://www.chezmoi.io/install/"
     chezmoi_re_add = "https://www.chezmoi.io/reference/commands/re-add/"
 
@@ -47,6 +47,8 @@ class LinkBtn(StrEnum):
 
     @property
     def link_text(self) -> str:
+        if self.value == LinkBtn.chezmoi_guess.value:
+            return "guess info"
         return (
             self.value.replace("https://", "").replace("www.", "").rstrip("/")
         )

@@ -37,23 +37,6 @@
   }
 }
 
-.flat_link {
-  background-tint: $primary-muted;
-  background: $primary-muted;
-  border: block $primary-muted;
-  color: $text-primary;
-  content-align: center middle;
-  padding: 0 1;
-  text-style: bold;
-  width: 100%;
-  &:hover {
-    color: $text-accent;
-    background: $primary-muted;
-    background-tint: $primary-muted;
-    border: block $primary-muted;
-  }
-}
-
 .flat_section_label {
   background-tint: $primary-muted;
   background: $primary-muted;
@@ -137,6 +120,33 @@ DoctorTable {
 
 FlatButtonsVertical {
   width: auto;
+}
+
+FlatLink {
+  background-tint: $primary-muted;
+  background: $primary-muted;
+  border: block $primary-muted;
+  color: $text-primary;
+  content-align: center middle;
+  padding: 0 1;
+  text-style: bold;
+  width: 100%;
+  &:hover {
+    color: $text-accent;
+    background: $primary-muted;
+    background-tint: $primary-muted;
+    border: block $primary-muted;
+  }
+  &.guess_link {
+    background: $panel;
+    background-tint: $panel;
+    border-top: wide $panel;
+    border-bottom: wide $panel;
+    border-right: wide $panel;
+    border-left: none;
+    width: auto;
+    padding: 0 0 0 1;
+  }
 }
 
 InputInitCloneRepo {

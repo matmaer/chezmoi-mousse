@@ -47,12 +47,17 @@ class FlatButton(Button):
 class FlatLink(Link):
     def __init__(self, *, ids: "AppIds", link_enum: LinkBtn) -> None:
         self.ids = ids
+
         super().__init__(
             id=self.ids.link_button_id(btn=link_enum),
             text=link_enum.link_text,
             url=link_enum.link_url,
-            classes=Tcss.flat_link,
         )
+        self.link_enum = link_enum
+
+    def on_mount(self) -> None:
+        if self.link_enum == LinkBtn.chezmoi_guess:
+            self.add_class(Tcss.guess_link)
 
 
 class FlatButtonsVertical(Vertical):
