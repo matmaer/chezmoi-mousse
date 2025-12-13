@@ -2,6 +2,8 @@ import re
 
 from textual.validation import Failure, ValidationResult, Validator
 
+__all__ = ["SSHSCP"]
+
 
 class SSHSCP(Validator):
     """Validator that checks if a string is a valid SSH SCP-style address.
