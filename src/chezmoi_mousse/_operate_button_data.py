@@ -11,58 +11,11 @@ from enum import Enum, StrEnum
 
 from ._str_enums import BindingDescription
 
-__all__ = ["FlatBtn", "LinkBtn", "OperateBtn", "TabBtn"]
+__all__ = ["OperateBtn"]
 
 
 # Sentinel value to distinguish "not provided" from None
 _UNSET = "UNSET"
-
-
-class FlatBtn(StrEnum):
-    add_help = "Add Help"
-    apply_help = "Apply Help"
-    cat_config = "Cat Config"
-    diagram = "Diagram"
-    doctor = "Doctor"
-    exit_app = "Exit App"
-    ignored = "Ignored"
-    pw_mgr_info = "Password Managers"
-    re_add_help = "Re-Add Help"
-    template_data = "Template Data"
-
-
-class LinkBtn(StrEnum):
-    chezmoi_add = "https://www.chezmoi.io/reference/commands/add/"
-    chezmoi_apply = "https://www.chezmoi.io/reference/commands/apply/"
-    chezmoi_destroy = "https://www.chezmoi.io/reference/commands/destroy/"
-    chezmoi_forget = "https://www.chezmoi.io/reference/commands/forget/"
-    chezmoi_guess = "chezmoi guess documentation: https://www.chezmoi.io/reference/commands/init/"
-    chezmoi_install = "https://www.chezmoi.io/install/"
-    chezmoi_re_add = "https://www.chezmoi.io/reference/commands/re-add/"
-
-    @property
-    def link_url(self) -> str:
-        return self.value
-
-    @property
-    def link_text(self) -> str:
-        return (
-            self.value.replace("https://", "").replace("www.", "").rstrip("/")
-        )
-
-
-class TabBtn(StrEnum):
-    # Tab buttons for content switcher within a main tab
-    app_log = "App"
-    contents = "Contents"
-    debug_log = "Debug"
-    diff = "Diff"
-    git_log_global = "Git"
-    git_log_path = "Git-Log"
-    list = "List"
-    operate_log = "Operate"
-    read_log = "Read"
-    tree = "Tree"
 
 
 class SharedLabels(StrEnum):

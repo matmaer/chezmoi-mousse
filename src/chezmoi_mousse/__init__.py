@@ -3,7 +3,6 @@ from importlib.metadata import PackageNotFoundError, version
 from typing import TYPE_CHECKING
 
 from ._app_ids import IDS, AppIds
-from ._button_data import FlatBtn, LinkBtn, OperateBtn, TabBtn
 from ._chezmoi import (
     Chezmoi,
     CommandResult,
@@ -14,17 +13,21 @@ from ._chezmoi import (
     VerbArgs,
     WriteCmd,
 )
+from ._operate_button_data import OperateBtn
 from ._str_enums import (
     BindingAction,
     BindingDescription,
     Chars,
     DestDirStrings,
+    FlatBtn,
     HeaderTitle,
+    LinkBtn,
     LogName,
     LogText,
     PathKind,
     ScreenName,
     SectionLabels,
+    TabBtn,
     TabName,
     Tcss,
     TreeName,

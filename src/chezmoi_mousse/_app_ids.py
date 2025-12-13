@@ -3,13 +3,16 @@
 Easy access, autocomplete, type checking or to generated the id dynamically.
 """
 
-from ._button_data import FlatBtn, LinkBtn, OperateBtn, TabBtn
+from ._operate_button_data import OperateBtn
 from ._str_enums import (
     ContainerName,
     ContentSwitcherName,
     DataTableName,
+    FlatBtn,
+    LinkBtn,
     LogName,
     ScreenName,
+    TabBtn,
     TabName,
     TreeName,
     ViewName,
