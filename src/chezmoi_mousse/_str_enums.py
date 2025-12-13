@@ -184,12 +184,11 @@ class TabName(StrEnum):
 
 class SectionLabels(StrEnum):
     cat_config_output = '"chezmoi cat-config" output'
+    clone_repo = "Initialize from an existing repository"
     debug_log_output = "Debug Log Output"
     doctor_output = '"chezmoi doctor" output'
     ignored_output = '"chezmoi ignored" output'
-    init_clone_repo = "Initialize from an existing repository"
-    init_clone_repo_url = "Repository URL to clone from."
-    init_new_repo = "Initialize a new chezmoi repository"
+    new_repo = "Initialize a new chezmoi repository"
     operate_context = "Operate Context"
     operate_output = "Operate Command Output"
     password_managers = "Password Manager Information"
