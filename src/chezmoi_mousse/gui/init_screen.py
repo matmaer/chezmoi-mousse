@@ -2,12 +2,7 @@ from enum import StrEnum
 
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import (
-    Horizontal,
-    HorizontalGroup,
-    Vertical,
-    VerticalGroup,
-)
+from textual.containers import Horizontal, HorizontalGroup, Vertical
 from textual.screen import Screen
 from textual.validation import URL
 from textual.widgets import (
@@ -57,23 +52,20 @@ class StaticText(StrEnum):
     ssh_select = "Enter an SSH SCP-style URL, e.g., git@github.com:user/repo.git. Make sure you have your SSH key pair set up before using this option."
 
 
-class InputInitCloneRepo(VerticalGroup):
+class InputInitCloneRepo(HorizontalGroup):
 
     def compose(self) -> ComposeResult:
-        yield HorizontalGroup(
-            Select[str].from_values(
-                ["https", "ssh", "guess url", "guess ssh"],
-                classes=Tcss.input_select,
-                value="https",
-                allow_blank=False,
-                type_to_search=False,
-            ),
-            Input(
-                placeholder="Enter repository URL",
-                validate_on=["submitted"],
-                validators=URL(),
-                classes=Tcss.input_field,
-            ),
+        yield Select[str].from_values(
+            ["https", "ssh", "guess url", "guess ssh"],
+            classes=Tcss.input_select,
+            allow_blank=False,
+            type_to_search=False,
+        )
+        yield Input(
+            placeholder="Enter repository URL",
+            validate_on=["submitted"],
+            validators=URL(),
+            classes=Tcss.input_field,
         )
 
 
