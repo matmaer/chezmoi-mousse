@@ -20,10 +20,12 @@ from chezmoi_mousse import (
     BindingAction,
     BindingDescription,
     FlatBtn,
+    InitData,
     OperateBtn,
     OperateData,
     SectionLabels,
     Tcss,
+    WriteCmd,
 )
 from chezmoi_mousse.shared import (
     CustomHeader,
@@ -128,9 +130,10 @@ class InitScreen(Screen[None], AppType):
         super().__init__()
         self.valid_url: bool = False
         self.debug_log: DebugLog
-        self.init_repo_arg: str | None = None
-        self.init_guess_ssh: bool | None = None
-        self.init_guess_https: bool | None = None
+        self.init_cmd: WriteCmd
+        self.repo_arg: str | None = None
+        self.guess_ssh: bool | None = None
+        self.guess_https: bool | None = None
 
     def compose(self) -> ComposeResult:
         yield CustomHeader(IDS.init)
@@ -198,13 +201,17 @@ class InitScreen(Screen[None], AppType):
         if msg.label == OperateBtn.operate_exit.exit_app_label:
             self.app.exit()
             return
+        init_data = InitData(
+            init_cmd=self.init_cmd,
+            repo_arg=self.repo_url,
+            guess_ssh=self.guess_ssh,
+            guess_https=self.guess_ssh,
+        )
         self.app.operate_data = OperateData(
             btn_enum=msg.btn_enum,
             btn_label=msg.label,
             btn_tooltip=msg.tooltip,
-            init_repo_arg=self.repo_url,
-            init_guess_ssh=self.init_guess_ssh,
-            init_guess_https=self.init_guess_ssh,
+            init_data=init_data,
         )
         self.app.pop_screen()
         self.app.push_screen(OperateScreen())
