@@ -5,6 +5,7 @@ __all__ = [
     "ContentSwitcherName",
     "DataTableName",
     "LogName",
+    "PathKind",
     "ScreenName",
     "TabName",
     "TreeName",
@@ -58,6 +59,11 @@ class LogName(StrEnum):
     operate_logger = auto()
     read_logger = auto()
     splash_logger = auto()
+
+
+class PathKind(StrEnum):
+    DIR = auto()
+    FILE = auto()
 
 
 class ScreenName(StrEnum):

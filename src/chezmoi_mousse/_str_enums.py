@@ -1,6 +1,6 @@
 """Contains StrEnum classes without other dependencies."""
 
-from enum import StrEnum, auto
+from enum import StrEnum
 
 from ._chezmoi import ReadCmd
 
@@ -11,7 +11,6 @@ __all__ = [
     "HeaderTitle",
     "LinkBtn",
     "LogText",
-    "PathKind",
     "SectionLabels",
     "TabBtn",
 ]
@@ -134,11 +133,6 @@ class LogText(StrEnum):
     dev_mode_enabled = "Dev mode enabled"
     operate_log_initialized = "Operate log initialized"
     read_log_initialized = "Read command log initialized"
-
-
-class PathKind(StrEnum):
-    DIR = auto()
-    FILE = auto()
 
 
 class SectionLabels(StrEnum):
