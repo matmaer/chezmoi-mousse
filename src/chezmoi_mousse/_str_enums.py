@@ -73,6 +73,7 @@ class ContainerName(StrEnum):
     doctor = auto()
     git_log_global = auto()
     git_log_path = auto()
+    init_info = auto()
     left_side = auto()
     operate_buttons = auto()
     post_operate = auto()

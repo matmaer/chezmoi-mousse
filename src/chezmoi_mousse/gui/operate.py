@@ -58,13 +58,20 @@ class InfoLine(StrEnum):
     )
 
 
-class InitText(StrEnum):
-    init_clone = f'To enable the [$text-primary]"{OperateBtn.init_repo.init_clone_label}"[/] button, enter a repository address below.'
-    guess_url = "Let chezmoi guess the best URL for you."
-    https_url = "Enter a full https:// URL, e.g., https://github.com/user/repo.git, if you use a PAT, make sure to include it in the URL like so: https://username:ghp_123456789abcdef@github.com/matmaer/my-dotfiles.git and delete the PAT after use. "
-    ssh_url = "You could also use an ssh URL if you have an SSH key pair set up,for example: ssh://git@github.com/user/dotfiles-repo.git"
-    ssh_scp = 'If you prefer the SCP-style URL, select "ssh" from the dropdown and enter the URL like so: git@github.com:user/repo.git This also requires an SSH key pair to be set up beforehand.'
-    ssh_select = "Enter an SSH SCP-style URL, e.g., git@github.com:user/repo.git. Make sure you have your SSH key pair set up before using this option."
+class InitSubLabels(StrEnum):
+    init_clone = "Optionally clone from an existing repository"
+    operate_context = "Operate Context"
+
+
+class InitStaticText(StrEnum):
+    init_new = f"Click the [$text-primary]{OperateBtn.init_repo.initial_label}[/] button to initialize a new chezmoi repository.\n"
+    guess_https = "Let chezmoi guess the best URL to clone from."
+    guess_ssh = (
+        "Let chezmoi guess the best ssh scp-style address to clone from."
+    )
+    https_url = "Enter a complete URL, e.g., [$text-primary]https://github.com/user/repo.git[/]."
+    pat_info = "If you have a PAT, make sure to include it in the URL, for example: [$text-primary]https://username:ghp_123456789abcdef@github.com/username/my-dotfiles.git[/] and delete the PAT after use."
+    ssh_select = "Enter an SSH SCP-style URL, e.g., git@github.com:user/repo.git. If your dotfiles repository is private, make sure you have your SSH key pair set up before using this option."
 
 
 class InitCollapsibles(VerticalGroup, AppType):
@@ -99,6 +106,27 @@ class InputInitCloneRepo(HorizontalGroup):
             validate_on=["submitted"],
             validators=URL(),
             classes=Tcss.input_field,
+        )
+
+
+class InitOperateContainer(VerticalGroup):
+    def compose(self) -> ComposeResult:
+        yield Label(SectionLabels.init_repo, classes=Tcss.main_section_label)
+        yield Static(InitStaticText.init_new)
+        yield Label(InitSubLabels.init_clone, classes=Tcss.sub_section_label)
+        yield Static(id=IDS.operate.container.init_info)
+        yield InputInitCloneRepo()
+        yield Label(
+            InitSubLabels.operate_context, classes=Tcss.sub_section_label
+        )
+        yield InitCollapsibles()
+
+    def on_mount(self) -> None:
+        init_info = self.query_one(IDS.operate.container.init_info_q, Static)
+        init_info.update(
+            "\n".join(
+                [InitStaticText.https_url.value, InitStaticText.pat_info.value]
+            )
         )
 
 
@@ -201,10 +229,7 @@ class OperateScreen(Screen[None], AppType):
             ):
                 yield DiffView(ids=IDS.operate, reverse=self.reverse)
             elif self.op_data.btn_enum == OperateBtn.init_repo:
-                yield Label(
-                    SectionLabels.init_repo, classes=Tcss.main_section_label
-                )
-                yield InitCollapsibles()
+                yield InitOperateContainer()
             else:
                 yield ContentsView(ids=IDS.operate)
         with VerticalGroup(id=IDS.operate.container.post_operate):

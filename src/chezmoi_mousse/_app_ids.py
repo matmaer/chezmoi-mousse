@@ -123,6 +123,9 @@ class ContainerIds:
             name=ContainerName.git_log_global
         )
         self.git_log_global_q = f"#{self.git_log_global}"
+        self.init_info = ids.container_id(name=ContainerName.init_info)
+        self.init_info_q = f"#{self.init_info}"
+
         self.left_side = ids.container_id(name=ContainerName.left_side)
         self.left_side_q = f"#{self.left_side}"
         self.operate_buttons = ids.container_id(
