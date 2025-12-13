@@ -7,10 +7,13 @@ from ._chezmoi import ReadCmd
 __all__ = [
     "Chars",
     "DestDirStrings",
+    "FlatBtn",
     "HeaderTitle",
+    "LinkBtn",
     "LogText",
     "PathKind",
     "SectionLabels",
+    "TabBtn",
     "Tcss",
 ]
 
