@@ -167,38 +167,20 @@ class WriteVerbs(Enum):
 
 
 class WriteCmd(Enum):
-    add = GlobalCmd.live_run.value + [
-        WriteVerbs.add.value,
-        VerbArgs.not_recursive.value,
-    ]
+    add = [WriteVerbs.add.value, VerbArgs.not_recursive.value]
     # add_encrypt = ["add", VerbArgs.encrypt.value] TODO
-    apply = GlobalCmd.live_run.value + [
-        WriteVerbs.apply.value,
-        VerbArgs.not_recursive.value,
-    ]
-    destroy = GlobalCmd.live_run.value + [
-        WriteVerbs.destroy.value,
-        VerbArgs.not_recursive.value,
-    ]
-    forget = GlobalCmd.live_run.value + [WriteVerbs.forget.value]
-    init_guess_https = GlobalCmd.live_run.value + [
-        WriteVerbs.init.value,
-        VerbArgs.init_guess.value,
-    ]
+    apply = [WriteVerbs.apply.value, VerbArgs.not_recursive.value]
+    destroy = [WriteVerbs.destroy.value, VerbArgs.not_recursive.value]
+    forget = [WriteVerbs.forget.value]
+    init_guess_https = [WriteVerbs.init.value, VerbArgs.init_guess.value]
     init_guess_ssh = (
         GlobalCmd.live_run.value
         + [WriteVerbs.init.value]
         + VerbArgs.init_guess_ssh.value
     )
-    init_new = GlobalCmd.live_run.value + [WriteVerbs.init.value]
-    init_no_guess = GlobalCmd.live_run.value + [
-        WriteVerbs.init.value,
-        VerbArgs.init_do_not_guess.value,
-    ]
-    re_add = GlobalCmd.live_run.value + [
-        WriteVerbs.re_add.value,
-        VerbArgs.not_recursive.value,
-    ]
+    init_new = [WriteVerbs.init.value]
+    init_no_guess = [WriteVerbs.init.value, VerbArgs.init_do_not_guess.value]
+    re_add = [WriteVerbs.re_add.value, VerbArgs.not_recursive.value]
 
     @property
     def pretty_cmd(self) -> str:
@@ -516,7 +498,6 @@ class Chezmoi:
             base_cmd = GlobalCmd.live_run.value
         else:
             base_cmd = GlobalCmd.dry_run.value
-        command: list[str] = base_cmd + write_cmd.value
         if (
             write_cmd
             in (
@@ -528,7 +509,7 @@ class Chezmoi:
             )
             and path_arg is not None
         ):
-            command: list[str] = command + [str(path_arg)]
+            command: list[str] = base_cmd + write_cmd.value + [str(path_arg)]
         elif (
             write_cmd
             in (
@@ -538,9 +519,9 @@ class Chezmoi:
             )
             and init_repo_arg is not None
         ):
-            command += [init_repo_arg]
+            command: list[str] = base_cmd + write_cmd.value + [init_repo_arg]
         elif write_cmd == WriteCmd.init_new:
-            command: list[str] = command  # no extra args
+            command: list[str] = base_cmd + write_cmd.value
         else:
             raise ValueError("Invalid arguments for perform()")
 
