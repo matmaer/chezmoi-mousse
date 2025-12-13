@@ -9,7 +9,7 @@ shared/_buttons.py.
 from dataclasses import dataclass
 from enum import Enum, StrEnum
 
-from ._str_enums import BindingDescription
+from ._str_enum_bindings import BindingDescription
 
 __all__ = ["OperateBtn"]
 
