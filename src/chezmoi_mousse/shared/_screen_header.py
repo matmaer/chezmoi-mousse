@@ -1,14 +1,27 @@
+from enum import StrEnum
 from typing import TYPE_CHECKING
 
 from textual.reactive import reactive
 from textual.widgets import Header, Static
 
-from chezmoi_mousse import AppType, Chars, HeaderTitle, Tcss
+from chezmoi_mousse import AppType, Chars, Tcss
 
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds
 
-__all__ = ["CustomHeader"]
+__all__ = ["CustomHeader", "HeaderTitle"]
+
+
+class HeaderTitle(StrEnum):
+    header_dry_run_mode = (
+        " -  c h e z m o i  m o u s s e  --  d r y  r u n  m o d e  - "
+    )
+    header_live_mode = (
+        " -  c h e z m o i  m o u s s e  --  l i v e  m o d e  - "
+    )
+    header_install_help = (
+        " - c h e z m o i  m o u s s e  --  i n s t a l l  h e l p  - "
+    )
 
 
 class CustomHeader(Header, AppType):

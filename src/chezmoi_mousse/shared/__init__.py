@@ -30,7 +30,7 @@ from ._operate_msg import (
     OperateButtonMsg,
 )
 from ._pw_mgr_info import PwMgrInfoView
-from ._screen_header import CustomHeader
+from ._screen_header import CustomHeader, HeaderTitle
 from ._ssh_scp_validator import SSHSCP
 
 __all__ = [
@@ -63,6 +63,7 @@ __all__ = [
     "FlatLink",
     "GitLogGlobal",
     "GitLogPath",
+    "HeaderTitle",
     "IgnoredView",
     "PrettyTemplateData",
     "PwMgrInfoView",

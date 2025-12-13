@@ -8,7 +8,6 @@ __all__ = [
     "Chars",
     "DestDirStrings",
     "FlatBtn",
-    "HeaderTitle",
     "LinkBtn",
     "LogText",
     "SectionLabels",
@@ -110,18 +109,6 @@ class DestDirStrings(StrEnum):
     )
     read_file = (
         'Click a file to see the output from [$success]"Path.read()"[/].'
-    )
-
-
-class HeaderTitle(StrEnum):
-    header_dry_run_mode = (
-        " -  c h e z m o i  m o u s s e  --  d r y  r u n  m o d e  - "
-    )
-    header_live_mode = (
-        " -  c h e z m o i  m o u s s e  --  l i v e  m o d e  - "
-    )
-    header_install_help = (
-        " - c h e z m o i  m o u s s e  --  i n s t a l l  h e l p  - "
     )
 
 

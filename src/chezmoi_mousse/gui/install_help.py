@@ -17,7 +17,6 @@ from chezmoi_mousse import (
     BindingDescription,
     Chars,
     FlatBtn,
-    HeaderTitle,
     LinkBtn,
     Tcss,
 )
@@ -26,6 +25,7 @@ from chezmoi_mousse.shared import (
     CustomHeader,
     FlatButton,
     FlatLink,
+    HeaderTitle,
 )
 
 type ParsedJson = dict[str, Any]
