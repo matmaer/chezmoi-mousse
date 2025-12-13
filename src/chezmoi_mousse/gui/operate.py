@@ -63,7 +63,7 @@ class InfoLine(StrEnum):
 
 class InitSubLabels(StrEnum):
     init_clone = "Optionally clone from an existing repository"
-    operate_context = "Operate Context"
+    operate_info = "Operate Info"
 
 
 class InitStaticText(StrEnum):
@@ -162,9 +162,7 @@ class InitOperateContainer(VerticalGroup):
         yield Label(InitSubLabels.init_clone, classes=Tcss.sub_section_label)
         yield Static(id=IDS.operate.container.init_info)
         yield InputInitCloneRepo()
-        yield Label(
-            InitSubLabels.operate_context, classes=Tcss.sub_section_label
-        )
+        yield Label(InitSubLabels.operate_info, classes=Tcss.sub_section_label)
         yield InitCollapsibles()
 
     def on_mount(self) -> None:
