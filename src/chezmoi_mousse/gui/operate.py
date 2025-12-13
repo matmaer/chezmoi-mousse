@@ -67,13 +67,13 @@ class InitSubLabels(StrEnum):
 
 
 class InitStaticText(StrEnum):
-    init_new = f"Click the [$text-primary]{OperateBtn.init_repo.initial_label}[/] button to initialize a new chezmoi repository.\n"
+    init_new = f"Click the [$primary-lighten-3 on $surface-lighten-1] {OperateBtn.init_repo.initial_label} [/] button to initialize a new chezmoi repository.\n"
     guess_https = "Let chezmoi guess the best URL to clone from."
     guess_ssh = (
         "Let chezmoi guess the best ssh scp-style address to clone from."
     )
     https_url = "Enter a complete URL, e.g., [$text-primary]https://github.com/user/repo.git[/]."
-    pat_info = "If you have a PAT, make sure to include it in the URL, for example: [$text-primary]https://username:ghp_123456789abcdef@github.com/username/my-dotfiles.git[/] and delete the PAT after use."
+    pat_info = "If you have a PAT, make sure to include it in the URL, for example:\n[$text-primary]https://username:ghp_123456789abcdef@github.com/username/my-dotfiles.git[/]\nand delete the PAT after use."
     ssh_select = "Enter an SSH SCP-style URL, e.g., git@github.com:user/repo.git. If your dotfiles repository is private, make sure you have your SSH key pair set up before using this option."
 
 
