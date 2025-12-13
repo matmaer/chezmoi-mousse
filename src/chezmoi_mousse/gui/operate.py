@@ -218,19 +218,6 @@ class InitOperateContainer(VerticalGroup):
         init_info = self.query_one(IDS.operate.container.init_info_q, Static)
         init_info.update(info_text)
 
-    @on(Input.Submitted)
-    def handle_validation(self, event: Input.Submitted) -> None:
-        if event.input not in (self.input_url, self.input_ssh):
-            return
-        if event.validation_result is None:
-            return
-        self.valid_url = event.validation_result.is_valid
-        if self.valid_url is False:
-            self.notify("Invalid URL entered.", severity="error")
-            return
-        self.notify("Valid URL entered, button enabled.")
-        self.repo_url = event.value
-
 
 class OperateInfo(Static, AppType):
 
@@ -488,6 +475,18 @@ class OperateScreen(Screen[None], AppType):
             self.exit_btn.label = OperateBtn.operate_exit.close_label
         elif self.op_data.btn_enum == OperateBtn.init_repo:
             self.exit_btn.label = OperateBtn.operate_exit.reload_label
+
+    @on(Input.Submitted)
+    def handle_validation(self, event: Input.Submitted) -> None:
+        event.stop()
+        if event.validation_result is None:
+            return
+        self.valid_url = event.validation_result.is_valid
+        if self.valid_url is False:
+            self.notify("Invalid URL entered.", severity="error")
+            return
+        self.notify("Valid URL entered, button enabled.")
+        self.repo_url = event.value
 
     @on(Button.Pressed, Tcss.operate_button.dot_prefix)
     def handle_operate_button_pressed(self, event: Button.Pressed) -> None:
