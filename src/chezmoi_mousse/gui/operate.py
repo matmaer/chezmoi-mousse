@@ -13,6 +13,7 @@ from chezmoi_mousse import (
     BindingAction,
     BindingDescription,
     Chars,
+    LinkBtn,
     OperateBtn,
     SectionLabels,
     Tcss,
@@ -25,6 +26,7 @@ from chezmoi_mousse.shared import (
     DebugLog,
     DiffView,
     DoctorTable,
+    FlatLink,
     InitCompletedMsg,
     OperateButtons,
     OperateLog,
@@ -116,6 +118,7 @@ class InitOperateContainer(VerticalGroup):
         yield Label(InitSubLabels.init_clone, classes=Tcss.sub_section_label)
         yield Static(id=IDS.operate.container.init_info)
         yield InputInitCloneRepo()
+        yield FlatLink(ids=IDS.operate, link_enum=LinkBtn.chezmoi_guess)
         yield Label(
             InitSubLabels.operate_context, classes=Tcss.sub_section_label
         )
@@ -128,6 +131,43 @@ class InitOperateContainer(VerticalGroup):
                 [InitStaticText.https_url.value, InitStaticText.pat_info.value]
             )
         )
+        self.guess_docs_link = self.query_one(
+            IDS.operate.link_button_id("#", btn=LinkBtn.chezmoi_guess),
+            FlatLink,
+        )
+
+    @on(Select.Changed)
+    def hanle_selection_change(self, event: Select.Changed) -> None:
+        if event.value == "https":
+            info_text = "\n".join(
+                [InitStaticText.https_url.value, InitStaticText.pat_info.value]
+            )
+            self.guess_docs_link.display = False
+
+        elif event.value == "ssh":
+            info_text = InitStaticText.ssh_select.value
+            self.guess_docs_link.display = False
+        elif event.value == "guess url":
+            self.guess_docs_link.display = True
+            info_text = InitStaticText.guess_https.value
+        elif event.value == "guess ssh":
+            info_text = InitStaticText.guess_ssh.value
+            self.guess_docs_link.display = True
+        else:
+            info_text = ""
+        init_info = self.query_one(IDS.operate.container.init_info_q, Static)
+        init_info.update(info_text)
+
+    @on(Input.Submitted)
+    def handle_url_validation(self, event: Input.Submitted) -> None:
+        if event.validation_result is None:
+            return
+        self.valid_url = event.validation_result.is_valid
+        if self.valid_url is False:
+            self.notify("Invalid URL entered.", severity="error")
+            return
+        self.notify("Valid URL entered, button enabled.")
+        self.repo_url = event.value
 
 
 class OperateInfo(Static, AppType):
@@ -404,14 +444,3 @@ class OperateScreen(Screen[None], AppType):
             self.dismiss()
         else:
             self.run_operate_command()
-
-    @on(Input.Submitted)
-    def log_validation_result(self, event: Input.Submitted) -> None:
-        if event.validation_result is None:
-            return
-        self.valid_url = event.validation_result.is_valid
-        if self.valid_url is False:
-            self.notify("Invalid URL entered.", severity="error")
-            return
-        self.notify("Valid URL entered, button enabled.")
-        self.repo_url = event.value
