@@ -31,11 +31,6 @@ from ._operate_msg import (
 )
 from ._pw_mgr_info import PwMgrInfoView
 from ._screen_header import CustomHeader
-from ._section_headers import (
-    FlatSectionLabel,
-    MainSectionLabel,
-    SubSectionLabel,
-)
 
 __all__ = [
     # Loggers
@@ -65,13 +60,10 @@ __all__ = [
     "DoctorTable",
     "DoctorTableView",
     "FlatLink",
-    "FlatSectionLabel",
     "GitLogGlobal",
     "GitLogPath",
     "IgnoredView",
-    "MainSectionLabel",
     "PrettyTemplateData",
     "PwMgrInfoView",
-    "SubSectionLabel",
     "TemplateDataView",
 ]

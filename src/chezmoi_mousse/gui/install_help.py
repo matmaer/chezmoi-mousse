@@ -8,7 +8,7 @@ from textual import on
 from textual.app import ComposeResult
 from textual.containers import Horizontal, VerticalGroup
 from textual.screen import Screen
-from textual.widgets import Footer, Pretty, Tree
+from textual.widgets import Footer, Label, Pretty, Tree
 
 from chezmoi_mousse import (
     IDS,
@@ -19,13 +19,13 @@ from chezmoi_mousse import (
     FlatBtn,
     HeaderTitle,
     LinkBtn,
+    Tcss,
 )
 from chezmoi_mousse.shared import (
     CustomCollapsible,
     CustomHeader,
     FlatButton,
     FlatLink,
-    MainSectionLabel,
 )
 
 type ParsedJson = dict[str, Any]
@@ -52,7 +52,9 @@ class InstallHelp(Screen[None], AppType):
 
     def compose(self) -> ComposeResult:
         yield CustomHeader(ids=IDS.install_help)
-        yield MainSectionLabel(InstallHelpStrings.top_label)
+        yield Label(
+            InstallHelpStrings.top_label, classes=Tcss.main_section_label
+        )
         yield CustomCollapsible(
             Pretty(InstallHelpStrings.no_path_var),
             title=InstallHelpStrings.collapsible_title,

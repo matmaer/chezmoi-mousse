@@ -6,12 +6,11 @@ from typing import TYPE_CHECKING
 
 from textual.app import ComposeResult
 from textual.containers import Vertical, VerticalGroup
-from textual.widgets import Link, Static
+from textual.widgets import Label, Link, Static
 
 from chezmoi_mousse import AppType, Chars, CommandResult, SectionLabels, Tcss
 
 from ._custom_collapsible import CustomCollapsible
-from ._section_headers import MainSectionLabel, SubSectionLabel
 
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds
@@ -176,11 +175,19 @@ class PwCollapsible(CustomCollapsible, AppType):
 
         super().__init__(
             VerticalGroup(
-                SubSectionLabel(SectionLabels.project_link),
+                Label(
+                    SectionLabels.project_link, classes=Tcss.sub_section_label
+                ),
                 Link(self.stripped_link, url=self.pw_mgr_data.link),
-                SubSectionLabel(SectionLabels.project_description),
+                Label(
+                    SectionLabels.project_description,
+                    classes=Tcss.sub_section_label,
+                ),
                 Static(self.pw_mgr_data.description, markup=False),
-                SubSectionLabel(InfoStrings.additional_info_label),
+                Label(
+                    InfoStrings.additional_info_label,
+                    classes=Tcss.sub_section_label,
+                ),
                 Static(self.pw_mgr_data.info, markup=False),
                 classes=Tcss.pw_mgr_group,
             ),
@@ -195,7 +202,9 @@ class PwMgrInfoView(Vertical):
         super().__init__(id=self.ids.view.pw_mgr_info)
 
     def compose(self) -> ComposeResult:
-        yield MainSectionLabel(SectionLabels.password_managers)
+        yield Label(
+            SectionLabels.password_managers, classes=Tcss.main_section_label
+        )
 
     def populate_pw_mgr_info(self, doctor_results: "CommandResult") -> None:
         doctor_lines = doctor_results.std_out.splitlines()

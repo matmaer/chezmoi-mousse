@@ -4,7 +4,7 @@ from rich.text import Text
 from textual.app import ComposeResult
 from textual.containers import Vertical
 from textual.reactive import reactive
-from textual.widgets import RichLog, Static
+from textual.widgets import Label, RichLog, Static
 
 from chezmoi_mousse import (
     AppType,
@@ -15,8 +15,6 @@ from chezmoi_mousse import (
     TabName,
     Tcss,
 )
-
-from ._section_headers import SubSectionLabel
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -48,7 +46,9 @@ class DiffView(Vertical, AppType):
 
     def compose(self) -> ComposeResult:
         with Vertical(id=self.ids.container.dest_dir_info):
-            yield SubSectionLabel(SectionLabels.path_info)
+            yield Label(
+                SectionLabels.path_info, classes=Tcss.sub_section_label
+            )
             yield Static(DestDirStrings.in_dest_dir)
             yield Static(self.in_dest_dir_diff_msg)
         yield RichLog(

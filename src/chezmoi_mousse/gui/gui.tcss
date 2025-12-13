@@ -54,8 +54,35 @@
   }
 }
 
+.flat_section_label {
+  background-tint: $primary-muted;
+  background: $primary-muted;
+  border: block $primary-muted;
+  color: $primary-lighten-3;
+  text-align: center;
+  width: 100%;
+}
+
 .flow_diagram {
   min-width: 78;
+}
+
+.main_section_label {
+  background-tint: $surface-lighten-1;
+  background: $surface-lighten-1;
+  border-bottom: inner $surface-lighten-1;
+  border-top: inner $surface-lighten-1;
+  color: $text-accent;
+  text-align: center;
+  width: 100%;
+}
+
+.sub_section_label {
+  background-tint: $surface-lighten-1;
+  background: $surface-lighten-1;
+  color: $text-success;
+  text-align: center;
+  width: 100%;
 }
 
 .tab_left_vertical {
@@ -110,15 +137,6 @@ DoctorTable {
 
 FlatButtonsVertical {
   width: auto;
-}
-
-FlatSectionLabel {
-  background-tint: $primary-muted;
-  background: $primary-muted;
-  border: block $primary-muted;
-  color: $primary-lighten-3;
-  text-align: center;
-  width: 100%;
 }
 
 InputInitCloneRepo {
@@ -201,16 +219,6 @@ LoggersBase {
   margin-bottom: 1;
 }
 
-MainSectionLabel {
-  background-tint: $surface-lighten-1;
-  background: $surface-lighten-1;
-  border-bottom: inner $surface-lighten-1;
-  border-top: inner $surface-lighten-1;
-  color: $text-accent;
-  text-align: center;
-  width: 100%;
-}
-
 OperateButtons {
   height: 3;
   dock: bottom;
@@ -249,14 +257,6 @@ InitScreen > OperateButtons {
 
 OperateScreen > OperateButtons {
     margin-bottom: 1;
-}
-
-SubSectionLabel {
-  background-tint: $surface-lighten-1;
-  background: $surface-lighten-1;
-  color: $text-success;
-  text-align: center;
-  width: 100%;
 }
 
 SwitchSlider {

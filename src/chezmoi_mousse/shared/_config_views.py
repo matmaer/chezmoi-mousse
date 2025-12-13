@@ -4,11 +4,9 @@ from typing import TYPE_CHECKING
 from rich.text import Text
 from textual.app import ComposeResult
 from textual.containers import ScrollableContainer, Vertical
-from textual.widgets import DataTable, Pretty, Static
+from textual.widgets import DataTable, Label, Pretty, Static
 
 from chezmoi_mousse import AppType, CommandResult, SectionLabels, Tcss
-
-from ._section_headers import MainSectionLabel
 
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds
@@ -34,7 +32,9 @@ class CatConfigView(Vertical):
         super().__init__(id=self.ids.view.cat_config)
 
     def compose(self) -> ComposeResult:
-        yield MainSectionLabel(SectionLabels.cat_config_output)
+        yield Label(
+            SectionLabels.cat_config_output, classes=Tcss.main_section_label
+        )
 
     def mount_cat_config_output(self, command_result: CommandResult) -> None:
         self.mount(ScrollableContainer(Static(command_result.std_out)))
@@ -96,7 +96,9 @@ class DoctorTableView(Vertical, AppType):
         super().__init__(id=self.ids.container.doctor)
 
     def compose(self) -> ComposeResult:
-        yield MainSectionLabel(SectionLabels.doctor_output)
+        yield Label(
+            SectionLabels.doctor_output, classes=Tcss.main_section_label
+        )
 
     def populate_doctor_data(self, command_result: CommandResult) -> None:
         self.mount(DoctorTable(ids=self.ids, doctor_data=command_result))
@@ -108,7 +110,9 @@ class IgnoredView(Vertical):
         super().__init__(id=self.ids.view.ignored)
 
     def compose(self) -> ComposeResult:
-        yield MainSectionLabel(SectionLabels.ignored_output)
+        yield Label(
+            SectionLabels.ignored_output, classes=Tcss.main_section_label
+        )
 
     def mount_ignored_output(self, command_result: CommandResult) -> None:
         self.mount(
@@ -128,7 +132,9 @@ class TemplateDataView(Vertical):
         super().__init__(id=self.ids.view.template_data)
 
     def compose(self) -> ComposeResult:
-        yield MainSectionLabel(SectionLabels.template_data_output)
+        yield Label(
+            SectionLabels.template_data_output, classes=Tcss.main_section_label
+        )
 
     def mount_template_data_output(
         self, command_result: CommandResult

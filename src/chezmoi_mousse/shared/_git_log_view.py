@@ -6,11 +6,9 @@ from rich.text import Text
 from textual.app import ComposeResult
 from textual.containers import Vertical
 from textual.reactive import reactive
-from textual.widgets import DataTable, Static
+from textual.widgets import DataTable, Label, Static
 
 from chezmoi_mousse import AppType, DestDirStrings, ReadCmd, Tcss
-
-from ._section_headers import SubSectionLabel
 
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds, CommandResult
@@ -70,7 +68,7 @@ class GitLogPath(Vertical, AppType):
 
     def compose(self) -> ComposeResult:
         with Vertical(id=self.ids.container.dest_dir_info):
-            yield SubSectionLabel("Path Git Log")
+            yield Label("Path Git Log", classes=Tcss.sub_section_label)
             yield Static(DestDirStrings.in_dest_dir)
             yield Static(DestDirStrings.git_log_msg)
         yield GitLogDataTable(ids=self.ids)

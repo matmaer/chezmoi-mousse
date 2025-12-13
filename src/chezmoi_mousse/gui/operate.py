@@ -4,7 +4,7 @@ from textual import on
 from textual.app import ComposeResult
 from textual.containers import VerticalGroup
 from textual.screen import Screen
-from textual.widgets import Button, Footer, Static
+from textual.widgets import Button, Footer, Label, Static
 
 from chezmoi_mousse import (
     IDS,
@@ -24,7 +24,6 @@ from chezmoi_mousse.shared import (
     DiffView,
     DoctorTable,
     InitCompletedMsg,
-    MainSectionLabel,
     OperateButtons,
     OperateLog,
     PrettyTemplateData,
@@ -166,12 +165,17 @@ class OperateScreen(Screen[None], AppType):
             ):
                 yield DiffView(ids=IDS.operate, reverse=self.reverse)
             elif self.op_data.btn_label == OperateBtn.init_repo:
-                yield MainSectionLabel(SectionLabels.operate_context)
+                yield Label(
+                    SectionLabels.operate_context,
+                    classes=Tcss.main_section_label,
+                )
                 yield InitCollapsibles()
             else:
                 yield ContentsView(ids=IDS.operate)
         with VerticalGroup(id=IDS.operate.container.post_operate):
-            yield MainSectionLabel(SectionLabels.operate_output)
+            yield Label(
+                SectionLabels.operate_output, classes=Tcss.main_section_label
+            )
             yield OperateLog(ids=IDS.operate)
         yield OperateButtons(
             ids=IDS.operate,

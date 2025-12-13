@@ -10,6 +10,7 @@ from textual.widgets import (
     ContentSwitcher,
     Footer,
     Input,
+    Label,
     Select,
     Static,
 )
@@ -32,10 +33,8 @@ from chezmoi_mousse.shared import (
     DebugLog,
     DoctorTableView,
     FlatButtonsVertical,
-    MainSectionLabel,
     OperateButtonMsg,
     OperateButtons,
-    SubSectionLabel,
     TemplateDataView,
 )
 
@@ -77,7 +76,7 @@ class InitNew(Vertical, AppType):
         super().__init__(id=IDS.init.view.init_new)
 
     def compose(self) -> ComposeResult:
-        yield MainSectionLabel(SectionLabels.new_repo)
+        yield Label(SectionLabels.new_repo, classes=Tcss.main_section_label)
         yield Static(StaticText.init_new)
 
 
@@ -87,7 +86,7 @@ class InitClone(Vertical, AppType):
         super().__init__(id=IDS.init.view.init_clone)
 
     def compose(self) -> ComposeResult:
-        yield MainSectionLabel(SectionLabels.clone_repo)
+        yield Label(SectionLabels.clone_repo, classes=Tcss.main_section_label)
         yield Static(StaticText.init_clone)
         yield InputInitCloneRepo()
 
@@ -149,7 +148,10 @@ class InitScreen(Screen[None], AppType):
             yield InitSwitcher()
             if self.app.dev_mode is True:
                 with Vertical():
-                    yield SubSectionLabel(SectionLabels.debug_log_output)
+                    yield Label(
+                        SectionLabels.debug_log_output,
+                        classes=Tcss.sub_section_label,
+                    )
                     yield DebugLog(ids=IDS.init)
         yield OperateButtons(
             ids=IDS.init,
