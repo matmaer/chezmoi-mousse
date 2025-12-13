@@ -22,6 +22,7 @@ from chezmoi_mousse.shared import (
     ContentsView,
     CustomCollapsible,
     CustomHeader,
+    DebugLog,
     DiffView,
     DoctorTable,
     InitCompletedMsg,
@@ -201,8 +202,7 @@ class OperateScreen(Screen[None], AppType):
                 yield DiffView(ids=IDS.operate, reverse=self.reverse)
             elif self.op_data.btn_enum == OperateBtn.init_repo:
                 yield Label(
-                    SectionLabels.operate_context,
-                    classes=Tcss.main_section_label,
+                    SectionLabels.init_repo, classes=Tcss.main_section_label
                 )
                 yield InitCollapsibles()
             else:
@@ -212,6 +212,9 @@ class OperateScreen(Screen[None], AppType):
                 SectionLabels.operate_output, classes=Tcss.main_section_label
             )
             yield OperateLog(ids=IDS.operate)
+        if self.app.dev_mode:
+            yield Label(SectionLabels.debug_log_output)
+            yield DebugLog(IDS.operate)
         yield OperateButtons(
             ids=IDS.operate,
             buttons=(self.op_data.btn_enum, OperateBtn.operate_exit),
