@@ -136,12 +136,6 @@ InputInitCloneRepo {
       }
     }
     &.-expanded {
-      .down-arrow {
-          display: none;
-      }
-      .up-arrow {
-          display: block;
-      }
       & > SelectOverlay {
         display: block;
         border: round $accent;
@@ -155,11 +149,7 @@ InputInitCloneRepo {
       padding: 0;
       width: auto;
       Static#label {
-        background-tint: $panel;
-        background: $panel;
-        height: 1;
         width: auto;
-        content-align: center middle;
       }
       .arrow {
         color: $accent;
