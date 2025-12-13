@@ -126,23 +126,22 @@ InputInitCloneRepo {
     background-tint: $panel;
     background: $panel;
     border: wide $panel;
-    color: $foreground;
     height: 3;
-    width: 9;
-    &:focus > SelectCurrent {
-      border: none;
-      color: $foreground;
-    }
+    width: auto;
     & > SelectOverlay {
-      color: $foreground;
-      height: 6;
       width: auto;
       &:focus {
-        background: $panel-lighten-1;
-        background-tint: $panel-lighten-1;
+        background: $panel;
+        background-tint: $panel;
       }
     }
     &.-expanded {
+      .down-arrow {
+          display: none;
+      }
+      .up-arrow {
+          display: block;
+      }
       & > SelectOverlay {
         display: block;
         border: round $accent;
@@ -153,17 +152,13 @@ InputInitCloneRepo {
       border: none;
       background-tint: $panel;
       background: $panel;
-      color: $foreground;
-      height: auto;
       padding: 0;
-      width: 1fr;
-
+      width: auto;
       Static#label {
         background-tint: $panel;
         background: $panel;
-        color: $foreground;
         height: 1;
-        width: 1fr;
+        width: auto;
         content-align: center middle;
       }
       .arrow {
