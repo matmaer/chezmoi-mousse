@@ -77,7 +77,7 @@ class InitNew(Vertical, AppType):
         super().__init__(id=IDS.init.view.init_new)
 
     def compose(self) -> ComposeResult:
-        yield MainSectionLabel(SectionLabels.init_new_repo)
+        yield MainSectionLabel(SectionLabels.new_repo)
         yield Static(StaticText.init_new)
 
 
@@ -87,8 +87,7 @@ class InitClone(Vertical, AppType):
         super().__init__(id=IDS.init.view.init_clone)
 
     def compose(self) -> ComposeResult:
-        yield MainSectionLabel(SectionLabels.init_clone_repo)
-        yield SubSectionLabel(SectionLabels.init_clone_repo_url)
+        yield MainSectionLabel(SectionLabels.clone_repo)
         yield Static(StaticText.init_clone)
         yield InputInitCloneRepo()
 
