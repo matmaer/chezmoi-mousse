@@ -26,8 +26,6 @@ class FlatBtn(StrEnum):
     doctor = "Doctor"
     exit_app = "Exit App"
     ignored = "Ignored"
-    init_clone = "Init Clone"
-    init_new = "Init New"
     pw_mgr_info = "Password Managers"
     re_add_help = "Re-Add Help"
     template_data = "Template Data"

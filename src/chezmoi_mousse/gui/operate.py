@@ -2,9 +2,10 @@ from enum import StrEnum
 
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import VerticalGroup
+from textual.containers import HorizontalGroup, VerticalGroup
 from textual.screen import Screen
-from textual.widgets import Button, Footer, Label, Static
+from textual.validation import URL
+from textual.widgets import Button, Footer, Input, Label, Select, Static
 
 from chezmoi_mousse import (
     IDS,
@@ -56,6 +57,15 @@ class InfoLine(StrEnum):
     )
 
 
+class InitText(StrEnum):
+    init_clone = f'To enable the [$text-primary]"{OperateBtn.init_repo.init_clone_label}"[/] button, enter a repository address below.'
+    guess_url = "Let chezmoi guess the best URL for you."
+    https_url = "Enter a full https:// URL, e.g., https://github.com/user/repo.git, if you use a PAT, make sure to include it in the URL like so: https://username:ghp_123456789abcdef@github.com/matmaer/my-dotfiles.git and delete the PAT after use. "
+    ssh_url = "You could also use an ssh URL if you have an SSH key pair set up,for example: ssh://git@github.com/user/dotfiles-repo.git"
+    ssh_scp = 'If you prefer the SCP-style URL, select "ssh" from the dropdown and enter the URL like so: git@github.com:user/repo.git This also requires an SSH key pair to be set up beforehand.'
+    ssh_select = "Enter an SSH SCP-style URL, e.g., git@github.com:user/repo.git. Make sure you have your SSH key pair set up before using this option."
+
+
 class InitCollapsibles(VerticalGroup, AppType):
     def __init__(self) -> None:
         super().__init__()
@@ -74,6 +84,23 @@ class InitCollapsibles(VerticalGroup, AppType):
         )
 
 
+class InputInitCloneRepo(HorizontalGroup):
+
+    def compose(self) -> ComposeResult:
+        yield Select[str].from_values(
+            ["https", "ssh", "guess url", "guess ssh"],
+            classes=Tcss.input_select,
+            allow_blank=False,
+            type_to_search=False,
+        )
+        yield Input(
+            placeholder="Enter repository URL",
+            validate_on=["submitted"],
+            validators=URL(),
+            classes=Tcss.input_field,
+        )
+
+
 class OperateInfo(Static, AppType):
 
     git_autocommit: bool | None = None
@@ -85,6 +112,7 @@ class OperateInfo(Static, AppType):
             raise ValueError("self.app.operate_data is None in OperateInfo")
         self.op_data = self.app.operate_data
         self.btn_enum = self.op_data.btn_enum
+        self.repo_arg: bool | None = None
 
     def on_mount(self) -> None:
         self.set_border_titles()
@@ -108,6 +136,11 @@ class OperateInfo(Static, AppType):
     def write_info_lines(self) -> None:
         self.update("")
         lines_to_write: list[str] = []
+        if self.app.changes_enabled is True:
+            lines_to_write.append(InfoLine.changes_enabled)
+        else:
+            lines_to_write.append(InfoLine.changes_disabled)
+
         if self.btn_enum in (OperateBtn.add_file, OperateBtn.add_dir):
             lines_to_write.append(InfoLine.add_path)
         elif self.btn_enum == OperateBtn.apply_path:
@@ -121,14 +154,11 @@ class OperateInfo(Static, AppType):
         elif self.btn_enum == OperateBtn.init_repo:
             if self.op_data.btn_label == OperateBtn.init_repo.init_clone_label:
                 lines_to_write.append(
-                    f"{InfoLine.init_clone} [$text-warning]{self.op_data.init_repo_arg}[/]"
+                    f"{InfoLine.init_clone} [$text-warning]{self.repo_arg}[/]"
                 )
             else:
                 lines_to_write.append(InfoLine.init_new)
-        if self.app.changes_enabled is True:
-            lines_to_write.append(InfoLine.changes_enabled)
-        else:
-            lines_to_write.append(InfoLine.changes_disabled)
+
         if self.btn_enum not in (OperateBtn.apply_path, OperateBtn.init_repo):
             if self.git_autocommit is True:
                 lines_to_write.append(InfoLine.auto_commit)
@@ -154,6 +184,11 @@ class OperateScreen(Screen[None], AppType):
         self.reverse = (
             False if self.op_data.btn_enum == OperateBtn.apply_path else True
         )
+        self.valid_url: bool = False
+        self.init_cmd: WriteCmd
+        self.repo_arg: str | None = None
+        self.guess_ssh: bool | None = None
+        self.guess_https: bool | None = None
 
     def compose(self) -> ComposeResult:
         yield CustomHeader(IDS.operate)
@@ -164,7 +199,7 @@ class OperateScreen(Screen[None], AppType):
                 OperateBtn.re_add_path,
             ):
                 yield DiffView(ids=IDS.operate, reverse=self.reverse)
-            elif self.op_data.btn_label == OperateBtn.init_repo:
+            elif self.op_data.btn_enum == OperateBtn.init_repo:
                 yield Label(
                     SectionLabels.operate_context,
                     classes=Tcss.main_section_label,
@@ -266,15 +301,16 @@ class OperateScreen(Screen[None], AppType):
                 changes_enabled=self.app.changes_enabled,
             )
         elif self.op_data.btn_enum == OperateBtn.init_repo:
-            self.app.operate_cmd_result = self.app.chezmoi.perform(
-                WriteCmd.init,
-                init_repo_arg=self.op_data.init_repo_arg,
-                init_guess_ssh=self.op_data.init_guess_ssh,
-                init_guess_https=self.op_data.init_guess_https,
-                changes_enabled=self.app.changes_enabled,
-            )
-            if self.app.operate_cmd_result.dry_run is False:
-                self.app.init_cmd_needed = False
+            if self.op_btn.label == OperateBtn.init_repo.init_new_label:
+                self.app.operate_cmd_result = self.app.chezmoi.perform(
+                    WriteCmd.init_new, changes_enabled=self.app.changes_enabled
+                )
+            elif self.op_btn.label == OperateBtn.init_repo.init_clone_label:
+                self.app.operate_cmd_result = self.app.chezmoi.perform(
+                    WriteCmd.init_guess_https,
+                    init_repo_arg=self.repo_arg,
+                    changes_enabled=self.app.changes_enabled,
+                )
 
         self.pre_op_container.display = False
         self.post_op_container.display = True
@@ -340,3 +376,14 @@ class OperateScreen(Screen[None], AppType):
             self.dismiss()
         else:
             self.run_operate_command()
+
+    @on(Input.Submitted)
+    def log_validation_result(self, event: Input.Submitted) -> None:
+        if event.validation_result is None:
+            return
+        self.valid_url = event.validation_result.is_valid
+        if self.valid_url is False:
+            self.notify("Invalid URL entered.", severity="error")
+            return
+        self.notify("Valid URL entered, button enabled.")
+        self.repo_url = event.value

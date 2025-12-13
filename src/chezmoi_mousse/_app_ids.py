@@ -94,7 +94,6 @@ class AppIds:
 class CanvasIds:
     def __init__(self) -> None:
         # Screens
-        self.init = AppIds(ScreenName.init)
         self.install_help = AppIds(ScreenName.install_help)
         self.splash = AppIds(ScreenName.splash)
         self.main = AppIds(ScreenName.main)
@@ -310,10 +309,6 @@ class FlatButtonIds:
         self.exit_app_q = f"#{self.exit_app}"
         self.ignored = ids.flat_button_id(btn=FlatBtn.ignored)
         self.ignored_q = f"#{self.ignored}"
-        self.init_new = ids.flat_button_id(btn=FlatBtn.init_new)
-        self.init_new_q = f"#{self.init_new}"
-        self.init_clone = ids.flat_button_id(btn=FlatBtn.init_clone)
-        self.init_clone_q = f"#{self.init_clone}"
         self.pw_mgr_info = ids.flat_button_id(btn=FlatBtn.pw_mgr_info)
         self.pw_mgr_info_q = f"#{self.pw_mgr_info}"
         self.re_add_help = ids.flat_button_id(btn=FlatBtn.re_add_help)
@@ -406,12 +401,6 @@ class ViewIds:
         self.re_add_help_q = f"#{self.re_add_help}"
         self.diagram = ids.view_id(view=ViewName.diagram_view)
         self.diagram_q = f"#{self.diagram}"
-
-        # Init screen
-        self.init_new = ids.view_id(view=ViewName.init_new_view)
-        self.init_new_q = f"#{self.init_new}"
-        self.init_clone = ids.view_id(view=ViewName.init_clone_view)
-        self.init_clone_q = f"#{self.init_clone}"
 
         # Config tab
         self.cat_config = ids.view_id(view=ViewName.cat_config_view)

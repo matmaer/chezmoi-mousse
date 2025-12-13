@@ -22,7 +22,7 @@ def run_app():
             app = ChezmoiGUI(
                 chezmoi_found=chezmoi_found,
                 dev_mode=dev_mode,
-                force_init_screen=pretend_init_needed,
+                force_init_operation=pretend_init_needed,
             )
         except Exception:
             with open((Path.joinpath(src_dir, "stack_trace.txt")), "w") as f:
@@ -48,6 +48,6 @@ def run_app():
         app = ChezmoiGUI(
             chezmoi_found=chezmoi_found,
             dev_mode=dev_mode,
-            force_init_screen=pretend_init_needed,
+            force_init_operation=pretend_init_needed,
         )
         app.run()

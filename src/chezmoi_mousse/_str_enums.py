@@ -166,7 +166,6 @@ class PathKind(StrEnum):
 
 
 class ScreenName(StrEnum):
-    init = auto()
     install_help = auto()
     main = auto()
     operate = auto()
@@ -240,8 +239,6 @@ class ViewName(StrEnum):
     cat_config_view = auto()
     diagram_view = auto()
     git_ignored_view = auto()
-    init_clone_view = auto()
-    init_new_view = auto()
     pw_mgr_info_view = auto()
     re_add_help_view = auto()
     template_data_view = auto()

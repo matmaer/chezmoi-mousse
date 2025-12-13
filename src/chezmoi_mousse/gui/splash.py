@@ -20,6 +20,8 @@ from chezmoi_mousse import (
     AppType,
     Chezmoi,
     CommandResult,
+    OperateBtn,
+    OperateData,
     ParsedConfig,
     ReadCmd,
     SplashData,
@@ -28,7 +30,7 @@ from chezmoi_mousse import (
 from chezmoi_mousse.shared import ContentsView, DiffView, GitLogPath
 
 from .main_tabs import MainScreen
-from .operate import OperateInfo
+from .operate import OperateInfo, OperateScreen
 from .tabs.add_tab import AddTab
 from .tabs.common.switchers import ViewSwitcher
 from .tabs.common.trees import TreeBase
@@ -156,13 +158,21 @@ class SplashScreen(Screen[SplashData | None], AppType):
         if status_worker.state == WorkerState.SUCCESS:
             if type(globals()["status_files"].exit_code) is not int:
                 raise RuntimeError("status_files exit_code is not an int")
-            if globals()["status_files"].exit_code != 0:
+            if (
+                globals()["status_files"].exit_code != 0
+                or self.app.force_init_operation is True
+            ):
+                self.app.force_init_operation = False
                 self.app.init_cmd_needed = True
-                # Run io workers for data used in the InitScreen
+                self.app.operate_data = OperateData(
+                    btn_enum=OperateBtn.init_repo,
+                    btn_label=OperateBtn.init_repo.init_new_label,
+                    btn_tooltip=OperateBtn.init_repo.initial_tooltip,
+                )
+                # Run io workers for OperateScreen init commands
                 self.run_io_worker(ReadCmd.doctor)
                 self.run_io_worker(ReadCmd.template_data)
                 return
-            self.app.init_cmd_needed = False
             for splash_cmd in SPLASH_COMMANDS:
                 if splash_cmd == ReadCmd.status_files:
                     continue
@@ -172,15 +182,18 @@ class SplashScreen(Screen[SplashData | None], AppType):
                 "status_files worker did not complete successfully"
             )
 
-    def subprocess_run_cmd(self, cmd: ReadCmd) -> CommandResult:
-        result: CompletedProcess[str] = run(
-            cmd.value, capture_output=True, shell=False, text=True, timeout=2
-        )
-        return CommandResult(completed_process=result, read_cmd=cmd)
-
     @work(thread=True, group="io_workers")
     def run_io_worker(self, splash_cmd: ReadCmd) -> None:
-        cmd_result = self.subprocess_run_cmd(splash_cmd)
+        result: CompletedProcess[str] = run(
+            splash_cmd.value,
+            capture_output=True,
+            shell=False,
+            text=True,
+            timeout=2,
+        )
+        cmd_result = CommandResult(
+            completed_process=result, read_cmd=splash_cmd
+        )
         cmd_text = cmd_result.pretty_cmd
         globals()[splash_cmd.name] = cmd_result
         if splash_cmd == ReadCmd.dump_config:
@@ -227,8 +240,6 @@ class SplashScreen(Screen[SplashData | None], AppType):
             template_data=globals()["template_data"],
             verify=globals()["verify"],
         )
-        if self.app.init_cmd_needed is True:
-            return
         self.app.chezmoi = Chezmoi(
             dev_mode=self.app.dev_mode,
             managed_dirs=globals()["managed_dirs"],
@@ -236,6 +247,8 @@ class SplashScreen(Screen[SplashData | None], AppType):
             status_dirs=globals()["status_dirs"],
             status_files=globals()["status_files"],
         )
+        if self.app.init_cmd_needed is True:
+            return
         dest_dir = globals()["parsed_config"].dest_dir
         AddTab.destDir = dest_dir
         ContentsView.destDir = dest_dir
@@ -260,6 +273,8 @@ class SplashScreen(Screen[SplashData | None], AppType):
             self.check_workers_timer.stop()
             update_app_worker = self.update_app()
             if update_app_worker.state == WorkerState.SUCCESS:
+                if self.app.init_cmd_needed is True:
+                    self.app.push_screen(OperateScreen())
                 self.dismiss()
             else:
                 raise RuntimeError(

@@ -104,7 +104,7 @@ class InitData:
 class OperateData:
     btn_enum: "OperateBtn"
     btn_label: "str"
-    btn_tooltip: "str"
+    btn_tooltip: "str | None"
     init_data: "InitData | None" = None
     node_data: "NodeData | None" = None
 
