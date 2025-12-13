@@ -92,14 +92,20 @@ class NodeData:
     path_kind: "PathKind"
 
 
+@dataclass
+class InitData:
+    init_cmd: "WriteCmd"
+    guess_https: "bool | None" = None
+    guess_ssh: "bool | None" = None
+    repo_arg: "str | None" = None
+
+
 @dataclass(slots=True)
 class OperateData:
     btn_enum: "OperateBtn"
     btn_label: "str"
     btn_tooltip: "str"
-    init_guess_https: "bool | None" = None
-    init_guess_ssh: "bool | None" = None
-    init_repo_arg: "str | None" = None
+    init_data: "InitData | None" = None
     node_data: "NodeData | None" = None
 
 
