@@ -204,11 +204,15 @@ InputInitCloneRepo {
     }
     &.-invalid {
       border: wide $error 30%;
-      border-left: none;
     }
     &.-invalid:focus {
       border: wide $error 50%;
-      border-left: none;
+    }
+    &.-valid {
+      border: wide $success 30%;
+    }
+    &.-valid:focus {
+      border: wide $success 50%;
     }
   }
 }
