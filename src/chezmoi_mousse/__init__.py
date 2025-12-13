@@ -16,6 +16,7 @@ from ._chezmoi import (
 from ._operate_button_data import OperateBtn
 from ._str_enum_bindings import BindingAction, BindingDescription
 from ._str_enum_names import LogName, ScreenName, TabName, TreeName
+from ._str_enum_tcss import Tcss
 from ._str_enums import (
     Chars,
     DestDirStrings,
@@ -26,7 +27,6 @@ from ._str_enums import (
     PathKind,
     SectionLabels,
     TabBtn,
-    Tcss,
 )
 from ._switch_data import Switches
 

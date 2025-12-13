@@ -14,7 +14,6 @@ __all__ = [
     "PathKind",
     "SectionLabels",
     "TabBtn",
-    "Tcss",
 ]
 
 #########################################
@@ -154,32 +153,3 @@ class SectionLabels(StrEnum):
     project_description = "Project Description"
     project_link = "Project Link"
     template_data_output = '"chezmoi data" output'
-
-
-class Tcss(StrEnum):
-    border_title_top = auto()
-    changes_enabled_color = auto()
-    content_switcher_left = auto()
-    doctor_table = auto()
-    flat_button = auto()
-    flat_link = auto()
-    flat_section_label = auto()
-    flow_diagram = auto()
-    input_field = auto()
-    input_select = auto()
-    last_clicked_flat_btn = auto()
-    last_clicked_tab_btn = auto()
-    main_section_label = auto()
-    operate_button = auto()
-    pw_mgr_group = auto()
-    read_cmd_static = auto()
-    single_button_vertical = auto()
-    sub_section_label = auto()
-    tab_button = auto()
-    tab_left_vertical = auto()
-    tree_widget = auto()
-
-    # add a property to return the name with a dot prefix
-    @property
-    def dot_prefix(self) -> str:
-        return f".{self.value}"
