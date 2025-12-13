@@ -31,6 +31,7 @@ from ._operate_msg import (
 )
 from ._pw_mgr_info import PwMgrInfoView
 from ._screen_header import CustomHeader
+from ._ssh_scp_validator import SSHSCP
 
 __all__ = [
     # Loggers
@@ -65,5 +66,6 @@ __all__ = [
     "IgnoredView",
     "PrettyTemplateData",
     "PwMgrInfoView",
+    "SSHSCP",
     "TemplateDataView",
 ]

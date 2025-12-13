@@ -20,6 +20,7 @@ from chezmoi_mousse import (
     WriteCmd,
 )
 from chezmoi_mousse.shared import (
+    SSHSCP,
     ContentsView,
     CustomCollapsible,
     CustomHeader,
@@ -76,6 +77,42 @@ class InitStaticText(StrEnum):
     ssh_select = "Enter an SSH SCP-style URL, e.g., git@github.com:user/repo.git. If your dotfiles repository is private, make sure you have your SSH key pair set up before using this option."
 
 
+class InputURL(Input):
+    def __init__(self) -> None:
+        super().__init__(
+            placeholder="Enter a repo URL",
+            validate_on=["submitted"],
+            validators=URL(),
+            classes=Tcss.input_field,
+        )
+
+
+class InputSSH(Input):
+    def __init__(self) -> None:
+        super().__init__(
+            placeholder="Enter an SSH address",
+            validate_on=["submitted"],
+            validators=SSHSCP(),
+            classes=Tcss.input_field,
+        )
+
+
+class InputGuessURL(Input):
+    def __init__(self) -> None:
+        super().__init__(
+            placeholder="Let chezmoi guess the repo URL",
+            classes=Tcss.input_field,
+        )
+
+
+class InputGuessSSH(Input):
+    def __init__(self) -> None:
+        super().__init__(
+            placeholder="Let chezmoi guess the SSH repo address",
+            classes=Tcss.input_field,
+        )
+
+
 class InitCollapsibles(VerticalGroup, AppType):
     def __init__(self) -> None:
         super().__init__()
@@ -103,12 +140,10 @@ class InputInitCloneRepo(HorizontalGroup):
             allow_blank=False,
             type_to_search=False,
         )
-        yield Input(
-            placeholder="Enter repository URL",
-            validate_on=["submitted"],
-            validators=URL(),
-            classes=Tcss.input_field,
-        )
+        yield InputURL()
+        yield InputSSH()
+        yield InputGuessURL()
+        yield InputGuessSSH()
 
 
 class InitOperateContainer(VerticalGroup):
@@ -135,6 +170,10 @@ class InitOperateContainer(VerticalGroup):
             IDS.operate.link_button_id("#", btn=LinkBtn.chezmoi_guess),
             FlatLink,
         )
+        self.input_url = self.query_exactly_one(InputURL)
+        self.input_ssh = self.query_exactly_one(InputSSH)
+        self.input_guess_url = self.query_exactly_one(InputGuessURL)
+        self.input_guess_ssh = self.query_exactly_one(InputGuessSSH)
 
     @on(Select.Changed)
     def hanle_selection_change(self, event: Select.Changed) -> None:
@@ -143,14 +182,29 @@ class InitOperateContainer(VerticalGroup):
                 [InitStaticText.https_url.value, InitStaticText.pat_info.value]
             )
             self.guess_docs_link.display = False
-
+            self.input_url.display = True
+            self.input_ssh.display = False
+            self.input_guess_url.display = False
+            self.input_guess_ssh.display = False
         elif event.value == "ssh":
             info_text = InitStaticText.ssh_select.value
             self.guess_docs_link.display = False
+            self.input_url.display = False
+            self.input_ssh.display = True
+            self.input_guess_url.display = False
+            self.input_guess_ssh.display = False
         elif event.value == "guess url":
+            self.input_url.display = False
+            self.input_ssh.display = False
+            self.input_guess_url.display = True
+            self.input_guess_ssh.display = False
             self.guess_docs_link.display = True
             info_text = InitStaticText.guess_https.value
         elif event.value == "guess ssh":
+            self.input_url.display = False
+            self.input_ssh.display = False
+            self.input_guess_url.display = False
+            self.input_guess_ssh.display = True
             info_text = InitStaticText.guess_ssh.value
             self.guess_docs_link.display = True
         else:
@@ -159,7 +213,9 @@ class InitOperateContainer(VerticalGroup):
         init_info.update(info_text)
 
     @on(Input.Submitted)
-    def handle_url_validation(self, event: Input.Submitted) -> None:
+    def handle_validation(self, event: Input.Submitted) -> None:
+        if event.input not in (self.input_url, self.input_ssh):
+            return
         if event.validation_result is None:
             return
         self.valid_url = event.validation_result.is_valid
