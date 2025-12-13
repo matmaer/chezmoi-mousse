@@ -4,19 +4,17 @@ Easy access, autocomplete, type checking or to generated the id dynamically.
 """
 
 from ._operate_button_data import OperateBtn
-from ._str_enums import (
+from ._str_enum_names import (
     ContainerName,
     ContentSwitcherName,
     DataTableName,
-    FlatBtn,
-    LinkBtn,
     LogName,
     ScreenName,
-    TabBtn,
     TabName,
     TreeName,
     ViewName,
 )
+from ._str_enums import FlatBtn, LinkBtn, TabBtn
 from ._switch_data import Switches
 
 __all__ = ["AppIds", "IDS"]

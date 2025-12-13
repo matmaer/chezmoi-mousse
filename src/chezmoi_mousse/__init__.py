@@ -14,6 +14,7 @@ from ._chezmoi import (
     WriteCmd,
 )
 from ._operate_button_data import OperateBtn
+from ._str_enum_names import LogName, ScreenName, TabName, TreeName
 from ._str_enums import (
     BindingAction,
     BindingDescription,
@@ -22,15 +23,11 @@ from ._str_enums import (
     FlatBtn,
     HeaderTitle,
     LinkBtn,
-    LogName,
     LogText,
     PathKind,
-    ScreenName,
     SectionLabels,
     TabBtn,
-    TabName,
     Tcss,
-    TreeName,
 )
 from ._switch_data import Switches
 
