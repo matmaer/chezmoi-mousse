@@ -1,4 +1,5 @@
 from enum import StrEnum
+from typing import TYPE_CHECKING
 
 from textual import on
 from textual.app import ComposeResult
@@ -34,7 +35,10 @@ from chezmoi_mousse.shared import (  # SwitchWithLabel,
     PrettyTemplateData,
 )
 
-__all__ = ["OperateInfo", "OperateChezmoi"]
+if TYPE_CHECKING:
+    from chezmoi_mousse import AppIds
+
+__all__ = ["ChezmoiInit", "OperateInfo", "OperateChezmoi"]
 
 
 class InfoBorderSubtitle(StrEnum):
@@ -160,7 +164,7 @@ class OperateInfo(Static, AppType):
     git_autocommit: bool | None = None
     git_autopush: bool | None = None
 
-    def __init__(self) -> None:
+    def __init__(self, ids: "AppIds") -> None:
         super().__init__()
         if self.app.operate_data is None:
             raise ValueError("self.app.operate_data is None in OperateInfo")
