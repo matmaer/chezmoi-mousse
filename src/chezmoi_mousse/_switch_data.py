@@ -5,6 +5,7 @@ __all__ = ["Switches"]
 
 
 class SwitchLabel(StrEnum):
+    init_repo = "Init existing repo"
     expand_all = "Expand all dirs"
     unchanged = "Show unchanged files"
     unmanaged_dirs = "Show unmanaged dirs"
@@ -20,6 +21,11 @@ class SwitchData:
 
 class Switches(Enum):
 
+    init_repo_switch = SwitchData(
+        label=SwitchLabel.init_repo,
+        enabled_tooltip="Initialize a new chezmoi repository, or clone an existing remote chezmoi repository.",
+        disabled_tooltip=None,
+    )
     expand_all = SwitchData(
         label=SwitchLabel.expand_all,
         enabled_tooltip='Expand all managed directories. Showing unchanged depending on the "show unchanged files" switch.',
