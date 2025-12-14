@@ -19,7 +19,7 @@ from chezmoi_mousse import (
     Tcss,
     WriteCmd,
 )
-from chezmoi_mousse.shared import (
+from chezmoi_mousse.shared import (  # SwitchWithLabel,
     SSHSCP,
     ContentsView,
     CustomCollapsible,
@@ -34,7 +34,7 @@ from chezmoi_mousse.shared import (
     PrettyTemplateData,
 )
 
-__all__ = ["OperateInfo", "OperateScreen"]
+__all__ = ["OperateInfo", "OperateChezmoi"]
 
 
 class InfoBorderSubtitle(StrEnum):
@@ -228,13 +228,24 @@ class OperateInfo(Static, AppType):
         self.update("\n".join(lines_to_write))
 
 
-class OperateScreen(Screen[None], AppType):
-
+class OperateScreenBase(Screen[None], AppType):
     def __init__(self) -> None:
         super().__init__()
         if self.app.operate_data is None:
             raise ValueError("self.app.operate_data is None in OperateScreen")
         self.op_data = self.app.operate_data
+
+
+class ChezmoiInit(OperateScreenBase): ...
+
+
+class OperateChezmoi(OperateScreenBase, AppType):
+
+    def __init__(self) -> None:
+        super().__init__()
+        if self.app.operate_data is None:
+            raise ValueError("self.app.operate_data is None in OperateScreen")
+        # self.op_data = self.app.operate_data
         self.reverse = (
             False if self.op_data.btn_enum == OperateBtn.apply_path else True
         )

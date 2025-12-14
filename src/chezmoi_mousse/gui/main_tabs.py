@@ -20,7 +20,7 @@ from chezmoi_mousse.shared import (
     ReadCmdLog,
 )
 
-from .operate import OperateScreen
+from .operate import OperateChezmoi
 from .tabs.add_tab import AddTab, FilteredDirTree
 from .tabs.apply_tab import ApplyTab
 from .tabs.common.trees import ExpandedTree, ListTree, ManagedTree
@@ -193,7 +193,7 @@ class MainScreen(Screen[None], AppType):
             operate_data.node_data = self.current_re_add_node
         self.app.operate_data = operate_data
         self.app.push_screen(
-            OperateScreen(), callback=self.handle_operate_result
+            OperateChezmoi(), callback=self.handle_operate_result
         )
 
     def handle_operate_result(self, _: None) -> None:

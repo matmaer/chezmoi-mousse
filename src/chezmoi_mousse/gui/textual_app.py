@@ -29,7 +29,7 @@ from chezmoi_mousse.shared import (
 
 from .install_help import InstallHelp
 from .main_tabs import MainScreen
-from .operate import OperateInfo, OperateScreen
+from .operate import OperateChezmoi, OperateInfo
 from .splash import SplashScreen
 from .tabs.add_tab import FilteredDirTree
 from .tabs.common.switch_slider import SwitchSlider
@@ -210,7 +210,7 @@ class ChezmoiGUI(App[None]):
         reactive_header = self.screen.query_exactly_one(CustomHeader)
         reactive_header.changes_enabled = self.changes_enabled
 
-        if isinstance(self.screen, OperateScreen):
+        if isinstance(self.screen, OperateChezmoi):
             operate_info = self.screen.query_exactly_one(OperateInfo)
             operate_info.write_info_lines()
 
@@ -328,14 +328,14 @@ class ChezmoiGUI(App[None]):
             or self.init_cmd_needed is True
         ):
             self.exit()
-        elif isinstance(self.screen, OperateScreen):
+        elif isinstance(self.screen, OperateChezmoi):
             self.screen.dismiss(self.operate_cmd_result)
 
     def check_action(
         self, action: str, parameters: tuple[object, ...]
     ) -> bool | None:
         if action == BindingAction.exit_screen:
-            if isinstance(self.screen, (InstallHelp, OperateScreen)):
+            if isinstance(self.screen, (InstallHelp, OperateChezmoi)):
                 return True
             else:
                 return False
@@ -381,12 +381,12 @@ class ChezmoiGUI(App[None]):
                     return False
                 elif active_tab == TabName.help:
                     return False
-            elif isinstance(self.screen, OperateScreen):
+            elif isinstance(self.screen, OperateChezmoi):
                 return True
             else:
                 return False
         elif action == BindingAction.toggle_maximized:
-            if isinstance(self.screen, (InstallHelp, OperateScreen)):
+            if isinstance(self.screen, (InstallHelp, OperateChezmoi)):
                 return False
         return True
 
