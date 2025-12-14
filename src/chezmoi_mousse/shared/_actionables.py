@@ -15,7 +15,7 @@ from chezmoi_mousse import (
     Tcss,
 )
 
-from ._operate_msg import OperateButtonMsg
+from ._messages import OperateButtonMsg
 
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds, Switches

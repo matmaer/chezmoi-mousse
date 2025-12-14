@@ -23,7 +23,7 @@ from ._custom_collapsible import CustomCollapsible
 from ._diff_view import DiffView
 from ._git_log_view import GitLogGlobal, GitLogPath
 from ._loggers import AppLog, DebugLog, OperateLog, ReadCmdLog
-from ._operate_msg import (
+from ._messages import (
     CurrentAddNodeMsg,
     CurrentApplyNodeMsg,
     CurrentReAddNodeMsg,
