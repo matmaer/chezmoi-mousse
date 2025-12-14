@@ -239,56 +239,10 @@ class OperateScreenBase(Screen[None], AppType):
             raise ValueError("self.app.operate_data is None in OperateScreen")
         self.op_data = self.app.operate_data
 
-
-class ChezmoiInit(OperateScreenBase): ...
-
-
-class OperateChezmoi(OperateScreenBase, AppType):
-
-    def __init__(self) -> None:
-        super().__init__()
-        if self.app.operate_data is None:
-            raise ValueError("self.app.operate_data is None in OperateScreen")
-        # self.op_data = self.app.operate_data
-        self.reverse = (
-            False if self.op_data.btn_enum == OperateBtn.apply_path else True
-        )
-        self.valid_url: bool = False
-        self.init_cmd: WriteCmd
-        self.repo_arg: str | None = None
-        self.guess_ssh: bool | None = None
-        self.guess_https: bool | None = None
-
     def compose(self) -> ComposeResult:
         yield CustomHeader(IDS.operate)
-        with VerticalGroup(id=IDS.operate.container.pre_operate):
-            yield OperateInfo()
-            if self.op_data.btn_enum == OperateBtn.init_repo:
-                yield VerticalGroup(
-                    Label(
-                        SectionLabels.init_repo,
-                        classes=Tcss.main_section_label,
-                    ),
-                    Static(InitStaticText.init_new),
-                    Label(
-                        InitSubLabels.init_clone,
-                        classes=Tcss.sub_section_label,
-                    ),
-                    Static(id=IDS.operate.container.init_info),
-                    InputInitCloneRepo(),
-                    Label(
-                        InitSubLabels.operate_info,
-                        classes=Tcss.sub_section_label,
-                    ),
-                    InitCollapsibles(),
-                )
-            elif self.op_data.btn_enum in (
-                OperateBtn.apply_path,
-                OperateBtn.re_add_path,
-            ):
-                yield DiffView(ids=IDS.operate, reverse=self.reverse)
-            else:
-                yield ContentsView(ids=IDS.operate)
+        yield OperateInfo(IDS.operate)
+        yield VerticalGroup(id=IDS.operate.container.pre_operate)
         with VerticalGroup(id=IDS.operate.container.post_operate):
             yield Label(
                 SectionLabels.operate_output, classes=Tcss.main_section_label
@@ -321,15 +275,55 @@ class OperateChezmoi(OperateScreenBase, AppType):
             IDS.operate.operate_button_id("#", btn=OperateBtn.operate_exit),
             Button,
         )
-        if self.op_data.btn_enum == OperateBtn.init_repo:
-            self.configure_init_repo_operation()
-        else:
-            self.configure_add_apply_re_add_operation()
 
-    def configure_init_repo_operation(self) -> None:
-        self.init_info = self.query_one(
-            IDS.operate.container.init_info_q, Static
+    def update_buttons(self) -> None:
+        if (
+            self.app.operate_cmd_result is None
+            or self.app.operate_cmd_result.dry_run is True
+        ):
+            return
+        self.op_btn.disabled = True
+        self.op_btn.tooltip = None
+        self.exit_btn.label = OperateBtn.operate_exit.reload_label
+
+    def update_key_binding(self) -> None:
+        if (
+            self.app.operate_cmd_result is not None
+            and self.app.operate_cmd_result.dry_run is True
+        ):
+            return
+        new_description = BindingDescription.reload
+        self.app.update_binding_description(
+            BindingAction.exit_screen, new_description
         )
+
+    def write_to_output_log(self) -> None:
+        output_log = self.query_one(IDS.operate.logger.operate_q, OperateLog)
+        if self.app.operate_cmd_result is not None:
+            output_log.log_cmd_results(self.app.operate_cmd_result)
+
+
+class ChezmoiInit(OperateScreenBase):
+    def __init__(self) -> None:
+        super().__init__()
+        self.guess_https: bool | None = None
+        self.guess_ssh: bool | None = None
+        self.init_cmd: WriteCmd
+        self.repo_arg: str | None = None
+        self.valid_url: bool = False
+
+    def on_mount(self) -> None:
+        super().on_mount()
+        self.pre_op_container.mount(
+            Label(SectionLabels.init_repo, classes=Tcss.main_section_label),
+            Static(InitStaticText.init_new),
+            Label(InitSubLabels.init_clone, classes=Tcss.sub_section_label),
+            Static(id=IDS.operate.static.init_info),
+            InputInitCloneRepo(),
+            Label(InitSubLabels.operate_info, classes=Tcss.sub_section_label),
+            InitCollapsibles(),
+        )
+        self.init_info = self.query_one(IDS.operate.static.init_info_q, Static)
         self.init_info.update(
             "\n".join(
                 [InitStaticText.https_url.value, InitStaticText.pat_info.value]
@@ -343,25 +337,117 @@ class OperateChezmoi(OperateScreenBase, AppType):
         self.input_ssh = self.query_exactly_one(InputSSH)
         self.input_guess_url = self.query_exactly_one(InputGuessURL)
         self.input_guess_ssh = self.query_exactly_one(InputGuessSSH)
-        if self.op_data.btn_enum == OperateBtn.init_repo:
-            self.exit_btn.label = OperateBtn.operate_exit.exit_app_label
+        self.exit_btn.label = OperateBtn.operate_exit.exit_app_label
 
-    def configure_add_apply_re_add_operation(self) -> None:
+    @on(Select.Changed)
+    def hanle_selection_change(self, event: Select.Changed) -> None:
+        if event.value == "https":
+            info_text = "\n".join(
+                [InitStaticText.https_url.value, InitStaticText.pat_info.value]
+            )
+            self.guess_docs_link.display = False
+            self.input_url.display = True
+            self.input_ssh.display = False
+            self.input_guess_url.display = False
+            self.input_guess_ssh.display = False
+        elif event.value == "ssh":
+            info_text = InitStaticText.ssh_select.value
+            self.guess_docs_link.display = False
+            self.input_url.display = False
+            self.input_ssh.display = True
+            self.input_guess_url.display = False
+            self.input_guess_ssh.display = False
+        elif event.value == "guess url":
+            self.input_url.display = False
+            self.input_ssh.display = False
+            self.input_guess_url.display = True
+            self.input_guess_ssh.display = False
+            self.guess_docs_link.display = True
+            info_text = InitStaticText.guess_https.value
+        elif event.value == "guess ssh":
+            self.input_url.display = False
+            self.input_ssh.display = False
+            self.input_guess_url.display = False
+            self.input_guess_ssh.display = True
+            info_text = InitStaticText.guess_ssh.value
+            self.guess_docs_link.display = True
+        else:
+            info_text = ""
+        init_info = self.query_one(IDS.operate.static.init_info_q, Static)
+        init_info.update(info_text)
+
+    def run_operate_command(self) -> None:
+        if self.op_btn.label == OperateBtn.init_repo.init_new_label:
+            self.app.operate_cmd_result = self.app.chezmoi.perform(
+                WriteCmd.init_new, changes_enabled=self.app.changes_enabled
+            )
+        elif (
+            self.op_btn.label == OperateBtn.init_repo.init_clone_label
+            and self.valid_url is True
+        ):
+            self.app.operate_cmd_result = self.app.chezmoi.perform(
+                WriteCmd.init_guess_https,
+                init_repo_arg=self.repo_arg,
+                changes_enabled=self.app.changes_enabled,
+            )
+
+    @on(Input.Submitted)
+    def handle_validation(self, event: Input.Submitted) -> None:
+        event.stop()
+        if event.validation_result is None:
+            self.notify("No input provided.", severity="error")
+            return
+        self.valid_url = event.validation_result.is_valid
+        if self.valid_url is False:
+            self.notify("Invalid URL entered.", severity="error")
+            return
+        self.repo_url = event.value
+        self.notify("Valid URL entered, init clone enabled.")
+        self.op_btn.tooltip = OperateBtn.init_repo.enabled_tooltip
+
+    @on(Button.Pressed, Tcss.operate_button.dot_prefix)
+    def handle_operate_button_pressed(self, event: Button.Pressed) -> None:
+        event.stop()
+        if event.button.label == OperateBtn.operate_exit.exit_app_label:
+            self.app.exit()
+        elif event.button.label in (OperateBtn.operate_exit.reload_label,):
+            self.app.post_message(InitCompletedMsg())
+        elif event.button.label in (
+            OperateBtn.operate_exit.close_label,
+            OperateBtn.operate_exit.reload_label,
+        ):
+            self.dismiss()
+        else:
+            self.run_operate_command()
+
+
+class OperateChezmoi(OperateScreenBase, AppType):
+
+    def __init__(self) -> None:
+        super().__init__()
+        if self.app.operate_data is None:
+            raise ValueError("self.app.operate_data is None in OperateScreen")
+        self.reverse = (
+            False if self.op_data.btn_enum == OperateBtn.apply_path else True
+        )
+        self.repo_arg: str | None = None
+
+    def on_mount(self) -> None:
+        super().on_mount()
         if self.op_data.btn_enum in (
             OperateBtn.apply_path,
             OperateBtn.re_add_path,
         ):
+            self.pre_op_container.mount(
+                DiffView(ids=IDS.operate, reverse=self.reverse)
+            )
             diff_view = self.pre_op_container.query_one(
                 IDS.operate.container.diff_q, DiffView
             )
             diff_view.node_data = self.op_data.node_data
             diff_view.remove_class(Tcss.border_title_top)
-        elif self.op_data.btn_enum in (
-            OperateBtn.add_file,
-            OperateBtn.add_dir,
-            OperateBtn.forget_path,
-            OperateBtn.destroy_path,
-        ):
+        else:
+            self.pre_op_container.mount(ContentsView(ids=IDS.operate))
             contents_view = self.pre_op_container.query_one(
                 IDS.operate.container.contents_q, ContentsView
             )
@@ -403,20 +489,6 @@ class OperateChezmoi(OperateScreenBase, AppType):
                 path_arg=path_arg,
                 changes_enabled=self.app.changes_enabled,
             )
-        elif self.op_data.btn_enum == OperateBtn.init_repo:
-            if self.op_btn.label == OperateBtn.init_repo.init_new_label:
-                self.app.operate_cmd_result = self.app.chezmoi.perform(
-                    WriteCmd.init_new, changes_enabled=self.app.changes_enabled
-                )
-            elif (
-                self.op_btn.label == OperateBtn.init_repo.init_clone_label
-                and self.valid_url is True
-            ):
-                self.app.operate_cmd_result = self.app.chezmoi.perform(
-                    WriteCmd.init_guess_https,
-                    init_repo_arg=self.repo_arg,
-                    changes_enabled=self.app.changes_enabled,
-                )
         if self.app.operate_cmd_result is None:
             raise ValueError(
                 "self.app.operate_cmd_result is None after running command"
@@ -428,87 +500,6 @@ class OperateChezmoi(OperateScreenBase, AppType):
             return
         self.update_buttons()
         self.update_key_binding()
-
-    def write_to_output_log(self) -> None:
-        output_log = self.query_one(IDS.operate.logger.operate_q, OperateLog)
-        if self.app.operate_cmd_result is not None:
-            output_log.log_cmd_results(self.app.operate_cmd_result)
-
-    def update_key_binding(self) -> None:
-        if (
-            self.app.operate_cmd_result is not None
-            and self.app.operate_cmd_result.dry_run is True
-        ):
-            return
-        new_description = (
-            BindingDescription.reload
-            if self.op_data.btn_enum == OperateBtn.init_repo
-            else BindingDescription.close
-        )
-        self.app.update_binding_description(
-            BindingAction.exit_screen, new_description
-        )
-
-    def update_buttons(self) -> None:
-        if (
-            self.app.operate_cmd_result is None
-            or self.app.operate_cmd_result.dry_run is True
-        ):
-            return
-        self.op_btn.disabled = True
-        self.op_btn.tooltip = None
-        self.exit_btn.label = OperateBtn.operate_exit.reload_label
-
-    @on(Select.Changed)
-    def hanle_selection_change(self, event: Select.Changed) -> None:
-        if event.value == "https":
-            info_text = "\n".join(
-                [InitStaticText.https_url.value, InitStaticText.pat_info.value]
-            )
-            self.guess_docs_link.display = False
-            self.input_url.display = True
-            self.input_ssh.display = False
-            self.input_guess_url.display = False
-            self.input_guess_ssh.display = False
-        elif event.value == "ssh":
-            info_text = InitStaticText.ssh_select.value
-            self.guess_docs_link.display = False
-            self.input_url.display = False
-            self.input_ssh.display = True
-            self.input_guess_url.display = False
-            self.input_guess_ssh.display = False
-        elif event.value == "guess url":
-            self.input_url.display = False
-            self.input_ssh.display = False
-            self.input_guess_url.display = True
-            self.input_guess_ssh.display = False
-            self.guess_docs_link.display = True
-            info_text = InitStaticText.guess_https.value
-        elif event.value == "guess ssh":
-            self.input_url.display = False
-            self.input_ssh.display = False
-            self.input_guess_url.display = False
-            self.input_guess_ssh.display = True
-            info_text = InitStaticText.guess_ssh.value
-            self.guess_docs_link.display = True
-        else:
-            info_text = ""
-        init_info = self.query_one(IDS.operate.container.init_info_q, Static)
-        init_info.update(info_text)
-
-    @on(Input.Submitted)
-    def handle_validation(self, event: Input.Submitted) -> None:
-        event.stop()
-        if event.validation_result is None:
-            self.notify("No input provided.", severity="error")
-            return
-        self.valid_url = event.validation_result.is_valid
-        if self.valid_url is False:
-            self.notify("Invalid URL entered.", severity="error")
-            return
-        self.repo_url = event.value
-        self.notify("Valid URL entered, init clone enabled.")
-        self.op_btn.tooltip = OperateBtn.init_repo.enabled_tooltip
 
     @on(Button.Pressed, Tcss.operate_button.dot_prefix)
     def handle_operate_button_pressed(self, event: Button.Pressed) -> None:
