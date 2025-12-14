@@ -20,7 +20,7 @@ from chezmoi_mousse.shared import (
     ReadCmdLog,
 )
 
-from .operate import OperateChezmoi
+from .operate_chezmoi import OperateChezmoi
 from .tabs.add_tab import AddTab, FilteredDirTree
 from .tabs.apply_tab import ApplyTab
 from .tabs.common.trees import ExpandedTree, ListTree, ManagedTree

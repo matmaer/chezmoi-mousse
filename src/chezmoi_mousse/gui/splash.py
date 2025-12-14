@@ -34,8 +34,8 @@ from chezmoi_mousse.shared import (
     OperateInfo,
 )
 
-from .init_chezmoi import InitScreen
 from .main_tabs import MainScreen
+from .operate_init import InitScreen
 from .tabs.add_tab import AddTab
 from .tabs.common.switchers import ViewSwitcher
 from .tabs.common.trees import TreeBase

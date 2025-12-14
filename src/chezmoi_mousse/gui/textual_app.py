@@ -30,7 +30,7 @@ from chezmoi_mousse.shared import (
 
 from .install_help import InstallHelp
 from .main_tabs import MainScreen
-from .operate import OperateChezmoi
+from .operate_chezmoi import OperateChezmoi
 from .splash import SplashScreen
 from .tabs.add_tab import FilteredDirTree
 from .tabs.common.switch_slider import SwitchSlider
