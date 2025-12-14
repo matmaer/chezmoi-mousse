@@ -12,6 +12,7 @@ from chezmoi_mousse import (
     LinkBtn,
     OperateBtn,
     SectionLabels,
+    Switches,
     Tcss,
     WriteCmd,
 )
@@ -23,6 +24,7 @@ from chezmoi_mousse.shared import (
     InitCompletedMsg,
     OperateScreenBase,
     PrettyTemplateData,
+    SwitchWithLabel,
 )
 
 __all__ = ["InitScreen"]
@@ -134,7 +136,14 @@ class InitScreen(OperateScreenBase):
     def on_mount(self) -> None:
         super().on_mount()
         self.pre_op_container.mount(
-            Label(SectionLabels.init_repo, classes=Tcss.main_section_label),
+            HorizontalGroup(
+                Label(
+                    SectionLabels.init_repo, classes=Tcss.main_section_label
+                ),
+                SwitchWithLabel(
+                    ids=IDS.operate, switch_enum=Switches.init_repo_switch
+                ),
+            ),
             Static(InitStaticText.init_new),
             Label(InitSubLabels.init_clone, classes=Tcss.sub_section_label),
             Static(id=IDS.operate.static.init_info),
@@ -142,6 +151,7 @@ class InitScreen(OperateScreenBase):
             Label(InitSubLabels.operate_info, classes=Tcss.sub_section_label),
             InitCollapsibles(),
         )
+        self.query_exactly_one(SwitchWithLabel).add_class(Tcss.single_switch)
         self.init_info = self.query_one(IDS.operate.static.init_info_q, Static)
         self.init_info.update(
             "\n".join(
