@@ -65,7 +65,7 @@
   background: $surface-lighten-1;
   border: inner $surface-lighten-1;
   color: $foreground-darken-1;
-  padding-right: 1;
+  padding-right: 2;
   height: 3;
   width: auto;
   & Switch {
