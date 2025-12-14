@@ -155,70 +155,6 @@ class InputInitCloneRepo(HorizontalGroup):
         yield InputGuessSSH()
 
 
-class InitOperateContainer(VerticalGroup):
-    def compose(self) -> ComposeResult:
-        yield Label(SectionLabels.init_repo, classes=Tcss.main_section_label)
-        yield Static(InitStaticText.init_new)
-        yield Label(InitSubLabels.init_clone, classes=Tcss.sub_section_label)
-        yield Static(id=IDS.operate.container.init_info)
-        yield InputInitCloneRepo()
-        yield Label(InitSubLabels.operate_info, classes=Tcss.sub_section_label)
-        yield InitCollapsibles()
-
-    def on_mount(self) -> None:
-        init_info = self.query_one(IDS.operate.container.init_info_q, Static)
-        init_info.update(
-            "\n".join(
-                [InitStaticText.https_url.value, InitStaticText.pat_info.value]
-            )
-        )
-        self.guess_docs_link = self.query_one(
-            IDS.operate.link_button_id("#", btn=LinkBtn.chezmoi_guess),
-            FlatLink,
-        )
-        self.input_url = self.query_exactly_one(InputURL)
-        self.input_ssh = self.query_exactly_one(InputSSH)
-        self.input_guess_url = self.query_exactly_one(InputGuessURL)
-        self.input_guess_ssh = self.query_exactly_one(InputGuessSSH)
-
-    @on(Select.Changed)
-    def hanle_selection_change(self, event: Select.Changed) -> None:
-        if event.value == "https":
-            info_text = "\n".join(
-                [InitStaticText.https_url.value, InitStaticText.pat_info.value]
-            )
-            self.guess_docs_link.display = False
-            self.input_url.display = True
-            self.input_ssh.display = False
-            self.input_guess_url.display = False
-            self.input_guess_ssh.display = False
-        elif event.value == "ssh":
-            info_text = InitStaticText.ssh_select.value
-            self.guess_docs_link.display = False
-            self.input_url.display = False
-            self.input_ssh.display = True
-            self.input_guess_url.display = False
-            self.input_guess_ssh.display = False
-        elif event.value == "guess url":
-            self.input_url.display = False
-            self.input_ssh.display = False
-            self.input_guess_url.display = True
-            self.input_guess_ssh.display = False
-            self.guess_docs_link.display = True
-            info_text = InitStaticText.guess_https.value
-        elif event.value == "guess ssh":
-            self.input_url.display = False
-            self.input_ssh.display = False
-            self.input_guess_url.display = False
-            self.input_guess_ssh.display = True
-            info_text = InitStaticText.guess_ssh.value
-            self.guess_docs_link.display = True
-        else:
-            info_text = ""
-        init_info = self.query_one(IDS.operate.container.init_info_q, Static)
-        init_info.update(info_text)
-
-
 class OperateInfo(Static, AppType):
 
     git_autocommit: bool | None = None
@@ -312,13 +248,30 @@ class OperateScreen(Screen[None], AppType):
         yield CustomHeader(IDS.operate)
         with VerticalGroup(id=IDS.operate.container.pre_operate):
             yield OperateInfo()
-            if self.op_data.btn_enum in (
+            if self.op_data.btn_enum == OperateBtn.init_repo:
+                yield VerticalGroup(
+                    Label(
+                        SectionLabels.init_repo,
+                        classes=Tcss.main_section_label,
+                    ),
+                    Static(InitStaticText.init_new),
+                    Label(
+                        InitSubLabels.init_clone,
+                        classes=Tcss.sub_section_label,
+                    ),
+                    Static(id=IDS.operate.container.init_info),
+                    InputInitCloneRepo(),
+                    Label(
+                        InitSubLabels.operate_info,
+                        classes=Tcss.sub_section_label,
+                    ),
+                    InitCollapsibles(),
+                )
+            elif self.op_data.btn_enum in (
                 OperateBtn.apply_path,
                 OperateBtn.re_add_path,
             ):
                 yield DiffView(ids=IDS.operate, reverse=self.reverse)
-            elif self.op_data.btn_enum == OperateBtn.init_repo:
-                yield InitOperateContainer()
             else:
                 yield ContentsView(ids=IDS.operate)
         with VerticalGroup(id=IDS.operate.container.post_operate):
@@ -347,14 +300,38 @@ class OperateScreen(Screen[None], AppType):
             IDS.operate.operate_button_id("#", btn=self.op_data.btn_enum),
             Button,
         )
+        self.op_btn.label = self.op_data.btn_label
+        self.op_btn.tooltip = self.op_data.btn_tooltip
         self.exit_btn = self.query_one(
             IDS.operate.operate_button_id("#", btn=OperateBtn.operate_exit),
             Button,
         )
-        self.set_reactives_and_remove_border_title_top()
-        self.configure_buttons()
+        if self.op_data.btn_enum == OperateBtn.init_repo:
+            self.configure_init_repo_operation()
+        else:
+            self.configure_add_apply_re_add_operation()
 
-    def set_reactives_and_remove_border_title_top(self) -> None:
+    def configure_init_repo_operation(self) -> None:
+        self.init_info = self.query_one(
+            IDS.operate.container.init_info_q, Static
+        )
+        self.init_info.update(
+            "\n".join(
+                [InitStaticText.https_url.value, InitStaticText.pat_info.value]
+            )
+        )
+        self.guess_docs_link = self.query_one(
+            IDS.operate.link_button_id("#", btn=LinkBtn.chezmoi_guess),
+            FlatLink,
+        )
+        self.input_url = self.query_exactly_one(InputURL)
+        self.input_ssh = self.query_exactly_one(InputSSH)
+        self.input_guess_url = self.query_exactly_one(InputGuessURL)
+        self.input_guess_ssh = self.query_exactly_one(InputGuessSSH)
+        if self.op_data.btn_enum == OperateBtn.init_repo:
+            self.exit_btn.label = OperateBtn.operate_exit.exit_app_label
+
+    def configure_add_apply_re_add_operation(self) -> None:
         if self.op_data.btn_enum in (
             OperateBtn.apply_path,
             OperateBtn.re_add_path,
@@ -375,12 +352,6 @@ class OperateScreen(Screen[None], AppType):
             )
             contents_view.node_data = self.op_data.node_data
             contents_view.remove_class(Tcss.border_title_top)
-
-    def configure_buttons(self) -> None:
-        self.op_btn.label = self.op_data.btn_label
-        self.op_btn.tooltip = self.op_data.btn_tooltip
-        if self.op_data.btn_enum == OperateBtn.init_repo:
-            self.exit_btn.label = OperateBtn.operate_exit.exit_app_label
 
     def run_operate_command(self) -> None:
         if self.op_data.node_data is not None:
@@ -422,17 +393,24 @@ class OperateScreen(Screen[None], AppType):
                 self.app.operate_cmd_result = self.app.chezmoi.perform(
                     WriteCmd.init_new, changes_enabled=self.app.changes_enabled
                 )
-            elif self.op_btn.label == OperateBtn.init_repo.init_clone_label:
+            elif (
+                self.op_btn.label == OperateBtn.init_repo.init_clone_label
+                and self.valid_url is True
+            ):
                 self.app.operate_cmd_result = self.app.chezmoi.perform(
                     WriteCmd.init_guess_https,
                     init_repo_arg=self.repo_arg,
                     changes_enabled=self.app.changes_enabled,
                 )
-
+        if self.app.operate_cmd_result is None:
+            raise ValueError(
+                "self.app.operate_cmd_result is None after running command"
+            )
         self.pre_op_container.display = False
         self.post_op_container.display = True
-
         self.write_to_output_log()
+        if self.app.operate_cmd_result.dry_run is True:
+            return
         self.update_buttons()
         self.update_key_binding()
 
@@ -464,29 +442,58 @@ class OperateScreen(Screen[None], AppType):
             return
         self.op_btn.disabled = True
         self.op_btn.tooltip = None
-        if self.op_data.btn_enum in (
-            OperateBtn.add_file,
-            OperateBtn.add_dir,
-            OperateBtn.apply_path,
-            OperateBtn.re_add_path,
-            OperateBtn.forget_path,
-            OperateBtn.destroy_path,
-        ):
-            self.exit_btn.label = OperateBtn.operate_exit.close_label
-        elif self.op_data.btn_enum == OperateBtn.init_repo:
-            self.exit_btn.label = OperateBtn.operate_exit.reload_label
+        self.exit_btn.label = OperateBtn.operate_exit.reload_label
+
+    @on(Select.Changed)
+    def hanle_selection_change(self, event: Select.Changed) -> None:
+        if event.value == "https":
+            info_text = "\n".join(
+                [InitStaticText.https_url.value, InitStaticText.pat_info.value]
+            )
+            self.guess_docs_link.display = False
+            self.input_url.display = True
+            self.input_ssh.display = False
+            self.input_guess_url.display = False
+            self.input_guess_ssh.display = False
+        elif event.value == "ssh":
+            info_text = InitStaticText.ssh_select.value
+            self.guess_docs_link.display = False
+            self.input_url.display = False
+            self.input_ssh.display = True
+            self.input_guess_url.display = False
+            self.input_guess_ssh.display = False
+        elif event.value == "guess url":
+            self.input_url.display = False
+            self.input_ssh.display = False
+            self.input_guess_url.display = True
+            self.input_guess_ssh.display = False
+            self.guess_docs_link.display = True
+            info_text = InitStaticText.guess_https.value
+        elif event.value == "guess ssh":
+            self.input_url.display = False
+            self.input_ssh.display = False
+            self.input_guess_url.display = False
+            self.input_guess_ssh.display = True
+            info_text = InitStaticText.guess_ssh.value
+            self.guess_docs_link.display = True
+        else:
+            info_text = ""
+        init_info = self.query_one(IDS.operate.container.init_info_q, Static)
+        init_info.update(info_text)
 
     @on(Input.Submitted)
     def handle_validation(self, event: Input.Submitted) -> None:
         event.stop()
         if event.validation_result is None:
+            self.notify("No input provided.", severity="error")
             return
         self.valid_url = event.validation_result.is_valid
         if self.valid_url is False:
             self.notify("Invalid URL entered.", severity="error")
             return
-        self.notify("Valid URL entered, button enabled.")
         self.repo_url = event.value
+        self.notify("Valid URL entered, init clone enabled.")
+        self.op_btn.tooltip = OperateBtn.init_repo.enabled_tooltip
 
     @on(Button.Pressed, Tcss.operate_button.dot_prefix)
     def handle_operate_button_pressed(self, event: Button.Pressed) -> None:
