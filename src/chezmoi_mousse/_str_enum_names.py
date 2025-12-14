@@ -20,7 +20,6 @@ class ContainerName(StrEnum):
     doctor = auto()
     git_log_global = auto()
     git_log_path = auto()
-    init_info = auto()
     left_side = auto()
     operate_buttons = auto()
     post_operate = auto()
@@ -71,6 +70,11 @@ class ScreenName(StrEnum):
     main = auto()
     operate = auto()
     splash = auto()
+
+
+class StaticName(StrEnum):
+    init_info = auto()
+    operate_info = auto()
 
 
 class TabName(StrEnum):

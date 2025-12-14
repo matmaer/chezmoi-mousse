@@ -10,6 +10,7 @@ from ._str_enum_names import (
     DataTableName,
     LogName,
     ScreenName,
+    StaticName,
     TabName,
     TreeName,
     ViewName,
@@ -31,6 +32,7 @@ class AppIds:
         "header",
         "logger",
         "operate_btn",
+        "static",
         "switcher",
         "tab_btn",
         "tree",
@@ -38,7 +40,6 @@ class AppIds:
     )
 
     def __init__(self, canvas_name: TabName | ScreenName) -> None:
-
         self.canvas_name = canvas_name
         self.footer = f"{self.canvas_name.name}_footer"
         self.header = f"{self.canvas_name.name}_header"
@@ -49,10 +50,11 @@ class AppIds:
         self.flat_btn = FlatButtonIds(self)
         self.logger = LoggerIds(self)
         self.operate_btn = OperateButtonIds(self)
+        self.static = StaticIds(self)
         self.switcher = ContentSwitcherIds(self)
+        self.tab_btn = TabButtonIds(self)
         self.tree = TreeIds(self)
         self.view = ViewIds(self)
-        self.tab_btn = TabButtonIds(self)
 
     def operate_button_id(self, qid: str = "", *, btn: OperateBtn) -> str:
         return f"{qid}{self.canvas_name.name}_{btn.name}_op_btn"
@@ -75,6 +77,9 @@ class AppIds:
 
     def link_button_id(self, qid: str = "", *, btn: LinkBtn) -> str:
         return f"{qid}{self.canvas_name.name}_{btn.name}_link_btn"
+
+    def static_id(self, qid: str = "", *, static: StaticName) -> str:
+        return f"{qid}{self.canvas_name.name}_{static.name}_static"
 
     def switch_horizontal_id(self, qid: str = "", *, switch: Switches) -> str:
         return f"{qid}{self.canvas_name.name}_{switch.name}_switch_horizontal"
@@ -124,9 +129,6 @@ class ContainerIds:
             name=ContainerName.git_log_global
         )
         self.git_log_global_q = f"#{self.git_log_global}"
-        self.init_info = ids.container_id(name=ContainerName.init_info)
-        self.init_info_q = f"#{self.init_info}"
-
         self.left_side = ids.container_id(name=ContainerName.left_side)
         self.left_side_q = f"#{self.left_side}"
         self.operate_buttons = ids.container_id(
@@ -359,6 +361,14 @@ class OperateButtonIds:
         self.operate_exit_q = f"#{self.operate_exit}"
         self.re_add_path = ids.operate_button_id(btn=OperateBtn.re_add_path)
         self.re_add_path_q = f"#{self.re_add_path}"
+
+
+class StaticIds:
+    def __init__(self, ids: AppIds):
+        self.init_info = ids.static_id(static=StaticName.init_info)
+        self.init_info_q = f"#{self.init_info}"
+        self.operate_info = ids.static_id(static=StaticName.operate_info)
+        self.operate_info_q = f"#{self.operate_info}"
 
 
 class TabButtonIds:
