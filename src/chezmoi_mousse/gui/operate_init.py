@@ -4,7 +4,7 @@ from textual import on
 from textual.app import ComposeResult
 from textual.containers import HorizontalGroup, VerticalGroup
 from textual.validation import URL
-from textual.widgets import Button, Input, Label, Select, Static
+from textual.widgets import Button, Input, Label, Select, Static, Switch
 
 from chezmoi_mousse import (
     IDS,
@@ -31,14 +31,37 @@ __all__ = ["InitScreen"]
 
 
 class InitStaticText(StrEnum):
-    init_new = f"Click the [$primary-lighten-3 on $surface-lighten-1] {OperateBtn.init_repo.initial_label} [/] button to initialize a new chezmoi repository.\n"
+    init_clone = f"Click the [$primary-lighten-3 on $surface-lighten-1] {OperateBtn.init_repo.init_clone_label} [/] button to initialize a new chezmoi repository.\n"
+    init_new = f"Click the [$primary-lighten-3 on $surface-lighten-1] {OperateBtn.init_repo.initial_label} [/] button to initialize a new chezmoi repository."
+    init_switch_on = f"Switch [$foreground-darken-1 on $surface-lighten-1] {Switches.init_repo_switch.label} [/] ON to clone an existing repository.\n"
     guess_https = "Let chezmoi guess the best URL to clone from."
     guess_ssh = (
         "Let chezmoi guess the best ssh scp-style address to clone from."
     )
     https_url = "Enter a complete URL, e.g., [$text-primary]https://github.com/user/repo.git[/]."
-    pat_info = "If you have a PAT, make sure to include it in the URL, for example: [$text-primary]https://username:ghp_123456789abcdef@github.com/username/my-dotfiles.git[/] and delete the PAT after use."
+    pat_info = "If you have a PAT, make sure to include it in the URL, for example: [$text-primary]https://username:ghp_123456789abcdef@github.com/username/my-dotfiles.git[/] and delete the PAT after use.\n"
     ssh_select = "Enter an SSH SCP-style URL, e.g., [$text-primary]git@github.com:user/repo.git[/]. If your dotfiles repository is private, make sure you have your SSH key pair set up before using this option."
+
+
+class InitInfo(Static):
+    def __init__(self) -> None:
+        super().__init__(id=IDS.operate.static.init_info)
+
+    def compose(self) -> ComposeResult:
+        yield Static(id=IDS.operate.static.init_info)
+
+    def on_mount(self) -> None:
+        self.init_info_static = self.query_one(
+            IDS.operate.static.init_info_q, Static
+        )
+        self.init_info_static.update(
+            "\n".join(
+                [
+                    InitStaticText.init_new.value,
+                    InitStaticText.init_switch_on.value,
+                ]
+            )
+        )
 
 
 class InputURL(Input):
@@ -108,6 +131,7 @@ class InitCollapsibles(VerticalGroup, AppType):
 class InputInitCloneRepo(HorizontalGroup):
 
     def compose(self) -> ComposeResult:
+        yield Static(id=IDS.operate.static.init_info)
         yield Select(
             options=[
                 ("https", "https"),
@@ -124,39 +148,7 @@ class InputInitCloneRepo(HorizontalGroup):
         yield InputGuessURL()
         yield InputGuessSSH()
 
-
-class InitScreen(OperateScreenBase):
-    def __init__(self) -> None:
-        super().__init__()
-        self.guess_https: bool | None = None
-        self.guess_ssh: bool | None = None
-        self.init_cmd: WriteCmd
-        self.repo_arg: str | None = None
-        self.valid_url: bool = False
-
     def on_mount(self) -> None:
-        super().on_mount()
-        self.pre_op_container.mount(
-            HorizontalGroup(
-                Label(
-                    SectionLabels.init_repo, classes=Tcss.main_section_label
-                ),
-                SwitchWithLabel(
-                    ids=IDS.operate, switch_enum=Switches.init_repo_switch
-                ),
-            ),
-            Static(InitStaticText.init_new),
-            Static(id=IDS.operate.static.init_info),
-            InputInitCloneRepo(),
-            InitCollapsibles(),
-        )
-        self.query_exactly_one(SwitchWithLabel).add_class(Tcss.single_switch)
-        self.init_info = self.query_one(IDS.operate.static.init_info_q, Static)
-        self.init_info.update(
-            "\n".join(
-                [InitStaticText.https_url.value, InitStaticText.pat_info.value]
-            )
-        )
         self.guess_docs_link = self.query_one(
             IDS.operate.link_button_id("#", btn=LinkBtn.chezmoi_guess),
             FlatLink,
@@ -165,7 +157,6 @@ class InitScreen(OperateScreenBase):
         self.input_ssh = self.query_exactly_one(InputSSH)
         self.input_guess_url = self.query_exactly_one(InputGuessURL)
         self.input_guess_ssh = self.query_exactly_one(InputGuessSSH)
-        self.exit_btn.label = OperateBtn.operate_exit.exit_app_label
 
     @on(Select.Changed)
     def hanle_selection_change(self, event: Select.Changed) -> None:
@@ -203,6 +194,52 @@ class InitScreen(OperateScreenBase):
             info_text = ""
         init_info = self.query_one(IDS.operate.static.init_info_q, Static)
         init_info.update(info_text)
+
+
+class InitScreen(OperateScreenBase):
+    def __init__(self) -> None:
+        super().__init__()
+        self.guess_https: bool | None = None
+        self.guess_ssh: bool | None = None
+        self.init_cmd: WriteCmd
+        self.repo_arg: str | None = None
+        self.valid_url: bool = False
+
+    def on_mount(self) -> None:
+        super().on_mount()
+        self.pre_op_container.mount(
+            HorizontalGroup(
+                Label(
+                    SectionLabels.init_repo, classes=Tcss.main_section_label
+                ),
+                SwitchWithLabel(
+                    ids=IDS.operate, switch_enum=Switches.init_repo_switch
+                ),
+            ),
+            InitInfo(),
+            InputInitCloneRepo(),
+            InitCollapsibles(),
+        )
+        self.query_exactly_one(SwitchWithLabel).add_class(Tcss.single_switch)
+        self.input_clone_repo = self.query_exactly_one(InputInitCloneRepo)
+        self.input_clone_repo.display = False
+        self.init_info = self.query_one(
+            IDS.operate.static.init_info_q, InitInfo
+        )
+        self.exit_btn.label = OperateBtn.operate_exit.exit_app_label
+
+    @on(Switch.Changed)
+    def handle_switch_state(self, event: Switch.Changed) -> None:
+        event.stop()
+        self.init_existing = event.value
+        if event.value is True:
+            self.op_btn.label = OperateBtn.init_repo.init_clone_label
+            self.input_clone_repo.display = True
+            self.init_info.display = False
+        else:
+            self.op_btn.label = OperateBtn.init_repo.init_new_label
+            self.input_clone_repo.display = False
+            self.init_info.display = True
 
     def run_operate_command(self) -> None:
         if self.op_btn.label == OperateBtn.init_repo.init_new_label:
