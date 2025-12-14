@@ -30,11 +30,6 @@ from chezmoi_mousse.shared import (
 __all__ = ["InitScreen"]
 
 
-class InitSubLabels(StrEnum):
-    init_clone = "Optionally clone from an existing repository"
-    operate_info = "Operate Info"
-
-
 class InitStaticText(StrEnum):
     init_new = f"Click the [$primary-lighten-3 on $surface-lighten-1] {OperateBtn.init_repo.initial_label} [/] button to initialize a new chezmoi repository.\n"
     guess_https = "Let chezmoi guess the best URL to clone from."
@@ -151,7 +146,6 @@ class InitScreen(OperateScreenBase):
                 ),
             ),
             Static(InitStaticText.init_new),
-            Label(InitSubLabels.init_clone, classes=Tcss.sub_section_label),
             Static(id=IDS.operate.static.init_info),
             InputInitCloneRepo(),
             InitCollapsibles(),
