@@ -21,6 +21,7 @@ class Tcss(StrEnum):
     pw_mgr_group = auto()
     read_cmd_static = auto()
     single_button_vertical = auto()
+    single_switch = auto()
     sub_section_label = auto()
     tab_button = auto()
     tab_left_vertical = auto()

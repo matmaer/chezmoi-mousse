@@ -57,7 +57,21 @@
   border-top: inner $surface-lighten-1;
   color: $text-accent;
   text-align: center;
-  width: 100%;
+  width: 1fr;
+}
+
+.single_switch {
+  background-tint: $surface-lighten-1;
+  background: $surface-lighten-1;
+  border: inner $surface-lighten-1;
+  color: $foreground-darken-1;
+  padding-right: 1;
+  height: 3;
+  width: auto;
+  & Switch {
+    background: $surface-lighten-1;
+    background-tint: $surface-lighten-1;
+  }
 }
 
 .sub_section_label {
