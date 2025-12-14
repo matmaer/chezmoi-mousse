@@ -229,12 +229,8 @@ class InitScreen(OperateScreenBase):
         event.stop()
         if event.button.label == OperateBtn.operate_exit.exit_app_label:
             self.app.exit()
-        elif event.button.label in (OperateBtn.operate_exit.reload_label,):
+        elif event.button.label == OperateBtn.operate_exit.reload_label:
             self.app.post_message(InitCompletedMsg())
-        elif event.button.label in (
-            OperateBtn.operate_exit.close_label,
-            OperateBtn.operate_exit.reload_label,
-        ):
             self.dismiss()
         else:
             self.run_operate_command()
