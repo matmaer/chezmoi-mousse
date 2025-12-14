@@ -18,12 +18,6 @@ __all__ = ["OperateBtn"]
 _UNSET = "UNSET"
 
 
-class SharedLabels(StrEnum):
-    cancel = "Cancel"
-    close = "Close"
-    exit_app = "Exit App"
-
-
 class SharedToolTips(StrEnum):
     path_no_status = "The selected path has no status to operate on."
     in_dest_dir = "This is the destDir, select a path to operate on."
@@ -48,17 +42,6 @@ class OpBtnData:
     # Init button specific
     init_new_label: str = _UNSET
     init_clone_label: str = _UNSET
-
-    # Exit button specific
-    cancel_label: str = SharedLabels.cancel
-    close_label: str = SharedLabels.close
-    close_tooltip: str | None = None
-    exit_app_label: str = SharedLabels.exit_app
-    exit_app_tooltip: str | None = None
-    reload_label: str = BindingDescription.reload.value
-    reload_tooltip: str = (
-        "Reload the application to load the initialized chezmoi state."
-    )
 
 
 class OperateBtn(Enum):
@@ -118,9 +101,7 @@ class OperateBtn(Enum):
         enabled_tooltip="Valid URL entered, ready to clone.",
         disabled_tooltip="Provide an input to determine the repository to clone from.",
     )
-    operate_exit = OpBtnData(
-        initial_label=SharedLabels.cancel, initial_tooltip=None
-    )
+    operate_exit = OpBtnData(initial_label="Cancel", initial_tooltip=None)
 
     # Allow access to dataclass attributes directly from the Enum member,
     # without needing to go through the value attribute
@@ -137,23 +118,15 @@ class OperateBtn(Enum):
 
     @property
     def cancel_label(self) -> str:
-        return self.value.cancel_label
-
-    @property
-    def close_label(self) -> str:
-        return self.value.close_label
+        return "Cancel"
 
     @property
     def exit_app_label(self) -> str:
-        return self.value.exit_app_label
+        return "Exit App"
 
     @property
-    def close_tooltip(self) -> str | None:
-        return self.value.close_tooltip
-
-    @property
-    def exit_app_tooltip(self) -> str | None:
-        return self.value.exit_app_tooltip
+    def reload_label(self) -> str:
+        return BindingDescription.reload.value
 
     # AddTab button specific attribute access
 
@@ -182,14 +155,6 @@ class OperateBtn(Enum):
     @property
     def dir_label(self) -> str:
         return self.value.dir_label
-
-    @property
-    def reload_label(self) -> str:
-        return self.value.reload_label
-
-    @property
-    def reload_tooltip(self) -> str:
-        return self.value.reload_tooltip
 
     @property
     def init_new_label(self) -> str:
