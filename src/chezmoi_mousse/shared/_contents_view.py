@@ -72,7 +72,6 @@ class ContentsView(Vertical, AppType):
 
     def on_mount(self) -> None:
         self.border_title = f" {self.destDir} "
-        self.rich_log = self.query_one(self.ids.logger.contents_q, RichLog)
 
     def write_managed_directory(self, path_arg: "Path") -> None:
         if self.node_data is None:
@@ -81,6 +80,7 @@ class ContentsView(Vertical, AppType):
         self.rich_log.write(ContentsTabStrings.click_file_path)
 
     def watch_node_data(self) -> None:
+        self.rich_log = self.query_one(self.ids.logger.contents_q, RichLog)
         if self.node_data is None:
             return
         else:
