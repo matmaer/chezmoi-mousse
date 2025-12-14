@@ -113,8 +113,13 @@ class InitCollapsibles(VerticalGroup, AppType):
 class InputInitCloneRepo(HorizontalGroup):
 
     def compose(self) -> ComposeResult:
-        yield Select[str].from_values(
-            ["https", "ssh", "guess url", "guess ssh"],
+        yield Select(
+            options=[
+                ("https", "https"),
+                ("ssh", "ssh"),
+                ("guess url", "guess url"),
+                ("guess ssh", "guess ssh"),
+            ],
             classes=Tcss.input_select,
             allow_blank=False,
             type_to_search=False,
