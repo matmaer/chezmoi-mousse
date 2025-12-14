@@ -34,8 +34,8 @@ from chezmoi_mousse.shared import (
     OperateInfo,
 )
 
+from .init_chezmoi import InitScreen
 from .main_tabs import MainScreen
-from .operate import ChezmoiInit
 from .tabs.add_tab import AddTab
 from .tabs.common.switchers import ViewSwitcher
 from .tabs.common.trees import TreeBase
@@ -279,7 +279,7 @@ class SplashScreen(Screen[SplashData | None], AppType):
             update_app_worker = self.update_app()
             if update_app_worker.state == WorkerState.SUCCESS:
                 if self.app.init_cmd_needed is True:
-                    self.app.push_screen(ChezmoiInit())
+                    self.app.push_screen(InitScreen())
                 self.dismiss()
             else:
                 raise RuntimeError(
