@@ -24,12 +24,13 @@ from chezmoi_mousse.shared import (
     FlatButtonsVertical,
     InitCompletedMsg,
     LogsTabButtons,
+    OperateInfo,
     ViewTabButtons,
 )
 
 from .install_help import InstallHelp
 from .main_tabs import MainScreen
-from .operate import OperateChezmoi, OperateInfo
+from .operate import OperateChezmoi
 from .splash import SplashScreen
 from .tabs.add_tab import FilteredDirTree
 from .tabs.common.switch_slider import SwitchSlider

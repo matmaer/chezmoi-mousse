@@ -30,11 +30,21 @@ from ._messages import (
     InitCompletedMsg,
     OperateButtonMsg,
 )
+from ._operate_screen import OperateInfo, OperateScreenBase
 from ._pw_mgr_info import PwMgrInfoView
 from ._screen_header import CustomHeader, HeaderTitle
 from ._ssh_scp_validator import SSHSCP
 
 __all__ = [
+    # Buttons, Links and Switches
+    "FlatButton",
+    "FlatButtonsVertical",
+    "FlatLink",
+    "LogsTabButtons",
+    "OperateButtons",
+    "SwitchWithLabel",
+    "TreeTabButtons",
+    "ViewTabButtons",
     # Loggers
     "AppLog",
     "DebugLog",
@@ -46,15 +56,9 @@ __all__ = [
     "CurrentReAddNodeMsg",
     "InitCompletedMsg",
     "OperateButtonMsg",
-    # Buttons, Links and Switches
-    "FlatButton",
-    "FlatButtonsVertical",
-    "FlatLink",
-    "LogsTabButtons",
-    "OperateButtons",
-    "SwitchWithLabel",
-    "TreeTabButtons",
-    "ViewTabButtons",
+    # OperateScreen
+    "OperateInfo",
+    "OperateScreenBase",
     # Other shared components
     "CatConfigView",
     "ContentsView",
