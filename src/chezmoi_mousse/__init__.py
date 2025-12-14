@@ -1,3 +1,11 @@
+"""This package does not import anything from textual, it only contains classes
+imported at module init before launching the textual app, and attributes
+accessed after the app is launched.
+
+Only launcher.py imports from textual, ChezmoiGUI which inherits from the
+textual App class.
+"""
+
 from dataclasses import dataclass, fields
 from importlib.metadata import PackageNotFoundError, version
 from typing import TYPE_CHECKING
