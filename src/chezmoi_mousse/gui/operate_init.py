@@ -99,6 +99,7 @@ class InitCollapsibles(VerticalGroup, AppType):
         self.splash_data = self.app.splash_data
 
     def compose(self) -> ComposeResult:
+        yield Label("Operate Info", classes=Tcss.sub_section_label)
         yield CustomCollapsible(
             DoctorTable(ids=IDS.operate, doctor_data=self.splash_data.doctor),
             title="Doctor Output",
@@ -148,7 +149,6 @@ class InitScreen(OperateScreenBase):
             Label(InitSubLabels.init_clone, classes=Tcss.sub_section_label),
             Static(id=IDS.operate.static.init_info),
             InputInitCloneRepo(),
-            Label(InitSubLabels.operate_info, classes=Tcss.sub_section_label),
             InitCollapsibles(),
         )
         self.query_exactly_one(SwitchWithLabel).add_class(Tcss.single_switch)
