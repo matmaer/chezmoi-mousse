@@ -2,8 +2,8 @@ from typing import TYPE_CHECKING
 
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import Horizontal, Vertical
-from textual.widgets import Button, Link
+from textual.containers import Horizontal, HorizontalGroup, Vertical
+from textual.widgets import Button, Label, Link, Switch
 
 from chezmoi_mousse import (
     AppType,
@@ -18,7 +18,7 @@ from chezmoi_mousse import (
 from ._operate_msg import OperateButtonMsg
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import AppIds
+    from chezmoi_mousse import AppIds, Switches
 
 
 __all__ = [
@@ -27,9 +27,26 @@ __all__ = [
     "FlatLink",
     "LogsTabButtons",
     "OperateButtons",
+    "SwitchWithLabel",
     "TreeTabButtons",
     "ViewTabButtons",
 ]
+
+
+class SwitchWithLabel(HorizontalGroup):
+
+    def __init__(self, *, ids: "AppIds", switch_enum: "Switches") -> None:
+        self.ids = ids
+        self.switch_enum = switch_enum
+        super().__init__(
+            id=self.ids.switch_horizontal_id(switch=self.switch_enum)
+        )
+
+    def compose(self) -> ComposeResult:
+        yield Switch(id=self.ids.switch_id(switch=self.switch_enum))
+        yield Label(self.switch_enum.label).with_tooltip(
+            tooltip=self.switch_enum.enabled_tooltip
+        )
 
 
 class FlatButton(Button):

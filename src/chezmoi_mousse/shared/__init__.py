@@ -1,11 +1,12 @@
 """Contains subclassed textual classes shared across the application."""
 
-from ._buttons import (
+from ._actionables import (
     FlatButton,
     FlatButtonsVertical,
     FlatLink,
     LogsTabButtons,
     OperateButtons,
+    SwitchWithLabel,
     TreeTabButtons,
     ViewTabButtons,
 )
@@ -45,11 +46,13 @@ __all__ = [
     "CurrentReAddNodeMsg",
     "InitCompletedMsg",
     "OperateButtonMsg",
-    # Buttons
+    # Buttons, Links and Switches
     "FlatButton",
     "FlatButtonsVertical",
+    "FlatLink",
     "LogsTabButtons",
     "OperateButtons",
+    "SwitchWithLabel",
     "TreeTabButtons",
     "ViewTabButtons",
     # Other shared components
@@ -60,7 +63,6 @@ __all__ = [
     "DiffView",
     "DoctorTable",
     "DoctorTableView",
-    "FlatLink",
     "GitLogGlobal",
     "GitLogPath",
     "HeaderTitle",
