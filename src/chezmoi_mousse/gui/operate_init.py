@@ -70,7 +70,7 @@ class InputGuessURL(HorizontalGroup):
             placeholder="Let chezmoi guess the repo URL",
             classes=Tcss.input_field,
         )
-        yield FlatLink(ids=IDS.operate, link_enum=LinkBtn.chezmoi_guess)
+        yield FlatLink(ids=IDS.operate_init, link_enum=LinkBtn.chezmoi_guess)
 
 
 class InputGuessSSH(HorizontalGroup):
@@ -79,7 +79,7 @@ class InputGuessSSH(HorizontalGroup):
             placeholder="Let chezmoi guess the SSH repo address",
             classes=Tcss.input_field,
         )
-        yield FlatLink(ids=IDS.operate, link_enum=LinkBtn.chezmoi_guess)
+        yield FlatLink(ids=IDS.operate_init, link_enum=LinkBtn.chezmoi_guess)
 
 
 class InitCollapsibles(VerticalGroup, AppType):
@@ -92,7 +92,9 @@ class InitCollapsibles(VerticalGroup, AppType):
     def compose(self) -> ComposeResult:
         yield Label("Operate Info", classes=Tcss.sub_section_label)
         yield CustomCollapsible(
-            DoctorTable(ids=IDS.operate, doctor_data=self.splash_data.doctor),
+            DoctorTable(
+                ids=IDS.operate_init, doctor_data=self.splash_data.doctor
+            ),
             title="Doctor Output",
         )
         yield CustomCollapsible(
@@ -104,7 +106,7 @@ class InitCollapsibles(VerticalGroup, AppType):
 class InputInitCloneRepo(HorizontalGroup):
 
     def __init__(self) -> None:
-        super().__init__(id=IDS.operate.container.repo_input)
+        super().__init__(id=IDS.operate_init.container.repo_input)
 
     def compose(self) -> ComposeResult:
         yield Select(
@@ -127,7 +129,7 @@ class InputInitCloneRepo(HorizontalGroup):
 
 class InitScreen(OperateScreenBase):
     def __init__(self) -> None:
-        super().__init__()
+        super().__init__(ids=IDS.operate_init)
         self.guess_https: bool | None = None
         self.guess_ssh: bool | None = None
         self.init_cmd: WriteCmd
@@ -142,22 +144,24 @@ class InitScreen(OperateScreenBase):
                     SectionLabels.init_repo, classes=Tcss.main_section_label
                 ),
                 SwitchWithLabel(
-                    ids=IDS.operate, switch_enum=Switches.init_repo_switch
+                    ids=IDS.operate_init, switch_enum=Switches.init_repo_switch
                 ),
             ),
-            Static(id=IDS.operate.static.init_info),
+            Static(id=IDS.operate_init.static.init_info),
             InputInitCloneRepo(),
             InitCollapsibles(),
         )
         self.query_exactly_one(SwitchWithLabel).add_class(Tcss.single_switch)
         self.repo_input = self.query_one(
-            IDS.operate.container.repo_input_q, InputInitCloneRepo
+            IDS.operate_init.container.repo_input_q, InputInitCloneRepo
         )
         self.repo_input.display = False
-        self.init_info = self.query_one(IDS.operate.static.init_info_q, Static)
+        self.init_info = self.query_one(
+            IDS.operate_init.static.init_info_q, Static
+        )
         self.exit_btn.label = OperateBtn.operate_exit.exit_app_label
         self.guess_docs_link = self.query_one(
-            IDS.operate.link_button_id("#", btn=LinkBtn.chezmoi_guess),
+            IDS.operate_init.link_button_id("#", btn=LinkBtn.chezmoi_guess),
             FlatLink,
         )
         self.guess_docs_link.display = False

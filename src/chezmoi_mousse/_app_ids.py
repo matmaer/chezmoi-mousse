@@ -103,7 +103,8 @@ class CanvasIds:
         self.install_help = AppIds(ScreenName.install_help)
         self.splash = AppIds(ScreenName.splash)
         self.main = AppIds(ScreenName.main)
-        self.operate = AppIds(ScreenName.operate)
+        self.operate_init = AppIds(ScreenName.operate_init)
+        self.operate_chezmoi = AppIds(ScreenName.operate_chezmoi)
         # TabPanes
         self.add = AppIds(TabName.add)
         self.apply = AppIds(TabName.apply)

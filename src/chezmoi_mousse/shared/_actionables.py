@@ -105,7 +105,10 @@ class OperateButton(Button):
         self.ids = ids
         self.button_enum = button_enum
         should_disable = True
-        if self.ids.canvas_name == ScreenName.operate:
+        if self.ids.canvas_name in (
+            ScreenName.operate_init,
+            ScreenName.operate_chezmoi,
+        ):
             should_disable = False
         super().__init__(
             classes=Tcss.operate_button,

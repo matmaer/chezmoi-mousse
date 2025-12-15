@@ -7,7 +7,6 @@ from textual.screen import Screen
 from textual.widgets import Button, Footer, Label, Static
 
 from chezmoi_mousse import (
-    IDS,
     AppType,
     BindingAction,
     BindingDescription,
@@ -125,46 +124,46 @@ class OperateInfo(Static, AppType):
 
 
 class OperateScreenBase(Screen[None], AppType):
-    def __init__(self) -> None:
+    def __init__(self, *, ids: "AppIds") -> None:
         super().__init__()
+        self.ids = ids
         if self.app.operate_data is None:
             raise ValueError("self.app.operate_data is None in OperateScreen")
         self.op_data = self.app.operate_data
 
     def compose(self) -> ComposeResult:
-        yield CustomHeader(IDS.operate)
-        yield OperateInfo(IDS.operate)
-        yield VerticalGroup(id=IDS.operate.container.pre_operate)
-        with VerticalGroup(id=IDS.operate.container.post_operate):
+        yield CustomHeader(self.ids)
+        yield OperateInfo(self.ids)
+        yield VerticalGroup(id=self.ids.container.pre_operate)
+        with VerticalGroup(id=self.ids.container.post_operate):
             yield Label(
                 SectionLabels.operate_output, classes=Tcss.main_section_label
             )
-            yield OperateLog(ids=IDS.operate)
+            yield OperateLog(ids=self.ids)
         if self.app.dev_mode:
             yield Label(SectionLabels.debug_log_output)
-            yield DebugLog(IDS.operate)
+            yield DebugLog(self.ids)
         yield OperateButtons(
-            ids=IDS.operate,
+            ids=self.ids,
             buttons=(self.op_data.btn_enum, OperateBtn.operate_exit),
         )
-        yield Footer(id=IDS.operate.footer)
+        yield Footer(id=self.ids.footer)
 
     def on_mount(self) -> None:
         self.post_op_container = self.query_one(
-            IDS.operate.container.post_operate_q, VerticalGroup
+            self.ids.container.post_operate_q, VerticalGroup
         )
         self.post_op_container.display = False
         self.pre_op_container = self.query_one(
-            IDS.operate.container.pre_operate_q, VerticalGroup
+            self.ids.container.pre_operate_q, VerticalGroup
         )
         self.op_btn = self.query_one(
-            IDS.operate.operate_button_id("#", btn=self.op_data.btn_enum),
-            Button,
+            self.ids.operate_button_id("#", btn=self.op_data.btn_enum), Button
         )
         self.op_btn.label = self.op_data.btn_label
         self.op_btn.tooltip = self.op_data.btn_tooltip
         self.exit_btn = self.query_one(
-            IDS.operate.operate_button_id("#", btn=OperateBtn.operate_exit),
+            self.ids.operate_button_id("#", btn=OperateBtn.operate_exit),
             Button,
         )
 
@@ -190,6 +189,6 @@ class OperateScreenBase(Screen[None], AppType):
         )
 
     def write_to_output_log(self) -> None:
-        output_log = self.query_one(IDS.operate.logger.operate_q, OperateLog)
+        output_log = self.query_one(self.ids.logger.operate_q, OperateLog)
         if self.app.operate_cmd_result is not None:
             output_log.log_cmd_results(self.app.operate_cmd_result)

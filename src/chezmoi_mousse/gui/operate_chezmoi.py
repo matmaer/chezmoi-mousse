@@ -10,7 +10,7 @@ __all__ = ["OperateChezmoi"]
 class OperateChezmoi(OperateScreenBase, AppType):
 
     def __init__(self) -> None:
-        super().__init__()
+        super().__init__(ids=IDS.operate_chezmoi)
         if self.app.operate_data is None:
             raise ValueError("self.app.operate_data is None in OperateScreen")
         self.reverse = (
@@ -25,17 +25,17 @@ class OperateChezmoi(OperateScreenBase, AppType):
             OperateBtn.re_add_path,
         ):
             self.pre_op_container.mount(
-                DiffView(ids=IDS.operate, reverse=self.reverse)
+                DiffView(ids=self.ids, reverse=self.reverse)
             )
             diff_view = self.pre_op_container.query_one(
-                IDS.operate.container.diff_q, DiffView
+                self.ids.container.diff_q, DiffView
             )
             diff_view.node_data = self.op_data.node_data
             diff_view.remove_class(Tcss.border_title_top)
         else:
-            self.pre_op_container.mount(ContentsView(ids=IDS.operate))
+            self.pre_op_container.mount(ContentsView(ids=self.ids))
             contents_view = self.pre_op_container.query_one(
-                IDS.operate.container.contents_q, ContentsView
+                self.ids.container.contents_q, ContentsView
             )
             contents_view.node_data = self.op_data.node_data
             contents_view.remove_class(Tcss.border_title_top)
