@@ -72,9 +72,6 @@ class InputGuessURL(HorizontalGroup):
         )
         yield FlatLink(ids=IDS.operate, link_enum=LinkBtn.chezmoi_guess)
 
-    def on_mount(self) -> None:
-        self.query_exactly_one(FlatLink).add_class(Tcss.guess_link)
-
 
 class InputGuessSSH(HorizontalGroup):
     def compose(self) -> ComposeResult:
@@ -83,9 +80,6 @@ class InputGuessSSH(HorizontalGroup):
             classes=Tcss.input_field,
         )
         yield FlatLink(ids=IDS.operate, link_enum=LinkBtn.chezmoi_guess)
-
-    def on_mount(self) -> None:
-        self.query_exactly_one(FlatLink).add_class(Tcss.guess_link)
 
 
 class InitCollapsibles(VerticalGroup, AppType):
@@ -166,14 +160,6 @@ class InitScreen(OperateScreenBase):
             IDS.operate.link_button_id("#", btn=LinkBtn.chezmoi_guess),
             FlatLink,
         )
-        self.init_info.update(
-            "\n".join(
-                [
-                    InitStaticText.init_new.value,
-                    InitStaticText.init_switch_on.value,
-                ]
-            )
-        )
         self.guess_docs_link = self.query_one(
             IDS.operate.link_button_id("#", btn=LinkBtn.chezmoi_guess),
             FlatLink,
@@ -198,14 +184,7 @@ class InitScreen(OperateScreenBase):
         else:
             self.op_btn.label = OperateBtn.init_repo.init_new_label
             self.repo_input.display = False
-            self.init_info.update(
-                "\n".join(
-                    [
-                        InitStaticText.init_new.value,
-                        InitStaticText.init_switch_on.value,
-                    ]
-                )
-            )
+            self.update_info_text()
 
     @on(Input.Submitted)
     def handle_validation(self, event: Input.Submitted) -> None:
@@ -279,7 +258,19 @@ class InitScreen(OperateScreenBase):
         assert isinstance(event.value, str)
         self.update_info_text(select_value=event.value)
 
-    def update_info_text(self, select_value: str) -> None:
+    def update_info_text(self, select_value: str | None = None) -> None:
+        if select_value is None:
+            switch_state = self.query_exactly_one(Switch).value
+            if switch_state is False:
+                self.init_info.update(
+                    "\n".join(
+                        [
+                            InitStaticText.init_new.value,
+                            InitStaticText.init_switch_on.value,
+                        ]
+                    )
+                )
+                return
         if select_value == "https":
             info_text = "\n".join(
                 [InitStaticText.https_url.value, InitStaticText.pat_info.value]
@@ -291,5 +282,5 @@ class InitScreen(OperateScreenBase):
         elif select_value == "guess ssh":
             info_text = InitStaticText.guess_ssh.value
         else:
-            info_text = ""
+            raise ValueError("Invalid select_value in update_info_text")
         self.init_info.update(info_text)
