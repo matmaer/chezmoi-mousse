@@ -7,6 +7,7 @@ __all__ = [
     "LogName",
     "PathKind",
     "ScreenName",
+    "StaticName",
     "TabName",
     "TreeName",
     "ViewName",
