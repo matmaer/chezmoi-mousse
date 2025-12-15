@@ -47,14 +47,8 @@ class InitInfo(Static):
     def __init__(self) -> None:
         super().__init__(id=IDS.operate.static.init_info)
 
-    def compose(self) -> ComposeResult:
-        yield Static(id=IDS.operate.static.init_info)
-
     def on_mount(self) -> None:
-        self.init_info_static = self.query_one(
-            IDS.operate.static.init_info_q, Static
-        )
-        self.init_info_static.update(
+        self.update(
             "\n".join(
                 [
                     InitStaticText.init_new.value,
