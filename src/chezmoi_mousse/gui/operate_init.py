@@ -27,7 +27,7 @@ from chezmoi_mousse.shared import (
     SwitchWithLabel,
 )
 
-__all__ = ["InitScreen"]
+__all__ = ["OperateInit"]
 
 
 class InitStaticText(StrEnum):
@@ -132,7 +132,7 @@ class InputInitCloneRepo(HorizontalGroup):
         self.query_exactly_one(InputGuessSSH).display = False
 
 
-class InitScreen(OperateScreenBase):
+class OperateInit(OperateScreenBase):
     def __init__(self) -> None:
         super().__init__(ids=IDS.operate_init)
         self.guess_https: bool | None = None
