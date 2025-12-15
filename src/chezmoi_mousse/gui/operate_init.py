@@ -39,7 +39,7 @@ class InitStaticText(StrEnum):
         "Let chezmoi guess the best ssh scp-style address to clone from."
     )
     https_url = "Enter a complete URL, e.g., [$text-primary]https://github.com/user/repo.git[/]."
-    pat_info = "If you have a PAT, make sure to include it in the URL, for example: [$text-primary]https://username:ghp_123456789abcdef@github.com/username/my-dotfiles.git[/] and delete the PAT after use.\n"
+    pat_info = "If you have a PAT, make sure to include it in the URL, for example: [$text-primary]https://username:ghp_123456789abcdef@github.com/username/my-dotfiles.git[/] and delete the PAT after use."
     ssh_select = "Enter an SSH SCP-style URL, e.g., [$text-primary]git@github.com:user/repo.git[/]. If your dotfiles repository is private, make sure you have your SSH key pair set up before using this option."
 
 
