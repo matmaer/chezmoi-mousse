@@ -126,6 +126,11 @@ class InputInitCloneRepo(HorizontalGroup):
         yield InputGuessURL()
         yield InputGuessSSH()
 
+    def on_mount(self) -> None:
+        self.query_exactly_one(InputSSH).display = False
+        self.query_exactly_one(InputGuessURL).display = False
+        self.query_exactly_one(InputGuessSSH).display = False
+
 
 class InitScreen(OperateScreenBase):
     def __init__(self) -> None:
@@ -260,7 +265,7 @@ class InitScreen(OperateScreenBase):
             self.input_guess_url.display = False
             self.input_guess_ssh.display = True
             self.guess_docs_link.display = True
-            self.update_info_text(select_value=event.value)
+        self.update_info_text(select_value=event.value)
 
     def update_info_text(self, select_value: str | None = None) -> None:
         if select_value is None:
