@@ -61,7 +61,7 @@ class MainScreen(Screen[None], AppType):
         self.current_re_add_node: "NodeData | None" = None
 
     def compose(self) -> ComposeResult:
-        yield CustomHeader(ids=IDS.main)
+        yield CustomHeader(IDS.main)
         with TabbedContent():
             yield TabPane(
                 TabPanes.apply_tab_label, ApplyTab(), id=TabName.apply

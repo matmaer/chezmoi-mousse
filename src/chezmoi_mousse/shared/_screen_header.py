@@ -29,9 +29,10 @@ class CustomHeader(Header, AppType):
     changes_enabled: reactive[bool | None] = reactive(None)
 
     def __init__(self, ids: "AppIds") -> None:
-        super().__init__(icon=Chars.burger, id=ids.header)
+        super().__init__(id=ids.header)
 
     def on_mount(self) -> None:
+        self.icon = Chars.burger
         self.changes_enabled = self.app.changes_enabled
         if self.changes_enabled is False:
             self.screen.title = HeaderTitle.header_dry_run_mode

@@ -51,7 +51,7 @@ class CommandsTree(Tree[ParsedJson]):
 class InstallHelp(Screen[None], AppType):
 
     def compose(self) -> ComposeResult:
-        yield CustomHeader(ids=IDS.install_help)
+        yield CustomHeader(IDS.install_help)
         yield Label(
             InstallHelpStrings.top_label, classes=Tcss.main_section_label
         )
