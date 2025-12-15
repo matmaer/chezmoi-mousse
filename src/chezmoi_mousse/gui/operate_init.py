@@ -169,6 +169,7 @@ class InitScreen(OperateScreenBase):
         self.input_ssh = self.query_exactly_one(InputSSH)
         self.input_guess_url = self.query_exactly_one(InputGuessURL)
         self.input_guess_ssh = self.query_exactly_one(InputGuessSSH)
+        self.update_info_text()
 
     @on(Switch.Changed)
     def handle_switch_state(self, event: Switch.Changed) -> None:
@@ -256,7 +257,9 @@ class InitScreen(OperateScreenBase):
             self.input_guess_ssh.display = True
             self.guess_docs_link.display = True
         assert isinstance(event.value, str)
-        self.update_info_text(select_value=event.value)
+
+        if self.repo_input.display:
+            self.update_info_text(select_value=event.value)
 
     def update_info_text(self, select_value: str | None = None) -> None:
         if select_value is None:
@@ -270,7 +273,7 @@ class InitScreen(OperateScreenBase):
                         ]
                     )
                 )
-                return
+            return
         if select_value == "https":
             info_text = "\n".join(
                 [InitStaticText.https_url.value, InitStaticText.pat_info.value]
