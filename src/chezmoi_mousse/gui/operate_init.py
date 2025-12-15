@@ -43,21 +43,6 @@ class InitStaticText(StrEnum):
     ssh_select = "Enter an SSH SCP-style URL, e.g., [$text-primary]git@github.com:user/repo.git[/]. If your dotfiles repository is private, make sure you have your SSH key pair set up before using this option."
 
 
-class InitInfo(Static):
-    def __init__(self) -> None:
-        super().__init__(id=IDS.operate.static.init_info)
-
-    def on_mount(self) -> None:
-        self.update(
-            "\n".join(
-                [
-                    InitStaticText.init_new.value,
-                    InitStaticText.init_switch_on.value,
-                ]
-            )
-        )
-
-
 class InputURL(Input):
     def __init__(self) -> None:
         super().__init__(
@@ -128,7 +113,6 @@ class InputInitCloneRepo(HorizontalGroup):
         super().__init__(id=IDS.operate.container.repo_input)
 
     def compose(self) -> ComposeResult:
-        yield Static(id=IDS.operate.static.init_info)
         yield Select(
             options=[
                 ("https", "https"),
@@ -136,6 +120,7 @@ class InputInitCloneRepo(HorizontalGroup):
                 ("guess url", "guess url"),
                 ("guess ssh", "guess ssh"),
             ],
+            value="https",
             classes=Tcss.input_select,
             allow_blank=False,
             type_to_search=False,
@@ -144,53 +129,6 @@ class InputInitCloneRepo(HorizontalGroup):
         yield InputSSH()
         yield InputGuessURL()
         yield InputGuessSSH()
-
-    def on_mount(self) -> None:
-        self.guess_docs_link = self.query_one(
-            IDS.operate.link_button_id("#", btn=LinkBtn.chezmoi_guess),
-            FlatLink,
-        )
-        self.input_url = self.query_exactly_one(InputURL)
-        self.input_ssh = self.query_exactly_one(InputSSH)
-        self.input_guess_url = self.query_exactly_one(InputGuessURL)
-        self.input_guess_ssh = self.query_exactly_one(InputGuessSSH)
-
-    @on(Select.Changed)
-    def hanle_selection_change(self, event: Select.Changed) -> None:
-        if event.value == "https":
-            info_text = "\n".join(
-                [InitStaticText.https_url.value, InitStaticText.pat_info.value]
-            )
-            self.guess_docs_link.display = False
-            self.input_url.display = True
-            self.input_ssh.display = False
-            self.input_guess_url.display = False
-            self.input_guess_ssh.display = False
-        elif event.value == "ssh":
-            info_text = InitStaticText.ssh_select.value
-            self.guess_docs_link.display = False
-            self.input_url.display = False
-            self.input_ssh.display = True
-            self.input_guess_url.display = False
-            self.input_guess_ssh.display = False
-        elif event.value == "guess url":
-            self.input_url.display = False
-            self.input_ssh.display = False
-            self.input_guess_url.display = True
-            self.input_guess_ssh.display = False
-            self.guess_docs_link.display = True
-            info_text = InitStaticText.guess_https.value
-        elif event.value == "guess ssh":
-            self.input_url.display = False
-            self.input_ssh.display = False
-            self.input_guess_url.display = False
-            self.input_guess_ssh.display = True
-            info_text = InitStaticText.guess_ssh.value
-            self.guess_docs_link.display = True
-        else:
-            info_text = ""
-        init_info = self.query_one(IDS.operate.static.init_info_q, Static)
-        init_info.update(info_text)
 
 
 class InitScreen(OperateScreenBase):
@@ -213,7 +151,7 @@ class InitScreen(OperateScreenBase):
                     ids=IDS.operate, switch_enum=Switches.init_repo_switch
                 ),
             ),
-            InitInfo(),
+            Static(id=IDS.operate.static.init_info),
             InputInitCloneRepo(),
             InitCollapsibles(),
         )
@@ -222,23 +160,52 @@ class InitScreen(OperateScreenBase):
             IDS.operate.container.repo_input_q, InputInitCloneRepo
         )
         self.repo_input.display = False
-        self.init_info = self.query_one(
-            IDS.operate.static.init_info_q, InitInfo
-        )
+        self.init_info = self.query_one(IDS.operate.static.init_info_q, Static)
         self.exit_btn.label = OperateBtn.operate_exit.exit_app_label
+        self.guess_docs_link = self.query_one(
+            IDS.operate.link_button_id("#", btn=LinkBtn.chezmoi_guess),
+            FlatLink,
+        )
+        self.init_info.update(
+            "\n".join(
+                [
+                    InitStaticText.init_new.value,
+                    InitStaticText.init_switch_on.value,
+                ]
+            )
+        )
+        self.guess_docs_link = self.query_one(
+            IDS.operate.link_button_id("#", btn=LinkBtn.chezmoi_guess),
+            FlatLink,
+        )
+        self.guess_docs_link.display = False
+        self.input_url = self.query_exactly_one(InputURL)
+        self.input_ssh = self.query_exactly_one(InputSSH)
+        self.input_guess_url = self.query_exactly_one(InputGuessURL)
+        self.input_guess_ssh = self.query_exactly_one(InputGuessSSH)
 
     @on(Switch.Changed)
     def handle_switch_state(self, event: Switch.Changed) -> None:
-        event.stop()
-        self.init_existing = event.value
         if event.value is True:
             self.op_btn.label = OperateBtn.init_repo.init_clone_label
             self.repo_input.display = True
-            self.init_info.display = False
+            current_select = self.repo_input.query_exactly_one(
+                Select[str]
+            ).value
+            # if current_select is not None:
+            assert isinstance(current_select, str)
+            self.update_info_text(select_value=current_select)
         else:
             self.op_btn.label = OperateBtn.init_repo.init_new_label
             self.repo_input.display = False
-            self.init_info.display = True
+            self.init_info.update(
+                "\n".join(
+                    [
+                        InitStaticText.init_new.value,
+                        InitStaticText.init_switch_on.value,
+                    ]
+                )
+            )
 
     @on(Input.Submitted)
     def handle_validation(self, event: Input.Submitted) -> None:
@@ -282,3 +249,47 @@ class InitScreen(OperateScreenBase):
                 severity="error",
             )
             return
+
+    @on(Select.Changed)
+    def hanle_selection_change(self, event: Select.Changed) -> None:
+        if event.value == "https":
+            self.guess_docs_link.display = False
+            self.input_url.display = True
+            self.input_ssh.display = False
+            self.input_guess_url.display = False
+            self.input_guess_ssh.display = False
+        elif event.value == "ssh":
+            self.guess_docs_link.display = False
+            self.input_url.display = False
+            self.input_ssh.display = True
+            self.input_guess_url.display = False
+            self.input_guess_ssh.display = False
+        elif event.value == "guess url":
+            self.input_url.display = False
+            self.input_ssh.display = False
+            self.input_guess_url.display = True
+            self.input_guess_ssh.display = False
+            self.guess_docs_link.display = True
+        elif event.value == "guess ssh":
+            self.input_url.display = False
+            self.input_ssh.display = False
+            self.input_guess_url.display = False
+            self.input_guess_ssh.display = True
+            self.guess_docs_link.display = True
+        assert isinstance(event.value, str)
+        self.update_info_text(select_value=event.value)
+
+    def update_info_text(self, select_value: str) -> None:
+        if select_value == "https":
+            info_text = "\n".join(
+                [InitStaticText.https_url.value, InitStaticText.pat_info.value]
+            )
+        elif select_value == "ssh":
+            info_text = InitStaticText.ssh_select.value
+        elif select_value == "guess url":
+            info_text = InitStaticText.guess_https.value
+        elif select_value == "guess ssh":
+            info_text = InitStaticText.guess_ssh.value
+        else:
+            info_text = ""
+        self.init_info.update(info_text)
