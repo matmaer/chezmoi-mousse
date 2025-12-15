@@ -130,6 +130,9 @@ class InitCollapsibles(VerticalGroup, AppType):
 
 class InputInitCloneRepo(HorizontalGroup):
 
+    def __init__(self) -> None:
+        super().__init__(id=IDS.operate.container.repo_input)
+
     def compose(self) -> ComposeResult:
         yield Static(id=IDS.operate.static.init_info)
         yield Select(
@@ -221,8 +224,10 @@ class InitScreen(OperateScreenBase):
             InitCollapsibles(),
         )
         self.query_exactly_one(SwitchWithLabel).add_class(Tcss.single_switch)
-        self.input_clone_repo = self.query_exactly_one(InputInitCloneRepo)
-        self.input_clone_repo.display = False
+        self.repo_input = self.query_one(
+            IDS.operate.container.repo_input_q, InputInitCloneRepo
+        )
+        self.repo_input.display = False
         self.init_info = self.query_one(
             IDS.operate.static.init_info_q, InitInfo
         )
@@ -234,11 +239,11 @@ class InitScreen(OperateScreenBase):
         self.init_existing = event.value
         if event.value is True:
             self.op_btn.label = OperateBtn.init_repo.init_clone_label
-            self.input_clone_repo.display = True
+            self.repo_input.display = True
             self.init_info.display = False
         else:
             self.op_btn.label = OperateBtn.init_repo.init_new_label
-            self.input_clone_repo.display = False
+            self.repo_input.display = False
             self.init_info.display = True
 
     @on(Input.Submitted)
