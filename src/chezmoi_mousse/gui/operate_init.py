@@ -228,6 +228,8 @@ class InitScreen(OperateScreenBase):
 
     @on(Select.Changed)
     def hanle_selection_change(self, event: Select.Changed) -> None:
+        if not isinstance(event.value, str):
+            return
         if event.value == "https":
             self.guess_docs_link.display = False
             self.input_url.display = True
@@ -252,9 +254,8 @@ class InitScreen(OperateScreenBase):
             self.input_guess_url.display = False
             self.input_guess_ssh.display = True
             self.guess_docs_link.display = True
-        assert isinstance(event.value, str)
 
-        if self.repo_input.display:
+        if self.repo_input.display is True:
             self.update_info_text(select_value=event.value)
 
     def update_info_text(self, select_value: str | None = None) -> None:
