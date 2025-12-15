@@ -279,8 +279,10 @@ OperateInfo {
   dock: top;
 }
 
-OperateScreen > OperateButtons {
-    margin-bottom: 1;
+OperateChezmoi, OperateInit {
+  & OperateButtons {
+      margin-bottom: 1;
+  }
 }
 
 SwitchSlider {
