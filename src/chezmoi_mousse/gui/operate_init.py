@@ -160,10 +160,6 @@ class InitScreen(OperateScreenBase):
             IDS.operate.link_button_id("#", btn=LinkBtn.chezmoi_guess),
             FlatLink,
         )
-        self.guess_docs_link = self.query_one(
-            IDS.operate.link_button_id("#", btn=LinkBtn.chezmoi_guess),
-            FlatLink,
-        )
         self.guess_docs_link.display = False
         self.input_url = self.query_exactly_one(InputURL)
         self.input_ssh = self.query_exactly_one(InputSSH)
