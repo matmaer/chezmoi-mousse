@@ -24,6 +24,7 @@ class ContainerName(StrEnum):
     operate_buttons = auto()
     post_operate = auto()
     pre_operate = auto()
+    repo_input = auto()
     right_side = auto()
     switch_slider = auto()
 

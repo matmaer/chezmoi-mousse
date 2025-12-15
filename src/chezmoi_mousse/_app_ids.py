@@ -139,6 +139,8 @@ class ContainerIds:
         self.post_operate_q = f"#{self.post_operate}"
         self.pre_operate = ids.container_id(name=ContainerName.pre_operate)
         self.pre_operate_q = f"#{self.pre_operate}"
+        self.repo_input = ids.container_id(name=ContainerName.repo_input)
+        self.repo_input_q = f"#{self.repo_input}"
         self.right_side = ids.container_id(name=ContainerName.right_side)
         self.right_side_q = f"#{self.right_side}"
         self.switch_slider = ids.container_id(name=ContainerName.switch_slider)
