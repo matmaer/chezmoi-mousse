@@ -224,7 +224,6 @@ class InitScreen(OperateScreenBase):
                 "Cannot perform init clone: unknown condition.",
                 severity="error",
             )
-            return
 
     @on(Select.Changed)
     def hanle_selection_change(self, event: Select.Changed) -> None:
