@@ -241,21 +241,6 @@ class InitScreen(OperateScreenBase):
             self.input_clone_repo.display = False
             self.init_info.display = True
 
-    def run_operate_command(self) -> None:
-        if self.op_btn.label == OperateBtn.init_repo.init_new_label:
-            self.app.operate_cmd_result = self.app.chezmoi.perform(
-                WriteCmd.init_new, changes_enabled=self.app.changes_enabled
-            )
-        elif (
-            self.op_btn.label == OperateBtn.init_repo.init_clone_label
-            and self.valid_url is True
-        ):
-            self.app.operate_cmd_result = self.app.chezmoi.perform(
-                WriteCmd.init_guess_https,
-                init_repo_arg=self.repo_arg,
-                changes_enabled=self.app.changes_enabled,
-            )
-
     @on(Input.Submitted)
     def handle_validation(self, event: Input.Submitted) -> None:
         event.stop()
@@ -278,5 +263,23 @@ class InitScreen(OperateScreenBase):
         elif event.button.label == OperateBtn.operate_exit.reload_label:
             self.app.post_message(InitCompletedMsg())
             self.dismiss()
+            return
+        if self.op_btn.label == OperateBtn.init_repo.init_new_label:
+            self.app.operate_cmd_result = self.app.chezmoi.perform(
+                WriteCmd.init_new, changes_enabled=self.app.changes_enabled
+            )
+        elif (
+            self.op_btn.label == OperateBtn.init_repo.init_clone_label
+            and self.valid_url is True
+        ):
+            self.app.operate_cmd_result = self.app.chezmoi.perform(
+                WriteCmd.init_guess_https,
+                init_repo_arg=self.repo_arg,
+                changes_enabled=self.app.changes_enabled,
+            )
         else:
-            self.run_operate_command()
+            self.notify(
+                "Cannot perform init clone: unknown condition.",
+                severity="error",
+            )
+            return
