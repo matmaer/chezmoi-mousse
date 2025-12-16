@@ -6,6 +6,7 @@ from typing import Any
 
 from textual import on
 from textual.app import ComposeResult
+from textual.binding import Binding
 from textual.containers import Horizontal, VerticalGroup
 from textual.screen import Screen
 from textual.widgets import Footer, Label, Pretty, Tree
@@ -50,6 +51,14 @@ class CommandsTree(Tree[ParsedJson]):
 
 class InstallHelp(Screen[None], AppType):
 
+    BINDINGS = [
+        Binding(
+            key="escape",
+            action=BindingAction.exit_screen,
+            description=BindingDescription.exit_app,
+        )
+    ]
+
     def compose(self) -> ComposeResult:
         yield CustomHeader(IDS.install_help)
         yield Label(
@@ -71,10 +80,6 @@ class InstallHelp(Screen[None], AppType):
 
     def on_mount(self) -> None:
         self.screen.title = HeaderTitle.header_install_help
-        self.app.update_binding_description(
-            binding_action=BindingAction.exit_screen,
-            new_description=BindingDescription.exit_app,
-        )
         self.update_path_widget()
         self.populate_tree()
 
@@ -107,4 +112,7 @@ class InstallHelp(Screen[None], AppType):
 
     @on(FlatButton.Pressed)
     def exit_application(self) -> None:
+        self.app.exit()
+
+    def action_exit_screen(self) -> None:
         self.app.exit()
