@@ -61,7 +61,7 @@ class MainScreen(Screen[None], AppType):
         self.current_re_add_node: "NodeData | None" = None
 
     def compose(self) -> ComposeResult:
-        yield CustomHeader(IDS.main)
+        yield CustomHeader(IDS.main_tabs)
         with TabbedContent():
             yield TabPane(
                 TabPanes.apply_tab_label, ApplyTab(), id=TabName.apply
@@ -75,7 +75,7 @@ class MainScreen(Screen[None], AppType):
                 TabPanes.config_tab_label, ConfigTab(), id=TabName.config
             )
             yield TabPane(TabPanes.help_tab_label, HelpTab(), id=TabName.help)
-        yield Footer(id=IDS.main.footer)
+        yield Footer(id=IDS.main_tabs.footer)
 
     async def on_mount(self) -> None:
         initialize_loggers_worker = self.initialize_loggers()

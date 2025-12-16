@@ -69,7 +69,7 @@ class PathKind(StrEnum):
 
 class ScreenName(StrEnum):
     install_help = auto()
-    main = auto()
+    main_tabs = auto()
     operate_init = auto()
     operate_chezmoi = auto()
     splash = auto()
