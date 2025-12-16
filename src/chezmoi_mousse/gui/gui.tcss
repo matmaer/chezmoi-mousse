@@ -231,6 +231,10 @@ InputInitCloneRepo {
   }
 }
 
+InitCollapsibles {
+  margin-top: 1;
+}
+
 InstallHelp {
   & VerticalGroup {
     margin-left: 1;

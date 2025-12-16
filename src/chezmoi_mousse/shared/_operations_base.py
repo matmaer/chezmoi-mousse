@@ -81,6 +81,8 @@ class OperateInfo(Static, AppType):
             self.border_subtitle = OperateText.destroy_subtitle
         elif self.btn_enum == OperateBtn.re_add_path:
             self.border_subtitle = OperateText.re_add_subtitle
+        elif self.btn_enum == OperateBtn.init_repo:
+            self.border_subtitle = None
         else:
             raise ValueError("No border subtitle, unknown operation")
 

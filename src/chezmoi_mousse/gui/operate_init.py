@@ -2,6 +2,7 @@ from enum import StrEnum
 
 from textual import on
 from textual.app import ComposeResult
+from textual.binding import Binding
 from textual.containers import HorizontalGroup, VerticalGroup
 from textual.validation import URL
 from textual.widgets import Button, Input, Label, Select, Static, Switch
@@ -9,6 +10,8 @@ from textual.widgets import Button, Input, Label, Select, Static, Switch
 from chezmoi_mousse import (
     IDS_OPERATE_INIT,
     AppType,
+    BindingAction,
+    BindingDescription,
     LinkBtn,
     OperateBtn,
     SectionLabels,
@@ -31,15 +34,15 @@ __all__ = ["OperateInit"]
 
 
 class InitStaticText(StrEnum):
-    init_clone = f"Click the [$primary-lighten-3 on $surface-lighten-1] {OperateBtn.init_repo.init_clone_label} [/] button to initialize a new chezmoi repository.\n"
-    init_new = f"Click the [$primary-lighten-3 on $surface-lighten-1] {OperateBtn.init_repo.initial_label} [/] button to initialize a new chezmoi repository."
-    init_switch_on = f"Switch [$foreground-darken-1 on $surface-lighten-1] {Switches.init_repo_switch.label} [/] ON to clone an existing repository.\n"
+    init_clone = f"Click the [$primary-lighten-3 on $surface-lighten-1] {OperateBtn.init_repo.init_clone_label} [/] button to initialize chezmoi from an existing repository."
+    init_new = f"Click the [$primary-lighten-3 on $surface-lighten-1] {OperateBtn.init_repo.initial_label} [/] button to initialize a new chezmoi repository with default settings."
     guess_https = "Let chezmoi guess the best URL to clone from."
     guess_ssh = (
         "Let chezmoi guess the best ssh scp-style address to clone from."
     )
     https_url = "Enter a complete URL, e.g., [$text-primary]https://github.com/user/repo.git[/]."
     pat_info = "If you have a PAT, make sure to include it in the URL, for example: [$text-primary]https://username:ghp_123456789abcdef@github.com/username/my-dotfiles.git[/] and delete the PAT after use."
+    run_chezmoi_init = 'Run [$text-success]"chezmoi init"[/]'
     ssh_select = "Enter an SSH SCP-style URL, e.g., [$text-primary]git@github.com:user/repo.git[/]. If your dotfiles repository is private, make sure you have your SSH key pair set up before using this option."
 
 
@@ -82,27 +85,6 @@ class InputGuessSSH(HorizontalGroup):
         yield FlatLink(ids=IDS_OPERATE_INIT, link_enum=LinkBtn.chezmoi_guess)
 
 
-class InitCollapsibles(VerticalGroup, AppType):
-    def __init__(self) -> None:
-        super().__init__()
-        if self.app.splash_data is None:
-            raise ValueError("self.app.splash_data is None in OperateScreen")
-        self.splash_data = self.app.splash_data
-
-    def compose(self) -> ComposeResult:
-        yield Label("Operate Info", classes=Tcss.sub_section_label)
-        yield CustomCollapsible(
-            DoctorTable(
-                ids=IDS_OPERATE_INIT, doctor_data=self.splash_data.doctor
-            ),
-            title="Doctor Output",
-        )
-        yield CustomCollapsible(
-            PrettyTemplateData(self.splash_data.template_data),
-            title="Template Data Output",
-        )
-
-
 class InputInitCloneRepo(HorizontalGroup):
 
     def __init__(self) -> None:
@@ -132,7 +114,37 @@ class InputInitCloneRepo(HorizontalGroup):
         self.query_exactly_one(InputGuessSSH).display = False
 
 
+class InitCollapsibles(VerticalGroup, AppType):
+    def __init__(self) -> None:
+        super().__init__()
+        if self.app.splash_data is None:
+            raise ValueError("self.app.splash_data is None in OperateScreen")
+        self.splash_data = self.app.splash_data
+
+    def compose(self) -> ComposeResult:
+        yield Label("Operate Info", classes=Tcss.sub_section_label)
+        yield CustomCollapsible(
+            DoctorTable(
+                ids=IDS_OPERATE_INIT, doctor_data=self.splash_data.doctor
+            ),
+            title="Doctor Output",
+        )
+        yield CustomCollapsible(
+            PrettyTemplateData(self.splash_data.template_data),
+            title="Template Data Output",
+        )
+
+
 class OperateInit(OperateScreenBase):
+
+    BINDINGS = [
+        Binding(
+            key="escape",
+            action=BindingAction.exit_screen,
+            description=BindingDescription.exit_app,
+        )
+    ]
+
     def __init__(self) -> None:
         super().__init__(ids=IDS_OPERATE_INIT)
         self.guess_https: bool | None = None
@@ -140,6 +152,22 @@ class OperateInit(OperateScreenBase):
         self.init_cmd: WriteCmd
         self.repo_arg: str | None = None
         self.valid_url: bool = False
+        self.init_clone_https_static_text = "\n".join(
+            [
+                InitStaticText.init_clone.value,
+                InitStaticText.https_url.value,
+                InitStaticText.pat_info.value,
+            ]
+        )
+        self.init_clone_ssh_static_text = "\n".join(
+            [InitStaticText.init_clone.value, InitStaticText.ssh_select.value]
+        )
+        self.init_clone_guess_https_static_text = "\n".join(
+            [InitStaticText.init_clone.value, InitStaticText.guess_https.value]
+        )
+        self.init_clone_guess_ssh_static_text = "\n".join(
+            [InitStaticText.init_clone.value, InitStaticText.guess_ssh.value]
+        )
 
     def on_mount(self) -> None:
         super().on_mount()
@@ -161,7 +189,7 @@ class OperateInit(OperateScreenBase):
             IDS_OPERATE_INIT.container.repo_input_q, InputInitCloneRepo
         )
         self.repo_input.display = False
-        self.init_info = self.query_one(
+        self.init_static = self.query_one(
             IDS_OPERATE_INIT.static.init_info_q, Static
         )
         self.exit_btn.label = OperateBtn.operate_exit.exit_app_label
@@ -174,23 +202,32 @@ class OperateInit(OperateScreenBase):
         self.input_ssh = self.query_exactly_one(InputSSH)
         self.input_guess_url = self.query_exactly_one(InputGuessURL)
         self.input_guess_ssh = self.query_exactly_one(InputGuessSSH)
-        self.update_info_text()
+        self.update_static_text()
+
+    def update_static_text(self) -> None:
+        switch_state = self.query_exactly_one(Switch).value
+        if switch_state is False:
+            self.init_static.update(InitStaticText.init_new.value)
+            return
+        current_select = self.repo_input.query_exactly_one(Select[str]).value
+        if current_select == "https":
+            self.init_static.update(self.init_clone_https_static_text)
+        elif current_select == "ssh":
+            self.init_static.update(self.init_clone_ssh_static_text)
+        elif current_select == "guess url":
+            self.init_static.update(self.init_clone_guess_https_static_text)
+        elif current_select == "guess ssh":
+            self.init_static.update(self.init_clone_guess_ssh_static_text)
 
     @on(Switch.Changed)
     def handle_switch_state(self, event: Switch.Changed) -> None:
         if event.value is True:
-            self.op_btn.label = OperateBtn.init_repo.init_clone_label
             self.repo_input.display = True
-            current_select = self.repo_input.query_exactly_one(
-                Select[str]
-            ).value
-            # if current_select is not None:
-            assert isinstance(current_select, str)
-            self.update_info_text(select_value=current_select)
-        else:
-            self.op_btn.label = OperateBtn.init_repo.init_new_label
+            self.op_btn.label = OperateBtn.init_repo.init_clone_label
+        elif event.value is False:
             self.repo_input.display = False
-            self.update_info_text()
+            self.op_btn.label = OperateBtn.init_repo.init_new_label
+        self.update_static_text()
 
     @on(Input.Submitted)
     def handle_validation(self, event: Input.Submitted) -> None:
@@ -236,11 +273,6 @@ class OperateInit(OperateScreenBase):
 
     @on(Select.Changed)
     def hanle_selection_change(self, event: Select.Changed) -> None:
-        if (
-            not isinstance(event.value, str)
-            or self.repo_input.display is False
-        ):
-            return
         if event.value == "https":
             self.guess_docs_link.display = False
             self.input_url.display = True
@@ -265,31 +297,13 @@ class OperateInit(OperateScreenBase):
             self.input_guess_url.display = False
             self.input_guess_ssh.display = True
             self.guess_docs_link.display = True
-        self.update_info_text(select_value=event.value)
+        self.update_static_text()
 
-    def update_info_text(self, select_value: str | None = None) -> None:
-        if select_value is None:
-            switch_state = self.query_exactly_one(Switch).value
-            if switch_state is False:
-                self.init_info.update(
-                    "\n".join(
-                        [
-                            InitStaticText.init_new.value,
-                            InitStaticText.init_switch_on.value,
-                        ]
-                    )
-                )
-            return
-        if select_value == "https":
-            info_text = "\n".join(
-                [InitStaticText.https_url.value, InitStaticText.pat_info.value]
-            )
-        elif select_value == "ssh":
-            info_text = InitStaticText.ssh_select.value
-        elif select_value == "guess url":
-            info_text = InitStaticText.guess_https.value
-        elif select_value == "guess ssh":
-            info_text = InitStaticText.guess_ssh.value
+    def action_exit_screen(self) -> None:
+        if (
+            self.app.operate_cmd_result is None
+            or self.app.operate_cmd_result.dry_run is True
+        ):
+            self.app.exit()
         else:
-            raise ValueError("Invalid select_value in update_info_text")
-        self.init_info.update(info_text)
+            self.screen.dismiss()

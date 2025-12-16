@@ -1,13 +1,30 @@
 from textual import on
+from textual.binding import Binding
 from textual.widgets import Button
 
-from chezmoi_mousse import IDS, AppType, OperateBtn, Tcss, WriteCmd
+from chezmoi_mousse import (
+    IDS,
+    AppType,
+    BindingAction,
+    BindingDescription,
+    OperateBtn,
+    Tcss,
+    WriteCmd,
+)
 from chezmoi_mousse.shared import ContentsView, DiffView, OperateScreenBase
 
 __all__ = ["OperateChezmoi"]
 
 
 class OperateChezmoi(OperateScreenBase, AppType):
+
+    BINDINGS = [
+        Binding(
+            key="escape",
+            action=BindingAction.exit_screen,
+            description=BindingDescription.cancel,
+        )
+    ]
 
     def __init__(self) -> None:
         super().__init__(ids=IDS.operate_chezmoi)

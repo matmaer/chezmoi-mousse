@@ -76,11 +76,6 @@ class ChezmoiGUI(App[None]):
 
     BINDINGS = [
         Binding(
-            key="escape",
-            action=BindingAction.exit_screen,
-            description=BindingDescription.cancel,
-        ),
-        Binding(
             key="M,m",
             action=BindingAction.toggle_maximized,
             description=BindingDescription.maximize,
@@ -325,25 +320,31 @@ class ChezmoiGUI(App[None]):
         )
 
     def action_exit_screen(self) -> None:
-        if (
-            isinstance(self.screen, InstallHelp)
-            or self.init_cmd_needed is True
-        ):
+        if isinstance(self.screen, InstallHelp):
             self.exit()
-        elif isinstance(self.screen, (OperateChezmoi, OperateInit)):
-            self.screen.dismiss(self.operate_cmd_result)
+        elif isinstance(self.screen, OperateInit):
+            if (
+                self.operate_cmd_result is None
+                or self.operate_cmd_result.dry_run is True
+            ):
+                self.exit()
+            else:
+                self.screen.dismiss()
+        elif isinstance(self.screen, OperateChezmoi):
+            self.screen.dismiss()
 
     def check_action(
         self, action: str, parameters: tuple[object, ...]
     ) -> bool | None:
-        if action == BindingAction.exit_screen:
-            if isinstance(
-                self.screen, (InstallHelp, OperateChezmoi, OperateInit)
-            ):
-                return True
-            else:
-                return False
-        elif action == BindingAction.toggle_switch_slider:
+        # if action == BindingAction.exit_screen:
+        #     if isinstance(
+        #         self.screen, (InstallHelp, OperateChezmoi, OperateInit)
+        #     ):
+        #         return True
+        #     else:
+        #         return False
+        # elif action == BindingAction.toggle_switch_slider:
+        if action == BindingAction.toggle_switch_slider:
             if isinstance(self.screen, MainScreen):
                 header = self.screen.query_exactly_one(CustomHeader)
                 if header.display is False:
