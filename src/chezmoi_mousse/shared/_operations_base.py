@@ -26,27 +26,29 @@ if TYPE_CHECKING:
 __all__ = ["OperateScreenBase", "OperateInfo"]
 
 
-class InfoBorderSubtitle(StrEnum):
-    add = f"local {Chars.right_arrow} chezmoi"
-    apply = f"local {Chars.left_arrow} chezmoi"
-    destroy = f"{Chars.x_mark} destroy {Chars.x_mark}"
-    forget = f"{Chars.x_mark} forget {Chars.x_mark}"
-
-
-class InfoLine(StrEnum):
+class OperateText(StrEnum):
     add_path = "[$text-primary]The path will be added to your chezmoi dotfile manager source state.[/]"
+    add_subtitle = f"path on disk {Chars.right_arrow} chezmoi repo"
     apply_path = "[$text-primary]The path in the destination directory will be modified.[/]"
+    apply_subtitle = f"chezmoi repo {Chars.right_arrow} path on disk"
     auto_commit = f"[$text-warning]{Chars.warning_sign} Auto commit is enabled: files will also be committed.{Chars.warning_sign}[/]"
     autopush = f"[$text-warning]{Chars.warning_sign} Auto push is enabled: files will be pushed to the remote.{Chars.warning_sign}[/]"
     changes_disabled = "[dim]Changes are currently disabled, running commands with '--dry-run' flag.[/]"
     changes_enabled = f"[$text-warning]{Chars.warning_sign} Changes currently enabled, running commands without '--dry-run' flag.{Chars.warning_sign}[/]"
     destroy_path = "[$text-error]Permanently remove the path both from your home directory and chezmoi's source directory, make sure you have a backup![/]"
+    destroy_subtitle = (
+        f"{Chars.x_mark} delete on disk and in chezmoi repo {Chars.x_mark}"
+    )
     diff_color = f"[$text-success]+ green lines will be added[/]\n[$text-error]- red lines will be removed[/]\n[dim]{Chars.bullet} dimmed lines for context[/]"
     forget_path = "[$text-primary]Remove the path from the source state, i.e. stop managing them.[/]"
+    forget_subtitle = f"{Chars.x_mark} leave on disk but remove from chezmoi repo {Chars.x_mark}"
     init_clone = "[$text-primary]Initialize a chezmoi from:[/]"
     init_new = "[$text-primary]Initialize a new chezmoi repository.[/]"
     re_add_path = (
         "[$text-primary]Overwrite the source state with current local path.[/]"
+    )
+    re_add_subtitle = (
+        f"path on disk {Chars.right_arrow} overwrite chezmoi repo"
     )
 
 
@@ -69,53 +71,53 @@ class OperateInfo(Static, AppType):
 
     def set_border_titles(self) -> None:
         self.border_title = self.op_data.btn_label
-        if self.btn_enum in (
-            OperateBtn.add_file,
-            OperateBtn.add_dir,
-            OperateBtn.re_add_path,
-        ):
-            self.border_subtitle = InfoBorderSubtitle.add
+        if self.btn_enum in (OperateBtn.add_file, OperateBtn.add_dir):
+            self.border_subtitle = OperateText.add_subtitle
         elif self.btn_enum == OperateBtn.apply_path:
-            self.border_subtitle = InfoBorderSubtitle.apply
+            self.border_subtitle = OperateText.apply_subtitle
         elif self.btn_enum == OperateBtn.forget_path:
-            self.border_subtitle = InfoBorderSubtitle.forget
+            self.border_subtitle = OperateText.forget_subtitle
         elif self.btn_enum == OperateBtn.destroy_path:
-            self.border_subtitle = InfoBorderSubtitle.destroy
+            self.border_subtitle = OperateText.destroy_subtitle
+        elif self.btn_enum == OperateBtn.re_add_path:
+            self.border_subtitle = OperateText.re_add_subtitle
+        else:
+            raise ValueError("No border subtitle, unknown operation")
 
     def write_info_lines(self) -> None:
         self.update("")
         lines_to_write: list[str] = []
         if self.app.changes_enabled is True:
-            lines_to_write.append(InfoLine.changes_enabled)
+            lines_to_write.append(OperateText.changes_enabled)
         else:
-            lines_to_write.append(InfoLine.changes_disabled)
+            lines_to_write.append(OperateText.changes_disabled)
 
         if self.btn_enum in (OperateBtn.add_file, OperateBtn.add_dir):
-            lines_to_write.append(InfoLine.add_path)
+            lines_to_write.append(OperateText.add_path)
         elif self.btn_enum == OperateBtn.apply_path:
-            lines_to_write.append(InfoLine.apply_path)
+            lines_to_write.append(OperateText.apply_path)
         elif self.btn_enum == OperateBtn.re_add_path:
-            lines_to_write.append(InfoLine.re_add_path)
+            lines_to_write.append(OperateText.re_add_path)
         elif self.btn_enum == OperateBtn.forget_path:
-            lines_to_write.append(InfoLine.forget_path)
+            lines_to_write.append(OperateText.forget_path)
         elif self.btn_enum == OperateBtn.destroy_path:
-            lines_to_write.append(InfoLine.destroy_path)
+            lines_to_write.append(OperateText.destroy_path)
         elif self.btn_enum == OperateBtn.init_repo:
             if self.op_data.btn_label == OperateBtn.init_repo.init_clone_label:
                 lines_to_write.append(
-                    f"{InfoLine.init_clone} [$text-warning]{self.repo_arg}[/]"
+                    f"{OperateText.init_clone} [$text-warning]{self.repo_arg}[/]"
                 )
             else:
-                lines_to_write.append(InfoLine.init_new)
+                lines_to_write.append(OperateText.init_new)
 
         if self.btn_enum not in (OperateBtn.apply_path, OperateBtn.init_repo):
             if self.git_autocommit is True:
-                lines_to_write.append(InfoLine.auto_commit)
+                lines_to_write.append(OperateText.auto_commit)
             if self.git_autopush is True:
-                lines_to_write.append(InfoLine.autopush)
+                lines_to_write.append(OperateText.autopush)
         # show git diff color info
         if self.btn_enum in (OperateBtn.apply_path, OperateBtn.re_add_path):
-            lines_to_write.append(InfoLine.diff_color)
+            lines_to_write.append(OperateText.diff_color)
         if self.op_data.node_data is not None:
             lines_to_write.append(
                 f"[$text-primary]Operating on path: {self.op_data.node_data.path}[/]"

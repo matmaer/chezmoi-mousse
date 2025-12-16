@@ -79,9 +79,6 @@ class Chars(StrEnum):
     check_mark = "\u2714"  # '\N{HEAVY CHECK MARK}'
     down_triangle = "\u25be "  # '\N{BLACK DOWN-POINTING SMALL TRIANGLE}'DOWN-POINTING TRIANGLE}'
     # gear = "\u2699"  # '\N{GEAR}'
-    left_arrow = (
-        f"\u2190{'\u2014' * 3}"  # '\N{LEFTWARDS ARROW}', '\N{EM DASH}'
-    )
     lower_3_8ths_block = "\u2583"  # "\N{LOWER THREE EIGHTHS BLOCK}"
     right_arrow = (
         f"{'\u2014' * 3}\u2192"  # '\N{EM DASH}', '\N{RIGHTWARDS ARROW}'
