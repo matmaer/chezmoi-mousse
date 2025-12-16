@@ -125,3 +125,6 @@ class OperateChezmoi(OperateScreenBase, AppType):
             return
         self.update_buttons()
         self.update_key_binding()
+
+    def action_exit_screen(self) -> None:
+        self.screen.dismiss()
