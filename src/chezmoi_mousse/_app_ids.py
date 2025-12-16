@@ -18,7 +18,7 @@ from ._str_enum_names import (
 from ._str_enums import FlatBtn, LinkBtn, TabBtn
 from ._switch_data import Switches
 
-__all__ = ["AppIds", "IDS"]
+__all__ = ["AppIds", "IDS", "IDS_OPERATE_INIT"]
 
 
 class AppIds:
@@ -433,3 +433,4 @@ class ViewIds:
 
 
 IDS = CanvasIds()
+IDS_OPERATE_INIT = AppIds(ScreenName.operate_init)
