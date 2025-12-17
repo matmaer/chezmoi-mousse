@@ -3,6 +3,7 @@
 from enum import StrEnum
 
 from ._chezmoi import ReadCmd
+from ._operate_button_data import OperateBtn
 
 __all__ = [
     "Chars",
@@ -10,6 +11,7 @@ __all__ = [
     "FlatBtn",
     "LinkBtn",
     "LogStrings",
+    "OperateStrings",
     "SectionLabels",
     "TabBtn",
 ]
@@ -117,6 +119,100 @@ class LogStrings(StrEnum):
     dev_mode_enabled = "Dev mode enabled"
     operate_log_initialized = "Operate log initialized"
     read_log_initialized = "Read command log initialized"
+
+
+class OperateStrings(StrEnum):
+    add_path = (
+        "[$text-primary]The path will be added to your chezmoi "
+        "dotfile manager source state.[/]"
+    )
+    add_subtitle = f"path on disk {Chars.right_arrow} chezmoi repo"
+    apply_path = (
+        "[$text-primary]The path in the destination directory "
+        "will be modified.[/]"
+    )
+    apply_subtitle = f"chezmoi repo {Chars.right_arrow} path on disk"
+    auto_commit = (
+        f"[$text-warning]{Chars.warning_sign} Auto commit is enabled: "
+        "files will also be committed."
+        f"{Chars.warning_sign}[/]"
+    )
+    auto_push = (
+        f"[$text-warning]{Chars.warning_sign} Auto push is enabled: "
+        "files will be pushed to the remote."
+        f"{Chars.warning_sign}[/]"
+    )
+    changes_disabled = (
+        "[dim]Changes are currently disabled, running commands "
+        "with '--dry-run' flag.[/]"
+    )
+    changes_enabled = (
+        f"[$text-warning]{Chars.warning_sign} Changes currently enabled, "
+        "running commands without '--dry-run' flag."
+        f"{Chars.warning_sign}[/]"
+    )
+    destroy_path = (
+        "[$text-error]Permanently remove the path both from your home "
+        "directory and chezmoi's source directory, make sure you have a "
+        "backup![/]"
+    )
+    destroy_subtitle = (
+        f"{Chars.x_mark} delete on disk and in chezmoi repo {Chars.x_mark}"
+    )
+    diff_color = (
+        f"[$text-success]+ green lines will be added[/]\n"
+        "[$text-error]- red lines will be removed[/]\n"
+        f"[dim]{Chars.bullet} dimmed lines for context[/]"
+    )
+    forget_path = (
+        "[$text-primary]Remove the path from the source state, i.e. stop "
+        "managing them.[/]"
+    )
+    forget_subtitle = (
+        f"{Chars.x_mark} leave on disk but remove from chezmoi repo "
+        f"{Chars.x_mark}"
+    )
+    guess_https = "Let chezmoi guess the best URL to clone from."
+    guess_ssh = (
+        "Let chezmoi guess the best ssh scp-style address to clone from."
+    )
+    https_url = (
+        "Enter a complete URL, e.g., "
+        "[$text-primary]https://github.com/user/repo.git[/]."
+    )
+    init_clone = (
+        f"Click the [$primary-lighten-3 on $surface-lighten-1] "
+        f"{OperateBtn.init_repo.init_clone_label} [/] button to initialize "
+        "chezmoi from an existing repository."
+    )
+    init_clone_operate_info = "[$text-primary]Initialize a chezmoi from:[/]"
+    init_new = (
+        f"Click the [$primary-lighten-3 on $surface-lighten-1] "
+        f"{OperateBtn.init_repo.initial_label} [/] button to initialize a "
+        "new chezmoi repository with default settings."
+    )
+    init_new_command = "Run [$text-success]'chezmoi init'[/]."
+    init_new_operate_info = (
+        "[$text-primary]Initialize a new chezmoi repository.[/]"
+    )
+    pat_info = (
+        "If you have a PAT, make sure to include it in the URL, for example: "
+        "[$text-primary]https://username:ghp_123456789abcdef@github.com/"
+        "username/my-dotfiles.git[/] and delete the PAT after use."
+    )
+    re_add_path = (
+        "[$text-primary]Overwrite the source state with current local path.[/]"
+    )
+    re_add_subtitle = (
+        f"path on disk {Chars.right_arrow} overwrite chezmoi repo"
+    )
+    run_chezmoi_init = 'Run [$text-success]"chezmoi init"[/]'
+    ssh_select = (
+        "Enter an SSH SCP-style URL, e.g., "
+        "[$text_primary]git@github.com:user/repo.git[/]. If your dotfiles "
+        "repository is private, make sure you have your SSH key pair set "
+        "up before using this option."
+    )
 
 
 class SectionLabels(StrEnum):

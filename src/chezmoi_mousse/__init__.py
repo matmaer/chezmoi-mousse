@@ -31,7 +31,7 @@ from ._str_enums import (
     FlatBtn,
     LinkBtn,
     LogStrings,
-    OperateInfoStrings,
+    OperateStrings,
     SectionLabels,
     TabBtn,
 )
@@ -60,7 +60,7 @@ __all__ = [
     # Operations
     "OperateBtn",
     "OperateData",
-    "OperateInfoStrings",
+    "OperateStrings",
     # _chezmoi.py
     "Chezmoi",
     "CommandResult",
