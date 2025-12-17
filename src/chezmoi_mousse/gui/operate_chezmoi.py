@@ -70,38 +70,38 @@ class OperateChezmoi(OperateScreenBase, AppType):
             self.run_operate_command()
 
     def run_operate_command(self) -> None:
-        if self.op_data.node_data is not None:
-            path_arg = self.op_data.node_data.path
-        else:
-            path_arg = None
+        if self.op_data.node_data is None:
+            raise ValueError(
+                "self.op_data.node_data is None in operate command"
+            )
         if self.op_data.btn_enum in (OperateBtn.add_file, OperateBtn.add_dir):
             self.app.operate_cmd_result = self.app.chezmoi.perform(
                 WriteCmd.add,
-                path_arg=path_arg,
+                path_arg=self.op_data.node_data.path,
                 changes_enabled=self.app.changes_enabled,
             )
         elif self.op_data.btn_enum == OperateBtn.apply_path:
             self.app.operate_cmd_result = self.app.chezmoi.perform(
                 WriteCmd.apply,
-                path_arg=path_arg,
+                path_arg=self.op_data.node_data.path,
                 changes_enabled=self.app.changes_enabled,
             )
         elif self.op_data.btn_enum == OperateBtn.re_add_path:
             self.app.operate_cmd_result = self.app.chezmoi.perform(
                 WriteCmd.re_add,
-                path_arg=path_arg,
+                path_arg=self.op_data.node_data.path,
                 changes_enabled=self.app.changes_enabled,
             )
         elif self.op_data.btn_enum == OperateBtn.forget_path:
             self.app.operate_cmd_result = self.app.chezmoi.perform(
                 WriteCmd.forget,
-                path_arg=path_arg,
+                path_arg=self.op_data.node_data.path,
                 changes_enabled=self.app.changes_enabled,
             )
         elif self.op_data.btn_enum == OperateBtn.destroy_path:
             self.app.operate_cmd_result = self.app.chezmoi.perform(
                 WriteCmd.destroy,
-                path_arg=path_arg,
+                path_arg=self.op_data.node_data.path,
                 changes_enabled=self.app.changes_enabled,
             )
         if self.app.operate_cmd_result is None:
