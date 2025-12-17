@@ -227,7 +227,7 @@ class SectionLabels(StrEnum):
     ignored_output = "Chezmoi Ignored Output"
     init_cloned_repo = "Initialize Cloned Chezmoi Repository"
     init_new_repo = "Initialize New Chezmoi Repository"
-    operate_info = "Operate Info"
+    pre_init_cmd_output = "Pre-init Command Outputs"
     operate_output = "Operate Command Output"
     password_managers = "Password Manager Information"
     path_info = "Path Information"

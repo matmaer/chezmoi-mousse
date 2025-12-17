@@ -121,7 +121,9 @@ class InitCollapsibles(VerticalGroup, AppType):
         self.splash_data = self.app.splash_data
 
     def compose(self) -> ComposeResult:
-        yield Label("Operate Info", classes=Tcss.sub_section_label)
+        yield Label(
+            SectionLabels.pre_init_cmd_output, classes=Tcss.sub_section_label
+        )
         yield CustomCollapsible(
             DoctorTable(
                 ids=IDS_OPERATE_INIT, doctor_data=self.splash_data.doctor
