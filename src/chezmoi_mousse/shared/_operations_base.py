@@ -58,7 +58,7 @@ class OperateInfo(Static, AppType):
     git_autopush: bool | None = None
 
     def __init__(self, ids: "AppIds") -> None:
-        super().__init__()
+        super().__init__(id=ids.static.operate_info)
         if self.app.operate_data is None:
             raise ValueError("self.app.operate_data is None in OperateInfo")
         self.op_data = self.app.operate_data
