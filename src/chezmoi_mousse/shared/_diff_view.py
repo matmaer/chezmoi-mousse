@@ -32,11 +32,6 @@ class DiffInfo(VerticalGroup, AppType):
     def compose(self) -> ComposeResult:
         yield Label(SectionLabels.diff_info, classes=Tcss.sub_section_label)
         yield Static(id=self.ids.static.diff_info)
-        # yield Label(
-        #     SectionLabels.diff_file_output,
-        #     classes=Tcss.sub_section_label,
-        #     id=self.ids.label.diff_file_output,
-        # )
 
 
 class DiffView(Vertical, AppType):
