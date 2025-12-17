@@ -1,5 +1,3 @@
-from enum import StrEnum
-
 from textual import on
 from textual.app import ComposeResult
 from textual.binding import Binding
@@ -14,6 +12,7 @@ from chezmoi_mousse import (
     BindingDescription,
     LinkBtn,
     OperateBtn,
+    OperateStrings,
     SectionLabels,
     Switches,
     Tcss,
@@ -33,17 +32,17 @@ from chezmoi_mousse.shared import (
 __all__ = ["OperateInit"]
 
 
-class InitStaticText(StrEnum):
-    init_clone = f"Click the [$primary-lighten-3 on $surface-lighten-1] {OperateBtn.init_repo.init_clone_label} [/] button to initialize chezmoi from an existing repository."
-    init_new = f"Click the [$primary-lighten-3 on $surface-lighten-1] {OperateBtn.init_repo.initial_label} [/] button to initialize a new chezmoi repository with default settings."
-    guess_https = "Let chezmoi guess the best URL to clone from."
-    guess_ssh = (
-        "Let chezmoi guess the best ssh scp-style address to clone from."
-    )
-    https_url = "Enter a complete URL, e.g., [$text-primary]https://github.com/user/repo.git[/]."
-    pat_info = "If you have a PAT, make sure to include it in the URL, for example: [$text-primary]https://username:ghp_123456789abcdef@github.com/username/my-dotfiles.git[/] and delete the PAT after use."
-    run_chezmoi_init = 'Run [$text-success]"chezmoi init"[/]'
-    ssh_select = "Enter an SSH SCP-style URL, e.g., [$text-primary]git@github.com:user/repo.git[/]. If your dotfiles repository is private, make sure you have your SSH key pair set up before using this option."
+# class InitStaticText(StrEnum):
+#     init_clone = f"Click the [$primary-lighten-3 on $surface-lighten-1] {OperateBtn.init_repo.init_clone_label} [/] button to initialize chezmoi from an existing repository."
+#     init_new = f"Click the [$primary-lighten-3 on $surface-lighten-1] {OperateBtn.init_repo.initial_label} [/] button to initialize a new chezmoi repository with default settings."
+#     guess_https = "Let chezmoi guess the best URL to clone from."
+#     guess_ssh = (
+#         "Let chezmoi guess the best ssh scp-style address to clone from."
+#     )
+#     https_url = "Enter a complete URL, e.g., [$text-primary]https://github.com/user/repo.git[/]."
+#     pat_info = "If you have a PAT, make sure to include it in the URL, for example: [$text-primary]https://username:ghp_123456789abcdef@github.com/username/my-dotfiles.git[/] and delete the PAT after use."
+#     run_chezmoi_init = 'Run [$text-success]"chezmoi init"[/]'
+#     ssh_select = "Enter an SSH SCP-style URL, e.g., [$text-primary]git@github.com:user/repo.git[/]. If your dotfiles repository is private, make sure you have your SSH key pair set up before using this option."
 
 
 class InputURL(Input):
@@ -154,19 +153,19 @@ class OperateInit(OperateScreenBase):
         self.valid_url: bool = False
         self.init_clone_https_static_text = "\n".join(
             [
-                InitStaticText.init_clone.value,
-                InitStaticText.https_url.value,
-                InitStaticText.pat_info.value,
+                OperateStrings.init_clone.value,
+                OperateStrings.https_url.value,
+                OperateStrings.pat_info.value,
             ]
         )
         self.init_clone_ssh_static_text = "\n".join(
-            [InitStaticText.init_clone.value, InitStaticText.ssh_select.value]
+            [OperateStrings.init_clone.value, OperateStrings.ssh_select.value]
         )
         self.init_clone_guess_https_static_text = "\n".join(
-            [InitStaticText.init_clone.value, InitStaticText.guess_https.value]
+            [OperateStrings.init_clone.value, OperateStrings.guess_https.value]
         )
         self.init_clone_guess_ssh_static_text = "\n".join(
-            [InitStaticText.init_clone.value, InitStaticText.guess_ssh.value]
+            [OperateStrings.init_clone.value, OperateStrings.guess_ssh.value]
         )
 
     def on_mount(self) -> None:
@@ -174,7 +173,8 @@ class OperateInit(OperateScreenBase):
         self.pre_op_container.mount(
             HorizontalGroup(
                 Label(
-                    SectionLabels.init_repo, classes=Tcss.main_section_label
+                    SectionLabels.init_new_repo,
+                    classes=Tcss.main_section_label,
                 ),
                 SwitchWithLabel(
                     ids=IDS_OPERATE_INIT, switch_enum=Switches.init_repo_switch
@@ -207,7 +207,7 @@ class OperateInit(OperateScreenBase):
     def update_static_text(self) -> None:
         switch_state = self.query_exactly_one(Switch).value
         if switch_state is False:
-            self.init_static.update(InitStaticText.init_new.value)
+            self.init_static.update(OperateStrings.init_new.value)
             return
         current_select = self.repo_input.query_exactly_one(Select[str]).value
         if current_select == "https":
