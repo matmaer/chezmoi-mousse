@@ -74,18 +74,16 @@ class TabBtn(StrEnum):
 
 
 class Chars(StrEnum):
-    bullet = "\u2022"  # '\N{BULLET}'
-    burger = "\u2261"  # '\N{IDENTICAL TO}'
-    check_mark = "\u2714"  # '\N{HEAVY CHECK MARK}'
-    down_triangle = "\u25be "  # '\N{BLACK DOWN-POINTING SMALL TRIANGLE}'DOWN-POINTING TRIANGLE}'
-    # gear = "\u2699"  # '\N{GEAR}'
-    lower_3_8ths_block = "\u2583"  # "\N{LOWER THREE EIGHTHS BLOCK}"
-    right_arrow = (
-        f"{'\u2014' * 3}\u2192"  # '\N{EM DASH}', '\N{RIGHTWARDS ARROW}'
-    )
-    right_triangle = "\u25b8 "  # '\N{BLACK RIGHT-POINTING SMALL TRIANGLE}'
-    warning_sign = "\u26a0"  # '\N{WARNING SIGN}'
-    x_mark = "\u2716"  # '\N{HEAVY MULTIPLICATION X}'
+    bullet = "\u2022"  # BULLET
+    burger = "\u2261"  # IDENTICAL TO
+    check_mark = "\u2714"  # HEAVY CHECK MARK
+    down_triangle = "\u25be "  # BLACK DOWN-POINTING SMALL TRIANGLE
+    # gear = "\u2699"  # GEAR
+    lower_3_8ths_block = "\u2583"  # LOWER THREE EIGHTHS BLOCK
+    right_arrow = f"{'\u2014' * 3}\u2192"  # EM DASH, RIGHTWARDS ARROW
+    right_triangle = "\u25b8 "  # BLACK RIGHT-POINTING SMALL TRIANGLE
+    warning_sign = "\u26a0"  # WARNING SIGN
+    x_mark = "\u2716"  # HEAVY MULTIPLICATION X
 
 
 class DestDirStrings(StrEnum):
