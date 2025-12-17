@@ -8,6 +8,7 @@ from ._str_enum_names import (
     ContainerName,
     ContentSwitcherName,
     DataTableName,
+    LabelName,
     LogName,
     ScreenName,
     StaticName,
@@ -30,6 +31,7 @@ class AppIds:
         "flat_btn",
         "footer",
         "header",
+        "label",
         "logger",
         "operate_btn",
         "static",
@@ -48,6 +50,7 @@ class AppIds:
         self.datatable = DataTableIds(self)
         self.filter = FilterIds(self)
         self.flat_btn = FlatButtonIds(self)
+        self.label = LabelIds(self)
         self.logger = LoggerIds(self)
         self.operate_btn = OperateButtonIds(self)
         self.static = StaticIds(self)
@@ -74,6 +77,9 @@ class AppIds:
 
     def flat_button_id(self, qid: str = "", *, btn: FlatBtn) -> str:
         return f"{qid}{self.canvas_name.name}_{btn.name}_flat_btn"
+
+    def label_id(self, qid: str = "", *, label: LabelName) -> str:
+        return f"{qid}{self.canvas_name.name}_{label.name}_label"
 
     def link_button_id(self, qid: str = "", *, btn: LinkBtn) -> str:
         return f"{qid}{self.canvas_name.name}_{btn.name}_link_btn"
@@ -120,10 +126,12 @@ class ContainerIds:
         self.contents_q = f"#{self.contents}"
         self.dest_dir_info = ids.container_id(name=ContainerName.dest_dir_info)
         self.dest_dir_info_q = f"#{self.dest_dir_info}"
-        self.doctor = ids.container_id(name=ContainerName.doctor)
-        self.doctor_q = f"#{self.doctor}"
         self.diff = ids.container_id(name=ContainerName.diff)
         self.diff_q = f"#{self.diff}"
+        self.diff_info = ids.container_id(name=ContainerName.diff_info)
+        self.diff_info_q = f"#{self.diff_info}"
+        self.doctor = ids.container_id(name=ContainerName.doctor)
+        self.doctor_q = f"#{self.doctor}"
         self.git_log_path = ids.container_id(name=ContainerName.git_log_path)
         self.git_log_path_q = f"#{self.git_log_path}"
         self.git_log_global = ids.container_id(
@@ -326,6 +334,16 @@ class FlatButtonIds:
         self.template_data_q = f"#{self.template_data}"
 
 
+class LabelIds:
+    """Label widgets their id's to target for show/hide or update the text."""
+
+    def __init__(self, ids: AppIds):
+        self.diff_dir_output = ids.label_id(label=LabelName.diff_dir_output)
+        self.diff_dir_output_q = f"#{self.diff_dir_output}"
+        self.diff_file_output = ids.label_id(label=LabelName.diff_file_output)
+        self.diff_file_output_q = f"#{self.diff_file_output}"
+
+
 class LoggerIds:
     """RichLog widgets their id's."""
 
@@ -368,6 +386,8 @@ class OperateButtonIds:
 
 class StaticIds:
     def __init__(self, ids: AppIds):
+        self.diff_info = ids.static_id(static=StaticName.diff_info)
+        self.diff_info_q = f"#{self.diff_info}"
         self.init_info = ids.static_id(static=StaticName.init_info)
         self.init_info_q = f"#{self.init_info}"
         self.operate_info = ids.static_id(static=StaticName.operate_info)

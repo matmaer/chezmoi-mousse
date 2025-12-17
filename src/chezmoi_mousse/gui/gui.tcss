@@ -247,7 +247,7 @@ InstallHelp {
   }
 }
 
-LoggersBase {
+DiffInfo, LoggersBase {
   margin-bottom: 1;
 }
 

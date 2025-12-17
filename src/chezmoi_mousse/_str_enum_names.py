@@ -18,6 +18,7 @@ class ContainerName(StrEnum):
     contents = auto()
     dest_dir_info = auto()
     diff = auto()
+    diff_info = auto()
     doctor = auto()
     git_log_global = auto()
     git_log_path = auto()
@@ -52,6 +53,11 @@ class DataTableName(StrEnum):
     git_log_table = auto()
 
 
+class LabelName(StrEnum):
+    diff_dir_output = auto()
+    diff_file_output = auto()
+
+
 class LogName(StrEnum):
     app_logger = auto()
     contents_logger = auto()
@@ -76,6 +82,7 @@ class ScreenName(StrEnum):
 
 
 class StaticName(StrEnum):
+    diff_info = auto()
     init_info = auto()
     operate_info = auto()
 

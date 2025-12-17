@@ -58,7 +58,8 @@ class ContentsView(Vertical, AppType):
     def compose(self) -> ComposeResult:
         with Vertical(id=self.ids.container.dest_dir_info):
             yield Label(
-                SectionLabels.path_info, classes=Tcss.sub_section_label
+                SectionLabels.contents_path_info,
+                classes=Tcss.sub_section_label,
             )
             yield Static(DestDirStrings.in_dest_dir)
             yield Static(self.click_file_info)
