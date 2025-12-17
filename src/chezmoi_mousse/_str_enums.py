@@ -216,14 +216,21 @@ class OperateStrings(StrEnum):
 
 
 class SectionLabels(StrEnum):
-    cat_config_output = '"chezmoi cat-config" output'
+    """Strings used for textual Label classes except for the help_tab.py module
+    which has its own StrEnum class "HelpSections" and the install_help.py
+    module which has its own StrEnum class "InstallHelpStrings"."""
+
+    cat_config_output = "Chezmoi Cat Config Output"
     debug_log_output = "Debug Log Output"
-    doctor_output = '"chezmoi doctor" output'
-    ignored_output = '"chezmoi ignored" output'
-    init_repo = "Initialize chezmoi repository"
+    diff_output = "Chezmoi Diff Output"
+    doctor_output = "Chezmoi Doctor Output"
+    ignored_output = "Chezmoi Ignored Output"
+    init_cloned_repo = "Initialize Cloned Chezmoi Repository"
+    init_new_repo = "Initialize New Chezmoi Repository"
+    operate_info = "Operate Info"
     operate_output = "Operate Command Output"
     password_managers = "Password Manager Information"
     path_info = "Path Information"
     project_description = "Project Description"
     project_link = "Project Link"
-    template_data_output = '"chezmoi data" output'
+    template_data_output = "Chezmoi Data Output"
