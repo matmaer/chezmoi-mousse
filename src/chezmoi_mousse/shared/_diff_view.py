@@ -79,7 +79,6 @@ class DiffView(Vertical, AppType):
         )
 
     def on_mount(self) -> None:
-        self.border_title = f" {self.destDir} "
         self.diff_info = self.query_one(
             self.ids.container.diff_info_q, DiffInfo
         )
@@ -108,10 +107,10 @@ class DiffView(Vertical, AppType):
             raise ValueError(
                 f"{self.node_data.path} is not managed but shown."
             )
+        self.border_title = None
         new_info_text: list[str] = []
         self.dir_output_label.display = False
         self.file_output_label.display = False
-        self.border_title = f" {self.node_data.path} "
         self.rich_log = self.query_one(self.ids.logger.diff_q, RichLog)
         self.rich_log.clear()
 
@@ -140,6 +139,7 @@ class DiffView(Vertical, AppType):
             self.diff_info_static_text.update("\n".join(new_info_text))
             return
 
+        self.border_title = f" {self.node_data.path} "
         # create the diff view for a changed file
         diff_output: "CommandResult" = self.app.chezmoi.read(
             self.diff_cmd, path_arg=self.node_data.path
