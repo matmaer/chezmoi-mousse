@@ -9,7 +9,7 @@ __all__ = [
     "DestDirStrings",
     "FlatBtn",
     "LinkBtn",
-    "LogText",
+    "LogStrings",
     "SectionLabels",
     "TabBtn",
 ]
@@ -111,7 +111,7 @@ class DestDirStrings(StrEnum):
     )
 
 
-class LogText(StrEnum):
+class LogStrings(StrEnum):
     app_log_initialized = "Application log initialized"
     debug_log_initialized = "Debug log initialized"
     chezmoi_found = "Found chezmoi command"

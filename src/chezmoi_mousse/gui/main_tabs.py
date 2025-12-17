@@ -7,7 +7,7 @@ from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.widgets import Footer, TabbedContent, TabPane
 
-from chezmoi_mousse import IDS, AppType, LogText, OperateData, TabName
+from chezmoi_mousse import IDS, AppType, LogStrings, OperateData, TabName
 from chezmoi_mousse.shared import (
     AppLog,
     CurrentAddNodeMsg,
@@ -96,17 +96,17 @@ class MainScreen(Screen[None], AppType):
             IDS.logs.logger.operate_q, OperateLog
         )
         self.app.chezmoi.operate_log = self.operate_log
-        self.app_log.success(LogText.operate_log_initialized)
+        self.app_log.success(LogStrings.operate_log_initialized)
         # Initialize ReadCmd logger
         self.read_cmd_log = self.query_one(IDS.logs.logger.read_q, ReadCmdLog)
         self.app.chezmoi.read_cmd_log = self.read_cmd_log
-        self.app_log.success(LogText.read_log_initialized)
+        self.app_log.success(LogStrings.read_log_initialized)
         # Initialize Debug logger if in dev mode
         if self.app.dev_mode:
             self.debug_log = self.query_one(IDS.logs.logger.debug_q, DebugLog)
             self.app.chezmoi.debug_log = self.debug_log
-            self.app_log.success(LogText.debug_log_initialized)
-            self.notify(LogText.dev_mode_enabled)
+            self.app_log.success(LogStrings.debug_log_initialized)
+            self.notify(LogStrings.dev_mode_enabled)
 
     def log_splash_log_commands(self) -> None:
         # Log SplashScreen and OperateScreen commands, if any.
