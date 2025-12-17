@@ -33,7 +33,6 @@ class OperateChezmoi(OperateScreenBase, AppType):
         self.reverse = (
             False if self.op_data.btn_enum == OperateBtn.apply_path else True
         )
-        self.repo_arg: str | None = None
 
     def on_mount(self) -> None:
         super().on_mount()
