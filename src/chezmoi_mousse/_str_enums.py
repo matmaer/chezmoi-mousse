@@ -89,26 +89,19 @@ class Chars(StrEnum):
 
 
 class DestDirStrings(StrEnum):
-    _cat_prefix = (
-        "Click a file or directory in the tree to see the output from"
+    _click_path = "Click a path to see the output from"
+    cat = (
+        f"Click a file to see the output from "
+        f"[$success]{ReadCmd.cat.pretty_cmd}[/]."
     )
-    _diff_prefix = "Click a path to see the output from"
-    _git_log_prefix = "Click a path in the tree to see the output from"
-    cat = f'{_cat_prefix} [$success]"{ReadCmd.cat.pretty_cmd}"[/].'
-    diff = f'{_diff_prefix} [$success]"{ReadCmd.diff.pretty_cmd}"[/].'
+    diff = f"{_click_path} " f"[$success]{ReadCmd.diff.pretty_cmd}[/]."
     diff_reverse = (
-        f'{_diff_prefix} [$success]"{ReadCmd.diff_reverse.pretty_cmd}"[/].'
+        f"{_click_path} [$success]{ReadCmd.diff_reverse.pretty_cmd}[/]."
     )
     dir_info = "Click a directary to see if it's managed or unmanaged."
-    git_log_msg = (
-        f'{_git_log_prefix} [$success]"{ReadCmd.git_log.pretty_cmd}"[/].'
-    )
-    in_dest_dir = (
-        "This is the destination directory (chezmoi [$success]destDir[/])"
-    )
-    read_file = (
-        'Click a file to see the output from [$success]"Path.read()"[/].'
-    )
+    git_log_msg = f"{_click_path} [$success]{ReadCmd.git_log.pretty_cmd}[/]."
+    in_dest_dir = "This is the destination directory (chezmoi destDir)."
+    read_file = "Click a file to see the output from [$success]Path.read()[/]."
 
 
 class LogStrings(StrEnum):
