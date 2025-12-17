@@ -46,60 +46,60 @@ class OpBtnData:
 
 class OperateBtn(Enum):
     add_file = OpBtnData(
-        initial_label="Add File",
-        initial_tooltip=SharedToolTips.in_dest_dir,
-        file_label="Add File",
         disabled_tooltip="Select a file to operate on.",
         enabled_tooltip="Manage the file with chezmoi.",
+        file_label="Add File",
+        initial_label="Add File",
+        initial_tooltip=SharedToolTips.in_dest_dir,
     )
     add_dir = OpBtnData(
-        initial_label="Add Dir",
-        initial_tooltip=SharedToolTips.in_dest_dir,
         dir_label="Add Dir",
         disabled_tooltip="Select a directory to operate on.",
         enabled_tooltip="Manage the directory with chezmoi.",
+        initial_label="Add Dir",
+        initial_tooltip=SharedToolTips.in_dest_dir,
     )
     apply_path = OpBtnData(
-        initial_label="Apply Path",
-        initial_tooltip=SharedToolTips.in_dest_dir,
         dir_label="Apply Dir",
-        disabled_tooltip=SharedToolTips.path_no_status,
         dir_tooltip='Run "chezmoi apply" on the directory.',
+        disabled_tooltip=SharedToolTips.path_no_status,
         file_label="Apply File",
         file_tooltip='Run "chezmoi apply" on the file.',
+        initial_label="Apply Path",
+        initial_tooltip=SharedToolTips.in_dest_dir,
     )
     re_add_path = OpBtnData(
-        initial_label="Re-Add Path",
-        initial_tooltip=SharedToolTips.in_dest_dir,
         dir_label="Re-Add Dir",
         dir_tooltip='Run "chezmoi re-add" on the directory.',
-        file_label="Re-Add File",
         disabled_tooltip=SharedToolTips.path_no_status,
+        file_label="Re-Add File",
         file_tooltip='Run "chezmoi re-add" on the file.',
+        initial_label="Re-Add Path",
+        initial_tooltip=SharedToolTips.in_dest_dir,
     )
     forget_path = OpBtnData(
-        initial_label="Forget Path",
-        initial_tooltip=SharedToolTips.in_dest_dir,
         dir_label="Forget Dir",
         dir_tooltip='Run "chezmoi forget", stop managing the directory.',
         file_label="Forget File",
         file_tooltip='Run "chezmoi forget", stop managing the file.',
+        initial_label="Forget Path",
+        initial_tooltip=SharedToolTips.in_dest_dir,
     )
     destroy_path = OpBtnData(
-        initial_label="Destroy Path",
-        initial_tooltip=SharedToolTips.in_dest_dir,
         dir_label="Destroy Dir",
         dir_tooltip='Run "chezmoi destroy" on the directory. Permanently remove the directory and its files from disk and chezmoi. MAKE SURE YOU HAVE A BACKUP!',
         file_label="Destroy File",
         file_tooltip='Run "chezmoi destroy" on the file. Permanently remove the file from disk and chezmoi. MAKE SURE YOU HAVE A BACKUP!',
+        initial_label="Destroy Path",
+        initial_tooltip=SharedToolTips.in_dest_dir,
     )
     init_repo = OpBtnData(
+        disabled_tooltip="Provide an input to determine the repository to clone from.",
+        enabled_tooltip="Valid URL entered, ready to clone.",
+        init_clone_label="Init Clone Repo",
+        init_new_label="Init New Repo",
         initial_label="Init New Repo",
         initial_tooltip="Initialize a new chezmoi repository in your home directory with default settings.",
-        init_new_label="Init New Repo",
-        init_clone_label="Init Clone Repo",
-        enabled_tooltip="Valid URL entered, ready to clone.",
-        disabled_tooltip="Provide an input to determine the repository to clone from.",
     )
     operate_exit = OpBtnData(initial_label="Cancel", initial_tooltip=None)
 
