@@ -47,6 +47,7 @@ class OperateChezmoi(OperateScreenBase, AppType):
             diff_view = self.pre_op_container.query_one(
                 self.ids.container.diff_q, DiffView
             )
+            diff_view.on_mount()
             diff_view.node_data = self.op_data.node_data
             diff_view.remove_class(Tcss.border_title_top)
         else:
