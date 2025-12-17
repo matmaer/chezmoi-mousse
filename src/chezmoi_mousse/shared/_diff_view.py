@@ -74,15 +74,6 @@ class DiffView(Vertical, AppType):
         )
 
     def on_mount(self) -> None:
-        self.diff_info = self.query_one(
-            self.ids.container.diff_info_q, DiffInfo
-        )
-        self.diff_info_static_text = self.diff_info.query_one(
-            self.ids.static.diff_info_q, Static
-        )
-        self.diff_info_static_text.update(
-            "\n".join([DestDirStrings.in_dest_dir, self.in_dest_dir_diff_msg])
-        )
         self.dir_output_label = self.query_one(
             self.ids.label.diff_dir_output_q, Label
         )
@@ -91,6 +82,18 @@ class DiffView(Vertical, AppType):
             self.ids.label.diff_file_output_q, Label
         )
         self.file_output_label.display = False
+        self.diff_info = self.query_one(
+            self.ids.container.diff_info_q, DiffInfo
+        )
+        self.diff_info_static_text = self.diff_info.query_one(
+            self.ids.static.diff_info_q, Static
+        )
+        if self.node_data is None:
+            self.diff_info_static_text.update(
+                "\n".join(
+                    [DestDirStrings.in_dest_dir, self.in_dest_dir_diff_msg]
+                )
+            )
 
     def watch_node_data(self) -> None:
         if self.node_data is None:
