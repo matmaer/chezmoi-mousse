@@ -10,7 +10,7 @@ from dataclasses import dataclass, fields
 from importlib.metadata import PackageNotFoundError, version
 from typing import TYPE_CHECKING
 
-from ._app_ids import IDS, IDS_OPERATE_INIT, AppIds
+from ._app_ids import IDS, IDS_OPERATE_CHEZMOI, IDS_OPERATE_INIT, AppIds
 from ._chezmoi import (
     Chezmoi,
     CommandResult,
@@ -31,6 +31,7 @@ from ._str_enums import (
     FlatBtn,
     LinkBtn,
     LogText,
+    OperateInfoStrings,
     SectionLabels,
     TabBtn,
 )
@@ -53,29 +54,35 @@ __all__ = [
     "__version__",
     # Id related
     "IDS",
+    "IDS_OPERATE_CHEZMOI",
     "IDS_OPERATE_INIT",
     "AppIds",
+    # Operations
+    "OperateBtn",
+    "OperateData",
+    "OperateInfoStrings",
+    # _chezmoi.py
+    "Chezmoi",
+    "CommandResult",
+    "GlobalCmd",
+    "PathDict",
+    "ReadCmd",
+    "ReadVerbs",
+    "WriteCmd",
+    "VerbArgs",
     # Other
     "AppType",
     "BindingAction",
     "BindingDescription",
     "Chars",
-    "Chezmoi",
-    "CommandResult",
     "DestDirStrings",
     "FlatBtn",
-    "GlobalCmd",
     "LinkBtn",
     "LogName",
     "LogText",
     "NodeData",
-    "OperateBtn",
-    "OperateData",
     "ParsedConfig",
-    "PathDict",
     "PathKind",
-    "ReadCmd",
-    "ReadVerbs",
     "ScreenName",
     "SectionLabels",
     "SplashData",
@@ -84,8 +91,6 @@ __all__ = [
     "TabName",
     "Tcss",
     "TreeName",
-    "VerbArgs",
-    "WriteCmd",
 ]
 
 
